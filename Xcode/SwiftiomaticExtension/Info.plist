@@ -32,7 +32,7 @@
 					<key>XCSourceEditorCommandClassName</key>
 					<string>$(PRODUCT_MODULE_NAME).FormatFileCommand</string>
 					<key>XCSourceEditorCommandIdentifier</key>
-					<string>com.toba.swiftiomatic.extension.format-file</string>
+					<string>app.toba.swiftiomatic.extension.format-file</string>
 					<key>XCSourceEditorCommandName</key>
 					<string>Format File</string>
 				</dict>
@@ -40,7 +40,7 @@
 					<key>XCSourceEditorCommandClassName</key>
 					<string>$(PRODUCT_MODULE_NAME).FormatSelectionCommand</string>
 					<key>XCSourceEditorCommandIdentifier</key>
-					<string>com.toba.swiftiomatic.extension.format-selection</string>
+					<string>app.toba.swiftiomatic.extension.format-selection</string>
 					<key>XCSourceEditorCommandName</key>
 					<string>Format Selection</string>
 				</dict>
@@ -48,7 +48,7 @@
 					<key>XCSourceEditorCommandClassName</key>
 					<string>$(PRODUCT_MODULE_NAME).LintFileCommand</string>
 					<key>XCSourceEditorCommandIdentifier</key>
-					<string>com.toba.swiftiomatic.extension.lint-file</string>
+					<string>app.toba.swiftiomatic.extension.lint-file</string>
 					<key>XCSourceEditorCommandName</key>
 					<string>Lint File</string>
 				</dict>

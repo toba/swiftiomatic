@@ -20,7 +20,7 @@ enum FormatCommandError: Error, LocalizedError, CustomNSError {
         }
     }
 
-    static var errorDomain: String { "com.toba.swiftiomatic.extension" }
+    static var errorDomain: String { "app.toba.swiftiomatic.extension" }
 
     var errorCode: Int {
         switch self {

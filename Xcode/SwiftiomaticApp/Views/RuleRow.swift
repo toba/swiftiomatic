@@ -9,6 +9,7 @@ struct RuleRow: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {
             HStack(alignment: .center, spacing: 8) {
+                // heading row
                 ScopeBadge(scope: entry.scope)
 
                 Text(entry.name)
@@ -33,32 +34,37 @@ struct RuleRow: View {
                 .labelsHidden()
             }
 
-            Text(entry.id)
-                .font(.caption2.monospaced())
-                .foregroundStyle(.tertiary)
+            HStack {
+                VStack(alignment: .leading) {
+                    Text(entry.id)
+                        .font(.caption2.monospaced())
+                        .foregroundStyle(.tertiary)
 
-            Text(entry.summary)
-                .foregroundStyle(.secondary)
-                .lineLimit(3)
+                    Text(entry.summary)
+                        .foregroundStyle(.secondary)
+                        .lineLimit(3)
 
-            if !entry.configurationOptions.isEmpty {
-                GroupBox {
-                    VStack(alignment: .leading, spacing: 12) {
-                        ForEach(
-                            Array(entry.configurationOptions.enumerated()),
-                            id: \.element.key
-                        ) { index, option in
-                            if index > 0 { Divider() }
-                            RuleOptionRow(
-                                option: option,
-                                binding: makeBinding(for: option)
-                            )
-                        }
-                    }
-                    .padding(4)
                 }
-                .padding(.top, 4)
-                .disabled(!document.isRuleEnabled(entry))
+                if !entry.configurationOptions.isEmpty {
+                    Spacer()
+                    GroupBox {
+                        VStack(alignment: .leading, spacing: 12) {
+                            ForEach(
+                                Array(entry.configurationOptions.enumerated()),
+                                id: \.element.key
+                            ) { index, option in
+                                if index > 0 { Divider() }
+                                RuleOptionRow(
+                                    option: option,
+                                    binding: makeBinding(for: option)
+                                )
+                            }
+                        }
+                        .padding(4)
+                    }
+                    .padding(.top, 4)
+                    .disabled(!document.isRuleEnabled(entry))
+                }
             }
         }
     }
@@ -122,7 +128,11 @@ struct RuleRow: View {
         Binding(
             get: {
                 if case .int(let v) = ruleConfigDict()[option.key] { return v }
-                return Int(option.defaultValue) ?? 0
+                if let defaultValue = option.defaultValue {
+                    return Int(defaultValue) ?? 0
+                } else {
+                    return 0
+                }
             },
             set: { newValue in
                 let isDefault = String(newValue) == option.defaultValue
@@ -137,7 +147,11 @@ struct RuleRow: View {
                 let dict = ruleConfigDict()
                 if case .double(let v) = dict[option.key] { return v }
                 if case .int(let v) = dict[option.key] { return Double(v) }
-                return Double(option.defaultValue) ?? 0.0
+                if let defaultValue = option.defaultValue {
+                    return Double(defaultValue) ?? 0.0
+                } else {
+                    return 0.0
+                }
             },
             set: { newValue in
                 let isDefault = String(newValue) == option.defaultValue
@@ -150,7 +164,7 @@ struct RuleRow: View {
         Binding(
             get: {
                 if case .string(let v) = ruleConfigDict()[option.key] { return v }
-                return option.defaultValue
+                return option.defaultValue ?? ""
             },
             set: { newValue in
                 let isDefault = newValue == option.defaultValue
@@ -168,7 +182,7 @@ struct RuleRow: View {
                         return nil
                     }.joined(separator: ", ")
                 }
-                return option.defaultValue
+                return option.defaultValue ?? ""
             },
             set: { newValue in
                 let trimmed = newValue.trimmingCharacters(in: .whitespaces)
@@ -222,7 +236,7 @@ private let previewOptInRule = RuleConfigurationEntry(
     isOptIn: true,
     configurationOptions: [
         ConfigOptionDescriptor(
-            key: "severity", displayName: "Severity", help: "",
+            key: "severity", displayName: "Lint as", help: "",
             valueType: .severity, defaultValue: "warning"
         )
     ]

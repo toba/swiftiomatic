@@ -1,5 +1,7 @@
 rules:
   config:
+    switch_case_alignment:
+      indented_cases: true
     unhandled_throwing_task:
       severity: warning
   disabled:
@@ -19,7 +21,6 @@ rules:
   - opening_brace
   - shorthand_argument
   - opening_brace
-  - switch_case_alignment
   - trailing_comma
   - trailing_whitespace
   - type_body_length

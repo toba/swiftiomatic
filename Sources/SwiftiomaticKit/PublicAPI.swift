@@ -5,12 +5,38 @@ public import SwiftiomaticSyntax
 public enum Swiftiomatic {
   /// Format Swift source code using default settings.
   public static func format(_ source: String) throws -> String {
-    try FormatEngine().format(source)
+    try format(source, configuration: .default)
   }
 
   /// Format Swift source code using the given configuration.
+  ///
+  /// Runs the swift-format pretty-printer followed by correctable Swiftiomatic rules.
   public static func format(_ source: String, configuration: Configuration) throws -> String {
-    try configuration.makeFormatEngine().format(source)
+    // 1. swift-format pretty-printer
+    var result = try configuration.makeFormatEngine().format(source)
+
+    // 2. Correctable Swiftiomatic rules
+    RuleRegistry.registerAllRulesOnce()
+    let rules = RuleResolver.loadRules(
+      enabled: configuration.enabledLintRules.isEmpty ? nil : Set(configuration.enabledLintRules),
+      disabled: Set(configuration.disabledLintRules),
+      ruleConfigs: configuration.lintRuleConfigs,
+      formatDefaults: ["max_width": configuration.formatMaxWidth],
+      skipAnalyzerRules: true
+    )
+    let correctable = rules.filter {
+      type(of: $0).isCorrectable && !type(of: $0).runsWithSourceKit
+    }
+
+    if correctable.isNotEmpty {
+      let file = SwiftSource(contents: result)
+      for rule in correctable {
+        _ = rule.correct(file: file)
+      }
+      result = file.contents
+    }
+
+    return result
   }
 
   /// Run lint-scope rules on a single source string and return diagnostics sorted by location.

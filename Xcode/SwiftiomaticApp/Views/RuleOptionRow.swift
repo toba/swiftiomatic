@@ -22,9 +22,11 @@ struct RuleOptionRow: View {
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }
-            Text("Default: \(option.defaultValue)")
-                .font(.caption2)
-                .foregroundStyle(.tertiary)
+            //            if let defaultValue = option.defaultValue {
+            //                Text("Default: \(defaultValue)")
+            //                    .font(.caption2)
+            //                    .foregroundStyle(.tertiary)
+            //            }
         }
     }
 
@@ -38,30 +40,31 @@ struct RuleOptionRow: View {
             HStack {
                 Text(option.displayName)
                 Spacer()
-                TextField(
-                    option.defaultValue,
-                    value: binding,
-                    format: .number
-                )
-                .frame(width: 80)
-                .textFieldStyle(.roundedBorder)
-                .multilineTextAlignment(.trailing)
-                Stepper("", value: binding)
-                    .labelsHidden()
+                if let defaultValue = option.defaultValue {
+                    TextField(
+                        defaultValue, value: binding, format: .number
+                    )
+                    .frame(width: 80)
+                    .textFieldStyle(.roundedBorder)
+                    .multilineTextAlignment(.trailing)
+                }
+                Stepper("", value: binding).labelsHidden()
             }
 
         case .float(let binding):
             HStack {
                 Text(option.displayName)
                 Spacer()
-                TextField(
-                    option.defaultValue,
-                    value: binding,
-                    format: .number.precision(.fractionLength(0...2))
-                )
-                .frame(width: 80)
-                .textFieldStyle(.roundedBorder)
-                .multilineTextAlignment(.trailing)
+                if let defaultValue = option.defaultValue {
+                    TextField(
+                        defaultValue,
+                        value: binding,
+                        format: .number.precision(.fractionLength(0...2))
+                    )
+                    .frame(width: 80)
+                    .textFieldStyle(.roundedBorder)
+                    .multilineTextAlignment(.trailing)
+                }
             }
 
         case .string(let binding, let validValues):
@@ -88,10 +91,12 @@ struct RuleOptionRow: View {
             } else {
                 HStack {
                     Text(option.displayName)
-                    Spacer()
-                    TextField(option.defaultValue, text: binding)
-                        .frame(width: 200)
-                        .textFieldStyle(.roundedBorder)
+                    if let defaultValue = option.defaultValue {
+                        Spacer()
+                        TextField(defaultValue, text: binding)
+                            .frame(width: 200)
+                            .textFieldStyle(.roundedBorder)
+                    }
                 }
             }
         }
@@ -142,8 +147,10 @@ struct RuleOptionRow: View {
             valueType: .enum, defaultValue: "all_except_iboutlets",
             validValues: ["all", "all_except_iboutlets", "weak_except_iboutlets"]
         ),
-        binding: .string(.constant("all_except_iboutlets"),
-                         validValues: ["all", "all_except_iboutlets", "weak_except_iboutlets"])
+        binding: .string(
+            .constant("all_except_iboutlets"),
+            validValues: ["all", "all_except_iboutlets", "weak_except_iboutlets"])
     )
     .padding()
 }
+
