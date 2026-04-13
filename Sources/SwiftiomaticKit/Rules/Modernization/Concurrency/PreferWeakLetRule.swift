@@ -114,10 +114,10 @@ extension PreferWeakLetRule {
       }
 
       let varToken = node.bindingSpecifier
-      let correction = SyntaxViolation.Correction(
-        start: varToken.positionAfterSkippingLeadingTrivia,
-        end: varToken.endPositionBeforeTrailingTrivia,
-        replacement: "let",
+      let letToken = varToken.with(\.tokenKind, .keyword(.let))
+      let correction = SyntaxViolation.Correction.replaceNode(
+        oldNode: Syntax(varToken),
+        newNode: Syntax(letToken),
       )
       violations.append(
         SyntaxViolation(

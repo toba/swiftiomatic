@@ -94,6 +94,40 @@ struct RedundantTypeAnnotationRule {
         "var url: URL = URL()",
         configuration: ["infer_locals_only": true],
       ),
+      Example(  // Set with array literal — element type matches
+        "var set: Set = [1, 2, 3]"
+      ),
+      Example(  // Set with array literal — mixed element types
+        "var set: Set<Any> = [1, \"a\"]"
+      ),
+      Example(  // Set with non-literal elements
+        "var set: Set<Int> = [a, b]"
+      ),
+      Example(  // if expression — different types in branches
+        """
+        let x: Any = if condition {
+            Int(1)
+        } else {
+            String("a")
+        }
+        """
+      ),
+      Example(  // if expression — incomplete (no else)
+        """
+        let x: Foo = if condition {
+            Foo()
+        }
+        """,
+        isExcludedFromDocumentation: true,
+      ),
+      Example(  // switch — different types per case
+        """
+        let x: Any = switch value {
+        case .a: Int(1)
+        case .b: String("b")
+        }
+        """
+      ),
     ]
   }
 
@@ -188,6 +222,40 @@ struct RedundantTypeAnnotationRule {
         "var str↓: String = \"str\"",
         configuration: ["consider_default_literal_types_redundant": true],
       ),
+      Example(  // Set with array literal — inferable generic argument
+        "var set: Set↓<Int> = [1, 2, 3]"
+      ),
+      Example(  // Set with string literal — inferable generic argument
+        "var set: Set↓<String> = [\"a\", \"b\"]"
+      ),
+      Example(  // if expression — all branches match type
+        """
+        let foo↓: Foo = if condition {
+            Foo("a")
+        } else {
+            Foo("b")
+        }
+        """
+      ),
+      Example(  // if/else if/else — all branches match
+        """
+        let foo↓: Foo = if a {
+            Foo("a")
+        } else if b {
+            Foo("b")
+        } else {
+            Foo("c")
+        }
+        """
+      ),
+      Example(  // switch — all cases match type
+        """
+        let foo↓: Foo = switch value {
+        case .a: Foo("a")
+        case .b: Foo("b")
+        }
+        """
+      ),
     ]
   }
 
@@ -276,6 +344,28 @@ struct RedundantTypeAnnotationRule {
         configuration: ["consider_default_literal_types_redundant": true],
       ):
         Example("var str = \"str\""),
+      // Set generic argument correction
+      Example("var set: Set↓<Int> = [1, 2, 3]"):
+        Example("var set: Set = [1, 2, 3]"),
+      // if expression correction
+      Example(
+        """
+        let foo↓: Foo = if condition {
+            Foo("a")
+        } else {
+            Foo("b")
+        }
+        """
+      ):
+        Example(
+          """
+          let foo = if condition {
+              Foo("a")
+          } else {
+              Foo("b")
+          }
+          """
+        ),
     ]
   }
 
@@ -317,7 +407,21 @@ extension RedundantTypeAnnotationRule {
         validateLiterals
         && initializer
           .hasRedundant(literalType: type.type)
-      guard isLiteralRedundant || initializer.hasRedundant(type: type.type) else {
+
+      // Check if/switch expression branches (SE-0380)
+      let isBranchRedundant: Bool
+      if let ifExpr = initializer.as(IfExprSyntax.self) {
+        isBranchRedundant = ifExpr.allBranchExpressionsMatch(type: type.type)
+      } else if let switchExpr = initializer.as(SwitchExprSyntax.self) {
+        isBranchRedundant = switchExpr.allCaseExpressionsMatch(type: type.type)
+      } else {
+        isBranchRedundant = false
+      }
+
+      guard isLiteralRedundant || isBranchRedundant || initializer.hasRedundant(type: type.type)
+      else {
+        // Check for Set<T> with array literal where T is inferable
+        collectSetGenericArgViolation(forType: type, withInitializer: initializer)
         return
       }
       violations.append(
@@ -325,6 +429,36 @@ extension RedundantTypeAnnotationRule {
         correction: .init(
           start: type.position,
           end: type.endPositionBeforeTrailingTrivia,
+          replacement: "",
+        ),
+      )
+    }
+
+    /// Detects `Set<T> = [literals]` where `T` is inferable from the array literal elements,
+    /// removing only the generic argument clause (`<T>`) rather than the entire type annotation.
+    private func collectSetGenericArgViolation(
+      forType type: TypeAnnotationSyntax, withInitializer initializer: ExprSyntax,
+    ) {
+      guard let identifierType = type.type.as(IdentifierTypeSyntax.self),
+        identifierType.name.text == "Set",
+        let genericArgs = identifierType.genericArgumentClause,
+        genericArgs.arguments.count == 1,
+        let genericArg = genericArgs.arguments.first,
+        let arrayExpr = initializer.as(ArrayExprSyntax.self),
+        !arrayExpr.elements.isEmpty
+      else { return }
+
+      let expectedType = genericArg.argument.trimmedDescription
+      let allMatch = arrayExpr.elements.allSatisfy { element in
+        element.expression.kind.compilerInferredLiteralType == expectedType
+      }
+      guard allMatch else { return }
+
+      violations.append(
+        at: genericArgs.positionAfterSkippingLeadingTrivia,
+        correction: .init(
+          start: genericArgs.position,
+          end: genericArgs.endPositionBeforeTrailingTrivia,
           replacement: "",
         ),
       )
@@ -361,6 +495,63 @@ extension ExprSyntax {
   fileprivate func hasRedundant(type: TypeSyntax) -> Bool {
     `as`(ForceUnwrapExprSyntax.self)?.expression.hasRedundant(type: type)
       ?? accessedNames.contains(type.trimmedDescription)
+  }
+}
+
+extension IfExprSyntax {
+  /// Returns `true` if every branch of this if/else if/else chain has a last expression
+  /// that matches the given type annotation.
+  fileprivate func allBranchExpressionsMatch(type: TypeSyntax) -> Bool {
+    // The "then" branch must match
+    guard let thenExpr = body.lastExpression, thenExpr.hasRedundant(type: type) else {
+      return false
+    }
+    // Must have an else branch (otherwise it's not a complete expression)
+    guard let elseBody else { return false }
+
+    switch elseBody {
+    case .ifExpr(let nestedIf):
+      return nestedIf.allBranchExpressionsMatch(type: type)
+    case .codeBlock(let codeBlock):
+      guard let elseExpr = codeBlock.lastExpression, elseExpr.hasRedundant(type: type) else {
+        return false
+      }
+      return true
+    }
+  }
+}
+
+extension SwitchExprSyntax {
+  /// Returns `true` if every case of this switch expression has a last expression
+  /// that matches the given type annotation.
+  fileprivate func allCaseExpressionsMatch(type: TypeSyntax) -> Bool {
+    let switchCases = cases.compactMap { $0.as(SwitchCaseSyntax.self) }
+    guard !switchCases.isEmpty else { return false }
+
+    return switchCases.allSatisfy { switchCase in
+      guard let lastExpr = switchCase.statements.lastExpression,
+        lastExpr.hasRedundant(type: type)
+      else {
+        return false
+      }
+      return true
+    }
+  }
+}
+
+extension CodeBlockSyntax {
+  /// The last expression in this code block, if the last item is an expression.
+  fileprivate var lastExpression: ExprSyntax? {
+    statements.lastExpression
+  }
+}
+
+extension CodeBlockItemListSyntax {
+  /// The last expression in this statement list, if the last item is an expression.
+  fileprivate var lastExpression: ExprSyntax? {
+    guard let lastItem = last?.item else { return nil }
+    return lastItem.as(ExprSyntax.self)
+      ?? lastItem.as(ExpressionStmtSyntax.self)?.expression
   }
 }
 

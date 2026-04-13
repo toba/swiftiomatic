@@ -24,8 +24,8 @@ extension SwiftSyntaxRule {
       .filter { $0.areRulesDisabled(ruleIDs: Self.allIdentifiers) }
       .compactMap { $0.toSourceRange(locationConverter: locationConverter) }
 
-    typealias CorrectionRange = (range: Range<String.Index>, correction: String)
-    let correctionRanges =
+    // Resolve corrections to UTF-8 offset edits.
+    let edits =
       violations
       .filter {
         !$0.position.isContainedIn(
@@ -34,24 +34,101 @@ extension SwiftSyntaxRule {
         )
       }
       .compactMap(\.correction)
-      .compactMap { correction in
-        file.stringView.stringRange(start: correction.start, end: correction.end)
-          .map { range in
-            CorrectionRange(range: range, correction: correction.replacement)
-          }
+      .compactMap { correction -> CorrectionEdit? in
+        guard let resolved = correction.resolved else { return nil }
+        return CorrectionEdit(
+          start: resolved.start,
+          end: resolved.end,
+          replacement: resolved.replacement,
+        )
       }
-      .sorted { (lhs: CorrectionRange, rhs: CorrectionRange) -> Bool in
-        lhs.range.lowerBound > rhs.range.lowerBound
-      }
-    guard correctionRanges.isNotEmpty else {
+    guard edits.isNotEmpty else {
       return 0
     }
 
-    var contents = file.contents
-    for range in correctionRanges {
-      contents.replaceSubrange(range.range, with: range.correction)
+    let (result, applied) = CorrectionApplicator.apply(edits: edits, to: file.contents)
+    file.write(result)
+    return applied
+  }
+}
+
+/// A UTF-8 offset edit used by the conflict-aware correction applicator.
+package struct CorrectionEdit {
+  package var startOffset: Int
+  package var endOffset: Int
+  package var replacement: String
+
+  package var isEmpty: Bool { startOffset == endOffset && replacement.isEmpty }
+
+  package static let empty = CorrectionEdit(startOffset: 0, endOffset: 0, replacement: "")
+
+  package init(startOffset: Int, endOffset: Int, replacement: String) {
+    self.startOffset = startOffset
+    self.endOffset = endOffset
+    self.replacement = replacement
+  }
+
+  init(start: AbsolutePosition, end: AbsolutePosition, replacement: String) {
+    self.startOffset = start.utf8Offset
+    self.endOffset = end.utf8Offset
+    self.replacement = replacement
+  }
+}
+
+/// Conflict-aware edit applicator ported from swift-syntax `FixItApplier`.
+///
+/// Applies edits in source order. Overlapping later edits are dropped;
+/// non-overlapping subsequent edits have their positions shifted by the
+/// delta of each applied edit.
+package enum CorrectionApplicator {
+  /// Apply edits to `source`, returning the modified string and the count of applied edits.
+  package static func apply(edits inputEdits: [CorrectionEdit], to source: String) -> (result: String, applied: Int) {
+    var edits = inputEdits.sorted { $0.startOffset < $1.startOffset }
+    var source = source
+    var applied = 0
+
+    for editIndex in edits.indices {
+      let edit = edits[editIndex]
+      guard !edit.isEmpty else { continue }
+
+      let utf8 = source.utf8
+      let startIndex = utf8.index(utf8.startIndex, offsetBy: edit.startOffset)
+      let endIndex = utf8.index(utf8.startIndex, offsetBy: edit.endOffset)
+      source.replaceSubrange(startIndex..<endIndex, with: edit.replacement)
+      applied += 1
+
+      var nextIndex = editIndex
+      while edits.formIndex(after: &nextIndex) != edits.endIndex {
+        let remaining = edits[nextIndex]
+        guard !remaining.isEmpty else { continue }
+
+        let overlaps =
+          edit.endOffset > remaining.startOffset
+          && edit.startOffset < remaining.endOffset
+
+        if overlaps {
+          edits[nextIndex] = .empty
+          continue
+        }
+
+        if edit.endOffset <= remaining.startOffset {
+          let shift = edit.replacement.utf8.count - (edit.endOffset - edit.startOffset)
+          edits[nextIndex] = CorrectionEdit(
+            startOffset: remaining.startOffset + shift,
+            endOffset: remaining.endOffset + shift,
+            replacement: remaining.replacement,
+          )
+        }
+      }
     }
-    file.write(contents)
-    return correctionRanges.count
+
+    return (source, applied)
+  }
+}
+
+private extension Collection {
+  func formIndex(after index: inout Index) -> Index {
+    formIndex(after: &index) as Void
+    return index
   }
 }

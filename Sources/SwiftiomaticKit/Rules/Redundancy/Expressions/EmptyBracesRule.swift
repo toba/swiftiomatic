@@ -13,6 +13,9 @@ struct EmptyBracesRule {
       // spaced style
       Example("func foo() { }", configuration: ["style": "spaced"]),
       Example("class Bar { }", configuration: ["style": "spaced"]),
+      // linebreak style
+      Example("func foo() {\n}", configuration: ["style": "linebreak"]),
+      Example("    func foo() {\n    }", configuration: ["style": "linebreak"]),
     ]
   }
 
@@ -36,6 +39,9 @@ struct EmptyBracesRule {
         """,
         configuration: ["style": "spaced"],
       ),
+      // linebreak style: no linebreak or extra content
+      Example("func foo() ↓{}", configuration: ["style": "linebreak"]),
+      Example("func foo() ↓{ }", configuration: ["style": "linebreak"]),
     ]
   }
 
@@ -47,6 +53,13 @@ struct EmptyBracesRule {
         Example("func foo() { }"),
       Example("func foo() ↓{  }", configuration: ["style": "spaced"]):
         Example("func foo() { }"),
+      // linebreak corrections
+      Example("func foo() ↓{}", configuration: ["style": "linebreak"]):
+        Example("func foo() {\n}"),
+      Example("func foo() ↓{ }", configuration: ["style": "linebreak"]):
+        Example("func foo() {\n}"),
+      Example("    func foo() ↓{}", configuration: ["style": "linebreak"]):
+        Example("    func foo() {\n    }"),
     ]
   }
 
@@ -90,6 +103,8 @@ extension EmptyBracesRule {
         return hasAnyInternalWhitespace(leftBrace: leftBrace, rightBrace: rightBrace)
       case .spaced:
         return !hasExactlySingleSpace(leftBrace: leftBrace, rightBrace: rightBrace)
+      case .linebreak:
+        return !hasLinebreakWithIndentation(leftBrace: leftBrace, rightBrace: rightBrace)
       }
     }
 
@@ -111,6 +126,19 @@ extension EmptyBracesRule {
     ) -> Bool {
       leftBrace.trailingTrivia == Trivia(pieces: [.spaces(1)])
         && rightBrace.leadingTrivia == Trivia()
+    }
+
+    private func hasLinebreakWithIndentation(
+      leftBrace: TokenSyntax,
+      rightBrace: TokenSyntax,
+    ) -> Bool {
+      let indent = lineIndentation(for: leftBrace, locationConverter: locationConverter, file: file)
+      let expectedLeadingTrivia =
+        indent.isEmpty
+        ? Trivia(pieces: [.newlines(1)])
+        : Trivia(pieces: [.newlines(1)] + indent.pieces)
+      return leftBrace.trailingTrivia == Trivia(pieces: [.newlines(1)])
+        && rightBrace.leadingTrivia == expectedLeadingTrivia
     }
 
     private func isFollowedByElseOrCatch(_ rightBrace: TokenSyntax) -> Bool {
@@ -161,27 +189,43 @@ extension EmptyBracesRule {
       case .spaced:
         return leftBrace.trailingTrivia != Trivia(pieces: [.spaces(1)])
           || rightBrace.leadingTrivia != Trivia()
+      case .linebreak:
+        let indent = lineIndentation(for: leftBrace, locationConverter: locationConverter, file: file)
+        let expectedLeading =
+          indent.isEmpty
+          ? Trivia(pieces: [.newlines(1)])
+          : Trivia(pieces: [.newlines(1)] + indent.pieces)
+        return leftBrace.trailingTrivia != Trivia(pieces: [.newlines(1)])
+          || rightBrace.leadingTrivia != expectedLeading
       }
     }
 
     private func applyStyle(_ node: CodeBlockSyntax) -> CodeBlockSyntax {
-      let (leftTrivia, rightTrivia) = targetTrivia
+      let (leftTrivia, rightTrivia) = targetTrivia(for: node.leftBrace)
       return node
         .with(\.leftBrace, node.leftBrace.with(\.trailingTrivia, leftTrivia))
         .with(\.rightBrace, node.rightBrace.with(\.leadingTrivia, rightTrivia))
     }
 
     private func applyStyle(_ node: MemberBlockSyntax) -> MemberBlockSyntax {
-      let (leftTrivia, rightTrivia) = targetTrivia
+      let (leftTrivia, rightTrivia) = targetTrivia(for: node.leftBrace)
       return node
         .with(\.leftBrace, node.leftBrace.with(\.trailingTrivia, leftTrivia))
         .with(\.rightBrace, node.rightBrace.with(\.leadingTrivia, rightTrivia))
     }
 
-    private var targetTrivia: (Trivia, Trivia) {
+    private func targetTrivia(for leftBrace: TokenSyntax) -> (Trivia, Trivia) {
       switch configuration.style {
-      case .noSpace: ([], [])
-      case .spaced: (Trivia(pieces: [.spaces(1)]), [])
+      case .noSpace: return ([], [])
+      case .spaced: return (Trivia(pieces: [.spaces(1)]), [])
+      case .linebreak:
+        let indent = lineIndentation(
+          for: leftBrace, locationConverter: locationConverter, file: file)
+        let rightTrivia =
+          indent.isEmpty
+          ? Trivia(pieces: [.newlines(1)])
+          : Trivia(pieces: [.newlines(1)] + indent.pieces)
+        return (Trivia(pieces: [.newlines(1)]), rightTrivia)
       }
     }
 
@@ -194,4 +238,22 @@ extension EmptyBracesRule {
       return false
     }
   }
+}
+
+/// Returns the leading whitespace trivia for the line containing the given token.
+private func lineIndentation(
+  for token: TokenSyntax,
+  locationConverter: SourceLocationConverter,
+  file: SwiftSource,
+) -> Trivia {
+  let line = locationConverter.location(for: token.positionAfterSkippingLeadingTrivia).line
+  guard line > 0, line <= file.lines.count else { return [] }
+  let content = file.lines[line - 1].content
+  let whitespace = content.prefix(while: { $0 == " " || $0 == "\t" })
+  guard !whitespace.isEmpty else { return [] }
+  // Build trivia from the leading whitespace
+  if whitespace.allSatisfy({ $0 == "\t" }) {
+    return Trivia(pieces: [.tabs(whitespace.count)])
+  }
+  return Trivia(pieces: [.spaces(whitespace.count)])
 }

@@ -5,11 +5,11 @@ status: in-progress
 type: epic
 priority: normal
 created_at: 2026-04-11T23:47:28Z
-updated_at: 2026-04-12T23:19:36Z
+updated_at: 2026-04-13T00:11:27Z
 sync:
     github:
         issue_number: "200"
-        synced_at: "2026-04-12T23:20:52Z"
+        synced_at: "2026-04-13T00:25:19Z"
 ---
 
 ## Overview
@@ -56,36 +56,52 @@ Existing rules already cover: `typed_throws`, `concurrency_modernization`, `swif
 
 ---
 
-## Medium Value — Detectable but need more context verification
+## Medium Value — Mechanical Detection
 
-### Performance (suggest rules)
-- [ ] **Empty/single-element array to Collection param** — `[]` or `[x]` passed to `some Collection`/`some Sequence`/`any Collection`/`any Sequence` parameters. Heap allocates unnecessarily. Suggest `EmptyCollection()` / `CollectionOfOne(x)`. Don't flag when param type is explicitly `Array`/`[T]`.
-- [ ] **Image decoding on main thread** — `UIImage(data:)` / `NSImage(data:)` inside SwiftUI `body`. Suggest offloading.
-- [ ] **@Observable + onChange computed property** — `onChange(of:)` observing a computed property that derives from frequently-mutated state causes per-frame view re-evaluation.
-- [ ] **`@TaskLocal` for business logic** — `@TaskLocal` used for required state (auth tokens, config) rather than cross-cutting concerns (logging, tracing). Silent bugs when forgotten via `withValue`.
-- [ ] **Generic specialization in libraries** — Public generic functions in library targets without `@inlinable`. ~4x overhead per call from witness table dispatch.
+These items have clear AST patterns detectable without SourceKit type resolution.
 
-### Collection Type Selection (suggest rules)
-- [ ] **`Array.insert(at: 0)` / `removeFirst()` → `Deque`** — Hot-path FIFO operations on Array.
-- [ ] **Array + `.contains()` → `OrderedSet`** — O(n) membership checks on Array.
-- [ ] **Dictionary sorted by keys → `OrderedDictionary`** — `.sorted(by:)` on dictionary keys for display/serialization.
-- [ ] **Sorted Array as priority queue → `Heap`** — `.sort()` after each `.append()`.
-- [ ] **`Set<Int>` with dense ranges → `BitSet`** / **`[Bool]` → `BitArray`**
+### Collection Type Selection (new grouped suggest rule: `collection_type_selection`)
+- [x] **`Array.insert(at: 0)` / `removeFirst()` → `Deque`** — Match `FunctionCallExprSyntax` for `.insert` with literal `0` arg, and `.removeFirst()` calls. Strong syntactic signal.
+- [x] **`if !x.contains(y) { x.append(y) }` → `OrderedSet`** — Match if-not-contains-then-append on same receiver in `IfExprSyntax` + `CodeBlockSyntax`.
+- [x] **`.sort()` after `.append()` → `Heap`** — Sequential statements on same receiver in a `CodeBlockItemListSyntax`.
 
-### SwiftUI Semantic (suggest rules)
-- [ ] **Unnecessary ViewModels** — `@Observable` ViewModel that only holds state and forwards to services. Should use MV pattern (`@State` + `@Environment` + `.task`).
-- [ ] **View member ordering** — Properties not following: `@Environment` → `let` → `@State` → computed → `init` → `body` → view builders → helpers.
+### SwiftUI View Member Ordering (new suggest rule: `swiftui_view_member_ordering`)
+- [x] **View member ordering** — Classify members by attribute (`@Environment`, `@FocusState`, `@State`) and kind (`let`, `init`, `body`, func). Existing `type_contents_order` only knows UIKit lifecycle categories — has no SwiftUI-specific attribute awareness. Expected order: `@Environment`/`@FocusState` → `let` → `@State` → computed var → `init` → `body` → view builders → helpers.
+
+### SwiftUI View Anti-Patterns (extend existing `swiftui_view_anti_patterns`)
+- [x] **Image decoding in body** — `NSImage(data:)` / `UIImage(data:)` inside SwiftUI `body`. Same `bodyDepth` tracking pattern as existing formatter-in-body check.
 
 ---
 
-## Lower Value — Need substantial semantic analysis
+## Medium Value — Heuristic Detection (not pursuing)
 
-- [ ] **Parameter pack opportunities** — 3+ overloads differing only in generic arity → `<each T>`.
-- [ ] **Sequence vs Collection over-constraining** — `Collection` constraint where only single-pass iteration is used.
-- [ ] **Copy-on-write opportunities** — Large structs copied frequently but rarely mutated.
-- [ ] **CKSyncEngine anti-patterns** — Very domain-specific (state persistence, fetchChanges in delegate, account changes).
-- [ ] **Quadratic copy patterns** — `Data.dropFirst()` / `Data.prefix()` in loops.
-- [ ] **Heap allocation for 0-1 element intermediate collections** — Chained `.flatMap`/`.map` creating intermediates.
+Reviewed 2026-04-12. None of these are feasible with acceptable signal-to-noise ratio. SourceKit provides `resolveType` (cursorinfo), `expressionTypes` (all expression types), and `indexFile` (USR-based declarations/references) — but cannot determine protocol conformance, type hierarchies, or semantic property dependency chains. The `AsyncEnrichableRule` infrastructure (4 existing conformers) is proven, so the blocker is SourceKit's depth, not our pipeline.
+
+The oad-n72 swift-syntax tooling (FixItApplier, diagnostic highlights/notes, DiagnosticCategory, incremental parsing, SwiftSyntaxBuilder, AST-level FixIt.Change) improves output and corrections but does not enable new detection capabilities.
+
+### Needs SourceKit type resolution
+- [x] ~~**Empty/single-element array to Collection param**~~ — **Not pursuing.** Would need function parameter type info (is it `some Collection` vs `[T]`?). `resolveType` gives function type but parsing param types from type strings is fragile. Even with resolution, `[]` passed to `[T]` is completely normal — false positive rate too high.
+- [x] ~~**Dictionary sorted by keys → `OrderedDictionary`**~~ — **Not pursuing.** `.sorted(by:)` on Dictionary is a normal, correct operation yielding `[(key: K, value: V)]`. `OrderedDictionary` only helps when maintaining sorted order across mutations — a usage context we can't determine from a single call site.
+- [x] ~~**`Set<Int>` with dense ranges → `BitSet`** / **`[Bool]` → `BitArray`**~~ — **Not pursuing.** Type annotations are syntactically visible but collection size is a runtime property. A 5-element `[Bool]` for flags is fine; a 10,000-element one for a sieve should be `BitArray`. We can't distinguish without runtime profiling.
+
+### Needs semantic understanding
+- [x] ~~**@Observable + onChange computed property**~~ — **Not pursuing.** Tracing property dependency chains (computed → stored → mutation frequency) is beyond SourceKit's capabilities entirely.
+- [x] ~~**`@TaskLocal` for business logic**~~ — **Not pursuing.** Distinguishing cross-cutting concerns from business logic is a human semantic judgment with no syntactic or type-level signal.
+- [x] ~~**Unnecessary ViewModels**~~ — **Not pursuing.** Determining whether a class "adds real logic" vs "just forwards" requires understanding method semantics. Too opinionated for a linter.
+
+### Already covered by existing rules
+- [x] **Generic specialization in libraries** — Covered by `inlinable_generic` rule.
+
+---
+
+## Lower Value — Need substantial semantic analysis (deferred)
+
+- [ ] **Parameter pack opportunities** — 3+ overloads differing only in generic arity → `<each T>`. Needs logic similarity analysis across overloads.
+- [ ] **Sequence vs Collection over-constraining** — `Collection` constraint where only single-pass iteration is used. Needs function body analysis.
+- [ ] **Copy-on-write opportunities** — Large structs copied frequently but rarely mutated. Needs size/frequency analysis.
+- [ ] **CKSyncEngine anti-patterns** — Very domain-specific (state persistence, fetchChanges in delegate, account changes). Mixed mechanical/semantic.
+- [x] **Quadratic copy patterns** — `Data.dropFirst()` / `Data.prefix()` in loops. Already covered by `mutation_during_iteration`.
+- [ ] **Heap allocation for 0-1 element intermediate collections** — Chained `.flatMap`/`.map` creating intermediates. Needs hot-path context.
 
 ---
 
@@ -97,3 +113,10 @@ Existing rules already cover: `typed_throws`, `concurrency_modernization`, `swif
 - `Task.immediate` should probably be **suggest** since not every Task in @MainActor context benefits
 - Collection type suggestions should be **suggest** scope since they add a dependency
 - Each bullet above could be its own rule file or grouped into thematic rules (e.g., one `swiftui_superseded_patterns` rule covering ObservableObject/NavigationView/GeometryReader/etc.)
+
+
+## Implementation Priority
+
+1. **`collection_type_selection`** (new grouped suggest rule) — `.insert(at: 0)`/`.removeFirst()` → Deque, `if !contains then append` → OrderedSet, `.sort()` after `.append()` → Heap
+2. **`swiftui_view_member_ordering`** (new suggest rule) — @Environment → let → @State → computed → init → body → view builders → helpers
+3. **Image decoding in body** (extend `swiftui_view_anti_patterns`) — NSImage(data:)/UIImage(data:) inside body

@@ -5,11 +5,11 @@ status: completed
 type: epic
 priority: high
 created_at: 2026-04-12T19:05:30Z
-updated_at: 2026-04-12T23:18:37Z
+updated_at: 2026-04-12T23:43:43Z
 sync:
     github:
         issue_number: "229"
-        synced_at: "2026-04-12T23:20:52Z"
+        synced_at: "2026-04-13T00:25:19Z"
 ---
 
 Systematic audit of Swiftiomatic rules mapped from SwiftFormat (via `RuleMapping.swiftformatMapping`) comparing logic completeness and test coverage against the reference at `~/Developer/swiftiomatic-ref/SwiftFormat/`.
@@ -27,17 +27,17 @@ Systematic audit of Swiftiomatic rules mapped from SwiftFormat (via `RuleMapping
 SwiftFormat's `backticksRequired(at:)` (~80 lines in `ParsingHelpers.swift:1306`) handles 15+ context-dependent scenarios. Our rule only checks `isSwiftKeyword` + `isValidBareIdentifier`.
 
 Missing scenarios:
-- [ ] `_`, `$` — always need backticks
-- [ ] `self` after `.` — needs backticks
-- [ ] `super`, `nil`, `true`, `false` — not in keyword set, handled contextually by SwiftFormat
-- [ ] `Self`, `Any` — context-dependent (safe after `:` or `->` type positions)
-- [ ] `Type` — context-dependent (needed inside type declarations, after `.`)
-- [ ] Accessor keywords (`get`, `set`, `willSet`, `didSet`, `init`, `_modify`) — needed only in accessor position
-- [ ] `actor` after infix operator — doesn't need backticks
-- [ ] After `.` — keywords don't need backticks (except `init`)
-- [ ] After `::` (module selector) — keywords are ordinary except `deinit`, `init`, `subscript`
-- [ ] `let`, `var` — always need backticks
-- [ ] Argument position — keywords used as argument labels don't need backticks
+- [x] `_`, `$` — always need backticks
+- [x] `self` after `.` — needs backticks
+- [x] `super`, `nil`, `true`, `false` — not in keyword set, handled contextually by SwiftFormat
+- [x] `Self`, `Any` — context-dependent (safe after `:` or `->` type positions)
+- [x] `Type` — context-dependent (needed inside type declarations, after `.`)
+- [x] Accessor keywords (`get`, `set`, `willSet`, `didSet`, `init`, `_modify`) — needed only in accessor position
+- [x] `actor` after infix operator — doesn't need backticks
+- [x] After `.` — keywords don't need backticks (except `init`)
+- [x] After `::` (module selector) — keywords are ordinary except `deinit`, `init`, `subscript`
+- [x] `let`, `var` — always need backticks
+- [x] Argument position — keywords used as argument labels don't need backticks
 
 SwiftFormat tests: 369 lines. Our examples: 6.
 
@@ -103,7 +103,7 @@ SwiftFormat handles additional exclusions:
 SwiftFormat supports three formatting modes via `--empty-braces` option:
 - [x] `noSpace` (our only behavior) — already implemented as default
 - [x] `spaced` (`{ }` with space)
-- [ ] `linebreak` (brace on new line with indentation)
+- [x] `linebreak` (brace on new line with indentation)
 
 ### Void (VoidReturnRule)
 SwiftFormat: 175 lines normalizing `Void`/`()`/`(Void)` across contexts.
@@ -115,10 +115,10 @@ SwiftFormat: 175 lines normalizing `Void`/`()`/`(Void)` across contexts.
 ### RedundantType (RedundantTypeAnnotationRule)
 SwiftFormat: 145+ lines (rule) + 130 lines (helpers).
 - [x] `inferLocalsOnly` mode (infer in local scopes, explicit in types)
-- [ ] If/switch expression branch type comparison (SE-0380)
+- [x] If/switch expression branch type comparison (SE-0380)
 - [x] `@Model` class exclusion
 - [x] Ternary expression detection
-- [ ] Set with inferred array literal element type
+- [x] Set with inferred array literal element type
 
 ## Summary
 
@@ -139,3 +139,19 @@ SwiftFormat: 145+ lines (rule) + 130 lines (helpers).
 ## Implementation Guidance
 
 Adapt logic and test cases directly from `~/Developer/swiftiomatic-ref/SwiftFormat/`. Only invent new patterns when the reference approach is incompatible (e.g., SwiftFormat's token-based parsing vs our swift-syntax AST visitors).
+
+
+
+## Summary of Changes
+
+All audit items resolved across multiple sessions:
+- **Mapping errors**: fixed 4 incorrect SwiftFormat → Swiftiomatic rule mappings
+- **RedundantBackticks**: context-aware backtick removal covering 15+ scenarios (vjl-m9o)
+- **RedundantParens**: empty attribute parens, trailing closure empty parens, nested parens
+- **TrailingComma**: extended to function calls, parameters, generics, tuples, closures (Swift 6.1+/6.2+)
+- **RedundantClosure**: Never-returning and Void type exclusions
+- **ImplicitReturn**: deferred items documented
+- **ImplicitOptionalInit**: result builder and Codable exclusions (kvc-jg6)
+- **RedundantType**: @Model exclusion, ternary detection, inferLocalsOnly, if/switch expressions (SE-0380), Set array literal inference (kvc-jg6, 56o-cnx)
+- **EmptyBraces**: spaced and linebreak style options (56o-cnx)
+- **VoidReturn**: configurable option, (Void) normalization, typealias handling

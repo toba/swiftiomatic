@@ -2,20 +2,72 @@ package import SwiftSyntax
 
 /// A violation produced by `ViolationCollectingVisitor`s.
 public struct SyntaxViolation: Comparable, Hashable {
-  /// The correction of a violation that is basically the violation's range in the source code and a
-  /// replacement for this range that would fix the violation.
-  public struct Correction: Hashable {
-    /// Start position of the violation range.
-    public let start: AbsolutePosition
-    /// End position of the violation range.
-    public let end: AbsolutePosition
-    /// Replacement for the violating range.
-    public let replacement: String
+  /// A correction that can be applied to fix a violation.
+  ///
+  /// Corrections come in four flavors:
+  /// - ``textReplacement``: raw byte-range replacement (the original model)
+  /// - ``replaceNode``: structural node replacement with smart trivia preservation
+  /// - ``replaceLeadingTrivia``: trivia-only edit on the leading side of a token
+  /// - ``replaceTrailingTrivia``: trivia-only edit on the trailing side of a token
+  public enum Correction: Equatable {
+    /// Replace the byte range `start..<end` with `replacement`.
+    case textReplacement(start: AbsolutePosition, end: AbsolutePosition, replacement: String)
 
+    /// Replace `oldNode` with `newNode`, automatically preserving matching
+    /// leading/trailing trivia (mirroring swift-syntax `FixIt.Change.replace`).
+    case replaceNode(oldNode: Syntax, newNode: Syntax)
+
+    /// Replace the leading trivia on `token` with `newTrivia`.
+    case replaceLeadingTrivia(token: TokenSyntax, newTrivia: Trivia)
+
+    /// Replace the trailing trivia on `token` with `newTrivia`.
+    case replaceTrailingTrivia(token: TokenSyntax, newTrivia: Trivia)
+
+    // MARK: - Convenience initializer for the original byte-range API
+
+    /// Creates a text-replacement correction (backward-compatible with the struct initializer).
     public init(start: AbsolutePosition, end: AbsolutePosition, replacement: String) {
-      self.start = start
-      self.end = end
-      self.replacement = replacement
+      self = .textReplacement(start: start, end: end, replacement: replacement)
+    }
+
+    // MARK: - Resolved range + replacement text
+
+    /// The byte range and replacement string that this correction resolves to.
+    ///
+    /// Returns `nil` when the correction is a no-op (trivia already matches).
+    package var resolved: (start: AbsolutePosition, end: AbsolutePosition, replacement: String)? {
+      switch self {
+      case .textReplacement(let start, let end, let replacement):
+        return (start, end, replacement)
+
+      case .replaceNode(let oldNode, let newNode):
+        let leadingMatch = oldNode.leadingTrivia == newNode.leadingTrivia
+        let trailingMatch = oldNode.trailingTrivia == newNode.trailingTrivia
+        let start = leadingMatch
+          ? oldNode.positionAfterSkippingLeadingTrivia : oldNode.position
+        let end = trailingMatch
+          ? oldNode.endPositionBeforeTrailingTrivia : oldNode.endPosition
+        var detached = newNode.detached
+        if leadingMatch { detached.leadingTrivia = [] }
+        if trailingMatch { detached.trailingTrivia = [] }
+        return (start, end, detached.description)
+
+      case .replaceLeadingTrivia(let token, let newTrivia):
+        guard token.leadingTrivia != newTrivia else { return nil }
+        return (
+          token.position,
+          token.positionAfterSkippingLeadingTrivia,
+          newTrivia.description
+        )
+
+      case .replaceTrailingTrivia(let token, let newTrivia):
+        guard token.trailingTrivia != newTrivia else { return nil }
+        return (
+          token.endPositionBeforeTrailingTrivia,
+          token.endPosition,
+          newTrivia.description
+        )
+      }
     }
   }
 
@@ -88,6 +140,28 @@ public struct SyntaxViolation: Comparable, Hashable {
 
   public static func < (lhs: Self, rhs: Self) -> Bool {
     lhs.position < rhs.position
+  }
+}
+
+extension SyntaxViolation.Correction: Hashable {
+  public func hash(into hasher: inout Hasher) {
+    switch self {
+    case .textReplacement(let start, let end, let replacement):
+      hasher.combine(0)
+      hasher.combine(start)
+      hasher.combine(end)
+      hasher.combine(replacement)
+    case .replaceNode(let oldNode, let newNode):
+      hasher.combine(1)
+      hasher.combine(oldNode)
+      hasher.combine(newNode)
+    case .replaceLeadingTrivia(let token, _):
+      hasher.combine(2)
+      hasher.combine(token)
+    case .replaceTrailingTrivia(let token, _):
+      hasher.combine(3)
+      hasher.combine(token)
+    }
   }
 }
 

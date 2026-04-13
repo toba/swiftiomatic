@@ -99,6 +99,16 @@ struct SwiftUIViewAntiPatternsRule {
         }
         """
       ),
+      // Image decoding outside body is fine
+      Example(
+        """
+        struct MyView: View {
+          let image: NSImage
+          init(data: Data) { self.image = NSImage(data: data)! }
+          var body: some View { Image(nsImage: image) }
+        }
+        """
+      ),
     ]
   }
 
@@ -197,6 +207,17 @@ struct SwiftUIViewAntiPatternsRule {
         }
         """
       ),
+      // Image decoding on main thread in body
+      Example(
+        """
+        struct MyView: View {
+          let data: Data
+          var body: some View {
+            Image(nsImage: ↓NSImage(data: data)!)
+          }
+        }
+        """
+      ),
     ]
   }
 
@@ -232,12 +253,20 @@ extension ViolationMessage {
 
   fileprivate static let withAnimationInOnChange: Self =
     "withAnimation inside onChange can be overridden by non-animated updates — use .animation(_:value:) modifier instead"
+
+  fileprivate static func imageDecodingInBody(_ name: String) -> Self {
+    "\(name)(data:) decodes on the main thread in view body — offload to background"
+  }
 }
 
 private let panelTypes: Set<String> = ["NSOpenPanel", "NSSavePanel"]
 
 private let formatterTypes: Set<String> = [
   "DateFormatter", "NumberFormatter", "MeasurementFormatter",
+]
+
+private let imageDecoderTypes: Set<String> = [
+  "NSImage", "UIImage",
 ]
 
 extension SwiftUIViewAntiPatternsRule {
@@ -325,6 +354,21 @@ extension SwiftUIViewAntiPatternsRule {
             message: .formatterInBody(callee),
             confidence: .high,
             suggestion: "Cache as a static property or @State",
+          )
+        )
+      }
+
+      // MARK: - Image decoding in body
+
+      if imageDecoderTypes.contains(callee),
+        node.arguments.first?.label?.text == "data"
+      {
+        violations.append(
+          SyntaxViolation(
+            position: node.calledExpression.positionAfterSkippingLeadingTrivia,
+            message: .imageDecodingInBody(callee),
+            confidence: .high,
+            suggestion: "Decode/downsample off the main thread and store the result",
           )
         )
       }

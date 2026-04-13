@@ -109,22 +109,26 @@ extension AttributeNameSpacingRule {
         return
       }
 
-      addViolation(
-        startPosition: node.name.endPositionBeforeTrailingTrivia,
-        endPosition: node.name.endPosition,
-        replacement: "",
-        reason: "There must not be any space between access control modifier and scope",
+      violations.append(
+        SyntaxViolation(
+          position: node.name.endPosition,
+          reason: "There must not be any space between access control modifier and scope",
+          severity: configuration.severity,
+          correction: .replaceTrailingTrivia(token: node.name, newTrivia: []),
+        ),
       )
     }
 
     override func visitPost(_ node: AttributeSyntax) {
       // Check for trailing trivia after the '@' sign. Handles cases like `@ MainActor` / `@ escaping`.
       if node.atSign.trailingTrivia.isNotEmpty {
-        addViolation(
-          startPosition: node.atSign.endPositionBeforeTrailingTrivia,
-          endPosition: node.atSign.endPosition,
-          replacement: "",
-          reason: "Attributes must not have trivia between `@` and the identifier",
+        violations.append(
+          SyntaxViolation(
+            position: node.atSign.endPosition,
+            reason: "Attributes must not have trivia between `@` and the identifier",
+            severity: configuration.severity,
+            correction: .replaceTrailingTrivia(token: node.atSign, newTrivia: []),
+          ),
         )
       }
 
@@ -132,44 +136,31 @@ extension AttributeNameSpacingRule {
 
       // Handles cases like `@MyPropertyWrapper (param: 2)`.
       if node.arguments != nil, hasTrailingTrivia {
-        addViolation(
-          startPosition: node.attributeName.endPositionBeforeTrailingTrivia,
-          endPosition: node.attributeName.endPosition,
-          replacement: "",
-          reason: "Attribute declarations with arguments must not have trailing trivia",
-        )
+        if let lastToken = node.attributeName.lastToken(viewMode: .sourceAccurate) {
+          violations.append(
+            SyntaxViolation(
+              position: lastToken.endPosition,
+              reason: "Attribute declarations with arguments must not have trailing trivia",
+              severity: configuration.severity,
+              correction: .replaceTrailingTrivia(token: lastToken, newTrivia: []),
+            ),
+          )
+        }
       }
 
       if !hasTrailingTrivia, node.isEscaping {
         // Handles cases where escaping has the wrong spacing: `@escaping()`
-        addViolation(
-          startPosition: node.attributeName.endPositionBeforeTrailingTrivia,
-          endPosition: node.attributeName.endPosition,
-          replacement: " ",
-          reason: "`@escaping` must have a trailing space before the associated type",
-        )
+        if let lastToken = node.attributeName.lastToken(viewMode: .sourceAccurate) {
+          violations.append(
+            SyntaxViolation(
+              position: lastToken.endPosition,
+              reason: "`@escaping` must have a trailing space before the associated type",
+              severity: configuration.severity,
+              correction: .replaceTrailingTrivia(token: lastToken, newTrivia: .space),
+            ),
+          )
+        }
       }
-    }
-
-    private func addViolation(
-      startPosition: AbsolutePosition,
-      endPosition: AbsolutePosition,
-      replacement: String,
-      reason: String,
-    ) {
-      let correction = SyntaxViolation.Correction(
-        start: startPosition,
-        end: endPosition,
-        replacement: replacement,
-      )
-
-      let violation = SyntaxViolation(
-        position: endPosition,
-        reason: reason,
-        severity: configuration.severity,
-        correction: correction,
-      )
-      violations.append(violation)
     }
   }
 }

@@ -4,6 +4,7 @@ struct EmptyBracesOptions: SeverityBasedRuleOptions {
   enum Style: String, AcceptableByOptionElement {
     case noSpace = "no_space"
     case spaced
+    case linebreak
   }
 
   @OptionElement(key: "severity")

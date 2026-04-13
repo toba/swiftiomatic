@@ -161,7 +161,7 @@ The 336 rules span 15 categories:
 
 ### Cross-File Analysis
 
-Some rules — dead symbol detection, structural duplication — need to see more than one file at a time. These use a two-pass architecture: pass 1 collects declarations across all files, pass 2 finds (or fails to find) references. Rules that need SourceKit for type-aware analysis can opt in with `requiresSourceKit`.
+Some rules (dead symbol detection, structural duplication) need to see more than one file at a time. These use a two-pass architecture: pass 1 collects declarations across all files, pass 2 finds (or fails to find) references. Rules that need SourceKit for type-aware analysis can opt in with `requiresSourceKit`.
 
 ## Agent Mode
 
@@ -188,6 +188,32 @@ Each finding includes a `confidence` level — `high`, `medium`, or `low` — so
 
 - macOS 26+
 - Swift 6.3
+
+## Architecture at a Glance
+
+### Scope × Correctability
+
+Every rule has a scope (where it runs) and a correctable flag (whether it can auto-fix). Two of the six combinations are architecturally impossible (format rules are *always* correctable, suggest rules are *never* correctable) which leaves three that matter:
+
+| | **Correctable** | **Not correctable** |
+|---|---|---|
+| **Lint** (~92 / ~168 rules) | `sm lint` warns in Xcode. `sm format` silently fixes. Same rule, both audiences. | `sm lint` warns in Xcode. Human fixes manually. |
+| **Format** (~32 rules) | `sm format` rewrites the file. Never surfaces as a warning. | *(no: formatting without fixing is just linting)* |
+| **Suggest** (~38 rules) | *(no: suggestions are for judgment, not auto-fix)* | `sm analyze` flags for human/agent review with confidence levels. |
+
+Commands: `sm lint` runs lint-scoped rules. `sm format` applies correctable lint + all format rules. `sm analyze` runs everything.
+
+### Parsing Strategy × Type Information
+
+Rules bifurcate along two technical axes: *how* they read code (parsing strategy) and *how much* semantic information they need (type resolution). The cross-product determines what a rule can see, what it costs to run, and whether it degrades gracefully without SourceKit.
+
+| | **Syntax-only** | **Async-enrichable** | **SourceKit-required** |
+|---|---|---|---|
+| **SwiftSyntax visitor** (~301 rules) | The workhorse. `ViolationCollectingVisitor` subclass walks the parsed AST. Pipeline-batched so multiple rules share one tree walk. | Synchronous visitor runs first, then optional `enrich()` resolves types via `TypeResolver` for additional findings. Works without SourceKit at reduced confidence. (~4 rules) | *(not used — SwiftSyntax visitors are designed to work without SourceKit)* |
+| **SourceKit AST** (~1 rule) | *(not used — these rules exist specifically for SourceKit structure data)* | *(N/A)* | Walks `SourceKitDictionary` tree depth-first, matching nodes by declaration/expression/statement kind. Legacy path. |
+| **Direct** `validate(file:)` (~28 rules) | File-name checks, line-based analysis, and rules needing post-walk computation. Not pipeline-eligible. | *(N/A)* | Relies on SourceKit structure dictionaries or compiler arguments directly. (~9 rules) |
+
+**Cross-file overlay** (~5 rules): `CollectingRule` adds a two-pass protocol on top of any strategy above. Pass 1 collects declarations across all files; pass 2 validates with aggregated data.
 
 ## License
 

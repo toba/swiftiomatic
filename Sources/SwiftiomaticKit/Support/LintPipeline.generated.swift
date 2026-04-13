@@ -30,6 +30,7 @@ let pipelineEligibleRuleIDs: Set<String> = [
     "closure_spacing",
     "codable_enum_raw_value",
     "collection_alignment",
+    "collection_type_selection",
     "colon",
     "comma_inheritance",
     "compiler_protocol_init",
@@ -58,6 +59,7 @@ let pipelineEligibleRuleIDs: Set<String> = [
     "discouraged_optional_collection",
     "doc_comments",
     "doc_comments_before_modifiers",
+    "dont_repeat_type_in_static_properties",
     "duplicate_conditions",
     "duplicate_enum_cases",
     "duplicated_key_in_dictionary_literal",
@@ -94,6 +96,7 @@ let pipelineEligibleRuleIDs: Set<String> = [
     "force_try",
     "force_unwrap",
     "foundation_modernization",
+    "fully_indirect_enum",
     "function_body_length",
     "function_default_parameter_at_end",
     "function_name_spacing",
@@ -150,6 +153,7 @@ let pipelineEligibleRuleIDs: Set<String> = [
     "no_force_try_in_tests",
     "no_force_unwrap_in_tests",
     "no_guard_in_tests",
+    "no_labels_in_case_patterns",
     "no_space_in_method_call",
     "non_overridable_class_declaration",
     "notification_center_detachment",
@@ -160,6 +164,7 @@ let pipelineEligibleRuleIDs: Set<String> = [
     "number_separator",
     "object_literal",
     "observation_pitfalls",
+    "one_case_per_line",
     "one_declaration_per_file",
     "opening_brace",
     "optional_data_string_conversion",
@@ -250,6 +255,7 @@ let pipelineEligibleRuleIDs: Set<String> = [
     "swiftui_layout",
     "swiftui_superseded_patterns",
     "swiftui_view_anti_patterns",
+    "swiftui_view_member_ordering",
     "switch_case_alignment",
     "switch_case_on_newline",
     "test_case_accessibility",
@@ -275,6 +281,7 @@ let pipelineEligibleRuleIDs: Set<String> = [
     "unused_optional_binding",
     "unused_setter_value",
     "url_macro",
+    "use_early_exits",
     "validate_test_cases",
     "vertical_parameter_alignment",
     "vertical_whitespace",
@@ -570,6 +577,12 @@ final class LintPipeline: SyntaxVisitor {
                 arrayExpr_visitPost.append(idx)
                 dictionaryElementList_visitPost.append(idx)
 
+            case "collection_type_selection":
+                codeBlockItemList_visitPost.append(idx)
+                functionCallExpr_visitPost.append(idx)
+                ifExpr_visitPost.append(idx)
+                variableDecl_visitPost.append(idx)
+
             case "colon":
                 declNameArguments_visit.append(idx)
                 dictionaryElement_visit.append(idx)
@@ -716,6 +729,9 @@ final class LintPipeline: SyntaxVisitor {
                 structDecl_visitPost.append(idx)
                 variableDecl_visitPost.append(idx)
 
+            case "dont_repeat_type_in_static_properties":
+                variableDecl_visitPost.append(idx)
+
             case "duplicate_conditions":
                 ifExpr_visitPost.append(idx)
                 switchCaseList_visitPost.append(idx)
@@ -860,6 +876,9 @@ final class LintPipeline: SyntaxVisitor {
                 identifierType_visitPost.append(idx)
                 memberAccessExpr_visitPost.append(idx)
                 memberType_visitPost.append(idx)
+
+            case "fully_indirect_enum":
+                enumDecl_visitPost.append(idx)
 
             case "function_body_length":
                 deinitializerDecl_visitPost.append(idx)
@@ -1129,6 +1148,9 @@ final class LintPipeline: SyntaxVisitor {
                 functionDecl_visitPost.append(idx)
                 guardStmt_visitPost.append(idx)
 
+            case "no_labels_in_case_patterns":
+                switchCaseLabel_visitPost.append(idx)
+
             case "no_space_in_method_call":
                 functionCallExpr_visitPost.append(idx)
 
@@ -1163,6 +1185,9 @@ final class LintPipeline: SyntaxVisitor {
 
             case "observation_pitfalls":
                 forStmt_visitPost.append(idx)
+
+            case "one_case_per_line":
+                enumCaseDecl_visitPost.append(idx)
 
             case "one_declaration_per_file":
                 actorDecl_visitPost.append(idx)
@@ -1551,6 +1576,9 @@ final class LintPipeline: SyntaxVisitor {
                 functionCallExpr_visitPost.append(idx)
                 patternBinding_visitPost.append(idx)
 
+            case "swiftui_view_member_ordering":
+                structDecl_visitPost.append(idx)
+
             case "switch_case_alignment":
                 switchExpr_visitPost.append(idx)
 
@@ -1663,6 +1691,9 @@ final class LintPipeline: SyntaxVisitor {
 
             case "url_macro":
                 forceUnwrapExpr_visitPost.append(idx)
+
+            case "use_early_exits":
+                ifExpr_visitPost.append(idx)
 
             case "validate_test_cases":
                 classDecl_visit.append(idx)
