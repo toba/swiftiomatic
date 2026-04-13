@@ -24,6 +24,7 @@ public struct FormatFinding: Sendable, Equatable {
   public func toDiagnostic() -> Diagnostic {
     Diagnostic(
       ruleID: category,
+      category: nil,
       source: .format,
       severity: .warning,
       confidence: .high,
@@ -33,6 +34,8 @@ public struct FormatFinding: Sendable, Equatable {
       message: message,
       suggestion: nil,
       canAutoFix: true,
+      highlights: nil,
+      notes: nil,
     )
   }
 }

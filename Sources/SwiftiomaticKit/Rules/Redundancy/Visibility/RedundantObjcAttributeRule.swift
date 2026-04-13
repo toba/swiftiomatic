@@ -43,6 +43,7 @@ extension RedundantObjcAttributeRule: SwiftSyntaxRule {
           position: start,
           severity: configuration.severity,
           correction: correction,
+          highlights: [Syntax(objcAttribute)],
         ),
       )
     }

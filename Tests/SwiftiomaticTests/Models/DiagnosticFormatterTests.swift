@@ -15,6 +15,7 @@ import Testing
   ) -> Diagnostic {
     Diagnostic(
       ruleID: ruleID,
+      category: nil,
       source: .lint,
       severity: severity,
       confidence: .high,
@@ -23,7 +24,9 @@ import Testing
       column: column,
       message: message,
       suggestion: nil,
-      canAutoFix: false
+      canAutoFix: false,
+      highlights: nil,
+      notes: nil
     )
   }
 

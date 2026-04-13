@@ -11,6 +11,7 @@ AST-accurate Swift linting, formatting, and code analysis — used from the IDE,
 - Never git stash to dodge an error — fix it.
 - Never edit `*.generated.swift`. Run `swift run GeneratePipeline` after adding/removing/renaming rules.
 - Rule examples are validated by a single parameterized test in `Tests/SwiftiomaticTests/Rules/Infrastructure/RuleExampleTests.swift` — no per-rule test boilerplate.
+- **After any rule change, run the full `RuleExampleTests` batch** (filter: `RuleExampleTests`), not just individual rule tests. Individual tests pass even when examples are broken — bugs only surface in the batch. This has caused 18+ consecutive CI failures.
 
 ### Diagnosing App UI
 

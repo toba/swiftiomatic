@@ -103,6 +103,7 @@ private func makeEntry(from ruleType: any Rule.Type) -> RuleConfigurationEntry {
     name: ruleType.ruleName,
     summary: ruleType.ruleSummary,
     rationale: ruleType.ruleRationale,
+    category: ruleType.ruleCategory,
     scope: ruleType.ruleScope,
     isCorrectable: ruleType.isCorrectable,
     isOptIn: ruleType.isOptIn,

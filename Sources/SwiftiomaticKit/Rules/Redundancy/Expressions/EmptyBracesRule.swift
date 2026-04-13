@@ -137,7 +137,7 @@ extension EmptyBracesRule {
         indent.isEmpty
         ? Trivia(pieces: [.newlines(1)])
         : Trivia(pieces: [.newlines(1)] + indent.pieces)
-      return leftBrace.trailingTrivia == Trivia(pieces: [.newlines(1)])
+      return leftBrace.trailingTrivia.isEmpty
         && rightBrace.leadingTrivia == expectedLeadingTrivia
     }
 
@@ -195,7 +195,7 @@ extension EmptyBracesRule {
           indent.isEmpty
           ? Trivia(pieces: [.newlines(1)])
           : Trivia(pieces: [.newlines(1)] + indent.pieces)
-        return leftBrace.trailingTrivia != Trivia(pieces: [.newlines(1)])
+        return !leftBrace.trailingTrivia.isEmpty
           || rightBrace.leadingTrivia != expectedLeading
       }
     }
@@ -225,7 +225,7 @@ extension EmptyBracesRule {
           indent.isEmpty
           ? Trivia(pieces: [.newlines(1)])
           : Trivia(pieces: [.newlines(1)] + indent.pieces)
-        return (Trivia(pieces: [.newlines(1)]), rightTrivia)
+        return (Trivia(), rightTrivia)
       }
     }
 

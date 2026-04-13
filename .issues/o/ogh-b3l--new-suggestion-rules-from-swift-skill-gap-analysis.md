@@ -1,15 +1,15 @@
 ---
 # ogh-b3l
 title: New suggestion rules from /swift skill gap analysis
-status: in-progress
+status: completed
 type: epic
 priority: normal
 created_at: 2026-04-11T23:47:28Z
-updated_at: 2026-04-13T00:11:27Z
+updated_at: 2026-04-13T00:26:41Z
 sync:
     github:
         issue_number: "200"
-        synced_at: "2026-04-13T00:25:19Z"
+        synced_at: "2026-04-13T00:55:41Z"
 ---
 
 ## Overview
@@ -94,14 +94,14 @@ The oad-n72 swift-syntax tooling (FixItApplier, diagnostic highlights/notes, Dia
 
 ---
 
-## Lower Value — Need substantial semantic analysis (deferred)
+## Lower Value — Need substantial semantic analysis (not pursuing)
 
-- [ ] **Parameter pack opportunities** — 3+ overloads differing only in generic arity → `<each T>`. Needs logic similarity analysis across overloads.
-- [ ] **Sequence vs Collection over-constraining** — `Collection` constraint where only single-pass iteration is used. Needs function body analysis.
-- [ ] **Copy-on-write opportunities** — Large structs copied frequently but rarely mutated. Needs size/frequency analysis.
-- [ ] **CKSyncEngine anti-patterns** — Very domain-specific (state persistence, fetchChanges in delegate, account changes). Mixed mechanical/semantic.
-- [x] **Quadratic copy patterns** — `Data.dropFirst()` / `Data.prefix()` in loops. Already covered by `mutation_during_iteration`.
-- [ ] **Heap allocation for 0-1 element intermediate collections** — Chained `.flatMap`/`.map` creating intermediates. Needs hot-path context.
+- [x] ~~**Parameter pack opportunities**~~ — **Not pursuing.** Feasible as a `CollectingRule` (group functions by name, detect 3+ overloads differing only in generic arity). But this pattern is almost exclusively found in library code (SwiftUI ViewBuilder, Combine). Extremely low hit rate in app-level codebases — not worth the implementation cost.
+- [x] ~~**Sequence vs Collection over-constraining**~~ — **Not pursuing.** Would need to enumerate all Collection-specific APIs (subscript, `count`, `indices`, `startIndex`/`endIndex`) vs Sequence-only APIs. Many APIs overlap, and users often choose `Collection` deliberately for multi-pass guarantees. High false positive rate.
+- [x] ~~**Copy-on-write opportunities**~~ — **Not pursuing.** Needs struct size analysis + mutation frequency across the codebase. Pure runtime concern beyond static analysis.
+- [x] ~~**CKSyncEngine anti-patterns**~~ — **Not pursuing.** Extremely narrow domain audience. Mechanical checks are possible (missing delegate methods, missing state persistence) but the maintenance cost isn't justified for so few users.
+- [x] **Quadratic copy patterns** — Already covered by `mutation_during_iteration`.
+- [x] ~~**Heap allocation for 0-1 element intermediate collections**~~ — **Not pursuing.** Whether a collection has 0-1 elements is a runtime property. The general "chained transforms → lazy" suggestion would be a different rule.
 
 ---
 
@@ -120,3 +120,8 @@ The oad-n72 swift-syntax tooling (FixItApplier, diagnostic highlights/notes, Dia
 1. **`collection_type_selection`** (new grouped suggest rule) — `.insert(at: 0)`/`.removeFirst()` → Deque, `if !contains then append` → OrderedSet, `.sort()` after `.append()` → Heap
 2. **`swiftui_view_member_ordering`** (new suggest rule) — @Environment → let → @State → computed → init → body → view builders → helpers
 3. **Image decoding in body** (extend `swiftui_view_anti_patterns`) — NSImage(data:)/UIImage(data:) inside body
+
+
+## Summary of Changes
+
+All items resolved. High Value and Medium Value (Mechanical) sections were implemented in prior sessions. Heuristic Detection and Lower Value sections reviewed 2026-04-12 and closed as not pursuing — SourceKit's type resolution depth is insufficient (no protocol conformance, type hierarchy, or dependency chain analysis), and the remaining items either flag patterns that aren't actually wrong (Dict.sorted, Sequence vs Collection), require runtime information (collection sizes, mutation frequency), target extremely narrow audiences (CKSyncEngine), or have low hit rates in app code (parameter packs).

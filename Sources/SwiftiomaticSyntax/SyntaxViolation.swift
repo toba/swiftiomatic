@@ -71,6 +71,19 @@ public struct SyntaxViolation: Comparable, Hashable {
     }
   }
 
+  /// A related location with an explanatory message.
+  public struct Note: Hashable {
+    /// The position of the related location.
+    public let position: AbsolutePosition
+    /// An explanatory message (e.g., "declared here", "inferred type is X").
+    public let message: String
+
+    public init(position: AbsolutePosition, message: String) {
+      self.position = position
+      self.message = message
+    }
+  }
+
   /// The violation's position.
   public let position: AbsolutePosition
   /// A specific reason for the violation.
@@ -84,6 +97,10 @@ public struct SyntaxViolation: Comparable, Hashable {
   public let confidence: Confidence
   /// A suggested fix for the violation.
   public let suggestion: String?
+  /// Syntax regions to underline in the editor (e.g., the offending token or expression).
+  public let highlights: [Syntax]
+  /// Related locations with explanatory messages (e.g., "declared here").
+  public let notes: [Note]
 
   /// Creates a `SyntaxViolation` with a typed ``ViolationMessage``.
   ///
@@ -101,6 +118,8 @@ public struct SyntaxViolation: Comparable, Hashable {
     correction: Correction? = nil,
     confidence: Confidence = .high,
     suggestion: String? = nil,
+    highlights: [Syntax] = [],
+    notes: [Note] = [],
   ) {
     self.position = position
     reason = message
@@ -108,6 +127,8 @@ public struct SyntaxViolation: Comparable, Hashable {
     self.correction = correction
     self.confidence = confidence
     self.suggestion = suggestion
+    self.highlights = highlights
+    self.notes = notes
   }
 
   /// Creates a `SyntaxViolation` with a plain string reason.
@@ -129,6 +150,8 @@ public struct SyntaxViolation: Comparable, Hashable {
     correction: Correction? = nil,
     confidence: Confidence = .high,
     suggestion: String? = nil,
+    highlights: [Syntax] = [],
+    notes: [Note] = [],
   ) {
     self.position = position
     self.reason = reason.map { ViolationMessage(stringLiteral: $0) }
@@ -136,10 +159,40 @@ public struct SyntaxViolation: Comparable, Hashable {
     self.correction = correction
     self.confidence = confidence
     self.suggestion = suggestion
+    self.highlights = highlights
+    self.notes = notes
   }
 
   public static func < (lhs: Self, rhs: Self) -> Bool {
     lhs.position < rhs.position
+  }
+}
+
+extension SyntaxViolation {
+  /// Convert AST-based highlights to line/column ranges.
+  package func resolvedHighlights(converter: SourceLocationConverter) -> [RuleViolation.HighlightRange] {
+    highlights.map { node in
+      let start = converter.location(for: node.positionAfterSkippingLeadingTrivia)
+      let end = converter.location(for: node.endPositionBeforeTrailingTrivia)
+      return RuleViolation.HighlightRange(
+        startLine: start.line,
+        startColumn: start.column,
+        endLine: end.line,
+        endColumn: end.column,
+      )
+    }
+  }
+
+  /// Convert position-based notes to line/column notes.
+  package func resolvedNotes(converter: SourceLocationConverter) -> [RuleViolation.Note] {
+    notes.map { note in
+      let loc = converter.location(for: note.position)
+      return RuleViolation.Note(
+        line: loc.line,
+        column: loc.column,
+        message: note.message,
+      )
+    }
   }
 }
 

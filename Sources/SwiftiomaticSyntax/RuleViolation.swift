@@ -2,6 +2,34 @@ import Foundation
 
 /// A value describing an instance of Swift source code that is considered invalid by a rule.
 public struct RuleViolation: CustomStringConvertible, Codable, Hashable, Sendable {
+  /// A source range to highlight in the editor (line/column based).
+  public struct HighlightRange: Codable, Hashable, Sendable {
+    public let startLine: Int
+    public let startColumn: Int
+    public let endLine: Int
+    public let endColumn: Int
+
+    public init(startLine: Int, startColumn: Int, endLine: Int, endColumn: Int) {
+      self.startLine = startLine
+      self.startColumn = startColumn
+      self.endLine = endLine
+      self.endColumn = endColumn
+    }
+  }
+
+  /// A related location with an explanatory message.
+  public struct Note: Codable, Hashable, Sendable {
+    public let line: Int
+    public let column: Int
+    public let message: String
+
+    public init(line: Int, column: Int, message: String) {
+      self.line = line
+      self.column = column
+      self.message = message
+    }
+  }
+
   /// The identifier of the rule that generated this violation.
   package let ruleIdentifier: String
 
@@ -25,6 +53,12 @@ public struct RuleViolation: CustomStringConvertible, Codable, Hashable, Sendabl
 
   /// A suggested fix for the violation.
   package let suggestion: String?
+
+  /// Source regions to underline in the editor.
+  package let highlights: [HighlightRange]
+
+  /// Related locations with explanatory messages.
+  package let notes: [Note]
 
   /// A printable description for this violation.
   public var description: String {
@@ -52,6 +86,8 @@ public struct RuleViolation: CustomStringConvertible, Codable, Hashable, Sendabl
     message: ViolationMessage?,
     confidence: Confidence = .high,
     suggestion: String? = nil,
+    highlights: [HighlightRange] = [],
+    notes: [Note] = [],
   ) {
     ruleIdentifier = R.id
     ruleDescription = R.summary
@@ -61,6 +97,8 @@ public struct RuleViolation: CustomStringConvertible, Codable, Hashable, Sendabl
     reason = message ?? ViolationMessage(stringLiteral: R.summary)
     self.confidence = confidence
     self.suggestion = suggestion
+    self.highlights = highlights
+    self.notes = notes
     #if DEBUG
       Self._validateReasonImpl?(reason, ruleIdentifier)
     #endif
@@ -80,6 +118,8 @@ public struct RuleViolation: CustomStringConvertible, Codable, Hashable, Sendabl
     reason: String? = nil,
     confidence: Confidence = .high,
     suggestion: String? = nil,
+    highlights: [HighlightRange] = [],
+    notes: [Note] = [],
   ) {
     ruleIdentifier = R.id
     ruleDescription = R.summary
@@ -91,6 +131,8 @@ public struct RuleViolation: CustomStringConvertible, Codable, Hashable, Sendabl
       ?? ViolationMessage(stringLiteral: R.summary)
     self.confidence = confidence
     self.suggestion = suggestion
+    self.highlights = highlights
+    self.notes = notes
     #if DEBUG
       Self._validateReasonImpl?(self.reason, ruleIdentifier)
     #endif
@@ -104,6 +146,8 @@ public struct RuleViolation: CustomStringConvertible, Codable, Hashable, Sendabl
     reason: String? = nil,
     confidence: Confidence = .high,
     suggestion: String? = nil,
+    highlights: [HighlightRange] = [],
+    notes: [Note] = [],
   ) {
     ruleIdentifier = ruleType.id
     ruleDescription = ruleType.summary
@@ -115,6 +159,8 @@ public struct RuleViolation: CustomStringConvertible, Codable, Hashable, Sendabl
       ?? ViolationMessage(stringLiteral: ruleType.summary)
     self.confidence = confidence
     self.suggestion = suggestion
+    self.highlights = highlights
+    self.notes = notes
   }
 
   /// Returns the same violation, but with the `severity` that is passed in

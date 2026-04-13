@@ -9,8 +9,12 @@ import Synchronization
 
 private typealias FileCacheKey = UUID
 
+package let incrementalParseResultCache = SyntaxCache { file -> IncrementalParseResult in
+  Parser.parseIncrementally(source: file.contents, parseTransition: nil)
+}
+
 package let syntaxTreeCache = SyntaxCache { file -> SourceFileSyntax in
-  Parser.parse(source: file.contents)
+  incrementalParseResultCache.get(file).tree
 }
 
 package let foldedSyntaxTreeCache = SyntaxCache { file -> SourceFileSyntax? in
@@ -161,11 +165,61 @@ extension SwiftSource {
     emptyLinesCache.get(self)
   }
 
+  /// The most recent incremental parse result, used to construct
+  /// `IncrementalParseTransition` for subsequent re-parses.
+  package var incrementalParseResult: IncrementalParseResult {
+    incrementalParseResultCache.get(self)
+  }
+
+  /// Re-parse the file incrementally after applying edits.
+  ///
+  /// This reuses unchanged subtrees from the previous parse, which is
+  /// significantly faster than a full re-parse for small edits (e.g., IDE
+  /// lint-on-type).
+  ///
+  /// After calling this method, the file's `syntaxTree`, `locationConverter`,
+  /// and all dependent caches reflect the new source.
+  ///
+  /// - Parameters:
+  ///   - newSource: The full source text after edits have been applied.
+  ///   - edits: The concurrent edits that were applied to transform the
+  ///     previous source into `newSource`.
+  package func reparseIncrementally(
+    newSource: String,
+    edits: ConcurrentEdits,
+  ) {
+    let previousResult = incrementalParseResultCache.get(self)
+    let transition = IncrementalParseTransition(
+      previousIncrementalParseResult: previousResult,
+      edits: edits,
+    )
+    let newResult = Parser.parseIncrementally(
+      source: newSource,
+      parseTransition: transition,
+    )
+
+    // Update source contents
+    file.contents = newSource
+
+    // Store the new incremental result and derived tree
+    incrementalParseResultCache.set(key: cacheKey, value: newResult)
+    syntaxTreeCache.set(key: cacheKey, value: newResult.tree)
+
+    // Invalidate dependent caches (they'll be lazily recomputed)
+    foldedSyntaxTreeCache.invalidate(self)
+    locationConverterCache.invalidate(self)
+    commandsCache.invalidate(self)
+    syntaxClassificationsCache.invalidate(self)
+    commentLinesCache.invalidate(self)
+    emptyLinesCache.invalidate(self)
+  }
+
   /// Invalidates syntax-level caches for this file
   ///
   /// Called by ``invalidateCache()`` in SwiftiomaticKit which also covers SourceKit caches.
   package func invalidateSyntaxCaches() {
     file.clearCaches()
+    incrementalParseResultCache.invalidate(self)
     syntaxTreeCache.invalidate(self)
     foldedSyntaxTreeCache.invalidate(self)
     locationConverterCache.invalidate(self)
@@ -177,6 +231,7 @@ extension SwiftSource {
 
   /// Remove every cached syntax value across all per-file caches
   package static func clearSyntaxCaches() {
+    incrementalParseResultCache.clear()
     syntaxTreeCache.clear()
     foldedSyntaxTreeCache.clear()
     locationConverterCache.clear()

@@ -71,16 +71,19 @@ extension FullyIndirectEnumRule {
           return member
         }
         var newCase = caseDecl
-        let indirectTrivia = caseDecl.modifiers.first {
+        let indirectIndex = caseDecl.modifiers.firstIndex {
           $0.name.tokenKind == .keyword(.indirect)
-        }?.leadingTrivia
+        }
+        let isFirstModifier = indirectIndex == caseDecl.modifiers.startIndex
+        let indirectTrivia = indirectIndex.map { caseDecl.modifiers[$0].leadingTrivia }
 
         newCase.modifiers = newCase.modifiers.filter {
           $0.name.tokenKind != .keyword(.indirect)
         }
 
-        // Transfer leading trivia from the removed `indirect` modifier
-        if let trivia = indirectTrivia {
+        // Only transfer trivia when `indirect` was the first modifier —
+        // otherwise the remaining modifiers already have correct trivia.
+        if isFirstModifier, let trivia = indirectTrivia {
           if let firstModifier = newCase.modifiers.first {
             var updated = firstModifier
             updated.leadingTrivia = trivia

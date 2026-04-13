@@ -6,8 +6,10 @@ extension RuleViolation {
   package func toDiagnostic() -> Diagnostic {
     let ruleType = RuleRegistry.shared.rule(forID: ruleIdentifier)
     let isCorrectableType = ruleType?.isCorrectable ?? false
+    let cat = ruleType?.ruleCategory
     return Diagnostic(
       ruleID: ruleIdentifier,
+      category: cat == .uncategorized ? nil : cat?.description,
       source: .lint,
       severity: severity,
       confidence: confidence,
@@ -17,6 +19,8 @@ extension RuleViolation {
       message: reason.text,
       suggestion: suggestion,
       canAutoFix: isCorrectableType,
+      highlights: highlights.isEmpty ? nil : highlights,
+      notes: notes.isEmpty ? nil : notes,
     )
   }
 }

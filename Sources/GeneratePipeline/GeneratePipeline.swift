@@ -30,7 +30,18 @@ struct GeneratePipeline {
         codeBlockNodeTypes: codeBlockNodeTypes,
       )
       allRules.append(contentsOf: rules)
-      allRuleTypes.append(contentsOf: ruleTypes)
+
+      // Derive category/subcategory from directory path
+      // e.g., Rules/Redundancy/Types/FooRule.swift → category "redundancy", subcategory "types"
+      let (categoryName, subcategoryName) = Self.extractCategory(
+        from: filePath, rulesDir: rulesDir)
+      allRuleTypes.append(
+        contentsOf: ruleTypes.map { info in
+          var info = info
+          info.categoryName = categoryName
+          info.subcategoryName = subcategoryName
+          return info
+        })
     }
 
     // Filter to pipeline-eligible rules
@@ -73,6 +84,27 @@ struct GeneratePipeline {
       }
     }
     return files.sorted()
+  }
+
+  /// Extract category and subcategory from a rule file path.
+  ///
+  /// Given `rulesDir = ".../Rules"` and `filePath = ".../Rules/Redundancy/Types/FooRule.swift"`,
+  /// returns `("redundancy", "types")`.
+  private static func extractCategory(
+    from filePath: String, rulesDir: String
+  ) -> (category: String?, subcategory: String?) {
+    // Get the relative path after the Rules/ directory
+    let prefix = rulesDir + "/"
+    guard filePath.hasPrefix(prefix) else { return (nil, nil) }
+    let relative = String(filePath.dropFirst(prefix.count))
+    let components = relative.split(separator: "/").map(String.init)
+    // components: ["Redundancy", "Types", "FooRule.swift"]
+    // or: ["Redundancy", "FooRule.swift"] (file directly in category)
+    // or: ["FooRule.swift"] (file directly in Rules/)
+    guard components.count >= 2 else { return (nil, nil) }
+    let category = components[0].lowercased()
+    let subcategory = components.count >= 3 ? components[1].lowercased() : nil
+    return (category, subcategory)
   }
 
   private static func collectCodeBlockVisitorNodeTypes(filePath: String) -> Set<String> {

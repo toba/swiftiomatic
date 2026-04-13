@@ -15,6 +15,10 @@ struct RuleInfo {
 struct RuleTypeInfo {
   let typeName: String
   let ruleID: String
+  /// Top-level category derived from directory path (e.g., "Redundancy")
+  var categoryName: String?
+  /// Subcategory derived from directory path (e.g., "Types")
+  var subcategoryName: String?
 }
 
 /// Parses rule source files to extract visitor override information

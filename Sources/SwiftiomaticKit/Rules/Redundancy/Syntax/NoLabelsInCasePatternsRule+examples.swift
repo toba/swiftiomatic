@@ -39,12 +39,11 @@ extension NoLabelsInCasePatternsRule {
         }
         """
       ),
-      // Mixed: one label matches, one doesn't — only the matching one triggers
-      // (the non-matching argument is fine)
+      // Mixed: neither label matches its bound name — no violations
       Example(
         """
         switch value {
-        case .pair(first: let x, second: let second):
+        case .pair(first: let x, second: let y):
             break
         }
         """,

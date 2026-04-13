@@ -7,6 +7,9 @@ public struct Diagnostic: Codable, Sendable, Comparable {
   /// The identifier of the rule that produced this diagnostic.
   public let ruleID: String
 
+  /// The category of the rule that produced this diagnostic.
+  public let category: String?
+
   /// Which engine produced this diagnostic.
   public let source: DiagnosticSource
 
@@ -33,6 +36,12 @@ public struct Diagnostic: Codable, Sendable, Comparable {
 
   /// Whether this diagnostic can be auto-fixed by the engine that produced it.
   public let canAutoFix: Bool
+
+  /// Source regions to underline in the editor.
+  public let highlights: [RuleViolation.HighlightRange]?
+
+  /// Related locations with explanatory messages.
+  public let notes: [RuleViolation.Note]?
 
   public static func < (lhs: Diagnostic, rhs: Diagnostic) -> Bool {
     if lhs.file != rhs.file { return lhs.file < rhs.file }

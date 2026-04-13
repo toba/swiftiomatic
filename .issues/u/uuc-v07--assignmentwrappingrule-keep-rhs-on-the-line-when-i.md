@@ -1,15 +1,15 @@
 ---
 # uuc-v07
 title: 'AssignmentWrappingRule: keep RHS on the = line when it fits'
-status: review
+status: completed
 type: feature
 priority: normal
 created_at: 2026-04-11T22:58:59Z
-updated_at: 2026-04-11T23:30:44Z
+updated_at: 2026-04-13T00:39:08Z
 sync:
     github:
         issue_number: "201"
-        synced_at: "2026-04-11T23:48:38Z"
+        synced_at: "2026-04-13T00:55:41Z"
 ---
 
 ## Problem

@@ -33,6 +33,30 @@ enum RegistryEmitter {
     lines.append("]")
     lines.append("")
 
+    // Emit category extensions derived from directory structure
+    let categorized = sorted.filter { $0.categoryName != nil }
+    if categorized.isNotEmpty {
+      lines.append("// MARK: - Categories (derived from directory structure)")
+      lines.append("")
+      for ruleType in categorized {
+        guard let cat = ruleType.categoryName else { continue }
+        if let sub = ruleType.subcategoryName {
+          lines.append(
+            "extension \(ruleType.typeName) { static let category = RuleCategory(name: \"\(cat)\", subcategory: \"\(sub)\") }"
+          )
+        } else {
+          lines.append(
+            "extension \(ruleType.typeName) { static let category = RuleCategory(name: \"\(cat)\") }"
+          )
+        }
+      }
+      lines.append("")
+    }
+
     return lines.joined(separator: "\n")
   }
+}
+
+extension Array {
+  fileprivate var isNotEmpty: Bool { !isEmpty }
 }

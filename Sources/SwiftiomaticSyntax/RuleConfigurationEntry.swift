@@ -7,6 +7,7 @@ public struct RuleConfigurationEntry: Sendable, Codable, Hashable, Identifiable 
   public let name: String
   public let summary: String
   public let rationale: String?
+  public let category: RuleCategory
   public let scope: Scope
   public let isCorrectable: Bool
   public let isOptIn: Bool
@@ -25,6 +26,7 @@ public struct RuleConfigurationEntry: Sendable, Codable, Hashable, Identifiable 
     name: String,
     summary: String,
     rationale: String? = nil,
+    category: RuleCategory = .uncategorized,
     scope: Scope,
     isCorrectable: Bool = false,
     isOptIn: Bool = false,
@@ -42,6 +44,7 @@ public struct RuleConfigurationEntry: Sendable, Codable, Hashable, Identifiable 
     self.name = name
     self.summary = summary
     self.rationale = rationale
+    self.category = category
     self.scope = scope
     self.isCorrectable = isCorrectable
     self.isOptIn = isOptIn

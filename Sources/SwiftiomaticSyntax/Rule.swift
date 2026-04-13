@@ -52,6 +52,9 @@ public protocol Rule: Sendable {
   /// Whether the rule requires its file to exist on disk
   static var requiresFileOnDisk: Bool { get }
 
+  /// The category this rule belongs to, derived from the directory structure.
+  static var category: RuleCategory { get }
+
   /// Configurable options exposed by this rule
   static var configurationOptions: [ConfigOptionDescriptor] { get }
 
@@ -200,6 +203,7 @@ extension Rule {
   package static var requiresCompilerArguments: Bool { false }
   public static var isCrossFile: Bool { false }
   package static var canEnrichAsync: Bool { false }
+  public static var category: RuleCategory { .uncategorized }
   package static var configurationOptions: [ConfigOptionDescriptor] { [] }
   package static var relatedRuleIDs: [String] { [] }
   package static var deprecatedAliases: Set<String> { [] }
@@ -337,6 +341,9 @@ extension Rule {
 
   /// Whether this rule requires SourceKit (alias for ``requiresSourceKit``)
   package static var runsWithSourceKit: Bool { requiresSourceKit }
+
+  /// Category (alias for ``category``)
+  package static var ruleCategory: RuleCategory { category }
 
   /// Scope (alias for ``scope``)
   package static var ruleScope: Scope { scope }

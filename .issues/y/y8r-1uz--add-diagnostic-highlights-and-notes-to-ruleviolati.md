@@ -1,16 +1,16 @@
 ---
 # y8r-1uz
 title: Add diagnostic highlights and notes to RuleViolation
-status: ready
+status: completed
 type: feature
 priority: normal
 created_at: 2026-04-12T23:54:23Z
-updated_at: 2026-04-12T23:54:23Z
+updated_at: 2026-04-13T00:36:23Z
 parent: oad-n72
 sync:
     github:
         issue_number: "252"
-        synced_at: "2026-04-13T00:25:21Z"
+        synced_at: "2026-04-13T00:55:43Z"
 ---
 
 `RuleViolation` has only a single position. swift-syntax's `Diagnostic` supports `highlights: [Syntax]` (regions to underline) and `notes: [Note]` (related locations with explanatory messages).
@@ -30,8 +30,23 @@ sync:
 
 ## Tasks
 
-- [ ] Add optional `highlights` field to `SyntaxViolation` or `RuleViolation`
-- [ ] Add optional `notes` field with position + message pairs
-- [ ] Propagate highlights/notes through `RuleViolation` → `Diagnostic` pipeline
-- [ ] Update JSON output format to include highlights and notes
-- [ ] Add highlights to 2-3 rules as proof of concept
+- [x] Add optional `highlights` field to `SyntaxViolation` or `RuleViolation`
+- [x] Add optional `notes` field with position + message pairs
+- [x] Propagate highlights/notes through `RuleViolation` → `Diagnostic` pipeline
+- [x] Update JSON output format to include highlights and notes
+- [x] Add highlights to 2-3 rules as proof of concept
+
+
+## Summary of Changes
+
+Added `highlights` and `notes` fields at every layer of the diagnostic pipeline:
+
+- **`SyntaxViolation`**: `highlights: [Syntax]` (AST nodes to underline) + `notes: [Note]` (position + message)
+- **`RuleViolation`**: `highlights: [HighlightRange]` (line/column ranges) + `notes: [Note]` (line/column + message)
+- **`Diagnostic`** (JSON output): optional `highlights` and `notes` arrays, omitted when empty
+
+Conversion helpers `resolvedHighlights(converter:)` and `resolvedNotes(converter:)` on `SyntaxViolation` translate AST positions to line/column via `SourceLocationConverter`.
+
+Proof of concept on 2 rules:
+- `RedundantObjcAttributeRule` — highlights the `@objc` attribute being removed
+- `RedundantTypeAnnotationRule` — highlights the redundant type + note pointing to the initializer ("type is inferred from this initializer")

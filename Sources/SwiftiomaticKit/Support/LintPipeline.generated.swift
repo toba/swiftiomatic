@@ -282,6 +282,7 @@ let pipelineEligibleRuleIDs: Set<String> = [
     "unused_setter_value",
     "url_macro",
     "use_early_exits",
+    "validate_documentation_comments",
     "validate_test_cases",
     "vertical_parameter_alignment",
     "vertical_whitespace",
@@ -1694,6 +1695,10 @@ final class LintPipeline: SyntaxVisitor {
 
             case "use_early_exits":
                 ifExpr_visitPost.append(idx)
+
+            case "validate_documentation_comments":
+                functionDecl_visitPost.append(idx)
+                initializerDecl_visitPost.append(idx)
 
             case "validate_test_cases":
                 classDecl_visit.append(idx)

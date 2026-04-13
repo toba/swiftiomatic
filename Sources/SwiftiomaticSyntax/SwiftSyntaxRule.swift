@@ -49,6 +49,8 @@ extension SwiftSyntaxRule where OptionsType: SeverityBasedRuleOptions {
       message: violation.reason,
       confidence: violation.confidence,
       suggestion: violation.suggestion,
+      highlights: violation.resolvedHighlights(converter: file.locationConverter),
+      notes: violation.resolvedNotes(converter: file.locationConverter),
     )
   }
 }
@@ -80,6 +82,8 @@ extension SwiftSyntaxRule {
       message: violation.reason,
       confidence: violation.confidence,
       suggestion: violation.suggestion,
+      highlights: violation.resolvedHighlights(converter: file.locationConverter),
+      notes: violation.resolvedNotes(converter: file.locationConverter),
     )
   }
 

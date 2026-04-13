@@ -425,11 +425,20 @@ extension RedundantTypeAnnotationRule {
         return
       }
       violations.append(
-        at: type.positionAfterSkippingLeadingTrivia,
-        correction: .init(
-          start: type.position,
-          end: type.endPositionBeforeTrailingTrivia,
-          replacement: "",
+        SyntaxViolation(
+          position: type.positionAfterSkippingLeadingTrivia,
+          correction: .init(
+            start: type.position,
+            end: type.endPositionBeforeTrailingTrivia,
+            replacement: "",
+          ),
+          highlights: [Syntax(type.type)],
+          notes: [
+            .init(
+              position: initializer.positionAfterSkippingLeadingTrivia,
+              message: "type is inferred from this initializer"
+            ),
+          ],
         ),
       )
     }

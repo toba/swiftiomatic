@@ -1,27 +1,27 @@
 ---
 # shb-etk
 title: 'Missing swift-format rules: 6 genuinely unimplemented checks'
-status: in-progress
+status: completed
 type: feature
 priority: normal
 created_at: 2026-04-12T23:56:03Z
-updated_at: 2026-04-13T00:00:00Z
+updated_at: 2026-04-13T00:36:59Z
 sync:
     github:
         issue_number: "240"
-        synced_at: "2026-04-13T00:25:18Z"
+        synced_at: "2026-04-13T00:55:41Z"
 ---
 
 Comparison of swift-format rules (reference at `~/Developer/swiftiomatic-ref/`) against Swiftiomatic's 330 rules found **6 genuinely missing** checks. These are NOT covered by existing rules under different names or configurations.
 
 ## Missing Rules
 
-- [ ] **UseEarlyExits** — prefer `guard` for early exits instead of nested `if/else` when the else branch is a simple exit (`return`, `throw`, `break`, `continue`). `redundant_else` handles a related but different case (removing else after an if that already exits). This rule would suggest converting `if condition { long block } else { return }` → `guard condition else { return }; long block`.
-- [ ] **FullyIndirectEnum** — when all cases of an enum are marked `indirect`, consolidate to `indirect enum` on the declaration itself. Simple redundancy removal.
-- [ ] **ValidateDocumentationComments** — validate doc comment *structure*: param names match the function signature, `- Returns:` clause is present for non-Void functions, one-line summary at start. `missing_docs` only checks *presence*, not correctness.
-- [ ] **OneCasePerLine** — enum cases with associated values or raw values should each have their own `case` declaration (e.g., `case a(Int), b(String)` → separate `case` lines). Plain cases without payloads are fine grouped.
-- [ ] **DontRepeatTypeInStaticProperties** — static properties returning their enclosing type shouldn't include the type name (e.g., `UIColor.blueColor` → `.blue`). `naming_heuristics` covers factory method prefixes and Bool naming but not this pattern.
-- [ ] **NoLabelsInCasePatterns** — remove redundant labels in case patterns where the label matches the bound variable name (e.g., `case .foo(bar: bar)` → `case .foo(bar)`). `empty_enum_arguments` handles `case .foo(_)` → `case .foo` but not this.
+- [x] **UseEarlyExits** — prefer `guard` for early exits instead of nested `if/else` when the else branch is a simple exit (`return`, `throw`, `break`, `continue`). `redundant_else` handles a related but different case (removing else after an if that already exits). This rule would suggest converting `if condition { long block } else { return }` → `guard condition else { return }; long block`.
+- [x] **FullyIndirectEnum** — when all cases of an enum are marked `indirect`, consolidate to `indirect enum` on the declaration itself. Simple redundancy removal.
+- [x] **ValidateDocumentationComments** — validate doc comment *structure*: param names match the function signature, `- Returns:` clause is present for non-Void functions, one-line summary at start. `missing_docs` only checks *presence*, not correctness.
+- [x] **OneCasePerLine** — enum cases with associated values or raw values should each have their own `case` declaration (e.g., `case a(Int), b(String)` → separate `case` lines). Plain cases without payloads are fine grouped.
+- [x] **DontRepeatTypeInStaticProperties** — static properties returning their enclosing type shouldn't include the type name (e.g., `UIColor.blueColor` → `.blue`). `naming_heuristics` covers factory method prefixes and Bool naming but not this pattern.
+- [x] **NoLabelsInCasePatterns** — remove redundant labels in case patterns where the label matches the bound variable name (e.g., `case .foo(bar: bar)` → `case .foo(bar)`). `empty_enum_arguments` handles `case .foo(_)` → `case .foo` but not this.
 
 ## Excluded from This List
 
@@ -68,3 +68,14 @@ Also excluded as borderline:
 - **NoAssignmentInExpressions** — Swift's type system (`=` returns Void) prevents most misuse scenarios
 - **IdentifiersMustBeASCII** — partially covered by `identifier_name` configuration
 - **NoLeadingUnderscores** — partially covered by `identifier_name` configuration
+
+
+## Summary of Changes
+
+All 6 missing swift-format rules implemented:
+- `fully_indirect_enum` — lint, correctable (Redundancy/Modifiers)
+- `no_labels_in_case_patterns` — lint, correctable (Redundancy/Syntax)
+- `one_case_per_line` — lint, correctable (Redundancy/Syntax)
+- `dont_repeat_type_in_static_properties` — lint (Naming/Identifiers)
+- `use_early_exits` — lint, opt-in (ControlFlow/Conditionals)
+- `validate_documentation_comments` — lint, opt-in (Documentation/Comments)
