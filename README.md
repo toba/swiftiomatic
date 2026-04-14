@@ -1,222 +1,283 @@
-<img src="AppIcon.icon/Assets/logo.png" style="width: 100px; height: 100px; float: right;"/>
-
 # Swiftiomatic
 
-AST-accurate Swift linting, formatting, and code analysis, usable from Xcode, command line, and your LLM frenemy. This tool derives directly from, and aspires to combine the best of,
+`sm` provides the formatting technology for
+[SourceKit-LSP](https://github.com/swiftlang/sourcekit-lsp) and the building
+blocks for doing code formatting transformations.
 
-- **[SwiftLint](https://github.com/realm/SwiftLint)**
-- Nick Lockwood's **[SwiftFormat](https://github.com/nicklockwood/SwiftFormat)**
-- Apple's **[swift-format](https://github.com/apple/swift-format)**
+This package can be used as a [command line tool](#command-line-usage)
+or linked into other applications as a Swift Package Manager dependency and
+invoked via an [API](#api-usage).
 
-My goal here was to lint, format and provide an LLM tool with areas of *possible* concern for deeper inquiry, without processing the code three times, and without having to configure the same rules in different ways.
-```swift
-// swiftlint:disable async_without_await
-// swiftformat:disable redundantAsync redundantThrows
-```
+> NOTE: No default Swift code style guidelines have yet been proposed. The
+> style that is currently applied by `sm` is just one possibility,
+> and the code is provided so that it can be tested on real-world code and
+> experiments can be made by modifying it.
 
-Instead, *Swiftiomatic* has a single set of rules, each configured either to
+## Matching Swiftiomatic to Your Swift Version
 
-| Scope | Runs in | What it does |
-|---|---|---|
-| `.lint` | Xcode Build Phase, `sm lint` | Wrong code, anti-patterns, style violations. Shows warnings and errors in the editor. |
-| `.format` | Xcode Editor Extension, `sm format` | Formatting only; whitespace, indentation, brace placement. Never surfaces as a lint warning. |
-| `.suggest` | `sm analyze` | Research patterns for investigation. Identifies code worth reviewing, not definitive errors. |
+### Swift 5.8 and later
 
-Each rule has a separate *auto-fix* property. All `.format` rules are auto-fixable (of course) whereas not all `.lint` rules are auto-fixable.
+As of Swift 5.8, Swiftiomatic depends on the version of
+[SwiftSyntax](https://github.com/swiftlang/swift-syntax) whose parser has been
+rewritten in Swift and no longer has dependencies on libraries in the
+Swift toolchain.
 
-Scope is the only thing that determines where a rule runs. The rule itself is agnostic (though it flirts with atheism), using the same `SyntaxVisitor`, violation model, and configuration.
+This change allows `sm` to be built, developed, and run using
+any version of Swift that can compile it, decoupling it from the version
+that supported a particular syntax. However, earlier versions of Swiftiomatic
+will still not be able to recognize new syntax added in later versions of the
+language and parser.
 
-This tool is fully Swift 6.3 with strict concurrency and Swift Testing. Any patterns older than about 20 minutes ago were eliminated with vigor.
+Note also that the version numbering scheme has changed to match
+SwiftSyntax; the 5.8 release of Swiftiomatic is `508.0.0`, not `0.50800.0`.
 
-## Installation
+### Swift 5.7 and earlier
 
-### Homebrew
+`sm` versions 0.50700.0 and earlier depend on versions of
+[SwiftSyntax](https://github.com/swiftlang/swift-syntax) that used a standalone
+parsing library distributed as part of the Swift toolchain. When using these
+versions, you should check out and build `sm` from the release
+tag or branch that is compatible with the version of Swift you are using.
+
+The major and minor version components of `sm` and SwiftSyntax must
+be the same—this is expressed in the `SwiftSyntax` dependency in
+[Package.swift](Package.swift)—and those version components must match the
+Swift toolchain that is installed and used to build and run the formatter:
+
+| Xcode Release   | Swift Version          | `sm` Branch / Tags     |
+|:----------------|:-----------------------|:---------------------------------|
+| –               | Swift at `main`        | `main`                           |
+| Xcode 14.0      | Swift 5.7              | `release/5.7` / `0.50700.x`      |
+| Xcode 13.3      | Swift 5.6              | `release/5.6` / `0.50600.x`      |
+| Xcode 13.0–13.2 | Swift 5.5              | `swift-5.5-branch` / `0.50500.x` |
+| Xcode 12.5      | Swift 5.4              | `swift-5.4-branch` / `0.50400.x` |
+| Xcode 12.0–12.4 | Swift 5.3              | `swift-5.3-branch` / `0.50300.x` |
+| Xcode 11.4–11.7 | Swift 5.2              | `swift-5.2-branch` / `0.50200.x` |
+| Xcode 11.0–11.3 | Swift 5.1              | `swift-5.1-branch`               |
+
+For example, if you are using Xcode 13.3 (Swift 5.6), you will need
+`sm` 0.50600.0.
+
+## Getting Swiftiomatic
+
+If you are mainly interested in using Swiftiomatic (rather than developing it),
+then you can get it in three different ways:
+
+### Included in the Swift Toolchain
+
+Swift 6 (included with Xcode 16) and above include Swiftiomatic in the toolchain. You can run `sm` from anywhere on the system using `swift format` (notice the space instead of dash). To find the path at which `sm` is installed in Xcode, run `xcrun --find Swiftiomatic`.
+
+### Installing via Homebrew
+
+Run `brew install Swiftiomatic` to install the latest version.
+
+### Building from source
+
+Install `sm` using the following commands:
 
 ```sh
-brew install toba/tap/sm
+VERSION=510.1.0  # replace this with the version you need
+git clone https://github.com/swiftlang/Swiftiomatic.git
+cd Swiftiomatic
+git checkout "tags/$VERSION"
+swift build -c release
 ```
 
-### Swift Package Manager
+Note that the `git checkout` command above will leave the repository in a
+"detached HEAD" state. This is fine if building and running the tool is all you
+want to do.
 
-Add to your `Package.swift`:
+Once the build has finished, the `sm` executable will be located at
+`.build/release/Swiftiomatic`.
 
-```swift
-.package(url: "https://github.com/toba/swiftiomatic.git", from: "0.22.0")
-```
-
-SPM plugins are included for both formatting and linting — usable from Xcode or the command line without installing the CLI separately.
-
-## Usage
-
-### CLI
+To test that the formatter was built successfully and is compatible with your
+Swift toolchain, you can also run the following command:
 
 ```sh
-# Lint (warnings and errors, Xcode-compatible output)
-sm lint Sources/
-
-# Format (rewrite files in place)
-sm format Sources/
-
-# Analyze (format + lint + suggest in one pass — designed for agents)
-sm analyze Sources/ --format json
-
-# List all rules
-sm list-rules
-
-# List only format-scope rules
-sm list-rules --source format
+swift test --parallel
 ```
 
-The `analyze` command is the all-in-one mode. It formats first (applying all correctable rules), then reports remaining lint violations and suggestions. Use `--no-fix` if you want diagnostics without file changes.
+We recommend using the `--parallel` flag to speed up the test run since there
+are a large number of tests.
 
-### Xcode Build Phase
+## Command Line Usage
 
-Add a Run Script phase, just like the venerable *SwiftLint*:
+The general invocation syntax for `sm` is as follows:
 
 ```sh
-if command -v sm >/dev/null 2>&1; then
-    sm lint "$SRCROOT"
-else
-    echo "warning: sm not found — see https://github.com/toba/swiftiomatic"
-fi
+Swiftiomatic [SUBCOMMAND] [OPTIONS...] [FILES...]
 ```
 
-Warnings and errors appear inline in the editor. Only `.lint`-scoped rules run here.
+The tool supports a number of subcommands, each of which has its own options
+and are described below. Descriptions of the subcommands that are available
+can also be obtained by running `Swiftiomatic --help`, and the description of
+a specific subcommand can be obtained by using the `--help` flag after the
+subcommand name; for example, `Swiftiomatic lint --help`.
 
-### Xcode Source Editor Extension
+### Formatting
 
-The companion app installs an editor extension that appears under **Editor > Swiftiomatic** with three commands:
-
-- **Format File** — formats the entire buffer
-- **Format Selection** — formats selected lines only
-- **Lint File** — runs lint rules and shows a summary notification
-
-## Configuration
-
-Drop a `.swiftiomatic.yaml` in your project root:
-
-```yaml
-rules:
-  disabled:
-    - line_length
-    - trailing_comma
-
-  enabled:
-    - unused_declaration
-    - prefer_swift_testing
-    - reduce_into
-
-  config:
-    cyclomatic_complexity:
-      severity: error
+```sh
+Swiftiomatic [format] [OPTIONS...] [FILES...]
 ```
 
-### Nested Overrides
+The `format` subcommand formats one or more Swift source files (or source code
+from standard input if no file paths are given on the command line). Writing
+out the `format` subcommand is optional; it is the default behavior if no other
+subcommand is given.
 
-`.swiftiomatic.yaml` files in subdirectories override the root config for files within that subtree:
+This subcommand supports all of the
+[common lint and format options](#options-supported-by-formatting-and-linting),
+as well as the formatting-only options below:
 
-```
-MyApp/
-  .swiftiomatic.yaml          # root: max_width 120
-  Sources/
-    .swiftiomatic.yaml        # overrides: max_width 80
-  Packages/LegacySDK/
-    .swiftiomatic.yaml        # inherit: false — starts fresh
-```
+*   `-i/--in-place`: Overwrites the input files when formatting instead of
+    printing the results to standard output. _No backup of the original file is
+    made before it is overwritten._
 
-Child configs deep-merge with their parents. Scalars: child wins. Arrays: child replaces. Nested dicts: merged key by key. Set `inherit: false` to stop the chain entirely.
+### Linting
 
-## Rule Model
-
-Every rule is a `SyntaxVisitor` subclass with two key properties:
-
-1. **Scope** — where it runs (`.lint`, `.format`, or `.suggest`)
-2. **Correctable** — whether it can auto-fix what it finds
-
-The interaction between these two properties is the whole trick:
-
-- **Format rules** are always correctable — that's their entire purpose.
-- **Correctable lint rules** show warnings in the build phase *and* apply fixes when the formatter runs. Same rule, both audiences.
-- **Suggest rules** are never correctable — they flag code for human or agent judgment.
-
-### Categories
-
-The 337 rules span 15 categories:
-
-| Category | Rules | Covers |
-|---|---|---|
-| Redundancy | 42 | Unnecessary overrides, redundant types, unneeded modifiers |
-| Whitespace | 42 | Braces, spacing, line endings, punctuation |
-| ControlFlow | 38 | Closures, conditionals, pattern matching, returns |
-| Modernization | 28 | Concurrency, legacy API replacement |
-| TypeSafety | 25 | Optionals, correctness, type usage |
-| Frameworks | 23 | Foundation, SwiftUI, UIKit patterns |
-| Performance | 20 | Collection algorithms, reduce patterns |
-| Multiline | 19 | Alignment, argument wrapping |
-| Testing | 17 | XCTest, Swift Testing, Quick/Nimble |
-| AccessControl | 17 | Visibility modifiers, access scope |
-| Ordering | 16 | Import sorting, file structure, declaration order |
-| Documentation | 16 | Comments, doc annotations, MARK usage |
-| DeadCode | 12 | Unused declarations, duplicate imports |
-| Naming | 12 | Identifier and file naming conventions |
-| Metrics | 10 | Complexity, length thresholds |
-
-### Cross-File Analysis
-
-Some rules (dead symbol detection, structural duplication) need to see more than one file at a time. These use a two-pass architecture: pass 1 collects declarations across all files, pass 2 finds (or fails to find) references. Rules that need SourceKit for type-aware analysis can opt in with `requiresSourceKit`.
-
-## Agent Mode
-
-The `analyze` command exists specifically for LLM agents. It runs the full pipeline — format, lint, suggest — and returns structured JSON:
-
-```json
-{
-  "ruleID": "typed-throws",
-  "source": "lint",
-  "severity": "warning",
-  "confidence": "high",
-  "file": "Sources/Foo.swift",
-  "line": 42,
-  "column": 5,
-  "message": "Function 'parse' throws only ParseError but declares untyped 'throws'",
-  "suggestion": "func parse() throws(ParseError)",
-  "canAutoFix": true
-}
+```sh
+Swiftiomatic lint [OPTIONS...] [FILES...]
 ```
 
-Each finding includes a `confidence` level — `high`, `medium`, or `low` — so the agent can triage. Swiftiomatic deliberately errs on the side of false positives. The agent has context we don't (project conventions, intent, history) and can dismiss what doesn't apply. A missed issue is worse than a noisy one.
+The `lint` subcommand checks one or more Swift source files (or source code
+from standard input if no file paths are given on the command line) for style
+violations and prints diagnostics to standard error for any violations that
+are detected.
 
-## Requirements
+This subcommand supports all of the
+[common lint and format options](#options-supported-by-formatting-and-linting),
+as well as the linting-only options below:
 
-- macOS 26+
-- Swift 6.3
+*   `-s/--strict`: If this option is specified, lint warnings will cause the
+    tool to exit with a non-zero exit code (failure). By default, lint warnings
+    do not prevent a successful exit; only fatal errors (for example, trying to
+    lint a file that does not exist) cause the tool to exit unsuccessfully.
 
-## Architecture at a Glance
+### Options Supported by Formatting and Linting
 
-### Scope × Correctability
+The following options are supported by both the `format` and `lint`
+subcommands:
 
-Every rule has a scope (where it runs) and a correctable flag (whether it can auto-fix). Two of the six combinations are architecturally impossible (format rules are *always* correctable, suggest rules are *never* correctable) which leaves three that matter:
+*   `--assume-filename <path>`: The file path that should be used in
+    diagnostics when linting or formatting from standard input. If this option
+    is not provided, then `<stdin>` will be used as the filename printed in
+    diagnostics.
 
-| | **Correctable** | **Not correctable** |
-|---|---|---|
-| **Lint** (53 / 213 rules) | `sm lint` warns in Xcode. `sm format` silently fixes. Same rule, both audiences. | `sm lint` warns in Xcode. Human fixes manually. |
-| **Format** (32 rules) | `sm format` rewrites the file. Never surfaces as a warning. | *(no: formatting without fixing is just linting)* |
-| **Suggest** (39 rules) | *(no: suggestions are for judgment, not auto-fix)* | `sm analyze` flags for human/agent review with confidence levels. |
+*   `--color-diagnostics/--no-color-diagnostics`: By default, `sm`
+    will print diagnostics in color if standard error is connected to a
+    terminal and without color otherwise (for example, if standard error is
+    being redirected to a file). These flags can be used to force colors on
+    or off respectively, regardless of whether the output is going to a
+    terminal.
 
-Commands: `sm lint` runs lint-scoped rules. `sm format` applies correctable lint + all format rules. `sm analyze` runs everything.
+*   `--configuration <file>`: The path to a JSON file that contains
+    [configurable settings](#configuring-the-command-line-tool) for
+    `sm`. If omitted, a default configuration is use (which
+    can be seen by running `Swiftiomatic dump-configuration`).
 
-### Parsing Strategy × Type Information
+*   `--ignore-unparsable-files`: If this option is specified and a source file
+    contains syntax errors or can otherwise not be parsed successfully by the
+    Swift syntax parser, it will be ignored (no diagnostics will be emitted
+    and it will not be formatted). Without this option, an error will be
+    emitted for any unparsable files.
 
-Rules bifurcate along two technical axes: *how* they read code (parsing strategy) and *how much* semantic information they need (type resolution). The cross-product determines what a rule can see, what it costs to run, and whether it degrades gracefully without SourceKit.
+*   `-p/--parallel`: Process files in parallel, simultaneously across
+    multiple cores.
 
-| | **Syntax-only** | **Async-enrichable** | **SourceKit-required** |
-|---|---|---|---|
-| **SwiftSyntax visitor** (~301 rules) | The workhorse. `ViolationCollectingVisitor` subclass walks the parsed AST. Pipeline-batched so multiple rules share one tree walk. | Synchronous visitor runs first, then optional `enrich()` resolves types via `TypeResolver` for additional findings. Works without SourceKit at reduced confidence. (~4 rules) | *(not used — SwiftSyntax visitors are designed to work without SourceKit)* |
-| **SourceKit AST** (~1 rule) | *(not used — these rules exist specifically for SourceKit structure data)* | *(N/A)* | Walks `SourceKitDictionary` tree depth-first, matching nodes by declaration/expression/statement kind. Legacy path. |
-| **Direct** `validate(file:)` (~28 rules) | File-name checks, line-based analysis, and rules needing post-walk computation. Not pipeline-eligible. | *(N/A)* | Relies on SourceKit structure dictionaries or compiler arguments directly. (~9 rules) |
+*   `-r/--recursive`: If specified, then the tool will process `.swift` source
+    files in any directories listed on the command line and their descendants.
+    Without this flag, it is an error to list a directory on the command line.
 
-**Cross-file overlay** (~5 rules): `CollectingRule` adds a two-pass protocol on top of any strategy above. Pass 1 collects declarations across all files; pass 2 validates with aggregated data.
+### Viewing the Default Configuration
 
-## License
+```sh
+Swiftiomatic dump-configuration
+```
 
-MIT
+The `dump-configuration` subcommand dumps the default configuration in JSON
+format to standard output. This can be used to simplify generating a custom
+configuration, by redirecting it to a file and editing it.
+
+### Configuring the Command Line Tool
+
+For any source file being checked or formatted, `sm` looks for a
+JSON-formatted file named `.Swiftiomatic` in the same directory. If one is
+found, then that file is loaded to determine the tool's configuration. If the
+file is not found, then it looks in the parent directory, and so on.
+
+If no configuration file is found, a default configuration is used. The
+settings in the default configuration can be viewed by running
+`Swiftiomatic dump-configuration`, which will dump it to standard
+output.
+
+If the `--configuration <configuration>` option is passed to `sm`,
+then that configuration will be used unconditionally and the file system will
+not be searched.
+
+See [Documentation/Configuration.md](Documentation/Configuration.md) for a
+description of the configuration format and the settings that are available.
+
+#### Viewing the Effective Configuration
+
+The `dump-configuration` subcommand accepts a `--effective` flag. If set, it
+dumps the configuration that would be used if `sm` was executed from
+the current working directory, and accounts for `.Swiftiomatic` files or
+ `--configuration` options as outlined above.
+
+### Miscellaneous
+
+Running `Swiftiomatic -v` or `Swiftiomatic --version` will print version
+information about `sm` version and then exit.
+
+## API Usage
+
+`sm` can be easily integrated into other tools written in Swift.
+Instead of invoking the formatter by spawning a subprocess, users can depend on
+`sm` as a Swift Package Manager dependency and import the
+`SwiftFormat` module, which contains the entry points into the formatter's
+diagnostic and correction behavior.
+
+Formatting behavior is provided by the `SwiftFormatter` class and linting
+behavior is provided by the `SwiftLinter` class. These APIs can be passed
+either a Swift source file `URL` or a `Syntax` node representing a
+SwiftSyntax syntax tree. The latter capability is particularly useful for
+writing code generators, since it significantly reduces the amount of trivia
+that the generator needs to be concerned about adding to the syntax nodes it
+creates. Instead, it can pass the in-memory syntax tree to the `SwiftFormat`
+API and receive perfectly formatted code as output.
+
+Please see the documentation in the
+[`SwiftFormatter`](Sources/SwiftFormat/API/SwiftFormatter.swift) and
+[`SwiftLinter`](Sources/SwiftFormat/API/SwiftLinter.swift) classes for more
+information about their usage.
+
+### Checking Out the Source Code for Development
+
+The `main` branch is used for development. Pull requests should be created
+to merge into the `main` branch; changes that are low-risk and compatible with
+the latest release branch may be cherry-picked into that branch after they have
+been merged into `main`.
+
+If you are interested in developing `sm`, there is additional
+documentation about that [here](Documentation/Development.md).
+
+## Contributing
+
+Contributions to Swift are welcomed and encouraged! Please see the
+[Contributing to Swift guide](https://swift.org/contributing/).
+
+Before submitting the pull request, please make sure you have [tested your
+ changes](https://github.com/apple/swift/blob/main/docs/ContinuousIntegration.md)
+ and that they follow the Swift project [guidelines for contributing
+ code](https://swift.org/contributing/#contributing-code).
+
+To be a truly great community, [Swift.org](https://swift.org/) needs to welcome
+developers from all walks of life, with different backgrounds, and with a wide
+range of experience. A diverse and friendly community will have more great
+ideas, more unique perspectives, and produce more great code. We will work
+diligently to make the Swift community welcoming to everyone.
+
+To give clarity of what is expected of our members, Swift has adopted the
+code of conduct defined by the Contributor Covenant. This document is used
+across many open source communities, and we think it articulates our values
+well. For more, see the [Code of Conduct](https://swift.org/code-of-conduct/).

@@ -114,7 +114,9 @@
       "mcp__xc-project__add_synchronized_folder_exception",
       "mcp__xc-project__validate_project",
       "mcp__xc-build__show_build_settings",
-      "mcp__xc-build__search_crash_reports"
+      "mcp__xc-build__search_crash_reports",
+      "Bash(brew --prefix)",
+      "Bash(sm:*)"
     ]
   },
   "enableAllProjectMcpServers": true,

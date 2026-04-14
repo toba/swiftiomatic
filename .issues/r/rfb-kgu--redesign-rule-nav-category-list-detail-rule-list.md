@@ -1,15 +1,15 @@
 ---
 # rfb-kgu
 title: 'Redesign rule nav: category list → detail rule list'
-status: review
+status: completed
 type: feature
 priority: high
 created_at: 2026-04-13T16:22:50Z
-updated_at: 2026-04-13T16:35:43Z
+updated_at: 2026-04-14T02:54:50Z
 sync:
     github:
         issue_number: "259"
-        synced_at: "2026-04-13T16:41:18Z"
+        synced_at: "2026-04-14T02:58:29Z"
 ---
 
 ## Problem

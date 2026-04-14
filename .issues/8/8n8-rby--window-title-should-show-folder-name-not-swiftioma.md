@@ -1,15 +1,15 @@
 ---
 # 8n8-rby
 title: Window title should show folder name, not .swiftiomatic.yaml
-status: review
+status: scrapped
 type: bug
 priority: normal
 created_at: 2026-04-13T16:22:33Z
-updated_at: 2026-04-13T16:34:27Z
+updated_at: 2026-04-14T02:54:38Z
 sync:
     github:
         issue_number: "260"
-        synced_at: "2026-04-13T16:41:18Z"
+        synced_at: "2026-04-14T02:58:29Z"
 ---
 
 The window title currently shows `.swiftiomatic.yaml` for every open file, which is unhelpful since all config files share the same name.

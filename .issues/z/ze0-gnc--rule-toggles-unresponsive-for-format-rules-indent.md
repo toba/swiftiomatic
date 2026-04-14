@@ -1,15 +1,15 @@
 ---
 # ze0-gnc
 title: Rule toggles unresponsive for format rules; INDENT option not saved
-status: review
+status: scrapped
 type: bug
 priority: normal
 created_at: 2026-04-14T01:48:36Z
-updated_at: 2026-04-14T01:49:26Z
+updated_at: 2026-04-14T02:54:34Z
 sync:
     github:
         issue_number: "263"
-        synced_at: "2026-04-14T02:00:50Z"
+        synced_at: "2026-04-14T02:58:29Z"
 ---
 
 Three related bugs in the SwiftiomaticApp:
