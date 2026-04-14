@@ -5,11 +5,11 @@ status: ready
 type: epic
 priority: high
 created_at: 2026-04-14T02:41:43Z
-updated_at: 2026-04-14T02:52:35Z
+updated_at: 2026-04-14T03:06:30Z
 sync:
     github:
         issue_number: "265"
-        synced_at: "2026-04-14T02:58:28Z"
+        synced_at: "2026-04-14T03:07:03Z"
 ---
 
 Migrate the entire test suite (124 files, 0% Swift Testing) to Swift Testing (`@Test`, `#expect`, `#require`). The only exception is `WhitespaceLinterPerformanceTests` which must remain XCTest due to `measure()`.
@@ -66,3 +66,7 @@ All helpers chain `file: StaticString = #file, line: UInt = #line`. Must collaps
 Phase 1 (parallel, no dependencies): Core, API, Utilities tests
 Phase 2 (blocker): _SwiftiomaticTestSupport infrastructure
 Phase 3 (depends on Phase 2): PrettyPrint tests, Rules tests
+
+## Reasons for Scrapping
+
+Covered by a different epic.

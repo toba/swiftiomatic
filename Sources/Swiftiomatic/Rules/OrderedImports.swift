@@ -214,27 +214,27 @@ public final class OrderedImports: SyntaxFormatRule {
   /// Raise lint errors if the different import types appear in the wrong order, and if import
   /// statements do not appear at the top of the file.
   private func checkGrouping<C: Collection>(_ lines: C) where C.Element == Line {
-    var declGroup = false
-    var implementationOnlyGroup = false
-    var testableGroup = false
-    var codeGroup = false
+    var seenDeclImport = false
+    var seenImplementationOnlyImport = false
+    var seenTestableImport = false
+    var seenCodeBlock = false
 
     for line in lines {
       let lineType = line.type
 
       switch lineType {
       case .declImport:
-        declGroup = true
+        seenDeclImport = true
       case .implementationOnlyImport:
-        implementationOnlyGroup = true
+        seenImplementationOnlyImport = true
       case .testableImport:
-        testableGroup = true
+        seenTestableImport = true
       case .codeBlock:
-        codeGroup = true
+        seenCodeBlock = true
       default: ()
       }
 
-      if codeGroup {
+      if seenCodeBlock {
         switch lineType {
         case .regularImport, .declImport, .implementationOnlyImport, .testableImport:
           diagnose(.placeAtTopOfFile, on: line.firstToken)
@@ -246,7 +246,7 @@ public final class OrderedImports: SyntaxFormatRule {
         continue
       }
 
-      if testableGroup {
+      if seenTestableImport {
         switch lineType {
         case .regularImport, .declImport, .implementationOnlyImport:
           diagnose(
@@ -257,7 +257,7 @@ public final class OrderedImports: SyntaxFormatRule {
         }
       }
 
-      if implementationOnlyGroup {
+      if seenImplementationOnlyImport {
         switch lineType {
         case .regularImport, .declImport:
           diagnose(
@@ -268,7 +268,7 @@ public final class OrderedImports: SyntaxFormatRule {
         }
       }
 
-      if declGroup {
+      if seenDeclImport {
         switch lineType {
         case .regularImport:
           diagnose(

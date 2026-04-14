@@ -1,16 +1,16 @@
 ---
 # f72-osd
 title: Consolidate duplicated visitor patterns in rules
-status: ready
+status: completed
 type: task
 priority: normal
 created_at: 2026-04-14T02:42:23Z
-updated_at: 2026-04-14T02:42:23Z
+updated_at: 2026-04-14T03:05:36Z
 parent: kqx-iku
 sync:
     github:
         issue_number: "268"
-        synced_at: "2026-04-14T02:58:30Z"
+        synced_at: "2026-04-14T03:07:05Z"
 ---
 
 Several rule files implement nearly identical SyntaxVisitor patterns that could be consolidated.
@@ -39,6 +39,17 @@ All call a single helper like `diagnoseMissingDocComment(DeclSyntax(...), ...)`.
 - `NeverForceUnwrap.swift:32`
 
 ## Tasks
-- [ ] Extract shared doc-comment extraction helpers
-- [ ] Evaluate consolidating multi-declaration visitors
-- [ ] Verify with RuleExampleTests batch
+- [x] Extract shared doc-comment extraction helpers (already extracted: `DocumentationComment`, `DocumentationCommentText`)
+- [x] Evaluate consolidating multi-declaration visitors (inherent swift-syntax limitation; no generic `visit(DeclSyntax)` on SyntaxVisitor)
+- [x] Verify with RuleExampleTests batch
+
+
+## Summary of Changes
+
+Evaluated all three consolidation areas:
+
+1. **Doc extraction**: Already extracted into shared `DocumentationComment` and `DocumentationCommentText` utilities. The per-rule visitor overrides are inherent swift-syntax boilerplate.
+2. **Multi-declaration visitors**: `SyntaxVisitor` has no generic `visit(_ node: DeclSyntax)` — each syntax type requires its own override. The 1-line delegation methods are already minimal.
+3. **XCTest detection**: Already centralized in `setImportsXCTest()`. The 3-line `visit(SourceFileSyntax)` per rule is the minimum.
+
+No code changes needed — the shared helpers were already properly extracted.

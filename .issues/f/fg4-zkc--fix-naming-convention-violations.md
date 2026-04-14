@@ -1,16 +1,16 @@
 ---
 # fg4-zkc
 title: Fix naming convention violations
-status: ready
+status: completed
 type: task
 priority: low
 created_at: 2026-04-14T02:42:23Z
-updated_at: 2026-04-14T02:42:23Z
+updated_at: 2026-04-14T03:06:16Z
 parent: kqx-iku
 sync:
     github:
         issue_number: "272"
-        synced_at: "2026-04-14T02:58:31Z"
+        synced_at: "2026-04-14T03:07:05Z"
 ---
 
 ## 1. Protocol naming — drop -Protocol suffix
@@ -31,6 +31,13 @@ var testableGroup = false
 These don't read as assertions. Consider: `seenDeclImports`, `seenImplementationOnlyImports`, `seenTestableImports`.
 
 ## Tasks
-- [ ] Check for swift-syntax name collisions before renaming protocols
-- [ ] Rename OrderedImports boolean variables
-- [ ] Build and test
+- [x] Check for swift-syntax name collisions before renaming protocols (no collisions found)
+- [x] Rename OrderedImports boolean variables
+- [x] Build and test
+
+
+## Summary of Changes
+
+- Renamed 3 protocols in `SyntaxTraits.swift`: dropped `-Protocol` suffix (`CallingExprSyntaxProtocol` → `CallingExprSyntax`, etc.); updated all usages in `TokenStreamCreator.swift`
+- Renamed 4 boolean variables in `OrderedImports.checkGrouping()`: `declGroup` → `seenDeclImport`, `implementationOnlyGroup` → `seenImplementationOnlyImport`, `testableGroup` → `seenTestableImport`, `codeGroup` → `seenCodeBlock`
+- All 2715 tests pass

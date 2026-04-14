@@ -72,3 +72,5 @@
 - `ValidateDocumentationComments` rule ([#253](https://github.com/toba/swiftiomatic/issues/253))
 - Infrastructure review; modernize support patterns ([#257](https://github.com/toba/swiftiomatic/issues/257))
 - Trim `/rule` skill for conciseness ([#237](https://github.com/toba/swiftiomatic/issues/237))
+- Fix naming convention violations; drop `-Protocol` suffix, rename `OrderedImports` booleans ([#272](https://github.com/toba/swiftiomatic/issues/272))
+- Consolidate duplicated visitor patterns in rules; evaluated and confirmed existing extraction is sufficient ([#268](https://github.com/toba/swiftiomatic/issues/268))

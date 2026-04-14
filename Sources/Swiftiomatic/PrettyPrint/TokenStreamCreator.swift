@@ -1048,7 +1048,7 @@ private final class TokenStreamCreator: SyntaxVisitor {
         // when visiting that wrapping expression is sufficient. Adding another group here in that
         // case can result in unnecessarily breaking after the modifier keyword.
         if !(base.firstToken(viewMode: .sourceAccurate)?.previousToken(viewMode: .all)?.parent?.isProtocol(
-          KeywordModifiedExprSyntaxProtocol.self
+          KeywordModifiedExprSyntax.self
         ) ?? false) {
           before(base.firstToken(viewMode: .sourceAccurate), tokens: .open)
           after(calledMemberAccessExpr.declName.baseName.lastToken(viewMode: .sourceAccurate), tokens: .close)
@@ -1789,7 +1789,7 @@ private final class TokenStreamCreator: SyntaxVisitor {
 
     // Check for an anchor token inside of the expression to end a group starting with the `try`
     // keyword.
-    if !(node.parent?.isProtocol(KeywordModifiedExprSyntaxProtocol.self) ?? false),
+    if !(node.parent?.isProtocol(KeywordModifiedExprSyntax.self) ?? false),
       let anchorToken = connectingTokenForKeywordModifiedExpr(inSubExpr: node.expression)
     {
       before(node.tryKeyword, tokens: .open)
@@ -1807,7 +1807,7 @@ private final class TokenStreamCreator: SyntaxVisitor {
 
     // Check for an anchor token inside of the expression to end a group starting with the `await`
     // keyword.
-    if !(node.parent?.isProtocol(KeywordModifiedExprSyntaxProtocol.self) ?? false),
+    if !(node.parent?.isProtocol(KeywordModifiedExprSyntax.self) ?? false),
       let anchorToken = connectingTokenForKeywordModifiedExpr(inSubExpr: node.expression)
     {
       before(node.awaitKeyword, tokens: .open)
@@ -1824,7 +1824,7 @@ private final class TokenStreamCreator: SyntaxVisitor {
 
     // Check for an anchor token inside of the expression to end a group starting with the `unsafe`
     // keyword.
-    if !(node.parent?.isProtocol(KeywordModifiedExprSyntaxProtocol.self) ?? false),
+    if !(node.parent?.isProtocol(KeywordModifiedExprSyntax.self) ?? false),
       let anchorToken = connectingTokenForKeywordModifiedExpr(inSubExpr: node.expression)
     {
       before(node.unsafeKeyword, tokens: .open)
@@ -1841,12 +1841,12 @@ private final class TokenStreamCreator: SyntaxVisitor {
   /// - Returns: The token that should end the group that is started by the modifier keyword, or
   ///   nil if there should be no group.
   func connectingTokenForKeywordModifiedExpr(inSubExpr expr: ExprSyntax) -> TokenSyntax? {
-    if let modifiedExpr = expr.asProtocol(KeywordModifiedExprSyntaxProtocol.self) {
+    if let modifiedExpr = expr.asProtocol(KeywordModifiedExprSyntax.self) {
       // If we were called from a keyword-modified expression like `try`, `await`, or `unsafe`,
       // recursively drill into the child expression.
       return connectingTokenForKeywordModifiedExpr(inSubExpr: modifiedExpr.expression)
     }
-    if let callingExpr = expr.asProtocol(CallingExprSyntaxProtocol.self) {
+    if let callingExpr = expr.asProtocol(CallingExprSyntax.self) {
       return connectingTokenForKeywordModifiedExpr(inSubExpr: callingExpr.calledExpression)
     }
     if let memberAccessExpr = expr.as(MemberAccessExprSyntax.self), let base = memberAccessExpr.base {
@@ -3906,7 +3906,7 @@ private final class TokenStreamCreator: SyntaxVisitor {
   /// that are known to wrap an expression, e.g. try expressions, are handled by checking the
   /// expression that they contain.
   private func isCompoundExpression(_ expr: ExprSyntax) -> Bool {
-    if let modifiedExpr = expr.asProtocol(KeywordModifiedExprSyntaxProtocol.self) {
+    if let modifiedExpr = expr.asProtocol(KeywordModifiedExprSyntax.self) {
       return isCompoundExpression(modifiedExpr.expression)
     }
     switch Syntax(expr).as(SyntaxEnum.self) {
@@ -4265,7 +4265,7 @@ private final class TokenStreamCreator: SyntaxVisitor {
       // When the member access is part of a calling expression, the break before the dot is
       // inserted when visiting the parent node instead so that the break is inserted before any
       // scoping tokens (e.g. `contextualBreakingStart`, `open`).
-      if memberAccessExpr.base != nil && expr.parent?.isProtocol(CallingExprSyntaxProtocol.self) != true {
+      if memberAccessExpr.base != nil && expr.parent?.isProtocol(CallingExprSyntax.self) != true {
         before(memberAccessExpr.period, tokens: .break(.contextual, size: 0))
       }
       var hasCompoundExpression = false
@@ -4295,7 +4295,7 @@ private final class TokenStreamCreator: SyntaxVisitor {
       after(postfixIfExpr.config.poundEndif, tokens: .break(.same, size: 0))
 
       return insertContextualBreaks(base, isTopLevel: false)
-    } else if let callingExpr = expr.asProtocol(CallingExprSyntaxProtocol.self) {
+    } else if let callingExpr = expr.asProtocol(CallingExprSyntax.self) {
       let calledExpression = callingExpr.calledExpression
       let (hasCompoundExpression, hasMemberAccess) =
         insertContextualBreaks(calledExpression, isTopLevel: false)
@@ -4345,7 +4345,7 @@ private final class TokenStreamCreator: SyntaxVisitor {
   ///   - node: The comma-separated list syntax node.
   ///   - isCollectionLiteral: Indicates whether the list should be treated as a collection literal during formatting.
   ///     If `true`, the list is affected by the `multiElementCollectionTrailingCommas` configuration.
-  private func markCommaDelimitedRegion<Node: CommaSeparatedListSyntaxProtocol>(
+  private func markCommaDelimitedRegion<Node: CommaSeparatedListSyntax>(
     _ node: Node,
     isCollectionLiteral: Bool
   ) {
