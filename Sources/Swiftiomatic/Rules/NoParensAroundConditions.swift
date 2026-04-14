@@ -12,14 +12,16 @@
 
 import SwiftSyntax
 
-/// Enforces rules around parentheses in conditions or matched expressions.
+/// Enforces rules around parentheses in conditions, matched expressions, return statements, and
+/// initializer assignments.
 ///
-/// Parentheses are not used around any condition of an `if`, `guard`, or `while` statement, or
-/// around the matched expression in a `switch` statement.
+/// Parentheses are not used around any condition of an `if`, `guard`, or `while` statement, around
+/// the matched expression in a `switch` statement, around `return` values, or around initializer
+/// values in variable/constant declarations.
 ///
-/// Lint: If a top-most expression in a `switch`, `if`, `guard`, or `while` statement is surrounded
-///       by parentheses, and it does not include a function call with a trailing closure, a lint
-///       error is raised.
+/// Lint: If a top-most expression in a `switch`, `if`, `guard`, `while`, or `return` statement, or
+///       in a variable initializer, is surrounded by parentheses, and it does not include a function
+///       call with a trailing closure, a lint error is raised.
 ///
 /// Format: Parentheses around such expressions are removed, if they do not cause a parse ambiguity.
 ///         Specifically, parentheses are allowed if and only if the expression contains a function
@@ -88,6 +90,27 @@ public final class NoParensAroundConditions: SyntaxFormatRule {
     result.conditions = visit(node.conditions)
     result.body = visit(node.body)
     return StmtSyntax(result)
+  }
+
+  public override func visit(_ node: ReturnStmtSyntax) -> StmtSyntax {
+    guard let expression = node.expression,
+      let newExpr = minimalSingleExpression(expression)
+    else {
+      return super.visit(node)
+    }
+    var result = node
+    fixKeywordTrailingTrivia(&result.returnKeyword.trailingTrivia)
+    result.expression = newExpr
+    return StmtSyntax(result)
+  }
+
+  public override func visit(_ node: InitializerClauseSyntax) -> InitializerClauseSyntax {
+    guard let newValue = minimalSingleExpression(node.value) else {
+      return super.visit(node)
+    }
+    var result = node
+    result.value = newValue
+    return result
   }
 
   private func fixKeywordTrailingTrivia(_ trivia: inout Trivia) {

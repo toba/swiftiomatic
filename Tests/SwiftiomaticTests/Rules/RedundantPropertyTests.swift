@@ -4,111 +4,258 @@ import Testing
 
 @Suite
 struct RedundantPropertyTests: RuleTesting {
+
+  // MARK: - Conversions
+
   @Test func basicLetThenReturn() {
-    assertLint(
+    assertFormatting(
       RedundantProperty.self,
-      """
-      func foo() -> Int {
-        1️⃣let result = 42
-        return result
-      }
-      """,
+      input: """
+        func foo() -> Int {
+            1️⃣let result = 42
+            return result
+        }
+        """,
+      expected: """
+        func foo() -> Int {
+            return 42
+        }
+        """,
       findings: [
-        FindingSpec("1️⃣", message: "remove redundant 'result' property; return the expression directly"),
-      ]
-    )
+        FindingSpec("1️⃣", message: "remove redundant 'result' property; return the expression directly")
+      ])
   }
 
   @Test func expressionInitializer() {
-    assertLint(
+    assertFormatting(
       RedundantProperty.self,
-      """
-      func foo() -> String {
-        1️⃣let text = bar() + baz()
-        return text
-      }
-      """,
+      input: """
+        func foo() -> String {
+            1️⃣let text = bar() + baz()
+            return text
+        }
+        """,
+      expected: """
+        func foo() -> String {
+            return bar() + baz()
+        }
+        """,
       findings: [
-        FindingSpec("1️⃣", message: "remove redundant 'text' property; return the expression directly"),
-      ]
-    )
+        FindingSpec("1️⃣", message: "remove redundant 'text' property; return the expression directly")
+      ])
   }
 
-  @Test func differentNameNotFlagged() {
-    assertLint(
+  @Test func removesRedundantVariableFollowingOtherVariable() {
+    assertFormatting(
       RedundantProperty.self,
-      """
-      func foo() -> Int {
-        let result = 42
-        return other
-      }
-      """,
-      findings: []
-    )
+      input: """
+        func foo() -> Foo {
+            let bar = Bar(baaz: baaz)
+            1️⃣let foo = Foo(bar: bar)
+            return foo
+        }
+        """,
+      expected: """
+        func foo() -> Foo {
+            let bar = Bar(baaz: baaz)
+            return Foo(bar: bar)
+        }
+        """,
+      findings: [
+        FindingSpec("1️⃣", message: "remove redundant 'foo' property; return the expression directly")
+      ])
+  }
+
+  @Test func removesRedundantVariableWithFunctionCall() {
+    assertFormatting(
+      RedundantProperty.self,
+      input: """
+        func foo() -> Foo {
+            1️⃣let foo = Foo(bar: bar, baaz: baaz)
+            return foo
+        }
+        """,
+      expected: """
+        func foo() -> Foo {
+            return Foo(bar: bar, baaz: baaz)
+        }
+        """,
+      findings: [
+        FindingSpec("1️⃣", message: "remove redundant 'foo' property; return the expression directly")
+      ])
+  }
+
+  // MARK: - No-ops
+
+  @Test func differentNameNotFlagged() {
+    assertFormatting(
+      RedundantProperty.self,
+      input: """
+        func foo() -> Int {
+            let result = 42
+            return other
+        }
+        """,
+      expected: """
+        func foo() -> Int {
+            let result = 42
+            return other
+        }
+        """)
   }
 
   @Test func varNotFlagged() {
-    assertLint(
+    assertFormatting(
       RedundantProperty.self,
-      """
-      func foo() -> Int {
-        var result = 42
-        return result
-      }
-      """,
-      findings: []
-    )
+      input: """
+        func foo() -> Int {
+            var result = 42
+            return result
+        }
+        """,
+      expected: """
+        func foo() -> Int {
+            var result = 42
+            return result
+        }
+        """)
   }
 
   @Test func withTypeAnnotationNotFlagged() {
-    assertLint(
+    assertFormatting(
       RedundantProperty.self,
-      """
-      func foo() -> Int {
-        let result: Int = 42
-        return result
-      }
-      """,
-      findings: []
-    )
+      input: """
+        func foo() -> Int {
+            let result: Int = 42
+            return result
+        }
+        """,
+      expected: """
+        func foo() -> Int {
+            let result: Int = 42
+            return result
+        }
+        """)
   }
 
   @Test func nonConsecutiveNotFlagged() {
-    assertLint(
+    assertFormatting(
       RedundantProperty.self,
-      """
-      func foo() -> Int {
-        let result = 42
-        print(result)
-        return result
-      }
-      """,
-      findings: []
-    )
+      input: """
+        func foo() -> Int {
+            let result = 42
+            print(result)
+            return result
+        }
+        """,
+      expected: """
+        func foo() -> Int {
+            let result = 42
+            print(result)
+            return result
+        }
+        """)
   }
 
   @Test func returnWithoutLetNotFlagged() {
-    assertLint(
+    assertFormatting(
       RedundantProperty.self,
-      """
-      func foo() -> Int {
-        return 42
-      }
-      """,
-      findings: []
-    )
+      input: """
+        func foo() -> Int {
+            return 42
+        }
+        """,
+      expected: """
+        func foo() -> Int {
+            return 42
+        }
+        """)
   }
 
   @Test func multipleBindingsNotFlagged() {
-    assertLint(
+    assertFormatting(
       RedundantProperty.self,
-      """
-      func foo() -> Int {
-        let a = 1, b = 2
-        return a
-      }
-      """,
-      findings: []
-    )
+      input: """
+        func foo() -> Int {
+            let a = 1, b = 2
+            return a
+        }
+        """,
+      expected: """
+        func foo() -> Int {
+            let a = 1, b = 2
+            return a
+        }
+        """)
+  }
+
+  @Test func returnWithMethodCallNotFlagged() {
+    assertFormatting(
+      RedundantProperty.self,
+      input: """
+        func foo() -> Foo {
+            let foo = Foo(bar: bar)
+            return foo.with(quux: quux)
+        }
+        """,
+      expected: """
+        func foo() -> Foo {
+            let foo = Foo(bar: bar)
+            return foo.with(quux: quux)
+        }
+        """)
+  }
+
+  @Test func returnWithPropertyAccessNotFlagged() {
+    assertFormatting(
+      RedundantProperty.self,
+      input: """
+        func bar() -> Foo {
+            let bar = Bar(baaz: baaz)
+            return bar.baaz
+        }
+        """,
+      expected: """
+        func bar() -> Foo {
+            let bar = Bar(baaz: baaz)
+            return bar.baaz
+        }
+        """)
+  }
+
+  @Test func propertyUsedBeforeReturnNotFlagged() {
+    assertFormatting(
+      RedundantProperty.self,
+      input: """
+        func baaz() -> Foo {
+            let bar = Bar(baaz: baaz)
+            print(bar)
+            return bar
+        }
+        """,
+      expected: """
+        func baaz() -> Foo {
+            let bar = Bar(baaz: baaz)
+            print(bar)
+            return bar
+        }
+        """)
+  }
+
+  @Test func returnWithNoExpressionNotFlagged() {
+    assertFormatting(
+      RedundantProperty.self,
+      input: """
+        func foo() {
+            let result = 42
+            return
+        }
+        """,
+      expected: """
+        func foo() {
+            let result = 42
+            return
+        }
+        """)
   }
 }

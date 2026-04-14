@@ -349,4 +349,289 @@ struct NoParensAroundConditionsTests: RuleTesting {
       ]
     )
   }
+
+  // MARK: - Return statements
+
+  @Test func parensRemovedInReturn() {
+    assertFormatting(
+      NoParensAroundConditions.self,
+      input: """
+        func foo() -> Bool {
+          return 1️⃣(true)
+        }
+        """,
+      expected: """
+        func foo() -> Bool {
+          return true
+        }
+        """,
+      findings: [
+        FindingSpec("1️⃣", message: "remove the parentheses around this expression"),
+      ]
+    )
+  }
+
+  @Test func parensRemovedInReturnWithIdentifier() {
+    assertFormatting(
+      NoParensAroundConditions.self,
+      input: """
+        func foo() -> Int {
+          return 1️⃣(bar)
+        }
+        """,
+      expected: """
+        func foo() -> Int {
+          return bar
+        }
+        """,
+      findings: [
+        FindingSpec("1️⃣", message: "remove the parentheses around this expression"),
+      ]
+    )
+  }
+
+  @Test func parensRemovedInReturnWithFunctionCall() {
+    assertFormatting(
+      NoParensAroundConditions.self,
+      input: """
+        func foo() -> Int {
+          return 1️⃣(bar())
+        }
+        """,
+      expected: """
+        func foo() -> Int {
+          return bar()
+        }
+        """,
+      findings: [
+        FindingSpec("1️⃣", message: "remove the parentheses around this expression"),
+      ]
+    )
+  }
+
+  @Test func parensRemovedInReturnWithMemberAccess() {
+    assertFormatting(
+      NoParensAroundConditions.self,
+      input: """
+        func foo() -> Int {
+          return 1️⃣(bar.baz)
+        }
+        """,
+      expected: """
+        func foo() -> Int {
+          return bar.baz
+        }
+        """,
+      findings: [
+        FindingSpec("1️⃣", message: "remove the parentheses around this expression"),
+      ]
+    )
+  }
+
+  @Test func parensNotRemovedInReturnWithTrailingClosure() {
+    assertFormatting(
+      NoParensAroundConditions.self,
+      input: """
+        func foo() -> Int {
+          return (bar { $0 })
+        }
+        """,
+      expected: """
+        func foo() -> Int {
+          return (bar { $0 })
+        }
+        """,
+      findings: []
+    )
+  }
+
+  @Test func parensNotRemovedInReturnWithImmediatelyCalledClosure() {
+    assertFormatting(
+      NoParensAroundConditions.self,
+      input: """
+        func foo() -> Int {
+          return ({ 42 }())
+        }
+        """,
+      expected: """
+        func foo() -> Int {
+          return ({ 42 }())
+        }
+        """,
+      findings: []
+    )
+  }
+
+  @Test func returnWithoutExpressionUnchanged() {
+    assertFormatting(
+      NoParensAroundConditions.self,
+      input: """
+        func foo() {
+          return
+        }
+        """,
+      expected: """
+        func foo() {
+          return
+        }
+        """,
+      findings: []
+    )
+  }
+
+  @Test func parensRemovedInReturnWithNoSpace() {
+    assertFormatting(
+      NoParensAroundConditions.self,
+      input: """
+        func foo() -> Bool {
+          return1️⃣(true)
+        }
+        """,
+      expected: """
+        func foo() -> Bool {
+          return true
+        }
+        """,
+      findings: [
+        FindingSpec("1️⃣", message: "remove the parentheses around this expression"),
+      ]
+    )
+  }
+
+  // MARK: - Initializer assignments
+
+  @Test func parensRemovedInLetInitializer() {
+    assertFormatting(
+      NoParensAroundConditions.self,
+      input: """
+        let x = 1️⃣(5)
+        """,
+      expected: """
+        let x = 5
+        """,
+      findings: [
+        FindingSpec("1️⃣", message: "remove the parentheses around this expression"),
+      ]
+    )
+  }
+
+  @Test func parensRemovedInVarInitializer() {
+    assertFormatting(
+      NoParensAroundConditions.self,
+      input: """
+        var x = 1️⃣(foo)
+        """,
+      expected: """
+        var x = foo
+        """,
+      findings: [
+        FindingSpec("1️⃣", message: "remove the parentheses around this expression"),
+      ]
+    )
+  }
+
+  @Test func parensRemovedInInitializerWithFunctionCall() {
+    assertFormatting(
+      NoParensAroundConditions.self,
+      input: """
+        let x = 1️⃣(foo())
+        """,
+      expected: """
+        let x = foo()
+        """,
+      findings: [
+        FindingSpec("1️⃣", message: "remove the parentheses around this expression"),
+      ]
+    )
+  }
+
+  @Test func parensRemovedInInitializerWithMemberAccess() {
+    assertFormatting(
+      NoParensAroundConditions.self,
+      input: """
+        let x = 1️⃣(foo.bar)
+        """,
+      expected: """
+        let x = foo.bar
+        """,
+      findings: [
+        FindingSpec("1️⃣", message: "remove the parentheses around this expression"),
+      ]
+    )
+  }
+
+  @Test func parensNotRemovedInInitializerWithTrailingClosure() {
+    assertFormatting(
+      NoParensAroundConditions.self,
+      input: """
+        let x = (bar { $0 })
+        """,
+      expected: """
+        let x = (bar { $0 })
+        """,
+      findings: []
+    )
+  }
+
+  @Test func tupleInitializerNotUnwrapped() {
+    assertFormatting(
+      NoParensAroundConditions.self,
+      input: """
+        let x = (1, 2)
+        """,
+      expected: """
+        let x = (1, 2)
+        """,
+      findings: []
+    )
+  }
+
+  @Test func parensRemovedInInitializerWithEnumMember() {
+    assertFormatting(
+      NoParensAroundConditions.self,
+      input: """
+        let x = 1️⃣(.bar)
+        """,
+      expected: """
+        let x = .bar
+        """,
+      findings: [
+        FindingSpec("1️⃣", message: "remove the parentheses around this expression"),
+      ]
+    )
+  }
+
+  @Test func parensRemovedInDefaultParameterValue() {
+    assertFormatting(
+      NoParensAroundConditions.self,
+      input: """
+        func foo(x: Int = 1️⃣(5)) {}
+        """,
+      expected: """
+        func foo(x: Int = 5) {}
+        """,
+      findings: [
+        FindingSpec("1️⃣", message: "remove the parentheses around this expression"),
+      ]
+    )
+  }
+
+  @Test func parensRemovedInReturnWithStringLiteral() {
+    assertFormatting(
+      NoParensAroundConditions.self,
+      input: """
+        func foo() -> String {
+          return 1️⃣("hello")
+        }
+        """,
+      expected: """
+        func foo() -> String {
+          return "hello"
+        }
+        """,
+      findings: [
+        FindingSpec("1️⃣", message: "remove the parentheses around this expression"),
+      ]
+    )
+  }
 }

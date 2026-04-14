@@ -11,39 +11,75 @@ import SwiftSyntax
 /// annotation, and the very next statement is `return <same identifier>`.
 ///
 /// Lint: If a redundant property-then-return is found, a lint warning is raised.
+///
+/// Format: The property declaration is removed and its value is inlined into
+///         the return statement.
 @_spi(Rules)
-public final class RedundantProperty: SyntaxLintRule {
+public final class RedundantProperty: SyntaxFormatRule {
 
-  public override func visit(_ node: CodeBlockItemListSyntax) -> SyntaxVisitorContinueKind {
-    let items = Array(node)
+  public override func visit(_ node: CodeBlockItemListSyntax) -> CodeBlockItemListSyntax {
+    let visited = super.visit(node)
+    let items = Array(visited)
+    var newItems = [CodeBlockItemSyntax]()
+    var i = 0
+    var changed = false
 
-    for i in 0..<items.count - 1 {
-      guard let varDecl = items[i].item.as(DeclSyntax.self)?.as(VariableDeclSyntax.self),
-        varDecl.bindingSpecifier.tokenKind == .keyword(.let),
-        varDecl.bindings.count == 1,
-        let binding = varDecl.bindings.first,
-        let identPattern = binding.pattern.as(IdentifierPatternSyntax.self),
-        binding.typeAnnotation == nil,
-        binding.initializer != nil
-      else {
-        continue
+    while i < items.count {
+      if i + 1 < items.count,
+        let merged = tryMerge(items[i], items[i + 1])
+      {
+        newItems.append(merged)
+        changed = true
+        i += 2
+      } else {
+        newItems.append(items[i])
+        i += 1
       }
-
-      let name = identPattern.identifier.text
-
-      guard let returnStmt = items[i + 1].item.as(StmtSyntax.self)?.as(ReturnStmtSyntax.self),
-        let returnExpr = returnStmt.expression,
-        let declRef = returnExpr.as(DeclReferenceExprSyntax.self),
-        declRef.baseName.text == name,
-        declRef.argumentNames == nil
-      else {
-        continue
-      }
-
-      diagnose(.removeRedundantProperty(name: name), on: varDecl.bindingSpecifier)
     }
 
-    return .visitChildren
+    guard changed else { return visited }
+    return CodeBlockItemListSyntax(newItems)
+  }
+
+  private func tryMerge(
+    _ declItem: CodeBlockItemSyntax,
+    _ returnItem: CodeBlockItemSyntax
+  ) -> CodeBlockItemSyntax? {
+    // First item: `let identifier = value` (no type annotation, single binding)
+    guard let varDecl = declItem.item.as(VariableDeclSyntax.self),
+      varDecl.bindingSpecifier.tokenKind == .keyword(.let),
+      varDecl.bindings.count == 1,
+      let binding = varDecl.bindings.first,
+      let identPattern = binding.pattern.as(IdentifierPatternSyntax.self),
+      binding.typeAnnotation == nil,
+      let initializer = binding.initializer
+    else { return nil }
+
+    let name = identPattern.identifier.text
+
+    // Second item: `return <same identifier>`
+    guard let returnStmt = returnItem.item.as(ReturnStmtSyntax.self),
+      let returnExpr = returnStmt.expression,
+      let declRef = returnExpr.as(DeclReferenceExprSyntax.self),
+      declRef.baseName.text == name,
+      declRef.argumentNames == nil
+    else { return nil }
+
+    diagnose(.removeRedundantProperty(name: name), on: varDecl)
+
+    // Build: `return value` — transfer declaration's leading trivia (may include
+    // preceding comments) to the return keyword, and use the original return
+    // expression's trivia on the inlined value.
+    var value = initializer.value
+    value.leadingTrivia = returnExpr.leadingTrivia
+    value.trailingTrivia = returnExpr.trailingTrivia
+
+    var newReturnStmt = returnStmt
+    newReturnStmt.returnKeyword = returnStmt.returnKeyword
+      .with(\.leadingTrivia, declItem.leadingTrivia)
+    newReturnStmt.expression = value
+
+    return CodeBlockItemSyntax(item: .stmt(StmtSyntax(newReturnStmt)))
   }
 }
 

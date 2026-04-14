@@ -1,88 +1,213 @@
 import SwiftSyntax
 
-/// Flag hand-written `Equatable` conformance on structs and enums that qualify for
-/// compiler-synthesized conformance.
+/// Remove a hand-written `Equatable` implementation when the compiler-synthesized
+/// conformance would be equivalent.
 ///
-/// The compiler synthesizes `Equatable` for structs (all stored properties are `Equatable`)
-/// and enums (all associated values are `Equatable`). A manual `==` implementation that
-/// simply compares all members in order is redundant.
+/// For structs conforming to `Equatable` (or `Hashable`), if the `static func ==`
+/// compares exactly the same stored instance properties that the compiler would
+/// synthesize, the hand-written implementation is redundant and can be removed.
 ///
-/// This rule uses a heuristic: it flags `==` implementations on `Equatable` types where
-/// the body is a single return statement comparing all stored properties with `&&`.
-/// It does NOT perform type-checking — it relies on structural patterns.
+/// Closures, enums, and extension-based conformances are not handled.
 ///
-/// This rule is opt-in due to the heuristic nature.
+/// This rule is opt-in due to the heuristic nature (no type-checking).
 ///
-/// Lint: If a likely-redundant `Equatable` implementation is found, a lint warning is raised.
+/// Lint: A redundant `==` implementation raises a warning.
+///
+/// Format: The `==` function is removed from the member block.
 @_spi(Rules)
-public final class RedundantEquatable: SyntaxLintRule {
+public final class RedundantEquatable: SyntaxFormatRule {
 
   public override class var isOptIn: Bool { true }
 
-  public override func visit(_ node: StructDeclSyntax) -> SyntaxVisitorContinueKind {
-    checkForRedundantEquatable(
-      members: node.memberBlock.members,
-      inheritanceClause: node.inheritanceClause
-    )
-    return .visitChildren
+  public override func visit(_ node: StructDeclSyntax) -> DeclSyntax {
+    let visited = super.visit(node).cast(StructDeclSyntax.self)
+
+    guard let inheritanceClause = visited.inheritanceClause,
+      inheritanceClause.contains(named: "Equatable")
+        || inheritanceClause.contains(named: "Hashable")
+    else { return DeclSyntax(visited) }
+
+    guard let removal = findRemovableEquatable(in: visited.memberBlock.members)
+    else { return DeclSyntax(visited) }
+
+    diagnose(.removeRedundantEquatable, on: removal.funcDecl)
+
+    var result = visited
+    result.memberBlock.members = removeItem(
+      at: removal.memberIndex, from: visited.memberBlock.members)
+    return DeclSyntax(result)
   }
 
-  public override func visit(_ node: EnumDeclSyntax) -> SyntaxVisitorContinueKind {
-    checkForRedundantEquatable(
-      members: node.memberBlock.members,
-      inheritanceClause: node.inheritanceClause
-    )
-    return .visitChildren
+  // MARK: - Analysis
+
+  private struct RemovableEquatable {
+    let funcDecl: FunctionDeclSyntax
+    let memberIndex: Int
   }
 
-  private func checkForRedundantEquatable(
-    members: MemberBlockItemListSyntax,
-    inheritanceClause: InheritanceClauseSyntax?
-  ) {
-    // Must conform to Equatable.
-    guard let inheritanceClause,
-      inheritanceClause.inheritedTypes.contains(where: {
-        $0.type.trimmedDescription == "Equatable"
-      })
-    else {
-      return
-    }
+  private func findRemovableEquatable(
+    in members: MemberBlockItemListSyntax
+  ) -> RemovableEquatable? {
+    let storedProps = collectStoredPropertyNames(from: members)
+    guard !storedProps.isEmpty else { return nil }
 
-    // Find the `==` operator function.
-    for member in members {
+    for (index, member) in members.enumerated() {
       guard let funcDecl = member.decl.as(FunctionDeclSyntax.self),
-        funcDecl.modifiers.contains(anyOf: [.static]),
-        funcDecl.name.text == "==",
-        funcDecl.signature.parameterClause.parameters.count == 2,
-        let body = funcDecl.body,
-        isSingleReturnBody(body)
-      else {
-        continue
-      }
+        isEquatableOperator(funcDecl)
+      else { continue }
 
-      diagnose(.removeRedundantEquatable, on: funcDecl.name)
-      return
+      // Skip functions with attributes (e.g., @usableFromInline, @inlinable)
+      guard funcDecl.attributes.isEmpty else { return nil }
+
+      guard let comparedProps = parseComparedProperties(from: funcDecl),
+        comparedProps == storedProps
+      else { return nil }
+
+      return RemovableEquatable(funcDecl: funcDecl, memberIndex: index)
     }
+
+    return nil
   }
 
-  /// Returns `true` if the function body is a single return statement.
-  private func isSingleReturnBody(_ body: CodeBlockSyntax) -> Bool {
-    let statements = body.statements
-    if statements.count == 1, let item = statements.first {
-      // Single expression (implicit return)
-      if item.item.is(ExprSyntax.self) { return true }
-      // Explicit return
-      if let returnStmt = item.item.as(StmtSyntax.self)?.as(ReturnStmtSyntax.self),
-        returnStmt.expression != nil
-      {
-        return true
+  // MARK: - Stored properties
+
+  private func collectStoredPropertyNames(
+    from members: MemberBlockItemListSyntax
+  ) -> Set<String> {
+    var props = Set<String>()
+    for member in members {
+      guard let varDecl = member.decl.as(VariableDeclSyntax.self),
+        !varDecl.modifiers.contains(anyOf: [.static, .class]),
+        varDecl.bindings.count == 1,
+        let binding = varDecl.bindings.first,
+        let identPattern = binding.pattern.as(IdentifierPatternSyntax.self)
+      else { continue }
+
+      // Skip computed properties (getter or explicit get/set)
+      if let accessorBlock = binding.accessorBlock {
+        switch accessorBlock.accessors {
+        case .getter:
+          continue
+        case .accessors(let accessors):
+          let isComputed = accessors.contains {
+            $0.accessorSpecifier.tokenKind == .keyword(.get)
+              || $0.accessorSpecifier.tokenKind == .keyword(.set)
+          }
+          if isComputed { continue }
+          // willSet/didSet = still a stored property
+        }
       }
+
+      props.insert(identPattern.identifier.text)
     }
+    return props
+  }
+
+  // MARK: - Equatable function detection
+
+  private func isEquatableOperator(_ funcDecl: FunctionDeclSyntax) -> Bool {
+    guard funcDecl.name.tokenKind == .binaryOperator("=="),
+      funcDecl.modifiers.contains(anyOf: [.static])
+    else { return false }
+
+    let params = funcDecl.signature.parameterClause.parameters
+    guard params.count == 2 else { return false }
+
+    let paramArray = Array(params)
+    // Internal labels must be lhs/rhs
+    let lhsLabel = paramArray[0].secondName?.text ?? paramArray[0].firstName.text
+    let rhsLabel = paramArray[1].secondName?.text ?? paramArray[1].firstName.text
+    guard lhsLabel == "lhs", rhsLabel == "rhs" else { return false }
+
+    // Both parameters must have the same type
+    guard paramArray[0].type.trimmedDescription == paramArray[1].type.trimmedDescription
+    else { return false }
+
+    return true
+  }
+
+  // MARK: - Parse compared properties
+
+  private func parseComparedProperties(
+    from funcDecl: FunctionDeclSyntax
+  ) -> Set<String>? {
+    guard let body = funcDecl.body,
+      let onlyItem = body.statements.firstAndOnly
+    else { return nil }
+
+    let expr: ExprSyntax
+    if let returnStmt = onlyItem.item.as(ReturnStmtSyntax.self),
+      let returnExpr = returnStmt.expression
+    {
+      expr = returnExpr
+    } else if let exprStmt = onlyItem.item.as(ExpressionStmtSyntax.self) {
+      expr = exprStmt.expression
+    } else if let directExpr = onlyItem.item.as(ExprSyntax.self) {
+      expr = directExpr
+    } else {
+      return nil
+    }
+
+    var props = Set<String>()
+    guard parseComparisons(expr, into: &props) else { return nil }
+    return props
+  }
+
+  private func parseComparisons(
+    _ expr: ExprSyntax,
+    into props: inout Set<String>
+  ) -> Bool {
+    guard let infixExpr = expr.as(InfixOperatorExprSyntax.self),
+      let binOp = infixExpr.operator.as(BinaryOperatorExprSyntax.self)
+    else { return false }
+
+    // lhs.prop == rhs.prop
+    if binOp.operator.text == "==" {
+      guard let lhsAccess = infixExpr.leftOperand.as(MemberAccessExprSyntax.self),
+        let lhsBase = lhsAccess.base?.as(DeclReferenceExprSyntax.self),
+        let rhsAccess = infixExpr.rightOperand.as(MemberAccessExprSyntax.self),
+        let rhsBase = rhsAccess.base?.as(DeclReferenceExprSyntax.self)
+      else { return false }
+
+      let lhsName = lhsBase.baseName.text
+      let rhsName = rhsBase.baseName.text
+      guard (lhsName == "lhs" && rhsName == "rhs")
+        || (lhsName == "rhs" && rhsName == "lhs")
+      else { return false }
+
+      let lhsProp = lhsAccess.declName.baseName.text
+      let rhsProp = rhsAccess.declName.baseName.text
+      guard lhsProp == rhsProp else { return false }
+
+      props.insert(lhsProp)
+      return true
+    }
+
+    // expr1 && expr2
+    if binOp.operator.text == "&&" {
+      return parseComparisons(infixExpr.leftOperand, into: &props)
+        && parseComparisons(infixExpr.rightOperand, into: &props)
+    }
+
     return false
+  }
+
+  // MARK: - Member removal
+
+  private func removeItem(
+    at targetIndex: Int,
+    from members: MemberBlockItemListSyntax
+  ) -> MemberBlockItemListSyntax {
+    var newItems = [MemberBlockItemSyntax]()
+    for (i, member) in members.enumerated() {
+      if i == targetIndex { continue }
+      newItems.append(member)
+    }
+    return MemberBlockItemListSyntax(newItems)
   }
 }
 
 extension Finding.Message {
   fileprivate static let removeRedundantEquatable: Finding.Message =
-    "remove hand-written '==' operator; compiler-synthesized Equatable conformance is likely equivalent"
+    "remove hand-written '==' operator; compiler-synthesized Equatable conformance is equivalent"
 }

@@ -5,7 +5,7 @@ status: in-progress
 type: epic
 priority: normal
 created_at: 2026-04-14T04:25:28Z
-updated_at: 2026-04-14T18:40:37Z
+updated_at: 2026-04-14T19:55:34Z
 sync:
     github:
         issue_number: "293"
@@ -82,3 +82,16 @@ Investigation of the swift-syntax source at `~/Developer/apple/swift-syntax` and
 - [x] `InheritanceClauseSyntax+Convenience` — `contains(named:)`, `inherited(named:)`, `removing(named:)` with comma/trivia cleanup
 - [x] `CodeBlockSyntax` body wrapping helpers — `bodyNeedsWrapping`, `wrappingBody(baseIndent:)`
 - [x] `Trivia` helpers — `indentation`, `trimmingTrailingWhitespace`
+
+
+### Testing Rules Deferred from m0v-ruy
+
+**`noForceUnwrapInTests`** (Category E — Expression Restructuring) — Replace `x!` with `try XCTUnwrap(x)`/`try #require(x)` in tests. Complex expression-level restructuring: parse expression ranges, handle scope containment, convert `!`→`?`, `as!`→`as?` with optional chaining, wrap in unwrap calls, detect LHS assignments / equality comparisons / XCTAssertEqual contexts. ~370 lines in SwiftFormat with heavy token-based logic.
+
+**`preferSwiftTesting`** (Categories B+D+E+I — Multi-faceted) — Convert XCTest suites to Swift Testing. Massive transformation: replace `import XCTest` with `import Testing` + `import Foundation`, remove XCTestCase conformance, convert setUp→init / tearDown→deinit, add `@Test` to test methods, convert ~20 XCT* helpers to `#expect`/`#require`, rename test methods, detect unsupported functionality. ~618 lines in SwiftFormat.
+
+
+
+### ~~Deferred from zbx-pz6: `wrapMultilineFunctionChains`~~
+
+No longer deferred — analysis was incorrect. The rule operates on source-level line breaks (trivia), not computed layout. Being implemented as a SyntaxFormatRule in zbx-pz6.

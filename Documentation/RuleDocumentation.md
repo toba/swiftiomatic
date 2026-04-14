@@ -28,6 +28,7 @@ Here's the list of available rules:
 - [BlankLinesBetweenChainedFunctions](#BlankLinesBetweenChainedFunctions)
 - [BlankLinesBetweenImports](#BlankLinesBetweenImports)
 - [BlankLinesBetweenScopes](#BlankLinesBetweenScopes)
+- [ConditionalAssignment](#ConditionalAssignment)
 - [ConsistentSwitchCaseSpacing](#ConsistentSwitchCaseSpacing)
 - [DoNotUseSemicolons](#DoNotUseSemicolons)
 - [DocCommentsBeforeModifiers](#DocCommentsBeforeModifiers)
@@ -35,6 +36,7 @@ Here's the list of available rules:
 - [EmptyBraces](#EmptyBraces)
 - [EmptyExtensions](#EmptyExtensions)
 - [EnumNamespaces](#EnumNamespaces)
+- [EnvironmentEntry](#EnvironmentEntry)
 - [FileMacro](#FileMacro)
 - [FileScopedDeclarationPrivacy](#FileScopedDeclarationPrivacy)
 - [FullyIndirectEnum](#FullyIndirectEnum)
@@ -59,6 +61,8 @@ Here's the list of available rules:
 - [NoEmptyTrailingClosureParentheses](#NoEmptyTrailingClosureParentheses)
 - [NoExplicitOwnership](#NoExplicitOwnership)
 - [NoForceTryInTests](#NoForceTryInTests)
+- [NoForceUnwrapInTests](#NoForceUnwrapInTests)
+- [NoGuardInTests](#NoGuardInTests)
 - [NoLabelsInCasePatterns](#NoLabelsInCasePatterns)
 - [NoLeadingUnderscores](#NoLeadingUnderscores)
 - [NoParensAroundConditions](#NoParensAroundConditions)
@@ -68,6 +72,7 @@ Here's the list of available rules:
 - [OneCasePerLine](#OneCasePerLine)
 - [OneVariableDeclarationPerLine](#OneVariableDeclarationPerLine)
 - [OnlyOneTrailingClosureArgument](#OnlyOneTrailingClosureArgument)
+- [OpaqueGenericParameters](#OpaqueGenericParameters)
 - [OrderedImports](#OrderedImports)
 - [PreferCountWhere](#PreferCountWhere)
 - [PreferExplicitFalse](#PreferExplicitFalse)
@@ -80,6 +85,7 @@ Here's the list of available rules:
 - [RedundantClosure](#RedundantClosure)
 - [RedundantEquatable](#RedundantEquatable)
 - [RedundantExtensionACL](#RedundantExtensionACL)
+- [RedundantFileprivate](#RedundantFileprivate)
 - [RedundantInit](#RedundantInit)
 - [RedundantInternal](#RedundantInternal)
 - [RedundantLet](#RedundantLet)
@@ -91,6 +97,7 @@ Here's the list of available rules:
 - [RedundantProperty](#RedundantProperty)
 - [RedundantPublic](#RedundantPublic)
 - [RedundantRawValues](#RedundantRawValues)
+- [RedundantSelf](#RedundantSelf)
 - [RedundantSendable](#RedundantSendable)
 - [RedundantStaticSelf](#RedundantStaticSelf)
 - [RedundantSwiftTestingSuite](#RedundantSwiftTestingSuite)
@@ -123,7 +130,11 @@ Here's the list of available rules:
 - [WrapConditionalBodies](#WrapConditionalBodies)
 - [WrapFunctionBodies](#WrapFunctionBodies)
 - [WrapLoopBodies](#WrapLoopBodies)
+- [WrapMultilineConditionalAssignment](#WrapMultilineConditionalAssignment)
+- [WrapMultilineFunctionChains](#WrapMultilineFunctionChains)
+- [WrapMultilineStatementBraces](#WrapMultilineStatementBraces)
 - [WrapPropertyBodies](#WrapPropertyBodies)
+- [WrapSingleLineComments](#WrapSingleLineComments)
 - [WrapSwitchCases](#WrapSwitchCases)
 - [YodaConditions](#YodaConditions)
 
@@ -366,6 +377,23 @@ Format: A blank line is inserted after the declaration.
 
 `BlankLinesBetweenScopes` rule can format your code automatically.
 
+### ConditionalAssignment
+
+Use if/switch expressions for conditional property assignment.
+
+When a property with a type annotation and no initializer is immediately
+followed by an exhaustive `if` or `switch` that assigns the property in
+every branch, the two statements are merged into a single assignment
+expression. Nested conditionals are handled recursively.
+
+Lint: A property followed by an exhaustive conditional assignment raises
+      a warning.
+
+Format: The separate statements are merged into a conditional expression
+        assignment.
+
+`ConditionalAssignment` rule can format your code automatically.
+
 ### ConsistentSwitchCaseSpacing
 
 Ensure consistent blank-line spacing among all cases in a switch statement.
@@ -462,6 +490,19 @@ Lint: A struct or final class containing only static members raises a warning.
 Format: The `struct` or `final class` keyword is replaced with `enum`.
 
 `EnumNamespaces` rule can format your code automatically.
+
+### EnvironmentEntry
+
+Use `@Entry` macro for `EnvironmentValues` instead of manual `EnvironmentKey` conformance.
+
+Recognizes `EnvironmentKey`-conforming structs/enums paired with `EnvironmentValues` extension
+properties and replaces them with `@Entry var` declarations.
+
+Lint: A lint warning is raised when an `EnvironmentKey` property can be replaced with `@Entry`.
+
+Format: The `EnvironmentKey` type is removed and the property is replaced with `@Entry var`.
+
+`EnvironmentEntry` rule can format your code automatically.
 
 ### FileMacro
 
@@ -804,6 +845,49 @@ Format: `try!` is replaced with `try` and `throws` is added to the signature if 
 
 `NoForceTryInTests` rule can format your code automatically.
 
+### NoForceUnwrapInTests
+
+Replace force unwraps (`!`) in test functions with `try XCTUnwrap(...)` (XCTest) or
+`try #require(...)` (Swift Testing).
+
+Force unwraps in tests crash the test runner instead of producing a useful failure message.
+Using XCTUnwrap / #require converts the crash into a clear test failure with location info.
+
+This rule applies to:
+- Functions annotated with `@Test` (Swift Testing)
+- Functions named `test*()` with no parameters inside `XCTestCase` subclasses
+
+Force unwraps in closures, nested functions, and string interpolation are left alone because
+`try` cannot propagate out of those scopes.
+
+Lint: A warning is raised for each force unwrap that can be converted.
+
+Format: Force unwraps are replaced with optional chaining and wrapped in XCTUnwrap/#require.
+
+`NoForceUnwrapInTests` rule can format your code automatically.
+
+### NoGuardInTests
+
+Convert `guard` statements in test functions to `try #require(...)`/`#expect(...)` (Swift
+Testing) or `try XCTUnwrap(...)`/`XCTAssert(...)` (XCTest).
+
+Guard statements in tests obscure the test intent behind control flow. Replacing them with
+direct assertions or unwraps makes the test linear and the failure message immediate.
+
+This rule applies to:
+- Functions annotated with `@Test` (Swift Testing)
+- Functions named `test*()` with no parameters inside `XCTestCase` subclasses
+
+Guards inside closures or nested functions are left alone because the enclosing test function's
+`throws` does not propagate into those scopes.
+
+Lint: A warning is raised for each `guard` that can be converted.
+
+Format: The `guard` is replaced with assertion/unwrap statements and `throws` is added to
+the signature if needed.
+
+`NoGuardInTests` rule can format your code automatically.
+
 ### NoLabelsInCasePatterns
 
 Redundant labels are forbidden in case patterns.
@@ -834,14 +918,16 @@ Lint: Declaring an identifier with a leading underscore yields a lint error.
 
 ### NoParensAroundConditions
 
-Enforces rules around parentheses in conditions or matched expressions.
+Enforces rules around parentheses in conditions, matched expressions, return statements, and
+initializer assignments.
 
-Parentheses are not used around any condition of an `if`, `guard`, or `while` statement, or
-around the matched expression in a `switch` statement.
+Parentheses are not used around any condition of an `if`, `guard`, or `while` statement, around
+the matched expression in a `switch` statement, around `return` values, or around initializer
+values in variable/constant declarations.
 
-Lint: If a top-most expression in a `switch`, `if`, `guard`, or `while` statement is surrounded
-      by parentheses, and it does not include a function call with a trailing closure, a lint
-      error is raised.
+Lint: If a top-most expression in a `switch`, `if`, `guard`, `while`, or `return` statement, or
+      in a variable initializer, is surrounded by parentheses, and it does not include a function
+      call with a trailing closure, a lint error is raised.
 
 Format: Parentheses around such expressions are removed, if they do not cause a parse ambiguity.
         Specifically, parentheses are allowed if and only if the expression contains a function
@@ -914,6 +1000,22 @@ Lint: If a function call with a trailing closure also contains a non-trailing cl
       a lint error is raised.
 
 `OnlyOneTrailingClosureArgument` is a linter-only rule.
+
+### OpaqueGenericParameters
+
+Use opaque generic parameters (`some Protocol`) instead of named generic parameters
+with constraints (`<T: Protocol>`) where equivalent.
+
+This rule applies to `func`, `init`, and `subscript` declarations. A generic type parameter
+is eligible for conversion when it appears exactly once in the parameter list and is not
+referenced in the return type, function body, attributes, typed throws, or other generic
+constraints.
+
+Lint: A lint warning is raised when a generic parameter can be replaced with an opaque parameter.
+
+Format: The generic parameter is replaced with `some Protocol` in the parameter type.
+
+`OpaqueGenericParameters` rule can format your code automatically.
 
 ### OrderedImports
 
@@ -1071,31 +1173,35 @@ statement can be replaced with just the expression.
 For example: `let x = { return 42 }()` → `let x = 42`
 And: `let x = { someValue }()` → `let x = someValue`
 
-This rule does NOT fire when the closure captures variables, has parameters, or
-contains multiple statements.
+Closures with parameters (`in` keyword), multiple statements, empty bodies,
+`fatalError`/`preconditionFailure` calls, or `throw` are preserved.
 
-Lint: If a redundant immediately-invoked closure is found, a lint warning is raised.
+Lint: If a redundant immediately-invoked closure is found, a lint warning
+      is raised.
 
-`RedundantClosure` is a linter-only rule.
+Format: The closure wrapper and invocation are removed, leaving just the
+        expression.
+
+`RedundantClosure` rule can format your code automatically.
 
 ### RedundantEquatable
 
-Flag hand-written `Equatable` conformance on structs and enums that qualify for
-compiler-synthesized conformance.
+Remove a hand-written `Equatable` implementation when the compiler-synthesized
+conformance would be equivalent.
 
-The compiler synthesizes `Equatable` for structs (all stored properties are `Equatable`)
-and enums (all associated values are `Equatable`). A manual `==` implementation that
-simply compares all members in order is redundant.
+For structs conforming to `Equatable` (or `Hashable`), if the `static func ==`
+compares exactly the same stored instance properties that the compiler would
+synthesize, the hand-written implementation is redundant and can be removed.
 
-This rule uses a heuristic: it flags `==` implementations on `Equatable` types where
-the body is a single return statement comparing all stored properties with `&&`.
-It does NOT perform type-checking — it relies on structural patterns.
+Closures, enums, and extension-based conformances are not handled.
 
-This rule is opt-in due to the heuristic nature.
+This rule is opt-in due to the heuristic nature (no type-checking).
 
-Lint: If a likely-redundant `Equatable` implementation is found, a lint warning is raised.
+Lint: A redundant `==` implementation raises a warning.
 
-`RedundantEquatable` is a linter-only rule.
+Format: The `==` function is removed from the member block.
+
+`RedundantEquatable` rule can format your code automatically.
 
 ### RedundantExtensionACL
 
@@ -1112,6 +1218,24 @@ Lint: If a member has the same access level as its containing extension, a lint 
 Format: The redundant access modifier is removed from the member.
 
 `RedundantExtensionACL` rule can format your code automatically.
+
+### RedundantFileprivate
+
+Prefer `private` over `fileprivate` where they are equivalent.
+
+In Swift 4+, `private` members are accessible from extensions of the same type in
+the same file. When a file contains only one logical type (a single type declaration
+plus extensions of that same type), `fileprivate` on members is equivalent to `private`.
+
+This rule only applies when the file contains a single logical type with no nested
+type declarations (nested types can access `fileprivate` but not `private` members
+of their parent).
+
+Lint: A lint warning is raised for `fileprivate` members that could be `private`.
+
+Format: `fileprivate` is replaced with `private`.
+
+`RedundantFileprivate` rule can format your code automatically.
 
 ### RedundantInit
 
@@ -1256,7 +1380,10 @@ annotation, and the very next statement is `return <same identifier>`.
 
 Lint: If a redundant property-then-return is found, a lint warning is raised.
 
-`RedundantProperty` is a linter-only rule.
+Format: The property declaration is removed and its value is inlined into
+        the return statement.
+
+`RedundantProperty` rule can format your code automatically.
 
 ### RedundantPublic
 
@@ -1286,6 +1413,30 @@ Lint: If a redundant raw value is found, a lint warning is raised.
 Format: The redundant raw value initializer is removed.
 
 `RedundantRawValues` rule can format your code automatically.
+
+### RedundantSelf
+
+Remove explicit `self.` where the compiler allows implicit self.
+
+In most contexts inside type bodies, `self.` is redundant when accessing members
+because Swift resolves bare identifiers to instance members. This rule removes
+the `self.` prefix when:
+- The access is inside a type member (method, computed property, init, subscript)
+- The member name is not shadowed by a local variable, parameter, or nested function
+- The scope allows implicit self (not a closure in a reference type without capture)
+
+For closures, implicit self is allowed per SE-0269 (Swift 5.3+) when:
+- The enclosing type is a value type (struct/enum)
+- The closure explicitly captures self: `[self]`, `[unowned self]`
+
+The `[weak self]` + `guard let self` pattern (SE-0365, Swift 5.8+) is handled
+conservatively: `self.` is kept in weak-self closures.
+
+Lint: A lint warning is raised for redundant `self.` usage.
+
+Format: The `self.` prefix is removed.
+
+`RedundantSelf` rule can format your code automatically.
 
 ### RedundantSendable
 
@@ -1768,6 +1919,49 @@ Format: The body is wrapped onto a new line with indentation.
 
 `WrapLoopBodies` rule can format your code automatically.
 
+### WrapMultilineConditionalAssignment
+
+Multiline conditional assignment expressions are wrapped after the
+assignment operator.
+
+When assigning an `if` or `switch` expression that spans multiple lines,
+the `=` should be on the same line as the property, and a line break
+should follow `=` before the `if`/`switch` keyword.
+
+Lint: A multiline `if`/`switch` expression on the same line as `=` raises
+      a warning.
+
+Format: A line break is inserted after `=`.
+
+`WrapMultilineConditionalAssignment` rule can format your code automatically.
+
+### WrapMultilineFunctionChains
+
+Chained function calls are wrapped consistently: if any dot in the chain
+is on a different line, all dots are placed on separate lines.
+
+Lint: A multiline chain where some dots share a line raises a warning.
+
+Format: Dots that share a line with a closing scope or another dot are
+        moved to their own line.
+
+`WrapMultilineFunctionChains` rule can format your code automatically.
+
+### WrapMultilineStatementBraces
+
+Opening braces of multiline statements are wrapped to their own line.
+
+When a statement signature (conditions, parameters, etc.) spans multiple
+lines, the opening `{` is moved to its own line, aligned with the
+statement keyword.
+
+Lint: A `{` on the same line as a multiline statement signature raises a
+      warning.
+
+Format: The `{` is moved to a new line aligned with the closing `}`.
+
+`WrapMultilineStatementBraces` rule can format your code automatically.
+
 ### WrapPropertyBodies
 
 Single-line computed property and observer bodies are wrapped onto multiple
@@ -1778,6 +1972,18 @@ Lint: A single-line property accessor block raises a warning.
 Format: The accessor block is wrapped onto a new line with indentation.
 
 `WrapPropertyBodies` rule can format your code automatically.
+
+### WrapSingleLineComments
+
+Single-line comments that exceed the configured line length are wrapped.
+
+Lint: A `//` or `///` comment that exceeds the line length raises a
+      warning.
+
+Format: The comment is word-wrapped, continuing on the next line with the
+        same prefix and indentation.
+
+`WrapSingleLineComments` rule can format your code automatically.
 
 ### WrapSwitchCases
 

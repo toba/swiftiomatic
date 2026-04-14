@@ -86,6 +86,52 @@ open func visitAny(_ node: Syntax) -> Syntax? { nil }  // dynamic dispatch escap
 
 `visitAny` can do protocol-based dispatch but fights the type system. Prefer concrete visit methods. NOTE: `SyntaxFormatRule` already overrides `visitAny` for `shouldFormat()` checks.
 
+## Position & Location
+
+```swift
+// SourceLocationConverter — access via context.sourceLocationConverter
+let loc = context.sourceLocationConverter.location(for: node.positionAfterSkippingLeadingTrivia)
+loc.line    // Int (1-based)
+loc.column  // Int (1-based)
+
+// Position properties on syntax nodes
+node.position                          // AbsolutePosition — start including leading trivia
+node.positionAfterSkippingLeadingTrivia // AbsolutePosition — start of actual text
+node.endPosition                       // AbsolutePosition — end including trailing trivia
+node.endPositionBeforeTrailingTrivia    // AbsolutePosition — end of actual text
+```
+
+## Token Navigation
+
+```swift
+node.lastToken(viewMode: .sourceAccurate)
+token.nextToken(viewMode: .sourceAccurate)
+token.previousToken(viewMode: .sourceAccurate)
+```
+
+## Trivia Primitives (swift-syntax)
+
+```swift
+// Modify trivia (returns new node — SwiftSyntax is immutable)
+token.with(\.leadingTrivia, .space)
+token.with(\.leadingTrivia, Trivia(pieces: newPieces))
+token.with(\.trailingTrivia, [])
+
+// Common values
+Trivia.space                     // single space
+Trivia.newline                   // single newline
+Trivia(pieces: [.spaces(4)])     // 4 spaces
+```
+
+## InitializerClauseSyntax Scope
+
+`InitializerClauseSyntax` (`= value`) fires in multiple contexts:
+- Variable initializers: `let x = value`, `var x = value`
+- Default parameter values: `func foo(x: Int = value)`
+- Enum case raw values: `case foo = value`
+
+This makes it a useful single visitor for "assignment context" transformations (e.g., removing redundant parens around `value`). But its `value` can be any expression — including `IfExprSyntax` (`let x = if cond { }`) or `SwitchExprSyntax` — so the fallback path must call `super.visit(node)` to let other visitors fire on descendants.
+
 ## swift-syntax API Notes
 
 **`SameTypeRequirementSyntax.RightType`** — enum: `.type(TypeSyntax)` | `.expr(ExprSyntax)`. Extract via:
@@ -106,6 +152,43 @@ BooleanLiteralExprSyntax(literal: .keyword(.true))
 **`DeclModifierListSyntax`** — `init(_:)` from array is deprecated. Use builder or pass elements directly.
 
 **`TypeSpecifierListSyntax.Element`** — `SyntaxChildChoices` enum. Match: `case .simpleTypeSpecifier(let simple)`. Token: `simple.specifier` with kinds like `.keyword(.borrowing)`.
+
+**`SomeOrAnyTypeSyntax`** — represents `some Protocol` or `any Protocol`:
+```swift
+// some Fooable
+SomeOrAnyTypeSyntax(
+    someOrAnySpecifier: .keyword(.some, trailingTrivia: .space),
+    constraint: IdentifierTypeSyntax(name: .identifier("Fooable"))
+)
+
+// some Fooable & Barable
+SomeOrAnyTypeSyntax(
+    someOrAnySpecifier: .keyword(.some, trailingTrivia: .space),
+    constraint: CompositionTypeSyntax(elements: CompositionTypeElementListSyntax([
+        CompositionTypeElementSyntax(
+            type: TypeSyntax(IdentifierTypeSyntax(name: .identifier("Fooable"))),
+            ampersand: .binaryOperator("&", leadingTrivia: .space, trailingTrivia: .space)),
+        CompositionTypeElementSyntax(
+            type: TypeSyntax(IdentifierTypeSyntax(name: .identifier("Barable"))))
+    ]))
+)
+```
+
+**Wrapping `some` types in parens** — required for `(some Any).Type` and `(some Any)?`:
+```swift
+// (some Any).Type
+MetatypeTypeSyntax(
+    baseType: TupleTypeSyntax(
+        leftParen: .leftParenToken(),
+        elements: [TupleTypeElementSyntax(type: someAnyType)],
+        rightParen: .rightParenToken()),
+    period: .periodToken(),
+    metatypeSpecifier: .keyword(.Type))
+```
+
+**`FunctionParameterSyntax.ellipsis`** — non-nil `TokenSyntax` when parameter is variadic (`T...`). Check this to prevent converting variadic generic parameters to opaque syntax.
+
+**`FunctionTypeSyntax`** — represents closure types like `(Foo) -> Void`. Check `type.is(FunctionTypeSyntax.self)` to detect closure parameters (opaque generics can't appear in closure parameter position).
 
 ## Convenience Extensions
 
@@ -173,6 +256,21 @@ func hasAttribute(_ name: String, inModule module: String) -> Bool
 ```swift
 var fullDeclName: String            // e.g. "foo(_:bar:)"
 ```
+
+## Extension Type Name: Simple vs Nested
+
+`ExtensionDeclSyntax.extendedType` can be:
+- `IdentifierTypeSyntax` for simple names: `extension Foo` → `.text == "Foo"`
+- `MemberTypeSyntax` for nested types: `extension Foo.Bar` → base type + member name
+
+When checking if an extension extends the same type as a primary declaration, guard with `IdentifierTypeSyntax`:
+
+```swift
+guard extDecl.extendedType.as(IdentifierTypeSyntax.self) != nil else { return nil }
+return extDecl.extendedType.trimmedDescription  // "Foo"
+```
+
+Using `trimmedDescription` without the `IdentifierTypeSyntax` guard would match `Foo.Bar` as a string, but it's a different logical type. The `MemberTypeSyntax` check ensures we only match top-level type extensions.
 
 ## swift-syntax Source Reference
 

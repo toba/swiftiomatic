@@ -1,11 +1,11 @@
 ---
 # 77g-8mh
 title: Port missing SwiftFormat rules to Swiftiomatic
-status: in-progress
+status: completed
 type: epic
 priority: normal
 created_at: 2026-04-14T03:16:43Z
-updated_at: 2026-04-14T03:40:55Z
+updated_at: 2026-04-14T19:04:24Z
 sync:
     github:
         issue_number: "285"

@@ -1,11 +1,11 @@
 ---
 # tac-gkq
 title: 'Phase 6: Large new implementations'
-status: ready
+status: in-progress
 type: task
 priority: normal
 created_at: 2026-04-14T18:37:12Z
-updated_at: 2026-04-14T18:37:12Z
+updated_at: 2026-04-14T21:58:19Z
 parent: c7r-77o
 sync:
     github:

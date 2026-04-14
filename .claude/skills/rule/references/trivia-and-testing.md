@@ -15,6 +15,28 @@ When removing a node (e.g., `= nil`), the **preceding token's trailing trivia** 
 // Result: set typeAnnotation.trailingTrivia = initializer.value.trailingTrivia
 ```
 
+## Accessor Block Removal Trivia
+
+When removing `accessorBlock` from a `PatternBindingSyntax` (e.g., replacing a computed property with a stored one), the type annotation's last token retains trailing whitespace that was spacing before the removed `{`. If adding an initializer, this causes double space: `Type  = value`.
+
+**Fix**: Trim the type annotation's type before adding the initializer:
+
+```swift
+newBinding.accessorBlock = nil
+if var typeAnnotation = newBinding.typeAnnotation {
+    typeAnnotation.type = typeAnnotation.type.trimmed
+    newBinding.typeAnnotation = typeAnnotation
+}
+newBinding.initializer = InitializerClauseSyntax(
+    equal: .equalToken(leadingTrivia: .space, trailingTrivia: .space),
+    value: ExprSyntax(expr)
+)
+```
+
+`.trimmed` strips leading trivia from the first token and trailing trivia from the last token. Since the type's leading trivia is empty (space after `:` is on the colon's trailing trivia), this only strips the unwanted trailing space.
+
+Used by: `EnvironmentEntry`.
+
 ## Boundary Trivia Transfer
 
 When replacing an expression with a structurally different one, transfer boundary trivia:
@@ -62,9 +84,41 @@ return DeclSyntax(transform(node))
 
 **#1 cause of "visitor not firing"**: Missing `super.visit` in a parent visitor when the rule visits both a declaration type AND a child node type.
 
+**Early-return paths must also `super.visit`**: When a visitor checks a condition and returns early (e.g., `guard ... else { return node }`), the fallback must be `super.visit(node)` — not bare `node` — if descendants could match other visitors. Example: `InitializerClauseSyntax` can contain `IfExprSyntax` (`let x = if (cond) {}`), so even when the initializer value isn't a `TupleExprSyntax`, returning bare `node` skips the `IfExprSyntax` visitor entirely.
+
+```swift
+// WRONG: skips descendant visitors on early return
+public override func visit(_ node: InitializerClauseSyntax) -> InitializerClauseSyntax {
+    guard let newValue = transform(node.value) else { return node }  // ❌
+    ...
+}
+
+// RIGHT: super.visit recurses into children
+public override func visit(_ node: InitializerClauseSyntax) -> InitializerClauseSyntax {
+    guard let newValue = transform(node.value) else { return super.visit(node) }  // ✅
+    ...
+}
+```
+
 ## Format Rules in the LintPipeline
 
 `SyntaxFormatRule` subclasses are also called by the `LintPipeline` via `visitIfEnabled` (return value ignored). `diagnose()` fires in both passes — no separate lint visitor needed.
+
+## diagnose Target: Declaration vs Child Token
+
+When diagnosing on a declaration that may have modifiers (e.g., `public var x: T`), pass the **declaration node** to `diagnose()`, not a specific child token like `bindingSpecifier`:
+
+```swift
+// WRONG: marker at `public` (col 5), finding at `var` (col 12)
+diagnose(.msg, on: varDecl.bindingSpecifier)
+
+// RIGHT: marker at `public` (col 5), finding at `public` (col 5)
+diagnose(.msg, on: varDecl)
+```
+
+`diagnose(on:)` uses `node.startLocation` which resolves to the first non-trivia token. For `VariableDeclSyntax`, that's the first modifier (if any) or `bindingSpecifier`. Diagnosing on `bindingSpecifier` directly skips modifiers, placing the finding past the marker.
+
+**When no modifiers exist**, both are equivalent since `bindingSpecifier` IS the first token. But always use the declaration node for forward-compatibility.
 
 ## Marker Placement
 
@@ -97,6 +151,8 @@ The SwiftFormat reference at `~/Developer/swiftiomatic-ref/SwiftFormat/Tests/Rul
 - Multiple trailing closures breaking keyPath conversion
 
 Pattern: read reference test file → identify untested code paths → adapt to `assertFormatting`. Skip token-level spacing tests (swift-syntax handles structurally).
+
+**Invalid Swift in SwiftFormat tests**: SwiftFormat's token-based approach can handle syntactically invalid Swift (e.g., `switch enumWithOneCase(let value)` — `let` binding inside a function call argument). Our AST-based parser creates error recovery nodes that don't match expected types. Always verify that test inputs are valid Swift syntax, and adapt invalid inputs to equivalent valid forms.
 
 ### Cascading hoisting (HoistTry/HoistAwait)
 
@@ -176,6 +232,42 @@ for piece in trivia.pieces {
     else { break }  // exits the for loop
 }
 ```
+
+## Trivia Duplication When Replacing CodeBlockItemSyntax
+
+When creating a replacement `CodeBlockItemSyntax` from a modified expression (e.g., stripping assignments from nested if/switch branches), do NOT pass `leadingTrivia:` to the initializer when the modified expression already carries the original trivia. The `leadingTrivia:` parameter creates an additional copy, producing double newlines.
+
+```swift
+// WRONG: double newline — modified already has leading trivia \n    on its `if` keyword
+CodeBlockItemSyntax(
+    leadingTrivia: onlyItem.leadingTrivia,  // adds \n    again
+    item: .expr(ExprSyntax(modified)))
+
+// RIGHT: let the expression's existing trivia flow through
+CodeBlockItemSyntax(item: .expr(ExprSyntax(modified)))
+```
+
+This only applies when the modified expression preserves its original structure (e.g., `removeAssignments` modifies body/else body but keeps the if/switch keyword unchanged). For cases where you create a NEW expression (e.g., stripping `foo = ` to keep just the value), you DO need to transfer trivia explicitly.
+
+Used by: `ConditionalAssignment` (nested if/switch branch handling).
+
+## String Interpolation in Test Strings
+
+Triple-quoted test strings are still Swift string literals — `\(x)` is interpreted as string interpolation by the compiler, not passed literally. When test code contains string interpolation in the source under test, escape the backslash:
+
+```swift
+// WRONG: compiler error — `x` is not in scope
+input: """
+    var description: String { "\(x)" }
+    """,
+
+// RIGHT: literal backslash passed to the parser
+input: """
+    var description: String { "\\(x)" }
+    """,
+```
+
+This applies to both `input` and `expected` strings in `assertFormatting` / `assertLint`.
 
 ## Known Limitations
 
