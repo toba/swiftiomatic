@@ -174,3 +174,88 @@ extension SyntaxCollection {
     return first
   }
 }
+
+// MARK: - Body Wrapping Helpers
+
+extension CodeBlockSyntax {
+  /// Whether this code block's content needs to be wrapped onto new lines.
+  /// Returns `true` if the body is non-empty and the first statement or closing
+  /// brace is on the same line as the opening brace.
+  var bodyNeedsWrapping: Bool {
+    guard let firstStmt = statements.first else { return false }
+    let firstOnNewLine = firstStmt.leadingTrivia.containsNewlines
+    let closingOnNewLine = rightBrace.leadingTrivia.containsNewlines
+    return !firstOnNewLine || !closingOnNewLine
+  }
+
+  /// Returns a copy with the body content wrapped onto new lines.
+  ///
+  /// - Parameter baseIndent: The indentation string of the enclosing declaration.
+  ///   The body content is indented by `baseIndent + "    "` and the closing brace
+  ///   is placed at `baseIndent`.
+  func wrappingBody(baseIndent: String) -> CodeBlockSyntax {
+    var result = self
+    let bodyIndent = baseIndent + "    "
+
+    let firstOnNewLine = statements.first?.leadingTrivia.containsNewlines ?? true
+    let closingOnNewLine = rightBrace.leadingTrivia.containsNewlines
+
+    if !firstOnNewLine {
+      // Strip trailing spaces from leftBrace (keep comments)
+      result.leftBrace = leftBrace.with(
+        \.trailingTrivia, leftBrace.trailingTrivia.trimmingTrailingWhitespace)
+
+      // Set first statement leading trivia to newline + body indent
+      var items = Array(result.statements)
+      items[0].leadingTrivia = .newline + Trivia(stringLiteral: bodyIndent)
+      result.statements = CodeBlockItemListSyntax(items)
+    }
+
+    if !closingOnNewLine {
+      // Strip trailing whitespace from last statement
+      var items = Array(result.statements)
+      let lastIdx = items.count - 1
+      items[lastIdx].trailingTrivia = items[lastIdx].trailingTrivia.trimmingTrailingWhitespace
+      result.statements = CodeBlockItemListSyntax(items)
+
+      // Set rightBrace leading trivia to newline + base indent
+      result.rightBrace = result.rightBrace.with(
+        \.leadingTrivia, .newline + Trivia(stringLiteral: baseIndent))
+    }
+
+    return result
+  }
+}
+
+extension Trivia {
+  /// Extracts the indentation string (spaces/tabs) after the last newline.
+  var indentation: String {
+    var indent = ""
+    var foundNewline = false
+    for piece in pieces.reversed() {
+      if foundNewline { break }
+      switch piece {
+      case .spaces(let n):
+        indent = String(repeating: " ", count: n) + indent
+      case .tabs(let n):
+        indent = String(repeating: "\t", count: n) + indent
+      case .newlines, .carriageReturns, .carriageReturnLineFeeds:
+        foundNewline = true
+      default:
+        indent = ""
+      }
+    }
+    return indent
+  }
+
+  /// Returns a copy with trailing spaces and tabs removed.
+  var trimmingTrailingWhitespace: Trivia {
+    var pieces = Array(self.pieces)
+    while let last = pieces.last {
+      if case .spaces = last { pieces.removeLast() }
+      else if case .tabs = last { pieces.removeLast() }
+      else { break }
+    }
+    return Trivia(pieces: pieces)
+  }
+}

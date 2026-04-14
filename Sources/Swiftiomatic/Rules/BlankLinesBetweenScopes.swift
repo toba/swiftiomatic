@@ -26,7 +26,8 @@ public final class BlankLinesBetweenScopes: SyntaxFormatRule {
   public override func visit(_ node: MemberBlockSyntax) -> MemberBlockSyntax {
     let visited = super.visit(node)
     var result = visited
-    result.members = ensureBlankLines(inMembers: visited.members)
+    result.members = ensureBlankLines(
+      inMembers: visited.members, diagnosing: node.members)
     return result
   }
 
@@ -57,8 +58,12 @@ public final class BlankLinesBetweenScopes: SyntaxFormatRule {
 
   // MARK: - MemberBlockItemListSyntax (type members)
 
-  private func ensureBlankLines(inMembers members: MemberBlockItemListSyntax) -> MemberBlockItemListSyntax {
+  private func ensureBlankLines(
+    inMembers members: MemberBlockItemListSyntax,
+    diagnosing originalMembers: MemberBlockItemListSyntax
+  ) -> MemberBlockItemListSyntax {
     let original = Array(members)
+    let diagTargets = Array(originalMembers)
     var items = original
     var modified = false
 
@@ -67,7 +72,7 @@ public final class BlankLinesBetweenScopes: SyntaxFormatRule {
       let nextIndex = i + 1
       guard blankLineCount(in: original[nextIndex].leadingTrivia) == 0 else { continue }
 
-      diagnose(.insertBlankLineAfterScope, on: original[nextIndex].decl)
+      diagnose(.insertBlankLineAfterScope, on: diagTargets[nextIndex].decl)
       var next = original[nextIndex]
       next.leadingTrivia = .newline + next.leadingTrivia
       items[nextIndex] = next

@@ -1,11 +1,11 @@
 ---
 # kt4-gwr
 title: Modern Swift idiom rules
-status: in-progress
+status: completed
 type: feature
 priority: normal
 created_at: 2026-04-14T03:18:16Z
-updated_at: 2026-04-14T05:06:43Z
+updated_at: 2026-04-14T17:34:52Z
 parent: 77g-8mh
 sync:
     github:
@@ -37,3 +37,8 @@ Port modern Swift idiom and language-pattern rules from SwiftFormat. These enfor
 - [x] `simplifyGenericConstraints` — Use inline constraints `<T: Foo>` instead of `where T: Foo`
 - [ ] `strongifiedSelf` — Remove backticks around `self` in optional unwrap expressions (**blocked**, see c7r-77o)
 - [x] `yodaConditions` — Prefer constant on right side of comparisons (e.g. `0 == x` → `x == 0`)
+
+
+## Summary of Changes
+
+13 of 17 modern Swift idiom rules ported: acronyms, andOperator, anyObjectProtocol, applicationMain, assertionFailures, enumNamespaces, genericExtensions, hoistAwait, hoistTry, isEmpty, preferCountWhere, preferKeyPath, simplifyGenericConstraints, yodaConditions. The 4 remaining rules (conditionalAssignment, environmentEntry, opaqueGenericParameters, strongifiedSelf) are blocked and tracked in c7r-77o.

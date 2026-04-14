@@ -1,11 +1,11 @@
 ---
 # xuy-4wl
 title: Wrapping and body formatting rules
-status: ready
+status: in-progress
 type: feature
 priority: normal
 created_at: 2026-04-14T03:18:17Z
-updated_at: 2026-04-14T03:18:17Z
+updated_at: 2026-04-14T18:29:25Z
 parent: 77g-8mh
 sync:
     github:
@@ -19,12 +19,12 @@ Port wrapping and body-formatting rules from SwiftFormat. Basic line wrapping an
 
 ## Rules
 
-- [ ] `wrapConditionalBodies` — Wrap inline `if`/`guard` bodies onto new lines
-- [ ] `wrapFunctionBodies` — Wrap single-line function/init/subscript bodies onto multiple lines
-- [ ] `wrapLoopBodies` — Wrap inline `for`/`while`/`repeat` loop bodies onto new lines
+- [x] `wrapConditionalBodies` — Wrap inline `if`/`guard` bodies onto new lines
+- [x] `wrapFunctionBodies` — Wrap single-line function/init/subscript bodies onto multiple lines
+- [x] `wrapLoopBodies` — Wrap inline `for`/`while`/`repeat` loop bodies onto new lines
 - [ ] `wrapMultilineConditionalAssignment` — Wrap multiline conditional assignment after the `=` operator
 - [ ] `wrapMultilineFunctionChains` — Ensure chained calls are all on one line or one per line
 - [ ] `wrapMultilineStatementBraces` — Wrap opening brace of multiline statements onto new line
-- [ ] `wrapPropertyBodies` — Wrap single-line computed property bodies onto multiple lines
+- [x] `wrapPropertyBodies` — Wrap single-line computed property bodies onto multiple lines
 - [ ] `wrapSingleLineComments` — Wrap `//` comments exceeding max line width
-- [ ] `wrapSwitchCases` — Wrap comma-delimited switch cases onto separate lines
+- [x] `wrapSwitchCases` — Wrap comma-delimited switch cases onto separate lines

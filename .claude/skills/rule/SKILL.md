@@ -53,6 +53,7 @@ extension Finding.Message {
 
 - Return `.visitChildren` or `.skipChildren`
 - `context.importsXCTest` / `node.hasTestAncestor` to skip test code
+- For non-XCTest import detection (e.g., `import Testing`), use a private `var` flag set in `visit(_ node: ImportDeclSyntax)` — see format-rule-patterns.md § Import Detection
 
 ## Creating a Format Rule
 
@@ -145,6 +146,9 @@ struct MyRuleTests: RuleTesting {
 | Wrong output | `assertFormatting` test, check trivia, check `super.visit` |
 | Finding at wrong position | Diagnosing on modified statement? Use `originalStatements[i].item` (see trivia-and-testing.md § Position Shift). Using `CodeBlockItemSyntax` instead of `.item`? |
 | Blank line detection wrong | Counting newlines after comments? Only count before first non-whitespace (see trivia-and-testing.md § Blank Line Detection). |
+| Per-arg pattern wildcards not detected | `case .bar(let _)` puts `let` as `LabeledExprSyntax.label` with `colon: nil`. Check `arg.expression.trimmedDescription == "_"` as fallback (see ast-and-extensions.md § Per-Argument Binding Label Quirk). |
+| "Inside type" check too broad | `isInsideTypeDeclaration` via parent chain matches the type's OWN name. Use `MemberBlockSyntax` instead (see ast-and-extensions.md § isInsideTypeDeclaration Pitfall). |
+| "After dot" misses type members | `MemberAccessExprSyntax` only covers expression dot access. Type dot access (`Foo.Type`) uses `MemberTypeSyntax` — check both (see ast-and-extensions.md § Member Access: Expression vs Type). |
 
 ## Key Reference Files
 

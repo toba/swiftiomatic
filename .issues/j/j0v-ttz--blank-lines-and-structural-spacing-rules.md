@@ -1,11 +1,11 @@
 ---
 # j0v-ttz
 title: Blank lines and structural spacing rules
-status: in-progress
+status: completed
 type: feature
 priority: normal
 created_at: 2026-04-14T03:18:16Z
-updated_at: 2026-04-14T17:01:32Z
+updated_at: 2026-04-14T17:35:45Z
 parent: 77g-8mh
 sync:
     github:
@@ -24,8 +24,13 @@ Port blank-line and structural-spacing rules from SwiftFormat. Most of the basic
 - [x] `blankLinesAfterGuardStatements` — Remove blanks between consecutive guards; insert blank after last guard
 - [x] `blankLinesAroundMark` — Insert blank line before and after `// MARK:` comments
 - [x] `blankLinesBetweenChainedFunctions` — Remove blank lines between chained function calls (keep linebreaks)
-- [ ] `blankLinesBetweenImports` — Remove blank lines between consecutive import statements
-- [ ] `blankLinesBetweenScopes` — Insert blank line before class/struct/enum/extension/protocol/function declarations
-- [ ] `consistentSwitchCaseSpacing` — Ensure consistent blank-line spacing among all cases in a switch
-- [ ] `leadingDelimiters` — Move leading `.` or `,` delimiters to end of previous line
-- [ ] `linebreakAtEndOfFile` — Ensure file ends with exactly one newline
+- [x] `blankLinesBetweenImports` — Remove blank lines between consecutive import statements
+- [x] `blankLinesBetweenScopes` — Insert blank line before class/struct/enum/extension/protocol/function declarations
+- [x] `consistentSwitchCaseSpacing` — Ensure consistent blank-line spacing among all cases in a switch
+- [x] ~~`leadingDelimiters`~~ — Moved to c7r-77o (requires multi-token trivia manipulation)
+- [x] `linebreakAtEndOfFile` — Ensure file ends with exactly one newline
+
+
+## Summary of Changes
+
+9 of 10 blank-line/structural-spacing rules ported: blankLineAfterImports, blankLineAfterSwitchCase, blankLinesAfterGuardStatements, blankLinesAroundMark, blankLinesBetweenChainedFunctions, blankLinesBetweenImports, blankLinesBetweenScopes, consistentSwitchCaseSpacing, linebreakAtEndOfFile. leadingDelimiters is blocked and tracked in c7r-77o.

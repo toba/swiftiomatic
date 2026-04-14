@@ -5,7 +5,7 @@ status: in-progress
 type: feature
 priority: normal
 created_at: 2026-04-14T05:26:49Z
-updated_at: 2026-04-14T17:13:49Z
+updated_at: 2026-04-14T17:38:18Z
 parent: c7r-77o
 sync:
     github:
@@ -202,9 +202,9 @@ public override func visit(_ node: CodeBlockItemListSyntax) -> CodeBlockItemList
 
 ## New Abstractions Needed
 
-- [x] `AttributeListSyntax+Convenience` — `attribute(named:)`, `remove(named:)`, `removing(named:)` with trivia cleanup
-- [x] `InheritanceClauseSyntax+Convenience` — `removing(named:)` returning nil when empty, handling comma/colon cleanup
-- [ ] Consider: `CodeBlockItemListSyntax` windowed-transform helper for pairwise pattern matching (Categories F/G)
+- [x] `AttributeListSyntax+Convenience` — `attribute(named:)`, `remove(named:)`, `removing(named:)` with trivia cleanup ✅
+- [x] `InheritanceClauseSyntax+Convenience` — `contains(named:)`, `inherited(named:)`, `removing(named:)` with comma/trivia cleanup ✅
+- [ ] Consider: `CodeBlockItemListSyntax` windowed-transform helper for pairwise pattern matching (Categories F/G) — deferred, pattern exists in UseEarlyExits
 
 ## Prioritized Implementation Order
 
@@ -234,3 +234,33 @@ public override func visit(_ node: CodeBlockItemListSyntax) -> CodeBlockItemList
 13. Convert redundantLet, redundantAsync, redundantThrows, redundantTypedThrows, redundantType to format
 14. Implement redundantEquatable (inheritance + member removal)
 15. Implement redundantStaticSelf (node type change: MemberAccessExpr → DeclReferenceExpr)
+
+
+## Progress
+
+### Completed (this session)
+
+**New abstractions:**
+- `AttributeListSyntax+Convenience` — `attribute(named:)`, `removing(named:)`, `remove(named:)` with trivia transfer
+- `InheritanceClauseSyntax+Convenience` — `contains(named:)`, `inherited(named:)`, `removing(named:)` with comma/trivia cleanup
+
+**Lint → format conversions (9 rules, 69 tests):**
+
+| Rule | Category | Pattern |
+|------|----------|--------|
+| RedundantObjc | B | Attribute removal |
+| RedundantViewBuilder | B | Attribute removal |
+| RedundantSendable | D | Inheritance clause removal |
+| RedundantExtensionACL | C | Member modifier removal |
+| RedundantPublic | C | Member modifier removal |
+| RedundantBreak | C | Statement removal |
+| RedundantAsync | C | Effect specifier removal |
+| RedundantThrows | C | Effect specifier removal |
+| RedundantTypedThrows | C | Effect specifier simplify/removal |
+
+**Skill updates:**
+- `/rule` references updated: `ast-and-extensions.md` (new convenience APIs), `format-rule-patterns.md` (attribute removal, inheritance removal patterns)
+
+### Remaining
+
+Remaining blocked rules and their specific blockers are tracked in parent issue c7r-77o. The approaches documented above (Categories A–I) and the abstractions built here provide the strategies needed to unblock them.

@@ -38,6 +38,12 @@ public override func visit(_ token: TokenSyntax) -> TokenSyntax {
 
 Marker placement: at the START of the token.
 
+**Backtick removal pattern**: backticked identifiers have `tokenKind == .identifier("` `` `name` `` `")`.
+Check `text.hasPrefix("` `` ` `` `")`, strip backticks, determine if context allows bare name, then
+`token.with(\.tokenKind, .identifier(bareName))`. Context checks use parent chain:
+`MemberAccessExprSyntax` (after `.`), `FunctionParameterSyntax` (argument label),
+`MemberTypeSyntax` (type member like `Foo.Type`), `MemberBlockSyntax` (inside type body).
+
 ## Remove Entire Declarations
 
 Visit the **list type** and filter:
@@ -252,7 +258,23 @@ if result.attributes.isEmpty {
 
 Use `super.visit` for container types (class/struct/enum) that may have nested declarations.
 
-Used by: `RedundantObjc`, `RedundantViewBuilder`.
+**Conditional attribute removal** — when only certain `@Foo` should be removed (e.g., `@Suite` without args but not `@Suite(.serialized)`), use `attribute(named:)` to find, check arguments, then `remove(named:)`:
+
+```swift
+guard let attr = node.attributes.attribute(named: "Suite"),
+      isRedundant(attr) else { return node }
+diagnose(.msg, on: attr)
+var result = node
+let savedTrivia = attr.leadingTrivia
+result.attributes.remove(named: "Suite")
+if result.attributes.isEmpty {
+    result[keyPath: keywordKeyPath].leadingTrivia = savedTrivia
+}
+```
+
+**Attribute argument checking**: `attr.arguments == nil` means no parens at all. `case let .argumentList(args) = attr.arguments, args.isEmpty` means empty `()`. Both are distinct from `@Foo(value)`.
+
+Used by: `RedundantObjc`, `RedundantViewBuilder`, `RedundantSwiftTestingSuite`.
 
 ## Remove Inheritance Conformance
 
@@ -470,3 +492,65 @@ return max(0, newlines - 1)  // -1 for end-of-previous-line newline
 - `SwitchCaseListSyntax.Element` is an enum: `.switchCase(SwitchCaseSyntax)` | `.ifConfigDecl(IfConfigDeclSyntax)`
 
 Used by: `BlankLineAfterImports`, `BlankLineAfterSwitchCase`, `BlankLinesAfterGuardStatements`.
+
+## Import Detection for Non-XCTest Frameworks
+
+`context.importsXCTest` only covers XCTest. For other frameworks (e.g., `Testing`), use a private flag on the rule set during `visit(_ node: ImportDeclSyntax)`:
+
+```swift
+private var importsTesting = false
+
+public override func visit(_ node: ImportDeclSyntax) -> DeclSyntax {
+    if node.path.first?.name.text == "Testing" {
+        importsTesting = true
+    }
+    return DeclSyntax(node)
+}
+
+// Then gate behavior in other visitors:
+public override func visit(_ node: StructDeclSyntax) -> DeclSyntax {
+    guard importsTesting else { return DeclSyntax(node) }
+    // ...
+}
+```
+
+Format rules are `SyntaxRewriter` subclasses, so the import visitor fires before type-declaration visitors during tree rewriting. The flag is safe to use in subsequent visitors within the same file.
+
+Used by: `RedundantSwiftTestingSuite`.
+
+## Adding Effect Specifiers (throws/async)
+
+When adding `throws` to a function that doesn't have it, the space before `{` lives on `body.leftBrace.leadingTrivia`. Transfer it to the new `throws` keyword and give `{` a fresh space:
+
+```swift
+var tc = ThrowsClauseSyntax(throwsSpecifier: .keyword(.throws, trailingTrivia: []))
+if var body = result.body {
+    tc.throwsSpecifier.leadingTrivia = body.leftBrace.leadingTrivia
+    body.leftBrace.leadingTrivia = .space
+    result.body = body
+}
+result.signature.effectSpecifiers = FunctionEffectSpecifiersSyntax(throwsClause: tc)
+```
+
+**Common mistake**: Adding `leadingTrivia: .space` to `throws` while `{` keeps its own space → double space (`func foo()  throws {`). Always steal the `{` trivia.
+
+Same pattern applies when `async` already exists — the space before `{` is still on `body.leftBrace.leadingTrivia`, not on `async.trailingTrivia`.
+
+Used by: `NoForceTryInTests`.
+
+## Removing Force-Unwrap Token (try!/as!)
+
+When setting `TryExprSyntax.questionOrExclamationMark = nil`, the `!` token's trailing trivia (usually a space) is lost. Transfer it to `tryKeyword.trailingTrivia`:
+
+```swift
+let bangTrivia = tryNode.questionOrExclamationMark?.trailingTrivia ?? .space
+return ExprSyntax(
+    tryNode
+        .with(\.questionOrExclamationMark, nil)
+        .with(\.tryKeyword, tryNode.tryKeyword.with(\.trailingTrivia, bangTrivia))
+)
+```
+
+Without this, `try! foo()` becomes `tryfoo()` instead of `try foo()`.
+
+Used by: `NoForceTryInTests`.

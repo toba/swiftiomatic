@@ -32,6 +32,48 @@ case .baz(_):         ← WildcardPatternSyntax (no ValueBindingPatternSyntax)
 
 Visit `PatternExprSyntax` or `ValueBindingPatternSyntax` directly.
 
+### Per-Argument Binding Label Quirk
+
+In per-argument patterns like `case .bar(let _, let _)`, the parser puts `let`/`var` as
+the `LabeledExprSyntax.label` (with `colon: nil`), NOT as part of the expression.
+
+```
+case .bar(let _):
+FunctionCallExprSyntax
+└─ arguments: LabeledExprListSyntax
+   └─ LabeledExprSyntax
+      ├─ label: "let"     ← keyword token as label
+      ├─ colon: nil        ← no colon (binding specifier, not argument label)
+      └─ expression: ???   ← the wildcard `_` in an unusual representation
+```
+
+**Critical**: the expression after `let` as label does NOT reliably match
+`DiscardAssignmentExprSyntax`, `PatternExprSyntax`, or `DeclReferenceExprSyntax`.
+Use `arg.expression.trimmedDescription == "_"` as a fallback.
+
+To distinguish real argument labels from binding specifiers: real labels always have
+`arg.colon != nil`. Binding specifiers have `arg.label != nil` but `arg.colon == nil`.
+
+### Backtick Token Representation
+
+swift-syntax stores backticks as part of identifier text: `.identifier("` `` `self` `` `")`.
+The `Identifier` type (from `Identifier.swift`) strips backticks via `.name`.
+`SyntaxRewriter.visit(_ token: TokenSyntax) -> TokenSyntax` intercepts all tokens — use
+`token.with(\.tokenKind, .identifier(bareName))` to remove backticks.
+
+### Member Access: Expression vs Type
+
+`MemberAccessExprSyntax` handles expression member access (`foo.bar`).
+`MemberTypeSyntax` handles type member access (`Foo.Type`, `Foo.Protocol`).
+Rules checking "after dot" must handle both — e.g., `` Foo.`Type` `` uses `MemberTypeSyntax`,
+not `MemberAccessExprSyntax`.
+
+### isInsideTypeDeclaration Pitfall
+
+Walking parent chain for `ClassDeclSyntax`/`StructDeclSyntax`/`EnumDeclSyntax` matches the
+type's OWN name token (e.g., `enum `Type` {}` — the name IS inside the `EnumDeclSyntax`).
+To check if a token is inside a type's **body**, look for `MemberBlockSyntax` in the parent chain instead.
+
 ## SyntaxRewriter Hooks
 
 ```swift

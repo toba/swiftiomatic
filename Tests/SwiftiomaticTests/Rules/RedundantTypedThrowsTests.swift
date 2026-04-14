@@ -5,11 +5,14 @@ import Testing
 @Suite
 struct RedundantTypedThrowsTests: RuleTesting {
   @Test func throwsAnyError() {
-    assertLint(
+    assertFormatting(
       RedundantTypedThrows.self,
-      """
-      func foo() 1️⃣throws(any Error) {}
-      """,
+      input: """
+        func foo() 1️⃣throws(any Error) {}
+        """,
+      expected: """
+        func foo() throws {}
+        """,
       findings: [
         FindingSpec("1️⃣", message: "replace 'throws(any Error)' with 'throws'"),
       ]
@@ -17,11 +20,14 @@ struct RedundantTypedThrowsTests: RuleTesting {
   }
 
   @Test func throwsNever() {
-    assertLint(
+    assertFormatting(
       RedundantTypedThrows.self,
-      """
-      func foo() 1️⃣throws(Never) {}
-      """,
+      input: """
+        func foo() 1️⃣throws(Never) {}
+        """,
+      expected: """
+        func foo() {}
+        """,
       findings: [
         FindingSpec("1️⃣", message: "remove 'throws(Never)'; the function cannot throw"),
       ]
@@ -29,41 +35,53 @@ struct RedundantTypedThrowsTests: RuleTesting {
   }
 
   @Test func plainThrowsNotFlagged() {
-    assertLint(
+    assertFormatting(
       RedundantTypedThrows.self,
-      """
-      func foo() throws {}
-      """,
+      input: """
+        func foo() throws {}
+        """,
+      expected: """
+        func foo() throws {}
+        """,
       findings: []
     )
   }
 
   @Test func typedThrowsSpecificErrorNotFlagged() {
-    assertLint(
+    assertFormatting(
       RedundantTypedThrows.self,
-      """
-      func foo() throws(MyError) {}
-      """,
+      input: """
+        func foo() throws(MyError) {}
+        """,
+      expected: """
+        func foo() throws(MyError) {}
+        """,
       findings: []
     )
   }
 
   @Test func nonThrowingNotFlagged() {
-    assertLint(
+    assertFormatting(
       RedundantTypedThrows.self,
-      """
-      func foo() {}
-      """,
+      input: """
+        func foo() {}
+        """,
+      expected: """
+        func foo() {}
+        """,
       findings: []
     )
   }
 
   @Test func closureThrowsAnyError() {
-    assertLint(
+    assertFormatting(
       RedundantTypedThrows.self,
-      """
-      let f: () 1️⃣throws(any Error) -> Void = {}
-      """,
+      input: """
+        let f: () 1️⃣throws(any Error) -> Void = {}
+        """,
+      expected: """
+        let f: () throws -> Void = {}
+        """,
       findings: [
         FindingSpec("1️⃣", message: "replace 'throws(any Error)' with 'throws'"),
       ]

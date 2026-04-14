@@ -1,6 +1,6 @@
 import SwiftSyntax
 
-/// Flag `throws` on functions that contain no `throw` or `try` expressions.
+/// Remove `throws` from functions that contain no `throw` or `try` expressions.
 ///
 /// If a function is marked `throws` but its body never uses `throw` or `try`, the `throws`
 /// is likely unnecessary.
@@ -9,24 +9,37 @@ import SwiftSyntax
 /// conformance or future-proofing even if they don't currently throw.
 ///
 /// Lint: If a `throws` function has no `throw` or `try` in its body, a lint warning is raised.
+///
+/// Format: The `throws` clause is removed.
 @_spi(Rules)
-public final class RedundantThrows: SyntaxLintRule {
+public final class RedundantThrows: SyntaxFormatRule {
 
   public override class var isOptIn: Bool { true }
 
-  public override func visit(_ node: FunctionDeclSyntax) -> SyntaxVisitorContinueKind {
+  public override func visit(_ node: FunctionDeclSyntax) -> DeclSyntax {
     guard let effectSpecifiers = node.signature.effectSpecifiers,
-      effectSpecifiers.throwsClause != nil,
+      let throwsClause = effectSpecifiers.throwsClause,
       let body = node.body
     else {
-      return .visitChildren
+      return DeclSyntax(node)
     }
 
-    if !containsThrowOrTry(body) {
-      diagnose(.removeRedundantThrows, on: effectSpecifiers.throwsClause!)
+    guard !containsThrowOrTry(body) else {
+      return DeclSyntax(node)
     }
 
-    return .skipChildren
+    diagnose(.removeRedundantThrows, on: throwsClause)
+
+    var newEffectSpecifiers = effectSpecifiers
+    newEffectSpecifiers.throwsClause = nil
+
+    var result = node
+    if newEffectSpecifiers.asyncSpecifier == nil && newEffectSpecifiers.throwsClause == nil {
+      result.signature.effectSpecifiers = nil
+    } else {
+      result.signature.effectSpecifiers = newEffectSpecifiers
+    }
+    return DeclSyntax(result)
   }
 
   /// Returns `true` if the syntax tree contains a `throw` statement or `try` expression,

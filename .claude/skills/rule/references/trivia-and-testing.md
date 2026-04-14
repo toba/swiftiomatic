@@ -76,6 +76,8 @@ var x: Int? 1️⃣= nil    // ✅ marker at `=`
 var x: Int?1️⃣ = nil    // ❌ before the space
 ```
 
+**Markers go in `input` only** — never in `expected`. The `expected` string is compared literally; marker emoji characters would corrupt the comparison.
+
 ## assertFormatting Mechanics
 
 Runs **two passes**:

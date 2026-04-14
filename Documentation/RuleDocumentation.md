@@ -30,6 +30,7 @@ Here's the list of available rules:
 - [BlankLinesBetweenScopes](#BlankLinesBetweenScopes)
 - [ConsistentSwitchCaseSpacing](#ConsistentSwitchCaseSpacing)
 - [DoNotUseSemicolons](#DoNotUseSemicolons)
+- [DocCommentsBeforeModifiers](#DocCommentsBeforeModifiers)
 - [DontRepeatTypeInStaticProperties](#DontRepeatTypeInStaticProperties)
 - [EmptyBraces](#EmptyBraces)
 - [EmptyExtensions](#EmptyExtensions)
@@ -44,6 +45,7 @@ Here's the list of available rules:
 - [IdentifiersMustBeASCII](#IdentifiersMustBeASCII)
 - [InitCoderUnavailable](#InitCoderUnavailable)
 - [IsEmpty](#IsEmpty)
+- [LinebreakAtEndOfFile](#LinebreakAtEndOfFile)
 - [ModifierOrder](#ModifierOrder)
 - [ModifiersOnSameLine](#ModifiersOnSameLine)
 - [NeverForceUnwrap](#NeverForceUnwrap)
@@ -56,6 +58,7 @@ Here's the list of available rules:
 - [NoEmptyLinesOpeningClosingBraces](#NoEmptyLinesOpeningClosingBraces)
 - [NoEmptyTrailingClosureParentheses](#NoEmptyTrailingClosureParentheses)
 - [NoExplicitOwnership](#NoExplicitOwnership)
+- [NoForceTryInTests](#NoForceTryInTests)
 - [NoLabelsInCasePatterns](#NoLabelsInCasePatterns)
 - [NoLeadingUnderscores](#NoLeadingUnderscores)
 - [NoParensAroundConditions](#NoParensAroundConditions)
@@ -84,11 +87,13 @@ Here's the list of available rules:
 - [RedundantNilInit](#RedundantNilInit)
 - [RedundantObjc](#RedundantObjc)
 - [RedundantOptionalBinding](#RedundantOptionalBinding)
+- [RedundantPattern](#RedundantPattern)
 - [RedundantProperty](#RedundantProperty)
 - [RedundantPublic](#RedundantPublic)
 - [RedundantRawValues](#RedundantRawValues)
 - [RedundantSendable](#RedundantSendable)
 - [RedundantStaticSelf](#RedundantStaticSelf)
+- [RedundantSwiftTestingSuite](#RedundantSwiftTestingSuite)
 - [RedundantThrows](#RedundantThrows)
 - [RedundantType](#RedundantType)
 - [RedundantTypedThrows](#RedundantTypedThrows)
@@ -96,9 +101,13 @@ Here's the list of available rules:
 - [ReplaceForEachWithForLoop](#ReplaceForEachWithForLoop)
 - [ReturnVoidInsteadOfEmptyTuple](#ReturnVoidInsteadOfEmptyTuple)
 - [SimplifyGenericConstraints](#SimplifyGenericConstraints)
+- [SortDeclarations](#SortDeclarations)
 - [SortSwitchCases](#SortSwitchCases)
 - [SortTypealiases](#SortTypealiases)
 - [StrongOutlets](#StrongOutlets)
+- [StrongifiedSelf](#StrongifiedSelf)
+- [SwiftTestingTestCaseNames](#SwiftTestingTestCaseNames)
+- [TestSuiteAccessControl](#TestSuiteAccessControl)
 - [Todos](#Todos)
 - [TypeNamesShouldBeCapitalized](#TypeNamesShouldBeCapitalized)
 - [UseEarlyExits](#UseEarlyExits)
@@ -110,6 +119,12 @@ Here's the list of available rules:
 - [UseTripleSlashForDocumentationComments](#UseTripleSlashForDocumentationComments)
 - [UseWhereClausesInForLoops](#UseWhereClausesInForLoops)
 - [ValidateDocumentationComments](#ValidateDocumentationComments)
+- [ValidateTestCases](#ValidateTestCases)
+- [WrapConditionalBodies](#WrapConditionalBodies)
+- [WrapFunctionBodies](#WrapFunctionBodies)
+- [WrapLoopBodies](#WrapLoopBodies)
+- [WrapPropertyBodies](#WrapPropertyBodies)
+- [WrapSwitchCases](#WrapSwitchCases)
 - [YodaConditions](#YodaConditions)
 
 ### Acronyms
@@ -377,6 +392,19 @@ Format: All semicolons will be replaced with line breaks.
 
 `DoNotUseSemicolons` rule can format your code automatically.
 
+### DocCommentsBeforeModifiers
+
+Place doc comments before any declaration modifiers or attributes.
+
+Doc comments (`///` or `/** */`) should appear before all attributes and access modifiers,
+not between them.
+
+Lint: If a doc comment appears after an attribute or modifier, a lint warning is raised.
+
+Format: The doc comment is moved before all attributes and modifiers.
+
+`DocCommentsBeforeModifiers` rule can format your code automatically.
+
 ### DontRepeatTypeInStaticProperties
 
 Static properties of a type that return that type should not include a reference to their type.
@@ -588,6 +616,19 @@ Format: The comparison is replaced with `.isEmpty` or `!.isEmpty`.
 
 `IsEmpty` rule can format your code automatically.
 
+### LinebreakAtEndOfFile
+
+Ensure the file ends with exactly one newline.
+
+Many Unix tools expect files to end with a newline. Missing trailing newlines cause
+`diff` noise and `cat` concatenation issues. Extra trailing newlines waste space.
+
+Lint: If the file does not end with exactly one newline, a lint warning is raised.
+
+Format: A trailing newline is added if missing, or extra newlines are removed.
+
+`LinebreakAtEndOfFile` rule can format your code automatically.
+
 ### ModifierOrder
 
 Enforce consistent ordering for declaration modifiers.
@@ -741,6 +782,27 @@ Lint: If an explicit `borrowing` or `consuming` modifier is found, a lint warnin
 Format: The ownership modifier is removed.
 
 `NoExplicitOwnership` rule can format your code automatically.
+
+### NoForceTryInTests
+
+Replace `try!` with `try` in test methods and add `throws` to the function signature.
+
+In test code, `try!` crashes the test runner on failure instead of producing a clear test
+failure. Using `throws` on the test method and plain `try` lets the framework report the
+error properly.
+
+This rule applies to:
+- Functions annotated with `@Test` (Swift Testing)
+- Functions named `test*()` with no parameters inside `XCTestCase` subclasses
+
+`try!` inside closures or nested functions is left alone because the enclosing test function's
+`throws` does not propagate into those scopes.
+
+Lint: A warning is raised for each `try!` in a test function body.
+
+Format: `try!` is replaced with `try` and `throws` is added to the signature if needed.
+
+`NoForceTryInTests` rule can format your code automatically.
 
 ### NoLabelsInCasePatterns
 
@@ -968,15 +1030,19 @@ Format: The `async` specifier is removed.
 
 ### RedundantBackticks
 
-Remove backticks around identifiers that are not reserved keywords.
+Remove unnecessary backticks around identifiers.
 
-Backticks are only needed when an identifier is a Swift keyword (e.g. `` `class` ``,
-`` `func` ``, `` `return` ``). Contextual keywords like `async`, `await`, `some`, `any`
-do not need backticks when used as identifiers.
+Backticks are required when an identifier is a Swift reserved keyword used in a position
+that expects an identifier. They are redundant when the identifier is:
+- Not a keyword at all (e.g., `` `myFunc` `` → `myFunc`)
+- A keyword used after `.` in member access (e.g., `Foo.`default`` → `Foo.default`)
+- A keyword used as a function argument label (e.g., `func foo(`default`: Int)` → `func foo(default: Int)`)
 
-Lint: If unnecessary backticks are found, a lint warning is raised.
+Lint: If unnecessary backticks are found, a finding is raised.
 
-`RedundantBackticks` is a linter-only rule.
+Format: The backticks are removed.
+
+`RedundantBackticks` rule can format your code automatically.
 
 ### RedundantBreak
 
@@ -1161,6 +1227,21 @@ Format: The redundant initializer is removed.
 
 `RedundantOptionalBinding` rule can format your code automatically.
 
+### RedundantPattern
+
+Remove redundant pattern matching where all associated values are discarded.
+
+When a case pattern matches an enum with associated values but all values are wildcards,
+the entire argument list is redundant and can be removed.
+
+Similarly, `let (_, _) = bar` can be simplified to `let _ = bar`.
+
+Lint: If a redundant pattern is found, a finding is raised.
+
+Format: The redundant pattern is removed.
+
+`RedundantPattern` rule can format your code automatically.
+
 ### RedundantProperty
 
 Remove a property that is assigned and immediately returned on the next line.
@@ -1238,9 +1319,24 @@ Lint: If a redundant `Self.` is found in a static context, a lint warning is rai
 
 `RedundantStaticSelf` is a linter-only rule.
 
+### RedundantSwiftTestingSuite
+
+Remove `@Suite` attributes that have no arguments, since they are inferred by the Swift Testing
+framework.
+
+`@Suite` with no arguments (or empty parentheses) is redundant — Swift Testing automatically
+discovers test suites without explicit annotation. Only `@Suite` with arguments like
+`@Suite(.serialized)` or `@Suite("Display Name")` should be kept.
+
+Lint: A warning is raised when `@Suite` or `@Suite()` is used without arguments.
+
+Format: The redundant `@Suite` attribute is removed.
+
+`RedundantSwiftTestingSuite` rule can format your code automatically.
+
 ### RedundantThrows
 
-Flag `throws` on functions that contain no `throw` or `try` expressions.
+Remove `throws` from functions that contain no `throw` or `try` expressions.
 
 If a function is marked `throws` but its body never uses `throw` or `try`, the `throws`
 is likely unnecessary.
@@ -1250,7 +1346,9 @@ conformance or future-proofing even if they don't currently throw.
 
 Lint: If a `throws` function has no `throw` or `try` in its body, a lint warning is raised.
 
-`RedundantThrows` is a linter-only rule.
+Format: The `throws` clause is removed.
+
+`RedundantThrows` rule can format your code automatically.
 
 ### RedundantType
 
@@ -1287,7 +1385,9 @@ Simplify redundant typed throws annotations.
 
 Lint: If a redundant typed throws is found, a lint warning is raised.
 
-`RedundantTypedThrows` is a linter-only rule.
+Format: `throws(any Error)` is replaced with `throws`. `throws(Never)` is removed.
+
+`RedundantTypedThrows` rule can format your code automatically.
 
 ### RedundantViewBuilder
 
@@ -1349,6 +1449,19 @@ Format: The conformance constraint is moved from the `where` clause to the gener
 
 `SimplifyGenericConstraints` rule can format your code automatically.
 
+### SortDeclarations
+
+Sort declarations between `// swiftiomatic:sort:begin` and `// swiftiomatic:sort:end` markers.
+
+Declarations within the marked region are sorted alphabetically by name. Comments and trivia
+associated with each declaration move with it. The markers themselves are preserved in place.
+
+Lint: If declarations in a marked region are not sorted, a lint warning is raised.
+
+Format: The declarations are reordered alphabetically by name.
+
+`SortDeclarations` rule can format your code automatically.
+
 ### SortSwitchCases
 
 Sort switch case items alphabetically within each case.
@@ -1390,6 +1503,49 @@ Lint: An `@IBOutlet` property with `weak` raises a warning.
 Format: The `weak` modifier is removed.
 
 `StrongOutlets` rule can format your code automatically.
+
+### StrongifiedSelf
+
+Remove backticks around `self` in optional unwrap expressions.
+
+Since Swift 4.2, `guard let self = self` is valid without backticks.
+Writing `` guard let `self` = self `` is a holdover from older Swift versions.
+
+Lint: If a backticked `self` is found in an optional binding, a finding is raised.
+
+Format: The backticks are removed.
+
+`StrongifiedSelf` rule can format your code automatically.
+
+### SwiftTestingTestCaseNames
+
+Remove the `test` prefix from Swift Testing `@Test` function names.
+
+In Swift Testing, test methods are identified by the `@Test` attribute, not by a naming
+convention. The `test` prefix is redundant and should be removed for idiomatic Swift Testing.
+
+The rename is skipped when:
+- The remainder after removing `test` would be empty, start with a digit, or be a Swift keyword
+- The new name would collide with an existing identifier in the same scope
+
+Lint: A warning is raised for `@Test` functions with a `test` prefix.
+
+Format: The `test` prefix is removed and the first letter is lowercased.
+
+`SwiftTestingTestCaseNames` rule can format your code automatically.
+
+### TestSuiteAccessControl
+
+Test methods should be `internal`; helper properties and functions should be `private`.
+
+In test suites, test methods don't need explicit access control (internal is the default and
+correct level). Non-test helpers should be `private` since they're only used within the suite.
+
+Lint: A warning is raised for incorrect access control on test suite members.
+
+Format: Access control is corrected.
+
+`TestSuiteAccessControl` rule can format your code automatically.
 
 ### Todos
 
@@ -1551,6 +1707,91 @@ Lint: Documentation comments that are incomplete (e.g. missing parameter documen
       invalid (uses `Parameters` when there is only one parameter) will yield a lint error.
 
 `ValidateDocumentationComments` is a linter-only rule.
+
+### ValidateTestCases
+
+Ensure test methods have the correct `test` prefix or `@Test` attribute.
+
+For XCTest: functions in `XCTestCase` subclasses that look like tests get a `test` prefix.
+For Swift Testing: functions in test suite types get a `@Test` attribute.
+
+A "test suite" type is one whose name ends with `Tests`, `TestCase`, or `Suite`.
+
+Functions are skipped if they:
+- Have parameters or a return type
+- Are `override`, `@objc`, `static`, or `private`/`fileprivate`
+- Start with a disabled prefix (`disable_`, `skip_`, `x_`, `_`, etc.)
+- Are referenced elsewhere in the file (XCTest only — they're helpers)
+- Are in a type with a parameterized initializer
+- Are in an `open` base class or one with "Base"/"base"/"subclass" in name/doc comment
+
+Lint: A warning is raised for each test method missing the correct prefix or attribute.
+
+Format: The `test` prefix or `@Test` attribute is added.
+
+`ValidateTestCases` rule can format your code automatically.
+
+### WrapConditionalBodies
+
+Inline conditional statement bodies are wrapped onto new lines.
+
+Single-line `if`, `else`, and `guard` bodies are expanded so the body content
+starts on its own line with proper indentation.
+
+Lint: A single-line conditional body raises a warning.
+
+Format: The body is wrapped onto a new line with indentation.
+
+`WrapConditionalBodies` rule can format your code automatically.
+
+### WrapFunctionBodies
+
+Single-line function, initializer, and subscript bodies are wrapped onto
+multiple lines.
+
+Lint: A single-line function/init/subscript body raises a warning.
+
+Format: The body is wrapped onto a new line with indentation.
+
+`WrapFunctionBodies` rule can format your code automatically.
+
+### WrapLoopBodies
+
+Inline loop bodies are wrapped onto new lines.
+
+Single-line `for`, `while`, and `repeat` loop bodies are expanded so the body
+content starts on its own line with proper indentation.
+
+Lint: A single-line loop body raises a warning.
+
+Format: The body is wrapped onto a new line with indentation.
+
+`WrapLoopBodies` rule can format your code automatically.
+
+### WrapPropertyBodies
+
+Single-line computed property and observer bodies are wrapped onto multiple
+lines.
+
+Lint: A single-line property accessor block raises a warning.
+
+Format: The accessor block is wrapped onto a new line with indentation.
+
+`WrapPropertyBodies` rule can format your code automatically.
+
+### WrapSwitchCases
+
+Comma-delimited switch case items are wrapped onto separate lines.
+
+Switch cases with multiple patterns separated by commas are expanded so each
+pattern appears on its own line, aligned after `case `.
+
+Lint: A switch case with multiple comma-separated items on a single line
+      raises a warning.
+
+Format: Each item is placed on its own line with alignment indentation.
+
+`WrapSwitchCases` rule can format your code automatically.
 
 ### YodaConditions
 
