@@ -13,9 +13,11 @@
 import Swiftiomatic
 import SwiftSyntax
 import _SwiftiomaticTestSupport
+import Testing
 
-final class DictionaryDeclTests: PrettyPrintTestCase {
-  func testBasicDictionaries() {
+@Suite
+struct DictionaryDeclTests: PrettyPrintTesting {
+  @Test func basicDictionaries() {
     let input =
       """
       let a: [String: String] = [ : ]
@@ -85,7 +87,7 @@ final class DictionaryDeclTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 50)
   }
 
-  func testNoTrailingCommasInTypes() {
+  @Test func noTrailingCommasInTypes() {
     let input =
       """
       let a = [SomeVeryLongKeyType: SomePrettyLongValueType]()
@@ -102,7 +104,7 @@ final class DictionaryDeclTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 50)
   }
 
-  func testWhitespaceOnlyDoesNotChangeTrailingComma() {
+  @Test func whitespaceOnlyDoesNotChangeTrailingComma() {
     assertPrettyPrintEqual(
       input: """
         let a = [
@@ -135,7 +137,7 @@ final class DictionaryDeclTests: PrettyPrintTestCase {
     )
   }
 
-  func testTrailingCommaDiagnostics() {
+  @Test func trailingCommaDiagnostics() {
     assertPrettyPrintEqual(
       input: """
         let a = [1: "a", 2: "b", 3: "c"1️⃣,]
@@ -161,7 +163,7 @@ final class DictionaryDeclTests: PrettyPrintTestCase {
     )
   }
 
-  func testDiscretionaryNewlineAfterColon() {
+  @Test func discretionaryNewlineAfterColon() {
     let input =
       """
       let a = [
@@ -219,7 +221,7 @@ final class DictionaryDeclTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 20)
   }
 
-  func testGroupsTrailingComma() {
+  @Test func groupsTrailingComma() {
     let input =
       """
       let d = [
@@ -242,7 +244,7 @@ final class DictionaryDeclTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 32)
   }
 
-  func testInnerElementBreakingFromComma() {
+  @Test func innerElementBreakingFromComma() {
     let input =
       """
       let a = [key1: ("abc", "def", "xyz"),key2: ("this ", "string", "is long"),]

@@ -12,9 +12,11 @@
 
 @_spi(Rules) import Swiftiomatic
 import _SwiftiomaticTestSupport
+import Testing
 
-final class UseSynthesizedInitializerTests: LintOrFormatRuleTestCase {
-  func testMemberwiseInitializerIsDiagnosed() {
+@Suite
+struct UseSynthesizedInitializerTests: RuleTesting {
+  @Test func memberwiseInitializerIsDiagnosed() {
     assertLint(
       UseSynthesizedInitializer.self,
       """
@@ -40,7 +42,7 @@ final class UseSynthesizedInitializerTests: LintOrFormatRuleTestCase {
     )
   }
 
-  func testNestedMemberwiseInitializerIsDiagnosed() {
+  @Test func nestedMemberwiseInitializerIsDiagnosed() {
     assertLint(
       UseSynthesizedInitializer.self,
       """
@@ -63,7 +65,7 @@ final class UseSynthesizedInitializerTests: LintOrFormatRuleTestCase {
     )
   }
 
-  func testInternalMemberwiseInitializerIsDiagnosed() {
+  @Test func internalMemberwiseInitializerIsDiagnosed() {
     assertLint(
       UseSynthesizedInitializer.self,
       """
@@ -89,7 +91,7 @@ final class UseSynthesizedInitializerTests: LintOrFormatRuleTestCase {
     )
   }
 
-  func testMemberwiseInitializerWithDefaultArgumentIsDiagnosed() {
+  @Test func memberwiseInitializerWithDefaultArgumentIsDiagnosed() {
     assertLint(
       UseSynthesizedInitializer.self,
       """
@@ -115,7 +117,7 @@ final class UseSynthesizedInitializerTests: LintOrFormatRuleTestCase {
     )
   }
 
-  func testCustomInitializerVoidsSynthesizedInitializerWarning() {
+  @Test func customInitializerVoidsSynthesizedInitializerWarning() {
     // The compiler won't create a memberwise initializer when there are any other initializers.
     // It's valid to have a memberwise initializer when there are any custom initializers.
     assertLint(
@@ -144,7 +146,7 @@ final class UseSynthesizedInitializerTests: LintOrFormatRuleTestCase {
     )
   }
 
-  func testMemberwiseInitializerWithDefaultArgument() {
+  @Test func memberwiseInitializerWithDefaultArgument() {
     assertLint(
       UseSynthesizedInitializer.self,
       """
@@ -165,7 +167,7 @@ final class UseSynthesizedInitializerTests: LintOrFormatRuleTestCase {
     )
   }
 
-  func testMemberwiseInitializerWithNonMatchingDefaultValues() {
+  @Test func memberwiseInitializerWithNonMatchingDefaultValues() {
     assertLint(
       UseSynthesizedInitializer.self,
       """
@@ -186,7 +188,7 @@ final class UseSynthesizedInitializerTests: LintOrFormatRuleTestCase {
     )
   }
 
-  func testMemberwiseInitializerMissingDefaultValues() {
+  @Test func memberwiseInitializerMissingDefaultValues() {
     // When the initializer doesn't contain a matching default argument, then it isn't equivalent to
     // the synthesized memberwise initializer.
     assertLint(
@@ -209,7 +211,7 @@ final class UseSynthesizedInitializerTests: LintOrFormatRuleTestCase {
     )
   }
 
-  func testCustomInitializerWithMismatchedTypes() {
+  @Test func customInitializerWithMismatchedTypes() {
     assertLint(
       UseSynthesizedInitializer.self,
       """
@@ -230,7 +232,7 @@ final class UseSynthesizedInitializerTests: LintOrFormatRuleTestCase {
     )
   }
 
-  func testCustomInitializerWithExtraParameters() {
+  @Test func customInitializerWithExtraParameters() {
     assertLint(
       UseSynthesizedInitializer.self,
       """
@@ -251,7 +253,7 @@ final class UseSynthesizedInitializerTests: LintOrFormatRuleTestCase {
     )
   }
 
-  func testCustomInitializerWithExtraStatements() {
+  @Test func customInitializerWithExtraStatements() {
     assertLint(
       UseSynthesizedInitializer.self,
       #"""
@@ -274,7 +276,7 @@ final class UseSynthesizedInitializerTests: LintOrFormatRuleTestCase {
     )
   }
 
-  func testFailableMemberwiseInitializerIsNotDiagnosed() {
+  @Test func failableMemberwiseInitializerIsNotDiagnosed() {
     assertLint(
       UseSynthesizedInitializer.self,
       """
@@ -295,7 +297,7 @@ final class UseSynthesizedInitializerTests: LintOrFormatRuleTestCase {
     )
   }
 
-  func testThrowingMemberwiseInitializerIsNotDiagnosed() {
+  @Test func throwingMemberwiseInitializerIsNotDiagnosed() {
     assertLint(
       UseSynthesizedInitializer.self,
       """
@@ -316,7 +318,7 @@ final class UseSynthesizedInitializerTests: LintOrFormatRuleTestCase {
     )
   }
 
-  func testPublicMemberwiseInitializerIsNotDiagnosed() {
+  @Test func publicMemberwiseInitializerIsNotDiagnosed() {
     assertLint(
       UseSynthesizedInitializer.self,
       """
@@ -337,7 +339,7 @@ final class UseSynthesizedInitializerTests: LintOrFormatRuleTestCase {
     )
   }
 
-  func testDefaultMemberwiseInitializerIsNotDiagnosed() {
+  @Test func defaultMemberwiseInitializerIsNotDiagnosed() {
     // The synthesized initializer is private when any member is private, so an initializer with
     // default access control (i.e. internal) is not equivalent to the synthesized initializer.
     assertLint(
@@ -358,7 +360,7 @@ final class UseSynthesizedInitializerTests: LintOrFormatRuleTestCase {
     )
   }
 
-  func testPrivateMemberwiseInitializerWithPrivateMemberIsDiagnosed() {
+  @Test func privateMemberwiseInitializerWithPrivateMemberIsDiagnosed() {
     // The synthesized initializer is private when any member is private, so a private initializer
     // is equivalent to the synthesized initializer.
     assertLint(
@@ -384,7 +386,7 @@ final class UseSynthesizedInitializerTests: LintOrFormatRuleTestCase {
     )
   }
 
-  func testFileprivateMemberwiseInitializerWithFileprivateMemberIsDiagnosed() {
+  @Test func fileprivateMemberwiseInitializerWithFileprivateMemberIsDiagnosed() {
     // The synthesized initializer is fileprivate when any member is fileprivate, so a fileprivate
     // initializer is equivalent to the synthesized initializer.
     assertLint(
@@ -410,7 +412,7 @@ final class UseSynthesizedInitializerTests: LintOrFormatRuleTestCase {
     )
   }
 
-  func testCustomSetterAccessLevel() {
+  @Test func customSetterAccessLevel() {
     // When a property has a different access level for its setter, the setter's access level
     // doesn't change the access level of the synthesized initializer.
     assertLint(
@@ -473,7 +475,7 @@ final class UseSynthesizedInitializerTests: LintOrFormatRuleTestCase {
     )
   }
 
-  func testMemberwiseInitializerWithAttributeIsNotDiagnosed() {
+  @Test func memberwiseInitializerWithAttributeIsNotDiagnosed() {
     assertLint(
       UseSynthesizedInitializer.self,
       """

@@ -10,8 +10,10 @@
 //
 //===----------------------------------------------------------------------===//
 
-final class MemberTypeIdentifierTests: PrettyPrintTestCase {
-  func testMemberTypes() {
+import Testing
+@Suite
+struct MemberTypeIdentifierTests: PrettyPrintTesting {
+  @Test func memberTypes() {
     let input =
       """
       let a: One.Two.Three.Four.Five

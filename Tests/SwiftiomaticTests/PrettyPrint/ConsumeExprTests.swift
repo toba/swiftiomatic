@@ -10,8 +10,10 @@
 //
 //===----------------------------------------------------------------------===//
 
-final class ConsumeExprTests: PrettyPrintTestCase {
-  func testConsume() {
+import Testing
+@Suite
+struct ConsumeExprTests: PrettyPrintTesting {
+  @Test func consume() {
     assertPrettyPrintEqual(
       input: """
         let x = consume y

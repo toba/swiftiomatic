@@ -11,9 +11,11 @@
 //===----------------------------------------------------------------------===//
 
 import Swiftiomatic
+import Testing
 
-final class InitializerDeclTests: PrettyPrintTestCase {
-  func testBasicInitializerDeclarations_noPackArguments() {
+@Suite
+struct InitializerDeclTests: PrettyPrintTesting {
+  @Test func basicInitializerDeclarations_noPackArguments() {
     let input =
       """
       struct Struct {
@@ -58,7 +60,7 @@ final class InitializerDeclTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 50, configuration: config)
   }
 
-  func testBasicInitializerDeclarations_packArguments() {
+  @Test func basicInitializerDeclarations_packArguments() {
     let input =
       """
       struct Struct {
@@ -102,7 +104,7 @@ final class InitializerDeclTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 50, configuration: config)
   }
 
-  func testInitializerOptionality() {
+  @Test func initializerOptionality() {
     let input =
       """
       struct Struct {
@@ -146,7 +148,7 @@ final class InitializerDeclTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 50, configuration: config)
   }
 
-  func testInitializerDeclThrows() {
+  @Test func initializerDeclThrows() {
     let input =
       """
       struct Struct {
@@ -180,7 +182,7 @@ final class InitializerDeclTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 50, configuration: config)
   }
 
-  func testInitializerGenericParameters() {
+  @Test func initializerGenericParameters() {
     let input =
       """
       struct Struct {
@@ -219,7 +221,7 @@ final class InitializerDeclTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 40)
   }
 
-  func testInitializerWhereClause() {
+  @Test func initializerWhereClause() {
     let input =
       """
       struct Struct {
@@ -262,7 +264,7 @@ final class InitializerDeclTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 50, configuration: config)
   }
 
-  func testInitializerWhereClause_lineBreakBeforeEachGenericRequirement() {
+  @Test func initializerWhereClause_lineBreakBeforeEachGenericRequirement() {
     let input =
       """
       struct Struct {
@@ -307,7 +309,7 @@ final class InitializerDeclTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 50, configuration: config)
   }
 
-  func testInitializerAttributes() {
+  @Test func initializerAttributes() {
     let input =
       """
       struct Struct {
@@ -349,7 +351,7 @@ final class InitializerDeclTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 35)
   }
 
-  func testInitializerFullWrap() {
+  @Test func initializerFullWrap() {
     let input =
       """
       struct Struct {
@@ -386,7 +388,7 @@ final class InitializerDeclTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 40, configuration: config)
   }
 
-  func testInitializerFullWrap_lineBreakBeforeEachGenericRequirement() {
+  @Test func initializerFullWrap_lineBreakBeforeEachGenericRequirement() {
     let input =
       """
       struct Struct {
@@ -425,7 +427,7 @@ final class InitializerDeclTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 40, configuration: config)
   }
 
-  func testEmptyInitializer() {
+  @Test func emptyInitializer() {
     // The comment inside the struct prevents it from *also* being collapsed onto a single line.
     let input = """
       struct X {

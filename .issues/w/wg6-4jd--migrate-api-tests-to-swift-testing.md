@@ -1,16 +1,16 @@
 ---
 # wg6-4jd
 title: Migrate API tests to Swift Testing
-status: ready
+status: completed
 type: task
 priority: normal
 created_at: 2026-04-14T02:53:02Z
-updated_at: 2026-04-14T02:53:02Z
+updated_at: 2026-04-14T03:14:58Z
 parent: rwb-wt3
 sync:
     github:
         issue_number: "276"
-        synced_at: "2026-04-14T02:58:30Z"
+        synced_at: "2026-04-14T03:28:23Z"
 ---
 
 Convert 2 standalone test files in `Tests/SwiftiomaticTests/API/` from XCTest to Swift Testing.

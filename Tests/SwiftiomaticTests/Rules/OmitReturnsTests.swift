@@ -12,9 +12,11 @@
 
 @_spi(Rules) import Swiftiomatic
 import _SwiftiomaticTestSupport
+import Testing
 
-final class OmitReturnsTests: LintOrFormatRuleTestCase {
-  func testOmitReturnInFunction() {
+@Suite
+struct OmitReturnsTests: RuleTesting {
+  @Test func omitReturnInFunction() {
     assertFormatting(
       OmitExplicitReturns.self,
       input: """
@@ -33,7 +35,7 @@ final class OmitReturnsTests: LintOrFormatRuleTestCase {
     )
   }
 
-  func testOmitReturnInClosure() {
+  @Test func omitReturnInClosure() {
     assertFormatting(
       OmitExplicitReturns.self,
       input: """
@@ -52,7 +54,7 @@ final class OmitReturnsTests: LintOrFormatRuleTestCase {
     )
   }
 
-  func testOmitReturnInSubscript() {
+  @Test func omitReturnInSubscript() {
     assertFormatting(
       OmitExplicitReturns.self,
       input: """
@@ -94,7 +96,7 @@ final class OmitReturnsTests: LintOrFormatRuleTestCase {
     )
   }
 
-  func testOmitReturnInComputedVars() {
+  @Test func omitReturnInComputedVars() {
     assertFormatting(
       OmitExplicitReturns.self,
       input: """
@@ -132,7 +134,7 @@ final class OmitReturnsTests: LintOrFormatRuleTestCase {
     )
   }
 
-  func testInVariableBindings() {
+  @Test func inVariableBindings() {
     assertFormatting(
       OmitExplicitReturns.self,
       input: """
@@ -154,7 +156,7 @@ final class OmitReturnsTests: LintOrFormatRuleTestCase {
     )
   }
 
-  func testInVariableBindingWithTrailingTrivia() {
+  @Test func inVariableBindingWithTrailingTrivia() {
     assertFormatting(
       OmitExplicitReturns.self,
       input: """

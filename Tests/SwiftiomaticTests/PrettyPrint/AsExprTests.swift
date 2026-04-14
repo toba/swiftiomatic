@@ -10,10 +10,11 @@
 //
 //===----------------------------------------------------------------------===//
 
-import XCTest
+import Testing
 
-final class AsExprTests: PrettyPrintTestCase {
-  func testWithoutPunctuation() throws {
+@Suite
+struct AsExprTests: PrettyPrintTesting {
+  @Test func withoutPunctuation() throws {
     let input =
       """
       func foo() {
@@ -40,7 +41,7 @@ final class AsExprTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 40)
   }
 
-  func testWithPunctuation() throws {
+  @Test func withPunctuation() throws {
     let input =
       """
       func foo() {

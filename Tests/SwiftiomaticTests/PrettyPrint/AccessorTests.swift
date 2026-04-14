@@ -10,8 +10,10 @@
 //
 //===----------------------------------------------------------------------===//
 
-final class AccessorTests: PrettyPrintTestCase {
-  func testBasicAccessors() {
+import Testing
+@Suite
+struct AccessorTests: PrettyPrintTesting {
+  @Test func basicAccessors() {
     let input =
       """
       struct MyStruct {
@@ -93,7 +95,7 @@ final class AccessorTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 45)
   }
 
-  func testEmptyAccessorList() {
+  @Test func emptyAccessorList() {
     // The comment inside the struct prevents it from *also* being collapsed onto a single line.
     let input = """
       struct Foo {
@@ -114,7 +116,7 @@ final class AccessorTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: wrapped, linelength: 14)
   }
 
-  func testEmptyAccessorBody() {
+  @Test func emptyAccessorBody() {
     // The comment inside the struct prevents it from *also* being collapsed onto a single line.
     let input = """
       struct Foo {
@@ -137,7 +139,7 @@ final class AccessorTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: wrapped, linelength: 27)
   }
 
-  func testEmptyAccessorBodyWithComment() {
+  @Test func emptyAccessorBodyWithComment() {
     let input = """
       struct Foo {
         //
@@ -151,7 +153,7 @@ final class AccessorTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: input + "\n", linelength: 50)
   }
 
-  func testSetModifier() {
+  @Test func setModifier() {
     let input =
       """
       fileprivate(set) var somevar = 0
@@ -164,7 +166,7 @@ final class AccessorTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: input + "\n", linelength: 50)
   }
 
-  func testDefaultValueAndAccessor() {
+  @Test func defaultValueAndAccessor() {
     let input =
       """
       var property = defaultValue {
@@ -193,7 +195,7 @@ final class AccessorTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected20, linelength: 20)
   }
 
-  func testTypeDefaultValueAndAccessor() {
+  @Test func typeDefaultValueAndAccessor() {
     let input =
       """
       var property: SomeType = defaultValue {
@@ -238,7 +240,7 @@ final class AccessorTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected20, linelength: 20)
   }
 
-  func testMultipleBindingsWithAccessors() {
+  @Test func multipleBindingsWithAccessors() {
     // NOTE: These examples are not actually valid Swift! The syntax parser will allow a variable
     // declaration that has multiple comma-separated bindings that have accessors, but the compiler
     // rejects these at a later stage ("error: 'var' declarations with multiple variables cannot
@@ -308,7 +310,7 @@ final class AccessorTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected20, linelength: 20)
   }
 
-  func testPropertyEffectsWithBodyAfter() {
+  @Test func propertyEffectsWithBodyAfter() {
     let input =
       """
       var x: T {
@@ -393,7 +395,7 @@ final class AccessorTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected10, linelength: 10)
   }
 
-  func testPropertyEffectsWithNoBodyAfter() {
+  @Test func propertyEffectsWithNoBodyAfter() {
     let input =
       """
       protocol P {

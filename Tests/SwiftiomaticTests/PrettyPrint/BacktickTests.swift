@@ -10,8 +10,10 @@
 //
 //===----------------------------------------------------------------------===//
 
-final class BacktickTests: PrettyPrintTestCase {
-  func testBackticks() {
+import Testing
+@Suite
+struct BacktickTests: PrettyPrintTesting {
+  @Test func backticks() {
     let input =
       """
       let `case` = 123

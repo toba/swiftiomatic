@@ -12,9 +12,11 @@
 
 @_spi(Rules) import Swiftiomatic
 import _SwiftiomaticTestSupport
+import Testing
 
-final class UseTripleSlashForDocumentationCommentsTests: LintOrFormatRuleTestCase {
-  func testRemoveDocBlockComments() {
+@Suite
+struct UseTripleSlashForDocumentationCommentsTests: RuleTesting {
+  @Test func removeDocBlockComments() {
     assertFormatting(
       UseTripleSlashForDocumentationComments.self,
       input: """
@@ -49,7 +51,7 @@ final class UseTripleSlashForDocumentationCommentsTests: LintOrFormatRuleTestCas
     )
   }
 
-  func testRemoveDocBlockCommentsWithoutStars() {
+  @Test func removeDocBlockCommentsWithoutStars() {
     assertFormatting(
       UseTripleSlashForDocumentationComments.self,
       input: """
@@ -76,7 +78,7 @@ final class UseTripleSlashForDocumentationCommentsTests: LintOrFormatRuleTestCas
     )
   }
 
-  func testMultipleTypesOfDocComments() {
+  @Test func multipleTypesOfDocComments() {
     assertFormatting(
       UseTripleSlashForDocumentationComments.self,
       input: """
@@ -105,7 +107,7 @@ final class UseTripleSlashForDocumentationCommentsTests: LintOrFormatRuleTestCas
     )
   }
 
-  func testMultipleDocLineComments() {
+  @Test func multipleDocLineComments() {
     assertFormatting(
       UseTripleSlashForDocumentationComments.self,
       input: """
@@ -132,7 +134,7 @@ final class UseTripleSlashForDocumentationCommentsTests: LintOrFormatRuleTestCas
     )
   }
 
-  func testManyDocComments() {
+  @Test func manyDocComments() {
     // Note that this retains the trailing space at the end of a single-line doc block comment
     // (i.e., the space in `name. */`). It's fine to leave it here; the pretty printer will remove
     // it later.
@@ -178,7 +180,7 @@ final class UseTripleSlashForDocumentationCommentsTests: LintOrFormatRuleTestCas
     )
   }
 
-  func testDocLineCommentsAreNotNormalized() {
+  @Test func docLineCommentsAreNotNormalized() {
     assertFormatting(
       UseTripleSlashForDocumentationComments.self,
       input: """

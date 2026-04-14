@@ -12,9 +12,11 @@
 
 @_spi(Rules) import Swiftiomatic
 import _SwiftiomaticTestSupport
+import Testing
 
-final class NoPlaygroundLiteralsTests: LintOrFormatRuleTestCase {
-  func testColorLiterals() {
+@Suite
+struct NoPlaygroundLiteralsTests: RuleTesting {
+  @Test func colorLiterals() {
     assertLint(
       NoPlaygroundLiterals.self,
       """
@@ -36,7 +38,7 @@ final class NoPlaygroundLiteralsTests: LintOrFormatRuleTestCase {
     )
   }
 
-  func testFileLiterals() {
+  @Test func fileLiterals() {
     assertLint(
       NoPlaygroundLiterals.self,
       """
@@ -67,7 +69,7 @@ final class NoPlaygroundLiteralsTests: LintOrFormatRuleTestCase {
     )
   }
 
-  func testImageLiterals() {
+  @Test func imageLiterals() {
     assertLint(
       NoPlaygroundLiterals.self,
       """

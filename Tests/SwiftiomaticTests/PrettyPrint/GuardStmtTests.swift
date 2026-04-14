@@ -10,8 +10,10 @@
 //
 //===----------------------------------------------------------------------===//
 
-final class GuardStmtTests: PrettyPrintTestCase {
-  func testGuardStatement() {
+import Testing
+@Suite
+struct GuardStmtTests: PrettyPrintTesting {
+  @Test func guardStatement() {
     let input =
       """
       guard var1 > var2 else {
@@ -60,7 +62,7 @@ final class GuardStmtTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 35)
   }
 
-  func testGuardWithFuncCall() {
+  @Test func guardWithFuncCall() {
     let input =
       """
       guard let myvar = myClass.itsFunc(first: .someStuff, second: .moreStuff).first else {
@@ -100,7 +102,7 @@ final class GuardStmtTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 35)
   }
 
-  func testOpenBraceIsGluedToElseKeyword() {
+  @Test func openBraceIsGluedToElseKeyword() {
     let input =
       """
       guard let foo = something,
@@ -123,7 +125,7 @@ final class GuardStmtTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 60)
   }
 
-  func testContinuationLineBreaking() {
+  @Test func continuationLineBreaking() {
     let input =
       """
       guard let someObject = object as? Int,
@@ -179,7 +181,7 @@ final class GuardStmtTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 40)
   }
 
-  func testOptionalBindingConditions() {
+  @Test func optionalBindingConditions() {
     let input =
       """
       guard let someObject: Foo = object as? Int else {
@@ -210,7 +212,7 @@ final class GuardStmtTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 40)
   }
 
-  func testParenthesizedClauses() {
+  @Test func parenthesizedClauses() {
     let input =
       """
       guard foo && (
@@ -272,7 +274,7 @@ final class GuardStmtTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 50)
   }
 
-  func testCompoundClauses() {
+  @Test func compoundClauses() {
     let input =
       """
       guard foo &&

@@ -10,8 +10,10 @@
 //
 //===----------------------------------------------------------------------===//
 
-final class TupleDeclTests: PrettyPrintTestCase {
-  func testBasicTuples() {
+import Testing
+@Suite
+struct TupleDeclTests: PrettyPrintTesting {
+  @Test func basicTuples() {
     let input =
       """
       let a = (1, 2, 3)
@@ -41,7 +43,7 @@ final class TupleDeclTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 37)
   }
 
-  func testLabeledTuples() {
+  @Test func labeledTuples() {
     let input =
       """
       let a = (A: var1, B: var2)
@@ -58,7 +60,7 @@ final class TupleDeclTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 30)
   }
 
-  func testDiscretionaryNewlineAfterColon() {
+  @Test func discretionaryNewlineAfterColon() {
     let input =
       """
       let a = (
@@ -101,7 +103,7 @@ final class TupleDeclTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 25)
   }
 
-  func testGroupsTrailingComma() {
+  @Test func groupsTrailingComma() {
     let input =
       """
       let t = (

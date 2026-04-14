@@ -10,8 +10,9 @@
 //
 //===----------------------------------------------------------------------===//
 
+import Foundation
 @_spi(Internal) @_spi(Testing) import Swiftiomatic
-import XCTest
+import Testing
 
 extension URL {
   fileprivate var realpath: URL {
@@ -26,10 +27,11 @@ extension URL {
   }
 }
 
-final class FileIteratorTests: XCTestCase {
-  private var tmpdir: URL!
+@Suite
+final class FileIteratorTests {
+  private let tmpdir: URL
 
-  override func setUpWithError() throws {
+  init() throws {
     tmpdir = try FileManager.default.url(
       for: .itemReplacementDirectory,
       in: .userDomainMask,
@@ -54,36 +56,36 @@ final class FileIteratorTests: XCTestCase {
     try symlink("project/2stepcycleend.swift", relativeTo: "./2stepcyclebegin.swift")
   }
 
-  override func tearDownWithError() throws {
-    try FileManager.default.removeItem(at: tmpdir)
+  deinit {
+    try? FileManager.default.removeItem(at: tmpdir)
   }
 
-  func testNoFollowSymlinks() throws {
+  @Test func noFollowSymlinks() {
     let seen = allFilesSeen(iteratingOver: [tmpdir], followSymlinks: false)
-    XCTAssertEqual(seen.count, 2)
-    XCTAssertTrue(seen.contains { $0.path.hasSuffix("project/real1.swift") })
-    XCTAssertTrue(seen.contains { $0.path.hasSuffix("project/real2.swift") })
+    #expect(seen.count == 2)
+    #expect(seen.contains { $0.path.hasSuffix("project/real1.swift") })
+    #expect(seen.contains { $0.path.hasSuffix("project/real2.swift") })
   }
 
-  func testFollowSymlinks() throws {
+  @Test func followSymlinks() {
     let seen = allFilesSeen(iteratingOver: [tmpdir], followSymlinks: true)
-    XCTAssertEqual(seen.count, 3)
-    XCTAssertTrue(seen.contains { $0.path.hasSuffix("project/real1.swift") })
-    XCTAssertTrue(seen.contains { $0.path.hasSuffix("project/real2.swift") })
+    #expect(seen.count == 3)
+    #expect(seen.contains { $0.path.hasSuffix("project/real1.swift") })
+    #expect(seen.contains { $0.path.hasSuffix("project/real2.swift") })
     // Hidden but found through the visible symlink project/link.swift
-    XCTAssertTrue(seen.contains { $0.path.hasSuffix("project/.hidden.swift") })
+    #expect(seen.contains { $0.path.hasSuffix("project/.hidden.swift") })
   }
 
-  func testFollowSymlinksToSymlinks() throws {
+  @Test func followSymlinksToSymlinks() {
     let seen = allFilesSeen(
       iteratingOver: [tmpURL("project/linktolink.swift")],
       followSymlinks: true
     )
     // Hidden but found through the visible symlink chain.
-    XCTAssertTrue(seen.contains { $0.path.hasSuffix("project/.hidden.swift") })
+    #expect(seen.contains { $0.path.hasSuffix("project/.hidden.swift") })
   }
 
-  func testSymlinkCyclesAreIgnored() throws {
+  @Test func symlinkCyclesAreIgnored() {
     let seen = allFilesSeen(
       iteratingOver: [
         tmpURL("project/cycliclink.swift"),
@@ -93,42 +95,43 @@ final class FileIteratorTests: XCTestCase {
       followSymlinks: true
     )
     // Hidden but found through the visible symlink chain.
-    XCTAssertTrue(seen.contains { $0.path.hasSuffix("project/.hidden.swift") })
+    #expect(seen.contains { $0.path.hasSuffix("project/.hidden.swift") })
     // And the cycles were ignored.
-    XCTAssertEqual(seen.count, 1)
+    #expect(seen.count == 1)
   }
 
-  func testTraversesHiddenFilesIfExplicitlySpecified() throws {
+  @Test func traversesHiddenFilesIfExplicitlySpecified() {
     let seen = allFilesSeen(
       iteratingOver: [tmpURL("project/.build"), tmpURL("project/.hidden.swift")],
       followSymlinks: false
     )
-    XCTAssertEqual(seen.count, 2)
-    XCTAssertTrue(seen.contains { $0.path.hasSuffix("project/.build/generated.swift") })
-    XCTAssertTrue(seen.contains { $0.path.hasSuffix("project/.hidden.swift") })
+    #expect(seen.count == 2)
+    #expect(seen.contains { $0.path.hasSuffix("project/.build/generated.swift") })
+    #expect(seen.contains { $0.path.hasSuffix("project/.hidden.swift") })
   }
 
-  func testDoesNotFollowSymlinksIfFollowSymlinksIsFalseEvenIfExplicitlySpecified() {
+  @Test func doesNotFollowSymlinksIfFollowSymlinksIsFalseEvenIfExplicitlySpecified() {
     let seen = allFilesSeen(
       iteratingOver: [tmpURL("project/link.swift"), tmpURL("project/rellink.swift")],
       followSymlinks: false
     )
-    XCTAssertTrue(seen.isEmpty)
+    #expect(seen.isEmpty)
   }
 
-  func testDoesNotTrimFirstCharacterOfPathIfRunningInRoot() throws {
-    var root = tmpdir!
+  @Test func doesNotTrimFirstCharacterOfPathIfRunningInRoot() {
+    var root = tmpdir
     while !root.isRoot {
       root.deleteLastPathComponent()
     }
     let rootPath = root.path
-    let seen = allFilesSeen(iteratingOver: [tmpdir], followSymlinks: false, workingDirectory: root).map(\.relativePath)
-    XCTAssertTrue(seen.allSatisfy { $0.hasPrefix(rootPath) }, "\(seen) does not contain root directory '\(rootPath)'")
+    let seen = allFilesSeen(iteratingOver: [tmpdir], followSymlinks: false, workingDirectory: root)
+      .map(\.relativePath)
+    #expect(seen.allSatisfy { $0.hasPrefix(rootPath) })
   }
 
-  func testShowsRelativePaths() throws {
+  @Test func showsRelativePaths() {
     let seen = allFilesSeen(iteratingOver: [tmpdir], followSymlinks: false, workingDirectory: tmpdir)
-    XCTAssertEqual(Set(seen.map(\.relativePath)), ["project/real1.swift", "project/real2.swift"])
+    #expect(Set(seen.map(\.relativePath)) == ["project/real1.swift", "project/real2.swift"])
   }
 }
 

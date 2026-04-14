@@ -10,57 +10,54 @@
 //
 //===----------------------------------------------------------------------===//
 
-import XCTest
+import Testing
 @_spi(Internal) import _GenerateSwiftiomatic
 
-final class GeneratedFilesValidityTests: XCTestCase {
-  var ruleCollector: RuleCollector!
+@Suite
+struct GeneratedFilesValidityTests {
+  let ruleCollector: RuleCollector
 
-  override func setUpWithError() throws {
+  init() throws {
     ruleCollector = RuleCollector()
     try ruleCollector.collect(from: GenerateSwiftiomaticPaths.rulesDirectory)
   }
 
-  func testGeneratedPipelineIsUpToDate() throws {
+  @Test func generatedPipelineIsUpToDate() throws {
     let pipelineGenerator = PipelineGenerator(ruleCollector: ruleCollector)
     let generated = pipelineGenerator.generateContent()
     let fileContents = try String(contentsOf: GenerateSwiftiomaticPaths.pipelineFile, encoding: .utf8)
-    XCTAssertEqual(
-      generated,
-      fileContents,
+    #expect(
+      generated == fileContents,
       "Pipelines+Generated.swift is out of date. Please run 'swift run generate-swiftiomatic'."
     )
   }
 
-  func testGeneratedRegistryIsUpToDate() throws {
+  @Test func generatedRegistryIsUpToDate() throws {
     let registryGenerator = RuleRegistryGenerator(ruleCollector: ruleCollector)
     let generated = registryGenerator.generateContent()
     let fileContents = try String(contentsOf: GenerateSwiftiomaticPaths.ruleRegistryFile, encoding: .utf8)
-    XCTAssertEqual(
-      generated,
-      fileContents,
+    #expect(
+      generated == fileContents,
       "RuleRegistry+Generated.swift is out of date. Please run 'swift run generate-swiftiomatic'."
     )
   }
 
-  func testGeneratedNameCacheIsUpToDate() throws {
+  @Test func generatedNameCacheIsUpToDate() throws {
     let ruleNameCacheGenerator = RuleNameCacheGenerator(ruleCollector: ruleCollector)
     let generated = ruleNameCacheGenerator.generateContent()
     let fileContents = try String(contentsOf: GenerateSwiftiomaticPaths.ruleNameCacheFile, encoding: .utf8)
-    XCTAssertEqual(
-      generated,
-      fileContents,
+    #expect(
+      generated == fileContents,
       "RuleNameCache+Generated.swift is out of date. Please run 'swift run generate-swiftiomatic'."
     )
   }
 
-  func testGeneratedDocumentationIsUpToDate() throws {
+  @Test func generatedDocumentationIsUpToDate() throws {
     let ruleDocumentationGenerator = RuleDocumentationGenerator(ruleCollector: ruleCollector)
     let generated = ruleDocumentationGenerator.generateContent()
     let fileContents = try String(contentsOf: GenerateSwiftiomaticPaths.ruleDocumentationFile, encoding: .utf8)
-    XCTAssertEqual(
-      generated,
-      fileContents,
+    #expect(
+      generated == fileContents,
       "RuleDocumentation.md is out of date. Please run 'swift run generate-swiftiomatic'."
     )
   }

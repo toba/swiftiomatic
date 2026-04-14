@@ -12,8 +12,6 @@
 
 @_spi(ExperimentalLanguageFeatures) import SwiftParser
 import SwiftSyntax
-import XCTest
-
 extension Parser {
   /// Parses the given source string and returns the corresponding `SourceFileSyntax` node.
   ///

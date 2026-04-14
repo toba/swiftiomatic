@@ -10,8 +10,10 @@
 //
 //===----------------------------------------------------------------------===//
 
-final class ForInStmtTests: PrettyPrintTestCase {
-  func testBasicForLoop() {
+import Testing
+@Suite
+struct ForInStmtTests: PrettyPrintTesting {
+  @Test func basicForLoop() {
     let input =
       """
       for i in mycontainer {
@@ -44,7 +46,7 @@ final class ForInStmtTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 25)
   }
 
-  func testForWhereLoop() {
+  @Test func forWhereLoop() {
     let input =
       """
       for i in array where array.isContainer() {
@@ -85,7 +87,7 @@ final class ForInStmtTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 45)
   }
 
-  func testForLoopFullWrap() {
+  @Test func forLoopFullWrap() {
     let input =
       """
       for item in aVeryLargeContainerObject where largeObject.hasProperty() && condition {
@@ -123,7 +125,7 @@ final class ForInStmtTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 30)
   }
 
-  func testForLabels() {
+  @Test func forLabels() {
     let input =
       """
       loopLabel: for element in container {
@@ -158,7 +160,7 @@ final class ForInStmtTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 40)
   }
 
-  func testForWithRanges() {
+  @Test func forWithRanges() {
     let input =
       """
       for i in 0...10 {
@@ -189,7 +191,7 @@ final class ForInStmtTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 40)
   }
 
-  func testForCase() {
+  @Test func forCase() {
     let input =
       """
       for case let a as String in [] {
@@ -212,7 +214,7 @@ final class ForInStmtTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 20)
   }
 
-  func testForStatementWithNestedExpressions() {
+  @Test func forStatementWithNestedExpressions() {
     let input =
       """
       for x in someCollection where someTestableCondition && x.someProperty + x.someSpecialProperty({ $0.value }) && someOtherCondition + thatUses + operators && binPackable && exprs
@@ -275,7 +277,7 @@ final class ForInStmtTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 30)
   }
 
-  func testExplicitTypeAnnotation() {
+  @Test func explicitTypeAnnotation() {
     let input =
       """
       for i: ExplicitType in mycontainer {
@@ -319,7 +321,7 @@ final class ForInStmtTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 40)
   }
 
-  func testTypeAnnotationIgnoresDiscretionaryNewlineAfterColon() {
+  @Test func typeAnnotationIgnoresDiscretionaryNewlineAfterColon() {
     let input =
       """
       for i:
@@ -342,7 +344,7 @@ final class ForInStmtTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 80)
   }
 
-  func testForAwait() {
+  @Test func forAwait() {
     let input =
       """
       for await line in file {
@@ -363,7 +365,7 @@ final class ForInStmtTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 15)
   }
 
-  func testForTryAwait() {
+  @Test func forTryAwait() {
     let input =
       """
       for try await line in file {

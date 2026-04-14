@@ -11,9 +11,11 @@
 //===----------------------------------------------------------------------===//
 
 import Swiftiomatic
+import Testing
 
-final class AttributeTests: PrettyPrintTestCase {
-  func testAttributeParamSpacing() {
+@Suite
+struct AttributeTests: PrettyPrintTesting {
+  @Test func attributeParamSpacing() {
     let input =
       """
       @available( iOS 9.0,* )
@@ -38,7 +40,7 @@ final class AttributeTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 60)
   }
 
-  func testAttributeParamSpacingInOriginallyDefinedIn() {
+  @Test func attributeParamSpacingInOriginallyDefinedIn() {
     let input =
       """
       @_originallyDefinedIn( module  :"SwiftUI" , iOS 10.0  )
@@ -55,7 +57,7 @@ final class AttributeTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 60)
   }
 
-  func testAttributeParamSpacingInDocVisibility() {
+  @Test func attributeParamSpacingInDocVisibility() {
     let input =
       """
       @_documentation(  visibility   :private )
@@ -72,7 +74,7 @@ final class AttributeTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 60)
   }
 
-  func testAttributeBinPackedWrapping() {
+  @Test func attributeBinPackedWrapping() {
     let input =
       """
       @available(iOS 9.0, *)
@@ -106,7 +108,7 @@ final class AttributeTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 32)
   }
 
-  func testAttributeArgumentPerLineWrapping() {
+  @Test func attributeArgumentPerLineWrapping() {
     let input =
       """
       @available(iOS 9.0, *)
@@ -146,7 +148,7 @@ final class AttributeTests: PrettyPrintTestCase {
     )
   }
 
-  func testAttributeFormattingRespectsDiscretionaryLineBreaks() {
+  @Test func attributeFormattingRespectsDiscretionaryLineBreaks() {
     let input =
       """
       @available(
@@ -174,7 +176,7 @@ final class AttributeTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 40)
   }
 
-  func testAttributeInterArgumentBinPackedLineBreaking() {
+  @Test func attributeInterArgumentBinPackedLineBreaking() {
     let input =
       """
       @available(iOSApplicationExtension, introduced: 10.0, deprecated: 11.0, message: "Use something else because this is definitely deprecated.")
@@ -196,7 +198,7 @@ final class AttributeTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 40)
   }
 
-  func testAttributArgumentPerLineBreaking() {
+  @Test func attributArgumentPerLineBreaking() {
     let input =
       """
       @available(iOSApplicationExtension, introduced: 10.0, deprecated: 11.0, message: "Use something else because this is definitely deprecated.")
@@ -226,7 +228,7 @@ final class AttributeTests: PrettyPrintTestCase {
     )
   }
 
-  func testObjCBinPackedAttributes() {
+  @Test func objCBinPackedAttributes() {
     let input =
       """
       @objc func f() {}
@@ -259,7 +261,7 @@ final class AttributeTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 40)
   }
 
-  func testObjCAttributesPerLineBreaking() {
+  @Test func objCAttributesPerLineBreaking() {
     let input =
       """
       @objc func f() {}
@@ -302,7 +304,7 @@ final class AttributeTests: PrettyPrintTestCase {
     )
   }
 
-  func testObjCAttributesDiscretionaryLineBreaking() {
+  @Test func objCAttributesDiscretionaryLineBreaking() {
     // The discretionary newlines in the 3rd function declaration are invalid, because new lines
     // should be after the ":" character in Objective-C selector pieces, so they should be removed.
     let input =
@@ -349,7 +351,7 @@ final class AttributeTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 80)
   }
 
-  func testIgnoresDiscretionaryLineBreakAfterColon() {
+  @Test func ignoresDiscretionaryLineBreakAfterColon() {
     let input =
       """
       @available(
@@ -373,7 +375,7 @@ final class AttributeTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 30)
   }
 
-  func testPropertyWrappers() {
+  @Test func propertyWrappers() {
     let input =
       """
       struct X {
@@ -415,7 +417,7 @@ final class AttributeTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 32)
   }
 
-  func testMultilineStringLiteralInCustomAttribute() {
+  @Test func multilineStringLiteralInCustomAttribute() {
     let input =
       #"""
       @CustomAttribute(message: """
@@ -441,7 +443,7 @@ final class AttributeTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 100)
   }
 
-  func testMultilineStringLiteralInAvailableAttribute() {
+  @Test func multilineStringLiteralInAvailableAttribute() {
     let input =
       #"""
       @available(*, deprecated, message: """
@@ -469,7 +471,7 @@ final class AttributeTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 100)
   }
 
-  func testAttributeParamSpacingInExpose() {
+  @Test func attributeParamSpacingInExpose() {
     let input =
       """
       @_expose( wasm  , "foo"  )
@@ -493,7 +495,7 @@ final class AttributeTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 100)
   }
 
-  func testLineBreakBetweenDeclarationAttributes() {
+  @Test func lineBreakBetweenDeclarationAttributes() {
     let input =
       """
       @_spi(Private) @_spi(InviteOnly) import Swiftiomatic
@@ -601,7 +603,7 @@ final class AttributeTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 80, configuration: configuration)
   }
 
-  func testAttributesStartWithPoundIf() {
+  @Test func attributesStartWithPoundIf() {
     let input =
       """
       #if os(macOS)
@@ -624,7 +626,7 @@ final class AttributeTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 45)
   }
 
-  func testAttributeLineBreakInInheritanceClause() {
+  @Test func attributeLineBreakInInheritanceClause() {
     let input =
       """
       public class MyClass: Foo, @unchecked Sendable, Bar {
@@ -645,7 +647,7 @@ final class AttributeTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 45)
   }
 
-  func testAttributesWithComment() {
+  @Test func attributesWithComment() {
     let input =
       """
       @foo // comment
@@ -663,7 +665,7 @@ final class AttributeTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 45)
   }
 
-  func testAttributesWithLineAndBlockComments() {
+  @Test func attributesWithLineAndBlockComments() {
     let input =
       """
       @foo // comment

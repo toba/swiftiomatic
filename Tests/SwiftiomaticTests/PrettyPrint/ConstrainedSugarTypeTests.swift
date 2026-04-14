@@ -10,8 +10,10 @@
 //
 //===----------------------------------------------------------------------===//
 
-final class ConstrainedSugarTypeTests: PrettyPrintTestCase {
-  func testSomeTypes() {
+import Testing
+@Suite
+struct ConstrainedSugarTypeTests: PrettyPrintTesting {
+  @Test func someTypes() {
     let input =
       """
       var body: some View
@@ -31,7 +33,7 @@ final class ConstrainedSugarTypeTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected11, linelength: 11)
   }
 
-  func testAnyTypes() {
+  @Test func anyTypes() {
     let input =
       """
       var body: any View

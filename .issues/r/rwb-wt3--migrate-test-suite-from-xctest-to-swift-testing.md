@@ -1,15 +1,15 @@
 ---
 # rwb-wt3
 title: Migrate test suite from XCTest to Swift Testing
-status: ready
+status: completed
 type: epic
 priority: high
 created_at: 2026-04-14T02:41:43Z
-updated_at: 2026-04-14T03:06:30Z
+updated_at: 2026-04-14T03:24:20Z
 sync:
     github:
         issue_number: "265"
-        synced_at: "2026-04-14T03:07:03Z"
+        synced_at: "2026-04-14T03:28:22Z"
 ---
 
 Migrate the entire test suite (124 files, 0% Swift Testing) to Swift Testing (`@Test`, `#expect`, `#require`). The only exception is `WhitespaceLinterPerformanceTests` which must remain XCTest due to `measure()`.

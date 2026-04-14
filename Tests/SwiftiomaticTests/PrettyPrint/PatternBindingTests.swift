@@ -11,9 +11,11 @@
 //===----------------------------------------------------------------------===//
 
 import Swiftiomatic
+import Testing
 
-final class PatternBindingTests: PrettyPrintTestCase {
-  func testBindingIncludingTypeAnnotation() {
+@Suite
+struct PatternBindingTests: PrettyPrintTesting {
+  @Test func bindingIncludingTypeAnnotation() {
     let input =
       """
       let someObject: Foo = object
@@ -36,7 +38,7 @@ final class PatternBindingTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 40)
   }
 
-  func testIgnoresDiscretionaryNewlineAfterColon() {
+  @Test func ignoresDiscretionaryNewlineAfterColon() {
     let input =
       """
       let someObject:
@@ -56,7 +58,7 @@ final class PatternBindingTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 28)
   }
 
-  func testGroupingIncludesTrailingComma() {
+  @Test func groupingIncludesTrailingComma() {
     let input =
       """
       let foo =  veryLongCondition

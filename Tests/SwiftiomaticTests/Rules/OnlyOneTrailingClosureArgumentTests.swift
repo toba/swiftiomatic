@@ -12,9 +12,11 @@
 
 @_spi(Rules) import Swiftiomatic
 import _SwiftiomaticTestSupport
+import Testing
 
-final class OnlyOneTrailingClosureArgumentTests: LintOrFormatRuleTestCase {
-  func testInvalidTrailingClosureCall() {
+@Suite
+struct OnlyOneTrailingClosureArgumentTests: RuleTesting {
+  @Test func invalidTrailingClosureCall() {
     assertLint(
       OnlyOneTrailingClosureArgument.self,
       """

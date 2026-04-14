@@ -12,9 +12,11 @@
 
 @_spi(Rules) import Swiftiomatic
 import _SwiftiomaticTestSupport
+import Testing
 
-final class AlwaysUseLiteralForEmptyCollectionInitTests: LintOrFormatRuleTestCase {
-  func testArray() {
+@Suite
+struct AlwaysUseLiteralForEmptyCollectionInitTests: RuleTesting {
+  @Test func array() {
     assertFormatting(
       AlwaysUseLiteralForEmptyCollectionInit.self,
       input: """
@@ -98,7 +100,7 @@ final class AlwaysUseLiteralForEmptyCollectionInitTests: LintOrFormatRuleTestCas
     )
   }
 
-  func testDictionary() {
+  @Test func dictionary() {
     assertFormatting(
       AlwaysUseLiteralForEmptyCollectionInit.self,
       input: """

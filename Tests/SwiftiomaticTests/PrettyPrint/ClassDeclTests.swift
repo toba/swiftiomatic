@@ -11,9 +11,11 @@
 //===----------------------------------------------------------------------===//
 
 import Swiftiomatic
+import Testing
 
-final class ClassDeclTests: PrettyPrintTestCase {
-  func testBasicClassDeclarations() {
+@Suite
+struct ClassDeclTests: PrettyPrintTesting {
+  @Test func basicClassDeclarations() {
     let input =
       """
       class MyClass {
@@ -52,7 +54,7 @@ final class ClassDeclTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 25)
   }
 
-  func testGenericClassDeclarations_noPackArguments() {
+  @Test func genericClassDeclarations_noPackArguments() {
     let input =
       """
       class MyClass<T> {
@@ -96,7 +98,7 @@ final class ClassDeclTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 30, configuration: config)
   }
 
-  func testGenericClassDeclarations_packArguments() {
+  @Test func genericClassDeclarations_packArguments() {
     let input =
       """
       class MyClass<T> {
@@ -137,7 +139,7 @@ final class ClassDeclTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 30, configuration: config)
   }
 
-  func testClassInheritance() {
+  @Test func classInheritance() {
     let input =
       """
       class MyClass: SuperOne {
@@ -197,7 +199,7 @@ final class ClassDeclTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 40)
   }
 
-  func testClassWhereClause() {
+  @Test func classWhereClause() {
     let input =
       """
       class MyClass<S, T> where S: Collection {
@@ -238,7 +240,7 @@ final class ClassDeclTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 60)
   }
 
-  func testClassWhereClause_lineBreakAfterGenericWhereClause() {
+  @Test func classWhereClause_lineBreakAfterGenericWhereClause() {
     let input =
       """
       class MyClass<S, T> where S: Collection {
@@ -284,7 +286,7 @@ final class ClassDeclTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 60, configuration: config)
   }
 
-  func testClassWhereClauseWithInheritance() {
+  @Test func classWhereClauseWithInheritance() {
     let input =
       """
       class MyClass<S, T>: SuperOne where S: Collection {
@@ -314,7 +316,7 @@ final class ClassDeclTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 60)
   }
 
-  func testClassWhereClauseWithInheritance_lineBreakAfterGenericWhereClause() {
+  @Test func classWhereClauseWithInheritance_lineBreakAfterGenericWhereClause() {
     let input =
       """
       class MyClass<S, T>: SuperOne where S: Collection {
@@ -360,7 +362,7 @@ final class ClassDeclTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 60, configuration: config)
   }
 
-  func testClassAttributes() {
+  @Test func classAttributes() {
     let input =
       """
       @dynamicMemberLookup public class MyClass {
@@ -408,7 +410,7 @@ final class ClassDeclTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 55)
   }
 
-  func testClassFullWrap() {
+  @Test func classFullWrap() {
     let input =
       """
       public class MyContainer<BaseCollection, SecondCollection>: MyContainerSuperclass, MyContainerProtocol, SomeoneElsesContainerProtocol, SomeFrameworkContainerProtocol where BaseCollection: Collection, BaseCollection: P, BaseCollection.Element: Equatable, BaseCollection.Element: SomeOtherProtocol {
@@ -441,7 +443,7 @@ final class ClassDeclTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 50, configuration: config)
   }
 
-  func testClassFullWrap_lineBreakAfterGenericWhereClause() {
+  @Test func classFullWrap_lineBreakAfterGenericWhereClause() {
     let input =
       """
       public class MyContainer<BaseCollection, SecondCollection>: MyContainerSuperclass, MyContainerProtocol, SomeoneElsesContainerProtocol, SomeFrameworkContainerProtocol where BaseCollection: Collection, BaseCollection: P, BaseCollection.Element: Equatable, BaseCollection.Element: SomeOtherProtocol {
@@ -476,7 +478,7 @@ final class ClassDeclTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 50, configuration: config)
   }
 
-  func testEmptyClass() {
+  @Test func emptyClass() {
     let input = "class Foo {}"
     assertPrettyPrintEqual(input: input, expected: input + "\n", linelength: 50)
 
@@ -488,7 +490,7 @@ final class ClassDeclTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: wrapped, linelength: 11)
   }
 
-  func testEmptyClassWithComment() {
+  @Test func emptyClassWithComment() {
     let input = """
       class Foo {
         // foo
@@ -497,12 +499,12 @@ final class ClassDeclTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: input + "\n", linelength: 50)
   }
 
-  func testOneMemberClass() {
+  @Test func oneMemberClass() {
     let input = "class Foo { var bar: Int }"
     assertPrettyPrintEqual(input: input, expected: input + "\n", linelength: 50)
   }
 
-  func testBasicActorDeclarations() {
+  @Test func basicActorDeclarations() {
     let input =
       """
       actor MyActor {

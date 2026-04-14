@@ -10,8 +10,10 @@
 //
 //===----------------------------------------------------------------------===//
 
-final class VariableDeclarationTests: PrettyPrintTestCase {
-  func testBasicVariableDecl() {
+import Testing
+@Suite
+struct VariableDeclarationTests: PrettyPrintTesting {
+  @Test func basicVariableDecl() {
     let input =
       """
       let x = firstVariable + secondVariable / thirdVariable + fourthVariable
@@ -37,7 +39,7 @@ final class VariableDeclarationTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 30)
   }
 
-  func testVariableDeclWithAttributes() {
+  @Test func variableDeclWithAttributes() {
     let input =
       """
       @NSCopying let a: Int = 123
@@ -60,7 +62,7 @@ final class VariableDeclarationTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 40)
   }
 
-  func testMultipleBindings() {
+  @Test func multipleBindings() {
     let input =
       """
       let a = 100, b = 200, c = 300, d = 400, e = 500, f = 600
@@ -93,7 +95,7 @@ final class VariableDeclarationTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 40)
   }
 
-  func testMultipleBindingsWithTypeAnnotations() {
+  @Test func multipleBindingsWithTypeAnnotations() {
     let input =
       """
       let a: Int = 100, b: ReallyLongTypeName = 200, c: (AnotherLongTypeName, AnotherOne) = 300
@@ -111,7 +113,7 @@ final class VariableDeclarationTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 40)
   }
 
-  func testAsyncLetBindings() {
+  @Test func asyncLetBindings() {
     let input =
       """
       async let a = fetch("1.jpg")

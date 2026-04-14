@@ -11,13 +11,15 @@
 //===----------------------------------------------------------------------===//
 
 import Swiftiomatic
+import Testing
 
 /// Tests the `indentSwitchCaseLabels` config option
-final class SwitchCaseIndentConfigTests: PrettyPrintTestCase {
+@Suite
+struct SwitchCaseIndentConfigTests: PrettyPrintTesting {
 
   /// Tests that setting `indentSwitchCaseLabels` to `false` and not indenting `case` statements
   /// does not change the input.
-  func testIndentationNotConfiguredNotInput() {
+  @Test func indentationNotConfiguredNotInput() {
     let input =
       """
       switch someCharacter {
@@ -51,7 +53,7 @@ final class SwitchCaseIndentConfigTests: PrettyPrintTestCase {
 
   /// Tests that setting `indentSwitchCaseLabels` to `false` and indenting `case` statements
   /// removes that indentation.
-  func testIndentationNotConfiguredButInput() {
+  @Test func indentationNotConfiguredButInput() {
     let input =
       """
       switch someCharacter {
@@ -106,7 +108,7 @@ final class SwitchCaseIndentConfigTests: PrettyPrintTestCase {
 
   /// Tests that setting `indentSwitchCaseLabels` to `true` and not indenting `case` statements
   /// adds the configured indentation.
-  func testIndentationConfiguredNotInput() {
+  @Test func indentationConfiguredNotInput() {
     let input =
       """
       switch someCharacter {
@@ -161,7 +163,7 @@ final class SwitchCaseIndentConfigTests: PrettyPrintTestCase {
 
   /// Tests that setting `indentSwitchCaseLabels` to `true` and indenting `case` statements does
   /// not change the input.
-  func testIndentationConfiguredAndInput() {
+  @Test func indentationConfiguredAndInput() {
     let input =
       """
       switch someCharacter {
@@ -195,7 +197,7 @@ final class SwitchCaseIndentConfigTests: PrettyPrintTestCase {
 
   /// Tests that setting `indentSwitchCaseLabels` to `false` and not indenting the `case` body
   /// indents the body but leaves the `case` statement unindented.
-  func testIndentationNotConfiguredCaseBodyNotIndented() {
+  @Test func indentationNotConfiguredCaseBodyNotIndented() {
     let input =
       """
       switch someCharacter {
@@ -250,7 +252,7 @@ final class SwitchCaseIndentConfigTests: PrettyPrintTestCase {
 
   /// Tests that setting `indentSwitchCaseLabels` to `true` and indenting the `case` statement but
   /// not the `case` body indents the body but leaves the `case` statement as input.
-  func testIndentationConfiguredCaseBodyNotIndented() {
+  @Test func indentationConfiguredCaseBodyNotIndented() {
     let input =
       """
       switch someCharacter {
@@ -305,7 +307,7 @@ final class SwitchCaseIndentConfigTests: PrettyPrintTestCase {
 
   /// Tests that setting `indentSwitchCaseLabels` to `true` and indenting neither the `case` body
   /// nor the `case` statement itself indents the body twice and the `case` statement once.
-  func testIndentationConfiguredCaseBodyAndStatementNotIndented() {
+  @Test func indentationConfiguredCaseBodyAndStatementNotIndented() {
     let input =
       """
       switch someCharacter {
@@ -360,7 +362,7 @@ final class SwitchCaseIndentConfigTests: PrettyPrintTestCase {
 
   /// Tests that setting `indentSwitchCaseLabels` to `true` and providing the `case` body on the
   /// same line as the statement (with the whole line indented) does not change the input.
-  func testIndentationConfiguredCaseBodySameLine() {
+  @Test func indentationConfiguredCaseBodySameLine() {
     let input =
       """
       switch somePoint {

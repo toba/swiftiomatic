@@ -37,7 +37,8 @@ let package = Package(
         .product(name: "SwiftParserDiagnostics", package: "swift-syntax"),
         .product(name: "SwiftSyntax", package: "swift-syntax"),
         .product(name: "SwiftSyntaxBuilder", package: "swift-syntax"),
-      ]
+      ],
+      path: "Tests/SwiftiomaticTestSupport"
     ),
     .target(
       name: "_GenerateSwiftiomatic",

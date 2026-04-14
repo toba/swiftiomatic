@@ -12,9 +12,11 @@
 
 @_spi(Rules) import Swiftiomatic
 import _SwiftiomaticTestSupport
+import Testing
 
-final class OrderedImportsTests: LintOrFormatRuleTestCase {
-  func testInvalidImportsOrder() {
+@Suite
+struct OrderedImportsTests: RuleTesting {
+  @Test func invalidImportsOrder() {
     assertFormatting(
       OrderedImports.self,
       input: """
@@ -75,7 +77,7 @@ final class OrderedImportsTests: LintOrFormatRuleTestCase {
     )
   }
 
-  func testImportsOrderWithoutModuleType() {
+  @Test func importsOrderWithoutModuleType() {
     assertFormatting(
       OrderedImports.self,
       input: """
@@ -104,7 +106,7 @@ final class OrderedImportsTests: LintOrFormatRuleTestCase {
     )
   }
 
-  func testImportsWithAttributes() {
+  @Test func importsWithAttributes() {
     assertFormatting(
       OrderedImports.self,
       input: """
@@ -148,7 +150,7 @@ final class OrderedImportsTests: LintOrFormatRuleTestCase {
     )
   }
 
-  func testImportsOrderWithDocComment() {
+  @Test func importsOrderWithDocComment() {
     assertFormatting(
       OrderedImports.self,
       input: """
@@ -187,7 +189,7 @@ final class OrderedImportsTests: LintOrFormatRuleTestCase {
     )
   }
 
-  func testValidOrderedImport() {
+  @Test func validOrderedImport() {
     assertFormatting(
       OrderedImports.self,
       input: """
@@ -220,7 +222,7 @@ final class OrderedImportsTests: LintOrFormatRuleTestCase {
     )
   }
 
-  func testSeparatedFileHeader() {
+  @Test func separatedFileHeader() {
     assertFormatting(
       OrderedImports.self,
       input: """
@@ -259,7 +261,7 @@ final class OrderedImportsTests: LintOrFormatRuleTestCase {
     )
   }
 
-  func testNonHeaderComment() {
+  @Test func nonHeaderComment() {
     let input =
       """
       // Top comment
@@ -288,7 +290,7 @@ final class OrderedImportsTests: LintOrFormatRuleTestCase {
     )
   }
 
-  func testMultipleCodeBlocksPerLine() {
+  @Test func multipleCodeBlocksPerLine() {
     assertFormatting(
       OrderedImports.self,
       input: """
@@ -309,7 +311,7 @@ final class OrderedImportsTests: LintOrFormatRuleTestCase {
     )
   }
 
-  func testMultipleCodeBlocksWithImportsPerLine() {
+  @Test func multipleCodeBlocksWithImportsPerLine() {
     assertFormatting(
       OrderedImports.self,
       input: """
@@ -329,7 +331,7 @@ final class OrderedImportsTests: LintOrFormatRuleTestCase {
     )
   }
 
-  func testDisableOrderedImports() {
+  @Test func disableOrderedImports() {
     assertFormatting(
       OrderedImports.self,
       input: """
@@ -364,7 +366,7 @@ final class OrderedImportsTests: LintOrFormatRuleTestCase {
     )
   }
 
-  func testDisableOrderedImportsMovingComments() {
+  @Test func disableOrderedImportsMovingComments() {
     assertFormatting(
       OrderedImports.self,
       input: """
@@ -423,7 +425,7 @@ final class OrderedImportsTests: LintOrFormatRuleTestCase {
     )
   }
 
-  func testEmptyFile() {
+  @Test func emptyFile() {
     assertFormatting(
       OrderedImports.self,
       input: "",
@@ -439,7 +441,7 @@ final class OrderedImportsTests: LintOrFormatRuleTestCase {
     )
   }
 
-  func testImportsContainingNewlines() {
+  @Test func importsContainingNewlines() {
     assertFormatting(
       OrderedImports.self,
       input: """
@@ -464,7 +466,7 @@ final class OrderedImportsTests: LintOrFormatRuleTestCase {
     )
   }
 
-  func testRemovesDuplicateImports() {
+  @Test func removesDuplicateImports() {
     assertFormatting(
       OrderedImports.self,
       input: """
@@ -487,7 +489,7 @@ final class OrderedImportsTests: LintOrFormatRuleTestCase {
     )
   }
 
-  func testDuplicateCommentedImports() {
+  @Test func duplicateCommentedImports() {
     // Verify that we diagnose redundant imports if they have comments, but don't remove them.
     assertFormatting(
       OrderedImports.self,
@@ -530,7 +532,7 @@ final class OrderedImportsTests: LintOrFormatRuleTestCase {
     )
   }
 
-  func testDuplicateIgnoredImports() {
+  @Test func duplicateIgnoredImports() {
     assertFormatting(
       OrderedImports.self,
       input: """
@@ -565,7 +567,7 @@ final class OrderedImportsTests: LintOrFormatRuleTestCase {
     )
   }
 
-  func testDuplicateAttributedImports() {
+  @Test func duplicateAttributedImports() {
     assertFormatting(
       OrderedImports.self,
       input: """
@@ -609,7 +611,7 @@ final class OrderedImportsTests: LintOrFormatRuleTestCase {
     )
   }
 
-  func testConditionalImportsWhenEnabled() {
+  @Test func conditionalImportsWhenEnabled() {
     var configuration = Configuration.forTesting
     configuration.orderedImports.includeConditionalImports = true
 
@@ -658,7 +660,7 @@ final class OrderedImportsTests: LintOrFormatRuleTestCase {
     )
   }
 
-  func testConditionalImportsWhenDisabled() {
+  @Test func conditionalImportsWhenDisabled() {
     var configuration = Configuration.forTesting
     configuration.orderedImports.includeConditionalImports = false
 
@@ -705,7 +707,7 @@ final class OrderedImportsTests: LintOrFormatRuleTestCase {
     )
   }
 
-  func testNestedConditionalImports() {
+  @Test func nestedConditionalImports() {
     var configuration = Configuration.forTesting
     configuration.orderedImports.includeConditionalImports = true
 
@@ -754,7 +756,7 @@ final class OrderedImportsTests: LintOrFormatRuleTestCase {
     )
   }
 
-  func testIgnoredConditionalImports() {
+  @Test func ignoredConditionalImports() {
     assertFormatting(
       OrderedImports.self,
       input: """
@@ -794,7 +796,7 @@ final class OrderedImportsTests: LintOrFormatRuleTestCase {
     )
   }
 
-  func testTrailingCommentsOnTopLevelCodeItems() {
+  @Test func trailingCommentsOnTopLevelCodeItems() {
     assertFormatting(
       OrderedImports.self,
       input: """
@@ -828,7 +830,7 @@ final class OrderedImportsTests: LintOrFormatRuleTestCase {
     )
   }
 
-  func testFileIgnoreDirectiveOnly() {
+  @Test func fileIgnoreDirectiveOnly() {
     assertFormatting(
       OrderedImports.self,
       input: """
@@ -856,7 +858,7 @@ final class OrderedImportsTests: LintOrFormatRuleTestCase {
     )
   }
 
-  func testFileIgnoreDirectiveWithAlreadySortedImports() {
+  @Test func fileIgnoreDirectiveWithAlreadySortedImports() {
     assertFormatting(
       OrderedImports.self,
       input: """
@@ -881,7 +883,7 @@ final class OrderedImportsTests: LintOrFormatRuleTestCase {
     )
   }
 
-  func testFileIgnoreDirectiveWithOtherComments() {
+  @Test func fileIgnoreDirectiveWithOtherComments() {
     assertFormatting(
       OrderedImports.self,
       input: """
@@ -915,7 +917,7 @@ final class OrderedImportsTests: LintOrFormatRuleTestCase {
     )
   }
 
-  func testFileHeaderContainsFileIgnoreDirective() {
+  @Test func fileHeaderContainsFileIgnoreDirective() {
     assertFormatting(
       OrderedImports.self,
       input: """
@@ -950,7 +952,7 @@ final class OrderedImportsTests: LintOrFormatRuleTestCase {
     )
   }
 
-  func testPreservesEmptyConditionalCompilationBlock() {
+  @Test func preservesEmptyConditionalCompilationBlock() {
     var configuration = Configuration.forTesting
     configuration.orderedImports.includeConditionalImports = true
 
@@ -972,7 +974,7 @@ final class OrderedImportsTests: LintOrFormatRuleTestCase {
     )
   }
 
-  func testPreservesHeaderCommentInConditionalCompilationBlock() {
+  @Test func preservesHeaderCommentInConditionalCompilationBlock() {
     var configuration = Configuration.forTesting
     configuration.orderedImports.includeConditionalImports = true
 
@@ -996,7 +998,7 @@ final class OrderedImportsTests: LintOrFormatRuleTestCase {
     )
   }
 
-  func testPreservesCommentsOnlyInConditionalCompilationBlock() {
+  @Test func preservesCommentsOnlyInConditionalCompilationBlock() {
     var configuration = Configuration.forTesting
     configuration.orderedImports.includeConditionalImports = true
 
@@ -1019,7 +1021,7 @@ final class OrderedImportsTests: LintOrFormatRuleTestCase {
     )
   }
 
-  func testOrderingWithGroupingDisabled() {
+  @Test func orderingWithGroupingDisabled() {
     var configuration = Configuration.forTesting
     configuration.orderedImports.shouldGroupImports = false
 
@@ -1046,7 +1048,7 @@ final class OrderedImportsTests: LintOrFormatRuleTestCase {
     )
   }
 
-  func testMixedContentOrderingWithGroupingDisabled() {
+  @Test func mixedContentOrderingWithGroupingDisabled() {
     var configuration = Configuration.forTesting
     configuration.orderedImports.shouldGroupImports = false
 
@@ -1087,7 +1089,7 @@ final class OrderedImportsTests: LintOrFormatRuleTestCase {
     )
   }
 
-  func testInvalidOrderingWithGroupingDisabled() {
+  @Test func invalidOrderingWithGroupingDisabled() {
     var configuration = Configuration.forTesting
     configuration.orderedImports.shouldGroupImports = false
 

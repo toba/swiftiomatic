@@ -12,9 +12,11 @@
 
 @_spi(Rules) import Swiftiomatic
 import _SwiftiomaticTestSupport
+import Testing
 
-final class UseShorthandTypeNamesTests: LintOrFormatRuleTestCase {
-  func testNamesInTypeContextsAreShortened() {
+@Suite
+struct UseShorthandTypeNamesTests: RuleTesting {
+  @Test func namesInTypeContextsAreShortened() {
     assertFormatting(
       UseShorthandTypeNames.self,
       input: """
@@ -35,7 +37,7 @@ final class UseShorthandTypeNamesTests: LintOrFormatRuleTestCase {
     )
   }
 
-  func testNestedNamesInTypeContextsAreShortened() {
+  @Test func nestedNamesInTypeContextsAreShortened() {
     assertFormatting(
       UseShorthandTypeNames.self,
       input: """
@@ -168,7 +170,7 @@ final class UseShorthandTypeNamesTests: LintOrFormatRuleTestCase {
     )
   }
 
-  func testNamesInNonMemberAccessExpressionContextsAreShortened() {
+  @Test func namesInNonMemberAccessExpressionContextsAreShortened() {
     assertFormatting(
       UseShorthandTypeNames.self,
       input: """
@@ -189,7 +191,7 @@ final class UseShorthandTypeNamesTests: LintOrFormatRuleTestCase {
     )
   }
 
-  func testNestedNamesInNonMemberAccessExpressionContextsAreShortened() {
+  @Test func nestedNamesInNonMemberAccessExpressionContextsAreShortened() {
     assertFormatting(
       UseShorthandTypeNames.self,
       input: """
@@ -322,7 +324,7 @@ final class UseShorthandTypeNamesTests: LintOrFormatRuleTestCase {
     )
   }
 
-  func testTypesWithMemberAccessesAreNotShortened() {
+  @Test func typesWithMemberAccessesAreNotShortened() {
     assertFormatting(
       UseShorthandTypeNames.self,
       input: """
@@ -396,7 +398,7 @@ final class UseShorthandTypeNamesTests: LintOrFormatRuleTestCase {
     )
   }
 
-  func testFunctionTypesAreOnlyWrappedWhenShortenedAsOptionals() {
+  @Test func functionTypesAreOnlyWrappedWhenShortenedAsOptionals() {
     // Some of these examples are questionable since function types aren't hashable and thus not
     // valid dictionary keys, nor are they codable, but syntactically they're fine.
     assertFormatting(
@@ -426,7 +428,7 @@ final class UseShorthandTypeNamesTests: LintOrFormatRuleTestCase {
     )
   }
 
-  func testTypesWithEmptyTupleAsGenericArgumentAreNotShortenedInExpressionContexts() {
+  @Test func typesWithEmptyTupleAsGenericArgumentAreNotShortenedInExpressionContexts() {
     // The Swift parser will treat `()` encountered in an expression context as the void *value*,
     // not the type. This extends outwards to shorthand syntax, where `()?` would be treated as an
     // attempt to optional-unwrap the tuple (which is not valid), `[()]` would be an array literal
@@ -460,7 +462,7 @@ final class UseShorthandTypeNamesTests: LintOrFormatRuleTestCase {
     )
   }
 
-  func testPreservesNestedGenericsForUnshortenedTypes() {
+  @Test func preservesNestedGenericsForUnshortenedTypes() {
     // Regression test for a bug that discarded the generic argument list of a nested type when
     // shortening something like `Array<Range<Foo>>` to `[Range]` (instead of `[Range<Foo>]`.
     assertFormatting(
@@ -486,7 +488,7 @@ final class UseShorthandTypeNamesTests: LintOrFormatRuleTestCase {
     )
   }
 
-  func testTypesWithIncorrectNumbersOfGenericArgumentsAreNotChanged() {
+  @Test func typesWithIncorrectNumbersOfGenericArgumentsAreNotChanged() {
     assertFormatting(
       UseShorthandTypeNames.self,
       input: """
@@ -510,7 +512,7 @@ final class UseShorthandTypeNamesTests: LintOrFormatRuleTestCase {
     )
   }
 
-  func testModuleQualifiedNamesAreNotShortened() {
+  @Test func moduleQualifiedNamesAreNotShortened() {
     assertFormatting(
       UseShorthandTypeNames.self,
       input: """
@@ -536,7 +538,7 @@ final class UseShorthandTypeNamesTests: LintOrFormatRuleTestCase {
     )
   }
 
-  func testTypesWeDoNotCareAboutAreUnchanged() {
+  @Test func typesWeDoNotCareAboutAreUnchanged() {
     assertFormatting(
       UseShorthandTypeNames.self,
       input: """
@@ -553,7 +555,7 @@ final class UseShorthandTypeNamesTests: LintOrFormatRuleTestCase {
     )
   }
 
-  func testOptionalStoredVarsWithoutInitializersAreNotChangedUnlessImmutable() {
+  @Test func optionalStoredVarsWithoutInitializersAreNotChangedUnlessImmutable() {
     assertFormatting(
       UseShorthandTypeNames.self,
       input: """
@@ -576,7 +578,7 @@ final class UseShorthandTypeNamesTests: LintOrFormatRuleTestCase {
     )
   }
 
-  func testOptionalComputedVarsAreChanged() {
+  @Test func optionalComputedVarsAreChanged() {
     assertFormatting(
       UseShorthandTypeNames.self,
       input: """
@@ -612,7 +614,7 @@ final class UseShorthandTypeNamesTests: LintOrFormatRuleTestCase {
     )
   }
 
-  func testOptionalStoredVarsWithInitializersAreChanged() {
+  @Test func optionalStoredVarsWithInitializersAreChanged() {
     assertFormatting(
       UseShorthandTypeNames.self,
       input: """
@@ -637,7 +639,7 @@ final class UseShorthandTypeNamesTests: LintOrFormatRuleTestCase {
     )
   }
 
-  func testOptionalsNestedInOtherTypesInStoredVarsAreStillChanged() {
+  @Test func optionalsNestedInOtherTypesInStoredVarsAreStillChanged() {
     assertFormatting(
       UseShorthandTypeNames.self,
       input: """
@@ -658,7 +660,7 @@ final class UseShorthandTypeNamesTests: LintOrFormatRuleTestCase {
     )
   }
 
-  func testSomeAnyTypesInOptionalsAreParenthesized() {
+  @Test func someAnyTypesInOptionalsAreParenthesized() {
     // If we need to insert parentheses, verify that we do, but also verify that we don't insert
     // them unnecessarily.
     assertFormatting(
@@ -704,7 +706,7 @@ final class UseShorthandTypeNamesTests: LintOrFormatRuleTestCase {
     )
   }
 
-  func testAttributedTypesInOptionalsAreParenthesized() {
+  @Test func attributedTypesInOptionalsAreParenthesized() {
     // If we need to insert parentheses, verify that we do, but also verify that we don't insert
     // them unnecessarily.
     assertFormatting(
@@ -744,7 +746,7 @@ final class UseShorthandTypeNamesTests: LintOrFormatRuleTestCase {
     )
   }
 
-  func testPackElementTypesInOptionalsAreParenthesized() {
+  @Test func packElementTypesInOptionalsAreParenthesized() {
     // If we need to insert parentheses, verify that we do, but also verify that we don't insert
     // them unnecessarily.
     assertFormatting(

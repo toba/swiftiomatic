@@ -11,9 +11,11 @@
 //===----------------------------------------------------------------------===//
 
 import Swiftiomatic
+import Testing
 
-final class FunctionCallTests: PrettyPrintTestCase {
-  func testBasicFunctionCalls_noPackArguments() {
+@Suite
+struct FunctionCallTests: PrettyPrintTesting {
+  @Test func basicFunctionCalls_noPackArguments() {
     let input =
       """
       let a = myFunc()
@@ -71,7 +73,7 @@ final class FunctionCallTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 45, configuration: config)
   }
 
-  func testBasicFunctionCalls_packArguments() {
+  @Test func basicFunctionCalls_packArguments() {
     let input =
       """
       let a = myFunc()
@@ -109,7 +111,7 @@ final class FunctionCallTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 45, configuration: config)
   }
 
-  func testDiscretionaryLineBreakBeforeClosingParenthesis() {
+  @Test func discretionaryLineBreakBeforeClosingParenthesis() {
     let input =
       """
       let a = myFunc(
@@ -120,7 +122,7 @@ final class FunctionCallTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: input + "\n", linelength: 45)
   }
 
-  func testDiscretionaryLineBreaksAreSelfCorrecting() {
+  @Test func discretionaryLineBreaksAreSelfCorrecting() {
     // A discretionary line break should never permit a violation of the rule that says,
     // effectively, "if a closing delimiter does not fit on the same line as its matching open
     // delimiter, then the open delimiter is the last token on that line" (which is implemented in
@@ -144,7 +146,7 @@ final class FunctionCallTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 45, configuration: config)
   }
 
-  func testArgumentStartsWithOpenDelimiter() {
+  @Test func argumentStartsWithOpenDelimiter() {
     let input =
       """
       myFunc(someArray: [
@@ -196,7 +198,7 @@ final class FunctionCallTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 45)
   }
 
-  func testSingleUnlabeledArgumentWithDelimiters() {
+  @Test func singleUnlabeledArgumentWithDelimiters() {
     let input =
       """
       myFunc([1000, 2000, 3000, 4000, 5000, 6000, 7000, 8000])
@@ -235,7 +237,7 @@ final class FunctionCallTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 45)
   }
 
-  func testNestedFunctionCallExprSequences() {
+  @Test func nestedFunctionCallExprSequences() {
     let input =
       """
       let result = firstObj.someOptionalReturningFunc(foo: arg) ?? (someOtherObj as SomeUsefulType).someGetterFunc()
@@ -252,7 +254,7 @@ final class FunctionCallTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 60)
   }
 
-  func testDiscretionaryLineBreakAfterColon() {
+  @Test func discretionaryLineBreakAfterColon() {
     let input =
       """
       myFunc(
@@ -285,7 +287,7 @@ final class FunctionCallTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 20)
   }
 
-  func testDiscretionaryLineBreakBeforeTrailingClosure() {
+  @Test func discretionaryLineBreakBeforeTrailingClosure() {
     let input =
       """
       foo(a, b, c)
@@ -334,7 +336,7 @@ final class FunctionCallTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 20)
   }
 
-  func testGroupsTrailingComma() {
+  @Test func groupsTrailingComma() {
     let input =
       """
       foo(
@@ -355,7 +357,7 @@ final class FunctionCallTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 70)
   }
 
-  func testMultipleTrailingClosures() {
+  @Test func multipleTrailingClosures() {
     let input =
       """
       a = f { b } c: { d }

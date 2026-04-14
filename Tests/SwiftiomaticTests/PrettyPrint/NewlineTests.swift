@@ -10,8 +10,10 @@
 //
 //===----------------------------------------------------------------------===//
 
-final class NewlineTests: PrettyPrintTestCase {
-  func testLeadingNewlines() {
+import Testing
+@Suite
+struct NewlineTests: PrettyPrintTesting {
+  @Test func leadingNewlines() {
     let input =
       """
 
@@ -28,7 +30,7 @@ final class NewlineTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 45)
   }
 
-  func testLeadingNewlinesWithComments() {
+  @Test func leadingNewlinesWithComments() {
     let input =
       """
 
@@ -49,7 +51,7 @@ final class NewlineTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 45)
   }
 
-  func testTrailingNewlines() {
+  @Test func trailingNewlines() {
     let input =
       """
       let a = 123
@@ -66,7 +68,7 @@ final class NewlineTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 45)
   }
 
-  func testTrailingNewlinesWithComments() {
+  @Test func trailingNewlinesWithComments() {
     let input =
       """
       let a = 123
@@ -87,7 +89,7 @@ final class NewlineTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 45)
   }
 
-  func testNewlinesBetweenMembers() {
+  @Test func newlinesBetweenMembers() {
     let input =
       """
 

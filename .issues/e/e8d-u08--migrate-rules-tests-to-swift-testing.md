@@ -1,18 +1,18 @@
 ---
 # e8d-u08
 title: Migrate Rules tests to Swift Testing
-status: ready
+status: completed
 type: task
 priority: normal
 created_at: 2026-04-14T02:55:02Z
-updated_at: 2026-04-14T02:55:02Z
+updated_at: 2026-04-14T03:24:20Z
 parent: rwb-wt3
 blocked_by:
     - 9mz-jmv
 sync:
     github:
         issue_number: "275"
-        synced_at: "2026-04-14T02:58:30Z"
+        synced_at: "2026-04-14T03:28:23Z"
 ---
 
 Convert 45 test files in `Tests/SwiftiomaticTests/Rules/` from XCTest to Swift Testing. Blocked by infrastructure rewrite (`9mz-jmv`).

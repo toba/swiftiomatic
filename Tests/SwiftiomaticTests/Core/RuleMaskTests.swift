@@ -10,30 +10,31 @@
 //
 //===----------------------------------------------------------------------===//
 
+import Foundation
 @_spi(Testing) import Swiftiomatic
 import SwiftParser
 import SwiftSyntax
-import XCTest
+import Testing
 
-final class RuleMaskTests: XCTestCase {
-  /// The source converter for the text in the current test. This is implicitly unwrapped because
-  /// each test case must prepare some source text before performing any assertions, otherwise
-  /// there's a developer error.
-  var converter: SourceLocationConverter!
-
-  private func createMask(sourceText: String) -> RuleMask {
+@Suite
+struct RuleMaskTests {
+  private func createMask(sourceText: String) -> (RuleMask, SourceLocationConverter) {
     let fileURL = URL(fileURLWithPath: "/tmp/test.swift")
     let syntax = Parser.parse(source: sourceText)
-    converter = SourceLocationConverter(fileName: fileURL.path, tree: syntax)
-    return RuleMask(syntaxNode: Syntax(syntax), sourceLocationConverter: converter)
+    let converter = SourceLocationConverter(fileName: fileURL.path, tree: syntax)
+    let mask = RuleMask(syntaxNode: Syntax(syntax), sourceLocationConverter: converter)
+    return (mask, converter)
   }
 
-  /// Returns the source location that corresponds to the given line and column numbers.
-  private func location(ofLine line: Int, column: Int = 0) -> SourceLocation {
-    return converter.location(for: converter.position(ofLine: line, column: column))
+  private func location(
+    ofLine line: Int,
+    column: Int = 0,
+    in converter: SourceLocationConverter
+  ) -> SwiftSyntax.SourceLocation {
+    converter.location(for: converter.position(ofLine: line, column: column))
   }
 
-  func testSingleRule() {
+  @Test func singleRule() {
     let text =
       """
       let a = 123
@@ -42,14 +43,14 @@ final class RuleMaskTests: XCTestCase {
       let c = 789
       """
 
-    let mask = createMask(sourceText: text)
+    let (mask, converter) = createMask(sourceText: text)
 
-    XCTAssertEqual(mask.ruleState("rule1", at: location(ofLine: 1)), .default)
-    XCTAssertEqual(mask.ruleState("rule1", at: location(ofLine: 3)), .disabled)
-    XCTAssertEqual(mask.ruleState("rule1", at: location(ofLine: 4)), .default)
+    #expect(mask.ruleState("rule1", at: location(ofLine: 1, in: converter)) == .default)
+    #expect(mask.ruleState("rule1", at: location(ofLine: 3, in: converter)) == .disabled)
+    #expect(mask.ruleState("rule1", at: location(ofLine: 4, in: converter)) == .default)
   }
 
-  func testIgnoreTwoRules() {
+  @Test func ignoreTwoRules() {
     let text =
       """
       let a = 123
@@ -62,41 +63,41 @@ final class RuleMaskTests: XCTestCase {
       let e = "def"
       """
 
-    let mask = createMask(sourceText: text)
+    let (mask, converter) = createMask(sourceText: text)
 
-    XCTAssertEqual(mask.ruleState("rule1", at: location(ofLine: 1)), .default)
-    XCTAssertEqual(mask.ruleState("rule1", at: location(ofLine: 3)), .disabled)
-    XCTAssertEqual(mask.ruleState("rule1", at: location(ofLine: 5)), .default)
-    XCTAssertEqual(mask.ruleState("rule1", at: location(ofLine: 7)), .disabled)
-    XCTAssertEqual(mask.ruleState("rule1", at: location(ofLine: 8)), .default)
+    #expect(mask.ruleState("rule1", at: location(ofLine: 1, in: converter)) == .default)
+    #expect(mask.ruleState("rule1", at: location(ofLine: 3, in: converter)) == .disabled)
+    #expect(mask.ruleState("rule1", at: location(ofLine: 5, in: converter)) == .default)
+    #expect(mask.ruleState("rule1", at: location(ofLine: 7, in: converter)) == .disabled)
+    #expect(mask.ruleState("rule1", at: location(ofLine: 8, in: converter)) == .default)
 
-    XCTAssertEqual(mask.ruleState("rule2", at: location(ofLine: 1)), .default)
-    XCTAssertEqual(mask.ruleState("rule2", at: location(ofLine: 3)), .default)
-    XCTAssertEqual(mask.ruleState("rule2", at: location(ofLine: 5)), .disabled)
-    XCTAssertEqual(mask.ruleState("rule2", at: location(ofLine: 7)), .disabled)
-    XCTAssertEqual(mask.ruleState("rule2", at: location(ofLine: 8)), .default)
+    #expect(mask.ruleState("rule2", at: location(ofLine: 1, in: converter)) == .default)
+    #expect(mask.ruleState("rule2", at: location(ofLine: 3, in: converter)) == .default)
+    #expect(mask.ruleState("rule2", at: location(ofLine: 5, in: converter)) == .disabled)
+    #expect(mask.ruleState("rule2", at: location(ofLine: 7, in: converter)) == .disabled)
+    #expect(mask.ruleState("rule2", at: location(ofLine: 8, in: converter)) == .default)
   }
 
-  func testIgnoreComplexRuleNames() {
+  @Test func ignoreComplexRuleNames() {
     let text =
       """
       // swiftiomatic-ignore: ru_le, rule!, ru&le, rule?, rule[], rule(), rule;
       let a = 123
       """
 
-    let mask = createMask(sourceText: text)
+    let (mask, converter) = createMask(sourceText: text)
 
-    XCTAssertEqual(mask.ruleState("ru_le", at: location(ofLine: 2)), .disabled)
-    XCTAssertEqual(mask.ruleState("rule!", at: location(ofLine: 2)), .disabled)
-    XCTAssertEqual(mask.ruleState("ru&le", at: location(ofLine: 2)), .disabled)
-    XCTAssertEqual(mask.ruleState("rule?", at: location(ofLine: 2)), .disabled)
-    XCTAssertEqual(mask.ruleState("rule[]", at: location(ofLine: 2)), .disabled)
-    XCTAssertEqual(mask.ruleState("rule()", at: location(ofLine: 2)), .disabled)
-    XCTAssertEqual(mask.ruleState("rule;", at: location(ofLine: 2)), .disabled)
-    XCTAssertEqual(mask.ruleState("default", at: location(ofLine: 2)), .default)
+    #expect(mask.ruleState("ru_le", at: location(ofLine: 2, in: converter)) == .disabled)
+    #expect(mask.ruleState("rule!", at: location(ofLine: 2, in: converter)) == .disabled)
+    #expect(mask.ruleState("ru&le", at: location(ofLine: 2, in: converter)) == .disabled)
+    #expect(mask.ruleState("rule?", at: location(ofLine: 2, in: converter)) == .disabled)
+    #expect(mask.ruleState("rule[]", at: location(ofLine: 2, in: converter)) == .disabled)
+    #expect(mask.ruleState("rule()", at: location(ofLine: 2, in: converter)) == .disabled)
+    #expect(mask.ruleState("rule;", at: location(ofLine: 2, in: converter)) == .disabled)
+    #expect(mask.ruleState("default", at: location(ofLine: 2, in: converter)) == .default)
   }
 
-  func testDuplicateNested() {
+  @Test func duplicateNested() {
     let text =
       """
       // swiftiomatic-ignore: rule1
@@ -113,22 +114,21 @@ final class RuleMaskTests: XCTestCase {
       }
       """
 
-    let mask = createMask(sourceText: text)
+    let (mask, converter) = createMask(sourceText: text)
 
-    XCTAssertEqual(mask.ruleState("rule1", at: location(ofLine: 3, column: 3)), .disabled)
-    XCTAssertEqual(mask.ruleState("rule4", at: location(ofLine: 3, column: 3)), .default)
+    #expect(mask.ruleState("rule1", at: location(ofLine: 3, column: 3, in: converter)) == .disabled)
+    #expect(mask.ruleState("rule4", at: location(ofLine: 3, column: 3, in: converter)) == .default)
 
-    XCTAssertEqual(mask.ruleState("rule1", at: location(ofLine: 6, column: 3)), .disabled)
-    XCTAssertEqual(mask.ruleState("rule4", at: location(ofLine: 6, column: 3)), .default)
+    #expect(mask.ruleState("rule1", at: location(ofLine: 6, column: 3, in: converter)) == .disabled)
+    #expect(mask.ruleState("rule4", at: location(ofLine: 6, column: 3, in: converter)) == .default)
 
-    XCTAssertEqual(mask.ruleState("rule1", at: location(ofLine: 9, column: 3)), .disabled)
-    XCTAssertEqual(mask.ruleState("rule4", at: location(ofLine: 9, column: 3)), .disabled)
+    #expect(mask.ruleState("rule1", at: location(ofLine: 9, column: 3, in: converter)) == .disabled)
+    #expect(mask.ruleState("rule4", at: location(ofLine: 9, column: 3, in: converter)) == .disabled)
 
-    XCTAssertEqual(mask.ruleState("rule4", at: location(ofLine: 11, column: 3)), .default)
-
+    #expect(mask.ruleState("rule4", at: location(ofLine: 11, column: 3, in: converter)) == .default)
   }
 
-  func testSpuriousFlags() {
+  @Test func spuriousFlags() {
     let text1 =
       """
       let a = 123
@@ -140,13 +140,13 @@ final class RuleMaskTests: XCTestCase {
       let b = 456
       """
 
-    let mask1 = createMask(sourceText: text1)
+    let (mask1, converter1) = createMask(sourceText: text1)
 
-    XCTAssertEqual(mask1.ruleState("rule1", at: location(ofLine: 1)), .default)
-    XCTAssertEqual(mask1.ruleState("rule1", at: location(ofLine: 2)), .default)
-    XCTAssertEqual(mask1.ruleState("rule1", at: location(ofLine: 3)), .default)
-    XCTAssertEqual(mask1.ruleState("rule1", at: location(ofLine: 5)), .default)
-    XCTAssertEqual(mask1.ruleState("rule1", at: location(ofLine: 7)), .default)
+    #expect(mask1.ruleState("rule1", at: location(ofLine: 1, in: converter1)) == .default)
+    #expect(mask1.ruleState("rule1", at: location(ofLine: 2, in: converter1)) == .default)
+    #expect(mask1.ruleState("rule1", at: location(ofLine: 3, in: converter1)) == .default)
+    #expect(mask1.ruleState("rule1", at: location(ofLine: 5, in: converter1)) == .default)
+    #expect(mask1.ruleState("rule1", at: location(ofLine: 7, in: converter1)) == .default)
 
     let text2 =
       #"""
@@ -160,14 +160,14 @@ final class RuleMaskTests: XCTestCase {
       let d = "abc"
       """#
 
-    let mask2 = createMask(sourceText: text2)
+    let (mask2, converter2) = createMask(sourceText: text2)
 
-    XCTAssertEqual(mask2.ruleState("rule1", at: location(ofLine: 1)), .default)
-    XCTAssertEqual(mask2.ruleState("rule1", at: location(ofLine: 6)), .default)
-    XCTAssertEqual(mask2.ruleState("rule1", at: location(ofLine: 8)), .disabled)
+    #expect(mask2.ruleState("rule1", at: location(ofLine: 1, in: converter2)) == .default)
+    #expect(mask2.ruleState("rule1", at: location(ofLine: 6, in: converter2)) == .default)
+    #expect(mask2.ruleState("rule1", at: location(ofLine: 8, in: converter2)) == .disabled)
   }
 
-  func testNamelessDirectiveAffectsAllRules() {
+  @Test func namelessDirectiveAffectsAllRules() {
     let text =
       """
       let a = 123
@@ -176,15 +176,15 @@ final class RuleMaskTests: XCTestCase {
       let c = 789
       """
 
-    let mask = createMask(sourceText: text)
+    let (mask, converter) = createMask(sourceText: text)
 
-    XCTAssertEqual(mask.ruleState("rule1", at: location(ofLine: 1)), .default)
-    XCTAssertEqual(mask.ruleState("rule1", at: location(ofLine: 3)), .disabled)
-    XCTAssertEqual(mask.ruleState("TotallyMadeUpRule", at: location(ofLine: 3)), .disabled)
-    XCTAssertEqual(mask.ruleState("rule1", at: location(ofLine: 4)), .default)
+    #expect(mask.ruleState("rule1", at: location(ofLine: 1, in: converter)) == .default)
+    #expect(mask.ruleState("rule1", at: location(ofLine: 3, in: converter)) == .disabled)
+    #expect(mask.ruleState("TotallyMadeUpRule", at: location(ofLine: 3, in: converter)) == .disabled)
+    #expect(mask.ruleState("rule1", at: location(ofLine: 4, in: converter)) == .default)
   }
 
-  func testDirectiveWithRulesList() {
+  @Test func directiveWithRulesList() {
     let text =
       """
       let a = 123
@@ -193,18 +193,18 @@ final class RuleMaskTests: XCTestCase {
       let c = 789
       """
 
-    let mask = createMask(sourceText: text)
+    let (mask, converter) = createMask(sourceText: text)
 
-    XCTAssertEqual(mask.ruleState("rule1", at: location(ofLine: 1)), .default)
-    XCTAssertEqual(mask.ruleState("rule1", at: location(ofLine: 3)), .disabled)
-    XCTAssertEqual(mask.ruleState("rule2", at: location(ofLine: 3)), .disabled)
-    XCTAssertEqual(mask.ruleState("AnotherRule", at: location(ofLine: 3)), .disabled)
-    XCTAssertEqual(mask.ruleState("TheBestRule", at: location(ofLine: 3)), .disabled)
-    XCTAssertEqual(mask.ruleState("TotallyMadeUpRule", at: location(ofLine: 3)), .default)
-    XCTAssertEqual(mask.ruleState("rule1", at: location(ofLine: 4)), .default)
+    #expect(mask.ruleState("rule1", at: location(ofLine: 1, in: converter)) == .default)
+    #expect(mask.ruleState("rule1", at: location(ofLine: 3, in: converter)) == .disabled)
+    #expect(mask.ruleState("rule2", at: location(ofLine: 3, in: converter)) == .disabled)
+    #expect(mask.ruleState("AnotherRule", at: location(ofLine: 3, in: converter)) == .disabled)
+    #expect(mask.ruleState("TheBestRule", at: location(ofLine: 3, in: converter)) == .disabled)
+    #expect(mask.ruleState("TotallyMadeUpRule", at: location(ofLine: 3, in: converter)) == .default)
+    #expect(mask.ruleState("rule1", at: location(ofLine: 4, in: converter)) == .default)
   }
 
-  func testAllRulesWholeFileIgnore() {
+  @Test func allRulesWholeFileIgnore() {
     let text =
       """
       // This file has important contents.
@@ -225,15 +225,15 @@ final class RuleMaskTests: XCTestCase {
       }
       """
 
-    let mask = createMask(sourceText: text)
+    let (mask, converter) = createMask(sourceText: text)
 
     let lineCount = text.split(separator: "\n").count
     for i in 0..<lineCount {
-      XCTAssertEqual(mask.ruleState("rule1", at: location(ofLine: i)), .disabled)
+      #expect(mask.ruleState("rule1", at: location(ofLine: i, in: converter)) == .disabled)
     }
   }
 
-  func testAllRulesWholeFileIgnoreNestedInNode() {
+  @Test func allRulesWholeFileIgnoreNestedInNode() {
     let text =
       """
       // This file has important contents.
@@ -254,15 +254,15 @@ final class RuleMaskTests: XCTestCase {
       }
       """
 
-    let mask = createMask(sourceText: text)
+    let (mask, converter) = createMask(sourceText: text)
 
     let lineCount = text.split(separator: "\n").count
     for i in 0..<lineCount {
-      XCTAssertEqual(mask.ruleState("rule1", at: location(ofLine: i)), .default)
+      #expect(mask.ruleState("rule1", at: location(ofLine: i, in: converter)) == .default)
     }
   }
 
-  func testSingleRuleWholeFileIgnore() {
+  @Test func singleRuleWholeFileIgnore() {
     let text =
       """
       // This file has important contents.
@@ -283,16 +283,16 @@ final class RuleMaskTests: XCTestCase {
       }
       """
 
-    let mask = createMask(sourceText: text)
+    let (mask, converter) = createMask(sourceText: text)
 
     let lineCount = text.split(separator: "\n").count
     for i in 0..<lineCount {
-      XCTAssertEqual(mask.ruleState("rule1", at: location(ofLine: i)), .disabled)
-      XCTAssertEqual(mask.ruleState("rule2", at: location(ofLine: i)), .default)
+      #expect(mask.ruleState("rule1", at: location(ofLine: i, in: converter)) == .disabled)
+      #expect(mask.ruleState("rule2", at: location(ofLine: i, in: converter)) == .default)
     }
   }
 
-  func testMultipleRulesWholeFileIgnore() {
+  @Test func multipleRulesWholeFileIgnore() {
     let text =
       """
       // This file has important contents.
@@ -313,18 +313,18 @@ final class RuleMaskTests: XCTestCase {
       }
       """
 
-    let mask = createMask(sourceText: text)
+    let (mask, converter) = createMask(sourceText: text)
 
     let lineCount = text.split(separator: "\n").count
     for i in 0..<lineCount {
-      XCTAssertEqual(mask.ruleState("rule1", at: location(ofLine: i)), .disabled)
-      XCTAssertEqual(mask.ruleState("rule2", at: location(ofLine: i)), .disabled)
-      XCTAssertEqual(mask.ruleState("rule3", at: location(ofLine: i)), .disabled)
-      XCTAssertEqual(mask.ruleState("rule4", at: location(ofLine: i)), .default)
+      #expect(mask.ruleState("rule1", at: location(ofLine: i, in: converter)) == .disabled)
+      #expect(mask.ruleState("rule2", at: location(ofLine: i, in: converter)) == .disabled)
+      #expect(mask.ruleState("rule3", at: location(ofLine: i, in: converter)) == .disabled)
+      #expect(mask.ruleState("rule4", at: location(ofLine: i, in: converter)) == .default)
     }
   }
 
-  func testFileAndLineIgnoresMixed() {
+  @Test func fileAndLineIgnoresMixed() {
     let text =
       """
       // This file has important contents.
@@ -348,26 +348,30 @@ final class RuleMaskTests: XCTestCase {
       }
       """
 
-    let mask = createMask(sourceText: text)
+    let (mask, converter) = createMask(sourceText: text)
 
     let lineCount = text.split(separator: "\n").count
     for i in 0..<lineCount {
-      XCTAssertEqual(mask.ruleState("rule1", at: location(ofLine: i)), .disabled)
-      XCTAssertEqual(mask.ruleState("rule2", at: location(ofLine: i)), .disabled)
+      #expect(mask.ruleState("rule1", at: location(ofLine: i, in: converter)) == .disabled)
+      #expect(mask.ruleState("rule2", at: location(ofLine: i, in: converter)) == .disabled)
       if i == 7 {
-        XCTAssertEqual(mask.ruleState("rule3", at: location(ofLine: i)), .disabled)
-        XCTAssertEqual(mask.ruleState("rule4", at: location(ofLine: i)), .default)
+        #expect(mask.ruleState("rule3", at: location(ofLine: i, in: converter)) == .disabled)
+        #expect(mask.ruleState("rule4", at: location(ofLine: i, in: converter)) == .default)
       } else if i == 11 {
-        XCTAssertEqual(mask.ruleState("rule3", at: location(ofLine: i, column: 3)), .disabled)
-        XCTAssertEqual(mask.ruleState("rule4", at: location(ofLine: i, column: 3)), .disabled)
+        #expect(
+          mask.ruleState("rule3", at: location(ofLine: i, column: 3, in: converter)) == .disabled
+        )
+        #expect(
+          mask.ruleState("rule4", at: location(ofLine: i, column: 3, in: converter)) == .disabled
+        )
       } else {
-        XCTAssertEqual(mask.ruleState("rule3", at: location(ofLine: i)), .default)
-        XCTAssertEqual(mask.ruleState("rule4", at: location(ofLine: i)), .default)
+        #expect(mask.ruleState("rule3", at: location(ofLine: i, in: converter)) == .default)
+        #expect(mask.ruleState("rule4", at: location(ofLine: i, in: converter)) == .default)
       }
     }
   }
 
-  func testMultipleSubsetFileIgnoreDirectives() {
+  @Test func multipleSubsetFileIgnoreDirectives() {
     let text =
       """
       // This file has important contents.
@@ -390,17 +394,17 @@ final class RuleMaskTests: XCTestCase {
       }
       """
 
-    let mask = createMask(sourceText: text)
+    let (mask, converter) = createMask(sourceText: text)
 
     let lineCount = text.split(separator: "\n").count
     for i in 0..<lineCount {
-      XCTAssertEqual(mask.ruleState("rule1", at: location(ofLine: i)), .disabled)
-      XCTAssertEqual(mask.ruleState("rule2", at: location(ofLine: i)), .disabled)
-      XCTAssertEqual(mask.ruleState("rule3", at: location(ofLine: i)), .default)
+      #expect(mask.ruleState("rule1", at: location(ofLine: i, in: converter)) == .disabled)
+      #expect(mask.ruleState("rule2", at: location(ofLine: i, in: converter)) == .disabled)
+      #expect(mask.ruleState("rule3", at: location(ofLine: i, in: converter)) == .default)
     }
   }
 
-  func testSubsetAndAllFileIgnoreDirectives() {
+  @Test func subsetAndAllFileIgnoreDirectives() {
     let text =
       """
       // This file has important contents.
@@ -423,13 +427,13 @@ final class RuleMaskTests: XCTestCase {
       }
       """
 
-    let mask = createMask(sourceText: text)
+    let (mask, converter) = createMask(sourceText: text)
 
     let lineCount = text.split(separator: "\n").count
     for i in 0..<lineCount {
-      XCTAssertEqual(mask.ruleState("rule1", at: location(ofLine: i)), .disabled)
-      XCTAssertEqual(mask.ruleState("rule2", at: location(ofLine: i)), .disabled)
-      XCTAssertEqual(mask.ruleState("rule3", at: location(ofLine: i)), .disabled)
+      #expect(mask.ruleState("rule1", at: location(ofLine: i, in: converter)) == .disabled)
+      #expect(mask.ruleState("rule2", at: location(ofLine: i, in: converter)) == .disabled)
+      #expect(mask.ruleState("rule3", at: location(ofLine: i, in: converter)) == .disabled)
     }
   }
 }

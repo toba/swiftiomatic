@@ -10,8 +10,10 @@
 //
 //===----------------------------------------------------------------------===//
 
-final class FunctionTypeTests: PrettyPrintTestCase {
-  func testFunctionType() {
+import Testing
+@Suite
+struct FunctionTypeTests: PrettyPrintTesting {
+  @Test func functionType() {
     let input =
       """
       func f(g: (_ somevalue: Int) -> String?) {
@@ -72,7 +74,7 @@ final class FunctionTypeTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 60)
   }
 
-  func testFunctionTypeAsync() {
+  @Test func functionTypeAsync() {
     let input =
       """
       func f(g: (_ somevalue: Int) async -> String?) {
@@ -133,7 +135,7 @@ final class FunctionTypeTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 66)
   }
 
-  func testFunctionTypeAsyncThrows() {
+  @Test func functionTypeAsyncThrows() {
     let input =
       """
       func f(g: (_ somevalue: Int) async throws -> String?) {
@@ -193,7 +195,7 @@ final class FunctionTypeTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 73)
   }
 
-  func testFunctionTypeThrows() {
+  @Test func functionTypeThrows() {
     let input =
       """
       func f(g: (_ somevalue: Int) throws -> String?) {
@@ -254,7 +256,7 @@ final class FunctionTypeTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 67)
   }
 
-  func testFunctionTypeInOut() {
+  @Test func functionTypeInOut() {
     let input =
       """
       func f(g: (firstArg: inout FirstArg, secondArg: inout SecondArg) -> Result) {
@@ -284,7 +286,7 @@ final class FunctionTypeTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 17)
   }
 
-  func testFunctionTypeWithTypeSpecifier() {
+  @Test func functionTypeWithTypeSpecifier() {
     let input =
       """
       func f(_ body: nonisolated(nonsending) () async -> Void) {}

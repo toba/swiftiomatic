@@ -12,9 +12,11 @@
 
 import Swiftiomatic
 import _SwiftiomaticTestSupport
+import Testing
 
-final class CommentTests: PrettyPrintTestCase {
-  func testDocumentationComments() {
+@Suite
+struct CommentTests: PrettyPrintTesting {
+  @Test func documentationComments() {
     let input =
       """
       /// This is a documentation comment
@@ -93,7 +95,7 @@ final class CommentTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 55)
   }
 
-  func testLineComments() {
+  @Test func lineComments() {
     let input =
       """
       // Line Comment0
@@ -212,7 +214,7 @@ final class CommentTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 45)
   }
 
-  func testLineCommentsWithCustomLeadingSpaces() {
+  @Test func lineCommentsWithCustomLeadingSpaces() {
     let pairs: [(String, String)] = [
       (
         """
@@ -358,7 +360,7 @@ final class CommentTests: PrettyPrintTestCase {
     }
   }
 
-  func testContainerLineComments() {
+  @Test func containerLineComments() {
     let input =
       """
       // Array comment
@@ -433,7 +435,7 @@ final class CommentTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 80)
   }
 
-  func testContainerLineCommentsWithCustomLeadingSpaces() {
+  @Test func containerLineCommentsWithCustomLeadingSpaces() {
     let input =
       """
       // Array comment
@@ -509,7 +511,7 @@ final class CommentTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 80, configuration: config)
   }
 
-  func testDocumentationBlockComments() {
+  @Test func documentationBlockComments() {
     let input =
       """
       /** This is a documentation comment
@@ -592,7 +594,7 @@ final class CommentTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 55)
   }
 
-  func testBlockComments() {
+  @Test func blockComments() {
     let input =
       """
               /* Line Comment1 */
@@ -655,7 +657,7 @@ final class CommentTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 45)
   }
 
-  func testDoesNotInsertExtraNewlinesAfterTrailingComments() {
+  @Test func doesNotInsertExtraNewlinesAfterTrailingComments() {
     let input =
       """
       struct Foo {
@@ -690,7 +692,7 @@ final class CommentTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 100)
   }
 
-  func testCommentOnContinuationLine() {
+  @Test func commentOnContinuationLine() {
     let input =
       """
       func foo() {
@@ -715,7 +717,7 @@ final class CommentTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: input + "\n", linelength: 60)
   }
 
-  func testLineCommentAtEndOfMemberDeclList() {
+  @Test func lineCommentAtEndOfMemberDeclList() {
     let input =
       """
       enum Foo {
@@ -736,7 +738,7 @@ final class CommentTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 100)
   }
 
-  func testCommentsAroundIfElseStatements() {
+  @Test func commentsAroundIfElseStatements() {
     let input =
       """
       if foo {
@@ -766,7 +768,7 @@ final class CommentTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 100)
   }
 
-  func testCommentsMoveAroundOperators() {
+  @Test func commentsMoveAroundOperators() {
     let input =
       """
       let x = a +  // comment about b
@@ -813,7 +815,7 @@ final class CommentTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 100)
   }
 
-  func testCommentsAllowedInParenthesizedExpressions() {
+  @Test func commentsAllowedInParenthesizedExpressions() {
     // There is no group applied outside of single element tuples that don't contain sequence
     // expressions, hence the examples with a tuple wrapping `foo()` and a tuple wrapping a
     // multiline string don't break before the left paren.
@@ -854,7 +856,7 @@ final class CommentTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 100)
   }
 
-  func testOperatorOnNewLineWithTrailingLineComment() {
+  @Test func operatorOnNewLineWithTrailingLineComment() {
     let input =
       """
       if next
@@ -879,7 +881,7 @@ final class CommentTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 100)
   }
 
-  func testOperatorOnSameLineWithTrailingLineComment() {
+  @Test func operatorOnSameLineWithTrailingLineComment() {
     let input =
       """
       if next && // final is important
@@ -902,7 +904,7 @@ final class CommentTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 100)
   }
 
-  func testCommentsInIfStatements() {
+  @Test func commentsInIfStatements() {
     let input =
       """
       if foo.bar && false && // comment about foo.bar
@@ -949,7 +951,7 @@ final class CommentTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 100)
   }
 
-  func testTrailingSpacesInComments() {
+  @Test func trailingSpacesInComments() {
     // Xcode has a commonly enabled setting to delete trailing spaces, which also applies to
     // multi-line strings. The trailing spaces are intentionally written using a unicode escape
     // sequence to ensure they aren't deleted.
@@ -993,7 +995,7 @@ final class CommentTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 60)
   }
 
-  func testDiagnoseMoveEndOfLineComment() {
+  @Test func diagnoseMoveEndOfLineComment() {
     assertPrettyPrintEqual(
       input: """
         import veryveryverylongmodulenameherebecauseitistypical  // special sentinel comment
@@ -1022,7 +1024,7 @@ final class CommentTests: PrettyPrintTestCase {
   }
 
   // Tests that "end of line" comments are flagged only when they exceed the configured line length.
-  func testDiagnoseMoveEndOfLineCommentAroundBoundary() {
+  @Test func diagnoseMoveEndOfLineCommentAroundBoundary() {
     assertPrettyPrintEqual(
       input: """
         x  // 789
@@ -1044,7 +1046,7 @@ final class CommentTests: PrettyPrintTestCase {
     )
   }
 
-  func testLineWithDocLineComment() {
+  @Test func lineWithDocLineComment() {
     // none of these should be merged if/when there is comment formatting
     let input =
       """
@@ -1059,7 +1061,7 @@ final class CommentTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: input, linelength: 80)
   }
 
-  func testNonmergeableComments() {
+  @Test func nonmergeableComments() {
     // none of these should be merged if/when there is comment formatting
     let input =
       """
@@ -1075,7 +1077,7 @@ final class CommentTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: input, linelength: 80)
   }
 
-  func testMergeableComments() {
+  @Test func mergeableComments() {
     // these examples should be merged and formatted if/when there is comment formatting
     let input =
       """
@@ -1095,7 +1097,7 @@ final class CommentTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: input, linelength: 80)
   }
 
-  func testUnexpectedUnicodeCharacters() {
+  @Test func unexpectedUnicodeCharacters() {
     let input =
       """
       // Hello World\u{2028}

@@ -11,9 +11,11 @@
 //===----------------------------------------------------------------------===//
 
 import Swiftiomatic
+import Testing
 
-final class EnumDeclTests: PrettyPrintTestCase {
-  func testBasicEnumDeclarations() {
+@Suite
+struct EnumDeclTests: PrettyPrintTesting {
+  @Test func basicEnumDeclarations() {
     let input =
       """
       enum MyEnum {
@@ -52,7 +54,7 @@ final class EnumDeclTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 23)
   }
 
-  func testMixedEnumCaseStyles_noPackArguments() {
+  @Test func mixedEnumCaseStyles_noPackArguments() {
     let input =
       """
       enum MyEnum {
@@ -96,7 +98,7 @@ final class EnumDeclTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 30, configuration: config)
   }
 
-  func testMixedEnumCaseStyles_packArguments() {
+  @Test func mixedEnumCaseStyles_packArguments() {
     let input =
       """
       enum MyEnum {
@@ -137,7 +139,7 @@ final class EnumDeclTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 31, configuration: config)
   }
 
-  func testIndirectEnum() {
+  @Test func indirectEnum() {
     let input =
       """
       enum MyEnum {
@@ -174,7 +176,7 @@ final class EnumDeclTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 30)
   }
 
-  func testGenericEnumDeclarations() {
+  @Test func genericEnumDeclarations() {
     let input =
       """
       enum MyEnum<T> {
@@ -215,7 +217,7 @@ final class EnumDeclTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 30, configuration: config)
   }
 
-  func testEnumInheritance() {
+  @Test func enumInheritance() {
     let input =
       """
       enum MyEnum: ProtoOne {
@@ -254,7 +256,7 @@ final class EnumDeclTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 40)
   }
 
-  func testEnumWhereClause() {
+  @Test func enumWhereClause() {
     let input =
       """
       enum MyEnum<S, T> where S: Collection {
@@ -295,7 +297,7 @@ final class EnumDeclTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 60)
   }
 
-  func testEnumWhereClause_lineBreakBeforeEachGenericRequirement() {
+  @Test func enumWhereClause_lineBreakBeforeEachGenericRequirement() {
     let input =
       """
       enum MyEnum<S, T> where S: Collection {
@@ -341,7 +343,7 @@ final class EnumDeclTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 60, configuration: config)
   }
 
-  func testEnumWhereClauseWithInheritance() {
+  @Test func enumWhereClauseWithInheritance() {
     let input =
       """
       enum MyEnum<S, T>: ProtoOne where S: Collection {
@@ -383,7 +385,7 @@ final class EnumDeclTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 60)
   }
 
-  func testEnumWhereClauseWithInheritance_lineBreakBeforeEachGenericRequirement() {
+  @Test func enumWhereClauseWithInheritance_lineBreakBeforeEachGenericRequirement() {
     let input =
       """
       enum MyEnum<S, T>: ProtoOne where S: Collection {
@@ -430,7 +432,7 @@ final class EnumDeclTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 60, configuration: config)
   }
 
-  func testEnumAttributes() {
+  @Test func enumAttributes() {
     let input =
       """
       @dynamicMemberLookup public enum MyEnum {
@@ -478,7 +480,7 @@ final class EnumDeclTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 55)
   }
 
-  func testEnumFullWrap() {
+  @Test func enumFullWrap() {
     let input =
       """
       public enum MyEnum<BaseCollection, SecondCollection>: MyContainerProtocolOne, MyContainerProtocolTwo, SomeoneElsesContainerProtocol, SomeFrameworkContainerProtocol where BaseCollection: Collection, BaseCollection: P, BaseCollection.Element: Equatable, BaseCollection.Element: SomeOtherProtocol {
@@ -511,7 +513,7 @@ final class EnumDeclTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 50, configuration: config)
   }
 
-  func testEnumFullWrap_lineBreakBeforeEachGenericRequirement() {
+  @Test func enumFullWrap_lineBreakBeforeEachGenericRequirement() {
     let input =
       """
       public enum MyEnum<BaseCollection, SecondCollection>: MyContainerProtocolOne, MyContainerProtocolTwo, SomeoneElsesContainerProtocol, SomeFrameworkContainerProtocol where BaseCollection: Collection, BaseCollection: P, BaseCollection.Element: Equatable, BaseCollection.Element: SomeOtherProtocol {
@@ -546,7 +548,7 @@ final class EnumDeclTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 50, configuration: config)
   }
 
-  func testEmptyEnum() {
+  @Test func emptyEnum() {
     let input = "enum Foo {}"
     assertPrettyPrintEqual(input: input, expected: input + "\n", linelength: 50)
 
@@ -558,7 +560,7 @@ final class EnumDeclTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: wrapped, linelength: 10)
   }
 
-  func testEmptyEnumWithComment() {
+  @Test func emptyEnumWithComment() {
     let input = """
       enum Foo {
         // foo
@@ -567,12 +569,12 @@ final class EnumDeclTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: input + "\n", linelength: 50)
   }
 
-  func testOneMemberEnum() {
+  @Test func oneMemberEnum() {
     let input = "enum Foo { var bar: Int }"
     assertPrettyPrintEqual(input: input, expected: input + "\n", linelength: 50)
   }
 
-  func testEnumWithPrioritizeKeepingFunctionOutputTogetherFlag() {
+  @Test func enumWithPrioritizeKeepingFunctionOutputTogetherFlag() {
     let input = """
       enum Error {
         case alreadyOpen(Int)

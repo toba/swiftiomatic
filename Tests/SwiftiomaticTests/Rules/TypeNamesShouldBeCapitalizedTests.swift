@@ -12,9 +12,11 @@
 
 @_spi(Rules) import Swiftiomatic
 import _SwiftiomaticTestSupport
+import Testing
 
-final class TypeNamesShouldBeCapitalizedTests: LintOrFormatRuleTestCase {
-  func testConstruction() {
+@Suite
+struct TypeNamesShouldBeCapitalizedTests: RuleTesting {
+  @Test func construction() {
     assertLint(
       TypeNamesShouldBeCapitalized.self,
       """
@@ -38,7 +40,7 @@ final class TypeNamesShouldBeCapitalizedTests: LintOrFormatRuleTestCase {
     )
   }
 
-  func testActors() {
+  @Test func actors() {
     assertLint(
       TypeNamesShouldBeCapitalized.self,
       """
@@ -54,7 +56,7 @@ final class TypeNamesShouldBeCapitalizedTests: LintOrFormatRuleTestCase {
     )
   }
 
-  func testAssociatedTypeandTypeAlias() {
+  @Test func associatedTypeandTypeAlias() {
     assertLint(
       TypeNamesShouldBeCapitalized.self,
       """
@@ -82,7 +84,7 @@ final class TypeNamesShouldBeCapitalizedTests: LintOrFormatRuleTestCase {
     )
   }
 
-  func testThatUnderscoredNamesAreDiagnosed() {
+  @Test func thatUnderscoredNamesAreDiagnosed() {
     assertLint(
       TypeNamesShouldBeCapitalized.self,
       """

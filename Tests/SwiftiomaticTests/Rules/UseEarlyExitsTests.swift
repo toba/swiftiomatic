@@ -12,9 +12,11 @@
 
 @_spi(Rules) import Swiftiomatic
 import _SwiftiomaticTestSupport
+import Testing
 
-final class UseEarlyExitsTests: LintOrFormatRuleTestCase {
-  func testBasicIfElse() {
+@Suite
+struct UseEarlyExitsTests: RuleTesting {
+  @Test func basicIfElse() {
     // In this and other tests, the indentation of the true block in the expected output is
     // explicitly incorrect because this formatting rule does not fix it up with the assumption that
     // the pretty-printer will handle it.
@@ -41,7 +43,7 @@ final class UseEarlyExitsTests: LintOrFormatRuleTestCase {
     )
   }
 
-  func testIfElseWithBothEarlyExiting() {
+  @Test func ifElseWithBothEarlyExiting() {
     assertFormatting(
       UseEarlyExits.self,
       input: """
@@ -67,7 +69,7 @@ final class UseEarlyExitsTests: LintOrFormatRuleTestCase {
     )
   }
 
-  func testElseIfsDoNotChange() {
+  @Test func elseIfsDoNotChange() {
     let input = """
       if condition {
         trueBlock()
@@ -79,7 +81,7 @@ final class UseEarlyExitsTests: LintOrFormatRuleTestCase {
     assertFormatting(UseEarlyExits.self, input: input, expected: input, findings: [])
   }
 
-  func testElsesAtEndOfElseIfsDoNotChange() {
+  @Test func elsesAtEndOfElseIfsDoNotChange() {
     let input = """
       if condition {
         trueBlock()
@@ -94,7 +96,7 @@ final class UseEarlyExitsTests: LintOrFormatRuleTestCase {
     assertFormatting(UseEarlyExits.self, input: input, expected: input, findings: [])
   }
 
-  func testComplex() {
+  @Test func complex() {
     assertFormatting(
       UseEarlyExits.self,
       input: """

@@ -12,9 +12,11 @@
 
 @_spi(Rules) import Swiftiomatic
 import _SwiftiomaticTestSupport
+import Testing
 
-final class NoAccessLevelOnExtensionDeclarationTests: LintOrFormatRuleTestCase {
-  func testExtensionDeclarationAccessLevel() {
+@Suite
+struct NoAccessLevelOnExtensionDeclarationTests: RuleTesting {
+  @Test func extensionDeclarationAccessLevel() {
     assertFormatting(
       NoAccessLevelOnExtensionDeclaration.self,
       input: """
@@ -71,7 +73,7 @@ final class NoAccessLevelOnExtensionDeclarationTests: LintOrFormatRuleTestCase {
     )
   }
 
-  func testRemoveRedundantInternal() {
+  @Test func removeRedundantInternal() {
     assertFormatting(
       NoAccessLevelOnExtensionDeclaration.self,
       input: """
@@ -92,7 +94,7 @@ final class NoAccessLevelOnExtensionDeclarationTests: LintOrFormatRuleTestCase {
     )
   }
 
-  func testPreservesCommentOnRemovedModifier() {
+  @Test func preservesCommentOnRemovedModifier() {
     assertFormatting(
       NoAccessLevelOnExtensionDeclaration.self,
       input: """
@@ -139,7 +141,7 @@ final class NoAccessLevelOnExtensionDeclarationTests: LintOrFormatRuleTestCase {
     )
   }
 
-  func testPackageAccessLevel() {
+  @Test func packageAccessLevel() {
     assertFormatting(
       NoAccessLevelOnExtensionDeclaration.self,
       input: """
@@ -164,7 +166,7 @@ final class NoAccessLevelOnExtensionDeclarationTests: LintOrFormatRuleTestCase {
     )
   }
 
-  func testPrivateIsEffectivelyFileprivate() {
+  @Test func privateIsEffectivelyFileprivate() {
     assertFormatting(
       NoAccessLevelOnExtensionDeclaration.self,
       input: """
@@ -190,7 +192,7 @@ final class NoAccessLevelOnExtensionDeclarationTests: LintOrFormatRuleTestCase {
     )
   }
 
-  func testExtensionWithAnnotation() {
+  @Test func extensionWithAnnotation() {
     assertFormatting(
       NoAccessLevelOnExtensionDeclaration.self,
       input: """
@@ -209,7 +211,7 @@ final class NoAccessLevelOnExtensionDeclarationTests: LintOrFormatRuleTestCase {
     )
   }
 
-  func testPreservesInlineAnnotationsBeforeAddedAccessLevelModifiers() {
+  @Test func preservesInlineAnnotationsBeforeAddedAccessLevelModifiers() {
     assertFormatting(
       NoAccessLevelOnExtensionDeclaration.self,
       input: """
@@ -267,7 +269,7 @@ final class NoAccessLevelOnExtensionDeclarationTests: LintOrFormatRuleTestCase {
     )
   }
 
-  func testPreservesMultiLineAnnotationsBeforeAddedAccessLevelModifiers() {
+  @Test func preservesMultiLineAnnotationsBeforeAddedAccessLevelModifiers() {
     assertFormatting(
       NoAccessLevelOnExtensionDeclaration.self,
       input: """
@@ -357,7 +359,7 @@ final class NoAccessLevelOnExtensionDeclarationTests: LintOrFormatRuleTestCase {
     )
   }
 
-  func testIfConfigMembers() {
+  @Test func ifConfigMembers() {
     assertFormatting(
       NoAccessLevelOnExtensionDeclaration.self,
       input: """
@@ -391,7 +393,7 @@ final class NoAccessLevelOnExtensionDeclarationTests: LintOrFormatRuleTestCase {
     )
   }
 
-  func testNestedExtensionsAreIgnored() {
+  @Test func nestedExtensionsAreIgnored() {
     assertFormatting(
       NoAccessLevelOnExtensionDeclaration.self,
       input: """

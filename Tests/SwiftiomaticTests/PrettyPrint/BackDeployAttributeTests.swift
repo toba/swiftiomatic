@@ -10,8 +10,10 @@
 //
 //===----------------------------------------------------------------------===//
 
-final class BackDeployAttributeTests: PrettyPrintTestCase {
-  func testSpacingAndWrapping() {
+import Testing
+@Suite
+struct BackDeployAttributeTests: PrettyPrintTesting {
+  @Test func spacingAndWrapping() {
     let input =
       """
       @backDeployed(before:iOS 17)

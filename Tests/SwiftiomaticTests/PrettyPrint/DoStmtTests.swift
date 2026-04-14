@@ -11,9 +11,11 @@
 //===----------------------------------------------------------------------===//
 
 import Swiftiomatic
+import Testing
 
-final class DoStmtTests: PrettyPrintTestCase {
-  func testBasicDoStmt() {
+@Suite
+struct DoStmtTests: PrettyPrintTesting {
+  @Test func basicDoStmt() {
     let input =
       """
       do {}
@@ -43,7 +45,7 @@ final class DoStmtTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 25)
   }
 
-  func testNestedDo() {
+  @Test func nestedDo() {
     // Avoid regressions in the case where a nested `do` block was getting shifted all the way left.
     let input = """
       func foo() {
@@ -56,7 +58,7 @@ final class DoStmtTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: input + "\n", linelength: 45)
   }
 
-  func testLabeledDoStmt() {
+  @Test func labeledDoStmt() {
     let input = """
       someLabel:do {
         bar()
@@ -83,7 +85,7 @@ final class DoStmtTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 45)
   }
 
-  func testDoTypedThrowsStmt() {
+  @Test func doTypedThrowsStmt() {
     let input =
       """
       do throws(FooError) {
@@ -116,7 +118,7 @@ final class DoStmtTests: PrettyPrintTestCase {
     )
   }
 
-  func testDoCatch_noBreakBeforeCatch() {
+  @Test func doCatch_noBreakBeforeCatch() {
     let input =
       """
       do { try thisFuncMightFail() } catch error1 { print("Nope") }
@@ -164,7 +166,7 @@ final class DoStmtTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 40)
   }
 
-  func testDoCatch_breakBeforeCatch() {
+  @Test func doCatch_breakBeforeCatch() {
     let input =
       """
       do { try thisFuncMightFail() } catch error1 { print("Nope") }
@@ -206,7 +208,7 @@ final class DoStmtTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 40, configuration: config)
   }
 
-  func testCatchWhere_noBreakBeforeCatch() {
+  @Test func catchWhere_noBreakBeforeCatch() {
     let input =
       """
       do { try thisFuncMightFail() } catch error1 where error1 is ErrorType { print("Nope") }
@@ -231,7 +233,7 @@ final class DoStmtTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 42)
   }
 
-  func testCatchWhere_breakBeforeCatch() {
+  @Test func catchWhere_breakBeforeCatch() {
     let input =
       """
       do { try thisFuncMightFail() } catch error1 where error1 is ErrorType { print("Nope") }
@@ -257,7 +259,7 @@ final class DoStmtTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 42, configuration: config)
   }
 
-  func testMultipleCatchItems() {
+  @Test func multipleCatchItems() {
     let input =
       """
       do { try thisMightFail() } catch error1, error2 { print("Nope") }

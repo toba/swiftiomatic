@@ -11,11 +11,13 @@
 //===----------------------------------------------------------------------===//
 
 import Swiftiomatic
+import Testing
 
 /// These tests verify the breaking and grouping behavior of expression modifiers like `try`,
 /// `await`, and `unsafe`.
-final class ExpressionModifierTests: PrettyPrintTestCase {
-  func testBasicTries() {
+@Suite
+struct ExpressionModifierTests: PrettyPrintTesting {
+  @Test func basicTries() {
     let input =
       """
       let a = try possiblyFailingFunc()
@@ -34,7 +36,7 @@ final class ExpressionModifierTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 40)
   }
 
-  func testTryKeywordBreaking() {
+  @Test func tryKeywordBreaking() {
     let input =
       """
       let aVeryLongArgumentName = try foo.bar()
@@ -86,7 +88,7 @@ final class ExpressionModifierTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 40)
   }
 
-  func testBasicAwaits() {
+  @Test func basicAwaits() {
     let input =
       """
       let a = await asynchronousFunction()
@@ -108,7 +110,7 @@ final class ExpressionModifierTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 36)
   }
 
-  func testAwaitKeywordBreaking() {
+  @Test func awaitKeywordBreaking() {
     let input =
       """
       let aVeryLongArgumentName = await foo.bar()
@@ -157,7 +159,7 @@ final class ExpressionModifierTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 42)
   }
 
-  func testTryAwaitKeywordBreaking() {
+  @Test func tryAwaitKeywordBreaking() {
     let input =
       """
       let aVeryLongArgumentName = try await foo.bar()
@@ -210,7 +212,7 @@ final class ExpressionModifierTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 46)
   }
 
-  func testBasicUnsafe() {
+  @Test func basicUnsafe() {
     // NOTE: Even though the third line will be overlong, it cannot be broken after `unsafe`
     // because the result would fail to parse.
     let input =
@@ -233,7 +235,7 @@ final class ExpressionModifierTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 32)
   }
 
-  func testMultipleModifierBreaking() {
+  @Test func multipleModifierBreaking() {
     assertPrettyPrintEqual(
       input: """
         let a = unsafe try await

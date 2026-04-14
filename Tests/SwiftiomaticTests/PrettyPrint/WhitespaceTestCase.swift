@@ -14,28 +14,20 @@ import Swiftiomatic
 @_spi(Testing) import Swiftiomatic
 import SwiftParser
 import SwiftSyntax
-import XCTest
+import Testing
 @_spi(Testing) import _SwiftiomaticTestSupport
 
-class WhitespaceTestCase: DiagnosingTestCase {
+protocol WhitespaceTesting {}
+
+extension WhitespaceTesting {
   /// Perform whitespace linting by comparing the input text from the user with the expected
   /// formatted text.
-  ///
-  /// - Parameters:
-  ///   - input: The user's input text.
-  ///   - expected: The formatted text.
-  ///   - linelength: The maximum allowed line length of the output.
-  ///   - findings: A list of `FindingSpec` values that describe the findings that are expected to
-  ///     be emitted.
-  ///   - file: The file the test resides in (defaults to the current caller's file).
-  ///   - line: The line the test resides in (defaults to the current caller's line).
-  final func assertWhitespaceLint(
+  func assertWhitespaceLint(
     input: String,
     expected: String,
     linelength: Int? = nil,
     findings: [FindingSpec],
-    file: StaticString = #file,
-    line: UInt = #line
+    sourceLocation: TestSourceLocation = #_sourceLocation
   ) {
     let markedText = MarkedText(textWithMarkers: input)
 
@@ -47,7 +39,7 @@ class WhitespaceTestCase: DiagnosingTestCase {
 
     var emittedFindings = [Finding]()
 
-    let context = makeContext(
+    let context = makeTestContext(
       sourceFileSyntax: sourceFileSyntax,
       configuration: configuration,
       selection: .infinite,
@@ -65,8 +57,7 @@ class WhitespaceTestCase: DiagnosingTestCase {
       markerLocations: markedText.markers,
       emittedFindings: emittedFindings,
       context: context,
-      file: file,
-      line: line
+      sourceLocation: sourceLocation
     )
   }
 }

@@ -12,16 +12,17 @@
 
 @_spi(Rules) import Swiftiomatic
 import _SwiftiomaticTestSupport
+import Testing
 
 // FIXME: We should place the diagnostic somewhere in the comment, not on the declaration.
-final class BeginDocumentationCommentWithOneLineSummaryTests: LintOrFormatRuleTestCase {
-  override func setUp() {
+@Suite
+struct BeginDocumentationCommentWithOneLineSummaryTests: RuleTesting {
+  init() {
     // Reset this to false by default. Specific tests may override it.
     BeginDocumentationCommentWithOneLineSummary._forcesFallbackModeForTesting = false
-    super.setUp()
   }
 
-  func testDocLineCommentsWithoutOneSentenceSummary() {
+  @Test func docLineCommentsWithoutOneSentenceSummary() {
     assertLint(
       BeginDocumentationCommentWithOneLineSummary.self,
       """
@@ -75,7 +76,7 @@ final class BeginDocumentationCommentWithOneLineSummaryTests: LintOrFormatRuleTe
     )
   }
 
-  func testBlockLineCommentsWithoutOneSentenceSummary() {
+  @Test func blockLineCommentsWithoutOneSentenceSummary() {
     assertLint(
       BeginDocumentationCommentWithOneLineSummary.self,
       """
@@ -131,7 +132,7 @@ final class BeginDocumentationCommentWithOneLineSummaryTests: LintOrFormatRuleTe
     )
   }
 
-  func testApproximationsOnMacOS() {
+  @Test func approximationsOnMacOS() {
     // Verify that the fallback (non-linguistic) mode also works.
     BeginDocumentationCommentWithOneLineSummary._forcesFallbackModeForTesting = true
 
@@ -177,7 +178,7 @@ final class BeginDocumentationCommentWithOneLineSummaryTests: LintOrFormatRuleTe
     )
   }
 
-  func testSentenceTerminationInsideQuotes() {
+  @Test func sentenceTerminationInsideQuotes() {
     assertLint(
       BeginDocumentationCommentWithOneLineSummary.self,
       """
@@ -207,7 +208,7 @@ final class BeginDocumentationCommentWithOneLineSummaryTests: LintOrFormatRuleTe
     )
   }
 
-  func testNestedInsideStruct() {
+  @Test func nestedInsideStruct() {
     assertLint(
       BeginDocumentationCommentWithOneLineSummary.self,
       """
@@ -223,7 +224,7 @@ final class BeginDocumentationCommentWithOneLineSummaryTests: LintOrFormatRuleTe
     )
   }
 
-  func testNestedInsideEnum() {
+  @Test func nestedInsideEnum() {
     assertLint(
       BeginDocumentationCommentWithOneLineSummary.self,
       """
@@ -239,7 +240,7 @@ final class BeginDocumentationCommentWithOneLineSummaryTests: LintOrFormatRuleTe
     )
   }
 
-  func testNestedInsideClass() {
+  @Test func nestedInsideClass() {
     assertLint(
       BeginDocumentationCommentWithOneLineSummary.self,
       """
@@ -255,7 +256,7 @@ final class BeginDocumentationCommentWithOneLineSummaryTests: LintOrFormatRuleTe
     )
   }
 
-  func testNestedInsideActor() {
+  @Test func nestedInsideActor() {
     assertLint(
       BeginDocumentationCommentWithOneLineSummary.self,
       """

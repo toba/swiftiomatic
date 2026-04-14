@@ -10,8 +10,10 @@
 //
 //===----------------------------------------------------------------------===//
 
-final class YieldStmtTests: PrettyPrintTestCase {
-  func testBasic() {
+import Testing
+@Suite
+struct YieldStmtTests: PrettyPrintTesting {
+  @Test func basic() {
     let input =
       """
       var foo: Int {

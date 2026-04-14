@@ -11,9 +11,11 @@
 //===----------------------------------------------------------------------===//
 
 import Swiftiomatic
+import Testing
 
-final class ProtocolDeclTests: PrettyPrintTestCase {
-  func testBasicProtocolDeclarations() {
+@Suite
+struct ProtocolDeclTests: PrettyPrintTesting {
+  @Test func basicProtocolDeclarations() {
     let input =
       """
       protocol MyProtocol {
@@ -62,7 +64,7 @@ final class ProtocolDeclTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 30)
   }
 
-  func testProtocolInheritance() {
+  @Test func protocolInheritance() {
     let input =
       """
       protocol MyProtocol: ProtoOne {
@@ -101,7 +103,7 @@ final class ProtocolDeclTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 50)
   }
 
-  func testProtocolAttributes() {
+  @Test func protocolAttributes() {
     let input =
       """
       @dynamicMemberLookup public protocol MyProtocol {
@@ -151,7 +153,7 @@ final class ProtocolDeclTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 60)
   }
 
-  func testProtocolWithFunctions() {
+  @Test func protocolWithFunctions() {
     let input =
       """
       protocol MyProtocol {
@@ -192,7 +194,7 @@ final class ProtocolDeclTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 30)
   }
 
-  func testProtocolWithInitializers() {
+  @Test func protocolWithInitializers() {
     let input =
       """
       protocol MyProtocol {
@@ -215,7 +217,7 @@ final class ProtocolDeclTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 30)
   }
 
-  func testProtocolWithAssociatedtype() {
+  @Test func protocolWithAssociatedtype() {
     let input =
       """
       protocol MyProtocol {
@@ -244,7 +246,7 @@ final class ProtocolDeclTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 65)
   }
 
-  func testEmptyProtocol() {
+  @Test func emptyProtocol() {
     let input = "protocol Foo {}"
     assertPrettyPrintEqual(input: input, expected: input + "\n", linelength: 50)
 
@@ -256,7 +258,7 @@ final class ProtocolDeclTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: wrapped, linelength: 14)
   }
 
-  func testEmptyProtocolWithComment() {
+  @Test func emptyProtocolWithComment() {
     let input = """
       protocol Foo {
         // foo
@@ -265,12 +267,12 @@ final class ProtocolDeclTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: input + "\n", linelength: 50)
   }
 
-  func testOneMemberProtocol() {
+  @Test func oneMemberProtocol() {
     let input = "protocol Foo { var bar: Int { get } }"
     assertPrettyPrintEqual(input: input, expected: input + "\n", linelength: 50)
   }
 
-  func testPrimaryAssociatedTypes_noPackArguments() {
+  @Test func primaryAssociatedTypes_noPackArguments() {
     let input =
       """
       protocol MyProtocol<T> {
@@ -314,7 +316,7 @@ final class ProtocolDeclTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 30, configuration: config)
   }
 
-  func testPrimaryAssociatedTypes_packArguments() {
+  @Test func primaryAssociatedTypes_packArguments() {
     let input =
       """
       protocol MyProtocol<T> {

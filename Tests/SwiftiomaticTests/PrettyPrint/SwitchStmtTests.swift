@@ -11,9 +11,11 @@
 //===----------------------------------------------------------------------===//
 
 import Swiftiomatic
+import Testing
 
-final class SwitchStmtTests: PrettyPrintTestCase {
-  func testBasicSwitch() {
+@Suite
+struct SwitchStmtTests: PrettyPrintTesting {
+  @Test func basicSwitch() {
     let input =
       """
       switch someCharacter {
@@ -64,7 +66,7 @@ final class SwitchStmtTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 35)
   }
 
-  func testSwitchCases() {
+  @Test func switchCases() {
     let input =
       """
       switch someCharacter {
@@ -90,7 +92,7 @@ final class SwitchStmtTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 35)
   }
 
-  func testSwitchEmptyCases() {
+  @Test func switchEmptyCases() {
     let input =
       """
       switch a {
@@ -127,7 +129,7 @@ final class SwitchStmtTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 35)
   }
 
-  func testSwitchCompoundCases() {
+  @Test func switchCompoundCases() {
     let input =
       """
       switch someChar {
@@ -162,7 +164,7 @@ final class SwitchStmtTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 20)
   }
 
-  func testNestedSwitch() {
+  @Test func nestedSwitch() {
     let input =
       """
       myloop: while a != b {
@@ -193,7 +195,7 @@ final class SwitchStmtTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 35)
   }
 
-  func testSwitchValueBinding() {
+  @Test func switchValueBinding() {
     let input =
       """
       switch someValue {
@@ -254,7 +256,7 @@ final class SwitchStmtTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 45)
   }
 
-  func testSwitchExpression1() {
+  @Test func switchExpression1() {
     let input =
       """
       func foo() -> Int {
@@ -289,7 +291,7 @@ final class SwitchStmtTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 35)
   }
 
-  func testSwitchExpression2() {
+  @Test func switchExpression2() {
     let input =
       """
       func foo() -> Int {
@@ -346,7 +348,7 @@ final class SwitchStmtTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected43, linelength: 43)
   }
 
-  func testUnknownDefault() {
+  @Test func unknownDefault() {
     let input =
       """
       switch foo {
@@ -366,7 +368,7 @@ final class SwitchStmtTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 20)
   }
 
-  func testNewlinesDisambiguatingWhereClauses() {
+  @Test func newlinesDisambiguatingWhereClauses() {
     let input =
       """
       switch foo {
@@ -406,7 +408,7 @@ final class SwitchStmtTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 80)
   }
 
-  func testSwitchSequenceExprCases() {
+  @Test func switchSequenceExprCases() {
     let input =
       """
       switch foo {
@@ -438,7 +440,7 @@ final class SwitchStmtTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 40)
   }
 
-  func testLabeledSwitchStmt() {
+  @Test func labeledSwitchStmt() {
     let input =
       """
       label:switch foo {
@@ -476,7 +478,7 @@ final class SwitchStmtTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 20)
   }
 
-  func testConditionalCases() {
+  @Test func conditionalCases() {
     let input =
       """
       switch foo {
@@ -521,7 +523,7 @@ final class SwitchStmtTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 40)
   }
 
-  func testConditionalCasesIndenting() {
+  @Test func conditionalCasesIndenting() {
     let input =
       """
       switch foo {

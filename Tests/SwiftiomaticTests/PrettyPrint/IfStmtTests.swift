@@ -11,10 +11,11 @@
 //===----------------------------------------------------------------------===//
 
 import Swiftiomatic
-import XCTest
+import Testing
 
-final class IfStmtTests: PrettyPrintTestCase {
-  func testIfStatement() {
+@Suite
+struct IfStmtTests: PrettyPrintTesting {
+  @Test func ifStatement() {
     let input =
       """
       if var1 > var2 {
@@ -74,7 +75,7 @@ final class IfStmtTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 20)
   }
 
-  func testIfElseStatement_noBreakBeforeElse() {
+  @Test func ifElseStatement_noBreakBeforeElse() {
     let input =
       """
       if var1 < var2 {
@@ -118,7 +119,7 @@ final class IfStmtTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 23)
   }
 
-  func testIfElseStatement_breakBeforeElse() {
+  @Test func ifElseStatement_breakBeforeElse() {
     let input =
       """
       if var1 < var2 {
@@ -165,7 +166,7 @@ final class IfStmtTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 20, configuration: config)
   }
 
-  func testIfExpression1() {
+  @Test func ifExpression1() {
     let input =
       """
       func foo() -> Int {
@@ -198,7 +199,7 @@ final class IfStmtTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 23)
   }
 
-  func testIfExpression2() {
+  @Test func ifExpression2() {
     let input =
       """
       func foo() -> Int {
@@ -234,7 +235,7 @@ final class IfStmtTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 26)
   }
 
-  func testIfExpression3() {
+  @Test func ifExpression3() {
     let input =
       """
       let x = if a { b } else { c }
@@ -267,7 +268,7 @@ final class IfStmtTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected22, linelength: 22)
   }
 
-  func testMatchingPatternConditions() {
+  @Test func matchingPatternConditions() {
     let input =
       """
       if case .foo = bar {
@@ -298,7 +299,7 @@ final class IfStmtTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 30)
   }
 
-  func testIfLetStatements() {
+  @Test func ifLetStatements() {
     let input =
       """
       if let SomeReallyLongVar = Some.More.Stuff(), let a = myfunc() {
@@ -331,7 +332,7 @@ final class IfStmtTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 44)
   }
 
-  func testContinuationLineBreakIndentation() {
+  @Test func continuationLineBreakIndentation() {
     let input =
       """
       if let someObject = object as? Int,
@@ -387,7 +388,7 @@ final class IfStmtTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 50)
   }
 
-  func testHangingOpenBreakIsTreatedLikeContinuation() {
+  @Test func hangingOpenBreakIsTreatedLikeContinuation() {
     let input =
       """
       if let foo = someFunction(someArgumentLabel: someValue) {
@@ -408,7 +409,7 @@ final class IfStmtTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 50)
   }
 
-  func testConditionExpressionOperatorGrouping() throws {
+  @Test func conditionExpressionOperatorGrouping() throws {
     let input =
       """
       if someObj is SuperVerboselyNamedType || someObj is AnotherPrettyLongType  || someObjc == "APlainString" || someObj == 4 {
@@ -441,7 +442,7 @@ final class IfStmtTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 50)
   }
 
-  func testConditionExpressionOperatorGroupingMixedWithParentheses() throws {
+  @Test func conditionExpressionOperatorGroupingMixedWithParentheses() throws {
     let input =
       """
       if (someObj is SuperVerboselyNamedType || someObj is AnotherPrettyLongType  || someObjc == "APlainString" || someObj == 4) {
@@ -474,7 +475,7 @@ final class IfStmtTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 50)
   }
 
-  func testOptionalBindingConditions() {
+  @Test func optionalBindingConditions() {
     let input =
       """
       if let someObject: Foo = object as? Int {
@@ -505,7 +506,7 @@ final class IfStmtTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 40)
   }
 
-  func testParenthesizedClauses() {
+  @Test func parenthesizedClauses() {
     let input =
       """
       if foo && (
@@ -564,7 +565,7 @@ final class IfStmtTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 50)
   }
 
-  func testCompoundClauses() {
+  @Test func compoundClauses() {
     let input =
       """
       if foo &&
@@ -606,7 +607,7 @@ final class IfStmtTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 50)
   }
 
-  func testLabeledIfStmt() {
+  @Test func labeledIfStmt() {
     let input =
       """
       someLabel:if foo && bar {
@@ -633,7 +634,7 @@ final class IfStmtTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 50)
   }
 
-  func testMultipleIfStmts() {
+  @Test func multipleIfStmts() {
     let input =
       """
       func foo() {

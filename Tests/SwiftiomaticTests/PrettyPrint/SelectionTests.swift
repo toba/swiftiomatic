@@ -11,10 +11,11 @@
 //===----------------------------------------------------------------------===//
 
 import Swiftiomatic
-import XCTest
+import Testing
 
-final class SelectionTests: PrettyPrintTestCase {
-  func testSelectAll() {
+@Suite
+struct SelectionTests: PrettyPrintTesting {
+  @Test func selectAll() {
     let input =
       """
       ⏩func foo() {
@@ -36,7 +37,7 @@ final class SelectionTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 80)
   }
 
-  func testSelectComment() {
+  @Test func selectComment() {
     let input =
       """
       func foo() {
@@ -58,7 +59,7 @@ final class SelectionTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 80)
   }
 
-  func testInsertionPointBeforeComment() {
+  @Test func insertionPointBeforeComment() {
     let input =
       """
       func foo() {
@@ -80,7 +81,7 @@ final class SelectionTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 80)
   }
 
-  func testSpacesInline() {
+  @Test func spacesInline() {
     let input =
       """
       func foo() {
@@ -102,7 +103,7 @@ final class SelectionTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 80)
   }
 
-  func testSpacesFullLine() {
+  @Test func spacesFullLine() {
     let input =
       """
       func foo() {
@@ -124,7 +125,7 @@ final class SelectionTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 80)
   }
 
-  func testWrapInline() {
+  @Test func wrapInline() {
     let input =
       """
       func foo() {
@@ -148,7 +149,7 @@ final class SelectionTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 44)
   }
 
-  func testCommentsOnly() {
+  @Test func commentsOnly() {
     let input =
       """
       func foo() {
@@ -174,7 +175,7 @@ final class SelectionTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 80)
   }
 
-  func testVarOnly() {
+  @Test func varOnly() {
     let input =
       """
       func foo() {
@@ -200,7 +201,7 @@ final class SelectionTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 80)
   }
 
-  func testSingleLineFunc() {
+  @Test func singleLineFunc() {
     let input =
       """
       func foo()   ⏩{}⏪
@@ -214,7 +215,7 @@ final class SelectionTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 80)
   }
 
-  func testSingleLineFunc2() {
+  @Test func singleLineFunc2() {
     let input =
       """
       func foo() /**/ ⏩{}⏪
@@ -228,7 +229,7 @@ final class SelectionTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 80)
   }
 
-  func testSimpleFunc() {
+  @Test func simpleFunc() {
     let input =
       """
       func foo() /**/
@@ -245,7 +246,7 @@ final class SelectionTests: PrettyPrintTestCase {
   }
 
   // MARK: - multiple selection ranges
-  func testFirstCommentAndVar() {
+  @Test func firstCommentAndVar() {
     let input =
       """
       func foo() {
@@ -272,7 +273,7 @@ final class SelectionTests: PrettyPrintTestCase {
   }
 
   // from AccessorTests (but with some Selection ranges)
-  func testBasicAccessors() {
+  @Test func basicAccessors() {
     let input =
       """
       ⏩struct MyStruct {
@@ -349,7 +350,7 @@ final class SelectionTests: PrettyPrintTestCase {
   }
 
   // from CommentTests (but with some Selection ranges)
-  func testContainerLineComments() {
+  @Test func containerLineComments() {
     let input =
       """
       // Array comment

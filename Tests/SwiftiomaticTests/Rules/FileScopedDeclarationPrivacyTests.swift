@@ -14,6 +14,7 @@ import Swiftiomatic
 @_spi(Rules) import Swiftiomatic
 import SwiftSyntax
 import _SwiftiomaticTestSupport
+import Testing
 
 private typealias TestConfiguration = (
   original: String,
@@ -39,8 +40,9 @@ private let unchangingTestConfigurations: [TestConfiguration] = [
   (original: "fileprivate", desired: .private, expected: "fileprivate"),
 ]
 
-final class FileScopedDeclarationPrivacyTests: LintOrFormatRuleTestCase {
-  func testFileScopeDecls() {
+@Suite
+struct FileScopedDeclarationPrivacyTests: RuleTesting {
+  @Test func fileScopeDecls() {
     runWithMultipleConfigurations(
       source: """
         1️⃣$access$ class Foo {}
@@ -65,7 +67,7 @@ final class FileScopedDeclarationPrivacyTests: LintOrFormatRuleTestCase {
     }
   }
 
-  func testFileScopeExtensionsAreNotChanged() {
+  @Test func fileScopeExtensionsAreNotChanged() {
     runWithMultipleConfigurations(
       source: """
         $access$ extension Foo {}
@@ -74,7 +76,7 @@ final class FileScopedDeclarationPrivacyTests: LintOrFormatRuleTestCase {
     ) { _, _ in [] }
   }
 
-  func testNonFileScopeDeclsAreNotChanged() {
+  @Test func nonFileScopeDeclsAreNotChanged() {
     runWithMultipleConfigurations(
       source: """
         enum Namespace {
@@ -90,7 +92,7 @@ final class FileScopedDeclarationPrivacyTests: LintOrFormatRuleTestCase {
     ) { _, _ in [] }
   }
 
-  func testFileScopeDeclsInsideConditionals() {
+  @Test func fileScopeDeclsInsideConditionals() {
     runWithMultipleConfigurations(
       source: """
         #if FOO
@@ -111,7 +113,7 @@ final class FileScopedDeclarationPrivacyTests: LintOrFormatRuleTestCase {
     }
   }
 
-  func testFileScopeDeclsInsideNestedConditionals() {
+  @Test func fileScopeDeclsInsideNestedConditionals() {
     runWithMultipleConfigurations(
       source: """
         #if FOO
@@ -140,7 +142,7 @@ final class FileScopedDeclarationPrivacyTests: LintOrFormatRuleTestCase {
     }
   }
 
-  func testLeadingTriviaIsPreserved() {
+  @Test func leadingTriviaIsPreserved() {
     runWithMultipleConfigurations(
       source: """
         /// Some doc comment
@@ -157,7 +159,7 @@ final class FileScopedDeclarationPrivacyTests: LintOrFormatRuleTestCase {
     }
   }
 
-  func testModifierDetailIsPreserved() {
+  @Test func modifierDetailIsPreserved() {
     runWithMultipleConfigurations(
       source: """
         public 1️⃣$access$(set) var foo: Int
@@ -174,8 +176,7 @@ final class FileScopedDeclarationPrivacyTests: LintOrFormatRuleTestCase {
   private func runWithMultipleConfigurations(
     source: String,
     testConfigurations: [TestConfiguration],
-    file: StaticString = #file,
-    line: UInt = #line,
+    sourceLocation: Testing.SourceLocation = #_sourceLocation,
     findingsProvider: (String, String) -> [FindingSpec]
   ) {
     for testConfig in testConfigurations {
@@ -205,8 +206,7 @@ final class FileScopedDeclarationPrivacyTests: LintOrFormatRuleTestCase {
         expected: substitutedExpected,
         findings: findingSpecs,
         configuration: configuration,
-        file: file,
-        line: line
+        sourceLocation: sourceLocation
       )
     }
   }

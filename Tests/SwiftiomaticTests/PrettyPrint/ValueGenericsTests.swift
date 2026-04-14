@@ -11,9 +11,11 @@
 //===----------------------------------------------------------------------===//
 
 @_spi(ExperimentalLanguageFeatures) import SwiftParser
+import Testing
 
-final class ValueGenericsTests: PrettyPrintTestCase {
-  func testValueGenericDeclaration() {
+@Suite
+struct ValueGenericsTests: PrettyPrintTesting {
+  @Test func valueGenericDeclaration() {
     let input = "struct Foo<let n: Int> { static let bar = n }"
     let expected = """
       struct Foo<
@@ -30,7 +32,7 @@ final class ValueGenericsTests: PrettyPrintTestCase {
     )
   }
 
-  func testValueGenericTypeUsage() {
+  @Test func valueGenericTypeUsage() {
     let input =
       """
       let v1: Vector<100, Int>

@@ -11,9 +11,11 @@
 //===----------------------------------------------------------------------===//
 
 import Swiftiomatic
+import Testing
 
-final class CommaTests: PrettyPrintTestCase {
-  func testArrayCommasAbsentEnabled() {
+@Suite
+struct CommaTests: PrettyPrintTesting {
+  @Test func arrayCommasAbsentEnabled() {
     let input =
       """
       let MyCollection = [
@@ -39,7 +41,7 @@ final class CommaTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 20, configuration: configuration)
   }
 
-  func testArrayCommasAbsentDisabled() {
+  @Test func arrayCommasAbsentDisabled() {
     let input =
       """
       let MyCollection = [
@@ -65,7 +67,7 @@ final class CommaTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 20, configuration: configuration)
   }
 
-  func testArrayCommasPresentEnabled() {
+  @Test func arrayCommasPresentEnabled() {
     let input =
       """
       let MyCollection = [
@@ -91,7 +93,7 @@ final class CommaTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 20, configuration: configuration)
   }
 
-  func testArrayCommasPresentDisabled() {
+  @Test func arrayCommasPresentDisabled() {
     let input =
       """
       let MyCollection = [
@@ -117,7 +119,7 @@ final class CommaTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 20, configuration: configuration)
   }
 
-  func testArraySingleLineCommasPresentEnabled() {
+  @Test func arraySingleLineCommasPresentEnabled() {
     let input =
       """
       let MyCollection = [1, 2, 3,]
@@ -136,7 +138,7 @@ final class CommaTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 40, configuration: configuration)
   }
 
-  func testArraySingleLineCommasPresentDisabled() {
+  @Test func arraySingleLineCommasPresentDisabled() {
     let input =
       """
       let MyCollection = [1, 2, 3,]
@@ -155,7 +157,7 @@ final class CommaTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 40, configuration: configuration)
   }
 
-  func testArrayWithCommentCommasPresentEnabled() {
+  @Test func arrayWithCommentCommasPresentEnabled() {
     let input =
       """
       let MyCollection = [
@@ -179,7 +181,7 @@ final class CommaTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 40, configuration: configuration)
   }
 
-  func testArrayWithCommentCommasPresentDisabled() {
+  @Test func arrayWithCommentCommasPresentDisabled() {
     let input =
       """
       let MyCollection = [
@@ -203,7 +205,7 @@ final class CommaTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 40, configuration: configuration)
   }
 
-  func testArrayWithTernaryOperatorAndCommentCommasPresentEnabled() {
+  @Test func arrayWithTernaryOperatorAndCommentCommasPresentEnabled() {
     let input =
       """
       let MyCollection = [
@@ -227,7 +229,7 @@ final class CommaTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 40, configuration: configuration)
   }
 
-  func testArrayWithTernaryOperatorAndCommentCommasPresentDisabled() {
+  @Test func arrayWithTernaryOperatorAndCommentCommasPresentDisabled() {
     let input =
       """
       let MyCollection = [
@@ -251,7 +253,7 @@ final class CommaTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 40, configuration: configuration)
   }
 
-  func testDictionaryCommasAbsentEnabled() {
+  @Test func dictionaryCommasAbsentEnabled() {
     let input =
       """
       let MyCollection = [
@@ -277,7 +279,7 @@ final class CommaTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 20, configuration: configuration)
   }
 
-  func testDictionaryCommasAbsentDisabled() {
+  @Test func dictionaryCommasAbsentDisabled() {
     let input =
       """
       let MyCollection = [
@@ -303,7 +305,7 @@ final class CommaTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 20, configuration: configuration)
   }
 
-  func testDictionaryCommasPresentEnabled() {
+  @Test func dictionaryCommasPresentEnabled() {
     let input =
       """
       let MyCollection = [
@@ -329,7 +331,7 @@ final class CommaTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 20, configuration: configuration)
   }
 
-  func testDictionaryCommasPresentDisabled() {
+  @Test func dictionaryCommasPresentDisabled() {
     let input =
       """
       let MyCollection = [
@@ -355,7 +357,7 @@ final class CommaTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 20, configuration: configuration)
   }
 
-  func testDictionarySingleLineCommasPresentDisabled() {
+  @Test func dictionarySingleLineCommasPresentDisabled() {
     let input =
       """
       let MyCollection = ["a": 1, "b": 2, "c": 3,]
@@ -375,7 +377,7 @@ final class CommaTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 40, configuration: configuration)
   }
 
-  func testDictionarySingleLineCommasPresentEnabled() {
+  @Test func dictionarySingleLineCommasPresentEnabled() {
     let input =
       """
       let MyCollection = ["a": 1, "b": 2, "c": 3,]
@@ -395,7 +397,7 @@ final class CommaTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 40, configuration: configuration)
   }
 
-  func testAlwaysTrailingCommasInGenericParameterList() {
+  @Test func alwaysTrailingCommasInGenericParameterList() {
     let input =
       """
       struct S<
@@ -433,7 +435,7 @@ final class CommaTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 40, configuration: configuration)
   }
 
-  func testAlwaysTrailingCommasInTuple() {
+  @Test func alwaysTrailingCommasInTuple() {
     let input =
       """
       let velocity = (
@@ -471,7 +473,7 @@ final class CommaTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 80, configuration: configuration)
   }
 
-  func testAlwaysTrailingCommasInFunction() {
+  @Test func alwaysTrailingCommasInFunction() {
     let input =
       """
       func foo(
@@ -524,7 +526,7 @@ final class CommaTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 40, configuration: configuration)
   }
 
-  func testAlwaysTrailingCommasInInitializer() {
+  @Test func alwaysTrailingCommasInInitializer() {
     let input =
       """
       struct S {
@@ -552,7 +554,7 @@ final class CommaTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 40, configuration: configuration)
   }
 
-  func testAlwaysTrailingCommasInEnumeration() {
+  @Test func alwaysTrailingCommasInEnumeration() {
     let input =
       """
       enum E {
@@ -594,7 +596,7 @@ final class CommaTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 40, configuration: configuration)
   }
 
-  func testAlwaysTrailingCommasInAttribute() {
+  @Test func alwaysTrailingCommasInAttribute() {
     let input =
       """
       @Foo(
@@ -622,7 +624,7 @@ final class CommaTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 40, configuration: configuration)
   }
 
-  func testAlwaysTrailingCommasInMacro() {
+  @Test func alwaysTrailingCommasInMacro() {
     let input =
       """
       struct S {
@@ -652,7 +654,7 @@ final class CommaTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 40, configuration: configuration)
   }
 
-  func testAlwaysTrailingCommasInKeyPath() {
+  @Test func alwaysTrailingCommasInKeyPath() {
     let input =
       #"""
       let value = m[
@@ -698,7 +700,7 @@ final class CommaTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 40, configuration: configuration)
   }
 
-  func testAlwaysTrailingCommasInClosureCapture() {
+  @Test func alwaysTrailingCommasInClosureCapture() {
     let input =
       """
       { 
@@ -740,7 +742,7 @@ final class CommaTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 40, configuration: configuration)
   }
 
-  func testNeverTrailingCommasInGenericParameterList() {
+  @Test func neverTrailingCommasInGenericParameterList() {
     let input =
       """
       struct S<
@@ -778,7 +780,7 @@ final class CommaTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 40, configuration: configuration)
   }
 
-  func testNeverTrailingCommasInTuple() {
+  @Test func neverTrailingCommasInTuple() {
     let input =
       """
       let velocity = (
@@ -816,7 +818,7 @@ final class CommaTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 80, configuration: configuration)
   }
 
-  func testNeverTrailingCommasInFunction() {
+  @Test func neverTrailingCommasInFunction() {
     let input =
       """
       func foo(
@@ -869,7 +871,7 @@ final class CommaTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 40, configuration: configuration)
   }
 
-  func testNeverTrailingCommasInInitializer() {
+  @Test func neverTrailingCommasInInitializer() {
     let input =
       """
       struct S {
@@ -897,7 +899,7 @@ final class CommaTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 40, configuration: configuration)
   }
 
-  func testNeverTrailingCommasInEnumeration() {
+  @Test func neverTrailingCommasInEnumeration() {
     let input =
       """
       enum E {
@@ -939,7 +941,7 @@ final class CommaTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 40, configuration: configuration)
   }
 
-  func testNeverTrailingCommasInAttribute() {
+  @Test func neverTrailingCommasInAttribute() {
     let input =
       """
       @Foo(
@@ -967,7 +969,7 @@ final class CommaTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 40, configuration: configuration)
   }
 
-  func testNeverTrailingCommasInMacro() {
+  @Test func neverTrailingCommasInMacro() {
     let input =
       """
       struct S {
@@ -997,7 +999,7 @@ final class CommaTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 40, configuration: configuration)
   }
 
-  func testNeverTrailingCommasInKeyPath() {
+  @Test func neverTrailingCommasInKeyPath() {
     let input =
       #"""
       let value = m[
@@ -1043,7 +1045,7 @@ final class CommaTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 40, configuration: configuration)
   }
 
-  func testNeverTrailingCommasInClosureCapture() {
+  @Test func neverTrailingCommasInClosureCapture() {
     let input =
       """
       { 
@@ -1085,7 +1087,7 @@ final class CommaTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 40, configuration: configuration)
   }
 
-  func testAlwaysMultilineTrailingCommaBehaviorOverridesMultiElementCollectionTrailingCommas() {
+  @Test func alwaysMultilineTrailingCommaBehaviorOverridesMultiElementCollectionTrailingCommas() {
     let input =
       """
       let MyCollection = [
@@ -1112,7 +1114,7 @@ final class CommaTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 20, configuration: configuration)
   }
 
-  func testNeverTrailingCommasInMultilineListsOverridesMultiElementCollectionTrailingCommas() {
+  @Test func neverTrailingCommasInMultilineListsOverridesMultiElementCollectionTrailingCommas() {
     let input =
       """
       let MyCollection = [

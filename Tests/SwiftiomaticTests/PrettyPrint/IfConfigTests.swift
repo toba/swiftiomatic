@@ -11,9 +11,11 @@
 //===----------------------------------------------------------------------===//
 
 import Swiftiomatic
+import Testing
 
-final class IfConfigTests: PrettyPrintTestCase {
-  func testBasicIfConfig() {
+@Suite
+struct IfConfigTests: PrettyPrintTesting {
+  @Test func basicIfConfig() {
     let input =
       """
       #if someCondition
@@ -70,7 +72,7 @@ final class IfConfigTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 45)
   }
 
-  func testIfConfigNoIndentation() {
+  @Test func ifConfigNoIndentation() {
     let input =
       """
       #if someCondition
@@ -129,7 +131,7 @@ final class IfConfigTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 45, configuration: config)
   }
 
-  func testPoundIfAroundMembers() {
+  @Test func poundIfAroundMembers() {
     let input =
       """
       class Foo {
@@ -154,7 +156,7 @@ final class IfConfigTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 45)
   }
 
-  func testPrettyPrintLineBreaksDisabled() {
+  @Test func prettyPrintLineBreaksDisabled() {
     let input =
       """
       #if canImport(SwiftUI) && !(os(iOS)&&arch( arm ) )&&( (canImport(AppKit) || canImport(UIKit)) && !os(watchOS))
@@ -173,7 +175,7 @@ final class IfConfigTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 40)
   }
 
-  func testInvalidDiscretionaryLineBreaksRemoved() {
+  @Test func invalidDiscretionaryLineBreaksRemoved() {
     let input =
       """
       #if (canImport(SwiftUI) &&
@@ -196,7 +198,7 @@ final class IfConfigTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 40)
   }
 
-  func testValidDiscretionaryLineBreaksRetained() {
+  @Test func validDiscretionaryLineBreaksRetained() {
     let input =
       """
       #if (canImport(SwiftUI)
@@ -243,7 +245,7 @@ final class IfConfigTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 40)
   }
 
-  func testPostfixPoundIfAfterParentheses() {
+  @Test func postfixPoundIfAfterParentheses() {
     let input =
       """
       VStack {
@@ -270,7 +272,7 @@ final class IfConfigTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 45)
   }
 
-  func testPostfixPoundIfAfterParenthesesMultipleMembers() {
+  @Test func postfixPoundIfAfterParenthesesMultipleMembers() {
     let input =
       """
       VStack {
@@ -303,7 +305,7 @@ final class IfConfigTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 45)
   }
 
-  func testPostfixPoundIfNested() {
+  @Test func postfixPoundIfNested() {
     let input =
       """
       VStack {
@@ -342,7 +344,7 @@ final class IfConfigTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 45)
   }
 
-  func testPostfixPoundIfAfterVariables() {
+  @Test func postfixPoundIfAfterVariables() {
     let input =
       """
       VStack {
@@ -369,7 +371,7 @@ final class IfConfigTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 45)
   }
 
-  func testPostfixPoundIfAfterClosingBrace() {
+  @Test func postfixPoundIfAfterClosingBrace() {
     let input =
       """
       HStack {
@@ -406,7 +408,7 @@ final class IfConfigTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 45)
   }
 
-  func testPostfixPoundIfBetweenOtherModifiers() {
+  @Test func postfixPoundIfBetweenOtherModifiers() {
     let input =
       """
       EmptyView()
@@ -433,7 +435,7 @@ final class IfConfigTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 45)
   }
 
-  func testPostfixPoundIfWithTypeInModifier() {
+  @Test func postfixPoundIfWithTypeInModifier() {
     let input =
       """
       EmptyView()
@@ -472,7 +474,7 @@ final class IfConfigTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 45)
   }
 
-  func testPostfixPoundIfNotIndentedIfClosingParenOnOwnLine() {
+  @Test func postfixPoundIfNotIndentedIfClosingParenOnOwnLine() {
     let input =
       """
       SomeFunction(
@@ -501,7 +503,7 @@ final class IfConfigTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 45)
   }
 
-  func testPostfixPoundIfForcesPrecedingClosingParenOntoNewLine() {
+  @Test func postfixPoundIfForcesPrecedingClosingParenOntoNewLine() {
     let input =
       """
       SomeFunction(
@@ -529,7 +531,7 @@ final class IfConfigTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 45)
   }
 
-  func testPostfixPoundIfInParameterList() {
+  @Test func postfixPoundIfInParameterList() {
     let input =
       """
       print(
@@ -544,7 +546,7 @@ final class IfConfigTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: input, linelength: 45)
   }
 
-  func testNestedPoundIfInSwitchStatement() {
+  @Test func nestedPoundIfInSwitchStatement() {
     let input =
       """
       switch self {

@@ -11,9 +11,11 @@
 //===----------------------------------------------------------------------===//
 
 import Swiftiomatic
+import Testing
 
-final class IndentBlankLinesTests: PrettyPrintTestCase {
-  func testIndentBlankLinesEnabled() {
+@Suite
+struct IndentBlankLinesTests: PrettyPrintTesting {
+  @Test func indentBlankLinesEnabled() {
     let input =
       """
       class A {
@@ -45,7 +47,7 @@ final class IndentBlankLinesTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 80, configuration: config)
   }
 
-  func testIndentBlankLinesDisabled() {
+  @Test func indentBlankLinesDisabled() {
     let input =
       """
       class A {
@@ -77,7 +79,7 @@ final class IndentBlankLinesTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 80, configuration: config)
   }
 
-  func testLineWithMoreWhitespacesThanIndentation() {
+  @Test func lineWithMoreWhitespacesThanIndentation() {
     let input =
       """
       class A {
@@ -109,7 +111,7 @@ final class IndentBlankLinesTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 80, configuration: config)
   }
 
-  func testLineWithFewerWhitespacesThanIndentation() {
+  @Test func lineWithFewerWhitespacesThanIndentation() {
     let input =
       """
       class A {
@@ -141,7 +143,7 @@ final class IndentBlankLinesTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 80, configuration: config)
   }
 
-  func testLineWithoutWhitespace() {
+  @Test func lineWithoutWhitespace() {
     let input =
       """
       class A {
@@ -173,7 +175,7 @@ final class IndentBlankLinesTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 80, configuration: config)
   }
 
-  func testConsecutiveLinesWithMoreWhitespacesThanIndentation() {
+  @Test func consecutiveLinesWithMoreWhitespacesThanIndentation() {
     let input =
       """
       class A {
@@ -206,7 +208,7 @@ final class IndentBlankLinesTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 80, configuration: config)
   }
 
-  func testConsecutiveLinesWithFewerWhitespacesThanIndentation() {
+  @Test func consecutiveLinesWithFewerWhitespacesThanIndentation() {
     let input =
       """
       class A {
@@ -239,7 +241,7 @@ final class IndentBlankLinesTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 80, configuration: config)
   }
 
-  func testConsecutiveLinesWithoutWhitespace() {
+  @Test func consecutiveLinesWithoutWhitespace() {
     let input =
       """
       class A {
@@ -272,7 +274,7 @@ final class IndentBlankLinesTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 80, configuration: config)
   }
 
-  func testExpressionsWithUnnecessaryWhitespaces() {
+  @Test func expressionsWithUnnecessaryWhitespaces() {
     let input =
       """
           class A {
@@ -304,7 +306,7 @@ final class IndentBlankLinesTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 80, configuration: config)
   }
 
-  func testBlockCommentWhenIndentBlankLinesDisabled() {
+  @Test func blockCommentWhenIndentBlankLinesDisabled() {
     let input =
       """
       struct Foo {
@@ -338,7 +340,7 @@ final class IndentBlankLinesTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 80, configuration: config)
   }
 
-  func testBlockCommentWhenIndentBlankLinesEnabled() {
+  @Test func blockCommentWhenIndentBlankLinesEnabled() {
     let input =
       """
       struct Foo {

@@ -13,9 +13,11 @@
 import Swiftiomatic
 import SwiftSyntax
 import _SwiftiomaticTestSupport
+import Testing
 
-final class ArrayDeclTests: PrettyPrintTestCase {
-  func testBasicArrays() {
+@Suite
+struct ArrayDeclTests: PrettyPrintTesting {
+  @Test func basicArrays() {
     let input =
       """
       let a = [ ]
@@ -79,7 +81,7 @@ final class ArrayDeclTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 45)
   }
 
-  func testArrayOfFunctions() {
+  @Test func arrayOfFunctions() {
     let input =
       """
       let A = [(Int, Double) -> Bool]()
@@ -149,7 +151,7 @@ final class ArrayDeclTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected27, linelength: 27)
   }
 
-  func testNoTrailingCommasInTypes() {
+  @Test func noTrailingCommasInTypes() {
     let input =
       """
       let a = [SomeSuperMegaLongTypeName]()
@@ -166,7 +168,7 @@ final class ArrayDeclTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 30)
   }
 
-  func testWhitespaceOnlyDoesNotChangeTrailingComma() {
+  @Test func whitespaceOnlyDoesNotChangeTrailingComma() {
     assertPrettyPrintEqual(
       input: """
         let a = [
@@ -199,7 +201,7 @@ final class ArrayDeclTests: PrettyPrintTestCase {
     )
   }
 
-  func testTrailingCommaDiagnostics() {
+  @Test func trailingCommaDiagnostics() {
     assertPrettyPrintEqual(
       input: """
         let a = [1, 2, 31️⃣,]
@@ -225,7 +227,7 @@ final class ArrayDeclTests: PrettyPrintTestCase {
     )
   }
 
-  func testGroupsTrailingComma() {
+  @Test func groupsTrailingComma() {
     let input =
       """
       let a = [
@@ -248,7 +250,7 @@ final class ArrayDeclTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 32)
   }
 
-  func testInnerElementBreakingFromComma() {
+  @Test func innerElementBreakingFromComma() {
     let input =
       """
       let a = [("abc", "def", "xyz"),("this ", "string", "is long"),]
@@ -303,7 +305,7 @@ final class ArrayDeclTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 32)
   }
 
-  func testInlineArrayTypeSugar() {
+  @Test func inlineArrayTypeSugar() {
     let input =
       """
       let a: [3 of Int]
@@ -333,7 +335,7 @@ final class ArrayDeclTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 80)
   }
 
-  func testInlineArrayTypeSugarWhenLineLengthExceeded() {
+  @Test func inlineArrayTypeSugarWhenLineLengthExceeded() {
     let input =
       """
       let a: [3 of VeryLongGenericTypeNameThatCausesWrapping]

@@ -10,8 +10,10 @@
 //
 //===----------------------------------------------------------------------===//
 
-final class WhileStmtTests: PrettyPrintTestCase {
-  func testBasicWhileLoops() {
+import Testing
+@Suite
+struct WhileStmtTests: PrettyPrintTesting {
+  @Test func basicWhileLoops() {
     let input =
       """
       while condition {
@@ -60,7 +62,7 @@ final class WhileStmtTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 20)
   }
 
-  func testLabeledWhileLoops() {
+  @Test func labeledWhileLoops() {
     let input =
       """
       myLabel: while condition {
@@ -112,7 +114,7 @@ final class WhileStmtTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 29)
   }
 
-  func testWhileLoopMultipleConditionElements() {
+  @Test func whileLoopMultipleConditionElements() {
     let input =
       """
       while x >= 0 && y >= 0 && x < foo && y < bar, let object = foo.value(at: y), let otherObject = foo.value(at: x), isEqual(a, b) {

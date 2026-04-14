@@ -12,8 +12,10 @@
 
 @_spi(Rules) import Swiftiomatic
 import _SwiftiomaticTestSupport
+import Testing
 
-final class ReplaceForEachWithForLoopTests: LintOrFormatRuleTestCase {
+@Suite
+struct ReplaceForEachWithForLoopTests: RuleTesting {
   func test() {
     assertLint(
       ReplaceForEachWithForLoop.self,

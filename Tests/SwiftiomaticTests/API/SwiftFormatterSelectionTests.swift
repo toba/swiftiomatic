@@ -14,11 +14,12 @@ import Swiftiomatic
 import SwiftOperators
 import SwiftParser
 import SwiftSyntax
-import XCTest
+import Testing
 import _SwiftiomaticTestSupport
 
-final class SwiftiomaticFormatterSelectionTests: XCTestCase {
-  func testSingleLineFormatting() throws {
+@Suite
+struct SwiftiomaticFormatterSelectionTests {
+  @Test func singleLineFormatting() throws {
     let source = """
       func foo() {
       let x = 1
@@ -40,7 +41,7 @@ final class SwiftiomaticFormatterSelectionTests: XCTestCase {
     try assertFormatting(source, expected: expected, selection: Selection(lineRanges: [2...2]))
   }
 
-  func testMultipleLinesFormatting() throws {
+  @Test func multipleLinesFormatting() throws {
     let source = """
       func foo() {
       let x = 1
@@ -62,7 +63,7 @@ final class SwiftiomaticFormatterSelectionTests: XCTestCase {
     try assertFormatting(source, expected: expected, selection: Selection(lineRanges: [2...3]))
   }
 
-  func testDisjointLineRanges() throws {
+  @Test func disjointLineRanges() throws {
     let source = """
       func foo() {
       let x = 1
@@ -84,7 +85,7 @@ final class SwiftiomaticFormatterSelectionTests: XCTestCase {
     try assertFormatting(source, expected: expected, selection: Selection(lineRanges: [2...2, 4...4]))
   }
 
-  func testPartiallyWrappedFunctionSignature() throws {
+  @Test func partiallyWrappedFunctionSignature() throws {
     let source = """
       func someFunction(
         param1: Int,
@@ -106,7 +107,7 @@ final class SwiftiomaticFormatterSelectionTests: XCTestCase {
     try assertFormatting(source, expected: expected, selection: Selection(lineRanges: [3...3]))
   }
 
-  func testComplexExpressionIndentation() throws {
+  @Test func complexExpressionIndentation() throws {
     let source = """
       let x = someFunction(
       a,
@@ -128,7 +129,7 @@ final class SwiftiomaticFormatterSelectionTests: XCTestCase {
     try assertFormatting(source, expected: expected, selection: Selection(lineRanges: [3...3]))
   }
 
-  func testMultipleSpacesInsideLine() throws {
+  @Test func multipleSpacesInsideLine() throws {
     let source = """
       let x = 1
       let y = 1   +   2
@@ -146,7 +147,7 @@ final class SwiftiomaticFormatterSelectionTests: XCTestCase {
     try assertFormatting(source, expected: expected, selection: Selection(lineRanges: [2...2]))
   }
 
-  func testAdjacentLongLineNotWrapped() throws {
+  @Test func adjacentLongLineNotWrapped() throws {
     let source = """
       let a = 1
       let veryLongVariableNameThatExceedsTheLineLengthLimitAndShouldBeWrappedIfSelected = 42
@@ -162,7 +163,7 @@ final class SwiftiomaticFormatterSelectionTests: XCTestCase {
     try assertFormatting(source, expected: expected, selection: Selection(lineRanges: [1...1]))
   }
 
-  func testDegenerateSignatureIndentation() throws {
+  @Test func degenerateSignatureIndentation() throws {
     let source = """
       func messyFunction(
         p1: Int,
@@ -184,7 +185,7 @@ final class SwiftiomaticFormatterSelectionTests: XCTestCase {
     try assertFormatting(source, expected: expected, selection: Selection(lineRanges: [3...3]))
   }
 
-  func testOutOfBoundsLineRange() throws {
+  @Test func outOfBoundsLineRange() throws {
     let source = """
       let x = 1
       let y = 2
@@ -200,7 +201,7 @@ final class SwiftiomaticFormatterSelectionTests: XCTestCase {
     try assertFormatting(source, expected: expected, selection: Selection(lineRanges: [10...20]))
   }
 
-  func testPartialOutOfBoundsLineRange() throws {
+  @Test func partialOutOfBoundsLineRange() throws {
     let source = """
       let x = 1
         let y = 2
@@ -216,7 +217,7 @@ final class SwiftiomaticFormatterSelectionTests: XCTestCase {
     try assertFormatting(source, expected: expected, selection: Selection(lineRanges: [2...100]))
   }
 
-  func testZeroLineRange() throws {
+  @Test func zeroLineRange() throws {
     let source = """
       let x = 1
       let y = 2
@@ -236,8 +237,7 @@ final class SwiftiomaticFormatterSelectionTests: XCTestCase {
     _ source: String,
     expected: String,
     selection: Selection,
-    file: StaticString = #file,
-    line: UInt = #line
+    sourceLocation: Testing.SourceLocation = #_sourceLocation
   ) throws {
     var configuration = Configuration.forTesting
     configuration.lineLength = 60
@@ -254,6 +254,6 @@ final class SwiftiomaticFormatterSelectionTests: XCTestCase {
       selection: selection,
       to: &output
     )
-    XCTAssertEqual(output, expected, file: file, line: line)
+    #expect(output == expected, sourceLocation: sourceLocation)
   }
 }

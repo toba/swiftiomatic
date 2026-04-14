@@ -12,9 +12,11 @@
 
 @_spi(Rules) import Swiftiomatic
 import _SwiftiomaticTestSupport
+import Testing
 
-final class NeverForceUnwrapTests: LintOrFormatRuleTestCase {
-  func testUnsafeUnwrap() {
+@Suite
+struct NeverForceUnwrapTests: RuleTesting {
+  @Test func unsafeUnwrap() {
     assertLint(
       NeverForceUnwrap.self,
       """
@@ -40,7 +42,7 @@ final class NeverForceUnwrapTests: LintOrFormatRuleTestCase {
     )
   }
 
-  func testIgnoreTestCode() {
+  @Test func ignoreTestCode() {
     assertLint(
       NeverForceUnwrap.self,
       """
@@ -52,16 +54,16 @@ final class NeverForceUnwrapTests: LintOrFormatRuleTestCase {
     )
   }
 
-  func testIgnoreTestAttributeFunction() {
+  @Test func ignoreTestAttributeFunction() {
     assertLint(
       NeverForceUnwrap.self,
       """
       @Test
-      func testSomeFunc() {
+      @Test func someFunc() {
         var b = a as! Int
       }
       @Test
-      func testAnotherFunc() {
+      @Test func anotherFunc() {
         func nestedFunc() {
           let c = someValue()!
         }

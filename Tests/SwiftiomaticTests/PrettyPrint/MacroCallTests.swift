@@ -11,9 +11,11 @@
 //===----------------------------------------------------------------------===//
 
 import Swiftiomatic
+import Testing
 
-final class MacroCallTests: PrettyPrintTestCase {
-  func testNoWhiteSpaceAfterMacroWithoutTrailingClosure() {
+@Suite
+struct MacroCallTests: PrettyPrintTesting {
+  @Test func noWhiteSpaceAfterMacroWithoutTrailingClosure() {
     let input =
       """
       func myFunction() {
@@ -33,7 +35,7 @@ final class MacroCallTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 50)
   }
 
-  func testKeepWhiteSpaceBeforeTrailingClosure() {
+  @Test func keepWhiteSpaceBeforeTrailingClosure() {
     let input =
       """
       #Preview {}
@@ -56,7 +58,7 @@ final class MacroCallTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 40)
   }
 
-  func testInsertWhiteSpaceBeforeTrailingClosure() {
+  @Test func insertWhiteSpaceBeforeTrailingClosure() {
     let input =
       """
       #Preview{}
@@ -79,7 +81,7 @@ final class MacroCallTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 40)
   }
 
-  func testDiscretionaryLineBreakBeforeTrailingClosure() {
+  @Test func discretionaryLineBreakBeforeTrailingClosure() {
     let input =
       """
       #Preview("MyPreview")
@@ -127,7 +129,7 @@ final class MacroCallTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 45)
   }
 
-  func testMacroDeclWithAttributesAndArguments() {
+  @Test func macroDeclWithAttributesAndArguments() {
     let input = """
       @nonsenseAttribute
       @available(iOS 17.0, *)

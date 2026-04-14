@@ -74,3 +74,4 @@
 - Trim `/rule` skill for conciseness ([#237](https://github.com/toba/swiftiomatic/issues/237))
 - Fix naming convention violations; drop `-Protocol` suffix, rename `OrderedImports` booleans ([#272](https://github.com/toba/swiftiomatic/issues/272))
 - Consolidate duplicated visitor patterns in rules; evaluated and confirmed existing extraction is sufficient ([#268](https://github.com/toba/swiftiomatic/issues/268))
+- Migrate test suite from XCTest to Swift Testing; protocol-based test helpers replace class hierarchy ([#265](https://github.com/toba/swiftiomatic/issues/265))

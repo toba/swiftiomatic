@@ -12,9 +12,11 @@
 
 @_spi(Rules) import Swiftiomatic
 import _SwiftiomaticTestSupport
+import Testing
 
-final class NoCasesWithOnlyFallthroughTests: LintOrFormatRuleTestCase {
-  func testFallthroughCases() {
+@Suite
+struct NoCasesWithOnlyFallthroughTests: RuleTesting {
+  @Test func fallthroughCases() {
     assertFormatting(
       NoCasesWithOnlyFallthrough.self,
       input: """
@@ -80,7 +82,7 @@ final class NoCasesWithOnlyFallthroughTests: LintOrFormatRuleTestCase {
     )
   }
 
-  func testFallthroughCasesWithCommentsAreNotCombined() {
+  @Test func fallthroughCasesWithCommentsAreNotCombined() {
     assertFormatting(
       NoCasesWithOnlyFallthrough.self,
       input: """
@@ -123,7 +125,7 @@ final class NoCasesWithOnlyFallthroughTests: LintOrFormatRuleTestCase {
     )
   }
 
-  func testCommentsAroundCombinedCasesStayInPlace() {
+  @Test func commentsAroundCombinedCasesStayInPlace() {
     assertFormatting(
       NoCasesWithOnlyFallthrough.self,
       input: """
@@ -157,7 +159,7 @@ final class NoCasesWithOnlyFallthroughTests: LintOrFormatRuleTestCase {
     )
   }
 
-  func testNestedSwitches() {
+  @Test func nestedSwitches() {
     assertFormatting(
       NoCasesWithOnlyFallthrough.self,
       input: """
@@ -197,7 +199,7 @@ final class NoCasesWithOnlyFallthroughTests: LintOrFormatRuleTestCase {
     )
   }
 
-  func testCasesInsideConditionalCompilationBlock() {
+  @Test func casesInsideConditionalCompilationBlock() {
     assertFormatting(
       NoCasesWithOnlyFallthrough.self,
       input: """
@@ -245,7 +247,7 @@ final class NoCasesWithOnlyFallthroughTests: LintOrFormatRuleTestCase {
     )
   }
 
-  func testCasesWithWhereClauses() {
+  @Test func casesWithWhereClauses() {
     // As noted in the rule implementation, the formatted result should include a newline before any
     // case items that have `where` clauses if they follow any case items that do not, to avoid
     // compiler warnings. This is handled by the pretty printer, not this rule.
@@ -286,7 +288,7 @@ final class NoCasesWithOnlyFallthroughTests: LintOrFormatRuleTestCase {
     )
   }
 
-  func testCasesWithValueBindingsAreNotMerged() {
+  @Test func casesWithValueBindingsAreNotMerged() {
     assertFormatting(
       NoCasesWithOnlyFallthrough.self,
       input: """
@@ -324,7 +326,7 @@ final class NoCasesWithOnlyFallthroughTests: LintOrFormatRuleTestCase {
     )
   }
 
-  func testFallthroughOnlyCasesAreNotMergedWithDefault() {
+  @Test func fallthroughOnlyCasesAreNotMergedWithDefault() {
     assertFormatting(
       NoCasesWithOnlyFallthrough.self,
       input: """
@@ -346,7 +348,7 @@ final class NoCasesWithOnlyFallthroughTests: LintOrFormatRuleTestCase {
     )
   }
 
-  func testFallthroughOnlyCasesAreNotMergedWithUnknownDefault() {
+  @Test func fallthroughOnlyCasesAreNotMergedWithUnknownDefault() {
     assertFormatting(
       NoCasesWithOnlyFallthrough.self,
       input: """

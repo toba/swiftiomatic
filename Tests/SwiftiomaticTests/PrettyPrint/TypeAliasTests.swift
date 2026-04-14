@@ -10,8 +10,10 @@
 //
 //===----------------------------------------------------------------------===//
 
-final class TypeAliasTests: PrettyPrintTestCase {
-  func testTypealias() {
+import Testing
+@Suite
+struct TypeAliasTests: PrettyPrintTesting {
+  @Test func `typealias`() {
     let input =
       """
       typealias MyAlias = Int
@@ -38,7 +40,7 @@ final class TypeAliasTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 60)
   }
 
-  func testTypealiasAttributes() {
+  @Test func typealiasAttributes() {
     let input =
       """
       @objc typealias MyAlias = Int
@@ -55,7 +57,7 @@ final class TypeAliasTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 60)
   }
 
-  func testTypealiasGenericTests() {
+  @Test func typealiasGenericTests() {
     let input =
       """
       typealias MyDict<Key: Hashable> = Dictionary<Key, Int>

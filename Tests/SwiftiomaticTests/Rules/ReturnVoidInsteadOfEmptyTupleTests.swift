@@ -12,9 +12,11 @@
 
 @_spi(Rules) import Swiftiomatic
 import _SwiftiomaticTestSupport
+import Testing
 
-final class ReturnVoidInsteadOfEmptyTupleTests: LintOrFormatRuleTestCase {
-  func testBasic() {
+@Suite
+struct ReturnVoidInsteadOfEmptyTupleTests: RuleTesting {
+  @Test func basic() {
     assertFormatting(
       ReturnVoidInsteadOfEmptyTuple.self,
       input: """
@@ -38,7 +40,7 @@ final class ReturnVoidInsteadOfEmptyTupleTests: LintOrFormatRuleTestCase {
     )
   }
 
-  func testNestedFunctionTypes() {
+  @Test func nestedFunctionTypes() {
     assertFormatting(
       ReturnVoidInsteadOfEmptyTuple.self,
       input: """
@@ -60,7 +62,7 @@ final class ReturnVoidInsteadOfEmptyTupleTests: LintOrFormatRuleTestCase {
     )
   }
 
-  func testClosureSignatures() {
+  @Test func closureSignatures() {
     assertFormatting(
       ReturnVoidInsteadOfEmptyTuple.self,
       input: """
@@ -94,7 +96,7 @@ final class ReturnVoidInsteadOfEmptyTupleTests: LintOrFormatRuleTestCase {
     )
   }
 
-  func testTriviaPreservation() {
+  @Test func triviaPreservation() {
     assertFormatting(
       ReturnVoidInsteadOfEmptyTuple.self,
       input: """
@@ -113,7 +115,7 @@ final class ReturnVoidInsteadOfEmptyTupleTests: LintOrFormatRuleTestCase {
     )
   }
 
-  func testEmptyTupleWithInternalCommentsIsDiagnosedButNotReplaced() {
+  @Test func emptyTupleWithInternalCommentsIsDiagnosedButNotReplaced() {
     assertFormatting(
       ReturnVoidInsteadOfEmptyTuple.self,
       input: """

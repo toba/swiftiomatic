@@ -10,8 +10,10 @@
 //
 //===----------------------------------------------------------------------===//
 
-final class DifferentiationAttributeTests: PrettyPrintTestCase {
-  func testDifferentiable() {
+import Testing
+@Suite
+struct DifferentiationAttributeTests: PrettyPrintTesting {
+  @Test func differentiable() {
     let input =
       """
       @differentiable(wrt: x where T: D)
@@ -45,7 +47,7 @@ final class DifferentiationAttributeTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 43)
   }
 
-  func testDifferentiableWithOnlyWhereClause() {
+  @Test func differentiableWithOnlyWhereClause() {
     let input =
       """
       @differentiable(where T: D)
@@ -70,7 +72,7 @@ final class DifferentiationAttributeTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 28)
   }
 
-  func testDifferentiableWithMultipleParameters() {
+  @Test func differentiableWithMultipleParameters() {
     let input =
       """
       @differentiable(wrt: (x, y))
@@ -107,7 +109,7 @@ final class DifferentiationAttributeTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 28)
   }
 
-  func testDerivative() {
+  @Test func derivative() {
     let input =
       """
       @derivative(of: foo)
@@ -149,7 +151,7 @@ final class DifferentiationAttributeTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 28)
   }
 
-  func testTranspose() {
+  @Test func transpose() {
     let input =
       """
       @transpose(of: foo, wrt: 0)

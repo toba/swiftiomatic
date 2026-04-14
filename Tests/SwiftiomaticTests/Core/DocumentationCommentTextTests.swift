@@ -13,96 +13,97 @@
 @_spi(Testing) import Swiftiomatic
 import SwiftSyntax
 import SwiftSyntaxBuilder
-import XCTest
+import Testing
 
-final class DocumentationCommentTextTests: XCTestCase {
-  func testSimpleDocLineComment() throws {
+@Suite
+struct DocumentationCommentTextTests {
+  @Test func simpleDocLineComment() throws {
     let decl: DeclSyntax = """
       /// A simple doc comment.
       func f() {}
       """
-    let commentText = try XCTUnwrap(DocumentationCommentText(extractedFrom: decl.leadingTrivia))
-    XCTAssertEqual(commentText.introducer, .line)
-    XCTAssertEqual(
-      commentText.text,
-      """
-      A simple doc comment.
+    let commentText = try #require(DocumentationCommentText(extractedFrom: decl.leadingTrivia))
+    #expect(commentText.introducer == .line)
+    #expect(
+      commentText.text
+        == """
+        A simple doc comment.
 
-      """
+        """
     )
   }
 
-  func testOneLineDocBlockComment() throws {
+  @Test func oneLineDocBlockComment() throws {
     let decl: DeclSyntax = """
       /** A simple doc comment. */
       func f() {}
       """
-    let commentText = try XCTUnwrap(DocumentationCommentText(extractedFrom: decl.leadingTrivia))
-    XCTAssertEqual(commentText.introducer, .block)
-    XCTAssertEqual(
-      commentText.text,
-      """
-      A simple doc comment.\u{0020}
+    let commentText = try #require(DocumentationCommentText(extractedFrom: decl.leadingTrivia))
+    #expect(commentText.introducer == .block)
+    #expect(
+      commentText.text
+        == """
+        A simple doc comment.\u{0020}
 
-      """
+        """
     )
   }
 
-  func testDocBlockCommentWithASCIIArt() throws {
+  @Test func docBlockCommentWithASCIIArt() throws {
     let decl: DeclSyntax = """
       /**
        * A simple doc comment.
        */
       func f() {}
       """
-    let commentText = try XCTUnwrap(DocumentationCommentText(extractedFrom: decl.leadingTrivia))
-    XCTAssertEqual(commentText.introducer, .block)
-    XCTAssertEqual(
-      commentText.text,
-      """
-      A simple doc comment.
+    let commentText = try #require(DocumentationCommentText(extractedFrom: decl.leadingTrivia))
+    #expect(commentText.introducer == .block)
+    #expect(
+      commentText.text
+        == """
+        A simple doc comment.
 
-      """
+        """
     )
   }
 
-  func testIndentedDocBlockCommentWithASCIIArt() throws {
+  @Test func indentedDocBlockCommentWithASCIIArt() throws {
     let decl: DeclSyntax = """
         /**
          * A simple doc comment.
          */
         func f() {}
       """
-    let commentText = try XCTUnwrap(DocumentationCommentText(extractedFrom: decl.leadingTrivia))
-    XCTAssertEqual(commentText.introducer, .block)
-    XCTAssertEqual(
-      commentText.text,
-      """
-      A simple doc comment.
+    let commentText = try #require(DocumentationCommentText(extractedFrom: decl.leadingTrivia))
+    #expect(commentText.introducer == .block)
+    #expect(
+      commentText.text
+        == """
+        A simple doc comment.
 
-      """
+        """
     )
   }
 
-  func testDocBlockCommentWithoutASCIIArt() throws {
+  @Test func docBlockCommentWithoutASCIIArt() throws {
     let decl: DeclSyntax = """
       /**
          A simple doc comment.
        */
       func f() {}
       """
-    let commentText = try XCTUnwrap(DocumentationCommentText(extractedFrom: decl.leadingTrivia))
-    XCTAssertEqual(commentText.introducer, .block)
-    XCTAssertEqual(
-      commentText.text,
-      """
-      A simple doc comment.
+    let commentText = try #require(DocumentationCommentText(extractedFrom: decl.leadingTrivia))
+    #expect(commentText.introducer == .block)
+    #expect(
+      commentText.text
+        == """
+        A simple doc comment.
 
-      """
+        """
     )
   }
 
-  func testMultilineDocLineComment() throws {
+  @Test func multilineDocLineComment() throws {
     let decl: DeclSyntax = """
       /// A doc comment.
       ///
@@ -113,42 +114,42 @@ final class DocumentationCommentTextTests: XCTestCase {
       /// - Returns: A value.
       func f(x: Int) -> Int {}
       """
-    let commentText = try XCTUnwrap(DocumentationCommentText(extractedFrom: decl.leadingTrivia))
-    XCTAssertEqual(commentText.introducer, .line)
-    XCTAssertEqual(
-      commentText.text,
-      """
-      A doc comment.
+    let commentText = try #require(DocumentationCommentText(extractedFrom: decl.leadingTrivia))
+    #expect(commentText.introducer == .line)
+    #expect(
+      commentText.text
+        == """
+        A doc comment.
 
-      This is a longer paragraph,
-      containing more detail.
+        This is a longer paragraph,
+        containing more detail.
 
-      - Parameter x: A parameter.
-      - Returns: A value.
+        - Parameter x: A parameter.
+        - Returns: A value.
 
-      """
+        """
     )
   }
 
-  func testDocLineCommentStopsAtBlankLine() throws {
+  @Test func docLineCommentStopsAtBlankLine() throws {
     let decl: DeclSyntax = """
       /// This should not be part of the comment.
 
       /// A doc comment.
       func f(x: Int) -> Int {}
       """
-    let commentText = try XCTUnwrap(DocumentationCommentText(extractedFrom: decl.leadingTrivia))
-    XCTAssertEqual(commentText.introducer, .line)
-    XCTAssertEqual(
-      commentText.text,
-      """
-      A doc comment.
+    let commentText = try #require(DocumentationCommentText(extractedFrom: decl.leadingTrivia))
+    #expect(commentText.introducer == .line)
+    #expect(
+      commentText.text
+        == """
+        A doc comment.
 
-      """
+        """
     )
   }
 
-  func testDocBlockCommentStopsAtBlankLine() throws {
+  @Test func docBlockCommentStopsAtBlankLine() throws {
     let decl: DeclSyntax = """
       /** This should not be part of the comment. */
 
@@ -158,40 +159,40 @@ final class DocumentationCommentTextTests: XCTestCase {
       /** so is this */
       func f(x: Int) -> Int {}
       """
-    let commentText = try XCTUnwrap(DocumentationCommentText(extractedFrom: decl.leadingTrivia))
-    XCTAssertEqual(commentText.introducer, .block)
-    XCTAssertEqual(
-      commentText.text,
-      """
-      This is part of the comment.
-       so is this\u{0020}
+    let commentText = try #require(DocumentationCommentText(extractedFrom: decl.leadingTrivia))
+    #expect(commentText.introducer == .block)
+    #expect(
+      commentText.text
+        == """
+        This is part of the comment.
+         so is this\u{0020}
 
-      """
+        """
     )
   }
 
-  func testDocCommentHasMixedIntroducers() throws {
+  @Test func docCommentHasMixedIntroducers() throws {
     let decl: DeclSyntax = """
       /// This is part of the comment.
       /** This is too. */
       func f(x: Int) -> Int {}
       """
-    let commentText = try XCTUnwrap(DocumentationCommentText(extractedFrom: decl.leadingTrivia))
-    XCTAssertEqual(commentText.introducer, .mixed)
-    XCTAssertEqual(
-      commentText.text,
-      """
-      This is part of the comment.
-      This is too.\u{0020}
+    let commentText = try #require(DocumentationCommentText(extractedFrom: decl.leadingTrivia))
+    #expect(commentText.introducer == .mixed)
+    #expect(
+      commentText.text
+        == """
+        This is part of the comment.
+        This is too.\u{0020}
 
-      """
+        """
     )
   }
 
-  func testNilIfNoComment() throws {
+  @Test func nilIfNoComment() throws {
     let decl: DeclSyntax = """
       func f(x: Int) -> Int {}
       """
-    XCTAssertNil(DocumentationCommentText(extractedFrom: decl.leadingTrivia))
+    #expect(DocumentationCommentText(extractedFrom: decl.leadingTrivia) == nil)
   }
 }

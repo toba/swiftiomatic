@@ -12,9 +12,11 @@
 
 @_spi(Rules) import Swiftiomatic
 import _SwiftiomaticTestSupport
+import Testing
 
-final class OneVariableDeclarationPerLineTests: LintOrFormatRuleTestCase {
-  func testMultipleVariableBindings() {
+@Suite
+struct OneVariableDeclarationPerLineTests: RuleTesting {
+  @Test func multipleVariableBindings() {
     assertFormatting(
       OneVariableDeclarationPerLine.self,
       input: """
@@ -48,7 +50,7 @@ final class OneVariableDeclarationPerLineTests: LintOrFormatRuleTestCase {
     )
   }
 
-  func testNestedVariableBindings() {
+  @Test func nestedVariableBindings() {
     assertFormatting(
       OneVariableDeclarationPerLine.self,
       input: """
@@ -132,7 +134,7 @@ final class OneVariableDeclarationPerLineTests: LintOrFormatRuleTestCase {
     )
   }
 
-  func testMixedInitializedAndTypedBindings() {
+  @Test func mixedInitializedAndTypedBindings() {
     assertFormatting(
       OneVariableDeclarationPerLine.self,
       input: """
@@ -154,7 +156,7 @@ final class OneVariableDeclarationPerLineTests: LintOrFormatRuleTestCase {
     )
   }
 
-  func testCommentPrecedingDeclIsNotRepeated() {
+  @Test func commentPrecedingDeclIsNotRepeated() {
     assertFormatting(
       OneVariableDeclarationPerLine.self,
       input: """
@@ -173,7 +175,7 @@ final class OneVariableDeclarationPerLineTests: LintOrFormatRuleTestCase {
     )
   }
 
-  func testCommentsPrecedingBindingsAreKept() {
+  @Test func commentsPrecedingBindingsAreKept() {
     assertFormatting(
       OneVariableDeclarationPerLine.self,
       input: """
@@ -190,7 +192,7 @@ final class OneVariableDeclarationPerLineTests: LintOrFormatRuleTestCase {
     )
   }
 
-  func testInvalidBindingsAreNotDestroyed() {
+  @Test func invalidBindingsAreNotDestroyed() {
     assertFormatting(
       OneVariableDeclarationPerLine.self,
       input: """
@@ -217,7 +219,7 @@ final class OneVariableDeclarationPerLineTests: LintOrFormatRuleTestCase {
     )
   }
 
-  func testMultipleBindingsWithAccessorsAreCorrected() {
+  @Test func multipleBindingsWithAccessorsAreCorrected() {
     // Swift parses multiple bindings with accessors but forbids them at a later
     // stage. That means that if the individual bindings would be correct in
     // isolation then we can correct them, which is kind of nice.

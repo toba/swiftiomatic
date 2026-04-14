@@ -10,8 +10,10 @@
 //
 //===----------------------------------------------------------------------===//
 
-final class ImportTests: PrettyPrintTestCase {
-  func testImports() {
+import Testing
+@Suite
+struct ImportTests: PrettyPrintTesting {
+  @Test func imports() {
     let input =
       """
       import someModule

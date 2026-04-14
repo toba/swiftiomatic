@@ -1,18 +1,18 @@
 ---
 # vu2-he3
 title: Migrate PrettyPrint tests to Swift Testing
-status: ready
+status: completed
 type: task
 priority: normal
 created_at: 2026-04-14T02:55:02Z
-updated_at: 2026-04-14T02:55:02Z
+updated_at: 2026-04-14T03:24:19Z
 parent: rwb-wt3
 blocked_by:
     - 9mz-jmv
 sync:
     github:
         issue_number: "279"
-        synced_at: "2026-04-14T02:58:32Z"
+        synced_at: "2026-04-14T03:28:23Z"
 ---
 
 Convert 71 test files in `Tests/SwiftiomaticTests/PrettyPrint/` from XCTest to Swift Testing. Blocked by infrastructure rewrite (`9mz-jmv`).

@@ -11,11 +11,13 @@
 //===----------------------------------------------------------------------===//
 
 import Swiftiomatic
+import Testing
 
 /// Basic checks and regression tests for the `respectsExistingLineBreaks` configuration setting
 /// in both true and false states.
-final class RespectsExistingLineBreaksTests: PrettyPrintTestCase {
-  func testExpressions() {
+@Suite
+struct RespectsExistingLineBreaksTests: PrettyPrintTesting {
+  @Test func expressions() {
     let input =
       """
       a = b + c
@@ -58,7 +60,7 @@ final class RespectsExistingLineBreaksTests: PrettyPrintTestCase {
     )
   }
 
-  func testCodeBlocksAndMemberDecls() {
+  @Test func codeBlocksAndMemberDecls() {
     let input =
       """
       import Module
@@ -138,7 +140,7 @@ final class RespectsExistingLineBreaksTests: PrettyPrintTestCase {
     )
   }
 
-  func testSemicolons() {
+  @Test func semicolons() {
     let input =
       """
       foo(); bar();
@@ -184,7 +186,7 @@ final class RespectsExistingLineBreaksTests: PrettyPrintTestCase {
     )
   }
 
-  func testInvalidBreaksAreAlwaysRejected() {
+  @Test func invalidBreaksAreAlwaysRejected() {
     // Verify that newlines in places where a break would not be allowed are removed, regardless of
     // the configuration setting.
     let input =
@@ -226,7 +228,7 @@ final class RespectsExistingLineBreaksTests: PrettyPrintTestCase {
     )
   }
 
-  func testBlockCommentAtStartOfFileKeepsRequiredLineBreak() {
+  @Test func blockCommentAtStartOfFileKeepsRequiredLineBreak() {
     let input =
       """
       /*
@@ -249,7 +251,7 @@ final class RespectsExistingLineBreaksTests: PrettyPrintTestCase {
     )
   }
 
-  func testBlockCommentAtStartOfLineKeepsRequiredLineBreak() {
+  @Test func blockCommentAtStartOfLineKeepsRequiredLineBreak() {
     let input =
       """
       import Foundation
@@ -274,7 +276,7 @@ final class RespectsExistingLineBreaksTests: PrettyPrintTestCase {
     )
   }
 
-  func testIndentedBlockCommentBeforeNestedDeclarationKeepsRequiredLineBreak() {
+  @Test func indentedBlockCommentBeforeNestedDeclarationKeepsRequiredLineBreak() {
     let input =
       """
       struct Foo {

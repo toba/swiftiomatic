@@ -10,8 +10,10 @@
 //
 //===----------------------------------------------------------------------===//
 
-final class ParenthesizedExprTests: PrettyPrintTestCase {
-  func testSequenceExprParens() {
+import Testing
+@Suite
+struct ParenthesizedExprTests: PrettyPrintTesting {
+  @Test func sequenceExprParens() {
     let input =
       """
       x = (firstTerm + secondTerm + thirdTerm)
@@ -105,7 +107,7 @@ final class ParenthesizedExprTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 30)
   }
 
-  func testInitializerClauseParens() {
+  @Test func initializerClauseParens() {
     let input =
       """
       let x = (firstTerm + secondTerm + thirdTerm)
@@ -140,7 +142,7 @@ final class ParenthesizedExprTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 30)
   }
 
-  func testNestedParentheses() {
+  @Test func nestedParentheses() {
     let input =
       """
       theFirstTerm + secondTerm * (nestedThing - (moreNesting + anotherTerm)) / andThatsAll
@@ -168,7 +170,7 @@ final class ParenthesizedExprTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 23)
   }
 
-  func testExpressionStartsWithParentheses() {
+  @Test func expressionStartsWithParentheses() {
     let input =
       """
       (firstTerm + secondTerm + thirdTerm)(firstArg, secondArg, thirdArg)
@@ -188,7 +190,7 @@ final class ParenthesizedExprTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 20)
   }
 
-  func testComplexConditionalWithParens() {
+  @Test func complexConditionalWithParens() {
     let input =
       """
       if (someNumericValue > NumericConstants.someConstant || (otherValue.n) > NumericConstants.otherValueToCheck) && (otherValue.n) > -NumericConstants.otherValueToCheck {
@@ -210,7 +212,7 @@ final class ParenthesizedExprTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 80)
   }
 
-  func testTupleSequenceExprs() {
+  @Test func tupleSequenceExprs() {
     let input =
       """
       let x = (

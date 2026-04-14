@@ -12,9 +12,11 @@
 
 @_spi(Rules) import Swiftiomatic
 import _SwiftiomaticTestSupport
+import Testing
 
-final class NoVoidReturnOnFunctionSignatureTests: LintOrFormatRuleTestCase {
-  func testVoidReturns() {
+@Suite
+struct NoVoidReturnOnFunctionSignatureTests: RuleTesting {
+  @Test func voidReturns() {
     assertFormatting(
       NoVoidReturnOnFunctionSignature.self,
       input: """

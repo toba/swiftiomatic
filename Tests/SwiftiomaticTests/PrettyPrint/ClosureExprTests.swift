@@ -11,9 +11,11 @@
 //===----------------------------------------------------------------------===//
 
 import Swiftiomatic
+import Testing
 
-final class ClosureExprTests: PrettyPrintTestCase {
-  func testBasicFunctionClosures_noPackArguments() {
+@Suite
+struct ClosureExprTests: PrettyPrintTesting {
+  @Test func basicFunctionClosures_noPackArguments() {
     let input =
       """
       funcCall(closure: <)
@@ -82,7 +84,7 @@ final class ClosureExprTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 42, configuration: config)
   }
 
-  func testBasicFunctionClosures_packArguments() {
+  @Test func basicFunctionClosures_packArguments() {
     let input =
       """
       funcCall(closure: <)
@@ -134,7 +136,7 @@ final class ClosureExprTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 42, configuration: config)
   }
 
-  func testTrailingClosure() {
+  @Test func trailingClosure() {
     let input =
       """
       funcCall() { $1 < $2 }
@@ -168,7 +170,7 @@ final class ClosureExprTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 40, configuration: config)
   }
 
-  func testClosureArgumentsWithTrailingClosure() {
+  @Test func closureArgumentsWithTrailingClosure() {
     let input =
       """
       someFunc({ return s0 }) { return s2 }
@@ -199,7 +201,7 @@ final class ClosureExprTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 40)
   }
 
-  func testClosuresWithIfs() {
+  @Test func closuresWithIfs() {
     let input =
       """
       let a = afunc() {
@@ -244,7 +246,7 @@ final class ClosureExprTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 40)
   }
 
-  func testClosureCapture() {
+  @Test func closureCapture() {
     let input =
       """
       let a = funcCall() { [weak self] (a: Int) in
@@ -278,7 +280,7 @@ final class ClosureExprTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 60)
   }
 
-  func testClosureCaptureWithoutArguments() {
+  @Test func closureCaptureWithoutArguments() {
     let input =
       """
       let a = { [weak self] in return foo }
@@ -295,7 +297,7 @@ final class ClosureExprTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 30)
   }
 
-  func testBodilessClosure() {
+  @Test func bodilessClosure() {
     let input =
       """
       let a = funcCall() { s1, s2 in
@@ -318,7 +320,7 @@ final class ClosureExprTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 60)
   }
 
-  func testClosureVariables() {
+  @Test func closureVariables() {
     let input =
       """
       var someClosure: (Int, Int, Int) -> Bool = {  // a comment
@@ -366,7 +368,7 @@ final class ClosureExprTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 100)
   }
 
-  func testArrayClosures() {
+  @Test func arrayClosures() {
     let input =
       """
       let a = [ { a, b in someFunc(a, b) } ]
@@ -381,7 +383,7 @@ final class ClosureExprTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 60)
   }
 
-  func testClosureOutputGrouping() {
+  @Test func closureOutputGrouping() {
     let input =
       """
       funcCall(closure: {
@@ -501,7 +503,7 @@ final class ClosureExprTests: PrettyPrintTestCase {
     )
   }
 
-  func testClosureSignatureAttributes() {
+  @Test func closureSignatureAttributes() {
     let input =
       """
       let a = { @MainActor in print("hi") }
@@ -533,7 +535,7 @@ final class ClosureExprTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 40)
   }
 
-  func testClosureWithSignatureAndMultipleStatements() {
+  @Test func closureWithSignatureAndMultipleStatements() {
     let input =
       """
       { a in a + 1

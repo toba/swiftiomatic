@@ -12,9 +12,11 @@
 
 @_spi(Rules) import Swiftiomatic
 import _SwiftiomaticTestSupport
+import Testing
 
-final class AvoidRetroactiveConformancesTests: LintOrFormatRuleTestCase {
-  func testRetroactiveConformanceIsDiagnosed() {
+@Suite
+struct AvoidRetroactiveConformancesTests: RuleTesting {
+  @Test func retroactiveConformanceIsDiagnosed() {
     assertLint(
       AvoidRetroactiveConformances.self,
       """

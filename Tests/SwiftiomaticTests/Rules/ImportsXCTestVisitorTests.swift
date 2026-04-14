@@ -10,49 +10,48 @@
 //
 //===----------------------------------------------------------------------===//
 
+import Foundation
 import Swiftiomatic
 @_spi(Rules) @_spi(Testing) import Swiftiomatic
 import SwiftParser
-import XCTest
+import Testing
 
-class ImportsXCTestVisitorTests: XCTestCase {
-  func testDoesNotImportXCTest() throws {
-    XCTAssertEqual(
+@Suite
+struct ImportsXCTestVisitorTests: RuleTesting {
+  @Test func doesNotImportXCTest() throws {
+    #expect(
       try makeContextAndSetImportsXCTest(
         source: """
           import Foundation
           """
-      ),
-      .doesNotImportXCTest
+      ) == .doesNotImportXCTest
     )
   }
 
-  func testImportsXCTest() throws {
-    XCTAssertEqual(
+  @Test func importsXCTest() throws {
+    #expect(
       try makeContextAndSetImportsXCTest(
         source: """
           import Foundation
           import XCTest
           """
-      ),
-      .importsXCTest
+      ) == .importsXCTest
     )
   }
 
-  func testImportsSpecificXCTestDecl() throws {
-    XCTAssertEqual(
+  @Test func importsSpecificXCTestDecl() throws {
+    #expect(
       try makeContextAndSetImportsXCTest(
         source: """
           import Foundation
           import class XCTest.XCTestCase
           """
-      ),
-      .importsXCTest
+      ) == .importsXCTest
     )
   }
 
-  func testImportsXCTestInsideConditional() throws {
-    XCTAssertEqual(
+  @Test func importsXCTestInsideConditional() throws {
+    #expect(
       try makeContextAndSetImportsXCTest(
         source: """
           import Foundation
@@ -60,8 +59,7 @@ class ImportsXCTestVisitorTests: XCTestCase {
             import XCTest
           #endif
           """
-      ),
-      .importsXCTest
+      ) == .importsXCTest
     )
   }
 

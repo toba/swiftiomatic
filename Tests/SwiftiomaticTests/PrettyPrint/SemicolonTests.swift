@@ -10,8 +10,10 @@
 //
 //===----------------------------------------------------------------------===//
 
-final class SemiColonTypeTests: PrettyPrintTestCase {
-  func testSemicolon() {
+import Testing
+@Suite
+struct SemiColonTypeTests: PrettyPrintTesting {
+  @Test func semicolon() {
     let input =
       """
       var foo = false
@@ -25,7 +27,7 @@ final class SemiColonTypeTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: input + "\n", linelength: 50)
   }
 
-  func testNoSemicolon() {
+  @Test func noSemicolon() {
     let input =
       """
       var foo = false

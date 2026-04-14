@@ -12,9 +12,11 @@
 
 @_spi(Rules) import Swiftiomatic
 import _SwiftiomaticTestSupport
+import Testing
 
-final class NoEmptyLinesOpeningClosingBracesTests: LintOrFormatRuleTestCase {
-  func testNoEmptyLinesOpeningClosingBracesInCodeBlock() {
+@Suite
+struct NoEmptyLinesOpeningClosingBracesTests: RuleTesting {
+  @Test func noEmptyLinesOpeningClosingBracesInCodeBlock() {
     assertFormatting(
       NoEmptyLinesOpeningClosingBraces.self,
       input: """
@@ -39,7 +41,7 @@ final class NoEmptyLinesOpeningClosingBracesTests: LintOrFormatRuleTestCase {
     )
   }
 
-  func testNoEmptyLinesOpeningClosingBracesInMemberBlock() {
+  @Test func noEmptyLinesOpeningClosingBracesInMemberBlock() {
     assertFormatting(
       NoEmptyLinesOpeningClosingBraces.self,
       input: """
@@ -65,7 +67,7 @@ final class NoEmptyLinesOpeningClosingBracesTests: LintOrFormatRuleTestCase {
     )
   }
 
-  func testNoEmptyLinesOpeningClosingBracesInAccessorBlock() {
+  @Test func noEmptyLinesOpeningClosingBracesInAccessorBlock() {
     assertFormatting(
       NoEmptyLinesOpeningClosingBraces.self,
       input: """
@@ -125,7 +127,7 @@ final class NoEmptyLinesOpeningClosingBracesTests: LintOrFormatRuleTestCase {
     )
   }
 
-  func testNoEmptyLinesOpeningClosingBracesInClosureExpr() {
+  @Test func noEmptyLinesOpeningClosingBracesInClosureExpr() {
     assertFormatting(
       NoEmptyLinesOpeningClosingBraces.self,
       input: """
@@ -149,7 +151,7 @@ final class NoEmptyLinesOpeningClosingBracesTests: LintOrFormatRuleTestCase {
     )
   }
 
-  func testNoEmptyLinesOpeningClosingBracesInFunctionBeginningAndEndingWithComment() {
+  @Test func noEmptyLinesOpeningClosingBracesInFunctionBeginningAndEndingWithComment() {
     assertFormatting(
       NoEmptyLinesOpeningClosingBraces.self,
       input: """
@@ -183,7 +185,7 @@ final class NoEmptyLinesOpeningClosingBracesTests: LintOrFormatRuleTestCase {
     )
   }
 
-  func testNoEmptyLinesOpeningClosingBracesInFunctionWithEmptyLinesOnly() {
+  @Test func noEmptyLinesOpeningClosingBracesInFunctionWithEmptyLinesOnly() {
     assertFormatting(
       NoEmptyLinesOpeningClosingBraces.self,
       input: """

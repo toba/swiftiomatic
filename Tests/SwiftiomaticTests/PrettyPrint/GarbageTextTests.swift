@@ -10,11 +10,13 @@
 //
 //===----------------------------------------------------------------------===//
 
+import Testing
 private let bom: Unicode.Scalar = "\u{feff}"
 private let unknownScalar: Unicode.Scalar = "\u{fffe}"
 
-final class GarbageTextTests: PrettyPrintTestCase {
-  func testHashBang() {
+@Suite
+struct GarbageTextTests: PrettyPrintTesting {
+  @Test func hashBang() {
     let input =
       """
       #!/usr/bin/swift -foo -bar
@@ -32,7 +34,7 @@ final class GarbageTextTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 20)
   }
 
-  func testBOM() {
+  @Test func bOM() {
     let input =
       """
       \(bom)print("Hello world!")
@@ -47,7 +49,7 @@ final class GarbageTextTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 21)
   }
 
-  func testBOMPresenceDoesNotPermitLeadingNewlines() {
+  @Test func bOMPresenceDoesNotPermitLeadingNewlines() {
     let input =
       """
       \(bom)
@@ -63,7 +65,7 @@ final class GarbageTextTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 21)
   }
 
-  func testUnknownCodePointAsLeadingTrivia() {
+  @Test func unknownCodePointAsLeadingTrivia() {
     let input =
       """
       \(unknownScalar)print("Hello world!")
@@ -78,7 +80,7 @@ final class GarbageTextTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 21)
   }
 
-  func testUnknownCodePointAsTrailingTriviaAreGluedToPreviousToken() {
+  @Test func unknownCodePointAsTrailingTriviaAreGluedToPreviousToken() {
     // Note: The third line here is a bit of a weird case. Despite the operator being separated from
     // the left-hand-side by a space, the intervening garbage text appears to put the parser in a
     // mode where it treats the operator as a postfix operator, which then causes `secondTerm` to be
@@ -126,7 +128,7 @@ final class GarbageTextTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 20)
   }
 
-  func testConflictMarkers() {
+  @Test func conflictMarkers() {
     let input =
       """
       func greet() {

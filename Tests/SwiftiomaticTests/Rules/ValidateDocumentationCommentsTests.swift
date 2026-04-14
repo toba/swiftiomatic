@@ -12,10 +12,12 @@
 
 @_spi(Rules) import Swiftiomatic
 import _SwiftiomaticTestSupport
+import Testing
 
 // FIXME: Diagnostics should be emitted inside the comment, not at the beginning of the declaration.
-final class ValidateDocumentationCommentsTests: LintOrFormatRuleTestCase {
-  func testParameterDocumentation() {
+@Suite
+struct ValidateDocumentationCommentsTests: RuleTesting {
+  @Test func parameterDocumentation() {
     assertLint(
       ValidateDocumentationComments.self,
       """
@@ -50,7 +52,7 @@ final class ValidateDocumentationCommentsTests: LintOrFormatRuleTestCase {
     )
   }
 
-  func testParametersName() {
+  @Test func parametersName() {
     assertLint(
       ValidateDocumentationComments.self,
       """
@@ -77,7 +79,7 @@ final class ValidateDocumentationCommentsTests: LintOrFormatRuleTestCase {
     )
   }
 
-  func testThrowsDocumentation() {
+  @Test func throwsDocumentation() {
     assertLint(
       ValidateDocumentationComments.self,
       """
@@ -111,7 +113,7 @@ final class ValidateDocumentationCommentsTests: LintOrFormatRuleTestCase {
     )
   }
 
-  func testReturnDocumentation() {
+  @Test func returnDocumentation() {
     assertLint(
       ValidateDocumentationComments.self,
       """
@@ -156,7 +158,7 @@ final class ValidateDocumentationCommentsTests: LintOrFormatRuleTestCase {
     )
   }
 
-  func testValidDocumentation() {
+  @Test func validDocumentation() {
     assertLint(
       ValidateDocumentationComments.self,
       """
@@ -198,7 +200,7 @@ final class ValidateDocumentationCommentsTests: LintOrFormatRuleTestCase {
     )
   }
 
-  func testSeparateLabelAndIdentifier() {
+  @Test func separateLabelAndIdentifier() {
     assertLint(
       ValidateDocumentationComments.self,
       """
@@ -241,7 +243,7 @@ final class ValidateDocumentationCommentsTests: LintOrFormatRuleTestCase {
     )
   }
 
-  func testInitializer() {
+  @Test func initializer() {
     assertLint(
       ValidateDocumentationComments.self,
       """

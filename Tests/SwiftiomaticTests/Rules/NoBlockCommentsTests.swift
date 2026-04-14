@@ -12,9 +12,11 @@
 
 @_spi(Rules) import Swiftiomatic
 import _SwiftiomaticTestSupport
+import Testing
 
-final class NoBlockCommentsTests: LintOrFormatRuleTestCase {
-  func testDiagnoseBlockComments() {
+@Suite
+struct NoBlockCommentsTests: RuleTesting {
+  @Test func diagnoseBlockComments() {
     assertLint(
       NoBlockComments.self,
       """

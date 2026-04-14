@@ -1,16 +1,16 @@
 ---
 # 9mz-jmv
 title: Rewrite _SwiftiomaticTestSupport for Swift Testing
-status: ready
+status: completed
 type: task
 priority: high
 created_at: 2026-04-14T02:53:32Z
-updated_at: 2026-04-14T02:53:32Z
+updated_at: 2026-04-14T03:24:19Z
 parent: rwb-wt3
 sync:
     github:
         issue_number: "278"
-        synced_at: "2026-04-14T02:58:32Z"
+        synced_at: "2026-04-14T03:28:24Z"
 ---
 
 Convert the `_SwiftiomaticTestSupport` module from XCTest base classes to Swift Testing-compatible free functions and traits. This is the **critical path blocker** — 116 test files depend on these helpers.

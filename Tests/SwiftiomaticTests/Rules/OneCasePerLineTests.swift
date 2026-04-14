@@ -12,14 +12,16 @@
 
 @_spi(Rules) import Swiftiomatic
 import _SwiftiomaticTestSupport
+import Testing
 
-final class OneCasePerLineTests: LintOrFormatRuleTestCase {
+@Suite
+struct OneCasePerLineTests: RuleTesting {
 
   // The inconsistent leading whitespace in the expected text is intentional. This transform does
   // not attempt to preserve leading indentation since the pretty printer will correct it when
   // running the full formatter.
 
-  func testInvalidCasesOnLine() {
+  @Test func invalidCasesOnLine() {
     assertFormatting(
       OneCasePerLine.self,
       input: """
@@ -64,7 +66,7 @@ final class OneCasePerLineTests: LintOrFormatRuleTestCase {
     )
   }
 
-  func testElementOrderIsPreserved() {
+  @Test func elementOrderIsPreserved() {
     assertFormatting(
       OneCasePerLine.self,
       input: """
@@ -84,7 +86,7 @@ final class OneCasePerLineTests: LintOrFormatRuleTestCase {
     )
   }
 
-  func testCommentsAreNotRepeated() {
+  @Test func commentsAreNotRepeated() {
     assertFormatting(
       OneCasePerLine.self,
       input: """
@@ -112,7 +114,7 @@ final class OneCasePerLineTests: LintOrFormatRuleTestCase {
     )
   }
 
-  func testAttributesArePropagated() {
+  @Test func attributesArePropagated() {
     assertFormatting(
       OneCasePerLine.self,
       input: """

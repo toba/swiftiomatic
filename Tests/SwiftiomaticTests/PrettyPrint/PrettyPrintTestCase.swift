@@ -15,28 +15,14 @@ import Swiftiomatic
 import SwiftOperators
 @_spi(ExperimentalLanguageFeatures) import SwiftParser
 import SwiftSyntax
-import XCTest
+import Testing
 @_spi(Testing) import _SwiftiomaticTestSupport
 
-class PrettyPrintTestCase: DiagnosingTestCase {
+protocol PrettyPrintTesting {}
+
+extension PrettyPrintTesting {
   /// Asserts that the input string, when pretty printed, is equal to the expected string.
-  ///
-  /// - Parameters:
-  ///   - input: The input text to pretty print.
-  ///   - expected: The expected pretty-printed output.
-  ///   - linelength: The maximum allowed line length of the output.
-  ///   - configuration: The formatter configuration.
-  ///   - whitespaceOnly: If true, the pretty printer should only apply whitespace changes and omit
-  ///     changes that insert or remove non-whitespace characters (like trailing commas).
-  ///   - findings: A list of `FindingSpec` values that describe the findings that are expected to
-  ///     be emitted. These are currently only checked if `whitespaceOnly` is true.
-  ///   - experimentalFeatures: The set of experimental features that should be enabled in the
-  ///     parser.
-  ///   - file: The file in which failure occurred. Defaults to the file name of the test case in
-  ///     which this function was called.
-  ///   - line: The line number on which failure occurred. Defaults to the line number on which this
-  ///     function was called.
-  final func assertPrettyPrintEqual(
+  func assertPrettyPrintEqual(
     input: String,
     expected: String,
     linelength: Int,
@@ -44,8 +30,7 @@ class PrettyPrintTestCase: DiagnosingTestCase {
     whitespaceOnly: Bool = false,
     findings: [FindingSpec] = [],
     experimentalFeatures: Parser.ExperimentalFeatures = [],
-    file: StaticString = #file,
-    line: UInt = #line
+    sourceLocation: TestSourceLocation = #_sourceLocation
   ) {
     var configuration = configuration
     configuration.lineLength = linelength
@@ -66,8 +51,7 @@ class PrettyPrintTestCase: DiagnosingTestCase {
       formatted,
       expected,
       "Pretty-printed result was not what was expected",
-      file: file,
-      line: line
+      sourceLocation: sourceLocation
     )
 
     // FIXME: It would be nice to check findings when whitespaceOnly == false, but their locations
@@ -78,8 +62,7 @@ class PrettyPrintTestCase: DiagnosingTestCase {
         markerLocations: markedInput.markers,
         emittedFindings: emittedFindings,
         context: context,
-        file: file,
-        line: line
+        sourceLocation: sourceLocation
       )
     }
 
@@ -99,50 +82,39 @@ class PrettyPrintTestCase: DiagnosingTestCase {
         reformatted,
         formatted,
         "Pretty printer is not idempotent",
-        file: file,
-        line: line
+        sourceLocation: sourceLocation
       )
     }
   }
+}
 
-  /// Returns the given source code reformatted with the pretty printer.
-  ///
-  /// - Parameters:
-  ///   - source: The source text to pretty print.
-  ///   - configuration: The formatter configuration.
-  ///   - whitespaceOnly: If true, the pretty printer should only apply whitespace changes and omit
-  ///     changes that insert or remove non-whitespace characters (like trailing commas).
-  ///   - experimentalFeatures: The set of experimental features that should be enabled in the
-  ///     parser.
-  ///   - findingConsumer: A function called for each finding that is emitted by the pretty printer.
-  /// - Returns: The pretty-printed text, or nil if an error occurred and a test failure was logged.
-  private func prettyPrintedSource(
-    _ source: String,
-    configuration: Configuration,
-    selection: Selection,
-    whitespaceOnly: Bool,
-    experimentalFeatures: Parser.ExperimentalFeatures = [],
-    findingConsumer: @escaping (Finding) -> Void
-  ) -> (String, Context) {
-    // Ignore folding errors for unrecognized operators so that we fallback to a reasonable default.
-    let sourceFileSyntax =
-      OperatorTable.standardOperators.foldAll(
-        Parser.parse(source: source, experimentalFeatures: experimentalFeatures)
-      ) { _ in }
-      .as(SourceFileSyntax.self)!
-    let context = makeContext(
-      sourceFileSyntax: sourceFileSyntax,
-      configuration: configuration,
-      selection: selection,
-      findingConsumer: findingConsumer
-    )
-    let printer = PrettyPrinter(
-      context: context,
-      source: source,
-      node: Syntax(sourceFileSyntax),
-      printTokenStream: false,
-      whitespaceOnly: whitespaceOnly
-    )
-    return (printer.prettyPrint(), context)
-  }
+/// Returns the given source code reformatted with the pretty printer.
+private func prettyPrintedSource(
+  _ source: String,
+  configuration: Configuration,
+  selection: Selection,
+  whitespaceOnly: Bool,
+  experimentalFeatures: Parser.ExperimentalFeatures = [],
+  findingConsumer: @escaping (Finding) -> Void
+) -> (String, Context) {
+  // Ignore folding errors for unrecognized operators so that we fallback to a reasonable default.
+  let sourceFileSyntax =
+    OperatorTable.standardOperators.foldAll(
+      Parser.parse(source: source, experimentalFeatures: experimentalFeatures)
+    ) { _ in }
+    .as(SourceFileSyntax.self)!
+  let context = makeTestContext(
+    sourceFileSyntax: sourceFileSyntax,
+    configuration: configuration,
+    selection: selection,
+    findingConsumer: findingConsumer
+  )
+  let printer = PrettyPrinter(
+    context: context,
+    source: source,
+    node: Syntax(sourceFileSyntax),
+    printTokenStream: false,
+    whitespaceOnly: whitespaceOnly
+  )
+  return (printer.prettyPrint(), context)
 }

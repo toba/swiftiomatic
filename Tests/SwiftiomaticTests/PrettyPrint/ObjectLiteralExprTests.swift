@@ -11,9 +11,11 @@
 //===----------------------------------------------------------------------===//
 
 import Swiftiomatic
+import Testing
 
-final class ObjectLiteralExprTests: PrettyPrintTestCase {
-  func testColorLiteral_noPackArguments() {
+@Suite
+struct ObjectLiteralExprTests: PrettyPrintTesting {
+  @Test func colorLiteral_noPackArguments() {
     let input =
       """
       #colorLiteral()
@@ -44,7 +46,7 @@ final class ObjectLiteralExprTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 25, configuration: config)
   }
 
-  func testColorLiteral_packArguments() {
+  @Test func colorLiteral_packArguments() {
     let input =
       """
       #colorLiteral()
@@ -70,7 +72,7 @@ final class ObjectLiteralExprTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 25, configuration: config)
   }
 
-  func testImageLiteral_noPackArguments() {
+  @Test func imageLiteral_noPackArguments() {
     let input =
       """
       #imageLiteral()
@@ -97,7 +99,7 @@ final class ObjectLiteralExprTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 38, configuration: config)
   }
 
-  func testImageLiteral_packArguments() {
+  @Test func imageLiteral_packArguments() {
     let input =
       """
       #imageLiteral()
@@ -123,7 +125,7 @@ final class ObjectLiteralExprTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 38, configuration: config)
   }
 
-  func testGroupsTrailingComma() {
+  @Test func groupsTrailingComma() {
     let input =
       """
       #imageLiteral(

@@ -12,9 +12,11 @@
 
 @_spi(Rules) import Swiftiomatic
 import _SwiftiomaticTestSupport
+import Testing
 
-final class UseSingleLinePropertyGetterTests: LintOrFormatRuleTestCase {
-  func testMultiLinePropertyGetter() {
+@Suite
+struct UseSingleLinePropertyGetterTests: RuleTesting {
+  @Test func multiLinePropertyGetter() {
     assertFormatting(
       UseSingleLinePropertyGetter.self,
       input: """
@@ -84,7 +86,7 @@ final class UseSingleLinePropertyGetterTests: LintOrFormatRuleTestCase {
     )
   }
 
-  func testSingleLineGetterWithInlineComments() {
+  @Test func singleLineGetterWithInlineComments() {
     assertFormatting(
       UseSingleLinePropertyGetter.self,
       input: """
@@ -130,7 +132,7 @@ final class UseSingleLinePropertyGetterTests: LintOrFormatRuleTestCase {
     )
   }
 
-  func testMultiLineGetterWithCommentsInsideBody() {
+  @Test func multiLineGetterWithCommentsInsideBody() {
     assertFormatting(
       UseSingleLinePropertyGetter.self,
       input: """
@@ -182,7 +184,7 @@ final class UseSingleLinePropertyGetterTests: LintOrFormatRuleTestCase {
     )
   }
 
-  func testGetterWithCommentsAfterGetKeyword() {
+  @Test func getterWithCommentsAfterGetKeyword() {
     assertFormatting(
       UseSingleLinePropertyGetter.self,
       input: """
@@ -219,7 +221,7 @@ final class UseSingleLinePropertyGetterTests: LintOrFormatRuleTestCase {
     )
   }
 
-  func testGetterWithCommentsAroundBracesAndBody() {
+  @Test func getterWithCommentsAroundBracesAndBody() {
     assertFormatting(
       UseSingleLinePropertyGetter.self,
       input: """
@@ -254,7 +256,7 @@ final class UseSingleLinePropertyGetterTests: LintOrFormatRuleTestCase {
     )
   }
 
-  func testGetterWithAttributedAccessorShouldBePreserved() {
+  @Test func getterWithAttributedAccessorShouldBePreserved() {
     assertFormatting(
       UseSingleLinePropertyGetter.self,
       input: """

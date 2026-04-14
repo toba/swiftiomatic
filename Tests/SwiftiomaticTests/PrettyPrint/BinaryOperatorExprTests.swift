@@ -11,9 +11,11 @@
 //===----------------------------------------------------------------------===//
 
 import Swiftiomatic
+import Testing
 
-final class BinaryOperatorExprTests: PrettyPrintTestCase {
-  func testNonRangeFormationOperatorsAreSurroundedByBreaks() {
+@Suite
+struct BinaryOperatorExprTests: PrettyPrintTesting {
+  @Test func nonRangeFormationOperatorsAreSurroundedByBreaks() {
     let input =
       """
       x=1+8-9  ^*^  5*4/10
@@ -40,7 +42,7 @@ final class BinaryOperatorExprTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected10, linelength: 10)
   }
 
-  func testRangeFormationOperatorCompaction_noSpacesAroundRangeFormation() {
+  @Test func rangeFormationOperatorCompaction_noSpacesAroundRangeFormation() {
     let input =
       """
       x = 1...100
@@ -72,7 +74,7 @@ final class BinaryOperatorExprTests: PrettyPrintTestCase {
     )
   }
 
-  func testRangeFormationOperatorCompaction_spacesAroundRangeFormation() {
+  @Test func rangeFormationOperatorCompaction_spacesAroundRangeFormation() {
     let input =
       """
       x = 1...100
@@ -104,7 +106,7 @@ final class BinaryOperatorExprTests: PrettyPrintTestCase {
     )
   }
 
-  func testRangeFormationOperatorsAreNotCompactedWhenFollowingAPostfixOperator() {
+  @Test func rangeFormationOperatorsAreNotCompactedWhenFollowingAPostfixOperator() {
     let input =
       """
       x = 1++ ... 100
@@ -144,7 +146,7 @@ final class BinaryOperatorExprTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected10, linelength: 10)
   }
 
-  func testRangeFormationOperatorsAreNotCompactedWhenPrecedingAPrefixOperator() {
+  @Test func rangeFormationOperatorsAreNotCompactedWhenPrecedingAPrefixOperator() {
     let input =
       """
       x = 1 ... -100
@@ -184,7 +186,7 @@ final class BinaryOperatorExprTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected10, linelength: 10)
   }
 
-  func testRangeFormationOperatorsAreNotCompactedWhenUnaryOperatorsAreOnEachSide() {
+  @Test func rangeFormationOperatorsAreNotCompactedWhenUnaryOperatorsAreOnEachSide() {
     let input =
       """
       x = 1++ ... -100
@@ -224,7 +226,7 @@ final class BinaryOperatorExprTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected10, linelength: 10)
   }
 
-  func testRangeFormationOperatorsAreNotCompactedWhenPrecedingPrefixDot() {
+  @Test func rangeFormationOperatorsAreNotCompactedWhenPrecedingPrefixDot() {
     let input =
       """
       x = .first   ...   .last

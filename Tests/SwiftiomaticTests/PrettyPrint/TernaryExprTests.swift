@@ -10,8 +10,10 @@
 //
 //===----------------------------------------------------------------------===//
 
-final class TernaryExprTests: PrettyPrintTestCase {
-  func testTernaryExprs() {
+import Testing
+@Suite
+struct TernaryExprTests: PrettyPrintTesting {
+  @Test func ternaryExprs() {
     let input =
       """
       let x = a ? b : c
@@ -47,7 +49,7 @@ final class TernaryExprTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 45)
   }
 
-  func testTernaryExprsWithMultiplePartChoices() {
+  @Test func ternaryExprsWithMultiplePartChoices() {
     let input =
       """
       let someLocalizedText =
@@ -68,7 +70,7 @@ final class TernaryExprTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 80)
   }
 
-  func testTernaryWithWrappingExpressions() {
+  @Test func ternaryWithWrappingExpressions() {
     let input =
       """
       foo = firstTerm + secondTerm + thirdTerm ? firstTerm + secondTerm + thirdTerm : firstTerm + secondTerm + thirdTerm
@@ -125,7 +127,7 @@ final class TernaryExprTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 15)
   }
 
-  func testNestedTernaries() {
+  @Test func nestedTernaries() {
     let input =
       """
       a = b ? c : d ? e : f
@@ -188,7 +190,7 @@ final class TernaryExprTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 15)
   }
 
-  func testExpressionStartsWithTernary() {
+  @Test func expressionStartsWithTernary() {
     // When the ternary itself doesn't already start on a continuation line, we don't have a way
     // to indent the continuation of the condition differently from the first and second choices,
     // because we don't want to double-indent the condition's continuation lines, and we don't want
@@ -220,7 +222,7 @@ final class TernaryExprTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 25)
   }
 
-  func testParenthesizedTernary() {
+  @Test func parenthesizedTernary() {
     let input =
       """
       let a = (

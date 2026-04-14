@@ -12,9 +12,11 @@
 
 @_spi(Rules) import Swiftiomatic
 import _SwiftiomaticTestSupport
+import Testing
 
-class FullyIndirectEnumTests: LintOrFormatRuleTestCase {
-  func testAllIndirectCases() {
+@Suite
+struct FullyIndirectEnumTests: RuleTesting {
+  @Test func allIndirectCases() {
     assertFormatting(
       FullyIndirectEnum.self,
       input: """
@@ -51,7 +53,7 @@ class FullyIndirectEnumTests: LintOrFormatRuleTestCase {
     )
   }
 
-  func testAllIndirectCasesWithAttributes() {
+  @Test func allIndirectCasesWithAttributes() {
     assertFormatting(
       FullyIndirectEnum.self,
       input: """
@@ -88,7 +90,7 @@ class FullyIndirectEnumTests: LintOrFormatRuleTestCase {
     )
   }
 
-  func testNotAllIndirectCases() {
+  @Test func notAllIndirectCases() {
     let input = """
       public enum CompassPoint {
         case north
@@ -100,7 +102,7 @@ class FullyIndirectEnumTests: LintOrFormatRuleTestCase {
     assertFormatting(FullyIndirectEnum.self, input: input, expected: input, findings: [])
   }
 
-  func testAlreadyIndirectEnum() {
+  @Test func alreadyIndirectEnum() {
     let input = """
       indirect enum CompassPoint {
         case north
@@ -112,7 +114,7 @@ class FullyIndirectEnumTests: LintOrFormatRuleTestCase {
     assertFormatting(FullyIndirectEnum.self, input: input, expected: input, findings: [])
   }
 
-  func testCaselessEnum() {
+  @Test func caselessEnum() {
     let input = """
       public enum Constants {
         public static let foo = 5

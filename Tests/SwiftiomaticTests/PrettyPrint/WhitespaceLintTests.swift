@@ -12,12 +12,14 @@
 
 import Swiftiomatic
 import _SwiftiomaticTestSupport
+import Testing
 
 // A note about these tests: `WhitespaceLinter` *only* emits findings; it does not do any
 // reformatting. Therefore, in these tests the "expected" source code is the desired string that the
 // linter is diffing against.
-final class WhitespaceLintTests: WhitespaceTestCase {
-  func testSpacing() {
+@Suite
+struct WhitespaceLintTests: WhitespaceTesting {
+  @Test func spacing() {
     assertWhitespaceLint(
       input: """
         let a1️⃣ : Int = 123
@@ -36,7 +38,7 @@ final class WhitespaceLintTests: WhitespaceTestCase {
     )
   }
 
-  func testTabSpacing() {
+  @Test func tabSpacing() {
     assertWhitespaceLint(
       input: """
         let a1️⃣\t: Int = 123
@@ -52,7 +54,7 @@ final class WhitespaceLintTests: WhitespaceTestCase {
     )
   }
 
-  func testSpaceIndentation() {
+  @Test func spaceIndentation() {
     assertWhitespaceLint(
       input: """
         1️⃣  let a = 123
@@ -77,7 +79,7 @@ final class WhitespaceLintTests: WhitespaceTestCase {
     )
   }
 
-  func testTabIndentation() {
+  @Test func tabIndentation() {
     assertWhitespaceLint(
       input: """
         1️⃣\t\tlet a = 123
@@ -102,7 +104,7 @@ final class WhitespaceLintTests: WhitespaceTestCase {
     )
   }
 
-  func testHeterogeneousIndentation() {
+  @Test func heterogeneousIndentation() {
     assertWhitespaceLint(
       input: """
         1️⃣\t\t  \t let a = 123
@@ -130,7 +132,7 @@ final class WhitespaceLintTests: WhitespaceTestCase {
     )
   }
 
-  func testTrailingWhitespace() {
+  @Test func trailingWhitespace() {
     assertWhitespaceLint(
       input: """
         let a = 1231️⃣\u{20}\u{20}
@@ -157,7 +159,7 @@ final class WhitespaceLintTests: WhitespaceTestCase {
     )
   }
 
-  func testAddLines() {
+  @Test func addLines() {
     assertWhitespaceLint(
       input: """
         let a = 1231️⃣
@@ -182,7 +184,7 @@ final class WhitespaceLintTests: WhitespaceTestCase {
     )
   }
 
-  func testRemoveLines() {
+  @Test func removeLines() {
     assertWhitespaceLint(
       input: """
         let a = 1231️⃣
@@ -213,7 +215,7 @@ final class WhitespaceLintTests: WhitespaceTestCase {
     )
   }
 
-  func testLineLength() {
+  @Test func lineLength() {
     assertWhitespaceLint(
       input: """
         1️⃣func myFunc(longVar1: Bool, longVar2: Bool, longVar3: Bool, longVar4: Bool) {
@@ -256,7 +258,7 @@ final class WhitespaceLintTests: WhitespaceTestCase {
     )
   }
 
-  func testUnexpectedUnicodeCharacters() {
+  @Test func unexpectedUnicodeCharacters() {
     assertWhitespaceLint(
       input: """
         // Hello World\u{2028}

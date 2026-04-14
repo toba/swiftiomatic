@@ -10,8 +10,10 @@
 //
 //===----------------------------------------------------------------------===//
 
-final class CopyExprTests: PrettyPrintTestCase {
-  func testCopy() {
+import Testing
+@Suite
+struct CopyExprTests: PrettyPrintTesting {
+  @Test func copy() {
     assertPrettyPrintEqual(
       input: """
         let x = copy y

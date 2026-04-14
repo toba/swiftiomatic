@@ -10,8 +10,10 @@
 //
 //===----------------------------------------------------------------------===//
 
-final class DiscardStmtTests: PrettyPrintTestCase {
-  func testDiscard() {
+import Testing
+@Suite
+struct DiscardStmtTests: PrettyPrintTesting {
+  @Test func discard() {
     assertPrettyPrintEqual(
       input: """
         discard self

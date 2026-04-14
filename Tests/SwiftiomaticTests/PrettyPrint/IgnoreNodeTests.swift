@@ -10,8 +10,10 @@
 //
 //===----------------------------------------------------------------------===//
 
-final class IgnoreNodeTests: PrettyPrintTestCase {
-  func testIgnoreCodeBlockListItems() {
+import Testing
+@Suite
+struct IgnoreNodeTests: PrettyPrintTesting {
+  @Test func ignoreCodeBlockListItems() {
     let input =
       """
             x      = 4       + 5 // This comment stays here.
@@ -111,7 +113,7 @@ final class IgnoreNodeTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 50)
   }
 
-  func testIgnoreMemberDeclListItems() {
+  @Test func ignoreMemberDeclListItems() {
     let input =
       """
           struct Foo {
@@ -160,7 +162,7 @@ final class IgnoreNodeTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 50)
   }
 
-  func testIgnoresNestedMembers() {
+  @Test func ignoresNestedMembers() {
     let input =
       """
       // swiftiomatic-ignore
@@ -205,7 +207,7 @@ final class IgnoreNodeTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 50)
   }
 
-  func testInvalidComment() {
+  @Test func invalidComment() {
     let input =
       """
       // swiftiomatic-ignore: RuleName
@@ -242,7 +244,7 @@ final class IgnoreNodeTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 50)
   }
 
-  func testValidComment() {
+  @Test func validComment() {
     let input =
       """
       // swiftiomatic-ignore
@@ -279,7 +281,7 @@ final class IgnoreNodeTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 50)
   }
 
-  func testIgnoreInvalidAfterFirstToken() {
+  @Test func ignoreInvalidAfterFirstToken() {
     let input =
       """
       public  // swiftiomatic-ignore
@@ -302,7 +304,7 @@ final class IgnoreNodeTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 50)
   }
 
-  func testIgnoreWholeFile() {
+  @Test func ignoreWholeFile() {
     let input =
       """
       // swiftiomatic-ignore-file
@@ -333,7 +335,7 @@ final class IgnoreNodeTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: input, linelength: 50)
   }
 
-  func testIgnoreWholeFileDoesNotTouchWhitespace() {
+  @Test func ignoreWholeFileDoesNotTouchWhitespace() {
     let input =
       """
       // swiftiomatic-ignore-file
@@ -344,7 +346,7 @@ final class IgnoreNodeTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: input, linelength: 100)
   }
 
-  func testIgnoreWholeFileInNestedNode() {
+  @Test func ignoreWholeFileInNestedNode() {
     let input =
       """
       import Zoo

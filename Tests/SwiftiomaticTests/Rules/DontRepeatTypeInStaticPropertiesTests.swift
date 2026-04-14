@@ -12,9 +12,11 @@
 
 @_spi(Rules) import Swiftiomatic
 import _SwiftiomaticTestSupport
+import Testing
 
-final class DontRepeatTypeInStaticPropertiesTests: LintOrFormatRuleTestCase {
-  func testRepetitiveProperties() {
+@Suite
+struct DontRepeatTypeInStaticPropertiesTests: RuleTesting {
+  @Test func repetitiveProperties() {
     assertLint(
       DontRepeatTypeInStaticProperties.self,
       """
@@ -61,7 +63,7 @@ final class DontRepeatTypeInStaticPropertiesTests: LintOrFormatRuleTestCase {
     )
   }
 
-  func testDoNotDiagnoseUnrelatedType() {
+  @Test func doNotDiagnoseUnrelatedType() {
     assertLint(
       DontRepeatTypeInStaticProperties.self,
       """
@@ -75,7 +77,7 @@ final class DontRepeatTypeInStaticPropertiesTests: LintOrFormatRuleTestCase {
     )
   }
 
-  func testDottedExtendedType() {
+  @Test func dottedExtendedType() {
     assertLint(
       DontRepeatTypeInStaticProperties.self,
       """
@@ -89,7 +91,7 @@ final class DontRepeatTypeInStaticPropertiesTests: LintOrFormatRuleTestCase {
     )
   }
 
-  func testDottedExtendedTypeWithNamespacePrefix() {
+  @Test func dottedExtendedTypeWithNamespacePrefix() {
     assertLint(
       DontRepeatTypeInStaticProperties.self,
       """
@@ -103,7 +105,7 @@ final class DontRepeatTypeInStaticPropertiesTests: LintOrFormatRuleTestCase {
     )
   }
 
-  func testSelfType() {
+  @Test func selfType() {
     assertLint(
       DontRepeatTypeInStaticProperties.self,
       """
@@ -117,7 +119,7 @@ final class DontRepeatTypeInStaticPropertiesTests: LintOrFormatRuleTestCase {
     )
   }
 
-  func testDottedExtendedTypeInitializer() {
+  @Test func dottedExtendedTypeInitializer() {
     assertLint(
       DontRepeatTypeInStaticProperties.self,
       """
@@ -131,7 +133,7 @@ final class DontRepeatTypeInStaticPropertiesTests: LintOrFormatRuleTestCase {
     )
   }
 
-  func testExplicitInitializer() {
+  @Test func explicitInitializer() {
     assertLint(
       DontRepeatTypeInStaticProperties.self,
       """
@@ -145,7 +147,7 @@ final class DontRepeatTypeInStaticPropertiesTests: LintOrFormatRuleTestCase {
     )
   }
 
-  func testSelfTypeInitializer() {
+  @Test func selfTypeInitializer() {
     assertLint(
       DontRepeatTypeInStaticProperties.self,
       """
@@ -159,7 +161,7 @@ final class DontRepeatTypeInStaticPropertiesTests: LintOrFormatRuleTestCase {
     )
   }
 
-  func testIgnoreSingleDecl() {
+  @Test func ignoreSingleDecl() {
     assertLint(
       DontRepeatTypeInStaticProperties.self,
       """

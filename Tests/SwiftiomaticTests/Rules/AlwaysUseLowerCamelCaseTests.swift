@@ -12,9 +12,11 @@
 
 @_spi(Rules) import Swiftiomatic
 import _SwiftiomaticTestSupport
+import Testing
 
-final class AlwaysUseLowerCamelCaseTests: LintOrFormatRuleTestCase {
-  func testInvalidVariableCasing() {
+@Suite
+struct AlwaysUseLowerCamelCaseTests: RuleTesting {
+  @Test func invalidVariableCasing() {
     assertLint(
       AlwaysUseLowerCamelCase.self,
       """
@@ -32,7 +34,7 @@ final class AlwaysUseLowerCamelCaseTests: LintOrFormatRuleTestCase {
     )
   }
 
-  func testInvalidFunctionCasing() {
+  @Test func invalidFunctionCasing() {
     assertLint(
       AlwaysUseLowerCamelCase.self,
       """
@@ -58,7 +60,7 @@ final class AlwaysUseLowerCamelCaseTests: LintOrFormatRuleTestCase {
 
   }
 
-  func testInvalidEnumCaseCasing() {
+  @Test func invalidEnumCaseCasing() {
     assertLint(
       AlwaysUseLowerCamelCase.self,
       """
@@ -74,7 +76,7 @@ final class AlwaysUseLowerCamelCaseTests: LintOrFormatRuleTestCase {
 
   }
 
-  func testInvalidClosureCasing() {
+  @Test func invalidClosureCasing() {
     assertLint(
       AlwaysUseLowerCamelCase.self,
       """
@@ -99,7 +101,7 @@ final class AlwaysUseLowerCamelCaseTests: LintOrFormatRuleTestCase {
     )
   }
 
-  func testIgnoresUnderscoresInTestNames() {
+  @Test func ignoresUnderscoresInTestNames() {
     assertLint(
       AlwaysUseLowerCamelCase.self,
       """
@@ -129,7 +131,7 @@ final class AlwaysUseLowerCamelCaseTests: LintOrFormatRuleTestCase {
     )
   }
 
-  func testIgnoresUnderscoresInTestNamesWhenImportedConditionally() {
+  @Test func ignoresUnderscoresInTestNamesWhenImportedConditionally() {
     assertLint(
       AlwaysUseLowerCamelCase.self,
       """
@@ -161,7 +163,7 @@ final class AlwaysUseLowerCamelCaseTests: LintOrFormatRuleTestCase {
     )
   }
 
-  func testIgnoresUnderscoresInConditionalTestNames() {
+  @Test func ignoresUnderscoresInConditionalTestNames() {
     assertLint(
       AlwaysUseLowerCamelCase.self,
       """
@@ -180,10 +182,10 @@ final class AlwaysUseLowerCamelCaseTests: LintOrFormatRuleTestCase {
           func test_HappyPath_Through_GoodCode_Throws() throws {}
         #else
           func 6️⃣testBadMethod_HasNonVoidReturn() -> ReturnType {}
-          func testGoodMethod_HasVoidReturn() {}
+          @Test func goodMethod_HasVoidReturn() {}
           #if SOME_OTHER_FEATURE_FLAG
             func 7️⃣testBadMethod_HasNonVoidReturn2() -> ReturnType {}
-            func testGoodMethod_HasVoidReturn2() {}
+            @Test func goodMethod_HasVoidReturn2() {}
           #endif
         #endif
       }
@@ -201,7 +203,7 @@ final class AlwaysUseLowerCamelCaseTests: LintOrFormatRuleTestCase {
     )
   }
 
-  func testIgnoresFunctionOverrides() {
+  @Test func ignoresFunctionOverrides() {
     assertLint(
       AlwaysUseLowerCamelCase.self,
       """
@@ -222,7 +224,7 @@ final class AlwaysUseLowerCamelCaseTests: LintOrFormatRuleTestCase {
     )
   }
 
-  func testIgnoresFunctionsWithTestAttributes() {
+  @Test func ignoresFunctionsWithTestAttributes() {
     assertLint(
       AlwaysUseLowerCamelCase.self,
       """

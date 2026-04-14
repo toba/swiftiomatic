@@ -12,9 +12,11 @@
 
 @_spi(Rules) import Swiftiomatic
 import _SwiftiomaticTestSupport
+import Testing
 
-final class NoEmptyTrailingClosureParenthesesTests: LintOrFormatRuleTestCase {
-  func testInvalidEmptyParenTrailingClosure() {
+@Suite
+struct NoEmptyTrailingClosureParenthesesTests: RuleTesting {
+  @Test func invalidEmptyParenTrailingClosure() {
     assertFormatting(
       NoEmptyTrailingClosureParentheses.self,
       input: """
@@ -94,7 +96,7 @@ final class NoEmptyTrailingClosureParenthesesTests: LintOrFormatRuleTestCase {
     )
   }
 
-  func testDoNotRemoveParensContainingOnlyComments() {
+  @Test func doNotRemoveParensContainingOnlyComments() {
     assertFormatting(
       NoEmptyTrailingClosureParentheses.self,
       input: """
@@ -119,7 +121,7 @@ final class NoEmptyTrailingClosureParenthesesTests: LintOrFormatRuleTestCase {
     )
   }
 
-  func testDoNotRemoveParensInCurriedCalls() {
+  @Test func doNotRemoveParensInCurriedCalls() {
     assertFormatting(
       NoEmptyTrailingClosureParentheses.self,
       input: """

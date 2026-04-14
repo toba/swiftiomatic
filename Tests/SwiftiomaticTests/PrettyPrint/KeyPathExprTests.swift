@@ -10,8 +10,10 @@
 //
 //===----------------------------------------------------------------------===//
 
-final class KeyPathExprTests: PrettyPrintTestCase {
-  func testSimple() {
+import Testing
+@Suite
+struct KeyPathExprTests: PrettyPrintTesting {
+  @Test func simple() {
     let input =
       #"""
       let x = \.foo
@@ -30,7 +32,7 @@ final class KeyPathExprTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 80)
   }
 
-  func testWithType() {
+  @Test func withType() {
     let input =
       #"""
       let x = \Type.foo
@@ -49,7 +51,7 @@ final class KeyPathExprTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 80)
   }
 
-  func testOptionalUnwrap() {
+  @Test func optionalUnwrap() {
     let input =
       #"""
       let x = \.foo?
@@ -84,7 +86,7 @@ final class KeyPathExprTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected11, linelength: 11)
   }
 
-  func testSubscript() {
+  @Test func `subscript`() {
     let input =
       #"""
       let x = \.foo[0]
@@ -103,7 +105,7 @@ final class KeyPathExprTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 80)
   }
 
-  func testImplicitSelfUnwrap() {
+  @Test func implicitSelfUnwrap() {
     let input =
       #"""
       let x = \.?.foo
@@ -138,7 +140,7 @@ final class KeyPathExprTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected11, linelength: 11)
   }
 
-  func testWrapping() {
+  @Test func wrapping() {
     let input =
       #"""
       let x = \ReallyLongType.reallyLongProperty.anotherLongProperty

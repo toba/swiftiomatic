@@ -54,14 +54,6 @@ citations:
       high: [ '**/*.swift' ]
       medium: [ Package.swift ]
       low: [ .github/**, README.md, LICENSE ]
-  - repo: jpsim/SourceKitten
-    branch: main
-    last_checked_sha: 02d1db1084dde306a4f7fd7a85480d6a0f4831c4
-    last_checked_date: "2026-04-11T17:35:36Z"
-    paths:
-      high: [ '**/*.swift' ]
-      medium: [ Package.swift ]
-      low: [ .github/**, README.md, LICENSE ]
   - repo: swiftlang/swift-format
     branch: main
     last_checked_sha: 6ddbafa85bff26c7a99c9c86295bbb44ed1a5bfb

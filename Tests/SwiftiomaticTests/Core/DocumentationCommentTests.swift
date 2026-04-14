@@ -14,30 +14,31 @@ import Markdown
 @_spi(Testing) import Swiftiomatic
 import SwiftSyntax
 import SwiftSyntaxBuilder
-import XCTest
+import Testing
 
-final class DocumentationCommentTests: XCTestCase {
-  func testBriefSummaryOnly() throws {
+@Suite
+struct DocumentationCommentTests {
+  @Test func briefSummaryOnly() throws {
     let decl: DeclSyntax = """
       /// A brief summary.
       func f() {}
       """
-    let comment = try XCTUnwrap(DocumentationComment(extractedFrom: decl))
-    XCTAssertEqual(
-      try XCTUnwrap(comment.briefSummary).debugDescription(),
-      """
-      Paragraph
-      └─ Text "A brief summary."
-      """
+    let comment = try #require(DocumentationComment(extractedFrom: decl))
+    #expect(
+      try #require(comment.briefSummary).debugDescription()
+        == """
+        Paragraph
+        └─ Text "A brief summary."
+        """
     )
-    XCTAssertTrue(comment.bodyNodes.isEmpty)
-    XCTAssertNil(comment.parameterLayout)
-    XCTAssertTrue(comment.parameters.isEmpty)
-    XCTAssertNil(comment.returns)
-    XCTAssertNil(comment.throws)
+    #expect(comment.bodyNodes.isEmpty)
+    #expect(comment.parameterLayout == nil)
+    #expect(comment.parameters.isEmpty)
+    #expect(comment.returns == nil)
+    #expect(comment.throws == nil)
   }
 
-  func testBriefSummaryAndAdditionalParagraphs() throws {
+  @Test func briefSummaryAndAdditionalParagraphs() throws {
     let decl: DeclSyntax = """
       /// A brief summary.
       ///
@@ -46,97 +47,97 @@ final class DocumentationCommentTests: XCTestCase {
       /// More detail.
       func f() {}
       """
-    let comment = try XCTUnwrap(DocumentationComment(extractedFrom: decl))
-    XCTAssertEqual(
-      comment.briefSummary?.debugDescription(),
-      """
-      Paragraph
-      └─ Text "A brief summary."
-      """
-    )
-    XCTAssertEqual(
-      comment.bodyNodes.map { $0.debugDescription() },
-      [
-        """
+    let comment = try #require(DocumentationComment(extractedFrom: decl))
+    #expect(
+      comment.briefSummary?.debugDescription()
+        == """
         Paragraph
-        └─ Text "Some detail."
-        """,
+        └─ Text "A brief summary."
         """
-        Paragraph
-        └─ Text "More detail."
-        """,
-      ]
     )
-    XCTAssertNil(comment.parameterLayout)
-    XCTAssertTrue(comment.parameters.isEmpty)
-    XCTAssertNil(comment.returns)
-    XCTAssertNil(comment.throws)
+    #expect(
+      comment.bodyNodes.map { $0.debugDescription() }
+        == [
+          """
+          Paragraph
+          └─ Text "Some detail."
+          """,
+          """
+          Paragraph
+          └─ Text "More detail."
+          """,
+        ]
+    )
+    #expect(comment.parameterLayout == nil)
+    #expect(comment.parameters.isEmpty)
+    #expect(comment.returns == nil)
+    #expect(comment.throws == nil)
   }
 
-  func testParameterOutline() throws {
+  @Test func parameterOutline() throws {
     let decl: DeclSyntax = """
       /// - Parameters:
       ///   - x: A value.
       ///   - y: Another value.
       func f(x: Int, y: Int) {}
       """
-    let comment = try XCTUnwrap(DocumentationComment(extractedFrom: decl))
-    XCTAssertNil(comment.briefSummary)
-    XCTAssertTrue(comment.bodyNodes.isEmpty)
-    XCTAssertEqual(comment.parameterLayout, .outline)
-    XCTAssertEqual(comment.parameters.count, 2)
-    XCTAssertEqual(comment.parameters[0].name, "x")
-    XCTAssertEqual(
-      comment.parameters[0].comment.briefSummary?.debugDescription(),
-      """
-      Paragraph
-      └─ Text " A value."
-      """
+    let comment = try #require(DocumentationComment(extractedFrom: decl))
+    #expect(comment.briefSummary == nil)
+    #expect(comment.bodyNodes.isEmpty)
+    #expect(comment.parameterLayout == .outline)
+    #expect(comment.parameters.count == 2)
+    #expect(comment.parameters[0].name == "x")
+    #expect(
+      comment.parameters[0].comment.briefSummary?.debugDescription()
+        == """
+        Paragraph
+        └─ Text " A value."
+        """
     )
-    XCTAssertEqual(comment.parameters[1].name, "y")
-    XCTAssertEqual(
-      comment.parameters[1].comment.briefSummary?.debugDescription(),
-      """
-      Paragraph
-      └─ Text " Another value."
-      """
+    #expect(comment.parameters[1].name == "y")
+    #expect(
+      comment.parameters[1].comment.briefSummary?.debugDescription()
+        == """
+        Paragraph
+        └─ Text " Another value."
+        """
     )
-    XCTAssertNil(comment.returns)
-    XCTAssertNil(comment.throws)
+    #expect(comment.returns == nil)
+    #expect(comment.throws == nil)
   }
 
-  func testSeparatedParameters() throws {
+  @Test func separatedParameters() throws {
     let decl: DeclSyntax = """
       /// - Parameter x: A value.
       /// - Parameter y: Another value.
       func f(x: Int, y: Int) {}
       """
-    let comment = try XCTUnwrap(DocumentationComment(extractedFrom: decl))
-    XCTAssertNil(comment.briefSummary)
-    XCTAssertTrue(comment.bodyNodes.isEmpty)
-    XCTAssertEqual(comment.parameterLayout, .separated)
-    XCTAssertEqual(comment.parameters.count, 2)
-    XCTAssertEqual(comment.parameters[0].name, "x")
-    XCTAssertEqual(
-      comment.parameters[0].comment.briefSummary?.debugDescription(),
-      """
-      Paragraph
-      └─ Text " A value."
-      """
+    let comment = try #require(DocumentationComment(extractedFrom: decl))
+    #expect(comment.briefSummary == nil)
+    #expect(comment.bodyNodes.isEmpty)
+    #expect(comment.parameterLayout == .separated)
+    #expect(comment.parameters.count == 2)
+    #expect(comment.parameters[0].name == "x")
+    #expect(
+      comment.parameters[0].comment.briefSummary?.debugDescription()
+        == """
+        Paragraph
+        └─ Text " A value."
+        """
     )
-    XCTAssertEqual(comment.parameters[1].name, "y")
-    XCTAssertEqual(
-      comment.parameters[1].comment.briefSummary?.debugDescription(),
-      """
-      Paragraph
-      └─ Text " Another value."
-      """
+    #expect(comment.parameters[1].name == "y")
+    #expect(
+      comment.parameters[1].comment.briefSummary?.debugDescription()
+        == """
+        Paragraph
+        └─ Text " Another value."
+        """
     )
-    XCTAssertNil(comment.returns)
-    XCTAssertNil(comment.throws)
+    #expect(comment.returns == nil)
+    #expect(comment.throws == nil)
   }
 
-  func testMalformedTagsGoIntoBodyNodes() throws {
+  @Test func malformedTagsGoIntoBodyNodes() throws {
     let decl: DeclSyntax = """
       /// - Parameter: A value.
       /// - Parameter y Another value.
@@ -146,100 +147,27 @@ final class DocumentationCommentTests: XCTestCase {
       /// - Throw: An error.
       func f(x: Int, y: Int) {}
       """
-    let comment = try XCTUnwrap(DocumentationComment(extractedFrom: decl))
-    XCTAssertEqual(comment.bodyNodes.count, 1)
-    XCTAssertEqual(
-      comment.bodyNodes[0].debugDescription(),
-      """
-      UnorderedList
-      ├─ ListItem
-      │  └─ Paragraph
-      │     └─ Text "Parameter: A value."
-      ├─ ListItem
-      │  └─ Paragraph
-      │     └─ Text "Parameter y Another value."
-      ├─ ListItem
-      │  └─ Paragraph
-      │     └─ Text "Parmeter z: Another value."
-      ├─ ListItem
-      │  └─ Paragraph
-      │     ├─ Text "Parameter "
-      │     ├─ Emphasis
-      │     │  └─ Text "x"
-      │     └─ Text ": Another value."
-      ├─ ListItem
-      │  └─ Paragraph
-      │     └─ Text "Return: A value."
-      └─ ListItem
-         └─ Paragraph
-            └─ Text "Throw: An error."
-      """
-    )
-    XCTAssertNil(comment.parameterLayout)
-    XCTAssertTrue(comment.parameters.isEmpty)
-  }
-
-  func testReturnsField() throws {
-    let decl: DeclSyntax = """
-      /// - Returns: A value.
-      func f() {}
-      """
-    let comment = try XCTUnwrap(DocumentationComment(extractedFrom: decl))
-    XCTAssertNil(comment.briefSummary)
-    XCTAssertTrue(comment.bodyNodes.isEmpty)
-    XCTAssertNil(comment.parameterLayout)
-    XCTAssertTrue(comment.parameters.isEmpty)
-
-    let returnsField = try XCTUnwrap(comment.returns)
-    XCTAssertEqual(
-      returnsField.debugDescription(),
-      """
-      Paragraph
-      └─ Text " A value."
-      """
-    )
-    XCTAssertNil(comment.throws)
-  }
-
-  func testThrowsField() throws {
-    let decl: DeclSyntax = """
-      /// - Throws: An error.
-      func f() {}
-      """
-    let comment = try XCTUnwrap(DocumentationComment(extractedFrom: decl))
-    XCTAssertNil(comment.briefSummary)
-    XCTAssertTrue(comment.bodyNodes.isEmpty)
-    XCTAssertNil(comment.parameterLayout)
-    XCTAssertTrue(comment.parameters.isEmpty)
-    XCTAssertNil(comment.returns)
-
-    let throwsField = try XCTUnwrap(comment.throws)
-    XCTAssertEqual(
-      throwsField.debugDescription(),
-      """
-      Paragraph
-      └─ Text " An error."
-      """
-    )
-  }
-
-  func testUnrecognizedFieldsGoIntoBodyNodes() throws {
-    let decl: DeclSyntax = """
-      /// - Blahblah: Blah.
-      /// - Return: A value.
-      /// - Throw: An error.
-      func f() {}
-      """
-    let comment = try XCTUnwrap(DocumentationComment(extractedFrom: decl))
-    XCTAssertNil(comment.briefSummary)
-    XCTAssertEqual(
-      comment.bodyNodes.map { $0.debugDescription() },
-      [
-        """
+    let comment = try #require(DocumentationComment(extractedFrom: decl))
+    #expect(comment.bodyNodes.count == 1)
+    #expect(
+      comment.bodyNodes[0].debugDescription()
+        == """
         UnorderedList
         ├─ ListItem
         │  └─ Paragraph
-        │     └─ Text "Blahblah: Blah."
+        │     └─ Text "Parameter: A value."
+        ├─ ListItem
+        │  └─ Paragraph
+        │     └─ Text "Parameter y Another value."
+        ├─ ListItem
+        │  └─ Paragraph
+        │     └─ Text "Parmeter z: Another value."
+        ├─ ListItem
+        │  └─ Paragraph
+        │     ├─ Text "Parameter "
+        │     ├─ Emphasis
+        │     │  └─ Text "x"
+        │     └─ Text ": Another value."
         ├─ ListItem
         │  └─ Paragraph
         │     └─ Text "Return: A value."
@@ -247,15 +175,88 @@ final class DocumentationCommentTests: XCTestCase {
            └─ Paragraph
               └─ Text "Throw: An error."
         """
-      ]
     )
-    XCTAssertNil(comment.parameterLayout)
-    XCTAssertTrue(comment.parameters.isEmpty)
-    XCTAssertNil(comment.returns)
-    XCTAssertNil(comment.throws)
+    #expect(comment.parameterLayout == nil)
+    #expect(comment.parameters.isEmpty)
   }
 
-  func testNestedCommentInParameter() throws {
+  @Test func returnsField() throws {
+    let decl: DeclSyntax = """
+      /// - Returns: A value.
+      func f() {}
+      """
+    let comment = try #require(DocumentationComment(extractedFrom: decl))
+    #expect(comment.briefSummary == nil)
+    #expect(comment.bodyNodes.isEmpty)
+    #expect(comment.parameterLayout == nil)
+    #expect(comment.parameters.isEmpty)
+
+    let returnsField = try #require(comment.returns)
+    #expect(
+      returnsField.debugDescription()
+        == """
+        Paragraph
+        └─ Text " A value."
+        """
+    )
+    #expect(comment.throws == nil)
+  }
+
+  @Test func throwsField() throws {
+    let decl: DeclSyntax = """
+      /// - Throws: An error.
+      func f() {}
+      """
+    let comment = try #require(DocumentationComment(extractedFrom: decl))
+    #expect(comment.briefSummary == nil)
+    #expect(comment.bodyNodes.isEmpty)
+    #expect(comment.parameterLayout == nil)
+    #expect(comment.parameters.isEmpty)
+    #expect(comment.returns == nil)
+
+    let throwsField = try #require(comment.throws)
+    #expect(
+      throwsField.debugDescription()
+        == """
+        Paragraph
+        └─ Text " An error."
+        """
+    )
+  }
+
+  @Test func unrecognizedFieldsGoIntoBodyNodes() throws {
+    let decl: DeclSyntax = """
+      /// - Blahblah: Blah.
+      /// - Return: A value.
+      /// - Throw: An error.
+      func f() {}
+      """
+    let comment = try #require(DocumentationComment(extractedFrom: decl))
+    #expect(comment.briefSummary == nil)
+    #expect(
+      comment.bodyNodes.map { $0.debugDescription() }
+        == [
+          """
+          UnorderedList
+          ├─ ListItem
+          │  └─ Paragraph
+          │     └─ Text "Blahblah: Blah."
+          ├─ ListItem
+          │  └─ Paragraph
+          │     └─ Text "Return: A value."
+          └─ ListItem
+             └─ Paragraph
+                └─ Text "Throw: An error."
+          """
+        ]
+    )
+    #expect(comment.parameterLayout == nil)
+    #expect(comment.parameters.isEmpty)
+    #expect(comment.returns == nil)
+    #expect(comment.throws == nil)
+  }
+
+  @Test func nestedCommentInParameter() throws {
     let decl: DeclSyntax = """
       /// - Parameters:
       ///   - g: A function.
@@ -264,49 +265,49 @@ final class DocumentationCommentTests: XCTestCase {
       ///     - Returns: A result.
       func f(g: (x: Int, y: Int) -> Int) {}
       """
-    let comment = try XCTUnwrap(DocumentationComment(extractedFrom: decl))
-    XCTAssertNil(comment.briefSummary)
-    XCTAssertTrue(comment.bodyNodes.isEmpty)
-    XCTAssertEqual(comment.parameterLayout, .outline)
-    XCTAssertEqual(comment.parameters.count, 1)
-    XCTAssertEqual(comment.parameters[0].name, "g")
-    XCTAssertNil(comment.returns)
-    XCTAssertNil(comment.throws)
+    let comment = try #require(DocumentationComment(extractedFrom: decl))
+    #expect(comment.briefSummary == nil)
+    #expect(comment.bodyNodes.isEmpty)
+    #expect(comment.parameterLayout == .outline)
+    #expect(comment.parameters.count == 1)
+    #expect(comment.parameters[0].name == "g")
+    #expect(comment.returns == nil)
+    #expect(comment.throws == nil)
 
     let paramComment = comment.parameters[0].comment
-    XCTAssertEqual(
-      paramComment.briefSummary?.debugDescription(),
-      """
-      Paragraph
-      └─ Text " A function."
-      """
+    #expect(
+      paramComment.briefSummary?.debugDescription()
+        == """
+        Paragraph
+        └─ Text " A function."
+        """
     )
-    XCTAssertTrue(paramComment.bodyNodes.isEmpty)
-    XCTAssertEqual(paramComment.parameterLayout, .separated)
-    XCTAssertEqual(paramComment.parameters.count, 2)
-    XCTAssertEqual(paramComment.parameters[0].name, "x")
-    XCTAssertEqual(
-      paramComment.parameters[0].comment.briefSummary?.debugDescription(),
-      """
-      Paragraph
-      └─ Text " A value."
-      """
+    #expect(paramComment.bodyNodes.isEmpty)
+    #expect(paramComment.parameterLayout == .separated)
+    #expect(paramComment.parameters.count == 2)
+    #expect(paramComment.parameters[0].name == "x")
+    #expect(
+      paramComment.parameters[0].comment.briefSummary?.debugDescription()
+        == """
+        Paragraph
+        └─ Text " A value."
+        """
     )
-    XCTAssertEqual(paramComment.parameters[1].name, "y")
-    XCTAssertEqual(
-      paramComment.parameters[1].comment.briefSummary?.debugDescription(),
-      """
-      Paragraph
-      └─ Text " Another value."
-      """
+    #expect(paramComment.parameters[1].name == "y")
+    #expect(
+      paramComment.parameters[1].comment.briefSummary?.debugDescription()
+        == """
+        Paragraph
+        └─ Text " Another value."
+        """
     )
-    XCTAssertEqual(
-      paramComment.returns?.debugDescription(),
-      """
-      Paragraph
-      └─ Text " A result."
-      """
+    #expect(
+      paramComment.returns?.debugDescription()
+        == """
+        Paragraph
+        └─ Text " A result."
+        """
     )
-    XCTAssertNil(paramComment.throws)
+    #expect(paramComment.throws == nil)
   }
 }

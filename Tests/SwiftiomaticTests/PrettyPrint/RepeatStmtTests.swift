@@ -11,9 +11,11 @@
 //===----------------------------------------------------------------------===//
 
 import Swiftiomatic
+import Testing
 
-final class RepeatStmtTests: PrettyPrintTestCase {
-  func testBasicRepeatTests_noBreakBeforeWhile() {
+@Suite
+struct RepeatStmtTests: PrettyPrintTesting {
+  @Test func basicRepeatTests_noBreakBeforeWhile() {
     let input =
       """
       repeat {}
@@ -70,7 +72,7 @@ final class RepeatStmtTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 25)
   }
 
-  func testBasicRepeatTests_breakBeforeWhile() {
+  @Test func basicRepeatTests_breakBeforeWhile() {
     let input =
       """
       repeat {} while x
@@ -124,7 +126,7 @@ final class RepeatStmtTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 25, configuration: config)
   }
 
-  func testNestedRepeat() {
+  @Test func nestedRepeat() {
     // Avoid regressions in the case where a nested `repeat` block was getting shifted all the way
     // left.
     let input = """
@@ -138,7 +140,7 @@ final class RepeatStmtTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: input + "\n", linelength: 45)
   }
 
-  func testLabeledRepeat() {
+  @Test func labeledRepeat() {
     let input = """
       someLabel:repeat {
         bar()

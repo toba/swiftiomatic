@@ -12,9 +12,11 @@
 
 @_spi(Rules) import Swiftiomatic
 import _SwiftiomaticTestSupport
+import Testing
 
-final class AllPublicDeclarationsHaveDocumentationTests: LintOrFormatRuleTestCase {
-  func testPublicDeclsWithoutDocs() {
+@Suite
+struct AllPublicDeclarationsHaveDocumentationTests: RuleTesting {
+  @Test func publicDeclsWithoutDocs() {
     assertLint(
       AllPublicDeclarationsHaveDocumentation.self,
       """
@@ -72,7 +74,7 @@ final class AllPublicDeclarationsHaveDocumentationTests: LintOrFormatRuleTestCas
     )
   }
 
-  func testNestedDecls() {
+  @Test func nestedDecls() {
     assertLint(
       AllPublicDeclarationsHaveDocumentation.self,
       """
@@ -127,7 +129,7 @@ final class AllPublicDeclarationsHaveDocumentationTests: LintOrFormatRuleTestCas
     )
   }
 
-  func testNestedInStruct() {
+  @Test func nestedInStruct() {
     assertLint(
       AllPublicDeclarationsHaveDocumentation.self,
       """
@@ -145,7 +147,7 @@ final class AllPublicDeclarationsHaveDocumentationTests: LintOrFormatRuleTestCas
     )
   }
 
-  func testNestedInClass() {
+  @Test func nestedInClass() {
     assertLint(
       AllPublicDeclarationsHaveDocumentation.self,
       """
@@ -163,7 +165,7 @@ final class AllPublicDeclarationsHaveDocumentationTests: LintOrFormatRuleTestCas
     )
   }
 
-  func testNestedInEnum() {
+  @Test func nestedInEnum() {
     assertLint(
       AllPublicDeclarationsHaveDocumentation.self,
       """
@@ -181,7 +183,7 @@ final class AllPublicDeclarationsHaveDocumentationTests: LintOrFormatRuleTestCas
     )
   }
 
-  func testNestedInActor() {
+  @Test func nestedInActor() {
     assertLint(
       AllPublicDeclarationsHaveDocumentation.self,
       """

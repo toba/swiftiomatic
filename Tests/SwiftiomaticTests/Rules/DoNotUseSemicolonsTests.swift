@@ -12,9 +12,11 @@
 
 @_spi(Rules) import Swiftiomatic
 import _SwiftiomaticTestSupport
+import Testing
 
-final class DoNotUseSemicolonsTests: LintOrFormatRuleTestCase {
-  func testSemicolonUse() {
+@Suite
+struct DoNotUseSemicolonsTests: RuleTesting {
+  @Test func semicolonUse() {
     assertFormatting(
       DoNotUseSemicolons.self,
       input: """
@@ -33,7 +35,7 @@ final class DoNotUseSemicolonsTests: LintOrFormatRuleTestCase {
     )
   }
 
-  func testSemicolonsInNestedStatements() {
+  @Test func semicolonsInNestedStatements() {
     assertFormatting(
       DoNotUseSemicolons.self,
       input: """
@@ -60,7 +62,7 @@ final class DoNotUseSemicolonsTests: LintOrFormatRuleTestCase {
     )
   }
 
-  func testSemicolonsInMemberLists() {
+  @Test func semicolonsInMemberLists() {
     assertFormatting(
       DoNotUseSemicolons.self,
       input: """
@@ -90,7 +92,7 @@ final class DoNotUseSemicolonsTests: LintOrFormatRuleTestCase {
     )
   }
 
-  func testNewlinesAfterSemicolons() {
+  @Test func newlinesAfterSemicolons() {
     assertFormatting(
       DoNotUseSemicolons.self,
       input: """
@@ -132,7 +134,7 @@ final class DoNotUseSemicolonsTests: LintOrFormatRuleTestCase {
     )
   }
 
-  func testBlockCommentAtEndOfBlock() {
+  @Test func blockCommentAtEndOfBlock() {
     assertFormatting(
       DoNotUseSemicolons.self,
       input: """
@@ -164,7 +166,7 @@ final class DoNotUseSemicolonsTests: LintOrFormatRuleTestCase {
     )
   }
 
-  func testBlockCommentAfterSemicolonPrecedingOtherStatement() {
+  @Test func blockCommentAfterSemicolonPrecedingOtherStatement() {
     assertFormatting(
       DoNotUseSemicolons.self,
       input: """
@@ -197,7 +199,7 @@ final class DoNotUseSemicolonsTests: LintOrFormatRuleTestCase {
     )
   }
 
-  func testSemicolonsSeparatingDoWhile() {
+  @Test func semicolonsSeparatingDoWhile() {
     assertFormatting(
       DoNotUseSemicolons.self,
       input: """

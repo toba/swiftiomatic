@@ -11,9 +11,11 @@
 //===----------------------------------------------------------------------===//
 
 import Swiftiomatic
+import Testing
 
-final class DeclNameArgumentTests: PrettyPrintTestCase {
-  func testSelectors_noPackArguments() {
+@Suite
+struct DeclNameArgumentTests: PrettyPrintTesting {
+  @Test func selectors_noPackArguments() {
     let input =
       """
       let selector = #selector(FooClass.method(firstArg:secondArg:thirdArg:fourthArg:fifthArg:))
@@ -58,7 +60,7 @@ final class DeclNameArgumentTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 40, configuration: config)
   }
 
-  func testSelectors_packArguments() {
+  @Test func selectors_packArguments() {
     let input =
       """
       let selector = #selector(FooClass.method(firstArg:secondArg:thirdArg:fourthArg:fifthArg:))
@@ -89,7 +91,7 @@ final class DeclNameArgumentTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 40)
   }
 
-  func testFunctions_noPackArguments() {
+  @Test func functions_noPackArguments() {
     let input =
       """
       someArray.map(foo(firstArg:secondArg:))
@@ -131,7 +133,7 @@ final class DeclNameArgumentTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 40, configuration: config)
   }
 
-  func testFunctions_packArguments() {
+  @Test func functions_packArguments() {
     let input =
       """
       someArray.map(foo(firstArg:secondArg:))

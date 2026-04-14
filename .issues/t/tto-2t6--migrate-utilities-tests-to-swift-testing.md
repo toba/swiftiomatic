@@ -1,16 +1,16 @@
 ---
 # tto-2t6
 title: Migrate Utilities tests to Swift Testing
-status: ready
+status: completed
 type: task
 priority: normal
 created_at: 2026-04-14T02:53:02Z
-updated_at: 2026-04-14T02:53:02Z
+updated_at: 2026-04-14T03:14:58Z
 parent: rwb-wt3
 sync:
     github:
         issue_number: "271"
-        synced_at: "2026-04-14T02:58:31Z"
+        synced_at: "2026-04-14T03:28:23Z"
 ---
 
 Convert 2 test files in `Tests/SwiftiomaticTests/Utilities/` from XCTest to Swift Testing. These extend `XCTestCase` directly but have setUp/tearDown lifecycle.

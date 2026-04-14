@@ -10,8 +10,10 @@
 //
 //===----------------------------------------------------------------------===//
 
-final class BorrowExprTests: PrettyPrintTestCase {
-  func testBorrow() {
+import Testing
+@Suite
+struct BorrowExprTests: PrettyPrintTesting {
+  @Test func borrow() {
     assertPrettyPrintEqual(
       input: """
         @lifetime(borrow self)

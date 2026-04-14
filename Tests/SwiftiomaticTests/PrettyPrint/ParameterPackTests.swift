@@ -10,8 +10,10 @@
 //
 //===----------------------------------------------------------------------===//
 
-final class ParameterPackTests: PrettyPrintTestCase {
-  func testGenericPackArgument() {
+import Testing
+@Suite
+struct ParameterPackTests: PrettyPrintTesting {
+  @Test func genericPackArgument() {
     assertPrettyPrintEqual(
       input: """
         func someFunction<each P>() {}
@@ -30,7 +32,7 @@ final class ParameterPackTests: PrettyPrintTestCase {
     )
   }
 
-  func testPackExpansionsAndElements() {
+  @Test func packExpansionsAndElements() {
     assertPrettyPrintEqual(
       input: """
         repeat checkNilness(of: each value)

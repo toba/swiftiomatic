@@ -16,7 +16,7 @@ import SwiftSyntax
 import XCTest
 @_spi(Testing) import _SwiftiomaticTestSupport
 
-final class WhitespaceLinterPerformanceTests: DiagnosingTestCase {
+final class WhitespaceLinterPerformanceTests: XCTestCase {
   /// When executing in Swift CI, run the block to make sure it doesn't hit any assertions because we don't look at
   /// performance numbers in CI and CI nodes can have variable performance characteristics if they are not bare-metal.
   ///
@@ -81,7 +81,7 @@ final class WhitespaceLinterPerformanceTests: DiagnosingTestCase {
   ///   - expected: The formatted text.
   private func performWhitespaceLint(input: String, expected: String) {
     let sourceFileSyntax = Parser.parse(source: input)
-    let context = makeContext(
+    let context = makeTestContext(
       sourceFileSyntax: sourceFileSyntax,
       selection: .infinite,
       findingConsumer: { _ in }

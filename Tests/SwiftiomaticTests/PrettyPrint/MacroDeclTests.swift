@@ -11,9 +11,11 @@
 //===----------------------------------------------------------------------===//
 
 import Swiftiomatic
+import Testing
 
-final class MacroDeclTests: PrettyPrintTestCase {
-  func testBasicMacroDeclarations_noPackArguments() {
+@Suite
+struct MacroDeclTests: PrettyPrintTesting {
+  @Test func basicMacroDeclarations_noPackArguments() {
     let input =
       """
       macro myFun(var1: Int, var2: Double) = #externalMacro(module: "Foo", type: "Bar")
@@ -39,7 +41,7 @@ final class MacroDeclTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 58, configuration: config)
   }
 
-  func testBasicMacroDeclarations_packArguments() {
+  @Test func basicMacroDeclarations_packArguments() {
     let input =
       """
       macro myFun(var1: Int, var2: Double) = #externalMacro(module: "Foo", type: "Bar")
@@ -63,7 +65,7 @@ final class MacroDeclTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 58, configuration: config)
   }
 
-  func testMacroDeclReturns() {
+  @Test func macroDeclReturns() {
     let input =
       """
       macro myFun(var1: Int, var2: Double) -> Double = #externalMacro(module: "Foo", type: "Bar")
@@ -100,7 +102,7 @@ final class MacroDeclTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 58, configuration: config)
   }
 
-  func testMacroGenericParameters_noPackArguments() {
+  @Test func macroGenericParameters_noPackArguments() {
     let input =
       """
       macro myFun<S, T>(var1: S, var2: T) = #externalMacro(module: "Foo", type: "Bar")
@@ -130,7 +132,7 @@ final class MacroDeclTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 44, configuration: config)
   }
 
-  func testMacroGenericParameters_packArguments() {
+  @Test func macroGenericParameters_packArguments() {
     let input =
       """
       macro myFun<S, T>(var1: S, var2: T) = #externalMacro(module: "Foo", type: "Bar")
@@ -158,7 +160,7 @@ final class MacroDeclTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 44, configuration: config)
   }
 
-  func testMacroWhereClause() {
+  @Test func macroWhereClause() {
     let input =
       """
       macro index<Elements: Collection, Element>(
@@ -208,7 +210,7 @@ final class MacroDeclTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 51, configuration: config)
   }
 
-  func testMacroWhereClause_lineBreakBeforeEachGenericRequirement() {
+  @Test func macroWhereClause_lineBreakBeforeEachGenericRequirement() {
     let input =
       """
       public macro index<Elements: Collection, Element>(
@@ -261,7 +263,7 @@ final class MacroDeclTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 50, configuration: config)
   }
 
-  func testMacroAttributes() {
+  @Test func macroAttributes() {
     let input =
       """
       @attached(accessor) public macro MyFun() = #externalMacro(module: "Foo", type: "Bar")
@@ -289,7 +291,7 @@ final class MacroDeclTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 69)
   }
 
-  func testMacroDeclWithoutDefinition() {
+  @Test func macroDeclWithoutDefinition() {
     let input =
       """
       macro myFun()
@@ -312,7 +314,7 @@ final class MacroDeclTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 50)
   }
 
-  func testBreaksBeforeOrInsideOutput() {
+  @Test func breaksBeforeOrInsideOutput() {
     let input =
       """
       macro name<R>(_ x: Int) -> R
@@ -329,7 +331,7 @@ final class MacroDeclTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 27)
   }
 
-  func testBreaksBeforeOrInsideOutput_prioritizingKeepingOutputTogether() {
+  @Test func breaksBeforeOrInsideOutput_prioritizingKeepingOutputTogether() {
     let input =
       """
       macro name<R>(_ x: Int) -> R
@@ -349,7 +351,7 @@ final class MacroDeclTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 27, configuration: config)
   }
 
-  func testBreaksBeforeOrInsideOutputWithAttributes() {
+  @Test func breaksBeforeOrInsideOutputWithAttributes() {
     let input =
       """
       @attached(member) @attached(memberAttribute)
@@ -367,7 +369,7 @@ final class MacroDeclTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 26)
   }
 
-  func testBreaksBeforeOrInsideOutputWithAttributes_prioritizingKeepingOutputTogether() {
+  @Test func breaksBeforeOrInsideOutputWithAttributes_prioritizingKeepingOutputTogether() {
     let input =
       """
       @attached(member) @attached(memberAttribute)
@@ -388,7 +390,7 @@ final class MacroDeclTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 26, configuration: config)
   }
 
-  func testDoesNotBreakInsideEmptyParens() {
+  @Test func doesNotBreakInsideEmptyParens() {
     // If the macro name is so long that the parentheses of a no-argument parameter list would
     // be pushed past the margin, don't break inside them.
     let input =

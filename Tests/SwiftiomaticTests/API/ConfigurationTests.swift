@@ -9,11 +9,13 @@
 // See https://swift.org/CONTRIBUTORS.txt for the list of Swift project authors
 //
 //===----------------------------------------------------------------------===//
+import Foundation
 import Swiftiomatic
-import XCTest
+import Testing
 
-final class ConfigurationTests: XCTestCase {
-  func testDefaultConfigurationIsSameAsEmptyDecode() {
+@Suite
+struct ConfigurationTests {
+  @Test func defaultConfigurationIsSameAsEmptyDecode() throws {
     // Since we don't use the synthesized `init(from: Decoder)` and allow fields
     // to be missing, we provide defaults there as well as in the property
     // declarations themselves. This test ensures that creating a default-
@@ -25,22 +27,22 @@ final class ConfigurationTests: XCTestCase {
     let jsonDecoder = JSONDecoder()
     jsonDecoder.allowsJSON5 = true
     let emptyJSONConfig =
-      try! jsonDecoder.decode(Configuration.self, from: emptyDictionaryData)
+      try jsonDecoder.decode(Configuration.self, from: emptyDictionaryData)
 
-    XCTAssertEqual(defaultInitConfig, emptyJSONConfig)
+    #expect(defaultInitConfig == emptyJSONConfig)
   }
 
-  func testMissingConfigurationFile() throws {
+  @Test func missingConfigurationFile() {
     let path = "/test.swift"
-    XCTAssertNil(Configuration.url(forConfigurationFileApplyingTo: URL(fileURLWithPath: path)))
+    #expect(Configuration.url(forConfigurationFileApplyingTo: URL(fileURLWithPath: path)) == nil)
   }
 
-  func testMissingConfigurationFileInSubdirectory() throws {
+  @Test func missingConfigurationFileInSubdirectory() {
     let path = "/whatever/test.swift"
-    XCTAssertNil(Configuration.url(forConfigurationFileApplyingTo: URL(fileURLWithPath: path)))
+    #expect(Configuration.url(forConfigurationFileApplyingTo: URL(fileURLWithPath: path)) == nil)
   }
 
-  func testDecodingReflowMultilineStringLiteralsAsString() throws {
+  @Test func decodingReflowMultilineStringLiteralsAsString() throws {
     let testCases: [String: Configuration.MultilineStringReflowBehavior] = [
       "never": .never,
       "always": .always,
@@ -57,12 +59,11 @@ final class ConfigurationTests: XCTestCase {
       let jsonDecoder = JSONDecoder()
       jsonDecoder.allowsJSON5 = true
       let config = try jsonDecoder.decode(Configuration.self, from: jsonData)
-      XCTAssertEqual(config.reflowMultilineStringLiterals, expectedBehavior)
+      #expect(config.reflowMultilineStringLiterals == expectedBehavior)
     }
   }
 
-  func testDecodingReflowMultilineStringLiteralsAsObject() throws {
-
+  @Test func decodingReflowMultilineStringLiteralsAsObject() throws {
     let testCases: [String: Configuration.MultilineStringReflowBehavior] = [
       "{ \"never\": {} }": .never,
       "{ \"always\": {} }": .always,
@@ -79,11 +80,11 @@ final class ConfigurationTests: XCTestCase {
       let jsonDecoder = JSONDecoder()
       jsonDecoder.allowsJSON5 = true
       let config = try jsonDecoder.decode(Configuration.self, from: jsonData)
-      XCTAssertEqual(config.reflowMultilineStringLiterals, expectedBehavior)
+      #expect(config.reflowMultilineStringLiterals == expectedBehavior)
     }
   }
 
-  func testConfigurationWithComments() throws {
+  @Test func configurationWithComments() throws {
     let expected = Configuration()
 
     let jsonData = """
@@ -96,6 +97,6 @@ final class ConfigurationTests: XCTestCase {
     let jsonDecoder = JSONDecoder()
     jsonDecoder.allowsJSON5 = true
     let config = try jsonDecoder.decode(Configuration.self, from: jsonData)
-    XCTAssertEqual(config, expected)
+    #expect(config == expected)
   }
 }

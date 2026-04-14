@@ -10,8 +10,10 @@
 //
 //===----------------------------------------------------------------------===//
 
-final class SubscriptExprTests: PrettyPrintTestCase {
-  func testBasicSubscriptGetters() {
+import Testing
+@Suite
+struct SubscriptExprTests: PrettyPrintTesting {
+  @Test func basicSubscriptGetters() {
     let input =
       """
       let a = myCollection[index]
@@ -31,7 +33,7 @@ final class SubscriptExprTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 45)
   }
 
-  func testBasicSubscriptSetters() {
+  @Test func basicSubscriptSetters() {
     let input =
       """
       myCollection[index] = someValue
@@ -52,7 +54,7 @@ final class SubscriptExprTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 45)
   }
 
-  func testSubscriptGettersWithTrailingClosures() {
+  @Test func subscriptGettersWithTrailingClosures() {
     let input =
       """
       let a = myCollection[index] { $0 < $1 }
@@ -75,7 +77,7 @@ final class SubscriptExprTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 45)
   }
 
-  func testSubscriptSettersWithTrailingClosures() {
+  @Test func subscriptSettersWithTrailingClosures() {
     let input =
       """
       myCollection[index] { $0 < $1 } = someValue
@@ -98,7 +100,7 @@ final class SubscriptExprTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 45)
   }
 
-  func testGroupsTrailingComma() {
+  @Test func groupsTrailingComma() {
     let input =
       """
       myCollection[
@@ -119,7 +121,7 @@ final class SubscriptExprTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 70)
   }
 
-  func testDiscretionaryLineBreakBeforeTrailingClosure() {
+  @Test func discretionaryLineBreakBeforeTrailingClosure() {
     let input =
       """
       foo[a, b, c]

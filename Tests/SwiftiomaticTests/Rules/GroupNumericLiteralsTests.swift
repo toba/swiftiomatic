@@ -12,9 +12,11 @@
 
 @_spi(Rules) import Swiftiomatic
 import _SwiftiomaticTestSupport
+import Testing
 
-final class GroupNumericLiteralsTests: LintOrFormatRuleTestCase {
-  func testNumericGrouping() {
+@Suite
+struct GroupNumericLiteralsTests: RuleTesting {
+  @Test func numericGrouping() {
     assertFormatting(
       GroupNumericLiterals.self,
       input: """

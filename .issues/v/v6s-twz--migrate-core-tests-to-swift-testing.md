@@ -1,16 +1,16 @@
 ---
 # v6s-twz
 title: Migrate Core tests to Swift Testing
-status: ready
+status: completed
 type: task
 priority: normal
 created_at: 2026-04-14T02:53:02Z
-updated_at: 2026-04-14T02:53:02Z
+updated_at: 2026-04-14T03:14:58Z
 parent: rwb-wt3
 sync:
     github:
         issue_number: "270"
-        synced_at: "2026-04-14T02:58:30Z"
+        synced_at: "2026-04-14T03:28:23Z"
 ---
 
 Convert 3 standalone test files in `Tests/SwiftiomaticTests/Core/` from XCTest to Swift Testing. These have no base class dependency — they extend `XCTestCase` directly.

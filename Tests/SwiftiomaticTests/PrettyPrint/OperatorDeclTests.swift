@@ -11,9 +11,11 @@
 //===----------------------------------------------------------------------===//
 
 import Swiftiomatic
+import Testing
 
-final class OperatorDeclTests: PrettyPrintTestCase {
-  func testOperatorDecl() {
+@Suite
+struct OperatorDeclTests: PrettyPrintTesting {
+  @Test func operatorDecl() {
     let input =
       """
       prefix operator ^*^
@@ -55,7 +57,7 @@ final class OperatorDeclTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expectedShorter, linelength: 10)
   }
 
-  func testPrecedenceGroups() {
+  @Test func precedenceGroups() {
     let input =
       """
       precedencegroup FooGroup{higherThan:Group1,Group2 lowerThan:Group3,Group4 associativity:left assignment:false}
@@ -96,7 +98,7 @@ final class OperatorDeclTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expectedShorter, linelength: 10)
   }
 
-  func testDesignatedTypes() {
+  @Test func designatedTypes() {
     let input =
       """
       infix operator *%*: PrecedenceGroup, Bool, Int, String

@@ -12,9 +12,11 @@
 
 @_spi(Rules) import Swiftiomatic
 import _SwiftiomaticTestSupport
+import Testing
 
-final class NeverUseForceTryTests: LintOrFormatRuleTestCase {
-  func testInvalidTryExpression() {
+@Suite
+struct NeverUseForceTryTests: RuleTesting {
+  @Test func invalidTryExpression() {
     assertLint(
       NeverUseForceTry.self,
       """
@@ -38,7 +40,7 @@ final class NeverUseForceTryTests: LintOrFormatRuleTestCase {
     )
   }
 
-  func testAllowForceTryInTestCode() {
+  @Test func allowForceTryInTestCode() {
     assertLint(
       NeverUseForceTry.self,
       """
@@ -50,12 +52,12 @@ final class NeverUseForceTryTests: LintOrFormatRuleTestCase {
     )
   }
 
-  func testAllowForceTryInTestAttributeFunction() {
+  @Test func allowForceTryInTestAttributeFunction() {
     assertLint(
       NeverUseForceTry.self,
       """
       @Test
-      func testSomeFunc() {
+      @Test func someFunc() {
         let document = try! Document(path: "important.data")
         func nestedFunc() {
           let x = try! someThrowingFunction()

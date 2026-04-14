@@ -12,9 +12,11 @@
 
 @_spi(Rules) import Swiftiomatic
 import _SwiftiomaticTestSupport
+import Testing
 
-final class NoAssignmentInExpressionsTests: LintOrFormatRuleTestCase {
-  func testAssignmentInExpressionContextIsDiagnosed() {
+@Suite
+struct NoAssignmentInExpressionsTests: RuleTesting {
+  @Test func assignmentInExpressionContextIsDiagnosed() {
     assertFormatting(
       NoAssignmentInExpressions.self,
       input: """
@@ -29,7 +31,7 @@ final class NoAssignmentInExpressionsTests: LintOrFormatRuleTestCase {
     )
   }
 
-  func testReturnStatementWithoutExpressionIsUnchanged() {
+  @Test func returnStatementWithoutExpressionIsUnchanged() {
     assertFormatting(
       NoAssignmentInExpressions.self,
       input: """
@@ -46,7 +48,7 @@ final class NoAssignmentInExpressionsTests: LintOrFormatRuleTestCase {
     )
   }
 
-  func testReturnStatementWithNonAssignmentExpressionIsUnchanged() {
+  @Test func returnStatementWithNonAssignmentExpressionIsUnchanged() {
     assertFormatting(
       NoAssignmentInExpressions.self,
       input: """
@@ -63,7 +65,7 @@ final class NoAssignmentInExpressionsTests: LintOrFormatRuleTestCase {
     )
   }
 
-  func testReturnStatementWithSimpleAssignmentExpressionIsExpanded() {
+  @Test func returnStatementWithSimpleAssignmentExpressionIsExpanded() {
     // For this and similar tests below, we don't try to match the leading indentation in the new
     // `return` statement; the pretty-printer will fix it up.
     assertFormatting(
@@ -85,7 +87,7 @@ final class NoAssignmentInExpressionsTests: LintOrFormatRuleTestCase {
     )
   }
 
-  func testReturnStatementWithCompoundAssignmentExpressionIsExpanded() {
+  @Test func returnStatementWithCompoundAssignmentExpressionIsExpanded() {
     assertFormatting(
       NoAssignmentInExpressions.self,
       input: """
@@ -105,7 +107,7 @@ final class NoAssignmentInExpressionsTests: LintOrFormatRuleTestCase {
     )
   }
 
-  func testReturnStatementWithAssignmentDealsWithLeadingLineCommentSensibly() {
+  @Test func returnStatementWithAssignmentDealsWithLeadingLineCommentSensibly() {
     assertFormatting(
       NoAssignmentInExpressions.self,
       input: """
@@ -127,7 +129,7 @@ final class NoAssignmentInExpressionsTests: LintOrFormatRuleTestCase {
     )
   }
 
-  func testReturnStatementWithAssignmentDealsWithTrailingLineCommentSensibly() {
+  @Test func returnStatementWithAssignmentDealsWithTrailingLineCommentSensibly() {
     assertFormatting(
       NoAssignmentInExpressions.self,
       input: """
@@ -147,7 +149,7 @@ final class NoAssignmentInExpressionsTests: LintOrFormatRuleTestCase {
     )
   }
 
-  func testReturnStatementWithAssignmentDealsWithTrailingBlockCommentSensibly() {
+  @Test func returnStatementWithAssignmentDealsWithTrailingBlockCommentSensibly() {
     assertFormatting(
       NoAssignmentInExpressions.self,
       input: """
@@ -167,7 +169,7 @@ final class NoAssignmentInExpressionsTests: LintOrFormatRuleTestCase {
     )
   }
 
-  func testReturnStatementWithAssignmentDealsWithNestedBlockCommentSensibly() {
+  @Test func returnStatementWithAssignmentDealsWithNestedBlockCommentSensibly() {
     assertFormatting(
       NoAssignmentInExpressions.self,
       input: """
@@ -187,7 +189,7 @@ final class NoAssignmentInExpressionsTests: LintOrFormatRuleTestCase {
     )
   }
 
-  func testTryAndAwaitAndUnsafeAssignmentExpressionsAreUnchanged() {
+  @Test func tryAndAwaitAndUnsafeAssignmentExpressionsAreUnchanged() {
     assertFormatting(
       NoAssignmentInExpressions.self,
       input: """
@@ -208,7 +210,7 @@ final class NoAssignmentInExpressionsTests: LintOrFormatRuleTestCase {
     )
   }
 
-  func testAssignmentExpressionsInAllowedFunctions() {
+  @Test func assignmentExpressionsInAllowedFunctions() {
     assertFormatting(
       NoAssignmentInExpressions.self,
       input: """

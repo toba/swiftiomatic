@@ -12,9 +12,11 @@
 
 import Swiftiomatic
 import _SwiftiomaticTestSupport
+import Testing
 
-final class LineNumbersTests: PrettyPrintTestCase {
-  func testLineNumbers() {
+@Suite
+struct LineNumbersTests: PrettyPrintTesting {
+  @Test func lineNumbers() {
     let input =
       """
       final class A {
@@ -45,7 +47,7 @@ final class LineNumbersTests: PrettyPrintTestCase {
     )
   }
 
-  func testLineNumbersWithComments() {
+  @Test func lineNumbersWithComments() {
     let input =
       """
       // Copyright (C) 2024 My Coorp. All rights reserved.
@@ -94,7 +96,7 @@ final class LineNumbersTests: PrettyPrintTestCase {
     )
   }
 
-  func testCharacterVsCodepoint() {
+  @Test func characterVsCodepoint() {
     let input =
       """
       let fo = 1  // 🤥
@@ -110,7 +112,7 @@ final class LineNumbersTests: PrettyPrintTestCase {
     )
   }
 
-  func testCharacterVsCodepointMultiline() {
+  @Test func characterVsCodepointMultiline() {
     let input =
       #"""
       /// This is a multiline

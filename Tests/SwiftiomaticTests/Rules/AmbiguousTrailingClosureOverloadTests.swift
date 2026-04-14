@@ -12,9 +12,11 @@
 
 @_spi(Rules) import Swiftiomatic
 import _SwiftiomaticTestSupport
+import Testing
 
-final class AmbiguousTrailingClosureOverloadTests: LintOrFormatRuleTestCase {
-  func testAmbiguousOverloads() {
+@Suite
+struct AmbiguousTrailingClosureOverloadTests: RuleTesting {
+  @Test func ambiguousOverloads() {
     assertLint(
       AmbiguousTrailingClosureOverload.self,
       """

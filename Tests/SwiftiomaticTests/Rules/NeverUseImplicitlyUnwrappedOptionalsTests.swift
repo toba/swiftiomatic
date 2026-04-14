@@ -12,9 +12,11 @@
 
 @_spi(Rules) import Swiftiomatic
 import _SwiftiomaticTestSupport
+import Testing
 
-final class NeverUseImplicitlyUnwrappedOptionalsTests: LintOrFormatRuleTestCase {
-  func testInvalidVariableUnwrapping() {
+@Suite
+struct NeverUseImplicitlyUnwrappedOptionalsTests: RuleTesting {
+  @Test func invalidVariableUnwrapping() {
     assertLint(
       NeverUseImplicitlyUnwrappedOptionals.self,
       """
@@ -35,7 +37,7 @@ final class NeverUseImplicitlyUnwrappedOptionalsTests: LintOrFormatRuleTestCase 
     )
   }
 
-  func testIgnoreTestCode() {
+  @Test func ignoreTestCode() {
     assertLint(
       NeverUseImplicitlyUnwrappedOptionals.self,
       """
@@ -47,12 +49,12 @@ final class NeverUseImplicitlyUnwrappedOptionalsTests: LintOrFormatRuleTestCase 
     )
   }
 
-  func testIgnoreTestAttrinuteFunction() {
+  @Test func ignoreTestAttrinuteFunction() {
     assertLint(
       NeverUseImplicitlyUnwrappedOptionals.self,
       """
       @Test
-      func testSomeFunc() {
+      @Test func someFunc() {
         var s: String!
         func nestedFunc() {
           var f: Foo!

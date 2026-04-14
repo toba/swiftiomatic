@@ -12,9 +12,11 @@
 
 @_spi(Rules) import Swiftiomatic
 import _SwiftiomaticTestSupport
+import Testing
 
-final class UseExplicitNilCheckInConditionsTests: LintOrFormatRuleTestCase {
-  func testIfExpressions() {
+@Suite
+struct UseExplicitNilCheckInConditionsTests: RuleTesting {
+  @Test func ifExpressions() {
     assertFormatting(
       UseExplicitNilCheckInConditions.self,
       input: """
@@ -35,7 +37,7 @@ final class UseExplicitNilCheckInConditionsTests: LintOrFormatRuleTestCase {
     )
   }
 
-  func testGuardStatements() {
+  @Test func guardStatements() {
     assertFormatting(
       UseExplicitNilCheckInConditions.self,
       input: """
@@ -53,7 +55,7 @@ final class UseExplicitNilCheckInConditionsTests: LintOrFormatRuleTestCase {
     )
   }
 
-  func testWhileStatements() {
+  @Test func whileStatements() {
     assertFormatting(
       UseExplicitNilCheckInConditions.self,
       input: """
@@ -71,7 +73,7 @@ final class UseExplicitNilCheckInConditionsTests: LintOrFormatRuleTestCase {
     )
   }
 
-  func testTriviaPreservation() {
+  @Test func triviaPreservation() {
     assertFormatting(
       UseExplicitNilCheckInConditions.self,
       input: """
@@ -91,7 +93,7 @@ final class UseExplicitNilCheckInConditionsTests: LintOrFormatRuleTestCase {
     )
   }
 
-  func testDoNotDropTrailingCommaInConditionList() {
+  @Test func doNotDropTrailingCommaInConditionList() {
     assertFormatting(
       UseExplicitNilCheckInConditions.self,
       input: """
@@ -107,7 +109,7 @@ final class UseExplicitNilCheckInConditionsTests: LintOrFormatRuleTestCase {
     )
   }
 
-  func testAddNecessaryParenthesesAroundTryExpr() {
+  @Test func addNecessaryParenthesesAroundTryExpr() {
     assertFormatting(
       UseExplicitNilCheckInConditions.self,
       input: """
@@ -125,7 +127,7 @@ final class UseExplicitNilCheckInConditionsTests: LintOrFormatRuleTestCase {
     )
   }
 
-  func testAddNecessaryParenthesesAroundTernaryExpr() {
+  @Test func addNecessaryParenthesesAroundTernaryExpr() {
     assertFormatting(
       UseExplicitNilCheckInConditions.self,
       input: """
@@ -140,7 +142,7 @@ final class UseExplicitNilCheckInConditionsTests: LintOrFormatRuleTestCase {
     )
   }
 
-  func testAddNecessaryParenthesesAroundSameOrLowerPrecedenceOperator() {
+  @Test func addNecessaryParenthesesAroundSameOrLowerPrecedenceOperator() {
     // The use of `&&` and `==` are semantically meaningless here because they don't return
     // optionals. We just need them to stand in for any potential custom operator with lower or same
     // precedence, respectively.
@@ -161,7 +163,7 @@ final class UseExplicitNilCheckInConditionsTests: LintOrFormatRuleTestCase {
     )
   }
 
-  func testTypeAnnotations() {
+  @Test func typeAnnotations() {
     assertFormatting(
       UseExplicitNilCheckInConditions.self,
       input: """

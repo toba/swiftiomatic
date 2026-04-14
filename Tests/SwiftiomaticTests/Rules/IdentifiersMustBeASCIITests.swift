@@ -12,9 +12,11 @@
 
 @_spi(Rules) import Swiftiomatic
 import _SwiftiomaticTestSupport
+import Testing
 
-final class IdentifiersMustBeASCIITests: LintOrFormatRuleTestCase {
-  func testInvalidIdentifiers() {
+@Suite
+struct IdentifiersMustBeASCIITests: RuleTesting {
+  @Test func invalidIdentifiers() {
     assertLint(
       IdentifiersMustBeASCII.self,
       """

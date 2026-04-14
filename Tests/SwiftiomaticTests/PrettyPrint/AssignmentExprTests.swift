@@ -11,9 +11,11 @@
 //===----------------------------------------------------------------------===//
 
 import Swiftiomatic
+import Testing
 
-final class AssignmentExprTests: PrettyPrintTestCase {
-  func testBasicAssignmentExprs() {
+@Suite
+struct AssignmentExprTests: PrettyPrintTesting {
+  @Test func basicAssignmentExprs() {
     let input =
       """
       foo = bar
@@ -33,7 +35,7 @@ final class AssignmentExprTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 30)
   }
 
-  func testAssignmentExprsWithGroupedOperators() {
+  @Test func assignmentExprsWithGroupedOperators() {
     let input =
       """
       someVeryLongVariableName = anotherPrettyLongVariableName && someOtherOperand
@@ -57,7 +59,7 @@ final class AssignmentExprTests: PrettyPrintTestCase {
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 30)
   }
 
-  func testAssignmentOperatorFromSequenceWithFunctionCalls() {
+  @Test func assignmentOperatorFromSequenceWithFunctionCalls() {
     let input =
       """
       result = firstOp + secondOp + someOpFetchingFunc(foo, bar: bar, baz: baz)
@@ -156,7 +158,7 @@ final class AssignmentExprTests: PrettyPrintTestCase {
     )
   }
 
-  func testAssignmentPatternBindingFromSequenceWithFunctionCalls() {
+  @Test func assignmentPatternBindingFromSequenceWithFunctionCalls() {
     let input =
       """
       let result = firstOp + secondOp + someOpFetchingFunc(foo, bar: bar, baz: baz)

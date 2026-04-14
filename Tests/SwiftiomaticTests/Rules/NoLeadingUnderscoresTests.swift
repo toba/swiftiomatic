@@ -12,9 +12,11 @@
 
 @_spi(Rules) import Swiftiomatic
 import _SwiftiomaticTestSupport
+import Testing
 
-final class NoLeadingUnderscoresTests: LintOrFormatRuleTestCase {
-  func testVars() {
+@Suite
+struct NoLeadingUnderscoresTests: RuleTesting {
+  @Test func vars() {
     assertLint(
       NoLeadingUnderscores.self,
       """
@@ -30,7 +32,7 @@ final class NoLeadingUnderscoresTests: LintOrFormatRuleTestCase {
     )
   }
 
-  func testClasses() {
+  @Test func classes() {
     assertLint(
       NoLeadingUnderscores.self,
       """
@@ -44,7 +46,7 @@ final class NoLeadingUnderscoresTests: LintOrFormatRuleTestCase {
     )
   }
 
-  func testEnums() {
+  @Test func enums() {
     assertLint(
       NoLeadingUnderscores.self,
       """
@@ -66,7 +68,7 @@ final class NoLeadingUnderscoresTests: LintOrFormatRuleTestCase {
     )
   }
 
-  func testProtocols() {
+  @Test func protocols() {
     assertLint(
       NoLeadingUnderscores.self,
       """
@@ -85,7 +87,7 @@ final class NoLeadingUnderscoresTests: LintOrFormatRuleTestCase {
     )
   }
 
-  func testStructs() {
+  @Test func structs() {
     assertLint(
       NoLeadingUnderscores.self,
       """
@@ -99,7 +101,7 @@ final class NoLeadingUnderscoresTests: LintOrFormatRuleTestCase {
     )
   }
 
-  func testFunctions() {
+  @Test func functions() {
     assertLint(
       NoLeadingUnderscores.self,
       """
@@ -115,7 +117,7 @@ final class NoLeadingUnderscoresTests: LintOrFormatRuleTestCase {
     )
   }
 
-  func testInitializerArguments() {
+  @Test func initializerArguments() {
     assertLint(
       NoLeadingUnderscores.self,
       """
@@ -131,7 +133,7 @@ final class NoLeadingUnderscoresTests: LintOrFormatRuleTestCase {
     )
   }
 
-  func testPrecedenceGroups() {
+  @Test func precedenceGroups() {
     assertLint(
       NoLeadingUnderscores.self,
       """
@@ -151,7 +153,7 @@ final class NoLeadingUnderscoresTests: LintOrFormatRuleTestCase {
     )
   }
 
-  func testTypealiases() {
+  @Test func typealiases() {
     assertLint(
       NoLeadingUnderscores.self,
       """
@@ -164,7 +166,7 @@ final class NoLeadingUnderscoresTests: LintOrFormatRuleTestCase {
     )
   }
 
-  func testIdentifiersAreIgnoredAtUsage() {
+  @Test func identifiersAreIgnoredAtUsage() {
     assertLint(
       NoLeadingUnderscores.self,
       """

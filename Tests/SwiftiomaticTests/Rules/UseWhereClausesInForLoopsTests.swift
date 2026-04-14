@@ -12,9 +12,11 @@
 
 @_spi(Rules) import Swiftiomatic
 import _SwiftiomaticTestSupport
+import Testing
 
-final class UseWhereClausesInForLoopsTests: LintOrFormatRuleTestCase {
-  func testForLoopWhereClauses() {
+@Suite
+struct UseWhereClausesInForLoopsTests: RuleTesting {
+  @Test func forLoopWhereClauses() {
     assertFormatting(
       UseWhereClausesInForLoops.self,
       input: """

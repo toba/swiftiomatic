@@ -12,9 +12,11 @@
 
 @_spi(Rules) import Swiftiomatic
 import _SwiftiomaticTestSupport
+import Testing
 
-final class NoParensAroundConditionsTests: LintOrFormatRuleTestCase {
-  func testParensAroundConditions() {
+@Suite
+struct NoParensAroundConditionsTests: RuleTesting {
+  @Test func parensAroundConditions() {
     assertFormatting(
       NoParensAroundConditions.self,
       input: """
@@ -45,7 +47,7 @@ final class NoParensAroundConditionsTests: LintOrFormatRuleTestCase {
     )
   }
 
-  func testParensAroundNestedParenthesizedStatements() {
+  @Test func parensAroundNestedParenthesizedStatements() {
     assertFormatting(
       NoParensAroundConditions.self,
       input: """
@@ -139,7 +141,7 @@ final class NoParensAroundConditionsTests: LintOrFormatRuleTestCase {
     )
   }
 
-  func testParensAroundNestedUnparenthesizedStatements() {
+  @Test func parensAroundNestedUnparenthesizedStatements() {
     assertFormatting(
       NoParensAroundConditions.self,
       input: """
@@ -200,7 +202,7 @@ final class NoParensAroundConditionsTests: LintOrFormatRuleTestCase {
     )
   }
 
-  func testParensAroundIfAndSwitchExprs() {
+  @Test func parensAroundIfAndSwitchExprs() {
     assertFormatting(
       NoParensAroundConditions.self,
       input: """
@@ -232,7 +234,7 @@ final class NoParensAroundConditionsTests: LintOrFormatRuleTestCase {
     )
   }
 
-  func testParensAroundAmbiguousConditions() {
+  @Test func parensAroundAmbiguousConditions() {
     assertFormatting(
       NoParensAroundConditions.self,
       input: """
@@ -247,7 +249,7 @@ final class NoParensAroundConditionsTests: LintOrFormatRuleTestCase {
     )
   }
 
-  func testKeywordAlwaysHasTrailingSpace() {
+  @Test func keywordAlwaysHasTrailingSpace() {
     assertFormatting(
       NoParensAroundConditions.self,
       input: """
@@ -276,7 +278,7 @@ final class NoParensAroundConditionsTests: LintOrFormatRuleTestCase {
     )
   }
 
-  func testBlockCommentsBeforeConditionArePreserved() {
+  @Test func blockCommentsBeforeConditionArePreserved() {
     assertFormatting(
       NoParensAroundConditions.self,
       input: """
@@ -305,7 +307,7 @@ final class NoParensAroundConditionsTests: LintOrFormatRuleTestCase {
     )
   }
 
-  func testCommentsAfterKeywordArePreserved() {
+  @Test func commentsAfterKeywordArePreserved() {
     assertFormatting(
       NoParensAroundConditions.self,
       input: """

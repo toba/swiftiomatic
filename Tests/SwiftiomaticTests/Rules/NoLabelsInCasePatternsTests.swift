@@ -12,9 +12,11 @@
 
 @_spi(Rules) import Swiftiomatic
 import _SwiftiomaticTestSupport
+import Testing
 
-final class NoLabelsInCasePatternsTests: LintOrFormatRuleTestCase {
-  func testRedundantCaseLabels() {
+@Suite
+struct NoLabelsInCasePatternsTests: RuleTesting {
+  @Test func redundantCaseLabels() {
     assertFormatting(
       NoLabelsInCasePatterns.self,
       input: """

@@ -12,9 +12,11 @@
 
 @_spi(Rules) import Swiftiomatic
 import _SwiftiomaticTestSupport
+import Testing
 
-final class UseLetInEveryBoundCaseVariableTests: LintOrFormatRuleTestCase {
-  func testSwitchCase() {
+@Suite
+struct UseLetInEveryBoundCaseVariableTests: RuleTesting {
+  @Test func switchCase() {
     assertFormatting(
       UseLetInEveryBoundCaseVariable.self,
       input: """
@@ -78,7 +80,7 @@ final class UseLetInEveryBoundCaseVariableTests: LintOrFormatRuleTestCase {
     )
   }
 
-  func testSwitchMultipleCases() {
+  @Test func switchMultipleCases() {
     assertFormatting(
       UseLetInEveryBoundCaseVariable.self,
       input: """
@@ -124,7 +126,7 @@ final class UseLetInEveryBoundCaseVariableTests: LintOrFormatRuleTestCase {
     )
   }
 
-  func testIfCase() {
+  @Test func ifCase() {
     assertFormatting(
       UseLetInEveryBoundCaseVariable.self,
       input: """
@@ -184,7 +186,7 @@ final class UseLetInEveryBoundCaseVariableTests: LintOrFormatRuleTestCase {
     )
   }
 
-  func testGuardCase() {
+  @Test func guardCase() {
     assertFormatting(
       UseLetInEveryBoundCaseVariable.self,
       input: """
@@ -244,7 +246,7 @@ final class UseLetInEveryBoundCaseVariableTests: LintOrFormatRuleTestCase {
     )
   }
 
-  func testForCase() {
+  @Test func forCase() {
     assertFormatting(
       UseLetInEveryBoundCaseVariable.self,
       input: """
@@ -304,7 +306,7 @@ final class UseLetInEveryBoundCaseVariableTests: LintOrFormatRuleTestCase {
     )
   }
 
-  func testWhileCase() {
+  @Test func whileCase() {
     assertFormatting(
       UseLetInEveryBoundCaseVariable.self,
       input: """
