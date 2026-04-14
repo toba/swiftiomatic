@@ -10,7 +10,7 @@ parent: 77g-8mh
 sync:
     github:
         issue_number: "289"
-        synced_at: "2026-04-14T03:28:23Z"
+        synced_at: "2026-04-14T18:45:51Z"
 ---
 
 Port code-organization, sorting, and documentation rules from SwiftFormat.

@@ -708,7 +708,7 @@ struct OrderedImportsTests: RuleTesting {
   }
 
   @Test func nestedConditionalImports() {
-    var configuration = Configuration.forTesting
+    var configuration = Configuration.forTesting(enabledRule: OrderedImports.ruleName)
     configuration.orderedImports.includeConditionalImports = true
 
     assertFormatting(
@@ -1049,7 +1049,7 @@ struct OrderedImportsTests: RuleTesting {
   }
 
   @Test func mixedContentOrderingWithGroupingDisabled() {
-    var configuration = Configuration.forTesting
+    var configuration = Configuration.forTesting(enabledRule: OrderedImports.ruleName)
     configuration.orderedImports.shouldGroupImports = false
 
     assertFormatting(

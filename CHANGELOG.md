@@ -4,6 +4,11 @@
 
 ### ✨ Features
 
+- Modern Swift idiom rules ([#290](https://github.com/toba/swiftiomatic/issues/290))
+- Declaration, modifier, and cleanup rules ([#287](https://github.com/toba/swiftiomatic/issues/287))
+- Blank lines and structural spacing rules ([#291](https://github.com/toba/swiftiomatic/issues/291))
+- Wrapping and body formatting rules ([#286](https://github.com/toba/swiftiomatic/issues/286))
+- Code organization and documentation rules ([#289](https://github.com/toba/swiftiomatic/issues/289))
 - Redundancy removal rules; `RedundantNilInit`, `RedundantInit`, `RedundantRawValues`, `RedundantOptionalBinding`, and more ([#292](https://github.com/toba/swiftiomatic/issues/292))
 - Convert app from document-based to single-window `UserDefaults`-based ([#264](https://github.com/toba/swiftiomatic/issues/264))
 - Redesign rule nav; category list → detail rule list ([#259](https://github.com/toba/swiftiomatic/issues/259))
@@ -41,6 +46,8 @@
 
 ### 🗜️ Tweaks
 
+- Migrate PrettyPrint, Rules, API, Core, Utilities tests to Swift Testing ([#279](https://github.com/toba/swiftiomatic/issues/279), [#275](https://github.com/toba/swiftiomatic/issues/275), [#276](https://github.com/toba/swiftiomatic/issues/276), [#270](https://github.com/toba/swiftiomatic/issues/270), [#271](https://github.com/toba/swiftiomatic/issues/271))
+- Rewrite `_SwiftiomaticTestSupport` for Swift Testing ([#278](https://github.com/toba/swiftiomatic/issues/278))
 - Add typed throws to API layer; `throws(SwiftiomaticError)` on 9 functions ([#277](https://github.com/toba/swiftiomatic/issues/277))
 - Modernize concurrency; replace `DispatchQueue` with `Mutex` in `StderrDiagnosticPrinter` ([#274](https://github.com/toba/swiftiomatic/issues/274))
 - Clean up debug prints and `fatalError` patterns; replace `print`/`assert(false)` with `assertionFailure`/`preconditionFailure` ([#269](https://github.com/toba/swiftiomatic/issues/269))

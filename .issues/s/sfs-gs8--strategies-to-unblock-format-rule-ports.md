@@ -1,16 +1,15 @@
 ---
 # sfs-gs8
 title: Strategies to unblock format rule ports
-status: in-progress
+status: scrapped
 type: feature
 priority: normal
 created_at: 2026-04-14T05:26:49Z
-updated_at: 2026-04-14T17:38:18Z
-parent: c7r-77o
+updated_at: 2026-04-14T18:40:48Z
 sync:
     github:
         issue_number: "294"
-        synced_at: "2026-04-14T06:15:35Z"
+        synced_at: "2026-04-14T18:45:52Z"
 ---
 
 Design and implement abstractions, helpers, and architectural patterns that unblock the 30 rules listed in c7r-77o, enabling their conversion from lint-only to auto-fixing format rules.
@@ -264,3 +263,9 @@ public override func visit(_ node: CodeBlockItemListSyntax) -> CodeBlockItemList
 ### Remaining
 
 Remaining blocked rules and their specific blockers are tracked in parent issue c7r-77o. The approaches documented above (Categories A–I) and the abstractions built here provide the strategies needed to unblock them.
+
+
+
+## Reasons for Scrapping
+
+Content merged into parent issue c7r-77o. This issue was redundant — the strategies belong directly on the epic that tracks the blocked rules.

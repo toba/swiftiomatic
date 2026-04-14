@@ -10,7 +10,7 @@ parent: 77g-8mh
 sync:
     github:
         issue_number: "287"
-        synced_at: "2026-04-14T06:15:35Z"
+        synced_at: "2026-04-14T18:45:52Z"
 ---
 
 Port remaining declaration, modifier, access-control, and cleanup rules from SwiftFormat.

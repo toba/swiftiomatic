@@ -184,3 +184,5 @@ for piece in trivia.pieces {
 **Backtick identifiers**: Stored as part of token text. Use `Identifier(token).name` for stripped name. `startLocation` points to opening backtick.
 
 **`assertFormatting` two-pass divergence**: If the full pipeline produces different output than the single rule, the test fails even if the single-rule output is correct.
+
+**Pipeline cross-rule position shift**: Format rules run sequentially in `FormatPipeline` (alphabetical order). If rule A inserts/removes bytes before rule B runs, B's findings have shifted positions relative to the original `SourceLocationConverter`. The `assertFormatting` second pass (pipeline) will fail with column offsets (typically +1 per inserted newline). **Fix**: Always use `Configuration.forTesting(enabledRule:)` when passing custom configurations to `assertFormatting`. Never use bare `Configuration.forTesting` (all rules enabled) — it exposes tests to interference from any new format rule added later.

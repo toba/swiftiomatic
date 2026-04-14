@@ -7,6 +7,10 @@ priority: high
 created_at: 2026-04-14T16:37:30Z
 updated_at: 2026-04-14T16:45:44Z
 parent: tis-edd
+sync:
+    github:
+        issue_number: "298"
+        synced_at: "2026-04-14T18:45:54Z"
 ---
 
 ## Context

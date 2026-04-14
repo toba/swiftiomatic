@@ -10,7 +10,7 @@ parent: 77g-8mh
 sync:
     github:
         issue_number: "288"
-        synced_at: "2026-04-14T03:28:23Z"
+        synced_at: "2026-04-14T18:45:51Z"
 ---
 
 Port testing-related rules from SwiftFormat. These enforce best practices in test code for both XCTest and Swift Testing.

@@ -10,7 +10,7 @@ parent: 77g-8mh
 sync:
     github:
         issue_number: "291"
-        synced_at: "2026-04-14T03:28:24Z"
+        synced_at: "2026-04-14T18:45:52Z"
 ---
 
 Port blank-line and structural-spacing rules from SwiftFormat. Most of the basic spacing rules (around/inside delimiters, trailing whitespace, consecutive blanks) are already handled by the PrettyPrinter. These rules cover semantic spacing decisions NOT handled by the PrettyPrinter.
