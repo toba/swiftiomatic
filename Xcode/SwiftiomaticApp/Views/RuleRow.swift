@@ -3,7 +3,7 @@ import SwiftiomaticKit
 import SwiftiomaticSyntax
 
 struct RuleRow: View {
-    @Bindable var document: SwiftiomaticDocument
+    @Bindable var store: ConfigStore
     let entry: RuleConfigurationEntry
 
     var body: some View {
@@ -26,7 +26,7 @@ struct RuleRow: View {
 
                 Spacer()
 
-                Toggle(isOn: document.ruleEnabledBinding(for: entry)) {
+                Toggle(isOn: store.ruleEnabledBinding(for: entry)) {
                     EmptyView()
                 }
                 .toggleStyle(.switch)
@@ -63,7 +63,7 @@ struct RuleRow: View {
                         .padding(4)
                     }
                     .padding(.top, 4)
-                    .disabled(!document.isRuleEnabled(entry))
+                    .disabled(!store.isRuleEnabled(entry))
                 }
             }
         }
@@ -72,7 +72,7 @@ struct RuleRow: View {
     // MARK: - Option Bindings
 
     private func ruleConfigDict() -> [String: ConfigValue] {
-        if case .dictionary(let dict) = document.configuration.lintRuleConfigs[entry.id] {
+        if case .dictionary(let dict) = store.configuration.lintRuleConfigs[entry.id] {
             return dict
         }
         return [:]
@@ -86,9 +86,9 @@ struct RuleRow: View {
             dict.removeValue(forKey: key)
         }
         if dict.isEmpty {
-            document.configuration.lintRuleConfigs.removeValue(forKey: entry.id)
+            store.configuration.lintRuleConfigs.removeValue(forKey: entry.id)
         } else {
-            document.configuration.lintRuleConfigs[entry.id] = .dictionary(dict)
+            store.configuration.lintRuleConfigs[entry.id] = .dictionary(dict)
         }
     }
 
@@ -201,7 +201,7 @@ struct RuleRow: View {
 
 // MARK: - Preview Mocks
 
-private let previewDocument = SwiftiomaticDocument()
+@MainActor private let previewStore = ConfigStore()
 
 private let previewLintRule = RuleConfigurationEntry(
     id: "line_length",
@@ -260,22 +260,21 @@ private let previewSuggestRule = RuleConfigurationEntry(
 )
 
 #Preview("Lint Rule — Correctable") {
-    RuleRow(document: previewDocument, entry: previewLintRule)
+    RuleRow(store: previewStore, entry: previewLintRule)
         .padding()
 }
 
 #Preview("Lint Rule — Opt-In") {
-    RuleRow(document: previewDocument, entry: previewOptInRule)
+    RuleRow(store: previewStore, entry: previewOptInRule)
         .padding()
 }
 
 #Preview("Format Rule") {
-    RuleRow(document: previewDocument, entry: previewFormatRule)
+    RuleRow(store: previewStore, entry: previewFormatRule)
         .padding()
 }
 
 #Preview("Suggest Rule") {
-    RuleRow(document: previewDocument, entry: previewSuggestRule)
+    RuleRow(store: previewStore, entry: previewSuggestRule)
         .padding()
 }
-

@@ -5,7 +5,7 @@ import Foundation
 /// Uses a plain suite name (not an App Group) so it works without provisioning.
 /// Any process under the same user account can read/write this suite.
 enum SharedDefaults {
-  static let suiteName = "app.toba.swiftiomatic"
+  static let suiteName = "group.app.toba.swiftiomatic"
   static var suite: UserDefaults? { UserDefaults(suiteName: suiteName) }
   static let configYAMLKey = "configYAML"
 }

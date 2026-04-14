@@ -11,6 +11,7 @@
 
 - Window title shows folder name instead of `.swiftiomatic.yaml` ([#260](https://github.com/toba/swiftiomatic/issues/260))
 - Pin `Format Options` above the rule list in sidebar ([#258](https://github.com/toba/swiftiomatic/issues/258))
+- Format command ignores correctable Swiftiomatic rules ([#262](https://github.com/toba/swiftiomatic/issues/262))
 
 ## Week of Apr 6 – Apr 12, 2026
 

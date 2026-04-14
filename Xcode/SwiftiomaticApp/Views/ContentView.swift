@@ -8,7 +8,7 @@ enum SidebarSelection: Hashable {
 }
 
 struct ContentView: View {
-    @Bindable var document: SwiftiomaticDocument
+    @Bindable var store: ConfigStore
     @State private var selection: SidebarSelection? = .options
     @State private var searchText = ""
     @State private var scopeFilter: ScopeFilter = .all
@@ -30,7 +30,7 @@ struct ContentView: View {
     }
 
     private var filteredRules: [RuleConfigurationEntry] {
-        document.rules.filter { entry in
+        store.rules.filter { entry in
             switch scopeFilter {
             case .all: true
             case .lint: entry.scope == .lint
@@ -123,10 +123,10 @@ struct ContentView: View {
         } detail: {
             switch selection {
             case .options:
-                FormatOptions(document: document)
+                FormatOptions(store: store)
             case .category(let category):
                 CategoryDetailView(
-                    document: document,
+                    store: store,
                     category: category,
                     rules: rulesByCategory[category] ?? []
                 )

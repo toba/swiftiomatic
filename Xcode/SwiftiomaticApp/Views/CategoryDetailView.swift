@@ -3,7 +3,7 @@ import SwiftiomaticKit
 import SwiftiomaticSyntax
 
 struct CategoryDetailView: View {
-    @Bindable var document: SwiftiomaticDocument
+    @Bindable var store: ConfigStore
     let category: DisplayCategory
     let rules: [RuleConfigurationEntry]
 
@@ -18,7 +18,7 @@ struct CategoryDetailView: View {
             ScrollView {
                 LazyVStack(alignment: .leading, spacing: 0) {
                     ForEach(rules) { entry in
-                        RuleRow(document: document, entry: entry)
+                        RuleRow(store: store, entry: entry)
                             .padding(.horizontal)
                             .padding(.vertical, 10)
 
@@ -32,4 +32,3 @@ struct CategoryDetailView: View {
         }
     }
 }
-

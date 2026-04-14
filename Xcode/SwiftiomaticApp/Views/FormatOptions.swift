@@ -3,40 +3,40 @@ import SwiftiomaticKit
 import SwiftiomaticSyntax
 
 struct FormatOptions: View {
-    @Bindable var document: SwiftiomaticDocument
+    @Bindable var store: ConfigStore
 
     private var indentation: Binding<String> {
         Binding(
-            get: { document.configuration.formatIndent == "\t" ? "tabs" : "spaces" },
+            get: { store.configuration.formatIndent == "\t" ? "tabs" : "spaces" },
             set: { newValue in
-                document.configuration.formatIndent = newValue == "tabs" ? "\t" : "    "
+                store.configuration.formatIndent = newValue == "tabs" ? "\t" : "    "
             }
         )
     }
 
     private var indentWidth: Binding<Int> {
         Binding(
-            get: { document.configuration.formatIndent.count },
+            get: { store.configuration.formatIndent.count },
             set: { newValue in
-                document.configuration.formatIndent = String(repeating: " ", count: max(1, newValue))
+                store.configuration.formatIndent = String(repeating: " ", count: max(1, newValue))
             }
         )
     }
 
     private var maxLineWidth: Binding<Int> {
         Binding(
-            get: { document.configuration.formatMaxWidth },
+            get: { store.configuration.formatMaxWidth },
             set: { newValue in
-                document.configuration.formatMaxWidth = newValue
+                store.configuration.formatMaxWidth = newValue
             }
         )
     }
 
     private var minConfidence: Binding<Confidence> {
         Binding(
-            get: { document.configuration.suggestMinConfidence },
+            get: { store.configuration.suggestMinConfidence },
             set: { newValue in
-                document.configuration.suggestMinConfidence = newValue
+                store.configuration.suggestMinConfidence = newValue
             }
         )
     }
@@ -49,16 +49,16 @@ struct FormatOptions: View {
                     Text("Tabs").tag("tabs")
                 }
 
-                if document.configuration.formatIndent != "\t" {
+                if store.configuration.formatIndent != "\t" {
                     Stepper(
-                        "Indent Width: \(document.configuration.formatIndent.count)",
+                        "Indent Width: \(store.configuration.formatIndent.count)",
                         value: indentWidth,
                         in: 1...8
                     )
                 }
 
                 Stepper(
-                    "Max Line Width: \(document.configuration.formatMaxWidth)",
+                    "Max Line Width: \(store.configuration.formatMaxWidth)",
                     value: maxLineWidth,
                     in: 40...200,
                     step: 10
@@ -77,4 +77,3 @@ struct FormatOptions: View {
         .navigationTitle("Options")
     }
 }
-
