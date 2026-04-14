@@ -7,18 +7,28 @@ import SwiftSyntax
 ///
 /// This rule fires for:
 /// - Constructor calls matching the annotation: `let x: Foo = Foo(...)` → `let x = Foo(...)`
+/// - Generic constructors: `let x: Foo<Int> = Foo<Int>(...)` → `let x = Foo<Int>(...)`
+/// - Array/Dictionary constructors: `var x: [String] = [String]()` → `var x = [String]()`
 /// - Boolean literals: `let x: Bool = true` → `let x = true`
 /// - String literals: `let x: String = "hello"` → `let x = "hello"`
+/// - if/switch expressions where all branches match: `let x: Foo = if c { Foo() } else { Foo() }`
 ///
-/// It does NOT fire for numeric literals (which could be Int, Double, Float, etc.) or
-/// collection literals (which could be Array, Set, etc.).
+/// It does NOT fire for:
+/// - Numeric literals (which could be Int, Double, Float, etc.)
+/// - Collection literals (which could be Array, Set, etc.)
+/// - `Void` types (removing the annotation is unhelpful)
 ///
 /// Lint: If a redundant type annotation is found, a lint warning is raised.
+///
+/// Format: The redundant type annotation is removed.
 @_spi(Rules)
-public final class RedundantType: SyntaxLintRule {
+public final class RedundantType: SyntaxFormatRule {
 
-  public override func visit(_ node: VariableDeclSyntax) -> SyntaxVisitorContinueKind {
-    for binding in node.bindings {
+  public override func visit(_ node: VariableDeclSyntax) -> DeclSyntax {
+    var bindings = node.bindings
+    var didChange = false
+
+    for (index, binding) in bindings.enumerated() {
       guard let typeAnnotation = binding.typeAnnotation,
         let initializer = binding.initializer
       else {
@@ -27,11 +37,36 @@ public final class RedundantType: SyntaxLintRule {
 
       let typeName = typeAnnotation.type.trimmedDescription
 
-      if isRedundant(typeName: typeName, initializer: initializer.value) {
-        diagnose(.removeRedundantType(typeName: typeName), on: typeAnnotation)
+      // Skip Void types — removing the annotation is unhelpful.
+      guard !isVoidType(typeName) else { continue }
+
+      guard isRedundant(typeName: typeName, initializer: initializer.value) else {
+        continue
       }
+
+      diagnose(.removeRedundantType(typeName: typeName), on: typeAnnotation)
+
+      var newBinding = binding
+      newBinding.typeAnnotation = nil
+
+      // Ensure there's a space before `=` — the type annotation's last token had trailing
+      // trivia (typically a space) that disappears when we remove the annotation.
+      if initializer.equal.leadingTrivia.isEmpty {
+        var newInitializer = initializer
+        newInitializer.equal.leadingTrivia = .space
+        newBinding.initializer = newInitializer
+      }
+
+      bindings = bindings.with(
+        \.[bindings.index(bindings.startIndex, offsetBy: index)], newBinding)
+      didChange = true
     }
-    return .visitChildren
+
+    guard didChange else { return DeclSyntax(node) }
+
+    var result = node
+    result.bindings = bindings
+    return DeclSyntax(result)
   }
 
   /// Returns `true` if the type annotation is redundant given the initializer expression.
@@ -53,8 +88,84 @@ public final class RedundantType: SyntaxLintRule {
       return typeName == "String"
     }
 
+    // `let x: Foo = if condition { Foo(...) } else { Foo(...) }`
+    if let ifExpr = initializer.as(IfExprSyntax.self) {
+      return allBranchesMatch(typeName: typeName, ifExpr: ifExpr)
+    }
+
+    // `let x: Foo = switch value { case ...: Foo(...) ... }`
+    if let switchExpr = initializer.as(SwitchExprSyntax.self) {
+      return allCasesMatch(typeName: typeName, switchExpr: switchExpr)
+    }
+
     return false
   }
+
+  // MARK: - if/switch expression branch matching
+
+  /// Returns `true` if all branches of an if expression produce values matching the type name.
+  private func allBranchesMatch(typeName: String, ifExpr: IfExprSyntax) -> Bool {
+    // Check the `then` body
+    guard allStatementsMatch(typeName: typeName, body: ifExpr.body) else { return false }
+
+    // Check the `else` clause
+    switch ifExpr.elseBody {
+    case .ifExpr(let nestedIf):
+      return allBranchesMatch(typeName: typeName, ifExpr: nestedIf)
+    case .codeBlock(let codeBlock):
+      return allStatementsMatch(typeName: typeName, body: codeBlock)
+    case nil:
+      return false  // if-expression without else isn't a complete expression
+    }
+  }
+
+  /// Returns `true` if all cases of a switch expression produce values matching the type name.
+  private func allCasesMatch(typeName: String, switchExpr: SwitchExprSyntax) -> Bool {
+    guard !switchExpr.cases.isEmpty else { return false }
+
+    for caseItem in switchExpr.cases {
+      switch caseItem {
+      case .switchCase(let switchCase):
+        guard allStatementsMatch(typeName: typeName, statements: switchCase.statements) else {
+          return false
+        }
+      case .ifConfigDecl:
+        // #if blocks are too complex to analyze
+        return false
+      }
+    }
+    return true
+  }
+
+  /// Returns `true` if the last expression in a code block matches the type name.
+  private func allStatementsMatch(typeName: String, body: CodeBlockSyntax) -> Bool {
+    allStatementsMatch(typeName: typeName, statements: body.statements)
+  }
+
+  /// Returns `true` if the last expression in a statement list matches the type name.
+  private func allStatementsMatch(typeName: String, statements: CodeBlockItemListSyntax) -> Bool {
+    guard let lastItem = statements.last else { return false }
+    let item = lastItem.item
+
+    // Direct expression (function call, literal, etc.)
+    if let expr = item.as(ExprSyntax.self) {
+      return isRedundant(typeName: typeName, initializer: expr)
+    }
+
+    // Nested if expression (may be parsed as statement in code block)
+    if let ifExpr = item.as(IfExprSyntax.self) {
+      return allBranchesMatch(typeName: typeName, ifExpr: ifExpr)
+    }
+
+    // Nested switch expression
+    if let switchExpr = item.as(SwitchExprSyntax.self) {
+      return allCasesMatch(typeName: typeName, switchExpr: switchExpr)
+    }
+
+    return false
+  }
+
+  // MARK: - Type name extraction
 
   /// Extracts the simple type name from a called expression, if it's a direct type reference.
   ///
@@ -82,7 +193,29 @@ public final class RedundantType: SyntaxLintRule {
       return memberAccess.trimmedDescription
     }
 
+    // `Foo<Bar>(...)` — GenericSpecializationExpr
+    if let generic = expr.as(GenericSpecializationExprSyntax.self) {
+      return generic.trimmedDescription
+    }
+
+    // `[String](...)` — ArrayExpr used as constructor
+    if let array = expr.as(ArrayExprSyntax.self) {
+      return array.trimmedDescription
+    }
+
+    // `[String: Int](...)` — DictionaryExpr used as constructor
+    if let dict = expr.as(DictionaryExprSyntax.self) {
+      return dict.trimmedDescription
+    }
+
     return nil
+  }
+
+  // MARK: - Void detection
+
+  /// Returns `true` if the type name refers to Void.
+  private func isVoidType(_ typeName: String) -> Bool {
+    typeName == "Void" || typeName == "()"
   }
 }
 

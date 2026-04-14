@@ -1,11 +1,11 @@
 ---
 # j0v-ttz
 title: Blank lines and structural spacing rules
-status: ready
+status: in-progress
 type: feature
 priority: normal
 created_at: 2026-04-14T03:18:16Z
-updated_at: 2026-04-14T03:18:16Z
+updated_at: 2026-04-14T16:22:49Z
 parent: 77g-8mh
 sync:
     github:

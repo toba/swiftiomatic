@@ -5,7 +5,7 @@ status: in-progress
 type: epic
 priority: normal
 created_at: 2026-04-14T04:25:28Z
-updated_at: 2026-04-14T05:53:44Z
+updated_at: 2026-04-14T16:19:33Z
 sync:
     github:
         issue_number: "293"
@@ -58,3 +58,15 @@ Rules from porting efforts that are blocked by tooling or architectural issues a
 - [ ] `redundantAsync` — Remove `async` keyword from function signatures. **Blocked**: format rule requires modifying `FunctionEffectSpecifiersSyntax` to remove the `asyncSpecifier` token, with trivia cleanup.
 - [ ] `redundantThrows` — Remove `throws` keyword from function signatures. **Blocked**: same as redundantAsync — modifying effect specifiers.
 - [ ] `redundantTypedThrows` — Simplify `throws(any Error)` or `throws(Never)`. **Blocked**: format rule requires modifying `ThrowsClauseSyntax` to remove type parameter or entire clause.
+
+
+- [ ] `propertyTypes` — Configure inferred vs explicit property types. **Blocked**: 325-line SwiftFormat implementation with 3 configuration modes (inferred, explicit, infer-locals-only), bidirectional conversion (Type() ↔ .init()), empty collection literal handling, if/switch expression branches, preserved-types exclusion list. Requires new configuration option and significant implementation. Parent: ka6-zh3.
+
+
+- [ ] `trailingClosures` — Use trailing closure syntax where applicable. **Blocked**: 187-line SwiftFormat implementation with multiple trailing closure handling (converting arguments to `trailingClosure` + `additionalTrailingClosures`), conditional statement exclusion, configuration options (`--trailing-closures`, `--never-trailing`), line wrapping for multi-closure cases. Requires coordinating with existing `NoEmptyTrailingClosureParentheses` rule. Parent: ka6-zh3.
+
+
+
+- [ ] `unusedArguments` — Mark unused function arguments with `_`. **Blocked**: 401-line SwiftFormat implementation requiring function body parsing, argument usage analysis, and multiple renaming strategies (closure-only, function-only, all). Needs scope analysis to track identifier usage within function bodies. Parent: ka6-zh3.
+- [ ] `unusedPrivateDeclarations` — Remove unused `private`/`fileprivate` declarations. **Blocked**: requires whole-file identifier counting, declaration removal across multiple list types, and high false-positive risk (dynamic dispatch, key paths, protocol witnesses). Destructive operation. Parent: ka6-zh3.
+- [ ] `urlMacro` — Replace `URL(string:)!` with `#URL(_:)`. **Blocked**: requires configuration option for macro name/module, import statement management, and string literal detection. Parent: ka6-zh3.

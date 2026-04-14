@@ -17,11 +17,17 @@ public final class SimplifyGenericConstraints: SyntaxFormatRule {
 
   public override func visit(_ node: FunctionDeclSyntax) -> DeclSyntax {
     let visited = super.visit(node).cast(FunctionDeclSyntax.self)
-    return DeclSyntax(simplifyConstraints(
+    var result = simplifyConstraints(
       visited,
       genericParamsKeyPath: \.genericParameterClause,
       whereClauseKeyPath: \.genericWhereClause
-    ))
+    )
+    // When the where clause is fully removed and there's no body (protocol methods),
+    // strip the trailing space that preceded the where keyword
+    if visited.genericWhereClause != nil && result.genericWhereClause == nil && result.body == nil {
+      result.signature.trailingTrivia = []
+    }
+    return DeclSyntax(result)
   }
 
   public override func visit(_ node: StructDeclSyntax) -> DeclSyntax {
@@ -137,6 +143,8 @@ public final class SimplifyGenericConstraints: SyntaxFormatRule {
         }
         if i == remainingRequirements.count - 1 {
           r.trailingComma = nil
+          // Preserve the trailing trivia from the original where clause (e.g. space before `{`)
+          r.trailingTrivia = whereClause.trailingTrivia
         }
         newReqs.append(r)
       }

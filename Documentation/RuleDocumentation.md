@@ -21,6 +21,8 @@ Here's the list of available rules:
 - [AssertionFailures](#AssertionFailures)
 - [AvoidRetroactiveConformances](#AvoidRetroactiveConformances)
 - [BeginDocumentationCommentWithOneLineSummary](#BeginDocumentationCommentWithOneLineSummary)
+- [BlankLineAfterImports](#BlankLineAfterImports)
+- [BlankLineAfterSwitchCase](#BlankLineAfterSwitchCase)
 - [DoNotUseSemicolons](#DoNotUseSemicolons)
 - [DontRepeatTypeInStaticProperties](#DontRepeatTypeInStaticProperties)
 - [EmptyBraces](#EmptyBraces)
@@ -59,7 +61,10 @@ Here's the list of available rules:
 - [OnlyOneTrailingClosureArgument](#OnlyOneTrailingClosureArgument)
 - [OrderedImports](#OrderedImports)
 - [PreferCountWhere](#PreferCountWhere)
+- [PreferExplicitFalse](#PreferExplicitFalse)
+- [PreferFinalClasses](#PreferFinalClasses)
 - [PreferKeyPath](#PreferKeyPath)
+- [PrivateStateVariables](#PrivateStateVariables)
 - [RedundantAsync](#RedundantAsync)
 - [RedundantBackticks](#RedundantBackticks)
 - [RedundantBreak](#RedundantBreak)
@@ -85,6 +90,7 @@ Here's the list of available rules:
 - [ReplaceForEachWithForLoop](#ReplaceForEachWithForLoop)
 - [ReturnVoidInsteadOfEmptyTuple](#ReturnVoidInsteadOfEmptyTuple)
 - [SimplifyGenericConstraints](#SimplifyGenericConstraints)
+- [StrongOutlets](#StrongOutlets)
 - [TypeNamesShouldBeCapitalized](#TypeNamesShouldBeCapitalized)
 - [UseEarlyExits](#UseEarlyExits)
 - [UseExplicitNilCheckInConditions](#UseExplicitNilCheckInConditions)
@@ -228,6 +234,36 @@ All documentation comments must begin with a one-line summary of the declaration
 Lint: If a comment does not begin with a single-line summary, a lint error is raised.
 
 `BeginDocumentationCommentWithOneLineSummary` is a linter-only rule.
+
+### BlankLineAfterImports
+
+Insert a blank line after the last import statement.
+
+When import statements are followed directly by other declarations without a separating blank
+line, readability suffers. This rule ensures exactly one blank line separates the import block
+from the rest of the code.
+
+Lint: If the first non-import declaration is not preceded by a blank line, a lint warning is raised.
+
+Format: A blank line is inserted after the last import statement.
+
+`BlankLineAfterImports` rule can format your code automatically.
+
+### BlankLineAfterSwitchCase
+
+Insert a blank line after multiline switch case bodies.
+
+When a switch case body spans multiple statements, a blank line after it improves readability
+by visually separating it from the next case. Single-statement cases do not require blank lines.
+The last case in a switch is never followed by a blank line (the closing brace provides
+visual separation).
+
+Lint: If a multiline case body is not followed by a blank line, a lint warning is raised.
+      If the last case is followed by a blank line before `}`, a lint warning is raised.
+
+Format: Blank lines are inserted after multiline cases and removed after the last case.
+
+`BlankLineAfterSwitchCase` rule can format your code automatically.
 
 ### DoNotUseSemicolons
 
@@ -749,6 +785,36 @@ Format: `.filter { ... }.count` is replaced with `.count(where: { ... })`.
 
 `PreferCountWhere` rule can format your code automatically.
 
+### PreferExplicitFalse
+
+Prefer `== false` over `!` prefix negation.
+
+The `!` prefix operator can be easy to miss, especially in complex conditions.
+Using `== false` makes the negation explicit and more readable.
+
+Lint: Using `!` prefix negation raises a warning.
+
+Format: `!expression` is replaced with `expression == false`.
+
+`PreferExplicitFalse` rule can format your code automatically.
+
+### PreferFinalClasses
+
+Prefer `final class` unless a class is designed for subclassing.
+
+Classes should be `final` by default to communicate that they are not designed to be
+subclassed. Classes are left non-final if they are `open`, have "Base" in the name,
+have a comment mentioning "base" or "subclass", or are subclassed within the same file.
+
+When a class is made `final`, any `open` members are converted to `public` since
+`final` classes cannot have `open` members.
+
+Lint: A non-final, non-open class declaration raises a warning.
+
+Format: The `final` modifier is added and `open` members are converted to `public`.
+
+`PreferFinalClasses` rule can format your code automatically.
+
 ### PreferKeyPath
 
 Convert trivial `map { $0.foo }` closures to keyPath-based syntax.
@@ -765,6 +831,21 @@ Lint: A trivial `{ $0.property }` closure raises a warning.
 Format: The closure is replaced with a keyPath expression.
 
 `PreferKeyPath` rule can format your code automatically.
+
+### PrivateStateVariables
+
+Add `private` to `@State` properties without explicit access control.
+
+SwiftUI `@State` and `@StateObject` properties should be `private` because they are
+owned by the view and should not be set from outside. If no access control modifier is
+present, `private` is added. Existing access modifiers (including `private(set)`) and
+`@Previewable` properties are left unchanged.
+
+Lint: A `@State` or `@StateObject` property without access control raises a warning.
+
+Format: The `private` modifier is added before the binding keyword.
+
+`PrivateStateVariables` rule can format your code automatically.
 
 ### RedundantAsync
 
@@ -892,19 +973,19 @@ Format: The redundant `internal` modifier is removed.
 
 ### RedundantLet
 
-Remove `let` from `let _ = expr` since `_ = expr` is equivalent and shorter.
+Remove redundant `let` from `let _ = expr`.
 
-When a variable binding uses the wildcard pattern `_`, the `let` keyword is unnecessary.
-The assignment `_ = expr` discards the result identically.
+At statement level, `let _ = expr` can be simplified to `_ = expr` since the `let` keyword
+is unnecessary when the result is discarded.
 
-This rule only applies to top-level `let _ = expr` bindings, not to wildcard patterns
-inside `switch` cases, `if case`, or tuple destructuring where other bindings are present.
+The rule skips result builder contexts (SwiftUI view builders, `#Preview`, etc.) where
+`let _ = expr` is required because `_ = expr` is not valid in a result builder body.
 
-Lint: If `let _ = expr` is found at statement level, a lint warning is raised.
+Lint: A finding is emitted when a redundant `let` or `var` is found.
 
-Format: The `let` keyword is removed, producing `_ = expr`.
+Format: The redundant `let`/`var` keyword is removed.
 
-`RedundantLet` is a linter-only rule.
+`RedundantLet` rule can format your code automatically.
 
 ### RedundantLetError
 
@@ -1074,7 +1155,9 @@ collection literals (which could be Array, Set, etc.).
 
 Lint: If a redundant type annotation is found, a lint warning is raised.
 
-`RedundantType` is a linter-only rule.
+Format: The redundant type annotation is removed.
+
+`RedundantType` rule can format your code automatically.
 
 ### RedundantTypedThrows
 
@@ -1144,6 +1227,20 @@ Lint: A `where` clause with a simple conformance constraint that could be inline
 Format: The conformance constraint is moved from the `where` clause to the generic parameter.
 
 `SimplifyGenericConstraints` rule can format your code automatically.
+
+### StrongOutlets
+
+Remove `weak` from `@IBOutlet` properties.
+
+As per Apple's recommendation, `@IBOutlet` properties should be strong. The `weak`
+modifier is preserved for delegate and data source outlets since those are typically
+owned elsewhere.
+
+Lint: An `@IBOutlet` property with `weak` raises a warning.
+
+Format: The `weak` modifier is removed.
+
+`StrongOutlets` rule can format your code automatically.
 
 ### TypeNamesShouldBeCapitalized
 

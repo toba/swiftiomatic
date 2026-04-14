@@ -30,7 +30,6 @@ public final class EnumNamespaces: SyntaxFormatRule {
     diagnose(.useEnumNamespace, on: visited.name)
 
     let enumDecl = EnumDeclSyntax(
-      leadingTrivia: visited.leadingTrivia,
       modifiers: visited.modifiers,
       enumKeyword: .keyword(
         .enum,
@@ -38,8 +37,7 @@ public final class EnumNamespaces: SyntaxFormatRule {
         trailingTrivia: visited.structKeyword.trailingTrivia
       ),
       name: visited.name,
-      memberBlock: visited.memberBlock,
-      trailingTrivia: visited.trailingTrivia
+      memberBlock: visited.memberBlock
     )
     return DeclSyntax(enumDecl)
   }
@@ -64,19 +62,19 @@ public final class EnumNamespaces: SyntaxFormatRule {
     diagnose(.useEnumNamespace, on: visited.name)
 
     // Remove the `final` modifier, transferring its trivia to the enum keyword
-    let modifiersWithoutFinal = visited.modifiers.filter { $0.name.tokenKind != .keyword(.final) }
+    let modifiers = DeclModifierListSyntax(
+      visited.modifiers.lazy.filter { $0.name.tokenKind != .keyword(.final) }
+    )
 
     let enumDecl = EnumDeclSyntax(
-      leadingTrivia: visited.leadingTrivia,
-      modifiers: DeclModifierListSyntax(modifiersWithoutFinal),
+      modifiers: modifiers,
       enumKeyword: .keyword(
         .enum,
-        leadingTrivia: visited.classKeyword.leadingTrivia,
+        leadingTrivia: visited.leadingTrivia,
         trailingTrivia: visited.classKeyword.trailingTrivia
       ),
       name: visited.name,
-      memberBlock: visited.memberBlock,
-      trailingTrivia: visited.trailingTrivia
+      memberBlock: visited.memberBlock
     )
     return DeclSyntax(enumDecl)
   }

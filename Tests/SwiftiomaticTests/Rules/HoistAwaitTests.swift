@@ -163,4 +163,145 @@ struct HoistAwaitTests: RuleTesting {
       findings: []
     )
   }
+
+  // MARK: - Adapted from SwiftFormat reference tests
+
+  @Test func hoistAwaitWithReturn() {
+    assertFormatting(
+      HoistAwait.self,
+      input: """
+        return .enumCase(try 1️⃣await service.greet())
+        """,
+      expected: """
+        return await .enumCase(try service.greet())
+        """,
+      findings: [
+        FindingSpec("1️⃣", message: "move 'await' to the start of the expression"),
+      ]
+    )
+  }
+
+  @Test func hoistAwaitWithInitAssignment() {
+    assertFormatting(
+      HoistAwait.self,
+      input: """
+        let variable = String(try 1️⃣await asyncFunction())
+        """,
+      expected: """
+        let variable = await String(try asyncFunction())
+        """,
+      findings: [
+        FindingSpec("1️⃣", message: "move 'await' to the start of the expression"),
+      ]
+    )
+  }
+
+  @Test func forAwaitNotHoisted() {
+    // `for await` is different syntax — not a function call argument
+    assertFormatting(
+      HoistAwait.self,
+      input: """
+        for await _ in asyncSequence() {}
+        """,
+      expected: """
+        for await _ in asyncSequence() {}
+        """,
+      findings: []
+    )
+  }
+
+  @Test func macroArgumentNotHoisted() {
+    // Macro expressions are not FunctionCallExprSyntax
+    assertFormatting(
+      HoistAwait.self,
+      input: """
+        #expect(await monitor.isAvailable == false)
+        """,
+      expected: """
+        #expect(await monitor.isAvailable == false)
+        """,
+      findings: []
+    )
+  }
+
+  @Test func hoistAwaitOnLineBeginningWithInfixDot() {
+    assertFormatting(
+      HoistAwait.self,
+      input: """
+        let foo = bar()
+            .baz(1️⃣await quux())
+        """,
+      expected: """
+        let foo = await bar()
+            .baz(quux())
+        """,
+      findings: [
+        FindingSpec("1️⃣", message: "move 'await' to the start of the expression"),
+      ]
+    )
+  }
+
+  @Test func hoistAwaitInsideGenericInit() {
+    assertFormatting(
+      HoistAwait.self,
+      input: """
+        return Target<T>(
+            file: 1️⃣await parseFile(path: $0)
+        )
+        """,
+      expected: """
+        return await Target<T>(
+            file: parseFile(path: $0)
+        )
+        """,
+      findings: [
+        FindingSpec("1️⃣", message: "move 'await' to the start of the expression"),
+      ]
+    )
+  }
+
+  @Test func hoistAwaitAfterSubscript() {
+    assertFormatting(
+      HoistAwait.self,
+      input: """
+        if foo[5].bar(1️⃣await baz()) {}
+        """,
+      expected: """
+        if await foo[5].bar(baz()) {}
+        """,
+      findings: [
+        FindingSpec("1️⃣", message: "move 'await' to the start of the expression"),
+      ]
+    )
+  }
+
+  @Test func hoistAwaitInsideOptionalFunction() {
+    assertFormatting(
+      HoistAwait.self,
+      input: """
+        foo?(1️⃣await bar())
+        """,
+      expected: """
+        await foo?(bar())
+        """,
+      findings: [
+        FindingSpec("1️⃣", message: "move 'await' to the start of the expression"),
+      ]
+    )
+  }
+
+  @Test func hoistAwaitAfterGenericType() {
+    assertFormatting(
+      HoistAwait.self,
+      input: """
+        let foo = Tree<T>.Foo(bar: 1️⃣await baz())
+        """,
+      expected: """
+        let foo = await Tree<T>.Foo(bar: baz())
+        """,
+      findings: [
+        FindingSpec("1️⃣", message: "move 'await' to the start of the expression"),
+      ]
+    )
+  }
 }

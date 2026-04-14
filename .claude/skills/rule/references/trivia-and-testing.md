@@ -29,13 +29,16 @@ result.trailingTrivia = originalNode.trailingTrivia  // last token's trailing
 
 ## Where Clause Trivia
 
-**Removing entire where clause**: Set to `nil`. The space before `{` is preserved on the preceding token's trailing trivia (e.g., `>` or `)` ).
+**Removing entire where clause**: Set to `nil`. The space before `{` is preserved on the preceding token's trailing trivia (e.g., `>` or `)`). **Caveat**: for declarations with no body (protocol methods), this trailing space becomes trailing whitespace. Fix by stripping trailing trivia from the preceding syntax element (e.g., `result.signature.trailingTrivia = []` for `FunctionDeclSyntax` when `result.body == nil`).
 
-**Partial where clause rebuild**: Strip leading trivia from the new first requirement — the `where` keyword's trailing trivia provides the space. Set first requirement's `leadingTrivia = []`, NOT `.space` (that creates a double space).
+**Partial where clause rebuild**: Strip leading trivia from the new first requirement — the `where` keyword's trailing trivia provides the space. Set first requirement's `leadingTrivia = []`, NOT `.space` (that creates a double space). **Also**: preserve the original where clause's trailing trivia on the last remaining requirement (e.g., space before `{`). When removing a `trailingComma`, the space that was on the comma's trailing trivia is lost — set `r.trailingTrivia = whereClause.trailingTrivia` to transfer it.
 
 ```swift
 if i == 0 { r.leadingTrivia = [] }  // NOT .space — where keyword has trailing space
-if i == remainingRequirements.count - 1 { r.trailingComma = nil }
+if i == remainingRequirements.count - 1 {
+    r.trailingComma = nil
+    r.trailingTrivia = whereClause.trailingTrivia  // preserve space before `{`
+}
 ```
 
 ## super.visit Rules
@@ -92,6 +95,23 @@ The SwiftFormat reference at `~/Developer/swiftiomatic-ref/SwiftFormat/Tests/Rul
 - Multiple trailing closures breaking keyPath conversion
 
 Pattern: read reference test file → identify untested code paths → adapt to `assertFormatting`. Skip token-level spacing tests (swift-syntax handles structurally).
+
+### Cascading hoisting (HoistTry/HoistAwait)
+
+Bottom-up visiting means inner calls hoist first, then the outer call sees the generated `try`/`await` and hoists again. This produces **multiple findings** for a single input (one per hoisting level). Tests with nested calls like `foo(.bar(try baz()))` emit 2 findings (inner + outer). Avoid testing these in `assertFormatting` since the pipeline findings count differs from single-rule findings count.
+
+### Diagnostic debugging for tests
+
+When `assertFormatting` fails with truncated diff output (common in MCP test runners), create a temporary diagnostic test that encodes the actual output:
+
+```swift
+let actual = "\(formatter.rewrite(sourceFileSyntax))"
+let escaped = actual.replacingOccurrences(of: "\n", with: "\\n")
+    .replacingOccurrences(of: " ", with: "·")
+Issue.record("OUTPUT: \(escaped)")
+```
+
+This makes whitespace issues (trailing spaces, missing spaces before `{`) visible in the error message. Delete the diagnostic test after debugging.
 
 ## Known Limitations
 

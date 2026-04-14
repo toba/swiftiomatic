@@ -220,4 +220,183 @@ struct HoistTryTests: RuleTesting {
       ]
     )
   }
+
+  // MARK: - Adapted from SwiftFormat reference tests
+
+  @Test func hoistTryInsideOptionalFunction() {
+    assertFormatting(
+      HoistTry.self,
+      input: """
+        foo?(1️⃣try bar())
+        """,
+      expected: """
+        try foo?(bar())
+        """,
+      findings: [
+        FindingSpec("1️⃣", message: "move 'try' to the start of the expression"),
+      ]
+    )
+  }
+
+  @Test func hoistTryAfterGenericType() {
+    assertFormatting(
+      HoistTry.self,
+      input: """
+        let foo = Tree<T>.Foo(bar: 1️⃣try baz())
+        """,
+      expected: """
+        let foo = try Tree<T>.Foo(bar: baz())
+        """,
+      findings: [
+        FindingSpec("1️⃣", message: "move 'try' to the start of the expression"),
+      ]
+    )
+  }
+
+  @Test func hoistTryAfterArrayLiteral() {
+    assertFormatting(
+      HoistTry.self,
+      input: """
+        if [.first, .second].contains(1️⃣try foo()) {}
+        """,
+      expected: """
+        if try [.first, .second].contains(foo()) {}
+        """,
+      findings: [
+        FindingSpec("1️⃣", message: "move 'try' to the start of the expression"),
+      ]
+    )
+  }
+
+  @Test func hoistTryAfterSubscript() {
+    assertFormatting(
+      HoistTry.self,
+      input: """
+        if foo[5].bar(1️⃣try baz()) {}
+        """,
+      expected: """
+        if try foo[5].bar(baz()) {}
+        """,
+      findings: [
+        FindingSpec("1️⃣", message: "move 'try' to the start of the expression"),
+      ]
+    )
+  }
+
+  @Test func hoistTryInsideGenericInit() {
+    assertFormatting(
+      HoistTry.self,
+      input: """
+        return Target<T>(
+            file: 1️⃣try parseFile(path: $0)
+        )
+        """,
+      expected: """
+        return try Target<T>(
+            file: parseFile(path: $0)
+        )
+        """,
+      findings: [
+        FindingSpec("1️⃣", message: "move 'try' to the start of the expression"),
+      ]
+    )
+  }
+
+  @Test func hoistTryOnLineBeginningWithInfixDot() {
+    assertFormatting(
+      HoistTry.self,
+      input: """
+        let foo = bar()
+            .baz(1️⃣try quux())
+        """,
+      expected: """
+        let foo = try bar()
+            .baz(quux())
+        """,
+      findings: [
+        FindingSpec("1️⃣", message: "move 'try' to the start of the expression"),
+      ]
+    )
+  }
+
+  @Test func hoistTryWithAwaitOnDifferentStatement() {
+    assertFormatting(
+      HoistTry.self,
+      input: """
+        let asyncVariable = try await performSomething()
+        return Foo(param1: 1️⃣try param1())
+        """,
+      expected: """
+        let asyncVariable = try await performSomething()
+        return try Foo(param1: param1())
+        """,
+      findings: [
+        FindingSpec("1️⃣", message: "move 'try' to the start of the expression"),
+      ]
+    )
+  }
+
+  @Test func hoistTryWithInitAssignment() {
+    assertFormatting(
+      HoistTry.self,
+      input: """
+        let variable = String(1️⃣try await asyncFunction())
+        """,
+      expected: """
+        let variable = try String(await asyncFunction())
+        """,
+      findings: [
+        FindingSpec("1️⃣", message: "move 'try' to the start of the expression"),
+      ]
+    )
+  }
+
+  @Test func hoistTryAfterString() {
+    assertFormatting(
+      HoistTry.self,
+      input: """
+        let json = "{}"
+
+        someFunction(1️⃣try parse(json), "someKey")
+        """,
+      expected: """
+        let json = "{}"
+
+        try someFunction(parse(json), "someKey")
+        """,
+      findings: [
+        FindingSpec("1️⃣", message: "move 'try' to the start of the expression"),
+      ]
+    )
+  }
+
+  @Test func hoistTryInsideArraySubscriptCall() {
+    assertFormatting(
+      HoistTry.self,
+      input: """
+        foo[bar](1️⃣try parseFile(path: $0))
+        """,
+      expected: """
+        try foo[bar](parseFile(path: $0))
+        """,
+      findings: [
+        FindingSpec("1️⃣", message: "move 'try' to the start of the expression"),
+      ]
+    )
+  }
+
+  @Test func hoistTryInsideArgument() {
+    assertFormatting(
+      HoistTry.self,
+      input: """
+        array.append(contentsOf: 1️⃣try await asyncFunction(param1: param1))
+        """,
+      expected: """
+        try array.append(contentsOf: await asyncFunction(param1: param1))
+        """,
+      findings: [
+        FindingSpec("1️⃣", message: "move 'try' to the start of the expression"),
+      ]
+    )
+  }
 }
