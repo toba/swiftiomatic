@@ -11,6 +11,6 @@
 //===----------------------------------------------------------------------===//
 
 func printVersionInformation() {
-  // TODO: Automate updates to this somehow.
+  // See issue 0w5-3pm for unifying version across CLI, app, and extension.
   print("main")
 }

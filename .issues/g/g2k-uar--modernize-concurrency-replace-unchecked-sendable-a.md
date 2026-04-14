@@ -1,16 +1,16 @@
 ---
 # g2k-uar
 title: 'Modernize concurrency: replace @unchecked Sendable and DispatchQueue'
-status: ready
+status: completed
 type: task
 priority: normal
 created_at: 2026-04-14T02:42:22Z
-updated_at: 2026-04-14T02:42:22Z
+updated_at: 2026-04-14T03:01:32Z
 parent: kqx-iku
 sync:
     github:
         issue_number: "274"
-        synced_at: "2026-04-14T02:58:31Z"
+        synced_at: "2026-04-14T03:02:34Z"
 ---
 
 ## @unchecked Sendable (4 occurrences)
@@ -29,7 +29,14 @@ Frontend classes use `@unchecked Sendable` with DispatchQueue for synchronizatio
   Since `Rule` conforms to `Sendable`, the metatype is already Sendable (SE-0470). The `nonisolated(unsafe)` may be removable.
 
 ## Tasks
-- [ ] Evaluate Frontend classes for Mutex conversion
-- [ ] Convert StderrDiagnosticPrinter DispatchQueue to Mutex
-- [ ] Check if RuleBasedFindingCategory nonisolated(unsafe) is still needed (SE-0470)
-- [ ] Build and test
+- [x] Evaluate Frontend classes for Mutex conversion (skipped — deep mutable state across DispatchQueue.concurrentPerform makes this invasive and risky)
+- [x] Convert StderrDiagnosticPrinter DispatchQueue to Mutex
+- [x] Check if RuleBasedFindingCategory nonisolated(unsafe) is still needed (SE-0470) — still needed, Rule protocol doesn't conform to Sendable
+- [x] Build and test
+
+
+## Summary of Changes
+
+- Replaced `DispatchQueue.sync` in `StderrDiagnosticPrinter` with `Mutex`; also made the class properly `Sendable`
+- Frontend `@unchecked Sendable` left as-is — the class hierarchy has mutable `DiagnosticsEngine`, `ConfigurationProvider` cache, and `lazy var` state shared across `concurrentPerform`; Mutex conversion would be invasive
+- `nonisolated(unsafe)` on `RuleBasedFindingCategory.ruleType` still needed — `Rule` protocol isn't `Sendable`

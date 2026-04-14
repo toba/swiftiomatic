@@ -12,34 +12,34 @@
 
 /// A description of a `Finding` that can be asserted during tests.
 public struct FindingSpec {
-  /// The marker that identifies the finding.
-  public var marker: String
+    /// The marker that identifies the finding.
+    public var marker: String
 
-  /// The message text associated with the finding.
-  public var message: String
+    /// The message text associated with the finding.
+    public var message: String
 
-  /// A description of a `Note` that should be associated with this finding.
-  public var notes: [NoteSpec]
+    /// A description of a `Note` that should be associated with this finding.
+    public var notes: [NoteSpec]
 
-  /// Creates a new `FindingSpec` with the given values.
-  public init(_ marker: String = "1️⃣", message: String, notes: [NoteSpec] = []) {
-    self.marker = marker
-    self.message = message
-    self.notes = notes
-  }
+    /// Creates a new `FindingSpec` with the given values.
+    public init(_ marker: String = "1️⃣", message: String, notes: [NoteSpec] = []) {
+        self.marker = marker
+        self.message = message
+        self.notes = notes
+    }
 }
 
 /// A description of a `Note` that can be asserted during tests.
 public struct NoteSpec {
-  /// The marker that identifies the note.
-  public var marker: String
+    /// The marker that identifies the note.
+    public var marker: String
 
-  /// The message text associated with the note.
-  public var message: String
+    /// The message text associated with the note.
+    public var message: String
 
-  /// Creates a new `NoteSpec` with the given values.
-  public init(_ marker: String, message: String) {
-    self.marker = marker
-    self.message = message
-  }
+    /// Creates a new `NoteSpec` with the given values.
+    public init(_ marker: String, message: String) {
+        self.marker = marker
+        self.message = message
+    }
 }

@@ -21,7 +21,7 @@
 ### 🐛 Fixes
 
 - Format command ignores correctable Swiftiomatic rules ([#262](https://github.com/toba/swiftiomatic/issues/262))
-- Fix O(n²) performance anti-patterns in `RuleMask` and `GroupNumericLiterals`
+- Fix O(n²) performance anti-patterns in `RuleMask` and `GroupNumericLiterals` ([#273](https://github.com/toba/swiftiomatic/issues/273))
 - Formatter strips backtick-quoted test names ([#227](https://github.com/toba/swiftiomatic/issues/227))
 - `RuleExampleTests`; `identifier_name` false failure from `prefixed_toplevel_constant` ([#230](https://github.com/toba/swiftiomatic/issues/230))
 - `RuleExampleTests` fails in isolation but passes in full suite ([#206](https://github.com/toba/swiftiomatic/issues/206))
@@ -40,7 +40,9 @@
 
 ### 🗜️ Tweaks
 
-- Add typed throws to API layer; `throws(SwiftiomaticError)` on 9 functions
+- Add typed throws to API layer; `throws(SwiftiomaticError)` on 9 functions ([#277](https://github.com/toba/swiftiomatic/issues/277))
+- Modernize concurrency; replace `DispatchQueue` with `Mutex` in `StderrDiagnosticPrinter` ([#274](https://github.com/toba/swiftiomatic/issues/274))
+- Clean up debug prints and `fatalError` patterns; replace `print`/`assert(false)` with `assertionFailure`/`preconditionFailure` ([#269](https://github.com/toba/swiftiomatic/issues/269))
 - Port `FixItApplier` conflict resolution for multi-rule corrections ([#244](https://github.com/toba/swiftiomatic/issues/244))
 - Use `SwiftSyntaxBuilder` result builders for correction node construction ([#251](https://github.com/toba/swiftiomatic/issues/251))
 - Extract `SwiftiomaticSyntax` wrapper target to cache swift-syntax builds ([#202](https://github.com/toba/swiftiomatic/issues/202))

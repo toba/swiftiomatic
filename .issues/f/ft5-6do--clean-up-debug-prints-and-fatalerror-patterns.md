@@ -1,16 +1,16 @@
 ---
 # ft5-6do
 title: Clean up debug prints and fatalError patterns
-status: ready
+status: completed
 type: task
 priority: low
 created_at: 2026-04-14T02:42:23Z
-updated_at: 2026-04-14T02:42:23Z
+updated_at: 2026-04-14T03:01:39Z
 parent: kqx-iku
 sync:
     github:
         issue_number: "269"
-        synced_at: "2026-04-14T02:58:30Z"
+        synced_at: "2026-04-14T03:02:33Z"
 ---
 
 ## 1. Debug print() in PrettyPrint.swift
@@ -39,7 +39,15 @@ Consider making `Frontend` a protocol or using an abstract method pattern instea
 - `Sources/Swiftiomatic/PrettyPrint/PrettyPrint.swift:612, 619` — "TODO(dabelknap): Handle the unwrapping more gracefully"
 
 ## Tasks
-- [ ] Replace debug prints with assertionFailure
-- [ ] Replace assert(false) with preconditionFailure
-- [ ] Evaluate Frontend subclass override pattern
-- [ ] Address or remove stale TODOs
+- [x] Replace debug prints with assertionFailure
+- [x] Replace assert(false) with preconditionFailure
+- [x] Evaluate Frontend subclass override pattern (kept — standard Swift class hierarchy pattern with shared implementation)
+- [x] Address or remove stale TODOs
+
+
+## Summary of Changes
+
+- Replaced `print("Bad index 1/2")` with `assertionFailure()` in PrettyPrint.swift
+- Replaced `assert(false, ...)` with `preconditionFailure()` in PrettyPrint.swift
+- Updated stale TODO in PrintVersion.swift to reference issue 0w5-3pm
+- Frontend `fatalError` override pattern left as-is — it's a standard Swift abstract-method pattern for class hierarchies with shared implementation

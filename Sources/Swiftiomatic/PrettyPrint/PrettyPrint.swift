@@ -609,17 +609,15 @@ public class PrettyPrinter {
       case .close:
         lengths.append(0)
 
-        // TODO(dabelknap): Handle the unwrapping more gracefully
         guard let index = delimIndexStack.popLast() else {
-          print("Bad index 1")
+          assertionFailure("Unbalanced close token: no matching open/break on delimiter stack")
           return ""
         }
         lengths[index] += total
 
-        // TODO(dabelknap): Handle the unwrapping more gracefully
         if case .break = tokens[index] {
           guard let index = delimIndexStack.popLast() else {
-            print("Bad index 2")
+            assertionFailure("Unbalanced break token: no matching open on delimiter stack")
             return ""
           }
           lengths[index] += total
@@ -725,7 +723,7 @@ public class PrettyPrinter {
     assert(delimIndexStack.count < 2, "Too many unresolved delimiter token lengths.")
     if let index = delimIndexStack.popLast() {
       if case .open = tokens[index] {
-        assert(false, "Open tokens must be closed.")
+        preconditionFailure("Open tokens must be closed.")
       }
       lengths[index] += total
     }

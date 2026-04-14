@@ -10,11 +10,11 @@
 //
 //===----------------------------------------------------------------------===//
 
-import Dispatch
 import Foundation
+import Synchronization
 
 /// Manages printing of diagnostics to standard error.
-final class StderrDiagnosticPrinter {
+final class StderrDiagnosticPrinter: Sendable {
   /// Determines how colors are used in printed diagnostics.
   enum ColorMode {
     /// Colors are used if stderr is detected to be connected to a TTY; otherwise, colors will not
@@ -38,8 +38,8 @@ final class StderrDiagnosticPrinter {
     case reset = "0"
   }
 
-  /// The queue used to synchronize printing uninterrupted diagnostic messages.
-  private let printQueue = DispatchQueue(label: "app.toba.swiftiomatic.StderrDiagnosticPrinter")
+  /// The lock used to synchronize printing uninterrupted diagnostic messages.
+  private let printLock = Mutex(())
 
   /// Indicates whether colors should be used when printing diagnostics.
   private let useColors: Bool
@@ -58,7 +58,7 @@ final class StderrDiagnosticPrinter {
 
   /// Prints a diagnostic to standard error.
   func printDiagnostic(_ diagnostic: Diagnostic) {
-    printQueue.sync {
+    printLock.withLock { _ in
       let stderr = FileHandleTextOutputStream(FileHandle.standardError)
 
       stderr.write("\(ansiSGR(.reset))\(description(of: diagnostic.location)): ")
