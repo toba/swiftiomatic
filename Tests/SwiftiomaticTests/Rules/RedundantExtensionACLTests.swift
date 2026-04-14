@@ -5,14 +5,20 @@ import Testing
 @Suite
 struct RedundantExtensionACLTests: RuleTesting {
   @Test func publicExtensionPublicMember() {
-    assertLint(
+    assertFormatting(
       RedundantExtensionACL.self,
-      """
-      public extension Foo {
-        1️⃣public func bar() {}
-        2️⃣public var x: Int { 1 }
-      }
-      """,
+      input: """
+        public extension Foo {
+          1️⃣public func bar() {}
+          2️⃣public var x: Int { 1 }
+        }
+        """,
+      expected: """
+        public extension Foo {
+          func bar() {}
+          var x: Int { 1 }
+        }
+        """,
       findings: [
         FindingSpec("1️⃣", message: "remove redundant 'public'; it matches the extension's access level"),
         FindingSpec("2️⃣", message: "remove redundant 'public'; it matches the extension's access level"),
@@ -21,13 +27,18 @@ struct RedundantExtensionACLTests: RuleTesting {
   }
 
   @Test func internalExtensionInternalMember() {
-    assertLint(
+    assertFormatting(
       RedundantExtensionACL.self,
-      """
-      internal extension Foo {
-        1️⃣internal func bar() {}
-      }
-      """,
+      input: """
+        internal extension Foo {
+          1️⃣internal func bar() {}
+        }
+        """,
+      expected: """
+        internal extension Foo {
+          func bar() {}
+        }
+        """,
       findings: [
         FindingSpec("1️⃣", message: "remove redundant 'internal'; it matches the extension's access level"),
       ]
@@ -35,51 +46,91 @@ struct RedundantExtensionACLTests: RuleTesting {
   }
 
   @Test func differentAccessLevelNotFlagged() {
-    assertLint(
+    assertFormatting(
       RedundantExtensionACL.self,
-      """
-      public extension Foo {
-        internal func bar() {}
-        private func baz() {}
-      }
-      """,
+      input: """
+        public extension Foo {
+          internal func bar() {}
+          private func baz() {}
+        }
+        """,
+      expected: """
+        public extension Foo {
+          internal func bar() {}
+          private func baz() {}
+        }
+        """,
       findings: []
     )
   }
 
   @Test func noExtensionAccessLevelNotFlagged() {
-    assertLint(
+    assertFormatting(
       RedundantExtensionACL.self,
-      """
-      extension Foo {
-        public func bar() {}
-      }
-      """,
+      input: """
+        extension Foo {
+          public func bar() {}
+        }
+        """,
+      expected: """
+        extension Foo {
+          public func bar() {}
+        }
+        """,
       findings: []
     )
   }
 
   @Test func memberWithNoAccessLevelNotFlagged() {
-    assertLint(
+    assertFormatting(
       RedundantExtensionACL.self,
-      """
-      public extension Foo {
-        func bar() {}
-      }
-      """,
+      input: """
+        public extension Foo {
+          func bar() {}
+        }
+        """,
+      expected: """
+        public extension Foo {
+          func bar() {}
+        }
+        """,
       findings: []
     )
   }
 
   @Test func publicSetNotFlagged() {
-    assertLint(
+    assertFormatting(
       RedundantExtensionACL.self,
-      """
-      public extension Foo {
-        public(set) var x: Int { get { 1 } set {} }
-      }
-      """,
+      input: """
+        public extension Foo {
+          public(set) var x: Int { get { 1 } set {} }
+        }
+        """,
+      expected: """
+        public extension Foo {
+          public(set) var x: Int { get { 1 } set {} }
+        }
+        """,
       findings: []
+    )
+  }
+
+  @Test func memberWithOtherModifiers() {
+    assertFormatting(
+      RedundantExtensionACL.self,
+      input: """
+        public extension Foo {
+          1️⃣public static func bar() {}
+        }
+        """,
+      expected: """
+        public extension Foo {
+          static func bar() {}
+        }
+        """,
+      findings: [
+        FindingSpec("1️⃣", message: "remove redundant 'public'; it matches the extension's access level"),
+      ]
     )
   }
 }

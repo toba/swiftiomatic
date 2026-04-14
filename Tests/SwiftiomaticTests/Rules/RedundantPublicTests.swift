@@ -5,14 +5,20 @@ import Testing
 @Suite
 struct RedundantPublicTests: RuleTesting {
   @Test func publicMemberInInternalType() {
-    assertLint(
+    assertFormatting(
       RedundantPublic.self,
-      """
-      struct Foo {
-        1️⃣public func bar() {}
-        2️⃣public var x = 1
-      }
-      """,
+      input: """
+        struct Foo {
+          1️⃣public func bar() {}
+          2️⃣public var x = 1
+        }
+        """,
+      expected: """
+        struct Foo {
+          func bar() {}
+          var x = 1
+        }
+        """,
       findings: [
         FindingSpec("1️⃣", message: "remove redundant 'public'; the enclosing type is not public"),
         FindingSpec("2️⃣", message: "remove redundant 'public'; the enclosing type is not public"),
@@ -21,13 +27,18 @@ struct RedundantPublicTests: RuleTesting {
   }
 
   @Test func publicMemberInPrivateType() {
-    assertLint(
+    assertFormatting(
       RedundantPublic.self,
-      """
-      private class Foo {
-        1️⃣public func bar() {}
-      }
-      """,
+      input: """
+        private class Foo {
+          1️⃣public func bar() {}
+        }
+        """,
+      expected: """
+        private class Foo {
+          func bar() {}
+        }
+        """,
       findings: [
         FindingSpec("1️⃣", message: "remove redundant 'public'; the enclosing type is not public"),
       ]
@@ -35,37 +46,52 @@ struct RedundantPublicTests: RuleTesting {
   }
 
   @Test func publicMemberInPublicTypeNotFlagged() {
-    assertLint(
+    assertFormatting(
       RedundantPublic.self,
-      """
-      public struct Foo {
-        public func bar() {}
-      }
-      """,
+      input: """
+        public struct Foo {
+          public func bar() {}
+        }
+        """,
+      expected: """
+        public struct Foo {
+          public func bar() {}
+        }
+        """,
       findings: []
     )
   }
 
   @Test func internalMemberNotFlagged() {
-    assertLint(
+    assertFormatting(
       RedundantPublic.self,
-      """
-      struct Foo {
-        func bar() {}
-      }
-      """,
+      input: """
+        struct Foo {
+          func bar() {}
+        }
+        """,
+      expected: """
+        struct Foo {
+          func bar() {}
+        }
+        """,
       findings: []
     )
   }
 
   @Test func publicMemberInEnum() {
-    assertLint(
+    assertFormatting(
       RedundantPublic.self,
-      """
-      enum Foo {
-        1️⃣public static func make() -> Foo { .init() }
-      }
-      """,
+      input: """
+        enum Foo {
+          1️⃣public static func make() -> Foo { .init() }
+        }
+        """,
+      expected: """
+        enum Foo {
+          static func make() -> Foo { .init() }
+        }
+        """,
       findings: [
         FindingSpec("1️⃣", message: "remove redundant 'public'; the enclosing type is not public"),
       ]
@@ -73,13 +99,18 @@ struct RedundantPublicTests: RuleTesting {
   }
 
   @Test func packageTypeNotFlagged() {
-    assertLint(
+    assertFormatting(
       RedundantPublic.self,
-      """
-      package struct Foo {
-        public func bar() {}
-      }
-      """,
+      input: """
+        package struct Foo {
+          public func bar() {}
+        }
+        """,
+      expected: """
+        package struct Foo {
+          public func bar() {}
+        }
+        """,
       findings: []
     )
   }

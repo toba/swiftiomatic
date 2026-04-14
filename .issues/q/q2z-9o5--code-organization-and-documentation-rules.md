@@ -5,7 +5,7 @@ status: in-progress
 type: feature
 priority: normal
 created_at: 2026-04-14T03:18:17Z
-updated_at: 2026-04-14T17:07:13Z
+updated_at: 2026-04-14T17:14:59Z
 parent: 77g-8mh
 sync:
     github:
@@ -28,5 +28,5 @@ Port code-organization, sorting, and documentation rules from SwiftFormat.
 - [ ] `organizeDeclarations` — Organize members within type bodies by category (properties, init, methods, etc.)
 - [ ] `sortDeclarations` — Sort declarations between `// swiftiomatic:sort:begin` / `end` markers
 - [x] `sortSwitchCases` — Sort switch cases alphabetically
-- [ ] `sortTypealiases` — Sort protocol composition typealiases alphabetically
+- [x] `sortTypealiases` — Sort protocol composition typealiases alphabetically
 - [x] `todos` — Enforce correct formatting for `TODO:`, `MARK:`, `FIXME:` comments (colon + space)

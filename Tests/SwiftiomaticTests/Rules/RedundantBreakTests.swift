@@ -1,15 +1,3 @@
-//===----------------------------------------------------------------------===//
-//
-// This source file is part of the Swift.org open source project
-//
-// Copyright (c) 2014 - 2025 Apple Inc. and the Swift project authors
-// Licensed under Apache License v2.0 with Runtime Library Exception
-//
-// See https://swift.org/LICENSE.txt for license information
-// See https://swift.org/CONTRIBUTORS.txt for the list of Swift project authors
-//
-//===----------------------------------------------------------------------===//
-
 @_spi(Rules) import Swiftiomatic
 import SwiftiomaticTestSupport
 import Testing
@@ -17,18 +5,26 @@ import Testing
 @Suite
 struct RedundantBreakTests: RuleTesting {
   @Test func trailingBreakAfterStatements() {
-    assertLint(
+    assertFormatting(
       RedundantBreak.self,
-      """
-      switch x {
-      case .a:
-        print("a")
-        1️⃣break
-      case .b:
-        print("b")
-        2️⃣break
-      }
-      """,
+      input: """
+        switch x {
+        case .a:
+          print("a")
+          1️⃣break
+        case .b:
+          print("b")
+          2️⃣break
+        }
+        """,
+      expected: """
+        switch x {
+        case .a:
+          print("a")
+        case .b:
+          print("b")
+        }
+        """,
       findings: [
         FindingSpec("1️⃣", message: "remove redundant 'break'; switch cases do not fall through by default"),
         FindingSpec("2️⃣", message: "remove redundant 'break'; switch cases do not fall through by default"),
@@ -37,44 +33,65 @@ struct RedundantBreakTests: RuleTesting {
   }
 
   @Test func breakAsOnlyStatementNotFlagged() {
-    assertLint(
+    assertFormatting(
       RedundantBreak.self,
-      """
-      switch x {
-      case .a:
-        break
-      default:
-        break
-      }
-      """,
+      input: """
+        switch x {
+        case .a:
+          break
+        default:
+          break
+        }
+        """,
+      expected: """
+        switch x {
+        case .a:
+          break
+        default:
+          break
+        }
+        """,
       findings: []
     )
   }
 
   @Test func labeledBreakNotFlagged() {
-    assertLint(
+    assertFormatting(
       RedundantBreak.self,
-      """
-      outer: switch x {
-      case .a:
-        print("a")
-        break outer
-      }
-      """,
+      input: """
+        outer: switch x {
+        case .a:
+          print("a")
+          break outer
+        }
+        """,
+      expected: """
+        outer: switch x {
+        case .a:
+          print("a")
+          break outer
+        }
+        """,
       findings: []
     )
   }
 
   @Test func defaultCase() {
-    assertLint(
+    assertFormatting(
       RedundantBreak.self,
-      """
-      switch x {
-      default:
-        print("default")
-        1️⃣break
-      }
-      """,
+      input: """
+        switch x {
+        default:
+          print("default")
+          1️⃣break
+        }
+        """,
+      expected: """
+        switch x {
+        default:
+          print("default")
+        }
+        """,
       findings: [
         FindingSpec("1️⃣", message: "remove redundant 'break'; switch cases do not fall through by default"),
       ]
@@ -82,32 +99,49 @@ struct RedundantBreakTests: RuleTesting {
   }
 
   @Test func noBreakNotFlagged() {
-    assertLint(
+    assertFormatting(
       RedundantBreak.self,
-      """
-      switch x {
-      case .a:
-        print("a")
-      case .b:
-        print("b")
-      }
-      """,
+      input: """
+        switch x {
+        case .a:
+          print("a")
+        case .b:
+          print("b")
+        }
+        """,
+      expected: """
+        switch x {
+        case .a:
+          print("a")
+        case .b:
+          print("b")
+        }
+        """,
       findings: []
     )
   }
 
   @Test func breakInMiddleNotFlagged() {
-    assertLint(
+    assertFormatting(
       RedundantBreak.self,
-      """
-      switch x {
-      case .a:
-        if condition {
-          break
+      input: """
+        switch x {
+        case .a:
+          if condition {
+            break
+          }
+          print("a")
         }
-        print("a")
-      }
-      """,
+        """,
+      expected: """
+        switch x {
+        case .a:
+          if condition {
+            break
+          }
+          print("a")
+        }
+        """,
       findings: []
     )
   }

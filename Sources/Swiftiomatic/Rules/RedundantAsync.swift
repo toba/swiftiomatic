@@ -1,6 +1,6 @@
 import SwiftSyntax
 
-/// Flag `async` on functions that contain no `await` expressions.
+/// Remove `async` from functions that contain no `await` expressions.
 ///
 /// If a function is marked `async` but its body never uses `await`, the `async` is likely
 /// unnecessary. Removing it simplifies the API and removes the requirement for callers
@@ -10,27 +10,47 @@ import SwiftSyntax
 /// conformance or future-proofing even if they don't currently await.
 ///
 /// Lint: If an `async` function has no `await` in its body, a lint warning is raised.
+///
+/// Format: The `async` specifier is removed.
 @_spi(Rules)
-public final class RedundantAsync: SyntaxLintRule {
+public final class RedundantAsync: SyntaxFormatRule {
 
   public override class var isOptIn: Bool { true }
 
-  public override func visit(_ node: FunctionDeclSyntax) -> SyntaxVisitorContinueKind {
+  public override func visit(_ node: FunctionDeclSyntax) -> DeclSyntax {
     guard let effectSpecifiers = node.signature.effectSpecifiers,
-      let throwsClause = effectSpecifiers.asyncSpecifier,
-      throwsClause.tokenKind == .keyword(.async),
+      let asyncSpecifier = effectSpecifiers.asyncSpecifier,
+      asyncSpecifier.tokenKind == .keyword(.async),
       let body = node.body
     else {
-      return .visitChildren
+      return DeclSyntax(node)
     }
 
-    // Check if the body contains any `await` expression.
-    if !containsAwait(body) {
-      diagnose(.removeRedundantAsync, on: throwsClause)
+    guard !containsAwait(body) else {
+      return DeclSyntax(node)
     }
 
-    // Don't visit children — nested functions have their own async context.
-    return .skipChildren
+    diagnose(.removeRedundantAsync, on: asyncSpecifier)
+
+    var newEffectSpecifiers = effectSpecifiers
+    newEffectSpecifiers.asyncSpecifier = nil
+
+    // Transfer trivia: async's leading trivia should go to the next token.
+    if let throwsClause = newEffectSpecifiers.throwsClause {
+      newEffectSpecifiers.throwsClause = throwsClause.with(
+        \.throwsSpecifier,
+        throwsClause.throwsSpecifier.with(\.leadingTrivia, asyncSpecifier.leadingTrivia)
+      )
+    }
+
+    var result = node
+    // If no specifiers remain, remove the entire effectSpecifiers to avoid empty node.
+    if newEffectSpecifiers.asyncSpecifier == nil && newEffectSpecifiers.throwsClause == nil {
+      result.signature.effectSpecifiers = nil
+    } else {
+      result.signature.effectSpecifiers = newEffectSpecifiers
+    }
+    return DeclSyntax(result)
   }
 
   /// Returns `true` if the syntax tree contains an `await` expression,
@@ -41,12 +61,9 @@ public final class RedundantAsync: SyntaxLintRule {
       if child.is(FunctionDeclSyntax.self) || child.is(ClosureExprSyntax.self) {
         continue
       }
-
-      if let awaitExpr = child.as(AwaitExprSyntax.self) {
-        _ = awaitExpr  // suppress unused warning
+      if child.is(AwaitExprSyntax.self) {
         return true
       }
-
       if containsAwait(child) {
         return true
       }

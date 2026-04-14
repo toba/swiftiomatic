@@ -798,12 +798,14 @@ class LintPipeline: SyntaxVisitor {
 
   override func visit(_ node: SwitchExprSyntax) -> SyntaxVisitorContinueKind {
     visitIfEnabled(BlankLineAfterSwitchCase.visit, for: node)
+    visitIfEnabled(ConsistentSwitchCaseSpacing.visit, for: node)
     visitIfEnabled(NoEmptyLinesOpeningClosingBraces.visit, for: node)
     visitIfEnabled(NoParensAroundConditions.visit, for: node)
     return .visitChildren
   }
   override func visitPost(_ node: SwitchExprSyntax) {
     onVisitPost(rule: BlankLineAfterSwitchCase.self, for: node)
+    onVisitPost(rule: ConsistentSwitchCaseSpacing.self, for: node)
     onVisitPost(rule: NoEmptyLinesOpeningClosingBraces.self, for: node)
     onVisitPost(rule: NoParensAroundConditions.self, for: node)
   }
@@ -848,6 +850,7 @@ class LintPipeline: SyntaxVisitor {
     visitIfEnabled(NoAccessLevelOnExtensionDeclaration.visit, for: node)
     visitIfEnabled(NoLeadingUnderscores.visit, for: node)
     visitIfEnabled(RedundantInternal.visit, for: node)
+    visitIfEnabled(SortTypealiases.visit, for: node)
     visitIfEnabled(TypeNamesShouldBeCapitalized.visit, for: node)
     visitIfEnabled(UseTripleSlashForDocumentationComments.visit, for: node)
     return .visitChildren
@@ -860,6 +863,7 @@ class LintPipeline: SyntaxVisitor {
     onVisitPost(rule: NoAccessLevelOnExtensionDeclaration.self, for: node)
     onVisitPost(rule: NoLeadingUnderscores.self, for: node)
     onVisitPost(rule: RedundantInternal.self, for: node)
+    onVisitPost(rule: SortTypealiases.self, for: node)
     onVisitPost(rule: TypeNamesShouldBeCapitalized.self, for: node)
     onVisitPost(rule: UseTripleSlashForDocumentationComments.self, for: node)
   }
@@ -928,6 +932,7 @@ extension FormatPipeline {
     node = BlankLinesBetweenChainedFunctions(context: context).rewrite(node)
     node = BlankLinesBetweenImports(context: context).rewrite(node)
     node = BlankLinesBetweenScopes(context: context).rewrite(node)
+    node = ConsistentSwitchCaseSpacing(context: context).rewrite(node)
     node = DoNotUseSemicolons(context: context).rewrite(node)
     node = EmptyBraces(context: context).rewrite(node)
     node = EmptyExtensions(context: context).rewrite(node)
@@ -961,6 +966,9 @@ extension FormatPipeline {
     node = PreferFinalClasses(context: context).rewrite(node)
     node = PreferKeyPath(context: context).rewrite(node)
     node = PrivateStateVariables(context: context).rewrite(node)
+    node = RedundantAsync(context: context).rewrite(node)
+    node = RedundantBreak(context: context).rewrite(node)
+    node = RedundantExtensionACL(context: context).rewrite(node)
     node = RedundantInit(context: context).rewrite(node)
     node = RedundantInternal(context: context).rewrite(node)
     node = RedundantLet(context: context).rewrite(node)
@@ -968,6 +976,7 @@ extension FormatPipeline {
     node = RedundantNilInit(context: context).rewrite(node)
     node = RedundantObjc(context: context).rewrite(node)
     node = RedundantOptionalBinding(context: context).rewrite(node)
+    node = RedundantPublic(context: context).rewrite(node)
     node = RedundantRawValues(context: context).rewrite(node)
     node = RedundantSendable(context: context).rewrite(node)
     node = RedundantType(context: context).rewrite(node)
@@ -975,6 +984,7 @@ extension FormatPipeline {
     node = ReturnVoidInsteadOfEmptyTuple(context: context).rewrite(node)
     node = SimplifyGenericConstraints(context: context).rewrite(node)
     node = SortSwitchCases(context: context).rewrite(node)
+    node = SortTypealiases(context: context).rewrite(node)
     node = StrongOutlets(context: context).rewrite(node)
     node = Todos(context: context).rewrite(node)
     node = UseEarlyExits(context: context).rewrite(node)

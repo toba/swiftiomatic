@@ -5,13 +5,18 @@ import Testing
 @Suite
 struct RedundantAsyncTests: RuleTesting {
   @Test func asyncWithoutAwait() {
-    assertLint(
+    assertFormatting(
       RedundantAsync.self,
-      """
-      func foo() 1️⃣async -> Int {
-        return 42
-      }
-      """,
+      input: """
+        func foo() 1️⃣async -> Int {
+          return 42
+        }
+        """,
+      expected: """
+        func foo() -> Int {
+          return 42
+        }
+        """,
       findings: [
         FindingSpec("1️⃣", message: "function is 'async' but contains no 'await'; consider removing 'async'"),
       ]
@@ -19,39 +24,56 @@ struct RedundantAsyncTests: RuleTesting {
   }
 
   @Test func asyncWithAwaitNotFlagged() {
-    assertLint(
+    assertFormatting(
       RedundantAsync.self,
-      """
-      func foo() async -> Int {
-        return await bar()
-      }
-      """,
+      input: """
+        func foo() async -> Int {
+          return await bar()
+        }
+        """,
+      expected: """
+        func foo() async -> Int {
+          return await bar()
+        }
+        """,
       findings: []
     )
   }
 
   @Test func nonAsyncNotFlagged() {
-    assertLint(
+    assertFormatting(
       RedundantAsync.self,
-      """
-      func foo() -> Int {
-        return 42
-      }
-      """,
+      input: """
+        func foo() -> Int {
+          return 42
+        }
+        """,
+      expected: """
+        func foo() -> Int {
+          return 42
+        }
+        """,
       findings: []
     )
   }
 
   @Test func nestedClosureAwaitNotCounted() {
-    assertLint(
+    assertFormatting(
       RedundantAsync.self,
-      """
-      func foo() 1️⃣async {
-        let closure = {
-          await bar()
+      input: """
+        func foo() 1️⃣async {
+          let closure = {
+            await bar()
+          }
         }
-      }
-      """,
+        """,
+      expected: """
+        func foo() {
+          let closure = {
+            await bar()
+          }
+        }
+        """,
       findings: [
         FindingSpec("1️⃣", message: "function is 'async' but contains no 'await'; consider removing 'async'"),
       ]
@@ -59,15 +81,22 @@ struct RedundantAsyncTests: RuleTesting {
   }
 
   @Test func nestedFunctionAwaitNotCounted() {
-    assertLint(
+    assertFormatting(
       RedundantAsync.self,
-      """
-      func foo() 1️⃣async {
-        func inner() async {
-          await bar()
+      input: """
+        func foo() 1️⃣async {
+          func inner() async {
+            await bar()
+          }
         }
-      }
-      """,
+        """,
+      expected: """
+        func foo() {
+          func inner() async {
+            await bar()
+          }
+        }
+        """,
       findings: [
         FindingSpec("1️⃣", message: "function is 'async' but contains no 'await'; consider removing 'async'"),
       ]
@@ -75,25 +104,35 @@ struct RedundantAsyncTests: RuleTesting {
   }
 
   @Test func asyncThrowsWithAwait() {
-    assertLint(
+    assertFormatting(
       RedundantAsync.self,
-      """
-      func foo() async throws -> Int {
-        return try await bar()
-      }
-      """,
+      input: """
+        func foo() async throws -> Int {
+          return try await bar()
+        }
+        """,
+      expected: """
+        func foo() async throws -> Int {
+          return try await bar()
+        }
+        """,
       findings: []
     )
   }
 
   @Test func protocolRequirementNotFlagged() {
-    assertLint(
+    assertFormatting(
       RedundantAsync.self,
-      """
-      protocol P {
-        func foo() async -> Int
-      }
-      """,
+      input: """
+        protocol P {
+          func foo() async -> Int
+        }
+        """,
+      expected: """
+        protocol P {
+          func foo() async -> Int
+        }
+        """,
       findings: []
     )
   }

@@ -57,8 +57,8 @@ struct BlankLinesBetweenScopesTests: RuleTesting {
         func foo() {
             print("foo")
         }
-        1️⃣/// headerdoc
-        func bar() {
+        /// headerdoc
+        1️⃣func bar() {
             print("bar")
         }
         """,

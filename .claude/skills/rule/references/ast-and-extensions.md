@@ -111,6 +111,17 @@ func removing(named name: String) -> AttributeListSyntax
 mutating func remove(named name: String)
 ```
 
+### InheritanceClauseSyntax
+```swift
+/// Find by trimmedDescription (works for simple and qualified names).
+func contains(named typeName: String) -> Bool
+func inherited(named typeName: String) -> InheritedTypeSyntax?
+
+/// Remove by name. Returns nil when clause becomes empty — caller must set
+/// inheritanceClause = nil AND add .space to memberBlock.leftBrace.leadingTrivia.
+func removing(named typeName: String) -> InheritanceClauseSyntax?
+```
+
 ### WithAttributesSyntax
 ```swift
 func hasAttribute(_ name: String, inModule module: String) -> Bool

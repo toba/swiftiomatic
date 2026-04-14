@@ -254,6 +254,34 @@ Use `super.visit` for container types (class/struct/enum) that may have nested d
 
 Used by: `RedundantObjc`, `RedundantViewBuilder`.
 
+## Remove Inheritance Conformance
+
+Remove a type from the inheritance clause (e.g., `: Sendable`):
+
+```swift
+public override func visit(_ node: StructDeclSyntax) -> DeclSyntax {
+    let visited = super.visit(node).cast(StructDeclSyntax.self)
+    guard let inheritanceClause = visited.inheritanceClause,
+          let inherited = inheritanceClause.inherited(named: "Sendable")
+    else { return DeclSyntax(visited) }
+    diagnose(.msg, on: inherited)
+    var result = visited
+    let newClause = inheritanceClause.removing(named: "Sendable")
+    result.inheritanceClause = newClause
+    if newClause == nil {
+        // Entire clause removed — space before `{` was in the removed type's trailing trivia.
+        result.memberBlock.leftBrace.leadingTrivia = .space
+    }
+    return DeclSyntax(result)
+}
+```
+
+**Trivia pitfall**: When the last conformance is removed, `removing(named:)` returns `nil`. Setting `inheritanceClause = nil` drops the `:` token and all type trivia. The space before `{` (which lived in the last type's trailing trivia) is lost. Fix: explicitly set `memberBlock.leftBrace.leadingTrivia = .space`.
+
+`removing(named:)` handles comma cleanup and trailing trivia transfer for partial removals automatically.
+
+Used by: `RedundantSendable`.
+
 ## Remove Type Specifiers
 
 Remove `borrowing`/`consuming` from `AttributedTypeSyntax`:

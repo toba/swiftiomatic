@@ -28,6 +28,7 @@ Here's the list of available rules:
 - [BlankLinesBetweenChainedFunctions](#BlankLinesBetweenChainedFunctions)
 - [BlankLinesBetweenImports](#BlankLinesBetweenImports)
 - [BlankLinesBetweenScopes](#BlankLinesBetweenScopes)
+- [ConsistentSwitchCaseSpacing](#ConsistentSwitchCaseSpacing)
 - [DoNotUseSemicolons](#DoNotUseSemicolons)
 - [DontRepeatTypeInStaticProperties](#DontRepeatTypeInStaticProperties)
 - [EmptyBraces](#EmptyBraces)
@@ -96,6 +97,7 @@ Here's the list of available rules:
 - [ReturnVoidInsteadOfEmptyTuple](#ReturnVoidInsteadOfEmptyTuple)
 - [SimplifyGenericConstraints](#SimplifyGenericConstraints)
 - [SortSwitchCases](#SortSwitchCases)
+- [SortTypealiases](#SortTypealiases)
 - [StrongOutlets](#StrongOutlets)
 - [Todos](#Todos)
 - [TypeNamesShouldBeCapitalized](#TypeNamesShouldBeCapitalized)
@@ -348,6 +350,22 @@ Lint: If a multi-line scoped declaration is not followed by a blank line, a lint
 Format: A blank line is inserted after the declaration.
 
 `BlankLinesBetweenScopes` rule can format your code automatically.
+
+### ConsistentSwitchCaseSpacing
+
+Ensure consistent blank-line spacing among all cases in a switch statement.
+
+When some cases in a switch are separated by blank lines and others aren't, the
+inconsistency looks sloppy. This rule normalizes to whichever style is used by
+the majority of cases: if more cases have blank lines, missing ones are added;
+if fewer do, extra ones are removed. The last case is excluded (it's always
+followed by `}`).
+
+Lint: If any case's spacing is inconsistent with the majority, a lint warning is raised.
+
+Format: Blank lines are added or removed to make spacing consistent.
+
+`ConsistentSwitchCaseSpacing` rule can format your code automatically.
 
 ### DoNotUseSemicolons
 
@@ -933,7 +951,7 @@ Format: The `private` modifier is added before the binding keyword.
 
 ### RedundantAsync
 
-Flag `async` on functions that contain no `await` expressions.
+Remove `async` from functions that contain no `await` expressions.
 
 If a function is marked `async` but its body never uses `await`, the `async` is likely
 unnecessary. Removing it simplifies the API and removes the requirement for callers
@@ -944,7 +962,9 @@ conformance or future-proofing even if they don't currently await.
 
 Lint: If an `async` function has no `await` in its body, a lint warning is raised.
 
-`RedundantAsync` is a linter-only rule.
+Format: The `async` specifier is removed.
+
+`RedundantAsync` rule can format your code automatically.
 
 ### RedundantBackticks
 
@@ -971,7 +991,9 @@ sole statement in a case body (since at least one statement is required).
 
 Lint: If a redundant `break` is found at the end of a switch case, a lint warning is raised.
 
-`RedundantBreak` is a linter-only rule.
+Format: The redundant `break` statement is removed.
+
+`RedundantBreak` rule can format your code automatically.
 
 ### RedundantClosure
 
@@ -1021,7 +1043,9 @@ is redundant because it matches the extension's access level.
 
 Lint: If a member has the same access level as its containing extension, a lint warning is raised.
 
-`RedundantExtensionACL` is a linter-only rule.
+Format: The redundant access modifier is removed from the member.
+
+`RedundantExtensionACL` rule can format your code automatically.
 
 ### RedundantInit
 
@@ -1165,7 +1189,9 @@ members of `public` or `package` types (where `public` is meaningful).
 
 Lint: If a `public` member is found inside a non-public type, a lint warning is raised.
 
-`RedundantPublic` is a linter-only rule.
+Format: The redundant `public` modifier is removed.
+
+`RedundantPublic` rule can format your code automatically.
 
 ### RedundantRawValues
 
@@ -1336,6 +1362,20 @@ Lint: If case items are not sorted, a lint warning is raised.
 Format: The case items are reordered alphabetically.
 
 `SortSwitchCases` rule can format your code automatically.
+
+### SortTypealiases
+
+Sort protocol composition typealiases alphabetically.
+
+When a typealias combines multiple protocols with `&` (e.g. `typealias Deps = Foo & Bar & Baz`),
+the types are sorted lexicographically. Duplicate types are removed. The `any` keyword, if
+present, is preserved at the beginning.
+
+Lint: If the composition types are not sorted, a lint warning is raised.
+
+Format: The types are reordered alphabetically and duplicates are removed.
+
+`SortTypealiases` rule can format your code automatically.
 
 ### StrongOutlets
 

@@ -5,7 +5,7 @@ status: in-progress
 type: feature
 priority: normal
 created_at: 2026-04-14T05:26:49Z
-updated_at: 2026-04-14T16:50:11Z
+updated_at: 2026-04-14T17:13:49Z
 parent: c7r-77o
 sync:
     github:
@@ -202,8 +202,8 @@ public override func visit(_ node: CodeBlockItemListSyntax) -> CodeBlockItemList
 
 ## New Abstractions Needed
 
-- [ ] `AttributeListSyntax+Convenience` — `attribute(named:)`, `remove(named:)`, `removing(named:)` with trivia cleanup
-- [ ] `InheritanceClauseSyntax+Convenience` — `removing(named:)` returning nil when empty, handling comma/colon cleanup
+- [x] `AttributeListSyntax+Convenience` — `attribute(named:)`, `remove(named:)`, `removing(named:)` with trivia cleanup
+- [x] `InheritanceClauseSyntax+Convenience` — `removing(named:)` returning nil when empty, handling comma/colon cleanup
 - [ ] Consider: `CodeBlockItemListSyntax` windowed-transform helper for pairwise pattern matching (Categories F/G)
 
 ## Prioritized Implementation Order

@@ -17,7 +17,7 @@ extension InheritanceClauseSyntax {
       return self
     }
 
-    items.remove(at: index)
+    let removed = items.remove(at: index)
 
     guard !items.isEmpty else { return nil }
 
@@ -26,6 +26,10 @@ extension InheritanceClauseSyntax {
     if items[lastIndex].trailingComma != nil {
       items[lastIndex] = items[lastIndex].with(\.trailingComma, nil)
     }
+
+    // Transfer the removed item's trailing trivia to the new last item so that
+    // trivia following the inheritance clause (e.g. space before `{`) is preserved.
+    items[lastIndex] = items[lastIndex].with(\.trailingTrivia, removed.trailingTrivia)
 
     // Transfer removed item's leading trivia to the new first item if we removed index 0.
     if index == 0 {

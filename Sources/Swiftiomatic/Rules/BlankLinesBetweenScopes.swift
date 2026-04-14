@@ -18,8 +18,8 @@ public final class BlankLinesBetweenScopes: SyntaxFormatRule {
   public override class var isOptIn: Bool { true }
 
   public override func visit(_ node: SourceFileSyntax) -> SourceFileSyntax {
-    var result = node
-    result.statements = ensureBlankLines(in: node.statements)
+    var result = super.visit(node)
+    result.statements = ensureBlankLines(in: result.statements)
     return result
   }
 
@@ -38,7 +38,9 @@ public final class BlankLinesBetweenScopes: SyntaxFormatRule {
     var modified = false
 
     for i in 0..<(original.count - 1) {
-      guard hasMultiLineBody(Syntax(original[i].item)) else { continue }
+      guard case .decl(let decl) = original[i].item,
+        hasDeclMultiLineBody(decl)
+      else { continue }
       let nextIndex = i + 1
       guard blankLineCount(in: original[nextIndex].leadingTrivia) == 0 else { continue }
 
@@ -61,7 +63,7 @@ public final class BlankLinesBetweenScopes: SyntaxFormatRule {
     var modified = false
 
     for i in 0..<(original.count - 1) {
-      guard hasMultiLineBody(Syntax(original[i].decl)) else { continue }
+      guard hasDeclMultiLineBody(original[i].decl) else { continue }
       let nextIndex = i + 1
       guard blankLineCount(in: original[nextIndex].leadingTrivia) == 0 else { continue }
 
@@ -78,24 +80,13 @@ public final class BlankLinesBetweenScopes: SyntaxFormatRule {
 
   // MARK: - Helpers
 
-  private func hasMultiLineBody(_ syntax: Syntax) -> Bool {
-    // Type declarations with member blocks.
-    if let declGroup = syntax.asProtocol(DeclGroupSyntax.self) {
-      return declGroup.memberBlock.rightBrace.leadingTrivia.containsNewlines
-    }
-    // Functions.
-    if let funcDecl = syntax.as(FunctionDeclSyntax.self), let body = funcDecl.body {
-      return body.rightBrace.leadingTrivia.containsNewlines
-    }
-    // Initializers.
-    if let initDecl = syntax.as(InitializerDeclSyntax.self), let body = initDecl.body {
-      return body.rightBrace.leadingTrivia.containsNewlines
-    }
-    // Deinitializers.
-    if let deinitDecl = syntax.as(DeinitializerDeclSyntax.self), let body = deinitDecl.body {
-      return body.rightBrace.leadingTrivia.containsNewlines
-    }
-    return false
+  /// A declaration has a multi-line body if its last token is `}` with newlines in its
+  /// leading trivia (meaning the closing brace is on a separate line from the content).
+  private func hasDeclMultiLineBody(_ decl: DeclSyntax) -> Bool {
+    guard let lastToken = decl.lastToken(viewMode: .sourceAccurate),
+      lastToken.tokenKind == .rightBrace
+    else { return false }
+    return lastToken.leadingTrivia.containsNewlines
   }
 
   private func blankLineCount(in trivia: Trivia) -> Int {

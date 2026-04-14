@@ -1,15 +1,3 @@
-//===----------------------------------------------------------------------===//
-//
-// This source file is part of the Swift.org open source project
-//
-// Copyright (c) 2014 - 2019 Apple Inc. and the Swift project authors
-// Licensed under Apache License v2.0 with Runtime Library Exception
-//
-// See https://swift.org/LICENSE.txt for license information
-// See https://swift.org/CONTRIBUTORS.txt for the list of Swift project authors
-//
-//===----------------------------------------------------------------------===//
-
 import SwiftSyntax
 
 /// Remove `break` at the end of switch cases.
@@ -22,15 +10,18 @@ import SwiftSyntax
 /// sole statement in a case body (since at least one statement is required).
 ///
 /// Lint: If a redundant `break` is found at the end of a switch case, a lint warning is raised.
+///
+/// Format: The redundant `break` statement is removed.
 @_spi(Rules)
-public final class RedundantBreak: SyntaxLintRule {
+public final class RedundantBreak: SyntaxFormatRule {
 
-  public override func visit(_ node: SwitchCaseSyntax) -> SyntaxVisitorContinueKind {
-    let statements = node.statements
+  public override func visit(_ node: SwitchCaseSyntax) -> SwitchCaseSyntax {
+    let visited = super.visit(node)
+    let statements = visited.statements
 
     // A case must have at least one statement. If `break` is the only statement, it's required.
     guard statements.count > 1 else {
-      return .visitChildren
+      return visited
     }
 
     // Check if the last statement is an unlabeled `break`.
@@ -38,11 +29,14 @@ public final class RedundantBreak: SyntaxLintRule {
       let breakStmt = lastItem.item.as(StmtSyntax.self)?.as(BreakStmtSyntax.self),
       breakStmt.label == nil
     else {
-      return .visitChildren
+      return visited
     }
 
     diagnose(.removeRedundantBreak, on: breakStmt.breakKeyword)
-    return .visitChildren
+
+    // Remove the last statement (the redundant break).
+    let newStatements = CodeBlockItemListSyntax(statements.dropLast())
+    return visited.with(\.statements, newStatements)
   }
 }
 
