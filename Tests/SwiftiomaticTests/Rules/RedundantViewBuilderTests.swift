@@ -5,16 +5,23 @@ import Testing
 @Suite
 struct RedundantViewBuilderTests: RuleTesting {
   @Test func singleExpressionComputedProperty() {
-    assertLint(
+    assertFormatting(
       RedundantViewBuilder.self,
-      """
-      struct MyView: View {
-        1️⃣@ViewBuilder
-        var body: some View {
-          Text("hello")
+      input: """
+        struct MyView: View {
+          1️⃣@ViewBuilder
+          var body: some View {
+            Text("hello")
+          }
         }
-      }
-      """,
+        """,
+      expected: """
+        struct MyView: View {
+          var body: some View {
+            Text("hello")
+          }
+        }
+        """,
       findings: [
         FindingSpec("1️⃣", message: "remove '@ViewBuilder'; single-expression body does not need a result builder"),
       ]
@@ -22,14 +29,19 @@ struct RedundantViewBuilderTests: RuleTesting {
   }
 
   @Test func singleExpressionFunction() {
-    assertLint(
+    assertFormatting(
       RedundantViewBuilder.self,
-      """
-      1️⃣@ViewBuilder
-      func makeContent() -> some View {
-        Text("hello")
-      }
-      """,
+      input: """
+        1️⃣@ViewBuilder
+        func makeContent() -> some View {
+          Text("hello")
+        }
+        """,
+      expected: """
+        func makeContent() -> some View {
+          Text("hello")
+        }
+        """,
       findings: [
         FindingSpec("1️⃣", message: "remove '@ViewBuilder'; single-expression body does not need a result builder"),
       ]
@@ -37,68 +49,118 @@ struct RedundantViewBuilderTests: RuleTesting {
   }
 
   @Test func multiExpressionNotFlagged() {
-    assertLint(
+    assertFormatting(
       RedundantViewBuilder.self,
-      """
-      @ViewBuilder
-      var body: some View {
-        Text("hello")
-        Text("world")
-      }
-      """,
+      input: """
+        @ViewBuilder
+        var body: some View {
+          Text("hello")
+          Text("world")
+        }
+        """,
+      expected: """
+        @ViewBuilder
+        var body: some View {
+          Text("hello")
+          Text("world")
+        }
+        """,
       findings: []
     )
   }
 
   @Test func ifElseNotFlagged() {
-    assertLint(
+    assertFormatting(
       RedundantViewBuilder.self,
-      """
-      @ViewBuilder
-      func content() -> some View {
-        if condition {
-          Text("yes")
-        } else {
-          Text("no")
+      input: """
+        @ViewBuilder
+        func content() -> some View {
+          if condition {
+            Text("yes")
+          } else {
+            Text("no")
+          }
         }
-      }
-      """,
+        """,
+      expected: """
+        @ViewBuilder
+        func content() -> some View {
+          if condition {
+            Text("yes")
+          } else {
+            Text("no")
+          }
+        }
+        """,
       findings: []
     )
   }
 
   @Test func noViewBuilderNotFlagged() {
-    assertLint(
+    assertFormatting(
       RedundantViewBuilder.self,
-      """
-      var body: some View {
-        Text("hello")
-      }
-      """,
+      input: """
+        var body: some View {
+          Text("hello")
+        }
+        """,
+      expected: """
+        var body: some View {
+          Text("hello")
+        }
+        """,
       findings: []
     )
   }
 
   @Test func protocolRequirementNotFlagged() {
-    assertLint(
+    assertFormatting(
       RedundantViewBuilder.self,
-      """
-      protocol MyProtocol {
-        @ViewBuilder
-        func makeContent() -> some View
-      }
-      """,
+      input: """
+        protocol MyProtocol {
+          @ViewBuilder
+          func makeContent() -> some View
+        }
+        """,
+      expected: """
+        protocol MyProtocol {
+          @ViewBuilder
+          func makeContent() -> some View
+        }
+        """,
       findings: []
     )
   }
 
   @Test func storedPropertyNotFlagged() {
-    assertLint(
+    assertFormatting(
       RedundantViewBuilder.self,
-      """
-      @ViewBuilder var content: () -> some View
-      """,
+      input: """
+        @ViewBuilder var content: () -> some View
+        """,
+      expected: """
+        @ViewBuilder var content: () -> some View
+        """,
       findings: []
+    )
+  }
+
+  @Test func viewBuilderOnSameLineAsFunc() {
+    assertFormatting(
+      RedundantViewBuilder.self,
+      input: """
+        1️⃣@ViewBuilder func makeContent() -> some View {
+          Text("hello")
+        }
+        """,
+      expected: """
+        func makeContent() -> some View {
+          Text("hello")
+        }
+        """,
+      findings: [
+        FindingSpec("1️⃣", message: "remove '@ViewBuilder'; single-expression body does not need a result builder"),
+      ]
     )
   }
 }

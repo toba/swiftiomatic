@@ -23,6 +23,11 @@ Here's the list of available rules:
 - [BeginDocumentationCommentWithOneLineSummary](#BeginDocumentationCommentWithOneLineSummary)
 - [BlankLineAfterImports](#BlankLineAfterImports)
 - [BlankLineAfterSwitchCase](#BlankLineAfterSwitchCase)
+- [BlankLinesAfterGuardStatements](#BlankLinesAfterGuardStatements)
+- [BlankLinesAroundMark](#BlankLinesAroundMark)
+- [BlankLinesBetweenChainedFunctions](#BlankLinesBetweenChainedFunctions)
+- [BlankLinesBetweenImports](#BlankLinesBetweenImports)
+- [BlankLinesBetweenScopes](#BlankLinesBetweenScopes)
 - [DoNotUseSemicolons](#DoNotUseSemicolons)
 - [DontRepeatTypeInStaticProperties](#DontRepeatTypeInStaticProperties)
 - [EmptyBraces](#EmptyBraces)
@@ -90,7 +95,9 @@ Here's the list of available rules:
 - [ReplaceForEachWithForLoop](#ReplaceForEachWithForLoop)
 - [ReturnVoidInsteadOfEmptyTuple](#ReturnVoidInsteadOfEmptyTuple)
 - [SimplifyGenericConstraints](#SimplifyGenericConstraints)
+- [SortSwitchCases](#SortSwitchCases)
 - [StrongOutlets](#StrongOutlets)
+- [Todos](#Todos)
 - [TypeNamesShouldBeCapitalized](#TypeNamesShouldBeCapitalized)
 - [UseEarlyExits](#UseEarlyExits)
 - [UseExplicitNilCheckInConditions](#UseExplicitNilCheckInConditions)
@@ -264,6 +271,83 @@ Lint: If a multiline case body is not followed by a blank line, a lint warning i
 Format: Blank lines are inserted after multiline cases and removed after the last case.
 
 `BlankLineAfterSwitchCase` rule can format your code automatically.
+
+### BlankLinesAfterGuardStatements
+
+Remove blank lines between consecutive guard statements and insert a blank line after
+the last guard.
+
+Guard blocks at the top of a function form a precondition section. Keeping them tight
+(no blank lines between them) and separated from the body (one blank line after) improves
+readability. Comments between guards break the "consecutive" chain — each guard followed
+by a comment gets its own trailing blank line.
+
+Lint: If there are blank lines between consecutive guards, or no blank line after the
+      last guard before other code, a lint warning is raised.
+
+Format: Blank lines between consecutive guards are removed. A blank line is inserted
+        after the last guard when followed by non-guard code.
+
+`BlankLinesAfterGuardStatements` rule can format your code automatically.
+
+### BlankLinesAroundMark
+
+Insert blank lines before and after `// MARK:` comments.
+
+MARK comments serve as section dividers. Surrounding them with blank lines makes the
+visual separation clear. A blank line before MARK is skipped when the MARK immediately
+follows an opening brace (start of scope). A blank line after MARK is skipped when
+the MARK immediately precedes a closing brace (end of scope) or end of file.
+
+Lint: If a MARK comment is missing a blank line before or after it, a lint warning is raised.
+
+Format: Blank lines are inserted around MARK comments.
+
+`BlankLinesAroundMark` rule can format your code automatically.
+
+### BlankLinesBetweenChainedFunctions
+
+Remove blank lines between chained function calls.
+
+Method chains like `.map { ... }.filter { ... }` are a single logical expression. Blank lines
+between chain elements break the visual continuity. Linebreaks are preserved — only the
+extra blank lines are removed. Comments between chain elements are also preserved.
+
+Lint: If there are blank lines between chained member accesses, a lint warning is raised.
+
+Format: The blank lines are removed, keeping linebreaks and comments.
+
+`BlankLinesBetweenChainedFunctions` rule can format your code automatically.
+
+### BlankLinesBetweenImports
+
+Remove blank lines between consecutive import statements.
+
+Import blocks should be compact — blank lines within the import section add visual noise
+without aiding readability. This rule removes them while preserving linebreaks.
+
+Lint: If there are blank lines between consecutive import statements, a lint warning is raised.
+
+Format: The blank lines are removed.
+
+`BlankLinesBetweenImports` rule can format your code automatically.
+
+### BlankLinesBetweenScopes
+
+Insert a blank line after declarations with multi-line bodies.
+
+When a type declaration (class, struct, enum, extension, protocol, actor) or function
+declaration has a multi-line body, a blank line after it improves readability by
+visually separating it from the next declaration. Single-line (inline) bodies are
+excluded. This rule operates at the top level and inside type member blocks — not
+inside function bodies (if/for/while don't need separation).
+
+Lint: If a multi-line scoped declaration is not followed by a blank line, a lint
+      warning is raised.
+
+Format: A blank line is inserted after the declaration.
+
+`BlankLinesBetweenScopes` rule can format your code automatically.
 
 ### DoNotUseSemicolons
 
@@ -1034,7 +1118,9 @@ declaration as ObjC-visible.
 
 Lint: If a redundant `@objc` is found, a lint warning is raised.
 
-`RedundantObjc` is a linter-only rule.
+Format: The redundant `@objc` attribute is removed.
+
+`RedundantObjc` rule can format your code automatically.
 
 ### RedundantOptionalBinding
 
@@ -1108,7 +1194,9 @@ be explicit for ABI stability.
 
 Lint: If a redundant `Sendable` conformance is found, a lint warning is raised.
 
-`RedundantSendable` is a linter-only rule.
+Format: The redundant `Sendable` conformance is removed from the inheritance clause.
+
+`RedundantSendable` rule can format your code automatically.
 
 ### RedundantStaticSelf
 
@@ -1147,11 +1235,16 @@ such as `let x: Foo = Foo(...)` or `let x: Bool = true`.
 
 This rule fires for:
 - Constructor calls matching the annotation: `let x: Foo = Foo(...)` → `let x = Foo(...)`
+- Generic constructors: `let x: Foo<Int> = Foo<Int>(...)` → `let x = Foo<Int>(...)`
+- Array/Dictionary constructors: `var x: [String] = [String]()` → `var x = [String]()`
 - Boolean literals: `let x: Bool = true` → `let x = true`
 - String literals: `let x: String = "hello"` → `let x = "hello"`
+- if/switch expressions where all branches match: `let x: Foo = if c { Foo() } else { Foo() }`
 
-It does NOT fire for numeric literals (which could be Int, Double, Float, etc.) or
-collection literals (which could be Array, Set, etc.).
+It does NOT fire for:
+- Numeric literals (which could be Int, Double, Float, etc.)
+- Collection literals (which could be Array, Set, etc.)
+- `Void` types (removing the annotation is unhelpful)
 
 Lint: If a redundant type annotation is found, a lint warning is raised.
 
@@ -1188,7 +1281,9 @@ It does NOT flag `@ViewBuilder` on:
 
 Lint: If a redundant `@ViewBuilder` is found, a lint warning is raised.
 
-`RedundantViewBuilder` is a linter-only rule.
+Format: The redundant `@ViewBuilder` attribute is removed.
+
+`RedundantViewBuilder` rule can format your code automatically.
 
 ### ReplaceForEachWithForLoop
 
@@ -1228,6 +1323,20 @@ Format: The conformance constraint is moved from the `where` clause to the gener
 
 `SimplifyGenericConstraints` rule can format your code automatically.
 
+### SortSwitchCases
+
+Sort switch case items alphabetically within each case.
+
+When a case matches multiple patterns (e.g. `case .b, .a, .c:`), the patterns are sorted
+lexicographically. Numeric literals are compared by value (including hex, octal, and binary).
+Cases with `where` clauses are only sorted if the `where` clause ends up on the last item.
+
+Lint: If case items are not sorted, a lint warning is raised.
+
+Format: The case items are reordered alphabetically.
+
+`SortSwitchCases` rule can format your code automatically.
+
 ### StrongOutlets
 
 Remove `weak` from `@IBOutlet` properties.
@@ -1241,6 +1350,20 @@ Lint: An `@IBOutlet` property with `weak` raises a warning.
 Format: The `weak` modifier is removed.
 
 `StrongOutlets` rule can format your code automatically.
+
+### Todos
+
+Use correct formatting for `TODO:`, `MARK:`, and `FIXME:` comments.
+
+These special comment tags must be uppercase, followed by a colon and a space. `MARK:` comments
+with a dash separator must use `// MARK: - text` format. Standalone `/// MARK:` doc comments are
+converted to `// MARK:` since MARK is not a documentation concept.
+
+Lint: If a special comment tag is not correctly formatted, a lint warning is raised.
+
+Format: The comment is reformatted to use the correct style.
+
+`Todos` rule can format your code automatically.
 
 ### TypeNamesShouldBeCapitalized
 

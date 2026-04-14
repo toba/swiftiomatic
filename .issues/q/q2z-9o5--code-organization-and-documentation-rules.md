@@ -1,11 +1,11 @@
 ---
 # q2z-9o5
 title: Code organization and documentation rules
-status: ready
+status: in-progress
 type: feature
 priority: normal
 created_at: 2026-04-14T03:18:17Z
-updated_at: 2026-04-14T03:18:17Z
+updated_at: 2026-04-14T17:07:13Z
 parent: 77g-8mh
 sync:
     github:
@@ -27,6 +27,6 @@ Port code-organization, sorting, and documentation rules from SwiftFormat.
 - [ ] `markTypes` — Add `// MARK: -` comment before top-level types and extensions
 - [ ] `organizeDeclarations` — Organize members within type bodies by category (properties, init, methods, etc.)
 - [ ] `sortDeclarations` — Sort declarations between `// swiftiomatic:sort:begin` / `end` markers
-- [ ] `sortSwitchCases` — Sort switch cases alphabetically
+- [x] `sortSwitchCases` — Sort switch cases alphabetically
 - [ ] `sortTypealiases` — Sort protocol composition typealiases alphabetically
-- [ ] `todos` — Enforce correct formatting for `TODO:`, `MARK:`, `FIXME:` comments (colon + space)
+- [x] `todos` — Enforce correct formatting for `TODO:`, `MARK:`, `FIXME:` comments (colon + space)

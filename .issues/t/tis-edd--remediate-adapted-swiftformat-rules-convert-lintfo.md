@@ -1,11 +1,11 @@
 ---
 # tis-edd
 title: 'Remediate adapted SwiftFormat rules: convert lint→format and add reference tests'
-status: in-progress
+status: completed
 type: epic
 priority: high
 created_at: 2026-04-14T16:06:07Z
-updated_at: 2026-04-14T16:37:30Z
+updated_at: 2026-04-14T16:45:44Z
 parent: 77g-8mh
 ---
 

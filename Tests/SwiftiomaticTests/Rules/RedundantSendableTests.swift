@@ -5,13 +5,18 @@ import Testing
 @Suite
 struct RedundantSendableTests: RuleTesting {
   @Test func internalStruct() {
-    assertLint(
+    assertFormatting(
       RedundantSendable.self,
-      """
-      struct Foo: 1️⃣Sendable {
-        let x: Int
-      }
-      """,
+      input: """
+        struct Foo: 1️⃣Sendable {
+          let x: Int
+        }
+        """,
+      expected: """
+        struct Foo {
+          let x: Int
+        }
+        """,
       findings: [
         FindingSpec("1️⃣", message: "remove explicit 'Sendable'; it is inferred for non-public structs and enums"),
       ]
@@ -19,13 +24,18 @@ struct RedundantSendableTests: RuleTesting {
   }
 
   @Test func internalEnum() {
-    assertLint(
+    assertFormatting(
       RedundantSendable.self,
-      """
-      enum Foo: 1️⃣Sendable {
-        case a, b
-      }
-      """,
+      input: """
+        enum Foo: 1️⃣Sendable {
+          case a, b
+        }
+        """,
+      expected: """
+        enum Foo {
+          case a, b
+        }
+        """,
       findings: [
         FindingSpec("1️⃣", message: "remove explicit 'Sendable'; it is inferred for non-public structs and enums"),
       ]
@@ -33,61 +43,147 @@ struct RedundantSendableTests: RuleTesting {
   }
 
   @Test func publicStructNotFlagged() {
-    assertLint(
+    assertFormatting(
       RedundantSendable.self,
-      """
-      public struct Foo: Sendable {
-        let x: Int
-      }
-      """,
+      input: """
+        public struct Foo: Sendable {
+          let x: Int
+        }
+        """,
+      expected: """
+        public struct Foo: Sendable {
+          let x: Int
+        }
+        """,
       findings: []
     )
   }
 
   @Test func packageStructNotFlagged() {
-    assertLint(
+    assertFormatting(
       RedundantSendable.self,
-      """
-      package struct Foo: Sendable {
-        let x: Int
-      }
-      """,
+      input: """
+        package struct Foo: Sendable {
+          let x: Int
+        }
+        """,
+      expected: """
+        package struct Foo: Sendable {
+          let x: Int
+        }
+        """,
       findings: []
     )
   }
 
   @Test func classNotFlagged() {
-    assertLint(
+    assertFormatting(
       RedundantSendable.self,
-      """
-      class Foo: Sendable {
-        let x: Int
-      }
-      """,
+      input: """
+        class Foo: Sendable {
+          let x: Int
+        }
+        """,
+      expected: """
+        class Foo: Sendable {
+          let x: Int
+        }
+        """,
       findings: []
     )
   }
 
   @Test func noSendableNotFlagged() {
-    assertLint(
+    assertFormatting(
       RedundantSendable.self,
-      """
-      struct Foo: Codable {
-        let x: Int
-      }
-      """,
+      input: """
+        struct Foo: Codable {
+          let x: Int
+        }
+        """,
+      expected: """
+        struct Foo: Codable {
+          let x: Int
+        }
+        """,
       findings: []
     )
   }
 
   @Test func privateStruct() {
-    assertLint(
+    assertFormatting(
       RedundantSendable.self,
-      """
-      private struct Foo: 1️⃣Sendable {
-        let x: Int
-      }
-      """,
+      input: """
+        private struct Foo: 1️⃣Sendable {
+          let x: Int
+        }
+        """,
+      expected: """
+        private struct Foo {
+          let x: Int
+        }
+        """,
+      findings: [
+        FindingSpec("1️⃣", message: "remove explicit 'Sendable'; it is inferred for non-public structs and enums"),
+      ]
+    )
+  }
+
+  @Test func sendableWithOtherConformances() {
+    assertFormatting(
+      RedundantSendable.self,
+      input: """
+        struct Foo: Codable, 1️⃣Sendable {
+          let x: Int
+        }
+        """,
+      expected: """
+        struct Foo: Codable {
+          let x: Int
+        }
+        """,
+      findings: [
+        FindingSpec("1️⃣", message: "remove explicit 'Sendable'; it is inferred for non-public structs and enums"),
+      ]
+    )
+  }
+
+  @Test func sendableFirstWithOtherConformances() {
+    assertFormatting(
+      RedundantSendable.self,
+      input: """
+        struct Foo: 1️⃣Sendable, Codable {
+          let x: Int
+        }
+        """,
+      expected: """
+        struct Foo: Codable {
+          let x: Int
+        }
+        """,
+      findings: [
+        FindingSpec("1️⃣", message: "remove explicit 'Sendable'; it is inferred for non-public structs and enums"),
+      ]
+    )
+  }
+
+  @Test func nestedStruct() {
+    assertFormatting(
+      RedundantSendable.self,
+      input: """
+        struct Outer {
+          struct Inner: 1️⃣Sendable {
+            let x: Int
+          }
+        }
+        """,
+      expected: """
+        struct Outer {
+          struct Inner {
+            let x: Int
+          }
+        }
+        """,
       findings: [
         FindingSpec("1️⃣", message: "remove explicit 'Sendable'; it is inferred for non-public structs and enums"),
       ]

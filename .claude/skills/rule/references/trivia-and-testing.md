@@ -113,6 +113,68 @@ Issue.record("OUTPUT: \(escaped)")
 
 This makes whitespace issues (trailing spaces, missing spaces before `{`) visible in the error message. Delete the diagnostic test after debugging.
 
+## Position Shift When Modifying Statements in a Loop
+
+When iterating through a statement list and modifying earlier entries (e.g., adding `\n` to a statement's leading trivia), later statements in the `var statements = ...` array have shifted positions. If you `diagnose(on: statements[i])` where `statements[i]` was modified by a previous iteration, the finding position will be off (typically +1 column per added newline).
+
+**Fix**: Keep a `let originalStatements = statements` copy and always `diagnose(on: originalStatements[i].item)`:
+
+```swift
+let originalStatements = Array(visited.statements)
+var statements = originalStatements
+for i in 0..<originalStatements.count {
+    // Always read from originalStatements for conditions and diagnose targets
+    // Always write to statements for modifications
+    diagnose(.msg, on: originalStatements[i].item)
+    statements[nextIndex] = modified
+}
+```
+
+## diagnose on `.item`, Not `CodeBlockItemSyntax`
+
+When diagnosing on a statement from `CodeBlockItemListSyntax`, use `statement.item` (the actual `GuardStmtSyntax`, `VariableDeclSyntax`, etc.) rather than the `CodeBlockItemSyntax` wrapper. Both share the same first token, but using `.item` is more precise and avoids subtle position discrepancies.
+
+## Blank Line Detection Must Stop at Comments
+
+When checking leading trivia for blank lines, only count newlines BEFORE the first comment. Comments in trivia (e.g., `\n// comment\n    guard`) produce 2 newlines total but represent zero blank lines — one newline ends the previous line, the other ends the comment.
+
+```swift
+// WRONG: counts all newlines including after comments
+trivia.pieces.reduce(0) { count, piece in
+    if case .newlines(let n) = piece { count + n } else { count }
+} >= 2
+
+// RIGHT: only count newlines before first non-whitespace content
+var newlines = 0
+for piece in trivia.pieces {
+    if case .newlines(let n) = piece { newlines += n }
+    else if piece.isSpaceOrTab { continue }
+    else { break }  // stop at comment or other content
+}
+let blankLineCount = max(0, newlines - 1)  // -1 for end-of-previous-line
+```
+
+## `break` in `switch` Inside `for` Loop
+
+In Swift, `break` inside a `switch` case breaks the **switch**, not the enclosing `for` loop. This is a common gotcha when scanning trivia pieces. Use `if/else` chains or labeled loops:
+
+```swift
+// WRONG: break exits switch, loop continues
+for piece in trivia.pieces {
+    switch piece {
+    case .newlines(let n): count += n
+    default: break  // only exits the switch!
+    }
+}
+
+// RIGHT: if/else chain — break exits the for loop
+for piece in trivia.pieces {
+    if case .newlines(let n) = piece { count += n }
+    else if piece.isSpaceOrTab { continue }
+    else { break }  // exits the for loop
+}
+```
+
 ## Known Limitations
 
 **Node removal requires parent-level visitation**: Can't return "nothing" from `visit`. Visit the parent collection and filter.

@@ -1,15 +1,3 @@
-//===----------------------------------------------------------------------===//
-//
-// This source file is part of the Swift.org open source project
-//
-// Copyright (c) 2014 - 2025 Apple Inc. and the Swift project authors
-// Licensed under Apache License v2.0 with Runtime Library Exception
-//
-// See https://swift.org/LICENSE.txt for license information
-// See https://swift.org/CONTRIBUTORS.txt for the list of Swift project authors
-//
-//===----------------------------------------------------------------------===//
-
 @_spi(Rules) import Swiftiomatic
 import SwiftiomaticTestSupport
 import Testing
@@ -17,11 +5,14 @@ import Testing
 @Suite
 struct RedundantObjcTests: RuleTesting {
   @Test func objcWithIBAction() {
-    assertLint(
+    assertFormatting(
       RedundantObjc.self,
-      """
-      1️⃣@objc @IBAction func buttonTapped() {}
-      """,
+      input: """
+        1️⃣@objc @IBAction func buttonTapped() {}
+        """,
+      expected: """
+        @IBAction func buttonTapped() {}
+        """,
       findings: [
         FindingSpec("1️⃣", message: "remove redundant '@objc'; it is implied by another attribute"),
       ]
@@ -29,11 +20,14 @@ struct RedundantObjcTests: RuleTesting {
   }
 
   @Test func objcWithIBOutlet() {
-    assertLint(
+    assertFormatting(
       RedundantObjc.self,
-      """
-      1️⃣@objc @IBOutlet var label: UILabel!
-      """,
+      input: """
+        1️⃣@objc @IBOutlet var label: UILabel!
+        """,
+      expected: """
+        @IBOutlet var label: UILabel!
+        """,
       findings: [
         FindingSpec("1️⃣", message: "remove redundant '@objc'; it is implied by another attribute"),
       ]
@@ -41,11 +35,14 @@ struct RedundantObjcTests: RuleTesting {
   }
 
   @Test func objcWithNSManaged() {
-    assertLint(
+    assertFormatting(
       RedundantObjc.self,
-      """
-      1️⃣@objc @NSManaged var name: String
-      """,
+      input: """
+        1️⃣@objc @NSManaged var name: String
+        """,
+      expected: """
+        @NSManaged var name: String
+        """,
       findings: [
         FindingSpec("1️⃣", message: "remove redundant '@objc'; it is implied by another attribute"),
       ]
@@ -53,11 +50,14 @@ struct RedundantObjcTests: RuleTesting {
   }
 
   @Test func objcWithIBInspectable() {
-    assertLint(
+    assertFormatting(
       RedundantObjc.self,
-      """
-      1️⃣@objc @IBInspectable var borderWidth: CGFloat
-      """,
+      input: """
+        1️⃣@objc @IBInspectable var borderWidth: CGFloat
+        """,
+      expected: """
+        @IBInspectable var borderWidth: CGFloat
+        """,
       findings: [
         FindingSpec("1️⃣", message: "remove redundant '@objc'; it is implied by another attribute"),
       ]
@@ -65,51 +65,116 @@ struct RedundantObjcTests: RuleTesting {
   }
 
   @Test func objcAloneNotFlagged() {
-    assertLint(
+    assertFormatting(
       RedundantObjc.self,
-      """
-      @objc func myMethod() {}
-      """,
+      input: """
+        @objc func myMethod() {}
+        """,
+      expected: """
+        @objc func myMethod() {}
+        """,
       findings: []
     )
   }
 
   @Test func objcWithExplicitNameNotFlagged() {
-    assertLint(
+    assertFormatting(
       RedundantObjc.self,
-      """
-      @objc(buttonTapped:) @IBAction func buttonTapped(_ sender: Any) {}
-      """,
+      input: """
+        @objc(buttonTapped:) @IBAction func buttonTapped(_ sender: Any) {}
+        """,
+      expected: """
+        @objc(buttonTapped:) @IBAction func buttonTapped(_ sender: Any) {}
+        """,
       findings: []
     )
   }
 
   @Test func ibActionAloneNotFlagged() {
-    assertLint(
+    assertFormatting(
       RedundantObjc.self,
-      """
-      @IBAction func buttonTapped() {}
-      """,
+      input: """
+        @IBAction func buttonTapped() {}
+        """,
+      expected: """
+        @IBAction func buttonTapped() {}
+        """,
       findings: []
     )
   }
 
   @Test func noAttributesNotFlagged() {
-    assertLint(
+    assertFormatting(
       RedundantObjc.self,
-      """
-      func myMethod() {}
-      """,
+      input: """
+        func myMethod() {}
+        """,
+      expected: """
+        func myMethod() {}
+        """,
       findings: []
     )
   }
 
   @Test func objcWithGKInspectable() {
-    assertLint(
+    assertFormatting(
       RedundantObjc.self,
-      """
-      1️⃣@objc @GKInspectable var speed: Float
-      """,
+      input: """
+        1️⃣@objc @GKInspectable var speed: Float
+        """,
+      expected: """
+        @GKInspectable var speed: Float
+        """,
+      findings: [
+        FindingSpec("1️⃣", message: "remove redundant '@objc'; it is implied by another attribute"),
+      ]
+    )
+  }
+
+  @Test func objcOnSeparateLineWithIBAction() {
+    assertFormatting(
+      RedundantObjc.self,
+      input: """
+        1️⃣@objc
+        @IBAction func buttonTapped() {}
+        """,
+      expected: """
+        @IBAction func buttonTapped() {}
+        """,
+      findings: [
+        FindingSpec("1️⃣", message: "remove redundant '@objc'; it is implied by another attribute"),
+      ]
+    )
+  }
+
+  @Test func implyingAttributeFirstObjcSecond() {
+    assertFormatting(
+      RedundantObjc.self,
+      input: """
+        @IBAction 1️⃣@objc func buttonTapped() {}
+        """,
+      expected: """
+        @IBAction func buttonTapped() {}
+        """,
+      findings: [
+        FindingSpec("1️⃣", message: "remove redundant '@objc'; it is implied by another attribute"),
+      ]
+    )
+  }
+
+  @Test func nestedInClass() {
+    assertFormatting(
+      RedundantObjc.self,
+      input: """
+        class ViewController {
+            1️⃣@objc @IBAction func tap() {}
+        }
+        """,
+      expected: """
+        class ViewController {
+            @IBAction func tap() {}
+        }
+        """,
       findings: [
         FindingSpec("1️⃣", message: "remove redundant '@objc'; it is implied by another attribute"),
       ]

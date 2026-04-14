@@ -209,6 +209,51 @@ public override func visit(_ node: ClassDeclSyntax) -> DeclSyntax {
 }
 ```
 
+## Remove Attributes Across Declaration Types
+
+Generic helper using `AttributeListSyntax+Convenience` and `WithAttributesSyntax` protocol:
+
+```swift
+private func removeRedundantFoo<Decl: DeclSyntaxProtocol & WithAttributesSyntax>(
+    from decl: Decl
+) -> Decl {
+    guard let fooAttr = decl.attributes.attribute(named: "foo") else { return decl }
+    guard fooAttr.arguments == nil else { return decl }  // skip @foo(args)
+    guard shouldRemove(decl) else { return decl }
+    diagnose(.msg, on: fooAttr)
+    var result = decl
+    result.attributes = decl.attributes.removing(named: "foo")
+    return result
+}
+
+// Thin visit overrides:
+public override func visit(_ node: FunctionDeclSyntax) -> DeclSyntax {
+    DeclSyntax(removeRedundantFoo(from: node))
+}
+public override func visit(_ node: ClassDeclSyntax) -> DeclSyntax {
+    let visited = super.visit(node).cast(ClassDeclSyntax.self)
+    return DeclSyntax(removeRedundantFoo(from: visited))
+}
+```
+
+`removing(named:)` transfers trivia from the removed attribute to the next kept element. When the removed attribute is the **only** attribute (list becomes empty), the caller must transfer trivia to the declaration keyword or next modifier — same pattern as `Remove Modifiers` above:
+
+```swift
+let savedTrivia = fooAttr.leadingTrivia
+result.attributes = decl.attributes.removing(named: "foo")
+if result.attributes.isEmpty {
+    if result.modifiers.first != nil {
+        result.modifiers[result.modifiers.startIndex].leadingTrivia = savedTrivia
+    } else {
+        result[keyPath: keywordKeyPath].leadingTrivia = savedTrivia
+    }
+}
+```
+
+Use `super.visit` for container types (class/struct/enum) that may have nested declarations.
+
+Used by: `RedundantObjc`, `RedundantViewBuilder`.
+
 ## Remove Type Specifiers
 
 Remove `borrowing`/`consuming` from `AttributedTypeSyntax`:
@@ -351,3 +396,49 @@ public override func visit(_ node: AwaitExprSyntax) -> ExprSyntax {
 ```
 
 The `hadTryBefore` guard prevents reordering pre-existing `await try` that the outer visitor still needs to process.
+
+## Insert / Remove Blank Lines Between Statements
+
+Rules like `BlankLineAfterImports`, `BlankLineAfterSwitchCase`, `BlankLinesAfterGuardStatements` manipulate blank lines by adjusting the leading trivia of the *next* statement.
+
+**Insert a blank line**: Prepend `.newline` to the next statement's leading trivia:
+
+```swift
+var modifiedNext = nextStmt
+modifiedNext.leadingTrivia = .newline + nextStmt.leadingTrivia
+statements[nextIndex] = modifiedNext
+```
+
+**Remove blank lines**: Replace the first `.newlines(N)` piece with `.newlines(1)`:
+
+```swift
+var pieces = Array(statement.leadingTrivia.pieces)
+for (i, piece) in pieces.enumerated() {
+    if case .newlines = piece {
+        pieces[i] = .newlines(1)
+        break
+    }
+}
+result.leadingTrivia = Trivia(pieces: pieces)
+```
+
+**Count blank lines** (only before first comment — see trivia-and-testing.md):
+
+```swift
+var newlines = 0
+for piece in trivia.pieces {
+    if case .newlines(let n) = piece { newlines += n }
+    else if piece.isSpaceOrTab { continue }
+    else { break }
+}
+return max(0, newlines - 1)  // -1 for end-of-previous-line newline
+```
+
+**Key patterns**:
+- `SourceFileSyntax` for file-level rules (imports)
+- `SwitchExprSyntax` for switch case spacing (iterate `cases: SwitchCaseListSyntax`, check `rightBrace` for trailing blank)
+- `CodeBlockSyntax` for statement-level rules (guards) — `super.visit` handles nested scopes
+- Always keep `originalStatements` for `diagnose()` targets (see trivia-and-testing.md § Position Shift)
+- `SwitchCaseListSyntax.Element` is an enum: `.switchCase(SwitchCaseSyntax)` | `.ifConfigDecl(IfConfigDeclSyntax)`
+
+Used by: `BlankLineAfterImports`, `BlankLineAfterSwitchCase`, `BlankLinesAfterGuardStatements`.

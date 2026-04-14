@@ -11,41 +11,55 @@ import SwiftSyntax
 /// be explicit for ABI stability.
 ///
 /// Lint: If a redundant `Sendable` conformance is found, a lint warning is raised.
+///
+/// Format: The redundant `Sendable` conformance is removed from the inheritance clause.
 @_spi(Rules)
-public final class RedundantSendable: SyntaxLintRule {
+public final class RedundantSendable: SyntaxFormatRule {
 
   public override class var isOptIn: Bool { true }
 
-  public override func visit(_ node: StructDeclSyntax) -> SyntaxVisitorContinueKind {
-    checkSendable(modifiers: node.modifiers, inheritanceClause: node.inheritanceClause)
-    return .visitChildren
+  public override func visit(_ node: StructDeclSyntax) -> DeclSyntax {
+    let visited = super.visit(node).cast(StructDeclSyntax.self)
+    guard !isPublicOrPackage(visited.modifiers),
+      let inheritanceClause = visited.inheritanceClause,
+      let inherited = inheritanceClause.inherited(named: "Sendable")
+    else {
+      return DeclSyntax(visited)
+    }
+    diagnose(.removeRedundantSendable, on: inherited)
+    var result = visited
+    let newClause = inheritanceClause.removing(named: "Sendable")
+    result.inheritanceClause = newClause
+    if newClause == nil {
+      // The entire clause was removed — ensure the member block brace has leading space.
+      result.memberBlock.leftBrace.leadingTrivia = .space
+    }
+    return DeclSyntax(result)
   }
 
-  public override func visit(_ node: EnumDeclSyntax) -> SyntaxVisitorContinueKind {
-    checkSendable(modifiers: node.modifiers, inheritanceClause: node.inheritanceClause)
-    return .visitChildren
+  public override func visit(_ node: EnumDeclSyntax) -> DeclSyntax {
+    let visited = super.visit(node).cast(EnumDeclSyntax.self)
+    guard !isPublicOrPackage(visited.modifiers),
+      let inheritanceClause = visited.inheritanceClause,
+      let inherited = inheritanceClause.inherited(named: "Sendable")
+    else {
+      return DeclSyntax(visited)
+    }
+    diagnose(.removeRedundantSendable, on: inherited)
+    var result = visited
+    let newClause = inheritanceClause.removing(named: "Sendable")
+    result.inheritanceClause = newClause
+    if newClause == nil {
+      result.memberBlock.leftBrace.leadingTrivia = .space
+    }
+    return DeclSyntax(result)
   }
 
-  private func checkSendable(
-    modifiers: DeclModifierListSyntax,
-    inheritanceClause: InheritanceClauseSyntax?
-  ) {
-    // Only non-public types get automatic Sendable inference.
-    if let accessModifier = modifiers.accessLevelModifier,
-      case .keyword(let keyword) = accessModifier.name.tokenKind,
-      keyword == .public || keyword == .package
-    {
-      return
-    }
-
-    guard let inheritanceClause else { return }
-
-    for inherited in inheritanceClause.inheritedTypes {
-      if inherited.type.trimmedDescription == "Sendable" {
-        diagnose(.removeRedundantSendable, on: inherited)
-        return
-      }
-    }
+  private func isPublicOrPackage(_ modifiers: DeclModifierListSyntax) -> Bool {
+    guard let accessModifier = modifiers.accessLevelModifier,
+      case .keyword(let keyword) = accessModifier.name.tokenKind
+    else { return false }
+    return keyword == .public || keyword == .package
   }
 }
 

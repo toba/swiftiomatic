@@ -15,16 +15,18 @@ import SwiftSyntax
 /// - Protocol requirements
 ///
 /// Lint: If a redundant `@ViewBuilder` is found, a lint warning is raised.
+///
+/// Format: The redundant `@ViewBuilder` attribute is removed.
 @_spi(Rules)
-public final class RedundantViewBuilder: SyntaxLintRule {
+public final class RedundantViewBuilder: SyntaxFormatRule {
 
   /// Identifies this rule as being opt-in. This rule requires SwiftUI context and may produce
   /// false positives in codebases that use custom result builders named `ViewBuilder`.
   public override class var isOptIn: Bool { true }
 
-  public override func visit(_ node: VariableDeclSyntax) -> SyntaxVisitorContinueKind {
-    guard let viewBuilderAttr = findViewBuilderAttribute(in: node.attributes) else {
-      return .visitChildren
+  public override func visit(_ node: VariableDeclSyntax) -> DeclSyntax {
+    guard let viewBuilderAttr = node.attributes.attribute(named: "ViewBuilder") else {
+      return DeclSyntax(node)
     }
 
     // Must be a computed property with an accessor block.
@@ -32,48 +34,54 @@ public final class RedundantViewBuilder: SyntaxLintRule {
       let binding = node.bindings.first,
       let accessorBlock = binding.accessorBlock
     else {
-      return .visitChildren
+      return DeclSyntax(node)
     }
 
     // Check for single-expression getter.
-    if case .getter(let body) = accessorBlock.accessors,
+    guard case .getter(let body) = accessorBlock.accessors,
       isSingleExpression(body)
-    {
-      diagnose(.removeRedundantViewBuilder, on: viewBuilderAttr)
+    else {
+      return DeclSyntax(node)
     }
 
-    return .visitChildren
+    diagnose(.removeRedundantViewBuilder, on: viewBuilderAttr)
+    var result = node
+    let savedTrivia = viewBuilderAttr.leadingTrivia
+    result.attributes = node.attributes.removing(named: "ViewBuilder")
+    // Transfer the removed attribute's leading trivia to the next token.
+    if result.attributes.isEmpty {
+      result.bindingSpecifier.leadingTrivia = savedTrivia
+    }
+    return DeclSyntax(result)
   }
 
-  public override func visit(_ node: FunctionDeclSyntax) -> SyntaxVisitorContinueKind {
-    guard let viewBuilderAttr = findViewBuilderAttribute(in: node.attributes) else {
-      return .visitChildren
+  public override func visit(_ node: FunctionDeclSyntax) -> DeclSyntax {
+    guard let viewBuilderAttr = node.attributes.attribute(named: "ViewBuilder") else {
+      return DeclSyntax(node)
     }
 
     // Must have a body (not a protocol requirement).
     guard let body = node.body else {
-      return .visitChildren
+      return DeclSyntax(node)
     }
 
-    if isSingleExpression(body.statements) {
-      diagnose(.removeRedundantViewBuilder, on: viewBuilderAttr)
+    guard isSingleExpression(body.statements) else {
+      return DeclSyntax(node)
     }
 
-    return .visitChildren
-  }
-
-  /// Returns the `@ViewBuilder` attribute if present in the list, or `nil`.
-  private func findViewBuilderAttribute(in attributes: AttributeListSyntax) -> AttributeSyntax? {
-    for element in attributes {
-      guard case .attribute(let attr) = element,
-        let name = attr.attributeName.as(IdentifierTypeSyntax.self)?.name.text,
-        name == "ViewBuilder"
-      else {
-        continue
+    diagnose(.removeRedundantViewBuilder, on: viewBuilderAttr)
+    var result = node
+    let savedTrivia = viewBuilderAttr.leadingTrivia
+    result.attributes = node.attributes.removing(named: "ViewBuilder")
+    // Transfer the removed attribute's leading trivia to the next token.
+    if result.attributes.isEmpty {
+      if result.modifiers.first != nil {
+        result.modifiers[result.modifiers.startIndex].leadingTrivia = savedTrivia
+      } else {
+        result.funcKeyword.leadingTrivia = savedTrivia
       }
-      return attr
     }
-    return nil
+    return DeclSyntax(result)
   }
 
   /// Returns `true` if the code block contains exactly one expression statement.

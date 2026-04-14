@@ -210,12 +210,14 @@ class LintPipeline: SyntaxVisitor {
 
   override func visit(_ node: CodeBlockSyntax) -> SyntaxVisitorContinueKind {
     visitIfEnabled(AmbiguousTrailingClosureOverload.visit, for: node)
+    visitIfEnabled(BlankLinesAfterGuardStatements.visit, for: node)
     visitIfEnabled(EmptyBraces.visit, for: node)
     visitIfEnabled(NoEmptyLinesOpeningClosingBraces.visit, for: node)
     return .visitChildren
   }
   override func visitPost(_ node: CodeBlockSyntax) {
     onVisitPost(rule: AmbiguousTrailingClosureOverload.self, for: node)
+    onVisitPost(rule: BlankLinesAfterGuardStatements.self, for: node)
     onVisitPost(rule: EmptyBraces.self, for: node)
     onVisitPost(rule: NoEmptyLinesOpeningClosingBraces.self, for: node)
   }
@@ -567,11 +569,13 @@ class LintPipeline: SyntaxVisitor {
   }
 
   override func visit(_ node: MemberAccessExprSyntax) -> SyntaxVisitorContinueKind {
+    visitIfEnabled(BlankLinesBetweenChainedFunctions.visit, for: node)
     visitIfEnabled(PreferCountWhere.visit, for: node)
     visitIfEnabled(RedundantStaticSelf.visit, for: node)
     return .visitChildren
   }
   override func visitPost(_ node: MemberAccessExprSyntax) {
+    onVisitPost(rule: BlankLinesBetweenChainedFunctions.self, for: node)
     onVisitPost(rule: PreferCountWhere.self, for: node)
     onVisitPost(rule: RedundantStaticSelf.self, for: node)
   }
@@ -586,12 +590,14 @@ class LintPipeline: SyntaxVisitor {
 
   override func visit(_ node: MemberBlockSyntax) -> SyntaxVisitorContinueKind {
     visitIfEnabled(AmbiguousTrailingClosureOverload.visit, for: node)
+    visitIfEnabled(BlankLinesBetweenScopes.visit, for: node)
     visitIfEnabled(EmptyBraces.visit, for: node)
     visitIfEnabled(NoEmptyLinesOpeningClosingBraces.visit, for: node)
     return .visitChildren
   }
   override func visitPost(_ node: MemberBlockSyntax) {
     onVisitPost(rule: AmbiguousTrailingClosureOverload.self, for: node)
+    onVisitPost(rule: BlankLinesBetweenScopes.self, for: node)
     onVisitPost(rule: EmptyBraces.self, for: node)
     onVisitPost(rule: NoEmptyLinesOpeningClosingBraces.self, for: node)
   }
@@ -670,6 +676,8 @@ class LintPipeline: SyntaxVisitor {
     visitIfEnabled(AlwaysUseLowerCamelCase.visit, for: node)
     visitIfEnabled(AmbiguousTrailingClosureOverload.visit, for: node)
     visitIfEnabled(BlankLineAfterImports.visit, for: node)
+    visitIfEnabled(BlankLinesBetweenImports.visit, for: node)
+    visitIfEnabled(BlankLinesBetweenScopes.visit, for: node)
     visitIfEnabled(FileScopedDeclarationPrivacy.visit, for: node)
     visitIfEnabled(NeverForceUnwrap.visit, for: node)
     visitIfEnabled(NeverUseForceTry.visit, for: node)
@@ -682,6 +690,8 @@ class LintPipeline: SyntaxVisitor {
     onVisitPost(rule: AlwaysUseLowerCamelCase.self, for: node)
     onVisitPost(rule: AmbiguousTrailingClosureOverload.self, for: node)
     onVisitPost(rule: BlankLineAfterImports.self, for: node)
+    onVisitPost(rule: BlankLinesBetweenImports.self, for: node)
+    onVisitPost(rule: BlankLinesBetweenScopes.self, for: node)
     onVisitPost(rule: FileScopedDeclarationPrivacy.self, for: node)
     onVisitPost(rule: NeverForceUnwrap.self, for: node)
     onVisitPost(rule: NeverUseForceTry.self, for: node)
@@ -778,10 +788,12 @@ class LintPipeline: SyntaxVisitor {
 
   override func visit(_ node: SwitchCaseSyntax) -> SyntaxVisitorContinueKind {
     visitIfEnabled(RedundantBreak.visit, for: node)
+    visitIfEnabled(SortSwitchCases.visit, for: node)
     return .visitChildren
   }
   override func visitPost(_ node: SwitchCaseSyntax) {
     onVisitPost(rule: RedundantBreak.self, for: node)
+    onVisitPost(rule: SortSwitchCases.self, for: node)
   }
 
   override func visit(_ node: SwitchExprSyntax) -> SyntaxVisitorContinueKind {
@@ -806,14 +818,18 @@ class LintPipeline: SyntaxVisitor {
 
   override func visit(_ node: TokenSyntax) -> SyntaxVisitorContinueKind {
     visitIfEnabled(Acronyms.visit, for: node)
+    visitIfEnabled(BlankLinesAroundMark.visit, for: node)
     visitIfEnabled(NoBlockComments.visit, for: node)
     visitIfEnabled(RedundantBackticks.visit, for: node)
+    visitIfEnabled(Todos.visit, for: node)
     return .visitChildren
   }
   override func visitPost(_ node: TokenSyntax) {
     onVisitPost(rule: Acronyms.self, for: node)
+    onVisitPost(rule: BlankLinesAroundMark.self, for: node)
     onVisitPost(rule: NoBlockComments.self, for: node)
     onVisitPost(rule: RedundantBackticks.self, for: node)
+    onVisitPost(rule: Todos.self, for: node)
   }
 
   override func visit(_ node: TryExprSyntax) -> SyntaxVisitorContinueKind {
@@ -907,6 +923,11 @@ extension FormatPipeline {
     node = AssertionFailures(context: context).rewrite(node)
     node = BlankLineAfterImports(context: context).rewrite(node)
     node = BlankLineAfterSwitchCase(context: context).rewrite(node)
+    node = BlankLinesAfterGuardStatements(context: context).rewrite(node)
+    node = BlankLinesAroundMark(context: context).rewrite(node)
+    node = BlankLinesBetweenChainedFunctions(context: context).rewrite(node)
+    node = BlankLinesBetweenImports(context: context).rewrite(node)
+    node = BlankLinesBetweenScopes(context: context).rewrite(node)
     node = DoNotUseSemicolons(context: context).rewrite(node)
     node = EmptyBraces(context: context).rewrite(node)
     node = EmptyExtensions(context: context).rewrite(node)
@@ -945,12 +966,17 @@ extension FormatPipeline {
     node = RedundantLet(context: context).rewrite(node)
     node = RedundantLetError(context: context).rewrite(node)
     node = RedundantNilInit(context: context).rewrite(node)
+    node = RedundantObjc(context: context).rewrite(node)
     node = RedundantOptionalBinding(context: context).rewrite(node)
     node = RedundantRawValues(context: context).rewrite(node)
+    node = RedundantSendable(context: context).rewrite(node)
     node = RedundantType(context: context).rewrite(node)
+    node = RedundantViewBuilder(context: context).rewrite(node)
     node = ReturnVoidInsteadOfEmptyTuple(context: context).rewrite(node)
     node = SimplifyGenericConstraints(context: context).rewrite(node)
+    node = SortSwitchCases(context: context).rewrite(node)
     node = StrongOutlets(context: context).rewrite(node)
+    node = Todos(context: context).rewrite(node)
     node = UseEarlyExits(context: context).rewrite(node)
     node = UseExplicitNilCheckInConditions(context: context).rewrite(node)
     node = UseLetInEveryBoundCaseVariable(context: context).rewrite(node)

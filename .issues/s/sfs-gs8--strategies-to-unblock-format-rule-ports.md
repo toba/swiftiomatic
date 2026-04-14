@@ -1,11 +1,11 @@
 ---
 # sfs-gs8
 title: Strategies to unblock format rule ports
-status: ready
+status: in-progress
 type: feature
 priority: normal
 created_at: 2026-04-14T05:26:49Z
-updated_at: 2026-04-14T05:26:49Z
+updated_at: 2026-04-14T16:50:11Z
 parent: c7r-77o
 sync:
     github:

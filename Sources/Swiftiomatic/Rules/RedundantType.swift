@@ -145,23 +145,20 @@ public final class RedundantType: SyntaxFormatRule {
   /// Returns `true` if the last expression in a statement list matches the type name.
   private func allStatementsMatch(typeName: String, statements: CodeBlockItemListSyntax) -> Bool {
     guard let lastItem = statements.last else { return false }
-    let item = lastItem.item
 
-    // Direct expression (function call, literal, etc.)
-    if let expr = item.as(ExprSyntax.self) {
-      return isRedundant(typeName: typeName, initializer: expr)
+    // Extract the expression from the code block item. In statement position, if/switch
+    // may not be directly accessible via .as(ExprSyntax.self), so check specific types too.
+    for child in lastItem.children(viewMode: .sourceAccurate) {
+      if let ifExpr = child.as(IfExprSyntax.self) {
+        return allBranchesMatch(typeName: typeName, ifExpr: ifExpr)
+      }
+      if let switchExpr = child.as(SwitchExprSyntax.self) {
+        return allCasesMatch(typeName: typeName, switchExpr: switchExpr)
+      }
+      if let expr = child.as(ExprSyntax.self) {
+        return isRedundant(typeName: typeName, initializer: expr)
+      }
     }
-
-    // Nested if expression (may be parsed as statement in code block)
-    if let ifExpr = item.as(IfExprSyntax.self) {
-      return allBranchesMatch(typeName: typeName, ifExpr: ifExpr)
-    }
-
-    // Nested switch expression
-    if let switchExpr = item.as(SwitchExprSyntax.self) {
-      return allCasesMatch(typeName: typeName, switchExpr: switchExpr)
-    }
-
     return false
   }
 

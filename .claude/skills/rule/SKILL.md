@@ -143,6 +143,8 @@ struct MyRuleTests: RuleTesting {
 | Rule doesn't trigger | Correct `visit()` node type? `generate-swiftiomatic` run? `isOptIn` + `forTesting`? Missing `super.visit` in parent? |
 | False positive | Write a test, add guard conditions (test files, bindings, closures) |
 | Wrong output | `assertFormatting` test, check trivia, check `super.visit` |
+| Finding at wrong position | Diagnosing on modified statement? Use `originalStatements[i].item` (see trivia-and-testing.md § Position Shift). Using `CodeBlockItemSyntax` instead of `.item`? |
+| Blank line detection wrong | Counting newlines after comments? Only count before first non-whitespace (see trivia-and-testing.md § Blank Line Detection). |
 
 ## Key Reference Files
 

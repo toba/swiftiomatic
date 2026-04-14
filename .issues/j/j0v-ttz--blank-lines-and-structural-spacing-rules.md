@@ -5,7 +5,7 @@ status: in-progress
 type: feature
 priority: normal
 created_at: 2026-04-14T03:18:16Z
-updated_at: 2026-04-14T16:22:49Z
+updated_at: 2026-04-14T17:01:32Z
 parent: 77g-8mh
 sync:
     github:
@@ -19,11 +19,11 @@ Port blank-line and structural-spacing rules from SwiftFormat. Most of the basic
 
 ## Rules
 
-- [ ] `blankLineAfterImports` — Insert blank line after the last import statement before other code
-- [ ] `blankLineAfterSwitchCase` — Insert blank line after each switch case body (excluding last case)
-- [ ] `blankLinesAfterGuardStatements` — Remove blanks between consecutive guards; insert blank after last guard
-- [ ] `blankLinesAroundMark` — Insert blank line before and after `// MARK:` comments
-- [ ] `blankLinesBetweenChainedFunctions` — Remove blank lines between chained function calls (keep linebreaks)
+- [x] `blankLineAfterImports` — Insert blank line after the last import statement before other code
+- [x] `blankLineAfterSwitchCase` — Insert blank line after each switch case body (excluding last case)
+- [x] `blankLinesAfterGuardStatements` — Remove blanks between consecutive guards; insert blank after last guard
+- [x] `blankLinesAroundMark` — Insert blank line before and after `// MARK:` comments
+- [x] `blankLinesBetweenChainedFunctions` — Remove blank lines between chained function calls (keep linebreaks)
 - [ ] `blankLinesBetweenImports` — Remove blank lines between consecutive import statements
 - [ ] `blankLinesBetweenScopes` — Insert blank line before class/struct/enum/extension/protocol/function declarations
 - [ ] `consistentSwitchCaseSpacing` — Ensure consistent blank-line spacing among all cases in a switch

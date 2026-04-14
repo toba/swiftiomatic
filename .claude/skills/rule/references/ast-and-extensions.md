@@ -100,6 +100,17 @@ var hasTestAncestor: Bool           // walks parent chain for @Test
 var firstAndOnly: Element?          // first element iff count == 1
 ```
 
+### AttributeListSyntax
+```swift
+/// Find a plain @Name attribute (ignores @Module.Name and #if-wrapped).
+/// Returns the AttributeSyntax including any arguments — caller decides if args disqualify.
+func attribute(named name: String) -> AttributeSyntax?
+
+/// Remove by name with trivia transfer to next kept element.
+func removing(named name: String) -> AttributeListSyntax
+mutating func remove(named name: String)
+```
+
 ### WithAttributesSyntax
 ```swift
 func hasAttribute(_ name: String, inModule module: String) -> Bool
