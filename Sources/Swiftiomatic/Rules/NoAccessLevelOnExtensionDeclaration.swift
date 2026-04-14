@@ -14,11 +14,14 @@ import SwiftSyntax
 
 /// Specifying an access level for an extension declaration is forbidden.
 ///
-/// Lint: Specifying an access level for an extension declaration yields a lint error.
+/// The behavior of this rule is controlled by `Configuration.extensionAccessControl.placement`:
 ///
-/// Format: The access level is removed from the extension declaration and is added to each
-///         declaration in the extension; declarations with redundant access levels (e.g.
-///         `internal`, as that is the default access level) have the explicit access level removed.
+/// - `onDeclarations` (default): Access levels on extensions are moved to individual members.
+/// - `onExtension`: When all members share the same access level, it is hoisted to the extension.
+///
+/// Lint: A lint error is raised when access control placement doesn't match the configuration.
+///
+/// Format: Access control modifiers are moved to match the configured placement.
 @_spi(Rules)
 public final class NoAccessLevelOnExtensionDeclaration: SyntaxFormatRule {
   private enum State {
@@ -26,7 +29,12 @@ public final class NoAccessLevelOnExtensionDeclaration: SyntaxFormatRule {
     case topLevel
 
     /// The rule is currently inside an extension that has the given access level keyword.
+    /// Used in `onDeclarations` mode to add the keyword to members.
     case insideExtension(accessKeyword: Keyword)
+
+    /// The rule is currently inside an extension where members' access level is being hoisted.
+    /// Used in `onExtension` mode to remove the keyword from members.
+    case hoistingFromExtension(accessKeyword: Keyword)
   }
 
   /// Tracks the state of the rule to determine which action should be taken on visited
@@ -37,10 +45,20 @@ public final class NoAccessLevelOnExtensionDeclaration: SyntaxFormatRule {
   private var notesFromRewrittenMembers: [Finding.Note] = []
 
   public override func visit(_ node: ExtensionDeclSyntax) -> DeclSyntax {
+    guard case .topLevel = state else { return DeclSyntax(node) }
+
+    switch context.configuration.extensionAccessControl.placement {
+    case .onDeclarations:
+      return visitOnDeclarations(node)
+    case .onExtension:
+      return visitOnExtension(node)
+    }
+  }
+
+  // MARK: - onDeclarations mode (push access from extension to members)
+
+  private func visitOnDeclarations(_ node: ExtensionDeclSyntax) -> DeclSyntax {
     guard
-      // Skip nested extensions; these are semantic errors but they still parse successfully.
-      case .topLevel = state,
-      // Skip extensions that don't have an access level modifier.
       let accessKeyword = node.modifiers.accessLevelModifier,
       case .keyword(let keyword) = accessKeyword.name.tokenKind
     else {
@@ -99,91 +117,146 @@ public final class NoAccessLevelOnExtensionDeclaration: SyntaxFormatRule {
     return DeclSyntax(result)
   }
 
+  // MARK: - onExtension mode (hoist access from members to extension)
+
+  private func visitOnExtension(_ node: ExtensionDeclSyntax) -> DeclSyntax {
+    // Only process extensions that don't already have an access level modifier.
+    guard node.modifiers.accessLevelModifier == nil else { return DeclSyntax(node) }
+
+    // Check if all members share the same hoistable access level.
+    guard let commonAccess = commonMemberAccessLevel(node.memberBlock) else {
+      return DeclSyntax(node)
+    }
+
+    self.notesFromRewrittenMembers = []
+
+    // Visit children to remove the access keyword from each member.
+    self.state = .hoistingFromExtension(accessKeyword: commonAccess)
+    defer { self.state = .topLevel }
+
+    var result = super.visit(node).as(ExtensionDeclSyntax.self)!
+
+    // Add the common access modifier to the extension.
+    var modifier = DeclModifierSyntax(name: .keyword(commonAccess))
+    modifier.trailingTrivia = [.spaces(1)]
+    modifier.leadingTrivia = result.extensionKeyword.leadingTrivia
+    result.extensionKeyword.leadingTrivia = []
+
+    if var firstModifier = result.modifiers.first {
+      // Insert before existing modifiers (e.g. @objc).
+      firstModifier.leadingTrivia = modifier.leadingTrivia
+      modifier.leadingTrivia = []
+      result.modifiers[result.modifiers.startIndex] = firstModifier
+      result.modifiers.insert(modifier, at: result.modifiers.startIndex)
+    } else {
+      result.modifiers = .init([modifier])
+    }
+
+    diagnose(
+      .hoistAccessKeyword(keyword: TokenSyntax.keyword(commonAccess).text),
+      on: node.extensionKeyword,
+      notes: self.notesFromRewrittenMembers
+    )
+    return DeclSyntax(result)
+  }
+
+  /// Returns the common access level keyword shared by all direct members, or `nil` if members
+  /// have mixed or non-hoistable access levels.
+  ///
+  /// Only `public`, `package`, and `fileprivate` are hoistable. `private` is not hoisted because
+  /// it would change semantics (extension-level `private` means `fileprivate`). `internal` is
+  /// not hoisted because it's redundant on an extension.
+  private func commonMemberAccessLevel(_ memberBlock: MemberBlockSyntax) -> Keyword? {
+    guard !memberBlock.members.isEmpty else { return nil }
+
+    var commonAccess: Keyword?
+
+    for member in memberBlock.members {
+      let decl = member.decl
+
+      // Don't hoist when there are #if blocks — too complex to analyze.
+      if decl.is(IfConfigDeclSyntax.self) { return nil }
+
+      // Get the access level of this member.
+      guard let modifiers = decl.asProtocol(WithModifiersSyntax.self)?.modifiers,
+        let accessModifier = modifiers.accessLevelModifier,
+        case .keyword(let keyword) = accessModifier.name.tokenKind
+      else {
+        // Member has no explicit access level — can't determine a common level.
+        return nil
+      }
+
+      // Only hoist public, package, or fileprivate.
+      guard keyword == .public || keyword == .package || keyword == .fileprivate else {
+        return nil
+      }
+
+      if let existing = commonAccess {
+        guard existing == keyword else { return nil }
+      } else {
+        commonAccess = keyword
+      }
+    }
+
+    return commonAccess
+  }
+
+  // MARK: - Member visitors
+
   public override func visit(_ node: ActorDeclSyntax) -> DeclSyntax {
-    return applyingAccessModifierIfNone(to: node)
+    return processExtensionMember(node, declKeywordKeyPath: \.actorKeyword)
   }
 
   public override func visit(_ node: ClassDeclSyntax) -> DeclSyntax {
-    return applyingAccessModifierIfNone(to: node)
+    return processExtensionMember(node, declKeywordKeyPath: \.classKeyword)
   }
 
   public override func visit(_ node: EnumDeclSyntax) -> DeclSyntax {
-    return applyingAccessModifierIfNone(to: node)
+    return processExtensionMember(node, declKeywordKeyPath: \.enumKeyword)
   }
 
   public override func visit(_ node: FunctionDeclSyntax) -> DeclSyntax {
-    return applyingAccessModifierIfNone(to: node)
+    return processExtensionMember(node, declKeywordKeyPath: \.funcKeyword)
   }
 
   public override func visit(_ node: InitializerDeclSyntax) -> DeclSyntax {
-    return applyingAccessModifierIfNone(to: node)
+    return processExtensionMember(node, declKeywordKeyPath: \.initKeyword)
   }
 
   public override func visit(_ node: StructDeclSyntax) -> DeclSyntax {
-    return applyingAccessModifierIfNone(to: node)
+    return processExtensionMember(node, declKeywordKeyPath: \.structKeyword)
   }
 
   public override func visit(_ node: SubscriptDeclSyntax) -> DeclSyntax {
-    return applyingAccessModifierIfNone(to: node)
+    return processExtensionMember(node, declKeywordKeyPath: \.subscriptKeyword)
   }
 
   public override func visit(_ node: TypeAliasDeclSyntax) -> DeclSyntax {
-    return applyingAccessModifierIfNone(to: node)
+    return processExtensionMember(node, declKeywordKeyPath: \.typealiasKeyword)
   }
 
   public override func visit(_ node: VariableDeclSyntax) -> DeclSyntax {
-    return applyingAccessModifierIfNone(to: node)
+    return processExtensionMember(node, declKeywordKeyPath: \.bindingSpecifier)
   }
 
-  /// Adds `modifier` to `decl` if it doesn't already have an explicit access level modifier and
-  /// returns the new declaration.
-  ///
-  /// If `decl` already has an access level modifier, it is returned unchanged.
-  private func applyingAccessModifierIfNone(to decl: some DeclSyntaxProtocol) -> DeclSyntax {
-    // Only go further if we are applying an access level keyword and if the decl is one that
-    // allows modifiers but doesn't already have an access level modifier.
-    guard
-      case .insideExtension(let accessKeyword) = state,
-      let modifiers = decl.asProtocol(WithModifiersSyntax.self)?.modifiers,
-      modifiers.accessLevelModifier == nil
-    else {
-      return DeclSyntax(decl)
-    }
+  // MARK: - Member processing
 
-    // Create a note associated with each declaration that needs to have an access level modifier
-    // added to it.
-    self.notesFromRewrittenMembers.append(
-      Finding.Note(
-        message: .addModifierToExtensionMember(keyword: TokenSyntax.keyword(accessKeyword).text),
-        location:
-          Finding.Location(decl.startLocation(converter: context.sourceLocationConverter))
-      )
-    )
-
-    switch Syntax(decl).as(SyntaxEnum.self) {
-    case .actorDecl(let actorDecl):
-      return applyingAccessModifierIfNone(accessKeyword, to: actorDecl, declKeywordKeyPath: \.actorKeyword)
-    case .classDecl(let classDecl):
-      return applyingAccessModifierIfNone(accessKeyword, to: classDecl, declKeywordKeyPath: \.classKeyword)
-    case .enumDecl(let enumDecl):
-      return applyingAccessModifierIfNone(accessKeyword, to: enumDecl, declKeywordKeyPath: \.enumKeyword)
-    case .initializerDecl(let initDecl):
-      return applyingAccessModifierIfNone(accessKeyword, to: initDecl, declKeywordKeyPath: \.initKeyword)
-    case .functionDecl(let funcDecl):
-      return applyingAccessModifierIfNone(accessKeyword, to: funcDecl, declKeywordKeyPath: \.funcKeyword)
-    case .structDecl(let structDecl):
-      return applyingAccessModifierIfNone(accessKeyword, to: structDecl, declKeywordKeyPath: \.structKeyword)
-    case .subscriptDecl(let subscriptDecl):
-      return applyingAccessModifierIfNone(accessKeyword, to: subscriptDecl, declKeywordKeyPath: \.subscriptKeyword)
-    case .typeAliasDecl(let typeAliasDecl):
-      return applyingAccessModifierIfNone(accessKeyword, to: typeAliasDecl, declKeywordKeyPath: \.typealiasKeyword)
-    case .variableDecl(let varDecl):
-      return applyingAccessModifierIfNone(accessKeyword, to: varDecl, declKeywordKeyPath: \.bindingSpecifier)
-    default:
+  /// Dispatches to the appropriate add/remove logic based on the current state.
+  private func processExtensionMember<Decl: DeclSyntaxProtocol & WithModifiersSyntax>(
+    _ decl: Decl,
+    declKeywordKeyPath: WritableKeyPath<Decl, TokenSyntax>
+  ) -> DeclSyntax {
+    switch state {
+    case .topLevel:
       return DeclSyntax(decl)
+    case .insideExtension(let accessKeyword):
+      return applyingAccessModifierIfNone(accessKeyword, to: decl, declKeywordKeyPath: declKeywordKeyPath)
+    case .hoistingFromExtension(let accessKeyword):
+      return removingAccessModifier(accessKeyword, from: decl, declKeywordKeyPath: declKeywordKeyPath)
     }
   }
 
+  /// Adds `modifier` to `decl` if it doesn't already have an explicit access level modifier.
   private func applyingAccessModifierIfNone<Decl: DeclSyntaxProtocol & WithModifiersSyntax>(
     _ modifier: Keyword,
     to decl: Decl,
@@ -191,6 +264,14 @@ public final class NoAccessLevelOnExtensionDeclaration: SyntaxFormatRule {
   ) -> DeclSyntax {
     // If there's already an access modifier among the modifier list, bail out.
     guard decl.modifiers.accessLevelModifier == nil else { return DeclSyntax(decl) }
+
+    self.notesFromRewrittenMembers.append(
+      Finding.Note(
+        message: .addModifierToExtensionMember(keyword: TokenSyntax.keyword(modifier).text),
+        location:
+          Finding.Location(decl.startLocation(converter: context.sourceLocationConverter))
+      )
+    )
 
     var result = decl
     var modifier = DeclModifierSyntax(name: .keyword(modifier))
@@ -213,6 +294,42 @@ public final class NoAccessLevelOnExtensionDeclaration: SyntaxFormatRule {
     result.modifiers.insert(modifier, at: result.modifiers.startIndex)
     return DeclSyntax(result)
   }
+
+  /// Removes the access modifier from `decl` if it matches the keyword being hoisted.
+  private func removingAccessModifier<Decl: DeclSyntaxProtocol & WithModifiersSyntax>(
+    _ keyword: Keyword,
+    from decl: Decl,
+    declKeywordKeyPath: WritableKeyPath<Decl, TokenSyntax>
+  ) -> DeclSyntax {
+    guard let accessModifier = decl.modifiers.accessLevelModifier,
+      case .keyword(keyword) = accessModifier.name.tokenKind
+    else {
+      return DeclSyntax(decl)
+    }
+
+    self.notesFromRewrittenMembers.append(
+      Finding.Note(
+        message: .removeModifierFromExtensionMember(keyword: accessModifier.name.text),
+        location:
+          Finding.Location(decl.startLocation(converter: context.sourceLocationConverter))
+      )
+    )
+
+    var result = decl
+    let savedLeadingTrivia = accessModifier.leadingTrivia
+    result.modifiers.remove(anyOf: [keyword])
+
+    if var firstModifier = result.modifiers.first {
+      // Transfer trivia to the remaining first modifier.
+      firstModifier.leadingTrivia = savedLeadingTrivia
+      result.modifiers[result.modifiers.startIndex] = firstModifier
+    } else {
+      // No modifiers left — transfer trivia to the declaration keyword.
+      result[keyPath: declKeywordKeyPath].leadingTrivia = savedLeadingTrivia
+    }
+
+    return DeclSyntax(result)
+  }
 }
 
 extension Finding.Message {
@@ -229,5 +346,13 @@ extension Finding.Message {
 
   fileprivate static func addModifierToExtensionMember(keyword: String) -> Finding.Message {
     "add '\(keyword)' access modifier to this declaration"
+  }
+
+  fileprivate static func hoistAccessKeyword(keyword: String) -> Finding.Message {
+    "hoist '\(keyword)' access modifier from members to this extension"
+  }
+
+  fileprivate static func removeModifierFromExtensionMember(keyword: String) -> Finding.Message {
+    "remove '\(keyword)' access modifier from this declaration"
   }
 }

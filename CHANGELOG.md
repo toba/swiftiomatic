@@ -4,6 +4,7 @@
 
 ### ✨ Features
 
+- Redundancy removal rules; `RedundantNilInit`, `RedundantInit`, `RedundantRawValues`, `RedundantOptionalBinding`, and more ([#292](https://github.com/toba/swiftiomatic/issues/292))
 - Convert app from document-based to single-window `UserDefaults`-based ([#264](https://github.com/toba/swiftiomatic/issues/264))
 - Redesign rule nav; category list → detail rule list ([#259](https://github.com/toba/swiftiomatic/issues/259))
 - Rule options UX in detail view ([#261](https://github.com/toba/swiftiomatic/issues/261))
@@ -75,3 +76,4 @@
 - Fix naming convention violations; drop `-Protocol` suffix, rename `OrderedImports` booleans ([#272](https://github.com/toba/swiftiomatic/issues/272))
 - Consolidate duplicated visitor patterns in rules; evaluated and confirmed existing extraction is sufficient ([#268](https://github.com/toba/swiftiomatic/issues/268))
 - Migrate test suite from XCTest to Swift Testing; protocol-based test helpers replace class hierarchy ([#265](https://github.com/toba/swiftiomatic/issues/265))
+- Adapt swift-format codebase for Swiftiomatic; macOS 26+, Swift 6.3+ ([#266](https://github.com/toba/swiftiomatic/issues/266))

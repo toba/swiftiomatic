@@ -42,6 +42,8 @@ extension Configuration {
     config.noAssignmentInExpressions = NoAssignmentInExpressionsConfiguration()
     config.multiElementCollectionTrailingCommas = true
     config.indentBlankLines = false
+    config.extensionAccessControl = ExtensionAccessControlConfiguration()
+    config.patternLet = PatternLetConfiguration()
     return config
   }
 

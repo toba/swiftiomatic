@@ -11,7 +11,7 @@
 //===----------------------------------------------------------------------===//
 
 @_spi(Rules) import Swiftiomatic
-import _SwiftiomaticTestSupport
+import SwiftiomaticTestSupport
 import Testing
 
 // FIXME: Diagnostics should be emitted inside the comment, not at the beginning of the declaration.

@@ -11,7 +11,7 @@
 //===----------------------------------------------------------------------===//
 
 @_spi(Rules) import Swiftiomatic
-import _SwiftiomaticTestSupport
+import SwiftiomaticTestSupport
 import Testing
 
 // FIXME: We should place the diagnostic somewhere in the comment, not on the declaration.

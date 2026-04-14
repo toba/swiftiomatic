@@ -13,7 +13,7 @@
 import Swiftiomatic
 @_spi(Rules) import Swiftiomatic
 import SwiftSyntax
-import _SwiftiomaticTestSupport
+import SwiftiomaticTestSupport
 import Testing
 
 private typealias TestConfiguration = (

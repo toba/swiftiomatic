@@ -29,7 +29,7 @@ let package = Package(
       ]
     ),
     .target(
-      name: "_SwiftiomaticTestSupport",
+      name: "SwiftiomaticTestSupport",
       dependencies: [
         "Swiftiomatic",
         .product(name: "SwiftOperators", package: "swift-syntax"),
@@ -84,7 +84,7 @@ let package = Package(
       name: "SwiftiomaticPerformanceTests",
       dependencies: [
         "Swiftiomatic",
-        "_SwiftiomaticTestSupport",
+        "SwiftiomaticTestSupport",
         .product(name: "SwiftParser", package: "swift-syntax"),
         .product(name: "SwiftSyntax", package: "swift-syntax"),
       ]
@@ -93,7 +93,7 @@ let package = Package(
       name: "SwiftiomaticTests",
       dependencies: [
         "Swiftiomatic",
-        "_SwiftiomaticTestSupport",
+        "SwiftiomaticTestSupport",
         "_GenerateSwiftiomatic",
         .product(name: "Markdown", package: "swift-markdown"),
         .product(name: "SwiftOperators", package: "swift-syntax"),

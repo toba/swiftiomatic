@@ -11,7 +11,7 @@
 //===----------------------------------------------------------------------===//
 
 @_spi(Rules) import Swiftiomatic
-import _SwiftiomaticTestSupport
+import SwiftiomaticTestSupport
 import Testing
 
 @Suite
@@ -430,6 +430,247 @@ struct NoAccessLevelOnExtensionDeclarationTests: RuleTesting {
           ]
         )
       ]
+    )
+  }
+
+  // MARK: - onExtension mode
+
+  private func onExtensionConfig() -> Configuration {
+    var config = Configuration.forTesting(enabledRule: NoAccessLevelOnExtensionDeclaration.self.ruleName)
+    config.extensionAccessControl.placement = .onExtension
+    return config
+  }
+
+  @Test func hoistPublicToExtension() {
+    assertFormatting(
+      NoAccessLevelOnExtensionDeclaration.self,
+      input: """
+        1️⃣extension Foo {
+          2️⃣public func bar() {}
+          3️⃣public func baz() {}
+        }
+        """,
+      expected: """
+        public extension Foo {
+          func bar() {}
+          func baz() {}
+        }
+        """,
+      findings: [
+        FindingSpec(
+          "1️⃣",
+          message: "hoist 'public' access modifier from members to this extension",
+          notes: [
+            NoteSpec("2️⃣", message: "remove 'public' access modifier from this declaration"),
+            NoteSpec("3️⃣", message: "remove 'public' access modifier from this declaration"),
+          ]
+        )
+      ],
+      configuration: onExtensionConfig()
+    )
+  }
+
+  @Test func hoistFileprivateToExtension() {
+    assertFormatting(
+      NoAccessLevelOnExtensionDeclaration.self,
+      input: """
+        1️⃣extension Foo {
+          2️⃣fileprivate var x: Int { 1 }
+          3️⃣fileprivate var y: Int { 2 }
+        }
+        """,
+      expected: """
+        fileprivate extension Foo {
+          var x: Int { 1 }
+          var y: Int { 2 }
+        }
+        """,
+      findings: [
+        FindingSpec(
+          "1️⃣",
+          message: "hoist 'fileprivate' access modifier from members to this extension",
+          notes: [
+            NoteSpec("2️⃣", message: "remove 'fileprivate' access modifier from this declaration"),
+            NoteSpec("3️⃣", message: "remove 'fileprivate' access modifier from this declaration"),
+          ]
+        )
+      ],
+      configuration: onExtensionConfig()
+    )
+  }
+
+  @Test func hoistPackageToExtension() {
+    assertFormatting(
+      NoAccessLevelOnExtensionDeclaration.self,
+      input: """
+        1️⃣extension Foo {
+          2️⃣package func bar() {}
+        }
+        """,
+      expected: """
+        package extension Foo {
+          func bar() {}
+        }
+        """,
+      findings: [
+        FindingSpec(
+          "1️⃣",
+          message: "hoist 'package' access modifier from members to this extension",
+          notes: [
+            NoteSpec("2️⃣", message: "remove 'package' access modifier from this declaration"),
+          ]
+        )
+      ],
+      configuration: onExtensionConfig()
+    )
+  }
+
+  @Test func mixedAccessLevelsNotHoisted() {
+    assertFormatting(
+      NoAccessLevelOnExtensionDeclaration.self,
+      input: """
+        extension Foo {
+          public func bar() {}
+          private func baz() {}
+        }
+        """,
+      expected: """
+        extension Foo {
+          public func bar() {}
+          private func baz() {}
+        }
+        """,
+      findings: [],
+      configuration: onExtensionConfig()
+    )
+  }
+
+  @Test func noExplicitAccessNotHoisted() {
+    assertFormatting(
+      NoAccessLevelOnExtensionDeclaration.self,
+      input: """
+        extension Foo {
+          func bar() {}
+          func baz() {}
+        }
+        """,
+      expected: """
+        extension Foo {
+          func bar() {}
+          func baz() {}
+        }
+        """,
+      findings: [],
+      configuration: onExtensionConfig()
+    )
+  }
+
+  @Test func privateNotHoisted() {
+    assertFormatting(
+      NoAccessLevelOnExtensionDeclaration.self,
+      input: """
+        extension Foo {
+          private func bar() {}
+          private func baz() {}
+        }
+        """,
+      expected: """
+        extension Foo {
+          private func bar() {}
+          private func baz() {}
+        }
+        """,
+      findings: [],
+      configuration: onExtensionConfig()
+    )
+  }
+
+  @Test func internalNotHoisted() {
+    assertFormatting(
+      NoAccessLevelOnExtensionDeclaration.self,
+      input: """
+        extension Foo {
+          internal func bar() {}
+          internal func baz() {}
+        }
+        """,
+      expected: """
+        extension Foo {
+          internal func bar() {}
+          internal func baz() {}
+        }
+        """,
+      findings: [],
+      configuration: onExtensionConfig()
+    )
+  }
+
+  @Test func extensionAlreadyHasAccessLevelUnchanged() {
+    assertFormatting(
+      NoAccessLevelOnExtensionDeclaration.self,
+      input: """
+        public extension Foo {
+          func bar() {}
+        }
+        """,
+      expected: """
+        public extension Foo {
+          func bar() {}
+        }
+        """,
+      findings: [],
+      configuration: onExtensionConfig()
+    )
+  }
+
+  @Test func hoistPreservesOtherModifiers() {
+    assertFormatting(
+      NoAccessLevelOnExtensionDeclaration.self,
+      input: """
+        1️⃣extension Foo {
+          2️⃣@objc public static func bar() {}
+          3️⃣@objc public func baz() {}
+        }
+        """,
+      expected: """
+        public extension Foo {
+          @objc static func bar() {}
+          @objc func baz() {}
+        }
+        """,
+      findings: [
+        FindingSpec(
+          "1️⃣",
+          message: "hoist 'public' access modifier from members to this extension",
+          notes: [
+            NoteSpec("2️⃣", message: "remove 'public' access modifier from this declaration"),
+            NoteSpec("3️⃣", message: "remove 'public' access modifier from this declaration"),
+          ]
+        )
+      ],
+      configuration: onExtensionConfig()
+    )
+  }
+
+  @Test func ifConfigBlocksPreventsHoist() {
+    assertFormatting(
+      NoAccessLevelOnExtensionDeclaration.self,
+      input: """
+        extension Foo {
+          #if os(macOS)
+            public func bar() {}
+          #endif
+        }
+        """,
+      expected: """
+        extension Foo {
+          #if os(macOS)
+            public func bar() {}
+          #endif
+        }
+        """,
+      findings: [],
+      configuration: onExtensionConfig()
     )
   }
 }

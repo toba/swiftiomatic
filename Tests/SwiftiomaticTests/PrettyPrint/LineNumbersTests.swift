@@ -11,7 +11,7 @@
 //===----------------------------------------------------------------------===//
 
 import Swiftiomatic
-import _SwiftiomaticTestSupport
+import SwiftiomaticTestSupport
 import Testing
 
 @Suite

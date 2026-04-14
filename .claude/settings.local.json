@@ -116,7 +116,9 @@
       "mcp__xc-build__show_build_settings",
       "mcp__xc-build__search_crash_reports",
       "Bash(brew --prefix)",
-      "Bash(sm:*)"
+      "Bash(sm:*)",
+      "Bash(self)",
+      "Read(//tmp/**)"
     ]
   },
   "enableAllProjectMcpServers": true,

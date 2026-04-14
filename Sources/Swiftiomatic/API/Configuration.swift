@@ -49,6 +49,9 @@ public struct Configuration: Codable, Equatable, Sendable {
     case reflowMultilineStringLiterals
     case indentBlankLines
     case orderedImports
+    case acronyms
+    case extensionAccessControl
+    case patternLet
   }
 
   /// A dictionary containing the default enabled/disabled states of rules, keyed by the rules'
@@ -305,6 +308,15 @@ public struct Configuration: Codable, Equatable, Sendable {
   /// Configuration for the `OrderedImports` rule.
   public var orderedImports: OrderedImportsConfiguration
 
+  /// Configuration for the `Acronyms` rule.
+  public var acronyms: AcronymsConfiguration = AcronymsConfiguration()
+
+  /// Determines where access control modifiers are placed for extension declarations.
+  public var extensionAccessControl: ExtensionAccessControlConfiguration
+
+  /// Determines where `let`/`var` is placed in case patterns.
+  public var patternLet: PatternLetConfiguration
+
   /// Creates a new `Configuration` by loading it from a configuration file.
   public init(contentsOf url: URL) throws {
     let data = try Data(contentsOf: url)
@@ -452,6 +464,25 @@ public struct Configuration: Codable, Equatable, Sendable {
       )
       ?? defaults.orderedImports
 
+    self.acronyms =
+      try container.decodeIfPresent(
+        AcronymsConfiguration.self,
+        forKey: .acronyms
+      )
+      ?? defaults.acronyms
+    self.extensionAccessControl =
+      try container.decodeIfPresent(
+        ExtensionAccessControlConfiguration.self,
+        forKey: .extensionAccessControl
+      )
+      ?? defaults.extensionAccessControl
+    self.patternLet =
+      try container.decodeIfPresent(
+        PatternLetConfiguration.self,
+        forKey: .patternLet
+      )
+      ?? defaults.patternLet
+
     // If the `rules` key is not present at all, default it to the built-in set
     // so that the behavior is the same as if the configuration had been
     // default-initialized. To get an empty rules dictionary, one can explicitly
@@ -492,6 +523,9 @@ public struct Configuration: Codable, Equatable, Sendable {
     try container.encode(reflowMultilineStringLiterals, forKey: .reflowMultilineStringLiterals)
     try container.encode(indentBlankLines, forKey: .indentBlankLines)
     try container.encode(orderedImports, forKey: .orderedImports)
+    try container.encode(acronyms, forKey: .acronyms)
+    try container.encode(extensionAccessControl, forKey: .extensionAccessControl)
+    try container.encode(patternLet, forKey: .patternLet)
     try container.encode(rules, forKey: .rules)
   }
 
@@ -564,5 +598,54 @@ public struct OrderedImportsConfiguration: Codable, Equatable, Sendable {
   public var includeConditionalImports = false
   /// Determines whether imports are separated into groups based on their type.
   public var shouldGroupImports = true
+  public init() {}
+}
+
+/// Configuration for the `Acronyms` rule.
+public struct AcronymsConfiguration: Codable, Equatable, Sendable {
+  /// The list of acronyms to capitalize. Each entry should be fully uppercased (e.g. "URL", "ID").
+  public var words: [String] = [
+    "ID", "URL", "UUID", "HTTP", "HTTPS", "JSON", "XML", "HTML",
+    "API", "TCP", "UDP", "DNS", "SSH", "FTP", "SQL", "CSS",
+    "RGB", "RGBA", "PDF", "GIF", "PNG", "JPEG",
+  ]
+
+  public init() {}
+}
+
+/// Configuration for the `NoAccessLevelOnExtensionDeclaration` rule.
+public struct ExtensionAccessControlConfiguration: Codable, Equatable, Sendable {
+  public enum Placement: String, Codable, Sendable {
+    /// Access control modifiers should be placed on individual declarations within the extension.
+    ///
+    /// If an extension has an access level modifier, it will be removed and applied to each member.
+    case onDeclarations
+
+    /// When all members share the same access level, it should be hoisted to the extension.
+    ///
+    /// If all members have the same explicit access level (`public`, `package`, or `fileprivate`),
+    /// that modifier is moved to the extension and removed from individual members.
+    case onExtension
+  }
+
+  /// Where access control modifiers should be placed for extensions.
+  public var placement: Placement = .onDeclarations
+
+  public init() {}
+}
+
+/// Configuration for the `UseLetInEveryBoundCaseVariable` rule.
+public struct PatternLetConfiguration: Codable, Equatable, Sendable {
+  public enum Placement: String, Codable, Sendable {
+    /// Each bound variable has its own `let`/`var`: `case .foo(let x, let y)`.
+    case eachBinding
+
+    /// The `let`/`var` is hoisted to the pattern level: `case let .foo(x, y)`.
+    case outerPattern
+  }
+
+  /// Where `let`/`var` should be placed in case patterns.
+  public var placement: Placement = .eachBinding
+
   public init() {}
 }

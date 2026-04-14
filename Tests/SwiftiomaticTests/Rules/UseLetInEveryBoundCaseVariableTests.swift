@@ -11,7 +11,7 @@
 //===----------------------------------------------------------------------===//
 
 @_spi(Rules) import Swiftiomatic
-import _SwiftiomaticTestSupport
+import SwiftiomaticTestSupport
 import Testing
 
 @Suite
@@ -363,6 +363,163 @@ struct UseLetInEveryBoundCaseVariableTests: RuleTesting {
           message: "move this 'var' keyword inside the 'case' pattern, before each of the bound variables"
         ),
       ]
+    )
+  }
+
+  // MARK: - outerPattern mode (hoist)
+
+  private func hoistConfig() -> Configuration {
+    var config = Configuration.forTesting(enabledRule: UseLetInEveryBoundCaseVariable.self.ruleName)
+    config.patternLet.placement = .outerPattern
+    return config
+  }
+
+  @Test func hoistSwitchCase() {
+    assertFormatting(
+      UseLetInEveryBoundCaseVariable.self,
+      input: """
+        switch DataPoint.labeled("hello", 100) {
+        case 1️⃣.labeled(let label, let value): break
+        case .labeled(label, let value): break
+        case let .labeled(label, value): break
+        case 2️⃣(let label, let value): break
+        }
+        """,
+      expected: """
+        switch DataPoint.labeled("hello", 100) {
+        case let .labeled(label, value): break
+        case .labeled(label, let value): break
+        case let .labeled(label, value): break
+        case let (label, value): break
+        }
+        """,
+      findings: [
+        FindingSpec(
+          "1️⃣",
+          message: "move 'let' keyword to precede the 'case' pattern"
+        ),
+        FindingSpec(
+          "2️⃣",
+          message: "move 'let' keyword to precede the 'case' pattern"
+        ),
+      ],
+      configuration: hoistConfig()
+    )
+  }
+
+  @Test func hoistIfCase() {
+    assertFormatting(
+      UseLetInEveryBoundCaseVariable.self,
+      input: """
+        if case 1️⃣.labeled(let label, let value) = DataPoint.labeled("hello", 100) {}
+        """,
+      expected: """
+        if case let .labeled(label, value) = DataPoint.labeled("hello", 100) {}
+        """,
+      findings: [
+        FindingSpec(
+          "1️⃣",
+          message: "move 'let' keyword to precede the 'case' pattern"
+        ),
+      ],
+      configuration: hoistConfig()
+    )
+  }
+
+  @Test func hoistVarSpecifier() {
+    assertFormatting(
+      UseLetInEveryBoundCaseVariable.self,
+      input: """
+        switch x {
+        case 1️⃣.foo(var a, var b): break
+        }
+        """,
+      expected: """
+        switch x {
+        case var .foo(a, b): break
+        }
+        """,
+      findings: [
+        FindingSpec(
+          "1️⃣",
+          message: "move 'var' keyword to precede the 'case' pattern"
+        ),
+      ],
+      configuration: hoistConfig()
+    )
+  }
+
+  @Test func hoistWithWildcard() {
+    // Wildcard arguments may not be PatternExprSyntax in swift-syntax.
+    // Only hoist when all arguments are explicit bindings.
+    assertFormatting(
+      UseLetInEveryBoundCaseVariable.self,
+      input: """
+        switch x {
+        case .foo(let a, _): break
+        }
+        """,
+      expected: """
+        switch x {
+        case .foo(let a, _): break
+        }
+        """,
+      findings: [],
+      configuration: hoistConfig()
+    )
+  }
+
+  @Test func noHoistMixedLetVar() {
+    assertFormatting(
+      UseLetInEveryBoundCaseVariable.self,
+      input: """
+        switch x {
+        case .foo(let a, var b): break
+        }
+        """,
+      expected: """
+        switch x {
+        case .foo(let a, var b): break
+        }
+        """,
+      findings: [],
+      configuration: hoistConfig()
+    )
+  }
+
+  @Test func noHoistPartialBindings() {
+    assertFormatting(
+      UseLetInEveryBoundCaseVariable.self,
+      input: """
+        switch x {
+        case .labeled(label, let value): break
+        }
+        """,
+      expected: """
+        switch x {
+        case .labeled(label, let value): break
+        }
+        """,
+      findings: [],
+      configuration: hoistConfig()
+    )
+  }
+
+  @Test func alreadyHoistedUnchanged() {
+    assertFormatting(
+      UseLetInEveryBoundCaseVariable.self,
+      input: """
+        switch x {
+        case let .foo(a, b): break
+        }
+        """,
+      expected: """
+        switch x {
+        case let .foo(a, b): break
+        }
+        """,
+      findings: [],
+      configuration: hoistConfig()
     )
   }
 }

@@ -15,7 +15,7 @@ import SwiftOperators
 import SwiftParser
 import SwiftSyntax
 import Testing
-import _SwiftiomaticTestSupport
+import SwiftiomaticTestSupport
 
 @Suite
 struct SwiftiomaticFormatterSelectionTests {

@@ -12,7 +12,7 @@
 
 import Swiftiomatic
 import SwiftSyntax
-import _SwiftiomaticTestSupport
+import SwiftiomaticTestSupport
 import Testing
 
 @Suite

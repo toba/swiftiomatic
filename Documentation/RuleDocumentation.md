@@ -10,18 +10,34 @@ automatically.
 
 Here's the list of available rules:
 
+- [Acronyms](#Acronyms)
 - [AllPublicDeclarationsHaveDocumentation](#AllPublicDeclarationsHaveDocumentation)
 - [AlwaysUseLiteralForEmptyCollectionInit](#AlwaysUseLiteralForEmptyCollectionInit)
 - [AlwaysUseLowerCamelCase](#AlwaysUseLowerCamelCase)
 - [AmbiguousTrailingClosureOverload](#AmbiguousTrailingClosureOverload)
+- [AndOperator](#AndOperator)
+- [AnyObjectProtocol](#AnyObjectProtocol)
+- [ApplicationMain](#ApplicationMain)
+- [AssertionFailures](#AssertionFailures)
 - [AvoidRetroactiveConformances](#AvoidRetroactiveConformances)
 - [BeginDocumentationCommentWithOneLineSummary](#BeginDocumentationCommentWithOneLineSummary)
 - [DoNotUseSemicolons](#DoNotUseSemicolons)
 - [DontRepeatTypeInStaticProperties](#DontRepeatTypeInStaticProperties)
+- [EmptyBraces](#EmptyBraces)
+- [EmptyExtensions](#EmptyExtensions)
+- [EnumNamespaces](#EnumNamespaces)
+- [FileMacro](#FileMacro)
 - [FileScopedDeclarationPrivacy](#FileScopedDeclarationPrivacy)
 - [FullyIndirectEnum](#FullyIndirectEnum)
+- [GenericExtensions](#GenericExtensions)
 - [GroupNumericLiterals](#GroupNumericLiterals)
+- [HoistAwait](#HoistAwait)
+- [HoistTry](#HoistTry)
 - [IdentifiersMustBeASCII](#IdentifiersMustBeASCII)
+- [InitCoderUnavailable](#InitCoderUnavailable)
+- [IsEmpty](#IsEmpty)
+- [ModifierOrder](#ModifierOrder)
+- [ModifiersOnSameLine](#ModifiersOnSameLine)
 - [NeverForceUnwrap](#NeverForceUnwrap)
 - [NeverUseForceTry](#NeverUseForceTry)
 - [NeverUseImplicitlyUnwrappedOptionals](#NeverUseImplicitlyUnwrappedOptionals)
@@ -31,6 +47,7 @@ Here's the list of available rules:
 - [NoCasesWithOnlyFallthrough](#NoCasesWithOnlyFallthrough)
 - [NoEmptyLinesOpeningClosingBraces](#NoEmptyLinesOpeningClosingBraces)
 - [NoEmptyTrailingClosureParentheses](#NoEmptyTrailingClosureParentheses)
+- [NoExplicitOwnership](#NoExplicitOwnership)
 - [NoLabelsInCasePatterns](#NoLabelsInCasePatterns)
 - [NoLeadingUnderscores](#NoLeadingUnderscores)
 - [NoParensAroundConditions](#NoParensAroundConditions)
@@ -41,8 +58,33 @@ Here's the list of available rules:
 - [OneVariableDeclarationPerLine](#OneVariableDeclarationPerLine)
 - [OnlyOneTrailingClosureArgument](#OnlyOneTrailingClosureArgument)
 - [OrderedImports](#OrderedImports)
+- [PreferCountWhere](#PreferCountWhere)
+- [PreferKeyPath](#PreferKeyPath)
+- [RedundantAsync](#RedundantAsync)
+- [RedundantBackticks](#RedundantBackticks)
+- [RedundantBreak](#RedundantBreak)
+- [RedundantClosure](#RedundantClosure)
+- [RedundantEquatable](#RedundantEquatable)
+- [RedundantExtensionACL](#RedundantExtensionACL)
+- [RedundantInit](#RedundantInit)
+- [RedundantInternal](#RedundantInternal)
+- [RedundantLet](#RedundantLet)
+- [RedundantLetError](#RedundantLetError)
+- [RedundantNilInit](#RedundantNilInit)
+- [RedundantObjc](#RedundantObjc)
+- [RedundantOptionalBinding](#RedundantOptionalBinding)
+- [RedundantProperty](#RedundantProperty)
+- [RedundantPublic](#RedundantPublic)
+- [RedundantRawValues](#RedundantRawValues)
+- [RedundantSendable](#RedundantSendable)
+- [RedundantStaticSelf](#RedundantStaticSelf)
+- [RedundantThrows](#RedundantThrows)
+- [RedundantType](#RedundantType)
+- [RedundantTypedThrows](#RedundantTypedThrows)
+- [RedundantViewBuilder](#RedundantViewBuilder)
 - [ReplaceForEachWithForLoop](#ReplaceForEachWithForLoop)
 - [ReturnVoidInsteadOfEmptyTuple](#ReturnVoidInsteadOfEmptyTuple)
+- [SimplifyGenericConstraints](#SimplifyGenericConstraints)
 - [TypeNamesShouldBeCapitalized](#TypeNamesShouldBeCapitalized)
 - [UseEarlyExits](#UseEarlyExits)
 - [UseExplicitNilCheckInConditions](#UseExplicitNilCheckInConditions)
@@ -53,6 +95,23 @@ Here's the list of available rules:
 - [UseTripleSlashForDocumentationComments](#UseTripleSlashForDocumentationComments)
 - [UseWhereClausesInForLoops](#UseWhereClausesInForLoops)
 - [ValidateDocumentationComments](#ValidateDocumentationComments)
+- [YodaConditions](#YodaConditions)
+
+### Acronyms
+
+Capitalize acronyms when the first character is capitalized.
+
+When an identifier contains a titlecased acronym (e.g. `Url`, `Json`, `Id`),
+it should be fully uppercased (e.g. `URL`, `JSON`, `ID`) for consistency with
+Swift naming conventions.
+
+The list of recognized acronyms is configurable via `Configuration.acronyms`.
+
+Lint: An identifier with a titlecased acronym raises a warning.
+
+Format: The titlecased acronym is replaced with the uppercased form.
+
+`Acronyms` rule can format your code automatically.
 
 ### AllPublicDeclarationsHaveDocumentation
 
@@ -96,6 +155,64 @@ Lint: If two overloaded functions with one closure parameter appear in the same 
 
 `AmbiguousTrailingClosureOverload` is a linter-only rule.
 
+### AndOperator
+
+Prefer comma over `&&` in `if`, `guard`, and `while` conditions.
+
+Swift condition lists use commas to separate independent boolean conditions,
+which short-circuit identically to `&&` but read more naturally and enable
+individual conditions to use optional binding or pattern matching.
+
+This rule only fires when `&&` is the top-level operator in a condition element
+(no `||` mixed in at the same precedence level, since that would change semantics).
+
+Lint: Using `&&` in a condition list raises a warning.
+
+Format: `&&` is replaced with commas, splitting the condition into separate
+condition elements.
+
+`AndOperator` rule can format your code automatically.
+
+### AnyObjectProtocol
+
+Prefer `AnyObject` over `class` for class-constrained protocols.
+
+The `class` keyword in protocol inheritance clauses was replaced by `AnyObject` in Swift 4.1.
+Using `AnyObject` is the modern, preferred spelling.
+
+Lint: A protocol inheriting from `class` instead of `AnyObject` raises a warning.
+
+Format: `class` is replaced with `AnyObject` in the inheritance clause.
+
+`AnyObjectProtocol` rule can format your code automatically.
+
+### ApplicationMain
+
+Replace `@UIApplicationMain` and `@NSApplicationMain` with `@main`.
+
+These attributes were deprecated in favor of `@main` (SE-0383, Swift 5.3+).
+
+Lint: Using `@UIApplicationMain` or `@NSApplicationMain` raises a warning.
+
+Format: The attribute is replaced with `@main`.
+
+`ApplicationMain` rule can format your code automatically.
+
+### AssertionFailures
+
+Replace `assert(false, ...)` with `assertionFailure(...)` and
+`precondition(false, ...)` with `preconditionFailure(...)`.
+
+The `Failure` variants more clearly express intent: the code path should never be reached.
+They also have `Never` return type, enabling the compiler to prove exhaustiveness.
+
+Lint: Using `assert(false, ...)` or `precondition(false, ...)` raises a warning.
+
+Format: The call is replaced with the corresponding `Failure` variant, removing the
+`false` argument.
+
+`AssertionFailures` rule can format your code automatically.
+
 ### AvoidRetroactiveConformances
 
 `@retroactive` conformances are forbidden.
@@ -134,6 +251,65 @@ Lint: Static properties of a type that return that type will yield a lint error.
 
 `DontRepeatTypeInStaticProperties` is a linter-only rule.
 
+### EmptyBraces
+
+Remove whitespace inside empty braces.
+
+Empty brace pairs should have no whitespace between them: `{}` instead of `{ }` or
+multi-line empty bodies. Braces containing comments are left unchanged.
+
+Lint: If empty braces contain whitespace, a lint warning is raised.
+
+Format: The whitespace is removed, collapsing the braces to `{}`.
+
+`EmptyBraces` rule can format your code automatically.
+
+### EmptyExtensions
+
+Remove empty extensions that do not add protocol conformance.
+
+An extension with no members and no inheritance clause serves no purpose and should be removed.
+Extensions that add protocol conformance (e.g. `extension Foo: Equatable {}`) are kept even
+when empty, because the conformance itself is meaningful.
+
+Extensions containing only comments are preserved.
+
+Lint: If an empty, non-conforming extension is found, a lint warning is raised.
+
+Format: The entire extension declaration is removed.
+
+`EmptyExtensions` rule can format your code automatically.
+
+### EnumNamespaces
+
+Convert types hosting only static members into enums.
+
+An empty enum is the canonical way to create a namespace in Swift because it cannot
+be instantiated. Structs and classes that contain only static members serve the same
+purpose but can be accidentally instantiated.
+
+This rule skips types with inheritance clauses, attributes, generic parameters,
+initializers, or any instance members.
+
+Lint: A struct or final class containing only static members raises a warning.
+
+Format: The `struct` or `final class` keyword is replaced with `enum`.
+
+`EnumNamespaces` rule can format your code automatically.
+
+### FileMacro
+
+Enforce consistent use of `#file` or `#fileID`.
+
+In Swift 6+, `#file` and `#fileID` have identical behavior (both produce `Module/File.swift`).
+This rule standardizes usage to `#fileID` by default. `#filePath` is unaffected.
+
+Lint: Using the non-preferred file macro yields a lint warning.
+
+Format: The macro is replaced with the preferred spelling.
+
+`FileMacro` rule can format your code automatically.
+
 ### FileScopedDeclarationPrivacy
 
 Declarations at file scope with effective private access should be consistently declared as
@@ -159,6 +335,24 @@ Format: Enums where all cases are `indirect` will be rewritten such that the enu
 
 `FullyIndirectEnum` rule can format your code automatically.
 
+### GenericExtensions
+
+Use angle brackets (`extension Array<Foo>`) for generic type extensions instead of
+type constraints (`extension Array where Element == Foo`).
+
+Swift 5.7+ supports angle bracket syntax in extension declarations. When a `where`
+clause constrains all generic parameters of a known type to concrete types,
+the angle bracket form is more concise.
+
+Known types: `Array`, `Set`, `Optional`, `Dictionary`, `Collection`, `Sequence`.
+
+Lint: An extension with a `where` clause that can be replaced by angle brackets raises a warning.
+
+Format: The `where` clause constraints are moved into angle bracket syntax on the
+extended type.
+
+`GenericExtensions` rule can format your code automatically.
+
 ### GroupNumericLiterals
 
 Numeric literals should be grouped with `_`s to delimit common separators.
@@ -176,6 +370,45 @@ TODO: Handle floating point literals.
 
 `GroupNumericLiterals` rule can format your code automatically.
 
+### HoistAwait
+
+Move inline `await` keyword(s) to the start of the expression.
+
+When `await` appears inside function call arguments, it can be hoisted to wrap the
+entire call expression. This is clearer and avoids redundant `await` keywords when
+multiple arguments are async.
+
+For example, `foo(await bar(), await baz())` should be `await foo(bar(), baz())`.
+
+This rule does not flag `await` inside closures (which have their own async context)
+or when the call is already wrapped in `await`.
+
+Lint: Using `await` inside a function call argument raises a warning.
+
+Format: `await` is removed from arguments and added to wrap the call expression.
+
+`HoistAwait` rule can format your code automatically.
+
+### HoistTry
+
+Move inline `try` keyword(s) to the start of the expression.
+
+When `try` appears inside function call arguments, it can be hoisted to wrap the
+entire call expression. This is clearer and avoids redundant `try` keywords when
+multiple arguments throw.
+
+For example, `foo(try bar(), try baz())` should be `try foo(bar(), baz())`.
+
+This rule does not flag `try` inside closures (which have their own throwing context)
+or when the call is already wrapped in `try`. Only plain `try` is hoisted (not
+`try?` or `try!`).
+
+Lint: Using `try` inside a function call argument raises a warning.
+
+Format: `try` is removed from arguments and added to wrap the call expression.
+
+`HoistTry` rule can format your code automatically.
+
 ### IdentifiersMustBeASCII
 
 All identifiers must be ASCII.
@@ -183,6 +416,67 @@ All identifiers must be ASCII.
 Lint: If an identifier contains non-ASCII characters, a lint error is raised.
 
 `IdentifiersMustBeASCII` is a linter-only rule.
+
+### InitCoderUnavailable
+
+Add `@available(*, unavailable)` to `required init(coder:)` that only calls `fatalError`.
+
+When a `UIView` or `UIViewController` subclass provides a `required init(coder:)` that
+immediately calls `fatalError`, it should be marked `@available(*, unavailable)` so the
+compiler prevents it from being called.
+
+Lint: A `required init(coder:)` stub without `@available(*, unavailable)` yields a warning.
+
+Format: The `@available(*, unavailable)` attribute is added.
+
+`InitCoderUnavailable` rule can format your code automatically.
+
+### IsEmpty
+
+Prefer `isEmpty` over comparing `count` against zero.
+
+Checking `count == 0` or `count != 0` (or `count > 0`) is less expressive and potentially less
+efficient than using `isEmpty`. Collections conforming to `Collection` guarantee O(1) `isEmpty`
+but `count` may be O(n) for some types (e.g. lazy sequences conforming to `Collection`).
+
+When the receiver is optional (`foo?.count == 0`), the replacement uses explicit boolean
+comparison (`foo?.isEmpty == true`) to preserve semantics.
+
+This rule is opt-in because not every type with a `count` property also provides `isEmpty`.
+
+Lint: Using `.count == 0`, `.count != 0`, or `.count > 0` raises a warning.
+
+Format: The comparison is replaced with `.isEmpty` or `!.isEmpty`.
+
+`IsEmpty` rule can format your code automatically.
+
+### ModifierOrder
+
+Enforce consistent ordering for declaration modifiers.
+
+Modifiers should appear in a canonical order: access control, then `override`, then
+`class`/`static`, then other modifiers. For example, `public static func` not
+`static public func`.
+
+Lint: If modifiers are out of order, a lint warning is raised.
+
+Format: The modifiers are reordered to match the canonical order.
+
+`ModifierOrder` rule can format your code automatically.
+
+### ModifiersOnSameLine
+
+Ensure all modifiers are on the same line as the declaration keyword.
+
+Modifiers (not attributes) that appear on separate lines from the declaration keyword
+are joined onto the same line. Attributes may remain on their own lines.
+
+Lint: If any modifier is on a different line than the declaration keyword, a lint warning
+is raised.
+
+Format: Newlines between modifiers and the declaration keyword are replaced with spaces.
+
+`ModifiersOnSameLine` rule can format your code automatically.
 
 ### NeverForceUnwrap
 
@@ -230,11 +524,14 @@ Lint: Declaring a property with an implicitly unwrapped type yields a lint error
 
 Specifying an access level for an extension declaration is forbidden.
 
-Lint: Specifying an access level for an extension declaration yields a lint error.
+The behavior of this rule is controlled by `Configuration.extensionAccessControl.placement`:
 
-Format: The access level is removed from the extension declaration and is added to each
-        declaration in the extension; declarations with redundant access levels (e.g.
-        `internal`, as that is the default access level) have the explicit access level removed.
+- `onDeclarations` (default): Access levels on extensions are moved to individual members.
+- `onExtension`: When all members share the same access level, it is hoisted to the extension.
+
+Lint: A lint error is raised when access control placement doesn't match the configuration.
+
+Format: Access control modifiers are moved to match the configured placement.
 
 `NoAccessLevelOnExtensionDeclaration` rule can format your code automatically.
 
@@ -292,6 +589,20 @@ Lint: If a function call with a trailing closure has an empty argument list with
 Format: Empty parentheses in function calls with trailing closures will be removed.
 
 `NoEmptyTrailingClosureParentheses` rule can format your code automatically.
+
+### NoExplicitOwnership
+
+Remove explicit `borrowing` and `consuming` ownership modifiers.
+
+Ownership modifiers are an advanced feature that most code does not need. When present
+on function declarations (e.g. `consuming func move()`) or parameter types
+(e.g. `func foo(_ bar: consuming Bar)`), they are removed.
+
+Lint: If an explicit `borrowing` or `consuming` modifier is found, a lint warning is raised.
+
+Format: The ownership modifier is removed.
+
+`NoExplicitOwnership` rule can format your code automatically.
 
 ### NoLabelsInCasePatterns
 
@@ -425,6 +736,377 @@ Format: Imports will be reordered and (optionally) grouped at the top of the fil
 
 `OrderedImports` rule can format your code automatically.
 
+### PreferCountWhere
+
+Prefer `count(where:)` over `filter(_:).count`.
+
+The `count(where:)` method (Swift 6.0+) is more expressive and avoids allocating an
+intermediate array just to count its elements.
+
+Lint: Using `.filter { ... }.count` raises a warning suggesting `count(where:)`.
+
+Format: `.filter { ... }.count` is replaced with `.count(where: { ... })`.
+
+`PreferCountWhere` rule can format your code automatically.
+
+### PreferKeyPath
+
+Convert trivial `map { $0.foo }` closures to keyPath-based syntax.
+
+When a closure's only expression is a property access on `$0`, the closure can be
+replaced with a keyPath expression: `map(\.foo)`. This is more concise and expressive.
+
+Applies to `map`, `flatMap`, `compactMap`, `allSatisfy`, `filter`, and `contains(where:)`.
+
+Only fires for simple property chains (not method calls, subscripts, or complex expressions).
+
+Lint: A trivial `{ $0.property }` closure raises a warning.
+
+Format: The closure is replaced with a keyPath expression.
+
+`PreferKeyPath` rule can format your code automatically.
+
+### RedundantAsync
+
+Flag `async` on functions that contain no `await` expressions.
+
+If a function is marked `async` but its body never uses `await`, the `async` is likely
+unnecessary. Removing it simplifies the API and removes the requirement for callers
+to use `await`.
+
+This rule is opt-in because some functions are intentionally async for protocol
+conformance or future-proofing even if they don't currently await.
+
+Lint: If an `async` function has no `await` in its body, a lint warning is raised.
+
+`RedundantAsync` is a linter-only rule.
+
+### RedundantBackticks
+
+Remove backticks around identifiers that are not reserved keywords.
+
+Backticks are only needed when an identifier is a Swift keyword (e.g. `` `class` ``,
+`` `func` ``, `` `return` ``). Contextual keywords like `async`, `await`, `some`, `any`
+do not need backticks when used as identifiers.
+
+Lint: If unnecessary backticks are found, a lint warning is raised.
+
+`RedundantBackticks` is a linter-only rule.
+
+### RedundantBreak
+
+Remove `break` at the end of switch cases.
+
+In Swift, switch cases do not fall through by default. A trailing `break` at the end of a
+case body is therefore redundant.
+
+This rule does NOT remove labeled `break` statements (e.g. `break outerLoop`), which transfer
+control to a specific enclosing statement. It also does not remove `break` when it is the
+sole statement in a case body (since at least one statement is required).
+
+Lint: If a redundant `break` is found at the end of a switch case, a lint warning is raised.
+
+`RedundantBreak` is a linter-only rule.
+
+### RedundantClosure
+
+Remove immediately-invoked closures containing a single expression.
+
+A closure that is immediately called and contains only a single expression or return
+statement can be replaced with just the expression.
+
+For example: `let x = { return 42 }()` → `let x = 42`
+And: `let x = { someValue }()` → `let x = someValue`
+
+This rule does NOT fire when the closure captures variables, has parameters, or
+contains multiple statements.
+
+Lint: If a redundant immediately-invoked closure is found, a lint warning is raised.
+
+`RedundantClosure` is a linter-only rule.
+
+### RedundantEquatable
+
+Flag hand-written `Equatable` conformance on structs and enums that qualify for
+compiler-synthesized conformance.
+
+The compiler synthesizes `Equatable` for structs (all stored properties are `Equatable`)
+and enums (all associated values are `Equatable`). A manual `==` implementation that
+simply compares all members in order is redundant.
+
+This rule uses a heuristic: it flags `==` implementations on `Equatable` types where
+the body is a single return statement comparing all stored properties with `&&`.
+It does NOT perform type-checking — it relies on structural patterns.
+
+This rule is opt-in due to the heuristic nature.
+
+Lint: If a likely-redundant `Equatable` implementation is found, a lint warning is raised.
+
+`RedundantEquatable` is a linter-only rule.
+
+### RedundantExtensionACL
+
+Remove access control on extension members that match the extension's own access level.
+
+When an extension declares an access level (e.g. `public extension Foo`), members that
+repeat that same access level are redundant.
+
+For example: `public extension Foo { public func bar() {} }` — the `public` on `bar`
+is redundant because it matches the extension's access level.
+
+Lint: If a member has the same access level as its containing extension, a lint warning is raised.
+
+`RedundantExtensionACL` is a linter-only rule.
+
+### RedundantInit
+
+Remove explicit `.init` when calling a type initializer directly.
+
+`Foo.init(args)` can be written as `Foo(args)` when the type is explicit.
+The `.init` is only necessary when the type is inferred (e.g. `.init(args)`).
+
+This rule only fires when `init` is called on a named base expression (not on `.init()`
+shorthand, method chains, or subscripts).
+
+Lint: If an explicit `.init` is found on a direct type reference, a lint warning is raised.
+
+Format: The `.init` member access is removed, leaving the type called directly.
+
+`RedundantInit` rule can format your code automatically.
+
+### RedundantInternal
+
+Remove explicit `internal` access modifier since it is the default.
+
+The `internal` access level is the default for all declarations in Swift.
+Writing it explicitly is redundant noise.
+
+This rule does NOT remove `internal(set)`, which is meaningful on properties with a higher
+getter access level (e.g. `public internal(set) var`).
+
+Lint: If an explicit `internal` modifier is found, a lint warning is raised.
+
+Format: The redundant `internal` modifier is removed.
+
+`RedundantInternal` rule can format your code automatically.
+
+### RedundantLet
+
+Remove `let` from `let _ = expr` since `_ = expr` is equivalent and shorter.
+
+When a variable binding uses the wildcard pattern `_`, the `let` keyword is unnecessary.
+The assignment `_ = expr` discards the result identically.
+
+This rule only applies to top-level `let _ = expr` bindings, not to wildcard patterns
+inside `switch` cases, `if case`, or tuple destructuring where other bindings are present.
+
+Lint: If `let _ = expr` is found at statement level, a lint warning is raised.
+
+Format: The `let` keyword is removed, producing `_ = expr`.
+
+`RedundantLet` is a linter-only rule.
+
+### RedundantLetError
+
+Remove `let error` from `catch` clauses where `error` is implicitly bound.
+
+In a `catch` clause without a pattern, the caught error is implicitly available as `error`.
+Writing `catch let error` is therefore redundant.
+
+This rule only fires when the catch item is exactly `let error` (no type cast, no where clause,
+and no other catch items in the same clause).
+
+Lint: If `catch let error` is found, a lint warning is raised.
+
+Format: The redundant `let error` pattern is removed.
+
+`RedundantLetError` rule can format your code automatically.
+
+### RedundantNilInit
+
+Remove `= nil` from optional `var` declarations where `nil` is the default.
+
+Optional `var` properties and local variables default to `nil` without an explicit initializer.
+Writing `= nil` is redundant.
+
+This rule only applies to `var` declarations with an explicit optional type annotation
+(e.g. `T?`, `Optional<T>`). It does not apply to `let` declarations, or to `var`
+declarations inside protocols (where there is no stored property).
+
+Lint: If `= nil` is found on an eligible optional `var`, a lint warning is raised.
+
+Format: The redundant `= nil` initializer is removed.
+
+`RedundantNilInit` rule can format your code automatically.
+
+### RedundantObjc
+
+Remove `@objc` when it is already implied by another attribute.
+
+The `@objc` attribute is automatically implied by `@IBAction`, `@IBOutlet`, `@IBDesignable`,
+`@IBInspectable`, `@NSManaged`, and `@GKInspectable`. Writing `@objc` alongside any of these
+is redundant.
+
+This rule does NOT flag `@objc` when it specifies an explicit Objective-C name
+(e.g. `@objc(mySelector:)`), since that provides information beyond just marking the
+declaration as ObjC-visible.
+
+Lint: If a redundant `@objc` is found, a lint warning is raised.
+
+`RedundantObjc` is a linter-only rule.
+
+### RedundantOptionalBinding
+
+Use shorthand optional binding `if let x` instead of `if let x = x` (SE-0345).
+
+When an optional binding's initializer is a bare identifier matching the pattern name,
+the initializer is redundant and can be removed using Swift 5.7+ shorthand syntax.
+
+This applies to `if let`, `guard let`, and `while let` bindings.
+
+Lint: If a redundant optional binding initializer is found, a lint warning is raised.
+
+Format: The redundant initializer is removed.
+
+`RedundantOptionalBinding` rule can format your code automatically.
+
+### RedundantProperty
+
+Remove a property that is assigned and immediately returned on the next line.
+
+When a `let` binding is followed immediately by a `return` of the same identifier,
+the binding is unnecessary. The expression can be returned directly.
+
+For example: `let result = expr; return result` → `return expr`.
+
+This rule only fires when the variable is a simple `let` with one binding, no type
+annotation, and the very next statement is `return <same identifier>`.
+
+Lint: If a redundant property-then-return is found, a lint warning is raised.
+
+`RedundantProperty` is a linter-only rule.
+
+### RedundantPublic
+
+Remove `public` on members inside non-public types where it has no effect.
+
+A `public` member inside an `internal`, `private`, or `fileprivate` type is effectively
+limited to the enclosing type's access level. The `public` modifier is misleading.
+
+This rule checks struct, class, enum, and actor declarations. It does NOT flag
+members of `public` or `package` types (where `public` is meaningful).
+
+Lint: If a `public` member is found inside a non-public type, a lint warning is raised.
+
+`RedundantPublic` is a linter-only rule.
+
+### RedundantRawValues
+
+Remove raw values that match the enum case name for `String`-backed enums.
+
+When a `String` enum case's raw value is identical to its name (e.g. `case foo = "foo"`),
+the raw value is redundant because Swift automatically assigns the case name as the raw value.
+
+Lint: If a redundant raw value is found, a lint warning is raised.
+
+Format: The redundant raw value initializer is removed.
+
+`RedundantRawValues` rule can format your code automatically.
+
+### RedundantSendable
+
+Remove explicit `Sendable` conformance from non-public structs and enums.
+
+In Swift 6, the compiler automatically infers `Sendable` for structs and enums whose
+stored properties/associated values are all `Sendable`, as long as the type is not `public`.
+Explicitly declaring `: Sendable` on these types is redundant.
+
+This rule only flags non-public structs and enums. Classes, actors, and public types
+are not checked because their `Sendable` conformance is either not inferred or must
+be explicit for ABI stability.
+
+Lint: If a redundant `Sendable` conformance is found, a lint warning is raised.
+
+`RedundantSendable` is a linter-only rule.
+
+### RedundantStaticSelf
+
+Remove `Self.` prefix in static context where the type is already inferred.
+
+Inside a static method or static computed property, `Self.` is redundant when accessing
+other static members of the same type.
+
+For example, inside `static func make()`, writing `Self.defaultValue` can be simplified
+to just `defaultValue`.
+
+Lint: If a redundant `Self.` is found in a static context, a lint warning is raised.
+
+`RedundantStaticSelf` is a linter-only rule.
+
+### RedundantThrows
+
+Flag `throws` on functions that contain no `throw` or `try` expressions.
+
+If a function is marked `throws` but its body never uses `throw` or `try`, the `throws`
+is likely unnecessary.
+
+This rule is opt-in because some functions are intentionally throwing for protocol
+conformance or future-proofing even if they don't currently throw.
+
+Lint: If a `throws` function has no `throw` or `try` in its body, a lint warning is raised.
+
+`RedundantThrows` is a linter-only rule.
+
+### RedundantType
+
+Remove redundant type annotations when the type is obvious from the initializer.
+
+A type annotation is redundant when it exactly matches what the compiler would infer,
+such as `let x: Foo = Foo(...)` or `let x: Bool = true`.
+
+This rule fires for:
+- Constructor calls matching the annotation: `let x: Foo = Foo(...)` → `let x = Foo(...)`
+- Boolean literals: `let x: Bool = true` → `let x = true`
+- String literals: `let x: String = "hello"` → `let x = "hello"`
+
+It does NOT fire for numeric literals (which could be Int, Double, Float, etc.) or
+collection literals (which could be Array, Set, etc.).
+
+Lint: If a redundant type annotation is found, a lint warning is raised.
+
+`RedundantType` is a linter-only rule.
+
+### RedundantTypedThrows
+
+Simplify redundant typed throws annotations.
+
+`throws(any Error)` is equivalent to plain `throws` and should be simplified.
+`throws(Never)` means the function cannot throw and the throws clause should be removed.
+
+Lint: If a redundant typed throws is found, a lint warning is raised.
+
+`RedundantTypedThrows` is a linter-only rule.
+
+### RedundantViewBuilder
+
+Remove `@ViewBuilder` when the body is a single expression.
+
+`@ViewBuilder` is unnecessary on computed properties and functions that return a single
+view expression, since Swift can infer the return type without the result builder.
+
+This rule flags `@ViewBuilder` on:
+- Computed properties with a single-expression getter
+- Functions with a single-expression body
+
+It does NOT flag `@ViewBuilder` on:
+- Closures (parameters)
+- Bodies with multiple statements, `if/else`, `switch`, or `ForEach`
+- Protocol requirements
+
+Lint: If a redundant `@ViewBuilder` is found, a lint warning is raised.
+
+`RedundantViewBuilder` is a linter-only rule.
+
 ### ReplaceForEachWithForLoop
 
 Replace `forEach` with `for-in` loop unless its argument is a function reference.
@@ -445,6 +1127,23 @@ Lint: Returning `()` in a signature yields a lint error.
 Format: `-> ()` is replaced with `-> Void`
 
 `ReturnVoidInsteadOfEmptyTuple` rule can format your code automatically.
+
+### SimplifyGenericConstraints
+
+Use inline generic constraints (`<T: Foo>`) instead of where clauses
+(`<T> where T: Foo`) for simple protocol conformance constraints.
+
+When a generic parameter has a simple conformance constraint in the `where` clause,
+it can be moved inline into the generic parameter list for conciseness.
+
+Same-type constraints (`T == Foo`), associated type constraints (`T.Element: Foo`),
+and parameters that already have an inline constraint are not modified.
+
+Lint: A `where` clause with a simple conformance constraint that could be inlined raises a warning.
+
+Format: The conformance constraint is moved from the `where` clause to the generic parameter.
+
+`SimplifyGenericConstraints` rule can format your code automatically.
 
 ### TypeNamesShouldBeCapitalized
 
@@ -508,15 +1207,18 @@ Format: `let _ = expr` inside a condition list will be replaced by `expr != nil`
 
 ### UseLetInEveryBoundCaseVariable
 
-Every variable bound in a `case` pattern must have its own `let/var`.
+Enforce consistent placement of `let`/`var` in case patterns.
 
-For example, `case let .identifier(x, y)` is forbidden. Use
-`case .identifier(let x, let y)` instead.
+Controlled by `Configuration.patternLet.placement`:
 
-Lint: `case let .identifier(...)` will yield a lint error.
+- `eachBinding` (default): Each variable has its own `let`/`var`:
+  `case .foo(let x, let y)`.
+- `outerPattern`: The `let`/`var` is hoisted to the pattern level:
+  `case let .foo(x, y)`.
 
-Format: `case let .identifier(x, y)` will be replaced by
-`case .identifier(let x, let y)`.
+Lint: Using the non-preferred placement yields a lint error.
+
+Format: The `let`/`var` is repositioned to match the configured placement.
 
 `UseLetInEveryBoundCaseVariable` rule can format your code automatically.
 
@@ -589,3 +1291,19 @@ Lint: Documentation comments that are incomplete (e.g. missing parameter documen
       invalid (uses `Parameters` when there is only one parameter) will yield a lint error.
 
 `ValidateDocumentationComments` is a linter-only rule.
+
+### YodaConditions
+
+Prefer the constant value on the right-hand side of comparison expressions.
+
+"Yoda conditions" place the constant on the left (`0 == x`), which reads unnaturally.
+The conventional Swift style places the variable first (`x == 0`).
+
+For ordered comparisons (`<`, `<=`, `>`, `>=`), the operator is flipped when swapping
+sides so the semantics are preserved.
+
+Lint: A comparison with a constant on the left raises a warning.
+
+Format: The operands are swapped and the operator is flipped if necessary.
+
+`YodaConditions` rule can format your code automatically.

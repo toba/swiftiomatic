@@ -15,7 +15,7 @@ import Swiftiomatic
 import SwiftParser
 import SwiftSyntax
 import Testing
-@_spi(Testing) import _SwiftiomaticTestSupport
+@_spi(Testing) import SwiftiomaticTestSupport
 
 protocol WhitespaceTesting {}
 

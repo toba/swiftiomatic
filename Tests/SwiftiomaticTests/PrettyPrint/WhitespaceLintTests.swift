@@ -11,7 +11,7 @@
 //===----------------------------------------------------------------------===//
 
 import Swiftiomatic
-import _SwiftiomaticTestSupport
+import SwiftiomaticTestSupport
 import Testing
 
 // A note about these tests: `WhitespaceLinter` *only* emits findings; it does not do any

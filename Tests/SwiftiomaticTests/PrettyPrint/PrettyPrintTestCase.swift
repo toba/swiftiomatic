@@ -16,7 +16,7 @@ import SwiftOperators
 @_spi(ExperimentalLanguageFeatures) import SwiftParser
 import SwiftSyntax
 import Testing
-@_spi(Testing) import _SwiftiomaticTestSupport
+@_spi(Testing) import SwiftiomaticTestSupport
 
 protocol PrettyPrintTesting {}
 

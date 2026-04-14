@@ -9,20 +9,28 @@ AST-accurate Swift linting, formatting, and code analysis — used from the IDE,
 - Errors: write a failing test first, then fix, then confirm the test passes.
 - Build/test with xc-mcp **only at session end or when asked**. Batch changes, verify once.
 - Never git stash to dodge an error — fix it.
-- Never edit `*.generated.swift`. Run `swift run GeneratePipeline` after adding/removing/renaming rules.
-- Rule examples are validated by a single parameterized test in `Tests/SwiftiomaticTests/Rules/Infrastructure/RuleExampleTests.swift` — no per-rule test boilerplate.
-- **After any rule change, run the full `RuleExampleTests` batch** (filter: `RuleExampleTests`), not just individual rule tests. Individual tests pass even when examples are broken — bugs only surface in the batch. This has caused 18+ consecutive CI failures.
 
-### Diagnosing App UI
+## Installation
 
-Use xc-mcp to build, launch, screenshot — don't guess.
+### Build and install
 
-1. `build_run_macos` (scheme: `Swiftiomatic`, bundle ID: `app.toba.swiftiomatic`)
-2. `start_mac_log_cap` (use `level: debug` for verbose)
-3. `screenshot_mac_window` to verify UI state
-4. `show_mac_log` for historical logs
-5. `stop_mac_log_cap` / `stop_mac_app` to clean up
-6. `sample_mac_app` if slow or hanging
+```sh
+swift build -c release
+cp .build/arm64-apple-macosx/release/sm /opt/homebrew/Cellar/sm/<version>/bin/sm
+```
+
+Homebrew manages the symlink `/opt/homebrew/bin/sm` → `../Cellar/sm/<version>/bin/sm`.
+
+### Xcode IDE integration
+
+Xcode's built-in "Format with swift-format" uses the toolchain binary at:
+```
+/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swift-format
+```
+
+This is symlinked to `/opt/homebrew/bin/sm`, so Xcode uses our binary directly. After a release build + copy to the Cellar path, Xcode picks up the new rules immediately.
+
+The SPM plugins ("Format Source Code", "Lint Source Code") also use the `sm` binary and are available via right-click in Xcode's project navigator.
 
 ## CLI
 
@@ -38,40 +46,46 @@ sm generate-docs
 
 ## Rule Model
 
-Rules are `SyntaxVisitor` subclasses. Each has a **scope** and may be **correctable**.
+Based on [apple/swift-format](https://github.com/swiftlang/swift-format) (reference clone at `~/Developer/swiftiomatic-ref/swift-format`). Two rule base classes:
 
-| Scope | Runs in | Purpose |
+| Base Class | Inherits | Purpose |
 |---|---|---|
-| `.lint` | Build phase, `sm lint` | Wrong code, anti-patterns, style. Warnings/errors in editor. |
-| `.format` | Editor extension, `sm format` | Whitespace, indentation, braces. Never a lint warning. |
-| `.suggest` | `sm suggest` | Research patterns for agent review. Never auto-fixed. |
+| `SyntaxLintRule` | `SyntaxVisitor` + `Rule` | Read-only analysis. Emits findings via `diagnose()`. |
+| `SyntaxFormatRule` | `SyntaxRewriter` + `Rule` | Transforms syntax AND emits findings. Returns modified nodes. |
 
-Correctable lint rules fix on format. Format rules are always correctable. Suggest rules are never correctable.
+Lint rules are interleaved in a single `LintPipeline` tree walk. Format rules run sequentially in `FormatPipeline`, each over the entire tree. Both pipelines are auto-generated.
+
+Rules are opt-out by default (`isOptIn = false`). Override `isOptIn` to make a rule opt-in.
 
 **Philosophy**: prefer false positives over missed issues. The consumer filters.
 
-**Grouping**: suggest-scope rules may group related patterns into one rule (e.g., `swiftui_view_anti_patterns` covers multiple view body smells). Lint and format rules must be one rule per concern — users need per-rule enable/disable control for anything that appears in the editor or auto-fixes.
-
 ## Architecture
+
+Follows [apple/swift-format](https://github.com/swiftlang/swift-format) architecture:
 
 - **swift-syntax** AST parsing (no grep heuristics)
 - **swift-argument-parser** CLI
-- Two-pass for cross-file checks: pass 1 collects, pass 2 references
-- Optional SourceKit for type-aware rules
-- `.swiftiomatic.yaml` config with nested per-directory overrides
+- `Rule` protocol → `SyntaxLintRule` (visitor) / `SyntaxFormatRule` (rewriter)
+- `Finding` with `Message`, `Location`, `Note` — emitted via `diagnose()` on `Rule`
+- `Context` holds `Configuration`, `FindingEmitter`, `RuleMask`, `SourceLocationConverter`
+- `LintPipeline` interleaves lint rules per node; `FormatPipeline` runs format rules sequentially
+- `RuleMask` disables rules via `// swiftiomatic-ignore` comments
+- `.swiftiomatic.json` config (JSON5); `Configuration.rules: [String: Bool]` enables/disables rules
+- Rule-specific config via nested structs on `Configuration` (e.g., `orderedImports`, `fileScopedDeclarationPrivacy`)
 - Homebrew installable
 
-### Config Merge
+### Code Generation
 
-Child `.swiftiomatic.yaml` overrides parent (leaf wins). Scalars: child wins. Arrays: child replaces. Dicts: deep-merged. `inherit: false` stops the chain. `--config` flag bypasses chain entirely. `ConfigurationResolver` caches per directory.
+`swift run generate-swiftiomatic` scans `Sources/Swiftiomatic/Rules/` and generates three files in `Core/`:
+- `Pipelines+Generated.swift` — `visit()` dispatchers for `LintPipeline` + `FormatPipeline.rewrite()`
+- `RuleRegistry+Generated.swift` — default rule enablements from `isOptIn`
+- `RuleNameCache+Generated.swift` — `ObjectIdentifier` → rule name mapping
+
+**Never edit `*+Generated.swift` directly.**
 
 ## Versioning
 
-Keep in sync:
-1. `Sources/SwiftiomaticKit/Models/SwiftiomaticVersion.swift` — `SwiftiomaticVersion.current`
-2. `MARKETING_VERSION` build setting (use `xc-project set_build_setting` for both targets)
-
-Never hardcode versions in Info.plists (they use `$(MARKETING_VERSION)`).
+Managed via Homebrew formula. Version is the Cellar directory name (e.g. `0.26.11`).
 
 ## Build Settings
 
@@ -117,21 +131,17 @@ Use latest Swift 6.3 and SwiftUI patterns. See `/swift` skill for full reference
 - `try #require(x)` over `XCTUnwrap`
 - `sourceLocation: SourceLocation = #_sourceLocation` in helpers
 
-## Output
+## Findings
 
-```json
-{
-  "ruleID": "typed-throws",
-  "source": "lint",
-  "severity": "warning",
-  "confidence": "high",
-  "file": "Sources/Foo.swift",
-  "line": 42,
-  "column": 5,
-  "message": "Function 'parse' throws only ParseError but declares untyped 'throws'",
-  "suggestion": "func parse() throws(ParseError)",
-  "canAutoFix": true
-}
+Rules emit `Finding` values via `diagnose(_:on:anchor:notes:)`:
+
+```swift
+Finding(
+  category: RuleBasedFindingCategory,  // rule name
+  message: Finding.Message,            // "remove ';'"
+  location: Finding.Location?,         // file, line, column
+  notes: [Finding.Note]                // additional detail
+)
 ```
 
-Confidence: `high` (definitive), `medium` (likely), `low` (needs review). All reported — consumer decides.
+Messages are defined as `Finding.Message` extensions on each rule file. Use string literals or interpolation.
