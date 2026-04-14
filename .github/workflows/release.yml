@@ -60,7 +60,7 @@ jobs:
         echo "$NOTES" > release_notes.txt
 
     - name: Create GitHub Release
-      uses: softprops/action-gh-release@v2
+      uses: softprops/action-gh-release@v3
       with:
         files: |
           sm-${{ github.ref_name }}-arm64.tar.gz
