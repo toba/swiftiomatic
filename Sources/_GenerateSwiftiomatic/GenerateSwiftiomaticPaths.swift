@@ -42,4 +42,8 @@ import Foundation
     .appendingPathComponent("..")
     .appendingPathComponent("Documentation")
     .appendingPathComponent("RuleDocumentation.md")
+  public static let configurationSchemaFile =
+    sourcesDirectory
+    .appendingPathComponent("..")
+    .appendingPathComponent("swiftiomatic.schema.json")
 }

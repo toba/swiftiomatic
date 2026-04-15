@@ -31,7 +31,7 @@ import Swiftiomatic
 
       # `sm` Lint and Format Rules
 
-      Use the rules below in the `rules` block of your `.swiftiomatic.json`
+      Use the rules below in the `rules` block of your `swiftiomatic.json`
       configuration file, as described in
       [Configuration](Documentation/Configuration.md). All of these rules can be
       applied in the linter, but only some of them can format your source code

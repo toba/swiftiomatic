@@ -13,7 +13,11 @@
 import Foundation
 
 extension Configuration {
-  /// Return the configuration as a JSON string.
+  /// The URL of the JSON schema hosted on GitHub.
+  public static let schemaURL =
+    "https://raw.githubusercontent.com/toba/swiftiomatic/main/swiftiomatic.schema.json"
+
+  /// Return the configuration as a JSON string with a `$schema` reference.
   public func asJsonString() throws(SwiftiomaticError) -> String {
     let data: Data
 
@@ -25,8 +29,19 @@ extension Configuration {
       throw SwiftiomaticError.configurationDumpFailed("\(error)")
     }
 
-    guard let jsonString = String(data: data, encoding: .utf8) else {
-      // This should never happen, but let's make sure we fail more gracefully than crashing, just in case.
+    guard var jsonObject = try? JSONSerialization.jsonObject(with: data) as? [String: Any] else {
+      throw SwiftiomaticError.configurationDumpFailed("The JSON was not a valid object")
+    }
+
+    jsonObject["$schema"] = Self.schemaURL
+
+    guard
+      let merged = try? JSONSerialization.data(
+        withJSONObject: jsonObject,
+        options: [.prettyPrinted, .sortedKeys, .withoutEscapingSlashes]
+      ),
+      let jsonString = String(data: merged, encoding: .utf8)
+    else {
       throw SwiftiomaticError.configurationDumpFailed("The JSON was not valid UTF-8")
     }
 

@@ -567,7 +567,7 @@ public struct Configuration: Codable, Equatable, Sendable {
     }
     repeat {
       candidateDirectory.deleteLastPathComponent()
-      let candidateFile = candidateDirectory.appendingPathComponent(".swiftiomatic.json")
+      let candidateFile = candidateDirectory.appendingPathComponent("swiftiomatic.json")
       if FileManager.default.isReadableFile(atPath: candidateFile.path) {
         return candidateFile
       }

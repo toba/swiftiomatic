@@ -32,3 +32,7 @@ try ruleNameCacheGenerator.generateFile(at: GenerateSwiftiomaticPaths.ruleNameCa
 // This uses DocC comments from rule implementations.
 let ruleDocumentationGenerator = RuleDocumentationGenerator(ruleCollector: ruleCollector)
 try ruleDocumentationGenerator.generateFile(at: GenerateSwiftiomaticPaths.ruleDocumentationFile)
+
+// Generate the JSON Schema for configuration files.
+let schemaGenerator = ConfigurationSchemaGenerator(ruleCollector: ruleCollector)
+try schemaGenerator.generateFile(at: GenerateSwiftiomaticPaths.configurationSchemaFile)
