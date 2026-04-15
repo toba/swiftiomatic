@@ -1,5 +1,5 @@
 {
-	"$schema": "https://raw.githubusercontent.com/toba/swiftiomatic/main/swiftiomatic.schema.json",
+	"$schema": "https://raw.githubusercontent.com/toba/swiftiomatic/refs/heads/main/swiftiomatic.schema.json",
 	"acronyms": {
 		"words": [
 			"ID",
