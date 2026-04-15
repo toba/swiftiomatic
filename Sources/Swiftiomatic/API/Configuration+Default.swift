@@ -43,8 +43,10 @@ extension Configuration {
     self.multiElementCollectionTrailingCommas = true
     self.reflowMultilineStringLiterals = .never
     self.indentBlankLines = false
-    self.orderedImports = OrderedImportsConfiguration()
+    self.sortImports = SortImportsConfiguration()
     self.extensionAccessControl = ExtensionAccessControlConfiguration()
     self.patternLet = PatternLetConfiguration()
+    self.urlMacro = URLMacroConfiguration()
+    self.fileHeader = FileHeaderConfiguration()
   }
 }

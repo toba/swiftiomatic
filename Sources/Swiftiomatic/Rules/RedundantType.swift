@@ -49,13 +49,18 @@ public final class RedundantType: SyntaxFormatRule {
       var newBinding = binding
       newBinding.typeAnnotation = nil
 
-      // Ensure there's a space before `=` — the type annotation's last token had trailing
-      // trivia (typically a space) that disappears when we remove the annotation.
-      if initializer.equal.leadingTrivia.isEmpty {
-        var newInitializer = initializer
+      // Transfer any comments from the type annotation's trailing trivia to
+      // the `=` token's leading trivia. Without this, `var x: T /* c */ = val`
+      // would lose the comment when the annotation is removed.
+      var newInitializer = initializer
+      let typeTrailingTrivia = typeAnnotation.type.trailingTrivia
+      if typeTrailingTrivia.hasAnyComments {
+        // Preserve the comment: `var x /* c */ = val`
+        newInitializer.equal.leadingTrivia = typeTrailingTrivia
+      } else if initializer.equal.leadingTrivia.isEmpty {
         newInitializer.equal.leadingTrivia = .space
-        newBinding.initializer = newInitializer
       }
+      newBinding.initializer = newInitializer
 
       bindings = bindings.with(
         \.[bindings.index(bindings.startIndex, offsetBy: index)], newBinding)
@@ -210,9 +215,10 @@ public final class RedundantType: SyntaxFormatRule {
 
   // MARK: - Void detection
 
-  /// Returns `true` if the type name refers to Void.
+  /// Returns `true` if the type name contains Void. Removing the annotation for Void-related
+  /// types is unhelpful and potentially confusing.
   private func isVoidType(_ typeName: String) -> Bool {
-    typeName == "Void" || typeName == "()"
+    typeName.contains("Void") || typeName.contains("()")
   }
 }
 

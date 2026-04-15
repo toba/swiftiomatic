@@ -271,4 +271,124 @@ struct RedundantLetTests: RuleTesting {
       findings: []
     )
   }
+
+  // MARK: - Case patterns (adapted from SwiftFormat)
+
+  @Test func removeRedundantLetInCase() {
+    assertFormatting(
+      RedundantLet.self,
+      input: """
+        if case .foo(1️⃣let _) = bar {}
+        """,
+      expected: """
+        if case .foo(_) = bar {}
+        """,
+      findings: [
+        FindingSpec("1️⃣", message: "remove redundant 'let' from wildcard pattern; use '_' instead"),
+      ]
+    )
+  }
+
+  @Test func removeRedundantVarsInCase() {
+    assertFormatting(
+      RedundantLet.self,
+      input: """
+        if case .foo(1️⃣var _, 2️⃣var /* unused */ _) = bar {}
+        """,
+      expected: """
+        if case .foo(_, /* unused */ _) = bar {}
+        """,
+      findings: [
+        FindingSpec("1️⃣", message: "remove redundant 'let' from wildcard pattern; use '_' instead"),
+        FindingSpec("2️⃣", message: "remove redundant 'let' from wildcard pattern; use '_' instead"),
+      ]
+    )
+  }
+
+  @Test func noRemoveLetInMultiIf() {
+    // Conditional binding `let _ = baz` is not redundant in if/guard conditions
+    assertFormatting(
+      RedundantLet.self,
+      input: """
+        if foo == bar, /* comment! */ let _ = baz {}
+        """,
+      expected: """
+        if foo == bar, /* comment! */ let _ = baz {}
+        """,
+      findings: []
+    )
+  }
+
+  @Test func noRemoveLetImmediatelyAfterMainActorAttribute() {
+    assertFormatting(
+      RedundantLet.self,
+      input: """
+        let foo = bar { @MainActor
+          let _ = try await baz()
+        }
+        """,
+      expected: """
+        let foo = bar { @MainActor
+          let _ = try await baz()
+        }
+        """,
+      findings: []
+    )
+  }
+
+  @Test func noRemoveLetImmediatelyAfterSendableAttribute() {
+    assertFormatting(
+      RedundantLet.self,
+      input: """
+        let foo = bar { @Sendable
+          let _ = try await baz()
+        }
+        """,
+      expected: """
+        let foo = bar { @Sendable
+          let _ = try await baz()
+        }
+        """,
+      findings: []
+    )
+  }
+
+  @Test func casePatternWithNamedBindingNotFlagged() {
+    // Only wildcards are flagged, not named bindings
+    assertFormatting(
+      RedundantLet.self,
+      input: """
+        if case .foo(let x) = bar {}
+        """,
+      expected: """
+        if case .foo(let x) = bar {}
+        """,
+      findings: []
+    )
+  }
+
+  @Test func switchCaseLetWildcard() {
+    assertFormatting(
+      RedundantLet.self,
+      input: """
+        switch value {
+        case .foo(1️⃣let _):
+          break
+        default:
+          break
+        }
+        """,
+      expected: """
+        switch value {
+        case .foo(_):
+          break
+        default:
+          break
+        }
+        """,
+      findings: [
+        FindingSpec("1️⃣", message: "remove redundant 'let' from wildcard pattern; use '_' instead"),
+      ]
+    )
+  }
 }

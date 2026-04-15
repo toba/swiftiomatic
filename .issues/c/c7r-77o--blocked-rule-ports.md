@@ -1,15 +1,15 @@
 ---
 # c7r-77o
 title: Blocked rule ports
-status: in-progress
+status: completed
 type: epic
 priority: normal
 created_at: 2026-04-14T04:25:28Z
-updated_at: 2026-04-14T19:55:34Z
+updated_at: 2026-04-15T00:13:50Z
 sync:
     github:
         issue_number: "293"
-        synced_at: "2026-04-14T18:45:51Z"
+        synced_at: "2026-04-15T00:34:43Z"
 ---
 
 Rules from porting efforts that are blocked or deferred, organized by implementation difficulty. Phases are tracked as child issues.

@@ -44,7 +44,7 @@ public override func visit(_ node: ConditionElementListSyntax) -> ConditionEleme
 }
 ```
 
-Used by: `DoNotUseSemicolons`, `OneVariableDeclarationPerLine`, `OneCasePerLine`, `AndOperator`.
+Used by: `NoSemicolons`, `OneDeclarationPerLine`, `PreferCommaConditions`.
 
 ## Merge Adjacent Statements (N→1)
 
@@ -151,7 +151,7 @@ public override func visit(_ node: SourceFileSyntax) -> SourceFileSyntax {
 
 **`#if` handling**: Both phases must recurse into `IfConfigDeclSyntax` — top-level declarations inside `#if` blocks are still file-scoped.
 
-Used by: `RedundantFileprivate`.
+Used by: `RedundantAccessControl`.
 
 ### Cross-Declaration Matching and Removal
 
@@ -223,3 +223,59 @@ public override func visit(_ node: StructDeclSyntax) -> DeclSyntax {
 Format rules are `SyntaxRewriter` subclasses, so the import visitor fires before type-declaration visitors during tree rewriting. The flag is safe to use in subsequent visitors within the same file.
 
 Used by: `RedundantSwiftTestingSuite`.
+
+## Import Insertion in Format Rules
+
+Adding a new import statement requires visiting `SourceFileSyntax`, calling `super.visit(node)` first (to process children and track whether changes were made), then modifying the result to insert the import.
+
+**Trivia matters**: when inserting after existing imports vs at the top of the file, the leading trivia is different:
+
+```swift
+private var madeReplacements = false
+private var hasModuleImport = false
+
+public override func visit(_ node: SourceFileSyntax) -> SourceFileSyntax {
+    let visited = super.visit(node)
+    guard madeReplacements, !hasModuleImport else { return visited }
+
+    let importDecl = ImportDeclSyntax(
+        importKeyword: .keyword(.import, trailingTrivia: .space),
+        path: ImportPathComponentListSyntax([
+            ImportPathComponentSyntax(name: .identifier("MyModule"))
+        ]))
+    let importItem = CodeBlockItemSyntax(item: .decl(DeclSyntax(importDecl)))
+
+    var statements = Array(visited.statements)
+
+    // Find insertion point: after last import, or at top
+    var insertIndex = 0
+    for (i, stmt) in statements.enumerated() {
+        if stmt.item.is(ImportDeclSyntax.self) {
+            insertIndex = i + 1
+        } else {
+            break
+        }
+    }
+
+    var importWithTrivia = importItem
+    if insertIndex > 0 {
+        // After existing imports: single newline to continue the import block.
+        // The next statement keeps its original trivia (blank line separator).
+        importWithTrivia.leadingTrivia = .newline
+    } else if insertIndex < statements.count {
+        // At top (no existing imports): take first statement's trivia,
+        // then add blank line before the (now-second) statement.
+        importWithTrivia.leadingTrivia = statements[insertIndex].leadingTrivia
+        statements[insertIndex].leadingTrivia = .newlines(2)
+    }
+
+    statements.insert(importWithTrivia, at: insertIndex)
+    var result = visited
+    result.statements = CodeBlockItemListSyntax(statements)
+    return result
+}
+```
+
+**Common mistake**: using the next statement's trivia for the new import when inserting after existing imports. This steals the blank-line separator, producing `import Foundation\n\nimport New\nlet x` instead of `import Foundation\nimport New\n\nlet x`.
+
+Used by: `URLMacro`, `PreferSwiftTesting` (import replacement, not insertion).

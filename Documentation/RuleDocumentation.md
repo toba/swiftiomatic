@@ -10,84 +10,95 @@ automatically.
 
 Here's the list of available rules:
 
-- [Acronyms](#Acronyms)
-- [AllPublicDeclarationsHaveDocumentation](#AllPublicDeclarationsHaveDocumentation)
-- [AlwaysUseLiteralForEmptyCollectionInit](#AlwaysUseLiteralForEmptyCollectionInit)
-- [AlwaysUseLowerCamelCase](#AlwaysUseLowerCamelCase)
+- [ASCIIIdentifiers](#ASCIIIdentifiers)
 - [AmbiguousTrailingClosureOverload](#AmbiguousTrailingClosureOverload)
-- [AndOperator](#AndOperator)
-- [AnyObjectProtocol](#AnyObjectProtocol)
-- [ApplicationMain](#ApplicationMain)
-- [AssertionFailures](#AssertionFailures)
-- [AvoidRetroactiveConformances](#AvoidRetroactiveConformances)
-- [BeginDocumentationCommentWithOneLineSummary](#BeginDocumentationCommentWithOneLineSummary)
-- [BlankLineAfterImports](#BlankLineAfterImports)
-- [BlankLineAfterSwitchCase](#BlankLineAfterSwitchCase)
 - [BlankLinesAfterGuardStatements](#BlankLinesAfterGuardStatements)
+- [BlankLinesAfterImports](#BlankLinesAfterImports)
+- [BlankLinesAfterSwitchCase](#BlankLinesAfterSwitchCase)
 - [BlankLinesAroundMark](#BlankLinesAroundMark)
 - [BlankLinesBetweenChainedFunctions](#BlankLinesBetweenChainedFunctions)
 - [BlankLinesBetweenImports](#BlankLinesBetweenImports)
 - [BlankLinesBetweenScopes](#BlankLinesBetweenScopes)
-- [ConditionalAssignment](#ConditionalAssignment)
+- [CapitalizeAcronyms](#CapitalizeAcronyms)
+- [CapitalizedTypeNames](#CapitalizedTypeNames)
 - [ConsistentSwitchCaseSpacing](#ConsistentSwitchCaseSpacing)
-- [DoNotUseSemicolons](#DoNotUseSemicolons)
+- [DocCommentSummary](#DocCommentSummary)
+- [DocComments](#DocComments)
 - [DocCommentsBeforeModifiers](#DocCommentsBeforeModifiers)
-- [DontRepeatTypeInStaticProperties](#DontRepeatTypeInStaticProperties)
+- [DocumentPublicDeclarations](#DocumentPublicDeclarations)
 - [EmptyBraces](#EmptyBraces)
+- [EmptyCollectionLiteral](#EmptyCollectionLiteral)
 - [EmptyExtensions](#EmptyExtensions)
 - [EnumNamespaces](#EnumNamespaces)
-- [EnvironmentEntry](#EnvironmentEntry)
-- [FileMacro](#FileMacro)
+- [ExplicitNilCheck](#ExplicitNilCheck)
+- [FileHeader](#FileHeader)
 - [FileScopedDeclarationPrivacy](#FileScopedDeclarationPrivacy)
+- [FormatSpecialComments](#FormatSpecialComments)
 - [FullyIndirectEnum](#FullyIndirectEnum)
-- [GenericExtensions](#GenericExtensions)
 - [GroupNumericLiterals](#GroupNumericLiterals)
 - [HoistAwait](#HoistAwait)
 - [HoistTry](#HoistTry)
-- [IdentifiersMustBeASCII](#IdentifiersMustBeASCII)
 - [InitCoderUnavailable](#InitCoderUnavailable)
-- [IsEmpty](#IsEmpty)
+- [LeadingDotOperators](#LeadingDotOperators)
 - [LinebreakAtEndOfFile](#LinebreakAtEndOfFile)
+- [LowerCamelCase](#LowerCamelCase)
 - [ModifierOrder](#ModifierOrder)
 - [ModifiersOnSameLine](#ModifiersOnSameLine)
-- [NeverForceUnwrap](#NeverForceUnwrap)
-- [NeverUseForceTry](#NeverUseForceTry)
-- [NeverUseImplicitlyUnwrappedOptionals](#NeverUseImplicitlyUnwrappedOptionals)
-- [NoAccessLevelOnExtensionDeclaration](#NoAccessLevelOnExtensionDeclaration)
 - [NoAssignmentInExpressions](#NoAssignmentInExpressions)
+- [NoBacktickedSelf](#NoBacktickedSelf)
 - [NoBlockComments](#NoBlockComments)
-- [NoCasesWithOnlyFallthrough](#NoCasesWithOnlyFallthrough)
 - [NoEmptyLinesOpeningClosingBraces](#NoEmptyLinesOpeningClosingBraces)
-- [NoEmptyTrailingClosureParentheses](#NoEmptyTrailingClosureParentheses)
 - [NoExplicitOwnership](#NoExplicitOwnership)
-- [NoForceTryInTests](#NoForceTryInTests)
-- [NoForceUnwrapInTests](#NoForceUnwrapInTests)
+- [NoExtensionAccessLevel](#NoExtensionAccessLevel)
+- [NoFallthroughOnlyCases](#NoFallthroughOnlyCases)
+- [NoForceTry](#NoForceTry)
+- [NoForceUnwrap](#NoForceUnwrap)
 - [NoGuardInTests](#NoGuardInTests)
+- [NoImplicitlyUnwrappedOptionals](#NoImplicitlyUnwrappedOptionals)
 - [NoLabelsInCasePatterns](#NoLabelsInCasePatterns)
 - [NoLeadingUnderscores](#NoLeadingUnderscores)
 - [NoParensAroundConditions](#NoParensAroundConditions)
 - [NoPlaygroundLiterals](#NoPlaygroundLiterals)
+- [NoRetroactiveConformances](#NoRetroactiveConformances)
+- [NoSemicolons](#NoSemicolons)
+- [NoTrailingClosureParens](#NoTrailingClosureParens)
+- [NoTypeRepetitionInStaticProperties](#NoTypeRepetitionInStaticProperties)
 - [NoVoidReturnOnFunctionSignature](#NoVoidReturnOnFunctionSignature)
+- [NoYodaConditions](#NoYodaConditions)
 - [OmitExplicitReturns](#OmitExplicitReturns)
-- [OneCasePerLine](#OneCasePerLine)
-- [OneVariableDeclarationPerLine](#OneVariableDeclarationPerLine)
+- [OneDeclarationPerLine](#OneDeclarationPerLine)
 - [OnlyOneTrailingClosureArgument](#OnlyOneTrailingClosureArgument)
 - [OpaqueGenericParameters](#OpaqueGenericParameters)
-- [OrderedImports](#OrderedImports)
+- [PatternLetPlacement](#PatternLetPlacement)
+- [PreferAngleBracketExtensions](#PreferAngleBracketExtensions)
+- [PreferAnyObject](#PreferAnyObject)
+- [PreferAssertionFailure](#PreferAssertionFailure)
+- [PreferCommaConditions](#PreferCommaConditions)
+- [PreferConditionalExpression](#PreferConditionalExpression)
 - [PreferCountWhere](#PreferCountWhere)
+- [PreferEarlyExits](#PreferEarlyExits)
+- [PreferEnvironmentEntry](#PreferEnvironmentEntry)
 - [PreferExplicitFalse](#PreferExplicitFalse)
+- [PreferFileID](#PreferFileID)
 - [PreferFinalClasses](#PreferFinalClasses)
+- [PreferIsEmpty](#PreferIsEmpty)
 - [PreferKeyPath](#PreferKeyPath)
+- [PreferMainAttribute](#PreferMainAttribute)
+- [PreferShorthandTypeNames](#PreferShorthandTypeNames)
+- [PreferSingleLinePropertyGetter](#PreferSingleLinePropertyGetter)
+- [PreferSwiftTesting](#PreferSwiftTesting)
+- [PreferSynthesizedInitializer](#PreferSynthesizedInitializer)
+- [PreferTrailingClosures](#PreferTrailingClosures)
+- [PreferVoidReturn](#PreferVoidReturn)
+- [PreferWhereClausesInForLoops](#PreferWhereClausesInForLoops)
 - [PrivateStateVariables](#PrivateStateVariables)
+- [RedundantAccessControl](#RedundantAccessControl)
 - [RedundantAsync](#RedundantAsync)
 - [RedundantBackticks](#RedundantBackticks)
 - [RedundantBreak](#RedundantBreak)
 - [RedundantClosure](#RedundantClosure)
 - [RedundantEquatable](#RedundantEquatable)
-- [RedundantExtensionACL](#RedundantExtensionACL)
-- [RedundantFileprivate](#RedundantFileprivate)
 - [RedundantInit](#RedundantInit)
-- [RedundantInternal](#RedundantInternal)
 - [RedundantLet](#RedundantLet)
 - [RedundantLetError](#RedundantLetError)
 - [RedundantNilInit](#RedundantNilInit)
@@ -95,7 +106,6 @@ Here's the list of available rules:
 - [RedundantOptionalBinding](#RedundantOptionalBinding)
 - [RedundantPattern](#RedundantPattern)
 - [RedundantProperty](#RedundantProperty)
-- [RedundantPublic](#RedundantPublic)
 - [RedundantRawValues](#RedundantRawValues)
 - [RedundantSelf](#RedundantSelf)
 - [RedundantSendable](#RedundantSendable)
@@ -106,86 +116,33 @@ Here's the list of available rules:
 - [RedundantTypedThrows](#RedundantTypedThrows)
 - [RedundantViewBuilder](#RedundantViewBuilder)
 - [ReplaceForEachWithForLoop](#ReplaceForEachWithForLoop)
-- [ReturnVoidInsteadOfEmptyTuple](#ReturnVoidInsteadOfEmptyTuple)
 - [SimplifyGenericConstraints](#SimplifyGenericConstraints)
 - [SortDeclarations](#SortDeclarations)
+- [SortImports](#SortImports)
 - [SortSwitchCases](#SortSwitchCases)
 - [SortTypealiases](#SortTypealiases)
 - [StrongOutlets](#StrongOutlets)
-- [StrongifiedSelf](#StrongifiedSelf)
 - [SwiftTestingTestCaseNames](#SwiftTestingTestCaseNames)
 - [TestSuiteAccessControl](#TestSuiteAccessControl)
-- [Todos](#Todos)
-- [TypeNamesShouldBeCapitalized](#TypeNamesShouldBeCapitalized)
-- [UseEarlyExits](#UseEarlyExits)
-- [UseExplicitNilCheckInConditions](#UseExplicitNilCheckInConditions)
-- [UseLetInEveryBoundCaseVariable](#UseLetInEveryBoundCaseVariable)
-- [UseShorthandTypeNames](#UseShorthandTypeNames)
-- [UseSingleLinePropertyGetter](#UseSingleLinePropertyGetter)
-- [UseSynthesizedInitializer](#UseSynthesizedInitializer)
-- [UseTripleSlashForDocumentationComments](#UseTripleSlashForDocumentationComments)
-- [UseWhereClausesInForLoops](#UseWhereClausesInForLoops)
+- [TripleSlashDocComments](#TripleSlashDocComments)
+- [URLMacro](#URLMacro)
+- [UnusedArguments](#UnusedArguments)
 - [ValidateDocumentationComments](#ValidateDocumentationComments)
 - [ValidateTestCases](#ValidateTestCases)
-- [WrapConditionalBodies](#WrapConditionalBodies)
-- [WrapFunctionBodies](#WrapFunctionBodies)
-- [WrapLoopBodies](#WrapLoopBodies)
-- [WrapMultilineConditionalAssignment](#WrapMultilineConditionalAssignment)
+- [WrapBodies](#WrapBodies)
+- [WrapConditionalAssignment](#WrapConditionalAssignment)
 - [WrapMultilineFunctionChains](#WrapMultilineFunctionChains)
 - [WrapMultilineStatementBraces](#WrapMultilineStatementBraces)
-- [WrapPropertyBodies](#WrapPropertyBodies)
 - [WrapSingleLineComments](#WrapSingleLineComments)
 - [WrapSwitchCases](#WrapSwitchCases)
-- [YodaConditions](#YodaConditions)
 
-### Acronyms
+### ASCIIIdentifiers
 
-Capitalize acronyms when the first character is capitalized.
+All identifiers must be ASCII.
 
-When an identifier contains a titlecased acronym (e.g. `Url`, `Json`, `Id`),
-it should be fully uppercased (e.g. `URL`, `JSON`, `ID`) for consistency with
-Swift naming conventions.
+Lint: If an identifier contains non-ASCII characters, a lint error is raised.
 
-The list of recognized acronyms is configurable via `Configuration.acronyms`.
-
-Lint: An identifier with a titlecased acronym raises a warning.
-
-Format: The titlecased acronym is replaced with the uppercased form.
-
-`Acronyms` rule can format your code automatically.
-
-### AllPublicDeclarationsHaveDocumentation
-
-All public or open declarations must have a top-level documentation comment.
-
-Lint: If a public declaration is missing a documentation comment, a lint error is raised.
-
-`AllPublicDeclarationsHaveDocumentation` is a linter-only rule.
-
-### AlwaysUseLiteralForEmptyCollectionInit
-
-Never use `[<Type>]()` syntax. In call sites that should be replaced with `[]`,
-for initializations use explicit type combined with empty array literal `let _: [<Type>] = []`
-Static properties of a type that return that type should not include a reference to their type.
-
-Lint:  Non-literal empty array initialization will yield a lint error.
-Format: All invalid use sites would be related with empty literal (with or without explicit type annotation).
-
-`AlwaysUseLiteralForEmptyCollectionInit` rule can format your code automatically.
-
-### AlwaysUseLowerCamelCase
-
-All values should be written in lower camel-case (`lowerCamelCase`).
-Underscores (except at the beginning of an identifier) are disallowed.
-
-This rule does not apply to test code, defined as code which:
-  * Contains the line `import XCTest`
-  * The function is marked with `@Test` attribute
-
-Lint: If an identifier contains underscores or begins with a capital letter, a lint error is
-      raised.
-
-`AlwaysUseLowerCamelCase` is a linter-only rule.
+`ASCIIIdentifiers` is a linter-only rule.
 
 ### AmbiguousTrailingClosureOverload
 
@@ -195,110 +152,6 @@ Lint: If two overloaded functions with one closure parameter appear in the same 
       error is raised.
 
 `AmbiguousTrailingClosureOverload` is a linter-only rule.
-
-### AndOperator
-
-Prefer comma over `&&` in `if`, `guard`, and `while` conditions.
-
-Swift condition lists use commas to separate independent boolean conditions,
-which short-circuit identically to `&&` but read more naturally and enable
-individual conditions to use optional binding or pattern matching.
-
-This rule only fires when `&&` is the top-level operator in a condition element
-(no `||` mixed in at the same precedence level, since that would change semantics).
-
-Lint: Using `&&` in a condition list raises a warning.
-
-Format: `&&` is replaced with commas, splitting the condition into separate
-condition elements.
-
-`AndOperator` rule can format your code automatically.
-
-### AnyObjectProtocol
-
-Prefer `AnyObject` over `class` for class-constrained protocols.
-
-The `class` keyword in protocol inheritance clauses was replaced by `AnyObject` in Swift 4.1.
-Using `AnyObject` is the modern, preferred spelling.
-
-Lint: A protocol inheriting from `class` instead of `AnyObject` raises a warning.
-
-Format: `class` is replaced with `AnyObject` in the inheritance clause.
-
-`AnyObjectProtocol` rule can format your code automatically.
-
-### ApplicationMain
-
-Replace `@UIApplicationMain` and `@NSApplicationMain` with `@main`.
-
-These attributes were deprecated in favor of `@main` (SE-0383, Swift 5.3+).
-
-Lint: Using `@UIApplicationMain` or `@NSApplicationMain` raises a warning.
-
-Format: The attribute is replaced with `@main`.
-
-`ApplicationMain` rule can format your code automatically.
-
-### AssertionFailures
-
-Replace `assert(false, ...)` with `assertionFailure(...)` and
-`precondition(false, ...)` with `preconditionFailure(...)`.
-
-The `Failure` variants more clearly express intent: the code path should never be reached.
-They also have `Never` return type, enabling the compiler to prove exhaustiveness.
-
-Lint: Using `assert(false, ...)` or `precondition(false, ...)` raises a warning.
-
-Format: The call is replaced with the corresponding `Failure` variant, removing the
-`false` argument.
-
-`AssertionFailures` rule can format your code automatically.
-
-### AvoidRetroactiveConformances
-
-`@retroactive` conformances are forbidden.
-
-Lint: Using `@retroactive` results in a lint error.
-
-`AvoidRetroactiveConformances` is a linter-only rule.
-
-### BeginDocumentationCommentWithOneLineSummary
-
-All documentation comments must begin with a one-line summary of the declaration.
-
-Lint: If a comment does not begin with a single-line summary, a lint error is raised.
-
-`BeginDocumentationCommentWithOneLineSummary` is a linter-only rule.
-
-### BlankLineAfterImports
-
-Insert a blank line after the last import statement.
-
-When import statements are followed directly by other declarations without a separating blank
-line, readability suffers. This rule ensures exactly one blank line separates the import block
-from the rest of the code.
-
-Lint: If the first non-import declaration is not preceded by a blank line, a lint warning is raised.
-
-Format: A blank line is inserted after the last import statement.
-
-`BlankLineAfterImports` rule can format your code automatically.
-
-### BlankLineAfterSwitchCase
-
-Insert a blank line after multiline switch case bodies.
-
-When a switch case body spans multiple statements, a blank line after it improves readability
-by visually separating it from the next case. Single-statement cases do not require blank lines.
-The last case in a switch is never followed by a blank line (the closing brace provides
-visual separation).
-
-Lint: If a multiline case body is not followed by a blank line, a lint warning is raised.
-      If the last case is followed by a blank line before `}`, a lint warning is raised.
-
-Format: Blank lines are inserted after multiline cases and removed after the last case.
-
-`BlankLineAfterSwitchCase` rule can format your code automatically.
 
 ### BlankLinesAfterGuardStatements
 
@@ -317,6 +170,36 @@ Format: Blank lines between consecutive guards are removed. A blank line is inse
         after the last guard when followed by non-guard code.
 
 `BlankLinesAfterGuardStatements` rule can format your code automatically.
+
+### BlankLinesAfterImports
+
+Insert a blank line after the last import statement.
+
+When import statements are followed directly by other declarations without a separating blank
+line, readability suffers. This rule ensures exactly one blank line separates the import block
+from the rest of the code.
+
+Lint: If the first non-import declaration is not preceded by a blank line, a lint warning is raised.
+
+Format: A blank line is inserted after the last import statement.
+
+`BlankLinesAfterImports` rule can format your code automatically.
+
+### BlankLinesAfterSwitchCase
+
+Insert a blank line after multiline switch case bodies.
+
+When a switch case body spans multiple statements, a blank line after it improves readability
+by visually separating it from the next case. Single-statement cases do not require blank lines.
+The last case in a switch is never followed by a blank line (the closing brace provides
+visual separation).
+
+Lint: If a multiline case body is not followed by a blank line, a lint warning is raised.
+      If the last case is followed by a blank line before `}`, a lint warning is raised.
+
+Format: Blank lines are inserted after multiline cases and removed after the last case.
+
+`BlankLinesAfterSwitchCase` rule can format your code automatically.
 
 ### BlankLinesAroundMark
 
@@ -377,22 +260,29 @@ Format: A blank line is inserted after the declaration.
 
 `BlankLinesBetweenScopes` rule can format your code automatically.
 
-### ConditionalAssignment
+### CapitalizeAcronyms
 
-Use if/switch expressions for conditional property assignment.
+Capitalize acronyms when the first character is capitalized.
 
-When a property with a type annotation and no initializer is immediately
-followed by an exhaustive `if` or `switch` that assigns the property in
-every branch, the two statements are merged into a single assignment
-expression. Nested conditionals are handled recursively.
+When an identifier contains a titlecased acronym (e.g. `Url`, `Json`, `Id`),
+it should be fully uppercased (e.g. `URL`, `JSON`, `ID`) for consistency with
+Swift naming conventions.
 
-Lint: A property followed by an exhaustive conditional assignment raises
-      a warning.
+The list of recognized acronyms is configurable via `Configuration.acronyms`.
 
-Format: The separate statements are merged into a conditional expression
-        assignment.
+Lint: An identifier with a titlecased acronym raises a warning.
 
-`ConditionalAssignment` rule can format your code automatically.
+Format: The titlecased acronym is replaced with the uppercased form.
+
+`CapitalizeAcronyms` rule can format your code automatically.
+
+### CapitalizedTypeNames
+
+`struct`, `class`, `enum` and `protocol` declarations should have a capitalized name.
+
+Lint:  Types with un-capitalized names will yield a lint error.
+
+`CapitalizedTypeNames` is a linter-only rule.
 
 ### ConsistentSwitchCaseSpacing
 
@@ -410,15 +300,27 @@ Format: Blank lines are added or removed to make spacing consistent.
 
 `ConsistentSwitchCaseSpacing` rule can format your code automatically.
 
-### DoNotUseSemicolons
+### DocCommentSummary
 
-Semicolons should not be present in Swift code.
+All documentation comments must begin with a one-line summary of the declaration.
 
-Lint: If a semicolon appears anywhere, a lint error is raised.
+Lint: If a comment does not begin with a single-line summary, a lint error is raised.
 
-Format: All semicolons will be replaced with line breaks.
+`DocCommentSummary` is a linter-only rule.
 
-`DoNotUseSemicolons` rule can format your code automatically.
+### DocComments
+
+Use doc comments for API declarations, otherwise use regular comments.
+
+Comments immediately before type declarations, properties, methods, and other
+API-level constructs use `///` doc comment syntax. Comments inside function
+bodies use `//` regular comment syntax, except for nested function declarations.
+
+Lint: When a regular comment should be a doc comment, or vice versa.
+
+Format: The comment style is corrected.
+
+`DocComments` rule can format your code automatically.
 
 ### DocCommentsBeforeModifiers
 
@@ -433,17 +335,13 @@ Format: The doc comment is moved before all attributes and modifiers.
 
 `DocCommentsBeforeModifiers` rule can format your code automatically.
 
-### DontRepeatTypeInStaticProperties
+### DocumentPublicDeclarations
 
-Static properties of a type that return that type should not include a reference to their type.
+All public or open declarations must have a top-level documentation comment.
 
-"Reference to their type" means that the property name includes part, or all, of the type. If
-the type contains a namespace (i.e. `UIColor`) the namespace is ignored;
-`public class var redColor: UIColor` would trigger this rule.
+Lint: If a public declaration is missing a documentation comment, a lint error is raised.
 
-Lint: Static properties of a type that return that type will yield a lint error.
-
-`DontRepeatTypeInStaticProperties` is a linter-only rule.
+`DocumentPublicDeclarations` is a linter-only rule.
 
 ### EmptyBraces
 
@@ -457,6 +355,17 @@ Lint: If empty braces contain whitespace, a lint warning is raised.
 Format: The whitespace is removed, collapsing the braces to `{}`.
 
 `EmptyBraces` rule can format your code automatically.
+
+### EmptyCollectionLiteral
+
+Never use `[<Type>]()` syntax. In call sites that should be replaced with `[]`,
+for initializations use explicit type combined with empty array literal `let _: [<Type>] = []`
+Static properties of a type that return that type should not include a reference to their type.
+
+Lint:  Non-literal empty array initialization will yield a lint error.
+Format: All invalid use sites would be related with empty literal (with or without explicit type annotation).
+
+`EmptyCollectionLiteral` rule can format your code automatically.
 
 ### EmptyExtensions
 
@@ -491,31 +400,41 @@ Format: The `struct` or `final class` keyword is replaced with `enum`.
 
 `EnumNamespaces` rule can format your code automatically.
 
-### EnvironmentEntry
+### ExplicitNilCheck
 
-Use `@Entry` macro for `EnvironmentValues` instead of manual `EnvironmentKey` conformance.
+When checking an optional value for `nil`-ness, prefer writing an explicit `nil` check rather
+than binding and immediately discarding the value.
 
-Recognizes `EnvironmentKey`-conforming structs/enums paired with `EnvironmentValues` extension
-properties and replaces them with `@Entry var` declarations.
+For example, `if let _ = someValue { ... }` is forbidden. Use `if someValue != nil { ... }`
+instead.
 
-Lint: A lint warning is raised when an `EnvironmentKey` property can be replaced with `@Entry`.
+Note: If the conditional binding carries an explicit type annotation (e.g. `if let _: S? = expr`),
+we skip the transformation. Such annotations can be necessary to drive generic type inference
+when a function mentions a type only in its return position.
 
-Format: The `EnvironmentKey` type is removed and the property is replaced with `@Entry var`.
+Lint: `let _ = expr` inside a condition list will yield a lint error.
 
-`EnvironmentEntry` rule can format your code automatically.
+Format: `let _ = expr` inside a condition list will be replaced by `expr != nil`.
 
-### FileMacro
+`ExplicitNilCheck` rule can format your code automatically.
 
-Enforce consistent use of `#file` or `#fileID`.
+### FileHeader
 
-In Swift 6+, `#file` and `#fileID` have identical behavior (both produce `Module/File.swift`).
-This rule standardizes usage to `#fileID` by default. `#filePath` is unaffected.
+Enforce a consistent file header comment, or remove file headers entirely.
 
-Lint: Using the non-preferred file macro yields a lint warning.
+When configured with header text, any existing file header comment is replaced with the
+configured text. When configured with an empty string, any existing file header is removed.
+File header comments are line comments (`//`) or block comments (`/* */`) at the start of
+the file, before any blank line, doc comment, or code. Doc comments (`///`, `/** */`) are
+not considered file header comments.
 
-Format: The macro is replaced with the preferred spelling.
+This rule is opt-in and requires configuration via `fileHeader.text` in the configuration file.
 
-`FileMacro` rule can format your code automatically.
+Lint: A warning is raised when the file header does not match the configured text.
+
+Format: The file header is replaced with (or cleared to) the configured text.
+
+`FileHeader` rule can format your code automatically.
 
 ### FileScopedDeclarationPrivacy
 
@@ -530,6 +449,20 @@ Format: File-scoped declarations that have formal access opposite to the desired
 
 `FileScopedDeclarationPrivacy` rule can format your code automatically.
 
+### FormatSpecialComments
+
+Use correct formatting for `TODO:`, `MARK:`, and `FIXME:` comments.
+
+These special comment tags must be uppercase, followed by a colon and a space. `MARK:` comments
+with a dash separator must use `// MARK: - text` format. Standalone `/// MARK:` doc comments are
+converted to `// MARK:` since MARK is not a documentation concept.
+
+Lint: If a special comment tag is not correctly formatted, a lint warning is raised.
+
+Format: The comment is reformatted to use the correct style.
+
+`FormatSpecialComments` rule can format your code automatically.
+
 ### FullyIndirectEnum
 
 If all cases of an enum are `indirect`, the entire enum should be marked `indirect`.
@@ -541,24 +474,6 @@ Format: Enums where all cases are `indirect` will be rewritten such that the enu
         `indirect`, and each case is not.
 
 `FullyIndirectEnum` rule can format your code automatically.
-
-### GenericExtensions
-
-Use angle brackets (`extension Array<Foo>`) for generic type extensions instead of
-type constraints (`extension Array where Element == Foo`).
-
-Swift 5.7+ supports angle bracket syntax in extension declarations. When a `where`
-clause constrains all generic parameters of a known type to concrete types,
-the angle bracket form is more concise.
-
-Known types: `Array`, `Set`, `Optional`, `Dictionary`, `Collection`, `Sequence`.
-
-Lint: An extension with a `where` clause that can be replaced by angle brackets raises a warning.
-
-Format: The `where` clause constraints are moved into angle bracket syntax on the
-extended type.
-
-`GenericExtensions` rule can format your code automatically.
 
 ### GroupNumericLiterals
 
@@ -616,14 +531,6 @@ Format: `try` is removed from arguments and added to wrap the call expression.
 
 `HoistTry` rule can format your code automatically.
 
-### IdentifiersMustBeASCII
-
-All identifiers must be ASCII.
-
-Lint: If an identifier contains non-ASCII characters, a lint error is raised.
-
-`IdentifiersMustBeASCII` is a linter-only rule.
-
 ### InitCoderUnavailable
 
 Add `@available(*, unavailable)` to `required init(coder:)` that only calls `fatalError`.
@@ -638,24 +545,19 @@ Format: The `@available(*, unavailable)` attribute is added.
 
 `InitCoderUnavailable` rule can format your code automatically.
 
-### IsEmpty
+### LeadingDotOperators
 
-Prefer `isEmpty` over comparing `count` against zero.
+Move leading delimiters to the end of the previous line.
 
-Checking `count == 0` or `count != 0` (or `count > 0`) is less expressive and potentially less
-efficient than using `isEmpty`. Collections conforming to `Collection` guarantee O(1) `isEmpty`
-but `count` may be O(n) for some types (e.g. lazy sequences conforming to `Collection`).
+When a line starts with a comma or colon, the delimiter should instead be placed at the end
+of the previous line. This keeps the delimiter associated with the preceding expression rather
+than the following one.
 
-When the receiver is optional (`foo?.count == 0`), the replacement uses explicit boolean
-comparison (`foo?.isEmpty == true`) to preserve semantics.
+Lint: A finding is emitted when a delimiter starts a line.
 
-This rule is opt-in because not every type with a `count` property also provides `isEmpty`.
+Format: The delimiter is moved to the end of the previous line.
 
-Lint: Using `.count == 0`, `.count != 0`, or `.count > 0` raises a warning.
-
-Format: The comparison is replaced with `.isEmpty` or `!.isEmpty`.
-
-`IsEmpty` rule can format your code automatically.
+`LeadingDotOperators` rule can format your code automatically.
 
 ### LinebreakAtEndOfFile
 
@@ -669,6 +571,20 @@ Lint: If the file does not end with exactly one newline, a lint warning is raise
 Format: A trailing newline is added if missing, or extra newlines are removed.
 
 `LinebreakAtEndOfFile` rule can format your code automatically.
+
+### LowerCamelCase
+
+All values should be written in lower camel-case (`lowerCamelCase`).
+Underscores (except at the beginning of an identifier) are disallowed.
+
+This rule does not apply to test code, defined as code which:
+  * Contains the line `import XCTest`
+  * The function is marked with `@Test` attribute
+
+Lint: If an identifier contains underscores or begins with a capital letter, a lint error is
+      raised.
+
+`LowerCamelCase` is a linter-only rule.
 
 ### ModifierOrder
 
@@ -698,63 +614,6 @@ Format: Newlines between modifiers and the declaration keyword are replaced with
 
 `ModifiersOnSameLine` rule can format your code automatically.
 
-### NeverForceUnwrap
-
-Force-unwraps are strongly discouraged and must be documented.
-
-This rule does not apply to test code, defined as code which:
-  * Contains the line `import XCTest`
-  * The function is marked with `@Test` attribute
-
-Lint: If a force unwrap is used, a lint warning is raised.
-
-`NeverForceUnwrap` is a linter-only rule.
-
-### NeverUseForceTry
-
-Force-try (`try!`) is forbidden.
-
-This rule does not apply to test code, defined as code which:
-  * Contains the line `import XCTest`
-  * The function is marked with `@Test` attribute
-
-Lint: Using `try!` results in a lint error.
-
-TODO: Create exception for NSRegularExpression
-
-`NeverUseForceTry` is a linter-only rule.
-
-### NeverUseImplicitlyUnwrappedOptionals
-
-Implicitly unwrapped optionals (e.g. `var s: String!`) are forbidden.
-
-Certain properties (e.g. `@IBOutlet`) tied to the UI lifecycle are ignored.
-
-This rule does not apply to test code, defined as code which:
-  * Contains the line `import XCTest`
-  * The function is marked with `@Test` attribute
-
-TODO: Create exceptions for other UI elements (ex: viewDidLoad)
-
-Lint: Declaring a property with an implicitly unwrapped type yields a lint error.
-
-`NeverUseImplicitlyUnwrappedOptionals` is a linter-only rule.
-
-### NoAccessLevelOnExtensionDeclaration
-
-Specifying an access level for an extension declaration is forbidden.
-
-The behavior of this rule is controlled by `Configuration.extensionAccessControl.placement`:
-
-- `onDeclarations` (default): Access levels on extensions are moved to individual members.
-- `onExtension`: When all members share the same access level, it is hoisted to the extension.
-
-Lint: A lint error is raised when access control placement doesn't match the configuration.
-
-Format: Access control modifiers are moved to match the configured placement.
-
-`NoAccessLevelOnExtensionDeclaration` rule can format your code automatically.
-
 ### NoAssignmentInExpressions
 
 Assignment expressions must be their own statements.
@@ -770,6 +629,19 @@ Format: A `return` statement containing an assignment expression is expanded int
 
 `NoAssignmentInExpressions` rule can format your code automatically.
 
+### NoBacktickedSelf
+
+Remove backticks around `self` in optional unwrap expressions.
+
+Since Swift 4.2, `guard let self = self` is valid without backticks.
+Writing `` guard let `self` = self `` is a holdover from older Swift versions.
+
+Lint: If a backticked `self` is found in an optional binding, a finding is raised.
+
+Format: The backticks are removed.
+
+`NoBacktickedSelf` rule can format your code automatically.
+
 ### NoBlockComments
 
 Block comments should be avoided in favor of line comments.
@@ -777,17 +649,6 @@ Block comments should be avoided in favor of line comments.
 Lint: If a block comment appears, a lint error is raised.
 
 `NoBlockComments` is a linter-only rule.
-
-### NoCasesWithOnlyFallthrough
-
-Cases that contain only the `fallthrough` statement are forbidden.
-
-Lint: Cases containing only the `fallthrough` statement yield a lint error.
-
-Format: The fallthrough `case` is added as a prefix to the next case unless the next case is
-        `default`; in that case, the fallthrough `case` is deleted.
-
-`NoCasesWithOnlyFallthrough` rule can format your code automatically.
 
 ### NoEmptyLinesOpeningClosingBraces
 
@@ -798,17 +659,6 @@ Lint: Empty lines after opening braces and before closing braces yield a lint er
 Format: Empty lines after opening braces and before closing braces will be removed.
 
 `NoEmptyLinesOpeningClosingBraces` rule can format your code automatically.
-
-### NoEmptyTrailingClosureParentheses
-
-Function calls with no arguments and a trailing closure should not have empty parentheses.
-
-Lint: If a function call with a trailing closure has an empty argument list with parentheses,
-      a lint error is raised.
-
-Format: Empty parentheses in function calls with trailing closures will be removed.
-
-`NoEmptyTrailingClosureParentheses` rule can format your code automatically.
 
 ### NoExplicitOwnership
 
@@ -824,47 +674,77 @@ Format: The ownership modifier is removed.
 
 `NoExplicitOwnership` rule can format your code automatically.
 
-### NoForceTryInTests
+### NoExtensionAccessLevel
 
-Replace `try!` with `try` in test methods and add `throws` to the function signature.
+Specifying an access level for an extension declaration is forbidden.
 
-In test code, `try!` crashes the test runner on failure instead of producing a clear test
-failure. Using `throws` on the test method and plain `try` lets the framework report the
-error properly.
+The behavior of this rule is controlled by `Configuration.extensionAccessControl.placement`:
 
-This rule applies to:
+- `onDeclarations` (default): Access levels on extensions are moved to individual members.
+- `onExtension`: When all members share the same access level, it is hoisted to the extension.
+
+Lint: A lint error is raised when access control placement doesn't match the configuration.
+
+Format: Access control modifiers are moved to match the configured placement.
+
+`NoExtensionAccessLevel` rule can format your code automatically.
+
+### NoFallthroughOnlyCases
+
+Cases that contain only the `fallthrough` statement are forbidden.
+
+Lint: Cases containing only the `fallthrough` statement yield a lint error.
+
+Format: The fallthrough `case` is added as a prefix to the next case unless the next case is
+        `default`; in that case, the fallthrough `case` is deleted.
+
+`NoFallthroughOnlyCases` rule can format your code automatically.
+
+### NoForceTry
+
+Force-try (`try!`) is forbidden.
+
+In test functions, `try!` is auto-fixed to `try` and `throws` is added to the function
+signature if needed.
+
+In non-test code, `try!` is diagnosed but not rewritten.
+
+Test functions are:
 - Functions annotated with `@Test` (Swift Testing)
 - Functions named `test*()` with no parameters inside `XCTestCase` subclasses
 
 `try!` inside closures or nested functions is left alone because the enclosing test function's
 `throws` does not propagate into those scopes.
 
-Lint: A warning is raised for each `try!` in a test function body.
+Lint: A warning is raised for each `try!`.
 
-Format: `try!` is replaced with `try` and `throws` is added to the signature if needed.
+Format: In test functions, `try!` is replaced with `try` and `throws` is added.
 
-`NoForceTryInTests` rule can format your code automatically.
+`NoForceTry` rule can format your code automatically.
 
-### NoForceUnwrapInTests
+### NoForceUnwrap
 
-Replace force unwraps (`!`) in test functions with `try XCTUnwrap(...)` (XCTest) or
-`try #require(...)` (Swift Testing).
+Force-unwraps are strongly discouraged and must be documented.
 
-Force unwraps in tests crash the test runner instead of producing a useful failure message.
-Using XCTUnwrap / #require converts the crash into a clear test failure with location info.
+In test functions, force unwraps are auto-fixed:
+- `foo!` becomes `try XCTUnwrap(foo)` (XCTest) or `try #require(foo)` (Swift Testing)
+- `foo as! Bar` becomes `try XCTUnwrap(foo as? Bar)` or `try #require(foo as? Bar)`
+- `throws` is added to the function signature if needed
 
-This rule applies to:
+In non-test code, force unwraps are diagnosed but not rewritten.
+
+Test functions are:
 - Functions annotated with `@Test` (Swift Testing)
 - Functions named `test*()` with no parameters inside `XCTestCase` subclasses
 
 Force unwraps in closures, nested functions, and string interpolation are left alone because
 `try` cannot propagate out of those scopes.
 
-Lint: A warning is raised for each force unwrap that can be converted.
+Lint: A warning is raised for each force unwrap.
 
-Format: Force unwraps are replaced with optional chaining and wrapped in XCTUnwrap/#require.
+Format: In test functions, force unwraps are replaced with XCTUnwrap/#require.
 
-`NoForceUnwrapInTests` rule can format your code automatically.
+`NoForceUnwrap` rule can format your code automatically.
 
 ### NoGuardInTests
 
@@ -887,6 +767,22 @@ Format: The `guard` is replaced with assertion/unwrap statements and `throws` is
 the signature if needed.
 
 `NoGuardInTests` rule can format your code automatically.
+
+### NoImplicitlyUnwrappedOptionals
+
+Implicitly unwrapped optionals (e.g. `var s: String!`) are forbidden.
+
+Certain properties (e.g. `@IBOutlet`) tied to the UI lifecycle are ignored.
+
+This rule does not apply to test code, defined as code which:
+  * Contains the line `import XCTest`
+  * The function is marked with `@Test` attribute
+
+TODO: Create exceptions for other UI elements (ex: viewDidLoad)
+
+Lint: Declaring a property with an implicitly unwrapped type yields a lint error.
+
+`NoImplicitlyUnwrappedOptionals` is a linter-only rule.
 
 ### NoLabelsInCasePatterns
 
@@ -944,6 +840,47 @@ it.
 
 `NoPlaygroundLiterals` is a linter-only rule.
 
+### NoRetroactiveConformances
+
+`@retroactive` conformances are forbidden.
+
+Lint: Using `@retroactive` results in a lint error.
+
+`NoRetroactiveConformances` is a linter-only rule.
+
+### NoSemicolons
+
+Semicolons should not be present in Swift code.
+
+Lint: If a semicolon appears anywhere, a lint error is raised.
+
+Format: All semicolons will be replaced with line breaks.
+
+`NoSemicolons` rule can format your code automatically.
+
+### NoTrailingClosureParens
+
+Function calls with no arguments and a trailing closure should not have empty parentheses.
+
+Lint: If a function call with a trailing closure has an empty argument list with parentheses,
+      a lint error is raised.
+
+Format: Empty parentheses in function calls with trailing closures will be removed.
+
+`NoTrailingClosureParens` rule can format your code automatically.
+
+### NoTypeRepetitionInStaticProperties
+
+Static properties of a type that return that type should not include a reference to their type.
+
+"Reference to their type" means that the property name includes part, or all, of the type. If
+the type contains a namespace (i.e. `UIColor`) the namespace is ignored;
+`public class var redColor: UIColor` would trigger this rule.
+
+Lint: Static properties of a type that return that type will yield a lint error.
+
+`NoTypeRepetitionInStaticProperties` is a linter-only rule.
+
 ### NoVoidReturnOnFunctionSignature
 
 Functions that return `()` or `Void` should omit the return signature.
@@ -954,6 +891,22 @@ Format: Function declarations with explicit returns of `()` or `Void` will have 
         signature stripped.
 
 `NoVoidReturnOnFunctionSignature` rule can format your code automatically.
+
+### NoYodaConditions
+
+Prefer the constant value on the right-hand side of comparison expressions.
+
+"Yoda conditions" place the constant on the left (`0 == x`), which reads unnaturally.
+The conventional Swift style places the variable first (`x == 0`).
+
+For ordered comparisons (`<`, `<=`, `>`, `>=`), the operator is flipped when swapping
+sides so the semantics are preserved.
+
+Lint: A comparison with a constant on the left raises a warning.
+
+Format: The operands are swapped and the operator is flipped if necessary.
+
+`NoYodaConditions` rule can format your code automatically.
 
 ### OmitExplicitReturns
 
@@ -966,31 +919,20 @@ Format: `func <name>() { return ... }` constructs will be replaced with
 
 `OmitExplicitReturns` rule can format your code automatically.
 
-### OneCasePerLine
+### OneDeclarationPerLine
 
-Each enum case with associated values or a raw value should appear in its own case declaration.
+Each enum case with associated values or a raw value should appear in its own case declaration,
+and each variable declaration (except tuple destructuring) should declare only one variable.
 
-Lint: If a single `case` declaration declares multiple cases, and any of them have associated
-      values or raw values, a lint error is raised.
+Lint: If a single `case` declaration declares multiple cases where any has associated values or
+      raw values, or if a variable declaration declares multiple variables, a lint error is
+      raised.
 
-Format: All case declarations with associated values or raw values will be moved to their own
-        case declarations.
+Format: Case declarations with associated values or raw values will be moved to their own case
+        declarations. Variable declarations with multiple bindings will be split into individual
+        declarations.
 
-`OneCasePerLine` rule can format your code automatically.
-
-### OneVariableDeclarationPerLine
-
-Each variable declaration, with the exception of tuple destructuring, should
-declare 1 variable.
-
-Lint: If a variable declaration declares multiple variables, a lint error is
-raised.
-
-Format: If a variable declaration declares multiple variables, it will be
-split into multiple declarations, each declaring one of the variables, as
-long as the result would still be syntactically valid.
-
-`OneVariableDeclarationPerLine` rule can format your code automatically.
+`OneDeclarationPerLine` rule can format your code automatically.
 
 ### OnlyOneTrailingClosureArgument
 
@@ -1017,26 +959,103 @@ Format: The generic parameter is replaced with `some Protocol` in the parameter 
 
 `OpaqueGenericParameters` rule can format your code automatically.
 
-### OrderedImports
+### PatternLetPlacement
 
-Imports must be lexicographically ordered and (optionally) logically grouped at the top of each source file.
-The order of the import groups is 1) regular imports, 2) declaration imports, 3) @\_implementationOnly
-imports, and 4) @testable imports. These groups are separated by a single blank line. Blank lines in
-between the import declarations are removed.
+Enforce consistent placement of `let`/`var` in case patterns.
 
-Logical grouping is enabled by default but can be disabled via the `orderedImports.shouldGroupImports`
-configuration option to limit this rule to lexicographic ordering.
+Controlled by `Configuration.patternLet.placement`:
 
-By default, imports within conditional compilation blocks (`#if`, `#elseif`, `#else`) are not ordered.
-This behavior can be controlled via the `orderedImports.includeConditionalImports` configuration option.
+- `eachBinding` (default): Each variable has its own `let`/`var`:
+  `case .foo(let x, let y)`.
+- `outerPattern`: The `let`/`var` is hoisted to the pattern level:
+  `case let .foo(x, y)`.
 
-Lint: If an import appears anywhere other than the beginning of the file it resides in,
-      not lexicographically ordered, or (optionally) not in the appropriate import group, a lint error is
-      raised.
+Lint: Using the non-preferred placement yields a lint error.
 
-Format: Imports will be reordered and (optionally) grouped at the top of the file.
+Format: The `let`/`var` is repositioned to match the configured placement.
 
-`OrderedImports` rule can format your code automatically.
+`PatternLetPlacement` rule can format your code automatically.
+
+### PreferAngleBracketExtensions
+
+Use angle brackets (`extension Array<Foo>`) for generic type extensions instead of
+type constraints (`extension Array where Element == Foo`).
+
+Swift 5.7+ supports angle bracket syntax in extension declarations. When a `where`
+clause constrains all generic parameters of a known type to concrete types,
+the angle bracket form is more concise.
+
+Known types: `Array`, `Set`, `Optional`, `Dictionary`, `Collection`, `Sequence`.
+
+Lint: An extension with a `where` clause that can be replaced by angle brackets raises a warning.
+
+Format: The `where` clause constraints are moved into angle bracket syntax on the
+extended type.
+
+`PreferAngleBracketExtensions` rule can format your code automatically.
+
+### PreferAnyObject
+
+Prefer `AnyObject` over `class` for class-constrained protocols.
+
+The `class` keyword in protocol inheritance clauses was replaced by `AnyObject` in Swift 4.1.
+Using `AnyObject` is the modern, preferred spelling.
+
+Lint: A protocol inheriting from `class` instead of `AnyObject` raises a warning.
+
+Format: `class` is replaced with `AnyObject` in the inheritance clause.
+
+`PreferAnyObject` rule can format your code automatically.
+
+### PreferAssertionFailure
+
+Replace `assert(false, ...)` with `assertionFailure(...)` and
+`precondition(false, ...)` with `preconditionFailure(...)`.
+
+The `Failure` variants more clearly express intent: the code path should never be reached.
+They also have `Never` return type, enabling the compiler to prove exhaustiveness.
+
+Lint: Using `assert(false, ...)` or `precondition(false, ...)` raises a warning.
+
+Format: The call is replaced with the corresponding `Failure` variant, removing the
+`false` argument.
+
+`PreferAssertionFailure` rule can format your code automatically.
+
+### PreferCommaConditions
+
+Prefer comma over `&&` in `if`, `guard`, and `while` conditions.
+
+Swift condition lists use commas to separate independent boolean conditions,
+which short-circuit identically to `&&` but read more naturally and enable
+individual conditions to use optional binding or pattern matching.
+
+This rule only fires when `&&` is the top-level operator in a condition element
+(no `||` mixed in at the same precedence level, since that would change semantics).
+
+Lint: Using `&&` in a condition list raises a warning.
+
+Format: `&&` is replaced with commas, splitting the condition into separate
+condition elements.
+
+`PreferCommaConditions` rule can format your code automatically.
+
+### PreferConditionalExpression
+
+Use if/switch expressions for conditional property assignment.
+
+When a property with a type annotation and no initializer is immediately
+followed by an exhaustive `if` or `switch` that assigns the property in
+every branch, the two statements are merged into a single assignment
+expression. Nested conditionals are handled recursively.
+
+Lint: A property followed by an exhaustive conditional assignment raises
+      a warning.
+
+Format: The separate statements are merged into a conditional expression
+        assignment.
+
+`PreferConditionalExpression` rule can format your code automatically.
 
 ### PreferCountWhere
 
@@ -1051,6 +1070,53 @@ Format: `.filter { ... }.count` is replaced with `.count(where: { ... })`.
 
 `PreferCountWhere` rule can format your code automatically.
 
+### PreferEarlyExits
+
+Early exits should be used whenever possible.
+
+This means that `if ... else { return/throw/break/continue }` constructs should be replaced by
+`guard ... else { return/throw/break/continue }` constructs in order to keep indentation levels
+low. Specifically, code of the following form:
+
+```swift
+if condition {
+  trueBlock
+} else {
+  falseBlock
+  return/throw/break/continue
+}
+```
+
+will be transformed into:
+
+```swift
+guard condition else {
+  falseBlock
+  return/throw/break/continue
+}
+trueBlock
+```
+
+Lint: `if ... else { return/throw/break/continue }` constructs will yield a lint error.
+
+Format: `if ... else { return/throw/break/continue }` constructs will be replaced with
+        equivalent `guard ... else { return/throw/break/continue }` constructs.
+
+`PreferEarlyExits` rule can format your code automatically.
+
+### PreferEnvironmentEntry
+
+Use `@Entry` macro for `EnvironmentValues` instead of manual `EnvironmentKey` conformance.
+
+Recognizes `EnvironmentKey`-conforming structs/enums paired with `EnvironmentValues` extension
+properties and replaces them with `@Entry var` declarations.
+
+Lint: A lint warning is raised when an `EnvironmentKey` property can be replaced with `@Entry`.
+
+Format: The `EnvironmentKey` type is removed and the property is replaced with `@Entry var`.
+
+`PreferEnvironmentEntry` rule can format your code automatically.
+
 ### PreferExplicitFalse
 
 Prefer `== false` over `!` prefix negation.
@@ -1063,6 +1129,19 @@ Lint: Using `!` prefix negation raises a warning.
 Format: `!expression` is replaced with `expression == false`.
 
 `PreferExplicitFalse` rule can format your code automatically.
+
+### PreferFileID
+
+Enforce consistent use of `#file` or `#fileID`.
+
+In Swift 6+, `#file` and `#fileID` have identical behavior (both produce `Module/File.swift`).
+This rule standardizes usage to `#fileID` by default. `#filePath` is unaffected.
+
+Lint: Using the non-preferred file macro yields a lint warning.
+
+Format: The macro is replaced with the preferred spelling.
+
+`PreferFileID` rule can format your code automatically.
 
 ### PreferFinalClasses
 
@@ -1081,6 +1160,25 @@ Format: The `final` modifier is added and `open` members are converted to `publi
 
 `PreferFinalClasses` rule can format your code automatically.
 
+### PreferIsEmpty
+
+Prefer `isEmpty` over comparing `count` against zero.
+
+Checking `count == 0` or `count != 0` (or `count > 0`) is less expressive and potentially less
+efficient than using `isEmpty`. Collections conforming to `Collection` guarantee O(1) `isEmpty`
+but `count` may be O(n) for some types (e.g. lazy sequences conforming to `Collection`).
+
+When the receiver is optional (`foo?.count == 0`), the replacement uses explicit boolean
+comparison (`foo?.isEmpty == true`) to preserve semantics.
+
+This rule is opt-in because not every type with a `count` property also provides `isEmpty`.
+
+Lint: Using `.count == 0`, `.count != 0`, or `.count > 0` raises a warning.
+
+Format: The comparison is replaced with `.isEmpty` or `!.isEmpty`.
+
+`PreferIsEmpty` rule can format your code automatically.
+
 ### PreferKeyPath
 
 Convert trivial `map { $0.foo }` closures to keyPath-based syntax.
@@ -1098,6 +1196,109 @@ Format: The closure is replaced with a keyPath expression.
 
 `PreferKeyPath` rule can format your code automatically.
 
+### PreferMainAttribute
+
+Replace `@UIApplicationMain` and `@NSApplicationMain` with `@main`.
+
+These attributes were deprecated in favor of `@main` (SE-0383, Swift 5.3+).
+
+Lint: Using `@UIApplicationMain` or `@NSApplicationMain` raises a warning.
+
+Format: The attribute is replaced with `@main`.
+
+`PreferMainAttribute` rule can format your code automatically.
+
+### PreferShorthandTypeNames
+
+Shorthand type forms must be used wherever possible.
+
+Lint: Using a non-shorthand form (e.g. `Array<Element>`) yields a lint error unless the long
+      form is necessary (e.g. `Array<Element>.Index` cannot be shortened today.)
+
+Format: Where possible, shorthand types replace long form types; e.g. `Array<Element>` is
+        converted to `[Element]`.
+
+`PreferShorthandTypeNames` rule can format your code automatically.
+
+### PreferSingleLinePropertyGetter
+
+Read-only computed properties must use implicit `get` blocks.
+
+Lint: Read-only computed properties with explicit `get` blocks yield a lint error.
+
+Format: Explicit `get` blocks are rendered implicit by removing the `get`.
+
+`PreferSingleLinePropertyGetter` rule can format your code automatically.
+
+### PreferSwiftTesting
+
+Convert XCTest suites to Swift Testing.
+
+Replaces `import XCTest` with `import Testing` + `import Foundation`, removes `XCTestCase`
+conformance, converts `setUp`/`tearDown` to `init`/`deinit`, adds `@Test` to test methods,
+and converts XCT assertions to `#expect`/`#require`.
+
+Bails out entirely if the file contains unsupported XCTest functionality (expectations,
+performance tests, unknown overrides, async/throws tearDown, XCTestCase extensions).
+
+Lint: A warning is raised for each XCTest pattern that can be converted.
+
+Format: The XCTest patterns are replaced with Swift Testing equivalents.
+
+`PreferSwiftTesting` rule can format your code automatically.
+
+### PreferSynthesizedInitializer
+
+When possible, the synthesized `struct` initializer should be used.
+
+This means the creation of a (non-public) memberwise initializer with the same structure as the
+synthesized initializer is forbidden.
+
+Lint: (Non-public) memberwise initializers with the same structure as the synthesized
+      initializer will yield a lint error.
+
+`PreferSynthesizedInitializer` is a linter-only rule.
+
+### PreferTrailingClosures
+
+Use trailing closure syntax where applicable.
+
+When the last argument(s) to a function call are closure expressions, convert
+them to trailing closure syntax. For a single trailing closure, the closure must
+be unlabeled unless the function is in the "always trailing" list (e.g. `async`,
+`sync`, `autoreleasepool`). For multiple trailing closures, the first must be
+unlabeled and the rest must be labeled.
+
+Lint: When closure arguments could use trailing closure syntax.
+
+Format: The closure arguments are moved to trailing closure position.
+
+`PreferTrailingClosures` rule can format your code automatically.
+
+### PreferVoidReturn
+
+Return `Void`, not `()`, in signatures.
+
+Note that this rule does *not* apply to function declaration signatures in order to avoid
+conflicting with `NoVoidReturnOnFunctionSignature`.
+
+Lint: Returning `()` in a signature yields a lint error.
+
+Format: `-> ()` is replaced with `-> Void`
+
+`PreferVoidReturn` rule can format your code automatically.
+
+### PreferWhereClausesInForLoops
+
+`for` loops that consist of a single `if` statement must use `where` clauses instead.
+
+Lint: `for` loops that consist of a single `if` statement yield a lint error.
+
+Format: `for` loops that consist of a single `if` statement have the conditional of that
+        statement factored out to a `where` clause.
+
+`PreferWhereClausesInForLoops` rule can format your code automatically.
+
 ### PrivateStateVariables
 
 Add `private` to `@State` properties without explicit access control.
@@ -1112,6 +1313,32 @@ Lint: A `@State` or `@StateObject` property without access control raises a warn
 Format: The `private` modifier is added before the binding keyword.
 
 `PrivateStateVariables` rule can format your code automatically.
+
+### RedundantAccessControl
+
+Unified rule that removes or replaces redundant access control modifiers.
+
+Combines four checks:
+
+1. **Redundant `internal`** — removes explicit `internal` since it is the default.
+   Does NOT remove `internal(set)`, which is meaningful on properties with a higher
+   getter access level (e.g. `public internal(set) var`).
+
+2. **Redundant `public`** — removes `public` on members inside non-public types
+   where it has no effect. Does NOT flag members of `public` or `package` types.
+
+3. **Redundant extension ACL** — removes access control on extension members that
+   match the extension's own access level.
+
+4. **Redundant `fileprivate`** — converts `fileprivate` to `private` where equivalent.
+   Only applies when the file contains a single logical type with no nested type
+   declarations.
+
+Lint: Raises warnings for any of the above redundancies.
+
+Format: Removes or replaces the redundant modifier.
+
+`RedundantAccessControl` rule can format your code automatically.
 
 ### RedundantAsync
 
@@ -1203,40 +1430,6 @@ Format: The `==` function is removed from the member block.
 
 `RedundantEquatable` rule can format your code automatically.
 
-### RedundantExtensionACL
-
-Remove access control on extension members that match the extension's own access level.
-
-When an extension declares an access level (e.g. `public extension Foo`), members that
-repeat that same access level are redundant.
-
-For example: `public extension Foo { public func bar() {} }` — the `public` on `bar`
-is redundant because it matches the extension's access level.
-
-Lint: If a member has the same access level as its containing extension, a lint warning is raised.
-
-Format: The redundant access modifier is removed from the member.
-
-`RedundantExtensionACL` rule can format your code automatically.
-
-### RedundantFileprivate
-
-Prefer `private` over `fileprivate` where they are equivalent.
-
-In Swift 4+, `private` members are accessible from extensions of the same type in
-the same file. When a file contains only one logical type (a single type declaration
-plus extensions of that same type), `fileprivate` on members is equivalent to `private`.
-
-This rule only applies when the file contains a single logical type with no nested
-type declarations (nested types can access `fileprivate` but not `private` members
-of their parent).
-
-Lint: A lint warning is raised for `fileprivate` members that could be `private`.
-
-Format: `fileprivate` is replaced with `private`.
-
-`RedundantFileprivate` rule can format your code automatically.
-
 ### RedundantInit
 
 Remove explicit `.init` when calling a type initializer directly.
@@ -1253,31 +1446,21 @@ Format: The `.init` member access is removed, leaving the type called directly.
 
 `RedundantInit` rule can format your code automatically.
 
-### RedundantInternal
-
-Remove explicit `internal` access modifier since it is the default.
-
-The `internal` access level is the default for all declarations in Swift.
-Writing it explicitly is redundant noise.
-
-This rule does NOT remove `internal(set)`, which is meaningful on properties with a higher
-getter access level (e.g. `public internal(set) var`).
-
-Lint: If an explicit `internal` modifier is found, a lint warning is raised.
-
-Format: The redundant `internal` modifier is removed.
-
-`RedundantInternal` rule can format your code automatically.
-
 ### RedundantLet
 
-Remove redundant `let` from `let _ = expr`.
+Remove redundant `let`/`var` from wildcard patterns.
 
 At statement level, `let _ = expr` can be simplified to `_ = expr` since the `let` keyword
 is unnecessary when the result is discarded.
 
+In case patterns, `if case .foo(let _)` can be simplified to `if case .foo(_)` since the
+`let` binding of a wildcard is redundant.
+
 The rule skips result builder contexts (SwiftUI view builders, `#Preview`, etc.) where
 `let _ = expr` is required because `_ = expr` is not valid in a result builder body.
+
+The rule also skips declarations with attributes (`@MainActor let _ = ...`) since the
+attribute requires a declaration to attach to.
 
 Lint: A finding is emitted when a redundant `let` or `var` is found.
 
@@ -1385,22 +1568,6 @@ Format: The property declaration is removed and its value is inlined into
 
 `RedundantProperty` rule can format your code automatically.
 
-### RedundantPublic
-
-Remove `public` on members inside non-public types where it has no effect.
-
-A `public` member inside an `internal`, `private`, or `fileprivate` type is effectively
-limited to the enclosing type's access level. The `public` modifier is misleading.
-
-This rule checks struct, class, enum, and actor declarations. It does NOT flag
-members of `public` or `package` types (where `public` is meaningful).
-
-Lint: If a `public` member is found inside a non-public type, a lint warning is raised.
-
-Format: The redundant `public` modifier is removed.
-
-`RedundantPublic` rule can format your code automatically.
-
 ### RedundantRawValues
 
 Remove raw values that match the enum case name for `String`-backed enums.
@@ -1461,14 +1628,19 @@ Format: The redundant `Sendable` conformance is removed from the inheritance cla
 Remove `Self.` prefix in static context where the type is already inferred.
 
 Inside a static method or static computed property, `Self.` is redundant when accessing
-other static members of the same type.
+other static members of the same type. For example, inside `static func make()`,
+writing `Self.defaultValue` can be simplified to just `defaultValue`.
 
-For example, inside `static func make()`, writing `Self.defaultValue` can be simplified
-to just `defaultValue`.
+The rule preserves `Self` when:
+- Used as an initializer: `Self()`, `Self.init()`
+- Inside an instance method, getter, or initializer
+- A parameter or local shadows the static member name
 
-Lint: If a redundant `Self.` is found in a static context, a lint warning is raised.
+Lint: If a redundant `Self.` is found in a static context, a finding is raised.
 
-`RedundantStaticSelf` is a linter-only rule.
+Format: The `Self.` prefix is removed.
+
+`RedundantStaticSelf` rule can format your code automatically.
 
 ### RedundantSwiftTestingSuite
 
@@ -1570,19 +1742,6 @@ Lint:  invalid use of `forEach` yield will yield a lint error.
 
 `ReplaceForEachWithForLoop` is a linter-only rule.
 
-### ReturnVoidInsteadOfEmptyTuple
-
-Return `Void`, not `()`, in signatures.
-
-Note that this rule does *not* apply to function declaration signatures in order to avoid
-conflicting with `NoVoidReturnOnFunctionSignature`.
-
-Lint: Returning `()` in a signature yields a lint error.
-
-Format: `-> ()` is replaced with `-> Void`
-
-`ReturnVoidInsteadOfEmptyTuple` rule can format your code automatically.
-
 ### SimplifyGenericConstraints
 
 Use inline generic constraints (`<T: Foo>`) instead of where clauses
@@ -1612,6 +1771,27 @@ Lint: If declarations in a marked region are not sorted, a lint warning is raise
 Format: The declarations are reordered alphabetically by name.
 
 `SortDeclarations` rule can format your code automatically.
+
+### SortImports
+
+Imports must be lexicographically ordered and (optionally) logically grouped at the top of each source file.
+The order of the import groups is 1) regular imports, 2) declaration imports, 3) @\_implementationOnly
+imports, and 4) @testable imports. These groups are separated by a single blank line. Blank lines in
+between the import declarations are removed.
+
+Logical grouping is enabled by default but can be disabled via the `sortImports.shouldGroupImports`
+configuration option to limit this rule to lexicographic ordering.
+
+By default, imports within conditional compilation blocks (`#if`, `#elseif`, `#else`) are not ordered.
+This behavior can be controlled via the `sortImports.includeConditionalImports` configuration option.
+
+Lint: If an import appears anywhere other than the beginning of the file it resides in,
+      not lexicographically ordered, or (optionally) not in the appropriate import group, a lint error is
+      raised.
+
+Format: Imports will be reordered and (optionally) grouped at the top of the file.
+
+`SortImports` rule can format your code automatically.
 
 ### SortSwitchCases
 
@@ -1655,19 +1835,6 @@ Format: The `weak` modifier is removed.
 
 `StrongOutlets` rule can format your code automatically.
 
-### StrongifiedSelf
-
-Remove backticks around `self` in optional unwrap expressions.
-
-Since Swift 4.2, `guard let self = self` is valid without backticks.
-Writing `` guard let `self` = self `` is a holdover from older Swift versions.
-
-Lint: If a backticked `self` is found in an optional binding, a finding is raised.
-
-Format: The backticks are removed.
-
-`StrongifiedSelf` rule can format your code automatically.
-
 ### SwiftTestingTestCaseNames
 
 Remove the `test` prefix from Swift Testing `@Test` function names.
@@ -1698,132 +1865,7 @@ Format: Access control is corrected.
 
 `TestSuiteAccessControl` rule can format your code automatically.
 
-### Todos
-
-Use correct formatting for `TODO:`, `MARK:`, and `FIXME:` comments.
-
-These special comment tags must be uppercase, followed by a colon and a space. `MARK:` comments
-with a dash separator must use `// MARK: - text` format. Standalone `/// MARK:` doc comments are
-converted to `// MARK:` since MARK is not a documentation concept.
-
-Lint: If a special comment tag is not correctly formatted, a lint warning is raised.
-
-Format: The comment is reformatted to use the correct style.
-
-`Todos` rule can format your code automatically.
-
-### TypeNamesShouldBeCapitalized
-
-`struct`, `class`, `enum` and `protocol` declarations should have a capitalized name.
-
-Lint:  Types with un-capitalized names will yield a lint error.
-
-`TypeNamesShouldBeCapitalized` is a linter-only rule.
-
-### UseEarlyExits
-
-Early exits should be used whenever possible.
-
-This means that `if ... else { return/throw/break/continue }` constructs should be replaced by
-`guard ... else { return/throw/break/continue }` constructs in order to keep indentation levels
-low. Specifically, code of the following form:
-
-```swift
-if condition {
-  trueBlock
-} else {
-  falseBlock
-  return/throw/break/continue
-}
-```
-
-will be transformed into:
-
-```swift
-guard condition else {
-  falseBlock
-  return/throw/break/continue
-}
-trueBlock
-```
-
-Lint: `if ... else { return/throw/break/continue }` constructs will yield a lint error.
-
-Format: `if ... else { return/throw/break/continue }` constructs will be replaced with
-        equivalent `guard ... else { return/throw/break/continue }` constructs.
-
-`UseEarlyExits` rule can format your code automatically.
-
-### UseExplicitNilCheckInConditions
-
-When checking an optional value for `nil`-ness, prefer writing an explicit `nil` check rather
-than binding and immediately discarding the value.
-
-For example, `if let _ = someValue { ... }` is forbidden. Use `if someValue != nil { ... }`
-instead.
-
-Note: If the conditional binding carries an explicit type annotation (e.g. `if let _: S? = expr`),
-we skip the transformation. Such annotations can be necessary to drive generic type inference
-when a function mentions a type only in its return position.
-
-Lint: `let _ = expr` inside a condition list will yield a lint error.
-
-Format: `let _ = expr` inside a condition list will be replaced by `expr != nil`.
-
-`UseExplicitNilCheckInConditions` rule can format your code automatically.
-
-### UseLetInEveryBoundCaseVariable
-
-Enforce consistent placement of `let`/`var` in case patterns.
-
-Controlled by `Configuration.patternLet.placement`:
-
-- `eachBinding` (default): Each variable has its own `let`/`var`:
-  `case .foo(let x, let y)`.
-- `outerPattern`: The `let`/`var` is hoisted to the pattern level:
-  `case let .foo(x, y)`.
-
-Lint: Using the non-preferred placement yields a lint error.
-
-Format: The `let`/`var` is repositioned to match the configured placement.
-
-`UseLetInEveryBoundCaseVariable` rule can format your code automatically.
-
-### UseShorthandTypeNames
-
-Shorthand type forms must be used wherever possible.
-
-Lint: Using a non-shorthand form (e.g. `Array<Element>`) yields a lint error unless the long
-      form is necessary (e.g. `Array<Element>.Index` cannot be shortened today.)
-
-Format: Where possible, shorthand types replace long form types; e.g. `Array<Element>` is
-        converted to `[Element]`.
-
-`UseShorthandTypeNames` rule can format your code automatically.
-
-### UseSingleLinePropertyGetter
-
-Read-only computed properties must use implicit `get` blocks.
-
-Lint: Read-only computed properties with explicit `get` blocks yield a lint error.
-
-Format: Explicit `get` blocks are rendered implicit by removing the `get`.
-
-`UseSingleLinePropertyGetter` rule can format your code automatically.
-
-### UseSynthesizedInitializer
-
-When possible, the synthesized `struct` initializer should be used.
-
-This means the creation of a (non-public) memberwise initializer with the same structure as the
-synthesized initializer is forbidden.
-
-Lint: (Non-public) memberwise initializers with the same structure as the synthesized
-      initializer will yield a lint error.
-
-`UseSynthesizedInitializer` is a linter-only rule.
-
-### UseTripleSlashForDocumentationComments
+### TripleSlashDocComments
 
 Documentation comments must use the `///` form.
 
@@ -1835,18 +1877,48 @@ Format: If a doc block comment appears on its own on a line, or if a doc block c
         multiple lines without appearing on the same line as code, it will be replaced with
         multiple doc line comments.
 
-`UseTripleSlashForDocumentationComments` rule can format your code automatically.
+`TripleSlashDocComments` rule can format your code automatically.
 
-### UseWhereClausesInForLoops
+### URLMacro
 
-`for` loops that consist of a single `if` statement must use `where` clauses instead.
+Replace force-unwrapped `URL(string:)` initializers with a configured URL macro.
 
-Lint: `for` loops that consist of a single `if` statement yield a lint error.
+When configured with a macro name like `#URL` and module like `URLFoundation`, this rule
+converts `URL(string: "https://example.com")!` to `#URL("https://example.com")` and adds
+the module import if not already present.
 
-Format: `for` loops that consist of a single `if` statement have the conditional of that
-        statement factored out to a `where` clause.
+Only simple string literals are converted — string interpolations, concatenations, and
+non-literal expressions are left alone. The `URL(string:relativeTo:)` and
+`URL(fileURLWithPath:)` initializers are not affected.
 
-`UseWhereClausesInForLoops` rule can format your code automatically.
+This rule is opt-in and requires configuration via `urlMacro.macroName` and
+`urlMacro.moduleName` in the configuration file.
+
+Lint: A warning is raised for each `URL(string: "...")!` that can be converted.
+
+Format: The force-unwrapped URL initializer is replaced with the configured macro.
+
+`URLMacro` rule can format your code automatically.
+
+### UnusedArguments
+
+Mark unused function arguments with `_`.
+
+Detects unused parameters in functions, initializers, subscripts, closures,
+and for-loop variables, and replaces them with `_`.
+
+For named function parameters, the internal name is replaced with `_`
+(e.g., `func foo(bar: Int)` → `func foo(bar _: Int)`). For unnamed
+parameters, the name is removed (`func foo(_ bar: Int)` → `func foo(_: Int)`).
+
+For operator functions and subscripts, the parameter name is replaced
+with `_` directly since external labels are unnecessary.
+
+Lint: When a parameter or loop variable is unused.
+
+Format: The unused parameter or variable is replaced with `_`.
+
+`UnusedArguments` rule can format your code automatically.
 
 ### ValidateDocumentationComments
 
@@ -1882,44 +1954,24 @@ Format: The `test` prefix or `@Test` attribute is added.
 
 `ValidateTestCases` rule can format your code automatically.
 
-### WrapConditionalBodies
+### WrapBodies
 
-Inline conditional statement bodies are wrapped onto new lines.
+Single-line bodies in conditionals, functions, loops, and properties are
+wrapped onto multiple lines.
 
-Single-line `if`, `else`, and `guard` bodies are expanded so the body content
-starts on its own line with proper indentation.
+This rule combines wrapping for:
+- **Conditionals**: `if`, `else`, `guard` bodies
+- **Functions**: function, initializer, and subscript bodies
+- **Loops**: `for`, `while`, `repeat` loop bodies
+- **Properties**: computed property and observer bodies
 
-Lint: A single-line conditional body raises a warning.
-
-Format: The body is wrapped onto a new line with indentation.
-
-`WrapConditionalBodies` rule can format your code automatically.
-
-### WrapFunctionBodies
-
-Single-line function, initializer, and subscript bodies are wrapped onto
-multiple lines.
-
-Lint: A single-line function/init/subscript body raises a warning.
+Lint: A single-line body raises a warning.
 
 Format: The body is wrapped onto a new line with indentation.
 
-`WrapFunctionBodies` rule can format your code automatically.
+`WrapBodies` rule can format your code automatically.
 
-### WrapLoopBodies
-
-Inline loop bodies are wrapped onto new lines.
-
-Single-line `for`, `while`, and `repeat` loop bodies are expanded so the body
-content starts on its own line with proper indentation.
-
-Lint: A single-line loop body raises a warning.
-
-Format: The body is wrapped onto a new line with indentation.
-
-`WrapLoopBodies` rule can format your code automatically.
-
-### WrapMultilineConditionalAssignment
+### WrapConditionalAssignment
 
 Multiline conditional assignment expressions are wrapped after the
 assignment operator.
@@ -1933,7 +1985,7 @@ Lint: A multiline `if`/`switch` expression on the same line as `=` raises
 
 Format: A line break is inserted after `=`.
 
-`WrapMultilineConditionalAssignment` rule can format your code automatically.
+`WrapConditionalAssignment` rule can format your code automatically.
 
 ### WrapMultilineFunctionChains
 
@@ -1962,17 +2014,6 @@ Format: The `{` is moved to a new line aligned with the closing `}`.
 
 `WrapMultilineStatementBraces` rule can format your code automatically.
 
-### WrapPropertyBodies
-
-Single-line computed property and observer bodies are wrapped onto multiple
-lines.
-
-Lint: A single-line property accessor block raises a warning.
-
-Format: The accessor block is wrapped onto a new line with indentation.
-
-`WrapPropertyBodies` rule can format your code automatically.
-
 ### WrapSingleLineComments
 
 Single-line comments that exceed the configured line length are wrapped.
@@ -1998,19 +2039,3 @@ Lint: A switch case with multiple comma-separated items on a single line
 Format: Each item is placed on its own line with alignment indentation.
 
 `WrapSwitchCases` rule can format your code automatically.
-
-### YodaConditions
-
-Prefer the constant value on the right-hand side of comparison expressions.
-
-"Yoda conditions" place the constant on the left (`0 == x`), which reads unnaturally.
-The conventional Swift style places the variable first (`x == 0`).
-
-For ordered comparisons (`<`, `<=`, `>`, `>=`), the operator is flipped when swapping
-sides so the semantics are preserved.
-
-Lint: A comparison with a constant on the left raises a warning.
-
-Format: The operands are swapped and the operator is flipped if necessary.
-
-`YodaConditions` rule can format your code automatically.

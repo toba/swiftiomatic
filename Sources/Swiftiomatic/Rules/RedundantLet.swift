@@ -12,13 +12,19 @@
 
 import SwiftSyntax
 
-/// Remove redundant `let` from `let _ = expr`.
+/// Remove redundant `let`/`var` from wildcard patterns.
 ///
 /// At statement level, `let _ = expr` can be simplified to `_ = expr` since the `let` keyword
 /// is unnecessary when the result is discarded.
 ///
+/// In case patterns, `if case .foo(let _)` can be simplified to `if case .foo(_)` since the
+/// `let` binding of a wildcard is redundant.
+///
 /// The rule skips result builder contexts (SwiftUI view builders, `#Preview`, etc.) where
 /// `let _ = expr` is required because `_ = expr` is not valid in a result builder body.
+///
+/// The rule also skips declarations with attributes (`@MainActor let _ = ...`) since the
+/// attribute requires a declaration to attach to.
 ///
 /// Lint: A finding is emitted when a redundant `let` or `var` is found.
 ///
@@ -78,6 +84,11 @@ public final class RedundantLet: SyntaxFormatRule {
     guard !node.modifiers.contains(where: { $0.name.tokenKind == .keyword(.async) }) else {
       return false
     }
+
+    // Not when attributes are present (`@MainActor let _ = ...`, `@Sendable let _ = ...`).
+    // Attributes require a declaration to attach to; removing `let` would leave `_ = expr`
+    // which cannot carry attributes.
+    guard node.attributes.isEmpty else { return false }
 
     // Must have exactly one binding.
     guard node.bindings.count == 1, let binding = node.bindings.first else { return false }
@@ -197,9 +208,42 @@ public final class RedundantLet: SyntaxFormatRule {
 
     return false
   }
+
+  // MARK: - Case patterns: if case .foo(let _) → if case .foo(_)
+
+  public override func visit(_ node: LabeledExprSyntax) -> LabeledExprSyntax {
+    // In case patterns like `case .foo(let _)`, the AST has:
+    //   LabeledExprSyntax → PatternExprSyntax → ValueBindingPatternSyntax(let, WildcardPatternSyntax)
+    // The `let`/`var` is redundant when the inner pattern is just `_`.
+    //
+    // Note: after child-first rewriter traversal, `WildcardPatternSyntax` type checks can fail
+    // on the reconstructed node. Use `trimmedDescription == "_"` as a robust check.
+    guard let patExpr = node.expression.as(PatternExprSyntax.self),
+          let binding = patExpr.pattern.as(ValueBindingPatternSyntax.self),
+          binding.pattern.trimmedDescription == "_"
+    else {
+      return node
+    }
+
+    diagnose(.removeRedundantLetInCasePattern, on: binding.bindingSpecifier)
+
+    // Replace the pattern inside PatternExprSyntax with just the wildcard.
+    var wildcard = binding.pattern
+    let specifierTrivia = binding.bindingSpecifier.leadingTrivia
+    let commentTrivia = binding.bindingSpecifier.trailingTrivia.withoutLeadingSpaces()
+    wildcard.leadingTrivia = specifierTrivia + commentTrivia + wildcard.leadingTrivia
+    var newPatExpr = patExpr
+    newPatExpr.pattern = wildcard
+    var result = node
+    result.expression = ExprSyntax(newPatExpr)
+    return result
+  }
 }
 
 extension Finding.Message {
   fileprivate static let removeRedundantLet: Finding.Message =
     "remove 'let' from 'let _ = ...'; use '_ = ...' instead"
+
+  fileprivate static let removeRedundantLetInCasePattern: Finding.Message =
+    "remove redundant 'let' from wildcard pattern; use '_' instead"
 }

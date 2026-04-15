@@ -12,6 +12,10 @@ AST-accurate Swift linting, formatting, and code analysis — used from the IDE,
 
 ## Installation
 
+This is a fork of [apple/swift-format](https://github.com/swiftlang/swift-format) with an identical CLI surface (`format`, `lint`, `dump-configuration` subcommands and all flags). The `sm` binary is a drop-in replacement for `swift-format`.
+
+**CRITICAL: Never rename, remove, or alter any swift-format subcommands or flags in `Sources/sm/`.** Xcode calls this binary as `swift-format` — the CLI contract must stay identical. New subcommands and flags (like `analyze`, `list-rules`) may be added, but the existing surface (`format`, `lint`, `dump-configuration` and all their flags) must match upstream.
+
 ### Build and install
 
 ```sh
@@ -23,14 +27,25 @@ Homebrew manages the symlink `/opt/homebrew/bin/sm` → `../Cellar/sm/<version>/
 
 ### Xcode IDE integration
 
-Xcode's built-in "Format with swift-format" uses the toolchain binary at:
+Xcode's "Format with swift-format" (Editor menu) resolves the binary via `xcrun --find swift-format`, which points to:
 ```
 /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swift-format
 ```
 
-This is symlinked to `/opt/homebrew/bin/sm`, so Xcode uses our binary directly. After a release build + copy to the Cellar path, Xcode picks up the new rules immediately.
+This is symlinked to `/opt/homebrew/bin/sm`:
+```sh
+sudo ln -sf /opt/homebrew/bin/sm \
+  /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swift-format
+```
 
-The SPM plugins ("Format Source Code", "Lint Source Code") also use the `sm` binary and are available via right-click in Xcode's project navigator.
+This path is **not** SIP-protected — only `sudo` is needed, no SIP disable. After a release build + copy to the Cellar path, Xcode picks up new rules immediately via the symlink chain.
+
+**Xcode updates will overwrite the symlink** — re-run the `ln` command after updating Xcode.
+
+Three invocation paths all work through this:
+1. **Editor → "Format with swift-format"** — calls `swift-format format` on the file via stdin with `--assume-filename`, `--lines`/`--offsets`
+2. **SPM plugins** ("Format Source Code", "Lint Source Code") — invoke the `sm` binary by name with `format --recursive --parallel --in-place`, available via right-click in Xcode's project navigator
+3. **CLI** — `sm format`, `sm lint`, etc. directly
 
 ## CLI
 

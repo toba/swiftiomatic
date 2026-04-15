@@ -80,19 +80,7 @@ public final class NoExplicitOwnership: SyntaxFormatRule {
     }
 
     diagnose(.removeOwnershipModifier(keyword: ownershipModifier.name.text), on: ownershipModifier.name)
-
-    var result = decl
-    let savedLeadingTrivia = ownershipModifier.leadingTrivia
-    result.modifiers.remove(anyOf: Self.ownershipKeywords)
-
-    if var firstModifier = result.modifiers.first {
-      firstModifier.leadingTrivia = savedLeadingTrivia
-      result.modifiers[result.modifiers.startIndex] = firstModifier
-    } else {
-      result[keyPath: keywordKeyPath].leadingTrivia = savedLeadingTrivia
-    }
-
-    return result
+    return decl.removingModifiers(Self.ownershipKeywords, keyword: keywordKeyPath)
   }
 }
 

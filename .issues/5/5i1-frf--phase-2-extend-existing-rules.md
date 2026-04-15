@@ -10,7 +10,7 @@ parent: c7r-77o
 sync:
     github:
         issue_number: "305"
-        synced_at: "2026-04-14T18:45:54Z"
+        synced_at: "2026-04-15T00:34:47Z"
 ---
 
 Require architectural decisions about modifying existing rules vs standalone.

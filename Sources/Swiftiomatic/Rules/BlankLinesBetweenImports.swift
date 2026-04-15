@@ -27,11 +27,12 @@ public final class BlankLinesBetweenImports: SyntaxFormatRule {
       else { continue }
 
       let nextStmt = originalStatements[nextIndex]
-      let blanks = blankLineCount(in: nextStmt.leadingTrivia)
-      guard blanks > 0 else { continue }
+      guard nextStmt.leadingTrivia.hasBlankLine else { continue }
 
       diagnose(.removeBlankLineBetweenImports, on: nextStmt.item)
-      statements[nextIndex] = withNewlineCount(nextStmt, count: 1)
+      var modifiedNext = nextStmt
+      modifiedNext.leadingTrivia = nextStmt.leadingTrivia.replacingFirstNewlines(with: 1)
+      statements[nextIndex] = modifiedNext
       modified = true
     }
 
@@ -39,31 +40,6 @@ public final class BlankLinesBetweenImports: SyntaxFormatRule {
     var result = node
     result.statements = CodeBlockItemListSyntax(statements)
     return result
-  }
-
-  /// Count blank lines before the first comment in the trivia.
-  private func blankLineCount(in trivia: Trivia) -> Int {
-    var newlines = 0
-    for piece in trivia.pieces {
-      if case .newlines(let n) = piece { newlines += n }
-      else if piece.isSpaceOrTab { continue }
-      else { break }
-    }
-    return max(0, newlines - 1)
-  }
-
-  /// Replace the first `.newlines` piece with exactly `count` newlines.
-  private func withNewlineCount(_ statement: CodeBlockItemSyntax, count: Int) -> CodeBlockItemSyntax {
-    var pieces = Array(statement.leadingTrivia.pieces)
-    for (i, piece) in pieces.enumerated() {
-      if case .newlines = piece {
-        pieces[i] = .newlines(count)
-        var result = statement
-        result.leadingTrivia = Trivia(pieces: pieces)
-        return result
-      }
-    }
-    return statement
   }
 }
 

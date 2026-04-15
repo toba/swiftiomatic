@@ -28,8 +28,7 @@ public final class ConsistentSwitchCaseSpacing: SyntaxFormatRule {
     var withBlank = 0
     var withoutBlank = 0
     for i in 0..<(cases.count - 1) {
-      let nextTrivia = cases[i + 1].leadingTrivia
-      if hasBlankLine(in: nextTrivia) {
+      if cases[i + 1].leadingTrivia.hasBlankLine {
         withBlank += 1
       } else {
         withoutBlank += 1
@@ -44,18 +43,15 @@ public final class ConsistentSwitchCaseSpacing: SyntaxFormatRule {
 
     for i in 0..<(cases.count - 1) {
       let nextIndex = i + 1
-      let nextTrivia = cases[nextIndex].leadingTrivia
-      let currentlyHasBlank = hasBlankLine(in: nextTrivia)
+      let currentlyHasBlank = cases[nextIndex].leadingTrivia.hasBlankLine
 
-      if shouldHaveBlankLines && !currentlyHasBlank {
-        // Add blank line.
+      if shouldHaveBlankLines, !currentlyHasBlank {
         diagnose(.addBlankLineForConsistency, on: cases[nextIndex])
-        modifiedCases[nextIndex] = addLeadingNewline(to: modifiedCases[nextIndex])
+        modifiedCases[nextIndex] = modifiedCases[nextIndex].prependingNewline()
         modified = true
-      } else if !shouldHaveBlankLines && currentlyHasBlank {
-        // Remove blank line.
+      } else if !shouldHaveBlankLines, currentlyHasBlank {
         diagnose(.removeBlankLineForConsistency, on: cases[nextIndex])
-        modifiedCases[nextIndex] = removeBlankLine(from: modifiedCases[nextIndex])
+        modifiedCases[nextIndex] = modifiedCases[nextIndex].removingBlankLines()
         modified = true
       }
     }
@@ -63,50 +59,6 @@ public final class ConsistentSwitchCaseSpacing: SyntaxFormatRule {
     guard modified else { return visited }
     switchExpr.cases = SwitchCaseListSyntax(modifiedCases)
     return ExprSyntax(switchExpr)
-  }
-
-  private func hasBlankLine(in trivia: Trivia) -> Bool {
-    var newlines = 0
-    for piece in trivia.pieces {
-      if case .newlines(let n) = piece { newlines += n }
-      else if piece.isSpaceOrTab { continue }
-      else { break }
-    }
-    return newlines >= 2
-  }
-
-  private func addLeadingNewline(to element: SwitchCaseListSyntax.Element) -> SwitchCaseListSyntax.Element {
-    switch element {
-    case .switchCase(var switchCase):
-      switchCase.leadingTrivia = .newline + switchCase.leadingTrivia
-      return .switchCase(switchCase)
-    case .ifConfigDecl(var ifConfig):
-      ifConfig.leadingTrivia = .newline + ifConfig.leadingTrivia
-      return .ifConfigDecl(ifConfig)
-    }
-  }
-
-  private func removeBlankLine(from element: SwitchCaseListSyntax.Element) -> SwitchCaseListSyntax.Element {
-    switch element {
-    case .switchCase(var switchCase):
-      switchCase.leadingTrivia = reducedTrivia(switchCase.leadingTrivia)
-      return .switchCase(switchCase)
-    case .ifConfigDecl(var ifConfig):
-      ifConfig.leadingTrivia = reducedTrivia(ifConfig.leadingTrivia)
-      return .ifConfigDecl(ifConfig)
-    }
-  }
-
-  /// Reduce the first `.newlines(N)` piece to `.newlines(1)`.
-  private func reducedTrivia(_ trivia: Trivia) -> Trivia {
-    var pieces = Array(trivia.pieces)
-    for (i, piece) in pieces.enumerated() {
-      if case .newlines(let n) = piece, n > 1 {
-        pieces[i] = .newlines(1)
-        return Trivia(pieces: pieces)
-      }
-    }
-    return trivia
   }
 }
 

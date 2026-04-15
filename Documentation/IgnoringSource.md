@@ -60,12 +60,12 @@ set of rules, add a comment of the form:
 `// swift-format-ignore: [comma delimited list of rule names]`.
 
 ```swift
-// swift-format-ignore: DoNotUseSemicolons
+// swift-format-ignore: NoSemicolons
 struct Foo {
 	   var bar = true
 }
 
-// swift-format-ignore: DoNotUseSemicolons, FullyIndirectEnum, UseEarlyExits
+// swift-format-ignore: NoSemicolons, FullyIndirectEnum, PreferEarlyExits
 func foo() {
 	    var bar = true
 }
@@ -81,7 +81,7 @@ You can also disable specific source transforming rules for an entire file
 by using the file-level ignore directive with a list of rule names. For example:
 
 ```swift
-// swift-format-ignore-file: DoNotUseSemicolons, FullyIndirectEnum
+// swift-format-ignore-file: NoSemicolons, FullyIndirectEnum
 import Zoo
 import Arrays
 
@@ -89,7 +89,7 @@ struct Foo {
   func foo() { bar();baz(); }
 }
 ```
-In this case, only the DoNotUseSemicolons and FullyIndirectEnum rules are disabled
+In this case, only the NoSemicolons and FullyIndirectEnum rules are disabled
 throughout the file, while all other formatting rules (such as line breaking and 
 indentation) remain active.
 

@@ -30,29 +30,48 @@ case .bar(let _):     ← ValueBindingPatternSyntax + WildcardPatternSyntax
 case .baz(_):         ← WildcardPatternSyntax (no ValueBindingPatternSyntax)
 ```
 
-Visit `PatternExprSyntax` or `ValueBindingPatternSyntax` directly.
+### Modifying Case Pattern Bindings in SyntaxRewriter
 
-### Per-Argument Binding Label Quirk
-
-In per-argument patterns like `case .bar(let _, let _)`, the parser puts `let`/`var` as
-the `LabeledExprSyntax.label` (with `colon: nil`), NOT as part of the expression.
+The actual AST for `case .bar(let _)` uses `PatternExprSyntax` → `ValueBindingPatternSyntax`,
+with `LabeledExprSyntax.label = nil`:
 
 ```
 case .bar(let _):
 FunctionCallExprSyntax
 └─ arguments: LabeledExprListSyntax
    └─ LabeledExprSyntax
-      ├─ label: "let"     ← keyword token as label
-      ├─ colon: nil        ← no colon (binding specifier, not argument label)
-      └─ expression: ???   ← the wildcard `_` in an unusual representation
+      ├─ label: nil
+      ├─ colon: nil
+      └─ expression: PatternExprSyntax
+         └─ pattern: ValueBindingPatternSyntax
+            ├─ bindingSpecifier: "let"
+            └─ pattern: WildcardPatternSyntax
 ```
 
-**Critical**: the expression after `let` as label does NOT reliably match
-`DiscardAssignmentExprSyntax`, `PatternExprSyntax`, or `DeclReferenceExprSyntax`.
-Use `arg.expression.trimmedDescription == "_"` as a fallback.
+**SyntaxRewriter caveat**: returning a different concrete type from a covariant `visit`
+(e.g., `WildcardPatternSyntax` from `visit(_ node: ValueBindingPatternSyntax) -> PatternSyntax`)
+is **silently ignored** — the visitor IS called but `rewrite()` doesn't apply the change.
 
-To distinguish real argument labels from binding specifiers: real labels always have
-`arg.colon != nil`. Binding specifiers have `arg.label != nil` but `arg.colon == nil`.
+**Fix**: modify at the PARENT level. Visit `LabeledExprSyntax` and replace
+`node.expression` with a new `PatternExprSyntax` wrapping just the wildcard:
+
+```swift
+override func visit(_ node: LabeledExprSyntax) -> LabeledExprSyntax {
+    guard let patExpr = node.expression.as(PatternExprSyntax.self),
+          let binding = patExpr.pattern.as(ValueBindingPatternSyntax.self),
+          binding.pattern.trimmedDescription == "_"  // ← is() fails after child traversal
+    else { return node }
+    var newPatExpr = patExpr
+    newPatExpr.pattern = binding.pattern
+    var result = node
+    result.expression = ExprSyntax(newPatExpr)
+    return result
+}
+```
+
+**`is()` check caveat**: after SyntaxRewriter's child-first traversal, `is(WildcardPatternSyntax.self)`
+on reconstructed nodes may return `false` even when the node IS a wildcard. Use
+`trimmedDescription == "_"` as a reliable fallback.
 
 ### Backtick Token Representation
 

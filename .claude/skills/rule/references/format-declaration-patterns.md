@@ -307,6 +307,62 @@ private func rebuildGenericClause(
 
 Same pattern for `GenericRequirementListSyntax`. Returning `nil` from the rebuild removes the clause entirely.
 
+## Static Context Detection
+
+Walk the parent chain to determine if code is inside a `static`/`class` member. **Key pitfall**: nested functions inside a static method are still in a static context, so don't stop at non-static `FunctionDeclSyntax` — only stop at direct type members.
+
+```swift
+private func isInStaticContext(_ node: some SyntaxProtocol) -> Bool {
+    var current = node.parent
+    while let parent = current {
+        if let funcDecl = parent.as(FunctionDeclSyntax.self) {
+            if funcDecl.modifiers.contains(anyOf: [.static, .class]) { return true }
+            // Direct member of a type → instance method, not static
+            if funcDecl.parent?.is(MemberBlockItemSyntax.self) == true { return false }
+            // Nested function → continue walking up
+        }
+        if let varDecl = parent.as(VariableDeclSyntax.self) {
+            if varDecl.modifiers.contains(anyOf: [.static, .class]) { return true }
+            if varDecl.parent?.is(MemberBlockItemSyntax.self) == true { return false }
+        }
+        // Initializers are NOT static context
+        if parent.is(InitializerDeclSyntax.self) { return false }
+        // Stop at type boundaries
+        if parent.is(ClassDeclSyntax.self) || parent.is(StructDeclSyntax.self)
+            || parent.is(EnumDeclSyntax.self) || parent.is(ActorDeclSyntax.self) { return false }
+        current = parent.parent
+    }
+    return false
+}
+```
+
+**`MemberBlockItemSyntax` check**: distinguishes direct type members from nested declarations. `func bar()` inside `static func foo()` has parent `CodeBlockItemSyntax`, not `MemberBlockItemSyntax`.
+
+Used by: `RedundantStaticSelf`.
+
+## Remove Type Annotation with Comment Preservation
+
+When removing a type annotation (`let x: T = expr` → `let x = expr`), the type's trailing trivia may contain block comments that must be transferred to the `=` token:
+
+```swift
+var newBinding = binding
+newBinding.typeAnnotation = nil
+
+var newInitializer = initializer
+let typeTrailingTrivia = typeAnnotation.type.trailingTrivia
+if typeTrailingTrivia.hasAnyComments {
+    // Transfer comment: `var x: T /* c */ = val` → `var x /* c */ = val`
+    newInitializer.equal.leadingTrivia = typeTrailingTrivia
+} else if initializer.equal.leadingTrivia.isEmpty {
+    newInitializer.equal.leadingTrivia = .space
+}
+newBinding.initializer = newInitializer
+```
+
+Without this, `var x: UIView /* view */ = UIView()` would lose the `/* view */` comment.
+
+Used by: `RedundantType`.
+
 **Where clause removal trivia**: When removing the where clause, the space that was before `where` (typically on the preceding token's trailing trivia) remains, and the space before `{` (on the where clause's last token) is lost. Fix by: (1) set `body.leftBrace.leadingTrivia = .space`, (2) strip trailing trivia from the preceding token (return clause type or parameter `)`):
 
 ```swift

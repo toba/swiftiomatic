@@ -259,3 +259,32 @@ extension Trivia {
     return Trivia(pieces: pieces)
   }
 }
+
+// MARK: - Switch Case Element Helpers
+
+extension SwitchCaseListSyntax.Element {
+  /// Returns a copy with an extra newline prepended to the leading trivia.
+  func prependingNewline() -> SwitchCaseListSyntax.Element {
+    switch self {
+    case .switchCase(var switchCase):
+      switchCase.leadingTrivia = .newline + switchCase.leadingTrivia
+      return .switchCase(switchCase)
+    case .ifConfigDecl(var ifConfig):
+      ifConfig.leadingTrivia = .newline + ifConfig.leadingTrivia
+      return .ifConfigDecl(ifConfig)
+    }
+  }
+
+  /// Returns a copy with multi-newlines collapsed to single newlines in leading trivia.
+  func removingBlankLines() -> SwitchCaseListSyntax.Element {
+    switch self {
+    case .switchCase(var switchCase):
+      switchCase.leadingTrivia = switchCase.leadingTrivia.reducingToSingleNewlines
+      return .switchCase(switchCase)
+    case .ifConfigDecl(var ifConfig):
+      ifConfig.leadingTrivia = ifConfig.leadingTrivia.reducingToSingleNewlines
+      return .ifConfigDecl(ifConfig)
+    }
+  }
+
+}

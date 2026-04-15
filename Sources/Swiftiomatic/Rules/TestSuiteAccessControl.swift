@@ -148,16 +148,7 @@ public final class TestSuiteAccessControl: SyntaxFormatRule {
     else { return decl }
 
     diagnose(.removePublicFromTestType, on: publicMod.name)
-
-    var result = decl
-    let savedTrivia = publicMod.leadingTrivia
-    result.modifiers = decl.modifiers.removing(anyOf: [.public])
-    if result.modifiers.isEmpty {
-      result[keyPath: keyword].leadingTrivia = savedTrivia
-    } else {
-      result.modifiers[result.modifiers.startIndex].leadingTrivia = savedTrivia
-    }
-    return result
+    return decl.removingModifiers([.public], keyword: keyword)
   }
 
   private func removeExplicitACL<Decl: DeclSyntaxProtocol & WithModifiersSyntax>(
@@ -172,16 +163,7 @@ public final class TestSuiteAccessControl: SyntaxFormatRule {
     diagnose(.removeACLFromTestMethod, on: aclMod.name)
 
     guard case .keyword(let kwToRemove) = aclMod.name.tokenKind else { return decl }
-
-    var result = decl
-    let savedTrivia = aclMod.leadingTrivia
-    result.modifiers = decl.modifiers.removing(anyOf: [kwToRemove])
-    if result.modifiers.isEmpty {
-      result[keyPath: keyword].leadingTrivia = savedTrivia
-    } else {
-      result.modifiers[result.modifiers.startIndex].leadingTrivia = savedTrivia
-    }
-    return result
+    return decl.removingModifiers([kwToRemove], keyword: keyword)
   }
 
   private func ensurePrivate<Decl: DeclSyntaxProtocol & WithModifiersSyntax>(

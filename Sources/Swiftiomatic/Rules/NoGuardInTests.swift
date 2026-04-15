@@ -22,34 +22,25 @@ public final class NoGuardInTests: SyntaxFormatRule {
 
   public override class var isOptIn: Bool { true }
 
-  private var importsTesting = false
-  private var insideXCTestCase = false
+  private var testContext = TestContextTracker()
   private var insideTestFunction = false
   private var addedTryStatement = false
 
   // MARK: - Scope tracking
 
   public override func visit(_ node: ImportDeclSyntax) -> DeclSyntax {
-    if node.path.first?.name.text == "Testing" {
-      importsTesting = true
-    }
+    testContext.visitImport(node)
     return DeclSyntax(node)
   }
 
   public override func visit(_ node: SourceFileSyntax) -> SourceFileSyntax {
-    setImportsXCTest(context: context, sourceFile: node)
+    testContext.visitSourceFile(node, context: context)
     return super.visit(node)
   }
 
   public override func visit(_ node: ClassDeclSyntax) -> DeclSyntax {
-    let wasInside = insideXCTestCase
-    if context.importsXCTest == .importsXCTest,
-      let inheritance = node.inheritanceClause,
-      inheritance.contains(named: "XCTestCase")
-    {
-      insideXCTestCase = true
-    }
-    defer { insideXCTestCase = wasInside }
+    let was = testContext.pushClass(node, context: context)
+    defer { testContext.popClass(was: was) }
     return super.visit(node)
   }
 
@@ -62,7 +53,7 @@ public final class NoGuardInTests: SyntaxFormatRule {
   // MARK: - Function-level: detect test, add throws
 
   public override func visit(_ node: FunctionDeclSyntax) -> DeclSyntax {
-    guard isTestFunction(node), node.body != nil else {
+    guard testContext.isTestFunction(node), node.body != nil else {
       return DeclSyntax(node)
     }
 
@@ -83,7 +74,7 @@ public final class NoGuardInTests: SyntaxFormatRule {
     }
 
     if result.signature.effectSpecifiers?.throwsClause == nil {
-      result = addThrows(to: result)
+      result = result.addingThrowsClause()
     }
 
     return DeclSyntax(result)
@@ -165,7 +156,7 @@ public final class NoGuardInTests: SyntaxFormatRule {
 
     // Extract assertion message from XCTFail/Issue.record in else body
     let assertionMessage = extractAssertionMessage(from: `guard`.body)
-    let useSwiftTesting = importsTesting
+    let useSwiftTesting = testContext.importsTesting
     let fullLeadingTrivia = item.leadingTrivia
     // Extract just the indentation (spaces/tabs) from the leading trivia
     let indentTrivia = extractIndentation(from: fullLeadingTrivia)
@@ -420,49 +411,6 @@ public final class NoGuardInTests: SyntaxFormatRule {
       }
     }
     return Trivia(pieces: pieces)
-  }
-
-  private func isTestFunction(_ node: FunctionDeclSyntax) -> Bool {
-    if importsTesting && node.hasAttribute("Test", inModule: "Testing") {
-      return true
-    }
-
-    if insideXCTestCase {
-      let name = node.name.text
-      return name.hasPrefix("test")
-        && node.signature.parameterClause.parameters.isEmpty
-        && node.signature.returnClause == nil
-    }
-
-    return false
-  }
-
-  private func addThrows(to node: FunctionDeclSyntax) -> FunctionDeclSyntax {
-    var result = node
-    let throwsClause = ThrowsClauseSyntax(
-      throwsSpecifier: .keyword(.throws, trailingTrivia: [])
-    )
-    if var effectSpecifiers = result.signature.effectSpecifiers {
-      if var body = result.body {
-        var tc = throwsClause
-        tc.throwsSpecifier.leadingTrivia = body.leftBrace.leadingTrivia
-        body.leftBrace.leadingTrivia = .space
-        effectSpecifiers.throwsClause = tc
-        result.signature.effectSpecifiers = effectSpecifiers
-        result.body = body
-      }
-    } else {
-      result.signature.effectSpecifiers = FunctionEffectSpecifiersSyntax(
-        throwsClause: throwsClause
-      )
-      if var body = result.body {
-        let bodyTrivia = body.leftBrace.leadingTrivia
-        result.signature.effectSpecifiers!.throwsClause!.throwsSpecifier.leadingTrivia = bodyTrivia
-        body.leftBrace.leadingTrivia = .space
-        result.body = body
-      }
-    }
-    return result
   }
 
   /// Collect variable names declared in a code block item (for shadowing detection).

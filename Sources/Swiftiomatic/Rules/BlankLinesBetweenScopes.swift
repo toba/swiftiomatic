@@ -43,7 +43,7 @@ public final class BlankLinesBetweenScopes: SyntaxFormatRule {
         hasDeclMultiLineBody(decl)
       else { continue }
       let nextIndex = i + 1
-      guard blankLineCount(in: original[nextIndex].leadingTrivia) == 0 else { continue }
+      guard !original[nextIndex].leadingTrivia.hasBlankLine else { continue }
 
       diagnose(.insertBlankLineAfterScope, on: original[nextIndex].item)
       var next = original[nextIndex]
@@ -70,7 +70,7 @@ public final class BlankLinesBetweenScopes: SyntaxFormatRule {
     for i in 0..<(original.count - 1) {
       guard hasDeclMultiLineBody(original[i].decl) else { continue }
       let nextIndex = i + 1
-      guard blankLineCount(in: original[nextIndex].leadingTrivia) == 0 else { continue }
+      guard !original[nextIndex].leadingTrivia.hasBlankLine else { continue }
 
       diagnose(.insertBlankLineAfterScope, on: diagTargets[nextIndex].decl)
       var next = original[nextIndex]
@@ -94,15 +94,6 @@ public final class BlankLinesBetweenScopes: SyntaxFormatRule {
     return lastToken.leadingTrivia.containsNewlines
   }
 
-  private func blankLineCount(in trivia: Trivia) -> Int {
-    var newlines = 0
-    for piece in trivia.pieces {
-      if case .newlines(let n) = piece { newlines += n }
-      else if piece.isSpaceOrTab { continue }
-      else { break }
-    }
-    return max(0, newlines - 1)
-  }
 }
 
 extension Finding.Message {

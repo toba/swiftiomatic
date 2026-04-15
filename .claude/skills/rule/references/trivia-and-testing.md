@@ -146,7 +146,7 @@ Both must produce identical output and findings. If the pipeline reformats diffe
 
 The SwiftFormat reference at `~/Developer/swiftiomatic-ref/SwiftFormat/Tests/Rules/` has extensive edge-case tests. **Always adapt them** — they catch real bugs:
 
-- Double-space in partial where clause rebuilds (caught in `GenericExtensions`)
+- Double-space in partial where clause rebuilds (caught in `PreferAngleBracketExtensions`)
 - Guard conditions for `case let` patterns, `repeat while`, `try?`/`try!`
 - Multiple trailing closures breaking keyPath conversion
 
@@ -249,7 +249,7 @@ CodeBlockItemSyntax(item: .expr(ExprSyntax(modified)))
 
 This only applies when the modified expression preserves its original structure (e.g., `removeAssignments` modifies body/else body but keeps the if/switch keyword unchanged). For cases where you create a NEW expression (e.g., stripping `foo = ` to keep just the value), you DO need to transfer trivia explicitly.
 
-Used by: `ConditionalAssignment` (nested if/switch branch handling).
+Used by: `PreferConditionalExpression` (nested if/switch branch handling).
 
 ## String Interpolation in Test Strings
 

@@ -44,6 +44,8 @@ extension Configuration {
     config.indentBlankLines = false
     config.extensionAccessControl = ExtensionAccessControlConfiguration()
     config.patternLet = PatternLetConfiguration()
+    config.urlMacro = URLMacroConfiguration()
+    config.fileHeader = FileHeaderConfiguration()
     return config
   }
 

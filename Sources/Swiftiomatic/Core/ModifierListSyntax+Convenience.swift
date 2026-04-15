@@ -57,3 +57,32 @@ extension DeclModifierListSyntax {
     }
   }
 }
+
+extension DeclSyntaxProtocol where Self: WithModifiersSyntax {
+  /// Removes modifiers matching `keywords` and transfers leading trivia from the first removed
+  /// modifier to the next remaining modifier — or to the declaration keyword if no modifiers remain.
+  ///
+  /// This is the standard pattern for removing access-level or other modifiers while preserving
+  /// trivia (comments, whitespace) that was attached to the removed modifier.
+  func removingModifiers(
+    _ keywords: Set<Keyword>,
+    keyword: WritableKeyPath<Self, TokenSyntax>
+  ) -> Self {
+    guard let removedModifier = modifiers.first(where: {
+      if case .keyword(let kw) = $0.name.tokenKind { return keywords.contains(kw) }
+      return false
+    }) else { return self }
+
+    var result = self
+    let savedTrivia = removedModifier.leadingTrivia
+    result.modifiers = modifiers.removing(anyOf: keywords)
+
+    if var firstModifier = result.modifiers.first {
+      firstModifier.leadingTrivia = savedTrivia
+      result.modifiers[result.modifiers.startIndex] = firstModifier
+    } else {
+      result[keyPath: keyword].leadingTrivia = savedTrivia
+    }
+    return result
+  }
+}

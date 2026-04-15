@@ -48,10 +48,12 @@ public struct Configuration: Codable, Equatable, Sendable {
     case multiElementCollectionTrailingCommas
     case reflowMultilineStringLiterals
     case indentBlankLines
-    case orderedImports
+    case sortImports
     case acronyms
     case extensionAccessControl
     case patternLet
+    case urlMacro
+    case fileHeader
   }
 
   /// A dictionary containing the default enabled/disabled states of rules, keyed by the rules'
@@ -305,10 +307,10 @@ public struct Configuration: Codable, Equatable, Sendable {
   /// If false (the default), the whitespace in blank lines will be removed entirely.
   public var indentBlankLines: Bool
 
-  /// Configuration for the `OrderedImports` rule.
-  public var orderedImports: OrderedImportsConfiguration
+  /// Configuration for the `SortImports` rule.
+  public var sortImports: SortImportsConfiguration
 
-  /// Configuration for the `Acronyms` rule.
+  /// Configuration for the `CapitalizeAcronyms` rule.
   public var acronyms: AcronymsConfiguration = AcronymsConfiguration()
 
   /// Determines where access control modifiers are placed for extension declarations.
@@ -316,6 +318,12 @@ public struct Configuration: Codable, Equatable, Sendable {
 
   /// Determines where `let`/`var` is placed in case patterns.
   public var patternLet: PatternLetConfiguration
+
+  /// Configuration for replacing `URL(string:)!` with a macro like `#URL(...)`.
+  public var urlMacro: URLMacroConfiguration
+
+  /// Configuration for enforcing a file header comment.
+  public var fileHeader: FileHeaderConfiguration
 
   /// Creates a new `Configuration` by loading it from a configuration file.
   public init(contentsOf url: URL) throws {
@@ -457,12 +465,12 @@ public struct Configuration: Codable, Equatable, Sendable {
       )
       ?? defaults.indentBlankLines
 
-    self.orderedImports =
+    self.sortImports =
       try container.decodeIfPresent(
-        OrderedImportsConfiguration.self,
-        forKey: .orderedImports
+        SortImportsConfiguration.self,
+        forKey: .sortImports
       )
-      ?? defaults.orderedImports
+      ?? defaults.sortImports
 
     self.acronyms =
       try container.decodeIfPresent(
@@ -482,6 +490,18 @@ public struct Configuration: Codable, Equatable, Sendable {
         forKey: .patternLet
       )
       ?? defaults.patternLet
+    self.urlMacro =
+      try container.decodeIfPresent(
+        URLMacroConfiguration.self,
+        forKey: .urlMacro
+      )
+      ?? defaults.urlMacro
+    self.fileHeader =
+      try container.decodeIfPresent(
+        FileHeaderConfiguration.self,
+        forKey: .fileHeader
+      )
+      ?? defaults.fileHeader
 
     // If the `rules` key is not present at all, default it to the built-in set
     // so that the behavior is the same as if the configuration had been
@@ -522,10 +542,12 @@ public struct Configuration: Codable, Equatable, Sendable {
     try container.encode(multiElementCollectionTrailingCommas, forKey: .multiElementCollectionTrailingCommas)
     try container.encode(reflowMultilineStringLiterals, forKey: .reflowMultilineStringLiterals)
     try container.encode(indentBlankLines, forKey: .indentBlankLines)
-    try container.encode(orderedImports, forKey: .orderedImports)
+    try container.encode(sortImports, forKey: .sortImports)
     try container.encode(acronyms, forKey: .acronyms)
     try container.encode(extensionAccessControl, forKey: .extensionAccessControl)
     try container.encode(patternLet, forKey: .patternLet)
+    try container.encode(urlMacro, forKey: .urlMacro)
+    try container.encode(fileHeader, forKey: .fileHeader)
     try container.encode(rules, forKey: .rules)
   }
 
@@ -592,8 +614,8 @@ public struct NoAssignmentInExpressionsConfiguration: Codable, Equatable, Sendab
   public init() {}
 }
 
-/// Configuration for the `OrderedImports` rule.
-public struct OrderedImportsConfiguration: Codable, Equatable, Sendable {
+/// Configuration for the `SortImports` rule.
+public struct SortImportsConfiguration: Codable, Equatable, Sendable {
   /// Determines whether imports within conditional compilation blocks should be ordered.
   public var includeConditionalImports = false
   /// Determines whether imports are separated into groups based on their type.
@@ -601,7 +623,7 @@ public struct OrderedImportsConfiguration: Codable, Equatable, Sendable {
   public init() {}
 }
 
-/// Configuration for the `Acronyms` rule.
+/// Configuration for the `CapitalizeAcronyms` rule.
 public struct AcronymsConfiguration: Codable, Equatable, Sendable {
   /// The list of acronyms to capitalize. Each entry should be fully uppercased (e.g. "URL", "ID").
   public var words: [String] = [
@@ -613,7 +635,7 @@ public struct AcronymsConfiguration: Codable, Equatable, Sendable {
   public init() {}
 }
 
-/// Configuration for the `NoAccessLevelOnExtensionDeclaration` rule.
+/// Configuration for the `NoExtensionAccessLevel` rule.
 public struct ExtensionAccessControlConfiguration: Codable, Equatable, Sendable {
   public enum Placement: String, Codable, Sendable {
     /// Access control modifiers should be placed on individual declarations within the extension.
@@ -634,7 +656,7 @@ public struct ExtensionAccessControlConfiguration: Codable, Equatable, Sendable 
   public init() {}
 }
 
-/// Configuration for the `UseLetInEveryBoundCaseVariable` rule.
+/// Configuration for the `PatternLetPlacement` rule.
 public struct PatternLetConfiguration: Codable, Equatable, Sendable {
   public enum Placement: String, Codable, Sendable {
     /// Each bound variable has its own `let`/`var`: `case .foo(let x, let y)`.
@@ -646,6 +668,31 @@ public struct PatternLetConfiguration: Codable, Equatable, Sendable {
 
   /// Where `let`/`var` should be placed in case patterns.
   public var placement: Placement = .eachBinding
+
+  public init() {}
+}
+
+/// Configuration for the `URLMacro` rule.
+public struct URLMacroConfiguration: Codable, Equatable, Sendable {
+  /// The macro name to use (e.g. `"#URL"`). When `nil`, the rule is inactive.
+  public var macroName: String?
+
+  /// The module to import when replacements are made (e.g. `"URLFoundation"`).
+  public var moduleName: String?
+
+  public init() {}
+}
+
+/// Configuration for the `FileHeader` rule.
+public struct FileHeaderConfiguration: Codable, Equatable, Sendable {
+  /// The header text to enforce.
+  ///
+  /// - `nil` (default): rule does nothing.
+  /// - `""` (empty string): clear any existing file header.
+  /// - Non-empty: replace file header with this text (include `//` comment markers).
+  ///
+  /// Example: `"// Copyright 2024 My Company\n// All rights reserved."`
+  public var text: String?
 
   public init() {}
 }

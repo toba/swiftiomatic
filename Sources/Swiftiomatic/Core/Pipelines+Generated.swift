@@ -38,10 +38,12 @@ class LintPipeline: SyntaxVisitor {
 
   override func visit(_ node: AccessorBlockSyntax) -> SyntaxVisitorContinueKind {
     visitIfEnabled(NoEmptyLinesOpeningClosingBraces.visit, for: node)
+    visitIfEnabled(RedundantSelf.visit, for: node)
     return .visitChildren
   }
   override func visitPost(_ node: AccessorBlockSyntax) {
     onVisitPost(rule: NoEmptyLinesOpeningClosingBraces.self, for: node)
+    onVisitPost(rule: RedundantSelf.self, for: node)
   }
 
   override func visit(_ node: AccessorDeclSyntax) -> SyntaxVisitorContinueKind {
@@ -53,67 +55,63 @@ class LintPipeline: SyntaxVisitor {
   }
 
   override func visit(_ node: ActorDeclSyntax) -> SyntaxVisitorContinueKind {
-    visitIfEnabled(AllPublicDeclarationsHaveDocumentation.visit, for: node)
+    visitIfEnabled(CapitalizedTypeNames.visit, for: node)
     visitIfEnabled(DocCommentsBeforeModifiers.visit, for: node)
+    visitIfEnabled(DocumentPublicDeclarations.visit, for: node)
     visitIfEnabled(ModifierOrder.visit, for: node)
     visitIfEnabled(ModifiersOnSameLine.visit, for: node)
-    visitIfEnabled(NoAccessLevelOnExtensionDeclaration.visit, for: node)
-    visitIfEnabled(RedundantInternal.visit, for: node)
-    visitIfEnabled(RedundantPublic.visit, for: node)
+    visitIfEnabled(NoExtensionAccessLevel.visit, for: node)
+    visitIfEnabled(RedundantAccessControl.visit, for: node)
     visitIfEnabled(RedundantSelf.visit, for: node)
     visitIfEnabled(RedundantSwiftTestingSuite.visit, for: node)
     visitIfEnabled(SimplifyGenericConstraints.visit, for: node)
-    visitIfEnabled(TypeNamesShouldBeCapitalized.visit, for: node)
     visitIfEnabled(WrapMultilineStatementBraces.visit, for: node)
     return .visitChildren
   }
   override func visitPost(_ node: ActorDeclSyntax) {
-    onVisitPost(rule: AllPublicDeclarationsHaveDocumentation.self, for: node)
+    onVisitPost(rule: CapitalizedTypeNames.self, for: node)
     onVisitPost(rule: DocCommentsBeforeModifiers.self, for: node)
+    onVisitPost(rule: DocumentPublicDeclarations.self, for: node)
     onVisitPost(rule: ModifierOrder.self, for: node)
     onVisitPost(rule: ModifiersOnSameLine.self, for: node)
-    onVisitPost(rule: NoAccessLevelOnExtensionDeclaration.self, for: node)
-    onVisitPost(rule: RedundantInternal.self, for: node)
-    onVisitPost(rule: RedundantPublic.self, for: node)
+    onVisitPost(rule: NoExtensionAccessLevel.self, for: node)
+    onVisitPost(rule: RedundantAccessControl.self, for: node)
     onVisitPost(rule: RedundantSelf.self, for: node)
     onVisitPost(rule: RedundantSwiftTestingSuite.self, for: node)
     onVisitPost(rule: SimplifyGenericConstraints.self, for: node)
-    onVisitPost(rule: TypeNamesShouldBeCapitalized.self, for: node)
     onVisitPost(rule: WrapMultilineStatementBraces.self, for: node)
   }
 
   override func visit(_ node: AsExprSyntax) -> SyntaxVisitorContinueKind {
-    visitIfEnabled(NeverForceUnwrap.visit, for: node)
-    visitIfEnabled(NoForceUnwrapInTests.visit, for: node)
+    visitIfEnabled(NoForceUnwrap.visit, for: node)
     return .visitChildren
   }
   override func visitPost(_ node: AsExprSyntax) {
-    onVisitPost(rule: NeverForceUnwrap.self, for: node)
-    onVisitPost(rule: NoForceUnwrapInTests.self, for: node)
+    onVisitPost(rule: NoForceUnwrap.self, for: node)
   }
 
   override func visit(_ node: AssociatedTypeDeclSyntax) -> SyntaxVisitorContinueKind {
-    visitIfEnabled(BeginDocumentationCommentWithOneLineSummary.visit, for: node)
+    visitIfEnabled(CapitalizedTypeNames.visit, for: node)
+    visitIfEnabled(DocCommentSummary.visit, for: node)
     visitIfEnabled(ModifiersOnSameLine.visit, for: node)
     visitIfEnabled(NoLeadingUnderscores.visit, for: node)
-    visitIfEnabled(TypeNamesShouldBeCapitalized.visit, for: node)
     return .visitChildren
   }
   override func visitPost(_ node: AssociatedTypeDeclSyntax) {
-    onVisitPost(rule: BeginDocumentationCommentWithOneLineSummary.self, for: node)
+    onVisitPost(rule: CapitalizedTypeNames.self, for: node)
+    onVisitPost(rule: DocCommentSummary.self, for: node)
     onVisitPost(rule: ModifiersOnSameLine.self, for: node)
     onVisitPost(rule: NoLeadingUnderscores.self, for: node)
-    onVisitPost(rule: TypeNamesShouldBeCapitalized.self, for: node)
   }
 
   override func visit(_ node: AttributeSyntax) -> SyntaxVisitorContinueKind {
-    visitIfEnabled(ApplicationMain.visit, for: node)
-    visitIfEnabled(AvoidRetroactiveConformances.visit, for: node)
+    visitIfEnabled(NoRetroactiveConformances.visit, for: node)
+    visitIfEnabled(PreferMainAttribute.visit, for: node)
     return .visitChildren
   }
   override func visitPost(_ node: AttributeSyntax) {
-    onVisitPost(rule: ApplicationMain.self, for: node)
-    onVisitPost(rule: AvoidRetroactiveConformances.self, for: node)
+    onVisitPost(rule: NoRetroactiveConformances.self, for: node)
+    onVisitPost(rule: PreferMainAttribute.self, for: node)
   }
 
   override func visit(_ node: AttributedTypeSyntax) -> SyntaxVisitorContinueKind {
@@ -141,55 +139,55 @@ class LintPipeline: SyntaxVisitor {
   }
 
   override func visit(_ node: ClassDeclSyntax) -> SyntaxVisitorContinueKind {
-    visitIfEnabled(AllPublicDeclarationsHaveDocumentation.visit, for: node)
-    visitIfEnabled(AlwaysUseLowerCamelCase.visit, for: node)
-    visitIfEnabled(BeginDocumentationCommentWithOneLineSummary.visit, for: node)
+    visitIfEnabled(CapitalizedTypeNames.visit, for: node)
+    visitIfEnabled(DocCommentSummary.visit, for: node)
     visitIfEnabled(DocCommentsBeforeModifiers.visit, for: node)
+    visitIfEnabled(DocumentPublicDeclarations.visit, for: node)
     visitIfEnabled(EnumNamespaces.visit, for: node)
+    visitIfEnabled(LowerCamelCase.visit, for: node)
     visitIfEnabled(ModifierOrder.visit, for: node)
     visitIfEnabled(ModifiersOnSameLine.visit, for: node)
-    visitIfEnabled(NoAccessLevelOnExtensionDeclaration.visit, for: node)
-    visitIfEnabled(NoForceTryInTests.visit, for: node)
-    visitIfEnabled(NoForceUnwrapInTests.visit, for: node)
+    visitIfEnabled(NoExtensionAccessLevel.visit, for: node)
+    visitIfEnabled(NoForceTry.visit, for: node)
+    visitIfEnabled(NoForceUnwrap.visit, for: node)
     visitIfEnabled(NoGuardInTests.visit, for: node)
     visitIfEnabled(NoLeadingUnderscores.visit, for: node)
     visitIfEnabled(PreferFinalClasses.visit, for: node)
-    visitIfEnabled(RedundantInternal.visit, for: node)
+    visitIfEnabled(PreferSwiftTesting.visit, for: node)
+    visitIfEnabled(RedundantAccessControl.visit, for: node)
     visitIfEnabled(RedundantObjc.visit, for: node)
-    visitIfEnabled(RedundantPublic.visit, for: node)
     visitIfEnabled(RedundantSelf.visit, for: node)
     visitIfEnabled(RedundantSwiftTestingSuite.visit, for: node)
     visitIfEnabled(SimplifyGenericConstraints.visit, for: node)
     visitIfEnabled(TestSuiteAccessControl.visit, for: node)
-    visitIfEnabled(TypeNamesShouldBeCapitalized.visit, for: node)
-    visitIfEnabled(UseTripleSlashForDocumentationComments.visit, for: node)
+    visitIfEnabled(TripleSlashDocComments.visit, for: node)
     visitIfEnabled(ValidateTestCases.visit, for: node)
     visitIfEnabled(WrapMultilineStatementBraces.visit, for: node)
     return .visitChildren
   }
   override func visitPost(_ node: ClassDeclSyntax) {
-    onVisitPost(rule: AllPublicDeclarationsHaveDocumentation.self, for: node)
-    onVisitPost(rule: AlwaysUseLowerCamelCase.self, for: node)
-    onVisitPost(rule: BeginDocumentationCommentWithOneLineSummary.self, for: node)
+    onVisitPost(rule: CapitalizedTypeNames.self, for: node)
+    onVisitPost(rule: DocCommentSummary.self, for: node)
     onVisitPost(rule: DocCommentsBeforeModifiers.self, for: node)
+    onVisitPost(rule: DocumentPublicDeclarations.self, for: node)
     onVisitPost(rule: EnumNamespaces.self, for: node)
+    onVisitPost(rule: LowerCamelCase.self, for: node)
     onVisitPost(rule: ModifierOrder.self, for: node)
     onVisitPost(rule: ModifiersOnSameLine.self, for: node)
-    onVisitPost(rule: NoAccessLevelOnExtensionDeclaration.self, for: node)
-    onVisitPost(rule: NoForceTryInTests.self, for: node)
-    onVisitPost(rule: NoForceUnwrapInTests.self, for: node)
+    onVisitPost(rule: NoExtensionAccessLevel.self, for: node)
+    onVisitPost(rule: NoForceTry.self, for: node)
+    onVisitPost(rule: NoForceUnwrap.self, for: node)
     onVisitPost(rule: NoGuardInTests.self, for: node)
     onVisitPost(rule: NoLeadingUnderscores.self, for: node)
     onVisitPost(rule: PreferFinalClasses.self, for: node)
-    onVisitPost(rule: RedundantInternal.self, for: node)
+    onVisitPost(rule: PreferSwiftTesting.self, for: node)
+    onVisitPost(rule: RedundantAccessControl.self, for: node)
     onVisitPost(rule: RedundantObjc.self, for: node)
-    onVisitPost(rule: RedundantPublic.self, for: node)
     onVisitPost(rule: RedundantSelf.self, for: node)
     onVisitPost(rule: RedundantSwiftTestingSuite.self, for: node)
     onVisitPost(rule: SimplifyGenericConstraints.self, for: node)
     onVisitPost(rule: TestSuiteAccessControl.self, for: node)
-    onVisitPost(rule: TypeNamesShouldBeCapitalized.self, for: node)
-    onVisitPost(rule: UseTripleSlashForDocumentationComments.self, for: node)
+    onVisitPost(rule: TripleSlashDocComments.self, for: node)
     onVisitPost(rule: ValidateTestCases.self, for: node)
     onVisitPost(rule: WrapMultilineStatementBraces.self, for: node)
   }
@@ -197,21 +195,23 @@ class LintPipeline: SyntaxVisitor {
   override func visit(_ node: ClosureExprSyntax) -> SyntaxVisitorContinueKind {
     visitIfEnabled(EmptyBraces.visit, for: node)
     visitIfEnabled(NoEmptyLinesOpeningClosingBraces.visit, for: node)
-    visitIfEnabled(NoForceTryInTests.visit, for: node)
-    visitIfEnabled(NoForceUnwrapInTests.visit, for: node)
+    visitIfEnabled(NoForceTry.visit, for: node)
+    visitIfEnabled(NoForceUnwrap.visit, for: node)
     visitIfEnabled(NoGuardInTests.visit, for: node)
     visitIfEnabled(OmitExplicitReturns.visit, for: node)
     visitIfEnabled(RedundantSelf.visit, for: node)
+    visitIfEnabled(UnusedArguments.visit, for: node)
     return .visitChildren
   }
   override func visitPost(_ node: ClosureExprSyntax) {
     onVisitPost(rule: EmptyBraces.self, for: node)
     onVisitPost(rule: NoEmptyLinesOpeningClosingBraces.self, for: node)
-    onVisitPost(rule: NoForceTryInTests.self, for: node)
-    onVisitPost(rule: NoForceUnwrapInTests.self, for: node)
+    onVisitPost(rule: NoForceTry.self, for: node)
+    onVisitPost(rule: NoForceUnwrap.self, for: node)
     onVisitPost(rule: NoGuardInTests.self, for: node)
     onVisitPost(rule: OmitExplicitReturns.self, for: node)
     onVisitPost(rule: RedundantSelf.self, for: node)
+    onVisitPost(rule: UnusedArguments.self, for: node)
   }
 
   override func visit(_ node: ClosureParameterSyntax) -> SyntaxVisitorContinueKind {
@@ -223,39 +223,47 @@ class LintPipeline: SyntaxVisitor {
   }
 
   override func visit(_ node: ClosureSignatureSyntax) -> SyntaxVisitorContinueKind {
-    visitIfEnabled(AlwaysUseLowerCamelCase.visit, for: node)
-    visitIfEnabled(ReturnVoidInsteadOfEmptyTuple.visit, for: node)
+    visitIfEnabled(LowerCamelCase.visit, for: node)
+    visitIfEnabled(PreferVoidReturn.visit, for: node)
     return .visitChildren
   }
   override func visitPost(_ node: ClosureSignatureSyntax) {
-    onVisitPost(rule: AlwaysUseLowerCamelCase.self, for: node)
-    onVisitPost(rule: ReturnVoidInsteadOfEmptyTuple.self, for: node)
+    onVisitPost(rule: LowerCamelCase.self, for: node)
+    onVisitPost(rule: PreferVoidReturn.self, for: node)
   }
 
   override func visit(_ node: CodeBlockItemListSyntax) -> SyntaxVisitorContinueKind {
-    visitIfEnabled(ConditionalAssignment.visit, for: node)
-    visitIfEnabled(DoNotUseSemicolons.visit, for: node)
     visitIfEnabled(EmptyExtensions.visit, for: node)
     visitIfEnabled(NoAssignmentInExpressions.visit, for: node)
     visitIfEnabled(NoGuardInTests.visit, for: node)
-    visitIfEnabled(OneVariableDeclarationPerLine.visit, for: node)
+    visitIfEnabled(NoSemicolons.visit, for: node)
+    visitIfEnabled(OneDeclarationPerLine.visit, for: node)
+    visitIfEnabled(PreferConditionalExpression.visit, for: node)
+    visitIfEnabled(PreferEarlyExits.visit, for: node)
     visitIfEnabled(RedundantLet.visit, for: node)
     visitIfEnabled(RedundantProperty.visit, for: node)
     visitIfEnabled(SortDeclarations.visit, for: node)
-    visitIfEnabled(UseEarlyExits.visit, for: node)
     return .visitChildren
   }
   override func visitPost(_ node: CodeBlockItemListSyntax) {
-    onVisitPost(rule: ConditionalAssignment.self, for: node)
-    onVisitPost(rule: DoNotUseSemicolons.self, for: node)
     onVisitPost(rule: EmptyExtensions.self, for: node)
     onVisitPost(rule: NoAssignmentInExpressions.self, for: node)
     onVisitPost(rule: NoGuardInTests.self, for: node)
-    onVisitPost(rule: OneVariableDeclarationPerLine.self, for: node)
+    onVisitPost(rule: NoSemicolons.self, for: node)
+    onVisitPost(rule: OneDeclarationPerLine.self, for: node)
+    onVisitPost(rule: PreferConditionalExpression.self, for: node)
+    onVisitPost(rule: PreferEarlyExits.self, for: node)
     onVisitPost(rule: RedundantLet.self, for: node)
     onVisitPost(rule: RedundantProperty.self, for: node)
     onVisitPost(rule: SortDeclarations.self, for: node)
-    onVisitPost(rule: UseEarlyExits.self, for: node)
+  }
+
+  override func visit(_ node: CodeBlockItemSyntax) -> SyntaxVisitorContinueKind {
+    visitIfEnabled(DocComments.visit, for: node)
+    return .visitChildren
+  }
+  override func visitPost(_ node: CodeBlockItemSyntax) {
+    onVisitPost(rule: DocComments.self, for: node)
   }
 
   override func visit(_ node: CodeBlockSyntax) -> SyntaxVisitorContinueKind {
@@ -273,36 +281,36 @@ class LintPipeline: SyntaxVisitor {
   }
 
   override func visit(_ node: ConditionElementListSyntax) -> SyntaxVisitorContinueKind {
-    visitIfEnabled(AndOperator.visit, for: node)
+    visitIfEnabled(PreferCommaConditions.visit, for: node)
     return .visitChildren
   }
   override func visitPost(_ node: ConditionElementListSyntax) {
-    onVisitPost(rule: AndOperator.self, for: node)
+    onVisitPost(rule: PreferCommaConditions.self, for: node)
   }
 
   override func visit(_ node: ConditionElementSyntax) -> SyntaxVisitorContinueKind {
+    visitIfEnabled(ExplicitNilCheck.visit, for: node)
     visitIfEnabled(NoParensAroundConditions.visit, for: node)
-    visitIfEnabled(UseExplicitNilCheckInConditions.visit, for: node)
     return .visitChildren
   }
   override func visitPost(_ node: ConditionElementSyntax) {
+    onVisitPost(rule: ExplicitNilCheck.self, for: node)
     onVisitPost(rule: NoParensAroundConditions.self, for: node)
-    onVisitPost(rule: UseExplicitNilCheckInConditions.self, for: node)
   }
 
   override func visit(_ node: DeinitializerDeclSyntax) -> SyntaxVisitorContinueKind {
-    visitIfEnabled(AllPublicDeclarationsHaveDocumentation.visit, for: node)
-    visitIfEnabled(BeginDocumentationCommentWithOneLineSummary.visit, for: node)
+    visitIfEnabled(DocCommentSummary.visit, for: node)
+    visitIfEnabled(DocumentPublicDeclarations.visit, for: node)
     visitIfEnabled(ModifiersOnSameLine.visit, for: node)
-    visitIfEnabled(UseTripleSlashForDocumentationComments.visit, for: node)
+    visitIfEnabled(TripleSlashDocComments.visit, for: node)
     visitIfEnabled(WrapMultilineStatementBraces.visit, for: node)
     return .visitChildren
   }
   override func visitPost(_ node: DeinitializerDeclSyntax) {
-    onVisitPost(rule: AllPublicDeclarationsHaveDocumentation.self, for: node)
-    onVisitPost(rule: BeginDocumentationCommentWithOneLineSummary.self, for: node)
+    onVisitPost(rule: DocCommentSummary.self, for: node)
+    onVisitPost(rule: DocumentPublicDeclarations.self, for: node)
     onVisitPost(rule: ModifiersOnSameLine.self, for: node)
-    onVisitPost(rule: UseTripleSlashForDocumentationComments.self, for: node)
+    onVisitPost(rule: TripleSlashDocComments.self, for: node)
     onVisitPost(rule: WrapMultilineStatementBraces.self, for: node)
   }
 
@@ -325,12 +333,12 @@ class LintPipeline: SyntaxVisitor {
   }
 
   override func visit(_ node: EnumCaseElementSyntax) -> SyntaxVisitorContinueKind {
-    visitIfEnabled(AlwaysUseLowerCamelCase.visit, for: node)
+    visitIfEnabled(LowerCamelCase.visit, for: node)
     visitIfEnabled(NoLeadingUnderscores.visit, for: node)
     return .visitChildren
   }
   override func visitPost(_ node: EnumCaseElementSyntax) {
-    onVisitPost(rule: AlwaysUseLowerCamelCase.self, for: node)
+    onVisitPost(rule: LowerCamelCase.self, for: node)
     onVisitPost(rule: NoLeadingUnderscores.self, for: node)
   }
 
@@ -343,106 +351,111 @@ class LintPipeline: SyntaxVisitor {
   }
 
   override func visit(_ node: EnumDeclSyntax) -> SyntaxVisitorContinueKind {
-    visitIfEnabled(AllPublicDeclarationsHaveDocumentation.visit, for: node)
-    visitIfEnabled(BeginDocumentationCommentWithOneLineSummary.visit, for: node)
+    visitIfEnabled(CapitalizedTypeNames.visit, for: node)
+    visitIfEnabled(DocCommentSummary.visit, for: node)
     visitIfEnabled(DocCommentsBeforeModifiers.visit, for: node)
+    visitIfEnabled(DocumentPublicDeclarations.visit, for: node)
     visitIfEnabled(FullyIndirectEnum.visit, for: node)
     visitIfEnabled(ModifierOrder.visit, for: node)
     visitIfEnabled(ModifiersOnSameLine.visit, for: node)
-    visitIfEnabled(NoAccessLevelOnExtensionDeclaration.visit, for: node)
+    visitIfEnabled(NoExtensionAccessLevel.visit, for: node)
     visitIfEnabled(NoLeadingUnderscores.visit, for: node)
-    visitIfEnabled(OneCasePerLine.visit, for: node)
-    visitIfEnabled(RedundantInternal.visit, for: node)
+    visitIfEnabled(OneDeclarationPerLine.visit, for: node)
+    visitIfEnabled(RedundantAccessControl.visit, for: node)
     visitIfEnabled(RedundantObjc.visit, for: node)
-    visitIfEnabled(RedundantPublic.visit, for: node)
     visitIfEnabled(RedundantSelf.visit, for: node)
     visitIfEnabled(RedundantSendable.visit, for: node)
     visitIfEnabled(RedundantSwiftTestingSuite.visit, for: node)
     visitIfEnabled(SimplifyGenericConstraints.visit, for: node)
-    visitIfEnabled(TypeNamesShouldBeCapitalized.visit, for: node)
-    visitIfEnabled(UseTripleSlashForDocumentationComments.visit, for: node)
+    visitIfEnabled(TripleSlashDocComments.visit, for: node)
     visitIfEnabled(ValidateTestCases.visit, for: node)
     visitIfEnabled(WrapMultilineStatementBraces.visit, for: node)
     return .visitChildren
   }
   override func visitPost(_ node: EnumDeclSyntax) {
-    onVisitPost(rule: AllPublicDeclarationsHaveDocumentation.self, for: node)
-    onVisitPost(rule: BeginDocumentationCommentWithOneLineSummary.self, for: node)
+    onVisitPost(rule: CapitalizedTypeNames.self, for: node)
+    onVisitPost(rule: DocCommentSummary.self, for: node)
     onVisitPost(rule: DocCommentsBeforeModifiers.self, for: node)
+    onVisitPost(rule: DocumentPublicDeclarations.self, for: node)
     onVisitPost(rule: FullyIndirectEnum.self, for: node)
     onVisitPost(rule: ModifierOrder.self, for: node)
     onVisitPost(rule: ModifiersOnSameLine.self, for: node)
-    onVisitPost(rule: NoAccessLevelOnExtensionDeclaration.self, for: node)
+    onVisitPost(rule: NoExtensionAccessLevel.self, for: node)
     onVisitPost(rule: NoLeadingUnderscores.self, for: node)
-    onVisitPost(rule: OneCasePerLine.self, for: node)
-    onVisitPost(rule: RedundantInternal.self, for: node)
+    onVisitPost(rule: OneDeclarationPerLine.self, for: node)
+    onVisitPost(rule: RedundantAccessControl.self, for: node)
     onVisitPost(rule: RedundantObjc.self, for: node)
-    onVisitPost(rule: RedundantPublic.self, for: node)
     onVisitPost(rule: RedundantSelf.self, for: node)
     onVisitPost(rule: RedundantSendable.self, for: node)
     onVisitPost(rule: RedundantSwiftTestingSuite.self, for: node)
     onVisitPost(rule: SimplifyGenericConstraints.self, for: node)
-    onVisitPost(rule: TypeNamesShouldBeCapitalized.self, for: node)
-    onVisitPost(rule: UseTripleSlashForDocumentationComments.self, for: node)
+    onVisitPost(rule: TripleSlashDocComments.self, for: node)
     onVisitPost(rule: ValidateTestCases.self, for: node)
     onVisitPost(rule: WrapMultilineStatementBraces.self, for: node)
   }
 
   override func visit(_ node: ExtensionDeclSyntax) -> SyntaxVisitorContinueKind {
-    visitIfEnabled(AvoidRetroactiveConformances.visit, for: node)
     visitIfEnabled(DocCommentsBeforeModifiers.visit, for: node)
-    visitIfEnabled(GenericExtensions.visit, for: node)
     visitIfEnabled(ModifiersOnSameLine.visit, for: node)
-    visitIfEnabled(NoAccessLevelOnExtensionDeclaration.visit, for: node)
-    visitIfEnabled(RedundantExtensionACL.visit, for: node)
+    visitIfEnabled(NoExtensionAccessLevel.visit, for: node)
+    visitIfEnabled(NoRetroactiveConformances.visit, for: node)
+    visitIfEnabled(PreferAngleBracketExtensions.visit, for: node)
+    visitIfEnabled(PreferSwiftTesting.visit, for: node)
+    visitIfEnabled(RedundantAccessControl.visit, for: node)
     visitIfEnabled(RedundantSelf.visit, for: node)
-    visitIfEnabled(UseTripleSlashForDocumentationComments.visit, for: node)
+    visitIfEnabled(TripleSlashDocComments.visit, for: node)
     visitIfEnabled(WrapMultilineStatementBraces.visit, for: node)
     return .visitChildren
   }
   override func visitPost(_ node: ExtensionDeclSyntax) {
-    onVisitPost(rule: AvoidRetroactiveConformances.self, for: node)
     onVisitPost(rule: DocCommentsBeforeModifiers.self, for: node)
-    onVisitPost(rule: GenericExtensions.self, for: node)
     onVisitPost(rule: ModifiersOnSameLine.self, for: node)
-    onVisitPost(rule: NoAccessLevelOnExtensionDeclaration.self, for: node)
-    onVisitPost(rule: RedundantExtensionACL.self, for: node)
+    onVisitPost(rule: NoExtensionAccessLevel.self, for: node)
+    onVisitPost(rule: NoRetroactiveConformances.self, for: node)
+    onVisitPost(rule: PreferAngleBracketExtensions.self, for: node)
+    onVisitPost(rule: PreferSwiftTesting.self, for: node)
+    onVisitPost(rule: RedundantAccessControl.self, for: node)
     onVisitPost(rule: RedundantSelf.self, for: node)
-    onVisitPost(rule: UseTripleSlashForDocumentationComments.self, for: node)
+    onVisitPost(rule: TripleSlashDocComments.self, for: node)
     onVisitPost(rule: WrapMultilineStatementBraces.self, for: node)
   }
 
   override func visit(_ node: ForStmtSyntax) -> SyntaxVisitorContinueKind {
-    visitIfEnabled(UseLetInEveryBoundCaseVariable.visit, for: node)
-    visitIfEnabled(UseWhereClausesInForLoops.visit, for: node)
-    visitIfEnabled(WrapLoopBodies.visit, for: node)
+    visitIfEnabled(PatternLetPlacement.visit, for: node)
+    visitIfEnabled(PreferWhereClausesInForLoops.visit, for: node)
+    visitIfEnabled(UnusedArguments.visit, for: node)
+    visitIfEnabled(WrapBodies.visit, for: node)
     visitIfEnabled(WrapMultilineStatementBraces.visit, for: node)
     return .visitChildren
   }
   override func visitPost(_ node: ForStmtSyntax) {
-    onVisitPost(rule: UseLetInEveryBoundCaseVariable.self, for: node)
-    onVisitPost(rule: UseWhereClausesInForLoops.self, for: node)
-    onVisitPost(rule: WrapLoopBodies.self, for: node)
+    onVisitPost(rule: PatternLetPlacement.self, for: node)
+    onVisitPost(rule: PreferWhereClausesInForLoops.self, for: node)
+    onVisitPost(rule: UnusedArguments.self, for: node)
+    onVisitPost(rule: WrapBodies.self, for: node)
     onVisitPost(rule: WrapMultilineStatementBraces.self, for: node)
   }
 
   override func visit(_ node: ForceUnwrapExprSyntax) -> SyntaxVisitorContinueKind {
-    visitIfEnabled(NeverForceUnwrap.visit, for: node)
-    visitIfEnabled(NoForceUnwrapInTests.visit, for: node)
+    visitIfEnabled(NoForceUnwrap.visit, for: node)
+    visitIfEnabled(URLMacro.visit, for: node)
     return .visitChildren
   }
   override func visitPost(_ node: ForceUnwrapExprSyntax) {
-    onVisitPost(rule: NeverForceUnwrap.self, for: node)
-    onVisitPost(rule: NoForceUnwrapInTests.self, for: node)
+    onVisitPost(rule: NoForceUnwrap.self, for: node)
+    onVisitPost(rule: URLMacro.self, for: node)
   }
 
   override func visit(_ node: FunctionCallExprSyntax) -> SyntaxVisitorContinueKind {
-    visitIfEnabled(AssertionFailures.visit, for: node)
     visitIfEnabled(HoistAwait.visit, for: node)
     visitIfEnabled(HoistTry.visit, for: node)
-    visitIfEnabled(NoEmptyTrailingClosureParentheses.visit, for: node)
+    visitIfEnabled(NoForceUnwrap.visit, for: node)
+    visitIfEnabled(NoTrailingClosureParens.visit, for: node)
     visitIfEnabled(OnlyOneTrailingClosureArgument.visit, for: node)
+    visitIfEnabled(PreferAssertionFailure.visit, for: node)
     visitIfEnabled(PreferKeyPath.visit, for: node)
+    visitIfEnabled(PreferSwiftTesting.visit, for: node)
+    visitIfEnabled(PreferTrailingClosures.visit, for: node)
     visitIfEnabled(RedundantClosure.visit, for: node)
     visitIfEnabled(RedundantInit.visit, for: node)
     visitIfEnabled(ReplaceForEachWithForLoop.visit, for: node)
@@ -450,12 +463,15 @@ class LintPipeline: SyntaxVisitor {
     return .visitChildren
   }
   override func visitPost(_ node: FunctionCallExprSyntax) {
-    onVisitPost(rule: AssertionFailures.self, for: node)
     onVisitPost(rule: HoistAwait.self, for: node)
     onVisitPost(rule: HoistTry.self, for: node)
-    onVisitPost(rule: NoEmptyTrailingClosureParentheses.self, for: node)
+    onVisitPost(rule: NoForceUnwrap.self, for: node)
+    onVisitPost(rule: NoTrailingClosureParens.self, for: node)
     onVisitPost(rule: OnlyOneTrailingClosureArgument.self, for: node)
+    onVisitPost(rule: PreferAssertionFailure.self, for: node)
     onVisitPost(rule: PreferKeyPath.self, for: node)
+    onVisitPost(rule: PreferSwiftTesting.self, for: node)
+    onVisitPost(rule: PreferTrailingClosures.self, for: node)
     onVisitPost(rule: RedundantClosure.self, for: node)
     onVisitPost(rule: RedundantInit.self, for: node)
     onVisitPost(rule: ReplaceForEachWithForLoop.self, for: node)
@@ -463,60 +479,64 @@ class LintPipeline: SyntaxVisitor {
   }
 
   override func visit(_ node: FunctionDeclSyntax) -> SyntaxVisitorContinueKind {
-    visitIfEnabled(AllPublicDeclarationsHaveDocumentation.visit, for: node)
-    visitIfEnabled(AlwaysUseLowerCamelCase.visit, for: node)
-    visitIfEnabled(BeginDocumentationCommentWithOneLineSummary.visit, for: node)
+    visitIfEnabled(DocCommentSummary.visit, for: node)
     visitIfEnabled(DocCommentsBeforeModifiers.visit, for: node)
+    visitIfEnabled(DocumentPublicDeclarations.visit, for: node)
+    visitIfEnabled(LowerCamelCase.visit, for: node)
     visitIfEnabled(ModifierOrder.visit, for: node)
     visitIfEnabled(ModifiersOnSameLine.visit, for: node)
-    visitIfEnabled(NoAccessLevelOnExtensionDeclaration.visit, for: node)
     visitIfEnabled(NoExplicitOwnership.visit, for: node)
-    visitIfEnabled(NoForceTryInTests.visit, for: node)
-    visitIfEnabled(NoForceUnwrapInTests.visit, for: node)
+    visitIfEnabled(NoExtensionAccessLevel.visit, for: node)
+    visitIfEnabled(NoForceTry.visit, for: node)
+    visitIfEnabled(NoForceUnwrap.visit, for: node)
     visitIfEnabled(NoGuardInTests.visit, for: node)
     visitIfEnabled(NoLeadingUnderscores.visit, for: node)
     visitIfEnabled(OmitExplicitReturns.visit, for: node)
     visitIfEnabled(OpaqueGenericParameters.visit, for: node)
+    visitIfEnabled(PreferSwiftTesting.visit, for: node)
+    visitIfEnabled(RedundantAccessControl.visit, for: node)
     visitIfEnabled(RedundantAsync.visit, for: node)
-    visitIfEnabled(RedundantInternal.visit, for: node)
     visitIfEnabled(RedundantObjc.visit, for: node)
     visitIfEnabled(RedundantSelf.visit, for: node)
     visitIfEnabled(RedundantThrows.visit, for: node)
     visitIfEnabled(RedundantViewBuilder.visit, for: node)
     visitIfEnabled(SimplifyGenericConstraints.visit, for: node)
     visitIfEnabled(SwiftTestingTestCaseNames.visit, for: node)
-    visitIfEnabled(UseTripleSlashForDocumentationComments.visit, for: node)
+    visitIfEnabled(TripleSlashDocComments.visit, for: node)
+    visitIfEnabled(UnusedArguments.visit, for: node)
     visitIfEnabled(ValidateDocumentationComments.visit, for: node)
-    visitIfEnabled(WrapFunctionBodies.visit, for: node)
+    visitIfEnabled(WrapBodies.visit, for: node)
     visitIfEnabled(WrapMultilineStatementBraces.visit, for: node)
     return .visitChildren
   }
   override func visitPost(_ node: FunctionDeclSyntax) {
-    onVisitPost(rule: AllPublicDeclarationsHaveDocumentation.self, for: node)
-    onVisitPost(rule: AlwaysUseLowerCamelCase.self, for: node)
-    onVisitPost(rule: BeginDocumentationCommentWithOneLineSummary.self, for: node)
+    onVisitPost(rule: DocCommentSummary.self, for: node)
     onVisitPost(rule: DocCommentsBeforeModifiers.self, for: node)
+    onVisitPost(rule: DocumentPublicDeclarations.self, for: node)
+    onVisitPost(rule: LowerCamelCase.self, for: node)
     onVisitPost(rule: ModifierOrder.self, for: node)
     onVisitPost(rule: ModifiersOnSameLine.self, for: node)
-    onVisitPost(rule: NoAccessLevelOnExtensionDeclaration.self, for: node)
     onVisitPost(rule: NoExplicitOwnership.self, for: node)
-    onVisitPost(rule: NoForceTryInTests.self, for: node)
-    onVisitPost(rule: NoForceUnwrapInTests.self, for: node)
+    onVisitPost(rule: NoExtensionAccessLevel.self, for: node)
+    onVisitPost(rule: NoForceTry.self, for: node)
+    onVisitPost(rule: NoForceUnwrap.self, for: node)
     onVisitPost(rule: NoGuardInTests.self, for: node)
     onVisitPost(rule: NoLeadingUnderscores.self, for: node)
     onVisitPost(rule: OmitExplicitReturns.self, for: node)
     onVisitPost(rule: OpaqueGenericParameters.self, for: node)
+    onVisitPost(rule: PreferSwiftTesting.self, for: node)
+    onVisitPost(rule: RedundantAccessControl.self, for: node)
     onVisitPost(rule: RedundantAsync.self, for: node)
-    onVisitPost(rule: RedundantInternal.self, for: node)
     onVisitPost(rule: RedundantObjc.self, for: node)
     onVisitPost(rule: RedundantSelf.self, for: node)
     onVisitPost(rule: RedundantThrows.self, for: node)
     onVisitPost(rule: RedundantViewBuilder.self, for: node)
     onVisitPost(rule: SimplifyGenericConstraints.self, for: node)
     onVisitPost(rule: SwiftTestingTestCaseNames.self, for: node)
-    onVisitPost(rule: UseTripleSlashForDocumentationComments.self, for: node)
+    onVisitPost(rule: TripleSlashDocComments.self, for: node)
+    onVisitPost(rule: UnusedArguments.self, for: node)
     onVisitPost(rule: ValidateDocumentationComments.self, for: node)
-    onVisitPost(rule: WrapFunctionBodies.self, for: node)
+    onVisitPost(rule: WrapBodies.self, for: node)
     onVisitPost(rule: WrapMultilineStatementBraces.self, for: node)
   }
 
@@ -529,12 +549,12 @@ class LintPipeline: SyntaxVisitor {
   }
 
   override func visit(_ node: FunctionParameterSyntax) -> SyntaxVisitorContinueKind {
-    visitIfEnabled(AlwaysUseLiteralForEmptyCollectionInit.visit, for: node)
+    visitIfEnabled(EmptyCollectionLiteral.visit, for: node)
     visitIfEnabled(NoLeadingUnderscores.visit, for: node)
     return .visitChildren
   }
   override func visitPost(_ node: FunctionParameterSyntax) {
-    onVisitPost(rule: AlwaysUseLiteralForEmptyCollectionInit.self, for: node)
+    onVisitPost(rule: EmptyCollectionLiteral.self, for: node)
     onVisitPost(rule: NoLeadingUnderscores.self, for: node)
   }
 
@@ -547,13 +567,13 @@ class LintPipeline: SyntaxVisitor {
   }
 
   override func visit(_ node: FunctionTypeSyntax) -> SyntaxVisitorContinueKind {
+    visitIfEnabled(PreferVoidReturn.visit, for: node)
     visitIfEnabled(RedundantTypedThrows.visit, for: node)
-    visitIfEnabled(ReturnVoidInsteadOfEmptyTuple.visit, for: node)
     return .visitChildren
   }
   override func visitPost(_ node: FunctionTypeSyntax) {
+    onVisitPost(rule: PreferVoidReturn.self, for: node)
     onVisitPost(rule: RedundantTypedThrows.self, for: node)
-    onVisitPost(rule: ReturnVoidInsteadOfEmptyTuple.self, for: node)
   }
 
   override func visit(_ node: GenericParameterSyntax) -> SyntaxVisitorContinueKind {
@@ -565,83 +585,87 @@ class LintPipeline: SyntaxVisitor {
   }
 
   override func visit(_ node: GenericSpecializationExprSyntax) -> SyntaxVisitorContinueKind {
-    visitIfEnabled(UseShorthandTypeNames.visit, for: node)
+    visitIfEnabled(PreferShorthandTypeNames.visit, for: node)
     return .visitChildren
   }
   override func visitPost(_ node: GenericSpecializationExprSyntax) {
-    onVisitPost(rule: UseShorthandTypeNames.self, for: node)
+    onVisitPost(rule: PreferShorthandTypeNames.self, for: node)
   }
 
   override func visit(_ node: GuardStmtSyntax) -> SyntaxVisitorContinueKind {
     visitIfEnabled(NoParensAroundConditions.visit, for: node)
-    visitIfEnabled(WrapConditionalBodies.visit, for: node)
+    visitIfEnabled(WrapBodies.visit, for: node)
     visitIfEnabled(WrapMultilineStatementBraces.visit, for: node)
     return .visitChildren
   }
   override func visitPost(_ node: GuardStmtSyntax) {
     onVisitPost(rule: NoParensAroundConditions.self, for: node)
-    onVisitPost(rule: WrapConditionalBodies.self, for: node)
+    onVisitPost(rule: WrapBodies.self, for: node)
     onVisitPost(rule: WrapMultilineStatementBraces.self, for: node)
   }
 
   override func visit(_ node: IdentifierPatternSyntax) -> SyntaxVisitorContinueKind {
-    visitIfEnabled(IdentifiersMustBeASCII.visit, for: node)
+    visitIfEnabled(ASCIIIdentifiers.visit, for: node)
     visitIfEnabled(NoLeadingUnderscores.visit, for: node)
     return .visitChildren
   }
   override func visitPost(_ node: IdentifierPatternSyntax) {
-    onVisitPost(rule: IdentifiersMustBeASCII.self, for: node)
+    onVisitPost(rule: ASCIIIdentifiers.self, for: node)
     onVisitPost(rule: NoLeadingUnderscores.self, for: node)
   }
 
   override func visit(_ node: IdentifierTypeSyntax) -> SyntaxVisitorContinueKind {
-    visitIfEnabled(UseShorthandTypeNames.visit, for: node)
+    visitIfEnabled(PreferShorthandTypeNames.visit, for: node)
     return .visitChildren
   }
   override func visitPost(_ node: IdentifierTypeSyntax) {
-    onVisitPost(rule: UseShorthandTypeNames.self, for: node)
+    onVisitPost(rule: PreferShorthandTypeNames.self, for: node)
   }
 
   override func visit(_ node: IfExprSyntax) -> SyntaxVisitorContinueKind {
     visitIfEnabled(NoParensAroundConditions.visit, for: node)
-    visitIfEnabled(WrapConditionalBodies.visit, for: node)
+    visitIfEnabled(WrapBodies.visit, for: node)
     visitIfEnabled(WrapMultilineStatementBraces.visit, for: node)
     return .visitChildren
   }
   override func visitPost(_ node: IfExprSyntax) {
     onVisitPost(rule: NoParensAroundConditions.self, for: node)
-    onVisitPost(rule: WrapConditionalBodies.self, for: node)
+    onVisitPost(rule: WrapBodies.self, for: node)
     onVisitPost(rule: WrapMultilineStatementBraces.self, for: node)
   }
 
   override func visit(_ node: ImportDeclSyntax) -> SyntaxVisitorContinueKind {
     visitIfEnabled(ModifiersOnSameLine.visit, for: node)
-    visitIfEnabled(NoForceTryInTests.visit, for: node)
-    visitIfEnabled(NoForceUnwrapInTests.visit, for: node)
+    visitIfEnabled(NoForceTry.visit, for: node)
+    visitIfEnabled(NoForceUnwrap.visit, for: node)
     visitIfEnabled(NoGuardInTests.visit, for: node)
+    visitIfEnabled(PreferSwiftTesting.visit, for: node)
     visitIfEnabled(RedundantSwiftTestingSuite.visit, for: node)
+    visitIfEnabled(URLMacro.visit, for: node)
     return .visitChildren
   }
   override func visitPost(_ node: ImportDeclSyntax) {
     onVisitPost(rule: ModifiersOnSameLine.self, for: node)
-    onVisitPost(rule: NoForceTryInTests.self, for: node)
-    onVisitPost(rule: NoForceUnwrapInTests.self, for: node)
+    onVisitPost(rule: NoForceTry.self, for: node)
+    onVisitPost(rule: NoForceUnwrap.self, for: node)
     onVisitPost(rule: NoGuardInTests.self, for: node)
+    onVisitPost(rule: PreferSwiftTesting.self, for: node)
     onVisitPost(rule: RedundantSwiftTestingSuite.self, for: node)
+    onVisitPost(rule: URLMacro.self, for: node)
   }
 
   override func visit(_ node: InfixOperatorExprSyntax) -> SyntaxVisitorContinueKind {
-    visitIfEnabled(IsEmpty.visit, for: node)
     visitIfEnabled(NoAssignmentInExpressions.visit, for: node)
-    visitIfEnabled(WrapMultilineConditionalAssignment.visit, for: node)
-    visitIfEnabled(YodaConditions.visit, for: node)
+    visitIfEnabled(NoYodaConditions.visit, for: node)
+    visitIfEnabled(PreferIsEmpty.visit, for: node)
+    visitIfEnabled(WrapConditionalAssignment.visit, for: node)
     return .visitChildren
   }
   override func visitPost(_ node: InfixOperatorExprSyntax) {
-    onVisitPost(rule: IsEmpty.self, for: node)
     onVisitPost(rule: NoAssignmentInExpressions.self, for: node)
-    onVisitPost(rule: WrapMultilineConditionalAssignment.self, for: node)
-    onVisitPost(rule: YodaConditions.self, for: node)
+    onVisitPost(rule: NoYodaConditions.self, for: node)
+    onVisitPost(rule: PreferIsEmpty.self, for: node)
+    onVisitPost(rule: WrapConditionalAssignment.self, for: node)
   }
 
   override func visit(_ node: InitializerClauseSyntax) -> SyntaxVisitorContinueKind {
@@ -653,38 +677,40 @@ class LintPipeline: SyntaxVisitor {
   }
 
   override func visit(_ node: InitializerDeclSyntax) -> SyntaxVisitorContinueKind {
-    visitIfEnabled(AllPublicDeclarationsHaveDocumentation.visit, for: node)
-    visitIfEnabled(BeginDocumentationCommentWithOneLineSummary.visit, for: node)
+    visitIfEnabled(DocCommentSummary.visit, for: node)
     visitIfEnabled(DocCommentsBeforeModifiers.visit, for: node)
+    visitIfEnabled(DocumentPublicDeclarations.visit, for: node)
     visitIfEnabled(InitCoderUnavailable.visit, for: node)
     visitIfEnabled(ModifierOrder.visit, for: node)
     visitIfEnabled(ModifiersOnSameLine.visit, for: node)
-    visitIfEnabled(NoAccessLevelOnExtensionDeclaration.visit, for: node)
+    visitIfEnabled(NoExtensionAccessLevel.visit, for: node)
     visitIfEnabled(OpaqueGenericParameters.visit, for: node)
-    visitIfEnabled(RedundantInternal.visit, for: node)
+    visitIfEnabled(RedundantAccessControl.visit, for: node)
     visitIfEnabled(RedundantObjc.visit, for: node)
     visitIfEnabled(RedundantSelf.visit, for: node)
-    visitIfEnabled(UseTripleSlashForDocumentationComments.visit, for: node)
+    visitIfEnabled(TripleSlashDocComments.visit, for: node)
+    visitIfEnabled(UnusedArguments.visit, for: node)
     visitIfEnabled(ValidateDocumentationComments.visit, for: node)
-    visitIfEnabled(WrapFunctionBodies.visit, for: node)
+    visitIfEnabled(WrapBodies.visit, for: node)
     visitIfEnabled(WrapMultilineStatementBraces.visit, for: node)
     return .visitChildren
   }
   override func visitPost(_ node: InitializerDeclSyntax) {
-    onVisitPost(rule: AllPublicDeclarationsHaveDocumentation.self, for: node)
-    onVisitPost(rule: BeginDocumentationCommentWithOneLineSummary.self, for: node)
+    onVisitPost(rule: DocCommentSummary.self, for: node)
     onVisitPost(rule: DocCommentsBeforeModifiers.self, for: node)
+    onVisitPost(rule: DocumentPublicDeclarations.self, for: node)
     onVisitPost(rule: InitCoderUnavailable.self, for: node)
     onVisitPost(rule: ModifierOrder.self, for: node)
     onVisitPost(rule: ModifiersOnSameLine.self, for: node)
-    onVisitPost(rule: NoAccessLevelOnExtensionDeclaration.self, for: node)
+    onVisitPost(rule: NoExtensionAccessLevel.self, for: node)
     onVisitPost(rule: OpaqueGenericParameters.self, for: node)
-    onVisitPost(rule: RedundantInternal.self, for: node)
+    onVisitPost(rule: RedundantAccessControl.self, for: node)
     onVisitPost(rule: RedundantObjc.self, for: node)
     onVisitPost(rule: RedundantSelf.self, for: node)
-    onVisitPost(rule: UseTripleSlashForDocumentationComments.self, for: node)
+    onVisitPost(rule: TripleSlashDocComments.self, for: node)
+    onVisitPost(rule: UnusedArguments.self, for: node)
     onVisitPost(rule: ValidateDocumentationComments.self, for: node)
-    onVisitPost(rule: WrapFunctionBodies.self, for: node)
+    onVisitPost(rule: WrapBodies.self, for: node)
     onVisitPost(rule: WrapMultilineStatementBraces.self, for: node)
   }
 
@@ -696,29 +722,37 @@ class LintPipeline: SyntaxVisitor {
     onVisitPost(rule: GroupNumericLiterals.self, for: node)
   }
 
+  override func visit(_ node: LabeledExprSyntax) -> SyntaxVisitorContinueKind {
+    visitIfEnabled(RedundantLet.visit, for: node)
+    return .visitChildren
+  }
+  override func visitPost(_ node: LabeledExprSyntax) {
+    onVisitPost(rule: RedundantLet.self, for: node)
+  }
+
   override func visit(_ node: MacroExpansionExprSyntax) -> SyntaxVisitorContinueKind {
-    visitIfEnabled(FileMacro.visit, for: node)
     visitIfEnabled(NoPlaygroundLiterals.visit, for: node)
+    visitIfEnabled(PreferFileID.visit, for: node)
     return .visitChildren
   }
   override func visitPost(_ node: MacroExpansionExprSyntax) {
-    onVisitPost(rule: FileMacro.self, for: node)
     onVisitPost(rule: NoPlaygroundLiterals.self, for: node)
+    onVisitPost(rule: PreferFileID.self, for: node)
   }
 
   override func visit(_ node: MatchingPatternConditionSyntax) -> SyntaxVisitorContinueKind {
+    visitIfEnabled(PatternLetPlacement.visit, for: node)
     visitIfEnabled(RedundantPattern.visit, for: node)
-    visitIfEnabled(UseLetInEveryBoundCaseVariable.visit, for: node)
     return .visitChildren
   }
   override func visitPost(_ node: MatchingPatternConditionSyntax) {
+    onVisitPost(rule: PatternLetPlacement.self, for: node)
     onVisitPost(rule: RedundantPattern.self, for: node)
-    onVisitPost(rule: UseLetInEveryBoundCaseVariable.self, for: node)
   }
 
   override func visit(_ node: MemberAccessExprSyntax) -> SyntaxVisitorContinueKind {
     visitIfEnabled(BlankLinesBetweenChainedFunctions.visit, for: node)
-    visitIfEnabled(NoForceUnwrapInTests.visit, for: node)
+    visitIfEnabled(NoForceUnwrap.visit, for: node)
     visitIfEnabled(PreferCountWhere.visit, for: node)
     visitIfEnabled(RedundantSelf.visit, for: node)
     visitIfEnabled(RedundantStaticSelf.visit, for: node)
@@ -726,20 +760,30 @@ class LintPipeline: SyntaxVisitor {
   }
   override func visitPost(_ node: MemberAccessExprSyntax) {
     onVisitPost(rule: BlankLinesBetweenChainedFunctions.self, for: node)
-    onVisitPost(rule: NoForceUnwrapInTests.self, for: node)
+    onVisitPost(rule: NoForceUnwrap.self, for: node)
     onVisitPost(rule: PreferCountWhere.self, for: node)
     onVisitPost(rule: RedundantSelf.self, for: node)
     onVisitPost(rule: RedundantStaticSelf.self, for: node)
   }
 
   override func visit(_ node: MemberBlockItemListSyntax) -> SyntaxVisitorContinueKind {
-    visitIfEnabled(DoNotUseSemicolons.visit, for: node)
+    visitIfEnabled(NoSemicolons.visit, for: node)
+    visitIfEnabled(PreferSwiftTesting.visit, for: node)
     visitIfEnabled(SortDeclarations.visit, for: node)
     return .visitChildren
   }
   override func visitPost(_ node: MemberBlockItemListSyntax) {
-    onVisitPost(rule: DoNotUseSemicolons.self, for: node)
+    onVisitPost(rule: NoSemicolons.self, for: node)
+    onVisitPost(rule: PreferSwiftTesting.self, for: node)
     onVisitPost(rule: SortDeclarations.self, for: node)
+  }
+
+  override func visit(_ node: MemberBlockItemSyntax) -> SyntaxVisitorContinueKind {
+    visitIfEnabled(DocComments.visit, for: node)
+    return .visitChildren
+  }
+  override func visitPost(_ node: MemberBlockItemSyntax) {
+    onVisitPost(rule: DocComments.self, for: node)
   }
 
   override func visit(_ node: MemberBlockSyntax) -> SyntaxVisitorContinueKind {
@@ -757,31 +801,31 @@ class LintPipeline: SyntaxVisitor {
   }
 
   override func visit(_ node: OptionalBindingConditionSyntax) -> SyntaxVisitorContinueKind {
-    visitIfEnabled(AlwaysUseLowerCamelCase.visit, for: node)
+    visitIfEnabled(LowerCamelCase.visit, for: node)
+    visitIfEnabled(NoBacktickedSelf.visit, for: node)
     visitIfEnabled(RedundantOptionalBinding.visit, for: node)
-    visitIfEnabled(StrongifiedSelf.visit, for: node)
     return .visitChildren
   }
   override func visitPost(_ node: OptionalBindingConditionSyntax) {
-    onVisitPost(rule: AlwaysUseLowerCamelCase.self, for: node)
+    onVisitPost(rule: LowerCamelCase.self, for: node)
+    onVisitPost(rule: NoBacktickedSelf.self, for: node)
     onVisitPost(rule: RedundantOptionalBinding.self, for: node)
-    onVisitPost(rule: StrongifiedSelf.self, for: node)
   }
 
   override func visit(_ node: PatternBindingSyntax) -> SyntaxVisitorContinueKind {
-    visitIfEnabled(AlwaysUseLiteralForEmptyCollectionInit.visit, for: node)
+    visitIfEnabled(EmptyCollectionLiteral.visit, for: node)
     visitIfEnabled(OmitExplicitReturns.visit, for: node)
-    visitIfEnabled(UseSingleLinePropertyGetter.visit, for: node)
-    visitIfEnabled(WrapMultilineConditionalAssignment.visit, for: node)
-    visitIfEnabled(WrapPropertyBodies.visit, for: node)
+    visitIfEnabled(PreferSingleLinePropertyGetter.visit, for: node)
+    visitIfEnabled(WrapBodies.visit, for: node)
+    visitIfEnabled(WrapConditionalAssignment.visit, for: node)
     return .visitChildren
   }
   override func visitPost(_ node: PatternBindingSyntax) {
-    onVisitPost(rule: AlwaysUseLiteralForEmptyCollectionInit.self, for: node)
+    onVisitPost(rule: EmptyCollectionLiteral.self, for: node)
     onVisitPost(rule: OmitExplicitReturns.self, for: node)
-    onVisitPost(rule: UseSingleLinePropertyGetter.self, for: node)
-    onVisitPost(rule: WrapMultilineConditionalAssignment.self, for: node)
-    onVisitPost(rule: WrapPropertyBodies.self, for: node)
+    onVisitPost(rule: PreferSingleLinePropertyGetter.self, for: node)
+    onVisitPost(rule: WrapBodies.self, for: node)
+    onVisitPost(rule: WrapConditionalAssignment.self, for: node)
   }
 
   override func visit(_ node: PrecedenceGroupDeclSyntax) -> SyntaxVisitorContinueKind {
@@ -803,39 +847,39 @@ class LintPipeline: SyntaxVisitor {
   }
 
   override func visit(_ node: ProtocolDeclSyntax) -> SyntaxVisitorContinueKind {
-    visitIfEnabled(AllPublicDeclarationsHaveDocumentation.visit, for: node)
-    visitIfEnabled(AnyObjectProtocol.visit, for: node)
-    visitIfEnabled(BeginDocumentationCommentWithOneLineSummary.visit, for: node)
+    visitIfEnabled(CapitalizedTypeNames.visit, for: node)
+    visitIfEnabled(DocCommentSummary.visit, for: node)
     visitIfEnabled(DocCommentsBeforeModifiers.visit, for: node)
+    visitIfEnabled(DocumentPublicDeclarations.visit, for: node)
     visitIfEnabled(ModifiersOnSameLine.visit, for: node)
     visitIfEnabled(NoLeadingUnderscores.visit, for: node)
-    visitIfEnabled(RedundantInternal.visit, for: node)
-    visitIfEnabled(TypeNamesShouldBeCapitalized.visit, for: node)
-    visitIfEnabled(UseTripleSlashForDocumentationComments.visit, for: node)
+    visitIfEnabled(PreferAnyObject.visit, for: node)
+    visitIfEnabled(RedundantAccessControl.visit, for: node)
+    visitIfEnabled(TripleSlashDocComments.visit, for: node)
     visitIfEnabled(WrapMultilineStatementBraces.visit, for: node)
     return .visitChildren
   }
   override func visitPost(_ node: ProtocolDeclSyntax) {
-    onVisitPost(rule: AllPublicDeclarationsHaveDocumentation.self, for: node)
-    onVisitPost(rule: AnyObjectProtocol.self, for: node)
-    onVisitPost(rule: BeginDocumentationCommentWithOneLineSummary.self, for: node)
+    onVisitPost(rule: CapitalizedTypeNames.self, for: node)
+    onVisitPost(rule: DocCommentSummary.self, for: node)
     onVisitPost(rule: DocCommentsBeforeModifiers.self, for: node)
+    onVisitPost(rule: DocumentPublicDeclarations.self, for: node)
     onVisitPost(rule: ModifiersOnSameLine.self, for: node)
     onVisitPost(rule: NoLeadingUnderscores.self, for: node)
-    onVisitPost(rule: RedundantInternal.self, for: node)
-    onVisitPost(rule: TypeNamesShouldBeCapitalized.self, for: node)
-    onVisitPost(rule: UseTripleSlashForDocumentationComments.self, for: node)
+    onVisitPost(rule: PreferAnyObject.self, for: node)
+    onVisitPost(rule: RedundantAccessControl.self, for: node)
+    onVisitPost(rule: TripleSlashDocComments.self, for: node)
     onVisitPost(rule: WrapMultilineStatementBraces.self, for: node)
   }
 
   override func visit(_ node: RepeatStmtSyntax) -> SyntaxVisitorContinueKind {
     visitIfEnabled(NoParensAroundConditions.visit, for: node)
-    visitIfEnabled(WrapLoopBodies.visit, for: node)
+    visitIfEnabled(WrapBodies.visit, for: node)
     return .visitChildren
   }
   override func visitPost(_ node: RepeatStmtSyntax) {
     onVisitPost(rule: NoParensAroundConditions.self, for: node)
-    onVisitPost(rule: WrapLoopBodies.self, for: node)
+    onVisitPost(rule: WrapBodies.self, for: node)
   }
 
   override func visit(_ node: ReturnStmtSyntax) -> SyntaxVisitorContinueKind {
@@ -847,149 +891,159 @@ class LintPipeline: SyntaxVisitor {
   }
 
   override func visit(_ node: SourceFileSyntax) -> SyntaxVisitorContinueKind {
-    visitIfEnabled(AlwaysUseLowerCamelCase.visit, for: node)
     visitIfEnabled(AmbiguousTrailingClosureOverload.visit, for: node)
-    visitIfEnabled(BlankLineAfterImports.visit, for: node)
+    visitIfEnabled(BlankLinesAfterImports.visit, for: node)
     visitIfEnabled(BlankLinesBetweenImports.visit, for: node)
     visitIfEnabled(BlankLinesBetweenScopes.visit, for: node)
-    visitIfEnabled(EnvironmentEntry.visit, for: node)
+    visitIfEnabled(FileHeader.visit, for: node)
     visitIfEnabled(FileScopedDeclarationPrivacy.visit, for: node)
     visitIfEnabled(LinebreakAtEndOfFile.visit, for: node)
-    visitIfEnabled(NeverForceUnwrap.visit, for: node)
-    visitIfEnabled(NeverUseForceTry.visit, for: node)
-    visitIfEnabled(NeverUseImplicitlyUnwrappedOptionals.visit, for: node)
-    visitIfEnabled(NoForceTryInTests.visit, for: node)
-    visitIfEnabled(NoForceUnwrapInTests.visit, for: node)
+    visitIfEnabled(LowerCamelCase.visit, for: node)
+    visitIfEnabled(NoForceTry.visit, for: node)
+    visitIfEnabled(NoForceUnwrap.visit, for: node)
     visitIfEnabled(NoGuardInTests.visit, for: node)
-    visitIfEnabled(OrderedImports.visit, for: node)
+    visitIfEnabled(NoImplicitlyUnwrappedOptionals.visit, for: node)
+    visitIfEnabled(PreferEnvironmentEntry.visit, for: node)
     visitIfEnabled(PreferFinalClasses.visit, for: node)
-    visitIfEnabled(RedundantFileprivate.visit, for: node)
+    visitIfEnabled(PreferSwiftTesting.visit, for: node)
+    visitIfEnabled(RedundantAccessControl.visit, for: node)
+    visitIfEnabled(SortImports.visit, for: node)
     visitIfEnabled(SwiftTestingTestCaseNames.visit, for: node)
     visitIfEnabled(TestSuiteAccessControl.visit, for: node)
+    visitIfEnabled(URLMacro.visit, for: node)
     visitIfEnabled(ValidateTestCases.visit, for: node)
     return .visitChildren
   }
   override func visitPost(_ node: SourceFileSyntax) {
-    onVisitPost(rule: AlwaysUseLowerCamelCase.self, for: node)
     onVisitPost(rule: AmbiguousTrailingClosureOverload.self, for: node)
-    onVisitPost(rule: BlankLineAfterImports.self, for: node)
+    onVisitPost(rule: BlankLinesAfterImports.self, for: node)
     onVisitPost(rule: BlankLinesBetweenImports.self, for: node)
     onVisitPost(rule: BlankLinesBetweenScopes.self, for: node)
-    onVisitPost(rule: EnvironmentEntry.self, for: node)
+    onVisitPost(rule: FileHeader.self, for: node)
     onVisitPost(rule: FileScopedDeclarationPrivacy.self, for: node)
     onVisitPost(rule: LinebreakAtEndOfFile.self, for: node)
-    onVisitPost(rule: NeverForceUnwrap.self, for: node)
-    onVisitPost(rule: NeverUseForceTry.self, for: node)
-    onVisitPost(rule: NeverUseImplicitlyUnwrappedOptionals.self, for: node)
-    onVisitPost(rule: NoForceTryInTests.self, for: node)
-    onVisitPost(rule: NoForceUnwrapInTests.self, for: node)
+    onVisitPost(rule: LowerCamelCase.self, for: node)
+    onVisitPost(rule: NoForceTry.self, for: node)
+    onVisitPost(rule: NoForceUnwrap.self, for: node)
     onVisitPost(rule: NoGuardInTests.self, for: node)
-    onVisitPost(rule: OrderedImports.self, for: node)
+    onVisitPost(rule: NoImplicitlyUnwrappedOptionals.self, for: node)
+    onVisitPost(rule: PreferEnvironmentEntry.self, for: node)
     onVisitPost(rule: PreferFinalClasses.self, for: node)
-    onVisitPost(rule: RedundantFileprivate.self, for: node)
+    onVisitPost(rule: PreferSwiftTesting.self, for: node)
+    onVisitPost(rule: RedundantAccessControl.self, for: node)
+    onVisitPost(rule: SortImports.self, for: node)
     onVisitPost(rule: SwiftTestingTestCaseNames.self, for: node)
     onVisitPost(rule: TestSuiteAccessControl.self, for: node)
+    onVisitPost(rule: URLMacro.self, for: node)
     onVisitPost(rule: ValidateTestCases.self, for: node)
   }
 
   override func visit(_ node: StringLiteralExprSyntax) -> SyntaxVisitorContinueKind {
-    visitIfEnabled(NoForceUnwrapInTests.visit, for: node)
+    visitIfEnabled(NoForceUnwrap.visit, for: node)
     return .visitChildren
   }
   override func visitPost(_ node: StringLiteralExprSyntax) {
-    onVisitPost(rule: NoForceUnwrapInTests.self, for: node)
+    onVisitPost(rule: NoForceUnwrap.self, for: node)
   }
 
   override func visit(_ node: StructDeclSyntax) -> SyntaxVisitorContinueKind {
-    visitIfEnabled(AllPublicDeclarationsHaveDocumentation.visit, for: node)
-    visitIfEnabled(BeginDocumentationCommentWithOneLineSummary.visit, for: node)
+    visitIfEnabled(CapitalizedTypeNames.visit, for: node)
+    visitIfEnabled(DocCommentSummary.visit, for: node)
     visitIfEnabled(DocCommentsBeforeModifiers.visit, for: node)
+    visitIfEnabled(DocumentPublicDeclarations.visit, for: node)
     visitIfEnabled(EnumNamespaces.visit, for: node)
     visitIfEnabled(ModifierOrder.visit, for: node)
     visitIfEnabled(ModifiersOnSameLine.visit, for: node)
-    visitIfEnabled(NoAccessLevelOnExtensionDeclaration.visit, for: node)
+    visitIfEnabled(NoExtensionAccessLevel.visit, for: node)
     visitIfEnabled(NoLeadingUnderscores.visit, for: node)
+    visitIfEnabled(PreferSynthesizedInitializer.visit, for: node)
+    visitIfEnabled(RedundantAccessControl.visit, for: node)
     visitIfEnabled(RedundantEquatable.visit, for: node)
-    visitIfEnabled(RedundantInternal.visit, for: node)
     visitIfEnabled(RedundantObjc.visit, for: node)
-    visitIfEnabled(RedundantPublic.visit, for: node)
     visitIfEnabled(RedundantSelf.visit, for: node)
     visitIfEnabled(RedundantSendable.visit, for: node)
     visitIfEnabled(RedundantSwiftTestingSuite.visit, for: node)
     visitIfEnabled(SimplifyGenericConstraints.visit, for: node)
     visitIfEnabled(TestSuiteAccessControl.visit, for: node)
-    visitIfEnabled(TypeNamesShouldBeCapitalized.visit, for: node)
-    visitIfEnabled(UseSynthesizedInitializer.visit, for: node)
-    visitIfEnabled(UseTripleSlashForDocumentationComments.visit, for: node)
+    visitIfEnabled(TripleSlashDocComments.visit, for: node)
     visitIfEnabled(ValidateTestCases.visit, for: node)
     visitIfEnabled(WrapMultilineStatementBraces.visit, for: node)
     return .visitChildren
   }
   override func visitPost(_ node: StructDeclSyntax) {
-    onVisitPost(rule: AllPublicDeclarationsHaveDocumentation.self, for: node)
-    onVisitPost(rule: BeginDocumentationCommentWithOneLineSummary.self, for: node)
+    onVisitPost(rule: CapitalizedTypeNames.self, for: node)
+    onVisitPost(rule: DocCommentSummary.self, for: node)
     onVisitPost(rule: DocCommentsBeforeModifiers.self, for: node)
+    onVisitPost(rule: DocumentPublicDeclarations.self, for: node)
     onVisitPost(rule: EnumNamespaces.self, for: node)
     onVisitPost(rule: ModifierOrder.self, for: node)
     onVisitPost(rule: ModifiersOnSameLine.self, for: node)
-    onVisitPost(rule: NoAccessLevelOnExtensionDeclaration.self, for: node)
+    onVisitPost(rule: NoExtensionAccessLevel.self, for: node)
     onVisitPost(rule: NoLeadingUnderscores.self, for: node)
+    onVisitPost(rule: PreferSynthesizedInitializer.self, for: node)
+    onVisitPost(rule: RedundantAccessControl.self, for: node)
     onVisitPost(rule: RedundantEquatable.self, for: node)
-    onVisitPost(rule: RedundantInternal.self, for: node)
     onVisitPost(rule: RedundantObjc.self, for: node)
-    onVisitPost(rule: RedundantPublic.self, for: node)
     onVisitPost(rule: RedundantSelf.self, for: node)
     onVisitPost(rule: RedundantSendable.self, for: node)
     onVisitPost(rule: RedundantSwiftTestingSuite.self, for: node)
     onVisitPost(rule: SimplifyGenericConstraints.self, for: node)
     onVisitPost(rule: TestSuiteAccessControl.self, for: node)
-    onVisitPost(rule: TypeNamesShouldBeCapitalized.self, for: node)
-    onVisitPost(rule: UseSynthesizedInitializer.self, for: node)
-    onVisitPost(rule: UseTripleSlashForDocumentationComments.self, for: node)
+    onVisitPost(rule: TripleSlashDocComments.self, for: node)
     onVisitPost(rule: ValidateTestCases.self, for: node)
     onVisitPost(rule: WrapMultilineStatementBraces.self, for: node)
   }
 
+  override func visit(_ node: SubscriptCallExprSyntax) -> SyntaxVisitorContinueKind {
+    visitIfEnabled(NoForceUnwrap.visit, for: node)
+    return .visitChildren
+  }
+  override func visitPost(_ node: SubscriptCallExprSyntax) {
+    onVisitPost(rule: NoForceUnwrap.self, for: node)
+  }
+
   override func visit(_ node: SubscriptDeclSyntax) -> SyntaxVisitorContinueKind {
-    visitIfEnabled(AllPublicDeclarationsHaveDocumentation.visit, for: node)
-    visitIfEnabled(BeginDocumentationCommentWithOneLineSummary.visit, for: node)
+    visitIfEnabled(DocCommentSummary.visit, for: node)
     visitIfEnabled(DocCommentsBeforeModifiers.visit, for: node)
+    visitIfEnabled(DocumentPublicDeclarations.visit, for: node)
     visitIfEnabled(ModifierOrder.visit, for: node)
     visitIfEnabled(ModifiersOnSameLine.visit, for: node)
-    visitIfEnabled(NoAccessLevelOnExtensionDeclaration.visit, for: node)
+    visitIfEnabled(NoExtensionAccessLevel.visit, for: node)
     visitIfEnabled(OmitExplicitReturns.visit, for: node)
     visitIfEnabled(OpaqueGenericParameters.visit, for: node)
-    visitIfEnabled(RedundantInternal.visit, for: node)
+    visitIfEnabled(RedundantAccessControl.visit, for: node)
     visitIfEnabled(RedundantObjc.visit, for: node)
     visitIfEnabled(RedundantSelf.visit, for: node)
-    visitIfEnabled(UseTripleSlashForDocumentationComments.visit, for: node)
-    visitIfEnabled(WrapFunctionBodies.visit, for: node)
+    visitIfEnabled(TripleSlashDocComments.visit, for: node)
+    visitIfEnabled(UnusedArguments.visit, for: node)
+    visitIfEnabled(WrapBodies.visit, for: node)
     return .visitChildren
   }
   override func visitPost(_ node: SubscriptDeclSyntax) {
-    onVisitPost(rule: AllPublicDeclarationsHaveDocumentation.self, for: node)
-    onVisitPost(rule: BeginDocumentationCommentWithOneLineSummary.self, for: node)
+    onVisitPost(rule: DocCommentSummary.self, for: node)
     onVisitPost(rule: DocCommentsBeforeModifiers.self, for: node)
+    onVisitPost(rule: DocumentPublicDeclarations.self, for: node)
     onVisitPost(rule: ModifierOrder.self, for: node)
     onVisitPost(rule: ModifiersOnSameLine.self, for: node)
-    onVisitPost(rule: NoAccessLevelOnExtensionDeclaration.self, for: node)
+    onVisitPost(rule: NoExtensionAccessLevel.self, for: node)
     onVisitPost(rule: OmitExplicitReturns.self, for: node)
     onVisitPost(rule: OpaqueGenericParameters.self, for: node)
-    onVisitPost(rule: RedundantInternal.self, for: node)
+    onVisitPost(rule: RedundantAccessControl.self, for: node)
     onVisitPost(rule: RedundantObjc.self, for: node)
     onVisitPost(rule: RedundantSelf.self, for: node)
-    onVisitPost(rule: UseTripleSlashForDocumentationComments.self, for: node)
-    onVisitPost(rule: WrapFunctionBodies.self, for: node)
+    onVisitPost(rule: TripleSlashDocComments.self, for: node)
+    onVisitPost(rule: UnusedArguments.self, for: node)
+    onVisitPost(rule: WrapBodies.self, for: node)
   }
 
   override func visit(_ node: SwitchCaseItemSyntax) -> SyntaxVisitorContinueKind {
+    visitIfEnabled(PatternLetPlacement.visit, for: node)
     visitIfEnabled(RedundantPattern.visit, for: node)
-    visitIfEnabled(UseLetInEveryBoundCaseVariable.visit, for: node)
     return .visitChildren
   }
   override func visitPost(_ node: SwitchCaseItemSyntax) {
+    onVisitPost(rule: PatternLetPlacement.self, for: node)
     onVisitPost(rule: RedundantPattern.self, for: node)
-    onVisitPost(rule: UseLetInEveryBoundCaseVariable.self, for: node)
   }
 
   override func visit(_ node: SwitchCaseLabelSyntax) -> SyntaxVisitorContinueKind {
@@ -1003,11 +1057,11 @@ class LintPipeline: SyntaxVisitor {
   }
 
   override func visit(_ node: SwitchCaseListSyntax) -> SyntaxVisitorContinueKind {
-    visitIfEnabled(NoCasesWithOnlyFallthrough.visit, for: node)
+    visitIfEnabled(NoFallthroughOnlyCases.visit, for: node)
     return .visitChildren
   }
   override func visitPost(_ node: SwitchCaseListSyntax) {
-    onVisitPost(rule: NoCasesWithOnlyFallthrough.self, for: node)
+    onVisitPost(rule: NoFallthroughOnlyCases.self, for: node)
   }
 
   override func visit(_ node: SwitchCaseSyntax) -> SyntaxVisitorContinueKind {
@@ -1021,7 +1075,7 @@ class LintPipeline: SyntaxVisitor {
   }
 
   override func visit(_ node: SwitchExprSyntax) -> SyntaxVisitorContinueKind {
-    visitIfEnabled(BlankLineAfterSwitchCase.visit, for: node)
+    visitIfEnabled(BlankLinesAfterSwitchCase.visit, for: node)
     visitIfEnabled(ConsistentSwitchCaseSpacing.visit, for: node)
     visitIfEnabled(NoEmptyLinesOpeningClosingBraces.visit, for: node)
     visitIfEnabled(NoParensAroundConditions.visit, for: node)
@@ -1029,7 +1083,7 @@ class LintPipeline: SyntaxVisitor {
     return .visitChildren
   }
   override func visitPost(_ node: SwitchExprSyntax) {
-    onVisitPost(rule: BlankLineAfterSwitchCase.self, for: node)
+    onVisitPost(rule: BlankLinesAfterSwitchCase.self, for: node)
     onVisitPost(rule: ConsistentSwitchCaseSpacing.self, for: node)
     onVisitPost(rule: NoEmptyLinesOpeningClosingBraces.self, for: node)
     onVisitPost(rule: NoParensAroundConditions.self, for: node)
@@ -1037,73 +1091,73 @@ class LintPipeline: SyntaxVisitor {
   }
 
   override func visit(_ node: TokenSyntax) -> SyntaxVisitorContinueKind {
-    visitIfEnabled(Acronyms.visit, for: node)
     visitIfEnabled(BlankLinesAroundMark.visit, for: node)
+    visitIfEnabled(CapitalizeAcronyms.visit, for: node)
+    visitIfEnabled(FormatSpecialComments.visit, for: node)
+    visitIfEnabled(LeadingDotOperators.visit, for: node)
     visitIfEnabled(NoBlockComments.visit, for: node)
     visitIfEnabled(RedundantBackticks.visit, for: node)
-    visitIfEnabled(Todos.visit, for: node)
     visitIfEnabled(WrapSingleLineComments.visit, for: node)
     return .visitChildren
   }
   override func visitPost(_ node: TokenSyntax) {
-    onVisitPost(rule: Acronyms.self, for: node)
     onVisitPost(rule: BlankLinesAroundMark.self, for: node)
+    onVisitPost(rule: CapitalizeAcronyms.self, for: node)
+    onVisitPost(rule: FormatSpecialComments.self, for: node)
+    onVisitPost(rule: LeadingDotOperators.self, for: node)
     onVisitPost(rule: NoBlockComments.self, for: node)
     onVisitPost(rule: RedundantBackticks.self, for: node)
-    onVisitPost(rule: Todos.self, for: node)
     onVisitPost(rule: WrapSingleLineComments.self, for: node)
   }
 
   override func visit(_ node: TryExprSyntax) -> SyntaxVisitorContinueKind {
-    visitIfEnabled(NeverUseForceTry.visit, for: node)
-    visitIfEnabled(NoForceTryInTests.visit, for: node)
+    visitIfEnabled(NoForceTry.visit, for: node)
     return .visitChildren
   }
   override func visitPost(_ node: TryExprSyntax) {
-    onVisitPost(rule: NeverUseForceTry.self, for: node)
-    onVisitPost(rule: NoForceTryInTests.self, for: node)
+    onVisitPost(rule: NoForceTry.self, for: node)
   }
 
   override func visit(_ node: TypeAliasDeclSyntax) -> SyntaxVisitorContinueKind {
-    visitIfEnabled(AllPublicDeclarationsHaveDocumentation.visit, for: node)
-    visitIfEnabled(BeginDocumentationCommentWithOneLineSummary.visit, for: node)
+    visitIfEnabled(CapitalizedTypeNames.visit, for: node)
+    visitIfEnabled(DocCommentSummary.visit, for: node)
     visitIfEnabled(DocCommentsBeforeModifiers.visit, for: node)
+    visitIfEnabled(DocumentPublicDeclarations.visit, for: node)
     visitIfEnabled(ModifierOrder.visit, for: node)
     visitIfEnabled(ModifiersOnSameLine.visit, for: node)
-    visitIfEnabled(NoAccessLevelOnExtensionDeclaration.visit, for: node)
+    visitIfEnabled(NoExtensionAccessLevel.visit, for: node)
     visitIfEnabled(NoLeadingUnderscores.visit, for: node)
-    visitIfEnabled(RedundantInternal.visit, for: node)
+    visitIfEnabled(RedundantAccessControl.visit, for: node)
     visitIfEnabled(SortTypealiases.visit, for: node)
-    visitIfEnabled(TypeNamesShouldBeCapitalized.visit, for: node)
-    visitIfEnabled(UseTripleSlashForDocumentationComments.visit, for: node)
+    visitIfEnabled(TripleSlashDocComments.visit, for: node)
     return .visitChildren
   }
   override func visitPost(_ node: TypeAliasDeclSyntax) {
-    onVisitPost(rule: AllPublicDeclarationsHaveDocumentation.self, for: node)
-    onVisitPost(rule: BeginDocumentationCommentWithOneLineSummary.self, for: node)
+    onVisitPost(rule: CapitalizedTypeNames.self, for: node)
+    onVisitPost(rule: DocCommentSummary.self, for: node)
     onVisitPost(rule: DocCommentsBeforeModifiers.self, for: node)
+    onVisitPost(rule: DocumentPublicDeclarations.self, for: node)
     onVisitPost(rule: ModifierOrder.self, for: node)
     onVisitPost(rule: ModifiersOnSameLine.self, for: node)
-    onVisitPost(rule: NoAccessLevelOnExtensionDeclaration.self, for: node)
+    onVisitPost(rule: NoExtensionAccessLevel.self, for: node)
     onVisitPost(rule: NoLeadingUnderscores.self, for: node)
-    onVisitPost(rule: RedundantInternal.self, for: node)
+    onVisitPost(rule: RedundantAccessControl.self, for: node)
     onVisitPost(rule: SortTypealiases.self, for: node)
-    onVisitPost(rule: TypeNamesShouldBeCapitalized.self, for: node)
-    onVisitPost(rule: UseTripleSlashForDocumentationComments.self, for: node)
+    onVisitPost(rule: TripleSlashDocComments.self, for: node)
   }
 
   override func visit(_ node: VariableDeclSyntax) -> SyntaxVisitorContinueKind {
-    visitIfEnabled(AllPublicDeclarationsHaveDocumentation.visit, for: node)
-    visitIfEnabled(AlwaysUseLowerCamelCase.visit, for: node)
-    visitIfEnabled(BeginDocumentationCommentWithOneLineSummary.visit, for: node)
+    visitIfEnabled(DocCommentSummary.visit, for: node)
     visitIfEnabled(DocCommentsBeforeModifiers.visit, for: node)
-    visitIfEnabled(DontRepeatTypeInStaticProperties.visit, for: node)
+    visitIfEnabled(DocumentPublicDeclarations.visit, for: node)
+    visitIfEnabled(LowerCamelCase.visit, for: node)
     visitIfEnabled(ModifierOrder.visit, for: node)
     visitIfEnabled(ModifiersOnSameLine.visit, for: node)
-    visitIfEnabled(NeverUseImplicitlyUnwrappedOptionals.visit, for: node)
-    visitIfEnabled(NoAccessLevelOnExtensionDeclaration.visit, for: node)
+    visitIfEnabled(NoExtensionAccessLevel.visit, for: node)
+    visitIfEnabled(NoImplicitlyUnwrappedOptionals.visit, for: node)
+    visitIfEnabled(NoTypeRepetitionInStaticProperties.visit, for: node)
     visitIfEnabled(PrivateStateVariables.visit, for: node)
-    visitIfEnabled(RedundantInternal.visit, for: node)
+    visitIfEnabled(RedundantAccessControl.visit, for: node)
     visitIfEnabled(RedundantNilInit.visit, for: node)
     visitIfEnabled(RedundantObjc.visit, for: node)
     visitIfEnabled(RedundantPattern.visit, for: node)
@@ -1111,21 +1165,21 @@ class LintPipeline: SyntaxVisitor {
     visitIfEnabled(RedundantType.visit, for: node)
     visitIfEnabled(RedundantViewBuilder.visit, for: node)
     visitIfEnabled(StrongOutlets.visit, for: node)
-    visitIfEnabled(UseTripleSlashForDocumentationComments.visit, for: node)
+    visitIfEnabled(TripleSlashDocComments.visit, for: node)
     return .visitChildren
   }
   override func visitPost(_ node: VariableDeclSyntax) {
-    onVisitPost(rule: AllPublicDeclarationsHaveDocumentation.self, for: node)
-    onVisitPost(rule: AlwaysUseLowerCamelCase.self, for: node)
-    onVisitPost(rule: BeginDocumentationCommentWithOneLineSummary.self, for: node)
+    onVisitPost(rule: DocCommentSummary.self, for: node)
     onVisitPost(rule: DocCommentsBeforeModifiers.self, for: node)
-    onVisitPost(rule: DontRepeatTypeInStaticProperties.self, for: node)
+    onVisitPost(rule: DocumentPublicDeclarations.self, for: node)
+    onVisitPost(rule: LowerCamelCase.self, for: node)
     onVisitPost(rule: ModifierOrder.self, for: node)
     onVisitPost(rule: ModifiersOnSameLine.self, for: node)
-    onVisitPost(rule: NeverUseImplicitlyUnwrappedOptionals.self, for: node)
-    onVisitPost(rule: NoAccessLevelOnExtensionDeclaration.self, for: node)
+    onVisitPost(rule: NoExtensionAccessLevel.self, for: node)
+    onVisitPost(rule: NoImplicitlyUnwrappedOptionals.self, for: node)
+    onVisitPost(rule: NoTypeRepetitionInStaticProperties.self, for: node)
     onVisitPost(rule: PrivateStateVariables.self, for: node)
-    onVisitPost(rule: RedundantInternal.self, for: node)
+    onVisitPost(rule: RedundantAccessControl.self, for: node)
     onVisitPost(rule: RedundantNilInit.self, for: node)
     onVisitPost(rule: RedundantObjc.self, for: node)
     onVisitPost(rule: RedundantPattern.self, for: node)
@@ -1133,18 +1187,18 @@ class LintPipeline: SyntaxVisitor {
     onVisitPost(rule: RedundantType.self, for: node)
     onVisitPost(rule: RedundantViewBuilder.self, for: node)
     onVisitPost(rule: StrongOutlets.self, for: node)
-    onVisitPost(rule: UseTripleSlashForDocumentationComments.self, for: node)
+    onVisitPost(rule: TripleSlashDocComments.self, for: node)
   }
 
   override func visit(_ node: WhileStmtSyntax) -> SyntaxVisitorContinueKind {
     visitIfEnabled(NoParensAroundConditions.visit, for: node)
-    visitIfEnabled(WrapLoopBodies.visit, for: node)
+    visitIfEnabled(WrapBodies.visit, for: node)
     visitIfEnabled(WrapMultilineStatementBraces.visit, for: node)
     return .visitChildren
   }
   override func visitPost(_ node: WhileStmtSyntax) {
     onVisitPost(rule: NoParensAroundConditions.self, for: node)
-    onVisitPost(rule: WrapLoopBodies.self, for: node)
+    onVisitPost(rule: WrapBodies.self, for: node)
     onVisitPost(rule: WrapMultilineStatementBraces.self, for: node)
   }
 }
@@ -1153,70 +1207,81 @@ extension FormatPipeline {
 
   func rewrite(_ node: Syntax) -> Syntax {
     var node = node
-    node = Acronyms(context: context).rewrite(node)
-    node = AlwaysUseLiteralForEmptyCollectionInit(context: context).rewrite(node)
-    node = AndOperator(context: context).rewrite(node)
-    node = AnyObjectProtocol(context: context).rewrite(node)
-    node = ApplicationMain(context: context).rewrite(node)
-    node = AssertionFailures(context: context).rewrite(node)
-    node = BlankLineAfterImports(context: context).rewrite(node)
-    node = BlankLineAfterSwitchCase(context: context).rewrite(node)
     node = BlankLinesAfterGuardStatements(context: context).rewrite(node)
+    node = BlankLinesAfterImports(context: context).rewrite(node)
+    node = BlankLinesAfterSwitchCase(context: context).rewrite(node)
     node = BlankLinesAroundMark(context: context).rewrite(node)
     node = BlankLinesBetweenChainedFunctions(context: context).rewrite(node)
     node = BlankLinesBetweenImports(context: context).rewrite(node)
     node = BlankLinesBetweenScopes(context: context).rewrite(node)
-    node = ConditionalAssignment(context: context).rewrite(node)
+    node = CapitalizeAcronyms(context: context).rewrite(node)
     node = ConsistentSwitchCaseSpacing(context: context).rewrite(node)
-    node = DoNotUseSemicolons(context: context).rewrite(node)
+    node = DocComments(context: context).rewrite(node)
     node = DocCommentsBeforeModifiers(context: context).rewrite(node)
     node = EmptyBraces(context: context).rewrite(node)
+    node = EmptyCollectionLiteral(context: context).rewrite(node)
     node = EmptyExtensions(context: context).rewrite(node)
     node = EnumNamespaces(context: context).rewrite(node)
-    node = EnvironmentEntry(context: context).rewrite(node)
-    node = FileMacro(context: context).rewrite(node)
+    node = ExplicitNilCheck(context: context).rewrite(node)
+    node = FileHeader(context: context).rewrite(node)
     node = FileScopedDeclarationPrivacy(context: context).rewrite(node)
+    node = FormatSpecialComments(context: context).rewrite(node)
     node = FullyIndirectEnum(context: context).rewrite(node)
-    node = GenericExtensions(context: context).rewrite(node)
     node = GroupNumericLiterals(context: context).rewrite(node)
     node = HoistAwait(context: context).rewrite(node)
     node = HoistTry(context: context).rewrite(node)
     node = InitCoderUnavailable(context: context).rewrite(node)
-    node = IsEmpty(context: context).rewrite(node)
+    node = LeadingDotOperators(context: context).rewrite(node)
     node = LinebreakAtEndOfFile(context: context).rewrite(node)
     node = ModifierOrder(context: context).rewrite(node)
     node = ModifiersOnSameLine(context: context).rewrite(node)
-    node = NoAccessLevelOnExtensionDeclaration(context: context).rewrite(node)
     node = NoAssignmentInExpressions(context: context).rewrite(node)
-    node = NoCasesWithOnlyFallthrough(context: context).rewrite(node)
+    node = NoBacktickedSelf(context: context).rewrite(node)
     node = NoEmptyLinesOpeningClosingBraces(context: context).rewrite(node)
-    node = NoEmptyTrailingClosureParentheses(context: context).rewrite(node)
     node = NoExplicitOwnership(context: context).rewrite(node)
-    node = NoForceTryInTests(context: context).rewrite(node)
-    node = NoForceUnwrapInTests(context: context).rewrite(node)
+    node = NoExtensionAccessLevel(context: context).rewrite(node)
+    node = NoFallthroughOnlyCases(context: context).rewrite(node)
+    node = NoForceTry(context: context).rewrite(node)
+    node = NoForceUnwrap(context: context).rewrite(node)
     node = NoGuardInTests(context: context).rewrite(node)
     node = NoLabelsInCasePatterns(context: context).rewrite(node)
     node = NoParensAroundConditions(context: context).rewrite(node)
+    node = NoSemicolons(context: context).rewrite(node)
+    node = NoTrailingClosureParens(context: context).rewrite(node)
     node = NoVoidReturnOnFunctionSignature(context: context).rewrite(node)
+    node = NoYodaConditions(context: context).rewrite(node)
     node = OmitExplicitReturns(context: context).rewrite(node)
-    node = OneCasePerLine(context: context).rewrite(node)
-    node = OneVariableDeclarationPerLine(context: context).rewrite(node)
+    node = OneDeclarationPerLine(context: context).rewrite(node)
     node = OpaqueGenericParameters(context: context).rewrite(node)
-    node = OrderedImports(context: context).rewrite(node)
+    node = PatternLetPlacement(context: context).rewrite(node)
+    node = PreferAngleBracketExtensions(context: context).rewrite(node)
+    node = PreferAnyObject(context: context).rewrite(node)
+    node = PreferAssertionFailure(context: context).rewrite(node)
+    node = PreferCommaConditions(context: context).rewrite(node)
+    node = PreferConditionalExpression(context: context).rewrite(node)
     node = PreferCountWhere(context: context).rewrite(node)
+    node = PreferEarlyExits(context: context).rewrite(node)
+    node = PreferEnvironmentEntry(context: context).rewrite(node)
     node = PreferExplicitFalse(context: context).rewrite(node)
+    node = PreferFileID(context: context).rewrite(node)
     node = PreferFinalClasses(context: context).rewrite(node)
+    node = PreferIsEmpty(context: context).rewrite(node)
     node = PreferKeyPath(context: context).rewrite(node)
+    node = PreferMainAttribute(context: context).rewrite(node)
+    node = PreferShorthandTypeNames(context: context).rewrite(node)
+    node = PreferSingleLinePropertyGetter(context: context).rewrite(node)
+    node = PreferSwiftTesting(context: context).rewrite(node)
+    node = PreferTrailingClosures(context: context).rewrite(node)
+    node = PreferVoidReturn(context: context).rewrite(node)
+    node = PreferWhereClausesInForLoops(context: context).rewrite(node)
     node = PrivateStateVariables(context: context).rewrite(node)
+    node = RedundantAccessControl(context: context).rewrite(node)
     node = RedundantAsync(context: context).rewrite(node)
     node = RedundantBackticks(context: context).rewrite(node)
     node = RedundantBreak(context: context).rewrite(node)
     node = RedundantClosure(context: context).rewrite(node)
     node = RedundantEquatable(context: context).rewrite(node)
-    node = RedundantExtensionACL(context: context).rewrite(node)
-    node = RedundantFileprivate(context: context).rewrite(node)
     node = RedundantInit(context: context).rewrite(node)
-    node = RedundantInternal(context: context).rewrite(node)
     node = RedundantLet(context: context).rewrite(node)
     node = RedundantLetError(context: context).rewrite(node)
     node = RedundantNilInit(context: context).rewrite(node)
@@ -1224,43 +1289,33 @@ extension FormatPipeline {
     node = RedundantOptionalBinding(context: context).rewrite(node)
     node = RedundantPattern(context: context).rewrite(node)
     node = RedundantProperty(context: context).rewrite(node)
-    node = RedundantPublic(context: context).rewrite(node)
     node = RedundantRawValues(context: context).rewrite(node)
     node = RedundantSelf(context: context).rewrite(node)
     node = RedundantSendable(context: context).rewrite(node)
+    node = RedundantStaticSelf(context: context).rewrite(node)
     node = RedundantSwiftTestingSuite(context: context).rewrite(node)
     node = RedundantThrows(context: context).rewrite(node)
     node = RedundantType(context: context).rewrite(node)
     node = RedundantTypedThrows(context: context).rewrite(node)
     node = RedundantViewBuilder(context: context).rewrite(node)
-    node = ReturnVoidInsteadOfEmptyTuple(context: context).rewrite(node)
     node = SimplifyGenericConstraints(context: context).rewrite(node)
     node = SortDeclarations(context: context).rewrite(node)
+    node = SortImports(context: context).rewrite(node)
     node = SortSwitchCases(context: context).rewrite(node)
     node = SortTypealiases(context: context).rewrite(node)
     node = StrongOutlets(context: context).rewrite(node)
-    node = StrongifiedSelf(context: context).rewrite(node)
     node = SwiftTestingTestCaseNames(context: context).rewrite(node)
     node = TestSuiteAccessControl(context: context).rewrite(node)
-    node = Todos(context: context).rewrite(node)
-    node = UseEarlyExits(context: context).rewrite(node)
-    node = UseExplicitNilCheckInConditions(context: context).rewrite(node)
-    node = UseLetInEveryBoundCaseVariable(context: context).rewrite(node)
-    node = UseShorthandTypeNames(context: context).rewrite(node)
-    node = UseSingleLinePropertyGetter(context: context).rewrite(node)
-    node = UseTripleSlashForDocumentationComments(context: context).rewrite(node)
-    node = UseWhereClausesInForLoops(context: context).rewrite(node)
+    node = TripleSlashDocComments(context: context).rewrite(node)
+    node = URLMacro(context: context).rewrite(node)
+    node = UnusedArguments(context: context).rewrite(node)
     node = ValidateTestCases(context: context).rewrite(node)
-    node = WrapConditionalBodies(context: context).rewrite(node)
-    node = WrapFunctionBodies(context: context).rewrite(node)
-    node = WrapLoopBodies(context: context).rewrite(node)
-    node = WrapMultilineConditionalAssignment(context: context).rewrite(node)
+    node = WrapBodies(context: context).rewrite(node)
+    node = WrapConditionalAssignment(context: context).rewrite(node)
     node = WrapMultilineFunctionChains(context: context).rewrite(node)
     node = WrapMultilineStatementBraces(context: context).rewrite(node)
-    node = WrapPropertyBodies(context: context).rewrite(node)
     node = WrapSingleLineComments(context: context).rewrite(node)
     node = WrapSwitchCases(context: context).rewrite(node)
-    node = YodaConditions(context: context).rewrite(node)
     return node
   }
 }

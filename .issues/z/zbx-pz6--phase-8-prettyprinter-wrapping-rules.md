@@ -10,7 +10,7 @@ parent: c7r-77o
 sync:
     github:
         issue_number: "296"
-        synced_at: "2026-04-14T18:45:53Z"
+        synced_at: "2026-04-15T00:34:45Z"
 ---
 
 Wrapping rules that require PrettyPrinter enhancements rather than SyntaxFormatRule. From xuy-4wl.

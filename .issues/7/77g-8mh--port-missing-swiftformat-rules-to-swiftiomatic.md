@@ -9,7 +9,7 @@ updated_at: 2026-04-14T19:04:24Z
 sync:
     github:
         issue_number: "285"
-        synced_at: "2026-04-14T06:15:33Z"
+        synced_at: "2026-04-15T00:34:43Z"
 ---
 
 ## Gap Analysis

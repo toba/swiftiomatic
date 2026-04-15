@@ -10,7 +10,7 @@ parent: c7r-77o
 sync:
     github:
         issue_number: "304"
-        synced_at: "2026-04-14T18:45:53Z"
+        synced_at: "2026-04-15T00:34:46Z"
 ---
 
 Pattern exists in `UseEarlyExits` (windowed iteration over `CodeBlockItemListSyntax`).

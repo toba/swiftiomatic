@@ -10,7 +10,7 @@ parent: c7r-77o
 sync:
     github:
         issue_number: "300"
-        synced_at: "2026-04-14T18:45:53Z"
+        synced_at: "2026-04-15T00:34:45Z"
 ---
 
 - [x] `environmentEntry` — Use `@Entry` macro for EnvironmentValues. Requires recognizing `EnvironmentKey` struct + `EnvironmentValues` extension pattern spanning separate file-level declarations.

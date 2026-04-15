@@ -118,7 +118,10 @@
       "Bash(brew --prefix)",
       "Bash(sm:*)",
       "Bash(self)",
-      "Read(//tmp/**)"
+      "Read(//tmp/**)",
+      "Bash(xcrun:*)",
+      "Bash(/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swift-format:*)",
+      "Bash(csrutil status:*)"
     ]
   },
   "enableAllProjectMcpServers": true,

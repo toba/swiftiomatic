@@ -197,22 +197,6 @@ public final class DocCommentsBeforeModifiers: SyntaxFormatRule {
   }
 }
 
-extension TriviaPiece {
-  fileprivate var isDocComment: Bool {
-    switch self {
-    case .docLineComment, .docBlockComment: return true
-    default: return false
-    }
-  }
-
-  fileprivate var isSpaceOrTab: Bool {
-    switch self {
-    case .spaces, .tabs: return true
-    default: return false
-    }
-  }
-}
-
 extension Finding.Message {
   fileprivate static let docCommentsBeforeModifiers: Finding.Message =
     "place doc comments before attributes and modifiers"

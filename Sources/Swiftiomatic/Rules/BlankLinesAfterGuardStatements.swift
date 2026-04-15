@@ -36,15 +36,15 @@ public final class BlankLinesAfterGuardStatements: SyntaxFormatRule {
 
       if nextIsConsecutiveGuard {
         // Remove blank lines between consecutive guards.
-        let blanks = blankLineCount(in: nextStmt.leadingTrivia)
-        guard blanks > 0 else { continue }
+        guard nextStmt.leadingTrivia.hasBlankLine else { continue }
         diagnose(.removeBlankLineBetweenGuards, on: nextStmt.item)
-        statements[nextIndex] = withNewlineCount(nextStmt, count: 1)
+        var modifiedNext = nextStmt
+        modifiedNext.leadingTrivia = nextStmt.leadingTrivia.replacingFirstNewlines(with: 1)
+        statements[nextIndex] = modifiedNext
         modified = true
       } else {
         // Ensure blank line after last guard in a run.
-        let blanks = blankLineCount(in: nextStmt.leadingTrivia)
-        guard blanks == 0 else { continue }
+        guard !nextStmt.leadingTrivia.hasBlankLine else { continue }
         diagnose(.insertBlankLineAfterGuard, on: originalStatements[i].item)
         var modifiedNext = nextStmt
         modifiedNext.leadingTrivia = .newline + nextStmt.leadingTrivia
@@ -57,35 +57,6 @@ public final class BlankLinesAfterGuardStatements: SyntaxFormatRule {
     var result = visited
     result.statements = CodeBlockItemListSyntax(statements)
     return result
-  }
-
-  /// Count blank lines in the leading trivia, only before the first comment.
-  private func blankLineCount(in trivia: Trivia) -> Int {
-    var newlines = 0
-    for piece in trivia.pieces {
-      if case .newlines(let n) = piece {
-        newlines += n
-      } else if piece.isSpaceOrTab {
-        continue
-      } else {
-        break
-      }
-    }
-    return max(0, newlines - 1)
-  }
-
-  /// Replace the leading newlines (before any comments) with exactly `count` newlines.
-  private func withNewlineCount(_ statement: CodeBlockItemSyntax, count: Int) -> CodeBlockItemSyntax {
-    var pieces = Array(statement.leadingTrivia.pieces)
-    for (i, piece) in pieces.enumerated() {
-      if case .newlines = piece {
-        pieces[i] = .newlines(count)
-        var result = statement
-        result.leadingTrivia = Trivia(pieces: pieces)
-        return result
-      }
-    }
-    return statement
   }
 }
 

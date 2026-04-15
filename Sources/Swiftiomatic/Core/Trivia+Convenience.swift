@@ -12,6 +12,16 @@
 
 import SwiftSyntax
 
+extension TriviaPiece {
+  /// Whether this piece is a doc comment (`///` or `/** ... */`).
+  var isDocComment: Bool {
+    switch self {
+    case .docLineComment, .docBlockComment: return true
+    default: return false
+    }
+  }
+}
+
 extension Trivia {
   var hasAnyComments: Bool {
     return contains {
@@ -94,6 +104,58 @@ extension Trivia {
       }
     }
     return result.isEmpty ? nil : result
+  }
+
+  /// The number of blank lines in the leading portion of this trivia (before the first comment or
+  /// non-whitespace piece). A single newline separating lines counts as 0 blank lines; two
+  /// consecutive newlines count as 1 blank line, etc.
+  var blankLineCount: Int {
+    var newlines = 0
+    for piece in pieces {
+      if case .newlines(let n) = piece { newlines += n }
+      else if piece.isSpaceOrTab { continue }
+      else { break }
+    }
+    return Swift.max(0, newlines - 1)
+  }
+
+  /// Whether this trivia contains at least one blank line (two or more newlines before any
+  /// non-whitespace content).
+  var hasBlankLine: Bool { blankLineCount > 0 }
+
+  /// Returns a copy with multi-newline pieces collapsed to single newlines.
+  var reducingToSingleNewlines: Trivia {
+    var pieces = Array(self.pieces)
+    for (i, piece) in pieces.enumerated() {
+      if case .newlines(let n) = piece, n > 1 {
+        pieces[i] = .newlines(1)
+      }
+    }
+    return Trivia(pieces: pieces)
+  }
+
+  /// The total count of newline characters, including carriage returns and CR+LF.
+  var totalNewlineCount: Int {
+    pieces.reduce(0) { count, piece in
+      switch piece {
+      case .newlines(let n): count + n
+      case .carriageReturns(let n): count + n
+      case .carriageReturnLineFeeds(let n): count + n
+      default: count
+      }
+    }
+  }
+
+  /// Returns a copy with the first `.newlines` piece replaced by the given count.
+  func replacingFirstNewlines(with count: Int) -> Trivia {
+    var pieces = Array(self.pieces)
+    for (i, piece) in pieces.enumerated() {
+      if case .newlines = piece {
+        pieces[i] = .newlines(count)
+        return Trivia(pieces: pieces)
+      }
+    }
+    return self
   }
 
   func trimmingSuperfluousNewlines(fromClosingBrace: Bool) -> (Trivia, Int) {

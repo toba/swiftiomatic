@@ -20,4 +20,43 @@ extension FunctionDeclSyntax {
     }
     return "\(name.text)(\(params.joined()))"
   }
+
+  /// Returns a copy with a `throws` clause added to the function signature.
+  ///
+  /// If the function already has effect specifiers (e.g. `async`), `throws` is appended.
+  /// Otherwise, new effect specifiers are created. Leading trivia from the body's `{` is
+  /// transferred to the `throws` keyword, and the brace gets a single space.
+  ///
+  /// Does nothing if the function already throws or has no body.
+  func addingThrowsClause() -> FunctionDeclSyntax {
+    guard signature.effectSpecifiers?.throwsClause == nil else { return self }
+
+    var result = self
+    let throwsClause = ThrowsClauseSyntax(
+      throwsSpecifier: .keyword(.throws, trailingTrivia: [])
+    )
+    if var effectSpecifiers = result.signature.effectSpecifiers {
+      // Has async but no throws — insert throws after async, transfer body's leading trivia.
+      if var body = result.body {
+        var tc = throwsClause
+        tc.throwsSpecifier.leadingTrivia = body.leftBrace.leadingTrivia
+        body.leftBrace.leadingTrivia = .space
+        effectSpecifiers.throwsClause = tc
+        result.signature.effectSpecifiers = effectSpecifiers
+        result.body = body
+      }
+    } else {
+      // No effect specifiers — add them, transfer body's leading trivia to throws.
+      result.signature.effectSpecifiers = FunctionEffectSpecifiersSyntax(
+        throwsClause: throwsClause
+      )
+      if var body = result.body {
+        let bodyTrivia = body.leftBrace.leadingTrivia
+        result.signature.effectSpecifiers!.throwsClause!.throwsSpecifier.leadingTrivia = bodyTrivia
+        body.leftBrace.leadingTrivia = .space
+        result.body = body
+      }
+    }
+    return result
+  }
 }

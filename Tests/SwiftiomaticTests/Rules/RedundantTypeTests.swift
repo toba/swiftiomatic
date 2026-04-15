@@ -455,9 +455,126 @@ struct RedundantTypeTests: RuleTesting {
     )
   }
 
-  // NOTE: Nested if expressions (if inside if) are not yet supported because
-  // swift-syntax stores the inner if as a statement in the code block, making
-  // it inaccessible via .as(ExprSyntax.self). Single-level if/switch works.
+  // MARK: - Additional SwiftFormat adapted tests
+
+  @Test func redundantTypeRemovalWithComment() {
+    assertFormatting(
+      RedundantType.self,
+      input: """
+        var view1️⃣: UIView /* view */ = UIView()
+        """,
+      expected: """
+        var view /* view */ = UIView()
+        """,
+      findings: [
+        FindingSpec("1️⃣", message: "remove redundant type annotation 'UIView'; it is obvious from the initializer"),
+      ]
+    )
+  }
+
+  @Test func redundantTypeRemovalWithComment2() {
+    assertFormatting(
+      RedundantType.self,
+      input: """
+        var view1️⃣: UIView = /* view */ UIView()
+        """,
+      expected: """
+        var view = /* view */ UIView()
+        """,
+      findings: [
+        FindingSpec("1️⃣", message: "remove redundant type annotation 'UIView'; it is obvious from the initializer"),
+      ]
+    )
+  }
+
+  @Test func noRemoveRedundantTypeIfVoidArray() {
+    assertFormatting(
+      RedundantType.self,
+      input: """
+        let foo: [Void] = [Void]()
+        """,
+      expected: """
+        let foo: [Void] = [Void]()
+        """,
+      findings: []
+    )
+  }
+
+  @Test func noRemoveRedundantTypeIfOptionalVoid() {
+    assertFormatting(
+      RedundantType.self,
+      input: """
+        let foo: Void? = Void?.none
+        """,
+      expected: """
+        let foo: Void? = Void?.none
+        """,
+      findings: []
+    )
+  }
+
+  @Test func redundantTypeWithStringInterpolation() {
+    assertFormatting(
+      RedundantType.self,
+      input: """
+        let b1️⃣: String = "\\(something)"
+        """,
+      expected: """
+        let b = "\\(something)"
+        """,
+      findings: [
+        FindingSpec("1️⃣", message: "remove redundant type annotation 'String'; it is obvious from the initializer"),
+      ]
+    )
+  }
+
+  @Test func redundantTypeWithSwitchExpression() {
+    assertFormatting(
+      RedundantType.self,
+      input: """
+        let foo1️⃣: Foo = switch condition {
+        case true:
+          Foo("foo")
+        case false:
+          Foo("bar")
+        }
+        """,
+      expected: """
+        let foo = switch condition {
+        case true:
+          Foo("foo")
+        case false:
+          Foo("bar")
+        }
+        """,
+      findings: [
+        FindingSpec("1️⃣", message: "remove redundant type annotation 'Foo'; it is obvious from the initializer"),
+      ]
+    )
+  }
+
+  @Test func preservesNonRedundantTypeWithSwitchExpression() {
+    assertFormatting(
+      RedundantType.self,
+      input: """
+        let foo: Foo = switch condition {
+        case true:
+          Foo("foo")
+        case false:
+          FooSubclass("bar")
+        }
+        """,
+      expected: """
+        let foo: Foo = switch condition {
+        case true:
+          Foo("foo")
+        case false:
+          FooSubclass("bar")
+        }
+        """,
+      findings: []
+    )
+  }
 
   @Test func redundantTypeWithLiteralsInIfExpression() {
     assertFormatting(

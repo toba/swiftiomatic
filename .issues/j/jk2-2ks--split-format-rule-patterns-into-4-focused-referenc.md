@@ -6,6 +6,10 @@ type: task
 priority: normal
 created_at: 2026-04-14T21:51:38Z
 updated_at: 2026-04-14T21:56:22Z
+sync:
+    github:
+        issue_number: "310"
+        synced_at: "2026-04-15T00:34:43Z"
 ---
 
 - [x] Split format-rule-patterns.md into 4 files by pattern family
