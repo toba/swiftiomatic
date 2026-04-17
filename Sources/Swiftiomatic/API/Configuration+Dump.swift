@@ -18,9 +18,6 @@ extension Configuration {
     "https://raw.githubusercontent.com/toba/swiftiomatic/refs/heads/main/swiftiomatic.schema.json"
 
   /// Return the configuration as a JSON string with a `$schema` reference.
-  ///
-  /// Rule-specific config objects are merged into the `rules` dict as
-  /// `{ "enabled": Bool, ...options }` and their old top-level keys are removed.
   public func asJsonString() throws(SwiftiomaticError) -> String {
     let data: Data
 
@@ -38,24 +35,12 @@ extension Configuration {
 
     jsonObject["$schema"] = Self.schemaURL
 
-    // Merge rule-specific config objects into the rules dict.
-    var rulesDict = jsonObject["rules"] as? [String: Any] ?? [:]
-    for (ruleName, configKey) in Self.ruleConfigKeys {
-      guard let configObj = jsonObject[configKey] as? [String: Any] else { continue }
-      let enabled = (rulesDict[ruleName] as? Bool) ?? false
-      var merged = configObj
-      merged["enabled"] = enabled
-      rulesDict[ruleName] = merged
-      jsonObject.removeValue(forKey: configKey)
-    }
-    jsonObject["rules"] = rulesDict
-
     guard
-      let merged = try? JSONSerialization.data(
+      let output = try? JSONSerialization.data(
         withJSONObject: jsonObject,
         options: [.prettyPrinted, .sortedKeys, .withoutEscapingSlashes]
       ),
-      let jsonString = String(data: merged, encoding: .utf8)
+      let jsonString = String(data: output, encoding: .utf8)
     else {
       throw SwiftiomaticError.configurationDumpFailed("The JSON was not valid UTF-8")
     }

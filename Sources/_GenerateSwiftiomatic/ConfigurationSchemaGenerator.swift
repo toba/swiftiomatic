@@ -51,232 +51,96 @@ import Swiftiomatic
         p["$schema"] = .string(description: "JSON Schema reference URL.")
         p["version"] = .integer(
             description: "Configuration format version.",
-            defaultValue: 1,
+            defaultValue: 3,
             minimum: 1
         )
 
-        // Core formatting
-        p["maximumBlankLines"] = .integer(
-            description: "Maximum consecutive blank lines.",
-            defaultValue: 1,
-            minimum: 0
-        )
-        p["lineLength"] = .integer(
-            description: "Maximum line length before wrapping.",
-            defaultValue: 100,
-            minimum: 1
-        )
-        p["spacesBeforeEndOfLineComments"] = .integer(
-            description: "Spaces before // comments.",
-            defaultValue: 2,
-            minimum: 0
-        )
-        p["tabWidth"] = .integer(
-            description: "Tab width in spaces for indentation conversion.",
-            defaultValue: 8,
-            minimum: 1
+        // Build the `format` section: settings + format rules.
+        var formatProps = formatSettingsSchema()
+
+        let formatRules = ruleCollector.allLinters
+            .filter { $0.canFormat }
+            .sorted(by: { $0.typeName < $1.typeName })
+        for rule in formatRules {
+            formatProps[rule.typeName] = ruleSchemaNode(for: rule)
+        }
+        p["format"] = .object(
+            description: "Formatting settings and format rules. Settings control the pretty-printer; rules are toggles or objects with 'enabled' plus rule-specific options.",
+            properties: formatProps
         )
 
-        // Indentation (oneOf)
+        // Build the `lint` section: lint rules only.
+        var lintProps: [String: JSONSchemaNode] = [:]
+        let lintRules = ruleCollector.allLinters
+            .filter { !$0.canFormat }
+            .sorted(by: { $0.typeName < $1.typeName })
+        for rule in lintRules {
+            lintProps[rule.typeName] = ruleSchemaNode(for: rule)
+        }
+        p["lint"] = .object(
+            description: "Lint rules. Each value is a boolean toggle.",
+            properties: lintProps
+        )
+
+        root.properties = p
+        return root
+    }
+
+    private func ruleSchemaNode(for rule: RuleCollector.DetectedRule) -> JSONSchemaNode {
+        var desc = rule.description ?? (rule.canFormat ? "Format rule." : "Lint rule.")
+        if rule.isOptIn { desc += " [opt-in]" }
+
+        if let optionsSchema = ruleOptionsSchema(for: rule.typeName, isOptIn: rule.isOptIn) {
+            let boolVariant = JSONSchemaNode.boolean(description: desc, defaultValue: !rule.isOptIn)
+            var node = JSONSchemaNode()
+            node.description = desc
+            node.oneOf = [boolVariant, optionsSchema]
+            return node
+        } else {
+            return .boolean(description: desc, defaultValue: !rule.isOptIn)
+        }
+    }
+
+    private func formatSettingsSchema() -> [String: JSONSchemaNode] {
+        var p: [String: JSONSchemaNode] = [:]
+
+        p["maximumBlankLines"] = .integer(description: "Maximum consecutive blank lines.", defaultValue: 1, minimum: 0)
+        p["lineLength"] = .integer(description: "Maximum line length before wrapping.", defaultValue: 100, minimum: 1)
+        p["spacesBeforeEndOfLineComments"] = .integer(description: "Spaces before // comments.", defaultValue: 2, minimum: 0)
+        p["tabWidth"] = .integer(description: "Tab width in spaces for indentation conversion.", defaultValue: 8, minimum: 1)
+
         var indent = JSONSchemaNode()
         indent.description = "Indentation unit: exactly one of spaces or tabs."
         indent.defaultValue = .object(["spaces": .int(2)])
         var spacesVariant = JSONSchemaNode.object(
             description: "Indent with spaces.",
-            properties: [
-                "spaces": .integer(
-                    description: "Number of spaces per indent level.",
-                    defaultValue: 2,
-                    minimum: 1
-                )
-            ]
+            properties: ["spaces": .integer(description: "Number of spaces per indent level.", defaultValue: 2, minimum: 1)]
         )
         spacesVariant.required = ["spaces"]
         var tabsVariant = JSONSchemaNode.object(
             description: "Indent with tabs.",
-            properties: [
-                "tabs": .integer(
-                    description: "Number of tabs per indent level.",
-                    defaultValue: 1,
-                    minimum: 1
-                )
-            ]
+            properties: ["tabs": .integer(description: "Number of tabs per indent level.", defaultValue: 1, minimum: 1)]
         )
         tabsVariant.required = ["tabs"]
         indent.oneOf = [spacesVariant, tabsVariant]
         p["indentation"] = indent
 
-        // Boolean options
-        p["respectsExistingLineBreaks"] = .boolean(
-            description: "Preserve discretionary line breaks.",
-            defaultValue: true
-        )
-        p["lineBreakBeforeControlFlowKeywords"] = .boolean(
-            description: "Break before else/catch after closing brace.",
-            defaultValue: false
-        )
-        p["lineBreakBeforeEachArgument"] = .boolean(
-            description: "Break before each argument when wrapping.",
-            defaultValue: false
-        )
-        p["lineBreakBeforeEachGenericRequirement"] = .boolean(
-            description: "Break before each generic requirement when wrapping.",
-            defaultValue: false
-        )
-        p["lineBreakBetweenDeclarationAttributes"] = .boolean(
-            description: "Break between adjacent attributes.",
-            defaultValue: false
-        )
-        p["prioritizeKeepingFunctionOutputTogether"] = .boolean(
-            description: "Keep return type with closing parenthesis.",
-            defaultValue: false
-        )
-        p["indentConditionalCompilationBlocks"] = .boolean(
-            description: "Indent #if/#elseif/#else blocks.",
-            defaultValue: true
-        )
-        p["lineBreakAroundMultilineExpressionChainComponents"] = .boolean(
-            description: "Break around multiline dot-chained components.",
-            defaultValue: false
-        )
-        p["indentSwitchCaseLabels"] = .boolean(
-            description: "Indent case labels relative to switch.",
-            defaultValue: false
-        )
-        p["spacesAroundRangeFormationOperators"] = .boolean(
-            description: "Force spaces around ... and ..<.",
-            defaultValue: false
-        )
-        p["multiElementCollectionTrailingCommas"] = .boolean(
-            description: "Trailing commas in multi-element collection literals.",
-            defaultValue: true
-        )
-        p["indentBlankLines"] = .boolean(
-            description: "Add indentation whitespace to blank lines.",
-            defaultValue: false
-        )
+        p["respectsExistingLineBreaks"] = .boolean(description: "Preserve discretionary line breaks.", defaultValue: true)
+        p["lineBreakBeforeControlFlowKeywords"] = .boolean(description: "Break before else/catch after closing brace.", defaultValue: false)
+        p["lineBreakBeforeEachArgument"] = .boolean(description: "Break before each argument when wrapping.", defaultValue: false)
+        p["lineBreakBeforeEachGenericRequirement"] = .boolean(description: "Break before each generic requirement when wrapping.", defaultValue: false)
+        p["lineBreakBetweenDeclarationAttributes"] = .boolean(description: "Break between adjacent attributes.", defaultValue: false)
+        p["prioritizeKeepingFunctionOutputTogether"] = .boolean(description: "Keep return type with closing parenthesis.", defaultValue: false)
+        p["indentConditionalCompilationBlocks"] = .boolean(description: "Indent #if/#elseif/#else blocks.", defaultValue: true)
+        p["lineBreakAroundMultilineExpressionChainComponents"] = .boolean(description: "Break around multiline dot-chained components.", defaultValue: false)
+        p["indentSwitchCaseLabels"] = .boolean(description: "Indent case labels relative to switch.", defaultValue: false)
+        p["spacesAroundRangeFormationOperators"] = .boolean(description: "Force spaces around ... and ..<.", defaultValue: false)
+        p["multiElementCollectionTrailingCommas"] = .boolean(description: "Trailing commas in multi-element collection literals.", defaultValue: true)
+        p["indentBlankLines"] = .boolean(description: "Add indentation whitespace to blank lines.", defaultValue: false)
+        p["multilineTrailingCommaBehavior"] = .stringEnum(description: "Trailing comma handling in multiline lists.", values: ["alwaysUsed", "neverUsed", "keptAsWritten"], defaultValue: "keptAsWritten")
+        p["reflowMultilineStringLiterals"] = .stringEnum(description: "Multiline string literal reflow mode.", values: ["never", "onlyLinesOverLength", "always"], defaultValue: "never")
 
-        // String enums
-        p["multilineTrailingCommaBehavior"] = .stringEnum(
-            description: "Trailing comma handling in multiline lists.",
-            values: ["alwaysUsed", "neverUsed", "keptAsWritten"],
-            defaultValue: "keptAsWritten"
-        )
-        p["reflowMultilineStringLiterals"] = .stringEnum(
-            description: "Multiline string literal reflow mode.",
-            values: ["never", "onlyLinesOverLength", "always"],
-            defaultValue: "never"
-        )
-
-        // Deprecated top-level config objects — kept for backward compatibility.
-        // Prefer setting options inside the rules dict instead.
-        p["fileScopedDeclarationPrivacy"] = .object(
-            description: "(Deprecated: use rules.FileScopedDeclarationPrivacy) File-scoped declaration access level.",
-            properties: [
-                "accessLevel": .stringEnum(
-                    description: "Access level for file-scoped private declarations.",
-                    values: ["private", "fileprivate"],
-                    defaultValue: "private"
-                )
-            ]
-        )
-        p["noAssignmentInExpressions"] = .object(
-            description: "(Deprecated: use rules.NoAssignmentInExpressions) NoAssignmentInExpressions rule exceptions.",
-            properties: [
-                "allowedFunctions": .stringArray(
-                    description: "Functions where embedded assignments are allowed.",
-                    defaultValue: ["XCTAssertNoThrow"]
-                )
-            ]
-        )
-        p["sortImports"] = .object(
-            description: "(Deprecated: use rules.SortImports) Import sorting options.",
-            properties: [
-                "includeConditionalImports": .boolean(
-                    description: "Sort imports within #if blocks.",
-                    defaultValue: false
-                ),
-                "shouldGroupImports": .boolean(
-                    description: "Separate imports into groups by type.",
-                    defaultValue: true
-                ),
-            ]
-        )
-        p["acronyms"] = .object(
-            description: "(Deprecated: use rules.CapitalizeAcronyms) Acronym capitalization options.",
-            properties: [
-                "words": .stringArray(
-                    description: "Acronyms to capitalize (fully uppercased).",
-                    defaultValue: [
-                        "API", "CSS", "DNS", "FTP", "GIF", "HTML", "HTTP", "HTTPS",
-                        "ID", "JPEG", "JSON", "PDF", "PNG", "RGB", "RGBA",
-                        "SQL", "SSH", "TCP", "UDP", "URL", "UUID", "XML",
-                    ]
-                )
-            ]
-        )
-        p["extensionAccessControl"] = .object(
-            description: "(Deprecated: use rules.NoExtensionAccessLevel) Extension access control modifier placement.",
-            properties: [
-                "placement": .stringEnum(
-                    description: "Where to place access control modifiers.",
-                    values: ["onDeclarations", "onExtension"],
-                    defaultValue: "onDeclarations"
-                )
-            ]
-        )
-        p["patternLet"] = .object(
-            description: "(Deprecated: use rules.PatternLetPlacement) Case pattern let/var placement.",
-            properties: [
-                "placement": .stringEnum(
-                    description: "Where to place let/var in case patterns.",
-                    values: ["eachBinding", "outerPattern"],
-                    defaultValue: "eachBinding"
-                )
-            ]
-        )
-        p["urlMacro"] = .object(
-            description: "(Deprecated: use rules.URLMacro) URL(string:)! to macro replacement.",
-            properties: [
-                "macroName": .string(description: "Macro name, e.g. \"#URL\". Omit to disable."),
-                "moduleName": .string(description: "Module to import for the macro."),
-            ]
-        )
-        p["fileHeader"] = .object(
-            description: "(Deprecated: use rules.FileHeader) File header enforcement.",
-            properties: [
-                "text": .string(
-                    description: "Header text. Omit to disable, empty string to remove headers."
-                )
-            ]
-        )
-
-        // Rules — each value is either a bool (simple toggle) or an object with
-        // "enabled" plus rule-specific options. Descriptions sourced from RuleCollector.
-        var rulesProps: [String: JSONSchemaNode] = [:]
-        for rule in ruleCollector.allLinters.sorted(by: { $0.typeName < $1.typeName }) {
-            var desc = rule.description ?? (rule.canFormat ? "Format rule." : "Lint rule.")
-            if rule.canFormat { desc += " [format]" }
-            if rule.isOptIn { desc += " [opt-in]" }
-
-            if let optionsSchema = ruleOptionsSchema(for: rule.typeName, isOptIn: rule.isOptIn) {
-                // Rules with options: oneOf bool or object
-                let boolVariant = JSONSchemaNode.boolean(description: desc, defaultValue: !rule.isOptIn)
-                var node = JSONSchemaNode()
-                node.description = desc
-                node.oneOf = [boolVariant, optionsSchema]
-                rulesProps[rule.typeName] = node
-            } else {
-                rulesProps[rule.typeName] = .boolean(description: desc, defaultValue: !rule.isOptIn)
-            }
-        }
-        p["rules"] = .object(
-            description: "Enable or disable individual rules by name. Each value is either a boolean or an object with 'enabled' plus rule-specific options.",
-            properties: rulesProps
-        )
-
-        root.properties = p
-        return root
+        return p
     }
 
     /// Returns the JSON Schema object variant for a rule that has config options,

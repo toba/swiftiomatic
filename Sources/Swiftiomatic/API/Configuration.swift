@@ -19,41 +19,15 @@ import Foundation
 /// use default values when loading older configurations that don't contain the new settings. This
 /// value only needs to be updated if the configuration changes in a way that would be incompatible
 /// with the previous format.
-internal let highestSupportedConfigurationVersion = 2
+internal let highestSupportedConfigurationVersion = 3
 
 /// Holds the complete set of configured values and defaults.
 public struct Configuration: Codable, Equatable, Sendable {
 
   private enum CodingKeys: CodingKey {
     case version
-    case maximumBlankLines
-    case lineLength
-    case spacesBeforeEndOfLineComments
-    case tabWidth
-    case indentation
-    case respectsExistingLineBreaks
-    case lineBreakBeforeControlFlowKeywords
-    case lineBreakBeforeEachArgument
-    case lineBreakBeforeEachGenericRequirement
-    case lineBreakBetweenDeclarationAttributes
-    case prioritizeKeepingFunctionOutputTogether
-    case indentConditionalCompilationBlocks
-    case lineBreakAroundMultilineExpressionChainComponents
-    case fileScopedDeclarationPrivacy
-    case indentSwitchCaseLabels
-    case rules
-    case spacesAroundRangeFormationOperators
-    case noAssignmentInExpressions
-    case multilineTrailingCommaBehavior
-    case multiElementCollectionTrailingCommas
-    case reflowMultilineStringLiterals
-    case indentBlankLines
-    case sortImports
-    case acronyms
-    case extensionAccessControl
-    case patternLet
-    case urlMacro
-    case fileHeader
+    case format
+    case lint
   }
 
   /// A coding key backed by a runtime string, used to iterate heterogeneous JSON dictionaries.
@@ -65,20 +39,143 @@ public struct Configuration: Codable, Equatable, Sendable {
     init?(intValue: Int) { nil }
   }
 
-  /// Maps rule type names to the top-level configuration key that holds their options.
-  ///
-  /// When decoding the unified `rules` dict, object values for these rule names are decoded into
-  /// the corresponding config struct. When encoding for `dump-configuration`, the config struct
-  /// is merged back into the rule entry.
-  internal static let ruleConfigKeys: [(ruleName: String, configKey: String)] = [
-    ("FileScopedDeclarationPrivacy", "fileScopedDeclarationPrivacy"),
-    ("NoAssignmentInExpressions", "noAssignmentInExpressions"),
-    ("SortImports", "sortImports"),
-    ("CapitalizeAcronyms", "acronyms"),
-    ("NoExtensionAccessLevel", "extensionAccessControl"),
-    ("PatternLetPlacement", "patternLet"),
-    ("URLMacro", "urlMacro"),
-    ("FileHeader", "fileHeader"),
+  /// Codable container for the formatting settings that live inside the `format` JSON section.
+  /// Rule keys (anything not a CodingKey case) are ignored by the decoder and handled separately.
+  private struct FormatSettings: Codable, Equatable {
+    var maximumBlankLines: Int
+    var lineLength: Int
+    var spacesBeforeEndOfLineComments: Int
+    var tabWidth: Int
+    var indentation: Indent
+    var respectsExistingLineBreaks: Bool
+    var lineBreakBeforeControlFlowKeywords: Bool
+    var lineBreakBeforeEachArgument: Bool
+    var lineBreakBeforeEachGenericRequirement: Bool
+    var lineBreakBetweenDeclarationAttributes: Bool
+    var prioritizeKeepingFunctionOutputTogether: Bool
+    var indentConditionalCompilationBlocks: Bool
+    var lineBreakAroundMultilineExpressionChainComponents: Bool
+    var indentSwitchCaseLabels: Bool
+    var spacesAroundRangeFormationOperators: Bool
+    var multilineTrailingCommaBehavior: MultilineTrailingCommaBehavior
+    var multiElementCollectionTrailingCommas: Bool
+    var reflowMultilineStringLiterals: MultilineStringReflowBehavior
+    var indentBlankLines: Bool
+
+    init(from config: Configuration) {
+      self.maximumBlankLines = config.maximumBlankLines
+      self.lineLength = config.lineLength
+      self.spacesBeforeEndOfLineComments = config.spacesBeforeEndOfLineComments
+      self.tabWidth = config.tabWidth
+      self.indentation = config.indentation
+      self.respectsExistingLineBreaks = config.respectsExistingLineBreaks
+      self.lineBreakBeforeControlFlowKeywords = config.lineBreakBeforeControlFlowKeywords
+      self.lineBreakBeforeEachArgument = config.lineBreakBeforeEachArgument
+      self.lineBreakBeforeEachGenericRequirement = config.lineBreakBeforeEachGenericRequirement
+      self.lineBreakBetweenDeclarationAttributes = config.lineBreakBetweenDeclarationAttributes
+      self.prioritizeKeepingFunctionOutputTogether = config.prioritizeKeepingFunctionOutputTogether
+      self.indentConditionalCompilationBlocks = config.indentConditionalCompilationBlocks
+      self.lineBreakAroundMultilineExpressionChainComponents = config.lineBreakAroundMultilineExpressionChainComponents
+      self.indentSwitchCaseLabels = config.indentSwitchCaseLabels
+      self.spacesAroundRangeFormationOperators = config.spacesAroundRangeFormationOperators
+      self.multilineTrailingCommaBehavior = config.multilineTrailingCommaBehavior
+      self.multiElementCollectionTrailingCommas = config.multiElementCollectionTrailingCommas
+      self.reflowMultilineStringLiterals = config.reflowMultilineStringLiterals
+      self.indentBlankLines = config.indentBlankLines
+    }
+
+    init(from decoder: Decoder) throws {
+      let defaults = Configuration()
+      let c = try decoder.container(keyedBy: CodingKeys.self)
+      self.maximumBlankLines = try c.decodeIfPresent(Int.self, forKey: .maximumBlankLines) ?? defaults.maximumBlankLines
+      self.lineLength = try c.decodeIfPresent(Int.self, forKey: .lineLength) ?? defaults.lineLength
+      self.spacesBeforeEndOfLineComments = try c.decodeIfPresent(Int.self, forKey: .spacesBeforeEndOfLineComments) ?? defaults.spacesBeforeEndOfLineComments
+      self.tabWidth = try c.decodeIfPresent(Int.self, forKey: .tabWidth) ?? defaults.tabWidth
+      self.indentation = try c.decodeIfPresent(Indent.self, forKey: .indentation) ?? defaults.indentation
+      self.respectsExistingLineBreaks = try c.decodeIfPresent(Bool.self, forKey: .respectsExistingLineBreaks) ?? defaults.respectsExistingLineBreaks
+      self.lineBreakBeforeControlFlowKeywords = try c.decodeIfPresent(Bool.self, forKey: .lineBreakBeforeControlFlowKeywords) ?? defaults.lineBreakBeforeControlFlowKeywords
+      self.lineBreakBeforeEachArgument = try c.decodeIfPresent(Bool.self, forKey: .lineBreakBeforeEachArgument) ?? defaults.lineBreakBeforeEachArgument
+      self.lineBreakBeforeEachGenericRequirement = try c.decodeIfPresent(Bool.self, forKey: .lineBreakBeforeEachGenericRequirement) ?? defaults.lineBreakBeforeEachGenericRequirement
+      self.lineBreakBetweenDeclarationAttributes = try c.decodeIfPresent(Bool.self, forKey: .lineBreakBetweenDeclarationAttributes) ?? defaults.lineBreakBetweenDeclarationAttributes
+      self.prioritizeKeepingFunctionOutputTogether = try c.decodeIfPresent(Bool.self, forKey: .prioritizeKeepingFunctionOutputTogether) ?? defaults.prioritizeKeepingFunctionOutputTogether
+      self.indentConditionalCompilationBlocks = try c.decodeIfPresent(Bool.self, forKey: .indentConditionalCompilationBlocks) ?? defaults.indentConditionalCompilationBlocks
+      self.lineBreakAroundMultilineExpressionChainComponents = try c.decodeIfPresent(Bool.self, forKey: .lineBreakAroundMultilineExpressionChainComponents) ?? defaults.lineBreakAroundMultilineExpressionChainComponents
+      self.indentSwitchCaseLabels = try c.decodeIfPresent(Bool.self, forKey: .indentSwitchCaseLabels) ?? defaults.indentSwitchCaseLabels
+      self.spacesAroundRangeFormationOperators = try c.decodeIfPresent(Bool.self, forKey: .spacesAroundRangeFormationOperators) ?? defaults.spacesAroundRangeFormationOperators
+      self.multilineTrailingCommaBehavior = try c.decodeIfPresent(MultilineTrailingCommaBehavior.self, forKey: .multilineTrailingCommaBehavior) ?? defaults.multilineTrailingCommaBehavior
+      self.multiElementCollectionTrailingCommas = try c.decodeIfPresent(Bool.self, forKey: .multiElementCollectionTrailingCommas) ?? defaults.multiElementCollectionTrailingCommas
+      self.reflowMultilineStringLiterals = try c.decodeIfPresent(MultilineStringReflowBehavior.self, forKey: .reflowMultilineStringLiterals) ?? defaults.reflowMultilineStringLiterals
+      self.indentBlankLines = try c.decodeIfPresent(Bool.self, forKey: .indentBlankLines) ?? defaults.indentBlankLines
+    }
+
+    func apply(to config: inout Configuration) {
+      config.maximumBlankLines = maximumBlankLines
+      config.lineLength = lineLength
+      config.spacesBeforeEndOfLineComments = spacesBeforeEndOfLineComments
+      config.tabWidth = tabWidth
+      config.indentation = indentation
+      config.respectsExistingLineBreaks = respectsExistingLineBreaks
+      config.lineBreakBeforeControlFlowKeywords = lineBreakBeforeControlFlowKeywords
+      config.lineBreakBeforeEachArgument = lineBreakBeforeEachArgument
+      config.lineBreakBeforeEachGenericRequirement = lineBreakBeforeEachGenericRequirement
+      config.lineBreakBetweenDeclarationAttributes = lineBreakBetweenDeclarationAttributes
+      config.prioritizeKeepingFunctionOutputTogether = prioritizeKeepingFunctionOutputTogether
+      config.indentConditionalCompilationBlocks = indentConditionalCompilationBlocks
+      config.lineBreakAroundMultilineExpressionChainComponents = lineBreakAroundMultilineExpressionChainComponents
+      config.indentSwitchCaseLabels = indentSwitchCaseLabels
+      config.spacesAroundRangeFormationOperators = spacesAroundRangeFormationOperators
+      config.multilineTrailingCommaBehavior = multilineTrailingCommaBehavior
+      config.multiElementCollectionTrailingCommas = multiElementCollectionTrailingCommas
+      config.reflowMultilineStringLiterals = reflowMultilineStringLiterals
+      config.indentBlankLines = indentBlankLines
+    }
+
+    func encode(into container: inout KeyedEncodingContainer<DynamicCodingKey>) throws {
+      func key(_ name: String) -> DynamicCodingKey { DynamicCodingKey(name) }
+      try container.encode(maximumBlankLines, forKey: key("maximumBlankLines"))
+      try container.encode(lineLength, forKey: key("lineLength"))
+      try container.encode(spacesBeforeEndOfLineComments, forKey: key("spacesBeforeEndOfLineComments"))
+      try container.encode(tabWidth, forKey: key("tabWidth"))
+      try container.encode(indentation, forKey: key("indentation"))
+      try container.encode(respectsExistingLineBreaks, forKey: key("respectsExistingLineBreaks"))
+      try container.encode(lineBreakBeforeControlFlowKeywords, forKey: key("lineBreakBeforeControlFlowKeywords"))
+      try container.encode(lineBreakBeforeEachArgument, forKey: key("lineBreakBeforeEachArgument"))
+      try container.encode(lineBreakBeforeEachGenericRequirement, forKey: key("lineBreakBeforeEachGenericRequirement"))
+      try container.encode(lineBreakBetweenDeclarationAttributes, forKey: key("lineBreakBetweenDeclarationAttributes"))
+      try container.encode(prioritizeKeepingFunctionOutputTogether, forKey: key("prioritizeKeepingFunctionOutputTogether"))
+      try container.encode(indentConditionalCompilationBlocks, forKey: key("indentConditionalCompilationBlocks"))
+      try container.encode(lineBreakAroundMultilineExpressionChainComponents, forKey: key("lineBreakAroundMultilineExpressionChainComponents"))
+      try container.encode(indentSwitchCaseLabels, forKey: key("indentSwitchCaseLabels"))
+      try container.encode(spacesAroundRangeFormationOperators, forKey: key("spacesAroundRangeFormationOperators"))
+      try container.encode(multilineTrailingCommaBehavior, forKey: key("multilineTrailingCommaBehavior"))
+      try container.encode(multiElementCollectionTrailingCommas, forKey: key("multiElementCollectionTrailingCommas"))
+      try container.encode(reflowMultilineStringLiterals, forKey: key("reflowMultilineStringLiterals"))
+      try container.encode(indentBlankLines, forKey: key("indentBlankLines"))
+    }
+
+    /// The CodingKey names that correspond to settings (not rules).
+    static let keyNames: Set<String> = [
+      "maximumBlankLines", "lineLength", "spacesBeforeEndOfLineComments", "tabWidth",
+      "indentation", "respectsExistingLineBreaks", "lineBreakBeforeControlFlowKeywords",
+      "lineBreakBeforeEachArgument", "lineBreakBeforeEachGenericRequirement",
+      "lineBreakBetweenDeclarationAttributes", "prioritizeKeepingFunctionOutputTogether",
+      "indentConditionalCompilationBlocks", "lineBreakAroundMultilineExpressionChainComponents",
+      "indentSwitchCaseLabels", "spacesAroundRangeFormationOperators",
+      "multilineTrailingCommaBehavior", "multiElementCollectionTrailingCommas",
+      "reflowMultilineStringLiterals", "indentBlankLines",
+    ]
+  }
+
+  /// Maps rule names to the config structs they should decode into.
+  private static let ruleConfigDecoders: [String: @Sendable (Decoder, inout Configuration) throws -> Void] = [
+    "FileScopedDeclarationPrivacy": { d, c in c.fileScopedDeclarationPrivacy = try .init(from: d) },
+    "NoAssignmentInExpressions": { d, c in c.noAssignmentInExpressions = try .init(from: d) },
+    "SortImports": { d, c in c.sortImports = try .init(from: d) },
+    "CapitalizeAcronyms": { d, c in c.acronyms = try .init(from: d) },
+    "NoExtensionAccessLevel": { d, c in c.extensionAccessControl = try .init(from: d) },
+    "PatternLetPlacement": { d, c in c.patternLet = try .init(from: d) },
+    "URLMacro": { d, c in c.urlMacro = try .init(from: d) },
+    "FileHeader": { d, c in c.fileHeader = try .init(from: d) },
   ]
 
   /// A dictionary containing the default enabled/disabled states of rules, keyed by the rules'
@@ -297,32 +394,6 @@ public struct Configuration: Codable, Equatable, Sendable {
     }
   }
 
-  /// A private enum created to maintain backward compatibility with sm version 601.0.0,
-  /// which had a `MultilineStringReflowBehavior` enum without a String raw type.
-  ///
-  /// In version 601.0.0, the `reflowMultilineStringLiterals` configuration was encoded as an object
-  /// with a single key (e.g., `{ "never": {} }`) rather than as a string (e.g., `"never"`). This
-  /// enum allows decoding from both formats:
-  /// - First, we attempt to decode as a String using `MultilineStringReflowBehavior`
-  /// - If that fails, we fall back to this legacy format
-  /// - If both attempts fail, an error will be thrown
-  ///
-  /// This approach preserves compatibility without requiring a configuration version bump.
-  private enum LegacyMultilineStringReflowBehavior: Codable {
-    case never
-    case onlyLinesOverLength
-    case always
-
-    /// Converts this legacy enum to the corresponding `MultilineStringReflowBehavior` value.
-    func toMultilineStringReflowBehavior() -> MultilineStringReflowBehavior {
-      switch self {
-      case .never: .never
-      case .always: .always
-      case .onlyLinesOverLength: .onlyLinesOverLength
-      }
-    }
-  }
-
   public var reflowMultilineStringLiterals: MultilineStringReflowBehavior
 
   /// Determines whether to add indentation whitespace to blank lines or remove it entirely.
@@ -366,7 +437,6 @@ public struct Configuration: Codable, Equatable, Sendable {
   public init(from decoder: Decoder) throws {
     let container = try decoder.container(keyedBy: CodingKeys.self)
 
-    // If the version number is not present, default to the current version.
     self.version =
       try container.decodeIfPresent(Int.self, forKey: .version)
       ?? highestSupportedConfigurationVersion
@@ -377,272 +447,164 @@ public struct Configuration: Codable, Equatable, Sendable {
       )
     }
 
-    // If we ever introduce a new version, this is where we should switch on the decoded version
-    // number and dispatch to different decoding methods.
+    // Start from defaults; sections below override what they find.
+    var config = Configuration()
 
-    // Unfortunately, to allow the user to leave out configuration options in the JSON, we would
-    // have to make them optional properties, but that makes using the type in the rest of the code
-    // more annoying because we'd have to unwrap everything. So, we override this initializer and
-    // provide the defaults ourselves if needed. We get those defaults by pulling them from a
-    // default-initialized instance.
-    let defaults = Configuration()
+    // MARK: - Decode `format` section (settings + format rules)
 
-    self.maximumBlankLines =
-      try container.decodeIfPresent(Int.self, forKey: .maximumBlankLines)
-      ?? defaults.maximumBlankLines
-    self.lineLength =
-      try container.decodeIfPresent(Int.self, forKey: .lineLength)
-      ?? defaults.lineLength
-    self.spacesBeforeEndOfLineComments =
-      try container.decodeIfPresent(Int.self, forKey: .spacesBeforeEndOfLineComments)
-      ?? defaults.spacesBeforeEndOfLineComments
-    self.tabWidth =
-      try container.decodeIfPresent(Int.self, forKey: .tabWidth)
-      ?? defaults.tabWidth
-    self.indentation =
-      try container.decodeIfPresent(Indent.self, forKey: .indentation)
-      ?? defaults.indentation
-    self.respectsExistingLineBreaks =
-      try container.decodeIfPresent(Bool.self, forKey: .respectsExistingLineBreaks)
-      ?? defaults.respectsExistingLineBreaks
-    self.lineBreakBeforeControlFlowKeywords =
-      try container.decodeIfPresent(Bool.self, forKey: .lineBreakBeforeControlFlowKeywords)
-      ?? defaults.lineBreakBeforeControlFlowKeywords
-    self.lineBreakBeforeEachArgument =
-      try container.decodeIfPresent(Bool.self, forKey: .lineBreakBeforeEachArgument)
-      ?? defaults.lineBreakBeforeEachArgument
-    self.lineBreakBeforeEachGenericRequirement =
-      try container.decodeIfPresent(Bool.self, forKey: .lineBreakBeforeEachGenericRequirement)
-      ?? defaults.lineBreakBeforeEachGenericRequirement
-    self.lineBreakBetweenDeclarationAttributes =
-      try container.decodeIfPresent(Bool.self, forKey: .lineBreakBetweenDeclarationAttributes)
-      ?? defaults.lineBreakBetweenDeclarationAttributes
-    self.prioritizeKeepingFunctionOutputTogether =
-      try container.decodeIfPresent(Bool.self, forKey: .prioritizeKeepingFunctionOutputTogether)
-      ?? defaults.prioritizeKeepingFunctionOutputTogether
-    self.indentConditionalCompilationBlocks =
-      try container.decodeIfPresent(Bool.self, forKey: .indentConditionalCompilationBlocks)
-      ?? defaults.indentConditionalCompilationBlocks
-    self.lineBreakAroundMultilineExpressionChainComponents =
-      try container.decodeIfPresent(
-        Bool.self,
-        forKey: .lineBreakAroundMultilineExpressionChainComponents
-      )
-      ?? defaults.lineBreakAroundMultilineExpressionChainComponents
-    self.spacesAroundRangeFormationOperators =
-      try container.decodeIfPresent(
-        Bool.self,
-        forKey: .spacesAroundRangeFormationOperators
-      )
-      ?? defaults.spacesAroundRangeFormationOperators
-    // Rule-specific config structs are set to defaults here and may be overridden
-    // by the unified rules dict or old top-level keys below.
-    self.fileScopedDeclarationPrivacy = defaults.fileScopedDeclarationPrivacy
-    self.noAssignmentInExpressions = defaults.noAssignmentInExpressions
-    self.sortImports = defaults.sortImports
-    self.acronyms = defaults.acronyms
-    self.extensionAccessControl = defaults.extensionAccessControl
-    self.patternLet = defaults.patternLet
-    self.urlMacro = defaults.urlMacro
-    self.fileHeader = defaults.fileHeader
-    self.indentSwitchCaseLabels =
-      try container.decodeIfPresent(Bool.self, forKey: .indentSwitchCaseLabels)
-      ?? defaults.indentSwitchCaseLabels
-    self.multilineTrailingCommaBehavior =
-      try container.decodeIfPresent(MultilineTrailingCommaBehavior.self, forKey: .multilineTrailingCommaBehavior)
-      ?? defaults.multilineTrailingCommaBehavior
-    self.multiElementCollectionTrailingCommas =
-      try container.decodeIfPresent(
-        Bool.self,
-        forKey: .multiElementCollectionTrailingCommas
-      )
-      ?? defaults.multiElementCollectionTrailingCommas
+    var formatRuleEnablements: [String: Bool] = [:]
 
-    self.reflowMultilineStringLiterals = try {
-      // Try to decode `reflowMultilineStringLiterals` as a string
-      // This handles configurations using the String raw value format (e.g. "never").
-      // If an error occurs, we'll silently bypass it and fall back to the legacy behavior.
-      if let behavior = try? container.decodeIfPresent(
-        MultilineStringReflowBehavior.self,
-        forKey: .reflowMultilineStringLiterals
-      ) {
-        return behavior
-      }
+    if container.contains(.format) {
+      // Decode typed settings (ignores unknown keys = rule names).
+      let settings = try container.decode(FormatSettings.self, forKey: .format)
+      settings.apply(to: &config)
 
-      // If the modern format fails, try to decode as an object with a single key.
-      // This handles configurations from sm v601.0.0 (e.g. { "never": {} }).
-      // If an error occurs in this step, we'll propagate it to the caller.
-      if let legacyBehavior = try container.decodeIfPresent(
-        LegacyMultilineStringReflowBehavior.self,
-        forKey: .reflowMultilineStringLiterals
-      ) {
-        return legacyBehavior.toMultilineStringReflowBehavior()
-      }
-
-      // If the key is not present in the configuration at all, use the default value.
-      return defaults.reflowMultilineStringLiterals
-    }()
-
-    self.indentBlankLines =
-      try container.decodeIfPresent(
-        Bool.self,
-        forKey: .indentBlankLines
-      )
-      ?? defaults.indentBlankLines
-
-    // Decode the unified rules dict. Each value is either a Bool or an object
-    // with an `enabled` key plus rule-specific options.
-    var ruleConfigsFromRulesDict: Set<String> = []
-
-    if container.contains(.rules) {
-      let rulesContainer = try container.nestedContainer(
-        keyedBy: DynamicCodingKey.self, forKey: .rules
-      )
-      var ruleEnablements: [String: Bool] = [:]
-
-      for key in rulesContainer.allKeys {
+      // Iterate all keys; anything not a setting key is a rule toggle/object.
+      let fmt = try container.nestedContainer(keyedBy: DynamicCodingKey.self, forKey: .format)
+      for key in fmt.allKeys where !FormatSettings.keyNames.contains(key.stringValue) {
         let ruleName = key.stringValue
 
-        // Try Bool first (simple toggle).
-        if let boolVal = try? rulesContainer.decode(Bool.self, forKey: key) {
-          ruleEnablements[ruleName] = boolVal
+        if let boolVal = try? fmt.decode(Bool.self, forKey: key) {
+          formatRuleEnablements[ruleName] = boolVal
           continue
         }
 
         // Object value: extract `enabled` and decode rule-specific options.
-        let entryDecoder = try rulesContainer.superDecoder(forKey: key)
+        let entryDecoder = try fmt.superDecoder(forKey: key)
         let entryContainer = try entryDecoder.container(keyedBy: DynamicCodingKey.self)
-        let enabled =
+        formatRuleEnablements[ruleName] =
           try entryContainer.decodeIfPresent(Bool.self, forKey: DynamicCodingKey("enabled")) ?? true
-        ruleEnablements[ruleName] = enabled
 
-        switch ruleName {
-        case "FileScopedDeclarationPrivacy":
-          self.fileScopedDeclarationPrivacy = try FileScopedDeclarationPrivacyConfiguration(
-            from: entryDecoder
-          )
-          ruleConfigsFromRulesDict.insert("fileScopedDeclarationPrivacy")
-        case "NoAssignmentInExpressions":
-          self.noAssignmentInExpressions = try NoAssignmentInExpressionsConfiguration(
-            from: entryDecoder
-          )
-          ruleConfigsFromRulesDict.insert("noAssignmentInExpressions")
-        case "SortImports":
-          self.sortImports = try SortImportsConfiguration(from: entryDecoder)
-          ruleConfigsFromRulesDict.insert("sortImports")
-        case "CapitalizeAcronyms":
-          self.acronyms = try AcronymsConfiguration(from: entryDecoder)
-          ruleConfigsFromRulesDict.insert("acronyms")
-        case "NoExtensionAccessLevel":
-          self.extensionAccessControl = try ExtensionAccessControlConfiguration(
-            from: entryDecoder
-          )
-          ruleConfigsFromRulesDict.insert("extensionAccessControl")
-        case "PatternLetPlacement":
-          self.patternLet = try PatternLetConfiguration(from: entryDecoder)
-          ruleConfigsFromRulesDict.insert("patternLet")
-        case "URLMacro":
-          self.urlMacro = try URLMacroConfiguration(from: entryDecoder)
-          ruleConfigsFromRulesDict.insert("urlMacro")
-        case "FileHeader":
-          self.fileHeader = try FileHeaderConfiguration(from: entryDecoder)
-          ruleConfigsFromRulesDict.insert("fileHeader")
-        default:
-          break
+        if let decode = Self.ruleConfigDecoders[ruleName] {
+          try decode(entryDecoder, &config)
         }
       }
-      self.rules = ruleEnablements
-    } else {
-      self.rules = defaults.rules
     }
 
-    // Backward compatibility: decode old top-level config keys, but only when the
-    // unified rules dict did not already provide options for that rule.
-    if !ruleConfigsFromRulesDict.contains("fileScopedDeclarationPrivacy") {
-      self.fileScopedDeclarationPrivacy =
-        try container.decodeIfPresent(
-          FileScopedDeclarationPrivacyConfiguration.self, forKey: .fileScopedDeclarationPrivacy
-        )
-        ?? defaults.fileScopedDeclarationPrivacy
+    // MARK: - Decode `lint` section (lint rules only)
+
+    var lintRuleEnablements: [String: Bool] = [:]
+
+    if container.contains(.lint) {
+      let lint = try container.nestedContainer(keyedBy: DynamicCodingKey.self, forKey: .lint)
+      for key in lint.allKeys {
+        if let boolVal = try? lint.decode(Bool.self, forKey: key) {
+          lintRuleEnablements[key.stringValue] = boolVal
+        }
+      }
     }
-    if !ruleConfigsFromRulesDict.contains("noAssignmentInExpressions") {
-      self.noAssignmentInExpressions =
-        try container.decodeIfPresent(
-          NoAssignmentInExpressionsConfiguration.self, forKey: .noAssignmentInExpressions
-        )
-        ?? defaults.noAssignmentInExpressions
-    }
-    if !ruleConfigsFromRulesDict.contains("sortImports") {
-      self.sortImports =
-        try container.decodeIfPresent(SortImportsConfiguration.self, forKey: .sortImports)
-        ?? defaults.sortImports
-    }
-    if !ruleConfigsFromRulesDict.contains("acronyms") {
-      self.acronyms =
-        try container.decodeIfPresent(AcronymsConfiguration.self, forKey: .acronyms)
-        ?? defaults.acronyms
-    }
-    if !ruleConfigsFromRulesDict.contains("extensionAccessControl") {
-      self.extensionAccessControl =
-        try container.decodeIfPresent(
-          ExtensionAccessControlConfiguration.self, forKey: .extensionAccessControl
-        )
-        ?? defaults.extensionAccessControl
-    }
-    if !ruleConfigsFromRulesDict.contains("patternLet") {
-      self.patternLet =
-        try container.decodeIfPresent(PatternLetConfiguration.self, forKey: .patternLet)
-        ?? defaults.patternLet
-    }
-    if !ruleConfigsFromRulesDict.contains("urlMacro") {
-      self.urlMacro =
-        try container.decodeIfPresent(URLMacroConfiguration.self, forKey: .urlMacro)
-        ?? defaults.urlMacro
-    }
-    if !ruleConfigsFromRulesDict.contains("fileHeader") {
-      self.fileHeader =
-        try container.decodeIfPresent(FileHeaderConfiguration.self, forKey: .fileHeader)
-        ?? defaults.fileHeader
+
+    // Merge format + lint rules over defaults.
+    for (name, enabled) in formatRuleEnablements { config.rules[name] = enabled }
+    for (name, enabled) in lintRuleEnablements { config.rules[name] = enabled }
+    self = config
+  }
+
+
+  /// Rules that have config structs, mapped to the encodable config value.
+  private func ruleConfigEncodable(for ruleName: String) -> (any Encodable)? {
+    switch ruleName {
+    case "FileScopedDeclarationPrivacy": fileScopedDeclarationPrivacy
+    case "NoAssignmentInExpressions": noAssignmentInExpressions
+    case "SortImports": sortImports
+    case "CapitalizeAcronyms": acronyms
+    case "NoExtensionAccessLevel": extensionAccessControl
+    case "PatternLetPlacement": patternLet
+    case "URLMacro": urlMacro
+    case "FileHeader": fileHeader
+    default: nil
     }
   }
 
   public func encode(to encoder: Encoder) throws {
     var container = encoder.container(keyedBy: CodingKeys.self)
-
     try container.encode(version, forKey: .version)
-    try container.encode(maximumBlankLines, forKey: .maximumBlankLines)
-    try container.encode(lineLength, forKey: .lineLength)
-    try container.encode(spacesBeforeEndOfLineComments, forKey: .spacesBeforeEndOfLineComments)
-    try container.encode(tabWidth, forKey: .tabWidth)
-    try container.encode(indentation, forKey: .indentation)
-    try container.encode(respectsExistingLineBreaks, forKey: .respectsExistingLineBreaks)
-    try container.encode(lineBreakBeforeControlFlowKeywords, forKey: .lineBreakBeforeControlFlowKeywords)
-    try container.encode(lineBreakBeforeEachArgument, forKey: .lineBreakBeforeEachArgument)
-    try container.encode(lineBreakBeforeEachGenericRequirement, forKey: .lineBreakBeforeEachGenericRequirement)
-    try container.encode(prioritizeKeepingFunctionOutputTogether, forKey: .prioritizeKeepingFunctionOutputTogether)
-    try container.encode(indentConditionalCompilationBlocks, forKey: .indentConditionalCompilationBlocks)
-    try container.encode(lineBreakBetweenDeclarationAttributes, forKey: .lineBreakBetweenDeclarationAttributes)
-    try container.encode(
-      lineBreakAroundMultilineExpressionChainComponents,
-      forKey: .lineBreakAroundMultilineExpressionChainComponents
-    )
-    try container.encode(
-      spacesAroundRangeFormationOperators,
-      forKey: .spacesAroundRangeFormationOperators
-    )
-    try container.encode(fileScopedDeclarationPrivacy, forKey: .fileScopedDeclarationPrivacy)
-    try container.encode(indentSwitchCaseLabels, forKey: .indentSwitchCaseLabels)
-    try container.encode(noAssignmentInExpressions, forKey: .noAssignmentInExpressions)
-    try container.encode(multiElementCollectionTrailingCommas, forKey: .multiElementCollectionTrailingCommas)
-    try container.encode(reflowMultilineStringLiterals, forKey: .reflowMultilineStringLiterals)
-    try container.encode(indentBlankLines, forKey: .indentBlankLines)
-    try container.encode(sortImports, forKey: .sortImports)
-    try container.encode(acronyms, forKey: .acronyms)
-    try container.encode(extensionAccessControl, forKey: .extensionAccessControl)
-    try container.encode(patternLet, forKey: .patternLet)
-    try container.encode(urlMacro, forKey: .urlMacro)
-    try container.encode(fileHeader, forKey: .fileHeader)
-    try container.encode(rules, forKey: .rules)
+
+    // MARK: - Encode `format` section (settings + format rules)
+
+    var fmt = container.nestedContainer(keyedBy: DynamicCodingKey.self, forKey: .format)
+    try FormatSettings(from: self).encode(into: &fmt)
+
+    let formatRuleNames = Set(RuleRegistry.formatRules.keys)
+    for (name, enabled) in rules where formatRuleNames.contains(name) {
+      if let config = ruleConfigEncodable(for: name) {
+        // Encode as object: { "enabled": true/false, ...config options }
+        // Use JSONSerialization to merge `enabled` into the config struct's encoding.
+        let configData = try JSONEncoder().encode(AnyEncodable(config))
+        if var configDict = try JSONSerialization.jsonObject(with: configData) as? [String: Any] {
+          configDict["enabled"] = enabled
+          // Re-encode the merged dict as a JSON fragment via a wrapper.
+          try fmt.encode(JSONFragment(configDict), forKey: DynamicCodingKey(name))
+        }
+      } else {
+        try fmt.encode(enabled, forKey: DynamicCodingKey(name))
+      }
+    }
+
+    // MARK: - Encode `lint` section
+
+    var lint = container.nestedContainer(keyedBy: DynamicCodingKey.self, forKey: .lint)
+    let lintRuleNames = Set(RuleRegistry.lintRules.keys)
+    for (name, enabled) in rules where lintRuleNames.contains(name) {
+      try lint.encode(enabled, forKey: DynamicCodingKey(name))
+    }
+  }
+
+  /// Type-erased Encodable wrapper.
+  private struct AnyEncodable: Encodable {
+    let value: any Encodable
+    init(_ value: any Encodable) { self.value = value }
+    func encode(to encoder: Encoder) throws { try value.encode(to: encoder) }
+  }
+
+  /// Encodes a `[String: Any]` dict as a JSON object via JSONSerialization round-trip.
+  private struct JSONFragment: Encodable {
+    let dict: [String: Any]
+    init(_ dict: [String: Any]) { self.dict = dict }
+    func encode(to encoder: Encoder) throws {
+      let data = try JSONSerialization.data(withJSONObject: dict)
+      let decoded = try JSONDecoder().decode([String: JSONValue].self, from: data)
+      var container = encoder.container(keyedBy: DynamicCodingKey.self)
+      for (key, value) in decoded {
+        try container.encode(value, forKey: DynamicCodingKey(key))
+      }
+    }
+  }
+
+  /// Generic JSON value for re-encoding arbitrary JSON.
+  private enum JSONValue: Codable {
+    case string(String)
+    case int(Int)
+    case double(Double)
+    case bool(Bool)
+    case array([JSONValue])
+    case object([String: JSONValue])
+    case null
+
+    init(from decoder: Decoder) throws {
+      let container = try decoder.singleValueContainer()
+      if let v = try? container.decode(Bool.self) { self = .bool(v) }
+      else if let v = try? container.decode(Int.self) { self = .int(v) }
+      else if let v = try? container.decode(Double.self) { self = .double(v) }
+      else if let v = try? container.decode(String.self) { self = .string(v) }
+      else if let v = try? container.decode([JSONValue].self) { self = .array(v) }
+      else if let v = try? container.decode([String: JSONValue].self) { self = .object(v) }
+      else if container.decodeNil() { self = .null }
+      else { throw DecodingError.dataCorrupted(.init(codingPath: decoder.codingPath, debugDescription: "Unsupported JSON value")) }
+    }
+
+    func encode(to encoder: Encoder) throws {
+      var container = encoder.singleValueContainer()
+      switch self {
+      case .string(let v): try container.encode(v)
+      case .int(let v): try container.encode(v)
+      case .double(let v): try container.encode(v)
+      case .bool(let v): try container.encode(v)
+      case .array(let v): try container.encode(v)
+      case .object(let v): try container.encode(v)
+      case .null: try container.encodeNil()
+      }
+    }
   }
 
   /// Returns the URL of the configuration file that applies to the given file or directory.

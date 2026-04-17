@@ -8,9 +8,9 @@ bin="$(realpath "$(brew --prefix sm)/bin")"
 cd "$(dirname "$0")/.."
 
 echo "Building release..."
-swift build -c release
+swift build -c release --product sm
 
-src="$(swift build -c release --show-bin-path)/sm"
+src="$(swift build -c release --product sm --show-bin-path)/sm"
 if [[ ! -f "$src" ]]; then
     echo "  ERROR: sm not found at $src"
     exit 1

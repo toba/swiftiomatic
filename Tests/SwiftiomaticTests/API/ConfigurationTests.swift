@@ -16,11 +16,6 @@ import Testing
 @Suite
 struct ConfigurationTests {
   @Test func defaultConfigurationIsSameAsEmptyDecode() throws {
-    // Since we don't use the synthesized `init(from: Decoder)` and allow fields
-    // to be missing, we provide defaults there as well as in the property
-    // declarations themselves. This test ensures that creating a default-
-    // initialized `Configuration` is identical to decoding one from an empty
-    // JSON input, which verifies that those defaults are always in sync.
     let defaultInitConfig = Configuration()
 
     let emptyDictionaryData = "{}\n".data(using: .utf8)!
@@ -42,7 +37,7 @@ struct ConfigurationTests {
     #expect(Configuration.url(forConfigurationFileApplyingTo: URL(fileURLWithPath: path)) == nil)
   }
 
-  @Test func decodingReflowMultilineStringLiteralsAsString() throws {
+  @Test func decodingReflowMultilineStringLiterals() throws {
     let testCases: [String: Configuration.MultilineStringReflowBehavior] = [
       "never": .never,
       "always": .always,
@@ -52,34 +47,13 @@ struct ConfigurationTests {
     for (jsonString, expectedBehavior) in testCases {
       let jsonData = """
         {
+          "format": {
             "reflowMultilineStringLiterals": "\(jsonString)"
+          }
         }
         """.data(using: .utf8)!
 
-      let jsonDecoder = JSONDecoder()
-      jsonDecoder.allowsJSON5 = true
-      let config = try jsonDecoder.decode(Configuration.self, from: jsonData)
-      #expect(config.reflowMultilineStringLiterals == expectedBehavior)
-    }
-  }
-
-  @Test func decodingReflowMultilineStringLiteralsAsObject() throws {
-    let testCases: [String: Configuration.MultilineStringReflowBehavior] = [
-      "{ \"never\": {} }": .never,
-      "{ \"always\": {} }": .always,
-      "{ \"onlyLinesOverLength\": {} }": .onlyLinesOverLength,
-    ]
-
-    for (jsonString, expectedBehavior) in testCases {
-      let jsonData = """
-        {
-            "reflowMultilineStringLiterals": \(jsonString)
-        }
-        """.data(using: .utf8)!
-
-      let jsonDecoder = JSONDecoder()
-      jsonDecoder.allowsJSON5 = true
-      let config = try jsonDecoder.decode(Configuration.self, from: jsonData)
+      let config = try JSONDecoder().decode(Configuration.self, from: jsonData)
       #expect(config.reflowMultilineStringLiterals == expectedBehavior)
     }
   }
@@ -90,7 +64,7 @@ struct ConfigurationTests {
     let jsonData = """
       {
           // Indicates the configuration schema version.
-          "version": 2,
+          "version": 3,
       }
       """.data(using: .utf8)!
 
@@ -100,12 +74,31 @@ struct ConfigurationTests {
     #expect(config == expected)
   }
 
-  // MARK: - Unified rules dict
+  // MARK: - Format section
 
-  @Test func unifiedRulesBoolValue() throws {
+  @Test func formatSettings() throws {
     let jsonData = """
       {
-        "rules": {
+        "format": {
+          "lineLength": 120,
+          "indentation": { "spaces": 4 },
+          "tabWidth": 4
+        }
+      }
+      """.data(using: .utf8)!
+
+    let config = try JSONDecoder().decode(Configuration.self, from: jsonData)
+    #expect(config.lineLength == 120)
+    #expect(config.indentation == .spaces(4))
+    #expect(config.tabWidth == 4)
+    // Unspecified settings use defaults.
+    #expect(config.maximumBlankLines == 1)
+  }
+
+  @Test func formatRuleBoolValue() throws {
+    let jsonData = """
+      {
+        "format": {
           "SortImports": false
         }
       }
@@ -118,10 +111,10 @@ struct ConfigurationTests {
     #expect(config.sortImports.includeConditionalImports == false)
   }
 
-  @Test func unifiedRulesObjectValue() throws {
+  @Test func formatRuleObjectValue() throws {
     let jsonData = """
       {
-        "rules": {
+        "format": {
           "SortImports": {
             "enabled": true,
             "includeConditionalImports": true
@@ -133,15 +126,13 @@ struct ConfigurationTests {
     let config = try JSONDecoder().decode(Configuration.self, from: jsonData)
     #expect(config.rules["SortImports"] == true)
     #expect(config.sortImports.includeConditionalImports == true)
-    // Omitted options should use defaults.
     #expect(config.sortImports.shouldGroupImports == true)
   }
 
-  @Test func unifiedRulesObjectDefaultsEnabled() throws {
-    // When "enabled" is omitted from the object, it defaults to true.
+  @Test func formatRuleObjectDefaultsEnabled() throws {
     let jsonData = """
       {
-        "rules": {
+        "format": {
           "CapitalizeAcronyms": {
             "words": ["ID", "URL"]
           }
@@ -154,10 +145,10 @@ struct ConfigurationTests {
     #expect(config.acronyms.words == ["ID", "URL"])
   }
 
-  @Test func unifiedRulesMixedBoolAndObject() throws {
+  @Test func formatRulesMixedBoolAndObject() throws {
     let jsonData = """
       {
-        "rules": {
+        "format": {
           "SortImports": { "enabled": true, "shouldGroupImports": false },
           "CapitalizeAcronyms": false,
           "URLMacro": { "enabled": true, "macroName": "#URL", "moduleName": "URLFoundation" }
@@ -174,40 +165,10 @@ struct ConfigurationTests {
     #expect(config.urlMacro.moduleName == "URLFoundation")
   }
 
-  @Test func backwardCompatTopLevelKeys() throws {
-    // Old format: rule options at the top level.
+  @Test func allRuleConfigsViaFormatSection() throws {
     let jsonData = """
       {
-        "sortImports": { "includeConditionalImports": true },
-        "rules": { "SortImports": true }
-      }
-      """.data(using: .utf8)!
-
-    let config = try JSONDecoder().decode(Configuration.self, from: jsonData)
-    #expect(config.sortImports.includeConditionalImports == true)
-    #expect(config.rules["SortImports"] == true)
-  }
-
-  @Test func unifiedRulesTakePrecedenceOverTopLevel() throws {
-    // When both the unified rules dict and old top-level key are present,
-    // the rules dict should win.
-    let jsonData = """
-      {
-        "sortImports": { "includeConditionalImports": false },
-        "rules": {
-          "SortImports": { "enabled": true, "includeConditionalImports": true }
-        }
-      }
-      """.data(using: .utf8)!
-
-    let config = try JSONDecoder().decode(Configuration.self, from: jsonData)
-    #expect(config.sortImports.includeConditionalImports == true)
-  }
-
-  @Test func allRuleConfigsViaUnifiedDict() throws {
-    let jsonData = """
-      {
-        "rules": {
+        "format": {
           "FileScopedDeclarationPrivacy": { "enabled": true, "accessLevel": "fileprivate" },
           "NoAssignmentInExpressions": { "enabled": true, "allowedFunctions": ["foo"] },
           "SortImports": { "enabled": true, "includeConditionalImports": true, "shouldGroupImports": false },
@@ -233,16 +194,38 @@ struct ConfigurationTests {
     #expect(config.fileHeader.text == "// Header")
   }
 
-  @Test func dumpConfigurationEmitsUnifiedFormat() throws {
+  // MARK: - Lint section
+
+  @Test func lintRules() throws {
+    let jsonData = """
+      {
+        "lint": {
+          "LowerCamelCase": false,
+          "NoBlockComments": true
+        }
+      }
+      """.data(using: .utf8)!
+
+    let config = try JSONDecoder().decode(Configuration.self, from: jsonData)
+    #expect(config.rules["LowerCamelCase"] == false)
+    #expect(config.rules["NoBlockComments"] == true)
+  }
+
+  // MARK: - Dump and round-trip
+
+  @Test func dumpConfigurationEmitsV3Format() throws {
     var config = Configuration()
     config.sortImports.includeConditionalImports = true
     config.rules["SortImports"] = true
 
     let json = try config.asJsonString()
 
-    // Should NOT contain top-level "sortImports" key.
-    #expect(!json.contains("\"sortImports\" :"))
-    // Should contain the option inside the rules dict.
+    // Should contain format and lint sections.
+    #expect(json.contains("\"format\""))
+    #expect(json.contains("\"lint\""))
+    // Should NOT contain a top-level "rules" key.
+    #expect(!json.contains("\"rules\" :"))
+    // SortImports options should be inside the format section.
     #expect(json.contains("\"includeConditionalImports\""))
     #expect(json.contains("\"SortImports\""))
   }

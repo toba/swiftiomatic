@@ -24,8 +24,11 @@ import Foundation
   }
 
   public func generateContent() -> String {
-    var result = ""
-    result += """
+    let sorted = ruleCollector.allLinters.sorted(by: { $0.typeName < $1.typeName })
+    let formatRules = sorted.filter { $0.canFormat }
+    let lintRules = sorted.filter { !$0.canFormat }
+
+    var result = """
       //===----------------------------------------------------------------------===//
       //
       // This source file is part of the Swift.org open source project
@@ -44,8 +47,20 @@ import Foundation
         public static let rules: [String: Bool] = [
 
       """
-    for detectedRule in ruleCollector.allLinters.sorted(by: { $0.typeName < $1.typeName }) {
-      result += "    \"\(detectedRule.typeName)\": \(!detectedRule.isOptIn),\n"
+    for rule in sorted {
+      result += "    \"\(rule.typeName)\": \(!rule.isOptIn),\n"
+    }
+    result += "  ]\n\n"
+
+    result += "  public static let formatRules: [String: Bool] = [\n"
+    for rule in formatRules {
+      result += "    \"\(rule.typeName)\": \(!rule.isOptIn),\n"
+    }
+    result += "  ]\n\n"
+
+    result += "  public static let lintRules: [String: Bool] = [\n"
+    for rule in lintRules {
+      result += "    \"\(rule.typeName)\": \(!rule.isOptIn),\n"
     }
     result += "  ]\n}\n"
     return result

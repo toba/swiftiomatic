@@ -122,7 +122,7 @@ extension JSONSchemaNode {
     ) -> JSONSchemaNode {
         var node = JSONSchemaNode()
         node.type = "string"
-        node.description = description
+        node.description = "\(description) Options: \(values.joined(separator: ", "))."
         node.enumValues = values
         node.defaultValue = .string(defaultValue)
         return node
