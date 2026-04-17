@@ -14,22 +14,22 @@ import Foundation
 
 /// Common behavior used to generate source files.
 @_spi(Internal) public protocol FileGenerator {
-  /// Generates the file content as a String.
-  func generateContent() -> String
+    /// Generates the file content as a String.
+    func generateContent() -> String
 }
 
 private struct FailedToCreateFileError: Error {
-  let url: URL
+    let url: URL
 }
 
 extension FileGenerator {
-  /// Generates a file at the given URL, overwriting it if it already exists.
-  public func generateFile(at url: URL) throws {
-    let fm = FileManager.default
-    if fm.fileExists(atPath: url.path) {
-      try fm.removeItem(at: url)
+    /// Generates a file at the given URL, overwriting it if it already exists.
+    public func generateFile(at url: URL) throws {
+        let fm = FileManager.default
+        if fm.fileExists(atPath: url.path) {
+            try fm.removeItem(at: url)
+        }
+        let content = generateContent()
+        try content.write(to: url, atomically: true, encoding: .utf8)
     }
-    let content = generateContent()
-    try content.write(to: url, atomically: true, encoding: .utf8)
-  }
 }

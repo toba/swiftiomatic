@@ -19,7 +19,7 @@ import Foundation
 /// use default values when loading older configurations that don't contain the new settings. This
 /// value only needs to be updated if the configuration changes in a way that would be incompatible
 /// with the previous format.
-internal let highestSupportedConfigurationVersion = 1
+internal let highestSupportedConfigurationVersion = 2
 
 /// Holds the complete set of configured values and defaults.
 public struct Configuration: Codable, Equatable, Sendable {
@@ -55,6 +55,31 @@ public struct Configuration: Codable, Equatable, Sendable {
     case urlMacro
     case fileHeader
   }
+
+  /// A coding key backed by a runtime string, used to iterate heterogeneous JSON dictionaries.
+  private struct DynamicCodingKey: CodingKey {
+    var stringValue: String
+    var intValue: Int? { nil }
+    init(_ string: String) { self.stringValue = string }
+    init?(stringValue: String) { self.stringValue = stringValue }
+    init?(intValue: Int) { nil }
+  }
+
+  /// Maps rule type names to the top-level configuration key that holds their options.
+  ///
+  /// When decoding the unified `rules` dict, object values for these rule names are decoded into
+  /// the corresponding config struct. When encoding for `dump-configuration`, the config struct
+  /// is merged back into the rule entry.
+  internal static let ruleConfigKeys: [(ruleName: String, configKey: String)] = [
+    ("FileScopedDeclarationPrivacy", "fileScopedDeclarationPrivacy"),
+    ("NoAssignmentInExpressions", "noAssignmentInExpressions"),
+    ("SortImports", "sortImports"),
+    ("CapitalizeAcronyms", "acronyms"),
+    ("NoExtensionAccessLevel", "extensionAccessControl"),
+    ("PatternLetPlacement", "patternLet"),
+    ("URLMacro", "urlMacro"),
+    ("FileHeader", "fileHeader"),
+  ]
 
   /// A dictionary containing the default enabled/disabled states of rules, keyed by the rules'
   /// names.
@@ -341,8 +366,10 @@ public struct Configuration: Codable, Equatable, Sendable {
   public init(from decoder: Decoder) throws {
     let container = try decoder.container(keyedBy: CodingKeys.self)
 
-    // If the version number is not present, assume it is 1.
-    self.version = try container.decodeIfPresent(Int.self, forKey: .version) ?? 1
+    // If the version number is not present, default to the current version.
+    self.version =
+      try container.decodeIfPresent(Int.self, forKey: .version)
+      ?? highestSupportedConfigurationVersion
     guard version <= highestSupportedConfigurationVersion else {
       throw SwiftiomaticError.unsupportedConfigurationVersion(
         version,
@@ -408,21 +435,19 @@ public struct Configuration: Codable, Equatable, Sendable {
         forKey: .spacesAroundRangeFormationOperators
       )
       ?? defaults.spacesAroundRangeFormationOperators
-    self.fileScopedDeclarationPrivacy =
-      try container.decodeIfPresent(
-        FileScopedDeclarationPrivacyConfiguration.self,
-        forKey: .fileScopedDeclarationPrivacy
-      )
-      ?? defaults.fileScopedDeclarationPrivacy
+    // Rule-specific config structs are set to defaults here and may be overridden
+    // by the unified rules dict or old top-level keys below.
+    self.fileScopedDeclarationPrivacy = defaults.fileScopedDeclarationPrivacy
+    self.noAssignmentInExpressions = defaults.noAssignmentInExpressions
+    self.sortImports = defaults.sortImports
+    self.acronyms = defaults.acronyms
+    self.extensionAccessControl = defaults.extensionAccessControl
+    self.patternLet = defaults.patternLet
+    self.urlMacro = defaults.urlMacro
+    self.fileHeader = defaults.fileHeader
     self.indentSwitchCaseLabels =
       try container.decodeIfPresent(Bool.self, forKey: .indentSwitchCaseLabels)
       ?? defaults.indentSwitchCaseLabels
-    self.noAssignmentInExpressions =
-      try container.decodeIfPresent(
-        NoAssignmentInExpressionsConfiguration.self,
-        forKey: .noAssignmentInExpressions
-      )
-      ?? defaults.noAssignmentInExpressions
     self.multilineTrailingCommaBehavior =
       try container.decodeIfPresent(MultilineTrailingCommaBehavior.self, forKey: .multilineTrailingCommaBehavior)
       ?? defaults.multilineTrailingCommaBehavior
@@ -465,51 +490,120 @@ public struct Configuration: Codable, Equatable, Sendable {
       )
       ?? defaults.indentBlankLines
 
-    self.sortImports =
-      try container.decodeIfPresent(
-        SortImportsConfiguration.self,
-        forKey: .sortImports
-      )
-      ?? defaults.sortImports
+    // Decode the unified rules dict. Each value is either a Bool or an object
+    // with an `enabled` key plus rule-specific options.
+    var ruleConfigsFromRulesDict: Set<String> = []
 
-    self.acronyms =
-      try container.decodeIfPresent(
-        AcronymsConfiguration.self,
-        forKey: .acronyms
+    if container.contains(.rules) {
+      let rulesContainer = try container.nestedContainer(
+        keyedBy: DynamicCodingKey.self, forKey: .rules
       )
-      ?? defaults.acronyms
-    self.extensionAccessControl =
-      try container.decodeIfPresent(
-        ExtensionAccessControlConfiguration.self,
-        forKey: .extensionAccessControl
-      )
-      ?? defaults.extensionAccessControl
-    self.patternLet =
-      try container.decodeIfPresent(
-        PatternLetConfiguration.self,
-        forKey: .patternLet
-      )
-      ?? defaults.patternLet
-    self.urlMacro =
-      try container.decodeIfPresent(
-        URLMacroConfiguration.self,
-        forKey: .urlMacro
-      )
-      ?? defaults.urlMacro
-    self.fileHeader =
-      try container.decodeIfPresent(
-        FileHeaderConfiguration.self,
-        forKey: .fileHeader
-      )
-      ?? defaults.fileHeader
+      var ruleEnablements: [String: Bool] = [:]
 
-    // If the `rules` key is not present at all, default it to the built-in set
-    // so that the behavior is the same as if the configuration had been
-    // default-initialized. To get an empty rules dictionary, one can explicitly
-    // set the `rules` key to `{}`.
-    self.rules =
-      try container.decodeIfPresent([String: Bool].self, forKey: .rules)
-      ?? defaults.rules
+      for key in rulesContainer.allKeys {
+        let ruleName = key.stringValue
+
+        // Try Bool first (simple toggle).
+        if let boolVal = try? rulesContainer.decode(Bool.self, forKey: key) {
+          ruleEnablements[ruleName] = boolVal
+          continue
+        }
+
+        // Object value: extract `enabled` and decode rule-specific options.
+        let entryDecoder = try rulesContainer.superDecoder(forKey: key)
+        let entryContainer = try entryDecoder.container(keyedBy: DynamicCodingKey.self)
+        let enabled =
+          try entryContainer.decodeIfPresent(Bool.self, forKey: DynamicCodingKey("enabled")) ?? true
+        ruleEnablements[ruleName] = enabled
+
+        switch ruleName {
+        case "FileScopedDeclarationPrivacy":
+          self.fileScopedDeclarationPrivacy = try FileScopedDeclarationPrivacyConfiguration(
+            from: entryDecoder
+          )
+          ruleConfigsFromRulesDict.insert("fileScopedDeclarationPrivacy")
+        case "NoAssignmentInExpressions":
+          self.noAssignmentInExpressions = try NoAssignmentInExpressionsConfiguration(
+            from: entryDecoder
+          )
+          ruleConfigsFromRulesDict.insert("noAssignmentInExpressions")
+        case "SortImports":
+          self.sortImports = try SortImportsConfiguration(from: entryDecoder)
+          ruleConfigsFromRulesDict.insert("sortImports")
+        case "CapitalizeAcronyms":
+          self.acronyms = try AcronymsConfiguration(from: entryDecoder)
+          ruleConfigsFromRulesDict.insert("acronyms")
+        case "NoExtensionAccessLevel":
+          self.extensionAccessControl = try ExtensionAccessControlConfiguration(
+            from: entryDecoder
+          )
+          ruleConfigsFromRulesDict.insert("extensionAccessControl")
+        case "PatternLetPlacement":
+          self.patternLet = try PatternLetConfiguration(from: entryDecoder)
+          ruleConfigsFromRulesDict.insert("patternLet")
+        case "URLMacro":
+          self.urlMacro = try URLMacroConfiguration(from: entryDecoder)
+          ruleConfigsFromRulesDict.insert("urlMacro")
+        case "FileHeader":
+          self.fileHeader = try FileHeaderConfiguration(from: entryDecoder)
+          ruleConfigsFromRulesDict.insert("fileHeader")
+        default:
+          break
+        }
+      }
+      self.rules = ruleEnablements
+    } else {
+      self.rules = defaults.rules
+    }
+
+    // Backward compatibility: decode old top-level config keys, but only when the
+    // unified rules dict did not already provide options for that rule.
+    if !ruleConfigsFromRulesDict.contains("fileScopedDeclarationPrivacy") {
+      self.fileScopedDeclarationPrivacy =
+        try container.decodeIfPresent(
+          FileScopedDeclarationPrivacyConfiguration.self, forKey: .fileScopedDeclarationPrivacy
+        )
+        ?? defaults.fileScopedDeclarationPrivacy
+    }
+    if !ruleConfigsFromRulesDict.contains("noAssignmentInExpressions") {
+      self.noAssignmentInExpressions =
+        try container.decodeIfPresent(
+          NoAssignmentInExpressionsConfiguration.self, forKey: .noAssignmentInExpressions
+        )
+        ?? defaults.noAssignmentInExpressions
+    }
+    if !ruleConfigsFromRulesDict.contains("sortImports") {
+      self.sortImports =
+        try container.decodeIfPresent(SortImportsConfiguration.self, forKey: .sortImports)
+        ?? defaults.sortImports
+    }
+    if !ruleConfigsFromRulesDict.contains("acronyms") {
+      self.acronyms =
+        try container.decodeIfPresent(AcronymsConfiguration.self, forKey: .acronyms)
+        ?? defaults.acronyms
+    }
+    if !ruleConfigsFromRulesDict.contains("extensionAccessControl") {
+      self.extensionAccessControl =
+        try container.decodeIfPresent(
+          ExtensionAccessControlConfiguration.self, forKey: .extensionAccessControl
+        )
+        ?? defaults.extensionAccessControl
+    }
+    if !ruleConfigsFromRulesDict.contains("patternLet") {
+      self.patternLet =
+        try container.decodeIfPresent(PatternLetConfiguration.self, forKey: .patternLet)
+        ?? defaults.patternLet
+    }
+    if !ruleConfigsFromRulesDict.contains("urlMacro") {
+      self.urlMacro =
+        try container.decodeIfPresent(URLMacroConfiguration.self, forKey: .urlMacro)
+        ?? defaults.urlMacro
+    }
+    if !ruleConfigsFromRulesDict.contains("fileHeader") {
+      self.fileHeader =
+        try container.decodeIfPresent(FileHeaderConfiguration.self, forKey: .fileHeader)
+        ?? defaults.fileHeader
+    }
   }
 
   public func encode(to encoder: Encoder) throws {
@@ -598,6 +692,14 @@ public struct FileScopedDeclarationPrivacyConfiguration: Codable, Equatable, Sen
   public var accessLevel: AccessLevel = .private
 
   public init() {}
+
+  public init(from decoder: Decoder) throws {
+    let container = try decoder.container(keyedBy: CodingKeys.self)
+    let defaults = Self()
+    self.accessLevel =
+      try container.decodeIfPresent(AccessLevel.self, forKey: .accessLevel)
+      ?? defaults.accessLevel
+  }
 }
 
 /// Configuration for the `NoAssignmentInExpressions` rule.
@@ -612,6 +714,14 @@ public struct NoAssignmentInExpressionsConfiguration: Codable, Equatable, Sendab
   ]
 
   public init() {}
+
+  public init(from decoder: Decoder) throws {
+    let container = try decoder.container(keyedBy: CodingKeys.self)
+    let defaults = Self()
+    self.allowedFunctions =
+      try container.decodeIfPresent([String].self, forKey: .allowedFunctions)
+      ?? defaults.allowedFunctions
+  }
 }
 
 /// Configuration for the `SortImports` rule.
@@ -620,7 +730,19 @@ public struct SortImportsConfiguration: Codable, Equatable, Sendable {
   public var includeConditionalImports = false
   /// Determines whether imports are separated into groups based on their type.
   public var shouldGroupImports = true
+
   public init() {}
+
+  public init(from decoder: Decoder) throws {
+    let container = try decoder.container(keyedBy: CodingKeys.self)
+    let defaults = Self()
+    self.includeConditionalImports =
+      try container.decodeIfPresent(Bool.self, forKey: .includeConditionalImports)
+      ?? defaults.includeConditionalImports
+    self.shouldGroupImports =
+      try container.decodeIfPresent(Bool.self, forKey: .shouldGroupImports)
+      ?? defaults.shouldGroupImports
+  }
 }
 
 /// Configuration for the `CapitalizeAcronyms` rule.
@@ -633,6 +755,14 @@ public struct AcronymsConfiguration: Codable, Equatable, Sendable {
   ]
 
   public init() {}
+
+  public init(from decoder: Decoder) throws {
+    let container = try decoder.container(keyedBy: CodingKeys.self)
+    let defaults = Self()
+    self.words =
+      try container.decodeIfPresent([String].self, forKey: .words)
+      ?? defaults.words
+  }
 }
 
 /// Configuration for the `NoExtensionAccessLevel` rule.
@@ -654,6 +784,14 @@ public struct ExtensionAccessControlConfiguration: Codable, Equatable, Sendable 
   public var placement: Placement = .onDeclarations
 
   public init() {}
+
+  public init(from decoder: Decoder) throws {
+    let container = try decoder.container(keyedBy: CodingKeys.self)
+    let defaults = Self()
+    self.placement =
+      try container.decodeIfPresent(Placement.self, forKey: .placement)
+      ?? defaults.placement
+  }
 }
 
 /// Configuration for the `PatternLetPlacement` rule.
@@ -670,6 +808,14 @@ public struct PatternLetConfiguration: Codable, Equatable, Sendable {
   public var placement: Placement = .eachBinding
 
   public init() {}
+
+  public init(from decoder: Decoder) throws {
+    let container = try decoder.container(keyedBy: CodingKeys.self)
+    let defaults = Self()
+    self.placement =
+      try container.decodeIfPresent(Placement.self, forKey: .placement)
+      ?? defaults.placement
+  }
 }
 
 /// Configuration for the `URLMacro` rule.
@@ -681,6 +827,12 @@ public struct URLMacroConfiguration: Codable, Equatable, Sendable {
   public var moduleName: String?
 
   public init() {}
+
+  public init(from decoder: Decoder) throws {
+    let container = try decoder.container(keyedBy: CodingKeys.self)
+    self.macroName = try container.decodeIfPresent(String.self, forKey: .macroName)
+    self.moduleName = try container.decodeIfPresent(String.self, forKey: .moduleName)
+  }
 }
 
 /// Configuration for the `FileHeader` rule.
@@ -695,4 +847,9 @@ public struct FileHeaderConfiguration: Codable, Equatable, Sendable {
   public var text: String?
 
   public init() {}
+
+  public init(from decoder: Decoder) throws {
+    let container = try decoder.container(keyedBy: CodingKeys.self)
+    self.text = try container.decodeIfPresent(String.self, forKey: .text)
+  }
 }

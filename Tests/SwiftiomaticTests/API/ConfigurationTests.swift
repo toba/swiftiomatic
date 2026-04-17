@@ -90,7 +90,7 @@ struct ConfigurationTests {
     let jsonData = """
       {
           // Indicates the configuration schema version.
-          "version": 1,
+          "version": 2,
       }
       """.data(using: .utf8)!
 
@@ -98,5 +98,164 @@ struct ConfigurationTests {
     jsonDecoder.allowsJSON5 = true
     let config = try jsonDecoder.decode(Configuration.self, from: jsonData)
     #expect(config == expected)
+  }
+
+  // MARK: - Unified rules dict
+
+  @Test func unifiedRulesBoolValue() throws {
+    let jsonData = """
+      {
+        "rules": {
+          "SortImports": false
+        }
+      }
+      """.data(using: .utf8)!
+
+    let config = try JSONDecoder().decode(Configuration.self, from: jsonData)
+    #expect(config.rules["SortImports"] == false)
+    // Config struct should have defaults since no options were provided.
+    #expect(config.sortImports.shouldGroupImports == true)
+    #expect(config.sortImports.includeConditionalImports == false)
+  }
+
+  @Test func unifiedRulesObjectValue() throws {
+    let jsonData = """
+      {
+        "rules": {
+          "SortImports": {
+            "enabled": true,
+            "includeConditionalImports": true
+          }
+        }
+      }
+      """.data(using: .utf8)!
+
+    let config = try JSONDecoder().decode(Configuration.self, from: jsonData)
+    #expect(config.rules["SortImports"] == true)
+    #expect(config.sortImports.includeConditionalImports == true)
+    // Omitted options should use defaults.
+    #expect(config.sortImports.shouldGroupImports == true)
+  }
+
+  @Test func unifiedRulesObjectDefaultsEnabled() throws {
+    // When "enabled" is omitted from the object, it defaults to true.
+    let jsonData = """
+      {
+        "rules": {
+          "CapitalizeAcronyms": {
+            "words": ["ID", "URL"]
+          }
+        }
+      }
+      """.data(using: .utf8)!
+
+    let config = try JSONDecoder().decode(Configuration.self, from: jsonData)
+    #expect(config.rules["CapitalizeAcronyms"] == true)
+    #expect(config.acronyms.words == ["ID", "URL"])
+  }
+
+  @Test func unifiedRulesMixedBoolAndObject() throws {
+    let jsonData = """
+      {
+        "rules": {
+          "SortImports": { "enabled": true, "shouldGroupImports": false },
+          "CapitalizeAcronyms": false,
+          "URLMacro": { "enabled": true, "macroName": "#URL", "moduleName": "URLFoundation" }
+        }
+      }
+      """.data(using: .utf8)!
+
+    let config = try JSONDecoder().decode(Configuration.self, from: jsonData)
+    #expect(config.rules["SortImports"] == true)
+    #expect(config.sortImports.shouldGroupImports == false)
+    #expect(config.rules["CapitalizeAcronyms"] == false)
+    #expect(config.rules["URLMacro"] == true)
+    #expect(config.urlMacro.macroName == "#URL")
+    #expect(config.urlMacro.moduleName == "URLFoundation")
+  }
+
+  @Test func backwardCompatTopLevelKeys() throws {
+    // Old format: rule options at the top level.
+    let jsonData = """
+      {
+        "sortImports": { "includeConditionalImports": true },
+        "rules": { "SortImports": true }
+      }
+      """.data(using: .utf8)!
+
+    let config = try JSONDecoder().decode(Configuration.self, from: jsonData)
+    #expect(config.sortImports.includeConditionalImports == true)
+    #expect(config.rules["SortImports"] == true)
+  }
+
+  @Test func unifiedRulesTakePrecedenceOverTopLevel() throws {
+    // When both the unified rules dict and old top-level key are present,
+    // the rules dict should win.
+    let jsonData = """
+      {
+        "sortImports": { "includeConditionalImports": false },
+        "rules": {
+          "SortImports": { "enabled": true, "includeConditionalImports": true }
+        }
+      }
+      """.data(using: .utf8)!
+
+    let config = try JSONDecoder().decode(Configuration.self, from: jsonData)
+    #expect(config.sortImports.includeConditionalImports == true)
+  }
+
+  @Test func allRuleConfigsViaUnifiedDict() throws {
+    let jsonData = """
+      {
+        "rules": {
+          "FileScopedDeclarationPrivacy": { "enabled": true, "accessLevel": "fileprivate" },
+          "NoAssignmentInExpressions": { "enabled": true, "allowedFunctions": ["foo"] },
+          "SortImports": { "enabled": true, "includeConditionalImports": true, "shouldGroupImports": false },
+          "CapitalizeAcronyms": { "enabled": true, "words": ["ID"] },
+          "NoExtensionAccessLevel": { "enabled": true, "placement": "onExtension" },
+          "PatternLetPlacement": { "enabled": true, "placement": "outerPattern" },
+          "URLMacro": { "enabled": true, "macroName": "#URL", "moduleName": "M" },
+          "FileHeader": { "enabled": true, "text": "// Header" }
+        }
+      }
+      """.data(using: .utf8)!
+
+    let config = try JSONDecoder().decode(Configuration.self, from: jsonData)
+    #expect(config.fileScopedDeclarationPrivacy.accessLevel == .fileprivate)
+    #expect(config.noAssignmentInExpressions.allowedFunctions == ["foo"])
+    #expect(config.sortImports.includeConditionalImports == true)
+    #expect(config.sortImports.shouldGroupImports == false)
+    #expect(config.acronyms.words == ["ID"])
+    #expect(config.extensionAccessControl.placement == .onExtension)
+    #expect(config.patternLet.placement == .outerPattern)
+    #expect(config.urlMacro.macroName == "#URL")
+    #expect(config.urlMacro.moduleName == "M")
+    #expect(config.fileHeader.text == "// Header")
+  }
+
+  @Test func dumpConfigurationEmitsUnifiedFormat() throws {
+    var config = Configuration()
+    config.sortImports.includeConditionalImports = true
+    config.rules["SortImports"] = true
+
+    let json = try config.asJsonString()
+
+    // Should NOT contain top-level "sortImports" key.
+    #expect(!json.contains("\"sortImports\" :"))
+    // Should contain the option inside the rules dict.
+    #expect(json.contains("\"includeConditionalImports\""))
+    #expect(json.contains("\"SortImports\""))
+  }
+
+  @Test func roundTripEncodeDecode() throws {
+    var config = Configuration()
+    config.sortImports.includeConditionalImports = true
+    config.acronyms.words = ["ID", "URL"]
+    config.rules["SortImports"] = true
+    config.rules["CapitalizeAcronyms"] = true
+
+    let data = try JSONEncoder().encode(config)
+    let decoded = try JSONDecoder().decode(Configuration.self, from: data)
+    #expect(config == decoded)
   }
 }

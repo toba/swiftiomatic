@@ -10,7 +10,7 @@
     },
     "acronyms" : {
       "additionalProperties" : false,
-      "description" : "Acronym capitalization options for the CapitalizeAcronyms rule.",
+      "description" : "(Deprecated: use rules.CapitalizeAcronyms) Acronym capitalization options.",
       "properties" : {
         "words" : {
           "default" : [
@@ -48,7 +48,7 @@
     },
     "extensionAccessControl" : {
       "additionalProperties" : false,
-      "description" : "Extension access control modifier placement.",
+      "description" : "(Deprecated: use rules.NoExtensionAccessLevel) Extension access control modifier placement.",
       "properties" : {
         "placement" : {
           "default" : "onDeclarations",
@@ -64,7 +64,7 @@
     },
     "fileHeader" : {
       "additionalProperties" : false,
-      "description" : "File header enforcement.",
+      "description" : "(Deprecated: use rules.FileHeader) File header enforcement.",
       "properties" : {
         "text" : {
           "description" : "Header text. Omit to disable, empty string to remove headers.",
@@ -75,7 +75,7 @@
     },
     "fileScopedDeclarationPrivacy" : {
       "additionalProperties" : false,
-      "description" : "File-scoped declaration access level.",
+      "description" : "(Deprecated: use rules.FileScopedDeclarationPrivacy) File-scoped declaration access level.",
       "properties" : {
         "accessLevel" : {
           "default" : "private",
@@ -198,7 +198,7 @@
     },
     "noAssignmentInExpressions" : {
       "additionalProperties" : false,
-      "description" : "NoAssignmentInExpressions rule exceptions.",
+      "description" : "(Deprecated: use rules.NoAssignmentInExpressions) NoAssignmentInExpressions rule exceptions.",
       "properties" : {
         "allowedFunctions" : {
           "default" : [
@@ -215,7 +215,7 @@
     },
     "patternLet" : {
       "additionalProperties" : false,
-      "description" : "Case pattern let/var placement.",
+      "description" : "(Deprecated: use rules.PatternLetPlacement) Case pattern let/var placement.",
       "properties" : {
         "placement" : {
           "default" : "eachBinding",
@@ -251,7 +251,7 @@
     },
     "rules" : {
       "additionalProperties" : false,
-      "description" : "Enable or disable individual rules by name.",
+      "description" : "Enable or disable individual rules by name. Each value is either a boolean or an object with 'enabled' plus rule-specific options.",
       "properties" : {
         "ASCIIIdentifiers" : {
           "default" : true,
@@ -299,9 +299,57 @@
           "type" : "boolean"
         },
         "CapitalizeAcronyms" : {
-          "default" : false,
           "description" : "Capitalize acronyms when the first character is capitalized.\n\nWhen an identifier contains a titlecased acronym (e.g. `Url`, `Json`, `Id`),\nit should be fully uppercased (e.g. `URL`, `JSON`, `ID`) for consistency with\nSwift naming conventions.\n\nThe list of recognized acronyms is configurable via `Configuration.acronyms`.\n\nLint: An identifier with a titlecased acronym raises a warning.\n\nFormat: The titlecased acronym is replaced with the uppercased form.\n [format] [opt-in]",
-          "type" : "boolean"
+          "oneOf" : [
+            {
+              "default" : false,
+              "description" : "Capitalize acronyms when the first character is capitalized.\n\nWhen an identifier contains a titlecased acronym (e.g. `Url`, `Json`, `Id`),\nit should be fully uppercased (e.g. `URL`, `JSON`, `ID`) for consistency with\nSwift naming conventions.\n\nThe list of recognized acronyms is configurable via `Configuration.acronyms`.\n\nLint: An identifier with a titlecased acronym raises a warning.\n\nFormat: The titlecased acronym is replaced with the uppercased form.\n [format] [opt-in]",
+              "type" : "boolean"
+            },
+            {
+              "additionalProperties" : false,
+              "description" : "",
+              "properties" : {
+                "enabled" : {
+                  "default" : false,
+                  "description" : "Enable or disable the rule.",
+                  "type" : "boolean"
+                },
+                "words" : {
+                  "default" : [
+                    "API",
+                    "CSS",
+                    "DNS",
+                    "FTP",
+                    "GIF",
+                    "HTML",
+                    "HTTP",
+                    "HTTPS",
+                    "ID",
+                    "JPEG",
+                    "JSON",
+                    "PDF",
+                    "PNG",
+                    "RGB",
+                    "RGBA",
+                    "SQL",
+                    "SSH",
+                    "TCP",
+                    "UDP",
+                    "URL",
+                    "UUID",
+                    "XML"
+                  ],
+                  "description" : "Acronyms to capitalize (fully uppercased).",
+                  "items" : {
+                    "type" : "string"
+                  },
+                  "type" : "array"
+                }
+              },
+              "type" : "object"
+            }
+          ]
         },
         "CapitalizedTypeNames" : {
           "default" : true,
@@ -359,14 +407,61 @@
           "type" : "boolean"
         },
         "FileHeader" : {
-          "default" : false,
           "description" : "Enforce a consistent file header comment, or remove file headers entirely.\n\nWhen configured with header text, any existing file header comment is replaced with the\nconfigured text. When configured with an empty string, any existing file header is removed.\nFile header comments are line comments (`//`) or block comments (`/* */`) at the start of\nthe file, before any blank line, doc comment, or code. Doc comments (`///`, `/** */`) are\nnot considered file header comments.\n\nThis rule is opt-in and requires configuration via `fileHeader.text` in the configuration file.\n\nLint: A warning is raised when the file header does not match the configured text.\n\nFormat: The file header is replaced with (or cleared to) the configured text.\n [format] [opt-in]",
-          "type" : "boolean"
+          "oneOf" : [
+            {
+              "default" : false,
+              "description" : "Enforce a consistent file header comment, or remove file headers entirely.\n\nWhen configured with header text, any existing file header comment is replaced with the\nconfigured text. When configured with an empty string, any existing file header is removed.\nFile header comments are line comments (`//`) or block comments (`/* */`) at the start of\nthe file, before any blank line, doc comment, or code. Doc comments (`///`, `/** */`) are\nnot considered file header comments.\n\nThis rule is opt-in and requires configuration via `fileHeader.text` in the configuration file.\n\nLint: A warning is raised when the file header does not match the configured text.\n\nFormat: The file header is replaced with (or cleared to) the configured text.\n [format] [opt-in]",
+              "type" : "boolean"
+            },
+            {
+              "additionalProperties" : false,
+              "description" : "",
+              "properties" : {
+                "enabled" : {
+                  "default" : false,
+                  "description" : "Enable or disable the rule.",
+                  "type" : "boolean"
+                },
+                "text" : {
+                  "description" : "Header text. Omit to disable, empty string to remove headers.",
+                  "type" : "string"
+                }
+              },
+              "type" : "object"
+            }
+          ]
         },
         "FileScopedDeclarationPrivacy" : {
-          "default" : true,
           "description" : "Declarations at file scope with effective private access should be consistently declared as\neither `fileprivate` or `private`, determined by configuration.\n\nLint: If a file-scoped declaration has formal access opposite to the desired access level in the\n      formatter's configuration, a lint error is raised.\n\nFormat: File-scoped declarations that have formal access opposite to the desired access level in\n        the formatter's configuration will have their access level changed.\n [format]",
-          "type" : "boolean"
+          "oneOf" : [
+            {
+              "default" : true,
+              "description" : "Declarations at file scope with effective private access should be consistently declared as\neither `fileprivate` or `private`, determined by configuration.\n\nLint: If a file-scoped declaration has formal access opposite to the desired access level in the\n      formatter's configuration, a lint error is raised.\n\nFormat: File-scoped declarations that have formal access opposite to the desired access level in\n        the formatter's configuration will have their access level changed.\n [format]",
+              "type" : "boolean"
+            },
+            {
+              "additionalProperties" : false,
+              "description" : "",
+              "properties" : {
+                "accessLevel" : {
+                  "default" : "private",
+                  "description" : "Access level for file-scoped private declarations.",
+                  "enum" : [
+                    "private",
+                    "fileprivate"
+                  ],
+                  "type" : "string"
+                },
+                "enabled" : {
+                  "default" : true,
+                  "description" : "Enable or disable the rule.",
+                  "type" : "boolean"
+                }
+              },
+              "type" : "object"
+            }
+          ]
         },
         "FormatSpecialComments" : {
           "default" : true,
@@ -424,9 +519,36 @@
           "type" : "boolean"
         },
         "NoAssignmentInExpressions" : {
-          "default" : true,
           "description" : "Assignment expressions must be their own statements.\n\nAssignment should not be used in an expression context that expects a `Void` value. For example,\nassigning a variable within a `return` statement exiting a `Void` function is prohibited.\n\nLint: If an assignment expression is found in a position other than a standalone statement, a\n      lint finding is emitted.\n\nFormat: A `return` statement containing an assignment expression is expanded into two separate\n        statements.\n [format]",
-          "type" : "boolean"
+          "oneOf" : [
+            {
+              "default" : true,
+              "description" : "Assignment expressions must be their own statements.\n\nAssignment should not be used in an expression context that expects a `Void` value. For example,\nassigning a variable within a `return` statement exiting a `Void` function is prohibited.\n\nLint: If an assignment expression is found in a position other than a standalone statement, a\n      lint finding is emitted.\n\nFormat: A `return` statement containing an assignment expression is expanded into two separate\n        statements.\n [format]",
+              "type" : "boolean"
+            },
+            {
+              "additionalProperties" : false,
+              "description" : "",
+              "properties" : {
+                "allowedFunctions" : {
+                  "default" : [
+                    "XCTAssertNoThrow"
+                  ],
+                  "description" : "Functions where embedded assignments are allowed.",
+                  "items" : {
+                    "type" : "string"
+                  },
+                  "type" : "array"
+                },
+                "enabled" : {
+                  "default" : true,
+                  "description" : "Enable or disable the rule.",
+                  "type" : "boolean"
+                }
+              },
+              "type" : "object"
+            }
+          ]
         },
         "NoBacktickedSelf" : {
           "default" : true,
@@ -449,9 +571,35 @@
           "type" : "boolean"
         },
         "NoExtensionAccessLevel" : {
-          "default" : true,
           "description" : "Specifying an access level for an extension declaration is forbidden.\n\nThe behavior of this rule is controlled by `Configuration.extensionAccessControl.placement`:\n\n- `onDeclarations` (default): Access levels on extensions are moved to individual members.\n- `onExtension`: When all members share the same access level, it is hoisted to the extension.\n\nLint: A lint error is raised when access control placement doesn't match the configuration.\n\nFormat: Access control modifiers are moved to match the configured placement.\n [format]",
-          "type" : "boolean"
+          "oneOf" : [
+            {
+              "default" : true,
+              "description" : "Specifying an access level for an extension declaration is forbidden.\n\nThe behavior of this rule is controlled by `Configuration.extensionAccessControl.placement`:\n\n- `onDeclarations` (default): Access levels on extensions are moved to individual members.\n- `onExtension`: When all members share the same access level, it is hoisted to the extension.\n\nLint: A lint error is raised when access control placement doesn't match the configuration.\n\nFormat: Access control modifiers are moved to match the configured placement.\n [format]",
+              "type" : "boolean"
+            },
+            {
+              "additionalProperties" : false,
+              "description" : "",
+              "properties" : {
+                "enabled" : {
+                  "default" : true,
+                  "description" : "Enable or disable the rule.",
+                  "type" : "boolean"
+                },
+                "placement" : {
+                  "default" : "onDeclarations",
+                  "description" : "Where to place access control modifiers.",
+                  "enum" : [
+                    "onDeclarations",
+                    "onExtension"
+                  ],
+                  "type" : "string"
+                }
+              },
+              "type" : "object"
+            }
+          ]
         },
         "NoFallthroughOnlyCases" : {
           "default" : true,
@@ -549,9 +697,35 @@
           "type" : "boolean"
         },
         "PatternLetPlacement" : {
-          "default" : true,
           "description" : "Enforce consistent placement of `let`/`var` in case patterns.\n\nControlled by `Configuration.patternLet.placement`:\n\n- `eachBinding` (default): Each variable has its own `let`/`var`:\n  `case .foo(let x, let y)`.\n- `outerPattern`: The `let`/`var` is hoisted to the pattern level:\n  `case let .foo(x, y)`.\n\nLint: Using the non-preferred placement yields a lint error.\n\nFormat: The `let`/`var` is repositioned to match the configured placement.\n [format]",
-          "type" : "boolean"
+          "oneOf" : [
+            {
+              "default" : true,
+              "description" : "Enforce consistent placement of `let`/`var` in case patterns.\n\nControlled by `Configuration.patternLet.placement`:\n\n- `eachBinding` (default): Each variable has its own `let`/`var`:\n  `case .foo(let x, let y)`.\n- `outerPattern`: The `let`/`var` is hoisted to the pattern level:\n  `case let .foo(x, y)`.\n\nLint: Using the non-preferred placement yields a lint error.\n\nFormat: The `let`/`var` is repositioned to match the configured placement.\n [format]",
+              "type" : "boolean"
+            },
+            {
+              "additionalProperties" : false,
+              "description" : "",
+              "properties" : {
+                "enabled" : {
+                  "default" : true,
+                  "description" : "Enable or disable the rule.",
+                  "type" : "boolean"
+                },
+                "placement" : {
+                  "default" : "eachBinding",
+                  "description" : "Where to place let/var in case patterns.",
+                  "enum" : [
+                    "eachBinding",
+                    "outerPattern"
+                  ],
+                  "type" : "string"
+                }
+              },
+              "type" : "object"
+            }
+          ]
         },
         "PreferAngleBracketExtensions" : {
           "default" : true,
@@ -794,9 +968,36 @@
           "type" : "boolean"
         },
         "SortImports" : {
-          "default" : true,
           "description" : "Imports must be lexicographically ordered and (optionally) logically grouped at the top of each source file.\nThe order of the import groups is 1) regular imports, 2) declaration imports, 3) @\\_implementationOnly\nimports, and 4) @testable imports. These groups are separated by a single blank line. Blank lines in\nbetween the import declarations are removed.\n\nLogical grouping is enabled by default but can be disabled via the `sortImports.shouldGroupImports`\nconfiguration option to limit this rule to lexicographic ordering.\n\nBy default, imports within conditional compilation blocks (`#if`, `#elseif`, `#else`) are not ordered.\nThis behavior can be controlled via the `sortImports.includeConditionalImports` configuration option.\n\nLint: If an import appears anywhere other than the beginning of the file it resides in,\n      not lexicographically ordered, or (optionally) not in the appropriate import group, a lint error is\n      raised.\n\nFormat: Imports will be reordered and (optionally) grouped at the top of the file.\n [format]",
-          "type" : "boolean"
+          "oneOf" : [
+            {
+              "default" : true,
+              "description" : "Imports must be lexicographically ordered and (optionally) logically grouped at the top of each source file.\nThe order of the import groups is 1) regular imports, 2) declaration imports, 3) @\\_implementationOnly\nimports, and 4) @testable imports. These groups are separated by a single blank line. Blank lines in\nbetween the import declarations are removed.\n\nLogical grouping is enabled by default but can be disabled via the `sortImports.shouldGroupImports`\nconfiguration option to limit this rule to lexicographic ordering.\n\nBy default, imports within conditional compilation blocks (`#if`, `#elseif`, `#else`) are not ordered.\nThis behavior can be controlled via the `sortImports.includeConditionalImports` configuration option.\n\nLint: If an import appears anywhere other than the beginning of the file it resides in,\n      not lexicographically ordered, or (optionally) not in the appropriate import group, a lint error is\n      raised.\n\nFormat: Imports will be reordered and (optionally) grouped at the top of the file.\n [format]",
+              "type" : "boolean"
+            },
+            {
+              "additionalProperties" : false,
+              "description" : "",
+              "properties" : {
+                "enabled" : {
+                  "default" : true,
+                  "description" : "Enable or disable the rule.",
+                  "type" : "boolean"
+                },
+                "includeConditionalImports" : {
+                  "default" : false,
+                  "description" : "Sort imports within #if blocks.",
+                  "type" : "boolean"
+                },
+                "shouldGroupImports" : {
+                  "default" : true,
+                  "description" : "Separate imports into groups by type.",
+                  "type" : "boolean"
+                }
+              },
+              "type" : "object"
+            }
+          ]
         },
         "SortSwitchCases" : {
           "default" : false,
@@ -829,9 +1030,34 @@
           "type" : "boolean"
         },
         "URLMacro" : {
-          "default" : false,
           "description" : "Replace force-unwrapped `URL(string:)` initializers with a configured URL macro.\n\nWhen configured with a macro name like `#URL` and module like `URLFoundation`, this rule\nconverts `URL(string: \"https://example.com\")!` to `#URL(\"https://example.com\")` and adds\nthe module import if not already present.\n\nOnly simple string literals are converted — string interpolations, concatenations, and\nnon-literal expressions are left alone. The `URL(string:relativeTo:)` and\n`URL(fileURLWithPath:)` initializers are not affected.\n\nThis rule is opt-in and requires configuration via `urlMacro.macroName` and\n`urlMacro.moduleName` in the configuration file.\n\nLint: A warning is raised for each `URL(string: \"...\")!` that can be converted.\n\nFormat: The force-unwrapped URL initializer is replaced with the configured macro.\n [format] [opt-in]",
-          "type" : "boolean"
+          "oneOf" : [
+            {
+              "default" : false,
+              "description" : "Replace force-unwrapped `URL(string:)` initializers with a configured URL macro.\n\nWhen configured with a macro name like `#URL` and module like `URLFoundation`, this rule\nconverts `URL(string: \"https://example.com\")!` to `#URL(\"https://example.com\")` and adds\nthe module import if not already present.\n\nOnly simple string literals are converted — string interpolations, concatenations, and\nnon-literal expressions are left alone. The `URL(string:relativeTo:)` and\n`URL(fileURLWithPath:)` initializers are not affected.\n\nThis rule is opt-in and requires configuration via `urlMacro.macroName` and\n`urlMacro.moduleName` in the configuration file.\n\nLint: A warning is raised for each `URL(string: \"...\")!` that can be converted.\n\nFormat: The force-unwrapped URL initializer is replaced with the configured macro.\n [format] [opt-in]",
+              "type" : "boolean"
+            },
+            {
+              "additionalProperties" : false,
+              "description" : "",
+              "properties" : {
+                "enabled" : {
+                  "default" : false,
+                  "description" : "Enable or disable the rule.",
+                  "type" : "boolean"
+                },
+                "macroName" : {
+                  "description" : "Macro name, e.g. \"#URL\". Omit to disable.",
+                  "type" : "string"
+                },
+                "moduleName" : {
+                  "description" : "Module to import for the macro.",
+                  "type" : "string"
+                }
+              },
+              "type" : "object"
+            }
+          ]
         },
         "UnusedArguments" : {
           "default" : true,
@@ -883,7 +1109,7 @@
     },
     "sortImports" : {
       "additionalProperties" : false,
-      "description" : "Import sorting options.",
+      "description" : "(Deprecated: use rules.SortImports) Import sorting options.",
       "properties" : {
         "includeConditionalImports" : {
           "default" : false,
@@ -917,7 +1143,7 @@
     },
     "urlMacro" : {
       "additionalProperties" : false,
-      "description" : "URL(string:)! to macro replacement.",
+      "description" : "(Deprecated: use rules.URLMacro) URL(string:)! to macro replacement.",
       "properties" : {
         "macroName" : {
           "description" : "Macro name, e.g. \"#URL\". Omit to disable.",

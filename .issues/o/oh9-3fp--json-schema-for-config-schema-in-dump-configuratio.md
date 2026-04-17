@@ -6,6 +6,10 @@ type: feature
 priority: normal
 created_at: 2026-04-15T00:51:57Z
 updated_at: 2026-04-15T01:07:23Z
+sync:
+    github:
+        issue_number: "321"
+        synced_at: "2026-04-17T22:17:15Z"
 ---
 
 - [x] Explore config structure, all rules, and rule options

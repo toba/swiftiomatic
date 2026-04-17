@@ -4,6 +4,7 @@
 
 ### ✨ Features
 
+- Unify rule toggles and rule options into single `rules` dict ([#323](https://github.com/toba/swiftiomatic/issues/323))
 - Modern Swift idiom rules ([#290](https://github.com/toba/swiftiomatic/issues/290))
 - Declaration, modifier, and cleanup rules ([#287](https://github.com/toba/swiftiomatic/issues/287))
 - Blank lines and structural spacing rules ([#291](https://github.com/toba/swiftiomatic/issues/291))
