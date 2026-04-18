@@ -14,6 +14,7 @@ import SwiftSyntax
 /// Format: The `async` specifier is removed.
 @_spi(Rules)
 public final class RedundantAsync: SyntaxFormatRule {
+  public override class var group: ConfigGroup? { .removeRedundant }
 
   public override class var isOptIn: Bool { true }
 

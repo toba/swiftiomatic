@@ -14,6 +14,7 @@ import SwiftSyntax
 /// Format: The redundant `break` statement is removed.
 @_spi(Rules)
 public final class RedundantBreak: SyntaxFormatRule {
+  public override class var group: ConfigGroup? { .removeRedundant }
 
   public override func visit(_ node: SwitchCaseSyntax) -> SwitchCaseSyntax {
     let visited = super.visit(node)

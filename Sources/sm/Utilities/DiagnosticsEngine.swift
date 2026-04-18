@@ -144,7 +144,7 @@ final class DiagnosticsEngine {
   private func diagnosticMessage(for finding: Finding) -> Diagnostic {
     let severity: Diagnostic.Severity = switch finding.severity {
     case .error: .error
-    case .warning, .off: .warning
+    case .fix, .warning, .off: .warning
     }
     return Diagnostic(
       severity: severity,

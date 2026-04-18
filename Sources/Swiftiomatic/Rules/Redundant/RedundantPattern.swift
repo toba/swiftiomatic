@@ -12,6 +12,7 @@ import SwiftSyntax
 /// Format: The redundant pattern is removed.
 @_spi(Rules)
 public final class RedundantPattern: SyntaxFormatRule {
+  public override class var group: ConfigGroup? { .removeRedundant }
 
   // MARK: - Switch case items: case let .foo(_, _) → case .foo
 

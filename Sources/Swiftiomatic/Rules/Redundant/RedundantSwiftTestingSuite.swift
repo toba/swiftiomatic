@@ -12,6 +12,7 @@ import SwiftSyntax
 /// Format: The redundant `@Suite` attribute is removed.
 @_spi(Rules)
 public final class RedundantSwiftTestingSuite: SyntaxFormatRule {
+  public override class var group: ConfigGroup? { .removeRedundant }
 
   public override class var isOptIn: Bool { true }
 

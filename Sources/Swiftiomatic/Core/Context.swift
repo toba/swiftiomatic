@@ -114,9 +114,15 @@ public final class Context {
     }
   }
 
-  /// Returns the configured severity for the given rule type.
-  func severity<R: Rule>(of rule: R.Type) -> RuleSeverity {
+  /// Returns the configured handling for the given rule type.
+  func severity<R: Rule>(of rule: R.Type) -> RuleHandling {
     let ruleName = ruleNameCache[ObjectIdentifier(rule)] ?? R.ruleName
     return configuration.rules[ruleName] ?? .warning
+  }
+
+  /// Whether the given format rule should auto-fix (rewrite the AST).
+  func shouldFix<R: Rule>(_ rule: R.Type) -> Bool {
+    let ruleName = ruleNameCache[ObjectIdentifier(rule)] ?? R.ruleName
+    return (configuration.rules[ruleName] ?? .off).shouldFix
   }
 }

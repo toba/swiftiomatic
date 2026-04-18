@@ -25,6 +25,7 @@ import SwiftSyntax
 /// Format: The `.init` member access is removed, leaving the type called directly.
 @_spi(Rules)
 public final class RedundantInit: SyntaxFormatRule {
+  public override class var group: ConfigGroup? { .removeRedundant }
 
   public override func visit(_ node: FunctionCallExprSyntax) -> ExprSyntax {
     guard let memberAccess = node.calledExpression.as(MemberAccessExprSyntax.self),

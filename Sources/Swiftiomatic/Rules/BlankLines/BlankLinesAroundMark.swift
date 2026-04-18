@@ -12,6 +12,7 @@ import SwiftSyntax
 /// Format: Blank lines are inserted around MARK comments.
 @_spi(Rules)
 public final class BlankLinesAroundMark: SyntaxFormatRule {
+  public override class var group: ConfigGroup? { .updateBlankLines }
 
   public override class var isOptIn: Bool { true }
 

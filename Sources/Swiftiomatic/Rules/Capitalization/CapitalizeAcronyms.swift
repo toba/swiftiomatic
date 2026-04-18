@@ -13,6 +13,7 @@ import SwiftSyntax
 /// Format: The titlecased acronym is replaced with the uppercased form.
 @_spi(Rules)
 public final class CapitalizeAcronyms: SyntaxFormatRule {
+    public override class var group: ConfigGroup? { .capitalization }
   public override class var isOptIn: Bool { true }
 
   public override func visit(_ token: TokenSyntax) -> TokenSyntax {

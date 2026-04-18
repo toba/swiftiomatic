@@ -18,8 +18,12 @@ let package = Package(
   ],
   targets: [
     .target(
+      name: "SwiftiomaticCore"
+    ),
+    .target(
       name: "Swiftiomatic",
       dependencies: [
+        "SwiftiomaticCore",
         .product(name: "Markdown", package: "swift-markdown"),
         .product(name: "SwiftOperators", package: "swift-syntax"),
         .product(name: "SwiftParser", package: "swift-syntax"),
@@ -41,8 +45,13 @@ let package = Package(
       path: "Tests/SwiftiomaticTestSupport"
     ),
     .target(
-      name: "_GenerateSwiftiomatic",
-      dependencies: ["Swiftiomatic"]
+      name: "Generators",
+      dependencies: [
+        "SwiftiomaticCore",
+        .product(name: "SwiftParser", package: "swift-syntax"),
+        .product(name: "SwiftSyntax", package: "swift-syntax"),
+      ],
+      path: "Sources/Generators"
     ),
     .plugin(
       name: "Format Source Code",
@@ -68,7 +77,7 @@ let package = Package(
     ),
     .executableTarget(
       name: "generate-swiftiomatic",
-      dependencies: ["_GenerateSwiftiomatic"]
+      dependencies: ["Generators"]
     ),
     .executableTarget(
       name: "sm",
@@ -94,7 +103,7 @@ let package = Package(
       dependencies: [
         "Swiftiomatic",
         "SwiftiomaticTestSupport",
-        "_GenerateSwiftiomatic",
+        "Generators",
         .product(name: "Markdown", package: "swift-markdown"),
         .product(name: "SwiftOperators", package: "swift-syntax"),
         .product(name: "SwiftParser", package: "swift-syntax"),

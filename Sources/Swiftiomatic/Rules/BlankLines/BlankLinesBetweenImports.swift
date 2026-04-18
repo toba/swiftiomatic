@@ -10,6 +10,7 @@ import SwiftSyntax
 /// Format: The blank lines are removed.
 @_spi(Rules)
 public final class BlankLinesBetweenImports: SyntaxFormatRule {
+  public override class var group: ConfigGroup? { .updateBlankLines }
 
   public override class var isOptIn: Bool { true }
 

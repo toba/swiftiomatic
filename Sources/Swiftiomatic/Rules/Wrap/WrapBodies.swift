@@ -14,6 +14,7 @@ import SwiftSyntax
 /// Format: The body is wrapped onto a new line with indentation.
 @_spi(Rules)
 public final class WrapBodies: SyntaxFormatRule {
+  public override class var group: ConfigGroup? { .wrap }
 
   public override class var isOptIn: Bool { true }
 

@@ -35,6 +35,7 @@ import SwiftSyntax
 /// Format: Removes or replaces the redundant modifier.
 @_spi(Rules)
 public final class RedundantAccessControl: SyntaxFormatRule {
+  public override class var group: ConfigGroup? { .removeRedundant }
 
   public override class var isOptIn: Bool { true }
 

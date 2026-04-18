@@ -31,6 +31,7 @@ import SwiftSyntax
 /// Format: The redundant `let`/`var` keyword is removed.
 @_spi(Rules)
 public final class RedundantLet: SyntaxFormatRule {
+  public override class var group: ConfigGroup? { .removeRedundant }
 
   // MARK: - Statement-level: let _ = expr → _ = expr
 

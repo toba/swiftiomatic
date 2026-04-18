@@ -24,6 +24,7 @@ import SwiftSyntax
 /// Format: The redundant initializer is removed.
 @_spi(Rules)
 public final class RedundantOptionalBinding: SyntaxFormatRule {
+  public override class var group: ConfigGroup? { .removeRedundant }
 
   public override func visit(_ node: OptionalBindingConditionSyntax) -> OptionalBindingConditionSyntax {
     guard let initializer = node.initializer,

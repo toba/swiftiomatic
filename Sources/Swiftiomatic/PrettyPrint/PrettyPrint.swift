@@ -499,7 +499,7 @@ public class PrettyPrinter {
       switch kind {
       case .disableBreaking(let allowDiscretionary):
         activeBreakSuppressionCount += 1
-        // Override the supression of discretionary breaks if we're at the top level or
+        // Override the suppression of discretionary breaks if we're at the top level or
         // discretionary breaks are currently allowed (false should override true, but not the other
         // way around).
         if activeBreakSuppressionCount == 1 || allowSuppressedDiscretionaryBreaks {
@@ -571,7 +571,7 @@ public class PrettyPrinter {
   }
 
   /// Indicates whether the current line can fit a string of the given length. If no length
-  /// is given, it indicates whether the current line can accomodate *any* text.
+  /// is given, it indicates whether the current line can accommodate *any* text.
   private func canFit(_ length: Int = 1) -> Bool {
     let spaceRemaining = configuration.lineLength - outputBuffer.column
     return outputBuffer.isAtStartOfLine || length <= spaceRemaining

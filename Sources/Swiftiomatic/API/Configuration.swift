@@ -19,16 +19,47 @@ import Foundation
 /// use default values when loading older configurations that don't contain the new settings. This
 /// value only needs to be updated if the configuration changes in a way that would be incompatible
 /// with the previous format.
-internal let highestSupportedConfigurationVersion = 3
+internal let highestSupportedConfigurationVersion = 4
+
+/// A type that describes its configurable properties for schema generation.
+///
+/// Structs implement this as a static property; enums (like ``ConfigGroup``)
+/// return different properties per case via the instance property.
+public protocol ConfigRepresentable: Sendable {
+  /// The properties this type contributes to the JSON configuration schema.
+  var configProperties: [ConfigProperty] { get }
+  /// Static access for types where properties don't vary by instance.
+  static var configProperties: [ConfigProperty] { get }
+}
+
+extension ConfigRepresentable {
+  /// Default: forward instance access to the static property.
+  public var configProperties: [ConfigProperty] { Self.configProperties }
+  /// Default: empty (types that only use instance override this).
+  public static var configProperties: [ConfigProperty] { [] }
+}
+
+/// Describes a single configuration property for schema generation.
+public struct ConfigProperty: Sendable {
+  public let key: String
+  public let schema: Schema
+
+  public enum Schema: Sendable {
+    case bool(description: String, defaultValue: Bool)
+    case integer(description: String, defaultValue: Int, minimum: Int)
+    case string(description: String)
+    case stringEnum(description: String, values: [String], defaultValue: String)
+    case stringArray(description: String, defaultValue: [String])
+  }
+
+  public init(_ key: String, _ schema: Schema) {
+    self.key = key
+    self.schema = schema
+  }
+}
 
 /// Holds the complete set of configured values and defaults.
 public struct Configuration: Codable, Equatable, Sendable {
-
-  private enum CodingKeys: CodingKey {
-    case version
-    case format
-    case lint
-  }
 
   /// A coding key backed by a runtime string, used to iterate heterogeneous JSON dictionaries.
   private struct DynamicCodingKey: CodingKey {
@@ -39,206 +70,131 @@ public struct Configuration: Codable, Equatable, Sendable {
     init?(intValue: Int) { nil }
   }
 
-  /// Codable container for the formatting settings that live inside the `format` JSON section.
-  /// Rule keys (anything not a CodingKey case) are ignored by the decoder and handled separately.
-  private struct FormatSettings: Codable, Equatable {
-    var lineLength: Int
-    var spacesBeforeEndOfLineComments: Int
-    var tabWidth: Int
-    var indentation: Indent
-    var respectsExistingLineBreaks: Bool
-    var lineBreakBeforeControlFlowKeywords: Bool
-    var lineBreakBeforeEachArgument: Bool
-    var lineBreakBeforeEachGenericRequirement: Bool
-    var lineBreakBetweenDeclarationAttributes: Bool
-    var prioritizeKeepingFunctionOutputTogether: Bool
-    var indentConditionalCompilationBlocks: Bool
-    var lineBreakAroundMultilineExpressionChainComponents: Bool
-    var indentSwitchCaseLabels: Bool
-    var spacesAroundRangeFormationOperators: Bool
-    var multilineTrailingCommaBehavior: MultilineTrailingCommaBehavior
-    var multiElementCollectionTrailingCommas: Bool
-    var reflowMultilineStringLiterals: MultilineStringReflowBehavior
-    var indentBlankLines: Bool
+  // MARK: - FormatSetting table (replaces FormatSettings struct)
 
-    init(from config: Configuration) {
-      self.lineLength = config.lineLength
-      self.spacesBeforeEndOfLineComments = config.spacesBeforeEndOfLineComments
-      self.tabWidth = config.tabWidth
-      self.indentation = config.indentation
-      self.respectsExistingLineBreaks = config.respectsExistingLineBreaks
-      self.lineBreakBeforeControlFlowKeywords = config.lineBreakBeforeControlFlowKeywords
-      self.lineBreakBeforeEachArgument = config.lineBreakBeforeEachArgument
-      self.lineBreakBeforeEachGenericRequirement = config.lineBreakBeforeEachGenericRequirement
-      self.lineBreakBetweenDeclarationAttributes = config.lineBreakBetweenDeclarationAttributes
-      self.prioritizeKeepingFunctionOutputTogether = config.prioritizeKeepingFunctionOutputTogether
-      self.indentConditionalCompilationBlocks = config.indentConditionalCompilationBlocks
-      self.lineBreakAroundMultilineExpressionChainComponents = config.lineBreakAroundMultilineExpressionChainComponents
-      self.indentSwitchCaseLabels = config.indentSwitchCaseLabels
-      self.spacesAroundRangeFormationOperators = config.spacesAroundRangeFormationOperators
-      self.multilineTrailingCommaBehavior = config.multilineTrailingCommaBehavior
-      self.multiElementCollectionTrailingCommas = config.multiElementCollectionTrailingCommas
-      self.reflowMultilineStringLiterals = config.reflowMultilineStringLiterals
-      self.indentBlankLines = config.indentBlankLines
+  /// A single pretty-print setting, with closure-based decode/encode keyed by a JSON key name.
+  /// Settings may optionally belong to a ``ConfigGroup``, in which case they decode/encode
+  /// inside that group's JSON object rather than at the root.
+  private struct FormatSetting: Sendable {
+    let key: String
+    let group: ConfigGroup?
+    let decode: @Sendable (KeyedDecodingContainer<DynamicCodingKey>, inout Configuration) throws -> Void
+    let encode: @Sendable (Configuration, inout KeyedEncodingContainer<DynamicCodingKey>) throws -> Void
+
+    static func setting<V: Codable & Sendable>(
+      _ key: String,
+      _ keyPath: WritableKeyPath<Configuration, V> & Sendable,
+      group: ConfigGroup? = nil
+    ) -> FormatSetting {
+      FormatSetting(
+        key: key,
+        group: group,
+        decode: { container, config in
+          if let value = try container.decodeIfPresent(V.self, forKey: DynamicCodingKey(key)) {
+            config[keyPath: keyPath] = value
+          }
+        },
+        encode: { config, container in
+          try container.encode(config[keyPath: keyPath], forKey: DynamicCodingKey(key))
+        }
+      )
     }
-
-    init(from decoder: Decoder) throws {
-      let defaults = Configuration()
-      let c = try decoder.container(keyedBy: CodingKeys.self)
-      self.lineLength = try c.decodeIfPresent(Int.self, forKey: .lineLength) ?? defaults.lineLength
-      self.spacesBeforeEndOfLineComments = try c.decodeIfPresent(Int.self, forKey: .spacesBeforeEndOfLineComments) ?? defaults.spacesBeforeEndOfLineComments
-      self.tabWidth = try c.decodeIfPresent(Int.self, forKey: .tabWidth) ?? defaults.tabWidth
-      self.indentation = try c.decodeIfPresent(Indent.self, forKey: .indentation) ?? defaults.indentation
-      self.respectsExistingLineBreaks = try c.decodeIfPresent(Bool.self, forKey: .respectsExistingLineBreaks) ?? defaults.respectsExistingLineBreaks
-      self.lineBreakBeforeControlFlowKeywords = try c.decodeIfPresent(Bool.self, forKey: .lineBreakBeforeControlFlowKeywords) ?? defaults.lineBreakBeforeControlFlowKeywords
-      self.lineBreakBeforeEachArgument = try c.decodeIfPresent(Bool.self, forKey: .lineBreakBeforeEachArgument) ?? defaults.lineBreakBeforeEachArgument
-      self.lineBreakBeforeEachGenericRequirement = try c.decodeIfPresent(Bool.self, forKey: .lineBreakBeforeEachGenericRequirement) ?? defaults.lineBreakBeforeEachGenericRequirement
-      self.lineBreakBetweenDeclarationAttributes = try c.decodeIfPresent(Bool.self, forKey: .lineBreakBetweenDeclarationAttributes) ?? defaults.lineBreakBetweenDeclarationAttributes
-      self.prioritizeKeepingFunctionOutputTogether = try c.decodeIfPresent(Bool.self, forKey: .prioritizeKeepingFunctionOutputTogether) ?? defaults.prioritizeKeepingFunctionOutputTogether
-      self.indentConditionalCompilationBlocks = try c.decodeIfPresent(Bool.self, forKey: .indentConditionalCompilationBlocks) ?? defaults.indentConditionalCompilationBlocks
-      self.lineBreakAroundMultilineExpressionChainComponents = try c.decodeIfPresent(Bool.self, forKey: .lineBreakAroundMultilineExpressionChainComponents) ?? defaults.lineBreakAroundMultilineExpressionChainComponents
-      self.indentSwitchCaseLabels = try c.decodeIfPresent(Bool.self, forKey: .indentSwitchCaseLabels) ?? defaults.indentSwitchCaseLabels
-      self.spacesAroundRangeFormationOperators = try c.decodeIfPresent(Bool.self, forKey: .spacesAroundRangeFormationOperators) ?? defaults.spacesAroundRangeFormationOperators
-      self.multilineTrailingCommaBehavior = try c.decodeIfPresent(MultilineTrailingCommaBehavior.self, forKey: .multilineTrailingCommaBehavior) ?? defaults.multilineTrailingCommaBehavior
-      self.multiElementCollectionTrailingCommas = try c.decodeIfPresent(Bool.self, forKey: .multiElementCollectionTrailingCommas) ?? defaults.multiElementCollectionTrailingCommas
-      self.reflowMultilineStringLiterals = try c.decodeIfPresent(MultilineStringReflowBehavior.self, forKey: .reflowMultilineStringLiterals) ?? defaults.reflowMultilineStringLiterals
-      self.indentBlankLines = try c.decodeIfPresent(Bool.self, forKey: .indentBlankLines) ?? defaults.indentBlankLines
-    }
-
-    func apply(to config: inout Configuration) {
-      config.lineLength = lineLength
-      config.spacesBeforeEndOfLineComments = spacesBeforeEndOfLineComments
-      config.tabWidth = tabWidth
-      config.indentation = indentation
-      config.respectsExistingLineBreaks = respectsExistingLineBreaks
-      config.lineBreakBeforeControlFlowKeywords = lineBreakBeforeControlFlowKeywords
-      config.lineBreakBeforeEachArgument = lineBreakBeforeEachArgument
-      config.lineBreakBeforeEachGenericRequirement = lineBreakBeforeEachGenericRequirement
-      config.lineBreakBetweenDeclarationAttributes = lineBreakBetweenDeclarationAttributes
-      config.prioritizeKeepingFunctionOutputTogether = prioritizeKeepingFunctionOutputTogether
-      config.indentConditionalCompilationBlocks = indentConditionalCompilationBlocks
-      config.lineBreakAroundMultilineExpressionChainComponents = lineBreakAroundMultilineExpressionChainComponents
-      config.indentSwitchCaseLabels = indentSwitchCaseLabels
-      config.spacesAroundRangeFormationOperators = spacesAroundRangeFormationOperators
-      config.multilineTrailingCommaBehavior = multilineTrailingCommaBehavior
-      config.multiElementCollectionTrailingCommas = multiElementCollectionTrailingCommas
-      config.reflowMultilineStringLiterals = reflowMultilineStringLiterals
-      config.indentBlankLines = indentBlankLines
-    }
-
-    func encode(into container: inout KeyedEncodingContainer<DynamicCodingKey>) throws {
-      func key(_ name: String) -> DynamicCodingKey { DynamicCodingKey(name) }
-      try container.encode(lineLength, forKey: key("lineLength"))
-      try container.encode(spacesBeforeEndOfLineComments, forKey: key("spacesBeforeEndOfLineComments"))
-      try container.encode(tabWidth, forKey: key("tabWidth"))
-      try container.encode(indentation, forKey: key("indentation"))
-      try container.encode(respectsExistingLineBreaks, forKey: key("respectsExistingLineBreaks"))
-      try container.encode(lineBreakBeforeControlFlowKeywords, forKey: key("lineBreakBeforeControlFlowKeywords"))
-      try container.encode(lineBreakBeforeEachArgument, forKey: key("lineBreakBeforeEachArgument"))
-      try container.encode(lineBreakBeforeEachGenericRequirement, forKey: key("lineBreakBeforeEachGenericRequirement"))
-      try container.encode(lineBreakBetweenDeclarationAttributes, forKey: key("lineBreakBetweenDeclarationAttributes"))
-      try container.encode(prioritizeKeepingFunctionOutputTogether, forKey: key("prioritizeKeepingFunctionOutputTogether"))
-      try container.encode(indentConditionalCompilationBlocks, forKey: key("indentConditionalCompilationBlocks"))
-      try container.encode(lineBreakAroundMultilineExpressionChainComponents, forKey: key("lineBreakAroundMultilineExpressionChainComponents"))
-      try container.encode(indentSwitchCaseLabels, forKey: key("indentSwitchCaseLabels"))
-      try container.encode(spacesAroundRangeFormationOperators, forKey: key("spacesAroundRangeFormationOperators"))
-      try container.encode(multilineTrailingCommaBehavior, forKey: key("multilineTrailingCommaBehavior"))
-      try container.encode(multiElementCollectionTrailingCommas, forKey: key("multiElementCollectionTrailingCommas"))
-      try container.encode(reflowMultilineStringLiterals, forKey: key("reflowMultilineStringLiterals"))
-      try container.encode(indentBlankLines, forKey: key("indentBlankLines"))
-    }
-
-    /// The CodingKey names that correspond to settings or umbrella groups (not individual rules).
-    static let keyNames: Set<String> = [
-      "lineLength", "spacesBeforeEndOfLineComments", "tabWidth",
-      "indentation", "respectsExistingLineBreaks", "lineBreakBeforeControlFlowKeywords",
-      "lineBreakBeforeEachArgument", "lineBreakBeforeEachGenericRequirement",
-      "lineBreakBetweenDeclarationAttributes", "prioritizeKeepingFunctionOutputTogether",
-      "indentConditionalCompilationBlocks", "lineBreakAroundMultilineExpressionChainComponents",
-      "indentSwitchCaseLabels", "spacesAroundRangeFormationOperators",
-      "multilineTrailingCommaBehavior", "multiElementCollectionTrailingCommas",
-      "reflowMultilineStringLiterals", "indentBlankLines",
-      // Umbrella config groups (handled separately from individual rules).
-      "UpdateBlankLines", "RemoveRedundant",
-    ]
   }
 
-  /// Maps rule names to the config structs they should decode into.
-  private static let ruleConfigDecoders: [String: @Sendable (Decoder, inout Configuration) throws -> Void] = [
-    "FileScopedDeclarationPrivacy": { d, c in c.fileScopedDeclarationPrivacy = try .init(from: d) },
-    "NoAssignmentInExpressions": { d, c in c.noAssignmentInExpressions = try .init(from: d) },
-    "SortImports": { d, c in c.sortImports = try .init(from: d) },
-    "CapitalizeAcronyms": { d, c in c.acronyms = try .init(from: d) },
-    "NoExtensionAccessLevel": { d, c in c.extensionAccessControl = try .init(from: d) },
-    "PatternLetPlacement": { d, c in c.patternLet = try .init(from: d) },
-    "URLMacro": { d, c in c.urlMacro = try .init(from: d) },
-    "FileHeader": { d, c in c.fileHeader = try .init(from: d) },
+  /// All pretty-print settings. Root-level settings have `group: nil`; group-owned settings
+  /// have a non-nil group and encode/decode inside that group's JSON object.
+  private static let allSettings: [FormatSetting] = [
+    // Root-level settings
+    .setting("lineLength", \.lineLength),
+    .setting("tabWidth", \.tabWidth),
+    .setting("indentation", \.indentation),
+    .setting("respectsExistingLineBreaks", \.respectsExistingLineBreaks),
+    .setting("spacesBeforeEndOfLineComments", \.spacesBeforeEndOfLineComments),
+    .setting("indentConditionalCompilationBlocks", \.indentConditionalCompilationBlocks),
+    .setting("indentSwitchCaseLabels", \.indentSwitchCaseLabels),
+    .setting("indentBlankLines", \.indentBlankLines),
+    .setting("spacesAroundRangeFormationOperators", \.spacesAroundRangeFormationOperators),
+    .setting("prioritizeKeepingFunctionOutputTogether", \.prioritizeKeepingFunctionOutputTogether),
+    .setting("multilineTrailingCommaBehavior", \.multilineTrailingCommaBehavior),
+    .setting("multiElementCollectionTrailingCommas", \.multiElementCollectionTrailingCommas),
+    .setting("reflowMultilineStringLiterals", \.reflowMultilineStringLiterals),
+
+    // Group-owned settings (encode inside their group's JSON object)
+    .setting("maximumBlankLines", \.maximumBlankLines, group: .updateBlankLines),
+    .setting("beforeControlFlowKeywords", \.lineBreakBeforeControlFlowKeywords, group: .updateLineBreak),
+    .setting("beforeEachArgument", \.lineBreakBeforeEachArgument, group: .updateLineBreak),
+    .setting("beforeEachGenericRequirement", \.lineBreakBeforeEachGenericRequirement, group: .updateLineBreak),
+    .setting("betweenDeclarationAttributes", \.lineBreakBetweenDeclarationAttributes, group: .updateLineBreak),
+    .setting("aroundMultilineExpressionChainComponents", \.lineBreakAroundMultilineExpressionChainComponents, group: .updateLineBreak),
   ]
 
-  // MARK: - Umbrella config groups
-
-  /// Maps umbrella config names to their sub-option→rule-name mappings.
-  /// Sub-options that are `true` inherit the umbrella severity; `false` means off.
-  private static let umbrellaGroups: [String: [(option: String, rule: String)]] = [
-    "UpdateBlankLines": [
-      ("afterGuardStatements", "BlankLinesAfterGuardStatements"),
-      ("afterImports", "BlankLinesAfterImports"),
-      ("afterSwitchCase", "BlankLinesAfterSwitchCase"),
-      ("aroundMark", "BlankLinesAroundMark"),
-      ("betweenChainedFunctions", "BlankLinesBetweenChainedFunctions"),
-      ("betweenImports", "BlankLinesBetweenImports"),
-      ("betweenScopes", "BlankLinesBetweenScopes"),
-    ],
-    "RemoveRedundant": [
-      ("accessControl", "RedundantAccessControl"),
-      ("async", "RedundantAsync"),
-      ("backticks", "RedundantBackticks"),
-      ("break", "RedundantBreak"),
-      ("closure", "RedundantClosure"),
-      ("equatable", "RedundantEquatable"),
-      ("init", "RedundantInit"),
-      ("let", "RedundantLet"),
-      ("letError", "RedundantLetError"),
-      ("nilInit", "RedundantNilInit"),
-      ("objc", "RedundantObjc"),
-      ("optionalBinding", "RedundantOptionalBinding"),
-      ("pattern", "RedundantPattern"),
-      ("property", "RedundantProperty"),
-      ("rawValues", "RedundantRawValues"),
-      ("self", "RedundantSelf"),
-      ("sendable", "RedundantSendable"),
-      ("staticSelf", "RedundantStaticSelf"),
-      ("swiftTestingSuite", "RedundantSwiftTestingSuite"),
-      ("throws", "RedundantThrows"),
-      ("type", "RedundantType"),
-      ("typedThrows", "RedundantTypedThrows"),
-      ("viewBuilder", "RedundantViewBuilder"),
-    ],
-  ]
-
-  /// Rule names managed by umbrella groups (excluded from normal encode loop).
-  private static let umbrellaManagedRules: Set<String> = {
-    var names = Set<String>()
-    for (_, mappings) in umbrellaGroups {
-      for (_, rule) in mappings { names.insert(rule) }
-    }
+  /// Keys that are known settings (not rules or groups), used to skip them during rule decoding.
+  private static let settingKeyNames: Set<String> = {
+    var names = Set(allSettings.filter { $0.group == nil }.map(\.key))
+    names.insert("version")
     return names
+  }()
+
+  /// Keys that are config group names.
+  private static let groupKeyNames: Set<String> = Set(ConfigGroup.allCases.map(\.rawValue))
+
+  // MARK: - Rule config registration
+
+  /// Pairs a ``ConfigRepresentable`` rule config type with its keyPath on Configuration.
+  private struct RuleConfigEntry: Sendable {
+    let ruleName: String
+    let configProperties: [ConfigProperty]
+    let decode: @Sendable (Decoder, inout Configuration) throws -> Void
+    let encode: @Sendable (Configuration) -> any Encodable
+
+    static func entry<C: ConfigRepresentable & Codable>(
+      _ ruleName: String,
+      _: C.Type,
+      _ keyPath: WritableKeyPath<Configuration, C> & Sendable
+    ) -> RuleConfigEntry {
+      RuleConfigEntry(
+        ruleName: ruleName,
+        configProperties: C.configProperties,
+        decode: { decoder, config in config[keyPath: keyPath] = try C(from: decoder) },
+        encode: { config in config[keyPath: keyPath] }
+      )
+    }
+  }
+
+  private static let ruleConfigEntries: [RuleConfigEntry] = [
+    .entry(FileScopedDeclarationPrivacyConfiguration.ruleName, FileScopedDeclarationPrivacyConfiguration.self, \.fileScopedDeclarationPrivacy),
+    .entry(NoAssignmentInExpressionsConfiguration.ruleName, NoAssignmentInExpressionsConfiguration.self, \.noAssignmentInExpressions),
+    .entry(SortImportsConfiguration.ruleName, SortImportsConfiguration.self, \.sortImports),
+    .entry(AcronymsConfiguration.ruleName, AcronymsConfiguration.self, \.acronyms),
+    .entry(ExtensionAccessControlConfiguration.ruleName, ExtensionAccessControlConfiguration.self, \.extensionAccessControl),
+    .entry(PatternLetConfiguration.ruleName, PatternLetConfiguration.self, \.patternLet),
+    .entry(URLMacroConfiguration.ruleName, URLMacroConfiguration.self, \.urlMacro),
+    .entry(FileHeaderConfiguration.ruleName, FileHeaderConfiguration.self, \.fileHeader),
+  ]
+
+  private static let ruleConfigDecoders: [String: @Sendable (Decoder, inout Configuration) throws -> Void] = {
+    Dictionary(uniqueKeysWithValues: ruleConfigEntries.map { ($0.ruleName, $0.decode) })
+  }()
+
+  /// Rule config schemas keyed by rule name, for the schema generator.
+  @_spi(Internal) public static let ruleConfigSchemas: [String: [ConfigProperty]] = {
+    Dictionary(uniqueKeysWithValues: ruleConfigEntries.map { ($0.ruleName, $0.configProperties) })
   }()
 
   /// A dictionary containing the default enabled/disabled states of rules, keyed by the rules'
   /// names.
   ///
   /// This value is generated by `generate-swiftiomatic` based on the `isOptIn` value of each rule.
-  public static let defaultRuleEnablements: [String: RuleSeverity] = RuleRegistry.rules
+  public static let defaultRuleEnablements: [String: RuleHandling] = RuleRegistry.rules
 
   /// The version of this configuration.
   private var version: Int = highestSupportedConfigurationVersion
 
-  /// MARK: Common configuration
+  // MARK: - Common configuration
 
   /// The dictionary containing the rule names that we wish to run on. A rule is not used if it is
-  /// marked as `false`, or if it is missing from the dictionary.
-  public var rules: [String: RuleSeverity]
+  /// marked as `.off`, or if it is missing from the dictionary.
+  public var rules: [String: RuleHandling]
 
   /// The maximum number of consecutive blank lines that may appear in a file.
   public var maximumBlankLines: Int
@@ -268,7 +224,7 @@ public struct Configuration: Codable, Equatable, Sendable {
   /// "opinionated" and collapse the statement onto a single line.
   public var respectsExistingLineBreaks: Bool
 
-  /// MARK: Rule-specific configuration
+  // MARK: - Rule-specific configuration
 
   /// Determines the line-breaking behavior for control flow keywords that follow a closing brace,
   /// like `else` and `catch`.
@@ -322,24 +278,6 @@ public struct Configuration: Codable, Equatable, Sendable {
   public var fileScopedDeclarationPrivacy: FileScopedDeclarationPrivacyConfiguration
 
   /// Determines if `case` statements should be indented compared to the containing `switch` block.
-  ///
-  /// When `false`, the correct form is:
-  /// ```swift
-  /// switch someValue {
-  /// case someCase:
-  ///   someStatement
-  /// ...
-  /// }
-  /// ```
-  ///
-  /// When `true`, the correct form is:
-  /// ```swift
-  /// switch someValue {
-  ///   case someCase:
-  ///     someStatement
-  ///   ...
-  /// }
-  ///```
   public var indentSwitchCaseLabels: Bool
 
   /// Determines whether whitespace should be forced before and after the range formation operators
@@ -357,97 +295,24 @@ public struct Configuration: Codable, Equatable, Sendable {
   }
 
   /// Determines how trailing commas in multiline comma-separated lists are handled during formatting.
-  ///
-  /// This setting takes precedence over `multiElementCollectionTrailingCommas`.
-  /// If set to `.keptAsWritten` (the default), the formatter defers to `multiElementCollectionTrailingCommas`
-  /// for collections only. In all other cases, existing trailing commas are preserved as-is and not modified.
-  /// If set to `.alwaysUsed` or `.neverUsed`, that behavior is applied uniformly across all list types,
-  /// regardless of `multiElementCollectionTrailingCommas`.
   public var multilineTrailingCommaBehavior: MultilineTrailingCommaBehavior
 
   /// Determines if multi-element collection literals should have trailing commas.
-  ///
-  /// When `true` (default), the correct form is:
-  /// ```swift
-  /// let MyCollection = [1, 2]
-  /// ...
-  /// let MyCollection = [
-  ///   "a": 1,
-  ///   "b": 2,
-  /// ]
-  /// ```
-  ///
-  /// When `false`, the correct form is:
-  /// ```swift
-  /// let MyCollection = [1, 2]
-  /// ...
-  /// let MyCollection = [
-  ///   "a": 1,
-  ///   "b": 2
-  /// ]
-  /// ```
   public var multiElementCollectionTrailingCommas: Bool
 
   /// Determines how multiline string literals should reflow when formatted.
   public enum MultilineStringReflowBehavior: String, Codable, Sendable {
-    /// Never reflow multiline string literals.
     case never
-    /// Reflow lines in string literal that exceed the maximum line length. For example with a line length of 10:
-    /// ```swift
-    /// """
-    /// an escape\
-    ///  line break
-    /// a hard line break
-    /// """
-    /// ```
-    /// will be formatted as:
-    /// ```swift
-    /// """
-    /// an escape\
-    ///  line break
-    /// a hard \
-    /// line break
-    /// """
-    /// ```
-    /// The existing `\` is left in place, but the line over line length is broken.
     case onlyLinesOverLength
-    /// Always reflow multiline string literals, this will ignore existing escaped newlines in the literal and reflow each line. Hard linebreaks are still respected.
-    /// For example, with a line length of 10:
-    /// ```swift
-    /// """
-    /// one \
-    /// word \
-    /// a line.
-    /// this is too long.
-    /// """
-    /// ```
-    /// will be formatted as:
-    /// ```swift
-    /// """
-    /// one word \
-    /// a line.
-    /// this is \
-    /// too long.
-    /// """
-    /// ```
     case always
 
-    var isNever: Bool {
-      self == .never
-    }
-
-    var isAlways: Bool {
-      self == .always
-    }
+    var isNever: Bool { self == .never }
+    var isAlways: Bool { self == .always }
   }
 
   public var reflowMultilineStringLiterals: MultilineStringReflowBehavior
 
   /// Determines whether to add indentation whitespace to blank lines or remove it entirely.
-  ///
-  /// If true, blank lines will be modified to match the current indentation level:
-  /// if they contain whitespace, the existing whitespace will be adjusted, and if they are empty, spaces will be added to match the indentation.
-  /// If false (the default), the whitespace in blank lines will be removed entirely.
   public var indentBlankLines: Bool
 
   /// Configuration for the `SortImports` rule.
@@ -481,11 +346,13 @@ public struct Configuration: Codable, Equatable, Sendable {
     self = try jsonDecoder.decode(Configuration.self, from: data)
   }
 
-  public init(from decoder: Decoder) throws {
-    let container = try decoder.container(keyedBy: CodingKeys.self)
+  // MARK: - Decoding
 
-    self.version =
-      try container.decodeIfPresent(Int.self, forKey: .version)
+  public init(from decoder: Decoder) throws {
+    let root = try decoder.container(keyedBy: DynamicCodingKey.self)
+
+    // Decode version.
+    let version = try root.decodeIfPresent(Int.self, forKey: DynamicCodingKey("version"))
       ?? highestSupportedConfigurationVersion
     guard version <= highestSupportedConfigurationVersion else {
       throw SwiftiomaticError.unsupportedConfigurationVersion(
@@ -494,168 +361,122 @@ public struct Configuration: Codable, Equatable, Sendable {
       )
     }
 
-    // Start from defaults; sections below override what they find.
+    // Start from defaults; keys below override what they find.
     var config = Configuration()
 
-    // MARK: - Decode `format` section (settings + format rules)
+    // Decode root-level settings.
+    for setting in Self.allSettings where setting.group == nil {
+      try setting.decode(root, &config)
+    }
 
-    var formatRuleEnablements: [String: RuleSeverity] = [:]
+    // Decode rules and groups from the root.
+    var ruleEnablements: [String: RuleHandling] = [:]
 
-    if container.contains(.format) {
-      // Decode typed settings (ignores unknown keys = rule names).
-      let settings = try container.decode(FormatSettings.self, forKey: .format)
-      settings.apply(to: &config)
+    for key in root.allKeys {
+      let name = key.stringValue
+      guard !Self.settingKeyNames.contains(name) else { continue }
 
-      // Iterate all keys; anything not a setting key or umbrella is a rule toggle/object.
-      let fmt = try container.nestedContainer(keyedBy: DynamicCodingKey.self, forKey: .format)
-      for key in fmt.allKeys where !FormatSettings.keyNames.contains(key.stringValue) {
-        let ruleName = key.stringValue
+      // Config group: decode rules + owned settings.
+      if let group = ConfigGroup(rawValue: name) {
+        let obj = try root.nestedContainer(keyedBy: DynamicCodingKey.self, forKey: key)
 
-        if let severity = try? fmt.decode(RuleSeverity.self, forKey: key) {
-          formatRuleEnablements[ruleName] = severity
-          continue
+        // Decode group-owned settings.
+        for setting in Self.allSettings where setting.group == group {
+          try setting.decode(obj, &config)
         }
 
-        // Object value: extract `severity` and decode rule-specific options.
-        let entryDecoder = try fmt.superDecoder(forKey: key)
-        let entryContainer = try entryDecoder.container(keyedBy: DynamicCodingKey.self)
-        formatRuleEnablements[ruleName] =
-          try entryContainer.decodeIfPresent(RuleSeverity.self, forKey: DynamicCodingKey("severity")) ?? .warning
-
-        if let decode = Self.ruleConfigDecoders[ruleName] {
-          try decode(entryDecoder, &config)
+        // Decode rules within the group.
+        if let mappings = RuleRegistry.groupRules[group] {
+          for (option, rule) in mappings {
+            let optKey = DynamicCodingKey(option)
+            guard obj.contains(optKey) else { continue }
+            if let ruleMode = try? obj.decode(RuleHandling.self, forKey: optKey) {
+              ruleEnablements[rule] = ruleMode
+            }
+          }
         }
+        continue
       }
 
-      // MARK: Decode umbrella config groups
+      // Simple rule: string value (e.g., "fix", "warn", "off").
+      if let mode = try? root.decode(RuleHandling.self, forKey: key) {
+        ruleEnablements[name] = mode
+        continue
+      }
 
-      for (umbrella, mappings) in Self.umbrellaGroups {
-        let key = DynamicCodingKey(umbrella)
-        guard fmt.contains(key) else { continue }
+      // Rule with options: object value with "mode" + rule-specific config.
+      let entryDecoder = try root.superDecoder(forKey: key)
+      let entryContainer = try entryDecoder.container(keyedBy: DynamicCodingKey.self)
+      ruleEnablements[name] =
+        try entryContainer.decodeIfPresent(RuleHandling.self, forKey: DynamicCodingKey("mode")) ?? .warning
 
-        let obj = try fmt.nestedContainer(keyedBy: DynamicCodingKey.self, forKey: key)
-        let severity = try obj.decodeIfPresent(RuleSeverity.self, forKey: DynamicCodingKey("severity")) ?? .warning
-
-        // UpdateBlankLines owns maximumBlankLines.
-        if umbrella == "UpdateBlankLines" {
-          if let maxBlanks = try obj.decodeIfPresent(Int.self, forKey: DynamicCodingKey("maximumBlankLines")) {
-            config.maximumBlankLines = maxBlanks
-          }
-        }
-
-        for (option, rule) in mappings {
-          let optKey = DynamicCodingKey(option)
-          guard obj.contains(optKey) else { continue }
-          // true → inherit severity, false → off, severity string → override.
-          if let boolVal = try? obj.decode(Bool.self, forKey: optKey) {
-            formatRuleEnablements[rule] = boolVal ? severity : .off
-          } else if let optSeverity = try? obj.decode(RuleSeverity.self, forKey: optKey) {
-            formatRuleEnablements[rule] = optSeverity
-          }
-        }
+      if let decode = Self.ruleConfigDecoders[name] {
+        try decode(entryDecoder, &config)
       }
     }
 
-    // MARK: - Decode `lint` section (lint rules only)
-
-    var lintRuleEnablements: [String: RuleSeverity] = [:]
-
-    if container.contains(.lint) {
-      let lint = try container.nestedContainer(keyedBy: DynamicCodingKey.self, forKey: .lint)
-      for key in lint.allKeys {
-        if let severity = try? lint.decode(RuleSeverity.self, forKey: key) {
-          lintRuleEnablements[key.stringValue] = severity
-        }
-      }
-    }
-
-    // Merge format + lint rules over defaults.
-    for (name, severity) in formatRuleEnablements { config.rules[name] = severity }
-    for (name, severity) in lintRuleEnablements { config.rules[name] = severity }
+    // Merge decoded rules over defaults.
+    for (name, mode) in ruleEnablements { config.rules[name] = mode }
     self = config
   }
 
+  // MARK: - Encoding
 
   /// Rules that have config structs, mapped to the encodable config value.
   private func ruleConfigEncodable(for ruleName: String) -> (any Encodable)? {
-    switch ruleName {
-    case "FileScopedDeclarationPrivacy": fileScopedDeclarationPrivacy
-    case "NoAssignmentInExpressions": noAssignmentInExpressions
-    case "SortImports": sortImports
-    case "CapitalizeAcronyms": acronyms
-    case "NoExtensionAccessLevel": extensionAccessControl
-    case "PatternLetPlacement": patternLet
-    case "URLMacro": urlMacro
-    case "FileHeader": fileHeader
-    default: nil
-    }
+    Self.ruleConfigEntries.first { $0.ruleName == ruleName }?.encode(self)
   }
 
   public func encode(to encoder: Encoder) throws {
-    var container = encoder.container(keyedBy: CodingKeys.self)
-    try container.encode(version, forKey: .version)
+    var root = encoder.container(keyedBy: DynamicCodingKey.self)
+    try root.encode(version, forKey: DynamicCodingKey("version"))
 
-    // MARK: - Encode `format` section (settings + format rules)
+    // Encode root-level settings.
+    for setting in Self.allSettings where setting.group == nil {
+      try setting.encode(self, &root)
+    }
 
-    var fmt = container.nestedContainer(keyedBy: DynamicCodingKey.self, forKey: .format)
-    try FormatSettings(from: self).encode(into: &fmt)
-
-    let formatRuleNames = Set(RuleRegistry.formatRules.keys)
-    for (name, severity) in rules
-      where formatRuleNames.contains(name) && !Self.umbrellaManagedRules.contains(name)
+    // Encode ungrouped rules.
+    for (name, mode) in rules
+      where !RuleRegistry.groupManagedRules.contains(name)
     {
       if let config = ruleConfigEncodable(for: name) {
         let configData = try JSONEncoder().encode(AnyEncodable(config))
         if var configDict = try JSONSerialization.jsonObject(with: configData) as? [String: Any] {
-          configDict["severity"] = severity.encodedString
-          try fmt.encode(JSONFragment(configDict), forKey: DynamicCodingKey(name))
+          configDict["mode"] = mode.encodedString
+          try root.encode(JSONFragment(configDict), forKey: DynamicCodingKey(name))
         }
       } else {
-        try fmt.encode(severity, forKey: DynamicCodingKey(name))
+        try root.encode(mode, forKey: DynamicCodingKey(name))
       }
     }
 
-    // MARK: Encode umbrella config groups
+    // Encode config groups.
+    for group in ConfigGroup.allCases {
+      guard let mappings = RuleRegistry.groupRules[group] else { continue }
 
-    for (umbrella, mappings) in Self.umbrellaGroups {
       var dict: [String: Any] = [:]
 
-      // Determine umbrella severity from first active sub-rule, or .warning.
-      let umbrellaSeverity: RuleSeverity = mappings
-        .compactMap { rules[$0.rule] }
-        .first(where: \.isActive) ?? .warning
-      dict["severity"] = umbrellaSeverity.encodedString
-
-      // UpdateBlankLines owns maximumBlankLines.
-      if umbrella == "UpdateBlankLines" {
-        dict["maximumBlankLines"] = maximumBlankLines
+      // Encode group-owned settings.
+      for setting in Self.allSettings where setting.group == group {
+        // Use a temporary container to extract the value, then put it in the dict.
+        let tempEncoder = DictEncoder()
+        var tempContainer = tempEncoder.container(keyedBy: DynamicCodingKey.self)
+        try setting.encode(self, &tempContainer)
+        for (k, v) in tempEncoder.dict { dict[k] = v }
       }
 
+      // Encode rules within the group.
       for (option, rule) in mappings {
-        if let severity = rules[rule] {
-          if severity == umbrellaSeverity {
-            dict[option] = true
-          } else if severity == .off {
-            dict[option] = false
-          } else {
-            dict[option] = severity.encodedString
-          }
-        } else {
-          dict[option] = false
-        }
+        let mode = rules[rule] ?? .off
+        dict[option] = mode.encodedString
       }
 
-      try fmt.encode(JSONFragment(dict), forKey: DynamicCodingKey(umbrella))
-    }
-
-    // MARK: - Encode `lint` section
-
-    var lint = container.nestedContainer(keyedBy: DynamicCodingKey.self, forKey: .lint)
-    let lintRuleNames = Set(RuleRegistry.lintRules.keys)
-    for (name, severity) in rules where lintRuleNames.contains(name) {
-      try lint.encode(severity, forKey: DynamicCodingKey(name))
+      try root.encode(JSONFragment(dict), forKey: DynamicCodingKey(group.rawValue))
     }
   }
+
+  // MARK: - Helpers
 
   /// Type-erased Encodable wrapper.
   private struct AnyEncodable: Encodable {
@@ -675,6 +496,34 @@ public struct Configuration: Codable, Equatable, Sendable {
       for (key, value) in decoded {
         try container.encode(value, forKey: DynamicCodingKey(key))
       }
+    }
+  }
+
+  /// A temporary encoder that captures encoded values into a dictionary.
+  private class DictEncoder: Encoder {
+    var codingPath: [CodingKey] = []
+    var userInfo: [CodingUserInfoKey: Any] = [:]
+    var dict: [String: Any] = [:]
+
+    func container<Key: CodingKey>(keyedBy type: Key.Type) -> KeyedEncodingContainer<Key> {
+      KeyedEncodingContainer(DictKeyedContainer<Key>(encoder: self))
+    }
+    func unkeyedContainer() -> UnkeyedEncodingContainer { fatalError() }
+    func singleValueContainer() -> SingleValueEncodingContainer { fatalError() }
+
+    private struct DictKeyedContainer<Key: CodingKey>: KeyedEncodingContainerProtocol {
+      let encoder: DictEncoder
+      var codingPath: [CodingKey] = []
+      mutating func encodeNil(forKey key: Key) throws {}
+      mutating func encode<T: Encodable>(_ value: T, forKey key: Key) throws {
+        encoder.dict[key.stringValue] = value
+      }
+      mutating func nestedContainer<NestedKey: CodingKey>(
+        keyedBy keyType: NestedKey.Type, forKey key: Key
+      ) -> KeyedEncodingContainer<NestedKey> { fatalError() }
+      mutating func nestedUnkeyedContainer(forKey key: Key) -> UnkeyedEncodingContainer { fatalError() }
+      mutating func superEncoder() -> Encoder { fatalError() }
+      mutating func superEncoder(forKey key: Key) -> Encoder { fatalError() }
     }
   }
 
@@ -716,16 +565,11 @@ public struct Configuration: Codable, Equatable, Sendable {
 
   /// Returns the URL of the configuration file that applies to the given file or directory.
   public static func url(forConfigurationFileApplyingTo url: URL) -> URL? {
-    // Despite the variable's name, this value might start out first as a file path (the path to a
-    // source file being formatted). However, it will immediately have its basename removed in the
-    // loop below, and from then on serve as a directory path only.
     var candidateDirectory = url.absoluteURL.standardized
     var isDirectory: ObjCBool = false
     if FileManager.default.fileExists(atPath: candidateDirectory.path, isDirectory: &isDirectory),
       isDirectory.boolValue
     {
-      // If the path actually was a directory, append a fake basename so that the trimming code
-      // below doesn't have to deal with the first-time special case.
       candidateDirectory.appendPathComponent("placeholder")
     }
     repeat {
@@ -740,24 +584,22 @@ public struct Configuration: Codable, Equatable, Sendable {
   }
 }
 
-/// Configuration for the `FileScopedDeclarationPrivacy` rule.
-public struct FileScopedDeclarationPrivacyConfiguration: Codable, Equatable, Sendable {
-  public enum AccessLevel: String, Codable, Sendable {
-    /// Private file-scoped declarations should be declared `private`.
-    ///
-    /// If a file-scoped declaration is declared `fileprivate`, it will be diagnosed (in lint mode)
-    /// or changed to `private` (in format mode).
-    case `private`
+// MARK: - Rule-specific configuration types
 
-    /// Private file-scoped declarations should be declared `fileprivate`.
-    ///
-    /// If a file-scoped declaration is declared `private`, it will be diagnosed (in lint mode) or
-    /// changed to `fileprivate` (in format mode).
+/// Configuration for the `FileScopedDeclarationPrivacy` rule.
+public struct FileScopedDeclarationPrivacyConfiguration: Codable, Equatable, Sendable, ConfigRepresentable {
+  public static let ruleName = "FileScopedDeclarationPrivacy"
+  public static let configProperties: [ConfigProperty] = [
+    .init("accessLevel", .stringEnum(
+      description: "Access level for file-scoped private declarations.",
+      values: ["private", "fileprivate"], defaultValue: "private")),
+  ]
+
+  public enum AccessLevel: String, Codable, Sendable {
+    case `private`
     case `fileprivate`
   }
 
-  /// The formal access level to use when encountering a file-scoped declaration with effective
-  /// private access.
   public var accessLevel: AccessLevel = .private
 
   public init() {}
@@ -772,15 +614,15 @@ public struct FileScopedDeclarationPrivacyConfiguration: Codable, Equatable, Sen
 }
 
 /// Configuration for the `NoAssignmentInExpressions` rule.
-public struct NoAssignmentInExpressionsConfiguration: Codable, Equatable, Sendable {
-  /// A list of function names where assignments are allowed to be embedded in expressions that are
-  /// passed as parameters to that function.
-  public var allowedFunctions: [String] = [
-    // Allow `XCTAssertNoThrow` because `XCTAssertNoThrow(x = try ...)` is clearer about intent than
-    // `x = try XCTUnwrap(try? ...)` or force-unwrapped if you need to use the value `x` later on
-    // in the test.
-    "XCTAssertNoThrow"
+public struct NoAssignmentInExpressionsConfiguration: Codable, Equatable, Sendable, ConfigRepresentable {
+  public static let ruleName = "NoAssignmentInExpressions"
+  public static let configProperties: [ConfigProperty] = [
+    .init("allowedFunctions", .stringArray(
+      description: "Functions where embedded assignments are allowed.",
+      defaultValue: ["XCTAssertNoThrow"])),
   ]
+
+  public var allowedFunctions: [String] = ["XCTAssertNoThrow"]
 
   public init() {}
 
@@ -794,10 +636,14 @@ public struct NoAssignmentInExpressionsConfiguration: Codable, Equatable, Sendab
 }
 
 /// Configuration for the `SortImports` rule.
-public struct SortImportsConfiguration: Codable, Equatable, Sendable {
-  /// Determines whether imports within conditional compilation blocks should be ordered.
+public struct SortImportsConfiguration: Codable, Equatable, Sendable, ConfigRepresentable {
+  public static let ruleName = "SortImports"
+  public static let configProperties: [ConfigProperty] = [
+    .init("includeConditionalImports", .bool(description: "Sort imports within #if blocks.", defaultValue: false)),
+    .init("shouldGroupImports", .bool(description: "Separate imports into groups by type.", defaultValue: true)),
+  ]
+
   public var includeConditionalImports = false
-  /// Determines whether imports are separated into groups based on their type.
   public var shouldGroupImports = true
 
   public init() {}
@@ -815,8 +661,17 @@ public struct SortImportsConfiguration: Codable, Equatable, Sendable {
 }
 
 /// Configuration for the `CapitalizeAcronyms` rule.
-public struct AcronymsConfiguration: Codable, Equatable, Sendable {
-  /// The list of acronyms to capitalize. Each entry should be fully uppercased (e.g. "URL", "ID").
+public struct AcronymsConfiguration: Codable, Equatable, Sendable, ConfigRepresentable {
+  public static let ruleName = "CapitalizeAcronyms"
+  public static let configProperties: [ConfigProperty] = [
+    .init("words", .stringArray(
+      description: "Acronyms to capitalize (fully uppercased).",
+      defaultValue: [
+        "API", "CSS", "DNS", "FTP", "GIF", "HTML", "HTTP", "HTTPS",
+        "ID", "JPEG", "JSON", "PDF", "PNG", "RGB", "RGBA",
+        "SQL", "SSH", "TCP", "UDP", "URL", "UUID", "XML",
+      ])),
+  ]
   public var words: [String] = [
     "ID", "URL", "UUID", "HTTP", "HTTPS", "JSON", "XML", "HTML",
     "API", "TCP", "UDP", "DNS", "SSH", "FTP", "SQL", "CSS",
@@ -835,21 +690,18 @@ public struct AcronymsConfiguration: Codable, Equatable, Sendable {
 }
 
 /// Configuration for the `NoExtensionAccessLevel` rule.
-public struct ExtensionAccessControlConfiguration: Codable, Equatable, Sendable {
+public struct ExtensionAccessControlConfiguration: Codable, Equatable, Sendable, ConfigRepresentable {
+  public static let ruleName = "NoExtensionAccessLevel"
+  public static let configProperties: [ConfigProperty] = [
+    .init("placement", .stringEnum(
+      description: "Where to place access control modifiers.",
+      values: ["onDeclarations", "onExtension"], defaultValue: "onDeclarations")),
+  ]
   public enum Placement: String, Codable, Sendable {
-    /// Access control modifiers should be placed on individual declarations within the extension.
-    ///
-    /// If an extension has an access level modifier, it will be removed and applied to each member.
     case onDeclarations
-
-    /// When all members share the same access level, it should be hoisted to the extension.
-    ///
-    /// If all members have the same explicit access level (`public`, `package`, or `fileprivate`),
-    /// that modifier is moved to the extension and removed from individual members.
     case onExtension
   }
 
-  /// Where access control modifiers should be placed for extensions.
   public var placement: Placement = .onDeclarations
 
   public init() {}
@@ -864,16 +716,18 @@ public struct ExtensionAccessControlConfiguration: Codable, Equatable, Sendable 
 }
 
 /// Configuration for the `PatternLetPlacement` rule.
-public struct PatternLetConfiguration: Codable, Equatable, Sendable {
+public struct PatternLetConfiguration: Codable, Equatable, Sendable, ConfigRepresentable {
+  public static let ruleName = "PatternLetPlacement"
+  public static let configProperties: [ConfigProperty] = [
+    .init("placement", .stringEnum(
+      description: "Where to place let/var in case patterns.",
+      values: ["eachBinding", "outerPattern"], defaultValue: "eachBinding")),
+  ]
   public enum Placement: String, Codable, Sendable {
-    /// Each bound variable has its own `let`/`var`: `case .foo(let x, let y)`.
     case eachBinding
-
-    /// The `let`/`var` is hoisted to the pattern level: `case let .foo(x, y)`.
     case outerPattern
   }
 
-  /// Where `let`/`var` should be placed in case patterns.
   public var placement: Placement = .eachBinding
 
   public init() {}
@@ -888,11 +742,13 @@ public struct PatternLetConfiguration: Codable, Equatable, Sendable {
 }
 
 /// Configuration for the `URLMacro` rule.
-public struct URLMacroConfiguration: Codable, Equatable, Sendable {
-  /// The macro name to use (e.g. `"#URL"`). When `nil`, the rule is inactive.
+public struct URLMacroConfiguration: Codable, Equatable, Sendable, ConfigRepresentable {
+  public static let ruleName = "URLMacro"
+  public static let configProperties: [ConfigProperty] = [
+    .init("macroName", .string(description: "Macro name, e.g. \"#URL\". Omit to disable.")),
+    .init("moduleName", .string(description: "Module to import for the macro.")),
+  ]
   public var macroName: String?
-
-  /// The module to import when replacements are made (e.g. `"URLFoundation"`).
   public var moduleName: String?
 
   public init() {}
@@ -905,14 +761,11 @@ public struct URLMacroConfiguration: Codable, Equatable, Sendable {
 }
 
 /// Configuration for the `FileHeader` rule.
-public struct FileHeaderConfiguration: Codable, Equatable, Sendable {
-  /// The header text to enforce.
-  ///
-  /// - `nil` (default): rule does nothing.
-  /// - `""` (empty string): clear any existing file header.
-  /// - Non-empty: replace file header with this text (include `//` comment markers).
-  ///
-  /// Example: `"// Copyright 2024 My Company\n// All rights reserved."`
+public struct FileHeaderConfiguration: Codable, Equatable, Sendable, ConfigRepresentable {
+  public static let ruleName = "FileHeader"
+  public static let configProperties: [ConfigProperty] = [
+    .init("text", .string(description: "Header text. Omit to disable, empty string to remove headers.")),
+  ]
   public var text: String?
 
   public init() {}
@@ -922,4 +775,3 @@ public struct FileHeaderConfiguration: Codable, Equatable, Sendable {
     self.text = try container.decodeIfPresent(String.self, forKey: .text)
   }
 }
-

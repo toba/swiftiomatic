@@ -16,6 +16,7 @@ import SwiftSyntax
 ///         the return statement.
 @_spi(Rules)
 public final class RedundantProperty: SyntaxFormatRule {
+  public override class var group: ConfigGroup? { .removeRedundant }
 
   public override func visit(_ node: CodeBlockItemListSyntax) -> CodeBlockItemListSyntax {
     let visited = super.visit(node)

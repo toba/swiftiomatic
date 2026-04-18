@@ -18,7 +18,7 @@ import Testing
 struct OmitReturnsTests: RuleTesting {
   @Test func omitReturnInFunction() {
     assertFormatting(
-      OmitExplicitReturns.self,
+      RedundantReturn.self,
       input: """
           func test() -> Bool {
             1️⃣return false
@@ -37,7 +37,7 @@ struct OmitReturnsTests: RuleTesting {
 
   @Test func omitReturnInClosure() {
     assertFormatting(
-      OmitExplicitReturns.self,
+      RedundantReturn.self,
       input: """
           vals.filter {
             1️⃣return $0.count == 1
@@ -56,7 +56,7 @@ struct OmitReturnsTests: RuleTesting {
 
   @Test func omitReturnInSubscript() {
     assertFormatting(
-      OmitExplicitReturns.self,
+      RedundantReturn.self,
       input: """
           struct Test {
             subscript(x: Int) -> Bool {
@@ -98,7 +98,7 @@ struct OmitReturnsTests: RuleTesting {
 
   @Test func omitReturnInComputedVars() {
     assertFormatting(
-      OmitExplicitReturns.self,
+      RedundantReturn.self,
       input: """
           var x: Int {
             1️⃣return 42
@@ -136,7 +136,7 @@ struct OmitReturnsTests: RuleTesting {
 
   @Test func inVariableBindings() {
     assertFormatting(
-      OmitExplicitReturns.self,
+      RedundantReturn.self,
       input: """
           var f = l.filter { 1️⃣return $0.a != o }
           var bar = l.filter {
@@ -158,7 +158,7 @@ struct OmitReturnsTests: RuleTesting {
 
   @Test func inVariableBindingWithTrailingTrivia() {
     assertFormatting(
-      OmitExplicitReturns.self,
+      RedundantReturn.self,
       input: """
           var f = l.filter {
             1️⃣return $0.a != o // comment

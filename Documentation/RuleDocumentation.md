@@ -65,7 +65,6 @@ Here's the list of available rules:
 - [NoTypeRepetitionInStaticProperties](#NoTypeRepetitionInStaticProperties)
 - [NoVoidReturnOnFunctionSignature](#NoVoidReturnOnFunctionSignature)
 - [NoYodaConditions](#NoYodaConditions)
-- [OmitExplicitReturns](#OmitExplicitReturns)
 - [OneDeclarationPerLine](#OneDeclarationPerLine)
 - [OnlyOneTrailingClosureArgument](#OnlyOneTrailingClosureArgument)
 - [OpaqueGenericParameters](#OpaqueGenericParameters)
@@ -107,6 +106,7 @@ Here's the list of available rules:
 - [RedundantPattern](#RedundantPattern)
 - [RedundantProperty](#RedundantProperty)
 - [RedundantRawValues](#RedundantRawValues)
+- [RedundantReturn](#RedundantReturn)
 - [RedundantSelf](#RedundantSelf)
 - [RedundantSendable](#RedundantSendable)
 - [RedundantStaticSelf](#RedundantStaticSelf)
@@ -908,17 +908,6 @@ Format: The operands are swapped and the operator is flipped if necessary.
 
 `NoYodaConditions` rule can format your code automatically.
 
-### OmitExplicitReturns
-
-Single-expression functions, closures, subscripts can omit `return` statement.
-
-Lint: `func <name>() { return ... }` and similar single expression constructs will yield a lint error.
-
-Format: `func <name>() { return ... }` constructs will be replaced with
-        equivalent `func <name>() { ... }` constructs.
-
-`OmitExplicitReturns` rule can format your code automatically.
-
 ### OneDeclarationPerLine
 
 Each enum case with associated values or a raw value should appear in its own case declaration,
@@ -1580,6 +1569,17 @@ Lint: If a redundant raw value is found, a lint warning is raised.
 Format: The redundant raw value initializer is removed.
 
 `RedundantRawValues` rule can format your code automatically.
+
+### RedundantReturn
+
+Single-expression functions, closures, subscripts can omit `return` statement.
+
+Lint: `func <name>() { return ... }` and similar single expression constructs will yield a lint error.
+
+Format: `func <name>() { return ... }` constructs will be replaced with
+        equivalent `func <name>() { ... }` constructs.
+
+`RedundantReturn` rule can format your code automatically.
 
 ### RedundantSelf
 

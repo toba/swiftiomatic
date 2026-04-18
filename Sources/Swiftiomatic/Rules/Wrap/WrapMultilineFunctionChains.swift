@@ -9,6 +9,7 @@ import SwiftSyntax
 ///         moved to their own line.
 @_spi(Rules)
 public final class WrapMultilineFunctionChains: SyntaxFormatRule {
+  public override class var group: ConfigGroup? { .wrap }
 
   public override class var isOptIn: Bool { true }
 

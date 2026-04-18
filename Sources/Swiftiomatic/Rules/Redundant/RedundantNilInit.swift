@@ -26,6 +26,7 @@ import SwiftSyntax
 /// Format: The redundant `= nil` initializer is removed.
 @_spi(Rules)
 public final class RedundantNilInit: SyntaxFormatRule {
+  public override class var group: ConfigGroup? { .removeRedundant }
 
   public override func visit(_ node: VariableDeclSyntax) -> DeclSyntax {
     // Only applies to `var`, not `let`.

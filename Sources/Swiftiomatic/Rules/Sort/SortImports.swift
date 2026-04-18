@@ -30,6 +30,7 @@ import SwiftSyntax
 /// Format: Imports will be reordered and (optionally) grouped at the top of the file.
 @_spi(Rules)
 public final class SortImports: SyntaxFormatRule {
+    public override class var group: ConfigGroup? { .sort }
 
   public override func visit(_ node: SourceFileSyntax) -> SourceFileSyntax {
     var newNode = node

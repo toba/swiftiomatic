@@ -23,6 +23,7 @@ import SwiftSyntax
 /// Format: The redundant type annotation is removed.
 @_spi(Rules)
 public final class RedundantType: SyntaxFormatRule {
+  public override class var group: ConfigGroup? { .removeRedundant }
 
   public override func visit(_ node: VariableDeclSyntax) -> DeclSyntax {
     var bindings = node.bindings

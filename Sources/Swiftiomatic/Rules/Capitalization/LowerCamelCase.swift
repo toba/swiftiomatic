@@ -23,6 +23,8 @@ import SwiftSyntax
 ///       raised.
 @_spi(Rules)
 public final class LowerCamelCase: SyntaxLintRule {
+    public override class var group: ConfigGroup? { .capitalization }
+    
   /// Stores function decls that are test cases.
   private var testCaseFuncs = Set<FunctionDeclSyntax>()
 

@@ -22,6 +22,9 @@ public class SyntaxLintRule: SyntaxVisitor, Rule {
     return false
   }
 
+  /// The config group this rule belongs to, or `nil` if ungrouped.
+  public class var group: ConfigGroup? { nil }
+
   /// The context in which the rule is executed.
   public let context: Context
 

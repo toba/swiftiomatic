@@ -13,6 +13,7 @@ import SwiftSyntax
 /// Format: The backticks are removed.
 @_spi(Rules)
 public final class RedundantBackticks: SyntaxFormatRule {
+  public override class var group: ConfigGroup? { .removeRedundant }
 
   /// Swift reserved keywords that always require backticks when used as identifiers
   /// (unless in a special context like after `.` or as argument labels).

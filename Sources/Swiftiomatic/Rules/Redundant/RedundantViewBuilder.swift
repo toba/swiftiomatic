@@ -19,6 +19,7 @@ import SwiftSyntax
 /// Format: The redundant `@ViewBuilder` attribute is removed.
 @_spi(Rules)
 public final class RedundantViewBuilder: SyntaxFormatRule {
+  public override class var group: ConfigGroup? { .removeRedundant }
 
   /// Identifies this rule as being opt-in. This rule requires SwiftUI context and may produce
   /// false positives in codebases that use custom result builders named `ViewBuilder`.

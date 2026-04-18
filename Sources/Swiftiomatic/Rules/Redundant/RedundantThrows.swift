@@ -13,6 +13,7 @@ import SwiftSyntax
 /// Format: The `throws` clause is removed.
 @_spi(Rules)
 public final class RedundantThrows: SyntaxFormatRule {
+  public override class var group: ConfigGroup? { .removeRedundant }
 
   public override class var isOptIn: Bool { true }
 

@@ -18,6 +18,7 @@ import SwiftSyntax
 ///         expression.
 @_spi(Rules)
 public final class RedundantClosure: SyntaxFormatRule {
+  public override class var group: ConfigGroup? { .removeRedundant }
 
   public override func visit(_ node: FunctionCallExprSyntax) -> ExprSyntax {
     let visited = super.visit(node)

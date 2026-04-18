@@ -16,6 +16,7 @@ import SwiftSyntax
 /// Format: The `==` function is removed from the member block.
 @_spi(Rules)
 public final class RedundantEquatable: SyntaxFormatRule {
+  public override class var group: ConfigGroup? { .removeRedundant }
 
   public override class var isOptIn: Bool { true }
 

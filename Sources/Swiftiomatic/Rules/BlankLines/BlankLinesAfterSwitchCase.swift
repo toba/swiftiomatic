@@ -13,6 +13,7 @@ import SwiftSyntax
 /// Format: Blank lines are inserted after multiline cases and removed after the last case.
 @_spi(Rules)
 public final class BlankLinesAfterSwitchCase: SyntaxFormatRule {
+  public override class var group: ConfigGroup? { .updateBlankLines }
 
   public override class var isOptIn: Bool { true }
 

@@ -13,6 +13,7 @@ import SwiftSyntax
 /// Format: A line break is inserted after `=`.
 @_spi(Rules)
 public final class WrapConditionalAssignment: SyntaxFormatRule {
+  public override class var group: ConfigGroup? { .wrap }
 
   public override class var isOptIn: Bool { true }
 

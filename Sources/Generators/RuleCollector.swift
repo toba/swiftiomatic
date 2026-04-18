@@ -11,7 +11,7 @@
 //===----------------------------------------------------------------------===//
 
 import Foundation
-@_spi(Rules) import Swiftiomatic
+import SwiftiomaticCore
 import SwiftParser
 import SwiftSyntax
 
@@ -34,6 +34,9 @@ import SwiftSyntax
 
     /// Indicates whether the rule is disabled by default, i.e. requires opting in to use it.
     let isOptIn: Bool
+
+    /// The config group this rule belongs to, or `nil` if ungrouped.
+    let group: ConfigGroup?
   }
 
   /// A list of all rules that can lint (thus also including format rules) found in the code base.
@@ -142,18 +145,67 @@ import SwiftSyntax
       /// Ignore it if it doesn't have any; there's no point in putting no-op rules in the pipeline.
       /// Otherwise, return it (we don't need to look at the rest of the inheritances).
       guard !visitedNodes.isEmpty else { return nil }
-      guard let ruleType = _typeByName("Swiftiomatic.\(typeName)") as? Rule.Type else {
-        preconditionFailure("Failed to find type for rule named \(typeName)")
-      }
       return DetectedRule(
         typeName: typeName,
         description: description?.text,
         visitedNodes: visitedNodes,
         canFormat: canFormat,
-        isOptIn: ruleType.isOptIn
+        isOptIn: Self.extractIsOptIn(from: members),
+        group: Self.extractGroup(from: members)
       )
     }
 
+    return nil
+  }
+
+  /// Extracts `isOptIn` from `override class var isOptIn: Bool { true }` in the AST.
+  /// Returns `false` (the base class default) when the override is absent.
+  private static func extractIsOptIn(from members: MemberBlockItemListSyntax) -> Bool {
+    for member in members {
+      guard let varDecl = member.decl.as(VariableDeclSyntax.self),
+            let binding = varDecl.bindings.firstAndOnly,
+            let pattern = binding.pattern.as(IdentifierPatternSyntax.self),
+            pattern.identifier.text == "isOptIn",
+            let accessorBlock = binding.accessorBlock,
+            case .getter(let body) = accessorBlock.accessors
+      else { continue }
+
+      if let boolExpr = body.first?.item.as(BooleanLiteralExprSyntax.self) {
+        return boolExpr.literal.tokenKind == .keyword(.true)
+      }
+      if let returnStmt = body.first?.item.as(ReturnStmtSyntax.self),
+         let boolExpr = returnStmt.expression?.as(BooleanLiteralExprSyntax.self) {
+        return boolExpr.literal.tokenKind == .keyword(.true)
+      }
+    }
+    return false
+  }
+
+  /// Extracts `group` from `override class var group: ConfigGroup? { .someCase }` in the AST.
+  /// Returns `nil` (the base class default) when the override is absent.
+  private static func extractGroup(from members: MemberBlockItemListSyntax) -> ConfigGroup? {
+    for member in members {
+      guard let varDecl = member.decl.as(VariableDeclSyntax.self),
+            let binding = varDecl.bindings.firstAndOnly,
+            let pattern = binding.pattern.as(IdentifierPatternSyntax.self),
+            pattern.identifier.text == "group",
+            let accessorBlock = binding.accessorBlock,
+            case .getter(let body) = accessorBlock.accessors
+      else { continue }
+
+      let memberAccess: MemberAccessExprSyntax?
+      if let expr = body.first?.item.as(MemberAccessExprSyntax.self) {
+        memberAccess = expr
+      } else if let returnStmt = body.first?.item.as(ReturnStmtSyntax.self) {
+        memberAccess = returnStmt.expression?.as(MemberAccessExprSyntax.self)
+      } else {
+        memberAccess = nil
+      }
+
+      if let memberAccess {
+        return ConfigGroup(rawValue: memberAccess.declName.baseName.text)
+      }
+    }
     return nil
   }
 }

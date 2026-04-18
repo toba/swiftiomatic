@@ -15,6 +15,7 @@ import SwiftSyntax
 ///         after the last guard when followed by non-guard code.
 @_spi(Rules)
 public final class BlankLinesAfterGuardStatements: SyntaxFormatRule {
+  public override class var group: ConfigGroup? { .updateBlankLines }
 
   public override class var isOptIn: Bool { true }
 

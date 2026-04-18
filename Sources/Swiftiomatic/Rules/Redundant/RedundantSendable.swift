@@ -15,6 +15,7 @@ import SwiftSyntax
 /// Format: The redundant `Sendable` conformance is removed from the inheritance clause.
 @_spi(Rules)
 public final class RedundantSendable: SyntaxFormatRule {
+  public override class var group: ConfigGroup? { .removeRedundant }
 
   public override class var isOptIn: Bool { true }
 

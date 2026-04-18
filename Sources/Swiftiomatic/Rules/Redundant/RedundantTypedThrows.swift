@@ -10,6 +10,7 @@ import SwiftSyntax
 /// Format: `throws(any Error)` is replaced with `throws`. `throws(Never)` is removed.
 @_spi(Rules)
 public final class RedundantTypedThrows: SyntaxFormatRule {
+  public override class var group: ConfigGroup? { .removeRedundant }
 
   // Function declarations: `func foo() throws(any Error)`
   public override func visit(_ node: FunctionEffectSpecifiersSyntax) -> FunctionEffectSpecifiersSyntax {

@@ -16,6 +16,7 @@ import SwiftSyntax
 /// Format: The `Self.` prefix is removed.
 @_spi(Rules)
 public final class RedundantStaticSelf: SyntaxFormatRule {
+  public override class var group: ConfigGroup? { .removeRedundant }
 
   public override class var isOptIn: Bool { true }
 

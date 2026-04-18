@@ -15,6 +15,7 @@ import SwiftSyntax
 /// Format: The redundant `@objc` attribute is removed.
 @_spi(Rules)
 public final class RedundantObjc: SyntaxFormatRule {
+  public override class var group: ConfigGroup? { .removeRedundant }
 
   /// Attributes that imply `@objc`.
   private static let implyingAttributes: Set<String> = [

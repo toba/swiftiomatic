@@ -11,7 +11,6 @@
 //===----------------------------------------------------------------------===//
 
 import Foundation
-import Swiftiomatic
 
 /// Generates the markdown file with extended documenation on the available rules.
 @_spi(Internal) public final class RuleDocumentationGenerator: FileGenerator {

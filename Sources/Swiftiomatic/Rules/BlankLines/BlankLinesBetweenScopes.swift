@@ -14,6 +14,7 @@ import SwiftSyntax
 /// Format: A blank line is inserted after the declaration.
 @_spi(Rules)
 public final class BlankLinesBetweenScopes: SyntaxFormatRule {
+  public override class var group: ConfigGroup? { .updateBlankLines }
 
   public override class var isOptIn: Bool { true }
 

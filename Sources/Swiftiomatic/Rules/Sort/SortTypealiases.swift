@@ -11,6 +11,7 @@ import SwiftSyntax
 /// Format: The types are reordered alphabetically and duplicates are removed.
 @_spi(Rules)
 public final class SortTypealiases: SyntaxFormatRule {
+    public override class var group: ConfigGroup? { .sort }
 
   public override func visit(_ node: TypeAliasDeclSyntax) -> DeclSyntax {
     let initializer = node.initializer

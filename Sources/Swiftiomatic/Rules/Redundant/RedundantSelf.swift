@@ -21,6 +21,7 @@ import SwiftSyntax
 /// Format: The `self.` prefix is removed.
 @_spi(Rules)
 public final class RedundantSelf: SyntaxFormatRule {
+  public override class var group: ConfigGroup? { .removeRedundant }
 
   // MARK: - State
 

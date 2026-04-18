@@ -9,6 +9,7 @@ import SwiftSyntax
 ///         same prefix and indentation.
 @_spi(Rules)
 public final class WrapSingleLineComments: SyntaxFormatRule {
+  public override class var group: ConfigGroup? { .wrap }
 
   public override class var isOptIn: Bool { true }
 

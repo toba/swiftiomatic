@@ -11,6 +11,7 @@ import SwiftSyntax
 /// Format: The blank lines are removed, keeping linebreaks and comments.
 @_spi(Rules)
 public final class BlankLinesBetweenChainedFunctions: SyntaxFormatRule {
+  public override class var group: ConfigGroup? { .updateBlankLines }
 
   public override class var isOptIn: Bool { true }
 

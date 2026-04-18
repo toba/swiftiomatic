@@ -11,6 +11,7 @@ import SwiftSyntax
 /// Format: A blank line is inserted after the last import statement.
 @_spi(Rules)
 public final class BlankLinesAfterImports: SyntaxFormatRule {
+  public override class var group: ConfigGroup? { .updateBlankLines }
 
   public override func visit(_ node: SourceFileSyntax) -> SourceFileSyntax {
     let statements = Array(node.statements)

@@ -15,7 +15,7 @@ import SwiftSyntax
 
 /// A Rule is a linting or formatting pass that executes in a given context.
 @_spi(Rules)
-public protocol Rule {
+public protocol Rule: Groupable {
   /// The context in which the rule is executed.
   var context: Context { get }
 
@@ -86,7 +86,7 @@ extension Rule {
     }
 
     let category = RuleBasedFindingCategory(ruleType: type(of: self))
-    let severity = context.severity(of: type(of: self))
+    let severity = context.severity(of: type(of: self)).diagnosticSeverity
     context.findingEmitter.emit(
       message,
       category: category,

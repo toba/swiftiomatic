@@ -11,6 +11,7 @@ import SwiftSyntax
 /// Format: Each item is placed on its own line with alignment indentation.
 @_spi(Rules)
 public final class WrapSwitchCases: SyntaxFormatRule {
+  public override class var group: ConfigGroup? { .wrap }
 
   public override class var isOptIn: Bool { true }
 

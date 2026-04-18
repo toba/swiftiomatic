@@ -12,6 +12,7 @@ import SwiftSyntax
 /// Format: The `{` is moved to a new line aligned with the closing `}`.
 @_spi(Rules)
 public final class WrapMultilineStatementBraces: SyntaxFormatRule {
+  public override class var group: ConfigGroup? { .wrap }
 
   public override class var isOptIn: Bool { true }
 

@@ -25,6 +25,7 @@ import SwiftSyntax
 /// Format: The redundant `let error` pattern is removed.
 @_spi(Rules)
 public final class RedundantLetError: SyntaxFormatRule {
+  public override class var group: ConfigGroup? { .removeRedundant }
 
   public override func visit(_ node: CatchClauseSyntax) -> CatchClauseSyntax {
     // Must have exactly one catch item.

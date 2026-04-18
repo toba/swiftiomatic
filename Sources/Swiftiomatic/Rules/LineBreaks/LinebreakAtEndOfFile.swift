@@ -10,6 +10,7 @@ import SwiftSyntax
 /// Format: A trailing newline is added if missing, or extra newlines are removed.
 @_spi(Rules)
 public final class LinebreakAtEndOfFile: SyntaxFormatRule {
+  public override class var group: ConfigGroup? { .updateLineBreak }
 
   public override class var isOptIn: Bool { true }
 
