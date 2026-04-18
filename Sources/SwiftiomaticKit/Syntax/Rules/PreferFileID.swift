@@ -9,7 +9,7 @@ import SwiftSyntax
 ///
 /// Format: The macro is replaced with the preferred spelling.
 final class PreferFileID: SyntaxFormatRule {
-    static let isOptIn = true
+    static let defaultHandling: RuleHandling = .off
 
     override func visit(_ node: MacroExpansionExprSyntax) -> ExprSyntax {
         // Only handle bare #file / #fileID (no arguments, no trailing closure).

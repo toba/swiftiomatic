@@ -10,7 +10,7 @@ import SwiftSyntax
 final class WrapSingleLineComments: SyntaxFormatRule {
     static let name = "singleLineComments"
     static let group: ConfigGroup? = .wrap
-    static let isOptIn = true
+    static let defaultHandling: RuleHandling = .off
 
     override func visit(_ token: TokenSyntax) -> TokenSyntax {
         let maxWidth = context.configuration.lineLength

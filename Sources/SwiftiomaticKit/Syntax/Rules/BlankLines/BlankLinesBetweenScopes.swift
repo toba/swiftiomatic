@@ -14,7 +14,7 @@ import SwiftSyntax
 /// Format: A blank line is inserted after the declaration.
 final class BlankLinesBetweenScopes: SyntaxFormatRule {
     static let group: ConfigGroup? = .blankLines
-    static let isOptIn = true
+    static let defaultHandling: RuleHandling = .off
 
     override func visit(_ node: SourceFileSyntax) -> SourceFileSyntax {
         var result = super.visit(node)

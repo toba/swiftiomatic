@@ -15,7 +15,7 @@ import SwiftSyntax
 ///
 /// Format: The comparison is replaced with `.isEmpty` or `!.isEmpty`.
 final class PreferIsEmpty: SyntaxFormatRule {
-  static let isOptIn = true
+  static let defaultHandling: RuleHandling = .off
 
   override func visit(_ node: InfixOperatorExprSyntax) -> ExprSyntax {
     let visited = super.visit(node)

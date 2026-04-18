@@ -47,17 +47,7 @@ package final class RuleRegistryGenerator: FileGenerator {
 
             """
         for rule in sorted {
-            // Format rules default to .fix (auto-format); lint-only rules default to .warning.
-            // Opt-in rules default to .off regardless of type.
-            let defaultHandling: String
-            if rule.isOptIn {
-                defaultHandling = ".off"
-            } else if rule.canFormat {
-                defaultHandling = ".fix"
-            } else {
-                defaultHandling = ".warning"
-            }
-            result += "    \"\(rule.ruleName)\": \(defaultHandling),\n"
+            result += "    \"\(rule.ruleName)\": .\(rule.defaultHandling),\n"
         }
         result += "  ]\n\n"
 

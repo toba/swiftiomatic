@@ -11,7 +11,7 @@ import SwiftSyntax
 ///
 /// Format: The `private` modifier is added before the binding keyword.
 final class PrivateStateVariables: SyntaxFormatRule {
-    static let isOptIn = true
+    static let defaultHandling: RuleHandling = .off
 
     /// Attribute names that trigger the rule.
     private static let stateAttributes: Set<String> = ["State", "StateObject"]

@@ -12,7 +12,7 @@ import SwiftSyntax
 /// Format: The `{` is moved to a new line aligned with the closing `}`.
 final class WrapMultilineStatementBraces: SyntaxFormatRule {
     static let group: ConfigGroup? = .wrap
-    static let isOptIn = true
+    static let defaultHandling: RuleHandling = .off
 
     // MARK: - Control flow statements
 

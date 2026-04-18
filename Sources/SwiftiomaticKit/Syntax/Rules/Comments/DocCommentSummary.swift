@@ -35,7 +35,7 @@ final class DocCommentSummary: SyntaxLintRule {
 
     /// Identifies this rule as being opt-in. Well written docs on declarations are important, but
     /// this rule isn't linguistically advanced enough on all platforms to be applied universally.
-    static let isOptIn = true
+    static let defaultHandling: RuleHandling = .off
 
     override func visit(_ node: FunctionDeclSyntax) -> SyntaxVisitorContinueKind {
         diagnoseDocComments(in: DeclSyntax(node))

@@ -11,7 +11,7 @@ import SwiftSyntax
 /// Format: The ownership modifier is removed.
 final class NoExplicitOwnership: SyntaxFormatRule {
 
-  static let isOptIn = true
+  static let defaultHandling: RuleHandling = .off
 
   private static let ownershipKeywords: Set<Keyword> = [.borrowing, .consuming]
 

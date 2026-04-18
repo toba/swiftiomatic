@@ -4,14 +4,14 @@ Build-time code generation that keeps pipelines, registries, and documentation i
 
 ## What It Does
 
-Scans all rule types in `Sources/Swiftiomatic/Rules/`, extracts their metadata (name, description, visited syntax nodes, opt-in status), and generates source files that would be tedious and error-prone to maintain by hand.
+Scans all rule types in `Sources/Swiftiomatic/Rules/`, extracts their metadata (name, description, visited syntax nodes, default handling), and generates source files that would be tedious and error-prone to maintain by hand.
 
 ## Generated Outputs
 
 | Generator | Output | Purpose |
 |---|---|---|
 | `PipelineGenerator` | `Pipelines+Generated.swift` | `visit()` dispatchers for `LintPipeline` and `FormatPipeline.rewrite()` |
-| `RuleRegistryGenerator` | `RuleRegistry+Generated.swift` | Default rule enablements derived from `isOptIn` |
+| `RuleRegistryGenerator` | `RuleRegistry+Generated.swift` | Default rule enablements derived from `defaultHandling` |
 | `RuleNameCacheGenerator` | `RuleNameCache+Generated.swift` | `ObjectIdentifier` to rule name mapping |
 | `ConfigurationSchemaGenerator` | JSON Schema | Config file validation schema |
 | `RuleDocumentationGenerator` | Markdown docs | Rule reference documentation |

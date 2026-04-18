@@ -14,7 +14,7 @@ import SwiftSyntax
 final class BlankLinesAfterSwitchCase: SyntaxFormatRule {
     static let group: ConfigGroup? = .blankLines
 
-    static let isOptIn = true
+    static let defaultHandling: RuleHandling = .off
 
     override func visit(_ node: SwitchExprSyntax) -> ExprSyntax {
         let visited = super.visit(node)

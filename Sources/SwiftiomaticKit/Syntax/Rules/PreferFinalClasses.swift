@@ -13,7 +13,7 @@ import SwiftSyntax
 ///
 /// Format: The `final` modifier is added and `open` members are converted to `public`.
 final class PreferFinalClasses: SyntaxFormatRule {
-  static let isOptIn = true
+  static let defaultHandling: RuleHandling = .off
 
   /// Class names that appear as a superclass in some class declaration within the file.
   private var subclassedNames = Set<String>()

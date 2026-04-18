@@ -20,7 +20,7 @@ import SwiftSyntax
 ///         equivalent `func <name>() { ... }` constructs.
 final class RedundantReturn: SyntaxFormatRule {
   static let group: ConfigGroup? = .redundancies
-  static let isOptIn = true
+  static let defaultHandling: RuleHandling = .off
 
   override func visit(_ node: FunctionDeclSyntax) -> DeclSyntax {
     let decl = super.visit(node)

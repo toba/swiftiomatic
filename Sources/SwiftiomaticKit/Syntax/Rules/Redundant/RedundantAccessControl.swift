@@ -36,7 +36,7 @@ import SwiftSyntax
 final class RedundantAccessControl: SyntaxFormatRule {
     static let group: ConfigGroup? = .redundancies
 
-    static let isOptIn = true
+    static let defaultHandling: RuleHandling = .off
 
     // MARK: - RedundantFileprivate State
 

@@ -10,7 +10,7 @@ import SwiftSyntax
 /// Format: The `EnvironmentKey` type is removed and the property is replaced with `@Entry var`.
 final class PreferEnvironmentEntry: SyntaxFormatRule {
 
-  static let isOptIn = true
+  static let defaultHandling: RuleHandling = .off
 
   // MARK: - Types
 

@@ -47,7 +47,7 @@ import SwiftSyntax
 /// Lint: When a lint warning is raised.
 final class MyNewRule: SyntaxLintRule {
 
-  // static let isOptIn = true
+  // static let defaultHandling: RuleHandling = .off
 
   override func visit(_ node: SomeNodeSyntax) -> SyntaxVisitorContinueKind {
     guard violationCondition else { return .visitChildren }
@@ -173,7 +173,7 @@ Used by: `ValidateTestCases`, `TestSuiteAccessControl`, `NoForceTry`, `NoForceUn
 
 | Problem | Check |
 |---------|-------|
-| Rule doesn't trigger | Correct `visit()` node type? `generate-swiftiomatic` run? `isOptIn` + `forTesting`? Missing `super.visit` in parent? |
+| Rule doesn't trigger | Correct `visit()` node type? `generate-swiftiomatic` run? `defaultHandling = .off` + `forTesting`? Missing `super.visit` in parent? |
 | False positive | Write a test, add guard conditions (test files, bindings, closures) |
 | Wrong output | `assertFormatting` test, check trivia, check `super.visit` |
 | Finding at wrong position | Diagnosing on modified statement? Use `originalStatements[i].item` (see trivia-and-testing.md § Position Shift). Using `CodeBlockItemSyntax` instead of `.item`? Pipeline cross-rule interference — use `forTesting(enabledRule:)` (see trivia-and-testing.md § Pipeline cross-rule position shift). Diagnosing on `bindingSpecifier` instead of `varDecl`? Use the declaration node so the position accounts for modifiers (see trivia-and-testing.md § diagnose Target). |

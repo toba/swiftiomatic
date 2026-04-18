@@ -9,7 +9,7 @@ import SwiftSyntax
 ///         moved to their own line.
 final class WrapMultilineFunctionChains: SyntaxFormatRule {
     static let group: ConfigGroup? = .wrap
-    static let isOptIn = true
+    static let defaultHandling: RuleHandling = .off
 
     override func visit(_ node: FunctionCallExprSyntax) -> ExprSyntax {
         let visited = super.visit(node)

@@ -11,7 +11,7 @@ import SwiftSyntax
 final class BlankLinesBetweenImports: SyntaxFormatRule {
     static let group: ConfigGroup? = .blankLines
 
-    static let isOptIn = true
+    static let defaultHandling: RuleHandling = .off
 
     override func visit(_ node: SourceFileSyntax) -> SourceFileSyntax {
         let originalStatements = Array(node.statements)

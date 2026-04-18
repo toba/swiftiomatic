@@ -12,7 +12,7 @@ import SwiftSyntax
 ///
 /// Format: A line break is inserted after `=`.
 final class WrapConditionalAssignment: SyntaxFormatRule {
-    static let isOptIn = true
+    static let defaultHandling: RuleHandling = .off
     static let group: ConfigGroup? = .wrap
 
     // MARK: - let/var declarations

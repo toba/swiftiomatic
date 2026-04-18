@@ -12,7 +12,7 @@ import SwiftSyntax
 final class SwitchCaseIndentation: SyntaxFormatRule {
     static let group: ConfigGroup? = .indentation
 
-    static let isOptIn = true
+    static let defaultHandling: RuleHandling = .off
 
     private var style: SwitchCaseIndentationConfiguration.Style {
         context.configuration.switchCaseIndentation.style

@@ -45,7 +45,7 @@ final class PreferEarlyExits: SyntaxFormatRule {
 
   /// Identifies this rule as being opt-in. This rule is experimental and not yet stable enough to
   /// be enabled by default.
-  static let isOptIn = true
+  static let defaultHandling: RuleHandling = .off
 
   override func visit(_ node: CodeBlockItemListSyntax) -> CodeBlockItemListSyntax {
     var newItems = [CodeBlockItemSyntax]()

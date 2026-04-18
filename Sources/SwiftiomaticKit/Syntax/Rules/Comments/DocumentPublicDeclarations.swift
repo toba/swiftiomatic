@@ -21,7 +21,7 @@ final class DocumentPublicDeclarations: SyntaxLintRule {
     /// there are a number of public decls where docs are either redundant or superfluous. This rule
     /// can't differentiate those situations and will make a lot of noise for projects that are
     /// intentionally avoiding docs on some decls.
-    static let isOptIn = true
+    static let defaultHandling: RuleHandling = .off
 
     override func visit(_ node: FunctionDeclSyntax) -> SyntaxVisitorContinueKind {
         diagnoseMissingDocComment(

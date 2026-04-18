@@ -13,7 +13,7 @@ import SwiftSyntax
 ///
 /// Format: The closure is replaced with a keyPath expression.
 final class PreferKeyPath: SyntaxFormatRule {
-  static let isOptIn = true
+  static let defaultHandling: RuleHandling = .off
 
   private static let eligibleMethods: Set<String> = [
     "map", "flatMap", "compactMap", "allSatisfy", "filter", "contains",

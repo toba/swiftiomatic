@@ -9,7 +9,7 @@
 /// - ``Groupable`` — optional ``ConfigGroup`` membership (also on ``Rule``)
 /// - ``ConfigRepresentable`` — emit ``ConfigProperty`` for schema generation
 ///   (also on rule config structs like `SortImportsConfiguration`)
-package protocol LayoutDescriptor: Groupable, ConfigRepresentable {
+package protocol LayoutDescriptor: ConfigurableItem, ConfigRepresentable {
     /// The type of value this setting holds.
     associatedtype Value: Codable & Equatable & Sendable
 

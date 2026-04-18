@@ -13,7 +13,7 @@ import SwiftSyntax
 final class BlankLinesAroundMark: SyntaxFormatRule {
     static let group: ConfigGroup? = .blankLines
 
-  static let isOptIn = true
+  static let defaultHandling: RuleHandling = .off
 
   override func visit(_ token: TokenSyntax) -> TokenSyntax {
     var pieces = Array(token.leadingTrivia.pieces)

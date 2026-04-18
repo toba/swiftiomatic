@@ -18,7 +18,7 @@ import SwiftSyntax
 ///
 /// Format: Empty lines after opening braces and before closing braces will be removed.
 final class NoEmptyLinesOpeningClosingBraces: SyntaxFormatRule {
-    static let isOptIn = true
+    static let defaultHandling: RuleHandling = .off
 
     override func visit(_ node: AccessorBlockSyntax) -> AccessorBlockSyntax {
         var result = node

@@ -78,13 +78,13 @@ package final class ConfigurationSchemaGenerator: FileGenerator {
 
     private func ruleSchemaNode(for rule: RuleCollector.DetectedRule) -> JSONSchemaNode {
         var desc = rule.description ?? (rule.canFormat ? "Format rule." : "Lint rule.")
-        if rule.isOptIn { desc += " [opt-in]" }
+        if rule.defaultHandling == "off" { desc += " [opt-in]" }
 
         let modeValues =
             rule.canFormat
             ? ["autoFix", "warn", "error", "off"]
             : ["warn", "error", "off"]
-        let defaultMode = rule.isOptIn ? "off" : (rule.canFormat ? "autoFix" : "warn")
+        let defaultMode = jsonMode(for: rule.defaultHandling)
 
         let modeVariant = JSONSchemaNode.stringEnum(
             description: desc,
@@ -95,7 +95,7 @@ package final class ConfigurationSchemaGenerator: FileGenerator {
         if let optionsSchema = ruleOptionsSchema(
             for: rule.ruleName,
             canFormat: rule.canFormat,
-            isOptIn: rule.isOptIn
+            defaultHandling: rule.defaultHandling
         ) {
             var node = JSONSchemaNode()
             node.description = desc
@@ -174,7 +174,7 @@ package final class ConfigurationSchemaGenerator: FileGenerator {
                         rule.canFormat
                         ? ["autoFix", "warn", "error", "off"]
                         : ["warn", "error", "off"]
-                    let defaultMode = rule.isOptIn ? "off" : (rule.canFormat ? "autoFix" : "warn")
+                    let defaultMode = jsonMode(for: rule.defaultHandling)
                     properties[option] = .stringEnum(
                         description: rule.description ?? rule.ruleName,
                         values: modeValues,
@@ -195,14 +195,14 @@ package final class ConfigurationSchemaGenerator: FileGenerator {
 
     /// Returns the JSON Schema object variant for a rule that has config options,
     /// including the `mode` property. Returns `nil` for rules without options.
-    private func ruleOptionsSchema(for ruleName: String, canFormat: Bool, isOptIn: Bool)
+    private func ruleOptionsSchema(for ruleName: String, canFormat: Bool, defaultHandling: String)
         -> JSONSchemaNode?
     {
         guard let configProperties = Configuration.ruleConfigSchemas[ruleName] else { return nil }
 
         let modeValues =
             canFormat ? ["autoFix", "warn", "error", "off"] : ["warn", "error", "off"]
-        let defaultMode = isOptIn ? "off" : (canFormat ? "autoFix" : "warn")
+        let defaultMode = jsonMode(for: defaultHandling)
         let modeProp = JSONSchemaNode.stringEnum(
             description: "Rule mode.",
             values: modeValues,
@@ -214,6 +214,17 @@ package final class ConfigurationSchemaGenerator: FileGenerator {
             props[prop.key] = schemaNode(from: prop.schema)
         }
         return .object(description: "", properties: props)
+    }
+
+    /// Maps a `RuleHandling` case name to its JSON-encoded string.
+    private func jsonMode(for defaultHandling: String) -> String {
+        switch defaultHandling {
+        case "fix": "autoFix"
+        case "warning": "warn"
+        case "error": "error"
+        case "off": "off"
+        default: "warn"
+        }
     }
 
     private func schemaNode(from schema: ConfigProperty.Schema) -> JSONSchemaNode {

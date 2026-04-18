@@ -14,7 +14,7 @@ import SwiftSyntax
 final class RedundantThrows: SyntaxFormatRule {
   static let group: ConfigGroup? = .redundancies
 
-  static let isOptIn = true
+  static let defaultHandling: RuleHandling = .off
 
   override func visit(_ node: FunctionDeclSyntax) -> DeclSyntax {
     guard let effectSpecifiers = node.signature.effectSpecifiers,

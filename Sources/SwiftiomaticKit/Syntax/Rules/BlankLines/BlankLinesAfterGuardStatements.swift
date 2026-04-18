@@ -15,7 +15,7 @@ import SwiftSyntax
 ///         after the last guard when followed by non-guard code.
 final class BlankLinesAfterGuardStatements: SyntaxFormatRule {
     static let group: ConfigGroup? = .blankLines
-    static let isOptIn = true
+    static let defaultHandling: RuleHandling = .off
     //    static let name: String = ""
 
     override func visit(_ node: CodeBlockSyntax) -> CodeBlockSyntax {

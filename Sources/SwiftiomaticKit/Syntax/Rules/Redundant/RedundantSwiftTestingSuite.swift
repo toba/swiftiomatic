@@ -13,7 +13,7 @@ import SwiftSyntax
 final class RedundantSwiftTestingSuite: SyntaxFormatRule {
   static let group: ConfigGroup? = .redundancies
 
-  static let isOptIn = true
+  static let defaultHandling: RuleHandling = .off
 
   private var importsTesting = false
 

@@ -10,7 +10,7 @@ import SwiftSyntax
 /// Format: Access control is corrected.
 final class TestSuiteAccessControl: SyntaxFormatRule {
 
-  static let isOptIn = true
+  static let defaultHandling: RuleHandling = .off
 
   private var framework: TestFramework?
 

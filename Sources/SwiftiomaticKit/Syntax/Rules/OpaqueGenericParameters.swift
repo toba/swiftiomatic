@@ -13,7 +13,7 @@ import SwiftSyntax
 /// Format: The generic parameter is replaced with `some Protocol` in the parameter type.
 final class OpaqueGenericParameters: SyntaxFormatRule {
 
-  static let isOptIn = true
+  static let defaultHandling: RuleHandling = .off
 
   // MARK: - Visitors
 

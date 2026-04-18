@@ -9,7 +9,7 @@ import SwiftSyntax
 ///
 /// Format: `!expression` is replaced with `expression == false`.
 final class PreferExplicitFalse: SyntaxFormatRule {
-  static let isOptIn = true
+  static let defaultHandling: RuleHandling = .off
 
   override func visit(_ node: PrefixOperatorExprSyntax) -> ExprSyntax {
     guard node.operator.text == "!" else { return super.visit(node) }

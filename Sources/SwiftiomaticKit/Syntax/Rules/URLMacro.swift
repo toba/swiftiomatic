@@ -18,7 +18,7 @@ import SwiftSyntax
 /// Format: The force-unwrapped URL initializer is replaced with the configured macro.
 final class URLMacro: SyntaxFormatRule {
 
-  static let isOptIn = true
+  static let defaultHandling: RuleHandling = .off
 
   /// Whether any replacements were made (drives import addition).
   private var madeReplacements = false

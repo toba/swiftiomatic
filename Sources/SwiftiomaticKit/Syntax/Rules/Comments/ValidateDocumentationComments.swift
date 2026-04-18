@@ -26,7 +26,7 @@ final class ValidateDocumentationComments: SyntaxLintRule {
     /// Identifies this rule as being opt-in. Accurate and complete documentation comments are
     /// important, but this rule isn't able to handle situations where portions of documentation are
     /// redundant. For example when the returns clause is redundant for a simple declaration.
-    static let isOptIn = true
+    static let defaultHandling: RuleHandling = .off
 
     override func visit(_ node: InitializerDeclSyntax) -> SyntaxVisitorContinueKind {
         return checkFunctionLikeDocumentation(

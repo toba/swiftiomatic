@@ -29,7 +29,7 @@ final class NoImplicitlyUnwrappedOptionals: SyntaxLintRule {
     /// unsafe pattern (i.e. it can crash), there are valid contexts for using implicitly unwrapped
     /// optionals where it won't crash. This rule can't evaluate the context around the usage to make
     /// that determination.
-    static let isOptIn = true
+    static let defaultHandling: RuleHandling = .off
 
     // Checks if "XCTest" is an import statement
     override func visit(_ node: SourceFileSyntax) -> SyntaxVisitorContinueKind {

@@ -23,7 +23,7 @@ import SwiftSyntax
 /// Format: The case items are reordered alphabetically.
 final class SortSwitchCases: SyntaxFormatRule {
     static let group: ConfigGroup? = .sort
-  static let isOptIn = true
+  static let defaultHandling: RuleHandling = .off
 
   override func visit(_ node: SwitchCaseSyntax) -> SwitchCaseSyntax {
     guard case .case(var caseLabel) = node.label else { return node }

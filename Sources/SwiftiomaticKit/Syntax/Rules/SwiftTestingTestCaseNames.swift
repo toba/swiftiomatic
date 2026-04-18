@@ -14,7 +14,7 @@ import SwiftSyntax
 /// Format: The `test` prefix is removed and the first letter is lowercased.
 final class SwiftTestingTestCaseNames: SyntaxFormatRule {
 
-  static let isOptIn = true
+  static let defaultHandling: RuleHandling = .off
 
   private var importsTesting = false
   private var allIdentifiers = Set<String>()

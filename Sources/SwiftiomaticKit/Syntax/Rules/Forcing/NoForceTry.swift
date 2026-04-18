@@ -19,7 +19,7 @@ import SwiftSyntax
 /// Format: In test functions, `try!` is replaced with `try` and `throws` is added.
 final class NoForceTry: SyntaxFormatRule {
     static let group: ConfigGroup? = .forcing
-    static let isOptIn = true
+    static let defaultHandling: RuleHandling = .off
 
     private var testContext = TestContextTracker()
     private var insideTestFunction = false

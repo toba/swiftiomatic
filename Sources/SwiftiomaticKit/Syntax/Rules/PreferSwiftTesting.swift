@@ -14,7 +14,7 @@ import SwiftSyntax
 /// Format: The XCTest patterns are replaced with Swift Testing equivalents.
 final class PreferSwiftTesting: SyntaxFormatRule {
 
-  static let isOptIn = true
+  static let defaultHandling: RuleHandling = .off
 
   /// Set to true when we detect unsupported patterns — bail out of the entire file.
   private var bailOut = false

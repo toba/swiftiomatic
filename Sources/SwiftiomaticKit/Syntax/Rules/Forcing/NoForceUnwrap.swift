@@ -21,7 +21,7 @@ import SwiftSyntax
 /// Format: In test functions, force unwraps are replaced with XCTUnwrap/#require.
 final class NoForceUnwrap: SyntaxFormatRule {
     static let group: ConfigGroup? = .forcing
-    static let isOptIn = true
+    static let defaultHandling: RuleHandling = .off
 
     private var testContext = TestContextTracker()
     private var insideTestFunction = false

@@ -16,7 +16,7 @@ import SwiftSyntax
 final class RedundantSendable: SyntaxFormatRule {
   static let group: ConfigGroup? = .redundancies
 
-  static let isOptIn = true
+  static let defaultHandling: RuleHandling = .off
 
   override func visit(_ node: StructDeclSyntax) -> DeclSyntax {
     let visited = super.visit(node).cast(StructDeclSyntax.self)

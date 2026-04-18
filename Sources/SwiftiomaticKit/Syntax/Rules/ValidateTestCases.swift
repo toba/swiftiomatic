@@ -20,7 +20,7 @@ import SwiftSyntax
 /// Format: The `test` prefix or `@Test` attribute is added.
 final class ValidateTestCases: SyntaxFormatRule {
 
-  static let isOptIn = true
+  static let defaultHandling: RuleHandling = .off
 
   private var framework: TestFramework?
   private var identifierCounts = [String: Int]()

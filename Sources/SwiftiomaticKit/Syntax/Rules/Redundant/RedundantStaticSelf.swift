@@ -17,7 +17,7 @@ import SwiftSyntax
 final class RedundantStaticSelf: SyntaxFormatRule {
   static let group: ConfigGroup? = .redundancies
 
-  static let isOptIn = true
+  static let defaultHandling: RuleHandling = .off
 
   override func visit(_ node: MemberAccessExprSyntax) -> ExprSyntax {
     let visited = super.visit(node)

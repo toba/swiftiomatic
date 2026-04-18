@@ -28,7 +28,7 @@ final class NoLeadingUnderscores: SyntaxLintRule {
     /// normal circumstances, there are situations where they can be used to hint which APIs should be
     /// avoided by general users. In particular when APIs must be exported publicly, but the author
     /// doesn't intend for arbitrary usage.
-    static let isOptIn = true
+    static let defaultHandling: RuleHandling = .off
 
     override func visit(_ node: AssociatedTypeDeclSyntax) -> SyntaxVisitorContinueKind {
         diagnoseIfNameStartsWithUnderscore(node.name)

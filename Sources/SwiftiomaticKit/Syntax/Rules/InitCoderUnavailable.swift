@@ -10,7 +10,7 @@ import SwiftSyntax
 ///
 /// Format: The `@available(*, unavailable)` attribute is added.
 final class InitCoderUnavailable: SyntaxFormatRule {
-  static let isOptIn = true
+  static let defaultHandling: RuleHandling = .off
 
   override func visit(_ node: InitializerDeclSyntax) -> DeclSyntax {
     guard isCoderInitStub(node), !hasUnavailableAttribute(node) else {

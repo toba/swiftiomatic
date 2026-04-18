@@ -13,7 +13,7 @@ import SwiftSyntax
 ///
 /// Format: The `async` specifier is removed.
 final class RedundantAsync: SyntaxFormatRule {
-    static let isOptIn = true
+    static let defaultHandling: RuleHandling = .off
     static let group: ConfigGroup? = .redundancies
 
     override func visit(_ node: FunctionDeclSyntax) -> DeclSyntax {

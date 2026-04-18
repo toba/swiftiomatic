@@ -70,7 +70,7 @@ Based on [apple/swift-format](https://github.com/swiftlang/swift-format) (refere
 
 Lint rules are interleaved in a single `LintPipeline` tree walk. Format rules run sequentially in `FormatPipeline`, each over the entire tree. Both pipelines are auto-generated.
 
-Rules are opt-out by default (`isOptIn = false`). Override `isOptIn` to make a rule opt-in.
+Format rules default to `.fix` (auto-fix), lint rules to `.warning`. Override `defaultHandling` to `.off` for opt-in rules.
 
 **Philosophy**: prefer false positives over missed issues. The consumer filters.
 
@@ -93,7 +93,7 @@ Follows [apple/swift-format](https://github.com/swiftlang/swift-format) architec
 
 `swift run generate-swiftiomatic` scans `Sources/SwiftiomaticKit/Syntax/Rules/` and generates three files in `Syntax/`:
 - `Pipelines+Generated.swift` — `visit()` dispatchers for `LintPipeline` + `FormatPipeline.rewrite()`
-- `RuleRegistry+Generated.swift` — default rule enablements from `isOptIn`
+- `RuleRegistry+Generated.swift` — default rule enablements from `defaultHandling`
 - `RuleNameCache+Generated.swift` — `ObjectIdentifier` → rule name mapping
 
 **Never edit `*+Generated.swift` directly.**

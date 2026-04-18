@@ -14,7 +14,7 @@ import SwiftSyntax
 ///
 /// Format: The body is wrapped or inlined to match the mode.
 final class WrapSingleLineBodies: SyntaxFormatRule {
-    static let isOptIn = true
+    static let defaultHandling: RuleHandling = .off
     static let group: ConfigGroup? = .wrap
 
     private var mode: SingleLineBodiesConfiguration.Mode {

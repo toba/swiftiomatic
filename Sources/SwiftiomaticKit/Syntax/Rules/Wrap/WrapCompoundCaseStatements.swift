@@ -12,7 +12,7 @@ import SwiftSyntax
 final class WrapCompoundCaseStatements: SyntaxFormatRule {
     //    static let name = "wrapCompoundCaseStatements"
     static let group: ConfigGroup? = .wrap
-    static let isOptIn = true
+    static let defaultHandling: RuleHandling = .off
 
     override func visit(_ node: SwitchCaseLabelSyntax) -> SwitchCaseLabelSyntax {
         let items = node.caseItems

@@ -35,8 +35,8 @@ package final class RuleCollector {
         /// Indicates whether the rule can format code (all rules can lint).
         let canFormat: Bool
 
-        /// Indicates whether the rule is disabled by default, i.e. requires opting in to use it.
-        let isOptIn: Bool
+        /// The default handling for this rule (e.g. "fix", "warning", "off").
+        let defaultHandling: String
 
         /// The config group this rule belongs to, or `nil` if ungrouped.
         let group: ConfigGroup?
@@ -157,7 +157,7 @@ package final class RuleCollector {
                 description: description?.text,
                 visitedNodes: visitedNodes,
                 canFormat: canFormat,
-                isOptIn: Self.extractIsOptIn(from: members),
+                defaultHandling: Self.extractDefaultHandling(from: members, canFormat: canFormat),
                 group: Self.extractGroup(from: members)
             )
         }
@@ -184,36 +184,39 @@ package final class RuleCollector {
         return nil
     }
 
-    /// Extracts `isOptIn` from `static let isOptIn = true` in the AST.
-    /// Returns `false` (the base class default) when the override is absent.
-    private static func extractIsOptIn(from members: MemberBlockItemListSyntax) -> Bool {
+    /// Extracts `defaultHandling` from `static let defaultHandling: RuleHandling = .off` in the AST.
+    /// Falls back to `"fix"` for format rules or `"warning"` for lint rules when no override is present.
+    private static func extractDefaultHandling(
+        from members: MemberBlockItemListSyntax,
+        canFormat: Bool
+    ) -> String {
         for member in members {
             guard let varDecl = member.decl.as(VariableDeclSyntax.self),
                 let binding = varDecl.bindings.firstAndOnly,
                 let pattern = binding.pattern.as(IdentifierPatternSyntax.self),
-                pattern.identifier.text == "isOptIn"
+                pattern.identifier.text == "defaultHandling"
             else { continue }
 
-            // Stored property: `static let isOptIn = true`
-            if let initializer = binding.initializer?.value.as(BooleanLiteralExprSyntax.self) {
-                return initializer.literal.tokenKind == .keyword(.true)
+            // Stored property: `static let defaultHandling: RuleHandling = .off`
+            if let initializer = binding.initializer?.value.as(MemberAccessExprSyntax.self) {
+                return initializer.declName.baseName.text
             }
 
-            // Computed property: `static var isOptIn: Bool { true }`
+            // Computed property: `static var defaultHandling: RuleHandling { .off }`
             if let accessorBlock = binding.accessorBlock,
                 case .getter(let body) = accessorBlock.accessors
             {
-                if let boolExpr = body.first?.item.as(BooleanLiteralExprSyntax.self) {
-                    return boolExpr.literal.tokenKind == .keyword(.true)
+                if let expr = body.first?.item.as(MemberAccessExprSyntax.self) {
+                    return expr.declName.baseName.text
                 }
                 if let returnStmt = body.first?.item.as(ReturnStmtSyntax.self),
-                    let boolExpr = returnStmt.expression?.as(BooleanLiteralExprSyntax.self)
+                    let expr = returnStmt.expression?.as(MemberAccessExprSyntax.self)
                 {
-                    return boolExpr.literal.tokenKind == .keyword(.true)
+                    return expr.declName.baseName.text
                 }
             }
         }
-        return false
+        return canFormat ? "fix" : "warning"
     }
 
     /// Extracts `group` from `static let group: ConfigGroup? = .someCase` in the AST.

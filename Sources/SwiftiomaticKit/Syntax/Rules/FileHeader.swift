@@ -15,7 +15,7 @@ import SwiftSyntax
 /// Format: The file header is replaced with (or cleared to) the configured text.
 final class FileHeader: SyntaxFormatRule {
 
-  static let isOptIn = true
+  static let defaultHandling: RuleHandling = .off
 
   override func visit(_ node: SourceFileSyntax) -> SourceFileSyntax {
     guard let text = context.configuration.fileHeader.text else { return node }

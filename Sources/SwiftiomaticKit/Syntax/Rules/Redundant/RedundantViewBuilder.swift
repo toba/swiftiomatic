@@ -22,7 +22,7 @@ final class RedundantViewBuilder: SyntaxFormatRule {
 
   /// Identifies this rule as being opt-in. This rule requires SwiftUI context and may produce
   /// false positives in codebases that use custom result builders named `ViewBuilder`.
-  static let isOptIn = true
+  static let defaultHandling: RuleHandling = .off
 
   override func visit(_ node: VariableDeclSyntax) -> DeclSyntax {
     guard let viewBuilderAttr = node.attributes.attribute(named: "ViewBuilder") else {

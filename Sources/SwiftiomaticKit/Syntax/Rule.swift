@@ -14,7 +14,7 @@ import Foundation
 import SwiftSyntax
 
 /// A Rule is a linting or formatting pass that executes in a given context.
-protocol Rule: Groupable {
+protocol Rule: ConfigurableItem {
     /// The context in which the rule is executed.
     var context: Context { get }
 
@@ -24,8 +24,11 @@ protocol Rule: Groupable {
     /// The config group this rule belongs to, or `nil` if ungrouped.
     static var group: ConfigGroup? { get }
 
-    /// Whether this rule is opt-in, meaning it is disabled by default.
-    static var isOptIn: Bool { get }
+    /// The default handling for this rule when not overridden by configuration.
+    ///
+    /// Base classes provide the default: `.fix` for format rules, `.warning` for
+    /// lint rules. Override to `.off` for rules that should be disabled by default.
+    static var defaultHandling: RuleHandling { get }
 
     /// Creates a new Rule in a given context.
     init(context: Context)
@@ -35,8 +38,20 @@ extension Rule {
     /// By default, the `ruleName` is just the name of the implementing rule class.
     static var name: String { String("\(self)".split(separator: ".").last!) }
     static var group: ConfigGroup? { nil }
-    static var isOptIn: Bool { false }
+    static var key: String { name }
+    static var defaultValue: RuleHandling { defaultHandling }
 
+}
+
+extension Rule where Self: SyntaxFormatRule {
+    static var defaultHandling: RuleHandling { .fix }
+}
+
+extension Rule where Self: SyntaxLintRule {
+    static var defaultHandling: RuleHandling { .warning }
+}
+
+extension Rule {
     /// Emits the given finding.
     ///
     /// - Parameters:

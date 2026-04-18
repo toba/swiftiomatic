@@ -14,7 +14,7 @@ import SwiftSyntax
 ///         assignment.
 final class PreferConditionalExpression: SyntaxFormatRule {
 
-  static let isOptIn = true
+  static let defaultHandling: RuleHandling = .off
 
   override func visit(_ node: CodeBlockItemListSyntax) -> CodeBlockItemListSyntax {
     let visited = super.visit(node)

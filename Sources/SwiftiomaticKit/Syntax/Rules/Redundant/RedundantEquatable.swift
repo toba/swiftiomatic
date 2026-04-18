@@ -15,7 +15,7 @@ import SwiftSyntax
 ///
 /// Format: The `==` function is removed from the member block.
 final class RedundantEquatable: SyntaxFormatRule {
-    static let isOptIn = true
+    static let defaultHandling: RuleHandling = .off
     static let group: ConfigGroup? = .redundancies
 
     override func visit(_ node: StructDeclSyntax) -> DeclSyntax {

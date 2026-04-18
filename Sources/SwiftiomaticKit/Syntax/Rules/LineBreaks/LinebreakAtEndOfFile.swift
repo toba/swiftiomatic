@@ -11,7 +11,7 @@ import SwiftSyntax
 final class LinebreakAtEndOfFile: SyntaxFormatRule {
     static let name = "ensureLineBreakAtEOF"
     static let group: ConfigGroup? = .lineBreaks
-    static let isOptIn = true
+    static let defaultHandling: RuleHandling = .off
 
     override func visit(_ node: SourceFileSyntax) -> SourceFileSyntax {
         let eof = node.endOfFileToken

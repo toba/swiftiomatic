@@ -19,7 +19,7 @@ import SwiftSyntax
 /// the signature if needed.
 final class NoGuardInTests: SyntaxFormatRule {
 
-  static let isOptIn = true
+  static let defaultHandling: RuleHandling = .off
 
   private var testContext = TestContextTracker()
   private var insideTestFunction = false

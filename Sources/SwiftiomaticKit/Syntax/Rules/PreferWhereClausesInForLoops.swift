@@ -22,7 +22,7 @@ final class PreferWhereClausesInForLoops: SyntaxFormatRule {
 
   /// Identifies this rule as being opt-in. This rule is experimental and not yet stable enough to
   /// be enabled by default.
-  static let isOptIn = true
+  static let defaultHandling: RuleHandling = .off
 
   override func visit(_ node: ForStmtSyntax) -> StmtSyntax {
     // Extract IfStmt node if it's the only node in the function's body.

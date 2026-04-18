@@ -11,7 +11,7 @@ import SwiftSyntax
 /// Format: The comment style is corrected.
 final class DocComments: SyntaxFormatRule {
     static let name = "convertRegularCommentToDocC"
-    static let isOptIn = true
+    static let defaultHandling: RuleHandling = .off
     static let group: ConfigGroup? = .comments
 
     /// Directive prefixes that should never be converted.
