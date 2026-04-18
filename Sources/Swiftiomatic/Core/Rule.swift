@@ -86,9 +86,11 @@ extension Rule {
     }
 
     let category = RuleBasedFindingCategory(ruleType: type(of: self))
+    let severity = context.severity(of: type(of: self))
     context.findingEmitter.emit(
       message,
       category: category,
+      severity: severity,
       location: syntaxLocation.flatMap(Finding.Location.init),
       notes: notes
     )

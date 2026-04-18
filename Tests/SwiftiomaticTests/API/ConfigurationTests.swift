@@ -95,17 +95,17 @@ struct ConfigurationTests {
     #expect(config.maximumBlankLines == 1)
   }
 
-  @Test func formatRuleBoolValue() throws {
+  @Test func formatRuleSeverityValue() throws {
     let jsonData = """
       {
         "format": {
-          "SortImports": false
+          "SortImports": "off"
         }
       }
       """.data(using: .utf8)!
 
     let config = try JSONDecoder().decode(Configuration.self, from: jsonData)
-    #expect(config.rules["SortImports"] == false)
+    #expect(config.rules["SortImports"] == .off)
     // Config struct should have defaults since no options were provided.
     #expect(config.sortImports.shouldGroupImports == true)
     #expect(config.sortImports.includeConditionalImports == false)
@@ -116,7 +116,7 @@ struct ConfigurationTests {
       {
         "format": {
           "SortImports": {
-            "enabled": true,
+            "severity": "warn",
             "includeConditionalImports": true
           }
         }
@@ -124,12 +124,12 @@ struct ConfigurationTests {
       """.data(using: .utf8)!
 
     let config = try JSONDecoder().decode(Configuration.self, from: jsonData)
-    #expect(config.rules["SortImports"] == true)
+    #expect(config.rules["SortImports"] == .warning)
     #expect(config.sortImports.includeConditionalImports == true)
     #expect(config.sortImports.shouldGroupImports == true)
   }
 
-  @Test func formatRuleObjectDefaultsEnabled() throws {
+  @Test func formatRuleObjectDefaultsSeverity() throws {
     let jsonData = """
       {
         "format": {
@@ -141,26 +141,26 @@ struct ConfigurationTests {
       """.data(using: .utf8)!
 
     let config = try JSONDecoder().decode(Configuration.self, from: jsonData)
-    #expect(config.rules["CapitalizeAcronyms"] == true)
+    #expect(config.rules["CapitalizeAcronyms"] == .warning)
     #expect(config.acronyms.words == ["ID", "URL"])
   }
 
-  @Test func formatRulesMixedBoolAndObject() throws {
+  @Test func formatRulesMixedSeverityAndObject() throws {
     let jsonData = """
       {
         "format": {
-          "SortImports": { "enabled": true, "shouldGroupImports": false },
-          "CapitalizeAcronyms": false,
-          "URLMacro": { "enabled": true, "macroName": "#URL", "moduleName": "URLFoundation" }
+          "SortImports": { "severity": "error", "shouldGroupImports": false },
+          "CapitalizeAcronyms": "off",
+          "URLMacro": { "severity": "warn", "macroName": "#URL", "moduleName": "URLFoundation" }
         }
       }
       """.data(using: .utf8)!
 
     let config = try JSONDecoder().decode(Configuration.self, from: jsonData)
-    #expect(config.rules["SortImports"] == true)
+    #expect(config.rules["SortImports"] == .error)
     #expect(config.sortImports.shouldGroupImports == false)
-    #expect(config.rules["CapitalizeAcronyms"] == false)
-    #expect(config.rules["URLMacro"] == true)
+    #expect(config.rules["CapitalizeAcronyms"] == .off)
+    #expect(config.rules["URLMacro"] == .warning)
     #expect(config.urlMacro.macroName == "#URL")
     #expect(config.urlMacro.moduleName == "URLFoundation")
   }
@@ -169,14 +169,29 @@ struct ConfigurationTests {
     let jsonData = """
       {
         "format": {
-          "FileScopedDeclarationPrivacy": { "enabled": true, "accessLevel": "fileprivate" },
-          "NoAssignmentInExpressions": { "enabled": true, "allowedFunctions": ["foo"] },
-          "SortImports": { "enabled": true, "includeConditionalImports": true, "shouldGroupImports": false },
-          "CapitalizeAcronyms": { "enabled": true, "words": ["ID"] },
-          "NoExtensionAccessLevel": { "enabled": true, "placement": "onExtension" },
-          "PatternLetPlacement": { "enabled": true, "placement": "outerPattern" },
-          "URLMacro": { "enabled": true, "macroName": "#URL", "moduleName": "M" },
-          "FileHeader": { "enabled": true, "text": "// Header" }
+          "FileScopedDeclarationPrivacy": { "severity": "warn", "accessLevel": "fileprivate" },
+          "NoAssignmentInExpressions": { "severity": "warn", "allowedFunctions": ["foo"] },
+          "SortImports": { "severity": "error", "includeConditionalImports": true, "shouldGroupImports": false },
+          "CapitalizeAcronyms": { "severity": "warn", "words": ["ID"] },
+          "NoExtensionAccessLevel": { "severity": "warn", "placement": "onExtension" },
+          "PatternLetPlacement": { "severity": "warn", "placement": "outerPattern" },
+          "URLMacro": { "severity": "warn", "macroName": "#URL", "moduleName": "M" },
+          "FileHeader": { "severity": "warn", "text": "// Header" },
+          "UpdateBlankLines": {
+            "severity": "warn",
+            "maximumBlankLines": 2,
+            "afterGuardStatements": true,
+            "afterImports": true,
+            "betweenChainedFunctions": true,
+            "betweenImports": false,
+            "betweenScopes": true
+          },
+          "RemoveRedundant": {
+            "severity": "error",
+            "self": true,
+            "init": false,
+            "backticks": "warn"
+          }
         }
       }
       """.data(using: .utf8)!
@@ -192,6 +207,17 @@ struct ConfigurationTests {
     #expect(config.urlMacro.macroName == "#URL")
     #expect(config.urlMacro.moduleName == "M")
     #expect(config.fileHeader.text == "// Header")
+    // UpdateBlankLines umbrella
+    #expect(config.maximumBlankLines == 2)
+    #expect(config.rules["BlankLinesAfterGuardStatements"] == .warning)
+    #expect(config.rules["BlankLinesAfterImports"] == .warning)
+    #expect(config.rules["BlankLinesBetweenChainedFunctions"] == .warning)
+    #expect(config.rules["BlankLinesBetweenImports"] == .off)
+    #expect(config.rules["BlankLinesBetweenScopes"] == .warning)
+    // RemoveRedundant umbrella
+    #expect(config.rules["RedundantSelf"] == .error)
+    #expect(config.rules["RedundantInit"] == .off)
+    #expect(config.rules["RedundantBackticks"] == .warning)
   }
 
   // MARK: - Lint section
@@ -200,15 +226,51 @@ struct ConfigurationTests {
     let jsonData = """
       {
         "lint": {
-          "LowerCamelCase": false,
-          "NoBlockComments": true
+          "LowerCamelCase": "off",
+          "NoBlockComments": "error"
         }
       }
       """.data(using: .utf8)!
 
     let config = try JSONDecoder().decode(Configuration.self, from: jsonData)
-    #expect(config.rules["LowerCamelCase"] == false)
-    #expect(config.rules["NoBlockComments"] == true)
+    #expect(config.rules["LowerCamelCase"] == .off)
+    #expect(config.rules["NoBlockComments"] == .error)
+  }
+
+  // MARK: - Severity
+
+  @Test func allSeverityValues() throws {
+    let jsonData = """
+      {
+        "format": {
+          "NoSemicolons": "error",
+          "RedundantSelf": "warn",
+          "CapitalizeAcronyms": "off"
+        }
+      }
+      """.data(using: .utf8)!
+
+    let config = try JSONDecoder().decode(Configuration.self, from: jsonData)
+    #expect(config.rules["NoSemicolons"] == .error)
+    #expect(config.rules["RedundantSelf"] == .warning)
+    #expect(config.rules["CapitalizeAcronyms"] == .off)
+  }
+
+  @Test func errorSeverityObjectForm() throws {
+    let jsonData = """
+      {
+        "format": {
+          "FileScopedDeclarationPrivacy": {
+            "severity": "error",
+            "accessLevel": "private"
+          }
+        }
+      }
+      """.data(using: .utf8)!
+
+    let config = try JSONDecoder().decode(Configuration.self, from: jsonData)
+    #expect(config.rules["FileScopedDeclarationPrivacy"] == .error)
+    #expect(config.fileScopedDeclarationPrivacy.accessLevel == .private)
   }
 
   // MARK: - Dump and round-trip
@@ -216,7 +278,7 @@ struct ConfigurationTests {
   @Test func dumpConfigurationEmitsV3Format() throws {
     var config = Configuration()
     config.sortImports.includeConditionalImports = true
-    config.rules["SortImports"] = true
+    config.rules["SortImports"] = .warning
 
     let json = try config.asJsonString()
 
@@ -234,8 +296,8 @@ struct ConfigurationTests {
     var config = Configuration()
     config.sortImports.includeConditionalImports = true
     config.acronyms.words = ["ID", "URL"]
-    config.rules["SortImports"] = true
-    config.rules["CapitalizeAcronyms"] = true
+    config.rules["SortImports"] = .warning
+    config.rules["CapitalizeAcronyms"] = .error
 
     let data = try JSONEncoder().encode(config)
     let decoded = try JSONDecoder().decode(Configuration.self, from: data)

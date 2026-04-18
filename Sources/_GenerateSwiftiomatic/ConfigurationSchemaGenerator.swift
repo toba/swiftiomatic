@@ -13,7 +13,7 @@
 import Foundation
 import Swiftiomatic
 
-/// Generates `swiftiomatic.schema.json` by encoding a `JSONSchemaNode` tree.
+/// Generates `schema.json` by encoding a `JSONSchemaNode` tree.
 ///
 /// Rule descriptions are sourced from `RuleCollector` (extracted from DocC comments)
 /// so they stay in sync with rule implementations.
@@ -65,7 +65,7 @@ import Swiftiomatic
             formatProps[rule.typeName] = ruleSchemaNode(for: rule)
         }
         p["format"] = .object(
-            description: "Formatting settings and format rules. Settings control the pretty-printer; rules are toggles or objects with 'enabled' plus rule-specific options.",
+            description: "Formatting settings and format rules. Settings control the pretty-printer; rules are severity strings ('warn', 'error', 'off') or objects with 'severity' plus rule-specific options.",
             properties: formatProps
         )
 
@@ -78,7 +78,7 @@ import Swiftiomatic
             lintProps[rule.typeName] = ruleSchemaNode(for: rule)
         }
         p["lint"] = .object(
-            description: "Lint rules. Each value is a boolean toggle.",
+            description: "Lint rules. Each value is a severity: 'warn', 'error', or 'off'.",
             properties: lintProps
         )
 
@@ -90,14 +90,19 @@ import Swiftiomatic
         var desc = rule.description ?? (rule.canFormat ? "Format rule." : "Lint rule.")
         if rule.isOptIn { desc += " [opt-in]" }
 
+        let severityVariant = JSONSchemaNode.stringEnum(
+            description: desc,
+            values: ["warn", "error", "off"],
+            defaultValue: rule.isOptIn ? "off" : "warn"
+        )
+
         if let optionsSchema = ruleOptionsSchema(for: rule.typeName, isOptIn: rule.isOptIn) {
-            let boolVariant = JSONSchemaNode.boolean(description: desc, defaultValue: !rule.isOptIn)
             var node = JSONSchemaNode()
             node.description = desc
-            node.oneOf = [boolVariant, optionsSchema]
+            node.oneOf = [severityVariant, optionsSchema]
             return node
         } else {
-            return .boolean(description: desc, defaultValue: !rule.isOptIn)
+            return severityVariant
         }
     }
 
@@ -144,11 +149,12 @@ import Swiftiomatic
     }
 
     /// Returns the JSON Schema object variant for a rule that has config options,
-    /// including the `enabled` property. Returns `nil` for rules without options.
+    /// including the `severity` property. Returns `nil` for rules without options.
     private func ruleOptionsSchema(for ruleName: String, isOptIn: Bool) -> JSONSchemaNode? {
-        let enabledProp = JSONSchemaNode.boolean(
-            description: "Enable or disable the rule.",
-            defaultValue: !isOptIn
+        let severityProp = JSONSchemaNode.stringEnum(
+            description: "Rule severity: warn, error, or off.",
+            values: ["warn", "error", "off"],
+            defaultValue: isOptIn ? "off" : "warn"
         )
 
         switch ruleName {
@@ -156,7 +162,7 @@ import Swiftiomatic
             return .object(
                 description: "",
                 properties: [
-                    "enabled": enabledProp,
+                    "severity": severityProp,
                     "accessLevel": .stringEnum(
                         description: "Access level for file-scoped private declarations.",
                         values: ["private", "fileprivate"],
@@ -168,7 +174,7 @@ import Swiftiomatic
             return .object(
                 description: "",
                 properties: [
-                    "enabled": enabledProp,
+                    "severity": severityProp,
                     "allowedFunctions": .stringArray(
                         description: "Functions where embedded assignments are allowed.",
                         defaultValue: ["XCTAssertNoThrow"]
@@ -179,7 +185,7 @@ import Swiftiomatic
             return .object(
                 description: "",
                 properties: [
-                    "enabled": enabledProp,
+                    "severity": severityProp,
                     "includeConditionalImports": .boolean(
                         description: "Sort imports within #if blocks.",
                         defaultValue: false
@@ -194,7 +200,7 @@ import Swiftiomatic
             return .object(
                 description: "",
                 properties: [
-                    "enabled": enabledProp,
+                    "severity": severityProp,
                     "words": .stringArray(
                         description: "Acronyms to capitalize (fully uppercased).",
                         defaultValue: [
@@ -209,7 +215,7 @@ import Swiftiomatic
             return .object(
                 description: "",
                 properties: [
-                    "enabled": enabledProp,
+                    "severity": severityProp,
                     "placement": .stringEnum(
                         description: "Where to place access control modifiers.",
                         values: ["onDeclarations", "onExtension"],
@@ -221,7 +227,7 @@ import Swiftiomatic
             return .object(
                 description: "",
                 properties: [
-                    "enabled": enabledProp,
+                    "severity": severityProp,
                     "placement": .stringEnum(
                         description: "Where to place let/var in case patterns.",
                         values: ["eachBinding", "outerPattern"],
@@ -233,7 +239,7 @@ import Swiftiomatic
             return .object(
                 description: "",
                 properties: [
-                    "enabled": enabledProp,
+                    "severity": severityProp,
                     "macroName": .string(description: "Macro name, e.g. \"#URL\". Omit to disable."),
                     "moduleName": .string(description: "Module to import for the macro."),
                 ]
@@ -242,7 +248,7 @@ import Swiftiomatic
             return .object(
                 description: "",
                 properties: [
-                    "enabled": enabledProp,
+                    "severity": severityProp,
                     "text": .string(
                         description: "Header text. Omit to disable, empty string to remove headers."
                     ),

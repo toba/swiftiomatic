@@ -51,8 +51,8 @@ extension Configuration {
 
   public static func forTesting(enabledRule: String) -> Configuration {
     var config = Configuration.forTesting
-    config.rules = config.rules.mapValues({ _ in false })
-    config.rules[enabledRule] = true
+    config.rules = config.rules.mapValues({ _ in .off })
+    config.rules[enabledRule] = .warning
     return config
   }
 }

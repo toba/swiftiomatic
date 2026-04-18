@@ -42,7 +42,6 @@ public struct Configuration: Codable, Equatable, Sendable {
   /// Codable container for the formatting settings that live inside the `format` JSON section.
   /// Rule keys (anything not a CodingKey case) are ignored by the decoder and handled separately.
   private struct FormatSettings: Codable, Equatable {
-    var maximumBlankLines: Int
     var lineLength: Int
     var spacesBeforeEndOfLineComments: Int
     var tabWidth: Int
@@ -63,7 +62,6 @@ public struct Configuration: Codable, Equatable, Sendable {
     var indentBlankLines: Bool
 
     init(from config: Configuration) {
-      self.maximumBlankLines = config.maximumBlankLines
       self.lineLength = config.lineLength
       self.spacesBeforeEndOfLineComments = config.spacesBeforeEndOfLineComments
       self.tabWidth = config.tabWidth
@@ -87,7 +85,6 @@ public struct Configuration: Codable, Equatable, Sendable {
     init(from decoder: Decoder) throws {
       let defaults = Configuration()
       let c = try decoder.container(keyedBy: CodingKeys.self)
-      self.maximumBlankLines = try c.decodeIfPresent(Int.self, forKey: .maximumBlankLines) ?? defaults.maximumBlankLines
       self.lineLength = try c.decodeIfPresent(Int.self, forKey: .lineLength) ?? defaults.lineLength
       self.spacesBeforeEndOfLineComments = try c.decodeIfPresent(Int.self, forKey: .spacesBeforeEndOfLineComments) ?? defaults.spacesBeforeEndOfLineComments
       self.tabWidth = try c.decodeIfPresent(Int.self, forKey: .tabWidth) ?? defaults.tabWidth
@@ -109,7 +106,6 @@ public struct Configuration: Codable, Equatable, Sendable {
     }
 
     func apply(to config: inout Configuration) {
-      config.maximumBlankLines = maximumBlankLines
       config.lineLength = lineLength
       config.spacesBeforeEndOfLineComments = spacesBeforeEndOfLineComments
       config.tabWidth = tabWidth
@@ -132,7 +128,6 @@ public struct Configuration: Codable, Equatable, Sendable {
 
     func encode(into container: inout KeyedEncodingContainer<DynamicCodingKey>) throws {
       func key(_ name: String) -> DynamicCodingKey { DynamicCodingKey(name) }
-      try container.encode(maximumBlankLines, forKey: key("maximumBlankLines"))
       try container.encode(lineLength, forKey: key("lineLength"))
       try container.encode(spacesBeforeEndOfLineComments, forKey: key("spacesBeforeEndOfLineComments"))
       try container.encode(tabWidth, forKey: key("tabWidth"))
@@ -153,9 +148,9 @@ public struct Configuration: Codable, Equatable, Sendable {
       try container.encode(indentBlankLines, forKey: key("indentBlankLines"))
     }
 
-    /// The CodingKey names that correspond to settings (not rules).
+    /// The CodingKey names that correspond to settings or umbrella groups (not individual rules).
     static let keyNames: Set<String> = [
-      "maximumBlankLines", "lineLength", "spacesBeforeEndOfLineComments", "tabWidth",
+      "lineLength", "spacesBeforeEndOfLineComments", "tabWidth",
       "indentation", "respectsExistingLineBreaks", "lineBreakBeforeControlFlowKeywords",
       "lineBreakBeforeEachArgument", "lineBreakBeforeEachGenericRequirement",
       "lineBreakBetweenDeclarationAttributes", "prioritizeKeepingFunctionOutputTogether",
@@ -163,6 +158,8 @@ public struct Configuration: Codable, Equatable, Sendable {
       "indentSwitchCaseLabels", "spacesAroundRangeFormationOperators",
       "multilineTrailingCommaBehavior", "multiElementCollectionTrailingCommas",
       "reflowMultilineStringLiterals", "indentBlankLines",
+      // Umbrella config groups (handled separately from individual rules).
+      "UpdateBlankLines", "RemoveRedundant",
     ]
   }
 
@@ -178,11 +175,61 @@ public struct Configuration: Codable, Equatable, Sendable {
     "FileHeader": { d, c in c.fileHeader = try .init(from: d) },
   ]
 
+  // MARK: - Umbrella config groups
+
+  /// Maps umbrella config names to their sub-option→rule-name mappings.
+  /// Sub-options that are `true` inherit the umbrella severity; `false` means off.
+  private static let umbrellaGroups: [String: [(option: String, rule: String)]] = [
+    "UpdateBlankLines": [
+      ("afterGuardStatements", "BlankLinesAfterGuardStatements"),
+      ("afterImports", "BlankLinesAfterImports"),
+      ("afterSwitchCase", "BlankLinesAfterSwitchCase"),
+      ("aroundMark", "BlankLinesAroundMark"),
+      ("betweenChainedFunctions", "BlankLinesBetweenChainedFunctions"),
+      ("betweenImports", "BlankLinesBetweenImports"),
+      ("betweenScopes", "BlankLinesBetweenScopes"),
+    ],
+    "RemoveRedundant": [
+      ("accessControl", "RedundantAccessControl"),
+      ("async", "RedundantAsync"),
+      ("backticks", "RedundantBackticks"),
+      ("break", "RedundantBreak"),
+      ("closure", "RedundantClosure"),
+      ("equatable", "RedundantEquatable"),
+      ("init", "RedundantInit"),
+      ("let", "RedundantLet"),
+      ("letError", "RedundantLetError"),
+      ("nilInit", "RedundantNilInit"),
+      ("objc", "RedundantObjc"),
+      ("optionalBinding", "RedundantOptionalBinding"),
+      ("pattern", "RedundantPattern"),
+      ("property", "RedundantProperty"),
+      ("rawValues", "RedundantRawValues"),
+      ("self", "RedundantSelf"),
+      ("sendable", "RedundantSendable"),
+      ("staticSelf", "RedundantStaticSelf"),
+      ("swiftTestingSuite", "RedundantSwiftTestingSuite"),
+      ("throws", "RedundantThrows"),
+      ("type", "RedundantType"),
+      ("typedThrows", "RedundantTypedThrows"),
+      ("viewBuilder", "RedundantViewBuilder"),
+    ],
+  ]
+
+  /// Rule names managed by umbrella groups (excluded from normal encode loop).
+  private static let umbrellaManagedRules: Set<String> = {
+    var names = Set<String>()
+    for (_, mappings) in umbrellaGroups {
+      for (_, rule) in mappings { names.insert(rule) }
+    }
+    return names
+  }()
+
   /// A dictionary containing the default enabled/disabled states of rules, keyed by the rules'
   /// names.
   ///
   /// This value is generated by `generate-swiftiomatic` based on the `isOptIn` value of each rule.
-  public static let defaultRuleEnablements: [String: Bool] = RuleRegistry.rules
+  public static let defaultRuleEnablements: [String: RuleSeverity] = RuleRegistry.rules
 
   /// The version of this configuration.
   private var version: Int = highestSupportedConfigurationVersion
@@ -191,7 +238,7 @@ public struct Configuration: Codable, Equatable, Sendable {
 
   /// The dictionary containing the rule names that we wish to run on. A rule is not used if it is
   /// marked as `false`, or if it is missing from the dictionary.
-  public var rules: [String: Bool]
+  public var rules: [String: RuleSeverity]
 
   /// The maximum number of consecutive blank lines that may appear in a file.
   public var maximumBlankLines: Int
@@ -452,51 +499,79 @@ public struct Configuration: Codable, Equatable, Sendable {
 
     // MARK: - Decode `format` section (settings + format rules)
 
-    var formatRuleEnablements: [String: Bool] = [:]
+    var formatRuleEnablements: [String: RuleSeverity] = [:]
 
     if container.contains(.format) {
       // Decode typed settings (ignores unknown keys = rule names).
       let settings = try container.decode(FormatSettings.self, forKey: .format)
       settings.apply(to: &config)
 
-      // Iterate all keys; anything not a setting key is a rule toggle/object.
+      // Iterate all keys; anything not a setting key or umbrella is a rule toggle/object.
       let fmt = try container.nestedContainer(keyedBy: DynamicCodingKey.self, forKey: .format)
       for key in fmt.allKeys where !FormatSettings.keyNames.contains(key.stringValue) {
         let ruleName = key.stringValue
 
-        if let boolVal = try? fmt.decode(Bool.self, forKey: key) {
-          formatRuleEnablements[ruleName] = boolVal
+        if let severity = try? fmt.decode(RuleSeverity.self, forKey: key) {
+          formatRuleEnablements[ruleName] = severity
           continue
         }
 
-        // Object value: extract `enabled` and decode rule-specific options.
+        // Object value: extract `severity` and decode rule-specific options.
         let entryDecoder = try fmt.superDecoder(forKey: key)
         let entryContainer = try entryDecoder.container(keyedBy: DynamicCodingKey.self)
         formatRuleEnablements[ruleName] =
-          try entryContainer.decodeIfPresent(Bool.self, forKey: DynamicCodingKey("enabled")) ?? true
+          try entryContainer.decodeIfPresent(RuleSeverity.self, forKey: DynamicCodingKey("severity")) ?? .warning
 
         if let decode = Self.ruleConfigDecoders[ruleName] {
           try decode(entryDecoder, &config)
+        }
+      }
+
+      // MARK: Decode umbrella config groups
+
+      for (umbrella, mappings) in Self.umbrellaGroups {
+        let key = DynamicCodingKey(umbrella)
+        guard fmt.contains(key) else { continue }
+
+        let obj = try fmt.nestedContainer(keyedBy: DynamicCodingKey.self, forKey: key)
+        let severity = try obj.decodeIfPresent(RuleSeverity.self, forKey: DynamicCodingKey("severity")) ?? .warning
+
+        // UpdateBlankLines owns maximumBlankLines.
+        if umbrella == "UpdateBlankLines" {
+          if let maxBlanks = try obj.decodeIfPresent(Int.self, forKey: DynamicCodingKey("maximumBlankLines")) {
+            config.maximumBlankLines = maxBlanks
+          }
+        }
+
+        for (option, rule) in mappings {
+          let optKey = DynamicCodingKey(option)
+          guard obj.contains(optKey) else { continue }
+          // true → inherit severity, false → off, severity string → override.
+          if let boolVal = try? obj.decode(Bool.self, forKey: optKey) {
+            formatRuleEnablements[rule] = boolVal ? severity : .off
+          } else if let optSeverity = try? obj.decode(RuleSeverity.self, forKey: optKey) {
+            formatRuleEnablements[rule] = optSeverity
+          }
         }
       }
     }
 
     // MARK: - Decode `lint` section (lint rules only)
 
-    var lintRuleEnablements: [String: Bool] = [:]
+    var lintRuleEnablements: [String: RuleSeverity] = [:]
 
     if container.contains(.lint) {
       let lint = try container.nestedContainer(keyedBy: DynamicCodingKey.self, forKey: .lint)
       for key in lint.allKeys {
-        if let boolVal = try? lint.decode(Bool.self, forKey: key) {
-          lintRuleEnablements[key.stringValue] = boolVal
+        if let severity = try? lint.decode(RuleSeverity.self, forKey: key) {
+          lintRuleEnablements[key.stringValue] = severity
         }
       }
     }
 
     // Merge format + lint rules over defaults.
-    for (name, enabled) in formatRuleEnablements { config.rules[name] = enabled }
-    for (name, enabled) in lintRuleEnablements { config.rules[name] = enabled }
+    for (name, severity) in formatRuleEnablements { config.rules[name] = severity }
+    for (name, severity) in lintRuleEnablements { config.rules[name] = severity }
     self = config
   }
 
@@ -526,27 +601,59 @@ public struct Configuration: Codable, Equatable, Sendable {
     try FormatSettings(from: self).encode(into: &fmt)
 
     let formatRuleNames = Set(RuleRegistry.formatRules.keys)
-    for (name, enabled) in rules where formatRuleNames.contains(name) {
+    for (name, severity) in rules
+      where formatRuleNames.contains(name) && !Self.umbrellaManagedRules.contains(name)
+    {
       if let config = ruleConfigEncodable(for: name) {
-        // Encode as object: { "enabled": true/false, ...config options }
-        // Use JSONSerialization to merge `enabled` into the config struct's encoding.
         let configData = try JSONEncoder().encode(AnyEncodable(config))
         if var configDict = try JSONSerialization.jsonObject(with: configData) as? [String: Any] {
-          configDict["enabled"] = enabled
-          // Re-encode the merged dict as a JSON fragment via a wrapper.
+          configDict["severity"] = severity.encodedString
           try fmt.encode(JSONFragment(configDict), forKey: DynamicCodingKey(name))
         }
       } else {
-        try fmt.encode(enabled, forKey: DynamicCodingKey(name))
+        try fmt.encode(severity, forKey: DynamicCodingKey(name))
       }
+    }
+
+    // MARK: Encode umbrella config groups
+
+    for (umbrella, mappings) in Self.umbrellaGroups {
+      var dict: [String: Any] = [:]
+
+      // Determine umbrella severity from first active sub-rule, or .warning.
+      let umbrellaSeverity: RuleSeverity = mappings
+        .compactMap { rules[$0.rule] }
+        .first(where: \.isActive) ?? .warning
+      dict["severity"] = umbrellaSeverity.encodedString
+
+      // UpdateBlankLines owns maximumBlankLines.
+      if umbrella == "UpdateBlankLines" {
+        dict["maximumBlankLines"] = maximumBlankLines
+      }
+
+      for (option, rule) in mappings {
+        if let severity = rules[rule] {
+          if severity == umbrellaSeverity {
+            dict[option] = true
+          } else if severity == .off {
+            dict[option] = false
+          } else {
+            dict[option] = severity.encodedString
+          }
+        } else {
+          dict[option] = false
+        }
+      }
+
+      try fmt.encode(JSONFragment(dict), forKey: DynamicCodingKey(umbrella))
     }
 
     // MARK: - Encode `lint` section
 
     var lint = container.nestedContainer(keyedBy: DynamicCodingKey.self, forKey: .lint)
     let lintRuleNames = Set(RuleRegistry.lintRules.keys)
-    for (name, enabled) in rules where lintRuleNames.contains(name) {
-      try lint.encode(enabled, forKey: DynamicCodingKey(name))
+    for (name, severity) in rules where lintRuleNames.contains(name) {
+      try lint.encode(severity, forKey: DynamicCodingKey(name))
     }
   }
 
@@ -815,3 +922,4 @@ public struct FileHeaderConfiguration: Codable, Equatable, Sendable {
     self.text = try container.decodeIfPresent(String.self, forKey: .text)
   }
 }
+

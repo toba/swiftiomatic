@@ -1,11 +1,11 @@
 ---
 # q3m-kwc
 title: Configurable lint severity per rule (warn/error/off)
-status: ready
+status: completed
 type: feature
 priority: high
 created_at: 2026-04-17T23:19:18Z
-updated_at: 2026-04-17T23:19:18Z
+updated_at: 2026-04-17T23:41:56Z
 ---
 
 ## Problem
@@ -91,3 +91,16 @@ Valid values: \`"warn"\`, \`"error"\`, \`"off"\` (plus \`true\`/\`false\` for ba
 - The CLI already has \`Diagnostic.Severity\` and \`treatWarningsAsErrors\` — the plumbing exists, it just needs to be connected
 - Xcode parses \`file:line:column: error:\` vs \`warning:\` from stderr to show red vs yellow markers — this is the key integration point
 - \`StderrDiagnosticPrinter\` already formats with severity — it will Just Work once \`consumeFinding\` uses the right severity
+
+
+## Summary of Changes
+
+Added first-class severity levels (warn, error, off) for lint and format rules.
+
+- New `RuleSeverity` enum in `Sources/Swiftiomatic/API/RuleSeverity.swift`
+- `Configuration.rules` changed from `[String: Bool]` to `[String: RuleSeverity]`
+- `Finding` now carries a `severity` property threaded from config through `FindingEmitter` and `Rule.diagnose()`
+- `DiagnosticsEngine.consumeFinding()` maps finding severity to Xcode-native `error:` / `warning:` output
+- Config JSON uses `"warn"` / `"error"` / `"off"` strings; object forms use `"severity"` key
+- Schema file renamed from `swiftiomatic.schema.json` to `schema.json`
+- All 2347 tests pass

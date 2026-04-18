@@ -43,6 +43,7 @@ final class FindingEmitter {
   public func emit(
     _ message: Finding.Message,
     category: FindingCategorizing,
+    severity: RuleSeverity = .warning,
     location: Finding.Location? = nil,
     notes: [Finding.Note] = []
   ) {
@@ -52,6 +53,7 @@ final class FindingEmitter {
       Finding(
         category: category,
         message: message,
+        severity: severity,
         location: location,
         notes: notes
       )

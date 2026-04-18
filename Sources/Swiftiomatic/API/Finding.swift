@@ -76,6 +76,9 @@ public struct Finding: Sendable {
   /// The finding's message.
   public let message: Message
 
+  /// The severity of the finding, determined by the rule's configuration.
+  public let severity: RuleSeverity
+
   /// The optional location of the finding.
   public let location: Location?
 
@@ -87,11 +90,13 @@ public struct Finding: Sendable {
   init(
     category: FindingCategorizing,
     message: Message,
+    severity: RuleSeverity = .warning,
     location: Location? = nil,
     notes: [Note] = []
   ) {
     self.category = category
     self.message = message
+    self.severity = severity
     self.location = location
     self.notes = notes
   }

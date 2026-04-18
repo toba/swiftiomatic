@@ -108,9 +108,15 @@ public final class Context {
     let ruleName = ruleNameCache[ObjectIdentifier(rule)] ?? R.ruleName
     switch ruleMask.ruleState(ruleName, at: loc) {
     case .default:
-      return configuration.rules[ruleName] ?? false
+      return (configuration.rules[ruleName] ?? .off).isActive
     case .disabled:
       return false
     }
+  }
+
+  /// Returns the configured severity for the given rule type.
+  func severity<R: Rule>(of rule: R.Type) -> RuleSeverity {
+    let ruleName = ruleNameCache[ObjectIdentifier(rule)] ?? R.ruleName
+    return configuration.rules[ruleName] ?? .warning
   }
 }

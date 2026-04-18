@@ -45,5 +45,5 @@ import Foundation
     public static let configurationSchemaFile =
         sourcesDirectory
         .appendingPathComponent("..")
-        .appendingPathComponent("swiftiomatic.schema.json")
+        .appendingPathComponent("schema.json")
 }
