@@ -175,7 +175,7 @@ final class SwitchCaseIndentation: SyntaxFormatRule {
 
 // MARK: - Configuration
 
-public struct SwitchCaseIndentationConfiguration: Codable, Equatable, Sendable, ConfigRepresentable {
+package struct SwitchCaseIndentationConfiguration: Codable, Equatable, Sendable, ConfigRepresentable {
     package static let configProperties: [ConfigProperty] = [
         .init(
             "style",
@@ -187,18 +187,18 @@ public struct SwitchCaseIndentationConfiguration: Codable, Equatable, Sendable, 
         )
     ]
 
-    public enum Style: String, Codable, Sendable {
+    package enum Style: String, Codable, Sendable {
         /// Case labels align with the `switch` keyword.
         case flush
         /// Case labels are indented one level from the `switch` keyword.
         case indented
     }
 
-    public var style: Style = .flush
+    package var style: Style = .flush
 
-    public init() {}
+    package init() {}
 
-    public init(from decoder: Decoder) throws {
+    package init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         self.style = try container.decodeIfPresent(Style.self, forKey: .style) ?? .flush
     }

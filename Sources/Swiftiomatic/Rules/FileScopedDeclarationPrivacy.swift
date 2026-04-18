@@ -168,7 +168,7 @@ extension Finding.Message {
 
 // MARK: - Configuration
 
-public struct FileScopedDeclarationPrivacyConfiguration: Codable, Equatable, Sendable,
+package struct FileScopedDeclarationPrivacyConfiguration: Codable, Equatable, Sendable,
     ConfigRepresentable
 {
     package static let configProperties: [ConfigProperty] = [
@@ -182,16 +182,16 @@ public struct FileScopedDeclarationPrivacyConfiguration: Codable, Equatable, Sen
         )
     ]
 
-    public enum AccessLevel: String, Codable, Sendable {
+    package enum AccessLevel: String, Codable, Sendable {
         case `private`
         case `fileprivate`
     }
 
-    public var accessLevel: AccessLevel = .private
+    package var accessLevel: AccessLevel = .private
 
-    public init() {}
+    package init() {}
 
-    public init(from decoder: Decoder) throws {
+    package init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         let defaults = Self()
         self.accessLevel =

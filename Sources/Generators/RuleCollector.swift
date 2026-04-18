@@ -16,7 +16,7 @@ import SwiftParser
 import SwiftSyntax
 
 /// Collects information about rules in the formatter code base.
-@_spi(Internal) public final class RuleCollector {
+package final class RuleCollector {
   /// Information about a detected rule.
   struct DetectedRule: Hashable {
     /// The type name of the rule.
@@ -54,12 +54,12 @@ import SwiftSyntax
   /// A dictionary mapping syntax node types to the lint/format rules that visit them.
   var syntaxNodeLinters = [String: [String]]()
 
-  public init() {}
+  package init() {}
 
   /// Populates the internal collections with rules in the given directory.
   ///
   /// - Parameter url: The file system URL that should be scanned for rules.
-  public func collect(from url: URL) throws {
+  package func collect(from url: URL) throws {
     // For each file in the Rules directory, find types that either conform to SyntaxLintRule or
     // inherit from SyntaxFormatRule.
     let fm = FileManager.default

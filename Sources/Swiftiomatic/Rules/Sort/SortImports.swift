@@ -690,7 +690,7 @@ extension Finding.Message {
 
 // MARK: - Configuration
 
-public struct SortImportsConfiguration: Codable, Equatable, Sendable, ConfigRepresentable {
+package struct SortImportsConfiguration: Codable, Equatable, Sendable, ConfigRepresentable {
   package static let configProperties: [ConfigProperty] = [
     .init(
       "includeConditionalImports",
@@ -702,12 +702,12 @@ public struct SortImportsConfiguration: Codable, Equatable, Sendable, ConfigRepr
     ),
   ]
 
-  public var includeConditionalImports = false
-  public var shouldGroupImports = true
+  package var includeConditionalImports = false
+  package var shouldGroupImports = true
 
-  public init() {}
+  package init() {}
 
-  public init(from decoder: Decoder) throws {
+  package init(from decoder: Decoder) throws {
     let container = try decoder.container(keyedBy: CodingKeys.self)
     let defaults = Self()
     self.includeConditionalImports =

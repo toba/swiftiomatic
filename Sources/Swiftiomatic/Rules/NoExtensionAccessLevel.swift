@@ -367,7 +367,7 @@ extension Finding.Message {
 
 // MARK: - Configuration
 
-public struct ExtensionAccessControlConfiguration: Codable, Equatable, Sendable, ConfigRepresentable
+package struct ExtensionAccessControlConfiguration: Codable, Equatable, Sendable, ConfigRepresentable
 {
     package static let configProperties: [ConfigProperty] = [
         .init(
@@ -380,16 +380,16 @@ public struct ExtensionAccessControlConfiguration: Codable, Equatable, Sendable,
         )
     ]
 
-    public enum Placement: String, Codable, Sendable {
+    package enum Placement: String, Codable, Sendable {
         case onDeclarations
         case onExtension
     }
 
-    public var placement: Placement = .onDeclarations
+    package var placement: Placement = .onDeclarations
 
-    public init() {}
+    package init() {}
 
-    public init(from decoder: Decoder) throws {
+    package init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         let defaults = Self()
         self.placement =

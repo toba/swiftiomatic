@@ -10,11 +10,11 @@
 //
 //===----------------------------------------------------------------------===//
 
-@_spi(Testing) import Swiftiomatic
+@testable import Swiftiomatic
 import SwiftParser
 import SwiftSyntax
 import XCTest
-@_spi(Testing) import SwiftiomaticTestSupport
+import SwiftiomaticTestSupport
 
 final class WhitespaceLinterPerformanceTests: XCTestCase {
   /// When executing in Swift CI, run the block to make sure it doesn't hit any assertions because we don't look at

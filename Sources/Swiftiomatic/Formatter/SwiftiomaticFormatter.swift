@@ -2,7 +2,7 @@
 //
 // This source file is part of the Swift.org open source project
 //
-// Copyright (c) 2014 - 2019 Apple Inc. and the Swift project authors
+// Copyright (c) 2014 - 2024 Apple Inc. and the Swift project authors
 // Licensed under Apache License v2.0 with Runtime Library Exception
 //
 // See https://swift.org/LICENSE.txt for license information
@@ -15,45 +15,48 @@ import SwiftDiagnostics
 import SwiftOperators
 import SwiftSyntax
 
-/// Diagnoses and reports problems in Swift source code or syntax trees according to the Swift style
-/// guidelines.
-public final class SwiftiomaticLinter {
+/// Formats Swift source code or syntax trees according to the Swift style guidelines.
+package final class SwiftiomaticFormatter {
 
-  /// The configuration settings that control the linter's behavior.
-  public let configuration: Configuration
+  /// The configuration settings that control the formatter's behavior.
+  package let configuration: Configuration
 
-  /// A callback that will be notified with any findings encountered during linting.
-  public let findingConsumer: (Finding) -> Void
+  /// An optional callback that will be notified with any findings encountered during formatting.
+  package let findingConsumer: ((Finding) -> Void)?
 
-  /// Advanced options that are useful when debugging the linter's behavior but are not meant for
+  /// Advanced options that are useful when debugging the formatter's behavior but are not meant for
   /// general use.
-  public var debugOptions: DebugOptions = []
+  package var debugOptions: DebugOptions = []
 
-  /// Creates a new Swift code linter with the given configuration.
+  /// Creates a new Swift code formatter with the given configuration.
   ///
   /// - Parameters:
-  ///   - configuration: The configuration settings that control the linter's behavior.
-  ///   - findingConsumer: A callback that will be notified with any findings encountered during
-  ///     linting.
-  public init(configuration: Configuration, findingConsumer: @escaping (Finding) -> Void) {
+  ///   - configuration: The configuration settings that control the formatter's behavior.
+  ///   - findingConsumer: An optional callback that will be notified with any findings encountered
+  ///     during formatting. Unlike the `Linter` API, this defaults to nil for formatting because
+  ///     findings are typically less useful than the final formatted output.
+  package init(configuration: Configuration, findingConsumer: ((Finding) -> Void)? = nil) {
     self.configuration = configuration
     self.findingConsumer = findingConsumer
   }
 
-  /// Lints the Swift code at the given file URL.
+  /// Formats the Swift code at the given file URL and writes the result to an output stream.
   ///
-  /// This form of the `lint` function automatically folds expressions using the default operator
+  /// This form of the `format` function automatically folds expressions using the default operator
   /// set defined in Swift. If you need more control over this—for example, to provide the correct
   /// precedence relationships for custom operators—you must parse and fold the syntax tree
-  /// manually and then call ``lint(syntax:source:operatorTable:assumingFileURL:)``.
+  /// manually and then call ``format(syntax:source:operatorTable:assumingFileURL:selection:to:)``.
   ///
   /// - Parameters:
   ///   - url: The URL of the file containing the code to format.
+  ///   - outputStream: A value conforming to `TextOutputStream` to which the formatted output will
+  ///     be written.
   ///   - parsingDiagnosticHandler: An optional callback that will be notified if there are any
   ///     errors when parsing the source code.
   /// - Throws: If an unrecoverable error occurs when formatting the code.
-  public func lint(
+  package func format<Output: TextOutputStream>(
     contentsOf url: URL,
+    to outputStream: inout Output,
     parsingDiagnosticHandler: ((Diagnostic, SourceLocation) -> Void)? = nil
   ) throws(SwiftiomaticError) {
     guard FileManager.default.isReadableFile(atPath: url.path) else {
@@ -71,38 +74,47 @@ public final class SwiftiomaticLinter {
       throw .fileNotReadable
     }
 
-    try lint(
+    try format(
       source: source,
       assumingFileURL: url,
+      selection: .infinite,
+      to: &outputStream,
       parsingDiagnosticHandler: parsingDiagnosticHandler
     )
   }
 
-  /// Lints the given Swift source code.
+  /// Formats the given Swift source code and writes the result to an output stream.
   ///
-  /// This form of the `lint` function automatically folds expressions using the default operator
+  /// This form of the `format` function automatically folds expressions using the default operator
   /// set defined in Swift. If you need more control over this—for example, to provide the correct
   /// precedence relationships for custom operators—you must parse and fold the syntax tree
-  /// manually and then call ``lint(syntax:source:operatorTable:assumingFileURL:)``.
+  /// manually and then call ``format(syntax:source:operatorTable:assumingFileURL:selection:to:)``.
   ///
   /// - Parameters:
-  ///   - source: The Swift source code to be linted.
-  ///   - url: A file URL denoting the filename/path that should be assumed for this source code.
+  ///   - source: The Swift source code to be formatted.
+  ///   - url: A file URL denoting the filename/path that should be assumed for this syntax tree,
+  ///     which is associated with any diagnostics emitted during formatting. If this is nil, a
+  ///     dummy value will be used.
+  ///   - selection: The ranges to format
   ///   - experimentalFeatures: The set of experimental features that should be enabled in the
   ///     parser. These names must be from the set of parser-recognized experimental language
   ///     features in `SwiftParser`'s `Parser.ExperimentalFeatures` enum, which match the spelling
   ///     defined in the compiler's `Features.def` file.
+  ///   - outputStream: A value conforming to `TextOutputStream` to which the formatted output will
+  ///     be written.
   ///   - parsingDiagnosticHandler: An optional callback that will be notified if there are any
   ///     errors when parsing the source code.
   /// - Throws: If an unrecoverable error occurs when formatting the code.
-  public func lint(
+  package func format<Output: TextOutputStream>(
     source: String,
-    assumingFileURL url: URL,
+    assumingFileURL url: URL?,
+    selection: Selection,
     experimentalFeatures: Set<String> = [],
+    to outputStream: inout Output,
     parsingDiagnosticHandler: ((Diagnostic, SourceLocation) -> Void)? = nil
   ) throws(SwiftiomaticError) {
     // If the file or input string is completely empty, do nothing. This prevents even a trailing
-    // newline from being diagnosed for an empty file. (This is consistent with clang-format, which
+    // newline from being emitted for an empty file. (This is consistent with clang-format, which
     // also does not touch an empty file even if the setting to add trailing newlines is enabled.)
     guard !source.isEmpty else { return }
 
@@ -113,72 +125,71 @@ public final class SwiftiomaticLinter {
       experimentalFeatures: experimentalFeatures,
       parsingDiagnosticHandler: parsingDiagnosticHandler
     )
-    try lint(
+    try format(
       syntax: sourceFile,
+      source: source,
       operatorTable: .standardOperators,
       assumingFileURL: url,
-      source: source
+      selection: selection,
+      to: &outputStream
     )
   }
 
-  /// Lints the given Swift syntax tree.
+  /// Formats the given Swift syntax tree and writes the result to an output stream.
   ///
-  /// This form of the `lint` function does not perform any additional processing on the given
+  /// This form of the `format` function does not perform any additional processing on the given
   /// syntax tree. The tree **must** have all expressions folded using an `OperatorTable`, and no
   /// detection of warnings/errors is performed.
   ///
-  /// - Note: The linter may be faster using the source text, if it's available.
+  /// - Note: The formatter may be faster using the source text, if it's available.
   ///
   /// - Parameters:
-  ///   - syntax: The Swift syntax tree to be converted to be linted.
-  ///   - source: The Swift source code to be linted.
+  ///   - syntax: The Swift syntax tree to be converted to source code and formatted.
+  ///   - source: The original Swift source code used to build the syntax tree.
   ///   - operatorTable: The table that defines the operators and their precedence relationships.
   ///     This must be the same operator table that was used to fold the expressions in the `syntax`
   ///     argument.
-  ///   - url: A file URL denoting the filename/path that should be assumed for this syntax tree.
+  ///   - url: A file URL denoting the filename/path that should be assumed for this syntax tree,
+  ///     which is associated with any diagnostics emitted during formatting. If this is nil, a
+  ///     dummy value will be used.
+  ///   - selection: The ranges to format
+  ///   - outputStream: A value conforming to `TextOutputStream` to which the formatted output will
+  ///     be written.
   /// - Throws: If an unrecoverable error occurs when formatting the code.
-  public func lint(
+  package func format<Output: TextOutputStream>(
     syntax: SourceFileSyntax,
     source: String,
     operatorTable: OperatorTable,
-    assumingFileURL url: URL
+    assumingFileURL url: URL?,
+    selection: Selection,
+    to outputStream: inout Output
   ) throws(SwiftiomaticError) {
-    try lint(syntax: syntax, operatorTable: operatorTable, assumingFileURL: url, source: source)
-  }
-
-  private func lint(
-    syntax: SourceFileSyntax,
-    operatorTable: OperatorTable,
-    assumingFileURL url: URL,
-    source: String
-  ) throws(SwiftiomaticError) {
+    let assumedURL = url ?? URL(fileURLWithPath: "source")
     let context = Context(
       configuration: configuration,
       operatorTable: operatorTable,
       findingConsumer: findingConsumer,
-      fileURL: url,
+      fileURL: assumedURL,
+      selection: selection,
       sourceFileSyntax: syntax,
       source: source,
       ruleNameCache: ruleNameCache
     )
-    let pipeline = LintPipeline(context: context)
-    pipeline.walk(Syntax(syntax))
+    let pipeline = FormatPipeline(context: context)
+    let transformedSyntax = pipeline.rewrite(Syntax(syntax))
 
     if debugOptions.contains(.disablePrettyPrint) {
+      outputStream.write(transformedSyntax.description)
       return
     }
 
-    // Perform whitespace linting by comparing the input source text with the output of the
-    // pretty-printer.
     let printer = PrettyPrinter(
       context: context,
       source: source,
-      node: Syntax(syntax),
+      node: transformedSyntax,
       printTokenStream: debugOptions.contains(.dumpTokenStream),
-      whitespaceOnly: true
+      whitespaceOnly: false
     )
-    let formatted = printer.prettyPrint()
-    let ws = WhitespaceLinter(user: syntax.description, formatted: formatted, context: context)
-    ws.lint()
+    outputStream.write(printer.prettyPrint())
   }
 }

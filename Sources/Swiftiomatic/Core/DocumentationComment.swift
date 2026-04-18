@@ -19,23 +19,22 @@ import SwiftSyntax
 /// also the nested information that can be provided on a parameter. For example, when a parameter
 /// is a function type, it can provide not only a brief summary but also its own parameter and
 /// return value descriptions.
-@_spi(Testing)
-public struct DocumentationComment {
+package struct DocumentationComment {
   /// A description of a parameter in a documentation comment.
-  public struct Parameter {
+  package struct Parameter {
     /// The name of the parameter.
-    public var name: String
+    package var name: String
 
     /// The documentation comment of the parameter.
     ///
     /// Typically, only the `briefSummary` field of this value will be populated. However, for more
     /// complex cases like parameters whose types are functions, the grammar permits full
     /// descriptions including `Parameter(s)`, `Returns`, and `Throws` fields to be present.
-    public var comment: DocumentationComment
+    package var comment: DocumentationComment
   }
 
   /// Describes the structural layout of the parameter descriptions in the comment.
-  public enum ParameterLayout {
+  package enum ParameterLayout {
     /// All parameters were written under a single `Parameters` outline section at the top level of
     /// the comment.
     case outline
@@ -49,31 +48,31 @@ public struct DocumentationComment {
   }
 
   /// A single paragraph representing a brief summary of the declaration, if present.
-  public var briefSummary: Paragraph? = nil
+  package var briefSummary: Paragraph? = nil
 
   /// A collection of otherwise uncategorized body nodes at the top level of the comment text.
   ///
   /// If a brief summary paragraph was extracted from the comment, it will not be present in this
   /// collection.
-  public var bodyNodes: [Markup] = []
+  package var bodyNodes: [Markup] = []
 
   /// The structural layout of the parameter descriptions in the comment.
-  public var parameterLayout: ParameterLayout? = nil
+  package var parameterLayout: ParameterLayout? = nil
 
   /// Descriptions of parameters to a function, if any.
-  public var parameters: [Parameter] = []
+  package var parameters: [Parameter] = []
 
   /// A description of the return value of a function.
   ///
   /// If present, this value is a copy of the `Paragraph` node from the comment but with the
   /// `Returns:` prefix removed for convenience.
-  public var returns: Paragraph? = nil
+  package var returns: Paragraph? = nil
 
   /// A description of an error thrown by a function.
   ///
   /// If present, this value is a copy of the `Paragraph` node from the comment but with the
   /// `Throws:` prefix removed for convenience.
-  public var `throws`: Paragraph? = nil
+  package var `throws`: Paragraph? = nil
 
   /// Creates a new `DocumentationComment` with information extracted from the leading trivia of the
   /// given syntax node.
@@ -82,7 +81,7 @@ public struct DocumentationComment {
   /// `nil`.
   ///
   /// - Parameter node: The syntax node from which the documentation comment should be extracted.
-  public init?<Node: SyntaxProtocol>(extractedFrom node: Node) {
+  package init?<Node: SyntaxProtocol>(extractedFrom node: Node) {
     guard let commentInfo = DocumentationCommentText(extractedFrom: node.leadingTrivia) else {
       return nil
     }

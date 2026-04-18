@@ -18,7 +18,7 @@ import SwiftSyntax
 /// Lint: Using a playground literal will yield a lint error with a suggestion of an API to replace
 /// it.
 final class NoPlaygroundLiterals: SyntaxLintRule {
-    override public func visit(_ node: MacroExpansionExprSyntax) -> SyntaxVisitorContinueKind {
+    override package func visit(_ node: MacroExpansionExprSyntax) -> SyntaxVisitorContinueKind {
         switch node.macroName.text {
         case "colorLiteral":
             diagnosedColorLiteralMacroExpansion(node)

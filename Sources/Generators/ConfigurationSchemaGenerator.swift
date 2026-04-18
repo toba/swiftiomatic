@@ -11,22 +11,22 @@
 //===----------------------------------------------------------------------===//
 
 import Foundation
-@_spi(Internal) import Swiftiomatic
+import Swiftiomatic
 import SwiftiomaticCore
 
 /// Generates `schema.json` by encoding a `JSONSchemaNode` tree.
 ///
 /// Rule descriptions are sourced from `RuleCollector` (extracted from DocC comments)
 /// so they stay in sync with rule implementations.
-@_spi(Internal) public final class ConfigurationSchemaGenerator: FileGenerator {
+package final class ConfigurationSchemaGenerator: FileGenerator {
 
     let ruleCollector: RuleCollector
 
-    public init(ruleCollector: RuleCollector) {
+    package init(ruleCollector: RuleCollector) {
         self.ruleCollector = ruleCollector
     }
 
-    public func generateContent() -> String {
+    package func generateContent() -> String {
         let schema = buildSchema()
         let encoder = JSONEncoder()
         encoder.outputFormatting = [.prettyPrinted, .sortedKeys, .withoutEscapingSlashes]

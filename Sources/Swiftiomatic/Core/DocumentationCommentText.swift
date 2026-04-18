@@ -17,10 +17,9 @@ import SwiftSyntax
 /// This type should be used when only the text of the comment is important, not the Markdown
 /// structural organization. It automatically handles trimming leading indentation from comments as
 /// well as "ASCII art" in block comments (i.e., leading asterisks on each line).
-@_spi(Testing)
-public struct DocumentationCommentText {
+package struct DocumentationCommentText {
   /// Denotes the kind of punctuation used to introduce the comment.
-  public enum Introducer {
+  package enum Introducer {
     /// The comment was introduced entirely by line-style comments (`///`).
     case line
 
@@ -32,13 +31,13 @@ public struct DocumentationCommentText {
   }
 
   /// The comment text extracted from the trivia.
-  public let text: String
+  package let text: String
 
   /// The index in the trivia collection passed to the initializer where the comment started.
-  public let startIndex: Trivia.Index
+  package let startIndex: Trivia.Index
 
   /// The kind of punctuation used to introduce the comment.
-  public let introducer: Introducer
+  package let introducer: Introducer
 
   /// Extracts and returns the body text of a documentation comment represented as a trivia
   /// collection.
@@ -50,7 +49,7 @@ public struct DocumentationCommentText {
   /// - Returns: If a comment was found, a tuple containing the `String` containing the extracted
   ///   text and the index into the trivia collection where the comment began is returned.
   ///   Otherwise, `nil` is returned.
-  public init?(extractedFrom trivia: Trivia) {
+  package init?(extractedFrom trivia: Trivia) {
     /// Represents a line of text and its leading indentation.
     struct Line {
       var text: Substring

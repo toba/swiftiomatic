@@ -10,13 +10,12 @@
 //
 //===----------------------------------------------------------------------===//
 
-import Swiftiomatic
-@_spi(Testing) @testable import Swiftiomatic
+@testable import Swiftiomatic
 import SwiftOperators
 @_spi(ExperimentalLanguageFeatures) import SwiftParser
 import SwiftSyntax
 import Testing
-@_spi(Testing) import SwiftiomaticTestSupport
+import SwiftiomaticTestSupport
 
 protocol PrettyPrintTesting {}
 

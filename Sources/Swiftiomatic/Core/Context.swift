@@ -19,11 +19,11 @@ import SwiftSyntax
 ///
 /// Specifically, it is the container for the shared configuration, diagnostic consumer, and URL of
 /// the current file.
-public final class Context {
+package final class Context {
 
   /// Tracks whether `XCTest` has been imported so that certain logic can be modified for files that
   /// are known to be tests.
-  public enum XCTestImportState {
+  package enum XCTestImportState {
 
     /// Whether `XCTest` is imported or not has not yet been determined.
     case notDetermined
@@ -51,10 +51,10 @@ public final class Context {
   let fileURL: URL
 
   /// Indicates whether the file is known to import XCTest.
-  public var importsXCTest: XCTestImportState
+  package var importsXCTest: XCTestImportState
 
   /// An object that converts `AbsolutePosition` values to `SourceLocation` values.
-  public let sourceLocationConverter: SourceLocationConverter
+  package let sourceLocationConverter: SourceLocationConverter
 
   /// Contains the rules have been disabled by comments for certain line numbers.
   let ruleMask: RuleMask
@@ -63,7 +63,7 @@ public final class Context {
   let ruleNameCache: [ObjectIdentifier: String]
 
   /// Creates a new Context with the provided configuration, diagnostic engine, and file URL.
-  public init(
+  package init(
     configuration: Configuration,
     operatorTable: OperatorTable,
     findingConsumer: ((Finding) -> Void)?,

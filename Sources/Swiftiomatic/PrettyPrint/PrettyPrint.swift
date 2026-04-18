@@ -15,8 +15,7 @@ import SwiftSyntax
 
 /// PrettyPrinter takes a Syntax node and outputs a well-formatted, re-indented reproduction of the
 /// code as a String.
-@_spi(Testing)
-public class PrettyPrinter {
+package class PrettyPrinter {
 
   /// Information about an open break that has not yet been closed during the printing stage.
   private struct ActiveOpenBreak {
@@ -185,7 +184,7 @@ public class PrettyPrinter {
   ///   - printTokenStream: Indicates whether debug information about the token stream should be
   ///     printed to standard output.
   ///   - whitespaceOnly: Whether only whitespace changes should be made.
-  public init(context: Context, source: String, node: Syntax, printTokenStream: Bool, whitespaceOnly: Bool) {
+  package init(context: Context, source: String, node: Syntax, printTokenStream: Bool, whitespaceOnly: Bool) {
     self.context = context
     self.source = source
     let configuration = context.configuration
@@ -583,7 +582,7 @@ public class PrettyPrinter {
   /// (1979).
   ///
   /// - Returns: A String containing the formatted source code.
-  public func prettyPrint() -> String {
+  package func prettyPrint() -> String {
     // Keep track of the indices of the .open and .break token locations.
     var delimIndexStack = [Int]()
     // Keep a running total of the token lengths.

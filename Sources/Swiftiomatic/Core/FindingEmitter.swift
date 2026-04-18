@@ -27,7 +27,7 @@ final class FindingEmitter {
   ///
   /// - Parameter consumer: An optional function that will be called and passed a finding each time
   ///   one is emitted.
-  public init(consumer: ((Finding) -> Void)?) {
+  package init(consumer: ((Finding) -> Void)?) {
     self.consumer = consumer
   }
 
@@ -40,7 +40,7 @@ final class FindingEmitter {
   ///     finding does not apply to a particular location in the source code, this may be nil.
   ///   - notes: Notes that provide additional detail about the finding, possibly referring to other
   ///     related locations in the source file.
-  public func emit(
+  package func emit(
     _ message: Finding.Message,
     category: FindingCategorizing,
     severity: RuleHandling = .warning,

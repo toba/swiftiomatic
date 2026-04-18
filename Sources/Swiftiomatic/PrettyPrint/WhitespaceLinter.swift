@@ -17,8 +17,7 @@ private let utf8Tab = UTF8.CodeUnit(ascii: "\t")
 
 /// Emits linter errors for whitespace style violations by comparing the raw text of the input Swift
 /// code with formatted text.
-@_spi(Testing)
-public class WhitespaceLinter {
+package class WhitespaceLinter {
 
     /// The text of the input source code to be linted.
     private let userText: [UTF8.CodeUnit]
@@ -38,7 +37,7 @@ public class WhitespaceLinter {
     ///   - user: The text of the Swift source code to be linted.
     ///   - formatted: The formatted text to compare to `user`.
     ///   - context: The context object containing the DiagnosticEngine instance we wish to use.
-    public init(user: String, formatted: String, context: Context) {
+    package init(user: String, formatted: String, context: Context) {
         self.userText = Array(user.utf8)
         self.formattedText = Array(formatted.utf8)
         self.context = context
@@ -46,7 +45,7 @@ public class WhitespaceLinter {
     }
 
     /// Perform whitespace linting.
-    public func lint() {
+    package func lint() {
         var userIndex = 0
         var formattedIndex = 0
         var userWhitespace: ArraySlice<UTF8.CodeUnit>
@@ -415,7 +414,7 @@ public class WhitespaceLinter {
 }
 
 /// Describes the composition of the whitespace that creates an indentation for a line of code.
-public enum WhitespaceIndentation: Equatable {
+enum WhitespaceIndentation: Equatable {
     /// The line has no preceding whitespace, meaning there's no indentation.
     case none
 

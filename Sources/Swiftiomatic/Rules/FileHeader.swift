@@ -155,7 +155,7 @@ extension Finding.Message {
 
 // MARK: - Configuration
 
-public struct FileHeaderConfiguration: Codable, Equatable, Sendable, ConfigRepresentable {
+package struct FileHeaderConfiguration: Codable, Equatable, Sendable, ConfigRepresentable {
   package static let configProperties: [ConfigProperty] = [
     .init(
       "text",
@@ -163,11 +163,11 @@ public struct FileHeaderConfiguration: Codable, Equatable, Sendable, ConfigRepre
     )
   ]
 
-  public var text: String?
+  package var text: String?
 
-  public init() {}
+  package init() {}
 
-  public init(from decoder: Decoder) throws {
+  package init(from decoder: Decoder) throws {
     let container = try decoder.container(keyedBy: CodingKeys.self)
     self.text = try container.decodeIfPresent(String.self, forKey: .text)
   }

@@ -14,8 +14,7 @@ import Foundation
 
 /// Iterator for looping over lists of files and directories. Directories are automatically
 /// traversed recursively, and we check for files with a ".swift" extension.
-@_spi(Internal)
-public struct FileIterator: Sequence, IteratorProtocol {
+package struct FileIterator: Sequence, IteratorProtocol {
 
   /// List of file and directory URLs to iterate over.
   private let urls: [URL]
@@ -51,7 +50,7 @@ public struct FileIterator: Sequence, IteratorProtocol {
   ///   - urls: `Array` of files or directories to iterate.
   ///   - followSymlinks: `Bool` to indicate if symbolic links should be followed when iterating.
   ///   - workingDirectory: `URL` that indicates the current working directory. Used for testing.
-  public init(urls: [URL], followSymlinks: Bool, workingDirectory: URL = URL(fileURLWithPath: ".")) {
+  package init(urls: [URL], followSymlinks: Bool, workingDirectory: URL = URL(fileURLWithPath: ".")) {
     self.workingDirectory = workingDirectory
     self.urls = urls
     self.urlIterator = self.urls.makeIterator()
@@ -60,7 +59,7 @@ public struct FileIterator: Sequence, IteratorProtocol {
 
   /// Iterate through the "paths" list, and emit the file paths in it. If we encounter a directory,
   /// recurse through it and emit .swift file paths.
-  public mutating func next() -> URL? {
+  package mutating func next() -> URL? {
     var output: URL? = nil
     while output == nil {
       // Check if we're recursing through a directory.

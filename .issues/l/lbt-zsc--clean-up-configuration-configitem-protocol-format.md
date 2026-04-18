@@ -1,11 +1,11 @@
 ---
 # lbt-zsc
 title: 'Clean up Configuration: ConfigItem protocol, format rule modes, reduce duplication'
-status: review
+status: completed
 type: feature
 priority: normal
 created_at: 2026-04-18T00:37:17Z
-updated_at: 2026-04-18T01:17:56Z
+updated_at: 2026-04-18T15:59:28Z
 ---
 
 ## Problem

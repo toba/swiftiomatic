@@ -1448,15 +1448,47 @@
       "type" : "string"
     },
     "SwitchCaseIndentation" : {
-      "default" : "off",
-      "description" : "Dedent switch case labels to align with the `switch` keyword.\n\nStandard Swift indents `case` one level deeper than `switch`. This rule removes that extra\nlevel so `case` labels sit at the same column as `switch`, and case bodies indent one level\nfrom `switch`.\n\nLint: Raised when a `case` or `default` label is indented deeper than the `switch` keyword.\n\nFormat: The extra indentation is removed from case labels, case bodies, and the closing brace.\n [opt-in] Options: autoFix, warn, error, off.",
-      "enum" : [
-        "autoFix",
-        "warn",
-        "error",
-        "off"
-      ],
-      "type" : "string"
+      "description" : "Enforce switch case label indentation style.\n\nTwo styles are supported via `SwitchCaseIndentationConfiguration.Style`:\n- `flush`: `case` labels align with the `switch` keyword (default).\n- `indented`: `case` labels are indented one level from `switch`.\n\nLint: Raised when a `case` or `default` label doesn't match the configured style.\n\nFormat: Case labels, bodies, and the closing brace are reindented to match.\n [opt-in]",
+      "oneOf" : [
+        {
+          "default" : "off",
+          "description" : "Enforce switch case label indentation style.\n\nTwo styles are supported via `SwitchCaseIndentationConfiguration.Style`:\n- `flush`: `case` labels align with the `switch` keyword (default).\n- `indented`: `case` labels are indented one level from `switch`.\n\nLint: Raised when a `case` or `default` label doesn't match the configured style.\n\nFormat: Case labels, bodies, and the closing brace are reindented to match.\n [opt-in] Options: autoFix, warn, error, off.",
+          "enum" : [
+            "autoFix",
+            "warn",
+            "error",
+            "off"
+          ],
+          "type" : "string"
+        },
+        {
+          "additionalProperties" : false,
+          "description" : "",
+          "properties" : {
+            "mode" : {
+              "default" : "off",
+              "description" : "Rule mode. Options: autoFix, warn, error, off.",
+              "enum" : [
+                "autoFix",
+                "warn",
+                "error",
+                "off"
+              ],
+              "type" : "string"
+            },
+            "style" : {
+              "default" : "flush",
+              "description" : "How case labels are indented relative to switch: flush (aligned) or indented (one level deeper). Options: flush, indented.",
+              "enum" : [
+                "flush",
+                "indented"
+              ],
+              "type" : "string"
+            }
+          },
+          "type" : "object"
+        }
+      ]
     },
     "TestSuiteAccessControl" : {
       "default" : "off",
@@ -1872,6 +1904,35 @@
       ],
       "type" : "string"
     },
+    "forcing" : {
+      "additionalProperties" : false,
+      "description" : "forcing rule group.",
+      "properties" : {
+        "noForceTry" : {
+          "default" : "off",
+          "description" : "Force-try (`try!`) is forbidden.\n\nIn test functions, `try!` is auto-fixed to `try` and `throws` is added to the function\nsignature if needed.\n\nIn non-test code, `try!` is diagnosed but not rewritten.\n\nTest functions are:\n- Functions annotated with `@Test` (Swift Testing)\n- Functions named `test*()` with no parameters inside `XCTestCase` subclasses\n\n`try!` inside closures or nested functions is left alone because the enclosing test function's\n`throws` does not propagate into those scopes.\n\nLint: A warning is raised for each `try!`.\n\nFormat: In test functions, `try!` is replaced with `try` and `throws` is added.\n Options: autoFix, warn, error, off.",
+          "enum" : [
+            "autoFix",
+            "warn",
+            "error",
+            "off"
+          ],
+          "type" : "string"
+        },
+        "noForceUnwrap" : {
+          "default" : "off",
+          "description" : "Force-unwraps are strongly discouraged and must be documented.\n\nIn test functions, force unwraps are auto-fixed:\n- `foo!` becomes `try XCTUnwrap(foo)` (XCTest) or `try #require(foo)` (Swift Testing)\n- `foo as! Bar` becomes `try XCTUnwrap(foo as? Bar)` or `try #require(foo as? Bar)`\n- `throws` is added to the function signature if needed\n\nIn non-test code, force unwraps are diagnosed but not rewritten.\n\nTest functions are:\n- Functions annotated with `@Test` (Swift Testing)\n- Functions named `test*()` with no parameters inside `XCTestCase` subclasses\n\nForce unwraps in closures, nested functions, and string interpolation are left alone because\n`try` cannot propagate out of those scopes.\n\nLint: A warning is raised for each force unwrap.\n\nFormat: In test functions, force unwraps are replaced with XCTUnwrap/#require.\n Options: autoFix, warn, error, off.",
+          "enum" : [
+            "autoFix",
+            "warn",
+            "error",
+            "off"
+          ],
+          "type" : "string"
+        }
+      },
+      "type" : "object"
+    },
     "hoist" : {
       "additionalProperties" : false,
       "description" : "hoist rule group.",
@@ -1927,7 +1988,7 @@
         },
         "switchCaseIndentation" : {
           "default" : "off",
-          "description" : "Dedent switch case labels to align with the `switch` keyword.\n\nStandard Swift indents `case` one level deeper than `switch`. This rule removes that extra\nlevel so `case` labels sit at the same column as `switch`, and case bodies indent one level\nfrom `switch`.\n\nLint: Raised when a `case` or `default` label is indented deeper than the `switch` keyword.\n\nFormat: The extra indentation is removed from case labels, case bodies, and the closing brace.\n Options: autoFix, warn, error, off.",
+          "description" : "Enforce switch case label indentation style.\n\nTwo styles are supported via `SwitchCaseIndentationConfiguration.Style`:\n- `flush`: `case` labels align with the `switch` keyword (default).\n- `indented`: `case` labels are indented one level from `switch`.\n\nLint: Raised when a `case` or `default` label doesn't match the configured style.\n\nFormat: Case labels, bodies, and the closing brace are reindented to match.\n Options: autoFix, warn, error, off.",
           "enum" : [
             "autoFix",
             "warn",
@@ -1935,11 +1996,6 @@
             "off"
           ],
           "type" : "string"
-        },
-        "switchCaseLabels" : {
-          "default" : false,
-          "description" : "Indent case labels relative to switch.",
-          "type" : "boolean"
         }
       },
       "type" : "object"

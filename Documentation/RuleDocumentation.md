@@ -1820,15 +1820,15 @@ Format: The `test` prefix is removed and the first letter is lowercased.
 
 ### SwitchCaseIndentation
 
-Dedent switch case labels to align with the `switch` keyword.
+Enforce switch case label indentation style.
 
-Standard Swift indents `case` one level deeper than `switch`. This rule removes that extra
-level so `case` labels sit at the same column as `switch`, and case bodies indent one level
-from `switch`.
+Two styles are supported via `SwitchCaseIndentationConfiguration.Style`:
+- `flush`: `case` labels align with the `switch` keyword (default).
+- `indented`: `case` labels are indented one level from `switch`.
 
-Lint: Raised when a `case` or `default` label is indented deeper than the `switch` keyword.
+Lint: Raised when a `case` or `default` label doesn't match the configured style.
 
-Format: The extra indentation is removed from case labels, case bodies, and the closing brace.
+Format: Case labels, bodies, and the closing brace are reindented to match.
 
 `SwitchCaseIndentation` rule can format your code automatically.
 

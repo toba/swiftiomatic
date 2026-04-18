@@ -10,7 +10,7 @@
 //
 //===----------------------------------------------------------------------===//
 
-@_spi(Testing) @testable import Swiftiomatic
+@testable import Swiftiomatic
 import Testing
 
 @Suite

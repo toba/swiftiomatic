@@ -11,7 +11,7 @@
 //===----------------------------------------------------------------------===//
 
 import Testing
-@_spi(Internal) import Generators
+import Generators
 
 @Suite
 struct GeneratedFilesValidityTests {

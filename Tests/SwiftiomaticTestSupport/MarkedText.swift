@@ -14,18 +14,18 @@ import SwiftSyntax
 import Swiftiomatic
 
 /// Encapsulates the locations of emoji markers extracted from source text.
-public struct MarkedText {
+package struct MarkedText {
     /// A mapping from marker names to the UTF-8 offset where the marker was found in the string.
-    public let markers: [String: Int]
+    package let markers: [String: Int]
 
     /// The text with all markers removed.
-    public let textWithoutMarkers: String
+    package let textWithoutMarkers: String
 
     /// If the marked text contains "⏩" and "⏪", they're used to create a selection
-    public var selection: Selection
+    package var selection: Selection
 
     /// Creates a new `MarkedText` value by extracting emoji markers from the given text.
-    public init(textWithMarkers markedText: String) {
+    package init(textWithMarkers markedText: String) {
         var text = ""
         var markers = [String: Int]()
         var lastIndex = markedText.startIndex

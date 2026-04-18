@@ -11,7 +11,7 @@
 //===----------------------------------------------------------------------===//
 
 import Markdown
-@_spi(Testing) import Swiftiomatic
+@testable import Swiftiomatic
 import SwiftSyntax
 import SwiftSyntaxBuilder
 import Testing

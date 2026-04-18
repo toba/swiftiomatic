@@ -174,18 +174,18 @@ extension Finding.Message {
 
 // MARK: - Configuration
 
-public struct URLMacroConfiguration: Codable, Equatable, Sendable, ConfigRepresentable {
+package struct URLMacroConfiguration: Codable, Equatable, Sendable, ConfigRepresentable {
   package static let configProperties: [ConfigProperty] = [
     .init("macroName", .string(description: "Macro name, e.g. \"#URL\". Omit to disable.")),
     .init("moduleName", .string(description: "Module to import for the macro.")),
   ]
 
-  public var macroName: String?
-  public var moduleName: String?
+  package var macroName: String?
+  package var moduleName: String?
 
-  public init() {}
+  package init() {}
 
-  public init(from decoder: Decoder) throws {
+  package init(from decoder: Decoder) throws {
     let container = try decoder.container(keyedBy: CodingKeys.self)
     self.macroName = try container.decodeIfPresent(String.self, forKey: .macroName)
     self.moduleName = try container.decodeIfPresent(String.self, forKey: .moduleName)

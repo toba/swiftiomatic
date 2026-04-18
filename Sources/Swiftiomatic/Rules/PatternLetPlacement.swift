@@ -341,7 +341,7 @@ private final class UnbindIdentifiersRewriter: SyntaxRewriter {
 
 // MARK: - Configuration
 
-public struct PatternLetConfiguration: Codable, Equatable, Sendable, ConfigRepresentable {
+package struct PatternLetConfiguration: Codable, Equatable, Sendable, ConfigRepresentable {
   package static let configProperties: [ConfigProperty] = [
     .init(
       "placement",
@@ -353,16 +353,16 @@ public struct PatternLetConfiguration: Codable, Equatable, Sendable, ConfigRepre
     )
   ]
 
-  public enum Placement: String, Codable, Sendable {
+  package enum Placement: String, Codable, Sendable {
     case eachBinding
     case outerPattern
   }
 
-  public var placement: Placement = .eachBinding
+  package var placement: Placement = .eachBinding
 
-  public init() {}
+  package init() {}
 
-  public init(from decoder: Decoder) throws {
+  package init(from decoder: Decoder) throws {
     let container = try decoder.container(keyedBy: CodingKeys.self)
     let defaults = Self()
     self.placement =

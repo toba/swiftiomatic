@@ -22,7 +22,7 @@ extension Configuration {
   /// delegate to another initializer first, which defeats the purpose). So, users adding new
   /// configuration settings should be sure to supply a default here for testing, otherwise they
   /// will be implicitly relying on the real default.
-  public static var forTesting: Configuration {
+  package static var forTesting: Configuration {
     var config = Configuration()
     config.rules = Configuration.defaultRuleEnablements
     config.maximumBlankLines = 1
@@ -50,7 +50,7 @@ extension Configuration {
     return config
   }
 
-  public static func forTesting(enabledRule: String) -> Configuration {
+  package static func forTesting(enabledRule: String) -> Configuration {
     var config = Configuration.forTesting
     config.rules = config.rules.mapValues({ _ in .off })
     config.rules[enabledRule] = .warning

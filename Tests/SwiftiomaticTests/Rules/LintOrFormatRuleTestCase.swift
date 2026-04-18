@@ -11,13 +11,12 @@
 //===----------------------------------------------------------------------===//
 
 import Foundation
-import Swiftiomatic
-@_spi(Testing) @testable import Swiftiomatic
+@testable import Swiftiomatic
 import SwiftOperators
 @_spi(ExperimentalLanguageFeatures) import SwiftParser
 import SwiftSyntax
 import Testing
-@_spi(Testing) import SwiftiomaticTestSupport
+import SwiftiomaticTestSupport
 
 protocol RuleTesting {}
 
@@ -38,7 +37,10 @@ extension RuleTesting {
       try! OperatorTable.standardOperators.foldAll(tree).as(SourceFileSyntax.self)!
 
     // Force the rule to be enabled while we test it.
-    let configuration = Configuration.forTesting(enabledRule: type.name)
+    // Use ruleNameCache to get the correct name: static let on subclasses isn't dispatched
+    // dynamically through the base class's protocol witness table.
+    let enabledRule = ruleNameCache[ObjectIdentifier(type)] ?? "\(type)"
+    let configuration = Configuration.forTesting(enabledRule: enabledRule)
     let context = makeTestContext(
       sourceFileSyntax: sourceFileSyntax,
       configuration: configuration,
@@ -88,7 +90,10 @@ extension RuleTesting {
     var emittedFindings = [Finding]()
 
     // Force the rule to be enabled while we test it.
-    let configuration = configuration ?? Configuration.forTesting(enabledRule: formatType.name)
+    // Use ruleNameCache to get the correct name: static let on subclasses isn't dispatched
+    // dynamically through the base class's protocol witness table.
+    let enabledRule = ruleNameCache[ObjectIdentifier(formatType)] ?? "\(formatType)"
+    let configuration = configuration ?? Configuration.forTesting(enabledRule: enabledRule)
 
     let context = makeTestContext(
       sourceFileSyntax: sourceFileSyntax,

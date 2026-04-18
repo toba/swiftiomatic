@@ -10,12 +10,11 @@
 //
 //===----------------------------------------------------------------------===//
 
-import Swiftiomatic
-@_spi(Testing) import Swiftiomatic
+@testable import Swiftiomatic
 import SwiftParser
 import SwiftSyntax
 import Testing
-@_spi(Testing) import SwiftiomaticTestSupport
+import SwiftiomaticTestSupport
 
 protocol WhitespaceTesting {}
 

@@ -13,7 +13,7 @@
 import Foundation
 
 /// Common behavior used to generate source files.
-@_spi(Internal) public protocol FileGenerator {
+package protocol FileGenerator {
     /// Generates the file content as a String.
     func generateContent() -> String
 }
@@ -24,7 +24,7 @@ private struct FailedToCreateFileError: Error {
 
 extension FileGenerator {
     /// Generates a file at the given URL, overwriting it if it already exists.
-    public func generateFile(at url: URL) throws {
+    package func generateFile(at url: URL) throws {
         let fm = FileManager.default
         if fm.fileExists(atPath: url.path) {
             try fm.removeItem(at: url)

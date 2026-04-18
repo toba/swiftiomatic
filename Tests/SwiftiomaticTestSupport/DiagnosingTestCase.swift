@@ -11,16 +11,14 @@
 //===----------------------------------------------------------------------===//
 
 import Foundation
-import Swiftiomatic
-@_spi(Testing) @testable import Swiftiomatic
+@testable import Swiftiomatic
 import SwiftSyntax
 import Testing
 
-public typealias TestSourceLocation = Testing.SourceLocation
+package typealias TestSourceLocation = Testing.SourceLocation
 
 /// Creates and returns a new `Context` for use in tests.
-@_spi(Testing)
-public func makeTestContext(
+package func makeTestContext(
   sourceFileSyntax: SourceFileSyntax,
   configuration: Configuration? = nil,
   selection: Selection,
@@ -38,8 +36,7 @@ public func makeTestContext(
 }
 
 /// Asserts that the given list of findings matches a set of specs.
-@_spi(Testing)
-public func assertFindings(
+package func assertFindings(
   expected specs: [FindingSpec],
   markerLocations: [String: Int],
   emittedFindings: [Finding],
@@ -189,8 +186,7 @@ private func assertAndRemoveNote(
 }
 
 /// Asserts that the two strings are equal, providing Unix `diff`-style output if they are not.
-@_spi(Testing)
-public func assertStringsEqualWithDiff(
+package func assertStringsEqualWithDiff(
   _ actual: String,
   _ expected: String,
   _ message: String = "",

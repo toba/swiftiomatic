@@ -11,7 +11,7 @@
 //===----------------------------------------------------------------------===//
 
 import Foundation
-@_spi(Internal) @_spi(Testing) import Swiftiomatic
+@testable import Swiftiomatic
 import Testing
 
 extension URL {

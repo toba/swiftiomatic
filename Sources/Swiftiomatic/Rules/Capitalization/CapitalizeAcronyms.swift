@@ -96,7 +96,7 @@ extension Finding.Message {
 
 // MARK: - Configuration
 
-public struct AcronymsConfiguration: Codable, Equatable, Sendable, ConfigRepresentable {
+package struct AcronymsConfiguration: Codable, Equatable, Sendable, ConfigRepresentable {
     package static let configProperties: [ConfigProperty] = [
         .init(
             "words",
@@ -111,15 +111,15 @@ public struct AcronymsConfiguration: Codable, Equatable, Sendable, ConfigReprese
         )
     ]
 
-    public var words: [String] = [
+    package var words: [String] = [
         "ID", "URL", "UUID", "HTTP", "HTTPS", "JSON", "XML", "HTML",
         "API", "TCP", "UDP", "DNS", "SSH", "FTP", "SQL", "CSS",
         "RGB", "RGBA", "PDF", "GIF", "PNG", "JPEG",
     ]
 
-    public init() {}
+    package init() {}
 
-    public init(from decoder: Decoder) throws {
+    package init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         let defaults = Self()
         self.words =

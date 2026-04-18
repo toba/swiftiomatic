@@ -16,17 +16,17 @@ import ArgumentParser
 /// appropriate subcommand.
 @main
 struct SwiftiomaticCommand: ParsableCommand {
-  nonisolated(unsafe) static var configuration = CommandConfiguration(
-    commandName: "sm",
-    abstract: "Format or lint Swift source code",
-    subcommands: [
-      DumpConfiguration.self,
-      Format.self,
-      Lint.self,
-    ],
-    defaultSubcommand: Format.self
-  )
+    nonisolated(unsafe) static var configuration = CommandConfiguration(
+        commandName: "sm",
+        abstract: "Format or lint Swift source code",
+        subcommands: [
+            DumpConfiguration.self,
+            Format.self,
+            Lint.self,
+        ],
+        defaultSubcommand: Format.self
+    )
 
-  @OptionGroup()
-  var versionOptions: VersionOptions
+    @OptionGroup()
+    var versionOptions: VersionOptions
 }

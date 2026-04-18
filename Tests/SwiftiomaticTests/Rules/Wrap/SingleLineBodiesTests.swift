@@ -810,7 +810,7 @@ struct SingleLineBodiesTests: RuleTesting {
 struct SingleLineBodiesInlineTests: RuleTesting {
 
   private var inlineConfig: Configuration {
-    var config = Configuration.forTesting(enabledRule: "SingleLineBodies")
+    var config = Configuration.forTesting(enabledRule: WrapSingleLineBodies.name)
     config.singleLineBodies = {
       var c = SingleLineBodiesConfiguration()
       c.mode = .inline

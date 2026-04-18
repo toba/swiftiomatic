@@ -16,6 +16,6 @@
 /// `description` property from the inherited `CustomStringConvertible` conformance). This is meant
 /// to be displayed as part of the diagnostic message when the finding is presented to the user.
 /// For example, the category `Indentation` in the message `[Indentation] Indent by 2 spaces`.
-public protocol FindingCategorizing: CustomStringConvertible, Sendable {
+package protocol FindingCategorizing: CustomStringConvertible, Sendable {
 
 }

@@ -191,29 +191,26 @@ struct ConfigurationTests {
         "PatternLetPlacement": { "mode": "warn", "placement": "outerPattern" },
         "URLMacro": { "mode": "warn", "macroName": "#URL", "moduleName": "M" },
         "FileHeader": { "mode": "warn", "text": "// Header" },
-        "updateBlankLines": {
-          "mode": "warn",
+        "blankLines": {
           "maximumBlankLines": 2,
-          "afterGuardStatements": true,
-          "afterImports": true,
-          "betweenChainedFunctions": true,
-          "betweenImports": false,
-          "betweenScopes": true
+          "blankLinesAfterGuardStatements": "warn",
+          "blankLinesAfterImports": "warn",
+          "blankLinesBetweenChainedFunctions": "warn",
+          "blankLinesBetweenImports": "off",
+          "blankLinesBetweenScopes": "warn"
         },
-        "updateLineBreak": {
-          "mode": "warn",
+        "lineBreaks": {
           "beforeControlFlowKeywords": true,
           "beforeEachArgument": true,
           "beforeEachGenericRequirement": true,
           "betweenDeclarationAttributes": true,
           "aroundMultilineExpressionChainComponents": true,
-          "atEndOfFile": true
+          "ensureLineBreakAtEOF": "warn"
         },
-        "removeRedundant": {
-          "mode": "error",
-          "self": true,
-          "init": false,
-          "backticks": "warn"
+        "redundancies": {
+          "redundantSelf": "error",
+          "redundantInit": "off",
+          "redundantBackticks": "warn"
         }
       }
       """.data(using: .utf8)!
@@ -229,21 +226,21 @@ struct ConfigurationTests {
     #expect(config.urlMacro.macroName == "#URL")
     #expect(config.urlMacro.moduleName == "M")
     #expect(config.fileHeader.text == "// Header")
-    // UpdateBlankLines group
+    // blankLines group
     #expect(config.maximumBlankLines == 2)
     #expect(config.rules["BlankLinesAfterGuardStatements"] == .warning)
     #expect(config.rules["BlankLinesAfterImports"] == .warning)
     #expect(config.rules["BlankLinesBetweenChainedFunctions"] == .warning)
     #expect(config.rules["BlankLinesBetweenImports"] == .off)
     #expect(config.rules["BlankLinesBetweenScopes"] == .warning)
-    // UpdateLineBreak group
+    // lineBreaks group
     #expect(config.lineBreakBeforeControlFlowKeywords == true)
     #expect(config.lineBreakBeforeEachArgument == true)
     #expect(config.lineBreakBeforeEachGenericRequirement == true)
     #expect(config.lineBreakBetweenDeclarationAttributes == true)
     #expect(config.lineBreakAroundMultilineExpressionChainComponents == true)
-    #expect(config.rules["LinebreakAtEndOfFile"] == .warning)
-    // RemoveRedundant group
+    #expect(config.rules["ensureLineBreakAtEOF"] == .warning)
+    // redundancies group
     #expect(config.rules["RedundantSelf"] == .error)
     #expect(config.rules["RedundantInit"] == .off)
     #expect(config.rules["RedundantBackticks"] == .warning)
@@ -300,7 +297,7 @@ struct ConfigurationTests {
     #expect(!json.contains("\"format\""))
     #expect(!json.contains("\"lint\""))
     // Should contain groups at root level.
-    #expect(json.contains("\"removeRedundant\""))
+    #expect(json.contains("\"redundancies\""))
     #expect(json.contains("\"sort\""))
   }
 

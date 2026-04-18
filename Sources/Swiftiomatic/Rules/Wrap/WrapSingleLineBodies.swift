@@ -708,7 +708,7 @@ extension Finding.Message {
 
 // MARK: - Configuration
 
-public struct SingleLineBodiesConfiguration: Codable, Equatable, Sendable, ConfigRepresentable {
+package struct SingleLineBodiesConfiguration: Codable, Equatable, Sendable, ConfigRepresentable {
     package static let configProperties: [ConfigProperty] = [
         .init(
             "mode",
@@ -721,18 +721,18 @@ public struct SingleLineBodiesConfiguration: Codable, Equatable, Sendable, Confi
         )
     ]
 
-    public enum Mode: String, Codable, Sendable {
+    package enum Mode: String, Codable, Sendable {
         /// Expand single-line bodies onto multiple lines.
         case wrap
         /// Collapse multi-line single-statement bodies onto one line.
         case inline
     }
 
-    public var mode: Mode = .wrap
+    package var mode: Mode = .wrap
 
-    public init() {}
+    package init() {}
 
-    public init(from decoder: Decoder) throws {
+    package init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         let defaults = Self()
         self.mode =

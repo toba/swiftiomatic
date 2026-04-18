@@ -19,8 +19,7 @@ extension Parser {
   ///   - source: The source text to parse.
   ///   - experimentalFeatures: The set of experimental features that should be enabled in the
   ///     parser.
-  @_spi(Testing)
-  public static func parse(
+  package static func parse(
     source: String,
     experimentalFeatures: Parser.ExperimentalFeatures
   ) -> SourceFileSyntax {

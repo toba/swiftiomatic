@@ -15,7 +15,7 @@ import Foundation
 extension URL {
   /// Returns a `Bool` to indicate if the given `URL` leads to the root of a filesystem.
   /// A non-filesystem type `URL` will always return false.
-  @_spi(Testing) public var isRoot: Bool {
+  package var isRoot: Bool {
     guard isFileURL else { return false }
     return self.path == "/"
   }

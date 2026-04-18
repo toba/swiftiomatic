@@ -47,8 +47,7 @@ import SwiftSyntax
 ///
 /// The rules themselves reference RuleMask to see if it is disabled for the line it is currently
 /// examining.
-@_spi(Testing)
-public class RuleMask {
+package class RuleMask {
   /// Stores the source ranges in which all rules are ignored.
   private var allRulesIgnoredRanges: [SourceRange] = []
 
@@ -63,7 +62,7 @@ public class RuleMask {
   ///
   /// Ranges in the source where rules' statuses are modified are pre-computed during init so that
   /// lookups later don't require parsing the source.
-  public init(syntaxNode: Syntax, sourceLocationConverter: SourceLocationConverter) {
+  package init(syntaxNode: Syntax, sourceLocationConverter: SourceLocationConverter) {
     self.sourceLocationConverter = sourceLocationConverter
     computeIgnoredRanges(in: syntaxNode)
   }
@@ -77,7 +76,7 @@ public class RuleMask {
   }
 
   /// Returns the `RuleState` for the given rule at the provided location.
-  public func ruleState(_ rule: String, at location: SourceLocation) -> RuleState {
+  package func ruleState(_ rule: String, at location: SourceLocation) -> RuleState {
     if allRulesIgnoredRanges.contains(where: { $0.contains(location) }) {
       return .disabled
     }

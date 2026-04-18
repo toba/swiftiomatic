@@ -11,7 +11,7 @@
 //===----------------------------------------------------------------------===//
 
 import Foundation
-@_spi(Internal) import Swiftiomatic
+import Swiftiomatic
 import SwiftParser
 import SwiftSyntax
 

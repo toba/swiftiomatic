@@ -11,7 +11,7 @@
 //===----------------------------------------------------------------------===//
 
 import Foundation
-@_spi(Internal) import Generators
+import Generators
 
 let ruleCollector = RuleCollector()
 try ruleCollector.collect(from: GenerateSwiftiomaticPaths.rulesDirectory)
