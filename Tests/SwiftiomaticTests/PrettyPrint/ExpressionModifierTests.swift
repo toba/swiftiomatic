@@ -10,7 +10,7 @@
 //
 //===----------------------------------------------------------------------===//
 
-import Swiftiomatic
+import SwiftiomaticKit
 import Testing
 
 /// These tests verify the breaking and grouping behavior of expression modifiers like `try`,

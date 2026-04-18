@@ -6,8 +6,8 @@ let package = Package(
     name: "swiftiomatic",
     platforms: [.macOS(.v26)],
     products: [
-        .executable(name: "sm", targets: ["sm"]),
-        .library(name: "Swiftiomatic", targets: ["Swiftiomatic"]),
+        .executable(name: "sm", targets: ["Swiftiomatic"]),
+        .library(name: "SwiftiomaticKit", targets: ["SwiftiomaticKit"]),
         .plugin(name: "FormatPlugin", targets: ["Format Source Code"]),
         .plugin(name: "LintPlugin", targets: ["Lint Source Code"]),
     ],
@@ -18,13 +18,13 @@ let package = Package(
     ],
     targets: [
         .target(
-            name: "SwiftiomaticCore",
+            name: "ConfigurationKit",
             exclude: ["README.md"]
         ),
         .target(
-            name: "Swiftiomatic",
+            name: "SwiftiomaticKit",
             dependencies: [
-                "SwiftiomaticCore",
+                "ConfigurationKit",
                 .product(name: "Markdown", package: "swift-markdown"),
                 .product(name: "SwiftOperators", package: "swift-syntax"),
                 .product(name: "SwiftParser", package: "swift-syntax"),
@@ -37,7 +37,7 @@ let package = Package(
         .target(
             name: "SwiftiomaticTestSupport",
             dependencies: [
-                "Swiftiomatic",
+                "SwiftiomaticKit",
                 .product(name: "SwiftOperators", package: "swift-syntax"),
                 .product(name: "SwiftParser", package: "swift-syntax"),
                 .product(name: "SwiftParserDiagnostics", package: "swift-syntax"),
@@ -48,14 +48,14 @@ let package = Package(
             exclude: ["README.md"]
         ),
         .target(
-            name: "Generators",
+            name: "GeneratorKit",
             dependencies: [
-                "Swiftiomatic",
-                "SwiftiomaticCore",
+                "SwiftiomaticKit",
+                "ConfigurationKit",
                 .product(name: "SwiftParser", package: "swift-syntax"),
                 .product(name: "SwiftSyntax", package: "swift-syntax"),
             ],
-            path: "Sources/Generators",
+            path: "Sources/GeneratorKit",
             exclude: ["README.md"]
         ),
         .plugin(
@@ -66,7 +66,7 @@ let package = Package(
                     .writeToPackageDirectory(reason: "This command formats the Swift source files")
                 ]
             ),
-            dependencies: [.target(name: "sm")],
+            dependencies: [.target(name: "Swiftiomatic")],
             path: "Plugins/FormatPlugin"
         ),
         .plugin(
@@ -77,18 +77,18 @@ let package = Package(
                     description: "Lint source code for a specified target."
                 )
             ),
-            dependencies: [.target(name: "sm")],
+            dependencies: [.target(name: "Swiftiomatic")],
             path: "Plugins/LintPlugin"
         ),
         .executableTarget(
-            name: "generate-swiftiomatic",
-            dependencies: ["Generators"],
+            name: "Generator",
+            dependencies: ["GeneratorKit"],
             exclude: ["README.md"]
         ),
         .executableTarget(
-            name: "sm",
+            name: "Swiftiomatic",
             dependencies: [
-                "Swiftiomatic",
+                "SwiftiomaticKit",
                 .product(name: "ArgumentParser", package: "swift-argument-parser"),
                 .product(name: "SwiftDiagnostics", package: "swift-syntax"),
                 .product(name: "SwiftParser", package: "swift-syntax"),
@@ -99,7 +99,7 @@ let package = Package(
         .testTarget(
             name: "SwiftiomaticPerformanceTests",
             dependencies: [
-                "Swiftiomatic",
+                "SwiftiomaticKit",
                 "SwiftiomaticTestSupport",
                 .product(name: "SwiftParser", package: "swift-syntax"),
                 .product(name: "SwiftSyntax", package: "swift-syntax"),
@@ -109,9 +109,9 @@ let package = Package(
         .testTarget(
             name: "SwiftiomaticTests",
             dependencies: [
-                "Swiftiomatic",
+                "SwiftiomaticKit",
                 "SwiftiomaticTestSupport",
-                "Generators",
+                "GeneratorKit",
                 .product(name: "Markdown", package: "swift-markdown"),
                 .product(name: "SwiftOperators", package: "swift-syntax"),
                 .product(name: "SwiftParser", package: "swift-syntax"),

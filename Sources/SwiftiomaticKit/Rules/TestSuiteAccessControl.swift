@@ -22,7 +22,7 @@ final class TestSuiteAccessControl: SyntaxFormatRule {
 
   override func visit(_ node: ClassDeclSyntax) -> DeclSyntax {
     guard let framework else { return DeclSyntax(node) }
-    guard Swiftiomatic.isTestSuite(name: node.name.text, inheritanceClause: node.inheritanceClause,
+    guard SwiftiomaticKit.isTestSuite(name: node.name.text, inheritanceClause: node.inheritanceClause,
       modifiers: node.modifiers, leadingTrivia: node.leadingTrivia, framework: framework)
     else { return DeclSyntax(node) }
     guard !hasParameterizedInit(node.memberBlock) else { return DeclSyntax(node) }
@@ -35,7 +35,7 @@ final class TestSuiteAccessControl: SyntaxFormatRule {
 
   override func visit(_ node: StructDeclSyntax) -> DeclSyntax {
     guard let framework else { return DeclSyntax(node) }
-    guard Swiftiomatic.isTestSuite(name: node.name.text, inheritanceClause: node.inheritanceClause,
+    guard SwiftiomaticKit.isTestSuite(name: node.name.text, inheritanceClause: node.inheritanceClause,
       modifiers: node.modifiers, leadingTrivia: node.leadingTrivia, framework: framework)
     else { return DeclSyntax(node) }
     guard !hasParameterizedInit(node.memberBlock) else { return DeclSyntax(node) }

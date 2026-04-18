@@ -12,7 +12,7 @@
 
 import ArgumentParser
 import Foundation
-import Swiftiomatic
+import SwiftiomaticKit
 
 extension SwiftiomaticCommand {
   /// Dumps the tool's configuration in JSON format to standard output.

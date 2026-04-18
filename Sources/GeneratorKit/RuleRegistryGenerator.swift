@@ -11,7 +11,7 @@
 //===----------------------------------------------------------------------===//
 
 import Foundation
-import SwiftiomaticCore
+import ConfigurationKit
 
 /// Generates the rule registry file used to populate the default configuration.
 package final class RuleRegistryGenerator: FileGenerator {

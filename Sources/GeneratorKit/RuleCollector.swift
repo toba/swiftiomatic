@@ -11,7 +11,7 @@
 //===----------------------------------------------------------------------===//
 
 import Foundation
-import SwiftiomaticCore
+import ConfigurationKit
 import SwiftParser
 import SwiftSyntax
 

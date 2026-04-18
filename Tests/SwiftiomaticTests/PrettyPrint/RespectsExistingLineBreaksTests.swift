@@ -10,7 +10,7 @@
 //
 //===----------------------------------------------------------------------===//
 
-import Swiftiomatic
+import SwiftiomaticKit
 import Testing
 
 /// Basic checks and regression tests for the `respectsExistingLineBreaks` configuration setting

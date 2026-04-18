@@ -11,7 +11,7 @@
 //===----------------------------------------------------------------------===//
 
 import SwiftDiagnostics
-import Swiftiomatic
+import SwiftiomaticKit
 import SwiftSyntax
 
 /// Unifies the handling of findings from the linter, parsing errors from the syntax parser, and

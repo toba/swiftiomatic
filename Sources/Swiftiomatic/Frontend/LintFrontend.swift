@@ -12,7 +12,7 @@
 
 import Foundation
 import SwiftDiagnostics
-import Swiftiomatic
+import SwiftiomaticKit
 import SwiftSyntax
 
 /// The frontend for linting operations.

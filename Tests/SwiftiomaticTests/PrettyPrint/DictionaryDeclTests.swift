@@ -10,7 +10,7 @@
 //
 //===----------------------------------------------------------------------===//
 
-import Swiftiomatic
+import SwiftiomaticKit
 import SwiftSyntax
 import SwiftiomaticTestSupport
 import Testing

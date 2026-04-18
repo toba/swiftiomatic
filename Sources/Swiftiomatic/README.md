@@ -1,32 +1,32 @@
-# Swiftiomatic
+# sm
 
-The core library for AST-accurate Swift linting, formatting, and code analysis.
+The command-line interface for Swiftiomatic -- a drop-in replacement for `swift-format`.
 
 ## What It Does
 
-Parses Swift source files into syntax trees (via swift-syntax) and applies 100+ rules to lint, format, and suggest improvements. This is the engine behind the `sm` CLI, SPM plugins, and direct API consumers.
+Provides the user-facing CLI that parses arguments, loads configuration, iterates source files, and delegates to the `Swiftiomatic` library for formatting, linting, and analysis.
+
+## Subcommands
+
+| Command | Description |
+|---|---|
+| `sm format` | Auto-fix formatting issues in-place |
+| `sm lint` | Report lint findings without modifying files |
+| `sm analyze` | Format + lint + suggest in a single pass |
+| `sm dump-configuration` | Print the resolved configuration as JSON |
+| `sm list-rules` | List all available rules |
+| `sm generate-docs` | Generate rule reference documentation |
 
 ## Structure
 
 | Directory | Purpose |
 |---|---|
-| `Configuration/` | JSON config serialization, defaults, and rule toggles |
-| `Core/` | Rule infrastructure, context/finding emission, parsing helpers, and auto-generated pipelines |
-| `Formatter/` | `SwiftiomaticFormatter`, `FormatPipeline`, and `SyntaxFormatRule` base class |
-| `Linter/` | `SwiftiomaticLinter`, `LintPipeline`, and `SyntaxLintRule` base class |
-| `PrettyPrint/` | Token-stream re-indentation and line-breaking engine |
-| `Rules/` | All lint and format rule implementations, organized by category |
-| `Support/` | `Finding`, `Selection`, error types, and debugging options |
-
-## Key Concepts
-
-- **SyntaxLintRule** -- read-only visitor that emits findings via `diagnose()`.
-- **SyntaxFormatRule** -- syntax rewriter that transforms code AND emits findings.
-- **LintPipeline** -- interleaves all lint rules in a single tree walk for efficiency.
-- **FormatPipeline** -- runs format rules sequentially, each over the full tree.
-- **PrettyPrinter** -- handles whitespace, indentation, and line-break decisions after rules run.
-- **RuleMask** -- honors `// swiftiomatic-ignore` comments to suppress rules per-line.
+| `Subcommands/` | Argument definitions and dispatch for each CLI subcommand |
+| `Frontend/` | `LintFrontend`, `FormatFrontend`, `ConfigurationLoader` -- orchestrates file iteration, rule execution, and output |
+| `Utilities/` | Diagnostics engine, TTY detection, terminal formatting |
 
 ## Where It Fits
 
-This is the main product library. The `sm` CLI and both SPM plugins depend on it. The `Generators` target also imports it to introspect rule types at build time. Test targets validate its behavior.
+This is the main executable product. Xcode invokes it as `swift-format` (via symlink), SPM plugins call it by name, and users run it directly from the terminal. It depends on the `Swiftiomatic` library for all rule logic and the `ArgumentParser` package for CLI parsing.
+
+**Critical:** The `format`, `lint`, and `dump-configuration` subcommands and all their flags must remain compatible with upstream `swift-format` -- Xcode depends on this contract.

@@ -10,7 +10,7 @@
 //
 //===----------------------------------------------------------------------===//
 
-import Swiftiomatic
+import SwiftiomaticKit
 import Testing
 
 /// Tests the `switchCaseIndentation.style` config option

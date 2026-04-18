@@ -10,7 +10,7 @@
 //
 //===----------------------------------------------------------------------===//
 import Foundation
-import Swiftiomatic
+import SwiftiomaticKit
 import Testing
 
 @Suite

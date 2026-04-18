@@ -10,16 +10,15 @@
 //
 //===----------------------------------------------------------------------===//
 
+import ConfigurationKit
 import Foundation
-import Swiftiomatic
-import SwiftiomaticCore
+import SwiftiomaticKit
 
 /// Generates `schema.json` by encoding a `JSONSchemaNode` tree.
 ///
 /// Rule descriptions are sourced from `RuleCollector` (extracted from DocC comments)
 /// so they stay in sync with rule implementations.
 package final class ConfigurationSchemaGenerator: FileGenerator {
-
     let ruleCollector: RuleCollector
 
     package init(ruleCollector: RuleCollector) {
@@ -81,7 +80,8 @@ package final class ConfigurationSchemaGenerator: FileGenerator {
         var desc = rule.description ?? (rule.canFormat ? "Format rule." : "Lint rule.")
         if rule.isOptIn { desc += " [opt-in]" }
 
-        let modeValues = rule.canFormat
+        let modeValues =
+            rule.canFormat
             ? ["autoFix", "warn", "error", "off"]
             : ["warn", "error", "off"]
         let defaultMode = rule.isOptIn ? "off" : (rule.canFormat ? "autoFix" : "warn")
@@ -92,7 +92,11 @@ package final class ConfigurationSchemaGenerator: FileGenerator {
             defaultValue: defaultMode
         )
 
-        if let optionsSchema = ruleOptionsSchema(for: rule.ruleName, canFormat: rule.canFormat, isOptIn: rule.isOptIn) {
+        if let optionsSchema = ruleOptionsSchema(
+            for: rule.ruleName,
+            canFormat: rule.canFormat,
+            isOptIn: rule.isOptIn
+        ) {
             var node = JSONSchemaNode()
             node.description = desc
             node.oneOf = [modeVariant, optionsSchema]
@@ -105,32 +109,76 @@ package final class ConfigurationSchemaGenerator: FileGenerator {
     private func rootSettingsSchema() -> [String: JSONSchemaNode] {
         var p: [String: JSONSchemaNode] = [:]
 
-        p["lineLength"] = .integer(description: "Maximum line length before wrapping.", defaultValue: 100, minimum: 1)
-        p["spacesBeforeEndOfLineComments"] = .integer(description: "Spaces before // comments.", defaultValue: 2, minimum: 0)
-        p["tabWidth"] = .integer(description: "Tab width in spaces for indentation conversion.", defaultValue: 8, minimum: 1)
+        p["lineLength"] = .integer(
+            description: "Maximum line length before wrapping.",
+            defaultValue: 100,
+            minimum: 1
+        )
+        p["spacesBeforeEndOfLineComments"] = .integer(
+            description: "Spaces before // comments.",
+            defaultValue: 2,
+            minimum: 0
+        )
+        p["tabWidth"] = .integer(
+            description: "Tab width in spaces for indentation conversion.",
+            defaultValue: 8,
+            minimum: 1
+        )
 
         var indent = JSONSchemaNode()
         indent.description = "Indentation unit: exactly one of spaces or tabs."
         indent.defaultValue = .object(["spaces": .int(2)])
         var spacesVariant = JSONSchemaNode.object(
             description: "Indent with spaces.",
-            properties: ["spaces": .integer(description: "Number of spaces per indent level.", defaultValue: 2, minimum: 1)]
+            properties: [
+                "spaces": .integer(
+                    description: "Number of spaces per indent level.",
+                    defaultValue: 2,
+                    minimum: 1
+                )
+            ]
         )
         spacesVariant.required = ["spaces"]
         var tabsVariant = JSONSchemaNode.object(
             description: "Indent with tabs.",
-            properties: ["tabs": .integer(description: "Number of tabs per indent level.", defaultValue: 1, minimum: 1)]
+            properties: [
+                "tabs": .integer(
+                    description: "Number of tabs per indent level.",
+                    defaultValue: 1,
+                    minimum: 1
+                )
+            ]
         )
         tabsVariant.required = ["tabs"]
         indent.oneOf = [spacesVariant, tabsVariant]
         p["indentation"] = indent
 
-        p["respectsExistingLineBreaks"] = .boolean(description: "Preserve discretionary line breaks.", defaultValue: true)
-        p["prioritizeKeepingFunctionOutputTogether"] = .boolean(description: "Keep return type with closing parenthesis.", defaultValue: false)
-        p["spacesAroundRangeFormationOperators"] = .boolean(description: "Force spaces around ... and ..<.", defaultValue: false)
-        p["multiElementCollectionTrailingCommas"] = .boolean(description: "Trailing commas in multi-element collection literals.", defaultValue: true)
-        p["multilineTrailingCommaBehavior"] = .stringEnum(description: "Trailing comma handling in multiline lists.", values: ["alwaysUsed", "neverUsed", "keptAsWritten"], defaultValue: "keptAsWritten")
-        p["reflowMultilineStringLiterals"] = .stringEnum(description: "Multiline string literal reflow mode.", values: ["never", "onlyLinesOverLength", "always"], defaultValue: "never")
+        p["respectsExistingLineBreaks"] = .boolean(
+            description: "Preserve discretionary line breaks.",
+            defaultValue: true
+        )
+        p["prioritizeKeepingFunctionOutputTogether"] = .boolean(
+            description: "Keep return type with closing parenthesis.",
+            defaultValue: false
+        )
+        p["spacesAroundRangeFormationOperators"] = .boolean(
+            description: "Force spaces around ... and ..<.",
+            defaultValue: false
+        )
+        p["multiElementCollectionTrailingCommas"] = .boolean(
+            description: "Trailing commas in multi-element collection literals.",
+            defaultValue: true
+        )
+        p["multilineTrailingCommaBehavior"] = .stringEnum(
+            description: "Trailing comma handling in multiline lists.",
+            values: ["alwaysUsed", "neverUsed", "keptAsWritten"],
+            defaultValue: "keptAsWritten"
+        )
+        p["reflowMultilineStringLiterals"] = .stringEnum(
+            description: "Multiline string literal reflow mode.",
+            values: ["never", "onlyLinesOverLength", "always"],
+            defaultValue: "never"
+        )
 
         return p
     }
@@ -157,13 +205,15 @@ package final class ConfigurationSchemaGenerator: FileGenerator {
             if let rules = groupedRules[group] {
                 for rule in rules.sorted(by: { $0.ruleName < $1.ruleName }) {
                     let option = RuleRegistryGenerator.optionName(for: rule.ruleName)
-                    let modeValues = rule.canFormat
+                    let modeValues =
+                        rule.canFormat
                         ? ["autoFix", "warn", "error", "off"]
                         : ["warn", "error", "off"]
                     let defaultMode = rule.isOptIn ? "off" : (rule.canFormat ? "autoFix" : "warn")
                     properties[option] = .stringEnum(
                         description: rule.description ?? rule.ruleName,
-                        values: modeValues, defaultValue: defaultMode
+                        values: modeValues,
+                        defaultValue: defaultMode
                     )
                 }
             }
@@ -180,13 +230,18 @@ package final class ConfigurationSchemaGenerator: FileGenerator {
 
     /// Returns the JSON Schema object variant for a rule that has config options,
     /// including the `mode` property. Returns `nil` for rules without options.
-    private func ruleOptionsSchema(for ruleName: String, canFormat: Bool, isOptIn: Bool) -> JSONSchemaNode? {
+    private func ruleOptionsSchema(for ruleName: String, canFormat: Bool, isOptIn: Bool)
+        -> JSONSchemaNode?
+    {
         guard let configProperties = Configuration.ruleConfigSchemas[ruleName] else { return nil }
 
-        let modeValues = canFormat ? ["autoFix", "warn", "error", "off"] : ["warn", "error", "off"]
+        let modeValues =
+            canFormat ? ["autoFix", "warn", "error", "off"] : ["warn", "error", "off"]
         let defaultMode = isOptIn ? "off" : (canFormat ? "autoFix" : "warn")
         let modeProp = JSONSchemaNode.stringEnum(
-            description: "Rule mode.", values: modeValues, defaultValue: defaultMode
+            description: "Rule mode.",
+            values: modeValues,
+            defaultValue: defaultMode
         )
 
         var props: [String: JSONSchemaNode] = ["mode": modeProp]
@@ -199,9 +254,11 @@ package final class ConfigurationSchemaGenerator: FileGenerator {
     private func schemaNode(from schema: ConfigProperty.Schema) -> JSONSchemaNode {
         switch schema {
         case .bool(let desc, let def): .boolean(description: desc, defaultValue: def)
-        case .integer(let desc, let def, let min): .integer(description: desc, defaultValue: def, minimum: min)
+        case .integer(let desc, let def, let min):
+            .integer(description: desc, defaultValue: def, minimum: min)
         case .string(let desc): .string(description: desc)
-        case .stringEnum(let desc, let vals, let def): .stringEnum(description: desc, values: vals, defaultValue: def)
+        case .stringEnum(let desc, let vals, let def):
+            .stringEnum(description: desc, values: vals, defaultValue: def)
         case .stringArray(let desc, let def): .stringArray(description: desc, defaultValue: def)
         }
     }

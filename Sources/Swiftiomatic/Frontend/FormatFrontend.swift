@@ -13,7 +13,7 @@
 import Foundation
 import SwiftDiagnostics
 import SwiftSyntax
-import Swiftiomatic
+import SwiftiomaticKit
 
 /// The frontend for formatting operations.
 class FormatFrontend: Frontend, @unchecked Sendable {

@@ -1,4 +1,4 @@
-@testable import Swiftiomatic
+@testable import SwiftiomaticKit
 import SwiftiomaticTestSupport
 import Testing
 

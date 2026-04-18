@@ -11,7 +11,7 @@
 //===----------------------------------------------------------------------===//
 
 import Testing
-import Generators
+import GeneratorKit
 
 @Suite
 struct GeneratedFilesValidityTests {
