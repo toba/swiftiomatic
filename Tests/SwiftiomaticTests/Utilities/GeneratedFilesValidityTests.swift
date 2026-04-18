@@ -19,13 +19,13 @@ struct GeneratedFilesValidityTests {
 
   init() throws {
     ruleCollector = RuleCollector()
-    try ruleCollector.collect(from: GenerateSwiftiomaticPaths.rulesDirectory)
+    try ruleCollector.collect(from: GeneratePaths.rulesDirectory)
   }
 
   @Test func generatedPipelineIsUpToDate() throws {
     let pipelineGenerator = PipelineGenerator(ruleCollector: ruleCollector)
     let generated = pipelineGenerator.generateContent()
-    let fileContents = try String(contentsOf: GenerateSwiftiomaticPaths.pipelineFile, encoding: .utf8)
+    let fileContents = try String(contentsOf: GeneratePaths.pipelineFile, encoding: .utf8)
     #expect(
       generated == fileContents,
       "Pipelines+Generated.swift is out of date. Please run 'swift run generate-swiftiomatic'."
@@ -35,7 +35,7 @@ struct GeneratedFilesValidityTests {
   @Test func generatedRegistryIsUpToDate() throws {
     let registryGenerator = RuleRegistryGenerator(ruleCollector: ruleCollector)
     let generated = registryGenerator.generateContent()
-    let fileContents = try String(contentsOf: GenerateSwiftiomaticPaths.ruleRegistryFile, encoding: .utf8)
+    let fileContents = try String(contentsOf: GeneratePaths.ruleRegistryFile, encoding: .utf8)
     #expect(
       generated == fileContents,
       "RuleRegistry+Generated.swift is out of date. Please run 'swift run generate-swiftiomatic'."
@@ -45,20 +45,11 @@ struct GeneratedFilesValidityTests {
   @Test func generatedNameCacheIsUpToDate() throws {
     let ruleNameCacheGenerator = RuleNameCacheGenerator(ruleCollector: ruleCollector)
     let generated = ruleNameCacheGenerator.generateContent()
-    let fileContents = try String(contentsOf: GenerateSwiftiomaticPaths.ruleNameCacheFile, encoding: .utf8)
+    let fileContents = try String(contentsOf: GeneratePaths.ruleNameCacheFile, encoding: .utf8)
     #expect(
       generated == fileContents,
       "RuleNameCache+Generated.swift is out of date. Please run 'swift run generate-swiftiomatic'."
     )
   }
 
-  @Test func generatedDocumentationIsUpToDate() throws {
-    let ruleDocumentationGenerator = RuleDocumentationGenerator(ruleCollector: ruleCollector)
-    let generated = ruleDocumentationGenerator.generateContent()
-    let fileContents = try String(contentsOf: GenerateSwiftiomaticPaths.ruleDocumentationFile, encoding: .utf8)
-    #expect(
-      generated == fileContents,
-      "RuleDocumentation.md is out of date. Please run 'swift run generate-swiftiomatic'."
-    )
-  }
 }

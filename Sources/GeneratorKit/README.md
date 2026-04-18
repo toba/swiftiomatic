@@ -26,4 +26,4 @@ Scans all rule types in `Sources/Swiftiomatic/Rules/`, extracts their metadata (
 
 ## Where It Fits
 
-Used exclusively by the `generate-swiftiomatic` build tool. Run via `swift run generate-swiftiomatic` to regenerate the `*+Generated.swift` files in `Sources/Swiftiomatic/Core/`. Never edit those generated files directly -- modify the generators or the rules instead.
+Used exclusively by the `generate-swiftiomatic` build tool. Run via `swift run generate-swiftiomatic` to regenerate the `*+Generated.swift` files in `Sources/SwiftiomaticKit/Syntax/`. Never edit those generated files directly -- modify the generators or the rules instead.

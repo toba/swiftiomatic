@@ -10,8 +10,8 @@
 //
 //===----------------------------------------------------------------------===//
 
-import Foundation
 @_exported import ConfigurationKit
+import Foundation
 
 /// A version number that can be specified in the configuration file, which allows us to change the
 /// format in the future if desired and still support older files.
@@ -34,7 +34,7 @@ package struct Configuration: Codable, Equatable, Sendable {
         init?(intValue: Int) { nil }
     }
 
-    // MARK: - FormatSetting table (replaces FormatSettings struct)
+    // MARK: - FormatSetting table (derived from LayoutDescriptor types)
 
     /// A single pretty-print setting, with closure-based decode/encode keyed by a JSON key name.
     /// Settings may optionally belong to a ``ConfigGroup``, in which case they decode/encode
@@ -47,79 +47,56 @@ package struct Configuration: Codable, Equatable, Sendable {
         let encode:
             @Sendable (Configuration, inout KeyedEncodingContainer<DynamicCodingKey>) throws -> Void
 
-        static func setting<V: Codable & Sendable>(
-            _ key: String,
-            _ keyPath: WritableKeyPath<Configuration, V> & Sendable,
-            group: ConfigGroup? = nil
-        ) -> FormatSetting {
+        static func from<D: LayoutDescriptor>(_ type: D.Type) -> FormatSetting {
             FormatSetting(
-                key: key,
-                group: group,
+                key: D.key,
+                group: D.group,
                 decode: { container, config in
                     // Use try? to tolerate type mismatches (e.g. "indentation" key can be
                     // either an Indent value or a ConfigGroup object depending on format).
                     if let value = try? container.decodeIfPresent(
-                        V.self,
-                        forKey: DynamicCodingKey(key)
+                        D.Value.self,
+                        forKey: DynamicCodingKey(D.key)
                     ) {
-                        config[keyPath: keyPath] = value
+                        config[keyPath: D.keyPath] = value
                     }
                 },
                 encode: { config, container in
-                    try container.encode(config[keyPath: keyPath], forKey: DynamicCodingKey(key))
+                    try container.encode(
+                        config[keyPath: D.keyPath],
+                        forKey: DynamicCodingKey(D.key)
+                    )
                 }
             )
         }
     }
 
-    /// All pretty-print settings. Root-level settings have `group: nil`; group-owned settings
-    /// have a non-nil group and encode/decode inside that group's JSON object.
+    /// All pretty-print settings, derived from ``LayoutDescriptor`` types. Root-level settings
+    /// have `group: nil`; group-owned settings encode/decode inside their group's JSON object.
     private static let allSettings: [FormatSetting] = [
-        // Root-level settings
-        .setting("lineLength", \.lineLength),
-        .setting("tabWidth", \.tabWidth),
-        .setting("indentation", \.indentation),
-        .setting("respectsExistingLineBreaks", \.respectsExistingLineBreaks),
-        .setting("spacesBeforeEndOfLineComments", \.spacesBeforeEndOfLineComments),
-        .setting("spacesAroundRangeFormationOperators", \.spacesAroundRangeFormationOperators),
-        .setting(
-            "prioritizeKeepingFunctionOutputTogether",
-            \.prioritizeKeepingFunctionOutputTogether
-        ),
-        .setting("multilineTrailingCommaBehavior", \.multilineTrailingCommaBehavior),
-        .setting("multiElementCollectionTrailingCommas", \.multiElementCollectionTrailingCommas),
-        .setting("reflowMultilineStringLiterals", \.reflowMultilineStringLiterals),
-
-        // Group-owned settings (encode inside their group's JSON object)
-        .setting("blankLines", \.indentBlankLines, group: .indentation),
-        .setting(
-            "conditionalCompilationBlocks",
-            \.indentConditionalCompilationBlocks,
-            group: .indentation
-        ),
-        .setting("maximumBlankLines", \.maximumBlankLines, group: .blankLines),
-        .setting(
-            "beforeControlFlowKeywords",
-            \.lineBreakBeforeControlFlowKeywords,
-            group: .lineBreaks
-        ),
-        .setting("beforeEachArgument", \.lineBreakBeforeEachArgument, group: .lineBreaks),
-        .setting(
-            "beforeEachGenericRequirement",
-            \.lineBreakBeforeEachGenericRequirement,
-            group: .lineBreaks
-        ),
-        .setting(
-            "betweenDeclarationAttributes",
-            \.lineBreakBetweenDeclarationAttributes,
-            group: .lineBreaks
-        ),
-        .setting(
-            "aroundMultilineExpressionChainComponents",
-            \.lineBreakAroundMultilineExpressionChainComponents,
-            group: .lineBreaks
-        ),
-        .setting("beforeGuardConditions", \.lineBreakBeforeGuardConditions, group: .lineBreaks),
+        // Root-level
+        .from(LineLength.self),
+        .from(TabWidth.self),
+        .from(IndentationSetting.self),
+        .from(RespectsExistingLineBreaks.self),
+        .from(SpacesBeforeEndOfLineComments.self),
+        .from(SpacesAroundRangeFormationOperators.self),
+        .from(PrioritizeKeepingFunctionOutputTogether.self),
+        .from(MultilineTrailingCommaBehaviorSetting.self),
+        .from(MultiElementCollectionTrailingCommas.self),
+        .from(ReflowMultilineStringLiterals.self),
+        // Grouped: .indentation
+        .from(IndentBlankLines.self),
+        .from(IndentConditionalCompilationBlocks.self),
+        // Grouped: .blankLines
+        .from(MaximumBlankLines.self),
+        // Grouped: .lineBreaks
+        .from(BeforeControlFlowKeywords.self),
+        .from(BeforeEachArgument.self),
+        .from(BeforeEachGenericRequirement.self),
+        .from(BetweenDeclarationAttributes.self),
+        .from(AroundMultilineExpressionChainComponents.self),
+        .from(BeforeGuardConditions.self),
     ]
 
     /// Keys that are known settings (not rules or groups), used to skip them during rule decoding.

@@ -17,83 +17,9 @@ package enum ConfigGroup: String, CaseIterable, Sendable {
 }
 
 extension ConfigGroup: ConfigRepresentable {
-    /// Non-rule settings owned by this group.
-    package var configProperties: [ConfigProperty] {
-        switch self {
-        case .blankLines:
-            [
-                .init(
-                    "maximumBlankLines",
-                    .integer(
-                        description: "Maximum consecutive blank lines.",
-                        defaultValue: 1,
-                        minimum: 0
-                    )
-                )
-            ]
-        case .lineBreaks:
-            [
-                .init(
-                    "beforeControlFlowKeywords",
-                    .bool(
-                        description: "Break before else/catch after closing brace.",
-                        defaultValue: false
-                    )
-                ),
-                .init(
-                    "beforeEachArgument",
-                    .bool(
-                        description: "Break before each argument when wrapping.",
-                        defaultValue: false
-                    )
-                ),
-                .init(
-                    "beforeEachGenericRequirement",
-                    .bool(
-                        description: "Break before each generic requirement when wrapping.",
-                        defaultValue: false
-                    )
-                ),
-                .init(
-                    "betweenDeclarationAttributes",
-                    .bool(description: "Break between adjacent attributes.", defaultValue: false)
-                ),
-                .init(
-                    "aroundMultilineExpressionChainComponents",
-                    .bool(
-                        description: "Break around multiline dot-chained components.",
-                        defaultValue: false
-                    )
-                ),
-                .init(
-                    "beforeGuardConditions",
-                    .bool(
-                        description:
-                            "Break before guard conditions. When true, all conditions start on a new line below guard. When false, the first condition stays on the same line as guard.",
-                        defaultValue: true
-                    )
-                ),
-            ]
-        case .indentation:
-            [
-                .init(
-                    "blankLines",
-                    .bool(
-                        description: "Add indentation whitespace to blank lines.",
-                        defaultValue: false
-                    )
-                ),
-                .init(
-                    "conditionalCompilationBlocks",
-                    .bool(
-                        description: "Indent #if/#elseif/#else blocks.",
-                        defaultValue: true
-                    )
-                ),
-            ]
-        default: []
-        }
-    }
+    // Layout setting config properties are derived from LayoutDescriptor types
+    // (see LayoutSettings). The schema generator reads them via
+    // LayoutSettings.settings(in:) rather than this conformance.
 }
 
 /// Declares optional membership in a ``ConfigGroup``.

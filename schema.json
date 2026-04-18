@@ -2,7 +2,7 @@
   "$id" : "https://raw.githubusercontent.com/toba/swiftiomatic/refs/heads/main/schema.json",
   "$schema" : "https://json-schema.org/draft/2020-12/schema",
   "additionalProperties" : false,
-  "description" : "Configuration for the sm Swift formatter and linter.",
+  "description" : "Configuration for Swiftiomatic formatter and linter.",
   "properties" : {
     "$schema" : {
       "description" : "JSON Schema reference URL.",
@@ -1414,7 +1414,7 @@
       ],
       "type" : "string"
     },
-    "SortTypealiases" : {
+    "SortTypeAliases" : {
       "default" : "autoFix",
       "description" : "Sort protocol composition typealiases alphabetically.\n\nWhen a typealias combines multiple protocols with `&` (e.g. `typealias Deps = Foo & Bar & Baz`),\nthe types are sorted lexicographically. Duplicate types are removed. The `any` keyword, if\npresent, is preserved at the beginning.\n\nLint: If the composition types are not sorted, a lint warning is raised.\n\nFormat: The types are reordered alphabetically and duplicates are removed.\n Options: autoFix, warn, error, off.",
       "enum" : [
@@ -2419,7 +2419,7 @@
           ],
           "type" : "string"
         },
-        "sortTypealiases" : {
+        "sortTypeAliases" : {
           "default" : "autoFix",
           "description" : "Sort protocol composition typealiases alphabetically.\n\nWhen a typealias combines multiple protocols with `&` (e.g. `typealias Deps = Foo & Bar & Baz`),\nthe types are sorted lexicographically. Duplicate types are removed. The `any` keyword, if\npresent, is preserved at the beginning.\n\nLint: If the composition types are not sorted, a lint warning is raised.\n\nFormat: The types are reordered alphabetically and duplicates are removed.\n Options: autoFix, warn, error, off.",
           "enum" : [

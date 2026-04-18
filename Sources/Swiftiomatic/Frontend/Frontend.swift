@@ -14,6 +14,7 @@ import Foundation
 import SwiftiomaticKit
 import SwiftParser
 import SwiftSyntax
+import Synchronization
 
 class Frontend: @unchecked Sendable {
   /// Provides formatter configurations for given `.swift` source files, configuration files or configuration strings.
@@ -130,10 +131,7 @@ class Frontend: @unchecked Sendable {
 
   /// Represents a file to be processed by the frontend and any file-specific options associated
   /// with it.
-  final class FileToProcess: @unchecked Sendable {
-    /// An open file handle to the source code of the file.
-    private let fileHandle: FileHandle
-
+  final class FileToProcess: Sendable {
     /// A file URL representing the path to the source file being processed.
     ///
     /// It is the responsibility of the specific frontend to make guarantees about the validity of
@@ -150,15 +148,11 @@ class Frontend: @unchecked Sendable {
     /// the selected ranges to process
     let selection: Selection
 
-    /// Returns the string contents of the file.
+    /// The string contents of the file, read eagerly during initialization.
     ///
     /// The contents of the file are assumed to be UTF-8 encoded. If there is an error decoding the
-    /// contents, `nil` will be returned.
-    lazy var sourceText: String? = {
-      let sourceData = fileHandle.readDataToEndOfFile()
-      defer { fileHandle.closeFile() }
-      return String(data: sourceData, encoding: .utf8)
-    }()
+    /// contents, this will be `nil`.
+    let sourceText: String?
 
     init(
       fileHandle: FileHandle,
@@ -166,10 +160,12 @@ class Frontend: @unchecked Sendable {
       configuration: Configuration,
       selection: Selection = .infinite
     ) {
-      self.fileHandle = fileHandle
       self.url = url
       self.configuration = configuration
       self.selection = selection
+      let sourceData = fileHandle.readDataToEndOfFile()
+      fileHandle.closeFile()
+      self.sourceText = String(data: sourceData, encoding: .utf8)
     }
   }
 
@@ -186,7 +182,7 @@ class Frontend: @unchecked Sendable {
   final let lintFormatOptions: LintFormatOptions
 
   /// The provider for formatter configurations.
-  final var configurationProvider: ConfigurationProvider
+  private final let configurationProvider: Mutex<ConfigurationProvider>
 
   /// Advanced options that are useful for developing/debugging but otherwise not meant for general
   /// use.
@@ -215,7 +211,7 @@ class Frontend: @unchecked Sendable {
       diagnosticsHandlers: [diagnosticPrinter.printDiagnostic],
       treatWarningsAsErrors: treatWarningsAsErrors
     )
-    self.configurationProvider = ConfigurationProvider(diagnosticsEngine: self.diagnosticsEngine)
+    self.configurationProvider = Mutex(ConfigurationProvider(diagnosticsEngine: self.diagnosticsEngine))
   }
 
   /// Runs the linter or formatter over the inputs.
@@ -261,10 +257,12 @@ class Frontend: @unchecked Sendable {
     let assumedUrl = lintFormatOptions.assumeFilename.map(URL.init(fileURLWithPath:))
 
     guard
-      let configuration = configurationProvider.provide(
-        forConfigPathOrString: configurationOptions.configuration,
-        orForSwiftFileAt: assumedUrl
-      )
+      let configuration = configurationProvider.withLock({
+        $0.provide(
+          forConfigPathOrString: configurationOptions.configuration,
+          orForSwiftFileAt: assumedUrl
+        )
+      })
     else {
       // Already diagnosed in the called method.
       return
@@ -319,10 +317,12 @@ class Frontend: @unchecked Sendable {
     }
 
     guard
-      let configuration = configurationProvider.provide(
-        forConfigPathOrString: configurationOptions.configuration,
-        orForSwiftFileAt: url
-      )
+      let configuration = configurationProvider.withLock({
+        $0.provide(
+          forConfigPathOrString: configurationOptions.configuration,
+          orForSwiftFileAt: url
+        )
+      })
     else {
       // Already diagnosed in the called method.
       return nil

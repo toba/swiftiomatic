@@ -14,7 +14,6 @@ import Foundation
 
 /// Generates the rule registry file used to populate the default configuration.
 package final class RuleNameCacheGenerator: FileGenerator {
-
     /// The rules collected by scanning the formatter source code.
     let ruleCollector: RuleCollector
 

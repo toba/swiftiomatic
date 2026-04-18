@@ -14,25 +14,24 @@ import Foundation
 import GeneratorKit
 
 let ruleCollector = RuleCollector()
-try ruleCollector.collect(from: GenerateSwiftiomaticPaths.rulesDirectory)
+try ruleCollector.collect(from: GeneratePaths.rulesDirectory)
 
 // Generate a file with extensions for the lint and format pipelines.
 let pipelineGenerator = PipelineGenerator(ruleCollector: ruleCollector)
-try pipelineGenerator.generateFile(at: GenerateSwiftiomaticPaths.pipelineFile)
+try pipelineGenerator.generateFile(at: GeneratePaths.pipelineFile)
 
 // Generate the rule registry dictionary for configuration.
 let registryGenerator = RuleRegistryGenerator(ruleCollector: ruleCollector)
-try registryGenerator.generateFile(at: GenerateSwiftiomaticPaths.ruleRegistryFile)
+try registryGenerator.generateFile(at: GeneratePaths.ruleRegistryFile)
 
 // Generate the rule name cache.
 let ruleNameCacheGenerator = RuleNameCacheGenerator(ruleCollector: ruleCollector)
-try ruleNameCacheGenerator.generateFile(at: GenerateSwiftiomaticPaths.ruleNameCacheFile)
+try ruleNameCacheGenerator.generateFile(at: GeneratePaths.ruleNameCacheFile)
 
-// Generate the Documentation/RuleDocumentation.md file with rule descriptions.
-// This uses DocC comments from rule implementations.
-let ruleDocumentationGenerator = RuleDocumentationGenerator(ruleCollector: ruleCollector)
-try ruleDocumentationGenerator.generateFile(at: GenerateSwiftiomaticPaths.ruleDocumentationFile)
+// DISABLED: Documentation generation kept in RuleDocumentationGenerator.swift for future use.
+// let ruleDocumentationGenerator = RuleDocumentationGenerator(ruleCollector: ruleCollector)
+// try ruleDocumentationGenerator.generateFile(at: GeneratePaths.ruleDocumentationFile)
 
 // Generate the JSON Schema for configuration files.
 let schemaGenerator = ConfigurationSchemaGenerator(ruleCollector: ruleCollector)
-try schemaGenerator.generateFile(at: GenerateSwiftiomaticPaths.configurationSchemaFile)
+try schemaGenerator.generateFile(at: GeneratePaths.configurationSchemaFile)

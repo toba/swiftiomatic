@@ -3,13 +3,13 @@ import SwiftiomaticTestSupport
 import Testing
 
 @Suite
-struct SortTypealiasesTests: RuleTesting {
+struct SortTypeAliasesTests: RuleTesting {
 
   // MARK: - Single line
 
   @Test func sortSingleLineTypealias() {
     assertFormatting(
-      SortTypealiases.self,
+      SortTypeAliases.self,
       input: """
         1️⃣typealias Placeholders = Foo & Bar & Quux & Baaz
         """,
@@ -24,7 +24,7 @@ struct SortTypealiasesTests: RuleTesting {
 
   @Test func alreadySorted() {
     assertFormatting(
-      SortTypealiases.self,
+      SortTypeAliases.self,
       input: """
         typealias Deps = Bar & Baz & Foo
         """,
@@ -39,7 +39,7 @@ struct SortTypealiasesTests: RuleTesting {
 
   @Test func sortWrappedMultilineTypealias() {
     assertFormatting(
-      SortTypealiases.self,
+      SortTypeAliases.self,
       input: """
         1️⃣typealias Dependencies = FooProviding
             & BarProviding
@@ -60,7 +60,7 @@ struct SortTypealiasesTests: RuleTesting {
 
   @Test func sortWrappedMultilineTypealiasEqualsOnNewLine() {
     assertFormatting(
-      SortTypealiases.self,
+      SortTypeAliases.self,
       input: """
         1️⃣typealias Dependencies
             = FooProviding
@@ -85,7 +85,7 @@ struct SortTypealiasesTests: RuleTesting {
 
   @Test func sortWithAnyPrefix() {
     assertFormatting(
-      SortTypealiases.self,
+      SortTypeAliases.self,
       input: """
         1️⃣typealias Wrapped = any UIView & UIContentView
         """,
@@ -100,7 +100,7 @@ struct SortTypealiasesTests: RuleTesting {
 
   @Test func sortWrappedMultilineWithAny() {
     assertFormatting(
-      SortTypealiases.self,
+      SortTypeAliases.self,
       input: """
         1️⃣typealias Dependencies
             = any FooProviding
@@ -125,7 +125,7 @@ struct SortTypealiasesTests: RuleTesting {
 
   @Test func removeDuplicates() {
     assertFormatting(
-      SortTypealiases.self,
+      SortTypeAliases.self,
       input: """
         1️⃣typealias Placeholders = Foo & Bar & Quux & Baaz & Bar
         """,
@@ -142,7 +142,7 @@ struct SortTypealiasesTests: RuleTesting {
 
   @Test func sortTypealiasesWithGenericTypes() {
     assertFormatting(
-      SortTypealiases.self,
+      SortTypeAliases.self,
       input: """
         1️⃣typealias Collections
             = Collection<Int>
@@ -167,7 +167,7 @@ struct SortTypealiasesTests: RuleTesting {
 
   @Test func arrayOfExistentialNotSorted() {
     assertFormatting(
-      SortTypealiases.self,
+      SortTypeAliases.self,
       input: """
         public typealias Parameters = [any Any & Sendable]
         """,
@@ -180,7 +180,7 @@ struct SortTypealiasesTests: RuleTesting {
 
   @Test func dictionaryOfExistentialNotSorted() {
     assertFormatting(
-      SortTypealiases.self,
+      SortTypeAliases.self,
       input: """
         public typealias Parameters = [any Hashable & Sendable: any Any & Sendable]
         """,
@@ -193,7 +193,7 @@ struct SortTypealiasesTests: RuleTesting {
 
   @Test func optionalExistentialNotSorted() {
     assertFormatting(
-      SortTypealiases.self,
+      SortTypeAliases.self,
       input: """
         public typealias Parameters = (Hashable & Sendable)?
         """,
@@ -206,7 +206,7 @@ struct SortTypealiasesTests: RuleTesting {
 
   @Test func genericExistentialNotSorted() {
     assertFormatting(
-      SortTypealiases.self,
+      SortTypeAliases.self,
       input: """
         public typealias Parameters = Result<any Hashable & Sendable, any Error & Sendable>
         """,
@@ -219,7 +219,7 @@ struct SortTypealiasesTests: RuleTesting {
 
   @Test func closureTypeNotSorted() {
     assertFormatting(
-      SortTypealiases.self,
+      SortTypeAliases.self,
       input: """
         public typealias Parameters = (any Hashable & Sendable, any Error & Sendable) -> any Equatable & Codable
         """,

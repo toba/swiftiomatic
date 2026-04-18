@@ -22,28 +22,34 @@ extension Configuration {
   /// the JSON will be populated from this default configuration.
   package init() {
     self.rules = Self.defaultRuleEnablements
-    self.maximumBlankLines = 1
-    self.lineLength = 100
-    self.tabWidth = 8
-    self.indentation = .spaces(2)
-    self.spacesBeforeEndOfLineComments = 2
-    self.respectsExistingLineBreaks = true
-    self.lineBreakBeforeControlFlowKeywords = false
-    self.lineBreakBeforeEachArgument = false
-    self.lineBreakBeforeEachGenericRequirement = false
-    self.lineBreakBetweenDeclarationAttributes = false
-    self.prioritizeKeepingFunctionOutputTogether = false
-    self.indentConditionalCompilationBlocks = true
-    self.lineBreakAroundMultilineExpressionChainComponents = false
-    self.lineBreakBeforeGuardConditions = true
+
+    // Layout setting defaults — each value comes from its LayoutDescriptor type.
+    self.lineLength = LineLength.defaultValue
+    self.tabWidth = TabWidth.defaultValue
+    self.indentation = IndentationSetting.defaultValue
+    self.respectsExistingLineBreaks = RespectsExistingLineBreaks.defaultValue
+    self.spacesBeforeEndOfLineComments = SpacesBeforeEndOfLineComments.defaultValue
+    self.spacesAroundRangeFormationOperators = SpacesAroundRangeFormationOperators.defaultValue
+    self.prioritizeKeepingFunctionOutputTogether =
+        PrioritizeKeepingFunctionOutputTogether.defaultValue
+    self.multilineTrailingCommaBehavior = MultilineTrailingCommaBehaviorSetting.defaultValue
+    self.multiElementCollectionTrailingCommas = MultiElementCollectionTrailingCommas.defaultValue
+    self.reflowMultilineStringLiterals = ReflowMultilineStringLiterals.defaultValue
+    self.indentBlankLines = IndentBlankLines.defaultValue
+    self.indentConditionalCompilationBlocks = IndentConditionalCompilationBlocks.defaultValue
+    self.maximumBlankLines = MaximumBlankLines.defaultValue
+    self.lineBreakBeforeControlFlowKeywords = BeforeControlFlowKeywords.defaultValue
+    self.lineBreakBeforeEachArgument = BeforeEachArgument.defaultValue
+    self.lineBreakBeforeEachGenericRequirement = BeforeEachGenericRequirement.defaultValue
+    self.lineBreakBetweenDeclarationAttributes = BetweenDeclarationAttributes.defaultValue
+    self.lineBreakAroundMultilineExpressionChainComponents =
+        AroundMultilineExpressionChainComponents.defaultValue
+    self.lineBreakBeforeGuardConditions = BeforeGuardConditions.defaultValue
+
+    // Rule-specific configuration defaults.
     self.fileScopedDeclarationPrivacy = FileScopedDeclarationPrivacyConfiguration()
     self.switchCaseIndentation = SwitchCaseIndentationConfiguration()
-    self.spacesAroundRangeFormationOperators = false
     self.noAssignmentInExpressions = NoAssignmentInExpressionsConfiguration()
-    self.multilineTrailingCommaBehavior = .keptAsWritten
-    self.multiElementCollectionTrailingCommas = true
-    self.reflowMultilineStringLiterals = .never
-    self.indentBlankLines = false
     self.sortImports = SortImportsConfiguration()
     self.extensionAccessControl = ExtensionAccessControlConfiguration()
     self.patternLet = PatternLetConfiguration()

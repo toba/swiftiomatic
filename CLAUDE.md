@@ -91,7 +91,7 @@ Follows [apple/swift-format](https://github.com/swiftlang/swift-format) architec
 
 ### Code Generation
 
-`swift run generate-swiftiomatic` scans `Sources/Swiftiomatic/Rules/` and generates three files in `Core/`:
+`swift run generate-swiftiomatic` scans `Sources/SwiftiomaticKit/Syntax/Rules/` and generates three files in `Syntax/`:
 - `Pipelines+Generated.swift` — `visit()` dispatchers for `LintPipeline` + `FormatPipeline.rewrite()`
 - `RuleRegistry+Generated.swift` — default rule enablements from `isOptIn`
 - `RuleNameCache+Generated.swift` — `ObjectIdentifier` → rule name mapping

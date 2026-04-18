@@ -42,14 +42,14 @@ package final class ConfigurationSchemaGenerator: FileGenerator {
         root.schema = "https://json-schema.org/draft/2020-12/schema"
         root.id = "https://raw.githubusercontent.com/toba/swiftiomatic/refs/heads/main/schema.json"
         root.title = "Swiftiomatic Configuration"
-        root.description = "Configuration for the sm Swift formatter and linter."
+        root.description = "Configuration for Swiftiomatic formatter and linter."
         root.type = "object"
         root.additionalProperties = false
 
-        var p: [String: JSONSchemaNode] = [:]
+        var schema: [String: JSONSchemaNode] = [:]
 
-        p["$schema"] = .string(description: "JSON Schema reference URL.")
-        p["version"] = .integer(
+        schema["$schema"] = .string(description: "JSON Schema reference URL.")
+        schema["version"] = .integer(
             description: "Configuration format version.",
             defaultValue: 4,
             minimum: 1
@@ -57,22 +57,22 @@ package final class ConfigurationSchemaGenerator: FileGenerator {
 
         // Root-level pretty-print settings.
         for (key, node) in rootSettingsSchema() {
-            p[key] = node
+            schema[key] = node
         }
 
         // Config groups at root level.
         for (key, node) in groupSchemas() {
-            p[key] = node
+            schema[key] = node
         }
 
         // All rules at root level (ungrouped).
         let allRules = ruleCollector.allLinters
             .sorted(by: { $0.ruleName < $1.ruleName })
         for rule in allRules {
-            p[rule.ruleName] = ruleSchemaNode(for: rule)
+            schema[rule.ruleName] = ruleSchemaNode(for: rule)
         }
 
-        root.properties = p
+        root.properties = schema
         return root
     }
 
@@ -107,26 +107,17 @@ package final class ConfigurationSchemaGenerator: FileGenerator {
     }
 
     private func rootSettingsSchema() -> [String: JSONSchemaNode] {
-        var p: [String: JSONSchemaNode] = [:]
+        var schema: [String: JSONSchemaNode] = [:]
 
-        p["lineLength"] = .integer(
-            description: "Maximum line length before wrapping.",
-            defaultValue: 100,
-            minimum: 1
-        )
-        p["spacesBeforeEndOfLineComments"] = .integer(
-            description: "Spaces before // comments.",
-            defaultValue: 2,
-            minimum: 0
-        )
-        p["tabWidth"] = .integer(
-            description: "Tab width in spaces for indentation conversion.",
-            defaultValue: 8,
-            minimum: 1
-        )
+        // Derive schema from LayoutDescriptor types.
+        for descriptor in LayoutSettings.rootSettings {
+            let prop = descriptor.configProperties[0]
+            schema[descriptor.key] = schemaNode(from: prop.schema)
+        }
 
+        // Override indentation with its oneOf schema (spaces/tabs).
         var indent = JSONSchemaNode()
-        indent.description = "Indentation unit: exactly one of spaces or tabs."
+        indent.description = IndentationSetting.description
         indent.defaultValue = .object(["spaces": .int(2)])
         var spacesVariant = JSONSchemaNode.object(
             description: "Indent with spaces.",
@@ -151,36 +142,9 @@ package final class ConfigurationSchemaGenerator: FileGenerator {
         )
         tabsVariant.required = ["tabs"]
         indent.oneOf = [spacesVariant, tabsVariant]
-        p["indentation"] = indent
+        schema["indentation"] = indent
 
-        p["respectsExistingLineBreaks"] = .boolean(
-            description: "Preserve discretionary line breaks.",
-            defaultValue: true
-        )
-        p["prioritizeKeepingFunctionOutputTogether"] = .boolean(
-            description: "Keep return type with closing parenthesis.",
-            defaultValue: false
-        )
-        p["spacesAroundRangeFormationOperators"] = .boolean(
-            description: "Force spaces around ... and ..<.",
-            defaultValue: false
-        )
-        p["multiElementCollectionTrailingCommas"] = .boolean(
-            description: "Trailing commas in multi-element collection literals.",
-            defaultValue: true
-        )
-        p["multilineTrailingCommaBehavior"] = .stringEnum(
-            description: "Trailing comma handling in multiline lists.",
-            values: ["alwaysUsed", "neverUsed", "keptAsWritten"],
-            defaultValue: "keptAsWritten"
-        )
-        p["reflowMultilineStringLiterals"] = .stringEnum(
-            description: "Multiline string literal reflow mode.",
-            values: ["never", "onlyLinesOverLength", "always"],
-            defaultValue: "never"
-        )
-
-        return p
+        return schema
     }
 
     private func groupSchemas() -> [String: JSONSchemaNode] {
@@ -196,8 +160,9 @@ package final class ConfigurationSchemaGenerator: FileGenerator {
         for group in ConfigGroup.allCases {
             var properties: [String: JSONSchemaNode] = [:]
 
-            // Non-rule settings from ConfigRepresentable.
-            for prop in group.configProperties {
+            // Non-rule settings from LayoutDescriptor types.
+            for descriptor in LayoutSettings.settings(in: group) {
+                let prop = descriptor.configProperties[0]
                 properties[prop.key] = schemaNode(from: prop.schema)
             }
 
