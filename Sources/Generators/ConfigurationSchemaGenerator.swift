@@ -138,10 +138,12 @@ import SwiftiomaticCore
     }
 
     private func groupSchemas() -> [String: JSONSchemaNode] {
-        let rulesByName = Dictionary(
-            ruleCollector.allLinters.map { ($0.typeName, $0) },
-            uniquingKeysWith: { a, _ in a }
-        )
+        // Build group → rules mapping from the collector (mirrors RuleRegistryGenerator logic).
+        var groupedRules: [ConfigGroup: [RuleCollector.DetectedRule]] = [:]
+        for rule in ruleCollector.allLinters {
+            guard let group = rule.group else { continue }
+            groupedRules[group, default: []].append(rule)
+        }
 
         var groups: [String: JSONSchemaNode] = [:]
 
@@ -153,19 +155,19 @@ import SwiftiomaticCore
                 properties[prop.key] = schemaNode(from: prop.schema)
             }
 
-            // Rules within the group from RuleRegistry.
-            if let mappings = RuleRegistry.groupRules[group] {
-                for (option, ruleName) in mappings {
-                    let rule = rulesByName[ruleName]
-                    let canFormat = rule?.canFormat ?? false
-                    let isOptIn = rule?.isOptIn ?? true
-                    let desc = rule?.description ?? ruleName
-                    let modeValues = canFormat
+            // Rules within the group.
+            if let rules = groupedRules[group] {
+                for rule in rules.sorted(by: { $0.typeName < $1.typeName }) {
+                    let option = RuleRegistryGenerator.optionName(
+                        for: rule.typeName, stripping: group.rulePrefix
+                    )
+                    let modeValues = rule.canFormat
                         ? ["fix", "warn", "error", "off"]
                         : ["warn", "error", "off"]
-                    let defaultMode = isOptIn ? "off" : (canFormat ? "fix" : "warn")
+                    let defaultMode = rule.isOptIn ? "off" : (rule.canFormat ? "fix" : "warn")
                     properties[option] = .stringEnum(
-                        description: desc, values: modeValues, defaultValue: defaultMode
+                        description: rule.description ?? rule.typeName,
+                        values: modeValues, defaultValue: defaultMode
                     )
                 }
             }
@@ -183,7 +185,7 @@ import SwiftiomaticCore
     /// Returns the JSON Schema object variant for a rule that has config options,
     /// including the `mode` property. Returns `nil` for rules without options.
     private func ruleOptionsSchema(for ruleName: String, canFormat: Bool, isOptIn: Bool) -> JSONSchemaNode? {
-        guard let configProperties = Configuration.ruleConfigSchemas[ruleName] else { return nil }
+        guard let configProperties = RuleConfigSchemas.schemas[ruleName] else { return nil }
 
         let modeValues = canFormat ? ["fix", "warn", "error", "off"] : ["warn", "error", "off"]
         let defaultMode = isOptIn ? "off" : (canFormat ? "fix" : "warn")

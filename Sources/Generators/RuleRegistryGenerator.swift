@@ -94,7 +94,7 @@ import SwiftiomaticCore
   }
 
   /// Derives a short option name by stripping the group prefix and lowercasing the first char.
-  private static func optionName(for typeName: String, stripping prefix: String) -> String {
+  static func optionName(for typeName: String, stripping prefix: String) -> String {
     var name = typeName
     if !prefix.isEmpty, name.hasPrefix(prefix) {
       name = String(name.dropFirst(prefix.count))

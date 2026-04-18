@@ -11,7 +11,7 @@
 //===----------------------------------------------------------------------===//
 
 import Testing
-@_spi(Internal) import _GenerateSwiftiomatic
+@_spi(Internal) import Generators
 
 @Suite
 struct GeneratedFilesValidityTests {
