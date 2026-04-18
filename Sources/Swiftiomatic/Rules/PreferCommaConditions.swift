@@ -13,10 +13,9 @@ import SwiftSyntax
 ///
 /// Format: `&&` is replaced with commas, splitting the condition into separate
 /// condition elements.
-@_spi(Rules)
-public final class PreferCommaConditions: SyntaxFormatRule {
+final class PreferCommaConditions: SyntaxFormatRule {
 
-  public override func visit(_ node: ConditionElementListSyntax) -> ConditionElementListSyntax {
+  override func visit(_ node: ConditionElementListSyntax) -> ConditionElementListSyntax {
     let visited = super.visit(node)
 
     // Check if any element has a top-level &&

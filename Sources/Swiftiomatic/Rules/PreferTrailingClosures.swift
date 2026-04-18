@@ -11,8 +11,7 @@ import SwiftSyntax
 /// Lint: When closure arguments could use trailing closure syntax.
 ///
 /// Format: The closure arguments are moved to trailing closure position.
-@_spi(Rules)
-public final class PreferTrailingClosures: SyntaxFormatRule {
+final class PreferTrailingClosures: SyntaxFormatRule {
 
   /// Function names where labeled closures should still be made trailing.
   private static let useTrailing: Set<String> = [
@@ -25,7 +24,7 @@ public final class PreferTrailingClosures: SyntaxFormatRule {
     "expect",
   ]
 
-  public override func visit(_ node: FunctionCallExprSyntax) -> ExprSyntax {
+  override func visit(_ node: FunctionCallExprSyntax) -> ExprSyntax {
     let visited = super.visit(node)
     guard let callNode = visited.as(FunctionCallExprSyntax.self) else { return visited }
 

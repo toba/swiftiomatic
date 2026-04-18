@@ -8,10 +8,9 @@ import SwiftSyntax
 /// Lint: A lint warning is raised when an `EnvironmentKey` property can be replaced with `@Entry`.
 ///
 /// Format: The `EnvironmentKey` type is removed and the property is replaced with `@Entry var`.
-@_spi(Rules)
-public final class PreferEnvironmentEntry: SyntaxFormatRule {
+final class PreferEnvironmentEntry: SyntaxFormatRule {
 
-  public override class var isOptIn: Bool { true }
+  static let isOptIn = true
 
   // MARK: - Types
 
@@ -33,7 +32,7 @@ public final class PreferEnvironmentEntry: SyntaxFormatRule {
 
   // MARK: - Visitor
 
-  public override func visit(_ node: SourceFileSyntax) -> SourceFileSyntax {
+  override func visit(_ node: SourceFileSyntax) -> SourceFileSyntax {
     collectEnvironmentKeys(from: node.statements)
     guard !environmentKeys.isEmpty else { return node }
 

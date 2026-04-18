@@ -15,9 +15,8 @@ import SwiftSyntax
 /// Replace `forEach` with `for-in` loop unless its argument is a function reference.
 ///
 /// Lint:  invalid use of `forEach` yield will yield a lint error.
-@_spi(Rules)
-public final class ReplaceForEachWithForLoop: SyntaxLintRule {
-  public override func visit(_ node: FunctionCallExprSyntax) -> SyntaxVisitorContinueKind {
+final class ReplaceForEachWithForLoop: SyntaxLintRule {
+  override func visit(_ node: FunctionCallExprSyntax) -> SyntaxVisitorContinueKind {
     // We are only interested in calls with a single trailing closure
     // argument.
     if !node.arguments.isEmpty || node.trailingClosure == nil || !node.additionalTrailingClosures.isEmpty {

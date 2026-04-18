@@ -9,11 +9,10 @@ import SwiftSyntax
 /// Lint: A `required init(coder:)` stub without `@available(*, unavailable)` yields a warning.
 ///
 /// Format: The `@available(*, unavailable)` attribute is added.
-@_spi(Rules)
-public final class InitCoderUnavailable: SyntaxFormatRule {
-  public override class var isOptIn: Bool { true }
+final class InitCoderUnavailable: SyntaxFormatRule {
+  static let isOptIn = true
 
-  public override func visit(_ node: InitializerDeclSyntax) -> DeclSyntax {
+  override func visit(_ node: InitializerDeclSyntax) -> DeclSyntax {
     guard isCoderInitStub(node), !hasUnavailableAttribute(node) else {
       return DeclSyntax(node)
     }

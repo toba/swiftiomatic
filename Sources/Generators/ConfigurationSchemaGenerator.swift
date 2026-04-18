@@ -11,6 +11,7 @@
 //===----------------------------------------------------------------------===//
 
 import Foundation
+@_spi(Internal) import Swiftiomatic
 import SwiftiomaticCore
 
 /// Generates `schema.json` by encoding a `JSONSchemaNode` tree.
@@ -67,9 +68,9 @@ import SwiftiomaticCore
 
         // All rules at root level (ungrouped).
         let allRules = ruleCollector.allLinters
-            .sorted(by: { $0.typeName < $1.typeName })
+            .sorted(by: { $0.ruleName < $1.ruleName })
         for rule in allRules {
-            p[rule.typeName] = ruleSchemaNode(for: rule)
+            p[rule.ruleName] = ruleSchemaNode(for: rule)
         }
 
         root.properties = p
@@ -81,9 +82,9 @@ import SwiftiomaticCore
         if rule.isOptIn { desc += " [opt-in]" }
 
         let modeValues = rule.canFormat
-            ? ["fix", "warn", "error", "off"]
+            ? ["autoFix", "warn", "error", "off"]
             : ["warn", "error", "off"]
-        let defaultMode = rule.isOptIn ? "off" : (rule.canFormat ? "fix" : "warn")
+        let defaultMode = rule.isOptIn ? "off" : (rule.canFormat ? "autoFix" : "warn")
 
         let modeVariant = JSONSchemaNode.stringEnum(
             description: desc,
@@ -91,7 +92,7 @@ import SwiftiomaticCore
             defaultValue: defaultMode
         )
 
-        if let optionsSchema = ruleOptionsSchema(for: rule.typeName, canFormat: rule.canFormat, isOptIn: rule.isOptIn) {
+        if let optionsSchema = ruleOptionsSchema(for: rule.ruleName, canFormat: rule.canFormat, isOptIn: rule.isOptIn) {
             var node = JSONSchemaNode()
             node.description = desc
             node.oneOf = [modeVariant, optionsSchema]
@@ -126,11 +127,8 @@ import SwiftiomaticCore
 
         p["respectsExistingLineBreaks"] = .boolean(description: "Preserve discretionary line breaks.", defaultValue: true)
         p["prioritizeKeepingFunctionOutputTogether"] = .boolean(description: "Keep return type with closing parenthesis.", defaultValue: false)
-        p["indentConditionalCompilationBlocks"] = .boolean(description: "Indent #if/#elseif/#else blocks.", defaultValue: true)
-        p["indentSwitchCaseLabels"] = .boolean(description: "Indent case labels relative to switch.", defaultValue: false)
         p["spacesAroundRangeFormationOperators"] = .boolean(description: "Force spaces around ... and ..<.", defaultValue: false)
         p["multiElementCollectionTrailingCommas"] = .boolean(description: "Trailing commas in multi-element collection literals.", defaultValue: true)
-        p["indentBlankLines"] = .boolean(description: "Add indentation whitespace to blank lines.", defaultValue: false)
         p["multilineTrailingCommaBehavior"] = .stringEnum(description: "Trailing comma handling in multiline lists.", values: ["alwaysUsed", "neverUsed", "keptAsWritten"], defaultValue: "keptAsWritten")
         p["reflowMultilineStringLiterals"] = .stringEnum(description: "Multiline string literal reflow mode.", values: ["never", "onlyLinesOverLength", "always"], defaultValue: "never")
 
@@ -157,16 +155,14 @@ import SwiftiomaticCore
 
             // Rules within the group.
             if let rules = groupedRules[group] {
-                for rule in rules.sorted(by: { $0.typeName < $1.typeName }) {
-                    let option = RuleRegistryGenerator.optionName(
-                        for: rule.typeName, stripping: group.rulePrefix
-                    )
+                for rule in rules.sorted(by: { $0.ruleName < $1.ruleName }) {
+                    let option = RuleRegistryGenerator.optionName(for: rule.ruleName)
                     let modeValues = rule.canFormat
-                        ? ["fix", "warn", "error", "off"]
+                        ? ["autoFix", "warn", "error", "off"]
                         : ["warn", "error", "off"]
-                    let defaultMode = rule.isOptIn ? "off" : (rule.canFormat ? "fix" : "warn")
+                    let defaultMode = rule.isOptIn ? "off" : (rule.canFormat ? "autoFix" : "warn")
                     properties[option] = .stringEnum(
-                        description: rule.description ?? rule.typeName,
+                        description: rule.description ?? rule.ruleName,
                         values: modeValues, defaultValue: defaultMode
                     )
                 }
@@ -185,10 +181,10 @@ import SwiftiomaticCore
     /// Returns the JSON Schema object variant for a rule that has config options,
     /// including the `mode` property. Returns `nil` for rules without options.
     private func ruleOptionsSchema(for ruleName: String, canFormat: Bool, isOptIn: Bool) -> JSONSchemaNode? {
-        guard let configProperties = RuleConfigSchemas.schemas[ruleName] else { return nil }
+        guard let configProperties = Configuration.ruleConfigSchemas[ruleName] else { return nil }
 
-        let modeValues = canFormat ? ["fix", "warn", "error", "off"] : ["warn", "error", "off"]
-        let defaultMode = isOptIn ? "off" : (canFormat ? "fix" : "warn")
+        let modeValues = canFormat ? ["autoFix", "warn", "error", "off"] : ["warn", "error", "off"]
+        let defaultMode = isOptIn ? "off" : (canFormat ? "autoFix" : "warn")
         let modeProp = JSONSchemaNode.stringEnum(
             description: "Rule mode.", values: modeValues, defaultValue: defaultMode
         )

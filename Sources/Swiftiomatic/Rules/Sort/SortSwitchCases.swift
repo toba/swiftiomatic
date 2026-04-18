@@ -21,12 +21,11 @@ import SwiftSyntax
 /// Lint: If case items are not sorted, a lint warning is raised.
 ///
 /// Format: The case items are reordered alphabetically.
-@_spi(Rules)
-public final class SortSwitchCases: SyntaxFormatRule {
-    public override class var group: ConfigGroup? { .sort }
-  public override class var isOptIn: Bool { true }
+final class SortSwitchCases: SyntaxFormatRule {
+    static let group: ConfigGroup? = .sort
+  static let isOptIn = true
 
-  public override func visit(_ node: SwitchCaseSyntax) -> SwitchCaseSyntax {
+  override func visit(_ node: SwitchCaseSyntax) -> SwitchCaseSyntax {
     guard case .case(var caseLabel) = node.label else { return node }
     let items = Array(caseLabel.caseItems)
     guard items.count > 1 else { return node }

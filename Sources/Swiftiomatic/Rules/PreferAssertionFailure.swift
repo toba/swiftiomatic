@@ -10,10 +10,9 @@ import SwiftSyntax
 ///
 /// Format: The call is replaced with the corresponding `Failure` variant, removing the
 /// `false` argument.
-@_spi(Rules)
-public final class PreferAssertionFailure: SyntaxFormatRule {
+final class PreferAssertionFailure: SyntaxFormatRule {
 
-  public override func visit(_ node: FunctionCallExprSyntax) -> ExprSyntax {
+  override func visit(_ node: FunctionCallExprSyntax) -> ExprSyntax {
     guard let callee = node.calledExpression.as(DeclReferenceExprSyntax.self) else {
       return super.visit(node)
     }

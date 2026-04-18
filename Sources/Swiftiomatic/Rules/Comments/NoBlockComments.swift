@@ -15,26 +15,27 @@ import SwiftSyntax
 /// Block comments should be avoided in favor of line comments.
 ///
 /// Lint: If a block comment appears, a lint error is raised.
-@_spi(Rules)
-public final class NoBlockComments: SyntaxLintRule {
-  public override func visit(_ token: TokenSyntax) -> SyntaxVisitorContinueKind {
-    for triviaIndex in token.leadingTrivia.indices {
-      let piece = token.leadingTrivia[triviaIndex]
-      if case .blockComment = piece {
-        diagnose(.avoidBlockComment, on: token, anchor: .leadingTrivia(triviaIndex))
-      }
+final class NoBlockComments: SyntaxLintRule {
+    static let group: ConfigGroup? = .comments
+
+    override func visit(_ token: TokenSyntax) -> SyntaxVisitorContinueKind {
+        for triviaIndex in token.leadingTrivia.indices {
+            let piece = token.leadingTrivia[triviaIndex]
+            if case .blockComment = piece {
+                diagnose(.avoidBlockComment, on: token, anchor: .leadingTrivia(triviaIndex))
+            }
+        }
+        for triviaIndex in token.trailingTrivia.indices {
+            let piece = token.trailingTrivia[triviaIndex]
+            if case .blockComment = piece {
+                diagnose(.avoidBlockComment, on: token, anchor: .trailingTrivia(triviaIndex))
+            }
+        }
+        return .skipChildren
     }
-    for triviaIndex in token.trailingTrivia.indices {
-      let piece = token.trailingTrivia[triviaIndex]
-      if case .blockComment = piece {
-        diagnose(.avoidBlockComment, on: token, anchor: .trailingTrivia(triviaIndex))
-      }
-    }
-    return .skipChildren
-  }
 }
 
 extension Finding.Message {
-  fileprivate static let avoidBlockComment: Finding.Message =
-    "replace this block comment with line comments"
+    fileprivate static let avoidBlockComment: Finding.Message =
+        "replace this block comment with line comments"
 }

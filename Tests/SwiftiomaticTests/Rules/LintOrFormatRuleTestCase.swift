@@ -12,7 +12,7 @@
 
 import Foundation
 import Swiftiomatic
-@_spi(Rules) @_spi(Testing) import Swiftiomatic
+@_spi(Testing) @testable import Swiftiomatic
 import SwiftOperators
 @_spi(ExperimentalLanguageFeatures) import SwiftParser
 import SwiftSyntax
@@ -38,7 +38,7 @@ extension RuleTesting {
       try! OperatorTable.standardOperators.foldAll(tree).as(SourceFileSyntax.self)!
 
     // Force the rule to be enabled while we test it.
-    let configuration = Configuration.forTesting(enabledRule: type.ruleName)
+    let configuration = Configuration.forTesting(enabledRule: type.name)
     let context = makeTestContext(
       sourceFileSyntax: sourceFileSyntax,
       configuration: configuration,
@@ -88,7 +88,7 @@ extension RuleTesting {
     var emittedFindings = [Finding]()
 
     // Force the rule to be enabled while we test it.
-    let configuration = configuration ?? Configuration.forTesting(enabledRule: formatType.ruleName)
+    let configuration = configuration ?? Configuration.forTesting(enabledRule: formatType.name)
 
     let context = makeTestContext(
       sourceFileSyntax: sourceFileSyntax,

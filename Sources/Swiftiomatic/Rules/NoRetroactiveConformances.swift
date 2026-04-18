@@ -15,24 +15,25 @@ import SwiftSyntax
 /// `@retroactive` conformances are forbidden.
 ///
 /// Lint: Using `@retroactive` results in a lint error.
-@_spi(Rules)
-public final class NoRetroactiveConformances: SyntaxLintRule {
-  public override func visit(_ node: ExtensionDeclSyntax) -> SyntaxVisitorContinueKind {
-    if let inheritanceClause = node.inheritanceClause {
-      walk(inheritanceClause)
+final class NoRetroactiveConformances: SyntaxLintRule {
+    override func visit(_ node: ExtensionDeclSyntax) -> SyntaxVisitorContinueKind {
+        if let inheritanceClause = node.inheritanceClause {
+            walk(inheritanceClause)
+        }
+        return .skipChildren
     }
-    return .skipChildren
-  }
-  public override func visit(_ type: AttributeSyntax) -> SyntaxVisitorContinueKind {
-    if let identifier = type.attributeName.as(IdentifierTypeSyntax.self) {
-      if identifier.name.text == "retroactive" {
-        diagnose(.doNotUseRetroactive, on: type)
-      }
+    
+    override func visit(_ type: AttributeSyntax) -> SyntaxVisitorContinueKind {
+        if let identifier = type.attributeName.as(IdentifierTypeSyntax.self) {
+            if identifier.name.text == "retroactive" {
+                diagnose(.doNotUseRetroactive, on: type)
+            }
+        }
+        return .skipChildren
     }
-    return .skipChildren
-  }
 }
 
 extension Finding.Message {
-  fileprivate static let doNotUseRetroactive: Finding.Message = "do not declare retroactive conformances"
+    fileprivate static let doNotUseRetroactive: Finding.Message =
+        "do not declare retroactive conformances"
 }

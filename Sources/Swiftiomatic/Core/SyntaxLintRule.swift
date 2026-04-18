@@ -14,23 +14,13 @@ import Foundation
 import SwiftSyntax
 
 /// A rule that lints a given file.
-@_spi(Rules)
-public class SyntaxLintRule: SyntaxVisitor, Rule {
-  /// Whether this rule is opt-in, meaning it's disabled by default. Rules are opt-out unless they
-  /// override this property.
-  public class var isOptIn: Bool {
-    return false
-  }
+class SyntaxLintRule: SyntaxVisitor, Rule {
+    /// The context in which the rule is executed.
+    let context: Context
 
-  /// The config group this rule belongs to, or `nil` if ungrouped.
-  public class var group: ConfigGroup? { nil }
-
-  /// The context in which the rule is executed.
-  public let context: Context
-
-  /// Creates a new rule in a given context.
-  public required init(context: Context) {
-    self.context = context
-    super.init(viewMode: .sourceAccurate)
-  }
+    /// Creates a new rule in a given context.
+    required init(context: Context) {
+        self.context = context
+        super.init(viewMode: .sourceAccurate)
+    }
 }

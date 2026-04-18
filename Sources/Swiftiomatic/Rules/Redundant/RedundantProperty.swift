@@ -14,11 +14,10 @@ import SwiftSyntax
 ///
 /// Format: The property declaration is removed and its value is inlined into
 ///         the return statement.
-@_spi(Rules)
-public final class RedundantProperty: SyntaxFormatRule {
-  public override class var group: ConfigGroup? { .removeRedundant }
+final class RedundantProperty: SyntaxFormatRule {
+  static let group: ConfigGroup? = .redundancies
 
-  public override func visit(_ node: CodeBlockItemListSyntax) -> CodeBlockItemListSyntax {
+  override func visit(_ node: CodeBlockItemListSyntax) -> CodeBlockItemListSyntax {
     let visited = super.visit(node)
     let items = Array(visited)
     var newItems = [CodeBlockItemSyntax]()

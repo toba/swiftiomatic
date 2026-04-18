@@ -20,11 +20,10 @@ import SwiftSyntax
 /// Lint: If a redundant raw value is found, a lint warning is raised.
 ///
 /// Format: The redundant raw value initializer is removed.
-@_spi(Rules)
-public final class RedundantRawValues: SyntaxFormatRule {
-  public override class var group: ConfigGroup? { .removeRedundant }
+final class RedundantRawValues: SyntaxFormatRule {
+  static let group: ConfigGroup? = .redundancies
 
-  public override func visit(_ node: EnumCaseDeclSyntax) -> DeclSyntax {
+  override func visit(_ node: EnumCaseDeclSyntax) -> DeclSyntax {
     // Only applies inside String-backed enums.
     guard isInsideStringEnum(node) else {
       return DeclSyntax(node)

@@ -19,12 +19,11 @@ import SwiftSyntax
 /// `public class var redColor: UIColor` would trigger this rule.
 ///
 /// Lint: Static properties of a type that return that type will yield a lint error.
-@_spi(Rules)
-public final class NoTypeRepetitionInStaticProperties: SyntaxLintRule {
+final class NoTypeRepetitionInStaticProperties: SyntaxLintRule {
 
   /// Visits the static/class properties and diagnoses any where the name has the containing
   /// type name (excluding possible namespace prefixes, like `NS` or `UI`) as a suffix.
-  public override func visit(_ node: VariableDeclSyntax) -> SyntaxVisitorContinueKind {
+  override func visit(_ node: VariableDeclSyntax) -> SyntaxVisitorContinueKind {
     guard node.modifiers.contains(anyOf: [.class, .static]),
       let typeName = Syntax(node).containingDeclName,
       let variableTypeName = node.typeName,

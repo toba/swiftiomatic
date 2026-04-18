@@ -1,15 +1,15 @@
-@_spi(Rules) import Swiftiomatic
+@testable import Swiftiomatic
 import SwiftiomaticTestSupport
 import Testing
 
 @Suite
-struct WrapBodiesTests: RuleTesting {
+struct SingleLineBodiesTests: RuleTesting {
 
   // MARK: - Guard statements
 
   @Test func guardReturnWraps() {
     assertFormatting(
-      WrapBodies.self,
+      WrapSingleLineBodies.self,
       input: """
         guard let foo = bar else 1️⃣{ return }
         """,
@@ -23,7 +23,7 @@ struct WrapBodiesTests: RuleTesting {
 
   @Test func guardReturnWithValueWraps() {
     assertFormatting(
-      WrapBodies.self,
+      WrapSingleLineBodies.self,
       input: """
         guard let foo = bar else 1️⃣{ return baz }
         """,
@@ -37,7 +37,7 @@ struct WrapBodiesTests: RuleTesting {
 
   @Test func emptyGuardBodyUnchanged() {
     assertFormatting(
-      WrapBodies.self,
+      WrapSingleLineBodies.self,
       input: """
         guard let foo = bar else { }
         """,
@@ -48,7 +48,7 @@ struct WrapBodiesTests: RuleTesting {
 
   @Test func emptyGuardBodyNoSpaceUnchanged() {
     assertFormatting(
-      WrapBodies.self,
+      WrapSingleLineBodies.self,
       input: """
         guard let foo = bar else {}
         """,
@@ -59,7 +59,7 @@ struct WrapBodiesTests: RuleTesting {
 
   @Test func guardAlreadyWrappedUnchanged() {
     assertFormatting(
-      WrapBodies.self,
+      WrapSingleLineBodies.self,
       input: """
         guard let foo = bar else {
             return
@@ -74,7 +74,7 @@ struct WrapBodiesTests: RuleTesting {
 
   @Test func guardContinueWraps() {
     assertFormatting(
-      WrapBodies.self,
+      WrapSingleLineBodies.self,
       input: """
         guard let foo = bar else 1️⃣{continue}
         """,
@@ -88,7 +88,7 @@ struct WrapBodiesTests: RuleTesting {
 
   @Test func guardBodyWithClosingBraceOnNewlineWraps() {
     assertFormatting(
-      WrapBodies.self,
+      WrapSingleLineBodies.self,
       input: """
         guard foo else 1️⃣{ return
         }
@@ -105,7 +105,7 @@ struct WrapBodiesTests: RuleTesting {
 
   @Test func ifElseReturnsWrap() {
     assertFormatting(
-      WrapBodies.self,
+      WrapSingleLineBodies.self,
       input: """
         if foo 1️⃣{ return bar } else if baz 2️⃣{ return qux } else 3️⃣{ return quux }
         """,
@@ -127,7 +127,7 @@ struct WrapBodiesTests: RuleTesting {
 
   @Test func ifElseBodiesWrap() {
     assertFormatting(
-      WrapBodies.self,
+      WrapSingleLineBodies.self,
       input: """
         if foo 1️⃣{ bar } else if baz 2️⃣{ qux } else 3️⃣{ quux }
         """,
@@ -149,7 +149,7 @@ struct WrapBodiesTests: RuleTesting {
 
   @Test func emptyIfElseBodiesUnchanged() {
     assertFormatting(
-      WrapBodies.self,
+      WrapSingleLineBodies.self,
       input: """
         if foo { } else if baz { } else { }
         """,
@@ -160,7 +160,7 @@ struct WrapBodiesTests: RuleTesting {
 
   @Test func alreadyWrappedIfElseUnchanged() {
     assertFormatting(
-      WrapBodies.self,
+      WrapSingleLineBodies.self,
       input: """
         if foo {
             return bar
@@ -181,7 +181,7 @@ struct WrapBodiesTests: RuleTesting {
 
   @Test func nestedGuardElseIfWraps() {
     assertFormatting(
-      WrapBodies.self,
+      WrapSingleLineBodies.self,
       input: """
         guard let foo = bar else 1️⃣{ if qux 2️⃣{ return quux } else 3️⃣{ return quuz } }
         """,
@@ -203,7 +203,7 @@ struct WrapBodiesTests: RuleTesting {
 
   @Test func nestedGuardElseGuardWraps() {
     assertFormatting(
-      WrapBodies.self,
+      WrapSingleLineBodies.self,
       input: """
         guard let foo = bar else 1️⃣{ guard qux else 2️⃣{ return quux } }
         """,
@@ -224,7 +224,7 @@ struct WrapBodiesTests: RuleTesting {
 
   @Test func indentedGuardWraps() {
     assertFormatting(
-      WrapBodies.self,
+      WrapSingleLineBodies.self,
       input: """
         func test() {
             guard let foo = bar else 1️⃣{ return }
@@ -242,7 +242,7 @@ struct WrapBodiesTests: RuleTesting {
 
   @Test func indentedIfElseWraps() {
     assertFormatting(
-      WrapBodies.self,
+      WrapSingleLineBodies.self,
       input: """
         func test() {
             if foo 1️⃣{ return bar } else 2️⃣{ return baz }
@@ -267,7 +267,7 @@ struct WrapBodiesTests: RuleTesting {
 
   @Test func guardWithSemicolonDelimitedStatements() {
     assertFormatting(
-      WrapBodies.self,
+      WrapSingleLineBodies.self,
       input: """
         guard let foo = bar else 1️⃣{ var baz = 0; let boo = 1; fatalError() }
         """,
@@ -283,7 +283,7 @@ struct WrapBodiesTests: RuleTesting {
 
   @Test func singleLineFunctionWraps() {
     assertFormatting(
-      WrapBodies.self,
+      WrapSingleLineBodies.self,
       input: """
         func foo() 1️⃣{ print("bar") }
         """,
@@ -297,7 +297,7 @@ struct WrapBodiesTests: RuleTesting {
 
   @Test func functionWithReturnWraps() {
     assertFormatting(
-      WrapBodies.self,
+      WrapSingleLineBodies.self,
       input: """
         func getValue() -> Int 1️⃣{ return 42 }
         """,
@@ -311,7 +311,7 @@ struct WrapBodiesTests: RuleTesting {
 
   @Test func alreadyMultilineFunctionUnchanged() {
     assertFormatting(
-      WrapBodies.self,
+      WrapSingleLineBodies.self,
       input: """
         func foo() {
             print("bar")
@@ -326,7 +326,7 @@ struct WrapBodiesTests: RuleTesting {
 
   @Test func emptyFunctionBodyUnchanged() {
     assertFormatting(
-      WrapBodies.self,
+      WrapSingleLineBodies.self,
       input: """
         func foo() {}
         """,
@@ -337,7 +337,7 @@ struct WrapBodiesTests: RuleTesting {
 
   @Test func functionWithSomeReturnTypeWraps() {
     assertFormatting(
-      WrapBodies.self,
+      WrapSingleLineBodies.self,
       input: """
         func foo() -> some View 1️⃣{ Text("hello") }
         """,
@@ -353,7 +353,7 @@ struct WrapBodiesTests: RuleTesting {
 
   @Test func singleLineInitWraps() {
     assertFormatting(
-      WrapBodies.self,
+      WrapSingleLineBodies.self,
       input: """
         init() 1️⃣{ value = 0 }
         """,
@@ -367,7 +367,7 @@ struct WrapBodiesTests: RuleTesting {
 
   @Test func failableInitWraps() {
     assertFormatting(
-      WrapBodies.self,
+      WrapSingleLineBodies.self,
       input: """
         init?() 1️⃣{ return nil }
         """,
@@ -383,7 +383,7 @@ struct WrapBodiesTests: RuleTesting {
 
   @Test func singleLineSubscriptWraps() {
     assertFormatting(
-      WrapBodies.self,
+      WrapSingleLineBodies.self,
       input: """
         subscript(index: Int) -> Int 1️⃣{ array[index] }
         """,
@@ -399,7 +399,7 @@ struct WrapBodiesTests: RuleTesting {
 
   @Test func closureNotWrapped() {
     assertFormatting(
-      WrapBodies.self,
+      WrapSingleLineBodies.self,
       input: """
         let closure = { print("hello") }
         """,
@@ -410,7 +410,7 @@ struct WrapBodiesTests: RuleTesting {
 
   @Test func closureAsArgumentNotWrapped() {
     assertFormatting(
-      WrapBodies.self,
+      WrapSingleLineBodies.self,
       input: """
         array.map { $0 * 2 }
         """,
@@ -421,7 +421,7 @@ struct WrapBodiesTests: RuleTesting {
 
   @Test func protocolFunctionDeclarationNotWrapped() {
     assertFormatting(
-      WrapBodies.self,
+      WrapSingleLineBodies.self,
       input: """
         protocol Foo {
             func bar() -> String
@@ -436,7 +436,7 @@ struct WrapBodiesTests: RuleTesting {
 
   @Test func protocolSubscriptDeclarationNotWrapped() {
     assertFormatting(
-      WrapBodies.self,
+      WrapSingleLineBodies.self,
       input: """
         protocol Foo {
             subscript(index: Int) -> Int { get }
@@ -453,7 +453,7 @@ struct WrapBodiesTests: RuleTesting {
 
   @Test func functionInClassWraps() {
     assertFormatting(
-      WrapBodies.self,
+      WrapSingleLineBodies.self,
       input: """
         class Foo {
             func bar() 1️⃣{ print("baz") }
@@ -473,7 +473,7 @@ struct WrapBodiesTests: RuleTesting {
 
   @Test func forLoopWraps() {
     assertFormatting(
-      WrapBodies.self,
+      WrapSingleLineBodies.self,
       input: """
         for foo in bar 1️⃣{ print(foo) }
         """,
@@ -487,7 +487,7 @@ struct WrapBodiesTests: RuleTesting {
 
   @Test func forLoopAlreadyWrappedUnchanged() {
     assertFormatting(
-      WrapBodies.self,
+      WrapSingleLineBodies.self,
       input: """
         for foo in bar {
             print(foo)
@@ -502,7 +502,7 @@ struct WrapBodiesTests: RuleTesting {
 
   @Test func emptyForLoopUnchanged() {
     assertFormatting(
-      WrapBodies.self,
+      WrapSingleLineBodies.self,
       input: """
         for foo in bar { }
         """,
@@ -513,7 +513,7 @@ struct WrapBodiesTests: RuleTesting {
 
   @Test func indentedForLoopWraps() {
     assertFormatting(
-      WrapBodies.self,
+      WrapSingleLineBodies.self,
       input: """
         func test() {
             for foo in bar 1️⃣{ print(foo) }
@@ -531,7 +531,7 @@ struct WrapBodiesTests: RuleTesting {
 
   @Test func forLoopWithWhereWraps() {
     assertFormatting(
-      WrapBodies.self,
+      WrapSingleLineBodies.self,
       input: """
         for foo in bar where foo > 0 1️⃣{ print(foo) }
         """,
@@ -547,7 +547,7 @@ struct WrapBodiesTests: RuleTesting {
 
   @Test func whileLoopWraps() {
     assertFormatting(
-      WrapBodies.self,
+      WrapSingleLineBodies.self,
       input: """
         while let foo = bar.next() 1️⃣{ print(foo) }
         """,
@@ -561,7 +561,7 @@ struct WrapBodiesTests: RuleTesting {
 
   @Test func whileLoopAlreadyWrappedUnchanged() {
     assertFormatting(
-      WrapBodies.self,
+      WrapSingleLineBodies.self,
       input: """
         while condition {
             doSomething()
@@ -578,7 +578,7 @@ struct WrapBodiesTests: RuleTesting {
 
   @Test func repeatWhileLoopWraps() {
     assertFormatting(
-      WrapBodies.self,
+      WrapSingleLineBodies.self,
       input: """
         repeat 1️⃣{ print(foo) } while condition()
         """,
@@ -592,7 +592,7 @@ struct WrapBodiesTests: RuleTesting {
 
   @Test func repeatWhileAlreadyWrappedUnchanged() {
     assertFormatting(
-      WrapBodies.self,
+      WrapSingleLineBodies.self,
       input: """
         repeat {
             print(foo)
@@ -609,7 +609,7 @@ struct WrapBodiesTests: RuleTesting {
 
   @Test func nestedForLoopsWrap() {
     assertFormatting(
-      WrapBodies.self,
+      WrapSingleLineBodies.self,
       input: """
         for x in xs 1️⃣{ for y in ys 2️⃣{ print(x, y) } }
         """,
@@ -630,7 +630,7 @@ struct WrapBodiesTests: RuleTesting {
 
   @Test func singleLineComputedPropertyWraps() {
     assertFormatting(
-      WrapBodies.self,
+      WrapSingleLineBodies.self,
       input: """
         var bar: String 1️⃣{ "bar" }
         """,
@@ -644,7 +644,7 @@ struct WrapBodiesTests: RuleTesting {
 
   @Test func computedPropertyWithReturnWraps() {
     assertFormatting(
-      WrapBodies.self,
+      WrapSingleLineBodies.self,
       input: """
         var value: Int 1️⃣{ return 42 }
         """,
@@ -658,7 +658,7 @@ struct WrapBodiesTests: RuleTesting {
 
   @Test func alreadyMultilineComputedPropertyUnchanged() {
     assertFormatting(
-      WrapBodies.self,
+      WrapSingleLineBodies.self,
       input: """
         var bar: String {
             "bar"
@@ -675,7 +675,7 @@ struct WrapBodiesTests: RuleTesting {
 
   @Test func storedPropertyWithDidSetWraps() {
     assertFormatting(
-      WrapBodies.self,
+      WrapSingleLineBodies.self,
       input: """
         var value: Int = 0 1️⃣{ didSet { print("changed") } }
         """,
@@ -689,7 +689,7 @@ struct WrapBodiesTests: RuleTesting {
 
   @Test func storedPropertyWithWillSetWraps() {
     assertFormatting(
-      WrapBodies.self,
+      WrapSingleLineBodies.self,
       input: """
         var value: Int = 0 1️⃣{ willSet { print("will change") } }
         """,
@@ -703,7 +703,7 @@ struct WrapBodiesTests: RuleTesting {
 
   @Test func propertyWithDidSetNoInitialValueWraps() {
     assertFormatting(
-      WrapBodies.self,
+      WrapSingleLineBodies.self,
       input: """
         var foo: Int 1️⃣{ didSet { bar() } }
         """,
@@ -719,7 +719,7 @@ struct WrapBodiesTests: RuleTesting {
 
   @Test func computedPropertyInStructWraps() {
     assertFormatting(
-      WrapBodies.self,
+      WrapSingleLineBodies.self,
       input: """
         struct Foo {
             var bar: String 1️⃣{ "bar" }
@@ -739,7 +739,7 @@ struct WrapBodiesTests: RuleTesting {
 
   @Test func computedPropertyWithGetterSetterUnchanged() {
     assertFormatting(
-      WrapBodies.self,
+      WrapSingleLineBodies.self,
       input: """
         var foo: Int {
             get { _foo }
@@ -759,9 +759,9 @@ struct WrapBodiesTests: RuleTesting {
   @Test func functionNotWrappedByPropertyRule() {
     // This test verifies computed property rule doesn't affect functions.
     // With the merged rule, functions DO get wrapped by the function visitor.
-    // So this test is adapted: a single-line function IS wrapped by WrapBodies.
+    // So this test is adapted: a single-line function IS wrapped by SingleLineBodies.
     assertFormatting(
-      WrapBodies.self,
+      WrapSingleLineBodies.self,
       input: """
         func foo() 1️⃣{ print("bar") }
         """,
@@ -775,7 +775,7 @@ struct WrapBodiesTests: RuleTesting {
 
   @Test func protocolPropertyNotWrapped() {
     assertFormatting(
-      WrapBodies.self,
+      WrapSingleLineBodies.self,
       input: """
         protocol Expandable: ExpandableView {
             var expansionStateDidChange: ((Self) -> Void)? { get set }
@@ -790,7 +790,7 @@ struct WrapBodiesTests: RuleTesting {
 
   @Test func protocolPropertyGetOnlyNotWrapped() {
     assertFormatting(
-      WrapBodies.self,
+      WrapSingleLineBodies.self,
       input: """
         protocol LayoutBacked: AnyObject {
             var layoutNode: LayoutNode? { get }
@@ -801,5 +801,361 @@ struct WrapBodiesTests: RuleTesting {
             var layoutNode: LayoutNode? { get }
         }
         """)
+  }
+}
+
+// MARK: - Inline Mode Tests
+
+@Suite
+struct SingleLineBodiesInlineTests: RuleTesting {
+
+  private var inlineConfig: Configuration {
+    var config = Configuration.forTesting(enabledRule: "SingleLineBodies")
+    config.singleLineBodies = {
+      var c = SingleLineBodiesConfiguration()
+      c.mode = .inline
+      return c
+    }()
+    return config
+  }
+
+  // MARK: - Functions
+
+  @Test func multiLineFunctionInlines() {
+    assertFormatting(
+      WrapSingleLineBodies.self,
+      input: """
+        func foo() 1️⃣{
+            return 42
+        }
+        """,
+      expected: """
+        func foo() { return 42 }
+        """,
+      findings: [FindingSpec("1️⃣", message: "place function body on same line as declaration")],
+      configuration: inlineConfig)
+  }
+
+  @Test func alreadyInlineFunctionUnchanged() {
+    assertFormatting(
+      WrapSingleLineBodies.self,
+      input: """
+        func foo() { return 42 }
+        """,
+      expected: """
+        func foo() { return 42 }
+        """,
+      configuration: inlineConfig)
+  }
+
+  @Test func emptyFunctionBodyUnchanged() {
+    assertFormatting(
+      WrapSingleLineBodies.self,
+      input: """
+        func foo() {}
+        """,
+      expected: """
+        func foo() {}
+        """,
+      configuration: inlineConfig)
+  }
+
+  @Test func multiStatementFunctionNotInlined() {
+    assertFormatting(
+      WrapSingleLineBodies.self,
+      input: """
+        func foo() {
+            let x = 1
+            return x
+        }
+        """,
+      expected: """
+        func foo() {
+            let x = 1
+            return x
+        }
+        """,
+      configuration: inlineConfig)
+  }
+
+  @Test func functionTooLongNotInlined() {
+    var config = inlineConfig
+    config.lineLength = 30
+    assertFormatting(
+      WrapSingleLineBodies.self,
+      input: """
+        func doSomethingLong() {
+            return someVeryLongExpression
+        }
+        """,
+      expected: """
+        func doSomethingLong() {
+            return someVeryLongExpression
+        }
+        """,
+      configuration: config)
+  }
+
+  @Test func functionFitsInlines() {
+    var config = inlineConfig
+    config.lineLength = 40
+    assertFormatting(
+      WrapSingleLineBodies.self,
+      input: """
+        func foo() 1️⃣{
+            return 42
+        }
+        """,
+      expected: """
+        func foo() { return 42 }
+        """,
+      findings: [FindingSpec("1️⃣", message: "place function body on same line as declaration")],
+      configuration: config)
+  }
+
+  // MARK: - Initializers
+
+  @Test func initInlines() {
+    assertFormatting(
+      WrapSingleLineBodies.self,
+      input: """
+        init() 1️⃣{
+            value = 0
+        }
+        """,
+      expected: """
+        init() { value = 0 }
+        """,
+      findings: [FindingSpec("1️⃣", message: "place function body on same line as declaration")],
+      configuration: inlineConfig)
+  }
+
+  // MARK: - Guard statements
+
+  @Test func guardInlines() {
+    assertFormatting(
+      WrapSingleLineBodies.self,
+      input: """
+        guard let foo = bar else 1️⃣{
+            return
+        }
+        """,
+      expected: """
+        guard let foo = bar else { return }
+        """,
+      findings: [FindingSpec("1️⃣", message: "place conditional body on same line as declaration")],
+      configuration: inlineConfig)
+  }
+
+  @Test func guardTooLongNotInlined() {
+    var config = inlineConfig
+    config.lineLength = 25
+    assertFormatting(
+      WrapSingleLineBodies.self,
+      input: """
+        guard let foo = bar else {
+            return
+        }
+        """,
+      expected: """
+        guard let foo = bar else {
+            return
+        }
+        """,
+      configuration: config)
+  }
+
+  // MARK: - If statements
+
+  @Test func simpleIfInlines() {
+    assertFormatting(
+      WrapSingleLineBodies.self,
+      input: """
+        if foo 1️⃣{
+            return bar
+        }
+        """,
+      expected: """
+        if foo { return bar }
+        """,
+      findings: [FindingSpec("1️⃣", message: "place conditional body on same line as declaration")],
+      configuration: inlineConfig)
+  }
+
+  @Test func ifElseNotInlined() {
+    // if/else chains are too complex to inline
+    assertFormatting(
+      WrapSingleLineBodies.self,
+      input: """
+        if foo {
+            return bar
+        } else {
+            return baz
+        }
+        """,
+      expected: """
+        if foo {
+            return bar
+        } else {
+            return baz
+        }
+        """,
+      configuration: inlineConfig)
+  }
+
+  // MARK: - Loops
+
+  @Test func forLoopInlines() {
+    assertFormatting(
+      WrapSingleLineBodies.self,
+      input: """
+        for foo in bar 1️⃣{
+            print(foo)
+        }
+        """,
+      expected: """
+        for foo in bar { print(foo) }
+        """,
+      findings: [FindingSpec("1️⃣", message: "place loop body on same line as declaration")],
+      configuration: inlineConfig)
+  }
+
+  @Test func whileLoopInlines() {
+    assertFormatting(
+      WrapSingleLineBodies.self,
+      input: """
+        while condition 1️⃣{
+            doWork()
+        }
+        """,
+      expected: """
+        while condition { doWork() }
+        """,
+      findings: [FindingSpec("1️⃣", message: "place loop body on same line as declaration")],
+      configuration: inlineConfig)
+  }
+
+  @Test func repeatWhileInlines() {
+    assertFormatting(
+      WrapSingleLineBodies.self,
+      input: """
+        repeat 1️⃣{
+            doWork()
+        } while condition
+        """,
+      expected: """
+        repeat { doWork() } while condition
+        """,
+      findings: [FindingSpec("1️⃣", message: "place loop body on same line as declaration")],
+      configuration: inlineConfig)
+  }
+
+  // MARK: - Properties
+
+  @Test func computedPropertyInlines() {
+    assertFormatting(
+      WrapSingleLineBodies.self,
+      input: """
+        var bar: String 1️⃣{
+            "bar"
+        }
+        """,
+      expected: """
+        var bar: String { "bar" }
+        """,
+      findings: [FindingSpec("1️⃣", message: "place property body on same line as declaration")],
+      configuration: inlineConfig)
+  }
+
+  @Test func computedPropertyTooLongNotInlined() {
+    var config = inlineConfig
+    config.lineLength = 20
+    assertFormatting(
+      WrapSingleLineBodies.self,
+      input: """
+        var bar: String {
+            "a long string value"
+        }
+        """,
+      expected: """
+        var bar: String {
+            "a long string value"
+        }
+        """,
+      configuration: config)
+  }
+
+  @Test func propertyObserverNotInlined() {
+    // Explicit accessors (didSet/willSet) are not inlined
+    assertFormatting(
+      WrapSingleLineBodies.self,
+      input: """
+        var value: Int = 0 {
+            didSet { print("changed") }
+        }
+        """,
+      expected: """
+        var value: Int = 0 {
+            didSet { print("changed") }
+        }
+        """,
+      configuration: inlineConfig)
+  }
+
+  // MARK: - Indented context
+
+  @Test func indentedFunctionInlines() {
+    assertFormatting(
+      WrapSingleLineBodies.self,
+      input: """
+        class Foo {
+            func bar() 1️⃣{
+                return 42
+            }
+        }
+        """,
+      expected: """
+        class Foo {
+            func bar() { return 42 }
+        }
+        """,
+      findings: [FindingSpec("1️⃣", message: "place function body on same line as declaration")],
+      configuration: inlineConfig)
+  }
+
+  @Test func indentedComputedPropertyInlines() {
+    assertFormatting(
+      WrapSingleLineBodies.self,
+      input: """
+        struct Foo {
+            var bar: String 1️⃣{
+                "bar"
+            }
+        }
+        """,
+      expected: """
+        struct Foo {
+            var bar: String { "bar" }
+        }
+        """,
+      findings: [FindingSpec("1️⃣", message: "place property body on same line as declaration")],
+      configuration: inlineConfig)
+  }
+
+  // MARK: - Subscripts
+
+  @Test func subscriptInlines() {
+    assertFormatting(
+      WrapSingleLineBodies.self,
+      input: """
+        subscript(index: Int) -> Int 1️⃣{
+            array[index]
+        }
+        """,
+      expected: """
+        subscript(index: Int) -> Int { array[index] }
+        """,
+      findings: [FindingSpec("1️⃣", message: "place function body on same line as declaration")],
+      configuration: inlineConfig)
   }
 }

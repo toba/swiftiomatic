@@ -13,12 +13,11 @@ import SwiftSyntax
 /// Lint: A warning is raised when the file header does not match the configured text.
 ///
 /// Format: The file header is replaced with (or cleared to) the configured text.
-@_spi(Rules)
-public final class FileHeader: SyntaxFormatRule {
+final class FileHeader: SyntaxFormatRule {
 
-  public override class var isOptIn: Bool { true }
+  static let isOptIn = true
 
-  public override func visit(_ node: SourceFileSyntax) -> SourceFileSyntax {
+  override func visit(_ node: SourceFileSyntax) -> SourceFileSyntax {
     guard let text = context.configuration.fileHeader.text else { return node }
 
     if node.statements.isEmpty {
@@ -152,4 +151,24 @@ public final class FileHeader: SyntaxFormatRule {
 extension Finding.Message {
   fileprivate static let updateFileHeader: Finding.Message =
     "update file header to match configured text"
+}
+
+// MARK: - Configuration
+
+public struct FileHeaderConfiguration: Codable, Equatable, Sendable, ConfigRepresentable {
+  package static let configProperties: [ConfigProperty] = [
+    .init(
+      "text",
+      .string(description: "Header text. Omit to disable, empty string to remove headers.")
+    )
+  ]
+
+  public var text: String?
+
+  public init() {}
+
+  public init(from decoder: Decoder) throws {
+    let container = try decoder.container(keyedBy: CodingKeys.self)
+    self.text = try container.decodeIfPresent(String.self, forKey: .text)
+  }
 }

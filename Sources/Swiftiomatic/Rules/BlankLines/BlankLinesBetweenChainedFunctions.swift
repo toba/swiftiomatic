@@ -9,45 +9,46 @@ import SwiftSyntax
 /// Lint: If there are blank lines between chained member accesses, a lint warning is raised.
 ///
 /// Format: The blank lines are removed, keeping linebreaks and comments.
-@_spi(Rules)
-public final class BlankLinesBetweenChainedFunctions: SyntaxFormatRule {
-  public override class var group: ConfigGroup? { .updateBlankLines }
+final class BlankLinesBetweenChainedFunctions: SyntaxFormatRule {
+    static let group: ConfigGroup? = .blankLines
+    static let isOptIn = true
 
-  public override class var isOptIn: Bool { true }
+    override func visit(_ node: MemberAccessExprSyntax) -> ExprSyntax {
+        let visited = super.visit(node)
+        guard let memberAccess = visited.as(MemberAccessExprSyntax.self) else { return visited }
 
-  public override func visit(_ node: MemberAccessExprSyntax) -> ExprSyntax {
-    let visited = super.visit(node)
-    guard let memberAccess = visited.as(MemberAccessExprSyntax.self) else { return visited }
+        // Only act on chains — the base must be a function call or another member access.
+        guard
+            memberAccess.base?.is(FunctionCallExprSyntax.self) == true
+                || memberAccess.base?.is(MemberAccessExprSyntax.self) == true
+        else { return visited }
 
-    // Only act on chains — the base must be a function call or another member access.
-    guard memberAccess.base?.is(FunctionCallExprSyntax.self) == true
-      || memberAccess.base?.is(MemberAccessExprSyntax.self) == true
-    else { return visited }
+        let period = memberAccess.period
+        let trivia = period.leadingTrivia
 
-    let period = memberAccess.period
-    let trivia = period.leadingTrivia
+        // Check if there are blank lines (any .newlines piece > 1).
+        let hasBlankLines = trivia.pieces.contains { piece in
+            if case .newlines(let n) = piece { return n > 1 }
+            return false
+        }
+        guard hasBlankLines else { return visited }
 
-    // Check if there are blank lines (any .newlines piece > 1).
-    let hasBlankLines = trivia.pieces.contains { piece in
-      if case .newlines(let n) = piece { return n > 1 }
-      return false
+        diagnose(.removeBlankLinesBetweenChainedCalls, on: period)
+
+        // Reduce all multi-newlines to single newlines.
+        let cleaned = Trivia(
+            pieces: trivia.pieces.map { piece in
+                if case .newlines(let n) = piece, n > 1 { return .newlines(1) }
+                return piece
+            }
+        )
+
+        let newPeriod = period.with(\.leadingTrivia, cleaned)
+        return ExprSyntax(memberAccess.with(\.period, newPeriod))
     }
-    guard hasBlankLines else { return visited }
-
-    diagnose(.removeBlankLinesBetweenChainedCalls, on: period)
-
-    // Reduce all multi-newlines to single newlines.
-    let cleaned = Trivia(pieces: trivia.pieces.map { piece in
-      if case .newlines(let n) = piece, n > 1 { return .newlines(1) }
-      return piece
-    })
-
-    let newPeriod = period.with(\.leadingTrivia, cleaned)
-    return ExprSyntax(memberAccess.with(\.period, newPeriod))
-  }
 }
 
 extension Finding.Message {
-  fileprivate static let removeBlankLinesBetweenChainedCalls: Finding.Message =
-    "remove blank lines between chained function calls"
+    fileprivate static let removeBlankLinesBetweenChainedCalls: Finding.Message =
+        "remove blank lines between chained function calls"
 }

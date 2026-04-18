@@ -24,11 +24,10 @@ import SwiftSyntax
 /// Lint: If `= nil` is found on an eligible optional `var`, a lint warning is raised.
 ///
 /// Format: The redundant `= nil` initializer is removed.
-@_spi(Rules)
-public final class RedundantNilInit: SyntaxFormatRule {
-  public override class var group: ConfigGroup? { .removeRedundant }
+final class RedundantNilInit: SyntaxFormatRule {
+  static let group: ConfigGroup? = .redundancies
 
-  public override func visit(_ node: VariableDeclSyntax) -> DeclSyntax {
+  override func visit(_ node: VariableDeclSyntax) -> DeclSyntax {
     // Only applies to `var`, not `let`.
     guard node.bindingSpecifier.tokenKind == .keyword(.var) else {
       return super.visit(node)

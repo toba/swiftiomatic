@@ -14,11 +14,10 @@ import SwiftSyntax
 /// Lint: Using `.count == 0`, `.count != 0`, or `.count > 0` raises a warning.
 ///
 /// Format: The comparison is replaced with `.isEmpty` or `!.isEmpty`.
-@_spi(Rules)
-public final class PreferIsEmpty: SyntaxFormatRule {
-  public override class var isOptIn: Bool { true }
+final class PreferIsEmpty: SyntaxFormatRule {
+  static let isOptIn = true
 
-  public override func visit(_ node: InfixOperatorExprSyntax) -> ExprSyntax {
+  override func visit(_ node: InfixOperatorExprSyntax) -> ExprSyntax {
     let visited = super.visit(node)
     guard let infixNode = visited.as(InfixOperatorExprSyntax.self),
       let binOp = infixNode.operator.as(BinaryOperatorExprSyntax.self)

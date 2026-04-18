@@ -10,7 +10,7 @@
 //
 //===----------------------------------------------------------------------===//
 
-@_spi(Rules) import Swiftiomatic
+@testable import Swiftiomatic
 import SwiftiomaticTestSupport
 import Testing
 
@@ -436,7 +436,7 @@ struct NoExtensionAccessLevelTests: RuleTesting {
   // MARK: - onExtension mode
 
   private func onExtensionConfig() -> Configuration {
-    var config = Configuration.forTesting(enabledRule: NoExtensionAccessLevel.self.ruleName)
+    var config = Configuration.forTesting(enabledRule: NoExtensionAccessLevel.self.name)
     config.extensionAccessControl.placement = .onExtension
     return config
   }

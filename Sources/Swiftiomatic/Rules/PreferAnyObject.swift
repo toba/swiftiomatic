@@ -8,10 +8,9 @@ import SwiftSyntax
 /// Lint: A protocol inheriting from `class` instead of `AnyObject` raises a warning.
 ///
 /// Format: `class` is replaced with `AnyObject` in the inheritance clause.
-@_spi(Rules)
-public final class PreferAnyObject: SyntaxFormatRule {
+final class PreferAnyObject: SyntaxFormatRule {
 
-  public override func visit(_ node: ProtocolDeclSyntax) -> DeclSyntax {
+  override func visit(_ node: ProtocolDeclSyntax) -> DeclSyntax {
     guard let inheritanceClause = node.inheritanceClause else {
       return DeclSyntax(node)
     }

@@ -13,9 +13,8 @@ import SwiftSyntax
 /// Lint: If a redundant `@objc` is found, a lint warning is raised.
 ///
 /// Format: The redundant `@objc` attribute is removed.
-@_spi(Rules)
-public final class RedundantObjc: SyntaxFormatRule {
-  public override class var group: ConfigGroup? { .removeRedundant }
+final class RedundantObjc: SyntaxFormatRule {
+  static let group: ConfigGroup? = .redundancies
 
   /// Attributes that imply `@objc`.
   private static let implyingAttributes: Set<String> = [
@@ -27,34 +26,34 @@ public final class RedundantObjc: SyntaxFormatRule {
     "GKInspectable",
   ]
 
-  public override func visit(_ node: FunctionDeclSyntax) -> DeclSyntax {
+  override func visit(_ node: FunctionDeclSyntax) -> DeclSyntax {
     DeclSyntax(removeRedundantObjc(from: node))
   }
 
-  public override func visit(_ node: VariableDeclSyntax) -> DeclSyntax {
+  override func visit(_ node: VariableDeclSyntax) -> DeclSyntax {
     DeclSyntax(removeRedundantObjc(from: node))
   }
 
-  public override func visit(_ node: ClassDeclSyntax) -> DeclSyntax {
+  override func visit(_ node: ClassDeclSyntax) -> DeclSyntax {
     let visited = super.visit(node).cast(ClassDeclSyntax.self)
     return DeclSyntax(removeRedundantObjc(from: visited))
   }
 
-  public override func visit(_ node: StructDeclSyntax) -> DeclSyntax {
+  override func visit(_ node: StructDeclSyntax) -> DeclSyntax {
     let visited = super.visit(node).cast(StructDeclSyntax.self)
     return DeclSyntax(removeRedundantObjc(from: visited))
   }
 
-  public override func visit(_ node: EnumDeclSyntax) -> DeclSyntax {
+  override func visit(_ node: EnumDeclSyntax) -> DeclSyntax {
     let visited = super.visit(node).cast(EnumDeclSyntax.self)
     return DeclSyntax(removeRedundantObjc(from: visited))
   }
 
-  public override func visit(_ node: SubscriptDeclSyntax) -> DeclSyntax {
+  override func visit(_ node: SubscriptDeclSyntax) -> DeclSyntax {
     DeclSyntax(removeRedundantObjc(from: node))
   }
 
-  public override func visit(_ node: InitializerDeclSyntax) -> DeclSyntax {
+  override func visit(_ node: InitializerDeclSyntax) -> DeclSyntax {
     DeclSyntax(removeRedundantObjc(from: node))
   }
 

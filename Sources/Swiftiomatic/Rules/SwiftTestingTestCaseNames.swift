@@ -12,10 +12,9 @@ import SwiftSyntax
 /// Lint: A warning is raised for `@Test` functions with a `test` prefix.
 ///
 /// Format: The `test` prefix is removed and the first letter is lowercased.
-@_spi(Rules)
-public final class SwiftTestingTestCaseNames: SyntaxFormatRule {
+final class SwiftTestingTestCaseNames: SyntaxFormatRule {
 
-  public override class var isOptIn: Bool { true }
+  static let isOptIn = true
 
   private var importsTesting = false
   private var allIdentifiers = Set<String>()
@@ -30,7 +29,7 @@ public final class SwiftTestingTestCaseNames: SyntaxFormatRule {
     "associatedtype", "operator", "precedencegroup", "inout", "static",
   ]
 
-  public override func visit(_ node: SourceFileSyntax) -> SourceFileSyntax {
+  override func visit(_ node: SourceFileSyntax) -> SourceFileSyntax {
     for stmt in node.statements {
       if let importDecl = stmt.item.as(ImportDeclSyntax.self),
         importDecl.path.first?.name.text == "Testing"
@@ -49,7 +48,7 @@ public final class SwiftTestingTestCaseNames: SyntaxFormatRule {
     return super.visit(node)
   }
 
-  public override func visit(_ node: FunctionDeclSyntax) -> DeclSyntax {
+  override func visit(_ node: FunctionDeclSyntax) -> DeclSyntax {
     guard importsTesting,
       node.hasAttribute("Test", inModule: "Testing")
     else {

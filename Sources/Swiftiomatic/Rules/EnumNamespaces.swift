@@ -12,10 +12,9 @@ import SwiftSyntax
 /// Lint: A struct or final class containing only static members raises a warning.
 ///
 /// Format: The `struct` or `final class` keyword is replaced with `enum`.
-@_spi(Rules)
-public final class EnumNamespaces: SyntaxFormatRule {
+final class EnumNamespaces: SyntaxFormatRule {
 
-  public override func visit(_ node: StructDeclSyntax) -> DeclSyntax {
+  override func visit(_ node: StructDeclSyntax) -> DeclSyntax {
     let visited = super.visit(node).cast(StructDeclSyntax.self)
     guard shouldBeEnum(
       attributes: visited.attributes,
@@ -42,7 +41,7 @@ public final class EnumNamespaces: SyntaxFormatRule {
     return DeclSyntax(enumDecl)
   }
 
-  public override func visit(_ node: ClassDeclSyntax) -> DeclSyntax {
+  override func visit(_ node: ClassDeclSyntax) -> DeclSyntax {
     let visited = super.visit(node).cast(ClassDeclSyntax.self)
 
     // Only final classes can be converted — non-final classes might be subclassed

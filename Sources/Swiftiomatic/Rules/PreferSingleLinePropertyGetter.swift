@@ -17,10 +17,9 @@ import SwiftSyntax
 /// Lint: Read-only computed properties with explicit `get` blocks yield a lint error.
 ///
 /// Format: Explicit `get` blocks are rendered implicit by removing the `get`.
-@_spi(Rules)
-public final class PreferSingleLinePropertyGetter: SyntaxFormatRule {
+final class PreferSingleLinePropertyGetter: SyntaxFormatRule {
 
-  public override func visit(_ node: PatternBindingSyntax) -> PatternBindingSyntax {
+  override func visit(_ node: PatternBindingSyntax) -> PatternBindingSyntax {
     guard
       let accessorBlock = node.accessorBlock,
       case .accessors(let accessors) = accessorBlock.accessors,

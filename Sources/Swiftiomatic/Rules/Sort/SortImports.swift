@@ -28,11 +28,10 @@ import SwiftSyntax
 ///       raised.
 ///
 /// Format: Imports will be reordered and (optionally) grouped at the top of the file.
-@_spi(Rules)
-public final class SortImports: SyntaxFormatRule {
-    public override class var group: ConfigGroup? { .sort }
+final class SortImports: SyntaxFormatRule {
+    static let group: ConfigGroup? = .sort
 
-  public override func visit(_ node: SourceFileSyntax) -> SourceFileSyntax {
+  override func visit(_ node: SourceFileSyntax) -> SourceFileSyntax {
     var newNode = node
     newNode.statements = orderImports(in: node.statements)
     return newNode
@@ -480,7 +479,7 @@ private func convertToCodeBlockItems(lines: [Line]) -> [CodeBlockItemSyntax] {
   return output
 }
 
-public enum LineType: CustomStringConvertible {
+enum LineType: CustomStringConvertible {
   case regularImport
   case declImport
   case implementationOnlyImport
@@ -489,7 +488,7 @@ public enum LineType: CustomStringConvertible {
   case comment
   case blankLine
 
-  public var description: String {
+  var description: String {
     switch self {
     case .regularImport:
       return "regular"
@@ -687,4 +686,35 @@ extension Finding.Message {
   fileprivate static let removeDuplicateImport: Finding.Message = "remove this duplicate import"
 
   fileprivate static let sortImports: Finding.Message = "sort import statements lexicographically"
+}
+
+// MARK: - Configuration
+
+public struct SortImportsConfiguration: Codable, Equatable, Sendable, ConfigRepresentable {
+  package static let configProperties: [ConfigProperty] = [
+    .init(
+      "includeConditionalImports",
+      .bool(description: "Sort imports within #if blocks.", defaultValue: false)
+    ),
+    .init(
+      "shouldGroupImports",
+      .bool(description: "Separate imports into groups by type.", defaultValue: true)
+    ),
+  ]
+
+  public var includeConditionalImports = false
+  public var shouldGroupImports = true
+
+  public init() {}
+
+  public init(from decoder: Decoder) throws {
+    let container = try decoder.container(keyedBy: CodingKeys.self)
+    let defaults = Self()
+    self.includeConditionalImports =
+      try container.decodeIfPresent(Bool.self, forKey: .includeConditionalImports)
+      ?? defaults.includeConditionalImports
+    self.shouldGroupImports =
+      try container.decodeIfPresent(Bool.self, forKey: .shouldGroupImports)
+      ?? defaults.shouldGroupImports
+  }
 }

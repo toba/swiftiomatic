@@ -33,11 +33,10 @@ import SwiftSyntax
 /// Lint: Raises warnings for any of the above redundancies.
 ///
 /// Format: Removes or replaces the redundant modifier.
-@_spi(Rules)
-public final class RedundantAccessControl: SyntaxFormatRule {
-  public override class var group: ConfigGroup? { .removeRedundant }
+final class RedundantAccessControl: SyntaxFormatRule {
+  static let group: ConfigGroup? = .redundancies
 
-  public override class var isOptIn: Bool { true }
+  static let isOptIn = true
 
   // MARK: - RedundantFileprivate State
 
@@ -49,7 +48,7 @@ public final class RedundantAccessControl: SyntaxFormatRule {
 
   // MARK: - RedundantFileprivate: SourceFileSyntax Visitor
 
-  public override func visit(_ node: SourceFileSyntax) -> SourceFileSyntax {
+  override func visit(_ node: SourceFileSyntax) -> SourceFileSyntax {
     // Phase 1: Analyze the file structure to determine if it's a single-type file.
     analyzeFileStructure(node.statements)
 
@@ -68,58 +67,58 @@ public final class RedundantAccessControl: SyntaxFormatRule {
 
   // MARK: - RedundantInternal: Per-Decl Visitors
 
-  public override func visit(_ node: ActorDeclSyntax) -> DeclSyntax {
+  override func visit(_ node: ActorDeclSyntax) -> DeclSyntax {
     let visited = super.visit(node).cast(ActorDeclSyntax.self)
     let afterInternal = removeRedundantInternal(from: visited, keywordKeyPath: \.actorKeyword)
     return DeclSyntax(removePublicFromMembers(of: afterInternal))
   }
 
-  public override func visit(_ node: ClassDeclSyntax) -> DeclSyntax {
+  override func visit(_ node: ClassDeclSyntax) -> DeclSyntax {
     let visited = super.visit(node).cast(ClassDeclSyntax.self)
     let afterInternal = removeRedundantInternal(from: visited, keywordKeyPath: \.classKeyword)
     return DeclSyntax(removePublicFromMembers(of: afterInternal))
   }
 
-  public override func visit(_ node: EnumDeclSyntax) -> DeclSyntax {
+  override func visit(_ node: EnumDeclSyntax) -> DeclSyntax {
     let visited = super.visit(node).cast(EnumDeclSyntax.self)
     let afterInternal = removeRedundantInternal(from: visited, keywordKeyPath: \.enumKeyword)
     return DeclSyntax(removePublicFromMembers(of: afterInternal))
   }
 
-  public override func visit(_ node: FunctionDeclSyntax) -> DeclSyntax {
+  override func visit(_ node: FunctionDeclSyntax) -> DeclSyntax {
     return DeclSyntax(removeRedundantInternal(from: node, keywordKeyPath: \.funcKeyword))
   }
 
-  public override func visit(_ node: InitializerDeclSyntax) -> DeclSyntax {
+  override func visit(_ node: InitializerDeclSyntax) -> DeclSyntax {
     return DeclSyntax(removeRedundantInternal(from: node, keywordKeyPath: \.initKeyword))
   }
 
-  public override func visit(_ node: ProtocolDeclSyntax) -> DeclSyntax {
+  override func visit(_ node: ProtocolDeclSyntax) -> DeclSyntax {
     let visited = super.visit(node).cast(ProtocolDeclSyntax.self)
     return DeclSyntax(removeRedundantInternal(from: visited, keywordKeyPath: \.protocolKeyword))
   }
 
-  public override func visit(_ node: StructDeclSyntax) -> DeclSyntax {
+  override func visit(_ node: StructDeclSyntax) -> DeclSyntax {
     let visited = super.visit(node).cast(StructDeclSyntax.self)
     let afterInternal = removeRedundantInternal(from: visited, keywordKeyPath: \.structKeyword)
     return DeclSyntax(removePublicFromMembers(of: afterInternal))
   }
 
-  public override func visit(_ node: SubscriptDeclSyntax) -> DeclSyntax {
+  override func visit(_ node: SubscriptDeclSyntax) -> DeclSyntax {
     return DeclSyntax(removeRedundantInternal(from: node, keywordKeyPath: \.subscriptKeyword))
   }
 
-  public override func visit(_ node: TypeAliasDeclSyntax) -> DeclSyntax {
+  override func visit(_ node: TypeAliasDeclSyntax) -> DeclSyntax {
     return DeclSyntax(removeRedundantInternal(from: node, keywordKeyPath: \.typealiasKeyword))
   }
 
-  public override func visit(_ node: VariableDeclSyntax) -> DeclSyntax {
+  override func visit(_ node: VariableDeclSyntax) -> DeclSyntax {
     return DeclSyntax(removeRedundantInternal(from: node, keywordKeyPath: \.bindingSpecifier))
   }
 
   // MARK: - RedundantExtensionACL: ExtensionDeclSyntax Visitor
 
-  public override func visit(_ node: ExtensionDeclSyntax) -> DeclSyntax {
+  override func visit(_ node: ExtensionDeclSyntax) -> DeclSyntax {
     let visited = super.visit(node).cast(ExtensionDeclSyntax.self)
 
     // Only check extensions that have an explicit access level.

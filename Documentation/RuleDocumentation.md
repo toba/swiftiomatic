@@ -10,7 +10,6 @@ automatically.
 
 Here's the list of available rules:
 
-- [ASCIIIdentifiers](#ASCIIIdentifiers)
 - [AmbiguousTrailingClosureOverload](#AmbiguousTrailingClosureOverload)
 - [BlankLinesAfterGuardStatements](#BlankLinesAfterGuardStatements)
 - [BlankLinesAfterImports](#BlankLinesAfterImports)
@@ -23,7 +22,6 @@ Here's the list of available rules:
 - [CapitalizedTypeNames](#CapitalizedTypeNames)
 - [ConsistentSwitchCaseSpacing](#ConsistentSwitchCaseSpacing)
 - [DocCommentSummary](#DocCommentSummary)
-- [DocComments](#DocComments)
 - [DocCommentsBeforeModifiers](#DocCommentsBeforeModifiers)
 - [DocumentPublicDeclarations](#DocumentPublicDeclarations)
 - [EmptyBraces](#EmptyBraces)
@@ -36,14 +34,13 @@ Here's the list of available rules:
 - [FormatSpecialComments](#FormatSpecialComments)
 - [FullyIndirectEnum](#FullyIndirectEnum)
 - [GroupNumericLiterals](#GroupNumericLiterals)
-- [HoistAwait](#HoistAwait)
-- [HoistTry](#HoistTry)
 - [InitCoderUnavailable](#InitCoderUnavailable)
 - [LeadingDotOperators](#LeadingDotOperators)
-- [LinebreakAtEndOfFile](#LinebreakAtEndOfFile)
 - [LowerCamelCase](#LowerCamelCase)
 - [ModifierOrder](#ModifierOrder)
 - [ModifiersOnSameLine](#ModifiersOnSameLine)
+- [MoveInlineAwaitToExpressionStart](#MoveInlineAwaitToExpressionStart)
+- [MoveInlineTryToExpressionStart](#MoveInlineTryToExpressionStart)
 - [NoAssignmentInExpressions](#NoAssignmentInExpressions)
 - [NoBacktickedSelf](#NoBacktickedSelf)
 - [NoBlockComments](#NoBlockComments)
@@ -123,26 +120,22 @@ Here's the list of available rules:
 - [SortTypealiases](#SortTypealiases)
 - [StrongOutlets](#StrongOutlets)
 - [SwiftTestingTestCaseNames](#SwiftTestingTestCaseNames)
+- [SwitchCaseIndentation](#SwitchCaseIndentation)
 - [TestSuiteAccessControl](#TestSuiteAccessControl)
 - [TripleSlashDocComments](#TripleSlashDocComments)
 - [URLMacro](#URLMacro)
 - [UnusedArguments](#UnusedArguments)
 - [ValidateDocumentationComments](#ValidateDocumentationComments)
 - [ValidateTestCases](#ValidateTestCases)
-- [WrapBodies](#WrapBodies)
+- [WrapCompoundCaseStatements](#WrapCompoundCaseStatements)
 - [WrapConditionalAssignment](#WrapConditionalAssignment)
 - [WrapMultilineFunctionChains](#WrapMultilineFunctionChains)
 - [WrapMultilineStatementBraces](#WrapMultilineStatementBraces)
-- [WrapSingleLineComments](#WrapSingleLineComments)
-- [WrapSwitchCases](#WrapSwitchCases)
-
-### ASCIIIdentifiers
-
-All identifiers must be ASCII.
-
-Lint: If an identifier contains non-ASCII characters, a lint error is raised.
-
-`ASCIIIdentifiers` is a linter-only rule.
+- [WrapSingleLineBodies](#WrapSingleLineBodies)
+- [convertRegularCommentToDocC](#convertRegularCommentToDocC)
+- [ensureLineBreakAtEOF](#ensureLineBreakAtEOF)
+- [identifiersMayOnlyUseASCII](#identifiersMayOnlyUseASCII)
+- [singleLineComments](#singleLineComments)
 
 ### AmbiguousTrailingClosureOverload
 
@@ -307,20 +300,6 @@ All documentation comments must begin with a one-line summary of the declaration
 Lint: If a comment does not begin with a single-line summary, a lint error is raised.
 
 `DocCommentSummary` is a linter-only rule.
-
-### DocComments
-
-Use doc comments for API declarations, otherwise use regular comments.
-
-Comments immediately before type declarations, properties, methods, and other
-API-level constructs use `///` doc comment syntax. Comments inside function
-bodies use `//` regular comment syntax, except for nested function declarations.
-
-Lint: When a regular comment should be a doc comment, or vice versa.
-
-Format: The comment style is corrected.
-
-`DocComments` rule can format your code automatically.
 
 ### DocCommentsBeforeModifiers
 
@@ -492,45 +471,6 @@ TODO: Handle floating point literals.
 
 `GroupNumericLiterals` rule can format your code automatically.
 
-### HoistAwait
-
-Move inline `await` keyword(s) to the start of the expression.
-
-When `await` appears inside function call arguments, it can be hoisted to wrap the
-entire call expression. This is clearer and avoids redundant `await` keywords when
-multiple arguments are async.
-
-For example, `foo(await bar(), await baz())` should be `await foo(bar(), baz())`.
-
-This rule does not flag `await` inside closures (which have their own async context)
-or when the call is already wrapped in `await`.
-
-Lint: Using `await` inside a function call argument raises a warning.
-
-Format: `await` is removed from arguments and added to wrap the call expression.
-
-`HoistAwait` rule can format your code automatically.
-
-### HoistTry
-
-Move inline `try` keyword(s) to the start of the expression.
-
-When `try` appears inside function call arguments, it can be hoisted to wrap the
-entire call expression. This is clearer and avoids redundant `try` keywords when
-multiple arguments throw.
-
-For example, `foo(try bar(), try baz())` should be `try foo(bar(), baz())`.
-
-This rule does not flag `try` inside closures (which have their own throwing context)
-or when the call is already wrapped in `try`. Only plain `try` is hoisted (not
-`try?` or `try!`).
-
-Lint: Using `try` inside a function call argument raises a warning.
-
-Format: `try` is removed from arguments and added to wrap the call expression.
-
-`HoistTry` rule can format your code automatically.
-
 ### InitCoderUnavailable
 
 Add `@available(*, unavailable)` to `required init(coder:)` that only calls `fatalError`.
@@ -558,19 +498,6 @@ Lint: A finding is emitted when a delimiter starts a line.
 Format: The delimiter is moved to the end of the previous line.
 
 `LeadingDotOperators` rule can format your code automatically.
-
-### LinebreakAtEndOfFile
-
-Ensure the file ends with exactly one newline.
-
-Many Unix tools expect files to end with a newline. Missing trailing newlines cause
-`diff` noise and `cat` concatenation issues. Extra trailing newlines waste space.
-
-Lint: If the file does not end with exactly one newline, a lint warning is raised.
-
-Format: A trailing newline is added if missing, or extra newlines are removed.
-
-`LinebreakAtEndOfFile` rule can format your code automatically.
 
 ### LowerCamelCase
 
@@ -613,6 +540,45 @@ is raised.
 Format: Newlines between modifiers and the declaration keyword are replaced with spaces.
 
 `ModifiersOnSameLine` rule can format your code automatically.
+
+### MoveInlineAwaitToExpressionStart
+
+Move inline `await` keyword(s) to the start of the expression.
+
+When `await` appears inside function call arguments, it can be hoisted to wrap the
+entire call expression. This is clearer and avoids redundant `await` keywords when
+multiple arguments are async.
+
+For example, `foo(await bar(), await baz())` should be `await foo(bar(), baz())`.
+
+This rule does not flag `await` inside closures (which have their own async context)
+or when the call is already wrapped in `await`.
+
+Lint: Using `await` inside a function call argument raises a warning.
+
+Format: `await` is removed from arguments and added to wrap the call expression.
+
+`MoveInlineAwaitToExpressionStart` rule can format your code automatically.
+
+### MoveInlineTryToExpressionStart
+
+Move inline `try` keyword(s) to the start of the expression.
+
+When `try` appears inside function call arguments, it can be hoisted to wrap the
+entire call expression. This is clearer and avoids redundant `try` keywords when
+multiple arguments throw.
+
+For example, `foo(try bar(), try baz())` should be `try foo(bar(), baz())`.
+
+This rule does not flag `try` inside closures (which have their own throwing context)
+or when the call is already wrapped in `try`. Only plain `try` is hoisted (not
+`try?` or `try!`).
+
+Lint: Using `try` inside a function call argument raises a warning.
+
+Format: `try` is removed from arguments and added to wrap the call expression.
+
+`MoveInlineTryToExpressionStart` rule can format your code automatically.
 
 ### NoAssignmentInExpressions
 
@@ -1852,6 +1818,20 @@ Format: The `test` prefix is removed and the first letter is lowercased.
 
 `SwiftTestingTestCaseNames` rule can format your code automatically.
 
+### SwitchCaseIndentation
+
+Dedent switch case labels to align with the `switch` keyword.
+
+Standard Swift indents `case` one level deeper than `switch`. This rule removes that extra
+level so `case` labels sit at the same column as `switch`, and case bodies indent one level
+from `switch`.
+
+Lint: Raised when a `case` or `default` label is indented deeper than the `switch` keyword.
+
+Format: The extra indentation is removed from case labels, case bodies, and the closing brace.
+
+`SwitchCaseIndentation` rule can format your code automatically.
+
 ### TestSuiteAccessControl
 
 Test methods should be `internal`; helper properties and functions should be `private`.
@@ -1954,22 +1934,19 @@ Format: The `test` prefix or `@Test` attribute is added.
 
 `ValidateTestCases` rule can format your code automatically.
 
-### WrapBodies
+### WrapCompoundCaseStatements
 
-Single-line bodies in conditionals, functions, loops, and properties are
-wrapped onto multiple lines.
+Comma-delimited switch case items are wrapped onto separate lines.
 
-This rule combines wrapping for:
-- **Conditionals**: `if`, `else`, `guard` bodies
-- **Functions**: function, initializer, and subscript bodies
-- **Loops**: `for`, `while`, `repeat` loop bodies
-- **Properties**: computed property and observer bodies
+Switch cases with multiple patterns separated by commas are expanded so each
+pattern appears on its own line, aligned after `case `.
 
-Lint: A single-line body raises a warning.
+Lint: A switch case with multiple comma-separated items on a single line
+      raises a warning.
 
-Format: The body is wrapped onto a new line with indentation.
+Format: Each item is placed on its own line with alignment indentation.
 
-`WrapBodies` rule can format your code automatically.
+`WrapCompoundCaseStatements` rule can format your code automatically.
 
 ### WrapConditionalAssignment
 
@@ -2014,7 +1991,60 @@ Format: The `{` is moved to a new line aligned with the closing `}`.
 
 `WrapMultilineStatementBraces` rule can format your code automatically.
 
-### WrapSingleLineComments
+### WrapSingleLineBodies
+
+Controls whether single-statement bodies are kept inline or wrapped to
+multiple lines.
+
+**Wrap mode** (default): Single-line bodies in conditionals, functions,
+loops, and properties are expanded onto multiple lines.
+
+**Inline mode**: Multi-line single-statement bodies are collapsed onto the
+same line as the declaration, provided the result fits within the configured
+line length.
+
+Lint: A body whose formatting doesn't match the mode raises a warning.
+
+Format: The body is wrapped or inlined to match the mode.
+
+`WrapSingleLineBodies` rule can format your code automatically.
+
+### convertRegularCommentToDocC
+
+Use doc comments for API declarations, otherwise use regular comments.
+
+Comments immediately before type declarations, properties, methods, and other
+API-level constructs use `///` doc comment syntax. Comments inside function
+bodies use `//` regular comment syntax, except for nested function declarations.
+
+Lint: When a regular comment should be a doc comment, or vice versa.
+
+Format: The comment style is corrected.
+
+`convertRegularCommentToDocC` rule can format your code automatically.
+
+### ensureLineBreakAtEOF
+
+Ensure the file ends with exactly one newline.
+
+Many Unix tools expect files to end with a newline. Missing trailing newlines cause
+`diff` noise and `cat` concatenation issues. Extra trailing newlines waste space.
+
+Lint: If the file does not end with exactly one newline, a lint warning is raised.
+
+Format: A trailing newline is added if missing, or extra newlines are removed.
+
+`ensureLineBreakAtEOF` rule can format your code automatically.
+
+### identifiersMayOnlyUseASCII
+
+All identifiers must be ASCII.
+
+Lint: If an identifier contains non-ASCII characters, a lint error is raised.
+
+`identifiersMayOnlyUseASCII` is a linter-only rule.
+
+### singleLineComments
 
 Single-line comments that exceed the configured line length are wrapped.
 
@@ -2024,18 +2054,4 @@ Lint: A `//` or `///` comment that exceeds the line length raises a
 Format: The comment is word-wrapped, continuing on the next line with the
         same prefix and indentation.
 
-`WrapSingleLineComments` rule can format your code automatically.
-
-### WrapSwitchCases
-
-Comma-delimited switch case items are wrapped onto separate lines.
-
-Switch cases with multiple patterns separated by commas are expanded so each
-pattern appears on its own line, aligned after `case `.
-
-Lint: A switch case with multiple comma-separated items on a single line
-      raises a warning.
-
-Format: Each item is placed on its own line with alignment indentation.
-
-`WrapSwitchCases` rule can format your code automatically.
+`singleLineComments` rule can format your code automatically.

@@ -18,12 +18,11 @@ import SwiftSyntax
 ///
 /// Format: `func <name>() { return ... }` constructs will be replaced with
 ///         equivalent `func <name>() { ... }` constructs.
-@_spi(Rules)
-public final class RedundantReturn: SyntaxFormatRule {
-  public override class var group: ConfigGroup? { .removeRedundant }
-  public override class var isOptIn: Bool { return true }
+final class RedundantReturn: SyntaxFormatRule {
+  static let group: ConfigGroup? = .redundancies
+  static let isOptIn = true
 
-  public override func visit(_ node: FunctionDeclSyntax) -> DeclSyntax {
+  override func visit(_ node: FunctionDeclSyntax) -> DeclSyntax {
     let decl = super.visit(node)
 
     // func <name>() -> <Type> { return ... }
@@ -39,7 +38,7 @@ public final class RedundantReturn: SyntaxFormatRule {
     return DeclSyntax(funcDecl)
   }
 
-  public override func visit(_ node: SubscriptDeclSyntax) -> DeclSyntax {
+  override func visit(_ node: SubscriptDeclSyntax) -> DeclSyntax {
     let decl = super.visit(node)
 
     guard var subscriptDecl = decl.as(SubscriptDeclSyntax.self),
@@ -55,7 +54,7 @@ public final class RedundantReturn: SyntaxFormatRule {
     return DeclSyntax(subscriptDecl)
   }
 
-  public override func visit(_ node: PatternBindingSyntax) -> PatternBindingSyntax {
+  override func visit(_ node: PatternBindingSyntax) -> PatternBindingSyntax {
     var binding = node
 
     guard let accessorBlock = binding.accessorBlock,
@@ -68,7 +67,7 @@ public final class RedundantReturn: SyntaxFormatRule {
     return binding
   }
 
-  public override func visit(_ node: ClosureExprSyntax) -> ExprSyntax {
+  override func visit(_ node: ClosureExprSyntax) -> ExprSyntax {
     let expr = super.visit(node)
 
     // test { return ... }

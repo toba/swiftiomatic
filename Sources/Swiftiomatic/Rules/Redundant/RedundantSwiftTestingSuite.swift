@@ -10,34 +10,33 @@ import SwiftSyntax
 /// Lint: A warning is raised when `@Suite` or `@Suite()` is used without arguments.
 ///
 /// Format: The redundant `@Suite` attribute is removed.
-@_spi(Rules)
-public final class RedundantSwiftTestingSuite: SyntaxFormatRule {
-  public override class var group: ConfigGroup? { .removeRedundant }
+final class RedundantSwiftTestingSuite: SyntaxFormatRule {
+  static let group: ConfigGroup? = .redundancies
 
-  public override class var isOptIn: Bool { true }
+  static let isOptIn = true
 
   private var importsTesting = false
 
-  public override func visit(_ node: ImportDeclSyntax) -> DeclSyntax {
+  override func visit(_ node: ImportDeclSyntax) -> DeclSyntax {
     if node.path.first?.name.text == "Testing" {
       importsTesting = true
     }
     return DeclSyntax(node)
   }
 
-  public override func visit(_ node: StructDeclSyntax) -> DeclSyntax {
+  override func visit(_ node: StructDeclSyntax) -> DeclSyntax {
     DeclSyntax(removeRedundantSuite(from: node, keyword: \.structKeyword))
   }
 
-  public override func visit(_ node: ClassDeclSyntax) -> DeclSyntax {
+  override func visit(_ node: ClassDeclSyntax) -> DeclSyntax {
     DeclSyntax(removeRedundantSuite(from: node, keyword: \.classKeyword))
   }
 
-  public override func visit(_ node: EnumDeclSyntax) -> DeclSyntax {
+  override func visit(_ node: EnumDeclSyntax) -> DeclSyntax {
     DeclSyntax(removeRedundantSuite(from: node, keyword: \.enumKeyword))
   }
 
-  public override func visit(_ node: ActorDeclSyntax) -> DeclSyntax {
+  override func visit(_ node: ActorDeclSyntax) -> DeclSyntax {
     DeclSyntax(removeRedundantSuite(from: node, keyword: \.actorKeyword))
   }
 

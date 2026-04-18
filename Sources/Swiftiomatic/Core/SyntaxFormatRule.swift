@@ -13,22 +13,14 @@
 import SwiftSyntax
 
 /// A rule that both formats and lints a given file.
-@_spi(Rules)
-public class SyntaxFormatRule: SyntaxRewriter, Rule {
-    /// Whether this rule is opt-in, meaning it's disabled by default. Rules are opt-out unless they
-    /// override this property.
-    public class var isOptIn: Bool { return false }
-
-    /// The config group this rule belongs to, or `nil` if ungrouped.
-    public class var group: ConfigGroup? { nil }
-
+class SyntaxFormatRule: SyntaxRewriter, Rule {
     /// The context in which the rule is executed.
-    public let context: Context
+    let context: Context
 
     /// Creates a new SyntaxFormatRule in the given context.
-    public required init(context: Context) { self.context = context }
+    required init(context: Context) { self.context = context }
 
-    public override func visitAny(_ node: Syntax) -> Syntax? {
+    override func visitAny(_ node: Syntax) -> Syntax? {
         // If the rule is not enabled, then return the node unmodified; otherwise, returning nil tells
         // SwiftSyntax to continue with the standard dispatch.
         guard context.shouldFormat(type(of: self), node: node) else { return node }

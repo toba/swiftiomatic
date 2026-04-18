@@ -11,13 +11,12 @@ import SwiftSyntax
 /// Lint: If a `throws` function has no `throw` or `try` in its body, a lint warning is raised.
 ///
 /// Format: The `throws` clause is removed.
-@_spi(Rules)
-public final class RedundantThrows: SyntaxFormatRule {
-  public override class var group: ConfigGroup? { .removeRedundant }
+final class RedundantThrows: SyntaxFormatRule {
+  static let group: ConfigGroup? = .redundancies
 
-  public override class var isOptIn: Bool { true }
+  static let isOptIn = true
 
-  public override func visit(_ node: FunctionDeclSyntax) -> DeclSyntax {
+  override func visit(_ node: FunctionDeclSyntax) -> DeclSyntax {
     guard let effectSpecifiers = node.signature.effectSpecifiers,
       let throwsClause = effectSpecifiers.throwsClause,
       let body = node.body

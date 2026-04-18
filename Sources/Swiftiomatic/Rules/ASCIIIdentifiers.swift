@@ -15,29 +15,31 @@ import SwiftSyntax
 /// All identifiers must be ASCII.
 ///
 /// Lint: If an identifier contains non-ASCII characters, a lint error is raised.
-@_spi(Rules)
-public final class ASCIIIdentifiers: SyntaxLintRule {
+final class ASCIIIdentifiers: SyntaxLintRule {
+    static let name = "identifiersMayOnlyUseASCII"
 
-  public override func visit(_ node: IdentifierPatternSyntax) -> SyntaxVisitorContinueKind {
-    let identifier = node.identifier.text
-    let invalidCharacters = identifier.unicodeScalars.filter { !$0.isASCII }.map { $0.description }
+    override func visit(_ node: IdentifierPatternSyntax) -> SyntaxVisitorContinueKind {
+        let identifier = node.identifier.text
+        let invalidCharacters = identifier.unicodeScalars.filter { !$0.isASCII }.map {
+            $0.description
+        }
 
-    if !invalidCharacters.isEmpty {
-      diagnose(.nonASCIICharsNotAllowed(invalidCharacters, identifier), on: node)
+        if !invalidCharacters.isEmpty {
+            diagnose(.nonASCIICharsNotAllowed(invalidCharacters, identifier), on: node)
+        }
+
+        return .skipChildren
     }
-
-    return .skipChildren
-  }
 }
 
 extension Finding.Message {
-  fileprivate static func nonASCIICharsNotAllowed(
-    _ invalidCharacters: [String],
-    _ identifierName: String
-  ) -> Finding.Message {
-    """
-    remove non-ASCII characters from '\(identifierName)': \
-    \(invalidCharacters.joined(separator: ", "))
-    """
-  }
+    fileprivate static func nonASCIICharsNotAllowed(
+        _ invalidCharacters: [String],
+        _ identifierName: String
+    ) -> Finding.Message {
+        """
+        remove non-ASCII characters from '\(identifierName)': \
+        \(invalidCharacters.joined(separator: ", "))
+        """
+    }
 }

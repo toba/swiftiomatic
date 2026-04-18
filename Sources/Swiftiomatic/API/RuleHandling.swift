@@ -39,7 +39,7 @@ public enum RuleHandling: Hashable, Sendable {
   /// The string used for JSON encoding.
   var encodedString: String {
     switch self {
-    case .fix: "fix"
+    case .fix: "autoFix"
     case .warning: "warn"
     case .error: "error"
     case .off: "off"
@@ -52,14 +52,14 @@ extension RuleHandling: Codable {
     let container = try decoder.singleValueContainer()
     let string = try container.decode(String.self)
     switch string {
-    case "fix": self = .fix
+    case "autoFix", "fix": self = .fix
     case "warn", "warning": self = .warning
     case "error": self = .error
     case "off": self = .off
     default:
       throw DecodingError.dataCorruptedError(
         in: container,
-        debugDescription: "Invalid rule handling '\(string)'. Expected 'fix', 'warn', 'error', or 'off'."
+        debugDescription: "Invalid rule handling '\(string)'. Expected 'autoFix', 'warn', 'error', or 'off'."
       )
     }
   }
@@ -67,7 +67,7 @@ extension RuleHandling: Codable {
   public func encode(to encoder: Encoder) throws {
     var container = encoder.singleValueContainer()
     switch self {
-    case .fix: try container.encode("fix")
+    case .fix: try container.encode("autoFix")
     case .warning: try container.encode("warn")
     case .error: try container.encode("error")
     case .off: try container.encode("off")

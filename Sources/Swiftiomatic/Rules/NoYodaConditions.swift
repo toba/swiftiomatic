@@ -11,10 +11,9 @@ import SwiftSyntax
 /// Lint: A comparison with a constant on the left raises a warning.
 ///
 /// Format: The operands are swapped and the operator is flipped if necessary.
-@_spi(Rules)
-public final class NoYodaConditions: SyntaxFormatRule {
+final class NoYodaConditions: SyntaxFormatRule {
 
-  public override func visit(_ node: InfixOperatorExprSyntax) -> ExprSyntax {
+  override func visit(_ node: InfixOperatorExprSyntax) -> ExprSyntax {
     guard let binOp = node.operator.as(BinaryOperatorExprSyntax.self) else {
       return super.visit(node)
     }

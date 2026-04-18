@@ -23,11 +23,10 @@ import SwiftSyntax
 /// Lint: If an explicit `.init` is found on a direct type reference, a lint warning is raised.
 ///
 /// Format: The `.init` member access is removed, leaving the type called directly.
-@_spi(Rules)
-public final class RedundantInit: SyntaxFormatRule {
-  public override class var group: ConfigGroup? { .removeRedundant }
+final class RedundantInit: SyntaxFormatRule {
+  static let group: ConfigGroup? = .redundancies
 
-  public override func visit(_ node: FunctionCallExprSyntax) -> ExprSyntax {
+  override func visit(_ node: FunctionCallExprSyntax) -> ExprSyntax {
     guard let memberAccess = node.calledExpression.as(MemberAccessExprSyntax.self),
       memberAccess.declName.baseName.tokenKind == .keyword(.`init`),
       memberAccess.declName.argumentNames == nil,

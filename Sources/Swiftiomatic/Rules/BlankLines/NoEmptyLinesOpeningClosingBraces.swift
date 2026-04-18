@@ -17,92 +17,93 @@ import SwiftSyntax
 /// Lint: Empty lines after opening braces and before closing braces yield a lint error.
 ///
 /// Format: Empty lines after opening braces and before closing braces will be removed.
-@_spi(Rules)
-public final class NoEmptyLinesOpeningClosingBraces: SyntaxFormatRule {
-  public override class var isOptIn: Bool { return true }
+final class NoEmptyLinesOpeningClosingBraces: SyntaxFormatRule {
+    static let isOptIn = true
 
-  public override func visit(_ node: AccessorBlockSyntax) -> AccessorBlockSyntax {
-    var result = node
-    switch node.accessors {
-    case .accessors(let accessors):
-      result.accessors = .init(rewritten(accessors))
-    case .getter(let getter):
-      result.accessors = .init(rewritten(getter))
+    override func visit(_ node: AccessorBlockSyntax) -> AccessorBlockSyntax {
+        var result = node
+        switch node.accessors {
+        case .accessors(let accessors):
+            result.accessors = .init(rewritten(accessors))
+        case .getter(let getter):
+            result.accessors = .init(rewritten(getter))
+        }
+        result.rightBrace = rewritten(node.rightBrace)
+        return result
     }
-    result.rightBrace = rewritten(node.rightBrace)
-    return result
-  }
 
-  public override func visit(_ node: CodeBlockSyntax) -> CodeBlockSyntax {
-    var result = node
-    result.statements = rewritten(node.statements)
-    result.rightBrace = rewritten(node.rightBrace)
-    return result
-  }
-
-  public override func visit(_ node: MemberBlockSyntax) -> MemberBlockSyntax {
-    var result = node
-    result.members = rewritten(node.members)
-    result.rightBrace = rewritten(node.rightBrace)
-    return result
-  }
-
-  public override func visit(_ node: ClosureExprSyntax) -> ExprSyntax {
-    var result = node
-    result.statements = rewritten(node.statements)
-    result.rightBrace = rewritten(node.rightBrace)
-    return ExprSyntax(result)
-  }
-
-  public override func visit(_ node: SwitchExprSyntax) -> ExprSyntax {
-    var result = node
-    result.cases = rewritten(node.cases)
-    result.rightBrace = rewritten(node.rightBrace)
-    return ExprSyntax(result)
-  }
-
-  public override func visit(_ node: PrecedenceGroupDeclSyntax) -> DeclSyntax {
-    var result = node
-    result.attributes = rewritten(node.attributes)
-    result.rightBrace = rewritten(node.rightBrace)
-    return DeclSyntax(result)
-  }
-
-  func rewritten(_ token: TokenSyntax) -> TokenSyntax {
-    let (trimmedLeadingTrivia, count) = token.leadingTrivia.trimmingSuperfluousNewlines(
-      fromClosingBrace: token.tokenKind == .rightBrace
-    )
-    if trimmedLeadingTrivia.sourceLength != token.leadingTriviaLength {
-      diagnose(.removeEmptyLinesBefore(count), on: token, anchor: .start)
-      return token.with(\.leadingTrivia, trimmedLeadingTrivia)
-    } else {
-      return token
+    override func visit(_ node: CodeBlockSyntax) -> CodeBlockSyntax {
+        var result = node
+        result.statements = rewritten(node.statements)
+        result.rightBrace = rewritten(node.rightBrace)
+        return result
     }
-  }
 
-  func rewritten<C: SyntaxCollection>(_ collection: C) -> C {
-    var result = collection
-    if let first = collection.first, first.leadingTrivia.containsNewlines,
-      let index = collection.index(of: first)
-    {
-      let (trimmedLeadingTrivia, count) = first.leadingTrivia.trimmingSuperfluousNewlines(fromClosingBrace: false)
-      if trimmedLeadingTrivia.sourceLength != first.leadingTriviaLength {
-        diagnose(.removeEmptyLinesAfter(count), on: first, anchor: .leadingTrivia(0))
-        var first = first
-        first.leadingTrivia = trimmedLeadingTrivia
-        result[index] = first
-      }
+    override func visit(_ node: MemberBlockSyntax) -> MemberBlockSyntax {
+        var result = node
+        result.members = rewritten(node.members)
+        result.rightBrace = rewritten(node.rightBrace)
+        return result
     }
-    return rewrite(result).as(C.self)!
-  }
+
+    override func visit(_ node: ClosureExprSyntax) -> ExprSyntax {
+        var result = node
+        result.statements = rewritten(node.statements)
+        result.rightBrace = rewritten(node.rightBrace)
+        return ExprSyntax(result)
+    }
+
+    override func visit(_ node: SwitchExprSyntax) -> ExprSyntax {
+        var result = node
+        result.cases = rewritten(node.cases)
+        result.rightBrace = rewritten(node.rightBrace)
+        return ExprSyntax(result)
+    }
+
+    override func visit(_ node: PrecedenceGroupDeclSyntax) -> DeclSyntax {
+        var result = node
+        result.attributes = rewritten(node.attributes)
+        result.rightBrace = rewritten(node.rightBrace)
+        return DeclSyntax(result)
+    }
+
+    func rewritten(_ token: TokenSyntax) -> TokenSyntax {
+        let (trimmedLeadingTrivia, count) = token.leadingTrivia.trimmingSuperfluousNewlines(
+            fromClosingBrace: token.tokenKind == .rightBrace
+        )
+        if trimmedLeadingTrivia.sourceLength != token.leadingTriviaLength {
+            diagnose(.removeEmptyLinesBefore(count), on: token, anchor: .start)
+            return token.with(\.leadingTrivia, trimmedLeadingTrivia)
+        } else {
+            return token
+        }
+    }
+
+    func rewritten<C: SyntaxCollection>(_ collection: C) -> C {
+        var result = collection
+        if let first = collection.first, first.leadingTrivia.containsNewlines,
+            let index = collection.index(of: first)
+        {
+            let (trimmedLeadingTrivia, count) = first.leadingTrivia.trimmingSuperfluousNewlines(
+                fromClosingBrace: false
+            )
+            if trimmedLeadingTrivia.sourceLength != first.leadingTriviaLength {
+                diagnose(.removeEmptyLinesAfter(count), on: first, anchor: .leadingTrivia(0))
+                var first = first
+                first.leadingTrivia = trimmedLeadingTrivia
+                result[index] = first
+            }
+        }
+        return rewrite(result).as(C.self)!
+    }
 }
 
 extension Finding.Message {
-  fileprivate static func removeEmptyLinesAfter(_ count: Int) -> Finding.Message {
-    "remove empty \(count > 1 ? "lines" : "line") after '{'"
-  }
+    fileprivate static func removeEmptyLinesAfter(_ count: Int) -> Finding.Message {
+        "remove empty \(count > 1 ? "lines" : "line") after '{'"
+    }
 
-  fileprivate static func removeEmptyLinesBefore(_ count: Int) -> Finding.Message {
-    "remove empty \(count > 1 ? "lines" : "line") before '}'"
-  }
+    fileprivate static func removeEmptyLinesBefore(_ count: Int) -> Finding.Message {
+        "remove empty \(count > 1 ? "lines" : "line") before '}'"
+    }
 }

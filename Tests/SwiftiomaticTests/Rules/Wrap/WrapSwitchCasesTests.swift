@@ -1,4 +1,4 @@
-@_spi(Rules) import Swiftiomatic
+@testable import Swiftiomatic
 import SwiftiomaticTestSupport
 import Testing
 
@@ -7,7 +7,7 @@ struct WrapSwitchCasesTests: RuleTesting {
 
   @Test func multilineSwitchCases() {
     assertFormatting(
-      WrapSwitchCases.self,
+      WrapCompoundCaseStatements.self,
       input: """
         func foo() {
             switch bar {
@@ -35,7 +35,7 @@ struct WrapSwitchCasesTests: RuleTesting {
 
   @Test func singleCaseItemUnchanged() {
     assertFormatting(
-      WrapSwitchCases.self,
+      WrapCompoundCaseStatements.self,
       input: """
         switch foo {
         case .bar:
@@ -52,7 +52,7 @@ struct WrapSwitchCasesTests: RuleTesting {
 
   @Test func alreadyWrappedUnchanged() {
     assertFormatting(
-      WrapSwitchCases.self,
+      WrapCompoundCaseStatements.self,
       input: """
         switch foo {
         case .a,
@@ -73,7 +73,7 @@ struct WrapSwitchCasesTests: RuleTesting {
 
   @Test func defaultCaseUnchanged() {
     assertFormatting(
-      WrapSwitchCases.self,
+      WrapCompoundCaseStatements.self,
       input: """
         switch foo {
         default:
@@ -90,7 +90,7 @@ struct WrapSwitchCasesTests: RuleTesting {
 
   @Test func twoCaseItemsWraps() {
     assertFormatting(
-      WrapSwitchCases.self,
+      WrapCompoundCaseStatements.self,
       input: """
         switch foo {
         1️⃣case .a, .b:
@@ -109,7 +109,7 @@ struct WrapSwitchCasesTests: RuleTesting {
 
   @Test func nestedIndentation() {
     assertFormatting(
-      WrapSwitchCases.self,
+      WrapCompoundCaseStatements.self,
       input: """
         func test() {
             switch value {
@@ -133,7 +133,7 @@ struct WrapSwitchCasesTests: RuleTesting {
 
   @Test func ifAfterSwitchCaseNotWrapped() {
     assertFormatting(
-      WrapSwitchCases.self,
+      WrapCompoundCaseStatements.self,
       input: """
         switch foo {
         case "foo":

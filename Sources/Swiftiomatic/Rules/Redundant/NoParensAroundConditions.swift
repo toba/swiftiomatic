@@ -26,9 +26,8 @@ import SwiftSyntax
 /// Format: Parentheses around such expressions are removed, if they do not cause a parse ambiguity.
 ///         Specifically, parentheses are allowed if and only if the expression contains a function
 ///         call with a trailing closure.
-@_spi(Rules)
-public final class NoParensAroundConditions: SyntaxFormatRule {
-  public override func visit(_ node: IfExprSyntax) -> ExprSyntax {
+final class NoParensAroundConditions: SyntaxFormatRule {
+  override func visit(_ node: IfExprSyntax) -> ExprSyntax {
     var result = node
     fixKeywordTrailingTrivia(&result.ifKeyword.trailingTrivia)
     result.conditions = visit(node.conditions)
@@ -39,7 +38,7 @@ public final class NoParensAroundConditions: SyntaxFormatRule {
     return ExprSyntax(result)
   }
 
-  public override func visit(_ node: ConditionElementSyntax) -> ConditionElementSyntax {
+  override func visit(_ node: ConditionElementSyntax) -> ConditionElementSyntax {
     guard
       case .expression(let condition) = node.condition,
       let newExpr = minimalSingleExpression(condition)
@@ -52,7 +51,7 @@ public final class NoParensAroundConditions: SyntaxFormatRule {
     return result
   }
 
-  public override func visit(_ node: GuardStmtSyntax) -> StmtSyntax {
+  override func visit(_ node: GuardStmtSyntax) -> StmtSyntax {
     var result = node
     fixKeywordTrailingTrivia(&result.guardKeyword.trailingTrivia)
     result.conditions = visit(node.conditions)
@@ -60,7 +59,7 @@ public final class NoParensAroundConditions: SyntaxFormatRule {
     return StmtSyntax(result)
   }
 
-  public override func visit(_ node: SwitchExprSyntax) -> ExprSyntax {
+  override func visit(_ node: SwitchExprSyntax) -> ExprSyntax {
     guard let newSubject = minimalSingleExpression(node.subject) else {
       return super.visit(node)
     }
@@ -72,7 +71,7 @@ public final class NoParensAroundConditions: SyntaxFormatRule {
     return ExprSyntax(result)
   }
 
-  public override func visit(_ node: RepeatStmtSyntax) -> StmtSyntax {
+  override func visit(_ node: RepeatStmtSyntax) -> StmtSyntax {
     guard let newCondition = minimalSingleExpression(node.condition) else {
       return super.visit(node)
     }
@@ -84,7 +83,7 @@ public final class NoParensAroundConditions: SyntaxFormatRule {
     return StmtSyntax(result)
   }
 
-  public override func visit(_ node: WhileStmtSyntax) -> StmtSyntax {
+  override func visit(_ node: WhileStmtSyntax) -> StmtSyntax {
     var result = node
     fixKeywordTrailingTrivia(&result.whileKeyword.trailingTrivia)
     result.conditions = visit(node.conditions)
@@ -92,7 +91,7 @@ public final class NoParensAroundConditions: SyntaxFormatRule {
     return StmtSyntax(result)
   }
 
-  public override func visit(_ node: ReturnStmtSyntax) -> StmtSyntax {
+  override func visit(_ node: ReturnStmtSyntax) -> StmtSyntax {
     guard let expression = node.expression,
       let newExpr = minimalSingleExpression(expression)
     else {
@@ -104,7 +103,7 @@ public final class NoParensAroundConditions: SyntaxFormatRule {
     return StmtSyntax(result)
   }
 
-  public override func visit(_ node: InitializerClauseSyntax) -> InitializerClauseSyntax {
+  override func visit(_ node: InitializerClauseSyntax) -> InitializerClauseSyntax {
     guard let newValue = minimalSingleExpression(node.value) else {
       return super.visit(node)
     }

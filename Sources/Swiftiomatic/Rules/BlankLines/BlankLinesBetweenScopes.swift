@@ -12,92 +12,93 @@ import SwiftSyntax
 ///       warning is raised.
 ///
 /// Format: A blank line is inserted after the declaration.
-@_spi(Rules)
-public final class BlankLinesBetweenScopes: SyntaxFormatRule {
-  public override class var group: ConfigGroup? { .updateBlankLines }
+final class BlankLinesBetweenScopes: SyntaxFormatRule {
+    static let group: ConfigGroup? = .blankLines
+    static let isOptIn = true
 
-  public override class var isOptIn: Bool { true }
-
-  public override func visit(_ node: SourceFileSyntax) -> SourceFileSyntax {
-    var result = super.visit(node)
-    result.statements = ensureBlankLines(in: result.statements)
-    return result
-  }
-
-  public override func visit(_ node: MemberBlockSyntax) -> MemberBlockSyntax {
-    let visited = super.visit(node)
-    var result = visited
-    result.members = ensureBlankLines(
-      inMembers: visited.members, diagnosing: node.members)
-    return result
-  }
-
-  // MARK: - CodeBlockItemListSyntax (top-level)
-
-  private func ensureBlankLines(in statements: CodeBlockItemListSyntax) -> CodeBlockItemListSyntax {
-    let original = Array(statements)
-    var items = original
-    var modified = false
-
-    for i in 0..<(original.count - 1) {
-      guard case .decl(let decl) = original[i].item,
-        hasDeclMultiLineBody(decl)
-      else { continue }
-      let nextIndex = i + 1
-      guard !original[nextIndex].leadingTrivia.hasBlankLine else { continue }
-
-      diagnose(.insertBlankLineAfterScope, on: original[nextIndex].item)
-      var next = original[nextIndex]
-      next.leadingTrivia = .newline + next.leadingTrivia
-      items[nextIndex] = next
-      modified = true
+    override func visit(_ node: SourceFileSyntax) -> SourceFileSyntax {
+        var result = super.visit(node)
+        result.statements = ensureBlankLines(in: result.statements)
+        return result
     }
 
-    guard modified else { return statements }
-    return CodeBlockItemListSyntax(items)
-  }
-
-  // MARK: - MemberBlockItemListSyntax (type members)
-
-  private func ensureBlankLines(
-    inMembers members: MemberBlockItemListSyntax,
-    diagnosing originalMembers: MemberBlockItemListSyntax
-  ) -> MemberBlockItemListSyntax {
-    let original = Array(members)
-    let diagTargets = Array(originalMembers)
-    var items = original
-    var modified = false
-
-    for i in 0..<(original.count - 1) {
-      guard hasDeclMultiLineBody(original[i].decl) else { continue }
-      let nextIndex = i + 1
-      guard !original[nextIndex].leadingTrivia.hasBlankLine else { continue }
-
-      diagnose(.insertBlankLineAfterScope, on: diagTargets[nextIndex].decl)
-      var next = original[nextIndex]
-      next.leadingTrivia = .newline + next.leadingTrivia
-      items[nextIndex] = next
-      modified = true
+    override func visit(_ node: MemberBlockSyntax) -> MemberBlockSyntax {
+        let visited = super.visit(node)
+        var result = visited
+        result.members = ensureBlankLines(
+            inMembers: visited.members,
+            diagnosing: node.members
+        )
+        return result
     }
 
-    guard modified else { return members }
-    return MemberBlockItemListSyntax(items)
-  }
+    // MARK: - CodeBlockItemListSyntax (top-level)
 
-  // MARK: - Helpers
+    private func ensureBlankLines(in statements: CodeBlockItemListSyntax) -> CodeBlockItemListSyntax
+    {
+        let original = Array(statements)
+        var items = original
+        var modified = false
 
-  /// A declaration has a multi-line body if its last token is `}` with newlines in its
-  /// leading trivia (meaning the closing brace is on a separate line from the content).
-  private func hasDeclMultiLineBody(_ decl: DeclSyntax) -> Bool {
-    guard let lastToken = decl.lastToken(viewMode: .sourceAccurate),
-      lastToken.tokenKind == .rightBrace
-    else { return false }
-    return lastToken.leadingTrivia.containsNewlines
-  }
+        for i in 0..<(original.count - 1) {
+            guard case .decl(let decl) = original[i].item,
+                hasDeclMultiLineBody(decl)
+            else { continue }
+            let nextIndex = i + 1
+            guard !original[nextIndex].leadingTrivia.hasBlankLine else { continue }
+
+            diagnose(.insertBlankLineAfterScope, on: original[nextIndex].item)
+            var next = original[nextIndex]
+            next.leadingTrivia = .newline + next.leadingTrivia
+            items[nextIndex] = next
+            modified = true
+        }
+
+        guard modified else { return statements }
+        return CodeBlockItemListSyntax(items)
+    }
+
+    // MARK: - MemberBlockItemListSyntax (type members)
+
+    private func ensureBlankLines(
+        inMembers members: MemberBlockItemListSyntax,
+        diagnosing originalMembers: MemberBlockItemListSyntax
+    ) -> MemberBlockItemListSyntax {
+        let original = Array(members)
+        let diagTargets = Array(originalMembers)
+        var items = original
+        var modified = false
+
+        for i in 0..<(original.count - 1) {
+            guard hasDeclMultiLineBody(original[i].decl) else { continue }
+            let nextIndex = i + 1
+            guard !original[nextIndex].leadingTrivia.hasBlankLine else { continue }
+
+            diagnose(.insertBlankLineAfterScope, on: diagTargets[nextIndex].decl)
+            var next = original[nextIndex]
+            next.leadingTrivia = .newline + next.leadingTrivia
+            items[nextIndex] = next
+            modified = true
+        }
+
+        guard modified else { return members }
+        return MemberBlockItemListSyntax(items)
+    }
+
+    // MARK: - Helpers
+
+    /// A declaration has a multi-line body if its last token is `}` with newlines in its
+    /// leading trivia (meaning the closing brace is on a separate line from the content).
+    private func hasDeclMultiLineBody(_ decl: DeclSyntax) -> Bool {
+        guard let lastToken = decl.lastToken(viewMode: .sourceAccurate),
+            lastToken.tokenKind == .rightBrace
+        else { return false }
+        return lastToken.leadingTrivia.containsNewlines
+    }
 
 }
 
 extension Finding.Message {
-  fileprivate static let insertBlankLineAfterScope: Finding.Message =
-    "insert blank line after scoped declaration"
+    fileprivate static let insertBlankLineAfterScope: Finding.Message =
+        "insert blank line after scoped declaration"
 }

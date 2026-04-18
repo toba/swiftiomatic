@@ -22,9 +22,8 @@ import SwiftSyntax
 ///
 /// Format: A `return` statement containing an assignment expression is expanded into two separate
 ///         statements.
-@_spi(Rules)
-public final class NoAssignmentInExpressions: SyntaxFormatRule {
-  public override func visit(_ node: InfixOperatorExprSyntax) -> ExprSyntax {
+final class NoAssignmentInExpressions: SyntaxFormatRule {
+  override func visit(_ node: InfixOperatorExprSyntax) -> ExprSyntax {
     // Diagnose any assignment that isn't directly a child of a `CodeBlockItem` (which would be the
     // case if it was its own statement).
     if isAssignmentExpression(node)
@@ -36,7 +35,7 @@ public final class NoAssignmentInExpressions: SyntaxFormatRule {
     return ExprSyntax(node)
   }
 
-  public override func visit(_ node: CodeBlockItemListSyntax) -> CodeBlockItemListSyntax {
+  override func visit(_ node: CodeBlockItemListSyntax) -> CodeBlockItemListSyntax {
     var newItems = [CodeBlockItemSyntax]()
     newItems.reserveCapacity(node.count)
 
@@ -162,4 +161,32 @@ public final class NoAssignmentInExpressions: SyntaxFormatRule {
 extension Finding.Message {
   fileprivate static let moveAssignmentToOwnStatement: Finding.Message =
     "move this assignment expression into its own statement"
+}
+
+// MARK: - Configuration
+
+public struct NoAssignmentInExpressionsConfiguration: Codable, Equatable, Sendable,
+  ConfigRepresentable
+{
+  package static let configProperties: [ConfigProperty] = [
+    .init(
+      "allowedFunctions",
+      .stringArray(
+        description: "Functions where embedded assignments are allowed.",
+        defaultValue: ["XCTAssertNoThrow"]
+      )
+    )
+  ]
+
+  public var allowedFunctions: [String] = ["XCTAssertNoThrow"]
+
+  public init() {}
+
+  public init(from decoder: Decoder) throws {
+    let container = try decoder.container(keyedBy: CodingKeys.self)
+    let defaults = Self()
+    self.allowedFunctions =
+      try container.decodeIfPresent([String].self, forKey: .allowedFunctions)
+      ?? defaults.allowedFunctions
+  }
 }

@@ -10,7 +10,7 @@
 //
 //===----------------------------------------------------------------------===//
 
-@_spi(Rules) import Swiftiomatic
+@testable import Swiftiomatic
 import SwiftiomaticTestSupport
 import Testing
 
@@ -369,7 +369,7 @@ struct UseLetInEveryBoundCaseVariableTests: RuleTesting {
   // MARK: - outerPattern mode (hoist)
 
   private func hoistConfig() -> Configuration {
-    var config = Configuration.forTesting(enabledRule: PatternLetPlacement.self.ruleName)
+    var config = Configuration.forTesting(enabledRule: PatternLetPlacement.self.name)
     config.patternLet.placement = .outerPattern
     return config
   }

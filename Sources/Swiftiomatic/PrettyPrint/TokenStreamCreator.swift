@@ -625,9 +625,12 @@ private final class TokenStreamCreator: SyntaxVisitor {
   override func visit(_ node: GuardStmtSyntax) -> SyntaxVisitorContinueKind {
     after(node.guardKeyword, tokens: .space)
 
-    // Add break groups, using open continuation breaks, around all conditions so that continuations
+    // Add break groups, using open continuation breaks, around conditions so that continuations
     // inside of the conditions can stack in addition to continuations between the conditions.
-    for condition in node.conditions {
+    // When `lineBreakBeforeGuardConditions` is false, skip the first condition (like if-statements)
+    // so it stays on the same line as `guard`.
+    for (i, condition) in node.conditions.enumerated() {
+      if i == 0 && !config.lineBreakBeforeGuardConditions { continue }
       before(condition.firstToken(viewMode: .sourceAccurate), tokens: .break(.open(kind: .continuation), size: 0))
       after(condition.lastToken(viewMode: .sourceAccurate), tokens: .break(.close(mustBreak: false), size: 0))
     }
@@ -792,7 +795,7 @@ private final class TokenStreamCreator: SyntaxVisitor {
     // An if-configuration clause around a switch-case encloses the case's node, so an
     // if-configuration clause requires a break here in order to be allowed on a new line.
     for ifConfigDecl in node.cases where ifConfigDecl.is(IfConfigDeclSyntax.self) {
-      if config.indentSwitchCaseLabels {
+      if config.switchCaseIndentation.style == .indented {
         before(ifConfigDecl.firstToken(viewMode: .sourceAccurate), tokens: .break(.open))
         after(ifConfigDecl.lastToken(viewMode: .sourceAccurate), tokens: .break(.close, size: 0))
       } else {
@@ -811,7 +814,7 @@ private final class TokenStreamCreator: SyntaxVisitor {
     // If switch/case labels were configured to be indented, use an `open` break; otherwise, use
     // the default `same` break.
     let openBreak: Token
-    if config.indentSwitchCaseLabels {
+    if config.switchCaseIndentation.style == .indented {
       openBreak = .break(.open, newlines: .elective)
     } else {
       openBreak = .break(.same, newlines: .soft)
@@ -824,7 +827,7 @@ private final class TokenStreamCreator: SyntaxVisitor {
     // If switch/case labels were configured to be indented, insert an extra `close` break after
     // the case body to match the `open` break above
     var afterLastTokenTokens: [Token] = [.break(.close, size: 0), .close]
-    if config.indentSwitchCaseLabels {
+    if config.switchCaseIndentation.style == .indented {
       afterLastTokenTokens.append(.break(.close, size: 0))
     }
 

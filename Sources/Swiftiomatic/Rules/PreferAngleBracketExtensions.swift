@@ -13,8 +13,7 @@ import SwiftSyntax
 ///
 /// Format: The `where` clause constraints are moved into angle bracket syntax on the
 /// extended type.
-@_spi(Rules)
-public final class PreferAngleBracketExtensions: SyntaxFormatRule {
+final class PreferAngleBracketExtensions: SyntaxFormatRule {
 
   /// Maps known generic types to their associated type names (in parameter order).
   private static let knownGenericTypes: [String: [String]] = [
@@ -26,7 +25,7 @@ public final class PreferAngleBracketExtensions: SyntaxFormatRule {
     "Dictionary": ["Key", "Value"],
   ]
 
-  public override func visit(_ node: ExtensionDeclSyntax) -> DeclSyntax {
+  override func visit(_ node: ExtensionDeclSyntax) -> DeclSyntax {
     let visited = super.visit(node).cast(ExtensionDeclSyntax.self)
 
     // Must have a where clause

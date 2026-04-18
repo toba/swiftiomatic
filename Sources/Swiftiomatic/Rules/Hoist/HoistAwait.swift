@@ -14,98 +14,103 @@ import SwiftSyntax
 /// Lint: Using `await` inside a function call argument raises a warning.
 ///
 /// Format: `await` is removed from arguments and added to wrap the call expression.
-@_spi(Rules)
-public final class HoistAwait: SyntaxFormatRule {
+final class HoistAwait: SyntaxFormatRule {
+    static let name = "MoveInlineAwaitToExpressionStart"
+    static let group: ConfigGroup? = .hoist
 
-  public override func visit(_ node: FunctionCallExprSyntax) -> ExprSyntax {
-    // Check parent on original node before visiting children
-    if isWrappedInAwait(ExprSyntax(node)) {
-      return super.visit(node)
+    override func visit(_ node: FunctionCallExprSyntax) -> ExprSyntax {
+        // Check parent on original node before visiting children
+        if isWrappedInAwait(ExprSyntax(node)) {
+            return super.visit(node)
+        }
+
+        let visited = super.visit(node)
+        guard let callNode = visited.as(FunctionCallExprSyntax.self) else { return visited }
+
+        // Find the first await in arguments
+        guard let firstAwait = findFirstAwaitInArguments(callNode) else { return visited }
+
+        diagnose(.hoistAwait, on: firstAwait.awaitKeyword)
+
+        // Strip await from all arguments
+        let newArgs = callNode.arguments.map { arg -> LabeledExprSyntax in
+            arg.with(\.expression, stripAwait(from: arg.expression))
+        }
+
+        let newCall = callNode.with(\.arguments, LabeledExprListSyntax(newArgs))
+
+        // Wrap in await
+        var callExpr = ExprSyntax(newCall)
+        callExpr.leadingTrivia = []
+
+        let awaitExpr = AwaitExprSyntax(
+            awaitKeyword: .keyword(
+                .await,
+                leadingTrivia: node.leadingTrivia,
+                trailingTrivia: .space
+            ),
+            expression: callExpr
+        )
+
+        var result = ExprSyntax(awaitExpr)
+        result.trailingTrivia = node.trailingTrivia
+        return result
     }
 
-    let visited = super.visit(node)
-    guard let callNode = visited.as(FunctionCallExprSyntax.self) else { return visited }
-
-    // Find the first await in arguments
-    guard let firstAwait = findFirstAwaitInArguments(callNode) else { return visited }
-
-    diagnose(.hoistAwait, on: firstAwait.awaitKeyword)
-
-    // Strip await from all arguments
-    let newArgs = callNode.arguments.map { arg -> LabeledExprSyntax in
-      arg.with(\.expression, stripAwait(from: arg.expression))
+    /// Strips `await` from the expression, handling `try await` nesting.
+    private func stripAwait(from expr: ExprSyntax) -> ExprSyntax {
+        if let awaitExpr = expr.as(AwaitExprSyntax.self) {
+            var inner = awaitExpr.expression
+            inner.leadingTrivia = expr.leadingTrivia
+            return inner
+        }
+        if let tryExpr = expr.as(TryExprSyntax.self),
+            let awaitExpr = tryExpr.expression.as(AwaitExprSyntax.self)
+        {
+            var inner = awaitExpr.expression
+            inner.leadingTrivia = awaitExpr.leadingTrivia
+            return ExprSyntax(tryExpr.with(\.expression, inner))
+        }
+        return expr
     }
 
-    let newCall = callNode.with(\.arguments, LabeledExprListSyntax(newArgs))
-
-    // Wrap in await
-    var callExpr = ExprSyntax(newCall)
-    callExpr.leadingTrivia = []
-
-    let awaitExpr = AwaitExprSyntax(
-      awaitKeyword: .keyword(.await, leadingTrivia: node.leadingTrivia, trailingTrivia: .space),
-      expression: callExpr
-    )
-
-    var result = ExprSyntax(awaitExpr)
-    result.trailingTrivia = node.trailingTrivia
-    return result
-  }
-
-  /// Strips `await` from the expression, handling `try await` nesting.
-  private func stripAwait(from expr: ExprSyntax) -> ExprSyntax {
-    if let awaitExpr = expr.as(AwaitExprSyntax.self) {
-      var inner = awaitExpr.expression
-      inner.leadingTrivia = expr.leadingTrivia
-      return inner
+    /// Returns the first `AwaitExprSyntax` found as a direct argument expression.
+    private func findFirstAwaitInArguments(_ call: FunctionCallExprSyntax) -> AwaitExprSyntax? {
+        for arg in call.arguments {
+            if let awaitExpr = arg.expression.as(AwaitExprSyntax.self) {
+                return awaitExpr
+            }
+            if let tryExpr = arg.expression.as(TryExprSyntax.self),
+                let awaitExpr = tryExpr.expression.as(AwaitExprSyntax.self)
+            {
+                return awaitExpr
+            }
+        }
+        return nil
     }
-    if let tryExpr = expr.as(TryExprSyntax.self),
-      let awaitExpr = tryExpr.expression.as(AwaitExprSyntax.self)
-    {
-      var inner = awaitExpr.expression
-      inner.leadingTrivia = awaitExpr.leadingTrivia
-      return ExprSyntax(tryExpr.with(\.expression, inner))
-    }
-    return expr
-  }
 
-  /// Returns the first `AwaitExprSyntax` found as a direct argument expression.
-  private func findFirstAwaitInArguments(_ call: FunctionCallExprSyntax) -> AwaitExprSyntax? {
-    for arg in call.arguments {
-      if let awaitExpr = arg.expression.as(AwaitExprSyntax.self) {
-        return awaitExpr
-      }
-      if let tryExpr = arg.expression.as(TryExprSyntax.self),
-        let awaitExpr = tryExpr.expression.as(AwaitExprSyntax.self)
-      {
-        return awaitExpr
-      }
+    /// Returns `true` if the expression is wrapped in an `AwaitExprSyntax` ancestor.
+    private func isWrappedInAwait(_ expr: ExprSyntax) -> Bool {
+        var current: Syntax = Syntax(expr)
+        while let parent = current.parent {
+            if parent.is(AwaitExprSyntax.self) {
+                return true
+            }
+            if parent.is(TryExprSyntax.self)
+                || parent.is(LabeledExprSyntax.self)
+                || parent.is(LabeledExprListSyntax.self)
+                || parent.is(FunctionCallExprSyntax.self)
+            {
+                current = parent
+                continue
+            }
+            break
+        }
+        return false
     }
-    return nil
-  }
-
-  /// Returns `true` if the expression is wrapped in an `AwaitExprSyntax` ancestor.
-  private func isWrappedInAwait(_ expr: ExprSyntax) -> Bool {
-    var current: Syntax = Syntax(expr)
-    while let parent = current.parent {
-      if parent.is(AwaitExprSyntax.self) {
-        return true
-      }
-      if parent.is(TryExprSyntax.self)
-        || parent.is(LabeledExprSyntax.self)
-        || parent.is(LabeledExprListSyntax.self)
-        || parent.is(FunctionCallExprSyntax.self)
-      {
-        current = parent
-        continue
-      }
-      break
-    }
-    return false
-  }
 }
 
 extension Finding.Message {
-  fileprivate static let hoistAwait: Finding.Message =
-    "move 'await' to the start of the expression"
+    fileprivate static let hoistAwait: Finding.Message =
+        "move 'await' to the start of the expression"
 }

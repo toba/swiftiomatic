@@ -22,8 +22,7 @@ import SwiftSyntax
 /// Format: Case declarations with associated values or raw values will be moved to their own case
 ///         declarations. Variable declarations with multiple bindings will be split into individual
 ///         declarations.
-@_spi(Rules)
-public final class OneDeclarationPerLine: SyntaxFormatRule {
+final class OneDeclarationPerLine: SyntaxFormatRule {
 
   // MARK: - Enum cases
 
@@ -33,7 +32,7 @@ public final class OneDeclarationPerLine: SyntaxFormatRule {
 
     /// The case declaration used as the source from which additional new declarations will be
     /// created; thus, all new cases will share the same attributes and modifiers as the basis.
-    public private(set) var basis: EnumCaseDeclSyntax
+    private(set) var basis: EnumCaseDeclSyntax
 
     /// Case elements collected so far.
     private var elements = [EnumCaseElementSyntax]()
@@ -88,7 +87,7 @@ public final class OneDeclarationPerLine: SyntaxFormatRule {
     }
   }
 
-  public override func visit(_ node: EnumDeclSyntax) -> DeclSyntax {
+  override func visit(_ node: EnumDeclSyntax) -> DeclSyntax {
     var newMembers: [MemberBlockItemSyntax] = []
 
     for member in node.memberBlock.members {
@@ -142,7 +141,7 @@ public final class OneDeclarationPerLine: SyntaxFormatRule {
 
   // MARK: - Variable declarations
 
-  public override func visit(_ node: CodeBlockItemListSyntax) -> CodeBlockItemListSyntax {
+  override func visit(_ node: CodeBlockItemListSyntax) -> CodeBlockItemListSyntax {
     guard node.contains(where: codeBlockItemHasMultipleVariableBindings) else {
       return super.visit(node)
     }

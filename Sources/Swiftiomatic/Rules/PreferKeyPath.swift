@@ -12,15 +12,14 @@ import SwiftSyntax
 /// Lint: A trivial `{ $0.property }` closure raises a warning.
 ///
 /// Format: The closure is replaced with a keyPath expression.
-@_spi(Rules)
-public final class PreferKeyPath: SyntaxFormatRule {
-  public override class var isOptIn: Bool { true }
+final class PreferKeyPath: SyntaxFormatRule {
+  static let isOptIn = true
 
   private static let eligibleMethods: Set<String> = [
     "map", "flatMap", "compactMap", "allSatisfy", "filter", "contains",
   ]
 
-  public override func visit(_ node: FunctionCallExprSyntax) -> ExprSyntax {
+  override func visit(_ node: FunctionCallExprSyntax) -> ExprSyntax {
     let visited = super.visit(node)
     guard let callNode = visited.as(FunctionCallExprSyntax.self) else { return visited }
 

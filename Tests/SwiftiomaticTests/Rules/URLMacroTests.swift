@@ -1,4 +1,4 @@
-@_spi(Rules) import Swiftiomatic
+@testable import Swiftiomatic
 import SwiftiomaticTestSupport
 import Testing
 
@@ -9,7 +9,7 @@ struct URLMacroTests: RuleTesting {
     macroName: String = "#URL",
     moduleName: String = "URLFoundation"
   ) -> Configuration {
-    var c = Configuration.forTesting(enabledRule: URLMacro.self.ruleName)
+    var c = Configuration.forTesting(enabledRule: URLMacro.self.name)
     c.urlMacro.macroName = macroName
     c.urlMacro.moduleName = moduleName
     return c
@@ -289,7 +289,7 @@ struct URLMacroTests: RuleTesting {
 
   @Test func noTransformationWhenMacroNotConfigured() {
     // Default config has no macro configured
-    var c = Configuration.forTesting(enabledRule: URLMacro.self.ruleName)
+    var c = Configuration.forTesting(enabledRule: URLMacro.self.name)
     c.urlMacro = URLMacroConfiguration()
     assertFormatting(
       URLMacro.self,

@@ -19,7 +19,6 @@ import SwiftSyntax
 ///
 /// Specifically, it is the container for the shared configuration, diagnostic consumer, and URL of
 /// the current file.
-@_spi(Rules)
 public final class Context {
 
   /// Tracks whether `XCTest` has been imported so that certain logic can be modified for files that
@@ -105,7 +104,7 @@ public final class Context {
       """
     )
 
-    let ruleName = ruleNameCache[ObjectIdentifier(rule)] ?? R.ruleName
+    let ruleName = ruleNameCache[ObjectIdentifier(rule)] ?? R.name
     switch ruleMask.ruleState(ruleName, at: loc) {
     case .default:
       return (configuration.rules[ruleName] ?? .off).isActive
@@ -116,13 +115,13 @@ public final class Context {
 
   /// Returns the configured handling for the given rule type.
   func severity<R: Rule>(of rule: R.Type) -> RuleHandling {
-    let ruleName = ruleNameCache[ObjectIdentifier(rule)] ?? R.ruleName
+    let ruleName = ruleNameCache[ObjectIdentifier(rule)] ?? R.name
     return configuration.rules[ruleName] ?? .warning
   }
 
   /// Whether the given format rule should auto-fix (rewrite the AST).
   func shouldFix<R: Rule>(_ rule: R.Type) -> Bool {
-    let ruleName = ruleNameCache[ObjectIdentifier(rule)] ?? R.ruleName
+    let ruleName = ruleNameCache[ObjectIdentifier(rule)] ?? R.name
     return (configuration.rules[ruleName] ?? .off).shouldFix
   }
 }

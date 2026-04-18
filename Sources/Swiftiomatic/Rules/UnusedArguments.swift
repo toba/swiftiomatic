@@ -15,12 +15,11 @@ import SwiftSyntax
 /// Lint: When a parameter or loop variable is unused.
 ///
 /// Format: The unused parameter or variable is replaced with `_`.
-@_spi(Rules)
-public final class UnusedArguments: SyntaxFormatRule {
+final class UnusedArguments: SyntaxFormatRule {
 
   // MARK: - Functions
 
-  public override func visit(_ node: FunctionDeclSyntax) -> DeclSyntax {
+  override func visit(_ node: FunctionDeclSyntax) -> DeclSyntax {
     let visited = super.visit(node)
     guard var result = visited.as(FunctionDeclSyntax.self) else { return visited }
     guard let body = result.body else { return visited }
@@ -53,7 +52,7 @@ public final class UnusedArguments: SyntaxFormatRule {
 
   // MARK: - Initializers
 
-  public override func visit(_ node: InitializerDeclSyntax) -> DeclSyntax {
+  override func visit(_ node: InitializerDeclSyntax) -> DeclSyntax {
     let visited = super.visit(node)
     guard var result = visited.as(InitializerDeclSyntax.self) else { return visited }
     guard let body = result.body else { return visited }
@@ -78,7 +77,7 @@ public final class UnusedArguments: SyntaxFormatRule {
 
   // MARK: - Subscripts
 
-  public override func visit(_ node: SubscriptDeclSyntax) -> DeclSyntax {
+  override func visit(_ node: SubscriptDeclSyntax) -> DeclSyntax {
     let visited = super.visit(node)
     guard var result = visited.as(SubscriptDeclSyntax.self) else { return visited }
 
@@ -102,7 +101,7 @@ public final class UnusedArguments: SyntaxFormatRule {
 
   // MARK: - Closures
 
-  public override func visit(_ node: ClosureExprSyntax) -> ExprSyntax {
+  override func visit(_ node: ClosureExprSyntax) -> ExprSyntax {
     let visited = super.visit(node)
     guard var result = visited.as(ClosureExprSyntax.self) else { return visited }
     guard var signature = result.signature,
@@ -158,7 +157,7 @@ public final class UnusedArguments: SyntaxFormatRule {
 
   // MARK: - For Loops
 
-  public override func visit(_ node: ForStmtSyntax) -> StmtSyntax {
+  override func visit(_ node: ForStmtSyntax) -> StmtSyntax {
     let visited = super.visit(node)
     guard var result = visited.as(ForStmtSyntax.self) else { return visited }
 

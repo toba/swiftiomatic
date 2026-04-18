@@ -57,7 +57,7 @@ import SwiftiomaticCore
       } else {
         defaultHandling = ".warning"
       }
-      result += "    \"\(rule.typeName)\": \(defaultHandling),\n"
+      result += "    \"\(rule.ruleName)\": \(defaultHandling),\n"
     }
     result += "  ]\n\n"
 
@@ -65,23 +65,27 @@ import SwiftiomaticCore
     var groupedRules: [ConfigGroup: [(option: String, rule: String)]] = [:]
     for rule in sorted {
       guard let group = rule.group else { continue }
-      let option = Self.optionName(for: rule.typeName, stripping: group.rulePrefix)
-      groupedRules[group, default: []].append((option, rule.typeName))
+      let option = Self.optionName(for: rule.ruleName)
+      groupedRules[group, default: []].append((option, rule.ruleName))
     }
 
-    result += "  public static let groupRules: [ConfigGroup: [(option: String, rule: String)]] = [\n"
-    for group in ConfigGroup.allCases {
-      guard let rules = groupedRules[group], !rules.isEmpty else { continue }
-      result += "    .\(group): [\n"
-      for (option, rule) in rules {
-        result += "      (\"\(option)\", \"\(rule)\"),\n"
+    if groupedRules.isEmpty {
+      result += "  package static let groupRules: [ConfigGroup: [(option: String, rule: String)]] = [:]\n"
+    } else {
+      result += "  package static let groupRules: [ConfigGroup: [(option: String, rule: String)]] = [\n"
+      for group in ConfigGroup.allCases {
+        guard let rules = groupedRules[group], !rules.isEmpty else { continue }
+        result += "    .\(group): [\n"
+        for (option, rule) in rules {
+          result += "      (\"\(option)\", \"\(rule)\"),\n"
+        }
+        result += "    ],\n"
       }
-      result += "    ],\n"
+      result += "  ]\n"
     }
-    result += "  ]\n"
 
     // Generate groupManagedRules: Set<String>
-    result += "\n  public static let groupManagedRules: Set<String> = {\n"
+    result += "\n  package static let groupManagedRules: Set<String> = {\n"
     result += "    var names = Set<String>()\n"
     result += "    for (_, mappings) in groupRules {\n"
     result += "      for (_, rule) in mappings { names.insert(rule) }\n"
@@ -93,13 +97,9 @@ import SwiftiomaticCore
     return result
   }
 
-  /// Derives a short option name by stripping the group prefix and lowercasing the first char.
-  static func optionName(for typeName: String, stripping prefix: String) -> String {
-    var name = typeName
-    if !prefix.isEmpty, name.hasPrefix(prefix) {
-      name = String(name.dropFirst(prefix.count))
-    }
-    guard let first = name.first else { return name }
-    return first.lowercased() + name.dropFirst()
+  /// Derives an option name by lowercasing the first character of the type name.
+  static func optionName(for typeName: String) -> String {
+    guard let first = typeName.first else { return typeName }
+    return first.lowercased() + typeName.dropFirst()
   }
 }

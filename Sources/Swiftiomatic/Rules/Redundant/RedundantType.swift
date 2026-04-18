@@ -21,11 +21,10 @@ import SwiftSyntax
 /// Lint: If a redundant type annotation is found, a lint warning is raised.
 ///
 /// Format: The redundant type annotation is removed.
-@_spi(Rules)
-public final class RedundantType: SyntaxFormatRule {
-  public override class var group: ConfigGroup? { .removeRedundant }
+final class RedundantType: SyntaxFormatRule {
+  static let group: ConfigGroup? = .redundancies
 
-  public override func visit(_ node: VariableDeclSyntax) -> DeclSyntax {
+  override func visit(_ node: VariableDeclSyntax) -> DeclSyntax {
     var bindings = node.bindings
     var didChange = false
 

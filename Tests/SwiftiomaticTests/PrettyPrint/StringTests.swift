@@ -10,7 +10,7 @@
 //
 //===----------------------------------------------------------------------===//
 
-@_spi(Rules) @_spi(Testing) import Swiftiomatic
+@_spi(Testing) @testable import Swiftiomatic
 import Testing
 
 @Suite

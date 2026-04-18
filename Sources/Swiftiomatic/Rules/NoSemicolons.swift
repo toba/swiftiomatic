@@ -17,8 +17,7 @@ import SwiftSyntax
 /// Lint: If a semicolon appears anywhere, a lint error is raised.
 ///
 /// Format: All semicolons will be replaced with line breaks.
-@_spi(Rules)
-public final class NoSemicolons: SyntaxFormatRule {
+final class NoSemicolons: SyntaxFormatRule {
   /// Creates a new version of the given node which doesn't contain any semicolons. The node's
   /// items are recursively modified to remove semicolons, replacing with line breaks where needed.
   /// Items are checked recursively to support items that contain code blocks, which may have
@@ -97,11 +96,11 @@ public final class NoSemicolons: SyntaxFormatRule {
     return NodeType(newItems)
   }
 
-  public override func visit(_ node: CodeBlockItemListSyntax) -> CodeBlockItemListSyntax {
+  override func visit(_ node: CodeBlockItemListSyntax) -> CodeBlockItemListSyntax {
     return nodeByRemovingSemicolons(from: node)
   }
 
-  public override func visit(_ node: MemberBlockItemListSyntax) -> MemberBlockItemListSyntax {
+  override func visit(_ node: MemberBlockItemListSyntax) -> MemberBlockItemListSyntax {
     return nodeByRemovingSemicolons(from: node)
   }
 

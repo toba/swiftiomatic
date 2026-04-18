@@ -11,7 +11,7 @@
 //===----------------------------------------------------------------------===//
 
 import Swiftiomatic
-@_spi(Rules) @_spi(Testing) import Swiftiomatic
+@_spi(Testing) @testable import Swiftiomatic
 import SwiftOperators
 @_spi(ExperimentalLanguageFeatures) import SwiftParser
 import SwiftSyntax

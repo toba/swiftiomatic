@@ -37,7 +37,7 @@ extension Configuration {
     config.indentConditionalCompilationBlocks = true
     config.lineBreakAroundMultilineExpressionChainComponents = false
     config.fileScopedDeclarationPrivacy = FileScopedDeclarationPrivacyConfiguration()
-    config.indentSwitchCaseLabels = false
+    config.switchCaseIndentation = SwitchCaseIndentationConfiguration()
     config.spacesAroundRangeFormationOperators = false
     config.noAssignmentInExpressions = NoAssignmentInExpressionsConfiguration()
     config.multiElementCollectionTrailingCommas = true
@@ -46,6 +46,7 @@ extension Configuration {
     config.patternLet = PatternLetConfiguration()
     config.urlMacro = URLMacroConfiguration()
     config.fileHeader = FileHeaderConfiguration()
+    config.singleLineBodies = SingleLineBodiesConfiguration()
     return config
   }
 

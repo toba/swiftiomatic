@@ -18,14 +18,13 @@ import SwiftSyntax
 ///
 /// Format: `for` loops that consist of a single `if` statement have the conditional of that
 ///         statement factored out to a `where` clause.
-@_spi(Rules)
-public final class PreferWhereClausesInForLoops: SyntaxFormatRule {
+final class PreferWhereClausesInForLoops: SyntaxFormatRule {
 
   /// Identifies this rule as being opt-in. This rule is experimental and not yet stable enough to
   /// be enabled by default.
-  public override class var isOptIn: Bool { return true }
+  static let isOptIn = true
 
-  public override func visit(_ node: ForStmtSyntax) -> StmtSyntax {
+  override func visit(_ node: ForStmtSyntax) -> StmtSyntax {
     // Extract IfStmt node if it's the only node in the function's body.
     guard !node.body.statements.isEmpty else { return StmtSyntax(node) }
     let firstStatement = node.body.statements.first!

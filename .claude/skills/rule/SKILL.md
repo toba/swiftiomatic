@@ -45,12 +45,11 @@ import SwiftSyntax
 /// Brief description.
 ///
 /// Lint: When a lint warning is raised.
-@_spi(Rules)
-public final class MyNewRule: SyntaxLintRule {
+final class MyNewRule: SyntaxLintRule {
 
-  // public override class var isOptIn: Bool { true }
+  // static let isOptIn = true
 
-  public override func visit(_ node: SomeNodeSyntax) -> SyntaxVisitorContinueKind {
+  override func visit(_ node: SomeNodeSyntax) -> SyntaxVisitorContinueKind {
     guard violationCondition else { return .visitChildren }
     diagnose(.myMessage, on: node)
     return .visitChildren
@@ -77,10 +76,9 @@ import SwiftSyntax
 /// Lint: When a violation is found.
 ///
 /// Format: The violation is corrected.
-@_spi(Rules)
-public final class MyFormatRule: SyntaxFormatRule {
+final class MyFormatRule: SyntaxFormatRule {
 
-  public override func visit(_ node: SomeNodeSyntax) -> ReturnType {
+  override func visit(_ node: SomeNodeSyntax) -> ReturnType {
     let visited = super.visit(node)  // recurse children first
     guard let typedNode = visited.as(SomeNodeSyntax.self) else { return visited }
     guard shouldModify(typedNode) else { return visited }
@@ -111,7 +109,7 @@ After creating/renaming/removing rules: `swift run generate-swiftiomatic`. Never
 ## Testing
 
 ```swift
-@_spi(Rules) import Swiftiomatic
+@testable import Swiftiomatic
 import SwiftiomaticTestSupport
 import Testing
 

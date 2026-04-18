@@ -12,7 +12,7 @@
 
 import Foundation
 import Swiftiomatic
-@_spi(Rules) @_spi(Testing) import Swiftiomatic
+@_spi(Testing) @testable import Swiftiomatic
 import SwiftSyntax
 import Testing
 

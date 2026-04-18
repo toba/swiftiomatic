@@ -1,4 +1,4 @@
-@_spi(Rules) import Swiftiomatic
+@testable import Swiftiomatic
 import SwiftiomaticTestSupport
 import Testing
 
@@ -6,7 +6,7 @@ import Testing
 struct WrapSingleLineCommentsTests: RuleTesting {
 
   private func config(maxWidth: Int) -> Configuration {
-    var c = Configuration.forTesting(enabledRule: WrapSingleLineComments.self.ruleName)
+    var c = Configuration.forTesting(enabledRule: WrapSingleLineComments.self.name)
     c.lineLength = maxWidth
     return c
   }

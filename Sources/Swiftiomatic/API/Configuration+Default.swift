@@ -35,8 +35,9 @@ extension Configuration {
     self.prioritizeKeepingFunctionOutputTogether = false
     self.indentConditionalCompilationBlocks = true
     self.lineBreakAroundMultilineExpressionChainComponents = false
+    self.lineBreakBeforeGuardConditions = true
     self.fileScopedDeclarationPrivacy = FileScopedDeclarationPrivacyConfiguration()
-    self.indentSwitchCaseLabels = false
+    self.switchCaseIndentation = SwitchCaseIndentationConfiguration()
     self.spacesAroundRangeFormationOperators = false
     self.noAssignmentInExpressions = NoAssignmentInExpressionsConfiguration()
     self.multilineTrailingCommaBehavior = .keptAsWritten
@@ -48,5 +49,6 @@ extension Configuration {
     self.patternLet = PatternLetConfiguration()
     self.urlMacro = URLMacroConfiguration()
     self.fileHeader = FileHeaderConfiguration()
+    self.singleLineBodies = SingleLineBodiesConfiguration()
   }
 }

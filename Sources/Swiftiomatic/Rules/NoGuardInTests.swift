@@ -17,10 +17,9 @@ import SwiftSyntax
 ///
 /// Format: The `guard` is replaced with assertion/unwrap statements and `throws` is added to
 /// the signature if needed.
-@_spi(Rules)
-public final class NoGuardInTests: SyntaxFormatRule {
+final class NoGuardInTests: SyntaxFormatRule {
 
-  public override class var isOptIn: Bool { true }
+  static let isOptIn = true
 
   private var testContext = TestContextTracker()
   private var insideTestFunction = false
@@ -28,17 +27,17 @@ public final class NoGuardInTests: SyntaxFormatRule {
 
   // MARK: - Scope tracking
 
-  public override func visit(_ node: ImportDeclSyntax) -> DeclSyntax {
+  override func visit(_ node: ImportDeclSyntax) -> DeclSyntax {
     testContext.visitImport(node)
     return DeclSyntax(node)
   }
 
-  public override func visit(_ node: SourceFileSyntax) -> SourceFileSyntax {
+  override func visit(_ node: SourceFileSyntax) -> SourceFileSyntax {
     testContext.visitSourceFile(node, context: context)
     return super.visit(node)
   }
 
-  public override func visit(_ node: ClassDeclSyntax) -> DeclSyntax {
+  override func visit(_ node: ClassDeclSyntax) -> DeclSyntax {
     let was = testContext.pushClass(node, context: context)
     defer { testContext.popClass(was: was) }
     return super.visit(node)
@@ -46,13 +45,13 @@ public final class NoGuardInTests: SyntaxFormatRule {
 
   // Don't recurse into closures — guard inside closures can't be fixed by making the outer
   // function throw.
-  public override func visit(_ node: ClosureExprSyntax) -> ExprSyntax {
+  override func visit(_ node: ClosureExprSyntax) -> ExprSyntax {
     ExprSyntax(node)
   }
 
   // MARK: - Function-level: detect test, add throws
 
-  public override func visit(_ node: FunctionDeclSyntax) -> DeclSyntax {
+  override func visit(_ node: FunctionDeclSyntax) -> DeclSyntax {
     guard testContext.isTestFunction(node), node.body != nil else {
       return DeclSyntax(node)
     }
@@ -82,7 +81,7 @@ public final class NoGuardInTests: SyntaxFormatRule {
 
   // MARK: - Guard replacement
 
-  public override func visit(_ node: CodeBlockItemListSyntax) -> CodeBlockItemListSyntax {
+  override func visit(_ node: CodeBlockItemListSyntax) -> CodeBlockItemListSyntax {
     guard insideTestFunction else { return super.visit(node) }
 
     let visited = super.visit(node)

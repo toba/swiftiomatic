@@ -11,7 +11,7 @@
 //===----------------------------------------------------------------------===//
 
 import Swiftiomatic
-@_spi(Rules) import Swiftiomatic
+@testable import Swiftiomatic
 import SwiftSyntax
 import SwiftiomaticTestSupport
 import Testing
@@ -180,7 +180,7 @@ struct FileScopedDeclarationPrivacyTests: RuleTesting {
     findingsProvider: (String, String) -> [FindingSpec]
   ) {
     for testConfig in testConfigurations {
-      var configuration = Configuration.forTesting(enabledRule: FileScopedDeclarationPrivacy.self.ruleName)
+      var configuration = Configuration.forTesting(enabledRule: FileScopedDeclarationPrivacy.self.name)
       configuration.fileScopedDeclarationPrivacy.accessLevel = testConfig.desired
 
       let substitutedInput = source.replacingOccurrences(of: "$access$", with: testConfig.original)

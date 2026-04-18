@@ -13,58 +13,57 @@ import SwiftSyntax
 ///
 /// Format: Blank lines between consecutive guards are removed. A blank line is inserted
 ///         after the last guard when followed by non-guard code.
-@_spi(Rules)
-public final class BlankLinesAfterGuardStatements: SyntaxFormatRule {
-  public override class var group: ConfigGroup? { .updateBlankLines }
+final class BlankLinesAfterGuardStatements: SyntaxFormatRule {
+    static let group: ConfigGroup? = .blankLines
+    static let isOptIn = true
+    //    static let name: String = ""
 
-  public override class var isOptIn: Bool { true }
+    override func visit(_ node: CodeBlockSyntax) -> CodeBlockSyntax {
+        let visited = super.visit(node)
+        let originalStatements = Array(visited.statements)
+        var statements = originalStatements
+        var modified = false
 
-  public override func visit(_ node: CodeBlockSyntax) -> CodeBlockSyntax {
-    let visited = super.visit(node)
-    let originalStatements = Array(visited.statements)
-    var statements = originalStatements
-    var modified = false
+        for i in 0..<originalStatements.count {
+            guard originalStatements[i].item.is(GuardStmtSyntax.self) else { continue }
 
-    for i in 0..<originalStatements.count {
-      guard originalStatements[i].item.is(GuardStmtSyntax.self) else { continue }
+            let nextIndex = i + 1
+            guard nextIndex < originalStatements.count else { continue }
 
-      let nextIndex = i + 1
-      guard nextIndex < originalStatements.count else { continue }
+            let nextStmt = originalStatements[nextIndex]
+            let nextIsConsecutiveGuard =
+                nextStmt.item.is(GuardStmtSyntax.self) && !nextStmt.leadingTrivia.hasAnyComments
 
-      let nextStmt = originalStatements[nextIndex]
-      let nextIsConsecutiveGuard =
-        nextStmt.item.is(GuardStmtSyntax.self) && !nextStmt.leadingTrivia.hasAnyComments
+            if nextIsConsecutiveGuard {
+                // Remove blank lines between consecutive guards.
+                guard nextStmt.leadingTrivia.hasBlankLine else { continue }
+                diagnose(.removeBlankLineBetweenGuards, on: nextStmt.item)
+                var modifiedNext = nextStmt
+                modifiedNext.leadingTrivia = nextStmt.leadingTrivia.replacingFirstNewlines(with: 1)
+                statements[nextIndex] = modifiedNext
+                modified = true
+            } else {
+                // Ensure blank line after last guard in a run.
+                guard !nextStmt.leadingTrivia.hasBlankLine else { continue }
+                diagnose(.insertBlankLineAfterGuard, on: originalStatements[i].item)
+                var modifiedNext = nextStmt
+                modifiedNext.leadingTrivia = .newline + nextStmt.leadingTrivia
+                statements[nextIndex] = modifiedNext
+                modified = true
+            }
+        }
 
-      if nextIsConsecutiveGuard {
-        // Remove blank lines between consecutive guards.
-        guard nextStmt.leadingTrivia.hasBlankLine else { continue }
-        diagnose(.removeBlankLineBetweenGuards, on: nextStmt.item)
-        var modifiedNext = nextStmt
-        modifiedNext.leadingTrivia = nextStmt.leadingTrivia.replacingFirstNewlines(with: 1)
-        statements[nextIndex] = modifiedNext
-        modified = true
-      } else {
-        // Ensure blank line after last guard in a run.
-        guard !nextStmt.leadingTrivia.hasBlankLine else { continue }
-        diagnose(.insertBlankLineAfterGuard, on: originalStatements[i].item)
-        var modifiedNext = nextStmt
-        modifiedNext.leadingTrivia = .newline + nextStmt.leadingTrivia
-        statements[nextIndex] = modifiedNext
-        modified = true
-      }
+        guard modified else { return visited }
+        var result = visited
+        result.statements = CodeBlockItemListSyntax(statements)
+        return result
     }
-
-    guard modified else { return visited }
-    var result = visited
-    result.statements = CodeBlockItemListSyntax(statements)
-    return result
-  }
 }
 
 extension Finding.Message {
-  fileprivate static let removeBlankLineBetweenGuards: Finding.Message =
-    "remove blank line between consecutive guard statements"
+    fileprivate static let removeBlankLineBetweenGuards: Finding.Message =
+        "remove blank line between consecutive guard statements"
 
-  fileprivate static let insertBlankLineAfterGuard: Finding.Message =
-    "insert blank line after guard statement"
+    fileprivate static let insertBlankLineAfterGuard: Finding.Message =
+        "insert blank line after guard statement"
 }

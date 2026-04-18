@@ -46,7 +46,7 @@ import Foundation
 
       """
     for detectedRule in ruleCollector.allLinters.sorted(by: { $0.typeName < $1.typeName }) {
-      result += "  ObjectIdentifier(\(detectedRule.typeName).self): \"\(detectedRule.typeName)\",\n"
+      result += "  ObjectIdentifier(\(detectedRule.typeName).self): \"\(detectedRule.ruleName)\",\n"
     }
     result += "]\n"
     return result

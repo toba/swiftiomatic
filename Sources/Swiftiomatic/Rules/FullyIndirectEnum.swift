@@ -19,10 +19,9 @@ import SwiftSyntax
 ///
 /// Format: Enums where all cases are `indirect` will be rewritten such that the enum is marked
 ///         `indirect`, and each case is not.
-@_spi(Rules)
-public final class FullyIndirectEnum: SyntaxFormatRule {
+final class FullyIndirectEnum: SyntaxFormatRule {
 
-  public override func visit(_ node: EnumDeclSyntax) -> DeclSyntax {
+  override func visit(_ node: EnumDeclSyntax) -> DeclSyntax {
     let enumMembers = node.memberBlock.members
     guard !node.modifiers.contains(anyOf: [.indirect]),
       case let indirectModifiers = indirectModifiersIfAllCasesIndirect(in: enumMembers),

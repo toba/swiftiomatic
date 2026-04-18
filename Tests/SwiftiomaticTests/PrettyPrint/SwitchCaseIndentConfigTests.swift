@@ -13,11 +13,11 @@
 import Swiftiomatic
 import Testing
 
-/// Tests the `indentSwitchCaseLabels` config option
+/// Tests the `switchCaseIndentation.style` config option
 @Suite
 struct SwitchCaseIndentConfigTests: PrettyPrintTesting {
 
-  /// Tests that setting `indentSwitchCaseLabels` to `false` and not indenting `case` statements
+  /// Tests that setting `switchCaseIndentation.style` to `false` and not indenting `case` statements
   /// does not change the input.
   @Test func indentationNotConfiguredNotInput() {
     let input =
@@ -46,12 +46,12 @@ struct SwitchCaseIndentConfigTests: PrettyPrintTesting {
     let expected = input
 
     var config = Configuration.forTesting
-    config.indentSwitchCaseLabels = false
+    config.switchCaseIndentation.style = .flush
 
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 35, configuration: config)
   }
 
-  /// Tests that setting `indentSwitchCaseLabels` to `false` and indenting `case` statements
+  /// Tests that setting `switchCaseIndentation.style` to `false` and indenting `case` statements
   /// removes that indentation.
   @Test func indentationNotConfiguredButInput() {
     let input =
@@ -101,12 +101,12 @@ struct SwitchCaseIndentConfigTests: PrettyPrintTesting {
       """
 
     var config = Configuration.forTesting
-    config.indentSwitchCaseLabels = false
+    config.switchCaseIndentation.style = .flush
 
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 35, configuration: config)
   }
 
-  /// Tests that setting `indentSwitchCaseLabels` to `true` and not indenting `case` statements
+  /// Tests that setting `switchCaseIndentation.style` to `true` and not indenting `case` statements
   /// adds the configured indentation.
   @Test func indentationConfiguredNotInput() {
     let input =
@@ -156,12 +156,12 @@ struct SwitchCaseIndentConfigTests: PrettyPrintTesting {
       """
 
     var config = Configuration.forTesting
-    config.indentSwitchCaseLabels = true
+    config.switchCaseIndentation.style = .indented
 
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 35, configuration: config)
   }
 
-  /// Tests that setting `indentSwitchCaseLabels` to `true` and indenting `case` statements does
+  /// Tests that setting `switchCaseIndentation.style` to `true` and indenting `case` statements does
   /// not change the input.
   @Test func indentationConfiguredAndInput() {
     let input =
@@ -190,12 +190,12 @@ struct SwitchCaseIndentConfigTests: PrettyPrintTesting {
     let expected = input
 
     var config = Configuration.forTesting
-    config.indentSwitchCaseLabels = true
+    config.switchCaseIndentation.style = .indented
 
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 35, configuration: config)
   }
 
-  /// Tests that setting `indentSwitchCaseLabels` to `false` and not indenting the `case` body
+  /// Tests that setting `switchCaseIndentation.style` to `false` and not indenting the `case` body
   /// indents the body but leaves the `case` statement unindented.
   @Test func indentationNotConfiguredCaseBodyNotIndented() {
     let input =
@@ -245,12 +245,12 @@ struct SwitchCaseIndentConfigTests: PrettyPrintTesting {
       """
 
     var config = Configuration.forTesting
-    config.indentSwitchCaseLabels = false
+    config.switchCaseIndentation.style = .flush
 
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 35, configuration: config)
   }
 
-  /// Tests that setting `indentSwitchCaseLabels` to `true` and indenting the `case` statement but
+  /// Tests that setting `switchCaseIndentation.style` to `true` and indenting the `case` statement but
   /// not the `case` body indents the body but leaves the `case` statement as input.
   @Test func indentationConfiguredCaseBodyNotIndented() {
     let input =
@@ -300,12 +300,12 @@ struct SwitchCaseIndentConfigTests: PrettyPrintTesting {
       """
 
     var config = Configuration.forTesting
-    config.indentSwitchCaseLabels = true
+    config.switchCaseIndentation.style = .indented
 
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 35, configuration: config)
   }
 
-  /// Tests that setting `indentSwitchCaseLabels` to `true` and indenting neither the `case` body
+  /// Tests that setting `switchCaseIndentation.style` to `true` and indenting neither the `case` body
   /// nor the `case` statement itself indents the body twice and the `case` statement once.
   @Test func indentationConfiguredCaseBodyAndStatementNotIndented() {
     let input =
@@ -355,12 +355,12 @@ struct SwitchCaseIndentConfigTests: PrettyPrintTesting {
       """
 
     var config = Configuration.forTesting
-    config.indentSwitchCaseLabels = true
+    config.switchCaseIndentation.style = .indented
 
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 35, configuration: config)
   }
 
-  /// Tests that setting `indentSwitchCaseLabels` to `true` and providing the `case` body on the
+  /// Tests that setting `switchCaseIndentation.style` to `true` and providing the `case` body on the
   /// same line as the statement (with the whole line indented) does not change the input.
   @Test func indentationConfiguredCaseBodySameLine() {
     let input =
@@ -386,7 +386,7 @@ struct SwitchCaseIndentConfigTests: PrettyPrintTesting {
     let expected = input
 
     var config = Configuration.forTesting
-    config.indentSwitchCaseLabels = true
+    config.switchCaseIndentation.style = .indented
 
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 80, configuration: config)
   }

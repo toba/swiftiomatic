@@ -8,10 +8,9 @@ import SwiftSyntax
 /// Lint: Using `.filter { ... }.count` raises a warning suggesting `count(where:)`.
 ///
 /// Format: `.filter { ... }.count` is replaced with `.count(where: { ... })`.
-@_spi(Rules)
-public final class PreferCountWhere: SyntaxFormatRule {
+final class PreferCountWhere: SyntaxFormatRule {
 
-  public override func visit(_ node: MemberAccessExprSyntax) -> ExprSyntax {
+  override func visit(_ node: MemberAccessExprSyntax) -> ExprSyntax {
     // If .count is a method call (parent is FunctionCallExprSyntax with this as calledExpression),
     // skip — check on original node before visiting children.
     if let parent = node.parent?.as(FunctionCallExprSyntax.self),

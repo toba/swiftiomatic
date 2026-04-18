@@ -8,20 +8,19 @@ import SwiftSyntax
 /// Lint: A warning is raised for incorrect access control on test suite members.
 ///
 /// Format: Access control is corrected.
-@_spi(Rules)
-public final class TestSuiteAccessControl: SyntaxFormatRule {
+final class TestSuiteAccessControl: SyntaxFormatRule {
 
-  public override class var isOptIn: Bool { true }
+  static let isOptIn = true
 
   private var framework: TestFramework?
 
-  public override func visit(_ node: SourceFileSyntax) -> SourceFileSyntax {
+  override func visit(_ node: SourceFileSyntax) -> SourceFileSyntax {
     setImportsXCTest(context: context, sourceFile: node)
     framework = detectTestFramework(in: node)
     return super.visit(node)
   }
 
-  public override func visit(_ node: ClassDeclSyntax) -> DeclSyntax {
+  override func visit(_ node: ClassDeclSyntax) -> DeclSyntax {
     guard let framework else { return DeclSyntax(node) }
     guard Swiftiomatic.isTestSuite(name: node.name.text, inheritanceClause: node.inheritanceClause,
       modifiers: node.modifiers, leadingTrivia: node.leadingTrivia, framework: framework)
@@ -34,7 +33,7 @@ public final class TestSuiteAccessControl: SyntaxFormatRule {
     return DeclSyntax(result)
   }
 
-  public override func visit(_ node: StructDeclSyntax) -> DeclSyntax {
+  override func visit(_ node: StructDeclSyntax) -> DeclSyntax {
     guard let framework else { return DeclSyntax(node) }
     guard Swiftiomatic.isTestSuite(name: node.name.text, inheritanceClause: node.inheritanceClause,
       modifiers: node.modifiers, leadingTrivia: node.leadingTrivia, framework: framework)

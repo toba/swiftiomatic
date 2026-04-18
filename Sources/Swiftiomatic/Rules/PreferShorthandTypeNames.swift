@@ -19,10 +19,9 @@ import SwiftSyntax
 ///
 /// Format: Where possible, shorthand types replace long form types; e.g. `Array<Element>` is
 ///         converted to `[Element]`.
-@_spi(Rules)
-public final class PreferShorthandTypeNames: SyntaxFormatRule {
+final class PreferShorthandTypeNames: SyntaxFormatRule {
 
-  public override func visit(_ node: IdentifierTypeSyntax) -> TypeSyntax {
+  override func visit(_ node: IdentifierTypeSyntax) -> TypeSyntax {
     // Ignore types that don't have generic arguments.
     guard let genericArgumentClause = node.genericArgumentClause else {
       return super.visit(node)
@@ -106,7 +105,7 @@ public final class PreferShorthandTypeNames: SyntaxFormatRule {
     return TypeSyntax(result)
   }
 
-  public override func visit(_ node: GenericSpecializationExprSyntax) -> ExprSyntax {
+  override func visit(_ node: GenericSpecializationExprSyntax) -> ExprSyntax {
     // `GenericSpecializationExprSyntax`s are found in the syntax tree when a generic type is
     // encountered in an expression context, such as `Array<Int>()`. In these situations, the
     // corresponding array and dictionary shorthand nodes will be expression nodes, not type nodes,

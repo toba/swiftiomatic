@@ -8,10 +8,9 @@ import SwiftSyntax
 /// Lint: If empty braces contain whitespace, a lint warning is raised.
 ///
 /// Format: The whitespace is removed, collapsing the braces to `{}`.
-@_spi(Rules)
-public final class EmptyBraces: SyntaxFormatRule {
+final class EmptyBraces: SyntaxFormatRule {
 
-  public override func visit(_ node: CodeBlockSyntax) -> CodeBlockSyntax {
+  override func visit(_ node: CodeBlockSyntax) -> CodeBlockSyntax {
     var result = node
     if result.statements.isEmpty {
       result = collapseIfNeeded(result, leftBrace: \.leftBrace, rightBrace: \.rightBrace)
@@ -19,7 +18,7 @@ public final class EmptyBraces: SyntaxFormatRule {
     return result
   }
 
-  public override func visit(_ node: MemberBlockSyntax) -> MemberBlockSyntax {
+  override func visit(_ node: MemberBlockSyntax) -> MemberBlockSyntax {
     var result = node
     if result.members.isEmpty {
       result = collapseIfNeeded(result, leftBrace: \.leftBrace, rightBrace: \.rightBrace)
@@ -27,7 +26,7 @@ public final class EmptyBraces: SyntaxFormatRule {
     return result
   }
 
-  public override func visit(_ node: ClosureExprSyntax) -> ExprSyntax {
+  override func visit(_ node: ClosureExprSyntax) -> ExprSyntax {
     var result = node
     if result.statements.isEmpty, result.signature == nil {
       result = collapseIfNeeded(result, leftBrace: \.leftBrace, rightBrace: \.rightBrace)

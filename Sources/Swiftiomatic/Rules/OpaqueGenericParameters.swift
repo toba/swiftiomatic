@@ -11,14 +11,13 @@ import SwiftSyntax
 /// Lint: A lint warning is raised when a generic parameter can be replaced with an opaque parameter.
 ///
 /// Format: The generic parameter is replaced with `some Protocol` in the parameter type.
-@_spi(Rules)
-public final class OpaqueGenericParameters: SyntaxFormatRule {
+final class OpaqueGenericParameters: SyntaxFormatRule {
 
-  public override class var isOptIn: Bool { true }
+  static let isOptIn = true
 
   // MARK: - Visitors
 
-  public override func visit(_ node: FunctionDeclSyntax) -> DeclSyntax {
+  override func visit(_ node: FunctionDeclSyntax) -> DeclSyntax {
     let visited = super.visit(node).cast(FunctionDeclSyntax.self)
     guard let genericClause = visited.genericParameterClause else { return DeclSyntax(visited) }
 
@@ -69,7 +68,7 @@ public final class OpaqueGenericParameters: SyntaxFormatRule {
     return DeclSyntax(result)
   }
 
-  public override func visit(_ node: InitializerDeclSyntax) -> DeclSyntax {
+  override func visit(_ node: InitializerDeclSyntax) -> DeclSyntax {
     let visited = super.visit(node).cast(InitializerDeclSyntax.self)
     guard let genericClause = visited.genericParameterClause else { return DeclSyntax(visited) }
 
@@ -120,7 +119,7 @@ public final class OpaqueGenericParameters: SyntaxFormatRule {
     return DeclSyntax(result)
   }
 
-  public override func visit(_ node: SubscriptDeclSyntax) -> DeclSyntax {
+  override func visit(_ node: SubscriptDeclSyntax) -> DeclSyntax {
     let visited = super.visit(node).cast(SubscriptDeclSyntax.self)
     guard let genericClause = visited.genericParameterClause else { return DeclSyntax(visited) }
 

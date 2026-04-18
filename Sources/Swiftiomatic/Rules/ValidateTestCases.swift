@@ -18,15 +18,14 @@ import SwiftSyntax
 /// Lint: A warning is raised for each test method missing the correct prefix or attribute.
 ///
 /// Format: The `test` prefix or `@Test` attribute is added.
-@_spi(Rules)
-public final class ValidateTestCases: SyntaxFormatRule {
+final class ValidateTestCases: SyntaxFormatRule {
 
-  public override class var isOptIn: Bool { true }
+  static let isOptIn = true
 
   private var framework: TestFramework?
   private var identifierCounts = [String: Int]()
 
-  public override func visit(_ node: SourceFileSyntax) -> SourceFileSyntax {
+  override func visit(_ node: SourceFileSyntax) -> SourceFileSyntax {
     setImportsXCTest(context: context, sourceFile: node)
     framework = detectTestFramework(in: node)
 
@@ -41,7 +40,7 @@ public final class ValidateTestCases: SyntaxFormatRule {
     return super.visit(node)
   }
 
-  public override func visit(_ node: ClassDeclSyntax) -> DeclSyntax {
+  override func visit(_ node: ClassDeclSyntax) -> DeclSyntax {
     guard let framework else { return DeclSyntax(node) }
     guard isTestSuite(name: node.name.text, inheritanceClause: node.inheritanceClause,
       modifiers: node.modifiers, leadingTrivia: node.leadingTrivia, framework: framework)
@@ -54,7 +53,7 @@ public final class ValidateTestCases: SyntaxFormatRule {
     return DeclSyntax(result)
   }
 
-  public override func visit(_ node: StructDeclSyntax) -> DeclSyntax {
+  override func visit(_ node: StructDeclSyntax) -> DeclSyntax {
     guard let framework else { return DeclSyntax(node) }
     guard isTestSuite(name: node.name.text, inheritanceClause: node.inheritanceClause,
       modifiers: node.modifiers, leadingTrivia: node.leadingTrivia, framework: framework)
@@ -67,7 +66,7 @@ public final class ValidateTestCases: SyntaxFormatRule {
     return DeclSyntax(result)
   }
 
-  public override func visit(_ node: EnumDeclSyntax) -> DeclSyntax {
+  override func visit(_ node: EnumDeclSyntax) -> DeclSyntax {
     guard let framework else { return DeclSyntax(node) }
     guard isTestSuite(name: node.name.text, inheritanceClause: nil,
       modifiers: node.modifiers, leadingTrivia: node.leadingTrivia, framework: framework)

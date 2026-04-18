@@ -10,13 +10,12 @@ import SwiftSyntax
 /// Lint: If a redundant pattern is found, a finding is raised.
 ///
 /// Format: The redundant pattern is removed.
-@_spi(Rules)
-public final class RedundantPattern: SyntaxFormatRule {
-  public override class var group: ConfigGroup? { .removeRedundant }
+final class RedundantPattern: SyntaxFormatRule {
+  static let group: ConfigGroup? = .redundancies
 
   // MARK: - Switch case items: case let .foo(_, _) → case .foo
 
-  public override func visit(_ node: SwitchCaseItemSyntax) -> SwitchCaseItemSyntax {
+  override func visit(_ node: SwitchCaseItemSyntax) -> SwitchCaseItemSyntax {
     guard let simplified = simplifyEnumCasePattern(node.pattern) else {
       return node
     }
@@ -28,7 +27,7 @@ public final class RedundantPattern: SyntaxFormatRule {
 
   // MARK: - If/guard/while case: if case let .foo(_, _) = bar → if case .foo = bar
 
-  public override func visit(
+  override func visit(
     _ node: MatchingPatternConditionSyntax
   ) -> MatchingPatternConditionSyntax {
     guard let simplified = simplifyEnumCasePattern(node.pattern) else {
@@ -42,7 +41,7 @@ public final class RedundantPattern: SyntaxFormatRule {
 
   // MARK: - Let/var bindings: let (_, _) = bar → let _ = bar
 
-  public override func visit(_ node: VariableDeclSyntax) -> DeclSyntax {
+  override func visit(_ node: VariableDeclSyntax) -> DeclSyntax {
     guard node.bindings.count == 1,
       let binding = node.bindings.first,
       let tuplePattern = binding.pattern.as(TuplePatternSyntax.self),

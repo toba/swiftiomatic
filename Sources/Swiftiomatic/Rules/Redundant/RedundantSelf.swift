@@ -19,9 +19,8 @@ import SwiftSyntax
 /// Lint: A lint warning is raised for redundant `self.` usage.
 ///
 /// Format: The `self.` prefix is removed.
-@_spi(Rules)
-public final class RedundantSelf: SyntaxFormatRule {
-  public override class var group: ConfigGroup? { .removeRedundant }
+final class RedundantSelf: SyntaxFormatRule {
+  static let group: ConfigGroup? = .redundancies
 
   // MARK: - State
 
@@ -49,31 +48,31 @@ public final class RedundantSelf: SyntaxFormatRule {
 
   // MARK: - Type Declarations
 
-  public override func visit(_ node: StructDeclSyntax) -> DeclSyntax {
+  override func visit(_ node: StructDeclSyntax) -> DeclSyntax {
     referenceTypeStack.append(false)
     defer { referenceTypeStack.removeLast() }
     return super.visit(node)
   }
 
-  public override func visit(_ node: EnumDeclSyntax) -> DeclSyntax {
+  override func visit(_ node: EnumDeclSyntax) -> DeclSyntax {
     referenceTypeStack.append(false)
     defer { referenceTypeStack.removeLast() }
     return super.visit(node)
   }
 
-  public override func visit(_ node: ClassDeclSyntax) -> DeclSyntax {
+  override func visit(_ node: ClassDeclSyntax) -> DeclSyntax {
     referenceTypeStack.append(true)
     defer { referenceTypeStack.removeLast() }
     return super.visit(node)
   }
 
-  public override func visit(_ node: ActorDeclSyntax) -> DeclSyntax {
+  override func visit(_ node: ActorDeclSyntax) -> DeclSyntax {
     referenceTypeStack.append(true)
     defer { referenceTypeStack.removeLast() }
     return super.visit(node)
   }
 
-  public override func visit(_ node: ExtensionDeclSyntax) -> DeclSyntax {
+  override func visit(_ node: ExtensionDeclSyntax) -> DeclSyntax {
     // Can't determine if value or reference type from extension alone.
     // Assume reference type (conservative — closures require explicit self).
     referenceTypeStack.append(true)
@@ -83,7 +82,7 @@ public final class RedundantSelf: SyntaxFormatRule {
 
   // MARK: - Function and Initializer Scopes
 
-  public override func visit(_ node: FunctionDeclSyntax) -> DeclSyntax {
+  override func visit(_ node: FunctionDeclSyntax) -> DeclSyntax {
     guard insideTypeBody else { return super.visit(node) }
 
     var names = collectParamNames(from: node.signature.parameterClause)
@@ -100,7 +99,7 @@ public final class RedundantSelf: SyntaxFormatRule {
     return super.visit(node)
   }
 
-  public override func visit(_ node: InitializerDeclSyntax) -> DeclSyntax {
+  override func visit(_ node: InitializerDeclSyntax) -> DeclSyntax {
     guard insideTypeBody else { return super.visit(node) }
 
     var names = collectParamNames(from: node.signature.parameterClause)
@@ -117,7 +116,7 @@ public final class RedundantSelf: SyntaxFormatRule {
     return super.visit(node)
   }
 
-  public override func visit(_ node: SubscriptDeclSyntax) -> DeclSyntax {
+  override func visit(_ node: SubscriptDeclSyntax) -> DeclSyntax {
     guard insideTypeBody else { return super.visit(node) }
 
     let names = collectParamNames(from: node.parameterClause)
@@ -132,7 +131,7 @@ public final class RedundantSelf: SyntaxFormatRule {
 
   // MARK: - Accessor Scopes (get/set/willSet/didSet)
 
-  public override func visit(_ node: AccessorDeclSyntax) -> DeclSyntax {
+  override func visit(_ node: AccessorDeclSyntax) -> DeclSyntax {
     guard insideTypeBody || !implicitSelfStack.isEmpty else {
       return super.visit(node)
     }
@@ -177,7 +176,7 @@ public final class RedundantSelf: SyntaxFormatRule {
 
   // MARK: - Variable Declarations (lazy var)
 
-  public override func visit(_ node: VariableDeclSyntax) -> DeclSyntax {
+  override func visit(_ node: VariableDeclSyntax) -> DeclSyntax {
     guard insideTypeBody, node.modifiers.contains(anyOf: [.lazy]) else {
       return super.visit(node)
     }
@@ -196,7 +195,7 @@ public final class RedundantSelf: SyntaxFormatRule {
 
   // MARK: - Shorthand Computed Properties
 
-  public override func visit(_ node: AccessorBlockSyntax) -> AccessorBlockSyntax {
+  override func visit(_ node: AccessorBlockSyntax) -> AccessorBlockSyntax {
     // Shorthand computed var: `var foo: Int { return self.bar }`
     // has .getter(CodeBlockItemListSyntax) with no AccessorDeclSyntax.
     guard case .getter(let body) = node.accessors else {
@@ -224,7 +223,7 @@ public final class RedundantSelf: SyntaxFormatRule {
 
   // MARK: - Closure Scopes
 
-  public override func visit(_ node: ClosureExprSyntax) -> ExprSyntax {
+  override func visit(_ node: ClosureExprSyntax) -> ExprSyntax {
     guard insideTypeBody else { return super.visit(node) }
 
     var names = Set<String>()
@@ -267,7 +266,7 @@ public final class RedundantSelf: SyntaxFormatRule {
 
   // MARK: - The Transform
 
-  public override func visit(_ node: MemberAccessExprSyntax) -> ExprSyntax {
+  override func visit(_ node: MemberAccessExprSyntax) -> ExprSyntax {
     let visited = super.visit(node)
     guard let access = visited.as(MemberAccessExprSyntax.self) else { return visited }
 

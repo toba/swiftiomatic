@@ -12,19 +12,18 @@ import SwiftSyntax
 /// Lint: A non-final, non-open class declaration raises a warning.
 ///
 /// Format: The `final` modifier is added and `open` members are converted to `public`.
-@_spi(Rules)
-public final class PreferFinalClasses: SyntaxFormatRule {
-  public override class var isOptIn: Bool { true }
+final class PreferFinalClasses: SyntaxFormatRule {
+  static let isOptIn = true
 
   /// Class names that appear as a superclass in some class declaration within the file.
   private var subclassedNames = Set<String>()
 
-  public override func visit(_ node: SourceFileSyntax) -> SourceFileSyntax {
+  override func visit(_ node: SourceFileSyntax) -> SourceFileSyntax {
     subclassedNames = collectSubclassedNames(in: Syntax(node))
     return super.visit(node)
   }
 
-  public override func visit(_ node: ClassDeclSyntax) -> DeclSyntax {
+  override func visit(_ node: ClassDeclSyntax) -> DeclSyntax {
     let visited = super.visit(node).cast(ClassDeclSyntax.self)
 
     // Already final

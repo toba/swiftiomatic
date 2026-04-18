@@ -1,4 +1,4 @@
-@_spi(Rules) import Swiftiomatic
+@testable import Swiftiomatic
 import SwiftiomaticTestSupport
 import Testing
 
@@ -6,13 +6,13 @@ import Testing
 struct FileHeaderTests: RuleTesting {
 
   private func clearConfig() -> Configuration {
-    var c = Configuration.forTesting(enabledRule: FileHeader.self.ruleName)
+    var c = Configuration.forTesting(enabledRule: FileHeader.self.name)
     c.fileHeader.text = ""
     return c
   }
 
   private func headerConfig(_ text: String) -> Configuration {
-    var c = Configuration.forTesting(enabledRule: FileHeader.self.ruleName)
+    var c = Configuration.forTesting(enabledRule: FileHeader.self.name)
     c.fileHeader.text = text
     return c
   }
@@ -342,7 +342,7 @@ struct FileHeaderTests: RuleTesting {
         func foo() {}
         """,
       findings: [],
-      configuration: Configuration.forTesting(enabledRule: FileHeader.self.ruleName))
+      configuration: Configuration.forTesting(enabledRule: FileHeader.self.name))
   }
 
   // MARK: - Update header

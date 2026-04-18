@@ -12,10 +12,9 @@ import SwiftSyntax
 /// Lint: A warning is raised for each XCTest pattern that can be converted.
 ///
 /// Format: The XCTest patterns are replaced with Swift Testing equivalents.
-@_spi(Rules)
-public final class PreferSwiftTesting: SyntaxFormatRule {
+final class PreferSwiftTesting: SyntaxFormatRule {
 
-  public override class var isOptIn: Bool { true }
+  static let isOptIn = true
 
   /// Set to true when we detect unsupported patterns — bail out of the entire file.
   private var bailOut = false
@@ -30,7 +29,7 @@ public final class PreferSwiftTesting: SyntaxFormatRule {
 
   // MARK: - File-level: scan for unsupported patterns, replace imports
 
-  public override func visit(_ node: SourceFileSyntax) -> SourceFileSyntax {
+  override func visit(_ node: SourceFileSyntax) -> SourceFileSyntax {
     // Pre-scan: detect unsupported patterns and XCTest import
     for stmt in node.statements {
       if let importDecl = stmt.item.as(ImportDeclSyntax.self) {
@@ -78,7 +77,7 @@ public final class PreferSwiftTesting: SyntaxFormatRule {
 
   // MARK: - Import replacement
 
-  public override func visit(_ node: ImportDeclSyntax) -> DeclSyntax {
+  override func visit(_ node: ImportDeclSyntax) -> DeclSyntax {
     guard hasXCTestImport, !bailOut else { return DeclSyntax(node) }
 
     if node.path.first?.name.text == "XCTest" {
@@ -96,7 +95,7 @@ public final class PreferSwiftTesting: SyntaxFormatRule {
 
   // MARK: - Class-level: remove XCTestCase conformance
 
-  public override func visit(_ node: ClassDeclSyntax) -> DeclSyntax {
+  override func visit(_ node: ClassDeclSyntax) -> DeclSyntax {
     guard hasXCTestImport, !bailOut else { return DeclSyntax(node) }
 
     guard let inheritance = node.inheritanceClause,
@@ -135,7 +134,7 @@ public final class PreferSwiftTesting: SyntaxFormatRule {
 
   // MARK: - Extension-level: convert test methods in extensions of XCTestCase types
 
-  public override func visit(_ node: ExtensionDeclSyntax) -> DeclSyntax {
+  override func visit(_ node: ExtensionDeclSyntax) -> DeclSyntax {
     guard hasXCTestImport, !bailOut else { return DeclSyntax(node) }
 
     let extName = node.extendedType.trimmedDescription
@@ -152,7 +151,7 @@ public final class PreferSwiftTesting: SyntaxFormatRule {
 
   // MARK: - Function-level: add @Test, convert setUp/tearDown, add throws
 
-  public override func visit(_ node: FunctionDeclSyntax) -> DeclSyntax {
+  override func visit(_ node: FunctionDeclSyntax) -> DeclSyntax {
     guard hasXCTestImport, !bailOut, insideXCTestCase else { return super.visit(node) }
 
     let name = node.name.text
@@ -185,7 +184,7 @@ public final class PreferSwiftTesting: SyntaxFormatRule {
 
   // MARK: - Expression-level: convert XCT assertions
 
-  public override func visit(_ node: FunctionCallExprSyntax) -> ExprSyntax {
+  override func visit(_ node: FunctionCallExprSyntax) -> ExprSyntax {
     guard hasXCTestImport, !bailOut else { return ExprSyntax(node) }
 
     let calledName = node.calledExpression.trimmedDescription
@@ -500,7 +499,7 @@ public final class PreferSwiftTesting: SyntaxFormatRule {
 
   // MARK: - Statement list: add Foundation import
 
-  public override func visit(_ node: MemberBlockItemListSyntax) -> MemberBlockItemListSyntax {
+  override func visit(_ node: MemberBlockItemListSyntax) -> MemberBlockItemListSyntax {
     guard hasXCTestImport, !bailOut else { return super.visit(node) }
     return super.visit(node)
   }

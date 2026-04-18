@@ -8,12 +8,11 @@ import SwiftSyntax
 /// Lint: If a redundant typed throws is found, a lint warning is raised.
 ///
 /// Format: `throws(any Error)` is replaced with `throws`. `throws(Never)` is removed.
-@_spi(Rules)
-public final class RedundantTypedThrows: SyntaxFormatRule {
-  public override class var group: ConfigGroup? { .removeRedundant }
+final class RedundantTypedThrows: SyntaxFormatRule {
+  static let group: ConfigGroup? = .redundancies
 
   // Function declarations: `func foo() throws(any Error)`
-  public override func visit(_ node: FunctionEffectSpecifiersSyntax) -> FunctionEffectSpecifiersSyntax {
+  override func visit(_ node: FunctionEffectSpecifiersSyntax) -> FunctionEffectSpecifiersSyntax {
     guard let throwsClause = node.throwsClause,
       let type = throwsClause.type
     else {
@@ -36,7 +35,7 @@ public final class RedundantTypedThrows: SyntaxFormatRule {
   }
 
   // Function types: `() throws(any Error) -> Void`
-  public override func visit(_ node: FunctionTypeSyntax) -> TypeSyntax {
+  override func visit(_ node: FunctionTypeSyntax) -> TypeSyntax {
     let visited = super.visit(node)
     guard let funcType = visited.as(FunctionTypeSyntax.self),
       let effectSpecifiers = funcType.effectSpecifiers,

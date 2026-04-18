@@ -15,55 +15,104 @@
 /// Groups appear as JSON objects at the config root. Rules and settings that
 /// belong to a group are encoded inside their group's object; ungrouped items
 /// live at the config root.
-public enum ConfigGroup: String, CaseIterable, Sendable {
+package enum ConfigGroup: String, CaseIterable, Sendable {
     case sort
     case wrap
+    case hoist
+    case forcing
+    case comments
+    case blankLines
+    case lineBreaks
+    case indentation
+    case redundancies
     case capitalization
-    case removeRedundant
-    case updateBlankLines
-    case updateLineBreak
-
-    /// Prefix stripped from rule names to derive short config option names.
-    ///
-    /// E.g., `removeRedundant` strips `"Redundant"` so `RedundantSelf` becomes `"self"`.
-    /// Groups with no common prefix (like `capitalization`) use an empty string,
-    /// meaning option names are the full rule name lowercased.
-    public var rulePrefix: String {
-        switch self {
-        case .sort: "Sort"
-        case .wrap: "Wrap"
-        case .capitalization: ""
-        case .removeRedundant: "Redundant"
-        case .updateBlankLines: "BlankLines"
-        case .updateLineBreak: "Linebreak"
-        }
-    }
 }
 
 extension ConfigGroup: ConfigRepresentable {
-  /// Non-rule settings owned by this group.
-  public var configProperties: [ConfigProperty] {
-    switch self {
-    case .updateBlankLines: [
-      .init("maximumBlankLines", .integer(description: "Maximum consecutive blank lines.", defaultValue: 1, minimum: 0)),
-    ]
-    case .updateLineBreak: [
-      .init("beforeControlFlowKeywords", .bool(description: "Break before else/catch after closing brace.", defaultValue: false)),
-      .init("beforeEachArgument", .bool(description: "Break before each argument when wrapping.", defaultValue: false)),
-      .init("beforeEachGenericRequirement", .bool(description: "Break before each generic requirement when wrapping.", defaultValue: false)),
-      .init("betweenDeclarationAttributes", .bool(description: "Break between adjacent attributes.", defaultValue: false)),
-      .init("aroundMultilineExpressionChainComponents", .bool(description: "Break around multiline dot-chained components.", defaultValue: false)),
-    ]
-    default: []
+    /// Non-rule settings owned by this group.
+    package var configProperties: [ConfigProperty] {
+        switch self {
+        case .blankLines:
+            [
+                .init(
+                    "maximumBlankLines",
+                    .integer(
+                        description: "Maximum consecutive blank lines.",
+                        defaultValue: 1,
+                        minimum: 0
+                    )
+                )
+            ]
+        case .lineBreaks:
+            [
+                .init(
+                    "beforeControlFlowKeywords",
+                    .bool(
+                        description: "Break before else/catch after closing brace.",
+                        defaultValue: false
+                    )
+                ),
+                .init(
+                    "beforeEachArgument",
+                    .bool(
+                        description: "Break before each argument when wrapping.",
+                        defaultValue: false
+                    )
+                ),
+                .init(
+                    "beforeEachGenericRequirement",
+                    .bool(
+                        description: "Break before each generic requirement when wrapping.",
+                        defaultValue: false
+                    )
+                ),
+                .init(
+                    "betweenDeclarationAttributes",
+                    .bool(description: "Break between adjacent attributes.", defaultValue: false)
+                ),
+                .init(
+                    "aroundMultilineExpressionChainComponents",
+                    .bool(
+                        description: "Break around multiline dot-chained components.",
+                        defaultValue: false
+                    )
+                ),
+                .init(
+                    "beforeGuardConditions",
+                    .bool(
+                        description:
+                            "Break before guard conditions. When true, all conditions start on a new line below guard. When false, the first condition stays on the same line as guard.",
+                        defaultValue: true
+                    )
+                ),
+            ]
+        case .indentation:
+            [
+                .init(
+                    "blankLines",
+                    .bool(
+                        description: "Add indentation whitespace to blank lines.",
+                        defaultValue: false
+                    )
+                ),
+                .init(
+                    "conditionalCompilationBlocks",
+                    .bool(
+                        description: "Indent #if/#elseif/#else blocks.",
+                        defaultValue: true
+                    )
+                ),
+            ]
+        default: []
+        }
     }
-  }
 }
 
 /// Declares optional membership in a ``ConfigGroup``.
 ///
 /// Items in a group encode/decode inside the group's JSON object.
 /// Items with `nil` group live at the config root.
-public protocol Groupable {
+package protocol Groupable {
     /// The config group this item belongs to, or `nil` if ungrouped.
     static var group: ConfigGroup? { get }
 }

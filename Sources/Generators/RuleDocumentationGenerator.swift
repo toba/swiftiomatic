@@ -40,13 +40,13 @@ import Foundation
 
 
       """
-    for detectedRule in ruleCollector.allLinters.sorted(by: { $0.typeName < $1.typeName }) {
-      result += "- [\(detectedRule.typeName)](#\(detectedRule.typeName))\n"
+    for detectedRule in ruleCollector.allLinters.sorted(by: { $0.ruleName < $1.ruleName }) {
+      result += "- [\(detectedRule.ruleName)](#\(detectedRule.ruleName))\n"
     }
-    for detectedRule in ruleCollector.allLinters.sorted(by: { $0.typeName < $1.typeName }) {
+    for detectedRule in ruleCollector.allLinters.sorted(by: { $0.ruleName < $1.ruleName }) {
       result += """
 
-        ### \(detectedRule.typeName)
+        ### \(detectedRule.ruleName)
 
         \(detectedRule.description ?? "")
         \(ruleFormatSupportDescription(for: detectedRule))
@@ -58,6 +58,6 @@ import Foundation
 
   private func ruleFormatSupportDescription(for rule: RuleCollector.DetectedRule) -> String {
     return rule.canFormat
-      ? "`\(rule.typeName)` rule can format your code automatically." : "`\(rule.typeName)` is a linter-only rule."
+      ? "`\(rule.ruleName)` rule can format your code automatically." : "`\(rule.ruleName)` is a linter-only rule."
   }
 }

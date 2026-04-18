@@ -119,10 +119,10 @@ top-level keys and values:
 
 ---
 
-### `indentConditionalCompilationBlocks`  
+### `indentation.conditionalCompilationBlocks`  
 **type:** boolean  
 
-**description:** Determines if conditional compilation blocks are indented. If this setting is `false` the body of `#if`, `#elseif`, and `#else` is not indented.  
+**description:** Determines if conditional compilation blocks are indented. If this setting is `false` the body of `#if`, `#elseif`, and `#else` is not indented. Lives inside the `indentation` config group.  
 
 **default:** `true`  
 
@@ -148,12 +148,12 @@ top-level keys and values:
 
 ---
 
-### `indentSwitchCaseLabels`
-**type:** boolean
+### `indentation.switchCaseIndentation`
+**type:** rule with config
 
-**description:** Determines if `case` statements should be indented compared to the containing `switch` block.
+**description:** Controls switch case label indentation style. Set the `style` option to `flush` (case labels align with `switch`) or `indented` (case labels indent one level from `switch`).
 
-When `false`, the correct form is:
+`"flush"` (default):
 ```swift
 switch someValue {
 case someCase:
@@ -161,7 +161,7 @@ case someCase:
 ...
 }
 ```
-When `true`, the correct form is:
+`"indented"`:
 ```swift
 switch someValue {
   case someCase:
@@ -170,7 +170,7 @@ switch someValue {
 }
 ```
 
-**default:** `false`
+**default:** `{ "mode": "off", "style": "flush" }`
 
 ---
 
@@ -289,10 +289,10 @@ too long.
 
 ---
 
-### `indentBlankLines`  
+### `indentation.blankLines`  
 **type:** boolean  
 
-**description:** Determines whether blank lines should be modified to match the current indentation. When this setting is true, blank lines will be modified whitespace. If `false`, all whitespace in blank lines will be completely removed.
+**description:** Determines whether blank lines should be modified to match the current indentation. When this setting is true, blank lines will be modified whitespace. If `false`, all whitespace in blank lines will be completely removed. Lives inside the `indentation` config group.
 
 **default:** `false`
 

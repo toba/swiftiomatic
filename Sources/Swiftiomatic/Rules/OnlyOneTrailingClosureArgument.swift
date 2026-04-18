@@ -16,10 +16,9 @@ import SwiftSyntax
 ///
 /// Lint: If a function call with a trailing closure also contains a non-trailing closure argument,
 ///       a lint error is raised.
-@_spi(Rules)
-public final class OnlyOneTrailingClosureArgument: SyntaxLintRule {
+final class OnlyOneTrailingClosureArgument: SyntaxLintRule {
 
-  public override func visit(_ node: FunctionCallExprSyntax) -> SyntaxVisitorContinueKind {
+  override func visit(_ node: FunctionCallExprSyntax) -> SyntaxVisitorContinueKind {
     guard (node.arguments.contains { $0.expression.is(ClosureExprSyntax.self) }) else {
       return .skipChildren
     }

@@ -12,10 +12,9 @@ import SwiftSyntax
 /// Lint: A `where` clause with a simple conformance constraint that could be inlined raises a warning.
 ///
 /// Format: The conformance constraint is moved from the `where` clause to the generic parameter.
-@_spi(Rules)
-public final class SimplifyGenericConstraints: SyntaxFormatRule {
+final class SimplifyGenericConstraints: SyntaxFormatRule {
 
-  public override func visit(_ node: FunctionDeclSyntax) -> DeclSyntax {
+  override func visit(_ node: FunctionDeclSyntax) -> DeclSyntax {
     let visited = super.visit(node).cast(FunctionDeclSyntax.self)
     var result = simplifyConstraints(
       visited,
@@ -30,7 +29,7 @@ public final class SimplifyGenericConstraints: SyntaxFormatRule {
     return DeclSyntax(result)
   }
 
-  public override func visit(_ node: StructDeclSyntax) -> DeclSyntax {
+  override func visit(_ node: StructDeclSyntax) -> DeclSyntax {
     let visited = super.visit(node).cast(StructDeclSyntax.self)
     return DeclSyntax(simplifyConstraints(
       visited,
@@ -39,7 +38,7 @@ public final class SimplifyGenericConstraints: SyntaxFormatRule {
     ))
   }
 
-  public override func visit(_ node: ClassDeclSyntax) -> DeclSyntax {
+  override func visit(_ node: ClassDeclSyntax) -> DeclSyntax {
     let visited = super.visit(node).cast(ClassDeclSyntax.self)
     return DeclSyntax(simplifyConstraints(
       visited,
@@ -48,7 +47,7 @@ public final class SimplifyGenericConstraints: SyntaxFormatRule {
     ))
   }
 
-  public override func visit(_ node: EnumDeclSyntax) -> DeclSyntax {
+  override func visit(_ node: EnumDeclSyntax) -> DeclSyntax {
     let visited = super.visit(node).cast(EnumDeclSyntax.self)
     return DeclSyntax(simplifyConstraints(
       visited,
@@ -57,7 +56,7 @@ public final class SimplifyGenericConstraints: SyntaxFormatRule {
     ))
   }
 
-  public override func visit(_ node: ActorDeclSyntax) -> DeclSyntax {
+  override func visit(_ node: ActorDeclSyntax) -> DeclSyntax {
     let visited = super.visit(node).cast(ActorDeclSyntax.self)
     return DeclSyntax(simplifyConstraints(
       visited,

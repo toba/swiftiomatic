@@ -20,7 +20,7 @@ struct RuleBasedFindingCategory: FindingCategorizing {
   /// The type of the rule associated with this category.
   private nonisolated(unsafe) let ruleType: Rule.Type
 
-  var description: String { ruleType.ruleName }
+  var description: String { ruleType.name }
 
   /// Creates a finding category that wraps the given rule type.
   init(ruleType: Rule.Type) {

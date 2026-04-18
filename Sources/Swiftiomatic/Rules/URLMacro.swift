@@ -16,10 +16,9 @@ import SwiftSyntax
 /// Lint: A warning is raised for each `URL(string: "...")!` that can be converted.
 ///
 /// Format: The force-unwrapped URL initializer is replaced with the configured macro.
-@_spi(Rules)
-public final class URLMacro: SyntaxFormatRule {
+final class URLMacro: SyntaxFormatRule {
 
-  public override class var isOptIn: Bool { true }
+  static let isOptIn = true
 
   /// Whether any replacements were made (drives import addition).
   private var madeReplacements = false
@@ -29,7 +28,7 @@ public final class URLMacro: SyntaxFormatRule {
 
   // MARK: - Import detection
 
-  public override func visit(_ node: ImportDeclSyntax) -> DeclSyntax {
+  override func visit(_ node: ImportDeclSyntax) -> DeclSyntax {
     if let moduleName = context.configuration.urlMacro.moduleName,
       node.path.first?.name.text == moduleName
     {
@@ -40,7 +39,7 @@ public final class URLMacro: SyntaxFormatRule {
 
   // MARK: - File-level: add import after processing children
 
-  public override func visit(_ node: SourceFileSyntax) -> SourceFileSyntax {
+  override func visit(_ node: SourceFileSyntax) -> SourceFileSyntax {
     let config = context.configuration.urlMacro
     guard config.macroName != nil else { return node }
 
@@ -100,7 +99,7 @@ public final class URLMacro: SyntaxFormatRule {
 
   // MARK: - Expression-level: replace URL(string: "...")!
 
-  public override func visit(_ node: ForceUnwrapExprSyntax) -> ExprSyntax {
+  override func visit(_ node: ForceUnwrapExprSyntax) -> ExprSyntax {
     let config = context.configuration.urlMacro
     guard let macroName = config.macroName else { return ExprSyntax(node) }
 
@@ -171,4 +170,24 @@ public final class URLMacro: SyntaxFormatRule {
 extension Finding.Message {
   fileprivate static let replaceWithURLMacro: Finding.Message =
     "replace force-unwrapped 'URL(string:)' with URL macro"
+}
+
+// MARK: - Configuration
+
+public struct URLMacroConfiguration: Codable, Equatable, Sendable, ConfigRepresentable {
+  package static let configProperties: [ConfigProperty] = [
+    .init("macroName", .string(description: "Macro name, e.g. \"#URL\". Omit to disable.")),
+    .init("moduleName", .string(description: "Module to import for the macro.")),
+  ]
+
+  public var macroName: String?
+  public var moduleName: String?
+
+  public init() {}
+
+  public init(from decoder: Decoder) throws {
+    let container = try decoder.container(keyedBy: CodingKeys.self)
+    self.macroName = try container.decodeIfPresent(String.self, forKey: .macroName)
+    self.moduleName = try container.decodeIfPresent(String.self, forKey: .moduleName)
+  }
 }

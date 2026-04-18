@@ -10,7 +10,7 @@
 //
 //===----------------------------------------------------------------------===//
 
-@_spi(Rules) import Swiftiomatic
+@testable import Swiftiomatic
 import SwiftiomaticTestSupport
 import Testing
 
@@ -708,7 +708,7 @@ struct SortImportsTests: RuleTesting {
   }
 
   @Test func nestedConditionalImports() {
-    var configuration = Configuration.forTesting(enabledRule: SortImports.ruleName)
+    var configuration = Configuration.forTesting(enabledRule: SortImports.name)
     configuration.sortImports.includeConditionalImports = true
 
     assertFormatting(
@@ -1049,7 +1049,7 @@ struct SortImportsTests: RuleTesting {
   }
 
   @Test func mixedContentOrderingWithGroupingDisabled() {
-    var configuration = Configuration.forTesting(enabledRule: SortImports.ruleName)
+    var configuration = Configuration.forTesting(enabledRule: SortImports.name)
     configuration.sortImports.shouldGroupImports = false
 
     assertFormatting(

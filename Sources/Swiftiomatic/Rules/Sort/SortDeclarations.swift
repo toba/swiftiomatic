@@ -8,15 +8,14 @@ import SwiftSyntax
 /// Lint: If declarations in a marked region are not sorted, a lint warning is raised.
 ///
 /// Format: The declarations are reordered alphabetically by name.
-@_spi(Rules)
-public final class SortDeclarations: SyntaxFormatRule {
-    public override class var group: ConfigGroup? { .sort }
+final class SortDeclarations: SyntaxFormatRule {
+    static let group: ConfigGroup? = .sort
     private static let beginMarker = "swiftiomatic:sort:begin"
     private static let endMarker = "swiftiomatic:sort:end"
 
     // MARK: - Member blocks (type bodies)
 
-    public override func visit(_ node: MemberBlockItemListSyntax) -> MemberBlockItemListSyntax {
+    override func visit(_ node: MemberBlockItemListSyntax) -> MemberBlockItemListSyntax {
         let visited = super.visit(node)
         let items = Array(visited)
         guard items.count > 1 else { return visited }
@@ -73,7 +72,7 @@ public final class SortDeclarations: SyntaxFormatRule {
 
     // MARK: - Code blocks (top-level declarations)
 
-    public override func visit(_ node: CodeBlockItemListSyntax) -> CodeBlockItemListSyntax {
+    override func visit(_ node: CodeBlockItemListSyntax) -> CodeBlockItemListSyntax {
         let visited = super.visit(node)
         let items = Array(visited)
         guard items.count > 1 else { return visited }

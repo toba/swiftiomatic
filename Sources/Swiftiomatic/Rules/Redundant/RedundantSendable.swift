@@ -13,13 +13,12 @@ import SwiftSyntax
 /// Lint: If a redundant `Sendable` conformance is found, a lint warning is raised.
 ///
 /// Format: The redundant `Sendable` conformance is removed from the inheritance clause.
-@_spi(Rules)
-public final class RedundantSendable: SyntaxFormatRule {
-  public override class var group: ConfigGroup? { .removeRedundant }
+final class RedundantSendable: SyntaxFormatRule {
+  static let group: ConfigGroup? = .redundancies
 
-  public override class var isOptIn: Bool { true }
+  static let isOptIn = true
 
-  public override func visit(_ node: StructDeclSyntax) -> DeclSyntax {
+  override func visit(_ node: StructDeclSyntax) -> DeclSyntax {
     let visited = super.visit(node).cast(StructDeclSyntax.self)
     guard !isPublicOrPackage(visited.modifiers),
       let inheritanceClause = visited.inheritanceClause,
@@ -38,7 +37,7 @@ public final class RedundantSendable: SyntaxFormatRule {
     return DeclSyntax(result)
   }
 
-  public override func visit(_ node: EnumDeclSyntax) -> DeclSyntax {
+  override func visit(_ node: EnumDeclSyntax) -> DeclSyntax {
     let visited = super.visit(node).cast(EnumDeclSyntax.self)
     guard !isPublicOrPackage(visited.modifiers),
       let inheritanceClause = visited.inheritanceClause,

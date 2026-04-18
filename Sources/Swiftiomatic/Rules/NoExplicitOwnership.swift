@@ -9,16 +9,15 @@ import SwiftSyntax
 /// Lint: If an explicit `borrowing` or `consuming` modifier is found, a lint warning is raised.
 ///
 /// Format: The ownership modifier is removed.
-@_spi(Rules)
-public final class NoExplicitOwnership: SyntaxFormatRule {
+final class NoExplicitOwnership: SyntaxFormatRule {
 
-  public override class var isOptIn: Bool { true }
+  static let isOptIn = true
 
   private static let ownershipKeywords: Set<Keyword> = [.borrowing, .consuming]
 
   // MARK: - Declaration modifiers (e.g. `consuming func move()`)
 
-  public override func visit(_ node: FunctionDeclSyntax) -> DeclSyntax {
+  override func visit(_ node: FunctionDeclSyntax) -> DeclSyntax {
     // Must call super.visit to recurse into parameter types where AttributedTypeSyntax lives.
     let visited = super.visit(node).cast(FunctionDeclSyntax.self)
     return DeclSyntax(removingOwnershipModifier(from: visited, keywordKeyPath: \.funcKeyword))
@@ -26,7 +25,7 @@ public final class NoExplicitOwnership: SyntaxFormatRule {
 
   // MARK: - Type specifiers (e.g. `consuming Foo` in parameter types)
 
-  public override func visit(_ node: AttributedTypeSyntax) -> TypeSyntax {
+  override func visit(_ node: AttributedTypeSyntax) -> TypeSyntax {
     let visited = super.visit(node)
     guard let attributed = visited.as(AttributedTypeSyntax.self) else { return visited }
 

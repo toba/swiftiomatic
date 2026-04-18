@@ -29,13 +29,12 @@ import SwiftSyntax
 /// Lint: A finding is emitted when a redundant `let` or `var` is found.
 ///
 /// Format: The redundant `let`/`var` keyword is removed.
-@_spi(Rules)
-public final class RedundantLet: SyntaxFormatRule {
-  public override class var group: ConfigGroup? { .removeRedundant }
+final class RedundantLet: SyntaxFormatRule {
+  static let group: ConfigGroup? = .redundancies
 
   // MARK: - Statement-level: let _ = expr → _ = expr
 
-  public override func visit(_ node: CodeBlockItemListSyntax) -> CodeBlockItemListSyntax {
+  override func visit(_ node: CodeBlockItemListSyntax) -> CodeBlockItemListSyntax {
     let visited = super.visit(node)
     guard !isLikelyResultBuilderContext(visited) else { return visited }
 
@@ -212,7 +211,7 @@ public final class RedundantLet: SyntaxFormatRule {
 
   // MARK: - Case patterns: if case .foo(let _) → if case .foo(_)
 
-  public override func visit(_ node: LabeledExprSyntax) -> LabeledExprSyntax {
+  override func visit(_ node: LabeledExprSyntax) -> LabeledExprSyntax {
     // In case patterns like `case .foo(let _)`, the AST has:
     //   LabeledExprSyntax → PatternExprSyntax → ValueBindingPatternSyntax(let, WildcardPatternSyntax)
     // The `let`/`var` is redundant when the inner pattern is just `_`.

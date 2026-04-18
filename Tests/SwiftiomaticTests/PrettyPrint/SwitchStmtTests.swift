@@ -566,7 +566,7 @@ struct SwitchStmtTests: PrettyPrintTesting {
       """
 
     var configuration = Configuration.forTesting
-    configuration.indentSwitchCaseLabels = true
+    configuration.switchCaseIndentation.style = .indented
     assertPrettyPrintEqual(
       input: input,
       expected: expected,

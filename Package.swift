@@ -47,6 +47,7 @@ let package = Package(
     .target(
       name: "Generators",
       dependencies: [
+        "Swiftiomatic",
         "SwiftiomaticCore",
         .product(name: "SwiftParser", package: "swift-syntax"),
         .product(name: "SwiftSyntax", package: "swift-syntax"),

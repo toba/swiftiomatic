@@ -24,12 +24,11 @@ import SwiftSyntax
 /// Lint: Using the non-preferred placement yields a lint error.
 ///
 /// Format: The `let`/`var` is repositioned to match the configured placement.
-@_spi(Rules)
-public final class PatternLetPlacement: SyntaxFormatRule {
+final class PatternLetPlacement: SyntaxFormatRule {
 
   // MARK: - Visitors
 
-  public override func visit(_ node: MatchingPatternConditionSyntax) -> MatchingPatternConditionSyntax {
+  override func visit(_ node: MatchingPatternConditionSyntax) -> MatchingPatternConditionSyntax {
     switch context.configuration.patternLet.placement {
     case .eachBinding:
       if let (replacement, specifier) = distributeLetVarThroughPattern(node.pattern) {
@@ -49,7 +48,7 @@ public final class PatternLetPlacement: SyntaxFormatRule {
     return super.visit(node)
   }
 
-  public override func visit(_ node: SwitchCaseItemSyntax) -> SwitchCaseItemSyntax {
+  override func visit(_ node: SwitchCaseItemSyntax) -> SwitchCaseItemSyntax {
     switch context.configuration.patternLet.placement {
     case .eachBinding:
       if let (replacement, specifier) = distributeLetVarThroughPattern(node.pattern) {
@@ -71,7 +70,7 @@ public final class PatternLetPlacement: SyntaxFormatRule {
     return super.visit(node)
   }
 
-  public override func visit(_ node: ForStmtSyntax) -> StmtSyntax {
+  override func visit(_ node: ForStmtSyntax) -> StmtSyntax {
     guard node.caseKeyword != nil else {
       return super.visit(node)
     }
@@ -337,5 +336,37 @@ private final class UnbindIdentifiersRewriter: SyntaxRewriter {
     var result = node
     result.pattern = binding.pattern
     return ExprSyntax(result)
+  }
+}
+
+// MARK: - Configuration
+
+public struct PatternLetConfiguration: Codable, Equatable, Sendable, ConfigRepresentable {
+  package static let configProperties: [ConfigProperty] = [
+    .init(
+      "placement",
+      .stringEnum(
+        description: "Where to place let/var in case patterns.",
+        values: ["eachBinding", "outerPattern"],
+        defaultValue: "eachBinding"
+      )
+    )
+  ]
+
+  public enum Placement: String, Codable, Sendable {
+    case eachBinding
+    case outerPattern
+  }
+
+  public var placement: Placement = .eachBinding
+
+  public init() {}
+
+  public init(from decoder: Decoder) throws {
+    let container = try decoder.container(keyedBy: CodingKeys.self)
+    let defaults = Self()
+    self.placement =
+      try container.decodeIfPresent(Placement.self, forKey: .placement)
+      ?? defaults.placement
   }
 }

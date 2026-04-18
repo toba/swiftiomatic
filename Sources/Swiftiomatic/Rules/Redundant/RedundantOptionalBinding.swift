@@ -22,11 +22,10 @@ import SwiftSyntax
 /// Lint: If a redundant optional binding initializer is found, a lint warning is raised.
 ///
 /// Format: The redundant initializer is removed.
-@_spi(Rules)
-public final class RedundantOptionalBinding: SyntaxFormatRule {
-  public override class var group: ConfigGroup? { .removeRedundant }
+final class RedundantOptionalBinding: SyntaxFormatRule {
+  static let group: ConfigGroup? = .redundancies
 
-  public override func visit(_ node: OptionalBindingConditionSyntax) -> OptionalBindingConditionSyntax {
+  override func visit(_ node: OptionalBindingConditionSyntax) -> OptionalBindingConditionSyntax {
     guard let initializer = node.initializer,
       let identifierPattern = node.pattern.as(IdentifierPatternSyntax.self),
       let declRef = initializer.value.as(DeclReferenceExprSyntax.self),

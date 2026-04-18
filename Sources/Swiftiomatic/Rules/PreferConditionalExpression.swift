@@ -12,12 +12,11 @@ import SwiftSyntax
 ///
 /// Format: The separate statements are merged into a conditional expression
 ///         assignment.
-@_spi(Rules)
-public final class PreferConditionalExpression: SyntaxFormatRule {
+final class PreferConditionalExpression: SyntaxFormatRule {
 
-  public override class var isOptIn: Bool { true }
+  static let isOptIn = true
 
-  public override func visit(_ node: CodeBlockItemListSyntax) -> CodeBlockItemListSyntax {
+  override func visit(_ node: CodeBlockItemListSyntax) -> CodeBlockItemListSyntax {
     let visited = super.visit(node)
     let items = Array(visited)
     var newItems = [CodeBlockItemSyntax]()
