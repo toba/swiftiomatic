@@ -14,8 +14,8 @@ import SwiftSyntax
 ///
 /// Format: The property declaration is removed and its value is inlined into
 ///         the return statement.
-final class RedundantProperty: SyntaxFormatRule {
-  static let group: ConfigGroup? = .redundancies
+final class RedundantProperty: RewriteSyntaxRule {
+  override class var group: ConfigurationGroup? { .redundancies }
 
   override func visit(_ node: CodeBlockItemListSyntax) -> CodeBlockItemListSyntax {
     let visited = super.visit(node)

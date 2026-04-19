@@ -15,7 +15,7 @@ import SwiftSyntax
 /// `@retroactive` conformances are forbidden.
 ///
 /// Lint: Using `@retroactive` results in a lint error.
-final class NoRetroactiveConformances: SyntaxLintRule {
+final class NoRetroactiveConformances: LintSyntaxRule {
     override func visit(_ node: ExtensionDeclSyntax) -> SyntaxVisitorContinueKind {
         if let inheritanceClause = node.inheritanceClause {
             walk(inheritanceClause)

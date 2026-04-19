@@ -10,7 +10,7 @@
 //
 //===----------------------------------------------------------------------===//
 
-/// A type that invokes individual format rules.
+/// A type that invokes individual rewrite rules.
 ///
 /// Note that this type is not a `SyntaxVisitor` or `SyntaxRewriter`. That is because, at this time,
 /// we need to run each of the format rules individually over the entire syntax tree. We cannot
@@ -20,8 +20,7 @@
 /// entire `visit` method has returned.
 ///
 /// This file will be extended with a `visit` method in Pipelines+Generated.swift.
-struct FormatPipeline {
-
+struct RewritePipeline {
     /// The formatter context.
     let context: Context
 

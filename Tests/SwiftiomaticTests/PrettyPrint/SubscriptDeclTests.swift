@@ -93,7 +93,7 @@ struct SubscriptDeclTests: PrettyPrintTesting {
       """
 
     var config = Configuration.forTesting
-    config.lineBreakBeforeEachArgument = true
+    config[BeforeEachArgument.self] = true
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 50, configuration: config)
   }
 
@@ -135,7 +135,7 @@ struct SubscriptDeclTests: PrettyPrintTesting {
       """
 
     var config = Configuration.forTesting
-    config.lineBreakBeforeEachArgument = false
+    config[BeforeEachArgument.self] = false
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 50, configuration: config)
   }
 
@@ -174,7 +174,7 @@ struct SubscriptDeclTests: PrettyPrintTesting {
       """
 
     var config = Configuration.forTesting
-    config.lineBreakBeforeEachArgument = false
+    config[BeforeEachArgument.self] = false
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 50, configuration: config)
   }
 
@@ -214,8 +214,8 @@ struct SubscriptDeclTests: PrettyPrintTesting {
       """
 
     var config = Configuration.forTesting
-    config.lineBreakBeforeEachArgument = false
-    config.lineBreakBeforeEachGenericRequirement = true
+    config[BeforeEachArgument.self] = false
+    config[BeforeEachGenericRequirement.self] = true
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 50, configuration: config)
   }
 
@@ -363,7 +363,7 @@ struct SubscriptDeclTests: PrettyPrintTesting {
 
       """
     var config = Configuration.forTesting
-    config.prioritizeKeepingFunctionOutputTogether = true
+    config[PrioritizeKeepingFunctionOutputTogether.self] = true
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 26, configuration: config)
 
     expected =
@@ -487,7 +487,7 @@ struct SubscriptDeclTests: PrettyPrintTesting {
       """
 
     var config = Configuration.forTesting
-    config.lineBreakBeforeEachGenericRequirement = true
+    config[BeforeEachGenericRequirement.self] = true
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 34, configuration: config)
   }
 

@@ -9,7 +9,7 @@ import SwiftSyntax
 /// Lint: If modifiers are out of order, a lint warning is raised.
 ///
 /// Format: The modifiers are reordered to match the canonical order.
-final class ModifierOrder: SyntaxFormatRule {
+final class ModifierOrder: RewriteSyntaxRule {
 
     /// Canonical modifier order. Modifiers not in this list keep their relative position
     /// after all listed modifiers.

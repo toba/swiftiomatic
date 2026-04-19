@@ -8,8 +8,8 @@ import SwiftSyntax
 /// Lint: Using `!` prefix negation raises a warning.
 ///
 /// Format: `!expression` is replaced with `expression == false`.
-final class PreferExplicitFalse: SyntaxFormatRule {
-  static let defaultHandling: RuleHandling = .off
+final class PreferExplicitFalse: RewriteSyntaxRule {
+  override class var defaultHandling: RuleHandling { .off }
 
   override func visit(_ node: PrefixOperatorExprSyntax) -> ExprSyntax {
     guard node.operator.text == "!" else { return super.visit(node) }

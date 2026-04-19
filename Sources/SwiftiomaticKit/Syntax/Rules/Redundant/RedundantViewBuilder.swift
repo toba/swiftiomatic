@@ -17,12 +17,12 @@ import SwiftSyntax
 /// Lint: If a redundant `@ViewBuilder` is found, a lint warning is raised.
 ///
 /// Format: The redundant `@ViewBuilder` attribute is removed.
-final class RedundantViewBuilder: SyntaxFormatRule {
-  static let group: ConfigGroup? = .redundancies
+final class RedundantViewBuilder: RewriteSyntaxRule {
+  override class var group: ConfigurationGroup? { .redundancies }
 
   /// Identifies this rule as being opt-in. This rule requires SwiftUI context and may produce
   /// false positives in codebases that use custom result builders named `ViewBuilder`.
-  static let defaultHandling: RuleHandling = .off
+  override class var defaultHandling: RuleHandling { .off }
 
   override func visit(_ node: VariableDeclSyntax) -> DeclSyntax {
     guard let viewBuilderAttr = node.attributes.attribute(named: "ViewBuilder") else {

@@ -613,7 +613,7 @@ struct SortImportsTests: RuleTesting {
 
   @Test func conditionalImportsWhenEnabled() {
     var configuration = Configuration.forTesting
-    configuration.sortImports.includeConditionalImports = true
+    configuration[SortImportsConfiguration.self].includeConditionalImports = true
 
     assertFormatting(
       SortImports.self,
@@ -662,7 +662,7 @@ struct SortImportsTests: RuleTesting {
 
   @Test func conditionalImportsWhenDisabled() {
     var configuration = Configuration.forTesting
-    configuration.sortImports.includeConditionalImports = false
+    configuration[SortImportsConfiguration.self].includeConditionalImports = false
 
     assertFormatting(
       SortImports.self,
@@ -708,8 +708,8 @@ struct SortImportsTests: RuleTesting {
   }
 
   @Test func nestedConditionalImports() {
-    var configuration = Configuration.forTesting(enabledRule: SortImports.name)
-    configuration.sortImports.includeConditionalImports = true
+    var configuration = Configuration.forTesting(enabledRule: SortImports.key)
+    configuration[SortImportsConfiguration.self].includeConditionalImports = true
 
     assertFormatting(
       SortImports.self,
@@ -954,7 +954,7 @@ struct SortImportsTests: RuleTesting {
 
   @Test func preservesEmptyConditionalCompilationBlock() {
     var configuration = Configuration.forTesting
-    configuration.sortImports.includeConditionalImports = true
+    configuration[SortImportsConfiguration.self].includeConditionalImports = true
 
     let code = """
       import Apples
@@ -976,7 +976,7 @@ struct SortImportsTests: RuleTesting {
 
   @Test func preservesHeaderCommentInConditionalCompilationBlock() {
     var configuration = Configuration.forTesting
-    configuration.sortImports.includeConditionalImports = true
+    configuration[SortImportsConfiguration.self].includeConditionalImports = true
 
     let code = """
       import Apples
@@ -1000,7 +1000,7 @@ struct SortImportsTests: RuleTesting {
 
   @Test func preservesCommentsOnlyInConditionalCompilationBlock() {
     var configuration = Configuration.forTesting
-    configuration.sortImports.includeConditionalImports = true
+    configuration[SortImportsConfiguration.self].includeConditionalImports = true
 
     let code = """
       import Apples
@@ -1023,7 +1023,7 @@ struct SortImportsTests: RuleTesting {
 
   @Test func orderingWithGroupingDisabled() {
     var configuration = Configuration.forTesting
-    configuration.sortImports.shouldGroupImports = false
+    configuration[SortImportsConfiguration.self].shouldGroupImports = false
 
     let code = """
       import Core
@@ -1049,8 +1049,8 @@ struct SortImportsTests: RuleTesting {
   }
 
   @Test func mixedContentOrderingWithGroupingDisabled() {
-    var configuration = Configuration.forTesting(enabledRule: SortImports.name)
-    configuration.sortImports.shouldGroupImports = false
+    var configuration = Configuration.forTesting(enabledRule: SortImports.key)
+    configuration[SortImportsConfiguration.self].shouldGroupImports = false
 
     assertFormatting(
       SortImports.self,
@@ -1091,7 +1091,7 @@ struct SortImportsTests: RuleTesting {
 
   @Test func invalidOrderingWithGroupingDisabled() {
     var configuration = Configuration.forTesting
-    configuration.sortImports.shouldGroupImports = false
+    configuration[SortImportsConfiguration.self].shouldGroupImports = false
 
     assertFormatting(
       SortImports.self,

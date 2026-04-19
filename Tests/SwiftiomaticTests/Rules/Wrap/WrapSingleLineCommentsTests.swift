@@ -6,8 +6,8 @@ import Testing
 struct WrapSingleLineCommentsTests: RuleTesting {
 
   private func config(maxWidth: Int) -> Configuration {
-    var c = Configuration.forTesting(enabledRule: WrapSingleLineComments.self.name)
-    c.lineLength = maxWidth
+    var c = Configuration.forTesting(enabledRule: WrapSingleLineComments.self.key)
+    c[LineLength.self] = maxWidth
     return c
   }
 

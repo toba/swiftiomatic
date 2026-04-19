@@ -25,7 +25,7 @@ extension LintPipeline {
     ///     disabled.
     ///   - node: The syntax node on which the rule will be applied. This lets us check whether the
     ///     rule is enabled for the particular source range where the node occurs.
-    func visitIfEnabled<Rule: SyntaxLintRule, Node: SyntaxProtocol>(
+    func visitIfEnabled<Rule: LintSyntaxRule, Node: SyntaxProtocol>(
         _ visitor: (Rule) -> (Node) -> SyntaxVisitorContinueKind,
         for node: Node
     ) {
@@ -42,13 +42,13 @@ extension LintPipeline {
     /// Calls the `visit` method of a rule for the given node if that rule is enabled for the node.
     ///
     /// - Parameters:
-    ///   - visitor: A reference to the `visit` method on the *type* of a `SyntaxFormatRule` subclass.
+    ///   - visitor: A reference to the `visit` method on the *type* of a `RewriteSyntaxRule` subclass.
     ///     The type of the rule in question is inferred from the signature of the method reference.
     ///   - context: The formatter context that contains information about which rules are enabled or
     ///     disabled.
     ///   - node: The syntax node on which the rule will be applied. This lets us check whether the
     ///     rule is enabled for the particular source range where the node occurs.
-    func visitIfEnabled<Rule: SyntaxFormatRule, Node: SyntaxProtocol>(
+    func visitIfEnabled<Rule: RewriteSyntaxRule, Node: SyntaxProtocol>(
         _ visitor: (Rule) -> (Node) -> Any,
         for node: Node
     ) {
@@ -67,7 +67,7 @@ extension LintPipeline {
     /// - Parameters:
     ///   - rule: The type of the syntax rule we're cleaning up.
     ///   - node: The syntax node that our traversal has left.
-    func onVisitPost<R: Rule, Node: SyntaxProtocol>(
+    func onVisitPost<R: SyntaxRule, Node: SyntaxProtocol>(
         rule: R.Type,
         for node: Node
     ) {
@@ -85,7 +85,7 @@ extension LintPipeline {
     /// create that instance as needed, using `ruleCache` to cache rules.
     /// - Parameter type: The type of the rule to retrieve.
     /// - Returns: An instance of the given type.
-    private func rule<R: Rule>(_ type: R.Type) -> R {
+    private func rule<R: SyntaxRule>(_ type: R.Type) -> R {
         let identifier = ObjectIdentifier(type)
         if let cachedRule = ruleCache[identifier] {
             return cachedRule as! R

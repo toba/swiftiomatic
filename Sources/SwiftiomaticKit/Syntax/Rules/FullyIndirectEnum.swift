@@ -19,7 +19,7 @@ import SwiftSyntax
 ///
 /// Format: Enums where all cases are `indirect` will be rewritten such that the enum is marked
 ///         `indirect`, and each case is not.
-final class FullyIndirectEnum: SyntaxFormatRule {
+final class FullyIndirectEnum: RewriteSyntaxRule {
 
   override func visit(_ node: EnumDeclSyntax) -> DeclSyntax {
     let enumMembers = node.memberBlock.members

@@ -17,8 +17,7 @@ private let utf8Tab = UTF8.CodeUnit(ascii: "\t")
 
 /// Emits linter errors for whitespace style violations by comparing the raw text of the input Swift
 /// code with formatted text.
-package class WhitespaceLinter {
-
+package final class WhitespaceLinter {
     /// The text of the input source code to be linted.
     private let userText: [UTF8.CodeUnit]
 
@@ -205,7 +204,7 @@ package class WhitespaceLinter {
             return
         }
 
-        let lengthLimit = context.configuration.lineLength
+        let lengthLimit = context.configuration[LineLength.self]
 
         // Move the offset to the first non-whitespace character.
         var adjustedUserIndex = userIndex
@@ -412,6 +411,8 @@ package class WhitespaceLinter {
         return .heterogeneous(indents)
     }
 }
+
+// MARK: - Support
 
 /// Describes the composition of the whitespace that creates an indentation for a line of code.
 enum WhitespaceIndentation: Equatable {

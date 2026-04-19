@@ -301,7 +301,7 @@ struct RespectsExistingLineBreaksTests: PrettyPrintTesting {
   /// values for everything else.
   private func configuration(respectingExistingLineBreaks: Bool) -> Configuration {
     var config = Configuration.forTesting
-    config.respectsExistingLineBreaks = respectingExistingLineBreaks
+    config[RespectsExistingLineBreaks.self] = respectingExistingLineBreaks
     return config
   }
 }

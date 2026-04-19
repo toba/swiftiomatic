@@ -59,7 +59,7 @@ struct StringTests: PrettyPrintTesting {
       """#
 
     var config = Configuration()
-    config.reflowMultilineStringLiterals = .onlyLinesOverLength
+    config[ReflowMultilineStringLiterals.self] = .onlyLinesOverLength
     assertPrettyPrintEqual(
       input: input,
       expected: expected,
@@ -118,7 +118,7 @@ struct StringTests: PrettyPrintTesting {
       """#
 
     var config = Configuration()
-    config.reflowMultilineStringLiterals = .onlyLinesOverLength
+    config[ReflowMultilineStringLiterals.self] = .onlyLinesOverLength
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 30, configuration: config)
   }
 
@@ -152,7 +152,7 @@ struct StringTests: PrettyPrintTesting {
       """#
 
     var config = Configuration()
-    config.reflowMultilineStringLiterals = .onlyLinesOverLength
+    config[ReflowMultilineStringLiterals.self] = .onlyLinesOverLength
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 100, configuration: config)
   }
 
@@ -179,7 +179,7 @@ struct StringTests: PrettyPrintTesting {
       """#
 
     var config = Configuration()
-    config.reflowMultilineStringLiterals = .onlyLinesOverLength
+    config[ReflowMultilineStringLiterals.self] = .onlyLinesOverLength
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 100, configuration: config)
   }
 
@@ -202,7 +202,7 @@ struct StringTests: PrettyPrintTesting {
       """#
 
     var config = Configuration()
-    config.reflowMultilineStringLiterals = .onlyLinesOverLength
+    config[ReflowMultilineStringLiterals.self] = .onlyLinesOverLength
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 100, configuration: config)
   }
 
@@ -303,7 +303,7 @@ struct StringTests: PrettyPrintTesting {
       """#
 
     var config = Configuration()
-    config.reflowMultilineStringLiterals = .onlyLinesOverLength
+    config[ReflowMultilineStringLiterals.self] = .onlyLinesOverLength
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 70, configuration: config)
   }
 
@@ -448,7 +448,7 @@ struct StringTests: PrettyPrintTesting {
       """#
 
     var config = Configuration.forTesting
-    config.reflowMultilineStringLiterals = .always
+    config[ReflowMultilineStringLiterals.self] = .always
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 20, configuration: config)
   }
 
@@ -486,7 +486,7 @@ struct StringTests: PrettyPrintTesting {
       """#
 
     var config = Configuration.forTesting
-    config.reflowMultilineStringLiterals = .never
+    config[ReflowMultilineStringLiterals.self] = .never
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 10, configuration: config)
   }
 

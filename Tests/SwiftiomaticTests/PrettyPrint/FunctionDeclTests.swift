@@ -56,7 +56,7 @@ struct FunctionDeclTests: PrettyPrintTesting {
       """
 
     var config = Configuration.forTesting
-    config.lineBreakBeforeEachArgument = true
+    config[BeforeEachArgument.self] = true
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 50, configuration: config)
   }
 
@@ -99,7 +99,7 @@ struct FunctionDeclTests: PrettyPrintTesting {
       """
 
     var config = Configuration.forTesting
-    config.lineBreakBeforeEachArgument = false
+    config[BeforeEachArgument.self] = false
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 50, configuration: config)
   }
 
@@ -162,7 +162,7 @@ struct FunctionDeclTests: PrettyPrintTesting {
       """
 
     var config = Configuration.forTesting
-    config.lineBreakBeforeEachArgument = false
+    config[BeforeEachArgument.self] = false
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 50, configuration: config)
   }
 
@@ -207,7 +207,7 @@ struct FunctionDeclTests: PrettyPrintTesting {
       """
 
     var config = Configuration.forTesting
-    config.lineBreakBeforeEachArgument = false
+    config[BeforeEachArgument.self] = false
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 50, configuration: config)
   }
 
@@ -254,7 +254,7 @@ struct FunctionDeclTests: PrettyPrintTesting {
       """
 
     var config = Configuration.forTesting
-    config.lineBreakBeforeEachArgument = true
+    config[BeforeEachArgument.self] = true
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 40, configuration: config)
   }
 
@@ -300,7 +300,7 @@ struct FunctionDeclTests: PrettyPrintTesting {
       """
 
     var config = Configuration.forTesting
-    config.lineBreakBeforeEachArgument = false
+    config[BeforeEachArgument.self] = false
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 40, configuration: config)
   }
 
@@ -367,7 +367,7 @@ struct FunctionDeclTests: PrettyPrintTesting {
       """
 
     var config = Configuration.forTesting
-    config.lineBreakBeforeEachArgument = false
+    config[BeforeEachArgument.self] = false
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 50, configuration: config)
   }
 
@@ -436,8 +436,8 @@ struct FunctionDeclTests: PrettyPrintTesting {
       """
 
     var config = Configuration.forTesting
-    config.lineBreakBeforeEachArgument = false
-    config.lineBreakBeforeEachGenericRequirement = true
+    config[BeforeEachArgument.self] = false
+    config[BeforeEachGenericRequirement.self] = true
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 50, configuration: config)
   }
 
@@ -632,7 +632,7 @@ struct FunctionDeclTests: PrettyPrintTesting {
       """
 
     var config = Configuration.forTesting
-    config.lineBreakBeforeEachGenericRequirement = true
+    config[BeforeEachGenericRequirement.self] = true
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 30, configuration: config)
   }
 
@@ -758,7 +758,7 @@ struct FunctionDeclTests: PrettyPrintTesting {
 
       """
     var config = Configuration.forTesting
-    config.prioritizeKeepingFunctionOutputTogether = true
+    config[PrioritizeKeepingFunctionOutputTogether.self] = true
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 23, configuration: config)
 
     expected =
@@ -844,7 +844,7 @@ struct FunctionDeclTests: PrettyPrintTesting {
 
       """
     var config = Configuration.forTesting
-    config.prioritizeKeepingFunctionOutputTogether = true
+    config[PrioritizeKeepingFunctionOutputTogether.self] = true
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 23, configuration: config)
   }
 
@@ -933,7 +933,7 @@ struct FunctionDeclTests: PrettyPrintTesting {
 
       """
     var config = Configuration.forTesting
-    config.prioritizeKeepingFunctionOutputTogether = true
+    config[PrioritizeKeepingFunctionOutputTogether.self] = true
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 23, configuration: config)
 
     input =
@@ -994,7 +994,7 @@ struct FunctionDeclTests: PrettyPrintTesting {
       """
 
     var config = Configuration.forTesting
-    config.lineBreakBeforeEachArgument = false
+    config[BeforeEachArgument.self] = false
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 35, configuration: config)
   }
 
@@ -1191,7 +1191,7 @@ struct FunctionDeclTests: PrettyPrintTesting {
       """
 
     var config = Configuration.forTesting
-    config.lineBreakBeforeEachArgument = false
+    config[BeforeEachArgument.self] = false
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 49, configuration: config)
   }
 
@@ -1236,7 +1236,7 @@ struct FunctionDeclTests: PrettyPrintTesting {
       """
 
     var config = Configuration.forTesting
-    config.lineBreakBeforeEachArgument = false
+    config[BeforeEachArgument.self] = false
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 49, configuration: config)
   }
 }

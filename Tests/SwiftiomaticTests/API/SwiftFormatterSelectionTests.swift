@@ -240,9 +240,9 @@ struct SwiftiomaticFormatterSelectionTests {
     sourceLocation: Testing.SourceLocation = #_sourceLocation
   ) throws {
     var configuration = Configuration.forTesting
-    configuration.lineLength = 60
+    configuration[LineLength.self] = 60
 
-    let formatter = SwiftiomaticFormatter(configuration: configuration)
+    let formatter = RewriteCoordinator(configuration: configuration)
     var output = ""
     let tree = Parser.parse(source: source)
     let foldedTree = try! OperatorTable.standardOperators.foldAll(tree).as(SourceFileSyntax.self)!

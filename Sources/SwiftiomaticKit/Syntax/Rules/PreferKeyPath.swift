@@ -12,8 +12,8 @@ import SwiftSyntax
 /// Lint: A trivial `{ $0.property }` closure raises a warning.
 ///
 /// Format: The closure is replaced with a keyPath expression.
-final class PreferKeyPath: SyntaxFormatRule {
-  static let defaultHandling: RuleHandling = .off
+final class PreferKeyPath: RewriteSyntaxRule {
+  override class var defaultHandling: RuleHandling { .off }
 
   private static let eligibleMethods: Set<String> = [
     "map", "flatMap", "compactMap", "allSatisfy", "filter", "contains",

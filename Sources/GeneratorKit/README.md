@@ -11,7 +11,7 @@ Scans all rule types in `Sources/Swiftiomatic/Rules/`, extracts their metadata (
 | Generator | Output | Purpose |
 |---|---|---|
 | `PipelineGenerator` | `Pipelines+Generated.swift` | `visit()` dispatchers for `LintPipeline` and `FormatPipeline.rewrite()` |
-| `RuleRegistryGenerator` | `RuleRegistry+Generated.swift` | Default rule enablements derived from `defaultHandling` |
+| `ConfigurationRegistryGenerator` | `ConfigurationRegistry+Generated.swift` | Default rule enablements derived from `defaultHandling` |
 | `RuleNameCacheGenerator` | `RuleNameCache+Generated.swift` | `ObjectIdentifier` to rule name mapping |
 | `ConfigurationSchemaGenerator` | JSON Schema | Config file validation schema |
 | `RuleDocumentationGenerator` | Markdown docs | Rule reference documentation |

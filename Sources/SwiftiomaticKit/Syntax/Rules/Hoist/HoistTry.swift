@@ -15,9 +15,9 @@ import SwiftSyntax
 /// Lint: Using `try` inside a function call argument raises a warning.
 ///
 /// Format: `try` is removed from arguments and added to wrap the call expression.
-final class HoistTry: SyntaxFormatRule {
-    static let name = "MoveInlineTryToExpressionStart"
-    static let group: ConfigGroup? = .hoist
+final class HoistTry: RewriteSyntaxRule {
+    override class var key: String { "moveInlineTryToExpressionStart" }
+    override class var group: ConfigurationGroup? { .hoist }
 
     override func visit(_ node: FunctionCallExprSyntax) -> ExprSyntax {
         // Check parent on original node before visiting children

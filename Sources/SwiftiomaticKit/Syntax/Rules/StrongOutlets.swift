@@ -9,7 +9,7 @@ import SwiftSyntax
 /// Lint: An `@IBOutlet` property with `weak` raises a warning.
 ///
 /// Format: The `weak` modifier is removed.
-final class StrongOutlets: SyntaxFormatRule {
+final class StrongOutlets: RewriteSyntaxRule {
 
     override func visit(_ node: VariableDeclSyntax) -> DeclSyntax {
         // Must have @IBOutlet attribute

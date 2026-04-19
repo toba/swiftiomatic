@@ -23,8 +23,8 @@ import SwiftSyntax
 /// Lint: If `catch let error` is found, a lint warning is raised.
 ///
 /// Format: The redundant `let error` pattern is removed.
-final class RedundantLetError: SyntaxFormatRule {
-  static let group: ConfigGroup? = .redundancies
+final class RedundantLetError: RewriteSyntaxRule {
+  override class var group: ConfigurationGroup? { .redundancies }
 
   override func visit(_ node: CatchClauseSyntax) -> CatchClauseSyntax {
     // Must have exactly one catch item.

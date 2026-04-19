@@ -11,9 +11,9 @@ import SwiftSyntax
 /// Lint: A lint warning is raised when a generic parameter can be replaced with an opaque parameter.
 ///
 /// Format: The generic parameter is replaced with `some Protocol` in the parameter type.
-final class OpaqueGenericParameters: SyntaxFormatRule {
+final class OpaqueGenericParameters: RewriteSyntaxRule {
 
-  static let defaultHandling: RuleHandling = .off
+  override class var defaultHandling: RuleHandling { .off }
 
   // MARK: - Visitors
 

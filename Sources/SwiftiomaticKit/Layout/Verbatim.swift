@@ -12,18 +12,6 @@
 
 import Foundation
 
-/// Describes options for behavior when applying the indentation of the current context when
-/// printing a verbatim token.
-enum IndentingBehavior: Sendable {
-    /// The indentation of the current context is completely ignored.
-    case none
-    /// The indentation of the current context is applied to every line.
-    case allLines
-    /// The indentation of the current context is applied to the first line, and ignored on any
-    /// additional lines.
-    case firstLine
-}
-
 struct Verbatim: Sendable {
     /// The behavior used to adjust indentation when printing verbatim content.
     private let indentingBehavior: IndentingBehavior
@@ -113,6 +101,20 @@ struct Verbatim: Sendable {
         }
         return output
     }
+}
+
+// MARK: - Support
+
+/// Describes options for behavior when applying the indentation of the current context when
+/// printing a verbatim token.
+enum IndentingBehavior: Sendable {
+    /// The indentation of the current context is completely ignored.
+    case none
+    /// The indentation of the current context is applied to every line.
+    case allLines
+    /// The indentation of the current context is applied to the first line, and ignored on any
+    /// additional lines.
+    case firstLine
 }
 
 /// Returns the leading number of spaces in the given string.

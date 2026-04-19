@@ -12,9 +12,9 @@ import SwiftSyntax
 /// Lint: If an `async` function has no `await` in its body, a lint warning is raised.
 ///
 /// Format: The `async` specifier is removed.
-final class RedundantAsync: SyntaxFormatRule {
-    static let defaultHandling: RuleHandling = .off
-    static let group: ConfigGroup? = .redundancies
+final class RedundantAsync: RewriteSyntaxRule {
+    override class var defaultHandling: RuleHandling { .off }
+    override class var group: ConfigurationGroup? { .redundancies }
 
     override func visit(_ node: FunctionDeclSyntax) -> DeclSyntax {
         guard let effectSpecifiers = node.signature.effectSpecifiers,

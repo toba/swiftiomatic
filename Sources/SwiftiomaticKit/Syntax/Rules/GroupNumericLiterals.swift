@@ -24,7 +24,7 @@ import SwiftSyntax
 /// TODO: Minimum numeric literal length bounds and numeric groupings have been selected arbitrarily;
 /// these could be reevaluated.
 /// TODO: Handle floating point literals.
-final class GroupNumericLiterals: SyntaxFormatRule {
+final class GroupNumericLiterals: RewriteSyntaxRule {
     override func visit(_ node: IntegerLiteralExprSyntax) -> ExprSyntax {
         var originalDigits = node.literal.text
         guard !originalDigits.contains("_") else { return ExprSyntax(node) }

@@ -15,8 +15,8 @@ import SwiftSyntax
 /// Block comments should be avoided in favor of line comments.
 ///
 /// Lint: If a block comment appears, a lint error is raised.
-final class NoBlockComments: SyntaxLintRule {
-    static let group: ConfigGroup? = .comments
+final class NoBlockComments: LintSyntaxRule {
+    override class var group: ConfigurationGroup? { .comments }
 
     override func visit(_ token: TokenSyntax) -> SyntaxVisitorContinueKind {
         for triviaIndex in token.leadingTrivia.indices {

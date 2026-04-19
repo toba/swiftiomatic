@@ -33,7 +33,7 @@ extension WhitespaceTesting {
     let sourceFileSyntax = Parser.parse(source: markedText.textWithoutMarkers)
     var configuration = Configuration.forTesting
     if let linelength = linelength {
-      configuration.lineLength = linelength
+      configuration[LineLength.self] = linelength
     }
 
     var emittedFindings = [Finding]()

@@ -810,8 +810,8 @@ struct SingleLineBodiesTests: RuleTesting {
 struct SingleLineBodiesInlineTests: RuleTesting {
 
   private var inlineConfig: Configuration {
-    var config = Configuration.forTesting(enabledRule: WrapSingleLineBodies.name)
-    config.singleLineBodies = {
+    var config = Configuration.forTesting(enabledRule: WrapSingleLineBodies.key)
+    config[SingleLineBodiesConfiguration.self] = {
       var c = SingleLineBodiesConfiguration()
       c.mode = .inline
       return c
@@ -880,7 +880,7 @@ struct SingleLineBodiesInlineTests: RuleTesting {
 
   @Test func functionTooLongNotInlined() {
     var config = inlineConfig
-    config.lineLength = 30
+    config[LineLength.self] = 30
     assertFormatting(
       WrapSingleLineBodies.self,
       input: """
@@ -898,7 +898,7 @@ struct SingleLineBodiesInlineTests: RuleTesting {
 
   @Test func functionFitsInlines() {
     var config = inlineConfig
-    config.lineLength = 40
+    config[LineLength.self] = 40
     assertFormatting(
       WrapSingleLineBodies.self,
       input: """
@@ -949,7 +949,7 @@ struct SingleLineBodiesInlineTests: RuleTesting {
 
   @Test func guardTooLongNotInlined() {
     var config = inlineConfig
-    config.lineLength = 25
+    config[LineLength.self] = 25
     assertFormatting(
       WrapSingleLineBodies.self,
       input: """
@@ -1069,7 +1069,7 @@ struct SingleLineBodiesInlineTests: RuleTesting {
 
   @Test func computedPropertyTooLongNotInlined() {
     var config = inlineConfig
-    config.lineLength = 20
+    config[LineLength.self] = 20
     assertFormatting(
       WrapSingleLineBodies.self,
       input: """

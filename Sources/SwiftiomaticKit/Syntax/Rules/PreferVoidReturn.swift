@@ -20,7 +20,7 @@ import SwiftSyntax
 /// Lint: Returning `()` in a signature yields a lint error.
 ///
 /// Format: `-> ()` is replaced with `-> Void`
-final class PreferVoidReturn: SyntaxFormatRule {
+final class PreferVoidReturn: RewriteSyntaxRule {
   override func visit(_ node: FunctionTypeSyntax) -> TypeSyntax {
     guard let returnType = node.returnClause.type.as(TupleTypeSyntax.self),
       returnType.elements.count == 0

@@ -176,7 +176,7 @@ struct ExtensionDeclTests: PrettyPrintTesting {
       """
 
     var config = Configuration.forTesting
-    config.lineBreakBeforeEachGenericRequirement = true
+    config[BeforeEachGenericRequirement.self] = true
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 70, configuration: config)
   }
 
@@ -264,7 +264,7 @@ struct ExtensionDeclTests: PrettyPrintTesting {
       """
 
     var config = Configuration.forTesting
-    config.lineBreakBeforeEachGenericRequirement = true
+    config[BeforeEachGenericRequirement.self] = true
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 70, configuration: config)
   }
 
@@ -377,7 +377,7 @@ struct ExtensionDeclTests: PrettyPrintTesting {
       """
 
     var config = Configuration.forTesting
-    config.lineBreakBeforeEachGenericRequirement = true
+    config[BeforeEachGenericRequirement.self] = true
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 50, configuration: config)
   }
 

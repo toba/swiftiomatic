@@ -7,7 +7,7 @@ import SwiftSyntax
 /// Lint: Using `@UIApplicationMain` or `@NSApplicationMain` raises a warning.
 ///
 /// Format: The attribute is replaced with `@main`.
-final class PreferMainAttribute: SyntaxFormatRule {
+final class PreferMainAttribute: RewriteSyntaxRule {
 
     override func visit(_ node: AttributeSyntax) -> AttributeSyntax {
         guard let identType = node.attributeName.as(IdentifierTypeSyntax.self) else {

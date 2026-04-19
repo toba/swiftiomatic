@@ -122,7 +122,7 @@ struct RepeatStmtTests: PrettyPrintTesting {
       """
 
     var config = Configuration.forTesting
-    config.lineBreakBeforeControlFlowKeywords = true
+    config[BeforeControlFlowKeywords.self] = true
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 25, configuration: config)
   }
 

@@ -354,7 +354,7 @@ struct CommentTests: PrettyPrintTesting {
     ]
 
     var config = Configuration.forTesting
-    config.spacesBeforeEndOfLineComments = 3
+    config[SpacesBeforeEndOfLineComments.self] = 3
     for (input, expected) in pairs {
       assertPrettyPrintEqual(input: input, expected: expected, linelength: 45, configuration: config)
     }
@@ -507,7 +507,7 @@ struct CommentTests: PrettyPrintTesting {
 
       """
     var config = Configuration.forTesting
-    config.spacesBeforeEndOfLineComments = 1
+    config[SpacesBeforeEndOfLineComments.self] = 1
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 80, configuration: config)
   }
 

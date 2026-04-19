@@ -14,8 +14,8 @@ import SwiftSyntax
 /// Lint: Using `.count == 0`, `.count != 0`, or `.count > 0` raises a warning.
 ///
 /// Format: The comparison is replaced with `.isEmpty` or `!.isEmpty`.
-final class PreferIsEmpty: SyntaxFormatRule {
-  static let defaultHandling: RuleHandling = .off
+final class PreferIsEmpty: RewriteSyntaxRule {
+  override class var defaultHandling: RuleHandling { .off }
 
   override func visit(_ node: InfixOperatorExprSyntax) -> ExprSyntax {
     let visited = super.visit(node)

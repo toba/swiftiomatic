@@ -11,16 +11,16 @@ import SwiftSyntax
 /// Lint: An identifier with a titlecased acronym raises a warning.
 ///
 /// Format: The titlecased acronym is replaced with the uppercased form.
-final class CapitalizeAcronyms: SyntaxFormatRule {
-    static let group: ConfigGroup? = .capitalization
-    static let defaultHandling: RuleHandling = .off
+final class CapitalizeAcronyms: RewriteSyntaxRule {
+    override class var group: ConfigurationGroup? { .capitalization }
+    override class var defaultHandling: RuleHandling { .off }
 
     override func visit(_ token: TokenSyntax) -> TokenSyntax {
         guard case .identifier(let text) = token.tokenKind else {
             return token
         }
 
-        let acronyms = context.configuration.acronyms.words
+        let acronyms = context.configuration[AcronymsConfiguration.self].words
         let updated = capitalizeAcronyms(in: text, acronyms: acronyms)
 
         guard updated != text else { return token }
@@ -96,20 +96,9 @@ extension Finding.Message {
 
 // MARK: - Configuration
 
-package struct AcronymsConfiguration: Codable, Equatable, Sendable, ConfigRepresentable {
-    package static let configProperties: [ConfigProperty] = [
-        .init(
-            "words",
-            .stringArray(
-                description: "Acronyms to capitalize (fully uppercased).",
-                defaultValue: [
-                    "API", "CSS", "DNS", "FTP", "GIF", "HTML", "HTTP", "HTTPS",
-                    "ID", "JPEG", "JSON", "PDF", "PNG", "RGB", "RGBA",
-                    "SQL", "SSH", "TCP", "UDP", "URL", "UUID", "XML",
-                ]
-            )
-        )
-    ]
+package struct AcronymsConfiguration: Configurable, Codable, Equatable, Sendable {
+    package static let key = "acronyms"
+    package static let defaultValue = AcronymsConfiguration()
 
     package var words: [String] = [
         "ID", "URL", "UUID", "HTTP", "HTTPS", "JSON", "XML", "HTML",

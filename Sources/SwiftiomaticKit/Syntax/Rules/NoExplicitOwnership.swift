@@ -9,9 +9,9 @@ import SwiftSyntax
 /// Lint: If an explicit `borrowing` or `consuming` modifier is found, a lint warning is raised.
 ///
 /// Format: The ownership modifier is removed.
-final class NoExplicitOwnership: SyntaxFormatRule {
+final class NoExplicitOwnership: RewriteSyntaxRule {
 
-  static let defaultHandling: RuleHandling = .off
+  override class var defaultHandling: RuleHandling { .off }
 
   private static let ownershipKeywords: Set<Keyword> = [.borrowing, .consuming]
 

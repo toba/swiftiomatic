@@ -312,7 +312,7 @@ struct ProtocolDeclTests: PrettyPrintTesting {
       """
 
     var config = Configuration.forTesting
-    config.lineBreakBeforeEachArgument = true
+    config[BeforeEachArgument.self] = true
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 30, configuration: config)
   }
 
@@ -353,7 +353,7 @@ struct ProtocolDeclTests: PrettyPrintTesting {
       """
 
     var config = Configuration.forTesting
-    config.lineBreakBeforeEachArgument = false
+    config[BeforeEachArgument.self] = false
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 30, configuration: config)
   }
 }

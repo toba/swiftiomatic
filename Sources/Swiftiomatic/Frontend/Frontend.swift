@@ -39,7 +39,7 @@ class Frontend: @unchecked Sendable {
       // If any rules in the decoded configuration are not supported by the registry,
       // emit them into the diagnosticsEngine as warnings.
       // That way they will be printed out, but we'll continue execution on the valid rules.
-      let invalidRules = configuration.rules.filter { !RuleRegistry.rules.keys.contains($0.key) }
+      let invalidRules = configuration.rules.filter { !ConfigurationRegistry.rules.keys.contains($0.key) }
       for rule in invalidRules {
         diagnosticsEngine.emitWarning("Configuration contains an unrecognized rule: \(rule.key)", location: nil)
       }

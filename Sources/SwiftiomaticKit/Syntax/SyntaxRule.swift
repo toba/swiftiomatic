@@ -14,15 +14,9 @@ import Foundation
 import SwiftSyntax
 
 /// A Rule is a linting or formatting pass that executes in a given context.
-protocol Rule: ConfigurableItem {
+protocol SyntaxRule: Configurable {
     /// The context in which the rule is executed.
     var context: Context { get }
-
-    /// The human-readable name of the rule. This defaults to the type name.
-    static var name: String { get }
-
-    /// The config group this rule belongs to, or `nil` if ungrouped.
-    static var group: ConfigGroup? { get }
 
     /// The default handling for this rule when not overridden by configuration.
     ///
@@ -34,24 +28,18 @@ protocol Rule: ConfigurableItem {
     init(context: Context)
 }
 
-extension Rule {
-    /// By default, the `ruleName` is just the name of the implementing rule class.
-    static var name: String { String("\(self)".split(separator: ".").last!) }
-    static var group: ConfigGroup? { nil }
-    static var key: String { name }
-    static var defaultValue: RuleHandling { defaultHandling }
-
-}
-
-extension Rule where Self: SyntaxFormatRule {
+extension SyntaxRule where Self: RewriteSyntaxRule {
     static var defaultHandling: RuleHandling { .fix }
 }
 
-extension Rule where Self: SyntaxLintRule {
+extension SyntaxRule where Self: LintSyntaxRule {
     static var defaultHandling: RuleHandling { .warning }
 }
 
-extension Rule {
+extension SyntaxRule {
+    typealias Value = RuleHandling
+    static var defaultValue: RuleHandling { defaultHandling }
+
     /// Emits the given finding.
     ///
     /// - Parameters:
@@ -88,7 +76,7 @@ extension Rule {
             syntaxLocation = nil
         }
 
-        let category = RuleBasedFindingCategory(ruleType: type(of: self))
+        let category = SyntaxFindingCategory(ruleType: type(of: self))
         let severity = context.severity(of: type(of: self)).diagnosticSeverity
         context.findingEmitter.emit(
             message,

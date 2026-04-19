@@ -15,135 +15,149 @@ import Foundation
 /// Iterator for looping over lists of files and directories. Directories are automatically
 /// traversed recursively, and we check for files with a ".swift" extension.
 package struct FileIterator: Sequence, IteratorProtocol {
+    /// List of file and directory URLs to iterate over.
+    private let urls: [URL]
 
-  /// List of file and directory URLs to iterate over.
-  private let urls: [URL]
+    /// If true, symlinks will be followed when iterating over directories and files. If not, they
+    /// will be ignored.
+    private let followSymlinks: Bool
 
-  /// If true, symlinks will be followed when iterating over directories and files. If not, they
-  /// will be ignored.
-  private let followSymlinks: Bool
+    /// Iterator for the list of URLs.
+    private var urlIterator: Array<URL>.Iterator
 
-  /// Iterator for the list of URLs.
-  private var urlIterator: Array<URL>.Iterator
+    /// Iterator for recursing through directories.
+    private var dirIterator: FileManager.DirectoryEnumerator? = nil
 
-  /// Iterator for recursing through directories.
-  private var dirIterator: FileManager.DirectoryEnumerator? = nil
+    /// The current working directory of the process, which is used to relativize URLs of files found
+    /// during iteration.
+    private let workingDirectory: URL
 
-  /// The current working directory of the process, which is used to relativize URLs of files found
-  /// during iteration.
-  private let workingDirectory: URL
+    /// Keep track of the current directory we're recursing through.
+    private var currentDirectory = URL(fileURLWithPath: "")
 
-  /// Keep track of the current directory we're recursing through.
-  private var currentDirectory = URL(fileURLWithPath: "")
+    /// Keep track of files we have visited to prevent duplicates.
+    private var visited: Set<String> = []
 
-  /// Keep track of files we have visited to prevent duplicates.
-  private var visited: Set<String> = []
+    /// The file extension to check for when recursing through directories.
+    private let fileSuffix = ".swift"
 
-  /// The file extension to check for when recursing through directories.
-  private let fileSuffix = ".swift"
-
-  /// Create a new file iterator over the given list of file URLs.
-  ///
-  /// The given URLs may be files or directories. If they are directories, the iterator will recurse
-  /// into them. Symlinks are never followed on Windows platforms as Foundation doesn't support it.
-  /// - Parameters:
-  ///   - urls: `Array` of files or directories to iterate.
-  ///   - followSymlinks: `Bool` to indicate if symbolic links should be followed when iterating.
-  ///   - workingDirectory: `URL` that indicates the current working directory. Used for testing.
-  package init(urls: [URL], followSymlinks: Bool, workingDirectory: URL = URL(fileURLWithPath: ".")) {
-    self.workingDirectory = workingDirectory
-    self.urls = urls
-    self.urlIterator = self.urls.makeIterator()
-    self.followSymlinks = followSymlinks
-  }
-
-  /// Iterate through the "paths" list, and emit the file paths in it. If we encounter a directory,
-  /// recurse through it and emit .swift file paths.
-  package mutating func next() -> URL? {
-    var output: URL? = nil
-    while output == nil {
-      // Check if we're recursing through a directory.
-      if dirIterator != nil {
-        output = nextInDirectory()
-      } else {
-        guard let next = urlIterator.next() else {
-          // If we've reached the end of all the URLs we wanted to iterate over, exit now.
-          return nil
-        }
-        guard let (next, fileType) = fileAndType(at: next, followSymlinks: followSymlinks) else {
-          continue
-        }
-
-        switch fileType {
-        case .typeSymbolicLink:
-          // If we got here, we encountered a symlink but didn't follow it. Skip it.
-          continue
-
-        case .typeDirectory:
-          dirIterator = FileManager.default.enumerator(
-            at: next,
-            includingPropertiesForKeys: nil,
-            options: [.skipsHiddenFiles]
-          )
-          currentDirectory = next
-
-        default:
-          // We'll get here if the path is a file, or if it doesn't exist. In the latter case,
-          // return the path anyway; we'll turn the error we get when we try to open the file into
-          // an appropriate diagnostic instead of trying to handle it here.
-          output = next
-        }
-      }
-      if let out = output, visited.contains(out.standardizedFileURL.path) {
-        output = nil
-      }
+    /// Create a new file iterator over the given list of file URLs.
+    ///
+    /// The given URLs may be files or directories. If they are directories, the iterator will recurse
+    /// into them. Symlinks are never followed on Windows platforms as Foundation doesn't support it.
+    /// - Parameters:
+    ///   - urls: `Array` of files or directories to iterate.
+    ///   - followSymlinks: `Bool` to indicate if symbolic links should be followed when iterating.
+    ///   - workingDirectory: `URL` that indicates the current working directory. Used for testing.
+    package init(
+        urls: [URL],
+        followSymlinks: Bool,
+        workingDirectory: URL = URL(fileURLWithPath: ".")
+    ) {
+        self.workingDirectory = workingDirectory
+        self.urls = urls
+        self.urlIterator = self.urls.makeIterator()
+        self.followSymlinks = followSymlinks
     }
-    if let out = output {
-      visited.insert(out.standardizedFileURL.path)
-    }
-    return output
-  }
 
-  /// Use the FileManager API to recurse through directories and emit .swift file paths.
-  private mutating func nextInDirectory() -> URL? {
-    var output: URL? = nil
-    while output == nil {
-      guard let item = dirIterator?.nextObject() as? URL else {
-        break
-      }
-      guard item.lastPathComponent.hasSuffix(fileSuffix),
-        let (item, fileType) = fileAndType(at: item, followSymlinks: followSymlinks)
-      else {
-        continue
-      }
+    /// Iterate through the "paths" list, and emit the file paths in it. If we encounter a directory,
+    /// recurse through it and emit .swift file paths.
+    package mutating func next() -> URL? {
+        var output: URL? = nil
+        while output == nil {
+            // Check if we're recursing through a directory.
+            if dirIterator != nil {
+                output = nextInDirectory()
+            } else {
+                guard let next = urlIterator.next() else {
+                    // If we've reached the end of all the URLs we wanted to iterate over, exit now.
+                    return nil
+                }
+                guard let (next, fileType) = fileAndType(at: next, followSymlinks: followSymlinks)
+                else {
+                    continue
+                }
 
-      switch fileType {
-      case .typeRegular:
-        // We attempt to relativize the URLs based on the current working directory, not the
-        // directory being iterated over, so that they can be displayed better in diagnostics. Thus,
-        // if the user passes paths that are relative to the current working directory, they will
-        // be displayed as relative paths. Otherwise, they will still be displayed as absolute
-        // paths.
-        let path = item.path
-        let relativePath: String
-        if !workingDirectory.isRoot, path.hasPrefix(workingDirectory.path) {
-          relativePath = String(path.dropFirst(workingDirectory.path.count).drop(while: { $0 == "/" || $0 == #"\"# }))
-        } else {
-          relativePath = path
+                switch fileType {
+                case .typeSymbolicLink:
+                    // If we got here, we encountered a symlink but didn't follow it. Skip it.
+                    continue
+
+                case .typeDirectory:
+                    dirIterator = FileManager.default.enumerator(
+                        at: next,
+                        includingPropertiesForKeys: nil,
+                        options: [.skipsHiddenFiles]
+                    )
+                    currentDirectory = next
+
+                default:
+                    // We'll get here if the path is a file, or if it doesn't exist. In the latter case,
+                    // return the path anyway; we'll turn the error we get when we try to open the file into
+                    // an appropriate diagnostic instead of trying to handle it here.
+                    output = next
+                }
+            }
+            if let out = output, visited.contains(out.standardizedFileURL.path) {
+                output = nil
+            }
         }
-        output = URL(fileURLWithPath: relativePath, isDirectory: false, relativeTo: workingDirectory)
+        if let out = output {
+            visited.insert(out.standardizedFileURL.path)
+        }
+        return output
+    }
 
-      default:
-        break
-      }
+    /// Use the FileManager API to recurse through directories and emit .swift file paths.
+    private mutating func nextInDirectory() -> URL? {
+        var output: URL? = nil
+        while output == nil {
+            guard let item = dirIterator?.nextObject() as? URL else {
+                break
+            }
+            guard item.lastPathComponent.hasSuffix(fileSuffix),
+                let (item, fileType) = fileAndType(at: item, followSymlinks: followSymlinks)
+            else {
+                continue
+            }
+
+            switch fileType {
+            case .typeRegular:
+                // We attempt to relativize the URLs based on the current working directory, not the
+                // directory being iterated over, so that they can be displayed better in diagnostics. Thus,
+                // if the user passes paths that are relative to the current working directory, they will
+                // be displayed as relative paths. Otherwise, they will still be displayed as absolute
+                // paths.
+                let path = item.path
+                let relativePath: String
+                if !workingDirectory.isRoot, path.hasPrefix(workingDirectory.path) {
+                    relativePath = String(
+                        path.dropFirst(workingDirectory.path.count).drop(while: {
+                            $0 == "/" || $0 == #"\"#
+                        })
+                    )
+                } else {
+                    relativePath = path
+                }
+                output = URL(
+                    fileURLWithPath: relativePath,
+                    isDirectory: false,
+                    relativeTo: workingDirectory
+                )
+
+            default:
+                break
+            }
+        }
+        // If we've exhausted the files in the directory recursion, unset the directory iterator.
+        if output == nil {
+            dirIterator = nil
+        }
+        return output
     }
-    // If we've exhausted the files in the directory recursion, unset the directory iterator.
-    if output == nil {
-      dirIterator = nil
-    }
-    return output
-  }
 }
+
+// MARK: - Support
 
 /// Returns the actual URL and type of the file at the given URL, following symlinks if requested.
 ///
@@ -154,32 +168,33 @@ package struct FileIterator: Sequence, IteratorProtocol {
 ///   exist or is not a supported file type. If `followSymlinks` is `true`, the returned URL may be
 ///   different from the given URL; otherwise, it will be the same.
 private func fileAndType(at url: URL, followSymlinks: Bool) -> (URL, FileAttributeType)? {
-  func typeOfFile(at url: URL) -> FileAttributeType? {
-    // We cannot use `URL.resourceValues(forKeys:)` here because it appears to behave incorrectly on
-    // Linux.
-    return try? FileManager.default.attributesOfItem(atPath: url.path)[.type] as? FileAttributeType
-  }
-
-  guard var fileType = typeOfFile(at: url) else {
-    return nil
-  }
-
-  // We would use `standardizedFileURL.path` here as we do in the iterator above to ensure that
-  // path components like `.` and `..` are resolved, but the standardized URLs returned by
-  // Foundation pre-Swift-6.0 resolve symlinks. This causes the file type of a URL and its
-  // standardized path to not match.
-  var visited: Set<String> = [url.absoluteString]
-  var url = url
-  while followSymlinks && fileType == .typeSymbolicLink,
-    let destination = try? FileManager.default.destinationOfSymbolicLink(atPath: url.path)
-  {
-    url = URL(fileURLWithPath: destination, relativeTo: url)
-    // If this URL is in the visited set, we must have a symlink cycle. Ignore it gracefully.
-    guard !visited.contains(url.absoluteString), let newType = typeOfFile(at: url) else {
-      return nil
+    func typeOfFile(at url: URL) -> FileAttributeType? {
+        // We cannot use `URL.resourceValues(forKeys:)` here because it appears to behave incorrectly on
+        // Linux.
+        return try? FileManager.default.attributesOfItem(atPath: url.path)[.type]
+            as? FileAttributeType
     }
-    visited.insert(url.absoluteString)
-    fileType = newType
-  }
-  return (url, fileType)
+
+    guard var fileType = typeOfFile(at: url) else {
+        return nil
+    }
+
+    // We would use `standardizedFileURL.path` here as we do in the iterator above to ensure that
+    // path components like `.` and `..` are resolved, but the standardized URLs returned by
+    // Foundation pre-Swift-6.0 resolve symlinks. This causes the file type of a URL and its
+    // standardized path to not match.
+    var visited: Set<String> = [url.absoluteString]
+    var url = url
+    while followSymlinks && fileType == .typeSymbolicLink,
+        let destination = try? FileManager.default.destinationOfSymbolicLink(atPath: url.path)
+    {
+        url = URL(fileURLWithPath: destination, relativeTo: url)
+        // If this URL is in the visited set, we must have a symlink cycle. Ignore it gracefully.
+        guard !visited.contains(url.absoluteString), let newType = typeOfFile(at: url) else {
+            return nil
+        }
+        visited.insert(url.absoluteString)
+        fileType = newType
+    }
+    return (url, fileType)
 }

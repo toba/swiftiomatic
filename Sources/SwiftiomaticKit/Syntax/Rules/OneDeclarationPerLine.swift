@@ -22,7 +22,7 @@ import SwiftSyntax
 /// Format: Case declarations with associated values or raw values will be moved to their own case
 ///         declarations. Variable declarations with multiple bindings will be split into individual
 ///         declarations.
-final class OneDeclarationPerLine: SyntaxFormatRule {
+final class OneDeclarationPerLine: RewriteSyntaxRule {
 
   // MARK: - Enum cases
 

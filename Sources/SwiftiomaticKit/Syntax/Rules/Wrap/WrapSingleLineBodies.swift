@@ -13,15 +13,15 @@ import SwiftSyntax
 /// Lint: A body whose formatting doesn't match the mode raises a warning.
 ///
 /// Format: The body is wrapped or inlined to match the mode.
-final class WrapSingleLineBodies: SyntaxFormatRule {
-    static let defaultHandling: RuleHandling = .off
-    static let group: ConfigGroup? = .wrap
+final class WrapSingleLineBodies: RewriteSyntaxRule {
+    override class var defaultHandling: RuleHandling { .off }
+    override class var group: ConfigurationGroup? { .wrap }
 
     private var mode: SingleLineBodiesConfiguration.Mode {
-        context.configuration.singleLineBodies.mode
+        context.configuration[SingleLineBodiesConfiguration.self].mode
     }
 
-    private var maxLength: Int { context.configuration.lineLength }
+    private var maxLength: Int { context.configuration[LineLength.self] }
 
     // MARK: - Wrap-mode state
 
@@ -708,18 +708,9 @@ extension Finding.Message {
 
 // MARK: - Configuration
 
-package struct SingleLineBodiesConfiguration: Codable, Equatable, Sendable, ConfigRepresentable {
-    package static let configProperties: [ConfigProperty] = [
-        .init(
-            "mode",
-            .stringEnum(
-                description:
-                    "Whether single-statement bodies are wrapped to multiple lines or inlined.",
-                values: ["wrap", "inline"],
-                defaultValue: "wrap"
-            )
-        )
-    ]
+package struct SingleLineBodiesConfiguration: Configurable, Codable, Equatable, Sendable {
+    package static let key = "singleLineBodies"
+    package static let defaultValue = SingleLineBodiesConfiguration()
 
     package enum Mode: String, Codable, Sendable {
         /// Expand single-line bodies onto multiple lines.

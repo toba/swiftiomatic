@@ -17,8 +17,8 @@ import SwiftSyntax
 /// Lint: Empty lines after opening braces and before closing braces yield a lint error.
 ///
 /// Format: Empty lines after opening braces and before closing braces will be removed.
-final class NoEmptyLinesOpeningClosingBraces: SyntaxFormatRule {
-    static let defaultHandling: RuleHandling = .off
+final class NoEmptyLinesOpeningClosingBraces: RewriteSyntaxRule {
+    override class var defaultHandling: RuleHandling { .off }
 
     override func visit(_ node: AccessorBlockSyntax) -> AccessorBlockSyntax {
         var result = node

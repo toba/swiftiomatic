@@ -42,7 +42,7 @@ struct ObjectLiteralExprTests: PrettyPrintTesting {
       """
 
     var config = Configuration.forTesting
-    config.lineBreakBeforeEachArgument = true
+    config[BeforeEachArgument.self] = true
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 25, configuration: config)
   }
 
@@ -68,7 +68,7 @@ struct ObjectLiteralExprTests: PrettyPrintTesting {
       """
 
     var config = Configuration.forTesting
-    config.lineBreakBeforeEachArgument = false
+    config[BeforeEachArgument.self] = false
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 25, configuration: config)
   }
 
@@ -95,7 +95,7 @@ struct ObjectLiteralExprTests: PrettyPrintTesting {
       """
 
     var config = Configuration.forTesting
-    config.lineBreakBeforeEachArgument = true
+    config[BeforeEachArgument.self] = true
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 38, configuration: config)
   }
 
@@ -121,7 +121,7 @@ struct ObjectLiteralExprTests: PrettyPrintTesting {
       """
 
     var config = Configuration.forTesting
-    config.lineBreakBeforeEachArgument = false
+    config[BeforeEachArgument.self] = false
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 38, configuration: config)
   }
 

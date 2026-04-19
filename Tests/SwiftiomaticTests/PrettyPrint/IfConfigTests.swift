@@ -127,7 +127,7 @@ struct IfConfigTests: PrettyPrintTesting {
       """
 
     var config = Configuration.forTesting
-    config.indentConditionalCompilationBlocks = false
+    config[IndentConditionalCompilationBlocks.self] = false
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 45, configuration: config)
   }
 
@@ -568,7 +568,7 @@ struct IfConfigTests: PrettyPrintTesting {
 
       """
     var configuration = Configuration.forTesting
-    configuration.indentConditionalCompilationBlocks = false
+    configuration[IndentConditionalCompilationBlocks.self] = false
     assertPrettyPrintEqual(input: input, expected: input, linelength: 45, configuration: configuration)
   }
 }

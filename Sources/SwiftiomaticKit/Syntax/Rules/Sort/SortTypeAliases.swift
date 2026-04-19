@@ -9,8 +9,8 @@ import SwiftSyntax
 /// Lint: If the composition types are not sorted, a lint warning is raised.
 ///
 /// Format: The types are reordered alphabetically and duplicates are removed.
-final class SortTypeAliases: SyntaxFormatRule {
-    static let group: ConfigGroup? = .sort
+final class SortTypeAliases: RewriteSyntaxRule {
+    override class var group: ConfigurationGroup? { .sort }
 
     override func visit(_ node: TypeAliasDeclSyntax) -> DeclSyntax {
         let initializer = node.initializer

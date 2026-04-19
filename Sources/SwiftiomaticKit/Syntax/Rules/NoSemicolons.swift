@@ -17,7 +17,7 @@ import SwiftSyntax
 /// Lint: If a semicolon appears anywhere, a lint error is raised.
 ///
 /// Format: All semicolons will be replaced with line breaks.
-final class NoSemicolons: SyntaxFormatRule {
+final class NoSemicolons: RewriteSyntaxRule {
   /// Creates a new version of the given node which doesn't contain any semicolons. The node's
   /// items are recursively modified to remove semicolons, replacing with line breaks where needed.
   /// Items are checked recursively to support items that contain code blocks, which may have

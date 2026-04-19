@@ -24,12 +24,12 @@ import SwiftSyntax
 /// Lint: Using the non-preferred placement yields a lint error.
 ///
 /// Format: The `let`/`var` is repositioned to match the configured placement.
-final class PatternLetPlacement: SyntaxFormatRule {
+final class PatternLetPlacement: RewriteSyntaxRule {
 
   // MARK: - Visitors
 
   override func visit(_ node: MatchingPatternConditionSyntax) -> MatchingPatternConditionSyntax {
-    switch context.configuration.patternLet.placement {
+    switch context.configuration[PatternLetConfiguration.self].placement {
     case .eachBinding:
       if let (replacement, specifier) = distributeLetVarThroughPattern(node.pattern) {
         diagnose(.distributeLetInBoundCaseVariables(specifier), on: node.pattern)
@@ -49,7 +49,7 @@ final class PatternLetPlacement: SyntaxFormatRule {
   }
 
   override func visit(_ node: SwitchCaseItemSyntax) -> SwitchCaseItemSyntax {
-    switch context.configuration.patternLet.placement {
+    switch context.configuration[PatternLetConfiguration.self].placement {
     case .eachBinding:
       if let (replacement, specifier) = distributeLetVarThroughPattern(node.pattern) {
         diagnose(.distributeLetInBoundCaseVariables(specifier), on: node.pattern)
@@ -75,7 +75,7 @@ final class PatternLetPlacement: SyntaxFormatRule {
       return super.visit(node)
     }
 
-    switch context.configuration.patternLet.placement {
+    switch context.configuration[PatternLetConfiguration.self].placement {
     case .eachBinding:
       if let (replacement, specifier) = distributeLetVarThroughPattern(node.pattern) {
         diagnose(.distributeLetInBoundCaseVariables(specifier), on: node.pattern)
@@ -341,17 +341,9 @@ private final class UnbindIdentifiersRewriter: SyntaxRewriter {
 
 // MARK: - Configuration
 
-package struct PatternLetConfiguration: Codable, Equatable, Sendable, ConfigRepresentable {
-  package static let configProperties: [ConfigProperty] = [
-    .init(
-      "placement",
-      .stringEnum(
-        description: "Where to place let/var in case patterns.",
-        values: ["eachBinding", "outerPattern"],
-        defaultValue: "eachBinding"
-      )
-    )
-  ]
+package struct PatternLetConfiguration: Configurable, Codable, Equatable, Sendable {
+  package static let key = "patternLet"
+  package static let defaultValue = PatternLetConfiguration()
 
   package enum Placement: String, Codable, Sendable {
     case eachBinding

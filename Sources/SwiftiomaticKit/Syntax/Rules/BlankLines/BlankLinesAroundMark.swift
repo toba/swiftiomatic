@@ -10,10 +10,10 @@ import SwiftSyntax
 /// Lint: If a MARK comment is missing a blank line before or after it, a lint warning is raised.
 ///
 /// Format: Blank lines are inserted around MARK comments.
-final class BlankLinesAroundMark: SyntaxFormatRule {
-    static let group: ConfigGroup? = .blankLines
+final class BlankLinesAroundMark: RewriteSyntaxRule {
+    override class var group: ConfigurationGroup? { .blankLines }
 
-  static let defaultHandling: RuleHandling = .off
+  override class var defaultHandling: RuleHandling { .off }
 
   override func visit(_ token: TokenSyntax) -> TokenSyntax {
     var pieces = Array(token.leadingTrivia.pieces)

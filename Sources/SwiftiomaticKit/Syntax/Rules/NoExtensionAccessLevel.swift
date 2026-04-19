@@ -22,7 +22,7 @@ import SwiftSyntax
 /// Lint: A lint error is raised when access control placement doesn't match the configuration.
 ///
 /// Format: Access control modifiers are moved to match the configured placement.
-final class NoExtensionAccessLevel: SyntaxFormatRule {
+final class NoExtensionAccessLevel: RewriteSyntaxRule {
     private enum State {
         /// The rule is currently visiting top-level declarations.
         case topLevel
@@ -46,7 +46,7 @@ final class NoExtensionAccessLevel: SyntaxFormatRule {
     override func visit(_ node: ExtensionDeclSyntax) -> DeclSyntax {
         guard case .topLevel = state else { return DeclSyntax(node) }
 
-        switch context.configuration.extensionAccessControl.placement {
+        switch context.configuration[ExtensionAccessControlConfiguration.self].placement {
         case .onDeclarations:
             return visitOnDeclarations(node)
         case .onExtension:
@@ -367,18 +367,9 @@ extension Finding.Message {
 
 // MARK: - Configuration
 
-package struct ExtensionAccessControlConfiguration: Codable, Equatable, Sendable, ConfigRepresentable
-{
-    package static let configProperties: [ConfigProperty] = [
-        .init(
-            "placement",
-            .stringEnum(
-                description: "Where to place access control modifiers.",
-                values: ["onDeclarations", "onExtension"],
-                defaultValue: "onDeclarations"
-            )
-        )
-    ]
+package struct ExtensionAccessControlConfiguration: Configurable, Codable, Equatable, Sendable {
+    package static let key = "extensionAccessControl"
+    package static let defaultValue = ExtensionAccessControlConfiguration()
 
     package enum Placement: String, Codable, Sendable {
         case onDeclarations

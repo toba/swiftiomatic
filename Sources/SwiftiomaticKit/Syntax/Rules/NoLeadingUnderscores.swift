@@ -22,13 +22,13 @@ import SwiftSyntax
 /// sites.
 ///
 /// Lint: Declaring an identifier with a leading underscore yields a lint error.
-final class NoLeadingUnderscores: SyntaxLintRule {
+final class NoLeadingUnderscores: LintSyntaxRule {
 
     /// Identifies this rule as being opt-in. While leading underscores aren't meant to be used in
     /// normal circumstances, there are situations where they can be used to hint which APIs should be
     /// avoided by general users. In particular when APIs must be exported publicly, but the author
     /// doesn't intend for arbitrary usage.
-    static let defaultHandling: RuleHandling = .off
+    override class var defaultHandling: RuleHandling { .off }
 
     override func visit(_ node: AssociatedTypeDeclSyntax) -> SyntaxVisitorContinueKind {
         diagnoseIfNameStartsWithUnderscore(node.name)

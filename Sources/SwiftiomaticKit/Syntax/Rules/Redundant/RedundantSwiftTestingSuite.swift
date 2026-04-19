@@ -10,10 +10,10 @@ import SwiftSyntax
 /// Lint: A warning is raised when `@Suite` or `@Suite()` is used without arguments.
 ///
 /// Format: The redundant `@Suite` attribute is removed.
-final class RedundantSwiftTestingSuite: SyntaxFormatRule {
-  static let group: ConfigGroup? = .redundancies
+final class RedundantSwiftTestingSuite: RewriteSyntaxRule {
+  override class var group: ConfigurationGroup? { .redundancies }
 
-  static let defaultHandling: RuleHandling = .off
+  override class var defaultHandling: RuleHandling { .off }
 
   private var importsTesting = false
 

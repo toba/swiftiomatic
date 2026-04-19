@@ -15,15 +15,16 @@ import GeneratorKit
 
 @Suite
 struct GeneratedFilesValidityTests {
-  let ruleCollector: RuleCollector
+  let collector: ConfigurableCollector
 
   init() throws {
-    ruleCollector = RuleCollector()
-    try ruleCollector.collect(from: GeneratePaths.rulesDirectory)
+    collector = ConfigurableCollector()
+    try collector.collectRules(from: GeneratePaths.rulesDirectory)
+    try collector.collectSettings(from: GeneratePaths.settingsDirectory)
   }
 
   @Test func generatedPipelineIsUpToDate() throws {
-    let pipelineGenerator = PipelineGenerator(ruleCollector: ruleCollector)
+    let pipelineGenerator = PipelineGenerator(collector: collector)
     let generated = pipelineGenerator.generateContent()
     let fileContents = try String(contentsOf: GeneratePaths.pipelineFile, encoding: .utf8)
     #expect(
@@ -33,23 +34,12 @@ struct GeneratedFilesValidityTests {
   }
 
   @Test func generatedRegistryIsUpToDate() throws {
-    let registryGenerator = RuleRegistryGenerator(ruleCollector: ruleCollector)
+    let registryGenerator = ConfigurationGenerator(collector: collector)
     let generated = registryGenerator.generateContent()
     let fileContents = try String(contentsOf: GeneratePaths.ruleRegistryFile, encoding: .utf8)
     #expect(
       generated == fileContents,
-      "RuleRegistry+Generated.swift is out of date. Please run 'swift run generate-swiftiomatic'."
+      "ConfigurationRegistry+Generated.swift is out of date. Please run 'swift run generate-swiftiomatic'."
     )
   }
-
-  @Test func generatedNameCacheIsUpToDate() throws {
-    let ruleNameCacheGenerator = RuleNameCacheGenerator(ruleCollector: ruleCollector)
-    let generated = ruleNameCacheGenerator.generateContent()
-    let fileContents = try String(contentsOf: GeneratePaths.ruleNameCacheFile, encoding: .utf8)
-    #expect(
-      generated == fileContents,
-      "RuleNameCache+Generated.swift is out of date. Please run 'swift run generate-swiftiomatic'."
-    )
-  }
-
 }

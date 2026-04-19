@@ -41,11 +41,11 @@ import SwiftSyntax
 ///
 /// Format: `if ... else { return/throw/break/continue }` constructs will be replaced with
 ///         equivalent `guard ... else { return/throw/break/continue }` constructs.
-final class PreferEarlyExits: SyntaxFormatRule {
+final class PreferEarlyExits: RewriteSyntaxRule {
 
   /// Identifies this rule as being opt-in. This rule is experimental and not yet stable enough to
   /// be enabled by default.
-  static let defaultHandling: RuleHandling = .off
+  override class var defaultHandling: RuleHandling { .off }
 
   override func visit(_ node: CodeBlockItemListSyntax) -> CodeBlockItemListSyntax {
     var newItems = [CodeBlockItemSyntax]()

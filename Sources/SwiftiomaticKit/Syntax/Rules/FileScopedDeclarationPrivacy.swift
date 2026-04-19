@@ -20,7 +20,7 @@ import SwiftSyntax
 ///
 /// Format: File-scoped declarations that have formal access opposite to the desired access level in
 ///         the formatter's configuration will have their access level changed.
-final class FileScopedDeclarationPrivacy: SyntaxFormatRule {
+final class FileScopedDeclarationPrivacy: RewriteSyntaxRule {
     override func visit(_ node: SourceFileSyntax) -> SourceFileSyntax {
         var result = node
         result.statements = rewrittenCodeBlockItems(node.statements)
@@ -126,7 +126,7 @@ final class FileScopedDeclarationPrivacy: SyntaxFormatRule {
         let validAccess: Keyword
         let diagnostic: Finding.Message
 
-        switch context.configuration.fileScopedDeclarationPrivacy.accessLevel {
+        switch context.configuration[FileScopedDeclarationPrivacyConfiguration.self].accessLevel {
         case .private:
             invalidAccess = .fileprivate
             validAccess = .private
@@ -168,19 +168,9 @@ extension Finding.Message {
 
 // MARK: - Configuration
 
-package struct FileScopedDeclarationPrivacyConfiguration: Codable, Equatable, Sendable,
-    ConfigRepresentable
-{
-    package static let configProperties: [ConfigProperty] = [
-        .init(
-            "accessLevel",
-            .stringEnum(
-                description: "Access level for file-scoped private declarations.",
-                values: ["private", "fileprivate"],
-                defaultValue: "private"
-            )
-        )
-    ]
+package struct FileScopedDeclarationPrivacyConfiguration: Configurable, Codable, Equatable, Sendable {
+    package static let key = "fileScopedDeclarationPrivacy"
+    package static let defaultValue = FileScopedDeclarationPrivacyConfiguration()
 
     package enum AccessLevel: String, Codable, Sendable {
         case `private`

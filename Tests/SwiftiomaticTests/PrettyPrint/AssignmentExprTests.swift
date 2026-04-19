@@ -99,7 +99,7 @@ struct AssignmentExprTests: PrettyPrintTesting {
       """
 
     var config = Configuration.forTesting
-    config.lineBreakBeforeEachArgument = false
+    config[BeforeEachArgument.self] = false
     assertPrettyPrintEqual(
       input: input,
       expected: expectedWithArgBinPacking,
@@ -149,7 +149,7 @@ struct AssignmentExprTests: PrettyPrintTesting {
         ) + nextOp + lastOp
 
       """
-    config.lineBreakBeforeEachArgument = true
+    config[BeforeEachArgument.self] = true
     assertPrettyPrintEqual(
       input: input,
       expected: expectedWithBreakBeforeEachArg,
@@ -189,7 +189,7 @@ struct AssignmentExprTests: PrettyPrintTesting {
       """
 
     var config = Configuration.forTesting
-    config.lineBreakBeforeEachArgument = false
+    config[BeforeEachArgument.self] = false
     assertPrettyPrintEqual(
       input: input,
       expected: expectedWithArgBinPacking,
@@ -227,7 +227,7 @@ struct AssignmentExprTests: PrettyPrintTesting {
         ) + nextOp + lastOp
 
       """
-    config.lineBreakBeforeEachArgument = true
+    config[BeforeEachArgument.self] = true
     assertPrettyPrintEqual(
       input: input,
       expected: expectedWithBreakBeforeEachArg,

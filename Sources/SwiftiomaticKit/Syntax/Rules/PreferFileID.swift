@@ -8,8 +8,8 @@ import SwiftSyntax
 /// Lint: Using the non-preferred file macro yields a lint warning.
 ///
 /// Format: The macro is replaced with the preferred spelling.
-final class PreferFileID: SyntaxFormatRule {
-    static let defaultHandling: RuleHandling = .off
+final class PreferFileID: RewriteSyntaxRule {
+    override class var defaultHandling: RuleHandling { .off }
 
     override func visit(_ node: MacroExpansionExprSyntax) -> ExprSyntax {
         // Only handle bare #file / #fileID (no arguments, no trailing closure).

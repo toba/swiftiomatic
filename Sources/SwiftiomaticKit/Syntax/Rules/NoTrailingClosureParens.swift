@@ -18,7 +18,7 @@ import SwiftSyntax
 ///       a lint error is raised.
 ///
 /// Format: Empty parentheses in function calls with trailing closures will be removed.
-final class NoTrailingClosureParens: SyntaxFormatRule {
+final class NoTrailingClosureParens: RewriteSyntaxRule {
 
     override func visit(_ node: FunctionCallExprSyntax) -> ExprSyntax {
         guard node.arguments.count == 0 else { return super.visit(node) }

@@ -14,9 +14,18 @@ import Foundation
 import SwiftSyntax
 
 /// A rule that lints a given file.
-class SyntaxLintRule: SyntaxVisitor, Rule {
+class LintSyntaxRule: SyntaxVisitor, SyntaxRule {
     /// The context in which the rule is executed.
     let context: Context
+
+    // class var so subclass overrides dispatch correctly through the vtable
+    // when accessed via protocol existentials (any Rule.Type).
+    class var key: String {
+        let name = String("\(self)".split(separator: ".").last!)
+        return name.prefix(1).lowercased() + name.dropFirst()
+    }
+    class var group: ConfigurationGroup? { nil }
+    class var defaultHandling: RuleHandling { .warning }
 
     /// Creates a new rule in a given context.
     required init(context: Context) {

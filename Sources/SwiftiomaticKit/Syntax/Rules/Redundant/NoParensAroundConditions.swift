@@ -26,7 +26,7 @@ import SwiftSyntax
 /// Format: Parentheses around such expressions are removed, if they do not cause a parse ambiguity.
 ///         Specifically, parentheses are allowed if and only if the expression contains a function
 ///         call with a trailing closure.
-final class NoParensAroundConditions: SyntaxFormatRule {
+final class NoParensAroundConditions: RewriteSyntaxRule {
   override func visit(_ node: IfExprSyntax) -> ExprSyntax {
     var result = node
     fixKeywordTrailingTrivia(&result.ifKeyword.trailingTrivia)

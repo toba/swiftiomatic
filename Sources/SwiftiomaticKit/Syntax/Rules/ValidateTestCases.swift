@@ -18,9 +18,9 @@ import SwiftSyntax
 /// Lint: A warning is raised for each test method missing the correct prefix or attribute.
 ///
 /// Format: The `test` prefix or `@Test` attribute is added.
-final class ValidateTestCases: SyntaxFormatRule {
+final class ValidateTestCases: RewriteSyntaxRule {
 
-  static let defaultHandling: RuleHandling = .off
+  override class var defaultHandling: RuleHandling { .off }
 
   private var framework: TestFramework?
   private var identifierCounts = [String: Int]()

@@ -11,7 +11,7 @@ import SwiftSyntax
 /// Lint: When closure arguments could use trailing closure syntax.
 ///
 /// Format: The closure arguments are moved to trailing closure position.
-final class PreferTrailingClosures: SyntaxFormatRule {
+final class PreferTrailingClosures: RewriteSyntaxRule {
 
   /// Function names where labeled closures should still be made trailing.
   private static let useTrailing: Set<String> = [

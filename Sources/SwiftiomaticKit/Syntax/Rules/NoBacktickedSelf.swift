@@ -8,7 +8,7 @@ import SwiftSyntax
 /// Lint: If a backticked `self` is found in an optional binding, a finding is raised.
 ///
 /// Format: The backticks are removed.
-final class NoBacktickedSelf: SyntaxFormatRule {
+final class NoBacktickedSelf: RewriteSyntaxRule {
 
   override func visit(
     _ node: OptionalBindingConditionSyntax

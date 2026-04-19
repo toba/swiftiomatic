@@ -33,7 +33,7 @@ class FormatFrontend: Frontend, @unchecked Sendable {
         // In format mode, the diagnostics engine is reserved for fatal messages. Pass nil as the
         // finding consumer to ignore findings emitted while the syntax tree is processed because they
         // will be fixed automatically if they can be, or ignored otherwise.
-        let formatter = SwiftiomaticFormatter(
+        let formatter = RewriteCoordinator(
             configuration: fileToProcess.configuration,
             findingConsumer: nil
         )

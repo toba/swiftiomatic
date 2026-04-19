@@ -29,8 +29,8 @@ import SwiftSyntax
 /// Lint: A finding is emitted when a redundant `let` or `var` is found.
 ///
 /// Format: The redundant `let`/`var` keyword is removed.
-final class RedundantLet: SyntaxFormatRule {
-  static let group: ConfigGroup? = .redundancies
+final class RedundantLet: RewriteSyntaxRule {
+  override class var group: ConfigurationGroup? { .redundancies }
 
   // MARK: - Statement-level: let _ = expr → _ = expr
 

@@ -17,9 +17,9 @@ import SwiftSyntax
 ///
 /// Format: The `guard` is replaced with assertion/unwrap statements and `throws` is added to
 /// the signature if needed.
-final class NoGuardInTests: SyntaxFormatRule {
+final class NoGuardInTests: RewriteSyntaxRule {
 
-  static let defaultHandling: RuleHandling = .off
+  override class var defaultHandling: RuleHandling { .off }
 
   private var testContext = TestContextTracker()
   private var insideTestFunction = false

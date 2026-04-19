@@ -8,9 +8,9 @@ import SwiftSyntax
 /// Lint: A warning is raised for incorrect access control on test suite members.
 ///
 /// Format: Access control is corrected.
-final class TestSuiteAccessControl: SyntaxFormatRule {
+final class TestSuiteAccessControl: RewriteSyntaxRule {
 
-  static let defaultHandling: RuleHandling = .off
+  override class var defaultHandling: RuleHandling { .off }
 
   private var framework: TestFramework?
 

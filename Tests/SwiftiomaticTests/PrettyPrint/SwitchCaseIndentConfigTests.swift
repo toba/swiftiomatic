@@ -46,7 +46,7 @@ struct SwitchCaseIndentConfigTests: PrettyPrintTesting {
     let expected = input
 
     var config = Configuration.forTesting
-    config.switchCaseIndentation.style = .flush
+    config[SwitchCaseIndentationConfiguration.self].style = .flush
 
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 35, configuration: config)
   }
@@ -101,7 +101,7 @@ struct SwitchCaseIndentConfigTests: PrettyPrintTesting {
       """
 
     var config = Configuration.forTesting
-    config.switchCaseIndentation.style = .flush
+    config[SwitchCaseIndentationConfiguration.self].style = .flush
 
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 35, configuration: config)
   }
@@ -156,7 +156,7 @@ struct SwitchCaseIndentConfigTests: PrettyPrintTesting {
       """
 
     var config = Configuration.forTesting
-    config.switchCaseIndentation.style = .indented
+    config[SwitchCaseIndentationConfiguration.self].style = .indented
 
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 35, configuration: config)
   }
@@ -190,7 +190,7 @@ struct SwitchCaseIndentConfigTests: PrettyPrintTesting {
     let expected = input
 
     var config = Configuration.forTesting
-    config.switchCaseIndentation.style = .indented
+    config[SwitchCaseIndentationConfiguration.self].style = .indented
 
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 35, configuration: config)
   }
@@ -245,7 +245,7 @@ struct SwitchCaseIndentConfigTests: PrettyPrintTesting {
       """
 
     var config = Configuration.forTesting
-    config.switchCaseIndentation.style = .flush
+    config[SwitchCaseIndentationConfiguration.self].style = .flush
 
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 35, configuration: config)
   }
@@ -300,7 +300,7 @@ struct SwitchCaseIndentConfigTests: PrettyPrintTesting {
       """
 
     var config = Configuration.forTesting
-    config.switchCaseIndentation.style = .indented
+    config[SwitchCaseIndentationConfiguration.self].style = .indented
 
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 35, configuration: config)
   }
@@ -355,7 +355,7 @@ struct SwitchCaseIndentConfigTests: PrettyPrintTesting {
       """
 
     var config = Configuration.forTesting
-    config.switchCaseIndentation.style = .indented
+    config[SwitchCaseIndentationConfiguration.self].style = .indented
 
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 35, configuration: config)
   }
@@ -386,7 +386,7 @@ struct SwitchCaseIndentConfigTests: PrettyPrintTesting {
     let expected = input
 
     var config = Configuration.forTesting
-    config.switchCaseIndentation.style = .indented
+    config[SwitchCaseIndentationConfiguration.self].style = .indented
 
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 80, configuration: config)
   }

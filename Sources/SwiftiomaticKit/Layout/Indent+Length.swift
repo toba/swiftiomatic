@@ -36,7 +36,7 @@ extension Array where Element == Indent {
     }
 
     func length(in configuration: Configuration) -> Int {
-        return self.length(tabWidth: configuration.tabWidth)
+        return self.length(tabWidth: configuration[TabWidth.self])
     }
 
     func length(tabWidth: Int) -> Int {

@@ -10,8 +10,8 @@ import SwiftSyntax
 /// Lint: A `@State` or `@StateObject` property without access control raises a warning.
 ///
 /// Format: The `private` modifier is added before the binding keyword.
-final class PrivateStateVariables: SyntaxFormatRule {
-    static let defaultHandling: RuleHandling = .off
+final class PrivateStateVariables: RewriteSyntaxRule {
+    override class var defaultHandling: RuleHandling { .off }
 
     /// Attribute names that trigger the rule.
     private static let stateAttributes: Set<String> = ["State", "StateObject"]

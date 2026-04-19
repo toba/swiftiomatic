@@ -80,7 +80,7 @@ struct ClosureExprTests: PrettyPrintTesting {
       """
 
     var config = Configuration.forTesting
-    config.lineBreakBeforeEachArgument = true
+    config[BeforeEachArgument.self] = true
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 42, configuration: config)
   }
 
@@ -132,7 +132,7 @@ struct ClosureExprTests: PrettyPrintTesting {
       """
 
     var config = Configuration.forTesting
-    config.lineBreakBeforeEachArgument = false
+    config[BeforeEachArgument.self] = false
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 42, configuration: config)
   }
 
@@ -166,7 +166,7 @@ struct ClosureExprTests: PrettyPrintTesting {
       """
 
     var config = Configuration.forTesting
-    config.lineBreakBeforeEachArgument = false
+    config[BeforeEachArgument.self] = false
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 40, configuration: config)
   }
 
@@ -494,7 +494,7 @@ struct ClosureExprTests: PrettyPrintTesting {
       """
 
     var config = Configuration.forTesting
-    config.prioritizeKeepingFunctionOutputTogether = true
+    config[PrioritizeKeepingFunctionOutputTogether.self] = true
     assertPrettyPrintEqual(
       input: input,
       expected: expectedKeepingOutputTogether,

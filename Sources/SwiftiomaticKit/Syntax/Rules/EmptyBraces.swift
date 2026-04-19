@@ -8,7 +8,7 @@ import SwiftSyntax
 /// Lint: If empty braces contain whitespace, a lint warning is raised.
 ///
 /// Format: The whitespace is removed, collapsing the braces to `{}`.
-final class EmptyBraces: SyntaxFormatRule {
+final class EmptyBraces: RewriteSyntaxRule {
 
   override func visit(_ node: CodeBlockSyntax) -> CodeBlockSyntax {
     var result = node

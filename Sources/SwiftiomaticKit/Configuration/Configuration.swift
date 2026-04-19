@@ -1,367 +1,214 @@
-//===----------------------------------------------------------------------===//
-//
-// This source file is part of the Swift.org open source project
-//
-// Copyright (c) 2014 - 2023 Apple Inc. and the Swift project authors
-// Licensed under Apache License v2.0 with Runtime Library Exception
-//
-// See https://swift.org/LICENSE.txt for license information
-// See https://swift.org/CONTRIBUTORS.txt for the list of Swift project authors
-//
-//===----------------------------------------------------------------------===//
-
 @_exported import ConfigurationKit
 import Foundation
 
 /// A version number that can be specified in the configuration file, which allows us to change the
 /// format in the future if desired and still support older files.
-///
-/// Note that *adding* new configuration values is not a version-breaking change; sm will
-/// use default values when loading older configurations that don't contain the new settings. This
-/// value only needs to be updated if the configuration changes in a way that would be incompatible
-/// with the previous format.
-internal let highestSupportedConfigurationVersion = 4
+private let highestSupportedConfigurationVersion = 4
 
 /// Holds the complete set of configured values and defaults.
-package struct Configuration: Codable, Equatable, Sendable {
-
-    /// A coding key backed by a runtime string, used to iterate heterogeneous JSON dictionaries.
-    private struct DynamicCodingKey: CodingKey {
-        var stringValue: String
-        var intValue: Int? { nil }
-        init(_ string: String) { self.stringValue = string }
-        init?(stringValue: String) { self.stringValue = stringValue }
-        init?(intValue: Int) { nil }
+package struct Configuration: Sendable, Equatable {
+    package static func == (lhs: Configuration, rhs: Configuration) -> Bool {
+        guard lhs.rules == rhs.rules, lhs.version == rhs.version else { return false }
+        // Compare all layout settings via their LayoutDescriptor types.
+        for entry in settingEntries {
+            let lKey = AnyCodingKey(entry.key)
+            let tempL = DictEncoder()
+            var cL = tempL.container(keyedBy: AnyCodingKey.self)
+            let tempR = DictEncoder()
+            var cR = tempR.container(keyedBy: AnyCodingKey.self)
+            do {
+                try entry.encode(lhs, &cL, lKey)
+                try entry.encode(rhs, &cR, lKey)
+            } catch { return false }
+            // Compare via string representation of encoded values.
+            guard "\(tempL.dict)" == "\(tempR.dict)" else { return false }
+        }
+        return true
     }
+    /// Rule enablements keyed by rule name.
+    package var rules: [String: RuleHandling] = ConfigurationRegistry.rules
 
-    // MARK: - FormatSetting table (derived from LayoutDescriptor types)
+    /// Type-erased store for layout settings and rule-specific config.
+    private var values: [String: any Sendable] = [:]
 
-    /// A single pretty-print setting, with closure-based decode/encode keyed by a JSON key name.
-    /// Settings may optionally belong to a ``ConfigGroup``, in which case they decode/encode
-    /// inside that group's JSON object rather than at the root.
-    private struct FormatSetting: Sendable {
-        let key: String
-        let group: ConfigGroup?
-        let decode:
-            @Sendable (KeyedDecodingContainer<DynamicCodingKey>, inout Configuration) throws -> Void
-        let encode:
-            @Sendable (Configuration, inout KeyedEncodingContainer<DynamicCodingKey>) throws -> Void
+    /// Version of the configuration format.
+    private var version: Int = highestSupportedConfigurationVersion
 
-        static func from<D: LayoutDescriptor>(_ type: D.Type) -> FormatSetting {
-            FormatSetting(
-                key: D.key,
-                group: D.group,
-                decode: { container, config in
-                    // Use try? to tolerate type mismatches (e.g. "indentation" key can be
-                    // either an Indent value or a ConfigGroup object depending on format).
-                    if let value = try? container.decodeIfPresent(
-                        D.Value.self,
-                        forKey: DynamicCodingKey(D.key)
-                    ) {
-                        config[keyPath: D.keyPath] = value
-                    }
-                },
-                encode: { config, container in
-                    try container.encode(
-                        config[keyPath: D.keyPath],
-                        forKey: DynamicCodingKey(D.key)
-                    )
-                }
-            )
+    // MARK: - Typed access
+
+    /// Look up any `Configurable` value by type, falling back to its default.
+    package subscript<C: Configurable>(type: C.Type = C.self) -> C.Value {
+        get {
+            if let group = C.group {
+                if let v = values["\(group.key).\(C.key)"] as? C.Value { return v }
+            }
+            return values[C.key] as? C.Value ?? C.defaultValue
+        }
+        set {
+            if let group = C.group {
+                values["\(group.key).\(C.key)"] = newValue
+            } else {
+                values[C.key] = newValue
+            }
         }
     }
 
-    /// All pretty-print settings, derived from ``LayoutDescriptor`` types. Root-level settings
-    /// have `group: nil`; group-owned settings encode/decode inside their group's JSON object.
-    private static let allSettings: [FormatSetting] = [
-        // Root-level
-        .from(LineLength.self),
-        .from(TabWidth.self),
-        .from(IndentationSetting.self),
-        .from(RespectsExistingLineBreaks.self),
-        .from(SpacesBeforeEndOfLineComments.self),
-        .from(SpacesAroundRangeFormationOperators.self),
-        .from(PrioritizeKeepingFunctionOutputTogether.self),
-        .from(MultilineTrailingCommaBehaviorSetting.self),
-        .from(MultiElementCollectionTrailingCommas.self),
-        .from(ReflowMultilineStringLiterals.self),
-        // Grouped: .indentation
-        .from(IndentBlankLines.self),
-        .from(IndentConditionalCompilationBlocks.self),
-        // Grouped: .blankLines
-        .from(MaximumBlankLines.self),
-        // Grouped: .lineBreaks
-        .from(BeforeControlFlowKeywords.self),
-        .from(BeforeEachArgument.self),
-        .from(BeforeEachGenericRequirement.self),
-        .from(BetweenDeclarationAttributes.self),
-        .from(AroundMultilineExpressionChainComponents.self),
-        .from(BeforeGuardConditions.self),
-    ]
+    // MARK: - Registry
 
-    /// Keys that are known settings (not rules or groups), used to skip them during rule decoding.
+    /// A decode closure that reads a value from a keyed container and stores it.
+    private typealias SettingDecoder =
+        @Sendable (
+            KeyedDecodingContainer<AnyCodingKey>, AnyCodingKey, inout Configuration
+        ) throws -> Void
+
+    /// A encode closure that writes a value to a keyed container.
+    private typealias SettingEncoder =
+        @Sendable (
+            Configuration, inout KeyedEncodingContainer<AnyCodingKey>, AnyCodingKey
+        ) throws -> Void
+
+    private struct SettingEntry: Sendable {
+        let key: String
+        let groupKey: ConfigurationGroup.Key?
+        let decode: SettingDecoder
+        let encode: SettingEncoder
+    }
+
+    /// Opens the existential `any LayoutDescriptor.Type` to capture the concrete `Value` type.
+    private static func entry(for type: any LayoutDescriptor.Type) -> SettingEntry {
+        func open<D: LayoutDescriptor>(_ type: D.Type) -> SettingEntry {
+            SettingEntry(
+                key: D.key,
+                groupKey: D.group?.key,
+                decode: { container, codingKey, config in
+                    if let value = try container.decodeIfPresent(D.Value.self, forKey: codingKey) {
+                        config[D.self] = value
+                    }
+                },
+                encode: { config, container, codingKey in
+                    try container.encode(config[D.self], forKey: codingKey)
+                }
+            )
+        }
+        return open(type)
+    }
+
+    /// All layout setting entries, derived from `LayoutSettings.all`.
+    private static let settingEntries: [SettingEntry] =
+        LayoutSettings.all.map { entry(for: $0) }
+
+    /// Setting entries keyed by their JSON key for lookup during decoding.
+    private static let settingsByKey: [String: SettingEntry] = {
+        Dictionary(uniqueKeysWithValues: settingEntries.map { ($0.key, $0) })
+    }()
+
+    /// Keys that are known settings (not rules or groups).
     private static let settingKeyNames: Set<String> = {
-        var names = Set(allSettings.filter { $0.group == nil }.map(\.key))
+        var names = Set(settingEntries.filter { $0.groupKey == nil }.map(\.key))
         names.insert("version")
         return names
     }()
 
-    /// Keys that are config group names.
-    private static let groupKeyNames: Set<String> = Set(ConfigGroup.allCases.map(\.rawValue))
+    // MARK: - Rule config registry
 
-    // MARK: - Rule config registration
-
-    /// Pairs a rule type with its config type's keyPath on Configuration.
+    /// A rule config entry pairs a rule name with closures to decode/encode its config struct.
     private struct RuleConfigEntry: Sendable {
+        /// The rule name this config belongs to (used to match JSON keys).
         let ruleName: String
-        let configProperties: [ConfigProperty]
-        let decode: @Sendable (Decoder, inout Configuration) throws -> Void
-        /// Decode from a keyed container at the given key (used for group-nested rules
-        /// where `superDecoder(forKey:)` on a nested container is unreliable).
-        let decodeFromContainer:
-            @Sendable (
-                KeyedDecodingContainer<DynamicCodingKey>, DynamicCodingKey, inout Configuration
-            ) throws -> Void
+        /// Decode the config struct from a Decoder (for rule objects).
+        let decode: @Sendable (any Decoder, inout Configuration) throws -> Void
+        /// Encode the config struct as an Encodable value.
         let encode: @Sendable (Configuration) -> any Encodable
-
-        static func entry<R: Rule, C: ConfigRepresentable & Codable>(
-            _: R.Type,
-            _ keyPath: WritableKeyPath<Configuration, C> & Sendable
-        ) -> RuleConfigEntry {
-            RuleConfigEntry(
-                ruleName: R.name,
-                configProperties: C.configProperties,
-                decode: { decoder, config in config[keyPath: keyPath] = try C(from: decoder) },
-                decodeFromContainer: { container, key, config in
-                    config[keyPath: keyPath] = try container.decode(C.self, forKey: key)
-                },
-                encode: { config in config[keyPath: keyPath] }
-            )
-        }
     }
 
+    private static func ruleConfigEntry<C: Configurable>(
+        for ruleName: String, _ type: C.Type
+    ) -> RuleConfigEntry where C.Value == C, C: Codable {
+        RuleConfigEntry(
+            ruleName: ruleName,
+            decode: { decoder, config in
+                config[C.self] = try C(from: decoder)
+            },
+            encode: { config in
+                config[C.self]
+            }
+        )
+    }
+
+    /// All rule config entries.
     private static let ruleConfigEntries: [RuleConfigEntry] = [
-        .entry(FileScopedDeclarationPrivacy.self, \.fileScopedDeclarationPrivacy),
-        .entry(NoAssignmentInExpressions.self, \.noAssignmentInExpressions),
-        .entry(SortImports.self, \.sortImports),
-        .entry(CapitalizeAcronyms.self, \.acronyms),
-        .entry(NoExtensionAccessLevel.self, \.extensionAccessControl),
-        .entry(PatternLetPlacement.self, \.patternLet),
-        .entry(URLMacro.self, \.urlMacro),
-        .entry(FileHeader.self, \.fileHeader),
-        .entry(WrapSingleLineBodies.self, \.singleLineBodies),
-        .entry(SwitchCaseIndentation.self, \.switchCaseIndentation),
+        ruleConfigEntry(for: "FileScopedDeclarationPrivacy", FileScopedDeclarationPrivacyConfiguration.self),
+        ruleConfigEntry(for: "NoAssignmentInExpressions", NoAssignmentInExpressionsConfiguration.self),
+        ruleConfigEntry(for: "SortImports", SortImportsConfiguration.self),
+        ruleConfigEntry(for: "CapitalizeAcronyms", AcronymsConfiguration.self),
+        ruleConfigEntry(for: "NoExtensionAccessLevel", ExtensionAccessControlConfiguration.self),
+        ruleConfigEntry(for: "PatternLetPlacement", PatternLetConfiguration.self),
+        ruleConfigEntry(for: "URLMacro", URLMacroConfiguration.self),
+        ruleConfigEntry(for: "FileHeader", FileHeaderConfiguration.self),
+        ruleConfigEntry(for: "WrapSingleLineBodies", SingleLineBodiesConfiguration.self),
+        ruleConfigEntry(for: "SwitchCaseIndentation", SwitchCaseIndentationConfiguration.self),
     ]
 
-    private static let ruleConfigDecoders:
-        [String: @Sendable (Decoder, inout Configuration) throws -> Void] = {
-            Dictionary(uniqueKeysWithValues: ruleConfigEntries.map { ($0.ruleName, $0.decode) })
-        }()
-
-    private static let ruleConfigContainerDecoders:
-        [String:
-            @Sendable (
-                KeyedDecodingContainer<DynamicCodingKey>, DynamicCodingKey, inout Configuration
-            ) throws -> Void] = {
-                Dictionary(
-                    uniqueKeysWithValues: ruleConfigEntries.map {
-                        ($0.ruleName, $0.decodeFromContainer)
-                    }
-                )
-            }()
-
-    /// Rule config schemas keyed by rule name, for the schema generator.
-    package static let ruleConfigSchemas: [String: [ConfigProperty]] = {
-        Dictionary(
-            uniqueKeysWithValues: ruleConfigEntries.map { ($0.ruleName, $0.configProperties) }
-        )
+    /// Rule config decoders keyed by rule name.
+    private static let ruleConfigDecoders: [String: @Sendable (any Decoder, inout Configuration) throws -> Void] = {
+        Dictionary(uniqueKeysWithValues: ruleConfigEntries.map { ($0.ruleName, $0.decode) })
     }()
 
-    /// A dictionary containing the default enabled/disabled states of rules, keyed by the rules'
-    /// names.
-    ///
-    /// This value is generated by `generate-swiftiomatic` based on the `defaultHandling` of each rule.
-    package static let defaultRuleEnablements: [String: RuleHandling] = RuleRegistry.rules
-
-    /// The version of this configuration.
-    private var version: Int = highestSupportedConfigurationVersion
-
-    // MARK: - Common configuration
-
-    /// The dictionary containing the rule names that we wish to run on. A rule is not used if it is
-    /// marked as `.off`, or if it is missing from the dictionary.
-    package var rules: [String: RuleHandling]
-
-    /// The maximum number of consecutive blank lines that may appear in a file.
-    package var maximumBlankLines: Int
-
-    /// The maximum length of a line of source code, after which the formatter will break lines.
-    package var lineLength: Int
-
-    /// Number of spaces that precede line comments.
-    package var spacesBeforeEndOfLineComments: Int
-
-    /// The width of the horizontal tab in spaces.
-    ///
-    /// This value is used when converting indentation types (for example, from tabs into spaces).
-    package var tabWidth: Int
-
-    /// A value representing a single level of indentation.
-    ///
-    /// All indentation will be conducted in multiples of this configuration.
-    package var indentation: Indent
-
-    /// Indicates that the formatter should try to respect users' discretionary line breaks when
-    /// possible.
-    ///
-    /// For example, a short `if` statement and its single-statement body might be able to fit on one
-    /// line, but for readability the user might break it inside the curly braces. If this setting is
-    /// true, those line breaks will be kept. If this setting is false, the formatter will act more
-    /// "opinionated" and collapse the statement onto a single line.
-    package var respectsExistingLineBreaks: Bool
-
-    // MARK: - Rule-specific configuration
-
-    /// Determines the line-breaking behavior for control flow keywords that follow a closing brace,
-    /// like `else` and `catch`.
-    ///
-    /// If true, a line break will be added before the keyword, forcing it onto its own line. If
-    /// false (the default), the keyword will be placed after the closing brace (separated by a
-    /// space).
-    package var lineBreakBeforeControlFlowKeywords: Bool
-
-    /// Determines the line-breaking behavior for generic arguments and function arguments when a
-    /// declaration is wrapped onto multiple lines.
-    ///
-    /// If false (the default), arguments will be laid out horizontally first, with line breaks only
-    /// being fired when the line length would be exceeded. If true, a line break will be added before
-    /// each argument, forcing the entire argument list to be laid out vertically.
-    package var lineBreakBeforeEachArgument: Bool
-
-    /// Determines the line-breaking behavior for generic requirements when the requirements list
-    /// is wrapped onto multiple lines.
-    ///
-    /// If true, a line break will be added before each requirement, forcing the entire requirements
-    /// list to be laid out vertically. If false (the default), requirements will be laid out
-    /// horizontally first, with line breaks only being fired when the line length would be exceeded.
-    package var lineBreakBeforeEachGenericRequirement: Bool
-
-    /// If true, a line break will be added between adjacent attributes.
-    package var lineBreakBetweenDeclarationAttributes: Bool
-
-    /// Determines if function-like declaration outputs should be prioritized to be together with the
-    /// function signature's right (closing) parenthesis.
-    ///
-    /// If false (the default), function output (i.e. throws, return type) is not prioritized to be
-    /// together with the signature's right parenthesis, and when the line length would be exceeded,
-    /// a line break will be fired after the function signature first, indenting the declaration output
-    /// one additional level. If true, a line break will be fired further up in the function's
-    /// declaration (e.g. generic parameters, parameters) before breaking on the function's output.
-    package var prioritizeKeepingFunctionOutputTogether: Bool
-
-    /// Determines the indentation behavior for `#if`, `#elseif`, and `#else`.
-    package var indentConditionalCompilationBlocks: Bool
-
-    /// Determines whether line breaks should be forced before and after multiline components of
-    /// dot-chained expressions, such as function calls and subscripts chained together through member
-    /// access (i.e. "." expressions). When any component is multiline and this option is true, a line
-    /// break is forced before the "." of the component and after the component's closing delimiter
-    /// (i.e. right paren, right bracket, right brace, etc.).
-    package var lineBreakAroundMultilineExpressionChainComponents: Bool
-
-    /// Determines whether guard statement conditions are placed on separate lines from the `guard`
-    /// keyword.
-    ///
-    /// If true (the default), all conditions are placed on their own lines below `guard`, matching
-    /// the original swift-format behavior. If false, the first condition stays on the same line as
-    /// `guard` (like `if` statements), and `else` stays on the same line as the last condition when
-    /// it fits.
-    package var lineBreakBeforeGuardConditions: Bool
-
-    /// Determines the formal access level (i.e., the level specified in source code) for file-scoped
-    /// declarations whose effective access level is private to the containing file.
-    package var fileScopedDeclarationPrivacy: FileScopedDeclarationPrivacyConfiguration
-
-    /// Determines the indentation style for switch case labels (flush or indented).
-    package var switchCaseIndentation: SwitchCaseIndentationConfiguration
-
-    /// Determines whether whitespace should be forced before and after the range formation operators
-    /// `...` and `..<`.
-    package var spacesAroundRangeFormationOperators: Bool
-
-    /// Contains exceptions for the `NoAssignmentInExpressions` rule.
-    package var noAssignmentInExpressions: NoAssignmentInExpressionsConfiguration
-
-    /// Determines how trailing commas in comma-separated lists should be handled during formatting.
-    package enum MultilineTrailingCommaBehavior: String, Codable, Sendable {
-        case alwaysUsed
-        case neverUsed
-        case keptAsWritten
+    /// Look up a rule config encoder by rule name.
+    private func ruleConfigEncodable(for ruleName: String) -> (any Encodable)? {
+        Self.ruleConfigEntries.first { $0.ruleName == ruleName }?.encode(self)
     }
 
-    /// Determines how trailing commas in multiline comma-separated lists are handled during formatting.
-    package var multilineTrailingCommaBehavior: MultilineTrailingCommaBehavior
+    // MARK: - Init
 
-    /// Determines if multi-element collection literals should have trailing commas.
-    package var multiElementCollectionTrailingCommas: Bool
+    package init() {}
 
-    /// Determines how multiline string literals should reflow when formatted.
-    package enum MultilineStringReflowBehavior: String, Codable, Sendable {
-        case never
-        case onlyLinesOverLength
-        case always
-
-        var isNever: Bool { self == .never }
-        var isAlways: Bool { self == .always }
-    }
-
-    package var reflowMultilineStringLiterals: MultilineStringReflowBehavior
-
-    /// Determines whether to add indentation whitespace to blank lines or remove it entirely.
-    package var indentBlankLines: Bool
-
-    /// Configuration for the `SortImports` rule.
-    package var sortImports: SortImportsConfiguration
-
-    /// Configuration for the `CapitalizeAcronyms` rule.
-    package var acronyms: AcronymsConfiguration = AcronymsConfiguration()
-
-    /// Determines where access control modifiers are placed for extension declarations.
-    package var extensionAccessControl: ExtensionAccessControlConfiguration
-
-    /// Determines where `let`/`var` is placed in case patterns.
-    package var patternLet: PatternLetConfiguration
-
-    /// Configuration for replacing `URL(string:)!` with a macro like `#URL(...)`.
-    package var urlMacro: URLMacroConfiguration
-
-    /// Configuration for enforcing a file header comment.
-    package var fileHeader: FileHeaderConfiguration
-
-    /// Configuration for single-line body handling (wrap or inline).
-    package var singleLineBodies: SingleLineBodiesConfiguration
-
-    /// Creates a new `Configuration` by loading it from a configuration file.
     package init(contentsOf url: URL) throws {
         let data = try Data(contentsOf: url)
         try self.init(data: data)
     }
 
-    /// Creates a new `Configuration` by decoding it from the UTF-8 representation in the given data.
     package init(data: Data) throws {
-        let jsonDecoder = JSONDecoder()
-        jsonDecoder.allowsJSON5 = true
-        self = try jsonDecoder.decode(Configuration.self, from: data)
+        let decoder = JSONDecoder()
+        decoder.allowsJSON5 = true
+        self = try decoder.decode(Configuration.self, from: data)
     }
 
-    // MARK: - Decoding
+    /// Default rule enablements (generated).
+    package static let defaultRuleEnablements: [String: RuleHandling] = ConfigurationRegistry.rules
 
-    package init(from decoder: Decoder) throws {
-        let root = try decoder.container(keyedBy: DynamicCodingKey.self)
+    /// Returns the URL of the configuration file that applies to the given file or directory.
+    package static func url(forConfigurationFileApplyingTo url: URL) -> URL? {
+        var candidateDirectory = url.absoluteURL.standardized
+        var isDirectory: ObjCBool = false
+        if FileManager.default.fileExists(
+            atPath: candidateDirectory.path,
+            isDirectory: &isDirectory
+        ),
+            isDirectory.boolValue
+        {
+            candidateDirectory.appendPathComponent("placeholder")
+        }
+        repeat {
+            candidateDirectory.deleteLastPathComponent()
+            let candidateFile = candidateDirectory.appendingPathComponent("swiftiomatic.json")
+            if FileManager.default.isReadableFile(atPath: candidateFile.path) {
+                return candidateFile
+            }
+        } while !candidateDirectory.isRoot
+        return nil
+    }
+}
+
+// MARK: - Codable
+
+extension Configuration: Codable {
+    package init(from decoder: any Decoder) throws {
+        let root = try decoder.container(keyedBy: AnyCodingKey.self)
 
         // Decode version.
         let version =
-            try root.decodeIfPresent(Int.self, forKey: DynamicCodingKey("version"))
+            try root.decodeIfPresent(Int.self, forKey: AnyCodingKey("version"))
             ?? highestSupportedConfigurationVersion
         guard version <= highestSupportedConfigurationVersion else {
             throw SwiftiomaticError.unsupportedConfigurationVersion(
@@ -370,99 +217,95 @@ package struct Configuration: Codable, Equatable, Sendable {
             )
         }
 
-        // Start from defaults; keys below override what they find.
         var config = Configuration()
+        config.version = version
 
         // Decode root-level settings.
-        for setting in Self.allSettings where setting.group == nil {
-            try setting.decode(root, &config)
+        for entry in Self.settingEntries where entry.groupKey == nil {
+            let codingKey = AnyCodingKey(entry.key)
+            guard root.contains(codingKey) else { continue }
+            try entry.decode(root, codingKey, &config)
         }
 
-        // Decode rules and groups from the root.
+        // Walk remaining keys for groups and rules.
         var ruleEnablements: [String: RuleHandling] = [:]
 
         for key in root.allKeys {
             let name = key.stringValue
 
-            // Config group: decode rules + owned settings.
-            // Check groups first — "indentation" is both a root setting and a group name.
-            if let group = ConfigGroup(rawValue: name) {
-                let obj = try root.nestedContainer(keyedBy: DynamicCodingKey.self, forKey: key)
+            // Skip known root-level settings (already decoded above) and version.
+            guard !Self.settingKeyNames.contains(name) else { continue }
+
+            // Config group: decode grouped settings + rules.
+            if let groupKey = ConfigurationGroup.Key(rawValue: name) {
+                let obj = try root.nestedContainer(keyedBy: AnyCodingKey.self, forKey: key)
 
                 // Decode group-owned settings.
-                for setting in Self.allSettings where setting.group == group {
-                    try setting.decode(obj, &config)
+                for entry in Self.settingEntries where entry.groupKey == groupKey {
+                    let codingKey = AnyCodingKey(entry.key)
+                    guard obj.contains(codingKey) else { continue }
+                    try entry.decode(obj, codingKey, &config)
                 }
 
                 // Decode rules within the group.
-                if let mappings = RuleRegistry.groupRules[group] {
-                    for (option, rule) in mappings {
-                        let optKey = DynamicCodingKey(option)
+                if let mappings = ConfigurationRegistry.groupRules[ConfigurationGroup(groupKey)] {
+                    for rule in mappings {
+                        let optKey = AnyCodingKey(rule)
                         guard obj.contains(optKey) else { continue }
 
-                        // Simple string value (e.g. "autoFix", "warn", "off").
                         if let ruleMode = try? obj.decode(RuleHandling.self, forKey: optKey) {
                             ruleEnablements[rule] = ruleMode
                         } else {
-                            // Object value with "mode" or "handling" + rule-specific config.
                             let nested = try obj.nestedContainer(
-                                keyedBy: DynamicCodingKey.self,
+                                keyedBy: AnyCodingKey.self,
                                 forKey: optKey
                             )
-                            // Try "handling" first (used when config has its own "mode" property),
-                            // then fall back to "mode".
                             ruleEnablements[rule] =
                                 try nested.decodeIfPresent(
                                     RuleHandling.self,
-                                    forKey: DynamicCodingKey("handling")
+                                    forKey: AnyCodingKey("handling")
                                 )
                                 ?? nested.decodeIfPresent(
                                     RuleHandling.self,
-                                    forKey: DynamicCodingKey("mode")
+                                    forKey: AnyCodingKey("mode")
                                 ) ?? .warning
 
-                            if let decode = Self.ruleConfigContainerDecoders[rule] {
-                                try decode(obj, optKey, &config)
-                            }
                         }
                     }
                 }
                 continue
             }
 
-            // Skip known settings and the version key.
-            guard !Self.settingKeyNames.contains(name) else { continue }
-
-            // Simple rule: string value (e.g., "autoFix", "warn", "off").
+            // Simple rule: string value.
             if let mode = try? root.decode(RuleHandling.self, forKey: key) {
                 ruleEnablements[name] = mode
                 continue
             }
 
-            // Rule with options: object value with "mode" or "handling" + rule-specific config.
-            // Guard against non-object values (e.g. "$schema" URL string).
+            // Rule with options: object value.
             guard
                 let entryContainer = try? root.nestedContainer(
-                    keyedBy: DynamicCodingKey.self,
+                    keyedBy: AnyCodingKey.self,
                     forKey: key
                 )
-            else {
-                continue
-            }
+            else { continue }
+
             ruleEnablements[name] =
                 try entryContainer.decodeIfPresent(
                     RuleHandling.self,
-                    forKey: DynamicCodingKey("handling")
+                    forKey: AnyCodingKey("handling")
                 )
                 ?? entryContainer.decodeIfPresent(
                     RuleHandling.self,
-                    forKey: DynamicCodingKey("mode")
+                    forKey: AnyCodingKey("mode")
                 ) ?? .warning
 
+            // Decode rule config struct if one is registered.
             if let decode = Self.ruleConfigDecoders[name] {
-                let entryDecoder = try root.superDecoder(forKey: key)
-                try decode(entryDecoder, &config)
+                let ruleDecoder = try root.superDecoder(forKey: key)
+                try decode(ruleDecoder, &config)
             }
+
         }
 
         // Merge decoded rules over defaults.
@@ -470,101 +313,76 @@ package struct Configuration: Codable, Equatable, Sendable {
         self = config
     }
 
-    // MARK: - Encoding
-
-    /// Rules that have config structs, mapped to the encodable config value.
-    private func ruleConfigEncodable(for ruleName: String) -> (any Encodable)? {
-        Self.ruleConfigEntries.first { $0.ruleName == ruleName }?.encode(self)
-    }
-
-    package func encode(to encoder: Encoder) throws {
-        var root = encoder.container(keyedBy: DynamicCodingKey.self)
-        try root.encode(version, forKey: DynamicCodingKey("version"))
+    package func encode(to encoder: any Encoder) throws {
+        var root = encoder.container(keyedBy: AnyCodingKey.self)
+        try root.encode(version, forKey: AnyCodingKey("version"))
 
         // Encode root-level settings.
-        for setting in Self.allSettings where setting.group == nil {
-            try setting.encode(self, &root)
+        for entry in Self.settingEntries where entry.groupKey == nil {
+            try entry.encode(self, &root, AnyCodingKey(entry.key))
         }
 
         // Encode ungrouped rules.
-        for (name, mode) in rules
-        where !RuleRegistry.groupManagedRules.contains(name) {
-            if let config = ruleConfigEncodable(for: name) {
-                let configData = try JSONEncoder().encode(AnyEncodable(config))
-                if var configDict = try JSONSerialization.jsonObject(with: configData)
-                    as? [String: Any]
-                {
-                    let handlingKey = configDict.keys.contains("mode") ? "handling" : "mode"
-                    configDict[handlingKey] = mode.encodedString
-                    try root.encode(JSONFragment(configDict), forKey: DynamicCodingKey(name))
-                }
+        for (name, mode) in rules.sorted(by: { $0.key < $1.key })
+        where !ConfigurationRegistry.groupManagedRules.contains(name) {
+            if let configEncodable = ruleConfigEncodable(for: name) {
+                // Rule with config: encode as object with mode + config properties.
+                let tempEncoder = DictEncoder()
+                var tempContainer = tempEncoder.container(keyedBy: AnyCodingKey.self)
+                try tempContainer.encode(mode.encodedString, forKey: AnyCodingKey("mode"))
+                try configEncodable.encode(to: tempEncoder)
+                try root.encode(JSONFragment(tempEncoder.dict), forKey: AnyCodingKey(name))
             } else {
-                try root.encode(mode, forKey: DynamicCodingKey(name))
+                try root.encode(mode, forKey: AnyCodingKey(name))
             }
         }
 
         // Encode config groups.
-        for group in ConfigGroup.allCases {
-            guard let mappings = RuleRegistry.groupRules[group] else { continue }
+        for group in ConfigurationGroup.Key.allCases {
+            let cfgGroup = ConfigurationGroup(group)
+            guard let mappings = ConfigurationRegistry.groupRules[cfgGroup] else { continue }
 
             var dict: [String: Any] = [:]
 
             // Encode group-owned settings.
-            for setting in Self.allSettings where setting.group == group {
-                // Use a temporary container to extract the value, then put it in the dict.
+            for entry in Self.settingEntries where entry.groupKey == group {
                 let tempEncoder = DictEncoder()
-                var tempContainer = tempEncoder.container(keyedBy: DynamicCodingKey.self)
-                try setting.encode(self, &tempContainer)
+                var tempContainer = tempEncoder.container(keyedBy: AnyCodingKey.self)
+                try entry.encode(self, &tempContainer, AnyCodingKey(entry.key))
                 for (k, v) in tempEncoder.dict { dict[k] = v }
             }
 
             // Encode rules within the group.
-            for (option, rule) in mappings {
+            for rule in mappings {
                 let mode = rules[rule] ?? .off
-                if let config = ruleConfigEncodable(for: rule) {
-                    let configData = try JSONEncoder().encode(AnyEncodable(config))
-                    if var configDict = try JSONSerialization.jsonObject(with: configData)
-                        as? [String: Any]
-                    {
-                        // Use "handling" key when the config already has a "mode" property
-                        // to avoid overwriting the config's own mode value.
-                        let handlingKey = configDict.keys.contains("mode") ? "handling" : "mode"
-                        configDict[handlingKey] = mode.encodedString
-                        dict[option] = configDict
-                    }
-                } else {
-                    dict[option] = mode.encodedString
-                }
+                dict[rule] = mode.encodedString
             }
 
-            try root.encode(JSONFragment(dict), forKey: DynamicCodingKey(group.rawValue))
+            try root.encode(JSONFragment(dict), forKey: AnyCodingKey(group.rawValue))
         }
     }
 
-    // MARK: - Helpers
+    // MARK: - Encoding helpers
 
-    /// Type-erased Encodable wrapper.
     private struct AnyEncodable: Encodable {
         let value: any Encodable
         init(_ value: any Encodable) { self.value = value }
-        func encode(to encoder: Encoder) throws { try value.encode(to: encoder) }
+        func encode(to encoder: any Encoder) throws { try value.encode(to: encoder) }
     }
 
-    /// Encodes a `[String: Any]` dict as a JSON object via JSONSerialization round-trip.
     private struct JSONFragment: Encodable {
         let dict: [String: Any]
         init(_ dict: [String: Any]) { self.dict = dict }
-        func encode(to encoder: Encoder) throws {
+        func encode(to encoder: any Encoder) throws {
             let data = try JSONSerialization.data(withJSONObject: dict)
             let decoded = try JSONDecoder().decode([String: JSONValue].self, from: data)
-            var container = encoder.container(keyedBy: DynamicCodingKey.self)
+            var container = encoder.container(keyedBy: AnyCodingKey.self)
             for (key, value) in decoded {
-                try container.encode(value, forKey: DynamicCodingKey(key))
+                try container.encode(value, forKey: AnyCodingKey(key))
             }
         }
     }
 
-    /// A temporary encoder that captures encoded values into a dictionary.
     private class DictEncoder: Encoder {
         var codingPath: [CodingKey] = []
         var userInfo: [CodingUserInfoKey: Any] = [:]
@@ -590,12 +408,11 @@ package struct Configuration: Codable, Equatable, Sendable {
             mutating func nestedUnkeyedContainer(forKey key: Key) -> UnkeyedEncodingContainer {
                 fatalError()
             }
-            mutating func superEncoder() -> Encoder { fatalError() }
-            mutating func superEncoder(forKey key: Key) -> Encoder { fatalError() }
+            mutating func superEncoder() -> any Encoder { fatalError() }
+            mutating func superEncoder(forKey key: Key) -> any Encoder { fatalError() }
         }
     }
 
-    /// Generic JSON value for re-encoding arbitrary JSON.
     private enum JSONValue: Codable {
         case string(String)
         case int(Int)
@@ -605,7 +422,7 @@ package struct Configuration: Codable, Equatable, Sendable {
         case object([String: JSONValue])
         case null
 
-        init(from decoder: Decoder) throws {
+        init(from decoder: any Decoder) throws {
             let container = try decoder.singleValueContainer()
             if let v = try? container.decode(Bool.self) {
                 self = .bool(v)
@@ -631,7 +448,7 @@ package struct Configuration: Codable, Equatable, Sendable {
             }
         }
 
-        func encode(to encoder: Encoder) throws {
+        func encode(to encoder: any Encoder) throws {
             var container = encoder.singleValueContainer()
             switch self {
             case .string(let v): try container.encode(v)
@@ -644,29 +461,4 @@ package struct Configuration: Codable, Equatable, Sendable {
             }
         }
     }
-
-    /// Returns the URL of the configuration file that applies to the given file or directory.
-    package static func url(forConfigurationFileApplyingTo url: URL) -> URL? {
-        var candidateDirectory = url.absoluteURL.standardized
-        var isDirectory: ObjCBool = false
-        if FileManager.default.fileExists(
-            atPath: candidateDirectory.path,
-            isDirectory: &isDirectory
-        ),
-            isDirectory.boolValue
-        {
-            candidateDirectory.appendPathComponent("placeholder")
-        }
-        repeat {
-            candidateDirectory.deleteLastPathComponent()
-            let candidateFile = candidateDirectory.appendingPathComponent("swiftiomatic.json")
-            if FileManager.default.isReadableFile(atPath: candidateFile.path) {
-                return candidateFile
-            }
-        } while !candidateDirectory.isRoot
-
-        return nil
-    }
 }
-
-// Rule-specific configuration types are defined in SwiftiomaticCore/RuleConfigs.swift

@@ -16,9 +16,9 @@ import SwiftSyntax
 /// Lint: A warning is raised for each `URL(string: "...")!` that can be converted.
 ///
 /// Format: The force-unwrapped URL initializer is replaced with the configured macro.
-final class URLMacro: SyntaxFormatRule {
+final class URLMacro: RewriteSyntaxRule {
 
-  static let defaultHandling: RuleHandling = .off
+  override class var defaultHandling: RuleHandling { .off }
 
   /// Whether any replacements were made (drives import addition).
   private var madeReplacements = false
@@ -29,7 +29,7 @@ final class URLMacro: SyntaxFormatRule {
   // MARK: - Import detection
 
   override func visit(_ node: ImportDeclSyntax) -> DeclSyntax {
-    if let moduleName = context.configuration.urlMacro.moduleName,
+    if let moduleName = context.configuration[URLMacroConfiguration.self].moduleName,
       node.path.first?.name.text == moduleName
     {
       hasModuleImport = true
@@ -40,7 +40,7 @@ final class URLMacro: SyntaxFormatRule {
   // MARK: - File-level: add import after processing children
 
   override func visit(_ node: SourceFileSyntax) -> SourceFileSyntax {
-    let config = context.configuration.urlMacro
+    let config = context.configuration[URLMacroConfiguration.self]
     guard config.macroName != nil else { return node }
 
     let visited = super.visit(node)
@@ -100,7 +100,7 @@ final class URLMacro: SyntaxFormatRule {
   // MARK: - Expression-level: replace URL(string: "...")!
 
   override func visit(_ node: ForceUnwrapExprSyntax) -> ExprSyntax {
-    let config = context.configuration.urlMacro
+    let config = context.configuration[URLMacroConfiguration.self]
     guard let macroName = config.macroName else { return ExprSyntax(node) }
 
     // The inner expression must be a function call
@@ -174,11 +174,9 @@ extension Finding.Message {
 
 // MARK: - Configuration
 
-package struct URLMacroConfiguration: Codable, Equatable, Sendable, ConfigRepresentable {
-  package static let configProperties: [ConfigProperty] = [
-    .init("macroName", .string(description: "Macro name, e.g. \"#URL\". Omit to disable.")),
-    .init("moduleName", .string(description: "Module to import for the macro.")),
-  ]
+package struct URLMacroConfiguration: Configurable, Codable, Equatable, Sendable {
+  package static let key = "urlMacro"
+  package static let defaultValue = URLMacroConfiguration()
 
   package var macroName: String?
   package var moduleName: String?

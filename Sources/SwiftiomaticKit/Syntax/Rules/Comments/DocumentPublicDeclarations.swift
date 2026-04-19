@@ -15,13 +15,13 @@ import SwiftSyntax
 /// All public or open declarations must have a top-level documentation comment.
 ///
 /// Lint: If a public declaration is missing a documentation comment, a lint error is raised.
-final class DocumentPublicDeclarations: SyntaxLintRule {
+final class DocumentPublicDeclarations: LintSyntaxRule {
 
     /// Identifies this rule as being opt-in. While docs on most public declarations are beneficial,
     /// there are a number of public decls where docs are either redundant or superfluous. This rule
     /// can't differentiate those situations and will make a lot of noise for projects that are
     /// intentionally avoiding docs on some decls.
-    static let defaultHandling: RuleHandling = .off
+    override class var defaultHandling: RuleHandling { .off }
 
     override func visit(_ node: FunctionDeclSyntax) -> SyntaxVisitorContinueKind {
         diagnoseMissingDocComment(

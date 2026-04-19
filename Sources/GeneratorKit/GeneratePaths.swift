@@ -35,8 +35,7 @@ package enum GeneratePaths {
     // MARK: - Generated file names
 
     private static let pipelinesFileName = "Pipelines+Generated.swift"
-    private static let ruleRegistryFileName = "RuleRegistry+Generated.swift"
-    private static let ruleNameCacheFileName = "RuleNameCache+Generated.swift"
+    private static let ruleRegistryFileName = "ConfigurationRegistry+Generated.swift"
     private static let ruleDocumentationFileName = "RuleDocumentation.md"
     private static let configurationSchemaFileName = "schema.json"
 
@@ -63,20 +62,28 @@ package enum GeneratePaths {
         syntaxDirectory
         .appendingPathComponent(rulesSubdirectory)
 
+    /// The directory containing layout setting descriptors to scan.
+    package static let settingsDirectory =
+        sourcesDirectory
+        .appendingPathComponent(kitTarget)
+        .appendingPathComponent("Layout")
+        .appendingPathComponent("Settings")
+
+    /// The Generated directory within the kit target for auto-generated files.
+    private static let generatedDirectory =
+        sourcesDirectory
+        .appendingPathComponent(kitTarget)
+        .appendingPathComponent("Generated")
+
     /// The generated pipelines file (`LintPipeline` + `FormatPipeline` extensions).
     package static let pipelineFile =
-        syntaxDirectory
+        generatedDirectory
         .appendingPathComponent(pipelinesFileName)
 
-    /// The generated rule registry file (default rule enablements).
+    /// The generated rule registry file (type arrays, default enablements, name cache).
     package static let ruleRegistryFile =
-        syntaxDirectory
+        generatedDirectory
         .appendingPathComponent(ruleRegistryFileName)
-
-    /// The generated rule name cache file (`ObjectIdentifier` → rule name mapping).
-    package static let ruleNameCacheFile =
-        syntaxDirectory
-        .appendingPathComponent(ruleNameCacheFileName)
 
     /// The generated rule documentation markdown file.
     package static let ruleDocumentationFile =

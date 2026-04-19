@@ -24,7 +24,7 @@ class LintPipeline: SyntaxVisitor {
 
   /// Stores lint and format rule instances, indexed by the `ObjectIdentifier` of a rule's
   /// class type.
-  var ruleCache = [ObjectIdentifier: Rule]()
+  var ruleCache = [ObjectIdentifier: any SyntaxRule]()
 
   /// Rules present in this dictionary skip visiting children until they leave the
   /// syntax node stored as their value
@@ -1205,8 +1205,7 @@ class LintPipeline: SyntaxVisitor {
   }
 }
 
-extension FormatPipeline {
-
+extension RewritePipeline {
   func rewrite(_ node: Syntax) -> Syntax {
     var node = node
     node = BlankLinesAfterGuardStatements(context: context).rewrite(node)

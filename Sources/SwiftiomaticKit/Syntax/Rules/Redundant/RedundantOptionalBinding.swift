@@ -22,8 +22,8 @@ import SwiftSyntax
 /// Lint: If a redundant optional binding initializer is found, a lint warning is raised.
 ///
 /// Format: The redundant initializer is removed.
-final class RedundantOptionalBinding: SyntaxFormatRule {
-  static let group: ConfigGroup? = .redundancies
+final class RedundantOptionalBinding: RewriteSyntaxRule {
+  override class var group: ConfigurationGroup? { .redundancies }
 
   override func visit(_ node: OptionalBindingConditionSyntax) -> OptionalBindingConditionSyntax {
     guard let initializer = node.initializer,

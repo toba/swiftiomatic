@@ -9,10 +9,10 @@ import SwiftSyntax
 /// Lint: When a regular comment should be a doc comment, or vice versa.
 ///
 /// Format: The comment style is corrected.
-final class DocComments: SyntaxFormatRule {
-    static let name = "convertRegularCommentToDocC"
-    static let defaultHandling: RuleHandling = .off
-    static let group: ConfigGroup? = .comments
+final class DocComments: RewriteSyntaxRule {
+    override class var key: String { "convertRegularCommentToDocC" }
+    override class var defaultHandling: RuleHandling { .off }
+    override class var group: ConfigurationGroup? { .comments }
 
     /// Directive prefixes that should never be converted.
     private static let directivePrefixes = [

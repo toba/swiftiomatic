@@ -15,18 +15,18 @@ import Foundation
 import SwiftParser
 import SwiftSyntax
 
-/// Collects information about rules in the formatter code base.
-package final class RuleCollector {
+/// Collects information about `Configurable` types (rules and layout settings) in the code base.
+package final class ConfigurableCollector {
     /// Information about a detected rule.
     struct DetectedRule: Hashable {
         /// The type name of the rule.
         let typeName: String
 
-        /// The custom name from `static let name = "..."`, or `nil` to use `typeName`.
-        let customName: String?
+        /// The custom key from `static let key = "..."`, or `nil` to derive from `typeName`.
+        let customKey: String?
 
         /// The description of the rule, extracted from the rule class or struct DocC comment
-        /// with `DocumentationCommentText(extractedFrom:)`
+        /// with `DocumentationCommentText(extractedFrom:)`.
         let description: String?
 
         /// The syntax node types visited by the rule type.
@@ -39,10 +39,19 @@ package final class RuleCollector {
         let defaultHandling: String
 
         /// The config group this rule belongs to, or `nil` if ungrouped.
-        let group: ConfigGroup?
+        let group: ConfigurationGroup?
 
-        /// The name to use for this rule (custom name if set, otherwise type name).
-        var ruleName: String { customName ?? typeName }
+        /// The config key for this rule (custom if set, otherwise camelCase type name).
+        var ruleName: String {
+            if let customKey { return customKey }
+            return typeName.prefix(1).lowercased() + typeName.dropFirst()
+        }
+    }
+
+    /// Information about a detected layout setting.
+    struct DetectedSetting: Hashable {
+        /// The type name of the setting (e.g. "LineLength").
+        let typeName: String
     }
 
     /// A list of all rules that can lint (thus also including format rules) found in the code base.
@@ -54,21 +63,21 @@ package final class RuleCollector {
     /// A dictionary mapping syntax node types to the lint/format rules that visit them.
     var syntaxNodeLinters = [String: [String]]()
 
+    /// All layout setting types found by scanning the settings directory.
+    var allSettings = [DetectedSetting]()
+
     package init() {}
 
     /// Populates the internal collections with rules in the given directory.
     ///
     /// - Parameter url: The file system URL that should be scanned for rules.
-    package func collect(from url: URL) throws {
-        // For each file in the Rules directory, find types that either conform to SyntaxLintRule or
-        // inherit from SyntaxFormatRule.
+    package func collectRules(from url: URL) throws {
         let fm = FileManager.default
         guard let rulesEnumerator = fm.enumerator(atPath: url.path) else {
             fatalError("Could not list the directory \(url.path)")
         }
 
         for baseName in rulesEnumerator {
-            // Ignore files that aren't Swift source files.
             guard let baseName = baseName as? String, baseName.hasSuffix(".swift") else { continue }
 
             let fileURL = url.appendingPathComponent(baseName)
@@ -79,14 +88,9 @@ package final class RuleCollector {
                 guard let detectedRule = self.detectedRule(at: statement) else { continue }
 
                 if detectedRule.canFormat {
-                    // Format rules just get added to their own list; we run them each over the entire tree in
-                    // succession.
                     allFormatters.insert(detectedRule)
                 }
 
-                // Lint rules (this includes format rules, which can also lint) get added to a mapping over
-                // the names of the types they touch so that they can be interleaved into one pass over the
-                // tree.
                 allLinters.insert(detectedRule)
                 for visitedNode in detectedRule.visitedNodes {
                     syntaxNodeLinters[visitedNode, default: []].append(detectedRule.typeName)
@@ -94,6 +98,48 @@ package final class RuleCollector {
             }
         }
     }
+
+    /// Populates `allSettings` by scanning for `LayoutDescriptor` conformances.
+    ///
+    /// - Parameter url: The file system URL of the settings directory.
+    package func collectSettings(from url: URL) throws {
+        let fm = FileManager.default
+        guard let enumerator = fm.enumerator(atPath: url.path) else {
+            fatalError("Could not list the directory \(url.path)")
+        }
+
+        for baseName in enumerator {
+            guard let baseName = baseName as? String, baseName.hasSuffix(".swift") else { continue }
+
+            let fileURL = url.appendingPathComponent(baseName)
+            let fileInput = try String(contentsOf: fileURL, encoding: .utf8)
+            let sourceFile = Parser.parse(source: fileInput)
+
+            for statement in sourceFile.statements {
+                guard let setting = self.detectedSetting(at: statement) else { continue }
+                allSettings.append(setting)
+            }
+        }
+
+        allSettings.sort { $0.typeName < $1.typeName }
+    }
+
+    /// Detect a layout setting type (struct conforming to LayoutDescriptor).
+    private func detectedSetting(at statement: CodeBlockItemSyntax) -> DetectedSetting? {
+        guard let structDecl = statement.item.as(StructDeclSyntax.self),
+              let inheritanceClause = structDecl.inheritanceClause
+        else { return nil }
+
+        for inheritance in inheritanceClause.inheritedTypes {
+            guard let identifier = inheritance.type.as(IdentifierTypeSyntax.self),
+                  identifier.name.text == "LayoutDescriptor"
+            else { continue }
+            return DetectedSetting(typeName: structDecl.name.text)
+        }
+        return nil
+    }
+
+    // MARK: - Rule detection
 
     /// Determine the rule kind for the declaration in the given statement, if any.
     private func detectedRule(at statement: CodeBlockItemSyntax) -> DetectedRule? {
@@ -114,12 +160,10 @@ package final class RuleCollector {
             return nil
         }
 
-        // Make sure it has an inheritance clause.
         guard let inheritanceClause = maybeInheritanceClause else {
             return nil
         }
 
-        // Scan through the inheritance clause to find one of the protocols/types we're interested in.
         for inheritance in inheritanceClause.inheritedTypes {
             guard let identifier = inheritance.type.as(IdentifierTypeSyntax.self) else {
                 continue
@@ -132,11 +176,9 @@ package final class RuleCollector {
             case "SyntaxFormatRule":
                 canFormat = true
             default:
-                // Keep looking at the other inheritances.
                 continue
             }
 
-            // Now that we know it's a format or lint rule, collect the `visit` methods.
             var visitedNodes = [String]()
             for member in members {
                 guard let function = member.decl.as(FunctionDeclSyntax.self) else { continue }
@@ -148,12 +190,10 @@ package final class RuleCollector {
                 visitedNodes.append(firstType.name.text)
             }
 
-            /// Ignore it if it doesn't have any; there's no point in putting no-op rules in the pipeline.
-            /// Otherwise, return it (we don't need to look at the rest of the inheritances).
             guard !visitedNodes.isEmpty else { return nil }
             return DetectedRule(
                 typeName: typeName,
-                customName: Self.extractCustomName(from: members),
+                customKey: Self.extractCustomKey(from: members),
                 description: description?.text,
                 visitedNodes: visitedNodes,
                 canFormat: canFormat,
@@ -165,14 +205,13 @@ package final class RuleCollector {
         return nil
     }
 
-    /// Extracts the custom `name` from `static let name = "..."` in the AST.
-    /// Returns `nil` when no custom name override is present.
-    private static func extractCustomName(from members: MemberBlockItemListSyntax) -> String? {
+    /// Extracts the custom `key` from `static let key = "..."` in the AST.
+    private static func extractCustomKey(from members: MemberBlockItemListSyntax) -> String? {
         for member in members {
             guard let varDecl = member.decl.as(VariableDeclSyntax.self),
                 let binding = varDecl.bindings.firstAndOnly,
                 let pattern = binding.pattern.as(IdentifierPatternSyntax.self),
-                pattern.identifier.text == "name"
+                pattern.identifier.text == "key"
             else { continue }
 
             if let initializer = binding.initializer?.value.as(StringLiteralExprSyntax.self),
@@ -185,7 +224,6 @@ package final class RuleCollector {
     }
 
     /// Extracts `defaultHandling` from `static let defaultHandling: RuleHandling = .off` in the AST.
-    /// Falls back to `"fix"` for format rules or `"warning"` for lint rules when no override is present.
     private static func extractDefaultHandling(
         from members: MemberBlockItemListSyntax,
         canFormat: Bool
@@ -197,12 +235,10 @@ package final class RuleCollector {
                 pattern.identifier.text == "defaultHandling"
             else { continue }
 
-            // Stored property: `static let defaultHandling: RuleHandling = .off`
             if let initializer = binding.initializer?.value.as(MemberAccessExprSyntax.self) {
                 return initializer.declName.baseName.text
             }
 
-            // Computed property: `static var defaultHandling: RuleHandling { .off }`
             if let accessorBlock = binding.accessorBlock,
                 case .getter(let body) = accessorBlock.accessors
             {
@@ -219,9 +255,8 @@ package final class RuleCollector {
         return canFormat ? "fix" : "warning"
     }
 
-    /// Extracts `group` from `static let group: ConfigGroup? = .someCase` in the AST.
-    /// Returns `nil` (the base class default) when the override is absent.
-    private static func extractGroup(from members: MemberBlockItemListSyntax) -> ConfigGroup? {
+    /// Extracts `group` from `static let group: ConfigurationGroup? = .someCase` in the AST.
+    private static func extractGroup(from members: MemberBlockItemListSyntax) -> ConfigurationGroup? {
         for member in members {
             guard let varDecl = member.decl.as(VariableDeclSyntax.self),
                 let binding = varDecl.bindings.firstAndOnly,
@@ -231,12 +266,9 @@ package final class RuleCollector {
 
             let memberAccess: MemberAccessExprSyntax?
 
-            // Stored property: `static let group: ConfigGroup? = .someCase`
             if let initializer = binding.initializer?.value.as(MemberAccessExprSyntax.self) {
                 memberAccess = initializer
-            }
-            // Computed property: `static var group: ConfigGroup? { .someCase }`
-            else if let accessorBlock = binding.accessorBlock,
+            } else if let accessorBlock = binding.accessorBlock,
                 case .getter(let body) = accessorBlock.accessors
             {
                 if let expr = body.first?.item.as(MemberAccessExprSyntax.self) {
@@ -251,7 +283,7 @@ package final class RuleCollector {
             }
 
             if let memberAccess {
-                return ConfigGroup(rawValue: memberAccess.declName.baseName.text)
+                return ConfigurationGroup(rawValue: memberAccess.declName.baseName.text)
             }
         }
         return nil

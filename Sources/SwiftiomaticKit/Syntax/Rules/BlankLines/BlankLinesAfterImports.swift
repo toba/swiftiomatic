@@ -9,8 +9,8 @@ import SwiftSyntax
 /// Lint: If the first non-import declaration is not preceded by a blank line, a lint warning is raised.
 ///
 /// Format: A blank line is inserted after the last import statement.
-final class BlankLinesAfterImports: SyntaxFormatRule {
-    static let group: ConfigGroup? = .blankLines
+final class BlankLinesAfterImports: RewriteSyntaxRule {
+    override class var group: ConfigurationGroup? { .blankLines }
 
     override func visit(_ node: SourceFileSyntax) -> SourceFileSyntax {
         let statements = Array(node.statements)

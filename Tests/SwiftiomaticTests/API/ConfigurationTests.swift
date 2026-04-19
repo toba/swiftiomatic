@@ -38,7 +38,7 @@ struct ConfigurationTests {
   }
 
   @Test func decodingReflowMultilineStringLiterals() throws {
-    let testCases: [String: Configuration.MultilineStringReflowBehavior] = [
+    let testCases: [String: MultilineStringReflowBehavior] = [
       "never": .never,
       "always": .always,
       "onlyLinesOverLength": .onlyLinesOverLength,
@@ -52,7 +52,7 @@ struct ConfigurationTests {
         """.data(using: .utf8)!
 
       let config = try JSONDecoder().decode(Configuration.self, from: jsonData)
-      #expect(config.reflowMultilineStringLiterals == expectedBehavior)
+      #expect(config[ReflowMultilineStringLiterals.self] == expectedBehavior)
     }
   }
 
@@ -84,11 +84,11 @@ struct ConfigurationTests {
       """.data(using: .utf8)!
 
     let config = try JSONDecoder().decode(Configuration.self, from: jsonData)
-    #expect(config.lineLength == 120)
-    #expect(config.indentation == .spaces(4))
-    #expect(config.tabWidth == 4)
+    #expect(config[LineLength.self] == 120)
+    #expect(config[IndentationSetting.self] == .spaces(4))
+    #expect(config[TabWidth.self] == 4)
     // Unspecified settings use defaults.
-    #expect(config.maximumBlankLines == 1)
+    #expect(config[MaximumBlankLines.self] == 1)
   }
 
   // MARK: - Rules
@@ -103,8 +103,8 @@ struct ConfigurationTests {
     let config = try JSONDecoder().decode(Configuration.self, from: jsonData)
     #expect(config.rules["SortImports"] == .off)
     // Config struct should have defaults since no options were provided.
-    #expect(config.sortImports.shouldGroupImports == true)
-    #expect(config.sortImports.includeConditionalImports == false)
+    #expect(config[SortImportsConfiguration.self].shouldGroupImports == true)
+    #expect(config[SortImportsConfiguration.self].includeConditionalImports == false)
   }
 
   @Test func ruleObjectValue() throws {
@@ -119,8 +119,8 @@ struct ConfigurationTests {
 
     let config = try JSONDecoder().decode(Configuration.self, from: jsonData)
     #expect(config.rules["SortImports"] == .warning)
-    #expect(config.sortImports.includeConditionalImports == true)
-    #expect(config.sortImports.shouldGroupImports == true)
+    #expect(config[SortImportsConfiguration.self].includeConditionalImports == true)
+    #expect(config[SortImportsConfiguration.self].shouldGroupImports == true)
   }
 
   @Test func ruleObjectDefaultsMode() throws {
@@ -134,7 +134,7 @@ struct ConfigurationTests {
 
     let config = try JSONDecoder().decode(Configuration.self, from: jsonData)
     #expect(config.rules["CapitalizeAcronyms"] == .warning)
-    #expect(config.acronyms.words == ["ID", "URL"])
+    #expect(config[AcronymsConfiguration.self].words == ["ID", "URL"])
   }
 
   @Test func rulesMixedModeAndObject() throws {
@@ -148,11 +148,11 @@ struct ConfigurationTests {
 
     let config = try JSONDecoder().decode(Configuration.self, from: jsonData)
     #expect(config.rules["SortImports"] == .error)
-    #expect(config.sortImports.shouldGroupImports == false)
+    #expect(config[SortImportsConfiguration.self].shouldGroupImports == false)
     #expect(config.rules["CapitalizeAcronyms"] == .off)
     #expect(config.rules["URLMacro"] == .warning)
-    #expect(config.urlMacro.macroName == "#URL")
-    #expect(config.urlMacro.moduleName == "URLFoundation")
+    #expect(config[URLMacroConfiguration.self].macroName == "#URL")
+    #expect(config[URLMacroConfiguration.self].moduleName == "URLFoundation")
   }
 
   // MARK: - Fix mode
@@ -216,34 +216,34 @@ struct ConfigurationTests {
       """.data(using: .utf8)!
 
     let config = try JSONDecoder().decode(Configuration.self, from: jsonData)
-    #expect(config.fileScopedDeclarationPrivacy.accessLevel == .fileprivate)
-    #expect(config.noAssignmentInExpressions.allowedFunctions == ["foo"])
-    #expect(config.sortImports.includeConditionalImports == true)
-    #expect(config.sortImports.shouldGroupImports == false)
-    #expect(config.acronyms.words == ["ID"])
-    #expect(config.extensionAccessControl.placement == .onExtension)
-    #expect(config.patternLet.placement == .outerPattern)
-    #expect(config.urlMacro.macroName == "#URL")
-    #expect(config.urlMacro.moduleName == "M")
-    #expect(config.fileHeader.text == "// Header")
+    #expect(config[FileScopedDeclarationPrivacyConfiguration.self].accessLevel == .fileprivate)
+    #expect(config[NoAssignmentInExpressionsConfiguration.self].allowedFunctions == ["foo"])
+    #expect(config[SortImportsConfiguration.self].includeConditionalImports == true)
+    #expect(config[SortImportsConfiguration.self].shouldGroupImports == false)
+    #expect(config[AcronymsConfiguration.self].words == ["ID"])
+    #expect(config[ExtensionAccessControlConfiguration.self].placement == .onExtension)
+    #expect(config[PatternLetConfiguration.self].placement == .outerPattern)
+    #expect(config[URLMacroConfiguration.self].macroName == "#URL")
+    #expect(config[URLMacroConfiguration.self].moduleName == "M")
+    #expect(config[FileHeaderConfiguration.self].text == "// Header")
     // blankLines group
-    #expect(config.maximumBlankLines == 2)
-    #expect(config.rules["BlankLinesAfterGuardStatements"] == .warning)
-    #expect(config.rules["BlankLinesAfterImports"] == .warning)
-    #expect(config.rules["BlankLinesBetweenChainedFunctions"] == .warning)
-    #expect(config.rules["BlankLinesBetweenImports"] == .off)
-    #expect(config.rules["BlankLinesBetweenScopes"] == .warning)
+    #expect(config[MaximumBlankLines.self] == 2)
+    #expect(config.rules["blankLinesAfterGuardStatements"] == .warning)
+    #expect(config.rules["blankLinesAfterImports"] == .warning)
+    #expect(config.rules["blankLinesBetweenChainedFunctions"] == .warning)
+    #expect(config.rules["blankLinesBetweenImports"] == .off)
+    #expect(config.rules["blankLinesBetweenScopes"] == .warning)
     // lineBreaks group
-    #expect(config.lineBreakBeforeControlFlowKeywords == true)
-    #expect(config.lineBreakBeforeEachArgument == true)
-    #expect(config.lineBreakBeforeEachGenericRequirement == true)
-    #expect(config.lineBreakBetweenDeclarationAttributes == true)
-    #expect(config.lineBreakAroundMultilineExpressionChainComponents == true)
+    #expect(config[BeforeControlFlowKeywords.self] == true)
+    #expect(config[BeforeEachArgument.self] == true)
+    #expect(config[BeforeEachGenericRequirement.self] == true)
+    #expect(config[BetweenDeclarationAttributes.self] == true)
+    #expect(config[AroundMultilineExpressionChainComponents.self] == true)
     #expect(config.rules["ensureLineBreakAtEOF"] == .warning)
     // redundancies group
-    #expect(config.rules["RedundantSelf"] == .error)
-    #expect(config.rules["RedundantInit"] == .off)
-    #expect(config.rules["RedundantBackticks"] == .warning)
+    #expect(config.rules["redundantSelf"] == .error)
+    #expect(config.rules["redundantInit"] == .off)
+    #expect(config.rules["redundantBackticks"] == .warning)
   }
 
   // MARK: - All mode values
@@ -277,14 +277,14 @@ struct ConfigurationTests {
 
     let config = try JSONDecoder().decode(Configuration.self, from: jsonData)
     #expect(config.rules["FileScopedDeclarationPrivacy"] == .error)
-    #expect(config.fileScopedDeclarationPrivacy.accessLevel == .private)
+    #expect(config[FileScopedDeclarationPrivacyConfiguration.self].accessLevel == .private)
   }
 
   // MARK: - Dump and round-trip
 
   @Test func dumpConfigurationEmitsV4Format() throws {
     var config = Configuration()
-    config.fileScopedDeclarationPrivacy.accessLevel = .fileprivate
+    config[FileScopedDeclarationPrivacyConfiguration.self].accessLevel = .fileprivate
     config.rules["FileScopedDeclarationPrivacy"] = .warning
 
     let json = try config.asJsonString()
@@ -303,7 +303,7 @@ struct ConfigurationTests {
 
   @Test func roundTripEncodeDecode() throws {
     var config = Configuration()
-    config.fileScopedDeclarationPrivacy.accessLevel = .fileprivate
+    config[FileScopedDeclarationPrivacyConfiguration.self].accessLevel = .fileprivate
     config.rules["FileScopedDeclarationPrivacy"] = .error
     config.rules["NoSemicolons"] = .fix
 

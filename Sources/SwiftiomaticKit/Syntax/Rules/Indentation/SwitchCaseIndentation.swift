@@ -9,13 +9,13 @@ import SwiftSyntax
 /// Lint: Raised when a `case` or `default` label doesn't match the configured style.
 ///
 /// Format: Case labels, bodies, and the closing brace are reindented to match.
-final class SwitchCaseIndentation: SyntaxFormatRule {
-    static let group: ConfigGroup? = .indentation
+final class SwitchCaseIndentation: RewriteSyntaxRule {
+    override class var group: ConfigurationGroup? { .indentation }
 
-    static let defaultHandling: RuleHandling = .off
+    override class var defaultHandling: RuleHandling { .off }
 
     private var style: SwitchCaseIndentationConfiguration.Style {
-        context.configuration.switchCaseIndentation.style
+        context.configuration[SwitchCaseIndentationConfiguration.self].style
     }
 
     override func visit(_ node: SwitchExprSyntax) -> ExprSyntax {
@@ -154,7 +154,7 @@ final class SwitchCaseIndentation: SyntaxFormatRule {
     /// Determine the single indent unit from the context configuration.
     private func indentUnit(from switchExpr: SwitchExprSyntax) -> String {
         // Use the configured indentation (e.g. 2 spaces, 4 spaces, tab).
-        switch context.configuration.indentation {
+        switch context.configuration[IndentationSetting.self] {
         case .spaces(let count): return String(repeating: " ", count: count)
         case .tabs(let count): return String(repeating: "\t", count: count)
         }
@@ -175,17 +175,9 @@ final class SwitchCaseIndentation: SyntaxFormatRule {
 
 // MARK: - Configuration
 
-package struct SwitchCaseIndentationConfiguration: Codable, Equatable, Sendable, ConfigRepresentable {
-    package static let configProperties: [ConfigProperty] = [
-        .init(
-            "style",
-            .stringEnum(
-                description: "How case labels are indented relative to switch: flush (aligned) or indented (one level deeper).",
-                values: ["flush", "indented"],
-                defaultValue: "flush"
-            )
-        )
-    ]
+package struct SwitchCaseIndentationConfiguration: Configurable, Codable, Equatable, Sendable {
+    package static let key = "switchCaseIndentation"
+    package static let defaultValue = SwitchCaseIndentationConfiguration()
 
     package enum Style: String, Codable, Sendable {
         /// Case labels align with the `switch` keyword.

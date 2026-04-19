@@ -12,9 +12,9 @@ import SwiftSyntax
 /// Lint: A warning is raised for `@Test` functions with a `test` prefix.
 ///
 /// Format: The `test` prefix is removed and the first letter is lowercased.
-final class SwiftTestingTestCaseNames: SyntaxFormatRule {
+final class SwiftTestingTestCaseNames: RewriteSyntaxRule {
 
-  static let defaultHandling: RuleHandling = .off
+  override class var defaultHandling: RuleHandling { .off }
 
   private var importsTesting = false
   private var allIdentifiers = Set<String>()

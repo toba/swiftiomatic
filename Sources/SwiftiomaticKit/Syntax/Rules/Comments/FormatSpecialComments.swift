@@ -9,8 +9,8 @@ import SwiftSyntax
 /// Lint: If a special comment tag is not correctly formatted, a lint warning is raised.
 ///
 /// Format: The comment is reformatted to use the correct style.
-final class FormatSpecialComments: SyntaxFormatRule {
-    static let group: ConfigGroup? = .comments
+final class FormatSpecialComments: RewriteSyntaxRule {
+    override class var group: ConfigurationGroup? { .comments }
 
     override func visit(_ token: TokenSyntax) -> TokenSyntax {
         var result = token

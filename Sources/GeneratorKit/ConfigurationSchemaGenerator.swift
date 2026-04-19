@@ -16,13 +16,13 @@ import SwiftiomaticKit
 
 /// Generates `schema.json` by encoding a `JSONSchemaNode` tree.
 ///
-/// Rule descriptions are sourced from `RuleCollector` (extracted from DocC comments)
+/// Rule descriptions are sourced from `ConfigurableCollector` (extracted from DocC comments)
 /// so they stay in sync with rule implementations.
 package final class ConfigurationSchemaGenerator: FileGenerator {
-    let ruleCollector: RuleCollector
+    let collector: ConfigurableCollector
 
-    package init(ruleCollector: RuleCollector) {
-        self.ruleCollector = ruleCollector
+    package init(collector: ConfigurableCollector) {
+        self.collector = collector
     }
 
     package func generateContent() -> String {
@@ -66,7 +66,7 @@ package final class ConfigurationSchemaGenerator: FileGenerator {
         }
 
         // All rules at root level (ungrouped).
-        let allRules = ruleCollector.allLinters
+        let allRules = collector.allLinters
             .sorted(by: { $0.ruleName < $1.ruleName })
         for rule in allRules {
             schema[rule.ruleName] = ruleSchemaNode(for: rule)
@@ -76,7 +76,7 @@ package final class ConfigurationSchemaGenerator: FileGenerator {
         return root
     }
 
-    private func ruleSchemaNode(for rule: RuleCollector.DetectedRule) -> JSONSchemaNode {
+    private func ruleSchemaNode(for rule: ConfigurableCollector.DetectedRule) -> JSONSchemaNode {
         var desc = rule.description ?? (rule.canFormat ? "Format rule." : "Lint rule.")
         if rule.defaultHandling == "off" { desc += " [opt-in]" }
 
@@ -111,8 +111,7 @@ package final class ConfigurationSchemaGenerator: FileGenerator {
 
         // Derive schema from LayoutDescriptor types.
         for descriptor in LayoutSettings.rootSettings {
-            let prop = descriptor.configProperties[0]
-            schema[descriptor.key] = schemaNode(from: prop.schema)
+            schema[descriptor.key] = .string(description: descriptor.description)
         }
 
         // Override indentation with its oneOf schema (spaces/tabs).
@@ -148,28 +147,27 @@ package final class ConfigurationSchemaGenerator: FileGenerator {
     }
 
     private func groupSchemas() -> [String: JSONSchemaNode] {
-        // Build group → rules mapping from the collector (mirrors RuleRegistryGenerator logic).
-        var groupedRules: [ConfigGroup: [RuleCollector.DetectedRule]] = [:]
-        for rule in ruleCollector.allLinters {
+        // Build group → rules mapping from the collector (mirrors ConfigurationRegistryGenerator logic).
+        var groupedRules: [ConfigurationGroup: [ConfigurableCollector.DetectedRule]] = [:]
+        for rule in collector.allLinters {
             guard let group = rule.group else { continue }
             groupedRules[group, default: []].append(rule)
         }
 
         var groups: [String: JSONSchemaNode] = [:]
 
-        for group in ConfigGroup.allCases {
+        for group in ConfigurationGroup.Key.allCases.map({ ConfigurationGroup($0) }) {
             var properties: [String: JSONSchemaNode] = [:]
 
             // Non-rule settings from LayoutDescriptor types.
             for descriptor in LayoutSettings.settings(in: group) {
-                let prop = descriptor.configProperties[0]
-                properties[prop.key] = schemaNode(from: prop.schema)
+                properties[descriptor.key] = .string(description: descriptor.description)
             }
 
             // Rules within the group.
             if let rules = groupedRules[group] {
                 for rule in rules.sorted(by: { $0.ruleName < $1.ruleName }) {
-                    let option = RuleRegistryGenerator.optionName(for: rule.ruleName)
+                    let option = ConfigurationGenerator.optionName(for: rule.ruleName)
                     let modeValues =
                         rule.canFormat
                         ? ["autoFix", "warn", "error", "off"]
@@ -184,8 +182,8 @@ package final class ConfigurationSchemaGenerator: FileGenerator {
             }
 
             guard !properties.isEmpty else { continue }
-            groups[group.rawValue] = .object(
-                description: "\(group.rawValue) rule group.",
+            groups[group.key.rawValue] = .object(
+                description: "\(group.key.rawValue) rule group.",
                 properties: properties
             )
         }
@@ -198,22 +196,8 @@ package final class ConfigurationSchemaGenerator: FileGenerator {
     private func ruleOptionsSchema(for ruleName: String, canFormat: Bool, defaultHandling: String)
         -> JSONSchemaNode?
     {
-        guard let configProperties = Configuration.ruleConfigSchemas[ruleName] else { return nil }
-
-        let modeValues =
-            canFormat ? ["autoFix", "warn", "error", "off"] : ["warn", "error", "off"]
-        let defaultMode = jsonMode(for: defaultHandling)
-        let modeProp = JSONSchemaNode.stringEnum(
-            description: "Rule mode.",
-            values: modeValues,
-            defaultValue: defaultMode
-        )
-
-        var props: [String: JSONSchemaNode] = ["mode": modeProp]
-        for prop in configProperties {
-            props[prop.key] = schemaNode(from: prop.schema)
-        }
-        return .object(description: "", properties: props)
+        // TODO: Derive rule config schemas from Configurable metadata
+        nil
     }
 
     /// Maps a `RuleHandling` case name to its JSON-encoded string.
@@ -227,15 +211,4 @@ package final class ConfigurationSchemaGenerator: FileGenerator {
         }
     }
 
-    private func schemaNode(from schema: ConfigProperty.Schema) -> JSONSchemaNode {
-        switch schema {
-        case .bool(let desc, let def): .boolean(description: desc, defaultValue: def)
-        case .integer(let desc, let def, let min):
-            .integer(description: desc, defaultValue: def, minimum: min)
-        case .string(let desc): .string(description: desc)
-        case .stringEnum(let desc, let vals, let def):
-            .stringEnum(description: desc, values: vals, defaultValue: def)
-        case .stringArray(let desc, let def): .stringArray(description: desc, defaultValue: def)
-        }
-    }
 }

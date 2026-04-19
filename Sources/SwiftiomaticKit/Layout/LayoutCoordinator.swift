@@ -15,53 +15,7 @@ import SwiftSyntax
 
 /// PrettyPrinter takes a Syntax node and outputs a well-formatted, re-indented reproduction of the
 /// code as a String.
-package class PrettyPrinter {
-
-    /// Information about an open break that has not yet been closed during the printing stage.
-    private struct ActiveOpenBreak {
-        /// The index of the open break.
-        let index: Int
-
-        /// The kind of open break that created this scope.
-        let kind: OpenBreakKind
-
-        /// The line number where the open break occurred.
-        let lineNumber: Int
-
-        /// Indicates whether the open break contributed a continuation indent to its scope.
-        ///
-        /// This indent is applied independently of `contributesBlockIndent`, which means a given break
-        /// may apply both a continuation indent and a block indent, either indent, or neither indent.
-        var contributesContinuationIndent: Bool
-
-        /// Indicates whether the open break contributed a block indent to its scope. Only one block
-        /// indent is applied per line that contains open breaks.
-        ///
-        /// This indent is applied independently of `contributesContinuationIndent`, which means a given
-        /// break may apply both a continuation indent and a block indent, either indent, or neither
-        /// indent.
-        var contributesBlockIndent: Bool
-    }
-
-    /// Records state of `contextualBreakingStart` tokens.
-    private struct ActiveBreakingContext {
-        /// The line number in the `outputBuffer` where a start token appeared.
-        let lineNumber: Int
-
-        enum BreakingBehavior {
-            /// The behavior hasn't been determined. This is treated as `continuation`.
-            case unset
-            /// The break is created as a `continuation` break, setting `currentLineIsContinuation` when
-            /// it fires.
-            case continuation
-            /// The break maintains the existing value of `currentLineIsContinuation` when it fires.
-            case maintain
-        }
-
-        /// The behavior to use when a `contextual` break fires inside of this break context.
-        var contextualBreakingBehavior = BreakingBehavior.unset
-    }
-
+package final class LayoutCoordinator {
     private let context: Context
     private var configuration: Configuration { return context.configuration }
     private let maxLineLength: Int
@@ -81,7 +35,7 @@ package class PrettyPrinter {
         }
     }
 
-    private var outputBuffer: PrettyPrintBuffer
+    private var outputBuffer: LayoutBuffer
 
     /// Keep track of the token lengths.
     private var lengths = [Int]()
@@ -152,7 +106,7 @@ package class PrettyPrinter {
     /// The computed indentation level, as a number of spaces, based on the state of any unclosed
     /// delimiters and whether or not the current line is a continuation line.
     private var currentIndentation: [Indent] {
-        let indentation = configuration.indentation
+        let indentation = configuration[IndentationSetting.self]
         var totalIndentation: [Indent] = activeOpenBreaks.flatMap { (open) -> [Indent] in
             let count =
                 (open.contributesBlockIndent ? 1 : 0)
@@ -160,7 +114,7 @@ package class PrettyPrinter {
             return Array(repeating: indentation, count: count)
         }
         if currentLineIsContinuation {
-            totalIndentation.append(configuration.indentation)
+            totalIndentation.append(configuration[IndentationSetting.self])
         }
         return totalIndentation
     }
@@ -199,12 +153,12 @@ package class PrettyPrinter {
             selection: context.selection,
             operatorTable: context.operatorTable
         )
-        self.maxLineLength = configuration.lineLength
+        self.maxLineLength = configuration[LineLength.self]
         self.printTokenStream = printTokenStream
         self.whitespaceOnly = whitespaceOnly
-        self.outputBuffer = PrettyPrintBuffer(
-            maximumBlankLines: configuration.maximumBlankLines,
-            tabWidth: configuration.tabWidth
+        self.outputBuffer = LayoutBuffer(
+            maximumBlankLines: configuration[MaximumBlankLines.self],
+            tabWidth: configuration[TabWidth.self]
         )
     }
 
@@ -401,7 +355,7 @@ package class PrettyPrinter {
                 // break context scope) onto its own line. For example, this is used when the previous
                 // context includes a multiline trailing closure or multiline function argument list.
                 if let lastBreakingContext = lastEndedBreakingContext {
-                    if configuration.lineBreakAroundMultilineExpressionChainComponents {
+                    if configuration[AroundMultilineExpressionChainComponents.self] {
                         mustBreak = lastBreakingContext.lineNumber != outputBuffer.lineNumber
                     }
                 }
@@ -460,7 +414,7 @@ package class PrettyPrinter {
                 }
                 outputBuffer.writeNewlines(
                     newline,
-                    shouldIndentBlankLines: configuration.indentBlankLines
+                    shouldIndentBlankLines: configuration[IndentBlankLines.self]
                 )
                 lastBreak = true
             } else {
@@ -479,7 +433,7 @@ package class PrettyPrinter {
 
         // Print out the number of spaces according to the size, and adjust spaceRemaining.
         case .space(let size, _):
-            if configuration.indentBlankLines, outputBuffer.isAtStartOfLine {
+            if configuration[IndentBlankLines.self], outputBuffer.isAtStartOfLine {
                 // An empty string write is needed to add line-leading indentation that matches the current indentation on a line that contains only whitespaces.
                 outputBuffer.write("")
             }
@@ -502,7 +456,7 @@ package class PrettyPrinter {
             outputBuffer.write(
                 comment.print(
                     indent: currentIndentation,
-                    shouldIndentBlankLines: configuration.indentBlankLines
+                    shouldIndentBlankLines: configuration[IndentBlankLines.self]
                 )
             )
 
@@ -596,7 +550,7 @@ package class PrettyPrinter {
     /// Indicates whether the current line can fit a string of the given length. If no length
     /// is given, it indicates whether the current line can accommodate *any* text.
     private func canFit(_ length: Int = 1) -> Bool {
-        let spaceRemaining = configuration.lineLength - outputBuffer.column
+        let spaceRemaining = configuration[LineLength.self] - outputBuffer.column
         return outputBuffer.isAtStartOfLine || length <= spaceRemaining
     }
 
@@ -772,13 +726,13 @@ package class PrettyPrinter {
     /// Returns whether trailing comma insertion or removal should be performed for the given comma-delimited region,
     /// or `nil` to keep as written.
     private func shouldHandleCommaDelimitedRegion(isCollection: Bool) -> Bool? {
-        switch configuration.multilineTrailingCommaBehavior {
+        switch configuration[MultilineTrailingCommaBehaviorSetting.self] {
         case .alwaysUsed:
             return true
         case .neverUsed:
             return false
         case .keptAsWritten:
-            return isCollection ? configuration.multiElementCollectionTrailingCommas : nil
+            return isCollection ? configuration[MultiElementCollectionTrailingCommas.self] : nil
         }
     }
 
@@ -874,7 +828,7 @@ package class PrettyPrinter {
     }
 
     /// Emits a finding with the given message and category at the current location in `outputBuffer`.
-    private func diagnose(_ message: Finding.Message, category: PrettyPrintFindingCategory) {
+    private func diagnose(_ message: Finding.Message, category: LayoutFindingCategory) {
         // Add 1 since columns uses 1-based indices.
         let column = outputBuffer.column + 1
         context.findingEmitter.emit(
@@ -886,6 +840,55 @@ package class PrettyPrinter {
                 column: column
             )
         )
+    }
+}
+
+// MARK: - Support
+
+extension LayoutCoordinator {
+    /// Information about an open break that has not yet been closed during the printing stage.
+    fileprivate struct ActiveOpenBreak {
+        /// The index of the open break.
+        let index: Int
+
+        /// The kind of open break that created this scope.
+        let kind: OpenBreakKind
+
+        /// The line number where the open break occurred.
+        let lineNumber: Int
+
+        /// Indicates whether the open break contributed a continuation indent to its scope.
+        ///
+        /// This indent is applied independently of `contributesBlockIndent`, which means a given break
+        /// may apply both a continuation indent and a block indent, either indent, or neither indent.
+        var contributesContinuationIndent: Bool
+
+        /// Indicates whether the open break contributed a block indent to its scope. Only one block
+        /// indent is applied per line that contains open breaks.
+        ///
+        /// This indent is applied independently of `contributesContinuationIndent`, which means a given
+        /// break may apply both a continuation indent and a block indent, either indent, or neither
+        /// indent.
+        var contributesBlockIndent: Bool
+    }
+
+    /// Records state of `contextualBreakingStart` tokens.
+    fileprivate struct ActiveBreakingContext {
+        /// The line number in the `outputBuffer` where a start token appeared.
+        let lineNumber: Int
+
+        enum BreakingBehavior {
+            /// The behavior hasn't been determined. This is treated as `continuation`.
+            case unset
+            /// The break is created as a `continuation` break, setting `currentLineIsContinuation` when
+            /// it fires.
+            case continuation
+            /// The break maintains the existing value of `currentLineIsContinuation` when it fires.
+            case maintain
+        }
+
+        /// The behavior to use when a `contextual` break fires inside of this break context.
+        var contextualBreakingBehavior = BreakingBehavior.unset
     }
 }
 

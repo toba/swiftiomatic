@@ -261,6 +261,8 @@ package struct DocumentationComment {
     }
 }
 
+// MARK: - Support
+
 /// Visits a list item representing a parameter in a documentation comment and rewrites it to remove
 /// any `Parameter` tag (if present), the name of the parameter, and the subsequent colon.
 private struct ParameterOutlineMarkupRewriter: MarkupRewriter {

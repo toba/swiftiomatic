@@ -8,10 +8,10 @@ import SwiftSyntax
 /// Lint: If the file does not end with exactly one newline, a lint warning is raised.
 ///
 /// Format: A trailing newline is added if missing, or extra newlines are removed.
-final class LinebreakAtEndOfFile: SyntaxFormatRule {
-    static let name = "ensureLineBreakAtEOF"
-    static let group: ConfigGroup? = .lineBreaks
-    static let defaultHandling: RuleHandling = .off
+final class LinebreakAtEndOfFile: RewriteSyntaxRule {
+    override class var key: String { "ensureLineBreakAtEOF" }
+    override class var group: ConfigurationGroup? { .lineBreaks }
+    override class var defaultHandling: RuleHandling { .off }
 
     override func visit(_ node: SourceFileSyntax) -> SourceFileSyntax {
         let eof = node.endOfFileToken

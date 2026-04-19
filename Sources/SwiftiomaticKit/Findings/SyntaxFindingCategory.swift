@@ -12,18 +12,18 @@
 
 /// A finding category that wraps a `Rule` type.
 ///
-/// Findings emitted by `SyntaxLintRule` and `SyntaxFormatRule` subclasses automatically emit their
+/// Findings emitted by `SyntaxLintRule` and `RewriteSyntaxRule` subclasses automatically emit their
 /// findings using this category type, via an instance that wraps the calling rule. The displayable
 /// name of the category is the same as the rule's name provided by the `ruleName` property (which
 /// defaults to the rule's type name).
-struct RuleBasedFindingCategory: FindingCategorizing {
-  /// The type of the rule associated with this category.
-  private nonisolated(unsafe) let ruleType: Rule.Type
+struct SyntaxFindingCategory: FindingCategorizing {
+    /// The type of the rule associated with this category.
+    private nonisolated(unsafe) let ruleType: any SyntaxRule.Type
 
-  var description: String { ruleType.name }
+    var description: String { ruleType.key }
 
-  /// Creates a finding category that wraps the given rule type.
-  init(ruleType: Rule.Type) {
-    self.ruleType = ruleType
-  }
+    /// Creates a finding category that wraps the given rule type.
+    init(ruleType: any SyntaxRule.Type) {
+        self.ruleType = ruleType
+    }
 }

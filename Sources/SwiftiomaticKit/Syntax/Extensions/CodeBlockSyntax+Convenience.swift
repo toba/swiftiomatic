@@ -1,0 +1,67 @@
+//===----------------------------------------------------------------------===//
+//
+// This source file is part of the Swift.org open source project
+//
+// Copyright (c) 2014 - 2019 Apple Inc. and the Swift project authors
+// Licensed under Apache License v2.0 with Runtime Library Exception
+//
+// See https://swift.org/LICENSE.txt for license information
+// See https://swift.org/CONTRIBUTORS.txt for the list of Swift project authors
+//
+//===----------------------------------------------------------------------===//
+
+import SwiftSyntax
+
+extension CodeBlockSyntax {
+    /// Whether this code block's content needs to be wrapped onto new lines.
+    /// Returns `true` if the body is non-empty and the first statement or closing
+    /// brace is on the same line as the opening brace.
+    var bodyNeedsWrapping: Bool {
+        guard let firstStmt = statements.first else { return false }
+        let firstOnNewLine = firstStmt.leadingTrivia.containsNewlines
+        let closingOnNewLine = rightBrace.leadingTrivia.containsNewlines
+        return !firstOnNewLine || !closingOnNewLine
+    }
+
+    /// Returns a copy with the body content wrapped onto new lines.
+    ///
+    /// - Parameter baseIndent: The indentation string of the enclosing declaration.
+    ///   The body content is indented by `baseIndent + "    "` and the closing brace
+    ///   is placed at `baseIndent`.
+    func wrappingBody(baseIndent: String) -> CodeBlockSyntax {
+        var result = self
+        let bodyIndent = baseIndent + "    "
+
+        let firstOnNewLine = statements.first?.leadingTrivia.containsNewlines ?? true
+        let closingOnNewLine = rightBrace.leadingTrivia.containsNewlines
+
+        if !firstOnNewLine {
+            // Strip trailing spaces from leftBrace (keep comments)
+            result.leftBrace = leftBrace.with(
+                \.trailingTrivia,
+                leftBrace.trailingTrivia.trimmingTrailingWhitespace
+            )
+
+            // Set first statement leading trivia to newline + body indent
+            var items = Array(result.statements)
+            items[0].leadingTrivia = .newline + Trivia(stringLiteral: bodyIndent)
+            result.statements = CodeBlockItemListSyntax(items)
+        }
+
+        if !closingOnNewLine {
+            // Strip trailing whitespace from last statement
+            var items = Array(result.statements)
+            let lastIdx = items.count - 1
+            items[lastIdx].trailingTrivia = items[lastIdx].trailingTrivia.trimmingTrailingWhitespace
+            result.statements = CodeBlockItemListSyntax(items)
+
+            // Set rightBrace leading trivia to newline + base indent
+            result.rightBrace = result.rightBrace.with(
+                \.leadingTrivia,
+                .newline + Trivia(stringLiteral: baseIndent)
+            )
+        }
+
+        return result
+    }
+}

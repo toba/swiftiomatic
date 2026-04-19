@@ -30,8 +30,7 @@ package func makeTestContext(
     findingConsumer: findingConsumer,
     fileURL: URL(fileURLWithPath: "/tmp/test.swift"),
     selection: selection,
-    sourceFileSyntax: sourceFileSyntax,
-    ruleNameCache: ruleNameCache
+    sourceFileSyntax: sourceFileSyntax
   )
 }
 

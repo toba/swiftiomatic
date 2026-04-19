@@ -17,8 +17,8 @@ protocol WithSemicolonSyntax: SyntaxProtocol {
     var semicolon: TokenSyntax? { get set }
 }
 
-extension MemberBlockItemSyntax: WithSemicolonSyntax {}
 extension CodeBlockItemSyntax: WithSemicolonSyntax {}
+extension MemberBlockItemSyntax: WithSemicolonSyntax {}
 
 extension SyntaxProtocol {
     func asProtocol(_: WithSemicolonSyntax.Protocol) -> WithSemicolonSyntax? {

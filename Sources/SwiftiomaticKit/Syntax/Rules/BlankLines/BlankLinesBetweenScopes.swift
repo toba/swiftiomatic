@@ -12,9 +12,9 @@ import SwiftSyntax
 ///       warning is raised.
 ///
 /// Format: A blank line is inserted after the declaration.
-final class BlankLinesBetweenScopes: SyntaxFormatRule {
-    static let group: ConfigGroup? = .blankLines
-    static let defaultHandling: RuleHandling = .off
+final class BlankLinesBetweenScopes: RewriteSyntaxRule {
+    override class var group: ConfigurationGroup? { .blankLines }
+    override class var defaultHandling: RuleHandling { .off }
 
     override func visit(_ node: SourceFileSyntax) -> SourceFileSyntax {
         var result = super.visit(node)

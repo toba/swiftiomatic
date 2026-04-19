@@ -139,7 +139,7 @@ struct AttributeTests: PrettyPrintTesting {
       """
 
     var configuration = Configuration.forTesting
-    configuration.lineBreakBeforeEachArgument = true
+    configuration[BeforeEachArgument.self] = true
     assertPrettyPrintEqual(
       input: input,
       expected: expected,
@@ -219,7 +219,7 @@ struct AttributeTests: PrettyPrintTesting {
       """
 
     var configuration = Configuration.forTesting
-    configuration.lineBreakBeforeEachArgument = true
+    configuration[BeforeEachArgument.self] = true
     assertPrettyPrintEqual(
       input: input,
       expected: expected,
@@ -295,7 +295,7 @@ struct AttributeTests: PrettyPrintTesting {
       """
 
     var configuration = Configuration.forTesting
-    configuration.lineBreakBeforeEachArgument = true
+    configuration[BeforeEachArgument.self] = true
     assertPrettyPrintEqual(
       input: input,
       expected: expected,
@@ -599,7 +599,7 @@ struct AttributeTests: PrettyPrintTesting {
 
       """
     var configuration = Configuration.forTesting
-    configuration.lineBreakBetweenDeclarationAttributes = true
+    configuration[BetweenDeclarationAttributes.self] = true
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 80, configuration: configuration)
   }
 

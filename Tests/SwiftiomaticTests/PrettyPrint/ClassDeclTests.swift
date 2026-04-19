@@ -94,7 +94,7 @@ struct ClassDeclTests: PrettyPrintTesting {
       """
 
     var config = Configuration.forTesting
-    config.lineBreakBeforeEachArgument = true
+    config[BeforeEachArgument.self] = true
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 30, configuration: config)
   }
 
@@ -135,7 +135,7 @@ struct ClassDeclTests: PrettyPrintTesting {
       """
 
     var config = Configuration.forTesting
-    config.lineBreakBeforeEachArgument = false
+    config[BeforeEachArgument.self] = false
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 30, configuration: config)
   }
 
@@ -282,7 +282,7 @@ struct ClassDeclTests: PrettyPrintTesting {
       """
 
     var config = Configuration.forTesting
-    config.lineBreakBeforeEachGenericRequirement = true
+    config[BeforeEachGenericRequirement.self] = true
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 60, configuration: config)
   }
 
@@ -358,7 +358,7 @@ struct ClassDeclTests: PrettyPrintTesting {
       """
 
     var config = Configuration.forTesting
-    config.lineBreakBeforeEachGenericRequirement = true
+    config[BeforeEachGenericRequirement.self] = true
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 60, configuration: config)
   }
 
@@ -439,7 +439,7 @@ struct ClassDeclTests: PrettyPrintTesting {
       """
 
     var config = Configuration.forTesting
-    config.lineBreakBeforeEachArgument = false
+    config[BeforeEachArgument.self] = false
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 50, configuration: config)
   }
 
@@ -473,8 +473,8 @@ struct ClassDeclTests: PrettyPrintTesting {
       """
 
     var config = Configuration.forTesting
-    config.lineBreakBeforeEachArgument = false
-    config.lineBreakBeforeEachGenericRequirement = true
+    config[BeforeEachArgument.self] = false
+    config[BeforeEachGenericRequirement.self] = true
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 50, configuration: config)
   }
 

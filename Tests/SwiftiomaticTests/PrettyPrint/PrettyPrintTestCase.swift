@@ -32,7 +32,7 @@ extension PrettyPrintTesting {
     sourceLocation: TestSourceLocation = #_sourceLocation
   ) {
     var configuration = configuration
-    configuration.lineLength = linelength
+    configuration[LineLength.self] = linelength
 
     let markedInput = MarkedText(textWithMarkers: input)
     var emittedFindings = [Finding]()
@@ -108,7 +108,7 @@ private func prettyPrintedSource(
     selection: selection,
     findingConsumer: findingConsumer
   )
-  let printer = PrettyPrinter(
+  let printer = LayoutCoordinator(
     context: context,
     source: source,
     node: Syntax(sourceFileSyntax),

@@ -37,7 +37,7 @@ struct MacroDeclTests: PrettyPrintTesting {
       """
 
     var config = Configuration.forTesting
-    config.lineBreakBeforeEachArgument = true
+    config[BeforeEachArgument.self] = true
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 58, configuration: config)
   }
 
@@ -61,7 +61,7 @@ struct MacroDeclTests: PrettyPrintTesting {
       """
 
     var config = Configuration.forTesting
-    config.lineBreakBeforeEachArgument = false
+    config[BeforeEachArgument.self] = false
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 58, configuration: config)
   }
 
@@ -98,7 +98,7 @@ struct MacroDeclTests: PrettyPrintTesting {
       """
 
     var config = Configuration.forTesting
-    config.lineBreakBeforeEachArgument = false
+    config[BeforeEachArgument.self] = false
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 58, configuration: config)
   }
 
@@ -128,7 +128,7 @@ struct MacroDeclTests: PrettyPrintTesting {
       """
 
     var config = Configuration.forTesting
-    config.lineBreakBeforeEachArgument = true
+    config[BeforeEachArgument.self] = true
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 44, configuration: config)
   }
 
@@ -156,7 +156,7 @@ struct MacroDeclTests: PrettyPrintTesting {
       """
 
     var config = Configuration.forTesting
-    config.lineBreakBeforeEachArgument = false
+    config[BeforeEachArgument.self] = false
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 44, configuration: config)
   }
 
@@ -206,7 +206,7 @@ struct MacroDeclTests: PrettyPrintTesting {
       """
 
     var config = Configuration.forTesting
-    config.lineBreakBeforeEachArgument = false
+    config[BeforeEachArgument.self] = false
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 51, configuration: config)
   }
 
@@ -258,8 +258,8 @@ struct MacroDeclTests: PrettyPrintTesting {
       """
 
     var config = Configuration.forTesting
-    config.lineBreakBeforeEachArgument = false
-    config.lineBreakBeforeEachGenericRequirement = true
+    config[BeforeEachArgument.self] = false
+    config[BeforeEachGenericRequirement.self] = true
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 50, configuration: config)
   }
 
@@ -345,7 +345,7 @@ struct MacroDeclTests: PrettyPrintTesting {
 
       """
     var config = Configuration.forTesting
-    config.prioritizeKeepingFunctionOutputTogether = true
+    config[PrioritizeKeepingFunctionOutputTogether.self] = true
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 23, configuration: config)
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 24, configuration: config)
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 27, configuration: config)
@@ -386,7 +386,7 @@ struct MacroDeclTests: PrettyPrintTesting {
 
       """
     var config = Configuration.forTesting
-    config.prioritizeKeepingFunctionOutputTogether = true
+    config[PrioritizeKeepingFunctionOutputTogether.self] = true
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 26, configuration: config)
   }
 

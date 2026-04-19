@@ -13,25 +13,22 @@
 import Foundation
 import GeneratorKit
 
-let ruleCollector = RuleCollector()
-try ruleCollector.collect(from: GeneratePaths.rulesDirectory)
+let collector = ConfigurableCollector()
+try collector.collectRules(from: GeneratePaths.rulesDirectory)
+try collector.collectSettings(from: GeneratePaths.settingsDirectory)
 
 // Generate a file with extensions for the lint and format pipelines.
-let pipelineGenerator = PipelineGenerator(ruleCollector: ruleCollector)
+let pipelineGenerator = PipelineGenerator(collector: collector)
 try pipelineGenerator.generateFile(at: GeneratePaths.pipelineFile)
 
-// Generate the rule registry dictionary for configuration.
-let registryGenerator = RuleRegistryGenerator(ruleCollector: ruleCollector)
+// Generate the unified rule registry (type arrays, defaults, name cache).
+let registryGenerator = ConfigurationGenerator(collector: collector)
 try registryGenerator.generateFile(at: GeneratePaths.ruleRegistryFile)
 
-// Generate the rule name cache.
-let ruleNameCacheGenerator = RuleNameCacheGenerator(ruleCollector: ruleCollector)
-try ruleNameCacheGenerator.generateFile(at: GeneratePaths.ruleNameCacheFile)
-
 // DISABLED: Documentation generation kept in RuleDocumentationGenerator.swift for future use.
-// let ruleDocumentationGenerator = RuleDocumentationGenerator(ruleCollector: ruleCollector)
+// let ruleDocumentationGenerator = RuleDocumentationGenerator(collector: collector)
 // try ruleDocumentationGenerator.generateFile(at: GeneratePaths.ruleDocumentationFile)
 
 // Generate the JSON Schema for configuration files.
-let schemaGenerator = ConfigurationSchemaGenerator(ruleCollector: ruleCollector)
+let schemaGenerator = ConfigurationSchemaGenerator(collector: collector)
 try schemaGenerator.generateFile(at: GeneratePaths.configurationSchemaFile)

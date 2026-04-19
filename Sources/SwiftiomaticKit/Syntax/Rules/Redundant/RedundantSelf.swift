@@ -19,8 +19,8 @@ import SwiftSyntax
 /// Lint: A lint warning is raised for redundant `self.` usage.
 ///
 /// Format: The `self.` prefix is removed.
-final class RedundantSelf: SyntaxFormatRule {
-  static let group: ConfigGroup? = .redundancies
+final class RedundantSelf: RewriteSyntaxRule {
+  override class var group: ConfigurationGroup? { .redundancies }
 
   // MARK: - State
 

@@ -65,7 +65,7 @@ struct BinaryOperatorExprTests: PrettyPrintTesting {
       """
 
     var configuration = Configuration.forTesting
-    configuration.spacesAroundRangeFormationOperators = false
+    configuration[SpacesAroundRangeFormationOperators.self] = false
     assertPrettyPrintEqual(
       input: input,
       expected: expected,
@@ -97,7 +97,7 @@ struct BinaryOperatorExprTests: PrettyPrintTesting {
       """
 
     var configuration = Configuration.forTesting
-    configuration.spacesAroundRangeFormationOperators = true
+    configuration[SpacesAroundRangeFormationOperators.self] = true
     assertPrettyPrintEqual(
       input: input,
       expected: expected,

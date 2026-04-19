@@ -7,13 +7,13 @@ import SwiftSyntax
 ///
 /// Format: The comment is word-wrapped, continuing on the next line with the
 ///         same prefix and indentation.
-final class WrapSingleLineComments: SyntaxFormatRule {
-    static let name = "singleLineComments"
-    static let group: ConfigGroup? = .wrap
-    static let defaultHandling: RuleHandling = .off
+final class WrapSingleLineComments: RewriteSyntaxRule {
+    override class var key: String { "singleLineComments" }
+    override class var group: ConfigurationGroup? { .wrap }
+    override class var defaultHandling: RuleHandling { .off }
 
     override func visit(_ token: TokenSyntax) -> TokenSyntax {
-        let maxWidth = context.configuration.lineLength
+        let maxWidth = context.configuration[LineLength.self]
         guard maxWidth > 3 else { return token }
 
         let originalTrivia = token.leadingTrivia

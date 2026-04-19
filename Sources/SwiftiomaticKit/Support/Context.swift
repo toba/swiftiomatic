@@ -59,9 +59,6 @@ package final class Context {
     /// Contains the rules have been disabled by comments for certain line numbers.
     let ruleMask: RuleMask
 
-    /// Contains all the available rules' names associated to their types' object identifiers.
-    let ruleNameCache: [ObjectIdentifier: String]
-
     /// Creates a new Context with the provided configuration, diagnostic engine, and file URL.
     package init(
         configuration: Configuration,
@@ -70,8 +67,7 @@ package final class Context {
         fileURL: URL,
         selection: Selection = .infinite,
         sourceFileSyntax: SourceFileSyntax,
-        source: String? = nil,
-        ruleNameCache: [ObjectIdentifier: String]
+        source: String? = nil
     ) {
         self.configuration = configuration
         self.operatorTable = operatorTable
@@ -86,42 +82,29 @@ package final class Context {
             syntaxNode: Syntax(sourceFileSyntax),
             sourceLocationConverter: sourceLocationConverter
         )
-        self.ruleNameCache = ruleNameCache
     }
 
     /// Given a rule's name and the node it is examining, determine if the rule is disabled at this
     /// location or not. Also makes sure the entire node is contained inside any selection.
-    func shouldFormat<R: Rule>(_ rule: R.Type, node: Syntax) -> Bool {
+    func shouldFormat<R: SyntaxRule>(_ rule: R.Type, node: Syntax) -> Bool {
         guard node.isInsideSelection(selection) else { return false }
-
         let loc = node.startLocation(converter: self.sourceLocationConverter)
-
-        assert(
-            ruleNameCache[ObjectIdentifier(rule)] != nil,
-            """
-            Missing cached rule name for '\(rule)'! \
-            Ensure `generate-swiftiomatic` has been run and `ruleNameCache` was injected.
-            """
-        )
-
-        let ruleName = ruleNameCache[ObjectIdentifier(rule)] ?? R.name
+        let ruleName = ConfigurationRegistry.ruleNameCache[ObjectIdentifier(rule)] ?? R.key
         switch ruleMask.ruleState(ruleName, at: loc) {
-        case .default:
-            return (configuration.rules[ruleName] ?? .off).isActive
-        case .disabled:
-            return false
+        case .default: return (configuration.rules[ruleName] ?? .off).isActive
+        case .disabled: return false
         }
     }
 
     /// Returns the configured handling for the given rule type.
-    func severity<R: Rule>(of rule: R.Type) -> RuleHandling {
-        let ruleName = ruleNameCache[ObjectIdentifier(rule)] ?? R.name
+    func severity<R: SyntaxRule>(of rule: R.Type) -> RuleHandling {
+        let ruleName = ConfigurationRegistry.ruleNameCache[ObjectIdentifier(rule)] ?? R.key
         return configuration.rules[ruleName] ?? .warning
     }
 
     /// Whether the given format rule should auto-fix (rewrite the AST).
-    func shouldFix<R: Rule>(_ rule: R.Type) -> Bool {
-        let ruleName = ruleNameCache[ObjectIdentifier(rule)] ?? R.name
+    func shouldFix<R: SyntaxRule>(_ rule: R.Type) -> Bool {
+        let ruleName = ConfigurationRegistry.ruleNameCache[ObjectIdentifier(rule)] ?? R.key
         return (configuration.rules[ruleName] ?? .off).shouldFix
     }
 }

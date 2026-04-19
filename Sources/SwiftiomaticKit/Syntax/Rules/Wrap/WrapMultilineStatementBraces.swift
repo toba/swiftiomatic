@@ -10,9 +10,9 @@ import SwiftSyntax
 ///       warning.
 ///
 /// Format: The `{` is moved to a new line aligned with the closing `}`.
-final class WrapMultilineStatementBraces: SyntaxFormatRule {
-    static let group: ConfigGroup? = .wrap
-    static let defaultHandling: RuleHandling = .off
+final class WrapMultilineStatementBraces: RewriteSyntaxRule {
+    override class var group: ConfigurationGroup? { .wrap }
+    override class var defaultHandling: RuleHandling { .off }
 
     // MARK: - Control flow statements
 

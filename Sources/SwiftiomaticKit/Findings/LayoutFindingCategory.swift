@@ -11,17 +11,17 @@
 //===----------------------------------------------------------------------===//
 
 /// Categories for findings emitted by the pretty printer.
-enum PrettyPrintFindingCategory: FindingCategorizing {
-  /// Finding related to an end-of-line comment.
-  case endOfLineComment
+enum LayoutFindingCategory: FindingCategorizing {
+    /// Finding related to an end-of-line comment.
+    case endOfLineComment
 
-  /// Findings related to the presence of absence of a trailing comma in collection literals.
-  case trailingComma
+    /// Findings related to the presence of absence of a trailing comma in collection literals.
+    case trailingComma
 
-  var description: String {
-    switch self {
-    case .endOfLineComment: return "EndOfLineComment"
-    case .trailingComma: return "TrailingComma"
+    var description: String {
+        switch self {
+        case .endOfLineComment: return "EndOfLineComment"
+        case .trailingComma: return "TrailingComma"
+        }
     }
-  }
 }

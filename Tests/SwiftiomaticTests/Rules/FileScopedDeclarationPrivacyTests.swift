@@ -180,8 +180,8 @@ struct FileScopedDeclarationPrivacyTests: RuleTesting {
     findingsProvider: (String, String) -> [FindingSpec]
   ) {
     for testConfig in testConfigurations {
-      var configuration = Configuration.forTesting(enabledRule: FileScopedDeclarationPrivacy.self.name)
-      configuration.fileScopedDeclarationPrivacy.accessLevel = testConfig.desired
+      var configuration = Configuration.forTesting(enabledRule: FileScopedDeclarationPrivacy.self.key)
+      configuration[FileScopedDeclarationPrivacyConfiguration.self].accessLevel = testConfig.desired
 
       let substitutedInput = source.replacingOccurrences(of: "$access$", with: testConfig.original)
 

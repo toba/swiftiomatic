@@ -71,8 +71,7 @@ struct ImportsXCTestVisitorTests: RuleTesting {
       operatorTable: .standardOperators,
       findingConsumer: { _ in },
       fileURL: URL(fileURLWithPath: "/tmp/test.swift"),
-      sourceFileSyntax: sourceFile,
-      ruleNameCache: ruleNameCache
+      sourceFileSyntax: sourceFile
     )
     setImportsXCTest(context: context, sourceFile: sourceFile)
     return context.importsXCTest

@@ -21,8 +21,8 @@ import SwiftSyntax
 ///
 /// Lint: If an identifier contains underscores or begins with a capital letter, a lint error is
 ///       raised.
-final class LowerCamelCase: SyntaxLintRule {
-    static let group: ConfigGroup? = .capitalization
+final class LowerCamelCase: LintSyntaxRule {
+    override class var group: ConfigurationGroup? { .capitalization }
 
     /// Stores function decls that are test cases.
     private var testCaseFuncs = Set<FunctionDeclSyntax>()

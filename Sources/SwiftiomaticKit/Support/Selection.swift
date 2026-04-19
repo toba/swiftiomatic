@@ -88,6 +88,8 @@ package enum Selection {
     }
 }
 
+// MARK: - Support
+
 extension Syntax {
     /// - Returns: `true` if the node is _completely_ inside any range in the selection
     package func isInsideSelection(_ selection: Selection) -> Bool {

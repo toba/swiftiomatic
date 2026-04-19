@@ -33,10 +33,10 @@ import SwiftSyntax
 /// Lint: Raises warnings for any of the above redundancies.
 ///
 /// Format: Removes or replaces the redundant modifier.
-final class RedundantAccessControl: SyntaxFormatRule {
-    static let group: ConfigGroup? = .redundancies
+final class RedundantAccessControl: RewriteSyntaxRule {
+    override class var group: ConfigurationGroup? { .redundancies }
 
-    static let defaultHandling: RuleHandling = .off
+    override class var defaultHandling: RuleHandling { .off }
 
     // MARK: - RedundantFileprivate State
 

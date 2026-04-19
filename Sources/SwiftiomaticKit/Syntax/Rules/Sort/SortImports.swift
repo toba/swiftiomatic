@@ -28,8 +28,8 @@ import SwiftSyntax
 ///       raised.
 ///
 /// Format: Imports will be reordered and (optionally) grouped at the top of the file.
-final class SortImports: SyntaxFormatRule {
-    static let group: ConfigGroup? = .sort
+final class SortImports: RewriteSyntaxRule {
+    override class var group: ConfigurationGroup? { .sort }
 
   override func visit(_ node: SourceFileSyntax) -> SourceFileSyntax {
     var newNode = node
@@ -135,7 +135,7 @@ final class SortImports: SyntaxFormatRule {
         }
       }
 
-      if context.configuration.sortImports.includeConditionalImports,
+      if context.configuration[SortImportsConfiguration.self].includeConditionalImports,
         let syntaxNode = line.syntaxNode,
         case .ifConfigCodeBlock(let ifConfigCodeBlock) = syntaxNode
       {
@@ -156,7 +156,7 @@ final class SortImports: SyntaxFormatRule {
         line.syntaxNode = .ifConfigCodeBlock(CodeBlockItemSyntax(item: .decl(DeclSyntax(ifConfigDecl))))
       }
 
-      if context.configuration.sortImports.shouldGroupImports {
+      if context.configuration[SortImportsConfiguration.self].shouldGroupImports {
         // Separate lines into different categories along with any associated comments.
         switch line.type {
         case .regularImport:
@@ -242,7 +242,7 @@ final class SortImports: SyntaxFormatRule {
         }
       }
 
-      guard context.configuration.sortImports.shouldGroupImports else {
+      guard context.configuration[SortImportsConfiguration.self].shouldGroupImports else {
         continue
       }
 
@@ -690,17 +690,9 @@ extension Finding.Message {
 
 // MARK: - Configuration
 
-package struct SortImportsConfiguration: Codable, Equatable, Sendable, ConfigRepresentable {
-  package static let configProperties: [ConfigProperty] = [
-    .init(
-      "includeConditionalImports",
-      .bool(description: "Sort imports within #if blocks.", defaultValue: false)
-    ),
-    .init(
-      "shouldGroupImports",
-      .bool(description: "Separate imports into groups by type.", defaultValue: true)
-    ),
-  ]
+package struct SortImportsConfiguration: Configurable, Codable, Equatable, Sendable {
+  package static let key = "sortImports"
+  package static let defaultValue = SortImportsConfiguration()
 
   package var includeConditionalImports = false
   package var shouldGroupImports = true

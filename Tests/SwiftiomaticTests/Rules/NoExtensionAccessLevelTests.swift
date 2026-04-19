@@ -436,8 +436,8 @@ struct NoExtensionAccessLevelTests: RuleTesting {
   // MARK: - onExtension mode
 
   private func onExtensionConfig() -> Configuration {
-    var config = Configuration.forTesting(enabledRule: NoExtensionAccessLevel.self.name)
-    config.extensionAccessControl.placement = .onExtension
+    var config = Configuration.forTesting(enabledRule: NoExtensionAccessLevel.self.key)
+    config[ExtensionAccessControlConfiguration.self].placement = .onExtension
     return config
   }
 

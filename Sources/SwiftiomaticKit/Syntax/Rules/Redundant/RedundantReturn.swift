@@ -18,9 +18,9 @@ import SwiftSyntax
 ///
 /// Format: `func <name>() { return ... }` constructs will be replaced with
 ///         equivalent `func <name>() { ... }` constructs.
-final class RedundantReturn: SyntaxFormatRule {
-  static let group: ConfigGroup? = .redundancies
-  static let defaultHandling: RuleHandling = .off
+final class RedundantReturn: RewriteSyntaxRule {
+  override class var group: ConfigurationGroup? { .redundancies }
+  override class var defaultHandling: RuleHandling { .off }
 
   override func visit(_ node: FunctionDeclSyntax) -> DeclSyntax {
     let decl = super.visit(node)

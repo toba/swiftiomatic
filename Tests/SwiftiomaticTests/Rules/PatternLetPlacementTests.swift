@@ -369,8 +369,8 @@ struct UseLetInEveryBoundCaseVariableTests: RuleTesting {
   // MARK: - outerPattern mode (hoist)
 
   private func hoistConfig() -> Configuration {
-    var config = Configuration.forTesting(enabledRule: PatternLetPlacement.self.name)
-    config.patternLet.placement = .outerPattern
+    var config = Configuration.forTesting(enabledRule: PatternLetPlacement.self.key)
+    config[PatternLetConfiguration.self].placement = .outerPattern
     return config
   }
 

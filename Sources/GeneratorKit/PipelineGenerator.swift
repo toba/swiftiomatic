@@ -16,11 +16,11 @@ import Foundation
 package final class PipelineGenerator: FileGenerator {
 
     /// The rules collected by scanning the formatter source code.
-    let ruleCollector: RuleCollector
+    let collector: ConfigurableCollector
 
     /// Creates a new pipeline generator.
-    package init(ruleCollector: RuleCollector) {
-        self.ruleCollector = ruleCollector
+    package init(collector: ConfigurableCollector) {
+        self.collector = collector
     }
 
     package func generateContent() -> String {
@@ -66,7 +66,7 @@ package final class PipelineGenerator: FileGenerator {
 
             """
 
-        for (nodeType, lintRules) in ruleCollector.syntaxNodeLinters.sorted(by: { $0.key < $1.key })
+        for (nodeType, lintRules) in collector.syntaxNodeLinters.sorted(by: { $0.key < $1.key })
         {
             result += """
 
@@ -109,7 +109,7 @@ package final class PipelineGenerator: FileGenerator {
                 var node = node
 
             """
-        for ruleName in ruleCollector.allFormatters.map({ $0.typeName }).sorted() {
+        for ruleName in collector.allFormatters.map({ $0.typeName }).sorted() {
             result += """
                     node = \(ruleName)(context: context).rewrite(node)
 

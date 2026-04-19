@@ -20,8 +20,8 @@ import SwiftSyntax
 /// Lint: If a redundant raw value is found, a lint warning is raised.
 ///
 /// Format: The redundant raw value initializer is removed.
-final class RedundantRawValues: SyntaxFormatRule {
-  static let group: ConfigGroup? = .redundancies
+final class RedundantRawValues: RewriteSyntaxRule {
+  override class var group: ConfigurationGroup? { .redundancies }
 
   override func visit(_ node: EnumCaseDeclSyntax) -> DeclSyntax {
     // Only applies inside String-backed enums.

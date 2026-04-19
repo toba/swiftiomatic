@@ -9,9 +9,9 @@ import SwiftSyntax
 /// Lint: If there are blank lines between chained member accesses, a lint warning is raised.
 ///
 /// Format: The blank lines are removed, keeping linebreaks and comments.
-final class BlankLinesBetweenChainedFunctions: SyntaxFormatRule {
-    static let group: ConfigGroup? = .blankLines
-    static let defaultHandling: RuleHandling = .off
+final class BlankLinesBetweenChainedFunctions: RewriteSyntaxRule {
+    override class var group: ConfigurationGroup? { .blankLines }
+    override class var defaultHandling: RuleHandling { .off }
 
     override func visit(_ node: MemberAccessExprSyntax) -> ExprSyntax {
         let visited = super.visit(node)

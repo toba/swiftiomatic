@@ -43,7 +43,7 @@ struct IndentBlankLinesTests: PrettyPrintTesting {
 
       """
     var config = Configuration.forTesting
-    config.indentBlankLines = true
+    config[IndentBlankLines.self] = true
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 80, configuration: config)
   }
 
@@ -75,7 +75,7 @@ struct IndentBlankLinesTests: PrettyPrintTesting {
 
       """
     var config = Configuration.forTesting
-    config.indentBlankLines = false
+    config[IndentBlankLines.self] = false
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 80, configuration: config)
   }
 
@@ -107,7 +107,7 @@ struct IndentBlankLinesTests: PrettyPrintTesting {
 
       """
     var config = Configuration.forTesting
-    config.indentBlankLines = true
+    config[IndentBlankLines.self] = true
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 80, configuration: config)
   }
 
@@ -139,7 +139,7 @@ struct IndentBlankLinesTests: PrettyPrintTesting {
 
       """
     var config = Configuration.forTesting
-    config.indentBlankLines = true
+    config[IndentBlankLines.self] = true
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 80, configuration: config)
   }
 
@@ -171,7 +171,7 @@ struct IndentBlankLinesTests: PrettyPrintTesting {
 
       """
     var config = Configuration.forTesting
-    config.indentBlankLines = true
+    config[IndentBlankLines.self] = true
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 80, configuration: config)
   }
 
@@ -204,7 +204,7 @@ struct IndentBlankLinesTests: PrettyPrintTesting {
 
       """
     var config = Configuration.forTesting
-    config.indentBlankLines = true
+    config[IndentBlankLines.self] = true
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 80, configuration: config)
   }
 
@@ -237,7 +237,7 @@ struct IndentBlankLinesTests: PrettyPrintTesting {
 
       """
     var config = Configuration.forTesting
-    config.indentBlankLines = true
+    config[IndentBlankLines.self] = true
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 80, configuration: config)
   }
 
@@ -270,7 +270,7 @@ struct IndentBlankLinesTests: PrettyPrintTesting {
 
       """
     var config = Configuration.forTesting
-    config.indentBlankLines = true
+    config[IndentBlankLines.self] = true
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 80, configuration: config)
   }
 
@@ -302,7 +302,7 @@ struct IndentBlankLinesTests: PrettyPrintTesting {
 
       """
     var config = Configuration.forTesting
-    config.indentBlankLines = true
+    config[IndentBlankLines.self] = true
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 80, configuration: config)
   }
 
@@ -336,7 +336,7 @@ struct IndentBlankLinesTests: PrettyPrintTesting {
 
       """
     var config = Configuration.forTesting
-    config.indentBlankLines = false
+    config[IndentBlankLines.self] = false
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 80, configuration: config)
   }
 
@@ -370,7 +370,7 @@ struct IndentBlankLinesTests: PrettyPrintTesting {
 
       """
     var config = Configuration.forTesting
-    config.indentBlankLines = true
+    config[IndentBlankLines.self] = true
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 80, configuration: config)
   }
 }

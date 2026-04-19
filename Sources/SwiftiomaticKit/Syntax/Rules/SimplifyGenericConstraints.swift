@@ -12,7 +12,7 @@ import SwiftSyntax
 /// Lint: A `where` clause with a simple conformance constraint that could be inlined raises a warning.
 ///
 /// Format: The conformance constraint is moved from the `where` clause to the generic parameter.
-final class SimplifyGenericConstraints: SyntaxFormatRule {
+final class SimplifyGenericConstraints: RewriteSyntaxRule {
 
   override func visit(_ node: FunctionDeclSyntax) -> DeclSyntax {
     let visited = super.visit(node).cast(FunctionDeclSyntax.self)

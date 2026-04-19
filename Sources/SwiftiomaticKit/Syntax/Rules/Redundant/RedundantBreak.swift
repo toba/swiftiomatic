@@ -12,8 +12,8 @@ import SwiftSyntax
 /// Lint: If a redundant `break` is found at the end of a switch case, a lint warning is raised.
 ///
 /// Format: The redundant `break` statement is removed.
-final class RedundantBreak: SyntaxFormatRule {
-    static let group: ConfigGroup? = .redundancies
+final class RedundantBreak: RewriteSyntaxRule {
+    override class var group: ConfigurationGroup? { .redundancies }
 
     override func visit(_ node: SwitchCaseSyntax) -> SwitchCaseSyntax {
         let visited = super.visit(node)

@@ -37,7 +37,7 @@ struct CommaTests: PrettyPrintTesting {
       """
 
     var configuration = Configuration.forTesting
-    configuration.multiElementCollectionTrailingCommas = true
+    configuration[MultiElementCollectionTrailingCommas.self] = true
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 20, configuration: configuration)
   }
 
@@ -63,7 +63,7 @@ struct CommaTests: PrettyPrintTesting {
       """
 
     var configuration = Configuration.forTesting
-    configuration.multiElementCollectionTrailingCommas = false
+    configuration[MultiElementCollectionTrailingCommas.self] = false
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 20, configuration: configuration)
   }
 
@@ -89,7 +89,7 @@ struct CommaTests: PrettyPrintTesting {
       """
 
     var configuration = Configuration.forTesting
-    configuration.multiElementCollectionTrailingCommas = true
+    configuration[MultiElementCollectionTrailingCommas.self] = true
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 20, configuration: configuration)
   }
 
@@ -115,7 +115,7 @@ struct CommaTests: PrettyPrintTesting {
       """
 
     var configuration = Configuration.forTesting
-    configuration.multiElementCollectionTrailingCommas = false
+    configuration[MultiElementCollectionTrailingCommas.self] = false
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 20, configuration: configuration)
   }
 
@@ -134,7 +134,7 @@ struct CommaTests: PrettyPrintTesting {
       """
 
     var configuration = Configuration.forTesting
-    configuration.multiElementCollectionTrailingCommas = true
+    configuration[MultiElementCollectionTrailingCommas.self] = true
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 40, configuration: configuration)
   }
 
@@ -153,7 +153,7 @@ struct CommaTests: PrettyPrintTesting {
       """
 
     var configuration = Configuration.forTesting
-    configuration.multiElementCollectionTrailingCommas = false
+    configuration[MultiElementCollectionTrailingCommas.self] = false
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 40, configuration: configuration)
   }
 
@@ -177,7 +177,7 @@ struct CommaTests: PrettyPrintTesting {
       """
 
     var configuration = Configuration.forTesting
-    configuration.multiElementCollectionTrailingCommas = true
+    configuration[MultiElementCollectionTrailingCommas.self] = true
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 40, configuration: configuration)
   }
 
@@ -201,7 +201,7 @@ struct CommaTests: PrettyPrintTesting {
       """
 
     var configuration = Configuration.forTesting
-    configuration.multiElementCollectionTrailingCommas = false
+    configuration[MultiElementCollectionTrailingCommas.self] = false
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 40, configuration: configuration)
   }
 
@@ -225,7 +225,7 @@ struct CommaTests: PrettyPrintTesting {
       """
 
     var configuration = Configuration.forTesting
-    configuration.multiElementCollectionTrailingCommas = true
+    configuration[MultiElementCollectionTrailingCommas.self] = true
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 40, configuration: configuration)
   }
 
@@ -249,7 +249,7 @@ struct CommaTests: PrettyPrintTesting {
       """
 
     var configuration = Configuration.forTesting
-    configuration.multiElementCollectionTrailingCommas = false
+    configuration[MultiElementCollectionTrailingCommas.self] = false
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 40, configuration: configuration)
   }
 
@@ -275,7 +275,7 @@ struct CommaTests: PrettyPrintTesting {
       """
 
     var configuration = Configuration.forTesting
-    configuration.multiElementCollectionTrailingCommas = true
+    configuration[MultiElementCollectionTrailingCommas.self] = true
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 20, configuration: configuration)
   }
 
@@ -301,7 +301,7 @@ struct CommaTests: PrettyPrintTesting {
       """
 
     var configuration = Configuration.forTesting
-    configuration.multiElementCollectionTrailingCommas = false
+    configuration[MultiElementCollectionTrailingCommas.self] = false
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 20, configuration: configuration)
   }
 
@@ -327,7 +327,7 @@ struct CommaTests: PrettyPrintTesting {
       """
 
     var configuration = Configuration.forTesting
-    configuration.multiElementCollectionTrailingCommas = true
+    configuration[MultiElementCollectionTrailingCommas.self] = true
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 20, configuration: configuration)
   }
 
@@ -353,7 +353,7 @@ struct CommaTests: PrettyPrintTesting {
       """
 
     var configuration = Configuration.forTesting
-    configuration.multiElementCollectionTrailingCommas = false
+    configuration[MultiElementCollectionTrailingCommas.self] = false
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 20, configuration: configuration)
   }
 
@@ -373,7 +373,7 @@ struct CommaTests: PrettyPrintTesting {
       """
 
     var configuration = Configuration.forTesting
-    configuration.multiElementCollectionTrailingCommas = true
+    configuration[MultiElementCollectionTrailingCommas.self] = true
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 40, configuration: configuration)
   }
 
@@ -393,7 +393,7 @@ struct CommaTests: PrettyPrintTesting {
       """
 
     var configuration = Configuration.forTesting
-    configuration.multiElementCollectionTrailingCommas = false
+    configuration[MultiElementCollectionTrailingCommas.self] = false
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 40, configuration: configuration)
   }
 
@@ -431,7 +431,7 @@ struct CommaTests: PrettyPrintTesting {
       """
 
     var configuration = Configuration.forTesting
-    configuration.multilineTrailingCommaBehavior = .alwaysUsed
+    configuration[MultilineTrailingCommaBehaviorSetting.self] = .alwaysUsed
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 40, configuration: configuration)
   }
 
@@ -469,7 +469,7 @@ struct CommaTests: PrettyPrintTesting {
       """
 
     var configuration = Configuration.forTesting
-    configuration.multilineTrailingCommaBehavior = .alwaysUsed
+    configuration[MultilineTrailingCommaBehaviorSetting.self] = .alwaysUsed
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 80, configuration: configuration)
   }
 
@@ -522,7 +522,7 @@ struct CommaTests: PrettyPrintTesting {
       """
 
     var configuration = Configuration.forTesting
-    configuration.multilineTrailingCommaBehavior = .alwaysUsed
+    configuration[MultilineTrailingCommaBehaviorSetting.self] = .alwaysUsed
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 40, configuration: configuration)
   }
 
@@ -550,7 +550,7 @@ struct CommaTests: PrettyPrintTesting {
       """
 
     var configuration = Configuration.forTesting
-    configuration.multilineTrailingCommaBehavior = .alwaysUsed
+    configuration[MultilineTrailingCommaBehaviorSetting.self] = .alwaysUsed
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 40, configuration: configuration)
   }
 
@@ -592,7 +592,7 @@ struct CommaTests: PrettyPrintTesting {
       """
 
     var configuration = Configuration.forTesting
-    configuration.multilineTrailingCommaBehavior = .alwaysUsed
+    configuration[MultilineTrailingCommaBehaviorSetting.self] = .alwaysUsed
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 40, configuration: configuration)
   }
 
@@ -620,7 +620,7 @@ struct CommaTests: PrettyPrintTesting {
       """
 
     var configuration = Configuration.forTesting
-    configuration.multilineTrailingCommaBehavior = .alwaysUsed
+    configuration[MultilineTrailingCommaBehaviorSetting.self] = .alwaysUsed
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 40, configuration: configuration)
   }
 
@@ -650,7 +650,7 @@ struct CommaTests: PrettyPrintTesting {
       """
 
     var configuration = Configuration.forTesting
-    configuration.multilineTrailingCommaBehavior = .alwaysUsed
+    configuration[MultilineTrailingCommaBehaviorSetting.self] = .alwaysUsed
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 40, configuration: configuration)
   }
 
@@ -696,7 +696,7 @@ struct CommaTests: PrettyPrintTesting {
       """#
 
     var configuration = Configuration.forTesting
-    configuration.multilineTrailingCommaBehavior = .alwaysUsed
+    configuration[MultilineTrailingCommaBehaviorSetting.self] = .alwaysUsed
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 40, configuration: configuration)
   }
 
@@ -738,7 +738,7 @@ struct CommaTests: PrettyPrintTesting {
       """
 
     var configuration = Configuration.forTesting
-    configuration.multilineTrailingCommaBehavior = .alwaysUsed
+    configuration[MultilineTrailingCommaBehaviorSetting.self] = .alwaysUsed
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 40, configuration: configuration)
   }
 
@@ -776,7 +776,7 @@ struct CommaTests: PrettyPrintTesting {
       """
 
     var configuration = Configuration.forTesting
-    configuration.multilineTrailingCommaBehavior = .neverUsed
+    configuration[MultilineTrailingCommaBehaviorSetting.self] = .neverUsed
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 40, configuration: configuration)
   }
 
@@ -814,7 +814,7 @@ struct CommaTests: PrettyPrintTesting {
       """
 
     var configuration = Configuration.forTesting
-    configuration.multilineTrailingCommaBehavior = .neverUsed
+    configuration[MultilineTrailingCommaBehaviorSetting.self] = .neverUsed
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 80, configuration: configuration)
   }
 
@@ -867,7 +867,7 @@ struct CommaTests: PrettyPrintTesting {
       """
 
     var configuration = Configuration.forTesting
-    configuration.multilineTrailingCommaBehavior = .neverUsed
+    configuration[MultilineTrailingCommaBehaviorSetting.self] = .neverUsed
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 40, configuration: configuration)
   }
 
@@ -895,7 +895,7 @@ struct CommaTests: PrettyPrintTesting {
       """
 
     var configuration = Configuration.forTesting
-    configuration.multilineTrailingCommaBehavior = .neverUsed
+    configuration[MultilineTrailingCommaBehaviorSetting.self] = .neverUsed
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 40, configuration: configuration)
   }
 
@@ -937,7 +937,7 @@ struct CommaTests: PrettyPrintTesting {
       """
 
     var configuration = Configuration.forTesting
-    configuration.multilineTrailingCommaBehavior = .neverUsed
+    configuration[MultilineTrailingCommaBehaviorSetting.self] = .neverUsed
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 40, configuration: configuration)
   }
 
@@ -965,7 +965,7 @@ struct CommaTests: PrettyPrintTesting {
       """
 
     var configuration = Configuration.forTesting
-    configuration.multilineTrailingCommaBehavior = .neverUsed
+    configuration[MultilineTrailingCommaBehaviorSetting.self] = .neverUsed
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 40, configuration: configuration)
   }
 
@@ -995,7 +995,7 @@ struct CommaTests: PrettyPrintTesting {
       """
 
     var configuration = Configuration.forTesting
-    configuration.multilineTrailingCommaBehavior = .neverUsed
+    configuration[MultilineTrailingCommaBehaviorSetting.self] = .neverUsed
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 40, configuration: configuration)
   }
 
@@ -1041,7 +1041,7 @@ struct CommaTests: PrettyPrintTesting {
       """#
 
     var configuration = Configuration.forTesting
-    configuration.multilineTrailingCommaBehavior = .neverUsed
+    configuration[MultilineTrailingCommaBehaviorSetting.self] = .neverUsed
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 40, configuration: configuration)
   }
 
@@ -1083,7 +1083,7 @@ struct CommaTests: PrettyPrintTesting {
       """
 
     var configuration = Configuration.forTesting
-    configuration.multilineTrailingCommaBehavior = .neverUsed
+    configuration[MultilineTrailingCommaBehaviorSetting.self] = .neverUsed
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 40, configuration: configuration)
   }
 
@@ -1109,8 +1109,8 @@ struct CommaTests: PrettyPrintTesting {
       """
 
     var configuration = Configuration.forTesting
-    configuration.multilineTrailingCommaBehavior = .alwaysUsed
-    configuration.multiElementCollectionTrailingCommas = false
+    configuration[MultilineTrailingCommaBehaviorSetting.self] = .alwaysUsed
+    configuration[MultiElementCollectionTrailingCommas.self] = false
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 20, configuration: configuration)
   }
 
@@ -1136,8 +1136,8 @@ struct CommaTests: PrettyPrintTesting {
       """
 
     var configuration = Configuration.forTesting
-    configuration.multilineTrailingCommaBehavior = .neverUsed
-    configuration.multiElementCollectionTrailingCommas = true
+    configuration[MultilineTrailingCommaBehaviorSetting.self] = .neverUsed
+    configuration[MultiElementCollectionTrailingCommas.self] = true
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 20, configuration: configuration)
   }
 }

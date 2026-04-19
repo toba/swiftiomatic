@@ -133,7 +133,7 @@ struct MemberAccessExprTests: PrettyPrintTesting {
       """
 
     var configuration = Configuration.forTesting
-    configuration.lineBreakAroundMultilineExpressionChainComponents = true
+    configuration[AroundMultilineExpressionChainComponents.self] = true
     assertPrettyPrintEqual(
       input: input,
       expected: expectedWithForcedBreaks,
@@ -253,7 +253,7 @@ struct MemberAccessExprTests: PrettyPrintTesting {
       """
 
     var configuration = Configuration.forTesting
-    configuration.lineBreakAroundMultilineExpressionChainComponents = true
+    configuration[AroundMultilineExpressionChainComponents.self] = true
     assertPrettyPrintEqual(
       input: input,
       expected: expectedWithForcedBreaking,
@@ -350,7 +350,7 @@ struct MemberAccessExprTests: PrettyPrintTesting {
       """
 
     var configuration = Configuration.forTesting
-    configuration.lineBreakAroundMultilineExpressionChainComponents = true
+    configuration[AroundMultilineExpressionChainComponents.self] = true
     assertPrettyPrintEqual(
       input: input,
       expected: expectedWithForcedBreaks,
@@ -446,7 +446,7 @@ struct MemberAccessExprTests: PrettyPrintTesting {
       """
 
     var configuration = Configuration.forTesting
-    configuration.lineBreakAroundMultilineExpressionChainComponents = true
+    configuration[AroundMultilineExpressionChainComponents.self] = true
     assertPrettyPrintEqual(
       input: input,
       expected: expectedWithForcedBreaks,
@@ -538,7 +538,7 @@ struct MemberAccessExprTests: PrettyPrintTesting {
       """
 
     var configuration = Configuration.forTesting
-    configuration.lineBreakAroundMultilineExpressionChainComponents = true
+    configuration[AroundMultilineExpressionChainComponents.self] = true
     assertPrettyPrintEqual(
       input: input,
       expected: expectedWithForcedBreaks,

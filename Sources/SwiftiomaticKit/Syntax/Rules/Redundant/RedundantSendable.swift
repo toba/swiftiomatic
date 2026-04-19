@@ -13,10 +13,10 @@ import SwiftSyntax
 /// Lint: If a redundant `Sendable` conformance is found, a lint warning is raised.
 ///
 /// Format: The redundant `Sendable` conformance is removed from the inheritance clause.
-final class RedundantSendable: SyntaxFormatRule {
-  static let group: ConfigGroup? = .redundancies
+final class RedundantSendable: RewriteSyntaxRule {
+  override class var group: ConfigurationGroup? { .redundancies }
 
-  static let defaultHandling: RuleHandling = .off
+  override class var defaultHandling: RuleHandling { .off }
 
   override func visit(_ node: StructDeclSyntax) -> DeclSyntax {
     let visited = super.visit(node).cast(StructDeclSyntax.self)

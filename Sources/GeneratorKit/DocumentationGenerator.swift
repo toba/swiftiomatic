@@ -12,15 +12,14 @@
 
 import Foundation
 
-/// Generates the markdown file with extended documenation on the available rules.
-package final class RuleDocumentationGenerator: FileGenerator {
-
+/// Generates the markdown file with extended documentation on the available rules.
+package final class DocumentationGenerator: FileGenerator {
   /// The rules collected by scanning the formatter source code.
-  let ruleCollector: RuleCollector
+  let collector: ConfigurableCollector
 
   /// Creates a new rule registry generator.
-  package init(ruleCollector: RuleCollector) {
-    self.ruleCollector = ruleCollector
+  package init(collector: ConfigurableCollector) {
+    self.collector = collector
   }
 
   package func generateContent() -> String {
@@ -40,10 +39,10 @@ package final class RuleDocumentationGenerator: FileGenerator {
 
 
       """
-    for detectedRule in ruleCollector.allLinters.sorted(by: { $0.ruleName < $1.ruleName }) {
+    for detectedRule in collector.allLinters.sorted(by: { $0.ruleName < $1.ruleName }) {
       result += "- [\(detectedRule.ruleName)](#\(detectedRule.ruleName))\n"
     }
-    for detectedRule in ruleCollector.allLinters.sorted(by: { $0.ruleName < $1.ruleName }) {
+    for detectedRule in collector.allLinters.sorted(by: { $0.ruleName < $1.ruleName }) {
       result += """
 
         ### \(detectedRule.ruleName)
@@ -56,7 +55,7 @@ package final class RuleDocumentationGenerator: FileGenerator {
     return result
   }
 
-  private func ruleFormatSupportDescription(for rule: RuleCollector.DetectedRule) -> String {
+  private func ruleFormatSupportDescription(for rule: ConfigurableCollector.DetectedRule) -> String {
     return rule.canFormat
       ? "`\(rule.ruleName)` rule can format your code automatically." : "`\(rule.ruleName)` is a linter-only rule."
   }

@@ -24,8 +24,8 @@ import SwiftSyntax
 /// Lint: If `= nil` is found on an eligible optional `var`, a lint warning is raised.
 ///
 /// Format: The redundant `= nil` initializer is removed.
-final class RedundantNilInit: SyntaxFormatRule {
-  static let group: ConfigGroup? = .redundancies
+final class RedundantNilInit: RewriteSyntaxRule {
+  override class var group: ConfigurationGroup? { .redundancies }
 
   override func visit(_ node: VariableDeclSyntax) -> DeclSyntax {
     // Only applies to `var`, not `let`.

@@ -3,8 +3,4 @@ package struct SpacesBeforeEndOfLineComments: LayoutDescriptor {
     package static let key = "spacesBeforeEndOfLineComments"
     package static let description = "Spaces before // comments."
     package static let defaultValue = 2
-    package static let schema: ConfigProperty.Schema = .integer(
-        description: description, defaultValue: defaultValue, minimum: 0
-    )
-    package static let keyPath = \Configuration.spacesBeforeEndOfLineComments
 }
