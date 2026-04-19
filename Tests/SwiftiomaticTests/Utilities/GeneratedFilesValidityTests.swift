@@ -15,18 +15,19 @@ import GeneratorKit
 
 @Suite
 struct GeneratedFilesValidityTests {
+  let paths = GeneratePaths.filePath
   let collector: ConfigurableCollector
 
   init() throws {
     collector = ConfigurableCollector()
-    try collector.collectRules(from: GeneratePaths.rulesDirectory)
-    try collector.collectSettings(from: GeneratePaths.settingsDirectory)
+    try collector.collectRules(from: paths.rulesDirectory)
+    try collector.collectSettings(from: paths.settingsDirectory)
   }
 
   @Test func generatedPipelineIsUpToDate() throws {
     let pipelineGenerator = PipelineGenerator(collector: collector)
     let generated = pipelineGenerator.generateContent()
-    let fileContents = try String(contentsOf: GeneratePaths.pipelineFile, encoding: .utf8)
+    let fileContents = try String(contentsOf: paths.pipelineFile, encoding: .utf8)
     #expect(
       generated == fileContents,
       "Pipelines+Generated.swift is out of date. Please run 'swift run generate-swiftiomatic'."
@@ -36,7 +37,7 @@ struct GeneratedFilesValidityTests {
   @Test func generatedRegistryIsUpToDate() throws {
     let registryGenerator = ConfigurationGenerator(collector: collector)
     let generated = registryGenerator.generateContent()
-    let fileContents = try String(contentsOf: GeneratePaths.ruleRegistryFile, encoding: .utf8)
+    let fileContents = try String(contentsOf: paths.ruleRegistryFile, encoding: .utf8)
     #expect(
       generated == fileContents,
       "ConfigurationRegistry+Generated.swift is out of date. Please run 'swift run generate-swiftiomatic'."

@@ -91,10 +91,18 @@ Follows [apple/swift-format](https://github.com/swiftlang/swift-format) architec
 
 ### Code Generation
 
-`swift run generate-swiftiomatic` scans `Sources/SwiftiomaticKit/Syntax/Rules/` and generates three files in `Syntax/`:
-- `Pipelines+Generated.swift` — `visit()` dispatchers for `LintPipeline` + `FormatPipeline.rewrite()`
-- `RuleRegistry+Generated.swift` — default rule enablements from `defaultHandling`
-- `RuleNameCache+Generated.swift` — `ObjectIdentifier` → rule name mapping
+Generated files are produced automatically via the `GenerateCode` SPM build tool plugin on every build. The plugin runs the `Generator` executable, which scans rule and layout source files and writes:
+
+- `Pipelines+Generated.swift` — `visit()` dispatchers for `LintPipeline` + `RewritePipeline.rewrite()`
+- `ConfigurationRegistry+Generated.swift` — type arrays for all rules and settings
+- `TokenStream+Generated.swift` — forwarding stubs for `TokenStream` subclass
+
+These files live in `Sources/SwiftiomaticKit/Generated/` (excluded from source compilation; the plugin writes to its work directory).
+
+To regenerate `schema.json` (not part of the build plugin):
+```sh
+swift run Generator
+```
 
 **Never edit `*+Generated.swift` directly.**
 

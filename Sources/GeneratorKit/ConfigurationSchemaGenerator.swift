@@ -12,7 +12,6 @@
 
 import ConfigurationKit
 import Foundation
-import SwiftiomaticKit
 
 /// Generates `schema.json` by encoding a `JSONSchemaNode` tree.
 ///
@@ -109,14 +108,19 @@ package final class ConfigurationSchemaGenerator: FileGenerator {
     private func rootSettingsSchema() -> [String: JSONSchemaNode] {
         var schema: [String: JSONSchemaNode] = [:]
 
-        // Derive schema from LayoutRule types.
-        for descriptor in LayoutRegistry.rootRules {
-            schema[descriptor.key] = .string(description: descriptor.description)
+        // Derive schema from AST-scanned layout settings with no group.
+        for setting in collector.allSettings where setting.group == nil {
+            schema[setting.settingKey] = .string(
+                description: setting.description ?? setting.settingKey
+            )
         }
 
         // Override indentation with its oneOf schema (spaces/tabs).
+        let indentDescription = collector.allSettings
+            .first { $0.settingKey == "unit" }?
+            .description ?? "Indentation unit."
         var indent = JSONSchemaNode()
-        indent.description = IndentationSetting.description
+        indent.description = indentDescription
         indent.defaultValue = .object(["spaces": .int(2)])
         var spacesVariant = JSONSchemaNode.object(
             description: "Indent with spaces.",
@@ -159,9 +163,11 @@ package final class ConfigurationSchemaGenerator: FileGenerator {
         for group in ConfigurationGroup.Key.allCases.map({ ConfigurationGroup($0) }) {
             var properties: [String: JSONSchemaNode] = [:]
 
-            // Non-rule settings from LayoutRule types.
-            for descriptor in LayoutRegistry.rules(in: group) {
-                properties[descriptor.key] = .string(description: descriptor.description)
+            // Non-rule settings from AST-scanned LayoutRule types.
+            for setting in collector.allSettings where setting.group == group {
+                properties[setting.settingKey] = .string(
+                    description: setting.description ?? setting.settingKey
+                )
             }
 
             // Rules within the group.

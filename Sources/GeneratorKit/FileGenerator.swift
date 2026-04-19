@@ -23,13 +23,16 @@ private struct FailedToCreateFileError: Error {
 }
 
 extension FileGenerator {
-    /// Generates a file at the given URL, overwriting it if it already exists.
+    /// Generates a file at the given URL, skipping the write when
+    /// the existing content is already up to date.
     package func generateFile(at url: URL) throws {
-        let fm = FileManager.default
-        if fm.fileExists(atPath: url.path) {
-            try fm.removeItem(at: url)
-        }
         let content = generateContent()
+        if let existing = try? String(contentsOf: url, encoding: .utf8),
+           existing == content { return }
+
+        let directory = url.deletingLastPathComponent()
+        try? FileManager.default.createDirectory(
+            at: directory, withIntermediateDirectories: true)
         try content.write(to: url, atomically: true, encoding: .utf8)
     }
 }

@@ -11,7 +11,6 @@
 //===----------------------------------------------------------------------===//
 
 import Foundation
-import SwiftParser
 import SwiftSyntax
 
 /// Scans `TokenStream+*.swift` extension files to discover visit methods that need
@@ -45,34 +44,35 @@ package final class TokenStreamStubCollector {
 
     /// Scans all `TokenStream+*.swift` files in the given directory for visit methods.
     package func collect(from directory: URL) throws {
-        let fm = FileManager.default
-        guard let enumerator = fm.enumerator(atPath: directory.path) else {
-            fatalError("Could not list the directory \(directory.path)")
-        }
-
-        for baseName in enumerator {
-            guard let baseName = baseName as? String,
-                  baseName.hasPrefix("TokenStream+"),
-                  baseName.hasSuffix(".swift")
-            else { continue }
-
-            let fileURL = directory.appendingPathComponent(baseName)
-            let fileInput = try String(contentsOf: fileURL, encoding: .utf8)
-            let sourceFile = Parser.parse(source: fileInput)
-
-            for statement in sourceFile.statements {
-                guard let extensionDecl = statement.item.as(ExtensionDeclSyntax.self) else {
-                    continue
-                }
-                for member in extensionDecl.memberBlock.members {
-                    if let stub = detectedStub(from: member) {
-                        stubs.append(stub)
-                    }
-                }
-            }
+        try enumerateSwiftStatements(
+            in: directory,
+            filter: { $0.hasPrefix("TokenStream+") }
+        ) { statement in
+            collectStubs(from: statement)
         }
 
         stubs.sort()
+    }
+
+    /// Scans all Swift files in the given directory for `extension TokenStream`
+    /// visit methods. Unlike `collect(from:)`, this has no filename filter.
+    package func collectExtensions(from directory: URL) throws {
+        try enumerateSwiftStatements(in: directory) { statement in
+            collectStubs(from: statement)
+        }
+
+        stubs.sort()
+    }
+
+    private func collectStubs(from statement: CodeBlockItemSyntax) {
+        guard let extensionDecl = statement.item.as(ExtensionDeclSyntax.self),
+              extensionDecl.extendedType.as(IdentifierTypeSyntax.self)?.name.text == "TokenStream"
+        else { return }
+        for member in extensionDecl.memberBlock.members {
+            if let stub = detectedStub(from: member) {
+                stubs.append(stub)
+            }
+        }
     }
 
     private func detectedStub(from member: MemberBlockItemSyntax) -> DetectedStub? {

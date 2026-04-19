@@ -12,7 +12,6 @@
 
 import ConfigurationKit
 import Foundation
-import SwiftParser
 import SwiftSyntax
 
 /// Collects information about `Configurable` types (rules and layout settings) in the code base.
@@ -52,6 +51,21 @@ package final class ConfigurableCollector {
     struct DetectedSetting: Hashable {
         /// The type name of the setting (e.g. "LineLength").
         let typeName: String
+
+        /// The custom key from `static let key = "..."`, or `nil` to derive from `typeName`.
+        let customKey: String?
+
+        /// The description from `static let description = "..."`.
+        let description: String?
+
+        /// The config group this setting belongs to, or `nil` if ungrouped.
+        let group: ConfigurationGroup?
+
+        /// The config key for this setting (custom if set, otherwise camelCase type name).
+        var settingKey: String {
+            if let customKey { return customKey }
+            return typeName.prefix(1).lowercased() + typeName.dropFirst()
+        }
     }
 
     /// A list of all rules that can lint (thus also including format rules) found in the code base.
@@ -72,29 +86,16 @@ package final class ConfigurableCollector {
     ///
     /// - Parameter url: The file system URL that should be scanned for rules.
     package func collectRules(from url: URL) throws {
-        let fm = FileManager.default
-        guard let rulesEnumerator = fm.enumerator(atPath: url.path) else {
-            fatalError("Could not list the directory \(url.path)")
-        }
+        try enumerateSwiftStatements(in: url) { statement in
+            guard let detectedRule = self.detectedRule(at: statement) else { return }
 
-        for baseName in rulesEnumerator {
-            guard let baseName = baseName as? String, baseName.hasSuffix(".swift") else { continue }
+            if detectedRule.canFormat {
+                allFormatters.insert(detectedRule)
+            }
 
-            let fileURL = url.appendingPathComponent(baseName)
-            let fileInput = try String(contentsOf: fileURL, encoding: .utf8)
-            let sourceFile = Parser.parse(source: fileInput)
-
-            for statement in sourceFile.statements {
-                guard let detectedRule = self.detectedRule(at: statement) else { continue }
-
-                if detectedRule.canFormat {
-                    allFormatters.insert(detectedRule)
-                }
-
-                allLinters.insert(detectedRule)
-                for visitedNode in detectedRule.visitedNodes {
-                    syntaxNodeLinters[visitedNode, default: []].append(detectedRule.typeName)
-                }
+            allLinters.insert(detectedRule)
+            for visitedNode in detectedRule.visitedNodes {
+                syntaxNodeLinters[visitedNode, default: []].append(detectedRule.typeName)
             }
         }
     }
@@ -103,22 +104,9 @@ package final class ConfigurableCollector {
     ///
     /// - Parameter url: The file system URL of the settings directory.
     package func collectSettings(from url: URL) throws {
-        let fm = FileManager.default
-        guard let enumerator = fm.enumerator(atPath: url.path) else {
-            fatalError("Could not list the directory \(url.path)")
-        }
-
-        for baseName in enumerator {
-            guard let baseName = baseName as? String, baseName.hasSuffix(".swift") else { continue }
-
-            let fileURL = url.appendingPathComponent(baseName)
-            let fileInput = try String(contentsOf: fileURL, encoding: .utf8)
-            let sourceFile = Parser.parse(source: fileInput)
-
-            for statement in sourceFile.statements {
-                guard let setting = self.detectedSetting(at: statement) else { continue }
-                allSettings.append(setting)
-            }
+        try enumerateSwiftStatements(in: url) { statement in
+            guard let setting = self.detectedSetting(at: statement) else { return }
+            allSettings.append(setting)
         }
 
         allSettings.sort { $0.typeName < $1.typeName }
@@ -134,7 +122,14 @@ package final class ConfigurableCollector {
             guard let identifier = inheritance.type.as(IdentifierTypeSyntax.self),
                   identifier.name.text == "LayoutRule"
             else { continue }
-            return DetectedSetting(typeName: structDecl.name.text)
+
+            let members = structDecl.memberBlock.members
+            return DetectedSetting(
+                typeName: structDecl.name.text,
+                customKey: Self.extractStringLiteral(named: "key", from: members),
+                description: Self.extractStringLiteral(named: "description", from: members),
+                group: Self.extractGroup(from: members)
+            )
         }
         return nil
     }
@@ -193,7 +188,7 @@ package final class ConfigurableCollector {
             guard !visitedNodes.isEmpty else { return nil }
             return DetectedRule(
                 typeName: typeName,
-                customKey: Self.extractCustomKey(from: members),
+                customKey: Self.extractStringLiteral(named: "key", from: members),
                 description: description?.text,
                 visitedNodes: visitedNodes,
                 canFormat: canFormat,
@@ -205,13 +200,15 @@ package final class ConfigurableCollector {
         return nil
     }
 
-    /// Extracts the custom `key` from `static let key = "..."` in the AST.
-    private static func extractCustomKey(from members: MemberBlockItemListSyntax) -> String? {
+    /// Extracts a string literal from `static let <name> = "..."` in the AST.
+    private static func extractStringLiteral(
+        named identifier: String, from members: MemberBlockItemListSyntax
+    ) -> String? {
         for member in members {
             guard let varDecl = member.decl.as(VariableDeclSyntax.self),
                 let binding = varDecl.bindings.firstAndOnly,
                 let pattern = binding.pattern.as(IdentifierPatternSyntax.self),
-                pattern.identifier.text == "key"
+                pattern.identifier.text == identifier
             else { continue }
 
             if let initializer = binding.initializer?.value.as(StringLiteralExprSyntax.self),

@@ -49,8 +49,8 @@ class TokenStreamBase: SyntaxVisitor {
     /// breaks and start/end contextual breaking tokens have been inserted.
     var preVisitedExprs = Set<SyntaxIdentifier>()
 
-    /// Tracks the "root" exprs where pre-visiting for contextual breaks started so that
-    /// `preVisitedExprs` can be emptied after exiting an expr tree.
+    /// Tracks the "root" expressions where pre-visiting for contextual breaks started so that
+    /// `preVisitedExprs` can be emptied after exiting an expression tree.
     var rootExprs = Set<SyntaxIdentifier>()
 
     /// Lists the tokens that are the closing or final delimiter of a node that shouldn't be split

@@ -32,7 +32,8 @@ let package = Package(
                 .product(name: "SwiftSyntax", package: "swift-syntax"),
                 .product(name: "SwiftSyntaxBuilder", package: "swift-syntax"),
             ],
-            exclude: ["README.md"]
+            exclude: ["README.md", "Generated"],
+            plugins: ["GenerateCode"]
         ),
         .target(
             name: "SwiftiomaticTestSupport",
@@ -50,7 +51,6 @@ let package = Package(
         .target(
             name: "GeneratorKit",
             dependencies: [
-                "SwiftiomaticKit",
                 "ConfigurationKit",
                 .product(name: "SwiftParser", package: "swift-syntax"),
                 .product(name: "SwiftSyntax", package: "swift-syntax"),
@@ -79,6 +79,12 @@ let package = Package(
             ),
             dependencies: [.target(name: "Swiftiomatic")],
             path: "Plugins/LintPlugin"
+        ),
+        .plugin(
+            name: "GenerateCode",
+            capability: .buildTool(),
+            dependencies: [.target(name: "Generator")],
+            path: "Plugins/GeneratePlugin"
         ),
         .executableTarget(
             name: "Generator",

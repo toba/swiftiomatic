@@ -1,11 +1,11 @@
 ---
 # rcc-z52
 title: Convert code generator to SPM build tool plugin
-status: draft
+status: completed
 type: feature
 priority: normal
 created_at: 2026-04-19T17:27:58Z
-updated_at: 2026-04-19T17:29:23Z
+updated_at: 2026-04-19T18:15:16Z
 ---
 
 Convert the manual `swift run generate-swiftiomatic` step into an SPM build tool plugin so generated files stay in sync automatically on every build. Eliminates the "second place to maintain paths and type names" problem.
@@ -34,23 +34,29 @@ Since the generated files live in `Sources/SwiftiomaticKit/Generated/`, `.prebui
 ### schema.json
 `schema.json` outputs to the package root, outside any target's source directory. This needs special handling — either generate it alongside the Swift files and copy it, or keep schema generation as a separate command plugin.
 
-## Tasks
+## Child Issues
 
-- [ ] Break `GeneratorKit` → `SwiftiomaticKit` dependency
-  - Move `LayoutRegistry` enumeration to AST-based scanning (like rules already work)
-  - Or extract the needed types (`LayoutRegistry`, `IndentationSetting`) to `ConfigurationKit`
-  - Verify `ConfigurationSchemaGenerator` works without `import SwiftiomaticKit`
-- [ ] Refactor `GeneratePaths` to accept injected base paths instead of `#filePath`
-  - Add an initializer/factory that takes a package root URL
-  - Keep the `#filePath`-based paths as a convenience for the standalone executable (backward compat during migration)
-- [ ] Create the build tool plugin target
-  - Add `.plugin(name: "GeneratePlugin", capability: .buildCommand(...))` or `.prebuildCommand(...)` to Package.swift
-  - Plugin executable reuses `GeneratorKit` with injected paths from plugin context
-  - Declare input directories and output files for correct invalidation
-- [ ] Handle `schema.json` output
-  - Option A: generate alongside Swift files, add a post-build copy step
-  - Option B: keep schema generation as a separate `.command` plugin (run manually)
-  - Option C: move schema.json into `Sources/SwiftiomaticKit/Generated/` and reference from there
-- [ ] Remove the standalone `Generator` executable target (or keep as convenience alias)
-- [ ] Verify full build cycle: clean build, incremental build, add new rule, rename rule
-- [ ] Update CLAUDE.md build instructions
+1. **su3-lef** — Break GeneratorKit → SwiftiomaticKit circular dependency
+2. **ugx-hol** — Refactor GeneratePaths to accept injected base paths
+3. **y40-fgh** — Create SPM build tool plugin target (blocked by 1, 2)
+4. **tea-3ch** — Handle schema.json output location
+5. **qvv-k5b** — Remove standalone Generator executable target (blocked by 3)
+
+
+
+## Summary of Changes
+
+Converted the manual `swift run generate-swiftiomatic` step into an SPM build tool plugin. All 5 child issues completed:
+
+1. **su3-lef** — Broke GeneratorKit → SwiftiomaticKit circular dependency by enriching DetectedSetting with AST-scanned metadata
+2. **ugx-hol** — Refactored GeneratePaths from enum to struct with injected base paths
+3. **y40-fgh** — Created GenerateCode build tool plugin with .buildCommand
+4. **tea-3ch** — Kept schema.json as manual step (`swift run Generator`); plugin passes `--skip-schema`
+5. **qvv-k5b** — Kept Generator executable (plugin dependency + schema generation)
+
+Additional Swift best practice improvements applied:
+- Unified duplicate `extractCustomKey`/`extractDescription` into single `extractStringLiteral(named:from:)`
+- Extracted shared directory scanning into `enumerateSwiftStatements(in:filter:body:)`
+- Modernized URL APIs: `appendingPathComponent` → `appending(path:)`
+- Fixed misleading parameter name in `optionName(for:)`
+- Updated CLAUDE.md code generation documentation

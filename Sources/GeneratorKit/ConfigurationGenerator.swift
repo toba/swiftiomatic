@@ -50,10 +50,10 @@ package final class ConfigurationGenerator: FileGenerator {
         return result
     }
 
-    /// Derives an option name by lowercasing the first character of the type name.
-    static func optionName(for typeName: String) -> String {
-        guard let first = typeName.first else { return typeName }
-        return first.lowercased() + typeName.dropFirst()
+    /// Derives an option name by lowercasing the first character of the rule name.
+    static func optionName(for ruleName: String) -> String {
+        guard let first = ruleName.first else { return ruleName }
+        return first.lowercased() + ruleName.dropFirst()
     }
 
     private var fileHeader: String {
