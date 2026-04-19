@@ -12,6 +12,63 @@
 
 import SwiftSyntax
 
+enum Token: Sendable {
+    case syntax(String)
+    case open(GroupBreakStyle)
+    case close
+    case `break`(BreakKind, size: Int, newlines: NewlineBehavior)
+    case space(size: Int, flexible: Bool)
+    case comment(Comment, wasEndOfLine: Bool)
+    case verbatim(Verbatim)
+    case printerControl(kind: PrinterControlKind)
+
+    /// Marks the beginning of a comma delimited collection, where a trailing comma should be inserted
+    /// at `commaDelimitedRegionEnd` if and only if the collection spans multiple lines.
+    case commaDelimitedRegionStart
+
+    /// Marks the end of a comma delimited collection, where a trailing comma should be inserted
+    /// if and only if the collection spans multiple lines and has multiple elements.
+    case commaDelimitedRegionEnd(isCollection: Bool, hasTrailingComma: Bool, isSingleElement: Bool)
+
+    /// Starts a scope where `contextual` breaks have consistent behavior.
+    case contextualBreakingStart
+
+    /// Ends a scope where `contextual` breaks have consistent behavior.
+    case contextualBreakingEnd
+
+    /// Turn formatting back on at the given position in the original file
+    /// nil is used to indicate the rest of the file should be output
+    case enableFormatting(AbsolutePosition?)
+
+    /// Turn formatting off at the given position in the original file.
+    case disableFormatting(AbsolutePosition)
+
+    // Convenience overloads for the enum types
+    static let open = Token.open(.inconsistent, 0)
+
+    static func open(_ breakStyle: GroupBreakStyle, _ offset: Int) -> Token {
+        return Token.open(breakStyle)
+    }
+
+    static let space = Token.space(size: 1, flexible: false)
+
+    static func space(size: Int) -> Token {
+        return .space(size: size, flexible: false)
+    }
+
+    static let `break` = Token.break(.continue, size: 1, newlines: .elective)
+
+    static func `break`(_ kind: BreakKind, size: Int = 1) -> Token {
+        return .break(kind, size: size, newlines: .elective)
+    }
+
+    static func `break`(_ kind: BreakKind, newlines: NewlineBehavior) -> Token {
+        return .break(kind, size: 1, newlines: newlines)
+    }
+}
+
+// MARK: - Support
+
 enum GroupBreakStyle: Sendable {
     /// A consistent break indicates that the break will always be finalized as a newline
     /// if wrapping occurs.
@@ -147,7 +204,7 @@ enum NewlineBehavior: Sendable {
     /// newlines and the configured maximum number of blank lines.
     case hard(count: Int)
 
-    /// Break onto a new line is allowed if neccessary. If a line break is emitted, it will be escaped with a '\', and this breaks whitespace will be printed prior to the
+    /// Break onto a new line is allowed if necessary. If a line break is emitted, it will be escaped with a '\', and this breaks whitespace will be printed prior to the
     /// escaped line break. This is useful in multiline strings where we don't want newlines printed in syntax to appear in the literal.
     case escaped
 
@@ -159,6 +216,41 @@ enum NewlineBehavior: Sendable {
 
     /// A single hard newline.
     static let hard = NewlineBehavior.hard(count: 1)
+
+    static func + (lhs: NewlineBehavior, rhs: NewlineBehavior) -> NewlineBehavior {
+        switch (lhs, rhs) {
+        case (.elective, _):
+            // `rhs` is either also elective or a required newline, which overwrites elective.
+            return rhs
+        case (_, .elective):
+            // `lhs` is either also elective or a required newline, which overwrites elective.
+            return lhs
+
+        case (.escaped, _):
+            return rhs
+        case (_, .escaped):
+            return lhs
+        case (.soft(let lhsCount, let lhsDiscretionary), .soft(let rhsCount, let rhsDiscretionary)):
+            let mergedCount: Int
+            if lhsDiscretionary && rhsDiscretionary {
+                mergedCount = lhsCount + rhsCount
+            } else if lhsDiscretionary {
+                mergedCount = lhsCount
+            } else if rhsDiscretionary {
+                mergedCount = rhsCount
+            } else {
+                mergedCount = max(lhsCount, rhsCount)
+            }
+            return .soft(count: mergedCount, discretionary: lhsDiscretionary || rhsDiscretionary)
+
+        case (.soft(let softCount, _), .hard(let hardCount)),
+            (.hard(let hardCount), .soft(let softCount, _)):
+            return .hard(count: max(softCount, hardCount))
+
+        case (.hard(let lhsCount), .hard(let rhsCount)):
+            return .hard(count: lhsCount + rhsCount)
+        }
+    }
 }
 
 /// Kinds of printer control tokens that can be used to customize the pretty printer's behavior in
@@ -176,59 +268,4 @@ enum PrinterControlKind: Sendable {
     /// A signal that break tokens should be allowed to fire following this token, as long as there
     /// are no other unmatched disable tokens.
     case enableBreaking
-}
-
-enum Token: Sendable {
-    case syntax(String)
-    case open(GroupBreakStyle)
-    case close
-    case `break`(BreakKind, size: Int, newlines: NewlineBehavior)
-    case space(size: Int, flexible: Bool)
-    case comment(Comment, wasEndOfLine: Bool)
-    case verbatim(Verbatim)
-    case printerControl(kind: PrinterControlKind)
-
-    /// Marks the beginning of a comma delimited collection, where a trailing comma should be inserted
-    /// at `commaDelimitedRegionEnd` if and only if the collection spans multiple lines.
-    case commaDelimitedRegionStart
-
-    /// Marks the end of a comma delimited collection, where a trailing comma should be inserted
-    /// if and only if the collection spans multiple lines and has multiple elements.
-    case commaDelimitedRegionEnd(isCollection: Bool, hasTrailingComma: Bool, isSingleElement: Bool)
-
-    /// Starts a scope where `contextual` breaks have consistent behavior.
-    case contextualBreakingStart
-
-    /// Ends a scope where `contextual` breaks have consistent behavior.
-    case contextualBreakingEnd
-
-    /// Turn formatting back on at the given position in the original file
-    /// nil is used to indicate the rest of the file should be output
-    case enableFormatting(AbsolutePosition?)
-
-    /// Turn formatting off at the given position in the original file.
-    case disableFormatting(AbsolutePosition)
-
-    // Convenience overloads for the enum types
-    static let open = Token.open(.inconsistent, 0)
-
-    static func open(_ breakStyle: GroupBreakStyle, _ offset: Int) -> Token {
-        return Token.open(breakStyle)
-    }
-
-    static let space = Token.space(size: 1, flexible: false)
-
-    static func space(size: Int) -> Token {
-        return .space(size: size, flexible: false)
-    }
-
-    static let `break` = Token.break(.continue, size: 1, newlines: .elective)
-
-    static func `break`(_ kind: BreakKind, size: Int = 1) -> Token {
-        return .break(kind, size: size, newlines: .elective)
-    }
-
-    static func `break`(_ kind: BreakKind, newlines: NewlineBehavior) -> Token {
-        return .break(kind, size: 1, newlines: newlines)
-    }
 }

@@ -162,7 +162,7 @@ package final class LayoutCoordinator {
         )
     }
 
-    /// Print out the provided token, and apply line-wrapping and indentation as needed.
+    /// Emit the provided token, and apply line-wrapping and indentation as needed.
     ///
     /// This method takes a Token and it's length, and it keeps track of how much space is left on the
     /// current line it is printing on. If a token exceeds the remaining space, we break to a new line,
@@ -170,7 +170,7 @@ package final class LayoutCoordinator {
     ///
     /// - Parameters:
     ///   - idx: The index of the token/length pair to be printed.
-    private func printToken(idx: Int) {
+    private func emitToken(idx: Int) {
         let token = tokens[idx]
         let length = lengths[idx]
 
@@ -201,9 +201,9 @@ package final class LayoutCoordinator {
 
         // Check if we need to force breaks in this group, and calculate the indentation to be used in
         // the group.
-        case .open(let breaktype):
+        case .open(let breakType):
             // Determine if the break tokens in this group need to be forced.
-            if !canFit(length) || lastBreak, case .consistent = breaktype {
+            if !canFit(length) || lastBreak, case .consistent = breakType {
                 forceBreakStack.append(true)
             } else {
                 forceBreakStack.append(false)
@@ -562,7 +562,7 @@ package final class LayoutCoordinator {
     /// - Returns: A String containing the formatted source code.
     package func prettyPrint() -> String {
         // Keep track of the indices of the .open and .break token locations.
-        var delimIndexStack = [Int]()
+        var delimiterIndices = [Int]()
         // Keep a running total of the token lengths.
         var total = 0
 
@@ -579,14 +579,14 @@ package final class LayoutCoordinator {
             // calculated when close tokens are encountered.
             case .open:
                 lengths.append(-total)
-                delimIndexStack.append(i)
+                delimiterIndices.append(i)
 
             // Close tokens have a length of 0. Calculate the length of the corresponding open token, and
             // the previous break token (if any).
             case .close:
                 lengths.append(0)
 
-                guard let index = delimIndexStack.popLast() else {
+                guard let index = delimiterIndices.popLast() else {
                     assertionFailure(
                         "Unbalanced close token: no matching open/break on delimiter stack"
                     )
@@ -595,7 +595,7 @@ package final class LayoutCoordinator {
                 lengths[index] += total
 
                 if case .break = tokens[index] {
-                    guard let index = delimIndexStack.popLast() else {
+                    guard let index = delimiterIndices.popLast() else {
                         assertionFailure(
                             "Unbalanced break token: no matching open on delimiter stack"
                         )
@@ -607,7 +607,7 @@ package final class LayoutCoordinator {
             // Break lengths are equal to its size plus the token or group following it. Calculate the
             // length of any prior break tokens.
             case .break(_, let size, let newline):
-                if let index = delimIndexStack.last,
+                if let index = delimiterIndices.last,
                     case .break(_, _, let lastNewline) = tokens[index]
                 {
                     /// If the last break and this break are both `.escaped` we add an extra 1 to the total for the last `.escaped` break.
@@ -642,10 +642,10 @@ package final class LayoutCoordinator {
                     } else {
                         lengths[index] += total
                     }
-                    delimIndexStack.removeLast()
+                    delimiterIndices.removeLast()
                 }
                 lengths.append(-total)
-                delimIndexStack.append(i)
+                delimiterIndices.append(i)
 
                 switch newline {
                 case .elective, .escaped:
@@ -703,8 +703,9 @@ package final class LayoutCoordinator {
         }
 
         // There may be an extra break token that needs to have its length calculated.
-        assert(delimIndexStack.count < 2, "Too many unresolved delimiter token lengths.")
-        if let index = delimIndexStack.popLast() {
+        assert(delimiterIndices.count < 2, "Too many unresolved delimiter token lengths.")
+
+        if let index = delimiterIndices.popLast() {
             if case .open = tokens[index] {
                 preconditionFailure("Open tokens must be closed.")
             }
@@ -713,7 +714,7 @@ package final class LayoutCoordinator {
 
         // Print out the token stream, wrapping according to line-length limitations.
         for i in 0..<tokens.count {
-            printToken(idx: i)
+            emitToken(idx: i)
         }
 
         guard activeOpenBreaks.isEmpty else {

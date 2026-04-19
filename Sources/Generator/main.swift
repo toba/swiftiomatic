@@ -32,3 +32,9 @@ try registryGenerator.generateFile(at: GeneratePaths.ruleRegistryFile)
 // Generate the JSON Schema for configuration files.
 let schemaGenerator = ConfigurationSchemaGenerator(collector: collector)
 try schemaGenerator.generateFile(at: GeneratePaths.configurationSchemaFile)
+
+// Generate TokenStream forwarding stubs from TokenStream+*.swift extensions.
+let stubCollector = TokenStreamStubCollector()
+try stubCollector.collect(from: GeneratePaths.tokenStreamDirectory)
+let stubGenerator = TokenStreamStubGenerator(collector: stubCollector)
+try stubGenerator.generateFile(at: GeneratePaths.tokenStreamStubsFile)

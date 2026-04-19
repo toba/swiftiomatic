@@ -109,8 +109,8 @@ package final class ConfigurationSchemaGenerator: FileGenerator {
     private func rootSettingsSchema() -> [String: JSONSchemaNode] {
         var schema: [String: JSONSchemaNode] = [:]
 
-        // Derive schema from LayoutDescriptor types.
-        for descriptor in LayoutSettings.rootSettings {
+        // Derive schema from LayoutRule types.
+        for descriptor in LayoutRegistry.rootRules {
             schema[descriptor.key] = .string(description: descriptor.description)
         }
 
@@ -159,8 +159,8 @@ package final class ConfigurationSchemaGenerator: FileGenerator {
         for group in ConfigurationGroup.Key.allCases.map({ ConfigurationGroup($0) }) {
             var properties: [String: JSONSchemaNode] = [:]
 
-            // Non-rule settings from LayoutDescriptor types.
-            for descriptor in LayoutSettings.settings(in: group) {
+            // Non-rule settings from LayoutRule types.
+            for descriptor in LayoutRegistry.rules(in: group) {
                 properties[descriptor.key] = .string(description: descriptor.description)
             }
 

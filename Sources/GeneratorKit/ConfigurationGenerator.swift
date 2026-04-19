@@ -32,7 +32,7 @@ package final class ConfigurationGenerator: FileGenerator {
 
         // Setting types
         result += "    /// All known layout setting types.\n"
-        result += "    package static let allSettingTypes: [any LayoutDescriptor.Type] = [\n"
+        result += "    package static let allSettingTypes: [any LayoutRule.Type] = [\n"
         for setting in sortedSettings {
             result += "        \(setting.typeName).self,\n"
         }

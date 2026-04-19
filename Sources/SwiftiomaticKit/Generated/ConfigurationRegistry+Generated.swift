@@ -14,7 +14,7 @@
 package enum ConfigurationRegistry {
 
     /// All known layout setting types.
-    package static let allSettingTypes: [any LayoutDescriptor.Type] = [
+    package static let allSettingTypes: [any LayoutRule.Type] = [
         AroundMultilineExpressionChainComponents.self,
         BeforeControlFlowKeywords.self,
         BeforeEachArgument.self,

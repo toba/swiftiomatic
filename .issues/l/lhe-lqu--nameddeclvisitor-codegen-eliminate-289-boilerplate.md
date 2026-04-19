@@ -2,10 +2,10 @@
 # lhe-lqu
 title: 'NamedDeclVisitor codegen: eliminate 289 boilerplate visit overrides across 53 rules'
 status: draft
-type: feature
+type: epic
 priority: normal
 created_at: 2026-04-17T21:56:55Z
-updated_at: 2026-04-17T22:11:43Z
+updated_at: 2026-04-19T17:27:58Z
 sync:
     github:
         issue_number: "322"

@@ -99,7 +99,7 @@ package final class ConfigurableCollector {
         }
     }
 
-    /// Populates `allSettings` by scanning for `LayoutDescriptor` conformances.
+    /// Populates `allSettings` by scanning for `LayoutRule` conformances.
     ///
     /// - Parameter url: The file system URL of the settings directory.
     package func collectSettings(from url: URL) throws {
@@ -124,7 +124,7 @@ package final class ConfigurableCollector {
         allSettings.sort { $0.typeName < $1.typeName }
     }
 
-    /// Detect a layout setting type (struct conforming to LayoutDescriptor).
+    /// Detect a layout setting type (struct conforming to LayoutRule).
     private func detectedSetting(at statement: CodeBlockItemSyntax) -> DetectedSetting? {
         guard let structDecl = statement.item.as(StructDeclSyntax.self),
               let inheritanceClause = structDecl.inheritanceClause
@@ -132,7 +132,7 @@ package final class ConfigurableCollector {
 
         for inheritance in inheritanceClause.inheritedTypes {
             guard let identifier = inheritance.type.as(IdentifierTypeSyntax.self),
-                  identifier.name.text == "LayoutDescriptor"
+                  identifier.name.text == "LayoutRule"
             else { continue }
             return DetectedSetting(typeName: structDecl.name.text)
         }

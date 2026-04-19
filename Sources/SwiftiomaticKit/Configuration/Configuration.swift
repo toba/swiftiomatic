@@ -9,7 +9,7 @@ private let highestSupportedConfigurationVersion = 4
 package struct Configuration: Sendable, Equatable {
     package static func == (lhs: Configuration, rhs: Configuration) -> Bool {
         guard lhs.rules == rhs.rules, lhs.version == rhs.version else { return false }
-        // Compare all layout settings via their LayoutDescriptor types.
+        // Compare all layout settings via their LayoutRule types.
         for entry in settingEntries {
             let lKey = AnyCodingKey(entry.key)
             let tempL = DictEncoder()
@@ -74,9 +74,9 @@ package struct Configuration: Sendable, Equatable {
         let encode: SettingEncoder
     }
 
-    /// Opens the existential `any LayoutDescriptor.Type` to capture the concrete `Value` type.
-    private static func entry(for type: any LayoutDescriptor.Type) -> SettingEntry {
-        func open<D: LayoutDescriptor>(_ type: D.Type) -> SettingEntry {
+    /// Opens the existential `any LayoutRule.Type` to capture the concrete `Value` type.
+    private static func entry(for type: any LayoutRule.Type) -> SettingEntry {
+        func open<D: LayoutRule>(_ type: D.Type) -> SettingEntry {
             SettingEntry(
                 key: D.key,
                 groupKey: D.group?.key,
@@ -95,7 +95,7 @@ package struct Configuration: Sendable, Equatable {
 
     /// All layout setting entries, derived from `LayoutSettings.all`.
     private static let settingEntries: [SettingEntry] =
-        LayoutSettings.all.map { entry(for: $0) }
+        LayoutRegistry.all.map { entry(for: $0) }
 
     /// Setting entries keyed by their JSON key for lookup during decoding.
     private static let settingsByKey: [String: SettingEntry] = {

@@ -122,7 +122,9 @@
       "Bash(xcrun:*)",
       "Bash(/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swift-format:*)",
       "Bash(csrutil status:*)",
-      "Bash(brew --prefix sm)"
+      "Bash(brew --prefix sm)",
+      "Read(//Users/jason/Developer/swiftiomatic-ref/swift-format/Sources/**)",
+      "Read(//Users/jason/Developer/swiftiomatic-ref/**)"
     ]
   },
   "enableAllProjectMcpServers": true,

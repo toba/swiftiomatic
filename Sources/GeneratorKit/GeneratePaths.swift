@@ -67,7 +67,14 @@ package enum GeneratePaths {
         sourcesDirectory
         .appendingPathComponent(kitTarget)
         .appendingPathComponent("Layout")
-        .appendingPathComponent("Settings")
+        .appendingPathComponent("Rules")
+
+    /// The directory containing `TokenStream+*.swift` token stream extension files.
+    package static let tokenStreamDirectory =
+        sourcesDirectory
+        .appendingPathComponent(kitTarget)
+        .appendingPathComponent("Layout")
+        .appendingPathComponent("Tokens")
 
     /// The Generated directory within the kit target for auto-generated files.
     private static let generatedDirectory =
@@ -95,4 +102,9 @@ package enum GeneratePaths {
     package static let configurationSchemaFile =
         packageRoot
         .appendingPathComponent(configurationSchemaFileName)
+
+    /// The generated `TokenStream` subclass with forwarding stubs.
+    package static let tokenStreamStubsFile =
+        generatedDirectory
+        .appendingPathComponent("TokenStream+Generated.swift")
 }
