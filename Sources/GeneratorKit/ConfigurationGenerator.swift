@@ -40,7 +40,7 @@ package final class ConfigurationGenerator: FileGenerator {
 
         // Rule types (internal because Rule is internal)
         result += "    /// All known rule types.\n"
-        result += "    static let allRuleTypes: [any Rule.Type] = [\n"
+        result += "    static let allRuleTypes: [any SyntaxRule.Type] = [\n"
         for rule in sortedRules {
             result += "        \(rule.typeName).self,\n"
         }

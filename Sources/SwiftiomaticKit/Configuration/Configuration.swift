@@ -399,7 +399,22 @@ extension Configuration: Codable {
             var codingPath: [CodingKey] = []
             mutating func encodeNil(forKey key: Key) throws {}
             mutating func encode<T: Encodable>(_ value: T, forKey key: Key) throws {
-                encoder.dict[key.stringValue] = value
+                // Primitive types bridge to Foundation for JSONSerialization.
+                // Non-primitives (enums, structs) must be round-tripped through
+                // JSONEncoder to produce Foundation-compatible values.
+                switch value {
+                case let v as String: encoder.dict[key.stringValue] = v
+                case let v as Bool: encoder.dict[key.stringValue] = v
+                case let v as any FixedWidthInteger:
+                    encoder.dict[key.stringValue] = Int(v)
+                case let v as any BinaryFloatingPoint:
+                    encoder.dict[key.stringValue] = Double(v)
+                default:
+                    let data = try JSONEncoder().encode(value)
+                    encoder.dict[key.stringValue] = try JSONSerialization.jsonObject(
+                        with: data, options: .fragmentsAllowed
+                    )
+                }
             }
             mutating func nestedContainer<NestedKey: CodingKey>(
                 keyedBy keyType: NestedKey.Type,

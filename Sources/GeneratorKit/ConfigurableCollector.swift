@@ -171,9 +171,9 @@ package final class ConfigurableCollector {
 
             let canFormat: Bool
             switch identifier.name.text {
-            case "SyntaxLintRule":
+            case "LintSyntaxRule":
                 canFormat = false
-            case "SyntaxFormatRule":
+            case "RewriteSyntaxRule":
                 canFormat = true
             default:
                 continue

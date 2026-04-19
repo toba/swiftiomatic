@@ -52,7 +52,7 @@ package final class PipelineGenerator: FileGenerator {
 
               /// Stores lint and format rule instances, indexed by the `ObjectIdentifier` of a rule's
               /// class type.
-              var ruleCache = [ObjectIdentifier: Rule]()
+              var ruleCache = [ObjectIdentifier: any SyntaxRule]()
 
               /// Rules present in this dictionary skip visiting children until they leave the
               /// syntax node stored as their value
@@ -103,7 +103,7 @@ package final class PipelineGenerator: FileGenerator {
         result += """
             }
 
-            extension FormatPipeline {
+            extension RewritePipeline {
 
               func rewrite(_ node: Syntax) -> Syntax {
                 var node = node

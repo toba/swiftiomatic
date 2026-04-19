@@ -246,6 +246,11 @@ private class RuleStatusCollectionVisitor: SyntaxVisitor {
         let rules = matchedRuleNames.split(separator: ",")
             .map { $0.trimmingCharacters(in: .whitespaces) }
             .filter { $0.count > 0 }
+            .map { name in
+                // Normalize type names (e.g. SortImports) to key format (e.g. sortImports)
+                guard let first = name.first, first.isUppercase else { return name }
+                return first.lowercased() + name.dropFirst()
+            }
         return .subset(ruleNames: rules)
     }
 

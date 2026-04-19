@@ -23,7 +23,7 @@ protocol RuleTesting {}
 extension RuleTesting {
   /// Performs a lint using the provided linter rule on the provided input and asserts that the
   /// emitted findings are correct.
-  func assertLint<LintRule: SyntaxLintRule>(
+  func assertLint<LintRule: LintSyntaxRule>(
     _ type: LintRule.Type,
     _ markedSource: String,
     findings: [FindingSpec] = [],
@@ -47,7 +47,7 @@ extension RuleTesting {
     )
 
     var emittedPipelineFindings = [Finding]()
-    let pipeline = SwiftiomaticLinter(
+    let pipeline = LintCoordinator(
       configuration: configuration,
       findingConsumer: { emittedPipelineFindings.append($0) }
     )
@@ -115,7 +115,7 @@ extension RuleTesting {
     // to verify that the format rule didn't transform the tree in such a way that it caused the
     // pretty-printer to drop important information (the most likely case is a format rule
     // misplacing trivia in a way that the pretty-printer isn't able to handle).
-    let prettyPrintedSource = PrettyPrinter(
+    let prettyPrintedSource = LayoutCoordinator(
       context: context,
       source: originalSource,
       node: Syntax(actual),
@@ -132,7 +132,7 @@ extension RuleTesting {
     )
 
     var emittedPipelineFindings = [Finding]()
-    let pipeline = SwiftiomaticFormatter(
+    let pipeline = RewriteCoordinator(
       configuration: configuration,
       findingConsumer: { emittedPipelineFindings.append($0) }
     )

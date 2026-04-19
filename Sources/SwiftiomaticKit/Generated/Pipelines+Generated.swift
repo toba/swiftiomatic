@@ -1206,6 +1206,7 @@ class LintPipeline: SyntaxVisitor {
 }
 
 extension RewritePipeline {
+
   func rewrite(_ node: Syntax) -> Syntax {
     var node = node
     node = BlankLinesAfterGuardStatements(context: context).rewrite(node)

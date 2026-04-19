@@ -198,9 +198,9 @@ struct RuleMaskTests {
     #expect(mask.ruleState("rule1", at: location(ofLine: 1, in: converter)) == .default)
     #expect(mask.ruleState("rule1", at: location(ofLine: 3, in: converter)) == .disabled)
     #expect(mask.ruleState("rule2", at: location(ofLine: 3, in: converter)) == .disabled)
-    #expect(mask.ruleState("AnotherRule", at: location(ofLine: 3, in: converter)) == .disabled)
-    #expect(mask.ruleState("TheBestRule", at: location(ofLine: 3, in: converter)) == .disabled)
-    #expect(mask.ruleState("TotallyMadeUpRule", at: location(ofLine: 3, in: converter)) == .default)
+    #expect(mask.ruleState("anotherRule", at: location(ofLine: 3, in: converter)) == .disabled)
+    #expect(mask.ruleState("theBestRule", at: location(ofLine: 3, in: converter)) == .disabled)
+    #expect(mask.ruleState("totallyMadeUpRule", at: location(ofLine: 3, in: converter)) == .default)
     #expect(mask.ruleState("rule1", at: location(ofLine: 4, in: converter)) == .default)
   }
 

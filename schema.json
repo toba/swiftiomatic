@@ -609,6 +609,10 @@
             "off"
           ],
           "type" : "string"
+        },
+        "unit" : {
+          "description" : "Indentation unit: exactly one of spaces or tabs.",
+          "type" : "string"
         }
       },
       "type" : "object"
