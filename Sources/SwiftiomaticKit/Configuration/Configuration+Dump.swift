@@ -10,6 +10,7 @@
 //
 //===----------------------------------------------------------------------===//
 
+@_exported import enum ConfigurationKit.KeySortOrder
 import Foundation
 
 extension Configuration {
@@ -20,8 +21,8 @@ extension Configuration {
     /// Return the configuration as a JSON string with a `$schema` reference.
     ///
     /// Rule objects that fit within 100 columns are printed on a single line.
-    package func asJsonString() throws(SwiftiomaticError) -> String {
-        // Encode to JSONValue, inject $schema, then serialize once.
+    package func asJsonString(sortBy order: KeySortOrder = .length) throws(SwiftiomaticError) -> String {
+        // Encode to JSONValue, inject $schema, then serialize with key ordering.
         let jsonValue: JSONValue
         do {
             let data = try JSONEncoder().encode(self)
@@ -32,19 +33,7 @@ extension Configuration {
             throw SwiftiomaticError.configurationDumpFailed("\(error)")
         }
 
-        let output: Data
-        do {
-            let encoder = JSONEncoder()
-            encoder.outputFormatting = [.prettyPrinted, .sortedKeys, .withoutEscapingSlashes]
-            output = try encoder.encode(jsonValue)
-        } catch {
-            throw SwiftiomaticError.configurationDumpFailed("\(error)")
-        }
-
-        guard var jsonString = String(data: output, encoding: .utf8) else {
-            throw SwiftiomaticError.configurationDumpFailed("The JSON was not valid UTF-8")
-        }
-
+        var jsonString = jsonValue.serialize(sortBy: order)
         jsonString = compactSmallObjects(in: jsonString, maxWidth: 100)
 
         return jsonString

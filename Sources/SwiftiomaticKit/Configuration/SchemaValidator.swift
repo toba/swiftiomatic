@@ -13,7 +13,8 @@ struct JSONPointer: Sendable {
     init() { components = [""] }
 
     init(path: String) {
-        components = path
+        components =
+            path
             .split(separator: "/", omittingEmptySubsequences: false)
             .map {
                 $0.replacingOccurrences(of: "~1", with: "/")
@@ -102,30 +103,30 @@ private struct ValidationContext {
             defer { keywordLocation.pop() }
 
             switch keyword {
-            case "type":
-                errors += validateType(value, instance: instance)
-            case "properties":
-                errors += validateProperties(value, instance: instance)
-            case "additionalProperties":
-                errors += validateAdditionalProperties(
-                    value, instance: instance, schema: schemaDict
-                )
-            case "required":
-                errors += validateRequired(value, instance: instance)
-            case "enum":
-                errors += validateEnum(value, instance: instance)
-            case "allOf":
-                errors += validateAllOf(value, instance: instance)
-            case "oneOf":
-                errors += validateOneOf(value, instance: instance)
-            case "$ref":
-                errors += validateRef(value, instance: instance)
-            case "items":
-                errors += validateItems(value, instance: instance)
-            case "minimum":
-                errors += validateMinimum(value, instance: instance)
-            default:
-                break // Ignore metadata keywords ($schema, $id, title, description, default, $defs, etc.)
+                case "type":
+                    errors += validateType(value, instance: instance)
+                case "properties":
+                    errors += validateProperties(value, instance: instance)
+                case "additionalProperties":
+                    errors += validateAdditionalProperties(
+                        value, instance: instance, schema: schemaDict
+                    )
+                case "required":
+                    errors += validateRequired(value, instance: instance)
+                case "enum":
+                    errors += validateEnum(value, instance: instance)
+                case "allOf":
+                    errors += validateAllOf(value, instance: instance)
+                case "oneOf":
+                    errors += validateOneOf(value, instance: instance)
+                case "$ref":
+                    errors += validateRef(value, instance: instance)
+                case "items":
+                    errors += validateItems(value, instance: instance)
+                case "minimum":
+                    errors += validateMinimum(value, instance: instance)
+                default:
+                    break  // Ignore metadata keywords ($schema, $id, title, description, default, $defs, etc.)
             }
         }
 
@@ -139,12 +140,12 @@ private struct ValidationContext {
     ) -> [SchemaValidationError] {
         let types: [String]
         switch type {
-        case .string(let single):
-            types = [single]
-        case .array(let array):
-            types = array.compactMap { if case .string(let s) = $0 { s } else { nil } }
-        default:
-            return []
+            case .string(let single):
+                types = [single]
+            case .array(let array):
+                types = array.compactMap { if case .string(let s) = $0 { s } else { nil } }
+            default:
+                return []
         }
 
         if types.contains(where: { instance.matches(schemaType: $0) }) {
@@ -159,7 +160,7 @@ private struct ValidationContext {
         _ properties: JSONValue, instance: JSONValue
     ) -> [SchemaValidationError] {
         guard case .object(let instanceDict) = instance,
-              case .object(let propertiesDict) = properties
+            case .object(let propertiesDict) = properties
         else { return [] }
 
         var errors: [SchemaValidationError] = []
@@ -199,7 +200,7 @@ private struct ValidationContext {
         _ required: JSONValue, instance: JSONValue
     ) -> [SchemaValidationError] {
         guard case .object(let instanceDict) = instance,
-              case .array(let requiredArray) = required
+            case .array(let requiredArray) = required
         else { return [] }
 
         return requiredArray.compactMap { element in
@@ -245,7 +246,7 @@ private struct ValidationContext {
         _ ref: JSONValue, instance: JSONValue
     ) -> [SchemaValidationError] {
         guard case .string(let refString) = ref,
-              let resolved = resolver.resolve(reference: refString)
+            let resolved = resolver.resolve(reference: refString)
         else { return [] }
         return validate(instance: instance, schema: resolved)
     }
@@ -266,11 +267,16 @@ private struct ValidationContext {
     private func validateMinimum(
         _ minimum: JSONValue, instance: JSONValue
     ) -> [SchemaValidationError] {
-        guard let minVal = minimum.numericValue,
-              let instVal = instance.numericValue
-        else { return [] }
+        guard let minVal = minimum.numericValue, let instVal = instance.numericValue else {
+            return []
+        }
         if instVal >= minVal { return [] }
-        return [error("'\(instance.displayDescription)' is less than minimum '\(minimum.displayDescription)'")]
+
+        return [
+            error(
+                "'\(instance.displayDescription)' is less than minimum '\(minimum.displayDescription)'"
+            )
+        ]
     }
 }
 

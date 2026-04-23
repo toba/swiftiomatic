@@ -1,5 +1,15 @@
 import Foundation
 
+// MARK: - Key Sort Order
+
+/// Controls the order of keys in serialized JSON output.
+public enum KeySortOrder: String, Sendable, CaseIterable {
+    /// Sort by key length ascending, alphabetical tiebreaker.
+    case length
+    /// Sort alphabetically (lexicographic).
+    case alphabetical
+}
+
 // MARK: - JSON Value
 
 /// A JSON value suitable for schema validation, configuration encoding, and
@@ -113,3 +123,95 @@ extension JSONValue {
         }
     }
 }
+
+// MARK: - Serialization
+
+extension JSONValue {
+    /// Serialize to a pretty-printed JSON string with keys ordered by `sortBy`.
+    public func serialize(sortBy order: KeySortOrder = .length) -> String {
+        var output = ""
+        write(to: &output, indent: 0, sortBy: order)
+        return output
+    }
+
+    private func write(to output: inout String, indent: Int, sortBy order: KeySortOrder) {
+        switch self {
+        case .string(let s):
+            output += "\""
+            output += escapeJSON(s)
+            output += "\""
+        case .int(let n):
+            output += "\(n)"
+        case .double(let n):
+            output += "\(n)"
+        case .bool(let b):
+            output += b ? "true" : "false"
+        case .null:
+            output += "null"
+        case .array(let elements):
+            if elements.isEmpty {
+                output += "[]"
+                return
+            }
+            output += "[\n"
+            let childIndent = indent + 2
+            for (i, element) in elements.enumerated() {
+                output += String(repeating: " ", count: childIndent)
+                element.write(to: &output, indent: childIndent, sortBy: order)
+                if i < elements.count - 1 { output += "," }
+                output += "\n"
+            }
+            output += String(repeating: " ", count: indent)
+            output += "]"
+        case .object(let dict):
+            if dict.isEmpty {
+                output += "{}"
+                return
+            }
+            let sortedKeys: [String]
+            switch order {
+            case .length:
+                sortedKeys = dict.keys.sorted { $0.count < $1.count || ($0.count == $1.count && $0 < $1) }
+            case .alphabetical:
+                sortedKeys = dict.keys.sorted()
+            }
+            output += "{\n"
+            let childIndent = indent + 2
+            for (i, key) in sortedKeys.enumerated() {
+                output += String(repeating: " ", count: childIndent)
+                output += "\""
+                output += escapeJSON(key)
+                output += "\" : "
+                dict[key]!.write(to: &output, indent: childIndent, sortBy: order)
+                if i < sortedKeys.count - 1 { output += "," }
+                output += "\n"
+            }
+            output += String(repeating: " ", count: indent)
+            output += "}"
+        }
+    }
+
+    private func escapeJSON(_ s: String) -> String {
+        var result = ""
+        result.reserveCapacity(s.count)
+        for c in s.unicodeScalars {
+            switch c {
+            case "\"": result += "\\\""
+            case "\\": result += "\\\\"
+            case "\n": result += "\\n"
+            case "\r": result += "\\r"
+            case "\t": result += "\\t"
+            case "\u{08}": result += "\\b"
+            case "\u{0C}": result += "\\f"
+            default:
+                if c.value < 0x20 {
+                    result += String(format: "\\u%04x", c.value)
+                } else {
+                    result += String(c)
+                }
+            }
+        }
+        return result
+    }
+}
+

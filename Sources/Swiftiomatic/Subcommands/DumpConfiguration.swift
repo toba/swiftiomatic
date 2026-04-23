@@ -14,6 +14,8 @@ import ArgumentParser
 import Foundation
 import SwiftiomaticKit
 
+extension KeySortOrder: ExpressibleByArgument {}
+
 extension SwiftiomaticCommand {
   /// Dumps the tool's configuration in JSON format to standard output.
   struct DumpConfiguration: ParsableCommand {
@@ -29,6 +31,9 @@ extension SwiftiomaticCommand {
     /// Whether or not to dump the effective configuration.
     @Flag(name: .shortAndLong, help: "Dump the effective instead of the default configuration.")
     var effective: Bool = false
+
+    @Option(name: .long, help: "Key sort order for JSON output (length, alphabetical).")
+    var sort: KeySortOrder = .length
 
     @OptionGroup()
     var configurationOptions: ConfigurationOptions
@@ -63,7 +68,7 @@ extension SwiftiomaticCommand {
       }
 
       do {
-        print(try configuration.asJsonString())
+        print(try configuration.asJsonString(sortBy: sort))
       } catch {
         diagnosticsEngine.emitError("\(error.localizedDescription)")
         throw ExitCode.failure

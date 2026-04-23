@@ -249,7 +249,9 @@ private class RuleStatusCollectionVisitor: SyntaxVisitor {
             .map { name in
                 // Normalize type names (e.g. SortImports) to key format (e.g. sortImports)
                 guard let first = name.first, first.isUppercase else { return name }
-                return first.lowercased() + name.dropFirst()
+                let derived = first.lowercased() + name.dropFirst()
+                // Resolve custom keys (e.g. SortImports → "imports" not "sortImports")
+                return ConfigurationRegistry.typeNameToKey[derived] ?? derived
             }
         return .subset(ruleNames: rules)
     }

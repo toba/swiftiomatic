@@ -24,10 +24,10 @@ struct LayoutBuffer {
 
     /// If true, output is generated as normal. If false, the various state variables are
     /// updated as normal but nothing is appended to the output (used by selection formatting).
-    var isEnabled: Bool = true
+    var isEnabled = true
 
     /// Indicates whether or not the printer is currently at the beginning of a line.
-    private(set) var isAtStartOfLine: Bool = true
+    private(set) var isAtStartOfLine = true
 
     /// Keeps track of the most recent number of consecutive newlines that have been printed.
     ///
@@ -49,12 +49,12 @@ struct LayoutBuffer {
     var currentIndentation: [Indent]
 
     /// The accumulated output of the pretty printer.
-    private(set) var output: String = ""
+    private(set) var output = ""
 
     init(maximumBlankLines: Int, tabWidth: Int, column: Int = 0) {
         self.maximumBlankLines = maximumBlankLines
         self.tabWidth = tabWidth
-        self.currentIndentation = []
+        currentIndentation = []
         self.column = column
     }
 
@@ -77,15 +77,15 @@ struct LayoutBuffer {
     mutating func writeNewlines(_ newlines: NewlineBehavior, shouldIndentBlankLines: Bool) {
         let numberToPrint: Int
         switch newlines {
-        case .elective:
-            numberToPrint = consecutiveNewlineCount == 0 ? 1 : 0
-        case .soft(let count, _):
-            // We add 1 to the max blank lines because it takes 2 newlines to create the first blank line.
-            numberToPrint = min(count, maximumBlankLines + 1) - consecutiveNewlineCount
-        case .hard(let count):
-            numberToPrint = count
-        case .escaped:
-            numberToPrint = 1
+            case .elective:
+                numberToPrint = consecutiveNewlineCount == 0 ? 1 : 0
+            case .soft(let count, _):
+                // We add 1 to the max blank lines because it takes 2 newlines to create the first blank line.
+                numberToPrint = min(count, maximumBlankLines + 1) - consecutiveNewlineCount
+            case .hard(let count):
+                numberToPrint = count
+            case .escaped:
+                numberToPrint = 1
         }
 
         guard numberToPrint > 0 else { return }
@@ -122,12 +122,10 @@ struct LayoutBuffer {
         // In case of comments, we may get a multi-line string. To account for that case, we need to correct the
         // `lineNumber` count. The new `column` is the position within the last line.
 
-        var lastNewlineIndex: String.Index? = nil
-        for i in text.utf8.indices {
-            if text.utf8[i] == UInt8(ascii: "\n") {
-                lastNewlineIndex = i
-                lineNumber += 1
-            }
+        var lastNewlineIndex: String.Index?
+        for i in text.utf8.indices where text.utf8[i] == UInt8(ascii: "\n") {
+            lastNewlineIndex = i
+            lineNumber += 1
         }
 
         if let lastNewlineIndex {

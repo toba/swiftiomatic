@@ -8,6 +8,22 @@ extension ConfigurationRegistry {
         Dictionary(uniqueKeysWithValues: allRuleTypes.map { (ObjectIdentifier($0), $0.key) })
     }()
 
+    /// Reverse lookup from type-name-derived key (e.g. "sortImports") to the actual
+    /// configuration key (e.g. "imports"). Used by `RuleMask` to resolve `// sm:ignore: SortImports`
+    /// directives when a rule overrides `key` to something other than the auto-derived name.
+    package static let typeNameToKey: [String: String] = {
+        var map: [String: String] = [:]
+        for type in allRuleTypes {
+            let typeName = String("\(type)".split(separator: ".").last!)
+            let derivedKey = typeName.prefix(1).lowercased() + typeName.dropFirst()
+            // Only add entries where derived key differs from actual key
+            if derivedKey != type.key {
+                map[derivedKey] = type.key
+            }
+        }
+        return map
+    }()
+
     /// Rules organized by configuration group (values are short keys for JSON encoding).
     package static let groupRules: [ConfigurationGroup: [String]] = {
         var groups: [ConfigurationGroup: [String]] = [:]
