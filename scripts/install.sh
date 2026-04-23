@@ -3,9 +3,17 @@
 # same location `brew install` uses. Compatible with `brew upgrade`.
 set -euo pipefail
 
-bin="$(realpath "$(brew --prefix sm)/bin")"
-
 cd "$(dirname "$0")/.."
+
+# Derive version from the latest git tag (e.g. v0.27.1 → 0.27.1).
+version="$(git describe --tags --abbrev=0 2>/dev/null | sed 's/^v//')"
+if [[ -z "$version" ]]; then
+    echo "  ERROR: no git tag found"
+    exit 1
+fi
+
+cellar="$(brew --cellar sm)/$version"
+mkdir -p "$cellar/bin"
 
 echo "Building release..."
 swift build -c release --product sm
@@ -16,7 +24,21 @@ if [[ ! -f "$src" ]]; then
     exit 1
 fi
 
-strip -x -o "$bin/sm" "$src"
-echo "  sm → $bin/sm"
+strip -x -o "$cellar/bin/sm" "$src"
+echo "  sm → $cellar/bin/sm"
 
-echo "Done."
+# Point Homebrew's opt symlink at the new version.
+brew unlink sm 2>/dev/null || true
+brew link --overwrite sm 2>/dev/null || ln -sf "$cellar/bin/sm" "$(brew --prefix)/bin/sm"
+echo "  Homebrew linked: $(readlink "$(brew --prefix)/bin/sm")"
+
+# Refresh Xcode toolchain symlink so Editor → Format with swift-format works.
+xc_bin="/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swift-format"
+if [[ -e "$xc_bin" && ! -L "$xc_bin" ]] || [[ "$(readlink "$xc_bin" 2>/dev/null)" != "$(brew --prefix)/bin/sm" ]]; then
+    sudo ln -sf "$(brew --prefix)/bin/sm" "$xc_bin"
+    echo "  Xcode symlink refreshed: $xc_bin → $(brew --prefix)/bin/sm"
+else
+    echo "  Xcode symlink OK"
+fi
+
+echo "Done. Installed sm $version."

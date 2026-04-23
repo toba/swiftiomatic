@@ -23,16 +23,16 @@ extension TriviaPiece {
     /// Whether this piece is a doc comment (`///` or `/** ... */`).
     var isDocComment: Bool {
         switch self {
-        case .docLineComment, .docBlockComment: return true
-        default: return false
+            case .docLineComment, .docBlockComment: return true
+            default: return false
         }
     }
 
     /// True if the trivia piece is unexpected text.
     var isUnexpectedText: Bool {
         switch self {
-        case .unexpectedText: return true
-        default: return false
+            case .unexpectedText: return true
+            default: return false
         }
     }
 

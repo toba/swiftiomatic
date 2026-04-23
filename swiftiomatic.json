@@ -78,7 +78,7 @@
 	"indentation": {
 		"unit": { "spaces": 4 },
 		"blankLines": false,
-		"switchCases": { "lint": "no", "rewrite": false, "style": "flush" },
+		"switchCases": { "lint": "no", "rewrite": true, "style": "indented" },
 		"conditionalCompilationBlocks": false
 	},
 	"initCoderUnavailable": { "lint": "no", "rewrite": false },

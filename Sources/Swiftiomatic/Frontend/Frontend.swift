@@ -64,26 +64,23 @@ class Frontend: @unchecked Sendable {
       orForSwiftFileAt swiftFileURL: URL?
     ) -> Configuration? {
       if let pathOrString = pathOrString {
-        // If an explicit configuration file path was given, try to load it and fail if it cannot be
-        // loaded. (Do not try to fall back to a path inferred from the source file path.)
+        // Only honor --configuration when it points to an actual file on disk.
+        // Xcode passes inline JSON via --configuration which overrides the project
+        // config — silently ignore inline JSON so swiftiomatic.json is always used.
         let configurationFileURL = URL(fileURLWithPath: pathOrString)
-        do {
-          let configuration = try configurationLoader.configuration(at: configurationFileURL)
-          self.checkForUnrecognizedRules(in: configuration)
-          return configuration
-        } catch {
-          // If we failed to load this from the path, try interpreting the string as configuration
-          // data itself because the user might have written something like `--configuration '{...}'`,
-          let data = pathOrString.data(using: .utf8)!
-          if let configuration = try? Configuration(data: data) {
+        if FileManager.default.isReadableFile(atPath: configurationFileURL.path) {
+          do {
+            let configuration = try configurationLoader.configuration(at: configurationFileURL)
+            self.checkForUnrecognizedRules(in: configuration)
             return configuration
+          } catch {
+            diagnosticsEngine.emitError(
+              "Unable to read configuration: \(error.localizedDescription)"
+            )
+            return nil
           }
-
-          // Fail if the configuration flag was neither a valid file path nor valid configuration
-          // data.
-          diagnosticsEngine.emitError("Unable to read configuration: \(error.localizedDescription)")
-          return nil
         }
+        // Inline JSON string — fall through to discover swiftiomatic.json from the file path.
       }
 
       // If no explicit configuration file path was given but a `.swift` source file path was given,
