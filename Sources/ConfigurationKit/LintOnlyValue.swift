@@ -18,11 +18,11 @@ package struct LintOnlyValue: SyntaxRuleValue {
     /// Always `false` for lint-only rules.
     package var rewrite: Bool {
         get { false }
-        set { /* lint-only rules cannot rewrite */ }
+        set { /* lint-only rules cannot rewrite */  }
     }
 
     package init() {
-        self.lint = .warn
+        lint = .warn
     }
 
     package init(lint: Lint) {
@@ -35,7 +35,7 @@ extension LintOnlyValue: Codable {
         let keyed = try decoder.container(keyedBy: CodingKeys.self)
         // Accept and ignore `rewrite` for backward compatibility.
         _ = try keyed.decodeIfPresent(Bool.self, forKey: .rewrite)
-        self.lint = try keyed.decodeIfPresent(Lint.self, forKey: .lint) ?? .warn
+        lint = try keyed.decodeIfPresent(Lint.self, forKey: .lint) ?? .warn
     }
 
     package func encode(to encoder: any Encoder) throws {

@@ -103,7 +103,9 @@ package struct Configuration: Sendable, Equatable {
         uniqueKeysWithValues: settingEntries.map { ($0.key, $0) })
 
     private static let settingKeyNames: Set<String> = {
-        var names = Set(settingEntries.filter { $0.groupKey == nil }.map(\.key))
+        // Only include setting keys that don't collide with group names,
+        // so group keys still fall through to the group decoder.
+        var names = Set(settingEntries.map(\.key)).subtracting(groupKeyNames)
         names.insert("version")
         return names
     }()
@@ -269,8 +271,9 @@ extension Configuration: Codable {
         var config = Configuration()
         config.version = version
 
-        // Decode root-level layout settings.
-        for entry in Self.settingEntries where entry.groupKey == nil {
+        // Decode root-level layout settings (including grouped settings placed at root).
+        // Skip any setting whose key collides with a group name (e.g. "blankLines").
+        for entry in Self.settingEntries where !Self.groupKeyNames.contains(entry.key) {
             let codingKey = AnyCodingKey(entry.key)
             guard root.contains(codingKey) else { continue }
             try entry.decode(root, codingKey, &config)
