@@ -28,7 +28,7 @@ jobs:
         echo "All tests passed (SIGBUS exit tolerated — macOS 26.3 runner + Xcode 26.4 known issue)"
 
     - name: Build release binary
-      run: swift build -c release --disable-sandbox
+      run: swift build -c release --product sm --disable-sandbox
 
     - name: Create archive
       run: |
