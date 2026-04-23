@@ -163,6 +163,32 @@ package struct Configuration: Sendable, Equatable {
     private static let rulesByKey: [String: RuleEntry] = Dictionary(
         uniqueKeysWithValues: ruleEntries.map { ($0.qualifiedKey, $0) })
 
+    // MARK: - Rule key metadata (for `sm update`)
+
+    /// All valid rule qualified keys (`group.key` or bare `key`).
+    package static var allRuleQualifiedKeys: Set<String> {
+        Set(ruleEntries.map(\.qualifiedKey))
+    }
+
+    /// All keys that are settings or meta fields (not rules or groups),
+    /// regardless of whether they're currently grouped or ungrouped.
+    package static var allSettingAndMetaKeys: Set<String> {
+        var keys = Set(settingEntries.map(\.key))
+        keys.insert("version")
+        keys.insert("$schema")
+        return keys
+    }
+
+    /// All configuration group key names.
+    package static var groupKeyNames: Set<String> {
+        Set(ConfigurationGroup.Key.allCases.map(\.rawValue))
+    }
+
+    /// Setting keys that live inside a given group (not rules).
+    package static func settingKeys(inGroup group: ConfigurationGroup.Key) -> Set<String> {
+        Set(settingEntries.filter { $0.groupKey == group }.map(\.key))
+    }
+
     // MARK: - Rule helpers
 
     /// Disables all syntax rules by setting `enabled = false` on each rule's value.

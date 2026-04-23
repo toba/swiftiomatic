@@ -1,6 +1,7 @@
 /// Trailing comma handling in multiline lists.
 package struct MultilineTrailingCommaBehaviorSetting: LayoutRule {
     package static let key = "multilineTrailingCommaBehavior"
+    package static let group: ConfigurationGroup? = .literals
     package static let description = "Trailing comma handling in multiline lists."
     package static let defaultValue: MultilineTrailingCommaBehavior = .keptAsWritten
 }

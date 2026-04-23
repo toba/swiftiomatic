@@ -22,6 +22,7 @@ import SwiftSyntax
 ///
 /// Format: Redundant labels in case patterns are removed.
 final class NoLabelsInCasePatterns: RewriteSyntaxRule<BasicRuleValue> {
+    override class var group: ConfigurationGroup? { .redundancies }
     override func visit(_ node: SwitchCaseLabelSyntax) -> SwitchCaseLabelSyntax {
         var newCaseItems: [SwitchCaseItemSyntax] = []
 

@@ -16,30 +16,48 @@ package struct ConfigurationGroup: Sendable, Hashable {
 
     /// Group key identifiers matching JSON object names.
     package enum Key: String, CaseIterable, Sendable, Codable {
-        case sort
-        case wrap
-        case hoist
-        case spaces
-        case forcing
-        case comments
+        case access
         case blankLines
-        case lineBreaks
+        case closures
+        case comments
+        case conditions
+        case declarations
+        case forcing
+        case generics
+        case hoist
+        case idioms
         case indentation
-        case redundancies
+        case lineBreaks
+        case literals
         case naming
+        case redundancies
+        case sort
+        case spaces
+        case testing
+        case types
+        case wrap
     }
 
     // MARK: - Static accessors for use in rule/setting declarations
 
-    package static let sort = ConfigurationGroup(.sort)
-    package static let wrap = ConfigurationGroup(.wrap)
-    package static let hoist = ConfigurationGroup(.hoist)
-    package static let spaces = ConfigurationGroup(.spaces)
-    package static let forcing = ConfigurationGroup(.forcing)
-    package static let comments = ConfigurationGroup(.comments)
+    package static let access = ConfigurationGroup(.access)
     package static let blankLines = ConfigurationGroup(.blankLines)
-    package static let lineBreaks = ConfigurationGroup(.lineBreaks)
+    package static let closures = ConfigurationGroup(.closures)
+    package static let comments = ConfigurationGroup(.comments)
+    package static let conditions = ConfigurationGroup(.conditions)
+    package static let declarations = ConfigurationGroup(.declarations)
+    package static let forcing = ConfigurationGroup(.forcing)
+    package static let generics = ConfigurationGroup(.generics)
+    package static let hoist = ConfigurationGroup(.hoist)
+    package static let idioms = ConfigurationGroup(.idioms)
     package static let indentation = ConfigurationGroup(.indentation)
-    package static let redundancies = ConfigurationGroup(.redundancies)
+    package static let lineBreaks = ConfigurationGroup(.lineBreaks)
+    package static let literals = ConfigurationGroup(.literals)
     package static let naming = ConfigurationGroup(.naming)
+    package static let redundancies = ConfigurationGroup(.redundancies)
+    package static let sort = ConfigurationGroup(.sort)
+    package static let spaces = ConfigurationGroup(.spaces)
+    package static let testing = ConfigurationGroup(.testing)
+    package static let types = ConfigurationGroup(.types)
+    package static let wrap = ConfigurationGroup(.wrap)
 }

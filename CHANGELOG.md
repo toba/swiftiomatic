@@ -4,6 +4,7 @@
 
 ### ✨ Features
 
+- Add `update` subcommand; sync `swiftiomatic.json` with current rule registry
 - `RedundantReturn`; support multi-branch implicit returns per SE-0380
 - New rules: `RedundantFinal` + `PreferStaticOverClassFunc`
 - Add `doctor` subcommand; JSON Schema validation + full config parsing
@@ -23,6 +24,7 @@
 - Handle `schema.json` output location; manual step outside plugin
 - Break `GeneratorKit` → `SwiftiomaticKit` circular dependency
 - Remove standalone `Generator` executable target
+- Add 9 configuration groups for ungrouped rules
 
 ## Week of Apr 12 – Apr 18, 2026
 
