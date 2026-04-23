@@ -140,7 +140,7 @@
 	"preferEnvironmentEntry": { "lint": "no", "rewrite": false },
 	"preferExplicitFalse": { "lint": "no", "rewrite": false },
 	"preferFileID": { "lint": "no", "rewrite": false },
-	"preferFinalClasses": { "lint": "no", "rewrite": false },
+	"preferFinalClasses": { "lint": "warn", "rewrite": false },
 	"preferIsEmpty": { "lint": "no", "rewrite": true },
 	"preferKeyPath": { "lint": "no", "rewrite": true },
 	"preferMainAttribute": { "lint": "warn", "rewrite": true },

@@ -19,6 +19,7 @@ package struct ConfigurationGroup: Sendable, Hashable {
         case sort
         case wrap
         case hoist
+        case spaces
         case forcing
         case comments
         case blankLines
@@ -33,6 +34,7 @@ package struct ConfigurationGroup: Sendable, Hashable {
     package static let sort = ConfigurationGroup(.sort)
     package static let wrap = ConfigurationGroup(.wrap)
     package static let hoist = ConfigurationGroup(.hoist)
+    package static let spaces = ConfigurationGroup(.spaces)
     package static let forcing = ConfigurationGroup(.forcing)
     package static let comments = ConfigurationGroup(.comments)
     package static let blankLines = ConfigurationGroup(.blankLines)

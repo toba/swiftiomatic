@@ -10,6 +10,7 @@ import SwiftSyntax
 /// Format: The whitespace is removed, collapsing the braces to `{}`.
 final class EmptyBraces: RewriteSyntaxRule<BasicRuleValue> {
     override class var key: String { "collapseEmptyBraces" }
+    override class var group: ConfigurationGroup? { .spaces }
 
     override func visit(_ node: CodeBlockSyntax) -> CodeBlockSyntax {
         var result = node

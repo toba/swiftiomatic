@@ -4,6 +4,7 @@ import SwiftSyntax
 /// Force spaces around range operators.
 package struct SpacesAroundRangeFormationOperators: LayoutRule {
     package static let key = "spacesAroundRangeFormationOperators"
+    package static let group: ConfigurationGroup? = .spaces
     package static let description = "Force spaces around ... and ..<."
     package static let defaultValue = false
 }

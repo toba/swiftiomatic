@@ -1512,6 +1512,21 @@
       ],
       "description" : "Sort protocol composition typealiases alphabetically.\n\nWhen a typealias combines multiple protocols with `&` (e.g. `typealias Deps = Foo & Bar & Baz`),\nthe types are sorted lexicographically. Duplicate types are removed. The `any` keyword, if\npresent, is preserved at the beginning.\n\nLint: If the composition types are not sorted, a lint warning is raised.\n\nFormat: The types are reordered alphabetically and duplicates are removed.\n"
     },
+    "spaces" : {
+      "additionalProperties" : false,
+      "description" : "spaces rule group.",
+      "properties" : {
+        "emptyBraces" : {
+          "allOf" : [
+            {
+              "$ref" : "#/$defs/ruleBase"
+            }
+          ],
+          "description" : "Remove whitespace inside empty braces.\n\nEmpty brace pairs should have no whitespace between them: `{}` instead of `{ }` or\nmulti-line empty bodies. Braces containing comments are left unchanged.\n\nLint: If empty braces contain whitespace, a lint warning is raised.\n\nFormat: The whitespace is removed, collapsing the braces to `{}`.\n"
+        }
+      },
+      "type" : "object"
+    },
     "spacesAroundRangeFormationOperators" : {
       "description" : "Force spaces around ... and ..<.",
       "type" : "string"
