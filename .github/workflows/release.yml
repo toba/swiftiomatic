@@ -1,11 +1,9 @@
 name: Release
 
 on:
-  workflow_dispatch:
-    inputs:
-      tag:
-        description: 'Tag to release (e.g. v0.29.2)'
-        required: true
+  push:
+    tags:
+      - 'v*'
 
 jobs:
   release:
@@ -14,16 +12,7 @@ jobs:
     steps:
     - uses: actions/checkout@v6
       with:
-        ref: ${{ inputs.tag }}
         fetch-depth: 0
-
-    - name: Validate tag
-      run: |
-        TAG="${{ inputs.tag }}"
-        if ! git tag -l "$TAG" | grep -q .; then
-          echo "::error::Tag $TAG does not exist"
-          exit 1
-        fi
 
     - name: Select Xcode version
       run: sudo xcode-select -s /Applications/Xcode_26.4.app/Contents/Developer
@@ -45,15 +34,12 @@ jobs:
 
     - name: Create archive
       run: |
-        TAG="${{ inputs.tag }}"
         mkdir -p dist
         cp .build/release/sm dist/
-        cd dist && tar -czvf ../sm-${TAG}-arm64.tar.gz *
+        cd dist && tar -czvf ../sm-${{ github.ref_name }}-arm64.tar.gz *
 
     - name: Generate SHA256
-      run: |
-        TAG="${{ inputs.tag }}"
-        shasum -a 256 sm-${TAG}-arm64.tar.gz > sm-${TAG}-arm64.tar.gz.sha256
+      run: shasum -a 256 sm-${{ github.ref_name }}-arm64.tar.gz > sm-${{ github.ref_name }}-arm64.tar.gz.sha256
 
     - name: Generate release notes
       run: |
@@ -68,17 +54,16 @@ jobs:
     - name: Create GitHub Release
       uses: softprops/action-gh-release@v2
       with:
-        tag_name: ${{ inputs.tag }}
         files: |
-          sm-${{ inputs.tag }}-arm64.tar.gz
-          sm-${{ inputs.tag }}-arm64.tar.gz.sha256
+          sm-${{ github.ref_name }}-arm64.tar.gz
+          sm-${{ github.ref_name }}-arm64.tar.gz.sha256
         body_path: release_notes.txt
 
     - name: Update Homebrew formula
       env:
         GH_TOKEN: ${{ secrets.HOMEBREW_TAP_TOKEN }}
       run: |
-        TAG="${{ inputs.tag }}"
+        TAG="${GITHUB_REF#refs/tags/}"
         VERSION="${TAG#v}"
 
         SHA=$(cat sm-${TAG}-arm64.tar.gz.sha256 | awk '{print $1}')
