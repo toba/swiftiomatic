@@ -13,6 +13,7 @@
 
 - Config properties match rule capabilities; `LintOnlyValue` for 16 lint-only rules
 - Fix JSON schema code; rewrite `SchemaValidator` on typed `JSONValue`, eliminate ObjC bridging
+- Unify `JSONValue` into ConfigurationKit; eliminate `[String: Any]` from config encoding
 - Split `TokenStreamCreator.swift` into 17 extension files
 - Co-locate layout rule config with `TokenStream` implementation
 - Generate `TokenStreamCreator` forwarding stubs

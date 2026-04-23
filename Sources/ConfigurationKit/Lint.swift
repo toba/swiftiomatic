@@ -11,14 +11,15 @@ package enum Lint: String, Hashable, Sendable, Codable {
     package var isActive: Bool { self != .no }
 
     package init(from decoder: any Decoder) throws {
-        let raw = try decoder.singleValueContainer().decode(String.self)
+        let container = try decoder.singleValueContainer()
+        let raw = try container.decode(String.self)
         switch raw {
         case "warn": self = .warn
         case "error": self = .error
         case "no", "none": self = .no  // accept legacy "none"
         default:
             throw DecodingError.dataCorruptedError(
-                in: try decoder.singleValueContainer(),
+                in: container,
                 debugDescription: "Invalid lint value '\(raw)'. Expected 'warn', 'error', or 'no'."
             )
         }

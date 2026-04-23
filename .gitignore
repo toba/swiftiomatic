@@ -5,3 +5,7 @@ swift-format.xcodeproj/
 Package.resolved
 /.vscode
 .index-build
+*.d
+*.dia
+*.swiftdeps
+*.swiftmodule

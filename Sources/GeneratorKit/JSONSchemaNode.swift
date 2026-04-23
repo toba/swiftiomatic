@@ -1,51 +1,20 @@
+import ConfigurationKit
 import Foundation
 
-/// An arbitrary JSON value used for `default` and other polymorphic schema fields.
-enum JSONSchemaValue: Codable {
-    case bool(Bool)
-    case int(Int)
-    case string(String)
-    case array([JSONSchemaValue])
-    case object([String: JSONSchemaValue])
-
-    func encode(to encoder: any Encoder) throws {
-        var container = encoder.singleValueContainer()
-        switch self {
-        case .bool(let v): try container.encode(v)
-        case .int(let v): try container.encode(v)
-        case .string(let v): try container.encode(v)
-        case .array(let v): try container.encode(v)
-        case .object(let v): try container.encode(v)
-        }
+/// Heap-allocated wrapper to break the recursive value type cycle in
+/// `JSONSchemaNode` (the `items` field references `JSONSchemaNode`).
+final class Indirect<Value: Codable>: Codable {
+    let value: Value
+    init(_ value: Value) { self.value = value }
+    convenience init(from decoder: any Decoder) throws {
+        try self.init(Value(from: decoder))
     }
-
-    init(from decoder: any Decoder) throws {
-        let container = try decoder.singleValueContainer()
-        if let v = try? container.decode(Bool.self) {
-            self = .bool(v)
-        } else if let v = try? container.decode(Int.self) {
-            self = .int(v)
-        } else if let v = try? container.decode(String.self) {
-            self = .string(v)
-        } else if let v = try? container.decode([JSONSchemaValue].self) {
-            self = .array(v)
-        } else if let v = try? container.decode([String: JSONSchemaValue].self) {
-            self = .object(v)
-        } else {
-            throw DecodingError.dataCorrupted(
-                .init(
-                    codingPath: decoder.codingPath,
-                    debugDescription: "Cannot decode JSONSchemaValue"
-                )
-            )
-        }
+    func encode(to encoder: any Encoder) throws {
+        try value.encode(to: encoder)
     }
 }
 
 /// A JSON Schema node. Encode to produce standard JSON Schema output.
-///
-/// Uses `[String: String]` for `items` to avoid recursive struct references
-/// (our array items are always simple types like `"string"`).
 struct JSONSchemaNode: Codable {
     var schema: String?
     var id: String?
@@ -56,13 +25,13 @@ struct JSONSchemaNode: Codable {
     var required: [String]?
     var additionalProperties: Bool?
     var enumValues: [String]?
-    var defaultValue: JSONSchemaValue?
+    var defaultValue: JSONValue?
     var minimum: Int?
     var oneOf: [JSONSchemaNode]?
     var allOf: [JSONSchemaNode]?
     var ref: String?
     var defs: [String: JSONSchemaNode]?
-    var items: [String: String]?
+    var items: Indirect<JSONSchemaNode>?
 
     private enum CodingKeys: String, CodingKey {
         case schema = "$schema"
@@ -142,7 +111,9 @@ extension JSONSchemaNode {
         var node = JSONSchemaNode()
         node.type = "array"
         node.description = description
-        node.items = ["type": "string"]
+        var itemNode = JSONSchemaNode()
+        itemNode.type = "string"
+        node.items = Indirect(itemNode)
         if let defaultValue {
             node.defaultValue = .array(defaultValue.map { .string($0) })
         }

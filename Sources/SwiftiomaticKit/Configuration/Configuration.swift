@@ -8,28 +8,28 @@ package struct Configuration: Sendable, Equatable {
         // Compare all layout settings via their LayoutRule types.
         for entry in settingEntries {
             let lKey = AnyCodingKey(entry.key)
-            let tempL = DictEncoder()
+            let tempL = JSONValueEncoder()
             var cL = tempL.container(keyedBy: AnyCodingKey.self)
-            let tempR = DictEncoder()
+            let tempR = JSONValueEncoder()
             var cR = tempR.container(keyedBy: AnyCodingKey.self)
             do {
                 try entry.encode(lhs, &cL, lKey)
                 try entry.encode(rhs, &cR, lKey)
             } catch { return false }
-            guard "\(tempL.dict)" == "\(tempR.dict)" else { return false }
+            guard tempL.dict == tempR.dict else { return false }
         }
         // Compare all rule values.
         for entry in ruleEntries {
             let lKey = AnyCodingKey(entry.key)
-            let tempL = DictEncoder()
+            let tempL = JSONValueEncoder()
             var cL = tempL.container(keyedBy: AnyCodingKey.self)
-            let tempR = DictEncoder()
+            let tempR = JSONValueEncoder()
             var cR = tempR.container(keyedBy: AnyCodingKey.self)
             do {
                 try entry.encode(lhs, &cL, lKey)
                 try entry.encode(rhs, &cR, lKey)
             } catch { return false }
-            guard "\(tempL.dict)" == "\(tempR.dict)" else { return false }
+            guard tempL.dict == tempR.dict else { return false }
         }
         return true
     }
@@ -311,11 +311,11 @@ extension Configuration: Codable {
 
             guard !groupSettings.isEmpty || !groupRuleNames.isEmpty else { continue }
 
-            var dict: [String: Any] = [:]
+            var dict: [String: JSONValue] = [:]
 
             // Encode group-owned settings.
             for entry in groupSettings {
-                let tempEncoder = DictEncoder()
+                let tempEncoder = JSONValueEncoder()
                 var tempContainer = tempEncoder.container(keyedBy: AnyCodingKey.self)
                 try entry.encode(self, &tempContainer, AnyCodingKey(entry.key))
                 for (k, v) in tempEncoder.dict { dict[k] = v }
@@ -325,94 +325,84 @@ extension Configuration: Codable {
             for ruleName in groupRuleNames {
                 let qualified = "\(group.rawValue).\(ruleName)"
                 if let entry = Self.rulesByKey[qualified] {
-                    let tempEncoder = DictEncoder()
+                    let tempEncoder = JSONValueEncoder()
                     var tempContainer = tempEncoder.container(keyedBy: AnyCodingKey.self)
                     try entry.encode(self, &tempContainer, AnyCodingKey(ruleName))
                     for (k, v) in tempEncoder.dict { dict[k] = v }
                 }
             }
 
-            try root.encode(JSONFragment(dict), forKey: AnyCodingKey(group.rawValue))
+            try root.encode(JSONValue.object(dict), forKey: AnyCodingKey(group.rawValue))
         }
     }
 
-    // MARK: - Encoding helpers
+}
 
-    private struct JSONFragment: Encodable {
-        let dict: [String: Any]
-        init(_ dict: [String: Any]) { self.dict = dict }
-        func encode(to encoder: any Encoder) throws {
-            let data = try JSONSerialization.data(withJSONObject: dict)
-            let decoded = try JSONDecoder().decode([String: JSONValue].self, from: data)
-            var container = encoder.container(keyedBy: AnyCodingKey.self)
-            for (key, value) in decoded {
-                try container.encode(value, forKey: AnyCodingKey(key))
-            }
-        }
+// MARK: - JSONValue Encoder
+
+/// Lightweight encoder that captures key-value pairs as `JSONValue`
+/// instead of `Any`, enabling type-safe equality and direct encoding
+/// without `JSONSerialization` round-trips.
+final class JSONValueEncoder: Encoder {
+    var codingPath: [CodingKey] = []
+    var userInfo: [CodingUserInfoKey: Any] = [:]
+    var dict: [String: JSONValue] = [:]
+
+    func container<Key: CodingKey>(keyedBy type: Key.Type) -> KeyedEncodingContainer<Key> {
+        KeyedEncodingContainer(JSONValueKeyedContainer<Key>(encoder: self))
+    }
+    func unkeyedContainer() -> UnkeyedEncodingContainer { fatalError() }
+    func singleValueContainer() -> SingleValueEncodingContainer {
+        JSONValueSingleContainer(encoder: self)
     }
 
-    class DictEncoder: Encoder {
+    /// Converts an arbitrary `Encodable` to `JSONValue` via `JSONEncoder`
+    /// round-trip. Used only for complex nested types.
+    private static func encodeToJSONValue<T: Encodable>(_ value: T) throws -> JSONValue {
+        let data = try JSONEncoder().encode(value)
+        return try JSONDecoder().decode(JSONValue.self, from: data)
+    }
+
+    private struct JSONValueKeyedContainer<Key: CodingKey>: KeyedEncodingContainerProtocol {
+        let encoder: JSONValueEncoder
         var codingPath: [CodingKey] = []
-        var userInfo: [CodingUserInfoKey: Any] = [:]
-        var dict: [String: Any] = [:]
-
-        func container<Key: CodingKey>(keyedBy type: Key.Type) -> KeyedEncodingContainer<Key> {
-            KeyedEncodingContainer(DictKeyedContainer<Key>(encoder: self))
+        mutating func encodeNil(forKey key: Key) throws {
+            encoder.dict[key.stringValue] = .null
         }
-        func unkeyedContainer() -> UnkeyedEncodingContainer { fatalError() }
-        func singleValueContainer() -> SingleValueEncodingContainer {
-            DictSingleValueContainer(encoder: self)
+        mutating func encode<T: Encodable>(_ value: T, forKey key: Key) throws {
+            encoder.dict[key.stringValue] = try JSONValueEncoder.toJSONValue(value)
         }
-
-        private struct DictKeyedContainer<Key: CodingKey>: KeyedEncodingContainerProtocol {
-            let encoder: DictEncoder
-            var codingPath: [CodingKey] = []
-            mutating func encodeNil(forKey key: Key) throws {}
-            mutating func encode<T: Encodable>(_ value: T, forKey key: Key) throws {
-                switch value {
-                case let v as String: encoder.dict[key.stringValue] = v
-                case let v as Bool: encoder.dict[key.stringValue] = v
-                case let v as any FixedWidthInteger:
-                    encoder.dict[key.stringValue] = Int(v)
-                case let v as any BinaryFloatingPoint:
-                    encoder.dict[key.stringValue] = Double(v)
-                default:
-                    let data = try JSONEncoder().encode(value)
-                    encoder.dict[key.stringValue] = try JSONSerialization.jsonObject(
-                        with: data, options: .fragmentsAllowed
-                    )
-                }
-            }
-            mutating func nestedContainer<NestedKey: CodingKey>(
-                keyedBy keyType: NestedKey.Type,
-                forKey key: Key
-            ) -> KeyedEncodingContainer<NestedKey> { fatalError() }
-            mutating func nestedUnkeyedContainer(forKey key: Key) -> UnkeyedEncodingContainer {
-                fatalError()
-            }
-            mutating func superEncoder() -> any Encoder { fatalError() }
-            mutating func superEncoder(forKey key: Key) -> any Encoder { fatalError() }
+        mutating func nestedContainer<NestedKey: CodingKey>(
+            keyedBy keyType: NestedKey.Type,
+            forKey key: Key
+        ) -> KeyedEncodingContainer<NestedKey> { fatalError() }
+        mutating func nestedUnkeyedContainer(forKey key: Key) -> UnkeyedEncodingContainer {
+            fatalError()
         }
+        mutating func superEncoder() -> any Encoder { fatalError() }
+        mutating func superEncoder(forKey key: Key) -> any Encoder { fatalError() }
+    }
 
-        private struct DictSingleValueContainer: SingleValueEncodingContainer {
-            let encoder: DictEncoder
-            var codingPath: [CodingKey] = []
-            mutating func encodeNil() throws {}
-            mutating func encode<T: Encodable>(_ value: T) throws {
-                switch value {
-                case let v as String: encoder.dict["_singleValue"] = v
-                case let v as Bool: encoder.dict["_singleValue"] = v
-                case let v as any FixedWidthInteger: encoder.dict["_singleValue"] = Int(v)
-                case let v as any BinaryFloatingPoint: encoder.dict["_singleValue"] = Double(v)
-                default:
-                    let data = try JSONEncoder().encode(value)
-                    encoder.dict["_singleValue"] = try JSONSerialization.jsonObject(
-                        with: data, options: .fragmentsAllowed
-                    )
-                }
-            }
+    private struct JSONValueSingleContainer: SingleValueEncodingContainer {
+        let encoder: JSONValueEncoder
+        var codingPath: [CodingKey] = []
+        mutating func encodeNil() throws {
+            encoder.dict["_singleValue"] = .null
+        }
+        mutating func encode<T: Encodable>(_ value: T) throws {
+            encoder.dict["_singleValue"] = try JSONValueEncoder.toJSONValue(value)
         }
     }
 
+    /// Converts a primitive or complex `Encodable` value to `JSONValue`.
+    fileprivate static func toJSONValue<T: Encodable>(_ value: T) throws -> JSONValue {
+        switch value {
+        case let v as String: .string(v)
+        case let v as Bool: .bool(v)
+        case let v as any FixedWidthInteger: .int(Int(v))
+        case let v as any BinaryFloatingPoint: .double(Double(v))
+        default: try encodeToJSONValue(value)
+        }
+    }
 }
 

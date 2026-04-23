@@ -2,6 +2,7 @@
 	"$schema": "https://raw.githubusercontent.com/toba/swiftiomatic/refs/heads/main/schema.json",
 	"ambiguousTrailingClosureOverload": { "lint": "warn" },
 	"blankLines": {
+		"maximumBlankLines": 1,
 		"afterGuardStatements": { "lint": "no", "rewrite": false },
 		"afterImports": { "lint": "warn", "rewrite": true },
 		"afterSwitchCase": { "lint": "no", "rewrite": false },
@@ -9,12 +10,11 @@
 		"betweenChainedFunctions": { "lint": "no", "rewrite": false },
 		"betweenImports": { "lint": "no", "rewrite": false },
 		"betweenScopes": { "lint": "no", "rewrite": false },
-		"consistentSwitchCaseSpacing": { "lint": "no", "rewrite": false },
-		"maximumBlankLines": 1
+		"consistentSwitchCaseSpacing": { "lint": "no", "rewrite": false }
 	},
 	"naming": {
-		"camelCaseIdentifiers": { "lint": "warn" },
 		"capitalizeTypeNames": { "lint": "warn" },
+		"camelCaseIdentifiers": { "lint": "warn" },
 		"identifiersMayOnlyUseASCII": { "lint": "warn" },
 		"uppercaseAcronyms": {
 			"lint": "no",
@@ -60,9 +60,9 @@
 	"explicitNilCheck": { "lint": "warn", "rewrite": true },
 	"fileHeader": { "lint": "no", "rewrite": false },
 	"fileScopedDeclarationPrivacy": {
-		"accessLevel": "private",
 		"lint": "warn",
-		"rewrite": true
+		"rewrite": true,
+		"accessLevel": "private"
 	},
 	"forcing": {
 		"noForceTry": { "lint": "no", "rewrite": false },
@@ -70,21 +70,22 @@
 	},
 	"groupNumericLiterals": { "lint": "warn", "rewrite": true },
 	"hoist": {
-		"nestedAwait": { "lint": "warn", "rewrite": true },
 		"caseLet": { "lint": "warn", "placement": "eachBinding", "rewrite": true },
-		"indirectEnum": { "lint": "warn", "rewrite": true },
-		"nestedTry": { "lint": "warn", "rewrite": true }
+		"nestedTry": { "lint": "warn", "rewrite": true },
+		"nestedAwait": { "lint": "warn", "rewrite": true },
+		"indirectEnum": { "lint": "warn", "rewrite": true }
 	},
 	"indentation": {
+		"unit": { "spaces": 4 },
 		"blankLines": false,
-		"conditionalCompilationBlocks": false,
 		"switchCases": { "lint": "no", "rewrite": false, "style": "flush" },
-		"unit": { "spaces": 4 }
+		"conditionalCompilationBlocks": false
 	},
 	"initCoderUnavailable": { "lint": "no", "rewrite": false },
 	"leadingDotOperators": { "lint": "warn", "rewrite": true },
 	"lineBreaks": {
 		"lineLength": 100,
+		"respectExisting": true,
 		"aroundMultilineExpressionChainComponents": false,
 		"beforeControlFlowKeywords": false,
 		"beforeEachArgument": false,
@@ -92,8 +93,7 @@
 		"beforeGuardConditions": true,
 		"betweenDeclarationAttributes": false,
 		"ensureLineBreakAtEOF": { "lint": "no", "rewrite": false },
-		"modifiersOnSameLine": { "lint": "warn", "rewrite": true },
-		"respectExisting": true
+		"modifiersOnSameLine": { "lint": "warn", "rewrite": true }
 	},
 	"modifierOrder": { "lint": "warn", "rewrite": true },
 	"multiElementCollectionTrailingCommas": true,
@@ -108,8 +108,8 @@
 	"noExplicitOwnership": { "lint": "no", "rewrite": false },
 	"noExtensionAccessLevel": {
 		"lint": "warn",
-		"placement": "onDeclarations",
-		"rewrite": true
+		"rewrite": true,
+		"placement": "onDeclarations"
 	},
 	"noFallthroughOnlyCases": { "lint": "warn", "rewrite": true },
 	"noGuardInTests": { "lint": "no", "rewrite": false },
@@ -165,12 +165,12 @@
 		"redundantPattern": { "lint": "warn", "rewrite": true },
 		"redundantProperty": { "lint": "warn", "rewrite": true },
 		"redundantRawValues": { "lint": "warn", "rewrite": true },
-		"redundantReturn": { "lint": "no", "rewrite": false },
+		"redundantReturn": { "lint": "no", "rewrite": true },
 		"redundantSelf": { "lint": "warn", "rewrite": true },
 		"redundantSendable": { "lint": "no", "rewrite": false },
-		"redundantStaticSelf": { "lint": "no", "rewrite": false },
+		"redundantStaticSelf": { "lint": "no", "rewrite": true },
 		"redundantSwiftTestingSuite": { "lint": "no", "rewrite": false },
-		"redundantThrows": { "lint": "no", "rewrite": false },
+		"redundantThrows": { "lint": "no", "rewrite": true },
 		"redundantType": { "lint": "warn", "rewrite": true },
 		"redundantTypedThrows": { "lint": "warn", "rewrite": true },
 		"redundantViewBuilder": { "lint": "no", "rewrite": false },
@@ -182,11 +182,11 @@
 	"sort": {
 		"declarations": { "lint": "no", "rewrite": false },
 		"imports": {
-			"includeConditionalImports": false,
 			"lint": "no",
 			"rewrite": true,
 			"sortOrder": "length",
-			"shouldGroupImports": true
+			"shouldGroupImports": true,
+			"includeConditionalImports": false
 		},
 		"switchCases": { "lint": "no", "rewrite": false },
 		"typeAliases": { "lint": "no", "rewrite": false }

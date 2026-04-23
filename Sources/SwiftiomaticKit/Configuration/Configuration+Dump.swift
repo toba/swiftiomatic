@@ -21,30 +21,27 @@ extension Configuration {
     ///
     /// Rule objects that fit within 100 columns are printed on a single line.
     package func asJsonString() throws(SwiftiomaticError) -> String {
-        let data: Data
-
+        // Encode to JSONValue, inject $schema, then serialize once.
+        let jsonValue: JSONValue
         do {
-            let encoder = JSONEncoder()
-            encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
-            data = try encoder.encode(self)
+            let data = try JSONEncoder().encode(self)
+            var obj = try JSONDecoder().decode([String: JSONValue].self, from: data)
+            obj["$schema"] = .string(Self.schemaURL)
+            jsonValue = .object(obj)
         } catch {
             throw SwiftiomaticError.configurationDumpFailed("\(error)")
         }
 
-        guard var jsonObject = try? JSONSerialization.jsonObject(with: data) as? [String: Any]
-        else {
-            throw SwiftiomaticError.configurationDumpFailed("The JSON was not a valid object")
+        let output: Data
+        do {
+            let encoder = JSONEncoder()
+            encoder.outputFormatting = [.prettyPrinted, .sortedKeys, .withoutEscapingSlashes]
+            output = try encoder.encode(jsonValue)
+        } catch {
+            throw SwiftiomaticError.configurationDumpFailed("\(error)")
         }
 
-        jsonObject["$schema"] = Self.schemaURL
-
-        guard
-            let output = try? JSONSerialization.data(
-                withJSONObject: jsonObject,
-                options: [.prettyPrinted, .sortedKeys, .withoutEscapingSlashes]
-            ),
-            var jsonString = String(data: output, encoding: .utf8)
-        else {
+        guard var jsonString = String(data: output, encoding: .utf8) else {
             throw SwiftiomaticError.configurationDumpFailed("The JSON was not valid UTF-8")
         }
 

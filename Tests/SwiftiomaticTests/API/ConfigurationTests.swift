@@ -50,8 +50,12 @@ struct ConfigurationTests {
   @Test func rootLevelSettings() throws {
     let jsonData = """
       {
-        "lineLength": 120,
-        "indentation": { "spaces": 4 },
+        "lineBreaks": {
+          "lineLength": 120
+        },
+        "indentation": {
+          "unit": { "spaces": 4 }
+        },
         "tabWidth": 4
       }
       """.data(using: .utf8)!
@@ -68,7 +72,9 @@ struct ConfigurationTests {
   @Test func ruleLintValue() throws {
     let jsonData = """
       {
-        "sortImports": { "lint": "no" }
+        "sort": {
+          "imports": { "lint": "no" }
+        }
       }
       """.data(using: .utf8)!
 
@@ -80,7 +86,9 @@ struct ConfigurationTests {
   @Test func ruleDisabled() throws {
     let jsonData = """
       {
-        "sortImports": { "rewrite": false, "lint": "no" }
+        "sort": {
+          "imports": { "rewrite": false, "lint": "no" }
+        }
       }
       """.data(using: .utf8)!
 
@@ -93,8 +101,10 @@ struct ConfigurationTests {
   @Test func ruleWarnAndError() throws {
     let jsonData = """
       {
-        "noSemicolons": { "lint": "warn" },
-        "redundantSelf": { "lint": "error" }
+        "redundancies": {
+          "semicolons": { "lint": "warn" },
+          "redundantSelf": { "lint": "error" }
+        }
       }
       """.data(using: .utf8)!
 
@@ -113,7 +123,9 @@ struct ConfigurationTests {
   @Test func legacyNoneDecodesAsNo() throws {
     let jsonData = """
       {
-        "sortImports": { "lint": "none" }
+        "sort": {
+          "imports": { "lint": "none" }
+        }
       }
       """.data(using: .utf8)!
 
@@ -128,11 +140,11 @@ struct ConfigurationTests {
       {
         "blankLines": {
           "maximumBlankLines": 2,
-          "blankLinesAfterGuardStatements": { "lint": "warn" },
-          "blankLinesAfterImports": { "lint": "warn" },
-          "blankLinesBetweenChainedFunctions": { "lint": "warn" },
-          "blankLinesBetweenImports": { "lint": "no" },
-          "blankLinesBetweenScopes": { "lint": "warn" }
+          "afterGuardStatements": { "lint": "warn" },
+          "afterImports": { "lint": "warn" },
+          "betweenChainedFunctions": { "lint": "warn" },
+          "betweenImports": { "lint": "no" },
+          "betweenScopes": { "lint": "warn" }
         },
         "lineBreaks": {
           "beforeControlFlowKeywords": true,
