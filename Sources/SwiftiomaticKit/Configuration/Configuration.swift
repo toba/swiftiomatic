@@ -112,7 +112,10 @@ package struct Configuration: Sendable, Equatable {
     // MARK: - Rule value registry
 
     private struct RuleEntry: Sendable {
+        /// Short key used for JSON encoding within a group (or at root if ungrouped).
         let key: String
+        /// Qualified key (`group.key` or bare `key`) for unique internal lookup.
+        let qualifiedKey: String
         let groupKey: ConfigurationGroup.Key?
         let decode: @Sendable (KeyedDecodingContainer<AnyCodingKey>, AnyCodingKey, inout Configuration) throws -> Void
         let encode: @Sendable (Configuration, inout KeyedEncodingContainer<AnyCodingKey>, AnyCodingKey) throws -> Void
@@ -124,6 +127,7 @@ package struct Configuration: Sendable, Equatable {
         func open<R: SyntaxRule>(_ type: R.Type) -> RuleEntry {
             RuleEntry(
                 key: R.key,
+                qualifiedKey: R.qualifiedKey,
                 groupKey: R.group?.key,
                 decode: { container, codingKey, config in
                     if let value = try container.decodeIfPresent(R.Value.self, forKey: codingKey) {
@@ -154,11 +158,7 @@ package struct Configuration: Sendable, Equatable {
         ConfigurationRegistry.allRuleTypes.map { ruleEntry(for: $0) }
 
     private static let rulesByKey: [String: RuleEntry] = {
-        Dictionary(uniqueKeysWithValues: ruleEntries.map { ($0.key, $0) })
-    }()
-
-    private static let ruleKeyNames: Set<String> = {
-        Set(ruleEntries.map(\.key))
+        Dictionary(uniqueKeysWithValues: ruleEntries.map { ($0.qualifiedKey, $0) })
     }()
 
     // MARK: - Rule helpers
@@ -170,7 +170,7 @@ package struct Configuration: Sendable, Equatable {
         }
     }
 
-    /// Enables a rule by name, setting `enabled = true` and `lint = .warn`.
+    /// Enables a rule by qualified key (`group.key` or bare `key`).
     package mutating func enableRule(named name: String) {
         if let entry = Self.rulesByKey[name] {
             entry.enable(&self)
@@ -269,7 +269,8 @@ extension Configuration: Codable {
                     for rule in mappings {
                         let ruleKey = AnyCodingKey(rule)
                         guard obj.contains(ruleKey) else { continue }
-                        if let entry = Self.rulesByKey[rule] {
+                        let qualified = "\(groupKey.rawValue).\(rule)"
+                        if let entry = Self.rulesByKey[qualified] {
                             try entry.decode(obj, ruleKey, &config)
                         }
                     }
@@ -298,7 +299,7 @@ extension Configuration: Codable {
 
         // Encode ungrouped rules.
         for entry in Self.ruleEntries.sorted(by: { $0.key < $1.key })
-        where !ConfigurationRegistry.groupManagedRules.contains(entry.key) {
+        where !ConfigurationRegistry.groupManagedRules.contains(entry.qualifiedKey) {
             try entry.encode(self, &root, AnyCodingKey(entry.key))
         }
 
@@ -322,7 +323,8 @@ extension Configuration: Codable {
 
             // Encode rules within the group.
             for ruleName in groupRuleNames {
-                if let entry = Self.rulesByKey[ruleName] {
+                let qualified = "\(group.rawValue).\(ruleName)"
+                if let entry = Self.rulesByKey[qualified] {
                     let tempEncoder = DictEncoder()
                     var tempContainer = tempEncoder.container(keyedBy: AnyCodingKey.self)
                     try entry.encode(self, &tempContainer, AnyCodingKey(ruleName))

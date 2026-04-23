@@ -590,6 +590,10 @@
             }
           ],
           "description" : "Ensure all modifiers are on the same line as the declaration keyword.\n\nModifiers (not attributes) that appear on separate lines from the declaration keyword\nare joined onto the same line. Attributes may remain on their own lines.\n\nLint: If any modifier is on a different line than the declaration keyword, a lint warning\nis raised.\n\nFormat: Newlines between modifiers and the declaration keyword are replaced with spaces.\n"
+        },
+        "respectExisting" : {
+          "description" : "Preserve discretionary line breaks.",
+          "type" : "string"
         }
       },
       "type" : "object"
@@ -1022,6 +1026,14 @@
       "additionalProperties" : false,
       "description" : "redundancies rule group.",
       "properties" : {
+        "noSemicolons" : {
+          "allOf" : [
+            {
+              "$ref" : "#/$defs/ruleBase"
+            }
+          ],
+          "description" : "Semicolons should not be present in Swift code.\n\nLint: If a semicolon appears anywhere, a lint error is raised.\n\nFormat: All semicolons will be replaced with line breaks.\n"
+        },
         "redundantAccessControl" : {
           "allOf" : [
             {
@@ -1420,10 +1432,6 @@
         }
       ],
       "description" : "Replace `forEach` with `for-in` loop unless its argument is a function reference.\n\nLint:  invalid use of `forEach` yield will yield a lint error.\n"
-    },
-    "respectsExistingLineBreaks" : {
-      "description" : "Preserve discretionary line breaks.",
-      "type" : "string"
     },
     "simplifyGenericConstraints" : {
       "allOf" : [

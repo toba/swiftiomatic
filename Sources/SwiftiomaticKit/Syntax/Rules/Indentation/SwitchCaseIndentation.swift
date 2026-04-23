@@ -10,6 +10,7 @@ import SwiftSyntax
 ///
 /// Format: Case labels, bodies, and the closing brace are reindented to match.
 final class SwitchCaseIndentation: RewriteSyntaxRule<SwitchCaseIndentationConfiguration> {
+    override class var key: String { "switchCases" }
     override class var group: ConfigurationGroup? { .indentation }
 
     override class var defaultValue: SwitchCaseIndentationConfiguration {

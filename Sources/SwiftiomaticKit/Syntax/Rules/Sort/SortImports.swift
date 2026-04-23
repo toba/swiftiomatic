@@ -29,6 +29,7 @@ import SwiftSyntax
 ///
 /// Format: Imports will be reordered and (optionally) grouped at the top of the file.
 final class SortImports: RewriteSyntaxRule<SortImportsConfiguration> {
+    override class var key: String { "imports" }
     override class var group: ConfigurationGroup? { .sort }
 
   override func visit(_ node: SourceFileSyntax) -> SourceFileSyntax {
@@ -281,10 +282,20 @@ final class SortImports: RewriteSyntaxRule<SortImportsConfiguration> {
     }
   }
 
-  /// Sort the list of import lines lexicographically by the import path name. Any comments above an
+  /// Sort the list of import lines by the configured sort order. Any comments above an
   /// import lines should be associated with it, and move with the line during sorting. We also emit
   /// a linter error if an import line is discovered to be out of order.
   private func formatImports(_ imports: [Line]) -> [Line] {
+    let sortOrder = context.configuration[SortImports.self].sortOrder
+    let importPrecedes: (Line, Line) -> Bool = switch sortOrder {
+    case .alphabetical:
+      { $0.importName.lexicographicallyPrecedes($1.importName) }
+    case .length:
+      { $0.importName.count < $1.importName.count
+        || ($0.importName.count == $1.importName.count
+            && $0.importName.lexicographicallyPrecedes($1.importName)) }
+    }
+
     var linesWithLeadingComments: [(import: Line, comments: [Line])] = []
     var visitedImports: [String: Int] = [:]
     var commentBuffer: [Line] = []
@@ -318,7 +329,7 @@ final class SortImports: RewriteSyntaxRule<SortImportsConfiguration> {
           // them. Leave this duplicate import.
         }
         if let previousImport = previousImport,
-          line.importName.lexicographicallyPrecedes(previousImport.importName) && !diagnosed
+          importPrecedes(line, previousImport) && !diagnosed
             // Only warn to sort imports that shouldn't be removed.
             && visitedImports[fullyQualifiedImport] == nil
         {
@@ -337,7 +348,7 @@ final class SortImports: RewriteSyntaxRule<SortImportsConfiguration> {
       }
     }
 
-    linesWithLeadingComments.sort { $0.0.importName.lexicographicallyPrecedes($1.0.importName) }
+    linesWithLeadingComments.sort { importPrecedes($0.0, $1.0) }
 
     // Unpack the tuples back into a list of Lines.
     var output: [Line] = []
@@ -696,6 +707,12 @@ package struct SortImportsConfiguration: SyntaxRuleValue {
 
   package var includeConditionalImports = false
   package var shouldGroupImports = true
+  package var sortOrder: SortOrder = .alphabetical
+
+  package enum SortOrder: String, Sendable, Codable, Equatable {
+    case alphabetical
+    case length
+  }
 
   package init() {}
 
@@ -708,5 +725,7 @@ package struct SortImportsConfiguration: SyntaxRuleValue {
       try container.decodeIfPresent(Bool.self, forKey: .includeConditionalImports) ?? false
     self.shouldGroupImports =
       try container.decodeIfPresent(Bool.self, forKey: .shouldGroupImports) ?? true
+    self.sortOrder =
+      try container.decodeIfPresent(SortOrder.self, forKey: .sortOrder) ?? .alphabetical
   }
 }

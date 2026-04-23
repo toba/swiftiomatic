@@ -10,7 +10,7 @@ import SwiftSyntax
 ///
 /// Format: Each item is placed on its own line with alignment indentation.
 final class WrapCompoundCaseStatements: RewriteSyntaxRule<BasicRuleValue> {
-    //    static let name = "wrapCompoundCaseStatements"
+    override class var key: String { "compoundCaseStatements" }
     override class var group: ConfigurationGroup? { .wrap }
     override class var defaultValue: BasicRuleValue { BasicRuleValue(rewrite: false, lint: .no) }
 

@@ -18,6 +18,8 @@ import SwiftSyntax
 ///
 /// Format: All semicolons will be replaced with line breaks.
 final class NoSemicolons: RewriteSyntaxRule<BasicRuleValue> {
+    override class var key: String { "semicolons" }
+    override class var group: ConfigurationGroup? { .redundancies }
   /// Creates a new version of the given node which doesn't contain any semicolons. The node's
   /// items are recursively modified to remove semicolons, replacing with line breaks where needed.
   /// Items are checked recursively to support items that contain code blocks, which may have

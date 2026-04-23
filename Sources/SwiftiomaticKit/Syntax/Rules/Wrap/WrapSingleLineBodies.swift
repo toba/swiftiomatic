@@ -14,6 +14,7 @@ import SwiftSyntax
 ///
 /// Format: The body is wrapped or inlined to match the mode.
 final class WrapSingleLineBodies: RewriteSyntaxRule<SingleLineBodiesConfiguration> {
+    override class var key: String { "singleLineBodies" }
     override class var defaultValue: SingleLineBodiesConfiguration {
         var v = SingleLineBodiesConfiguration()
         v.rewrite = false

@@ -3,12 +3,12 @@
 /// the `SyntaxRule` protocol — no generated string literals needed.
 extension ConfigurationRegistry {
 
-    /// Fast lookup from rule type identity to its string name.
+    /// Fast lookup from rule type identity to its short key (used by `RuleMask`).
     package static let ruleNameCache: [ObjectIdentifier: String] = {
         Dictionary(uniqueKeysWithValues: allRuleTypes.map { (ObjectIdentifier($0), $0.key) })
     }()
 
-    /// Rules organized by configuration group.
+    /// Rules organized by configuration group (values are short keys for JSON encoding).
     package static let groupRules: [ConfigurationGroup: [String]] = {
         var groups: [ConfigurationGroup: [String]] = [:]
         for type in allRuleTypes {
@@ -17,8 +17,10 @@ extension ConfigurationRegistry {
         return groups
     }()
 
-    /// Set of all rule names managed by a group (used to avoid double-encoding).
+    /// Set of all qualified keys managed by a group (used to avoid double-encoding).
     package static let groupManagedRules: Set<String> = {
-        Set(groupRules.values.flatMap { $0 })
+        Set(allRuleTypes.compactMap { type in
+            type.group != nil ? type.qualifiedKey : nil
+        })
     }()
 }

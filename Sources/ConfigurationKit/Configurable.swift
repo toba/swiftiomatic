@@ -35,5 +35,9 @@ extension Configurable {
     }
     package static var group: ConfigurationGroup? { nil }
     package static var description: String { key }
-}
 
+    /// Fully qualified key: `group.key` for grouped items, bare `key` otherwise.
+    package static var qualifiedKey: String {
+        if let group { "\(group.key).\(key)" } else { key }
+    }
+}

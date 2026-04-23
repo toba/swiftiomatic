@@ -20,7 +20,7 @@ import Synchronization
 ///
 /// Lint: If a comment does not begin with a single-line summary, a lint error is raised.
 final class DocCommentSummary: LintSyntaxRule<LintOnlyValue> {
-    override class var key: String { "requireCommentSummary" }
+    override class var key: String { "requireSummary" }
     override class var group: ConfigurationGroup? { .comments }
 
     /// Unit tests can testably import this module and set this to true in order to force the rule

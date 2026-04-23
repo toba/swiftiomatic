@@ -12,6 +12,7 @@ import SwiftSyntax
 ///
 /// Format: A line break is inserted after `=`.
 final class WrapConditionalAssignment: RewriteSyntaxRule<BasicRuleValue> {
+    override class var key: String { "conditionalAssignment" }
     override class var defaultValue: BasicRuleValue { BasicRuleValue(rewrite: false, lint: .no) }
     override class var group: ConfigurationGroup? { .wrap }
 

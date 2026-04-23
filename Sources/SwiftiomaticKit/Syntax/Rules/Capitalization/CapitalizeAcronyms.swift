@@ -12,6 +12,7 @@ import SwiftSyntax
 ///
 /// Format: The titlecased acronym is replaced with the uppercased form.
 final class CapitalizeAcronyms: RewriteSyntaxRule<AcronymsConfiguration> {
+    override class var key: String { "uppercaseAcronyms" }
     override class var group: ConfigurationGroup? { .capitalization }
     override class var defaultValue: AcronymsConfiguration {
         var v = AcronymsConfiguration()

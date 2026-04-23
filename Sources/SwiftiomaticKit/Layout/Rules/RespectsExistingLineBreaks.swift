@@ -2,7 +2,8 @@ import SwiftSyntax
 
 /// Preserve discretionary line breaks.
 package struct RespectsExistingLineBreaks: LayoutRule {
-    package static let key = "respectsExistingLineBreaks"
+    package static let key = "respectExisting"
+    package static let group: ConfigurationGroup? = .lineBreaks
     package static let description = "Preserve discretionary line breaks."
     package static let defaultValue = true
 }

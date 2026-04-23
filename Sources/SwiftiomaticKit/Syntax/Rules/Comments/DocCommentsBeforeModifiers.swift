@@ -9,7 +9,7 @@ import SwiftSyntax
 ///
 /// Format: The doc comment is moved before all attributes and modifiers.
 final class DocCommentsBeforeModifiers: RewriteSyntaxRule<BasicRuleValue> {
-    override class var key: String { "commentsPrecedeModifiers" }
+    override class var key: String { "precedeModifiers" }
     override class var group: ConfigurationGroup? { .comments }
 
     // MARK: - Container types (need super.visit)
