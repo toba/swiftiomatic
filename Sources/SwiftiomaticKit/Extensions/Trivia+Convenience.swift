@@ -14,19 +14,19 @@ import SwiftSyntax
 
 extension Trivia {
     var hasAnyComments: Bool {
-        return contains {
+        contains {
             switch $0 {
-            case .lineComment, .docLineComment, .blockComment, .docBlockComment:
-                return true
-            default:
-                return false
+                case .lineComment, .docLineComment, .blockComment, .docBlockComment:
+                    return true
+                default:
+                    return false
             }
         }
     }
 
     /// Returns whether the trivia contains at least 1 `lineComment`.
     var hasLineComment: Bool {
-        return self.contains {
+        contains {
             if case .lineComment = $0 { return true }
             return false
         }
@@ -34,11 +34,11 @@ extension Trivia {
 
     /// Returns this set of trivia, without any leading spaces.
     func withoutLeadingSpaces() -> Trivia {
-        return Trivia(pieces: self.pieces.drop(while: \.isSpaceOrTab))
+        Trivia(pieces: pieces.drop(while: \.isSpaceOrTab))
     }
 
     func withoutTrailingSpaces() -> Trivia {
-        guard let lastNonSpaceIndex = self.pieces.lastIndex(where: \.isSpaceOrTab) else {
+        guard let lastNonSpaceIndex = pieces.lastIndex(where: \.isSpaceOrTab) else {
             return self
         }
         return Trivia(pieces: self[..<lastNonSpaceIndex])
@@ -48,22 +48,22 @@ extension Trivia {
     ///
     /// If there is no newline in the trivia, it is returned unmodified.
     func withoutLastLine() -> Trivia {
-        var maybeLastNewlineOffset: Int? = nil
-        for (offset, piece) in self.enumerated() {
+        var maybeLastNewlineOffset: Int?
+        for (offset, piece) in enumerated() {
             switch piece {
-            case .newlines, .carriageReturns, .carriageReturnLineFeeds:
-                maybeLastNewlineOffset = offset
-            default:
-                break
+                case .newlines, .carriageReturns, .carriageReturnLineFeeds:
+                    maybeLastNewlineOffset = offset
+                default:
+                    break
             }
         }
         guard let lastNewlineOffset = maybeLastNewlineOffset else { return self }
-        return Trivia(pieces: self.dropLast(self.count - lastNewlineOffset))
+        return Trivia(pieces: dropLast(count - lastNewlineOffset))
     }
 
     /// Returns `true` if this trivia contains any newlines.
     var containsNewlines: Bool {
-        return contains(
+        contains(
             where: {
                 if case .newlines = $0 { return true }
                 return false
@@ -72,7 +72,7 @@ extension Trivia {
 
     /// Returns `true` if this trivia contains any spaces.
     var containsSpaces: Bool {
-        return contains(
+        contains(
             where: {
                 if case .spaces = $0 { return true }
                 if case .tabs = $0 { return true }
@@ -87,10 +87,10 @@ extension Trivia {
         var result = ""
         for piece in pieces {
             switch piece {
-            case .backslashes, .pounds:
-                piece.write(to: &result)
-            default:
-                break
+                case .backslashes, .pounds:
+                    piece.write(to: &result)
+                default:
+                    break
             }
         }
         return result.isEmpty ? nil : result
@@ -132,10 +132,10 @@ extension Trivia {
     var totalNewlineCount: Int {
         pieces.reduce(0) { count, piece in
             switch piece {
-            case .newlines(let n): count + n
-            case .carriageReturns(let n): count + n
-            case .carriageReturnLineFeeds(let n): count + n
-            default: count
+                case .newlines(let n): count + n
+                case .carriageReturns(let n): count + n
+                case .carriageReturnLineFeeds(let n): count + n
+                default: count
             }
         }
     }
@@ -155,7 +155,7 @@ extension Trivia {
     func trimmingSuperfluousNewlines(fromClosingBrace: Bool) -> (Trivia, Int) {
         var trimmed = 0
         var pendingNewlineCount = 0
-        let pieces = self.indices.reduce([TriviaPiece]()) { (partialResult, index) in
+        let pieces = indices.reduce([TriviaPiece]()) { (partialResult, index) in
             let piece = self[index]
             // Collapse consecutive newlines into a single one
             if case .newlines(let count) = piece {
@@ -211,14 +211,14 @@ extension Trivia {
         for piece in pieces.reversed() {
             if foundNewline { break }
             switch piece {
-            case .spaces(let n):
-                indent = String(repeating: " ", count: n) + indent
-            case .tabs(let n):
-                indent = String(repeating: "\t", count: n) + indent
-            case .newlines, .carriageReturns, .carriageReturnLineFeeds:
-                foundNewline = true
-            default:
-                indent = ""
+                case .spaces(let n):
+                    indent = String(repeating: " ", count: n) + indent
+                case .tabs(let n):
+                    indent = String(repeating: "\t", count: n) + indent
+                case .newlines, .carriageReturns, .carriageReturnLineFeeds:
+                    foundNewline = true
+                default:
+                    indent = ""
             }
         }
         return indent

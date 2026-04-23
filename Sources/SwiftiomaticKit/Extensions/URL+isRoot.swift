@@ -17,6 +17,6 @@ extension URL {
     /// A non-filesystem type `URL` will always return false.
     package var isRoot: Bool {
         guard isFileURL else { return false }
-        return self.path == "/"
+        return path == "/"
     }
 }

@@ -33,7 +33,7 @@ extension SyntaxProtocol {
         for currentIndex in leadingTrivia.startIndex..<index {
             offset += leadingTrivia[currentIndex].sourceLength
         }
-        return self.position + offset
+        return position + offset
     }
 
     /// Returns the absolute position of the trivia piece at the given index in the receiver's
@@ -56,7 +56,7 @@ extension SyntaxProtocol {
         for currentIndex in trailingTrivia.startIndex..<index {
             offset += trailingTrivia[currentIndex].sourceLength
         }
-        return self.endPositionBeforeTrailingTrivia + offset
+        return endPositionBeforeTrailingTrivia + offset
     }
 
     /// Returns the source location of the trivia piece at the given index in the receiver's leading
@@ -77,7 +77,7 @@ extension SyntaxProtocol {
         ofLeadingTriviaAt index: Trivia.Index,
         converter: SourceLocationConverter
     ) -> SourceLocation {
-        return converter.location(for: position(ofLeadingTriviaAt: index))
+        converter.location(for: position(ofLeadingTriviaAt: index))
     }
 
     /// Returns the source location of the trivia piece at the given index in the receiver's trailing
@@ -98,7 +98,7 @@ extension SyntaxProtocol {
         ofTrailingTriviaAt index: Trivia.Index,
         converter: SourceLocationConverter
     ) -> SourceLocation {
-        return converter.location(for: position(ofTrailingTriviaAt: index))
+        converter.location(for: position(ofTrailingTriviaAt: index))
     }
 
     /// The collection of all contiguous trivia preceding this node; that is, the trailing trivia of
@@ -181,24 +181,24 @@ extension SwitchCaseListSyntax.Element {
     /// Returns a copy with an extra newline prepended to the leading trivia.
     func prependingNewline() -> SwitchCaseListSyntax.Element {
         switch self {
-        case .switchCase(var switchCase):
-            switchCase.leadingTrivia = .newline + switchCase.leadingTrivia
-            return .switchCase(switchCase)
-        case .ifConfigDecl(var ifConfig):
-            ifConfig.leadingTrivia = .newline + ifConfig.leadingTrivia
-            return .ifConfigDecl(ifConfig)
+            case .switchCase(var switchCase):
+                switchCase.leadingTrivia = .newline + switchCase.leadingTrivia
+                return .switchCase(switchCase)
+            case .ifConfigDecl(var ifConfig):
+                ifConfig.leadingTrivia = .newline + ifConfig.leadingTrivia
+                return .ifConfigDecl(ifConfig)
         }
     }
 
     /// Returns a copy with multi-newlines collapsed to single newlines in leading trivia.
     func removingBlankLines() -> SwitchCaseListSyntax.Element {
         switch self {
-        case .switchCase(var switchCase):
-            switchCase.leadingTrivia = switchCase.leadingTrivia.reducingToSingleNewlines
-            return .switchCase(switchCase)
-        case .ifConfigDecl(var ifConfig):
-            ifConfig.leadingTrivia = ifConfig.leadingTrivia.reducingToSingleNewlines
-            return .ifConfigDecl(ifConfig)
+            case .switchCase(var switchCase):
+                switchCase.leadingTrivia = switchCase.leadingTrivia.reducingToSingleNewlines
+                return .switchCase(switchCase)
+            case .ifConfigDecl(var ifConfig):
+                ifConfig.leadingTrivia = ifConfig.leadingTrivia.reducingToSingleNewlines
+                return .ifConfigDecl(ifConfig)
         }
     }
 

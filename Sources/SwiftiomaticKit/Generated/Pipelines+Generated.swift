@@ -153,8 +153,10 @@ class LintPipeline: SyntaxVisitor {
     visitIfEnabled(NoGuardInTests.visit, for: node)
     visitIfEnabled(NoLeadingUnderscores.visit, for: node)
     visitIfEnabled(PreferFinalClasses.visit, for: node)
+    visitIfEnabled(PreferStaticOverClassFunc.visit, for: node)
     visitIfEnabled(PreferSwiftTesting.visit, for: node)
     visitIfEnabled(RedundantAccessControl.visit, for: node)
+    visitIfEnabled(RedundantFinal.visit, for: node)
     visitIfEnabled(RedundantObjc.visit, for: node)
     visitIfEnabled(RedundantSelf.visit, for: node)
     visitIfEnabled(RedundantSwiftTestingSuite.visit, for: node)
@@ -180,8 +182,10 @@ class LintPipeline: SyntaxVisitor {
     onVisitPost(rule: NoGuardInTests.self, for: node)
     onVisitPost(rule: NoLeadingUnderscores.self, for: node)
     onVisitPost(rule: PreferFinalClasses.self, for: node)
+    onVisitPost(rule: PreferStaticOverClassFunc.self, for: node)
     onVisitPost(rule: PreferSwiftTesting.self, for: node)
     onVisitPost(rule: RedundantAccessControl.self, for: node)
+    onVisitPost(rule: RedundantFinal.self, for: node)
     onVisitPost(rule: RedundantObjc.self, for: node)
     onVisitPost(rule: RedundantSelf.self, for: node)
     onVisitPost(rule: RedundantSwiftTestingSuite.self, for: node)
@@ -1395,6 +1399,9 @@ extension RewritePipeline {
     if context.shouldFormat(PreferSingleLinePropertyGetter.self, node: node) {
       node = PreferSingleLinePropertyGetter(context: context).rewrite(node)
     }
+    if context.shouldFormat(PreferStaticOverClassFunc.self, node: node) {
+      node = PreferStaticOverClassFunc(context: context).rewrite(node)
+    }
     if context.shouldFormat(PreferSwiftTesting.self, node: node) {
       node = PreferSwiftTesting(context: context).rewrite(node)
     }
@@ -1427,6 +1434,9 @@ extension RewritePipeline {
     }
     if context.shouldFormat(RedundantEquatable.self, node: node) {
       node = RedundantEquatable(context: context).rewrite(node)
+    }
+    if context.shouldFormat(RedundantFinal.self, node: node) {
+      node = RedundantFinal(context: context).rewrite(node)
     }
     if context.shouldFormat(RedundantInit.self, node: node) {
       node = RedundantInit(context: context).rewrite(node)

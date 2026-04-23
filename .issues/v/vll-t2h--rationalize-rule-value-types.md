@@ -1,15 +1,15 @@
 ---
 # vll-t2h
 title: Rationalize rule value types
-status: review
+status: completed
 type: feature
 priority: normal
 created_at: 2026-04-19T19:23:51Z
-updated_at: 2026-04-19T20:18:29Z
+updated_at: 2026-04-23T16:03:59Z
 sync:
     github:
         issue_number: "344"
-        synced_at: "2026-04-23T05:30:24Z"
+        synced_at: "2026-04-23T16:14:36Z"
 ---
 
 Replace RuleHandling enum with clean SyntaxRuleValue protocol system.

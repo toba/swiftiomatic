@@ -10,8 +10,8 @@
 //
 //===----------------------------------------------------------------------===//
 
-import SwiftOperators
 import SwiftSyntax
+import SwiftOperators
 
 extension Syntax {
     /// Creates a pretty-printable token stream for the provided Syntax node.

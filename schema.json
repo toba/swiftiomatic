@@ -1044,6 +1044,14 @@
       ],
       "description" : "Read-only computed properties must use implicit `get` blocks.\n\nLint: Read-only computed properties with explicit `get` blocks yield a lint error.\n\nFormat: Explicit `get` blocks are rendered implicit by removing the `get`.\n"
     },
+    "preferStaticOverClassFunc" : {
+      "allOf" : [
+        {
+          "$ref" : "#/$defs/ruleBase"
+        }
+      ],
+      "description" : "Prefer `static` over `class` for type members of `final` classes.\n\nIn a `final` class, `class func` and `class var` are equivalent to `static func` and\n`static var` since the class cannot be subclassed. Using `static` makes the intent clearer.\n\nLint: If a `class` modifier is found on a member of a `final` class, a warning is raised.\n\nFormat: The `class` modifier is replaced with `static`.\n [opt-in]"
+    },
     "preferSwiftTesting" : {
       "allOf" : [
         {
@@ -1148,6 +1156,14 @@
           ],
           "description" : "Remove a hand-written `Equatable` implementation when the compiler-synthesized\nconformance would be equivalent.\n\nFor structs conforming to `Equatable` (or `Hashable`), if the `static func ==`\ncompares exactly the same stored instance properties that the compiler would\nsynthesize, the hand-written implementation is redundant and can be removed.\n\nClosures, enums, and extension-based conformances are not handled.\n\nThis rule is opt-in due to the heuristic nature (no type-checking).\n\nLint: A redundant `==` implementation raises a warning.\n\nFormat: The `==` function is removed from the member block.\n [opt-in]"
         },
+        "redundantFinal" : {
+          "allOf" : [
+            {
+              "$ref" : "#/$defs/ruleBase"
+            }
+          ],
+          "description" : "Remove redundant `final` from members of `final` classes.\n\nWhen a class is declared `final`, all its members are implicitly final.\nAdding `final` to individual members is redundant.\n\nLint: If a `final` modifier is found on a member of a `final` class, a warning is raised.\n\nFormat: The redundant `final` modifier is removed.\n [opt-in]"
+        },
         "redundantInit" : {
           "allOf" : [
             {
@@ -1226,7 +1242,7 @@
               "$ref" : "#/$defs/ruleBase"
             }
           ],
-          "description" : "Single-expression functions, closures, subscripts can omit `return` statement.\n\nLint: `func <name>() { return ... }` and similar single expression constructs will yield a lint error.\n\nFormat: `func <name>() { return ... }` constructs will be replaced with\n        equivalent `func <name>() { ... }` constructs.\n [opt-in]"
+          "description" : "Single-expression functions, closures, subscripts can omit `return` statement.\n\nThis includes exhaustive `if`/`switch` expressions where every branch is a single\n`return <expr>` ([SE-0380](https://github.com/swiftlang/swift-evolution/blob/main/proposals/0380-if-switch-expressions.md),\nimplemented in Swift 5.9).\n\nLint: `func <name>() { return ... }` and similar single expression constructs will yield a lint error.\n\nFormat: `func <name>() { return ... }` constructs will be replaced with\n        equivalent `func <name>() { ... }` constructs.\n [opt-in]"
         },
         "redundantSelf" : {
           "allOf" : [
@@ -1351,6 +1367,14 @@
       ],
       "description" : "Remove a hand-written `Equatable` implementation when the compiler-synthesized\nconformance would be equivalent.\n\nFor structs conforming to `Equatable` (or `Hashable`), if the `static func ==`\ncompares exactly the same stored instance properties that the compiler would\nsynthesize, the hand-written implementation is redundant and can be removed.\n\nClosures, enums, and extension-based conformances are not handled.\n\nThis rule is opt-in due to the heuristic nature (no type-checking).\n\nLint: A redundant `==` implementation raises a warning.\n\nFormat: The `==` function is removed from the member block.\n [opt-in]"
     },
+    "redundantFinal" : {
+      "allOf" : [
+        {
+          "$ref" : "#/$defs/ruleBase"
+        }
+      ],
+      "description" : "Remove redundant `final` from members of `final` classes.\n\nWhen a class is declared `final`, all its members are implicitly final.\nAdding `final` to individual members is redundant.\n\nLint: If a `final` modifier is found on a member of a `final` class, a warning is raised.\n\nFormat: The redundant `final` modifier is removed.\n [opt-in]"
+    },
     "redundantInit" : {
       "allOf" : [
         {
@@ -1429,7 +1453,7 @@
           "$ref" : "#/$defs/ruleBase"
         }
       ],
-      "description" : "Single-expression functions, closures, subscripts can omit `return` statement.\n\nLint: `func <name>() { return ... }` and similar single expression constructs will yield a lint error.\n\nFormat: `func <name>() { return ... }` constructs will be replaced with\n        equivalent `func <name>() { ... }` constructs.\n [opt-in]"
+      "description" : "Single-expression functions, closures, subscripts can omit `return` statement.\n\nThis includes exhaustive `if`/`switch` expressions where every branch is a single\n`return <expr>` ([SE-0380](https://github.com/swiftlang/swift-evolution/blob/main/proposals/0380-if-switch-expressions.md),\nimplemented in Swift 5.9).\n\nLint: `func <name>() { return ... }` and similar single expression constructs will yield a lint error.\n\nFormat: `func <name>() { return ... }` constructs will be replaced with\n        equivalent `func <name>() { ... }` constructs.\n [opt-in]"
     },
     "redundantSelf" : {
       "allOf" : [

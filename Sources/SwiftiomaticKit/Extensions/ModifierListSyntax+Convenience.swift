@@ -17,11 +17,12 @@ extension DeclModifierListSyntax {
     var accessLevelModifier: DeclModifierSyntax? {
         for modifier in self {
             switch modifier.name.tokenKind {
-            case .keyword(.public), .keyword(.private), .keyword(.fileprivate), .keyword(.internal),
-                .keyword(.package):
-                return modifier
-            default:
-                continue
+                case .keyword(.public), .keyword(.private), .keyword(.fileprivate),
+                    .keyword(.internal),
+                    .keyword(.package):
+                    return modifier
+                default:
+                    continue
             }
         }
         return nil
@@ -29,10 +30,10 @@ extension DeclModifierListSyntax {
 
     /// Returns true if the modifier list contains any of the keywords in the given set.
     func contains(anyOf keywords: Set<Keyword>) -> Bool {
-        return contains {
+        contains {
             switch $0.name.tokenKind {
-            case .keyword(let keyword): return keywords.contains(keyword)
-            default: return false
+                case .keyword(let keyword): return keywords.contains(keyword)
+                default: return false
             }
         }
     }
@@ -41,18 +42,18 @@ extension DeclModifierListSyntax {
     mutating func remove(anyOf keywords: Set<Keyword>) {
         self = filter {
             switch $0.name.tokenKind {
-            case .keyword(let keyword): return !keywords.contains(keyword)
-            default: return true
+                case .keyword(let keyword): return !keywords.contains(keyword)
+                default: return true
             }
         }
     }
 
     /// Returns a copy of the modifier list with any of the modifiers in the given set removed.
     func removing(anyOf keywords: Set<Keyword>) -> DeclModifierListSyntax {
-        return filter {
+        filter {
             switch $0.name.tokenKind {
-            case .keyword(let keyword): return !keywords.contains(keyword)
-            default: return true
+                case .keyword(let keyword): return !keywords.contains(keyword)
+                default: return true
             }
         }
     }
@@ -69,21 +70,26 @@ extension DeclSyntaxProtocol where Self: WithModifiersSyntax {
         keyword: WritableKeyPath<Self, TokenSyntax>
     ) -> Self {
         guard
-            let removedModifier = modifiers.first(where: {
+            let removedIndex = modifiers.firstIndex(where: {
                 if case .keyword(let kw) = $0.name.tokenKind { return keywords.contains(kw) }
                 return false
             })
         else { return self }
 
+        let removedModifier = modifiers[removedIndex]
+        let removedIsFirst = removedIndex == modifiers.startIndex
         var result = self
-        let savedTrivia = removedModifier.leadingTrivia
         result.modifiers = modifiers.removing(anyOf: keywords)
 
-        if var firstModifier = result.modifiers.first {
-            firstModifier.leadingTrivia = savedTrivia
-            result.modifiers[result.modifiers.startIndex] = firstModifier
-        } else {
-            result[keyPath: keyword].leadingTrivia = savedTrivia
+        if removedIsFirst {
+            // Transfer the removed modifier's leading trivia to the next item.
+            let savedTrivia = removedModifier.leadingTrivia
+            if var firstModifier = result.modifiers.first {
+                firstModifier.leadingTrivia = savedTrivia
+                result.modifiers[result.modifiers.startIndex] = firstModifier
+            } else {
+                result[keyPath: keyword].leadingTrivia = savedTrivia
+            }
         }
         return result
     }

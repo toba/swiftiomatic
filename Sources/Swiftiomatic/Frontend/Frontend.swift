@@ -42,6 +42,38 @@ class Frontend: @unchecked Sendable {
       // Rule validation happens during decoding — unknown keys are ignored.
     }
 
+    /// Returns a user-friendly description of a configuration loading error.
+    ///
+    /// For `DecodingError` values, this includes the coding path so the user can identify
+    /// exactly which key is invalid. For other errors, falls back to `localizedDescription`.
+    private func descriptionForConfigurationError(_ error: Error) -> String {
+      guard let decodingError = error as? DecodingError else {
+        return error.localizedDescription
+      }
+      switch decodingError {
+      case .dataCorrupted(let context):
+        return descriptionWithCodingPath(context)
+      case .typeMismatch(_, let context):
+        return descriptionWithCodingPath(context)
+      case .keyNotFound(let key, let context):
+        let path = (context.codingPath + [key]).map(\.stringValue).joined(separator: ".")
+        return "missing key `\(path)`"
+      case .valueNotFound(_, let context):
+        return descriptionWithCodingPath(context)
+      @unknown default:
+        return error.localizedDescription
+      }
+    }
+
+    /// Formats a `DecodingError.Context` with its coding path for diagnostic output.
+    private func descriptionWithCodingPath(_ context: DecodingError.Context) -> String {
+      if context.codingPath.isEmpty {
+        return context.debugDescription
+      }
+      let path = context.codingPath.map(\.stringValue).joined(separator: ".")
+      return "at `\(path)`: \(context.debugDescription)"
+    }
+
     /// Returns the configuration that applies to the given `.swift` source file, when an explicit
     /// configuration path is also perhaps provided.
     ///
@@ -75,7 +107,7 @@ class Frontend: @unchecked Sendable {
             return configuration
           } catch {
             diagnosticsEngine.emitError(
-              "Unable to read configuration: \(error.localizedDescription)"
+              "Unable to read configuration: \(descriptionForConfigurationError(error))"
             )
             return nil
           }
@@ -94,7 +126,7 @@ class Frontend: @unchecked Sendable {
           // Fall through to the default return at the end of the function.
         } catch {
           diagnosticsEngine.emitError(
-            "Unable to read configuration for \(swiftFileURL.relativePath): \(error.localizedDescription)"
+            "Unable to read configuration for \(swiftFileURL.relativePath): \(descriptionForConfigurationError(error))"
           )
           return nil
         }
@@ -111,7 +143,7 @@ class Frontend: @unchecked Sendable {
           }
         } catch {
           diagnosticsEngine.emitError(
-            "Unable to read configuration for \(cwd.relativePath): \(error.localizedDescription)"
+            "Unable to read configuration for \(cwd.relativePath): \(descriptionForConfigurationError(error))"
           )
           return nil
         }

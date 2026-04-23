@@ -175,4 +175,291 @@ struct OmitReturnsTests: RuleTesting {
     )
   }
 
+  // MARK: - Multi-branch implicit returns (SE-0380)
+
+  @Test
+  func switchInClosure() {
+    assertFormatting(
+      RedundantReturn.self,
+      input: """
+          val.contains {
+            switch $0 {
+            case .a, .b:
+              1️⃣return true
+            default:
+              2️⃣return false
+            }
+          }
+        """,
+      expected: """
+          val.contains {
+            switch $0 {
+            case .a, .b:
+              true
+            default:
+              false
+            }
+          }
+        """,
+      findings: [
+        FindingSpec("1️⃣", message: "'return' can be omitted because body consists of a single expression"),
+        FindingSpec("2️⃣", message: "'return' can be omitted because body consists of a single expression"),
+      ]
+    )
+  }
+
+  @Test
+  func switchInComputedProperty() {
+    assertFormatting(
+      RedundantReturn.self,
+      input: """
+          var x: Bool {
+            switch self {
+            case .a:
+              1️⃣return true
+            case .b:
+              2️⃣return false
+            }
+          }
+        """,
+      expected: """
+          var x: Bool {
+            switch self {
+            case .a:
+              true
+            case .b:
+              false
+            }
+          }
+        """,
+      findings: [
+        FindingSpec("1️⃣", message: "'return' can be omitted because body consists of a single expression"),
+        FindingSpec("2️⃣", message: "'return' can be omitted because body consists of a single expression"),
+      ]
+    )
+  }
+
+  @Test
+  func ifElseInFunction() {
+    assertFormatting(
+      RedundantReturn.self,
+      input: """
+          func f(_ x: Bool) -> Int {
+            if x {
+              1️⃣return 1
+            } else {
+              2️⃣return 2
+            }
+          }
+        """,
+      expected: """
+          func f(_ x: Bool) -> Int {
+            if x {
+              1
+            } else {
+              2
+            }
+          }
+        """,
+      findings: [
+        FindingSpec("1️⃣", message: "'return' can be omitted because body consists of a single expression"),
+        FindingSpec("2️⃣", message: "'return' can be omitted because body consists of a single expression"),
+      ]
+    )
+  }
+
+  @Test
+  func ifElseIfElseChain() {
+    assertFormatting(
+      RedundantReturn.self,
+      input: """
+          func f(_ x: Int) -> String {
+            if x > 0 {
+              1️⃣return "positive"
+            } else if x < 0 {
+              2️⃣return "negative"
+            } else {
+              3️⃣return "zero"
+            }
+          }
+        """,
+      expected: """
+          func f(_ x: Int) -> String {
+            if x > 0 {
+              "positive"
+            } else if x < 0 {
+              "negative"
+            } else {
+              "zero"
+            }
+          }
+        """,
+      findings: [
+        FindingSpec("1️⃣", message: "'return' can be omitted because body consists of a single expression"),
+        FindingSpec("2️⃣", message: "'return' can be omitted because body consists of a single expression"),
+        FindingSpec("3️⃣", message: "'return' can be omitted because body consists of a single expression"),
+      ]
+    )
+  }
+
+  @Test
+  func nestedSwitchInIf() {
+    assertFormatting(
+      RedundantReturn.self,
+      input: """
+          func f(_ x: Bool, _ y: E) -> Int {
+            if x {
+              switch y {
+              case .a:
+                1️⃣return 1
+              case .b:
+                2️⃣return 2
+              }
+            } else {
+              3️⃣return 0
+            }
+          }
+        """,
+      expected: """
+          func f(_ x: Bool, _ y: E) -> Int {
+            if x {
+              switch y {
+              case .a:
+                1
+              case .b:
+                2
+              }
+            } else {
+              0
+            }
+          }
+        """,
+      findings: [
+        FindingSpec("1️⃣", message: "'return' can be omitted because body consists of a single expression"),
+        FindingSpec("2️⃣", message: "'return' can be omitted because body consists of a single expression"),
+        FindingSpec("3️⃣", message: "'return' can be omitted because body consists of a single expression"),
+      ]
+    )
+  }
+
+  @Test
+  func switchInExplicitGetter() {
+    assertFormatting(
+      RedundantReturn.self,
+      input: """
+          struct S {
+            var x: Int {
+              get {
+                switch self.kind {
+                case .a:
+                  1️⃣return 1
+                default:
+                  2️⃣return 0
+                }
+              }
+              set { }
+            }
+          }
+        """,
+      expected: """
+          struct S {
+            var x: Int {
+              get {
+                switch self.kind {
+                case .a:
+                  1
+                default:
+                  0
+                }
+              }
+              set { }
+            }
+          }
+        """,
+      findings: [
+        FindingSpec("1️⃣", message: "'return' can be omitted because body consists of a single expression"),
+        FindingSpec("2️⃣", message: "'return' can be omitted because body consists of a single expression"),
+      ]
+    )
+  }
+
+  @Test
+  func ifWithoutElseNotTransformed() {
+    assertFormatting(
+      RedundantReturn.self,
+      input: """
+          func f(_ x: Bool) -> Int {
+            if x {
+              return 1
+            }
+            return 0
+          }
+        """,
+      expected: """
+          func f(_ x: Bool) -> Int {
+            if x {
+              return 1
+            }
+            return 0
+          }
+        """,
+      findings: []
+    )
+  }
+
+  @Test
+  func switchWithNonReturnBranchNotTransformed() {
+    assertFormatting(
+      RedundantReturn.self,
+      input: """
+          func f(_ x: E) -> Int {
+            switch x {
+            case .a:
+              return 1
+            case .b:
+              print("b")
+            }
+          }
+        """,
+      expected: """
+          func f(_ x: E) -> Int {
+            switch x {
+            case .a:
+              return 1
+            case .b:
+              print("b")
+            }
+          }
+        """,
+      findings: []
+    )
+  }
+
+  @Test
+  func multiStatementBranchNotTransformed() {
+    assertFormatting(
+      RedundantReturn.self,
+      input: """
+          func f(_ x: Bool) -> Int {
+            if x {
+              print("yes")
+              return 1
+            } else {
+              return 2
+            }
+          }
+        """,
+      expected: """
+          func f(_ x: Bool) -> Int {
+            if x {
+              print("yes")
+              return 1
+            } else {
+              return 2
+            }
+          }
+        """,
+      findings: []
+    )
+  }
 }

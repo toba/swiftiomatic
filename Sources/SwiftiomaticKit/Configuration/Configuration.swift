@@ -1,5 +1,5 @@
-@_exported import ConfigurationKit
 import Foundation
+@_exported import ConfigurationKit
 
 /// Holds the complete set of configured values and defaults.
 package struct Configuration: Sendable, Equatable {
@@ -43,7 +43,7 @@ package struct Configuration: Sendable, Equatable {
     // MARK: - Typed access
 
     /// Look up any `Configurable` value by type, falling back to its default.
-    package subscript<C: Configurable>(type: C.Type = C.self) -> C.Value {
+    package subscript<C: Configurable>(_: C.Type = C.self) -> C.Value {
         get {
             if let group = C.group {
                 if let v = values["\(group.key).\(C.key)"] as? C.Value { return v }
@@ -79,7 +79,7 @@ package struct Configuration: Sendable, Equatable {
     }
 
     private static func entry(for type: any LayoutRule.Type) -> SettingEntry {
-        func open<D: LayoutRule>(_ type: D.Type) -> SettingEntry {
+        func open<D: LayoutRule>(_: D.Type) -> SettingEntry {
             SettingEntry(
                 key: D.key,
                 groupKey: D.group?.key,
@@ -99,9 +99,8 @@ package struct Configuration: Sendable, Equatable {
     private static let settingEntries: [SettingEntry] =
         LayoutRegistry.all.map { entry(for: $0) }
 
-    private static let settingsByKey: [String: SettingEntry] = {
-        Dictionary(uniqueKeysWithValues: settingEntries.map { ($0.key, $0) })
-    }()
+    private static let settingsByKey: [String: SettingEntry] = Dictionary(
+        uniqueKeysWithValues: settingEntries.map { ($0.key, $0) })
 
     private static let settingKeyNames: Set<String> = {
         var names = Set(settingEntries.filter { $0.groupKey == nil }.map(\.key))
@@ -117,14 +116,18 @@ package struct Configuration: Sendable, Equatable {
         /// Qualified key (`group.key` or bare `key`) for unique internal lookup.
         let qualifiedKey: String
         let groupKey: ConfigurationGroup.Key?
-        let decode: @Sendable (KeyedDecodingContainer<AnyCodingKey>, AnyCodingKey, inout Configuration) throws -> Void
-        let encode: @Sendable (Configuration, inout KeyedEncodingContainer<AnyCodingKey>, AnyCodingKey) throws -> Void
+        let decode:
+            @Sendable (KeyedDecodingContainer<AnyCodingKey>, AnyCodingKey, inout Configuration)
+                throws -> Void
+        let encode:
+            @Sendable (Configuration, inout KeyedEncodingContainer<AnyCodingKey>, AnyCodingKey)
+                throws -> Void
         let disable: @Sendable (inout Configuration) -> Void
         let enable: @Sendable (inout Configuration) -> Void
     }
 
     private static func ruleEntry(for type: any SyntaxRule.Type) -> RuleEntry {
-        func open<R: SyntaxRule>(_ type: R.Type) -> RuleEntry {
+        func open<R: SyntaxRule>(_: R.Type) -> RuleEntry {
             RuleEntry(
                 key: R.key,
                 qualifiedKey: R.qualifiedKey,
@@ -157,9 +160,8 @@ package struct Configuration: Sendable, Equatable {
     private static let ruleEntries: [RuleEntry] =
         ConfigurationRegistry.allRuleTypes.map { ruleEntry(for: $0) }
 
-    private static let rulesByKey: [String: RuleEntry] = {
-        Dictionary(uniqueKeysWithValues: ruleEntries.map { ($0.qualifiedKey, $0) })
-    }()
+    private static let rulesByKey: [String: RuleEntry] = Dictionary(
+        uniqueKeysWithValues: ruleEntries.map { ($0.qualifiedKey, $0) })
 
     // MARK: - Rule helpers
 
@@ -170,9 +172,11 @@ package struct Configuration: Sendable, Equatable {
         }
     }
 
-    /// Enables a rule by qualified key (`group.key` or bare `key`).
+    /// Enables a rule by qualified key (`group.key`) or short key (`key`).
     package mutating func enableRule(named name: String) {
         if let entry = Self.rulesByKey[name] {
+            entry.enable(&self)
+        } else if let entry = Self.ruleEntries.first(where: { $0.key == name }) {
             entry.enable(&self)
         }
     }
@@ -348,7 +352,7 @@ final class JSONValueEncoder: Encoder {
     var userInfo: [CodingUserInfoKey: Any] = [:]
     var dict: [String: JSONValue] = [:]
 
-    func container<Key: CodingKey>(keyedBy type: Key.Type) -> KeyedEncodingContainer<Key> {
+    func container<Key: CodingKey>(keyedBy _: Key.Type) -> KeyedEncodingContainer<Key> {
         KeyedEncodingContainer(JSONValueKeyedContainer<Key>(encoder: self))
     }
     func unkeyedContainer() -> UnkeyedEncodingContainer { fatalError() }
@@ -366,27 +370,27 @@ final class JSONValueEncoder: Encoder {
     private struct JSONValueKeyedContainer<Key: CodingKey>: KeyedEncodingContainerProtocol {
         let encoder: JSONValueEncoder
         var codingPath: [CodingKey] = []
-        mutating func encodeNil(forKey key: Key) throws {
+        mutating func encodeNil(forKey key: Key) {
             encoder.dict[key.stringValue] = .null
         }
         mutating func encode<T: Encodable>(_ value: T, forKey key: Key) throws {
             encoder.dict[key.stringValue] = try JSONValueEncoder.toJSONValue(value)
         }
         mutating func nestedContainer<NestedKey: CodingKey>(
-            keyedBy keyType: NestedKey.Type,
-            forKey key: Key
+            keyedBy _: NestedKey.Type,
+            forKey _: Key
         ) -> KeyedEncodingContainer<NestedKey> { fatalError() }
-        mutating func nestedUnkeyedContainer(forKey key: Key) -> UnkeyedEncodingContainer {
+        mutating func nestedUnkeyedContainer(forKey _: Key) -> UnkeyedEncodingContainer {
             fatalError()
         }
         mutating func superEncoder() -> any Encoder { fatalError() }
-        mutating func superEncoder(forKey key: Key) -> any Encoder { fatalError() }
+        mutating func superEncoder(forKey _: Key) -> any Encoder { fatalError() }
     }
 
     private struct JSONValueSingleContainer: SingleValueEncodingContainer {
         let encoder: JSONValueEncoder
         var codingPath: [CodingKey] = []
-        mutating func encodeNil() throws {
+        mutating func encodeNil() {
             encoder.dict["_singleValue"] = .null
         }
         mutating func encode<T: Encodable>(_ value: T) throws {
@@ -397,12 +401,11 @@ final class JSONValueEncoder: Encoder {
     /// Converts a primitive or complex `Encodable` value to `JSONValue`.
     fileprivate static func toJSONValue<T: Encodable>(_ value: T) throws -> JSONValue {
         switch value {
-        case let v as String: .string(v)
-        case let v as Bool: .bool(v)
-        case let v as any FixedWidthInteger: .int(Int(v))
-        case let v as any BinaryFloatingPoint: .double(Double(v))
-        default: try encodeToJSONValue(value)
+            case let v as String: .string(v)
+            case let v as Bool: .bool(v)
+            case let v as any FixedWidthInteger: .int(Int(v))
+            case let v as any BinaryFloatingPoint: .double(Double(v))
+            default: try encodeToJSONValue(value)
         }
     }
 }
-

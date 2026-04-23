@@ -4,6 +4,8 @@
 
 ### ✨ Features
 
+- `RedundantReturn`; support multi-branch implicit returns per SE-0380
+- New rules: `RedundantFinal` + `PreferStaticOverClassFunc`
 - Add `doctor` subcommand; JSON Schema validation + full config parsing
 - Simplify rule configuration; uniform object shape, remove shorthand
 - Convert code generator to SPM build tool plugin

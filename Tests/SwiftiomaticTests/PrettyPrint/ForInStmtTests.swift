@@ -392,4 +392,88 @@ struct ForInStmtTests: PrettyPrintTesting {
 
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 14)
   }
+
+  @Test func forUnsafe() {
+    let input =
+      """
+      for unsafe x in xs {}
+      """
+
+    let expected80 =
+      """
+      for unsafe x in xs {}
+
+      """
+    assertPrettyPrintEqual(input: input, expected: expected80, linelength: 80)
+
+    let expected10 =
+      """
+      for unsafe
+        x in xs
+      {}
+
+      """
+    assertPrettyPrintEqual(input: input, expected: expected10, linelength: 10)
+  }
+
+  @Test func forTryAwaitUnsafe() {
+    let input =
+      """
+      for try await unsafe x in xs {}
+      """
+
+    let expected80 =
+      """
+      for try await unsafe x in xs {}
+
+      """
+    assertPrettyPrintEqual(input: input, expected: expected80, linelength: 80)
+
+    let expected10 =
+      """
+      for
+        try
+        await
+        unsafe x
+        in xs
+      {}
+
+      """
+    assertPrettyPrintEqual(input: input, expected: expected10, linelength: 10)
+  }
+
+  @Test func forUnsafeWrapPattern() {
+    let input =
+      """
+      for unsafe (aVeryLongVariableNameThatWillForceAWrap, anotherVeryLongVariableName) in someCollection {}
+      """
+    let expected =
+      """
+      for unsafe (
+        aVeryLongVariableNameThatWillForceAWrap,
+        anotherVeryLongVariableName
+      ) in someCollection {}
+
+      """
+    assertPrettyPrintEqual(input: input, expected: expected, linelength: 40)
+  }
+
+  @Test func forTryAwaitUnsafeWrapPattern() {
+    let input =
+      """
+      for try await unsafe (aVeryLongVariableNameThatWillForceAWrap, anotherVeryLongVariableName) in someCollection {}
+      """
+    let expected =
+      """
+      for try await unsafe
+        (
+          aVeryLongVariableNameThatWillForceAWrap,
+          anotherVeryLongVariableName
+        )
+        in someCollection
+      {}
+
+      """
+    assertPrettyPrintEqual(input: input, expected: expected, linelength: 20)
+  }
 }
