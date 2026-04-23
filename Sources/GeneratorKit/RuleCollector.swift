@@ -146,7 +146,11 @@ package final class RuleCollector {
         return nil
     }
 
-    /// Extracts a string literal from `static let <name> = "..."` in the AST.
+    /// Extracts a string literal for a named member.
+    ///
+    /// Handles both patterns:
+    /// - `static let key = "value"` (stored property)
+    /// - `override class var key: String { "value" }` (computed property)
     private static func extractStringLiteral(
         named identifier: String,
         from members: MemberBlockItemListSyntax
@@ -158,10 +162,30 @@ package final class RuleCollector {
                 pattern.identifier.text == identifier
             else { continue }
 
+            // Stored property: `static let key = "value"`
             if let initializer = binding.initializer?.value.as(StringLiteralExprSyntax.self),
                 let segment = initializer.segments.firstAndOnly?.as(StringSegmentSyntax.self)
             {
                 return segment.content.text
+            }
+
+            // Computed property: `class var key: String { "value" }`
+            if let accessorBlock = binding.accessorBlock,
+                case .getter(let body) = accessorBlock.accessors
+            {
+                // Single-expression getter
+                if let stringLiteral = body.first?.item.as(StringLiteralExprSyntax.self),
+                    let segment = stringLiteral.segments.firstAndOnly?.as(StringSegmentSyntax.self)
+                {
+                    return segment.content.text
+                }
+                // Return statement
+                if let returnStmt = body.first?.item.as(ReturnStmtSyntax.self),
+                    let stringLiteral = returnStmt.expression?.as(StringLiteralExprSyntax.self),
+                    let segment = stringLiteral.segments.firstAndOnly?.as(StringSegmentSyntax.self)
+                {
+                    return segment.content.text
+                }
             }
         }
         return nil

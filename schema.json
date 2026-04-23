@@ -49,13 +49,29 @@
       "description" : "JSON Schema reference URL.",
       "type" : "string"
     },
-    "aSCIIIdentifiers" : {
+    "afterGuardStatements" : {
       "allOf" : [
         {
-          "$ref" : "#/$defs/lintOnlyBase"
+          "$ref" : "#/$defs/ruleBase"
         }
       ],
-      "description" : "All identifiers must be ASCII.\n\nLint: If an identifier contains non-ASCII characters, a lint error is raised.\n"
+      "description" : "Remove blank lines between consecutive guard statements and insert a blank line after\nthe last guard.\n\nGuard blocks at the top of a function form a precondition section. Keeping them tight\n(no blank lines between them) and separated from the body (one blank line after) improves\nreadability. Comments between guards break the \"consecutive\" chain — each guard followed\nby a comment gets its own trailing blank line.\n\nLint: If there are blank lines between consecutive guards, or no blank line after the\n      last guard before other code, a lint warning is raised.\n\nFormat: Blank lines between consecutive guards are removed. A blank line is inserted\n        after the last guard when followed by non-guard code.\n [opt-in]"
+    },
+    "afterImports" : {
+      "allOf" : [
+        {
+          "$ref" : "#/$defs/ruleBase"
+        }
+      ],
+      "description" : "Insert a blank line after the last import statement.\n\nWhen import statements are followed directly by other declarations without a separating blank\nline, readability suffers. This rule ensures exactly one blank line separates the import block\nfrom the rest of the code.\n\nLint: If the first non-import declaration is not preceded by a blank line, a lint warning is raised.\n\nFormat: A blank line is inserted after the last import statement.\n"
+    },
+    "afterSwitchCase" : {
+      "allOf" : [
+        {
+          "$ref" : "#/$defs/ruleBase"
+        }
+      ],
+      "description" : "Insert a blank line after multiline switch case bodies.\n\nWhen a switch case body spans multiple statements, a blank line after it improves readability\nby visually separating it from the next case. Single-statement cases do not require blank lines.\nThe last case in a switch is never followed by a blank line (the closing brace provides\nvisual separation).\n\nLint: If a multiline case body is not followed by a blank line, a lint warning is raised.\n      If the last case is followed by a blank line before `}`, a lint warning is raised.\n\nFormat: Blank lines are inserted after multiline cases and removed after the last case.\n [opt-in]"
     },
     "ambiguousTrailingClosureOverload" : {
       "allOf" : [
@@ -65,11 +81,43 @@
       ],
       "description" : "Overloads with only a closure argument should not be disambiguated by parameter labels.\n\nLint: If two overloaded functions with one closure parameter appear in the same scope, a lint\n      error is raised.\n"
     },
+    "beforeAndAfterMark" : {
+      "allOf" : [
+        {
+          "$ref" : "#/$defs/ruleBase"
+        }
+      ],
+      "description" : "Insert blank lines before and after `// MARK:` comments.\n\nMARK comments serve as section dividers. Surrounding them with blank lines makes the\nvisual separation clear. A blank line before MARK is skipped when the MARK immediately\nfollows an opening brace (start of scope). A blank line after MARK is skipped when\nthe MARK immediately precedes a closing brace (end of scope) or end of file.\n\nLint: If a MARK comment is missing a blank line before or after it, a lint warning is raised.\n\nFormat: Blank lines are inserted around MARK comments.\n [opt-in]"
+    },
+    "betweenChainedFunctions" : {
+      "allOf" : [
+        {
+          "$ref" : "#/$defs/ruleBase"
+        }
+      ],
+      "description" : "Remove blank lines between chained function calls.\n\nMethod chains like `.map { ... }.filter { ... }` are a single logical expression. Blank lines\nbetween chain elements break the visual continuity. Linebreaks are preserved — only the\nextra blank lines are removed. Comments between chain elements are also preserved.\n\nLint: If there are blank lines between chained member accesses, a lint warning is raised.\n\nFormat: The blank lines are removed, keeping linebreaks and comments.\n [opt-in]"
+    },
+    "betweenImports" : {
+      "allOf" : [
+        {
+          "$ref" : "#/$defs/ruleBase"
+        }
+      ],
+      "description" : "Remove blank lines between consecutive import statements.\n\nImport blocks should be compact — blank lines within the import section add visual noise\nwithout aiding readability. This rule removes them while preserving linebreaks.\n\nLint: If there are blank lines between consecutive import statements, a lint warning is raised.\n\nFormat: The blank lines are removed.\n [opt-in]"
+    },
+    "betweenScopes" : {
+      "allOf" : [
+        {
+          "$ref" : "#/$defs/ruleBase"
+        }
+      ],
+      "description" : "Insert a blank line after declarations with multi-line bodies.\n\nWhen a type declaration (class, struct, enum, extension, protocol, actor) or function\ndeclaration has a multi-line body, a blank line after it improves readability by\nvisually separating it from the next declaration. Single-line (inline) bodies are\nexcluded. This rule operates at the top level and inside type member blocks — not\ninside function bodies (if/for/while don't need separation).\n\nLint: If a multi-line scoped declaration is not followed by a blank line, a lint\n      warning is raised.\n\nFormat: A blank line is inserted after the declaration.\n [opt-in]"
+    },
     "blankLines" : {
       "additionalProperties" : false,
       "description" : "blankLines rule group.",
       "properties" : {
-        "blankLinesAfterGuardStatements" : {
+        "afterGuardStatements" : {
           "allOf" : [
             {
               "$ref" : "#/$defs/ruleBase"
@@ -77,7 +125,7 @@
           ],
           "description" : "Remove blank lines between consecutive guard statements and insert a blank line after\nthe last guard.\n\nGuard blocks at the top of a function form a precondition section. Keeping them tight\n(no blank lines between them) and separated from the body (one blank line after) improves\nreadability. Comments between guards break the \"consecutive\" chain — each guard followed\nby a comment gets its own trailing blank line.\n\nLint: If there are blank lines between consecutive guards, or no blank line after the\n      last guard before other code, a lint warning is raised.\n\nFormat: Blank lines between consecutive guards are removed. A blank line is inserted\n        after the last guard when followed by non-guard code.\n [opt-in]"
         },
-        "blankLinesAfterImports" : {
+        "afterImports" : {
           "allOf" : [
             {
               "$ref" : "#/$defs/ruleBase"
@@ -85,7 +133,7 @@
           ],
           "description" : "Insert a blank line after the last import statement.\n\nWhen import statements are followed directly by other declarations without a separating blank\nline, readability suffers. This rule ensures exactly one blank line separates the import block\nfrom the rest of the code.\n\nLint: If the first non-import declaration is not preceded by a blank line, a lint warning is raised.\n\nFormat: A blank line is inserted after the last import statement.\n"
         },
-        "blankLinesAfterSwitchCase" : {
+        "afterSwitchCase" : {
           "allOf" : [
             {
               "$ref" : "#/$defs/ruleBase"
@@ -93,7 +141,7 @@
           ],
           "description" : "Insert a blank line after multiline switch case bodies.\n\nWhen a switch case body spans multiple statements, a blank line after it improves readability\nby visually separating it from the next case. Single-statement cases do not require blank lines.\nThe last case in a switch is never followed by a blank line (the closing brace provides\nvisual separation).\n\nLint: If a multiline case body is not followed by a blank line, a lint warning is raised.\n      If the last case is followed by a blank line before `}`, a lint warning is raised.\n\nFormat: Blank lines are inserted after multiline cases and removed after the last case.\n [opt-in]"
         },
-        "blankLinesAroundMark" : {
+        "beforeAndAfterMark" : {
           "allOf" : [
             {
               "$ref" : "#/$defs/ruleBase"
@@ -101,7 +149,7 @@
           ],
           "description" : "Insert blank lines before and after `// MARK:` comments.\n\nMARK comments serve as section dividers. Surrounding them with blank lines makes the\nvisual separation clear. A blank line before MARK is skipped when the MARK immediately\nfollows an opening brace (start of scope). A blank line after MARK is skipped when\nthe MARK immediately precedes a closing brace (end of scope) or end of file.\n\nLint: If a MARK comment is missing a blank line before or after it, a lint warning is raised.\n\nFormat: Blank lines are inserted around MARK comments.\n [opt-in]"
         },
-        "blankLinesBetweenChainedFunctions" : {
+        "betweenChainedFunctions" : {
           "allOf" : [
             {
               "$ref" : "#/$defs/ruleBase"
@@ -109,7 +157,7 @@
           ],
           "description" : "Remove blank lines between chained function calls.\n\nMethod chains like `.map { ... }.filter { ... }` are a single logical expression. Blank lines\nbetween chain elements break the visual continuity. Linebreaks are preserved — only the\nextra blank lines are removed. Comments between chain elements are also preserved.\n\nLint: If there are blank lines between chained member accesses, a lint warning is raised.\n\nFormat: The blank lines are removed, keeping linebreaks and comments.\n [opt-in]"
         },
-        "blankLinesBetweenImports" : {
+        "betweenImports" : {
           "allOf" : [
             {
               "$ref" : "#/$defs/ruleBase"
@@ -117,7 +165,7 @@
           ],
           "description" : "Remove blank lines between consecutive import statements.\n\nImport blocks should be compact — blank lines within the import section add visual noise\nwithout aiding readability. This rule removes them while preserving linebreaks.\n\nLint: If there are blank lines between consecutive import statements, a lint warning is raised.\n\nFormat: The blank lines are removed.\n [opt-in]"
         },
-        "blankLinesBetweenScopes" : {
+        "betweenScopes" : {
           "allOf" : [
             {
               "$ref" : "#/$defs/ruleBase"
@@ -140,102 +188,15 @@
       },
       "type" : "object"
     },
-    "blankLinesAfterGuardStatements" : {
+    "camelCaseIdentifiers" : {
       "allOf" : [
         {
-          "$ref" : "#/$defs/ruleBase"
+          "$ref" : "#/$defs/lintOnlyBase"
         }
       ],
-      "description" : "Remove blank lines between consecutive guard statements and insert a blank line after\nthe last guard.\n\nGuard blocks at the top of a function form a precondition section. Keeping them tight\n(no blank lines between them) and separated from the body (one blank line after) improves\nreadability. Comments between guards break the \"consecutive\" chain — each guard followed\nby a comment gets its own trailing blank line.\n\nLint: If there are blank lines between consecutive guards, or no blank line after the\n      last guard before other code, a lint warning is raised.\n\nFormat: Blank lines between consecutive guards are removed. A blank line is inserted\n        after the last guard when followed by non-guard code.\n [opt-in]"
+      "description" : "All values should be written in lower camel-case (`lowerCamelCase`).\nUnderscores (except at the beginning of an identifier) are disallowed.\n\nThis rule does not apply to test code, defined as code which:\n  * Contains the line `import XCTest`\n  * The function is marked with `@Test` attribute\n\nLint: If an identifier contains underscores or begins with a capital letter, a lint error is\n      raised.\n"
     },
-    "blankLinesAfterImports" : {
-      "allOf" : [
-        {
-          "$ref" : "#/$defs/ruleBase"
-        }
-      ],
-      "description" : "Insert a blank line after the last import statement.\n\nWhen import statements are followed directly by other declarations without a separating blank\nline, readability suffers. This rule ensures exactly one blank line separates the import block\nfrom the rest of the code.\n\nLint: If the first non-import declaration is not preceded by a blank line, a lint warning is raised.\n\nFormat: A blank line is inserted after the last import statement.\n"
-    },
-    "blankLinesAfterSwitchCase" : {
-      "allOf" : [
-        {
-          "$ref" : "#/$defs/ruleBase"
-        }
-      ],
-      "description" : "Insert a blank line after multiline switch case bodies.\n\nWhen a switch case body spans multiple statements, a blank line after it improves readability\nby visually separating it from the next case. Single-statement cases do not require blank lines.\nThe last case in a switch is never followed by a blank line (the closing brace provides\nvisual separation).\n\nLint: If a multiline case body is not followed by a blank line, a lint warning is raised.\n      If the last case is followed by a blank line before `}`, a lint warning is raised.\n\nFormat: Blank lines are inserted after multiline cases and removed after the last case.\n [opt-in]"
-    },
-    "blankLinesAroundMark" : {
-      "allOf" : [
-        {
-          "$ref" : "#/$defs/ruleBase"
-        }
-      ],
-      "description" : "Insert blank lines before and after `// MARK:` comments.\n\nMARK comments serve as section dividers. Surrounding them with blank lines makes the\nvisual separation clear. A blank line before MARK is skipped when the MARK immediately\nfollows an opening brace (start of scope). A blank line after MARK is skipped when\nthe MARK immediately precedes a closing brace (end of scope) or end of file.\n\nLint: If a MARK comment is missing a blank line before or after it, a lint warning is raised.\n\nFormat: Blank lines are inserted around MARK comments.\n [opt-in]"
-    },
-    "blankLinesBetweenChainedFunctions" : {
-      "allOf" : [
-        {
-          "$ref" : "#/$defs/ruleBase"
-        }
-      ],
-      "description" : "Remove blank lines between chained function calls.\n\nMethod chains like `.map { ... }.filter { ... }` are a single logical expression. Blank lines\nbetween chain elements break the visual continuity. Linebreaks are preserved — only the\nextra blank lines are removed. Comments between chain elements are also preserved.\n\nLint: If there are blank lines between chained member accesses, a lint warning is raised.\n\nFormat: The blank lines are removed, keeping linebreaks and comments.\n [opt-in]"
-    },
-    "blankLinesBetweenImports" : {
-      "allOf" : [
-        {
-          "$ref" : "#/$defs/ruleBase"
-        }
-      ],
-      "description" : "Remove blank lines between consecutive import statements.\n\nImport blocks should be compact — blank lines within the import section add visual noise\nwithout aiding readability. This rule removes them while preserving linebreaks.\n\nLint: If there are blank lines between consecutive import statements, a lint warning is raised.\n\nFormat: The blank lines are removed.\n [opt-in]"
-    },
-    "blankLinesBetweenScopes" : {
-      "allOf" : [
-        {
-          "$ref" : "#/$defs/ruleBase"
-        }
-      ],
-      "description" : "Insert a blank line after declarations with multi-line bodies.\n\nWhen a type declaration (class, struct, enum, extension, protocol, actor) or function\ndeclaration has a multi-line body, a blank line after it improves readability by\nvisually separating it from the next declaration. Single-line (inline) bodies are\nexcluded. This rule operates at the top level and inside type member blocks — not\ninside function bodies (if/for/while don't need separation).\n\nLint: If a multi-line scoped declaration is not followed by a blank line, a lint\n      warning is raised.\n\nFormat: A blank line is inserted after the declaration.\n [opt-in]"
-    },
-    "capitalization" : {
-      "additionalProperties" : false,
-      "description" : "capitalization rule group.",
-      "properties" : {
-        "capitalizeAcronyms" : {
-          "allOf" : [
-            {
-              "$ref" : "#/$defs/ruleBase"
-            }
-          ],
-          "description" : "Capitalize acronyms when the first character is capitalized.\n\nWhen an identifier contains a titlecased acronym (e.g. `Url`, `Json`, `Id`),\nit should be fully uppercased (e.g. `URL`, `JSON`, `ID`) for consistency with\nSwift naming conventions.\n\nThe list of recognized acronyms is configurable via `Configuration.acronyms`.\n\nLint: An identifier with a titlecased acronym raises a warning.\n\nFormat: The titlecased acronym is replaced with the uppercased form.\n [opt-in]"
-        },
-        "capitalizedTypeNames" : {
-          "allOf" : [
-            {
-              "$ref" : "#/$defs/lintOnlyBase"
-            }
-          ],
-          "description" : "`struct`, `class`, `enum` and `protocol` declarations should have a capitalized name.\n\nLint:  Types with un-capitalized names will yield a lint error.\n"
-        },
-        "lowerCamelCase" : {
-          "allOf" : [
-            {
-              "$ref" : "#/$defs/lintOnlyBase"
-            }
-          ],
-          "description" : "All values should be written in lower camel-case (`lowerCamelCase`).\nUnderscores (except at the beginning of an identifier) are disallowed.\n\nThis rule does not apply to test code, defined as code which:\n  * Contains the line `import XCTest`\n  * The function is marked with `@Test` attribute\n\nLint: If an identifier contains underscores or begins with a capital letter, a lint error is\n      raised.\n"
-        }
-      },
-      "type" : "object"
-    },
-    "capitalizeAcronyms" : {
-      "allOf" : [
-        {
-          "$ref" : "#/$defs/ruleBase"
-        }
-      ],
-      "description" : "Capitalize acronyms when the first character is capitalized.\n\nWhen an identifier contains a titlecased acronym (e.g. `Url`, `Json`, `Id`),\nit should be fully uppercased (e.g. `URL`, `JSON`, `ID`) for consistency with\nSwift naming conventions.\n\nThe list of recognized acronyms is configurable via `Configuration.acronyms`.\n\nLint: An identifier with a titlecased acronym raises a warning.\n\nFormat: The titlecased acronym is replaced with the uppercased form.\n [opt-in]"
-    },
-    "capitalizedTypeNames" : {
+    "capitalizeTypeNames" : {
       "allOf" : [
         {
           "$ref" : "#/$defs/lintOnlyBase"
@@ -243,19 +204,27 @@
       ],
       "description" : "`struct`, `class`, `enum` and `protocol` declarations should have a capitalized name.\n\nLint:  Types with un-capitalized names will yield a lint error.\n"
     },
+    "caseLet" : {
+      "allOf" : [
+        {
+          "$ref" : "#/$defs/ruleBase"
+        }
+      ],
+      "description" : "Enforce consistent placement of `let`/`var` in case patterns.\n\nControlled by `Configuration.patternLet.placement`:\n\n- `eachBinding` (default): Each variable has its own `let`/`var`:\n  `case .foo(let x, let y)`.\n- `outerPattern`: The `let`/`var` is hoisted to the pattern level:\n  `case let .foo(x, y)`.\n\nLint: Using the non-preferred placement yields a lint error.\n\nFormat: The `let`/`var` is repositioned to match the configured placement.\n"
+    },
+    "collapseEmptyBraces" : {
+      "allOf" : [
+        {
+          "$ref" : "#/$defs/ruleBase"
+        }
+      ],
+      "description" : "Remove whitespace inside empty braces.\n\nEmpty brace pairs should have no whitespace between them: `{}` instead of `{ }` or\nmulti-line empty bodies. Braces containing comments are left unchanged.\n\nLint: If empty braces contain whitespace, a lint warning is raised.\n\nFormat: The whitespace is removed, collapsing the braces to `{}`.\n"
+    },
     "comments" : {
       "additionalProperties" : false,
       "description" : "comments rule group.",
       "properties" : {
-        "docCommentSummary" : {
-          "allOf" : [
-            {
-              "$ref" : "#/$defs/lintOnlyBase"
-            }
-          ],
-          "description" : "All documentation comments must begin with a one-line summary of the declaration.\n\nLint: If a comment does not begin with a single-line summary, a lint error is raised.\n [opt-in]"
-        },
-        "docComments" : {
+        "convertRegularCommentToDocC" : {
           "allOf" : [
             {
               "$ref" : "#/$defs/ruleBase"
@@ -263,13 +232,21 @@
           ],
           "description" : "Use doc comments for API declarations, otherwise use regular comments.\n\nComments immediately before type declarations, properties, methods, and other\nAPI-level constructs use `///` doc comment syntax. Comments inside function\nbodies use `//` regular comment syntax, except for nested function declarations.\n\nLint: When a regular comment should be a doc comment, or vice versa.\n\nFormat: The comment style is corrected.\n [opt-in]"
         },
-        "docCommentsBeforeModifiers" : {
+        "disallowBlockComments" : {
           "allOf" : [
             {
-              "$ref" : "#/$defs/ruleBase"
+              "$ref" : "#/$defs/lintOnlyBase"
             }
           ],
-          "description" : "Place doc comments before any declaration modifiers or attributes.\n\nDoc comments (`///` or `/** */`) should appear before all attributes and access modifiers,\nnot between them.\n\nLint: If a doc comment appears after an attribute or modifier, a lint warning is raised.\n\nFormat: The doc comment is moved before all attributes and modifiers.\n"
+          "description" : "Block comments should be avoided in favor of line comments.\n\nLint: If a block comment appears, a lint error is raised.\n"
+        },
+        "documentParameters" : {
+          "allOf" : [
+            {
+              "$ref" : "#/$defs/lintOnlyBase"
+            }
+          ],
+          "description" : "Documentation comments must be complete and valid.\n\n\"Command + Option + /\" in Xcode produces a minimal valid documentation comment.\n\nLint: Documentation comments that are incomplete (e.g. missing parameter documentation) or\n      invalid (uses `Parameters` when there is only one parameter) will yield a lint error.\n [opt-in]"
         },
         "documentPublicDeclarations" : {
           "allOf" : [
@@ -279,7 +256,7 @@
           ],
           "description" : "All public or open declarations must have a top-level documentation comment.\n\nLint: If a public declaration is missing a documentation comment, a lint error is raised.\n [opt-in]"
         },
-        "formatSpecialComments" : {
+        "formatTypePrefix" : {
           "allOf" : [
             {
               "$ref" : "#/$defs/ruleBase"
@@ -287,32 +264,48 @@
           ],
           "description" : "Use correct formatting for `TODO:`, `MARK:`, and `FIXME:` comments.\n\nThese special comment tags must be uppercase, followed by a colon and a space. `MARK:` comments\nwith a dash separator must use `// MARK: - text` format. Standalone `/// MARK:` doc comments are\nconverted to `// MARK:` since MARK is not a documentation concept.\n\nLint: If a special comment tag is not correctly formatted, a lint warning is raised.\n\nFormat: The comment is reformatted to use the correct style.\n"
         },
-        "noBlockComments" : {
+        "precedeModifiers" : {
+          "allOf" : [
+            {
+              "$ref" : "#/$defs/ruleBase"
+            }
+          ],
+          "description" : "Place doc comments before any declaration modifiers or attributes.\n\nDoc comments (`///` or `/** */`) should appear before all attributes and access modifiers,\nnot between them.\n\nLint: If a doc comment appears after an attribute or modifier, a lint warning is raised.\n\nFormat: The doc comment is moved before all attributes and modifiers.\n"
+        },
+        "requireSummary" : {
           "allOf" : [
             {
               "$ref" : "#/$defs/lintOnlyBase"
             }
           ],
-          "description" : "Block comments should be avoided in favor of line comments.\n\nLint: If a block comment appears, a lint error is raised.\n"
+          "description" : "All documentation comments must begin with a one-line summary of the declaration.\n\nLint: If a comment does not begin with a single-line summary, a lint error is raised.\n [opt-in]"
         },
-        "tripleSlashDocComments" : {
+        "tripleSlashDocC" : {
           "allOf" : [
             {
               "$ref" : "#/$defs/ruleBase"
             }
           ],
           "description" : "Documentation comments must use the `///` form.\n\nThis is similar to `NoBlockComments` but is meant to prevent documentation block comments.\n\nLint: If a doc block comment appears, a lint error is raised.\n\nFormat: If a doc block comment appears on its own on a line, or if a doc block comment spans\n        multiple lines without appearing on the same line as code, it will be replaced with\n        multiple doc line comments.\n"
-        },
-        "validateDocumentationComments" : {
-          "allOf" : [
-            {
-              "$ref" : "#/$defs/lintOnlyBase"
-            }
-          ],
-          "description" : "Documentation comments must be complete and valid.\n\n\"Command + Option + /\" in Xcode produces a minimal valid documentation comment.\n\nLint: Documentation comments that are incomplete (e.g. missing parameter documentation) or\n      invalid (uses `Parameters` when there is only one parameter) will yield a lint error.\n [opt-in]"
         }
       },
       "type" : "object"
+    },
+    "compoundCaseStatements" : {
+      "allOf" : [
+        {
+          "$ref" : "#/$defs/ruleBase"
+        }
+      ],
+      "description" : "Comma-delimited switch case items are wrapped onto separate lines.\n\nSwitch cases with multiple patterns separated by commas are expanded so each\npattern appears on its own line, aligned after `case `.\n\nLint: A switch case with multiple comma-separated items on a single line\n      raises a warning.\n\nFormat: Each item is placed on its own line with alignment indentation.\n [opt-in]"
+    },
+    "conditionalAssignment" : {
+      "allOf" : [
+        {
+          "$ref" : "#/$defs/ruleBase"
+        }
+      ],
+      "description" : "Multiline conditional assignment expressions are wrapped after the\nassignment operator.\n\nWhen assigning an `if` or `switch` expression that spans multiple lines,\nthe `=` should be on the same line as the property, and a line break\nshould follow `=` before the `if`/`switch` keyword.\n\nLint: A multiline `if`/`switch` expression on the same line as `=` raises\n      a warning.\n\nFormat: A line break is inserted after `=`.\n [opt-in]"
     },
     "consistentSwitchCaseSpacing" : {
       "allOf" : [
@@ -322,15 +315,7 @@
       ],
       "description" : "Ensure consistent blank-line spacing among all cases in a switch statement.\n\nWhen some cases in a switch are separated by blank lines and others aren't, the\ninconsistency looks sloppy. This rule normalizes to whichever style is used by\nthe majority of cases: if more cases have blank lines, missing ones are added;\nif fewer do, extra ones are removed. The last case is excluded (it's always\nfollowed by `}`).\n\nLint: If any case's spacing is inconsistent with the majority, a lint warning is raised.\n\nFormat: Blank lines are added or removed to make spacing consistent.\n [opt-in]"
     },
-    "docCommentSummary" : {
-      "allOf" : [
-        {
-          "$ref" : "#/$defs/lintOnlyBase"
-        }
-      ],
-      "description" : "All documentation comments must begin with a one-line summary of the declaration.\n\nLint: If a comment does not begin with a single-line summary, a lint error is raised.\n [opt-in]"
-    },
-    "docComments" : {
+    "convertRegularCommentToDocC" : {
       "allOf" : [
         {
           "$ref" : "#/$defs/ruleBase"
@@ -338,13 +323,29 @@
       ],
       "description" : "Use doc comments for API declarations, otherwise use regular comments.\n\nComments immediately before type declarations, properties, methods, and other\nAPI-level constructs use `///` doc comment syntax. Comments inside function\nbodies use `//` regular comment syntax, except for nested function declarations.\n\nLint: When a regular comment should be a doc comment, or vice versa.\n\nFormat: The comment style is corrected.\n [opt-in]"
     },
-    "docCommentsBeforeModifiers" : {
+    "declarations" : {
       "allOf" : [
         {
           "$ref" : "#/$defs/ruleBase"
         }
       ],
-      "description" : "Place doc comments before any declaration modifiers or attributes.\n\nDoc comments (`///` or `/** */`) should appear before all attributes and access modifiers,\nnot between them.\n\nLint: If a doc comment appears after an attribute or modifier, a lint warning is raised.\n\nFormat: The doc comment is moved before all attributes and modifiers.\n"
+      "description" : "Sort declarations between `// swiftiomatic:sort:begin` and `// swiftiomatic:sort:end` markers.\n\nDeclarations within the marked region are sorted alphabetically by name. Comments and trivia\nassociated with each declaration move with it. The markers themselves are preserved in place.\n\nLint: If declarations in a marked region are not sorted, a lint warning is raised.\n\nFormat: The declarations are reordered alphabetically by name.\n"
+    },
+    "disallowBlockComments" : {
+      "allOf" : [
+        {
+          "$ref" : "#/$defs/lintOnlyBase"
+        }
+      ],
+      "description" : "Block comments should be avoided in favor of line comments.\n\nLint: If a block comment appears, a lint error is raised.\n"
+    },
+    "documentParameters" : {
+      "allOf" : [
+        {
+          "$ref" : "#/$defs/lintOnlyBase"
+        }
+      ],
+      "description" : "Documentation comments must be complete and valid.\n\n\"Command + Option + /\" in Xcode produces a minimal valid documentation comment.\n\nLint: Documentation comments that are incomplete (e.g. missing parameter documentation) or\n      invalid (uses `Parameters` when there is only one parameter) will yield a lint error.\n [opt-in]"
     },
     "documentPublicDeclarations" : {
       "allOf" : [
@@ -354,22 +355,6 @@
       ],
       "description" : "All public or open declarations must have a top-level documentation comment.\n\nLint: If a public declaration is missing a documentation comment, a lint error is raised.\n [opt-in]"
     },
-    "emptyBraces" : {
-      "allOf" : [
-        {
-          "$ref" : "#/$defs/ruleBase"
-        }
-      ],
-      "description" : "Remove whitespace inside empty braces.\n\nEmpty brace pairs should have no whitespace between them: `{}` instead of `{ }` or\nmulti-line empty bodies. Braces containing comments are left unchanged.\n\nLint: If empty braces contain whitespace, a lint warning is raised.\n\nFormat: The whitespace is removed, collapsing the braces to `{}`.\n"
-    },
-    "emptyCollectionLiteral" : {
-      "allOf" : [
-        {
-          "$ref" : "#/$defs/ruleBase"
-        }
-      ],
-      "description" : "Never use `[<Type>]()` syntax. In call sites that should be replaced with `[]`,\nfor initializations use explicit type combined with empty array literal `let _: [<Type>] = []`\nStatic properties of a type that return that type should not include a reference to their type.\n\nLint:  Non-literal empty array initialization will yield a lint error.\nFormat: All invalid use sites would be related with empty literal (with or without explicit type annotation).\n [opt-in]"
-    },
     "emptyExtensions" : {
       "allOf" : [
         {
@@ -378,13 +363,13 @@
       ],
       "description" : "Remove empty extensions that do not add protocol conformance.\n\nAn extension with no members and no inheritance clause serves no purpose and should be removed.\nExtensions that add protocol conformance (e.g. `extension Foo: Equatable {}`) are kept even\nwhen empty, because the conformance itself is meaningful.\n\nExtensions containing only comments are preserved.\n\nLint: If an empty, non-conforming extension is found, a lint warning is raised.\n\nFormat: The entire extension declaration is removed.\n"
     },
-    "enumNamespaces" : {
+    "ensureLineBreakAtEOF" : {
       "allOf" : [
         {
           "$ref" : "#/$defs/ruleBase"
         }
       ],
-      "description" : "Convert types hosting only static members into enums.\n\nAn empty enum is the canonical way to create a namespace in Swift because it cannot\nbe instantiated. Structs and classes that contain only static members serve the same\npurpose but can be accidentally instantiated.\n\nThis rule skips types with inheritance clauses, attributes, generic parameters,\ninitializers, or any instance members.\n\nLint: A struct or final class containing only static members raises a warning.\n\nFormat: The `struct` or `final class` keyword is replaced with `enum`.\n"
+      "description" : "Ensure the file ends with exactly one newline.\n\nMany Unix tools expect files to end with a newline. Missing trailing newlines cause\n`diff` noise and `cat` concatenation issues. Extra trailing newlines waste space.\n\nLint: If the file does not end with exactly one newline, a lint warning is raised.\n\nFormat: A trailing newline is added if missing, or extra newlines are removed.\n [opt-in]"
     },
     "explicitNilCheck" : {
       "allOf" : [
@@ -433,21 +418,13 @@
       },
       "type" : "object"
     },
-    "formatSpecialComments" : {
+    "formatTypePrefix" : {
       "allOf" : [
         {
           "$ref" : "#/$defs/ruleBase"
         }
       ],
       "description" : "Use correct formatting for `TODO:`, `MARK:`, and `FIXME:` comments.\n\nThese special comment tags must be uppercase, followed by a colon and a space. `MARK:` comments\nwith a dash separator must use `// MARK: - text` format. Standalone `/// MARK:` doc comments are\nconverted to `// MARK:` since MARK is not a documentation concept.\n\nLint: If a special comment tag is not correctly formatted, a lint warning is raised.\n\nFormat: The comment is reformatted to use the correct style.\n"
-    },
-    "fullyIndirectEnum" : {
-      "allOf" : [
-        {
-          "$ref" : "#/$defs/ruleBase"
-        }
-      ],
-      "description" : "If all cases of an enum are `indirect`, the entire enum should be marked `indirect`.\n\nLint: If every case of an enum is `indirect`, but the enum itself is not, a lint error is\n      raised.\n\nFormat: Enums where all cases are `indirect` will be rewritten such that the enum is marked\n        `indirect`, and each case is not.\n"
     },
     "groupNumericLiterals" : {
       "allOf" : [
@@ -461,7 +438,15 @@
       "additionalProperties" : false,
       "description" : "hoist rule group.",
       "properties" : {
-        "fullyIndirectEnum" : {
+        "caseLet" : {
+          "allOf" : [
+            {
+              "$ref" : "#/$defs/ruleBase"
+            }
+          ],
+          "description" : "Enforce consistent placement of `let`/`var` in case patterns.\n\nControlled by `Configuration.patternLet.placement`:\n\n- `eachBinding` (default): Each variable has its own `let`/`var`:\n  `case .foo(let x, let y)`.\n- `outerPattern`: The `let`/`var` is hoisted to the pattern level:\n  `case let .foo(x, y)`.\n\nLint: Using the non-preferred placement yields a lint error.\n\nFormat: The `let`/`var` is repositioned to match the configured placement.\n"
+        },
+        "indirectEnum" : {
           "allOf" : [
             {
               "$ref" : "#/$defs/ruleBase"
@@ -469,7 +454,7 @@
           ],
           "description" : "If all cases of an enum are `indirect`, the entire enum should be marked `indirect`.\n\nLint: If every case of an enum is `indirect`, but the enum itself is not, a lint error is\n      raised.\n\nFormat: Enums where all cases are `indirect` will be rewritten such that the enum is marked\n        `indirect`, and each case is not.\n"
         },
-        "hoistAwait" : {
+        "nestedAwait" : {
           "allOf" : [
             {
               "$ref" : "#/$defs/ruleBase"
@@ -477,7 +462,7 @@
           ],
           "description" : "Move inline `await` keyword(s) to the start of the expression.\n\nWhen `await` appears inside function call arguments, it can be hoisted to wrap the\nentire call expression. This is clearer and avoids redundant `await` keywords when\nmultiple arguments are async.\n\nFor example, `foo(await bar(), await baz())` should be `await foo(bar(), baz())`.\n\nThis rule does not flag `await` inside closures (which have their own async context)\nor when the call is already wrapped in `await`.\n\nLint: Using `await` inside a function call argument raises a warning.\n\nFormat: `await` is removed from arguments and added to wrap the call expression.\n"
         },
-        "hoistTry" : {
+        "nestedTry" : {
           "allOf" : [
             {
               "$ref" : "#/$defs/ruleBase"
@@ -488,21 +473,21 @@
       },
       "type" : "object"
     },
-    "hoistAwait" : {
+    "identifiersMayOnlyUseASCII" : {
       "allOf" : [
         {
-          "$ref" : "#/$defs/ruleBase"
+          "$ref" : "#/$defs/lintOnlyBase"
         }
       ],
-      "description" : "Move inline `await` keyword(s) to the start of the expression.\n\nWhen `await` appears inside function call arguments, it can be hoisted to wrap the\nentire call expression. This is clearer and avoids redundant `await` keywords when\nmultiple arguments are async.\n\nFor example, `foo(await bar(), await baz())` should be `await foo(bar(), baz())`.\n\nThis rule does not flag `await` inside closures (which have their own async context)\nor when the call is already wrapped in `await`.\n\nLint: Using `await` inside a function call argument raises a warning.\n\nFormat: `await` is removed from arguments and added to wrap the call expression.\n"
+      "description" : "All identifiers must be ASCII.\n\nLint: If an identifier contains non-ASCII characters, a lint error is raised.\n"
     },
-    "hoistTry" : {
+    "imports" : {
       "allOf" : [
         {
           "$ref" : "#/$defs/ruleBase"
         }
       ],
-      "description" : "Move inline `try` keyword(s) to the start of the expression.\n\nWhen `try` appears inside function call arguments, it can be hoisted to wrap the\nentire call expression. This is clearer and avoids redundant `try` keywords when\nmultiple arguments throw.\n\nFor example, `foo(try bar(), try baz())` should be `try foo(bar(), baz())`.\n\nThis rule does not flag `try` inside closures (which have their own throwing context)\nor when the call is already wrapped in `try`. Only plain `try` is hoisted (not\n`try?` or `try!`).\n\nLint: Using `try` inside a function call argument raises a warning.\n\nFormat: `try` is removed from arguments and added to wrap the call expression.\n"
+      "description" : "Imports must be lexicographically ordered and (optionally) logically grouped at the top of each source file.\nThe order of the import groups is 1) regular imports, 2) declaration imports, 3) @\\_implementationOnly\nimports, and 4) @testable imports. These groups are separated by a single blank line. Blank lines in\nbetween the import declarations are removed.\n\nLogical grouping is enabled by default but can be disabled via the `sortImports.shouldGroupImports`\nconfiguration option to limit this rule to lexicographic ordering.\n\nBy default, imports within conditional compilation blocks (`#if`, `#elseif`, `#else`) are not ordered.\nThis behavior can be controlled via the `sortImports.includeConditionalImports` configuration option.\n\nLint: If an import appears anywhere other than the beginning of the file it resides in,\n      not lexicographically ordered, or (optionally) not in the appropriate import group, a lint error is\n      raised.\n\nFormat: Imports will be reordered and (optionally) grouped at the top of the file.\n"
     },
     "indentation" : {
       "additionalProperties" : false,
@@ -516,7 +501,7 @@
           "description" : "Indent #if/#elseif/#else blocks.",
           "type" : "string"
         },
-        "switchCaseIndentation" : {
+        "switchCases" : {
           "allOf" : [
             {
               "$ref" : "#/$defs/ruleBase"
@@ -530,6 +515,14 @@
         }
       },
       "type" : "object"
+    },
+    "indirectEnum" : {
+      "allOf" : [
+        {
+          "$ref" : "#/$defs/ruleBase"
+        }
+      ],
+      "description" : "If all cases of an enum are `indirect`, the entire enum should be marked `indirect`.\n\nLint: If every case of an enum is `indirect`, but the enum itself is not, a lint error is\n      raised.\n\nFormat: Enums where all cases are `indirect` will be rewritten such that the enum is marked\n        `indirect`, and each case is not.\n"
     },
     "initCoderUnavailable" : {
       "allOf" : [
@@ -575,13 +568,17 @@
           "description" : "Break between adjacent attributes.",
           "type" : "string"
         },
-        "linebreakAtEndOfFile" : {
+        "ensureLineBreakAtEOF" : {
           "allOf" : [
             {
               "$ref" : "#/$defs/ruleBase"
             }
           ],
           "description" : "Ensure the file ends with exactly one newline.\n\nMany Unix tools expect files to end with a newline. Missing trailing newlines cause\n`diff` noise and `cat` concatenation issues. Extra trailing newlines waste space.\n\nLint: If the file does not end with exactly one newline, a lint warning is raised.\n\nFormat: A trailing newline is added if missing, or extra newlines are removed.\n [opt-in]"
+        },
+        "lineLength" : {
+          "description" : "Maximum line length before wrapping.",
+          "type" : "string"
         },
         "modifiersOnSameLine" : {
           "allOf" : [
@@ -597,26 +594,6 @@
         }
       },
       "type" : "object"
-    },
-    "lineLength" : {
-      "description" : "Maximum line length before wrapping.",
-      "type" : "string"
-    },
-    "linebreakAtEndOfFile" : {
-      "allOf" : [
-        {
-          "$ref" : "#/$defs/ruleBase"
-        }
-      ],
-      "description" : "Ensure the file ends with exactly one newline.\n\nMany Unix tools expect files to end with a newline. Missing trailing newlines cause\n`diff` noise and `cat` concatenation issues. Extra trailing newlines waste space.\n\nLint: If the file does not end with exactly one newline, a lint warning is raised.\n\nFormat: A trailing newline is added if missing, or extra newlines are removed.\n [opt-in]"
-    },
-    "lowerCamelCase" : {
-      "allOf" : [
-        {
-          "$ref" : "#/$defs/lintOnlyBase"
-        }
-      ],
-      "description" : "All values should be written in lower camel-case (`lowerCamelCase`).\nUnderscores (except at the beginning of an identifier) are disallowed.\n\nThis rule does not apply to test code, defined as code which:\n  * Contains the line `import XCTest`\n  * The function is marked with `@Test` attribute\n\nLint: If an identifier contains underscores or begins with a capital letter, a lint error is\n      raised.\n"
     },
     "modifierOrder" : {
       "allOf" : [
@@ -638,9 +615,80 @@
       "description" : "Trailing commas in multi-element collection literals.",
       "type" : "string"
     },
+    "multilineFunctionChains" : {
+      "allOf" : [
+        {
+          "$ref" : "#/$defs/ruleBase"
+        }
+      ],
+      "description" : "Chained function calls are wrapped consistently: if any dot in the chain\nis on a different line, all dots are placed on separate lines.\n\nLint: A multiline chain where some dots share a line raises a warning.\n\nFormat: Dots that share a line with a closing scope or another dot are\n        moved to their own line.\n [opt-in]"
+    },
+    "multilineStatementBraces" : {
+      "allOf" : [
+        {
+          "$ref" : "#/$defs/ruleBase"
+        }
+      ],
+      "description" : "Opening braces of multiline statements are wrapped to their own line.\n\nWhen a statement signature (conditions, parameters, etc.) spans multiple\nlines, the opening `{` is moved to its own line, aligned with the\nstatement keyword.\n\nLint: A `{` on the same line as a multiline statement signature raises a\n      warning.\n\nFormat: The `{` is moved to a new line aligned with the closing `}`.\n [opt-in]"
+    },
     "multilineTrailingCommaBehavior" : {
       "description" : "Trailing comma handling in multiline lists.",
       "type" : "string"
+    },
+    "naming" : {
+      "additionalProperties" : false,
+      "description" : "naming rule group.",
+      "properties" : {
+        "camelCaseIdentifiers" : {
+          "allOf" : [
+            {
+              "$ref" : "#/$defs/lintOnlyBase"
+            }
+          ],
+          "description" : "All values should be written in lower camel-case (`lowerCamelCase`).\nUnderscores (except at the beginning of an identifier) are disallowed.\n\nThis rule does not apply to test code, defined as code which:\n  * Contains the line `import XCTest`\n  * The function is marked with `@Test` attribute\n\nLint: If an identifier contains underscores or begins with a capital letter, a lint error is\n      raised.\n"
+        },
+        "capitalizeTypeNames" : {
+          "allOf" : [
+            {
+              "$ref" : "#/$defs/lintOnlyBase"
+            }
+          ],
+          "description" : "`struct`, `class`, `enum` and `protocol` declarations should have a capitalized name.\n\nLint:  Types with un-capitalized names will yield a lint error.\n"
+        },
+        "identifiersMayOnlyUseASCII" : {
+          "allOf" : [
+            {
+              "$ref" : "#/$defs/lintOnlyBase"
+            }
+          ],
+          "description" : "All identifiers must be ASCII.\n\nLint: If an identifier contains non-ASCII characters, a lint error is raised.\n"
+        },
+        "uppercaseAcronyms" : {
+          "allOf" : [
+            {
+              "$ref" : "#/$defs/ruleBase"
+            }
+          ],
+          "description" : "Capitalize acronyms when the first character is capitalized.\n\nWhen an identifier contains a titlecased acronym (e.g. `Url`, `Json`, `Id`),\nit should be fully uppercased (e.g. `URL`, `JSON`, `ID`) for consistency with\nSwift naming conventions.\n\nThe list of recognized acronyms is configurable via `Configuration.acronyms`.\n\nLint: An identifier with a titlecased acronym raises a warning.\n\nFormat: The titlecased acronym is replaced with the uppercased form.\n [opt-in]"
+        }
+      },
+      "type" : "object"
+    },
+    "nestedAwait" : {
+      "allOf" : [
+        {
+          "$ref" : "#/$defs/ruleBase"
+        }
+      ],
+      "description" : "Move inline `await` keyword(s) to the start of the expression.\n\nWhen `await` appears inside function call arguments, it can be hoisted to wrap the\nentire call expression. This is clearer and avoids redundant `await` keywords when\nmultiple arguments are async.\n\nFor example, `foo(await bar(), await baz())` should be `await foo(bar(), baz())`.\n\nThis rule does not flag `await` inside closures (which have their own async context)\nor when the call is already wrapped in `await`.\n\nLint: Using `await` inside a function call argument raises a warning.\n\nFormat: `await` is removed from arguments and added to wrap the call expression.\n"
+    },
+    "nestedTry" : {
+      "allOf" : [
+        {
+          "$ref" : "#/$defs/ruleBase"
+        }
+      ],
+      "description" : "Move inline `try` keyword(s) to the start of the expression.\n\nWhen `try` appears inside function call arguments, it can be hoisted to wrap the\nentire call expression. This is clearer and avoids redundant `try` keywords when\nmultiple arguments throw.\n\nFor example, `foo(try bar(), try baz())` should be `try foo(bar(), baz())`.\n\nThis rule does not flag `try` inside closures (which have their own throwing context)\nor when the call is already wrapped in `try`. Only plain `try` is hoisted (not\n`try?` or `try!`).\n\nLint: Using `try` inside a function call argument raises a warning.\n\nFormat: `try` is removed from arguments and added to wrap the call expression.\n"
     },
     "noAssignmentInExpressions" : {
       "allOf" : [
@@ -657,14 +705,6 @@
         }
       ],
       "description" : "Remove backticks around `self` in optional unwrap expressions.\n\nSince Swift 4.2, `guard let self = self` is valid without backticks.\nWriting `` guard let `self` = self `` is a holdover from older Swift versions.\n\nLint: If a backticked `self` is found in an optional binding, a finding is raised.\n\nFormat: The backticks are removed.\n"
-    },
-    "noBlockComments" : {
-      "allOf" : [
-        {
-          "$ref" : "#/$defs/lintOnlyBase"
-        }
-      ],
-      "description" : "Block comments should be avoided in favor of line comments.\n\nLint: If a block comment appears, a lint error is raised.\n"
     },
     "noEmptyLinesOpeningClosingBraces" : {
       "allOf" : [
@@ -770,14 +810,6 @@
       ],
       "description" : "`@retroactive` conformances are forbidden.\n\nLint: Using `@retroactive` results in a lint error.\n"
     },
-    "noSemicolons" : {
-      "allOf" : [
-        {
-          "$ref" : "#/$defs/ruleBase"
-        }
-      ],
-      "description" : "Semicolons should not be present in Swift code.\n\nLint: If a semicolon appears anywhere, a lint error is raised.\n\nFormat: All semicolons will be replaced with line breaks.\n"
-    },
     "noTrailingClosureParens" : {
       "allOf" : [
         {
@@ -834,13 +866,13 @@
       ],
       "description" : "Use opaque generic parameters (`some Protocol`) instead of named generic parameters\nwith constraints (`<T: Protocol>`) where equivalent.\n\nThis rule applies to `func`, `init`, and `subscript` declarations. A generic type parameter\nis eligible for conversion when it appears exactly once in the parameter list and is not\nreferenced in the return type, function body, attributes, typed throws, or other generic\nconstraints.\n\nLint: A lint warning is raised when a generic parameter can be replaced with an opaque parameter.\n\nFormat: The generic parameter is replaced with `some Protocol` in the parameter type.\n [opt-in]"
     },
-    "patternLetPlacement" : {
+    "precedeModifiers" : {
       "allOf" : [
         {
           "$ref" : "#/$defs/ruleBase"
         }
       ],
-      "description" : "Enforce consistent placement of `let`/`var` in case patterns.\n\nControlled by `Configuration.patternLet.placement`:\n\n- `eachBinding` (default): Each variable has its own `let`/`var`:\n  `case .foo(let x, let y)`.\n- `outerPattern`: The `let`/`var` is hoisted to the pattern level:\n  `case let .foo(x, y)`.\n\nLint: Using the non-preferred placement yields a lint error.\n\nFormat: The `let`/`var` is repositioned to match the configured placement.\n"
+      "description" : "Place doc comments before any declaration modifiers or attributes.\n\nDoc comments (`///` or `/** */`) should appear before all attributes and access modifiers,\nnot between them.\n\nLint: If a doc comment appears after an attribute or modifier, a lint warning is raised.\n\nFormat: The doc comment is moved before all attributes and modifiers.\n"
     },
     "preferAngleBracketExtensions" : {
       "allOf" : [
@@ -1026,14 +1058,6 @@
       "additionalProperties" : false,
       "description" : "redundancies rule group.",
       "properties" : {
-        "noSemicolons" : {
-          "allOf" : [
-            {
-              "$ref" : "#/$defs/ruleBase"
-            }
-          ],
-          "description" : "Semicolons should not be present in Swift code.\n\nLint: If a semicolon appears anywhere, a lint error is raised.\n\nFormat: All semicolons will be replaced with line breaks.\n"
-        },
         "redundantAccessControl" : {
           "allOf" : [
             {
@@ -1225,6 +1249,14 @@
             }
           ],
           "description" : "Remove `@ViewBuilder` when the body is a single expression.\n\n`@ViewBuilder` is unnecessary on computed properties and functions that return a single\nview expression, since Swift can infer the return type without the result builder.\n\nThis rule flags `@ViewBuilder` on:\n- Computed properties with a single-expression getter\n- Functions with a single-expression body\n\nIt does NOT flag `@ViewBuilder` on:\n- Closures (parameters)\n- Bodies with multiple statements, `if/else`, `switch`, or `ForEach`\n- Protocol requirements\n\nLint: If a redundant `@ViewBuilder` is found, a lint warning is raised.\n\nFormat: The redundant `@ViewBuilder` attribute is removed.\n [opt-in]"
+        },
+        "semicolons" : {
+          "allOf" : [
+            {
+              "$ref" : "#/$defs/ruleBase"
+            }
+          ],
+          "description" : "Semicolons should not be present in Swift code.\n\nLint: If a semicolon appears anywhere, a lint error is raised.\n\nFormat: All semicolons will be replaced with line breaks.\n"
         }
       },
       "type" : "object"
@@ -1433,6 +1465,22 @@
       ],
       "description" : "Replace `forEach` with `for-in` loop unless its argument is a function reference.\n\nLint:  invalid use of `forEach` yield will yield a lint error.\n"
     },
+    "requireSummary" : {
+      "allOf" : [
+        {
+          "$ref" : "#/$defs/lintOnlyBase"
+        }
+      ],
+      "description" : "All documentation comments must begin with a one-line summary of the declaration.\n\nLint: If a comment does not begin with a single-line summary, a lint error is raised.\n [opt-in]"
+    },
+    "semicolons" : {
+      "allOf" : [
+        {
+          "$ref" : "#/$defs/ruleBase"
+        }
+      ],
+      "description" : "Semicolons should not be present in Swift code.\n\nLint: If a semicolon appears anywhere, a lint error is raised.\n\nFormat: All semicolons will be replaced with line breaks.\n"
+    },
     "simplifyGenericConstraints" : {
       "allOf" : [
         {
@@ -1441,11 +1489,27 @@
       ],
       "description" : "Use inline generic constraints (`<T: Foo>`) instead of where clauses\n(`<T> where T: Foo`) for simple protocol conformance constraints.\n\nWhen a generic parameter has a simple conformance constraint in the `where` clause,\nit can be moved inline into the generic parameter list for conciseness.\n\nSame-type constraints (`T == Foo`), associated type constraints (`T.Element: Foo`),\nand parameters that already have an inline constraint are not modified.\n\nLint: A `where` clause with a simple conformance constraint that could be inlined raises a warning.\n\nFormat: The conformance constraint is moved from the `where` clause to the generic parameter.\n"
     },
+    "singleLineBodies" : {
+      "allOf" : [
+        {
+          "$ref" : "#/$defs/ruleBase"
+        }
+      ],
+      "description" : "Controls whether single-statement bodies are kept inline or wrapped to\nmultiple lines.\n\n**Wrap mode** (default): Single-line bodies in conditionals, functions,\nloops, and properties are expanded onto multiple lines.\n\n**Inline mode**: Multi-line single-statement bodies are collapsed onto the\nsame line as the declaration, provided the result fits within the configured\nline length.\n\nLint: A body whose formatting doesn't match the mode raises a warning.\n\nFormat: The body is wrapped or inlined to match the mode.\n [opt-in]"
+    },
+    "singleLineComments" : {
+      "allOf" : [
+        {
+          "$ref" : "#/$defs/ruleBase"
+        }
+      ],
+      "description" : "Single-line comments that exceed the configured line length are wrapped.\n\nLint: A `//` or `///` comment that exceeds the line length raises a\n      warning.\n\nFormat: The comment is word-wrapped, continuing on the next line with the\n        same prefix and indentation.\n [opt-in]"
+    },
     "sort" : {
       "additionalProperties" : false,
       "description" : "sort rule group.",
       "properties" : {
-        "sortDeclarations" : {
+        "declarations" : {
           "allOf" : [
             {
               "$ref" : "#/$defs/ruleBase"
@@ -1453,7 +1517,7 @@
           ],
           "description" : "Sort declarations between `// swiftiomatic:sort:begin` and `// swiftiomatic:sort:end` markers.\n\nDeclarations within the marked region are sorted alphabetically by name. Comments and trivia\nassociated with each declaration move with it. The markers themselves are preserved in place.\n\nLint: If declarations in a marked region are not sorted, a lint warning is raised.\n\nFormat: The declarations are reordered alphabetically by name.\n"
         },
-        "sortImports" : {
+        "imports" : {
           "allOf" : [
             {
               "$ref" : "#/$defs/ruleBase"
@@ -1461,7 +1525,7 @@
           ],
           "description" : "Imports must be lexicographically ordered and (optionally) logically grouped at the top of each source file.\nThe order of the import groups is 1) regular imports, 2) declaration imports, 3) @\\_implementationOnly\nimports, and 4) @testable imports. These groups are separated by a single blank line. Blank lines in\nbetween the import declarations are removed.\n\nLogical grouping is enabled by default but can be disabled via the `sortImports.shouldGroupImports`\nconfiguration option to limit this rule to lexicographic ordering.\n\nBy default, imports within conditional compilation blocks (`#if`, `#elseif`, `#else`) are not ordered.\nThis behavior can be controlled via the `sortImports.includeConditionalImports` configuration option.\n\nLint: If an import appears anywhere other than the beginning of the file it resides in,\n      not lexicographically ordered, or (optionally) not in the appropriate import group, a lint error is\n      raised.\n\nFormat: Imports will be reordered and (optionally) grouped at the top of the file.\n"
         },
-        "sortSwitchCases" : {
+        "switchCases" : {
           "allOf" : [
             {
               "$ref" : "#/$defs/ruleBase"
@@ -1469,7 +1533,7 @@
           ],
           "description" : "Sort switch case items alphabetically within each case.\n\nWhen a case matches multiple patterns (e.g. `case .b, .a, .c:`), the patterns are sorted\nlexicographically. Numeric literals are compared by value (including hex, octal, and binary).\nCases with `where` clauses are only sorted if the `where` clause ends up on the last item.\n\nLint: If case items are not sorted, a lint warning is raised.\n\nFormat: The case items are reordered alphabetically.\n [opt-in]"
         },
-        "sortTypeAliases" : {
+        "typeAliases" : {
           "allOf" : [
             {
               "$ref" : "#/$defs/ruleBase"
@@ -1480,60 +1544,36 @@
       },
       "type" : "object"
     },
-    "sortDeclarations" : {
-      "allOf" : [
-        {
-          "$ref" : "#/$defs/ruleBase"
-        }
-      ],
-      "description" : "Sort declarations between `// swiftiomatic:sort:begin` and `// swiftiomatic:sort:end` markers.\n\nDeclarations within the marked region are sorted alphabetically by name. Comments and trivia\nassociated with each declaration move with it. The markers themselves are preserved in place.\n\nLint: If declarations in a marked region are not sorted, a lint warning is raised.\n\nFormat: The declarations are reordered alphabetically by name.\n"
-    },
-    "sortImports" : {
-      "allOf" : [
-        {
-          "$ref" : "#/$defs/ruleBase"
-        }
-      ],
-      "description" : "Imports must be lexicographically ordered and (optionally) logically grouped at the top of each source file.\nThe order of the import groups is 1) regular imports, 2) declaration imports, 3) @\\_implementationOnly\nimports, and 4) @testable imports. These groups are separated by a single blank line. Blank lines in\nbetween the import declarations are removed.\n\nLogical grouping is enabled by default but can be disabled via the `sortImports.shouldGroupImports`\nconfiguration option to limit this rule to lexicographic ordering.\n\nBy default, imports within conditional compilation blocks (`#if`, `#elseif`, `#else`) are not ordered.\nThis behavior can be controlled via the `sortImports.includeConditionalImports` configuration option.\n\nLint: If an import appears anywhere other than the beginning of the file it resides in,\n      not lexicographically ordered, or (optionally) not in the appropriate import group, a lint error is\n      raised.\n\nFormat: Imports will be reordered and (optionally) grouped at the top of the file.\n"
-    },
-    "sortSwitchCases" : {
-      "allOf" : [
-        {
-          "$ref" : "#/$defs/ruleBase"
-        }
-      ],
-      "description" : "Sort switch case items alphabetically within each case.\n\nWhen a case matches multiple patterns (e.g. `case .b, .a, .c:`), the patterns are sorted\nlexicographically. Numeric literals are compared by value (including hex, octal, and binary).\nCases with `where` clauses are only sorted if the `where` clause ends up on the last item.\n\nLint: If case items are not sorted, a lint warning is raised.\n\nFormat: The case items are reordered alphabetically.\n [opt-in]"
-    },
-    "sortTypeAliases" : {
-      "allOf" : [
-        {
-          "$ref" : "#/$defs/ruleBase"
-        }
-      ],
-      "description" : "Sort protocol composition typealiases alphabetically.\n\nWhen a typealias combines multiple protocols with `&` (e.g. `typealias Deps = Foo & Bar & Baz`),\nthe types are sorted lexicographically. Duplicate types are removed. The `any` keyword, if\npresent, is preserved at the beginning.\n\nLint: If the composition types are not sorted, a lint warning is raised.\n\nFormat: The types are reordered alphabetically and duplicates are removed.\n"
-    },
     "spaces" : {
       "additionalProperties" : false,
       "description" : "spaces rule group.",
       "properties" : {
-        "emptyBraces" : {
+        "collapseEmptyBraces" : {
           "allOf" : [
             {
               "$ref" : "#/$defs/ruleBase"
             }
           ],
           "description" : "Remove whitespace inside empty braces.\n\nEmpty brace pairs should have no whitespace between them: `{}` instead of `{ }` or\nmulti-line empty bodies. Braces containing comments are left unchanged.\n\nLint: If empty braces contain whitespace, a lint warning is raised.\n\nFormat: The whitespace is removed, collapsing the braces to `{}`.\n"
+        },
+        "spacesAroundRangeFormationOperators" : {
+          "description" : "Force spaces around ... and ..<.",
+          "type" : "string"
+        },
+        "spacesBeforeEndOfLineComments" : {
+          "description" : "Spaces before // comments.",
+          "type" : "string"
         }
       },
       "type" : "object"
     },
-    "spacesAroundRangeFormationOperators" : {
-      "description" : "Force spaces around ... and ..<.",
-      "type" : "string"
-    },
-    "spacesBeforeEndOfLineComments" : {
-      "description" : "Spaces before // comments.",
-      "type" : "string"
+    "staticStructShouldBeEnum" : {
+      "allOf" : [
+        {
+          "$ref" : "#/$defs/ruleBase"
+        }
+      ],
+      "description" : "Convert types hosting only static members into enums.\n\nAn empty enum is the canonical way to create a namespace in Swift because it cannot\nbe instantiated. Structs and classes that contain only static members serve the same\npurpose but can be accidentally instantiated.\n\nThis rule skips types with inheritance clauses, attributes, generic parameters,\ninitializers, or any instance members.\n\nLint: A struct or final class containing only static members raises a warning.\n\nFormat: The `struct` or `final class` keyword is replaced with `enum`.\n"
     },
     "strongOutlets" : {
       "allOf" : [
@@ -1551,7 +1591,7 @@
       ],
       "description" : "Remove the `test` prefix from Swift Testing `@Test` function names.\n\nIn Swift Testing, test methods are identified by the `@Test` attribute, not by a naming\nconvention. The `test` prefix is redundant and should be removed for idiomatic Swift Testing.\n\nThe rename is skipped when:\n- The remainder after removing `test` would be empty, start with a digit, or be a Swift keyword\n- The new name would collide with an existing identifier in the same scope\n\nLint: A warning is raised for `@Test` functions with a `test` prefix.\n\nFormat: The `test` prefix is removed and the first letter is lowercased.\n [opt-in]"
     },
-    "switchCaseIndentation" : {
+    "switchCases" : {
       "allOf" : [
         {
           "$ref" : "#/$defs/ruleBase"
@@ -1571,13 +1611,21 @@
       ],
       "description" : "Test methods should be `internal`; helper properties and functions should be `private`.\n\nIn test suites, test methods don't need explicit access control (internal is the default and\ncorrect level). Non-test helpers should be `private` since they're only used within the suite.\n\nLint: A warning is raised for incorrect access control on test suite members.\n\nFormat: Access control is corrected.\n [opt-in]"
     },
-    "tripleSlashDocComments" : {
+    "tripleSlashDocC" : {
       "allOf" : [
         {
           "$ref" : "#/$defs/ruleBase"
         }
       ],
       "description" : "Documentation comments must use the `///` form.\n\nThis is similar to `NoBlockComments` but is meant to prevent documentation block comments.\n\nLint: If a doc block comment appears, a lint error is raised.\n\nFormat: If a doc block comment appears on its own on a line, or if a doc block comment spans\n        multiple lines without appearing on the same line as code, it will be replaced with\n        multiple doc line comments.\n"
+    },
+    "typeAliases" : {
+      "allOf" : [
+        {
+          "$ref" : "#/$defs/ruleBase"
+        }
+      ],
+      "description" : "Sort protocol composition typealiases alphabetically.\n\nWhen a typealias combines multiple protocols with `&` (e.g. `typealias Deps = Foo & Bar & Baz`),\nthe types are sorted lexicographically. Duplicate types are removed. The `any` keyword, if\npresent, is preserved at the beginning.\n\nLint: If the composition types are not sorted, a lint warning is raised.\n\nFormat: The types are reordered alphabetically and duplicates are removed.\n"
     },
     "uRLMacro" : {
       "allOf" : [
@@ -1595,13 +1643,21 @@
       ],
       "description" : "Mark unused function arguments with `_`.\n\nDetects unused parameters in functions, initializers, subscripts, closures,\nand for-loop variables, and replaces them with `_`.\n\nFor named function parameters, the internal name is replaced with `_`\n(e.g., `func foo(bar: Int)` → `func foo(bar _: Int)`). For unnamed\nparameters, the name is removed (`func foo(_ bar: Int)` → `func foo(_: Int)`).\n\nFor operator functions and subscripts, the parameter name is replaced\nwith `_` directly since external labels are unnecessary.\n\nLint: When a parameter or loop variable is unused.\n\nFormat: The unused parameter or variable is replaced with `_`.\n"
     },
-    "validateDocumentationComments" : {
+    "uppercaseAcronyms" : {
       "allOf" : [
         {
-          "$ref" : "#/$defs/lintOnlyBase"
+          "$ref" : "#/$defs/ruleBase"
         }
       ],
-      "description" : "Documentation comments must be complete and valid.\n\n\"Command + Option + /\" in Xcode produces a minimal valid documentation comment.\n\nLint: Documentation comments that are incomplete (e.g. missing parameter documentation) or\n      invalid (uses `Parameters` when there is only one parameter) will yield a lint error.\n [opt-in]"
+      "description" : "Capitalize acronyms when the first character is capitalized.\n\nWhen an identifier contains a titlecased acronym (e.g. `Url`, `Json`, `Id`),\nit should be fully uppercased (e.g. `URL`, `JSON`, `ID`) for consistency with\nSwift naming conventions.\n\nThe list of recognized acronyms is configurable via `Configuration.acronyms`.\n\nLint: An identifier with a titlecased acronym raises a warning.\n\nFormat: The titlecased acronym is replaced with the uppercased form.\n [opt-in]"
+    },
+    "useShortArrayLiteral" : {
+      "allOf" : [
+        {
+          "$ref" : "#/$defs/ruleBase"
+        }
+      ],
+      "description" : "Never use `[<Type>]()` syntax. In call sites that should be replaced with `[]`,\nfor initializations use explicit type combined with empty array literal `let _: [<Type>] = []`\nStatic properties of a type that return that type should not include a reference to their type.\n\nLint:  Non-literal empty array initialization will yield a lint error.\nFormat: All invalid use sites would be related with empty literal (with or without explicit type annotation).\n [opt-in]"
     },
     "validateTestCases" : {
       "allOf" : [
@@ -1621,7 +1677,7 @@
       "additionalProperties" : false,
       "description" : "wrap rule group.",
       "properties" : {
-        "wrapCompoundCaseStatements" : {
+        "compoundCaseStatements" : {
           "allOf" : [
             {
               "$ref" : "#/$defs/ruleBase"
@@ -1629,7 +1685,7 @@
           ],
           "description" : "Comma-delimited switch case items are wrapped onto separate lines.\n\nSwitch cases with multiple patterns separated by commas are expanded so each\npattern appears on its own line, aligned after `case `.\n\nLint: A switch case with multiple comma-separated items on a single line\n      raises a warning.\n\nFormat: Each item is placed on its own line with alignment indentation.\n [opt-in]"
         },
-        "wrapConditionalAssignment" : {
+        "conditionalAssignment" : {
           "allOf" : [
             {
               "$ref" : "#/$defs/ruleBase"
@@ -1637,7 +1693,7 @@
           ],
           "description" : "Multiline conditional assignment expressions are wrapped after the\nassignment operator.\n\nWhen assigning an `if` or `switch` expression that spans multiple lines,\nthe `=` should be on the same line as the property, and a line break\nshould follow `=` before the `if`/`switch` keyword.\n\nLint: A multiline `if`/`switch` expression on the same line as `=` raises\n      a warning.\n\nFormat: A line break is inserted after `=`.\n [opt-in]"
         },
-        "wrapMultilineFunctionChains" : {
+        "multilineFunctionChains" : {
           "allOf" : [
             {
               "$ref" : "#/$defs/ruleBase"
@@ -1645,7 +1701,7 @@
           ],
           "description" : "Chained function calls are wrapped consistently: if any dot in the chain\nis on a different line, all dots are placed on separate lines.\n\nLint: A multiline chain where some dots share a line raises a warning.\n\nFormat: Dots that share a line with a closing scope or another dot are\n        moved to their own line.\n [opt-in]"
         },
-        "wrapMultilineStatementBraces" : {
+        "multilineStatementBraces" : {
           "allOf" : [
             {
               "$ref" : "#/$defs/ruleBase"
@@ -1653,7 +1709,7 @@
           ],
           "description" : "Opening braces of multiline statements are wrapped to their own line.\n\nWhen a statement signature (conditions, parameters, etc.) spans multiple\nlines, the opening `{` is moved to its own line, aligned with the\nstatement keyword.\n\nLint: A `{` on the same line as a multiline statement signature raises a\n      warning.\n\nFormat: The `{` is moved to a new line aligned with the closing `}`.\n [opt-in]"
         },
-        "wrapSingleLineBodies" : {
+        "singleLineBodies" : {
           "allOf" : [
             {
               "$ref" : "#/$defs/ruleBase"
@@ -1661,7 +1717,7 @@
           ],
           "description" : "Controls whether single-statement bodies are kept inline or wrapped to\nmultiple lines.\n\n**Wrap mode** (default): Single-line bodies in conditionals, functions,\nloops, and properties are expanded onto multiple lines.\n\n**Inline mode**: Multi-line single-statement bodies are collapsed onto the\nsame line as the declaration, provided the result fits within the configured\nline length.\n\nLint: A body whose formatting doesn't match the mode raises a warning.\n\nFormat: The body is wrapped or inlined to match the mode.\n [opt-in]"
         },
-        "wrapSingleLineComments" : {
+        "singleLineComments" : {
           "allOf" : [
             {
               "$ref" : "#/$defs/ruleBase"
@@ -1671,54 +1727,6 @@
         }
       },
       "type" : "object"
-    },
-    "wrapCompoundCaseStatements" : {
-      "allOf" : [
-        {
-          "$ref" : "#/$defs/ruleBase"
-        }
-      ],
-      "description" : "Comma-delimited switch case items are wrapped onto separate lines.\n\nSwitch cases with multiple patterns separated by commas are expanded so each\npattern appears on its own line, aligned after `case `.\n\nLint: A switch case with multiple comma-separated items on a single line\n      raises a warning.\n\nFormat: Each item is placed on its own line with alignment indentation.\n [opt-in]"
-    },
-    "wrapConditionalAssignment" : {
-      "allOf" : [
-        {
-          "$ref" : "#/$defs/ruleBase"
-        }
-      ],
-      "description" : "Multiline conditional assignment expressions are wrapped after the\nassignment operator.\n\nWhen assigning an `if` or `switch` expression that spans multiple lines,\nthe `=` should be on the same line as the property, and a line break\nshould follow `=` before the `if`/`switch` keyword.\n\nLint: A multiline `if`/`switch` expression on the same line as `=` raises\n      a warning.\n\nFormat: A line break is inserted after `=`.\n [opt-in]"
-    },
-    "wrapMultilineFunctionChains" : {
-      "allOf" : [
-        {
-          "$ref" : "#/$defs/ruleBase"
-        }
-      ],
-      "description" : "Chained function calls are wrapped consistently: if any dot in the chain\nis on a different line, all dots are placed on separate lines.\n\nLint: A multiline chain where some dots share a line raises a warning.\n\nFormat: Dots that share a line with a closing scope or another dot are\n        moved to their own line.\n [opt-in]"
-    },
-    "wrapMultilineStatementBraces" : {
-      "allOf" : [
-        {
-          "$ref" : "#/$defs/ruleBase"
-        }
-      ],
-      "description" : "Opening braces of multiline statements are wrapped to their own line.\n\nWhen a statement signature (conditions, parameters, etc.) spans multiple\nlines, the opening `{` is moved to its own line, aligned with the\nstatement keyword.\n\nLint: A `{` on the same line as a multiline statement signature raises a\n      warning.\n\nFormat: The `{` is moved to a new line aligned with the closing `}`.\n [opt-in]"
-    },
-    "wrapSingleLineBodies" : {
-      "allOf" : [
-        {
-          "$ref" : "#/$defs/ruleBase"
-        }
-      ],
-      "description" : "Controls whether single-statement bodies are kept inline or wrapped to\nmultiple lines.\n\n**Wrap mode** (default): Single-line bodies in conditionals, functions,\nloops, and properties are expanded onto multiple lines.\n\n**Inline mode**: Multi-line single-statement bodies are collapsed onto the\nsame line as the declaration, provided the result fits within the configured\nline length.\n\nLint: A body whose formatting doesn't match the mode raises a warning.\n\nFormat: The body is wrapped or inlined to match the mode.\n [opt-in]"
-    },
-    "wrapSingleLineComments" : {
-      "allOf" : [
-        {
-          "$ref" : "#/$defs/ruleBase"
-        }
-      ],
-      "description" : "Single-line comments that exceed the configured line length are wrapped.\n\nLint: A `//` or `///` comment that exceeds the line length raises a\n      warning.\n\nFormat: The comment is word-wrapped, continuing on the next line with the\n        same prefix and indentation.\n [opt-in]"
     }
   },
   "title" : "Swiftiomatic Configuration",

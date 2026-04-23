@@ -12,9 +12,10 @@
 		"consistentSwitchCaseSpacing": { "lint": "no", "rewrite": false },
 		"maximumBlankLines": 1
 	},
-	"capitalization": {
+	"naming": {
 		"camelCaseIdentifiers": { "lint": "warn" },
 		"capitalizeTypeNames": { "lint": "warn" },
+		"identifiersMayOnlyUseASCII": { "lint": "warn" },
 		"uppercaseAcronyms": {
 			"lint": "no",
 			"rewrite": false,
@@ -70,10 +71,10 @@
 	"groupNumericLiterals": { "lint": "warn", "rewrite": true },
 	"hoist": {
 		"awaitWithinExpression": { "lint": "warn", "rewrite": true },
+		"caseLet": { "lint": "warn", "placement": "eachBinding", "rewrite": true },
 		"indirectEnum": { "lint": "warn", "rewrite": true },
 		"tryWithinExpression": { "lint": "warn", "rewrite": true }
 	},
-	"identifiersMayOnlyUseASCII": { "lint": "warn" },
 	"indentation": {
 		"blankLines": false,
 		"conditionalCompilationBlocks": false,
@@ -83,6 +84,7 @@
 	"initCoderUnavailable": { "lint": "no", "rewrite": false },
 	"leadingDotOperators": { "lint": "warn", "rewrite": true },
 	"lineBreaks": {
+		"lineLength": 100,
 		"aroundMultilineExpressionChainComponents": false,
 		"beforeControlFlowKeywords": false,
 		"beforeEachArgument": false,
@@ -93,7 +95,6 @@
 		"modifiersOnSameLine": { "lint": "warn", "rewrite": true },
 		"respectsExistingLineBreaks": true
 	},
-	"lineLength": 100,
 	"modifierOrder": { "lint": "warn", "rewrite": true },
 	"multiElementCollectionTrailingCommas": true,
 	"multilineTrailingCommaBehavior": "keptAsWritten",
@@ -125,11 +126,6 @@
 	"oneDeclarationPerLine": { "lint": "warn", "rewrite": true },
 	"onlyOneTrailingClosureArgument": { "lint": "warn" },
 	"opaqueGenericParameters": { "lint": "no", "rewrite": false },
-	"patternLetPlacement": {
-		"lint": "warn",
-		"placement": "eachBinding",
-		"rewrite": true
-	},
 	"preferAngleBracketExtensions": { "lint": "warn", "rewrite": true },
 	"preferAnyObject": { "lint": "warn", "rewrite": true },
 	"preferAssertionFailure": { "lint": "warn", "rewrite": true },
@@ -195,8 +191,10 @@
 		"switchCases": { "lint": "no", "rewrite": false },
 		"typeAliases": { "lint": "no", "rewrite": false }
 	},
-	"spacesAroundRangeFormationOperators": false,
-	"spacesBeforeEndOfLineComments": 2,
+	"spacing": {
+		"spacesAroundRangeFormationOperators": false,
+		"spacesBeforeEndOfLineComments": 2
+	},
 	"staticStructShouldBeEnum": { "lint": "warn", "rewrite": true },
 	"strongOutlets": { "lint": "warn", "rewrite": true },
 	"swiftTestingTestCaseNames": { "lint": "no", "rewrite": false },

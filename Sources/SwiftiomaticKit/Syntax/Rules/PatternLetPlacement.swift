@@ -25,6 +25,8 @@ import SwiftSyntax
 ///
 /// Format: The `let`/`var` is repositioned to match the configured placement.
 final class PatternLetPlacement: RewriteSyntaxRule<PatternLetConfiguration> {
+    override class var key: String { "caseLet" }
+    override class var group: ConfigurationGroup? { .hoist }
 
   // MARK: - Visitors
 

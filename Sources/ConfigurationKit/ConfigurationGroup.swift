@@ -26,7 +26,7 @@ package struct ConfigurationGroup: Sendable, Hashable {
         case lineBreaks
         case indentation
         case redundancies
-        case capitalization
+        case naming
     }
 
     // MARK: - Static accessors for use in rule/setting declarations
@@ -41,5 +41,5 @@ package struct ConfigurationGroup: Sendable, Hashable {
     package static let lineBreaks = ConfigurationGroup(.lineBreaks)
     package static let indentation = ConfigurationGroup(.indentation)
     package static let redundancies = ConfigurationGroup(.redundancies)
-    package static let capitalization = ConfigurationGroup(.capitalization)
+    package static let naming = ConfigurationGroup(.naming)
 }

@@ -23,7 +23,7 @@ import SwiftSyntax
 ///       raised.
 final class LowerCamelCase: LintSyntaxRule<LintOnlyValue> {
     override class var key: String { "camelCaseIdentifiers" }
-    override class var group: ConfigurationGroup? { .capitalization }
+    override class var group: ConfigurationGroup? { .naming }
 
     /// Stores function decls that are test cases.
     private var testCaseFuncs = Set<FunctionDeclSyntax>()
