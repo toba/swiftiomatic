@@ -92,6 +92,15 @@ jobs:
               bin.install "sm"
             end
 
+            def caveats
+              <<~EOS
+                To use sm as Xcode's swift-format, run:
+                  sudo ln -sf #{bin}/sm /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swift-format
+
+                Re-run after Xcode updates (the symlink gets overwritten).
+              EOS
+            end
+
             test do
               assert_match "AST-based", shell_output("#{bin}/sm --help")
             end
