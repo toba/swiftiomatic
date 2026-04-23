@@ -7,6 +7,10 @@ priority: normal
 created_at: 2026-04-19T17:31:45Z
 updated_at: 2026-04-19T17:51:12Z
 parent: rcc-z52
+sync:
+    github:
+        issue_number: "354"
+        synced_at: "2026-04-23T05:30:28Z"
 ---
 
 `GeneratePaths.swift` uses `#filePath` to locate the source tree. Plugins receive paths via the plugin context API (`context.package.directory`, target source directories). Refactor to accept injected paths.

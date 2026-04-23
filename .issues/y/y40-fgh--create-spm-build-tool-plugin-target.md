@@ -10,6 +10,10 @@ parent: rcc-z52
 blocked_by:
     - su3-lef
     - ugx-hol
+sync:
+    github:
+        issue_number: "352"
+        synced_at: "2026-04-23T05:30:27Z"
 ---
 
 Add a `.plugin` target to Package.swift that runs the generator automatically before each build.

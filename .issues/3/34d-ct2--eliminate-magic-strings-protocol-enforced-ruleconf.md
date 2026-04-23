@@ -8,6 +8,10 @@ created_at: 2026-04-18T01:18:11Z
 updated_at: 2026-04-18T02:17:05Z
 blocked_by:
     - lbt-zsc
+sync:
+    github:
+        issue_number: "331"
+        synced_at: "2026-04-23T05:30:22Z"
 ---
 
 ## Problem

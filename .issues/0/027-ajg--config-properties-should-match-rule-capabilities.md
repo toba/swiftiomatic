@@ -6,6 +6,10 @@ type: task
 priority: normal
 created_at: 2026-04-23T02:45:17Z
 updated_at: 2026-04-23T02:48:50Z
+sync:
+    github:
+        issue_number: "346"
+        synced_at: "2026-04-23T05:30:25Z"
 ---
 
 - [x] Create LintOnlyValue in ConfigurationKit

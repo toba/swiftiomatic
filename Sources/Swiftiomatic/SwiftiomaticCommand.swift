@@ -20,6 +20,7 @@ struct SwiftiomaticCommand: ParsableCommand {
         commandName: "sm",
         abstract: "Format or lint Swift source code",
         subcommands: [
+            Doctor.self,
             DumpConfiguration.self,
             Format.self,
             Lint.self,

@@ -6,6 +6,10 @@ type: feature
 priority: normal
 created_at: 2026-04-18T18:50:07Z
 updated_at: 2026-04-18T18:59:38Z
+sync:
+    github:
+        issue_number: "332"
+        synced_at: "2026-04-23T05:30:22Z"
 ---
 
 - [x] Create LayoutDescriptor protocol in SwiftiomaticKit (ConfigurationKit can't reference Configuration)

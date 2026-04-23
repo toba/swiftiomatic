@@ -6,6 +6,10 @@ type: task
 priority: normal
 created_at: 2026-04-18T00:27:31Z
 updated_at: 2026-04-18T00:30:23Z
+sync:
+    github:
+        issue_number: "327"
+        synced_at: "2026-04-23T05:30:22Z"
 ---
 
 Group lineBreak* pretty-print settings and LinebreakAtEndOfFile rule under UpdateLineBreak umbrella config category.

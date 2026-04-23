@@ -1,5 +1,26 @@
 # Changelog
 
+## Week of Apr 19 – Apr 25, 2026
+
+### ✨ Features
+
+- Add `doctor` subcommand; JSON Schema validation + full config parsing
+- Simplify rule configuration; uniform object shape, remove shorthand
+- Convert code generator to SPM build tool plugin
+- Rationalize rule value types; `SyntaxRuleValue` protocol replaces `RuleHandling` enum
+
+### 🗜️ Tweaks
+
+- Config properties match rule capabilities; `LintOnlyValue` for 16 lint-only rules
+- Fix JSON schema code; rewrite `SchemaValidator` on typed `JSONValue`, eliminate ObjC bridging
+- Split `TokenStreamCreator.swift` into 17 extension files
+- Co-locate layout rule config with `TokenStream` implementation
+- Generate `TokenStreamCreator` forwarding stubs
+- Refactor `GeneratePaths` to accept injected base paths
+- Handle `schema.json` output location; manual step outside plugin
+- Break `GeneratorKit` → `SwiftiomaticKit` circular dependency
+- Remove standalone `Generator` executable target
+
 ## Week of Apr 12 – Apr 18, 2026
 
 ### ✨ Features

@@ -6,6 +6,10 @@ type: feature
 priority: normal
 created_at: 2026-04-17T22:56:48Z
 updated_at: 2026-04-17T23:13:39Z
+sync:
+    github:
+        issue_number: "328"
+        synced_at: "2026-04-23T05:30:22Z"
 ---
 
 - [x] Update RuleRegistryGenerator to produce formatRules/lintRules sets

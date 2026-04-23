@@ -9,6 +9,10 @@ updated_at: 2026-04-19T18:15:04Z
 parent: rcc-z52
 blocked_by:
     - y40-fgh
+sync:
+    github:
+        issue_number: "350"
+        synced_at: "2026-04-23T05:30:27Z"
 ---
 
 Once the build tool plugin is working, clean up the old manual generator.

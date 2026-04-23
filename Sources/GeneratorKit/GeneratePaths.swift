@@ -57,9 +57,14 @@ package struct GeneratePaths {
     /// The generated `TokenStream` subclass with forwarding stubs.
     package let tokenStreamStubsFile: URL
 
+    /// The generated Swift file embedding the JSON Schema as a string literal.
+    package let configurationSchemaSwiftFile: URL
+
     // MARK: - Initializers
 
     /// Creates paths rooted at the given package directory.
+    ///
+    /// Output files go to `Sources/SwiftiomaticKit/Generated/`.
     package init(packageRoot: URL) {
         let generated =
             packageRoot
@@ -92,5 +97,6 @@ package struct GeneratePaths {
             .appending(path: "RuleDocumentation.md")
         configurationSchemaFile = packageRoot.appending(path: "schema.json")
         tokenStreamStubsFile = outputDirectory.appending(path: "TokenStream+Generated.swift")
+        configurationSchemaSwiftFile = outputDirectory.appending(path: "ConfigurationSchema+Generated.swift")
     }
 }

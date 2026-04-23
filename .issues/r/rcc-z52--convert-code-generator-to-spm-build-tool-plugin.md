@@ -6,6 +6,10 @@ type: feature
 priority: normal
 created_at: 2026-04-19T17:27:58Z
 updated_at: 2026-04-19T18:15:16Z
+sync:
+    github:
+        issue_number: "349"
+        synced_at: "2026-04-23T05:30:25Z"
 ---
 
 Convert the manual `swift run generate-swiftiomatic` step into an SPM build tool plugin so generated files stay in sync automatically on every build. Eliminates the "second place to maintain paths and type names" problem.

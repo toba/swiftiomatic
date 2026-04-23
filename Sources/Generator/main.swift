@@ -41,10 +41,14 @@ let registryGenerator = ConfigurationGenerator(collector: collector)
 try registryGenerator.generateFile(at: paths.ruleRegistryFile)
 
 // Generate the JSON Schema for configuration files.
+let schemaGenerator = ConfigurationSchemaGenerator(collector: collector)
 if !skipSchema {
-    let schemaGenerator = ConfigurationSchemaGenerator(collector: collector)
     try schemaGenerator.generateFile(at: paths.configurationSchemaFile)
 }
+
+// Generate the embedded schema Swift file for runtime validation.
+let schemaSwiftGenerator = ConfigurationSchemaSwiftGenerator(schemaGenerator: schemaGenerator)
+try schemaSwiftGenerator.generateFile(at: paths.configurationSchemaSwiftFile)
 
 // Generate TokenStream forwarding stubs from TokenStream+*.swift extensions
 // and any extension TokenStream blocks co-located with layout rules.

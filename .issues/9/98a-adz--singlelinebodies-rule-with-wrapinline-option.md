@@ -6,6 +6,10 @@ type: feature
 priority: normal
 created_at: 2026-04-18T04:03:31Z
 updated_at: 2026-04-18T04:10:30Z
+sync:
+    github:
+        issue_number: "343"
+        synced_at: "2026-04-23T05:30:25Z"
 ---
 
 - [x] Rename WrapBodies → SingleLineBodies

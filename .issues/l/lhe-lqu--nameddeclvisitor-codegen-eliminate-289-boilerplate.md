@@ -9,7 +9,7 @@ updated_at: 2026-04-19T17:27:58Z
 sync:
     github:
         issue_number: "322"
-        synced_at: "2026-04-17T22:17:15Z"
+        synced_at: "2026-04-23T05:30:22Z"
 ---
 
 53 rules have fan-out visit() overrides (289 total across 17 declaration types) where each override is 3-6 lines calling the same helper. ~1,135 lines of pure mechanical boilerplate.

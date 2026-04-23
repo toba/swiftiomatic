@@ -125,7 +125,7 @@ extension JSONSchemaNode {
     static func object(
         description: String,
         properties: [String: JSONSchemaNode],
-        additionalProperties: Bool = false
+        additionalProperties: Bool? = false
     ) -> JSONSchemaNode {
         var node = JSONSchemaNode()
         node.type = "object"

@@ -7,6 +7,10 @@ priority: normal
 created_at: 2026-04-19T17:32:03Z
 updated_at: 2026-04-19T18:14:55Z
 parent: rcc-z52
+sync:
+    github:
+        issue_number: "353"
+        synced_at: "2026-04-23T05:30:27Z"
 ---
 
 `schema.json` outputs to the package root, outside any target's source directory. Decide how to handle this in the plugin context.

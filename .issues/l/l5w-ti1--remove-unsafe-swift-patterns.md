@@ -6,6 +6,10 @@ type: task
 priority: normal
 created_at: 2026-04-18T18:05:18Z
 updated_at: 2026-04-18T18:08:34Z
+sync:
+    github:
+        issue_number: "348"
+        synced_at: "2026-04-23T05:30:25Z"
 ---
 
 Replace `@unchecked Sendable` and `nonisolated(unsafe)` with proper safe alternatives.

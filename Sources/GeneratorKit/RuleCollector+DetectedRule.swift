@@ -49,10 +49,19 @@ extension RuleCollector {
 
     /// Information about a detected layout rule.
     struct DetectedLayoutRule: DetectedRule {
+        /// The JSON Schema type inferred from a layout rule's `defaultValue`.
+        enum SchemaValueType: Sendable {
+            case boolean
+            case integer
+            case string
+        }
+
         let group: ConfigurationGroup?
         let typeName: String
         let customKey: String?
         let description: String?
+        /// The JSON Schema type of this setting's value.
+        let valueType: SchemaValueType
     }
 }
 

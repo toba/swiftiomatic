@@ -6,6 +6,10 @@ type: feature
 priority: normal
 created_at: 2026-04-19T19:23:51Z
 updated_at: 2026-04-19T20:18:29Z
+sync:
+    github:
+        issue_number: "344"
+        synced_at: "2026-04-23T05:30:24Z"
 ---
 
 Replace RuleHandling enum with clean SyntaxRuleValue protocol system.

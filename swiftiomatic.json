@@ -70,15 +70,15 @@
 	},
 	"groupNumericLiterals": { "lint": "warn", "rewrite": true },
 	"hoist": {
-		"awaitWithinExpression": { "lint": "warn", "rewrite": true },
+		"nestedAwait": { "lint": "warn", "rewrite": true },
 		"caseLet": { "lint": "warn", "placement": "eachBinding", "rewrite": true },
 		"indirectEnum": { "lint": "warn", "rewrite": true },
-		"tryWithinExpression": { "lint": "warn", "rewrite": true }
+		"nestedTry": { "lint": "warn", "rewrite": true }
 	},
 	"indentation": {
 		"blankLines": false,
 		"conditionalCompilationBlocks": false,
-		"switchCases": { "lint": "no", "rewrite": false, "style": "" },
+		"switchCases": { "lint": "no", "rewrite": false, "style": "flush" },
 		"unit": { "spaces": 4 }
 	},
 	"initCoderUnavailable": { "lint": "no", "rewrite": false },
@@ -93,7 +93,7 @@
 		"betweenDeclarationAttributes": false,
 		"ensureLineBreakAtEOF": { "lint": "no", "rewrite": false },
 		"modifiersOnSameLine": { "lint": "warn", "rewrite": true },
-		"respectsExistingLineBreaks": true
+		"respectExisting": true
 	},
 	"modifierOrder": { "lint": "warn", "rewrite": true },
 	"multiElementCollectionTrailingCommas": true,
@@ -191,7 +191,7 @@
 		"switchCases": { "lint": "no", "rewrite": false },
 		"typeAliases": { "lint": "no", "rewrite": false }
 	},
-	"spacing": {
+	"spaces": {
 		"spacesAroundRangeFormationOperators": false,
 		"spacesBeforeEndOfLineComments": 2
 	},

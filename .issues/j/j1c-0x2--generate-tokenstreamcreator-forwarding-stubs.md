@@ -6,6 +6,10 @@ type: task
 priority: normal
 created_at: 2026-04-19T17:13:08Z
 updated_at: 2026-04-19T17:24:54Z
+sync:
+    github:
+        issue_number: "345"
+        synced_at: "2026-04-23T05:30:25Z"
 ---
 
 Eliminate hand-maintained forwarding stubs in TokenStreamCreator by generating them.

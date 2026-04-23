@@ -6,6 +6,10 @@ type: bug
 priority: normal
 created_at: 2026-04-18T04:27:59Z
 updated_at: 2026-04-18T04:30:46Z
+sync:
+    github:
+        issue_number: "333"
+        synced_at: "2026-04-23T05:30:24Z"
 ---
 
 RuleNameCacheGenerator always uses the class name (typeName) as the cache value, ignoring custom `static let name` overrides on rules. Rules like ASCIIIdentifiers (name: identifiersMayOnlyUseASCII), DocComments (name: convertRegularCommentToDocC), etc. show incorrectly.

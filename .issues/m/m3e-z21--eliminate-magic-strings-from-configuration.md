@@ -6,6 +6,10 @@ type: task
 priority: normal
 created_at: 2026-04-18T22:12:26Z
 updated_at: 2026-04-18T22:32:08Z
+sync:
+    github:
+        issue_number: "342"
+        synced_at: "2026-04-23T05:30:24Z"
 ---
 
 - [x] Phase 1: Add Configurable conformance to rule config structs, update callers

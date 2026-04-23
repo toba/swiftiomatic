@@ -7,6 +7,10 @@ priority: normal
 created_at: 2026-04-19T17:31:45Z
 updated_at: 2026-04-19T17:45:11Z
 parent: rcc-z52
+sync:
+    github:
+        issue_number: "351"
+        synced_at: "2026-04-23T05:30:27Z"
 ---
 
 `ConfigurationSchemaGenerator` imports `SwiftiomaticKit` for `LayoutRegistry.rootRules`, `LayoutRegistry.rules(in:)`, and `IndentationSetting`. This creates a circular dependency that blocks the build tool plugin.

@@ -6,6 +6,10 @@ type: task
 priority: normal
 created_at: 2026-04-18T02:18:33Z
 updated_at: 2026-04-18T02:27:36Z
+sync:
+    github:
+        issue_number: "330"
+        synced_at: "2026-04-23T05:30:22Z"
 ---
 
 Replace runtime reflection with AST parsing in RuleCollector. Create SwiftiomaticCore shared target for ConfigGroup.

@@ -6,6 +6,10 @@ type: task
 priority: normal
 created_at: 2026-04-18T22:47:38Z
 updated_at: 2026-04-18T23:16:05Z
+sync:
+    github:
+        issue_number: "339"
+        synced_at: "2026-04-23T05:30:24Z"
 ---
 
 Refactor RuleRegistry+Generated.swift to use type arrays instead of string-keyed dictionaries.

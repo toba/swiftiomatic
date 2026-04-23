@@ -6,6 +6,10 @@ type: feature
 priority: normal
 created_at: 2026-04-23T02:14:46Z
 updated_at: 2026-04-23T02:24:44Z
+sync:
+    github:
+        issue_number: "336"
+        synced_at: "2026-04-23T05:30:24Z"
 ---
 
 Remove shorthand config syntax. Every rule uses uniform object shape:

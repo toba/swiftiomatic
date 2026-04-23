@@ -6,6 +6,10 @@ type: task
 priority: normal
 created_at: 2026-04-19T02:48:59Z
 updated_at: 2026-04-19T03:00:04Z
+sync:
+    github:
+        issue_number: "329"
+        synced_at: "2026-04-23T05:30:22Z"
 ---
 
 - [x] Change access control (private → internal)

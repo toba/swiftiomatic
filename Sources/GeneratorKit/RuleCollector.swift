@@ -75,6 +75,7 @@ package final class RuleCollector {
                 typeName: structDecl.name.text,
                 customKey: Self.extractStringLiteral(named: "key", from: members),
                 description: Self.extractStringLiteral(named: "description", from: members),
+                valueType: Self.detectValueType(named: "defaultValue", from: members)
             )
         }
         return nil
@@ -189,6 +190,34 @@ package final class RuleCollector {
             }
         }
         return nil
+    }
+
+    /// Infers the JSON Schema type for a layout rule's `defaultValue` from its AST.
+    ///
+    /// - `true`/`false` → `.boolean`
+    /// - Integer literal → `.integer`
+    /// - Everything else (string literals, enum member access) → `.string`
+    private static func detectValueType(
+        named identifier: String,
+        from members: MemberBlockItemListSyntax
+    ) -> DetectedLayoutRule.SchemaValueType {
+        for member in members {
+            guard let varDecl = member.decl.as(VariableDeclSyntax.self),
+                let binding = varDecl.bindings.firstAndOnly,
+                let pattern = binding.pattern.as(IdentifierPatternSyntax.self),
+                pattern.identifier.text == identifier,
+                let initializer = binding.initializer
+            else { continue }
+
+            if initializer.value.is(BooleanLiteralExprSyntax.self) {
+                return .boolean
+            }
+            if initializer.value.is(IntegerLiteralExprSyntax.self) {
+                return .integer
+            }
+            return .string
+        }
+        return .string
     }
 
     /// Checks whether a rule is opt-in by detecting disabled defaults in its `defaultValue`.

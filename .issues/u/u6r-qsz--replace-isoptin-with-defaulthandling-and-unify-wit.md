@@ -6,6 +6,10 @@ type: feature
 priority: normal
 created_at: 2026-04-18T19:04:17Z
 updated_at: 2026-04-18T19:11:39Z
+sync:
+    github:
+        issue_number: "334"
+        synced_at: "2026-04-23T05:30:24Z"
 ---
 
 Replace `isOptIn: Bool` on `Rule` with `defaultHandling: RuleHandling`, create shared `ConfigurableItem` protocol for both `Rule` and `LayoutDescriptor`.

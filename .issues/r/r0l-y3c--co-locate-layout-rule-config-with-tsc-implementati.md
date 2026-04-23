@@ -6,6 +6,10 @@ type: task
 priority: normal
 created_at: 2026-04-19T16:42:31Z
 updated_at: 2026-04-19T16:45:16Z
+sync:
+    github:
+        issue_number: "341"
+        synced_at: "2026-04-23T05:30:24Z"
 ---
 
 Move TokenStreamCreator methods that have a 1:1 relationship with a layout rule into the rule's file as an extension.

@@ -70,6 +70,9 @@ package final class ConfigurationSchemaGenerator: FileGenerator {
     }
 
     /// Base schema for rewrite rules: `{ "rewrite": bool, "lint": enum }`.
+    ///
+    /// Does not set `additionalProperties: false` because rules may define
+    /// extra configuration properties beyond these base fields.
     private static func ruleBaseSchema() -> JSONSchemaNode {
         .object(
             description: "Rule configuration with rewrite and lint properties.",
@@ -83,11 +86,15 @@ package final class ConfigurationSchemaGenerator: FileGenerator {
                     values: lintModeValues,
                     defaultValue: "warn"
                 ),
-            ]
+            ],
+            additionalProperties: nil
         )
     }
 
     /// Base schema for lint-only rules: `{ "lint": enum }`.
+    ///
+    /// Does not set `additionalProperties: false` because rules may define
+    /// extra configuration properties beyond this base field.
     private static func lintOnlyBaseSchema() -> JSONSchemaNode {
         .object(
             description: "Lint-only rule configuration.",
@@ -97,8 +104,27 @@ package final class ConfigurationSchemaGenerator: FileGenerator {
                     values: lintModeValues,
                     defaultValue: "warn"
                 ),
-            ]
+            ],
+            additionalProperties: nil
         )
+    }
+
+    private func settingSchemaNode(for setting: RuleCollector.DetectedLayoutRule) -> JSONSchemaNode {
+        let desc = setting.description ?? setting.configKey
+        switch setting.valueType {
+        case .boolean:
+            var node = JSONSchemaNode()
+            node.type = "boolean"
+            node.description = desc
+            return node
+        case .integer:
+            var node = JSONSchemaNode()
+            node.type = "integer"
+            node.description = desc
+            return node
+        case .string:
+            return .string(description: desc)
+        }
     }
 
     private static let lintModeValues = ["warn", "error", "no"]
@@ -121,18 +147,19 @@ package final class ConfigurationSchemaGenerator: FileGenerator {
         var schema: [String: JSONSchemaNode] = [:]
 
         for setting in collector.layoutRules where setting.group == nil {
-            schema[setting.configKey] = .string(
-                description: setting.description ?? setting.configKey
-            )
+            schema[setting.configKey] = settingSchemaNode(for: setting)
         }
 
-        // Override indentation with its oneOf schema (spaces/tabs).
-        let indentDescription = collector.layoutRules
-            .first { $0.configKey == "unit" }?
-            .description ?? "Indentation unit."
-        var indent = JSONSchemaNode()
-        indent.description = indentDescription
-        indent.defaultValue = .object(["spaces": .int(2)])
+        return schema
+    }
+
+    /// The `unit` setting uses a `oneOf` schema (spaces or tabs object) instead
+    /// of a simple type, since its value type is the `Indent` enum.
+    private static func indentationUnitSchema() -> JSONSchemaNode {
+        let desc = "Indentation unit: exactly one of spaces or tabs."
+        var node = JSONSchemaNode()
+        node.description = desc
+        node.defaultValue = .object(["spaces": .int(2)])
         var spacesVariant = JSONSchemaNode.object(
             description: "Indent with spaces.",
             properties: [
@@ -155,10 +182,8 @@ package final class ConfigurationSchemaGenerator: FileGenerator {
             ]
         )
         tabsVariant.required = ["tabs"]
-        indent.oneOf = [spacesVariant, tabsVariant]
-        schema["indentation"] = indent
-
-        return schema
+        node.oneOf = [spacesVariant, tabsVariant]
+        return node
     }
 
     private func groupSchemas() -> [String: JSONSchemaNode] {
@@ -174,9 +199,11 @@ package final class ConfigurationSchemaGenerator: FileGenerator {
             var properties: [String: JSONSchemaNode] = [:]
 
             for setting in collector.layoutRules where setting.group == group {
-                properties[setting.configKey] = .string(
-                    description: setting.description ?? setting.configKey
-                )
+                if setting.configKey == "unit" {
+                    properties[setting.configKey] = Self.indentationUnitSchema()
+                } else {
+                    properties[setting.configKey] = settingSchemaNode(for: setting)
+                }
             }
 
             if let rules = groupedRules[group] {
