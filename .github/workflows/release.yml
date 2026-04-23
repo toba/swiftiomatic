@@ -6,7 +6,7 @@ on:
       - 'v*'
 
 jobs:
-  test:
+  release:
     runs-on: macos-26
 
     steps:
@@ -26,16 +26,6 @@ jobs:
           exit 1
         fi
         echo "All tests passed (SIGBUS exit tolerated — macOS 26.3 runner + Xcode 26.4 known issue)"
-
-  build:
-    needs: test
-    runs-on: macos-26
-
-    steps:
-    - uses: actions/checkout@v4
-
-    - name: Select Xcode version
-      run: sudo xcode-select -s /Applications/Xcode_26.4.app/Contents/Developer
 
     - name: Build release binary
       run: swift build -c release --disable-sandbox
@@ -67,51 +57,45 @@ jobs:
           sm-${{ github.ref_name }}-arm64.tar.gz.sha256
         body_path: release_notes.txt
 
-  update-homebrew:
-    needs: build
-    runs-on: ubuntu-latest
-    steps:
-      - name: Update Homebrew formula
-        env:
-          GH_TOKEN: ${{ secrets.HOMEBREW_TAP_TOKEN }}
-        run: |
-          TAG="${GITHUB_REF#refs/tags/}"
-          VERSION="${TAG#v}"
+    - name: Update Homebrew formula
+      env:
+        GH_TOKEN: ${{ secrets.HOMEBREW_TAP_TOKEN }}
+      run: |
+        TAG="${GITHUB_REF#refs/tags/}"
+        VERSION="${TAG#v}"
 
-          SHA=$(gh release download "$TAG" --repo "$GITHUB_REPOSITORY" --pattern "*.sha256" -O - | awk '{print $1}')
+        SHA=$(cat sm-${TAG}-arm64.tar.gz.sha256 | awk '{print $1}')
 
-          git clone "https://x-access-token:${GH_TOKEN}@github.com/toba/homebrew-tap.git" tap
-          cd tap
+        git clone "https://x-access-token:${GH_TOKEN}@github.com/toba/homebrew-tap.git" tap
+        cd tap
 
-          cat > Formula/sm.rb << FORMULA
-          class Sm < Formula
-            desc "AST-based Swift code analysis CLI — lint, format, and detect anti-patterns"
-            homepage "https://github.com/toba/swiftiomatic"
-            url "https://github.com/toba/swiftiomatic/releases/download/${TAG}/sm-${TAG}-arm64.tar.gz"
-            version "${VERSION}"
-            sha256 "${SHA}"
-            license "MIT"
+        cat > Formula/sm.rb <<FORMULA
+class Sm < Formula
+  desc "AST-based Swift code analysis CLI — lint, format, and detect anti-patterns"
+  homepage "https://github.com/toba/swiftiomatic"
+  url "https://github.com/toba/swiftiomatic/releases/download/${TAG}/sm-${TAG}-arm64.tar.gz"
+  version "${VERSION}"
+  sha256 "${SHA}"
+  license "MIT"
 
-            depends_on :macos => :tahoe
-            depends_on arch: :arm64
+  depends_on :macos => :tahoe
+  depends_on arch: :arm64
 
-            def install
-              bin.install "sm"
-            end
+  def install
+    bin.install "sm"
+  end
 
-            test do
-              assert_match "AST-based", shell_output("#{bin}/sm --help")
-            end
-          end
-          FORMULA
+  test do
+    assert_match "AST-based", shell_output("#{bin}/sm --help")
+  end
+end
+FORMULA
 
-          sed -i 's/^          //' Formula/sm.rb
+        # Remove old formula if it exists
+        git rm -f Formula/swiftiomatic.rb 2>/dev/null || true
 
-          # Remove old formula if it exists
-          git rm -f Formula/swiftiomatic.rb 2>/dev/null || true
-
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add Formula/sm.rb
-          git commit -m "bump to ${VERSION}"
-          git push
+        git config user.name "github-actions[bot]"
+        git config user.email "github-actions[bot]@users.noreply.github.com"
+        git add Formula/sm.rb
+        git commit -m "bump to ${VERSION}"
+        git push
