@@ -6,8 +6,6 @@ package struct BeforeEachArgument: LayoutRule {
     package static let defaultValue = false
 }
 
-// MARK: - TokenStream
-
 extension TokenStream {
     /// Returns the group consistency that should be used for argument lists based on the user's
     /// current configuration.

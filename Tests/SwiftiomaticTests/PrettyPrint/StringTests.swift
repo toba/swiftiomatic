@@ -72,7 +72,7 @@ struct StringTests: PrettyPrintTesting {
     let input =
       #"""
       let someString =
-        // swiftiomatic-ignore
+        // sm:ignore
         """
         lines \
         are \
@@ -83,7 +83,7 @@ struct StringTests: PrettyPrintTesting {
     let expected =
       #"""
       let someString =
-        // swiftiomatic-ignore
+        // sm:ignore
         """
         lines \
         are \

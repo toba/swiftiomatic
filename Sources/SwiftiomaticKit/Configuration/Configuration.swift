@@ -1,14 +1,10 @@
 @_exported import ConfigurationKit
 import Foundation
 
-/// A version number that can be specified in the configuration file, which allows us to change the
-/// format in the future if desired and still support older files.
-private let highestSupportedConfigurationVersion = 4
-
 /// Holds the complete set of configured values and defaults.
 package struct Configuration: Sendable, Equatable {
     package static func == (lhs: Configuration, rhs: Configuration) -> Bool {
-        guard lhs.rules == rhs.rules, lhs.version == rhs.version else { return false }
+        guard lhs.version == rhs.version else { return false }
         // Compare all layout settings via their LayoutRule types.
         for entry in settingEntries {
             let lKey = AnyCodingKey(entry.key)
@@ -20,15 +16,25 @@ package struct Configuration: Sendable, Equatable {
                 try entry.encode(lhs, &cL, lKey)
                 try entry.encode(rhs, &cR, lKey)
             } catch { return false }
-            // Compare via string representation of encoded values.
+            guard "\(tempL.dict)" == "\(tempR.dict)" else { return false }
+        }
+        // Compare all rule values.
+        for entry in ruleEntries {
+            let lKey = AnyCodingKey(entry.key)
+            let tempL = DictEncoder()
+            var cL = tempL.container(keyedBy: AnyCodingKey.self)
+            let tempR = DictEncoder()
+            var cR = tempR.container(keyedBy: AnyCodingKey.self)
+            do {
+                try entry.encode(lhs, &cL, lKey)
+                try entry.encode(rhs, &cR, lKey)
+            } catch { return false }
             guard "\(tempL.dict)" == "\(tempR.dict)" else { return false }
         }
         return true
     }
-    /// Rule enablements keyed by rule name.
-    package var rules: [String: RuleHandling] = ConfigurationRegistry.rules
 
-    /// Type-erased store for layout settings and rule-specific config.
+    /// Type-erased store for layout settings and rule values.
     private var values: [String: any Sendable] = [:]
 
     /// Version of the configuration format.
@@ -53,15 +59,13 @@ package struct Configuration: Sendable, Equatable {
         }
     }
 
-    // MARK: - Registry
+    // MARK: - Layout setting registry
 
-    /// A decode closure that reads a value from a keyed container and stores it.
     private typealias SettingDecoder =
         @Sendable (
             KeyedDecodingContainer<AnyCodingKey>, AnyCodingKey, inout Configuration
         ) throws -> Void
 
-    /// A encode closure that writes a value to a keyed container.
     private typealias SettingEncoder =
         @Sendable (
             Configuration, inout KeyedEncodingContainer<AnyCodingKey>, AnyCodingKey
@@ -74,7 +78,6 @@ package struct Configuration: Sendable, Equatable {
         let encode: SettingEncoder
     }
 
-    /// Opens the existential `any LayoutRule.Type` to capture the concrete `Value` type.
     private static func entry(for type: any LayoutRule.Type) -> SettingEntry {
         func open<D: LayoutRule>(_ type: D.Type) -> SettingEntry {
             SettingEntry(
@@ -93,70 +96,85 @@ package struct Configuration: Sendable, Equatable {
         return open(type)
     }
 
-    /// All layout setting entries, derived from `LayoutSettings.all`.
     private static let settingEntries: [SettingEntry] =
         LayoutRegistry.all.map { entry(for: $0) }
 
-    /// Setting entries keyed by their JSON key for lookup during decoding.
     private static let settingsByKey: [String: SettingEntry] = {
         Dictionary(uniqueKeysWithValues: settingEntries.map { ($0.key, $0) })
     }()
 
-    /// Keys that are known settings (not rules or groups).
     private static let settingKeyNames: Set<String> = {
         var names = Set(settingEntries.filter { $0.groupKey == nil }.map(\.key))
         names.insert("version")
         return names
     }()
 
-    // MARK: - Rule config registry
+    // MARK: - Rule value registry
 
-    /// A rule config entry pairs a rule name with closures to decode/encode its config struct.
-    private struct RuleConfigEntry: Sendable {
-        /// The rule name this config belongs to (used to match JSON keys).
-        let ruleName: String
-        /// Decode the config struct from a Decoder (for rule objects).
-        let decode: @Sendable (any Decoder, inout Configuration) throws -> Void
-        /// Encode the config struct as an Encodable value.
-        let encode: @Sendable (Configuration) -> any Encodable
+    private struct RuleEntry: Sendable {
+        let key: String
+        let groupKey: ConfigurationGroup.Key?
+        let decode: @Sendable (KeyedDecodingContainer<AnyCodingKey>, AnyCodingKey, inout Configuration) throws -> Void
+        let encode: @Sendable (Configuration, inout KeyedEncodingContainer<AnyCodingKey>, AnyCodingKey) throws -> Void
+        let disable: @Sendable (inout Configuration) -> Void
+        let enable: @Sendable (inout Configuration) -> Void
     }
 
-    private static func ruleConfigEntry<C: Configurable>(
-        for ruleName: String, _ type: C.Type
-    ) -> RuleConfigEntry where C.Value == C, C: Codable {
-        RuleConfigEntry(
-            ruleName: ruleName,
-            decode: { decoder, config in
-                config[C.self] = try C(from: decoder)
-            },
-            encode: { config in
-                config[C.self]
-            }
-        )
+    private static func ruleEntry(for type: any SyntaxRule.Type) -> RuleEntry {
+        func open<R: SyntaxRule>(_ type: R.Type) -> RuleEntry {
+            RuleEntry(
+                key: R.key,
+                groupKey: R.group?.key,
+                decode: { container, codingKey, config in
+                    if let value = try container.decodeIfPresent(R.Value.self, forKey: codingKey) {
+                        config[R.self] = value
+                    }
+                },
+                encode: { config, container, codingKey in
+                    try container.encode(config[R.self], forKey: codingKey)
+                },
+                disable: { config in
+                    var value = config[R.self]
+                    value.rewrite = false
+                    value.lint = .no
+                    config[R.self] = value
+                },
+                enable: { config in
+                    var value = config[R.self]
+                    value.rewrite = true
+                    value.lint = .warn
+                    config[R.self] = value
+                }
+            )
+        }
+        return open(type)
     }
 
-    /// All rule config entries.
-    private static let ruleConfigEntries: [RuleConfigEntry] = [
-        ruleConfigEntry(for: "FileScopedDeclarationPrivacy", FileScopedDeclarationPrivacyConfiguration.self),
-        ruleConfigEntry(for: "NoAssignmentInExpressions", NoAssignmentInExpressionsConfiguration.self),
-        ruleConfigEntry(for: "SortImports", SortImportsConfiguration.self),
-        ruleConfigEntry(for: "CapitalizeAcronyms", AcronymsConfiguration.self),
-        ruleConfigEntry(for: "NoExtensionAccessLevel", ExtensionAccessControlConfiguration.self),
-        ruleConfigEntry(for: "PatternLetPlacement", PatternLetConfiguration.self),
-        ruleConfigEntry(for: "URLMacro", URLMacroConfiguration.self),
-        ruleConfigEntry(for: "FileHeader", FileHeaderConfiguration.self),
-        ruleConfigEntry(for: "WrapSingleLineBodies", SingleLineBodiesConfiguration.self),
-        ruleConfigEntry(for: "SwitchCaseIndentation", SwitchCaseIndentationConfiguration.self),
-    ]
+    private static let ruleEntries: [RuleEntry] =
+        ConfigurationRegistry.allRuleTypes.map { ruleEntry(for: $0) }
 
-    /// Rule config decoders keyed by rule name.
-    private static let ruleConfigDecoders: [String: @Sendable (any Decoder, inout Configuration) throws -> Void] = {
-        Dictionary(uniqueKeysWithValues: ruleConfigEntries.map { ($0.ruleName, $0.decode) })
+    private static let rulesByKey: [String: RuleEntry] = {
+        Dictionary(uniqueKeysWithValues: ruleEntries.map { ($0.key, $0) })
     }()
 
-    /// Look up a rule config encoder by rule name.
-    private func ruleConfigEncodable(for ruleName: String) -> (any Encodable)? {
-        Self.ruleConfigEntries.first { $0.ruleName == ruleName }?.encode(self)
+    private static let ruleKeyNames: Set<String> = {
+        Set(ruleEntries.map(\.key))
+    }()
+
+    // MARK: - Rule helpers
+
+    /// Disables all syntax rules by setting `enabled = false` on each rule's value.
+    package mutating func disableAllRules() {
+        for entry in Self.ruleEntries {
+            entry.disable(&self)
+        }
+    }
+
+    /// Enables a rule by name, setting `enabled = true` and `lint = .warn`.
+    package mutating func enableRule(named name: String) {
+        if let entry = Self.rulesByKey[name] {
+            entry.enable(&self)
+        }
     }
 
     // MARK: - Init
@@ -173,9 +191,6 @@ package struct Configuration: Sendable, Equatable {
         decoder.allowsJSON5 = true
         self = try decoder.decode(Configuration.self, from: data)
     }
-
-    /// Default rule enablements (generated).
-    package static let defaultRuleEnablements: [String: RuleHandling] = ConfigurationRegistry.rules
 
     /// Returns the URL of the configuration file that applies to the given file or directory.
     package static func url(forConfigurationFileApplyingTo url: URL) -> URL? {
@@ -200,6 +215,10 @@ package struct Configuration: Sendable, Equatable {
     }
 }
 
+/// A version number that can be specified in the configuration file, which allows us to change the
+/// format in the future if desired and still support older files.
+private let highestSupportedConfigurationVersion = 6
+
 // MARK: - Codable
 
 extension Configuration: Codable {
@@ -220,7 +239,7 @@ extension Configuration: Codable {
         var config = Configuration()
         config.version = version
 
-        // Decode root-level settings.
+        // Decode root-level layout settings.
         for entry in Self.settingEntries where entry.groupKey == nil {
             let codingKey = AnyCodingKey(entry.key)
             guard root.contains(codingKey) else { continue }
@@ -228,12 +247,10 @@ extension Configuration: Codable {
         }
 
         // Walk remaining keys for groups and rules.
-        var ruleEnablements: [String: RuleHandling] = [:]
-
         for key in root.allKeys {
             let name = key.stringValue
 
-            // Skip known root-level settings (already decoded above) and version.
+            // Skip known root-level settings and version.
             guard !Self.settingKeyNames.contains(name) else { continue }
 
             // Config group: decode grouped settings + rules.
@@ -250,66 +267,23 @@ extension Configuration: Codable {
                 // Decode rules within the group.
                 if let mappings = ConfigurationRegistry.groupRules[ConfigurationGroup(groupKey)] {
                     for rule in mappings {
-                        let optKey = AnyCodingKey(rule)
-                        guard obj.contains(optKey) else { continue }
-
-                        if let ruleMode = try? obj.decode(RuleHandling.self, forKey: optKey) {
-                            ruleEnablements[rule] = ruleMode
-                        } else {
-                            let nested = try obj.nestedContainer(
-                                keyedBy: AnyCodingKey.self,
-                                forKey: optKey
-                            )
-                            ruleEnablements[rule] =
-                                try nested.decodeIfPresent(
-                                    RuleHandling.self,
-                                    forKey: AnyCodingKey("handling")
-                                )
-                                ?? nested.decodeIfPresent(
-                                    RuleHandling.self,
-                                    forKey: AnyCodingKey("mode")
-                                ) ?? .warning
-
+                        let ruleKey = AnyCodingKey(rule)
+                        guard obj.contains(ruleKey) else { continue }
+                        if let entry = Self.rulesByKey[rule] {
+                            try entry.decode(obj, ruleKey, &config)
                         }
                     }
                 }
                 continue
             }
 
-            // Simple rule: string value.
-            if let mode = try? root.decode(RuleHandling.self, forKey: key) {
-                ruleEnablements[name] = mode
+            // Rule value: decode via the rule's entry.
+            if let entry = Self.rulesByKey[name] {
+                try entry.decode(root, key, &config)
                 continue
             }
-
-            // Rule with options: object value.
-            guard
-                let entryContainer = try? root.nestedContainer(
-                    keyedBy: AnyCodingKey.self,
-                    forKey: key
-                )
-            else { continue }
-
-            ruleEnablements[name] =
-                try entryContainer.decodeIfPresent(
-                    RuleHandling.self,
-                    forKey: AnyCodingKey("handling")
-                )
-                ?? entryContainer.decodeIfPresent(
-                    RuleHandling.self,
-                    forKey: AnyCodingKey("mode")
-                ) ?? .warning
-
-            // Decode rule config struct if one is registered.
-            if let decode = Self.ruleConfigDecoders[name] {
-                let ruleDecoder = try root.superDecoder(forKey: key)
-                try decode(ruleDecoder, &config)
-            }
-
         }
 
-        // Merge decoded rules over defaults.
-        for (name, mode) in ruleEnablements { config.rules[name] = mode }
         self = config
     }
 
@@ -317,35 +291,29 @@ extension Configuration: Codable {
         var root = encoder.container(keyedBy: AnyCodingKey.self)
         try root.encode(version, forKey: AnyCodingKey("version"))
 
-        // Encode root-level settings.
+        // Encode root-level layout settings.
         for entry in Self.settingEntries where entry.groupKey == nil {
             try entry.encode(self, &root, AnyCodingKey(entry.key))
         }
 
         // Encode ungrouped rules.
-        for (name, mode) in rules.sorted(by: { $0.key < $1.key })
-        where !ConfigurationRegistry.groupManagedRules.contains(name) {
-            if let configEncodable = ruleConfigEncodable(for: name) {
-                // Rule with config: encode as object with mode + config properties.
-                let tempEncoder = DictEncoder()
-                var tempContainer = tempEncoder.container(keyedBy: AnyCodingKey.self)
-                try tempContainer.encode(mode.encodedString, forKey: AnyCodingKey("mode"))
-                try configEncodable.encode(to: tempEncoder)
-                try root.encode(JSONFragment(tempEncoder.dict), forKey: AnyCodingKey(name))
-            } else {
-                try root.encode(mode, forKey: AnyCodingKey(name))
-            }
+        for entry in Self.ruleEntries.sorted(by: { $0.key < $1.key })
+        where !ConfigurationRegistry.groupManagedRules.contains(entry.key) {
+            try entry.encode(self, &root, AnyCodingKey(entry.key))
         }
 
         // Encode config groups.
         for group in ConfigurationGroup.Key.allCases {
             let cfgGroup = ConfigurationGroup(group)
-            guard let mappings = ConfigurationRegistry.groupRules[cfgGroup] else { continue }
+            let groupSettings = Self.settingEntries.filter { $0.groupKey == group }
+            let groupRuleNames = ConfigurationRegistry.groupRules[cfgGroup] ?? []
+
+            guard !groupSettings.isEmpty || !groupRuleNames.isEmpty else { continue }
 
             var dict: [String: Any] = [:]
 
             // Encode group-owned settings.
-            for entry in Self.settingEntries where entry.groupKey == group {
+            for entry in groupSettings {
                 let tempEncoder = DictEncoder()
                 var tempContainer = tempEncoder.container(keyedBy: AnyCodingKey.self)
                 try entry.encode(self, &tempContainer, AnyCodingKey(entry.key))
@@ -353,9 +321,13 @@ extension Configuration: Codable {
             }
 
             // Encode rules within the group.
-            for rule in mappings {
-                let mode = rules[rule] ?? .off
-                dict[rule] = mode.encodedString
+            for ruleName in groupRuleNames {
+                if let entry = Self.rulesByKey[ruleName] {
+                    let tempEncoder = DictEncoder()
+                    var tempContainer = tempEncoder.container(keyedBy: AnyCodingKey.self)
+                    try entry.encode(self, &tempContainer, AnyCodingKey(ruleName))
+                    for (k, v) in tempEncoder.dict { dict[k] = v }
+                }
             }
 
             try root.encode(JSONFragment(dict), forKey: AnyCodingKey(group.rawValue))
@@ -363,12 +335,6 @@ extension Configuration: Codable {
     }
 
     // MARK: - Encoding helpers
-
-    private struct AnyEncodable: Encodable {
-        let value: any Encodable
-        init(_ value: any Encodable) { self.value = value }
-        func encode(to encoder: any Encoder) throws { try value.encode(to: encoder) }
-    }
 
     private struct JSONFragment: Encodable {
         let dict: [String: Any]
@@ -383,7 +349,7 @@ extension Configuration: Codable {
         }
     }
 
-    private class DictEncoder: Encoder {
+    class DictEncoder: Encoder {
         var codingPath: [CodingKey] = []
         var userInfo: [CodingUserInfoKey: Any] = [:]
         var dict: [String: Any] = [:]
@@ -392,16 +358,15 @@ extension Configuration: Codable {
             KeyedEncodingContainer(DictKeyedContainer<Key>(encoder: self))
         }
         func unkeyedContainer() -> UnkeyedEncodingContainer { fatalError() }
-        func singleValueContainer() -> SingleValueEncodingContainer { fatalError() }
+        func singleValueContainer() -> SingleValueEncodingContainer {
+            DictSingleValueContainer(encoder: self)
+        }
 
         private struct DictKeyedContainer<Key: CodingKey>: KeyedEncodingContainerProtocol {
             let encoder: DictEncoder
             var codingPath: [CodingKey] = []
             mutating func encodeNil(forKey key: Key) throws {}
             mutating func encode<T: Encodable>(_ value: T, forKey key: Key) throws {
-                // Primitive types bridge to Foundation for JSONSerialization.
-                // Non-primitives (enums, structs) must be round-tripped through
-                // JSONEncoder to produce Foundation-compatible values.
                 switch value {
                 case let v as String: encoder.dict[key.stringValue] = v
                 case let v as Bool: encoder.dict[key.stringValue] = v
@@ -425,6 +390,25 @@ extension Configuration: Codable {
             }
             mutating func superEncoder() -> any Encoder { fatalError() }
             mutating func superEncoder(forKey key: Key) -> any Encoder { fatalError() }
+        }
+
+        private struct DictSingleValueContainer: SingleValueEncodingContainer {
+            let encoder: DictEncoder
+            var codingPath: [CodingKey] = []
+            mutating func encodeNil() throws {}
+            mutating func encode<T: Encodable>(_ value: T) throws {
+                switch value {
+                case let v as String: encoder.dict["_singleValue"] = v
+                case let v as Bool: encoder.dict["_singleValue"] = v
+                case let v as any FixedWidthInteger: encoder.dict["_singleValue"] = Int(v)
+                case let v as any BinaryFloatingPoint: encoder.dict["_singleValue"] = Double(v)
+                default:
+                    let data = try JSONEncoder().encode(value)
+                    encoder.dict["_singleValue"] = try JSONSerialization.jsonObject(
+                        with: data, options: .fragmentsAllowed
+                    )
+                }
+            }
         }
     }
 

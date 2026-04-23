@@ -15,7 +15,7 @@ import SwiftSyntax
 /// All identifiers must be ASCII.
 ///
 /// Lint: If an identifier contains non-ASCII characters, a lint error is raised.
-final class ASCIIIdentifiers: LintSyntaxRule {
+final class ASCIIIdentifiers: LintSyntaxRule<LintOnlyValue> {
     override class var key: String { "identifiersMayOnlyUseASCII" }
 
     override func visit(_ node: IdentifierPatternSyntax) -> SyntaxVisitorContinueKind {

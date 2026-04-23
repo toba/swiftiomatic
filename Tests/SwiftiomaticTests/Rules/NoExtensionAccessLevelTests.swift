@@ -437,7 +437,7 @@ struct NoExtensionAccessLevelTests: RuleTesting {
 
   private func onExtensionConfig() -> Configuration {
     var config = Configuration.forTesting(enabledRule: NoExtensionAccessLevel.self.key)
-    config[ExtensionAccessControlConfiguration.self].placement = .onExtension
+    config[NoExtensionAccessLevel.self].placement = .onExtension
     return config
   }
 

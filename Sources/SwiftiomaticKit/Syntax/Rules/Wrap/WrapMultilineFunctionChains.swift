@@ -7,9 +7,9 @@ import SwiftSyntax
 ///
 /// Format: Dots that share a line with a closing scope or another dot are
 ///         moved to their own line.
-final class WrapMultilineFunctionChains: RewriteSyntaxRule {
+final class WrapMultilineFunctionChains: RewriteSyntaxRule<BasicRuleValue> {
     override class var group: ConfigurationGroup? { .wrap }
-    override class var defaultHandling: RuleHandling { .off }
+    override class var defaultValue: BasicRuleValue { BasicRuleValue(rewrite: false, lint: .no) }
 
     override func visit(_ node: FunctionCallExprSyntax) -> ExprSyntax {
         let visited = super.visit(node)

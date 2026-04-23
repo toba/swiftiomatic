@@ -11,8 +11,8 @@ import SwiftSyntax
 ///       a warning.
 ///
 /// Format: A line break is inserted after `=`.
-final class WrapConditionalAssignment: RewriteSyntaxRule {
-    override class var defaultHandling: RuleHandling { .off }
+final class WrapConditionalAssignment: RewriteSyntaxRule<BasicRuleValue> {
+    override class var defaultValue: BasicRuleValue { BasicRuleValue(rewrite: false, lint: .no) }
     override class var group: ConfigurationGroup? { .wrap }
 
     // MARK: - let/var declarations

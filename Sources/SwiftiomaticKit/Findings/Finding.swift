@@ -78,7 +78,7 @@ package struct Finding: Sendable {
     package let message: Message
 
     /// The severity of the finding, determined by the rule's configuration.
-    package let severity: RuleHandling
+    package let severity: Lint
 
     /// The optional location of the finding.
     package let location: Location?
@@ -91,7 +91,7 @@ package struct Finding: Sendable {
     init(
         category: FindingCategorizing,
         message: Message,
-        severity: RuleHandling = .warning,
+        severity: Lint = .warn,
         location: Location? = nil,
         notes: [Note] = []
     ) {

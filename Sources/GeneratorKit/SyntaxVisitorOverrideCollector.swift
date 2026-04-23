@@ -1,44 +1,10 @@
-//===----------------------------------------------------------------------===//
-//
-// This source file is part of the Swift.org open source project
-//
-// Copyright (c) 2014 - 2025 Apple Inc. and the Swift project authors
-// Licensed under Apache License v2.0 with Runtime Library Exception
-//
-// See https://swift.org/LICENSE.txt for license information
-// See https://swift.org/CONTRIBUTORS.txt for the list of Swift project authors
-//
-//===----------------------------------------------------------------------===//
-
 import Foundation
 import SwiftSyntax
 
 /// Scans `TokenStream+*.swift` extension files to discover visit methods that need
 /// forwarding stubs in the generated `TokenStream` subclass.
-package final class TokenStreamStubCollector {
-
-    /// A single visit or visitPost method found in a TSC extension.
-    struct DetectedStub: Comparable {
-        /// The method name in the extension (e.g. "visitAccessorDeclList" or "visitPostFunctionCallExpr").
-        let methodName: String
-
-        /// The parameter label ("node" or "token").
-        let paramLabel: String
-
-        /// The parameter type (e.g. "AccessorDeclListSyntax" or "TokenSyntax").
-        let paramType: String
-
-        /// Whether this is a `visitPost` override (void return) vs a `visit` override.
-        let isPost: Bool
-
-        static func < (lhs: DetectedStub, rhs: DetectedStub) -> Bool {
-            if lhs.isPost != rhs.isPost { return !lhs.isPost }
-            return lhs.paramType < rhs.paramType
-        }
-    }
-
-    /// All detected stubs, populated by `collect(from:)`.
-    var stubs = [DetectedStub]()
+package final class SyntaxVisitorOverrideCollector {
+    var overrides = [DetectedOverride]()
 
     package init() {}
 
@@ -48,34 +14,32 @@ package final class TokenStreamStubCollector {
             in: directory,
             filter: { $0.hasPrefix("TokenStream+") }
         ) { statement in
-            collectStubs(from: statement)
+            collectOverrides(from: statement)
         }
-
-        stubs.sort()
+        overrides.sort()
     }
 
     /// Scans all Swift files in the given directory for `extension TokenStream`
     /// visit methods. Unlike `collect(from:)`, this has no filename filter.
     package func collectExtensions(from directory: URL) throws {
         try enumerateSwiftStatements(in: directory) { statement in
-            collectStubs(from: statement)
+            collectOverrides(from: statement)
         }
 
-        stubs.sort()
+        overrides.sort()
     }
 
-    private func collectStubs(from statement: CodeBlockItemSyntax) {
+    private func collectOverrides(from statement: CodeBlockItemSyntax) {
         guard let extensionDecl = statement.item.as(ExtensionDeclSyntax.self),
-              extensionDecl.extendedType.as(IdentifierTypeSyntax.self)?.name.text == "TokenStream"
+            extensionDecl.extendedType.as(IdentifierTypeSyntax.self)?.name.text == "TokenStream"
         else { return }
+
         for member in extensionDecl.memberBlock.members {
-            if let stub = detectedStub(from: member) {
-                stubs.append(stub)
-            }
+            if let stub = detectOverride(from: member) { overrides.append(stub) }
         }
     }
 
-    private func detectedStub(from member: MemberBlockItemSyntax) -> DetectedStub? {
+    private func detectOverride(from member: MemberBlockItemSyntax) -> DetectedOverride? {
         guard let funcDecl = member.decl.as(FunctionDeclSyntax.self) else { return nil }
 
         let name = funcDecl.name.text
@@ -96,11 +60,37 @@ package final class TokenStreamStubCollector {
         // Visitor methods always have a single parameter whose type ends in "Syntax".
         let paramLabel = param.secondName?.text ?? param.firstName.text
 
-        return DetectedStub(
+        return DetectedOverride(
+            isPost: isPost,
             methodName: name,
             paramLabel: paramLabel,
             paramType: paramTypeName,
-            isPost: isPost
         )
+    }
+}
+
+// MARK: - Support
+
+extension SyntaxVisitorOverrideCollector {
+    /// A single visit or visitPost method found in a TSC extension.
+    struct DetectedOverride: Comparable {
+        /// Whether this is a `visitPost` override (void return) vs a `visit` override.
+        let isPost: Bool
+
+        /// The method name in the extension (e.g. "visitAccessorDeclList" or "visitPostFunctionCallExpr").
+        let methodName: String
+
+        /// The parameter label ("node" or "token").
+        let paramLabel: String
+
+        /// The parameter type (e.g. "AccessorDeclListSyntax" or "TokenSyntax").
+        let paramType: String
+
+
+
+        static func < (lhs: DetectedOverride, rhs: DetectedOverride) -> Bool {
+            if lhs.isPost != rhs.isPost { return !lhs.isPost }
+            return lhs.paramType < rhs.paramType
+        }
     }
 }

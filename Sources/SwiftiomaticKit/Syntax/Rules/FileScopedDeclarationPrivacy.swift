@@ -20,7 +20,7 @@ import SwiftSyntax
 ///
 /// Format: File-scoped declarations that have formal access opposite to the desired access level in
 ///         the formatter's configuration will have their access level changed.
-final class FileScopedDeclarationPrivacy: RewriteSyntaxRule {
+final class FileScopedDeclarationPrivacy: RewriteSyntaxRule<FileScopedDeclarationPrivacyConfiguration> {
     override func visit(_ node: SourceFileSyntax) -> SourceFileSyntax {
         var result = node
         result.statements = rewrittenCodeBlockItems(node.statements)
@@ -126,7 +126,7 @@ final class FileScopedDeclarationPrivacy: RewriteSyntaxRule {
         let validAccess: Keyword
         let diagnostic: Finding.Message
 
-        switch context.configuration[FileScopedDeclarationPrivacyConfiguration.self].accessLevel {
+        switch context.configuration[FileScopedDeclarationPrivacy.self].accessLevel {
         case .private:
             invalidAccess = .fileprivate
             validAccess = .private
@@ -168,24 +168,25 @@ extension Finding.Message {
 
 // MARK: - Configuration
 
-package struct FileScopedDeclarationPrivacyConfiguration: Configurable, Codable, Equatable, Sendable {
-    package static let key = "fileScopedDeclarationPrivacy"
-    package static let defaultValue = FileScopedDeclarationPrivacyConfiguration()
-
+package struct FileScopedDeclarationPrivacyConfiguration: SyntaxRuleValue {
     package enum AccessLevel: String, Codable, Sendable {
         case `private`
         case `fileprivate`
     }
 
+    package var rewrite = true
+    package var lint: Lint = .warn
     package var accessLevel: AccessLevel = .private
 
     package init() {}
 
-    package init(from decoder: Decoder) throws {
+    package init(from decoder: any Decoder) throws {
+        self.init()
         let container = try decoder.container(keyedBy: CodingKeys.self)
-        let defaults = Self()
+        if let v = try container.decodeIfPresent(Bool.self, forKey: .rewrite) { self.rewrite = v }
+        if let v = try container.decodeIfPresent(Lint.self, forKey: .lint) { self.lint = v }
         self.accessLevel =
             try container.decodeIfPresent(AccessLevel.self, forKey: .accessLevel)
-            ?? defaults.accessLevel
+            ?? .private
     }
 }

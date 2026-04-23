@@ -41,11 +41,11 @@ import SwiftSyntax
 ///
 /// Format: `if ... else { return/throw/break/continue }` constructs will be replaced with
 ///         equivalent `guard ... else { return/throw/break/continue }` constructs.
-final class PreferEarlyExits: RewriteSyntaxRule {
+final class PreferEarlyExits: RewriteSyntaxRule<BasicRuleValue> {
 
   /// Identifies this rule as being opt-in. This rule is experimental and not yet stable enough to
   /// be enabled by default.
-  override class var defaultHandling: RuleHandling { .off }
+  override class var defaultValue: BasicRuleValue { BasicRuleValue(rewrite: false, lint: .no) }
 
   override func visit(_ node: CodeBlockItemListSyntax) -> CodeBlockItemListSyntax {
     var newItems = [CodeBlockItemSyntax]()

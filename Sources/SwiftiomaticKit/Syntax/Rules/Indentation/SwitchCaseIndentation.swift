@@ -9,13 +9,18 @@ import SwiftSyntax
 /// Lint: Raised when a `case` or `default` label doesn't match the configured style.
 ///
 /// Format: Case labels, bodies, and the closing brace are reindented to match.
-final class SwitchCaseIndentation: RewriteSyntaxRule {
+final class SwitchCaseIndentation: RewriteSyntaxRule<SwitchCaseIndentationConfiguration> {
     override class var group: ConfigurationGroup? { .indentation }
 
-    override class var defaultHandling: RuleHandling { .off }
+    override class var defaultValue: SwitchCaseIndentationConfiguration {
+        var v = SwitchCaseIndentationConfiguration()
+        v.rewrite = false
+        v.lint = .no
+        return v
+    }
 
     private var style: SwitchCaseIndentationConfiguration.Style {
-        context.configuration[SwitchCaseIndentationConfiguration.self].style
+        context.configuration[SwitchCaseIndentation.self].style
     }
 
     override func visit(_ node: SwitchExprSyntax) -> ExprSyntax {
@@ -175,10 +180,7 @@ final class SwitchCaseIndentation: RewriteSyntaxRule {
 
 // MARK: - Configuration
 
-package struct SwitchCaseIndentationConfiguration: Configurable, Codable, Equatable, Sendable {
-    package static let key = "switchCaseIndentation"
-    package static let defaultValue = SwitchCaseIndentationConfiguration()
-
+package struct SwitchCaseIndentationConfiguration: SyntaxRuleValue {
     package enum Style: String, Codable, Sendable {
         /// Case labels align with the `switch` keyword.
         case flush
@@ -186,12 +188,17 @@ package struct SwitchCaseIndentationConfiguration: Configurable, Codable, Equata
         case indented
     }
 
+    package var rewrite = true
+    package var lint: Lint = .warn
     package var style: Style = .flush
 
     package init() {}
 
-    package init(from decoder: Decoder) throws {
+    package init(from decoder: any Decoder) throws {
+        self.init()
         let container = try decoder.container(keyedBy: CodingKeys.self)
+        if let v = try container.decodeIfPresent(Bool.self, forKey: .rewrite) { self.rewrite = v }
+        if let v = try container.decodeIfPresent(Lint.self, forKey: .lint) { self.lint = v }
         self.style = try container.decodeIfPresent(Style.self, forKey: .style) ?? .flush
     }
 }

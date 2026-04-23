@@ -11,10 +11,10 @@ import SwiftSyntax
 /// Lint: If a `throws` function has no `throw` or `try` in its body, a lint warning is raised.
 ///
 /// Format: The `throws` clause is removed.
-final class RedundantThrows: RewriteSyntaxRule {
+final class RedundantThrows: RewriteSyntaxRule<BasicRuleValue> {
   override class var group: ConfigurationGroup? { .redundancies }
 
-  override class var defaultHandling: RuleHandling { .off }
+  override class var defaultValue: BasicRuleValue { BasicRuleValue(rewrite: false, lint: .no) }
 
   override func visit(_ node: FunctionDeclSyntax) -> DeclSyntax {
     guard let effectSpecifiers = node.signature.effectSpecifiers,

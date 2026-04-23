@@ -13,12 +13,17 @@ import SwiftSyntax
 /// Lint: A warning is raised when the file header does not match the configured text.
 ///
 /// Format: The file header is replaced with (or cleared to) the configured text.
-final class FileHeader: RewriteSyntaxRule {
+final class FileHeader: RewriteSyntaxRule<FileHeaderConfiguration> {
 
-  override class var defaultHandling: RuleHandling { .off }
+  override class var defaultValue: FileHeaderConfiguration {
+    var v = FileHeaderConfiguration()
+    v.rewrite = false
+    v.lint = .no
+    return v
+  }
 
   override func visit(_ node: SourceFileSyntax) -> SourceFileSyntax {
-    guard let text = context.configuration[FileHeaderConfiguration.self].text else { return node }
+    guard let text = context.configuration[FileHeader.self].text else { return node }
 
     if node.statements.isEmpty {
       // File has no code — header is on the EOF token
@@ -155,16 +160,18 @@ extension Finding.Message {
 
 // MARK: - Configuration
 
-package struct FileHeaderConfiguration: Configurable, Codable, Equatable, Sendable {
-  package static let key = "fileHeader"
-  package static let defaultValue = FileHeaderConfiguration()
-
+package struct FileHeaderConfiguration: SyntaxRuleValue {
+  package var rewrite = true
+  package var lint: Lint = .warn
   package var text: String?
 
   package init() {}
 
-  package init(from decoder: Decoder) throws {
+  package init(from decoder: any Decoder) throws {
+    self.init()
     let container = try decoder.container(keyedBy: CodingKeys.self)
+    if let v = try container.decodeIfPresent(Bool.self, forKey: .rewrite) { self.rewrite = v }
+    if let v = try container.decodeIfPresent(Lint.self, forKey: .lint) { self.lint = v }
     self.text = try container.decodeIfPresent(String.self, forKey: .text)
   }
 }

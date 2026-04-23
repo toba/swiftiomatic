@@ -19,7 +19,9 @@ import SwiftSyntax
 ///
 /// Format: Enums where all cases are `indirect` will be rewritten such that the enum is marked
 ///         `indirect`, and each case is not.
-final class FullyIndirectEnum: RewriteSyntaxRule {
+final class FullyIndirectEnum: RewriteSyntaxRule<BasicRuleValue> {
+    override class var key: String { "indirectEnum" }
+    override class var group: ConfigurationGroup? { .hoist }
 
   override func visit(_ node: EnumDeclSyntax) -> DeclSyntax {
     let enumMembers = node.memberBlock.members

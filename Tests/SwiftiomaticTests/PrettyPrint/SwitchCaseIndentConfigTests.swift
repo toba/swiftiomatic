@@ -10,7 +10,7 @@
 //
 //===----------------------------------------------------------------------===//
 
-import SwiftiomaticKit
+@testable import SwiftiomaticKit
 import Testing
 
 /// Tests the `switchCaseIndentation.style` config option
@@ -46,7 +46,7 @@ struct SwitchCaseIndentConfigTests: PrettyPrintTesting {
     let expected = input
 
     var config = Configuration.forTesting
-    config[SwitchCaseIndentationConfiguration.self].style = .flush
+    config[SwitchCaseIndentation.self].style = .flush
 
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 35, configuration: config)
   }
@@ -101,7 +101,7 @@ struct SwitchCaseIndentConfigTests: PrettyPrintTesting {
       """
 
     var config = Configuration.forTesting
-    config[SwitchCaseIndentationConfiguration.self].style = .flush
+    config[SwitchCaseIndentation.self].style = .flush
 
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 35, configuration: config)
   }
@@ -156,7 +156,7 @@ struct SwitchCaseIndentConfigTests: PrettyPrintTesting {
       """
 
     var config = Configuration.forTesting
-    config[SwitchCaseIndentationConfiguration.self].style = .indented
+    config[SwitchCaseIndentation.self].style = .indented
 
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 35, configuration: config)
   }
@@ -190,7 +190,7 @@ struct SwitchCaseIndentConfigTests: PrettyPrintTesting {
     let expected = input
 
     var config = Configuration.forTesting
-    config[SwitchCaseIndentationConfiguration.self].style = .indented
+    config[SwitchCaseIndentation.self].style = .indented
 
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 35, configuration: config)
   }
@@ -245,7 +245,7 @@ struct SwitchCaseIndentConfigTests: PrettyPrintTesting {
       """
 
     var config = Configuration.forTesting
-    config[SwitchCaseIndentationConfiguration.self].style = .flush
+    config[SwitchCaseIndentation.self].style = .flush
 
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 35, configuration: config)
   }
@@ -300,7 +300,7 @@ struct SwitchCaseIndentConfigTests: PrettyPrintTesting {
       """
 
     var config = Configuration.forTesting
-    config[SwitchCaseIndentationConfiguration.self].style = .indented
+    config[SwitchCaseIndentation.self].style = .indented
 
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 35, configuration: config)
   }
@@ -355,7 +355,7 @@ struct SwitchCaseIndentConfigTests: PrettyPrintTesting {
       """
 
     var config = Configuration.forTesting
-    config[SwitchCaseIndentationConfiguration.self].style = .indented
+    config[SwitchCaseIndentation.self].style = .indented
 
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 35, configuration: config)
   }
@@ -386,7 +386,7 @@ struct SwitchCaseIndentConfigTests: PrettyPrintTesting {
     let expected = input
 
     var config = Configuration.forTesting
-    config[SwitchCaseIndentationConfiguration.self].style = .indented
+    config[SwitchCaseIndentation.self].style = .indented
 
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 80, configuration: config)
   }

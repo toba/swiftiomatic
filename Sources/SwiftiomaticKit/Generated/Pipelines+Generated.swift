@@ -1209,116 +1209,336 @@ extension RewritePipeline {
 
   func rewrite(_ node: Syntax) -> Syntax {
     var node = node
-    node = BlankLinesAfterGuardStatements(context: context).rewrite(node)
-    node = BlankLinesAfterImports(context: context).rewrite(node)
-    node = BlankLinesAfterSwitchCase(context: context).rewrite(node)
-    node = BlankLinesAroundMark(context: context).rewrite(node)
-    node = BlankLinesBetweenChainedFunctions(context: context).rewrite(node)
-    node = BlankLinesBetweenImports(context: context).rewrite(node)
-    node = BlankLinesBetweenScopes(context: context).rewrite(node)
-    node = CapitalizeAcronyms(context: context).rewrite(node)
-    node = ConsistentSwitchCaseSpacing(context: context).rewrite(node)
-    node = DocComments(context: context).rewrite(node)
-    node = DocCommentsBeforeModifiers(context: context).rewrite(node)
-    node = EmptyBraces(context: context).rewrite(node)
-    node = EmptyCollectionLiteral(context: context).rewrite(node)
-    node = EmptyExtensions(context: context).rewrite(node)
-    node = EnumNamespaces(context: context).rewrite(node)
-    node = ExplicitNilCheck(context: context).rewrite(node)
-    node = FileHeader(context: context).rewrite(node)
-    node = FileScopedDeclarationPrivacy(context: context).rewrite(node)
-    node = FormatSpecialComments(context: context).rewrite(node)
-    node = FullyIndirectEnum(context: context).rewrite(node)
-    node = GroupNumericLiterals(context: context).rewrite(node)
-    node = HoistAwait(context: context).rewrite(node)
-    node = HoistTry(context: context).rewrite(node)
-    node = InitCoderUnavailable(context: context).rewrite(node)
-    node = LeadingDotOperators(context: context).rewrite(node)
-    node = LinebreakAtEndOfFile(context: context).rewrite(node)
-    node = ModifierOrder(context: context).rewrite(node)
-    node = ModifiersOnSameLine(context: context).rewrite(node)
-    node = NoAssignmentInExpressions(context: context).rewrite(node)
-    node = NoBacktickedSelf(context: context).rewrite(node)
-    node = NoEmptyLinesOpeningClosingBraces(context: context).rewrite(node)
-    node = NoExplicitOwnership(context: context).rewrite(node)
-    node = NoExtensionAccessLevel(context: context).rewrite(node)
-    node = NoFallthroughOnlyCases(context: context).rewrite(node)
-    node = NoForceTry(context: context).rewrite(node)
-    node = NoForceUnwrap(context: context).rewrite(node)
-    node = NoGuardInTests(context: context).rewrite(node)
-    node = NoLabelsInCasePatterns(context: context).rewrite(node)
-    node = NoParensAroundConditions(context: context).rewrite(node)
-    node = NoSemicolons(context: context).rewrite(node)
-    node = NoTrailingClosureParens(context: context).rewrite(node)
-    node = NoVoidReturnOnFunctionSignature(context: context).rewrite(node)
-    node = NoYodaConditions(context: context).rewrite(node)
-    node = OneDeclarationPerLine(context: context).rewrite(node)
-    node = OpaqueGenericParameters(context: context).rewrite(node)
-    node = PatternLetPlacement(context: context).rewrite(node)
-    node = PreferAngleBracketExtensions(context: context).rewrite(node)
-    node = PreferAnyObject(context: context).rewrite(node)
-    node = PreferAssertionFailure(context: context).rewrite(node)
-    node = PreferCommaConditions(context: context).rewrite(node)
-    node = PreferConditionalExpression(context: context).rewrite(node)
-    node = PreferCountWhere(context: context).rewrite(node)
-    node = PreferEarlyExits(context: context).rewrite(node)
-    node = PreferEnvironmentEntry(context: context).rewrite(node)
-    node = PreferExplicitFalse(context: context).rewrite(node)
-    node = PreferFileID(context: context).rewrite(node)
-    node = PreferFinalClasses(context: context).rewrite(node)
-    node = PreferIsEmpty(context: context).rewrite(node)
-    node = PreferKeyPath(context: context).rewrite(node)
-    node = PreferMainAttribute(context: context).rewrite(node)
-    node = PreferShorthandTypeNames(context: context).rewrite(node)
-    node = PreferSingleLinePropertyGetter(context: context).rewrite(node)
-    node = PreferSwiftTesting(context: context).rewrite(node)
-    node = PreferTrailingClosures(context: context).rewrite(node)
-    node = PreferVoidReturn(context: context).rewrite(node)
-    node = PreferWhereClausesInForLoops(context: context).rewrite(node)
-    node = PrivateStateVariables(context: context).rewrite(node)
-    node = RedundantAccessControl(context: context).rewrite(node)
-    node = RedundantAsync(context: context).rewrite(node)
-    node = RedundantBackticks(context: context).rewrite(node)
-    node = RedundantBreak(context: context).rewrite(node)
-    node = RedundantClosure(context: context).rewrite(node)
-    node = RedundantEquatable(context: context).rewrite(node)
-    node = RedundantInit(context: context).rewrite(node)
-    node = RedundantLet(context: context).rewrite(node)
-    node = RedundantLetError(context: context).rewrite(node)
-    node = RedundantNilInit(context: context).rewrite(node)
-    node = RedundantObjc(context: context).rewrite(node)
-    node = RedundantOptionalBinding(context: context).rewrite(node)
-    node = RedundantPattern(context: context).rewrite(node)
-    node = RedundantProperty(context: context).rewrite(node)
-    node = RedundantRawValues(context: context).rewrite(node)
-    node = RedundantReturn(context: context).rewrite(node)
-    node = RedundantSelf(context: context).rewrite(node)
-    node = RedundantSendable(context: context).rewrite(node)
-    node = RedundantStaticSelf(context: context).rewrite(node)
-    node = RedundantSwiftTestingSuite(context: context).rewrite(node)
-    node = RedundantThrows(context: context).rewrite(node)
-    node = RedundantType(context: context).rewrite(node)
-    node = RedundantTypedThrows(context: context).rewrite(node)
-    node = RedundantViewBuilder(context: context).rewrite(node)
-    node = SimplifyGenericConstraints(context: context).rewrite(node)
-    node = SortDeclarations(context: context).rewrite(node)
-    node = SortImports(context: context).rewrite(node)
-    node = SortSwitchCases(context: context).rewrite(node)
-    node = SortTypeAliases(context: context).rewrite(node)
-    node = StrongOutlets(context: context).rewrite(node)
-    node = SwiftTestingTestCaseNames(context: context).rewrite(node)
-    node = SwitchCaseIndentation(context: context).rewrite(node)
-    node = TestSuiteAccessControl(context: context).rewrite(node)
-    node = TripleSlashDocComments(context: context).rewrite(node)
-    node = URLMacro(context: context).rewrite(node)
-    node = UnusedArguments(context: context).rewrite(node)
-    node = ValidateTestCases(context: context).rewrite(node)
-    node = WrapCompoundCaseStatements(context: context).rewrite(node)
-    node = WrapConditionalAssignment(context: context).rewrite(node)
-    node = WrapMultilineFunctionChains(context: context).rewrite(node)
-    node = WrapMultilineStatementBraces(context: context).rewrite(node)
-    node = WrapSingleLineBodies(context: context).rewrite(node)
-    node = WrapSingleLineComments(context: context).rewrite(node)
+    if context.shouldFormat(BlankLinesAfterGuardStatements.self, node: node) {
+      node = BlankLinesAfterGuardStatements(context: context).rewrite(node)
+    }
+    if context.shouldFormat(BlankLinesAfterImports.self, node: node) {
+      node = BlankLinesAfterImports(context: context).rewrite(node)
+    }
+    if context.shouldFormat(BlankLinesAfterSwitchCase.self, node: node) {
+      node = BlankLinesAfterSwitchCase(context: context).rewrite(node)
+    }
+    if context.shouldFormat(BlankLinesAroundMark.self, node: node) {
+      node = BlankLinesAroundMark(context: context).rewrite(node)
+    }
+    if context.shouldFormat(BlankLinesBetweenChainedFunctions.self, node: node) {
+      node = BlankLinesBetweenChainedFunctions(context: context).rewrite(node)
+    }
+    if context.shouldFormat(BlankLinesBetweenImports.self, node: node) {
+      node = BlankLinesBetweenImports(context: context).rewrite(node)
+    }
+    if context.shouldFormat(BlankLinesBetweenScopes.self, node: node) {
+      node = BlankLinesBetweenScopes(context: context).rewrite(node)
+    }
+    if context.shouldFormat(CapitalizeAcronyms.self, node: node) {
+      node = CapitalizeAcronyms(context: context).rewrite(node)
+    }
+    if context.shouldFormat(ConsistentSwitchCaseSpacing.self, node: node) {
+      node = ConsistentSwitchCaseSpacing(context: context).rewrite(node)
+    }
+    if context.shouldFormat(DocComments.self, node: node) {
+      node = DocComments(context: context).rewrite(node)
+    }
+    if context.shouldFormat(DocCommentsBeforeModifiers.self, node: node) {
+      node = DocCommentsBeforeModifiers(context: context).rewrite(node)
+    }
+    if context.shouldFormat(EmptyBraces.self, node: node) {
+      node = EmptyBraces(context: context).rewrite(node)
+    }
+    if context.shouldFormat(EmptyCollectionLiteral.self, node: node) {
+      node = EmptyCollectionLiteral(context: context).rewrite(node)
+    }
+    if context.shouldFormat(EmptyExtensions.self, node: node) {
+      node = EmptyExtensions(context: context).rewrite(node)
+    }
+    if context.shouldFormat(EnumNamespaces.self, node: node) {
+      node = EnumNamespaces(context: context).rewrite(node)
+    }
+    if context.shouldFormat(ExplicitNilCheck.self, node: node) {
+      node = ExplicitNilCheck(context: context).rewrite(node)
+    }
+    if context.shouldFormat(FileHeader.self, node: node) {
+      node = FileHeader(context: context).rewrite(node)
+    }
+    if context.shouldFormat(FileScopedDeclarationPrivacy.self, node: node) {
+      node = FileScopedDeclarationPrivacy(context: context).rewrite(node)
+    }
+    if context.shouldFormat(FormatSpecialComments.self, node: node) {
+      node = FormatSpecialComments(context: context).rewrite(node)
+    }
+    if context.shouldFormat(FullyIndirectEnum.self, node: node) {
+      node = FullyIndirectEnum(context: context).rewrite(node)
+    }
+    if context.shouldFormat(GroupNumericLiterals.self, node: node) {
+      node = GroupNumericLiterals(context: context).rewrite(node)
+    }
+    if context.shouldFormat(HoistAwait.self, node: node) {
+      node = HoistAwait(context: context).rewrite(node)
+    }
+    if context.shouldFormat(HoistTry.self, node: node) {
+      node = HoistTry(context: context).rewrite(node)
+    }
+    if context.shouldFormat(InitCoderUnavailable.self, node: node) {
+      node = InitCoderUnavailable(context: context).rewrite(node)
+    }
+    if context.shouldFormat(LeadingDotOperators.self, node: node) {
+      node = LeadingDotOperators(context: context).rewrite(node)
+    }
+    if context.shouldFormat(LinebreakAtEndOfFile.self, node: node) {
+      node = LinebreakAtEndOfFile(context: context).rewrite(node)
+    }
+    if context.shouldFormat(ModifierOrder.self, node: node) {
+      node = ModifierOrder(context: context).rewrite(node)
+    }
+    if context.shouldFormat(ModifiersOnSameLine.self, node: node) {
+      node = ModifiersOnSameLine(context: context).rewrite(node)
+    }
+    if context.shouldFormat(NoAssignmentInExpressions.self, node: node) {
+      node = NoAssignmentInExpressions(context: context).rewrite(node)
+    }
+    if context.shouldFormat(NoBacktickedSelf.self, node: node) {
+      node = NoBacktickedSelf(context: context).rewrite(node)
+    }
+    if context.shouldFormat(NoEmptyLinesOpeningClosingBraces.self, node: node) {
+      node = NoEmptyLinesOpeningClosingBraces(context: context).rewrite(node)
+    }
+    if context.shouldFormat(NoExplicitOwnership.self, node: node) {
+      node = NoExplicitOwnership(context: context).rewrite(node)
+    }
+    if context.shouldFormat(NoExtensionAccessLevel.self, node: node) {
+      node = NoExtensionAccessLevel(context: context).rewrite(node)
+    }
+    if context.shouldFormat(NoFallthroughOnlyCases.self, node: node) {
+      node = NoFallthroughOnlyCases(context: context).rewrite(node)
+    }
+    if context.shouldFormat(NoForceTry.self, node: node) {
+      node = NoForceTry(context: context).rewrite(node)
+    }
+    if context.shouldFormat(NoForceUnwrap.self, node: node) {
+      node = NoForceUnwrap(context: context).rewrite(node)
+    }
+    if context.shouldFormat(NoGuardInTests.self, node: node) {
+      node = NoGuardInTests(context: context).rewrite(node)
+    }
+    if context.shouldFormat(NoLabelsInCasePatterns.self, node: node) {
+      node = NoLabelsInCasePatterns(context: context).rewrite(node)
+    }
+    if context.shouldFormat(NoParensAroundConditions.self, node: node) {
+      node = NoParensAroundConditions(context: context).rewrite(node)
+    }
+    if context.shouldFormat(NoSemicolons.self, node: node) {
+      node = NoSemicolons(context: context).rewrite(node)
+    }
+    if context.shouldFormat(NoTrailingClosureParens.self, node: node) {
+      node = NoTrailingClosureParens(context: context).rewrite(node)
+    }
+    if context.shouldFormat(NoVoidReturnOnFunctionSignature.self, node: node) {
+      node = NoVoidReturnOnFunctionSignature(context: context).rewrite(node)
+    }
+    if context.shouldFormat(NoYodaConditions.self, node: node) {
+      node = NoYodaConditions(context: context).rewrite(node)
+    }
+    if context.shouldFormat(OneDeclarationPerLine.self, node: node) {
+      node = OneDeclarationPerLine(context: context).rewrite(node)
+    }
+    if context.shouldFormat(OpaqueGenericParameters.self, node: node) {
+      node = OpaqueGenericParameters(context: context).rewrite(node)
+    }
+    if context.shouldFormat(PatternLetPlacement.self, node: node) {
+      node = PatternLetPlacement(context: context).rewrite(node)
+    }
+    if context.shouldFormat(PreferAngleBracketExtensions.self, node: node) {
+      node = PreferAngleBracketExtensions(context: context).rewrite(node)
+    }
+    if context.shouldFormat(PreferAnyObject.self, node: node) {
+      node = PreferAnyObject(context: context).rewrite(node)
+    }
+    if context.shouldFormat(PreferAssertionFailure.self, node: node) {
+      node = PreferAssertionFailure(context: context).rewrite(node)
+    }
+    if context.shouldFormat(PreferCommaConditions.self, node: node) {
+      node = PreferCommaConditions(context: context).rewrite(node)
+    }
+    if context.shouldFormat(PreferConditionalExpression.self, node: node) {
+      node = PreferConditionalExpression(context: context).rewrite(node)
+    }
+    if context.shouldFormat(PreferCountWhere.self, node: node) {
+      node = PreferCountWhere(context: context).rewrite(node)
+    }
+    if context.shouldFormat(PreferEarlyExits.self, node: node) {
+      node = PreferEarlyExits(context: context).rewrite(node)
+    }
+    if context.shouldFormat(PreferEnvironmentEntry.self, node: node) {
+      node = PreferEnvironmentEntry(context: context).rewrite(node)
+    }
+    if context.shouldFormat(PreferExplicitFalse.self, node: node) {
+      node = PreferExplicitFalse(context: context).rewrite(node)
+    }
+    if context.shouldFormat(PreferFileID.self, node: node) {
+      node = PreferFileID(context: context).rewrite(node)
+    }
+    if context.shouldFormat(PreferFinalClasses.self, node: node) {
+      node = PreferFinalClasses(context: context).rewrite(node)
+    }
+    if context.shouldFormat(PreferIsEmpty.self, node: node) {
+      node = PreferIsEmpty(context: context).rewrite(node)
+    }
+    if context.shouldFormat(PreferKeyPath.self, node: node) {
+      node = PreferKeyPath(context: context).rewrite(node)
+    }
+    if context.shouldFormat(PreferMainAttribute.self, node: node) {
+      node = PreferMainAttribute(context: context).rewrite(node)
+    }
+    if context.shouldFormat(PreferShorthandTypeNames.self, node: node) {
+      node = PreferShorthandTypeNames(context: context).rewrite(node)
+    }
+    if context.shouldFormat(PreferSingleLinePropertyGetter.self, node: node) {
+      node = PreferSingleLinePropertyGetter(context: context).rewrite(node)
+    }
+    if context.shouldFormat(PreferSwiftTesting.self, node: node) {
+      node = PreferSwiftTesting(context: context).rewrite(node)
+    }
+    if context.shouldFormat(PreferTrailingClosures.self, node: node) {
+      node = PreferTrailingClosures(context: context).rewrite(node)
+    }
+    if context.shouldFormat(PreferVoidReturn.self, node: node) {
+      node = PreferVoidReturn(context: context).rewrite(node)
+    }
+    if context.shouldFormat(PreferWhereClausesInForLoops.self, node: node) {
+      node = PreferWhereClausesInForLoops(context: context).rewrite(node)
+    }
+    if context.shouldFormat(PrivateStateVariables.self, node: node) {
+      node = PrivateStateVariables(context: context).rewrite(node)
+    }
+    if context.shouldFormat(RedundantAccessControl.self, node: node) {
+      node = RedundantAccessControl(context: context).rewrite(node)
+    }
+    if context.shouldFormat(RedundantAsync.self, node: node) {
+      node = RedundantAsync(context: context).rewrite(node)
+    }
+    if context.shouldFormat(RedundantBackticks.self, node: node) {
+      node = RedundantBackticks(context: context).rewrite(node)
+    }
+    if context.shouldFormat(RedundantBreak.self, node: node) {
+      node = RedundantBreak(context: context).rewrite(node)
+    }
+    if context.shouldFormat(RedundantClosure.self, node: node) {
+      node = RedundantClosure(context: context).rewrite(node)
+    }
+    if context.shouldFormat(RedundantEquatable.self, node: node) {
+      node = RedundantEquatable(context: context).rewrite(node)
+    }
+    if context.shouldFormat(RedundantInit.self, node: node) {
+      node = RedundantInit(context: context).rewrite(node)
+    }
+    if context.shouldFormat(RedundantLet.self, node: node) {
+      node = RedundantLet(context: context).rewrite(node)
+    }
+    if context.shouldFormat(RedundantLetError.self, node: node) {
+      node = RedundantLetError(context: context).rewrite(node)
+    }
+    if context.shouldFormat(RedundantNilInit.self, node: node) {
+      node = RedundantNilInit(context: context).rewrite(node)
+    }
+    if context.shouldFormat(RedundantObjc.self, node: node) {
+      node = RedundantObjc(context: context).rewrite(node)
+    }
+    if context.shouldFormat(RedundantOptionalBinding.self, node: node) {
+      node = RedundantOptionalBinding(context: context).rewrite(node)
+    }
+    if context.shouldFormat(RedundantPattern.self, node: node) {
+      node = RedundantPattern(context: context).rewrite(node)
+    }
+    if context.shouldFormat(RedundantProperty.self, node: node) {
+      node = RedundantProperty(context: context).rewrite(node)
+    }
+    if context.shouldFormat(RedundantRawValues.self, node: node) {
+      node = RedundantRawValues(context: context).rewrite(node)
+    }
+    if context.shouldFormat(RedundantReturn.self, node: node) {
+      node = RedundantReturn(context: context).rewrite(node)
+    }
+    if context.shouldFormat(RedundantSelf.self, node: node) {
+      node = RedundantSelf(context: context).rewrite(node)
+    }
+    if context.shouldFormat(RedundantSendable.self, node: node) {
+      node = RedundantSendable(context: context).rewrite(node)
+    }
+    if context.shouldFormat(RedundantStaticSelf.self, node: node) {
+      node = RedundantStaticSelf(context: context).rewrite(node)
+    }
+    if context.shouldFormat(RedundantSwiftTestingSuite.self, node: node) {
+      node = RedundantSwiftTestingSuite(context: context).rewrite(node)
+    }
+    if context.shouldFormat(RedundantThrows.self, node: node) {
+      node = RedundantThrows(context: context).rewrite(node)
+    }
+    if context.shouldFormat(RedundantType.self, node: node) {
+      node = RedundantType(context: context).rewrite(node)
+    }
+    if context.shouldFormat(RedundantTypedThrows.self, node: node) {
+      node = RedundantTypedThrows(context: context).rewrite(node)
+    }
+    if context.shouldFormat(RedundantViewBuilder.self, node: node) {
+      node = RedundantViewBuilder(context: context).rewrite(node)
+    }
+    if context.shouldFormat(SimplifyGenericConstraints.self, node: node) {
+      node = SimplifyGenericConstraints(context: context).rewrite(node)
+    }
+    if context.shouldFormat(SortDeclarations.self, node: node) {
+      node = SortDeclarations(context: context).rewrite(node)
+    }
+    if context.shouldFormat(SortImports.self, node: node) {
+      node = SortImports(context: context).rewrite(node)
+    }
+    if context.shouldFormat(SortSwitchCases.self, node: node) {
+      node = SortSwitchCases(context: context).rewrite(node)
+    }
+    if context.shouldFormat(SortTypeAliases.self, node: node) {
+      node = SortTypeAliases(context: context).rewrite(node)
+    }
+    if context.shouldFormat(StrongOutlets.self, node: node) {
+      node = StrongOutlets(context: context).rewrite(node)
+    }
+    if context.shouldFormat(SwiftTestingTestCaseNames.self, node: node) {
+      node = SwiftTestingTestCaseNames(context: context).rewrite(node)
+    }
+    if context.shouldFormat(SwitchCaseIndentation.self, node: node) {
+      node = SwitchCaseIndentation(context: context).rewrite(node)
+    }
+    if context.shouldFormat(TestSuiteAccessControl.self, node: node) {
+      node = TestSuiteAccessControl(context: context).rewrite(node)
+    }
+    if context.shouldFormat(TripleSlashDocComments.self, node: node) {
+      node = TripleSlashDocComments(context: context).rewrite(node)
+    }
+    if context.shouldFormat(URLMacro.self, node: node) {
+      node = URLMacro(context: context).rewrite(node)
+    }
+    if context.shouldFormat(UnusedArguments.self, node: node) {
+      node = UnusedArguments(context: context).rewrite(node)
+    }
+    if context.shouldFormat(ValidateTestCases.self, node: node) {
+      node = ValidateTestCases(context: context).rewrite(node)
+    }
+    if context.shouldFormat(WrapCompoundCaseStatements.self, node: node) {
+      node = WrapCompoundCaseStatements(context: context).rewrite(node)
+    }
+    if context.shouldFormat(WrapConditionalAssignment.self, node: node) {
+      node = WrapConditionalAssignment(context: context).rewrite(node)
+    }
+    if context.shouldFormat(WrapMultilineFunctionChains.self, node: node) {
+      node = WrapMultilineFunctionChains(context: context).rewrite(node)
+    }
+    if context.shouldFormat(WrapMultilineStatementBraces.self, node: node) {
+      node = WrapMultilineStatementBraces(context: context).rewrite(node)
+    }
+    if context.shouldFormat(WrapSingleLineBodies.self, node: node) {
+      node = WrapSingleLineBodies(context: context).rewrite(node)
+    }
+    if context.shouldFormat(WrapSingleLineComments.self, node: node) {
+      node = WrapSingleLineComments(context: context).rewrite(node)
+    }
     return node
   }
 }

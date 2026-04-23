@@ -811,7 +811,7 @@ struct SingleLineBodiesInlineTests: RuleTesting {
 
   private var inlineConfig: Configuration {
     var config = Configuration.forTesting(enabledRule: WrapSingleLineBodies.key)
-    config[SingleLineBodiesConfiguration.self] = {
+    config[WrapSingleLineBodies.self] = {
       var c = SingleLineBodiesConfiguration()
       c.mode = .inline
       return c

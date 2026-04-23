@@ -11,10 +11,10 @@ import SwiftSyntax
 /// Lint: If any case's spacing is inconsistent with the majority, a lint warning is raised.
 ///
 /// Format: Blank lines are added or removed to make spacing consistent.
-final class ConsistentSwitchCaseSpacing: RewriteSyntaxRule {
-//    static let name="
+final class ConsistentSwitchCaseSpacing: RewriteSyntaxRule<BasicRuleValue> {
+//    override class var key: String { "betweenScopes" }
     override class var group: ConfigurationGroup? { .blankLines }
-    override class var defaultHandling: RuleHandling { .off }
+    override class var defaultValue: BasicRuleValue { .init(rewrite: false, lint: .no) }
 
     override func visit(_ node: SwitchExprSyntax) -> ExprSyntax {
         let visited = super.visit(node)

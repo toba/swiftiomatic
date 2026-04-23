@@ -16,9 +16,14 @@ import SwiftSyntax
 /// Lint: A warning is raised for each `URL(string: "...")!` that can be converted.
 ///
 /// Format: The force-unwrapped URL initializer is replaced with the configured macro.
-final class URLMacro: RewriteSyntaxRule {
+final class URLMacro: RewriteSyntaxRule<URLMacroConfiguration> {
 
-  override class var defaultHandling: RuleHandling { .off }
+  override class var defaultValue: URLMacroConfiguration {
+    var v = URLMacroConfiguration()
+    v.rewrite = false
+    v.lint = .no
+    return v
+  }
 
   /// Whether any replacements were made (drives import addition).
   private var madeReplacements = false
@@ -29,7 +34,7 @@ final class URLMacro: RewriteSyntaxRule {
   // MARK: - Import detection
 
   override func visit(_ node: ImportDeclSyntax) -> DeclSyntax {
-    if let moduleName = context.configuration[URLMacroConfiguration.self].moduleName,
+    if let moduleName = context.configuration[URLMacro.self].moduleName,
       node.path.first?.name.text == moduleName
     {
       hasModuleImport = true
@@ -40,7 +45,7 @@ final class URLMacro: RewriteSyntaxRule {
   // MARK: - File-level: add import after processing children
 
   override func visit(_ node: SourceFileSyntax) -> SourceFileSyntax {
-    let config = context.configuration[URLMacroConfiguration.self]
+    let config = context.configuration[URLMacro.self]
     guard config.macroName != nil else { return node }
 
     let visited = super.visit(node)
@@ -100,7 +105,7 @@ final class URLMacro: RewriteSyntaxRule {
   // MARK: - Expression-level: replace URL(string: "...")!
 
   override func visit(_ node: ForceUnwrapExprSyntax) -> ExprSyntax {
-    let config = context.configuration[URLMacroConfiguration.self]
+    let config = context.configuration[URLMacro.self]
     guard let macroName = config.macroName else { return ExprSyntax(node) }
 
     // The inner expression must be a function call
@@ -174,17 +179,19 @@ extension Finding.Message {
 
 // MARK: - Configuration
 
-package struct URLMacroConfiguration: Configurable, Codable, Equatable, Sendable {
-  package static let key = "urlMacro"
-  package static let defaultValue = URLMacroConfiguration()
-
+package struct URLMacroConfiguration: SyntaxRuleValue {
+  package var rewrite = true
+  package var lint: Lint = .warn
   package var macroName: String?
   package var moduleName: String?
 
   package init() {}
 
-  package init(from decoder: Decoder) throws {
+  package init(from decoder: any Decoder) throws {
+    self.init()
     let container = try decoder.container(keyedBy: CodingKeys.self)
+    if let v = try container.decodeIfPresent(Bool.self, forKey: .rewrite) { self.rewrite = v }
+    if let v = try container.decodeIfPresent(Lint.self, forKey: .lint) { self.lint = v }
     self.macroName = try container.decodeIfPresent(String.self, forKey: .macroName)
     self.moduleName = try container.decodeIfPresent(String.self, forKey: .moduleName)
   }

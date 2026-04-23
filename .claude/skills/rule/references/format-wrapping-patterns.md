@@ -83,7 +83,7 @@ public override func visit(_ token: TokenSyntax) -> TokenSyntax {
 
 **Indentation**: Walk backward from the comment piece in trivia to find `.spaces`/`.tabs` after the last `.newlines`.
 
-**Don't wrap**: comment directives (`MARK:`, `TODO:`, `FIXME:`, `swiftiomatic-ignore`, etc.) and words that won't fit on a line by themselves (avoids infinite wrapping).
+**Don't wrap**: comment directives (`MARK:`, `TODO:`, `FIXME:`, `sm:ignore`, etc.) and words that won't fit on a line by themselves (avoids infinite wrapping).
 
 Used by: `WrapSingleLineComments`.
 

@@ -12,9 +12,9 @@ import SwiftSyntax
 /// Lint: A warning is raised for each XCTest pattern that can be converted.
 ///
 /// Format: The XCTest patterns are replaced with Swift Testing equivalents.
-final class PreferSwiftTesting: RewriteSyntaxRule {
+final class PreferSwiftTesting: RewriteSyntaxRule<BasicRuleValue> {
 
-  override class var defaultHandling: RuleHandling { .off }
+  override class var defaultValue: BasicRuleValue { BasicRuleValue(rewrite: false, lint: .no) }
 
   /// Set to true when we detect unsupported patterns — bail out of the entire file.
   private var bailOut = false

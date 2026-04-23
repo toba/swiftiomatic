@@ -1,12 +1,7 @@
 /// Derived rule metadata, computed once from the generated `allRuleTypes` array.
-/// Each rule type carries its own `key`, `defaultHandling`, and `group` via
-/// the `Rule` protocol — no generated string literals needed.
+/// Each rule type carries its own `key`, `defaultValue`, and `group` via
+/// the `SyntaxRule` protocol — no generated string literals needed.
 extension ConfigurationRegistry {
-
-    /// Rule name → default handling, derived from each type's static properties.
-    package static let rules: [String: RuleHandling] = {
-        Dictionary(uniqueKeysWithValues: allRuleTypes.map { ($0.key, $0.defaultHandling) })
-    }()
 
     /// Fast lookup from rule type identity to its string name.
     package static let ruleNameCache: [ObjectIdentifier: String] = {

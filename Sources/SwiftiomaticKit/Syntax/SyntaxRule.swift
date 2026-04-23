@@ -1,44 +1,18 @@
-//===----------------------------------------------------------------------===//
-//
-// This source file is part of the Swift.org open source project
-//
-// Copyright (c) 2014 - 2019 Apple Inc. and the Swift project authors
-// Licensed under Apache License v2.0 with Runtime Library Exception
-//
-// See https://swift.org/LICENSE.txt for license information
-// See https://swift.org/CONTRIBUTORS.txt for the list of Swift project authors
-//
-//===----------------------------------------------------------------------===//
-
 import Foundation
 import SwiftSyntax
 
 /// A Rule is a linting or formatting pass that executes in a given context.
-protocol SyntaxRule: Configurable {
+protocol SyntaxRule: Configurable where Value: SyntaxRuleValue {
     /// The context in which the rule is executed.
     var context: Context { get }
-
-    /// The default handling for this rule when not overridden by configuration.
-    ///
-    /// Base classes provide the default: `.fix` for format rules, `.warning` for
-    /// lint rules. Override to `.off` for rules that should be disabled by default.
-    static var defaultHandling: RuleHandling { get }
 
     /// Creates a new Rule in a given context.
     init(context: Context)
 }
 
-extension SyntaxRule where Self: RewriteSyntaxRule {
-    static var defaultHandling: RuleHandling { .fix }
-}
-
-extension SyntaxRule where Self: LintSyntaxRule {
-    static var defaultHandling: RuleHandling { .warning }
-}
-
 extension SyntaxRule {
-    typealias Value = RuleHandling
-    static var defaultValue: RuleHandling { defaultHandling }
+    /// Default value from the `SyntaxRuleValue`'s `init()`.
+    static var defaultValue: Value { Value() }
 
     /// Emits the given finding.
     ///
@@ -56,6 +30,9 @@ extension SyntaxRule {
         anchor: FindingAnchor = .start,
         notes: [Finding.Note] = []
     ) {
+        let severity = context.severity(of: type(of: self))
+        guard severity.isActive else { return }
+
         let syntaxLocation: SourceLocation?
         if let node = node {
             switch anchor {
@@ -77,7 +54,7 @@ extension SyntaxRule {
         }
 
         let category = SyntaxFindingCategory(ruleType: type(of: self))
-        let severity = context.severity(of: type(of: self)).diagnosticSeverity
+
         context.findingEmitter.emit(
             message,
             category: category,

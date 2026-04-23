@@ -18,11 +18,11 @@ import SwiftSyntax
 ///
 /// Format: `for` loops that consist of a single `if` statement have the conditional of that
 ///         statement factored out to a `where` clause.
-final class PreferWhereClausesInForLoops: RewriteSyntaxRule {
+final class PreferWhereClausesInForLoops: RewriteSyntaxRule<BasicRuleValue> {
 
   /// Identifies this rule as being opt-in. This rule is experimental and not yet stable enough to
   /// be enabled by default.
-  override class var defaultHandling: RuleHandling { .off }
+  override class var defaultValue: BasicRuleValue { BasicRuleValue(rewrite: false, lint: .no) }
 
   override func visit(_ node: ForStmtSyntax) -> StmtSyntax {
     // Extract IfStmt node if it's the only node in the function's body.

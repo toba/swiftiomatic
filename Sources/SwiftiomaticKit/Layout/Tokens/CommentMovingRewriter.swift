@@ -157,7 +157,7 @@ func isFormatterIgnorePresent(inTrivia trivia: Trivia, isWholeFile: Bool) -> Boo
             commentText.dropFirst(prefix.count)
             .dropLast(suffix.count)
             .trimmingCharacters(in: .whitespaces)
-        let pattern = isWholeFile ? "swiftiomatic-ignore-file" : "swiftiomatic-ignore"
+        let pattern = isWholeFile ? "sm:ignore-file" : "sm:ignore"
         return trimmed == pattern
     }
 

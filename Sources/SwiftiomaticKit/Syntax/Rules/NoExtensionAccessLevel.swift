@@ -22,7 +22,7 @@ import SwiftSyntax
 /// Lint: A lint error is raised when access control placement doesn't match the configuration.
 ///
 /// Format: Access control modifiers are moved to match the configured placement.
-final class NoExtensionAccessLevel: RewriteSyntaxRule {
+final class NoExtensionAccessLevel: RewriteSyntaxRule<ExtensionAccessControlConfiguration> {
     private enum State {
         /// The rule is currently visiting top-level declarations.
         case topLevel
@@ -46,7 +46,7 @@ final class NoExtensionAccessLevel: RewriteSyntaxRule {
     override func visit(_ node: ExtensionDeclSyntax) -> DeclSyntax {
         guard case .topLevel = state else { return DeclSyntax(node) }
 
-        switch context.configuration[ExtensionAccessControlConfiguration.self].placement {
+        switch context.configuration[NoExtensionAccessLevel.self].placement {
         case .onDeclarations:
             return visitOnDeclarations(node)
         case .onExtension:
@@ -367,24 +367,25 @@ extension Finding.Message {
 
 // MARK: - Configuration
 
-package struct ExtensionAccessControlConfiguration: Configurable, Codable, Equatable, Sendable {
-    package static let key = "extensionAccessControl"
-    package static let defaultValue = ExtensionAccessControlConfiguration()
-
+package struct ExtensionAccessControlConfiguration: SyntaxRuleValue {
     package enum Placement: String, Codable, Sendable {
         case onDeclarations
         case onExtension
     }
 
+    package var rewrite = true
+    package var lint: Lint = .warn
     package var placement: Placement = .onDeclarations
 
     package init() {}
 
-    package init(from decoder: Decoder) throws {
+    package init(from decoder: any Decoder) throws {
+        self.init()
         let container = try decoder.container(keyedBy: CodingKeys.self)
-        let defaults = Self()
+        if let v = try container.decodeIfPresent(Bool.self, forKey: .rewrite) { self.rewrite = v }
+        if let v = try container.decodeIfPresent(Lint.self, forKey: .lint) { self.lint = v }
         self.placement =
             try container.decodeIfPresent(Placement.self, forKey: .placement)
-            ?? defaults.placement
+            ?? .onDeclarations
     }
 }

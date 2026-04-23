@@ -14,8 +14,8 @@ import SwiftSyntax
 /// Lint: A redundant `==` implementation raises a warning.
 ///
 /// Format: The `==` function is removed from the member block.
-final class RedundantEquatable: RewriteSyntaxRule {
-    override class var defaultHandling: RuleHandling { .off }
+final class RedundantEquatable: RewriteSyntaxRule<BasicRuleValue> {
+    override class var defaultValue: BasicRuleValue { BasicRuleValue(rewrite: false, lint: .no) }
     override class var group: ConfigurationGroup? { .redundancies }
 
     override func visit(_ node: StructDeclSyntax) -> DeclSyntax {

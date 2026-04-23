@@ -15,7 +15,7 @@ import SwiftSyntax
 /// Lint: When a parameter or loop variable is unused.
 ///
 /// Format: The unused parameter or variable is replaced with `_`.
-final class UnusedArguments: RewriteSyntaxRule {
+final class UnusedArguments: RewriteSyntaxRule<BasicRuleValue> {
 
   // MARK: - Functions
 

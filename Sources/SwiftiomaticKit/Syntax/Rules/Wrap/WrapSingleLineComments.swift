@@ -7,10 +7,10 @@ import SwiftSyntax
 ///
 /// Format: The comment is word-wrapped, continuing on the next line with the
 ///         same prefix and indentation.
-final class WrapSingleLineComments: RewriteSyntaxRule {
+final class WrapSingleLineComments: RewriteSyntaxRule<BasicRuleValue> {
     override class var key: String { "singleLineComments" }
     override class var group: ConfigurationGroup? { .wrap }
-    override class var defaultHandling: RuleHandling { .off }
+    override class var defaultValue: BasicRuleValue { BasicRuleValue(rewrite: false, lint: .no) }
 
     override func visit(_ token: TokenSyntax) -> TokenSyntax {
         let maxWidth = context.configuration[LineLength.self]
@@ -231,7 +231,7 @@ final class WrapSingleLineComments: RewriteSyntaxRule {
         let body = text.drop { $0 == "/" }.trimmingCharacters(in: .whitespaces)
         let directives = [
             "MARK:", "TODO:", "FIXME:", "WARNING:", "NOTE:", "HACK:",
-            "swiftiomatic-ignore", "swift-format-ignore",
+            "sm:ignore", "swift-format-ignore",
             "swiftlint:", "sourcery:",
         ]
         return directives.contains { body.hasPrefix($0) }

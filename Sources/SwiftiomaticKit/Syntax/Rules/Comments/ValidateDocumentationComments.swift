@@ -20,13 +20,14 @@ import SwiftSyntax
 ///
 /// Lint: Documentation comments that are incomplete (e.g. missing parameter documentation) or
 ///       invalid (uses `Parameters` when there is only one parameter) will yield a lint error.
-final class ValidateDocumentationComments: LintSyntaxRule {
+final class ValidateDocumentationComments: LintSyntaxRule<LintOnlyValue> {
+    override class var key: String { "documentParameters" }
     override class var group: ConfigurationGroup? { .comments }
 
     /// Identifies this rule as being opt-in. Accurate and complete documentation comments are
     /// important, but this rule isn't able to handle situations where portions of documentation are
     /// redundant. For example when the returns clause is redundant for a simple declaration.
-    override class var defaultHandling: RuleHandling { .off }
+    override class var defaultValue: LintOnlyValue { LintOnlyValue(lint: .no) }
 
     override func visit(_ node: InitializerDeclSyntax) -> SyntaxVisitorContinueKind {
         return checkFunctionLikeDocumentation(

@@ -136,7 +136,7 @@ Option B — **Post-scan pass**: After `TokenStreamCreator` builds the token str
    - Emit remaining words as a new line with the same indent and comment prefix (`//` or `///`).
    - Handle doc comment prefixes (`/// `) vs regular (`// `).
    - Don't split if the next word alone wouldn't fit on a line by itself (avoid infinite loops).
-   - Don't split comment directives (`// swiftiomatic-ignore`, `// swift-format-ignore`, `// MARK:`, etc.).
+   - Don't split comment directives (`// sm:ignore`, `// swift-format-ignore`, `// MARK:`, etc.).
 
 **Alternative**: Handle this in `TokenStreamCreator` when creating `Comment` tokens — split long comments into multiple `Comment` tokens separated by breaks. This would be cleaner since the PrettyPrinter already handles multiple sequential comments. However, the column position isn't known at tokenization time, so this won't work for indented code.
 

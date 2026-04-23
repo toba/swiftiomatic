@@ -22,7 +22,7 @@ import SwiftSyntax
 ///
 /// Format: A `return` statement containing an assignment expression is expanded into two separate
 ///         statements.
-final class NoAssignmentInExpressions: RewriteSyntaxRule {
+final class NoAssignmentInExpressions: RewriteSyntaxRule<NoAssignmentInExpressionsConfiguration> {
   override func visit(_ node: InfixOperatorExprSyntax) -> ExprSyntax {
     // Diagnose any assignment that isn't directly a child of a `CodeBlockItem` (which would be the
     // case if it was its own statement).
@@ -136,7 +136,7 @@ final class NoAssignmentInExpressions: RewriteSyntaxRule {
   /// Returns true if the infix operator expression is in the (non-closure) parameters of an allowed
   /// function call.
   private func isInAllowedFunction(_ node: InfixOperatorExprSyntax) -> Bool {
-    let allowedFunctions = context.configuration[NoAssignmentInExpressionsConfiguration.self].allowedFunctions
+    let allowedFunctions = context.configuration[NoAssignmentInExpressions.self].allowedFunctions
     // Walk up the tree until we find a FunctionCallExprSyntax, and if the name matches, return
     // true. However, stop early if we hit a CodeBlockItemSyntax first; this would represent a
     // closure context where we *don't* want the exception to apply (for example, in
@@ -165,19 +165,20 @@ extension Finding.Message {
 
 // MARK: - Configuration
 
-package struct NoAssignmentInExpressionsConfiguration: Configurable, Codable, Equatable, Sendable {
-  package static let key = "noAssignmentInExpressions"
-  package static let defaultValue = NoAssignmentInExpressionsConfiguration()
-
+package struct NoAssignmentInExpressionsConfiguration: SyntaxRuleValue {
+  package var rewrite = true
+  package var lint: Lint = .warn
   package var allowedFunctions: [String] = ["XCTAssertNoThrow"]
 
   package init() {}
 
-  package init(from decoder: Decoder) throws {
+  package init(from decoder: any Decoder) throws {
+    self.init()
     let container = try decoder.container(keyedBy: CodingKeys.self)
-    let defaults = Self()
+    if let v = try container.decodeIfPresent(Bool.self, forKey: .rewrite) { self.rewrite = v }
+    if let v = try container.decodeIfPresent(Lint.self, forKey: .lint) { self.lint = v }
     self.allowedFunctions =
       try container.decodeIfPresent([String].self, forKey: .allowedFunctions)
-      ?? defaults.allowedFunctions
+      ?? ["XCTAssertNoThrow"]
   }
 }

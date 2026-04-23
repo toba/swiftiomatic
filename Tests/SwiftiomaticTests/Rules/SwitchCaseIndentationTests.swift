@@ -7,8 +7,8 @@ struct SwitchCaseIndentationTests: RuleTesting {
 
     private func config(style: SwitchCaseIndentationConfiguration.Style) -> Configuration {
         var config = Configuration.forTesting
-        config[SwitchCaseIndentationConfiguration.self].style = style
-        config.rules[SwitchCaseIndentation.key] = .fix
+        config[SwitchCaseIndentation.self].style = style
+        config.enableRule(named: SwitchCaseIndentation.key)
         return config
     }
 

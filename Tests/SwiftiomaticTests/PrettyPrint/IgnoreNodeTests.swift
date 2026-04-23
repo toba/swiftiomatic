@@ -18,12 +18,12 @@ struct IgnoreNodeTests: PrettyPrintTesting {
       """
             x      = 4       + 5 // This comment stays here.
 
-            // swiftiomatic-ignore
+            // sm:ignore
             x   =
       4 + 5 +
        6
 
-      // swiftiomatic-ignore
+      // sm:ignore
       let foo = bar( a, b,
       c)
       let baz = bar( a, b,
@@ -31,7 +31,7 @@ struct IgnoreNodeTests: PrettyPrintTesting {
 
               /// some other unrelated comment
 
-      // swiftiomatic-ignore
+      // sm:ignore
       func foo()
         throws ->
           (Bool, Bool, Bool) {
@@ -41,7 +41,7 @@ struct IgnoreNodeTests: PrettyPrintTesting {
             var b =        5
       }
 
-      // swiftiomatic-ignore
+      // sm:ignore
       if someExtremelyLongCondition && anotherVeryLongCondition && thisOneOverflowsTheLineLength
              + foo + bar + baz {
           var a = b // comment
@@ -52,7 +52,7 @@ struct IgnoreNodeTests: PrettyPrintTesting {
 
       if someExtremelyLongCondition && anotherVeryLongCondition && thisOneOverflowsTheLineLength
              + foo + bar + baz {
-          // swiftiomatic-ignore
+          // sm:ignore
           var a = b // comment
           // comment 2
           var c
@@ -64,12 +64,12 @@ struct IgnoreNodeTests: PrettyPrintTesting {
       """
       x = 4 + 5  // This comment stays here.
 
-      // swiftiomatic-ignore
+      // sm:ignore
       x   =
       4 + 5 +
        6
 
-      // swiftiomatic-ignore
+      // sm:ignore
       let foo = bar( a, b,
       c)
       let baz = bar(
@@ -78,7 +78,7 @@ struct IgnoreNodeTests: PrettyPrintTesting {
 
       /// some other unrelated comment
 
-      // swiftiomatic-ignore
+      // sm:ignore
       func foo()
         throws ->
           (Bool, Bool, Bool) {
@@ -88,7 +88,7 @@ struct IgnoreNodeTests: PrettyPrintTesting {
             var b =        5
       }
 
-      // swiftiomatic-ignore
+      // sm:ignore
       if someExtremelyLongCondition && anotherVeryLongCondition && thisOneOverflowsTheLineLength
              + foo + bar + baz {
           var a = b // comment
@@ -102,7 +102,7 @@ struct IgnoreNodeTests: PrettyPrintTesting {
         && thisOneOverflowsTheLineLength
           + foo + bar + baz
       {
-        // swiftiomatic-ignore
+        // sm:ignore
         var a = b // comment
         // comment 2
         var c = d
@@ -117,19 +117,19 @@ struct IgnoreNodeTests: PrettyPrintTesting {
     let input =
       """
           struct Foo {
-            // swiftiomatic-ignore
+            // sm:ignore
             private var baz: Bool {
                 return foo +
                  bar + // poorly placed comment
                   false
             }
 
-            // swiftiomatic-ignore
+            // sm:ignore
             var a = true    // line comment
                             // aligned line comment
             var b = false  // correct trailing comment
 
-      // swiftiomatic-ignore
+      // sm:ignore
       var c = 0 +
           1
           + (2 + 3)
@@ -139,19 +139,19 @@ struct IgnoreNodeTests: PrettyPrintTesting {
     let expected =
       """
       struct Foo {
-        // swiftiomatic-ignore
+        // sm:ignore
         private var baz: Bool {
                 return foo +
                  bar + // poorly placed comment
                   false
             }
 
-        // swiftiomatic-ignore
+        // sm:ignore
         var a = true    // line comment
         // aligned line comment
         var b = false  // correct trailing comment
 
-        // swiftiomatic-ignore
+        // sm:ignore
         var c = 0 +
           1
           + (2 + 3)
@@ -165,7 +165,7 @@ struct IgnoreNodeTests: PrettyPrintTesting {
   @Test func ignoresNestedMembers() {
     let input =
       """
-      // swiftiomatic-ignore
+      // sm:ignore
           struct Foo {
             private var baz: Bool {
                 return foo +
@@ -185,7 +185,7 @@ struct IgnoreNodeTests: PrettyPrintTesting {
 
     let expected =
       """
-      // swiftiomatic-ignore
+      // sm:ignore
       struct Foo {
             private var baz: Bool {
                 return foo +
@@ -210,33 +210,33 @@ struct IgnoreNodeTests: PrettyPrintTesting {
   @Test func invalidComment() {
     let input =
       """
-      // swiftiomatic-ignore: RuleName
+      // sm:ignore: RuleName
       x        =                  1 +
       2
 
-      /// swiftiomatic-ignore
+      /// sm:ignore
       x      =    a+1+2+3+4
 
-      /** swiftiomatic-ignore */
+      /** sm:ignore */
       x      =    foo -
       bar
 
-      // I could use swiftiomatic-ignore here if I wanted my code to look bad.
+      // I could use sm:ignore here if I wanted my code to look bad.
       x     = foo+bar+baz
       """
 
     let expected =
       """
-      // swiftiomatic-ignore: RuleName
+      // sm:ignore: RuleName
       x = 1 + 2
 
-      /// swiftiomatic-ignore
+      /// sm:ignore
       x = a + 1 + 2 + 3 + 4
 
-      /** swiftiomatic-ignore */
+      /** sm:ignore */
       x = foo - bar
 
-      // I could use swiftiomatic-ignore here if I wanted my code to look bad.
+      // I could use sm:ignore here if I wanted my code to look bad.
       x = foo + bar + baz
 
       """
@@ -247,33 +247,33 @@ struct IgnoreNodeTests: PrettyPrintTesting {
   @Test func validComment() {
     let input =
       """
-      // swiftiomatic-ignore
+      // sm:ignore
       x=y+b+c
 
       /// Pragma mark: - Special Region
 
-      // swiftiomatic-ignore
+      // sm:ignore
       // x is important
       x        =                  1 +
       2
 
-      /* swiftiomatic-ignore */
+      /* sm:ignore */
       x      =    a+1+2+3+4
       """
 
     let expected =
       """
-      // swiftiomatic-ignore
+      // sm:ignore
       x=y+b+c
 
       /// Pragma mark: - Special Region
 
-      // swiftiomatic-ignore
+      // sm:ignore
       // x is important
       x        =                  1 +
       2
 
-      /* swiftiomatic-ignore */
+      /* sm:ignore */
       x      =    a+1+2+3+4
 
       """
@@ -284,7 +284,7 @@ struct IgnoreNodeTests: PrettyPrintTesting {
   @Test func ignoreInvalidAfterFirstToken() {
     let input =
       """
-      public  // swiftiomatic-ignore
+      public  // sm:ignore
         struct MyStruct {
           var a:Foo=3
         }
@@ -293,7 +293,7 @@ struct IgnoreNodeTests: PrettyPrintTesting {
 
     let expected =
       """
-      public  // swiftiomatic-ignore
+      public  // sm:ignore
         struct MyStruct
       {
         var a: Foo = 3
@@ -307,7 +307,7 @@ struct IgnoreNodeTests: PrettyPrintTesting {
   @Test func ignoreWholeFile() {
     let input =
       """
-      // swiftiomatic-ignore-file
+      // sm:ignore-file
       import Zoo
       import Aoo
       import foo
@@ -338,7 +338,7 @@ struct IgnoreNodeTests: PrettyPrintTesting {
   @Test func ignoreWholeFileDoesNotTouchWhitespace() {
     let input =
       """
-      // swiftiomatic-ignore-file
+      // sm:ignore-file
       /// foo bar
       \u{0020}
       // baz
@@ -353,7 +353,7 @@ struct IgnoreNodeTests: PrettyPrintTesting {
       import Aoo
       import foo
 
-      // swiftiomatic-ignore-file
+      // sm:ignore-file
           struct Foo {
             private var baz: Bool {
                 return foo +
@@ -372,7 +372,7 @@ struct IgnoreNodeTests: PrettyPrintTesting {
 
             class Bar
       {
-      // swiftiomatic-ignore-file
+      // sm:ignore-file
         var bazzle = 0 }
       """
 
@@ -382,7 +382,7 @@ struct IgnoreNodeTests: PrettyPrintTesting {
       import Aoo
       import foo
 
-      // swiftiomatic-ignore-file
+      // sm:ignore-file
       struct Foo {
         private var baz: Bool {
           return foo + bar  // poorly placed comment
@@ -399,7 +399,7 @@ struct IgnoreNodeTests: PrettyPrintTesting {
       }
 
       class Bar {
-        // swiftiomatic-ignore-file
+        // sm:ignore-file
         var bazzle = 0
       }
 

@@ -111,10 +111,10 @@ struct WrapSingleLineCommentsTests: RuleTesting {
     assertFormatting(
       WrapSingleLineComments.self,
       input: """
-        // swiftiomatic-ignore: SomeRule - this is very long
+        // sm:ignore: SomeRule - this is very long
         """,
       expected: """
-        // swiftiomatic-ignore: SomeRule - this is very long
+        // sm:ignore: SomeRule - this is very long
         """,
       configuration: config(maxWidth: 20))
   }

@@ -8,10 +8,10 @@ import SwiftSyntax
 /// Lint: If there are blank lines between consecutive import statements, a lint warning is raised.
 ///
 /// Format: The blank lines are removed.
-final class BlankLinesBetweenImports: RewriteSyntaxRule {
+final class BlankLinesBetweenImports: RewriteSyntaxRule<BasicRuleValue> {
+    override class var key: String { "betweenImports" }
     override class var group: ConfigurationGroup? { .blankLines }
-
-    override class var defaultHandling: RuleHandling { .off }
+    override class var defaultValue: BasicRuleValue { .init(rewrite: false, lint: .no) }
 
     override func visit(_ node: SourceFileSyntax) -> SourceFileSyntax {
         let originalStatements = Array(node.statements)

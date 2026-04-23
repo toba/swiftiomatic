@@ -34,13 +34,13 @@ package struct GeneratePaths {
     package let packageRoot: URL
 
     /// The directory containing rule implementations to scan.
-    package let rulesDirectory: URL
+    package let syntaxRulesFolder: URL
 
     /// The directory containing layout setting descriptors to scan.
-    package let settingsDirectory: URL
+    package let layoutRulesFolder: URL
 
     /// The directory containing `TokenStream+*.swift` token stream extension files.
-    package let tokenStreamDirectory: URL
+    package let tokenFolder: URL
 
     /// The generated pipelines file (`LintPipeline` + `FormatPipeline` extensions).
     package let pipelineFile: URL
@@ -61,7 +61,8 @@ package struct GeneratePaths {
 
     /// Creates paths rooted at the given package directory.
     package init(packageRoot: URL) {
-        let generated = packageRoot
+        let generated =
+            packageRoot
             .appending(path: "Sources")
             .appending(path: "SwiftiomaticKit")
             .appending(path: "Generated")
@@ -78,13 +79,12 @@ package struct GeneratePaths {
 
         let sources = packageRoot.appending(path: "Sources")
         let kit = sources.appending(path: "SwiftiomaticKit")
+        let layout = kit.appending(path: "Layout")
         let syntax = kit.appending(path: "Syntax")
 
-        rulesDirectory = syntax.appending(path: "Rules")
-        settingsDirectory = kit.appending(path: "Layout")
-            .appending(path: "Rules")
-        tokenStreamDirectory = kit.appending(path: "Layout")
-            .appending(path: "Tokens")
+        tokenFolder = layout.appending(path: "Tokens")
+        layoutRulesFolder = layout.appending(path: "Rules")
+        syntaxRulesFolder = syntax.appending(path: "Rules")
 
         pipelineFile = outputDirectory.appending(path: "Pipelines+Generated.swift")
         ruleRegistryFile = outputDirectory.appending(path: "ConfigurationRegistry+Generated.swift")

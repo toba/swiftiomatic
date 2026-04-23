@@ -27,12 +27,20 @@ extension FileGenerator {
     /// the existing content is already up to date.
     package func generateFile(at url: URL) throws {
         let content = generateContent()
+
         if let existing = try? String(contentsOf: url, encoding: .utf8),
-           existing == content { return }
+            existing == content
+        {
+            return
+        }
 
         let directory = url.deletingLastPathComponent()
+
         try? FileManager.default.createDirectory(
-            at: directory, withIntermediateDirectories: true)
+            at: directory,
+            withIntermediateDirectories: true
+        )
+
         try content.write(to: url, atomically: true, encoding: .utf8)
     }
 }

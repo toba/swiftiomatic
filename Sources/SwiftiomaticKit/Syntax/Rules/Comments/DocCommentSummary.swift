@@ -19,7 +19,8 @@ import Synchronization
 /// All documentation comments must begin with a one-line summary of the declaration.
 ///
 /// Lint: If a comment does not begin with a single-line summary, a lint error is raised.
-final class DocCommentSummary: LintSyntaxRule {
+final class DocCommentSummary: LintSyntaxRule<LintOnlyValue> {
+    override class var key: String { "requireCommentSummary" }
     override class var group: ConfigurationGroup? { .comments }
 
     /// Unit tests can testably import this module and set this to true in order to force the rule
@@ -35,7 +36,7 @@ final class DocCommentSummary: LintSyntaxRule {
 
     /// Identifies this rule as being opt-in. Well written docs on declarations are important, but
     /// this rule isn't linguistically advanced enough on all platforms to be applied universally.
-    override class var defaultHandling: RuleHandling { .off }
+    override class var defaultValue: LintOnlyValue { LintOnlyValue(lint: .no) }
 
     override func visit(_ node: FunctionDeclSyntax) -> SyntaxVisitorContinueKind {
         diagnoseDocComments(in: DeclSyntax(node))

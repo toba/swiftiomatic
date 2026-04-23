@@ -19,9 +19,9 @@ import SwiftSyntax
 /// Lint: A warning is raised for each force unwrap.
 ///
 /// Format: In test functions, force unwraps are replaced with XCTUnwrap/#require.
-final class NoForceUnwrap: RewriteSyntaxRule {
+final class NoForceUnwrap: RewriteSyntaxRule<BasicRuleValue> {
     override class var group: ConfigurationGroup? { .forcing }
-    override class var defaultHandling: RuleHandling { .off }
+    override class var defaultValue: BasicRuleValue { BasicRuleValue(rewrite: false, lint: .no) }
 
     private var testContext = TestContextTracker()
     private var insideTestFunction = false

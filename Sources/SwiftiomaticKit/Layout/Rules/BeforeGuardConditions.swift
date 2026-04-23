@@ -9,8 +9,6 @@ package struct BeforeGuardConditions: LayoutRule {
     package static let defaultValue = true
 }
 
-// MARK: - TokenStream
-
 extension TokenStream {
     func visitGuardStmt(_ node: GuardStmtSyntax) -> SyntaxVisitorContinueKind {
         after(node.guardKeyword, tokens: .space)

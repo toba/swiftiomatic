@@ -1,10 +1,9 @@
-import SwiftiomaticKit
+@testable import SwiftiomaticKit
 
 extension Configuration {
   /// The default configuration to be used during unit tests.
   package static var forTesting: Configuration {
     var config = Configuration()
-    config.rules = Configuration.defaultRuleEnablements
     config[MaximumBlankLines.self] = 1
     config[LineLength.self] = 100
     config[TabWidth.self] = 8
@@ -16,24 +15,25 @@ extension Configuration {
     config[PrioritizeKeepingFunctionOutputTogether.self] = false
     config[IndentConditionalCompilationBlocks.self] = true
     config[AroundMultilineExpressionChainComponents.self] = false
-    config[FileScopedDeclarationPrivacyConfiguration.self] = FileScopedDeclarationPrivacyConfiguration()
-    config[SwitchCaseIndentationConfiguration.self] = SwitchCaseIndentationConfiguration()
+    config[FileScopedDeclarationPrivacy.self] = FileScopedDeclarationPrivacyConfiguration()
+    config[SwitchCaseIndentation.self] = SwitchCaseIndentationConfiguration()
     config[SpacesAroundRangeFormationOperators.self] = false
-    config[NoAssignmentInExpressionsConfiguration.self] = NoAssignmentInExpressionsConfiguration()
+    config[NoAssignmentInExpressions.self] = NoAssignmentInExpressionsConfiguration()
     config[MultiElementCollectionTrailingCommas.self] = true
     config[IndentBlankLines.self] = false
-    config[ExtensionAccessControlConfiguration.self] = ExtensionAccessControlConfiguration()
-    config[PatternLetConfiguration.self] = PatternLetConfiguration()
-    config[URLMacroConfiguration.self] = URLMacroConfiguration()
-    config[FileHeaderConfiguration.self] = FileHeaderConfiguration()
-    config[SingleLineBodiesConfiguration.self] = SingleLineBodiesConfiguration()
+    config[NoExtensionAccessLevel.self] = ExtensionAccessControlConfiguration()
+    config[PatternLetPlacement.self] = PatternLetConfiguration()
+    config[URLMacro.self] = URLMacroConfiguration()
+    config[FileHeader.self] = FileHeaderConfiguration()
+    config[WrapSingleLineBodies.self] = SingleLineBodiesConfiguration()
     return config
   }
 
+  /// Creates a test configuration with only the named rule enabled.
   package static func forTesting(enabledRule: String) -> Configuration {
     var config = Configuration.forTesting
-    config.rules = config.rules.mapValues({ _ in .off })
-    config.rules[enabledRule] = .warning
+    config.disableAllRules()
+    config.enableRule(named: enabledRule)
     return config
   }
 }

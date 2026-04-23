@@ -14,8 +14,8 @@ import SwiftSyntax
 /// Lint: Using `await` inside a function call argument raises a warning.
 ///
 /// Format: `await` is removed from arguments and added to wrap the call expression.
-final class HoistAwait: RewriteSyntaxRule {
-    override class var key: String { "moveInlineAwaitToExpressionStart" }
+final class HoistAwait: RewriteSyntaxRule<BasicRuleValue> {
+    override class var key: String { "awaitWithinExpression" }
     override class var group: ConfigurationGroup? { .hoist }
 
     override func visit(_ node: FunctionCallExprSyntax) -> ExprSyntax {

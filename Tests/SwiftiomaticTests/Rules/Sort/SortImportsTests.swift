@@ -337,26 +337,26 @@ struct SortImportsTests: RuleTesting {
       input: """
         import C
         1️⃣import B
-        // swiftiomatic-ignore: SortImports
+        // sm:ignore: SortImports
         import A
         let a = 123
         2️⃣import func Darwin.C.isatty
 
-        // swiftiomatic-ignore
+        // sm:ignore
         import a
         """,
       expected: """
         import B
         import C
 
-        // swiftiomatic-ignore: SortImports
+        // sm:ignore: SortImports
         import A
 
         import func Darwin.C.isatty
 
         let a = 123
 
-        // swiftiomatic-ignore
+        // sm:ignore
         import a
         """,
       findings: [
@@ -373,17 +373,17 @@ struct SortImportsTests: RuleTesting {
         import C  // Trailing comment about C
         1️⃣import B
         // Comment about ignored A
-        // swiftiomatic-ignore: SortImports
+        // sm:ignore: SortImports
         import A  // trailing comment about ignored A
         // Comment about Z
         import Z
         2️⃣import D
-        // swiftiomatic-ignore
+        // sm:ignore
         // Comment about testable testA
         @testable import testA
         @testable import testZ  // trailing comment about testZ
         3️⃣@testable import testC
-        // swiftiomatic-ignore
+        // sm:ignore
         @_implementationOnly import testB
         // Comment about Bar
         import enum Bar
@@ -395,21 +395,21 @@ struct SortImportsTests: RuleTesting {
         import C  // Trailing comment about C
 
         // Comment about ignored A
-        // swiftiomatic-ignore: SortImports
+        // sm:ignore: SortImports
         import A  // trailing comment about ignored A
 
         import D
         // Comment about Z
         import Z
 
-        // swiftiomatic-ignore
+        // sm:ignore
         // Comment about testable testA
         @testable import testA
 
         @testable import testC
         @testable import testZ  // trailing comment about testZ
 
-        // swiftiomatic-ignore
+        // sm:ignore
         @_implementationOnly import testB
 
         // Comment about Bar
@@ -537,20 +537,20 @@ struct SortImportsTests: RuleTesting {
       SortImports.self,
       input: """
         import AppKit
-        // swiftiomatic-ignore
+        // sm:ignore
         import CoreLocation
         // Second CoreLocation import here.
         import CoreLocation
         // Comment about ZeeFramework.
         import ZeeFramework
-        // swiftiomatic-ignore
+        // sm:ignore
         import ZeeFramework  // trailing comment
         foo()
         """,
       expected: """
         import AppKit
 
-        // swiftiomatic-ignore
+        // sm:ignore
         import CoreLocation
 
         // Second CoreLocation import here.
@@ -558,7 +558,7 @@ struct SortImportsTests: RuleTesting {
         // Comment about ZeeFramework.
         import ZeeFramework
 
-        // swiftiomatic-ignore
+        // sm:ignore
         import ZeeFramework  // trailing comment
 
         foo()
@@ -613,7 +613,7 @@ struct SortImportsTests: RuleTesting {
 
   @Test func conditionalImportsWhenEnabled() {
     var configuration = Configuration.forTesting
-    configuration[SortImportsConfiguration.self].includeConditionalImports = true
+    configuration[SortImports.self].includeConditionalImports = true
 
     assertFormatting(
       SortImports.self,
@@ -662,7 +662,7 @@ struct SortImportsTests: RuleTesting {
 
   @Test func conditionalImportsWhenDisabled() {
     var configuration = Configuration.forTesting
-    configuration[SortImportsConfiguration.self].includeConditionalImports = false
+    configuration[SortImports.self].includeConditionalImports = false
 
     assertFormatting(
       SortImports.self,
@@ -709,7 +709,7 @@ struct SortImportsTests: RuleTesting {
 
   @Test func nestedConditionalImports() {
     var configuration = Configuration.forTesting(enabledRule: SortImports.key)
-    configuration[SortImportsConfiguration.self].includeConditionalImports = true
+    configuration[SortImports.self].includeConditionalImports = true
 
     assertFormatting(
       SortImports.self,
@@ -767,7 +767,7 @@ struct SortImportsTests: RuleTesting {
         #elseif canImport(Glibc)
           import Glibc
         #endif
-        // swiftiomatic-ignore
+        // sm:ignore
         import Aardvarks
 
         foo()
@@ -783,7 +783,7 @@ struct SortImportsTests: RuleTesting {
         #elseif canImport(Glibc)
           import Glibc
         #endif
-        // swiftiomatic-ignore
+        // sm:ignore
         import Aardvarks
 
         foo()
@@ -834,7 +834,7 @@ struct SortImportsTests: RuleTesting {
     assertFormatting(
       SortImports.self,
       input: """
-        // swiftiomatic-ignore-file: NoSemicolons, FullyIndirectEnum
+        // sm:ignore-file: NoSemicolons, FullyIndirectEnum
         import Zoo
         1️⃣import Arrays
 
@@ -843,7 +843,7 @@ struct SortImportsTests: RuleTesting {
         }
         """,
       expected: """
-        // swiftiomatic-ignore-file: NoSemicolons, FullyIndirectEnum
+        // sm:ignore-file: NoSemicolons, FullyIndirectEnum
 
         import Arrays
         import Zoo
@@ -862,7 +862,7 @@ struct SortImportsTests: RuleTesting {
     assertFormatting(
       SortImports.self,
       input: """
-        // swiftiomatic-ignore-file: NoSemicolons, FullyIndirectEnum
+        // sm:ignore-file: NoSemicolons, FullyIndirectEnum
         import Arrays
         import Zoo
 
@@ -871,7 +871,7 @@ struct SortImportsTests: RuleTesting {
         }
         """,
       expected: """
-        // swiftiomatic-ignore-file: NoSemicolons, FullyIndirectEnum
+        // sm:ignore-file: NoSemicolons, FullyIndirectEnum
 
         import Arrays
         import Zoo
@@ -888,7 +888,7 @@ struct SortImportsTests: RuleTesting {
       SortImports.self,
       input: """
         // We need to ignore this file because it is generated
-        // swiftiomatic-ignore-file: NoSemicolons, FullyIndirectEnum
+        // sm:ignore-file: NoSemicolons, FullyIndirectEnum
         // Line comment for Zoo
         import Zoo
         // Line comment for Array
@@ -900,7 +900,7 @@ struct SortImportsTests: RuleTesting {
         """,
       expected: """
         // We need to ignore this file because it is generated
-        // swiftiomatic-ignore-file: NoSemicolons, FullyIndirectEnum
+        // sm:ignore-file: NoSemicolons, FullyIndirectEnum
 
         // Line comment for Array
         import Arrays
@@ -922,8 +922,8 @@ struct SortImportsTests: RuleTesting {
       SortImports.self,
       input: """
         // This file has important contents.
-        // swiftiomatic-ignore-file: NoSemicolons
-        // swiftiomatic-ignore-file: FullyIndirectEnum
+        // sm:ignore-file: NoSemicolons
+        // sm:ignore-file: FullyIndirectEnum
         // Everything in this file is ignored.
 
         import Zoo
@@ -935,8 +935,8 @@ struct SortImportsTests: RuleTesting {
         """,
       expected: """
         // This file has important contents.
-        // swiftiomatic-ignore-file: NoSemicolons
-        // swiftiomatic-ignore-file: FullyIndirectEnum
+        // sm:ignore-file: NoSemicolons
+        // sm:ignore-file: FullyIndirectEnum
         // Everything in this file is ignored.
 
         import Arrays
@@ -954,7 +954,7 @@ struct SortImportsTests: RuleTesting {
 
   @Test func preservesEmptyConditionalCompilationBlock() {
     var configuration = Configuration.forTesting
-    configuration[SortImportsConfiguration.self].includeConditionalImports = true
+    configuration[SortImports.self].includeConditionalImports = true
 
     let code = """
       import Apples
@@ -976,7 +976,7 @@ struct SortImportsTests: RuleTesting {
 
   @Test func preservesHeaderCommentInConditionalCompilationBlock() {
     var configuration = Configuration.forTesting
-    configuration[SortImportsConfiguration.self].includeConditionalImports = true
+    configuration[SortImports.self].includeConditionalImports = true
 
     let code = """
       import Apples
@@ -1000,7 +1000,7 @@ struct SortImportsTests: RuleTesting {
 
   @Test func preservesCommentsOnlyInConditionalCompilationBlock() {
     var configuration = Configuration.forTesting
-    configuration[SortImportsConfiguration.self].includeConditionalImports = true
+    configuration[SortImports.self].includeConditionalImports = true
 
     let code = """
       import Apples
@@ -1023,7 +1023,7 @@ struct SortImportsTests: RuleTesting {
 
   @Test func orderingWithGroupingDisabled() {
     var configuration = Configuration.forTesting
-    configuration[SortImportsConfiguration.self].shouldGroupImports = false
+    configuration[SortImports.self].shouldGroupImports = false
 
     let code = """
       import Core
@@ -1050,7 +1050,7 @@ struct SortImportsTests: RuleTesting {
 
   @Test func mixedContentOrderingWithGroupingDisabled() {
     var configuration = Configuration.forTesting(enabledRule: SortImports.key)
-    configuration[SortImportsConfiguration.self].shouldGroupImports = false
+    configuration[SortImports.self].shouldGroupImports = false
 
     assertFormatting(
       SortImports.self,
@@ -1091,7 +1091,7 @@ struct SortImportsTests: RuleTesting {
 
   @Test func invalidOrderingWithGroupingDisabled() {
     var configuration = Configuration.forTesting
-    configuration[SortImportsConfiguration.self].shouldGroupImports = false
+    configuration[SortImports.self].shouldGroupImports = false
 
     assertFormatting(
       SortImports.self,

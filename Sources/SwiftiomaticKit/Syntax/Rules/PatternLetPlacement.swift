@@ -24,12 +24,12 @@ import SwiftSyntax
 /// Lint: Using the non-preferred placement yields a lint error.
 ///
 /// Format: The `let`/`var` is repositioned to match the configured placement.
-final class PatternLetPlacement: RewriteSyntaxRule {
+final class PatternLetPlacement: RewriteSyntaxRule<PatternLetConfiguration> {
 
   // MARK: - Visitors
 
   override func visit(_ node: MatchingPatternConditionSyntax) -> MatchingPatternConditionSyntax {
-    switch context.configuration[PatternLetConfiguration.self].placement {
+    switch context.configuration[PatternLetPlacement.self].placement {
     case .eachBinding:
       if let (replacement, specifier) = distributeLetVarThroughPattern(node.pattern) {
         diagnose(.distributeLetInBoundCaseVariables(specifier), on: node.pattern)
@@ -49,7 +49,7 @@ final class PatternLetPlacement: RewriteSyntaxRule {
   }
 
   override func visit(_ node: SwitchCaseItemSyntax) -> SwitchCaseItemSyntax {
-    switch context.configuration[PatternLetConfiguration.self].placement {
+    switch context.configuration[PatternLetPlacement.self].placement {
     case .eachBinding:
       if let (replacement, specifier) = distributeLetVarThroughPattern(node.pattern) {
         diagnose(.distributeLetInBoundCaseVariables(specifier), on: node.pattern)
@@ -75,7 +75,7 @@ final class PatternLetPlacement: RewriteSyntaxRule {
       return super.visit(node)
     }
 
-    switch context.configuration[PatternLetConfiguration.self].placement {
+    switch context.configuration[PatternLetPlacement.self].placement {
     case .eachBinding:
       if let (replacement, specifier) = distributeLetVarThroughPattern(node.pattern) {
         diagnose(.distributeLetInBoundCaseVariables(specifier), on: node.pattern)
@@ -341,24 +341,25 @@ private final class UnbindIdentifiersRewriter: SyntaxRewriter {
 
 // MARK: - Configuration
 
-package struct PatternLetConfiguration: Configurable, Codable, Equatable, Sendable {
-  package static let key = "patternLet"
-  package static let defaultValue = PatternLetConfiguration()
-
+package struct PatternLetConfiguration: SyntaxRuleValue {
   package enum Placement: String, Codable, Sendable {
     case eachBinding
     case outerPattern
   }
 
+  package var rewrite = true
+  package var lint: Lint = .warn
   package var placement: Placement = .eachBinding
 
   package init() {}
 
-  package init(from decoder: Decoder) throws {
+  package init(from decoder: any Decoder) throws {
+    self.init()
     let container = try decoder.container(keyedBy: CodingKeys.self)
-    let defaults = Self()
+    if let v = try container.decodeIfPresent(Bool.self, forKey: .rewrite) { self.rewrite = v }
+    if let v = try container.decodeIfPresent(Lint.self, forKey: .lint) { self.lint = v }
     self.placement =
       try container.decodeIfPresent(Placement.self, forKey: .placement)
-      ?? defaults.placement
+      ?? .eachBinding
   }
 }

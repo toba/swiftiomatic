@@ -25,7 +25,7 @@ Parses Swift source files into syntax trees (via swift-syntax) and applies 100+ 
 - **LintPipeline** -- interleaves all lint rules in a single tree walk for efficiency.
 - **FormatPipeline** -- runs format rules sequentially, each over the full tree.
 - **PrettyPrinter** -- handles whitespace, indentation, and line-break decisions after rules run.
-- **RuleMask** -- honors `// swiftiomatic-ignore` comments to suppress rules per-line.
+- **RuleMask** -- honors `// sm:ignore` comments to suppress rules per-line.
 
 ## Where It Fits
 

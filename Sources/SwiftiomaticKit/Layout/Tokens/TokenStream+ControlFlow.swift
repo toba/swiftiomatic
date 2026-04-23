@@ -242,7 +242,7 @@ extension TokenStream {
         // An if-configuration clause around a switch-case encloses the case's node, so an
         // if-configuration clause requires a break here in order to be allowed on a new line.
         for ifConfigDecl in node.cases where ifConfigDecl.is(IfConfigDeclSyntax.self) {
-            if config[SwitchCaseIndentationConfiguration.self].style == .indented {
+            if config[SwitchCaseIndentation.self].style == .indented {
                 before(ifConfigDecl.firstToken(viewMode: .sourceAccurate), tokens: .break(.open))
                 after(
                     ifConfigDecl.lastToken(viewMode: .sourceAccurate),
@@ -264,7 +264,7 @@ extension TokenStream {
         // If switch/case labels were configured to be indented, use an `open` break; otherwise, use
         // the default `same` break.
         let openBreak: Token
-        if config[SwitchCaseIndentationConfiguration.self].style == .indented {
+        if config[SwitchCaseIndentation.self].style == .indented {
             openBreak = .break(.open, newlines: .elective)
         } else {
             openBreak = .break(.same, newlines: .soft)
@@ -282,7 +282,7 @@ extension TokenStream {
         // If switch/case labels were configured to be indented, insert an extra `close` break after
         // the case body to match the `open` break above
         var afterLastTokenTokens: [Token] = [.break(.close, size: 0), .close]
-        if config[SwitchCaseIndentationConfiguration.self].style == .indented {
+        if config[SwitchCaseIndentation.self].style == .indented {
             afterLastTokenTokens.append(.break(.close, size: 0))
         }
 

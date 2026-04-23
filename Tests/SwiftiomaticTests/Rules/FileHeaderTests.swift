@@ -7,13 +7,13 @@ struct FileHeaderTests: RuleTesting {
 
   private func clearConfig() -> Configuration {
     var c = Configuration.forTesting(enabledRule: FileHeader.self.key)
-    c[FileHeaderConfiguration.self].text = ""
+    c[FileHeader.self].text = ""
     return c
   }
 
   private func headerConfig(_ text: String) -> Configuration {
     var c = Configuration.forTesting(enabledRule: FileHeader.self.key)
-    c[FileHeaderConfiguration.self].text = text
+    c[FileHeader.self].text = text
     return c
   }
 

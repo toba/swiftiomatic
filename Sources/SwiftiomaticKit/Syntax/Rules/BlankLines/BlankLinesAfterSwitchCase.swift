@@ -11,10 +11,10 @@ import SwiftSyntax
 ///       If the last case is followed by a blank line before `}`, a lint warning is raised.
 ///
 /// Format: Blank lines are inserted after multiline cases and removed after the last case.
-final class BlankLinesAfterSwitchCase: RewriteSyntaxRule {
+final class BlankLinesAfterSwitchCase: RewriteSyntaxRule<BasicRuleValue> {
+    override class var key: String { "afterSwitchCase" }
     override class var group: ConfigurationGroup? { .blankLines }
-
-    override class var defaultHandling: RuleHandling { .off }
+    override class var defaultValue: BasicRuleValue { .init(rewrite: false, lint: .no) }
 
     override func visit(_ node: SwitchExprSyntax) -> ExprSyntax {
         let visited = super.visit(node)

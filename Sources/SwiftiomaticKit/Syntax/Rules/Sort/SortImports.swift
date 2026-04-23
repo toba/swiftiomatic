@@ -28,7 +28,7 @@ import SwiftSyntax
 ///       raised.
 ///
 /// Format: Imports will be reordered and (optionally) grouped at the top of the file.
-final class SortImports: RewriteSyntaxRule {
+final class SortImports: RewriteSyntaxRule<SortImportsConfiguration> {
     override class var group: ConfigurationGroup? { .sort }
 
   override func visit(_ node: SourceFileSyntax) -> SourceFileSyntax {
@@ -135,7 +135,7 @@ final class SortImports: RewriteSyntaxRule {
         }
       }
 
-      if context.configuration[SortImportsConfiguration.self].includeConditionalImports,
+      if context.configuration[SortImports.self].includeConditionalImports,
         let syntaxNode = line.syntaxNode,
         case .ifConfigCodeBlock(let ifConfigCodeBlock) = syntaxNode
       {
@@ -156,7 +156,7 @@ final class SortImports: RewriteSyntaxRule {
         line.syntaxNode = .ifConfigCodeBlock(CodeBlockItemSyntax(item: .decl(DeclSyntax(ifConfigDecl))))
       }
 
-      if context.configuration[SortImportsConfiguration.self].shouldGroupImports {
+      if context.configuration[SortImports.self].shouldGroupImports {
         // Separate lines into different categories along with any associated comments.
         switch line.type {
         case .regularImport:
@@ -242,7 +242,7 @@ final class SortImports: RewriteSyntaxRule {
         }
       }
 
-      guard context.configuration[SortImportsConfiguration.self].shouldGroupImports else {
+      guard context.configuration[SortImports.self].shouldGroupImports else {
         continue
       }
 
@@ -690,23 +690,23 @@ extension Finding.Message {
 
 // MARK: - Configuration
 
-package struct SortImportsConfiguration: Configurable, Codable, Equatable, Sendable {
-  package static let key = "sortImports"
-  package static let defaultValue = SortImportsConfiguration()
+package struct SortImportsConfiguration: SyntaxRuleValue {
+  package var rewrite = true
+  package var lint: Lint = .warn
 
   package var includeConditionalImports = false
   package var shouldGroupImports = true
 
   package init() {}
 
-  package init(from decoder: Decoder) throws {
+  package init(from decoder: any Decoder) throws {
+    self.init()
     let container = try decoder.container(keyedBy: CodingKeys.self)
-    let defaults = Self()
+    if let v = try container.decodeIfPresent(Bool.self, forKey: .rewrite) { self.rewrite = v }
+    if let v = try container.decodeIfPresent(Lint.self, forKey: .lint) { self.lint = v }
     self.includeConditionalImports =
-      try container.decodeIfPresent(Bool.self, forKey: .includeConditionalImports)
-      ?? defaults.includeConditionalImports
+      try container.decodeIfPresent(Bool.self, forKey: .includeConditionalImports) ?? false
     self.shouldGroupImports =
-      try container.decodeIfPresent(Bool.self, forKey: .shouldGroupImports)
-      ?? defaults.shouldGroupImports
+      try container.decodeIfPresent(Bool.self, forKey: .shouldGroupImports) ?? true
   }
 }

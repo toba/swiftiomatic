@@ -20,7 +20,7 @@ import SwiftSyntax
 ///
 /// Lint: (Non-public) memberwise initializers with the same structure as the synthesized
 ///       initializer will yield a lint error.
-final class PreferSynthesizedInitializer: LintSyntaxRule {
+final class PreferSynthesizedInitializer: LintSyntaxRule<LintOnlyValue> {
 
   override func visit(_ node: StructDeclSyntax) -> SyntaxVisitorContinueKind {
     var storedProperties: [VariableDeclSyntax] = []

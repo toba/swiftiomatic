@@ -59,6 +59,9 @@ struct JSONSchemaNode: Codable {
     var defaultValue: JSONSchemaValue?
     var minimum: Int?
     var oneOf: [JSONSchemaNode]?
+    var allOf: [JSONSchemaNode]?
+    var ref: String?
+    var defs: [String: JSONSchemaNode]?
     var items: [String: String]?
 
     private enum CodingKeys: String, CodingKey {
@@ -68,7 +71,10 @@ struct JSONSchemaNode: Codable {
         case additionalProperties
         case enumValues = "enum"
         case defaultValue = "default"
-        case minimum, oneOf, items
+        case minimum, oneOf, allOf
+        case ref = "$ref"
+        case defs = "$defs"
+        case items
     }
 }
 

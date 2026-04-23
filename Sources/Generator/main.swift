@@ -28,9 +28,9 @@ if positional.count >= 2 {
     paths = GeneratePaths.filePath
 }
 
-let collector = ConfigurableCollector()
-try collector.collectRules(from: paths.rulesDirectory)
-try collector.collectSettings(from: paths.settingsDirectory)
+let collector = RuleCollector()
+try collector.collectSyntaxRules(from: paths.syntaxRulesFolder)
+try collector.collectLayoutRules(from: paths.layoutRulesFolder)
 
 // Generate a file with extensions for the lint and format pipelines.
 let pipelineGenerator = PipelineGenerator(collector: collector)
@@ -48,8 +48,8 @@ if !skipSchema {
 
 // Generate TokenStream forwarding stubs from TokenStream+*.swift extensions
 // and any extension TokenStream blocks co-located with layout rules.
-let stubCollector = TokenStreamStubCollector()
-try stubCollector.collect(from: paths.tokenStreamDirectory)
-try stubCollector.collectExtensions(from: paths.settingsDirectory)
+let stubCollector = SyntaxVisitorOverrideCollector()
+try stubCollector.collect(from: paths.tokenFolder)
+try stubCollector.collectExtensions(from: paths.layoutRulesFolder)
 let stubGenerator = TokenStreamStubGenerator(collector: stubCollector)
 try stubGenerator.generateFile(at: paths.tokenStreamStubsFile)

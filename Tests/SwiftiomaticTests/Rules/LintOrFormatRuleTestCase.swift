@@ -23,7 +23,7 @@ protocol RuleTesting {}
 extension RuleTesting {
   /// Performs a lint using the provided linter rule on the provided input and asserts that the
   /// emitted findings are correct.
-  func assertLint<LintRule: LintSyntaxRule>(
+  func assertLint<LintRule: SyntaxRule & SyntaxVisitor>(
     _ type: LintRule.Type,
     _ markedSource: String,
     findings: [FindingSpec] = [],
@@ -71,7 +71,7 @@ extension RuleTesting {
 
   /// Asserts that the result of applying a formatter to the provided input code yields the output.
   func assertFormatting(
-    _ formatType: RewriteSyntaxRule.Type,
+    _ formatType: (some SyntaxRule & SyntaxRewriter).Type,
     input: String,
     expected: String,
     findings: [FindingSpec] = [],

@@ -152,7 +152,7 @@ final class DiagnosticsEngine: Sendable {
         let severity: Diagnostic.Severity =
             switch finding.severity {
             case .error: .error
-            case .fix, .warning, .off: .warning
+            case .warn, .no: .warning
             }
         return Diagnostic(
             severity: severity,

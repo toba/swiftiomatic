@@ -4,7 +4,8 @@ import PackagePlugin
 @main
 struct GeneratePlugin: BuildToolPlugin {
     func createBuildCommands(
-        context: PluginContext, target: Target
+        context: PluginContext,
+        target: Target
     ) async throws -> [Command] {
         guard let sourceTarget = target as? SourceModuleTarget else {
             return []
@@ -15,7 +16,8 @@ struct GeneratePlugin: BuildToolPlugin {
 
         // Collect input files from the three directories the generator scans.
         let packageDir = context.package.directoryURL
-        let kitDir = packageDir
+        let kitDir =
+            packageDir
             .appending(path: "Sources/SwiftiomaticKit")
 
         let inputDirectories = [
@@ -50,7 +52,7 @@ struct GeneratePlugin: BuildToolPlugin {
                 ],
                 inputFiles: inputFiles,
                 outputFiles: outputFiles
-            ),
+            )
         ]
     }
 }

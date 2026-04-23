@@ -1,19 +1,9 @@
-//===----------------------------------------------------------------------===//
-//
-// This source file is part of the Swift.org open source project
-//
-// Copyright (c) 2014 - 2019 Apple Inc. and the Swift project authors
-// Licensed under Apache License v2.0 with Runtime Library Exception
-//
-// See https://swift.org/LICENSE.txt for license information
-// See https://swift.org/CONTRIBUTORS.txt for the list of Swift project authors
-//
-//===----------------------------------------------------------------------===//
-
 import SwiftSyntax
 
 /// A rule that both formats and lints a given file.
-class RewriteSyntaxRule: SyntaxRewriter, SyntaxRule {
+class RewriteSyntaxRule<V: SyntaxRuleValue>: SyntaxRewriter, SyntaxRule {
+    typealias Value = V
+
     /// The context in which the rule is executed.
     let context: Context
 
@@ -24,7 +14,7 @@ class RewriteSyntaxRule: SyntaxRewriter, SyntaxRule {
         return name.prefix(1).lowercased() + name.dropFirst()
     }
     class var group: ConfigurationGroup? { nil }
-    class var defaultHandling: RuleHandling { .fix }
+    class var defaultValue: V { V() }
 
     /// Creates a new RewriteSyntaxRule in the given context.
     required init(context: Context) { self.context = context }

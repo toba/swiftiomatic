@@ -1,26 +1,14 @@
-//===----------------------------------------------------------------------===//
-//
-// This source file is part of the Swift.org open source project
-//
-// Copyright (c) 2014 - 2025 Apple Inc. and the Swift project authors
-// Licensed under Apache License v2.0 with Runtime Library Exception
-//
-// See https://swift.org/LICENSE.txt for license information
-// See https://swift.org/CONTRIBUTORS.txt for the list of Swift project authors
-//
-//===----------------------------------------------------------------------===//
-
 import ConfigurationKit
 import Foundation
 
 /// Generates `schema.json` by encoding a `JSONSchemaNode` tree.
 ///
-/// Rule descriptions are sourced from `ConfigurableCollector` (extracted from DocC comments)
+/// Rule descriptions are sourced from `RuleCollector` (extracted from DocC comments)
 /// so they stay in sync with rule implementations.
 package final class ConfigurationSchemaGenerator: FileGenerator {
-    let collector: ConfigurableCollector
+    let collector: RuleCollector
 
-    package init(collector: ConfigurableCollector) {
+    package init(collector: RuleCollector) {
         self.collector = collector
     }
 
@@ -45,12 +33,18 @@ package final class ConfigurationSchemaGenerator: FileGenerator {
         root.type = "object"
         root.additionalProperties = false
 
+        // Define reusable base rule types via $defs.
+        root.defs = [
+            "ruleBase": Self.ruleBaseSchema(),
+            "lintOnlyBase": Self.lintOnlyBaseSchema(),
+        ]
+
         var schema: [String: JSONSchemaNode] = [:]
 
         schema["$schema"] = .string(description: "JSON Schema reference URL.")
         schema["version"] = .integer(
             description: "Configuration format version.",
-            defaultValue: 4,
+            defaultValue: 6,
             minimum: 1
         )
 
@@ -65,59 +59,76 @@ package final class ConfigurationSchemaGenerator: FileGenerator {
         }
 
         // All rules at root level (ungrouped).
-        let allRules = collector.allLinters
-            .sorted(by: { $0.ruleName < $1.ruleName })
+        let allRules = collector.lintingSyntaxRules
+            .sorted(by: { $0.configKey < $1.configKey })
         for rule in allRules {
-            schema[rule.ruleName] = ruleSchemaNode(for: rule)
+            schema[rule.configKey] = ruleSchemaNode(for: rule)
         }
 
         root.properties = schema
         return root
     }
 
-    private func ruleSchemaNode(for rule: ConfigurableCollector.DetectedRule) -> JSONSchemaNode {
-        var desc = rule.description ?? (rule.canFormat ? "Format rule." : "Lint rule.")
-        if rule.defaultHandling == "off" { desc += " [opt-in]" }
-
-        let modeValues =
-            rule.canFormat
-            ? ["autoFix", "warn", "error", "off"]
-            : ["warn", "error", "off"]
-        let defaultMode = jsonMode(for: rule.defaultHandling)
-
-        let modeVariant = JSONSchemaNode.stringEnum(
-            description: desc,
-            values: modeValues,
-            defaultValue: defaultMode
+    /// Base schema for rewrite rules: `{ "rewrite": bool, "lint": enum }`.
+    private static func ruleBaseSchema() -> JSONSchemaNode {
+        .object(
+            description: "Rule configuration with rewrite and lint properties.",
+            properties: [
+                "rewrite": .boolean(
+                    description: "Whether the rule auto-fixes source code.",
+                    defaultValue: true
+                ),
+                "lint": .stringEnum(
+                    description: "Finding severity when the rule is active.",
+                    values: lintModeValues,
+                    defaultValue: "warn"
+                ),
+            ]
         )
+    }
 
-        if let optionsSchema = ruleOptionsSchema(
-            for: rule.ruleName,
-            canFormat: rule.canFormat,
-            defaultHandling: rule.defaultHandling
-        ) {
-            var node = JSONSchemaNode()
-            node.description = desc
-            node.oneOf = [modeVariant, optionsSchema]
-            return node
-        } else {
-            return modeVariant
-        }
+    /// Base schema for lint-only rules: `{ "lint": enum }`.
+    private static func lintOnlyBaseSchema() -> JSONSchemaNode {
+        .object(
+            description: "Lint-only rule configuration.",
+            properties: [
+                "lint": .stringEnum(
+                    description: "Finding severity when the rule is active.",
+                    values: lintModeValues,
+                    defaultValue: "warn"
+                ),
+            ]
+        )
+    }
+
+    private static let lintModeValues = ["warn", "error", "no"]
+
+    private func ruleSchemaNode(for rule: RuleCollector.DetectedSyntaxRule) -> JSONSchemaNode {
+        var desc = rule.description ?? (rule.canRewrite ? "Format rule." : "Lint rule.")
+        if rule.isOptIn { desc += " [opt-in]" }
+
+        var node = JSONSchemaNode()
+        node.description = desc
+
+        var ref = JSONSchemaNode()
+        ref.ref = rule.canRewrite ? "#/$defs/ruleBase" : "#/$defs/lintOnlyBase"
+
+        node.allOf = [ref]
+        return node
     }
 
     private func rootSettingsSchema() -> [String: JSONSchemaNode] {
         var schema: [String: JSONSchemaNode] = [:]
 
-        // Derive schema from AST-scanned layout settings with no group.
-        for setting in collector.allSettings where setting.group == nil {
-            schema[setting.settingKey] = .string(
-                description: setting.description ?? setting.settingKey
+        for setting in collector.layoutRules where setting.group == nil {
+            schema[setting.configKey] = .string(
+                description: setting.description ?? setting.configKey
             )
         }
 
         // Override indentation with its oneOf schema (spaces/tabs).
-        let indentDescription = collector.allSettings
-            .first { $0.settingKey == "unit" }?
+        let indentDescription = collector.layoutRules
+            .first { $0.configKey == "unit" }?
             .description ?? "Indentation unit."
         var indent = JSONSchemaNode()
         indent.description = indentDescription
@@ -151,9 +162,8 @@ package final class ConfigurationSchemaGenerator: FileGenerator {
     }
 
     private func groupSchemas() -> [String: JSONSchemaNode] {
-        // Build group → rules mapping from the collector (mirrors ConfigurationRegistryGenerator logic).
-        var groupedRules: [ConfigurationGroup: [ConfigurableCollector.DetectedRule]] = [:]
-        for rule in collector.allLinters {
+        var groupedRules: [ConfigurationGroup: [RuleCollector.DetectedSyntaxRule]] = [:]
+        for rule in collector.lintingSyntaxRules {
             guard let group = rule.group else { continue }
             groupedRules[group, default: []].append(rule)
         }
@@ -163,27 +173,15 @@ package final class ConfigurationSchemaGenerator: FileGenerator {
         for group in ConfigurationGroup.Key.allCases.map({ ConfigurationGroup($0) }) {
             var properties: [String: JSONSchemaNode] = [:]
 
-            // Non-rule settings from AST-scanned LayoutRule types.
-            for setting in collector.allSettings where setting.group == group {
-                properties[setting.settingKey] = .string(
-                    description: setting.description ?? setting.settingKey
+            for setting in collector.layoutRules where setting.group == group {
+                properties[setting.configKey] = .string(
+                    description: setting.description ?? setting.configKey
                 )
             }
 
-            // Rules within the group.
             if let rules = groupedRules[group] {
-                for rule in rules.sorted(by: { $0.ruleName < $1.ruleName }) {
-                    let option = ConfigurationGenerator.optionName(for: rule.ruleName)
-                    let modeValues =
-                        rule.canFormat
-                        ? ["autoFix", "warn", "error", "off"]
-                        : ["warn", "error", "off"]
-                    let defaultMode = jsonMode(for: rule.defaultHandling)
-                    properties[option] = .stringEnum(
-                        description: rule.description ?? rule.ruleName,
-                        values: modeValues,
-                        defaultValue: defaultMode
-                    )
+                for rule in rules.sorted(by: { $0.configKey < $1.configKey }) {
+                    properties[rule.configKey] = ruleSchemaNode(for: rule)
                 }
             }
 
@@ -196,25 +194,4 @@ package final class ConfigurationSchemaGenerator: FileGenerator {
 
         return groups
     }
-
-    /// Returns the JSON Schema object variant for a rule that has config options,
-    /// including the `mode` property. Returns `nil` for rules without options.
-    private func ruleOptionsSchema(for ruleName: String, canFormat: Bool, defaultHandling: String)
-        -> JSONSchemaNode?
-    {
-        // TODO: Derive rule config schemas from Configurable metadata
-        nil
-    }
-
-    /// Maps a `RuleHandling` case name to its JSON-encoded string.
-    private func jsonMode(for defaultHandling: String) -> String {
-        switch defaultHandling {
-        case "fix": "autoFix"
-        case "warning": "warn"
-        case "error": "error"
-        case "off": "off"
-        default: "warn"
-        }
-    }
-
 }

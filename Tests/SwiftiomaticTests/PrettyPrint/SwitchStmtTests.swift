@@ -10,7 +10,7 @@
 //
 //===----------------------------------------------------------------------===//
 
-import SwiftiomaticKit
+@testable import SwiftiomaticKit
 import Testing
 
 @Suite
@@ -566,7 +566,7 @@ struct SwitchStmtTests: PrettyPrintTesting {
       """
 
     var configuration = Configuration.forTesting
-    configuration[SwitchCaseIndentationConfiguration.self].style = .indented
+    configuration[SwitchCaseIndentation.self].style = .indented
     assertPrettyPrintEqual(
       input: input,
       expected: expected,

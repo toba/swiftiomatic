@@ -16,7 +16,7 @@ import SwiftSyntax
 ///
 /// Lint: If two overloaded functions with one closure parameter appear in the same scope, a lint
 ///       error is raised.
-final class AmbiguousTrailingClosureOverload: LintSyntaxRule {
+final class AmbiguousTrailingClosureOverload: LintSyntaxRule<LintOnlyValue> {
 
     private func diagnoseBadOverloads(_ overloads: [String: [FunctionDeclSyntax]]) {
         for (_, decls) in overloads where decls.count > 1 {

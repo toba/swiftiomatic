@@ -14,10 +14,10 @@ import SwiftSyntax
 /// Lint: If a redundant `Self.` is found in a static context, a finding is raised.
 ///
 /// Format: The `Self.` prefix is removed.
-final class RedundantStaticSelf: RewriteSyntaxRule {
+final class RedundantStaticSelf: RewriteSyntaxRule<BasicRuleValue> {
   override class var group: ConfigurationGroup? { .redundancies }
 
-  override class var defaultHandling: RuleHandling { .off }
+  override class var defaultValue: BasicRuleValue { BasicRuleValue(rewrite: false, lint: .no) }
 
   override func visit(_ node: MemberAccessExprSyntax) -> ExprSyntax {
     let visited = super.visit(node)

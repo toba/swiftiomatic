@@ -38,7 +38,7 @@ struct RuleMaskTests {
     let text =
       """
       let a = 123
-      // swiftiomatic-ignore: rule1
+      // sm:ignore: rule1
       let b = 456
       let c = 789
       """
@@ -54,11 +54,11 @@ struct RuleMaskTests {
     let text =
       """
       let a = 123
-      // swiftiomatic-ignore: rule1
+      // sm:ignore: rule1
       let b = 456
-      // swiftiomatic-ignore: rule2
+      // sm:ignore: rule2
       let c = 789
-      // swiftiomatic-ignore: rule1, rule2
+      // sm:ignore: rule1, rule2
       let d = "abc"
       let e = "def"
       """
@@ -81,7 +81,7 @@ struct RuleMaskTests {
   @Test func ignoreComplexRuleNames() {
     let text =
       """
-      // swiftiomatic-ignore: ru_le, rule!, ru&le, rule?, rule[], rule(), rule;
+      // sm:ignore: ru_le, rule!, ru&le, rule?, rule[], rule(), rule;
       let a = 123
       """
 
@@ -100,14 +100,14 @@ struct RuleMaskTests {
   @Test func duplicateNested() {
     let text =
       """
-      // swiftiomatic-ignore: rule1
+      // sm:ignore: rule1
       struct Foo {
         var bar = 0
 
-        // swiftiomatic-ignore: rule1
+        // sm:ignore: rule1
         var baz = 0
 
-        // swiftiomatic-ignore: rule4
+        // sm:ignore: rule4
         var bazzle = 0
 
         var barzle = 0
@@ -132,11 +132,11 @@ struct RuleMaskTests {
     let text1 =
       """
       let a = 123
-      let b = 456 // swiftiomatic-ignore: rule1
+      let b = 456 // sm:ignore: rule1
       let c = 789
-      /* swiftiomatic-ignore: rule2 */
+      /* sm:ignore: rule2 */
       let d = 111
-      // swiftiomatic-ignore:
+      // sm:ignore:
       let b = 456
       """
 
@@ -153,10 +153,10 @@ struct RuleMaskTests {
       let a = 123
       let b =
         """
-        // swiftiomatic-ignore: rule1
+        // sm:ignore: rule1
         """
       let c = 789
-      // swiftiomatic-ignore: rule1
+      // sm:ignore: rule1
       let d = "abc"
       """#
 
@@ -171,7 +171,7 @@ struct RuleMaskTests {
     let text =
       """
       let a = 123
-      // swiftiomatic-ignore
+      // sm:ignore
       let b = 456
       let c = 789
       """
@@ -188,7 +188,7 @@ struct RuleMaskTests {
     let text =
       """
       let a = 123
-      // swiftiomatic-ignore: rule1, rule2   , AnotherRule  , TheBestRule,, ,   , ,
+      // sm:ignore: rule1, rule2   , AnotherRule  , TheBestRule,, ,   , ,
       let b = 456
       let c = 789
       """
@@ -208,7 +208,7 @@ struct RuleMaskTests {
     let text =
       """
       // This file has important contents.
-      // swiftiomatic-ignore-file
+      // sm:ignore-file
       // Everything in this file is ignored.
 
       let a = 5
@@ -243,7 +243,7 @@ struct RuleMaskTests {
       let b = 4
 
       class Foo {
-        // swiftiomatic-ignore-file
+        // sm:ignore-file
         let member1 = 0
         func foo() {
           baz()
@@ -266,7 +266,7 @@ struct RuleMaskTests {
     let text =
       """
       // This file has important contents.
-      // swiftiomatic-ignore-file: rule1
+      // sm:ignore-file: rule1
       // Everything in this file is ignored.
 
       let a = 5
@@ -296,7 +296,7 @@ struct RuleMaskTests {
     let text =
       """
       // This file has important contents.
-      // swiftiomatic-ignore-file: rule1, rule2, rule3
+      // sm:ignore-file: rule1, rule2, rule3
       // Everything in this file is ignored.
 
       let a = 5
@@ -328,15 +328,15 @@ struct RuleMaskTests {
     let text =
       """
       // This file has important contents.
-      // swiftiomatic-ignore-file: rule1, rule2
+      // sm:ignore-file: rule1, rule2
       // Everything in this file is ignored.
 
       let a = 5
-      // swiftiomatic-ignore: rule3
+      // sm:ignore: rule3
       let b = 4
 
       class Foo {
-        // swiftiomatic-ignore: rule3, rule4
+        // sm:ignore: rule3, rule4
         let member1 = 0
 
         func foo() {
@@ -375,8 +375,8 @@ struct RuleMaskTests {
     let text =
       """
       // This file has important contents.
-      // swiftiomatic-ignore-file: rule1
-      // swiftiomatic-ignore-file: rule2
+      // sm:ignore-file: rule1
+      // sm:ignore-file: rule2
       // Everything in this file is ignored.
 
       let a = 5
@@ -408,8 +408,8 @@ struct RuleMaskTests {
     let text =
       """
       // This file has important contents.
-      // swiftiomatic-ignore-file: rule1
-      // swiftiomatic-ignore-file
+      // sm:ignore-file: rule1
+      // sm:ignore-file
       // Everything in this file is ignored.
 
       let a = 5

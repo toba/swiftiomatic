@@ -12,9 +12,9 @@ import SwiftSyntax
 ///
 /// Format: The separate statements are merged into a conditional expression
 ///         assignment.
-final class PreferConditionalExpression: RewriteSyntaxRule {
+final class PreferConditionalExpression: RewriteSyntaxRule<BasicRuleValue> {
 
-  override class var defaultHandling: RuleHandling { .off }
+  override class var defaultValue: BasicRuleValue { BasicRuleValue(rewrite: false, lint: .no) }
 
   override func visit(_ node: CodeBlockItemListSyntax) -> CodeBlockItemListSyntax {
     let visited = super.visit(node)

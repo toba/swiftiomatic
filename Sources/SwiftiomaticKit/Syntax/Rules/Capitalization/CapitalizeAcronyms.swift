@@ -11,16 +11,21 @@ import SwiftSyntax
 /// Lint: An identifier with a titlecased acronym raises a warning.
 ///
 /// Format: The titlecased acronym is replaced with the uppercased form.
-final class CapitalizeAcronyms: RewriteSyntaxRule {
+final class CapitalizeAcronyms: RewriteSyntaxRule<AcronymsConfiguration> {
     override class var group: ConfigurationGroup? { .capitalization }
-    override class var defaultHandling: RuleHandling { .off }
+    override class var defaultValue: AcronymsConfiguration {
+        var v = AcronymsConfiguration()
+        v.rewrite = false
+        v.lint = .no
+        return v
+    }
 
     override func visit(_ token: TokenSyntax) -> TokenSyntax {
         guard case .identifier(let text) = token.tokenKind else {
             return token
         }
 
-        let acronyms = context.configuration[AcronymsConfiguration.self].words
+        let acronyms = context.configuration[CapitalizeAcronyms.self].words
         let updated = capitalizeAcronyms(in: text, acronyms: acronyms)
 
         guard updated != text else { return token }
@@ -96,10 +101,9 @@ extension Finding.Message {
 
 // MARK: - Configuration
 
-package struct AcronymsConfiguration: Configurable, Codable, Equatable, Sendable {
-    package static let key = "acronyms"
-    package static let defaultValue = AcronymsConfiguration()
-
+package struct AcronymsConfiguration: SyntaxRuleValue {
+    package var rewrite = true
+    package var lint: Lint = .warn
     package var words: [String] = [
         "ID", "URL", "UUID", "HTTP", "HTTPS", "JSON", "XML", "HTML",
         "API", "TCP", "UDP", "DNS", "SSH", "FTP", "SQL", "CSS",
@@ -108,11 +112,13 @@ package struct AcronymsConfiguration: Configurable, Codable, Equatable, Sendable
 
     package init() {}
 
-    package init(from decoder: Decoder) throws {
+    package init(from decoder: any Decoder) throws {
+        self.init()
         let container = try decoder.container(keyedBy: CodingKeys.self)
-        let defaults = Self()
+        if let v = try container.decodeIfPresent(Bool.self, forKey: .rewrite) { self.rewrite = v }
+        if let v = try container.decodeIfPresent(Lint.self, forKey: .lint) { self.lint = v }
         self.words =
             try container.decodeIfPresent([String].self, forKey: .words)
-            ?? defaults.words
+            ?? AcronymsConfiguration().words
     }
 }

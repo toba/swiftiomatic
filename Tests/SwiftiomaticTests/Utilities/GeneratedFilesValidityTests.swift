@@ -16,12 +16,12 @@ import GeneratorKit
 @Suite
 struct GeneratedFilesValidityTests {
   let paths = GeneratePaths.filePath
-  let collector: ConfigurableCollector
+  let collector: RuleCollector
 
   init() throws {
-    collector = ConfigurableCollector()
-    try collector.collectRules(from: paths.rulesDirectory)
-    try collector.collectSettings(from: paths.settingsDirectory)
+    collector = RuleCollector()
+    try collector.collectSyntaxRules(from: paths.syntaxRulesFolder)
+    try collector.collectLayoutRules(from: paths.layoutRulesFolder)
   }
 
   @Test func generatedPipelineIsUpToDate() throws {

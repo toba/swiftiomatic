@@ -1,15 +1,3 @@
-//===----------------------------------------------------------------------===//
-//
-// This source file is part of the Swift.org open source project
-//
-// Copyright (c) 2014 - 2024 Apple Inc. and the Swift project authors
-// Licensed under Apache License v2.0 with Runtime Library Exception
-//
-// See https://swift.org/LICENSE.txt for license information
-// See https://swift.org/CONTRIBUTORS.txt for the list of Swift project authors
-//
-//===----------------------------------------------------------------------===//
-
 import Foundation
 import SwiftOperators
 import SwiftParser
@@ -91,20 +79,13 @@ package final class Context {
         let loc = node.startLocation(converter: self.sourceLocationConverter)
         let ruleName = ConfigurationRegistry.ruleNameCache[ObjectIdentifier(rule)] ?? R.key
         switch ruleMask.ruleState(ruleName, at: loc) {
-        case .default: return (configuration.rules[ruleName] ?? .off).isActive
+        case .default: return configuration[R.self].isActive
         case .disabled: return false
         }
     }
 
-    /// Returns the configured handling for the given rule type.
-    func severity<R: SyntaxRule>(of rule: R.Type) -> RuleHandling {
-        let ruleName = ConfigurationRegistry.ruleNameCache[ObjectIdentifier(rule)] ?? R.key
-        return configuration.rules[ruleName] ?? .warning
-    }
-
-    /// Whether the given format rule should auto-fix (rewrite the AST).
-    func shouldFix<R: SyntaxRule>(_ rule: R.Type) -> Bool {
-        let ruleName = ConfigurationRegistry.ruleNameCache[ObjectIdentifier(rule)] ?? R.key
-        return (configuration.rules[ruleName] ?? .off).shouldFix
+    /// Returns the configured lint severity for the given rule type.
+    func severity<R: SyntaxRule>(of rule: R.Type) -> Lint {
+        return configuration[R.self].lint
     }
 }

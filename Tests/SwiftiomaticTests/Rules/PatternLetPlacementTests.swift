@@ -370,7 +370,7 @@ struct UseLetInEveryBoundCaseVariableTests: RuleTesting {
 
   private func hoistConfig() -> Configuration {
     var config = Configuration.forTesting(enabledRule: PatternLetPlacement.self.key)
-    config[PatternLetConfiguration.self].placement = .outerPattern
+    config[PatternLetPlacement.self].placement = .outerPattern
     return config
   }
 

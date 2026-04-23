@@ -84,7 +84,7 @@ Follows [apple/swift-format](https://github.com/swiftlang/swift-format) architec
 - `Finding` with `Message`, `Location`, `Note` — emitted via `diagnose()` on `Rule`
 - `Context` holds `Configuration`, `FindingEmitter`, `RuleMask`, `SourceLocationConverter`
 - `LintPipeline` interleaves lint rules per node; `FormatPipeline` runs format rules sequentially
-- `RuleMask` disables rules via `// swiftiomatic-ignore` comments
+- `RuleMask` disables rules via `// sm:ignore` comments
 - `swiftiomatic.json` config (JSON5); `Configuration.rules: [String: Bool]` enables/disables rules
 - Rule-specific config via nested structs on `Configuration` (e.g., `orderedImports`, `fileScopedDeclarationPrivacy`)
 - Homebrew installable

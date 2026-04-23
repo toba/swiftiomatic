@@ -10,8 +10,8 @@ struct URLMacroTests: RuleTesting {
     moduleName: String = "URLFoundation"
   ) -> Configuration {
     var c = Configuration.forTesting(enabledRule: URLMacro.self.key)
-    c[URLMacroConfiguration.self].macroName = macroName
-    c[URLMacroConfiguration.self].moduleName = moduleName
+    c[URLMacro.self].macroName = macroName
+    c[URLMacro.self].moduleName = moduleName
     return c
   }
 
@@ -290,7 +290,7 @@ struct URLMacroTests: RuleTesting {
   @Test func noTransformationWhenMacroNotConfigured() {
     // Default config has no macro configured
     var c = Configuration.forTesting(enabledRule: URLMacro.self.key)
-    c[URLMacroConfiguration.self] = URLMacroConfiguration()
+    c[URLMacro.self] = URLMacroConfiguration()
     assertFormatting(
       URLMacro.self,
       input: """

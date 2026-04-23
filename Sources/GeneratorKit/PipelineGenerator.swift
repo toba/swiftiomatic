@@ -16,10 +16,10 @@ import Foundation
 package final class PipelineGenerator: FileGenerator {
 
     /// The rules collected by scanning the formatter source code.
-    let collector: ConfigurableCollector
+    let collector: RuleCollector
 
     /// Creates a new pipeline generator.
-    package init(collector: ConfigurableCollector) {
+    package init(collector: RuleCollector) {
         self.collector = collector
     }
 
@@ -66,8 +66,7 @@ package final class PipelineGenerator: FileGenerator {
 
             """
 
-        for (nodeType, lintRules) in collector.syntaxNodeLinters.sorted(by: { $0.key < $1.key })
-        {
+        for (nodeType, lintRules) in collector.syntaxNodeLinters.sorted(by: { $0.key < $1.key }) {
             result += """
 
                   override func visit(_ node: \(nodeType)) -> SyntaxVisitorContinueKind {
@@ -109,9 +108,11 @@ package final class PipelineGenerator: FileGenerator {
                 var node = node
 
             """
-        for ruleName in collector.allFormatters.map({ $0.typeName }).sorted() {
+        for ruleName in collector.rewritingSyntaxRules.map({ $0.typeName }).sorted() {
             result += """
-                    node = \(ruleName)(context: context).rewrite(node)
+                    if context.shouldFormat(\(ruleName).self, node: node) {
+                      node = \(ruleName)(context: context).rewrite(node)
+                    }
 
                 """
         }

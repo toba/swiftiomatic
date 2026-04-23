@@ -13,12 +13,17 @@ import SwiftSyntax
 /// Lint: A body whose formatting doesn't match the mode raises a warning.
 ///
 /// Format: The body is wrapped or inlined to match the mode.
-final class WrapSingleLineBodies: RewriteSyntaxRule {
-    override class var defaultHandling: RuleHandling { .off }
+final class WrapSingleLineBodies: RewriteSyntaxRule<SingleLineBodiesConfiguration> {
+    override class var defaultValue: SingleLineBodiesConfiguration {
+        var v = SingleLineBodiesConfiguration()
+        v.rewrite = false
+        v.lint = .no
+        return v
+    }
     override class var group: ConfigurationGroup? { .wrap }
 
     private var mode: SingleLineBodiesConfiguration.Mode {
-        context.configuration[SingleLineBodiesConfiguration.self].mode
+        context.configuration[WrapSingleLineBodies.self].mode
     }
 
     private var maxLength: Int { context.configuration[LineLength.self] }
@@ -708,10 +713,7 @@ extension Finding.Message {
 
 // MARK: - Configuration
 
-package struct SingleLineBodiesConfiguration: Configurable, Codable, Equatable, Sendable {
-    package static let key = "singleLineBodies"
-    package static let defaultValue = SingleLineBodiesConfiguration()
-
+package struct SingleLineBodiesConfiguration: SyntaxRuleValue {
     package enum Mode: String, Codable, Sendable {
         /// Expand single-line bodies onto multiple lines.
         case wrap
@@ -719,15 +721,19 @@ package struct SingleLineBodiesConfiguration: Configurable, Codable, Equatable, 
         case inline
     }
 
+    package var rewrite = true
+    package var lint: Lint = .warn
     package var mode: Mode = .wrap
 
     package init() {}
 
-    package init(from decoder: Decoder) throws {
+    package init(from decoder: any Decoder) throws {
+        self.init()
         let container = try decoder.container(keyedBy: CodingKeys.self)
-        let defaults = Self()
+        if let v = try container.decodeIfPresent(Bool.self, forKey: .rewrite) { self.rewrite = v }
+        if let v = try container.decodeIfPresent(Lint.self, forKey: .lint) { self.lint = v }
         self.mode =
             try container.decodeIfPresent(Mode.self, forKey: .mode)
-            ?? defaults.mode
+            ?? .wrap
     }
 }

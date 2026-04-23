@@ -20,7 +20,7 @@ import SwiftSyntax
 /// Lint: If a redundant raw value is found, a lint warning is raised.
 ///
 /// Format: The redundant raw value initializer is removed.
-final class RedundantRawValues: RewriteSyntaxRule {
+final class RedundantRawValues: RewriteSyntaxRule<BasicRuleValue> {
   override class var group: ConfigurationGroup? { .redundancies }
 
   override func visit(_ node: EnumCaseDeclSyntax) -> DeclSyntax {

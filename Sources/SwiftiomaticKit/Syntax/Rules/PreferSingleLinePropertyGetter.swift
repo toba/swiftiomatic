@@ -17,7 +17,7 @@ import SwiftSyntax
 /// Lint: Read-only computed properties with explicit `get` blocks yield a lint error.
 ///
 /// Format: Explicit `get` blocks are rendered implicit by removing the `get`.
-final class PreferSingleLinePropertyGetter: RewriteSyntaxRule {
+final class PreferSingleLinePropertyGetter: RewriteSyntaxRule<BasicRuleValue> {
 
   override func visit(_ node: PatternBindingSyntax) -> PatternBindingSyntax {
     guard

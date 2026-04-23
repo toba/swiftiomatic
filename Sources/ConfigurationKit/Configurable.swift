@@ -1,3 +1,11 @@
+/// Derives a configuration key from a type name by lowercasing the first character.
+///
+/// This is the single source of truth for the default key derivation used by both
+/// `Configurable.key` (runtime) and `DetectedRule.configKey` (build-time code generation).
+package func configurationKey(forTypeName name: String) -> String {
+    name.prefix(1).lowercased() + name.dropFirst()
+}
+
 /// A configurable item with a key, default value, and optional group membership.
 ///
 /// Both syntax rules and layout settings conform to this protocol, unifying the
@@ -23,7 +31,7 @@ extension Configurable {
     /// By default, the key is the name of the conforming type with a lowercase initial letter.
     package static var key: String {
         let name = String("\(self)".split(separator: ".").last!)
-        return name.prefix(1).lowercased() + name.dropFirst()
+        return configurationKey(forTypeName: name)
     }
     package static var group: ConfigurationGroup? { nil }
     package static var description: String { key }

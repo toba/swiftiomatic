@@ -8,7 +8,8 @@ import SwiftSyntax
 /// Lint: If a doc comment appears after an attribute or modifier, a lint warning is raised.
 ///
 /// Format: The doc comment is moved before all attributes and modifiers.
-final class DocCommentsBeforeModifiers: RewriteSyntaxRule {
+final class DocCommentsBeforeModifiers: RewriteSyntaxRule<BasicRuleValue> {
+    override class var key: String { "commentsPrecedeModifiers" }
     override class var group: ConfigurationGroup? { .comments }
 
     // MARK: - Container types (need super.visit)

@@ -15,7 +15,8 @@ import SwiftSyntax
 /// Block comments should be avoided in favor of line comments.
 ///
 /// Lint: If a block comment appears, a lint error is raised.
-final class NoBlockComments: LintSyntaxRule {
+final class NoBlockComments: LintSyntaxRule<LintOnlyValue> {
+    override class var key: String { "disallowBlockComments" }
     override class var group: ConfigurationGroup? { .comments }
 
     override func visit(_ token: TokenSyntax) -> SyntaxVisitorContinueKind {

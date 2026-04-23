@@ -20,8 +20,9 @@ import SwiftSyntax
 ///
 /// Lint:  Non-literal empty array initialization will yield a lint error.
 /// Format: All invalid use sites would be related with empty literal (with or without explicit type annotation).
-final class EmptyCollectionLiteral: RewriteSyntaxRule {
-    override class var defaultHandling: RuleHandling { .off }
+final class EmptyCollectionLiteral: RewriteSyntaxRule<BasicRuleValue> {
+    override class var key: String { "useShortArrayLiteral" }
+    override class var defaultValue: BasicRuleValue { BasicRuleValue(rewrite: false, lint: .no) }
 
     override func visit(_ node: PatternBindingSyntax) -> PatternBindingSyntax {
         guard let initializer = node.initializer,

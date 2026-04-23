@@ -10,22 +10,22 @@
 //
 //===----------------------------------------------------------------------===//
 
-import Foundation
 import ConfigurationKit
+import Foundation
 
 /// Generates the rule registry file with type arrays for rules and settings.
 /// All metadata (names, defaults, groups) is derived at runtime from the types
 /// via protocol witness dispatch on the `Rule` existential.
 package final class ConfigurationGenerator: FileGenerator {
-    let collector: ConfigurableCollector
+    let collector: RuleCollector
 
-    package init(collector: ConfigurableCollector) {
+    package init(collector: RuleCollector) {
         self.collector = collector
     }
 
     package func generateContent() -> String {
-        let sortedRules = collector.allLinters.sorted(by: { $0.typeName < $1.typeName })
-        let sortedSettings = collector.allSettings.sorted(by: { $0.typeName < $1.typeName })
+        let sortedRules = collector.lintingSyntaxRules.sorted(by: { $0.typeName < $1.typeName })
+        let sortedSettings = collector.layoutRules.sorted(by: { $0.typeName < $1.typeName })
 
         var result = fileHeader
         result += "package enum ConfigurationRegistry {\n\n"
@@ -48,12 +48,6 @@ package final class ConfigurationGenerator: FileGenerator {
 
         result += "}\n"
         return result
-    }
-
-    /// Derives an option name by lowercasing the first character of the rule name.
-    static func optionName(for ruleName: String) -> String {
-        guard let first = ruleName.first else { return ruleName }
-        return first.lowercased() + ruleName.dropFirst()
     }
 
     private var fileHeader: String {

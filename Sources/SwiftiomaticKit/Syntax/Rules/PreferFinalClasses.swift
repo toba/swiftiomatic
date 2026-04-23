@@ -12,8 +12,8 @@ import SwiftSyntax
 /// Lint: A non-final, non-open class declaration raises a warning.
 ///
 /// Format: The `final` modifier is added and `open` members are converted to `public`.
-final class PreferFinalClasses: RewriteSyntaxRule {
-  override class var defaultHandling: RuleHandling { .off }
+final class PreferFinalClasses: RewriteSyntaxRule<BasicRuleValue> {
+  override class var defaultValue: BasicRuleValue { BasicRuleValue(rewrite: false, lint: .no) }
 
   /// Class names that appear as a superclass in some class declaration within the file.
   private var subclassedNames = Set<String>()

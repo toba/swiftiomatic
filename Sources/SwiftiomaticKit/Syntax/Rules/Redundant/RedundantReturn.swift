@@ -18,9 +18,9 @@ import SwiftSyntax
 ///
 /// Format: `func <name>() { return ... }` constructs will be replaced with
 ///         equivalent `func <name>() { ... }` constructs.
-final class RedundantReturn: RewriteSyntaxRule {
+final class RedundantReturn: RewriteSyntaxRule<BasicRuleValue> {
   override class var group: ConfigurationGroup? { .redundancies }
-  override class var defaultHandling: RuleHandling { .off }
+  override class var defaultValue: BasicRuleValue { BasicRuleValue(rewrite: false, lint: .no) }
 
   override func visit(_ node: FunctionDeclSyntax) -> DeclSyntax {
     let decl = super.visit(node)

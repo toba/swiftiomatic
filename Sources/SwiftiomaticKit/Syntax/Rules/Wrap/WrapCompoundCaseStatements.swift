@@ -9,10 +9,10 @@ import SwiftSyntax
 ///       raises a warning.
 ///
 /// Format: Each item is placed on its own line with alignment indentation.
-final class WrapCompoundCaseStatements: RewriteSyntaxRule {
+final class WrapCompoundCaseStatements: RewriteSyntaxRule<BasicRuleValue> {
     //    static let name = "wrapCompoundCaseStatements"
     override class var group: ConfigurationGroup? { .wrap }
-    override class var defaultHandling: RuleHandling { .off }
+    override class var defaultValue: BasicRuleValue { BasicRuleValue(rewrite: false, lint: .no) }
 
     override func visit(_ node: SwitchCaseLabelSyntax) -> SwitchCaseLabelSyntax {
         let items = node.caseItems

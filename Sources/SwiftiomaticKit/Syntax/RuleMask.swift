@@ -18,29 +18,29 @@ import SwiftSyntax
 /// rule names to affect all rules, a single rule name to affect that rule, or a comma delimited
 /// list of rule names to affect a number of rules. Ignore is the only supported operation.
 ///
-///   1. |  // swiftiomatic-ignore
+///   1. |  // sm:ignore
 ///   2. |  let a = 123
 ///   Ignores all rules for line 2.
 ///
-///   1. |  // swiftiomatic-ignore-file
+///   1. |  // sm:ignore-file
 ///   2. |  let a = 123
 ///   3. | class Foo { }
 ///   Ignores all rules for an entire file (lines 2-3).
 ///
-///   1. |  // swiftiomatic-ignore: RuleName
+///   1. |  // sm:ignore: RuleName
 ///   2. |  let a = 123
 ///   Ignores `RuleName` for line 2.
 ///
-///   1. |  // swiftiomatic-ignore: RuleName, OtherRuleName
+///   1. |  // sm:ignore: RuleName, OtherRuleName
 ///   2. |  let a = 123
 ///   Ignores `RuleName` and `OtherRuleName` for line 2.
 ///
-///   1. |  // swiftiomatic-ignore-file: RuleName
+///   1. |  // sm:ignore-file: RuleName
 ///   2. |  let a = 123
 ///   3. | class Foo { }
 ///   Ignores `RuleName` for the entire file (lines 2-3).
 ///
-///   1. |  // swiftiomatic-ignore-file: RuleName, OtherRuleName
+///   1. |  // sm:ignore-file: RuleName, OtherRuleName
 ///   2. |  let a = 123
 ///   3. | class Foo { }
 ///   Ignores `RuleName` and `OtherRuleName` for the entire file (lines 2-3).
@@ -106,9 +106,9 @@ enum IgnoreDirective: CustomStringConvertible {
     var description: String {
         switch self {
         case .node:
-            return "swiftiomatic-ignore"
+            return "sm:ignore"
         case .file:
-            return "swiftiomatic-ignore-file"
+            return "sm:ignore-file"
         }
     }
 

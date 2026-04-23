@@ -6,8 +6,6 @@ package struct BeforeEachGenericRequirement: LayoutRule {
     package static let defaultValue = false
 }
 
-// MARK: - TokenStream
-
 extension TokenStream {
     /// Returns the group consistency that should be used for generic requirement lists based on
     /// the user's current configuration.

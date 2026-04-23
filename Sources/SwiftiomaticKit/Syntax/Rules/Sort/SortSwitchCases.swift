@@ -21,9 +21,9 @@ import SwiftSyntax
 /// Lint: If case items are not sorted, a lint warning is raised.
 ///
 /// Format: The case items are reordered alphabetically.
-final class SortSwitchCases: RewriteSyntaxRule {
+final class SortSwitchCases: RewriteSyntaxRule<BasicRuleValue> {
     override class var group: ConfigurationGroup? { .sort }
-  override class var defaultHandling: RuleHandling { .off }
+  override class var defaultValue: BasicRuleValue { BasicRuleValue(rewrite: false, lint: .no) }
 
   override func visit(_ node: SwitchCaseSyntax) -> SwitchCaseSyntax {
     guard case .case(var caseLabel) = node.label else { return node }

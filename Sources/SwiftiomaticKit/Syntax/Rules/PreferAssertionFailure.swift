@@ -10,7 +10,7 @@ import SwiftSyntax
 ///
 /// Format: The call is replaced with the corresponding `Failure` variant, removing the
 /// `false` argument.
-final class PreferAssertionFailure: RewriteSyntaxRule {
+final class PreferAssertionFailure: RewriteSyntaxRule<BasicRuleValue> {
 
   override func visit(_ node: FunctionCallExprSyntax) -> ExprSyntax {
     guard let callee = node.calledExpression.as(DeclReferenceExprSyntax.self) else {

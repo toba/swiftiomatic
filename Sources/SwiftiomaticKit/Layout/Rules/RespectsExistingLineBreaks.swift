@@ -7,8 +7,6 @@ package struct RespectsExistingLineBreaks: LayoutRule {
     package static let defaultValue = true
 }
 
-// MARK: - TokenStream
-
 extension TokenStream {
     /// Returns a value indicating whether or not discretionary newlines are permitted before the
     /// given syntax token.

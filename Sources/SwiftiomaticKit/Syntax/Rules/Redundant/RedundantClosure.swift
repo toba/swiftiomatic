@@ -16,7 +16,7 @@ import SwiftSyntax
 ///
 /// Format: The closure wrapper and invocation are removed, leaving just the
 ///         expression.
-final class RedundantClosure: RewriteSyntaxRule {
+final class RedundantClosure: RewriteSyntaxRule<BasicRuleValue> {
     override class var group: ConfigurationGroup? { .redundancies }
 
     override func visit(_ node: FunctionCallExprSyntax) -> ExprSyntax {

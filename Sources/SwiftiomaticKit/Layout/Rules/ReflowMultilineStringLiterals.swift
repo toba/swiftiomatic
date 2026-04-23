@@ -16,8 +16,6 @@ package enum MultilineStringReflowBehavior: String, Codable, Sendable {
     var isAlways: Bool { self == .always }
 }
 
-// MARK: - TokenStream
-
 extension TokenStream {
     // Insert an `.escaped` break token after each series of whitespace in a substring
     func emitMultilineSegmentTextTokens(breakKind: BreakKind, segment: Substring) {
