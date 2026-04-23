@@ -34,8 +34,8 @@
 		"noTypeRepetitionInStaticProperties": { "lint": "warn" }
 	},
 	"access": {
-		"preferFinalClasses": { "lint": "no", "rewrite": false },
-		"privateStateVariables": { "lint": "no", "rewrite": false },
+		"preferFinalClasses": { "lint": "warn", "rewrite": false },
+		"privateStateVariables": { "lint": "no", "rewrite": true },
 		"noExtensionAccessLevel": {
 			"lint": "warn",
 			"rewrite": true,
@@ -64,7 +64,7 @@
 	},
 	"naming": {
 		"uppercaseAcronyms": {
-			"lint": "no",
+			"lint": "warn",
 			"words": [
 				"ID",
 				"URL",
@@ -93,11 +93,11 @@
 		},
 		"capitalizeTypeNames": { "lint": "warn" },
 		"camelCaseIdentifiers": { "lint": "warn" },
-		"noLeadingUnderscores": { "lint": "no" },
+		"noLeadingUnderscores": { "lint": "warn" },
 		"identifiersMayOnlyUseASCII": { "lint": "warn" }
 	},
 	"spaces": {
-		"collapseEmptyBraces": { "lint": "warn", "rewrite": true },
+		"collapseEmptyBraces": { "lint": "no", "rewrite": true },
 		"spacesBeforeEndOfLineComments": 2,
 		"spacesAroundRangeFormationOperators": false
 	},

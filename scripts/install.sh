@@ -15,6 +15,8 @@ fi
 cellar="$(brew --cellar sm)/$version"
 mkdir -p "$cellar/bin"
 
+echo "Regenerating schema..."
+swift run Generator
 echo "Building release..."
 swift build -c release --product sm
 
