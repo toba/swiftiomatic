@@ -92,27 +92,32 @@ jobs:
         git clone "https://x-access-token:${GH_TOKEN}@github.com/toba/homebrew-tap.git" tap
         cd tap
 
-        cat > Formula/sm.rb <<FORMULA
-class Sm < Formula
-  desc "AST-based Swift code analysis CLI — lint, format, and detect anti-patterns"
-  homepage "https://github.com/toba/swiftiomatic"
-  url "https://github.com/toba/swiftiomatic/releases/download/${TAG}/sm-${TAG}-arm64.tar.gz"
-  version "${VERSION}"
-  sha256 "${SHA}"
-  license "MIT"
+        cat > Formula/sm.rb <<'FORMULA'
+        class Sm < Formula
+          desc "AST-based Swift code analysis CLI — lint, format, and detect anti-patterns"
+          homepage "https://github.com/toba/swiftiomatic"
+          url "URL_PLACEHOLDER"
+          version "VERSION_PLACEHOLDER"
+          sha256 "SHA_PLACEHOLDER"
+          license "MIT"
 
-  depends_on :macos => :tahoe
-  depends_on arch: :arm64
+          depends_on :macos => :tahoe
+          depends_on arch: :arm64
 
-  def install
-    bin.install "sm"
-  end
+          def install
+            bin.install "sm"
+          end
 
-  test do
-    assert_match "AST-based", shell_output("#{bin}/sm --help")
-  end
-end
-FORMULA
+          test do
+            assert_match "AST-based", shell_output("#{bin}/sm --help")
+          end
+        end
+        FORMULA
+
+        sed -i '' 's/^        //' Formula/sm.rb
+        sed -i '' "s|URL_PLACEHOLDER|https://github.com/toba/swiftiomatic/releases/download/${TAG}/sm-${TAG}-arm64.tar.gz|" Formula/sm.rb
+        sed -i '' "s|VERSION_PLACEHOLDER|${VERSION}|" Formula/sm.rb
+        sed -i '' "s|SHA_PLACEHOLDER|${SHA}|" Formula/sm.rb
 
         git rm -f Formula/swiftiomatic.rb 2>/dev/null || true
 
