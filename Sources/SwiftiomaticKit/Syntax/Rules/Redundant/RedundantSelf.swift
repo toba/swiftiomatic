@@ -360,13 +360,13 @@ final class RedundantSelf: RewriteSyntaxRule<BasicRuleValue> {
   /// Used to prevent removing `self.` inside a computed property's own getter/setter.
   private func enclosingPropertyName(of node: some SyntaxProtocol) -> String? {
     var current = node.parent
-    while let p = current {
-      if let binding = p.as(PatternBindingSyntax.self),
+    while let parent = current {
+      if let binding = parent.as(PatternBindingSyntax.self),
         let ident = binding.pattern.as(IdentifierPatternSyntax.self)
       {
         return ident.identifier.text
       }
-      current = p.parent
+      current = parent.parent
     }
     return nil
   }

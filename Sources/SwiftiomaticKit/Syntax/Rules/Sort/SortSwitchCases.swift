@@ -119,14 +119,14 @@ final class SortSwitchCases: RewriteSyntaxRule<BasicRuleValue> {
   /// Normalize hex, octal, and binary literals to decimal strings for comparison.
   private func normalizeNumericLiteral(_ value: String) -> String {
     let stripped = value.filter { $0 != "_" }
-    if stripped.hasPrefix("0x"), let n = Int(stripped.dropFirst(2), radix: 16) {
-      return String(n)
+    if stripped.hasPrefix("0x"), let decimal = Int(stripped.dropFirst(2), radix: 16) {
+      return String(decimal)
     }
-    if stripped.hasPrefix("0o"), let n = Int(stripped.dropFirst(2), radix: 8) {
-      return String(n)
+    if stripped.hasPrefix("0o"), let decimal = Int(stripped.dropFirst(2), radix: 8) {
+      return String(decimal)
     }
-    if stripped.hasPrefix("0b"), let n = Int(stripped.dropFirst(2), radix: 2) {
-      return String(n)
+    if stripped.hasPrefix("0b"), let decimal = Int(stripped.dropFirst(2), radix: 2) {
+      return String(decimal)
     }
     return stripped
   }

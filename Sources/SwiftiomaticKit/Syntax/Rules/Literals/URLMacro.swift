@@ -20,10 +20,10 @@ final class URLMacro: RewriteSyntaxRule<URLMacroConfiguration> {
     override class var group: ConfigurationGroup? { .literals }
 
   override class var defaultValue: URLMacroConfiguration {
-    var v = URLMacroConfiguration()
-    v.rewrite = false
-    v.lint = .no
-    return v
+    var config = URLMacroConfiguration()
+    config.rewrite = false
+    config.lint = .no
+    return config
   }
 
   /// Whether any replacements were made (drives import addition).
@@ -191,8 +191,8 @@ package struct URLMacroConfiguration: SyntaxRuleValue {
   package init(from decoder: any Decoder) throws {
     self.init()
     let container = try decoder.container(keyedBy: CodingKeys.self)
-    if let v = try container.decodeIfPresent(Bool.self, forKey: .rewrite) { self.rewrite = v }
-    if let v = try container.decodeIfPresent(Lint.self, forKey: .lint) { self.lint = v }
+    if let rewrite = try container.decodeIfPresent(Bool.self, forKey: .rewrite) { self.rewrite = rewrite }
+    if let lint = try container.decodeIfPresent(Lint.self, forKey: .lint) { self.lint = lint }
     self.macroName = try container.decodeIfPresent(String.self, forKey: .macroName)
     self.moduleName = try container.decodeIfPresent(String.self, forKey: .moduleName)
   }

@@ -483,19 +483,19 @@ final class OpaqueGenericParameters: RewriteSyntaxRule<BasicRuleValue> {
 
     // Rebuild with proper commas
     let newParams = remaining.enumerated().map { i, param -> GenericParameterSyntax in
-      var p = param
+      var modified = param
       if i < remaining.count - 1 {
-        p.trailingComma = .commaToken(trailingTrivia: .space)
+        modified.trailingComma = .commaToken(trailingTrivia: .space)
       } else {
-        p.trailingComma = nil
+        modified.trailingComma = nil
       }
       // Strip leading trivia from non-first params to avoid extra whitespace
       if i == 0 {
-        p.leadingTrivia = []
+        modified.leadingTrivia = []
       } else {
-        p.leadingTrivia = []
+        modified.leadingTrivia = []
       }
-      return p
+      return modified
     }
 
     var result = clause
@@ -516,16 +516,16 @@ final class OpaqueGenericParameters: RewriteSyntaxRule<BasicRuleValue> {
     if remaining.isEmpty { return nil }
 
     let newReqs = remaining.enumerated().map { i, req -> GenericRequirementSyntax in
-      var r = req
+      var modified = req
       if i < remaining.count - 1 {
-        r.trailingComma = .commaToken(trailingTrivia: .space)
+        modified.trailingComma = .commaToken(trailingTrivia: .space)
       } else {
-        r.trailingComma = nil
+        modified.trailingComma = nil
       }
       if i == 0 {
-        r.leadingTrivia = []
+        modified.leadingTrivia = []
       }
-      return r
+      return modified
     }
 
     var result = clause

@@ -16,9 +16,9 @@ class LintSyntaxRule<V: SyntaxRuleValue>: SyntaxVisitor, SyntaxRule {
     }
     class var group: ConfigurationGroup? { nil }
     class var defaultValue: V {
-        var v = V()
-        v.rewrite = false
-        return v
+        var config = V()
+        config.rewrite = false
+        return config
     }
 
     /// Creates a new rule in a given context.

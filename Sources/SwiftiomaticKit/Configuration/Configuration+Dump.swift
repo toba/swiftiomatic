@@ -26,9 +26,9 @@ extension Configuration {
         let jsonValue: JSONValue
         do {
             let data = try JSONEncoder().encode(self)
-            var obj = try JSONDecoder().decode([String: JSONValue].self, from: data)
-            obj["$schema"] = .string(Self.schemaURL)
-            jsonValue = .object(obj)
+            var decoded = try JSONDecoder().decode([String: JSONValue].self, from: data)
+            decoded["$schema"] = .string(Self.schemaURL)
+            jsonValue = .object(decoded)
         } catch {
             throw SwiftiomaticError.configurationDumpFailed("\(error)")
         }

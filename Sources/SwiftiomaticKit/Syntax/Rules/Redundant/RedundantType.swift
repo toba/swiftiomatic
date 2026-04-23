@@ -206,8 +206,8 @@ final class RedundantType: RewriteSyntaxRule<BasicRuleValue> {
     }
 
     // `[String: Int](...)` — DictionaryExpr used as constructor
-    if let dict = expr.as(DictionaryExprSyntax.self) {
-      return dict.trimmedDescription
+    if let dictionaryExpr = expr.as(DictionaryExprSyntax.self) {
+      return dictionaryExpr.trimmedDescription
     }
 
     return nil

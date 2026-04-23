@@ -105,9 +105,9 @@ final class PreferFinalClasses: RewriteSyntaxRule<BasicRuleValue> {
       node.leadingTrivia.pieces
       .compactMap { piece -> String? in
         switch piece {
-        case .docLineComment(let t), .docBlockComment(let t), .lineComment(let t),
-          .blockComment(let t):
-          return t
+        case .docLineComment(let text), .docBlockComment(let text), .lineComment(let text),
+          .blockComment(let text):
+          return text
         default: return nil
         }
       }
@@ -133,20 +133,20 @@ final class PreferFinalClasses: RewriteSyntaxRule<BasicRuleValue> {
   }
 
   private func replaceOpenModifier(in decl: DeclSyntax) -> DeclSyntax? {
-    if var d = decl.as(FunctionDeclSyntax.self), let m = openToPublic(d.modifiers) {
-      d.modifiers = m; return DeclSyntax(d)
+    if var funcDecl = decl.as(FunctionDeclSyntax.self), let modifiers = openToPublic(funcDecl.modifiers) {
+      funcDecl.modifiers = modifiers; return DeclSyntax(funcDecl)
     }
-    if var d = decl.as(VariableDeclSyntax.self), let m = openToPublic(d.modifiers) {
-      d.modifiers = m; return DeclSyntax(d)
+    if var varDecl = decl.as(VariableDeclSyntax.self), let modifiers = openToPublic(varDecl.modifiers) {
+      varDecl.modifiers = modifiers; return DeclSyntax(varDecl)
     }
-    if var d = decl.as(SubscriptDeclSyntax.self), let m = openToPublic(d.modifiers) {
-      d.modifiers = m; return DeclSyntax(d)
+    if var subscriptDecl = decl.as(SubscriptDeclSyntax.self), let modifiers = openToPublic(subscriptDecl.modifiers) {
+      subscriptDecl.modifiers = modifiers; return DeclSyntax(subscriptDecl)
     }
-    if var d = decl.as(InitializerDeclSyntax.self), let m = openToPublic(d.modifiers) {
-      d.modifiers = m; return DeclSyntax(d)
+    if var initDecl = decl.as(InitializerDeclSyntax.self), let modifiers = openToPublic(initDecl.modifiers) {
+      initDecl.modifiers = modifiers; return DeclSyntax(initDecl)
     }
-    if var d = decl.as(TypeAliasDeclSyntax.self), let m = openToPublic(d.modifiers) {
-      d.modifiers = m; return DeclSyntax(d)
+    if var typeAliasDecl = decl.as(TypeAliasDeclSyntax.self), let modifiers = openToPublic(typeAliasDecl.modifiers) {
+      typeAliasDecl.modifiers = modifiers; return DeclSyntax(typeAliasDecl)
     }
     return nil
   }

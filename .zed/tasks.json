@@ -3,5 +3,10 @@
     "label": "Install App",
     "command": "./scripts/install.sh",
     "use_new_terminal": false
+  },
+  {
+    "label": "Link Xcode swift-format",
+    "command": "sudo ln -sf /opt/homebrew/bin/sm /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swift-format",
+    "use_new_terminal": true
   }
 ]

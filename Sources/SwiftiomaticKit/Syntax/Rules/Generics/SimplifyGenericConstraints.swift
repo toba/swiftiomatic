@@ -136,17 +136,17 @@ final class SimplifyGenericConstraints: RewriteSyntaxRule<BasicRuleValue> {
     } else {
       var newReqs = [GenericRequirementSyntax]()
       for (i, req) in remainingRequirements.enumerated() {
-        var r = req
+        var modified = req
         if i == 0 {
           // Strip leading trivia — the where keyword provides the space
-          r.leadingTrivia = []
+          modified.leadingTrivia = []
         }
         if i == remainingRequirements.count - 1 {
-          r.trailingComma = nil
+          modified.trailingComma = nil
           // Preserve the trailing trivia from the original where clause (e.g. space before `{`)
-          r.trailingTrivia = whereClause.trailingTrivia
+          modified.trailingTrivia = whereClause.trailingTrivia
         }
-        newReqs.append(r)
+        newReqs.append(modified)
       }
       result[keyPath: whereClauseKeyPath] = whereClause.with(
         \.requirements, GenericRequirementListSyntax(newReqs))

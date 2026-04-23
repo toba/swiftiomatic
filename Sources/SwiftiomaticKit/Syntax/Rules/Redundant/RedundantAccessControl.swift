@@ -209,26 +209,26 @@ final class RedundantAccessControl: RewriteSyntaxRule<BasicRuleValue> {
 
     private func rewrittenDeclForPublic(_ decl: DeclSyntax) -> DeclSyntax {
         switch Syntax(decl).as(SyntaxEnum.self) {
-        case .functionDecl(let d):
-            return DeclSyntax(removePublic(from: d, keywordKeyPath: \.funcKeyword))
-        case .variableDecl(let d):
-            return DeclSyntax(removePublic(from: d, keywordKeyPath: \.bindingSpecifier))
-        case .classDecl(let d):
-            return DeclSyntax(removePublic(from: d, keywordKeyPath: \.classKeyword))
-        case .structDecl(let d):
-            return DeclSyntax(removePublic(from: d, keywordKeyPath: \.structKeyword))
-        case .enumDecl(let d):
-            return DeclSyntax(removePublic(from: d, keywordKeyPath: \.enumKeyword))
-        case .protocolDecl(let d):
-            return DeclSyntax(removePublic(from: d, keywordKeyPath: \.protocolKeyword))
-        case .typeAliasDecl(let d):
-            return DeclSyntax(removePublic(from: d, keywordKeyPath: \.typealiasKeyword))
-        case .initializerDecl(let d):
-            return DeclSyntax(removePublic(from: d, keywordKeyPath: \.initKeyword))
-        case .subscriptDecl(let d):
-            return DeclSyntax(removePublic(from: d, keywordKeyPath: \.subscriptKeyword))
-        case .actorDecl(let d):
-            return DeclSyntax(removePublic(from: d, keywordKeyPath: \.actorKeyword))
+        case .functionDecl(let functionDecl):
+            return DeclSyntax(removePublic(from: functionDecl, keywordKeyPath: \.funcKeyword))
+        case .variableDecl(let variableDecl):
+            return DeclSyntax(removePublic(from: variableDecl, keywordKeyPath: \.bindingSpecifier))
+        case .classDecl(let classDecl):
+            return DeclSyntax(removePublic(from: classDecl, keywordKeyPath: \.classKeyword))
+        case .structDecl(let structDecl):
+            return DeclSyntax(removePublic(from: structDecl, keywordKeyPath: \.structKeyword))
+        case .enumDecl(let enumDecl):
+            return DeclSyntax(removePublic(from: enumDecl, keywordKeyPath: \.enumKeyword))
+        case .protocolDecl(let protocolDecl):
+            return DeclSyntax(removePublic(from: protocolDecl, keywordKeyPath: \.protocolKeyword))
+        case .typeAliasDecl(let typeAliasDecl):
+            return DeclSyntax(removePublic(from: typeAliasDecl, keywordKeyPath: \.typealiasKeyword))
+        case .initializerDecl(let initializerDecl):
+            return DeclSyntax(removePublic(from: initializerDecl, keywordKeyPath: \.initKeyword))
+        case .subscriptDecl(let subscriptDecl):
+            return DeclSyntax(removePublic(from: subscriptDecl, keywordKeyPath: \.subscriptKeyword))
+        case .actorDecl(let actorDecl):
+            return DeclSyntax(removePublic(from: actorDecl, keywordKeyPath: \.actorKeyword))
         default: return decl
         }
     }
@@ -263,82 +263,82 @@ final class RedundantAccessControl: RewriteSyntaxRule<BasicRuleValue> {
         -> DeclSyntax
     {
         switch Syntax(decl).as(SyntaxEnum.self) {
-        case .functionDecl(let d):
+        case .functionDecl(let functionDecl):
             return DeclSyntax(
                 removeExtensionACLModifier(
-                    from: d,
+                    from: functionDecl,
                     keyword: extensionKeyword,
                     keywordKeyPath: \.funcKeyword
                 )
             )
-        case .variableDecl(let d):
+        case .variableDecl(let variableDecl):
             return DeclSyntax(
                 removeExtensionACLModifier(
-                    from: d,
+                    from: variableDecl,
                     keyword: extensionKeyword,
                     keywordKeyPath: \.bindingSpecifier
                 )
             )
-        case .classDecl(let d):
+        case .classDecl(let classDecl):
             return DeclSyntax(
                 removeExtensionACLModifier(
-                    from: d,
+                    from: classDecl,
                     keyword: extensionKeyword,
                     keywordKeyPath: \.classKeyword
                 )
             )
-        case .structDecl(let d):
+        case .structDecl(let structDecl):
             return DeclSyntax(
                 removeExtensionACLModifier(
-                    from: d,
+                    from: structDecl,
                     keyword: extensionKeyword,
                     keywordKeyPath: \.structKeyword
                 )
             )
-        case .enumDecl(let d):
+        case .enumDecl(let enumDecl):
             return DeclSyntax(
                 removeExtensionACLModifier(
-                    from: d,
+                    from: enumDecl,
                     keyword: extensionKeyword,
                     keywordKeyPath: \.enumKeyword
                 )
             )
-        case .protocolDecl(let d):
+        case .protocolDecl(let protocolDecl):
             return DeclSyntax(
                 removeExtensionACLModifier(
-                    from: d,
+                    from: protocolDecl,
                     keyword: extensionKeyword,
                     keywordKeyPath: \.protocolKeyword
                 )
             )
-        case .typeAliasDecl(let d):
+        case .typeAliasDecl(let typeAliasDecl):
             return DeclSyntax(
                 removeExtensionACLModifier(
-                    from: d,
+                    from: typeAliasDecl,
                     keyword: extensionKeyword,
                     keywordKeyPath: \.typealiasKeyword
                 )
             )
-        case .initializerDecl(let d):
+        case .initializerDecl(let initializerDecl):
             return DeclSyntax(
                 removeExtensionACLModifier(
-                    from: d,
+                    from: initializerDecl,
                     keyword: extensionKeyword,
                     keywordKeyPath: \.initKeyword
                 )
             )
-        case .subscriptDecl(let d):
+        case .subscriptDecl(let subscriptDecl):
             return DeclSyntax(
                 removeExtensionACLModifier(
-                    from: d,
+                    from: subscriptDecl,
                     keyword: extensionKeyword,
                     keywordKeyPath: \.subscriptKeyword
                 )
             )
-        case .actorDecl(let d):
+        case .actorDecl(let actorDecl):
             return DeclSyntax(
                 removeExtensionACLModifier(
-                    from: d,
+                    from: actorDecl,
                     keyword: extensionKeyword,
                     keywordKeyPath: \.actorKeyword
                 )
@@ -486,16 +486,16 @@ final class RedundantAccessControl: RewriteSyntaxRule<BasicRuleValue> {
     /// Returns true if the declaration body contains nested type declarations.
     private func declHasNestedTypes(_ decl: DeclSyntax) -> Bool {
         let members: MemberBlockItemListSyntax?
-        if let s = decl.as(StructDeclSyntax.self) {
-            members = s.memberBlock.members
-        } else if let c = decl.as(ClassDeclSyntax.self) {
-            members = c.memberBlock.members
-        } else if let e = decl.as(EnumDeclSyntax.self) {
-            members = e.memberBlock.members
-        } else if let a = decl.as(ActorDeclSyntax.self) {
-            members = a.memberBlock.members
-        } else if let x = decl.as(ExtensionDeclSyntax.self) {
-            members = x.memberBlock.members
+        if let structDecl = decl.as(StructDeclSyntax.self) {
+            members = structDecl.memberBlock.members
+        } else if let classDecl = decl.as(ClassDeclSyntax.self) {
+            members = classDecl.memberBlock.members
+        } else if let enumDecl = decl.as(EnumDeclSyntax.self) {
+            members = enumDecl.memberBlock.members
+        } else if let actorDecl = decl.as(ActorDeclSyntax.self) {
+            members = actorDecl.memberBlock.members
+        } else if let extensionDecl = decl.as(ExtensionDeclSyntax.self) {
+            members = extensionDecl.memberBlock.members
         } else {
             return false
         }

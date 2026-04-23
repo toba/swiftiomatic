@@ -110,15 +110,15 @@ final class PreferAngleBracketExtensions: RewriteSyntaxRule<BasicRuleValue> {
       // Rebuild where clause with remaining requirements and correct commas
       var newReqs = [GenericRequirementSyntax]()
       for (i, req) in remainingRequirements.enumerated() {
-        var r = req
+        var modified = req
         if i == 0 {
           // Strip leading trivia — the where keyword provides the space
-          r.leadingTrivia = []
+          modified.leadingTrivia = []
         }
         if i == remainingRequirements.count - 1 {
-          r.trailingComma = nil
+          modified.trailingComma = nil
         }
-        newReqs.append(r)
+        newReqs.append(modified)
       }
       result.genericWhereClause = whereClause.with(
         \.requirements, GenericRequirementListSyntax(newReqs))

@@ -358,8 +358,8 @@ package struct PatternLetConfiguration: SyntaxRuleValue {
     package init(from decoder: any Decoder) throws {
         self.init()
         let container = try decoder.container(keyedBy: CodingKeys.self)
-        if let v = try container.decodeIfPresent(Bool.self, forKey: .rewrite) { rewrite = v }
-        if let v = try container.decodeIfPresent(Lint.self, forKey: .lint) { lint = v }
+        if let rewrite = try container.decodeIfPresent(Bool.self, forKey: .rewrite) { self.rewrite = rewrite }
+        if let lint = try container.decodeIfPresent(Lint.self, forKey: .lint) { self.lint = lint }
         placement =
             try container.decodeIfPresent(Placement.self, forKey: .placement)
             ?? .eachBinding

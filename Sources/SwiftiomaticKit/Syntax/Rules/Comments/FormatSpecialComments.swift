@@ -168,10 +168,10 @@ final class FormatSpecialComments: RewriteSyntaxRule<BasicRuleValue> {
     /// Fix the body of a comment (after prefix and leading spaces) for tag formatting.
     /// Returns the fixed body, or nil if no change needed.
     private func fixCommentBody(_ body: String) -> String? {
-        var s = body
+        var normalized = body
 
         // Apply prefix replacements for tag normalization (case-insensitive)
-        let lowered = s.lowercased()
+        let lowered = normalized.lowercased()
         let replacements: [(prefix: String, replacement: String)] = [
             ("todo:", "TODO:"),
             ("todo :", "TODO:"),
@@ -183,17 +183,17 @@ final class FormatSpecialComments: RewriteSyntaxRule<BasicRuleValue> {
             ("mark -", "MARK: -"),
         ]
 
-        for r in replacements where lowered.hasPrefix(r.prefix) {
-            s = r.replacement + s.dropFirst(r.prefix.count)
+        for replacement in replacements where lowered.hasPrefix(replacement.prefix) {
+            normalized = replacement.replacement + normalized.dropFirst(replacement.prefix.count)
             break
         }
 
         // Find tag at start
-        guard let tag = ["TODO", "MARK", "FIXME"].first(where: { s.hasPrefix($0) }) else {
+        guard let tag = ["TODO", "MARK", "FIXME"].first(where: { normalized.hasPrefix($0) }) else {
             return nil
         }
 
-        var suffix = String(s[s.index(s.startIndex, offsetBy: tag.count)...])
+        var suffix = String(normalized[normalized.index(normalized.startIndex, offsetBy: tag.count)...])
 
         // If not followed by a space or colon, don't mess with it (may be custom format)
         if let first = suffix.unicodeScalars.first, !" :".unicodeScalars.contains(first) {

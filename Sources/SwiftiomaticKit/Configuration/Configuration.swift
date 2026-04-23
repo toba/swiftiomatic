@@ -7,29 +7,29 @@ package struct Configuration: Sendable, Equatable {
         guard lhs.version == rhs.version else { return false }
         // Compare all layout settings via their LayoutRule types.
         for entry in settingEntries {
-            let lKey = AnyCodingKey(entry.key)
-            let tempL = JSONValueEncoder()
-            var cL = tempL.container(keyedBy: AnyCodingKey.self)
-            let tempR = JSONValueEncoder()
-            var cR = tempR.container(keyedBy: AnyCodingKey.self)
+            let codingKey = AnyCodingKey(entry.key)
+            let lhsEncoder = JSONValueEncoder()
+            var lhsContainer = lhsEncoder.container(keyedBy: AnyCodingKey.self)
+            let rhsEncoder = JSONValueEncoder()
+            var rhsContainer = rhsEncoder.container(keyedBy: AnyCodingKey.self)
             do {
-                try entry.encode(lhs, &cL, lKey)
-                try entry.encode(rhs, &cR, lKey)
+                try entry.encode(lhs, &lhsContainer, codingKey)
+                try entry.encode(rhs, &rhsContainer, codingKey)
             } catch { return false }
-            guard tempL.dict == tempR.dict else { return false }
+            guard lhsEncoder.values == rhsEncoder.values else { return false }
         }
         // Compare all rule values.
         for entry in ruleEntries {
-            let lKey = AnyCodingKey(entry.key)
-            let tempL = JSONValueEncoder()
-            var cL = tempL.container(keyedBy: AnyCodingKey.self)
-            let tempR = JSONValueEncoder()
-            var cR = tempR.container(keyedBy: AnyCodingKey.self)
+            let codingKey = AnyCodingKey(entry.key)
+            let lhsEncoder = JSONValueEncoder()
+            var lhsContainer = lhsEncoder.container(keyedBy: AnyCodingKey.self)
+            let rhsEncoder = JSONValueEncoder()
+            var rhsContainer = rhsEncoder.container(keyedBy: AnyCodingKey.self)
             do {
-                try entry.encode(lhs, &cL, lKey)
-                try entry.encode(rhs, &cR, lKey)
+                try entry.encode(lhs, &lhsContainer, codingKey)
+                try entry.encode(rhs, &rhsContainer, codingKey)
             } catch { return false }
-            guard tempL.dict == tempR.dict else { return false }
+            guard lhsEncoder.values == rhsEncoder.values else { return false }
         }
         return true
     }
@@ -46,7 +46,7 @@ package struct Configuration: Sendable, Equatable {
     package subscript<C: Configurable>(_: C.Type = C.self) -> C.Value {
         get {
             if let group = C.group {
-                if let v = values["\(group.key).\(C.key)"] as? C.Value { return v }
+                if let value = values["\(group.key).\(C.key)"] as? C.Value { return value }
             }
             return values[C.key] as? C.Value ?? C.defaultValue
         }
@@ -288,23 +288,23 @@ extension Configuration: Codable {
 
             // Config group: decode grouped settings + rules.
             if let groupKey = ConfigurationGroup.Key(rawValue: name) {
-                let obj = try root.nestedContainer(keyedBy: AnyCodingKey.self, forKey: key)
+                let groupContainer = try root.nestedContainer(keyedBy: AnyCodingKey.self, forKey: key)
 
                 // Decode group-owned settings.
                 for entry in Self.settingEntries where entry.groupKey == groupKey {
                     let codingKey = AnyCodingKey(entry.key)
-                    guard obj.contains(codingKey) else { continue }
-                    try entry.decode(obj, codingKey, &config)
+                    guard groupContainer.contains(codingKey) else { continue }
+                    try entry.decode(groupContainer, codingKey, &config)
                 }
 
                 // Decode rules within the group.
                 if let mappings = ConfigurationRegistry.groupRules[ConfigurationGroup(groupKey)] {
                     for rule in mappings {
                         let ruleKey = AnyCodingKey(rule)
-                        guard obj.contains(ruleKey) else { continue }
-                        let qualified = "\(groupKey.rawValue).\(rule)"
-                        if let entry = Self.rulesByKey[qualified] {
-                            try entry.decode(obj, ruleKey, &config)
+                        guard groupContainer.contains(ruleKey) else { continue }
+                        let qualifiedKey = "\(groupKey.rawValue).\(rule)"
+                        if let entry = Self.rulesByKey[qualifiedKey] {
+                            try entry.decode(groupContainer, ruleKey, &config)
                         }
                     }
                 }
@@ -338,34 +338,34 @@ extension Configuration: Codable {
 
         // Encode config groups.
         for group in ConfigurationGroup.Key.allCases {
-            let cfgGroup = ConfigurationGroup(group)
+            let configurationGroup = ConfigurationGroup(group)
             let groupSettings = Self.settingEntries.filter { $0.groupKey == group }
-            let groupRuleNames = ConfigurationRegistry.groupRules[cfgGroup] ?? []
+            let groupRuleNames = ConfigurationRegistry.groupRules[configurationGroup] ?? []
 
             guard !groupSettings.isEmpty || !groupRuleNames.isEmpty else { continue }
 
-            var dict: [String: JSONValue] = [:]
+            var groupValues: [String: JSONValue] = [:]
 
             // Encode group-owned settings.
             for entry in groupSettings {
-                let tempEncoder = JSONValueEncoder()
-                var tempContainer = tempEncoder.container(keyedBy: AnyCodingKey.self)
-                try entry.encode(self, &tempContainer, AnyCodingKey(entry.key))
-                for (k, v) in tempEncoder.dict { dict[k] = v }
+                let settingEncoder = JSONValueEncoder()
+                var settingContainer = settingEncoder.container(keyedBy: AnyCodingKey.self)
+                try entry.encode(self, &settingContainer, AnyCodingKey(entry.key))
+                for (key, value) in settingEncoder.values { groupValues[key] = value }
             }
 
             // Encode rules within the group.
             for ruleName in groupRuleNames {
-                let qualified = "\(group.rawValue).\(ruleName)"
-                if let entry = Self.rulesByKey[qualified] {
-                    let tempEncoder = JSONValueEncoder()
-                    var tempContainer = tempEncoder.container(keyedBy: AnyCodingKey.self)
-                    try entry.encode(self, &tempContainer, AnyCodingKey(ruleName))
-                    for (k, v) in tempEncoder.dict { dict[k] = v }
+                let qualifiedKey = "\(group.rawValue).\(ruleName)"
+                if let entry = Self.rulesByKey[qualifiedKey] {
+                    let ruleEncoder = JSONValueEncoder()
+                    var ruleContainer = ruleEncoder.container(keyedBy: AnyCodingKey.self)
+                    try entry.encode(self, &ruleContainer, AnyCodingKey(ruleName))
+                    for (key, value) in ruleEncoder.values { groupValues[key] = value }
                 }
             }
 
-            try root.encode(JSONValue.object(dict), forKey: AnyCodingKey(group.rawValue))
+            try root.encode(JSONValue.object(groupValues), forKey: AnyCodingKey(group.rawValue))
         }
     }
 
@@ -379,7 +379,7 @@ extension Configuration: Codable {
 final class JSONValueEncoder: Encoder {
     var codingPath: [CodingKey] = []
     var userInfo: [CodingUserInfoKey: Any] = [:]
-    var dict: [String: JSONValue] = [:]
+    var values: [String: JSONValue] = [:]
 
     func container<Key: CodingKey>(keyedBy _: Key.Type) -> KeyedEncodingContainer<Key> {
         KeyedEncodingContainer(JSONValueKeyedContainer<Key>(encoder: self))
@@ -400,10 +400,10 @@ final class JSONValueEncoder: Encoder {
         let encoder: JSONValueEncoder
         var codingPath: [CodingKey] = []
         mutating func encodeNil(forKey key: Key) {
-            encoder.dict[key.stringValue] = .null
+            encoder.values[key.stringValue] = .null
         }
         mutating func encode<T: Encodable>(_ value: T, forKey key: Key) throws {
-            encoder.dict[key.stringValue] = try JSONValueEncoder.toJSONValue(value)
+            encoder.values[key.stringValue] = try JSONValueEncoder.toJSONValue(value)
         }
         mutating func nestedContainer<NestedKey: CodingKey>(
             keyedBy _: NestedKey.Type,
@@ -420,20 +420,20 @@ final class JSONValueEncoder: Encoder {
         let encoder: JSONValueEncoder
         var codingPath: [CodingKey] = []
         mutating func encodeNil() {
-            encoder.dict["_singleValue"] = .null
+            encoder.values["_singleValue"] = .null
         }
         mutating func encode<T: Encodable>(_ value: T) throws {
-            encoder.dict["_singleValue"] = try JSONValueEncoder.toJSONValue(value)
+            encoder.values["_singleValue"] = try JSONValueEncoder.toJSONValue(value)
         }
     }
 
     /// Converts a primitive or complex `Encodable` value to `JSONValue`.
     fileprivate static func toJSONValue<T: Encodable>(_ value: T) throws -> JSONValue {
         switch value {
-            case let v as String: .string(v)
-            case let v as Bool: .bool(v)
-            case let v as any FixedWidthInteger: .int(Int(v))
-            case let v as any BinaryFloatingPoint: .double(Double(v))
+            case let string as String: .string(string)
+            case let bool as Bool: .bool(bool)
+            case let integer as any FixedWidthInteger: .int(Int(integer))
+            case let floating as any BinaryFloatingPoint: .double(Double(floating))
             default: try encodeToJSONValue(value)
         }
     }

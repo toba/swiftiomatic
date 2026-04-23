@@ -12,7 +12,7 @@
 		"declarations": { "lint": "warn", "rewrite": true }
 	},
 	"wrap": {
-		"singleLineBodies": { "lint": "no", "mode": "wrap", "rewrite": false },
+		"singleLineBodies": { "lint": "no", "mode": "wrap", "rewrite": true },
 		"singleLineComments": { "lint": "no", "rewrite": false },
 		"conditionalAssignment": { "lint": "no", "rewrite": false },
 		"compoundCaseStatements": { "lint": "no", "rewrite": false },
@@ -21,9 +21,9 @@
 		"prioritizeKeepingFunctionOutputTogether": false
 	},
 	"hoist": {
-		"caseLet": { "lint": "warn", "rewrite": true, "placement": "eachBinding" },
-		"nestedTry": { "lint": "warn", "rewrite": true },
-		"nestedAwait": { "lint": "warn", "rewrite": true },
+		"caseLet": { "lint": "no", "rewrite": true, "placement": "eachBinding" },
+		"nestedTry": { "lint": "no", "rewrite": true },
+		"nestedAwait": { "lint": "no", "rewrite": true },
 		"indirectEnum": { "lint": "warn", "rewrite": true }
 	},
 	"types": {
@@ -49,8 +49,8 @@
 	},
 	"idioms": {
 		"preferFileID": { "lint": "no", "rewrite": false },
-		"preferIsEmpty": { "lint": "no", "rewrite": false },
-		"preferKeyPath": { "lint": "no", "rewrite": false },
+		"preferIsEmpty": { "lint": "warn", "rewrite": true },
+		"preferKeyPath": { "lint": "warn", "rewrite": false },
 		"preferCountWhere": { "lint": "warn", "rewrite": true },
 		"noExplicitOwnership": { "lint": "no", "rewrite": false },
 		"noAssignmentInExpressions": {

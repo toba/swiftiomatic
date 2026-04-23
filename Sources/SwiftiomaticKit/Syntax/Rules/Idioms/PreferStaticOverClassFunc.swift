@@ -36,10 +36,10 @@ final class PreferStaticOverClassFunc: RewriteSyntaxRule<BasicRuleValue> {
     }
 
     private func replaceClassWithStatic(in decl: DeclSyntax) -> DeclSyntax {
-        func replace<D: DeclSyntaxProtocol & WithModifiersSyntax>(_ d: D) -> DeclSyntax {
-            var result = d
+        func replace<D: DeclSyntaxProtocol & WithModifiersSyntax>(_ node: D) -> DeclSyntax {
+            var result = node
             result.modifiers = DeclModifierListSyntax(
-                d.modifiers.map { mod in
+                node.modifiers.map { mod in
                     guard mod.name.tokenKind == .keyword(.class) else { return mod }
                     return mod.with(
                         \.name,
@@ -51,9 +51,9 @@ final class PreferStaticOverClassFunc: RewriteSyntaxRule<BasicRuleValue> {
                 })
             return DeclSyntax(result)
         }
-        if let d = decl.as(FunctionDeclSyntax.self) { return replace(d) }
-        if let d = decl.as(VariableDeclSyntax.self) { return replace(d) }
-        if let d = decl.as(SubscriptDeclSyntax.self) { return replace(d) }
+        if let funcDecl = decl.as(FunctionDeclSyntax.self) { return replace(funcDecl) }
+        if let varDecl = decl.as(VariableDeclSyntax.self) { return replace(varDecl) }
+        if let subscriptDecl = decl.as(SubscriptDeclSyntax.self) { return replace(subscriptDecl) }
         return decl
     }
 }

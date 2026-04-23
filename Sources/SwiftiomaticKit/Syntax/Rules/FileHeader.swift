@@ -16,10 +16,10 @@ import SwiftSyntax
 final class FileHeader: RewriteSyntaxRule<FileHeaderConfiguration> {
 
   override class var defaultValue: FileHeaderConfiguration {
-    var v = FileHeaderConfiguration()
-    v.rewrite = false
-    v.lint = .no
-    return v
+    var config = FileHeaderConfiguration()
+    config.rewrite = false
+    config.lint = .no
+    return config
   }
 
   override func visit(_ node: SourceFileSyntax) -> SourceFileSyntax {
@@ -170,8 +170,8 @@ package struct FileHeaderConfiguration: SyntaxRuleValue {
   package init(from decoder: any Decoder) throws {
     self.init()
     let container = try decoder.container(keyedBy: CodingKeys.self)
-    if let v = try container.decodeIfPresent(Bool.self, forKey: .rewrite) { self.rewrite = v }
-    if let v = try container.decodeIfPresent(Lint.self, forKey: .lint) { self.lint = v }
+    if let rewrite = try container.decodeIfPresent(Bool.self, forKey: .rewrite) { self.rewrite = rewrite }
+    if let lint = try container.decodeIfPresent(Lint.self, forKey: .lint) { self.lint = lint }
     self.text = try container.decodeIfPresent(String.self, forKey: .text)
   }
 }
