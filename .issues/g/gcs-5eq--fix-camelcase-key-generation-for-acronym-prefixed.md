@@ -1,15 +1,15 @@
 ---
 # gcs-5eq
 title: Fix camelCase key generation for acronym-prefixed rule names
-status: ready
+status: review
 type: bug
 priority: normal
 created_at: 2026-04-24T15:22:59Z
-updated_at: 2026-04-24T15:22:59Z
+updated_at: 2026-04-24T15:32:16Z
 sync:
     github:
         issue_number: "367"
-        synced_at: "2026-04-24T15:23:37Z"
+        synced_at: "2026-04-24T16:08:52Z"
 ---
 
 Rule key generation produces incorrect camelCase when a rule name begins with an acronym. For example, `URLMacro` becomes `uRLMacro` instead of the correct `urlMacro`.
@@ -23,6 +23,6 @@ Examples:
 
 ## Plan
 
-- [ ] Find the key generation code
-- [ ] Fix with regex to handle leading acronyms
+- [x] Find the key generation code
+- [x] Fix with regex to handle leading acronyms
 - [ ] Verify existing rule keys are unaffected or corrected

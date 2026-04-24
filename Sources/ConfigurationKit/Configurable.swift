@@ -1,9 +1,14 @@
-/// Derives a configuration key from a type name by lowercasing the first character.
+/// Derives a lowerCamelCase configuration key from a PascalCase type name.
+///
+/// Lowercases a leading uppercase run, stopping before the last capital when it
+/// begins the next word: `URLMacro` → `urlMacro`, `BlankLines` → `blankLines`.
 ///
 /// This is the single source of truth for the default key derivation used by both
 /// `Configurable.key` (runtime) and `DetectedRule.configKey` (build-time code generation).
+private nonisolated(unsafe) let leadingUppercase = /^[A-Z]+(?=[A-Z][a-z])|^[A-Z]/
+
 package func configurationKey(forTypeName name: String) -> String {
-    name.prefix(1).lowercased() + name.dropFirst()
+    name.replacing(leadingUppercase) { $0.output.lowercased() }
 }
 
 /// A configurable item with a key, default value, and optional group membership.

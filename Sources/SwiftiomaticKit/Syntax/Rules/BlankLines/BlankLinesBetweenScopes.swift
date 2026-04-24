@@ -40,6 +40,7 @@ final class BlankLinesBetweenScopes: RewriteSyntaxRule<BasicRuleValue> {
         let original = Array(statements)
         var items = original
         var modified = false
+        let braceIsBlank = context.configuration[ClosingBraceAsBlankLine.self]
 
         for i in 0..<(original.count - 1) {
             guard case .decl(let decl) = original[i].item,
@@ -47,6 +48,7 @@ final class BlankLinesBetweenScopes: RewriteSyntaxRule<BasicRuleValue> {
             else { continue }
             let nextIndex = i + 1
             guard !original[nextIndex].leadingTrivia.hasBlankLine else { continue }
+            if braceIsBlank { continue }
 
             diagnose(.insertBlankLineAfterScope, on: original[nextIndex].item)
             var next = original[nextIndex]
@@ -70,10 +72,13 @@ final class BlankLinesBetweenScopes: RewriteSyntaxRule<BasicRuleValue> {
         var items = original
         var modified = false
 
+        let braceIsBlank = context.configuration[ClosingBraceAsBlankLine.self]
+
         for i in 0..<(original.count - 1) {
             guard hasDeclMultiLineBody(original[i].decl) else { continue }
             let nextIndex = i + 1
             guard !original[nextIndex].leadingTrivia.hasBlankLine else { continue }
+            if braceIsBlank { continue }
 
             diagnose(.insertBlankLineAfterScope, on: diagTargets[nextIndex].decl)
             var next = original[nextIndex]

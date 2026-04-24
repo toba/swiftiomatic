@@ -346,6 +346,97 @@ struct BlankLinesBeforeControlFlowTests: RuleTesting {
     )
   }
 
+  @Test func closingBraceAsBlankLineSkipsInsertion() {
+    var config = Configuration.forTesting(enabledRule: BlankLinesBeforeControlFlow.self.key)
+    config[ClosingBraceAsBlankLine.self] = true
+
+    assertFormatting(
+      BlankLinesBeforeControlFlow.self,
+      input: """
+        func test() {
+            if condition {
+                doSomething()
+            }
+            for item in items {
+                process(item)
+            }
+        }
+        """,
+      expected: """
+        func test() {
+            if condition {
+                doSomething()
+            }
+            for item in items {
+                process(item)
+            }
+        }
+        """,
+      findings: [],
+      configuration: config
+    )
+  }
+
+  @Test func closingBraceAsBlankLineDefaultStillInserts() {
+    assertFormatting(
+      BlankLinesBeforeControlFlow.self,
+      input: """
+        func test() {
+            if condition {
+                doSomething()
+            }
+            1️⃣for item in items {
+                process(item)
+            }
+        }
+        """,
+      expected: """
+        func test() {
+            if condition {
+                doSomething()
+            }
+
+            for item in items {
+                process(item)
+            }
+        }
+        """,
+      findings: [
+        FindingSpec("1️⃣", message: "insert blank line before control flow statement"),
+      ]
+    )
+  }
+
+  @Test func closingBraceAsBlankLineNonBracePrevious() {
+    var config = Configuration.forTesting(enabledRule: BlankLinesBeforeControlFlow.self.key)
+    config[ClosingBraceAsBlankLine.self] = true
+
+    assertFormatting(
+      BlankLinesBeforeControlFlow.self,
+      input: """
+        func test() {
+            let x = getValue()
+            1️⃣for item in items {
+                process(item)
+            }
+        }
+        """,
+      expected: """
+        func test() {
+            let x = getValue()
+
+            for item in items {
+                process(item)
+            }
+        }
+        """,
+      findings: [
+        FindingSpec("1️⃣", message: "insert blank line before control flow statement"),
+      ],
+      configuration: config
+    )
+  }
+
   @Test func nestedControlFlow() {
     assertFormatting(
       BlankLinesBeforeControlFlow.self,

@@ -248,6 +248,10 @@
           ],
           "description" : "Insert a blank line after declarations with multi-line bodies.\n\nWhen a type declaration (class, struct, enum, extension, protocol, actor) or function\ndeclaration has a multi-line body, a blank line after it improves readability by\nvisually separating it from the next declaration. Single-line (inline) bodies are\nexcluded. This rule operates at the top level and inside type member blocks — not\ninside function bodies (if/for/while don't need separation).\n\nLint: If a multi-line scoped declaration is not followed by a blank line, a lint\n      warning is raised.\n\nFormat: A blank line is inserted after the declaration.\n [opt-in]"
         },
+        "closingBraceAsBlankLine" : {
+          "description" : "Treat a solitary closing brace as a blank line.",
+          "type" : "boolean"
+        },
         "consistentSwitchCaseSpacing" : {
           "allOf" : [
             {

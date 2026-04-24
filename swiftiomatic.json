@@ -154,6 +154,7 @@
 		"beforeAndAfterMark": { "lint": "no", "rewrite": false },
 		"afterGuardStatements": { "lint": "no", "rewrite": false },
 		"betweenChainedFunctions": { "lint": "no", "rewrite": false },
+		"closingBraceAsBlankLine": true,
 		"consistentSwitchCaseSpacing": { "lint": "no", "rewrite": false },
 		"noEmptyLinesOpeningClosingBraces": { "lint": "no", "rewrite": false }
 	},

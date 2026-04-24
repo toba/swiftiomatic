@@ -21,6 +21,7 @@ package enum ConfigurationRegistry {
         BeforeEachGenericRequirement.self,
         BeforeGuardConditions.self,
         BetweenDeclarationAttributes.self,
+        ClosingBraceAsBlankLine.self,
         IndentBlankLines.self,
         IndentConditionalCompilationBlocks.self,
         IndentationSetting.self,

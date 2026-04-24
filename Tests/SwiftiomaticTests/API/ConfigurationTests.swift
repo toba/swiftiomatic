@@ -1,3 +1,4 @@
+@testable import ConfigurationKit
 import Foundation
 @testable import SwiftiomaticKit
 import Testing
@@ -181,6 +182,21 @@ struct ConfigurationTests {
     #expect(config[RedundantSelf.self].lint == .error)
     #expect(config[RedundantInit.self].lint == .no)
     #expect(config[RedundantBackticks.self].lint == .warn)
+  }
+
+  // MARK: - Key derivation
+
+  @Test(arguments: [
+    ("BlankLines", "blankLines"),
+    ("URLMacro", "urlMacro"),
+    ("ASCIIIdentifiers", "asciiIdentifiers"),
+    ("HTTPHeader", "httpHeader"),
+    ("SortImports", "sortImports"),
+    ("URL", "url"),
+    ("A", "a"),
+  ])
+  func configurationKeyDerivation(typeName: String, expected: String) {
+    #expect(configurationKey(forTypeName: typeName) == expected)
   }
 
   // MARK: - Dump and round-trip

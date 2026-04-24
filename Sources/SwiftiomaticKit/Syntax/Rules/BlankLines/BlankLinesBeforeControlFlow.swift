@@ -47,10 +47,13 @@ final class BlankLinesBeforeControlFlow: RewriteSyntaxRule<BasicRuleValue> {
         var statements = visitedItems
         var modified = false
 
+        let braceIsBlank = context.configuration[ClosingBraceAsBlankLine.self]
+
         for i in 1..<visitedItems.count {
             let item = visitedItems[i]
             guard isMultiLineControlFlow(item.item) else { continue }
             guard !item.leadingTrivia.hasBlankLine else { continue }
+            if braceIsBlank, endsSolitaryBrace(visitedItems[i - 1]) { continue }
 
             diagnose(.insertBlankLineBeforeControlFlow, on: originalItems[i].item)
             var next = item
@@ -63,6 +66,14 @@ final class BlankLinesBeforeControlFlow: RewriteSyntaxRule<BasicRuleValue> {
     }
 
     // MARK: - Helpers
+
+    /// Whether the item's last token is `}` on its own line.
+    private func endsSolitaryBrace(_ item: CodeBlockItemSyntax) -> Bool {
+        guard let lastToken = item.lastToken(viewMode: .sourceAccurate),
+            lastToken.tokenKind == .rightBrace
+        else { return false }
+        return lastToken.leadingTrivia.containsNewlines
+    }
 
     private func isMultiLineControlFlow(_ item: CodeBlockItemSyntax.Item) -> Bool {
         switch item {
