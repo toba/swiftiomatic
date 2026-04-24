@@ -102,7 +102,7 @@ Sentence-like names that could be shortened:
 | `TypeNamesShouldBeCapitalized` | `CapitalizedTypeNames` |
 | `IdentifiersMustBeASCII` | `ASCIIIdentifiers` |
 | `AlwaysUseLiteralForEmptyCollectionInit` | `EmptyCollectionLiteral` |
-| `NoAccessLevelOnExtensionDeclaration` | `NoExtensionAccessLevel` |
+| `NoAccessLevelOnExtensionDeclaration` | `ExtensionAccessLevel` |
 | `UseExplicitNilCheckInConditions` | `ExplicitNilCheck` |
 | `UseTripleSlashForDocumentationComments` | `TripleSlashDocComments` |
 | `UseLetInEveryBoundCaseVariable` | `PatternLetPlacement` |

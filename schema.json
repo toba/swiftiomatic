@@ -51,6 +51,25 @@
       "additionalProperties" : false,
       "description" : "access rule group.",
       "properties" : {
+        "extensionAccessLevel" : {
+          "allOf" : [
+            {
+              "$ref" : "#/$defs/ruleBase"
+            }
+          ],
+          "description" : "Controls placement of access level modifiers on extensions vs. their members.\n\nThe behavior of this rule is controlled by `Configuration.extensionAccessControl.placement`:\n\n- `onMembers` (default): Access levels on extensions are moved to individual members.\n- `onExtension`: When all members share the same access level, it is hoisted to the extension.\n\nLint: A lint error is raised when access control placement doesn't match the configuration.\n\nFormat: Access control modifiers are moved to match the configured placement.\n",
+          "properties" : {
+            "placement" : {
+              "default" : "onMembers",
+              "description" : "placement Options: onMembers, onExtension.",
+              "enum" : [
+                "onMembers",
+                "onExtension"
+              ],
+              "type" : "string"
+            }
+          }
+        },
         "fileScopedDeclarationPrivacy" : {
           "allOf" : [
             {
@@ -65,25 +84,6 @@
               "enum" : [
                 "private",
                 "fileprivate"
-              ],
-              "type" : "string"
-            }
-          }
-        },
-        "noExtensionAccessLevel" : {
-          "allOf" : [
-            {
-              "$ref" : "#/$defs/ruleBase"
-            }
-          ],
-          "description" : "Specifying an access level for an extension declaration is forbidden.\n\nThe behavior of this rule is controlled by `Configuration.extensionAccessControl.placement`:\n\n- `onDeclarations` (default): Access levels on extensions are moved to individual members.\n- `onExtension`: When all members share the same access level, it is hoisted to the extension.\n\nLint: A lint error is raised when access control placement doesn't match the configuration.\n\nFormat: Access control modifiers are moved to match the configured placement.\n",
-          "properties" : {
-            "placement" : {
-              "default" : "onDeclarations",
-              "description" : "placement Options: onDeclarations, onExtension.",
-              "enum" : [
-                "onDeclarations",
-                "onExtension"
               ],
               "type" : "string"
             }
@@ -432,14 +432,6 @@
       },
       "type" : "object"
     },
-    "compoundCaseStatements" : {
-      "allOf" : [
-        {
-          "$ref" : "#/$defs/ruleBase"
-        }
-      ],
-      "description" : "Comma-delimited switch case items are wrapped onto separate lines.\n\nSwitch cases with multiple patterns separated by commas are expanded so each\npattern appears on its own line, aligned after `case `.\n\nLint: A switch case with multiple comma-separated items on a single line\n      raises a warning.\n\nFormat: Each item is placed on its own line with alignment indentation.\n [opt-in]"
-    },
     "conditionalAssignment" : {
       "allOf" : [
         {
@@ -499,6 +491,14 @@
             }
           ],
           "description" : "Early exits should be used whenever possible.\n\nThis means that `if ... else { return/throw/break/continue }` constructs should be replaced by\n`guard ... else { return/throw/break/continue }` constructs in order to keep indentation levels\nlow. Specifically, code of the following form:\n\n```swift\nif condition {\n  trueBlock\n} else {\n  falseBlock\n  return/throw/break/continue\n}\n```\n\nwill be transformed into:\n\n```swift\nguard condition else {\n  falseBlock\n  return/throw/break/continue\n}\ntrueBlock\n```\n\nLint: `if ... else { return/throw/break/continue }` constructs will yield a lint error.\n\nFormat: `if ... else { return/throw/break/continue }` constructs will be replaced with\n        equivalent `guard ... else { return/throw/break/continue }` constructs.\n [opt-in]"
+        },
+        "preferTernary" : {
+          "allOf" : [
+            {
+              "$ref" : "#/$defs/ruleBase"
+            }
+          ],
+          "description" : "Use ternary conditional expressions for simple if-else returns.\n\nWhen an `if`-`else` has exactly two branches, each containing a single\n`return` statement, and the condition is a simple expression (no else-if\nchains), the construct is collapsed into a ternary conditional expression.\n\n```swift\n// Before\nif condition {\n    return trueValue\n} else {\n    return falseValue\n}\n\n// After\nreturn condition ? trueValue : falseValue\n```\n\nLint: A simple if-else with single returns in both branches raises a\n      warning.\n\nFormat: The if-else is replaced with a ternary expression.\n [opt-in]"
         }
       },
       "type" : "object"
@@ -574,6 +574,25 @@
         }
       ],
       "description" : "When checking an optional value for `nil`-ness, prefer writing an explicit `nil` check rather\nthan binding and immediately discarding the value.\n\nFor example, `if let _ = someValue { ... }` is forbidden. Use `if someValue != nil { ... }`\ninstead.\n\nNote: If the conditional binding carries an explicit type annotation (e.g. `if let _: S? = expr`),\nwe skip the transformation. Such annotations can be necessary to drive generic type inference\nwhen a function mentions a type only in its return position.\n\nLint: `let _ = expr` inside a condition list will yield a lint error.\n\nFormat: `let _ = expr` inside a condition list will be replaced by `expr != nil`.\n"
+    },
+    "extensionAccessLevel" : {
+      "allOf" : [
+        {
+          "$ref" : "#/$defs/ruleBase"
+        }
+      ],
+      "description" : "Controls placement of access level modifiers on extensions vs. their members.\n\nThe behavior of this rule is controlled by `Configuration.extensionAccessControl.placement`:\n\n- `onMembers` (default): Access levels on extensions are moved to individual members.\n- `onExtension`: When all members share the same access level, it is hoisted to the extension.\n\nLint: A lint error is raised when access control placement doesn't match the configuration.\n\nFormat: Access control modifiers are moved to match the configured placement.\n",
+      "properties" : {
+        "placement" : {
+          "default" : "onMembers",
+          "description" : "placement Options: onMembers, onExtension.",
+          "enum" : [
+            "onMembers",
+            "onExtension"
+          ],
+          "type" : "string"
+        }
+      }
     },
     "fileHeader" : {
       "allOf" : [
@@ -1218,25 +1237,6 @@
       ],
       "description" : "Remove explicit `borrowing` and `consuming` ownership modifiers.\n\nOwnership modifiers are an advanced feature that most code does not need. When present\non function declarations (e.g. `consuming func move()`) or parameter types\n(e.g. `func foo(_ bar: consuming Bar)`), they are removed.\n\nLint: If an explicit `borrowing` or `consuming` modifier is found, a lint warning is raised.\n\nFormat: The ownership modifier is removed.\n [opt-in]"
     },
-    "noExtensionAccessLevel" : {
-      "allOf" : [
-        {
-          "$ref" : "#/$defs/ruleBase"
-        }
-      ],
-      "description" : "Specifying an access level for an extension declaration is forbidden.\n\nThe behavior of this rule is controlled by `Configuration.extensionAccessControl.placement`:\n\n- `onDeclarations` (default): Access levels on extensions are moved to individual members.\n- `onExtension`: When all members share the same access level, it is hoisted to the extension.\n\nLint: A lint error is raised when access control placement doesn't match the configuration.\n\nFormat: Access control modifiers are moved to match the configured placement.\n",
-      "properties" : {
-        "placement" : {
-          "default" : "onDeclarations",
-          "description" : "placement Options: onDeclarations, onExtension.",
-          "enum" : [
-            "onDeclarations",
-            "onExtension"
-          ],
-          "type" : "string"
-        }
-      }
-    },
     "noFallthroughOnlyCases" : {
       "allOf" : [
         {
@@ -1532,6 +1532,14 @@
         }
       ],
       "description" : "When possible, the synthesized `struct` initializer should be used.\n\nThis means the creation of a (non-public) memberwise initializer with the same structure as the\nsynthesized initializer is forbidden.\n\nLint: (Non-public) memberwise initializers with the same structure as the synthesized\n      initializer will yield a lint error.\n"
+    },
+    "preferTernary" : {
+      "allOf" : [
+        {
+          "$ref" : "#/$defs/ruleBase"
+        }
+      ],
+      "description" : "Use ternary conditional expressions for simple if-else returns.\n\nWhen an `if`-`else` has exactly two branches, each containing a single\n`return` statement, and the condition is a simple expression (no else-if\nchains), the construct is collapsed into a ternary conditional expression.\n\n```swift\n// Before\nif condition {\n    return trueValue\n} else {\n    return falseValue\n}\n\n// After\nreturn condition ? trueValue : falseValue\n```\n\nLint: A simple if-else with single returns in both branches raises a\n      warning.\n\nFormat: The if-else is replaced with a ternary expression.\n [opt-in]"
     },
     "preferTrailingClosures" : {
       "allOf" : [
@@ -2355,14 +2363,6 @@
       "additionalProperties" : false,
       "description" : "wrap rule group.",
       "properties" : {
-        "compoundCaseStatements" : {
-          "allOf" : [
-            {
-              "$ref" : "#/$defs/ruleBase"
-            }
-          ],
-          "description" : "Comma-delimited switch case items are wrapped onto separate lines.\n\nSwitch cases with multiple patterns separated by commas are expanded so each\npattern appears on its own line, aligned after `case `.\n\nLint: A switch case with multiple comma-separated items on a single line\n      raises a warning.\n\nFormat: Each item is placed on its own line with alignment indentation.\n [opt-in]"
-        },
         "conditionalAssignment" : {
           "allOf" : [
             {
@@ -2417,9 +2417,25 @@
             }
           ],
           "description" : "Single-line comments that exceed the configured line length are wrapped.\n\nLint: A `//` or `///` comment that exceeds the line length raises a\n      warning.\n\nFormat: The comment is word-wrapped, continuing on the next line with the\n        same prefix and indentation.\n [opt-in]"
+        },
+        "wrapCompoundCaseItems" : {
+          "allOf" : [
+            {
+              "$ref" : "#/$defs/ruleBase"
+            }
+          ],
+          "description" : "Comma-delimited switch case items are wrapped onto separate lines.\n\nSwitch cases with multiple patterns separated by commas are expanded so each\npattern appears on its own line, aligned after `case `.\n\nLint: A switch case with multiple comma-separated items on a single line\n      raises a warning.\n\nFormat: Each item is placed on its own line with alignment indentation.\n [opt-in]"
         }
       },
       "type" : "object"
+    },
+    "wrapCompoundCaseItems" : {
+      "allOf" : [
+        {
+          "$ref" : "#/$defs/ruleBase"
+        }
+      ],
+      "description" : "Comma-delimited switch case items are wrapped onto separate lines.\n\nSwitch cases with multiple patterns separated by commas are expanded so each\npattern appears on its own line, aligned after `case `.\n\nLint: A switch case with multiple comma-separated items on a single line\n      raises a warning.\n\nFormat: Each item is placed on its own line with alignment indentation.\n [opt-in]"
     }
   },
   "title" : "Swiftiomatic Configuration",

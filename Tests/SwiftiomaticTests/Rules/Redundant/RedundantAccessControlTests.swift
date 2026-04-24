@@ -431,7 +431,7 @@ struct RedundantAccessControlTests: RuleTesting {
     )
   }
 
-  @Test func redundantExtensionACL_noExtensionAccessLevelNotFlagged() {
+  @Test func redundantExtensionACL_extensionAccessLevelNotFlagged() {
     assertFormatting(
       RedundantAccessControl.self,
       input: """

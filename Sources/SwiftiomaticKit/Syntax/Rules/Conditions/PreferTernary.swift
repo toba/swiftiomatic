@@ -1,0 +1,149 @@
+import SwiftSyntax
+
+/// Use ternary conditional expressions for simple if-else returns.
+///
+/// When an `if`-`else` has exactly two branches, each containing a single
+/// `return` statement, and the condition is a simple expression (no else-if
+/// chains), the construct is collapsed into a ternary conditional expression.
+///
+/// ```swift
+/// // Before
+/// if condition {
+///     return trueValue
+/// } else {
+///     return falseValue
+/// }
+///
+/// // After
+/// return condition ? trueValue : falseValue
+/// ```
+///
+/// Lint: A simple if-else with single returns in both branches raises a
+///       warning.
+///
+/// Format: The if-else is replaced with a ternary expression.
+final class PreferTernary: RewriteSyntaxRule<BasicRuleValue> {
+    override class var group: ConfigurationGroup? { .conditions }
+
+    override class var defaultValue: BasicRuleValue { BasicRuleValue(rewrite: false, lint: .no) }
+
+    override func visit(_ node: CodeBlockItemListSyntax) -> CodeBlockItemListSyntax {
+        let visited = super.visit(node)
+        let items = Array(visited)
+        var newItems = [CodeBlockItemSyntax]()
+        var changed = false
+
+        for item in items {
+            if let replacement = tryConvert(item) {
+                newItems.append(replacement)
+                changed = true
+            } else {
+                newItems.append(item)
+            }
+        }
+
+        guard changed else { return visited }
+        return CodeBlockItemListSyntax(newItems)
+    }
+
+    // MARK: - Conversion
+
+    private func tryConvert(_ item: CodeBlockItemSyntax) -> CodeBlockItemSyntax? {
+        guard let ifExpr = extractIfExpr(from: item) else { return nil }
+
+        // Must be a simple if-else (no else-if chains)
+        guard let elseBlock = ifExpr.elseBody?.as(CodeBlockSyntax.self) else { return nil }
+
+        // Condition must be a single boolean expression (not optional binding,
+        // pattern matching, availability check, etc.)
+        guard let onlyCondition = ifExpr.conditions.firstAndOnly,
+            case .expression = onlyCondition.condition
+        else { return nil }
+
+        let thenStatements = ifExpr.body.statements
+        let elseStatements = elseBlock.statements
+
+        // Each branch must have exactly one statement
+        guard let thenOnly = thenStatements.firstAndOnly,
+            let elseOnly = elseStatements.firstAndOnly
+        else { return nil }
+
+        // Both branches must be return statements with expressions
+        guard let thenReturn = extractReturn(from: thenOnly),
+            let elseReturn = extractReturn(from: elseOnly)
+        else { return nil }
+
+        return buildTernaryReturn(
+            item: item,
+            ifExpr: ifExpr,
+            thenExpr: thenReturn,
+            elseExpr: elseReturn)
+    }
+
+    // MARK: - Extraction
+
+    private func extractIfExpr(from item: CodeBlockItemSyntax) -> IfExprSyntax? {
+        if let exprStmt = item.item.as(ExpressionStmtSyntax.self) {
+            return exprStmt.expression.as(IfExprSyntax.self)
+        }
+        return item.item.as(IfExprSyntax.self)
+    }
+
+    /// Extracts the expression from a `return expr` statement.
+    private func extractReturn(from item: CodeBlockItemSyntax) -> ExprSyntax? {
+        guard let returnStmt = item.item.as(ReturnStmtSyntax.self),
+            let expr = returnStmt.expression
+        else { return nil }
+        return expr
+    }
+
+    // MARK: - Building ternary
+
+    private func buildTernaryReturn(
+        item: CodeBlockItemSyntax,
+        ifExpr: IfExprSyntax,
+        thenExpr: ExprSyntax,
+        elseExpr: ExprSyntax
+    ) -> CodeBlockItemSyntax {
+        diagnose(.useTernary, on: ifExpr.ifKeyword)
+
+        let ternary = buildTernaryExpr(
+            condition: ifExpr.conditions,
+            thenExpr: thenExpr,
+            elseExpr: elseExpr)
+
+        let returnStmt = ReturnStmtSyntax(
+            returnKeyword: .keyword(.return, trailingTrivia: .space),
+            expression: ternary)
+
+        return CodeBlockItemSyntax(
+            leadingTrivia: item.leadingTrivia,
+            item: .stmt(StmtSyntax(returnStmt)),
+            trailingTrivia: item.trailingTrivia)
+    }
+
+    private func buildTernaryExpr(
+        condition: ConditionElementListSyntax,
+        thenExpr: ExprSyntax,
+        elseExpr: ExprSyntax
+    ) -> ExprSyntax {
+        // The caller already verified a single expression condition.
+        let onlyCondition = condition.first!
+        guard case .expression(let conditionExpr) = onlyCondition.condition
+        else { return ExprSyntax(DeclReferenceExprSyntax(baseName: .identifier("false"))) }
+
+        let ternary = TernaryExprSyntax(
+            condition: conditionExpr.with(\.trailingTrivia, .space),
+            questionMark: .infixQuestionMarkToken(trailingTrivia: .space),
+            thenExpression: thenExpr.with(\.leadingTrivia, []).with(\.trailingTrivia, .space),
+            colon: .colonToken(trailingTrivia: .space),
+            elseExpression: elseExpr.with(\.leadingTrivia, []).with(\.trailingTrivia, []))
+
+        return ExprSyntax(ternary)
+    }
+}
+
+extension Finding.Message {
+    fileprivate static let useTernary: Finding.Message =
+        "use ternary conditional expression for simple if-else"
+}

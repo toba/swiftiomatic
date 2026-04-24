@@ -15,9 +15,9 @@
 	},
 	"wrap": {
 		"singleLineBodies": { "lint": "no", "mode": "inline", "rewrite": true },
+		"compoundCaseItems": { "lint": "no", "rewrite": false },
 		"singleLineComments": { "lint": "no", "rewrite": false },
 		"conditionalAssignment": { "lint": "no", "rewrite": false },
-		"compoundCaseStatements": { "lint": "no", "rewrite": false },
 		"multilineFunctionChains": { "lint": "no", "rewrite": false },
 		"multilineStatementBraces": { "lint": "no", "rewrite": false },
 		"keepFunctionOutputTogether": true
@@ -37,12 +37,12 @@
 	},
 	"access": {
 		"preferFinalClasses": { "lint": "warn", "rewrite": false },
-		"privateStateVariables": { "lint": "no", "rewrite": true },
-		"noExtensionAccessLevel": {
-			"lint": "warn",
+		"extensionAccessLevel": {
+			"lint": "no",
 			"rewrite": true,
-			"placement": "onDeclarations"
+			"placement": "onExtension"
 		},
+		"privateStateVariables": { "lint": "no", "rewrite": true },
 		"fileScopedDeclarationPrivacy": {
 			"lint": "warn",
 			"rewrite": true,
@@ -160,6 +160,7 @@
 		"noEmptyLinesOpeningClosingBraces": { "lint": "no", "rewrite": false }
 	},
 	"conditions": {
+		"preferTernary": { "lint": "no", "rewrite": true },
 		"explicitNilCheck": { "lint": "warn", "rewrite": true },
 		"noYodaConditions": { "lint": "warn", "rewrite": true },
 		"preferEarlyExits": { "lint": "no", "rewrite": false },
@@ -173,7 +174,7 @@
 		"respectExisting": true,
 		"beforeEachArgument": false,
 		"elseCatchOnNewLine": false,
-		"modifiersOnSameLine": { "lint": "warn", "rewrite": true },
+		"modifiersOnSameLine": { "lint": "warn", "rewrite": false },
 		"ensureLineBreakAtEOF": { "lint": "no", "rewrite": false },
 		"beforeGuardConditions": true,
 		"beforeEachGenericRequirement": false,

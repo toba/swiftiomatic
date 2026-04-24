@@ -12,24 +12,24 @@
 
 import SwiftSyntax
 
-/// Specifying an access level for an extension declaration is forbidden.
+/// Controls placement of access level modifiers on extensions vs. their members.
 ///
 /// The behavior of this rule is controlled by `Configuration.extensionAccessControl.placement`:
 ///
-/// - `onDeclarations` (default): Access levels on extensions are moved to individual members.
+/// - `onMembers` (default): Access levels on extensions are moved to individual members.
 /// - `onExtension`: When all members share the same access level, it is hoisted to the extension.
 ///
 /// Lint: A lint error is raised when access control placement doesn't match the configuration.
 ///
 /// Format: Access control modifiers are moved to match the configured placement.
-final class NoExtensionAccessLevel: RewriteSyntaxRule<ExtensionAccessControlConfiguration> {
+final class ExtensionAccessLevel: RewriteSyntaxRule<ExtensionAccessControlConfiguration> {
     override class var group: ConfigurationGroup? { .access }
     private enum State {
         /// The rule is currently visiting top-level declarations.
         case topLevel
 
         /// The rule is currently inside an extension that has the given access level keyword.
-        /// Used in `onDeclarations` mode to add the keyword to members.
+        /// Used in `onMembers` mode to add the keyword to members.
         case insideExtension(accessKeyword: Keyword)
 
         /// The rule is currently inside an extension where members' access level is being hoisted.
@@ -47,15 +47,15 @@ final class NoExtensionAccessLevel: RewriteSyntaxRule<ExtensionAccessControlConf
     override func visit(_ node: ExtensionDeclSyntax) -> DeclSyntax {
         guard case .topLevel = state else { return DeclSyntax(node) }
 
-        switch context.configuration[NoExtensionAccessLevel.self].placement {
-        case .onDeclarations:
+        switch context.configuration[ExtensionAccessLevel.self].placement {
+        case .onMembers:
             return visitOnDeclarations(node)
         case .onExtension:
             return visitOnExtension(node)
         }
     }
 
-    // MARK: - onDeclarations mode (push access from extension to members)
+    // MARK: - onMembers mode (push access from extension to members)
 
     private func visitOnDeclarations(_ node: ExtensionDeclSyntax) -> DeclSyntax {
         guard
@@ -370,13 +370,13 @@ extension Finding.Message {
 
 package struct ExtensionAccessControlConfiguration: SyntaxRuleValue {
     package enum Placement: String, Codable, Sendable {
-        case onDeclarations
+        case onMembers
         case onExtension
     }
 
     package var rewrite = true
     package var lint: Lint = .warn
-    package var placement: Placement = .onDeclarations
+    package var placement: Placement = .onMembers
 
     package init() {}
 
@@ -387,6 +387,6 @@ package struct ExtensionAccessControlConfiguration: SyntaxRuleValue {
         if let lint = try container.decodeIfPresent(Lint.self, forKey: .lint) { self.lint = lint }
         self.placement =
             try container.decodeIfPresent(Placement.self, forKey: .placement)
-            ?? .onDeclarations
+            ?? .onMembers
     }
 }

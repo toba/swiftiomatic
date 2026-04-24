@@ -152,6 +152,53 @@ struct AssignmentExprTests: PrettyPrintTesting {
     )
   }
 
+  @Test func assignmentWithMemberAccessChain() {
+    // The formatter should keep `result = result` on one line, breaking at dots.
+    let input =
+      """
+      result = result.with(\\.leftParen, nil).with(\\.rightParen, nil).with(\\.arguments, LabeledExprListSyntax([]))
+      """
+    let expected =
+      """
+      result = result.with(\\.leftParen, nil)
+        .with(\\.rightParen, nil).with(
+          \\.arguments,
+          LabeledExprListSyntax([]))
+
+      """
+    assertPrettyPrintEqual(input: input, expected: expected, linelength: 40)
+  }
+
+  @Test func assignmentWithMemberAccessChainShortEnoughToFit() {
+    let input =
+      """
+      result = result.with(\\.leftParen, nil)
+      """
+    let expected =
+      """
+      result = result.with(\\.leftParen, nil)
+
+      """
+    assertPrettyPrintEqual(input: input, expected: expected, linelength: 50)
+  }
+
+  @Test func assignmentWithSimpleMemberAccessChain() {
+    // Keeps `components = path.split(` together, breaks inside args.
+    let input =
+      """
+      components = path.split(separator: "/", omittingEmptySubsequences: false).map { String($0) }
+      """
+    let expected =
+      """
+      components = path.split(
+        separator: "/",
+        omittingEmptySubsequences: false
+      ).map { String($0) }
+
+      """
+    assertPrettyPrintEqual(input: input, expected: expected, linelength: 40)
+  }
+
   @Test func assignmentPatternBindingFromSequenceWithFunctionCalls() {
     let input =
       """

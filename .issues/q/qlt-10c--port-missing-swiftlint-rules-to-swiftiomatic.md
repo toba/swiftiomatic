@@ -75,7 +75,7 @@ Compared Swiftiomatic's 142 rules against SwiftLint's 250 rules (ref at `~/Devel
 | `implicit_optional_initialization` | `RedundantNilInit` |
 | `implicitly_unwrapped_optional` | `NoImplicitlyUnwrappedOptionals` |
 | `no_empty_block` | `EmptyBraces` |
-| `no_extension_access_modifier` | `NoExtensionAccessLevel` |
+| `no_extension_access_modifier` | `ExtensionAccessLevel` |
 | `no_fallthrough_only` | `NoFallthroughOnlyCases` |
 | `pattern_matching_keywords` | `PatternLetPlacement` |
 | `prefer_key_path` | `PreferKeyPath` |

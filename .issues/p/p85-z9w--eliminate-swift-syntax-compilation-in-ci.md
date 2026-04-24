@@ -1,15 +1,15 @@
 ---
 # p85-z9w
 title: Eliminate swift-syntax compilation in CI
-status: review
+status: completed
 type: task
 priority: high
 created_at: 2026-04-24T18:22:37Z
-updated_at: 2026-04-24T18:33:03Z
+updated_at: 2026-04-24T22:03:47Z
 sync:
     github:
         issue_number: "373"
-        synced_at: "2026-04-24T18:35:59Z"
+        synced_at: "2026-04-24T22:30:44Z"
 ---
 
 swift-syntax compiles from source every CI run (~5 min). Investigate two approaches to eliminate this.

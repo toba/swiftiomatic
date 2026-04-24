@@ -36,7 +36,7 @@ Each rule value is either a `bool` (simple toggle) or an `object` (toggle + opti
 - `NoAssignmentInExpressions` — `allowedFunctions`
 - `SortImports` — `includeConditionalImports`, `shouldGroupImports`
 - `CapitalizeAcronyms` — `words`
-- `NoExtensionAccessLevel` — `placement` (from `extensionAccessControl`)
+- `ExtensionAccessLevel` — `placement` (from `extensionAccessControl`)
 - `PatternLetPlacement` — `placement` (from `patternLet`)
 
 ### Scope

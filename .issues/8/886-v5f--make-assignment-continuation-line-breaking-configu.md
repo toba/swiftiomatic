@@ -1,15 +1,15 @@
 ---
 # 886-v5f
 title: Prefer breaking at . over = in long assignments
-status: review
+status: completed
 type: bug
 priority: normal
 created_at: 2026-04-24T01:24:48Z
-updated_at: 2026-04-24T01:55:43Z
+updated_at: 2026-04-24T22:03:50Z
 sync:
     github:
         issue_number: "363"
-        synced_at: "2026-04-24T02:26:01Z"
+        synced_at: "2026-04-24T22:30:44Z"
 ---
 
 ## Problem

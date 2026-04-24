@@ -15,10 +15,10 @@ import SwiftiomaticTestSupport
 import Testing
 
 @Suite
-struct NoExtensionAccessLevelTests: RuleTesting {
+struct ExtensionAccessLevelTests: RuleTesting {
   @Test func extensionDeclarationAccessLevel() {
     assertFormatting(
-      NoExtensionAccessLevel.self,
+      ExtensionAccessLevel.self,
       input: """
         1️⃣public extension Foo {
           2️⃣var x: Bool
@@ -75,7 +75,7 @@ struct NoExtensionAccessLevelTests: RuleTesting {
 
   @Test func removeRedundantInternal() {
     assertFormatting(
-      NoExtensionAccessLevel.self,
+      ExtensionAccessLevel.self,
       input: """
         1️⃣internal extension Bar {
           var a: Int
@@ -96,7 +96,7 @@ struct NoExtensionAccessLevelTests: RuleTesting {
 
   @Test func preservesCommentOnRemovedModifier() {
     assertFormatting(
-      NoExtensionAccessLevel.self,
+      ExtensionAccessLevel.self,
       input: """
         /// This doc comment should stick around.
         1️⃣public extension Foo {
@@ -143,7 +143,7 @@ struct NoExtensionAccessLevelTests: RuleTesting {
 
   @Test func packageAccessLevel() {
     assertFormatting(
-      NoExtensionAccessLevel.self,
+      ExtensionAccessLevel.self,
       input: """
         1️⃣package extension Foo {
           2️⃣func f() {}
@@ -168,7 +168,7 @@ struct NoExtensionAccessLevelTests: RuleTesting {
 
   @Test func privateIsEffectivelyFileprivate() {
     assertFormatting(
-      NoExtensionAccessLevel.self,
+      ExtensionAccessLevel.self,
       input: """
         1️⃣private extension Foo {
           2️⃣func f() {}
@@ -194,7 +194,7 @@ struct NoExtensionAccessLevelTests: RuleTesting {
 
   @Test func extensionWithAnnotation() {
     assertFormatting(
-      NoExtensionAccessLevel.self,
+      ExtensionAccessLevel.self,
       input: """
         /// This extension has a comment.
         @objc 1️⃣public extension Foo {
@@ -213,7 +213,7 @@ struct NoExtensionAccessLevelTests: RuleTesting {
 
   @Test func preservesInlineAnnotationsBeforeAddedAccessLevelModifiers() {
     assertFormatting(
-      NoExtensionAccessLevel.self,
+      ExtensionAccessLevel.self,
       input: """
         /// This extension has a comment.
         1️⃣public extension Foo {
@@ -271,7 +271,7 @@ struct NoExtensionAccessLevelTests: RuleTesting {
 
   @Test func preservesMultiLineAnnotationsBeforeAddedAccessLevelModifiers() {
     assertFormatting(
-      NoExtensionAccessLevel.self,
+      ExtensionAccessLevel.self,
       input: """
         /// This extension has a comment.
         1️⃣public extension Foo {
@@ -361,7 +361,7 @@ struct NoExtensionAccessLevelTests: RuleTesting {
 
   @Test func ifConfigMembers() {
     assertFormatting(
-      NoExtensionAccessLevel.self,
+      ExtensionAccessLevel.self,
       input: """
         1️⃣public extension Foo {
           #if os(macOS)
@@ -395,7 +395,7 @@ struct NoExtensionAccessLevelTests: RuleTesting {
 
   @Test func nestedExtensionsAreIgnored() {
     assertFormatting(
-      NoExtensionAccessLevel.self,
+      ExtensionAccessLevel.self,
       input: """
         1️⃣public extension Foo {
           2️⃣var x: Bool
@@ -436,14 +436,14 @@ struct NoExtensionAccessLevelTests: RuleTesting {
   // MARK: - onExtension mode
 
   private func onExtensionConfig() -> Configuration {
-    var config = Configuration.forTesting(enabledRule: NoExtensionAccessLevel.self.key)
-    config[NoExtensionAccessLevel.self].placement = .onExtension
+    var config = Configuration.forTesting(enabledRule: ExtensionAccessLevel.self.key)
+    config[ExtensionAccessLevel.self].placement = .onExtension
     return config
   }
 
   @Test func hoistPublicToExtension() {
     assertFormatting(
-      NoExtensionAccessLevel.self,
+      ExtensionAccessLevel.self,
       input: """
         1️⃣extension Foo {
           2️⃣public func bar() {}
@@ -472,7 +472,7 @@ struct NoExtensionAccessLevelTests: RuleTesting {
 
   @Test func hoistFileprivateToExtension() {
     assertFormatting(
-      NoExtensionAccessLevel.self,
+      ExtensionAccessLevel.self,
       input: """
         1️⃣extension Foo {
           2️⃣fileprivate var x: Int { 1 }
@@ -501,7 +501,7 @@ struct NoExtensionAccessLevelTests: RuleTesting {
 
   @Test func hoistPackageToExtension() {
     assertFormatting(
-      NoExtensionAccessLevel.self,
+      ExtensionAccessLevel.self,
       input: """
         1️⃣extension Foo {
           2️⃣package func bar() {}
@@ -527,7 +527,7 @@ struct NoExtensionAccessLevelTests: RuleTesting {
 
   @Test func mixedAccessLevelsNotHoisted() {
     assertFormatting(
-      NoExtensionAccessLevel.self,
+      ExtensionAccessLevel.self,
       input: """
         extension Foo {
           public func bar() {}
@@ -547,7 +547,7 @@ struct NoExtensionAccessLevelTests: RuleTesting {
 
   @Test func noExplicitAccessNotHoisted() {
     assertFormatting(
-      NoExtensionAccessLevel.self,
+      ExtensionAccessLevel.self,
       input: """
         extension Foo {
           func bar() {}
@@ -567,7 +567,7 @@ struct NoExtensionAccessLevelTests: RuleTesting {
 
   @Test func privateNotHoisted() {
     assertFormatting(
-      NoExtensionAccessLevel.self,
+      ExtensionAccessLevel.self,
       input: """
         extension Foo {
           private func bar() {}
@@ -587,7 +587,7 @@ struct NoExtensionAccessLevelTests: RuleTesting {
 
   @Test func internalNotHoisted() {
     assertFormatting(
-      NoExtensionAccessLevel.self,
+      ExtensionAccessLevel.self,
       input: """
         extension Foo {
           internal func bar() {}
@@ -607,7 +607,7 @@ struct NoExtensionAccessLevelTests: RuleTesting {
 
   @Test func extensionAlreadyHasAccessLevelUnchanged() {
     assertFormatting(
-      NoExtensionAccessLevel.self,
+      ExtensionAccessLevel.self,
       input: """
         public extension Foo {
           func bar() {}
@@ -625,7 +625,7 @@ struct NoExtensionAccessLevelTests: RuleTesting {
 
   @Test func hoistPreservesOtherModifiers() {
     assertFormatting(
-      NoExtensionAccessLevel.self,
+      ExtensionAccessLevel.self,
       input: """
         1️⃣extension Foo {
           2️⃣@objc public static func bar() {}
@@ -654,7 +654,7 @@ struct NoExtensionAccessLevelTests: RuleTesting {
 
   @Test func ifConfigBlocksPreventsHoist() {
     assertFormatting(
-      NoExtensionAccessLevel.self,
+      ExtensionAccessLevel.self,
       input: """
         extension Foo {
           #if os(macOS)

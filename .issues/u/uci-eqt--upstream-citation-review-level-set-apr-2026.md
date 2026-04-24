@@ -26,7 +26,7 @@ First thorough review of all cited upstream repos. Work through each relevant ch
 ### New rules to evaluate
 
 - [x] **EVALUATE** \`54f63a3\` — \`redundantEmptyView\`. LATER — SwiftUI-specific, lower priority
-- [x] **EVALUATE** \`d798a8a\` — \`wrapCaseBodies\`. SKIP — already have WrapCompoundCaseStatements
+- [x] **EVALUATE** \`d798a8a\` — \`wrapCaseBodies\`. SKIP — already have WrapCompoundCaseItems
 
 ### Features to evaluate
 
@@ -38,7 +38,7 @@ First thorough review of all cited upstream repos. Work through each relevant ch
 - [x] **REVIEW** \`f00ffbc\` — #if edge cases. NOT AFFECTED — our rules never modify #if conditions
 - [x] **REVIEW** \`e913427\` — @MainActor paren removal. LOW RISK — NoTrailingClosureParens has theoretical gap but unlikely to trigger
 - [x] **REVIEW** \`835f6f2\` — Infinite loop with trailing comments. NOT AFFECTED — clear loop termination in our rewriters
-- [x] **REVIEW** \`727c044\` — Extension access on nested types. NOT AFFECTED — conservative guards in NoExtensionAccessLevel and RedundantAccessControl
+- [x] **REVIEW** \`727c044\` — Extension access on nested types. NOT AFFECTED — conservative guards in ExtensionAccessLevel and RedundantAccessControl
 - [x] **REVIEW** \`9d60158\` — nonisolated(nonsending) spacing. NOT AFFECTED — no spaceAroundParens-style rule
 - [x] **REVIEW** \`b0b756d\` — @convention trailing commas. NOT AFFECTED — our rule is generic, doesn't special-case closure types
 - [x] **REVIEW** \`4ace97e\` — Conditional imports with access modifiers. NOT AFFECTED — architecture doesn't apply access to imports
@@ -79,7 +79,7 @@ First thorough review of all cited upstream repos. Work through each relevant ch
 - multilineTrailingCommaBehavior encoding — registry auto-encodes
 - sortImports length,alpha — SortImports has full parity
 - testSuiteAccessControl option — TestSuiteAccessControl covers this
-- wrapCaseBodies — WrapCompoundCaseStatements exists
+- wrapCaseBodies — WrapCompoundCaseItems exists
 - legacy_uigraphics_function — iOS-specific
 
 **Deferred:**

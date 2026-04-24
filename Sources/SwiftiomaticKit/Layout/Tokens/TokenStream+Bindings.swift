@@ -68,8 +68,9 @@ extension TokenStream {
 
             let isCompound =
                 isCompoundExpression(expr) && leftmostMultilineStringLiteral(of: expr) == nil
+            let hasMemberChain = isMemberAccessChain(expr)
             let canGroupBeforeBreak =
-                isCompound && !hasLeadingLineComments(expr)
+                (isCompound || hasMemberChain) && !hasLeadingLineComments(expr)
 
             if let (unindentingNode, _, breakKind, shouldGroup) = stackedIndentationBehavior(
                 rhs: expr

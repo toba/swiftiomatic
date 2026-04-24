@@ -40,8 +40,9 @@ extension TokenStream {
                 // When there are comments between = and the RHS expression, placing the group
                 // open before the break disrupts comment indentation. Only apply the optimization
                 // when there are no leading comments on the RHS.
+                let hasMemberChain = isMemberAccessChain(rhs)
                 let canGroupBeforeBreak =
-                    isCompound && !hasLeadingLineComments(rhs)
+                    (isCompound || hasMemberChain) && !hasLeadingLineComments(rhs)
 
                 if let (unindentingNode, _, breakKind, shouldGroup) =
                     stackedIndentationBehavior(after: binOp, rhs: rhs)

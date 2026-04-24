@@ -1,15 +1,15 @@
 ---
 # we9-2fx
 title: 'Line break precedence: prefer splitting at ?? / + over = assignment'
-status: review
+status: completed
 type: bug
 priority: normal
 created_at: 2026-04-24T18:44:01Z
-updated_at: 2026-04-24T20:12:28Z
+updated_at: 2026-04-24T22:03:37Z
 sync:
     github:
         issue_number: "374"
-        synced_at: "2026-04-24T20:43:39Z"
+        synced_at: "2026-04-24T22:30:44Z"
 ---
 
 ## Problem

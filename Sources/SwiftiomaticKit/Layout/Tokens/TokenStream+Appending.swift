@@ -392,6 +392,17 @@ extension TokenStream {
         }
     }
 
+    /// Returns whether the given expression is or begins with a member access chain (e.g.
+    /// `foo.bar(...)`, `foo.bar(...).baz(...)`). Used to detect method-chaining RHS expressions
+    /// in assignments so the formatter prefers breaking at dots rather than after `=`.
+    func isMemberAccessChain(_ expr: ExprSyntax) -> Bool {
+        if let callingExpr = expr.asProtocol(CallingExprSyntax.self) {
+            return callingExpr.calledExpression.is(MemberAccessExprSyntax.self)
+                || isMemberAccessChain(callingExpr.calledExpression)
+        }
+        return expr.is(MemberAccessExprSyntax.self)
+    }
+
     /// Returns whether the given expression has line or block comments in the leading trivia of its
     /// first token. When comments are present between `=` and the RHS expression, grouping the open
     /// before the break disrupts comment indentation.

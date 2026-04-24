@@ -21,7 +21,7 @@ extension Configuration {
     config[NoAssignmentInExpressions.self] = NoAssignmentInExpressionsConfiguration()
     config[MultiElementCollectionTrailingCommas.self] = true
     config[IndentBlankLines.self] = false
-    config[NoExtensionAccessLevel.self] = ExtensionAccessControlConfiguration()
+    config[ExtensionAccessLevel.self] = ExtensionAccessControlConfiguration()
     config[PatternLetPlacement.self] = PatternLetConfiguration()
     config[URLMacro.self] = URLMacroConfiguration()
     config[FileHeader.self] = FileHeaderConfiguration()

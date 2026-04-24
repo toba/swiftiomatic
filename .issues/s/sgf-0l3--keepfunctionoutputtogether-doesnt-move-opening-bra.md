@@ -1,15 +1,15 @@
 ---
 # sgf-0l3
 title: keepFunctionOutputTogether doesn't move opening brace to output line when wrapping parameters
-status: review
+status: completed
 type: bug
 priority: normal
 created_at: 2026-04-24T19:59:21Z
-updated_at: 2026-04-24T20:53:19Z
+updated_at: 2026-04-24T22:03:42Z
 sync:
     github:
         issue_number: "376"
-        synced_at: "2026-04-24T20:56:37Z"
+        synced_at: "2026-04-24T22:30:44Z"
 ---
 
 When `keepFunctionOutputTogether` is `true` and a function signature exceeds the line length, the opening brace should stay with the return type on the same line rather than dropping to its own line.

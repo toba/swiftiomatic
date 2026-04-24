@@ -9,8 +9,8 @@ import SwiftSyntax
 ///
 /// Format: The macro is replaced with the preferred spelling.
 final class PreferFileID: RewriteSyntaxRule<BasicRuleValue> {
-    override class var group: ConfigurationGroup? { .idioms }
-    override class var defaultValue: BasicRuleValue { BasicRuleValue(rewrite: false, lint: .no) }
+    override static var group: ConfigurationGroup? { .idioms }
+    override static var defaultValue: BasicRuleValue { .init(rewrite: false, lint: .no) }
 
     override func visit(_ node: MacroExpansionExprSyntax) -> ExprSyntax {
         // Only handle bare #file / #fileID (no arguments, no trailing closure).
@@ -24,18 +24,18 @@ final class PreferFileID: RewriteSyntaxRule<BasicRuleValue> {
         let macroName = node.macroName.text
 
         switch macroName {
-        case "file":
-            diagnose(.preferFileID, on: node)
-            var result = node
-            result.macroName = result.macroName.with(\.tokenKind, .identifier("fileID"))
-            return ExprSyntax(result)
+            case "file":
+                diagnose(.preferFileID, on: node)
+                var result = node
+                result.macroName = result.macroName.with(\.tokenKind, .identifier("fileID"))
+                return ExprSyntax(result)
 
-        case "fileID":
-            // Already the preferred form; no change.
-            return ExprSyntax(node)
+            case "fileID":
+                // Already the preferred form; no change.
+                return ExprSyntax(node)
 
-        default:
-            return ExprSyntax(node)
+            default:
+                return ExprSyntax(node)
         }
     }
 }

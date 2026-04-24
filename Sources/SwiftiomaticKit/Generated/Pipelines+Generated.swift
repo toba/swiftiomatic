@@ -60,9 +60,9 @@ class LintPipeline: SyntaxVisitor {
     visitIfEnabled(CapitalizedTypeNames.visit, for: node)
     visitIfEnabled(DocCommentsBeforeModifiers.visit, for: node)
     visitIfEnabled(DocumentPublicDeclarations.visit, for: node)
+    visitIfEnabled(ExtensionAccessLevel.visit, for: node)
     visitIfEnabled(ModifierOrder.visit, for: node)
     visitIfEnabled(ModifiersOnSameLine.visit, for: node)
-    visitIfEnabled(NoExtensionAccessLevel.visit, for: node)
     visitIfEnabled(RedundantAccessControl.visit, for: node)
     visitIfEnabled(RedundantSelf.visit, for: node)
     visitIfEnabled(RedundantSwiftTestingSuite.visit, for: node)
@@ -74,9 +74,9 @@ class LintPipeline: SyntaxVisitor {
     onVisitPost(rule: CapitalizedTypeNames.self, for: node)
     onVisitPost(rule: DocCommentsBeforeModifiers.self, for: node)
     onVisitPost(rule: DocumentPublicDeclarations.self, for: node)
+    onVisitPost(rule: ExtensionAccessLevel.self, for: node)
     onVisitPost(rule: ModifierOrder.self, for: node)
     onVisitPost(rule: ModifiersOnSameLine.self, for: node)
-    onVisitPost(rule: NoExtensionAccessLevel.self, for: node)
     onVisitPost(rule: RedundantAccessControl.self, for: node)
     onVisitPost(rule: RedundantSelf.self, for: node)
     onVisitPost(rule: RedundantSwiftTestingSuite.self, for: node)
@@ -146,10 +146,10 @@ class LintPipeline: SyntaxVisitor {
     visitIfEnabled(DocCommentsBeforeModifiers.visit, for: node)
     visitIfEnabled(DocumentPublicDeclarations.visit, for: node)
     visitIfEnabled(EnumNamespaces.visit, for: node)
+    visitIfEnabled(ExtensionAccessLevel.visit, for: node)
     visitIfEnabled(LowerCamelCase.visit, for: node)
     visitIfEnabled(ModifierOrder.visit, for: node)
     visitIfEnabled(ModifiersOnSameLine.visit, for: node)
-    visitIfEnabled(NoExtensionAccessLevel.visit, for: node)
     visitIfEnabled(NoForceTry.visit, for: node)
     visitIfEnabled(NoForceUnwrap.visit, for: node)
     visitIfEnabled(NoGuardInTests.visit, for: node)
@@ -175,10 +175,10 @@ class LintPipeline: SyntaxVisitor {
     onVisitPost(rule: DocCommentsBeforeModifiers.self, for: node)
     onVisitPost(rule: DocumentPublicDeclarations.self, for: node)
     onVisitPost(rule: EnumNamespaces.self, for: node)
+    onVisitPost(rule: ExtensionAccessLevel.self, for: node)
     onVisitPost(rule: LowerCamelCase.self, for: node)
     onVisitPost(rule: ModifierOrder.self, for: node)
     onVisitPost(rule: ModifiersOnSameLine.self, for: node)
-    onVisitPost(rule: NoExtensionAccessLevel.self, for: node)
     onVisitPost(rule: NoForceTry.self, for: node)
     onVisitPost(rule: NoForceUnwrap.self, for: node)
     onVisitPost(rule: NoGuardInTests.self, for: node)
@@ -246,6 +246,7 @@ class LintPipeline: SyntaxVisitor {
     visitIfEnabled(OneDeclarationPerLine.visit, for: node)
     visitIfEnabled(PreferConditionalExpression.visit, for: node)
     visitIfEnabled(PreferEarlyExits.visit, for: node)
+    visitIfEnabled(PreferTernary.visit, for: node)
     visitIfEnabled(RedundantLet.visit, for: node)
     visitIfEnabled(RedundantProperty.visit, for: node)
     visitIfEnabled(SortDeclarations.visit, for: node)
@@ -259,6 +260,7 @@ class LintPipeline: SyntaxVisitor {
     onVisitPost(rule: OneDeclarationPerLine.self, for: node)
     onVisitPost(rule: PreferConditionalExpression.self, for: node)
     onVisitPost(rule: PreferEarlyExits.self, for: node)
+    onVisitPost(rule: PreferTernary.self, for: node)
     onVisitPost(rule: RedundantLet.self, for: node)
     onVisitPost(rule: RedundantProperty.self, for: node)
     onVisitPost(rule: SortDeclarations.self, for: node)
@@ -363,10 +365,10 @@ class LintPipeline: SyntaxVisitor {
     visitIfEnabled(DocCommentSummary.visit, for: node)
     visitIfEnabled(DocCommentsBeforeModifiers.visit, for: node)
     visitIfEnabled(DocumentPublicDeclarations.visit, for: node)
+    visitIfEnabled(ExtensionAccessLevel.visit, for: node)
     visitIfEnabled(FullyIndirectEnum.visit, for: node)
     visitIfEnabled(ModifierOrder.visit, for: node)
     visitIfEnabled(ModifiersOnSameLine.visit, for: node)
-    visitIfEnabled(NoExtensionAccessLevel.visit, for: node)
     visitIfEnabled(NoLeadingUnderscores.visit, for: node)
     visitIfEnabled(OneDeclarationPerLine.visit, for: node)
     visitIfEnabled(RedundantAccessControl.visit, for: node)
@@ -385,10 +387,10 @@ class LintPipeline: SyntaxVisitor {
     onVisitPost(rule: DocCommentSummary.self, for: node)
     onVisitPost(rule: DocCommentsBeforeModifiers.self, for: node)
     onVisitPost(rule: DocumentPublicDeclarations.self, for: node)
+    onVisitPost(rule: ExtensionAccessLevel.self, for: node)
     onVisitPost(rule: FullyIndirectEnum.self, for: node)
     onVisitPost(rule: ModifierOrder.self, for: node)
     onVisitPost(rule: ModifiersOnSameLine.self, for: node)
-    onVisitPost(rule: NoExtensionAccessLevel.self, for: node)
     onVisitPost(rule: NoLeadingUnderscores.self, for: node)
     onVisitPost(rule: OneDeclarationPerLine.self, for: node)
     onVisitPost(rule: RedundantAccessControl.self, for: node)
@@ -404,8 +406,8 @@ class LintPipeline: SyntaxVisitor {
 
   override func visit(_ node: ExtensionDeclSyntax) -> SyntaxVisitorContinueKind {
     visitIfEnabled(DocCommentsBeforeModifiers.visit, for: node)
+    visitIfEnabled(ExtensionAccessLevel.visit, for: node)
     visitIfEnabled(ModifiersOnSameLine.visit, for: node)
-    visitIfEnabled(NoExtensionAccessLevel.visit, for: node)
     visitIfEnabled(NoRetroactiveConformances.visit, for: node)
     visitIfEnabled(PreferAngleBracketExtensions.visit, for: node)
     visitIfEnabled(PreferSwiftTesting.visit, for: node)
@@ -417,8 +419,8 @@ class LintPipeline: SyntaxVisitor {
   }
   override func visitPost(_ node: ExtensionDeclSyntax) {
     onVisitPost(rule: DocCommentsBeforeModifiers.self, for: node)
+    onVisitPost(rule: ExtensionAccessLevel.self, for: node)
     onVisitPost(rule: ModifiersOnSameLine.self, for: node)
-    onVisitPost(rule: NoExtensionAccessLevel.self, for: node)
     onVisitPost(rule: NoRetroactiveConformances.self, for: node)
     onVisitPost(rule: PreferAngleBracketExtensions.self, for: node)
     onVisitPost(rule: PreferSwiftTesting.self, for: node)
@@ -490,11 +492,11 @@ class LintPipeline: SyntaxVisitor {
     visitIfEnabled(DocCommentSummary.visit, for: node)
     visitIfEnabled(DocCommentsBeforeModifiers.visit, for: node)
     visitIfEnabled(DocumentPublicDeclarations.visit, for: node)
+    visitIfEnabled(ExtensionAccessLevel.visit, for: node)
     visitIfEnabled(LowerCamelCase.visit, for: node)
     visitIfEnabled(ModifierOrder.visit, for: node)
     visitIfEnabled(ModifiersOnSameLine.visit, for: node)
     visitIfEnabled(NoExplicitOwnership.visit, for: node)
-    visitIfEnabled(NoExtensionAccessLevel.visit, for: node)
     visitIfEnabled(NoForceTry.visit, for: node)
     visitIfEnabled(NoForceUnwrap.visit, for: node)
     visitIfEnabled(NoGuardInTests.visit, for: node)
@@ -522,11 +524,11 @@ class LintPipeline: SyntaxVisitor {
     onVisitPost(rule: DocCommentSummary.self, for: node)
     onVisitPost(rule: DocCommentsBeforeModifiers.self, for: node)
     onVisitPost(rule: DocumentPublicDeclarations.self, for: node)
+    onVisitPost(rule: ExtensionAccessLevel.self, for: node)
     onVisitPost(rule: LowerCamelCase.self, for: node)
     onVisitPost(rule: ModifierOrder.self, for: node)
     onVisitPost(rule: ModifiersOnSameLine.self, for: node)
     onVisitPost(rule: NoExplicitOwnership.self, for: node)
-    onVisitPost(rule: NoExtensionAccessLevel.self, for: node)
     onVisitPost(rule: NoForceTry.self, for: node)
     onVisitPost(rule: NoForceUnwrap.self, for: node)
     onVisitPost(rule: NoGuardInTests.self, for: node)
@@ -690,10 +692,10 @@ class LintPipeline: SyntaxVisitor {
     visitIfEnabled(DocCommentSummary.visit, for: node)
     visitIfEnabled(DocCommentsBeforeModifiers.visit, for: node)
     visitIfEnabled(DocumentPublicDeclarations.visit, for: node)
+    visitIfEnabled(ExtensionAccessLevel.visit, for: node)
     visitIfEnabled(InitCoderUnavailable.visit, for: node)
     visitIfEnabled(ModifierOrder.visit, for: node)
     visitIfEnabled(ModifiersOnSameLine.visit, for: node)
-    visitIfEnabled(NoExtensionAccessLevel.visit, for: node)
     visitIfEnabled(OpaqueGenericParameters.visit, for: node)
     visitIfEnabled(RedundantAccessControl.visit, for: node)
     visitIfEnabled(RedundantObjc.visit, for: node)
@@ -710,10 +712,10 @@ class LintPipeline: SyntaxVisitor {
     onVisitPost(rule: DocCommentSummary.self, for: node)
     onVisitPost(rule: DocCommentsBeforeModifiers.self, for: node)
     onVisitPost(rule: DocumentPublicDeclarations.self, for: node)
+    onVisitPost(rule: ExtensionAccessLevel.self, for: node)
     onVisitPost(rule: InitCoderUnavailable.self, for: node)
     onVisitPost(rule: ModifierOrder.self, for: node)
     onVisitPost(rule: ModifiersOnSameLine.self, for: node)
-    onVisitPost(rule: NoExtensionAccessLevel.self, for: node)
     onVisitPost(rule: OpaqueGenericParameters.self, for: node)
     onVisitPost(rule: RedundantAccessControl.self, for: node)
     onVisitPost(rule: RedundantObjc.self, for: node)
@@ -966,9 +968,9 @@ class LintPipeline: SyntaxVisitor {
     visitIfEnabled(DocCommentsBeforeModifiers.visit, for: node)
     visitIfEnabled(DocumentPublicDeclarations.visit, for: node)
     visitIfEnabled(EnumNamespaces.visit, for: node)
+    visitIfEnabled(ExtensionAccessLevel.visit, for: node)
     visitIfEnabled(ModifierOrder.visit, for: node)
     visitIfEnabled(ModifiersOnSameLine.visit, for: node)
-    visitIfEnabled(NoExtensionAccessLevel.visit, for: node)
     visitIfEnabled(NoLeadingUnderscores.visit, for: node)
     visitIfEnabled(PreferSynthesizedInitializer.visit, for: node)
     visitIfEnabled(RedundantAccessControl.visit, for: node)
@@ -990,9 +992,9 @@ class LintPipeline: SyntaxVisitor {
     onVisitPost(rule: DocCommentsBeforeModifiers.self, for: node)
     onVisitPost(rule: DocumentPublicDeclarations.self, for: node)
     onVisitPost(rule: EnumNamespaces.self, for: node)
+    onVisitPost(rule: ExtensionAccessLevel.self, for: node)
     onVisitPost(rule: ModifierOrder.self, for: node)
     onVisitPost(rule: ModifiersOnSameLine.self, for: node)
-    onVisitPost(rule: NoExtensionAccessLevel.self, for: node)
     onVisitPost(rule: NoLeadingUnderscores.self, for: node)
     onVisitPost(rule: PreferSynthesizedInitializer.self, for: node)
     onVisitPost(rule: RedundantAccessControl.self, for: node)
@@ -1020,9 +1022,9 @@ class LintPipeline: SyntaxVisitor {
     visitIfEnabled(DocCommentSummary.visit, for: node)
     visitIfEnabled(DocCommentsBeforeModifiers.visit, for: node)
     visitIfEnabled(DocumentPublicDeclarations.visit, for: node)
+    visitIfEnabled(ExtensionAccessLevel.visit, for: node)
     visitIfEnabled(ModifierOrder.visit, for: node)
     visitIfEnabled(ModifiersOnSameLine.visit, for: node)
-    visitIfEnabled(NoExtensionAccessLevel.visit, for: node)
     visitIfEnabled(OpaqueGenericParameters.visit, for: node)
     visitIfEnabled(RedundantAccessControl.visit, for: node)
     visitIfEnabled(RedundantObjc.visit, for: node)
@@ -1038,9 +1040,9 @@ class LintPipeline: SyntaxVisitor {
     onVisitPost(rule: DocCommentSummary.self, for: node)
     onVisitPost(rule: DocCommentsBeforeModifiers.self, for: node)
     onVisitPost(rule: DocumentPublicDeclarations.self, for: node)
+    onVisitPost(rule: ExtensionAccessLevel.self, for: node)
     onVisitPost(rule: ModifierOrder.self, for: node)
     onVisitPost(rule: ModifiersOnSameLine.self, for: node)
-    onVisitPost(rule: NoExtensionAccessLevel.self, for: node)
     onVisitPost(rule: OpaqueGenericParameters.self, for: node)
     onVisitPost(rule: RedundantAccessControl.self, for: node)
     onVisitPost(rule: RedundantObjc.self, for: node)
@@ -1064,12 +1066,12 @@ class LintPipeline: SyntaxVisitor {
 
   override func visit(_ node: SwitchCaseLabelSyntax) -> SyntaxVisitorContinueKind {
     visitIfEnabled(NoLabelsInCasePatterns.visit, for: node)
-    visitIfEnabled(WrapCompoundCaseStatements.visit, for: node)
+    visitIfEnabled(WrapCompoundCaseItems.visit, for: node)
     return .visitChildren
   }
   override func visitPost(_ node: SwitchCaseLabelSyntax) {
     onVisitPost(rule: NoLabelsInCasePatterns.self, for: node)
-    onVisitPost(rule: WrapCompoundCaseStatements.self, for: node)
+    onVisitPost(rule: WrapCompoundCaseItems.self, for: node)
   }
 
   override func visit(_ node: SwitchCaseListSyntax) -> SyntaxVisitorContinueKind {
@@ -1143,9 +1145,9 @@ class LintPipeline: SyntaxVisitor {
     visitIfEnabled(DocCommentSummary.visit, for: node)
     visitIfEnabled(DocCommentsBeforeModifiers.visit, for: node)
     visitIfEnabled(DocumentPublicDeclarations.visit, for: node)
+    visitIfEnabled(ExtensionAccessLevel.visit, for: node)
     visitIfEnabled(ModifierOrder.visit, for: node)
     visitIfEnabled(ModifiersOnSameLine.visit, for: node)
-    visitIfEnabled(NoExtensionAccessLevel.visit, for: node)
     visitIfEnabled(NoLeadingUnderscores.visit, for: node)
     visitIfEnabled(RedundantAccessControl.visit, for: node)
     visitIfEnabled(SortTypeAliases.visit, for: node)
@@ -1157,9 +1159,9 @@ class LintPipeline: SyntaxVisitor {
     onVisitPost(rule: DocCommentSummary.self, for: node)
     onVisitPost(rule: DocCommentsBeforeModifiers.self, for: node)
     onVisitPost(rule: DocumentPublicDeclarations.self, for: node)
+    onVisitPost(rule: ExtensionAccessLevel.self, for: node)
     onVisitPost(rule: ModifierOrder.self, for: node)
     onVisitPost(rule: ModifiersOnSameLine.self, for: node)
-    onVisitPost(rule: NoExtensionAccessLevel.self, for: node)
     onVisitPost(rule: NoLeadingUnderscores.self, for: node)
     onVisitPost(rule: RedundantAccessControl.self, for: node)
     onVisitPost(rule: SortTypeAliases.self, for: node)
@@ -1170,10 +1172,10 @@ class LintPipeline: SyntaxVisitor {
     visitIfEnabled(DocCommentSummary.visit, for: node)
     visitIfEnabled(DocCommentsBeforeModifiers.visit, for: node)
     visitIfEnabled(DocumentPublicDeclarations.visit, for: node)
+    visitIfEnabled(ExtensionAccessLevel.visit, for: node)
     visitIfEnabled(LowerCamelCase.visit, for: node)
     visitIfEnabled(ModifierOrder.visit, for: node)
     visitIfEnabled(ModifiersOnSameLine.visit, for: node)
-    visitIfEnabled(NoExtensionAccessLevel.visit, for: node)
     visitIfEnabled(NoImplicitlyUnwrappedOptionals.visit, for: node)
     visitIfEnabled(NoTypeRepetitionInStaticProperties.visit, for: node)
     visitIfEnabled(PrivateStateVariables.visit, for: node)
@@ -1192,10 +1194,10 @@ class LintPipeline: SyntaxVisitor {
     onVisitPost(rule: DocCommentSummary.self, for: node)
     onVisitPost(rule: DocCommentsBeforeModifiers.self, for: node)
     onVisitPost(rule: DocumentPublicDeclarations.self, for: node)
+    onVisitPost(rule: ExtensionAccessLevel.self, for: node)
     onVisitPost(rule: LowerCamelCase.self, for: node)
     onVisitPost(rule: ModifierOrder.self, for: node)
     onVisitPost(rule: ModifiersOnSameLine.self, for: node)
-    onVisitPost(rule: NoExtensionAccessLevel.self, for: node)
     onVisitPost(rule: NoImplicitlyUnwrappedOptionals.self, for: node)
     onVisitPost(rule: NoTypeRepetitionInStaticProperties.self, for: node)
     onVisitPost(rule: PrivateStateVariables.self, for: node)
@@ -1278,6 +1280,9 @@ extension RewritePipeline {
     if context.shouldFormat(ExplicitNilCheck.self, node: node) {
       node = ExplicitNilCheck(context: context).rewrite(node)
     }
+    if context.shouldFormat(ExtensionAccessLevel.self, node: node) {
+      node = ExtensionAccessLevel(context: context).rewrite(node)
+    }
     if context.shouldFormat(FileHeader.self, node: node) {
       node = FileHeader(context: context).rewrite(node)
     }
@@ -1325,9 +1330,6 @@ extension RewritePipeline {
     }
     if context.shouldFormat(NoExplicitOwnership.self, node: node) {
       node = NoExplicitOwnership(context: context).rewrite(node)
-    }
-    if context.shouldFormat(NoExtensionAccessLevel.self, node: node) {
-      node = NoExtensionAccessLevel(context: context).rewrite(node)
     }
     if context.shouldFormat(NoFallthroughOnlyCases.self, node: node) {
       node = NoFallthroughOnlyCases(context: context).rewrite(node)
@@ -1421,6 +1423,9 @@ extension RewritePipeline {
     }
     if context.shouldFormat(PreferSwiftTesting.self, node: node) {
       node = PreferSwiftTesting(context: context).rewrite(node)
+    }
+    if context.shouldFormat(PreferTernary.self, node: node) {
+      node = PreferTernary(context: context).rewrite(node)
     }
     if context.shouldFormat(PreferTrailingClosures.self, node: node) {
       node = PreferTrailingClosures(context: context).rewrite(node)
@@ -1551,8 +1556,8 @@ extension RewritePipeline {
     if context.shouldFormat(ValidateTestCases.self, node: node) {
       node = ValidateTestCases(context: context).rewrite(node)
     }
-    if context.shouldFormat(WrapCompoundCaseStatements.self, node: node) {
-      node = WrapCompoundCaseStatements(context: context).rewrite(node)
+    if context.shouldFormat(WrapCompoundCaseItems.self, node: node) {
+      node = WrapCompoundCaseItems(context: context).rewrite(node)
     }
     if context.shouldFormat(WrapConditionalAssignment.self, node: node) {
       node = WrapConditionalAssignment(context: context).rewrite(node)
