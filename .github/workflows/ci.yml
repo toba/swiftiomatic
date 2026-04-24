@@ -11,7 +11,6 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
   XCODE_VERSION: '26.4'
 
 jobs:
@@ -19,13 +18,13 @@ jobs:
     runs-on: macos-26
 
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v6
 
     - name: Select Xcode version
       run: sudo xcode-select -s /Applications/Xcode_${{ env.XCODE_VERSION }}.app/Contents/Developer
 
     - name: Cache SPM build
-      uses: actions/cache@v4
+      uses: actions/cache@v5
       with:
         path: .build
         key: spm-debug-${{ runner.os }}-xcode${{ env.XCODE_VERSION }}-${{ hashFiles('Package.resolved') }}

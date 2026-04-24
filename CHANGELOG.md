@@ -47,6 +47,7 @@
 - Pre-commit hook to regenerate `schema.json` ([#369](https://github.com/toba/swiftiomatic/issues/369))
 - Create SPM build tool plugin target ([#352](https://github.com/toba/swiftiomatic/issues/352))
 - Swift review; code quality and modernization fixes
+- Update GitHub Actions to Node.js 24-native versions; remove `FORCE_JAVASCRIPT_ACTIONS_TO_NODE24` workaround
 
 ## Week of Apr 12 – Apr 18, 2026
 

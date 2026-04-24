@@ -91,7 +91,7 @@ final class FullyIndirectEnum: RewriteSyntaxRule<BasicRuleValue> {
 
         newEnumDecl.modifiers = newEnumDecl.modifiers + [newModifier]
         newEnumDecl.memberBlock.members = MemberBlockItemListSyntax(newMembers)
-        return DeclSyntax(newEnumDecl)
+        return .init(newEnumDecl)
     }
 
     /// Returns a value indicating whether all enum cases in the given list are indirect.
@@ -101,6 +101,7 @@ final class FullyIndirectEnum: RewriteSyntaxRule<BasicRuleValue> {
         in members: MemberBlockItemListSyntax
     ) -> [DeclModifierSyntax] {
         var indirectModifiers = [DeclModifierSyntax]()
+
         for member in members {
             if let caseMember = member.decl.as(EnumCaseDeclSyntax.self) {
                 guard
