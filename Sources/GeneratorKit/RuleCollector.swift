@@ -34,14 +34,19 @@ package final class RuleCollector {
     ///
     /// - Parameter url: The file system URL that should be scanned for rules.
     package func collectSyntaxRules(from url: URL) throws {
-        try enumerateSwiftStatements(in: url) { statement in
-            guard let rule = self.detectSyntaxRule(at: statement) else { return }
+        try enumerateSwiftFiles(in: url) { statements in
+            for statement in statements {
+                guard let rule = self.detectSyntaxRule(
+                    at: statement,
+                    fileStatements: statements
+                ) else { continue }
 
-            if rule.canRewrite { rewritingSyntaxRules.insert(rule) }
-            lintingSyntaxRules.insert(rule)
+                if rule.canRewrite { self.rewritingSyntaxRules.insert(rule) }
+                self.lintingSyntaxRules.insert(rule)
 
-            for visitedNode in rule.visitedNodes {
-                syntaxNodeLinters[visitedNode, default: []].append(rule.typeName)
+                for visitedNode in rule.visitedNodes {
+                    self.syntaxNodeLinters[visitedNode, default: []].append(rule.typeName)
+                }
             }
         }
     }
@@ -84,7 +89,10 @@ package final class RuleCollector {
     // MARK: - Rule detection
 
     /// Determine the rule kind for the declaration in the given statement, if any.
-    private func detectSyntaxRule(at statement: CodeBlockItemSyntax) -> DetectedSyntaxRule? {
+    private func detectSyntaxRule(
+        at statement: CodeBlockItemSyntax,
+        fileStatements: CodeBlockItemListSyntax
+    ) -> DetectedSyntaxRule? {
         let members: MemberBlockItemListSyntax
         let typeName: String
         let description = DocumentationCommentText(extractedFrom: statement.item.leadingTrivia)
@@ -119,6 +127,12 @@ package final class RuleCollector {
                 continue
             }
 
+            // Extract the generic parameter (config type name).
+            let configTypeName = identifier.genericArgumentClause?
+                .arguments.first?
+                .argument.as(IdentifierTypeSyntax.self)?
+                .name.text
+
             var visitedNodes = [String]()
 
             for member in members {
@@ -133,6 +147,17 @@ package final class RuleCollector {
 
             guard !visitedNodes.isEmpty else { return nil }
 
+            // Extract custom properties from the configuration type.
+            let customProperties: [DetectedProperty]
+            if let configTypeName {
+                customProperties = Self.extractCustomProperties(
+                    configTypeName: configTypeName,
+                    from: fileStatements
+                )
+            } else {
+                customProperties = []
+            }
+
             return DetectedSyntaxRule(
                 group: Self.extractGroup(from: members),
                 typeName: typeName,
@@ -141,9 +166,185 @@ package final class RuleCollector {
                 canRewrite: canRewrite,
                 visitedNodes: visitedNodes,
                 isOptIn: Self.extractIsOptIn(from: members),
+                customProperties: customProperties,
             )
         }
 
+        return nil
+    }
+
+    // MARK: - Custom property extraction
+
+    /// Base property keys that are already handled by `ruleBase`/`lintOnlyBase`.
+    private static let basePropertyKeys: Set<String> = ["rewrite", "lint"]
+
+    /// Extracts custom properties from a configuration struct in the file.
+    private static func extractCustomProperties(
+        configTypeName: String,
+        from statements: CodeBlockItemListSyntax
+    ) -> [DetectedProperty] {
+        // Find the config struct declaration.
+        guard let configStruct = findStruct(named: configTypeName, in: statements) else {
+            return []
+        }
+
+        let members = configStruct.memberBlock.members
+
+        // Collect nested enum types: name → [case raw values].
+        var enumTypes: [String: [String]] = [:]
+        for member in members {
+            guard let enumDecl = member.decl.as(EnumDeclSyntax.self) else { continue }
+            let cases = extractEnumCases(from: enumDecl)
+            if !cases.isEmpty {
+                enumTypes[enumDecl.name.text] = cases
+            }
+        }
+
+        // Scan stored properties for custom (non-base) ones.
+        var properties: [DetectedProperty] = []
+        for member in members {
+            guard let varDecl = member.decl.as(VariableDeclSyntax.self),
+                let binding = varDecl.bindings.firstAndOnly,
+                let pattern = binding.pattern.as(IdentifierPatternSyntax.self)
+            else { continue }
+
+            let propertyName = pattern.identifier.text
+            guard !basePropertyKeys.contains(propertyName) else { continue }
+
+            // Determine the type from the annotation or initializer.
+            guard let schemaNode = schemaNode(
+                for: binding,
+                propertyName: propertyName,
+                enumTypes: enumTypes
+            ) else { continue }
+
+            properties.append(DetectedProperty(key: propertyName, schemaNode: schemaNode))
+        }
+
+        return properties
+    }
+
+    /// Finds a struct declaration by name in the file's top-level statements.
+    private static func findStruct(
+        named name: String,
+        in statements: CodeBlockItemListSyntax
+    ) -> StructDeclSyntax? {
+        for statement in statements {
+            if let structDecl = statement.item.as(StructDeclSyntax.self),
+                structDecl.name.text == name
+            {
+                return structDecl
+            }
+        }
+        return nil
+    }
+
+    /// Extracts all case names from a `String`-backed enum.
+    private static func extractEnumCases(from enumDecl: EnumDeclSyntax) -> [String] {
+        // Only process enums that inherit from String (raw value enums).
+        guard let inheritance = enumDecl.inheritanceClause,
+            inheritance.inheritedTypes.contains(where: {
+                $0.type.as(IdentifierTypeSyntax.self)?.name.text == "String"
+            })
+        else { return [] }
+
+        var cases: [String] = []
+        for member in enumDecl.memberBlock.members {
+            guard let caseDecl = member.decl.as(EnumCaseDeclSyntax.self) else { continue }
+            for element in caseDecl.elements {
+                // Strip backticks from keyword-escaped names like `private` → "private".
+                let name = element.name.text.trimmingCharacters(in: CharacterSet(charactersIn: "`"))
+                cases.append(name)
+            }
+        }
+        return cases
+    }
+
+    /// Determines the JSON Schema node for a property binding.
+    private static func schemaNode(
+        for binding: PatternBindingSyntax,
+        propertyName: String,
+        enumTypes: [String: [String]]
+    ) -> JSONSchemaNode? {
+        // Try type annotation first.
+        if let typeAnnotation = binding.typeAnnotation {
+            return schemaNodeFromType(
+                typeAnnotation.type,
+                propertyName: propertyName,
+                enumTypes: enumTypes
+            )
+        }
+        // Fall back to initializer inference.
+        if let initializer = binding.initializer {
+            return schemaNodeFromInitializer(
+                initializer.value,
+                propertyName: propertyName,
+                enumTypes: enumTypes
+            )
+        }
+        return nil
+    }
+
+    /// Determines the schema from a type annotation.
+    private static func schemaNodeFromType(
+        _ type: TypeSyntax,
+        propertyName: String,
+        enumTypes: [String: [String]]
+    ) -> JSONSchemaNode? {
+        // Optional type: `String?` or `[String]?`
+        if let optional = type.as(OptionalTypeSyntax.self) {
+            return schemaNodeFromType(
+                optional.wrappedType,
+                propertyName: propertyName,
+                enumTypes: enumTypes
+            )
+        }
+
+        // Array type: `[String]`
+        if let array = type.as(ArrayTypeSyntax.self),
+            let elementIdent = array.element.as(IdentifierTypeSyntax.self),
+            elementIdent.name.text == "String"
+        {
+            return .stringArray(description: propertyName)
+        }
+
+        // Simple identifier type
+        if let ident = type.as(IdentifierTypeSyntax.self) {
+            let typeName = ident.name.text
+            if typeName == "String" {
+                return .string(description: propertyName)
+            }
+            // Check if it's a nested enum type.
+            if let cases = enumTypes[typeName] {
+                return .stringEnum(
+                    description: propertyName,
+                    values: cases,
+                    defaultValue: cases[0]
+                )
+            }
+        }
+
+        return nil
+    }
+
+    /// Determines the schema from an initializer expression.
+    private static func schemaNodeFromInitializer(
+        _ expr: ExprSyntax,
+        propertyName: String,
+        enumTypes: [String: [String]]
+    ) -> JSONSchemaNode? {
+        // `.someCase` → look up in enum types
+        if let memberAccess = expr.as(MemberAccessExprSyntax.self) {
+            let caseName = memberAccess.declName.baseName.text
+            // Try to find which enum type this belongs to.
+            for (_, cases) in enumTypes where cases.contains(caseName) {
+                return .stringEnum(
+                    description: propertyName,
+                    values: cases,
+                    defaultValue: caseName
+                )
+            }
+        }
         return nil
     }
 

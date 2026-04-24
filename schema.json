@@ -57,7 +57,18 @@
               "$ref" : "#/$defs/ruleBase"
             }
           ],
-          "description" : "Declarations at file scope with effective private access should be consistently declared as\neither `fileprivate` or `private`, determined by configuration.\n\nLint: If a file-scoped declaration has formal access opposite to the desired access level in the\n      formatter's configuration, a lint error is raised.\n\nFormat: File-scoped declarations that have formal access opposite to the desired access level in\n        the formatter's configuration will have their access level changed.\n"
+          "description" : "Declarations at file scope with effective private access should be consistently declared as\neither `fileprivate` or `private`, determined by configuration.\n\nLint: If a file-scoped declaration has formal access opposite to the desired access level in the\n      formatter's configuration, a lint error is raised.\n\nFormat: File-scoped declarations that have formal access opposite to the desired access level in\n        the formatter's configuration will have their access level changed.\n",
+          "properties" : {
+            "accessLevel" : {
+              "default" : "private",
+              "description" : "accessLevel Options: private, fileprivate.",
+              "enum" : [
+                "private",
+                "fileprivate"
+              ],
+              "type" : "string"
+            }
+          }
         },
         "noExtensionAccessLevel" : {
           "allOf" : [
@@ -65,7 +76,18 @@
               "$ref" : "#/$defs/ruleBase"
             }
           ],
-          "description" : "Specifying an access level for an extension declaration is forbidden.\n\nThe behavior of this rule is controlled by `Configuration.extensionAccessControl.placement`:\n\n- `onDeclarations` (default): Access levels on extensions are moved to individual members.\n- `onExtension`: When all members share the same access level, it is hoisted to the extension.\n\nLint: A lint error is raised when access control placement doesn't match the configuration.\n\nFormat: Access control modifiers are moved to match the configured placement.\n"
+          "description" : "Specifying an access level for an extension declaration is forbidden.\n\nThe behavior of this rule is controlled by `Configuration.extensionAccessControl.placement`:\n\n- `onDeclarations` (default): Access levels on extensions are moved to individual members.\n- `onExtension`: When all members share the same access level, it is hoisted to the extension.\n\nLint: A lint error is raised when access control placement doesn't match the configuration.\n\nFormat: Access control modifiers are moved to match the configured placement.\n",
+          "properties" : {
+            "placement" : {
+              "default" : "onDeclarations",
+              "description" : "placement Options: onDeclarations, onExtension.",
+              "enum" : [
+                "onDeclarations",
+                "onExtension"
+              ],
+              "type" : "string"
+            }
+          }
         },
         "preferFinalClasses" : {
           "allOf" : [
@@ -255,7 +277,18 @@
           "$ref" : "#/$defs/ruleBase"
         }
       ],
-      "description" : "Enforce consistent placement of `let`/`var` in case patterns.\n\nControlled by `Configuration.patternLet.placement`:\n\n- `eachBinding` (default): Each variable has its own `let`/`var`:\n  `case .foo(let x, let y)`.\n- `outerPattern`: The `let`/`var` is hoisted to the pattern level:\n  `case let .foo(x, y)`.\n\nLint: Using the non-preferred placement yields a lint error.\n\nFormat: The `let`/`var` is repositioned to match the configured placement.\n"
+      "description" : "Enforce consistent placement of `let`/`var` in case patterns.\n\nControlled by `Configuration.patternLet.placement`:\n\n- `eachBinding` (default): Each variable has its own `let`/`var`:\n  `case .foo(let x, let y)`.\n- `outerPattern`: The `let`/`var` is hoisted to the pattern level:\n  `case let .foo(x, y)`.\n\nLint: Using the non-preferred placement yields a lint error.\n\nFormat: The `let`/`var` is repositioned to match the configured placement.\n",
+      "properties" : {
+        "placement" : {
+          "default" : "eachBinding",
+          "description" : "placement Options: eachBinding, outerPattern.",
+          "enum" : [
+            "eachBinding",
+            "outerPattern"
+          ],
+          "type" : "string"
+        }
+      }
     },
     "closures" : {
       "additionalProperties" : false,
@@ -524,7 +557,13 @@
           "$ref" : "#/$defs/ruleBase"
         }
       ],
-      "description" : "Enforce a consistent file header comment, or remove file headers entirely.\n\nWhen configured with header text, any existing file header comment is replaced with the\nconfigured text. When configured with an empty string, any existing file header is removed.\nFile header comments are line comments (`//`) or block comments (`/* */`) at the start of\nthe file, before any blank line, doc comment, or code. Doc comments (`///`, `/** */`) are\nnot considered file header comments.\n\nThis rule is opt-in and requires configuration via `fileHeader.text` in the configuration file.\n\nLint: A warning is raised when the file header does not match the configured text.\n\nFormat: The file header is replaced with (or cleared to) the configured text.\n [opt-in]"
+      "description" : "Enforce a consistent file header comment, or remove file headers entirely.\n\nWhen configured with header text, any existing file header comment is replaced with the\nconfigured text. When configured with an empty string, any existing file header is removed.\nFile header comments are line comments (`//`) or block comments (`/* */`) at the start of\nthe file, before any blank line, doc comment, or code. Doc comments (`///`, `/** */`) are\nnot considered file header comments.\n\nThis rule is opt-in and requires configuration via `fileHeader.text` in the configuration file.\n\nLint: A warning is raised when the file header does not match the configured text.\n\nFormat: The file header is replaced with (or cleared to) the configured text.\n [opt-in]",
+      "properties" : {
+        "text" : {
+          "description" : "text",
+          "type" : "string"
+        }
+      }
     },
     "fileScopedDeclarationPrivacy" : {
       "allOf" : [
@@ -532,7 +571,18 @@
           "$ref" : "#/$defs/ruleBase"
         }
       ],
-      "description" : "Declarations at file scope with effective private access should be consistently declared as\neither `fileprivate` or `private`, determined by configuration.\n\nLint: If a file-scoped declaration has formal access opposite to the desired access level in the\n      formatter's configuration, a lint error is raised.\n\nFormat: File-scoped declarations that have formal access opposite to the desired access level in\n        the formatter's configuration will have their access level changed.\n"
+      "description" : "Declarations at file scope with effective private access should be consistently declared as\neither `fileprivate` or `private`, determined by configuration.\n\nLint: If a file-scoped declaration has formal access opposite to the desired access level in the\n      formatter's configuration, a lint error is raised.\n\nFormat: File-scoped declarations that have formal access opposite to the desired access level in\n        the formatter's configuration will have their access level changed.\n",
+      "properties" : {
+        "accessLevel" : {
+          "default" : "private",
+          "description" : "accessLevel Options: private, fileprivate.",
+          "enum" : [
+            "private",
+            "fileprivate"
+          ],
+          "type" : "string"
+        }
+      }
     },
     "forcing" : {
       "additionalProperties" : false,
@@ -614,7 +664,18 @@
               "$ref" : "#/$defs/ruleBase"
             }
           ],
-          "description" : "Enforce consistent placement of `let`/`var` in case patterns.\n\nControlled by `Configuration.patternLet.placement`:\n\n- `eachBinding` (default): Each variable has its own `let`/`var`:\n  `case .foo(let x, let y)`.\n- `outerPattern`: The `let`/`var` is hoisted to the pattern level:\n  `case let .foo(x, y)`.\n\nLint: Using the non-preferred placement yields a lint error.\n\nFormat: The `let`/`var` is repositioned to match the configured placement.\n"
+          "description" : "Enforce consistent placement of `let`/`var` in case patterns.\n\nControlled by `Configuration.patternLet.placement`:\n\n- `eachBinding` (default): Each variable has its own `let`/`var`:\n  `case .foo(let x, let y)`.\n- `outerPattern`: The `let`/`var` is hoisted to the pattern level:\n  `case let .foo(x, y)`.\n\nLint: Using the non-preferred placement yields a lint error.\n\nFormat: The `let`/`var` is repositioned to match the configured placement.\n",
+          "properties" : {
+            "placement" : {
+              "default" : "eachBinding",
+              "description" : "placement Options: eachBinding, outerPattern.",
+              "enum" : [
+                "eachBinding",
+                "outerPattern"
+              ],
+              "type" : "string"
+            }
+          }
         },
         "indirectEnum" : {
           "allOf" : [
@@ -661,7 +722,16 @@
               "$ref" : "#/$defs/ruleBase"
             }
           ],
-          "description" : "Assignment expressions must be their own statements.\n\nAssignment should not be used in an expression context that expects a `Void` value. For example,\nassigning a variable within a `return` statement exiting a `Void` function is prohibited.\n\nLint: If an assignment expression is found in a position other than a standalone statement, a\n      lint finding is emitted.\n\nFormat: A `return` statement containing an assignment expression is expanded into two separate\n        statements.\n"
+          "description" : "Assignment expressions must be their own statements.\n\nAssignment should not be used in an expression context that expects a `Void` value. For example,\nassigning a variable within a `return` statement exiting a `Void` function is prohibited.\n\nLint: If an assignment expression is found in a position other than a standalone statement, a\n      lint finding is emitted.\n\nFormat: A `return` statement containing an assignment expression is expanded into two separate\n        statements.\n",
+          "properties" : {
+            "allowedFunctions" : {
+              "description" : "allowedFunctions",
+              "items" : {
+                "type" : "string"
+              },
+              "type" : "array"
+            }
+          }
         },
         "noExplicitOwnership" : {
           "allOf" : [
@@ -736,7 +806,18 @@
           "$ref" : "#/$defs/ruleBase"
         }
       ],
-      "description" : "Imports must be lexicographically ordered and (optionally) logically grouped at the top of each source file.\nThe order of the import groups is 1) regular imports, 2) declaration imports, 3) @\\_implementationOnly\nimports, and 4) @testable imports. These groups are separated by a single blank line. Blank lines in\nbetween the import declarations are removed.\n\nLogical grouping is enabled by default but can be disabled via the `sortImports.shouldGroupImports`\nconfiguration option to limit this rule to lexicographic ordering.\n\nBy default, imports within conditional compilation blocks (`#if`, `#elseif`, `#else`) are not ordered.\nThis behavior can be controlled via the `sortImports.includeConditionalImports` configuration option.\n\nLint: If an import appears anywhere other than the beginning of the file it resides in,\n      not lexicographically ordered, or (optionally) not in the appropriate import group, a lint error is\n      raised.\n\nFormat: Imports will be reordered and (optionally) grouped at the top of the file.\n"
+      "description" : "Imports must be lexicographically ordered and (optionally) logically grouped at the top of each source file.\nThe order of the import groups is 1) regular imports, 2) declaration imports, 3) @\\_implementationOnly\nimports, and 4) @testable imports. These groups are separated by a single blank line. Blank lines in\nbetween the import declarations are removed.\n\nLogical grouping is enabled by default but can be disabled via the `sortImports.shouldGroupImports`\nconfiguration option to limit this rule to lexicographic ordering.\n\nBy default, imports within conditional compilation blocks (`#if`, `#elseif`, `#else`) are not ordered.\nThis behavior can be controlled via the `sortImports.includeConditionalImports` configuration option.\n\nLint: If an import appears anywhere other than the beginning of the file it resides in,\n      not lexicographically ordered, or (optionally) not in the appropriate import group, a lint error is\n      raised.\n\nFormat: Imports will be reordered and (optionally) grouped at the top of the file.\n",
+      "properties" : {
+        "sortOrder" : {
+          "default" : "alphabetical",
+          "description" : "sortOrder Options: alphabetical, length.",
+          "enum" : [
+            "alphabetical",
+            "length"
+          ],
+          "type" : "string"
+        }
+      }
     },
     "indentation" : {
       "additionalProperties" : false,
@@ -756,7 +837,18 @@
               "$ref" : "#/$defs/ruleBase"
             }
           ],
-          "description" : "Enforce switch case label indentation style.\n\nTwo styles are supported via `SwitchCaseIndentationConfiguration.Style`:\n- `flush`: `case` labels align with the `switch` keyword (default).\n- `indented`: `case` labels are indented one level from `switch`.\n\nLint: Raised when a `case` or `default` label doesn't match the configured style.\n\nFormat: Case labels, bodies, and the closing brace are reindented to match.\n [opt-in]"
+          "description" : "Enforce switch case label indentation style.\n\nTwo styles are supported via `SwitchCaseIndentationConfiguration.Style`:\n- `flush`: `case` labels align with the `switch` keyword (default).\n- `indented`: `case` labels are indented one level from `switch`.\n\nLint: Raised when a `case` or `default` label doesn't match the configured style.\n\nFormat: Case labels, bodies, and the closing brace are reindented to match.\n [opt-in]",
+          "properties" : {
+            "style" : {
+              "default" : "flush",
+              "description" : "style Options: flush, indented.",
+              "enum" : [
+                "flush",
+                "indented"
+              ],
+              "type" : "string"
+            }
+          }
         },
         "tabWidth" : {
           "description" : "Tab width in spaces for indentation conversion.",
@@ -922,7 +1014,17 @@
               "$ref" : "#/$defs/ruleBase"
             }
           ],
-          "description" : "Replace force-unwrapped `URL(string:)` initializers with a configured URL macro.\n\nWhen configured with a macro name like `#URL` and module like `URLFoundation`, this rule\nconverts `URL(string: \"https://example.com\")!` to `#URL(\"https://example.com\")` and adds\nthe module import if not already present.\n\nOnly simple string literals are converted — string interpolations, concatenations, and\nnon-literal expressions are left alone. The `URL(string:relativeTo:)` and\n`URL(fileURLWithPath:)` initializers are not affected.\n\nThis rule is opt-in and requires configuration via `urlMacro.macroName` and\n`urlMacro.moduleName` in the configuration file.\n\nLint: A warning is raised for each `URL(string: \"...\")!` that can be converted.\n\nFormat: The force-unwrapped URL initializer is replaced with the configured macro.\n [opt-in]"
+          "description" : "Replace force-unwrapped `URL(string:)` initializers with a configured URL macro.\n\nWhen configured with a macro name like `#URL` and module like `URLFoundation`, this rule\nconverts `URL(string: \"https://example.com\")!` to `#URL(\"https://example.com\")` and adds\nthe module import if not already present.\n\nOnly simple string literals are converted — string interpolations, concatenations, and\nnon-literal expressions are left alone. The `URL(string:relativeTo:)` and\n`URL(fileURLWithPath:)` initializers are not affected.\n\nThis rule is opt-in and requires configuration via `urlMacro.macroName` and\n`urlMacro.moduleName` in the configuration file.\n\nLint: A warning is raised for each `URL(string: \"...\")!` that can be converted.\n\nFormat: The force-unwrapped URL initializer is replaced with the configured macro.\n [opt-in]",
+          "properties" : {
+            "macroName" : {
+              "description" : "macroName",
+              "type" : "string"
+            },
+            "moduleName" : {
+              "description" : "moduleName",
+              "type" : "string"
+            }
+          }
         },
         "useShortArrayLiteral" : {
           "allOf" : [
@@ -1009,7 +1111,16 @@
               "$ref" : "#/$defs/ruleBase"
             }
           ],
-          "description" : "Capitalize acronyms when the first character is capitalized.\n\nWhen an identifier contains a titlecased acronym (e.g. `Url`, `Json`, `Id`),\nit should be fully uppercased (e.g. `URL`, `JSON`, `ID`) for consistency with\nSwift naming conventions.\n\nThe list of recognized acronyms is configurable via `Configuration.acronyms`.\n\nLint: An identifier with a titlecased acronym raises a warning.\n\nFormat: The titlecased acronym is replaced with the uppercased form.\n [opt-in]"
+          "description" : "Capitalize acronyms when the first character is capitalized.\n\nWhen an identifier contains a titlecased acronym (e.g. `Url`, `Json`, `Id`),\nit should be fully uppercased (e.g. `URL`, `JSON`, `ID`) for consistency with\nSwift naming conventions.\n\nThe list of recognized acronyms is configurable via `Configuration.acronyms`.\n\nLint: An identifier with a titlecased acronym raises a warning.\n\nFormat: The titlecased acronym is replaced with the uppercased form.\n [opt-in]",
+          "properties" : {
+            "words" : {
+              "description" : "words",
+              "items" : {
+                "type" : "string"
+              },
+              "type" : "array"
+            }
+          }
         }
       },
       "type" : "object"
@@ -1036,7 +1147,16 @@
           "$ref" : "#/$defs/ruleBase"
         }
       ],
-      "description" : "Assignment expressions must be their own statements.\n\nAssignment should not be used in an expression context that expects a `Void` value. For example,\nassigning a variable within a `return` statement exiting a `Void` function is prohibited.\n\nLint: If an assignment expression is found in a position other than a standalone statement, a\n      lint finding is emitted.\n\nFormat: A `return` statement containing an assignment expression is expanded into two separate\n        statements.\n"
+      "description" : "Assignment expressions must be their own statements.\n\nAssignment should not be used in an expression context that expects a `Void` value. For example,\nassigning a variable within a `return` statement exiting a `Void` function is prohibited.\n\nLint: If an assignment expression is found in a position other than a standalone statement, a\n      lint finding is emitted.\n\nFormat: A `return` statement containing an assignment expression is expanded into two separate\n        statements.\n",
+      "properties" : {
+        "allowedFunctions" : {
+          "description" : "allowedFunctions",
+          "items" : {
+            "type" : "string"
+          },
+          "type" : "array"
+        }
+      }
     },
     "noBacktickedSelf" : {
       "allOf" : [
@@ -1068,7 +1188,18 @@
           "$ref" : "#/$defs/ruleBase"
         }
       ],
-      "description" : "Specifying an access level for an extension declaration is forbidden.\n\nThe behavior of this rule is controlled by `Configuration.extensionAccessControl.placement`:\n\n- `onDeclarations` (default): Access levels on extensions are moved to individual members.\n- `onExtension`: When all members share the same access level, it is hoisted to the extension.\n\nLint: A lint error is raised when access control placement doesn't match the configuration.\n\nFormat: Access control modifiers are moved to match the configured placement.\n"
+      "description" : "Specifying an access level for an extension declaration is forbidden.\n\nThe behavior of this rule is controlled by `Configuration.extensionAccessControl.placement`:\n\n- `onDeclarations` (default): Access levels on extensions are moved to individual members.\n- `onExtension`: When all members share the same access level, it is hoisted to the extension.\n\nLint: A lint error is raised when access control placement doesn't match the configuration.\n\nFormat: Access control modifiers are moved to match the configured placement.\n",
+      "properties" : {
+        "placement" : {
+          "default" : "onDeclarations",
+          "description" : "placement Options: onDeclarations, onExtension.",
+          "enum" : [
+            "onDeclarations",
+            "onExtension"
+          ],
+          "type" : "string"
+        }
+      }
     },
     "noFallthroughOnlyCases" : {
       "allOf" : [
@@ -1859,7 +1990,18 @@
           "$ref" : "#/$defs/ruleBase"
         }
       ],
-      "description" : "Controls whether single-statement bodies are kept inline or wrapped to\nmultiple lines.\n\n**Wrap mode** (default): Single-line bodies in conditionals, functions,\nloops, and properties are expanded onto multiple lines.\n\n**Inline mode**: Multi-line single-statement bodies are collapsed onto the\nsame line as the declaration, provided the result fits within the configured\nline length.\n\nLint: A body whose formatting doesn't match the mode raises a warning.\n\nFormat: The body is wrapped or inlined to match the mode.\n [opt-in]"
+      "description" : "Controls whether single-statement bodies are kept inline or wrapped to\nmultiple lines.\n\n**Wrap mode** (default): Single-line bodies in conditionals, functions,\nloops, and properties are expanded onto multiple lines.\n\n**Inline mode**: Multi-line single-statement bodies are collapsed onto the\nsame line as the declaration, provided the result fits within the configured\nline length.\n\nLint: A body whose formatting doesn't match the mode raises a warning.\n\nFormat: The body is wrapped or inlined to match the mode.\n [opt-in]",
+      "properties" : {
+        "mode" : {
+          "default" : "wrap",
+          "description" : "mode Options: wrap, inline.",
+          "enum" : [
+            "wrap",
+            "inline"
+          ],
+          "type" : "string"
+        }
+      }
     },
     "singleLineComments" : {
       "allOf" : [
@@ -1887,7 +2029,18 @@
               "$ref" : "#/$defs/ruleBase"
             }
           ],
-          "description" : "Imports must be lexicographically ordered and (optionally) logically grouped at the top of each source file.\nThe order of the import groups is 1) regular imports, 2) declaration imports, 3) @\\_implementationOnly\nimports, and 4) @testable imports. These groups are separated by a single blank line. Blank lines in\nbetween the import declarations are removed.\n\nLogical grouping is enabled by default but can be disabled via the `sortImports.shouldGroupImports`\nconfiguration option to limit this rule to lexicographic ordering.\n\nBy default, imports within conditional compilation blocks (`#if`, `#elseif`, `#else`) are not ordered.\nThis behavior can be controlled via the `sortImports.includeConditionalImports` configuration option.\n\nLint: If an import appears anywhere other than the beginning of the file it resides in,\n      not lexicographically ordered, or (optionally) not in the appropriate import group, a lint error is\n      raised.\n\nFormat: Imports will be reordered and (optionally) grouped at the top of the file.\n"
+          "description" : "Imports must be lexicographically ordered and (optionally) logically grouped at the top of each source file.\nThe order of the import groups is 1) regular imports, 2) declaration imports, 3) @\\_implementationOnly\nimports, and 4) @testable imports. These groups are separated by a single blank line. Blank lines in\nbetween the import declarations are removed.\n\nLogical grouping is enabled by default but can be disabled via the `sortImports.shouldGroupImports`\nconfiguration option to limit this rule to lexicographic ordering.\n\nBy default, imports within conditional compilation blocks (`#if`, `#elseif`, `#else`) are not ordered.\nThis behavior can be controlled via the `sortImports.includeConditionalImports` configuration option.\n\nLint: If an import appears anywhere other than the beginning of the file it resides in,\n      not lexicographically ordered, or (optionally) not in the appropriate import group, a lint error is\n      raised.\n\nFormat: Imports will be reordered and (optionally) grouped at the top of the file.\n",
+          "properties" : {
+            "sortOrder" : {
+              "default" : "alphabetical",
+              "description" : "sortOrder Options: alphabetical, length.",
+              "enum" : [
+                "alphabetical",
+                "length"
+              ],
+              "type" : "string"
+            }
+          }
         },
         "switchCases" : {
           "allOf" : [
@@ -1961,7 +2114,18 @@
           "$ref" : "#/$defs/ruleBase"
         }
       ],
-      "description" : "Enforce switch case label indentation style.\n\nTwo styles are supported via `SwitchCaseIndentationConfiguration.Style`:\n- `flush`: `case` labels align with the `switch` keyword (default).\n- `indented`: `case` labels are indented one level from `switch`.\n\nLint: Raised when a `case` or `default` label doesn't match the configured style.\n\nFormat: Case labels, bodies, and the closing brace are reindented to match.\n [opt-in]"
+      "description" : "Enforce switch case label indentation style.\n\nTwo styles are supported via `SwitchCaseIndentationConfiguration.Style`:\n- `flush`: `case` labels align with the `switch` keyword (default).\n- `indented`: `case` labels are indented one level from `switch`.\n\nLint: Raised when a `case` or `default` label doesn't match the configured style.\n\nFormat: Case labels, bodies, and the closing brace are reindented to match.\n [opt-in]",
+      "properties" : {
+        "style" : {
+          "default" : "flush",
+          "description" : "style Options: flush, indented.",
+          "enum" : [
+            "flush",
+            "indented"
+          ],
+          "type" : "string"
+        }
+      }
     },
     "testSuiteAccessControl" : {
       "allOf" : [
@@ -2087,7 +2251,17 @@
           "$ref" : "#/$defs/ruleBase"
         }
       ],
-      "description" : "Replace force-unwrapped `URL(string:)` initializers with a configured URL macro.\n\nWhen configured with a macro name like `#URL` and module like `URLFoundation`, this rule\nconverts `URL(string: \"https://example.com\")!` to `#URL(\"https://example.com\")` and adds\nthe module import if not already present.\n\nOnly simple string literals are converted — string interpolations, concatenations, and\nnon-literal expressions are left alone. The `URL(string:relativeTo:)` and\n`URL(fileURLWithPath:)` initializers are not affected.\n\nThis rule is opt-in and requires configuration via `urlMacro.macroName` and\n`urlMacro.moduleName` in the configuration file.\n\nLint: A warning is raised for each `URL(string: \"...\")!` that can be converted.\n\nFormat: The force-unwrapped URL initializer is replaced with the configured macro.\n [opt-in]"
+      "description" : "Replace force-unwrapped `URL(string:)` initializers with a configured URL macro.\n\nWhen configured with a macro name like `#URL` and module like `URLFoundation`, this rule\nconverts `URL(string: \"https://example.com\")!` to `#URL(\"https://example.com\")` and adds\nthe module import if not already present.\n\nOnly simple string literals are converted — string interpolations, concatenations, and\nnon-literal expressions are left alone. The `URL(string:relativeTo:)` and\n`URL(fileURLWithPath:)` initializers are not affected.\n\nThis rule is opt-in and requires configuration via `urlMacro.macroName` and\n`urlMacro.moduleName` in the configuration file.\n\nLint: A warning is raised for each `URL(string: \"...\")!` that can be converted.\n\nFormat: The force-unwrapped URL initializer is replaced with the configured macro.\n [opt-in]",
+      "properties" : {
+        "macroName" : {
+          "description" : "macroName",
+          "type" : "string"
+        },
+        "moduleName" : {
+          "description" : "moduleName",
+          "type" : "string"
+        }
+      }
     },
     "unusedArguments" : {
       "allOf" : [
@@ -2103,7 +2277,16 @@
           "$ref" : "#/$defs/ruleBase"
         }
       ],
-      "description" : "Capitalize acronyms when the first character is capitalized.\n\nWhen an identifier contains a titlecased acronym (e.g. `Url`, `Json`, `Id`),\nit should be fully uppercased (e.g. `URL`, `JSON`, `ID`) for consistency with\nSwift naming conventions.\n\nThe list of recognized acronyms is configurable via `Configuration.acronyms`.\n\nLint: An identifier with a titlecased acronym raises a warning.\n\nFormat: The titlecased acronym is replaced with the uppercased form.\n [opt-in]"
+      "description" : "Capitalize acronyms when the first character is capitalized.\n\nWhen an identifier contains a titlecased acronym (e.g. `Url`, `Json`, `Id`),\nit should be fully uppercased (e.g. `URL`, `JSON`, `ID`) for consistency with\nSwift naming conventions.\n\nThe list of recognized acronyms is configurable via `Configuration.acronyms`.\n\nLint: An identifier with a titlecased acronym raises a warning.\n\nFormat: The titlecased acronym is replaced with the uppercased form.\n [opt-in]",
+      "properties" : {
+        "words" : {
+          "description" : "words",
+          "items" : {
+            "type" : "string"
+          },
+          "type" : "array"
+        }
+      }
     },
     "useShortArrayLiteral" : {
       "allOf" : [
@@ -2173,7 +2356,18 @@
               "$ref" : "#/$defs/ruleBase"
             }
           ],
-          "description" : "Controls whether single-statement bodies are kept inline or wrapped to\nmultiple lines.\n\n**Wrap mode** (default): Single-line bodies in conditionals, functions,\nloops, and properties are expanded onto multiple lines.\n\n**Inline mode**: Multi-line single-statement bodies are collapsed onto the\nsame line as the declaration, provided the result fits within the configured\nline length.\n\nLint: A body whose formatting doesn't match the mode raises a warning.\n\nFormat: The body is wrapped or inlined to match the mode.\n [opt-in]"
+          "description" : "Controls whether single-statement bodies are kept inline or wrapped to\nmultiple lines.\n\n**Wrap mode** (default): Single-line bodies in conditionals, functions,\nloops, and properties are expanded onto multiple lines.\n\n**Inline mode**: Multi-line single-statement bodies are collapsed onto the\nsame line as the declaration, provided the result fits within the configured\nline length.\n\nLint: A body whose formatting doesn't match the mode raises a warning.\n\nFormat: The body is wrapped or inlined to match the mode.\n [opt-in]",
+          "properties" : {
+            "mode" : {
+              "default" : "wrap",
+              "description" : "mode Options: wrap, inline.",
+              "enum" : [
+                "wrap",
+                "inline"
+              ],
+              "type" : "string"
+            }
+          }
         },
         "singleLineComments" : {
           "allOf" : [

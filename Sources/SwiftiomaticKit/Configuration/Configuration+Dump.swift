@@ -22,13 +22,12 @@ extension Configuration {
     ///
     /// Rule objects that fit within 100 columns are printed on a single line.
     package func asJsonString(sortBy order: KeySortOrder = .length) throws(SwiftiomaticError) -> String {
-        // Encode to JSONValue, inject $schema, then serialize with key ordering.
+        // Encode to JSONValue, then serialize with key ordering.
+        // $schema is emitted by encode(to:), pinned to the top by the serializer.
         let jsonValue: JSONValue
         do {
             let data = try JSONEncoder().encode(self)
-            var decoded = try JSONDecoder().decode([String: JSONValue].self, from: data)
-            decoded["$schema"] = .string(Self.schemaURL)
-            jsonValue = .object(decoded)
+            jsonValue = try JSONDecoder().decode(JSONValue.self, from: data)
         } catch {
             throw SwiftiomaticError.configurationDumpFailed("\(error)")
         }

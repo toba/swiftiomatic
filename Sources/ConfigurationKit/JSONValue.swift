@@ -169,11 +169,15 @@ extension JSONValue {
                 return
             }
             let sortedKeys: [String]
+            let pinned = ["$schema", "version"]
+            let pinnedSet = Set(pinned)
+            let pinnedPresent = pinned.filter { dict.keys.contains($0) }
+            let remaining = dict.keys.filter { !pinnedSet.contains($0) }
             switch order {
             case .length:
-                sortedKeys = dict.keys.sorted { $0.count < $1.count || ($0.count == $1.count && $0 < $1) }
+                sortedKeys = pinnedPresent + remaining.sorted { $0.count < $1.count || ($0.count == $1.count && $0 < $1) }
             case .alphabetical:
-                sortedKeys = dict.keys.sorted()
+                sortedKeys = pinnedPresent + remaining.sorted()
             }
             output += "{\n"
             let childIndent = indent + 2

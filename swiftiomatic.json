@@ -1,4 +1,5 @@
 {
+	"$schema": "https://raw.githubusercontent.com/toba/swiftiomatic/refs/heads/main/schema.json",
 	"sort": {
 		"imports": {
 			"lint": "warn",
@@ -12,7 +13,7 @@
 		"declarations": { "lint": "warn", "rewrite": true }
 	},
 	"wrap": {
-		"singleLineBodies": { "lint": "no", "mode": "wrap", "rewrite": true },
+		"singleLineBodies": { "lint": "no", "mode": "wrap", "rewrite": false },
 		"singleLineComments": { "lint": "no", "rewrite": false },
 		"conditionalAssignment": { "lint": "no", "rewrite": false },
 		"compoundCaseStatements": { "lint": "no", "rewrite": false },
@@ -21,9 +22,9 @@
 		"prioritizeKeepingFunctionOutputTogether": false
 	},
 	"hoist": {
-		"caseLet": { "lint": "no", "rewrite": true, "placement": "eachBinding" },
-		"nestedTry": { "lint": "no", "rewrite": true },
-		"nestedAwait": { "lint": "no", "rewrite": true },
+		"caseLet": { "lint": "warn", "rewrite": true, "placement": "eachBinding" },
+		"nestedTry": { "lint": "warn", "rewrite": true },
+		"nestedAwait": { "lint": "warn", "rewrite": true },
 		"indirectEnum": { "lint": "warn", "rewrite": true }
 	},
 	"types": {
@@ -49,8 +50,8 @@
 	},
 	"idioms": {
 		"preferFileID": { "lint": "no", "rewrite": false },
-		"preferIsEmpty": { "lint": "warn", "rewrite": true },
-		"preferKeyPath": { "lint": "warn", "rewrite": false },
+		"preferIsEmpty": { "lint": "no", "rewrite": false },
+		"preferKeyPath": { "lint": "no", "rewrite": false },
 		"preferCountWhere": { "lint": "warn", "rewrite": true },
 		"noExplicitOwnership": { "lint": "no", "rewrite": false },
 		"noAssignmentInExpressions": {
@@ -101,7 +102,6 @@
 		"spacesBeforeEndOfLineComments": 2,
 		"spacesAroundRangeFormationOperators": false
 	},
-	"$schema": "https://raw.githubusercontent.com/toba/swiftiomatic/refs/heads/main/schema.json",
 	"forcing": {
 		"noForceTry": { "lint": "no", "rewrite": false },
 		"noForceUnwrap": { "lint": "no", "rewrite": false }

@@ -30,6 +30,14 @@ extension RuleCollector {
         var configKey: String { get }
     }
 
+    /// A custom property on a rule's configuration type, for JSON Schema generation.
+    struct DetectedProperty {
+        /// The JSON key for this property (from CodingKeys or the property name).
+        let key: String
+        /// The schema node describing this property's type and constraints.
+        let schemaNode: JSONSchemaNode
+    }
+
     /// Information about a detected rule.
     struct DetectedSyntaxRule: DetectedRule {
         let group: ConfigurationGroup?
@@ -45,6 +53,13 @@ extension RuleCollector {
 
         /// Whether this rule is disabled by default (opt-in).
         let isOptIn: Bool
+
+        /// Custom properties beyond `rewrite`/`lint` on the configuration type.
+        var customProperties: [DetectedProperty] = []
+
+        // Hashable/Equatable based on typeName only — customProperties are metadata.
+        static func == (lhs: Self, rhs: Self) -> Bool { lhs.typeName == rhs.typeName }
+        func hash(into hasher: inout Hasher) { hasher.combine(typeName) }
     }
 
     /// Information about a detected layout rule.

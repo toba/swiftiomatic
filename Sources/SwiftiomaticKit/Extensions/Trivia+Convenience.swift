@@ -16,10 +16,10 @@ extension Trivia {
     var hasAnyComments: Bool {
         contains {
             switch $0 {
-            case .lineComment, .docLineComment, .blockComment, .docBlockComment:
-                return true
-            default:
-                return false
+                case .lineComment, .docLineComment, .blockComment, .docBlockComment:
+                    return true
+                default:
+                    return false
             }
         }
     }
@@ -51,13 +51,15 @@ extension Trivia {
         var maybeLastNewlineOffset: Int?
         for (offset, piece) in enumerated() {
             switch piece {
-            case .newlines, .carriageReturns, .carriageReturnLineFeeds:
-                maybeLastNewlineOffset = offset
-            default:
-                break
+                case .newlines, .carriageReturns, .carriageReturnLineFeeds:
+                    maybeLastNewlineOffset = offset
+                default:
+                    break
             }
         }
-        guard let lastNewlineOffset = maybeLastNewlineOffset else { return self }
+        guard let lastNewlineOffset = maybeLastNewlineOffset else {
+            return self
+        }
         return Trivia(pieces: dropLast(count - lastNewlineOffset))
     }
 
@@ -87,10 +89,10 @@ extension Trivia {
         var result = ""
         for piece in pieces {
             switch piece {
-            case .backslashes, .pounds:
-                piece.write(to: &result)
-            default:
-                break
+                case .backslashes, .pounds:
+                    piece.write(to: &result)
+                default:
+                    break
             }
         }
         return result.isEmpty ? nil : result
@@ -115,7 +117,9 @@ extension Trivia {
 
     /// Whether this trivia contains at least one blank line (two or more newlines before any
     /// non-whitespace content).
-    var hasBlankLine: Bool { blankLineCount > 0 }
+    var hasBlankLine: Bool {
+        blankLineCount > 0
+    }
 
     /// Returns a copy with multi-newline pieces collapsed to single newlines.
     var reducingToSingleNewlines: Trivia {
@@ -132,10 +136,10 @@ extension Trivia {
     var totalNewlineCount: Int {
         pieces.reduce(0) { count, piece in
             switch piece {
-            case .newlines(let n): count + n
-            case .carriageReturns(let n): count + n
-            case .carriageReturnLineFeeds(let n): count + n
-            default: count
+                case .newlines(let n): count + n
+                case .carriageReturns(let n): count + n
+                case .carriageReturnLineFeeds(let n): count + n
+                default: count
             }
         }
     }
@@ -211,14 +215,14 @@ extension Trivia {
         for piece in pieces.reversed() {
             if foundNewline { break }
             switch piece {
-            case .spaces(let n):
-                indent = String(repeating: " ", count: n) + indent
-            case .tabs(let n):
-                indent = String(repeating: "\t", count: n) + indent
-            case .newlines, .carriageReturns, .carriageReturnLineFeeds:
-                foundNewline = true
-            default:
-                indent = ""
+                case .spaces(let n):
+                    indent = String(repeating: " ", count: n) + indent
+                case .tabs(let n):
+                    indent = String(repeating: "\t", count: n) + indent
+                case .newlines, .carriageReturns, .carriageReturnLineFeeds:
+                    foundNewline = true
+                default:
+                    indent = ""
             }
         }
         return indent

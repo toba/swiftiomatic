@@ -140,6 +140,14 @@ package final class ConfigurationSchemaGenerator: FileGenerator {
         ref.ref = rule.canRewrite ? "#/$defs/ruleBase" : "#/$defs/lintOnlyBase"
 
         node.allOf = [ref]
+
+        // Add custom properties (enums, strings, arrays) beyond base rewrite/lint.
+        if !rule.customProperties.isEmpty {
+            node.properties = rule.customProperties.reduce(into: [:]) { dict, prop in
+                dict[prop.key] = prop.schemaNode
+            }
+        }
+
         return node
     }
 

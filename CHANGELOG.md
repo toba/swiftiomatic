@@ -12,6 +12,10 @@
 - Convert code generator to SPM build tool plugin
 - Rationalize rule value types; `SyntaxRuleValue` protocol replaces `RuleHandling` enum
 
+### 🐛 Fixes
+
+- JSON schema now emits enum constraints for rule-specific properties; validates `mode`, `style`, `placement`, `accessLevel`, `sortOrder`
+
 ### 🗜️ Tweaks
 
 - Config properties match rule capabilities; `LintOnlyValue` for 16 lint-only rules
