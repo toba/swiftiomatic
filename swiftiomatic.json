@@ -1,5 +1,4 @@
 {
-	"$schema": "https://raw.githubusercontent.com/toba/swiftiomatic/refs/heads/main/schema.json",
 	"sort": {
 		"imports": {
 			"lint": "warn",
@@ -102,9 +101,10 @@
 		"spacesBeforeEndOfLineComments": 2,
 		"spacesAroundRangeFormationOperators": false
 	},
+	"$schema": "https://raw.githubusercontent.com/toba/swiftiomatic/refs/heads/main/schema.json",
 	"forcing": {
-		"noForceTry": { "lint": "warn", "rewrite": false },
-		"noForceUnwrap": { "lint": "warn", "rewrite": false }
+		"noForceTry": { "lint": "no", "rewrite": false },
+		"noForceUnwrap": { "lint": "no", "rewrite": false }
 	},
 	"testing": {
 		"noGuardInTests": { "lint": "no", "rewrite": false },
@@ -181,7 +181,7 @@
 		"unit": { "spaces": 4 },
 		"tabWidth": 8,
 		"blankLines": false,
-		"switchCases": { "lint": "no", "style": "indented", "rewrite": true },
+		"switchCases": { "lint": "no", "style": "flush", "rewrite": false },
 		"conditionalCompilationBlocks": false
 	},
 	"declarations": {
