@@ -298,6 +298,54 @@ struct BlankLinesBeforeControlFlowTests: RuleTesting {
     )
   }
 
+  @Test func insertsBlankInsideSwitchCase() {
+    assertFormatting(
+      BlankLinesBeforeControlFlow.self,
+      input: """
+        func test() {
+            switch value {
+            case .a:
+                let x = compute()
+                1️⃣if x > 0 {
+                    process(x)
+                }
+            case .b:
+                let y = prepare()
+                2️⃣for item in items {
+                    handle(item)
+                }
+            default:
+                break
+            }
+        }
+        """,
+      expected: """
+        func test() {
+            switch value {
+            case .a:
+                let x = compute()
+
+                if x > 0 {
+                    process(x)
+                }
+            case .b:
+                let y = prepare()
+
+                for item in items {
+                    handle(item)
+                }
+            default:
+                break
+            }
+        }
+        """,
+      findings: [
+        FindingSpec("1️⃣", message: "insert blank line before control flow statement"),
+        FindingSpec("2️⃣", message: "insert blank line before control flow statement"),
+      ]
+    )
+  }
+
   @Test func nestedControlFlow() {
     assertFormatting(
       BlankLinesBeforeControlFlow.self,

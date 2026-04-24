@@ -12,14 +12,38 @@ import SwiftSyntax
 ///
 /// Format: A blank line is inserted before the control flow statement.
 final class BlankLinesBeforeControlFlow: RewriteSyntaxRule<BasicRuleValue> {
-    override class var key: String { "beforeControlFlow" }
-    override class var group: ConfigurationGroup? { .blankLines }
-    override class var defaultValue: BasicRuleValue { .init(rewrite: false, lint: .no) }
+    override static var key: String { "beforeControlFlow" }
+    override static var group: ConfigurationGroup? { .blankLines }
+    override static var defaultValue: BasicRuleValue { .init(rewrite: false, lint: .no) }
 
     override func visit(_ node: CodeBlockSyntax) -> CodeBlockSyntax {
         let originalItems = Array(node.statements)
         let visited = super.visit(node)
-        let visitedItems = Array(visited.statements)
+        guard let statements = insertBlankLines(
+            in: originalItems, visited: Array(visited.statements)
+        ) else { return visited }
+        var result = visited
+        result.statements = CodeBlockItemListSyntax(statements)
+        return result
+    }
+
+    override func visit(_ node: SwitchCaseSyntax) -> SwitchCaseSyntax {
+        let originalItems = Array(node.statements)
+        let visited = super.visit(node)
+        guard let statements = insertBlankLines(
+            in: originalItems, visited: Array(visited.statements)
+        ) else { return visited }
+        var result = visited
+        result.statements = CodeBlockItemListSyntax(statements)
+        return result
+    }
+
+    // MARK: - Blank line insertion
+
+    private func insertBlankLines(
+        in originalItems: [CodeBlockItemSyntax],
+        visited visitedItems: [CodeBlockItemSyntax]
+    ) -> [CodeBlockItemSyntax]? {
         var statements = visitedItems
         var modified = false
 
@@ -35,48 +59,42 @@ final class BlankLinesBeforeControlFlow: RewriteSyntaxRule<BasicRuleValue> {
             modified = true
         }
 
-        guard modified else { return visited }
-        var result = visited
-        result.statements = CodeBlockItemListSyntax(statements)
-        return result
+        return modified ? statements : nil
     }
 
     // MARK: - Helpers
 
     private func isMultiLineControlFlow(_ item: CodeBlockItemSyntax.Item) -> Bool {
         switch item {
-        case .stmt(let stmt):
-            if let forStmt = stmt.as(ForStmtSyntax.self) {
-                return isMultiLineBody(forStmt.body)
-            }
-            if let whileStmt = stmt.as(WhileStmtSyntax.self) {
-                return isMultiLineBody(whileStmt.body)
-            }
-            if let repeatStmt = stmt.as(RepeatStmtSyntax.self) {
-                return isMultiLineBody(repeatStmt.body)
-            }
-            if let doStmt = stmt.as(DoStmtSyntax.self) {
-                return isMultiLineBody(doStmt.body)
-            }
-            if let deferStmt = stmt.as(DeferStmtSyntax.self) {
-                return isMultiLineBody(deferStmt.body)
-            }
-            // if/switch are expressions wrapped in ExpressionStmtSyntax
-            if let exprStmt = stmt.as(ExpressionStmtSyntax.self) {
-                return isMultiLineControlFlowExpr(exprStmt.expression)
-            }
-            return false
-        case .expr(let expr):
-            return isMultiLineControlFlowExpr(expr)
-        default:
-            return false
+            case .stmt(let stmt):
+                if let forStmt = stmt.as(ForStmtSyntax.self) {
+                    return isMultiLineBody(forStmt.body)
+                }
+                if let whileStmt = stmt.as(WhileStmtSyntax.self) {
+                    return isMultiLineBody(whileStmt.body)
+                }
+                if let repeatStmt = stmt.as(RepeatStmtSyntax.self) {
+                    return isMultiLineBody(repeatStmt.body)
+                }
+                if let doStmt = stmt.as(DoStmtSyntax.self) { return isMultiLineBody(doStmt.body) }
+                if let deferStmt = stmt.as(DeferStmtSyntax.self) {
+                    return isMultiLineBody(deferStmt.body)
+                }
+                // if/switch are expressions wrapped in ExpressionStmtSyntax
+                if let exprStmt = stmt.as(ExpressionStmtSyntax.self) {
+                    return isMultiLineControlFlowExpr(exprStmt.expression)
+                }
+                return false
+            case .expr(let expr):
+                return isMultiLineControlFlowExpr(expr)
+            default:
+                return false
         }
     }
 
     private func isMultiLineControlFlowExpr(_ expr: ExprSyntax) -> Bool {
-        if let ifExpr = expr.as(IfExprSyntax.self) {
-            return isMultiLineBody(ifExpr.body)
-        }
+        if let ifExpr = expr.as(IfExprSyntax.self) { return isMultiLineBody(ifExpr.body) }
+
         if let switchExpr = expr.as(SwitchExprSyntax.self) {
             return switchExpr.rightBrace.leadingTrivia.containsNewlines
         }

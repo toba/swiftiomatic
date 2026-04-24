@@ -149,6 +149,7 @@
 		"betweenScopes": { "lint": "no", "rewrite": false },
 		"betweenImports": { "lint": "no", "rewrite": false },
 		"afterSwitchCase": { "lint": "no", "rewrite": false },
+		"beforeControlFlow": { "lint": "no", "rewrite": true },
 		"maximumBlankLines": 1,
 		"beforeAndAfterMark": { "lint": "no", "rewrite": false },
 		"afterGuardStatements": { "lint": "no", "rewrite": false },

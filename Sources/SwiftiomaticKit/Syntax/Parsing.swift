@@ -60,8 +60,8 @@ func parseAndEmitDiagnostics(
     let diagnostics = ParseDiagnosticsGenerator.diagnostics(for: sourceFile)
     var hasErrors = false
     if let parsingDiagnosticHandler {
-        let expectedConverter =
-            SourceLocationConverter(fileName: url?.path ?? "<unknown>", tree: sourceFile)
+        let expectedConverter = SourceLocationConverter(
+            fileName: url?.path ?? "<unknown>", tree: sourceFile)
         for diagnostic in diagnostics {
             let location = diagnostic.location(converter: expectedConverter)
 

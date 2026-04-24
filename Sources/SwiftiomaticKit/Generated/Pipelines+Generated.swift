@@ -1073,11 +1073,13 @@ class LintPipeline: SyntaxVisitor {
   }
 
   override func visit(_ node: SwitchCaseSyntax) -> SyntaxVisitorContinueKind {
+    visitIfEnabled(BlankLinesBeforeControlFlow.visit, for: node)
     visitIfEnabled(RedundantBreak.visit, for: node)
     visitIfEnabled(SortSwitchCases.visit, for: node)
     return .visitChildren
   }
   override func visitPost(_ node: SwitchCaseSyntax) {
+    onVisitPost(rule: BlankLinesBeforeControlFlow.self, for: node)
     onVisitPost(rule: RedundantBreak.self, for: node)
     onVisitPost(rule: SortSwitchCases.self, for: node)
   }
