@@ -86,8 +86,6 @@ extension SyntaxVisitorOverrideCollector {
         /// The parameter type (e.g. "AccessorDeclListSyntax" or "TokenSyntax").
         let paramType: String
 
-
-
         static func < (lhs: DetectedOverride, rhs: DetectedOverride) -> Bool {
             if lhs.isPost != rhs.isPost { return !lhs.isPost }
             return lhs.paramType < rhs.paramType

@@ -1002,7 +1002,13 @@ package enum ConfigurationSchema {
           "type" : "boolean"
         },
         "multilineTrailingCommaBehavior" : {
-          "description" : "Trailing comma handling in multiline lists.",
+          "default" : "keptAsWritten",
+          "description" : "Trailing comma handling in multiline lists. Options: alwaysUsed, neverUsed, keptAsWritten.",
+          "enum" : [
+            "alwaysUsed",
+            "neverUsed",
+            "keptAsWritten"
+          ],
           "type" : "string"
         },
         "noPlaygroundLiterals" : {
@@ -1014,7 +1020,13 @@ package enum ConfigurationSchema {
           "description" : "The playground literals (`#colorLiteral`, `#fileLiteral`, and `#imageLiteral`) are forbidden.\n\nLint: Using a playground literal will yield a lint error with a suggestion of an API to replace\nit.\n"
         },
         "reflowMultilineStringLiterals" : {
-          "description" : "Multiline string literal reflow mode.",
+          "default" : "never",
+          "description" : "Multiline string literal reflow mode. Options: never, onlyLinesOverLength, always.",
+          "enum" : [
+            "never",
+            "onlyLinesOverLength",
+            "always"
+          ],
           "type" : "string"
         },
         "uRLMacro" : {

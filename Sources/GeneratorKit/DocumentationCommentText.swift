@@ -58,7 +58,7 @@ struct DocumentationCommentText {
 
             init(_ text: Substring) {
                 self.text = text
-                self.firstNonspaceDistance = indentationDistance(of: text)
+                firstNonspaceDistance = indentationDistance(of: text)
             }
         }
 
@@ -86,53 +86,54 @@ struct DocumentationCommentText {
         // stripped).
         for triviaPiece in trivia[commentStartIndex...] {
             switch triviaPiece {
-            case .docLineComment(let line):
-                updateIntroducer(.line)
-                lines.append(Line(line.dropFirst(3)))
+                case .docLineComment(let line):
+                    updateIntroducer(.line)
+                    lines.append(Line(line.dropFirst(3)))
 
-            case .docBlockComment(let line):
-                updateIntroducer(.block)
+                case .docBlockComment(let line):
+                    updateIntroducer(.block)
 
-                var cleaned = line.dropFirst(3)
-                if cleaned.hasSuffix("*/") {
-                    cleaned = cleaned.dropLast(2)
-                }
-
-                var hasASCIIArt = false
-                if cleaned.hasPrefix("\n") {
-                    cleaned = cleaned.dropFirst()
-                    hasASCIIArt = asciiArtLength(of: cleaned, leadingSpaces: leadingWhitespace) != 0
-                }
-
-                while !cleaned.isEmpty {
-                    var index = cleaned.firstIndex(where: \.isNewline) ?? cleaned.endIndex
-                    if hasASCIIArt {
-                        cleaned =
-                            cleaned.dropFirst(
-                                asciiArtLength(of: cleaned, leadingSpaces: leadingWhitespace)
-                            )
-                        index = cleaned.firstIndex(where: \.isNewline) ?? cleaned.endIndex
+                    var cleaned = line.dropFirst(3)
+                    if cleaned.hasSuffix("*/") {
+                        cleaned = cleaned.dropLast(2)
                     }
 
-                    // Don't add an unnecessary blank line at the end when `*/` is on its own line.
-                    guard cleaned.firstIndex(where: { !$0.isWhitespace }) != nil else {
-                        break
+                    var hasASCIIArt = false
+                    if cleaned.hasPrefix("\n") {
+                        cleaned = cleaned.dropFirst()
+                        hasASCIIArt =
+                            asciiArtLength(of: cleaned, leadingSpaces: leadingWhitespace) != 0
                     }
 
-                    let line = cleaned.prefix(upTo: index)
-                    lines.append(Line(line))
-                    cleaned = cleaned[index...].dropFirst()
-                }
+                    while !cleaned.isEmpty {
+                        var index = cleaned.firstIndex(where: \.isNewline) ?? cleaned.endIndex
+                        if hasASCIIArt {
+                            cleaned =
+                                cleaned.dropFirst(
+                                    asciiArtLength(of: cleaned, leadingSpaces: leadingWhitespace)
+                                )
+                            index = cleaned.firstIndex(where: \.isNewline) ?? cleaned.endIndex
+                        }
 
-            default:
-                break
+                        // Don't add an unnecessary blank line at the end when `*/` is on its own line.
+                        guard cleaned.firstIndex(where: { !$0.isWhitespace }) != nil else {
+                            break
+                        }
+
+                        let line = cleaned.prefix(upTo: index)
+                        lines.append(Line(line))
+                        cleaned = cleaned[index...].dropFirst()
+                    }
+
+                default:
+                    break
             }
         }
 
         // Concatenate the lines into a single string, trimming any leading indentation that might be
         // present.
         guard
-            let introducer = introducer,
+            let introducer,
             !lines.isEmpty,
             let firstLineIndex = lines.firstIndex(where: { !$0.text.isEmpty })
         else { return nil }
@@ -148,8 +149,8 @@ struct DocumentationCommentText {
 
         let commentStartDistance =
             triviaArray.distance(from: triviaArray.startIndex, to: commentStartIndex)
-        self.text = result
-        self.startIndex = trivia.index(trivia.startIndex, offsetBy: commentStartDistance)
+        text = result
+        startIndex = trivia.index(trivia.startIndex, offsetBy: commentStartDistance)
         self.introducer = introducer
     }
 }
@@ -173,9 +174,9 @@ private func contiguousWhitespace(
     loop: while index != trivia.startIndex {
         index = trivia.index(before: index)
         switch trivia[index] {
-        case .spaces(let count): whitespace += count
-        case .tabs(let count): whitespace += count
-        default: break loop
+            case .spaces(let count): whitespace += count
+            case .tabs(let count): whitespace += count
+            default: break loop
         }
     }
     return whitespace
@@ -209,22 +210,22 @@ private func findCommentStartIndex(_ triviaArray: [TriviaPiece]) -> Array<Trivia
     func firstCommentIndex(_ slice: ArraySlice<TriviaPiece>) -> Array<TriviaPiece>.Index {
         return slice.firstIndex(where: {
             switch $0 {
-            case .docLineComment, .docBlockComment:
-                return true
-            default:
-                return false
+                case .docLineComment, .docBlockComment:
+                    return true
+                default:
+                    return false
             }
         }) ?? slice.endIndex
     }
 
     if let lastNonDocCommentIndex = triviaArray.lastIndex(where: {
         switch $0 {
-        case .docBlockComment, .docLineComment,
-            .newlines(1), .carriageReturns(1), .carriageReturnLineFeeds(1),
-            .spaces, .tabs:
-            return false
-        default:
-            return true
+            case .docBlockComment, .docLineComment,
+                .newlines(1), .carriageReturns(1), .carriageReturnLineFeeds(1),
+                .spaces, .tabs:
+                return false
+            default:
+                return true
         }
     }) {
         let nextIndex = triviaArray.index(after: lastNonDocCommentIndex)

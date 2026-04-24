@@ -42,6 +42,20 @@ final class RedundantInit: RewriteSyntaxRule<BasicRuleValue> {
       return super.visit(node)
     }
 
+    // Skip `self.init(...)`, `Self.init(...)`, and `super.init(...)` — these are
+    // delegation/chaining calls where `.init` is required.
+    if let baseRef = base.as(DeclReferenceExprSyntax.self) {
+      switch baseRef.baseName.tokenKind {
+      case .keyword(.self), .keyword(.Self), .keyword(.super):
+        return super.visit(node)
+      default:
+        break
+      }
+    }
+    if base.is(SuperExprSyntax.self) {
+      return super.visit(node)
+    }
+
     diagnose(.removeRedundantInit, on: memberAccess.period)
 
     // Replace `Foo.init(args)` with `Foo(args)`.

@@ -69,6 +69,7 @@ extension RuleCollector {
             case boolean
             case integer
             case string
+            case stringEnum(values: [String], defaultValue: String)
         }
 
         let group: ConfigurationGroup?
@@ -77,6 +78,9 @@ extension RuleCollector {
         let description: String?
         /// The JSON Schema type of this setting's value.
         let valueType: SchemaValueType
+
+        static func == (lhs: Self, rhs: Self) -> Bool { lhs.typeName == rhs.typeName }
+        func hash(into hasher: inout Hasher) { hasher.combine(typeName) }
     }
 }
 

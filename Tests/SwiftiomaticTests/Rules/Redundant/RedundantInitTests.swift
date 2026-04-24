@@ -112,4 +112,88 @@ struct RedundantInitTests: RuleTesting {
       findings: []
     )
   }
+
+  @Test func selfInitNotModified() {
+    assertFormatting(
+      RedundantInit.self,
+      input: """
+        class Foo {
+          convenience init(x: Int) {
+            self.init()
+          }
+        }
+        """,
+      expected: """
+        class Foo {
+          convenience init(x: Int) {
+            self.init()
+          }
+        }
+        """,
+      findings: []
+    )
+  }
+
+  @Test func selfInitWithArgsNotModified() {
+    assertFormatting(
+      RedundantInit.self,
+      input: """
+        class Foo {
+          convenience init(x: Int) {
+            self.init(value: x)
+          }
+        }
+        """,
+      expected: """
+        class Foo {
+          convenience init(x: Int) {
+            self.init(value: x)
+          }
+        }
+        """,
+      findings: []
+    )
+  }
+
+  @Test func capitalSelfInitNotModified() {
+    assertFormatting(
+      RedundantInit.self,
+      input: """
+        struct Foo {
+          static func make() -> Foo {
+            Self.init()
+          }
+        }
+        """,
+      expected: """
+        struct Foo {
+          static func make() -> Foo {
+            Self.init()
+          }
+        }
+        """,
+      findings: []
+    )
+  }
+
+  @Test func superInitNotModified() {
+    assertFormatting(
+      RedundantInit.self,
+      input: """
+        class Sub: Base {
+          override init() {
+            super.init()
+          }
+        }
+        """,
+      expected: """
+        class Sub: Base {
+          override init() {
+            super.init()
+          }
+        }
+        """,
+      findings: []
+    )
+  }
 }

@@ -36,10 +36,12 @@ package final class RuleCollector {
     package func collectSyntaxRules(from url: URL) throws {
         try enumerateSwiftFiles(in: url) { statements in
             for statement in statements {
-                guard let rule = self.detectSyntaxRule(
-                    at: statement,
-                    fileStatements: statements
-                ) else { continue }
+                guard
+                    let rule = self.detectSyntaxRule(
+                        at: statement,
+                        fileStatements: statements
+                    )
+                else { continue }
 
                 if rule.canRewrite { self.rewritingSyntaxRules.insert(rule) }
                 self.lintingSyntaxRules.insert(rule)
@@ -55,15 +57,25 @@ package final class RuleCollector {
     ///
     /// - Parameter url: The file system URL of the settings directory.
     package func collectLayoutRules(from url: URL) throws {
-        try enumerateSwiftStatements(in: url) { statement in
-            guard let rule = self.detectLayoutRule(at: statement) else { return }
-            layoutRules.append(rule)
+        try enumerateSwiftFiles(in: url) { statements in
+            for statement in statements {
+                guard
+                    let rule = self.detectLayoutRule(
+                        at: statement,
+                        fileStatements: statements
+                    )
+                else { continue }
+                self.layoutRules.append(rule)
+            }
         }
         layoutRules.sort { $0.typeName < $1.typeName }
     }
 
     /// Detect a layout rule type (struct conforming to LayoutRule).
-    private func detectLayoutRule(at statement: CodeBlockItemSyntax) -> DetectedLayoutRule? {
+    private func detectLayoutRule(
+        at statement: CodeBlockItemSyntax,
+        fileStatements: CodeBlockItemListSyntax
+    ) -> DetectedLayoutRule? {
         guard let structDecl = statement.item.as(StructDeclSyntax.self),
             let inheritanceClause = structDecl.inheritanceClause
         else { return nil }
@@ -80,7 +92,11 @@ package final class RuleCollector {
                 typeName: structDecl.name.text,
                 customKey: Self.extractStringLiteral(named: "key", from: members),
                 description: Self.extractStringLiteral(named: "description", from: members),
-                valueType: Self.detectValueType(named: "defaultValue", from: members)
+                valueType: Self.detectValueType(
+                    named: "defaultValue",
+                    from: members,
+                    fileStatements: fileStatements
+                )
             )
         }
         return nil
@@ -119,12 +135,12 @@ package final class RuleCollector {
 
             let canRewrite: Bool
             switch identifier.name.text {
-            case "LintSyntaxRule":
-                canRewrite = false
-            case "RewriteSyntaxRule":
-                canRewrite = true
-            default:
-                continue
+                case "LintSyntaxRule":
+                    canRewrite = false
+                case "RewriteSyntaxRule":
+                    canRewrite = true
+                default:
+                    continue
             }
 
             // Extract the generic parameter (config type name).
@@ -212,11 +228,13 @@ package final class RuleCollector {
             guard !basePropertyKeys.contains(propertyName) else { continue }
 
             // Determine the type from the annotation or initializer.
-            guard let schemaNode = schemaNode(
-                for: binding,
-                propertyName: propertyName,
-                enumTypes: enumTypes
-            ) else { continue }
+            guard
+                let schemaNode = schemaNode(
+                    for: binding,
+                    propertyName: propertyName,
+                    enumTypes: enumTypes
+                )
+            else { continue }
 
             properties.append(DetectedProperty(key: propertyName, schemaNode: schemaNode))
         }
@@ -266,37 +284,49 @@ package final class RuleCollector {
         propertyName: String,
         enumTypes: [String: [String]]
     ) -> JSONSchemaNode? {
-        // Try type annotation first.
+        let defaultCase = defaultCaseName(from: binding.initializer?.value)
+
+        // Try type annotation first (with initializer for the real default).
         if let typeAnnotation = binding.typeAnnotation {
             return schemaNodeFromType(
                 typeAnnotation.type,
                 propertyName: propertyName,
-                enumTypes: enumTypes
+                enumTypes: enumTypes,
+                defaultCase: defaultCase
             )
         }
-        // Fall back to initializer inference.
-        if let initializer = binding.initializer {
-            return schemaNodeFromInitializer(
-                initializer.value,
-                propertyName: propertyName,
-                enumTypes: enumTypes
+
+        // No type annotation — infer from initializer alone (e.g. `.wrap`).
+        if let defaultCase, let (cases, _) = enumTypes.first(where: { $1.contains(defaultCase) }) {
+            return .stringEnum(
+                description: propertyName,
+                values: enumTypes[cases]!,
+                defaultValue: defaultCase
             )
         }
+
         return nil
+    }
+
+    /// Extracts the case name from a `.someCase` initializer expression.
+    private static func defaultCaseName(from expr: ExprSyntax?) -> String? {
+        expr?.as(MemberAccessExprSyntax.self)?.declName.baseName.text
     }
 
     /// Determines the schema from a type annotation.
     private static func schemaNodeFromType(
         _ type: TypeSyntax,
         propertyName: String,
-        enumTypes: [String: [String]]
+        enumTypes: [String: [String]],
+        defaultCase: String?
     ) -> JSONSchemaNode? {
         // Optional type: `String?` or `[String]?`
         if let optional = type.as(OptionalTypeSyntax.self) {
             return schemaNodeFromType(
                 optional.wrappedType,
                 propertyName: propertyName,
-                enumTypes: enumTypes
+                enumTypes: enumTypes,
+                defaultCase: defaultCase
             )
         }
 
@@ -314,37 +344,16 @@ package final class RuleCollector {
             if typeName == "String" {
                 return .string(description: propertyName)
             }
-            // Check if it's a nested enum type.
+            // Enum type — use initializer's case as default, fall back to first case.
             if let cases = enumTypes[typeName] {
                 return .stringEnum(
                     description: propertyName,
                     values: cases,
-                    defaultValue: cases[0]
+                    defaultValue: defaultCase ?? cases[0]
                 )
             }
         }
 
-        return nil
-    }
-
-    /// Determines the schema from an initializer expression.
-    private static func schemaNodeFromInitializer(
-        _ expr: ExprSyntax,
-        propertyName: String,
-        enumTypes: [String: [String]]
-    ) -> JSONSchemaNode? {
-        // `.someCase` → look up in enum types
-        if let memberAccess = expr.as(MemberAccessExprSyntax.self) {
-            let caseName = memberAccess.declName.baseName.text
-            // Try to find which enum type this belongs to.
-            for (_, cases) in enumTypes where cases.contains(caseName) {
-                return .stringEnum(
-                    description: propertyName,
-                    values: cases,
-                    defaultValue: caseName
-                )
-            }
-        }
         return nil
     }
 
@@ -397,10 +406,12 @@ package final class RuleCollector {
     ///
     /// - `true`/`false` → `.boolean`
     /// - Integer literal → `.integer`
-    /// - Everything else (string literals, enum member access) → `.string`
+    /// - `.enumCase` with matching enum in file → `.stringEnum`
+    /// - Everything else (string literals) → `.string`
     private static func detectValueType(
         named identifier: String,
-        from members: MemberBlockItemListSyntax
+        from members: MemberBlockItemListSyntax,
+        fileStatements: CodeBlockItemListSyntax
     ) -> DetectedLayoutRule.SchemaValueType {
         for member in members {
             guard let varDecl = member.decl.as(VariableDeclSyntax.self),
@@ -416,9 +427,35 @@ package final class RuleCollector {
             if initializer.value.is(IntegerLiteralExprSyntax.self) {
                 return .integer
             }
+
+            // Check for `.enumCase` → find the enum type in the file via type annotation.
+            if let memberAccess = initializer.value.as(MemberAccessExprSyntax.self),
+                let typeAnnotation = binding.typeAnnotation,
+                let typeName = typeAnnotation.type.as(IdentifierTypeSyntax.self)?.name.text,
+                let cases = findEnumCases(named: typeName, in: fileStatements)
+            {
+                let defaultCase = memberAccess.declName.baseName.text
+                return .stringEnum(values: cases, defaultValue: defaultCase)
+            }
+
             return .string
         }
         return .string
+    }
+
+    /// Finds a file-level enum by name and extracts its cases.
+    private static func findEnumCases(
+        named name: String,
+        in statements: CodeBlockItemListSyntax
+    ) -> [String]? {
+        for statement in statements {
+            guard let enumDecl = statement.item.as(EnumDeclSyntax.self),
+                enumDecl.name.text == name
+            else { continue }
+            let cases = extractEnumCases(from: enumDecl)
+            return cases.isEmpty ? nil : cases
+        }
+        return nil
     }
 
     /// Checks whether a rule is opt-in by detecting disabled defaults in its `defaultValue`.

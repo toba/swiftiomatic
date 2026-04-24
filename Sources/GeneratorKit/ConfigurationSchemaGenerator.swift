@@ -103,27 +103,30 @@ package final class ConfigurationSchemaGenerator: FileGenerator {
                     description: "Finding severity when the rule is active.",
                     values: lintModeValues,
                     defaultValue: "warn"
-                ),
+                )
             ],
             additionalProperties: nil
         )
     }
 
-    private func settingSchemaNode(for setting: RuleCollector.DetectedLayoutRule) -> JSONSchemaNode {
+    private func settingSchemaNode(for setting: RuleCollector.DetectedLayoutRule) -> JSONSchemaNode
+    {
         let desc = setting.description ?? setting.configKey
         switch setting.valueType {
-        case .boolean:
-            var node = JSONSchemaNode()
-            node.type = "boolean"
-            node.description = desc
-            return node
-        case .integer:
-            var node = JSONSchemaNode()
-            node.type = "integer"
-            node.description = desc
-            return node
-        case .string:
-            return .string(description: desc)
+            case .boolean:
+                var node = JSONSchemaNode()
+                node.type = "boolean"
+                node.description = desc
+                return node
+            case .integer:
+                var node = JSONSchemaNode()
+                node.type = "integer"
+                node.description = desc
+                return node
+            case .string:
+                return .string(description: desc)
+            case .stringEnum(let values, let defaultValue):
+                return .stringEnum(description: desc, values: values, defaultValue: defaultValue)
         }
     }
 

@@ -97,6 +97,7 @@ package struct GeneratePaths {
             .appending(path: "RuleDocumentation.md")
         configurationSchemaFile = packageRoot.appending(path: "schema.json")
         tokenStreamStubsFile = outputDirectory.appending(path: "TokenStream+Generated.swift")
-        configurationSchemaSwiftFile = outputDirectory.appending(path: "ConfigurationSchema+Generated.swift")
+        configurationSchemaSwiftFile = outputDirectory.appending(
+            path: "ConfigurationSchema+Generated.swift")
     }
 }
