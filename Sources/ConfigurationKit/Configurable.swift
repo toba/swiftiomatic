@@ -5,7 +5,7 @@
 ///
 /// This is the single source of truth for the default key derivation used by both
 /// `Configurable.key` (runtime) and `DetectedRule.configKey` (build-time code generation).
-private nonisolated(unsafe) let leadingUppercase = /^[A-Z]+(?=[A-Z][a-z])|^[A-Z]/
+private nonisolated(unsafe) let leadingUppercase = /^[A-Z]+(?=[A-Z][a-z])|^[A-Z]+$|^[A-Z]/
 
 package func configurationKey(forTypeName name: String) -> String {
     name.replacing(leadingUppercase) { $0.output.lowercased() }
