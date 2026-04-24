@@ -29,9 +29,7 @@ struct Verbatim: Sendable {
         var originalLines = text.split(separator: "\n", omittingEmptySubsequences: false)
 
         // Prevents an extra leading new line from being created.
-        if originalLines[0].isEmpty {
-            originalLines.remove(at: 0)
-        }
+        if originalLines[0].isEmpty { originalLines.remove(at: 0) }
 
         // If we have no lines left (or none with any content), just initialize everything empty and
         // exit.
@@ -39,16 +37,16 @@ struct Verbatim: Sendable {
             !originalLines.isEmpty,
             let index = originalLines.firstIndex(where: { !$0.isEmpty })
         else {
-            self.lines = []
-            self.leadingWhitespaceCounts = []
+            lines = []
+            leadingWhitespaceCounts = []
             return
         }
 
         // If our indenting behavior is `none`, then keep the original lines _exactly_ as is---don't
         // attempt to calculate or trim their leading indentation.
         guard indentingBehavior != .none else {
-            self.lines = originalLines.map(String.init)
-            self.leadingWhitespaceCounts = [Int](repeating: 0, count: originalLines.count)
+            lines = originalLines.map(String.init)
+            leadingWhitespaceCounts = [Int](repeating: 0, count: originalLines.count)
             return
         }
 
@@ -57,10 +55,10 @@ struct Verbatim: Sendable {
         // subsequent lines (if possible). Record the new leading whitespaces counts, and trim off
         // whitespace from the ends of the strings.
         let firstLineLeadingSpaceCount = numberOfLeadingSpaces(in: originalLines[index])
-        self.leadingWhitespaceCounts = originalLines.map {
+        leadingWhitespaceCounts = originalLines.map {
             max(numberOfLeadingSpaces(in: $0) - firstLineLeadingSpaceCount, 0)
         }
-        self.lines = originalLines.map {
+        lines = originalLines.map {
             $0.trimmingCharacters(in: CharacterSet(charactersIn: " "))
         }
     }
@@ -71,12 +69,8 @@ struct Verbatim: Sendable {
     /// Specifically, multiline content should have a length equal to the maximum (to force breaking),
     /// while single-line content should have its natural length.
     func prettyPrintingLength(maximum: Int) -> Int {
-        if lines.isEmpty {
-            return 0
-        }
-        if lines.count > 1 {
-            return maximum
-        }
+        if lines.isEmpty { return 0 }
+        if lines.count > 1 { return maximum }
         return lines[0].count
     }
 
@@ -85,19 +79,17 @@ struct Verbatim: Sendable {
         for i in 0..<lines.count {
             if lines[i] != "" {
                 switch indentingBehavior {
-                case .firstLine where i == 0, .allLines:
-                    output += indent.indentation()
-                case .none, .firstLine:
-                    break
+                    case .firstLine where i == 0, .allLines:
+                        output += indent.indentation()
+                    case .none, .firstLine:
+                        break
                 }
                 if leadingWhitespaceCounts[i] > 0 {
                     output += String(repeating: " ", count: leadingWhitespaceCounts[i])
                 }
                 output += lines[i]
             }
-            if i < lines.count - 1 {
-                output += "\n"
-            }
+            if i < lines.count - 1 { output += "\n" }
         }
         return output
     }
@@ -120,8 +112,6 @@ enum IndentingBehavior: Sendable {
 /// Returns the leading number of spaces in the given string.
 private func numberOfLeadingSpaces(in text: Substring) -> Int {
     var count = 0
-    for char in text {
-        if char == " " { count += 1 } else { break }
-    }
+    for char in text { if char == " " { count += 1 } else { break } }
     return count
 }

@@ -108,6 +108,18 @@ final class WrapSingleLineBodies: RewriteSyntaxRule<SingleLineBodiesConfiguratio
         case .inline: return inlineProperty(node)
         }
     }
+
+    // MARK: - Property Observers
+
+    override func visit(_ node: AccessorDeclSyntax) -> DeclSyntax {
+        // Only handle willSet/didSet observer bodies in inline mode
+        guard mode == .inline,
+            node.accessorSpecifier.tokenKind == .keyword(.didSet)
+                || node.accessorSpecifier.tokenKind == .keyword(.willSet)
+        else { return super.visit(node) }
+
+        return inlineObserver(node)
+    }
 }
 
 // MARK: - Wrap Mode
@@ -347,13 +359,15 @@ extension WrapSingleLineBodies {
             return result
 
         case .accessors(let accessors):
-            guard accessors.contains(where: { $0.body != nil }) else { return node }
+            guard accessors.contains(where: { $0.body != nil }) else {
+                return super.visit(node)
+            }
 
             guard let firstAccessor = accessors.first,
                 !firstAccessor.leadingTrivia.containsNewlines
-            else { return node }
+            else { return super.visit(node) }
             let closingOnNewLine = accessorBlock.rightBrace.leadingTrivia.containsNewlines
-            guard !closingOnNewLine else { return node }
+            guard !closingOnNewLine else { return super.visit(node) }
 
             diagnose(.wrapPropertyBody, on: accessorBlock.leftBrace)
 
@@ -380,9 +394,10 @@ extension WrapSingleLineBodies {
             )
 
             result.accessorBlock = block
-            return result
+            return super.visit(result)
         }
     }
+
 }
 
 // MARK: - Inline Mode
@@ -660,10 +675,27 @@ extension WrapSingleLineBodies {
             return result
 
         case .accessors:
-            // Don't inline explicit accessors (get/set/didSet/willSet) —
-            // they're complex enough to stay wrapped
-            return node
+            // Individual accessor bodies (didSet/willSet) are handled by
+            // visit(AccessorDeclSyntax); get/set stay wrapped here.
+            return super.visit(node)
         }
+    }
+
+    private func inlineObserver(_ node: AccessorDeclSyntax) -> DeclSyntax {
+        guard let body = node.body, canInline(body) else { return super.visit(node) }
+
+        let bodyText = singleStatementText(body)
+        let prefix = prefixLength(from: node.accessorSpecifier, to: body.leftBrace)
+
+        guard fitsInline(prefixLength: prefix, bodyText: bodyText) else {
+            return super.visit(node)
+        }
+
+        diagnose(.inlineObserverBody, on: body.leftBrace)
+
+        var result = node
+        result.body = inliningBody(body)
+        return DeclSyntax(result)
     }
 }
 
@@ -710,6 +742,9 @@ extension Finding.Message {
 
     fileprivate static let inlinePropertyBody: Finding.Message =
         "place property body on same line as declaration"
+
+    fileprivate static let inlineObserverBody: Finding.Message =
+        "place observer body on same line as accessor"
 }
 
 // MARK: - Configuration

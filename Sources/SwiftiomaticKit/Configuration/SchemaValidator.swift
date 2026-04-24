@@ -53,16 +53,12 @@ private struct RefResolver: Sendable {
     init(schema: [String: JSONValue]) {
         var store: [String: JSONValue] = [:]
         if case .object(let defs) = schema["$defs"] {
-            for (key, value) in defs {
-                store["#/$defs/\(key)"] = value
-            }
+            for (key, value) in defs { store["#/$defs/\(key)"] = value }
         }
         self.store = store
     }
 
-    func resolve(reference: String) -> JSONValue? {
-        store[reference]
-    }
+    func resolve(reference: String) -> JSONValue? { store[reference] }
 }
 
 // MARK: - Validation Context
@@ -73,9 +69,7 @@ private struct ValidationContext {
     var instanceLocation = JSONPointer()
     var keywordLocation = JSONPointer(path: "#")
 
-    init(resolver: RefResolver) {
-        self.resolver = resolver
-    }
+    init(resolver: RefResolver) { self.resolver = resolver }
 
     func error(_ message: String) -> SchemaValidationError {
         SchemaValidationError(
@@ -86,9 +80,7 @@ private struct ValidationContext {
     }
 
     mutating func validate(instance: JSONValue, schema: JSONValue) -> [SchemaValidationError] {
-        if case .bool(let flag) = schema {
-            return flag ? [] : [error("Schema is false")]
-        }
+        if case .bool(let flag) = schema { return flag ? [] : [error("Schema is false")] }
         guard case .object(let schemaDict) = schema else { return [] }
         return validate(instance: instance, schemaDict: schemaDict)
     }
@@ -148,9 +140,7 @@ private struct ValidationContext {
                 return []
         }
 
-        if types.contains(where: { instance.matches(schemaType: $0) }) {
-            return []
-        }
+        if types.contains(where: { instance.matches(schemaType: $0) }) { return [] }
 
         let typeList = types.map { "'\($0)'" }.joined(separator: ", ")
         return [error("'\(instance.displayDescription)' is not of type \(typeList)")]
@@ -234,9 +224,7 @@ private struct ValidationContext {
         for schema in schemas {
             // Use a copy so location state isn't polluted.
             var branch = self
-            if branch.validate(instance: instance, schema: schema).isEmpty {
-                validCount += 1
-            }
+            if branch.validate(instance: instance, schema: schema).isEmpty { validCount += 1 }
         }
         if validCount == 1 { return [] }
         return [error("Exactly one schema in 'oneOf' must match, but \(validCount) matched")]

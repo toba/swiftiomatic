@@ -14,14 +14,15 @@ package enum Lint: String, Hashable, Sendable, Codable {
         let container = try decoder.singleValueContainer()
         let raw = try container.decode(String.self)
         switch raw {
-        case "warn": self = .warn
-        case "error": self = .error
-        case "no", "none": self = .no  // accept legacy "none"
-        default:
-            throw DecodingError.dataCorruptedError(
-                in: container,
-                debugDescription: "Invalid lint value '\(raw)'. Expected 'warn', 'error', or 'no'."
-            )
+            case "warn": self = .warn
+            case "error": self = .error
+            case "no", "none": self = .no  // accept legacy "none"
+            default:
+                throw DecodingError.dataCorruptedError(
+                    in: container,
+                    debugDescription:
+                        "Invalid lint value '\(raw)'. Expected 'warn', 'error', or 'no'."
+                )
         }
     }
 }

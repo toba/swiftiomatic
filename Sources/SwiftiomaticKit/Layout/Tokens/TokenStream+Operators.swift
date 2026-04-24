@@ -37,7 +37,12 @@ extension TokenStream {
                 if let (unindentingNode, _, breakKind, shouldGroup) =
                     stackedIndentationBehavior(after: binOp, rhs: rhs)
                 {
-                    beforeTokens = [.break(.open(kind: breakKind))]
+                    beforeTokens = [
+                        .break(
+                            .open(kind: breakKind),
+                            newlines: .elective(ignoresDiscretionary: true)
+                        ),
+                    ]
                     var afterTokens: [Token] = [.break(.close(mustBreak: false), size: 0)]
                     if shouldGroup {
                         beforeTokens.append(.open)
@@ -48,7 +53,9 @@ extension TokenStream {
                         tokens: afterTokens
                     )
                 } else {
-                    beforeTokens = [.break(.continue)]
+                    beforeTokens = [
+                        .break(.continue, newlines: .elective(ignoresDiscretionary: true)),
+                    ]
                 }
 
                 // When the RHS is a simple expression, even if is requires multiple lines, we don't add a

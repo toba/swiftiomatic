@@ -10,6 +10,7 @@ let package = Package(
         .library(name: "SwiftiomaticKit", targets: ["SwiftiomaticKit"]),
         .plugin(name: "FormatPlugin", targets: ["Format Source Code"]),
         .plugin(name: "LintPlugin", targets: ["Lint Source Code"]),
+        .plugin(name: "LintBuildPlugin", targets: ["Lint on Build"]),
     ],
     dependencies: [
         .package(url: "https://github.com/apple/swift-argument-parser.git", from: "1.2.2"),
@@ -79,6 +80,12 @@ let package = Package(
             ),
             dependencies: [.target(name: "Swiftiomatic")],
             path: "Plugins/LintPlugin"
+        ),
+        .plugin(
+            name: "Lint on Build",
+            capability: .buildTool(),
+            dependencies: [.target(name: "Swiftiomatic")],
+            path: "Plugins/LintBuildPlugin"
         ),
         .plugin(
             name: "GenerateCode",

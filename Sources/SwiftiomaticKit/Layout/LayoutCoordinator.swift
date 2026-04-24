@@ -29,7 +29,7 @@ package final class LayoutCoordinator {
     /// original source. When enabling formatting, we copy the text between `disabledPosition` and the
     /// current position to `outputBuffer`. From then on, we continue to format until the next
     /// `disableFormatting` token.
-    private var disabledPosition: AbsolutePosition? = nil {
+    private var disabledPosition: AbsolutePosition? {
         didSet {
             outputBuffer.isEnabled = disabledPosition == nil
         }
@@ -67,7 +67,7 @@ package final class LayoutCoordinator {
     private var activeBreakingContexts: [ActiveBreakingContext] = []
 
     /// The most recently ended breaking context, used to force certain following `contextual` breaks.
-    private var lastEndedBreakingContext: ActiveBreakingContext? = nil
+    private var lastEndedBreakingContext: ActiveBreakingContext?
 
     /// Indicates whether or not the current line being printed is a continuation line.
     private var currentLineIsContinuation = false {
@@ -91,9 +91,7 @@ package final class LayoutCoordinator {
     /// Whether breaks are suppressed from firing. When true, no breaks should fire and the only way to
     /// move to a new line is an explicit new line token. Discretionary breaks aren't suppressed
     /// if ``allowSuppressedDiscretionaryBreaks`` is true.
-    private var isBreakingSuppressed: Bool {
-        return activeBreakSuppressionCount > 0
-    }
+    private var isBreakingSuppressed: Bool { return activeBreakSuppressionCount > 0 }
 
     /// Indicates whether discretionary breaks should still be included even if break suppression is
     /// enabled (see ``isBreakingSuppressed``).
@@ -148,15 +146,15 @@ package final class LayoutCoordinator {
         self.context = context
         self.source = source
         let configuration = context.configuration
-        self.tokens = node.makeTokenStream(
+        tokens = node.makeTokenStream(
             configuration: configuration,
             selection: context.selection,
             operatorTable: context.operatorTable
         )
-        self.maxLineLength = configuration[LineLength.self]
+        maxLineLength = configuration[LineLength.self]
         self.printTokenStream = printTokenStream
         self.whitespaceOnly = whitespaceOnly
-        self.outputBuffer = LayoutBuffer(
+        outputBuffer = LayoutBuffer(
             maximumBlankLines: configuration[MaximumBlankLines.self],
             tabWidth: configuration[TabWidth.self]
         )
@@ -174,376 +172,377 @@ package final class LayoutCoordinator {
         let token = tokens[idx]
         let length = lengths[idx]
 
-        if self.printTokenStream {
-            printDebugToken(token: token, length: length, idx: idx)
-        }
+        if printTokenStream { printDebugToken(token: token, length: length, idx: idx) }
         assert(length >= 0, "Token lengths must be positive")
 
         switch token {
-        case .contextualBreakingStart:
-            activeBreakingContexts.append(
-                ActiveBreakingContext(lineNumber: outputBuffer.lineNumber)
-            )
-            // Discard the last finished breaking context to keep it from effecting breaks inside of the
-            // new context. The discarded context has already either had an impact on the contextual break
-            // after it or there was no relevant contextual break, so it's safe to discard.
-            lastEndedBreakingContext = nil
+            case .contextualBreakingStart:
+                activeBreakingContexts.append(
+                    ActiveBreakingContext(lineNumber: outputBuffer.lineNumber)
+                )
+                // Discard the last finished breaking context to keep it from effecting breaks inside of the
+                // new context. The discarded context has already either had an impact on the contextual break
+                // after it or there was no relevant contextual break, so it's safe to discard.
+                lastEndedBreakingContext = nil
 
-        case .contextualBreakingEnd:
-            guard let closedContext = activeBreakingContexts.popLast() else {
-                fatalError("Encountered unmatched contextualBreakingEnd token.")
-            }
-
-            // Break contexts create scopes, and a breaking context should never be carried between
-            // scopes. When there's no active break context, discard the popped one to prevent carrying it
-            // into a new scope.
-            lastEndedBreakingContext = activeBreakingContexts.isEmpty ? nil : closedContext
-
-        // Check if we need to force breaks in this group, and calculate the indentation to be used in
-        // the group.
-        case .open(let breakType):
-            // Determine if the break tokens in this group need to be forced.
-            if !canFit(length) || lastBreak, case .consistent = breakType {
-                forceBreakStack.append(true)
-            } else {
-                forceBreakStack.append(false)
-            }
-
-        case .close:
-            forceBreakStack.removeLast()
-
-        // Create a line break if needed. Calculate the indentation required and adjust spaceRemaining
-        // accordingly.
-        case .break(let kind, let size, let newline):
-            var mustBreak = forceBreakStack.last ?? false
-
-            // Tracks whether the current line should be considered a continuation line, *if and only if
-            // the break fires* (note that this is assigned to `currentLineIsContinuation` only in that
-            // case).
-            var isContinuationIfBreakFires = false
-
-            switch kind {
-            case .open(let openKind):
-                let lastOpenBreak = activeOpenBreaks.last
-                let currentLineNumber = openCloseBreakCompensatingLineNumber
-
-                // Only increase the indentation if there wasn't an open break already encountered on this
-                // line (i.e., the previous open break didn't fire), to prevent the indentation of the next
-                // line from being more than one level deeper than this line.
-                let lastOpenBreakWasSameLine = currentLineNumber == (lastOpenBreak?.lineNumber ?? 0)
-                if lastOpenBreakWasSameLine && openKind == .block {
-                    // If the last open break was on the same line, then we mark it as *not* contributing to
-                    // the indentation of the subsequent lines. When the breaks are closed, this ensures that
-                    // indentation is popped evenly (and also popped in an order that causes everything to
-                    // line up properly).
-                    activeOpenBreaks[activeOpenBreaks.count - 1].contributesBlockIndent = false
+            case .contextualBreakingEnd:
+                guard let closedContext = activeBreakingContexts.popLast() else {
+                    fatalError("Encountered unmatched contextualBreakingEnd token.")
                 }
 
-                // If an open break occurs on a continuation line, we must push that continuation
-                // indentation onto the stack. The open break will reset the continuation state for the
-                // lines within it (unless they are themselves continuations within that particular
-                // scope), so we need the continuation indentation to persist across all the lines in that
-                // scope. Additionally, continuation open breaks must indent when the break fires.
-                let continuationBreakWillFire =
-                    openKind == .continuation
-                    && (outputBuffer.isAtStartOfLine || !canFit(length) || mustBreak)
-                let contributesContinuationIndent =
-                    currentLineIsContinuation || continuationBreakWillFire
+                // Break contexts create scopes, and a breaking context should never be carried between
+                // scopes. When there's no active break context, discard the popped one to prevent carrying it
+                // into a new scope.
+                lastEndedBreakingContext = activeBreakingContexts.isEmpty ? nil : closedContext
 
-                activeOpenBreaks.append(
-                    ActiveOpenBreak(
-                        index: idx,
-                        kind: openKind,
-                        lineNumber: currentLineNumber,
-                        contributesContinuationIndent: contributesContinuationIndent,
-                        contributesBlockIndent: openKind == .block
+            // Check if we need to force breaks in this group, and calculate the indentation to be used in
+            // the group.
+            case .open(let breakType):
+                // Determine if the break tokens in this group need to be forced.
+                if !canFit(length) || lastBreak, case .consistent = breakType {
+                    forceBreakStack.append(true)
+                } else {
+                    forceBreakStack.append(false)
+                }
+
+            case .close:
+                forceBreakStack.removeLast()
+
+            // Create a line break if needed. Calculate the indentation required and adjust spaceRemaining
+            // accordingly.
+            case .break(let kind, let size, let newline):
+                var mustBreak = forceBreakStack.last ?? false
+
+                // Tracks whether the current line should be considered a continuation line, *if and only if
+                // the break fires* (note that this is assigned to `currentLineIsContinuation` only in that
+                // case).
+                var isContinuationIfBreakFires = false
+
+                switch kind {
+                    case .open(let openKind):
+                        let lastOpenBreak = activeOpenBreaks.last
+                        let currentLineNumber = openCloseBreakCompensatingLineNumber
+
+                        // Only increase the indentation if there wasn't an open break already encountered on this
+                        // line (i.e., the previous open break didn't fire), to prevent the indentation of the next
+                        // line from being more than one level deeper than this line.
+                        let lastOpenBreakWasSameLine =
+                            currentLineNumber == (lastOpenBreak?.lineNumber ?? 0)
+                        if lastOpenBreakWasSameLine, openKind == .block {
+                            // If the last open break was on the same line, then we mark it as *not* contributing to
+                            // the indentation of the subsequent lines. When the breaks are closed, this ensures that
+                            // indentation is popped evenly (and also popped in an order that causes everything to
+                            // line up properly).
+                            activeOpenBreaks[activeOpenBreaks.count - 1].contributesBlockIndent =
+                                false
+                        }
+
+                        // If an open break occurs on a continuation line, we must push that continuation
+                        // indentation onto the stack. The open break will reset the continuation state for the
+                        // lines within it (unless they are themselves continuations within that particular
+                        // scope), so we need the continuation indentation to persist across all the lines in that
+                        // scope. Additionally, continuation open breaks must indent when the break fires.
+                        let continuationBreakWillFire =
+                            openKind == .continuation
+                            && (outputBuffer.isAtStartOfLine || !canFit(length) || mustBreak)
+                        let contributesContinuationIndent =
+                            currentLineIsContinuation || continuationBreakWillFire
+
+                        activeOpenBreaks.append(
+                            ActiveOpenBreak(
+                                index: idx,
+                                kind: openKind,
+                                lineNumber: currentLineNumber,
+                                contributesContinuationIndent: contributesContinuationIndent,
+                                contributesBlockIndent: openKind == .block
+                            )
+                        )
+
+                        continuationStack.append(currentLineIsContinuation)
+
+                        // Once we've reached an open break and preserved the continuation state, the "scope" we now
+                        // enter is *not* a continuation scope. If it was one, we'll re-enter it when we reach the
+                        // corresponding close.
+                        currentLineIsContinuation = false
+
+                    case .close(let closeMustBreak):
+                        guard let matchingOpenBreak = activeOpenBreaks.popLast() else {
+                            fatalError("Unmatched closing break")
+                        }
+
+                        let openedOnDifferentLine =
+                            openCloseBreakCompensatingLineNumber != matchingOpenBreak.lineNumber
+
+                        if matchingOpenBreak.contributesBlockIndent {
+                            // The actual line number is used, instead of the compensating line number. When the close
+                            // break is at the start of a new line, the block indentation isn't carried to the new line.
+                            let currentLine = outputBuffer.lineNumber
+                            // When two or more open breaks are encountered on the same line, only the final open
+                            // break is allowed to increase the block indent, avoiding multiple block indents. As the
+                            // open breaks on that line are closed, the new final open break must be enabled again to
+                            // add a block indent.
+                            if matchingOpenBreak.lineNumber == currentLine,
+                                let lastActiveOpenBreak = activeOpenBreaks.last,
+                                lastActiveOpenBreak.kind == .block,
+                                !lastActiveOpenBreak.contributesBlockIndent
+                            {
+                                activeOpenBreaks[activeOpenBreaks.count - 1]
+                                    .contributesBlockIndent = true
+                            }
+                        }
+
+                        if closeMustBreak {
+                            // If it's a mandatory breaking close, then we must break (regardless of line length) if
+                            // the break is on a different line than its corresponding open break.
+                            mustBreak = openedOnDifferentLine
+                        } else if !canFit() {
+                            // If there is no room left on the line, then we must force this break to fire so that the
+                            // next token that comes along (typically a closing bracket of some kind) ends up on the
+                            // next line.
+                            mustBreak = true
+                        } else {
+                            // Otherwise, if we're not force-breaking and we're on a different line than the
+                            // corresponding open, then the current line must effectively become a continuation line.
+                            // This ensures that any reset breaks that might follow on the same line are honored. For
+                            // example, the reset break before the open curly brace below must be made to fire so that
+                            // the brace can distinguish the argument lines from the block body.
+                            //
+                            //    if let someLongVariableName = someLongFunctionName(
+                            //      firstArgument: argumentValue)
+                            //    {
+                            //      ...
+                            //    }
+                            //
+                            // In this case, the preferred style would be to break before the parenthesis and place it
+                            // on the same line as the curly brace, but that requires quite a bit more contextual
+                            // information than is easily available. The user can, however, do so with discretionary
+                            // breaks (if they are enabled).
+                            //
+                            // Note that in this case, the transformation of the current line into a continuation line
+                            // must happen regardless of whether this break fires.
+                            //
+                            // Likewise, we need to do this if we popped an old continuation state off the stack,
+                            // even if the break *doesn't* fire.
+                            let matchingOpenBreakIndented =
+                                matchingOpenBreak.contributesContinuationIndent
+                                || matchingOpenBreak.contributesBlockIndent
+                            currentLineIsContinuation =
+                                matchingOpenBreakIndented && openedOnDifferentLine
+                        }
+
+                        let wasContinuationWhenOpened =
+                            (continuationStack.popLast() ?? false)
+                            || matchingOpenBreak.contributesContinuationIndent
+                            // This ensures a continuation indent is propagated to following scope when an initial
+                            // scope would've indented if the leading break wasn't at the start of a line.
+                            || (matchingOpenBreak.kind == .continuation && openedOnDifferentLine)
+
+                        // Restore the continuation state of the scope we were in before the open break occurred.
+                        currentLineIsContinuation =
+                            currentLineIsContinuation || wasContinuationWhenOpened
+                        isContinuationIfBreakFires = wasContinuationWhenOpened
+
+                    case .continue:
+                        isContinuationIfBreakFires = true
+
+                    case .same:
+                        break
+
+                    case .reset:
+                        mustBreak = currentLineIsContinuation
+
+                    case .contextual:
+                        // When the last context spanned multiple lines, move the next context (in the same parent
+                        // break context scope) onto its own line. For example, this is used when the previous
+                        // context includes a multiline trailing closure or multiline function argument list.
+                        if let lastBreakingContext = lastEndedBreakingContext {
+                            if configuration[AroundMultilineExpressionChainComponents.self] {
+                                mustBreak =
+                                    lastBreakingContext.lineNumber != outputBuffer.lineNumber
+                            }
+                        }
+
+                        // Wait for a contextual break to fire and then update the breaking behavior for the rest of
+                        // the contextual breaks in this scope to match the behavior of the one that fired.
+                        let willFire = !canFit(length) || mustBreak
+                        if willFire {
+                            // Update the active breaking context according to the most recently finished breaking
+                            // context so all following contextual breaks in this scope to have matching behavior.
+                            if let closedContext = lastEndedBreakingContext,
+                                let activeContext = activeBreakingContexts.last,
+                                case .unset = activeContext.contextualBreakingBehavior
+                            {
+                                activeBreakingContexts[activeBreakingContexts.count - 1]
+                                    .contextualBreakingBehavior =
+                                    (closedContext.lineNumber == outputBuffer.lineNumber)
+                                    ? .continuation : .maintain
+                            }
+                        }
+
+                        if let activeBreakingContext = activeBreakingContexts.last {
+                            switch activeBreakingContext.contextualBreakingBehavior {
+                                case .unset, .continuation:
+                                    isContinuationIfBreakFires = true
+                                case .maintain:
+                                    isContinuationIfBreakFires = currentLineIsContinuation
+                            }
+                        }
+
+                        lastEndedBreakingContext = nil
+                }
+
+                var overrideBreakingSuppressed = false
+                switch newline {
+                    case .elective, .escaped: break
+                    case .soft(_, let discretionary):
+                        // A discretionary newline (i.e. from the source) should create a line break even if the
+                        // rules for breaking are disabled.
+                        overrideBreakingSuppressed =
+                            shouldOverrideBreakSuppression
+                            || (discretionary && allowSuppressedDiscretionaryBreaks)
+                        mustBreak = true
+                    case .hard:
+                        // A hard newline must always create a line break, regardless of the context.
+                        overrideBreakingSuppressed = true
+                        mustBreak = true
+                }
+
+                let suppressBreaking = isBreakingSuppressed && !overrideBreakingSuppressed
+                if !suppressBreaking, !canFit(length) || mustBreak {
+                    currentLineIsContinuation = isContinuationIfBreakFires
+                    if case .escaped = newline {
+                        outputBuffer.enqueueSpaces(size)
+                        outputBuffer.write("\\")
+                    }
+                    outputBuffer.writeNewlines(
+                        newline,
+                        shouldIndentBlankLines: configuration[IndentBlankLines.self]
+                    )
+                    lastBreak = true
+                } else {
+                    if outputBuffer.isAtStartOfLine {
+                        // Make sure that the continuation status is correct even at the beginning of a line
+                        // (for example, after a newline token). This is necessary because a discretionary newline
+                        // might be inserted into the token stream before a continuation break, and the length of
+                        // that break might not be enough to satisfy the conditions above but we still need to
+                        // treat the line as a continuation.
+                        currentLineIsContinuation = isContinuationIfBreakFires
+                    }
+                    outputBuffer.enqueueSpaces(size)
+                    lastBreak = false
+                }
+                shouldOverrideBreakSuppression = false
+
+            // Print out the number of spaces according to the size, and adjust spaceRemaining.
+            case .space(let size, _):
+                if configuration[IndentBlankLines.self], outputBuffer.isAtStartOfLine {
+                    // An empty string write is needed to add line-leading indentation that matches the current indentation on a line that contains only whitespaces.
+                    outputBuffer.write("")
+                }
+                outputBuffer.enqueueSpaces(size)
+
+            // Print any indentation required, followed by the text content of the syntax token.
+            case .syntax(let text):
+                guard !text.isEmpty else { break }
+                lastBreak = false
+                outputBuffer.write(text)
+
+            case .comment(let comment, let wasEndOfLine):
+                lastBreak = false
+                shouldOverrideBreakSuppression = comment.kind == .docLine || comment.kind == .line
+                if wasEndOfLine {
+                    if !(canFit(comment.length) || isBreakingSuppressed) {
+                        diagnose(.moveEndOfLineComment, category: .endOfLineComment)
+                    }
+                }
+                outputBuffer.write(
+                    comment.print(
+                        indent: currentIndentation,
+                        shouldIndentBlankLines: configuration[IndentBlankLines.self]
                     )
                 )
 
-                continuationStack.append(currentLineIsContinuation)
-
-                // Once we've reached an open break and preserved the continuation state, the "scope" we now
-                // enter is *not* a continuation scope. If it was one, we'll re-enter it when we reach the
-                // corresponding close.
-                currentLineIsContinuation = false
-
-            case .close(let closeMustBreak):
-                guard let matchingOpenBreak = activeOpenBreaks.popLast() else {
-                    fatalError("Unmatched closing break")
-                }
-
-                let openedOnDifferentLine =
-                    openCloseBreakCompensatingLineNumber != matchingOpenBreak.lineNumber
-
-                if matchingOpenBreak.contributesBlockIndent {
-                    // The actual line number is used, instead of the compensating line number. When the close
-                    // break is at the start of a new line, the block indentation isn't carried to the new line.
-                    let currentLine = outputBuffer.lineNumber
-                    // When two or more open breaks are encountered on the same line, only the final open
-                    // break is allowed to increase the block indent, avoiding multiple block indents. As the
-                    // open breaks on that line are closed, the new final open break must be enabled again to
-                    // add a block indent.
-                    if matchingOpenBreak.lineNumber == currentLine,
-                        let lastActiveOpenBreak = activeOpenBreaks.last,
-                        lastActiveOpenBreak.kind == .block,
-                        !lastActiveOpenBreak.contributesBlockIndent
-                    {
-                        activeOpenBreaks[activeOpenBreaks.count - 1].contributesBlockIndent = true
-                    }
-                }
-
-                if closeMustBreak {
-                    // If it's a mandatory breaking close, then we must break (regardless of line length) if
-                    // the break is on a different line than its corresponding open break.
-                    mustBreak = openedOnDifferentLine
-                } else if !canFit() {
-                    // If there is no room left on the line, then we must force this break to fire so that the
-                    // next token that comes along (typically a closing bracket of some kind) ends up on the
-                    // next line.
-                    mustBreak = true
-                } else {
-                    // Otherwise, if we're not force-breaking and we're on a different line than the
-                    // corresponding open, then the current line must effectively become a continuation line.
-                    // This ensures that any reset breaks that might follow on the same line are honored. For
-                    // example, the reset break before the open curly brace below must be made to fire so that
-                    // the brace can distinguish the argument lines from the block body.
-                    //
-                    //    if let someLongVariableName = someLongFunctionName(
-                    //      firstArgument: argumentValue)
-                    //    {
-                    //      ...
-                    //    }
-                    //
-                    // In this case, the preferred style would be to break before the parenthesis and place it
-                    // on the same line as the curly brace, but that requires quite a bit more contextual
-                    // information than is easily available. The user can, however, do so with discretionary
-                    // breaks (if they are enabled).
-                    //
-                    // Note that in this case, the transformation of the current line into a continuation line
-                    // must happen regardless of whether this break fires.
-                    //
-                    // Likewise, we need to do this if we popped an old continuation state off the stack,
-                    // even if the break *doesn't* fire.
-                    let matchingOpenBreakIndented =
-                        matchingOpenBreak.contributesContinuationIndent
-                        || matchingOpenBreak.contributesBlockIndent
-                    currentLineIsContinuation = matchingOpenBreakIndented && openedOnDifferentLine
-                }
-
-                let wasContinuationWhenOpened =
-                    (continuationStack.popLast() ?? false)
-                    || matchingOpenBreak.contributesContinuationIndent
-                    // This ensures a continuation indent is propagated to following scope when an initial
-                    // scope would've indented if the leading break wasn't at the start of a line.
-                    || (matchingOpenBreak.kind == .continuation && openedOnDifferentLine)
-
-                // Restore the continuation state of the scope we were in before the open break occurred.
-                currentLineIsContinuation = currentLineIsContinuation || wasContinuationWhenOpened
-                isContinuationIfBreakFires = wasContinuationWhenOpened
-
-            case .continue:
-                isContinuationIfBreakFires = true
-
-            case .same:
-                break
-
-            case .reset:
-                mustBreak = currentLineIsContinuation
-
-            case .contextual:
-                // When the last context spanned multiple lines, move the next context (in the same parent
-                // break context scope) onto its own line. For example, this is used when the previous
-                // context includes a multiline trailing closure or multiline function argument list.
-                if let lastBreakingContext = lastEndedBreakingContext {
-                    if configuration[AroundMultilineExpressionChainComponents.self] {
-                        mustBreak = lastBreakingContext.lineNumber != outputBuffer.lineNumber
-                    }
-                }
-
-                // Wait for a contextual break to fire and then update the breaking behavior for the rest of
-                // the contextual breaks in this scope to match the behavior of the one that fired.
-                let willFire = !canFit(length) || mustBreak
-                if willFire {
-                    // Update the active breaking context according to the most recently finished breaking
-                    // context so all following contextual breaks in this scope to have matching behavior.
-                    if let closedContext = lastEndedBreakingContext,
-                        let activeContext = activeBreakingContexts.last,
-                        case .unset = activeContext.contextualBreakingBehavior
-                    {
-                        activeBreakingContexts[activeBreakingContexts.count - 1]
-                            .contextualBreakingBehavior =
-                            (closedContext.lineNumber == outputBuffer.lineNumber)
-                            ? .continuation : .maintain
-                    }
-                }
-
-                if let activeBreakingContext = activeBreakingContexts.last {
-                    switch activeBreakingContext.contextualBreakingBehavior {
-                    case .unset, .continuation:
-                        isContinuationIfBreakFires = true
-                    case .maintain:
-                        isContinuationIfBreakFires = currentLineIsContinuation
-                    }
-                }
-
-                lastEndedBreakingContext = nil
-            }
-
-            var overrideBreakingSuppressed = false
-            switch newline {
-            case .elective, .escaped: break
-            case .soft(_, let discretionary):
-                // A discretionary newline (i.e. from the source) should create a line break even if the
-                // rules for breaking are disabled.
-                overrideBreakingSuppressed =
-                    shouldOverrideBreakSuppression
-                    || (discretionary && allowSuppressedDiscretionaryBreaks)
-                mustBreak = true
-            case .hard:
-                // A hard newline must always create a line break, regardless of the context.
-                overrideBreakingSuppressed = true
-                mustBreak = true
-            }
-
-            let suppressBreaking = isBreakingSuppressed && !overrideBreakingSuppressed
-            if !suppressBreaking && (!canFit(length) || mustBreak) {
-                currentLineIsContinuation = isContinuationIfBreakFires
-                if case .escaped = newline {
-                    outputBuffer.enqueueSpaces(size)
-                    outputBuffer.write("\\")
-                }
-                outputBuffer.writeNewlines(
-                    newline,
-                    shouldIndentBlankLines: configuration[IndentBlankLines.self]
-                )
-                lastBreak = true
-            } else {
-                if outputBuffer.isAtStartOfLine {
-                    // Make sure that the continuation status is correct even at the beginning of a line
-                    // (for example, after a newline token). This is necessary because a discretionary newline
-                    // might be inserted into the token stream before a continuation break, and the length of
-                    // that break might not be enough to satisfy the conditions above but we still need to
-                    // treat the line as a continuation.
-                    currentLineIsContinuation = isContinuationIfBreakFires
-                }
-                outputBuffer.enqueueSpaces(size)
+            case .verbatim(let verbatim):
+                outputBuffer.writeVerbatim(verbatim.print(indent: currentIndentation), length)
                 lastBreak = false
-            }
-            shouldOverrideBreakSuppression = false
 
-        // Print out the number of spaces according to the size, and adjust spaceRemaining.
-        case .space(let size, _):
-            if configuration[IndentBlankLines.self], outputBuffer.isAtStartOfLine {
-                // An empty string write is needed to add line-leading indentation that matches the current indentation on a line that contains only whitespaces.
-                outputBuffer.write("")
-            }
-            outputBuffer.enqueueSpaces(size)
-
-        // Print any indentation required, followed by the text content of the syntax token.
-        case .syntax(let text):
-            guard !text.isEmpty else { break }
-            lastBreak = false
-            outputBuffer.write(text)
-
-        case .comment(let comment, let wasEndOfLine):
-            lastBreak = false
-            shouldOverrideBreakSuppression = comment.kind == .docLine || comment.kind == .line
-            if wasEndOfLine {
-                if !(canFit(comment.length) || isBreakingSuppressed) {
-                    diagnose(.moveEndOfLineComment, category: .endOfLineComment)
-                }
-            }
-            outputBuffer.write(
-                comment.print(
-                    indent: currentIndentation,
-                    shouldIndentBlankLines: configuration[IndentBlankLines.self]
-                )
-            )
-
-        case .verbatim(let verbatim):
-            outputBuffer.writeVerbatim(verbatim.print(indent: currentIndentation), length)
-            lastBreak = false
-
-        case .printerControl(let kind):
-            switch kind {
-            case .disableBreaking(let allowDiscretionary):
-                activeBreakSuppressionCount += 1
-                // Override the suppression of discretionary breaks if we're at the top level or
-                // discretionary breaks are currently allowed (false should override true, but not the other
-                // way around).
-                if activeBreakSuppressionCount == 1 || allowSuppressedDiscretionaryBreaks {
-                    allowSuppressedDiscretionaryBreaks = allowDiscretionary
-                }
-            case .enableBreaking:
-                activeBreakSuppressionCount -= 1
-            }
-
-        case .commaDelimitedRegionStart:
-            commaDelimitedRegionStack.append(openCloseBreakCompensatingLineNumber)
-
-        case .commaDelimitedRegionEnd(let isCollection, let hasTrailingComma, let isSingleElement):
-            guard let startLineNumber = commaDelimitedRegionStack.popLast() else {
-                fatalError("Found trailing comma end with no corresponding start.")
-            }
-
-            // We need to specifically disable trailing commas on elements of single item collections.
-            // The syntax library can't distinguish a collection's initializer (where the elements are
-            // types) from a literal (where the elements are the contents of a collection instance).
-            // We never want to add a trailing comma in an initializer so we disable trailing commas on
-            // single element collections.
-            if let shouldHandleCommaDelimitedRegion = shouldHandleCommaDelimitedRegion(
-                isCollection: isCollection
-            ) {
-                let shouldHaveTrailingComma =
-                    startLineNumber != openCloseBreakCompensatingLineNumber && !isSingleElement
-                    && shouldHandleCommaDelimitedRegion
-                if shouldHaveTrailingComma && !hasTrailingComma {
-                    diagnose(.addTrailingComma, category: .trailingComma)
-                } else if !shouldHaveTrailingComma && hasTrailingComma {
-                    diagnose(.removeTrailingComma, category: .trailingComma)
+            case .printerControl(let kind):
+                switch kind {
+                    case .disableBreaking(let allowDiscretionary):
+                        activeBreakSuppressionCount += 1
+                        // Override the suppression of discretionary breaks if we're at the top level or
+                        // discretionary breaks are currently allowed (false should override true, but not the other
+                        // way around).
+                        if activeBreakSuppressionCount == 1 || allowSuppressedDiscretionaryBreaks {
+                            allowSuppressedDiscretionaryBreaks = allowDiscretionary
+                        }
+                    case .enableBreaking:
+                        activeBreakSuppressionCount -= 1
                 }
 
-                let shouldWriteComma = whitespaceOnly ? hasTrailingComma : shouldHaveTrailingComma
-                if shouldWriteComma {
+            case .commaDelimitedRegionStart:
+                commaDelimitedRegionStack.append(openCloseBreakCompensatingLineNumber)
+
+            case .commaDelimitedRegionEnd(
+                let isCollection, let hasTrailingComma, let isSingleElement):
+                guard let startLineNumber = commaDelimitedRegionStack.popLast() else {
+                    fatalError("Found trailing comma end with no corresponding start.")
+                }
+
+                // We need to specifically disable trailing commas on elements of single item collections.
+                // The syntax library can't distinguish a collection's initializer (where the elements are
+                // types) from a literal (where the elements are the contents of a collection instance).
+                // We never want to add a trailing comma in an initializer so we disable trailing commas on
+                // single element collections.
+                if let shouldHandleCommaDelimitedRegion = shouldHandleCommaDelimitedRegion(
+                    isCollection: isCollection
+                ) {
+                    let shouldHaveTrailingComma =
+                        startLineNumber != openCloseBreakCompensatingLineNumber && !isSingleElement
+                        && shouldHandleCommaDelimitedRegion
+                    if shouldHaveTrailingComma, !hasTrailingComma {
+                        diagnose(.addTrailingComma, category: .trailingComma)
+                    } else if !shouldHaveTrailingComma, hasTrailingComma {
+                        diagnose(.removeTrailingComma, category: .trailingComma)
+                    }
+
+                    let shouldWriteComma =
+                        whitespaceOnly ? hasTrailingComma : shouldHaveTrailingComma
+                    if shouldWriteComma { outputBuffer.write(",") }
+                } else if hasTrailingComma {
                     outputBuffer.write(",")
                 }
-            } else if hasTrailingComma {
-                outputBuffer.write(",")
-            }
 
-        case .enableFormatting(let enabledPosition):
-            guard let disabledPosition else {
-                // if we're not disabled, we ignore the token
-                break
-            }
-            let start = source.utf8.index(
-                source.utf8.startIndex,
-                offsetBy: disabledPosition.utf8Offset
-            )
-            let end: String.Index
-            if let enabledPosition {
-                end = source.utf8.index(
+            case .enableFormatting(let enabledPosition):
+                guard let disabledPosition else { break }
+                let start = source.utf8.index(
                     source.utf8.startIndex,
-                    offsetBy: enabledPosition.utf8Offset
+                    offsetBy: disabledPosition.utf8Offset
                 )
-            } else {
-                end = source.endIndex
-            }
-            var text = String(source[start..<end])
-            // strip trailing whitespace so that the next formatting can add the right amount
-            if let nonWhitespace = text.rangeOfCharacter(
-                from: CharacterSet.whitespaces.inverted,
-                options: .backwards
-            ) {
-                text = String(text[..<nonWhitespace.upperBound])
-            }
+                let end: String.Index
+                if let enabledPosition {
+                    end = source.utf8.index(
+                        source.utf8.startIndex,
+                        offsetBy: enabledPosition.utf8Offset
+                    )
+                } else {
+                    end = source.endIndex
+                }
+                var text = String(source[start..<end])
+                // strip trailing whitespace so that the next formatting can add the right amount
+                if let nonWhitespace = text.rangeOfCharacter(
+                    from: CharacterSet.whitespaces.inverted,
+                    options: .backwards
+                ) {
+                    text = String(text[..<nonWhitespace.upperBound])
+                }
 
-            self.disabledPosition = nil
-            outputBuffer.writeVerbatimAfterEnablingFormatting(text)
+                self.disabledPosition = nil
+                outputBuffer.writeVerbatimAfterEnablingFormatting(text)
 
-        case .disableFormatting(let newPosition):
-            assert(disabledPosition == nil)
-            disabledPosition = newPosition
+            case .disableFormatting(let newPosition):
+                assert(disabledPosition == nil)
+                disabledPosition = newPosition
         }
     }
 
@@ -569,136 +568,136 @@ package final class LayoutCoordinator {
         // Calculate token lengths
         for (i, token) in tokens.enumerated() {
             switch token {
-            case .contextualBreakingStart:
-                lengths.append(0)
+                case .contextualBreakingStart:
+                    lengths.append(0)
 
-            case .contextualBreakingEnd:
-                lengths.append(0)
+                case .contextualBreakingEnd:
+                    lengths.append(0)
 
-            // Open tokens have lengths equal to the total of the contents of its group. The value is
-            // calculated when close tokens are encountered.
-            case .open:
-                lengths.append(-total)
-                delimiterIndices.append(i)
+                // Open tokens have lengths equal to the total of the contents of its group. The value is
+                // calculated when close tokens are encountered.
+                case .open:
+                    lengths.append(-total)
+                    delimiterIndices.append(i)
 
-            // Close tokens have a length of 0. Calculate the length of the corresponding open token, and
-            // the previous break token (if any).
-            case .close:
-                lengths.append(0)
+                // Close tokens have a length of 0. Calculate the length of the corresponding open token, and
+                // the previous break token (if any).
+                case .close:
+                    lengths.append(0)
 
-                guard let index = delimiterIndices.popLast() else {
-                    assertionFailure(
-                        "Unbalanced close token: no matching open/break on delimiter stack"
-                    )
-                    return ""
-                }
-                lengths[index] += total
-
-                if case .break = tokens[index] {
                     guard let index = delimiterIndices.popLast() else {
                         assertionFailure(
-                            "Unbalanced break token: no matching open on delimiter stack"
+                            "Unbalanced close token: no matching open/break on delimiter stack"
                         )
                         return ""
                     }
                     lengths[index] += total
-                }
 
-            // Break lengths are equal to its size plus the token or group following it. Calculate the
-            // length of any prior break tokens.
-            case .break(_, let size, let newline):
-                if let index = delimiterIndices.last,
-                    case .break(_, _, let lastNewline) = tokens[index]
-                {
-                    /// If the last break and this break are both `.escaped` we add an extra 1 to the total for the last `.escaped` break.
-                    /// This is to handle situations where adding the `\` for an escaped line break would put us over the line length.
-                    /// For example, consider the token sequence:
-                    /// `[.syntax("this fits"), .break(.escaped), .syntax("this fits in line length"), .break(.escaped)]`
-                    /// The naive layout of these tokens will incorrectly print as:
-                    ///  """
-                    ///  this fits this fits in line length \
-                    ///  """
-                    ///  which will be too long because of the '\' character. Instead we have to print it as:
-                    ///  """
-                    ///  this fits \
-                    ///  this fits in line length
-                    ///  """
-                    ///
-                    /// While not prematurely inserting a line in situations where a hard line break is occurring, such as:
-                    ///
-                    /// `[.syntax("some text"), .break(.escaped), .syntax("this is exactly the right length"), .break(.hard)]`
-                    ///
-                    /// We want this to print as:
-                    /// """
-                    /// some text this is exactly the right length
-                    /// """
-                    /// and not:
-                    /// """
-                    /// some text \
-                    /// this is exactly the right length
-                    /// """
-                    if case .escaped = newline, case .escaped = lastNewline {
-                        lengths[index] += total + 1
-                    } else {
+                    if case .break = tokens[index] {
+                        guard let index = delimiterIndices.popLast() else {
+                            assertionFailure(
+                                "Unbalanced break token: no matching open on delimiter stack"
+                            )
+                            return ""
+                        }
                         lengths[index] += total
                     }
-                    delimiterIndices.removeLast()
-                }
-                lengths.append(-total)
-                delimiterIndices.append(i)
 
-                switch newline {
-                case .elective, .escaped:
+                // Break lengths are equal to its size plus the token or group following it. Calculate the
+                // length of any prior break tokens.
+                case .break(_, let size, let newline):
+                    if let index = delimiterIndices.last,
+                        case .break(_, _, let lastNewline) = tokens[index]
+                    {
+                        /// If the last break and this break are both `.escaped` we add an extra 1 to the total for the last `.escaped` break.
+                        /// This is to handle situations where adding the `\` for an escaped line break would put us over the line length.
+                        /// For example, consider the token sequence:
+                        /// `[.syntax("this fits"), .break(.escaped), .syntax("this fits in line length"), .break(.escaped)]`
+                        /// The naive layout of these tokens will incorrectly print as:
+                        ///  """
+                        ///  this fits this fits in line length \
+                        ///  """
+                        ///  which will be too long because of the '\' character. Instead we have to print it as:
+                        ///  """
+                        ///  this fits \
+                        ///  this fits in line length
+                        ///  """
+                        ///
+                        /// While not prematurely inserting a line in situations where a hard line break is occurring, such as:
+                        ///
+                        /// `[.syntax("some text"), .break(.escaped), .syntax("this is exactly the right length"), .break(.hard)]`
+                        ///
+                        /// We want this to print as:
+                        /// """
+                        /// some text this is exactly the right length
+                        /// """
+                        /// and not:
+                        /// """
+                        /// some text \
+                        /// this is exactly the right length
+                        /// """
+                        if case .escaped = newline, case .escaped = lastNewline {
+                            lengths[index] += total + 1
+                        } else {
+                            lengths[index] += total
+                        }
+                        delimiterIndices.removeLast()
+                    }
+                    lengths.append(-total)
+                    delimiterIndices.append(i)
+
+                    switch newline {
+                        case .elective, .escaped:
+                            total += size
+                        default:
+                            // `size` is never used in this case, because the break always fires. Use `maxLineLength`
+                            // to ensure enclosing groups are large enough to force preceding breaks to fire.
+                            total += maxLineLength
+                    }
+
+                // Space tokens have a length equal to its size.
+                case .space(let size, _):
+                    lengths.append(size)
                     total += size
-                default:
-                    // `size` is never used in this case, because the break always fires. Use `maxLineLength`
-                    // to ensure enclosing groups are large enough to force preceding breaks to fire.
-                    total += maxLineLength
-                }
 
-            // Space tokens have a length equal to its size.
-            case .space(let size, _):
-                lengths.append(size)
-                total += size
+                // Syntax tokens have a length equal to the number of columns needed to print its contents.
+                case .syntax(let text):
+                    lengths.append(text.count)
+                    total += text.count
 
-            // Syntax tokens have a length equal to the number of columns needed to print its contents.
-            case .syntax(let text):
-                lengths.append(text.count)
-                total += text.count
+                case .comment(let comment, let wasEndOfLine):
+                    lengths.append(comment.length)
+                    total += wasEndOfLine ? 0 : comment.length
 
-            case .comment(let comment, let wasEndOfLine):
-                lengths.append(comment.length)
-                total += wasEndOfLine ? 0 : comment.length
-
-            case .verbatim(let verbatim):
-                let length = verbatim.prettyPrintingLength(maximum: maxLineLength)
-                lengths.append(length)
-                total += length
-
-            case .printerControl:
-                // Control tokens have no length. They aren't printed.
-                lengths.append(0)
-
-            case .commaDelimitedRegionStart:
-                lengths.append(0)
-
-            case .commaDelimitedRegionEnd(let isCollection, _, let isSingleElement):
-                // The token's length is only necessary when a comma will be printed, but it's impossible to
-                // know at this point whether the region-start token will be on the same line as this token.
-                // Without adding this length to the total, it would be possible for this comma to be
-                // printed in column `maxLineLength`. Unfortunately, this can cause breaks to fire
-                // unnecessarily when the enclosed tokens comma would fit within `maxLineLength`.
-                if shouldHandleCommaDelimitedRegion(isCollection: isCollection) == true {
-                    let length = isSingleElement ? 0 : 1
-                    total += length
+                case .verbatim(let verbatim):
+                    let length = verbatim.prettyPrintingLength(maximum: maxLineLength)
                     lengths.append(length)
-                } else {
-                    lengths.append(0)
-                }
+                    total += length
 
-            case .enableFormatting, .disableFormatting:
-                // no effect on length calculations
-                lengths.append(0)
+                case .printerControl:
+                    // Control tokens have no length. They aren't printed.
+                    lengths.append(0)
+
+                case .commaDelimitedRegionStart:
+                    lengths.append(0)
+
+                case .commaDelimitedRegionEnd(let isCollection, _, let isSingleElement):
+                    // The token's length is only necessary when a comma will be printed, but it's impossible to
+                    // know at this point whether the region-start token will be on the same line as this token.
+                    // Without adding this length to the total, it would be possible for this comma to be
+                    // printed in column `maxLineLength`. Unfortunately, this can cause breaks to fire
+                    // unnecessarily when the enclosed tokens comma would fit within `maxLineLength`.
+                    if shouldHandleCommaDelimitedRegion(isCollection: isCollection) == true {
+                        let length = isSingleElement ? 0 : 1
+                        total += length
+                        lengths.append(length)
+                    } else {
+                        lengths.append(0)
+                    }
+
+                case .enableFormatting, .disableFormatting:
+                    // no effect on length calculations
+                    lengths.append(0)
             }
         }
 
@@ -706,16 +705,12 @@ package final class LayoutCoordinator {
         assert(delimiterIndices.count < 2, "Too many unresolved delimiter token lengths.")
 
         if let index = delimiterIndices.popLast() {
-            if case .open = tokens[index] {
-                preconditionFailure("Open tokens must be closed.")
-            }
+            if case .open = tokens[index] { preconditionFailure("Open tokens must be closed.") }
             lengths[index] += total
         }
 
         // Print out the token stream, wrapping according to line-length limitations.
-        for i in 0..<tokens.count {
-            emitToken(idx: i)
-        }
+        for i in 0..<tokens.count { emitToken(idx: i) }
 
         guard activeOpenBreaks.isEmpty else {
             fatalError("At least one .break(.open) was not matched by a .break(.close)")
@@ -728,12 +723,12 @@ package final class LayoutCoordinator {
     /// or `nil` to keep as written.
     private func shouldHandleCommaDelimitedRegion(isCollection: Bool) -> Bool? {
         switch configuration[MultilineTrailingCommaBehaviorSetting.self] {
-        case .alwaysUsed:
-            return true
-        case .neverUsed:
-            return false
-        case .keptAsWritten:
-            return isCollection ? configuration[MultiElementCollectionTrailingCommas.self] : nil
+            case .alwaysUsed:
+                return true
+            case .neverUsed:
+                return false
+            case .keptAsWritten:
+                return isCollection ? configuration[MultiElementCollectionTrailingCommas.self] : nil
         }
     }
 
@@ -744,87 +739,87 @@ package final class LayoutCoordinator {
     ///
     /// Indentation is applied to make identification of groups easier.
     private func printDebugToken(token: Token, length: Int, idx: Int) {
-        func printDebugIndent() {
-            print(debugIndent.indentation(), terminator: "")
-        }
+        func printDebugIndent() { print(debugIndent.indentation(), terminator: "") }
 
         switch token {
-        case .syntax(let syntax):
-            printDebugIndent()
-            print("[SYNTAX \"\(syntax)\" Length: \(length) Idx: \(idx)]")
+            case .syntax(let syntax):
+                printDebugIndent()
+                print("[SYNTAX \"\(syntax)\" Length: \(length) Idx: \(idx)]")
 
-        case .break(let kind, let size, let newline):
-            printDebugIndent()
-            print(
-                "[BREAK Kind: \(kind) Size: \(size) Length: \(length) NL: \(newline) Idx: \(idx)]"
-            )
+            case .break(let kind, let size, let newline):
+                printDebugIndent()
+                print(
+                    "[BREAK Kind: \(kind) Size: \(size) Length: \(length) NL: \(newline) Idx: \(idx)]"
+                )
 
-        case .open(let breakstyle):
-            printDebugIndent()
-            switch breakstyle {
-            case .consistent:
-                print("[OPEN Consistent Length: \(length) Idx: \(idx)]")
-            case .inconsistent:
-                print("[OPEN Inconsistent Length: \(length) Idx: \(idx)]")
-            }
-            debugIndent.append(.spaces(2))
+            case .open(let breakstyle):
+                printDebugIndent()
+                switch breakstyle {
+                    case .consistent:
+                        print("[OPEN Consistent Length: \(length) Idx: \(idx)]")
+                    case .inconsistent:
+                        print("[OPEN Inconsistent Length: \(length) Idx: \(idx)]")
+                }
+                debugIndent.append(.spaces(2))
 
-        case .close:
-            debugIndent.removeLast()
-            printDebugIndent()
-            print("[CLOSE Idx: \(idx)]")
+            case .close:
+                debugIndent.removeLast()
+                printDebugIndent()
+                print("[CLOSE Idx: \(idx)]")
 
-        case .space(let size, let flexible):
-            printDebugIndent()
-            print("[SPACE Size: \(size) Flexible: \(flexible) Length: \(length) Idx: \(idx)]")
+            case .space(let size, let flexible):
+                printDebugIndent()
+                print("[SPACE Size: \(size) Flexible: \(flexible) Length: \(length) Idx: \(idx)]")
 
-        case .comment(let comment, let wasEndOfLine):
-            printDebugIndent()
-            switch comment.kind {
-            case .line:
-                print("[COMMENT Line Length: \(length) EOL: \(wasEndOfLine) Idx: \(idx)]")
-            case .docLine:
-                print("[COMMENT DocLine Length: \(length) EOL: \(wasEndOfLine) Idx: \(idx)]")
-            case .block:
-                print("[COMMENT Block Length: \(length) EOL: \(wasEndOfLine) Idx: \(idx)]")
-            case .docBlock:
-                print("[COMMENT DocBlock Length: \(length) EOL: \(wasEndOfLine) Idx: \(idx)]")
-            }
-            printDebugIndent()
-            print(comment.print(indent: debugIndent))
+            case .comment(let comment, let wasEndOfLine):
+                printDebugIndent()
+                switch comment.kind {
+                    case .line:
+                        print("[COMMENT Line Length: \(length) EOL: \(wasEndOfLine) Idx: \(idx)]")
+                    case .docLine:
+                        print(
+                            "[COMMENT DocLine Length: \(length) EOL: \(wasEndOfLine) Idx: \(idx)]")
+                    case .block:
+                        print("[COMMENT Block Length: \(length) EOL: \(wasEndOfLine) Idx: \(idx)]")
+                    case .docBlock:
+                        print(
+                            "[COMMENT DocBlock Length: \(length) EOL: \(wasEndOfLine) Idx: \(idx)]")
+                }
+                printDebugIndent()
+                print(comment.print(indent: debugIndent))
 
-        case .verbatim(let verbatim):
-            printDebugIndent()
-            print("[VERBATIM Length: \(length) Idx: \(idx)]")
-            print(verbatim.print(indent: debugIndent))
+            case .verbatim(let verbatim):
+                printDebugIndent()
+                print("[VERBATIM Length: \(length) Idx: \(idx)]")
+                print(verbatim.print(indent: debugIndent))
 
-        case .printerControl(let kind):
-            printDebugIndent()
-            print("[PRINTER CONTROL Kind: \(kind) Idx: \(idx)]")
+            case .printerControl(let kind):
+                printDebugIndent()
+                print("[PRINTER CONTROL Kind: \(kind) Idx: \(idx)]")
 
-        case .commaDelimitedRegionStart:
-            printDebugIndent()
-            print("[COMMA DELIMITED START Idx: \(idx)]")
+            case .commaDelimitedRegionStart:
+                printDebugIndent()
+                print("[COMMA DELIMITED START Idx: \(idx)]")
 
-        case .commaDelimitedRegionEnd:
-            printDebugIndent()
-            print("[COMMA DELIMITED END Idx: \(idx)]")
+            case .commaDelimitedRegionEnd:
+                printDebugIndent()
+                print("[COMMA DELIMITED END Idx: \(idx)]")
 
-        case .contextualBreakingStart:
-            printDebugIndent()
-            print("[START BREAKING CONTEXT Idx: \(idx)]")
+            case .contextualBreakingStart:
+                printDebugIndent()
+                print("[START BREAKING CONTEXT Idx: \(idx)]")
 
-        case .contextualBreakingEnd:
-            printDebugIndent()
-            print("[END BREAKING CONTEXT Idx: \(idx)]")
+            case .contextualBreakingEnd:
+                printDebugIndent()
+                print("[END BREAKING CONTEXT Idx: \(idx)]")
 
-        case .enableFormatting(let pos):
-            printDebugIndent()
-            print("[ENABLE FORMATTING utf8 offset: \(String(describing: pos))]")
+            case .enableFormatting(let pos):
+                printDebugIndent()
+                print("[ENABLE FORMATTING utf8 offset: \(String(describing: pos))]")
 
-        case .disableFormatting(let pos):
-            printDebugIndent()
-            print("[DISABLE FORMATTING utf8 offset: \(pos)]")
+            case .disableFormatting(let pos):
+                printDebugIndent()
+                print("[DISABLE FORMATTING utf8 offset: \(pos)]")
         }
     }
 

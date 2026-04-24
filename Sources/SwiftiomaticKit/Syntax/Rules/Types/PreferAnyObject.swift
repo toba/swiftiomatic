@@ -9,46 +9,47 @@ import SwiftSyntax
 ///
 /// Format: `class` is replaced with `AnyObject` in the inheritance clause.
 final class PreferAnyObject: RewriteSyntaxRule<BasicRuleValue> {
-    override class var group: ConfigurationGroup? { .types }
+    override static var group: ConfigurationGroup? { .types }
 
-  override func visit(_ node: ProtocolDeclSyntax) -> DeclSyntax {
-    guard let inheritanceClause = node.inheritanceClause else {
-      return DeclSyntax(node)
-    }
+    override func visit(_ node: ProtocolDeclSyntax) -> DeclSyntax {
+        guard let inheritanceClause = node.inheritanceClause else {
+            return DeclSyntax(node)
+        }
 
-    var foundViolation = false
-    let newInheritedTypes = inheritanceClause.inheritedTypes.map { inherited -> InheritedTypeSyntax in
-      guard let classRestriction = inherited.type.as(ClassRestrictionTypeSyntax.self) else {
-        return inherited
-      }
+        var foundViolation = false
+        let newInheritedTypes = inheritanceClause.inheritedTypes.map {
+            inherited -> InheritedTypeSyntax in
+            guard let classRestriction = inherited.type.as(ClassRestrictionTypeSyntax.self) else {
+                return inherited
+            }
 
-      foundViolation = true
-      diagnose(.preferAnyObject, on: classRestriction.classKeyword)
+            foundViolation = true
+            diagnose(.preferAnyObject, on: classRestriction.classKeyword)
 
-      // Replace `class` with `AnyObject` identifier type, preserving trivia
-      let anyObjectType = IdentifierTypeSyntax(
-        name: .identifier(
-          "AnyObject",
-          leadingTrivia: classRestriction.classKeyword.leadingTrivia,
-          trailingTrivia: classRestriction.classKeyword.trailingTrivia
+            // Replace `class` with `AnyObject` identifier type, preserving trivia
+            let anyObjectType = IdentifierTypeSyntax(
+                name: .identifier(
+                    "AnyObject",
+                    leadingTrivia: classRestriction.classKeyword.leadingTrivia,
+                    trailingTrivia: classRestriction.classKeyword.trailingTrivia
+                )
+            )
+            return inherited.with(\.type, TypeSyntax(anyObjectType))
+        }
+
+        guard foundViolation else {
+            return DeclSyntax(node)
+        }
+
+        let newClause = inheritanceClause.with(
+            \.inheritedTypes,
+            InheritedTypeListSyntax(newInheritedTypes)
         )
-      )
-      return inherited.with(\.type, TypeSyntax(anyObjectType))
+        return DeclSyntax(node.with(\.inheritanceClause, newClause))
     }
-
-    guard foundViolation else {
-      return DeclSyntax(node)
-    }
-
-    let newClause = inheritanceClause.with(
-      \.inheritedTypes,
-      InheritedTypeListSyntax(newInheritedTypes)
-    )
-    return DeclSyntax(node.with(\.inheritanceClause, newClause))
-  }
 }
 
 extension Finding.Message {
-  fileprivate static let preferAnyObject: Finding.Message =
-    "use 'AnyObject' instead of 'class' for class-constrained protocols"
+    fileprivate static let preferAnyObject: Finding.Message =
+        "use 'AnyObject' instead of 'class' for class-constrained protocols"
 }

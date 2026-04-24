@@ -131,6 +131,54 @@ the current working directory, and accounts for `.Swiftiomatic` files or
 Running `Swiftiomatic -v` or `Swiftiomatic --version` will print version
 information about `sm` version and then exit.
 
+## Xcode
+
+### Run Script Build Phase
+
+If you have `sm` [installed via Homebrew](#command-line-usage), you can
+integrate it as an Xcode Run Script Build Phase to get warnings and errors
+displayed inline in the Issue Navigator and in the source editor.
+
+1. In Xcode, select your project in the navigator, then select your app target.
+2. Go to the **Build Phases** tab and click **+** → **New Run Script Phase**.
+3. Drag the new phase **above** "Compile Sources" so linting runs first.
+4. Paste the following script:
+
+```bash
+if command -v sm >/dev/null 2>&1
+then
+    sm lint --parallel --recursive "${SRCROOT}"
+else
+    echo "warning: sm not installed — see https://github.com/toba/swiftiomatic#command-line-usage"
+fi
+```
+
+5. Uncheck **"Based on dependency analysis"** so linting runs on every
+   incremental build (not just when inputs change).
+
+To fail the build on any lint finding, add `--strict`:
+
+```bash
+sm lint --parallel --recursive --strict "${SRCROOT}"
+```
+
+To use a project-specific configuration file:
+
+```bash
+sm lint --parallel --recursive --configuration "${SRCROOT}/sm.json" "${SRCROOT}"
+```
+
+### SPM Plugins
+
+Three SPM plugins are also available when you add swiftiomatic as a package
+dependency:
+
+| Plugin | Type | Usage |
+|---|---|---|
+| **Lint on Build** | Build tool | Runs automatically on every build |
+| **Lint Source Code** | Command | Right-click target in navigator → "Lint Source Code" |
+| **Format Source Code** | Command | Right-click target in navigator → "Format Source Code" |
+
 ## API Usage
 
 `sm` can be easily integrated into other tools written in Swift.

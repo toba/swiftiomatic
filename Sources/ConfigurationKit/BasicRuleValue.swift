@@ -12,8 +12,8 @@ package struct BasicRuleValue: SyntaxRuleValue {
     package var rewrite: Bool
 
     package init() {
-        self.lint = .warn
-        self.rewrite = true
+        lint = .warn
+        rewrite = true
     }
 
     package init(rewrite: Bool = true, lint: Lint = .warn) {
@@ -23,7 +23,7 @@ package struct BasicRuleValue: SyntaxRuleValue {
 
     package init(_ lint: Lint) {
         self.lint = lint
-        self.rewrite = true
+        rewrite = true
     }
 }
 

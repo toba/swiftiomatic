@@ -21,13 +21,9 @@ package struct LintOnlyValue: SyntaxRuleValue {
         set { /* lint-only rules cannot rewrite */  }
     }
 
-    package init() {
-        lint = .warn
-    }
+    package init() { lint = .warn }
 
-    package init(lint: Lint) {
-        self.lint = lint
-    }
+    package init(lint: Lint) { self.lint = lint }
 }
 
 extension LintOnlyValue: Codable {

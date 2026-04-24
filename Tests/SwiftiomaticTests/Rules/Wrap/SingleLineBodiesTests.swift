@@ -1085,8 +1085,45 @@ struct SingleLineBodiesInlineTests: RuleTesting {
       configuration: config)
   }
 
-  @Test func propertyObserverNotInlined() {
-    // Explicit accessors (didSet/willSet) are not inlined
+  @Test func didSetBodyInlines() {
+    assertFormatting(
+      WrapSingleLineBodies.self,
+      input: """
+        var value: Int = 0 {
+            didSet 1️⃣{
+                print("changed")
+            }
+        }
+        """,
+      expected: """
+        var value: Int = 0 {
+            didSet { print("changed") }
+        }
+        """,
+      findings: [FindingSpec("1️⃣", message: "place observer body on same line as accessor")],
+      configuration: inlineConfig)
+  }
+
+  @Test func willSetBodyInlines() {
+    assertFormatting(
+      WrapSingleLineBodies.self,
+      input: """
+        var value: Int = 0 {
+            willSet 1️⃣{
+                print("will change")
+            }
+        }
+        """,
+      expected: """
+        var value: Int = 0 {
+            willSet { print("will change") }
+        }
+        """,
+      findings: [FindingSpec("1️⃣", message: "place observer body on same line as accessor")],
+      configuration: inlineConfig)
+  }
+
+  @Test func observerBodyAlreadyInlineUnchanged() {
     assertFormatting(
       WrapSingleLineBodies.self,
       input: """
@@ -1097,6 +1134,50 @@ struct SingleLineBodiesInlineTests: RuleTesting {
       expected: """
         var value: Int = 0 {
             didSet { print("changed") }
+        }
+        """,
+      configuration: inlineConfig)
+  }
+
+  @Test func observerBodyTooLongNotInlined() {
+    var config = inlineConfig
+    config[LineLength.self] = 30
+    assertFormatting(
+      WrapSingleLineBodies.self,
+      input: """
+        var value: Int = 0 {
+            didSet {
+                outputBuffer.isEnabled = disabledPosition == nil
+            }
+        }
+        """,
+      expected: """
+        var value: Int = 0 {
+            didSet {
+                outputBuffer.isEnabled = disabledPosition == nil
+            }
+        }
+        """,
+      configuration: config)
+  }
+
+  @Test func observerMultiStatementNotInlined() {
+    assertFormatting(
+      WrapSingleLineBodies.self,
+      input: """
+        var value: Int = 0 {
+            didSet {
+                print("old: \\(oldValue)")
+                print("new: \\(value)")
+            }
+        }
+        """,
+      expected: """
+        var value: Int = 0 {
+            didSet {
+                print("old: \\(oldValue)")
+                print("new: \\(value)")
+            }
         }
         """,
       configuration: inlineConfig)

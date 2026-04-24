@@ -6,9 +6,7 @@ package enum LayoutRegistry {
     package static var all: [any LayoutRule.Type] { ConfigurationRegistry.allSettingTypes }
 
     /// Root-level settings (group == nil).
-    package static var rootRules: [any LayoutRule.Type] {
-        all.filter { $0.group == nil }
-    }
+    package static var rootRules: [any LayoutRule.Type] { all.filter { $0.group == nil } }
 
     /// Rules belonging to a specific group.
     package static func rules(in group: ConfigurationGroup) -> [any LayoutRule.Type] {

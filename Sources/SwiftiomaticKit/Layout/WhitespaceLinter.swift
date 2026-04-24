@@ -37,10 +37,10 @@ package final class WhitespaceLinter {
     ///   - formatted: The formatted text to compare to `user`.
     ///   - context: The context object containing the DiagnosticEngine instance we wish to use.
     package init(user: String, formatted: String, context: Context) {
-        self.userText = Array(user.utf8)
-        self.formattedText = Array(formatted.utf8)
+        userText = Array(user.utf8)
+        formattedText = Array(formatted.utf8)
         self.context = context
-        self.isLineTooLong = false
+        isLineTooLong = false
     }
 
     /// Perform whitespace linting.
@@ -113,7 +113,7 @@ package final class WhitespaceLinter {
         var userRunsIterator = RememberingIterator(userRuns.makeIterator())
         var formattedRunsIterator = RememberingIterator(formattedRuns.makeIterator())
 
-        if userRuns.count == 1 && formattedRuns.count == 1 {
+        if userRuns.count == 1, formattedRuns.count == 1 {
             let userRun = userRunsIterator.next()!
             let formattedRun = formattedRunsIterator.next()!
 
@@ -153,7 +153,6 @@ package final class WhitespaceLinter {
                     }
                     userIndex += userRun.count + 1
                 }
-
                 runIndex += 1
             }
         }
@@ -174,7 +173,7 @@ package final class WhitespaceLinter {
         // If there were more lines in the formatted output and the user's line did not exceed the
         // line length limit, tell the user to add the necessary blank lines.
         let excessFormattedLines = formattedRuns.count - userRuns.count
-        if excessFormattedLines > 0 && !isLineTooLong {
+        if excessFormattedLines > 0, !isLineTooLong {
             diagnose(
                 .addLinesError(excessFormattedLines),
                 category: .addLines,
@@ -209,11 +208,10 @@ package final class WhitespaceLinter {
         // Move the offset to the first non-whitespace character.
         var adjustedUserIndex = userIndex
         var lastUserRun: ArraySlice<UTF8.CodeUnit>!
+
         for (index, userRun) in userRuns.enumerated() {
             lastUserRun = userRun
-            if index < userRuns.count - 1 {
-                adjustedUserIndex += userRun.count + 1
-            }
+            if index < userRuns.count - 1 { adjustedUserIndex += userRun.count + 1 }
         }
 
         // Calculate the length of the user's line.
@@ -236,9 +234,7 @@ package final class WhitespaceLinter {
         var lastFormattedRun: ArraySlice<UTF8.CodeUnit>!
         for (index, formattedRun) in formattedRuns.enumerated() {
             lastFormattedRun = formattedRun
-            if index < formattedRuns.count - 1 {
-                adjustedFormattedIndex += formattedRun.count + 1
-            }
+            if index < formattedRuns.count - 1 { adjustedFormattedIndex += formattedRun.count + 1 }
         }
 
         // Calculate the length of the formatted line.
@@ -387,9 +383,7 @@ package final class WhitespaceLinter {
     /// Returns the indentation that represents the indentation of the given whitespace, which is the
     /// leading spacing for a line.
     private func indentation(of whitespace: ArraySlice<UTF8.CodeUnit>) -> WhitespaceIndentation {
-        if whitespace.count == 0 {
-            return .none
-        }
+        if whitespace.count == 0 { return .none }
 
         var orderedRuns: [(char: UTF8.CodeUnit, count: Int)] = []
         for char in whitespace {
@@ -405,9 +399,7 @@ package final class WhitespaceLinter {
             // Assumes any non-tab whitespace character is some type of space.
             return run.char == utf8Tab ? Indent.tabs(run.count) : Indent.spaces(run.count)
         }
-        if indents.count == 1, let onlyIndent = indents.first {
-            return .homogeneous(onlyIndent)
-        }
+        if indents.count == 1, let onlyIndent = indents.first { return .homogeneous(onlyIndent) }
         return .heterogeneous(indents)
     }
 }
@@ -432,12 +424,12 @@ extension Indent {
     /// appropriate for use in diagnostic messages.
     fileprivate var diagnosticDescription: String {
         switch self {
-        case .spaces(let count):
-            let noun = count == 1 ? "space" : "spaces"
-            return "\(count) \(noun)"
-        case .tabs(let count):
-            let noun = count == 1 ? "tab" : "tabs"
-            return "\(count) \(noun)"
+            case .spaces(let count):
+                let noun = count == 1 ? "space" : "spaces"
+                return "\(count) \(noun)"
+            case .tabs(let count):
+                let noun = count == 1 ? "tab" : "tabs"
+                return "\(count) \(noun)"
         }
     }
 }
@@ -447,15 +439,15 @@ extension WhitespaceIndentation {
     /// appropriate for use in diagnostic messages.
     fileprivate var diagnosticDescription: String {
         switch self {
-        case .none:
-            return "no indentation"
-        case .heterogeneous(let indents):
-            guard let first = indents.first else { return "no indentation" }
-            return indents.dropFirst().reduce(first.diagnosticDescription) {
-                return $0 + ", " + $1.diagnosticDescription
-            }
-        case .homogeneous(let indent):
-            return indent.diagnosticDescription
+            case .none:
+                return "no indentation"
+            case .heterogeneous(let indents):
+                guard let first = indents.first else { return "no indentation" }
+                return indents.dropFirst().reduce(first.diagnosticDescription) {
+                    return $0 + ", " + $1.diagnosticDescription
+                }
+            case .homogeneous(let indent):
+                return indent.diagnosticDescription
         }
     }
 }
@@ -468,34 +460,34 @@ extension Finding.Message {
         actual actualIndentation: WhitespaceIndentation
     ) -> Finding.Message {
         switch expectedIndentation {
-        case .none:
-            return "remove all leading whitespace"
+            case .none:
+                return "remove all leading whitespace"
 
-        case .homogeneous, .heterogeneous:
-            if case .homogeneous(let expectedIndent) = expectedIndentation,
-                case .homogeneous(let actualIndent) = actualIndentation
-            {
-                if case .spaces(let expectedCount) = expectedIndent,
-                    case .spaces(let actualCount) = actualIndent
+            case .homogeneous, .heterogeneous:
+                if case .homogeneous(let expectedIndent) = expectedIndentation,
+                    case .homogeneous(let actualIndent) = actualIndentation
                 {
-                    let delta = expectedCount - actualCount
-                    let verb = delta > 0 ? "indent" : "unindent"
-                    return "\(verb) by \(abs(delta)) spaces"
+                    if case .spaces(let expectedCount) = expectedIndent,
+                        case .spaces(let actualCount) = actualIndent
+                    {
+                        let delta = expectedCount - actualCount
+                        let verb = delta > 0 ? "indent" : "unindent"
+                        return "\(verb) by \(abs(delta)) spaces"
+                    }
+                    if case .tabs(let expectedCount) = expectedIndent,
+                        case .tabs(let actualCount) = actualIndent
+                    {
+                        let delta = expectedCount - actualCount
+                        let verb = delta > 0 ? "indent" : "unindent"
+                        return "\(verb) by \(abs(delta)) tabs"
+                    }
+                    // Intentionally fall-through to the heterogeneous indentation diagnostic below.
                 }
-                if case .tabs(let expectedCount) = expectedIndent,
-                    case .tabs(let actualCount) = actualIndent
-                {
-                    let delta = expectedCount - actualCount
-                    let verb = delta > 0 ? "indent" : "unindent"
-                    return "\(verb) by \(abs(delta)) tabs"
-                }
-                // Intentionally fall-through to the heterogeneous indentation diagnostic below.
-            }
-            // Otherwise, the change can't be described by a simple add/remove N spaces/tabs. It's easier
-            // to instruct the user to remove the existing whitespace and add the appropriate sequence of
-            // indenting characters.
-            let expectedDescription = expectedIndentation.diagnosticDescription
-            return "replace leading whitespace with \(expectedDescription)"
+                // Otherwise, the change can't be described by a simple add/remove N spaces/tabs. It's easier
+                // to instruct the user to remove the existing whitespace and add the appropriate sequence of
+                // indenting characters.
+                let expectedDescription = expectedIndentation.diagnosticDescription
+                return "replace leading whitespace with \(expectedDescription)"
         }
     }
 
