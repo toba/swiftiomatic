@@ -17,9 +17,9 @@ extension Trivia {
         contains {
             switch $0 {
                 case .lineComment, .docLineComment, .blockComment, .docBlockComment:
-                    return true
+                    true
                 default:
-                    return false
+                    false
             }
         }
     }
@@ -33,15 +33,11 @@ extension Trivia {
     }
 
     /// Returns this set of trivia, without any leading spaces.
-    func withoutLeadingSpaces() -> Trivia {
-        Trivia(pieces: pieces.drop(while: \.isSpaceOrTab))
-    }
+    func withoutLeadingSpaces() -> Trivia { .init(pieces: pieces.drop(while: \.isSpaceOrTab)) }
 
     func withoutTrailingSpaces() -> Trivia {
-        guard let lastNonSpaceIndex = pieces.lastIndex(where: \.isSpaceOrTab) else {
-            return self
-        }
-        return Trivia(pieces: self[..<lastNonSpaceIndex])
+        guard let lastNonSpaceIndex = pieces.lastIndex(where: \.isSpaceOrTab) else { return self }
+        return .init(pieces: self[..<lastNonSpaceIndex])
     }
 
     /// Returns this trivia, excluding the last newline and anything following it.
@@ -49,6 +45,7 @@ extension Trivia {
     /// If there is no newline in the trivia, it is returned unmodified.
     func withoutLastLine() -> Trivia {
         var maybeLastNewlineOffset: Int?
+
         for (offset, piece) in enumerated() {
             switch piece {
                 case .newlines, .carriageReturns, .carriageReturnLineFeeds:
@@ -57,10 +54,8 @@ extension Trivia {
                     break
             }
         }
-        guard let lastNewlineOffset = maybeLastNewlineOffset else {
-            return self
-        }
-        return Trivia(pieces: dropLast(count - lastNewlineOffset))
+        guard let lastNewlineOffset = maybeLastNewlineOffset else { return self }
+        return .init(pieces: dropLast(count - lastNewlineOffset))
     }
 
     /// Returns `true` if this trivia contains any newlines.
@@ -117,9 +112,7 @@ extension Trivia {
 
     /// Whether this trivia contains at least one blank line (two or more newlines before any
     /// non-whitespace content).
-    var hasBlankLine: Bool {
-        blankLineCount > 0
-    }
+    var hasBlankLine: Bool { blankLineCount > 0 }
 
     /// Whether this trivia starts with a comment (before any blank line).
     ///
@@ -128,12 +121,12 @@ extension Trivia {
     var startsWithComment: Bool {
         for piece in pieces {
             switch piece {
-            case .lineComment, .docLineComment, .blockComment, .docBlockComment:
-                return true
-            case .newlines, .spaces, .tabs, .carriageReturns, .carriageReturnLineFeeds:
-                continue
-            default:
-                return false
+                case .lineComment, .docLineComment, .blockComment, .docBlockComment:
+                    return true
+                case .newlines, .spaces, .tabs, .carriageReturns, .carriageReturnLineFeeds:
+                    continue
+                default:
+                    return false
             }
         }
         return false
@@ -147,7 +140,7 @@ extension Trivia {
                 pieces[i] = .newlines(1)
             }
         }
-        return Trivia(pieces: pieces)
+        return .init(pieces: pieces)
     }
 
     /// The total count of newline characters, including carriage returns and CR+LF.
@@ -165,6 +158,7 @@ extension Trivia {
     /// Returns a copy with the first `.newlines` piece replaced by the given count.
     func replacingFirstNewlines(with count: Int) -> Trivia {
         var pieces = Array(self.pieces)
+
         for (i, piece) in pieces.enumerated() {
             if case .newlines = piece {
                 pieces[i] = .newlines(count)
@@ -232,6 +226,7 @@ extension Trivia {
         var foundNewline = false
         for piece in pieces.reversed() {
             if foundNewline { break }
+
             switch piece {
                 case .spaces(let n):
                     indent = String(repeating: " ", count: n) + indent
@@ -258,6 +253,6 @@ extension Trivia {
                 break
             }
         }
-        return Trivia(pieces: pieces)
+        return .init(pieces: pieces)
     }
 }
