@@ -199,7 +199,6 @@ class LintPipeline: SyntaxVisitor {
   }
 
   override func visit(_ node: ClosureExprSyntax) -> SyntaxVisitorContinueKind {
-    visitIfEnabled(EmptyBraces.visit, for: node)
     visitIfEnabled(NoEmptyLinesOpeningClosingBraces.visit, for: node)
     visitIfEnabled(NoForceTry.visit, for: node)
     visitIfEnabled(NoForceUnwrap.visit, for: node)
@@ -210,7 +209,6 @@ class LintPipeline: SyntaxVisitor {
     return .visitChildren
   }
   override func visitPost(_ node: ClosureExprSyntax) {
-    onVisitPost(rule: EmptyBraces.self, for: node)
     onVisitPost(rule: NoEmptyLinesOpeningClosingBraces.self, for: node)
     onVisitPost(rule: NoForceTry.self, for: node)
     onVisitPost(rule: NoForceUnwrap.self, for: node)
@@ -280,7 +278,6 @@ class LintPipeline: SyntaxVisitor {
     visitIfEnabled(AmbiguousTrailingClosureOverload.visit, for: node)
     visitIfEnabled(BlankLinesAfterGuardStatements.visit, for: node)
     visitIfEnabled(BlankLinesBeforeControlFlow.visit, for: node)
-    visitIfEnabled(EmptyBraces.visit, for: node)
     visitIfEnabled(NoEmptyLinesOpeningClosingBraces.visit, for: node)
     return .visitChildren
   }
@@ -288,7 +285,6 @@ class LintPipeline: SyntaxVisitor {
     onVisitPost(rule: AmbiguousTrailingClosureOverload.self, for: node)
     onVisitPost(rule: BlankLinesAfterGuardStatements.self, for: node)
     onVisitPost(rule: BlankLinesBeforeControlFlow.self, for: node)
-    onVisitPost(rule: EmptyBraces.self, for: node)
     onVisitPost(rule: NoEmptyLinesOpeningClosingBraces.self, for: node)
   }
 
@@ -364,6 +360,7 @@ class LintPipeline: SyntaxVisitor {
 
   override func visit(_ node: EnumDeclSyntax) -> SyntaxVisitorContinueKind {
     visitIfEnabled(CapitalizedTypeNames.visit, for: node)
+    visitIfEnabled(CollapseSimpleEnums.visit, for: node)
     visitIfEnabled(DocCommentSummary.visit, for: node)
     visitIfEnabled(DocCommentsBeforeModifiers.visit, for: node)
     visitIfEnabled(DocumentPublicDeclarations.visit, for: node)
@@ -386,6 +383,7 @@ class LintPipeline: SyntaxVisitor {
   }
   override func visitPost(_ node: EnumDeclSyntax) {
     onVisitPost(rule: CapitalizedTypeNames.self, for: node)
+    onVisitPost(rule: CollapseSimpleEnums.self, for: node)
     onVisitPost(rule: DocCommentSummary.self, for: node)
     onVisitPost(rule: DocCommentsBeforeModifiers.self, for: node)
     onVisitPost(rule: DocumentPublicDeclarations.self, for: node)
@@ -461,6 +459,7 @@ class LintPipeline: SyntaxVisitor {
   override func visit(_ node: FunctionCallExprSyntax) -> SyntaxVisitorContinueKind {
     visitIfEnabled(HoistAwait.visit, for: node)
     visitIfEnabled(HoistTry.visit, for: node)
+    visitIfEnabled(NestedCallLayout.visit, for: node)
     visitIfEnabled(NoForceUnwrap.visit, for: node)
     visitIfEnabled(NoTrailingClosureParens.visit, for: node)
     visitIfEnabled(OnlyOneTrailingClosureArgument.visit, for: node)
@@ -477,6 +476,7 @@ class LintPipeline: SyntaxVisitor {
   override func visitPost(_ node: FunctionCallExprSyntax) {
     onVisitPost(rule: HoistAwait.self, for: node)
     onVisitPost(rule: HoistTry.self, for: node)
+    onVisitPost(rule: NestedCallLayout.self, for: node)
     onVisitPost(rule: NoForceUnwrap.self, for: node)
     onVisitPost(rule: NoTrailingClosureParens.self, for: node)
     onVisitPost(rule: OnlyOneTrailingClosureArgument.self, for: node)
@@ -805,14 +805,12 @@ class LintPipeline: SyntaxVisitor {
   override func visit(_ node: MemberBlockSyntax) -> SyntaxVisitorContinueKind {
     visitIfEnabled(AmbiguousTrailingClosureOverload.visit, for: node)
     visitIfEnabled(BlankLinesBetweenScopes.visit, for: node)
-    visitIfEnabled(EmptyBraces.visit, for: node)
     visitIfEnabled(NoEmptyLinesOpeningClosingBraces.visit, for: node)
     return .visitChildren
   }
   override func visitPost(_ node: MemberBlockSyntax) {
     onVisitPost(rule: AmbiguousTrailingClosureOverload.self, for: node)
     onVisitPost(rule: BlankLinesBetweenScopes.self, for: node)
-    onVisitPost(rule: EmptyBraces.self, for: node)
     onVisitPost(rule: NoEmptyLinesOpeningClosingBraces.self, for: node)
   }
 
@@ -1260,6 +1258,9 @@ extension RewritePipeline {
     if context.shouldFormat(CapitalizeAcronyms.self, node: node) {
       node = CapitalizeAcronyms(context: context).rewrite(node)
     }
+    if context.shouldFormat(CollapseSimpleEnums.self, node: node) {
+      node = CollapseSimpleEnums(context: context).rewrite(node)
+    }
     if context.shouldFormat(ConsistentSwitchCaseSpacing.self, node: node) {
       node = ConsistentSwitchCaseSpacing(context: context).rewrite(node)
     }
@@ -1268,9 +1269,6 @@ extension RewritePipeline {
     }
     if context.shouldFormat(DocCommentsBeforeModifiers.self, node: node) {
       node = DocCommentsBeforeModifiers(context: context).rewrite(node)
-    }
-    if context.shouldFormat(EmptyBraces.self, node: node) {
-      node = EmptyBraces(context: context).rewrite(node)
     }
     if context.shouldFormat(EmptyCollectionLiteral.self, node: node) {
       node = EmptyCollectionLiteral(context: context).rewrite(node)
@@ -1322,6 +1320,9 @@ extension RewritePipeline {
     }
     if context.shouldFormat(ModifiersOnSameLine.self, node: node) {
       node = ModifiersOnSameLine(context: context).rewrite(node)
+    }
+    if context.shouldFormat(NestedCallLayout.self, node: node) {
+      node = NestedCallLayout(context: context).rewrite(node)
     }
     if context.shouldFormat(NoAssignmentInExpressions.self, node: node) {
       node = NoAssignmentInExpressions(context: context).rewrite(node)

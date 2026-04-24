@@ -1,0 +1,1279 @@
+//===----------------------------------------------------------------------===//
+//
+// This source file is part of the Swift.org open source project
+//
+// Copyright (c) 2014 - 2025 Apple Inc. and the Swift project authors
+// Licensed under Apache License v2.0 with Runtime Library Exception
+//
+// See https://swift.org/LICENSE.txt for license information
+// See https://swift.org/CONTRIBUTORS.txt for the list of Swift project authors
+//
+//===----------------------------------------------------------------------===//
+
+import SwiftiomaticKit
+import Testing
+
+@Suite
+struct FunctionDeclTests: LayoutTesting {
+  @Test func basicFunctionDeclarations_noPackArguments() {
+    let input =
+      """
+      func myFun(var1: Int, var2: Double) {
+        print("Hello World")
+        let a = 23
+      }
+      func reallyLongName(var1: Int, var2: Double, var3: Bool) {
+        print("Hello World")
+        let a = 23
+      }
+      func myFun() {
+        let a = 23
+      }
+      func myFun() { let a = "AAAA BBBB CCCC DDDD EEEE FFFF" }
+      """
+
+    let expected =
+      """
+      func myFun(var1: Int, var2: Double) {
+        print("Hello World")
+        let a = 23
+      }
+      func reallyLongName(
+        var1: Int,
+        var2: Double,
+        var3: Bool
+      ) {
+        print("Hello World")
+        let a = 23
+      }
+      func myFun() {
+        let a = 23
+      }
+      func myFun() {
+        let a = "AAAA BBBB CCCC DDDD EEEE FFFF"
+      }
+
+      """
+
+    var config = Configuration.forTesting
+    config[BeforeEachArgument.self] = true
+    assertLayout(input: input, expected: expected, linelength: 50, configuration: config)
+  }
+
+  @Test func basicFunctionDeclarations_packArguments() {
+    let input =
+      """
+      func myFun(var1: Int, var2: Double) {
+        print("Hello World")
+        let a = 23
+      }
+      func reallyLongName(var1: Int, var2: Double, var3: Bool) {
+        print("Hello World")
+        let a = 23
+      }
+      func myFun() {
+        let a = 23
+      }
+      func myFun() { let a = "AAAA BBBB CCCC DDDD EEEE FFFF" }
+      """
+
+    let expected =
+      """
+      func myFun(var1: Int, var2: Double) {
+        print("Hello World")
+        let a = 23
+      }
+      func reallyLongName(
+        var1: Int, var2: Double, var3: Bool
+      ) {
+        print("Hello World")
+        let a = 23
+      }
+      func myFun() {
+        let a = 23
+      }
+      func myFun() {
+        let a = "AAAA BBBB CCCC DDDD EEEE FFFF"
+      }
+
+      """
+
+    var config = Configuration.forTesting
+    config[BeforeEachArgument.self] = false
+    assertLayout(input: input, expected: expected, linelength: 50, configuration: config)
+  }
+
+  @Test func functionDeclReturns() {
+    let input =
+      """
+      func myFun(var1: Int, var2: Double) -> Double {
+        print("Hello World")
+        return 1.0
+      }
+      func reallyLongName(var1: Int, var2: Double, var3: Bool) -> Double {
+        print("Hello World")
+        return 1.0
+      }
+      func tupleFunc() throws -> (one: Int, two: Double, three: Bool, four: String) {
+        return (one: 1, two: 2.0, three: true, four: "four")
+      }
+      func memberTypeThrowingFunc() throws -> SomeBaseType<GenericArg1, GenericArg2, GenericArg3>.SomeInnerType {
+      }
+      func memberTypeReallyLongNameFunc() -> Type.InnerMember {
+      }
+      func tupleMembersFunc() -> (Type.Inner, Type2.Inner2) {
+      }
+      """
+
+    let expected =
+      """
+      func myFun(var1: Int, var2: Double) -> Double {
+        print("Hello World")
+        return 1.0
+      }
+      func reallyLongName(
+        var1: Int, var2: Double, var3: Bool
+      ) -> Double {
+        print("Hello World")
+        return 1.0
+      }
+      func tupleFunc() throws -> (
+        one: Int, two: Double, three: Bool, four: String
+      ) {
+        return (
+          one: 1, two: 2.0, three: true, four: "four"
+        )
+      }
+      func memberTypeThrowingFunc() throws
+        -> SomeBaseType<
+          GenericArg1, GenericArg2, GenericArg3
+        >.SomeInnerType
+      {}
+      func memberTypeReallyLongNameFunc()
+        -> Type.InnerMember
+      {}
+      func tupleMembersFunc() -> (
+        Type.Inner, Type2.Inner2
+      ) {}
+
+      """
+
+    var config = Configuration.forTesting
+    config[BeforeEachArgument.self] = false
+    assertLayout(input: input, expected: expected, linelength: 50, configuration: config)
+  }
+
+  @Test func functionDeclThrows() {
+    let input =
+      """
+      func myFun(var1: Int) throws -> Double {
+        print("Hello World")
+        if badCondition {
+          throw Error
+        }
+        return 1.0
+      }
+      func reallyLongName(var1: Int, var2: Double, var3: Bool) throws -> Double {
+        print("Hello World")
+        if badCondition {
+          throw Error
+        }
+        return 1.0
+      }
+      """
+
+    let expected =
+      """
+      func myFun(var1: Int) throws -> Double {
+        print("Hello World")
+        if badCondition {
+          throw Error
+        }
+        return 1.0
+      }
+      func reallyLongName(
+        var1: Int, var2: Double, var3: Bool
+      ) throws -> Double {
+        print("Hello World")
+        if badCondition {
+          throw Error
+        }
+        return 1.0
+      }
+
+      """
+
+    var config = Configuration.forTesting
+    config[BeforeEachArgument.self] = false
+    assertLayout(input: input, expected: expected, linelength: 50, configuration: config)
+  }
+
+  @Test func functionGenericParameters_noPackArguments() {
+    let input =
+      """
+      func myFun<S, T>(var1: S, var2: T) {
+        let a = 123
+        print("Hello World")
+      }
+
+      func myFun<S: T & U>(var1: S) {
+        // do stuff
+      }
+
+      func longerNameFun<ReallyLongTypeName: Conform, TypeName>(var1: ReallyLongTypeName, var2: TypeName) {
+        let a = 123
+        let b = 456
+      }
+      """
+
+    let expected =
+      """
+      func myFun<S, T>(var1: S, var2: T) {
+        let a = 123
+        print("Hello World")
+      }
+
+      func myFun<S: T & U>(var1: S) {
+        // do stuff
+      }
+
+      func longerNameFun<
+        ReallyLongTypeName: Conform,
+        TypeName
+      >(
+        var1: ReallyLongTypeName,
+        var2: TypeName
+      ) {
+        let a = 123
+        let b = 456
+      }
+
+      """
+
+    var config = Configuration.forTesting
+    config[BeforeEachArgument.self] = true
+    assertLayout(input: input, expected: expected, linelength: 40, configuration: config)
+  }
+
+  @Test func functionGenericParameters_packArguments() {
+    let input =
+      """
+      func myFun<S, T>(var1: S, var2: T) {
+        let a = 123
+        print("Hello World")
+      }
+
+      func myFun<S: T & U>(var1: S) {
+        // do stuff
+      }
+
+      func longerNameFun<ReallyLongTypeName: Conform, TypeName>(var1: ReallyLongTypeName, var2: TypeName) {
+        let a = 123
+        let b = 456
+      }
+      """
+
+    let expected =
+      """
+      func myFun<S, T>(var1: S, var2: T) {
+        let a = 123
+        print("Hello World")
+      }
+
+      func myFun<S: T & U>(var1: S) {
+        // do stuff
+      }
+
+      func longerNameFun<
+        ReallyLongTypeName: Conform, TypeName
+      >(
+        var1: ReallyLongTypeName,
+        var2: TypeName
+      ) {
+        let a = 123
+        let b = 456
+      }
+
+      """
+
+    var config = Configuration.forTesting
+    config[BeforeEachArgument.self] = false
+    assertLayout(input: input, expected: expected, linelength: 40, configuration: config)
+  }
+
+  @Test func functionWhereClause() {
+    let input =
+      """
+      public func index<Elements: Collection, Element>(
+        of element: Element, in collection: Elements
+      ) -> Elements.Index? where Elements.Element == Element {
+        let a = 123
+        let b = "abc"
+      }
+
+      public func index<Elements: Collection, Element>(
+        of element: Element,
+        in collection: Elements
+      ) -> Elements.Index? where Elements.Element == Element, Element: Equatable {
+        let a = 123
+        let b = "abc"
+      }
+
+      public func index<Elements: Collection, Element>(
+        of element: Element,
+        in collection: Elements
+      ) -> Elements.Index? where Elements.Element == Element, Element: Equatable, Element: ReallyLongProtocolName {
+        let a = 123
+        let b = "abc"
+      }
+      """
+
+    let expected =
+      """
+      public func index<Elements: Collection, Element>(
+        of element: Element, in collection: Elements
+      ) -> Elements.Index?
+      where Elements.Element == Element {
+        let a = 123
+        let b = "abc"
+      }
+
+      public func index<Elements: Collection, Element>(
+        of element: Element,
+        in collection: Elements
+      ) -> Elements.Index?
+      where
+        Elements.Element == Element, Element: Equatable
+      {
+        let a = 123
+        let b = "abc"
+      }
+
+      public func index<Elements: Collection, Element>(
+        of element: Element,
+        in collection: Elements
+      ) -> Elements.Index?
+      where
+        Elements.Element == Element, Element: Equatable,
+        Element: ReallyLongProtocolName
+      {
+        let a = 123
+        let b = "abc"
+      }
+
+      """
+
+    var config = Configuration.forTesting
+    config[BeforeEachArgument.self] = false
+    assertLayout(input: input, expected: expected, linelength: 50, configuration: config)
+  }
+
+  @Test func functionWhereClause_lineBreakBeforeEachGenericRequirement() {
+    let input =
+      """
+      public func index<Elements: Collection, Element>(
+        of element: Element, in collection: Elements
+      ) -> Elements.Index? where Elements.Element == Element {
+        let a = 123
+        let b = "abc"
+      }
+
+      public func index<Elements: Collection, Element>(
+        of element: Element,
+        in collection: Elements
+      ) -> Elements.Index? where Elements.Element == Element, Element: Equatable {
+        let a = 123
+        let b = "abc"
+      }
+
+      public func index<Elements: Collection, Element>(
+        of element: Element,
+        in collection: Elements
+      ) -> Elements.Index? where Elements.Element == Element, Element: Equatable, Element: ReallyLongProtocolName {
+        let a = 123
+        let b = "abc"
+      }
+      """
+
+    let expected =
+      """
+      public func index<Elements: Collection, Element>(
+        of element: Element, in collection: Elements
+      ) -> Elements.Index?
+      where Elements.Element == Element {
+        let a = 123
+        let b = "abc"
+      }
+
+      public func index<Elements: Collection, Element>(
+        of element: Element,
+        in collection: Elements
+      ) -> Elements.Index?
+      where
+        Elements.Element == Element,
+        Element: Equatable
+      {
+        let a = 123
+        let b = "abc"
+      }
+
+      public func index<Elements: Collection, Element>(
+        of element: Element,
+        in collection: Elements
+      ) -> Elements.Index?
+      where
+        Elements.Element == Element,
+        Element: Equatable,
+        Element: ReallyLongProtocolName
+      {
+        let a = 123
+        let b = "abc"
+      }
+
+      """
+
+    var config = Configuration.forTesting
+    config[BeforeEachArgument.self] = false
+    config[BeforeEachGenericRequirement.self] = true
+    assertLayout(input: input, expected: expected, linelength: 50, configuration: config)
+  }
+
+  @Test func functionWithDefer() {
+    let input =
+      """
+      func myFun() {
+        defer { print("Hello world") }
+        return 0
+      }
+      func myFun() {
+        defer { print("Hello world with longer message") }
+        return 0
+      }
+      func myFun() {
+        defer {
+          print("First message")
+          print("Second message")
+        }
+        return 0
+      }
+      """
+
+    let expected =
+      """
+      func myFun() {
+        defer { print("Hello world") }
+        return 0
+      }
+      func myFun() {
+        defer {
+          print("Hello world with longer message")
+        }
+        return 0
+      }
+      func myFun() {
+        defer {
+          print("First message")
+          print("Second message")
+        }
+        return 0
+      }
+
+      """
+
+    assertLayout(input: input, expected: expected, linelength: 48)
+  }
+
+  @Test func functionAttributes() {
+    let input =
+      """
+      @discardableResult public func MyFun() {
+        let a = 123
+        let b = "abc"
+      }
+      @discardableResult @objc public func MyFun() {
+        let a = 123
+        let b = "abc"
+      }
+      @discardableResult @objc @inlinable public func MyFun() {
+        let a = 123
+        let b = "abc"
+      }
+      @discardableResult
+      @available(swift 4.0)
+      public func MyFun() {
+        let a = 123
+        let b = "abc"
+      }
+      """
+
+    let expected =
+      """
+      @discardableResult public func MyFun() {
+        let a = 123
+        let b = "abc"
+      }
+      @discardableResult @objc public func MyFun() {
+        let a = 123
+        let b = "abc"
+      }
+      @discardableResult @objc @inlinable
+      public func MyFun() {
+        let a = 123
+        let b = "abc"
+      }
+      @discardableResult
+      @available(swift 4.0)
+      public func MyFun() {
+        let a = 123
+        let b = "abc"
+      }
+
+      """
+
+    assertLayout(input: input, expected: expected, linelength: 50)
+  }
+
+  @Test func bodilessFunctionDecl() {
+    let input =
+      """
+      func myFun()
+
+      func myFun(arg1: Int)
+
+      func myFun() -> Int
+
+      func myFun<T>(arg1: Int)
+
+      func myFun<T>(arg1: Int) where T: S
+      """
+
+    let expected =
+      """
+      func myFun()
+
+      func myFun(arg1: Int)
+
+      func myFun() -> Int
+
+      func myFun<T>(arg1: Int)
+
+      func myFun<T>(arg1: Int) where T: S
+
+      """
+
+    assertLayout(input: input, expected: expected, linelength: 50)
+  }
+
+  @Test func functionFullWrap() {
+    let input =
+      """
+      @discardableResult @objc
+      public func index<Elements: Collection, Element>(of element: Element, in collection: Elements) -> Elements.Index? where Element: Foo, Element: Bar, Elements.Element == Element  {
+        let a = 123
+        let b = "abc"
+      }
+      """
+
+    let expected =
+      """
+      @discardableResult @objc
+      public func index<
+        Elements: Collection,
+        Element
+      >(
+        of element: Element,
+        in collection: Elements
+      ) -> Elements.Index?
+      where
+        Element: Foo, Element: Bar,
+        Elements.Element == Element
+      {
+        let a = 123
+        let b = "abc"
+      }
+
+      """
+
+    assertLayout(input: input, expected: expected, linelength: 30)
+  }
+
+  @Test func functionFullWrap_lineBreakBeforeEachGenericRequirement() {
+    let input =
+      """
+      @discardableResult @objc
+      public func index<Elements: Collection, Element>(of element: Element, in collection: Elements) -> Elements.Index? where Element: Foo, Element: Bar, Elements.Element == Element  {
+        let a = 123
+        let b = "abc"
+      }
+      """
+
+    let expected =
+      """
+      @discardableResult @objc
+      public func index<
+        Elements: Collection,
+        Element
+      >(
+        of element: Element,
+        in collection: Elements
+      ) -> Elements.Index?
+      where
+        Element: Foo,
+        Element: Bar,
+        Elements.Element == Element
+      {
+        let a = 123
+        let b = "abc"
+      }
+
+      """
+
+    var config = Configuration.forTesting
+    config[BeforeEachGenericRequirement.self] = true
+    assertLayout(input: input, expected: expected, linelength: 30, configuration: config)
+  }
+
+  @Test func emptyFunction() {
+    let input = "func foo() {}"
+    assertLayout(input: input, expected: input + "\n", linelength: 50)
+
+    let wrapped = """
+      func foo() {
+      }
+
+      """
+    assertLayout(input: input, expected: wrapped, linelength: 12)
+  }
+
+  @Test func operatorOverloads() {
+    let input =
+      """
+      struct X {
+        static func + (lhs: X, rhs: X) -> X {}
+        static func +(lhs: X, rhs: X) -> X {}
+        static func ⊕ (lhs: X, rhs: X) -> X {}
+        static func ⊕(lhs: X, rhs: X) -> X {}
+        static func * <T>(lhs: X, rhs: T) -> T {}
+        static func *<T>(lhs: X, rhs: T) -> T {}
+      }
+      """
+
+    let expected =
+      """
+      struct X {
+        static func + (
+          lhs: X, rhs: X
+        ) -> X {}
+        static func + (
+          lhs: X, rhs: X
+        ) -> X {}
+        static func ⊕ (
+          lhs: X, rhs: X
+        ) -> X {}
+        static func ⊕ (
+          lhs: X, rhs: X
+        ) -> X {}
+        static func * <T>(
+          lhs: X, rhs: T
+        ) -> T {}
+        static func * <T>(
+          lhs: X, rhs: T
+        ) -> T {}
+      }
+
+      """
+
+    assertLayout(input: input, expected: expected, linelength: 20)
+  }
+
+  @Test func breaksBeforeOrInsideOutput() {
+    let input =
+      """
+      func name<R>(_ x: Int) throws -> R
+
+      func name<R>(_ x: Int) throws -> R {
+        statement
+        statement
+      }
+      """
+
+    var expected =
+      """
+      func name<R>(_ x: Int)
+        throws -> R
+
+      func name<R>(_ x: Int)
+        throws -> R
+      {
+        statement
+        statement
+      }
+
+      """
+    assertLayout(input: input, expected: expected, linelength: 23)
+
+    expected =
+      """
+      func name<R>(_ x: Int) throws
+        -> R
+
+      func name<R>(_ x: Int) throws
+        -> R
+      {
+        statement
+        statement
+      }
+
+      """
+    assertLayout(input: input, expected: expected, linelength: 30)
+    assertLayout(input: input, expected: expected, linelength: 33)
+  }
+
+  @Test func breaksBeforeOrInsideOutput_prioritizingKeepingOutputTogether() {
+    let input =
+      """
+      func name<R>(_ x: Int) throws -> R
+
+      func name<R>(_ x: Int) throws -> R {
+        statement
+        statement
+      }
+      """
+
+    var expected =
+      """
+      func name<R>(
+        _ x: Int
+      ) throws -> R
+
+      func name<R>(
+        _ x: Int
+      ) throws -> R {
+        statement
+        statement
+      }
+
+      """
+    var config = Configuration.forTesting
+    config[KeepFunctionOutputTogether.self] = true
+    assertLayout(input: input, expected: expected, linelength: 23, configuration: config)
+
+    expected =
+      """
+      func name<R>(
+        _ x: Int
+      ) throws -> R
+
+      func name<R>(
+        _ x: Int
+      ) throws -> R {
+        statement
+        statement
+      }
+
+      """
+    assertLayout(input: input, expected: expected, linelength: 30, configuration: config)
+    assertLayout(input: input, expected: expected, linelength: 33, configuration: config)
+  }
+
+  @Test func breaksBeforeOrInsideOutputWithAttributes() {
+    let input =
+      """
+      @objc @discardableResult
+      func name<R>(_ x: Int) throws -> R
+
+      @objc @discardableResult
+      func name<R>(_ x: Int) throws -> R {
+        statement
+        statement
+      }
+      """
+
+    let expected =
+      """
+      @objc
+      @discardableResult
+      func name<R>(_ x: Int)
+        throws -> R
+
+      @objc
+      @discardableResult
+      func name<R>(_ x: Int)
+        throws -> R
+      {
+        statement
+        statement
+      }
+
+      """
+    assertLayout(input: input, expected: expected, linelength: 23)
+  }
+
+  @Test func breaksBeforeOrInsideOutputWithAttributes_prioritizingKeepingOutputTogether() {
+    let input =
+      """
+      @objc @discardableResult
+      func name<R>(_ x: Int) throws -> R
+
+      @objc @discardableResult
+      func name<R>(_ x: Int) throws -> R {
+        statement
+        statement
+      }
+      """
+
+    let expected =
+      """
+      @objc
+      @discardableResult
+      func name<R>(
+        _ x: Int
+      ) throws -> R
+
+      @objc
+      @discardableResult
+      func name<R>(
+        _ x: Int
+      ) throws -> R {
+        statement
+        statement
+      }
+
+      """
+    var config = Configuration.forTesting
+    config[KeepFunctionOutputTogether.self] = true
+    assertLayout(input: input, expected: expected, linelength: 23, configuration: config)
+  }
+
+  @Test func breaksBeforeOrInsideOutputWithWhereClause() {
+    var input =
+      """
+      func name<R>(_ x: Int) throws -> R where Foo == Bar
+
+      func name<R>(_ x: Int) throws -> R where Foo == Bar {
+        statement
+        statement
+      }
+      """
+
+    var expected =
+      """
+      func name<R>(_ x: Int)
+        throws -> R
+      where Foo == Bar
+
+      func name<R>(_ x: Int)
+        throws -> R
+      where Foo == Bar {
+        statement
+        statement
+      }
+
+      """
+    assertLayout(input: input, expected: expected, linelength: 23)
+
+    input =
+      """
+      func name<R>(_ x: Int) throws -> R where Fooooooo == Barrrrr
+
+      func name<R>(_ x: Int) throws -> R where Fooooooo == Barrrrr {
+        statement
+        statement
+      }
+      """
+
+    expected =
+      """
+      func name<R>(_ x: Int)
+        throws -> R
+      where
+        Fooooooo == Barrrrr
+
+      func name<R>(_ x: Int)
+        throws -> R
+      where
+        Fooooooo == Barrrrr
+      {
+        statement
+        statement
+      }
+
+      """
+    assertLayout(input: input, expected: expected, linelength: 23)
+  }
+
+  @Test func breaksBeforeOrInsideOutputWithWhereClause_prioritizingKeepingOutputTogether() {
+    var input =
+      """
+      func name<R>(_ x: Int) throws -> R where Foo == Bar
+
+      func name<R>(_ x: Int) throws -> R where Foo == Bar {
+        statement
+        statement
+      }
+      """
+
+    var expected =
+      """
+      func name<R>(
+        _ x: Int
+      ) throws -> R
+      where Foo == Bar
+
+      func name<R>(
+        _ x: Int
+      ) throws -> R
+      where Foo == Bar {
+        statement
+        statement
+      }
+
+      """
+    var config = Configuration.forTesting
+    config[KeepFunctionOutputTogether.self] = true
+    assertLayout(input: input, expected: expected, linelength: 23, configuration: config)
+
+    input =
+      """
+      func name<R>(_ x: Int) throws -> R where Fooooooo == Barrrrr
+
+      func name<R>(_ x: Int) throws -> R where Fooooooo == Barrrrr {
+      statement
+      statement
+      }
+      """
+
+    expected =
+      """
+      func name<R>(
+        _ x: Int
+      ) throws -> R
+      where
+        Fooooooo == Barrrrr
+
+      func name<R>(
+        _ x: Int
+      ) throws -> R
+      where
+        Fooooooo == Barrrrr
+      {
+        statement
+        statement
+      }
+
+      """
+    assertLayout(input: input, expected: expected, linelength: 23, configuration: config)
+  }
+
+  @Test func attributedTypes() {
+    let input =
+      """
+      func MyFun(myvar: @escaping MyType)
+
+      func MyFun(myvar1: Int, myvar2: Double, myvar3: @escaping MyType) -> Bool {
+        // do stuff
+        return false
+      }
+      """
+
+    let expected =
+      """
+      func MyFun(myvar: @escaping MyType)
+
+      func MyFun(
+        myvar1: Int, myvar2: Double,
+        myvar3: @escaping MyType
+      ) -> Bool {
+        // do stuff
+        return false
+      }
+
+      """
+
+    var config = Configuration.forTesting
+    config[BeforeEachArgument.self] = false
+    assertLayout(input: input, expected: expected, linelength: 35, configuration: config)
+  }
+
+  @Test func removesLineBreakBeforeOpenBraceUnlessAbsolutelyNecessary() {
+    let input =
+      """
+      func foo(bar: Int)
+      {
+        baz()
+      }
+
+      func foo(longer: Int)
+      {
+        baz()
+      }
+      """
+
+    let expected =
+      """
+      func foo(bar: Int) {
+        baz()
+      }
+
+      func foo(longer: Int)
+      {
+        baz()
+      }
+
+      """
+    assertLayout(input: input, expected: expected, linelength: 21)
+  }
+
+  @Test func doesNotCollapseFunctionParameterAttributes() {
+    let input =
+      """
+      func foo<Content: View>(@ViewBuilder bar: () -> View) {
+        bar()
+      }
+
+      """
+
+    assertLayout(input: input, expected: input, linelength: 60)
+  }
+
+  @Test func doesNotCollapseStackedFunctionParameterAttributes() {
+    let input =
+      """
+      func foo<Content: View>(@FakeAttr @ViewBuilder bar: () -> View) {
+        bar()
+      }
+
+      """
+
+    assertLayout(input: input, expected: input, linelength: 80)
+  }
+
+  @Test func doesNotBreakInsideEmptyParens() {
+    // If the function name is so long that the parentheses of a no-argument parameter list would
+    // be pushed past the margin, don't break inside them.
+    let input =
+      """
+      func fooBarBaz() {}
+
+      """
+
+    let expected =
+      """
+      func
+        fooBarBaz()
+      {}
+
+      """
+
+    assertLayout(input: input, expected: expected, linelength: 14)
+  }
+
+  @Test func discretionaryLineBreakAfterColonAndInout() {
+    let input =
+      """
+      func foo(
+        a:
+          ReallyLongTypeName,
+        b:
+          ShortType,
+        c:
+          inout
+            C,
+        labeled
+          d:
+            D,
+        reallyLongLabel
+          reallyLongArg: E
+      ) {}
+      func foo(
+        a: Very.Deeply.Nested.InnerMember,
+        b:
+          Also.Deeply.Nested.InnerMember,
+      ) {}
+      func foo(
+        cmp: @escaping (R) -> ()
+      ) {}
+      func foo(
+        cmp:
+          @escaping (R) -> ()
+      ) {}
+      func foo<
+        A:
+          ReallyLongType,
+        B:
+          ShortType
+      >(a: A, b: B) {}
+
+      """
+
+    let expected =
+      """
+      func foo(
+        a:
+          ReallyLongTypeName,
+        b:
+          ShortType,
+        c:
+          inout C,
+        labeled d:
+          D,
+        reallyLongLabel
+          reallyLongArg: E
+      ) {}
+      func foo(
+        a: Very.Deeply.Nested
+          .InnerMember,
+        b:
+          Also.Deeply.Nested
+          .InnerMember,
+      ) {}
+      func foo(
+        cmp:
+          @escaping (R) -> ()
+      ) {}
+      func foo(
+        cmp:
+          @escaping (R) -> ()
+      ) {}
+      func foo<
+        A:
+          ReallyLongType,
+        B:
+          ShortType
+      >(a: A, b: B) {}
+
+      """
+
+    assertLayout(input: input, expected: expected, linelength: 23)
+  }
+
+  @Test func functionDeclAsync() {
+    let input =
+      """
+      func myFun(var1: Int) async -> Double {
+        print("Hello World")
+        if badCondition {
+          throw Error
+        }
+        return 1.0
+      }
+      func reallyLongName(var1: Int, var2: Double, var3: Bool) async -> Double {
+        print("Hello World")
+        if badCondition {
+          throw Error
+        }
+        return 1.0
+      }
+      """
+
+    let expected =
+      """
+      func myFun(var1: Int) async -> Double {
+        print("Hello World")
+        if badCondition {
+          throw Error
+        }
+        return 1.0
+      }
+      func reallyLongName(
+        var1: Int, var2: Double, var3: Bool
+      ) async -> Double {
+        print("Hello World")
+        if badCondition {
+          throw Error
+        }
+        return 1.0
+      }
+
+      """
+
+    var config = Configuration.forTesting
+    config[BeforeEachArgument.self] = false
+    assertLayout(input: input, expected: expected, linelength: 49, configuration: config)
+  }
+
+  @Test func functionDeclAsyncThrows() {
+    let input =
+      """
+      func myFun(var1: Int) async throws -> Double {
+        print("Hello World")
+        if badCondition {
+          throw Error
+        }
+        return 1.0
+      }
+      func reallyLongName(var1: Int, var2: Double, var3: Bool) async throws -> Double {
+        print("Hello World")
+        if badCondition {
+          throw Error
+        }
+        return 1.0
+      }
+      """
+
+    let expected =
+      """
+      func myFun(var1: Int) async throws -> Double {
+        print("Hello World")
+        if badCondition {
+          throw Error
+        }
+        return 1.0
+      }
+      func reallyLongName(
+        var1: Int, var2: Double, var3: Bool
+      ) async throws -> Double {
+        print("Hello World")
+        if badCondition {
+          throw Error
+        }
+        return 1.0
+      }
+
+      """
+
+    var config = Configuration.forTesting
+    config[BeforeEachArgument.self] = false
+    assertLayout(input: input, expected: expected, linelength: 49, configuration: config)
+  }
+
+  @Test func keepFunctionOutputTogetherWithLongReturnType() {
+    let input =
+      """
+      fileprivate static func useFailureVariant(name: String, replacement: String) -> Finding.Message {
+        "replace '\\(name)(false, ...)' with '\\(replacement)(...)'";
+      }
+      """
+
+    // With BeforeEachArgument=false (default test config), params pack inconsistently
+    let expected =
+      """
+      fileprivate static func useFailureVariant(
+        name: String, replacement: String
+      ) -> Finding.Message {
+        "replace '\\(name)(false, ...)' with '\\(replacement)(...)'";
+      }
+
+      """
+    var config = Configuration.forTesting
+    config[KeepFunctionOutputTogether.self] = true
+    assertLayout(input: input, expected: expected, linelength: 50, configuration: config)
+
+    // With BeforeEachArgument=true, each param gets its own line
+    let expected2 =
+      """
+      fileprivate static func useFailureVariant(
+        name: String,
+        replacement: String
+      ) -> Finding.Message {
+        "replace '\\(name)(false, ...)' with '\\(replacement)(...)'";
+      }
+
+      """
+    var config2 = Configuration.forTesting
+    config2[KeepFunctionOutputTogether.self] = true
+    config2[BeforeEachArgument.self] = true
+    assertLayout(input: input, expected: expected2, linelength: 50, configuration: config2)
+  }
+
+}

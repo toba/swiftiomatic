@@ -11,7 +11,7 @@ Tests every rule, pretty-printer behavior, configuration edge case, and API cont
 | Directory | Purpose |
 |---|---|
 | `Rules/` | 150+ test files covering all lint and format rules with before/after source examples |
-| `PrettyPrint/` | 80+ test files for the formatting engine (arrays, closures, functions, control flow, etc.) |
+| `Layout/` | 80+ test files for the formatting engine (arrays, closures, functions, control flow, etc.) |
 | `Core/` | Tests for documentation comments, rule masks, and syntax utilities |
 | `API/` | Tests for configuration parsing and formatter/linter selection |
 

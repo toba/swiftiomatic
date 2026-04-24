@@ -362,13 +362,13 @@ package enum ConfigurationSchema {
       },
       "type" : "object"
     },
-    "collapseEmptyBraces" : {
+    "collapseSimpleEnums" : {
       "allOf" : [
         {
           "$ref" : "#/$defs/ruleBase"
         }
       ],
-      "description" : "Remove whitespace inside empty braces.\n\nEmpty brace pairs should have no whitespace between them: `{}` instead of `{ }` or\nmulti-line empty bodies. Braces containing comments are left unchanged.\n\nLint: If empty braces contain whitespace, a lint warning is raised.\n\nFormat: The whitespace is removed, collapsing the braces to `{}`.\n"
+      "description" : "Collapses simple enums with no associated values, no raw values, and no\nmembers other than cases onto a single line.\n\n```swift\n// Before\nprivate enum Kind {\n    case chained\n    case forced\n}\n\n// After\nprivate enum Kind { case chained, forced }\n```\n\nThe rule only applies when the collapsed form fits within the configured\nline length. Enums with associated values, explicit raw value assignments,\nraw-value types (e.g. `: Int`, `: String`), computed properties, methods,\nor any non-case member are left untouched.\n [opt-in]"
     },
     "comments" : {
       "additionalProperties" : false,
@@ -1204,6 +1204,25 @@ package enum ConfigurationSchema {
         }
       ],
       "description" : "Move inline `await` keyword(s) to the start of the expression.\n\nWhen `await` appears inside function call arguments, it can be hoisted to wrap the\nentire call expression. This is clearer and avoids redundant `await` keywords when\nmultiple arguments are async.\n\nFor example, `foo(await bar(), await baz())` should be `await foo(bar(), baz())`.\n\nThis rule does not flag `await` inside closures (which have their own async context)\nor when the call is already wrapped in `await`.\n\nLint: Using `await` inside a function call argument raises a warning.\n\nFormat: `await` is removed from arguments and added to wrap the call expression.\n"
+    },
+    "nestedCallLayout" : {
+      "allOf" : [
+        {
+          "$ref" : "#/$defs/ruleBase"
+        }
+      ],
+      "description" : "Controls the layout of nested function/initializer calls where the sole\nargument to one call is another call.\n\n**Inline mode**: Collapses deeply nested calls into the most compact form\nthat fits the line width, trying each layout in order:\n\n1. Fully inline:\n   ```swift\n   result = ExprSyntax(ForceUnwrapExprSyntax(expression: result, trailingTrivia: trivia))\n   ```\n\n2. Outer inline, inner wrapped:\n   ```swift\n   result = ExprSyntax(ForceUnwrapExprSyntax(\n       expression: result,\n       trailingTrivia: trivia\n   ))\n   ```\n\n3. Fully wrapped (outer on new line, inner inline):\n   ```swift\n   result = ExprSyntax(\n       ForceUnwrapExprSyntax(expression: result, trailingTrivia: trivia)\n   )\n   ```\n\n4. Fully nested (no change).\n\n**Wrap mode**: Expands any compact form into the fully nested form with each\ncall and its arguments on separate indented lines.\n\nLint: A nested call whose layout doesn't match the mode raises a warning.\n\nFormat: The call tree is reformatted to match the mode.\n [opt-in]",
+      "properties" : {
+        "mode" : {
+          "default" : "inline",
+          "description" : "mode Options: inline, wrap.",
+          "enum" : [
+            "inline",
+            "wrap"
+          ],
+          "type" : "string"
+        }
+      }
     },
     "nestedTry" : {
       "allOf" : [
@@ -2142,14 +2161,6 @@ package enum ConfigurationSchema {
       "additionalProperties" : false,
       "description" : "spaces rule group.",
       "properties" : {
-        "collapseEmptyBraces" : {
-          "allOf" : [
-            {
-              "$ref" : "#/$defs/ruleBase"
-            }
-          ],
-          "description" : "Remove whitespace inside empty braces.\n\nEmpty brace pairs should have no whitespace between them: `{}` instead of `{ }` or\nmulti-line empty bodies. Braces containing comments are left unchanged.\n\nLint: If empty braces contain whitespace, a lint warning is raised.\n\nFormat: The whitespace is removed, collapsing the braces to `{}`.\n"
-        },
         "spacesAroundRangeFormationOperators" : {
           "description" : "Force spaces around ... and ..<.",
           "type" : "boolean"
@@ -2210,7 +2221,18 @@ package enum ConfigurationSchema {
           "$ref" : "#/$defs/ruleBase"
         }
       ],
-      "description" : "Sort switch case items alphabetically within each case.\n\nWhen a case matches multiple patterns (e.g. `case .b, .a, .c:`), the patterns are sorted\nlexicographically. Numeric literals are compared by value (including hex, octal, and binary).\nCases with `where` clauses are only sorted if the `where` clause ends up on the last item.\n\nLint: If case items are not sorted, a lint warning is raised.\n\nFormat: The case items are reordered alphabetically.\n [opt-in]"
+      "description" : "Enforce switch case label indentation style.\n\nTwo styles are supported via `SwitchCaseIndentationConfiguration.Style`:\n- `flush`: `case` labels align with the `switch` keyword (default).\n- `indented`: `case` labels are indented one level from `switch`.\n\nLint: Raised when a `case` or `default` label doesn't match the configured style.\n\nFormat: Case labels, bodies, and the closing brace are reindented to match.\n [opt-in]",
+      "properties" : {
+        "style" : {
+          "default" : "flush",
+          "description" : "style Options: flush, indented.",
+          "enum" : [
+            "flush",
+            "indented"
+          ],
+          "type" : "string"
+        }
+      }
     },
     "testSuiteAccessControl" : {
       "allOf" : [
@@ -2407,6 +2429,14 @@ package enum ConfigurationSchema {
       "additionalProperties" : false,
       "description" : "wrap rule group.",
       "properties" : {
+        "collapseSimpleEnums" : {
+          "allOf" : [
+            {
+              "$ref" : "#/$defs/ruleBase"
+            }
+          ],
+          "description" : "Collapses simple enums with no associated values, no raw values, and no\nmembers other than cases onto a single line.\n\n```swift\n// Before\nprivate enum Kind {\n    case chained\n    case forced\n}\n\n// After\nprivate enum Kind { case chained, forced }\n```\n\nThe rule only applies when the collapsed form fits within the configured\nline length. Enums with associated values, explicit raw value assignments,\nraw-value types (e.g. `: Int`, `: String`), computed properties, methods,\nor any non-case member are left untouched.\n [opt-in]"
+        },
         "conditionalAssignment" : {
           "allOf" : [
             {
@@ -2434,6 +2464,25 @@ package enum ConfigurationSchema {
             }
           ],
           "description" : "Opening braces of multiline statements are wrapped to their own line.\n\nWhen a statement signature (conditions, parameters, etc.) spans multiple\nlines, the opening `{` is moved to its own line, aligned with the\nstatement keyword.\n\nLint: A `{` on the same line as a multiline statement signature raises a\n      warning.\n\nFormat: The `{` is moved to a new line aligned with the closing `}`.\n [opt-in]"
+        },
+        "nestedCallLayout" : {
+          "allOf" : [
+            {
+              "$ref" : "#/$defs/ruleBase"
+            }
+          ],
+          "description" : "Controls the layout of nested function/initializer calls where the sole\nargument to one call is another call.\n\n**Inline mode**: Collapses deeply nested calls into the most compact form\nthat fits the line width, trying each layout in order:\n\n1. Fully inline:\n   ```swift\n   result = ExprSyntax(ForceUnwrapExprSyntax(expression: result, trailingTrivia: trivia))\n   ```\n\n2. Outer inline, inner wrapped:\n   ```swift\n   result = ExprSyntax(ForceUnwrapExprSyntax(\n       expression: result,\n       trailingTrivia: trivia\n   ))\n   ```\n\n3. Fully wrapped (outer on new line, inner inline):\n   ```swift\n   result = ExprSyntax(\n       ForceUnwrapExprSyntax(expression: result, trailingTrivia: trivia)\n   )\n   ```\n\n4. Fully nested (no change).\n\n**Wrap mode**: Expands any compact form into the fully nested form with each\ncall and its arguments on separate indented lines.\n\nLint: A nested call whose layout doesn't match the mode raises a warning.\n\nFormat: The call tree is reformatted to match the mode.\n [opt-in]",
+          "properties" : {
+            "mode" : {
+              "default" : "inline",
+              "description" : "mode Options: inline, wrap.",
+              "enum" : [
+                "inline",
+                "wrap"
+              ],
+              "type" : "string"
+            }
+          }
         },
         "singleLineBodies" : {
           "allOf" : [

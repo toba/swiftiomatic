@@ -48,7 +48,7 @@ package struct DocumentationComment {
     }
 
     /// A single paragraph representing a brief summary of the declaration, if present.
-    package var briefSummary: Paragraph? = nil
+    package var briefSummary: Paragraph?
 
     /// A collection of otherwise uncategorized body nodes at the top level of the comment text.
     ///
@@ -57,7 +57,7 @@ package struct DocumentationComment {
     package var bodyNodes: [Markup] = []
 
     /// The structural layout of the parameter descriptions in the comment.
-    package var parameterLayout: ParameterLayout? = nil
+    package var parameterLayout: ParameterLayout?
 
     /// Descriptions of parameters to a function, if any.
     package var parameters: [Parameter] = []
@@ -66,13 +66,13 @@ package struct DocumentationComment {
     ///
     /// If present, this value is a copy of the `Paragraph` node from the comment but with the
     /// `Returns:` prefix removed for convenience.
-    package var returns: Paragraph? = nil
+    package var returns: Paragraph?
 
     /// A description of an error thrown by a function.
     ///
     /// If present, this value is a copy of the `Paragraph` node from the comment but with the
     /// `Throws:` prefix removed for convenience.
-    package var `throws`: Paragraph? = nil
+    package var `throws`: Paragraph?
 
     /// Creates a new `DocumentationComment` with information extracted from the leading trivia of the
     /// given syntax node.
@@ -97,6 +97,7 @@ package struct DocumentationComment {
         // Extract the first paragraph as the brief summary. It will *not* be included in the body
         // nodes.
         let remainingChildren: DropFirstSequence<MarkupChildren>
+
         if let firstParagraph = markup.child(through: [(0, Paragraph.self)]) {
             briefSummary = firstParagraph.detachedFromParent as? Paragraph
             remainingChildren = markup.children.dropFirst()
@@ -160,6 +161,7 @@ package struct DocumentationComment {
             for index in 1..<listItem.childCount {
                 let listChild = listItem.child(at: index)
                 guard let sublist = listChild as? UnorderedList else { continue }
+
                 for sublistItem in sublist.listItems {
                     guard
                         let paramField = parameterField(
@@ -169,8 +171,8 @@ package struct DocumentationComment {
                     else {
                         continue
                     }
-                    self.parameters.append(paramField)
-                    self.parameterLayout = .outline
+                    parameters.append(paramField)
+                    parameterLayout = .outline
                 }
             }
         }
@@ -195,15 +197,15 @@ package struct DocumentationComment {
                 continue
             }
 
-            self.parameters.append(paramField)
+            parameters.append(paramField)
 
-            switch self.parameterLayout {
-            case nil:
-                self.parameterLayout = .separated
-            case .outline:
-                self.parameterLayout = .mixed
-            default:
-                break
+            switch parameterLayout {
+                case nil:
+                    parameterLayout = .separated
+                case .outline:
+                    parameterLayout = .mixed
+                default:
+                    break
             }
         }
 
@@ -248,12 +250,12 @@ package struct DocumentationComment {
             }
 
             switch name.lowercased() {
-            case "returns":
-                self.returns = paragraph
-            case "throws":
-                self.throws = paragraph
-            default:
-                unprocessedChildren.append(child)
+                case "returns":
+                    returns = paragraph
+                case "throws":
+                    self.throws = paragraph
+                default:
+                    unprocessedChildren.append(child)
             }
         }
 
@@ -273,7 +275,7 @@ private struct ParameterOutlineMarkupRewriter: MarkupRewriter {
     let expectParameterLabel: Bool
 
     /// Populated if the list item to which this is applied represents a valid parameter field.
-    private(set) var parameterName: String? = nil
+    private(set) var parameterName: String?
 
     mutating func visitListItem(_ listItem: ListItem) -> Markup? {
         // Only recurse into the exact list item we're applying this to; otherwise, return it unchanged.
@@ -292,7 +294,8 @@ private struct ParameterOutlineMarkupRewriter: MarkupRewriter {
         guard text.indexInParent == 0 else { return text }
 
         let parameterPrefix = "parameter "
-        if expectParameterLabel && !text.string.lowercased().hasPrefix(parameterPrefix) {
+
+        if expectParameterLabel, !text.string.lowercased().hasPrefix(parameterPrefix) {
             return text
         }
 
@@ -304,7 +307,7 @@ private struct ParameterOutlineMarkupRewriter: MarkupRewriter {
         let name = nameAndRemainder[0].trimmingCharacters(in: .whitespaces)
         guard !name.isEmpty else { return text }
 
-        self.parameterName = name
+        parameterName = name
         return Text(String(nameAndRemainder[1]))
     }
 }
@@ -316,10 +319,10 @@ private struct SimpleFieldMarkupRewriter: MarkupRewriter {
     let origin: ListItem
 
     /// Populated if the list item to which this is applied represents a valid simple field.
-    private(set) var fieldName: String? = nil
+    private(set) var fieldName: String?
 
     /// Populated if the list item to which this is applied represents a valid simple field.
-    private(set) var paragraph: Paragraph? = nil
+    private(set) var paragraph: Paragraph?
 
     mutating func visitListItem(_ listItem: ListItem) -> Markup? {
         // Only recurse into the exact list item we're applying this to; otherwise, return it unchanged.
@@ -346,7 +349,7 @@ private struct SimpleFieldMarkupRewriter: MarkupRewriter {
         let name = nameAndRemainder[0].trimmingCharacters(in: .whitespaces)
         guard !name.isEmpty else { return text }
 
-        self.fieldName = name
+        fieldName = name
         return Text(String(nameAndRemainder[1]))
     }
 }

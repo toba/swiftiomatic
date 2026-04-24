@@ -47,7 +47,7 @@ import SwiftSyntax
 ///
 /// The rules themselves reference RuleMask to see if it is disabled for the line it is currently
 /// examining.
-package class RuleMask {
+package final class RuleMask {
     /// Stores the source ranges in which all rules are ignored.
     private var allRulesIgnoredRanges: [SourceRange] = []
 
@@ -77,9 +77,8 @@ package class RuleMask {
 
     /// Returns the `RuleState` for the given rule at the provided location.
     package func ruleState(_ rule: String, at location: SourceLocation) -> RuleState {
-        if allRulesIgnoredRanges.contains(where: { $0.contains(location) }) {
-            return .disabled
-        }
+        if allRulesIgnoredRanges.contains(where: { $0.contains(location) }) { return .disabled }
+
         if let ignoredRanges = ruleMap[rule] {
             return ignoredRanges.contains { $0.contains(location) } ? .disabled : .default
         }
@@ -90,7 +89,7 @@ package class RuleMask {
 extension SourceRange {
     /// Returns whether the range includes the given location.
     fileprivate func contains(_ location: SourceLocation) -> Bool {
-        return start.offset <= location.offset && end.offset >= location.offset
+        start.offset <= location.offset && end.offset >= location.offset
     }
 }
 
@@ -105,10 +104,10 @@ enum IgnoreDirective: CustomStringConvertible {
 
     var description: String {
         switch self {
-        case .node:
-            return "sm:ignore"
-        case .file:
-            return "sm:ignore-file"
+            case .node:
+                "sm:ignore"
+            case .file:
+                "sm:ignore-file"
         }
     }
 
@@ -130,7 +129,7 @@ enum IgnoreDirective: CustomStringConvertible {
 /// The rule status comment directives implementation intentionally supports exactly the same nodes
 /// as `TokenStream` to disable pretty printing. This ensures ignore comments for pretty
 /// printing and for rules are as consistent as possible.
-private class RuleStatusCollectionVisitor: SyntaxVisitor {
+private final class RuleStatusCollectionVisitor: SyntaxVisitor {
     /// Describes the possible matches for ignore directives, in comments.
     enum RuleStatusDirectiveMatch {
         /// There is a directive that applies to all rules.
@@ -142,11 +141,11 @@ private class RuleStatusCollectionVisitor: SyntaxVisitor {
     }
 
     /// Cached regex object for ignoring rules at the node.
-    nonisolated(unsafe) private static let ignoreRegex: IgnoreDirective.RegexExpression =
+    private static nonisolated(unsafe) let ignoreRegex: IgnoreDirective.RegexExpression =
         IgnoreDirective.node.makeRegex()
 
     /// Cached regex object for ignoring rules at the file.
-    nonisolated(unsafe) private static let ignoreFileRegex: IgnoreDirective.RegexExpression =
+    private static nonisolated(unsafe) let ignoreFileRegex: IgnoreDirective.RegexExpression =
         IgnoreDirective.file.makeRegex()
 
     /// Computes source locations and ranges for syntax nodes in a source file.
@@ -210,22 +209,22 @@ private class RuleStatusCollectionVisitor: SyntaxVisitor {
     ) -> SyntaxVisitorContinueKind {
         let isFirstInFile = token.previousToken(viewMode: .sourceAccurate) == nil
         let comments = loneLineComments(in: token.leadingTrivia, isFirstToken: isFirstInFile)
+
         for comment in comments {
             guard let matchResult = ruleStatusDirectiveMatch(in: comment, using: regex) else {
                 continue
             }
             switch matchResult {
-            case .all:
-                allRulesIgnoredRanges.append(sourceRange)
+                case .all:
+                    allRulesIgnoredRanges.append(sourceRange)
 
-                // All rules are ignored for the entire node and its children. Any ignore comments in the
-                // node's children are irrelevant because all rules are suppressed by this node.
-                return .skipChildren
-            case .subset(let ruleNames):
-                for ruleName in ruleNames {
-                    ruleMap[ruleName, default: []].append(sourceRange)
-                }
-                break
+                    // All rules are ignored for the entire node and its children. Any ignore comments in the
+                    // node's children are irrelevant because all rules are suppressed by this node.
+                    return .skipChildren
+                case let .subset(ruleNames):
+                    for ruleName in ruleNames {
+                        ruleMap[ruleName, default: []].append(sourceRange)
+                    }
             }
         }
         return .visitChildren
@@ -237,21 +236,17 @@ private class RuleStatusCollectionVisitor: SyntaxVisitor {
         in text: String,
         using regex: IgnoreDirective.RegexExpression
     ) -> RuleStatusDirectiveMatch? {
-        guard let match = text.firstMatch(of: regex) else {
-            return nil
-        }
-        guard let matchedRuleNames = match.output.ruleNames else {
-            return .all
-        }
+        guard let match = text.firstMatch(of: regex) else { return nil }
+        guard let matchedRuleNames = match.output.ruleNames else { return .all }
         let rules = matchedRuleNames.split(separator: ",").compactMap { segment -> String? in
-                let name = segment.trimmingCharacters(in: .whitespaces)
-                guard !name.isEmpty else { return nil }
-                // Normalize type names (e.g. SortImports) to key format (e.g. sortImports)
-                guard let first = name.first, first.isUppercase else { return name }
-                let derived = first.lowercased() + name.dropFirst()
-                // Resolve custom keys (e.g. SortImports → "imports" not "sortImports")
-                return ConfigurationRegistry.typeNameToKey[derived] ?? derived
-            }
+            let name = segment.trimmingCharacters(in: .whitespaces)
+            guard !name.isEmpty else { return nil }
+            // Normalize type names (e.g. SortImports) to key format (e.g. sortImports)
+            guard let first = name.first, first.isUppercase else { return name }
+            let derived = first.lowercased() + name.dropFirst()
+            // Resolve custom keys (e.g. SortImports → "imports" not "sortImports")
+            return ConfigurationRegistry.typeNameToKey[derived] ?? derived
+        }
         return .subset(ruleNames: rules)
     }
 
@@ -263,32 +258,30 @@ private class RuleStatusCollectionVisitor: SyntaxVisitor {
     ///   - isFirstToken: True if the trivia came from the first token in the file.
     /// - Returns: The list of lone line comments from the trivia.
     private func loneLineComments(in trivia: Trivia, isFirstToken: Bool) -> [String] {
-        var currentComment: String? = nil
+        var currentComment: String?
         var lineComments = [String]()
 
         for piece in trivia.reversed() {
             switch piece {
-            case .lineComment(let text):
-                currentComment = text
-            case .spaces, .tabs:
-                break  // Intentionally do nothing.
-            case .carriageReturnLineFeeds, .carriageReturns, .newlines:
-                if let text = currentComment {
-                    lineComments.append(text)
+                case let .lineComment(text):
+                    currentComment = text
+                case .spaces, .tabs:
+                    break  // Intentionally do nothing.
+                case .carriageReturnLineFeeds, .carriageReturns, .newlines:
+                    if let text = currentComment {
+                        lineComments.append(text)
+                        currentComment = nil
+                    }
+                default:
+                    // If anything other than spaces intervened between the line comment and a newline, then the
+                    // comment isn't on a line by itself, so reset our state.
                     currentComment = nil
-                }
-            default:
-                // If anything other than spaces intervened between the line comment and a newline, then the
-                // comment isn't on a line by itself, so reset our state.
-                currentComment = nil
             }
         }
 
         // For the first token in the file, there may not be a newline preceding the first line comment,
         // so check for that here.
-        if isFirstToken, let text = currentComment {
-            lineComments.append(text)
-        }
+        if isFirstToken, let text = currentComment { lineComments.append(text) }
 
         lineComments.reverse()
         return lineComments

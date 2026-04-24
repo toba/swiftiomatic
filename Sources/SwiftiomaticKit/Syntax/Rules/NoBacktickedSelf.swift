@@ -9,31 +9,30 @@ import SwiftSyntax
 ///
 /// Format: The backticks are removed.
 final class NoBacktickedSelf: RewriteSyntaxRule<BasicRuleValue> {
+    override func visit(
+        _ node: OptionalBindingConditionSyntax
+    ) -> OptionalBindingConditionSyntax {
+        // Match: let `self` = self
+        guard let identifierPattern = node.pattern.as(IdentifierPatternSyntax.self),
+            case let .identifier(text) = identifierPattern.identifier.tokenKind,
+            text == "`self`",
+            let initializer = node.initializer,
+            let declRef = initializer.value.as(DeclReferenceExprSyntax.self),
+            declRef.baseName.tokenKind == .keyword(.self)
+        else {
+            return node
+        }
 
-  override func visit(
-    _ node: OptionalBindingConditionSyntax
-  ) -> OptionalBindingConditionSyntax {
-    // Match: let `self` = self
-    guard let identifierPattern = node.pattern.as(IdentifierPatternSyntax.self),
-      case .identifier(let text) = identifierPattern.identifier.tokenKind,
-      text == "`self`",
-      let initializer = node.initializer,
-      let declRef = initializer.value.as(DeclReferenceExprSyntax.self),
-      declRef.baseName.tokenKind == .keyword(.self)
-    else {
-      return node
+        diagnose(.removeBackticksAroundSelf, on: identifierPattern.identifier)
+
+        var result = node
+        let newIdentifier = identifierPattern.identifier.with(\.tokenKind, .identifier("self"))
+        result.pattern = PatternSyntax(identifierPattern.with(\.identifier, newIdentifier))
+        return result
     }
-
-    diagnose(.removeBackticksAroundSelf, on: identifierPattern.identifier)
-
-    var result = node
-    let newIdentifier = identifierPattern.identifier.with(\.tokenKind, .identifier("self"))
-    result.pattern = PatternSyntax(identifierPattern.with(\.identifier, newIdentifier))
-    return result
-  }
 }
 
 extension Finding.Message {
-  fileprivate static let removeBackticksAroundSelf: Finding.Message =
-    "remove backticks around 'self' in optional binding"
+    fileprivate static let removeBackticksAroundSelf: Finding.Message =
+        "remove backticks around 'self' in optional binding"
 }

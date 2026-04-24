@@ -16,14 +16,12 @@ import SwiftSyntax
 ///
 /// Format: `try` is removed from arguments and added to wrap the call expression.
 final class HoistTry: RewriteSyntaxRule<BasicRuleValue> {
-    override class var key: String { "nestedTry" }
-    override class var group: ConfigurationGroup? { .hoist }
+    override static var key: String { "nestedTry" }
+    override static var group: ConfigurationGroup? { .hoist }
 
     override func visit(_ node: FunctionCallExprSyntax) -> ExprSyntax {
         // Check parent on original node before visiting children
-        if isWrappedInTry(ExprSyntax(node)) {
-            return super.visit(node)
-        }
+        if isWrappedInTry(ExprSyntax(node)) { return super.visit(node) }
 
         let visited = super.visit(node)
         guard let callNode = visited.as(FunctionCallExprSyntax.self) else { return visited }
@@ -62,6 +60,7 @@ final class HoistTry: RewriteSyntaxRule<BasicRuleValue> {
     override func visit(_ node: AwaitExprSyntax) -> ExprSyntax {
         let hadTryBefore = node.expression.is(TryExprSyntax.self)
         let visited = super.visit(node)
+
         guard let awaitNode = visited.as(AwaitExprSyntax.self),
             !hadTryBefore,
             let tryExpr = awaitNode.expression.as(TryExprSyntax.self)
@@ -106,9 +105,8 @@ final class HoistTry: RewriteSyntaxRule<BasicRuleValue> {
     /// Returns the first `TryExprSyntax` found as a direct argument expression.
     private func findFirstTryInArguments(_ call: FunctionCallExprSyntax) -> TryExprSyntax? {
         for arg in call.arguments {
-            if let tryExpr = arg.expression.as(TryExprSyntax.self) {
-                return tryExpr
-            }
+            if let tryExpr = arg.expression.as(TryExprSyntax.self) { return tryExpr }
+
             if let awaitExpr = arg.expression.as(AwaitExprSyntax.self),
                 let tryExpr = awaitExpr.expression.as(TryExprSyntax.self)
             {
@@ -120,11 +118,11 @@ final class HoistTry: RewriteSyntaxRule<BasicRuleValue> {
 
     /// Returns `true` if the expression is wrapped in a `TryExprSyntax` ancestor.
     private func isWrappedInTry(_ expr: ExprSyntax) -> Bool {
-        var current: Syntax = Syntax(expr)
+        var current = Syntax(expr)
+
         while let parent = current.parent {
-            if parent.is(TryExprSyntax.self) {
-                return true
-            }
+            if parent.is(TryExprSyntax.self) { return true }
+
             if parent.is(AwaitExprSyntax.self)
                 || parent.is(LabeledExprSyntax.self)
                 || parent.is(LabeledExprListSyntax.self)
@@ -140,6 +138,5 @@ final class HoistTry: RewriteSyntaxRule<BasicRuleValue> {
 }
 
 extension Finding.Message {
-    fileprivate static let hoistTry: Finding.Message =
-        "move 'try' to the start of the expression"
+    fileprivate static let hoistTry: Finding.Message = "move 'try' to the start of the expression"
 }

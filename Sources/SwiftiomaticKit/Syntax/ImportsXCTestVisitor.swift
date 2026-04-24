@@ -13,7 +13,7 @@
 import SwiftSyntax
 
 /// A visitor that determines if the target source file imports `XCTest`.
-private class ImportsXCTestVisitor: SyntaxVisitor {
+private final class ImportsXCTestVisitor: SyntaxVisitor {
     private let context: Context
 
     init(context: Context) {
@@ -35,11 +35,9 @@ private class ImportsXCTestVisitor: SyntaxVisitor {
         return .skipChildren
     }
 
-    override func visitPost(_ node: SourceFileSyntax) {
+    override func visitPost(_: SourceFileSyntax) {
         // If we visited the entire source file and didn't find an `XCTest` import, record that fact.
-        if context.importsXCTest == .notDetermined {
-            context.importsXCTest = .doesNotImportXCTest
-        }
+        if context.importsXCTest == .notDetermined { context.importsXCTest = .doesNotImportXCTest }
     }
 }
 

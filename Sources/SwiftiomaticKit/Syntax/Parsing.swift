@@ -44,6 +44,7 @@ func parseAndEmitDiagnostics(
     parsingDiagnosticHandler: ((Diagnostic, SourceLocation) -> Void)? = nil
 ) throws(SwiftiomaticError) -> SourceFileSyntax {
     var experimentalFeaturesSet: Parser.ExperimentalFeatures = []
+
     for featureName in experimentalFeatures {
         guard let featureValue = Parser.ExperimentalFeatures(name: featureName) else {
             throw SwiftiomaticError.unrecognizedExperimentalFeature(featureName)
@@ -59,9 +60,11 @@ func parseAndEmitDiagnostics(
     }
     let diagnostics = ParseDiagnosticsGenerator.diagnostics(for: sourceFile)
     var hasErrors = false
+
     if let parsingDiagnosticHandler {
         let expectedConverter = SourceLocationConverter(
             fileName: url?.path ?? "<unknown>", tree: sourceFile)
+
         for diagnostic in diagnostics {
             let location = diagnostic.location(converter: expectedConverter)
 

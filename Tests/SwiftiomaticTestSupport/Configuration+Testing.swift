@@ -27,6 +27,7 @@ extension Configuration {
     config[FileHeader.self] = FileHeaderConfiguration()
     config[WrapSingleLineBodies.self] = SingleLineBodiesConfiguration()
     config[WrapSwitchCaseBodies.self] = SwitchCaseBodiesConfiguration()
+    config[NestedCallLayout.self] = NestedCallLayoutConfiguration()
     return config
   }
 

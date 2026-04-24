@@ -16,6 +16,9 @@
 - Convert code generator to SPM build tool plugin
 - Rationalize rule value types; `SyntaxRuleValue` protocol replaces `RuleHandling` enum
 - Prefer implicit member expression over explicit type in known-type context
+- `PreferTernary`; rewrite simple if-else return to ternary ([#380](https://github.com/toba/swiftiomatic/issues/380))
+- `PreferIfElseChain`; convert series of early returns to chained if/else ([#386](https://github.com/toba/swiftiomatic/issues/386))
+- `WrapSwitchCaseBodies`; wrap or inline switch case bodies ([#384](https://github.com/toba/swiftiomatic/issues/384))
 
 ### 🐛 Fixes
 
@@ -26,6 +29,7 @@
 - Fix camelCase key generation for acronym-prefixed rule names ([#367](https://github.com/toba/swiftiomatic/issues/367))
 - `keepFunctionOutputTogether` doesn't move opening brace to output line when wrapping parameters ([#376](https://github.com/toba/swiftiomatic/issues/376))
 - Line break precedence; prefer splitting at `??` / `+` over `=` assignment
+- `PreferTrailingClosures` assignment continuation line-breaking is wrong ([#381](https://github.com/toba/swiftiomatic/issues/381))
 
 ### 🗜️ Tweaks
 
@@ -48,6 +52,9 @@
 - Create SPM build tool plugin target ([#352](https://github.com/toba/swiftiomatic/issues/352))
 - Swift review; code quality and modernization fixes
 - Update GitHub Actions to Node.js 24-native versions; remove `FORCE_JAVASCRIPT_ACTIONS_TO_NODE24` workaround
+- Rename `NoExtensionAccessLevel` to `ExtensionAccessLevel`; rename `onDeclarations` to `onMembers` ([#383](https://github.com/toba/swiftiomatic/issues/383))
+- Rename `compoundCaseStatements` to `wrapCompoundCaseItems` ([#382](https://github.com/toba/swiftiomatic/issues/382))
+- Convert `EmptyBraces` from syntax rewrite rule to layout
 
 ## Week of Apr 12 – Apr 18, 2026
 

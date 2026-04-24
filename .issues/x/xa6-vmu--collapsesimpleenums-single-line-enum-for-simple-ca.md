@@ -1,15 +1,15 @@
 ---
 # xa6-vmu
 title: 'CollapseSimpleEnums: single-line enum for simple cases'
-status: in-progress
+status: review
 type: feature
 priority: normal
 created_at: 2026-04-24T22:40:51Z
-updated_at: 2026-04-24T22:42:58Z
+updated_at: 2026-04-24T23:01:46Z
 sync:
     github:
         issue_number: "388"
-        synced_at: "2026-04-24T22:54:05Z"
+        synced_at: "2026-04-24T23:31:20Z"
 ---
 
 ## Description
@@ -42,9 +42,24 @@ private enum OptionalPatternKind { case chained, forced }
 
 ## Tasks
 
-- [ ] Create rule file `Sources/SwiftiomaticKit/Syntax/Rules/Wrap/CollapseSimpleEnums.swift`
-- [ ] Add `Finding.Message` extensions
-- [ ] Add configuration entry in `swiftiomatic.json`
-- [ ] Create test file `Tests/SwiftiomaticTests/Rules/Wrap/CollapseSimpleEnumsTests.swift`
-- [ ] Write tests covering: basic collapse, associated values (skip), raw values (skip), methods present (skip), too long for one line (skip), single case, access modifiers preserved
-- [ ] Verify generated pipelines pick up the new rule
+- [x] Create rule file `Sources/SwiftiomaticKit/Syntax/Rules/Wrap/CollapseSimpleEnums.swift`
+- [x] Add `Finding.Message` extensions
+- [ ] Add configuration entry in `swiftiomatic.json` (user must add — hook blocks agent edits)
+- [x] Create test file `Tests/SwiftiomaticTests/Rules/Wrap/CollapseSimpleEnumsTests.swift`
+- [x] Write tests covering: basic collapse, associated values (skip), raw values (skip), methods present (skip), too long for one line (skip), single case, access modifiers preserved
+- [x] Verify generated pipelines pick up the new rule
+
+
+
+## Summary of Changes
+
+Implemented `CollapseSimpleEnums` as a `RewriteSyntaxRule<BasicRuleValue>` in the `wrap` group. The rule merges separate `case` declarations into a single comma-separated `case` on the same line as the enum declaration when:
+- All members are case declarations (no methods, properties, etc.)
+- No associated values
+- No explicit raw value assignments
+- No raw-value type inheritance (Int, String, etc.)
+- The collapsed form fits within the configured line length
+
+Default: `rewrite: false, lint: .no` (opt-in). 14 tests pass.
+
+User action needed: add `"collapseSimpleEnums": { "lint": "no", "rewrite": false }` to the `wrap` section in `swiftiomatic.json`.

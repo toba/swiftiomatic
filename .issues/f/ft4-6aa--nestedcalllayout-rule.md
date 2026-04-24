@@ -1,15 +1,15 @@
 ---
 # ft4-6aa
 title: NestedCallLayout rule
-status: draft
+status: review
 type: feature
 priority: normal
 created_at: 2026-04-24T22:52:08Z
-updated_at: 2026-04-24T22:52:08Z
+updated_at: 2026-04-24T23:28:34Z
 sync:
     github:
         issue_number: "385"
-        synced_at: "2026-04-24T22:54:05Z"
+        synced_at: "2026-04-24T23:31:20Z"
 ---
 
 ## Description
@@ -73,9 +73,29 @@ result = ExprSyntax(ForceUnwrapExprSyntax(expression: result, trailingTrivia: tr
 
 ## Tasks
 
-- [ ] Create rule file `Sources/SwiftiomaticKit/Syntax/Rules/Wrap/NestedCallLayout.swift`
-- [ ] Add configuration for mode (`inline` | `wrap`)
-- [ ] Implement inline mode with cascading fit logic
-- [ ] Implement wrap mode
-- [ ] Add tests
-- [ ] Regenerate schema
+- [x] Create rule file `Sources/SwiftiomaticKit/Syntax/Rules/Wrap/NestedCallLayout.swift`
+- [x] Add configuration for mode (`inline` | `wrap`)
+- [x] Implement inline mode with cascading fit logic
+- [x] Implement wrap mode
+- [x] Add tests (14 tests: 8 inline, 6 wrap)
+- [x] Regenerate schema
+
+
+## Summary of Changes
+
+Implemented the `NestedCallLayout` rule with two modes:
+
+- **Inline mode**: cascading fit strategy (fully inline → outer inline/inner wrapped → fully wrapped/inner inline → fully nested)
+- **Wrap mode**: expands any compact form to fully nested
+
+Key implementation details:
+- `columnOffset()` helper walks backward through tokens (avoids SourceLocationConverter discrepancies between direct and pipeline contexts)
+- `lineIndentation()` helper finds the indent at the start of the containing line
+- `inlineArgText()` joins arguments with `, ` to avoid preserving internal newlines from `trimmedDescription`
+- Rule defaults to off (`rewrite: false, lint: .no`) — opt-in via `wrap.nestedCallLayout` config
+
+Files:
+- `Sources/SwiftiomaticKit/Syntax/Rules/Wrap/NestedCallLayout.swift` — rule + configuration
+- `Tests/SwiftiomaticTests/Rules/Wrap/NestedCallLayoutTests.swift` — 14 tests
+- `Tests/SwiftiomaticTestSupport/Configuration+Testing.swift` — test config registration
+- `schema.json` — regenerated

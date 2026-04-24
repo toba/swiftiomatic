@@ -271,11 +271,7 @@ extension TokenStream {
             )
             before(node.rightBrace, tokens: .break(.close, size: 1), .close)
         } else {
-            after(
-                node.leftBrace,
-                tokens: .break(.open, size: 0, newlines: openBraceNewlineBehavior)
-            )
-            before(node.rightBrace, tokens: .break(.close, size: 0))
+            arrangeEmptyBraces(node)
         }
     }
 
@@ -304,8 +300,7 @@ extension TokenStream {
             after(node.leftBrace, tokens: .break(.open, size: 1), .open)
             before(node.rightBrace, tokens: .break(.close, size: 1), .close)
         } else {
-            after(node.leftBrace, tokens: .break(.open, size: 0))
-            before(node.rightBrace, tokens: .break(.close, size: 0))
+            arrangeEmptyBraces(node)
         }
     }
 
@@ -334,8 +329,7 @@ extension TokenStream {
             after(node.leftBrace, tokens: .break(.open, size: 1), .open)
             before(node.rightBrace, tokens: .break(.close, size: 1), .close)
         } else {
-            after(node.leftBrace, tokens: .break(.open, size: 0))
-            before(node.rightBrace, tokens: .break(.close, size: 0))
+            arrangeEmptyBraces(node)
         }
     }
 
@@ -362,9 +356,28 @@ extension TokenStream {
             after(leftBrace, tokens: .break(.open, size: 1), .open)
             before(rightBrace, tokens: .break(.close, size: 1), .close)
         } else {
-            after(leftBrace, tokens: .break(.open, size: 0))
-            before(rightBrace, tokens: .break(.close, size: 0))
+            after(
+                leftBrace,
+                tokens: .break(.open, size: 0, newlines: .elective(ignoresDiscretionary: true))
+            )
+            before(
+                rightBrace,
+                tokens: .break(.close, size: 0, newlines: .elective(ignoresDiscretionary: true))
+            )
         }
+    }
+
+    /// Collapses empty braces to `{}` by ignoring discretionary newlines from source trivia.
+    /// Line-length wrapping is still allowed.
+    private func arrangeEmptyBraces(_ node: some BracedSyntax) {
+        after(
+            node.leftBrace,
+            tokens: .break(.open, size: 0, newlines: .elective(ignoresDiscretionary: true))
+        )
+        before(
+            node.rightBrace,
+            tokens: .break(.close, size: 0, newlines: .elective(ignoresDiscretionary: true))
+        )
     }
 
     func afterTokensForTrailingComment(

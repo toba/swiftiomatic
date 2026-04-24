@@ -357,6 +357,7 @@ package struct PatternLetConfiguration: SyntaxRuleValue {
     package init(from decoder: any Decoder) throws {
         self.init()
         let container = try decoder.container(keyedBy: CodingKeys.self)
+
         if let rewrite = try container.decodeIfPresent(Bool.self, forKey: .rewrite) {
             self.rewrite = rewrite
         }
