@@ -437,6 +437,38 @@ struct BlankLinesBeforeControlFlowTests: RuleTesting {
     )
   }
 
+  @Test func emptyCodeBlock() {
+    assertFormatting(
+      BlankLinesBeforeControlFlow.self,
+      input: """
+        func foo() {}
+        """,
+      expected: """
+        func foo() {}
+        """,
+      findings: []
+    )
+  }
+
+  @Test func emptyCodeBlockInStruct() {
+    assertFormatting(
+      BlankLinesBeforeControlFlow.self,
+      input: """
+        struct Foo {
+            var x = 1
+            init() {}
+        }
+        """,
+      expected: """
+        struct Foo {
+            var x = 1
+            init() {}
+        }
+        """,
+      findings: []
+    )
+  }
+
   @Test func nestedControlFlow() {
     assertFormatting(
       BlankLinesBeforeControlFlow.self,

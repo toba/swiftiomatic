@@ -10,9 +10,9 @@ import SwiftSyntax
 ///
 /// Format: The blank lines are removed, keeping linebreaks and comments.
 final class BlankLinesBetweenChainedFunctions: RewriteSyntaxRule<BasicRuleValue> {
-    override class var key: String { "betweenChainedFunctions" }
-    override class var group: ConfigurationGroup? { .blankLines }
-    override class var defaultValue: BasicRuleValue { .init(rewrite: false, lint: .no) }
+    override static var key: String { "betweenChainedFunctions" }
+    override static var group: ConfigurationGroup? { .blankLines }
+    override static var defaultValue: BasicRuleValue { .init(rewrite: false, lint: .no) }
 
     override func visit(_ node: MemberAccessExprSyntax) -> ExprSyntax {
         let visited = super.visit(node)

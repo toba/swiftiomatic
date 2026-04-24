@@ -12,7 +12,7 @@ extension Configuration {
     config[BeforeControlFlowKeywords.self] = false
     config[BeforeEachArgument.self] = false
     config[BeforeEachGenericRequirement.self] = false
-    config[PrioritizeKeepingFunctionOutputTogether.self] = false
+    config[KeepFunctionOutputTogether.self] = false
     config[IndentConditionalCompilationBlocks.self] = true
     config[AroundMultilineExpressionChainComponents.self] = false
     config[FileScopedDeclarationPrivacy.self] = FileScopedDeclarationPrivacyConfiguration()

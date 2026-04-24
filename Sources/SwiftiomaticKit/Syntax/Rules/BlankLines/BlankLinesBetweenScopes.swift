@@ -13,9 +13,9 @@ import SwiftSyntax
 ///
 /// Format: A blank line is inserted after the declaration.
 final class BlankLinesBetweenScopes: RewriteSyntaxRule<BasicRuleValue> {
-    override class var key: String { "betweenScopes" }
-    override class var group: ConfigurationGroup? { .blankLines }
-    override class var defaultValue: BasicRuleValue { .init(rewrite: false, lint: .no) }
+    override static var key: String { "betweenScopes" }
+    override static var group: ConfigurationGroup? { .blankLines }
+    override static var defaultValue: BasicRuleValue { .init(rewrite: false, lint: .no) }
 
     override func visit(_ node: SourceFileSyntax) -> SourceFileSyntax {
         var result = super.visit(node)

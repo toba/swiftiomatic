@@ -25,20 +25,20 @@ jobs:
         key: spm-${{ runner.os }}-${{ hashFiles('Package.resolved') }}
         restore-keys: spm-${{ runner.os }}-
 
+    - name: Build release binary
+      run: swift build -c release --product sm --disable-sandbox
+
     - name: Run tests
       env:
         SWIFTIOMATIC_FULL_TESTS: "1"
       run: |
-        swift test --disable-sandbox 2>&1 | tee test-output.log || true
+        swift test -c release --disable-sandbox 2>&1 | tee test-output.log || true
         if grep -q '✘' test-output.log; then
           echo "::error::Test failures detected"
           grep '✘' test-output.log
           exit 1
         fi
         echo "All tests passed"
-
-    - name: Build release binary
-      run: swift build -c release --product sm --disable-sandbox
 
     - name: Create archive
       run: |

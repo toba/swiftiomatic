@@ -12,9 +12,9 @@ import SwiftSyntax
 ///
 /// Format: Blank lines are added or removed to make spacing consistent.
 final class ConsistentSwitchCaseSpacing: RewriteSyntaxRule<BasicRuleValue> {
-//    override class var key: String { "betweenScopes" }
-    override class var group: ConfigurationGroup? { .blankLines }
-    override class var defaultValue: BasicRuleValue { .init(rewrite: false, lint: .no) }
+    //    override class var key: String { "betweenScopes" }
+    override static var group: ConfigurationGroup? { .blankLines }
+    override static var defaultValue: BasicRuleValue { .init(rewrite: false, lint: .no) }
 
     override func visit(_ node: SwitchExprSyntax) -> ExprSyntax {
         let visited = super.visit(node)
@@ -27,6 +27,7 @@ final class ConsistentSwitchCaseSpacing: RewriteSyntaxRule<BasicRuleValue> {
         // Count cases with/without blank lines (exclude last case).
         var withBlank = 0
         var withoutBlank = 0
+
         for i in 0..<(cases.count - 1) {
             if cases[i + 1].leadingTrivia.hasBlankLine {
                 withBlank += 1

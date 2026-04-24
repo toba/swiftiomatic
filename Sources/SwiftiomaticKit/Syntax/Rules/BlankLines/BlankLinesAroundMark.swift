@@ -11,9 +11,9 @@ import SwiftSyntax
 ///
 /// Format: Blank lines are inserted around MARK comments.
 final class BlankLinesAroundMark: RewriteSyntaxRule<BasicRuleValue> {
-    override class var key: String { "beforeAndAfterMark" }
-    override class var group: ConfigurationGroup? { .blankLines }
-    override class var defaultValue: BasicRuleValue { .init(rewrite: false, lint: .no) }
+    override static var key: String { "beforeAndAfterMark" }
+    override static var group: ConfigurationGroup? { .blankLines }
+    override static var defaultValue: BasicRuleValue { .init(rewrite: false, lint: .no) }
 
     override func visit(_ token: TokenSyntax) -> TokenSyntax {
         var pieces = Array(token.leadingTrivia.pieces)
@@ -30,6 +30,7 @@ final class BlankLinesAroundMark: RewriteSyntaxRule<BasicRuleValue> {
         // Add blank line BEFORE MARK — skip at start of scope (after `{`).
         let prevToken = token.previousToken(viewMode: .sourceAccurate)
         let isAtStartOfScope = prevToken?.tokenKind == .leftBrace
+
         if !isAtStartOfScope, let idx = findNewlinesBefore(markIndex, in: pieces) {
             if case .newlines(let n) = pieces[idx], n < 2 {
                 diagnose(.insertBlankLineBeforeMark, on: token, anchor: .leadingTrivia(markIndex))
@@ -41,7 +42,8 @@ final class BlankLinesAroundMark: RewriteSyntaxRule<BasicRuleValue> {
         // Add blank line AFTER MARK — skip at end of scope (before `}`) or end of file.
         let isAtEndOfScope = token.tokenKind == .rightBrace
         let isAtEndOfFile = token.tokenKind == .endOfFile
-        if !isAtEndOfScope && !isAtEndOfFile {
+
+        if !isAtEndOfScope, !isAtEndOfFile {
             if let idx = findNewlinesAfter(markIndex, in: pieces) {
                 if case .newlines(let n) = pieces[idx], n < 2 {
                     diagnose(.insertBlankLineAfterMark, on: token)

@@ -22,8 +22,8 @@ import SwiftSyntax
 /// Lint: If an identifier contains underscores or begins with a capital letter, a lint error is
 ///       raised.
 final class LowerCamelCase: LintSyntaxRule<LintOnlyValue> {
-    override class var key: String { "camelCaseIdentifiers" }
-    override class var group: ConfigurationGroup? { .naming }
+    override static var key: String { "camelCaseIdentifiers" }
+    override static var group: ConfigurationGroup? { .naming }
 
     /// Stores function decls that are test cases.
     private var testCaseFuncs = Set<FunctionDeclSyntax>()
@@ -41,22 +41,16 @@ final class LowerCamelCase: LintSyntaxRule<LintOnlyValue> {
         return .visitChildren
     }
 
-    override func visitPost(_ node: ClassDeclSyntax) {
-        testCaseFuncs.removeAll()
-    }
+    override func visitPost(_: ClassDeclSyntax) { testCaseFuncs.removeAll() }
 
     override func visit(_ node: VariableDeclSyntax) -> SyntaxVisitorContinueKind {
         // Don't diagnose any issues when the variable is overriding, because this declaration can't
         // rename the variable. If the user analyzes the code where the variable is really declared,
         // then the diagnostic can be raised for just that location.
-        if node.modifiers.contains(anyOf: [.override]) {
-            return .visitChildren
-        }
+        if node.modifiers.contains(anyOf: [.override]) { return .visitChildren }
 
         for binding in node.bindings {
-            guard let pat = binding.pattern.as(IdentifierPatternSyntax.self) else {
-                continue
-            }
+            guard let pat = binding.pattern.as(IdentifierPatternSyntax.self) else { continue }
             diagnoseLowerCamelCaseViolations(
                 pat.identifier,
                 allowUnderscores: false,
@@ -95,6 +89,7 @@ final class LowerCamelCase: LintSyntaxRule<LintOnlyValue> {
                         allowUnderscores: false,
                         description: identifierDescription(for: node)
                     )
+
                     if let secondName = param.secondName {
                         diagnoseLowerCamelCaseViolations(
                             secondName,
@@ -112,9 +107,7 @@ final class LowerCamelCase: LintSyntaxRule<LintOnlyValue> {
         // Don't diagnose any issues when the function is overriding, because this declaration can't
         // rename the function. If the user analyzes the code where the function is really declared,
         // then the diagnostic can be raised for just that location.
-        if node.modifiers.contains(anyOf: [.override]) {
-            return .visitChildren
-        }
+        if node.modifiers.contains(anyOf: [.override]) { return .visitChildren }
 
         // We allow underscores in test names, because there's an existing convention of using
         // underscores to separate phrases in very detailed test names.
@@ -126,6 +119,7 @@ final class LowerCamelCase: LintSyntaxRule<LintOnlyValue> {
             allowUnderscores: allowUnderscores,
             description: identifierDescription(for: node)
         )
+
         for param in node.signature.parameterClause.parameters {
             // These identifiers aren't described using `identifierDescription(for:)` because no single
             // node can disambiguate the argument label from the parameter name.
@@ -134,6 +128,7 @@ final class LowerCamelCase: LintSyntaxRule<LintOnlyValue> {
                 allowUnderscores: false,
                 description: "argument label"
             )
+
             if let paramName = param.secondName {
                 diagnoseLowerCamelCaseViolations(
                     paramName,
@@ -171,9 +166,9 @@ final class LowerCamelCase: LintSyntaxRule<LintOnlyValue> {
             } else if let functionDecl = member.decl.as(FunctionDeclSyntax.self) {
                 // Identify test methods using the same heuristics as XCTest: name starts with "test", has
                 // no arguments, and returns a void type.
-                if functionDecl.name.text.starts(with: "test")
-                    && functionDecl.signature.parameterClause.parameters.isEmpty
-                    && (functionDecl.signature.returnClause.map(\.isVoid) ?? true)
+                if functionDecl.name.text.starts(with: "test"),
+                    functionDecl.signature.parameterClause.parameters.isEmpty,
+                    functionDecl.signature.returnClause.map(\.isVoid) ?? true
                 {
                     set.insert(functionDecl)
                 }
@@ -188,6 +183,7 @@ final class LowerCamelCase: LintSyntaxRule<LintOnlyValue> {
     ) {
         guard case .identifier(let text) = identifier.tokenKind else { return }
         if text.isEmpty { return }
+
         if (text.dropFirst().contains("_") && !allowUnderscores)
             || ("A"..."Z").contains(text.first!)
         {
@@ -203,15 +199,15 @@ final class LowerCamelCase: LintSyntaxRule<LintOnlyValue> {
 /// - Returns: A human readable description of the node and its identifier.
 private func identifierDescription<NodeType: SyntaxProtocol>(for node: NodeType) -> String {
     switch Syntax(node).as(SyntaxEnum.self) {
-    case .closureSignature: return "closure parameter"
-    case .enumCaseElement: return "enum case"
-    case .functionDecl: return "function"
-    case .optionalBindingCondition(let binding):
-        return binding.bindingSpecifier.tokenKind == .keyword(.var) ? "variable" : "constant"
-    case .variableDecl(let variableDecl):
-        return variableDecl.bindingSpecifier.tokenKind == .keyword(.var) ? "variable" : "constant"
-    default:
-        return "identifier"
+        case .closureSignature: "closure parameter"
+        case .enumCaseElement: "enum case"
+        case .functionDecl: "function"
+        case .optionalBindingCondition(let binding):
+            binding.bindingSpecifier.tokenKind == .keyword(.var) ? "variable" : "constant"
+        case .variableDecl(let variableDecl):
+            variableDecl.bindingSpecifier.tokenKind == .keyword(.var) ? "variable" : "constant"
+        default:
+            "identifier"
     }
 }
 

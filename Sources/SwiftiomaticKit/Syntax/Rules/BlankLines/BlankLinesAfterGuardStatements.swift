@@ -14,9 +14,9 @@ import SwiftSyntax
 /// Format: Blank lines between consecutive guards are removed. A blank line is inserted
 ///         after the last guard when followed by non-guard code.
 final class BlankLinesAfterGuardStatements: RewriteSyntaxRule<BasicRuleValue> {
-    override class var key: String { "afterGuardStatements" }
-    override class var group: ConfigurationGroup? { .blankLines }
-    override class var defaultValue: BasicRuleValue { .init(rewrite: false, lint: .no) }
+    override static var key: String { "afterGuardStatements" }
+    override static var group: ConfigurationGroup? { .blankLines }
+    override static var defaultValue: BasicRuleValue { .init(rewrite: false, lint: .no) }
 
     override func visit(_ node: CodeBlockSyntax) -> CodeBlockSyntax {
         let visited = super.visit(node)

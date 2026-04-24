@@ -19,9 +19,11 @@ final class BlankLinesBeforeControlFlow: RewriteSyntaxRule<BasicRuleValue> {
     override func visit(_ node: CodeBlockSyntax) -> CodeBlockSyntax {
         let originalItems = Array(node.statements)
         let visited = super.visit(node)
-        guard let statements = insertBlankLines(
-            in: originalItems, visited: Array(visited.statements)
-        ) else { return visited }
+        guard
+            let statements = insertBlankLines(
+                in: originalItems, visited: Array(visited.statements)
+            )
+        else { return visited }
         var result = visited
         result.statements = CodeBlockItemListSyntax(statements)
         return result
@@ -30,9 +32,11 @@ final class BlankLinesBeforeControlFlow: RewriteSyntaxRule<BasicRuleValue> {
     override func visit(_ node: SwitchCaseSyntax) -> SwitchCaseSyntax {
         let originalItems = Array(node.statements)
         let visited = super.visit(node)
-        guard let statements = insertBlankLines(
-            in: originalItems, visited: Array(visited.statements)
-        ) else { return visited }
+        guard
+            let statements = insertBlankLines(
+                in: originalItems, visited: Array(visited.statements)
+            )
+        else { return visited }
         var result = visited
         result.statements = CodeBlockItemListSyntax(statements)
         return result
@@ -44,6 +48,8 @@ final class BlankLinesBeforeControlFlow: RewriteSyntaxRule<BasicRuleValue> {
         in originalItems: [CodeBlockItemSyntax],
         visited visitedItems: [CodeBlockItemSyntax]
     ) -> [CodeBlockItemSyntax]? {
+        guard visitedItems.count > 1 else { return nil }
+
         var statements = visitedItems
         var modified = false
 
@@ -88,6 +94,7 @@ final class BlankLinesBeforeControlFlow: RewriteSyntaxRule<BasicRuleValue> {
                     return isMultiLineBody(repeatStmt.body)
                 }
                 if let doStmt = stmt.as(DoStmtSyntax.self) { return isMultiLineBody(doStmt.body) }
+
                 if let deferStmt = stmt.as(DeferStmtSyntax.self) {
                     return isMultiLineBody(deferStmt.body)
                 }

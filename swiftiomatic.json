@@ -19,7 +19,7 @@
 		"compoundCaseStatements": { "lint": "no", "rewrite": false },
 		"multilineFunctionChains": { "lint": "no", "rewrite": false },
 		"multilineStatementBraces": { "lint": "no", "rewrite": false },
-		"prioritizeKeepingFunctionOutputTogether": false
+		"keepunctionOutputTogether": true
 	},
 	"hoist": {
 		"caseLet": { "lint": "warn", "rewrite": true, "placement": "eachBinding" },

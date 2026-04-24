@@ -12,9 +12,9 @@ import SwiftSyntax
 ///
 /// Format: Blank lines are inserted after multiline cases and removed after the last case.
 final class BlankLinesAfterSwitchCase: RewriteSyntaxRule<BasicRuleValue> {
-    override class var key: String { "afterSwitchCase" }
-    override class var group: ConfigurationGroup? { .blankLines }
-    override class var defaultValue: BasicRuleValue { .init(rewrite: false, lint: .no) }
+    override static var key: String { "afterSwitchCase" }
+    override static var group: ConfigurationGroup? { .blankLines }
+    override static var defaultValue: BasicRuleValue { .init(rewrite: false, lint: .no) }
 
     override func visit(_ node: SwitchExprSyntax) -> ExprSyntax {
         let visited = super.visit(node)
@@ -40,9 +40,7 @@ final class BlankLinesAfterSwitchCase: RewriteSyntaxRule<BasicRuleValue> {
             modified = true
         }
 
-        if modified {
-            switchExpr.cases = SwitchCaseListSyntax(modifiedCases)
-        }
+        if modified { switchExpr.cases = SwitchCaseListSyntax(modifiedCases) }
 
         // Remove blank line before closing brace after last case.
         if switchExpr.rightBrace.leadingTrivia.hasBlankLine {

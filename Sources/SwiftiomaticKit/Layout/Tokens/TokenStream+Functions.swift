@@ -18,7 +18,7 @@ extension TokenStream {
 
         // Prioritize keeping ") throws -> <return_type>" together. We can only do this if the function
         // has arguments.
-        if hasArguments && config[PrioritizeKeepingFunctionOutputTogether.self] {
+        if hasArguments && config[KeepFunctionOutputTogether.self] {
             // Due to visitation order, the matching .open break is added in ParameterClauseSyntax.
             after(node.signature.lastToken(viewMode: .sourceAccurate), tokens: .close)
         }
@@ -65,7 +65,7 @@ extension TokenStream {
 
         // Prioritize keeping ") throws" together. We can only do this if the function
         // has arguments.
-        if hasArguments && config[PrioritizeKeepingFunctionOutputTogether.self] {
+        if hasArguments && config[KeepFunctionOutputTogether.self] {
             // Due to visitation order, the matching .open break is added in ParameterClauseSyntax.
             after(node.signature.lastToken(viewMode: .sourceAccurate), tokens: .close)
         }
@@ -126,7 +126,7 @@ extension TokenStream {
 
         // Prioritize keeping ") -> <return_type>" together. We can only do this if the subscript has
         // arguments.
-        if hasArguments && config[PrioritizeKeepingFunctionOutputTogether.self] {
+        if hasArguments && config[KeepFunctionOutputTogether.self] {
             // Due to visitation order, the matching .open break is added in ParameterClauseSyntax.
             after(node.returnClause.lastToken(viewMode: .sourceAccurate), tokens: .close)
         }

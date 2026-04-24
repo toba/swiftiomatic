@@ -9,9 +9,9 @@ import SwiftSyntax
 ///
 /// Format: The blank lines are removed.
 final class BlankLinesBetweenImports: RewriteSyntaxRule<BasicRuleValue> {
-    override class var key: String { "betweenImports" }
-    override class var group: ConfigurationGroup? { .blankLines }
-    override class var defaultValue: BasicRuleValue { .init(rewrite: false, lint: .no) }
+    override static var key: String { "betweenImports" }
+    override static var group: ConfigurationGroup? { .blankLines }
+    override static var defaultValue: BasicRuleValue { .init(rewrite: false, lint: .no) }
 
     override func visit(_ node: SourceFileSyntax) -> SourceFileSyntax {
         let originalStatements = Array(node.statements)

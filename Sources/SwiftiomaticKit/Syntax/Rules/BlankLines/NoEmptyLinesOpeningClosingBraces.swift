@@ -18,16 +18,17 @@ import SwiftSyntax
 ///
 /// Format: Empty lines after opening braces and before closing braces will be removed.
 final class NoEmptyLinesOpeningClosingBraces: RewriteSyntaxRule<BasicRuleValue> {
-    override class var group: ConfigurationGroup? { .blankLines }
-    override class var defaultValue: BasicRuleValue { .init(rewrite: false, lint: .no) }
+    override static var group: ConfigurationGroup? { .blankLines }
+    override static var defaultValue: BasicRuleValue { .init(rewrite: false, lint: .no) }
 
     override func visit(_ node: AccessorBlockSyntax) -> AccessorBlockSyntax {
         var result = node
+
         switch node.accessors {
-        case .accessors(let accessors):
-            result.accessors = .init(rewritten(accessors))
-        case .getter(let getter):
-            result.accessors = .init(rewritten(getter))
+            case .accessors(let accessors):
+                result.accessors = .init(rewritten(accessors))
+            case .getter(let getter):
+                result.accessors = .init(rewritten(getter))
         }
         result.rightBrace = rewritten(node.rightBrace)
         return result
@@ -72,6 +73,7 @@ final class NoEmptyLinesOpeningClosingBraces: RewriteSyntaxRule<BasicRuleValue> 
         let (trimmedLeadingTrivia, count) = token.leadingTrivia.trimmingSuperfluousNewlines(
             fromClosingBrace: token.tokenKind == .rightBrace
         )
+
         if trimmedLeadingTrivia.sourceLength != token.leadingTriviaLength {
             diagnose(.removeEmptyLinesBefore(count), on: token, anchor: .start)
             return token.with(\.leadingTrivia, trimmedLeadingTrivia)
@@ -82,12 +84,14 @@ final class NoEmptyLinesOpeningClosingBraces: RewriteSyntaxRule<BasicRuleValue> 
 
     func rewritten<C: SyntaxCollection>(_ collection: C) -> C {
         var result = collection
+
         if let first = collection.first, first.leadingTrivia.containsNewlines,
             let index = collection.index(of: first)
         {
             let (trimmedLeadingTrivia, count) = first.leadingTrivia.trimmingSuperfluousNewlines(
                 fromClosingBrace: false
             )
+
             if trimmedLeadingTrivia.sourceLength != first.leadingTriviaLength {
                 diagnose(.removeEmptyLinesAfter(count), on: first, anchor: .leadingTrivia(0))
                 var first = first

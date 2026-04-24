@@ -131,7 +131,7 @@ extension TokenStream {
 
         // Prioritize keeping ") -> <return_type>" together. We can only do this if the macro has
         // arguments.
-        if hasArguments && config[PrioritizeKeepingFunctionOutputTogether.self] {
+        if hasArguments && config[KeepFunctionOutputTogether.self] {
             // Due to visitation order, the matching .open break is added in ParameterClauseSyntax.
             after(node.signature.lastToken(viewMode: .sourceAccurate), tokens: .close)
         }

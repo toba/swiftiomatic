@@ -10,14 +10,12 @@ import SwiftSyntax
 ///
 /// Format: A blank line is inserted after the last import statement.
 final class BlankLinesAfterImports: RewriteSyntaxRule<BasicRuleValue> {
-    override class var key: String { "afterImports" }
-    override class var group: ConfigurationGroup? { .blankLines }
+    override static var key: String { "afterImports" }
+    override static var group: ConfigurationGroup? { .blankLines }
 
     override func visit(_ node: SourceFileSyntax) -> SourceFileSyntax {
         let statements = Array(node.statements)
-        guard let lastImportIndex = findLastImportIndex(in: statements) else {
-            return node
-        }
+        guard let lastImportIndex = findLastImportIndex(in: statements) else { return node }
 
         // Check there's a statement after the last import.
         let nextIndex = lastImportIndex + 1
@@ -29,8 +27,8 @@ final class BlankLinesAfterImports: RewriteSyntaxRule<BasicRuleValue> {
         // We need at least 2 newlines (end of import line + blank line).
         let newlineCount = nextStatement.leadingTrivia.pieces.reduce(0) { count, piece in
             switch piece {
-            case .newlines(let n): count + n
-            default: count
+                case .newlines(let n): count + n
+                default: count
             }
         }
 
@@ -75,10 +73,9 @@ final class BlankLinesAfterImports: RewriteSyntaxRule<BasicRuleValue> {
     private func containsOnlyImports(_ ifConfig: IfConfigDeclSyntax) -> Bool {
         for clause in ifConfig.clauses {
             guard case .statements(let stmts) = clause.elements else { continue }
+
             for stmt in stmts {
-                if !stmt.item.is(ImportDeclSyntax.self) {
-                    return false
-                }
+                if !stmt.item.is(ImportDeclSyntax.self) { return false }
             }
         }
         return true

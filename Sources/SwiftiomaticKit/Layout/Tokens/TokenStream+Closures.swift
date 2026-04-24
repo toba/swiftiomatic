@@ -75,7 +75,7 @@ extension TokenStream {
                 // this if the closure has arguments.
                 let keepOutputTogether =
                     !closureParameterClause.parameters.isEmpty
-                    && config[PrioritizeKeepingFunctionOutputTogether.self]
+                    && config[KeepFunctionOutputTogether.self]
 
                 // Keep the output together by grouping from the right paren to the end of the output.
                 if keepOutputTogether {
@@ -229,7 +229,7 @@ extension TokenStream {
     func visitClosureParameterClause(_ node: ClosureParameterClauseSyntax) -> SyntaxVisitorContinueKind {
         // Prioritize keeping ") throws -> <return_type>" together. We can only do this if the function
         // has arguments.
-        if !node.parameters.isEmpty && config[PrioritizeKeepingFunctionOutputTogether.self] {
+        if !node.parameters.isEmpty && config[KeepFunctionOutputTogether.self] {
             // Due to visitation order, this .open corresponds to a .close added in FunctionDeclSyntax
             // or SubscriptDeclSyntax.
             before(node.rightParen, tokens: .open)
@@ -250,7 +250,7 @@ extension TokenStream {
     func visitFunctionParameterClause(_ node: FunctionParameterClauseSyntax) -> SyntaxVisitorContinueKind {
         // Prioritize keeping ") throws -> <return_type>" together. We can only do this if the function
         // has arguments.
-        if !node.parameters.isEmpty && config[PrioritizeKeepingFunctionOutputTogether.self] {
+        if !node.parameters.isEmpty && config[KeepFunctionOutputTogether.self] {
             // Due to visitation order, this .open corresponds to a .close added in FunctionDeclSyntax
             // or SubscriptDeclSyntax.
             before(node.rightParen, tokens: .open)

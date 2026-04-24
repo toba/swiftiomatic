@@ -17,6 +17,7 @@
 
 ### 🐛 Fixes
 
+- `BlankLinesBeforeControlFlow` crashes on empty code blocks; invalid range `1..<0` ([#370](https://github.com/toba/swiftiomatic/issues/370))
 - JSON schema now emits enum constraints for rule-specific properties; validates `mode`, `style`, `placement`, `accessLevel`, `sortOrder`
 - `SortImports` checks fail on CI ([#361](https://github.com/toba/swiftiomatic/issues/361))
 

@@ -16,8 +16,8 @@ import SwiftSyntax
 ///
 /// Lint:  Types with un-capitalized names will yield a lint error.
 final class CapitalizedTypeNames: LintSyntaxRule<LintOnlyValue> {
-    override class var key: String { "capitalizeTypeNames" }
-    override class var group: ConfigurationGroup? { .naming }
+    override static var key: String { "capitalizeTypeNames" }
+    override static var group: ConfigurationGroup? { .naming }
 
     override func visit(_ node: StructDeclSyntax) -> SyntaxVisitorContinueKind {
         diagnoseNameConventionMismatch(node, name: node.name, kind: "struct")
@@ -55,11 +55,12 @@ final class CapitalizedTypeNames: LintSyntaxRule<LintOnlyValue> {
     }
 
     private func diagnoseNameConventionMismatch<T: DeclSyntaxProtocol>(
-        _ type: T,
+        _: T,
         name: TokenSyntax,
         kind: String
     ) {
         let leadingUnderscores = name.text.prefix { $0 == "_" }
+
         if let firstChar = name.text[leadingUnderscores.endIndex...].first,
             firstChar.uppercased() != String(firstChar)
         {
