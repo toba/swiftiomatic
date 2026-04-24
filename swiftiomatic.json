@@ -136,7 +136,7 @@
 		"preferAngleBracketExtensions": { "lint": "warn", "rewrite": true }
 	},
 	"literals": {
-		"uRLMacro": { "lint": "no", "rewrite": false },
+		"urlMacro": { "lint": "no", "rewrite": false },
 		"groupNumericLiterals": { "lint": "warn", "rewrite": true },
 		"noPlaygroundLiterals": { "lint": "warn" },
 		"useShortArrayLiteral": { "lint": "no", "rewrite": false },

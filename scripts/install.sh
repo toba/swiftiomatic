@@ -15,6 +15,9 @@ fi
 cellar="$(brew --cellar sm)/$version"
 mkdir -p "$cellar/bin"
 
+# Activate committed git hooks.
+git config core.hooksPath scripts
+
 echo "Regenerating schema..."
 swift run Generator
 echo "Building release..."

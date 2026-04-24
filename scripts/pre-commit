@@ -1,0 +1,10 @@
+#!/bin/bash
+# Regenerate schema.json before every commit to keep it in sync with rule definitions.
+# swift-syntax is a binary dependency so this runs fast.
+
+swift run Generator 2>/dev/null
+
+if ! git diff --quiet schema.json; then
+    git add schema.json
+    echo "pre-commit: schema.json updated and staged"
+fi

@@ -124,7 +124,8 @@
       "Bash(csrutil status:*)",
       "Bash(brew --prefix sm)",
       "Read(//Users/jason/Developer/swiftiomatic-ref/swift-format/Sources/**)",
-      "Read(//Users/jason/Developer/swiftiomatic-ref/**)"
+      "Read(//Users/jason/Developer/swiftiomatic-ref/**)",
+      "Bash(/opt/homebrew/bin/sm format *)"
     ]
   },
   "enableAllProjectMcpServers": true,
