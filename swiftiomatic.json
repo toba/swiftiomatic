@@ -1,5 +1,6 @@
 {
 	"$schema": "https://raw.githubusercontent.com/toba/swiftiomatic/refs/heads/main/schema.json",
+	"version": 6,
 	"sort": {
 		"imports": {
 			"lint": "no",
@@ -9,8 +10,8 @@
 			"includeConditionalImports": false
 		},
 		"switchCases": { "lint": "no", "rewrite": false },
-		"typeAliases": { "lint": "warn", "rewrite": true },
-		"declarations": { "lint": "warn", "rewrite": true }
+		"typeAliases": { "lint": "no", "rewrite": false },
+		"declarations": { "lint": "no", "rewrite": false }
 	},
 	"wrap": {
 		"singleLineBodies": { "lint": "no", "mode": "inline", "rewrite": true },
@@ -113,7 +114,6 @@
 		"testSuiteAccessControl": { "lint": "no", "rewrite": false },
 		"swiftTestingTestCaseNames": { "lint": "no", "rewrite": false }
 	},
-	"version": 6,
 	"closures": {
 		"preferTrailingClosures": { "lint": "warn", "rewrite": true },
 		"noTrailingClosureParens": { "lint": "warn", "rewrite": true },
@@ -145,16 +145,17 @@
 		"multiElementCollectionTrailingCommas": true
 	},
 	"blankLines": {
+		"maximumBlankLines": 1,
+		"commentAsBlankLine": true,
+		"closingBraceAsBlankLine": true,
 		"afterImports": { "lint": "warn", "rewrite": true },
 		"betweenScopes": { "lint": "no", "rewrite": false },
 		"betweenImports": { "lint": "no", "rewrite": false },
 		"afterSwitchCase": { "lint": "no", "rewrite": false },
 		"beforeControlFlow": { "lint": "no", "rewrite": true },
-		"maximumBlankLines": 1,
 		"beforeAndAfterMark": { "lint": "no", "rewrite": false },
 		"afterGuardStatements": { "lint": "no", "rewrite": false },
 		"betweenChainedFunctions": { "lint": "no", "rewrite": false },
-		"closingBraceAsBlankLine": true,
 		"consistentSwitchCaseSpacing": { "lint": "no", "rewrite": false },
 		"noEmptyLinesOpeningClosingBraces": { "lint": "no", "rewrite": false }
 	},

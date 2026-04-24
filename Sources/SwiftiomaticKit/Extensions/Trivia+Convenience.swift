@@ -121,6 +121,24 @@ extension Trivia {
         blankLineCount > 0
     }
 
+    /// Whether this trivia starts with a comment (before any blank line).
+    ///
+    /// Returns `true` when the first non-whitespace piece in the trivia is a comment,
+    /// which means `hasBlankLine` would return `false` even if blank lines follow.
+    var startsWithComment: Bool {
+        for piece in pieces {
+            switch piece {
+            case .lineComment, .docLineComment, .blockComment, .docBlockComment:
+                return true
+            case .newlines, .spaces, .tabs, .carriageReturns, .carriageReturnLineFeeds:
+                continue
+            default:
+                return false
+            }
+        }
+        return false
+    }
+
     /// Returns a copy with multi-newline pieces collapsed to single newlines.
     var reducingToSingleNewlines: Trivia {
         var pieces = Array(self.pieces)

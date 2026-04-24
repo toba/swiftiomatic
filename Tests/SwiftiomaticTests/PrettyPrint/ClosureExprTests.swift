@@ -494,7 +494,7 @@ struct ClosureExprTests: PrettyPrintTesting {
       """
 
     var config = Configuration.forTesting
-    config[PrioritizeKeepingFunctionOutputTogether.self] = true
+    config[KeepFunctionOutputTogether.self] = true
     assertPrettyPrintEqual(
       input: input,
       expected: expectedKeepingOutputTogether,

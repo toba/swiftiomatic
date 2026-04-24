@@ -285,6 +285,96 @@ struct BlankLinesBetweenScopesTests: RuleTesting {
     )
   }
 
+  @Test func commentAsBlankLineSkipsInsertion() {
+    var config = Configuration.forTesting(enabledRule: BlankLinesBetweenScopes.self.key)
+    config[CommentAsBlankLine.self] = true
+
+    assertFormatting(
+      BlankLinesBetweenScopes.self,
+      input: """
+        func foo() {
+            print("foo")
+        }
+        /// Does bar things.
+        func bar() {
+            print("bar")
+        }
+        """,
+      expected: """
+        func foo() {
+            print("foo")
+        }
+        /// Does bar things.
+        func bar() {
+            print("bar")
+        }
+        """,
+      findings: [],
+      configuration: config
+    )
+  }
+
+  @Test func commentAsBlankLineDefaultStillInserts() {
+    assertFormatting(
+      BlankLinesBetweenScopes.self,
+      input: """
+        func foo() {
+            print("foo")
+        }
+        /// Does bar things.
+        1️⃣func bar() {
+            print("bar")
+        }
+        """,
+      expected: """
+        func foo() {
+            print("foo")
+        }
+
+        /// Does bar things.
+        func bar() {
+            print("bar")
+        }
+        """,
+      findings: [
+        FindingSpec("1️⃣", message: "insert blank line after scoped declaration"),
+      ]
+    )
+  }
+
+  @Test func commentAsBlankLineMemberBlock() {
+    var config = Configuration.forTesting(enabledRule: BlankLinesBetweenScopes.self.key)
+    config[CommentAsBlankLine.self] = true
+
+    assertFormatting(
+      BlankLinesBetweenScopes.self,
+      input: """
+        struct Foo {
+            func bar() {
+                print("bar")
+            }
+            // Next function
+            func baz() {
+                print("baz")
+            }
+        }
+        """,
+      expected: """
+        struct Foo {
+            func bar() {
+                print("bar")
+            }
+            // Next function
+            func baz() {
+                print("baz")
+            }
+        }
+        """,
+      findings: [],
+      configuration: config
+    )
+  }
+
   @Test func noBlankLineBetweenProtocolMethods() {
     assertFormatting(
       BlankLinesBetweenScopes.self,

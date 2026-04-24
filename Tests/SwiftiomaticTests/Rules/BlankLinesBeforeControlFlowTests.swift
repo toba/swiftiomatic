@@ -469,6 +469,63 @@ struct BlankLinesBeforeControlFlowTests: RuleTesting {
     )
   }
 
+  @Test func commentAsBlankLineSkipsInsertion() {
+    var config = Configuration.forTesting(enabledRule: BlankLinesBeforeControlFlow.self.key)
+    config[CommentAsBlankLine.self] = true
+
+    assertFormatting(
+      BlankLinesBeforeControlFlow.self,
+      input: """
+        func test() {
+            let items = getItems()
+            // iterate over all items
+            for item in items {
+                process(item)
+            }
+        }
+        """,
+      expected: """
+        func test() {
+            let items = getItems()
+            // iterate over all items
+            for item in items {
+                process(item)
+            }
+        }
+        """,
+      findings: [],
+      configuration: config
+    )
+  }
+
+  @Test func commentAsBlankLineDefaultStillInserts() {
+    assertFormatting(
+      BlankLinesBeforeControlFlow.self,
+      input: """
+        func test() {
+            let items = getItems()
+            // iterate over all items
+            1️⃣for item in items {
+                process(item)
+            }
+        }
+        """,
+      expected: """
+        func test() {
+            let items = getItems()
+
+            // iterate over all items
+            for item in items {
+                process(item)
+            }
+        }
+        """,
+      findings: [
+        FindingSpec("1️⃣", message: "insert blank line before control flow statement"),
+      ]
+    )
+  }
+
   @Test func nestedControlFlow() {
     assertFormatting(
       BlankLinesBeforeControlFlow.self,

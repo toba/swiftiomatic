@@ -11,8 +11,8 @@ import SwiftSyntax
 ///
 /// Format: The `private` modifier is added before the binding keyword.
 final class PrivateStateVariables: RewriteSyntaxRule<BasicRuleValue> {
-    override class var group: ConfigurationGroup? { .access }
-    override class var defaultValue: BasicRuleValue { BasicRuleValue(rewrite: false, lint: .no) }
+    override static var group: ConfigurationGroup? { .access }
+    override static var defaultValue: BasicRuleValue { BasicRuleValue(rewrite: false, lint: .no) }
 
     /// Attribute names that trigger the rule.
     private static let stateAttributes: Set<String> = ["State", "StateObject"]

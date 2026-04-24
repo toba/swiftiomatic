@@ -345,7 +345,7 @@ struct MacroDeclTests: PrettyPrintTesting {
 
       """
     var config = Configuration.forTesting
-    config[PrioritizeKeepingFunctionOutputTogether.self] = true
+    config[KeepFunctionOutputTogether.self] = true
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 23, configuration: config)
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 24, configuration: config)
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 27, configuration: config)
@@ -386,7 +386,7 @@ struct MacroDeclTests: PrettyPrintTesting {
 
       """
     var config = Configuration.forTesting
-    config[PrioritizeKeepingFunctionOutputTogether.self] = true
+    config[KeepFunctionOutputTogether.self] = true
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 26, configuration: config)
   }
 

@@ -54,12 +54,14 @@ final class BlankLinesBeforeControlFlow: RewriteSyntaxRule<BasicRuleValue> {
         var modified = false
 
         let braceIsBlank = context.configuration[ClosingBraceAsBlankLine.self]
+        let commentIsBlank = context.configuration[CommentAsBlankLine.self]
 
         for i in 1..<visitedItems.count {
             let item = visitedItems[i]
             guard isMultiLineControlFlow(item.item) else { continue }
             guard !item.leadingTrivia.hasBlankLine else { continue }
             if braceIsBlank, endsSolitaryBrace(visitedItems[i - 1]) { continue }
+            if commentIsBlank, item.leadingTrivia.startsWithComment { continue }
 
             diagnose(.insertBlankLineBeforeControlFlow, on: originalItems[i].item)
             var next = item

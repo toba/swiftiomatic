@@ -363,7 +363,7 @@ struct SubscriptDeclTests: PrettyPrintTesting {
 
       """
     var config = Configuration.forTesting
-    config[PrioritizeKeepingFunctionOutputTogether.self] = true
+    config[KeepFunctionOutputTogether.self] = true
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 26, configuration: config)
 
     expected =

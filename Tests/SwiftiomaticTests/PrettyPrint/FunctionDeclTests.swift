@@ -758,7 +758,7 @@ struct FunctionDeclTests: PrettyPrintTesting {
 
       """
     var config = Configuration.forTesting
-    config[PrioritizeKeepingFunctionOutputTogether.self] = true
+    config[KeepFunctionOutputTogether.self] = true
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 23, configuration: config)
 
     expected =
@@ -844,7 +844,7 @@ struct FunctionDeclTests: PrettyPrintTesting {
 
       """
     var config = Configuration.forTesting
-    config[PrioritizeKeepingFunctionOutputTogether.self] = true
+    config[KeepFunctionOutputTogether.self] = true
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 23, configuration: config)
   }
 
@@ -933,7 +933,7 @@ struct FunctionDeclTests: PrettyPrintTesting {
 
       """
     var config = Configuration.forTesting
-    config[PrioritizeKeepingFunctionOutputTogether.self] = true
+    config[KeepFunctionOutputTogether.self] = true
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 23, configuration: config)
 
     input =

@@ -22,6 +22,7 @@ package enum ConfigurationRegistry {
         BeforeGuardConditions.self,
         BetweenDeclarationAttributes.self,
         ClosingBraceAsBlankLine.self,
+        CommentAsBlankLine.self,
         IndentBlankLines.self,
         IndentConditionalCompilationBlocks.self,
         IndentationSetting.self,

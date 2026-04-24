@@ -574,7 +574,7 @@ struct EnumDeclTests: PrettyPrintTesting {
     assertPrettyPrintEqual(input: input, expected: input + "\n", linelength: 50)
   }
 
-  @Test func enumWithPrioritizeKeepingFunctionOutputTogetherFlag() {
+  @Test func enumWithKeepFunctionOutputTogetherFlag() {
     let input = """
       enum Error {
         case alreadyOpen(Int)
@@ -582,7 +582,7 @@ struct EnumDeclTests: PrettyPrintTesting {
 
       """
     var config = Configuration.forTesting
-    config[PrioritizeKeepingFunctionOutputTogether.self] = true
+    config[KeepFunctionOutputTogether.self] = true
     assertPrettyPrintEqual(input: input, expected: input, linelength: 50, configuration: config)
   }
 }

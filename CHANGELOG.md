@@ -9,6 +9,7 @@
 - `RedundantReturn`; treat Never-returning calls as terminal branches
 - Add `BlankLinesBeforeControlFlow` rule
 - `blankLines.closingBraceAsBlankLine` layout option; treat solitary `}` as visual separation ([#368](https://github.com/toba/swiftiomatic/issues/368))
+- `blankLines.commentAsBlankLine` layout option; treat comment lines as visual separation
 - New rules: `RedundantFinal` + `PreferStaticOverClassFunc`
 - Add `doctor` subcommand; JSON Schema validation + full config parsing
 - Simplify rule configuration; uniform object shape, remove shorthand
