@@ -32,16 +32,6 @@ class Frontend: @unchecked Sendable {
       self.diagnosticsEngine = diagnosticsEngine
     }
 
-    /// Checks if all the rules in the given configuration are supported by the registry.
-    ///
-    /// If there are any rules that are not supported, they are emitted as a warning.
-    private func checkForUnrecognizedRules(in configuration: Configuration) {
-      // If any rules in the decoded configuration are not supported by the registry,
-      // emit them into the diagnosticsEngine as warnings.
-      // That way they will be printed out, but we'll continue execution on the valid rules.
-      // Rule validation happens during decoding — unknown keys are ignored.
-    }
-
     /// Returns a user-friendly description of a configuration loading error.
     ///
     /// For `DecodingError` values, this includes the coding path so the user can identify
@@ -103,7 +93,6 @@ class Frontend: @unchecked Sendable {
         if FileManager.default.isReadableFile(atPath: configurationFileURL.path) {
           do {
             let configuration = try configurationLoader.configuration(at: configurationFileURL)
-            self.checkForUnrecognizedRules(in: configuration)
             return configuration
           } catch {
             diagnosticsEngine.emitError(
@@ -120,7 +109,6 @@ class Frontend: @unchecked Sendable {
       if let swiftFileURL = swiftFileURL {
         do {
           if let configuration = try configurationLoader.configuration(forPath: swiftFileURL) {
-            self.checkForUnrecognizedRules(in: configuration)
             return configuration
           }
           // Fall through to the default return at the end of the function.
@@ -138,7 +126,6 @@ class Frontend: @unchecked Sendable {
         // Definitely a Swift file. Definitely not a directory. Shhhhhh.
         do {
           if let configuration = try configurationLoader.configuration(forPath: cwd) {
-            self.checkForUnrecognizedRules(in: configuration)
             return configuration
           }
         } catch {

@@ -22,7 +22,7 @@ final class NoTrailingClosureParens: RewriteSyntaxRule<BasicRuleValue> {
     override class var group: ConfigurationGroup? { .closures }
 
     override func visit(_ node: FunctionCallExprSyntax) -> ExprSyntax {
-        guard node.arguments.count == 0 else { return super.visit(node) }
+        guard node.arguments.isEmpty else { return super.visit(node) }
 
         guard
             let trailingClosure = node.trailingClosure,

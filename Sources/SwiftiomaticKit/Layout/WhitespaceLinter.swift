@@ -383,7 +383,7 @@ package final class WhitespaceLinter {
     /// Returns the indentation that represents the indentation of the given whitespace, which is the
     /// leading spacing for a line.
     private func indentation(of whitespace: ArraySlice<UTF8.CodeUnit>) -> WhitespaceIndentation {
-        if whitespace.count == 0 { return .none }
+        if whitespace.isEmpty { return .none }
 
         var orderedRuns: [(char: UTF8.CodeUnit, count: Int)] = []
         for char in whitespace {

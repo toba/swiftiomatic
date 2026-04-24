@@ -18,7 +18,7 @@ package struct LintOnlyValue: SyntaxRuleValue {
     /// Always `false` for lint-only rules.
     package var rewrite: Bool {
         get { false }
-        set { /* lint-only rules cannot rewrite */  }
+        set { } // lint-only rules cannot rewrite
     }
 
     package init() { lint = .warn }

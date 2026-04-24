@@ -106,29 +106,7 @@ class TokenStreamBase: SyntaxVisitor {
     func insertTokens<Node: SyntaxCollection>(
         _ tokens: Token...,
         betweenElementsOf collectionNode: Node
-    ) where Node.Element == Syntax {
-        for element in collectionNode.dropLast() {
-            after(element.lastToken(viewMode: .sourceAccurate), tokens: tokens)
-        }
-    }
-
-    /// Enqueues the given list of formatting tokens between each element of the given syntax
-    /// collection (but not before the first one nor after the last one).
-    func insertTokens<Node: SyntaxCollection>(
-        _ tokens: Token...,
-        betweenElementsOf collectionNode: Node
     ) where Node.Element: SyntaxProtocol {
-        for element in collectionNode.dropLast() {
-            after(element.lastToken(viewMode: .sourceAccurate), tokens: tokens)
-        }
-    }
-
-    /// Enqueues the given list of formatting tokens between each element of the given syntax
-    /// collection (but not before the first one nor after the last one).
-    func insertTokens<Node: SyntaxCollection>(
-        _ tokens: Token...,
-        betweenElementsOf collectionNode: Node
-    ) where Node.Element == DeclSyntax {
         for element in collectionNode.dropLast() {
             after(element.lastToken(viewMode: .sourceAccurate), tokens: tokens)
         }

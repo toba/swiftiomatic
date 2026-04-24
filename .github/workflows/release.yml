@@ -5,6 +5,10 @@ on:
     tags:
       - 'v*'
 
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: true
+
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
   XCODE_VERSION: '26.4'
@@ -23,8 +27,8 @@ jobs:
       uses: actions/cache@v4
       with:
         path: .build
-        key: spm-${{ runner.os }}-xcode${{ env.XCODE_VERSION }}-${{ hashFiles('Package.resolved') }}
-        restore-keys: spm-${{ runner.os }}-xcode${{ env.XCODE_VERSION }}-
+        key: spm-release-${{ runner.os }}-xcode${{ env.XCODE_VERSION }}-${{ hashFiles('Package.resolved') }}
+        restore-keys: spm-release-${{ runner.os }}-xcode${{ env.XCODE_VERSION }}-
 
     - name: Resolve dependencies
       run: swift package resolve

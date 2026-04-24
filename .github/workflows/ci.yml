@@ -6,6 +6,10 @@ on:
   pull_request:
     branches: [main]
 
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
   XCODE_VERSION: '26.4'
@@ -20,22 +24,20 @@ jobs:
     - name: Select Xcode version
       run: sudo xcode-select -s /Applications/Xcode_${{ env.XCODE_VERSION }}.app/Contents/Developer
 
-    - name: Cache SPM dependencies
+    - name: Cache SPM build
       uses: actions/cache@v4
       with:
         path: .build
-        key: spm-${{ runner.os }}-xcode${{ env.XCODE_VERSION }}-${{ hashFiles('Package.resolved') }}
-        restore-keys: spm-${{ runner.os }}-xcode${{ env.XCODE_VERSION }}-
+        key: spm-debug-${{ runner.os }}-xcode${{ env.XCODE_VERSION }}-${{ hashFiles('Package.resolved') }}
+        restore-keys: spm-debug-${{ runner.os }}-xcode${{ env.XCODE_VERSION }}-
+        save-always: true
 
     - name: Resolve dependencies
       run: swift package resolve
 
-    - name: Build
-      run: swift build -c release --disable-sandbox
-
     - name: Test
       run: |
-        swift test -c release --disable-sandbox 2>&1 | tee test-output.log || true
+        swift test --parallel --disable-sandbox 2>&1 | tee test-output.log || true
         if grep -q '✘' test-output.log; then
           echo "::error::Test failures detected"
           grep '✘' test-output.log

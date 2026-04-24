@@ -110,7 +110,7 @@ final class DocCommentSummary: LintSyntaxRule<LintOnlyValue> {
         let trimmedText = noInlineCodeSummary.plainText
             .trimmingCharacters(in: .whitespacesAndNewlines)
         let (commentSentences, trailingText) = sentences(in: trimmedText)
-        if commentSentences.count == 0 {
+        if commentSentences.isEmpty {
             diagnose(.terminateSentenceWithPeriod(trimmedText), on: decl)
         } else if commentSentences.count > 1 {
             diagnose(.addBlankLineAfterFirstSentence(commentSentences[0]), on: decl)

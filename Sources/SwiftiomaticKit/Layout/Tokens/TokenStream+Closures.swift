@@ -23,7 +23,7 @@ extension TokenStream {
 
         if let signature = node.signature {
             after(node.leftBrace, tokens: .break(.open))
-            if node.statements.count > 0 {
+            if !node.statements.isEmpty {
                 after(signature.inKeyword, tokens: .break(.same, newlines: newlineBehavior))
             } else {
                 after(

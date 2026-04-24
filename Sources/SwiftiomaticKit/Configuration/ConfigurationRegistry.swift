@@ -14,7 +14,7 @@ extension ConfigurationRegistry {
     package static let typeNameToKey: [String: String] = {
         var map: [String: String] = [:]
         for type in allRuleTypes {
-            let typeName = String("\(type)".split(separator: ".").last!)
+            let typeName = String("\(type)".split(separator: ".").last ?? "")
             let derivedKey = typeName.prefix(1).lowercased() + typeName.dropFirst()
             // Only add entries where derived key differs from actual key
             if derivedKey != type.key {

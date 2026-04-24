@@ -46,6 +46,7 @@
 - Rename config keys for clarity
 - Pre-commit hook to regenerate `schema.json` ([#369](https://github.com/toba/swiftiomatic/issues/369))
 - Create SPM build tool plugin target ([#352](https://github.com/toba/swiftiomatic/issues/352))
+- Swift review; code quality and modernization fixes
 
 ## Week of Apr 12 – Apr 18, 2026
 

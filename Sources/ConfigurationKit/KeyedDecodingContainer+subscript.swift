@@ -1,39 +1,12 @@
 public import Foundation
 
 extension KeyedDecodingContainer {
-    //    func decode<T: Decodable>(_ key: Key) throws -> T {
-    //        try decode(T.self, forKey: key)
-    //    }
-
-    //    func decode<T: DecodableWithConfiguration>(
-    //        _ key: Key,
-    //        with configuration: T.DecodingConfiguration
-    //    ) throws -> T {
-    //        try decode(T.self, forKey: key, configuration: configuration)
-    //    }
 
     // MARK: subscript
 
     public subscript<T: Decodable>(key: Key) -> T {
         get throws { try decode(T.self, forKey: key) }
     }
-
-    //    subscript<T: Decodable>(key: Key, otherwise value: T) -> T {
-    //        get throws { try decodeIfPresent(T.self, forKey: key) ?? value }
-    //    }
-
-    //    subscript<T>(orEmpty key: Key) -> T where T: Decodable & RangeReplaceableCollection {
-    //        get throws { try decodeIfPresent(T.self, forKey: key) ?? .init() }
-    //    }
-
-    //    subscript<T: Decodable>(key: Key, failWith value: T) -> T {
-    //        do {
-    //            return try decode(T.self, forKey: key)
-    //        } catch {
-    //            assertionFailure("Could not decode \(key): \(error)")
-    //            return value
-    //        }
-    //    }
 
     public subscript<T: DecodableWithConfiguration>(
         key: Key,
@@ -90,29 +63,6 @@ extension KeyedDecodingContainer {
         if contains(key) { try maybeInt(key) } else { nil }
     }
 
-    /// Return `String` value of a key that may be stored as a number or return `nil` if the key is
-    /// not present
-    //    func maybeIntIfNotEmpty(_ key: Key) throws -> String? {
-    //        if let value = try? decodeIfPresent(String.self, forKey: key) {
-    //            value.isEmpty ? nil : value
-    //        } else if let value = try? decodeIfPresent(Int.self, forKey: key) {
-    //            String(value)
-    //        } else {
-    //            nil
-    //        }
-    //    }
-
-    /// Return `String` value of a key that may be stored as a number. If there is an error then
-    /// return the `otherwise` value.
-    //    func maybeInt(_ key: Key, otherwise value: String) -> String {
-    //        do {
-    //            return try maybeInt(key)
-    //        } catch {
-    //            // assertionFailure("Could not decode \(key): \(error)")
-    //            return value
-    //        }
-    //    }
-
     /// Attempt to convert various value types to a boolean
     public func truthLike(_ key: Key, otherwise: Bool = false) -> Bool {
         if contains(key) {
@@ -130,12 +80,4 @@ extension KeyedDecodingContainer {
         }
     }
 
-    /// Value container at given key organized with ``AnyCodingKey``
-    //    func nestedAnyContainer(_ key: Key) throws -> KeyedDecodingContainer<AnyCodingKey> {
-    //        try nestedContainer(keyedBy: AnyCodingKey.self, forKey: key)
-    //    }
-
-    //    func nestedAnyContainer(_ key: String) throws -> KeyedDecodingContainer<AnyCodingKey> {
-    //        try nestedContainer(keyedBy: AnyCodingKey.self, forKey: AnyCodingKey(key))
-    //    }
 }

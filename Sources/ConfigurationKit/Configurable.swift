@@ -35,7 +35,7 @@ package protocol Configurable {
 extension Configurable {
     /// By default, the key is the name of the conforming type with a lowercase initial letter.
     package static var key: String {
-        let name = String("\(self)".split(separator: ".").last!)
+        let name = String("\(self)".split(separator: ".").last ?? "")
         return configurationKey(forTypeName: name)
     }
     package static var group: ConfigurationGroup? { nil }
