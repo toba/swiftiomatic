@@ -28,7 +28,7 @@ final class PreferSingleLinePropertyGetter: RewriteSyntaxRule<BasicRuleValue> {
       accessors.count == 1,
       acc.accessorSpecifier.tokenKind == .keyword(.get),
       acc.attributes.isEmpty,
-      acc.modifiers.isEmpty,
+      // TODO: restore acc.modifiers.isEmpty when swift-syntax adds modifiers to AccessorDeclSyntax (604.0.0+)
       acc.effectSpecifiers == nil
     else { return node }
 

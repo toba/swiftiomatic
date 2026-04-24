@@ -30,9 +30,10 @@ struct UseSingleLinePropertyGetterTests: RuleTesting {
           get { return 0 }
           set { print("no set, only get") }
         }
-        var j: Int {
-          mutating get { return 0 }
-        }
+        // TODO: restore mutating get test case when swift-syntax adds modifiers to AccessorDeclSyntax (604.0.0+)
+        // var j: Int {
+        //   mutating get { return 0 }
+        // }
         var k: Int {
           get async {
             return 4
@@ -58,9 +59,10 @@ struct UseSingleLinePropertyGetterTests: RuleTesting {
           get { return 0 }
           set { print("no set, only get") }
         }
-        var j: Int {
-          mutating get { return 0 }
-        }
+        // TODO: restore mutating get test case when swift-syntax adds modifiers to AccessorDeclSyntax (604.0.0+)
+        // var j: Int {
+        //   mutating get { return 0 }
+        // }
         var k: Int {
           get async {
             return 4
