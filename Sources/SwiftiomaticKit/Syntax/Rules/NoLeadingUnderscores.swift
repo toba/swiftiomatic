@@ -23,13 +23,13 @@ import SwiftSyntax
 ///
 /// Lint: Declaring an identifier with a leading underscore yields a lint error.
 final class NoLeadingUnderscores: LintSyntaxRule<LintOnlyValue> {
-    override class var group: ConfigurationGroup? { .naming }
+    override static var group: ConfigurationGroup? { .naming }
 
     /// Identifies this rule as being opt-in. While leading underscores aren't meant to be used in
     /// normal circumstances, there are situations where they can be used to hint which APIs should be
     /// avoided by general users. In particular when APIs must be exported publicly, but the author
     /// doesn't intend for arbitrary usage.
-    override class var defaultValue: LintOnlyValue { LintOnlyValue(lint: .no) }
+    override static var defaultValue: LintOnlyValue { LintOnlyValue(lint: .no) }
 
     override func visit(_ node: AssociatedTypeDeclSyntax) -> SyntaxVisitorContinueKind {
         diagnoseIfNameStartsWithUnderscore(node.name)
@@ -118,7 +118,7 @@ final class NoLeadingUnderscores: LintSyntaxRule<LintOnlyValue> {
     /// - Parameter token: The token to check.
     private func diagnoseIfNameStartsWithUnderscore(_ token: TokenSyntax) {
         let text = token.text
-        if text.count > 1 && text.first == "_" {
+        if text.count > 1, text.first == "_" {
             diagnose(.doNotStartWithUnderscore(identifier: text), on: token)
         }
     }

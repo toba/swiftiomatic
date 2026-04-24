@@ -34,6 +34,15 @@ extension TokenStream {
 
                 // If the rhs starts with a parenthesized expression, stack indentation around it.
                 // Otherwise, use regular continuation breaks.
+                let isCompound =
+                    isCompoundExpression(rhs) && leftmostMultilineStringLiteral(of: rhs) == nil
+
+                // When there are comments between = and the RHS expression, placing the group
+                // open before the break disrupts comment indentation. Only apply the optimization
+                // when there are no leading comments on the RHS.
+                let canGroupBeforeBreak =
+                    isCompound && !hasLeadingLineComments(rhs)
+
                 if let (unindentingNode, _, breakKind, shouldGroup) =
                     stackedIndentationBehavior(after: binOp, rhs: rhs)
                 {
@@ -52,18 +61,32 @@ extension TokenStream {
                         unindentingNode.lastToken(viewMode: .sourceAccurate),
                         tokens: afterTokens
                     )
+
+                    // For stacked indentation, keep the compound expression group after the break
+                    // (original behavior) since the stacked break already manages its own scope.
+                    if isCompound {
+                        beforeTokens.append(.open)
+                        after(rhs.lastToken(viewMode: .sourceAccurate), tokens: .close)
+                    }
+                } else if canGroupBeforeBreak {
+                    // When the RHS is a compound expression (e.g. contains binary operators like
+                    // ?? or +), place the group open *before* the break so that in the Oppen
+                    // length calculation, the = break's length only extends to the next operator
+                    // break (not to the end of the stream). This causes the formatter to prefer
+                    // breaking at binary operators over breaking at the = sign.
+                    beforeTokens = [
+                        .open,
+                        .break(.continue, newlines: .elective(ignoresDiscretionary: true)),
+                    ]
+                    after(rhs.lastToken(viewMode: .sourceAccurate), tokens: .close)
                 } else {
                     beforeTokens = [
                         .break(.continue, newlines: .elective(ignoresDiscretionary: true)),
                     ]
-                }
-
-                // When the RHS is a simple expression, even if is requires multiple lines, we don't add a
-                // group so that as much of the expression as possible can stay on the same line as the
-                // operator token.
-                if isCompoundExpression(rhs) && leftmostMultilineStringLiteral(of: rhs) == nil {
-                    beforeTokens.append(.open)
-                    after(rhs.lastToken(viewMode: .sourceAccurate), tokens: .close)
+                    if isCompound {
+                        beforeTokens.append(.open)
+                        after(rhs.lastToken(viewMode: .sourceAccurate), tokens: .close)
+                    }
                 }
 
                 after(binOp.lastToken(viewMode: .sourceAccurate), tokens: beforeTokens)

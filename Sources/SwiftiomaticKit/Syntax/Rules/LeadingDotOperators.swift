@@ -71,10 +71,10 @@ final class LeadingDotOperators: RewriteSyntaxRule<BasicRuleValue> {
     /// meaning it starts a new line (leading delimiter).
     private func isLeadingDelimiter(_ token: TokenSyntax) -> Bool {
         switch token.tokenKind {
-        case .comma, .colon:
-            return token.leadingTrivia.containsNewlines
-        default:
-            return false
+            case .comma, .colon:
+                token.leadingTrivia.containsNewlines
+            default:
+                false
         }
     }
 }

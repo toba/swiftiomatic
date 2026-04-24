@@ -15,12 +15,16 @@
 - Simplify rule configuration; uniform object shape, remove shorthand
 - Convert code generator to SPM build tool plugin
 - Rationalize rule value types; `SyntaxRuleValue` protocol replaces `RuleHandling` enum
+- Prefer implicit member expression over explicit type in known-type context
 
 ### 🐛 Fixes
 
 - `BlankLinesBeforeControlFlow` crashes on empty code blocks; invalid range `1..<0` ([#370](https://github.com/toba/swiftiomatic/issues/370))
 - JSON schema now emits enum constraints for rule-specific properties; validates `mode`, `style`, `placement`, `accessLevel`, `sortOrder`
 - `SortImports` checks fail on CI ([#361](https://github.com/toba/swiftiomatic/issues/361))
+- Prefer breaking at `.` over `=` in long assignments ([#363](https://github.com/toba/swiftiomatic/issues/363))
+- Fix camelCase key generation for acronym-prefixed rule names ([#367](https://github.com/toba/swiftiomatic/issues/367))
+- Line break precedence; prefer splitting at `??` / `+` over `=` assignment
 
 ### 🗜️ Tweaks
 
@@ -37,6 +41,10 @@
 - Break `GeneratorKit` → `SwiftiomaticKit` circular dependency
 - Remove standalone `Generator` executable target
 - Add 9 configuration groups for ungrouped rules
+- Eliminate swift-syntax compilation in CI ([#373](https://github.com/toba/swiftiomatic/issues/373))
+- Rename config keys for clarity
+- Pre-commit hook to regenerate `schema.json` ([#369](https://github.com/toba/swiftiomatic/issues/369))
+- Create SPM build tool plugin target ([#352](https://github.com/toba/swiftiomatic/issues/352))
 
 ## Week of Apr 12 – Apr 18, 2026
 

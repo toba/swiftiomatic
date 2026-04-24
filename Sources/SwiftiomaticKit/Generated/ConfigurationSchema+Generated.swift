@@ -157,7 +157,7 @@ package enum ConfigurationSchema {
       ],
       "description" : "Insert blank lines before and after `// MARK:` comments.\n\nMARK comments serve as section dividers. Surrounding them with blank lines makes the\nvisual separation clear. A blank line before MARK is skipped when the MARK immediately\nfollows an opening brace (start of scope). A blank line after MARK is skipped when\nthe MARK immediately precedes a closing brace (end of scope) or end of file.\n\nLint: If a MARK comment is missing a blank line before or after it, a lint warning is raised.\n\nFormat: Blank lines are inserted around MARK comments.\n [opt-in]"
     },
-    "beforeControlFlow" : {
+    "beforeControlFlowBlocks" : {
       "allOf" : [
         {
           "$ref" : "#/$defs/ruleBase"
@@ -225,7 +225,7 @@ package enum ConfigurationSchema {
           ],
           "description" : "Insert blank lines before and after `// MARK:` comments.\n\nMARK comments serve as section dividers. Surrounding them with blank lines makes the\nvisual separation clear. A blank line before MARK is skipped when the MARK immediately\nfollows an opening brace (start of scope). A blank line after MARK is skipped when\nthe MARK immediately precedes a closing brace (end of scope) or end of file.\n\nLint: If a MARK comment is missing a blank line before or after it, a lint warning is raised.\n\nFormat: Blank lines are inserted around MARK comments.\n [opt-in]"
         },
-        "beforeControlFlow" : {
+        "beforeControlFlowBlocks" : {
           "allOf" : [
             {
               "$ref" : "#/$defs/ruleBase"
@@ -962,10 +962,6 @@ package enum ConfigurationSchema {
           "description" : "Break around multiline dot-chained components.",
           "type" : "boolean"
         },
-        "beforeControlFlowKeywords" : {
-          "description" : "Break before else/catch after closing brace.",
-          "type" : "boolean"
-        },
         "beforeEachArgument" : {
           "description" : "Break before each argument when wrapping.",
           "type" : "boolean"
@@ -980,6 +976,10 @@ package enum ConfigurationSchema {
         },
         "betweenDeclarationAttributes" : {
           "description" : "Break between adjacent attributes.",
+          "type" : "boolean"
+        },
+        "elseCatchOnNewLine" : {
+          "description" : "Break before else/catch after closing brace.",
           "type" : "boolean"
         },
         "ensureLineBreakAtEOF" : {
@@ -1793,6 +1793,14 @@ package enum ConfigurationSchema {
             }
           ],
           "description" : "Semicolons should not be present in Swift code.\n\nLint: If a semicolon appears anywhere, a lint error is raised.\n\nFormat: All semicolons will be replaced with line breaks.\n"
+        },
+        "useImplicitInit" : {
+          "allOf" : [
+            {
+              "$ref" : "#/$defs/ruleBase"
+            }
+          ],
+          "description" : "Prefer implicit member syntax when the type is known from context.\n\nWhen a return type, type annotation, or parameter type makes the expected type clear,\nexplicit type references in constructor calls and static member accesses are redundant.\n\n```swift\n// Before\nstatic var defaultValue: Bar { Bar(x: 1) }\nfunc make() -> Config { Config(debug: true) }\nfunc run(mode: Mode = Mode.fast) {}\n\n// After\nstatic var defaultValue: Bar { .init(x: 1) }\nfunc make() -> Config { .init(debug: true) }\nfunc run(mode: Mode = .fast) {}\n```\n\nLint: A lint warning is raised when an explicit type can be replaced with implicit member syntax.\n\nFormat: The explicit type is replaced with a leading dot.\n"
         }
       },
       "type" : "object"
@@ -2159,18 +2167,7 @@ package enum ConfigurationSchema {
           "$ref" : "#/$defs/ruleBase"
         }
       ],
-      "description" : "Enforce switch case label indentation style.\n\nTwo styles are supported via `SwitchCaseIndentationConfiguration.Style`:\n- `flush`: `case` labels align with the `switch` keyword (default).\n- `indented`: `case` labels are indented one level from `switch`.\n\nLint: Raised when a `case` or `default` label doesn't match the configured style.\n\nFormat: Case labels, bodies, and the closing brace are reindented to match.\n [opt-in]",
-      "properties" : {
-        "style" : {
-          "default" : "flush",
-          "description" : "style Options: flush, indented.",
-          "enum" : [
-            "flush",
-            "indented"
-          ],
-          "type" : "string"
-        }
-      }
+      "description" : "Sort switch case items alphabetically within each case.\n\nWhen a case matches multiple patterns (e.g. `case .b, .a, .c:`), the patterns are sorted\nlexicographically. Numeric literals are compared by value (including hex, octal, and binary).\nCases with `where` clauses are only sorted if the `where` clause ends up on the last item.\n\nLint: If case items are not sorted, a lint warning is raised.\n\nFormat: The case items are reordered alphabetically.\n [opt-in]"
     },
     "testSuiteAccessControl" : {
       "allOf" : [
@@ -2332,6 +2329,14 @@ package enum ConfigurationSchema {
           "type" : "string"
         }
       }
+    },
+    "useImplicitInit" : {
+      "allOf" : [
+        {
+          "$ref" : "#/$defs/ruleBase"
+        }
+      ],
+      "description" : "Prefer implicit member syntax when the type is known from context.\n\nWhen a return type, type annotation, or parameter type makes the expected type clear,\nexplicit type references in constructor calls and static member accesses are redundant.\n\n```swift\n// Before\nstatic var defaultValue: Bar { Bar(x: 1) }\nfunc make() -> Config { Config(debug: true) }\nfunc run(mode: Mode = Mode.fast) {}\n\n// After\nstatic var defaultValue: Bar { .init(x: 1) }\nfunc make() -> Config { .init(debug: true) }\nfunc run(mode: Mode = .fast) {}\n```\n\nLint: A lint warning is raised when an explicit type can be replaced with implicit member syntax.\n\nFormat: The explicit type is replaced with a leading dot.\n"
     },
     "useShortArrayLiteral" : {
       "allOf" : [

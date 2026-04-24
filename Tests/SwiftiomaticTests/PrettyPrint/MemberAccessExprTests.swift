@@ -179,9 +179,8 @@ struct MemberAccessExprTests: PrettyPrintTesting {
 
     let expected =
       """
-      let totalHeight =
-        Constants.textFieldHeight + Constants.borderHeight
-        + Constants.importantLabelHeight
+      let totalHeight = Constants.textFieldHeight
+        + Constants.borderHeight + Constants.importantLabelHeight
 
       """
 

@@ -23,13 +23,12 @@ struct VariableDeclarationTests: PrettyPrintTesting {
 
     let expected =
       """
-      let x =
-        firstVariable
+      let x = firstVariable
         + secondVariable
         / thirdVariable
         + fourthVariable
-      let y: Int =
-        anotherVar + moreVar
+      let y:
+        Int = anotherVar + moreVar
       let (w, z, s):
         (Int, Double, Bool) =
           firstTuple + secondTuple
@@ -83,11 +82,9 @@ struct VariableDeclarationTests: PrettyPrintTesting {
         a = letsForceTheFirstOneToWrapAsWell,
         longVariableName = longFunctionCall()
       let
-        a =
-          firstThing + secondThing
+        a = firstThing + secondThing
           + thirdThing,
-        b =
-          firstThing + secondThing
+        b = firstThing + secondThing
           + thirdThing
 
       """

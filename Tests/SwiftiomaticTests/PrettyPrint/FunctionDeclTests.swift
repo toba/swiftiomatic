@@ -1239,4 +1239,27 @@ struct FunctionDeclTests: PrettyPrintTesting {
     config[BeforeEachArgument.self] = false
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 49, configuration: config)
   }
+
+  @Test func keepFunctionOutputTogetherWithLongReturnType() {
+    let input =
+      """
+      fileprivate static func useFailureVariant(name: String, replacement: String) -> Finding.Message {
+        "replace '\\(name)(false, ...)' with '\\(replacement)(...)'";
+      }
+      """
+
+    let expected =
+      """
+      fileprivate static func useFailureVariant(
+        name: String,
+        replacement: String
+      ) -> Finding.Message {
+        "replace '\\(name)(false, ...)' with '\\(replacement)(...)'";
+      }
+
+      """
+    var config = Configuration.forTesting
+    config[KeepFunctionOutputTogether.self] = true
+    assertPrettyPrintEqual(input: input, expected: expected, linelength: 50, configuration: config)
+  }
 }

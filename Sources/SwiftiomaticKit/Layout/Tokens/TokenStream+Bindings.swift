@@ -66,6 +66,11 @@ extension TokenStream {
         if let initializer = node.initializer {
             let expr = initializer.value
 
+            let isCompound =
+                isCompoundExpression(expr) && leftmostMultilineStringLiteral(of: expr) == nil
+            let canGroupBeforeBreak =
+                isCompound && !hasLeadingLineComments(expr)
+
             if let (unindentingNode, _, breakKind, shouldGroup) = stackedIndentationBehavior(
                 rhs: expr
             ) {
@@ -84,21 +89,34 @@ extension TokenStream {
                     closeTokens.append(.close)
                 }
                 after(unindentingNode.lastToken(viewMode: .sourceAccurate), tokens: closeTokens)
+
+                if isCompound {
+                    before(expr.firstToken(viewMode: .sourceAccurate), tokens: .open)
+                    after(expr.lastToken(viewMode: .sourceAccurate), tokens: .close)
+                }
+            } else if canGroupBeforeBreak {
+                // Place the group open *before* the break so that in the Oppen length
+                // calculation, the = break's length only extends to the next operator break
+                // (not to the end of the stream). This causes the formatter to prefer breaking
+                // at binary operators over breaking at the = sign.
+                after(
+                    initializer.equal,
+                    tokens:
+                        .open,
+                        .break(.continue, newlines: .elective(ignoresDiscretionary: true))
+                )
+                after(expr.lastToken(viewMode: .sourceAccurate), tokens: .close)
             } else {
                 after(
                     initializer.equal,
                     tokens: .break(.continue, newlines: .elective(ignoresDiscretionary: true))
                 )
+                if isCompound {
+                    before(expr.firstToken(viewMode: .sourceAccurate), tokens: .open)
+                    after(expr.lastToken(viewMode: .sourceAccurate), tokens: .close)
+                }
             }
             closeAfterToken = initializer.lastToken(viewMode: .sourceAccurate)
-
-            // When the RHS is a simple expression, even if is requires multiple lines, we don't add a
-            // group so that as much of the expression as possible can stay on the same line as the
-            // operator token.
-            if isCompoundExpression(expr) && leftmostMultilineStringLiteral(of: expr) == nil {
-                before(expr.firstToken(viewMode: .sourceAccurate), tokens: .open)
-                after(expr.lastToken(viewMode: .sourceAccurate), tokens: .close)
-            }
         }
 
         if let accessorBlock = node.accessorBlock {

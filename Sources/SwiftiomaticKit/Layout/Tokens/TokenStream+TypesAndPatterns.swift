@@ -380,7 +380,7 @@ extension TokenStream {
 
     func visitWhereClause(_ node: WhereClauseSyntax) -> SyntaxVisitorContinueKind {
         // We need to special case `where`-clauses associated with `catch` blocks when
-        // `lineBreakBeforeControlFlowKeywords == false`, because that's the one situation where we
+        // `elseCatchOnNewLine == false`, because that's the one situation where we
         // want the `where` keyword to be treated as a continuation; that way, we get this:
         //
         //     } catch LongExceptionName
@@ -397,7 +397,7 @@ extension TokenStream {
         //     }
         //
         let wherePrecedingBreak: Token
-        if !config[BeforeControlFlowKeywords.self],
+        if !config[ElseCatchOnNewLine.self],
             let parent = node.parent, parent.is(CatchItemSyntax.self)
         {
             wherePrecedingBreak = .break(.continue)

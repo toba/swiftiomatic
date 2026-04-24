@@ -152,9 +152,9 @@
 		"betweenScopes": { "lint": "no", "rewrite": false },
 		"betweenImports": { "lint": "no", "rewrite": false },
 		"afterSwitchCase": { "lint": "no", "rewrite": false },
-		"beforeControlFlow": { "lint": "no", "rewrite": true },
 		"beforeAndAfterMark": { "lint": "no", "rewrite": false },
 		"afterGuardStatements": { "lint": "no", "rewrite": false },
+		"beforeControlFlowBlocks": { "lint": "no", "rewrite": true },
 		"betweenChainedFunctions": { "lint": "no", "rewrite": false },
 		"consistentSwitchCaseSpacing": { "lint": "no", "rewrite": false },
 		"noEmptyLinesOpeningClosingBraces": { "lint": "no", "rewrite": false }
@@ -172,10 +172,10 @@
 		"lineLength": 100,
 		"respectExisting": true,
 		"beforeEachArgument": false,
+		"elseCatchOnNewLine": false,
 		"modifiersOnSameLine": { "lint": "warn", "rewrite": true },
 		"ensureLineBreakAtEOF": { "lint": "no", "rewrite": false },
 		"beforeGuardConditions": true,
-		"beforeControlFlowKeywords": false,
 		"beforeEachGenericRequirement": false,
 		"betweenDeclarationAttributes": false,
 		"aroundMultilineExpressionChainComponents": false

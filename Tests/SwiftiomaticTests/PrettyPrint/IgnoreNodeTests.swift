@@ -393,8 +393,7 @@ struct IgnoreNodeTests: PrettyPrintTesting {
         // aligned line comment
         var b = false  // correct trailing comment
 
-        var c =
-          0 + 1
+        var c = 0 + 1
           + (2 + 3)
       }
 

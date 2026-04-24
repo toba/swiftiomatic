@@ -47,12 +47,10 @@ struct AssignmentExprTests: PrettyPrintTesting {
       someVeryLongVariableName =
         anotherPrettyLongVariableName
         && someOtherOperand
-      shortName =
-        wxyz + aaaaaa + bbbbbb
-        + cccccc
-      longerName =
-        wxyz + aaaaaa + bbbbbb
-        + cccccc || zzzzzzz
+      shortName = wxyz + aaaaaa
+        + bbbbbb + cccccc
+      longerName = wxyz + aaaaaa
+        + bbbbbb + cccccc || zzzzzzz
 
       """
 
@@ -72,26 +70,24 @@ struct AssignmentExprTests: PrettyPrintTesting {
 
     let expectedWithArgBinPacking =
       """
-      result =
-        firstOp + secondOp
+      result = firstOp + secondOp
         + someOpFetchingFunc(
           foo, bar: bar, baz: baz)
       result = someOpFetchingFunc(
         foo, bar: bar, baz: baz)
       result += someOpFetchingFunc(
         foo, bar: bar, baz: baz)
-      result =
-        someOpFetchingFunc(
-          foo, bar: bar, baz: baz)
+      result = someOpFetchingFunc(
+        foo, bar: bar, baz: baz)
         + someOtherOperand
         + andAThirdOneForReasons
-      result =
-        firstOp + secondOp + thirdOp
+      result = firstOp + secondOp
+        + thirdOp
         + someOpFetchingFunc(
           foo, bar, baz) + nextOp
         + lastOp
-      result +=
-        firstOp + secondOp + thirdOp
+      result += firstOp + secondOp
+        + thirdOp
         + someOpFetchingFunc(
           foo, bar, baz) + nextOp
         + lastOp
@@ -109,8 +105,7 @@ struct AssignmentExprTests: PrettyPrintTesting {
 
     let expectedWithBreakBeforeEachArg =
       """
-      result =
-        firstOp + secondOp
+      result = firstOp + secondOp
         + someOpFetchingFunc(
           foo,
           bar: bar,
@@ -126,22 +121,21 @@ struct AssignmentExprTests: PrettyPrintTesting {
         bar: bar,
         baz: baz
       )
-      result =
-        someOpFetchingFunc(
-          foo,
-          bar: bar,
-          baz: baz
-        ) + someOtherOperand
+      result = someOpFetchingFunc(
+        foo,
+        bar: bar,
+        baz: baz
+      ) + someOtherOperand
         + andAThirdOneForReasons
-      result =
-        firstOp + secondOp + thirdOp
+      result = firstOp + secondOp
+        + thirdOp
         + someOpFetchingFunc(
           foo,
           bar,
           baz
         ) + nextOp + lastOp
-      result +=
-        firstOp + secondOp + thirdOp
+      result += firstOp + secondOp
+        + thirdOp
         + someOpFetchingFunc(
           foo,
           bar,
@@ -169,19 +163,17 @@ struct AssignmentExprTests: PrettyPrintTesting {
 
     let expectedWithArgBinPacking =
       """
-      let result =
-        firstOp + secondOp
+      let result = firstOp + secondOp
         + someOpFetchingFunc(
           foo, bar: bar, baz: baz)
       let result = someOpFetchingFunc(
         foo, bar: bar, baz: baz)
-      let result =
-        someOpFetchingFunc(
-          foo, bar: bar, baz: baz)
+      let result = someOpFetchingFunc(
+        foo, bar: bar, baz: baz)
         + someOtherOperand
         + andAThirdOneForReasons
-      let result =
-        firstOp + secondOp + thirdOp
+      let result = firstOp + secondOp
+        + thirdOp
         + someOpFetchingFunc(
           foo, bar, baz) + nextOp
         + lastOp
@@ -199,8 +191,7 @@ struct AssignmentExprTests: PrettyPrintTesting {
 
     let expectedWithBreakBeforeEachArg =
       """
-      let result =
-        firstOp + secondOp
+      let result = firstOp + secondOp
         + someOpFetchingFunc(
           foo,
           bar: bar,
@@ -211,15 +202,14 @@ struct AssignmentExprTests: PrettyPrintTesting {
         bar: bar,
         baz: baz
       )
-      let result =
-        someOpFetchingFunc(
-          foo,
-          bar: bar,
-          baz: baz
-        ) + someOtherOperand
+      let result = someOpFetchingFunc(
+        foo,
+        bar: bar,
+        baz: baz
+      ) + someOtherOperand
         + andAThirdOneForReasons
-      let result =
-        firstOp + secondOp + thirdOp
+      let result = firstOp + secondOp
+        + thirdOp
         + someOpFetchingFunc(
           foo,
           bar,

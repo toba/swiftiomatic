@@ -1,6 +1,6 @@
-# `swift-format` Ignore/Disable Options
+# Ignore/Disable Options
 
-`swift-format` allows users to suppress formatting within a section of source
+Swiftiomatic allows users to suppress formatting within a section of source
 code. At present, this is only supported on declarations and statements due to
 technical limitations of the formatter's implementation. When an ignore comment
 is present, the next ["node"](#understanding-nodes) in the source's AST
@@ -9,11 +9,11 @@ representation is ignored by the formatter.
 ## Ignore A File
 
 In the event that an entire file cannot be formatted, add a comment that contains 
-`swift-format-ignore-file` at the top of the file and the formatter will leave 
+`sm:ignore-file` at the top of the file and the formatter will leave 
 the file completely unchanged.
 
 ```swift
-// swift-format-ignore-file
+// sm:ignore-file
 import Zoo
 import Arrays
 
@@ -26,20 +26,20 @@ struct Foo {
 
 The formatter applies line length to add line breaks and indentation throughout
 source code. When this formatting isn't desired, it can be disabled by prefixing
-a declaration or statement with a comment that contains "swift-format-ignore".
+a declaration or statement with a comment that contains "sm:ignore".
 
 ```swift
-// swift-format-ignore
+// sm:ignore
 struct Foo {
 	   var bar = true
 }
 
-// swift-format-ignore
+// sm:ignore
 func foo() {
 	    var bar = true
 }
 
-// swift-format-ignore
+// sm:ignore
 var a = foo+bar+baz
 ```
 
@@ -53,24 +53,24 @@ struct or class causes the formatter to ignore all of its members.
 In addition to line breaks and indentation, the formatter provides a number of
 rules that apply various source transformations to fix-up common issues in
 source code. These rules can be disabled with a similar comment for disabling
-formatting. All rules are disabled whenever a "swift-format-ignore" (with no
+formatting. All rules are disabled whenever a "sm:ignore" (with no
 rule names) comment is encountered. When you want to disable a specific rule or
 set of rules, add a comment of the form:
 
-`// swift-format-ignore: [comma delimited list of rule names]`.
+`// sm:ignore: [comma delimited list of rule names]`.
 
 ```swift
-// swift-format-ignore: NoSemicolons
+// sm:ignore: NoSemicolons
 struct Foo {
 	   var bar = true
 }
 
-// swift-format-ignore: NoSemicolons, FullyIndirectEnum, PreferEarlyExits
+// sm:ignore: NoSemicolons, FullyIndirectEnum, PreferEarlyExits
 func foo() {
 	    var bar = true
 }
 
-// swift-format-ignore
+// sm:ignore
 var a = foo+bar+baz
 ```
 
@@ -81,7 +81,7 @@ You can also disable specific source transforming rules for an entire file
 by using the file-level ignore directive with a list of rule names. For example:
 
 ```swift
-// swift-format-ignore-file: NoSemicolons, FullyIndirectEnum
+// sm:ignore-file: NoSemicolons, FullyIndirectEnum
 import Zoo
 import Arrays
 
@@ -95,7 +95,7 @@ indentation) remain active.
 
 ## Understanding Nodes
 
-`swift-format` parses Swift into an abstract syntax tree, where each element of
+`sm` parses Swift into an abstract syntax tree, where each element of
 the source is represented by a node. Formatting can only be suppressed on
 certain "top level nodes" due to limitations of the syntax visitor pattern used
 by the formatter. Limiting to these nodes ensures there will be no mismatched

@@ -28,8 +28,7 @@ struct RespectsExistingLineBreaksTests: PrettyPrintTesting {
 
     let expectedRespecting =
       """
-      a =
-        b + c
+      a = b + c
         + d
         + e + f
         + g
@@ -46,8 +45,7 @@ struct RespectsExistingLineBreaksTests: PrettyPrintTesting {
 
     let expectedNotRespecting =
       """
-      a =
-        b + c + d + e + f + g
+      a = b + c + d + e + f + g
         + h + i
 
       """

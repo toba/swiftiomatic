@@ -202,8 +202,7 @@ struct CommentTests: PrettyPrintTesting {
       default: ()
       }
 
-      let a =
-        123  // comment
+      let a = 123  // comment
         + b + c
 
       let d = 123
@@ -342,8 +341,7 @@ struct CommentTests: PrettyPrintTesting {
         // Trailing Comment
         """,
         """
-        let a =
-          123   // comment
+        let a = 123   // comment
           + b + c
 
         let d = 123
@@ -790,21 +788,17 @@ struct CommentTests: PrettyPrintTesting {
 
     let expected =
       """
-      let x =
-        a  // comment about b
+      let x = a  // comment about b
         + b
       let x =  // comment about RHS
         a + b + c
-      x =
-        a + b
+      x = a + b
         // comment about c
         + c
-      x =
-        a
+      x = a
         // line 2
         + /* block */ b
-      x =
-        a  // comment 1
+      x = a  // comment 1
 
         // comment 2
 

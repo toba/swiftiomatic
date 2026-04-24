@@ -9,8 +9,8 @@ import SwiftSyntax
 ///
 /// Format: The doc comment is moved before all attributes and modifiers.
 final class DocCommentsBeforeModifiers: RewriteSyntaxRule<BasicRuleValue> {
-    override class var key: String { "precedeModifiers" }
-    override class var group: ConfigurationGroup? { .comments }
+    override static var key: String { "precedeModifiers" }
+    override static var group: ConfigurationGroup? { .comments }
 
     // MARK: - Container types (need super.visit)
 
@@ -87,9 +87,11 @@ final class DocCommentsBeforeModifiers: RewriteSyntaxRule<BasicRuleValue> {
 
         // Check modifiers' leading trivia (skip first modifier if it IS the first position)
         var modifiers = result.modifiers
+
         for i in modifiers.indices.reversed() {
-            let isFirstPosition = (i == modifiers.startIndex && !hasAttributes)
+            let isFirstPosition = i == modifiers.startIndex && !hasAttributes
             if isFirstPosition { continue }
+
             if let extracted = extractDocBlock(from: modifiers[i].leadingTrivia) {
                 modifiers[i].leadingTrivia = extracted.cleaned
                 collectedDoc.insert(contentsOf: extracted.docBlock, at: 0)
@@ -142,6 +144,7 @@ final class DocCommentsBeforeModifiers: RewriteSyntaxRule<BasicRuleValue> {
                     foundDoc = true
                     // First doc: keep newlines in cleaned, take trailing spaces/tabs as indent for doc
                     var splitIdx = whitespaceBuffer.count
+
                     while splitIdx > 0, whitespaceBuffer[splitIdx - 1].isSpaceOrTab {
                         splitIdx -= 1
                     }
@@ -173,6 +176,7 @@ final class DocCommentsBeforeModifiers: RewriteSyntaxRule<BasicRuleValue> {
         if foundDoc {
             // Include first newline in doc block; leave rest (indent) for the token
             var tookNewline = false
+
             for piece in whitespaceBuffer {
                 if !tookNewline, piece.isNewline {
                     docBlock.append(piece)

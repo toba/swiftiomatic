@@ -331,8 +331,8 @@ struct SelectionTests: PrettyPrintTesting {
           }
           set(newValue) {
             memberValue = newValue && otherValue
-            memberValue2 =
-              newValue / 2 && andableValue
+            memberValue2 = newValue / 2
+              && andableValue
           }
         }
       }

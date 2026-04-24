@@ -9,7 +9,7 @@ extension Configuration {
     config[TabWidth.self] = 8
     config[IndentationSetting.self] = .spaces(2)
     config[RespectsExistingLineBreaks.self] = true
-    config[BeforeControlFlowKeywords.self] = false
+    config[ElseCatchOnNewLine.self] = false
     config[BeforeEachArgument.self] = false
     config[BeforeEachGenericRequirement.self] = false
     config[KeepFunctionOutputTogether.self] = false

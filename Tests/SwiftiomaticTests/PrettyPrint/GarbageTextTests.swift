@@ -104,23 +104,19 @@ struct GarbageTextTests: PrettyPrintTesting {
       """
       x = y\(unknownScalar) + z
 
-      x =
-        firstTerm\(unknownScalar)
+      x = firstTerm\(unknownScalar)
         + secondTerm
 
       x = firstTerm \(unknownScalar)+
       secondTerm
 
-      x =
-        firstTerm\(unknownScalar)
+      x = firstTerm\(unknownScalar)
         + secondTerm
 
-      x =
-        firstTerm \(unknownScalar)
+      x = firstTerm \(unknownScalar)
         + secondTerm
 
-      x =
-        firstTerm \(unknownScalar) \(unknownScalar)
+      x = firstTerm \(unknownScalar) \(unknownScalar)
         + secondTerm
 
       """

@@ -16,13 +16,13 @@ package enum ConfigurationRegistry {
     /// All known layout setting types.
     package static let allSettingTypes: [any LayoutRule.Type] = [
         AroundMultilineExpressionChainComponents.self,
-        BeforeControlFlowKeywords.self,
         BeforeEachArgument.self,
         BeforeEachGenericRequirement.self,
         BeforeGuardConditions.self,
         BetweenDeclarationAttributes.self,
         ClosingBraceAsBlankLine.self,
         CommentAsBlankLine.self,
+        ElseCatchOnNewLine.self,
         IndentBlankLines.self,
         IndentConditionalCompilationBlocks.self,
         IndentationSetting.self,
@@ -161,6 +161,7 @@ package enum ConfigurationRegistry {
         TripleSlashDocComments.self,
         URLMacro.self,
         UnusedArguments.self,
+        UseImplicitInit.self,
         ValidateDocumentationComments.self,
         ValidateTestCases.self,
         WrapCompoundCaseStatements.self,

@@ -148,7 +148,7 @@ struct ConfigurationTests {
           "betweenScopes": { "lint": "warn" }
         },
         "lineBreaks": {
-          "beforeControlFlowKeywords": true,
+          "elseCatchOnNewLine": true,
           "beforeEachArgument": true,
           "beforeEachGenericRequirement": true,
           "betweenDeclarationAttributes": true,
@@ -172,7 +172,7 @@ struct ConfigurationTests {
     #expect(config[BlankLinesBetweenImports.self].lint == .no)
     #expect(config[BlankLinesBetweenScopes.self].lint == .warn)
     // lineBreaks group
-    #expect(config[BeforeControlFlowKeywords.self] == true)
+    #expect(config[ElseCatchOnNewLine.self] == true)
     #expect(config[BeforeEachArgument.self] == true)
     #expect(config[BeforeEachGenericRequirement.self] == true)
     #expect(config[BetweenDeclarationAttributes.self] == true)

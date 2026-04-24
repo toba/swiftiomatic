@@ -10,8 +10,8 @@ import SwiftSyntax
 ///
 /// Format: The comment is reformatted to use the correct style.
 final class FormatSpecialComments: RewriteSyntaxRule<BasicRuleValue> {
-    override class var key: String { "formatTypePrefix" }
-    override class var group: ConfigurationGroup? { .comments }
+    override static var key: String { "formatTypePrefix" }
+    override static var group: ConfigurationGroup? { .comments }
 
     override func visit(_ token: TokenSyntax) -> TokenSyntax {
         var result = token
@@ -36,9 +36,7 @@ final class FormatSpecialComments: RewriteSyntaxRule<BasicRuleValue> {
             }
         }
 
-        if leadingChanged {
-            result = result.with(\.leadingTrivia, Trivia(pieces: leadingPieces))
-        }
+        if leadingChanged { result = result.with(\.leadingTrivia, Trivia(pieces: leadingPieces)) }
         if trailingChanged {
             result = result.with(\.trailingTrivia, Trivia(pieces: trailingPieces))
         }
@@ -52,22 +50,22 @@ final class FormatSpecialComments: RewriteSyntaxRule<BasicRuleValue> {
         pieces: [TriviaPiece]
     ) -> TriviaPiece? {
         switch piece {
-        case .lineComment(let text):
-            guard let fixed = fixLineComment(text) else { return nil }
-            return .lineComment(fixed)
+            case .lineComment(let text):
+                guard let fixed = fixLineComment(text) else { return nil }
+                return .lineComment(fixed)
 
-        case .blockComment(let text):
-            guard let fixed = fixBlockComment(text) else { return nil }
-            return .blockComment(fixed)
+            case .blockComment(let text):
+                guard let fixed = fixBlockComment(text) else { return nil }
+                return .blockComment(fixed)
 
-        case .docLineComment(let text):
-            // Only convert standalone /// with tags to //
-            guard !isPartOfDocBlock(index: index, pieces: pieces) else { return nil }
-            guard let fixed = fixDocLineComment(text) else { return nil }
-            return .lineComment(fixed)
+            case .docLineComment(let text):
+                // Only convert standalone /// with tags to //
+                guard !isPartOfDocBlock(index: index, pieces: pieces) else { return nil }
+                guard let fixed = fixDocLineComment(text) else { return nil }
+                return .lineComment(fixed)
 
-        default:
-            return nil
+            default:
+                return nil
         }
     }
 
@@ -129,24 +127,24 @@ final class FormatSpecialComments: RewriteSyntaxRule<BasicRuleValue> {
         // Check before
         for j in stride(from: index - 1, through: 0, by: -1) {
             switch pieces[j] {
-            case .newlines, .carriageReturns, .carriageReturnLineFeeds, .spaces, .tabs:
-                continue
-            case .docLineComment:
-                return true
-            default:
-                break
+                case .newlines, .carriageReturns, .carriageReturnLineFeeds, .spaces, .tabs:
+                    continue
+                case .docLineComment:
+                    return true
+                default:
+                    break
             }
             break
         }
         // Check after
         for j in (index + 1)..<pieces.count {
             switch pieces[j] {
-            case .newlines, .carriageReturns, .carriageReturnLineFeeds, .spaces, .tabs:
-                continue
-            case .docLineComment:
-                return true
-            default:
-                break
+                case .newlines, .carriageReturns, .carriageReturnLineFeeds, .spaces, .tabs:
+                    continue
+                case .docLineComment:
+                    return true
+                default:
+                    break
             }
             break
         }
@@ -193,7 +191,8 @@ final class FormatSpecialComments: RewriteSyntaxRule<BasicRuleValue> {
             return nil
         }
 
-        var suffix = String(normalized[normalized.index(normalized.startIndex, offsetBy: tag.count)...])
+        var suffix = String(
+            normalized[normalized.index(normalized.startIndex, offsetBy: tag.count)...])
 
         // If not followed by a space or colon, don't mess with it (may be custom format)
         if let first = suffix.unicodeScalars.first, !" :".unicodeScalars.contains(first) {

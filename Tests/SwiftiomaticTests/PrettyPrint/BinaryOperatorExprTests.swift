@@ -31,8 +31,7 @@ struct BinaryOperatorExprTests: PrettyPrintTesting {
 
     let expected10 =
       """
-      x =
-        1 + 8
+      x = 1 + 8
         - 9
         ^*^ 5
         * 4 / 10
@@ -128,17 +127,13 @@ struct BinaryOperatorExprTests: PrettyPrintTesting {
 
     let expected10 =
       """
-      x =
-        1++
+      x = 1++
         ... 100
-      x =
-        1--
+      x = 1--
         ..< 100
-      x =
-        1++
+      x = 1++
         ... 100
-      x =
-        1--
+      x = 1--
         ..< 100
 
       """
@@ -168,17 +163,13 @@ struct BinaryOperatorExprTests: PrettyPrintTesting {
 
     let expected10 =
       """
-      x =
-        1
+      x = 1
         ... -100
-      x =
-        1
+      x = 1
         ..< -100
-      x =
-        1
+      x = 1
         ... √100
-      x =
-        1
+      x = 1
         ..< √100
 
       """
@@ -208,17 +199,13 @@ struct BinaryOperatorExprTests: PrettyPrintTesting {
 
     let expected10 =
       """
-      x =
-        1++
+      x = 1++
         ... -100
-      x =
-        1--
+      x = 1--
         ..< -100
-      x =
-        1++
+      x = 1++
         ... √100
-      x =
-        1--
+      x = 1--
         ..< √100
 
       """
@@ -248,21 +235,73 @@ struct BinaryOperatorExprTests: PrettyPrintTesting {
 
     let expected10 =
       """
-      x =
-        .first
+      x = .first
         ... .last
-      x =
-        .first
+      x = .first
         ..< .last
-      x =
-        .first
+      x = .first
         ... .last
-      x =
-        .first
+      x = .first
         ..< .last
 
       """
 
     assertPrettyPrintEqual(input: input, expected: expected10, linelength: 10)
+  }
+
+  @Test func assignmentPrefersBreakingAtOperatorOverEquals() {
+    // Prefer breaking at ?? over breaking at = when the first operand fits with the LHS.
+    let input =
+      """
+      words = try container.decodeIfPresent([String].self, forKey: .words) ?? AcronymsConfiguration().words
+      """
+
+    // "words = try container.decodeIfPresent([String].self, forKey: .words)" is 69 chars.
+    // At line lengths where this fits, the = stays glued and ?? break fires.
+    let expected =
+      """
+      words = try container.decodeIfPresent([String].self, forKey: .words)
+        ?? AcronymsConfiguration().words
+
+      """
+
+    assertPrettyPrintEqual(input: input, expected: expected, linelength: 75)
+    assertPrettyPrintEqual(input: input, expected: expected, linelength: 100)
+  }
+
+  @Test func assignmentPrefersBreakingAtPlusOverEquals() {
+    let input =
+      """
+      result = firstLongValue + secondLongValue + thirdLongValue
+      """
+
+    // "result = firstLongValue + secondLongValue" is 41 chars; fits in 45.
+    // The + thirdLongValue part forces a break before the last +.
+    let expected45 =
+      """
+      result = firstLongValue + secondLongValue
+        + thirdLongValue
+
+      """
+
+    assertPrettyPrintEqual(input: input, expected: expected45, linelength: 45)
+  }
+
+  @Test func assignmentFallsBackToEqualsBreakWhenNeeded() {
+    // When even the first operand of the RHS doesn't fit with the LHS, break at = too.
+    let input =
+      """
+      veryLongPropertyName = aVeryLongExpressionName + anotherLongExpressionName
+      """
+
+    let expected35 =
+      """
+      veryLongPropertyName =
+        aVeryLongExpressionName
+        + anotherLongExpressionName
+
+      """
+
+    assertPrettyPrintEqual(input: input, expected: expected35, linelength: 35)
   }
 }

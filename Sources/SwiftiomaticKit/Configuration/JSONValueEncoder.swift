@@ -11,9 +11,8 @@ final class JSONValueEncoder: Encoder {
     func container<Key: CodingKey>(keyedBy _: Key.Type) -> KeyedEncodingContainer<Key> {
         KeyedEncodingContainer(JSONValueKeyedContainer<Key>(encoder: self))
     }
-    func unkeyedContainer() -> UnkeyedEncodingContainer {
-        fatalError()
-    }
+    func unkeyedContainer() -> UnkeyedEncodingContainer { fatalError() }
+
     func singleValueContainer() -> SingleValueEncodingContainer {
         JSONValueSingleContainer(encoder: self)
     }
@@ -28,9 +27,8 @@ final class JSONValueEncoder: Encoder {
     private struct JSONValueKeyedContainer<Key: CodingKey>: KeyedEncodingContainerProtocol {
         let encoder: JSONValueEncoder
         var codingPath: [CodingKey] = []
-        mutating func encodeNil(forKey key: Key) {
-            encoder.values[key.stringValue] = .null
-        }
+
+        mutating func encodeNil(forKey key: Key) { encoder.values[key.stringValue] = .null }
         mutating func encode<T: Encodable>(_ value: T, forKey key: Key) throws {
             encoder.values[key.stringValue] = try JSONValueEncoder.toJSONValue(value)
         }
@@ -43,20 +41,14 @@ final class JSONValueEncoder: Encoder {
         mutating func nestedUnkeyedContainer(forKey _: Key) -> UnkeyedEncodingContainer {
             fatalError()
         }
-        mutating func superEncoder() -> any Encoder {
-            fatalError()
-        }
-        mutating func superEncoder(forKey _: Key) -> any Encoder {
-            fatalError()
-        }
+        mutating func superEncoder() -> any Encoder { fatalError() }
+        mutating func superEncoder(forKey _: Key) -> any Encoder { fatalError() }
     }
 
     private struct JSONValueSingleContainer: SingleValueEncodingContainer {
         let encoder: JSONValueEncoder
         var codingPath: [CodingKey] = []
-        mutating func encodeNil() {
-            encoder.values["_singleValue"] = .null
-        }
+        mutating func encodeNil() { encoder.values["_singleValue"] = .null }
         mutating func encode<T: Encodable>(_ value: T) throws {
             encoder.values["_singleValue"] = try JSONValueEncoder.toJSONValue(value)
         }
@@ -65,11 +57,11 @@ final class JSONValueEncoder: Encoder {
     /// Converts a primitive or complex `Encodable` value to `JSONValue`.
     fileprivate static func toJSONValue<T: Encodable>(_ value: T) throws -> JSONValue {
         switch value {
-        case let string as String: .string(string)
-        case let bool as Bool: .bool(bool)
-        case let integer as any FixedWidthInteger: .int(Int(integer))
-        case let floating as any BinaryFloatingPoint: .double(Double(floating))
-        default: try encodeToJSONValue(value)
+            case let string as String: .string(string)
+            case let bool as Bool: .bool(bool)
+            case let integer as any FixedWidthInteger: .int(Int(integer))
+            case let floating as any BinaryFloatingPoint: .double(Double(floating))
+            default: try encodeToJSONValue(value)
         }
     }
 }

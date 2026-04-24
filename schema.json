@@ -148,7 +148,7 @@
       ],
       "description" : "Insert blank lines before and after `// MARK:` comments.\n\nMARK comments serve as section dividers. Surrounding them with blank lines makes the\nvisual separation clear. A blank line before MARK is skipped when the MARK immediately\nfollows an opening brace (start of scope). A blank line after MARK is skipped when\nthe MARK immediately precedes a closing brace (end of scope) or end of file.\n\nLint: If a MARK comment is missing a blank line before or after it, a lint warning is raised.\n\nFormat: Blank lines are inserted around MARK comments.\n [opt-in]"
     },
-    "beforeControlFlow" : {
+    "beforeControlFlowBlocks" : {
       "allOf" : [
         {
           "$ref" : "#/$defs/ruleBase"
@@ -216,7 +216,7 @@
           ],
           "description" : "Insert blank lines before and after `// MARK:` comments.\n\nMARK comments serve as section dividers. Surrounding them with blank lines makes the\nvisual separation clear. A blank line before MARK is skipped when the MARK immediately\nfollows an opening brace (start of scope). A blank line after MARK is skipped when\nthe MARK immediately precedes a closing brace (end of scope) or end of file.\n\nLint: If a MARK comment is missing a blank line before or after it, a lint warning is raised.\n\nFormat: Blank lines are inserted around MARK comments.\n [opt-in]"
         },
-        "beforeControlFlow" : {
+        "beforeControlFlowBlocks" : {
           "allOf" : [
             {
               "$ref" : "#/$defs/ruleBase"
@@ -953,10 +953,6 @@
           "description" : "Break around multiline dot-chained components.",
           "type" : "boolean"
         },
-        "beforeControlFlowKeywords" : {
-          "description" : "Break before else/catch after closing brace.",
-          "type" : "boolean"
-        },
         "beforeEachArgument" : {
           "description" : "Break before each argument when wrapping.",
           "type" : "boolean"
@@ -971,6 +967,10 @@
         },
         "betweenDeclarationAttributes" : {
           "description" : "Break between adjacent attributes.",
+          "type" : "boolean"
+        },
+        "elseCatchOnNewLine" : {
+          "description" : "Break before else/catch after closing brace.",
           "type" : "boolean"
         },
         "ensureLineBreakAtEOF" : {
@@ -1784,6 +1784,14 @@
             }
           ],
           "description" : "Semicolons should not be present in Swift code.\n\nLint: If a semicolon appears anywhere, a lint error is raised.\n\nFormat: All semicolons will be replaced with line breaks.\n"
+        },
+        "useImplicitInit" : {
+          "allOf" : [
+            {
+              "$ref" : "#/$defs/ruleBase"
+            }
+          ],
+          "description" : "Prefer implicit member syntax when the type is known from context.\n\nWhen a return type, type annotation, or parameter type makes the expected type clear,\nexplicit type references in constructor calls and static member accesses are redundant.\n\n```swift\n// Before\nstatic var defaultValue: Bar { Bar(x: 1) }\nfunc make() -> Config { Config(debug: true) }\nfunc run(mode: Mode = Mode.fast) {}\n\n// After\nstatic var defaultValue: Bar { .init(x: 1) }\nfunc make() -> Config { .init(debug: true) }\nfunc run(mode: Mode = .fast) {}\n```\n\nLint: A lint warning is raised when an explicit type can be replaced with implicit member syntax.\n\nFormat: The explicit type is replaced with a leading dot.\n"
         }
       },
       "type" : "object"
@@ -2312,6 +2320,14 @@
           "type" : "string"
         }
       }
+    },
+    "useImplicitInit" : {
+      "allOf" : [
+        {
+          "$ref" : "#/$defs/ruleBase"
+        }
+      ],
+      "description" : "Prefer implicit member syntax when the type is known from context.\n\nWhen a return type, type annotation, or parameter type makes the expected type clear,\nexplicit type references in constructor calls and static member accesses are redundant.\n\n```swift\n// Before\nstatic var defaultValue: Bar { Bar(x: 1) }\nfunc make() -> Config { Config(debug: true) }\nfunc run(mode: Mode = Mode.fast) {}\n\n// After\nstatic var defaultValue: Bar { .init(x: 1) }\nfunc make() -> Config { .init(debug: true) }\nfunc run(mode: Mode = .fast) {}\n```\n\nLint: A lint warning is raised when an explicit type can be replaced with implicit member syntax.\n\nFormat: The explicit type is replaced with a leading dot.\n"
     },
     "useShortArrayLiteral" : {
       "allOf" : [

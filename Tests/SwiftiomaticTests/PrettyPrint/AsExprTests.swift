@@ -30,10 +30,10 @@ struct AsExprTests: PrettyPrintTesting {
       func foo() {
         let a = b as Int
         a = b as Int
-        let reallyLongVariableName =
-          x as ReallyLongTypeName
-        reallyLongVariableName =
-          x as ReallyLongTypeName
+        let reallyLongVariableName = x
+          as ReallyLongTypeName
+        reallyLongVariableName = x
+          as ReallyLongTypeName
       }
 
       """
@@ -61,10 +61,10 @@ struct AsExprTests: PrettyPrintTesting {
         a = b as? Int
         let c = d as! Int
         c = d as! Int
-        let reallyLongVariableName =
-          x as? ReallyLongTypeName
-        reallyLongVariableName =
-          x as? ReallyLongTypeName
+        let reallyLongVariableName = x
+          as? ReallyLongTypeName
+        reallyLongVariableName = x
+          as? ReallyLongTypeName
       }
 
       """

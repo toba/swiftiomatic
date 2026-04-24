@@ -23,51 +23,51 @@ import SwiftSyntax
 ///         multiple lines without appearing on the same line as code, it will be replaced with
 ///         multiple doc line comments.
 final class TripleSlashDocComments: RewriteSyntaxRule<BasicRuleValue> {
-    override class var key: String { "tripleSlashDocC" }
-    override class var group: ConfigurationGroup? { .comments }
+    override static var key: String { "tripleSlashDocC" }
+    override static var group: ConfigurationGroup? { .comments }
 
     override func visit(_ node: FunctionDeclSyntax) -> DeclSyntax {
-        return convertDocBlockCommentToDocLineComment(DeclSyntax(node))
+        convertDocBlockCommentToDocLineComment(DeclSyntax(node))
     }
 
     override func visit(_ node: EnumDeclSyntax) -> DeclSyntax {
-        return convertDocBlockCommentToDocLineComment(DeclSyntax(node))
+        convertDocBlockCommentToDocLineComment(DeclSyntax(node))
     }
 
     override func visit(_ node: InitializerDeclSyntax) -> DeclSyntax {
-        return convertDocBlockCommentToDocLineComment(DeclSyntax(node))
+        convertDocBlockCommentToDocLineComment(DeclSyntax(node))
     }
 
     override func visit(_ node: DeinitializerDeclSyntax) -> DeclSyntax {
-        return convertDocBlockCommentToDocLineComment(DeclSyntax(node))
+        convertDocBlockCommentToDocLineComment(DeclSyntax(node))
     }
 
     override func visit(_ node: SubscriptDeclSyntax) -> DeclSyntax {
-        return convertDocBlockCommentToDocLineComment(DeclSyntax(node))
+        convertDocBlockCommentToDocLineComment(DeclSyntax(node))
     }
 
     override func visit(_ node: ClassDeclSyntax) -> DeclSyntax {
-        return convertDocBlockCommentToDocLineComment(DeclSyntax(node))
+        convertDocBlockCommentToDocLineComment(DeclSyntax(node))
     }
 
     override func visit(_ node: VariableDeclSyntax) -> DeclSyntax {
-        return convertDocBlockCommentToDocLineComment(DeclSyntax(node))
+        convertDocBlockCommentToDocLineComment(DeclSyntax(node))
     }
 
     override func visit(_ node: StructDeclSyntax) -> DeclSyntax {
-        return convertDocBlockCommentToDocLineComment(DeclSyntax(node))
+        convertDocBlockCommentToDocLineComment(DeclSyntax(node))
     }
 
     override func visit(_ node: ProtocolDeclSyntax) -> DeclSyntax {
-        return convertDocBlockCommentToDocLineComment(DeclSyntax(node))
+        convertDocBlockCommentToDocLineComment(DeclSyntax(node))
     }
 
     override func visit(_ node: TypeAliasDeclSyntax) -> DeclSyntax {
-        return convertDocBlockCommentToDocLineComment(DeclSyntax(node))
+        convertDocBlockCommentToDocLineComment(DeclSyntax(node))
     }
 
     override func visit(_ node: ExtensionDeclSyntax) -> DeclSyntax {
-        return convertDocBlockCommentToDocLineComment(DeclSyntax(node))
+        convertDocBlockCommentToDocLineComment(DeclSyntax(node))
     }
 
     /// If the declaration has a doc block comment, return the declaration with the comment rewritten
@@ -90,16 +90,14 @@ final class TripleSlashDocComments: RewriteSyntaxRule<BasicRuleValue> {
         // If the comment text ends with a newline, remove it so that we don't end up with an extra
         // blank line after splitting.
         var text = commentInfo.text[...]
-        if text.hasSuffix("\n") {
-            text = text.dropLast(1)
-        }
+
+        if text.hasSuffix("\n") { text = text.dropLast(1) }
 
         // Append each line of the doc comment with `///` prefixes.
         for line in text.split(separator: "\n", omittingEmptySubsequences: false) {
             var newLine = "///"
-            if !line.isEmpty {
-                newLine.append(" \(line)")
-            }
+
+            if !line.isEmpty { newLine.append(" \(line)") }
             pieces.append(.docLineComment(newLine))
             pieces.append(.newlines(1))
         }

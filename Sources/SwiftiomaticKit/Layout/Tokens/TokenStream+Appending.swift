@@ -392,6 +392,21 @@ extension TokenStream {
         }
     }
 
+    /// Returns whether the given expression has line or block comments in the leading trivia of its
+    /// first token. When comments are present between `=` and the RHS expression, grouping the open
+    /// before the break disrupts comment indentation.
+    func hasLeadingLineComments(_ expr: ExprSyntax) -> Bool {
+        guard let firstToken = expr.firstToken(viewMode: .sourceAccurate) else { return false }
+        return firstToken.leadingTrivia.contains { piece in
+            switch piece {
+            case .lineComment, .blockComment, .docLineComment, .docBlockComment:
+                return true
+            default:
+                return false
+            }
+        }
+    }
+
     /// Returns whether the given operator behaves as an assignment, to assign a right-hand-side to a
     /// left-hand-side in a `InfixOperatorExpr`.
     ///

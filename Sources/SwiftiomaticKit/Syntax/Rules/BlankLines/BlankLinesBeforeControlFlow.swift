@@ -12,7 +12,7 @@ import SwiftSyntax
 ///
 /// Format: A blank line is inserted before the control flow statement.
 final class BlankLinesBeforeControlFlow: RewriteSyntaxRule<BasicRuleValue> {
-    override static var key: String { "beforeControlFlow" }
+    override static var key: String { "beforeControlFlowBlocks" }
     override static var group: ConfigurationGroup? { .blankLines }
     override static var defaultValue: BasicRuleValue { .init(rewrite: false, lint: .no) }
 

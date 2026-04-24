@@ -47,7 +47,7 @@ extension TokenStream {
         if let elseKeyword = node.elseKeyword {
             // Add a token before the else keyword. Breaking before `else` is explicitly allowed when
             // there's a comment.
-            if config[BeforeControlFlowKeywords.self] {
+            if config[ElseCatchOnNewLine.self] {
                 before(elseKeyword, tokens: .break(.same, newlines: .soft))
             } else if elseKeyword.hasPrecedingLineComment {
                 before(elseKeyword, tokens: .break(.same, size: 1))
@@ -148,7 +148,7 @@ extension TokenStream {
     func visitRepeatStmt(_ node: RepeatStmtSyntax) -> SyntaxVisitorContinueKind {
         arrangeBracesAndContents(of: node.body, contentsKeyPath: \.statements)
 
-        if config[BeforeControlFlowKeywords.self] {
+        if config[ElseCatchOnNewLine.self] {
             before(node.whileKeyword, tokens: .break(.same), .open)
             after(node.condition.lastToken(viewMode: .sourceAccurate), tokens: .close)
         } else {
@@ -174,7 +174,7 @@ extension TokenStream {
 
     func visitCatchClause(_ node: CatchClauseSyntax) -> SyntaxVisitorContinueKind {
         let catchPrecedingBreak =
-            config[BeforeControlFlowKeywords.self]
+            config[ElseCatchOnNewLine.self]
             ? Token.break(.same, newlines: .soft) : Token.space
         before(node.catchKeyword, tokens: catchPrecedingBreak)
 

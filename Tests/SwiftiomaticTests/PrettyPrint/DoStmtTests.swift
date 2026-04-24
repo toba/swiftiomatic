@@ -204,7 +204,7 @@ struct DoStmtTests: PrettyPrintTesting {
       """
 
     var config = Configuration.forTesting
-    config[BeforeControlFlowKeywords.self] = true
+    config[ElseCatchOnNewLine.self] = true
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 40, configuration: config)
   }
 
@@ -255,7 +255,7 @@ struct DoStmtTests: PrettyPrintTesting {
       """
 
     var config = Configuration.forTesting
-    config[BeforeControlFlowKeywords.self] = true
+    config[ElseCatchOnNewLine.self] = true
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 42, configuration: config)
   }
 

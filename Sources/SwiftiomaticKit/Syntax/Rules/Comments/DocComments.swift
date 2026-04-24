@@ -10,9 +10,9 @@ import SwiftSyntax
 ///
 /// Format: The comment style is corrected.
 final class DocComments: RewriteSyntaxRule<BasicRuleValue> {
-    override class var key: String { "convertRegularCommentToDocC" }
-    override class var group: ConfigurationGroup? { .comments }
-    override class var defaultValue: BasicRuleValue { .init(rewrite: false, lint: .no) }
+    override static var key: String { "convertRegularCommentToDocC" }
+    override static var group: ConfigurationGroup? { .comments }
+    override static var defaultValue: BasicRuleValue { .init(rewrite: false, lint: .no) }
 
     /// Directive prefixes that should never be converted.
     private static let directivePrefixes = [
@@ -84,10 +84,8 @@ final class DocComments: RewriteSyntaxRule<BasicRuleValue> {
 
         if toDocComment {
             if hasDirective { return node }
-            if hasBlankLine {
-                // Doc comments separated by blank line → convert to regular
-                return convertDocToRegular(node, original: original)
-            }
+
+            if hasBlankLine { return convertDocToRegular(node, original: original) }
             if preserveRegular { return node }
             return convertRegularToDoc(node, original: original)
         } else {
@@ -104,14 +102,14 @@ final class DocComments: RewriteSyntaxRule<BasicRuleValue> {
 
         for piece in node.leadingTrivia.pieces {
             switch piece {
-            case .lineComment(let text):
-                newPieces.append(.docLineComment("/" + text))
-                modified = true
-            case .blockComment(let text):
-                newPieces.append(.docBlockComment("/*" + "*" + String(text.dropFirst(2))))
-                modified = true
-            default:
-                newPieces.append(piece)
+                case .lineComment(let text):
+                    newPieces.append(.docLineComment("/" + text))
+                    modified = true
+                case .blockComment(let text):
+                    newPieces.append(.docBlockComment("/*" + "*" + String(text.dropFirst(2))))
+                    modified = true
+                default:
+                    newPieces.append(piece)
             }
         }
 
@@ -129,24 +127,24 @@ final class DocComments: RewriteSyntaxRule<BasicRuleValue> {
 
         for piece in node.leadingTrivia.pieces {
             switch piece {
-            case .docLineComment(let text):
-                let slashCount = text.prefix(while: { $0 == "/" }).count
-                guard slashCount <= 3 else {
+                case .docLineComment(let text):
+                    let slashCount = text.prefix(while: { $0 == "/" }).count
+                    guard slashCount <= 3 else {
+                        newPieces.append(piece)
+                        continue
+                    }
+                    newPieces.append(.lineComment(String(text.dropFirst())))
+                    modified = true
+                case .docBlockComment(let text):
+                    let starCount = text.dropFirst(2).prefix(while: { $0 == "*" }).count
+                    guard starCount <= 1 else {
+                        newPieces.append(piece)
+                        continue
+                    }
+                    newPieces.append(.blockComment("/*" + String(text.dropFirst(3))))
+                    modified = true
+                default:
                     newPieces.append(piece)
-                    continue
-                }
-                newPieces.append(.lineComment(String(text.dropFirst())))
-                modified = true
-            case .docBlockComment(let text):
-                let starCount = text.dropFirst(2).prefix(while: { $0 == "*" }).count
-                guard starCount <= 1 else {
-                    newPieces.append(piece)
-                    continue
-                }
-                newPieces.append(.blockComment("/*" + String(text.dropFirst(3))))
-                modified = true
-            default:
-                newPieces.append(piece)
             }
         }
 
@@ -165,6 +163,7 @@ final class DocComments: RewriteSyntaxRule<BasicRuleValue> {
 
     private func isAtFileScope(_ node: CodeBlockItemSyntax) -> Bool {
         var current: Syntax? = Syntax(node).parent
+
         while let parent = current {
             if parent.is(SourceFileSyntax.self) { return true }
             if parent.is(CodeBlockSyntax.self) { return false }
@@ -180,9 +179,8 @@ final class DocComments: RewriteSyntaxRule<BasicRuleValue> {
         for piece in trivia.pieces {
             guard case .lineComment(let text) = piece else { continue }
             let body = text.dropFirst(2).drop(while: { $0 == " " })
-            if Self.directivePrefixes.contains(where: { body.hasPrefix($0) }) {
-                return true
-            }
+
+            if Self.directivePrefixes.contains(where: { body.hasPrefix($0) }) { return true }
         }
         return false
     }
@@ -190,22 +188,24 @@ final class DocComments: RewriteSyntaxRule<BasicRuleValue> {
     private func hasBlankLineBeforeDeclaration(_ trivia: Trivia) -> Bool {
         // Find the last comment piece, then check for 2+ newlines after it
         var lastCommentIndex: Int?
+
         for (i, piece) in trivia.pieces.enumerated() {
             switch piece {
-            case .lineComment, .blockComment, .docLineComment, .docBlockComment:
-                lastCommentIndex = i
-            default: break
+                case .lineComment, .blockComment, .docLineComment, .docBlockComment:
+                    lastCommentIndex = i
+                default: break
             }
         }
         guard let idx = lastCommentIndex else { return false }
 
         var newlines = 0
+
         for piece in trivia.pieces[(idx + 1)...] {
             switch piece {
-            case .newlines(let n): newlines += n
-            case .carriageReturns(let n): newlines += n
-            case .carriageReturnLineFeeds(let n): newlines += n
-            default: break
+                case .newlines(let n): newlines += n
+                case .carriageReturns(let n): newlines += n
+                case .carriageReturnLineFeeds(let n): newlines += n
+                default: break
             }
         }
         return newlines >= 2
@@ -217,10 +217,9 @@ final class DocComments: RewriteSyntaxRule<BasicRuleValue> {
     private func isFollowedByConsecutiveMember(_ node: MemberBlockItemSyntax) -> Bool {
         guard let parent = node.parent?.as(MemberBlockItemListSyntax.self) else { return false }
         var foundSelf = false
+
         for item in parent {
-            if foundSelf {
-                return item.leadingTrivia.totalNewlineCount <= 1
-            }
+            if foundSelf { return item.leadingTrivia.totalNewlineCount <= 1 }
             if item.id == node.id { foundSelf = true }
         }
         return false
@@ -229,10 +228,9 @@ final class DocComments: RewriteSyntaxRule<BasicRuleValue> {
     private func isFollowedByConsecutiveCodeItem(_ node: CodeBlockItemSyntax) -> Bool {
         guard let parent = node.parent?.as(CodeBlockItemListSyntax.self) else { return false }
         var foundSelf = false
+
         for item in parent {
-            if foundSelf {
-                return item.leadingTrivia.totalNewlineCount <= 1
-            }
+            if foundSelf { return item.leadingTrivia.totalNewlineCount <= 1 }
             if item.id == node.id { foundSelf = true }
         }
         return false

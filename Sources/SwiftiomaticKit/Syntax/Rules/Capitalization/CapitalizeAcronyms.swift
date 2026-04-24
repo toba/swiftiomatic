@@ -12,9 +12,9 @@ import SwiftSyntax
 ///
 /// Format: The titlecased acronym is replaced with the uppercased form.
 final class CapitalizeAcronyms: RewriteSyntaxRule<AcronymsConfiguration> {
-    override class var key: String { "uppercaseAcronyms" }
-    override class var group: ConfigurationGroup? { .naming }
-    override class var defaultValue: AcronymsConfiguration {
+    override static var key: String { "uppercaseAcronyms" }
+    override static var group: ConfigurationGroup? { .naming }
+    override static var defaultValue: AcronymsConfiguration {
         var config = AcronymsConfiguration()
         config.rewrite = false
         config.lint = .no
@@ -22,9 +22,7 @@ final class CapitalizeAcronyms: RewriteSyntaxRule<AcronymsConfiguration> {
     }
 
     override func visit(_ token: TokenSyntax) -> TokenSyntax {
-        guard case .identifier(let text) = token.tokenKind else {
-            return token
-        }
+        guard case .identifier(let text) = token.tokenKind else { return token }
 
         let acronyms = context.configuration[CapitalizeAcronyms.self].words
         let updated = capitalizeAcronyms(in: text, acronyms: acronyms)
@@ -51,7 +49,9 @@ final class CapitalizeAcronyms: RewriteSyntaxRule<AcronymsConfiguration> {
 
     /// Replace occurrences of a titlecased acronym with its uppercased form,
     /// but only when followed by an uppercase letter, end of string, or 's' + uppercase/end.
-    private func replaceAcronym(_ titlecased: String, with uppercased: String, in text: String)
+    private func replaceAcronym(
+        _ titlecased: String, with uppercased: String, in text: String
+    )
         -> String
     {
         var result = ""
@@ -59,8 +59,10 @@ final class CapitalizeAcronyms: RewriteSyntaxRule<AcronymsConfiguration> {
 
         while index < text.endIndex {
             let remaining = text[index...]
+
             if remaining.hasPrefix(titlecased) {
                 let afterMatch = text.index(index, offsetBy: titlecased.count)
+
                 if isAcronymBoundary(text, at: afterMatch) {
                     result += uppercased
                     index = afterMatch
@@ -96,8 +98,7 @@ final class CapitalizeAcronyms: RewriteSyntaxRule<AcronymsConfiguration> {
 }
 
 extension Finding.Message {
-    fileprivate static let capitalizeAcronym: Finding.Message =
-        "capitalize acronyms in identifier"
+    fileprivate static let capitalizeAcronym: Finding.Message = "capitalize acronyms in identifier"
 }
 
 // MARK: - Configuration
@@ -116,9 +117,12 @@ package struct AcronymsConfiguration: SyntaxRuleValue {
     package init(from decoder: any Decoder) throws {
         self.init()
         let container = try decoder.container(keyedBy: CodingKeys.self)
-        if let rewrite = try container.decodeIfPresent(Bool.self, forKey: .rewrite) { self.rewrite = rewrite }
+
+        if let rewrite = try container.decodeIfPresent(Bool.self, forKey: .rewrite) {
+            self.rewrite = rewrite
+        }
         if let lint = try container.decodeIfPresent(Lint.self, forKey: .lint) { self.lint = lint }
-        self.words =
+        words =
             try container.decodeIfPresent([String].self, forKey: .words)
             ?? AcronymsConfiguration().words
     }

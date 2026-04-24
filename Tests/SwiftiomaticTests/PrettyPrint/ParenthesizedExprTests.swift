@@ -61,40 +61,34 @@ struct ParenthesizedExprTests: PrettyPrintTesting {
           + thirdTerm)
         * (firstTerm + secondTerm
           + thirdTerm)
-      x =
-        zerothTerm
+      x = zerothTerm
         + (firstTerm + secondTerm
           + thirdTerm)
-      x =
-        zerothTerm
+      x = zerothTerm
         + (firstTerm + secondTerm
           + thirdTerm)
         - (firstTerm + secondTerm
           + thirdTerm)
-      x =
-        zerothTerm
+      x = zerothTerm
         + (firstTerm + secondTerm
           + thirdTerm)
         - (firstTerm + secondTerm
           + thirdTerm)
         * (firstTerm + secondTerm
           + thirdTerm)
-      x =
-        zerothTerm
+      x = zerothTerm
         + (firstTerm + secondTerm
           + thirdTerm)
         - (firstTerm + secondTerm
           + thirdTerm)
-      x =
-        zerothTerm
+      x = zerothTerm
         + (firstTerm + secondTerm
           + (nestedFirstTerm
             + nestedSecondTerm
             + (doubleNestedFirstTerm
               + doubleNestedSecondTerm)))
         + thirdTerm
-      x =
-        zerothTerm
+      x = zerothTerm
         + (firstTerm + secondTerm
           && thirdTerm
             + (nestedFirstTerm
@@ -126,12 +120,10 @@ struct ParenthesizedExprTests: PrettyPrintTesting {
           + thirdTerm)
         - (firstTerm + secondTerm
           + thirdTerm)
-      let x =
-        zerothTerm
+      let x = zerothTerm
         + (firstTerm + secondTerm
           + thirdTerm)
-      let y =
-        zerothTerm
+      let y = zerothTerm
         + (firstTerm + secondTerm
           + thirdTerm)
         - (firstTerm + secondTerm

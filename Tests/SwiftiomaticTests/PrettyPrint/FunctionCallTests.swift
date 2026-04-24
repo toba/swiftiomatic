@@ -245,8 +245,7 @@ struct FunctionCallTests: PrettyPrintTesting {
 
     let expected =
       """
-      let result =
-        firstObj.someOptionalReturningFunc(foo: arg)
+      let result = firstObj.someOptionalReturningFunc(foo: arg)
         ?? (someOtherObj as SomeUsefulType).someGetterFunc()
 
       """

@@ -16,18 +16,20 @@ import SwiftSyntax
 ///
 /// Lint: If a block comment appears, a lint error is raised.
 final class NoBlockComments: LintSyntaxRule<LintOnlyValue> {
-    override class var key: String { "disallowBlockComments" }
-    override class var group: ConfigurationGroup? { .comments }
+    override static var key: String { "disallowBlockComments" }
+    override static var group: ConfigurationGroup? { .comments }
 
     override func visit(_ token: TokenSyntax) -> SyntaxVisitorContinueKind {
         for triviaIndex in token.leadingTrivia.indices {
             let piece = token.leadingTrivia[triviaIndex]
+
             if case .blockComment = piece {
                 diagnose(.avoidBlockComment, on: token, anchor: .leadingTrivia(triviaIndex))
             }
         }
         for triviaIndex in token.trailingTrivia.indices {
             let piece = token.trailingTrivia[triviaIndex]
+
             if case .blockComment = piece {
                 diagnose(.avoidBlockComment, on: token, anchor: .trailingTrivia(triviaIndex))
             }

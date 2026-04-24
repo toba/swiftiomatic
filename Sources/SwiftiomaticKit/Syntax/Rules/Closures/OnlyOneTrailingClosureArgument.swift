@@ -17,19 +17,19 @@ import SwiftSyntax
 /// Lint: If a function call with a trailing closure also contains a non-trailing closure argument,
 ///       a lint error is raised.
 final class OnlyOneTrailingClosureArgument: LintSyntaxRule<LintOnlyValue> {
-    override class var group: ConfigurationGroup? { .closures }
+    override static var group: ConfigurationGroup? { .closures }
 
-  override func visit(_ node: FunctionCallExprSyntax) -> SyntaxVisitorContinueKind {
-    guard (node.arguments.contains { $0.expression.is(ClosureExprSyntax.self) }) else {
-      return .skipChildren
+    override func visit(_ node: FunctionCallExprSyntax) -> SyntaxVisitorContinueKind {
+        guard (node.arguments.contains { $0.expression.is(ClosureExprSyntax.self) }) else {
+            return .skipChildren
+        }
+        guard node.trailingClosure != nil else { return .skipChildren }
+        diagnose(.removeTrailingClosure, on: node)
+        return .skipChildren
     }
-    guard node.trailingClosure != nil else { return .skipChildren }
-    diagnose(.removeTrailingClosure, on: node)
-    return .skipChildren
-  }
 }
 
 extension Finding.Message {
-  fileprivate static let removeTrailingClosure: Finding.Message =
-    "revise this function call to avoid using both closure arguments and a trailing closure"
+    fileprivate static let removeTrailingClosure: Finding.Message =
+        "revise this function call to avoid using both closure arguments and a trailing closure"
 }

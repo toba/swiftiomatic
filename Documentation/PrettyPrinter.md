@@ -1,8 +1,8 @@
-# swift-format Pretty Printer
+# Pretty Printer
 
 ## Introduction
 
-The algorithm used in the swift-format pretty printer is based on (but not a
+The algorithm used in the Swiftiomatic pretty printer is based on (but not a
 strict implementation of) the "simple" version of the algorithm described by
 Derek Oppen in his paper
 [*Pretty Printing*](http://i.stanford.edu/pub/cstr/reports/cs/tr/79/770/CS-TR-79-770.pdf)
@@ -13,7 +13,7 @@ accepts a stream of tokens and calculates the lengths of these tokens. It then
 passes the tokens and their computed lengths to *print*, which handles the
 actual printing of the tokens, automatically inserting line breaks and indents
 to obey a given maximum line length. We describe in detail how these functions
-have been implemented in swift-format.
+have been implemented in Swiftiomatic.
 
 ## Tokens
 
@@ -31,7 +31,7 @@ The available cases are: `syntax`, `break`, `spaces`, `open`, `close`,
 `newlines`, `comment`, and `verbatim`. The behavior of each of them is
 described below with pseudocode examples.
 
-See: [`Token.swift`](../Sources/SwiftFormat/PrettyPrint/Token.swift)
+See: [`Token.swift`](../Sources/SwiftiomaticKit/Layout/Tokens/Token.swift)
 
 #### Syntax
 
@@ -326,13 +326,13 @@ beginning of a source file).
 When we have visited all nodes in the AST, the array of printing tokens is then
 passed on to the *scan* phase of the pretty-printer.
 
-See: [`TokenStreamCreator.swift`](../Sources/SwiftFormat/PrettyPrint/TokenStreamCreator.swift)
+See: [`TokenStreamBase.swift`](../Sources/SwiftiomaticKit/Layout/Tokens/TokenStreamBase.swift)
 
 ## Scan
 
 The purpose of the scan phase is to calculate the lengths of all tokens;
 primarily the `break` and `open` tokens. It takes as input the array of tokens
-produced by `TokenStreamCreator`.
+produced by `TokenStreamBase`.
 
 There are three main variables used in the scan phase: an index stack
 (`delimIndexStack`), a running total of the lengths (`total`), and an array of
@@ -346,7 +346,7 @@ After having iterated over the entire list of tokens and calculated their
 lengths, we then loop over the tokens and call `print` for each token with its
 corresponding length.
 
-See: [`PrettyPrint.swift:prettyPrint()`](../Sources/SwiftFormat/PrettyPrint/PrettyPrint.swift)
+See: [`LayoutCoordinator.swift`](../Sources/SwiftiomaticKit/Layout/LayoutCoordinator.swift)
 
 ### Syntax Tokens
 
@@ -413,7 +413,7 @@ value is appended to the length array, and added to `total`.
 ## Print
 
 The purpose of the *print* phase is to print the contents of a syntax node to
-the console or to append it to a string buffer as we do in swift-format. It
+the console or to append it to a string buffer as we do in Swiftiomatic. It
 tracks the remaining space left on the line, and it decides whether or not to
 insert a line break based on the length of the token.
 
@@ -421,19 +421,19 @@ The logic for the `print` function is fairly complex and varies depending on
 the kind of token or break being printed. Rather than explain it here, we
 recommend viewing its documented source directly.
 
-See: [`PrettyPrint.swift:printToken(...)`](../Sources/SwiftFormat/PrettyPrint/PrettyPrint.swift)
+See: [`LayoutCoordinator.swift`](../Sources/SwiftiomaticKit/Layout/LayoutCoordinator.swift)
 
 ## Differences from Oppen's Algorithm
 
 For those who might already be familiar with Oppen's pretty-printing algorithm,
-described below are ways in which swift-format's pretty-printer differs from
+described below are ways in which Swiftiomatic's pretty-printer differs from
 Oppen's.
 
 ### Absence of a "stream"
 
 Oppen's algorithm was designed to run like a server. It accepts tokens one at a
 time ad infinitum, so it requires a buffer to accumulate tokens. It prints them
-out as it goes along. All of swift-format's tokens are already available as an
+out as it goes along. All of Swiftiomatic's tokens are already available as an
 array in memory, so we don't need a buffer. We access the token array directly,
 rather than using a separate `stream`.
 

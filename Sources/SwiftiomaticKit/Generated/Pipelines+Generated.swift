@@ -512,6 +512,7 @@ class LintPipeline: SyntaxVisitor {
     visitIfEnabled(SwiftTestingTestCaseNames.visit, for: node)
     visitIfEnabled(TripleSlashDocComments.visit, for: node)
     visitIfEnabled(UnusedArguments.visit, for: node)
+    visitIfEnabled(UseImplicitInit.visit, for: node)
     visitIfEnabled(ValidateDocumentationComments.visit, for: node)
     visitIfEnabled(WrapMultilineStatementBraces.visit, for: node)
     visitIfEnabled(WrapSingleLineBodies.visit, for: node)
@@ -543,6 +544,7 @@ class LintPipeline: SyntaxVisitor {
     onVisitPost(rule: SwiftTestingTestCaseNames.self, for: node)
     onVisitPost(rule: TripleSlashDocComments.self, for: node)
     onVisitPost(rule: UnusedArguments.self, for: node)
+    onVisitPost(rule: UseImplicitInit.self, for: node)
     onVisitPost(rule: ValidateDocumentationComments.self, for: node)
     onVisitPost(rule: WrapMultilineStatementBraces.self, for: node)
     onVisitPost(rule: WrapSingleLineBodies.self, for: node)
@@ -698,6 +700,7 @@ class LintPipeline: SyntaxVisitor {
     visitIfEnabled(RedundantSelf.visit, for: node)
     visitIfEnabled(TripleSlashDocComments.visit, for: node)
     visitIfEnabled(UnusedArguments.visit, for: node)
+    visitIfEnabled(UseImplicitInit.visit, for: node)
     visitIfEnabled(ValidateDocumentationComments.visit, for: node)
     visitIfEnabled(WrapMultilineStatementBraces.visit, for: node)
     visitIfEnabled(WrapSingleLineBodies.visit, for: node)
@@ -717,6 +720,7 @@ class LintPipeline: SyntaxVisitor {
     onVisitPost(rule: RedundantSelf.self, for: node)
     onVisitPost(rule: TripleSlashDocComments.self, for: node)
     onVisitPost(rule: UnusedArguments.self, for: node)
+    onVisitPost(rule: UseImplicitInit.self, for: node)
     onVisitPost(rule: ValidateDocumentationComments.self, for: node)
     onVisitPost(rule: WrapMultilineStatementBraces.self, for: node)
     onVisitPost(rule: WrapSingleLineBodies.self, for: node)
@@ -824,6 +828,7 @@ class LintPipeline: SyntaxVisitor {
     visitIfEnabled(EmptyCollectionLiteral.visit, for: node)
     visitIfEnabled(PreferSingleLinePropertyGetter.visit, for: node)
     visitIfEnabled(RedundantReturn.visit, for: node)
+    visitIfEnabled(UseImplicitInit.visit, for: node)
     visitIfEnabled(WrapConditionalAssignment.visit, for: node)
     visitIfEnabled(WrapSingleLineBodies.visit, for: node)
     return .visitChildren
@@ -832,6 +837,7 @@ class LintPipeline: SyntaxVisitor {
     onVisitPost(rule: EmptyCollectionLiteral.self, for: node)
     onVisitPost(rule: PreferSingleLinePropertyGetter.self, for: node)
     onVisitPost(rule: RedundantReturn.self, for: node)
+    onVisitPost(rule: UseImplicitInit.self, for: node)
     onVisitPost(rule: WrapConditionalAssignment.self, for: node)
     onVisitPost(rule: WrapSingleLineBodies.self, for: node)
   }
@@ -1024,6 +1030,7 @@ class LintPipeline: SyntaxVisitor {
     visitIfEnabled(RedundantSelf.visit, for: node)
     visitIfEnabled(TripleSlashDocComments.visit, for: node)
     visitIfEnabled(UnusedArguments.visit, for: node)
+    visitIfEnabled(UseImplicitInit.visit, for: node)
     visitIfEnabled(WrapSingleLineBodies.visit, for: node)
     return .visitChildren
   }
@@ -1041,6 +1048,7 @@ class LintPipeline: SyntaxVisitor {
     onVisitPost(rule: RedundantSelf.self, for: node)
     onVisitPost(rule: TripleSlashDocComments.self, for: node)
     onVisitPost(rule: UnusedArguments.self, for: node)
+    onVisitPost(rule: UseImplicitInit.self, for: node)
     onVisitPost(rule: WrapSingleLineBodies.self, for: node)
   }
 
@@ -1536,6 +1544,9 @@ extension RewritePipeline {
     }
     if context.shouldFormat(UnusedArguments.self, node: node) {
       node = UnusedArguments(context: context).rewrite(node)
+    }
+    if context.shouldFormat(UseImplicitInit.self, node: node) {
+      node = UseImplicitInit(context: context).rewrite(node)
     }
     if context.shouldFormat(ValidateTestCases.self, node: node) {
       node = ValidateTestCases(context: context).rewrite(node)

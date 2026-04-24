@@ -44,10 +44,10 @@ See [PrettyPrinter.md](PrettyPrinter.md) for details on the algorithm and token 
 
 | File | Role |
 |------|------|
-| `PrettyPrint/PrettyPrint.swift` | Layout engine (scan + print phases) |
-| `PrettyPrint/Token.swift` | Token types encoding layout instructions |
-| `PrettyPrint/TokenStreamCreator.swift` | `SyntaxVisitor` that converts AST to token stream |
-| `PrettyPrint/Verbatim.swift` | Multiline string literal handling |
+| `Layout/LayoutCoordinator.swift` | Layout engine (scan + print phases) |
+| `Layout/Tokens/Token.swift` | Token types encoding layout instructions |
+| `Layout/Tokens/TokenStreamBase.swift` | `SyntaxVisitor` that converts AST to token stream |
+| `Layout/Verbatim.swift` | Multiline string literal handling |
 
 ## Format Rules: AST Rewriters
 
@@ -70,9 +70,9 @@ Format rules (`SyntaxFormatRule` subclasses) receive the full syntax tree, visit
 
 | File | Role |
 |------|------|
-| `Formatter/SyntaxFormatRule.swift` | Base class for format rules |
-| `Formatter/SwiftiomaticFormatter.swift` | Pipeline orchestration |
-| `Core/Pipelines+Generated.swift` | Generated rule dispatch (do not edit) |
+| `Syntax/Rewriter/RewriteSyntaxRule.swift` | Base class for format rules |
+| `Syntax/Rewriter/RewriteCoordinator.swift` | Pipeline orchestration |
+| `Generated/Pipelines+Generated.swift` | Generated rule dispatch (do not edit) |
 
 ## Decision Framework
 
