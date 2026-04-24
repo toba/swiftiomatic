@@ -1,5 +1,4 @@
 {
-	"$schema": "https://raw.githubusercontent.com/toba/swiftiomatic/refs/heads/main/schema.json",
 	"sort": {
 		"imports": {
 			"lint": "warn",
@@ -102,6 +101,7 @@
 		"spacesBeforeEndOfLineComments": 2,
 		"spacesAroundRangeFormationOperators": false
 	},
+	"$schema": "https://raw.githubusercontent.com/toba/swiftiomatic/refs/heads/main/schema.json",
 	"forcing": {
 		"noForceTry": { "lint": "no", "rewrite": false },
 		"noForceUnwrap": { "lint": "no", "rewrite": false }
