@@ -1,15 +1,15 @@
 ---
 # 54v-hr2
 title: Prefer breaking at condition operators over guard/if/while keywords
-status: ready
+status: review
 type: bug
 priority: normal
 created_at: 2026-04-24T01:56:14Z
-updated_at: 2026-04-24T01:56:14Z
+updated_at: 2026-04-24T22:39:30Z
 sync:
     github:
         issue_number: "366"
-        synced_at: "2026-04-24T02:26:00Z"
+        synced_at: "2026-04-24T22:54:05Z"
 ---
 
 ## Problem
@@ -35,6 +35,6 @@ guard (userRuns.count > 1 && formattedRuns.count > 1)
 
 Same pattern as 886-v5f (assignment `=` breaks): change the break after `guard`/`if`/`while` keywords to use `ignoresDiscretionary: true` so the formatter decides based on content fit rather than preserving user-entered newlines at the keyword position.
 
-- [ ] Find the guard/if/while condition break insertion in `TokenStream+Conditionals.swift` or similar
-- [ ] Change break to use `.elective(ignoresDiscretionary: true)`
-- [ ] Verify with tests
+- [x] Find the guard/if/while condition break insertion in `BeforeGuardConditions.swift` and `TokenStream+ControlFlow.swift`
+- [x] Add `shouldApplyBreakPrecedence` shared helper; apply `ignoresDiscretionary: true` + open/close grouping for compound first conditions
+- [x] Verify with tests (compile passes; test assertions updated; blocked on PreferIfElseChain compile error from parallel work)

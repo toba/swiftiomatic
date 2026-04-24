@@ -125,7 +125,8 @@
       "Bash(brew --prefix sm)",
       "Read(//Users/jason/Developer/swiftiomatic-ref/swift-format/Sources/**)",
       "Read(//Users/jason/Developer/swiftiomatic-ref/**)",
-      "Bash(/opt/homebrew/bin/sm format *)"
+      "Bash(/opt/homebrew/bin/sm format *)",
+      "mcp__xc-swift__swift_package_clean"
     ]
   },
   "enableAllProjectMcpServers": true,

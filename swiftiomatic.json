@@ -23,7 +23,7 @@
 		"keepFunctionOutputTogether": true
 	},
 	"hoist": {
-		"caseLet": { "lint": "warn", "rewrite": true, "placement": "eachBinding" },
+		"caseLet": { "lint": "warn", "rewrite": true, "placement": "outerPattern" },
 		"nestedTry": { "lint": "warn", "rewrite": true },
 		"nestedAwait": { "lint": "warn", "rewrite": true },
 		"indirectEnum": { "lint": "warn", "rewrite": true }

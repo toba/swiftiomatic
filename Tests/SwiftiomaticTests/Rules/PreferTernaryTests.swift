@@ -237,6 +237,165 @@ struct PreferTernaryTests: RuleTesting {
                 """)
     }
 
+    // MARK: - Assignment statements
+
+    @Test func convertsSimpleIfElseAssignment() {
+        assertFormatting(
+            PreferTernary.self,
+            input: """
+                func test() {
+                    var result = 0
+                    1️⃣if condition {
+                        result = foo()
+                    } else {
+                        result = bar()
+                    }
+                }
+                """,
+            expected: """
+                func test() {
+                    var result = 0
+                    result = condition ? foo() : bar()
+                }
+                """,
+            findings: [
+                FindingSpec("1️⃣", message: "use ternary conditional expression for simple if-else")
+            ])
+    }
+
+    @Test func convertsAssignmentWithComplexExpressions() {
+        assertFormatting(
+            PreferTernary.self,
+            input: """
+                func test() {
+                    1️⃣if kind == .chained {
+                        result = ExprSyntax(
+                            OptionalChainingExprSyntax(
+                                expression: result,
+                                trailingTrivia: trivia
+                            )
+                        )
+                    } else {
+                        result = ExprSyntax(
+                            ForceUnwrapExprSyntax(
+                                expression: result,
+                                trailingTrivia: trivia
+                            )
+                        )
+                    }
+                }
+                """,
+            expected: """
+                func test() {
+                    result = kind == .chained ? ExprSyntax(
+                            OptionalChainingExprSyntax(
+                                expression: result,
+                                trailingTrivia: trivia
+                            )
+                        ) : ExprSyntax(
+                            ForceUnwrapExprSyntax(
+                                expression: result,
+                                trailingTrivia: trivia
+                            )
+                        )
+                }
+                """,
+            findings: [
+                FindingSpec("1️⃣", message: "use ternary conditional expression for simple if-else")
+            ])
+    }
+
+    @Test func convertsAssignmentWithMemberAccess() {
+        assertFormatting(
+            PreferTernary.self,
+            input: """
+                func test() {
+                    1️⃣if flag {
+                        self.value = trueValue
+                    } else {
+                        self.value = falseValue
+                    }
+                }
+                """,
+            expected: """
+                func test() {
+                    self.value = flag ? trueValue : falseValue
+                }
+                """,
+            findings: [
+                FindingSpec("1️⃣", message: "use ternary conditional expression for simple if-else")
+            ])
+    }
+
+    @Test func doesNotConvertAssignmentToDifferentVariables() {
+        assertFormatting(
+            PreferTernary.self,
+            input: """
+                func test() {
+                    if condition {
+                        x = foo()
+                    } else {
+                        y = bar()
+                    }
+                }
+                """,
+            expected: """
+                func test() {
+                    if condition {
+                        x = foo()
+                    } else {
+                        y = bar()
+                    }
+                }
+                """)
+    }
+
+    @Test func doesNotConvertMixedReturnAndAssignment() {
+        assertFormatting(
+            PreferTernary.self,
+            input: """
+                func test() {
+                    if condition {
+                        return foo()
+                    } else {
+                        result = bar()
+                    }
+                }
+                """,
+            expected: """
+                func test() {
+                    if condition {
+                        return foo()
+                    } else {
+                        result = bar()
+                    }
+                }
+                """)
+    }
+
+    @Test func doesNotConvertCompoundAssignment() {
+        assertFormatting(
+            PreferTernary.self,
+            input: """
+                func test() {
+                    if condition {
+                        result += foo()
+                    } else {
+                        result += bar()
+                    }
+                }
+                """,
+            expected: """
+                func test() {
+                    if condition {
+                        result += foo()
+                    } else {
+                        result += bar()
+                    }
+                }
+                """)
+    }
+
     @Test func doesNotConvertOptionalBinding() {
         assertFormatting(
             PreferTernary.self,

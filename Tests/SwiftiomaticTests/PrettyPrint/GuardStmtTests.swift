@@ -244,27 +244,24 @@ struct GuardStmtTests: PrettyPrintTesting {
       guard foo && (bar < 1 || bar > 1) && baz else {
         // do something
       }
-      guard
-        muchLongerFoo
-          && (muchLongerBar < 1 || muchLongerBar > 1)
-          && baz
+      guard muchLongerFoo
+        && (muchLongerBar < 1 || muchLongerBar > 1)
+        && baz
       else {
         // do something
       }
-      guard
-        muchLongerFoo
-          && (muchLongerBar < 1
-            || muchLongerBar > 100000000)
-          && baz
+      guard muchLongerFoo
+        && (muchLongerBar < 1
+          || muchLongerBar > 100000000)
+        && baz
       else {
         // do something
       }
-      guard
-        muchLongerFoo
-          && (muchLongerBar < 1
-            || muchLongerBar > 100000000
-            || (extraTerm1 + extraTerm2 + extraTerm3))
-          && baz
+      guard muchLongerFoo
+        && (muchLongerBar < 1
+          || muchLongerBar > 100000000
+          || (extraTerm1 + extraTerm2 + extraTerm3))
+        && baz
       else {
         // do something
       }
@@ -297,18 +294,16 @@ struct GuardStmtTests: PrettyPrintTesting {
 
     let expected =
       """
-      guard
-        foo && bar < 1
-          || bar
-            > 1,
+      guard foo && bar < 1
+        || bar
+          > 1,
         let quxxe = 0
       else {
         // do something
       }
-      guard
-        bar < 1
-          && (baz
-            > 1),
+      guard bar < 1
+        && (baz
+          > 1),
         let quxxe = 0
       else {
         // blah
@@ -317,5 +312,44 @@ struct GuardStmtTests: PrettyPrintTesting {
       """
 
     assertPrettyPrintEqual(input: input, expected: expected, linelength: 50)
+  }
+
+  @Test func compoundExpressionBreakPrecedence() {
+    let input =
+      """
+      guard (userRuns.count > 1 && formattedRuns.count > 1) || (userRuns.count == 1 && formattedRuns.count == 1 && userIndex == 0) else {
+        return
+      }
+      guard foo && bar else {
+        return
+      }
+      guard veryLongConditionName && anotherLongCondition || yetAnotherCondition else {
+        return
+      }
+      """
+
+    let expected =
+      """
+      guard (userRuns.count > 1
+        && formattedRuns.count > 1)
+        || (userRuns.count == 1
+          && formattedRuns.count == 1
+          && userIndex == 0)
+      else {
+        return
+      }
+      guard foo && bar else {
+        return
+      }
+      guard veryLongConditionName
+        && anotherLongCondition
+        || yetAnotherCondition
+      else {
+        return
+      }
+
+      """
+
+    assertPrettyPrintEqual(input: input, expected: expected, linelength: 45)
   }
 }

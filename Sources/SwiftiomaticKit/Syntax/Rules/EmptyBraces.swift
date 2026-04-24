@@ -9,11 +9,12 @@ import SwiftSyntax
 ///
 /// Format: The whitespace is removed, collapsing the braces to `{}`.
 final class EmptyBraces: RewriteSyntaxRule<BasicRuleValue> {
-    override class var key: String { "collapseEmptyBraces" }
-    override class var group: ConfigurationGroup? { .spaces }
+    override static var key: String { "collapseEmptyBraces" }
+    override static var group: ConfigurationGroup? { .spaces }
 
     override func visit(_ node: CodeBlockSyntax) -> CodeBlockSyntax {
         var result = node
+
         if result.statements.isEmpty {
             result = collapseIfNeeded(result, leftBrace: \.leftBrace, rightBrace: \.rightBrace)
         }
@@ -22,6 +23,7 @@ final class EmptyBraces: RewriteSyntaxRule<BasicRuleValue> {
 
     override func visit(_ node: MemberBlockSyntax) -> MemberBlockSyntax {
         var result = node
+
         if result.members.isEmpty {
             result = collapseIfNeeded(result, leftBrace: \.leftBrace, rightBrace: \.rightBrace)
         }
@@ -30,10 +32,11 @@ final class EmptyBraces: RewriteSyntaxRule<BasicRuleValue> {
 
     override func visit(_ node: ClosureExprSyntax) -> ExprSyntax {
         var result = node
+
         if result.statements.isEmpty, result.signature == nil {
             result = collapseIfNeeded(result, leftBrace: \.leftBrace, rightBrace: \.rightBrace)
         }
-        return ExprSyntax(result)
+        return .init(result)
     }
 
     /// Collapses whitespace between empty braces if no comments are present between them.
@@ -46,9 +49,7 @@ final class EmptyBraces: RewriteSyntaxRule<BasicRuleValue> {
         let right = node[keyPath: rightBrace]
 
         // Don't collapse if there are comments between the braces.
-        if left.trailingTrivia.hasAnyComments || right.leadingTrivia.hasAnyComments {
-            return node
-        }
+        if left.trailingTrivia.hasAnyComments || right.leadingTrivia.hasAnyComments { return node }
 
         // Check if there is any whitespace/newlines to remove.
         let hasTrailingWhitespace = !left.trailingTrivia.isEmpty
@@ -59,12 +60,9 @@ final class EmptyBraces: RewriteSyntaxRule<BasicRuleValue> {
         diagnose(.removeWhitespaceInEmptyBraces, on: left)
 
         var result = node
-        if hasTrailingWhitespace {
-            result[keyPath: leftBrace] = left.with(\.trailingTrivia, [])
-        }
-        if hasLeadingWhitespace {
-            result[keyPath: rightBrace] = right.with(\.leadingTrivia, [])
-        }
+
+        if hasTrailingWhitespace { result[keyPath: leftBrace] = left.with(\.trailingTrivia, []) }
+        if hasLeadingWhitespace { result[keyPath: rightBrace] = right.with(\.leadingTrivia, []) }
         return result
     }
 }

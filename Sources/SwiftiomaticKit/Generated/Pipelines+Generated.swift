@@ -246,6 +246,7 @@ class LintPipeline: SyntaxVisitor {
     visitIfEnabled(OneDeclarationPerLine.visit, for: node)
     visitIfEnabled(PreferConditionalExpression.visit, for: node)
     visitIfEnabled(PreferEarlyExits.visit, for: node)
+    visitIfEnabled(PreferIfElseChain.visit, for: node)
     visitIfEnabled(PreferTernary.visit, for: node)
     visitIfEnabled(RedundantLet.visit, for: node)
     visitIfEnabled(RedundantProperty.visit, for: node)
@@ -260,6 +261,7 @@ class LintPipeline: SyntaxVisitor {
     onVisitPost(rule: OneDeclarationPerLine.self, for: node)
     onVisitPost(rule: PreferConditionalExpression.self, for: node)
     onVisitPost(rule: PreferEarlyExits.self, for: node)
+    onVisitPost(rule: PreferIfElseChain.self, for: node)
     onVisitPost(rule: PreferTernary.self, for: node)
     onVisitPost(rule: RedundantLet.self, for: node)
     onVisitPost(rule: RedundantProperty.self, for: node)
@@ -1075,23 +1077,25 @@ class LintPipeline: SyntaxVisitor {
   }
 
   override func visit(_ node: SwitchCaseListSyntax) -> SyntaxVisitorContinueKind {
-    visitIfEnabled(NoFallthroughOnlyCases.visit, for: node)
+    visitIfEnabled(NoFallThroughOnlyCases.visit, for: node)
     return .visitChildren
   }
   override func visitPost(_ node: SwitchCaseListSyntax) {
-    onVisitPost(rule: NoFallthroughOnlyCases.self, for: node)
+    onVisitPost(rule: NoFallThroughOnlyCases.self, for: node)
   }
 
   override func visit(_ node: SwitchCaseSyntax) -> SyntaxVisitorContinueKind {
     visitIfEnabled(BlankLinesBeforeControlFlow.visit, for: node)
     visitIfEnabled(RedundantBreak.visit, for: node)
     visitIfEnabled(SortSwitchCases.visit, for: node)
+    visitIfEnabled(WrapSwitchCaseBodies.visit, for: node)
     return .visitChildren
   }
   override func visitPost(_ node: SwitchCaseSyntax) {
     onVisitPost(rule: BlankLinesBeforeControlFlow.self, for: node)
     onVisitPost(rule: RedundantBreak.self, for: node)
     onVisitPost(rule: SortSwitchCases.self, for: node)
+    onVisitPost(rule: WrapSwitchCaseBodies.self, for: node)
   }
 
   override func visit(_ node: SwitchExprSyntax) -> SyntaxVisitorContinueKind {
@@ -1331,8 +1335,8 @@ extension RewritePipeline {
     if context.shouldFormat(NoExplicitOwnership.self, node: node) {
       node = NoExplicitOwnership(context: context).rewrite(node)
     }
-    if context.shouldFormat(NoFallthroughOnlyCases.self, node: node) {
-      node = NoFallthroughOnlyCases(context: context).rewrite(node)
+    if context.shouldFormat(NoFallThroughOnlyCases.self, node: node) {
+      node = NoFallThroughOnlyCases(context: context).rewrite(node)
     }
     if context.shouldFormat(NoForceTry.self, node: node) {
       node = NoForceTry(context: context).rewrite(node)
@@ -1402,6 +1406,9 @@ extension RewritePipeline {
     }
     if context.shouldFormat(PreferFinalClasses.self, node: node) {
       node = PreferFinalClasses(context: context).rewrite(node)
+    }
+    if context.shouldFormat(PreferIfElseChain.self, node: node) {
+      node = PreferIfElseChain(context: context).rewrite(node)
     }
     if context.shouldFormat(PreferIsEmpty.self, node: node) {
       node = PreferIsEmpty(context: context).rewrite(node)
@@ -1573,6 +1580,9 @@ extension RewritePipeline {
     }
     if context.shouldFormat(WrapSingleLineComments.self, node: node) {
       node = WrapSingleLineComments(context: context).rewrite(node)
+    }
+    if context.shouldFormat(WrapSwitchCaseBodies.self, node: node) {
+      node = WrapSwitchCaseBodies(context: context).rewrite(node)
     }
     return node
   }

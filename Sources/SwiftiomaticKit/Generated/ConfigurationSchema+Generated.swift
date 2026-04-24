@@ -404,7 +404,7 @@ package enum ConfigurationSchema {
               "$ref" : "#/$defs/lintOnlyBase"
             }
           ],
-          "description" : "All public or open declarations must have a top-level documentation comment.\n\nLint: If a public declaration is missing a documentation comment, a lint error is raised.\n [opt-in]"
+          "description" : "All public or open declarations must have a top-level documentation comment.\n\nLint: If a public declaration is missing a documentation comment, a lint error is raised.\n"
         },
         "formatTypePrefix" : {
           "allOf" : [
@@ -501,13 +501,21 @@ package enum ConfigurationSchema {
           ],
           "description" : "Early exits should be used whenever possible.\n\nThis means that `if ... else { return/throw/break/continue }` constructs should be replaced by\n`guard ... else { return/throw/break/continue }` constructs in order to keep indentation levels\nlow. Specifically, code of the following form:\n\n```swift\nif condition {\n  trueBlock\n} else {\n  falseBlock\n  return/throw/break/continue\n}\n```\n\nwill be transformed into:\n\n```swift\nguard condition else {\n  falseBlock\n  return/throw/break/continue\n}\ntrueBlock\n```\n\nLint: `if ... else { return/throw/break/continue }` constructs will yield a lint error.\n\nFormat: `if ... else { return/throw/break/continue }` constructs will be replaced with\n        equivalent `guard ... else { return/throw/break/continue }` constructs.\n [opt-in]"
         },
+        "preferIfElseChain" : {
+          "allOf" : [
+            {
+              "$ref" : "#/$defs/ruleBase"
+            }
+          ],
+          "description" : "Consecutive single-return `if` statements followed by a final `return` should\nbe expressed as a chained `if/else` expression.\n\nWhen a sequence of `if` statements each contain only a `return` and are\nfollowed by a trailing `return`, the chain is converted into a single\n`if/else if/.../else` expression (two or more `if` branches required).\n\n```swift\n// Before\nif case .spaces = $0 { return true }\nif case .tabs = $0 { return true }\nreturn false\n\n// After\nif case .spaces = $0 {\n    true\n} else if case .tabs = $0 {\n    true\n} else {\n    false\n}\n```\n\nLint: A chain of early-return `if` statements raises a warning.\n\nFormat: The chain is replaced with an `if/else` expression.\n"
+        },
         "preferTernary" : {
           "allOf" : [
             {
               "$ref" : "#/$defs/ruleBase"
             }
           ],
-          "description" : "Use ternary conditional expressions for simple if-else returns.\n\nWhen an `if`-`else` has exactly two branches, each containing a single\n`return` statement, and the condition is a simple expression (no else-if\nchains), the construct is collapsed into a ternary conditional expression.\n\n```swift\n// Before\nif condition {\n    return trueValue\n} else {\n    return falseValue\n}\n\n// After\nreturn condition ? trueValue : falseValue\n```\n\nLint: A simple if-else with single returns in both branches raises a\n      warning.\n\nFormat: The if-else is replaced with a ternary expression.\n [opt-in]"
+          "description" : "Use ternary conditional expressions for simple if-else returns or assignments.\n\nWhen an `if`-`else` has exactly two branches, each containing a single\n`return` statement or a single assignment to the same variable, and the\ncondition is a simple expression (no else-if chains), the construct is\ncollapsed into a ternary conditional expression.\n\n```swift\n// Before\nif condition {\n    return trueValue\n} else {\n    return falseValue\n}\n// After\nreturn condition ? trueValue : falseValue\n\n// Before\nif condition {\n    result = trueValue\n} else {\n    result = falseValue\n}\n// After\nresult = condition ? trueValue : falseValue\n```\n\nLint: A simple if-else with single returns or same-variable assignments\n      in both branches raises a warning.\n\nFormat: The if-else is replaced with a ternary expression.\n [opt-in]"
         }
       },
       "type" : "object"
@@ -558,7 +566,7 @@ package enum ConfigurationSchema {
           "$ref" : "#/$defs/lintOnlyBase"
         }
       ],
-      "description" : "All public or open declarations must have a top-level documentation comment.\n\nLint: If a public declaration is missing a documentation comment, a lint error is raised.\n [opt-in]"
+      "description" : "All public or open declarations must have a top-level documentation comment.\n\nLint: If a public declaration is missing a documentation comment, a lint error is raised.\n"
     },
     "emptyExtensions" : {
       "allOf" : [
@@ -1246,13 +1254,13 @@ package enum ConfigurationSchema {
       ],
       "description" : "Remove explicit `borrowing` and `consuming` ownership modifiers.\n\nOwnership modifiers are an advanced feature that most code does not need. When present\non function declarations (e.g. `consuming func move()`) or parameter types\n(e.g. `func foo(_ bar: consuming Bar)`), they are removed.\n\nLint: If an explicit `borrowing` or `consuming` modifier is found, a lint warning is raised.\n\nFormat: The ownership modifier is removed.\n [opt-in]"
     },
-    "noFallthroughOnlyCases" : {
+    "noFallThroughOnlyCases" : {
       "allOf" : [
         {
           "$ref" : "#/$defs/ruleBase"
         }
       ],
-      "description" : "Cases that contain only the `fallthrough` statement are forbidden.\n\nLint: Cases containing only the `fallthrough` statement yield a lint error.\n\nFormat: The fallthrough `case` is added as a prefix to the next case unless the next case is\n        `default`; in that case, the fallthrough `case` is deleted.\n"
+      "description" : "Cases that contain only the `fallthrough` statement are forbidden.\n\nLint: Cases containing only the `fallthrough` statement yield a lint error.\n\nFormat: The fall-through `case` is added as a prefix to the next case unless the next case is\n        `default`; in that case, the fallthrough `case` is deleted.\n"
     },
     "noForceTry" : {
       "allOf" : [
@@ -1284,7 +1292,7 @@ package enum ConfigurationSchema {
           "$ref" : "#/$defs/lintOnlyBase"
         }
       ],
-      "description" : "Implicitly unwrapped optionals (e.g. `var s: String!`) are forbidden.\n\nCertain properties (e.g. `@IBOutlet`) tied to the UI lifecycle are ignored.\n\nThis rule does not apply to test code, defined as code which:\n  * Contains the line `import XCTest`\n  * The function is marked with `@Test` attribute\n\nTODO: Create exceptions for other UI elements (ex: viewDidLoad)\n\nLint: Declaring a property with an implicitly unwrapped type yields a lint error.\n [opt-in]"
+      "description" : "Implicitly unwrapped optionals (e.g. `var s: String!`) are forbidden.\n\nCertain properties (e.g. `@IBOutlet`) tied to the UI lifecycle are ignored.\n\nThis rule does not apply to test code, defined as code which:\n  * Contains the line `import XCTest`\n  * The function is marked with `@Test` attribute\n\nTODO: Create exceptions for other UI elements (ex: viewDidLoad)\n\nLint: Declaring a property with an implicitly unwrapped type yields a lint error.\n"
     },
     "noLabelsInCasePatterns" : {
       "allOf" : [
@@ -1478,6 +1486,14 @@ package enum ConfigurationSchema {
       ],
       "description" : "Prefer `final class` unless a class is designed for subclassing.\n\nClasses should be `final` by default to communicate that they are not designed to be\nsubclassed. Classes are left non-final if they are `open`, have \"Base\" in the name,\nhave a comment mentioning \"base\" or \"subclass\", or are subclassed within the same file.\n\nWhen a class is made `final`, any `open` members are converted to `public` since\n`final` classes cannot have `open` members.\n\nLint: A non-final, non-open class declaration raises a warning.\n\nFormat: The `final` modifier is added and `open` members are converted to `public`.\n [opt-in]"
     },
+    "preferIfElseChain" : {
+      "allOf" : [
+        {
+          "$ref" : "#/$defs/ruleBase"
+        }
+      ],
+      "description" : "Consecutive single-return `if` statements followed by a final `return` should\nbe expressed as a chained `if/else` expression.\n\nWhen a sequence of `if` statements each contain only a `return` and are\nfollowed by a trailing `return`, the chain is converted into a single\n`if/else if/.../else` expression (two or more `if` branches required).\n\n```swift\n// Before\nif case .spaces = $0 { return true }\nif case .tabs = $0 { return true }\nreturn false\n\n// After\nif case .spaces = $0 {\n    true\n} else if case .tabs = $0 {\n    true\n} else {\n    false\n}\n```\n\nLint: A chain of early-return `if` statements raises a warning.\n\nFormat: The chain is replaced with an `if/else` expression.\n"
+    },
     "preferIsEmpty" : {
       "allOf" : [
         {
@@ -1548,7 +1564,7 @@ package enum ConfigurationSchema {
           "$ref" : "#/$defs/ruleBase"
         }
       ],
-      "description" : "Use ternary conditional expressions for simple if-else returns.\n\nWhen an `if`-`else` has exactly two branches, each containing a single\n`return` statement, and the condition is a simple expression (no else-if\nchains), the construct is collapsed into a ternary conditional expression.\n\n```swift\n// Before\nif condition {\n    return trueValue\n} else {\n    return falseValue\n}\n\n// After\nreturn condition ? trueValue : falseValue\n```\n\nLint: A simple if-else with single returns in both branches raises a\n      warning.\n\nFormat: The if-else is replaced with a ternary expression.\n [opt-in]"
+      "description" : "Use ternary conditional expressions for simple if-else returns or assignments.\n\nWhen an `if`-`else` has exactly two branches, each containing a single\n`return` statement or a single assignment to the same variable, and the\ncondition is a simple expression (no else-if chains), the construct is\ncollapsed into a ternary conditional expression.\n\n```swift\n// Before\nif condition {\n    return trueValue\n} else {\n    return falseValue\n}\n// After\nreturn condition ? trueValue : falseValue\n\n// Before\nif condition {\n    result = trueValue\n} else {\n    result = falseValue\n}\n// After\nresult = condition ? trueValue : falseValue\n```\n\nLint: A simple if-else with single returns or same-variable assignments\n      in both branches raises a warning.\n\nFormat: The if-else is replaced with a ternary expression.\n [opt-in]"
     },
     "preferTrailingClosures" : {
       "allOf" : [
@@ -2169,6 +2185,25 @@ package enum ConfigurationSchema {
       ],
       "description" : "Remove the `test` prefix from Swift Testing `@Test` function names.\n\nIn Swift Testing, test methods are identified by the `@Test` attribute, not by a naming\nconvention. The `test` prefix is redundant and should be removed for idiomatic Swift Testing.\n\nThe rename is skipped when:\n- The remainder after removing `test` would be empty, start with a digit, or be a Swift keyword\n- The new name would collide with an existing identifier in the same scope\n\nLint: A warning is raised for `@Test` functions with a `test` prefix.\n\nFormat: The `test` prefix is removed and the first letter is lowercased.\n [opt-in]"
     },
+    "switchCaseBodies" : {
+      "allOf" : [
+        {
+          "$ref" : "#/$defs/ruleBase"
+        }
+      ],
+      "description" : "Controls whether switch case bodies are wrapped (multiline) or inlined.\n\n**Wrap mode** (default): Each case body appears on its own indented line\nbelow the case label.\n\n```swift\nswitch piece {\ncase .backslashes, .pounds:\n    piece.write(to: &result)\ndefault:\n    break\n}\n```\n\n**Adaptive mode**: Each case is independently inlined if it has a single\nstatement that fits within the configured line length; cases that don't fit\nor have multiple statements remain wrapped.\n\n```swift\nswitch piece {\ncase .backslashes, .pounds: piece.write(to: &result)\ndefault: break\n}\n```\n\nLint: A case body whose formatting doesn't match the mode raises a warning.\n\nFormat: The case body is wrapped or inlined to match the mode.\n [opt-in]",
+      "properties" : {
+        "mode" : {
+          "default" : "wrap",
+          "description" : "mode Options: wrap, adaptive.",
+          "enum" : [
+            "wrap",
+            "adaptive"
+          ],
+          "type" : "string"
+        }
+      }
+    },
     "switchCases" : {
       "allOf" : [
         {
@@ -2426,6 +2461,25 @@ package enum ConfigurationSchema {
             }
           ],
           "description" : "Single-line comments that exceed the configured line length are wrapped.\n\nLint: A `//` or `///` comment that exceeds the line length raises a\n      warning.\n\nFormat: The comment is word-wrapped, continuing on the next line with the\n        same prefix and indentation.\n [opt-in]"
+        },
+        "switchCaseBodies" : {
+          "allOf" : [
+            {
+              "$ref" : "#/$defs/ruleBase"
+            }
+          ],
+          "description" : "Controls whether switch case bodies are wrapped (multiline) or inlined.\n\n**Wrap mode** (default): Each case body appears on its own indented line\nbelow the case label.\n\n```swift\nswitch piece {\ncase .backslashes, .pounds:\n    piece.write(to: &result)\ndefault:\n    break\n}\n```\n\n**Adaptive mode**: Each case is independently inlined if it has a single\nstatement that fits within the configured line length; cases that don't fit\nor have multiple statements remain wrapped.\n\n```swift\nswitch piece {\ncase .backslashes, .pounds: piece.write(to: &result)\ndefault: break\n}\n```\n\nLint: A case body whose formatting doesn't match the mode raises a warning.\n\nFormat: The case body is wrapped or inlined to match the mode.\n [opt-in]",
+          "properties" : {
+            "mode" : {
+              "default" : "wrap",
+              "description" : "mode Options: wrap, adaptive.",
+              "enum" : [
+                "wrap",
+                "adaptive"
+              ],
+              "type" : "string"
+            }
+          }
         },
         "wrapCompoundCaseItems" : {
           "allOf" : [

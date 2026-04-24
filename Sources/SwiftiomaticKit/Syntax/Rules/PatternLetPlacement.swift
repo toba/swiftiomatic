@@ -25,73 +25,71 @@ import SwiftSyntax
 ///
 /// Format: The `let`/`var` is repositioned to match the configured placement.
 final class PatternLetPlacement: RewriteSyntaxRule<PatternLetConfiguration> {
-    override class var key: String { "caseLet" }
-    override class var group: ConfigurationGroup? { .hoist }
+    override static var key: String { "caseLet" }
+    override static var group: ConfigurationGroup? { .hoist }
 
     // MARK: - Visitors
 
     override func visit(_ node: MatchingPatternConditionSyntax) -> MatchingPatternConditionSyntax {
         switch context.configuration[PatternLetPlacement.self].placement {
-        case .eachBinding:
-            if let (replacement, specifier) = distributeLetVarThroughPattern(node.pattern) {
-                diagnose(.distributeLetInBoundCaseVariables(specifier), on: node.pattern)
-                var result = node
-                result.pattern = PatternSyntax(replacement)
-                return result
-            }
-        case .outerPattern:
-            if let (replacement, specifier) = hoistLetVarFromPattern(node.pattern) {
-                diagnose(.hoistLetFromBoundCaseVariables(specifier), on: node.pattern)
-                var result = node
-                result.pattern = PatternSyntax(replacement)
-                return result
-            }
+            case .eachBinding:
+                if let (replacement, specifier) = distributeLetVarThroughPattern(node.pattern) {
+                    diagnose(.distributeLetInBoundCaseVariables(specifier), on: node.pattern)
+                    var result = node
+                    result.pattern = PatternSyntax(replacement)
+                    return result
+                }
+            case .outerPattern:
+                if let (replacement, specifier) = hoistLetVarFromPattern(node.pattern) {
+                    diagnose(.hoistLetFromBoundCaseVariables(specifier), on: node.pattern)
+                    var result = node
+                    result.pattern = PatternSyntax(replacement)
+                    return result
+                }
         }
         return super.visit(node)
     }
 
     override func visit(_ node: SwitchCaseItemSyntax) -> SwitchCaseItemSyntax {
         switch context.configuration[PatternLetPlacement.self].placement {
-        case .eachBinding:
-            if let (replacement, specifier) = distributeLetVarThroughPattern(node.pattern) {
-                diagnose(.distributeLetInBoundCaseVariables(specifier), on: node.pattern)
-                var result = node
-                result.pattern = PatternSyntax(replacement)
-                result.leadingTrivia = node.leadingTrivia
-                return result
-            }
-        case .outerPattern:
-            if let (replacement, specifier) = hoistLetVarFromPattern(node.pattern) {
-                diagnose(.hoistLetFromBoundCaseVariables(specifier), on: node.pattern)
-                var result = node
-                result.pattern = PatternSyntax(replacement)
-                result.leadingTrivia = node.leadingTrivia
-                return result
-            }
+            case .eachBinding:
+                if let (replacement, specifier) = distributeLetVarThroughPattern(node.pattern) {
+                    diagnose(.distributeLetInBoundCaseVariables(specifier), on: node.pattern)
+                    var result = node
+                    result.pattern = PatternSyntax(replacement)
+                    result.leadingTrivia = node.leadingTrivia
+                    return result
+                }
+            case .outerPattern:
+                if let (replacement, specifier) = hoistLetVarFromPattern(node.pattern) {
+                    diagnose(.hoistLetFromBoundCaseVariables(specifier), on: node.pattern)
+                    var result = node
+                    result.pattern = PatternSyntax(replacement)
+                    result.leadingTrivia = node.leadingTrivia
+                    return result
+                }
         }
         return super.visit(node)
     }
 
     override func visit(_ node: ForStmtSyntax) -> StmtSyntax {
-        guard node.caseKeyword != nil else {
-            return super.visit(node)
-        }
+        guard node.caseKeyword != nil else { return super.visit(node) }
 
         switch context.configuration[PatternLetPlacement.self].placement {
-        case .eachBinding:
-            if let (replacement, specifier) = distributeLetVarThroughPattern(node.pattern) {
-                diagnose(.distributeLetInBoundCaseVariables(specifier), on: node.pattern)
-                var result = node
-                result.pattern = PatternSyntax(replacement)
-                return StmtSyntax(result)
-            }
-        case .outerPattern:
-            if let (replacement, specifier) = hoistLetVarFromPattern(node.pattern) {
-                diagnose(.hoistLetFromBoundCaseVariables(specifier), on: node.pattern)
-                var result = node
-                result.pattern = PatternSyntax(replacement)
-                return StmtSyntax(result)
-            }
+            case .eachBinding:
+                if let (replacement, specifier) = distributeLetVarThroughPattern(node.pattern) {
+                    diagnose(.distributeLetInBoundCaseVariables(specifier), on: node.pattern)
+                    var result = node
+                    result.pattern = PatternSyntax(replacement)
+                    return StmtSyntax(result)
+                }
+            case .outerPattern:
+                if let (replacement, specifier) = hoistLetVarFromPattern(node.pattern) {
+                    diagnose(.hoistLetFromBoundCaseVariables(specifier), on: node.pattern)
+                    var result = node
+                    result.pattern = PatternSyntax(replacement)
+                    return StmtSyntax(result)
+                }
         }
         return super.visit(node)
     }
@@ -154,6 +152,7 @@ extension PatternLetPlacement {
         // Drill down into any optional patterns that we encounter (e.g., `case let .foo(x)?`).
         var patternStack: [(OptionalPatternKind, Trivia)] = []
         var expression = exprPattern.expression
+
         while true {
             if let optionalExpr = expression.as(OptionalChainingExprSyntax.self) {
                 expression = optionalExpr.expression
@@ -244,6 +243,7 @@ extension PatternLetPlacement {
 
             if let binding = patternExpr.pattern.as(ValueBindingPatternSyntax.self) {
                 hasAtLeastOneBinding = true
+
                 if let existing = commonSpecifier {
                     guard existing.tokenKind == binding.bindingSpecifier.tokenKind else {
                         return nil  // Mixed let/var
@@ -267,6 +267,7 @@ extension PatternLetPlacement {
 
         // Rebuild the expression with unbound arguments.
         var cleanExprPattern = exprPattern
+
         if var functionCall = exprPattern.expression.as(FunctionCallExprSyntax.self) {
             functionCall.arguments = newArguments
             cleanExprPattern.expression = ExprSyntax(functionCall)
@@ -309,9 +310,7 @@ extension Finding.Message {
 private final class BindIdentifiersRewriter: SyntaxRewriter {
     var bindingSpecifier: TokenSyntax
 
-    init(bindingSpecifier: TokenSyntax) {
-        self.bindingSpecifier = bindingSpecifier
-    }
+    init(bindingSpecifier: TokenSyntax) { self.bindingSpecifier = bindingSpecifier }
 
     override func visit(_ node: PatternExprSyntax) -> ExprSyntax {
         guard let identifier = node.pattern.as(IdentifierPatternSyntax.self) else {
@@ -324,7 +323,7 @@ private final class BindIdentifiersRewriter: SyntaxRewriter {
         )
         var result = node
         result.pattern = PatternSyntax(binding)
-        return ExprSyntax(result)
+        return .init(result)
     }
 }
 
@@ -337,7 +336,7 @@ private final class UnbindIdentifiersRewriter: SyntaxRewriter {
         }
         var result = node
         result.pattern = binding.pattern
-        return ExprSyntax(result)
+        return .init(result)
     }
 }
 
@@ -358,10 +357,11 @@ package struct PatternLetConfiguration: SyntaxRuleValue {
     package init(from decoder: any Decoder) throws {
         self.init()
         let container = try decoder.container(keyedBy: CodingKeys.self)
-        if let rewrite = try container.decodeIfPresent(Bool.self, forKey: .rewrite) { self.rewrite = rewrite }
+        if let rewrite = try container.decodeIfPresent(Bool.self, forKey: .rewrite) {
+            self.rewrite = rewrite
+        }
         if let lint = try container.decodeIfPresent(Lint.self, forKey: .lint) { self.lint = lint }
-        placement =
-            try container.decodeIfPresent(Placement.self, forKey: .placement)
+        placement = try container.decodeIfPresent(Placement.self, forKey: .placement)
             ?? .eachBinding
     }
 }

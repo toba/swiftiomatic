@@ -19,6 +19,16 @@ extension TokenStream {
         // so it stays on the same line as `guard`.
         for (i, condition) in node.conditions.enumerated() {
             if i == 0 && !config[BeforeGuardConditions.self] { continue }
+
+            // When the first condition is a compound expression (&&, ||, etc.), skip the
+            // continuation break so the first token stays on the guard line — matching
+            // if/while behavior. Inner operator breaks handle line wrapping with their own
+            // continuation indentation (same precedence principle as assignment `=` breaks).
+            if i == 0,
+                case .expression(let expr) = condition.condition,
+                shouldApplyBreakPrecedence(expr)
+            { continue }
+
             before(
                 condition.firstToken(viewMode: .sourceAccurate),
                 tokens: .break(.open(kind: .continuation), size: 0)

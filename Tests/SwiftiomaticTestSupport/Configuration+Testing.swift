@@ -26,6 +26,7 @@ extension Configuration {
     config[URLMacro.self] = URLMacroConfiguration()
     config[FileHeader.self] = FileHeaderConfiguration()
     config[WrapSingleLineBodies.self] = SingleLineBodiesConfiguration()
+    config[WrapSwitchCaseBodies.self] = SwitchCaseBodiesConfiguration()
     return config
   }
 

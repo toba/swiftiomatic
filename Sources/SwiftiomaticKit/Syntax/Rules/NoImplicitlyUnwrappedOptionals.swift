@@ -29,7 +29,7 @@ final class NoImplicitlyUnwrappedOptionals: LintSyntaxRule<LintOnlyValue> {
     /// unsafe pattern (i.e. it can crash), there are valid contexts for using implicitly unwrapped
     /// optionals where it won't crash. This rule can't evaluate the context around the usage to make
     /// that determination.
-    override class var defaultValue: LintOnlyValue { LintOnlyValue(lint: .no) }
+    override static var defaultValue: LintOnlyValue { .init(lint: .no) }
 
     // Checks if "XCTest" is an import statement
     override func visit(_ node: SourceFileSyntax) -> SyntaxVisitorContinueKind {

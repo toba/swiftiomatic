@@ -403,6 +403,15 @@ extension TokenStream {
         return expr.is(MemberAccessExprSyntax.self)
     }
 
+    /// Whether an expression should use break precedence — `ignoresDiscretionary` + open/close
+    /// grouping — so the formatter prefers inner operator breaks over the enclosing break position.
+    /// Used for both assignment (`=`) and keyword (`guard`) breaks.
+    func shouldApplyBreakPrecedence(_ expr: ExprSyntax) -> Bool {
+        isCompoundExpression(expr)
+            && leftmostMultilineStringLiteral(of: expr) == nil
+            && !hasLeadingLineComments(expr)
+    }
+
     /// Returns whether the given expression has line or block comments in the leading trivia of its
     /// first token. When comments are present between `=` and the RHS expression, grouping the open
     /// before the break disrupts comment indentation.

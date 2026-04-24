@@ -18,7 +18,7 @@ import Testing
 struct NoCasesWithOnlyFallthroughTests: RuleTesting {
   @Test func fallthroughCases() {
     assertFormatting(
-      NoFallthroughOnlyCases.self,
+      NoFallThroughOnlyCases.self,
       input: """
         switch numbers {
         case 1: print("one")
@@ -84,7 +84,7 @@ struct NoCasesWithOnlyFallthroughTests: RuleTesting {
 
   @Test func fallthroughCasesWithCommentsAreNotCombined() {
     assertFormatting(
-      NoFallthroughOnlyCases.self,
+      NoFallThroughOnlyCases.self,
       input: """
         switch numbers {
         case 1:
@@ -127,7 +127,7 @@ struct NoCasesWithOnlyFallthroughTests: RuleTesting {
 
   @Test func commentsAroundCombinedCasesStayInPlace() {
     assertFormatting(
-      NoFallthroughOnlyCases.self,
+      NoFallThroughOnlyCases.self,
       input: """
         switch numbers {
         case 5:
@@ -161,7 +161,7 @@ struct NoCasesWithOnlyFallthroughTests: RuleTesting {
 
   @Test func nestedSwitches() {
     assertFormatting(
-      NoFallthroughOnlyCases.self,
+      NoFallThroughOnlyCases.self,
       input: """
         switch x {
         1️⃣case 1: fallthrough
@@ -201,7 +201,7 @@ struct NoCasesWithOnlyFallthroughTests: RuleTesting {
 
   @Test func casesInsideConditionalCompilationBlock() {
     assertFormatting(
-      NoFallthroughOnlyCases.self,
+      NoFallThroughOnlyCases.self,
       input: """
         switch x {
         case 1: fallthrough
@@ -252,7 +252,7 @@ struct NoCasesWithOnlyFallthroughTests: RuleTesting {
     // case items that have `where` clauses if they follow any case items that do not, to avoid
     // compiler warnings. This is handled by the pretty printer, not this rule.
     assertFormatting(
-      NoFallthroughOnlyCases.self,
+      NoFallThroughOnlyCases.self,
       input: """
         switch x {
         1️⃣case 1 where y < 0: fallthrough
@@ -290,7 +290,7 @@ struct NoCasesWithOnlyFallthroughTests: RuleTesting {
 
   @Test func casesWithValueBindingsAreNotMerged() {
     assertFormatting(
-      NoFallthroughOnlyCases.self,
+      NoFallThroughOnlyCases.self,
       input: """
         switch x {
         1️⃣case .a: fallthrough
@@ -328,7 +328,7 @@ struct NoCasesWithOnlyFallthroughTests: RuleTesting {
 
   @Test func fallthroughOnlyCasesAreNotMergedWithDefault() {
     assertFormatting(
-      NoFallthroughOnlyCases.self,
+      NoFallThroughOnlyCases.self,
       input: """
         switch x {
         1️⃣case .a: fallthrough
@@ -350,7 +350,7 @@ struct NoCasesWithOnlyFallthroughTests: RuleTesting {
 
   @Test func fallthroughOnlyCasesAreNotMergedWithUnknownDefault() {
     assertFormatting(
-      NoFallthroughOnlyCases.self,
+      NoFallThroughOnlyCases.self,
       input: """
         switch x {
         1️⃣case .a: fallthrough

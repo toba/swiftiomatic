@@ -81,7 +81,7 @@ package enum ConfigurationRegistry {
         NoBlockComments.self,
         NoEmptyLinesOpeningClosingBraces.self,
         NoExplicitOwnership.self,
-        NoFallthroughOnlyCases.self,
+        NoFallThroughOnlyCases.self,
         NoForceTry.self,
         NoForceUnwrap.self,
         NoGuardInTests.self,
@@ -111,6 +111,7 @@ package enum ConfigurationRegistry {
         PreferExplicitFalse.self,
         PreferFileID.self,
         PreferFinalClasses.self,
+        PreferIfElseChain.self,
         PreferIsEmpty.self,
         PreferKeyPath.self,
         PreferMainAttribute.self,
@@ -171,5 +172,6 @@ package enum ConfigurationRegistry {
         WrapMultilineStatementBraces.self,
         WrapSingleLineBodies.self,
         WrapSingleLineComments.self,
+        WrapSwitchCaseBodies.self,
     ]
 }

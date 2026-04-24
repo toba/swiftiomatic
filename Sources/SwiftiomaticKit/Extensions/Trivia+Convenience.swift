@@ -99,7 +99,7 @@ extension Trivia {
     var blankLineCount: Int {
         var newlines = 0
         for piece in pieces {
-            if case .newlines(let n) = piece {
+            if case let .newlines(n) = piece {
                 newlines += n
             } else if piece.isSpaceOrTab {
                 continue
@@ -136,7 +136,7 @@ extension Trivia {
     var reducingToSingleNewlines: Trivia {
         var pieces = Array(self.pieces)
         for (i, piece) in pieces.enumerated() {
-            if case .newlines(let n) = piece, n > 1 {
+            if case let .newlines(n) = piece, n > 1 {
                 pieces[i] = .newlines(1)
             }
         }
@@ -147,9 +147,9 @@ extension Trivia {
     var totalNewlineCount: Int {
         pieces.reduce(0) { count, piece in
             switch piece {
-                case .newlines(let n): count + n
-                case .carriageReturns(let n): count + n
-                case .carriageReturnLineFeeds(let n): count + n
+                case let .newlines(n): count + n
+                case let .carriageReturns(n): count + n
+                case let .carriageReturnLineFeeds(n): count + n
                 default: count
             }
         }
@@ -174,7 +174,7 @@ extension Trivia {
         let pieces = indices.reduce([TriviaPiece]()) { (partialResult, index) in
             let piece = self[index]
             // Collapse consecutive newlines into a single one
-            if case .newlines(let count) = piece {
+            if case let .newlines(count) = piece {
                 if fromClosingBrace {
                     if index == self.count - 1 {
                         // For the last index(newline right before the closing brace), collapse into a single newline
@@ -228,9 +228,9 @@ extension Trivia {
             if foundNewline { break }
 
             switch piece {
-                case .spaces(let n):
+                case let .spaces(n):
                     indent = String(repeating: " ", count: n) + indent
-                case .tabs(let n):
+                case let .tabs(n):
                     indent = String(repeating: "\t", count: n) + indent
                 case .newlines, .carriageReturns, .carriageReturnLineFeeds:
                     foundNewline = true
