@@ -24,6 +24,7 @@
 - `SortImports` checks fail on CI ([#361](https://github.com/toba/swiftiomatic/issues/361))
 - Prefer breaking at `.` over `=` in long assignments ([#363](https://github.com/toba/swiftiomatic/issues/363))
 - Fix camelCase key generation for acronym-prefixed rule names ([#367](https://github.com/toba/swiftiomatic/issues/367))
+- `keepFunctionOutputTogether` doesn't move opening brace to output line when wrapping parameters ([#376](https://github.com/toba/swiftiomatic/issues/376))
 - Line break precedence; prefer splitting at `??` / `+` over `=` assignment
 
 ### 🗜️ Tweaks

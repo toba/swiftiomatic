@@ -16,14 +16,16 @@ extension TokenStream {
     func visitFunctionDecl(_ node: FunctionDeclSyntax) -> SyntaxVisitorContinueKind {
         let hasArguments = !node.signature.parameterClause.parameters.isEmpty
 
-        // Prioritize keeping ") throws -> <return_type>" together. We can only do this if the function
-        // has arguments.
-        if hasArguments && config[KeepFunctionOutputTogether.self] {
+        let hasBody = node.body != nil
+
+        // Prioritize keeping ") throws -> <return_type>" together (or ") throws -> <return_type> {"
+        // when there's a body). We can only do this if the function has arguments.
+        if hasArguments && config[KeepFunctionOutputTogether.self] && !hasBody {
             // Due to visitation order, the matching .open break is added in ParameterClauseSyntax.
             after(node.signature.lastToken(viewMode: .sourceAccurate), tokens: .close)
         }
 
-        let mustBreak = node.body != nil || node.signature.returnClause != nil
+        let mustBreak = hasBody || node.signature.returnClause != nil
         arrangeParameterClause(
             node.signature.parameterClause,
             forcesBreakBeforeRightParen: mustBreak
@@ -57,22 +59,30 @@ extension TokenStream {
             bodyContentsKeyPath: \.statements
         )
 
+        // When the function has a body, close the keepFunctionOutputTogether group after the opening
+        // brace. This must be called after arrangeFunctionLikeDecl so that (due to afterMap reversal)
+        // the .close is emitted immediately after '{', before the body's .break/.open tokens.
+        if hasArguments && config[KeepFunctionOutputTogether.self] && hasBody {
+            after(node.body!.leftBrace, tokens: .close)
+        }
+
         return .visitChildren
     }
 
     func visitInitializerDecl(_ node: InitializerDeclSyntax) -> SyntaxVisitorContinueKind {
         let hasArguments = !node.signature.parameterClause.parameters.isEmpty
+        let hasBody = node.body != nil
 
-        // Prioritize keeping ") throws" together. We can only do this if the function
-        // has arguments.
-        if hasArguments && config[KeepFunctionOutputTogether.self] {
+        // Prioritize keeping ") throws" together (or ") throws {" when there's a body).
+        // We can only do this if the initializer has arguments.
+        if hasArguments && config[KeepFunctionOutputTogether.self] && !hasBody {
             // Due to visitation order, the matching .open break is added in ParameterClauseSyntax.
             after(node.signature.lastToken(viewMode: .sourceAccurate), tokens: .close)
         }
 
         arrangeParameterClause(
             node.signature.parameterClause,
-            forcesBreakBeforeRightParen: node.body != nil
+            forcesBreakBeforeRightParen: hasBody
         )
 
         // Prioritize keeping "<modifiers> init<punctuation>" together.
@@ -93,6 +103,12 @@ extension TokenStream {
             body: node.body,
             bodyContentsKeyPath: \.statements
         )
+
+        // When the initializer has a body, close the keepFunctionOutputTogether group after the
+        // opening brace (must be after arrangeFunctionLikeDecl for correct afterMap ordering).
+        if hasArguments && config[KeepFunctionOutputTogether.self] && hasBody {
+            after(node.body!.leftBrace, tokens: .close)
+        }
 
         return .visitChildren
     }

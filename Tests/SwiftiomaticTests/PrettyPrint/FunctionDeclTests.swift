@@ -1248,7 +1248,22 @@ struct FunctionDeclTests: PrettyPrintTesting {
       }
       """
 
+    // With BeforeEachArgument=false (default test config), params pack inconsistently
     let expected =
+      """
+      fileprivate static func useFailureVariant(
+        name: String, replacement: String
+      ) -> Finding.Message {
+        "replace '\\(name)(false, ...)' with '\\(replacement)(...)'";
+      }
+
+      """
+    var config = Configuration.forTesting
+    config[KeepFunctionOutputTogether.self] = true
+    assertPrettyPrintEqual(input: input, expected: expected, linelength: 50, configuration: config)
+
+    // With BeforeEachArgument=true, each param gets its own line
+    let expected2 =
       """
       fileprivate static func useFailureVariant(
         name: String,
@@ -1258,8 +1273,10 @@ struct FunctionDeclTests: PrettyPrintTesting {
       }
 
       """
-    var config = Configuration.forTesting
-    config[KeepFunctionOutputTogether.self] = true
-    assertPrettyPrintEqual(input: input, expected: expected, linelength: 50, configuration: config)
+    var config2 = Configuration.forTesting
+    config2[KeepFunctionOutputTogether.self] = true
+    config2[BeforeEachArgument.self] = true
+    assertPrettyPrintEqual(input: input, expected: expected2, linelength: 50, configuration: config2)
   }
+
 }
