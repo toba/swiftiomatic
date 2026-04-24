@@ -356,7 +356,7 @@ package final class WhitespaceLinter {
     /// This helper is only used in an assertion that verifies that the non-whitespace code units in
     /// the text are identical, but is not evaluated in release builds.
     private func safeCodeUnit(at index: Int, in data: [UTF8.CodeUnit]) -> UTF8.CodeUnit? {
-        return index != data.endIndex ? data[index] : nil
+        index != data.endIndex ? data[index] : nil
     }
 
     /// Emits a finding with the given message and category. The message will correspond to a specific
@@ -397,7 +397,7 @@ package final class WhitespaceLinter {
 
         let indents = orderedRuns.map { run in
             // Assumes any non-tab whitespace character is some type of space.
-            return run.char == utf8Tab ? Indent.tabs(run.count) : Indent.spaces(run.count)
+            run.char == utf8Tab ? Indent.tabs(run.count) : Indent.spaces(run.count)
         }
         if indents.count == 1, let onlyIndent = indents.first { return .homogeneous(onlyIndent) }
         return .heterogeneous(indents)
@@ -444,7 +444,7 @@ extension WhitespaceIndentation {
             case .heterogeneous(let indents):
                 guard let first = indents.first else { return "no indentation" }
                 return indents.dropFirst().reduce(first.diagnosticDescription) {
-                    return $0 + ", " + $1.diagnosticDescription
+                    $0 + ", " + $1.diagnosticDescription
                 }
             case .homogeneous(let indent):
                 return indent.diagnosticDescription

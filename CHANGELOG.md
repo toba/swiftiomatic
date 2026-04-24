@@ -4,8 +4,10 @@
 
 ### ✨ Features
 
-- Add `update` subcommand; sync `swiftiomatic.json` with current rule registry
+- Add `update` subcommand; sync config with current rule registry
 - `RedundantReturn`; support multi-branch implicit returns per SE-0380
+- `RedundantReturn`; treat Never-returning calls as terminal branches
+- Add `BlankLinesBeforeControlFlow` rule
 - New rules: `RedundantFinal` + `PreferStaticOverClassFunc`
 - Add `doctor` subcommand; JSON Schema validation + full config parsing
 - Simplify rule configuration; uniform object shape, remove shorthand
@@ -15,9 +17,12 @@
 ### 🐛 Fixes
 
 - JSON schema now emits enum constraints for rule-specific properties; validates `mode`, `style`, `placement`, `accessLevel`, `sortOrder`
+- `SortImports` checks fail on CI ([#361](https://github.com/toba/swiftiomatic/issues/361))
 
 ### 🗜️ Tweaks
 
+- Swift review; JSON encoding, decoding, schema generation, schema validation ([#355](https://github.com/toba/swiftiomatic/issues/355))
+- Upstream citation review; level-set ([#357](https://github.com/toba/swiftiomatic/issues/357))
 - Config properties match rule capabilities; `LintOnlyValue` for 16 lint-only rules
 - Fix JSON schema code; rewrite `SchemaValidator` on typed `JSONValue`, eliminate ObjC bridging
 - Unify `JSONValue` into ConfigurationKit; eliminate `[String: Any]` from config encoding

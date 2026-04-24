@@ -22,9 +22,7 @@ struct LazySplitSequence<Base: Collection>: Sequence where Base.Element: Equatab
     /// The number of subsequences, which is precomputed when the sequence is initialized.
     let count: Int
 
-    var underestimatedCount: Int {
-        return count
-    }
+    var underestimatedCount: Int { count }
 
     /// Creates a new sequence that lazily computes the longest possible subsequences of a collection,
     /// in order, around elements equal to the given element.
@@ -34,15 +32,11 @@ struct LazySplitSequence<Base: Collection>: Sequence where Base.Element: Equatab
 
         // Precompute the number of subsequences.
         var count = 1
-        for element in base where element == separator {
-            count += 1
-        }
+        for element in base where element == separator { count += 1 }
         self.count = count
     }
 
-    func makeIterator() -> Iterator {
-        return Iterator(base: base, separator: separator)
-    }
+    func makeIterator() -> Iterator { Iterator(base: base, separator: separator) }
 
     struct Iterator: IteratorProtocol {
         private let base: Base
@@ -64,10 +58,10 @@ struct LazySplitSequence<Base: Collection>: Sequence where Base.Element: Equatab
             self.base = base
             self.separator = separator
 
-            self.subSequenceStart = base.startIndex
-            self.subSequenceEnd = self.subSequenceStart
-            self.endIndex = base.endIndex
-            self.done = false
+            subSequenceStart = base.startIndex
+            subSequenceEnd = subSequenceStart
+            endIndex = base.endIndex
+            done = false
         }
 
         mutating func next() -> Base.SubSequence? {
@@ -98,6 +92,6 @@ extension Collection where Element: Equatable {
     /// - Parameter separator: The element that should be split upon.
     /// - Returns: A sequence of subsequences, split from this collection’s elements.
     func lazilySplit(separator: Element) -> LazySplitSequence<Self> {
-        return LazySplitSequence(base: self, separator: separator)
+        LazySplitSequence(base: self, separator: separator)
     }
 }

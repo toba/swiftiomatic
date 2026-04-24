@@ -44,6 +44,7 @@ package enum ConfigurationRegistry {
         BlankLinesAfterImports.self,
         BlankLinesAfterSwitchCase.self,
         BlankLinesAroundMark.self,
+        BlankLinesBeforeControlFlow.self,
         BlankLinesBetweenChainedFunctions.self,
         BlankLinesBetweenImports.self,
         BlankLinesBetweenScopes.self,

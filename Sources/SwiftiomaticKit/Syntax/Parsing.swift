@@ -11,11 +11,11 @@
 //===----------------------------------------------------------------------===//
 
 import Foundation
-import SwiftDiagnostics
-import SwiftOperators
 @_spi(ExperimentalLanguageFeatures) import SwiftParser
-import SwiftParserDiagnostics
 import SwiftSyntax
+import SwiftOperators
+import SwiftDiagnostics
+import SwiftParserDiagnostics
 
 /// Parses the given source code and returns a valid `SourceFileSyntax` node.
 ///
@@ -59,7 +59,7 @@ func parseAndEmitDiagnostics(
     }
     let diagnostics = ParseDiagnosticsGenerator.diagnostics(for: sourceFile)
     var hasErrors = false
-    if let parsingDiagnosticHandler = parsingDiagnosticHandler {
+    if let parsingDiagnosticHandler {
         let expectedConverter =
             SourceLocationConverter(fileName: url?.path ?? "<unknown>", tree: sourceFile)
         for diagnostic in diagnostics {
@@ -74,8 +74,6 @@ func parseAndEmitDiagnostics(
         }
     }
 
-    guard !hasErrors else {
-        throw SwiftiomaticError.fileContainsInvalidSyntax
-    }
+    guard !hasErrors else { throw SwiftiomaticError.fileContainsInvalidSyntax }
     return sourceFile
 }

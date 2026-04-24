@@ -184,14 +184,16 @@ final class RedundantReturn: RewriteSyntaxRule<BasicRuleValue> {
     return true
   }
 
-  /// Whether a branch contains a single `return <expr>` or a single nested
-  /// exhaustive if/switch where every branch returns.
+  /// Whether a branch contains a single `return <expr>`, a `Never`-returning call
+  /// (e.g. `fatalError`), or a single nested exhaustive if/switch where every branch returns.
   private func branchReturns(_ statements: CodeBlockItemListSyntax) -> Bool {
     guard let only = statements.firstAndOnly else { return false }
 
     if let returnStmt = only.item.as(ReturnStmtSyntax.self) {
       return returnStmt.expression != nil
     }
+
+    if isFatalCall(only) { return true }
 
     guard let expr = expressionFromItem(only) else { return false }
 
@@ -203,6 +205,31 @@ final class RedundantReturn: RewriteSyntaxRule<BasicRuleValue> {
     }
 
     return false
+  }
+
+  /// Names of standard library functions that return `Never`.
+  private static let neverReturningFunctions: Set<String> = [
+    "fatalError", "preconditionFailure",
+  ]
+
+  /// Whether the statement is a call to a `Never`-returning function like `fatalError`.
+  private func isFatalCall(_ item: CodeBlockItemSyntax) -> Bool {
+    let expr: ExprSyntax
+    if let exprStmt = item.item.as(ExpressionStmtSyntax.self) {
+      expr = exprStmt.expression
+    } else if let e = item.item.as(ExprSyntax.self) {
+      expr = e
+    } else {
+      return false
+    }
+
+    guard let call = expr.as(FunctionCallExprSyntax.self),
+      let callee = call.calledExpression.as(DeclReferenceExprSyntax.self)
+    else {
+      return false
+    }
+
+    return Self.neverReturningFunctions.contains(callee.baseName.text)
   }
 
   /// Unwraps `ExpressionStmtSyntax` to get the underlying expression.
@@ -261,8 +288,12 @@ final class RedundantReturn: RewriteSyntaxRule<BasicRuleValue> {
   }
 
   /// Strips `return` from the single statement in a branch.
+  /// Fatal branches (`fatalError`, etc.) are left unchanged.
   private func stripBranch(_ statements: CodeBlockItemListSyntax) -> CodeBlockItemListSyntax {
     guard let only = statements.firstAndOnly else { return statements }
+
+    // Never-returning calls don't have a `return` to strip.
+    if isFatalCall(only) { return statements }
 
     if let returnStmt = only.item.as(ReturnStmtSyntax.self), let expr = returnStmt.expression {
       diagnose(.omitReturnStatement, on: returnStmt)

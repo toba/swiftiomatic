@@ -48,10 +48,12 @@ class LintPipeline: SyntaxVisitor {
 
   override func visit(_ node: AccessorDeclSyntax) -> SyntaxVisitorContinueKind {
     visitIfEnabled(RedundantSelf.visit, for: node)
+    visitIfEnabled(WrapSingleLineBodies.visit, for: node)
     return .visitChildren
   }
   override func visitPost(_ node: AccessorDeclSyntax) {
     onVisitPost(rule: RedundantSelf.self, for: node)
+    onVisitPost(rule: WrapSingleLineBodies.self, for: node)
   }
 
   override func visit(_ node: ActorDeclSyntax) -> SyntaxVisitorContinueKind {
@@ -273,6 +275,7 @@ class LintPipeline: SyntaxVisitor {
   override func visit(_ node: CodeBlockSyntax) -> SyntaxVisitorContinueKind {
     visitIfEnabled(AmbiguousTrailingClosureOverload.visit, for: node)
     visitIfEnabled(BlankLinesAfterGuardStatements.visit, for: node)
+    visitIfEnabled(BlankLinesBeforeControlFlow.visit, for: node)
     visitIfEnabled(EmptyBraces.visit, for: node)
     visitIfEnabled(NoEmptyLinesOpeningClosingBraces.visit, for: node)
     return .visitChildren
@@ -280,6 +283,7 @@ class LintPipeline: SyntaxVisitor {
   override func visitPost(_ node: CodeBlockSyntax) {
     onVisitPost(rule: AmbiguousTrailingClosureOverload.self, for: node)
     onVisitPost(rule: BlankLinesAfterGuardStatements.self, for: node)
+    onVisitPost(rule: BlankLinesBeforeControlFlow.self, for: node)
     onVisitPost(rule: EmptyBraces.self, for: node)
     onVisitPost(rule: NoEmptyLinesOpeningClosingBraces.self, for: node)
   }
@@ -1224,6 +1228,9 @@ extension RewritePipeline {
     }
     if context.shouldFormat(BlankLinesAroundMark.self, node: node) {
       node = BlankLinesAroundMark(context: context).rewrite(node)
+    }
+    if context.shouldFormat(BlankLinesBeforeControlFlow.self, node: node) {
+      node = BlankLinesBeforeControlFlow(context: context).rewrite(node)
     }
     if context.shouldFormat(BlankLinesBetweenChainedFunctions.self, node: node) {
       node = BlankLinesBetweenChainedFunctions(context: context).rewrite(node)

@@ -13,33 +13,27 @@
 extension Indent {
     var character: Character {
         switch self {
-        case .tabs: return "\t"
-        case .spaces: return " "
+            case .tabs: "\t"
+            case .spaces: " "
         }
     }
 
-    var text: String {
-        return String(repeating: character, count: count)
-    }
+    var text: String { String(repeating: character, count: count) }
 
     func length(tabWidth: Int) -> Int {
         switch self {
-        case .spaces(let count): return count
-        case .tabs(let count): return count * tabWidth
+            case .spaces(let count): count
+            case .tabs(let count): count * tabWidth
         }
     }
 }
 
-extension Array where Element == Indent {
-    func indentation() -> String {
-        return map { $0.text }.joined()
-    }
+extension [Indent] {
+    func indentation() -> String { map { $0.text }.joined() }
 
     func length(in configuration: Configuration) -> Int {
-        return self.length(tabWidth: configuration[TabWidth.self])
+        length(tabWidth: configuration[TabWidth.self])
     }
 
-    func length(tabWidth: Int) -> Int {
-        return reduce(into: 0) { $0 += $1.length(tabWidth: tabWidth) }
-    }
+    func length(tabWidth: Int) -> Int { reduce(into: 0) { $0 += $1.length(tabWidth: tabWidth) } }
 }

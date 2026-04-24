@@ -1,7 +1,7 @@
 import Foundation
-import SwiftOperators
 import SwiftParser
 import SwiftSyntax
+import SwiftOperators
 
 /// Context contains the bits that each formatter and linter will need access to.
 ///
@@ -59,14 +59,14 @@ package final class Context {
     ) {
         self.configuration = configuration
         self.operatorTable = operatorTable
-        self.findingEmitter = FindingEmitter(consumer: findingConsumer)
+        findingEmitter = FindingEmitter(consumer: findingConsumer)
         self.fileURL = fileURL
-        self.importsXCTest = .notDetermined
+        importsXCTest = .notDetermined
         let tree = source.map { Parser.parse(source: $0) } ?? sourceFileSyntax
-        self.sourceLocationConverter =
+        sourceLocationConverter =
             SourceLocationConverter(fileName: fileURL.relativePath, tree: tree)
-        self.selection = selection.resolved(with: self.sourceLocationConverter)
-        self.ruleMask = RuleMask(
+        self.selection = selection.resolved(with: sourceLocationConverter)
+        ruleMask = RuleMask(
             syntaxNode: Syntax(sourceFileSyntax),
             sourceLocationConverter: sourceLocationConverter
         )
@@ -76,16 +76,15 @@ package final class Context {
     /// location or not. Also makes sure the entire node is contained inside any selection.
     func shouldFormat<R: SyntaxRule>(_ rule: R.Type, node: Syntax) -> Bool {
         guard node.isInsideSelection(selection) else { return false }
-        let loc = node.startLocation(converter: self.sourceLocationConverter)
+        let loc = node.startLocation(converter: sourceLocationConverter)
         let ruleName = ConfigurationRegistry.ruleNameCache[ObjectIdentifier(rule)] ?? R.key
+
         switch ruleMask.ruleState(ruleName, at: loc) {
-        case .default: return configuration[R.self].isActive
-        case .disabled: return false
+            case .default: return configuration[R.self].isActive
+            case .disabled: return false
         }
     }
 
     /// Returns the configured lint severity for the given rule type.
-    func severity<R: SyntaxRule>(of rule: R.Type) -> Lint {
-        return configuration[R.self].lint
-    }
+    func severity<R: SyntaxRule>(of _: R.Type) -> Lint { configuration[R.self].lint }
 }

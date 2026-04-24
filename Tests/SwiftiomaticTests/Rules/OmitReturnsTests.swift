@@ -435,6 +435,100 @@ struct OmitReturnsTests: RuleTesting {
     )
   }
 
+  // MARK: - Fatal branch support (Never-returning calls)
+
+  @Test
+  func switchWithFatalErrorBranch() {
+    assertFormatting(
+      RedundantReturn.self,
+      input: """
+          func contains(_ position: Int) -> Bool {
+            switch self {
+            case .infinite:
+              1️⃣return true
+            case .ranges(let ranges):
+              2️⃣return ranges.contains(position)
+            case .unresolved:
+              fatalError("Must resolve before calling contains")
+            }
+          }
+        """,
+      expected: """
+          func contains(_ position: Int) -> Bool {
+            switch self {
+            case .infinite:
+              true
+            case .ranges(let ranges):
+              ranges.contains(position)
+            case .unresolved:
+              fatalError("Must resolve before calling contains")
+            }
+          }
+        """,
+      findings: [
+        FindingSpec("1️⃣", message: "'return' can be omitted because body consists of a single expression"),
+        FindingSpec("2️⃣", message: "'return' can be omitted because body consists of a single expression"),
+      ]
+    )
+  }
+
+  @Test
+  func ifElseWithPreconditionFailure() {
+    assertFormatting(
+      RedundantReturn.self,
+      input: """
+          func value() -> Int {
+            if isValid {
+              1️⃣return computedValue
+            } else {
+              preconditionFailure("Invalid state")
+            }
+          }
+        """,
+      expected: """
+          func value() -> Int {
+            if isValid {
+              computedValue
+            } else {
+              preconditionFailure("Invalid state")
+            }
+          }
+        """,
+      findings: [
+        FindingSpec("1️⃣", message: "'return' can be omitted because body consists of a single expression")
+      ]
+    )
+  }
+
+  @Test
+  func allFatalBranchesNotTransformed() {
+    // If no branch has a `return`, the rule shouldn't fire (nothing to strip).
+    assertFormatting(
+      RedundantReturn.self,
+      input: """
+          func f(_ x: E) -> Int {
+            switch x {
+            case .a:
+              fatalError("a")
+            case .b:
+              fatalError("b")
+            }
+          }
+        """,
+      expected: """
+          func f(_ x: E) -> Int {
+            switch x {
+            case .a:
+              fatalError("a")
+            case .b:
+              fatalError("b")
+            }
+          }
+        """,
+      findings: []
+    )
+  }
+
   @Test
   func multiStatementBranchNotTransformed() {
     assertFormatting(

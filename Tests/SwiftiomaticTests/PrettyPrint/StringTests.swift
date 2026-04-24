@@ -71,8 +71,7 @@ struct StringTests: PrettyPrintTesting {
   @Test func multilineStringIsNotReformattedWithIgnore() {
     let input =
       #"""
-      let someString =
-        // sm:ignore
+      let someString =  // sm:ignore
         """
         lines \
         are \
@@ -82,8 +81,7 @@ struct StringTests: PrettyPrintTesting {
 
     let expected =
       #"""
-      let someString =
-        // sm:ignore
+      let someString =  // sm:ignore
         """
         lines \
         are \
@@ -108,8 +106,7 @@ struct StringTests: PrettyPrintTesting {
 
     let expected =
       #"""
-      let someString =
-        """
+      let someString = """
         lines \
         are \
         short.
@@ -645,9 +642,8 @@ struct StringTests: PrettyPrintTesting {
           .someMethod
         #endif
 
-      // Like the infix operator cases, cast operations force the string's open quotes to wrap.
-      // This could be considered consistent if you look at it through the right lens. Let's make
-      // sure to test it so that we can see if the behavior ever changes accidentally.
+      // Cast operations no longer force the string's open quotes to wrap because the break after
+      // `=` ignores discretionary line breaks. The quotes stay on the same line when it fits.
       let cast =
         """
         {
@@ -661,7 +657,68 @@ struct StringTests: PrettyPrintTesting {
         }
         """ is NSString
       """#
-    assertPrettyPrintEqual(input: input, expected: input + "\n", linelength: 100)
+
+    let expected =
+      #"""
+      let bytes = """
+        {
+          "key": "value"
+        }
+        """.utf8.count
+      let json = """
+        {
+          "key": "value"
+        }
+        """.data(using: .utf8)
+      let slice = """
+        {
+          "key": "value"
+        }
+        """[...]
+      let forceUnwrap = """
+        {
+          "key": "value"
+        }
+        """!
+      let optionalChaining = """
+        {
+          "key": "value"
+        }
+        """?
+      let postfix = """
+        {
+          "key": "value"
+        }
+        """^*^
+      let prefix = +"""
+        {
+          "key": "value"
+        }
+        """
+      let postfixIf = """
+        {
+          "key": "value"
+        }
+        """
+        #if FLAG
+          .someMethod
+        #endif
+
+      // Cast operations no longer force the string's open quotes to wrap because the break after
+      // `=` ignores discretionary line breaks. The quotes stay on the same line when it fits.
+      let cast = """
+        {
+          "key": "value"
+        }
+        """ as NSString
+      let typecheck = """
+        {
+          "key": "value"
+        }
+        """ is NSString
+
+      """#
+    assertPrettyPrintEqual(input: input, expected: expected, linelength: 100)
   }
 
   @Test func multilineStringsAsEnumRawValues() {
@@ -717,7 +774,20 @@ struct StringTests: PrettyPrintTesting {
         """#
       """##
 
-    assertPrettyPrintEqual(input: input, expected: input + "\n", linelength: 20)
+    let expected =
+      ##"""
+      let x = """
+        """
+      let y = """
+        """
+      let x = #"""
+        """#
+      let y = #"""
+        """#
+
+      """##
+
+    assertPrettyPrintEqual(input: input, expected: expected, linelength: 20)
   }
 
   @Test func onlyBlankLinesMultilineStrings() {
@@ -739,7 +809,24 @@ struct StringTests: PrettyPrintTesting {
         """#
       """##
 
-    assertPrettyPrintEqual(input: input, expected: input + "\n", linelength: 20)
+    let expected =
+      ##"""
+      let x = """
+
+        """
+      let y = """
+
+        """
+      let x = #"""
+
+        """#
+      let y = #"""
+
+        """#
+
+      """##
+
+    assertPrettyPrintEqual(input: input, expected: expected, linelength: 20)
   }
 
   @Test func multilineStringWithContinuations() {
@@ -761,14 +848,12 @@ struct StringTests: PrettyPrintTesting {
 
     let expected =
       ##"""
-      let someString =
-        """
+      let someString = """
         lines \
         \nare \
         short.
         """
-      let someString =
-        #"""
+      let someString = #"""
         lines \#
         \#nare \#
         short.

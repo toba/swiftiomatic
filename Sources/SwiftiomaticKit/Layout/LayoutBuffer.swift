@@ -90,9 +90,7 @@ struct LayoutBuffer {
 
         guard numberToPrint > 0 else { return }
         for number in 0..<numberToPrint {
-            if shouldIndentBlankLines, number >= 1 {
-                writeRaw(currentIndentation.indentation())
-            }
+            if shouldIndentBlankLines, number >= 1 { writeRaw(currentIndentation.indentation()) }
             writeRaw("\n")
         }
 

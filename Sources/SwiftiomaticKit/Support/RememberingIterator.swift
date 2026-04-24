@@ -26,14 +26,12 @@ struct RememberingIterator<Base: IteratorProtocol>: IteratorProtocol {
     /// Creates a new remembering iterator that wraps the specified iterator.
     init(_ base: Base) {
         self.base = base
-        self.latestElement = nil
+        latestElement = nil
     }
 
     mutating func next() -> Base.Element? {
         let element = base.next()
-        if element != nil {
-            latestElement = element
-        }
+        if element != nil { latestElement = element }
         return element
     }
 }

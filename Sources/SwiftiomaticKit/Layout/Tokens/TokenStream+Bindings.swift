@@ -69,7 +69,12 @@ extension TokenStream {
             if let (unindentingNode, _, breakKind, shouldGroup) = stackedIndentationBehavior(
                 rhs: expr
             ) {
-                var openTokens: [Token] = [.break(.open(kind: breakKind))]
+                var openTokens: [Token] = [
+                    .break(
+                        .open(kind: breakKind),
+                        newlines: .elective(ignoresDiscretionary: true)
+                    ),
+                ]
                 if shouldGroup {
                     openTokens.append(.open)
                 }
@@ -80,7 +85,10 @@ extension TokenStream {
                 }
                 after(unindentingNode.lastToken(viewMode: .sourceAccurate), tokens: closeTokens)
             } else {
-                after(initializer.equal, tokens: .break(.continue))
+                after(
+                    initializer.equal,
+                    tokens: .break(.continue, newlines: .elective(ignoresDiscretionary: true))
+                )
             }
             closeAfterToken = initializer.lastToken(viewMode: .sourceAccurate)
 

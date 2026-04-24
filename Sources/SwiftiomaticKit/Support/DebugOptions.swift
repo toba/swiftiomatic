@@ -14,19 +14,19 @@
 /// not meant for general use.
 package struct DebugOptions: OptionSet, Sendable {
 
-  /// Disables the pretty-printer pass entirely, executing only the syntax-transforming rules in the
-  /// pipeline.
-  package static let disablePrettyPrint = DebugOptions(rawValue: 1 << 0)
+    /// Disables the pretty-printer pass entirely, executing only the syntax-transforming rules in the
+    /// pipeline.
+    package static let disablePrettyPrint = DebugOptions(rawValue: 1 << 0)
 
-  /// Dumps a verbose representation of the raw pretty-printer token stream.
-  package static let dumpTokenStream = DebugOptions(rawValue: 1 << 1)
+    /// Dumps a verbose representation of the raw pretty-printer token stream.
+    package static let dumpTokenStream = DebugOptions(rawValue: 1 << 1)
 
-  package let rawValue: Int
+    package let rawValue: Int
 
-  package init(rawValue: Int) { self.rawValue = rawValue }
+    package init(rawValue: Int) { self.rawValue = rawValue }
 
-  /// Inserts or removes the given element from the option set, based on the value of `enabled`.
-  package mutating func set(_ element: Element, enabled: Bool) {
-    if enabled { insert(element) } else { remove(element) }
-  }
+    /// Inserts or removes the given element from the option set, based on the value of `enabled`.
+    package mutating func set(_ element: Element, enabled: Bool) {
+        if enabled { insert(element) } else { remove(element) }
+    }
 }

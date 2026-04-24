@@ -100,10 +100,50 @@ struct RespectsExistingLineBreaksTests: PrettyPrintTesting {
       }
       """
 
-    // No changes expected when respecting existing newlines.
+    // Assignment breaks after `=` ignore discretionary newlines — the formatter
+    // keeps the first RHS token on the `=` line when it fits, preferring to break
+    // at deeper operators (`.`, `+`, etc.) instead.
+    let expectedRespecting =
+      """
+      import Module
+      import Other
+
+      struct FitsOnOneLine {
+        var x: Int
+      }
+
+      struct Foo {
+        var storedProperty: Int = 100
+        var readOnlyProperty: Int {
+          return
+            200
+        }
+        var readWriteProperty: Int {
+          get {
+            return
+              somethingElse
+          }
+          set {
+            somethingElse = newValue
+          }
+        }
+
+        func oneLiner() -> Int {
+          return 500
+        }
+        func someFunction(
+          x: Int
+        ) {
+          foo(x)
+          bar(x)
+        }
+      }
+
+      """
+
     assertPrettyPrintEqual(
       input: input,
-      expected: input + "\n",
+      expected: expectedRespecting,
       linelength: 80,
       configuration: configuration(respectingExistingLineBreaks: true)
     )

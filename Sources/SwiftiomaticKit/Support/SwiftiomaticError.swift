@@ -36,18 +36,17 @@ package enum SwiftiomaticError: LocalizedError {
 
     package var errorDescription: String? {
         switch self {
-        case .fileNotReadable:
-            return "file is not readable or does not exist"
-        case .isDirectory:
-            return "requested path is a directory, not a file"
-        case .fileContainsInvalidSyntax:
-            return "file contains invalid Swift syntax"
-        case .unrecognizedExperimentalFeature(let name):
-            return "experimental feature '\(name)' was not recognized by the Swift parser"
-        case .configurationDumpFailed(let message):
-            return "dumping configuration failed: \(message)"
-        case .unsupportedConfigurationVersion(let version, let highestSupported):
-            return
+            case .fileNotReadable:
+                "file is not readable or does not exist"
+            case .isDirectory:
+                "requested path is a directory, not a file"
+            case .fileContainsInvalidSyntax:
+                "file contains invalid Swift syntax"
+            case .unrecognizedExperimentalFeature(let name):
+                "experimental feature '\(name)' was not recognized by the Swift parser"
+            case .configurationDumpFailed(let message):
+                "dumping configuration failed: \(message)"
+            case .unsupportedConfigurationVersion(let version, let highestSupported):
                 "This version of the formatter does not support configuration version \(version). The highest supported version is \(highestSupported)."
         }
     }

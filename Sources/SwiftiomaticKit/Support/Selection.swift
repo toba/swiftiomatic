@@ -48,42 +48,43 @@ package enum Selection {
 
     package func resolved(with converter: SourceLocationConverter) -> Selection {
         switch self {
-        case .infinite, .ranges:
-            return self
-        case .unresolvedLineRanges(let lineRanges):
-            let resolvedRanges = lineRanges.map { lineRange in
-                let start = converter.position(ofLine: lineRange.lowerBound, column: 1)
-                let nextLineStart = converter.position(ofLine: lineRange.upperBound + 1, column: 1)
-                if start == nextLineStart {
-                    return start..<start
+            case .infinite, .ranges:
+                return self
+            case .unresolvedLineRanges(let lineRanges):
+                let resolvedRanges = lineRanges.map { lineRange in
+                    let start = converter.position(ofLine: lineRange.lowerBound, column: 1)
+                    let nextLineStart = converter.position(
+                        ofLine: lineRange.upperBound + 1, column: 1)
+                    if start == nextLineStart {
+                        return start..<start
+                    }
+                    // Subtract 1 from the next line's start offset to get the end of the current line.
+                    let end = AbsolutePosition(utf8Offset: nextLineStart.utf8Offset - 1)
+                    return start..<end
                 }
-                // Subtract 1 from the next line's start offset to get the end of the current line.
-                let end = AbsolutePosition(utf8Offset: nextLineStart.utf8Offset - 1)
-                return start..<end
-            }
-            return .ranges(resolvedRanges)
+                return .ranges(resolvedRanges)
         }
     }
 
     package func contains(_ position: AbsolutePosition) -> Bool {
         switch self {
-        case .infinite:
-            return true
-        case .ranges(let ranges):
-            return ranges.contains { $0.contains(position) }
-        case .unresolvedLineRanges:
-            fatalError("Must resolve Selection before calling contains")
+            case .infinite:
+                true
+            case .ranges(let ranges):
+                ranges.contains { $0.contains(position) }
+            case .unresolvedLineRanges:
+                fatalError("Must resolve Selection before calling contains")
         }
     }
 
     package func overlapsOrTouches(_ range: Range<AbsolutePosition>) -> Bool {
         switch self {
-        case .infinite:
-            return true
-        case .ranges(let ranges):
-            return ranges.contains { $0.overlapsOrTouches(range) }
-        case .unresolvedLineRanges:
-            fatalError("Must resolve Selection before calling overlapsOrTouches")
+            case .infinite:
+                return true
+            case .ranges(let ranges):
+                return ranges.contains { $0.overlapsOrTouches(range) }
+            case .unresolvedLineRanges:
+                fatalError("Must resolve Selection before calling overlapsOrTouches")
         }
     }
 }
@@ -94,14 +95,14 @@ extension Syntax {
     /// - Returns: `true` if the node is _completely_ inside any range in the selection
     package func isInsideSelection(_ selection: Selection) -> Bool {
         switch selection {
-        case .infinite:
-            return true
-        case .ranges(let ranges):
-            return ranges.contains {
-                return $0.lowerBound <= position && endPosition <= $0.upperBound
-            }
-        case .unresolvedLineRanges:
-            fatalError("Must resolve Selection before calling isInsideSelection")
+            case .infinite:
+                return true
+            case .ranges(let ranges):
+                return ranges.contains {
+                    $0.lowerBound <= position && endPosition <= $0.upperBound
+                }
+            case .unresolvedLineRanges:
+                fatalError("Must resolve Selection before calling isInsideSelection")
         }
     }
 }

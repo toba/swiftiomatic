@@ -202,7 +202,7 @@
 		"redundantAsync": { "lint": "no", "rewrite": false },
 		"redundantBreak": { "lint": "warn", "rewrite": true },
 		"redundantFinal": { "lint": "warn", "rewrite": false },
-		"redundantReturn": { "lint": "no", "rewrite": false },
+		"redundantReturn": { "lint": "no", "rewrite": true },
 		"redundantThrows": { "lint": "no", "rewrite": false },
 		"redundantClosure": { "lint": "warn", "rewrite": true },
 		"redundantNilInit": { "lint": "warn", "rewrite": true },
