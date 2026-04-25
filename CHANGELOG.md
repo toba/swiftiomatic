@@ -46,6 +46,12 @@
 - `guard` bindings should not wrap to next line ([#402](https://github.com/toba/swiftiomatic/issues/402))
 - Capture of non-`Sendable` `D.Type` in `Configuration` setting/rule closures; `Sendable` requirement on `LayoutRule`/`SyntaxRule` protocols, `@unchecked Sendable` on `LintSyntaxRule`/`RewriteSyntaxRule` base classes
 - `LintSyntaxRule`/`RewriteSyntaxRule` `class var key` overrides shadowed `Configurable.key` fix; acronym rules like `URLMacro` regressed to `uRLMacro` ([#407](https://github.com/toba/swiftiomatic/issues/407))
+- `nestedCallLayout` inline mode doesn't collapse chained `.with()` calls ([#409](https://github.com/toba/swiftiomatic/issues/409))
+- `singleLineBodies` inline mode doesn't collapse multi-line conditions when body fits ([#408](https://github.com/toba/swiftiomatic/issues/408))
+- `sm update` rewrites entire configuration instead of editing ([#410](https://github.com/toba/swiftiomatic/issues/410))
+- `PreferStaticOverClassFunc` skips `override` members; `UseImplicitInit` skips single-unlabeled-arg type-erasure conversions ([#411](https://github.com/toba/swiftiomatic/issues/411))
+- `collapseSimpleEnums` doesn't collapse `CodingKeys` enum in `Indent.swift` ([#412](https://github.com/toba/swiftiomatic/issues/412))
+- `NestedCallLayout` silently deletes trailing-closure bodies when collapsing ([#413](https://github.com/toba/swiftiomatic/issues/413))
 
 ### 🗜️ Tweaks
 

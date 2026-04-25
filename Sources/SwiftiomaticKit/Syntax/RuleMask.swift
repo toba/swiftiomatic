@@ -77,18 +77,19 @@ package final class RuleMask {
 
     /// Returns the `RuleState` for the given rule at the provided location.
     package func ruleState(_ rule: String, at location: SourceLocation) -> RuleState {
-        if allRulesIgnoredRanges.contains(where: { $0.contains(location) }) { return .disabled }
-
-        if let ignoredRanges = ruleMap[rule] {
-            return ignoredRanges.contains { $0.contains(location) } ? .disabled : .default
+        if allRulesIgnoredRanges.contains(where: { $0.contains(location) }) {
+            .disabled
+        } else if let ignoredRanges = ruleMap[rule] {
+            ignoredRanges.contains { $0.contains(location) } ? .disabled : .default
+        } else {
+            .default
         }
-        return .default
     }
 }
 
-extension SourceRange {
+fileprivate extension SourceRange {
     /// Returns whether the range includes the given location.
-    fileprivate func contains(_ location: SourceLocation) -> Bool {
+    func contains(_ location: SourceLocation) -> Bool {
         start.offset <= location.offset && end.offset >= location.offset
     }
 }
@@ -104,10 +105,8 @@ enum IgnoreDirective: CustomStringConvertible {
 
     var description: String {
         switch self {
-            case .node:
-                "sm:ignore"
-            case .file:
-                "sm:ignore-file"
+            case .node: "sm:ignore"
+            case .file: "sm:ignore-file"
         }
     }
 
@@ -141,12 +140,12 @@ private final class RuleStatusCollectionVisitor: SyntaxVisitor {
     }
 
     /// Cached regex object for ignoring rules at the node.
-    private static nonisolated(unsafe) let ignoreRegex: IgnoreDirective.RegexExpression =
-        IgnoreDirective.node.makeRegex()
+    private static nonisolated(unsafe) let ignoreRegex:
+        IgnoreDirective.RegexExpression = IgnoreDirective.node.makeRegex()
 
     /// Cached regex object for ignoring rules at the file.
-    private static nonisolated(unsafe) let ignoreFileRegex: IgnoreDirective.RegexExpression =
-        IgnoreDirective.file.makeRegex()
+    private static nonisolated(unsafe) let ignoreFileRegex:
+        IgnoreDirective.RegexExpression = IgnoreDirective.file.makeRegex()
 
     /// Computes source locations and ranges for syntax nodes in a source file.
     private let sourceLocationConverter: SourceLocationConverter
@@ -238,12 +237,14 @@ private final class RuleStatusCollectionVisitor: SyntaxVisitor {
     ) -> RuleStatusDirectiveMatch? {
         guard let match = text.firstMatch(of: regex) else { return nil }
         guard let matchedRuleNames = match.output.ruleNames else { return .all }
+
         let rules = matchedRuleNames.split(separator: ",").compactMap { segment -> String? in
             let name = segment.trimmingCharacters(in: .whitespaces)
             guard !name.isEmpty else { return nil }
             // Normalize type names (e.g. SortImports) to key format (e.g. sortImports)
             guard let first = name.first, first.isUppercase else { return name }
             let derived = first.lowercased() + name.dropFirst()
+
             // Resolve custom keys (e.g. SortImports → "imports" not "sortImports")
             return ConfigurationRegistry.typeNameToKey[derived] ?? derived
         }
@@ -263,19 +264,14 @@ private final class RuleStatusCollectionVisitor: SyntaxVisitor {
 
         for piece in trivia.reversed() {
             switch piece {
-                case let .lineComment(text):
-                    currentComment = text
-                case .spaces, .tabs:
-                    break  // Intentionally do nothing.
+                case let .lineComment(text): currentComment = text
+                case .spaces, .tabs: break
                 case .carriageReturnLineFeeds, .carriageReturns, .newlines:
                     if let text = currentComment {
                         lineComments.append(text)
                         currentComment = nil
                     }
-                default:
-                    // If anything other than spaces intervened between the line comment and a newline, then the
-                    // comment isn't on a line by itself, so reset our state.
-                    currentComment = nil
+                default: currentComment = nil
             }
         }
 

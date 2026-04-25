@@ -5,7 +5,11 @@ import SwiftSyntax
 /// In a `final` class, `class func` and `class var` are equivalent to `static func` and
 /// `static var` since the class cannot be subclassed. Using `static` makes the intent clearer.
 ///
-/// Lint: If a `class` modifier is found on a member of a `final` class, a warning is raised.
+/// Members carrying `override` are skipped: the parent's signature uses `class` so the override
+/// chain remains open; switching to `static` would close that chain even though this class is
+/// final, and may break the override under generic specialization.
+///
+/// Lint: If a `class` modifier is found on a non-override member of a `final` class, a warning is raised.
 ///
 /// Format: The `class` modifier is replaced with `static`.
 final class PreferStaticOverClassFunc: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable {
@@ -32,6 +36,9 @@ final class PreferStaticOverClassFunc: RewriteSyntaxRule<BasicRuleValue>, @unche
 
     private func classModifier(in decl: DeclSyntax) -> DeclModifierSyntax? {
         guard let withModifiers = decl.asProtocol(WithModifiersSyntax.self) else { return nil }
+        if withModifiers.modifiers.contains(where: { $0.name.tokenKind == .keyword(.override) }) {
+            return nil
+        }
         return withModifiers.modifiers.first { $0.name.tokenKind == .keyword(.class) }
     }
 

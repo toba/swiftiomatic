@@ -157,6 +157,25 @@ struct PreferStaticOverClassFuncTests: RuleTesting {
         )
     }
 
+    @Test func overrideClassVarNotFlagged() {
+        assertFormatting(
+            PreferStaticOverClassFunc.self,
+            input: """
+                final class Foo: Bar {
+                    override class var shared: Int { 0 }
+                    override class func make() -> Foo { Foo() }
+                }
+                """,
+            expected: """
+                final class Foo: Bar {
+                    override class var shared: Int { 0 }
+                    override class func make() -> Foo { Foo() }
+                }
+                """,
+            findings: []
+        )
+    }
+
     @Test func structNotFlagged() {
         assertFormatting(
             PreferStaticOverClassFunc.self,

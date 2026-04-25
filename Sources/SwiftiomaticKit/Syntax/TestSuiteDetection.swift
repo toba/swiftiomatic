@@ -4,9 +4,7 @@ import SwiftSyntax
 /// `NoForceTry`).
 
 /// The testing framework detected from imports.
-enum TestFramework {
-    case xcTest, swiftTesting
-}
+enum TestFramework { case xcTest, swiftTesting }
 
 /// Detects which testing framework is imported in the source file.
 ///
@@ -128,8 +126,8 @@ struct TestContextTracker {
         let was = insideXCTestCase
 
         if context.importsXCTest == .importsXCTest,
-            let inheritance = node.inheritanceClause,
-            inheritance.contains(named: "XCTestCase")
+           let inheritance = node.inheritanceClause,
+           inheritance.contains(named: "XCTestCase")
         {
             insideXCTestCase = true
         }

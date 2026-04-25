@@ -329,6 +329,77 @@ struct UseImplicitInitTests: RuleTesting {
     )
   }
 
+  // MARK: - Type-erasure / conversion calls (single unlabeled argument)
+
+  @Test func typeErasureFromSubclassNotRewritten() {
+    // `DeclSyntax(node)` where node is a more specific type is a type-erasure
+    // conversion, not a field-init. Rewriting to `.init(node)` obscures the
+    // intent and can break type inference at the use site.
+    assertFormatting(
+      UseImplicitInit.self,
+      input: """
+        func visit(_ node: ClassDeclSyntax) -> DeclSyntax {
+          return DeclSyntax(node)
+        }
+        """,
+      expected: """
+        func visit(_ node: ClassDeclSyntax) -> DeclSyntax {
+          return DeclSyntax(node)
+        }
+        """,
+      findings: []
+    )
+  }
+
+  @Test func singleUnlabeledArgConversionNotRewritten() {
+    assertFormatting(
+      UseImplicitInit.self,
+      input: """
+        func wrap(items: [Int]) -> CodeBlockItemListSyntax {
+          return CodeBlockItemListSyntax(items)
+        }
+        """,
+      expected: """
+        func wrap(items: [Int]) -> CodeBlockItemListSyntax {
+          return CodeBlockItemListSyntax(items)
+        }
+        """,
+      findings: []
+    )
+  }
+
+  @Test func labeledSingleArgStillRewritten() {
+    // Labeled single-arg calls are field-init patterns, still rewrite.
+    assertFormatting(
+      UseImplicitInit.self,
+      input: """
+        func make() -> Config { 1️⃣Config(debug: true) }
+        """,
+      expected: """
+        func make() -> Config { .init(debug: true) }
+        """,
+      findings: [
+        FindingSpec("1️⃣", message: "replace 'Config(debug: true)' with '.init(debug: true)'"),
+      ]
+    )
+  }
+
+  @Test func multiArgConversionStillRewritten() {
+    // Multiple args (even unlabeled) are usually field-inits, keep rewriting.
+    assertFormatting(
+      UseImplicitInit.self,
+      input: """
+        func make() -> Point { 1️⃣Point(1, 2) }
+        """,
+      expected: """
+        func make() -> Point { .init(1, 2) }
+        """,
+      findings: [
+        FindingSpec("1️⃣", message: "replace 'Point(1, 2)' with '.init(1, 2)'"),
+      ]
+    )
+  }
+
   // MARK: - Subscript return types
 
   @Test func subscriptReturnType() {

@@ -13,24 +13,20 @@ import SwiftSyntax
 ///
 /// Format: The redundant `break` statement is removed.
 final class RedundantBreak: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable {
-    override class var group: ConfigurationGroup? { .redundancies }
+    override static var group: ConfigurationGroup? { .redundancies }
 
     override func visit(_ node: SwitchCaseSyntax) -> SwitchCaseSyntax {
         let visited = super.visit(node)
         let statements = visited.statements
 
         // A case must have at least one statement. If `break` is the only statement, it's required.
-        guard statements.count > 1 else {
-            return visited
-        }
+        guard statements.count > 1 else { return visited }
 
         // Check if the last statement is an unlabeled `break`.
         guard let lastItem = statements.last,
-            let breakStmt = lastItem.item.as(StmtSyntax.self)?.as(BreakStmtSyntax.self),
-            breakStmt.label == nil
-        else {
-            return visited
-        }
+              let breakStmt = lastItem.item.as(StmtSyntax.self)?.as(BreakStmtSyntax.self),
+              breakStmt.label == nil
+        else { return visited }
 
         diagnose(.removeRedundantBreak, on: breakStmt.breakKeyword)
 
@@ -40,7 +36,7 @@ final class RedundantBreak: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendab
     }
 }
 
-extension Finding.Message {
-    fileprivate static let removeRedundantBreak: Finding.Message =
+fileprivate extension Finding.Message {
+    static let removeRedundantBreak: Finding.Message =
         "remove redundant 'break'; switch cases do not fall through by default"
 }

@@ -10,7 +10,6 @@ import SwiftSyntax
 ///
 /// Format: The delimiter is moved to the end of the previous line.
 final class LeadingDotOperators: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable {
-
     /// Trivia (newline + indentation) saved from a leading delimiter, to be prepended to the
     /// next token's leading trivia.
     private var pendingLeadingTrivia: Trivia?
@@ -32,8 +31,8 @@ final class LeadingDotOperators: RewriteSyntaxRule<BasicRuleValue>, @unchecked S
         // 2. Check if this token precedes a leading delimiter and has a trailing line comment.
         //    If so, strip the comment so it can be placed after the delimiter.
         if let nextToken = token.nextToken(viewMode: .sourceAccurate),
-            isLeadingDelimiter(nextToken),
-            result.trailingTrivia.hasLineComment
+           isLeadingDelimiter(nextToken),
+           result.trailingTrivia.hasLineComment
         {
             pendingComment = result.trailingTrivia
             result = result.with(\.trailingTrivia, Trivia())
@@ -47,11 +46,9 @@ final class LeadingDotOperators: RewriteSyntaxRule<BasicRuleValue>, @unchecked S
         // Save the newline + indentation for the next token. Also include any non-space trailing
         // trivia (e.g., block comments that follow the delimiter).
         let trailingNonSpace = result.trailingTrivia.withoutLeadingSpaces()
-        if trailingNonSpace.isEmpty {
-            pendingLeadingTrivia = token.leadingTrivia
-        } else {
-            pendingLeadingTrivia = token.leadingTrivia + trailingNonSpace
-        }
+
+        pendingLeadingTrivia = trailingNonSpace.isEmpty
+            ? token.leadingTrivia : token.leadingTrivia + trailingNonSpace
 
         // Clear the delimiter's leading trivia (it now sits at the end of the previous line)
         result = result.with(\.leadingTrivia, Trivia())
@@ -71,15 +68,13 @@ final class LeadingDotOperators: RewriteSyntaxRule<BasicRuleValue>, @unchecked S
     /// meaning it starts a new line (leading delimiter).
     private func isLeadingDelimiter(_ token: TokenSyntax) -> Bool {
         switch token.tokenKind {
-            case .comma, .colon:
-                token.leadingTrivia.containsNewlines
-            default:
-                false
+            case .comma, .colon: token.leadingTrivia.containsNewlines
+            default: false
         }
     }
 }
 
-extension Finding.Message {
-    fileprivate static let moveDelimiterToEndOfPreviousLine: Finding.Message =
+fileprivate extension Finding.Message {
+    static let moveDelimiterToEndOfPreviousLine: Finding.Message =
         "move delimiter to end of previous line"
 }

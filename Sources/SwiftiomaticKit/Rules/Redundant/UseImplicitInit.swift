@@ -281,6 +281,16 @@ final class UseImplicitInit: RewriteSyntaxRule<BasicRuleValue>, @unchecked Senda
   ) -> ExprSyntax? {
     let calledExpr = call.calledExpression
 
+    // Skip single-unlabeled-argument calls. These are conversion / type-erasure
+    // patterns (`DeclSyntax(node)`, `String(buffer)`, `CodeBlockItemListSyntax(items)`)
+    // rather than field-init patterns (`Foo(x: 1, y: 2)`). Rewriting them to
+    // `.init(arg)` obscures the type-erasure intent and can break type
+    // inference at the use site (the generic init may not resolve from
+    // contextual return type alone).
+    if call.arguments.count == 1, call.arguments.first?.label == nil {
+      return nil
+    }
+
     // `Type(args)` — direct constructor call
     if let declRef = calledExpr.as(DeclReferenceExprSyntax.self),
       declRef.argumentNames == nil,

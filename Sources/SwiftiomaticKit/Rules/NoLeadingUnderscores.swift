@@ -14,7 +14,7 @@ import SwiftSyntax
 
 /// Identifiers in declarations and patterns should not have leading underscores.
 ///
-/// This is intended to avoid certain antipatterns; `self.member = member` should be preferred to
+/// This is intended to avoid certain anti-patterns; `self.member = member` should be preferred to
 /// `member = _member` and the leading underscore should not be used to signal access level.
 ///
 /// This rule intentionally checks only the parameter variable names of a function declaration, not
@@ -29,7 +29,7 @@ final class NoLeadingUnderscores: LintSyntaxRule<LintOnlyValue>, @unchecked Send
     /// normal circumstances, there are situations where they can be used to hint which APIs should be
     /// avoided by general users. In particular when APIs must be exported publicly, but the author
     /// doesn't intend for arbitrary usage.
-    override static var defaultValue: LintOnlyValue { LintOnlyValue(lint: .no) }
+    override static var defaultValue: LintOnlyValue { .init(lint: .no) }
 
     override func visit(_ node: AssociatedTypeDeclSyntax) -> SyntaxVisitorContinueKind {
         diagnoseIfNameStartsWithUnderscore(node.name)
@@ -118,14 +118,15 @@ final class NoLeadingUnderscores: LintSyntaxRule<LintOnlyValue>, @unchecked Send
     /// - Parameter token: The token to check.
     private func diagnoseIfNameStartsWithUnderscore(_ token: TokenSyntax) {
         let text = token.text
+
         if text.count > 1, text.first == "_" {
             diagnose(.doNotStartWithUnderscore(identifier: text), on: token)
         }
     }
 }
 
-extension Finding.Message {
-    fileprivate static func doNotStartWithUnderscore(identifier: String) -> Finding.Message {
+fileprivate extension Finding.Message {
+    static func doNotStartWithUnderscore(identifier: String) -> Finding.Message {
         "remove the leading '_' from the name '\(identifier)'"
     }
 }

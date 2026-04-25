@@ -181,6 +181,39 @@ struct NestedCallLayoutInlineTests: RuleTesting {
       configuration: inlineConfig)
   }
 
+  @Test func innerCallWithTrailingClosureNotCollapsed() {
+    // Regression: NestedCallLayout previously rebuilt nested calls using only
+    // `arguments`, silently deleting `trailingClosure` bodies. The rule must
+    // bail on calls that carry a trailing closure since the rebuild paths
+    // don't preserve them.
+    let input = """
+      let x = MemberBlockItemListSyntax(
+          items.map { item in
+              return item
+          })
+      """
+    assertFormatting(
+      NestedCallLayout.self,
+      input: input,
+      expected: input,
+      configuration: inlineConfig)
+  }
+
+  @Test func outerCallWithTrailingClosureNotCollapsed() {
+    let input = """
+      let x = Foo(
+          Bar()
+      ) { result in
+          handle(result)
+      }
+      """
+    assertFormatting(
+      NestedCallLayout.self,
+      input: input,
+      expected: input,
+      configuration: inlineConfig)
+  }
+
   @Test func nonNestedCallUnchanged() {
     assertFormatting(
       NestedCallLayout.self,

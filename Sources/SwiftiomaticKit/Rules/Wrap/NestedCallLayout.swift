@@ -113,10 +113,17 @@ extension NestedCallLayout {
     /// argument list item whose expression is a function call. Bails when the
     /// inner call's `calledExpression` spans multiple lines (e.g., a chained
     /// member access) — that's not a clean nested call chain.
+    ///
+    /// Also bails when either the outer or inner call carries a trailing
+    /// closure: the rebuild paths in this rule only stringify `arguments`, so
+    /// preserving a trailing closure isn't supported and a naive rebuild would
+    /// silently delete the closure body.
     private func soleArgumentCall(_ call: FunctionCallExprSyntax) -> FunctionCallExprSyntax? {
+        if call.trailingClosure != nil || !call.additionalTrailingClosures.isEmpty { return nil }
         let args = call.arguments
         guard args.count == 1, let only = args.first else { return nil }
         guard let inner = only.expression.as(FunctionCallExprSyntax.self) else { return nil }
+        if inner.trailingClosure != nil || !inner.additionalTrailingClosures.isEmpty { return nil }
         if inner.calledExpression.trimmedDescription.contains("\n") { return nil }
         return inner
     }
