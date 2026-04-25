@@ -1,3 +1,4 @@
+import ConfigurationKit
 import SwiftSyntax
 
 /// A rule that both formats and lints a given file.
@@ -10,8 +11,8 @@ class RewriteSyntaxRule<V: SyntaxRuleValue>: SyntaxRewriter, SyntaxRule, @unchec
     // class var so subclass overrides dispatch correctly through the vtable
     // when accessed via protocol existentials (any Rule.Type).
     class var key: String {
-        let name = String("\(self)".split(separator: ".").last!)
-        return name.prefix(1).lowercased() + name.dropFirst()
+        let name = String("\(self)".split(separator: ".").last ?? "")
+        return configurationKey(forTypeName: name)
     }
     class var group: ConfigurationGroup? { nil }
     class var defaultValue: V { V() }

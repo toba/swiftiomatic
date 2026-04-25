@@ -45,6 +45,7 @@
 - Ternary breaks at `=` before breaking ternary parts
 - `guard` bindings should not wrap to next line ([#402](https://github.com/toba/swiftiomatic/issues/402))
 - Capture of non-`Sendable` `D.Type` in `Configuration` setting/rule closures; `Sendable` requirement on `LayoutRule`/`SyntaxRule` protocols, `@unchecked Sendable` on `LintSyntaxRule`/`RewriteSyntaxRule` base classes
+- `LintSyntaxRule`/`RewriteSyntaxRule` `class var key` overrides shadowed `Configurable.key` fix; acronym rules like `URLMacro` regressed to `uRLMacro` ([#407](https://github.com/toba/swiftiomatic/issues/407))
 
 ### 🗜️ Tweaks
 

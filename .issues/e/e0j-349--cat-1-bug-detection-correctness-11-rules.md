@@ -1,16 +1,16 @@
 ---
 # e0j-349
 title: 'Cat 1: Bug Detection & Correctness (11 rules)'
-status: review
+status: completed
 type: feature
 priority: normal
 created_at: 2026-04-15T00:27:58Z
-updated_at: 2026-04-25T18:28:53Z
+updated_at: 2026-04-25T18:42:31Z
 parent: qlt-10c
 sync:
     github:
         issue_number: "320"
-        synced_at: "2026-04-25T18:30:27Z"
+        synced_at: "2026-04-25T18:52:09Z"
 ---
 
 High-value lint rules that catch real bugs the compiler doesn't flag.

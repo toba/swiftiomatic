@@ -1,3 +1,4 @@
+import ConfigurationKit
 import Foundation
 import SwiftSyntax
 
@@ -11,8 +12,8 @@ class LintSyntaxRule<V: SyntaxRuleValue>: SyntaxVisitor, SyntaxRule, @unchecked 
     // class var so subclass overrides dispatch correctly through the vtable
     // when accessed via protocol existentials (any SyntaxRule.Type).
     class var key: String {
-        let name = String("\(self)".split(separator: ".").last!)
-        return name.prefix(1).lowercased() + name.dropFirst()
+        let name = String("\(self)".split(separator: ".").last ?? "")
+        return configurationKey(forTypeName: name)
     }
     class var group: ConfigurationGroup? { nil }
     class var defaultValue: V {
