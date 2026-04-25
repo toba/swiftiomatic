@@ -168,8 +168,6 @@ struct ConfigurationTests {
     #expect(config[MaximumBlankLines.self] == 2)
     #expect(config[BlankLinesAfterGuardStatements.self].lint == .warn)
     #expect(config[BlankLinesAfterImports.self].lint == .warn)
-    #expect(config[BlankLinesBetweenChainedFunctions.self].lint == .warn)
-    #expect(config[BlankLinesBetweenImports.self].lint == .no)
     #expect(config[BlankLinesBetweenScopes.self].lint == .warn)
     // lineBreaks group
     #expect(config[ElseCatchOnNewLine.self] == true)

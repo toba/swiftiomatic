@@ -156,22 +156,6 @@
       ],
       "description" : "Insert a blank line before control flow statements with multi-line bodies.\n\nWhen a `for`, `while`, `repeat`, `if`, `switch`, `do`, or `defer` statement has a\nmulti-line body and is preceded by another statement, a blank line before it improves\nreadability. Single-line (inline) control flow is excluded. Guard statements are excluded\nbecause `BlankLinesAfterGuardStatements` already handles spacing around guards.\n\nLint: If a multi-line control flow statement is not preceded by a blank line, a lint\n      warning is raised.\n\nFormat: A blank line is inserted before the control flow statement.\n [opt-in]"
     },
-    "betweenChainedFunctions" : {
-      "allOf" : [
-        {
-          "$ref" : "#/$defs/ruleBase"
-        }
-      ],
-      "description" : "Remove blank lines between chained function calls.\n\nMethod chains like `.map { ... }.filter { ... }` are a single logical expression. Blank lines\nbetween chain elements break the visual continuity. Linebreaks are preserved — only the\nextra blank lines are removed. Comments between chain elements are also preserved.\n\nLint: If there are blank lines between chained member accesses, a lint warning is raised.\n\nFormat: The blank lines are removed, keeping linebreaks and comments.\n [opt-in]"
-    },
-    "betweenImports" : {
-      "allOf" : [
-        {
-          "$ref" : "#/$defs/ruleBase"
-        }
-      ],
-      "description" : "Remove blank lines between consecutive import statements.\n\nImport blocks should be compact — blank lines within the import section add visual noise\nwithout aiding readability. This rule removes them while preserving linebreaks.\n\nLint: If there are blank lines between consecutive import statements, a lint warning is raised.\n\nFormat: The blank lines are removed.\n [opt-in]"
-    },
     "betweenScopes" : {
       "allOf" : [
         {
@@ -224,22 +208,6 @@
           ],
           "description" : "Insert a blank line before control flow statements with multi-line bodies.\n\nWhen a `for`, `while`, `repeat`, `if`, `switch`, `do`, or `defer` statement has a\nmulti-line body and is preceded by another statement, a blank line before it improves\nreadability. Single-line (inline) control flow is excluded. Guard statements are excluded\nbecause `BlankLinesAfterGuardStatements` already handles spacing around guards.\n\nLint: If a multi-line control flow statement is not preceded by a blank line, a lint\n      warning is raised.\n\nFormat: A blank line is inserted before the control flow statement.\n [opt-in]"
         },
-        "betweenChainedFunctions" : {
-          "allOf" : [
-            {
-              "$ref" : "#/$defs/ruleBase"
-            }
-          ],
-          "description" : "Remove blank lines between chained function calls.\n\nMethod chains like `.map { ... }.filter { ... }` are a single logical expression. Blank lines\nbetween chain elements break the visual continuity. Linebreaks are preserved — only the\nextra blank lines are removed. Comments between chain elements are also preserved.\n\nLint: If there are blank lines between chained member accesses, a lint warning is raised.\n\nFormat: The blank lines are removed, keeping linebreaks and comments.\n [opt-in]"
-        },
-        "betweenImports" : {
-          "allOf" : [
-            {
-              "$ref" : "#/$defs/ruleBase"
-            }
-          ],
-          "description" : "Remove blank lines between consecutive import statements.\n\nImport blocks should be compact — blank lines within the import section add visual noise\nwithout aiding readability. This rule removes them while preserving linebreaks.\n\nLint: If there are blank lines between consecutive import statements, a lint warning is raised.\n\nFormat: The blank lines are removed.\n [opt-in]"
-        },
         "betweenScopes" : {
           "allOf" : [
             {
@@ -267,14 +235,6 @@
         "maximumBlankLines" : {
           "description" : "Maximum consecutive blank lines.",
           "type" : "integer"
-        },
-        "noEmptyLinesOpeningClosingBraces" : {
-          "allOf" : [
-            {
-              "$ref" : "#/$defs/ruleBase"
-            }
-          ],
-          "description" : "Empty lines are forbidden after opening braces and before closing braces.\n\nLint: Empty lines after opening braces and before closing braces yield a lint error.\n\nFormat: Empty lines after opening braces and before closing braces will be removed.\n [opt-in]"
         }
       },
       "type" : "object"
@@ -1248,14 +1208,6 @@
       ],
       "description" : "Remove backticks around `self` in optional unwrap expressions.\n\nSince Swift 4.2, `guard let self = self` is valid without backticks.\nWriting `` guard let `self` = self `` is a holdover from older Swift versions.\n\nLint: If a backticked `self` is found in an optional binding, a finding is raised.\n\nFormat: The backticks are removed.\n"
     },
-    "noEmptyLinesOpeningClosingBraces" : {
-      "allOf" : [
-        {
-          "$ref" : "#/$defs/ruleBase"
-        }
-      ],
-      "description" : "Empty lines are forbidden after opening braces and before closing braces.\n\nLint: Empty lines after opening braces and before closing braces yield a lint error.\n\nFormat: Empty lines after opening braces and before closing braces will be removed.\n [opt-in]"
-    },
     "noExplicitOwnership" : {
       "allOf" : [
         {
@@ -2212,18 +2164,7 @@
           "$ref" : "#/$defs/ruleBase"
         }
       ],
-      "description" : "Enforce switch case label indentation style.\n\nTwo styles are supported via `SwitchCaseIndentationConfiguration.Style`:\n- `flush`: `case` labels align with the `switch` keyword (default).\n- `indented`: `case` labels are indented one level from `switch`.\n\nLint: Raised when a `case` or `default` label doesn't match the configured style.\n\nFormat: Case labels, bodies, and the closing brace are reindented to match.\n [opt-in]",
-      "properties" : {
-        "style" : {
-          "default" : "flush",
-          "description" : "style Options: flush, indented.",
-          "enum" : [
-            "flush",
-            "indented"
-          ],
-          "type" : "string"
-        }
-      }
+      "description" : "Sort switch case items alphabetically within each case.\n\nWhen a case matches multiple patterns (e.g. `case .b, .a, .c:`), the patterns are sorted\nlexicographically. Numeric literals are compared by value (including hex, octal, and binary).\nCases with `where` clauses are only sorted if the `where` clause ends up on the last item.\n\nLint: If case items are not sorted, a lint warning is raised.\n\nFormat: The case items are reordered alphabetically.\n [opt-in]"
     },
     "testSuiteAccessControl" : {
       "allOf" : [

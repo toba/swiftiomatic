@@ -29,7 +29,7 @@ extension TokenStream {
         func isBreakMoreRecentThanNonbreakingContent(_ tokens: [Token]) -> Bool? {
             for token in tokens.reversed() as ReversedCollection {
                 switch token {
-                case .break(_, _, .elective(ignoresDiscretionary: true)): return false
+                case .break(_, _, .elective(ignoresDiscretionary: true, _)): return false
                 case .break: return true
                 case .comment, .space, .syntax, .verbatim: return false
                 default: break

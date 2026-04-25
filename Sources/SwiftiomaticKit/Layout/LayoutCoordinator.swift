@@ -394,7 +394,7 @@ package final class LayoutCoordinator {
                 var overrideBreakingSuppressed = false
                 switch newline {
                     case .elective, .escaped: break
-                    case .soft(_, let discretionary):
+                    case .soft(_, let discretionary, _):
                         // A discretionary newline (i.e. from the source) should create a line break even if the
                         // rules for breaking are disabled.
                         overrideBreakingSuppressed =

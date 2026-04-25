@@ -24,6 +24,7 @@ final class StrongOutlets: RewriteSyntaxRule<BasicRuleValue> {
         if let name = node.bindings.first?.pattern.as(IdentifierPatternSyntax.self)?.identifier.text
         {
             let lowercased = name.lowercased()
+
             if lowercased.hasSuffix("delegate") || lowercased.hasSuffix("datasource") {
                 return DeclSyntax(node)
             }
@@ -40,8 +41,7 @@ final class StrongOutlets: RewriteSyntaxRule<BasicRuleValue> {
         let weakIsFirst = result.modifiers.first?.name.tokenKind == .keyword(.weak)
         let savedLeadingTrivia =
             weakIsFirst
-            ? result.modifiers.first!.leadingTrivia
-            : Trivia()
+            ? result.modifiers.first!.leadingTrivia : Trivia()
 
         result.modifiers.remove(anyOf: [.weak])
 
@@ -55,7 +55,7 @@ final class StrongOutlets: RewriteSyntaxRule<BasicRuleValue> {
             }
         }
 
-        return DeclSyntax(result)
+        return .init(result)
     }
 
     private func hasIBOutletAttribute(_ node: VariableDeclSyntax) -> Bool {

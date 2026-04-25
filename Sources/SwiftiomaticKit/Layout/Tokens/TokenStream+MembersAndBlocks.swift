@@ -170,10 +170,21 @@ extension TokenStream {
         // unclosed open tokens.
         for item in node where !shouldFormatterIgnore(node: Syntax(item)) {
             before(item.firstToken(viewMode: .sourceAccurate), tokens: .open)
-            let newlines: NewlineBehavior =
+            var newlines: NewlineBehavior =
                 item != node.last && shouldInsertNewline(basedOn: item.semicolon)
                 ? .soft : .elective
             let resetSize = item.semicolon != nil ? 1 : 0
+
+            // Remove blank lines between consecutive import statements.
+            if let nextItem = node[node.index(after: node.index(of: item)!)...].first(where: {
+                !shouldFormatterIgnore(node: Syntax($0))
+            }),
+                item.item.is(ImportDeclSyntax.self),
+                nextItem.item.is(ImportDeclSyntax.self)
+            {
+                newlines = .soft(count: 1, discretionary: false, maxBlankLines: 0)
+            }
+
             after(
                 item.lastToken(viewMode: .sourceAccurate),
                 tokens: .close,

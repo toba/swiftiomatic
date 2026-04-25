@@ -79,9 +79,10 @@ struct LayoutBuffer {
         switch newlines {
             case .elective:
                 numberToPrint = consecutiveNewlineCount == 0 ? 1 : 0
-            case .soft(let count, _):
+            case .soft(let count, _, let maxBlankLines):
                 // We add 1 to the max blank lines because it takes 2 newlines to create the first blank line.
-                numberToPrint = min(count, maximumBlankLines + 1) - consecutiveNewlineCount
+                let effectiveMax = maxBlankLines ?? maximumBlankLines
+                numberToPrint = min(count, effectiveMax + 1) - consecutiveNewlineCount
             case .hard(let count):
                 numberToPrint = count
             case .escaped:

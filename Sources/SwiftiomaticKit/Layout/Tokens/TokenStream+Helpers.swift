@@ -264,12 +264,7 @@ extension TokenStream {
             )
         }
         if !areBracesCompletelyEmpty(node, contentsKeyPath: contentsKeyPath) {
-            after(
-                node.leftBrace,
-                tokens: .break(.open, size: 1, newlines: openBraceNewlineBehavior),
-                .open
-            )
-            before(node.rightBrace, tokens: .break(.close, size: 1), .close)
+            arrangeNonEmptyBraces(node, openBraceNewlineBehavior: openBraceNewlineBehavior)
         } else {
             arrangeEmptyBraces(node)
         }
@@ -297,8 +292,7 @@ extension TokenStream {
             before(node.leftBrace, tokens: .break(.reset, size: 1))
         }
         if !areBracesCompletelyEmpty(node, contentsKeyPath: contentsKeyPath) {
-            after(node.leftBrace, tokens: .break(.open, size: 1), .open)
-            before(node.rightBrace, tokens: .break(.close, size: 1), .close)
+            arrangeNonEmptyBraces(node)
         } else {
             arrangeEmptyBraces(node)
         }
@@ -326,8 +320,7 @@ extension TokenStream {
             before(node.leftBrace, tokens: .break(.reset, size: 1))
         }
         if !areBracesCompletelyEmpty(node, contentsKeyPath: contentsKeyPath) {
-            after(node.leftBrace, tokens: .break(.open, size: 1), .open)
-            before(node.rightBrace, tokens: .break(.close, size: 1), .close)
+            arrangeNonEmptyBraces(node)
         } else {
             arrangeEmptyBraces(node)
         }
@@ -353,8 +346,17 @@ extension TokenStream {
         before(leftBrace, tokens: .break(.reset, size: 1))
 
         if !bracesAreCompletelyEmpty {
-            after(leftBrace, tokens: .break(.open, size: 1), .open)
-            before(rightBrace, tokens: .break(.close, size: 1), .close)
+            after(
+                leftBrace,
+                tokens: .break(.open, size: 1, newlines: .elective(ignoresDiscretionary: false, maxBlankLines: 0)),
+                .open
+            )
+            before(
+                rightBrace,
+                tokens: .break(.same, size: 0, newlines: .elective(ignoresDiscretionary: false, maxBlankLines: 0)),
+                .break(.close, size: 1),
+                .close
+            )
         } else {
             after(
                 leftBrace,
@@ -365,6 +367,26 @@ extension TokenStream {
                 tokens: .break(.close, size: 0, newlines: .elective(ignoresDiscretionary: true))
             )
         }
+    }
+
+    /// Arranges non-empty braces with `maxBlankLines: 0` to prevent blank lines after `{` and
+    /// before `}`.
+    private func arrangeNonEmptyBraces(
+        _ node: some BracedSyntax,
+        openBraceNewlineBehavior: NewlineBehavior = .elective
+    ) {
+        after(
+            node.leftBrace,
+            tokens: .break(.open, size: 1, newlines: openBraceNewlineBehavior.withMaxBlankLines(0)),
+            .open
+        )
+        // A .same break (open-scope) caps blank lines before `}` via maxBlankLines: 0.
+        before(
+            node.rightBrace,
+            tokens: .break(.same, size: 0, newlines: .elective(ignoresDiscretionary: false, maxBlankLines: 0)),
+            .break(.close, size: 1),
+            .close
+        )
     }
 
     /// Collapses empty braces to `{}` by ignoring discretionary newlines from source trivia.

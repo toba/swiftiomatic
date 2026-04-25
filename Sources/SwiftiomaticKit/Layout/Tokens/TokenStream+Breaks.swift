@@ -87,7 +87,10 @@ extension TokenStream {
             if memberAccessExpr.base != nil
                 && expr.parent?.isProtocol(CallingExprSyntax.self) != true
             {
-                before(memberAccessExpr.period, tokens: .break(.contextual, size: 0))
+                before(
+                    memberAccessExpr.period,
+                    tokens: .break(.contextual, size: 0, newlines: .elective(ignoresDiscretionary: false, maxBlankLines: 0))
+                )
             }
             var hasCompoundExpression = false
             if let base = memberAccessExpr.base {
@@ -138,11 +141,11 @@ extension TokenStream {
             if let calledMemberAccessExpr = calledExpression.as(MemberAccessExprSyntax.self) {
                 if calledMemberAccessExpr.base != nil {
                     if isNestedInPostfixIfConfig(node: Syntax(calledMemberAccessExpr)) {
-                        before(calledMemberAccessExpr.period, tokens: [.break(.same, size: 0)])
+                        before(calledMemberAccessExpr.period, tokens: [.break(.same, size: 0, newlines: .elective(ignoresDiscretionary: false, maxBlankLines: 0))])
                     } else {
                         before(
                             calledMemberAccessExpr.period,
-                            tokens: [.break(.contextual, size: 0)]
+                            tokens: [.break(.contextual, size: 0, newlines: .elective(ignoresDiscretionary: false, maxBlankLines: 0))]
                         )
                     }
                 }

@@ -3,40 +3,37 @@ import SwiftiomaticTestSupport
 import Testing
 
 @Suite
-struct BlankLinesBetweenImportsTests: RuleTesting {
+struct BlankLinesBetweenImportsTests: LayoutTesting {
 
   @Test func removesBlankLineBetweenImports() {
-    assertFormatting(
-      BlankLinesBetweenImports.self,
+    assertLayout(
       input: """
         import ModuleA
 
-        1️⃣import ModuleB
+        import ModuleB
         """,
       expected: """
         import ModuleA
         import ModuleB
+
         """,
-      findings: [
-        FindingSpec("1️⃣", message: "remove blank line between import statements"),
-      ]
+      linelength: 100
     )
   }
 
   @Test func removesMultipleBlankLinesBetweenImports() {
-    assertFormatting(
-      BlankLinesBetweenImports.self,
+    assertLayout(
       input: """
         import ModuleA
         import ModuleB
 
-        1️⃣import ModuleC
+        import ModuleC
         import ModuleD
         import ModuleE
 
-        2️⃣import ModuleF
+        import ModuleF
 
-        3️⃣import ModuleG
+        import ModuleG
         import ModuleH
         """,
       expected: """
@@ -48,28 +45,24 @@ struct BlankLinesBetweenImportsTests: RuleTesting {
         import ModuleF
         import ModuleG
         import ModuleH
+
         """,
-      findings: [
-        FindingSpec("1️⃣", message: "remove blank line between import statements"),
-        FindingSpec("2️⃣", message: "remove blank line between import statements"),
-        FindingSpec("3️⃣", message: "remove blank line between import statements"),
-      ]
+      linelength: 100
     )
   }
 
   @Test func removesBlankLinesBetweenTestableImports() {
-    assertFormatting(
-      BlankLinesBetweenImports.self,
+    assertLayout(
       input: """
         import ModuleA
 
-        1️⃣@testable import ModuleB
+        @testable import ModuleB
         import ModuleC
 
-        2️⃣@testable import ModuleD
+        @testable import ModuleD
         @testable import ModuleE
 
-        3️⃣@testable import ModuleF
+        @testable import ModuleF
         """,
       expected: """
         import ModuleA
@@ -78,18 +71,14 @@ struct BlankLinesBetweenImportsTests: RuleTesting {
         @testable import ModuleD
         @testable import ModuleE
         @testable import ModuleF
+
         """,
-      findings: [
-        FindingSpec("1️⃣", message: "remove blank line between import statements"),
-        FindingSpec("2️⃣", message: "remove blank line between import statements"),
-        FindingSpec("3️⃣", message: "remove blank line between import statements"),
-      ]
+      linelength: 100
     )
   }
 
   @Test func noChangeWhenNoBlankLines() {
-    assertFormatting(
-      BlankLinesBetweenImports.self,
+    assertLayout(
       input: """
         import ModuleA
         import ModuleB
@@ -99,14 +88,14 @@ struct BlankLinesBetweenImportsTests: RuleTesting {
         import ModuleA
         import ModuleB
         import ModuleC
+
         """,
-      findings: []
+      linelength: 100
     )
   }
 
   @Test func preservesBlankLineAfterImportsBeforeCode() {
-    assertFormatting(
-      BlankLinesBetweenImports.self,
+    assertLayout(
       input: """
         import ModuleA
         import ModuleB
@@ -118,8 +107,9 @@ struct BlankLinesBetweenImportsTests: RuleTesting {
         import ModuleB
 
         class Foo {}
+
         """,
-      findings: []
+      linelength: 100
     )
   }
 }

@@ -191,13 +191,19 @@ enum BreakKind: Equatable, Sendable {
 enum NewlineBehavior: Sendable {
     /// Breaking onto a newline is allowed if necessary, but is not required. `ignoresDiscretionary`
     /// specifies whether a user-entered discretionary newline should be respected.
-    case elective(ignoresDiscretionary: Bool)
+    ///
+    /// `maxBlankLines` overrides the global `MaximumBlankLines` setting when this break merges
+    /// with discretionary newlines from source trivia.
+    case elective(ignoresDiscretionary: Bool, maxBlankLines: Int? = nil)
 
     /// Breaking onto a newline `count` times is required, unless it would create more blank lines
     /// than are allowed by the current configuration. Any blank lines over the configured limit are
     /// discarded. `discretionary` tracks whether these newlines were created based on user-entered
     /// discretionary newlines, from the source, or were inserted by the formatter.
-    case soft(count: Int, discretionary: Bool)
+    ///
+    /// `maxBlankLines` overrides the global `MaximumBlankLines` setting for this specific break,
+    /// allowing per-context blank line limits (e.g., 0 blank lines between imports).
+    case soft(count: Int, discretionary: Bool, maxBlankLines: Int? = nil)
 
     /// Breaking onto a newline `count` times is required and any limits on blank lines are
     /// **ignored**. Exactly `count` newlines are always printed, regardless of existing consecutive
@@ -217,20 +223,40 @@ enum NewlineBehavior: Sendable {
     /// A single hard newline.
     static let hard = NewlineBehavior.hard(count: 1)
 
+    /// Returns a copy of this newline behavior with the given maxBlankLines applied.
+    func withMaxBlankLines(_ max: Int) -> NewlineBehavior {
+        switch self {
+        case .elective(let ignores, let existing):
+            .elective(ignoresDiscretionary: ignores, maxBlankLines: mergeMax(max, existing))
+        case .soft(let count, let disc, let existing):
+            .soft(count: count, discretionary: disc, maxBlankLines: mergeMax(max, existing))
+        case .hard, .escaped:
+            self
+        }
+    }
+
     static func + (lhs: NewlineBehavior, rhs: NewlineBehavior) -> NewlineBehavior {
         switch (lhs, rhs) {
-        case (.elective, _):
+        case (.elective(_, let max), _):
             // `rhs` is either also elective or a required newline, which overwrites elective.
+            // Carry maxBlankLines through if the rhs is soft.
+            if let max, case .soft(let c, let d, let rhsMax) = rhs {
+                return .soft(count: c, discretionary: d, maxBlankLines: mergeMax(max, rhsMax))
+            }
             return rhs
-        case (_, .elective):
+        case (_, .elective(_, let max)):
             // `lhs` is either also elective or a required newline, which overwrites elective.
+            if let max, case .soft(let c, let d, let lhsMax) = lhs {
+                return .soft(count: c, discretionary: d, maxBlankLines: mergeMax(max, lhsMax))
+            }
             return lhs
 
         case (.escaped, _):
             return rhs
         case (_, .escaped):
             return lhs
-        case (.soft(let lhsCount, let lhsDiscretionary), .soft(let rhsCount, let rhsDiscretionary)):
+        case (.soft(let lhsCount, let lhsDiscretionary, let lhsMax),
+              .soft(let rhsCount, let rhsDiscretionary, let rhsMax)):
             let mergedCount: Int
             if lhsDiscretionary && rhsDiscretionary {
                 mergedCount = lhsCount + rhsCount
@@ -241,15 +267,28 @@ enum NewlineBehavior: Sendable {
             } else {
                 mergedCount = max(lhsCount, rhsCount)
             }
-            return .soft(count: mergedCount, discretionary: lhsDiscretionary || rhsDiscretionary)
+            return .soft(
+                count: mergedCount,
+                discretionary: lhsDiscretionary || rhsDiscretionary,
+                maxBlankLines: mergeMax(lhsMax, rhsMax)
+            )
 
-        case (.soft(let softCount, _), .hard(let hardCount)),
-            (.hard(let hardCount), .soft(let softCount, _)):
+        case (.soft(let softCount, _, _), .hard(let hardCount)),
+            (.hard(let hardCount), .soft(let softCount, _, _)):
             return .hard(count: max(softCount, hardCount))
 
         case (.hard(let lhsCount), .hard(let rhsCount)):
             return .hard(count: lhsCount + rhsCount)
         }
+    }
+}
+
+/// Returns the most restrictive (smallest) of two optional maxBlankLines values.
+private func mergeMax(_ a: Int?, _ b: Int?) -> Int? {
+    switch (a, b) {
+    case (let a?, let b?): min(a, b)
+    case (let a?, nil), (nil, let a?): a
+    case (nil, nil): nil
     }
 }
 

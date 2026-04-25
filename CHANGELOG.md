@@ -55,6 +55,11 @@
 - Rename `NoExtensionAccessLevel` to `ExtensionAccessLevel`; rename `onDeclarations` to `onMembers` ([#383](https://github.com/toba/swiftiomatic/issues/383))
 - Rename `compoundCaseStatements` to `wrapCompoundCaseItems` ([#382](https://github.com/toba/swiftiomatic/issues/382))
 - Convert `EmptyBraces` from syntax rewrite rule to layout
+- Convert `BlankLinesBetweenImports` to layout; `maxBlankLines: 0` between consecutive imports
+- Convert `NoEmptyLinesOpeningClosingBraces` to layout; `maxBlankLines: 0` on brace breaks
+- Convert `BlankLinesBetweenChainedFunctions` to layout; `maxBlankLines: 0` on chain period breaks
+- Add per-break `maxBlankLines` to `NewlineBehavior`; enables per-context blank line limits in layout
+- Rename `PrettyPrint` test folder to `Layout`; `assertPrettyPrintEqual` to `assertLayout`
 
 ## Week of Apr 12 – Apr 18, 2026
 

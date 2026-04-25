@@ -236,7 +236,7 @@ extension TokenStream {
                 canMergeNewlinesIntoLastBreak = false
                 tokens.append(token)
                 return
-            case (.break(let breakKind, _, .soft(1, _)), .comment(let c2, _))
+            case (.break(let breakKind, _, .soft(1, _, _)), .comment(let c2, _))
             where breakAllowsCommentMerge(breakKind) && (c2.kind == .docLine || c2.kind == .line):
                 // we are search for the pattern of [line comment] - [soft break 1] - [line comment]
                 // where the comment type is the same; these can be merged into a single comment

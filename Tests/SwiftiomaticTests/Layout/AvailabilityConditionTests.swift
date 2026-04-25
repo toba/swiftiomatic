@@ -108,9 +108,7 @@ struct AvailabilityConditionTests: LayoutTesting {
       #endif
 
       func myfun() {
-
         if #available(OSX 10.12, *) {
-
           let a = 123
         } else {
           // do stuff

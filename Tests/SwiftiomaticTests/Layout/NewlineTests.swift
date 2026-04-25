@@ -122,7 +122,6 @@ struct NewlineTests: LayoutTesting {
     let expected =
       """
       class MyClazz {
-
         lazy var memberView: UIView = {
           let view = UIView()
           return view
@@ -137,7 +136,6 @@ struct NewlineTests: LayoutTesting {
         }
 
         let constMember = 1
-
       }
 
       """
