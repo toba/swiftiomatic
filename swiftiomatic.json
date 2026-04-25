@@ -3,54 +3,61 @@
 	"access": {
 		"extensionAccessLevel": {
 			"lint": "no",
-			"placement": "onExtension",
-			"rewrite": true
+			"rewrite": true,
+			"placement": "onExtension"
 		},
 		"fileScopedDeclarationPrivacy": {
-			"accessLevel": "private",
 			"lint": "warn",
-			"rewrite": true
+			"rewrite": true,
+			"accessLevel": "private"
 		},
 		"preferFinalClasses": { "lint": "warn", "rewrite": false },
 		"privateStateVariables": { "lint": "no", "rewrite": true }
 	},
 	"blankLines": {
-		"afterGuardStatements": { "lint": "no", "rewrite": false },
 		"afterImports": { "lint": "warn", "rewrite": true },
+		"betweenScopes": { "lint": "no", "rewrite": false },
 		"afterSwitchCase": { "lint": "no", "rewrite": false },
 		"beforeAndAfterMark": { "lint": "no", "rewrite": false },
-		"beforeControlFlowBlocks": { "lint": "no", "rewrite": true },
-		"betweenScopes": { "lint": "no", "rewrite": false },
-		"closingBraceAsBlankLine": true,
+		"maximumBlankLines": 1,
 		"commentAsBlankLine": true,
-		"consistentSwitchCaseSpacing": { "lint": "no", "rewrite": false },
-		"maximumBlankLines": 1
+		"afterGuardStatements": { "lint": "no", "rewrite": false },
+		"beforeControlFlowBlocks": { "lint": "no", "rewrite": true },
+		"closingBraceAsBlankLine": true,
+		"consistentSwitchCaseSpacing": { "lint": "no", "rewrite": false }
 	},
 	"closures": {
-		"ambiguousTrailingClosureOverload": { "lint": "warn" },
+		"mutableCapture": { "lint": "warn" },
+		"namedClosureParams": { "lint": "warn", "rewrite": false },
+		"unhandledThrowingTask": { "lint": "no" },
+		"preferTrailingClosures": { "lint": "warn", "rewrite": true },
+		"noParensInClosureParams": { "lint": "warn", "rewrite": true },
 		"noTrailingClosureParens": { "lint": "warn", "rewrite": true },
 		"onlyOneTrailingClosureArgument": { "lint": "warn" },
-		"preferTrailingClosures": { "lint": "warn", "rewrite": true }
+		"ambiguousTrailingClosureOverload": { "lint": "warn" }
 	},
 	"comments": {
-		"convertRegularCommentToDocC": { "lint": "no", "rewrite": false },
-		"disallowBlockComments": { "lint": "warn" },
-		"documentParameters": { "lint": "no" },
-		"documentPublicDeclarations": { "lint": "no" },
+		"requireSummary": { "lint": "no" },
+		"tripleSlashDocC": { "lint": "warn", "rewrite": true },
 		"formatTypePrefix": { "lint": "warn", "rewrite": true },
 		"precedeModifiers": { "lint": "warn", "rewrite": true },
-		"requireSummary": { "lint": "no" },
-		"tripleSlashDocC": { "lint": "warn", "rewrite": true }
+		"documentParameters": { "lint": "no" },
+		"disallowBlockComments": { "lint": "warn" },
+		"documentPublicDeclarations": { "lint": "no" },
+		"convertRegularCommentToDocC": { "lint": "no", "rewrite": false }
 	},
 	"conditions": {
+		"preferTernary": { "lint": "no", "rewrite": true },
 		"explicitNilCheck": { "lint": "warn", "rewrite": true },
-		"noParensAroundConditions": { "lint": "warn", "rewrite": true },
 		"noYodaConditions": { "lint": "warn", "rewrite": true },
-		"preferCommaConditions": { "lint": "warn", "rewrite": true },
-		"preferConditionalExpression": { "lint": "no", "rewrite": false },
 		"preferEarlyExits": { "lint": "no", "rewrite": false },
+		"identicalOperands": { "lint": "no" },
+		"preferUnavailable": { "lint": "warn", "rewrite": true },
 		"preferIfElseChain": { "lint": "warn", "rewrite": true },
-		"preferTernary": { "lint": "no", "rewrite": true }
+		"duplicateConditions": { "lint": "error" },
+		"preferCommaConditions": { "lint": "warn", "rewrite": true },
+		"noParensAroundConditions": { "lint": "warn", "rewrite": true },
+		"preferConditionalExpression": { "lint": "no", "rewrite": false }
 	},
 	"declarations": {
 		"initCoderUnavailable": { "lint": "no", "rewrite": false },
@@ -58,13 +65,41 @@
 		"oneDeclarationPerLine": { "lint": "warn", "rewrite": true },
 		"preferMainAttribute": { "lint": "warn", "rewrite": true },
 		"preferSynthesizedInitializer": { "lint": "warn" },
-		"staticStructShouldBeEnum": { "lint": "warn", "rewrite": true }
+		"staticStructShouldBeEnum": { "lint": "warn", "rewrite": true },
+		"requireSuperCall": {
+			"lint": "no",
+			"rewrite": false,
+			"methodNames": [
+				"awakeFromNib()",
+				"prepareForInterfaceBuilder()",
+				"invalidateLayout()",
+				"invalidateLayout(with:)",
+				"prepareForReuse()",
+				"updateConstraints()",
+				"didReceiveMemoryWarning()",
+				"encodeRestorableState(with:)",
+				"decodeRestorableState(with:)",
+				"setEditing(_:animated:)",
+				"viewDidAppear(_:)",
+				"viewDidDisappear(_:)",
+				"viewDidLoad()",
+				"viewWillAppear(_:)",
+				"viewWillDisappear(_:)",
+				"setUp()",
+				"setUpWithError()",
+				"tearDown()",
+				"tearDownWithError()",
+				"invokeTest()"
+			]
+		},
+		"unusedSetterValue": { "lint": "warn" }
 	},
 	"emptyExtensions": { "lint": "warn", "rewrite": true },
 	"fileHeader": { "lint": "no", "rewrite": false },
 	"forcing": {
 		"noForceTry": { "lint": "no", "rewrite": false },
-		"noForceUnwrap": { "lint": "no", "rewrite": false }
+		"noForceUnwrap": { "lint": "no", "rewrite": false },
+		"noForceCast": { "lint": "warn", "rewrite": false }
 	},
 	"generics": {
 		"opaqueGenericParameters": { "lint": "no", "rewrite": false },
@@ -90,7 +125,16 @@
 		"preferIsEmpty": { "lint": "no", "rewrite": false },
 		"preferKeyPath": { "lint": "no", "rewrite": false },
 		"preferStaticOverClassFunc": { "lint": "warn", "rewrite": false },
-		"replaceForEachWithForLoop": { "lint": "warn" }
+		"replaceForEachWithForLoop": { "lint": "warn" },
+		"avoidNoneName": { "lint": "warn", "rewrite": false },
+		"noVoidTernary": { "lint": "warn", "rewrite": false },
+		"preferCompoundAssignment": { "lint": "warn", "rewrite": true },
+		"preferDotZero": { "lint": "warn", "rewrite": true },
+		"preferIsDisjoint": { "lint": "warn", "rewrite": false },
+		"preferSelfType": { "lint": "warn", "rewrite": true },
+		"preferToggle": { "lint": "warn", "rewrite": true },
+		"requireFatalErrorMessage": { "lint": "warn", "rewrite": false },
+		"retainNotificationObserver": { "lint": "no" }
 	},
 	"indentation": {
 		"blankLines": false,
@@ -111,7 +155,8 @@
 		"ensureLineBreakAtEOF": { "lint": "no", "rewrite": false },
 		"lineLength": 100,
 		"modifiersOnSameLine": { "lint": "warn", "rewrite": false },
-		"respectExisting": true
+		"respectExisting": true,
+		"wrapTernary": { "lint": "warn", "rewrite": true }
 	},
 	"literals": {
 		"groupNumericLiterals": { "lint": "warn", "rewrite": true },
@@ -120,7 +165,10 @@
 		"noPlaygroundLiterals": { "lint": "warn" },
 		"reflowMultilineStringLiterals": "never",
 		"urlMacro": { "lint": "no", "rewrite": false },
-		"useShortArrayLiteral": { "lint": "no", "rewrite": false }
+		"useShortArrayLiteral": { "lint": "no", "rewrite": false },
+		"duplicateDictionaryKeys": { "lint": "warn" },
+		"invisibleCharacters": { "lint": "error", "additionalCodePoints": [] },
+		"noLiteralProtocolInit": { "lint": "warn" }
 	},
 	"naming": {
 		"camelCaseIdentifiers": { "lint": "warn" },
@@ -192,7 +240,13 @@
 		"redundantTypedThrows": { "lint": "warn", "rewrite": true },
 		"redundantViewBuilder": { "lint": "no", "rewrite": false },
 		"semicolons": { "lint": "warn", "rewrite": true },
-		"useImplicitInit": { "lint": "warn", "rewrite": true }
+		"useImplicitInit": { "lint": "warn", "rewrite": true },
+		"redundantEnumerated": { "lint": "warn", "rewrite": true },
+		"redundantEscaping": { "lint": "warn", "rewrite": false },
+		"redundantNilCoalescing": { "lint": "warn", "rewrite": true },
+		"redundantOverride": { "lint": "warn", "rewrite": false },
+		"redundantSetterACL": { "lint": "warn", "rewrite": false },
+		"unusedControlFlowLabel": { "lint": "warn" }
 	},
 	"sort": {
 		"declarations": { "lint": "no", "rewrite": false },
@@ -239,5 +293,8 @@
 		"singleLineBodies": { "lint": "no", "mode": "inline", "rewrite": true },
 		"singleLineComments": { "lint": "no", "rewrite": false },
 		"switchCaseBodies": { "lint": "no", "mode": "adaptive", "rewrite": true }
-	}
+	},
+	"deinitObserverRemoval": { "lint": "warn" },
+	"delegateProtocolRequiresAnyObject": { "lint": "warn" },
+	"weakDelegates": { "lint": "warn" }
 }

@@ -736,6 +736,15 @@ package enum ConfigurationSchema {
         }
       }
     },
+    "finalTestCase" : {
+      "allOf" : [
+        {
+          "$ref" : "#/$defs/lintOnlyBase"
+        }
+      ],
+      "description" : "XCTestCase subclasses should be `final`.\n\nMarking a test case `final` lets the runtime resolve test methods statically and avoids the\ndynamic-dispatch overhead Apple's docs call out for non-final test cases.\n\nLint: warns on a `class` (not `final`, not `open`) that inherits from a known test base class\n(`XCTestCase`, `QuickSpec`).\n",
+      "unevaluatedProperties" : false
+    },
     "forcing" : {
       "additionalProperties" : false,
       "description" : "forcing rule group.",
@@ -936,6 +945,15 @@ package enum ConfigurationSchema {
           ],
           "description" : "Don't use a ternary expression to call void-returning functions.\n\n`condition ? doA() : doB()` reads as if it produces a value, but when both branches return\n`Void` it's effectively a hidden if/else with strictly worse readability. Use a proper\n`if`/`else` statement instead.\n\nLint: A warning is raised when a ternary appears as a statement and both branches are call\nexpressions.\n\nFormat: Not auto-fixed; the rewrite would change formatting beyond the scope of this rule.\n [opt-in]"
         },
+        "preferAllSatisfy" : {
+          "allOf" : [
+            {
+              "$ref" : "#/$defs/lintOnlyBase"
+            }
+          ],
+          "description" : "Prefer `allSatisfy` or `contains` over `reduce(true)` / `reduce(false)`.\n\n`reduce(true) { $0 && ... }` and `reduce(false) { $0 || ... }` are spellings of `allSatisfy`\nand `contains` that don't short-circuit. The dedicated methods stop as soon as the answer is\ndetermined.\n\nLint:\n- `xs.reduce(true) { ... }` / `xs.reduce(into: true) { ... }` → suggest `allSatisfy`\n- `xs.reduce(false) { ... }` / `xs.reduce(into: false) { ... }` → suggest `contains`\n",
+          "unevaluatedProperties" : false
+        },
         "preferCompoundAssignment" : {
           "allOf" : [
             {
@@ -943,6 +961,15 @@ package enum ConfigurationSchema {
             }
           ],
           "description" : "Prefer compound assignment operators (`+=`, `-=`, `*=`, `/=`) over the long form.\n\n`x = x + y` is exactly equivalent to `x += y` for the supported operators (`+`, `-`, `*`, `/`).\nThe compound form is shorter and avoids repeating the LHS, which makes refactors safer when the\nreceiver is renamed.\n\nThe rule fires only when the LHS expression text matches the RHS's first operand exactly. It\ndoes not fire on `x = a + x` or `x = a + b` patterns.\n\nLint: A warning is raised for `x = x + y` etc.\n\nFormat: The expression is rewritten to `x += y`.\n"
+        },
+        "preferContains" : {
+          "allOf" : [
+            {
+              "$ref" : "#/$defs/lintOnlyBase"
+            }
+          ],
+          "description" : "Prefer `contains(where:)` over `filter`-then-count/isEmpty/first patterns, and\n`contains(_:)` over `range(of:) != nil`.\n\n`filter` allocates an intermediate collection just to ask a yes/no question; `contains`\nshort-circuits at the first match. Likewise, `string.contains(needle)` is clearer and faster\nthan building a `Range` only to check it for `nil`.\n\nLint: warns on:\n- `xs.filter { ... }.count [==/!=/>] 0`\n- `xs.filter { ... }.isEmpty`\n- `xs.first(where:) [==/!=] nil`, `xs.firstIndex(where:) [==/!=] nil`\n- `s.range(of: needle) [==/!=] nil` (skipped when `options:` is supplied, e.g. `.regularExpression`)\n",
+          "unevaluatedProperties" : false
         },
         "preferCountWhere" : {
           "allOf" : [
@@ -968,6 +995,24 @@ package enum ConfigurationSchema {
           ],
           "description" : "Enforce consistent use of `#file` or `#fileID`.\n\nIn Swift 6+, `#file` and `#fileID` have identical behavior (both produce `Module/File.swift`).\nThis rule standardizes usage to `#fileID` by default. `#filePath` is unaffected.\n\nLint: Using the non-preferred file macro yields a lint warning.\n\nFormat: The macro is replaced with the preferred spelling.\n [opt-in]"
         },
+        "preferFirstWhere" : {
+          "allOf" : [
+            {
+              "$ref" : "#/$defs/lintOnlyBase"
+            }
+          ],
+          "description" : "Prefer `.first(where:)` over `.filter { ... }.first`.\n\n`filter` allocates and populates an entire intermediate array; `first(where:)` short-circuits\nat the first match.\n\nLint: `xs.filter { ... }.first` raises a warning suggesting `first(where:)`.\n",
+          "unevaluatedProperties" : false
+        },
+        "preferFlatMap" : {
+          "allOf" : [
+            {
+              "$ref" : "#/$defs/lintOnlyBase"
+            }
+          ],
+          "description" : "Prefer `flatMap` over `map { ... }.reduce([], +)`.\n\n`flatMap` performs the concatenation in a single pass; `map` followed by\n`reduce([], +)` allocates an intermediate array per element.\n\nLint: warns on `xs.map { ... }.reduce([], +)`.\n",
+          "unevaluatedProperties" : false
+        },
         "preferIsDisjoint" : {
           "allOf" : [
             {
@@ -991,6 +1036,33 @@ package enum ConfigurationSchema {
             }
           ],
           "description" : "Convert trivial `map { $0.foo }` closures to keyPath-based syntax.\n\nWhen a closure's only expression is a property access on `$0`, the closure can be\nreplaced with a keyPath expression: `map(\\.foo)`. This is more concise and expressive.\n\nApplies to `map`, `flatMap`, `compactMap`, `allSatisfy`, `filter`, and `contains(where:)`.\n\nOnly fires for simple property chains (not method calls, subscripts, or complex expressions).\n\nLint: A trivial `{ $0.property }` closure raises a warning.\n\nFormat: The closure is replaced with a keyPath expression.\n [opt-in]"
+        },
+        "preferLastWhere" : {
+          "allOf" : [
+            {
+              "$ref" : "#/$defs/lintOnlyBase"
+            }
+          ],
+          "description" : "Prefer `.last(where:)` over `.filter { ... }.last`.\n\n`filter` allocates and populates an entire intermediate array; `last(where:)` walks the\ncollection once and avoids the allocation.\n\nLint: `xs.filter { ... }.last` raises a warning suggesting `last(where:)`.\n",
+          "unevaluatedProperties" : false
+        },
+        "preferMinMax" : {
+          "allOf" : [
+            {
+              "$ref" : "#/$defs/lintOnlyBase"
+            }
+          ],
+          "description" : "Prefer `min()` / `max()` over `sorted().first` / `sorted().last`.\n\n`sorted()` is O(n log n); `min()`/`max()` are O(n) and avoid the intermediate sorted array.\n\nLint: warns on `xs.sorted().first` and `xs.sorted().last` (and the `sorted(by:)` variants).\n`sorted(byKeyPath:)`, `sorted(byKeyPath:ascending:)`, and chains where `first`/`last` is\nitself called as a method (e.g. `first(where:)`) are intentionally not flagged.\n",
+          "unevaluatedProperties" : false
+        },
+        "preferReduceInto" : {
+          "allOf" : [
+            {
+              "$ref" : "#/$defs/lintOnlyBase"
+            }
+          ],
+          "description" : "Prefer `reduce(into:_:)` over `reduce(_:_:)` when the accumulator is a copy-on-write value\ntype (Array, Dictionary, Set, String).\n\n`reduce(_:_:)` makes a fresh copy of the accumulator on every step; `reduce(into:_:)` mutates\nthe seed in place.\n\nLint: warns when `reduce`'s first argument is unlabeled (so it would otherwise be `into:`) and\nthe seed expression names a CoW type.\n",
+          "unevaluatedProperties" : false
         },
         "preferSelfType" : {
           "allOf" : [
@@ -1613,6 +1685,24 @@ package enum ConfigurationSchema {
       "description" : "Initializers declared in `ExpressibleBy*` literal protocols are intended\nfor the compiler. Calling them directly (`Set(arrayLiteral: 1, 2)`) is\nalmost certainly a mistake — the literal form (`[1, 2]`) is shorter,\nfaster, and more idiomatic.\n\nLint: When a known standard-library or Foundation type is initialized via\na compiler-protocol label like `arrayLiteral`/`dictionaryLiteral`/\n`stringLiteral`, a warning is raised.\n",
       "unevaluatedProperties" : false
     },
+    "noOptionalBool" : {
+      "allOf" : [
+        {
+          "$ref" : "#/$defs/lintOnlyBase"
+        }
+      ],
+      "description" : "Optional booleans are confusing — three states (`true`, `false`, `nil`) where two are usually\nenough. Prefer a non-optional `Bool` with a sensible default, or model the third state with an\nenum so the cases are named.\n\nLint: A warning is raised for any `Bool?` type annotation, `Bool?` written as an expression\ntype, or an `Optional<Bool>.some(...)` call wrapping a boolean literal.\n",
+      "unevaluatedProperties" : false
+    },
+    "noOptionalCollection" : {
+      "allOf" : [
+        {
+          "$ref" : "#/$defs/lintOnlyBase"
+        }
+      ],
+      "description" : "Optional collections like `[T]?`, `[K: V]?`, and `Set<T>?` add a state (`nil`) that is rarely\ndistinguishable from \"empty\". Prefer the non-optional collection and use `isEmpty` to check\nfor absence.\n\nLint: A warning is raised for any `OptionalTypeSyntax` whose wrapped type is an array,\ndictionary, or named `Array`/`Dictionary`/`Set`.\n",
+      "unevaluatedProperties" : false
+    },
     "noParensAroundConditions" : {
       "allOf" : [
         {
@@ -1721,6 +1811,15 @@ package enum ConfigurationSchema {
       ],
       "description" : "Place doc comments before any declaration modifiers or attributes.\n\nDoc comments (`///` or `/** */`) should appear before all attributes and access modifiers,\nnot between them.\n\nLint: If a doc comment appears after an attribute or modifier, a lint warning is raised.\n\nFormat: The doc comment is moved before all attributes and modifiers.\n"
     },
+    "preferAllSatisfy" : {
+      "allOf" : [
+        {
+          "$ref" : "#/$defs/lintOnlyBase"
+        }
+      ],
+      "description" : "Prefer `allSatisfy` or `contains` over `reduce(true)` / `reduce(false)`.\n\n`reduce(true) { $0 && ... }` and `reduce(false) { $0 || ... }` are spellings of `allSatisfy`\nand `contains` that don't short-circuit. The dedicated methods stop as soon as the answer is\ndetermined.\n\nLint:\n- `xs.reduce(true) { ... }` / `xs.reduce(into: true) { ... }` → suggest `allSatisfy`\n- `xs.reduce(false) { ... }` / `xs.reduce(into: false) { ... }` → suggest `contains`\n",
+      "unevaluatedProperties" : false
+    },
     "preferAngleBracketExtensions" : {
       "allOf" : [
         {
@@ -1769,6 +1868,15 @@ package enum ConfigurationSchema {
       ],
       "description" : "Use if/switch expressions for conditional property assignment.\n\nWhen a property with a type annotation and no initializer is immediately\nfollowed by an exhaustive `if` or `switch` that assigns the property in\nevery branch, the two statements are merged into a single assignment\nexpression. Nested conditionals are handled recursively.\n\nLint: A property followed by an exhaustive conditional assignment raises\n      a warning.\n\nFormat: The separate statements are merged into a conditional expression\n        assignment.\n [opt-in]"
     },
+    "preferContains" : {
+      "allOf" : [
+        {
+          "$ref" : "#/$defs/lintOnlyBase"
+        }
+      ],
+      "description" : "Prefer `contains(where:)` over `filter`-then-count/isEmpty/first patterns, and\n`contains(_:)` over `range(of:) != nil`.\n\n`filter` allocates an intermediate collection just to ask a yes/no question; `contains`\nshort-circuits at the first match. Likewise, `string.contains(needle)` is clearer and faster\nthan building a `Range` only to check it for `nil`.\n\nLint: warns on:\n- `xs.filter { ... }.count [==/!=/>] 0`\n- `xs.filter { ... }.isEmpty`\n- `xs.first(where:) [==/!=] nil`, `xs.firstIndex(where:) [==/!=] nil`\n- `s.range(of: needle) [==/!=] nil` (skipped when `options:` is supplied, e.g. `.regularExpression`)\n",
+      "unevaluatedProperties" : false
+    },
     "preferCountWhere" : {
       "allOf" : [
         {
@@ -1809,6 +1917,15 @@ package enum ConfigurationSchema {
       ],
       "description" : "Prefer `== false` over `!` prefix negation.\n\nThe `!` prefix operator can be easy to miss, especially in complex conditions.\nUsing `== false` makes the negation explicit and more readable.\n\nLint: Using `!` prefix negation raises a warning.\n\nFormat: `!expression` is replaced with `expression == false`.\n [opt-in]"
     },
+    "preferFailableStringInit" : {
+      "allOf" : [
+        {
+          "$ref" : "#/$defs/lintOnlyBase"
+        }
+      ],
+      "description" : "`String(decoding: data, as: UTF8.self)` silently substitutes `U+FFFD` for invalid bytes,\nhiding decoding errors. Prefer the failable `String(bytes: data, encoding: .utf8)` initializer\nso the caller can handle invalid input explicitly.\n\nLint: A warning is raised for any call of the form `String(decoding:as:)` or\n`String.init(decoding:as:)` whose `as:` argument is `UTF8.self`. Other unicode codecs\n(`UTF16.self`, etc.) are not flagged.\n",
+      "unevaluatedProperties" : false
+    },
     "preferFileID" : {
       "allOf" : [
         {
@@ -1824,6 +1941,24 @@ package enum ConfigurationSchema {
         }
       ],
       "description" : "Prefer `final class` unless a class is designed for subclassing.\n\nClasses should be `final` by default to communicate that they are not designed to be\nsubclassed. Classes are left non-final if they are `open`, have \"Base\" in the name,\nhave a comment mentioning \"base\" or \"subclass\", or are subclassed within the same file.\n\nWhen a class is made `final`, any `open` members are converted to `public` since\n`final` classes cannot have `open` members.\n\nLint: A non-final, non-open class declaration raises a warning.\n\nFormat: The `final` modifier is added and `open` members are converted to `public`.\n [opt-in]"
+    },
+    "preferFirstWhere" : {
+      "allOf" : [
+        {
+          "$ref" : "#/$defs/lintOnlyBase"
+        }
+      ],
+      "description" : "Prefer `.first(where:)` over `.filter { ... }.first`.\n\n`filter` allocates and populates an entire intermediate array; `first(where:)` short-circuits\nat the first match.\n\nLint: `xs.filter { ... }.first` raises a warning suggesting `first(where:)`.\n",
+      "unevaluatedProperties" : false
+    },
+    "preferFlatMap" : {
+      "allOf" : [
+        {
+          "$ref" : "#/$defs/lintOnlyBase"
+        }
+      ],
+      "description" : "Prefer `flatMap` over `map { ... }.reduce([], +)`.\n\n`flatMap` performs the concatenation in a single pass; `map` followed by\n`reduce([], +)` allocates an intermediate array per element.\n\nLint: warns on `xs.map { ... }.reduce([], +)`.\n",
+      "unevaluatedProperties" : false
     },
     "preferIfElseChain" : {
       "allOf" : [
@@ -1857,6 +1992,15 @@ package enum ConfigurationSchema {
       ],
       "description" : "Convert trivial `map { $0.foo }` closures to keyPath-based syntax.\n\nWhen a closure's only expression is a property access on `$0`, the closure can be\nreplaced with a keyPath expression: `map(\\.foo)`. This is more concise and expressive.\n\nApplies to `map`, `flatMap`, `compactMap`, `allSatisfy`, `filter`, and `contains(where:)`.\n\nOnly fires for simple property chains (not method calls, subscripts, or complex expressions).\n\nLint: A trivial `{ $0.property }` closure raises a warning.\n\nFormat: The closure is replaced with a keyPath expression.\n [opt-in]"
     },
+    "preferLastWhere" : {
+      "allOf" : [
+        {
+          "$ref" : "#/$defs/lintOnlyBase"
+        }
+      ],
+      "description" : "Prefer `.last(where:)` over `.filter { ... }.last`.\n\n`filter` allocates and populates an entire intermediate array; `last(where:)` walks the\ncollection once and avoids the allocation.\n\nLint: `xs.filter { ... }.last` raises a warning suggesting `last(where:)`.\n",
+      "unevaluatedProperties" : false
+    },
     "preferMainAttribute" : {
       "allOf" : [
         {
@@ -1864,6 +2008,33 @@ package enum ConfigurationSchema {
         }
       ],
       "description" : "Replace `@UIApplicationMain` and `@NSApplicationMain` with `@main`.\n\nThese attributes were deprecated in favor of `@main` (SE-0383, Swift 5.3+).\n\nLint: Using `@UIApplicationMain` or `@NSApplicationMain` raises a warning.\n\nFormat: The attribute is replaced with `@main`.\n"
+    },
+    "preferMinMax" : {
+      "allOf" : [
+        {
+          "$ref" : "#/$defs/lintOnlyBase"
+        }
+      ],
+      "description" : "Prefer `min()` / `max()` over `sorted().first` / `sorted().last`.\n\n`sorted()` is O(n log n); `min()`/`max()` are O(n) and avoid the intermediate sorted array.\n\nLint: warns on `xs.sorted().first` and `xs.sorted().last` (and the `sorted(by:)` variants).\n`sorted(byKeyPath:)`, `sorted(byKeyPath:ascending:)`, and chains where `first`/`last` is\nitself called as a method (e.g. `first(where:)`) are intentionally not flagged.\n",
+      "unevaluatedProperties" : false
+    },
+    "preferNonOptionalDataInit" : {
+      "allOf" : [
+        {
+          "$ref" : "#/$defs/lintOnlyBase"
+        }
+      ],
+      "description" : "`String.data(using: .utf8)` returns `Data?`, even though UTF-8 encoding can never fail. Prefer\nthe non-optional `Data(_:)` initializer that takes a `String.UTF8View`:\n`Data(\"foo\".utf8)` instead of `\"foo\".data(using: .utf8)`.\n\nLint: A warning is raised for any call of the form `<expr>.data(using: .utf8)`. Other\nencodings (`.ascii`, `.unicode`, etc.) are not flagged because they really can fail.\n",
+      "unevaluatedProperties" : false
+    },
+    "preferReduceInto" : {
+      "allOf" : [
+        {
+          "$ref" : "#/$defs/lintOnlyBase"
+        }
+      ],
+      "description" : "Prefer `reduce(into:_:)` over `reduce(_:_:)` when the accumulator is a copy-on-write value\ntype (Array, Dictionary, Set, String).\n\n`reduce(_:_:)` makes a fresh copy of the accumulator on every step; `reduce(into:_:)` mutates\nthe seed in place.\n\nLint: warns when `reduce`'s first argument is unlabeled (so it would otherwise be `into:`) and\nthe seed expression names a CoW type.\n",
+      "unevaluatedProperties" : false
     },
     "preferSelfType" : {
       "allOf" : [
@@ -1953,6 +2124,15 @@ package enum ConfigurationSchema {
         }
       ],
       "description" : "Return `Void`, not `()`, in signatures.\n\nNote that this rule does *not* apply to function declaration signatures in order to avoid\nconflicting with `NoVoidReturnOnFunctionSignature`.\n\nLint: Returning `()` in a signature yields a lint error.\n\nFormat: `-> ()` is replaced with `-> Void`\n"
+    },
+    "preferWeakCapture" : {
+      "allOf" : [
+        {
+          "$ref" : "#/$defs/lintOnlyBase"
+        }
+      ],
+      "description" : "Prefer `[weak self]` over `[unowned self]` in closure capture lists.\n\n`unowned` references crash when the captured object has been deallocated; `weak` returns `nil`\nsafely. Unless the closure's lifetime is provably shorter than the captured object's,\n`unowned` is a latent crash waiting for a refactor to expose.\n\nLint: A warning is raised on any `unowned` keyword that appears in a closure capture list.\n`unowned` stored properties (e.g. `unowned var owner: Foo`) are not flagged.\n",
+      "unevaluatedProperties" : false
     },
     "preferWhereClausesInForLoops" : {
       "allOf" : [
@@ -2732,6 +2912,15 @@ package enum ConfigurationSchema {
       "additionalProperties" : false,
       "description" : "testing rule group.",
       "properties" : {
+        "finalTestCase" : {
+          "allOf" : [
+            {
+              "$ref" : "#/$defs/lintOnlyBase"
+            }
+          ],
+          "description" : "XCTestCase subclasses should be `final`.\n\nMarking a test case `final` lets the runtime resolve test methods statically and avoids the\ndynamic-dispatch overhead Apple's docs call out for non-final test cases.\n\nLint: warns on a `class` (not `final`, not `open`) that inherits from a known test base class\n(`XCTestCase`, `QuickSpec`).\n",
+          "unevaluatedProperties" : false
+        },
         "noGuardInTests" : {
           "allOf" : [
             {
@@ -2790,6 +2979,15 @@ package enum ConfigurationSchema {
         }
       ],
       "description" : "Sort protocol composition typealiases alphabetically.\n\nWhen a typealias combines multiple protocols with `&` (e.g. `typealias Deps = Foo & Bar & Baz`),\nthe types are sorted lexicographically. Duplicate types are removed. The `any` keyword, if\npresent, is preserved at the beginning.\n\nLint: If the composition types are not sorted, a lint warning is raised.\n\nFormat: The types are reordered alphabetically and duplicates are removed.\n"
+    },
+    "typedCatchError" : {
+      "allOf" : [
+        {
+          "$ref" : "#/$defs/lintOnlyBase"
+        }
+      ],
+      "description" : "`catch let error` (or any plain identifier-pattern catch) declares a binding of inferred type\n`any Error`, throwing away whatever concrete type `try` could have produced. Either omit the\nbinding (the implicit `error` constant is the same thing) or pattern-match a concrete error\ntype with `catch let e as MyError`.\n\nLint: A warning is raised on `catch` clauses whose only catch item is a bare identifier\npattern (`let error`, `var x`, `(let error)`) without a type cast or `where` clause. The\nimplicit `catch {}` form is fine.\n",
+      "unevaluatedProperties" : false
     },
     "types" : {
       "additionalProperties" : false,
