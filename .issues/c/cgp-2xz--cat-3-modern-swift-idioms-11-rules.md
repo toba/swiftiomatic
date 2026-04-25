@@ -1,11 +1,11 @@
 ---
 # cgp-2xz
 title: 'Cat 3: Modern Swift Idioms (11 rules)'
-status: ready
+status: completed
 type: feature
 priority: normal
 created_at: 2026-04-15T00:27:58Z
-updated_at: 2026-04-15T00:27:58Z
+updated_at: 2026-04-25T20:17:02Z
 parent: qlt-10c
 sync:
     github:
@@ -28,3 +28,19 @@ Prefer modern APIs and patterns.
 | `shorthand_operator` | PreferCompoundAssignment | `.format` | `x += 1` over `x = x + 1` |
 | `prefer_self_type_over_type_of_self` | PreferSelfType | `.lint` | `Self` over `type(of: self)` |
 | `void_function_in_ternary` | NoVoidTernary | `.lint` | Don't use ternary to call void functions |
+
+
+
+## Implementation checklist
+
+- [x] 1. NoForceCast (`.forcing`, lint-only)
+- [x] 2. RequireFatalErrorMessage (`.idioms`, lint-only)
+- [x] 3. AvoidNoneName (`.idioms`, lint-only)
+- [x] 4. NoVoidTernary (`.idioms`, lint-only)
+- [x] 5. PreferIsDisjoint (`.idioms`, lint-only)
+- [x] 6. NamedClosureParams (`.closures`, lint-only)
+- [x] 7. PreferToggle (`.idioms`, rewrite)
+- [x] 8. PreferCompoundAssignment (`.idioms`, rewrite)
+- [x] 9. PreferSelfType (`.idioms`, rewrite)
+- [x] 10. PreferDotZero (`.idioms`, rewrite)
+- [x] 11. PreferUnavailable (`.conditions`, rewrite)
