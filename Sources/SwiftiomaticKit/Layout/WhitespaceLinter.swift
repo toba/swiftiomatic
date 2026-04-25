@@ -447,9 +447,11 @@ fileprivate extension WhitespaceIndentation {
             case .none: return "no indentation"
             case let .heterogeneous(indents):
                 guard let first = indents.first else { return "no indentation" }
-                return indents.dropFirst().reduce(first.diagnosticDescription) {
-                    $0 + ", " + $1.diagnosticDescription
+                var description = first.diagnosticDescription
+                for i in 1..<indents.count {
+                    description += ", " + indents[i].diagnosticDescription
                 }
+                return description
             case let .homogeneous(indent): return indent.diagnosticDescription
         }
     }

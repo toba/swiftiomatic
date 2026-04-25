@@ -5,38 +5,8 @@ import Foundation
 package struct Configuration: Sendable, Equatable {
     package static func == (lhs: Configuration, rhs: Configuration) -> Bool {
         guard lhs.version == rhs.version else { return false }
-        // Compare all layout settings via their LayoutRule types.
-        for entry in settingEntries {
-            let codingKey = AnyCodingKey(entry.key)
-            let lhsEncoder = JSONValueEncoder()
-            var lhsContainer = lhsEncoder.container(keyedBy: AnyCodingKey.self)
-            let rhsEncoder = JSONValueEncoder()
-            var rhsContainer = rhsEncoder.container(keyedBy: AnyCodingKey.self)
-
-            do {
-                try entry.encode(lhs, &lhsContainer, codingKey)
-                try entry.encode(rhs, &rhsContainer, codingKey)
-            } catch {
-                return false
-            }
-            guard lhsEncoder.values == rhsEncoder.values else { return false }
-        }
-        // Compare all rule values.
-        for entry in ruleEntries {
-            let codingKey = AnyCodingKey(entry.key)
-            let lhsEncoder = JSONValueEncoder()
-            var lhsContainer = lhsEncoder.container(keyedBy: AnyCodingKey.self)
-            let rhsEncoder = JSONValueEncoder()
-            var rhsContainer = rhsEncoder.container(keyedBy: AnyCodingKey.self)
-
-            do {
-                try entry.encode(lhs, &lhsContainer, codingKey)
-                try entry.encode(rhs, &rhsContainer, codingKey)
-            } catch {
-                return false
-            }
-            guard lhsEncoder.values == rhsEncoder.values else { return false }
-        }
+        for entry in settingEntries where !entry.isEqual(lhs, rhs) { return false }
+        for entry in ruleEntries where !entry.isEqual(lhs, rhs) { return false }
         return true
     }
 
@@ -49,19 +19,26 @@ package struct Configuration: Sendable, Equatable {
     // MARK: - Typed access
 
     /// Look up any `Configurable` value by type, falling back to its default.
+    ///
+    /// A type mismatch in the underlying storage is a programmer error — typically a
+    /// duplicate key registered for two different `Configurable` types. The getter
+    /// traps with a diagnostic instead of silently returning the default, which
+    /// would hide the bug.
     package subscript<C: Configurable>(_: C.Type = C.self) -> C.Value {
         get {
-            if let group = C.group {
-                if let value = values["\(group.key).\(C.key)"] as? C.Value { return value }
+            let key = C.group.map { "\($0.key).\(C.key)" } ?? C.key
+            guard let stored = values[key] else { return C.defaultValue }
+            guard let typed = stored as? C.Value else {
+                preconditionFailure(
+                    "Configuration key '\(key)' has stored type \(type(of: stored)), "
+                        + "expected \(C.Value.self). This indicates a duplicate Configurable "
+                        + "registration with conflicting Value types.")
             }
-            return values[C.key] as? C.Value ?? C.defaultValue
+            return typed
         }
         set {
-            if let group = C.group {
-                values["\(group.key).\(C.key)"] = newValue
-            } else {
-                values[C.key] = newValue
-            }
+            let key = C.group.map { "\($0.key).\(C.key)" } ?? C.key
+            values[key] = newValue
         }
     }
 
@@ -82,21 +59,42 @@ package struct Configuration: Sendable, Equatable {
         let groupKey: ConfigurationGroup.Key?
         let decode: SettingDecoder
         let encode: SettingEncoder
+        let isEqual: @Sendable (Configuration, Configuration) -> Bool
+    }
+
+    /// Builds the shared decode/encode/equality closures for any `Configurable` type.
+    /// Used by both `SettingEntry` and `RuleEntry` factories.
+    private static func codingClosures<C: Configurable>(
+        for _: C.Type
+    ) -> (
+        decode: @Sendable (KeyedDecodingContainer<AnyCodingKey>, AnyCodingKey, inout Configuration)
+            throws -> Void,
+        encode: @Sendable (Configuration, inout KeyedEncodingContainer<AnyCodingKey>, AnyCodingKey)
+            throws -> Void,
+        isEqual: @Sendable (Configuration, Configuration) -> Bool
+    ) {
+        (
+            decode: { container, codingKey, config in
+                if let value = try container.decodeIfPresent(C.Value.self, forKey: codingKey) {
+                    config[C.self] = value
+                }
+            },
+            encode: { config, container, codingKey in
+                try container.encode(config[C.self], forKey: codingKey)
+            },
+            isEqual: { lhs, rhs in lhs[C.self] == rhs[C.self] }
+        )
     }
 
     private static func entry(for type: any LayoutRule.Type) -> SettingEntry {
         func open<D: LayoutRule>(_: D.Type) -> SettingEntry {
-            SettingEntry(
+            let codecs = codingClosures(for: D.self)
+            return SettingEntry(
                 key: D.key,
                 groupKey: D.group?.key,
-                decode: { container, codingKey, config in
-                    if let value = try container.decodeIfPresent(D.Value.self, forKey: codingKey) {
-                        config[D.self] = value
-                    }
-                },
-                encode: { config, container, codingKey in
-                    try container.encode(config[D.self], forKey: codingKey)
-                }
+                decode: codecs.decode,
+                encode: codecs.encode,
+                isEqual: codecs.isEqual
             )
         }
         return open(type)
@@ -131,22 +129,18 @@ package struct Configuration: Sendable, Equatable {
                 throws -> Void
         let disable: @Sendable (inout Configuration) -> Void
         let enable: @Sendable (inout Configuration) -> Void
+        let isEqual: @Sendable (Configuration, Configuration) -> Bool
     }
 
     private static func ruleEntry(for type: any SyntaxRule.Type) -> RuleEntry {
         func open<R: SyntaxRule>(_: R.Type) -> RuleEntry {
-            RuleEntry(
+            let codecs = codingClosures(for: R.self)
+            return RuleEntry(
                 key: R.key,
                 qualifiedKey: R.qualifiedKey,
                 groupKey: R.group?.key,
-                decode: { container, codingKey, config in
-                    if let value = try container.decodeIfPresent(R.Value.self, forKey: codingKey) {
-                        config[R.self] = value
-                    }
-                },
-                encode: { config, container, codingKey in
-                    try container.encode(config[R.self], forKey: codingKey)
-                },
+                decode: codecs.decode,
+                encode: codecs.encode,
                 disable: { config in
                     var value = config[R.self]
                     value.rewrite = false
@@ -158,7 +152,8 @@ package struct Configuration: Sendable, Equatable {
                     value.rewrite = true
                     value.lint = .warn
                     config[R.self] = value
-                }
+                },
+                isEqual: codecs.isEqual
             )
         }
         return open(type)
@@ -261,6 +256,22 @@ package struct Configuration: Sendable, Equatable {
 /// A version number that can be specified in the configuration file, which allows us to change the
 /// format in the future if desired and still support older files.
 private let highestSupportedConfigurationVersion = 6
+
+extension Configuration {
+    /// The URL of the JSON schema hosted on GitHub. Embedded as `$schema` by `encode(to:)`.
+    package static let schemaURL =
+        "https://raw.githubusercontent.com/toba/swiftiomatic/refs/heads/main/schema.json"
+}
+
+extension String {
+    /// Splits a qualified configuration key like `"group.name"` into `(group, name)` parts.
+    /// Returns `(nil, self)` when no group prefix is present.
+    package var qualifiedKeyParts: (group: String?, name: String) {
+        let parts = split(separator: ".", maxSplits: 1).map(String.init)
+        if parts.count == 2 { return (parts[0], parts[1]) }
+        return (nil, self)
+    }
+}
 
 // MARK: - Codable
 

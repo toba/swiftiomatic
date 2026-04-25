@@ -108,10 +108,20 @@ private func prettyPrintedSource(
         selection: selection,
         findingConsumer: findingConsumer
     )
+    // Apply layout-affecting format rules whose decisions live outside the pretty printer
+    // (currently just WrapTernary, which inserts discretionary newlines for ternaries that would
+    // overflow the line length). Other rules are intentionally skipped here so layout tests
+    // remain focused on PP behavior.
+    let transformedSyntax: Syntax
+    if context.shouldFormat(WrapTernary.self, node: Syntax(sourceFileSyntax)) {
+        transformedSyntax = WrapTernary(context: context).rewrite(Syntax(sourceFileSyntax))
+    } else {
+        transformedSyntax = Syntax(sourceFileSyntax)
+    }
     let printer = LayoutCoordinator(
         context: context,
         source: source,
-        node: Syntax(sourceFileSyntax),
+        node: transformedSyntax,
         printTokenStream: false,
         whitespaceOnly: whitespaceOnly
     )

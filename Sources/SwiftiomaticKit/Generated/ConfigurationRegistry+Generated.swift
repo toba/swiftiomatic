@@ -201,5 +201,6 @@ package enum ConfigurationRegistry {
         WrapSingleLineBodies.self,
         WrapSingleLineComments.self,
         WrapSwitchCaseBodies.self,
+        WrapTernary.self,
     ]
 }

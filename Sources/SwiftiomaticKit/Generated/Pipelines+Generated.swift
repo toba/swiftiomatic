@@ -1196,10 +1196,12 @@ class LintPipeline: SyntaxVisitor {
 
   override func visit(_ node: TernaryExprSyntax) -> SyntaxVisitorContinueKind {
     visitIfEnabled(NoVoidTernary.visit, for: node)
+    visitIfEnabled(WrapTernary.visit, for: node)
     return .visitChildren
   }
   override func visitPost(_ node: TernaryExprSyntax) {
     onVisitPost(rule: NoVoidTernary.self, for: node)
+    onVisitPost(rule: WrapTernary.self, for: node)
   }
 
   override func visit(_ node: TokenSyntax) -> SyntaxVisitorContinueKind {
@@ -1721,6 +1723,9 @@ extension RewritePipeline {
     }
     if context.shouldFormat(WrapSwitchCaseBodies.self, node: node) {
       node = WrapSwitchCaseBodies(context: context).rewrite(node)
+    }
+    if context.shouldFormat(WrapTernary.self, node: node) {
+      node = WrapTernary(context: context).rewrite(node)
     }
     return node
   }

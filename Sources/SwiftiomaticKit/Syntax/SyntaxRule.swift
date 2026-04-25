@@ -14,6 +14,9 @@ extension SyntaxRule {
     /// Default value from the `SyntaxRuleValue`'s `init()`.
     static var defaultValue: Value { .init() }
 
+    /// This rule's configuration value, sugar for `context.configuration[Self.self]`.
+    var ruleConfig: Value { context.configuration[Self.self] }
+
     /// Emits the given finding.
     ///
     /// - Parameters:

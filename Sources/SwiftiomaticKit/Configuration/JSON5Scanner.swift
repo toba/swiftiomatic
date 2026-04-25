@@ -78,7 +78,7 @@ struct JSON5Scanner {
   // MARK: - Public entry
 
   /// Parses a single top-level JSON5 object.
-  static func parseDocument(_ source: String) throws -> ObjectLayout {
+  static func parseDocument(_ source: String) throws(Error) -> ObjectLayout {
     var scanner = JSON5Scanner(source: source)
     try scanner.lexer.advance()
     scanner.lexer.skipInsignificant()
@@ -99,7 +99,7 @@ struct JSON5Scanner {
 
   // MARK: - Object / value parsers
 
-  private mutating func parseObject() throws -> ObjectLayout {
+  private mutating func parseObject() throws(Error) -> ObjectLayout {
     let openTok = try lexer.expect(.braceLeft)
     let openBrace = openTok.range.lowerBound
     try lexer.advance()
@@ -161,7 +161,7 @@ struct JSON5Scanner {
   /// Parse a member key — either a quoted string or a JSON5 unquoted
   /// identifier. Returns the decoded key name and the source range covering
   /// the key token (including any surrounding quotes).
-  private mutating func parseKey() throws -> (String, Range<String.Index>) {
+  private mutating func parseKey() throws(Error) -> (String, Range<String.Index>) {
     let tok = lexer.peek()
     switch tok.kind {
     case .string:
@@ -177,7 +177,7 @@ struct JSON5Scanner {
 
   /// Advances past one JSON5 value. Returns a nested object layout if the
   /// value is `{...}`, otherwise `nil`.
-  private mutating func parseValue() throws -> ObjectLayout? {
+  private mutating func parseValue() throws(Error) -> ObjectLayout? {
     let tok = lexer.peek()
     switch tok.kind {
     case .braceLeft:
@@ -193,7 +193,7 @@ struct JSON5Scanner {
     }
   }
 
-  private mutating func skipArray() throws {
+  private mutating func skipArray() throws(Error) {
     _ = try lexer.consume(.bracketLeft)
     lexer.skipInsignificant()
     while !lexer.matches(.bracketRight, .eof) {
@@ -297,7 +297,7 @@ extension JSON5Scanner {
 
     /// Throws unless the current token has one of `kinds`, then returns it
     /// without advancing.
-    func expect(_ kinds: TokenKind...) throws -> Token {
+    func expect(_ kinds: TokenKind...) throws(JSON5Scanner.Error) -> Token {
       if kinds.contains(current.kind) { return current }
       throw Error.expected(
         kinds.count == 1
@@ -309,7 +309,7 @@ extension JSON5Scanner {
 
     /// Returns the current token if it matches, then advances.
     @discardableResult
-    mutating func consume(_ kinds: TokenKind...) throws -> Token {
+    mutating func consume(_ kinds: TokenKind...) throws(JSON5Scanner.Error) -> Token {
       if kinds.contains(current.kind) {
         let tok = current
         try advance()
@@ -334,7 +334,7 @@ extension JSON5Scanner {
     }
 
     /// Lex the next token from `cursor` and store it as `current`.
-    mutating func advance() throws {
+    mutating func advance() throws(JSON5Scanner.Error) {
       if cursor >= source.endIndex {
         current = Token(kind: .eof, range: source.endIndex..<source.endIndex)
         return
@@ -452,7 +452,7 @@ extension JSON5Scanner {
       current = Token(kind: kind, range: start..<cursor)
     }
 
-    private mutating func lexString(quote: Character) throws {
+    private mutating func lexString(quote: Character) throws(JSON5Scanner.Error) {
       let start = cursor
       cursor = source.index(after: cursor)  // consume opening quote
       while cursor < source.endIndex {
@@ -485,7 +485,7 @@ extension JSON5Scanner {
       throw Error.unexpectedEOF
     }
 
-    private mutating func lexNumber() throws {
+    private mutating func lexNumber() throws(JSON5Scanner.Error) {
       let start = cursor
       // Optional sign.
       if source[cursor] == "+" || source[cursor] == "-" {

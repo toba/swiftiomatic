@@ -399,7 +399,8 @@ struct IfConfigTests: LayoutTesting {
         #endif
         .accessibilityValue(
           binding.wrappedValue == true
-            ? "On" : "Off"
+            ? "On"
+            : "Off"
         )
       }
 

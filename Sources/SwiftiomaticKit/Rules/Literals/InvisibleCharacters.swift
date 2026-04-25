@@ -21,7 +21,7 @@ final class InvisibleCharacters: LintSyntaxRule<InvisibleCharactersConfiguration
     }
 
     override func visit(_ node: StringLiteralExprSyntax) -> SyntaxVisitorContinueKind {
-        let invalidScalars = context.configuration[Self.self].resolvedScalars
+        let invalidScalars = ruleConfig.resolvedScalars
         for segment in node.segments {
             guard let stringSegment = segment.as(StringSegmentSyntax.self) else {
                 continue

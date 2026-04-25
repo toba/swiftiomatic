@@ -16,7 +16,7 @@ final class StrongOutlets: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendabl
         guard hasIBOutletAttribute(node) else { return DeclSyntax(node) }
 
         // Must have `weak` modifier
-        guard node.modifiers.contains(where: { $0.name.tokenKind == .keyword(.weak) }) else {
+        guard node.modifiers.contains(.weak) else {
             return DeclSyntax(node)
         }
 

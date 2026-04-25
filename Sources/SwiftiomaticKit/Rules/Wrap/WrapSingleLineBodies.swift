@@ -23,9 +23,7 @@ final class WrapSingleLineBodies: RewriteSyntaxRule<SingleLineBodiesConfiguratio
     }
     override class var group: ConfigurationGroup? { .wrap }
 
-    private var mode: SingleLineBodiesConfiguration.Mode {
-        context.configuration[WrapSingleLineBodies.self].mode
-    }
+    private var mode: SingleLineBodiesConfiguration.Mode { ruleConfig.mode }
 
     private var maxLength: Int { context.configuration[LineLength.self] }
 
@@ -446,8 +444,8 @@ extension WrapSingleLineBodies {
         bodyText: String,
         suffixLength: Int = 0
     ) -> Bool {
-        // "{ " + body + " }" = body.count + 4
-        let totalLength = prefixLength + 2 + bodyText.count + 2 + suffixLength
+        // prefixLength already includes the `{`. Inline form adds " " + body + " }".
+        let totalLength = prefixLength + 1 + bodyText.count + 2 + suffixLength
         return totalLength <= maxLength
     }
 

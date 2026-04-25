@@ -38,9 +38,7 @@ final class WrapSwitchCaseBodies: RewriteSyntaxRule<SwitchCaseBodiesConfiguratio
         return config
     }
 
-    private var mode: SwitchCaseBodiesConfiguration.Mode {
-        context.configuration[WrapSwitchCaseBodies.self].mode
-    }
+    private var mode: SwitchCaseBodiesConfiguration.Mode { ruleConfig.mode }
 
     private var maxLength: Int { context.configuration[LineLength.self] }
 

@@ -1,15 +1,15 @@
 ---
 # d62-x7v
 title: NestedCallLayout silently deletes trailing-closure bodies when collapsing
-status: review
+status: completed
 type: bug
 priority: critical
 created_at: 2026-04-25T20:05:50Z
-updated_at: 2026-04-25T20:18:35Z
+updated_at: 2026-04-25T20:28:29Z
 sync:
     github:
         issue_number: "413"
-        synced_at: "2026-04-25T20:19:37Z"
+        synced_at: "2026-04-25T22:35:07Z"
 ---
 
 ## Severity: critical — silent code deletion

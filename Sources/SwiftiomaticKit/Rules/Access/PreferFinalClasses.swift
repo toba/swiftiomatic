@@ -17,6 +17,12 @@ final class PreferFinalClasses: RewriteSyntaxRule<BasicRuleValue>, @unchecked Se
     override static var defaultValue: BasicRuleValue { BasicRuleValue(rewrite: false, lint: .no) }
 
     /// Class names that appear as a superclass in some class declaration within the file.
+    ///
+    /// **Lifecycle**: per-file. Reset (overwritten) at the top of `visit(_:SourceFileSyntax)`,
+    /// which is always the visitor's first call. Rule instances are constructed per-file by
+    /// the pipeline, so this state cannot leak across files in the current architecture; the
+    /// reset in `visit(_:SourceFileSyntax)` keeps the invariant explicit if a future caller
+    /// reuses an instance.
     private var subclassedNames = Set<String>()
 
     override func visit(_ node: SourceFileSyntax) -> SourceFileSyntax {
@@ -28,12 +34,12 @@ final class PreferFinalClasses: RewriteSyntaxRule<BasicRuleValue>, @unchecked Se
         let visited = super.visit(node).cast(ClassDeclSyntax.self)
 
         // Already final
-        if visited.modifiers.contains(where: { $0.name.tokenKind == .keyword(.final) }) {
+        if visited.modifiers.contains(.final) {
             return DeclSyntax(visited)
         }
 
         // Open classes are designed for subclassing
-        if visited.modifiers.contains(where: { $0.name.tokenKind == .keyword(.open) }) {
+        if visited.modifiers.contains(.open) {
             return DeclSyntax(visited)
         }
 

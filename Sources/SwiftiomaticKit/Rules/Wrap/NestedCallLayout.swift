@@ -44,9 +44,7 @@ final class NestedCallLayout: RewriteSyntaxRule<NestedCallLayoutConfiguration>, 
         return config
     }
 
-    private var mode: NestedCallLayoutConfiguration.Mode {
-        context.configuration[NestedCallLayout.self].mode
-    }
+    private var mode: NestedCallLayoutConfiguration.Mode { ruleConfig.mode }
 
     private var maxLength: Int { context.configuration[LineLength.self] }
     private let indentUnit = "    "

@@ -23,7 +23,7 @@ final class FileHeader: RewriteSyntaxRule<FileHeaderConfiguration>, @unchecked S
   }
 
   override func visit(_ node: SourceFileSyntax) -> SourceFileSyntax {
-    guard let text = context.configuration[FileHeader.self].text else { return node }
+    guard let text = ruleConfig.text else { return node }
 
     if node.statements.isEmpty {
       // File has no code — header is on the EOF token

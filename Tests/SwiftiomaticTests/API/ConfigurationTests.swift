@@ -205,4 +205,29 @@ struct ConfigurationTests {
     let decoded = try JSONDecoder().decode(Configuration.self, from: data)
     #expect(config == decoded)
   }
+
+  // MARK: - Equality
+
+  @Test func equalityDetectsLayoutSettingDifference() {
+    var a = Configuration()
+    var b = Configuration()
+    #expect(a == b)
+    a[LineLength.self] = 80
+    b[LineLength.self] = 120
+    #expect(a != b)
+    b[LineLength.self] = 80
+    #expect(a == b)
+  }
+
+  @Test func equalityDetectsRuleValueDifference() {
+    var a = Configuration()
+    var b = Configuration()
+    #expect(a == b)
+    var ruleValue = a[NoSemicolons.self]
+    ruleValue.lint = .error
+    a[NoSemicolons.self] = ruleValue
+    #expect(a != b)
+    b[NoSemicolons.self] = ruleValue
+    #expect(a == b)
+  }
 }

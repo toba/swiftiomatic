@@ -159,14 +159,14 @@ final class PreferSwiftTesting: RewriteSyntaxRule<BasicRuleValue>, @unchecked Se
 
     // Convert setUp/setUpWithError → init
     if (name == "setUp" || name == "setUpWithError")
-      && node.modifiers.contains(where: { $0.name.tokenKind == .keyword(.override) })
+      && node.modifiers.contains(.override)
     {
       return convertSetUp(node)
     }
 
     // Convert tearDown → deinit
     if name == "tearDown"
-      && node.modifiers.contains(where: { $0.name.tokenKind == .keyword(.override) })
+      && node.modifiers.contains(.override)
     {
       return convertTearDown(node)
     }
@@ -175,7 +175,7 @@ final class PreferSwiftTesting: RewriteSyntaxRule<BasicRuleValue>, @unchecked Se
     if name.hasPrefix("test")
       && node.signature.parameterClause.parameters.isEmpty
       && node.signature.returnClause == nil
-      && !node.modifiers.contains(where: { $0.name.tokenKind == .keyword(.static) })
+      && !node.modifiers.contains(.static)
     {
       return convertTestMethod(node)
     }
@@ -523,7 +523,7 @@ final class PreferSwiftTesting: RewriteSyntaxRule<BasicRuleValue>, @unchecked Se
         for member in classDecl.memberBlock.members {
           if let funcDecl = member.decl.as(FunctionDeclSyntax.self),
             funcDecl.name.text == "tearDown",
-            funcDecl.modifiers.contains(where: { $0.name.tokenKind == .keyword(.override) })
+            funcDecl.modifiers.contains(.override)
           {
             let effects = funcDecl.signature.effectSpecifiers
             if effects?.asyncSpecifier != nil || effects?.throwsClause != nil {
@@ -533,7 +533,7 @@ final class PreferSwiftTesting: RewriteSyntaxRule<BasicRuleValue>, @unchecked Se
 
           // Check for unsupported overrides
           if let funcDecl = member.decl.as(FunctionDeclSyntax.self),
-            funcDecl.modifiers.contains(where: { $0.name.tokenKind == .keyword(.override) })
+            funcDecl.modifiers.contains(.override)
           {
             let name = funcDecl.name.text
             let supported = ["setUp", "setUpWithError", "tearDown"]

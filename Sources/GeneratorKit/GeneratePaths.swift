@@ -17,7 +17,6 @@ import Foundation
 /// Create with a package root URL. For the standalone executable,
 /// use the ``filePath`` convenience that derives the root from `#filePath`.
 package struct GeneratePaths {
-
     // MARK: - Convenience for standalone executable
 
     /// Paths derived from this source file's location (`Sources/GeneratorKit/`).

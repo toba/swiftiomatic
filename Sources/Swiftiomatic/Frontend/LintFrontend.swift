@@ -16,7 +16,7 @@ import SwiftiomaticKit
 import SwiftSyntax
 
 /// The frontend for linting operations.
-class LintFrontend: Frontend, @unchecked Sendable {
+final class LintFrontend: Frontend, @unchecked Sendable {
   override func processFile(_ fileToProcess: FileToProcess) {
     let linter = LintCoordinator(
       configuration: fileToProcess.configuration,

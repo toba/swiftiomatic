@@ -81,7 +81,7 @@ final class RedundantLet: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable
     guard node.bindingSpecifier.tokenKind == .keyword(.let) else { return false }
 
     // Not `async let`.
-    guard !node.modifiers.contains(where: { $0.name.tokenKind == .keyword(.async) }) else {
+    guard !node.modifiers.contains(.async) else {
       return false
     }
 

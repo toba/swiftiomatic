@@ -212,6 +212,10 @@ final class OpaqueGenericParameters: RewriteSyntaxRule<BasicRuleValue>, @uncheck
     }
 
     let typeNames = Set(types.map(\.name))
+    // O(1) name → index lookup; previously each `firstIndex(where: { $0.name == leftName })`
+    // was O(n), making the where-clause walk O(n × requirements).
+    let typeIndexByName: [String: Int] = Dictionary(
+      uniqueKeysWithValues: types.enumerated().map { ($0.element.name, $0.offset) })
 
     // Collect constraints from where clause
     if let whereClause {
@@ -219,14 +223,14 @@ final class OpaqueGenericParameters: RewriteSyntaxRule<BasicRuleValue>, @uncheck
         switch requirement.requirement {
         case .conformanceRequirement(let conf):
           let leftName = conf.leftType.trimmedDescription
-          if let i = types.firstIndex(where: { $0.name == leftName }) {
+          if let i = typeIndexByName[leftName] {
             types[i].conformances.append(conf.rightType)
             types[i].whereRequirementIndices.append(reqIndex)
           }
 
         case .sameTypeRequirement(let same):
           let leftName = same.leftType.trimmedDescription
-          if let i = types.firstIndex(where: { $0.name == leftName }) {
+          if let i = typeIndexByName[leftName] {
             if case .type(let rightType) = same.rightType {
               // Check if same type to `any Protocol` → replace with `any Protocol`
               if let someOrAny = rightType.as(SomeOrAnyTypeSyntax.self),
@@ -244,7 +248,7 @@ final class OpaqueGenericParameters: RewriteSyntaxRule<BasicRuleValue>, @uncheck
              typeNames.contains(rightIdent.name.text) {
             // The left type gets replaced with the right type's name
             // But only if the left is a simple generic name
-            if let i = types.firstIndex(where: { $0.name == leftName }),
+            if let i = typeIndexByName[leftName],
                types[i].sameTypeTarget != nil {
               // Already handled above
             }

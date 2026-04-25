@@ -22,14 +22,14 @@ private struct FailedToCreateFileError: Error {
     let url: URL
 }
 
-extension FileGenerator {
+package extension FileGenerator {
     /// Generates a file at the given URL, skipping the write when
     /// the existing content is already up to date.
-    package func generateFile(at url: URL) throws {
+    func generateFile(at url: URL) throws {
         let content = generateContent()
 
         if let existing = try? String(contentsOf: url, encoding: .utf8),
-            existing == content
+           existing == content
         {
             return
         }

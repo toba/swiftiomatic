@@ -4,7 +4,7 @@ import SwiftiomaticKit
 
 extension SwiftiomaticCommand {
   struct Update: ParsableCommand {
-    nonisolated(unsafe) static var configuration = CommandConfiguration(
+    static let configuration = CommandConfiguration(
       abstract: "Update the configuration file to match the current rule registry",
       discussion: """
         Compares rule entries in swiftiomatic.json against the built-in rule registry. \

@@ -47,7 +47,7 @@ final class ExtensionAccessLevel: RewriteSyntaxRule<ExtensionAccessControlConfig
     override func visit(_ node: ExtensionDeclSyntax) -> DeclSyntax {
         guard case .topLevel = state else { return DeclSyntax(node) }
 
-        switch context.configuration[ExtensionAccessLevel.self].placement {
+        switch ruleConfig.placement {
         case .onMembers:
             return visitOnDeclarations(node)
         case .onExtension:

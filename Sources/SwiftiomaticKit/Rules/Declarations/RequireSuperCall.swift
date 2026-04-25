@@ -22,17 +22,15 @@ final class RequireSuperCall: LintSyntaxRule<RequireSuperCallConfiguration>, @un
 
     override func visit(_ node: FunctionDeclSyntax) -> SyntaxVisitorContinueKind {
         guard let body = node.body else { return .visitChildren }
-        guard node.modifiers.contains(where: { $0.name.tokenKind == .keyword(.override) }) else {
+        guard node.modifiers.contains(.override) else {
             return .visitChildren
         }
-        if node.modifiers.contains(where: {
-            $0.name.tokenKind == .keyword(.static) || $0.name.tokenKind == .keyword(.class)
-        }) {
+        if node.modifiers.contains(anyOf: [.static, .class]) {
             return .visitChildren
         }
 
         let resolved = resolvedName(of: node)
-        let methods = context.configuration[Self.self].methodNames
+        let methods = ruleConfig.methodNames
         guard methods.contains(resolved) else { return .visitChildren }
 
         let count = countSuperCalls(named: node.name.text, in: body)

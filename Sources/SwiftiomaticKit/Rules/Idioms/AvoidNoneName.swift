@@ -24,10 +24,10 @@ final class AvoidNoneName: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendabl
 
     override func visit(_ node: VariableDeclSyntax) -> DeclSyntax {
         let kind: String? = {
-            if node.modifiers.contains(where: { $0.name.tokenKind == .keyword(.class) }) {
+            if node.modifiers.contains(.class) {
                 return "class"
             }
-            if node.modifiers.contains(where: { $0.name.tokenKind == .keyword(.static) }) {
+            if node.modifiers.contains(.static) {
                 return "static"
             }
             return nil

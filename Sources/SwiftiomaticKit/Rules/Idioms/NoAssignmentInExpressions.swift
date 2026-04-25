@@ -137,7 +137,7 @@ final class NoAssignmentInExpressions: RewriteSyntaxRule<NoAssignmentInExpressio
   /// Returns true if the infix operator expression is in the (non-closure) parameters of an allowed
   /// function call.
   private func isInAllowedFunction(_ node: InfixOperatorExprSyntax) -> Bool {
-    let allowedFunctions = context.configuration[NoAssignmentInExpressions.self].allowedFunctions
+    let allowedFunctions = ruleConfig.allowedFunctions
     // Walk up the tree until we find a FunctionCallExprSyntax, and if the name matches, return
     // true. However, stop early if we hit a CodeBlockItemSyntax first; this would represent a
     // closure context where we *don't* want the exception to apply (for example, in

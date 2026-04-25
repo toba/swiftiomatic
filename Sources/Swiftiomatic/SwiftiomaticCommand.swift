@@ -16,7 +16,7 @@ import ArgumentParser
 /// appropriate subcommand.
 @main
 struct SwiftiomaticCommand: ParsableCommand {
-    nonisolated(unsafe) static var configuration = CommandConfiguration(
+    static let configuration = CommandConfiguration(
         commandName: "sm",
         abstract: "Format or lint Swift source code",
         subcommands: [

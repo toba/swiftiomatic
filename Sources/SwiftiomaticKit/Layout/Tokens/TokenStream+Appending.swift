@@ -199,8 +199,12 @@ extension TokenStream {
         }
 
         let lastBreak = tokens[lastBreakIndex]
+        // `lastBreakIndex` is internal bookkeeping maintained by `appendToken`; reaching
+        // this branch with a non-break token means the bookkeeping is broken (programmer
+        // error), not malformed input. Skip silently in release.
         guard case .break(let kind, let size, let existingNewlines) = lastBreak else {
-            fatalError("Found non-break token at lastBreakIndex. TokenStream is invalid.")
+            assertionFailure("Found non-break token at lastBreakIndex. TokenStream is invalid.")
+            return
         }
 
         guard !canMergeNewlinesIntoLastBreak else {

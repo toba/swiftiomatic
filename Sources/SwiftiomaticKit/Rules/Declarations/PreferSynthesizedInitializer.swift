@@ -183,13 +183,24 @@ final class PreferSynthesizedInitializer: LintSyntaxRule<LintOnlyValue>, @unchec
       statements.append(leftName)
     }
 
+    // Multiset compare: each variable must consume exactly one matching statement,
+    // and no statements may be left over. Previously, `firstIndex(of:)` + `remove(at:)`
+    // per variable was O(n²) on the statements list.
+    var statementCounts: [String: Int] = [:]
+    for stmt in statements { statementCounts[stmt, default: 0] += 1 }
+    var remaining = statements.count
+
     for variable in variables {
       let id = variable.firstIdentifier.identifier.text
-      guard statements.contains(id) else { return false }
-      guard let idx = statements.firstIndex(of: id) else { return false }
-      statements.remove(at: idx)
+      guard let count = statementCounts[id], count > 0 else { return false }
+      if count == 1 {
+        statementCounts.removeValue(forKey: id)
+      } else {
+        statementCounts[id] = count - 1
+      }
+      remaining -= 1
     }
-    return statements.isEmpty
+    return remaining == 0
   }
 }
 

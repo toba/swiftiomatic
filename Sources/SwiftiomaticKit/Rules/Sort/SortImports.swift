@@ -136,7 +136,7 @@ final class SortImports: RewriteSyntaxRule<SortImportsConfiguration>, @unchecked
         }
       }
 
-      if context.configuration[SortImports.self].includeConditionalImports,
+      if ruleConfig.includeConditionalImports,
         let syntaxNode = line.syntaxNode,
         case .ifConfigCodeBlock(let ifConfigCodeBlock) = syntaxNode
       {
@@ -157,7 +157,7 @@ final class SortImports: RewriteSyntaxRule<SortImportsConfiguration>, @unchecked
         line.syntaxNode = .ifConfigCodeBlock(CodeBlockItemSyntax(item: .decl(DeclSyntax(ifConfigDecl))))
       }
 
-      if context.configuration[SortImports.self].shouldGroupImports {
+      if ruleConfig.shouldGroupImports {
         // Separate lines into different categories along with any associated comments.
         switch line.type {
         case .regularImport:
@@ -243,7 +243,7 @@ final class SortImports: RewriteSyntaxRule<SortImportsConfiguration>, @unchecked
         }
       }
 
-      guard context.configuration[SortImports.self].shouldGroupImports else {
+      guard ruleConfig.shouldGroupImports else {
         continue
       }
 
@@ -286,7 +286,7 @@ final class SortImports: RewriteSyntaxRule<SortImportsConfiguration>, @unchecked
   /// import lines should be associated with it, and move with the line during sorting. We also emit
   /// a linter error if an import line is discovered to be out of order.
   private func formatImports(_ imports: [Line]) -> [Line] {
-    let sortOrder = context.configuration[SortImports.self].sortOrder
+    let sortOrder = ruleConfig.sortOrder
     let importPrecedes: (Line, Line) -> Bool = switch sortOrder {
     case .alphabetical:
       { $0.importName.lexicographicallyPrecedes($1.importName) }

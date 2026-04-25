@@ -18,9 +18,9 @@ import Synchronization
 
 class Frontend: @unchecked Sendable {
   /// Provides formatter configurations for given `.swift` source files, configuration files or configuration strings.
-  struct ConfigurationProvider {
-    /// Loads formatter configuration files and chaches them in memory.
-    private var configurationLoader: ConfigurationLoader = ConfigurationLoader()
+  struct ConfigurationProvider: Sendable {
+    /// Loads formatter configuration files and caches them in memory.
+    private let configurationLoader = ConfigurationLoader()
 
     /// The diagnostic engine to which warnings and errors will be emitted.
     private let diagnosticsEngine: DiagnosticsEngine
@@ -81,7 +81,7 @@ class Frontend: @unchecked Sendable {
     ///   default configuration otherwise. If an error occurred when reading the configuration, a
     ///   diagnostic is emitted and `nil` is returned. If neither `pathOrString` nor `swiftFileURL`
     ///   were provided, a default `Configuration()` will be returned.
-    mutating func provide(
+    func provide(
       forConfigPathOrString pathOrString: String?,
       orForSwiftFileAt swiftFileURL: URL?
     ) -> Configuration? {
@@ -195,7 +195,7 @@ class Frontend: @unchecked Sendable {
   final let lintFormatOptions: LintFormatOptions
 
   /// The provider for formatter configurations.
-  private final let configurationProvider: Mutex<ConfigurationProvider>
+  private final let configurationProvider: ConfigurationProvider
 
   /// Advanced options that are useful for developing/debugging but otherwise not meant for general
   /// use.
@@ -224,7 +224,7 @@ class Frontend: @unchecked Sendable {
       diagnosticsHandlers: [diagnosticPrinter.printDiagnostic],
       treatWarningsAsErrors: treatWarningsAsErrors
     )
-    self.configurationProvider = Mutex(ConfigurationProvider(diagnosticsEngine: self.diagnosticsEngine))
+    self.configurationProvider = ConfigurationProvider(diagnosticsEngine: self.diagnosticsEngine)
   }
 
   /// Runs the linter or formatter over the inputs.
@@ -270,12 +270,10 @@ class Frontend: @unchecked Sendable {
     let assumedUrl = lintFormatOptions.assumeFilename.map(URL.init(fileURLWithPath:))
 
     guard
-      let configuration = configurationProvider.withLock({
-        $0.provide(
-          forConfigPathOrString: configurationOptions.configuration,
-          orForSwiftFileAt: assumedUrl
-        )
-      })
+      let configuration = configurationProvider.provide(
+        forConfigPathOrString: configurationOptions.configuration,
+        orForSwiftFileAt: assumedUrl
+      )
     else {
       // Already diagnosed in the called method.
       return
@@ -298,18 +296,22 @@ class Frontend: @unchecked Sendable {
   }
 
   /// Processes source content from a list of files and/or directories provided as file URLs.
+  ///
+  /// Caller (`run()`) is the only invocation site and gates on a non-empty path list,
+  /// so a precondition here would only fire on a programmer error in the same file.
   private func processURLs(_ urls: [URL], parallel: Bool) {
-    precondition(
-      !urls.isEmpty,
-      "processURLs(_:) should only be called when 'urls' is non-empty."
-    )
+    assert(!urls.isEmpty, "processURLs(_:) should only be called when 'urls' is non-empty.")
 
     if parallel {
-      let filesToProcess =
-        FileIterator(urls: urls, followSymlinks: lintFormatOptions.followSymlinks)
-        .compactMap(openAndPrepareFile)
-      DispatchQueue.concurrentPerform(iterations: filesToProcess.count) { index in
-        processFile(filesToProcess[index])
+      // Materialize URLs only (cheap path strings); open and read each file inside
+      // the worker so peak memory stays at ~workers × file_size instead of
+      // total-source-bytes.
+      let urlsToProcess = Array(
+        FileIterator(urls: urls, followSymlinks: lintFormatOptions.followSymlinks))
+      DispatchQueue.concurrentPerform(iterations: urlsToProcess.count) { index in
+        if let file = openAndPrepareFile(at: urlsToProcess[index]) {
+          processFile(file)
+        }
       }
     } else {
       FileIterator(urls: urls, followSymlinks: lintFormatOptions.followSymlinks)
@@ -330,12 +332,10 @@ class Frontend: @unchecked Sendable {
     }
 
     guard
-      let configuration = configurationProvider.withLock({
-        $0.provide(
-          forConfigPathOrString: configurationOptions.configuration,
-          orForSwiftFileAt: url
-        )
-      })
+      let configuration = configurationProvider.provide(
+        forConfigPathOrString: configurationOptions.configuration,
+        orForSwiftFileAt: url
+      )
     else {
       // Already diagnosed in the called method.
       return nil

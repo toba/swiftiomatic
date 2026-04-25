@@ -58,23 +58,22 @@ final class StderrDiagnosticPrinter: Sendable {
 
     /// Prints a diagnostic to standard error.
     func printDiagnostic(_ diagnostic: Diagnostic) {
+        // Build the complete formatted message outside the lock so the lock only spans the
+        // single write call that needs ordering with concurrent producers.
+        var message = "\(ansiSGR(.reset))\(description(of: diagnostic.location)): "
+        switch diagnostic.severity {
+        case .error: message += "\(ansiSGR(.boldRed))error: "
+        case .warning: message += "\(ansiSGR(.boldYellow))warning: "
+        case .note: message += "\(ansiSGR(.boldGray))note: "
+        }
+        if let category = diagnostic.category {
+            message += "\(ansiSGR(.boldMagenta))[\(category)] "
+        }
+        message += "\(ansiSGR(.reset))\(ansiSGR(.bold))\(diagnostic.message)\(ansiSGR(.reset))\n"
+
         printLock.withLock { _ in
             let stderr = FileHandleTextOutputStream(FileHandle.standardError)
-
-            stderr.write("\(ansiSGR(.reset))\(description(of: diagnostic.location)): ")
-
-            switch diagnostic.severity {
-            case .error: stderr.write("\(ansiSGR(.boldRed))error: ")
-            case .warning: stderr.write("\(ansiSGR(.boldYellow))warning: ")
-            case .note: stderr.write("\(ansiSGR(.boldGray))note: ")
-            }
-
-            if let category = diagnostic.category {
-                stderr.write("\(ansiSGR(.boldMagenta))[\(category)] ")
-            }
-            stderr.write(
-                "\(ansiSGR(.reset))\(ansiSGR(.bold))\(diagnostic.message)\(ansiSGR(.reset))\n"
-            )
+            stderr.write(message)
         }
     }
 

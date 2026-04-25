@@ -352,29 +352,29 @@ extension TokenStream {
     }
 
     func visitTernaryExpr(_ node: TernaryExprSyntax) -> SyntaxVisitorContinueKind {
-        // The order of the .open/.close tokens here is intentional. They are normally paired with the
-        // corresponding breaks, but in this case, we want to prioritize keeping the entire `? a : b`
-        // part together if some part of the ternary wraps, instead of keeping `c ? a` together and
-        // wrapping after that.
-        before(node.questionMark, tokens: .break(.open(kind: .continuation)), .open)
+        // Wrapping decisions for ternaries belong to the WrapTernary format rule, which inserts
+        // discretionary newlines into the leading trivia of `?` and `:` when the expression would
+        // overflow the configured line length. The pretty printer only emits the operator-relative
+        // breaks here. Using `.break(.open(kind: .continuation)) ... .break(.close)` pairs lets the
+        // wrapped branches push a continuation indent so wrapped sub-expressions (e.g. `+` chains
+        // inside a branch) align relative to the branch keyword, and keeps the breaks eligible for
+        // discretionary newlines via `RespectsExistingLineBreaks`.
+        before(node.questionMark, tokens: .break(.open(kind: .continuation)))
         after(node.questionMark, tokens: .space)
         before(
             node.colon,
             tokens: .break(.close(mustBreak: false), size: 0),
-            .break(.open(kind: .continuation)),
-            .open
+            .break(.open(kind: .continuation))
         )
         after(node.colon, tokens: .space)
 
-        // When the ternary is wrapped in parens, absorb the closing paren into the ternary's group so
-        // that it is glued to the last token of the ternary.
         let closeScopeToken: TokenSyntax?
         if let parenExpr = outermostEnclosingNode(from: Syntax(node.elseExpression)) {
             closeScopeToken = parenExpr.lastToken(viewMode: .sourceAccurate)
         } else {
             closeScopeToken = node.elseExpression.lastToken(viewMode: .sourceAccurate)
         }
-        after(closeScopeToken, tokens: .break(.close(mustBreak: false), size: 0), .close, .close)
+        after(closeScopeToken, tokens: .break(.close(mustBreak: false), size: 0))
         return .visitChildren
     }
 

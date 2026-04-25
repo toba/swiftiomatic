@@ -1,15 +1,15 @@
 ---
 # hib-4ov
 title: sm update rewrites entire swiftiomatic.json instead of editing
-status: review
+status: completed
 type: bug
 priority: high
 created_at: 2026-04-25T18:58:58Z
-updated_at: 2026-04-25T19:34:04Z
+updated_at: 2026-04-25T20:28:26Z
 sync:
     github:
         issue_number: "410"
-        synced_at: "2026-04-25T19:53:35Z"
+        synced_at: "2026-04-25T22:35:07Z"
 ---
 
 ## Problem

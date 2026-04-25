@@ -15,7 +15,7 @@ import ArgumentParser
 extension SwiftiomaticCommand {
   /// Emits style diagnostics for one or more files containing Swift code.
   struct Lint: ParsableCommand {
-    nonisolated(unsafe) static var configuration = CommandConfiguration(
+    static let configuration = CommandConfiguration(
       abstract: "Diagnose style issues in Swift source code",
       discussion: "When no files are specified, it expects the source from standard input."
     )

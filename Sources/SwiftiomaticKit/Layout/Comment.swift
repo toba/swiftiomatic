@@ -21,13 +21,21 @@ extension StringProtocol {
     /// - Returns: The string with trailing whitespace removed.
     func trimmingTrailingWhitespace() -> String {
         if isEmpty { return String() }
-        let utf8Array = Array(utf8)
-        var idx = utf8Array.endIndex - 1
-        while utf8Array[idx].isWhitespace {
-            if idx == utf8Array.startIndex { return String() }
-            idx -= 1
+        // Walk Characters from the end (StringProtocol is BidirectionalCollection)
+        // instead of materializing `Array(utf8)`. The set of whitespace recognised
+        // here matches the prior byte-level check: space, LF, tab, CR, VT, FF.
+        var end = endIndex
+        while end > startIndex {
+            let prev = index(before: end)
+            let ch = self[prev]
+            guard
+                ch == " " || ch == "\n" || ch == "\t" || ch == "\r"
+                    || ch == "\u{0B}" || ch == "\u{0C}"
+            else { break }
+            end = prev
         }
-        return String(decoding: utf8Array[...idx], as: UTF8.self)
+        if end == startIndex { return String() }
+        return String(self[..<end])
     }
 }
 

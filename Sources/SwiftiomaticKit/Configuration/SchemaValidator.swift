@@ -23,12 +23,20 @@ struct JSONPointer: Sendable {
     }
 
     var path: String {
-        components
-            .map {
-                $0.replacingOccurrences(of: "~", with: "~0")
-                    .replacingOccurrences(of: "/", with: "~1")
+        var result = ""
+        var first = true
+        for component in components {
+            if !first { result.append("/") }
+            first = false
+            for c in component {
+                switch c {
+                case "~": result.append("~0")
+                case "/": result.append("~1")
+                default: result.append(c)
+                }
             }
-            .joined(separator: "/")
+        }
+        return result
     }
 
     mutating func push(_ component: String) { components.append(component) }

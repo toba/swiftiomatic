@@ -19,56 +19,8 @@ final class SortDeclarations: RewriteSyntaxRule<BasicRuleValue>, @unchecked Send
     override func visit(_ node: MemberBlockItemListSyntax) -> MemberBlockItemListSyntax {
         let visited = super.visit(node)
         let items = Array(visited)
-        guard items.count > 1 else { return visited }
-
-        // Find sort regions
-        var sortedRegions = [(start: Int, end: Int)]()
-        var regionStart: Int?
-
-        for (i, item) in items.enumerated() {
-            if hasMarker(Self.beginMarker, in: item.leadingTrivia) {
-                regionStart = i
-            } else if hasMarker(Self.endMarker, in: item.leadingTrivia), let start = regionStart {
-                // End marker is on this item, so sorted region is [start, i)
-                sortedRegions.append((start, i))
-                regionStart = nil
-            }
-        }
-
-        guard !sortedRegions.isEmpty else { return visited }
-
-        var newItems = items
-        for region in sortedRegions.reversed() {
-            let slice = Array(items[region.start..<region.end])
-            guard slice.count > 1 else { continue }
-
-            let sorted = slice.enumerated().sorted { lhs, rhs in
-                let lhsName = declarationName(lhs.element.decl) ?? ""
-                let rhsName = declarationName(rhs.element.decl) ?? ""
-                if lhsName != rhsName {
-                    return lhsName.localizedCompare(rhsName) == .orderedAscending
-                }
-                return lhs.offset < rhs.offset
-            }.map(\.element)
-
-            // Check if already sorted
-            let originalNames = slice.compactMap { declarationName($0.decl) }
-            let sortedNames = sorted.compactMap { declarationName($0.decl) }
-            guard originalNames != sortedNames else { continue }
-
-            if let firstItem = items[region.start].decl.firstToken(viewMode: .sourceAccurate) {
-                diagnose(.sortDeclarations, on: firstItem)
-            }
-
-            // Rebuild preserving positional trivia (keeps begin marker at position 0)
-            for (i, sortedItem) in sorted.enumerated() {
-                var newItem = sortedItem
-                newItem.leadingTrivia = items[region.start + i].leadingTrivia
-                newItems[region.start + i] = newItem
-            }
-        }
-
-        return MemberBlockItemListSyntax(newItems)
+        let sorted = sortMarkedRegions(items: items) { declarationName($0.decl) }
+        return sorted.map(MemberBlockItemListSyntax.init) ?? visited
     }
 
     // MARK: - Code blocks (top-level declarations)
@@ -76,11 +28,21 @@ final class SortDeclarations: RewriteSyntaxRule<BasicRuleValue>, @unchecked Send
     override func visit(_ node: CodeBlockItemListSyntax) -> CodeBlockItemListSyntax {
         let visited = super.visit(node)
         let items = Array(visited)
-        guard items.count > 1 else { return visited }
+        let sorted = sortMarkedRegions(items: items) { codeBlockItemName($0) }
+        return sorted.map(CodeBlockItemListSyntax.init) ?? visited
+    }
+
+    /// Sorts items inside `swiftiomatic:sort:begin`/`end` regions in-place,
+    /// preserving each position's leading trivia (so the begin/end markers stay put).
+    /// Returns `nil` if there are no regions to sort or all regions are already sorted.
+    private func sortMarkedRegions<Element: SyntaxProtocol>(
+        items: [Element],
+        name: (Element) -> String?
+    ) -> [Element]? {
+        guard items.count > 1 else { return nil }
 
         var sortedRegions = [(start: Int, end: Int)]()
         var regionStart: Int?
-
         for (i, item) in items.enumerated() {
             if hasMarker(Self.beginMarker, in: item.leadingTrivia) {
                 regionStart = i
@@ -89,39 +51,41 @@ final class SortDeclarations: RewriteSyntaxRule<BasicRuleValue>, @unchecked Send
                 regionStart = nil
             }
         }
-
-        guard !sortedRegions.isEmpty else { return visited }
+        guard !sortedRegions.isEmpty else { return nil }
 
         var newItems = items
+        var didChange = false
         for region in sortedRegions.reversed() {
-            let slice = Array(items[region.start..<region.end])
+            let slice = items[region.start..<region.end]
             guard slice.count > 1 else { continue }
 
+            let originalNames = slice.compactMap(name)
+
             let sorted = slice.enumerated().sorted { lhs, rhs in
-                let lhsName = codeBlockItemName(lhs.element) ?? ""
-                let rhsName = codeBlockItemName(rhs.element) ?? ""
+                let lhsName = name(lhs.element) ?? ""
+                let rhsName = name(rhs.element) ?? ""
                 if lhsName != rhsName {
                     return lhsName.localizedCompare(rhsName) == .orderedAscending
                 }
                 return lhs.offset < rhs.offset
             }.map(\.element)
 
-            let originalNames = slice.compactMap { codeBlockItemName($0) }
-            let sortedNames = sorted.compactMap { codeBlockItemName($0) }
+            let sortedNames = sorted.compactMap(name)
             guard originalNames != sortedNames else { continue }
 
             if let firstToken = items[region.start].firstToken(viewMode: .sourceAccurate) {
                 diagnose(.sortDeclarations, on: firstToken)
             }
 
+            // Rebuild preserving positional trivia (keeps begin marker at position 0).
             for (i, sortedItem) in sorted.enumerated() {
                 var newItem = sortedItem
                 newItem.leadingTrivia = items[region.start + i].leadingTrivia
                 newItems[region.start + i] = newItem
             }
+            didChange = true
         }
-
-        return CodeBlockItemListSyntax(newItems)
+        return didChange ? newItems : nil
     }
 
     // MARK: - Helpers

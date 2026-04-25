@@ -102,7 +102,7 @@ package final class LayoutCoordinator {
     private var currentIndentation: [Indent] {
         let indentation = configuration[IndentationSetting.self]
         var totalIndentation:
-            [Indent] = activeOpenBreaks.flatMap { (open) -> [Indent] in
+            [Indent] = activeOpenBreaks.flatMap { open -> [Indent] in
                 if case let .alignment(spaces) = open.kind, open.contributesContinuationIndent {
                     return [.spaces(spaces)]
                 }
@@ -178,16 +178,21 @@ package final class LayoutCoordinator {
         switch token {
             case .contextualBreakingStart:
                 activeBreakingContexts.append(
-                    ActiveBreakingContext(lineNumber: outputBuffer.lineNumber)
-                )
+                    ActiveBreakingContext(
+                        lineNumber: outputBuffer.lineNumber
+                    ))
                 // Discard the last finished breaking context to keep it from effecting breaks inside of the
                 // new context. The discarded context has already either had an impact on the contextual break
                 // after it or there was no relevant contextual break, so it's safe to discard.
                 lastEndedBreakingContext = nil
 
             case .contextualBreakingEnd:
+                // Unmatched end is a programmer error in token-stream construction, but
+                // crashing the formatter on malformed input is worse than skipping the
+                // token and producing best-effort output.
                 guard let closedContext = activeBreakingContexts.popLast() else {
-                    fatalError("Encountered unmatched contextualBreakingEnd token.")
+                    assertionFailure("Encountered unmatched contextualBreakingEnd token.")
+                    return
                 }
 
                 // Break contexts create scopes, and a breaking context should never be carried between
@@ -254,8 +259,7 @@ package final class LayoutCoordinator {
                                 lineNumber: currentLineNumber,
                                 contributesContinuationIndent: contributesContinuationIndent,
                                 contributesBlockIndent: openKind == .block
-                            )
-                        )
+                            ))
 
                         continuationStack.append(currentLineIsContinuation)
 
@@ -266,7 +270,8 @@ package final class LayoutCoordinator {
 
                     case let .close(closeMustBreak):
                         guard let matchingOpenBreak = activeOpenBreaks.popLast() else {
-                            fatalError("Unmatched closing break")
+                            assertionFailure("Unmatched closing break")
+                            return
                         }
 
                         let openedOnDifferentLine = openCloseBreakCompensatingLineNumber
@@ -434,11 +439,6 @@ package final class LayoutCoordinator {
                     lastBreak = true
                 } else {
                     if outputBuffer.isAtStartOfLine {
-                        // Make sure that the continuation status is correct even at the beginning of a line
-                        // (for example, after a newline token). This is necessary because a discretionary newline
-                        // might be inserted into the token stream before a continuation break, and the length of
-                        // that break might not be enough to satisfy the conditions above but we still need to
-                        // treat the line as a continuation.
                         currentLineIsContinuation = isContinuationIfBreakFires
                     }
                     outputBuffer.enqueueSpaces(size)
@@ -449,7 +449,6 @@ package final class LayoutCoordinator {
             // Print out the number of spaces according to the size, and adjust spaceRemaining.
             case .space(let size, _):
                 if configuration[IndentBlankLines.self], outputBuffer.isAtStartOfLine {
-                    // An empty string write is needed to add line-leading indentation that matches the current indentation on a line that contains only whitespaces.
                     outputBuffer.write("")
                 }
                 outputBuffer.enqueueSpaces(size)
@@ -473,8 +472,7 @@ package final class LayoutCoordinator {
                     comment.print(
                         indent: currentIndentation,
                         shouldIndentBlankLines: configuration[IndentBlankLines.self]
-                    )
-                )
+                    ))
 
             case let .verbatim(verbatim):
                 outputBuffer.writeVerbatim(verbatim.print(indent: currentIndentation), length)
@@ -499,7 +497,8 @@ package final class LayoutCoordinator {
 
             case let .commaDelimitedRegionEnd(isCollection, hasTrailingComma, isSingleElement):
                 guard let startLineNumber = commaDelimitedRegionStack.popLast() else {
-                    fatalError("Found trailing comma end with no corresponding start.")
+                    assertionFailure("Found trailing comma end with no corresponding start.")
+                    return
                 }
 
                 // We need to specifically disable trailing commas on elements of single item collections.
@@ -719,9 +718,11 @@ package final class LayoutCoordinator {
         // Print out the token stream, wrapping according to line-length limitations.
         for i in 0..<tokens.count { emitToken(idx: i) }
 
-        guard activeOpenBreaks.isEmpty else {
-            fatalError("At least one .break(.open) was not matched by a .break(.close)")
-        }
+        // An unmatched open break means the token stream was malformed (programmer error
+        // upstream); emit a best-effort result rather than crashing the whole format pass.
+        assert(
+            activeOpenBreaks.isEmpty,
+            "At least one .break(.open) was not matched by a .break(.close)")
 
         return outputBuffer.output
     }

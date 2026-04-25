@@ -1,15 +1,15 @@
 ---
 # 6rg-85v
 title: PreferStaticOverClassFunc + formatTypePrefix break the rule's own source file
-status: review
+status: completed
 type: bug
 priority: normal
 created_at: 2026-04-25T19:39:11Z
-updated_at: 2026-04-25T20:18:49Z
+updated_at: 2026-04-25T20:28:21Z
 sync:
     github:
         issue_number: "411"
-        synced_at: "2026-04-25T20:19:37Z"
+        synced_at: "2026-04-25T22:35:07Z"
 ---
 
 ## Repro

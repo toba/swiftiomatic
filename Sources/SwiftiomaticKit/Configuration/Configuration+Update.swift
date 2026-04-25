@@ -109,10 +109,10 @@ extension Configuration {
     // MARK: - JSON dict mutations
 
     private static func removeKey(_ qualifiedKey: String, from root: inout [String: JSONValue]) {
-        let parts = qualifiedKey.split(separator: ".", maxSplits: 1).map(String.init)
-        if parts.count == 2, case .object(var groupDict) = root[parts[0]] {
-            groupDict.removeValue(forKey: parts[1])
-            root[parts[0]] = .object(groupDict)
+        let (group, name) = qualifiedKey.qualifiedKeyParts
+        if let group, case .object(var groupDict) = root[group] {
+            groupDict.removeValue(forKey: name)
+            root[group] = .object(groupDict)
         } else {
             root.removeValue(forKey: qualifiedKey)
         }
@@ -123,13 +123,13 @@ extension Configuration {
         value: JSONValue,
         into root: inout [String: JSONValue]
     ) {
-        let parts = qualifiedKey.split(separator: ".", maxSplits: 1).map(String.init)
-        if parts.count == 2 {
-            if case .object(var groupDict) = root[parts[0]] {
-                groupDict[parts[1]] = value
-                root[parts[0]] = .object(groupDict)
+        let (group, name) = qualifiedKey.qualifiedKeyParts
+        if let group {
+            if case .object(var groupDict) = root[group] {
+                groupDict[name] = value
+                root[group] = .object(groupDict)
             } else {
-                root[parts[0]] = .object([parts[1]: value])
+                root[group] = .object([name: value])
             }
         } else {
             root[qualifiedKey] = value
@@ -140,12 +140,11 @@ extension Configuration {
         forQualifiedKey key: String,
         defaults: [String: JSONValue]
     ) -> JSONValue {
-        let parts = key.split(separator: ".", maxSplits: 1).map(String.init)
-        if parts.count == 2 {
-            if case .object(let groupDict) = defaults[parts[0]] {
-                return groupDict[parts[1]] ?? .object([:])
-            }
-        } else if let value = defaults[key] {
+        let (group, name) = key.qualifiedKeyParts
+        if let group, case .object(let groupDict) = defaults[group] {
+            return groupDict[name] ?? .object([:])
+        }
+        if group == nil, let value = defaults[key] {
             return value
         }
         return .object([:])

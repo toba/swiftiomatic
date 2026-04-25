@@ -24,7 +24,7 @@ final class CapitalizeAcronyms: RewriteSyntaxRule<AcronymsConfiguration>, @unche
     override func visit(_ token: TokenSyntax) -> TokenSyntax {
         guard case .identifier(let text) = token.tokenKind else { return token }
 
-        let acronyms = context.configuration[CapitalizeAcronyms.self].words
+        let acronyms = ruleConfig.words
         let updated = capitalizeAcronyms(in: text, acronyms: acronyms)
 
         guard updated != text else { return token }

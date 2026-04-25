@@ -19,7 +19,7 @@ extension KeySortOrder: ExpressibleByArgument {}
 extension SwiftiomaticCommand {
   /// Dumps the tool's configuration in JSON format to standard output.
   struct DumpConfiguration: ParsableCommand {
-    nonisolated(unsafe) static var configuration = CommandConfiguration(
+    static let configuration = CommandConfiguration(
       abstract: "Dump the configuration in JSON format to standard output",
       discussion: """
         Without any options, dumps the default configuration. When '--effective' is set, dumps the configuration that \

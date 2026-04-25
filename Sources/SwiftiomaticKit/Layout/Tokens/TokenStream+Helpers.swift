@@ -96,20 +96,14 @@ extension TokenStream {
     /// are line comments, we need to make sure to insert the same breaks that we would if there were
     /// other statements there to get the same layout.
     ///
-    /// Note the slightly different generic constraints on this and the other overloads. All are
-    /// required because protocols in Swift do not conform to themselves, so if the element type of
-    /// the collection is *precisely* `Syntax`, the constraint `BodyContents.Element: Syntax` is not
-    /// satisfied and we must constrain it by `BodyContents.Element == Syntax` instead.
-    ///
     /// - Parameters:
     ///   - node: A node that conforms to `BracedSyntax`.
-    ///   - contentsKeyPath: A keypath describing how to get from `node` to the contents of the node
-    ///     (a `Collection` whose elements are of a type that conforms to `Syntax`).
+    ///   - contentsKeyPath: A keypath describing how to get from `node` to the contents of the node.
     /// - Returns: True if the collection at the node's keypath is empty and there are no comments.
     func areBracesCompletelyEmpty<Node: BracedSyntax, BodyContents: SyntaxCollection>(
         _ node: Node,
         contentsKeyPath: KeyPath<Node, BodyContents>
-    ) -> Bool where BodyContents.Element: SyntaxProtocol {
+    ) -> Bool {
         // If the collection is empty, then any comments that might be present in the block must be
         // leading trivia of the right brace.
         let commentPrecedesRightBrace = node.rightBrace.hasAnyPrecedingComment
@@ -119,120 +113,58 @@ extension TokenStream {
         return contentsIterator.next() == nil && !commentPrecedesRightBrace
     }
 
-    /// Returns a value indicating whether or not the given braced syntax node is completely empty;
-    /// that is, it contains neither child syntax nodes (aside from the braces) *nor* any comments.
-    ///
-    /// - Parameters:
-    ///   - node: A node that conforms to `BracedSyntax`.
-    ///   - contentsKeyPath: A keypath describing how to get from `node` to the contents of the node
-    ///     (a `Collection` whose elements are of type `Syntax`).
-    /// - Returns: True if the collection at the node's keypath is empty and there are no comments.
-    func areBracesCompletelyEmpty<Node: BracedSyntax, BodyContents: SyntaxCollection>(
-        _ node: Node,
-        contentsKeyPath: KeyPath<Node, BodyContents>
-    ) -> Bool where BodyContents.Element == Syntax {
-        // If the collection is empty, then any comments that might be present in the block must be
-        // leading trivia of the right brace.
-        let commentPrecedesRightBrace = node.rightBrace.hasAnyPrecedingComment
-        // We can't use `count` here because it also includes missing children. Instead, we get an
-        // iterator and check if it returns `nil` immediately.
-        var contentsIterator = node[keyPath: contentsKeyPath].makeIterator()
-        return contentsIterator.next() == nil && !commentPrecedesRightBrace
+    /// Applies formatting to a parenthesized parameter clause (closure, enum-case, or function).
+    private func arrangeParenthesizedParameters(
+        leftParen: TokenSyntax,
+        rightParen: TokenSyntax,
+        isEmpty: Bool,
+        forcesBreakBeforeRightParen: Bool
+    ) {
+        guard !isEmpty else { return }
+        after(leftParen, tokens: .break(.open, size: 0), .open(argumentListConsistency()))
+        before(
+            rightParen,
+            tokens: .break(.close(mustBreak: forcesBreakBeforeRightParen), size: 0),
+            .close
+        )
     }
 
-    /// Returns a value indicating whether or not the given braced syntax node is completely empty;
-    /// that is, it contains neither child syntax nodes (aside from the braces) *nor* any comments.
-    ///
-    /// - Parameters:
-    ///   - node: A node that conforms to `BracedSyntax`.
-    ///   - contentsKeyPath: A keypath describing how to get from `node` to the contents of the node
-    ///     (a `Collection` whose elements are of type `DeclSyntax`).
-    /// - Returns: True if the collection at the node's keypath is empty and there are no comments.
-    func areBracesCompletelyEmpty<Node: BracedSyntax, BodyContents: SyntaxCollection>(
-        _ node: Node,
-        contentsKeyPath: KeyPath<Node, BodyContents>
-    ) -> Bool where BodyContents.Element == DeclSyntax {
-        // If the collection is empty, then any comments that might be present in the block must be
-        // leading trivia of the right brace.
-        let commentPrecedesRightBrace = node.rightBrace.hasAnyPrecedingComment
-        // We can't use `count` here because it also includes missing children. Instead, we get an
-        // iterator and check if it returns `nil` immediately.
-        var contentsIterator = node[keyPath: contentsKeyPath].makeIterator()
-        return contentsIterator.next() == nil && !commentPrecedesRightBrace
-    }
-
-    /// Applies formatting to a collection of parameters for a decl.
-    ///
-    /// - Parameters:
-    ///    - parameters: A node that contains the parameters that can be passed to a decl when its
-    ///      called.
-    ///    - forcesBreakBeforeRightParen: Whether a break should be required before the right paren
-    ///      when the right paren is on a different line than the corresponding left paren.
+    /// Applies formatting to a closure parameter clause.
     func arrangeClosureParameterClause(
         _ parameters: ClosureParameterClauseSyntax,
         forcesBreakBeforeRightParen: Bool
     ) {
-        guard !parameters.parameters.isEmpty else { return }
-
-        after(
-            parameters.leftParen,
-            tokens: .break(.open, size: 0),
-            .open(argumentListConsistency())
-        )
-        before(
-            parameters.rightParen,
-            tokens: .break(.close(mustBreak: forcesBreakBeforeRightParen), size: 0),
-            .close
+        arrangeParenthesizedParameters(
+            leftParen: parameters.leftParen,
+            rightParen: parameters.rightParen,
+            isEmpty: parameters.parameters.isEmpty,
+            forcesBreakBeforeRightParen: forcesBreakBeforeRightParen
         )
     }
 
-    /// Applies formatting to a collection of enum case parameters for a decl.
-    ///
-    /// - Parameters:
-    ///    - parameters: A node that contains the parameters that can be passed to a decl when its
-    ///      called.
-    ///    - forcesBreakBeforeRightParen: Whether a break should be required before the right paren
-    ///      when the right paren is on a different line than the corresponding left paren.
+    /// Applies formatting to an enum-case parameter clause.
     func arrangeEnumCaseParameterClause(
         _ parameters: EnumCaseParameterClauseSyntax,
         forcesBreakBeforeRightParen: Bool
     ) {
-        guard !parameters.parameters.isEmpty else { return }
-
-        after(
-            parameters.leftParen,
-            tokens: .break(.open, size: 0),
-            .open(argumentListConsistency())
-        )
-        before(
-            parameters.rightParen,
-            tokens: .break(.close(mustBreak: forcesBreakBeforeRightParen), size: 0),
-            .close
+        arrangeParenthesizedParameters(
+            leftParen: parameters.leftParen,
+            rightParen: parameters.rightParen,
+            isEmpty: parameters.parameters.isEmpty,
+            forcesBreakBeforeRightParen: forcesBreakBeforeRightParen
         )
     }
 
-    /// Applies formatting to a collection of parameters for a decl.
-    ///
-    /// - Parameters:
-    ///    - parameters: A node that contains the parameters that can be passed to a decl when its
-    ///      called.
-    ///    - forcesBreakBeforeRightParen: Whether a break should be required before the right paren
-    ///      when the right paren is on a different line than the corresponding left paren.
+    /// Applies formatting to a function parameter clause.
     func arrangeParameterClause(
         _ parameters: FunctionParameterClauseSyntax,
         forcesBreakBeforeRightParen: Bool
     ) {
-        guard !parameters.parameters.isEmpty else { return }
-
-        after(
-            parameters.leftParen,
-            tokens: .break(.open, size: 0),
-            .open(argumentListConsistency())
-        )
-        before(
-            parameters.rightParen,
-            tokens: .break(.close(mustBreak: forcesBreakBeforeRightParen), size: 0),
-            .close
+        arrangeParenthesizedParameters(
+            leftParen: parameters.leftParen,
+            rightParen: parameters.rightParen,
+            isEmpty: parameters.parameters.isEmpty,
+            forcesBreakBeforeRightParen: forcesBreakBeforeRightParen
         )
     }
 
@@ -457,7 +389,7 @@ extension TokenStream {
     /// `.break` tokens that end a "scope" after the token.
     func splitScopingBeforeTokens(
         of token: TokenSyntax
-    ) -> (openingScope: [Token], closingScope: [Token]) {
+    ) -> (openingScope: ArraySlice<Token>, closingScope: ArraySlice<Token>) {
         guard let beforeTokens = beforeMap[token] else {
             return ([], [])
         }
@@ -470,14 +402,14 @@ extension TokenStream {
                 break
             default:
                 if index > 0 {
-                    return (Array(beforeTokens[0...(index - 1)]), Array(beforeTokens[index...]))
+                    return (beforeTokens[..<index], beforeTokens[index...])
                 } else {
-                    return ([], beforeTokens)
+                    return ([], beforeTokens[...])
                 }
             }
         }
         // Never found a closing-scope token, so assume they're all opening-scope.
-        return (beforeTokens, [])
+        return (beforeTokens[...], [])
     }
 
     /// Partitions the given trailing trivia into two contiguous slices: the first containing only

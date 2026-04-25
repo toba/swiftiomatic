@@ -13,6 +13,24 @@
 import Testing
 @Suite
 struct TernaryExprTests: LayoutTesting {
+  @Test func bothBranchesOnTheirOwnLineWhenTernaryWraps() {
+    // When the ternary itself wraps, both `?` and `:` each get their own line,
+    // even if the `? a : b` portion would fit together on the wrapped line.
+    let input =
+      """
+      let pendingLeadingTrivia = trailingNonSpace.isEmpty ? token.leadingTrivia : token.leadingTrivia + trailingNonSpace
+      """
+    let expected =
+      """
+      let pendingLeadingTrivia = trailingNonSpace.isEmpty
+        ? token.leadingTrivia
+        : token.leadingTrivia + trailingNonSpace
+
+      """
+
+    assertLayout(input: input, expected: expected, linelength: 80)
+  }
+
   @Test func assignmentPrefersTernaryBreaksOverEqualsBreak() {
     // Breaking after `=` is a last resort. When a ternary RHS doesn't fit, prefer
     // breaking before `?` and `:` over breaking after `=`.
@@ -49,9 +67,11 @@ struct TernaryExprTests: LayoutTesting {
       let y = a ? b : c
       let z = a ? b : c
       let reallyLongName = a
-        ? longTruePart : longFalsePart
+        ? longTruePart
+        : longFalsePart
       let reallyLongName = reallyLongCondition
-        ? reallyLongTruePart : reallyLongFalsePart
+        ? reallyLongTruePart
+        : reallyLongFalsePart
       let reallyLongName = reallyLongCondition
         ? reallyReallyReallyLongTruePart
         : reallyLongFalsePart

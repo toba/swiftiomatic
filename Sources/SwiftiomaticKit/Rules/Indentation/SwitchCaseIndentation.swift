@@ -20,9 +20,7 @@ final class SwitchCaseIndentation: RewriteSyntaxRule<SwitchCaseIndentationConfig
         return config
     }
 
-    private var style: SwitchCaseIndentationConfiguration.Style {
-        context.configuration[SwitchCaseIndentation.self].style
-    }
+    private var style: SwitchCaseIndentationConfiguration.Style { ruleConfig.style }
 
     override func visit(_ node: SwitchExprSyntax) -> ExprSyntax {
         let visited = super.visit(node)

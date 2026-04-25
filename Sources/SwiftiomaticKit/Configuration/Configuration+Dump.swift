@@ -14,10 +14,6 @@
 import Foundation
 
 extension Configuration {
-    /// The URL of the JSON schema hosted on GitHub.
-    package static let schemaURL =
-        "https://raw.githubusercontent.com/toba/swiftiomatic/refs/heads/main/schema.json"
-
     /// Return the configuration as a JSON string with a `$schema` reference.
     ///
     /// Rule objects that fit within 100 columns are printed on a single line.

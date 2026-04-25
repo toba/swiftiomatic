@@ -35,7 +35,7 @@ final class URLMacro: RewriteSyntaxRule<URLMacroConfiguration>, @unchecked Senda
   // MARK: - Import detection
 
   override func visit(_ node: ImportDeclSyntax) -> DeclSyntax {
-    if let moduleName = context.configuration[URLMacro.self].moduleName,
+    if let moduleName = ruleConfig.moduleName,
       node.path.first?.name.text == moduleName
     {
       hasModuleImport = true
@@ -46,7 +46,7 @@ final class URLMacro: RewriteSyntaxRule<URLMacroConfiguration>, @unchecked Senda
   // MARK: - File-level: add import after processing children
 
   override func visit(_ node: SourceFileSyntax) -> SourceFileSyntax {
-    let config = context.configuration[URLMacro.self]
+    let config = ruleConfig
     guard config.macroName != nil else { return node }
 
     let visited = super.visit(node)
@@ -106,7 +106,7 @@ final class URLMacro: RewriteSyntaxRule<URLMacroConfiguration>, @unchecked Senda
   // MARK: - Expression-level: replace URL(string: "...")!
 
   override func visit(_ node: ForceUnwrapExprSyntax) -> ExprSyntax {
-    let config = context.configuration[URLMacro.self]
+    let config = ruleConfig
     guard let macroName = config.macroName else { return ExprSyntax(node) }
 
     // The inner expression must be a function call

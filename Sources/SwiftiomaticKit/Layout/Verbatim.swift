@@ -13,6 +13,9 @@
 import Foundation
 
 struct Verbatim: Sendable {
+    /// Hoisted to avoid rebuilding a `CharacterSet` per line during init.
+    private static let spacesOnly = CharacterSet(charactersIn: " ")
+
     /// The behavior used to adjust indentation when printing verbatim content.
     private let indentingBehavior: IndentingBehavior
 
@@ -59,7 +62,7 @@ struct Verbatim: Sendable {
             max(numberOfLeadingSpaces(in: $0) - firstLineLeadingSpaceCount, 0)
         }
         lines = originalLines.map {
-            $0.trimmingCharacters(in: CharacterSet(charactersIn: " "))
+            $0.trimmingCharacters(in: Self.spacesOnly)
         }
     }
 
@@ -73,16 +76,34 @@ struct Verbatim: Sendable {
     }
 
     func print(indent: [Indent]) -> String {
+        // Hoist the indentation string and pre-compute the output capacity so the
+        // writer doesn't reallocate while concatenating each line.
+        let indentation = indent.indentation()
+        var capacity = 0
+        for i in 0..<lines.count {
+            let line = lines[i]
+            if !line.isEmpty {
+                switch indentingBehavior {
+                    case .firstLine where i == 0, .allLines:
+                        capacity += indentation.utf8.count
+                    case .none, .firstLine: break
+                }
+                capacity += leadingWhitespaceCounts[i] + line.utf8.count
+            }
+            if i < lines.count - 1 { capacity += 1 }
+        }
+
         var output = ""
+        output.reserveCapacity(capacity)
 
         for i in 0..<lines.count {
-            if lines[i] != "" {
+            if !lines[i].isEmpty {
                 switch indentingBehavior {
-                    case .firstLine where i == 0, .allLines: output += indent.indentation()
+                    case .firstLine where i == 0, .allLines: output += indentation
                     case .none, .firstLine: break
                 }
                 if leadingWhitespaceCounts[i] > 0 {
-                    output += String(repeating: " ", count: leadingWhitespaceCounts[i])
+                    output += SpacePadding.spaces(leadingWhitespaceCounts[i])
                 }
                 output += lines[i]
             }

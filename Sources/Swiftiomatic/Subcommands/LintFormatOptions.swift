@@ -151,25 +151,26 @@ struct LintFormatOptions: ParsableArguments {
   }
 }
 
+/// Parses a `start:end` argument into integer bounds, requiring `start <= end`.
+private func parseIntPair(_ argument: String) -> (start: Int, end: Int)? {
+  let pair = argument.components(separatedBy: ":")
+  guard pair.count == 2, let start = Int(pair[0]), let end = Int(pair[1]), start <= end else {
+    return nil
+  }
+  return (start, end)
+}
+
 extension Range<Int> {
   public init?(argument: String) {
-    let pair = argument.components(separatedBy: ":")
-    if pair.count == 2, let start = Int(pair[0]), let end = Int(pair[1]), start <= end {
-      self = start..<end
-    } else {
-      return nil
-    }
+    guard let (start, end) = parseIntPair(argument) else { return nil }
+    self = start..<end
   }
 }
 
 extension ClosedRange<Int> {
   public init?(argument: String) {
-    let pair = argument.components(separatedBy: ":")
-    if pair.count == 2, let start = Int(pair[0]), let end = Int(pair[1]), start <= end {
-      self = start...end
-    } else {
-      return nil
-    }
+    guard let (start, end) = parseIntPair(argument) else { return nil }
+    self = start...end
   }
 }
 

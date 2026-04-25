@@ -73,7 +73,7 @@ package enum Selection {
             case .ranges(let ranges):
                 ranges.contains { $0.contains(position) }
             case .unresolvedLineRanges:
-                fatalError("Must resolve Selection before calling contains")
+                preconditionFailure("Must resolve Selection before calling contains")
         }
     }
 
@@ -84,7 +84,7 @@ package enum Selection {
             case .ranges(let ranges):
                 return ranges.contains { $0.overlapsOrTouches(range) }
             case .unresolvedLineRanges:
-                fatalError("Must resolve Selection before calling overlapsOrTouches")
+                preconditionFailure("Must resolve Selection before calling overlapsOrTouches")
         }
     }
 }
@@ -102,7 +102,7 @@ extension Syntax {
                     $0.lowerBound <= position && endPosition <= $0.upperBound
                 }
             case .unresolvedLineRanges:
-                fatalError("Must resolve Selection before calling isInsideSelection")
+                preconditionFailure("Must resolve Selection before calling isInsideSelection")
         }
     }
 }

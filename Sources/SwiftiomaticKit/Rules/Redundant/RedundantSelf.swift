@@ -26,16 +26,25 @@ final class RedundantSelf: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendabl
 
   /// Whether the immediately enclosing type is a reference type (class/actor).
   /// Stack to handle nested types.
+  ///
+  /// **Lifecycle**: managed exclusively through `withTypeContext(isReference:_:)`, which
+  /// guarantees balanced push/pop via `defer`. Rule instances are constructed per-file by
+  /// the pipeline, so the stack must be empty between files; the helper enforces this by
+  /// construction as long as every visit site routes through it.
   private var referenceTypeStack: [Bool] = []
 
   /// Stack of implicit-self-allowed flags. Each scope level (function, accessor,
   /// closure) pushes an entry. When checking whether self. can be removed, the
   /// current (top) entry is consulted.
+  ///
+  /// **Lifecycle**: managed exclusively through `withScope(localNames:allowsImplicitSelf:_:)`.
   private var implicitSelfStack: [Bool] = []
 
   /// Stack of local name sets. Each scope level pushes a set containing the names
   /// declared in that scope (params, let/var bindings, for-in vars, etc.).
   /// When checking for shadowing, ALL levels are consulted via `allLocalNames`.
+  ///
+  /// **Lifecycle**: managed exclusively through `withScope(localNames:allowsImplicitSelf:_:)`.
   private var localNameStack: [Set<String>] = []
 
   private var insideTypeBody: Bool { !referenceTypeStack.isEmpty }
@@ -46,38 +55,54 @@ final class RedundantSelf: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendabl
     localNameStack.reduce(into: Set()) { $0.formUnion($1) }
   }
 
+  // MARK: - Balanced scope helpers
+
+  /// Push a reference-type flag for the duration of `body`, popping on exit.
+  /// Use this rather than touching `referenceTypeStack` directly so push/pop stay balanced.
+  private func withTypeContext<T>(isReference: Bool, _ body: () -> T) -> T {
+    referenceTypeStack.append(isReference)
+    defer { referenceTypeStack.removeLast() }
+    return body()
+  }
+
+  /// Push a local-names + implicit-self frame for the duration of `body`, popping on exit.
+  /// Both stacks are pushed and popped together so the two stay aligned.
+  private func withScope<T>(
+    localNames: Set<String>,
+    allowsImplicitSelf: Bool,
+    _ body: () -> T
+  ) -> T {
+    localNameStack.append(localNames)
+    implicitSelfStack.append(allowsImplicitSelf)
+    defer {
+      localNameStack.removeLast()
+      implicitSelfStack.removeLast()
+    }
+    return body()
+  }
+
   // MARK: - Type Declarations
 
   override func visit(_ node: StructDeclSyntax) -> DeclSyntax {
-    referenceTypeStack.append(false)
-    defer { referenceTypeStack.removeLast() }
-    return super.visit(node)
+    withTypeContext(isReference: false) { super.visit(node) }
   }
 
   override func visit(_ node: EnumDeclSyntax) -> DeclSyntax {
-    referenceTypeStack.append(false)
-    defer { referenceTypeStack.removeLast() }
-    return super.visit(node)
+    withTypeContext(isReference: false) { super.visit(node) }
   }
 
   override func visit(_ node: ClassDeclSyntax) -> DeclSyntax {
-    referenceTypeStack.append(true)
-    defer { referenceTypeStack.removeLast() }
-    return super.visit(node)
+    withTypeContext(isReference: true) { super.visit(node) }
   }
 
   override func visit(_ node: ActorDeclSyntax) -> DeclSyntax {
-    referenceTypeStack.append(true)
-    defer { referenceTypeStack.removeLast() }
-    return super.visit(node)
+    withTypeContext(isReference: true) { super.visit(node) }
   }
 
   override func visit(_ node: ExtensionDeclSyntax) -> DeclSyntax {
     // Can't determine if value or reference type from extension alone.
     // Assume reference type (conservative — closures require explicit self).
-    referenceTypeStack.append(true)
-    defer { referenceTypeStack.removeLast() }
-    return super.visit(node)
+    withTypeContext(isReference: true) { super.visit(node) }
   }
 
   // MARK: - Function and Initializer Scopes
@@ -90,13 +115,7 @@ final class RedundantSelf: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendabl
       names.formUnion(collectLocalNames(in: Syntax(body)))
     }
 
-    localNameStack.append(names)
-    implicitSelfStack.append(true)
-    defer {
-      localNameStack.removeLast()
-      implicitSelfStack.removeLast()
-    }
-    return super.visit(node)
+    return withScope(localNames: names, allowsImplicitSelf: true) { super.visit(node) }
   }
 
   override func visit(_ node: InitializerDeclSyntax) -> DeclSyntax {
@@ -107,26 +126,14 @@ final class RedundantSelf: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendabl
       names.formUnion(collectLocalNames(in: Syntax(body)))
     }
 
-    localNameStack.append(names)
-    implicitSelfStack.append(true)
-    defer {
-      localNameStack.removeLast()
-      implicitSelfStack.removeLast()
-    }
-    return super.visit(node)
+    return withScope(localNames: names, allowsImplicitSelf: true) { super.visit(node) }
   }
 
   override func visit(_ node: SubscriptDeclSyntax) -> DeclSyntax {
     guard insideTypeBody else { return super.visit(node) }
 
     let names = collectParamNames(from: node.parameterClause)
-    localNameStack.append(names)
-    implicitSelfStack.append(true)
-    defer {
-      localNameStack.removeLast()
-      implicitSelfStack.removeLast()
-    }
-    return super.visit(node)
+    return withScope(localNames: names, allowsImplicitSelf: true) { super.visit(node) }
   }
 
   // MARK: - Accessor Scopes (get/set/willSet/didSet)
@@ -165,13 +172,7 @@ final class RedundantSelf: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendabl
       names.formUnion(collectLocalNames(in: Syntax(body)))
     }
 
-    localNameStack.append(names)
-    implicitSelfStack.append(true)
-    defer {
-      localNameStack.removeLast()
-      implicitSelfStack.removeLast()
-    }
-    return super.visit(node)
+    return withScope(localNames: names, allowsImplicitSelf: true) { super.visit(node) }
   }
 
   // MARK: - Variable Declarations (lazy var)
@@ -184,13 +185,7 @@ final class RedundantSelf: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendabl
     // Lazy stored properties have implicit closure semantics.
     // In reference types, self is required. In value types, it's optional.
     let allowed = !isReferenceType
-    implicitSelfStack.append(allowed)
-    localNameStack.append([])
-    defer {
-      implicitSelfStack.removeLast()
-      localNameStack.removeLast()
-    }
-    return super.visit(node)
+    return withScope(localNames: [], allowsImplicitSelf: allowed) { super.visit(node) }
   }
 
   // MARK: - Shorthand Computed Properties
@@ -212,13 +207,7 @@ final class RedundantSelf: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendabl
     if let propName = enclosingPropertyName(of: node) {
       names.insert(propName)
     }
-    localNameStack.append(names)
-    implicitSelfStack.append(true)
-    defer {
-      localNameStack.removeLast()
-      implicitSelfStack.removeLast()
-    }
-    return super.visit(node)
+    return withScope(localNames: names, allowsImplicitSelf: true) { super.visit(node) }
   }
 
   // MARK: - Closure Scopes
@@ -227,7 +216,7 @@ final class RedundantSelf: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendabl
     guard insideTypeBody else { return super.visit(node) }
 
     var names = Set<String>()
-    var allowsImplicitSelf: Bool
+    let allowsImplicitSelf: Bool
 
     if !isReferenceType {
       // Value types (struct/enum): closures always allow implicit self (SE-0269)
@@ -255,13 +244,9 @@ final class RedundantSelf: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendabl
     // Collect names declared in the closure body
     names.formUnion(collectLocalNames(in: Syntax(node.statements)))
 
-    localNameStack.append(names)
-    implicitSelfStack.append(allowsImplicitSelf)
-    defer {
-      localNameStack.removeLast()
-      implicitSelfStack.removeLast()
+    return withScope(localNames: names, allowsImplicitSelf: allowsImplicitSelf) {
+      super.visit(node)
     }
-    return super.visit(node)
   }
 
   // MARK: - The Transform

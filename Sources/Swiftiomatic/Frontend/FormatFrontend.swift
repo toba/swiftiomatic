@@ -16,7 +16,7 @@ import SwiftSyntax
 import SwiftiomaticKit
 
 /// The frontend for formatting operations.
-class FormatFrontend: Frontend, @unchecked Sendable {
+final class FormatFrontend: Frontend, @unchecked Sendable {
     /// Whether or not to format the Swift file in-place.
     private let inPlace: Bool
 

@@ -25,7 +25,7 @@ final class UnusedSetterValue: LintSyntaxRule<LintOnlyValue>, @unchecked Sendabl
         let parameterName = node.parameters?.name.text ?? "newValue"
         let visitor = NewValueUsageVisitor(name: parameterName, viewMode: .sourceAccurate)
         visitor.walk(body)
-        guard !visitor.isUsed else { return .visitChildren }
+        guard !visitor.wasUsed else { return .visitChildren }
 
         // Empty body in an `override` setter is intentional.
         if body.statements.isEmpty,
@@ -59,7 +59,7 @@ final class UnusedSetterValue: LintSyntaxRule<LintOnlyValue>, @unchecked Sendabl
 
 private final class NewValueUsageVisitor: SyntaxVisitor {
     let name: String
-    var isUsed = false
+    var wasUsed = false
 
     init(name: String, viewMode: SyntaxTreeViewMode) {
         self.name = name
@@ -68,7 +68,7 @@ private final class NewValueUsageVisitor: SyntaxVisitor {
 
     override func visit(_ node: DeclReferenceExprSyntax) -> SyntaxVisitorContinueKind {
         if node.baseName.text == name {
-            isUsed = true
+            wasUsed = true
             return .skipChildren
         }
         return .visitChildren

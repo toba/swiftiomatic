@@ -10,7 +10,7 @@ parent: qlt-10c
 sync:
     github:
         issue_number: "311"
-        synced_at: "2026-04-15T00:34:45Z"
+        synced_at: "2026-04-25T22:35:08Z"
 ---
 
 Prefer modern APIs and patterns.

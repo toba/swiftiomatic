@@ -15,7 +15,7 @@ import ArgumentParser
 extension SwiftiomaticCommand {
   /// Formats one or more files containing Swift code.
   struct Format: ParsableCommand {
-    nonisolated(unsafe) static var configuration = CommandConfiguration(
+    static let configuration = CommandConfiguration(
       abstract: "Format Swift source code",
       discussion: "When no files are specified, it expects the source from standard input."
     )

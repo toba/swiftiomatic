@@ -95,7 +95,7 @@ final class UnhandledThrowingTask: LintSyntaxRule<LintOnlyValue>, @unchecked Sen
         for arg in node.arguments {
             visitor.walk(arg)
         }
-        return visitor.doesThrow
+        return visitor.hasThrow
     }
 }
 
@@ -105,10 +105,10 @@ final class UnhandledThrowingTask: LintSyntaxRule<LintOnlyValue>, @unchecked Sen
 /// an identifier pattern, catching everything) silence the throw. A `Result`
 /// initializer with a trailing closure also handles its body's throws.
 private final class ThrowsVisitor: SyntaxVisitor {
-    var doesThrow = false
+    var hasThrow = false
 
     override func visit(_ node: DoStmtSyntax) -> SyntaxVisitorContinueKind {
-        if doesThrow { return .skipChildren }
+        if hasThrow { return .skipChildren }
 
         guard let lastCatch = node.catchClauses.last else {
             return .visitChildren
@@ -126,12 +126,12 @@ private final class ThrowsVisitor: SyntaxVisitor {
         // Walk only the catch clause; the do-body's throws are caught.
         let catchVisitor = ThrowsVisitor(viewMode: .sourceAccurate)
         catchVisitor.walk(lastCatch)
-        if catchVisitor.doesThrow { doesThrow = true }
+        if catchVisitor.hasThrow { hasThrow = true }
         return .skipChildren
     }
 
     override func visit(_ node: FunctionCallExprSyntax) -> SyntaxVisitorContinueKind {
-        if doesThrow { return .skipChildren }
+        if hasThrow { return .skipChildren }
         // `Result { try ... }` consumes errors via the trailing closure.
         if let ref = node.calledExpression.as(DeclReferenceExprSyntax.self),
             ref.baseName.text == "Result",
@@ -144,12 +144,12 @@ private final class ThrowsVisitor: SyntaxVisitor {
 
     override func visitPost(_ node: TryExprSyntax) {
         if node.questionOrExclamationMark == nil {
-            doesThrow = true
+            hasThrow = true
         }
     }
 
     override func visitPost(_ node: ThrowStmtSyntax) {
-        doesThrow = true
+        hasThrow = true
     }
 }
 

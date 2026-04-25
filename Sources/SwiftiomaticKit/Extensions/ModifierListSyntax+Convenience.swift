@@ -28,6 +28,11 @@ extension DeclModifierListSyntax {
         return nil
     }
 
+    /// Returns true if the modifier list contains the given keyword.
+    func contains(_ keyword: Keyword) -> Bool {
+        contains { $0.name.tokenKind == .keyword(keyword) }
+    }
+
     /// Returns true if the modifier list contains any of the keywords in the given set.
     func contains(anyOf keywords: Set<Keyword>) -> Bool {
         contains {

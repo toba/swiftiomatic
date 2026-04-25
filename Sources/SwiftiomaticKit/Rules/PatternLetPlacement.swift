@@ -31,7 +31,7 @@ final class PatternLetPlacement: RewriteSyntaxRule<PatternLetConfiguration>, @un
     // MARK: - Visitors
 
     override func visit(_ node: MatchingPatternConditionSyntax) -> MatchingPatternConditionSyntax {
-        switch context.configuration[PatternLetPlacement.self].placement {
+        switch ruleConfig.placement {
             case .eachBinding:
                 if let (replacement, specifier) = distributeLetVarThroughPattern(node.pattern) {
                     diagnose(.distributeLetInBoundCaseVariables(specifier), on: node.pattern)
@@ -51,7 +51,7 @@ final class PatternLetPlacement: RewriteSyntaxRule<PatternLetConfiguration>, @un
     }
 
     override func visit(_ node: SwitchCaseItemSyntax) -> SwitchCaseItemSyntax {
-        switch context.configuration[PatternLetPlacement.self].placement {
+        switch ruleConfig.placement {
             case .eachBinding:
                 if let (replacement, specifier) = distributeLetVarThroughPattern(node.pattern) {
                     diagnose(.distributeLetInBoundCaseVariables(specifier), on: node.pattern)
@@ -75,7 +75,7 @@ final class PatternLetPlacement: RewriteSyntaxRule<PatternLetConfiguration>, @un
     override func visit(_ node: ForStmtSyntax) -> StmtSyntax {
         guard node.caseKeyword != nil else { return super.visit(node) }
 
-        switch context.configuration[PatternLetPlacement.self].placement {
+        switch ruleConfig.placement {
             case .eachBinding:
                 if let (replacement, specifier) = distributeLetVarThroughPattern(node.pattern) {
                     diagnose(.distributeLetInBoundCaseVariables(specifier), on: node.pattern)

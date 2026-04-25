@@ -9,6 +9,9 @@ extension Configuration {
   /// appended at the end of the root. Removals delete the key's logical
   /// block and rebalance the trailing comma on the previous sibling when
   /// the removed key was the last child.
+  // Not narrowed to `throws(JSON5Scanner.Error)` because the surrounding scanner type is
+  // file-internal; a `package` API may not advertise an internal-typed error. Promoting
+  // the scanner to `package` for one error type is too much surface area for the win.
   package static func applyUpdateText(
     _ diff: UpdateDiff,
     to source: String,
@@ -87,11 +90,11 @@ extension Configuration {
     in source: String,
     layout: JSON5Scanner.ObjectLayout
   ) -> TextEdit? {
-    let parts = qualifiedKey.split(separator: ".", maxSplits: 1).map(String.init)
-    if parts.count == 2 {
-      guard let group = layout.members.first(where: { $0.key == parts[0] }),
+    let (groupName, name) = qualifiedKey.qualifiedKeyParts
+    if let groupName {
+      guard let group = layout.members.first(where: { $0.key == groupName }),
         let nested = group.nested,
-        let memberIndex = nested.members.firstIndex(where: { $0.key == parts[1] })
+        let memberIndex = nested.members.firstIndex(where: { $0.key == name })
       else { return nil }
       return removalEdit(memberIndex: memberIndex, container: nested, source: source)
     } else {
@@ -124,8 +127,7 @@ extension Configuration {
   // MARK: - Insertion
 
   private static func insertTarget(forQualifiedKey key: String) -> InsertTarget {
-    let parts = key.split(separator: ".", maxSplits: 1).map(String.init)
-    return parts.count == 2 ? .group(parts[0]) : .root
+    if let group = key.qualifiedKeyParts.group { .group(group) } else { .root }
   }
 
   private static func insertionEdits(
@@ -408,19 +410,17 @@ extension Configuration {
     forQualifiedKey key: String,
     defaults: [String: JSONValue]
   ) -> JSONValue {
-    let parts = key.split(separator: ".", maxSplits: 1).map(String.init)
-    if parts.count == 2 {
-      if case .object(let groupDict) = defaults[parts[0]] {
-        return groupDict[parts[1]] ?? .object([:])
-      }
-    } else if let value = defaults[key] {
+    let (group, name) = key.qualifiedKeyParts
+    if let group, case .object(let groupDict) = defaults[group] {
+      return groupDict[name] ?? .object([:])
+    }
+    if group == nil, let value = defaults[key] {
       return value
     }
     return .object([:])
   }
 
   private static func shortKey(forQualifiedKey key: String) -> String {
-    let parts = key.split(separator: ".", maxSplits: 1).map(String.init)
-    return parts.count == 2 ? parts[1] : key
+    key.qualifiedKeyParts.name
   }
 }

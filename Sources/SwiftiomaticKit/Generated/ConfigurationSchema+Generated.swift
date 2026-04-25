@@ -1221,6 +1221,14 @@ package enum ConfigurationSchema {
         "respectExisting" : {
           "description" : "Preserve discretionary line breaks.",
           "type" : "boolean"
+        },
+        "wrapTernary" : {
+          "allOf" : [
+            {
+              "$ref" : "#/$defs/ruleBase"
+            }
+          ],
+          "description" : "Wrap each branch of a ternary expression onto its own line when the expression\nwould exceed the configured line length.\n\nThe pretty printer no longer makes wrapping decisions for ternaries — instead, this\nrule inserts discretionary newlines into the leading trivia of `?` and `:` whenever\nthe ternary's last column would exceed `LineLength`. The pretty printer respects\nthose newlines (see `RespectsExistingLineBreaks`) and applies a continuation indent\nto each wrapped branch, producing:\n\n```swift\npendingLeadingTrivia = trailingNonSpace.isEmpty\n  ? token.leadingTrivia\n  : token.leadingTrivia + trailingNonSpace\n```\n\nIf either operator already has a leading newline, the rule normalizes the other to\nmatch so the ternary always has both branches on their own lines once it wraps.\n"
         }
       },
       "type" : "object"
@@ -2681,7 +2689,18 @@ package enum ConfigurationSchema {
           "$ref" : "#/$defs/ruleBase"
         }
       ],
-      "description" : "Sort switch case items alphabetically within each case.\n\nWhen a case matches multiple patterns (e.g. `case .b, .a, .c:`), the patterns are sorted\nlexicographically. Numeric literals are compared by value (including hex, octal, and binary).\nCases with `where` clauses are only sorted if the `where` clause ends up on the last item.\n\nLint: If case items are not sorted, a lint warning is raised.\n\nFormat: The case items are reordered alphabetically.\n [opt-in]"
+      "description" : "Enforce switch case label indentation style.\n\nTwo styles are supported via `SwitchCaseIndentationConfiguration.Style`:\n- `flush`: `case` labels align with the `switch` keyword (default).\n- `indented`: `case` labels are indented one level from `switch`.\n\nLint: Raised when a `case` or `default` label doesn't match the configured style.\n\nFormat: Case labels, bodies, and the closing brace are reindented to match.\n [opt-in]",
+      "properties" : {
+        "style" : {
+          "default" : "flush",
+          "description" : "style Options: flush, indented.",
+          "enum" : [
+            "flush",
+            "indented"
+          ],
+          "type" : "string"
+        }
+      }
     },
     "testSuiteAccessControl" : {
       "allOf" : [
@@ -3025,6 +3044,14 @@ package enum ConfigurationSchema {
         }
       },
       "type" : "object"
+    },
+    "wrapTernary" : {
+      "allOf" : [
+        {
+          "$ref" : "#/$defs/ruleBase"
+        }
+      ],
+      "description" : "Wrap each branch of a ternary expression onto its own line when the expression\nwould exceed the configured line length.\n\nThe pretty printer no longer makes wrapping decisions for ternaries — instead, this\nrule inserts discretionary newlines into the leading trivia of `?` and `:` whenever\nthe ternary's last column would exceed `LineLength`. The pretty printer respects\nthose newlines (see `RespectsExistingLineBreaks`) and applies a continuation indent\nto each wrapped branch, producing:\n\n```swift\npendingLeadingTrivia = trailingNonSpace.isEmpty\n  ? token.leadingTrivia\n  : token.leadingTrivia + trailingNonSpace\n```\n\nIf either operator already has a leading newline, the rule normalizes the other to\nmatch so the ternary always has both branches on their own lines once it wraps.\n"
     }
   },
   "title" : "Swiftiomatic Configuration",

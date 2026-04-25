@@ -127,7 +127,7 @@ final class FileScopedDeclarationPrivacy: RewriteSyntaxRule<FileScopedDeclaratio
         let validAccess: Keyword
         let diagnostic: Finding.Message
 
-        switch context.configuration[FileScopedDeclarationPrivacy.self].accessLevel {
+        switch ruleConfig.accessLevel {
         case .private:
             invalidAccess = .fileprivate
             validAccess = .private

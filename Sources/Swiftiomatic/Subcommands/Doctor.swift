@@ -4,7 +4,7 @@ import SwiftiomaticKit
 
 extension SwiftiomaticCommand {
   struct Doctor: ParsableCommand {
-    nonisolated(unsafe) static var configuration = CommandConfiguration(
+    static let configuration = CommandConfiguration(
       abstract: "Validate the configuration file",
       discussion: """
         Validates swiftiomatic.json in two stages: first against the JSON Schema \
@@ -70,7 +70,7 @@ extension SwiftiomaticCommand {
 
     private func findConfiguration(
       diagnosticsEngine: DiagnosticsEngine
-    ) throws -> (URL, Data) {
+    ) throws(ExitCode) -> (URL, Data) {
       let configURL: URL
 
       if let explicit = configurationOptions.configuration {

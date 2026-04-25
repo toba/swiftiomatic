@@ -36,7 +36,7 @@ final class PreferStaticOverClassFunc: RewriteSyntaxRule<BasicRuleValue>, @unche
 
     private func classModifier(in decl: DeclSyntax) -> DeclModifierSyntax? {
         guard let withModifiers = decl.asProtocol(WithModifiersSyntax.self) else { return nil }
-        if withModifiers.modifiers.contains(where: { $0.name.tokenKind == .keyword(.override) }) {
+        if withModifiers.modifiers.contains(.override) {
             return nil
         }
         return withModifiers.modifiers.first { $0.name.tokenKind == .keyword(.class) }

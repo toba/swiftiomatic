@@ -58,7 +58,7 @@ private final class MutableVarNameCollector: SyntaxVisitor {
         guard node.bindingSpecifier.tokenKind == .keyword(.var) else {
             return .visitChildren
         }
-        if node.modifiers.contains(where: { $0.name.tokenKind == .keyword(.lazy) }) {
+        if node.modifiers.contains(.lazy) {
             return .visitChildren
         }
         for binding in node.bindings {

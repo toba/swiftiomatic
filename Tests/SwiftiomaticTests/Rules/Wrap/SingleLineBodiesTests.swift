@@ -1077,6 +1077,24 @@ struct SingleLineBodiesInlineTests: RuleTesting {
       configuration: inlineConfig)
   }
 
+  @Test func forLoopInlinesAtExactLineLengthBoundary() {
+    // Collapsed form is exactly 29 chars; lineLength is 29, so it should fit.
+    var config = inlineConfig
+    config[LineLength.self] = 29
+    assertFormatting(
+      WrapSingleLineBodies.self,
+      input: """
+        for x in y 1️⃣{
+            doSomething(z)
+        }
+        """,
+      expected: """
+        for x in y { doSomething(z) }
+        """,
+      findings: [FindingSpec("1️⃣", message: "place loop body on same line as declaration")],
+      configuration: config)
+  }
+
   @Test func whileLoopInlines() {
     assertFormatting(
       WrapSingleLineBodies.self,

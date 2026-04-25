@@ -98,9 +98,13 @@ extension TokenStream {
     }
 
     func visitExtensionDecl(_ node: ExtensionDeclSyntax) -> SyntaxVisitorContinueKind {
+        // Parser recovery on a malformed `extension` declaration can occasionally yield
+        // an extendedType with no tokens; skip rather than crash so the rest of the file
+        // still formats.
         guard let lastTokenOfExtendedType = node.extendedType.lastToken(viewMode: .sourceAccurate)
         else {
-            fatalError("ExtensionDeclSyntax.extendedType must have at least one token")
+            assertionFailure("ExtensionDeclSyntax.extendedType must have at least one token")
+            return .visitChildren
         }
         arrangeTypeDeclBlock(
             Syntax(node),
