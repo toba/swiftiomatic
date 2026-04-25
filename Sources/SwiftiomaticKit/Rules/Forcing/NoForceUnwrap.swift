@@ -20,8 +20,8 @@ import SwiftSyntax
 ///
 /// Format: In test functions, force unwraps are replaced with XCTUnwrap/#require.
 final class NoForceUnwrap: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable {
-    override class var group: ConfigurationGroup? { .forcing }
-    override class var defaultValue: BasicRuleValue { BasicRuleValue(rewrite: false, lint: .no) }
+    override static var group: ConfigurationGroup? { .forcing }
+    override static var defaultValue: BasicRuleValue { .init(rewrite: false, lint: .no) }
 
     private var testContext = TestContextTracker()
     private var insideTestFunction = false
@@ -33,7 +33,7 @@ final class NoForceUnwrap: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendabl
 
     override func visit(_ node: ImportDeclSyntax) -> DeclSyntax {
         testContext.visitImport(node)
-        return DeclSyntax(node)
+        return .init(node)
     }
 
     override func visit(_ node: SourceFileSyntax) -> SourceFileSyntax {
@@ -51,22 +51,20 @@ final class NoForceUnwrap: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendabl
     // In non-test code, continue recursing to diagnose.
     override func visit(_ node: ClosureExprSyntax) -> ExprSyntax {
         guard insideTestFunction else { return super.visit(node) }
-        return ExprSyntax(node)
+        return .init(node)
     }
 
     // Don't recurse into string interpolation in test functions — try is not allowed.
     // In non-test code, continue recursing to diagnose.
     override func visit(_ node: StringLiteralExprSyntax) -> ExprSyntax {
         guard insideTestFunction else { return super.visit(node) }
-        return ExprSyntax(node)
+        return .init(node)
     }
 
     // MARK: - Function-level: detect test, add throws
 
     override func visit(_ node: FunctionDeclSyntax) -> DeclSyntax {
-        guard node.body != nil else {
-            return DeclSyntax(node)
-        }
+        guard node.body != nil else { return DeclSyntax(node) }
 
         // Non-test functions: visit children for diagnose-only but don't rewrite.
         // Reset insideTestFunction so nested functions inside test functions don't
@@ -82,23 +80,22 @@ final class NoForceUnwrap: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendabl
         let wasAddedTry = addedTryExpression
         insideTestFunction = true
         addedTryExpression = false
+
         defer {
             insideTestFunction = wasInsideTest
             addedTryExpression = wasAddedTry
         }
-
         let visited = super.visit(node)
+
         guard var result = visited.as(FunctionDeclSyntax.self) else { return visited }
 
-        guard addedTryExpression else {
-            return DeclSyntax(result)
-        }
+        guard addedTryExpression else { return DeclSyntax(result) }
 
         if result.signature.effectSpecifiers?.throwsClause == nil {
             result = result.addingThrowsClause()
         }
 
-        return DeclSyntax(result)
+        return .init(result)
     }
 
     // MARK: - Force unwrap
@@ -112,7 +109,7 @@ final class NoForceUnwrap: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendabl
 
         // Skip if preceded by try! (handled by NoForceTry)
         if let parentTry = node.parent?.as(TryExprSyntax.self),
-            parentTry.questionOrExclamationMark?.tokenKind == .exclamationMark
+           parentTry.questionOrExclamationMark?.tokenKind == .exclamationMark
         {
             return ExprSyntax(node)
         }
@@ -125,51 +122,49 @@ final class NoForceUnwrap: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendabl
         // If this ForceUnwrapExpr IS the chain top, handle wrapping directly
         if isChainTop(Syntax(node)) {
             let context = classifyChainTopContext(Syntax(node))
+
             switch context {
-            case .wrap:
-                // Wrap the inner expression (remove !, XCTUnwrap does the unwrapping)
-                addedTryExpression = true
-                return wrapInUnwrap(
-                    typedNode.expression,
-                    trailingTrivia: typedNode.exclamationMark.trailingTrivia
-                )
-            case .noWrap:
-                // Just convert to optional chaining
-                return ExprSyntax(
-                    OptionalChainingExprSyntax(
-                        expression: typedNode.expression,
-                        questionMark: .postfixQuestionMarkToken(
-                            leadingTrivia: typedNode.exclamationMark.leadingTrivia,
-                            trailingTrivia: typedNode.exclamationMark.trailingTrivia
-                        )
+                case .wrap:
+                    // Wrap the inner expression (remove !, XCTUnwrap does the unwrapping)
+                    addedTryExpression = true
+                    return wrapInUnwrap(
+                        typedNode.expression,
+                        trailingTrivia: typedNode.exclamationMark.trailingTrivia
                     )
-                )
-            case .propagate:
-                // Convert to ? and let parent handle wrapping
-                chainNeedsWrapping = true
-                return ExprSyntax(
-                    OptionalChainingExprSyntax(
-                        expression: typedNode.expression,
-                        questionMark: .postfixQuestionMarkToken(
-                            leadingTrivia: typedNode.exclamationMark.leadingTrivia,
-                            trailingTrivia: typedNode.exclamationMark.trailingTrivia
-                        )
-                    )
-                )
+                case .noWrap:
+                    // Just convert to optional chaining
+                    return ExprSyntax(
+                        OptionalChainingExprSyntax(
+                            expression: typedNode.expression,
+                            questionMark: .postfixQuestionMarkToken(
+                                leadingTrivia: typedNode.exclamationMark.leadingTrivia,
+                                trailingTrivia: typedNode.exclamationMark.trailingTrivia
+                            )
+                        ))
+                case .propagate:
+                    // Convert to ? and let parent handle wrapping
+                    chainNeedsWrapping = true
+                    return ExprSyntax(
+                        OptionalChainingExprSyntax(
+                            expression: typedNode.expression,
+                            questionMark: .postfixQuestionMarkToken(
+                                leadingTrivia: typedNode.exclamationMark.leadingTrivia,
+                                trailingTrivia: typedNode.exclamationMark.trailingTrivia
+                            )
+                        ))
             }
         }
 
         // Not the chain top — convert to ? and signal chain needs wrapping
         chainNeedsWrapping = true
-        return ExprSyntax(
+        return .init(
             OptionalChainingExprSyntax(
                 expression: typedNode.expression,
                 questionMark: .postfixQuestionMarkToken(
                     leadingTrivia: typedNode.exclamationMark.leadingTrivia,
                     trailingTrivia: typedNode.exclamationMark.trailingTrivia
                 )
-            )
-        )
+            ))
     }
 
     // MARK: - Force cast (as!)
@@ -192,29 +187,30 @@ final class NoForceUnwrap: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendabl
 
         // Convert as! to as?
         var result = typedNode
-        result.questionOrExclamationMark = .postfixQuestionMarkToken(
-            leadingTrivia: typedNode.questionOrExclamationMark!.leadingTrivia,
-            trailingTrivia: typedNode.questionOrExclamationMark!.trailingTrivia
-        )
+        result
+            .questionOrExclamationMark = .postfixQuestionMarkToken(
+                leadingTrivia: typedNode.questionOrExclamationMark!.leadingTrivia,
+                trailingTrivia: typedNode.questionOrExclamationMark!.trailingTrivia
+            )
 
         // If this is a chain top, decide wrapping
         if isChainTop(Syntax(node)) {
             let context = classifyChainTopContext(Syntax(node))
+
             switch context {
-            case .wrap:
-                addedTryExpression = true
-                return wrapInUnwrap(ExprSyntax(result), trailingTrivia: result.trailingTrivia)
-            case .noWrap:
-                return ExprSyntax(result)
-            case .propagate:
-                chainNeedsWrapping = true
-                return ExprSyntax(result)
+                case .wrap:
+                    addedTryExpression = true
+                    return wrapInUnwrap(ExprSyntax(result), trailingTrivia: result.trailingTrivia)
+                case .noWrap: return ExprSyntax(result)
+                case .propagate:
+                    chainNeedsWrapping = true
+                    return ExprSyntax(result)
             }
         }
 
         // Not chain top — signal chain needs wrapping
         chainNeedsWrapping = true
-        return ExprSyntax(result)
+        return .init(result)
     }
 
     // MARK: - Chain top wrapping: MemberAccessExpr
@@ -224,11 +220,12 @@ final class NoForceUnwrap: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendabl
 
         // Check original node: does the base contain a force cast inside parens?
         let originalHadForceCast: Bool
+
         if let base = node.base,
-            let tupleExpr = base.as(TupleExprSyntax.self),
-            tupleExpr.elements.count == 1,
-            let singleElement = tupleExpr.elements.first,
-            findForceCast(in: singleElement.expression) != nil
+           let tupleExpr = base.as(TupleExprSyntax.self),
+           tupleExpr.elements.count == 1,
+           let singleElement = tupleExpr.elements.first,
+           findForceCast(in: singleElement.expression) != nil
         {
             originalHadForceCast = true
         } else {
@@ -251,18 +248,18 @@ final class NoForceUnwrap: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendabl
             var result = typedNode
             result.base = ExprSyntax(optionalBase)
 
-            if isChainTop(Syntax(node)) && childChainNeedsWrapping {
+            if isChainTop(Syntax(node)), childChainNeedsWrapping {
                 return wrapIfNeeded(ExprSyntax(result), originalNode: Syntax(node))
             }
             return ExprSyntax(result)
         }
 
         // If at chain top and wrapping needed, wrap
-        if isChainTop(Syntax(node)) && childChainNeedsWrapping {
+        if isChainTop(Syntax(node)), childChainNeedsWrapping {
             return wrapIfNeeded(ExprSyntax(typedNode), originalNode: Syntax(node))
         }
 
-        return ExprSyntax(typedNode)
+        return .init(typedNode)
     }
 
     // MARK: - Chain top wrapping: FunctionCallExpr
@@ -278,11 +275,11 @@ final class NoForceUnwrap: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendabl
         guard let typedNode = visited.as(FunctionCallExprSyntax.self) else { return visited }
 
         // If at chain top and wrapping needed, wrap
-        if isChainTop(Syntax(node)) && childChainNeedsWrapping {
+        if isChainTop(Syntax(node)), childChainNeedsWrapping {
             return wrapIfNeeded(ExprSyntax(typedNode), originalNode: Syntax(node))
         }
 
-        return ExprSyntax(typedNode)
+        return .init(typedNode)
     }
 
     // MARK: - Chain top wrapping: SubscriptCallExpr
@@ -297,11 +294,11 @@ final class NoForceUnwrap: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendabl
         chainNeedsWrapping = savedFlag || childChainNeedsWrapping
         guard let typedNode = visited.as(SubscriptCallExprSyntax.self) else { return visited }
 
-        if isChainTop(Syntax(node)) && childChainNeedsWrapping {
+        if isChainTop(Syntax(node)), childChainNeedsWrapping {
             return wrapIfNeeded(ExprSyntax(typedNode), originalNode: Syntax(node))
         }
 
-        return ExprSyntax(typedNode)
+        return .init(typedNode)
     }
 
     // MARK: - Chain topology
@@ -316,17 +313,16 @@ final class NoForceUnwrap: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendabl
         if parent.is(OptionalChainingExprSyntax.self) { return false }
 
         if let funcCall = parent.as(FunctionCallExprSyntax.self),
-            funcCall.calledExpression.id == node.id
+           funcCall.calledExpression.id == node.id
         {
             return false
         }
 
         if let subscriptCall = parent.as(SubscriptCallExprSyntax.self),
-            subscriptCall.calledExpression.id == node.id
+           subscriptCall.calledExpression.id == node.id
         {
             return false
         }
-
         return true
     }
 
@@ -335,25 +331,20 @@ final class NoForceUnwrap: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendabl
     /// At a chain top, decide if the expression should be wrapped based on parent context.
     private func wrapIfNeeded(_ expr: ExprSyntax, originalNode: Syntax) -> ExprSyntax {
         let context = classifyChainTopContext(originalNode)
+
         switch context {
-        case .wrap:
-            addedTryExpression = true
-            chainNeedsWrapping = false
-            return wrapInUnwrap(expr, trailingTrivia: expr.trailingTrivia)
-        case .noWrap:
-            chainNeedsWrapping = false
-            return expr
-        case .propagate:
-            // Keep chainNeedsWrapping set for parent to handle
-            return expr
+            case .wrap:
+                addedTryExpression = true
+                chainNeedsWrapping = false
+                return wrapInUnwrap(expr, trailingTrivia: expr.trailingTrivia)
+            case .noWrap:
+                chainNeedsWrapping = false
+                return expr
+            case .propagate: return expr
         }
     }
 
-    private enum ChainTopContext {
-        case wrap  // Wrap with try XCTUnwrap/require
-        case noWrap  // No wrapping needed (=, ==, standalone, XCTAssertEqual/Nil)
-        case propagate  // Not the real boundary yet, propagate up
-    }
+    private enum ChainTopContext { case wrap, noWrap, propagate }
 
     private func classifyChainTopContext(_ node: Syntax) -> ChainTopContext {
         guard let parent = node.parent else { return .wrap }
@@ -372,44 +363,31 @@ final class NoForceUnwrap: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendabl
         }
 
         // Standalone expression (direct child of CodeBlockItem)
-        if parent.is(CodeBlockItemSyntax.self) {
-            return .noWrap
-        }
+        if parent.is(CodeBlockItemSyntax.self) { return .noWrap }
 
         // Initializer clause (let x = expr) — wrap
-        if parent.is(InitializerClauseSyntax.self) {
-            return .wrap
-        }
+        if parent.is(InitializerClauseSyntax.self) { return .wrap }
 
         // Return statement — wrap
-        if parent.is(ReturnStmtSyntax.self) {
-            return .wrap
-        }
+        if parent.is(ReturnStmtSyntax.self) { return .wrap }
 
         // Condition element — wrap
-        if parent.is(ConditionElementSyntax.self) {
-            return .wrap
-        }
+        if parent.is(ConditionElementSyntax.self) { return .wrap }
 
         return .wrap
     }
 
     private func classifyArgContext(_ labeledExpr: LabeledExprSyntax) -> ChainTopContext {
         guard let argList = labeledExpr.parent?.as(LabeledExprListSyntax.self),
-            let funcCall = argList.parent?.as(FunctionCallExprSyntax.self)
+              let funcCall = argList.parent?.as(FunctionCallExprSyntax.self)
         else {
             return .wrap
         }
 
         let funcName = funcCall.calledExpression.trimmedDescription
 
-        if funcName == "XCTAssertNil" {
-            return .noWrap
-        }
-
-        if funcName == "XCTAssertEqual" && argList.count == 2 {
-            return .noWrap
-        }
+        if funcName == "XCTAssertNil" { return .noWrap }
+        if funcName == "XCTAssertEqual", argList.count == 2 { return .noWrap }
 
         return .wrap
     }
@@ -422,9 +400,7 @@ final class NoForceUnwrap: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendabl
 
         // Assignment: LHS → no wrap, RHS → wrap
         if op.is(AssignmentExprSyntax.self) {
-            if infixExpr.leftOperand.id == chainExpr.id {
-                return .noWrap
-            }
+            if infixExpr.leftOperand.id == chainExpr.id { return .noWrap }
             return .wrap
         }
 
@@ -442,8 +418,9 @@ final class NoForceUnwrap: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendabl
     private func wrapInUnwrap(_ expr: ExprSyntax, trailingTrivia: Trivia = []) -> ExprSyntax {
         let innerExpr = expr.trimmed
         let callExpr: ExprSyntax
-        if testContext.importsTesting {
-            callExpr = ExprSyntax(
+
+        callExpr = testContext.importsTesting
+            ? ExprSyntax(
                 MacroExpansionExprSyntax(
                     pound: .poundToken(),
                     macroName: .identifier("require"),
@@ -452,10 +429,8 @@ final class NoForceUnwrap: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendabl
                         LabeledExprSyntax(expression: innerExpr)
                     ]),
                     rightParen: .rightParenToken(trailingTrivia: trailingTrivia)
-                )
-            )
-        } else {
-            callExpr = ExprSyntax(
+                ))
+            : ExprSyntax(
                 FunctionCallExprSyntax(
                     calledExpression: ExprSyntax(
                         DeclReferenceExprSyntax(baseName: .identifier("XCTUnwrap"))
@@ -465,28 +440,25 @@ final class NoForceUnwrap: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendabl
                         LabeledExprSyntax(expression: innerExpr)
                     ]),
                     rightParen: .rightParenToken(trailingTrivia: trailingTrivia)
-                )
-            )
-        }
+                ))
 
-        return ExprSyntax(
+        return .init(
             TryExprSyntax(
                 tryKeyword: .keyword(.try, trailingTrivia: .space),
                 expression: callExpr
-            )
-        )
+            ))
     }
 
     /// Find a force cast (as!) anywhere in the expression tree.
     private func findForceCast(in expr: ExprSyntax) -> AsExprSyntax? {
         if let asExpr = expr.as(AsExprSyntax.self),
-            asExpr.questionOrExclamationMark?.tokenKind == .exclamationMark
+           asExpr.questionOrExclamationMark?.tokenKind == .exclamationMark
         {
             return asExpr
         }
         for child in expr.children(viewMode: .sourceAccurate) {
             if let childExpr = child.as(ExprSyntax.self),
-                let found = findForceCast(in: childExpr)
+               let found = findForceCast(in: childExpr)
             {
                 return found
             }
@@ -495,17 +467,15 @@ final class NoForceUnwrap: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendabl
     }
 }
 
-extension Finding.Message {
-    fileprivate static func doNotForceUnwrap(name: String) -> Finding.Message {
+fileprivate extension Finding.Message {
+    static func doNotForceUnwrap(name: String) -> Finding.Message {
         "do not force unwrap '\(name)'"
     }
 
-    fileprivate static func doNotForceCast(name: String) -> Finding.Message {
-        "do not force cast to '\(name)'"
-    }
+    static func doNotForceCast(name: String) -> Finding.Message { "do not force cast to '\(name)'" }
 
-    fileprivate static let replaceForceUnwrap: Finding.Message =
+    static let replaceForceUnwrap: Finding.Message =
         "replace force unwrap in test with 'XCTUnwrap' or '#require'"
-    fileprivate static let replaceForceCast: Finding.Message =
-        "replace force cast in test with optional cast"
+    
+    static let replaceForceCast: Finding.Message = "replace force cast in test with optional cast"
 }

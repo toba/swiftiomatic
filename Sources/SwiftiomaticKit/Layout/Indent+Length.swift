@@ -18,12 +18,12 @@ extension Indent {
         }
     }
 
-    var text: String { String(repeating: character, count: count) }
+    var text: String { .init(repeating: character, count: count) }
 
     func length(tabWidth: Int) -> Int {
         switch self {
-            case .spaces(let count): count
-            case .tabs(let count): count * tabWidth
+            case let .spaces(count): count
+            case let .tabs(count): count * tabWidth
         }
     }
 }

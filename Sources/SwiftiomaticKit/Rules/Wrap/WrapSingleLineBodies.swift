@@ -417,15 +417,21 @@ extension WrapSingleLineBodies {
         return !isAlreadyInline(body)
     }
 
-    /// Computes the length of a declaration line prefix up to (but not including) the body.
-    /// Uses the leading trivia indentation + text from the first token to the left brace.
+    /// Computes the length of the last line of a declaration prefix, up to and including the
+    /// left brace. For multi-line prefixes (e.g. an `if` with comma-separated conditions across
+    /// several lines), only the last line counts — that's the line the inlined body will join.
+    /// If the brace currently sits on its own line, the result reflects the brace being glued to
+    /// the previous token with a single space.
     private func prefixLength(from startToken: TokenSyntax, to leftBrace: TokenSyntax) -> Int {
-        let indent = startToken.leadingTrivia.indentation
-        // From the start of the line (after indent) to the left brace, inclusive.
-        let startPos = startToken.positionAfterSkippingLeadingTrivia
-        let braceEndPos = leftBrace.endPositionBeforeTrailingTrivia
-        let textLength = braceEndPos.utf8Offset - startPos.utf8Offset
-        return indent.count + textLength
+        let converter = context.sourceLocationConverter
+        if leftBrace.leadingTrivia.containsNewlines,
+            let prev = leftBrace.previousToken(viewMode: .sourceAccurate)
+        {
+            let prevEnd = prev.endLocation(converter: converter)
+            return (prevEnd.column - 1) + 2  // " {"
+        }
+        let braceEnd = leftBrace.endLocation(converter: converter)
+        return braceEnd.column - 1
     }
 
     /// Returns the trimmed body text for a single-statement code block.
@@ -448,6 +454,9 @@ extension WrapSingleLineBodies {
     /// Returns a copy of the code block with the body inlined.
     private func inliningBody(_ body: CodeBlockSyntax) -> CodeBlockSyntax {
         var result = body
+        if result.leftBrace.leadingTrivia.containsNewlines {
+            result.leftBrace = result.leftBrace.with(\.leadingTrivia, .space)
+        }
         result.leftBrace = result.leftBrace.with(\.trailingTrivia, .space)
 
         var items = Array(result.statements)

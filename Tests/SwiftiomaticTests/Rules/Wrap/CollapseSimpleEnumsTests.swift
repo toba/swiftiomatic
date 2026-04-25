@@ -248,4 +248,37 @@ struct CollapseSimpleEnumsTests: RuleTesting {
         }
         """)
   }
+
+  @Test func collapsesNestedEnumInsideNonCollapsibleEnum() {
+    // The outer enum has methods so it can't collapse, but the inner CodingKeys
+    // enum should still be visited and collapsed.
+    assertFormatting(
+      CollapseSimpleEnums.self,
+      input: """
+        enum Indent: Codable {
+            case tabs(Int)
+            case spaces(Int)
+
+            1️⃣private enum CodingKeys: CodingKey {
+                case tabs
+                case spaces
+            }
+
+            func encode(to encoder: Encoder) throws {}
+        }
+        """,
+      expected: """
+        enum Indent: Codable {
+            case tabs(Int)
+            case spaces(Int)
+
+            private enum CodingKeys: CodingKey { case tabs, spaces }
+
+            func encode(to encoder: Encoder) throws {}
+        }
+        """,
+      findings: [
+        FindingSpec("1️⃣", message: "collapse simple enum onto a single line"),
+      ])
+  }
 }

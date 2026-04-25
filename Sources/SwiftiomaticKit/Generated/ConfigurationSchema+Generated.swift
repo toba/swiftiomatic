@@ -308,6 +308,14 @@ package enum ConfigurationSchema {
           "description" : "Capturing a `var` by name in a closure captures its current value, not the\nvariable. Subsequent mutations through the original binding are invisible\nto the closure, which is almost always surprising.\n\nThis rule is purely syntactic: it pre-scans the source file for `var`\ndeclarations (excluding `lazy var` and IUOs) and flags closure captures\nwhose name matches any such declaration. Captures with an explicit\ninitializer (`[x = self.x]`) and `weak`/`unowned` captures are not flagged.\n\nLint: When a closure captures a name that matches a `var` declaration in\nthe same file, a warning is raised.\n",
           "unevaluatedProperties" : false
         },
+        "noParensInClosureParams" : {
+          "allOf" : [
+            {
+              "$ref" : "#/$defs/ruleBase"
+            }
+          ],
+          "description" : "Remove parentheses around closure parameter lists when no parameter has a type annotation.\n\n`{ (x, y) in ... }` is equivalent to `{ x, y in ... }` when the parameters are untyped —\nthe parens add visual noise. Typed parameter lists (`{ (x: Int) in }`) keep the parens\nbecause shorthand parameters can't carry types.\n\nLint: A finding is raised at the parameter clause.\n\nFormat: The parenthesized parameter list is converted to shorthand (`x, y`).\n"
+        },
         "noTrailingClosureParens" : {
           "allOf" : [
             {
@@ -1475,6 +1483,14 @@ package enum ConfigurationSchema {
       ],
       "description" : "Enforces rules around parentheses in conditions, matched expressions, return statements, and\ninitializer assignments.\n\nParentheses are not used around any condition of an `if`, `guard`, or `while` statement, around\nthe matched expression in a `switch` statement, around `return` values, or around initializer\nvalues in variable/constant declarations.\n\nLint: If a top-most expression in a `switch`, `if`, `guard`, `while`, or `return` statement, or\n      in a variable initializer, is surrounded by parentheses, and it does not include a function\n      call with a trailing closure, a lint error is raised.\n\nFormat: Parentheses around such expressions are removed, if they do not cause a parse ambiguity.\n        Specifically, parentheses are allowed if and only if the expression contains a function\n        call with a trailing closure.\n"
     },
+    "noParensInClosureParams" : {
+      "allOf" : [
+        {
+          "$ref" : "#/$defs/ruleBase"
+        }
+      ],
+      "description" : "Remove parentheses around closure parameter lists when no parameter has a type annotation.\n\n`{ (x, y) in ... }` is equivalent to `{ x, y in ... }` when the parameters are untyped —\nthe parens add visual noise. Typed parameter lists (`{ (x: Int) in }`) keep the parens\nbecause shorthand parameters can't carry types.\n\nLint: A finding is raised at the parameter clause.\n\nFormat: The parenthesized parameter list is converted to shorthand (`x, y`).\n"
+    },
     "noPlaygroundLiterals" : {
       "allOf" : [
         {
@@ -1812,6 +1828,14 @@ package enum ConfigurationSchema {
           ],
           "description" : "Remove immediately-invoked closures containing a single expression.\n\nA closure that is immediately called and contains only a single expression or return\nstatement can be replaced with just the expression.\n\nFor example: `let x = { return 42 }()` → `let x = 42`\nAnd: `let x = { someValue }()` → `let x = someValue`\n\nClosures with parameters (`in` keyword), multiple statements, empty bodies,\n`fatalError`/`preconditionFailure` calls, or `throw` are preserved.\n\nLint: If a redundant immediately-invoked closure is found, a lint warning\n      is raised.\n\nFormat: The closure wrapper and invocation are removed, leaving just the\n        expression.\n"
         },
+        "redundantEnumerated" : {
+          "allOf" : [
+            {
+              "$ref" : "#/$defs/ruleBase"
+            }
+          ],
+          "description" : "Drop `.enumerated()` from `for` loops where one half of the tuple pattern is unused.\n\n- `for (_, x) in seq.enumerated()` → `for x in seq`\n- `for (i, _) in seq.enumerated()` → `for i in seq.indices`\n\nThe rule only rewrites when the call is exactly `seq.enumerated()` with no further chaining,\nno arguments, and no trailing closure. Closure-based usages (`seq.enumerated().map { ... }`)\nare not handled because $0/$1 reference analysis is intricate; lint a separate rule when\nthat case becomes important.\n\nLint: A finding is raised at `enumerated`.\n\nFormat: `.enumerated()` is removed (or replaced with `.indices`) and the binding pattern\n        is collapsed to a single identifier.\n"
+        },
         "redundantEquatable" : {
           "allOf" : [
             {
@@ -1819,6 +1843,14 @@ package enum ConfigurationSchema {
             }
           ],
           "description" : "Remove a hand-written `Equatable` implementation when the compiler-synthesized\nconformance would be equivalent.\n\nFor structs conforming to `Equatable` (or `Hashable`), if the `static func ==`\ncompares exactly the same stored instance properties that the compiler would\nsynthesize, the hand-written implementation is redundant and can be removed.\n\nClosures, enums, and extension-based conformances are not handled.\n\nThis rule is opt-in due to the heuristic nature (no type-checking).\n\nLint: A redundant `==` implementation raises a warning.\n\nFormat: The `==` function is removed from the member block.\n [opt-in]"
+        },
+        "redundantEscaping" : {
+          "allOf" : [
+            {
+              "$ref" : "#/$defs/ruleBase"
+            }
+          ],
+          "description" : "Remove `@escaping` from closure parameters that demonstrably do not escape.\n\n`@escaping` is required only when a closure parameter outlives the function call. This\nrule uses a flow-insensitive escape check: a closure escapes if it (or a value tainted\nby it) is returned, assigned to a non-local variable, passed to another function, or\nreferenced inside a nested closure.\n\nThe analysis is deliberately conservative — when escape can't be ruled out, the rule\nstays silent. Protocol requirements, autoclosure-only edge cases, and parameters\nreferenced inside nested closures are all assumed to escape.\n\nLint: A finding is raised at the `@escaping` attribute.\n\nFormat: The `@escaping` attribute is removed.\n [opt-in]"
         },
         "redundantFinal" : {
           "allOf" : [
@@ -1852,6 +1884,14 @@ package enum ConfigurationSchema {
           ],
           "description" : "Remove `let error` from `catch` clauses where `error` is implicitly bound.\n\nIn a `catch` clause without a pattern, the caught error is implicitly available as `error`.\nWriting `catch let error` is therefore redundant.\n\nThis rule only fires when the catch item is exactly `let error` (no type cast, no where clause,\nand no other catch items in the same clause).\n\nLint: If `catch let error` is found, a lint warning is raised.\n\nFormat: The redundant `let error` pattern is removed.\n"
         },
+        "redundantNilCoalescing" : {
+          "allOf" : [
+            {
+              "$ref" : "#/$defs/ruleBase"
+            }
+          ],
+          "description" : "Remove nil-coalescing where the right-hand side is `nil`.\n\n`x ?? nil` is identical in value and type to `x` itself.\n\nLint: A finding is raised when `??` has a `nil` literal on the right-hand side.\n\nFormat: The `??` operator and the `nil` right-hand side are removed.\n"
+        },
         "redundantNilInit" : {
           "allOf" : [
             {
@@ -1875,6 +1915,14 @@ package enum ConfigurationSchema {
             }
           ],
           "description" : "Use shorthand optional binding `if let x` instead of `if let x = x` (SE-0345).\n\nWhen an optional binding's initializer is a bare identifier matching the pattern name,\nthe initializer is redundant and can be removed using Swift 5.7+ shorthand syntax.\n\nThis applies to `if let`, `guard let`, and `while let` bindings.\n\nLint: If a redundant optional binding initializer is found, a lint warning is raised.\n\nFormat: The redundant initializer is removed.\n"
+        },
+        "redundantOverride" : {
+          "allOf" : [
+            {
+              "$ref" : "#/$defs/ruleBase"
+            }
+          ],
+          "description" : "Remove `override` declarations whose body only forwards identical arguments to `super`.\n\nAn override that does nothing other than `super.<name>(...)` with the same parameters\n(in order, with matching labels) adds no behavior.\n\nThe rule is conservative:\n- Bails out if the override has any attributes (e.g. `@available`).\n- Bails out if any parameter has a default value (the override may be tightening defaults).\n- Bails out if the call uses a trailing closure or `try!`/`try?` (assumed to change behavior).\n- Skips overrides explicitly required by tests (`tearDown`, `setUp`, etc.) and common\n  UIKit/AppKit lifecycle methods that are typically intentional anchors.\n\nLint: A finding is raised on the `override` keyword.\n\nFormat: The entire `override` declaration is removed, preserving surrounding trivia.\n [opt-in]"
         },
         "redundantPattern" : {
           "allOf" : [
@@ -1923,6 +1971,14 @@ package enum ConfigurationSchema {
             }
           ],
           "description" : "Remove explicit `Sendable` conformance from non-public structs and enums.\n\nIn Swift 6, the compiler automatically infers `Sendable` for structs and enums whose\nstored properties/associated values are all `Sendable`, as long as the type is not `public`.\nExplicitly declaring `: Sendable` on these types is redundant.\n\nThis rule only flags non-public structs and enums. Classes, actors, and public types\nare not checked because their `Sendable` conformance is either not inferred or must\nbe explicit for ABI stability.\n\nLint: If a redundant `Sendable` conformance is found, a lint warning is raised.\n\nFormat: The redundant `Sendable` conformance is removed from the inheritance clause.\n [opt-in]"
+        },
+        "redundantSetterACL" : {
+          "allOf" : [
+            {
+              "$ref" : "#/$defs/ruleBase"
+            }
+          ],
+          "description" : "Remove setter access modifiers (`(set)`) that match the property's effective access level.\n\n`private(set) private var x` is redundant — the property is already entirely `private`,\nso restricting the setter to `private` adds nothing. Likewise `internal(set) var x` inside\nan `internal` (or default-internal) type, or `fileprivate(set) fileprivate var x`.\n\nThe rule fires when:\n1. Another modifier on the same declaration already supplies the matching access level, OR\n2. The `(set)` keyword is `internal` or `fileprivate` and it matches the effective access of\n   the enclosing type (or the file scope, in the `internal` case).\n\nLint: A finding is raised at the redundant `(set)` modifier.\n\nFormat: The redundant `(set)` modifier is removed, transferring its leading trivia to the\n        next modifier or the binding specifier.\n [opt-in]"
         },
         "redundantStaticSelf" : {
           "allOf" : [
@@ -2040,6 +2096,14 @@ package enum ConfigurationSchema {
       ],
       "description" : "Remove immediately-invoked closures containing a single expression.\n\nA closure that is immediately called and contains only a single expression or return\nstatement can be replaced with just the expression.\n\nFor example: `let x = { return 42 }()` → `let x = 42`\nAnd: `let x = { someValue }()` → `let x = someValue`\n\nClosures with parameters (`in` keyword), multiple statements, empty bodies,\n`fatalError`/`preconditionFailure` calls, or `throw` are preserved.\n\nLint: If a redundant immediately-invoked closure is found, a lint warning\n      is raised.\n\nFormat: The closure wrapper and invocation are removed, leaving just the\n        expression.\n"
     },
+    "redundantEnumerated" : {
+      "allOf" : [
+        {
+          "$ref" : "#/$defs/ruleBase"
+        }
+      ],
+      "description" : "Drop `.enumerated()` from `for` loops where one half of the tuple pattern is unused.\n\n- `for (_, x) in seq.enumerated()` → `for x in seq`\n- `for (i, _) in seq.enumerated()` → `for i in seq.indices`\n\nThe rule only rewrites when the call is exactly `seq.enumerated()` with no further chaining,\nno arguments, and no trailing closure. Closure-based usages (`seq.enumerated().map { ... }`)\nare not handled because $0/$1 reference analysis is intricate; lint a separate rule when\nthat case becomes important.\n\nLint: A finding is raised at `enumerated`.\n\nFormat: `.enumerated()` is removed (or replaced with `.indices`) and the binding pattern\n        is collapsed to a single identifier.\n"
+    },
     "redundantEquatable" : {
       "allOf" : [
         {
@@ -2047,6 +2111,14 @@ package enum ConfigurationSchema {
         }
       ],
       "description" : "Remove a hand-written `Equatable` implementation when the compiler-synthesized\nconformance would be equivalent.\n\nFor structs conforming to `Equatable` (or `Hashable`), if the `static func ==`\ncompares exactly the same stored instance properties that the compiler would\nsynthesize, the hand-written implementation is redundant and can be removed.\n\nClosures, enums, and extension-based conformances are not handled.\n\nThis rule is opt-in due to the heuristic nature (no type-checking).\n\nLint: A redundant `==` implementation raises a warning.\n\nFormat: The `==` function is removed from the member block.\n [opt-in]"
+    },
+    "redundantEscaping" : {
+      "allOf" : [
+        {
+          "$ref" : "#/$defs/ruleBase"
+        }
+      ],
+      "description" : "Remove `@escaping` from closure parameters that demonstrably do not escape.\n\n`@escaping` is required only when a closure parameter outlives the function call. This\nrule uses a flow-insensitive escape check: a closure escapes if it (or a value tainted\nby it) is returned, assigned to a non-local variable, passed to another function, or\nreferenced inside a nested closure.\n\nThe analysis is deliberately conservative — when escape can't be ruled out, the rule\nstays silent. Protocol requirements, autoclosure-only edge cases, and parameters\nreferenced inside nested closures are all assumed to escape.\n\nLint: A finding is raised at the `@escaping` attribute.\n\nFormat: The `@escaping` attribute is removed.\n [opt-in]"
     },
     "redundantFinal" : {
       "allOf" : [
@@ -2080,6 +2152,14 @@ package enum ConfigurationSchema {
       ],
       "description" : "Remove `let error` from `catch` clauses where `error` is implicitly bound.\n\nIn a `catch` clause without a pattern, the caught error is implicitly available as `error`.\nWriting `catch let error` is therefore redundant.\n\nThis rule only fires when the catch item is exactly `let error` (no type cast, no where clause,\nand no other catch items in the same clause).\n\nLint: If `catch let error` is found, a lint warning is raised.\n\nFormat: The redundant `let error` pattern is removed.\n"
     },
+    "redundantNilCoalescing" : {
+      "allOf" : [
+        {
+          "$ref" : "#/$defs/ruleBase"
+        }
+      ],
+      "description" : "Remove nil-coalescing where the right-hand side is `nil`.\n\n`x ?? nil` is identical in value and type to `x` itself.\n\nLint: A finding is raised when `??` has a `nil` literal on the right-hand side.\n\nFormat: The `??` operator and the `nil` right-hand side are removed.\n"
+    },
     "redundantNilInit" : {
       "allOf" : [
         {
@@ -2103,6 +2183,14 @@ package enum ConfigurationSchema {
         }
       ],
       "description" : "Use shorthand optional binding `if let x` instead of `if let x = x` (SE-0345).\n\nWhen an optional binding's initializer is a bare identifier matching the pattern name,\nthe initializer is redundant and can be removed using Swift 5.7+ shorthand syntax.\n\nThis applies to `if let`, `guard let`, and `while let` bindings.\n\nLint: If a redundant optional binding initializer is found, a lint warning is raised.\n\nFormat: The redundant initializer is removed.\n"
+    },
+    "redundantOverride" : {
+      "allOf" : [
+        {
+          "$ref" : "#/$defs/ruleBase"
+        }
+      ],
+      "description" : "Remove `override` declarations whose body only forwards identical arguments to `super`.\n\nAn override that does nothing other than `super.<name>(...)` with the same parameters\n(in order, with matching labels) adds no behavior.\n\nThe rule is conservative:\n- Bails out if the override has any attributes (e.g. `@available`).\n- Bails out if any parameter has a default value (the override may be tightening defaults).\n- Bails out if the call uses a trailing closure or `try!`/`try?` (assumed to change behavior).\n- Skips overrides explicitly required by tests (`tearDown`, `setUp`, etc.) and common\n  UIKit/AppKit lifecycle methods that are typically intentional anchors.\n\nLint: A finding is raised on the `override` keyword.\n\nFormat: The entire `override` declaration is removed, preserving surrounding trivia.\n [opt-in]"
     },
     "redundantPattern" : {
       "allOf" : [
@@ -2151,6 +2239,14 @@ package enum ConfigurationSchema {
         }
       ],
       "description" : "Remove explicit `Sendable` conformance from non-public structs and enums.\n\nIn Swift 6, the compiler automatically infers `Sendable` for structs and enums whose\nstored properties/associated values are all `Sendable`, as long as the type is not `public`.\nExplicitly declaring `: Sendable` on these types is redundant.\n\nThis rule only flags non-public structs and enums. Classes, actors, and public types\nare not checked because their `Sendable` conformance is either not inferred or must\nbe explicit for ABI stability.\n\nLint: If a redundant `Sendable` conformance is found, a lint warning is raised.\n\nFormat: The redundant `Sendable` conformance is removed from the inheritance clause.\n [opt-in]"
+    },
+    "redundantSetterACL" : {
+      "allOf" : [
+        {
+          "$ref" : "#/$defs/ruleBase"
+        }
+      ],
+      "description" : "Remove setter access modifiers (`(set)`) that match the property's effective access level.\n\n`private(set) private var x` is redundant — the property is already entirely `private`,\nso restricting the setter to `private` adds nothing. Likewise `internal(set) var x` inside\nan `internal` (or default-internal) type, or `fileprivate(set) fileprivate var x`.\n\nThe rule fires when:\n1. Another modifier on the same declaration already supplies the matching access level, OR\n2. The `(set)` keyword is `internal` or `fileprivate` and it matches the effective access of\n   the enclosing type (or the file scope, in the `internal` case).\n\nLint: A finding is raised at the redundant `(set)` modifier.\n\nFormat: The redundant `(set)` modifier is removed, transferring its leading trivia to the\n        next modifier or the binding specifier.\n [opt-in]"
     },
     "redundantStaticSelf" : {
       "allOf" : [
@@ -2409,7 +2505,18 @@ package enum ConfigurationSchema {
           "$ref" : "#/$defs/ruleBase"
         }
       ],
-      "description" : "Sort switch case items alphabetically within each case.\n\nWhen a case matches multiple patterns (e.g. `case .b, .a, .c:`), the patterns are sorted\nlexicographically. Numeric literals are compared by value (including hex, octal, and binary).\nCases with `where` clauses are only sorted if the `where` clause ends up on the last item.\n\nLint: If case items are not sorted, a lint warning is raised.\n\nFormat: The case items are reordered alphabetically.\n [opt-in]"
+      "description" : "Enforce switch case label indentation style.\n\nTwo styles are supported via `SwitchCaseIndentationConfiguration.Style`:\n- `flush`: `case` labels align with the `switch` keyword (default).\n- `indented`: `case` labels are indented one level from `switch`.\n\nLint: Raised when a `case` or `default` label doesn't match the configured style.\n\nFormat: Case labels, bodies, and the closing brace are reindented to match.\n [opt-in]",
+      "properties" : {
+        "style" : {
+          "default" : "flush",
+          "description" : "style Options: flush, indented.",
+          "enum" : [
+            "flush",
+            "indented"
+          ],
+          "type" : "string"
+        }
+      }
     },
     "testSuiteAccessControl" : {
       "allOf" : [

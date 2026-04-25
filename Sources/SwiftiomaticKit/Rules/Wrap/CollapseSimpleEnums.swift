@@ -25,28 +25,33 @@ final class CollapseSimpleEnums: RewriteSyntaxRule<BasicRuleValue>, @unchecked S
     private var maxLength: Int { context.configuration[LineLength.self] }
 
     override func visit(_ node: EnumDeclSyntax) -> DeclSyntax {
-        guard isCollapsible(node) else { return DeclSyntax(node) }
+        // Recurse first so nested enums get a chance to collapse even when the
+        // outer enum isn't collapsible (e.g. an enum with methods that contains
+        // a nested `CodingKeys` enum).
+        let recursed = super.visit(node).as(EnumDeclSyntax.self) ?? node
 
-        let allElements = collectElements(from: node)
-        guard !allElements.isEmpty else { return DeclSyntax(node) }
+        guard isCollapsible(recursed) else { return DeclSyntax(recursed) }
+
+        let allElements = collectElements(from: recursed)
+        guard !allElements.isEmpty else { return DeclSyntax(recursed) }
 
         // Already on a single line — nothing to do.
-        if node.memberBlock.members.count == 1,
-           !node.memberBlock.rightBrace.leadingTrivia.containsNewlines
+        if recursed.memberBlock.members.count == 1,
+           !recursed.memberBlock.rightBrace.leadingTrivia.containsNewlines
         {
-            return DeclSyntax(node)
+            return DeclSyntax(recursed)
         }
 
         // Build the collapsed text to check line length.
         let caseList = allElements.map(\.name.text).joined(separator: ", ")
-        let prefix = declPrefix(node)
+        let prefix = declPrefix(recursed)
         // "prefix { case a, b, c }"
         let collapsedLength = prefix.count + " { case ".count + caseList.count + " }".count
-        let indent = node.leadingTrivia.indentation
+        let indent = recursed.leadingTrivia.indentation
 
-        guard indent.count + collapsedLength <= maxLength else { return DeclSyntax(node) }
+        guard indent.count + collapsedLength <= maxLength else { return DeclSyntax(recursed) }
 
-        diagnose(.collapseSimpleEnum, on: node)
+        diagnose(.collapseSimpleEnum, on: recursed)
 
         // Build a single EnumCaseDeclSyntax with all elements comma-separated.
         let elements = EnumCaseElementListSyntax(
@@ -69,7 +74,7 @@ final class CollapseSimpleEnums: RewriteSyntaxRule<BasicRuleValue>, @unchecked S
         let member = MemberBlockItemSyntax(decl: caseDecl)
         let members = MemberBlockItemListSyntax([member])
 
-        var result = node
+        var result = recursed
         result.memberBlock = MemberBlockSyntax(
             leftBrace: .leftBraceToken(),
             members: members,

@@ -234,11 +234,13 @@ class LintPipeline: SyntaxVisitor {
 
   override func visit(_ node: ClosureSignatureSyntax) -> SyntaxVisitorContinueKind {
     visitIfEnabled(LowerCamelCase.visit, for: node)
+    visitIfEnabled(NoParensInClosureParams.visit, for: node)
     visitIfEnabled(PreferVoidReturn.visit, for: node)
     return .visitChildren
   }
   override func visitPost(_ node: ClosureSignatureSyntax) {
     onVisitPost(rule: LowerCamelCase.self, for: node)
+    onVisitPost(rule: NoParensInClosureParams.self, for: node)
     onVisitPost(rule: PreferVoidReturn.self, for: node)
   }
 
@@ -445,6 +447,7 @@ class LintPipeline: SyntaxVisitor {
   override func visit(_ node: ForStmtSyntax) -> SyntaxVisitorContinueKind {
     visitIfEnabled(PatternLetPlacement.visit, for: node)
     visitIfEnabled(PreferWhereClausesInForLoops.visit, for: node)
+    visitIfEnabled(RedundantEnumerated.visit, for: node)
     visitIfEnabled(UnusedArguments.visit, for: node)
     visitIfEnabled(WrapMultilineStatementBraces.visit, for: node)
     visitIfEnabled(WrapSingleLineBodies.visit, for: node)
@@ -453,6 +456,7 @@ class LintPipeline: SyntaxVisitor {
   override func visitPost(_ node: ForStmtSyntax) {
     onVisitPost(rule: PatternLetPlacement.self, for: node)
     onVisitPost(rule: PreferWhereClausesInForLoops.self, for: node)
+    onVisitPost(rule: RedundantEnumerated.self, for: node)
     onVisitPost(rule: UnusedArguments.self, for: node)
     onVisitPost(rule: WrapMultilineStatementBraces.self, for: node)
     onVisitPost(rule: WrapSingleLineBodies.self, for: node)
@@ -525,7 +529,9 @@ class LintPipeline: SyntaxVisitor {
     visitIfEnabled(PreferSwiftTesting.visit, for: node)
     visitIfEnabled(RedundantAccessControl.visit, for: node)
     visitIfEnabled(RedundantAsync.visit, for: node)
+    visitIfEnabled(RedundantEscaping.visit, for: node)
     visitIfEnabled(RedundantObjc.visit, for: node)
+    visitIfEnabled(RedundantOverride.visit, for: node)
     visitIfEnabled(RedundantReturn.visit, for: node)
     visitIfEnabled(RedundantSelf.visit, for: node)
     visitIfEnabled(RedundantThrows.visit, for: node)
@@ -558,7 +564,9 @@ class LintPipeline: SyntaxVisitor {
     onVisitPost(rule: PreferSwiftTesting.self, for: node)
     onVisitPost(rule: RedundantAccessControl.self, for: node)
     onVisitPost(rule: RedundantAsync.self, for: node)
+    onVisitPost(rule: RedundantEscaping.self, for: node)
     onVisitPost(rule: RedundantObjc.self, for: node)
+    onVisitPost(rule: RedundantOverride.self, for: node)
     onVisitPost(rule: RedundantReturn.self, for: node)
     onVisitPost(rule: RedundantSelf.self, for: node)
     onVisitPost(rule: RedundantThrows.self, for: node)
@@ -697,6 +705,7 @@ class LintPipeline: SyntaxVisitor {
     visitIfEnabled(NoAssignmentInExpressions.visit, for: node)
     visitIfEnabled(NoYodaConditions.visit, for: node)
     visitIfEnabled(PreferIsEmpty.visit, for: node)
+    visitIfEnabled(RedundantNilCoalescing.visit, for: node)
     visitIfEnabled(WrapConditionalAssignment.visit, for: node)
     return .visitChildren
   }
@@ -705,6 +714,7 @@ class LintPipeline: SyntaxVisitor {
     onVisitPost(rule: NoAssignmentInExpressions.self, for: node)
     onVisitPost(rule: NoYodaConditions.self, for: node)
     onVisitPost(rule: PreferIsEmpty.self, for: node)
+    onVisitPost(rule: RedundantNilCoalescing.self, for: node)
     onVisitPost(rule: WrapConditionalAssignment.self, for: node)
   }
 
@@ -726,6 +736,7 @@ class LintPipeline: SyntaxVisitor {
     visitIfEnabled(ModifiersOnSameLine.visit, for: node)
     visitIfEnabled(OpaqueGenericParameters.visit, for: node)
     visitIfEnabled(RedundantAccessControl.visit, for: node)
+    visitIfEnabled(RedundantEscaping.visit, for: node)
     visitIfEnabled(RedundantObjc.visit, for: node)
     visitIfEnabled(RedundantSelf.visit, for: node)
     visitIfEnabled(TripleSlashDocComments.visit, for: node)
@@ -746,6 +757,7 @@ class LintPipeline: SyntaxVisitor {
     onVisitPost(rule: ModifiersOnSameLine.self, for: node)
     onVisitPost(rule: OpaqueGenericParameters.self, for: node)
     onVisitPost(rule: RedundantAccessControl.self, for: node)
+    onVisitPost(rule: RedundantEscaping.self, for: node)
     onVisitPost(rule: RedundantObjc.self, for: node)
     onVisitPost(rule: RedundantSelf.self, for: node)
     onVisitPost(rule: TripleSlashDocComments.self, for: node)
@@ -1216,6 +1228,7 @@ class LintPipeline: SyntaxVisitor {
     visitIfEnabled(RedundantObjc.visit, for: node)
     visitIfEnabled(RedundantPattern.visit, for: node)
     visitIfEnabled(RedundantSelf.visit, for: node)
+    visitIfEnabled(RedundantSetterACL.visit, for: node)
     visitIfEnabled(RedundantType.visit, for: node)
     visitIfEnabled(RedundantViewBuilder.visit, for: node)
     visitIfEnabled(StrongOutlets.visit, for: node)
@@ -1238,6 +1251,7 @@ class LintPipeline: SyntaxVisitor {
     onVisitPost(rule: RedundantObjc.self, for: node)
     onVisitPost(rule: RedundantPattern.self, for: node)
     onVisitPost(rule: RedundantSelf.self, for: node)
+    onVisitPost(rule: RedundantSetterACL.self, for: node)
     onVisitPost(rule: RedundantType.self, for: node)
     onVisitPost(rule: RedundantViewBuilder.self, for: node)
     onVisitPost(rule: StrongOutlets.self, for: node)
@@ -1378,6 +1392,9 @@ extension RewritePipeline {
     if context.shouldFormat(NoParensAroundConditions.self, node: node) {
       node = NoParensAroundConditions(context: context).rewrite(node)
     }
+    if context.shouldFormat(NoParensInClosureParams.self, node: node) {
+      node = NoParensInClosureParams(context: context).rewrite(node)
+    }
     if context.shouldFormat(NoSemicolons.self, node: node) {
       node = NoSemicolons(context: context).rewrite(node)
     }
@@ -1486,8 +1503,14 @@ extension RewritePipeline {
     if context.shouldFormat(RedundantClosure.self, node: node) {
       node = RedundantClosure(context: context).rewrite(node)
     }
+    if context.shouldFormat(RedundantEnumerated.self, node: node) {
+      node = RedundantEnumerated(context: context).rewrite(node)
+    }
     if context.shouldFormat(RedundantEquatable.self, node: node) {
       node = RedundantEquatable(context: context).rewrite(node)
+    }
+    if context.shouldFormat(RedundantEscaping.self, node: node) {
+      node = RedundantEscaping(context: context).rewrite(node)
     }
     if context.shouldFormat(RedundantFinal.self, node: node) {
       node = RedundantFinal(context: context).rewrite(node)
@@ -1501,6 +1524,9 @@ extension RewritePipeline {
     if context.shouldFormat(RedundantLetError.self, node: node) {
       node = RedundantLetError(context: context).rewrite(node)
     }
+    if context.shouldFormat(RedundantNilCoalescing.self, node: node) {
+      node = RedundantNilCoalescing(context: context).rewrite(node)
+    }
     if context.shouldFormat(RedundantNilInit.self, node: node) {
       node = RedundantNilInit(context: context).rewrite(node)
     }
@@ -1509,6 +1535,9 @@ extension RewritePipeline {
     }
     if context.shouldFormat(RedundantOptionalBinding.self, node: node) {
       node = RedundantOptionalBinding(context: context).rewrite(node)
+    }
+    if context.shouldFormat(RedundantOverride.self, node: node) {
+      node = RedundantOverride(context: context).rewrite(node)
     }
     if context.shouldFormat(RedundantPattern.self, node: node) {
       node = RedundantPattern(context: context).rewrite(node)
@@ -1527,6 +1556,9 @@ extension RewritePipeline {
     }
     if context.shouldFormat(RedundantSendable.self, node: node) {
       node = RedundantSendable(context: context).rewrite(node)
+    }
+    if context.shouldFormat(RedundantSetterACL.self, node: node) {
+      node = RedundantSetterACL(context: context).rewrite(node)
     }
     if context.shouldFormat(RedundantStaticSelf.self, node: node) {
       node = RedundantStaticSelf(context: context).rewrite(node)

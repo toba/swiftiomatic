@@ -14,11 +14,11 @@ final class NoBacktickedSelf: RewriteSyntaxRule<BasicRuleValue>, @unchecked Send
     ) -> OptionalBindingConditionSyntax {
         // Match: let `self` = self
         guard let identifierPattern = node.pattern.as(IdentifierPatternSyntax.self),
-            case let .identifier(text) = identifierPattern.identifier.tokenKind,
-            text == "`self`",
-            let initializer = node.initializer,
-            let declRef = initializer.value.as(DeclReferenceExprSyntax.self),
-            declRef.baseName.tokenKind == .keyword(.self)
+              case let .identifier(text) = identifierPattern.identifier.tokenKind,
+              text == "`self`",
+              let initializer = node.initializer,
+              let declRef = initializer.value.as(DeclReferenceExprSyntax.self),
+              declRef.baseName.tokenKind == .keyword(.self)
         else {
             return node
         }
@@ -32,7 +32,7 @@ final class NoBacktickedSelf: RewriteSyntaxRule<BasicRuleValue>, @unchecked Send
     }
 }
 
-extension Finding.Message {
-    fileprivate static let removeBackticksAroundSelf: Finding.Message =
+fileprivate extension Finding.Message {
+    static let removeBackticksAroundSelf: Finding.Message =
         "remove backticks around 'self' in optional binding"
 }

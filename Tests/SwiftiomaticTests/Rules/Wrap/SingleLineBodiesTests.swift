@@ -1003,6 +1003,63 @@ struct SingleLineBodiesInlineTests: RuleTesting {
       configuration: inlineConfig)
   }
 
+  @Test func multiLineConditionWithBraceOnOwnLineInlines() {
+    assertFormatting(
+      WrapSingleLineBodies.self,
+      input: """
+        if let funcCall = parent.as(FunctionCallExprSyntax.self),
+           funcCall.calledExpression.id == node.id
+        1️⃣{
+            return false
+        }
+        """,
+      expected: """
+        if let funcCall = parent.as(FunctionCallExprSyntax.self),
+           funcCall.calledExpression.id == node.id { return false }
+        """,
+      findings: [FindingSpec("1️⃣", message: "place conditional body on same line as declaration")],
+      configuration: inlineConfig)
+  }
+
+  @Test func multiLineConditionWithBraceOnLastConditionLineInlines() {
+    assertFormatting(
+      WrapSingleLineBodies.self,
+      input: """
+        if let funcCall = parent.as(FunctionCallExprSyntax.self),
+           funcCall.calledExpression.id == node.id 1️⃣{
+            return false
+        }
+        """,
+      expected: """
+        if let funcCall = parent.as(FunctionCallExprSyntax.self),
+           funcCall.calledExpression.id == node.id { return false }
+        """,
+      findings: [FindingSpec("1️⃣", message: "place conditional body on same line as declaration")],
+      configuration: inlineConfig)
+  }
+
+  @Test func multiLineConditionTooLongNotInlined() {
+    var config = inlineConfig
+    config[LineLength.self] = 50
+    assertFormatting(
+      WrapSingleLineBodies.self,
+      input: """
+        if let funcCall = parent.as(FunctionCallExprSyntax.self),
+           funcCall.calledExpression.id == node.id
+        {
+            return someVeryLongValueThatWontFitOnTheLine
+        }
+        """,
+      expected: """
+        if let funcCall = parent.as(FunctionCallExprSyntax.self),
+           funcCall.calledExpression.id == node.id
+        {
+            return someVeryLongValueThatWontFitOnTheLine
+        }
+        """,
+      configuration: config)
+  }
+
   // MARK: - Loops
 
   @Test func forLoopInlines() {

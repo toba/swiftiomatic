@@ -17,7 +17,7 @@ import SwiftSyntax
 /// code as a String.
 package final class LayoutCoordinator {
     private let context: Context
-    private var configuration: Configuration { return context.configuration }
+    private var configuration: Configuration { context.configuration }
     private let maxLineLength: Int
     private var tokens: [Token]
     private var source: String
@@ -30,9 +30,7 @@ package final class LayoutCoordinator {
     /// current position to `outputBuffer`. From then on, we continue to format until the next
     /// `disableFormatting` token.
     private var disabledPosition: AbsolutePosition? {
-        didSet {
-            outputBuffer.isEnabled = disabledPosition == nil
-        }
+        didSet { outputBuffer.isEnabled = disabledPosition == nil }
     }
 
     private var outputBuffer: LayoutBuffer
@@ -58,9 +56,7 @@ package final class LayoutCoordinator {
     /// Keeps track of the line numbers and indentation states of the open (and unclosed) breaks seen
     /// so far.
     private var activeOpenBreaks: [ActiveOpenBreak] = [] {
-        didSet {
-            outputBuffer.currentIndentation = currentIndentation
-        }
+        didSet { outputBuffer.currentIndentation = currentIndentation }
     }
 
     /// Stack of the active breaking contexts.
@@ -91,7 +87,7 @@ package final class LayoutCoordinator {
     /// Whether breaks are suppressed from firing. When true, no breaks should fire and the only way to
     /// move to a new line is an explicit new line token. Discretionary breaks aren't suppressed
     /// if ``allowSuppressedDiscretionaryBreaks`` is true.
-    private var isBreakingSuppressed: Bool { return activeBreakSuppressionCount > 0 }
+    private var isBreakingSuppressed: Bool { activeBreakSuppressionCount > 0 }
 
     /// Indicates whether discretionary breaks should still be included even if break suppression is
     /// enabled (see ``isBreakingSuppressed``).
@@ -105,15 +101,16 @@ package final class LayoutCoordinator {
     /// delimiters and whether or not the current line is a continuation line.
     private var currentIndentation: [Indent] {
         let indentation = configuration[IndentationSetting.self]
-        var totalIndentation: [Indent] = activeOpenBreaks.flatMap { (open) -> [Indent] in
-            if case .alignment(let spaces) = open.kind, open.contributesContinuationIndent {
-                return [.spaces(spaces)]
+        var totalIndentation:
+            [Indent] = activeOpenBreaks.flatMap { (open) -> [Indent] in
+                if case let .alignment(spaces) = open.kind, open.contributesContinuationIndent {
+                    return [.spaces(spaces)]
+                }
+                let count =
+                    (open.contributesBlockIndent ? 1 : 0)
+                    + (open.contributesContinuationIndent ? 1 : 0)
+                return Array(repeating: indentation, count: count)
             }
-            let count =
-                (open.contributesBlockIndent ? 1 : 0)
-                + (open.contributesContinuationIndent ? 1 : 0)
-            return Array(repeating: indentation, count: count)
-        }
         if currentLineIsContinuation {
             totalIndentation.append(configuration[IndentationSetting.self])
         }
@@ -128,7 +125,7 @@ package final class LayoutCoordinator {
     /// line number to increase by one by the time we reach the break, when we really wish to consider
     /// the break as being located at the end of the previous line.
     private var openCloseBreakCompensatingLineNumber: Int {
-        return outputBuffer.lineNumber - (outputBuffer.isAtStartOfLine ? 1 : 0)
+        outputBuffer.lineNumber - (outputBuffer.isAtStartOfLine ? 1 : 0)
     }
 
     /// Creates a new PrettyPrinter with the provided formatting configuration.
@@ -200,7 +197,7 @@ package final class LayoutCoordinator {
 
             // Check if we need to force breaks in this group, and calculate the indentation to be used in
             // the group.
-            case .open(let breakType):
+            case let .open(breakType):
                 // Determine if the break tokens in this group need to be forced.
                 if !canFit(length) || lastBreak, case .consistent = breakType {
                     forceBreakStack.append(true)
@@ -208,12 +205,11 @@ package final class LayoutCoordinator {
                     forceBreakStack.append(false)
                 }
 
-            case .close:
-                forceBreakStack.removeLast()
+            case .close: forceBreakStack.removeLast()
 
             // Create a line break if needed. Calculate the indentation required and adjust spaceRemaining
             // accordingly.
-            case .break(let kind, let size, let newline):
+            case let .break(kind, size, newline):
                 var mustBreak = forceBreakStack.last ?? false
 
                 // Tracks whether the current line should be considered a continuation line, *if and only if
@@ -222,15 +218,16 @@ package final class LayoutCoordinator {
                 var isContinuationIfBreakFires = false
 
                 switch kind {
-                    case .open(let openKind):
+                    case let .open(openKind):
                         let lastOpenBreak = activeOpenBreaks.last
                         let currentLineNumber = openCloseBreakCompensatingLineNumber
 
                         // Only increase the indentation if there wasn't an open break already encountered on this
                         // line (i.e., the previous open break didn't fire), to prevent the indentation of the next
                         // line from being more than one level deeper than this line.
-                        let lastOpenBreakWasSameLine =
-                            currentLineNumber == (lastOpenBreak?.lineNumber ?? 0)
+                        let lastOpenBreakWasSameLine = currentLineNumber
+                            == (lastOpenBreak?.lineNumber ?? 0)
+
                         if lastOpenBreakWasSameLine, openKind == .block {
                             // If the last open break was on the same line, then we mark it as *not* contributing to
                             // the indentation of the subsequent lines. When the breaks are closed, this ensures that
@@ -245,11 +242,10 @@ package final class LayoutCoordinator {
                         // lines within it (unless they are themselves continuations within that particular
                         // scope), so we need the continuation indentation to persist across all the lines in that
                         // scope. Additionally, continuation open breaks must indent when the break fires.
-                        let continuationBreakWillFire =
-                            openKind != .block
+                        let continuationBreakWillFire = openKind != .block
                             && (outputBuffer.isAtStartOfLine || !canFit(length) || mustBreak)
-                        let contributesContinuationIndent =
-                            currentLineIsContinuation || continuationBreakWillFire
+                        let contributesContinuationIndent = currentLineIsContinuation
+                            || continuationBreakWillFire
 
                         activeOpenBreaks.append(
                             ActiveOpenBreak(
@@ -268,13 +264,13 @@ package final class LayoutCoordinator {
                         // corresponding close.
                         currentLineIsContinuation = false
 
-                    case .close(let closeMustBreak):
+                    case let .close(closeMustBreak):
                         guard let matchingOpenBreak = activeOpenBreaks.popLast() else {
                             fatalError("Unmatched closing break")
                         }
 
-                        let openedOnDifferentLine =
-                            openCloseBreakCompensatingLineNumber != matchingOpenBreak.lineNumber
+                        let openedOnDifferentLine = openCloseBreakCompensatingLineNumber
+                            != matchingOpenBreak.lineNumber
 
                         if matchingOpenBreak.contributesBlockIndent {
                             // The actual line number is used, instead of the compensating line number. When the close
@@ -285,9 +281,9 @@ package final class LayoutCoordinator {
                             // open breaks on that line are closed, the new final open break must be enabled again to
                             // add a block indent.
                             if matchingOpenBreak.lineNumber == currentLine,
-                                let lastActiveOpenBreak = activeOpenBreaks.last,
-                                lastActiveOpenBreak.kind == .block,
-                                !lastActiveOpenBreak.contributesBlockIndent
+                               let lastActiveOpenBreak = activeOpenBreaks.last,
+                               lastActiveOpenBreak.kind == .block,
+                               !lastActiveOpenBreak.contributesBlockIndent
                             {
                                 activeOpenBreaks[activeOpenBreaks.count - 1]
                                     .contributesBlockIndent = true
@@ -326,19 +322,23 @@ package final class LayoutCoordinator {
                             //
                             // Likewise, we need to do this if we popped an old continuation state off the stack,
                             // even if the break *doesn't* fire.
-                            let matchingOpenBreakIndented =
-                                matchingOpenBreak.contributesContinuationIndent
+                            let matchingOpenBreakIndented = matchingOpenBreak
+                                .contributesContinuationIndent
                                 || matchingOpenBreak.contributesBlockIndent
-                            currentLineIsContinuation =
-                                matchingOpenBreakIndented && openedOnDifferentLine
+                            currentLineIsContinuation = matchingOpenBreakIndented
+                                && openedOnDifferentLine
                         }
 
                         // Alignment breaks contribute indentation but should not propagate
                         // continuation state — they align to a keyword column, not a
                         // continuation scope, so the reset break before `{` should not fire.
                         let isAlignment: Bool
-                        if case .alignment = matchingOpenBreak.kind { isAlignment = true }
-                        else { isAlignment = false }
+
+                        if case .alignment = matchingOpenBreak.kind {
+                            isAlignment = true
+                        } else {
+                            isAlignment = false
+                        }
 
                         let wasContinuationWhenOpened =
                             (continuationStack.popLast() ?? false)
@@ -348,8 +348,8 @@ package final class LayoutCoordinator {
                             || (matchingOpenBreak.kind == .continuation && openedOnDifferentLine)
 
                         // Restore the continuation state of the scope we were in before the open break occurred.
-                        currentLineIsContinuation =
-                            currentLineIsContinuation || wasContinuationWhenOpened
+                        currentLineIsContinuation = currentLineIsContinuation
+                            || wasContinuationWhenOpened
                         isContinuationIfBreakFires = wasContinuationWhenOpened
 
                     case .continue:
@@ -367,20 +367,21 @@ package final class LayoutCoordinator {
                         // context includes a multiline trailing closure or multiline function argument list.
                         if let lastBreakingContext = lastEndedBreakingContext {
                             if configuration[AroundMultilineExpressionChainComponents.self] {
-                                mustBreak =
-                                    lastBreakingContext.lineNumber != outputBuffer.lineNumber
+                                mustBreak = lastBreakingContext.lineNumber
+                                    != outputBuffer.lineNumber
                             }
                         }
 
                         // Wait for a contextual break to fire and then update the breaking behavior for the rest of
                         // the contextual breaks in this scope to match the behavior of the one that fired.
                         let willFire = !canFit(length) || mustBreak
+
                         if willFire {
                             // Update the active breaking context according to the most recently finished breaking
                             // context so all following contextual breaks in this scope to have matching behavior.
                             if let closedContext = lastEndedBreakingContext,
-                                let activeContext = activeBreakingContexts.last,
-                                case .unset = activeContext.contextualBreakingBehavior
+                               let activeContext = activeBreakingContexts.last,
+                               case .unset = activeContext.contextualBreakingBehavior
                             {
                                 activeBreakingContexts[activeBreakingContexts.count - 1]
                                     .contextualBreakingBehavior =
@@ -402,13 +403,13 @@ package final class LayoutCoordinator {
                 }
 
                 var overrideBreakingSuppressed = false
+
                 switch newline {
                     case .elective, .escaped: break
                     case .soft(_, let discretionary, _):
                         // A discretionary newline (i.e. from the source) should create a line break even if the
                         // rules for breaking are disabled.
-                        overrideBreakingSuppressed =
-                            shouldOverrideBreakSuppression
+                        overrideBreakingSuppressed = shouldOverrideBreakSuppression
                             || (discretionary && allowSuppressedDiscretionaryBreaks)
                         mustBreak = true
                     case .hard:
@@ -418,8 +419,10 @@ package final class LayoutCoordinator {
                 }
 
                 let suppressBreaking = isBreakingSuppressed && !overrideBreakingSuppressed
+
                 if !suppressBreaking, !canFit(length) || mustBreak {
                     currentLineIsContinuation = isContinuationIfBreakFires
+
                     if case .escaped = newline {
                         outputBuffer.enqueueSpaces(size)
                         outputBuffer.write("\\")
@@ -452,14 +455,15 @@ package final class LayoutCoordinator {
                 outputBuffer.enqueueSpaces(size)
 
             // Print any indentation required, followed by the text content of the syntax token.
-            case .syntax(let text):
+            case let .syntax(text):
                 guard !text.isEmpty else { break }
                 lastBreak = false
                 outputBuffer.write(text)
 
-            case .comment(let comment, let wasEndOfLine):
+            case let .comment(comment, wasEndOfLine):
                 lastBreak = false
                 shouldOverrideBreakSuppression = comment.kind == .docLine || comment.kind == .line
+
                 if wasEndOfLine {
                     if !(canFit(comment.length) || isBreakingSuppressed) {
                         diagnose(.moveEndOfLineComment, category: .endOfLineComment)
@@ -472,13 +476,13 @@ package final class LayoutCoordinator {
                     )
                 )
 
-            case .verbatim(let verbatim):
+            case let .verbatim(verbatim):
                 outputBuffer.writeVerbatim(verbatim.print(indent: currentIndentation), length)
                 lastBreak = false
 
-            case .printerControl(let kind):
+            case let .printerControl(kind):
                 switch kind {
-                    case .disableBreaking(let allowDiscretionary):
+                    case let .disableBreaking(allowDiscretionary):
                         activeBreakSuppressionCount += 1
                         // Override the suppression of discretionary breaks if we're at the top level or
                         // discretionary breaks are currently allowed (false should override true, but not the other
@@ -493,8 +497,7 @@ package final class LayoutCoordinator {
             case .commaDelimitedRegionStart:
                 commaDelimitedRegionStack.append(openCloseBreakCompensatingLineNumber)
 
-            case .commaDelimitedRegionEnd(
-                let isCollection, let hasTrailingComma, let isSingleElement):
+            case let .commaDelimitedRegionEnd(isCollection, hasTrailingComma, isSingleElement):
                 guard let startLineNumber = commaDelimitedRegionStack.popLast() else {
                     fatalError("Found trailing comma end with no corresponding start.")
                 }
@@ -507,29 +510,31 @@ package final class LayoutCoordinator {
                 if let shouldHandleCommaDelimitedRegion = shouldHandleCommaDelimitedRegion(
                     isCollection: isCollection
                 ) {
-                    let shouldHaveTrailingComma =
-                        startLineNumber != openCloseBreakCompensatingLineNumber && !isSingleElement
+                    let shouldHaveTrailingComma = startLineNumber
+                        != openCloseBreakCompensatingLineNumber && !isSingleElement
                         && shouldHandleCommaDelimitedRegion
+
                     if shouldHaveTrailingComma, !hasTrailingComma {
                         diagnose(.addTrailingComma, category: .trailingComma)
                     } else if !shouldHaveTrailingComma, hasTrailingComma {
                         diagnose(.removeTrailingComma, category: .trailingComma)
                     }
 
-                    let shouldWriteComma =
-                        whitespaceOnly ? hasTrailingComma : shouldHaveTrailingComma
+                    let shouldWriteComma = whitespaceOnly
+                        ? hasTrailingComma : shouldHaveTrailingComma
                     if shouldWriteComma { outputBuffer.write(",") }
                 } else if hasTrailingComma {
                     outputBuffer.write(",")
                 }
 
-            case .enableFormatting(let enabledPosition):
+            case let .enableFormatting(enabledPosition):
                 guard let disabledPosition else { break }
                 let start = source.utf8.index(
                     source.utf8.startIndex,
                     offsetBy: disabledPosition.utf8Offset
                 )
                 let end: String.Index
+
                 if let enabledPosition {
                     end = source.utf8.index(
                         source.utf8.startIndex,
@@ -550,7 +555,7 @@ package final class LayoutCoordinator {
                 self.disabledPosition = nil
                 outputBuffer.writeVerbatimAfterEnablingFormatting(text)
 
-            case .disableFormatting(let newPosition):
+            case let .disableFormatting(newPosition):
                 assert(disabledPosition == nil)
                 disabledPosition = newPosition
         }
@@ -578,11 +583,8 @@ package final class LayoutCoordinator {
         // Calculate token lengths
         for (i, token) in tokens.enumerated() {
             switch token {
-                case .contextualBreakingStart:
-                    lengths.append(0)
-
-                case .contextualBreakingEnd:
-                    lengths.append(0)
+                case .contextualBreakingStart: lengths.append(0)
+                case .contextualBreakingEnd: lengths.append(0)
 
                 // Open tokens have lengths equal to the total of the contents of its group. The value is
                 // calculated when close tokens are encountered.
@@ -617,7 +619,7 @@ package final class LayoutCoordinator {
                 // length of any prior break tokens.
                 case .break(_, let size, let newline):
                     if let index = delimiterIndices.last,
-                        case .break(_, _, let lastNewline) = tokens[index]
+                       case .break(_, _, let lastNewline) = tokens[index]
                     {
                         /// If the last break and this break are both `.escaped` we add an extra 1 to the total for the last `.escaped` break.
                         /// This is to handle situations where adding the `\` for an escaped line break would put us over the line length.
@@ -671,25 +673,22 @@ package final class LayoutCoordinator {
                     total += size
 
                 // Syntax tokens have a length equal to the number of columns needed to print its contents.
-                case .syntax(let text):
+                case let .syntax(text):
                     lengths.append(text.count)
                     total += text.count
 
-                case .comment(let comment, let wasEndOfLine):
+                case let .comment(comment, wasEndOfLine):
                     lengths.append(comment.length)
                     total += wasEndOfLine ? 0 : comment.length
 
-                case .verbatim(let verbatim):
+                case let .verbatim(verbatim):
                     let length = verbatim.prettyPrintingLength(maximum: maxLineLength)
                     lengths.append(length)
                     total += length
 
-                case .printerControl:
-                    // Control tokens have no length. They aren't printed.
-                    lengths.append(0)
+                case .printerControl: lengths.append(0)
 
-                case .commaDelimitedRegionStart:
-                    lengths.append(0)
+                case .commaDelimitedRegionStart: lengths.append(0)
 
                 case .commaDelimitedRegionEnd(let isCollection, _, let isSingleElement):
                     // The token's length is only necessary when a comma will be printed, but it's impossible to
@@ -705,9 +704,7 @@ package final class LayoutCoordinator {
                         lengths.append(0)
                     }
 
-                case .enableFormatting, .disableFormatting:
-                    // no effect on length calculations
-                    lengths.append(0)
+                case .enableFormatting, .disableFormatting: lengths.append(0)
             }
         }
 
@@ -733,12 +730,10 @@ package final class LayoutCoordinator {
     /// or `nil` to keep as written.
     private func shouldHandleCommaDelimitedRegion(isCollection: Bool) -> Bool? {
         switch configuration[MultilineTrailingCommaBehaviorSetting.self] {
-            case .alwaysUsed:
-                return true
-            case .neverUsed:
-                return false
+            case .alwaysUsed: true
+            case .neverUsed: false
             case .keptAsWritten:
-                return isCollection ? configuration[MultiElementCollectionTrailingCommas.self] : nil
+                isCollection ? configuration[MultiElementCollectionTrailingCommas.self] : nil
         }
     }
 
@@ -752,18 +747,19 @@ package final class LayoutCoordinator {
         func printDebugIndent() { print(debugIndent.indentation(), terminator: "") }
 
         switch token {
-            case .syntax(let syntax):
+            case let .syntax(syntax):
                 printDebugIndent()
                 print("[SYNTAX \"\(syntax)\" Length: \(length) Idx: \(idx)]")
 
-            case .break(let kind, let size, let newline):
+            case let .break(kind, size, newline):
                 printDebugIndent()
                 print(
                     "[BREAK Kind: \(kind) Size: \(size) Length: \(length) NL: \(newline) Idx: \(idx)]"
                 )
 
-            case .open(let breakstyle):
+            case let .open(breakstyle):
                 printDebugIndent()
+
                 switch breakstyle {
                     case .consistent:
                         print("[OPEN Consistent Length: \(length) Idx: \(idx)]")
@@ -777,12 +773,13 @@ package final class LayoutCoordinator {
                 printDebugIndent()
                 print("[CLOSE Idx: \(idx)]")
 
-            case .space(let size, let flexible):
+            case let .space(size, flexible):
                 printDebugIndent()
                 print("[SPACE Size: \(size) Flexible: \(flexible) Length: \(length) Idx: \(idx)]")
 
-            case .comment(let comment, let wasEndOfLine):
+            case let .comment(comment, wasEndOfLine):
                 printDebugIndent()
+
                 switch comment.kind {
                     case .line:
                         print("[COMMENT Line Length: \(length) EOL: \(wasEndOfLine) Idx: \(idx)]")
@@ -798,12 +795,12 @@ package final class LayoutCoordinator {
                 printDebugIndent()
                 print(comment.print(indent: debugIndent))
 
-            case .verbatim(let verbatim):
+            case let .verbatim(verbatim):
                 printDebugIndent()
                 print("[VERBATIM Length: \(length) Idx: \(idx)]")
                 print(verbatim.print(indent: debugIndent))
 
-            case .printerControl(let kind):
+            case let .printerControl(kind):
                 printDebugIndent()
                 print("[PRINTER CONTROL Kind: \(kind) Idx: \(idx)]")
 
@@ -823,11 +820,11 @@ package final class LayoutCoordinator {
                 printDebugIndent()
                 print("[END BREAKING CONTEXT Idx: \(idx)]")
 
-            case .enableFormatting(let pos):
+            case let .enableFormatting(pos):
                 printDebugIndent()
                 print("[ENABLE FORMATTING utf8 offset: \(String(describing: pos))]")
 
-            case .disableFormatting(let pos):
+            case let .disableFormatting(pos):
                 printDebugIndent()
                 print("[DISABLE FORMATTING utf8 offset: \(pos)]")
         }
@@ -851,9 +848,9 @@ package final class LayoutCoordinator {
 
 // MARK: - Support
 
-extension LayoutCoordinator {
+fileprivate extension LayoutCoordinator {
     /// Information about an open break that has not yet been closed during the printing stage.
-    fileprivate struct ActiveOpenBreak {
+    struct ActiveOpenBreak {
         /// The index of the open break.
         let index: Int
 
@@ -879,32 +876,24 @@ extension LayoutCoordinator {
     }
 
     /// Records state of `contextualBreakingStart` tokens.
-    fileprivate struct ActiveBreakingContext {
+    struct ActiveBreakingContext {
         /// The line number in the `outputBuffer` where a start token appeared.
         let lineNumber: Int
 
-        enum BreakingBehavior {
-            /// The behavior hasn't been determined. This is treated as `continuation`.
-            case unset
-            /// The break is created as a `continuation` break, setting `currentLineIsContinuation` when
-            /// it fires.
-            case continuation
-            /// The break maintains the existing value of `currentLineIsContinuation` when it fires.
-            case maintain
-        }
+        enum BreakingBehavior { case unset, continuation, maintain }
 
         /// The behavior to use when a `contextual` break fires inside of this break context.
         var contextualBreakingBehavior = BreakingBehavior.unset
     }
 }
 
-extension Finding.Message {
-    fileprivate static let moveEndOfLineComment: Finding.Message =
+fileprivate extension Finding.Message {
+    static let moveEndOfLineComment: Finding.Message =
         "move end-of-line comment that exceeds the line length"
 
-    fileprivate static let addTrailingComma: Finding.Message =
+    static let addTrailingComma: Finding.Message =
         "add trailing comma to the last element in multiline collection literal"
 
-    fileprivate static let removeTrailingComma: Finding.Message =
+    static let removeTrailingComma: Finding.Message =
         "remove trailing comma from the last element in single line collection literal"
 }

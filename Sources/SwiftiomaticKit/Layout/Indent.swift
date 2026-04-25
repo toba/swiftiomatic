@@ -12,7 +12,6 @@
 
 /// Represents an indentation unit that is applied to lines that are pretty-printed.
 package enum Indent: Hashable, Codable, Sendable {
-
     /// An indentation unit equal to the given number of tab characters.
     ///
     /// This value is independent of the actual tab width, which is set separately in the
@@ -32,7 +31,7 @@ package enum Indent: Hashable, Codable, Sendable {
         let spacesCount = try container.decodeIfPresent(Int.self, forKey: .spaces)
         let tabsCount = try container.decodeIfPresent(Int.self, forKey: .tabs)
 
-        if spacesCount != nil && tabsCount != nil {
+        if spacesCount != nil, tabsCount != nil {
             throw DecodingError.dataCorrupted(
                 DecodingError.Context(
                     codingPath: decoder.codingPath,
@@ -40,11 +39,11 @@ package enum Indent: Hashable, Codable, Sendable {
                 )
             )
         }
-        if let spacesCount = spacesCount {
+        if let spacesCount {
             self = .spaces(spacesCount)
             return
         }
-        if let tabsCount = tabsCount {
+        if let tabsCount {
             self = .tabs(tabsCount)
             return
         }
@@ -59,11 +58,10 @@ package enum Indent: Hashable, Codable, Sendable {
 
     package func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
+
         switch self {
-        case .tabs(let count):
-            try container.encode(count, forKey: .tabs)
-        case .spaces(let count):
-            try container.encode(count, forKey: .spaces)
+            case let .tabs(count): try container.encode(count, forKey: .tabs)
+            case let .spaces(count): try container.encode(count, forKey: .spaces)
         }
     }
 
@@ -72,10 +70,8 @@ package enum Indent: Hashable, Codable, Sendable {
     /// Note that this does _not_ represent the physical number of spaces occupied by the indentation.
     package var count: Int {
         switch self {
-        case .spaces(let count):
-            return count
-        case .tabs(let count):
-            return count
+            case let .spaces(count): count
+            case let .tabs(count): count
         }
     }
 }

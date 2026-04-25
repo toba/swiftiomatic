@@ -235,7 +235,7 @@
 		"keepFunctionOutputTogether": true,
 		"multilineFunctionChains": { "lint": "no", "rewrite": false },
 		"multilineStatementBraces": { "lint": "no", "rewrite": false },
-		"nestedCallLayout": { "lint": "no", "mode": "inline", "rewrite": false },
+		"nestedCallLayout": { "lint": "no", "mode": "inline", "rewrite": true },
 		"singleLineBodies": { "lint": "no", "mode": "inline", "rewrite": true },
 		"singleLineComments": { "lint": "no", "rewrite": false },
 		"switchCaseBodies": { "lint": "no", "mode": "adaptive", "rewrite": true }

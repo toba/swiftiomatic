@@ -347,8 +347,7 @@ package final class WhitespaceLinter {
         startingAt offset: Int,
         in data: [UTF8.CodeUnit]
     ) -> ArraySlice<UTF8.CodeUnit> {
-        guard let whitespaceEnd = data[offset...].firstIndex(where: { !$0.isWhitespace })
-        else {
+        guard let whitespaceEnd = data[offset...].firstIndex(where: { !$0.isWhitespace }) else {
             return data[offset..<data.endIndex]
         }
         return data[offset..<whitespaceEnd]

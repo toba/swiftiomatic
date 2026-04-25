@@ -265,6 +265,97 @@ struct NestedCallLayoutInlineTests: RuleTesting {
       ],
       configuration: inlineConfig)
   }
+
+  @Test func hugsMultilineChainArgument() {
+    // Issue enu-4zl: outer call's sole arg is a multi-line method chain.
+    // The opening paren should hug the chain's first token, and the chain
+    // should be re-indented to baseIndent + indentUnit.
+    assertFormatting(
+      NestedCallLayout.self,
+      input: """
+        return 1️⃣.init(
+                    tryNode
+                        .with(\\.questionOrExclamationMark, nil)
+                        .with(\\.tryKeyword, tryNode.tryKeyword.with(\\.trailingTrivia, bangTrailingTrivia))
+                )
+        """,
+      expected: """
+        return .init(tryNode
+            .with(\\.questionOrExclamationMark, nil)
+            .with(\\.tryKeyword, tryNode.tryKeyword.with(\\.trailingTrivia, bangTrailingTrivia))
+        )
+        """,
+      findings: [
+        FindingSpec("1️⃣", message: "collapse nested call to fit on one line"),
+      ],
+      configuration: inlineConfig)
+  }
+
+  @Test func hugsMultilineNestedCallArgument() {
+    // Issue enu-4zl: outer call's sole arg is a multi-line nested call whose
+    // own args don't fit on one line. The inner call should be hugged to the
+    // opening paren and its content re-indented.
+    assertFormatting(
+      NestedCallLayout.self,
+      input: """
+        return 1️⃣ExprSyntax(
+                                OptionalChainingExprSyntax(
+                                    expression: typedNode.expression,
+                                    questionMark: .postfixQuestionMarkToken(
+                                        leadingTrivia: typedNode.exclamationMark.leadingTrivia,
+                                        trailingTrivia: typedNode.exclamationMark.trailingTrivia
+                                    )
+                                ))
+        """,
+      expected: """
+        return ExprSyntax(OptionalChainingExprSyntax(
+            expression: typedNode.expression,
+            questionMark: .postfixQuestionMarkToken(
+                leadingTrivia: typedNode.exclamationMark.leadingTrivia,
+                trailingTrivia: typedNode.exclamationMark.trailingTrivia
+            )
+        ))
+        """,
+      findings: [
+        FindingSpec("1️⃣", message: "collapse nested call to fit on one line"),
+      ],
+      configuration: inlineConfig)
+  }
+
+  @Test func hugsMultilineNestedCallWithDeepContent() {
+    // Issue enu-4zl: outer call's sole arg is a multi-line call with deeply
+    // nested content (collections, etc.). All inner content should re-indent
+    // proportionally so relative structure is preserved.
+    assertFormatting(
+      NestedCallLayout.self,
+      input: """
+        1️⃣ExprSyntax(
+                        MacroExpansionExprSyntax(
+                            pound: .poundToken(),
+                            macroName: .identifier("require"),
+                            leftParen: .leftParenToken(),
+                            arguments: LabeledExprListSyntax([
+                                LabeledExprSyntax(expression: innerExpr)
+                            ]),
+                            rightParen: .rightParenToken(trailingTrivia: trailingTrivia)
+                        ))
+        """,
+      expected: """
+        ExprSyntax(MacroExpansionExprSyntax(
+            pound: .poundToken(),
+            macroName: .identifier("require"),
+            leftParen: .leftParenToken(),
+            arguments: LabeledExprListSyntax([
+                LabeledExprSyntax(expression: innerExpr)
+            ]),
+            rightParen: .rightParenToken(trailingTrivia: trailingTrivia)
+        ))
+        """,
+      findings: [
+        FindingSpec("1️⃣", message: "collapse nested call to fit on one line"),
+      ],
+      configuration: inlineConfig)
+  }
 }
 
 // MARK: - Wrap Mode Tests
