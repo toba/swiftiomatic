@@ -27,7 +27,7 @@
 - Publish separate `swiftiomatic-plugins` repo with `binaryTarget` ([#405](https://github.com/toba/swiftiomatic/issues/405))
 - Layout; collapse `else {` onto preceding line for guard/if when it fits ([#406](https://github.com/toba/swiftiomatic/issues/406))
 
-### 🐛 Fixes
+### 🪲 Fixes
 
 - `BlankLinesBeforeControlFlow` crashes on empty code blocks; invalid range `1..<0` ([#370](https://github.com/toba/swiftiomatic/issues/370))
 - JSON schema now emits enum constraints for rule-specific properties; validates `mode`, `style`, `placement`, `accessLevel`, `sortOrder`
@@ -103,7 +103,7 @@
 - Missing swift-format rules; 6 genuinely unimplemented checks ([#240](https://github.com/toba/swiftiomatic/issues/240))
 - Document-based SwiftUI app; open/create `.swiftiomatic.yaml` ([#223](https://github.com/toba/swiftiomatic/issues/223))
 
-### 🐛 Fixes
+### 🪲 Fixes
 
 - Format command ignores correctable Swiftiomatic rules ([#262](https://github.com/toba/swiftiomatic/issues/262))
 - Fix O(n²) performance anti-patterns in `RuleMask` and `GroupNumericLiterals` ([#273](https://github.com/toba/swiftiomatic/issues/273))
