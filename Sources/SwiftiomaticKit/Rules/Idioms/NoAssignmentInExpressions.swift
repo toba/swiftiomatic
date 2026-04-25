@@ -22,7 +22,7 @@ import SwiftSyntax
 ///
 /// Format: A `return` statement containing an assignment expression is expanded into two separate
 ///         statements.
-final class NoAssignmentInExpressions: RewriteSyntaxRule<NoAssignmentInExpressionsConfiguration> {
+final class NoAssignmentInExpressions: RewriteSyntaxRule<NoAssignmentInExpressionsConfiguration>, @unchecked Sendable {
     override class var group: ConfigurationGroup? { .idioms }
   override func visit(_ node: InfixOperatorExprSyntax) -> ExprSyntax {
     // Diagnose any assignment that isn't directly a child of a `CodeBlockItem` (which would be the

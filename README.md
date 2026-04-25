@@ -179,6 +179,26 @@ dependency:
 | **Lint Source Code** | Command | Right-click target in navigator → "Lint Source Code" |
 | **Format Source Code** | Command | Right-click target in navigator → "Format Source Code" |
 
+For external SPM projects, depend on the sibling
+[**toba/swiftiomatic-plugins**](https://github.com/toba/swiftiomatic-plugins)
+package instead of this repo. It ships the same three plugins but resolves the
+`sm` binary via a `.binaryTarget` (a small artifact bundle attached to each
+release here), so consumers do not have to compile SwiftSyntax, swift-markdown,
+or the rules engine into their dependency graph.
+
+```swift
+.package(url: "https://github.com/toba/swiftiomatic-plugins", from: "0.31.12")
+```
+
+```swift
+.target(
+    name: "MyApp",
+    plugins: [
+        .plugin(name: "SwiftiomaticBuildToolPlugin", package: "swiftiomatic-plugins"),
+    ]
+),
+```
+
 ## API Usage
 
 `sm` can be easily integrated into other tools written in Swift.

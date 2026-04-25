@@ -15,7 +15,7 @@ import SwiftSyntax
 /// Block comments should be avoided in favor of line comments.
 ///
 /// Lint: If a block comment appears, a lint error is raised.
-final class NoBlockComments: LintSyntaxRule<LintOnlyValue> {
+final class NoBlockComments: LintSyntaxRule<LintOnlyValue>, @unchecked Sendable {
     override static var key: String { "disallowBlockComments" }
     override static var group: ConfigurationGroup? { .comments }
 

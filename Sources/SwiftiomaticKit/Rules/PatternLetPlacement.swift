@@ -24,7 +24,7 @@ import SwiftSyntax
 /// Lint: Using the non-preferred placement yields a lint error.
 ///
 /// Format: The `let`/`var` is repositioned to match the configured placement.
-final class PatternLetPlacement: RewriteSyntaxRule<PatternLetConfiguration> {
+final class PatternLetPlacement: RewriteSyntaxRule<PatternLetConfiguration>, @unchecked Sendable {
     override static var key: String { "caseLet" }
     override static var group: ConfigurationGroup? { .hoist }
 

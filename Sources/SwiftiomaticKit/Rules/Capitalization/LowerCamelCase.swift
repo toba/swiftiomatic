@@ -21,7 +21,7 @@ import SwiftSyntax
 ///
 /// Lint: If an identifier contains underscores or begins with a capital letter, a lint error is
 ///       raised.
-final class LowerCamelCase: LintSyntaxRule<LintOnlyValue> {
+final class LowerCamelCase: LintSyntaxRule<LintOnlyValue>, @unchecked Sendable {
     override static var key: String { "camelCaseIdentifiers" }
     override static var group: ConfigurationGroup? { .naming }
 

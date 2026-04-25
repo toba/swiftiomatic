@@ -8,7 +8,7 @@ import SwiftSyntax
 /// Lint: If the file does not end with exactly one newline, a lint warning is raised.
 ///
 /// Format: A trailing newline is added if missing, or extra newlines are removed.
-final class LinebreakAtEndOfFile: RewriteSyntaxRule<BasicRuleValue> {
+final class LinebreakAtEndOfFile: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable {
     override class var key: String { "ensureLineBreakAtEOF" }
     override class var group: ConfigurationGroup? { .lineBreaks }
     override class var defaultValue: BasicRuleValue { BasicRuleValue(rewrite: false, lint: .no) }

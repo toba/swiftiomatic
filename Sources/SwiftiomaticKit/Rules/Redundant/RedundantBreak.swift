@@ -12,7 +12,7 @@ import SwiftSyntax
 /// Lint: If a redundant `break` is found at the end of a switch case, a lint warning is raised.
 ///
 /// Format: The redundant `break` statement is removed.
-final class RedundantBreak: RewriteSyntaxRule<BasicRuleValue> {
+final class RedundantBreak: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable {
     override class var group: ConfigurationGroup? { .redundancies }
 
     override func visit(_ node: SwitchCaseSyntax) -> SwitchCaseSyntax {

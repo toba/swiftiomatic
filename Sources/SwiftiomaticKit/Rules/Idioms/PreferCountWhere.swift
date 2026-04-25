@@ -8,7 +8,7 @@ import SwiftSyntax
 /// Lint: Using `.filter { ... }.count` raises a warning suggesting `count(where:)`.
 ///
 /// Format: `.filter { ... }.count` is replaced with `.count(where: { ... })`.
-final class PreferCountWhere: RewriteSyntaxRule<BasicRuleValue> {
+final class PreferCountWhere: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable {
     override class var group: ConfigurationGroup? { .idioms }
 
   override func visit(_ node: MemberAccessExprSyntax) -> ExprSyntax {

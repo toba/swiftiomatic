@@ -12,10 +12,13 @@ package struct Configuration: Sendable, Equatable {
             var lhsContainer = lhsEncoder.container(keyedBy: AnyCodingKey.self)
             let rhsEncoder = JSONValueEncoder()
             var rhsContainer = rhsEncoder.container(keyedBy: AnyCodingKey.self)
+
             do {
                 try entry.encode(lhs, &lhsContainer, codingKey)
                 try entry.encode(rhs, &rhsContainer, codingKey)
-            } catch { return false }
+            } catch {
+                return false
+            }
             guard lhsEncoder.values == rhsEncoder.values else { return false }
         }
         // Compare all rule values.
@@ -25,10 +28,13 @@ package struct Configuration: Sendable, Equatable {
             var lhsContainer = lhsEncoder.container(keyedBy: AnyCodingKey.self)
             let rhsEncoder = JSONValueEncoder()
             var rhsContainer = rhsEncoder.container(keyedBy: AnyCodingKey.self)
+
             do {
                 try entry.encode(lhs, &lhsContainer, codingKey)
                 try entry.encode(rhs, &rhsContainer, codingKey)
-            } catch { return false }
+            } catch {
+                return false
+            }
             guard lhsEncoder.values == rhsEncoder.values else { return false }
         }
         return true
@@ -96,8 +102,7 @@ package struct Configuration: Sendable, Equatable {
         return open(type)
     }
 
-    private static let settingEntries: [SettingEntry] =
-        LayoutRegistry.all.map { entry(for: $0) }
+    private static let settingEntries: [SettingEntry] = LayoutRegistry.all.map { entry(for: $0) }
 
     private static let settingsByKey: [String: SettingEntry] = Dictionary(
         uniqueKeysWithValues: settingEntries.map { ($0.key, $0) })
@@ -159,8 +164,8 @@ package struct Configuration: Sendable, Equatable {
         return open(type)
     }
 
-    private static let ruleEntries: [RuleEntry] =
-        ConfigurationRegistry.allRuleTypes.map { ruleEntry(for: $0) }
+    private static let ruleEntries:
+        [RuleEntry] = ConfigurationRegistry.allRuleTypes.map { ruleEntry(for: $0) }
 
     private static let rulesByKey: [String: RuleEntry] = Dictionary(
         uniqueKeysWithValues: ruleEntries.map { ($0.qualifiedKey, $0) })
@@ -168,9 +173,7 @@ package struct Configuration: Sendable, Equatable {
     // MARK: - Rule key metadata (for `sm update`)
 
     /// All valid rule qualified keys (`group.key` or bare `key`).
-    package static var allRuleQualifiedKeys: Set<String> {
-        Set(ruleEntries.map(\.qualifiedKey))
-    }
+    package static var allRuleQualifiedKeys: Set<String> { Set(ruleEntries.map(\.qualifiedKey)) }
 
     /// Maps each rule's short key to its canonical qualified key.
     /// If two rules share a short key (different groups), one is chosen arbitrarily.
@@ -203,9 +206,7 @@ package struct Configuration: Sendable, Equatable {
 
     /// Disables all syntax rules by setting `enabled = false` on each rule's value.
     package mutating func disableAllRules() {
-        for entry in Self.ruleEntries {
-            entry.disable(&self)
-        }
+        for entry in Self.ruleEntries { entry.disable(&self) }
     }
 
     /// Enables a rule by qualified key (`group.key`) or short key (`key`).
@@ -236,17 +237,19 @@ package struct Configuration: Sendable, Equatable {
     package static func url(forConfigurationFileApplyingTo url: URL) -> URL? {
         var candidateDirectory = url.absoluteURL.standardized
         var isDirectory: ObjCBool = false
+
         if FileManager.default.fileExists(
             atPath: candidateDirectory.path,
             isDirectory: &isDirectory
         ),
-            isDirectory.boolValue
+           isDirectory.boolValue
         {
             candidateDirectory.appendPathComponent("placeholder")
         }
         repeat {
             candidateDirectory.deleteLastPathComponent()
             let candidateFile = candidateDirectory.appendingPathComponent("swiftiomatic.json")
+
             if FileManager.default.isReadableFile(atPath: candidateFile.path) {
                 return candidateFile
             }
@@ -266,8 +269,7 @@ extension Configuration: Codable {
         let root = try decoder.container(keyedBy: AnyCodingKey.self)
 
         // Decode version.
-        let version =
-            try root.decodeIfPresent(Int.self, forKey: AnyCodingKey("version"))
+        let version = try root.decodeIfPresent(Int.self, forKey: AnyCodingKey("version"))
             ?? highestSupportedConfigurationVersion
         guard version <= highestSupportedConfigurationVersion else {
             throw SwiftiomaticError.unsupportedConfigurationVersion(
@@ -296,7 +298,8 @@ extension Configuration: Codable {
 
             // Config group: decode grouped settings + rules.
             if let groupKey = ConfigurationGroup.Key(rawValue: name) {
-                let groupContainer = try root.nestedContainer(keyedBy: AnyCodingKey.self, forKey: key)
+                let groupContainer = try root.nestedContainer(
+                    keyedBy: AnyCodingKey.self, forKey: key)
 
                 // Decode group-owned settings.
                 for entry in Self.settingEntries where entry.groupKey == groupKey {
@@ -311,6 +314,7 @@ extension Configuration: Codable {
                         let ruleKey = AnyCodingKey(rule)
                         guard groupContainer.contains(ruleKey) else { continue }
                         let qualifiedKey = "\(groupKey.rawValue).\(rule)"
+
                         if let entry = Self.rulesByKey[qualifiedKey] {
                             try entry.decode(groupContainer, ruleKey, &config)
                         }
@@ -366,6 +370,7 @@ extension Configuration: Codable {
             // Encode rules within the group.
             for ruleName in groupRuleNames {
                 let qualifiedKey = "\(group.rawValue).\(ruleName)"
+
                 if let entry = Self.rulesByKey[qualifiedKey] {
                     let ruleEncoder = JSONValueEncoder()
                     var ruleContainer = ruleEncoder.container(keyedBy: AnyCodingKey.self)
@@ -377,7 +382,4 @@ extension Configuration: Codable {
             try root.encode(JSONValue.object(groupValues), forKey: AnyCodingKey(group.rawValue))
         }
     }
-
 }
-
-

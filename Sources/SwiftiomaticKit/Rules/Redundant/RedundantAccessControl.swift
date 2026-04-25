@@ -33,7 +33,7 @@ import SwiftSyntax
 /// Lint: Raises warnings for any of the above redundancies.
 ///
 /// Format: Removes or replaces the redundant modifier.
-final class RedundantAccessControl: RewriteSyntaxRule<BasicRuleValue> {
+final class RedundantAccessControl: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable {
     override class var group: ConfigurationGroup? { .redundancies }
 
     override class var defaultValue: BasicRuleValue { BasicRuleValue(rewrite: false, lint: .no) }

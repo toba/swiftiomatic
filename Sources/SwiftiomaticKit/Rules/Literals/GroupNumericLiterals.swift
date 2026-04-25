@@ -24,7 +24,7 @@ import SwiftSyntax
 /// TODO: Minimum numeric literal length bounds and numeric groupings have been selected arbitrarily;
 /// these could be reevaluated.
 /// TODO: Handle floating point literals.
-final class GroupNumericLiterals: RewriteSyntaxRule<BasicRuleValue> {
+final class GroupNumericLiterals: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable {
     override class var group: ConfigurationGroup? { .literals }
     override func visit(_ node: IntegerLiteralExprSyntax) -> ExprSyntax {
         var originalDigits = node.literal.text

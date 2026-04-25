@@ -9,7 +9,7 @@ import SwiftSyntax
 /// is raised.
 ///
 /// Format: Newlines between modifiers and the declaration keyword are replaced with spaces.
-final class ModifiersOnSameLine: RewriteSyntaxRule<BasicRuleValue> {
+final class ModifiersOnSameLine: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable {
     override class var group: ConfigurationGroup? { .lineBreaks }
 
     // MARK: - Container declarations

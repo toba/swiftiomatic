@@ -13,7 +13,7 @@ import SwiftSyntax
 /// Lint: A body whose formatting doesn't match the mode raises a warning.
 ///
 /// Format: The body is wrapped or inlined to match the mode.
-final class WrapSingleLineBodies: RewriteSyntaxRule<SingleLineBodiesConfiguration> {
+final class WrapSingleLineBodies: RewriteSyntaxRule<SingleLineBodiesConfiguration>, @unchecked Sendable {
     override class var key: String { "singleLineBodies" }
     override class var defaultValue: SingleLineBodiesConfiguration {
         var config = SingleLineBodiesConfiguration()

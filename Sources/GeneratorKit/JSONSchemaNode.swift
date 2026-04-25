@@ -24,6 +24,7 @@ struct JSONSchemaNode: Codable {
     var properties: [String: JSONSchemaNode]?
     var required: [String]?
     var additionalProperties: Bool?
+    var unevaluatedProperties: Bool?
     var enumValues: [String]?
     var defaultValue: JSONValue?
     var minimum: Int?
@@ -38,6 +39,7 @@ struct JSONSchemaNode: Codable {
         case id = "$id"
         case title, description, type, properties, required
         case additionalProperties
+        case unevaluatedProperties
         case enumValues = "enum"
         case defaultValue = "default"
         case minimum, oneOf, allOf

@@ -18,7 +18,7 @@ import SwiftSyntax
 ///       a lint error is raised.
 ///
 /// Format: Empty parentheses in function calls with trailing closures will be removed.
-final class NoTrailingClosureParens: RewriteSyntaxRule<BasicRuleValue> {
+final class NoTrailingClosureParens: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable {
     override class var group: ConfigurationGroup? { .closures }
 
     override func visit(_ node: FunctionCallExprSyntax) -> ExprSyntax {

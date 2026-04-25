@@ -9,7 +9,7 @@ import SwiftSyntax
 /// Lint: Raised when a `case` or `default` label doesn't match the configured style.
 ///
 /// Format: Case labels, bodies, and the closing brace are reindented to match.
-final class SwitchCaseIndentation: RewriteSyntaxRule<SwitchCaseIndentationConfiguration> {
+final class SwitchCaseIndentation: RewriteSyntaxRule<SwitchCaseIndentationConfiguration>, @unchecked Sendable {
     override class var key: String { "switchCases" }
     override class var group: ConfigurationGroup? { .indentation }
 

@@ -22,7 +22,7 @@ import SwiftSyntax
 /// Format: If a doc block comment appears on its own on a line, or if a doc block comment spans
 ///         multiple lines without appearing on the same line as code, it will be replaced with
 ///         multiple doc line comments.
-final class TripleSlashDocComments: RewriteSyntaxRule<BasicRuleValue> {
+final class TripleSlashDocComments: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable {
     override static var key: String { "tripleSlashDocC" }
     override static var group: ConfigurationGroup? { .comments }
 

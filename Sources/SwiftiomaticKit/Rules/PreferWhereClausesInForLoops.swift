@@ -18,7 +18,7 @@ import SwiftSyntax
 ///
 /// Format: `for` loops that consist of a single `if` statement have the conditional of that
 ///         statement factored out to a `where` clause.
-final class PreferWhereClausesInForLoops: RewriteSyntaxRule<BasicRuleValue> {
+final class PreferWhereClausesInForLoops: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable {
     /// Identifies this rule as being opt-in. This rule is experimental and not yet stable enough to
     /// be enabled by default.
     override static var defaultValue: BasicRuleValue { .init(rewrite: false, lint: .no) }

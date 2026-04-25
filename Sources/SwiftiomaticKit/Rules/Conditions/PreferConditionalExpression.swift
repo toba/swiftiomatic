@@ -12,7 +12,7 @@ import SwiftSyntax
 ///
 /// Format: The separate statements are merged into a conditional expression
 ///         assignment.
-final class PreferConditionalExpression: RewriteSyntaxRule<BasicRuleValue> {
+final class PreferConditionalExpression: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable {
     override class var group: ConfigurationGroup? { .conditions }
 
   override class var defaultValue: BasicRuleValue { BasicRuleValue(rewrite: false, lint: .no) }

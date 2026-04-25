@@ -10,7 +10,7 @@ import SwiftSyntax
 /// Lint: A `@State` or `@StateObject` property without access control raises a warning.
 ///
 /// Format: The `private` modifier is added before the binding keyword.
-final class PrivateStateVariables: RewriteSyntaxRule<BasicRuleValue> {
+final class PrivateStateVariables: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable {
     override static var group: ConfigurationGroup? { .access }
     override static var defaultValue: BasicRuleValue { BasicRuleValue(rewrite: false, lint: .no) }
 

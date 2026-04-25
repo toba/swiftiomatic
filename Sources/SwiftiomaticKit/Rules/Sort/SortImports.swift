@@ -28,7 +28,7 @@ import SwiftSyntax
 ///       raised.
 ///
 /// Format: Imports will be reordered and (optionally) grouped at the top of the file.
-final class SortImports: RewriteSyntaxRule<SortImportsConfiguration> {
+final class SortImports: RewriteSyntaxRule<SortImportsConfiguration>, @unchecked Sendable {
     override class var key: String { "imports" }
     override class var group: ConfigurationGroup? { .sort }
 

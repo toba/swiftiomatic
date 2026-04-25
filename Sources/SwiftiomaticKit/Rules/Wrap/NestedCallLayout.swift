@@ -34,7 +34,7 @@ import SwiftSyntax
 /// Lint: A nested call whose layout doesn't match the mode raises a warning.
 ///
 /// Format: The call tree is reformatted to match the mode.
-final class NestedCallLayout: RewriteSyntaxRule<NestedCallLayoutConfiguration> {
+final class NestedCallLayout: RewriteSyntaxRule<NestedCallLayoutConfiguration>, @unchecked Sendable {
     override class var key: String { "nestedCallLayout" }
     override class var group: ConfigurationGroup? { .wrap }
     override class var defaultValue: NestedCallLayoutConfiguration {

@@ -9,4 +9,4 @@
 /// - ``Groupable`` — optional ``ConfigGroup`` membership (also on ``Rule``)
 /// - ``ConfigRepresentable`` — emit ``ConfigProperty`` for schema generation
 ///   (also on rule config structs like `SortImportsConfiguration`)
-package protocol LayoutRule: Configurable {}
+package protocol LayoutRule: Configurable, Sendable {}

@@ -19,7 +19,7 @@ import SwiftSyntax
 ///
 /// Format: Enums where all cases are `indirect` will be rewritten such that the enum is marked
 ///         `indirect`, and each case is not.
-final class FullyIndirectEnum: RewriteSyntaxRule<BasicRuleValue> {
+final class FullyIndirectEnum: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable {
     override static var key: String { "indirectEnum" }
     override static var group: ConfigurationGroup? { .hoist }
 

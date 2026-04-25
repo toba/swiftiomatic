@@ -2,7 +2,7 @@ import Foundation
 import SwiftSyntax
 
 /// A Rule is a linting or formatting pass that executes in a given context.
-protocol SyntaxRule: Configurable where Value: SyntaxRuleValue {
+protocol SyntaxRule: Configurable, Sendable where Value: SyntaxRuleValue {
     /// The context in which the rule is executed.
     var context: Context { get }
 

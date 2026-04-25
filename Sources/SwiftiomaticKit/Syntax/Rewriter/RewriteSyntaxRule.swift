@@ -1,7 +1,7 @@
 import SwiftSyntax
 
 /// A rule that both formats and lints a given file.
-class RewriteSyntaxRule<V: SyntaxRuleValue>: SyntaxRewriter, SyntaxRule {
+class RewriteSyntaxRule<V: SyntaxRuleValue>: SyntaxRewriter, SyntaxRule, @unchecked Sendable {
     typealias Value = V
 
     /// The context in which the rule is executed.

@@ -13,7 +13,7 @@ import SwiftSyntax
 ///
 /// Format: `&&` is replaced with commas, splitting the condition into separate
 /// condition elements.
-final class PreferCommaConditions: RewriteSyntaxRule<BasicRuleValue> {
+final class PreferCommaConditions: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable {
     override class var group: ConfigurationGroup? { .conditions }
 
   override func visit(_ node: ConditionElementListSyntax) -> ConditionElementListSyntax {

@@ -15,7 +15,7 @@ import SwiftSyntax
 /// `struct`, `class`, `enum` and `protocol` declarations should have a capitalized name.
 ///
 /// Lint:  Types with un-capitalized names will yield a lint error.
-final class CapitalizedTypeNames: LintSyntaxRule<LintOnlyValue> {
+final class CapitalizedTypeNames: LintSyntaxRule<LintOnlyValue>, @unchecked Sendable {
     override static var key: String { "capitalizeTypeNames" }
     override static var group: ConfigurationGroup? { .naming }
 

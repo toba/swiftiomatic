@@ -85,11 +85,13 @@ package struct GeneratePaths {
         let sources = packageRoot.appending(path: "Sources")
         let kit = sources.appending(path: "SwiftiomaticKit")
         let layout = kit.appending(path: "Layout")
-        let syntax = kit.appending(path: "Syntax")
+        let rules = kit.appending(path: "Rules")
 
         tokenFolder = layout.appending(path: "Tokens")
-        layoutRulesFolder = layout.appending(path: "Rules")
-        syntaxRulesFolder = syntax.appending(path: "Rules")
+        // Layout and syntax rules now share a single unified `Rules/` tree.
+        // Each collector picks out its kind by inheritance.
+        layoutRulesFolder = rules
+        syntaxRulesFolder = rules
 
         pipelineFile = outputDirectory.appending(path: "Pipelines+Generated.swift")
         ruleRegistryFile = outputDirectory.appending(path: "ConfigurationRegistry+Generated.swift")

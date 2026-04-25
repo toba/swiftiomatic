@@ -14,7 +14,7 @@ import SwiftSyntax
 ///
 /// Format: The property declaration is removed and its value is inlined into
 ///         the return statement.
-final class RedundantProperty: RewriteSyntaxRule<BasicRuleValue> {
+final class RedundantProperty: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable {
   override class var group: ConfigurationGroup? { .redundancies }
 
   override func visit(_ node: CodeBlockItemListSyntax) -> CodeBlockItemListSyntax {

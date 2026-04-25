@@ -23,7 +23,7 @@ import SwiftSyntax
 /// TODO: Create exceptions for other UI elements (ex: viewDidLoad)
 ///
 /// Lint: Declaring a property with an implicitly unwrapped type yields a lint error.
-final class NoImplicitlyUnwrappedOptionals: LintSyntaxRule<LintOnlyValue> {
+final class NoImplicitlyUnwrappedOptionals: LintSyntaxRule<LintOnlyValue>, @unchecked Sendable {
 
     /// Identifies this rule as being opt-in. While accessing implicitly unwrapped optionals is an
     /// unsafe pattern (i.e. it can crash), there are valid contexts for using implicitly unwrapped

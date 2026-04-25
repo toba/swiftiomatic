@@ -15,7 +15,7 @@ import SwiftSyntax
 /// All public or open declarations must have a top-level documentation comment.
 ///
 /// Lint: If a public declaration is missing a documentation comment, a lint error is raised.
-final class DocumentPublicDeclarations: LintSyntaxRule<LintOnlyValue> {
+final class DocumentPublicDeclarations: LintSyntaxRule<LintOnlyValue>, @unchecked Sendable {
     override static var group: ConfigurationGroup? { .comments }
 
     /// Identifies this rule as being opt-in. While docs on most public declarations are beneficial,

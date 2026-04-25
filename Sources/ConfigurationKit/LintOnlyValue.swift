@@ -10,8 +10,7 @@
 /// "someRule": { "lint": "warn" }
 /// ```
 ///
-/// Decoding accepts an optional `rewrite` key for backward compatibility
-/// but silently ignores it.
+/// The JSON Schema rejects a `rewrite` key on lint-only rule entries.
 package struct LintOnlyValue: SyntaxRuleValue {
     package var lint: Lint
 
@@ -29,8 +28,6 @@ package struct LintOnlyValue: SyntaxRuleValue {
 extension LintOnlyValue: Codable {
     package init(from decoder: any Decoder) throws {
         let keyed = try decoder.container(keyedBy: CodingKeys.self)
-        // Accept and ignore `rewrite` for backward compatibility.
-        _ = try keyed.decodeIfPresent(Bool.self, forKey: .rewrite)
         lint = try keyed.decodeIfPresent(Lint.self, forKey: .lint) ?? .warn
     }
 
@@ -40,7 +37,6 @@ extension LintOnlyValue: Codable {
     }
 
     private enum CodingKeys: String, CodingKey {
-        case rewrite
         case lint
     }
 }

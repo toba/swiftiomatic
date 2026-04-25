@@ -9,7 +9,7 @@ import SwiftSyntax
 /// Lint: A `required init(coder:)` stub without `@available(*, unavailable)` yields a warning.
 ///
 /// Format: The `@available(*, unavailable)` attribute is added.
-final class InitCoderUnavailable: RewriteSyntaxRule<BasicRuleValue> {
+final class InitCoderUnavailable: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable {
     override class var group: ConfigurationGroup? { .declarations }
   override class var defaultValue: BasicRuleValue { BasicRuleValue(rewrite: false, lint: .no) }
 

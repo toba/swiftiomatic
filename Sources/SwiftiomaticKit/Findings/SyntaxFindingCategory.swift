@@ -18,7 +18,7 @@
 /// defaults to the rule's type name).
 struct SyntaxFindingCategory: FindingCategorizing {
     /// The type of the rule associated with this category.
-    private nonisolated(unsafe) let ruleType: any SyntaxRule.Type
+    private let ruleType: any SyntaxRule.Type
 
     var description: String { ruleType.key }
 

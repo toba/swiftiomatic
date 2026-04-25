@@ -23,7 +23,7 @@ import SwiftSyntax
 /// Lint: If an explicit `.init` is found on a direct type reference, a lint warning is raised.
 ///
 /// Format: The `.init` member access is removed, leaving the type called directly.
-final class RedundantInit: RewriteSyntaxRule<BasicRuleValue> {
+final class RedundantInit: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable {
   override class var group: ConfigurationGroup? { .redundancies }
 
   override func visit(_ node: FunctionCallExprSyntax) -> ExprSyntax {

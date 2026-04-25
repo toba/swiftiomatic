@@ -9,7 +9,7 @@ import SwiftSyntax
 /// Lint: A finding is emitted when a delimiter starts a line.
 ///
 /// Format: The delimiter is moved to the end of the previous line.
-final class LeadingDotOperators: RewriteSyntaxRule<BasicRuleValue> {
+final class LeadingDotOperators: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable {
 
     /// Trivia (newline + indentation) saved from a leading delimiter, to be prepended to the
     /// next token's leading trivia.

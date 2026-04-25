@@ -18,7 +18,7 @@ import SwiftSyntax
 ///
 /// Format: The fall-through `case` is added as a prefix to the next case unless the next case is
 ///         `default`; in that case, the fallthrough `case` is deleted.
-final class NoFallThroughOnlyCases: RewriteSyntaxRule<BasicRuleValue> {
+final class NoFallThroughOnlyCases: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable {
     override func visit(_ node: SwitchCaseListSyntax) -> SwitchCaseListSyntax {
         var newChildren: [SwitchCaseListSyntax.Element] = []
         var fallThroughOnlyCases: [SwitchCaseSyntax] = []

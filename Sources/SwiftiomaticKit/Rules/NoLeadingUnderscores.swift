@@ -22,7 +22,7 @@ import SwiftSyntax
 /// sites.
 ///
 /// Lint: Declaring an identifier with a leading underscore yields a lint error.
-final class NoLeadingUnderscores: LintSyntaxRule<LintOnlyValue> {
+final class NoLeadingUnderscores: LintSyntaxRule<LintOnlyValue>, @unchecked Sendable {
     override static var group: ConfigurationGroup? { .naming }
 
     /// Identifies this rule as being opt-in. While leading underscores aren't meant to be used in

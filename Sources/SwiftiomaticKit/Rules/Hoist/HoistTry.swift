@@ -15,7 +15,7 @@ import SwiftSyntax
 /// Lint: Using `try` inside a function call argument raises a warning.
 ///
 /// Format: `try` is removed from arguments and added to wrap the call expression.
-final class HoistTry: RewriteSyntaxRule<BasicRuleValue> {
+final class HoistTry: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable {
     override static var key: String { "nestedTry" }
     override static var group: ConfigurationGroup? { .hoist }
 

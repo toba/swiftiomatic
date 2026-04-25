@@ -8,7 +8,7 @@ import SwiftSyntax
 /// Lint: Using `!` prefix negation raises a warning.
 ///
 /// Format: `!expression` is replaced with `expression == false`.
-final class PreferExplicitFalse: RewriteSyntaxRule<BasicRuleValue> {
+final class PreferExplicitFalse: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable {
     override static var defaultValue: BasicRuleValue { .init(rewrite: false, lint: .no) }
 
     override func visit(_ node: PrefixOperatorExprSyntax) -> ExprSyntax {

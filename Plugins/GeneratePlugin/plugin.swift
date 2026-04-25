@@ -21,8 +21,7 @@ struct GeneratePlugin: BuildToolPlugin {
             .appending(path: "Sources/SwiftiomaticKit")
 
         let inputDirectories = [
-            kitDir.appending(path: "Syntax/Rules"),
-            kitDir.appending(path: "Layout/Rules"),
+            kitDir.appending(path: "Rules"),
             kitDir.appending(path: "Layout/Tokens"),
         ]
 

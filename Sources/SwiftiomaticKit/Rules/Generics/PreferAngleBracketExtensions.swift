@@ -13,7 +13,7 @@ import SwiftSyntax
 ///
 /// Format: The `where` clause constraints are moved into angle bracket syntax on the
 /// extended type.
-final class PreferAngleBracketExtensions: RewriteSyntaxRule<BasicRuleValue> {
+final class PreferAngleBracketExtensions: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable {
     override class var group: ConfigurationGroup? { .generics }
 
   /// Maps known generic types to their associated type names (in parameter order).

@@ -7,7 +7,7 @@ import SwiftSyntax
 ///
 /// Format: Dots that share a line with a closing scope or another dot are
 ///         moved to their own line.
-final class WrapMultilineFunctionChains: RewriteSyntaxRule<BasicRuleValue> {
+final class WrapMultilineFunctionChains: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable {
     override class var key: String { "multilineFunctionChains" }
     override class var group: ConfigurationGroup? { .wrap }
     override class var defaultValue: BasicRuleValue { BasicRuleValue(rewrite: false, lint: .no) }

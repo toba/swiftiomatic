@@ -10,7 +10,7 @@ import SwiftSyntax
 /// Lint: If a redundant pattern is found, a finding is raised.
 ///
 /// Format: The redundant pattern is removed.
-final class RedundantPattern: RewriteSyntaxRule<BasicRuleValue> {
+final class RedundantPattern: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable {
   override class var group: ConfigurationGroup? { .redundancies }
 
   // MARK: - Switch case items: case let .foo(_, _) → case .foo

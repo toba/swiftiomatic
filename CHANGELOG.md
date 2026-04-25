@@ -41,6 +41,7 @@
 - `AlignWrappedConditions`; align at normal indent when `beforeGuardConditions` break is set
 - Ternary breaks at `=` before breaking ternary parts
 - `guard` bindings should not wrap to next line ([#402](https://github.com/toba/swiftiomatic/issues/402))
+- Capture of non-`Sendable` `D.Type` in `Configuration` setting/rule closures; `Sendable` requirement on `LayoutRule`/`SyntaxRule` protocols, `@unchecked Sendable` on `LintSyntaxRule`/`RewriteSyntaxRule` base classes
 
 ### 🗜️ Tweaks
 

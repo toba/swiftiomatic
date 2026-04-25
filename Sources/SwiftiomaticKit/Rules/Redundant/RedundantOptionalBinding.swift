@@ -22,7 +22,7 @@ import SwiftSyntax
 /// Lint: If a redundant optional binding initializer is found, a lint warning is raised.
 ///
 /// Format: The redundant initializer is removed.
-final class RedundantOptionalBinding: RewriteSyntaxRule<BasicRuleValue> {
+final class RedundantOptionalBinding: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable {
   override class var group: ConfigurationGroup? { .redundancies }
 
   override func visit(_ node: OptionalBindingConditionSyntax) -> OptionalBindingConditionSyntax {

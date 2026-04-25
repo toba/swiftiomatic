@@ -8,7 +8,7 @@ import SwiftSyntax
 /// Lint: A lint warning is raised when an `EnvironmentKey` property can be replaced with `@Entry`.
 ///
 /// Format: The `EnvironmentKey` type is removed and the property is replaced with `@Entry var`.
-final class PreferEnvironmentEntry: RewriteSyntaxRule<BasicRuleValue> {
+final class PreferEnvironmentEntry: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable {
 
     override static var defaultValue: BasicRuleValue { .init(rewrite: false, lint: .no) }
 

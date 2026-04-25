@@ -31,7 +31,7 @@ import SwiftSyntax
 ///       in both branches raises a warning.
 ///
 /// Format: The if-else is replaced with a ternary expression.
-final class PreferTernary: RewriteSyntaxRule<BasicRuleValue> {
+final class PreferTernary: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable {
     override class var group: ConfigurationGroup? { .conditions }
 
     override class var defaultValue: BasicRuleValue { BasicRuleValue(rewrite: false, lint: .no) }

@@ -19,7 +19,7 @@ import SwiftSyntax
 /// `public class var redColor: UIColor` would trigger this rule.
 ///
 /// Lint: Static properties of a type that return that type will yield a lint error.
-final class NoTypeRepetitionInStaticProperties: LintSyntaxRule<LintOnlyValue> {
+final class NoTypeRepetitionInStaticProperties: LintSyntaxRule<LintOnlyValue>, @unchecked Sendable {
     override class var group: ConfigurationGroup? { .types }
 
   /// Visits the static/class properties and diagnoses any where the name has the containing

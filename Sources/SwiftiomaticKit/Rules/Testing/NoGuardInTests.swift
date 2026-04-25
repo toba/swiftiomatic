@@ -17,7 +17,7 @@ import SwiftSyntax
 ///
 /// Format: The `guard` is replaced with assertion/unwrap statements and `throws` is added to
 /// the signature if needed.
-final class NoGuardInTests: RewriteSyntaxRule<BasicRuleValue> {
+final class NoGuardInTests: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable {
     override class var group: ConfigurationGroup? { .testing }
     override class var defaultValue: BasicRuleValue { .init(rewrite: false, lint: .no) }
 

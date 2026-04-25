@@ -19,7 +19,7 @@ import Synchronization
 /// All documentation comments must begin with a one-line summary of the declaration.
 ///
 /// Lint: If a comment does not begin with a single-line summary, a lint error is raised.
-final class DocCommentSummary: LintSyntaxRule<LintOnlyValue> {
+final class DocCommentSummary: LintSyntaxRule<LintOnlyValue>, @unchecked Sendable {
     override class var key: String { "requireSummary" }
     override class var group: ConfigurationGroup? { .comments }
 

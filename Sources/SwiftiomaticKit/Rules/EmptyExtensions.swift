@@ -11,7 +11,7 @@ import SwiftSyntax
 /// Lint: If an empty, non-conforming extension is found, a lint warning is raised.
 ///
 /// Format: The entire extension declaration is removed.
-final class EmptyExtensions: RewriteSyntaxRule<BasicRuleValue> {
+final class EmptyExtensions: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable {
 
     override func visit(_ node: CodeBlockItemListSyntax) -> CodeBlockItemListSyntax {
         let visited = super.visit(node)

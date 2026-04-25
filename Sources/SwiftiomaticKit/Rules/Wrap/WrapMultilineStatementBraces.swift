@@ -10,7 +10,7 @@ import SwiftSyntax
 ///       warning.
 ///
 /// Format: The `{` is moved to a new line aligned with the closing `}`.
-final class WrapMultilineStatementBraces: RewriteSyntaxRule<BasicRuleValue> {
+final class WrapMultilineStatementBraces: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable {
     override class var key: String { "multilineStatementBraces" }
     override class var group: ConfigurationGroup? { .wrap }
     override class var defaultValue: BasicRuleValue { .init(rewrite: false, lint: .no) }

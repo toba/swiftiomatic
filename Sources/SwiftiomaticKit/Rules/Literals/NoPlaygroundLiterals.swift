@@ -17,7 +17,7 @@ import SwiftSyntax
 ///
 /// Lint: Using a playground literal will yield a lint error with a suggestion of an API to replace
 /// it.
-final class NoPlaygroundLiterals: LintSyntaxRule<LintOnlyValue> {
+final class NoPlaygroundLiterals: LintSyntaxRule<LintOnlyValue>, @unchecked Sendable {
     override class var group: ConfigurationGroup? { .literals }
     override package func visit(_ node: MacroExpansionExprSyntax) -> SyntaxVisitorContinueKind {
         switch node.macroName.text {

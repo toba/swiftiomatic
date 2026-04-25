@@ -147,7 +147,8 @@ package enum ConfigurationSchema {
           "$ref" : "#/$defs/lintOnlyBase"
         }
       ],
-      "description" : "Overloads with only a closure argument should not be disambiguated by parameter labels.\n\nLint: If two overloaded functions with one closure parameter appear in the same scope, a lint\n      error is raised.\n"
+      "description" : "Overloads with only a closure argument should not be disambiguated by parameter labels.\n\nLint: If two overloaded functions with one closure parameter appear in the same scope, a lint\n      error is raised.\n",
+      "unevaluatedProperties" : false
     },
     "beforeAndAfterMark" : {
       "allOf" : [
@@ -254,7 +255,8 @@ package enum ConfigurationSchema {
           "$ref" : "#/$defs/lintOnlyBase"
         }
       ],
-      "description" : "All values should be written in lower camel-case (`lowerCamelCase`).\nUnderscores (except at the beginning of an identifier) are disallowed.\n\nThis rule does not apply to test code, defined as code which:\n  * Contains the line `import XCTest`\n  * The function is marked with `@Test` attribute\n\nLint: If an identifier contains underscores or begins with a capital letter, a lint error is\n      raised.\n"
+      "description" : "All values should be written in lower camel-case (`lowerCamelCase`).\nUnderscores (except at the beginning of an identifier) are disallowed.\n\nThis rule does not apply to test code, defined as code which:\n  * Contains the line `import XCTest`\n  * The function is marked with `@Test` attribute\n\nLint: If an identifier contains underscores or begins with a capital letter, a lint error is\n      raised.\n",
+      "unevaluatedProperties" : false
     },
     "capitalizeTypeNames" : {
       "allOf" : [
@@ -262,7 +264,8 @@ package enum ConfigurationSchema {
           "$ref" : "#/$defs/lintOnlyBase"
         }
       ],
-      "description" : "`struct`, `class`, `enum` and `protocol` declarations should have a capitalized name.\n\nLint:  Types with un-capitalized names will yield a lint error.\n"
+      "description" : "`struct`, `class`, `enum` and `protocol` declarations should have a capitalized name.\n\nLint:  Types with un-capitalized names will yield a lint error.\n",
+      "unevaluatedProperties" : false
     },
     "caseLet" : {
       "allOf" : [
@@ -293,7 +296,8 @@ package enum ConfigurationSchema {
               "$ref" : "#/$defs/lintOnlyBase"
             }
           ],
-          "description" : "Overloads with only a closure argument should not be disambiguated by parameter labels.\n\nLint: If two overloaded functions with one closure parameter appear in the same scope, a lint\n      error is raised.\n"
+          "description" : "Overloads with only a closure argument should not be disambiguated by parameter labels.\n\nLint: If two overloaded functions with one closure parameter appear in the same scope, a lint\n      error is raised.\n",
+          "unevaluatedProperties" : false
         },
         "noTrailingClosureParens" : {
           "allOf" : [
@@ -309,7 +313,8 @@ package enum ConfigurationSchema {
               "$ref" : "#/$defs/lintOnlyBase"
             }
           ],
-          "description" : "Function calls should never mix normal closure arguments and trailing closures.\n\nLint: If a function call with a trailing closure also contains a non-trailing closure argument,\n      a lint error is raised.\n"
+          "description" : "Function calls should never mix normal closure arguments and trailing closures.\n\nLint: If a function call with a trailing closure also contains a non-trailing closure argument,\n      a lint error is raised.\n",
+          "unevaluatedProperties" : false
         },
         "preferTrailingClosures" : {
           "allOf" : [
@@ -356,7 +361,8 @@ package enum ConfigurationSchema {
               "$ref" : "#/$defs/lintOnlyBase"
             }
           ],
-          "description" : "Block comments should be avoided in favor of line comments.\n\nLint: If a block comment appears, a lint error is raised.\n"
+          "description" : "Block comments should be avoided in favor of line comments.\n\nLint: If a block comment appears, a lint error is raised.\n",
+          "unevaluatedProperties" : false
         },
         "documentParameters" : {
           "allOf" : [
@@ -364,7 +370,8 @@ package enum ConfigurationSchema {
               "$ref" : "#/$defs/lintOnlyBase"
             }
           ],
-          "description" : "Documentation comments must be complete and valid.\n\n\"Command + Option + /\" in Xcode produces a minimal valid documentation comment.\n\nLint: Documentation comments that are incomplete (e.g. missing parameter documentation) or\n      invalid (uses `Parameters` when there is only one parameter) will yield a lint error.\n [opt-in]"
+          "description" : "Documentation comments must be complete and valid.\n\n\"Command + Option + /\" in Xcode produces a minimal valid documentation comment.\n\nLint: Documentation comments that are incomplete (e.g. missing parameter documentation) or\n      invalid (uses `Parameters` when there is only one parameter) will yield a lint error.\n [opt-in]",
+          "unevaluatedProperties" : false
         },
         "documentPublicDeclarations" : {
           "allOf" : [
@@ -372,7 +379,8 @@ package enum ConfigurationSchema {
               "$ref" : "#/$defs/lintOnlyBase"
             }
           ],
-          "description" : "All public or open declarations must have a top-level documentation comment.\n\nLint: If a public declaration is missing a documentation comment, a lint error is raised.\n"
+          "description" : "All public or open declarations must have a top-level documentation comment.\n\nLint: If a public declaration is missing a documentation comment, a lint error is raised.\n",
+          "unevaluatedProperties" : false
         },
         "formatTypePrefix" : {
           "allOf" : [
@@ -396,7 +404,8 @@ package enum ConfigurationSchema {
               "$ref" : "#/$defs/lintOnlyBase"
             }
           ],
-          "description" : "All documentation comments must begin with a one-line summary of the declaration.\n\nLint: If a comment does not begin with a single-line summary, a lint error is raised.\n [opt-in]"
+          "description" : "All documentation comments must begin with a one-line summary of the declaration.\n\nLint: If a comment does not begin with a single-line summary, a lint error is raised.\n [opt-in]",
+          "unevaluatedProperties" : false
         },
         "tripleSlashDocC" : {
           "allOf" : [
@@ -526,7 +535,8 @@ package enum ConfigurationSchema {
           "$ref" : "#/$defs/lintOnlyBase"
         }
       ],
-      "description" : "Block comments should be avoided in favor of line comments.\n\nLint: If a block comment appears, a lint error is raised.\n"
+      "description" : "Block comments should be avoided in favor of line comments.\n\nLint: If a block comment appears, a lint error is raised.\n",
+      "unevaluatedProperties" : false
     },
     "documentParameters" : {
       "allOf" : [
@@ -534,7 +544,8 @@ package enum ConfigurationSchema {
           "$ref" : "#/$defs/lintOnlyBase"
         }
       ],
-      "description" : "Documentation comments must be complete and valid.\n\n\"Command + Option + /\" in Xcode produces a minimal valid documentation comment.\n\nLint: Documentation comments that are incomplete (e.g. missing parameter documentation) or\n      invalid (uses `Parameters` when there is only one parameter) will yield a lint error.\n [opt-in]"
+      "description" : "Documentation comments must be complete and valid.\n\n\"Command + Option + /\" in Xcode produces a minimal valid documentation comment.\n\nLint: Documentation comments that are incomplete (e.g. missing parameter documentation) or\n      invalid (uses `Parameters` when there is only one parameter) will yield a lint error.\n [opt-in]",
+      "unevaluatedProperties" : false
     },
     "documentPublicDeclarations" : {
       "allOf" : [
@@ -542,7 +553,8 @@ package enum ConfigurationSchema {
           "$ref" : "#/$defs/lintOnlyBase"
         }
       ],
-      "description" : "All public or open declarations must have a top-level documentation comment.\n\nLint: If a public declaration is missing a documentation comment, a lint error is raised.\n"
+      "description" : "All public or open declarations must have a top-level documentation comment.\n\nLint: If a public declaration is missing a documentation comment, a lint error is raised.\n",
+      "unevaluatedProperties" : false
     },
     "emptyExtensions" : {
       "allOf" : [
@@ -746,7 +758,8 @@ package enum ConfigurationSchema {
           "$ref" : "#/$defs/lintOnlyBase"
         }
       ],
-      "description" : "All identifiers must be ASCII.\n\nLint: If an identifier contains non-ASCII characters, a lint error is raised.\n"
+      "description" : "All identifiers must be ASCII.\n\nLint: If an identifier contains non-ASCII characters, a lint error is raised.\n",
+      "unevaluatedProperties" : false
     },
     "idioms" : {
       "additionalProperties" : false,
@@ -783,7 +796,8 @@ package enum ConfigurationSchema {
               "$ref" : "#/$defs/lintOnlyBase"
             }
           ],
-          "description" : "`@retroactive` conformances are forbidden.\n\nLint: Using `@retroactive` results in a lint error.\n"
+          "description" : "`@retroactive` conformances are forbidden.\n\nLint: Using `@retroactive` results in a lint error.\n",
+          "unevaluatedProperties" : false
         },
         "preferCountWhere" : {
           "allOf" : [
@@ -831,7 +845,8 @@ package enum ConfigurationSchema {
               "$ref" : "#/$defs/lintOnlyBase"
             }
           ],
-          "description" : "Replace `forEach` with `for-in` loop unless its argument is a function reference.\n\nLint:  invalid use of `forEach` yield will yield a lint error.\n"
+          "description" : "Replace `forEach` with `for-in` loop unless its argument is a function reference.\n\nLint:  invalid use of `forEach` yield will yield a lint error.\n",
+          "unevaluatedProperties" : false
         }
       },
       "type" : "object"
@@ -1048,7 +1063,8 @@ package enum ConfigurationSchema {
               "$ref" : "#/$defs/lintOnlyBase"
             }
           ],
-          "description" : "The playground literals (`#colorLiteral`, `#fileLiteral`, and `#imageLiteral`) are forbidden.\n\nLint: Using a playground literal will yield a lint error with a suggestion of an API to replace\nit.\n"
+          "description" : "The playground literals (`#colorLiteral`, `#fileLiteral`, and `#imageLiteral`) are forbidden.\n\nLint: Using a playground literal will yield a lint error with a suggestion of an API to replace\nit.\n",
+          "unevaluatedProperties" : false
         },
         "reflowMultilineStringLiterals" : {
           "default" : "never",
@@ -1131,7 +1147,8 @@ package enum ConfigurationSchema {
               "$ref" : "#/$defs/lintOnlyBase"
             }
           ],
-          "description" : "All values should be written in lower camel-case (`lowerCamelCase`).\nUnderscores (except at the beginning of an identifier) are disallowed.\n\nThis rule does not apply to test code, defined as code which:\n  * Contains the line `import XCTest`\n  * The function is marked with `@Test` attribute\n\nLint: If an identifier contains underscores or begins with a capital letter, a lint error is\n      raised.\n"
+          "description" : "All values should be written in lower camel-case (`lowerCamelCase`).\nUnderscores (except at the beginning of an identifier) are disallowed.\n\nThis rule does not apply to test code, defined as code which:\n  * Contains the line `import XCTest`\n  * The function is marked with `@Test` attribute\n\nLint: If an identifier contains underscores or begins with a capital letter, a lint error is\n      raised.\n",
+          "unevaluatedProperties" : false
         },
         "capitalizeTypeNames" : {
           "allOf" : [
@@ -1139,7 +1156,8 @@ package enum ConfigurationSchema {
               "$ref" : "#/$defs/lintOnlyBase"
             }
           ],
-          "description" : "`struct`, `class`, `enum` and `protocol` declarations should have a capitalized name.\n\nLint:  Types with un-capitalized names will yield a lint error.\n"
+          "description" : "`struct`, `class`, `enum` and `protocol` declarations should have a capitalized name.\n\nLint:  Types with un-capitalized names will yield a lint error.\n",
+          "unevaluatedProperties" : false
         },
         "identifiersMayOnlyUseASCII" : {
           "allOf" : [
@@ -1147,7 +1165,8 @@ package enum ConfigurationSchema {
               "$ref" : "#/$defs/lintOnlyBase"
             }
           ],
-          "description" : "All identifiers must be ASCII.\n\nLint: If an identifier contains non-ASCII characters, a lint error is raised.\n"
+          "description" : "All identifiers must be ASCII.\n\nLint: If an identifier contains non-ASCII characters, a lint error is raised.\n",
+          "unevaluatedProperties" : false
         },
         "noLeadingUnderscores" : {
           "allOf" : [
@@ -1155,7 +1174,8 @@ package enum ConfigurationSchema {
               "$ref" : "#/$defs/lintOnlyBase"
             }
           ],
-          "description" : "Identifiers in declarations and patterns should not have leading underscores.\n\nThis is intended to avoid certain antipatterns; `self.member = member` should be preferred to\n`member = _member` and the leading underscore should not be used to signal access level.\n\nThis rule intentionally checks only the parameter variable names of a function declaration, not\nthe parameter labels. It also only checks identifiers at the declaration site, not at usage\nsites.\n\nLint: Declaring an identifier with a leading underscore yields a lint error.\n [opt-in]"
+          "description" : "Identifiers in declarations and patterns should not have leading underscores.\n\nThis is intended to avoid certain antipatterns; `self.member = member` should be preferred to\n`member = _member` and the leading underscore should not be used to signal access level.\n\nThis rule intentionally checks only the parameter variable names of a function declaration, not\nthe parameter labels. It also only checks identifiers at the declaration site, not at usage\nsites.\n\nLint: Declaring an identifier with a leading underscore yields a lint error.\n [opt-in]",
+          "unevaluatedProperties" : false
         },
         "uppercaseAcronyms" : {
           "allOf" : [
@@ -1283,7 +1303,8 @@ package enum ConfigurationSchema {
           "$ref" : "#/$defs/lintOnlyBase"
         }
       ],
-      "description" : "Implicitly unwrapped optionals (e.g. `var s: String!`) are forbidden.\n\nCertain properties (e.g. `@IBOutlet`) tied to the UI lifecycle are ignored.\n\nThis rule does not apply to test code, defined as code which:\n  * Contains the line `import XCTest`\n  * The function is marked with `@Test` attribute\n\nTODO: Create exceptions for other UI elements (ex: viewDidLoad)\n\nLint: Declaring a property with an implicitly unwrapped type yields a lint error.\n"
+      "description" : "Implicitly unwrapped optionals (e.g. `var s: String!`) are forbidden.\n\nCertain properties (e.g. `@IBOutlet`) tied to the UI lifecycle are ignored.\n\nThis rule does not apply to test code, defined as code which:\n  * Contains the line `import XCTest`\n  * The function is marked with `@Test` attribute\n\nTODO: Create exceptions for other UI elements (ex: viewDidLoad)\n\nLint: Declaring a property with an implicitly unwrapped type yields a lint error.\n",
+      "unevaluatedProperties" : false
     },
     "noLabelsInCasePatterns" : {
       "allOf" : [
@@ -1299,7 +1320,8 @@ package enum ConfigurationSchema {
           "$ref" : "#/$defs/lintOnlyBase"
         }
       ],
-      "description" : "Identifiers in declarations and patterns should not have leading underscores.\n\nThis is intended to avoid certain antipatterns; `self.member = member` should be preferred to\n`member = _member` and the leading underscore should not be used to signal access level.\n\nThis rule intentionally checks only the parameter variable names of a function declaration, not\nthe parameter labels. It also only checks identifiers at the declaration site, not at usage\nsites.\n\nLint: Declaring an identifier with a leading underscore yields a lint error.\n [opt-in]"
+      "description" : "Identifiers in declarations and patterns should not have leading underscores.\n\nThis is intended to avoid certain antipatterns; `self.member = member` should be preferred to\n`member = _member` and the leading underscore should not be used to signal access level.\n\nThis rule intentionally checks only the parameter variable names of a function declaration, not\nthe parameter labels. It also only checks identifiers at the declaration site, not at usage\nsites.\n\nLint: Declaring an identifier with a leading underscore yields a lint error.\n [opt-in]",
+      "unevaluatedProperties" : false
     },
     "noParensAroundConditions" : {
       "allOf" : [
@@ -1315,7 +1337,8 @@ package enum ConfigurationSchema {
           "$ref" : "#/$defs/lintOnlyBase"
         }
       ],
-      "description" : "The playground literals (`#colorLiteral`, `#fileLiteral`, and `#imageLiteral`) are forbidden.\n\nLint: Using a playground literal will yield a lint error with a suggestion of an API to replace\nit.\n"
+      "description" : "The playground literals (`#colorLiteral`, `#fileLiteral`, and `#imageLiteral`) are forbidden.\n\nLint: Using a playground literal will yield a lint error with a suggestion of an API to replace\nit.\n",
+      "unevaluatedProperties" : false
     },
     "noRetroactiveConformances" : {
       "allOf" : [
@@ -1323,7 +1346,8 @@ package enum ConfigurationSchema {
           "$ref" : "#/$defs/lintOnlyBase"
         }
       ],
-      "description" : "`@retroactive` conformances are forbidden.\n\nLint: Using `@retroactive` results in a lint error.\n"
+      "description" : "`@retroactive` conformances are forbidden.\n\nLint: Using `@retroactive` results in a lint error.\n",
+      "unevaluatedProperties" : false
     },
     "noTrailingClosureParens" : {
       "allOf" : [
@@ -1339,7 +1363,8 @@ package enum ConfigurationSchema {
           "$ref" : "#/$defs/lintOnlyBase"
         }
       ],
-      "description" : "Static properties of a type that return that type should not include a reference to their type.\n\n\"Reference to their type\" means that the property name includes part, or all, of the type. If\nthe type contains a namespace (i.e. `UIColor`) the namespace is ignored;\n`public class var redColor: UIColor` would trigger this rule.\n\nLint: Static properties of a type that return that type will yield a lint error.\n"
+      "description" : "Static properties of a type that return that type should not include a reference to their type.\n\n\"Reference to their type\" means that the property name includes part, or all, of the type. If\nthe type contains a namespace (i.e. `UIColor`) the namespace is ignored;\n`public class var redColor: UIColor` would trigger this rule.\n\nLint: Static properties of a type that return that type will yield a lint error.\n",
+      "unevaluatedProperties" : false
     },
     "noVoidReturnOnFunctionSignature" : {
       "allOf" : [
@@ -1371,7 +1396,8 @@ package enum ConfigurationSchema {
           "$ref" : "#/$defs/lintOnlyBase"
         }
       ],
-      "description" : "Function calls should never mix normal closure arguments and trailing closures.\n\nLint: If a function call with a trailing closure also contains a non-trailing closure argument,\n      a lint error is raised.\n"
+      "description" : "Function calls should never mix normal closure arguments and trailing closures.\n\nLint: If a function call with a trailing closure also contains a non-trailing closure argument,\n      a lint error is raised.\n",
+      "unevaluatedProperties" : false
     },
     "opaqueGenericParameters" : {
       "allOf" : [
@@ -1547,7 +1573,8 @@ package enum ConfigurationSchema {
           "$ref" : "#/$defs/lintOnlyBase"
         }
       ],
-      "description" : "When possible, the synthesized `struct` initializer should be used.\n\nThis means the creation of a (non-public) memberwise initializer with the same structure as the\nsynthesized initializer is forbidden.\n\nLint: (Non-public) memberwise initializers with the same structure as the synthesized\n      initializer will yield a lint error.\n"
+      "description" : "When possible, the synthesized `struct` initializer should be used.\n\nThis means the creation of a (non-public) memberwise initializer with the same structure as the\nsynthesized initializer is forbidden.\n\nLint: (Non-public) memberwise initializers with the same structure as the synthesized\n      initializer will yield a lint error.\n",
+      "unevaluatedProperties" : false
     },
     "preferTernary" : {
       "allOf" : [
@@ -2026,7 +2053,8 @@ package enum ConfigurationSchema {
           "$ref" : "#/$defs/lintOnlyBase"
         }
       ],
-      "description" : "Replace `forEach` with `for-in` loop unless its argument is a function reference.\n\nLint:  invalid use of `forEach` yield will yield a lint error.\n"
+      "description" : "Replace `forEach` with `for-in` loop unless its argument is a function reference.\n\nLint:  invalid use of `forEach` yield will yield a lint error.\n",
+      "unevaluatedProperties" : false
     },
     "requireSummary" : {
       "allOf" : [
@@ -2034,7 +2062,8 @@ package enum ConfigurationSchema {
           "$ref" : "#/$defs/lintOnlyBase"
         }
       ],
-      "description" : "All documentation comments must begin with a one-line summary of the declaration.\n\nLint: If a comment does not begin with a single-line summary, a lint error is raised.\n [opt-in]"
+      "description" : "All documentation comments must begin with a one-line summary of the declaration.\n\nLint: If a comment does not begin with a single-line summary, a lint error is raised.\n [opt-in]",
+      "unevaluatedProperties" : false
     },
     "semicolons" : {
       "allOf" : [
@@ -2287,7 +2316,8 @@ package enum ConfigurationSchema {
               "$ref" : "#/$defs/lintOnlyBase"
             }
           ],
-          "description" : "Static properties of a type that return that type should not include a reference to their type.\n\n\"Reference to their type\" means that the property name includes part, or all, of the type. If\nthe type contains a namespace (i.e. `UIColor`) the namespace is ignored;\n`public class var redColor: UIColor` would trigger this rule.\n\nLint: Static properties of a type that return that type will yield a lint error.\n"
+          "description" : "Static properties of a type that return that type should not include a reference to their type.\n\n\"Reference to their type\" means that the property name includes part, or all, of the type. If\nthe type contains a namespace (i.e. `UIColor`) the namespace is ignored;\n`public class var redColor: UIColor` would trigger this rule.\n\nLint: Static properties of a type that return that type will yield a lint error.\n",
+          "unevaluatedProperties" : false
         },
         "noVoidReturnOnFunctionSignature" : {
           "allOf" : [

@@ -20,7 +20,7 @@ import SwiftSyntax
 ///
 /// Format: File-scoped declarations that have formal access opposite to the desired access level in
 ///         the formatter's configuration will have their access level changed.
-final class FileScopedDeclarationPrivacy: RewriteSyntaxRule<FileScopedDeclarationPrivacyConfiguration> {
+final class FileScopedDeclarationPrivacy: RewriteSyntaxRule<FileScopedDeclarationPrivacyConfiguration>, @unchecked Sendable {
     override class var group: ConfigurationGroup? { .access }
     override func visit(_ node: SourceFileSyntax) -> SourceFileSyntax {
         var result = node

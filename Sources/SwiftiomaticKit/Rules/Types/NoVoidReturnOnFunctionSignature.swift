@@ -18,7 +18,7 @@ import SwiftSyntax
 ///
 /// Format: Function declarations with explicit returns of `()` or `Void` will have their return
 ///         signature stripped.
-final class NoVoidReturnOnFunctionSignature: RewriteSyntaxRule<BasicRuleValue> {
+final class NoVoidReturnOnFunctionSignature: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable {
     override class var group: ConfigurationGroup? { .types }
   /// Remove the `-> Void` return type for function signatures. Do not remove
   /// it for closure signatures, because that may introduce an ambiguity when closure signatures

@@ -9,7 +9,7 @@ import SwiftSyntax
 /// Lint: An `@IBOutlet` property with `weak` raises a warning.
 ///
 /// Format: The `weak` modifier is removed.
-final class StrongOutlets: RewriteSyntaxRule<BasicRuleValue> {
+final class StrongOutlets: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable {
 
     override func visit(_ node: VariableDeclSyntax) -> DeclSyntax {
         // Must have @IBOutlet attribute

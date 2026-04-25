@@ -11,7 +11,7 @@ import SwiftSyntax
 /// Lint: An identifier with a titlecased acronym raises a warning.
 ///
 /// Format: The titlecased acronym is replaced with the uppercased form.
-final class CapitalizeAcronyms: RewriteSyntaxRule<AcronymsConfiguration> {
+final class CapitalizeAcronyms: RewriteSyntaxRule<AcronymsConfiguration>, @unchecked Sendable {
     override static var key: String { "uppercaseAcronyms" }
     override static var group: ConfigurationGroup? { .naming }
     override static var defaultValue: AcronymsConfiguration {

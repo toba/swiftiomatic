@@ -19,7 +19,7 @@ import SwiftSyntax
 ///
 /// Format: Where possible, shorthand types replace long form types; e.g. `Array<Element>` is
 ///         converted to `[Element]`.
-final class PreferShorthandTypeNames: RewriteSyntaxRule<BasicRuleValue> {
+final class PreferShorthandTypeNames: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable {
     override class var group: ConfigurationGroup? { .types }
 
     override func visit(_ node: IdentifierTypeSyntax) -> TypeSyntax {

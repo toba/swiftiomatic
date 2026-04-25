@@ -151,6 +151,13 @@ package final class ConfigurationSchemaGenerator: FileGenerator {
             }
         }
 
+        // Lint-only rules don't accept `rewrite`. `unevaluatedProperties` (not
+        // `additionalProperties`) is required so JSON Schema considers keys
+        // contributed by the `$ref` to `lintOnlyBase` and any custom properties.
+        if !rule.canRewrite {
+            node.unevaluatedProperties = false
+        }
+
         return node
     }
 

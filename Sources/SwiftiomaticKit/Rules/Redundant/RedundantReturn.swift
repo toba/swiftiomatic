@@ -22,7 +22,7 @@ import SwiftSyntax
 ///
 /// Format: `func <name>() { return ... }` constructs will be replaced with
 ///         equivalent `func <name>() { ... }` constructs.
-final class RedundantReturn: RewriteSyntaxRule<BasicRuleValue> {
+final class RedundantReturn: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable {
   override class var group: ConfigurationGroup? { .redundancies }
   override class var defaultValue: BasicRuleValue { BasicRuleValue(rewrite: false, lint: .no) }
 

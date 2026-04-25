@@ -12,7 +12,7 @@ import SwiftSyntax
 /// Lint: If an `async` function has no `await` in its body, a lint warning is raised.
 ///
 /// Format: The `async` specifier is removed.
-final class RedundantAsync: RewriteSyntaxRule<BasicRuleValue> {
+final class RedundantAsync: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable {
     override class var defaultValue: BasicRuleValue { BasicRuleValue(rewrite: false, lint: .no) }
     override class var group: ConfigurationGroup? { .redundancies }
 

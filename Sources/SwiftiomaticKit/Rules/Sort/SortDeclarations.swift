@@ -8,7 +8,7 @@ import SwiftSyntax
 /// Lint: If declarations in a marked region are not sorted, a lint warning is raised.
 ///
 /// Format: The declarations are reordered alphabetically by name.
-final class SortDeclarations: RewriteSyntaxRule<BasicRuleValue> {
+final class SortDeclarations: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable {
     override class var key: String { "declarations" }
     override class var group: ConfigurationGroup? { .sort }
     private static let beginMarker = "swiftiomatic:sort:begin"

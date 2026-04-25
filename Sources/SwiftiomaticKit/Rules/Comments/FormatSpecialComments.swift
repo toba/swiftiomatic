@@ -9,7 +9,7 @@ import SwiftSyntax
 /// Lint: If a special comment tag is not correctly formatted, a lint warning is raised.
 ///
 /// Format: The comment is reformatted to use the correct style.
-final class FormatSpecialComments: RewriteSyntaxRule<BasicRuleValue> {
+final class FormatSpecialComments: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable {
     override static var key: String { "formatTypePrefix" }
     override static var group: ConfigurationGroup? { .comments }
 

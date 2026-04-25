@@ -16,7 +16,7 @@ import SwiftSyntax
 /// Lint: A warning is raised for each `URL(string: "...")!` that can be converted.
 ///
 /// Format: The force-unwrapped URL initializer is replaced with the configured macro.
-final class URLMacro: RewriteSyntaxRule<URLMacroConfiguration> {
+final class URLMacro: RewriteSyntaxRule<URLMacroConfiguration>, @unchecked Sendable {
     override class var group: ConfigurationGroup? { .literals }
 
   override class var defaultValue: URLMacroConfiguration {

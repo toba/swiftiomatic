@@ -8,7 +8,7 @@ import SwiftSyntax
 /// Lint: If a `class` modifier is found on a member of a `final` class, a warning is raised.
 ///
 /// Format: The `class` modifier is replaced with `static`.
-final class PreferStaticOverClassFunc: RewriteSyntaxRule<BasicRuleValue> {
+final class PreferStaticOverClassFunc: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable {
     override class var group: ConfigurationGroup? { .idioms }
     override class var defaultValue: BasicRuleValue { .init(rewrite: false, lint: .warn) }
 

@@ -17,7 +17,7 @@ import SwiftSyntax
 /// Lint: If a semicolon appears anywhere, a lint error is raised.
 ///
 /// Format: All semicolons will be replaced with line breaks.
-final class NoSemicolons: RewriteSyntaxRule<BasicRuleValue> {
+final class NoSemicolons: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable {
     override class var key: String { "semicolons" }
     override class var group: ConfigurationGroup? { .redundancies }
   /// Creates a new version of the given node which doesn't contain any semicolons. The node's

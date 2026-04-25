@@ -13,7 +13,7 @@ import SwiftSyntax
 /// Lint: If a redundant `Sendable` conformance is found, a lint warning is raised.
 ///
 /// Format: The redundant `Sendable` conformance is removed from the inheritance clause.
-final class RedundantSendable: RewriteSyntaxRule<BasicRuleValue> {
+final class RedundantSendable: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable {
     override class var group: ConfigurationGroup? { .redundancies }
     override class var defaultValue: BasicRuleValue { .init(rewrite: false, lint: .no) }
 

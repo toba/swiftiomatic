@@ -2,7 +2,7 @@ import Foundation
 import SwiftSyntax
 
 /// A rule that lints a given file.
-class LintSyntaxRule<V: SyntaxRuleValue>: SyntaxVisitor, SyntaxRule {
+class LintSyntaxRule<V: SyntaxRuleValue>: SyntaxVisitor, SyntaxRule, @unchecked Sendable {
     typealias Value = V
 
     /// The context in which the rule is executed.

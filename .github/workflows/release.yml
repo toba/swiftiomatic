@@ -50,6 +50,9 @@ jobs:
     - name: Generate SHA256
       run: shasum -a 256 sm-${{ github.ref_name }}-arm64.tar.gz > sm-${{ github.ref_name }}-arm64.tar.gz.sha256
 
+    - name: Build artifact bundle
+      run: ./scripts/build-artifactbundle.sh "${GITHUB_REF#refs/tags/v}"
+
     - name: Generate release notes
       run: |
         PREV_TAG=$(git tag --sort=-v:refname | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' | sed -n '2p')
@@ -66,6 +69,8 @@ jobs:
         files: |
           sm-${{ github.ref_name }}-arm64.tar.gz
           sm-${{ github.ref_name }}-arm64.tar.gz.sha256
+          build/sm.artifactbundle.zip
+          build/sm.artifactbundle.zip.sha256
         body_path: release_notes.txt
 
   update-homebrew:
@@ -79,7 +84,7 @@ jobs:
           TAG="${GITHUB_REF#refs/tags/}"
           VERSION="${TAG#v}"
 
-          SHA=$(gh release download "$TAG" --repo "$GITHUB_REPOSITORY" --pattern "*.sha256" -O - | awk '{print $1}')
+          SHA=$(gh release download "$TAG" --repo "$GITHUB_REPOSITORY" --pattern "*.tar.gz.sha256" -O - | awk '{print $1}')
 
           git clone "https://x-access-token:${GH_TOKEN}@github.com/toba/homebrew-tap.git" tap
           cd tap
@@ -127,3 +132,36 @@ jobs:
           git add Formula/sm.rb
           git commit -m "bump to ${VERSION}"
           git push
+
+  update-plugins:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Bump swiftiomatic-plugins binaryTarget
+        env:
+          GH_TOKEN: ${{ secrets.HOMEBREW_TAP_TOKEN }}
+        run: |
+          TAG="${GITHUB_REF#refs/tags/}"
+          VERSION="${TAG#v}"
+
+          SHA=$(gh release download "$TAG" --repo "$GITHUB_REPOSITORY" --pattern "sm.artifactbundle.zip.sha256" -O - | awk '{print $1}')
+
+          git clone "https://x-access-token:${GH_TOKEN}@github.com/toba/swiftiomatic-plugins.git" plugins
+          cd plugins
+
+          URL="https://github.com/toba/swiftiomatic/releases/download/${TAG}/sm.artifactbundle.zip"
+          sed -i \
+            -e "s|url: \"https://github.com/toba/swiftiomatic/releases/download/[^\"]*\"|url: \"${URL}\"|" \
+            -e "s|checksum: \"[0-9a-f]\{64\}\"|checksum: \"${SHA}\"|" \
+            Package.swift
+
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add Package.swift
+          if git diff --cached --quiet; then
+            echo "no change to Package.swift; skipping commit"
+            exit 0
+          fi
+          git commit -m "bump sm to ${VERSION}"
+          git tag "${TAG}"
+          git push origin main "${TAG}"

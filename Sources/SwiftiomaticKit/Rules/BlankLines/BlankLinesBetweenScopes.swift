@@ -12,7 +12,7 @@ import SwiftSyntax
 ///       warning is raised.
 ///
 /// Format: A blank line is inserted after the declaration.
-final class BlankLinesBetweenScopes: RewriteSyntaxRule<BasicRuleValue> {
+final class BlankLinesBetweenScopes: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable {
     override static var key: String { "betweenScopes" }
     override static var group: ConfigurationGroup? { .blankLines }
     override static var defaultValue: BasicRuleValue { .init(rewrite: false, lint: .no) }
