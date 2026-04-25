@@ -1,16 +1,16 @@
 ---
 # i29-ezi
 title: 'Cat 5: Type Safety & Data Handling (6 rules)'
-status: ready
+status: in-progress
 type: feature
 priority: normal
 created_at: 2026-04-15T00:27:58Z
-updated_at: 2026-04-15T00:27:58Z
+updated_at: 2026-04-25T22:56:06Z
 parent: qlt-10c
 sync:
     github:
         issue_number: "318"
-        synced_at: "2026-04-15T00:34:46Z"
+        synced_at: "2026-04-25T22:56:10Z"
 ---
 
 | SwiftLint Rule | Swiftiomatic Name | Scope | Description |

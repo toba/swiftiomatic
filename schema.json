@@ -588,6 +588,24 @@
       ],
       "description" : "Sort declarations between `// swiftiomatic:sort:begin` and `// swiftiomatic:sort:end` markers.\n\nDeclarations within the marked region are sorted alphabetically by name. Comments and trivia\nassociated with each declaration move with it. The markers themselves are preserved in place.\n\nLint: If declarations in a marked region are not sorted, a lint warning is raised.\n\nFormat: The declarations are reordered alphabetically by name.\n"
     },
+    "deinitObserverRemoval" : {
+      "allOf" : [
+        {
+          "$ref" : "#/$defs/lintOnlyBase"
+        }
+      ],
+      "description" : "`NotificationCenter.default.removeObserver(self)` should only appear in `deinit`.\n\nRemoving the observer earlier (e.g. in `viewWillDisappear`) prevents notifications from being\ndelivered when the object is otherwise still alive. The correct place to detach is `deinit`,\nwhich runs exactly once at the end of the object's lifetime.\n\nLint: A call to `NotificationCenter.default.removeObserver(self)` outside `deinit` yields a\nwarning. Removing other observers (e.g. `removeObserver(otherObject)`) is allowed anywhere.\n",
+      "unevaluatedProperties" : false
+    },
+    "delegateProtocolRequiresAnyObject" : {
+      "allOf" : [
+        {
+          "$ref" : "#/$defs/lintOnlyBase"
+        }
+      ],
+      "description" : "Protocols whose name ends in `Delegate` should be class-constrained.\n\nDelegate properties are typically declared `weak` to avoid retain cycles. The `weak` modifier\nis only valid on class-bound references, so a delegate protocol must inherit from `AnyObject`\n(or `NSObjectProtocol`, `Actor`, another `*Delegate` protocol) — otherwise it cannot be held\nweakly.\n\nLint: A protocol whose name ends in `Delegate` and is not class-constrained yields a warning.\n",
+      "unevaluatedProperties" : false
+    },
     "disallowBlockComments" : {
       "allOf" : [
         {
@@ -2911,6 +2929,15 @@
       "description" : "Configuration format version.",
       "minimum" : 1,
       "type" : "integer"
+    },
+    "weakDelegates" : {
+      "allOf" : [
+        {
+          "$ref" : "#/$defs/lintOnlyBase"
+        }
+      ],
+      "description" : "Properties whose name ends in `delegate` should be declared `weak` to avoid retain cycles.\n\nThis rule fires only on class instance properties. Local variables, struct/enum members,\ncomputed properties, protocol requirements, and properties marked with one of the SwiftUI\nadaptor attributes (`@UIApplicationDelegateAdaptor`, `@NSApplicationDelegateAdaptor`,\n`@WKExtensionDelegateAdaptor`) are excluded. Properties already marked `weak` or `unowned`\npass.\n\nLint: A class instance property named `*delegate` without a `weak`/`unowned` modifier yields\na warning.\n",
+      "unevaluatedProperties" : false
     },
     "wrap" : {
       "additionalProperties" : false,

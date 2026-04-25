@@ -329,6 +329,7 @@ class LintPipeline: SyntaxVisitor {
   }
 
   override func visit(_ node: DeinitializerDeclSyntax) -> SyntaxVisitorContinueKind {
+    visitIfEnabled(DeinitObserverRemoval.visit, for: node)
     visitIfEnabled(DocCommentSummary.visit, for: node)
     visitIfEnabled(DocumentPublicDeclarations.visit, for: node)
     visitIfEnabled(ModifiersOnSameLine.visit, for: node)
@@ -337,6 +338,7 @@ class LintPipeline: SyntaxVisitor {
     return .visitChildren
   }
   override func visitPost(_ node: DeinitializerDeclSyntax) {
+    onVisitPost(rule: DeinitObserverRemoval.self, for: node)
     onVisitPost(rule: DocCommentSummary.self, for: node)
     onVisitPost(rule: DocumentPublicDeclarations.self, for: node)
     onVisitPost(rule: ModifiersOnSameLine.self, for: node)
@@ -495,6 +497,7 @@ class LintPipeline: SyntaxVisitor {
   }
 
   override func visit(_ node: FunctionCallExprSyntax) -> SyntaxVisitorContinueKind {
+    visitIfEnabled(DeinitObserverRemoval.visit, for: node)
     visitIfEnabled(HoistAwait.visit, for: node)
     visitIfEnabled(HoistTry.visit, for: node)
     visitIfEnabled(NestedCallLayout.visit, for: node)
@@ -517,6 +520,7 @@ class LintPipeline: SyntaxVisitor {
     return .visitChildren
   }
   override func visitPost(_ node: FunctionCallExprSyntax) {
+    onVisitPost(rule: DeinitObserverRemoval.self, for: node)
     onVisitPost(rule: HoistAwait.self, for: node)
     onVisitPost(rule: HoistTry.self, for: node)
     onVisitPost(rule: NestedCallLayout.self, for: node)
@@ -940,6 +944,7 @@ class LintPipeline: SyntaxVisitor {
 
   override func visit(_ node: ProtocolDeclSyntax) -> SyntaxVisitorContinueKind {
     visitIfEnabled(CapitalizedTypeNames.visit, for: node)
+    visitIfEnabled(DelegateProtocolRequiresAnyObject.visit, for: node)
     visitIfEnabled(DocCommentSummary.visit, for: node)
     visitIfEnabled(DocCommentsBeforeModifiers.visit, for: node)
     visitIfEnabled(DocumentPublicDeclarations.visit, for: node)
@@ -948,11 +953,13 @@ class LintPipeline: SyntaxVisitor {
     visitIfEnabled(PreferAnyObject.visit, for: node)
     visitIfEnabled(RedundantAccessControl.visit, for: node)
     visitIfEnabled(TripleSlashDocComments.visit, for: node)
+    visitIfEnabled(WeakDelegates.visit, for: node)
     visitIfEnabled(WrapMultilineStatementBraces.visit, for: node)
     return .visitChildren
   }
   override func visitPost(_ node: ProtocolDeclSyntax) {
     onVisitPost(rule: CapitalizedTypeNames.self, for: node)
+    onVisitPost(rule: DelegateProtocolRequiresAnyObject.self, for: node)
     onVisitPost(rule: DocCommentSummary.self, for: node)
     onVisitPost(rule: DocCommentsBeforeModifiers.self, for: node)
     onVisitPost(rule: DocumentPublicDeclarations.self, for: node)
@@ -961,6 +968,7 @@ class LintPipeline: SyntaxVisitor {
     onVisitPost(rule: PreferAnyObject.self, for: node)
     onVisitPost(rule: RedundantAccessControl.self, for: node)
     onVisitPost(rule: TripleSlashDocComments.self, for: node)
+    onVisitPost(rule: WeakDelegates.self, for: node)
     onVisitPost(rule: WrapMultilineStatementBraces.self, for: node)
   }
 
@@ -1282,6 +1290,7 @@ class LintPipeline: SyntaxVisitor {
     visitIfEnabled(RedundantViewBuilder.visit, for: node)
     visitIfEnabled(StrongOutlets.visit, for: node)
     visitIfEnabled(TripleSlashDocComments.visit, for: node)
+    visitIfEnabled(WeakDelegates.visit, for: node)
     return .visitChildren
   }
   override func visitPost(_ node: VariableDeclSyntax) {
@@ -1306,6 +1315,7 @@ class LintPipeline: SyntaxVisitor {
     onVisitPost(rule: RedundantViewBuilder.self, for: node)
     onVisitPost(rule: StrongOutlets.self, for: node)
     onVisitPost(rule: TripleSlashDocComments.self, for: node)
+    onVisitPost(rule: WeakDelegates.self, for: node)
   }
 
   override func visit(_ node: WhileStmtSyntax) -> SyntaxVisitorContinueKind {
