@@ -1,15 +1,15 @@
 ---
 # xa6-vmu
 title: 'CollapseSimpleEnums: single-line enum for simple cases'
-status: review
+status: completed
 type: feature
 priority: normal
 created_at: 2026-04-24T22:40:51Z
-updated_at: 2026-04-24T23:01:46Z
+updated_at: 2026-04-25T02:28:56Z
 sync:
     github:
         issue_number: "388"
-        synced_at: "2026-04-24T23:31:20Z"
+        synced_at: "2026-04-25T02:39:17Z"
 ---
 
 ## Description

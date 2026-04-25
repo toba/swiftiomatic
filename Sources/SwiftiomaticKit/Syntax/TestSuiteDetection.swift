@@ -14,6 +14,7 @@ enum TestFramework {
 func detectTestFramework(in node: SourceFileSyntax) -> TestFramework? {
     var hasXCTest = false
     var hasTesting = false
+
     for stmt in node.statements {
         if let importDecl = stmt.item.as(ImportDeclSyntax.self) {
             let name = importDecl.path.first?.name.text
@@ -21,7 +22,7 @@ func detectTestFramework(in node: SourceFileSyntax) -> TestFramework? {
             if name == "Testing" { hasTesting = true }
         }
     }
-    if hasXCTest && hasTesting { return nil }
+    if hasXCTest, hasTesting { return nil }
     if hasTesting { return .swiftTesting }
     if hasXCTest { return .xcTest }
     return nil
@@ -108,9 +109,7 @@ struct TestContextTracker {
 
     /// Call from `visit(_ node: ImportDeclSyntax)`.
     mutating func visitImport(_ node: ImportDeclSyntax) {
-        if node.path.first?.name.text == "Testing" {
-            importsTesting = true
-        }
+        if node.path.first?.name.text == "Testing" { importsTesting = true }
     }
 
     /// Call from `visit(_ node: SourceFileSyntax)`.
@@ -122,6 +121,7 @@ struct TestContextTracker {
     /// `insideXCTestCase` — restore it in a `defer` block.
     mutating func pushClass(_ node: ClassDeclSyntax, context: Context) -> Bool {
         let was = insideXCTestCase
+
         if context.importsXCTest == .importsXCTest,
             let inheritance = node.inheritanceClause,
             inheritance.contains(named: "XCTestCase")
@@ -132,9 +132,7 @@ struct TestContextTracker {
     }
 
     /// Restore `insideXCTestCase` to the value returned by `pushClass(_:context:)`.
-    mutating func popClass(was: Bool) {
-        insideXCTestCase = was
-    }
+    mutating func popClass(was: Bool) { insideXCTestCase = was }
 
     /// Whether the given function declaration is a test function.
     ///
@@ -142,9 +140,7 @@ struct TestContextTracker {
     /// - It has the `@Test` attribute (Swift Testing), or
     /// - It's inside an `XCTestCase` subclass and named `test*()` with no parameters and no return.
     func isTestFunction(_ node: FunctionDeclSyntax) -> Bool {
-        if importsTesting, node.hasAttribute("Test", inModule: "Testing") {
-            return true
-        }
+        if importsTesting, node.hasAttribute("Test", inModule: "Testing") { return true }
         if insideXCTestCase {
             let name = node.name.text
             return name.hasPrefix("test")

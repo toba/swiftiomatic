@@ -30,6 +30,11 @@ jobs:
         restore-keys: spm-release-${{ runner.os }}-xcode${{ env.XCODE_VERSION }}-
         save-always: true
 
+    - name: Embed version
+      run: |
+        VERSION="${GITHUB_REF#refs/tags/v}"
+        sed -i '' "s/let smVersion = \".*\"/let smVersion = \"$VERSION\"/" Sources/Swiftiomatic/Version.swift
+
     - name: Resolve dependencies
       run: swift package resolve
 

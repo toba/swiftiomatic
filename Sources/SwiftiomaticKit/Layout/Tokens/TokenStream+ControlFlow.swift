@@ -31,10 +31,12 @@ extension TokenStream {
         // that continuations inside of the conditions can stack in addition to continuations between
         // the conditions. There are no breaks around the first condition because if-statements look
         // better without a break between the "if" and the first condition.
+        let ifBreakKind: OpenBreakKind =
+            config[AlignWrappedConditions.self] ? .alignment(spaces: 3) : .continuation
         for condition in node.conditions.dropFirst() {
             before(
                 condition.firstToken(viewMode: .sourceAccurate),
-                tokens: .break(.open(kind: .continuation), size: 0)
+                tokens: .break(.open(kind: ifBreakKind), size: 0)
             )
             after(
                 condition.lastToken(viewMode: .sourceAccurate),
@@ -129,10 +131,12 @@ extension TokenStream {
         // This has the side effect that the label + `while` + tokens up to the first break in the first
         // condition could be longer than the column limit since there are no breaks between the label
         // or while token.
+        let whileBreakKind: OpenBreakKind =
+            config[AlignWrappedConditions.self] ? .alignment(spaces: 6) : .continuation
         for condition in node.conditions.dropFirst() {
             before(
                 condition.firstToken(viewMode: .sourceAccurate),
-                tokens: .break(.open(kind: .continuation), size: 0)
+                tokens: .break(.open(kind: whileBreakKind), size: 0)
             )
             after(
                 condition.lastToken(viewMode: .sourceAccurate),

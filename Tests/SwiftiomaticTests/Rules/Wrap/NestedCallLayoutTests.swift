@@ -102,6 +102,36 @@ struct NestedCallLayoutInlineTests: RuleTesting {
       configuration: config)
   }
 
+  @Test func labelWidthIncludedInStrategySelection() {
+    // "let x = " = 8 chars column offset.
+    // buildFullyInlineText = "Outer(Inner(value: 1))" = 22 chars (no label).
+    // Actual with label    = "Outer(label: Inner(value: 1))" = 29 chars.
+    // 8 + 22 = 30 <= 35 — Strategy 1 chosen without label accounting.
+    // 8 + 29 = 37 > 35  — Strategy 1 should NOT be chosen.
+    // Strategy 2 prefix with label = "Outer(label: Inner(" = 20 + 8 = 28 <= 35, fits.
+    var config = inlineConfig
+    config[LineLength.self] = 35
+
+    assertFormatting(
+      NestedCallLayout.self,
+      input: """
+        let x = 1️⃣Outer(
+            label: Inner(
+                value: 1
+            )
+        )
+        """,
+      expected: """
+        let x = Outer(label: Inner(
+            value: 1
+        ))
+        """,
+      findings: [
+        FindingSpec("1️⃣", message: "collapse nested call to fit on one line"),
+      ],
+      configuration: config)
+  }
+
   @Test func nothingFitsStaysFullyNested() {
     var config = inlineConfig
     config[LineLength.self] = 30
@@ -166,6 +196,50 @@ struct NestedCallLayoutInlineTests: RuleTesting {
             baz: 2
         )
         """,
+      configuration: inlineConfig)
+  }
+
+  @Test func labeledOuterArgumentPreservesLabelFullyInline() {
+    assertFormatting(
+      NestedCallLayout.self,
+      input: """
+        let x = 1️⃣Outer(
+            label: Inner(
+                value: 1
+            )
+        )
+        """,
+      expected: """
+        let x = Outer(label: Inner(value: 1))
+        """,
+      findings: [
+        FindingSpec("1️⃣", message: "collapse nested call to fit on one line"),
+      ],
+      configuration: inlineConfig)
+  }
+
+  @Test func labeledOuterArgumentPreservesLabelStrategy2() {
+    assertFormatting(
+      NestedCallLayout.self,
+      input: """
+        attributeName: 1️⃣IdentifierTypeSyntax(
+            name: TokenSyntax(
+                .identifier("Entry"),
+                trailingTrivia: .space,
+                presence: .present
+            )
+        )
+        """,
+      expected: """
+        attributeName: IdentifierTypeSyntax(name: TokenSyntax(
+            .identifier("Entry"),
+            trailingTrivia: .space,
+            presence: .present
+        ))
+        """,
+      findings: [
+        FindingSpec("1️⃣", message: "collapse nested call to fit on one line"),
+      ],
       configuration: inlineConfig)
   }
 
@@ -290,6 +364,25 @@ struct NestedCallLayoutWrapTests: RuleTesting {
             )
         )
         """,
+      configuration: wrapConfig)
+  }
+
+  @Test func labeledOuterArgumentPreservesLabelOnExpand() {
+    assertFormatting(
+      NestedCallLayout.self,
+      input: """
+        let x = 1️⃣Outer(label: Inner(value: 1))
+        """,
+      expected: """
+        let x = Outer(
+            label: Inner(
+                value: 1
+            )
+        )
+        """,
+      findings: [
+        FindingSpec("1️⃣", message: "expand nested call onto separate lines"),
+      ],
       configuration: wrapConfig)
   }
 

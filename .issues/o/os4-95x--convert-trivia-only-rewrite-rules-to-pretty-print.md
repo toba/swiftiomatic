@@ -1,15 +1,15 @@
 ---
 # os4-95x
 title: Convert trivia-only rewrite rules to pretty-print layout
-status: ready
+status: completed
 type: epic
 priority: normal
 created_at: 2026-04-24T22:49:59Z
-updated_at: 2026-04-25T00:14:04Z
+updated_at: 2026-04-25T02:28:49Z
 sync:
     github:
         issue_number: "387"
-        synced_at: "2026-04-25T01:59:55Z"
+        synced_at: "2026-04-25T02:39:17Z"
 ---
 
 ## Overview
@@ -27,14 +27,14 @@ Many `SyntaxFormatRule` (rewrite) rules only manipulate trivia — adding/removi
 
 All modify `leadingTrivia`/`trailingTrivia` to insert or remove newlines. The layout system already has `MaximumBlankLines`, `ClosingBraceAsBlankLine`, and `CommentAsBlankLine` — these would extend that model.
 
-- [ ] `BlankLinesAfterImports` — insert blank line after last import
+- [ ] ~~`BlankLinesAfterImports` — insert blank line after last import~~ (insertion-only; needs `minBlankLines`)
 - [x] `BlankLinesBetweenImports` — converted: maxBlankLines: 0 between consecutive imports in `visitCodeBlockItemList`
-- [ ] `BlankLinesAfterGuardStatements` — blank line after last guard, none between consecutive guards
-- [ ] `BlankLinesBetweenScopes` — blank lines between multi-line scoped declarations
-- [ ] `BlankLinesBeforeControlFlow` — blank line before multi-line control flow
-- [ ] `BlankLinesAroundMark` — blank lines before/after MARK comments
-- [ ] `BlankLinesAfterSwitchCase` — blank line after multiline cases, none before closing brace
-- [ ] `ConsistentSwitchCaseSpacing` — uniform blank lines between switch cases
+- [ ] ~~`BlankLinesAfterGuardStatements` — blank line after last guard, none between consecutive guards~~ (insertion-only; needs `minBlankLines`)
+- [ ] ~~`BlankLinesBetweenScopes` — blank lines between multi-line scoped declarations~~ (insertion-only; needs `minBlankLines`)
+- [ ] ~~`BlankLinesBeforeControlFlow` — blank line before multi-line control flow~~ (insertion-only; needs `minBlankLines`)
+- [ ] ~~`BlankLinesAroundMark` — blank lines before/after MARK comments~~ (insertion-only; needs `minBlankLines`)
+- [ ] ~~`BlankLinesAfterSwitchCase` — blank line after multiline cases, none before closing brace~~ (insertion-only; needs `minBlankLines`)
+- [ ] ~~`ConsistentSwitchCaseSpacing` — uniform blank lines between switch cases~~ (insertion-only; needs `minBlankLines`)
 - [x] `BlankLinesBetweenChainedFunctions` — converted: maxBlankLines: 0 on contextual breaks before `.` in chains
 - [x] `NoEmptyLinesOpeningClosingBraces` — converted: `arrangeNonEmptyBraces()` with maxBlankLines: 0
 
@@ -42,11 +42,11 @@ All modify `leadingTrivia`/`trailingTrivia` to insert or remove newlines. The la
 
 These modify trivia to control line breaks. The layout system already decides where to break via `BreakKind` and `GroupBreakStyle`.
 
-- [ ] `WrapConditionalAssignment` — newline after `=` in conditional assignments
-- [ ] `WrapMultilineFunctionChains` — break at `.` in chained calls
-- [ ] `WrapMultilineStatementBraces` — opening brace on new line for multiline statements
-- [ ] `WrapCompoundCaseItems` — each case item on its own line
-- [ ] `WrapSingleLineComments` — wrap long comments across lines
+- [ ] ~~`WrapConditionalAssignment` — newline after `=` in conditional assignments~~ (structural AST change)
+- [ ] ~~`WrapMultilineFunctionChains` — break at `.` in chained calls~~ (NOT redundant with layout; stays as rewrite)
+- [ ] ~~`WrapMultilineStatementBraces` — opening brace on new line for multiline statements~~ (NOT redundant with layout; stays as rewrite)
+- [ ] ~~`WrapCompoundCaseItems` — each case item on its own line~~ (needs custom alignment indent unsupported by layout)
+- [ ] ~~`WrapSingleLineComments` — wrap long comments across lines~~ (rewrites comment trivia pieces)
 
 ### Other — 1 rule
 

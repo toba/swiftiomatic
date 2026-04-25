@@ -22,19 +22,19 @@ extension SubscriptCallExprSyntax: CallingExprSyntax {}
 
 extension Syntax {
     func asProtocol(_: CallingExprSyntax.Protocol) -> CallingExprSyntax? {
-        return self.asProtocol(SyntaxProtocol.self) as? CallingExprSyntax
+        asProtocol(SyntaxProtocol.self) as? CallingExprSyntax
     }
     func isProtocol(_: CallingExprSyntax.Protocol) -> Bool {
-        return self.asProtocol(CallingExprSyntax.self) != nil
+        asProtocol(CallingExprSyntax.self) != nil
     }
 }
 
 extension ExprSyntax {
     func asProtocol(_: CallingExprSyntax.Protocol) -> CallingExprSyntax? {
-        return Syntax(self).asProtocol(SyntaxProtocol.self) as? CallingExprSyntax
+        Syntax(self).asProtocol(SyntaxProtocol.self) as? CallingExprSyntax
     }
     func isProtocol(_: CallingExprSyntax.Protocol) -> Bool {
-        return self.asProtocol(CallingExprSyntax.self) != nil
+        asProtocol(CallingExprSyntax.self) != nil
     }
 }
 
@@ -50,19 +50,19 @@ extension UnsafeExprSyntax: KeywordModifiedExprSyntax {}
 
 extension Syntax {
     func asProtocol(_: KeywordModifiedExprSyntax.Protocol) -> KeywordModifiedExprSyntax? {
-        return self.asProtocol(SyntaxProtocol.self) as? KeywordModifiedExprSyntax
+        asProtocol(SyntaxProtocol.self) as? KeywordModifiedExprSyntax
     }
     func isProtocol(_: KeywordModifiedExprSyntax.Protocol) -> Bool {
-        return self.asProtocol(KeywordModifiedExprSyntax.self) != nil
+        asProtocol(KeywordModifiedExprSyntax.self) != nil
     }
 }
 
 extension ExprSyntax {
     func asProtocol(_: KeywordModifiedExprSyntax.Protocol) -> KeywordModifiedExprSyntax? {
-        return Syntax(self).asProtocol(SyntaxProtocol.self) as? KeywordModifiedExprSyntax
+        Syntax(self).asProtocol(SyntaxProtocol.self) as? KeywordModifiedExprSyntax
     }
     func isProtocol(_: KeywordModifiedExprSyntax.Protocol) -> Bool {
-        return self.asProtocol(KeywordModifiedExprSyntax.self) != nil
+        asProtocol(KeywordModifiedExprSyntax.self) != nil
     }
 }
 
@@ -86,38 +86,38 @@ extension LabeledExprListSyntax: CommaSeparatedListSyntax {
 extension ClosureCaptureListSyntax: CommaSeparatedListSyntax {
     var lastNodeForTrailingComma: SyntaxProtocol? {
         if let initializer = last?.initializer {
-            return initializer
+            initializer
         } else {
-            return last?.name
+            last?.name
         }
     }
 }
 extension EnumCaseParameterListSyntax: CommaSeparatedListSyntax {
     var lastNodeForTrailingComma: SyntaxProtocol? {
         if let defaultValue = last?.defaultValue {
-            return defaultValue
+            defaultValue
         } else {
-            return last?.type
+            last?.type
         }
     }
 }
 extension FunctionParameterListSyntax: CommaSeparatedListSyntax {
     var lastNodeForTrailingComma: SyntaxProtocol? {
         if let defaultValue = last?.defaultValue {
-            return defaultValue
+            defaultValue
         } else if let ellipsis = last?.ellipsis {
-            return ellipsis
+            ellipsis
         } else {
-            return last?.type
+            last?.type
         }
     }
 }
 extension GenericParameterListSyntax: CommaSeparatedListSyntax {
     var lastNodeForTrailingComma: SyntaxProtocol? {
         if let inheritedType = last?.inheritedType {
-            return inheritedType
+            inheritedType
         } else {
-            return last?.name
+            last?.name
         }
     }
 }
@@ -127,9 +127,9 @@ extension TuplePatternElementListSyntax: CommaSeparatedListSyntax {
 
 extension SyntaxProtocol {
     func asProtocol(_: (any CommaSeparatedListSyntax).Protocol) -> (any CommaSeparatedListSyntax)? {
-        return Syntax(self).asProtocol(SyntaxProtocol.self) as? (any CommaSeparatedListSyntax)
+        Syntax(self).asProtocol(SyntaxProtocol.self) as? (any CommaSeparatedListSyntax)
     }
     func isProtocol(_: (any CommaSeparatedListSyntax).Protocol) -> Bool {
-        return self.asProtocol((any CommaSeparatedListSyntax).self) != nil
+        asProtocol((any CommaSeparatedListSyntax).self) != nil
     }
 }

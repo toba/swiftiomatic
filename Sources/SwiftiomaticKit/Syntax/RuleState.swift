@@ -13,10 +13,10 @@
 /// The enablement of a lint/format rule based on the presence or absence of comment directives in
 /// the source file.
 package enum RuleState {
-  /// There is no explicit information in the source file about whether the rule should be enabled
-  /// or disabled at the requested location, so the configuration default should be used.
-  case `default`
+    /// There is no explicit information in the source file about whether the rule should be enabled
+    /// or disabled at the requested location, so the configuration default should be used.
+    case `default`
 
-  /// The rule is explicitly disabled at the requested location.
-  case disabled
+    /// The rule is explicitly disabled at the requested location.
+    case disabled
 }

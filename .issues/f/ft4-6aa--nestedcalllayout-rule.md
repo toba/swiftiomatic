@@ -1,15 +1,15 @@
 ---
 # ft4-6aa
 title: NestedCallLayout rule
-status: review
+status: completed
 type: feature
 priority: normal
 created_at: 2026-04-24T22:52:08Z
-updated_at: 2026-04-24T23:28:34Z
+updated_at: 2026-04-25T02:24:43Z
 sync:
     github:
         issue_number: "385"
-        synced_at: "2026-04-24T23:31:20Z"
+        synced_at: "2026-04-25T02:39:17Z"
 ---
 
 ## Description

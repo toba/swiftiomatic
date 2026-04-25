@@ -165,33 +165,47 @@ extension NestedCallLayout {
         call.arguments.map(\.trimmedDescription).joined(separator: ", ")
     }
 
-    /// Builds the text for a fully inlined version: `Outer(Inner(arg1: x, arg2: y))`
+    /// Returns `"label: "` if the sole argument has a label, otherwise `""`.
+    private func argumentLabelPrefix(_ call: FunctionCallExprSyntax) -> String {
+        guard let label = call.arguments.first?.label else { return "" }
+        return label.trimmedDescription + ": "
+    }
+
+    /// Builds the text for a fully inlined version: `Outer(label: Inner(arg1: x, arg2: y))`
     private func buildFullyInlineText(_ chain: [CallLevel]) -> String {
         var result = ""
-        for level in chain {
+        for level in chain.dropLast() {
             result += level.call.calledExpression.trimmedDescription + "("
+            result += argumentLabelPrefix(level.call)
         }
-        result += inlineArgText(chain.last!.call)
+        let innermost = chain.last!.call
+        result += innermost.calledExpression.trimmedDescription + "("
+        result += inlineArgText(innermost)
         result += String(repeating: ")", count: chain.count)
         return result
     }
 
-    /// Builds just the prefix for strategy 2: `Outer(Inner(`
+    /// Builds just the prefix for strategy 2: `Outer(label: Inner(`
     private func buildOuterInlinePrefix(_ chain: [CallLevel]) -> String {
         var result = ""
-        for level in chain {
+        for level in chain.dropLast() {
             result += level.call.calledExpression.trimmedDescription + "("
+            result += argumentLabelPrefix(level.call)
         }
+        result += chain.last!.call.calledExpression.trimmedDescription + "("
         return result
     }
 
     /// Builds the inner call inline text for strategy 3: `Inner(arg1: x, arg2: y)`
     private func buildInnerInlineText(_ chain: [CallLevel]) -> String {
         var result = ""
-        for level in chain.dropFirst() {
+        for level in chain.dropFirst().dropLast() {
             result += level.call.calledExpression.trimmedDescription + "("
+            result += argumentLabelPrefix(level.call)
         }
-        result += inlineArgText(chain.last!.call)
+        let innermost = chain.last!.call
+        result += innermost.calledExpression.trimmedDescription + "("
+        result += inlineArgText(innermost)
         result += String(repeating: ")", count: chain.count - 1)
         return result
     }
@@ -212,7 +226,12 @@ extension NestedCallLayout {
         var result: ExprSyntax = rebuildSingleCallInline(chain.last!.call)
 
         for level in chain.dropLast().reversed() {
-            let arg = LabeledExprSyntax(expression: result)
+            let original = level.call.arguments.first!
+            let arg = LabeledExprSyntax(
+                label: original.label,
+                colon: original.colon,
+                expression: result
+            )
             result = ExprSyntax(
                 FunctionCallExprSyntax(
                     calledExpression: level.call.calledExpression.trimmed,
@@ -267,7 +286,12 @@ extension NestedCallLayout {
 
         // Wrap each outer level inline.
         for level in chain.dropLast().reversed() {
-            let arg = LabeledExprSyntax(expression: result)
+            let original = level.call.arguments.first!
+            let arg = LabeledExprSyntax(
+                label: original.label,
+                colon: original.colon,
+                expression: result
+            )
             result = ExprSyntax(
                 FunctionCallExprSyntax(
                     calledExpression: level.call.calledExpression.trimmed,
@@ -296,7 +320,12 @@ extension NestedCallLayout {
         // Build inner calls fully inline.
         var innerExpr: ExprSyntax = rebuildSingleCallInline(chain.last!.call)
         for level in chain.dropFirst().dropLast().reversed() {
-            let arg = LabeledExprSyntax(expression: innerExpr)
+            let original = level.call.arguments.first!
+            let arg = LabeledExprSyntax(
+                label: original.label,
+                colon: original.colon,
+                expression: innerExpr
+            )
             innerExpr = ExprSyntax(
                 FunctionCallExprSyntax(
                     calledExpression: level.call.calledExpression.trimmed,
@@ -309,7 +338,10 @@ extension NestedCallLayout {
 
         // Wrap the outermost call.
         let outermost = chain.first!.call
+        let outerOriginal = outermost.arguments.first!
         let arg = LabeledExprSyntax(
+            label: outerOriginal.label,
+            colon: outerOriginal.colon,
             expression: innerExpr
                 .with(\.leadingTrivia, .newline + Trivia(stringLiteral: innerIndent))
         )
@@ -398,7 +430,10 @@ extension NestedCallLayout {
             let currentIndent = baseIndent + String(repeating: indentUnit, count: i)
             let argIndent = currentIndent + indentUnit
 
+            let original = level.call.arguments.first!
             let arg = LabeledExprSyntax(
+                label: original.label,
+                colon: original.colon,
                 expression: result
                     .with(\.leadingTrivia, .newline + Trivia(stringLiteral: argIndent))
             )

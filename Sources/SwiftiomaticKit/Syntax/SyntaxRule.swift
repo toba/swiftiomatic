@@ -12,7 +12,7 @@ protocol SyntaxRule: Configurable where Value: SyntaxRuleValue {
 
 extension SyntaxRule {
     /// Default value from the `SyntaxRuleValue`'s `init()`.
-    static var defaultValue: Value { Value() }
+    static var defaultValue: Value { .init() }
 
     /// Emits the given finding.
     ///
@@ -34,20 +34,21 @@ extension SyntaxRule {
         guard severity.isActive else { return }
 
         let syntaxLocation: SourceLocation?
-        if let node = node {
+
+        if let node {
             switch anchor {
-            case .start:
-                syntaxLocation = node.startLocation(converter: context.sourceLocationConverter)
-            case .leadingTrivia(let index):
-                syntaxLocation = node.startLocation(
-                    ofLeadingTriviaAt: index,
-                    converter: context.sourceLocationConverter
-                )
-            case .trailingTrivia(let index):
-                syntaxLocation = node.startLocation(
-                    ofTrailingTriviaAt: index,
-                    converter: context.sourceLocationConverter
-                )
+                case .start:
+                    syntaxLocation = node.startLocation(converter: context.sourceLocationConverter)
+                case let .leadingTrivia(index):
+                    syntaxLocation = node.startLocation(
+                        ofLeadingTriviaAt: index,
+                        converter: context.sourceLocationConverter
+                    )
+                case let .trailingTrivia(index):
+                    syntaxLocation = node.startLocation(
+                        ofTrailingTriviaAt: index,
+                        converter: context.sourceLocationConverter
+                    )
             }
         } else {
             syntaxLocation = nil

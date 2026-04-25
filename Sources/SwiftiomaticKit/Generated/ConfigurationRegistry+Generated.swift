@@ -15,6 +15,7 @@ package enum ConfigurationRegistry {
 
     /// All known layout setting types.
     package static let allSettingTypes: [any LayoutRule.Type] = [
+        AlignWrappedConditions.self,
         AroundMultilineExpressionChainComponents.self,
         BeforeEachArgument.self,
         BeforeEachGenericRequirement.self,

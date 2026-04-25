@@ -106,6 +106,9 @@ package final class LayoutCoordinator {
     private var currentIndentation: [Indent] {
         let indentation = configuration[IndentationSetting.self]
         var totalIndentation: [Indent] = activeOpenBreaks.flatMap { (open) -> [Indent] in
+            if case .alignment(let spaces) = open.kind, open.contributesContinuationIndent {
+                return [.spaces(spaces)]
+            }
             let count =
                 (open.contributesBlockIndent ? 1 : 0)
                 + (open.contributesContinuationIndent ? 1 : 0)
@@ -243,7 +246,7 @@ package final class LayoutCoordinator {
                         // scope), so we need the continuation indentation to persist across all the lines in that
                         // scope. Additionally, continuation open breaks must indent when the break fires.
                         let continuationBreakWillFire =
-                            openKind == .continuation
+                            openKind != .block
                             && (outputBuffer.isAtStartOfLine || !canFit(length) || mustBreak)
                         let contributesContinuationIndent =
                             currentLineIsContinuation || continuationBreakWillFire
@@ -330,9 +333,16 @@ package final class LayoutCoordinator {
                                 matchingOpenBreakIndented && openedOnDifferentLine
                         }
 
+                        // Alignment breaks contribute indentation but should not propagate
+                        // continuation state — they align to a keyword column, not a
+                        // continuation scope, so the reset break before `{` should not fire.
+                        let isAlignment: Bool
+                        if case .alignment = matchingOpenBreak.kind { isAlignment = true }
+                        else { isAlignment = false }
+
                         let wasContinuationWhenOpened =
                             (continuationStack.popLast() ?? false)
-                            || matchingOpenBreak.contributesContinuationIndent
+                            || (!isAlignment && matchingOpenBreak.contributesContinuationIndent)
                             // This ensures a continuation indent is propagated to following scope when an initial
                             // scope would've indented if the leading break wasn't at the start of a line.
                             || (matchingOpenBreak.kind == .continuation && openedOnDifferentLine)

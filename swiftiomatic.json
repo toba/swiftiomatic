@@ -100,7 +100,6 @@
 		"identifiersMayOnlyUseASCII": { "lint": "warn" }
 	},
 	"spaces": {
-		"collapseEmptyBraces": { "lint": "no", "rewrite": true },
 		"spacesBeforeEndOfLineComments": 2,
 		"spacesAroundRangeFormationOperators": false
 	},
@@ -151,14 +150,11 @@
 		"closingBraceAsBlankLine": true,
 		"afterImports": { "lint": "warn", "rewrite": true },
 		"betweenScopes": { "lint": "no", "rewrite": false },
-		"betweenImports": { "lint": "no", "rewrite": false },
 		"afterSwitchCase": { "lint": "no", "rewrite": false },
 		"beforeAndAfterMark": { "lint": "no", "rewrite": false },
 		"afterGuardStatements": { "lint": "no", "rewrite": false },
 		"beforeControlFlowBlocks": { "lint": "no", "rewrite": true },
-		"betweenChainedFunctions": { "lint": "no", "rewrite": false },
-		"consistentSwitchCaseSpacing": { "lint": "no", "rewrite": false },
-		"noEmptyLinesOpeningClosingBraces": { "lint": "no", "rewrite": false }
+		"consistentSwitchCaseSpacing": { "lint": "no", "rewrite": false }
 	},
 	"conditions": {
 		"preferTernary": { "lint": "no", "rewrite": true },
@@ -232,7 +228,7 @@
 	"noBacktickedSelf": { "lint": "warn", "rewrite": true },
 	"leadingDotOperators": { "lint": "warn", "rewrite": true },
 	"preferExplicitFalse": { "lint": "no", "rewrite": false },
-	"noFallthroughOnlyCases": { "lint": "warn", "rewrite": true },
+	"noFallThroughOnlyCases": { "lint": "warn", "rewrite": true },
 	"preferAssertionFailure": { "lint": "warn", "rewrite": true },
 	"preferEnvironmentEntry": { "lint": "no", "rewrite": false },
 	"preferWhereClausesInForLoops": { "lint": "no", "rewrite": true },

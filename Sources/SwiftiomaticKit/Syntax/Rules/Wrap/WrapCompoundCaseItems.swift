@@ -10,9 +10,9 @@ import SwiftSyntax
 ///
 /// Format: Each item is placed on its own line with alignment indentation.
 final class WrapCompoundCaseItems: RewriteSyntaxRule<BasicRuleValue> {
-    override class var key: String { "wrapCompoundCaseItems" }
-    override class var group: ConfigurationGroup? { .wrap }
-    override class var defaultValue: BasicRuleValue { BasicRuleValue(rewrite: false, lint: .no) }
+    override static var key: String { "compoundCaseItems" }
+    override static var group: ConfigurationGroup? { .wrap }
+    override static var defaultValue: BasicRuleValue { .init(rewrite: false, lint: .no) }
 
     override func visit(_ node: SwitchCaseLabelSyntax) -> SwitchCaseLabelSyntax {
         let items = node.caseItems
@@ -20,8 +20,8 @@ final class WrapCompoundCaseItems: RewriteSyntaxRule<BasicRuleValue> {
 
         // Check if any items need wrapping (items after first on same line as comma)
         var needsWrapping = false
-        for item in items {
-            guard item.trailingComma != nil else { continue }
+
+        for item in items where item.trailingComma != nil {
             // If the next item doesn't start on a new line, we need to wrap
             if let nextToken = item.trailingComma?.nextToken(viewMode: .sourceAccurate),
                 !nextToken.leadingTrivia.containsNewlines
@@ -35,16 +35,15 @@ final class WrapCompoundCaseItems: RewriteSyntaxRule<BasicRuleValue> {
 
         diagnose(.wrapSwitchCase, on: node.caseKeyword)
 
-        let alignIndent =
-            node.caseKeyword.leadingTrivia.indentation
+        let alignIndent = node.caseKeyword.leadingTrivia.indentation
             + String(repeating: " ", count: "case ".count)
 
         var newItems = [SwitchCaseItemSyntax]()
+
         for (index, item) in items.enumerated() {
             var modified = item
-            if index > 0 {
-                modified.leadingTrivia = .newline + Trivia(stringLiteral: alignIndent)
-            }
+
+            if index > 0 { modified.leadingTrivia = .newline + Trivia(stringLiteral: alignIndent) }
             if let comma = modified.trailingComma {
                 modified.trailingComma = comma.with(\.trailingTrivia, [])
             }

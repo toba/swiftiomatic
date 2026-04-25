@@ -401,6 +401,14 @@ package enum ConfigurationSchema {
       },
       "type" : "object"
     },
+    "compoundCaseItems" : {
+      "allOf" : [
+        {
+          "$ref" : "#/$defs/ruleBase"
+        }
+      ],
+      "description" : "Comma-delimited switch case items are wrapped onto separate lines.\n\nSwitch cases with multiple patterns separated by commas are expanded so each\npattern appears on its own line, aligned after `case `.\n\nLint: A switch case with multiple comma-separated items on a single line\n      raises a warning.\n\nFormat: Each item is placed on its own line with alignment indentation.\n [opt-in]"
+    },
     "conditionalAssignment" : {
       "allOf" : [
         {
@@ -945,6 +953,10 @@ package enum ConfigurationSchema {
       "additionalProperties" : false,
       "description" : "lineBreaks rule group.",
       "properties" : {
+        "alignWrappedConditions" : {
+          "description" : "Align wrapped conditions to the column after the keyword (if/guard/while).",
+          "type" : "boolean"
+        },
         "aroundMultilineExpressionChainComponents" : {
           "description" : "Break around multiline dot-chained components.",
           "type" : "boolean"
@@ -2173,7 +2185,18 @@ package enum ConfigurationSchema {
           "$ref" : "#/$defs/ruleBase"
         }
       ],
-      "description" : "Sort switch case items alphabetically within each case.\n\nWhen a case matches multiple patterns (e.g. `case .b, .a, .c:`), the patterns are sorted\nlexicographically. Numeric literals are compared by value (including hex, octal, and binary).\nCases with `where` clauses are only sorted if the `where` clause ends up on the last item.\n\nLint: If case items are not sorted, a lint warning is raised.\n\nFormat: The case items are reordered alphabetically.\n [opt-in]"
+      "description" : "Enforce switch case label indentation style.\n\nTwo styles are supported via `SwitchCaseIndentationConfiguration.Style`:\n- `flush`: `case` labels align with the `switch` keyword (default).\n- `indented`: `case` labels are indented one level from `switch`.\n\nLint: Raised when a `case` or `default` label doesn't match the configured style.\n\nFormat: Case labels, bodies, and the closing brace are reindented to match.\n [opt-in]",
+      "properties" : {
+        "style" : {
+          "default" : "flush",
+          "description" : "style Options: flush, indented.",
+          "enum" : [
+            "flush",
+            "indented"
+          ],
+          "type" : "string"
+        }
+      }
     },
     "testSuiteAccessControl" : {
       "allOf" : [
@@ -2378,6 +2401,14 @@ package enum ConfigurationSchema {
           ],
           "description" : "Collapses simple enums with no associated values, no raw values, and no\nmembers other than cases onto a single line.\n\n```swift\n// Before\nprivate enum Kind {\n    case chained\n    case forced\n}\n\n// After\nprivate enum Kind { case chained, forced }\n```\n\nThe rule only applies when the collapsed form fits within the configured\nline length. Enums with associated values, explicit raw value assignments,\nraw-value types (e.g. `: Int`, `: String`), computed properties, methods,\nor any non-case member are left untouched.\n [opt-in]"
         },
+        "compoundCaseItems" : {
+          "allOf" : [
+            {
+              "$ref" : "#/$defs/ruleBase"
+            }
+          ],
+          "description" : "Comma-delimited switch case items are wrapped onto separate lines.\n\nSwitch cases with multiple patterns separated by commas are expanded so each\npattern appears on its own line, aligned after `case `.\n\nLint: A switch case with multiple comma-separated items on a single line\n      raises a warning.\n\nFormat: Each item is placed on its own line with alignment indentation.\n [opt-in]"
+        },
         "conditionalAssignment" : {
           "allOf" : [
             {
@@ -2470,25 +2501,9 @@ package enum ConfigurationSchema {
               "type" : "string"
             }
           }
-        },
-        "wrapCompoundCaseItems" : {
-          "allOf" : [
-            {
-              "$ref" : "#/$defs/ruleBase"
-            }
-          ],
-          "description" : "Comma-delimited switch case items are wrapped onto separate lines.\n\nSwitch cases with multiple patterns separated by commas are expanded so each\npattern appears on its own line, aligned after `case `.\n\nLint: A switch case with multiple comma-separated items on a single line\n      raises a warning.\n\nFormat: Each item is placed on its own line with alignment indentation.\n [opt-in]"
         }
       },
       "type" : "object"
-    },
-    "wrapCompoundCaseItems" : {
-      "allOf" : [
-        {
-          "$ref" : "#/$defs/ruleBase"
-        }
-      ],
-      "description" : "Comma-delimited switch case items are wrapped onto separate lines.\n\nSwitch cases with multiple patterns separated by commas are expanded so each\npattern appears on its own line, aligned after `case `.\n\nLint: A switch case with multiple comma-separated items on a single line\n      raises a warning.\n\nFormat: Each item is placed on its own line with alignment indentation.\n [opt-in]"
     }
   },
   "title" : "Swiftiomatic Configuration",

@@ -60,10 +60,13 @@ final class StrongOutlets: RewriteSyntaxRule<BasicRuleValue> {
 
     private func hasIBOutletAttribute(_ node: VariableDeclSyntax) -> Bool {
         node.attributes.contains { element in
-            guard let attr = element.as(AttributeSyntax.self),
+            if let attr = element.as(AttributeSyntax.self),
                 let name = attr.attributeName.as(IdentifierTypeSyntax.self)
-            else { return false }
-            return name.name.text == "IBOutlet"
+            {
+                name.name.text == "IBOutlet"
+            } else {
+                false
+            }
         }
     }
 }

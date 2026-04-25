@@ -88,6 +88,11 @@ enum OpenBreakKind: Equatable, Sendable {
     /// indent is applied if either the line on which this break is encountered is a continuation or
     /// if this break fires. A continuation open break never applies a block indent to its scope.
     case continuation
+
+    /// An open break that applies a fixed number of spaces as indentation instead of the configured
+    /// indent unit. Used to align wrapped conditions to the column after a keyword (e.g. `if `,
+    /// `guard `, `while `). Behaves like `.continuation` for break-firing logic.
+    case alignment(spaces: Int)
 }
 
 enum BreakKind: Equatable, Sendable {

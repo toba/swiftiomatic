@@ -12,6 +12,9 @@ if [[ -z "$version" ]]; then
     exit 1
 fi
 
+# Embed version in source before building.
+sed -i '' "s/let smVersion = \".*\"/let smVersion = \"$version\"/" Sources/Swiftiomatic/Version.swift
+
 cellar="$(brew --cellar sm)/$version"
 mkdir -p "$cellar/bin"
 

@@ -253,7 +253,7 @@ package struct DocumentationComment {
                 case "returns":
                     returns = paragraph
                 case "throws":
-                    throws = paragraph
+                    `throws` = paragraph
                 default:
                     unprocessedChildren.append(child)
             }
