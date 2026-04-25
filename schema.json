@@ -321,6 +321,14 @@
       ],
       "description" : "Collapses simple enums with no associated values, no raw values, and no\nmembers other than cases onto a single line.\n\n```swift\n// Before\nprivate enum Kind {\n    case chained\n    case forced\n}\n\n// After\nprivate enum Kind { case chained, forced }\n```\n\nThe rule only applies when the collapsed form fits within the configured\nline length. Enums with associated values, explicit raw value assignments,\nraw-value types (e.g. `: Int`, `: String`), computed properties, methods,\nor any non-case member are left untouched.\n [opt-in]"
     },
+    "collapseSimpleIfElse" : {
+      "allOf" : [
+        {
+          "$ref" : "#/$defs/ruleBase"
+        }
+      ],
+      "description" : "Collapses multi-line `if`/`else` (and `else if` chains) onto a single line\nwhen every branch contains exactly one statement and the collapsed form fits\nwithin the configured line length.\n\nComplements `PreferTernary` for cases ternary can't reach: `if let`/`if case`\nconditional bindings, `if #available`, and multi-clause conditions.\n\n```swift\n// Before\nif let defaultValue = last?.defaultValue {\n    defaultValue\n} else {\n    last?.type\n}\n\n// After\nif let defaultValue = last?.defaultValue { defaultValue } else { last?.type }\n```\n\nLint: A multi-line if/else where each branch has a single statement and the\n      collapsed form fits within line length raises a warning.\n\nFormat: The chain is collapsed onto a single line.\n [opt-in]"
+    },
     "comments" : {
       "additionalProperties" : false,
       "description" : "comments rule group.",
@@ -2391,6 +2399,14 @@
             }
           ],
           "description" : "Collapses simple enums with no associated values, no raw values, and no\nmembers other than cases onto a single line.\n\n```swift\n// Before\nprivate enum Kind {\n    case chained\n    case forced\n}\n\n// After\nprivate enum Kind { case chained, forced }\n```\n\nThe rule only applies when the collapsed form fits within the configured\nline length. Enums with associated values, explicit raw value assignments,\nraw-value types (e.g. `: Int`, `: String`), computed properties, methods,\nor any non-case member are left untouched.\n [opt-in]"
+        },
+        "collapseSimpleIfElse" : {
+          "allOf" : [
+            {
+              "$ref" : "#/$defs/ruleBase"
+            }
+          ],
+          "description" : "Collapses multi-line `if`/`else` (and `else if` chains) onto a single line\nwhen every branch contains exactly one statement and the collapsed form fits\nwithin the configured line length.\n\nComplements `PreferTernary` for cases ternary can't reach: `if let`/`if case`\nconditional bindings, `if #available`, and multi-clause conditions.\n\n```swift\n// Before\nif let defaultValue = last?.defaultValue {\n    defaultValue\n} else {\n    last?.type\n}\n\n// After\nif let defaultValue = last?.defaultValue { defaultValue } else { last?.type }\n```\n\nLint: A multi-line if/else where each branch has a single statement and the\n      collapsed form fits within line length raises a warning.\n\nFormat: The chain is collapsed onto a single line.\n [opt-in]"
         },
         "compoundCaseItems" : {
           "allOf" : [

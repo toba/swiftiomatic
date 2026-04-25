@@ -19,11 +19,8 @@ import SwiftSyntax
 /// raw-value types (e.g. `: Int`, `: String`), computed properties, methods,
 /// or any non-case member are left untouched.
 final class CollapseSimpleEnums: RewriteSyntaxRule<BasicRuleValue> {
-    override class var key: String { "collapseSimpleEnums" }
-    override class var group: ConfigurationGroup? { .wrap }
-    override class var defaultValue: BasicRuleValue {
-        BasicRuleValue(rewrite: false, lint: .no)
-    }
+    override static var group: ConfigurationGroup? { .wrap }
+    override static var defaultValue: BasicRuleValue { .init(rewrite: false, lint: .no) }
 
     private var maxLength: Int { context.configuration[LineLength.self] }
 
@@ -35,7 +32,8 @@ final class CollapseSimpleEnums: RewriteSyntaxRule<BasicRuleValue> {
 
         // Already on a single line — nothing to do.
         if node.memberBlock.members.count == 1,
-           !node.memberBlock.rightBrace.leadingTrivia.containsNewlines {
+           !node.memberBlock.rightBrace.leadingTrivia.containsNewlines
+        {
             return DeclSyntax(node)
         }
 
@@ -46,9 +44,7 @@ final class CollapseSimpleEnums: RewriteSyntaxRule<BasicRuleValue> {
         let collapsedLength = prefix.count + " { case ".count + caseList.count + " }".count
         let indent = node.leadingTrivia.indentation
 
-        guard indent.count + collapsedLength <= maxLength else {
-            return DeclSyntax(node)
-        }
+        guard indent.count + collapsedLength <= maxLength else { return DeclSyntax(node) }
 
         diagnose(.collapseSimpleEnum, on: node)
 
@@ -56,11 +52,10 @@ final class CollapseSimpleEnums: RewriteSyntaxRule<BasicRuleValue> {
         let elements = EnumCaseElementListSyntax(
             allElements.enumerated().map { index, element in
                 var el = element.with(\.leadingTrivia, []).with(\.trailingTrivia, [])
-                if index < allElements.count - 1 {
-                    el = el.with(\.trailingComma, .commaToken(trailingTrivia: .space))
-                } else {
-                    el = el.with(\.trailingComma, nil)
-                }
+                el =
+                    index < allElements.count - 1
+                    ? el.with(\.trailingComma, .commaToken(trailingTrivia: .space))
+                    : el.with(\.trailingComma, nil)
                 return el
             }
         )
@@ -81,14 +76,13 @@ final class CollapseSimpleEnums: RewriteSyntaxRule<BasicRuleValue> {
             rightBrace: .rightBraceToken(leadingTrivia: .space)
         )
 
-        return DeclSyntax(result)
+        return .init(result)
     }
 }
 
 // MARK: - Helpers
 
 extension CollapseSimpleEnums {
-
     /// The known Swift raw-value types that disqualify an enum from collapsing.
     private static let rawValueTypes: Set<String> = [
         "Int", "Int8", "Int16", "Int32", "Int64",
@@ -103,9 +97,7 @@ extension CollapseSimpleEnums {
         guard !members.isEmpty else { return false }
 
         for member in members {
-            guard let caseDecl = member.decl.as(EnumCaseDeclSyntax.self) else {
-                return false
-            }
+            guard let caseDecl = member.decl.as(EnumCaseDeclSyntax.self) else { return false }
             for element in caseDecl.elements {
                 if element.parameterClause != nil { return false }
                 if element.rawValue != nil { return false }
@@ -134,12 +126,12 @@ extension CollapseSimpleEnums {
     /// The text before the opening brace (e.g. "private enum Kind").
     private func declPrefix(_ node: EnumDeclSyntax) -> String {
         var text = ""
+
         for token in node.tokens(viewMode: .sourceAccurate) {
             if token.tokenKind == .leftBrace { break }
             text += token.text
-            if !token.trailingTrivia.isEmpty {
-                text += token.trailingTrivia.description
-            }
+
+            if !token.trailingTrivia.isEmpty { text += token.trailingTrivia.description }
         }
         // Trim any trailing whitespace before the brace.
         while text.last?.isWhitespace == true { text.removeLast() }
@@ -149,7 +141,6 @@ extension CollapseSimpleEnums {
 
 // MARK: - Finding Messages
 
-extension Finding.Message {
-    fileprivate static let collapseSimpleEnum: Finding.Message =
-        "collapse simple enum onto a single line"
+fileprivate extension Finding.Message {
+    static let collapseSimpleEnum: Finding.Message = "collapse simple enum onto a single line"
 }

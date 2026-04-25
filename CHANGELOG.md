@@ -19,6 +19,10 @@
 - `PreferTernary`; rewrite simple if-else return to ternary ([#380](https://github.com/toba/swiftiomatic/issues/380))
 - `PreferIfElseChain`; convert series of early returns to chained if/else ([#386](https://github.com/toba/swiftiomatic/issues/386))
 - `WrapSwitchCaseBodies`; wrap or inline switch case bodies ([#384](https://github.com/toba/swiftiomatic/issues/384))
+- `CollapseSimpleEnums`; single-line enum for simple cases ([#388](https://github.com/toba/swiftiomatic/issues/388))
+- `AlignWrappedConditions`; align continuation conditions in if/guard ([#395](https://github.com/toba/swiftiomatic/issues/395))
+- `NestedCallLayout` rule ([#385](https://github.com/toba/swiftiomatic/issues/385))
+- `CollapseSimpleIfElse`; single-line if/else for simple cases ([#397](https://github.com/toba/swiftiomatic/issues/397))
 
 ### 🐛 Fixes
 
@@ -30,6 +34,12 @@
 - `keepFunctionOutputTogether` doesn't move opening brace to output line when wrapping parameters ([#376](https://github.com/toba/swiftiomatic/issues/376))
 - Line break precedence; prefer splitting at `??` / `+` over `=` assignment
 - `PreferTrailingClosures` assignment continuation line-breaking is wrong ([#381](https://github.com/toba/swiftiomatic/issues/381))
+- Prefer breaking at condition operators over guard/if/while keywords ([#366](https://github.com/toba/swiftiomatic/issues/366))
+- `sm --version` prints `main` instead of actual version ([#396](https://github.com/toba/swiftiomatic/issues/396))
+- `PreferIfElseChain`; don't convert chained returns when not at implicit-return position
+- `sm update` doesn't sync rules in config
+- `AlignWrappedConditions`; align at normal indent when `beforeGuardConditions` break is set
+- Ternary breaks at `=` before breaking ternary parts
 
 ### 🗜️ Tweaks
 
@@ -60,6 +70,7 @@
 - Convert `BlankLinesBetweenChainedFunctions` to layout; `maxBlankLines: 0` on chain period breaks
 - Add per-break `maxBlankLines` to `NewlineBehavior`; enables per-context blank line limits in layout
 - Rename `PrettyPrint` test folder to `Layout`; `assertPrettyPrintEqual` to `assertLayout`
+- Investigate redundant wrap rules ([#391](https://github.com/toba/swiftiomatic/issues/391))
 
 ## Week of Apr 12 – Apr 18, 2026
 

@@ -134,4 +134,81 @@ struct PreferIfElseChainTests: RuleTesting {
       """
     assertFormatting(PreferIfElseChain.self, input: input, expected: input, findings: [])
   }
+
+  @Test func chainInsideSwitchCaseDoesNotMatch() {
+    // The bare-expression branches would silently drop the original `return`
+    // statements that exit the enclosing function from a switch case body.
+    let input = """
+      func f(_ x: Int) -> Bool {
+        switch x {
+        case 0:
+          if x > 0 { return true }
+          if x < 0 { return false }
+          return false
+        default:
+          return false
+        }
+      }
+      """
+    assertFormatting(PreferIfElseChain.self, input: input, expected: input, findings: [])
+  }
+
+  @Test func chainInsideIfBodyDoesNotMatch() {
+    // Inside an if body that isn't itself the implicit-return position, the
+    // rewrite would discard the explicit returns.
+    let input = """
+      func f(_ x: Int) -> Bool {
+        if x > 100 {
+          if x > 0 { return true }
+          if x < 0 { return false }
+          return false
+        }
+        return false
+      }
+      """
+    assertFormatting(PreferIfElseChain.self, input: input, expected: input, findings: [])
+  }
+
+  @Test func chainInsideLoopBodyDoesNotMatch() {
+    let input = """
+      func f(_ items: [Int]) -> Bool {
+        for x in items {
+          if x > 0 { return true }
+          if x < 0 { return false }
+          return false
+        }
+        return false
+      }
+      """
+    assertFormatting(PreferIfElseChain.self, input: input, expected: input, findings: [])
+  }
+
+  @Test func chainNotAtStartOfFunctionBodyDoesNotMatch() {
+    // The chain doesn't occupy the entire body — the bare if/else expression
+    // would be a discarded value rather than the function's return.
+    let input = """
+      func f(_ x: Int) -> Bool {
+        let scaled = x * 2
+        if scaled > 0 { return true }
+        if scaled < 0 { return false }
+        return false
+      }
+      """
+    assertFormatting(PreferIfElseChain.self, input: input, expected: input, findings: [])
+  }
+
+  @Test func chainWithFollowingStatementDoesNotMatch() {
+    // Statements after the chain mean the if/else expression's value would be
+    // discarded rather than implicitly returned.
+    let input = """
+      func f(_ x: Int) -> Bool {
+        if x > 0 { return true }
+        if x < 0 { return false }
+        return false
+        let unreachable = 1
+        _ = unreachable
+      }
+      """
+    assertFormatting(PreferIfElseChain.self, input: input, expected: input, findings: [])
+  }
 }

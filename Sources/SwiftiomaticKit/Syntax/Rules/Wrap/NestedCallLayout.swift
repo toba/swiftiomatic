@@ -228,7 +228,7 @@ extension NestedCallLayout {
         for level in chain.dropLast().reversed() {
             let original = level.call.arguments.first!
             let arg = LabeledExprSyntax(
-                label: original.label,
+                label: original.label?.with(\.leadingTrivia, []),
                 colon: original.colon,
                 expression: result
             )
@@ -288,7 +288,7 @@ extension NestedCallLayout {
         for level in chain.dropLast().reversed() {
             let original = level.call.arguments.first!
             let arg = LabeledExprSyntax(
-                label: original.label,
+                label: original.label?.with(\.leadingTrivia, []),
                 colon: original.colon,
                 expression: result
             )
@@ -339,12 +339,19 @@ extension NestedCallLayout {
         // Wrap the outermost call.
         let outermost = chain.first!.call
         let outerOriginal = outermost.arguments.first!
-        let arg = LabeledExprSyntax(
-            label: outerOriginal.label,
-            colon: outerOriginal.colon,
-            expression: innerExpr
-                .with(\.leadingTrivia, .newline + Trivia(stringLiteral: innerIndent))
-        )
+        let arg: LabeledExprSyntax
+        if let label = outerOriginal.label {
+            arg = LabeledExprSyntax(
+                label: label.with(\.leadingTrivia, .newline + Trivia(stringLiteral: innerIndent)),
+                colon: outerOriginal.colon,
+                expression: innerExpr.with(\.leadingTrivia, [])
+            )
+        } else {
+            arg = LabeledExprSyntax(
+                expression: innerExpr
+                    .with(\.leadingTrivia, .newline + Trivia(stringLiteral: innerIndent))
+            )
+        }
         let result = ExprSyntax(
             FunctionCallExprSyntax(
                 calledExpression: outermost.calledExpression.trimmed,
@@ -382,7 +389,6 @@ extension NestedCallLayout {
     private func isFullyNested(_ chain: [CallLevel], baseIndent: String) -> Bool {
         for (depth, level) in chain.enumerated() {
             let call = level.call
-            let expectedIndent = baseIndent + String(repeating: indentUnit, count: depth)
 
             // The left paren should be followed by a newline.
             guard let firstArg = call.arguments.first else { continue }
@@ -431,12 +437,19 @@ extension NestedCallLayout {
             let argIndent = currentIndent + indentUnit
 
             let original = level.call.arguments.first!
-            let arg = LabeledExprSyntax(
-                label: original.label,
-                colon: original.colon,
-                expression: result
-                    .with(\.leadingTrivia, .newline + Trivia(stringLiteral: argIndent))
-            )
+            let arg: LabeledExprSyntax
+            if let label = original.label {
+                arg = LabeledExprSyntax(
+                    label: label.with(\.leadingTrivia, .newline + Trivia(stringLiteral: argIndent)),
+                    colon: original.colon,
+                    expression: result.with(\.leadingTrivia, [])
+                )
+            } else {
+                arg = LabeledExprSyntax(
+                    expression: result
+                        .with(\.leadingTrivia, .newline + Trivia(stringLiteral: argIndent))
+                )
+            }
 
             result = ExprSyntax(
                 FunctionCallExprSyntax(

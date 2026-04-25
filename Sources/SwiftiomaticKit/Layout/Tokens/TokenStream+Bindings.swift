@@ -65,58 +65,7 @@ extension TokenStream {
         }
         if let initializer = node.initializer {
             let expr = initializer.value
-
-            let isCompound =
-                isCompoundExpression(expr) && leftmostMultilineStringLiteral(of: expr) == nil
-            let hasMemberChain = isMemberAccessChain(expr)
-            let canGroupBeforeBreak =
-                (isCompound || hasMemberChain) && !hasLeadingLineComments(expr)
-
-            if let (unindentingNode, _, breakKind, shouldGroup) = stackedIndentationBehavior(
-                rhs: expr
-            ) {
-                var openTokens: [Token] = [
-                    .break(
-                        .open(kind: breakKind),
-                        newlines: .elective(ignoresDiscretionary: true)
-                    ),
-                ]
-                if shouldGroup {
-                    openTokens.append(.open)
-                }
-                after(initializer.equal, tokens: openTokens)
-                var closeTokens: [Token] = [.break(.close(mustBreak: false), size: 0)]
-                if shouldGroup {
-                    closeTokens.append(.close)
-                }
-                after(unindentingNode.lastToken(viewMode: .sourceAccurate), tokens: closeTokens)
-
-                if isCompound {
-                    before(expr.firstToken(viewMode: .sourceAccurate), tokens: .open)
-                    after(expr.lastToken(viewMode: .sourceAccurate), tokens: .close)
-                }
-            } else if canGroupBeforeBreak {
-                // Place the group open *before* the break so that in the Oppen length
-                // calculation, the = break's length only extends to the next operator break
-                // (not to the end of the stream). This causes the formatter to prefer breaking
-                // at binary operators over breaking at the = sign.
-                after(
-                    initializer.equal,
-                    tokens:
-                        .open,
-                        .break(.continue, newlines: .elective(ignoresDiscretionary: true))
-                )
-                after(expr.lastToken(viewMode: .sourceAccurate), tokens: .close)
-            } else {
-                after(
-                    initializer.equal,
-                    tokens: .break(.continue, newlines: .elective(ignoresDiscretionary: true))
-                )
-                if isCompound {
-                    before(expr.firstToken(viewMode: .sourceAccurate), tokens: .open)
-                    after(expr.lastToken(viewMode: .sourceAccurate), tokens: .close)
-                }
-            }
+            arrangeAssignmentBreaks(afterEqualToken: initializer.equal, rhs: expr)
             closeAfterToken = initializer.lastToken(viewMode: .sourceAccurate)
         }
 

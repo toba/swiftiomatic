@@ -52,6 +52,7 @@ package enum ConfigurationRegistry {
         CapitalizeAcronyms.self,
         CapitalizedTypeNames.self,
         CollapseSimpleEnums.self,
+        CollapseSimpleIfElse.self,
         ConsistentSwitchCaseSpacing.self,
         DocCommentSummary.self,
         DocComments.self,

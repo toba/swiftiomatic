@@ -219,10 +219,12 @@ struct NestedCallLayoutInlineTests: RuleTesting {
   }
 
   @Test func labeledOuterArgumentPreservesLabelStrategy2() {
+    // Fully inline ≈ 113 chars (> 100), so Strategy 1 doesn't fit.
+    // Strategy 2 prefix "let x = IdentifierTypeSyntax(name: TokenSyntax(" = 48 chars, fits.
     assertFormatting(
       NestedCallLayout.self,
       input: """
-        attributeName: 1️⃣IdentifierTypeSyntax(
+        let x = 1️⃣IdentifierTypeSyntax(
             name: TokenSyntax(
                 .identifier("Entry"),
                 trailingTrivia: .space,
@@ -231,7 +233,7 @@ struct NestedCallLayoutInlineTests: RuleTesting {
         )
         """,
       expected: """
-        attributeName: IdentifierTypeSyntax(name: TokenSyntax(
+        let x = IdentifierTypeSyntax(name: TokenSyntax(
             .identifier("Entry"),
             trailingTrivia: .space,
             presence: .present

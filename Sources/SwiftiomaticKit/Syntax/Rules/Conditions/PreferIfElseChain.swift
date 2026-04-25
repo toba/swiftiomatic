@@ -31,31 +31,53 @@ final class PreferIfElseChain: RewriteSyntaxRule<BasicRuleValue> {
 
   override func visit(_ node: CodeBlockItemListSyntax) -> CodeBlockItemListSyntax {
     let visited = super.visit(node)
+
+    // The rewrite turns explicit `return` statements into bare-expression
+    // branches of an if-expression. That only preserves semantics when the
+    // expression's value is the implicit return of the enclosing scope, which
+    // requires (1) the chain occupies the entire item list and (2) the list
+    // is the body of a single-expression function/closure/accessor.
+    guard parentAllowsImplicitReturn(visited) else { return visited }
+
     let items = Array(visited)
-    var newItems = [CodeBlockItemSyntax]()
-    var i = 0
-    var changed = false
+    guard let chain = tryBuildChain(items: items, startingAt: 0),
+      chain.endIndex == items.count
+    else { return visited }
 
-    while i < items.count {
-      if let chain = tryBuildChain(items: items, startingAt: i) {
-        diagnose(.useIfElseChain, on: chain.firstIf)
-        newItems.append(
-          CodeBlockItemSyntax(
-            leadingTrivia: items[i].leadingTrivia,
-            item: .expr(ExprSyntax(chain.ifExpr)),
-            trailingTrivia: items[chain.endIndex - 1].trailingTrivia
-          )
-        )
-        changed = true
-        i = chain.endIndex
-      } else {
-        newItems.append(items[i])
-        i += 1
-      }
-    }
+    diagnose(.useIfElseChain, on: chain.firstIf)
+    return CodeBlockItemListSyntax([
+      CodeBlockItemSyntax(
+        leadingTrivia: items[0].leadingTrivia,
+        item: .expr(ExprSyntax(chain.ifExpr)),
+        trailingTrivia: items[chain.endIndex - 1].trailingTrivia
+      ),
+    ])
+  }
 
-    guard changed else { return visited }
-    return CodeBlockItemListSyntax(newItems)
+  /// Whether the items list sits in a position where a trailing bare
+  /// expression becomes the enclosing scope's implicit return value.
+  private func parentAllowsImplicitReturn(_ list: CodeBlockItemListSyntax) -> Bool {
+    guard let parent = list.parent else { return false }
+
+    // Closure body, computed-property accessor block, and top-level scripts
+    // host the items list directly.
+    if parent.is(ClosureExprSyntax.self) { return true }
+    if parent.is(AccessorBlockSyntax.self) { return true }
+    if parent.is(SourceFileSyntax.self) { return true }
+
+    // Switch cases require explicit `return` to leave the enclosing function.
+    if parent.is(SwitchCaseSyntax.self) { return false }
+
+    // Otherwise the list is wrapped in a CodeBlockSyntax. Function and
+    // accessor bodies allow implicit return; do/for/while/if/guard/defer/catch
+    // do not.
+    guard let codeBlock = parent.as(CodeBlockSyntax.self),
+      let grandparent = codeBlock.parent
+    else { return false }
+
+    if grandparent.is(FunctionDeclSyntax.self) { return true }
+    if grandparent.is(AccessorDeclSyntax.self) { return true }
+    return false
   }
 
   // MARK: - Chain detection

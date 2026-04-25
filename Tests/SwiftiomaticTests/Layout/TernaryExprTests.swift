@@ -13,6 +13,24 @@
 import Testing
 @Suite
 struct TernaryExprTests: LayoutTesting {
+  @Test func assignmentPrefersTernaryBreaksOverEqualsBreak() {
+    // Breaking after `=` is a last resort. When a ternary RHS doesn't fit, prefer
+    // breaking before `?` and `:` over breaking after `=`.
+    let input =
+      """
+      let string = expectParameterLabel ? text.string.dropFirst(parameterPrefix.count) : text.string[...]
+      """
+    let expected =
+      """
+      let string = expectParameterLabel
+        ? text.string.dropFirst(parameterPrefix.count)
+        : text.string[...]
+
+      """
+
+    assertLayout(input: input, expected: expected, linelength: 50)
+  }
+
   @Test func ternaryExprs() {
     let input =
       """
@@ -30,17 +48,14 @@ struct TernaryExprTests: LayoutTesting {
       let x = a ? b : c
       let y = a ? b : c
       let z = a ? b : c
-      let reallyLongName =
-        a ? longTruePart : longFalsePart
-      let reallyLongName =
-        reallyLongCondition
+      let reallyLongName = a
+        ? longTruePart : longFalsePart
+      let reallyLongName = reallyLongCondition
         ? reallyLongTruePart : reallyLongFalsePart
-      let reallyLongName =
-        reallyLongCondition
+      let reallyLongName = reallyLongCondition
         ? reallyReallyReallyLongTruePart
         : reallyLongFalsePart
-      let reallyLongName =
-        someCondition
+      let reallyLongName = someCondition
         ? firstFunc(foo: arg)
         : secondFunc(bar: arg)
 
@@ -58,8 +73,7 @@ struct TernaryExprTests: LayoutTesting {
       """
     let expected =
       """
-      let someLocalizedText =
-        shouldUseTheFirstOption
+      let someLocalizedText = shouldUseTheFirstOption
         ? stringFunc(name: "Name1", comment: "short comment")
         : stringFunc(
           name: "Name2", comment: "Some very, extremely long comment",
@@ -81,10 +95,9 @@ struct TernaryExprTests: LayoutTesting {
 
     let expected =
       """
-      foo =
-        firstTerm
-          + secondTerm
-          + thirdTerm
+      foo = firstTerm
+        + secondTerm
+        + thirdTerm
         ? firstTerm
           + secondTerm
           + thirdTerm
@@ -93,18 +106,17 @@ struct TernaryExprTests: LayoutTesting {
           + thirdTerm
       let foo =
         firstTerm
-          + secondTerm
-          + thirdTerm
+        + secondTerm
+        + thirdTerm
         ? firstTerm
           + secondTerm
           + thirdTerm
         : firstTerm
           + secondTerm
           + thirdTerm
-      foo =
-        firstTerm
-          || secondTerm
-            && thirdTerm
+      foo = firstTerm
+        || secondTerm
+          && thirdTerm
         ? firstTerm
           + secondTerm
           + thirdTerm
@@ -113,8 +125,8 @@ struct TernaryExprTests: LayoutTesting {
           + thirdTerm
       let foo =
         firstTerm
-          || secondTerm
-            && thirdTerm
+        || secondTerm
+          && thirdTerm
         ? firstTerm
           + secondTerm
           + thirdTerm
@@ -142,42 +154,34 @@ struct TernaryExprTests: LayoutTesting {
 
     let expected =
       """
-      a =
-        b
+      a = b
         ? c
         : d ? e : f
-      let a =
-        b
+      let a = b
         ? c
         : d ? e : f
-      a =
-        b
+      a = b
         ? c0 + c1
         : d ? e : f
-      let a =
-        b
+      let a = b
         ? c0 + c1
         : d ? e : f
-      a =
-        b
+      a = b
         ? c0 + c1
           + c2 + c3
         : d ? e : f
-      let a =
-        b
+      let a = b
         ? c0 + c1
           + c2 + c3
         : d ? e : f
-      foo =
-        testA
+      foo = testA
         ? testB
           ? testC
           : testD
         : testE
           ? testF
           : testG
-      let foo =
-        testA
+      let foo = testA
         ? testB
           ? testC
           : testD

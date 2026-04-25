@@ -15,9 +15,11 @@
 	},
 	"wrap": {
 		"singleLineBodies": { "lint": "no", "mode": "inline", "rewrite": true },
+		"switchCaseBodies": { "lint": "no", "mode": "adaptive", "rewrite": true },
 		"compoundCaseItems": { "lint": "no", "rewrite": false },
 		"singleLineComments": { "lint": "no", "rewrite": false },
-		"collapseSimpleEnums": { "lint": "no", "rewrite": false },
+		"collapseSimpleEnums": { "lint": "no", "rewrite": true },
+		"collapseSimpleIfElse": { "lint": "no", "rewrite": true },
 		"conditionalAssignment": { "lint": "no", "rewrite": false },
 		"multilineFunctionChains": { "lint": "no", "rewrite": false },
 		"multilineStatementBraces": { "lint": "no", "rewrite": false },
@@ -173,7 +175,8 @@
 		"elseCatchOnNewLine": false,
 		"modifiersOnSameLine": { "lint": "warn", "rewrite": false },
 		"ensureLineBreakAtEOF": { "lint": "no", "rewrite": false },
-		"beforeGuardConditions": true,
+		"beforeGuardConditions": false,
+		"alignWrappedConditions": true,
 		"beforeEachGenericRequirement": false,
 		"betweenDeclarationAttributes": false,
 		"aroundMultilineExpressionChainComponents": false

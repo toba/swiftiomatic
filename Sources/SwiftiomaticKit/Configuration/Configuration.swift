@@ -172,6 +172,14 @@ package struct Configuration: Sendable, Equatable {
         Set(ruleEntries.map(\.qualifiedKey))
     }
 
+    /// Maps each rule's short key to its canonical qualified key.
+    /// If two rules share a short key (different groups), one is chosen arbitrarily.
+    package static var qualifiedKeyByShortKey: [String: String] {
+        var map: [String: String] = [:]
+        for entry in ruleEntries { map[entry.key] = entry.qualifiedKey }
+        return map
+    }
+
     /// All keys that are settings or meta fields (not rules or groups),
     /// regardless of whether they're currently grouped or ungrouped.
     package static var allSettingAndMetaKeys: Set<String> {

@@ -17,8 +17,12 @@ extension TokenStream {
         // inside of the conditions can stack in addition to continuations between the conditions.
         // When `lineBreakBeforeGuardConditions` is false, skip the first condition (like if-statements)
         // so it stays on the same line as `guard`.
+        // The +6 alignment under the first condition only makes sense when the first condition
+        // stays on the `guard` line (i.e., `beforeGuardConditions` is false). When conditions are
+        // expected to wrap below `guard`, fall back to the normal continuation indent.
         let guardBreakKind: OpenBreakKind =
-            config[AlignWrappedConditions.self] ? .alignment(spaces: 6) : .continuation
+            config[AlignWrappedConditions.self] && !config[BeforeGuardConditions.self]
+            ? .alignment(spaces: 6) : .continuation
         for (i, condition) in node.conditions.enumerated() {
             if i == 0 && !config[BeforeGuardConditions.self] { continue }
 

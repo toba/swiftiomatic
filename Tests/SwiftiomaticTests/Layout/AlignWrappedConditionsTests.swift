@@ -114,6 +114,15 @@ struct AlignWrappedConditionsTests: LayoutTesting {
 
   // MARK: - guard
 
+  /// Configuration that pairs `alignWrappedConditions = true` with
+  /// `beforeGuardConditions = false` so the +6 alignment under the first
+  /// condition takes effect (the first condition stays on the `guard` line).
+  private var guardAlignConfig: Configuration {
+    var c = config
+    c[BeforeGuardConditions.self] = false
+    return c
+  }
+
   @Test func guardAlignsTwoConditions() {
     assertLayout(
       input: """
@@ -130,7 +139,7 @@ struct AlignWrappedConditionsTests: LayoutTesting {
 
         """,
       linelength: 30,
-      configuration: config
+      configuration: guardAlignConfig
     )
   }
 
@@ -154,7 +163,57 @@ struct AlignWrappedConditionsTests: LayoutTesting {
 
         """,
       linelength: 35,
-      configuration: config
+      configuration: guardAlignConfig
+    )
+  }
+
+  /// When `beforeGuardConditions` is true, wrapped guard conditions should
+  /// fall back to the normal continuation indent rather than aligning at +6.
+  @Test func guardBeforeGuardConditionsUsesNormalIndent() {
+    var c = config
+    c[BeforeGuardConditions.self] = true
+    assertLayout(
+      input: """
+        guard let a = foo(), let b = bar() else {
+          return
+        }
+        """,
+      expected: """
+        guard let a = foo(),
+          let b = bar()
+        else {
+          return
+        }
+
+        """,
+      linelength: 30,
+      configuration: c
+    )
+  }
+
+  @Test func guardBeforeGuardConditionsNestedUsesNormalIndent() {
+    var c = config
+    c[BeforeGuardConditions.self] = true
+    assertLayout(
+      input: """
+        func foo() {
+          guard let a = foo(), let b = bar() else {
+            return
+          }
+        }
+        """,
+      expected: """
+        func foo() {
+          guard let a = foo(),
+            let b = bar()
+          else {
+            return
+          }
+        }
+
+        """,
+      linelength: 35,
+      configuration: c
     )
   }
 

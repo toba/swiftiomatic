@@ -412,6 +412,68 @@ extension TokenStream {
             && !hasLeadingLineComments(expr)
     }
 
+    /// Places break tokens after an assignment-style operator and matching close tokens around the
+    /// RHS. Shared by `InfixOperatorExpr` (assigning operators) and `PatternBinding` (`let/var = …`).
+    ///
+    /// Strategies, in priority order:
+    /// - Ternary RHS: skips stacked indent so the engine prefers `?`/`:` breaks over `=`.
+    /// - Stacked indent (parens, `&&`/`||`): wraps the RHS scope with stacked continuation indent.
+    /// - Group-before-break (chains, binary operators): places `.open` before the break so inner
+    ///   operator breaks get priority over the `=` break.
+    /// - Otherwise: a simple continuation break.
+    func arrangeAssignmentBreaks(
+        afterEqualToken equal: TokenSyntax,
+        rhs: ExprSyntax,
+        operatorExpr: ExprSyntax? = nil
+    ) {
+        let isCompound =
+            isCompoundExpression(rhs) && leftmostMultilineStringLiteral(of: rhs) == nil
+        let hasMemberChain = isMemberAccessChain(rhs)
+        let canGroupBeforeBreak =
+            (isCompound || hasMemberChain) && !hasLeadingLineComments(rhs)
+        let isTernaryRhs = rhs.is(TernaryExprSyntax.self)
+
+        if !isTernaryRhs,
+            let (unindentingNode, _, breakKind, shouldGroup) =
+                stackedIndentationBehavior(after: operatorExpr, rhs: rhs)
+        {
+            var openTokens: [Token] = [
+                .break(
+                    .open(kind: breakKind),
+                    newlines: .elective(ignoresDiscretionary: true)
+                ),
+            ]
+            if shouldGroup {
+                openTokens.append(.open)
+            }
+            after(equal, tokens: openTokens)
+
+            var closeTokens: [Token] = [.break(.close(mustBreak: false), size: 0)]
+            if shouldGroup {
+                closeTokens.append(.close)
+            }
+            after(unindentingNode.lastToken(viewMode: .sourceAccurate), tokens: closeTokens)
+
+            if isCompound {
+                before(rhs.firstToken(viewMode: .sourceAccurate), tokens: .open)
+                after(rhs.lastToken(viewMode: .sourceAccurate), tokens: .close)
+            }
+        } else if canGroupBeforeBreak {
+            after(
+                equal,
+                tokens: .open,
+                .break(.continue, newlines: .elective(ignoresDiscretionary: true))
+            )
+            after(rhs.lastToken(viewMode: .sourceAccurate), tokens: .close)
+        } else {
+            after(equal, tokens: .break(.continue, newlines: .elective(ignoresDiscretionary: true)))
+            if isCompound {
+                before(rhs.firstToken(viewMode: .sourceAccurate), tokens: .open)
+                after(rhs.lastToken(viewMode: .sourceAccurate), tokens: .close)
+            }
+        }
+    }
+
     /// Returns whether the given expression has line or block comments in the leading trivia of its
     /// first token. When comments are present between `=` and the RHS expression, grouping the open
     /// before the break disrupts comment indentation.

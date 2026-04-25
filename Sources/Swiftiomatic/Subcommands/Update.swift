@@ -8,8 +8,10 @@ extension SwiftiomaticCommand {
       abstract: "Update the configuration file to match the current rule registry",
       discussion: """
         Compares rule entries in swiftiomatic.json against the built-in rule registry. \
-        Removes entries for rules that no longer exist and adds entries for new rules \
-        (with their default values). All other settings and values are preserved.
+        Removes entries for rules that no longer exist, adds entries for new rules \
+        (with their default values), and warns about rules placed in the wrong group — \
+        moving them to the correct location while preserving the user's customized values. \
+        All other settings and values are preserved.
         """
     )
 
@@ -17,10 +19,8 @@ extension SwiftiomaticCommand {
     var configurationOptions: ConfigurationOptions
 
     func run() throws {
-      // 1. Find and read the configuration file.
       let (configURL, data) = try findConfiguration()
 
-      // 2. Parse as JSONValue to inspect keys.
       let decoder = JSONDecoder()
       decoder.allowsJSON5 = true
       let rootValue = try decoder.decode(JSONValue.self, from: data)
@@ -30,26 +30,26 @@ extension SwiftiomaticCommand {
         throw ExitCode.failure
       }
 
-      // 3. Compute diff.
-      let validKeys = Configuration.allRuleQualifiedKeys
-      let fileKeys = extractRuleKeys(from: rootDict)
+      let diff = Configuration.computeUpdate(for: rootDict)
 
-      let toAdd = validKeys.subtracting(fileKeys).sorted()
-      let toRemove = fileKeys.subtracting(validKeys).sorted()
-
-      guard !toAdd.isEmpty || !toRemove.isEmpty else {
+      guard diff.hasChanges else {
         print("Configuration is up to date.")
         return
       }
 
-      // 4. Show planned changes.
-      if !toRemove.isEmpty {
-        print("Rules to remove:")
-        for key in toRemove { print("  - \(key)") }
+      if !diff.misplaced.isEmpty {
+        print("Misplaced rules (will be moved, preserving your values):")
+        for entry in diff.misplaced {
+          print("  ! \(entry.foundAt) → \(entry.correctAt)")
+        }
       }
-      if !toAdd.isEmpty {
+      if !diff.toRemove.isEmpty {
+        print("Unknown rules to remove:")
+        for key in diff.toRemove { print("  - \(key)") }
+      }
+      if !diff.toAdd.isEmpty {
         print("Rules to add (with defaults):")
-        for key in toAdd { print("  + \(key)") }
+        for key in diff.toAdd { print("  + \(key)") }
       }
 
       print("\nType \"yes\" to apply changes:")
@@ -58,45 +58,9 @@ extension SwiftiomaticCommand {
         return
       }
 
-      // 5. Get default values for new rules from a default Configuration.
       let defaultJSON = try encodeDefaultConfiguration()
+      Configuration.apply(diff, to: &rootDict, defaults: defaultJSON)
 
-      // 6. Apply removals.
-      for key in toRemove {
-        let parts = key.split(separator: ".", maxSplits: 1).map(String.init)
-        if parts.count == 2, case .object(var groupDict) = rootDict[parts[0]] {
-          groupDict.removeValue(forKey: parts[1])
-          rootDict[parts[0]] = .object(groupDict)
-        } else {
-          rootDict.removeValue(forKey: key)
-        }
-      }
-
-      // 7. Apply additions.
-      for key in toAdd {
-        let parts = key.split(separator: ".", maxSplits: 1).map(String.init)
-
-        if parts.count == 2 {
-          // Grouped rule.
-          let groupName = parts[0]
-          let ruleName = parts[1]
-          let value = extractRuleValue(qualifiedKey: key, shortKey: ruleName, from: defaultJSON)
-
-          if case .object(var groupDict) = rootDict[groupName] {
-            groupDict[ruleName] = value
-            rootDict[groupName] = .object(groupDict)
-          } else {
-            // Group doesn't exist yet — create it.
-            rootDict[groupName] = .object([ruleName: value])
-          }
-        } else {
-          // Ungrouped rule.
-          let value = extractRuleValue(qualifiedKey: key, shortKey: key, from: defaultJSON)
-          rootDict[key] = value
-        }
-      }
-
-      // 8. Serialize and write.
       let encoder = JSONEncoder()
       encoder.outputFormatting = [.prettyPrinted, .sortedKeys, .withoutEscapingSlashes]
       let output = try encoder.encode(JSONValue.object(rootDict))
@@ -110,12 +74,14 @@ extension SwiftiomaticCommand {
 
       try jsonString.write(to: configURL, atomically: true, encoding: .utf8)
 
-      // 9. Report.
-      if !toRemove.isEmpty {
-        print("Removed \(toRemove.count) rule\(toRemove.count == 1 ? "" : "s").")
+      if !diff.misplaced.isEmpty {
+        print("Moved \(diff.misplaced.count) rule\(diff.misplaced.count == 1 ? "" : "s").")
       }
-      if !toAdd.isEmpty {
-        print("Added \(toAdd.count) rule\(toAdd.count == 1 ? "" : "s").")
+      if !diff.toRemove.isEmpty {
+        print("Removed \(diff.toRemove.count) rule\(diff.toRemove.count == 1 ? "" : "s").")
+      }
+      if !diff.toAdd.isEmpty {
+        print("Added \(diff.toAdd.count) rule\(diff.toAdd.count == 1 ? "" : "s").")
       }
       print("Updated \(configURL.path)")
     }

@@ -22,10 +22,15 @@ func detectTestFramework(in node: SourceFileSyntax) -> TestFramework? {
             if name == "Testing" { hasTesting = true }
         }
     }
-    if hasXCTest, hasTesting { return nil }
-    if hasTesting { return .swiftTesting }
-    if hasXCTest { return .xcTest }
-    return nil
+    return if hasXCTest, hasTesting {
+        nil
+    } else if hasTesting {
+        .swiftTesting
+    } else if hasXCTest {
+        .xcTest
+    } else {
+        nil
+    }
 }
 
 /// Type name suffixes that indicate a test suite.
@@ -141,6 +146,7 @@ struct TestContextTracker {
     /// - It's inside an `XCTestCase` subclass and named `test*()` with no parameters and no return.
     func isTestFunction(_ node: FunctionDeclSyntax) -> Bool {
         if importsTesting, node.hasAttribute("Test", inModule: "Testing") { return true }
+
         if insideXCTestCase {
             let name = node.name.text
             return name.hasPrefix("test")

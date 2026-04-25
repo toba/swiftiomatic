@@ -631,12 +631,14 @@ class LintPipeline: SyntaxVisitor {
   }
 
   override func visit(_ node: IfExprSyntax) -> SyntaxVisitorContinueKind {
+    visitIfEnabled(CollapseSimpleIfElse.visit, for: node)
     visitIfEnabled(NoParensAroundConditions.visit, for: node)
     visitIfEnabled(WrapMultilineStatementBraces.visit, for: node)
     visitIfEnabled(WrapSingleLineBodies.visit, for: node)
     return .visitChildren
   }
   override func visitPost(_ node: IfExprSyntax) {
+    onVisitPost(rule: CollapseSimpleIfElse.self, for: node)
     onVisitPost(rule: NoParensAroundConditions.self, for: node)
     onVisitPost(rule: WrapMultilineStatementBraces.self, for: node)
     onVisitPost(rule: WrapSingleLineBodies.self, for: node)
@@ -1238,6 +1240,9 @@ extension RewritePipeline {
     }
     if context.shouldFormat(CollapseSimpleEnums.self, node: node) {
       node = CollapseSimpleEnums(context: context).rewrite(node)
+    }
+    if context.shouldFormat(CollapseSimpleIfElse.self, node: node) {
+      node = CollapseSimpleIfElse(context: context).rewrite(node)
     }
     if context.shouldFormat(ConsistentSwitchCaseSpacing.self, node: node) {
       node = ConsistentSwitchCaseSpacing(context: context).rewrite(node)

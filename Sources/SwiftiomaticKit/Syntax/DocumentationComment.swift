@@ -34,18 +34,7 @@ package struct DocumentationComment {
     }
 
     /// Describes the structural layout of the parameter descriptions in the comment.
-    package enum ParameterLayout {
-        /// All parameters were written under a single `Parameters` outline section at the top level of
-        /// the comment.
-        case outline
-
-        /// All parameters were written as individual `Parameter` items at the top level of the comment.
-        case separated
-
-        /// Parameters were written as a combination of one or more `Parameters` outlines and individual
-        /// `Parameter` items.
-        case mixed
-    }
+    package enum ParameterLayout { case outline, separated, mixed }
 
     /// A single paragraph representing a brief summary of the declaration, if present.
     package var briefSummary: Paragraph?
@@ -146,13 +135,13 @@ package struct DocumentationComment {
         var unprocessedChildren: [Markup] = []
 
         for child in list.children {
-            guard
-                let listItem = child as? ListItem,
-                let firstText = listItem.child(through: [
-                    (0, Paragraph.self),
-                    (0, Text.self),
-                ]) as? Text,
-                firstText.string.trimmingCharacters(in: .whitespaces).lowercased() == "parameters:"
+            guard let listItem = child as? ListItem,
+                  let firstText = listItem.child(through: [
+                      (0, Paragraph.self),
+                      (0, Text.self),
+                  ]) as? Text,
+                  firstText.string.trimmingCharacters(in: .whitespaces).lowercased()
+                      == "parameters:"
             else {
                 unprocessedChildren.append(child.detachedFromParent)
                 continue
@@ -163,11 +152,10 @@ package struct DocumentationComment {
                 guard let sublist = listChild as? UnorderedList else { continue }
 
                 for sublistItem in sublist.listItems {
-                    guard
-                        let paramField = parameterField(
-                            extractedFrom: sublistItem,
-                            expectParameterLabel: false
-                        )
+                    guard let paramField = parameterField(
+                        extractedFrom: sublistItem,
+                        expectParameterLabel: false
+                    )
                     else {
                         continue
                     }
@@ -189,9 +177,9 @@ package struct DocumentationComment {
         var unprocessedChildren: [Markup] = []
 
         for child in list.children {
-            guard
-                let listItem = child as? ListItem,
-                let paramField = parameterField(extractedFrom: listItem, expectParameterLabel: true)
+            guard let listItem = child as? ListItem,
+                  let paramField = parameterField(
+                      extractedFrom: listItem, expectParameterLabel: true)
             else {
                 unprocessedChildren.append(child.detachedFromParent)
                 continue
@@ -200,12 +188,9 @@ package struct DocumentationComment {
             parameters.append(paramField)
 
             switch parameterLayout {
-                case nil:
-                    parameterLayout = .separated
-                case .outline:
-                    parameterLayout = .mixed
-                default:
-                    break
+                case nil: parameterLayout = .separated
+                case .outline: parameterLayout = .mixed
+                default: break
             }
         }
 
@@ -222,9 +207,8 @@ package struct DocumentationComment {
             origin: listItem,
             expectParameterLabel: expectParameterLabel
         )
-        guard
-            let newListItem = listItem.accept(&rewriter) as? ListItem,
-            let name = rewriter.parameterName
+        guard let newListItem = listItem.accept(&rewriter) as? ListItem,
+              let name = rewriter.parameterName
         else { return nil }
 
         return Parameter(name: name, comment: DocumentationComment(markup: newListItem))
@@ -238,24 +222,20 @@ package struct DocumentationComment {
         var unprocessedChildren: [Markup] = []
 
         for child in list.children {
-            guard
-                let listItem = child as? ListItem,
-                case var rewriter = SimpleFieldMarkupRewriter(origin: listItem),
-                listItem.accept(&rewriter) as? ListItem != nil,
-                let name = rewriter.fieldName,
-                let paragraph = rewriter.paragraph
+            guard let listItem = child as? ListItem,
+                  case var rewriter = SimpleFieldMarkupRewriter(origin: listItem),
+                  listItem.accept(&rewriter) as? ListItem != nil,
+                  let name = rewriter.fieldName,
+                  let paragraph = rewriter.paragraph
             else {
                 unprocessedChildren.append(child)
                 continue
             }
 
             switch name.lowercased() {
-                case "returns":
-                    returns = paragraph
-                case "throws":
-                    `throws` = paragraph
-                default:
-                    unprocessedChildren.append(child)
+                case "returns": returns = paragraph
+                case "throws": `throws` = paragraph
+                default: unprocessedChildren.append(child)
             }
         }
 
@@ -299,8 +279,8 @@ private struct ParameterOutlineMarkupRewriter: MarkupRewriter {
             return text
         }
 
-        let string =
-            expectParameterLabel ? text.string.dropFirst(parameterPrefix.count) : text.string[...]
+        let string = expectParameterLabel
+            ? text.string.dropFirst(parameterPrefix.count) : text.string[...]
         let nameAndRemainder = string.split(separator: ":", maxSplits: 1)
         guard nameAndRemainder.count == 2 else { return text }
 
