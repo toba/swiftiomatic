@@ -10,6 +10,7 @@ AST-accurate Swift linting, formatting, and code analysis — used from the IDE,
 - Build/test with xc-mcp **only at session end or when asked**. Batch changes, verify once.
 - Multiple agents work on this repo concurrently. Expect compile errors and uncommitted changes in files outside your scope — ignore them. Only modify files directly related to your current task.
 - Never git stash to dodge an error — fix it.
+- On `/commit`, commit **everything** in the working tree — not just the files you touched. The user only invokes `/commit` when the whole project is ready, so leaving other agents' work uncommitted defeats the purpose. Exclude only `.claude/worktrees/` and obvious junk (build artifacts, secrets).
 
 ## Installation
 
