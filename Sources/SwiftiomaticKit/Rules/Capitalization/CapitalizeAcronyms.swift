@@ -106,6 +106,9 @@ extension Finding.Message {
 package struct AcronymsConfiguration: SyntaxRuleValue {
     package var rewrite = true
     package var lint: Lint = .warn
+    /// Acronyms that should be fully uppercased when they appear at the start
+    /// of an identifier already written in PascalCase. Replace this list to
+    /// override the defaults; entries should be uppercase, e.g. `"URL"`, `"ID"`.
     package var words: [String] = [
         "ID", "URL", "UUID", "HTTP", "HTTPS", "JSON", "XML", "HTML",
         "API", "TCP", "UDP", "DNS", "SSH", "FTP", "SQL", "CSS",

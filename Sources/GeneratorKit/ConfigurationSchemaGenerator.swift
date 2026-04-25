@@ -74,8 +74,10 @@ package final class ConfigurationSchemaGenerator: FileGenerator {
     /// Does not set `additionalProperties: false` because rules may define
     /// extra configuration properties beyond these base fields.
     private static func ruleBaseSchema() -> JSONSchemaNode {
+        // No top-level description: it would override the per-rule description
+        // sibling to `allOf` in IDE hovers (Xcode, VS Code).
         .object(
-            description: "Rule configuration with rewrite and lint properties.",
+            description: nil,
             properties: [
                 "rewrite": .boolean(
                     description: "Whether the rule auto-fixes source code.",
@@ -97,7 +99,7 @@ package final class ConfigurationSchemaGenerator: FileGenerator {
     /// extra configuration properties beyond this base field.
     private static func lintOnlyBaseSchema() -> JSONSchemaNode {
         .object(
-            description: "Lint-only rule configuration.",
+            description: nil,
             properties: [
                 "lint": .stringEnum(
                     description: "Finding severity when the rule is active.",

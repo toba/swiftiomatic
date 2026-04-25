@@ -183,7 +183,11 @@ extension Finding.Message {
 package struct URLMacroConfiguration: SyntaxRuleValue {
   package var rewrite = true
   package var lint: Lint = .warn
+  /// Name of the URL macro to substitute for `URL(string:)!`, e.g. `"URL"`
+  /// or `"#URL"`. When `nil`, the rule is inactive.
   package var macroName: String?
+  /// Module that defines `macroName`, used to insert an `import` statement
+  /// when applying the rewrite. When `nil`, no import is added.
   package var moduleName: String?
 
   package init() {}

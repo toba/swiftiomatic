@@ -376,6 +376,8 @@ package struct ExtensionAccessControlConfiguration: SyntaxRuleValue {
 
     package var rewrite = true
     package var lint: Lint = .warn
+    /// Where to attach the access-level modifier: on each member of an
+    /// extension, or hoisted onto the extension itself when uniform.
     package var placement: Placement = .onMembers
 
     package init() {}

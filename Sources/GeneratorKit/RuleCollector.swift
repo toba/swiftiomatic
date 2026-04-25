@@ -227,11 +227,16 @@ package final class RuleCollector {
             let propertyName = pattern.identifier.text
             guard !basePropertyKeys.contains(propertyName) else { continue }
 
+            let docComment = DocumentationCommentText(
+                extractedFrom: varDecl.leadingTrivia
+            )?.text.trimmingCharacters(in: .whitespacesAndNewlines)
+
             // Determine the type from the annotation or initializer.
             guard
                 let schemaNode = schemaNode(
                     for: binding,
                     propertyName: propertyName,
+                    description: docComment,
                     enumTypes: enumTypes
                 )
             else { continue }
@@ -279,27 +284,46 @@ package final class RuleCollector {
     }
 
     /// Determines the JSON Schema node for a property binding.
+    ///
+    /// `description` is the extracted DocC text for the property, when present;
+    /// callers fall back to the property name if it is `nil` or empty.
     private static func schemaNode(
         for binding: PatternBindingSyntax,
         propertyName: String,
+        description: String?,
         enumTypes: [String: [String]]
     ) -> JSONSchemaNode? {
-        let defaultCase = defaultCaseName(from: binding.initializer?.value)
+        let initValue = binding.initializer?.value
+        let defaultCase = defaultCaseName(from: initValue)
+        let scalarDesc = description?.isEmpty == false ? description! : propertyName
 
         // Try type annotation first (with initializer for the real default).
         if let typeAnnotation = binding.typeAnnotation {
             return schemaNodeFromType(
                 typeAnnotation.type,
                 propertyName: propertyName,
+                description: description,
                 enumTypes: enumTypes,
-                defaultCase: defaultCase
+                defaultCase: defaultCase,
+                initValue: initValue
             )
         }
 
-        // No type annotation — infer from initializer alone (e.g. `.wrap`).
+        // No type annotation — infer from initializer alone.
+        if let intLiteral = initValue?.as(IntegerLiteralExprSyntax.self),
+            let value = Int(intLiteral.literal.text)
+        {
+            return .integer(description: scalarDesc, defaultValue: value)
+        }
+        if let boolLiteral = initValue?.as(BooleanLiteralExprSyntax.self) {
+            return .boolean(
+                description: scalarDesc,
+                defaultValue: boolLiteral.literal.text == "true"
+            )
+        }
         if let defaultCase, let (cases, _) = enumTypes.first(where: { $1.contains(defaultCase) }) {
             return .stringEnum(
-                description: propertyName,
+                description: description,
                 values: enumTypes[cases]!,
                 defaultValue: defaultCase
             )
@@ -317,16 +341,22 @@ package final class RuleCollector {
     private static func schemaNodeFromType(
         _ type: TypeSyntax,
         propertyName: String,
+        description: String?,
         enumTypes: [String: [String]],
-        defaultCase: String?
+        defaultCase: String?,
+        initValue: ExprSyntax?
     ) -> JSONSchemaNode? {
+        let scalarDesc = description?.isEmpty == false ? description! : propertyName
+
         // Optional type: `String?` or `[String]?`
         if let optional = type.as(OptionalTypeSyntax.self) {
             return schemaNodeFromType(
                 optional.wrappedType,
                 propertyName: propertyName,
+                description: description,
                 enumTypes: enumTypes,
-                defaultCase: defaultCase
+                defaultCase: defaultCase,
+                initValue: initValue
             )
         }
 
@@ -335,19 +365,39 @@ package final class RuleCollector {
             let elementIdent = array.element.as(IdentifierTypeSyntax.self),
             elementIdent.name.text == "String"
         {
-            return .stringArray(description: propertyName)
+            return .stringArray(description: scalarDesc)
         }
 
         // Simple identifier type
         if let ident = type.as(IdentifierTypeSyntax.self) {
             let typeName = ident.name.text
             if typeName == "String" {
-                return .string(description: propertyName)
+                return .string(description: scalarDesc)
+            }
+            if typeName == "Int" {
+                let defaultValue: Int
+                if let intLiteral = initValue?.as(IntegerLiteralExprSyntax.self),
+                    let parsed = Int(intLiteral.literal.text)
+                {
+                    defaultValue = parsed
+                } else {
+                    defaultValue = 0
+                }
+                return .integer(description: scalarDesc, defaultValue: defaultValue)
+            }
+            if typeName == "Bool" {
+                let defaultValue: Bool
+                if let boolLiteral = initValue?.as(BooleanLiteralExprSyntax.self) {
+                    defaultValue = boolLiteral.literal.text == "true"
+                } else {
+                    defaultValue = false
+                }
+                return .boolean(description: scalarDesc, defaultValue: defaultValue)
             }
             // Enum type — use initializer's case as default, fall back to first case.
             if let cases = enumTypes[typeName] {
                 return .stringEnum(
-                    description: propertyName,
+                    description: description,
                     values: cases,
                     defaultValue: defaultCase ?? cases[0]
                 )

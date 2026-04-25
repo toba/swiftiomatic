@@ -350,6 +350,8 @@ package struct PatternLetConfiguration: SyntaxRuleValue {
 
     package var rewrite = true
     package var lint: Lint = .warn
+    /// `eachBinding` puts `let`/`var` on each individual binding inside a
+    /// pattern; `outerPattern` hoists a single `let`/`var` to the outer pattern.
     package var placement: Placement = .eachBinding
 
     package init() {}

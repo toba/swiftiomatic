@@ -169,6 +169,9 @@ extension Finding.Message {
 package struct NoAssignmentInExpressionsConfiguration: SyntaxRuleValue {
   package var rewrite = true
   package var lint: Lint = .warn
+  /// Function names whose argument expressions may contain assignments
+  /// without triggering a finding (e.g. `XCTAssertNoThrow` accepts an
+  /// expression that legitimately produces side effects).
   package var allowedFunctions: [String] = ["XCTAssertNoThrow"]
 
   package init() {}

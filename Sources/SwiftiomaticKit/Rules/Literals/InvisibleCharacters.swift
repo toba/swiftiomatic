@@ -55,6 +55,9 @@ extension Finding.Message {
 package struct InvisibleCharactersConfiguration: SyntaxRuleValue {
     package var rewrite = false
     package var lint: Lint = .error
+    /// Extra invisible code points to flag, beyond the built-in set
+    /// (U+200B zero-width space, U+200C zero-width non-joiner, U+FEFF BOM).
+    /// Each entry is a hex string with no prefix, e.g. `"00AD"`, `"200D"`.
     package var additionalCodePoints: [String] = []
 
     /// Built-in default invisible code points and their human-readable names.

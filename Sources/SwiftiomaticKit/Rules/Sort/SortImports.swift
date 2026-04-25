@@ -705,8 +705,14 @@ package struct SortImportsConfiguration: SyntaxRuleValue {
   package var rewrite = true
   package var lint: Lint = .warn
 
+  /// When `true`, imports inside `#if` conditional blocks are also sorted.
+  /// When `false`, conditional imports are left in source order.
   package var includeConditionalImports = false
+  /// When `true`, imports are split into groups (regular, `@testable`, etc.)
+  /// separated by a blank line, and sorted within each group.
   package var shouldGroupImports = true
+  /// Sort key for imports inside a group: `alphabetical` by module name, or
+  /// `length` (shortest first, ties broken alphabetically).
   package var sortOrder: SortOrder = .alphabetical
 
   package enum SortOrder: String, Sendable, Codable, Equatable {

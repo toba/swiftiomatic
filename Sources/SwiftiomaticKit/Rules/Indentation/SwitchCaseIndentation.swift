@@ -189,6 +189,8 @@ package struct SwitchCaseIndentationConfiguration: SyntaxRuleValue {
 
     package var rewrite = true
     package var lint: Lint = .warn
+    /// `flush` aligns case labels with the `switch` keyword; `indented`
+    /// indents them one level beneath it.
     package var style: Style = .flush
 
     package init() {}

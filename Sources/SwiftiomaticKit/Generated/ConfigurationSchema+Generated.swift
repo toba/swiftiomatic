@@ -10,11 +10,10 @@ package enum ConfigurationSchema {
 {
   "$defs" : {
     "lintOnlyBase" : {
-      "description" : "Lint-only rule configuration.",
       "properties" : {
         "lint" : {
           "default" : "warn",
-          "description" : "Finding severity when the rule is active. Options: warn, error, no.",
+          "description" : "Finding severity when the rule is active.\n\nOptions: warn, error, no.",
           "enum" : [
             "warn",
             "error",
@@ -26,11 +25,10 @@ package enum ConfigurationSchema {
       "type" : "object"
     },
     "ruleBase" : {
-      "description" : "Rule configuration with rewrite and lint properties.",
       "properties" : {
         "lint" : {
           "default" : "warn",
-          "description" : "Finding severity when the rule is active. Options: warn, error, no.",
+          "description" : "Finding severity when the rule is active.\n\nOptions: warn, error, no.",
           "enum" : [
             "warn",
             "error",
@@ -70,7 +68,7 @@ package enum ConfigurationSchema {
           "properties" : {
             "placement" : {
               "default" : "onMembers",
-              "description" : "placement Options: onMembers, onExtension.",
+              "description" : "Where to attach the access-level modifier: on each member of an\nextension, or hoisted onto the extension itself when uniform.\n\nOptions: onMembers, onExtension.",
               "enum" : [
                 "onMembers",
                 "onExtension"
@@ -89,7 +87,7 @@ package enum ConfigurationSchema {
           "properties" : {
             "accessLevel" : {
               "default" : "private",
-              "description" : "accessLevel Options: private, fileprivate.",
+              "description" : "Preferred modifier for file-scoped declarations whose effective access\nis private to the file.\n\nOptions: private, fileprivate.",
               "enum" : [
                 "private",
                 "fileprivate"
@@ -148,6 +146,27 @@ package enum ConfigurationSchema {
         }
       ],
       "description" : "Overloads with only a closure argument should not be disambiguated by parameter labels.\n\nLint: If two overloaded functions with one closure parameter appear in the same scope, a lint\n      error is raised.\n",
+      "unevaluatedProperties" : false
+    },
+    "associatedValueCount" : {
+      "allOf" : [
+        {
+          "$ref" : "#/$defs/lintOnlyBase"
+        }
+      ],
+      "description" : "Enum cases should not declare too many associated values.\n",
+      "properties" : {
+        "error" : {
+          "default" : 6,
+          "description" : "Enum cases with more than this many associated values emit an\nerror-severity finding.",
+          "type" : "integer"
+        },
+        "warning" : {
+          "default" : 5,
+          "description" : "Enum cases with more than this many associated values emit a\nwarning-severity finding.",
+          "type" : "integer"
+        }
+      },
       "unevaluatedProperties" : false
     },
     "avoidNoneName" : {
@@ -285,7 +304,7 @@ package enum ConfigurationSchema {
       "properties" : {
         "placement" : {
           "default" : "eachBinding",
-          "description" : "placement Options: eachBinding, outerPattern.",
+          "description" : "`eachBinding` puts `let`/`var` on each individual binding inside a\npattern; `outerPattern` hoists a single `let`/`var` to the outer pattern.\n\nOptions: eachBinding, outerPattern.",
           "enum" : [
             "eachBinding",
             "outerPattern"
@@ -293,6 +312,27 @@ package enum ConfigurationSchema {
           "type" : "string"
         }
       }
+    },
+    "closureBodyLength" : {
+      "allOf" : [
+        {
+          "$ref" : "#/$defs/lintOnlyBase"
+        }
+      ],
+      "description" : "Closures should not exceed a configurable body line length.\n",
+      "properties" : {
+        "error" : {
+          "default" : 50,
+          "description" : "Closure bodies longer than this many lines emit an error-severity finding.",
+          "type" : "integer"
+        },
+        "warning" : {
+          "default" : 30,
+          "description" : "Closure bodies longer than this many lines emit a warning-severity finding.",
+          "type" : "integer"
+        }
+      },
+      "unevaluatedProperties" : false
     },
     "closures" : {
       "additionalProperties" : false,
@@ -424,6 +464,38 @@ package enum ConfigurationSchema {
           "description" : "All public or open declarations must have a top-level documentation comment.\n\nLint: If a public declaration is missing a documentation comment, a lint error is raised.\n",
           "unevaluatedProperties" : false
         },
+        "expiringTodo" : {
+          "allOf" : [
+            {
+              "$ref" : "#/$defs/lintOnlyBase"
+            }
+          ],
+          "description" : "`TODO` and `FIXME` comments with a bracketed date should be resolved by that\ndate.\n\nA trailing date in a configurable format (default `[MM/dd/yyyy]`) is parsed\nand compared to the current date. Comments approaching, past, or\nincorrectly formatted dates emit findings at independently-configured\nseverities.\n\nLint: If a dated TODO/FIXME is approaching expiry, expired, or has a\nmalformed date, a lint finding is raised.\n",
+          "properties" : {
+            "approachingExpiryThreshold" : {
+              "default" : 15,
+              "description" : "Days before expiry at which the TODO starts being reported as\napproaching its deadline.",
+              "type" : "integer"
+            },
+            "dateDelimitersClosing" : {
+              "description" : "Closing delimiter that terminates the date inside the TODO comment.",
+              "type" : "string"
+            },
+            "dateDelimitersOpening" : {
+              "description" : "Opening delimiter that introduces the date inside the TODO comment.",
+              "type" : "string"
+            },
+            "dateFormat" : {
+              "description" : "`DateFormatter` pattern used to parse the expiry date out of the comment.",
+              "type" : "string"
+            },
+            "dateSeparator" : {
+              "description" : "Separator between date components.",
+              "type" : "string"
+            }
+          },
+          "unevaluatedProperties" : false
+        },
         "formatTypePrefix" : {
           "allOf" : [
             {
@@ -431,6 +503,24 @@ package enum ConfigurationSchema {
             }
           ],
           "description" : "Use correct formatting for `TODO:`, `MARK:`, and `FIXME:` comments.\n\nThese special comment tags must be uppercase, followed by a colon and a space. `MARK:` comments\nwith a dash separator must use `// MARK: - text` format. Standalone `/// MARK:` doc comments are\nconverted to `// MARK:` since MARK is not a documentation concept.\n\nLint: If a special comment tag is not correctly formatted, a lint warning is raised.\n\nFormat: The comment is reformatted to use the correct style.\n"
+        },
+        "noLocalDocComments" : {
+          "allOf" : [
+            {
+              "$ref" : "#/$defs/lintOnlyBase"
+            }
+          ],
+          "description" : "Doc comments (`///` and `/** */`) inside function, initializer, and accessor\nbodies should be regular comments (`//` or `/* */`).\n\nDocumentation comments are intended for API-level declarations. Inside an\nimplementation body, a doc comment cannot document anything externally\nvisible, so a regular comment is the correct form.\n\nNested function declarations are exempt — they are still declarations and\nmay carry doc comments.\n\nLint: If a doc comment appears inside a body, a lint warning is raised.\n",
+          "unevaluatedProperties" : false
+        },
+        "orphanedDocComment" : {
+          "allOf" : [
+            {
+              "$ref" : "#/$defs/lintOnlyBase"
+            }
+          ],
+          "description" : "Documentation comments must be attached to a declaration.\n\nA `///` or `/** */` doc comment that is followed by a regular `//` or `/* */`\ncomment instead of a declaration is \"orphaned\" — the doc comment is detached\nfrom any code construct it could document.\n\nFile-header style comments (`////` and `/***`) are excluded.\n\nLint: If a doc comment is orphaned, a lint warning is raised.\n",
+          "unevaluatedProperties" : false
         },
         "precedeModifiers" : {
           "allOf" : [
@@ -589,6 +679,32 @@ package enum ConfigurationSchema {
       ],
       "description" : "Use doc comments for API declarations, otherwise use regular comments.\n\nComments immediately before type declarations, properties, methods, and other\nAPI-level constructs use `///` doc comment syntax. Comments inside function\nbodies use `//` regular comment syntax, except for nested function declarations.\n\nLint: When a regular comment should be a doc comment, or vice versa.\n\nFormat: The comment style is corrected.\n [opt-in]"
     },
+    "cyclomaticComplexity" : {
+      "allOf" : [
+        {
+          "$ref" : "#/$defs/lintOnlyBase"
+        }
+      ],
+      "description" : "Function bodies should have bounded cyclomatic complexity.\n\nCounts decision points (`if`, `for`, `while`, `guard`, `repeat`, `switch case`,\n`catch`, `fallthrough`) within each function or initializer body. Nested\nfunctions and initializers are excluded — they get their own measurement.\n\nLint: emits `.warn` when complexity exceeds the warning threshold and\n      `.error` when it exceeds the error threshold.\n",
+      "properties" : {
+        "error" : {
+          "default" : 20,
+          "description" : "Functions whose cyclomatic complexity exceeds this value emit an\nerror-severity finding.",
+          "type" : "integer"
+        },
+        "ignoresCaseStatements" : {
+          "default" : false,
+          "description" : "When `true`, individual `case` clauses inside a `switch` don't add to\ncomplexity (only the `switch` itself counts).",
+          "type" : "boolean"
+        },
+        "warning" : {
+          "default" : 10,
+          "description" : "Functions whose cyclomatic complexity exceeds this value emit a\nwarning-severity finding.",
+          "type" : "integer"
+        }
+      },
+      "unevaluatedProperties" : false
+    },
     "declarations" : {
       "allOf" : [
         {
@@ -676,6 +792,38 @@ package enum ConfigurationSchema {
       ],
       "description" : "Ensure the file ends with exactly one newline.\n\nMany Unix tools expect files to end with a newline. Missing trailing newlines cause\n`diff` noise and `cat` concatenation issues. Extra trailing newlines waste space.\n\nLint: If the file does not end with exactly one newline, a lint warning is raised.\n\nFormat: A trailing newline is added if missing, or extra newlines are removed.\n [opt-in]"
     },
+    "expiringTodo" : {
+      "allOf" : [
+        {
+          "$ref" : "#/$defs/lintOnlyBase"
+        }
+      ],
+      "description" : "`TODO` and `FIXME` comments with a bracketed date should be resolved by that\ndate.\n\nA trailing date in a configurable format (default `[MM/dd/yyyy]`) is parsed\nand compared to the current date. Comments approaching, past, or\nincorrectly formatted dates emit findings at independently-configured\nseverities.\n\nLint: If a dated TODO/FIXME is approaching expiry, expired, or has a\nmalformed date, a lint finding is raised.\n",
+      "properties" : {
+        "approachingExpiryThreshold" : {
+          "default" : 15,
+          "description" : "Days before expiry at which the TODO starts being reported as\napproaching its deadline.",
+          "type" : "integer"
+        },
+        "dateDelimitersClosing" : {
+          "description" : "Closing delimiter that terminates the date inside the TODO comment.",
+          "type" : "string"
+        },
+        "dateDelimitersOpening" : {
+          "description" : "Opening delimiter that introduces the date inside the TODO comment.",
+          "type" : "string"
+        },
+        "dateFormat" : {
+          "description" : "`DateFormatter` pattern used to parse the expiry date out of the comment.",
+          "type" : "string"
+        },
+        "dateSeparator" : {
+          "description" : "Separator between date components.",
+          "type" : "string"
+        }
+      },
+      "unevaluatedProperties" : false
+    },
     "explicitNilCheck" : {
       "allOf" : [
         {
@@ -694,7 +842,7 @@ package enum ConfigurationSchema {
       "properties" : {
         "placement" : {
           "default" : "onMembers",
-          "description" : "placement Options: onMembers, onExtension.",
+          "description" : "Where to attach the access-level modifier: on each member of an\nextension, or hoisted onto the extension itself when uniform.\n\nOptions: onMembers, onExtension.",
           "enum" : [
             "onMembers",
             "onExtension"
@@ -712,10 +860,36 @@ package enum ConfigurationSchema {
       "description" : "Enforce a consistent file header comment, or remove file headers entirely.\n\nWhen configured with header text, any existing file header comment is replaced with the\nconfigured text. When configured with an empty string, any existing file header is removed.\nFile header comments are line comments (`//`) or block comments (`/* */`) at the start of\nthe file, before any blank line, doc comment, or code. Doc comments (`///`, `/** */`) are\nnot considered file header comments.\n\nThis rule is opt-in and requires configuration via `fileHeader.text` in the configuration file.\n\nLint: A warning is raised when the file header does not match the configured text.\n\nFormat: The file header is replaced with (or cleared to) the configured text.\n [opt-in]",
       "properties" : {
         "text" : {
-          "description" : "text",
+          "description" : "The exact header text every file must begin with. May contain newlines\nfor multi-line headers. When `nil` or empty, any existing file header\nis removed instead.",
           "type" : "string"
         }
       }
+    },
+    "fileLength" : {
+      "allOf" : [
+        {
+          "$ref" : "#/$defs/lintOnlyBase"
+        }
+      ],
+      "description" : "Files should not exceed a configurable total line count.\n",
+      "properties" : {
+        "error" : {
+          "default" : 1000,
+          "description" : "Files with more than this many lines emit an error-severity finding.",
+          "type" : "integer"
+        },
+        "ignoreCommentOnlyLines" : {
+          "default" : false,
+          "description" : "When `true`, lines that contain only a comment (or whitespace) don't\ncount toward the line total.",
+          "type" : "boolean"
+        },
+        "warning" : {
+          "default" : 400,
+          "description" : "Files with more than this many lines emit a warning-severity finding.",
+          "type" : "integer"
+        }
+      },
+      "unevaluatedProperties" : false
     },
     "fileScopedDeclarationPrivacy" : {
       "allOf" : [
@@ -727,7 +901,7 @@ package enum ConfigurationSchema {
       "properties" : {
         "accessLevel" : {
           "default" : "private",
-          "description" : "accessLevel Options: private, fileprivate.",
+          "description" : "Preferred modifier for file-scoped declarations whose effective access\nis private to the file.\n\nOptions: private, fileprivate.",
           "enum" : [
             "private",
             "fileprivate"
@@ -784,6 +958,27 @@ package enum ConfigurationSchema {
       ],
       "description" : "Use correct formatting for `TODO:`, `MARK:`, and `FIXME:` comments.\n\nThese special comment tags must be uppercase, followed by a colon and a space. `MARK:` comments\nwith a dash separator must use `// MARK: - text` format. Standalone `/// MARK:` doc comments are\nconverted to `// MARK:` since MARK is not a documentation concept.\n\nLint: If a special comment tag is not correctly formatted, a lint warning is raised.\n\nFormat: The comment is reformatted to use the correct style.\n"
     },
+    "functionBodyLength" : {
+      "allOf" : [
+        {
+          "$ref" : "#/$defs/lintOnlyBase"
+        }
+      ],
+      "description" : "Function bodies should not exceed a configurable line length.\n\nCounts source lines inside the body, excluding the lines containing the\nopening and closing braces. Comment-only and blank lines are excluded by\ndefault; tokens on the same line still count that line.\n\nLint: emits `.warn` over the warning threshold and `.error` over the error\n      threshold.\n",
+      "properties" : {
+        "error" : {
+          "default" : 100,
+          "description" : "Function bodies longer than this many lines emit an error-severity finding.",
+          "type" : "integer"
+        },
+        "warning" : {
+          "default" : 50,
+          "description" : "Function bodies longer than this many lines emit a warning-severity finding.",
+          "type" : "integer"
+        }
+      },
+      "unevaluatedProperties" : false
+    },
     "generics" : {
       "additionalProperties" : false,
       "description" : "generics rule group.",
@@ -837,7 +1032,7 @@ package enum ConfigurationSchema {
           "properties" : {
             "placement" : {
               "default" : "eachBinding",
-              "description" : "placement Options: eachBinding, outerPattern.",
+              "description" : "`eachBinding` puts `let`/`var` on each individual binding inside a\npattern; `outerPattern` hoists a single `let`/`var` to the outer pattern.\n\nOptions: eachBinding, outerPattern.",
               "enum" : [
                 "eachBinding",
                 "outerPattern"
@@ -912,7 +1107,7 @@ package enum ConfigurationSchema {
           "description" : "Assignment expressions must be their own statements.\n\nAssignment should not be used in an expression context that expects a `Void` value. For example,\nassigning a variable within a `return` statement exiting a `Void` function is prohibited.\n\nLint: If an assignment expression is found in a position other than a standalone statement, a\n      lint finding is emitted.\n\nFormat: A `return` statement containing an assignment expression is expanded into two separate\n        statements.\n",
           "properties" : {
             "allowedFunctions" : {
-              "description" : "allowedFunctions",
+              "description" : "Function names whose argument expressions may contain assignments\nwithout triggering a finding (e.g. `XCTAssertNoThrow` accepts an\nexpression that legitimately produces side effects).",
               "items" : {
                 "type" : "string"
               },
@@ -1125,9 +1320,19 @@ package enum ConfigurationSchema {
       ],
       "description" : "Imports must be lexicographically ordered and (optionally) logically grouped at the top of each source file.\nThe order of the import groups is 1) regular imports, 2) declaration imports, 3) @\\_implementationOnly\nimports, and 4) @testable imports. These groups are separated by a single blank line. Blank lines in\nbetween the import declarations are removed.\n\nLogical grouping is enabled by default but can be disabled via the `sortImports.shouldGroupImports`\nconfiguration option to limit this rule to lexicographic ordering.\n\nBy default, imports within conditional compilation blocks (`#if`, `#elseif`, `#else`) are not ordered.\nThis behavior can be controlled via the `sortImports.includeConditionalImports` configuration option.\n\nLint: If an import appears anywhere other than the beginning of the file it resides in,\n      not lexicographically ordered, or (optionally) not in the appropriate import group, a lint error is\n      raised.\n\nFormat: Imports will be reordered and (optionally) grouped at the top of the file.\n",
       "properties" : {
+        "includeConditionalImports" : {
+          "default" : false,
+          "description" : "When `true`, imports inside `#if` conditional blocks are also sorted.\nWhen `false`, conditional imports are left in source order.",
+          "type" : "boolean"
+        },
+        "shouldGroupImports" : {
+          "default" : true,
+          "description" : "When `true`, imports are split into groups (regular, `@testable`, etc.)\nseparated by a blank line, and sorted within each group.",
+          "type" : "boolean"
+        },
         "sortOrder" : {
           "default" : "alphabetical",
-          "description" : "sortOrder Options: alphabetical, length.",
+          "description" : "Sort key for imports inside a group: `alphabetical` by module name, or\n`length` (shortest first, ties broken alphabetically).\n\nOptions: alphabetical, length.",
           "enum" : [
             "alphabetical",
             "length"
@@ -1158,7 +1363,7 @@ package enum ConfigurationSchema {
           "properties" : {
             "style" : {
               "default" : "flush",
-              "description" : "style Options: flush, indented.",
+              "description" : "`flush` aligns case labels with the `switch` keyword; `indented`\nindents them one level beneath it.\n\nOptions: flush, indented.",
               "enum" : [
                 "flush",
                 "indented"
@@ -1239,7 +1444,7 @@ package enum ConfigurationSchema {
       "description" : "Zero-width and other invisible Unicode characters in string literals are\nalmost always typos or paste artifacts. They're impossible to see in source\nand cause string equality, lookup, and URL parsing to silently fail.\n\nThe default character set is U+200B (zero-width space), U+200C (zero-width\nnon-joiner), and U+FEFF (BOM). Configure additional code points via\n`invisibleCharacters.additionalCodePoints` (an array of hex strings, e.g.\n`[\"00AD\", \"200D\"]`).\n\nLint: When a string literal segment contains any of the configured\ninvisible code points, an error is raised at the offending character.\n",
       "properties" : {
         "additionalCodePoints" : {
-          "description" : "additionalCodePoints",
+          "description" : "Extra invisible code points to flag, beyond the built-in set\n(U+200B zero-width space, U+200C zero-width non-joiner, U+FEFF BOM).\nEach entry is a hex string with no prefix, e.g. `\"00AD\"`, `\"200D\"`.",
           "items" : {
             "type" : "string"
           },
@@ -1323,6 +1528,27 @@ package enum ConfigurationSchema {
       },
       "type" : "object"
     },
+    "lineLengthLimit" : {
+      "allOf" : [
+        {
+          "$ref" : "#/$defs/lintOnlyBase"
+        }
+      ],
+      "description" : "Source lines should not exceed a configurable character count.\n\nLint-only counterpart to the `lineLength` layout setting (which targets the\npretty-printer's wrap point). This rule emits findings on lines that exceed\n`warning` / `error` thresholds.\n",
+      "properties" : {
+        "error" : {
+          "default" : 200,
+          "description" : "Lines longer than this many characters emit an error-severity finding.",
+          "type" : "integer"
+        },
+        "warning" : {
+          "default" : 120,
+          "description" : "Lines longer than this many characters emit a warning-severity finding.",
+          "type" : "integer"
+        }
+      },
+      "unevaluatedProperties" : false
+    },
     "literals" : {
       "additionalProperties" : false,
       "description" : "literals rule group.",
@@ -1353,7 +1579,7 @@ package enum ConfigurationSchema {
           "description" : "Zero-width and other invisible Unicode characters in string literals are\nalmost always typos or paste artifacts. They're impossible to see in source\nand cause string equality, lookup, and URL parsing to silently fail.\n\nThe default character set is U+200B (zero-width space), U+200C (zero-width\nnon-joiner), and U+FEFF (BOM). Configure additional code points via\n`invisibleCharacters.additionalCodePoints` (an array of hex strings, e.g.\n`[\"00AD\", \"200D\"]`).\n\nLint: When a string literal segment contains any of the configured\ninvisible code points, an error is raised at the offending character.\n",
           "properties" : {
             "additionalCodePoints" : {
-              "description" : "additionalCodePoints",
+              "description" : "Extra invisible code points to flag, beyond the built-in set\n(U+200B zero-width space, U+200C zero-width non-joiner, U+FEFF BOM).\nEach entry is a hex string with no prefix, e.g. `\"00AD\"`, `\"200D\"`.",
               "items" : {
                 "type" : "string"
               },
@@ -1368,7 +1594,7 @@ package enum ConfigurationSchema {
         },
         "multilineTrailingCommaBehavior" : {
           "default" : "keptAsWritten",
-          "description" : "Trailing comma handling in multiline lists. Options: alwaysUsed, neverUsed, keptAsWritten.",
+          "description" : "Trailing comma handling in multiline lists.\n\nOptions: alwaysUsed, neverUsed, keptAsWritten.",
           "enum" : [
             "alwaysUsed",
             "neverUsed",
@@ -1396,7 +1622,7 @@ package enum ConfigurationSchema {
         },
         "reflowMultilineStringLiterals" : {
           "default" : "never",
-          "description" : "Multiline string literal reflow mode. Options: never, onlyLinesOverLength, always.",
+          "description" : "Multiline string literal reflow mode.\n\nOptions: never, onlyLinesOverLength, always.",
           "enum" : [
             "never",
             "onlyLinesOverLength",
@@ -1413,11 +1639,11 @@ package enum ConfigurationSchema {
           "description" : "Replace force-unwrapped `URL(string:)` initializers with a configured URL macro.\n\nWhen configured with a macro name like `#URL` and module like `URLFoundation`, this rule\nconverts `URL(string: \"https://example.com\")!` to `#URL(\"https://example.com\")` and adds\nthe module import if not already present.\n\nOnly simple string literals are converted — string interpolations, concatenations, and\nnon-literal expressions are left alone. The `URL(string:relativeTo:)` and\n`URL(fileURLWithPath:)` initializers are not affected.\n\nThis rule is opt-in and requires configuration via `urlMacro.macroName` and\n`urlMacro.moduleName` in the configuration file.\n\nLint: A warning is raised for each `URL(string: \"...\")!` that can be converted.\n\nFormat: The force-unwrapped URL initializer is replaced with the configured macro.\n [opt-in]",
           "properties" : {
             "macroName" : {
-              "description" : "macroName",
+              "description" : "Name of the URL macro to substitute for `URL(string:)!`, e.g. `\"URL\"`\nor `\"#URL\"`. When `nil`, the rule is inactive.",
               "type" : "string"
             },
             "moduleName" : {
-              "description" : "moduleName",
+              "description" : "Module that defines `macroName`, used to insert an `import` statement\nwhen applying the rewrite. When `nil`, no import is added.",
               "type" : "string"
             }
           }
@@ -1429,6 +1655,238 @@ package enum ConfigurationSchema {
             }
           ],
           "description" : "Never use `[<Type>]()` syntax. In call sites that should be replaced with `[]`,\nfor initializations use explicit type combined with empty array literal `let _: [<Type>] = []`\nStatic properties of a type that return that type should not include a reference to their type.\n\nLint:  Non-literal empty array initialization will yield a lint error.\nFormat: All invalid use sites would be related with empty literal (with or without explicit type annotation).\n [opt-in]"
+        }
+      },
+      "type" : "object"
+    },
+    "metrics" : {
+      "additionalProperties" : false,
+      "description" : "metrics rule group.",
+      "properties" : {
+        "associatedValueCount" : {
+          "allOf" : [
+            {
+              "$ref" : "#/$defs/lintOnlyBase"
+            }
+          ],
+          "description" : "Enum cases should not declare too many associated values.\n",
+          "properties" : {
+            "error" : {
+              "default" : 6,
+              "description" : "Enum cases with more than this many associated values emit an\nerror-severity finding.",
+              "type" : "integer"
+            },
+            "warning" : {
+              "default" : 5,
+              "description" : "Enum cases with more than this many associated values emit a\nwarning-severity finding.",
+              "type" : "integer"
+            }
+          },
+          "unevaluatedProperties" : false
+        },
+        "closureBodyLength" : {
+          "allOf" : [
+            {
+              "$ref" : "#/$defs/lintOnlyBase"
+            }
+          ],
+          "description" : "Closures should not exceed a configurable body line length.\n",
+          "properties" : {
+            "error" : {
+              "default" : 50,
+              "description" : "Closure bodies longer than this many lines emit an error-severity finding.",
+              "type" : "integer"
+            },
+            "warning" : {
+              "default" : 30,
+              "description" : "Closure bodies longer than this many lines emit a warning-severity finding.",
+              "type" : "integer"
+            }
+          },
+          "unevaluatedProperties" : false
+        },
+        "cyclomaticComplexity" : {
+          "allOf" : [
+            {
+              "$ref" : "#/$defs/lintOnlyBase"
+            }
+          ],
+          "description" : "Function bodies should have bounded cyclomatic complexity.\n\nCounts decision points (`if`, `for`, `while`, `guard`, `repeat`, `switch case`,\n`catch`, `fallthrough`) within each function or initializer body. Nested\nfunctions and initializers are excluded — they get their own measurement.\n\nLint: emits `.warn` when complexity exceeds the warning threshold and\n      `.error` when it exceeds the error threshold.\n",
+          "properties" : {
+            "error" : {
+              "default" : 20,
+              "description" : "Functions whose cyclomatic complexity exceeds this value emit an\nerror-severity finding.",
+              "type" : "integer"
+            },
+            "ignoresCaseStatements" : {
+              "default" : false,
+              "description" : "When `true`, individual `case` clauses inside a `switch` don't add to\ncomplexity (only the `switch` itself counts).",
+              "type" : "boolean"
+            },
+            "warning" : {
+              "default" : 10,
+              "description" : "Functions whose cyclomatic complexity exceeds this value emit a\nwarning-severity finding.",
+              "type" : "integer"
+            }
+          },
+          "unevaluatedProperties" : false
+        },
+        "fileLength" : {
+          "allOf" : [
+            {
+              "$ref" : "#/$defs/lintOnlyBase"
+            }
+          ],
+          "description" : "Files should not exceed a configurable total line count.\n",
+          "properties" : {
+            "error" : {
+              "default" : 1000,
+              "description" : "Files with more than this many lines emit an error-severity finding.",
+              "type" : "integer"
+            },
+            "ignoreCommentOnlyLines" : {
+              "default" : false,
+              "description" : "When `true`, lines that contain only a comment (or whitespace) don't\ncount toward the line total.",
+              "type" : "boolean"
+            },
+            "warning" : {
+              "default" : 400,
+              "description" : "Files with more than this many lines emit a warning-severity finding.",
+              "type" : "integer"
+            }
+          },
+          "unevaluatedProperties" : false
+        },
+        "functionBodyLength" : {
+          "allOf" : [
+            {
+              "$ref" : "#/$defs/lintOnlyBase"
+            }
+          ],
+          "description" : "Function bodies should not exceed a configurable line length.\n\nCounts source lines inside the body, excluding the lines containing the\nopening and closing braces. Comment-only and blank lines are excluded by\ndefault; tokens on the same line still count that line.\n\nLint: emits `.warn` over the warning threshold and `.error` over the error\n      threshold.\n",
+          "properties" : {
+            "error" : {
+              "default" : 100,
+              "description" : "Function bodies longer than this many lines emit an error-severity finding.",
+              "type" : "integer"
+            },
+            "warning" : {
+              "default" : 50,
+              "description" : "Function bodies longer than this many lines emit a warning-severity finding.",
+              "type" : "integer"
+            }
+          },
+          "unevaluatedProperties" : false
+        },
+        "lineLengthLimit" : {
+          "allOf" : [
+            {
+              "$ref" : "#/$defs/lintOnlyBase"
+            }
+          ],
+          "description" : "Source lines should not exceed a configurable character count.\n\nLint-only counterpart to the `lineLength` layout setting (which targets the\npretty-printer's wrap point). This rule emits findings on lines that exceed\n`warning` / `error` thresholds.\n",
+          "properties" : {
+            "error" : {
+              "default" : 200,
+              "description" : "Lines longer than this many characters emit an error-severity finding.",
+              "type" : "integer"
+            },
+            "warning" : {
+              "default" : 120,
+              "description" : "Lines longer than this many characters emit a warning-severity finding.",
+              "type" : "integer"
+            }
+          },
+          "unevaluatedProperties" : false
+        },
+        "nestingDepth" : {
+          "allOf" : [
+            {
+              "$ref" : "#/$defs/lintOnlyBase"
+            }
+          ],
+          "description" : "Types and functions should not be excessively nested.\n\nTracks nesting depth separately for types (`class`, `struct`, `enum`, `actor`,\n`extension`, `protocol`) and functions/initializers/subscripts. Emits a finding\neach time a node opens at a depth greater than the configured limit.\n",
+          "properties" : {
+            "functionLevel" : {
+              "default" : 2,
+              "description" : "Maximum permitted nesting depth for control-flow blocks inside a\nfunction body (if/for/while/switch/closure).",
+              "type" : "integer"
+            },
+            "typeLevel" : {
+              "default" : 1,
+              "description" : "Maximum permitted nesting depth for type declarations\n(struct/class/enum/actor/protocol inside another type).",
+              "type" : "integer"
+            }
+          },
+          "unevaluatedProperties" : false
+        },
+        "parameterCount" : {
+          "allOf" : [
+            {
+              "$ref" : "#/$defs/lintOnlyBase"
+            }
+          ],
+          "description" : "Functions and initializers should not declare too many parameters.\n",
+          "properties" : {
+            "error" : {
+              "default" : 8,
+              "description" : "Functions with more than this many parameters emit an error-severity finding.",
+              "type" : "integer"
+            },
+            "ignoresDefaultParameters" : {
+              "default" : true,
+              "description" : "When `true`, parameters with a default value don't count toward the limit.",
+              "type" : "boolean"
+            },
+            "warning" : {
+              "default" : 5,
+              "description" : "Functions with more than this many parameters emit a warning-severity finding.",
+              "type" : "integer"
+            }
+          },
+          "unevaluatedProperties" : false
+        },
+        "tupleSize" : {
+          "allOf" : [
+            {
+              "$ref" : "#/$defs/lintOnlyBase"
+            }
+          ],
+          "description" : "Tuples with many elements are hard to read; consider a struct instead.\n",
+          "properties" : {
+            "error" : {
+              "default" : 4,
+              "description" : "Tuples with more than this many elements emit an error-severity finding.",
+              "type" : "integer"
+            },
+            "warning" : {
+              "default" : 3,
+              "description" : "Tuples with more than this many elements emit a warning-severity finding.",
+              "type" : "integer"
+            }
+          },
+          "unevaluatedProperties" : false
+        },
+        "typeBodyLength" : {
+          "allOf" : [
+            {
+              "$ref" : "#/$defs/lintOnlyBase"
+            }
+          ],
+          "description" : "Type bodies (class, struct, enum, actor, protocol, extension) should not\nexceed a configurable line length.\n",
+          "properties" : {
+            "error" : {
+              "default" : 350,
+              "description" : "Type bodies longer than this many lines emit an error-severity finding.",
+              "type" : "integer"
+            },
+            "warning" : {
+              "default" : 250,
+              "description" : "Type bodies (struct/class/enum/actor) longer than this many lines\nemit a warning-severity finding.",
+              "type" : "integer"
+            }
+          },
+          "unevaluatedProperties" : false
         }
       },
       "type" : "object"
@@ -1531,7 +1989,7 @@ package enum ConfigurationSchema {
           "description" : "Capitalize acronyms when the first character is capitalized.\n\nWhen an identifier contains a titlecased acronym (e.g. `Url`, `Json`, `Id`),\nit should be fully uppercased (e.g. `URL`, `JSON`, `ID`) for consistency with\nSwift naming conventions.\n\nThe list of recognized acronyms is configurable via `Configuration.acronyms`.\n\nLint: An identifier with a titlecased acronym raises a warning.\n\nFormat: The titlecased acronym is replaced with the uppercased form.\n [opt-in]",
           "properties" : {
             "words" : {
-              "description" : "words",
+              "description" : "Acronyms that should be fully uppercased when they appear at the start\nof an identifier already written in PascalCase. Replace this list to\noverride the defaults; entries should be uppercase, e.g. `\"URL\"`, `\"ID\"`.",
               "items" : {
                 "type" : "string"
               },
@@ -1560,7 +2018,7 @@ package enum ConfigurationSchema {
       "properties" : {
         "mode" : {
           "default" : "inline",
-          "description" : "mode Options: inline, wrap.",
+          "description" : "`inline` collapses nested calls to the most compact form that fits;\n`wrap` expands them to fully nested form.\n\nOptions: inline, wrap.",
           "enum" : [
             "inline",
             "wrap"
@@ -1577,6 +2035,27 @@ package enum ConfigurationSchema {
       ],
       "description" : "Move inline `try` keyword(s) to the start of the expression.\n\nWhen `try` appears inside function call arguments, it can be hoisted to wrap the\nentire call expression. This is clearer and avoids redundant `try` keywords when\nmultiple arguments throw.\n\nFor example, `foo(try bar(), try baz())` should be `try foo(bar(), baz())`.\n\nThis rule does not flag `try` inside closures (which have their own throwing context)\nor when the call is already wrapped in `try`. Only plain `try` is hoisted (not\n`try?` or `try!`).\n\nLint: Using `try` inside a function call argument raises a warning.\n\nFormat: `try` is removed from arguments and added to wrap the call expression.\n"
     },
+    "nestingDepth" : {
+      "allOf" : [
+        {
+          "$ref" : "#/$defs/lintOnlyBase"
+        }
+      ],
+      "description" : "Types and functions should not be excessively nested.\n\nTracks nesting depth separately for types (`class`, `struct`, `enum`, `actor`,\n`extension`, `protocol`) and functions/initializers/subscripts. Emits a finding\neach time a node opens at a depth greater than the configured limit.\n",
+      "properties" : {
+        "functionLevel" : {
+          "default" : 2,
+          "description" : "Maximum permitted nesting depth for control-flow blocks inside a\nfunction body (if/for/while/switch/closure).",
+          "type" : "integer"
+        },
+        "typeLevel" : {
+          "default" : 1,
+          "description" : "Maximum permitted nesting depth for type declarations\n(struct/class/enum/actor/protocol inside another type).",
+          "type" : "integer"
+        }
+      },
+      "unevaluatedProperties" : false
+    },
     "noAssignmentInExpressions" : {
       "allOf" : [
         {
@@ -1586,7 +2065,7 @@ package enum ConfigurationSchema {
       "description" : "Assignment expressions must be their own statements.\n\nAssignment should not be used in an expression context that expects a `Void` value. For example,\nassigning a variable within a `return` statement exiting a `Void` function is prohibited.\n\nLint: If an assignment expression is found in a position other than a standalone statement, a\n      lint finding is emitted.\n\nFormat: A `return` statement containing an assignment expression is expanded into two separate\n        statements.\n",
       "properties" : {
         "allowedFunctions" : {
-          "description" : "allowedFunctions",
+          "description" : "Function names whose argument expressions may contain assignments\nwithout triggering a finding (e.g. `XCTAssertNoThrow` accepts an\nexpression that legitimately produces side effects).",
           "items" : {
             "type" : "string"
           },
@@ -1683,6 +2162,15 @@ package enum ConfigurationSchema {
         }
       ],
       "description" : "Initializers declared in `ExpressibleBy*` literal protocols are intended\nfor the compiler. Calling them directly (`Set(arrayLiteral: 1, 2)`) is\nalmost certainly a mistake — the literal form (`[1, 2]`) is shorter,\nfaster, and more idiomatic.\n\nLint: When a known standard-library or Foundation type is initialized via\na compiler-protocol label like `arrayLiteral`/`dictionaryLiteral`/\n`stringLiteral`, a warning is raised.\n",
+      "unevaluatedProperties" : false
+    },
+    "noLocalDocComments" : {
+      "allOf" : [
+        {
+          "$ref" : "#/$defs/lintOnlyBase"
+        }
+      ],
+      "description" : "Doc comments (`///` and `/** */`) inside function, initializer, and accessor\nbodies should be regular comments (`//` or `/* */`).\n\nDocumentation comments are intended for API-level declarations. Inside an\nimplementation body, a doc comment cannot document anything externally\nvisible, so a regular comment is the correct form.\n\nNested function declarations are exempt — they are still declarations and\nmay carry doc comments.\n\nLint: If a doc comment appears inside a body, a lint warning is raised.\n",
       "unevaluatedProperties" : false
     },
     "noOptionalBool" : {
@@ -1802,6 +2290,41 @@ package enum ConfigurationSchema {
         }
       ],
       "description" : "Use opaque generic parameters (`some Protocol`) instead of named generic parameters\nwith constraints (`<T: Protocol>`) where equivalent.\n\nThis rule applies to `func`, `init`, and `subscript` declarations. A generic type parameter\nis eligible for conversion when it appears exactly once in the parameter list and is not\nreferenced in the return type, function body, attributes, typed throws, or other generic\nconstraints.\n\nLint: A lint warning is raised when a generic parameter can be replaced with an opaque parameter.\n\nFormat: The generic parameter is replaced with `some Protocol` in the parameter type.\n [opt-in]"
+    },
+    "orphanedDocComment" : {
+      "allOf" : [
+        {
+          "$ref" : "#/$defs/lintOnlyBase"
+        }
+      ],
+      "description" : "Documentation comments must be attached to a declaration.\n\nA `///` or `/** */` doc comment that is followed by a regular `//` or `/* */`\ncomment instead of a declaration is \"orphaned\" — the doc comment is detached\nfrom any code construct it could document.\n\nFile-header style comments (`////` and `/***`) are excluded.\n\nLint: If a doc comment is orphaned, a lint warning is raised.\n",
+      "unevaluatedProperties" : false
+    },
+    "parameterCount" : {
+      "allOf" : [
+        {
+          "$ref" : "#/$defs/lintOnlyBase"
+        }
+      ],
+      "description" : "Functions and initializers should not declare too many parameters.\n",
+      "properties" : {
+        "error" : {
+          "default" : 8,
+          "description" : "Functions with more than this many parameters emit an error-severity finding.",
+          "type" : "integer"
+        },
+        "ignoresDefaultParameters" : {
+          "default" : true,
+          "description" : "When `true`, parameters with a default value don't count toward the limit.",
+          "type" : "boolean"
+        },
+        "warning" : {
+          "default" : 5,
+          "description" : "Functions with more than this many parameters emit a warning-severity finding.",
+          "type" : "integer"
+        }
+      },
+      "unevaluatedProperties" : false
     },
     "precedeModifiers" : {
       "allOf" : [
@@ -2712,7 +3235,7 @@ package enum ConfigurationSchema {
           "type" : "array"
         },
         "methodNames" : {
-          "description" : "methodNames",
+          "description" : "Methods whose overrides must call `super`. Entries are full Swift\nselectors, e.g. `\"viewDidLoad()\"` or `\"setEditing(_:animated:)\"`.\nReplacing this list overrides the built-in UIKit/AppKit/XCTest defaults.",
           "items" : {
             "type" : "string"
           },
@@ -2756,7 +3279,7 @@ package enum ConfigurationSchema {
       "properties" : {
         "mode" : {
           "default" : "wrap",
-          "description" : "mode Options: wrap, inline.",
+          "description" : "`wrap` expands single-line bodies onto multiple lines; `inline`\ncollapses multi-line single-statement bodies onto one line.\n\nOptions: wrap, inline.",
           "enum" : [
             "wrap",
             "inline"
@@ -2793,9 +3316,19 @@ package enum ConfigurationSchema {
           ],
           "description" : "Imports must be lexicographically ordered and (optionally) logically grouped at the top of each source file.\nThe order of the import groups is 1) regular imports, 2) declaration imports, 3) @\\_implementationOnly\nimports, and 4) @testable imports. These groups are separated by a single blank line. Blank lines in\nbetween the import declarations are removed.\n\nLogical grouping is enabled by default but can be disabled via the `sortImports.shouldGroupImports`\nconfiguration option to limit this rule to lexicographic ordering.\n\nBy default, imports within conditional compilation blocks (`#if`, `#elseif`, `#else`) are not ordered.\nThis behavior can be controlled via the `sortImports.includeConditionalImports` configuration option.\n\nLint: If an import appears anywhere other than the beginning of the file it resides in,\n      not lexicographically ordered, or (optionally) not in the appropriate import group, a lint error is\n      raised.\n\nFormat: Imports will be reordered and (optionally) grouped at the top of the file.\n",
           "properties" : {
+            "includeConditionalImports" : {
+              "default" : false,
+              "description" : "When `true`, imports inside `#if` conditional blocks are also sorted.\nWhen `false`, conditional imports are left in source order.",
+              "type" : "boolean"
+            },
+            "shouldGroupImports" : {
+              "default" : true,
+              "description" : "When `true`, imports are split into groups (regular, `@testable`, etc.)\nseparated by a blank line, and sorted within each group.",
+              "type" : "boolean"
+            },
             "sortOrder" : {
               "default" : "alphabetical",
-              "description" : "sortOrder Options: alphabetical, length.",
+              "description" : "Sort key for imports inside a group: `alphabetical` by module name, or\n`length` (shortest first, ties broken alphabetically).\n\nOptions: alphabetical, length.",
               "enum" : [
                 "alphabetical",
                 "length"
@@ -2872,7 +3405,7 @@ package enum ConfigurationSchema {
       "properties" : {
         "mode" : {
           "default" : "wrap",
-          "description" : "mode Options: wrap, adaptive.",
+          "description" : "`wrap` puts each case body on its own indented line; `adaptive` keeps\nshort single-statement cases inline when they fit, wraps the rest.\n\nOptions: wrap, adaptive.",
           "enum" : [
             "wrap",
             "adaptive"
@@ -2887,18 +3420,7 @@ package enum ConfigurationSchema {
           "$ref" : "#/$defs/ruleBase"
         }
       ],
-      "description" : "Enforce switch case label indentation style.\n\nTwo styles are supported via `SwitchCaseIndentationConfiguration.Style`:\n- `flush`: `case` labels align with the `switch` keyword (default).\n- `indented`: `case` labels are indented one level from `switch`.\n\nLint: Raised when a `case` or `default` label doesn't match the configured style.\n\nFormat: Case labels, bodies, and the closing brace are reindented to match.\n [opt-in]",
-      "properties" : {
-        "style" : {
-          "default" : "flush",
-          "description" : "style Options: flush, indented.",
-          "enum" : [
-            "flush",
-            "indented"
-          ],
-          "type" : "string"
-        }
-      }
+      "description" : "Sort switch case items alphabetically within each case.\n\nWhen a case matches multiple patterns (e.g. `case .b, .a, .c:`), the patterns are sorted\nlexicographically. Numeric literals are compared by value (including hex, octal, and binary).\nCases with `where` clauses are only sorted if the `where` clause ends up on the last item.\n\nLint: If case items are not sorted, a lint warning is raised.\n\nFormat: The case items are reordered alphabetically.\n [opt-in]"
     },
     "testSuiteAccessControl" : {
       "allOf" : [
@@ -2972,6 +3494,27 @@ package enum ConfigurationSchema {
       ],
       "description" : "Documentation comments must use the `///` form.\n\nThis is similar to `NoBlockComments` but is meant to prevent documentation block comments.\n\nLint: If a doc block comment appears, a lint error is raised.\n\nFormat: If a doc block comment appears on its own on a line, or if a doc block comment spans\n        multiple lines without appearing on the same line as code, it will be replaced with\n        multiple doc line comments.\n"
     },
+    "tupleSize" : {
+      "allOf" : [
+        {
+          "$ref" : "#/$defs/lintOnlyBase"
+        }
+      ],
+      "description" : "Tuples with many elements are hard to read; consider a struct instead.\n",
+      "properties" : {
+        "error" : {
+          "default" : 4,
+          "description" : "Tuples with more than this many elements emit an error-severity finding.",
+          "type" : "integer"
+        },
+        "warning" : {
+          "default" : 3,
+          "description" : "Tuples with more than this many elements emit a warning-severity finding.",
+          "type" : "integer"
+        }
+      },
+      "unevaluatedProperties" : false
+    },
     "typeAliases" : {
       "allOf" : [
         {
@@ -2979,6 +3522,27 @@ package enum ConfigurationSchema {
         }
       ],
       "description" : "Sort protocol composition typealiases alphabetically.\n\nWhen a typealias combines multiple protocols with `&` (e.g. `typealias Deps = Foo & Bar & Baz`),\nthe types are sorted lexicographically. Duplicate types are removed. The `any` keyword, if\npresent, is preserved at the beginning.\n\nLint: If the composition types are not sorted, a lint warning is raised.\n\nFormat: The types are reordered alphabetically and duplicates are removed.\n"
+    },
+    "typeBodyLength" : {
+      "allOf" : [
+        {
+          "$ref" : "#/$defs/lintOnlyBase"
+        }
+      ],
+      "description" : "Type bodies (class, struct, enum, actor, protocol, extension) should not\nexceed a configurable line length.\n",
+      "properties" : {
+        "error" : {
+          "default" : 350,
+          "description" : "Type bodies longer than this many lines emit an error-severity finding.",
+          "type" : "integer"
+        },
+        "warning" : {
+          "default" : 250,
+          "description" : "Type bodies (struct/class/enum/actor) longer than this many lines\nemit a warning-severity finding.",
+          "type" : "integer"
+        }
+      },
+      "unevaluatedProperties" : false
     },
     "typedCatchError" : {
       "allOf" : [
@@ -3081,7 +3645,7 @@ package enum ConfigurationSchema {
       "description" : "Capitalize acronyms when the first character is capitalized.\n\nWhen an identifier contains a titlecased acronym (e.g. `Url`, `Json`, `Id`),\nit should be fully uppercased (e.g. `URL`, `JSON`, `ID`) for consistency with\nSwift naming conventions.\n\nThe list of recognized acronyms is configurable via `Configuration.acronyms`.\n\nLint: An identifier with a titlecased acronym raises a warning.\n\nFormat: The titlecased acronym is replaced with the uppercased form.\n [opt-in]",
       "properties" : {
         "words" : {
-          "description" : "words",
+          "description" : "Acronyms that should be fully uppercased when they appear at the start\nof an identifier already written in PascalCase. Replace this list to\noverride the defaults; entries should be uppercase, e.g. `\"URL\"`, `\"ID\"`.",
           "items" : {
             "type" : "string"
           },
@@ -3098,11 +3662,11 @@ package enum ConfigurationSchema {
       "description" : "Replace force-unwrapped `URL(string:)` initializers with a configured URL macro.\n\nWhen configured with a macro name like `#URL` and module like `URLFoundation`, this rule\nconverts `URL(string: \"https://example.com\")!` to `#URL(\"https://example.com\")` and adds\nthe module import if not already present.\n\nOnly simple string literals are converted — string interpolations, concatenations, and\nnon-literal expressions are left alone. The `URL(string:relativeTo:)` and\n`URL(fileURLWithPath:)` initializers are not affected.\n\nThis rule is opt-in and requires configuration via `urlMacro.macroName` and\n`urlMacro.moduleName` in the configuration file.\n\nLint: A warning is raised for each `URL(string: \"...\")!` that can be converted.\n\nFormat: The force-unwrapped URL initializer is replaced with the configured macro.\n [opt-in]",
       "properties" : {
         "macroName" : {
-          "description" : "macroName",
+          "description" : "Name of the URL macro to substitute for `URL(string:)!`, e.g. `\"URL\"`\nor `\"#URL\"`. When `nil`, the rule is inactive.",
           "type" : "string"
         },
         "moduleName" : {
-          "description" : "moduleName",
+          "description" : "Module that defines `macroName`, used to insert an `import` statement\nwhen applying the rewrite. When `nil`, no import is added.",
           "type" : "string"
         }
       }
@@ -3212,7 +3776,7 @@ package enum ConfigurationSchema {
           "properties" : {
             "mode" : {
               "default" : "inline",
-              "description" : "mode Options: inline, wrap.",
+              "description" : "`inline` collapses nested calls to the most compact form that fits;\n`wrap` expands them to fully nested form.\n\nOptions: inline, wrap.",
               "enum" : [
                 "inline",
                 "wrap"
@@ -3231,7 +3795,7 @@ package enum ConfigurationSchema {
           "properties" : {
             "mode" : {
               "default" : "wrap",
-              "description" : "mode Options: wrap, inline.",
+              "description" : "`wrap` expands single-line bodies onto multiple lines; `inline`\ncollapses multi-line single-statement bodies onto one line.\n\nOptions: wrap, inline.",
               "enum" : [
                 "wrap",
                 "inline"
@@ -3258,7 +3822,7 @@ package enum ConfigurationSchema {
           "properties" : {
             "mode" : {
               "default" : "wrap",
-              "description" : "mode Options: wrap, adaptive.",
+              "description" : "`wrap` puts each case body on its own indented line; `adaptive` keeps\nshort single-statement cases inline when they fit, wraps the rest.\n\nOptions: wrap, adaptive.",
               "enum" : [
                 "wrap",
                 "adaptive"

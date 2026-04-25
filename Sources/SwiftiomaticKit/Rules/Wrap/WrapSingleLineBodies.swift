@@ -766,6 +766,8 @@ package struct SingleLineBodiesConfiguration: SyntaxRuleValue {
 
     package var rewrite = true
     package var lint: Lint = .warn
+    /// `wrap` expands single-line bodies onto multiple lines; `inline`
+    /// collapses multi-line single-statement bodies onto one line.
     package var mode: Mode = .wrap
 
     package init() {}

@@ -35,6 +35,46 @@ extension SyntaxRule {
     ) {
         let severity = context.severity(of: type(of: self))
         guard severity.isActive else { return }
+        emitFinding(
+            message,
+            on: node,
+            severity: severity,
+            anchor: anchor,
+            notes: notes
+        )
+    }
+
+    /// Emits a finding at an explicit severity, overriding the rule's configured
+    /// `lint` value. The rule's master setting still gates emission — if the rule
+    /// is disabled (`lint == .no`), nothing is emitted regardless of the override.
+    ///
+    /// Used by metrics rules that emit at `.warn` over a warning threshold and
+    /// `.error` over an error threshold within a single configured rule.
+    func diagnose<SyntaxType: SyntaxProtocol>(
+        _ message: Finding.Message,
+        on node: SyntaxType?,
+        severity: Lint,
+        anchor: FindingAnchor = .start,
+        notes: [Finding.Note] = []
+    ) {
+        let configured = context.severity(of: type(of: self))
+        guard configured.isActive, severity.isActive else { return }
+        emitFinding(
+            message,
+            on: node,
+            severity: severity,
+            anchor: anchor,
+            notes: notes
+        )
+    }
+
+    private func emitFinding<SyntaxType: SyntaxProtocol>(
+        _ message: Finding.Message,
+        on node: SyntaxType?,
+        severity: Lint,
+        anchor: FindingAnchor,
+        notes: [Finding.Note]
+    ) {
 
         let syntaxLocation: SourceLocation?
 

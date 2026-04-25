@@ -163,6 +163,9 @@ extension Finding.Message {
 package struct FileHeaderConfiguration: SyntaxRuleValue {
   package var rewrite = true
   package var lint: Lint = .warn
+  /// The exact header text every file must begin with. May contain newlines
+  /// for multi-line headers. When `nil` or empty, any existing file header
+  /// is removed instead.
   package var text: String?
 
   package init() {}

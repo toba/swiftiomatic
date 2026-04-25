@@ -722,6 +722,8 @@ package struct NestedCallLayoutConfiguration: SyntaxRuleValue {
 
     package var rewrite = true
     package var lint: Lint = .warn
+    /// `inline` collapses nested calls to the most compact form that fits;
+    /// `wrap` expands them to fully nested form.
     package var mode: Mode = .inline
 
     package init() {}

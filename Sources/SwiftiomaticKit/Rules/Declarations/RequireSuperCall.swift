@@ -97,6 +97,9 @@ extension Finding.Message {
 package struct RequireSuperCallConfiguration: SyntaxRuleValue {
     package var rewrite = false
     package var lint: Lint = .warn
+    /// Methods whose overrides must call `super`. Entries are full Swift
+    /// selectors, e.g. `"viewDidLoad()"` or `"setEditing(_:animated:)"`.
+    /// Replacing this list overrides the built-in UIKit/AppKit/XCTest defaults.
     package var methodNames: [String] = Self.defaultMethodNames
 
     private static let defaultMethodNames: [String] = [

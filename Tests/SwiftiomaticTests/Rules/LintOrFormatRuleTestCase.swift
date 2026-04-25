@@ -27,6 +27,7 @@ extension RuleTesting {
     _ type: LintRule.Type,
     _ markedSource: String,
     findings: [FindingSpec] = [],
+    configuration: Configuration? = nil,
     experimentalFeatures: Parser.ExperimentalFeatures = [],
     sourceLocation: TestSourceLocation = #_sourceLocation
   ) {
@@ -38,7 +39,7 @@ extension RuleTesting {
 
     // Force the rule to be enabled while we test it.
     let enabledRule = ConfigurationRegistry.ruleNameCache[ObjectIdentifier(type)] ?? "\(type)"
-    let configuration = Configuration.forTesting(enabledRule: enabledRule)
+    let configuration = configuration ?? Configuration.forTesting(enabledRule: enabledRule)
     let context = makeTestContext(
       sourceFileSyntax: sourceFileSyntax,
       configuration: configuration,

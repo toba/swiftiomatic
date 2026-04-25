@@ -80,21 +80,31 @@ extension JSONSchemaNode {
         return node
     }
 
+    /// - Parameter description: Prose explaining what the property controls.
+    ///   The legal values are appended automatically as `Options: a, b, c.`
+    ///   Pass `nil` to omit the prose and emit only the options list.
     static func stringEnum(
-        description: String,
+        description: String?,
         values: [String],
         defaultValue: String
     ) -> JSONSchemaNode {
         var node = JSONSchemaNode()
         node.type = "string"
-        node.description = "\(description) Options: \(values.joined(separator: ", "))."
+        let options = "Options: \(values.joined(separator: ", "))."
+        let trimmed = description?
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+        if let trimmed, !trimmed.isEmpty {
+            node.description = "\(trimmed)\n\n\(options)"
+        } else {
+            node.description = options
+        }
         node.enumValues = values
         node.defaultValue = .string(defaultValue)
         return node
     }
 
     static func object(
-        description: String,
+        description: String?,
         properties: [String: JSONSchemaNode],
         additionalProperties: Bool? = false
     ) -> JSONSchemaNode {

@@ -28,6 +28,12 @@
 - Cat 6 performance rules; `PreferFirstWhere`, `PreferLastWhere`, `PreferContains`, `PreferFlatMap`, `PreferAllSatisfy`, `PreferReduceInto`, `PreferMinMax`, `FinalTestCase` ([#316](https://github.com/toba/swiftiomatic/issues/316))
 - Publish separate `swiftiomatic-plugins` repo with `binaryTarget` ([#405](https://github.com/toba/swiftiomatic/issues/405))
 - Layout; collapse `else {` onto preceding line for guard/if when it fits ([#406](https://github.com/toba/swiftiomatic/issues/406))
+- Cat 2 redundancy & cleanup rules ([#319](https://github.com/toba/swiftiomatic/issues/319))
+- Cat 3 modern Swift idiom rules ([#311](https://github.com/toba/swiftiomatic/issues/311))
+- Cat 5 type-safety & data-handling rules ([#318](https://github.com/toba/swiftiomatic/issues/318))
+- Cat 7 metrics rules; `LineLengthLimit`, `FileLength`, `TypeBodyLength`, `FunctionBodyLength`, `ClosureBodyLength`, `CyclomaticComplexity`, `NestingDepth`, `ParameterCount`, `TupleSize`, `AssociatedValueCount` ([#314](https://github.com/toba/swiftiomatic/issues/314))
+- Cat 8 documentation & comments rules; `ExpiringTodo`, `NoLocalDocComments`, `OrphanedDocComment` ([#317](https://github.com/toba/swiftiomatic/issues/317))
+- Wrap ternary; true and false branches each on their own line ([#415](https://github.com/toba/swiftiomatic/issues/415))
 
 ### 🐞 Fixes
 
@@ -54,6 +60,8 @@
 - `PreferStaticOverClassFunc` skips `override` members; `UseImplicitInit` skips single-unlabeled-arg type-erasure conversions ([#411](https://github.com/toba/swiftiomatic/issues/411))
 - `collapseSimpleEnums` doesn't collapse `CodingKeys` enum in `Indent.swift` ([#412](https://github.com/toba/swiftiomatic/issues/412))
 - `NestedCallLayout` silently deletes trailing-closure bodies when collapsing ([#413](https://github.com/toba/swiftiomatic/issues/413))
+- Format rule deletes trailing closure on `.reduce`; leaving call broken ([#416](https://github.com/toba/swiftiomatic/issues/416))
+- `singleLineBodies` inline doesn't collapse `for-in` body that fits on one line ([#414](https://github.com/toba/swiftiomatic/issues/414))
 
 ### 🗜️ Tweaks
 
@@ -86,6 +94,28 @@
 - Rename `PrettyPrint` test folder to `Layout`; `assertPrettyPrintEqual` to `assertLayout`
 - Investigate redundant wrap rules ([#391](https://github.com/toba/swiftiomatic/issues/391))
 - Reorganize `Layout/Rules` into config-group folders
+- Pre-release Swift code review cleanup ([#417](https://github.com/toba/swiftiomatic/issues/417))
+- Convert trivia-only rewrite rules to pretty-print layout ([#387](https://github.com/toba/swiftiomatic/issues/387))
+- Improve JSON schema descriptions for rules ([#439](https://github.com/toba/swiftiomatic/issues/439))
+- Audit visitor-state lifecycle ([#419](https://github.com/toba/swiftiomatic/issues/419))
+- `ConfigurationLoader`; mutating struct to `final class` ([#428](https://github.com/toba/swiftiomatic/issues/428))
+- Extract `Configuration` entry / JSON-modify / range-parse helpers ([#434](https://github.com/toba/swiftiomatic/issues/434))
+- Extract modifier-check and config-reading helpers ([#418](https://github.com/toba/swiftiomatic/issues/418))
+- Layout output; hot-path string allocations ([#429](https://github.com/toba/swiftiomatic/issues/429))
+- `Configuration` equality; avoid encoder allocation per call ([#436](https://github.com/toba/swiftiomatic/issues/436))
+- Remove unnecessary `nonisolated(unsafe)` annotations ([#433](https://github.com/toba/swiftiomatic/issues/433))
+- Replace `[String: any Sendable]` storage in `Configuration` ([#430](https://github.com/toba/swiftiomatic/issues/430))
+- Misc small perf nits in Layout, Schema, Rules ([#427](https://github.com/toba/swiftiomatic/issues/427))
+- Naming nits; `no`, `doesThrow`, `isUsed` ([#425](https://github.com/toba/swiftiomatic/issues/425))
+- Consolidate `TokenStream+Helpers` overloads ([#435](https://github.com/toba/swiftiomatic/issues/435))
+- Frontend parallelism; `DispatchQueue` to `TaskGroup`; stream files ([#426](https://github.com/toba/swiftiomatic/issues/426))
+- Quadratic lookups in `PreferSynthesizedInitializer` / `OpaqueGenericParameters` ([#437](https://github.com/toba/swiftiomatic/issues/437))
+- Findings emission; better anchors and notes ([#423](https://github.com/toba/swiftiomatic/issues/423))
+- Dead code; commented `ConfigurationItem`; missing `schemaURL` ref ([#420](https://github.com/toba/swiftiomatic/issues/420))
+- Drop `@unchecked Sendable` from Frontend classes ([#438](https://github.com/toba/swiftiomatic/issues/438))
+- Typed throws on `JSON5Scanner` and configuration loaders ([#421](https://github.com/toba/swiftiomatic/issues/421))
+- `fatalError` audit; convert programmer-error invariants ([#432](https://github.com/toba/swiftiomatic/issues/432))
+- Consolidate duplicated rule `visit` overloads ([#424](https://github.com/toba/swiftiomatic/issues/424))
 
 ## Week of Apr 12 – Apr 18, 2026
 

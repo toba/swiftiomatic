@@ -179,6 +179,8 @@ package struct SwitchCaseBodiesConfiguration: SyntaxRuleValue {
 
     package var rewrite = true
     package var lint: Lint = .warn
+    /// `wrap` puts each case body on its own indented line; `adaptive` keeps
+    /// short single-statement cases inline when they fit, wraps the rest.
     package var mode: Mode = .wrap
 
     package init() {}

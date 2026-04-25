@@ -29,6 +29,7 @@ package struct ConfigurationGroup: Sendable, Hashable {
         case indentation
         case lineBreaks
         case literals
+        case metrics
         case naming
         case redundancies
         case sort
@@ -53,6 +54,7 @@ package struct ConfigurationGroup: Sendable, Hashable {
     package static let indentation = ConfigurationGroup(.indentation)
     package static let lineBreaks = ConfigurationGroup(.lineBreaks)
     package static let literals = ConfigurationGroup(.literals)
+    package static let metrics = ConfigurationGroup(.metrics)
     package static let naming = ConfigurationGroup(.naming)
     package static let redundancies = ConfigurationGroup(.redundancies)
     package static let sort = ConfigurationGroup(.sort)

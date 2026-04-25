@@ -177,6 +177,8 @@ package struct FileScopedDeclarationPrivacyConfiguration: SyntaxRuleValue {
 
     package var rewrite = true
     package var lint: Lint = .warn
+    /// Preferred modifier for file-scoped declarations whose effective access
+    /// is private to the file.
     package var accessLevel: AccessLevel = .private
 
     package init() {}
