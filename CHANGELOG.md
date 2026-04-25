@@ -23,6 +23,9 @@
 - `AlignWrappedConditions`; align continuation conditions in if/guard ([#395](https://github.com/toba/swiftiomatic/issues/395))
 - `NestedCallLayout` rule ([#385](https://github.com/toba/swiftiomatic/issues/385))
 - `CollapseSimpleIfElse`; single-line if/else for simple cases ([#397](https://github.com/toba/swiftiomatic/issues/397))
+- Cat 1 bug-detection rules; `IdenticalOperands`, `DuplicateConditions`, `DuplicateDictionaryKeys`, `MutableCapture`, `UnhandledThrowingTask`, `RetainNotificationObserver`, `RequireSuperCall`, `NoLiteralProtocolInit`, `UnusedSetterValue`, `UnusedControlFlowLabel`, `InvisibleCharacters` ([#320](https://github.com/toba/swiftiomatic/issues/320))
+- Publish separate `swiftiomatic-plugins` repo with `binaryTarget` ([#405](https://github.com/toba/swiftiomatic/issues/405))
+- Layout; collapse `else {` onto preceding line for guard/if when it fits ([#406](https://github.com/toba/swiftiomatic/issues/406))
 
 ### 🐛 Fixes
 

@@ -161,6 +161,7 @@ package final class WhitespaceLinter {
             // Advance to the last formatted whitespace run if we haven't already. This run precedes
             // a token, so we check it for leading indentation violations.
             while formattedRunsIterator.next() != nil {}
+
             if let lastFormattedRun = formattedRunsIterator.latestElement {
                 checkForIndentationErrors(
                     userIndex: userIndex,
@@ -173,6 +174,7 @@ package final class WhitespaceLinter {
         // If there were more lines in the formatted output and the user's line did not exceed the
         // line length limit, tell the user to add the necessary blank lines.
         let excessFormattedLines = formattedRuns.count - userRuns.count
+
         if excessFormattedLines > 0, !isLineTooLong {
             diagnose(
                 .addLinesError(excessFormattedLines),
@@ -196,9 +198,8 @@ package final class WhitespaceLinter {
         formattedRuns: LazySplitSequence<ArraySlice<UTF8.CodeUnit>>
     ) {
         // Only run this check at the start of a line.
-        guard
-            (userRuns.count > 1 && formattedRuns.count > 1)
-                || (userRuns.count == 1 && formattedRuns.count == 1 && userIndex == 0)
+        guard (userRuns.count > 1 && formattedRuns.count > 1)
+            || (userRuns.count == 1 && formattedRuns.count == 1 && userIndex == 0)
         else {
             return
         }
@@ -217,6 +218,7 @@ package final class WhitespaceLinter {
         // Calculate the length of the user's line.
         let userIndent = lastUserRun.count
         var userLength = userIndent
+
         for index in adjustedUserIndex..<userText.count {
             // Count characters up to the newline.
             if userText[index] == utf8Newline { break }
@@ -232,6 +234,7 @@ package final class WhitespaceLinter {
         // Move the offset to the first non-whitespace character.
         var adjustedFormattedIndex = formattedIndex
         var lastFormattedRun: ArraySlice<UTF8.CodeUnit>!
+
         for (index, formattedRun) in formattedRuns.enumerated() {
             lastFormattedRun = formattedRun
             if index < formattedRuns.count - 1 { adjustedFormattedIndex += formattedRun.count + 1 }
@@ -240,6 +243,7 @@ package final class WhitespaceLinter {
         // Calculate the length of the formatted line.
         let formattedIndent = lastFormattedRun.count
         var formattedLength = formattedIndent
+
         for index in adjustedFormattedIndex..<formattedText.count {
             // Count characters up to the newline.
             if formattedText[index] == utf8Newline { break }
@@ -343,8 +347,7 @@ package final class WhitespaceLinter {
         startingAt offset: Int,
         in data: [UTF8.CodeUnit]
     ) -> ArraySlice<UTF8.CodeUnit> {
-        guard
-            let whitespaceEnd = data[offset...].firstIndex(where: { !$0.isWhitespace })
+        guard let whitespaceEnd = data[offset...].firstIndex(where: { !$0.isWhitespace })
         else {
             return data[offset..<data.endIndex]
         }
@@ -373,6 +376,7 @@ package final class WhitespaceLinter {
     ) {
         let absolutePosition = AbsolutePosition(utf8Offset: utf8Offset)
         let sourceLocation = context.sourceLocationConverter.location(for: absolutePosition)
+
         context.findingEmitter.emit(
             message,
             category: category,
@@ -386,8 +390,10 @@ package final class WhitespaceLinter {
         if whitespace.isEmpty { return .none }
 
         var orderedRuns: [(char: UTF8.CodeUnit, count: Int)] = []
+
         for char in whitespace {
             let lastRun = orderedRuns.last
+
             if lastRun?.char == char {
                 orderedRuns[orderedRuns.endIndex - 1].count += 1
             } else {
@@ -419,63 +425,60 @@ enum WhitespaceIndentation: Equatable {
     case heterogeneous([Indent])
 }
 
-extension Indent {
+fileprivate extension Indent {
     /// Returns a string that describes the indentation in a human readable format, which is
     /// appropriate for use in diagnostic messages.
-    fileprivate var diagnosticDescription: String {
+    var diagnosticDescription: String {
         switch self {
-            case .spaces(let count):
+            case let .spaces(count):
                 let noun = count == 1 ? "space" : "spaces"
                 return "\(count) \(noun)"
-            case .tabs(let count):
+            case let .tabs(count):
                 let noun = count == 1 ? "tab" : "tabs"
                 return "\(count) \(noun)"
         }
     }
 }
 
-extension WhitespaceIndentation {
+fileprivate extension WhitespaceIndentation {
     /// Returns a string that describes the whitespace in a human readable format, which is
     /// appropriate for use in diagnostic messages.
-    fileprivate var diagnosticDescription: String {
+    var diagnosticDescription: String {
         switch self {
-            case .none:
-                return "no indentation"
-            case .heterogeneous(let indents):
+            case .none: return "no indentation"
+            case let .heterogeneous(indents):
                 guard let first = indents.first else { return "no indentation" }
                 return indents.dropFirst().reduce(first.diagnosticDescription) {
                     $0 + ", " + $1.diagnosticDescription
                 }
-            case .homogeneous(let indent):
-                return indent.diagnosticDescription
+            case let .homogeneous(indent): return indent.diagnosticDescription
         }
     }
 }
 
-extension Finding.Message {
-    fileprivate static let trailingWhitespaceError: Finding.Message = "remove trailing whitespace"
+fileprivate extension Finding.Message {
+    static let trailingWhitespaceError: Finding.Message = "remove trailing whitespace"
 
-    fileprivate static func indentationError(
+    static func indentationError(
         expected expectedIndentation: WhitespaceIndentation,
         actual actualIndentation: WhitespaceIndentation
     ) -> Finding.Message {
         switch expectedIndentation {
-            case .none:
-                return "remove all leading whitespace"
+            case .none: return "remove all leading whitespace"
 
             case .homogeneous, .heterogeneous:
-                if case .homogeneous(let expectedIndent) = expectedIndentation,
-                    case .homogeneous(let actualIndent) = actualIndentation
+                if case let .homogeneous(expectedIndent) = expectedIndentation,
+                   case let .homogeneous(actualIndent) = actualIndentation
                 {
-                    if case .spaces(let expectedCount) = expectedIndent,
-                        case .spaces(let actualCount) = actualIndent
+                    if case let .spaces(expectedCount) = expectedIndent,
+                       case let .spaces(actualCount) = actualIndent
                     {
                         let delta = expectedCount - actualCount
                         let verb = delta > 0 ? "indent" : "unindent"
                         return "\(verb) by \(abs(delta)) spaces"
                     }
-                    if case .tabs(let expectedCount) = expectedIndent,
-                        case .tabs(let actualCount) = actualIndent
+                    if case let .tabs(expectedCount) = expectedIndent,
+                       case let .tabs(actualCount) = actualIndent
                     {
                         let delta = expectedCount - actualCount
                         let verb = delta > 0 ? "indent" : "unindent"
@@ -491,20 +494,20 @@ extension Finding.Message {
         }
     }
 
-    fileprivate static func spacingError(_ spaces: Int) -> Finding.Message {
+    static func spacingError(_ spaces: Int) -> Finding.Message {
         let verb = spaces > 0 ? "add" : "remove"
         let noun = abs(spaces) == 1 ? "space" : "spaces"
         return "\(verb) \(abs(spaces)) \(noun)"
     }
 
-    fileprivate static let spacingCharError: Finding.Message = "use spaces for spacing"
+    static let spacingCharError: Finding.Message = "use spaces for spacing"
 
-    fileprivate static let removeLineError: Finding.Message = "remove line break"
+    static let removeLineError: Finding.Message = "remove line break"
 
-    fileprivate static func addLinesError(_ lines: Int) -> Finding.Message {
+    static func addLinesError(_ lines: Int) -> Finding.Message {
         let noun = lines == 1 ? "break" : "breaks"
         return "add \(lines) line \(noun)"
     }
 
-    fileprivate static let lineLengthError: Finding.Message = "line is too long"
+    static let lineLengthError: Finding.Message = "line is too long"
 }

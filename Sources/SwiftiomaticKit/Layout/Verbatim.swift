@@ -33,9 +33,8 @@ struct Verbatim: Sendable {
 
         // If we have no lines left (or none with any content), just initialize everything empty and
         // exit.
-        guard
-            !originalLines.isEmpty,
-            let index = originalLines.firstIndex(where: { !$0.isEmpty })
+        guard !originalLines.isEmpty,
+              let index = originalLines.firstIndex(where: { !$0.isEmpty })
         else {
             lines = []
             leadingWhitespaceCounts = []
@@ -55,6 +54,7 @@ struct Verbatim: Sendable {
         // subsequent lines (if possible). Record the new leading whitespaces counts, and trim off
         // whitespace from the ends of the strings.
         let firstLineLeadingSpaceCount = numberOfLeadingSpaces(in: originalLines[index])
+
         leadingWhitespaceCounts = originalLines.map {
             max(numberOfLeadingSpaces(in: $0) - firstLineLeadingSpaceCount, 0)
         }
@@ -69,20 +69,17 @@ struct Verbatim: Sendable {
     /// Specifically, multiline content should have a length equal to the maximum (to force breaking),
     /// while single-line content should have its natural length.
     func prettyPrintingLength(maximum: Int) -> Int {
-        if lines.isEmpty { return 0 }
-        if lines.count > 1 { return maximum }
-        return lines[0].count
+        if lines.isEmpty { 0 } else if lines.count > 1 { maximum } else { lines[0].count }
     }
 
     func print(indent: [Indent]) -> String {
         var output = ""
+
         for i in 0..<lines.count {
             if lines[i] != "" {
                 switch indentingBehavior {
-                    case .firstLine where i == 0, .allLines:
-                        output += indent.indentation()
-                    case .none, .firstLine:
-                        break
+                    case .firstLine where i == 0, .allLines: output += indent.indentation()
+                    case .none, .firstLine: break
                 }
                 if leadingWhitespaceCounts[i] > 0 {
                     output += String(repeating: " ", count: leadingWhitespaceCounts[i])
@@ -99,15 +96,7 @@ struct Verbatim: Sendable {
 
 /// Describes options for behavior when applying the indentation of the current context when
 /// printing a verbatim token.
-enum IndentingBehavior: Sendable {
-    /// The indentation of the current context is completely ignored.
-    case none
-    /// The indentation of the current context is applied to every line.
-    case allLines
-    /// The indentation of the current context is applied to the first line, and ignored on any
-    /// additional lines.
-    case firstLine
-}
+enum IndentingBehavior: Sendable { case none, allLines, firstLine }
 
 /// Returns the leading number of spaces in the given string.
 private func numberOfLeadingSpaces(in text: Substring) -> Int {

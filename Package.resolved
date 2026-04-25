@@ -1,5 +1,5 @@
 {
-  "originHash" : "c864118de192c25a16e85c6f5483048bb2aa9f3b4967904fcab921fc4590f14e",
+  "originHash" : "8a5da4ea3e175bacbb22b0ee4cbd97d3afd678d96cc38f87bf00a8d41488ad99",
   "pins" : [
     {
       "identity" : "swift-argument-parser",
@@ -35,6 +35,15 @@
       "state" : {
         "revision" : "9de99a78f099e59caf2b2beec65a4c45d54b2081",
         "version" : "603.0.1"
+      }
+    },
+    {
+      "identity" : "swiftiomatic-plugins",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/toba/swiftiomatic-plugins",
+      "state" : {
+        "revision" : "209199629af8f5e24e2c0906cc98411b8c810c47",
+        "version" : "0.32.2"
       }
     }
   ],

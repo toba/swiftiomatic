@@ -16,6 +16,10 @@ let package = Package(
         .package(url: "https://github.com/apple/swift-argument-parser.git", from: "1.2.2"),
         .package(url: "https://github.com/swiftlang/swift-markdown.git", from: "0.7.0"),
         .package(url: "https://github.com/swiftlang/swift-syntax.git", exact: "603.0.1"),
+        // Self-hosted lint via prebuilt binary from a previous release. Breaks
+        // the cycle that prevents a target from depending on a plugin in the
+        // same package as the executable the plugin invokes.
+        .package(url: "https://github.com/toba/swiftiomatic-plugins", from: "0.32.2"),
     ],
     targets: [
         .target(
@@ -34,7 +38,10 @@ let package = Package(
                 .product(name: "SwiftSyntaxBuilder", package: "swift-syntax"),
             ],
             exclude: ["README.md", "Generated"],
-            plugins: ["GenerateCode"]
+            plugins: [
+                "GenerateCode",
+                .plugin(name: "SwiftiomaticBuildToolPlugin", package: "swiftiomatic-plugins"),
+            ]
         ),
         .target(
             name: "SwiftiomaticTestSupport",
@@ -107,7 +114,10 @@ let package = Package(
                 .product(name: "SwiftParser", package: "swift-syntax"),
                 .product(name: "SwiftSyntax", package: "swift-syntax"),
             ],
-            exclude: ["README.md"]
+            exclude: ["README.md"],
+            plugins: [
+                .plugin(name: "SwiftiomaticBuildToolPlugin", package: "swiftiomatic-plugins"),
+            ]
         ),
         .testTarget(
             name: "SwiftiomaticPerformanceTests",

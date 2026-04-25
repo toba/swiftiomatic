@@ -18,7 +18,7 @@ struct LintBuildPlugin: BuildToolPlugin {
             .appending(path: "swiftiomatic.json")
         let configExists = FileManager.default.fileExists(atPath: configURL.path())
 
-        var arguments: [String] = ["lint", "--parallel"]
+        var arguments: [String] = ["lint", "--parallel", "--recursive"]
 
         if configExists {
             arguments.append(contentsOf: ["--configuration", configURL.path()])

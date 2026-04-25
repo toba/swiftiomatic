@@ -352,4 +352,54 @@ struct GuardStmtTests: LayoutTesting {
 
     assertLayout(input: input, expected: expected, linelength: 45)
   }
+
+  /// When the user pre-broke `else` onto its own line but the whole guard
+  /// (including ` else {`) fits on a single line, the formatter should collapse
+  /// it. The discretionary newline before `else` should not pin it to its own
+  /// line — only an actual condition wrap should push it down.
+  @Test func collapsesElseOntoConditionLineWhenItFits() {
+    let input =
+      """
+      guard let whitespaceEnd = data[offset...].firstIndex(where: { !$0.isWhitespace })
+      else {
+        return data[offset..<data.endIndex]
+      }
+      """
+
+    let expected =
+      """
+      guard let whitespaceEnd = data[offset...].firstIndex(where: { !$0.isWhitespace }) else {
+        return data[offset..<data.endIndex]
+      }
+
+      """
+
+    assertLayout(input: input, expected: expected, linelength: 100)
+  }
+
+  /// Same scenario as above but with a wider variety of conditions. When the
+  /// condition fits with `else {` appended, no break should be inserted before
+  /// `else` even if the user originally had one.
+  @Test func discretionaryElseBreakIgnoredWhenFits() {
+    let input =
+      """
+      guard let foo = bar()
+      else {
+        return
+      }
+      guard foo == 1
+      else { return }
+      """
+
+    let expected =
+      """
+      guard let foo = bar() else {
+        return
+      }
+      guard foo == 1 else { return }
+
+      """
+
+    assertLayout(input: input, expected: expected, linelength: 60)
+  }
 }

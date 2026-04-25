@@ -76,20 +76,19 @@ struct LayoutBuffer {
     ///     for blank lines based on the current indentation level.
     mutating func writeNewlines(_ newlines: NewlineBehavior, shouldIndentBlankLines: Bool) {
         let numberToPrint: Int
+
         switch newlines {
-            case .elective:
-                numberToPrint = consecutiveNewlineCount == 0 ? 1 : 0
+            case .elective: numberToPrint = consecutiveNewlineCount == 0 ? 1 : 0
             case .soft(let count, _, let maxBlankLines):
                 // We add 1 to the max blank lines because it takes 2 newlines to create the first blank line.
                 let effectiveMax = maxBlankLines ?? maximumBlankLines
                 numberToPrint = min(count, effectiveMax + 1) - consecutiveNewlineCount
-            case .hard(let count):
-                numberToPrint = count
-            case .escaped:
-                numberToPrint = 1
+            case let .hard(count): numberToPrint = count
+            case .escaped: numberToPrint = 1
         }
 
         guard numberToPrint > 0 else { return }
+
         for number in 0..<numberToPrint {
             if shouldIndentBlankLines, number >= 1 { writeRaw(currentIndentation.indentation()) }
             writeRaw("\n")
@@ -122,6 +121,7 @@ struct LayoutBuffer {
         // `lineNumber` count. The new `column` is the position within the last line.
 
         var lastNewlineIndex: String.Index?
+
         for i in text.utf8.indices where text.utf8[i] == UInt8(ascii: "\n") {
             lastNewlineIndex = i
             lineNumber += 1
@@ -158,6 +158,7 @@ struct LayoutBuffer {
     /// enabled formatting, writing all the previous information as-is.
     mutating func writeVerbatimAfterEnablingFormatting<S: StringProtocol>(_ str: S) {
         writeRaw(str)
+
         if str.hasSuffix("\n") {
             isAtStartOfLine = true
             consecutiveNewlineCount = 1

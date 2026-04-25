@@ -45,7 +45,15 @@ extension TokenStream {
             )
         }
 
-        before(node.elseKeyword, tokens: .break(.reset), .open)
+        // Use `ignoresDiscretionary` so a user-entered newline before `else`
+        // does not pin it to its own line — the `.reset` semantics still force a
+        // break when the conditions wrap onto a continuation line, but when the
+        // entire `guard ... else {` fits we collapse it back to one line.
+        before(
+            node.elseKeyword,
+            tokens: .break(.reset, newlines: .elective(ignoresDiscretionary: true)),
+            .open
+        )
         after(node.elseKeyword, tokens: .space)
         before(node.body.leftBrace, tokens: .close)
 

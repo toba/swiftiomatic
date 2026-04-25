@@ -290,6 +290,15 @@
           "description" : "Overloads with only a closure argument should not be disambiguated by parameter labels.\n\nLint: If two overloaded functions with one closure parameter appear in the same scope, a lint\n      error is raised.\n",
           "unevaluatedProperties" : false
         },
+        "mutableCapture" : {
+          "allOf" : [
+            {
+              "$ref" : "#/$defs/lintOnlyBase"
+            }
+          ],
+          "description" : "Capturing a `var` by name in a closure captures its current value, not the\nvariable. Subsequent mutations through the original binding are invisible\nto the closure, which is almost always surprising.\n\nThis rule is purely syntactic: it pre-scans the source file for `var`\ndeclarations (excluding `lazy var` and IUOs) and flags closure captures\nwhose name matches any such declaration. Captures with an explicit\ninitializer (`[x = self.x]`) and `weak`/`unowned` captures are not flagged.\n\nLint: When a closure captures a name that matches a `var` declaration in\nthe same file, a warning is raised.\n",
+          "unevaluatedProperties" : false
+        },
         "noTrailingClosureParens" : {
           "allOf" : [
             {
@@ -314,6 +323,15 @@
             }
           ],
           "description" : "Use trailing closure syntax where applicable.\n\nWhen the last argument(s) to a function call are closure expressions, convert\nthem to trailing closure syntax. For a single trailing closure, the closure must\nbe unlabeled unless the function is in the \"always trailing\" list (e.g. `async`,\n`sync`, `autoreleasepool`). For multiple trailing closures, the first must be\nunlabeled and the rest must be labeled.\n\nLint: When closure arguments could use trailing closure syntax.\n\nFormat: The closure arguments are moved to trailing closure position.\n"
+        },
+        "unhandledThrowingTask" : {
+          "allOf" : [
+            {
+              "$ref" : "#/$defs/lintOnlyBase"
+            }
+          ],
+          "description" : "`Task { try ... }` silently swallows thrown errors when the error type is\ninferred (or written as `_`).\n\nWithout an explicit `Failure` generic argument, a `Task` that throws an\nunhandled error doesn't surface the error anywhere — there is no `throws`\nsignature on the closure call site, and the value/result of the task is\nusually discarded.\n\nSee: https://forums.swift.org/t/task-initializer-with-throwing-closure-swallows-error/56066\n\nLint: When a `Task { ... }` (with implicit or wildcard error type) contains\nan unhandled `throw` or `try`, an error is raised. Tasks whose value or\nresult is consumed (`let t = Task { ... }`, `Task { ... }.value`,\n`return Task { ... }`) are exempt.\n [opt-in]",
+          "unevaluatedProperties" : false
         }
       },
       "type" : "object"
@@ -429,6 +447,15 @@
       "additionalProperties" : false,
       "description" : "conditions rule group.",
       "properties" : {
+        "duplicateConditions" : {
+          "allOf" : [
+            {
+              "$ref" : "#/$defs/lintOnlyBase"
+            }
+          ],
+          "description" : "The same condition appearing twice in an if/else-if chain or switch is dead code.\n\nWalks each top-level if/else-if chain and groups branches by their normalized\ncondition set (order-insensitive). Any condition appearing in more than one\nbranch is flagged.\n\nWalks each switch's case list and groups case items by their normalized\n`pattern + where`. Any case item appearing more than once is flagged.\n\nLint: When the same condition or case appears multiple times in the same\nbranch instruction, an error is raised.\n",
+          "unevaluatedProperties" : false
+        },
         "explicitNilCheck" : {
           "allOf" : [
             {
@@ -436,6 +463,15 @@
             }
           ],
           "description" : "When checking an optional value for `nil`-ness, prefer writing an explicit `nil` check rather\nthan binding and immediately discarding the value.\n\nFor example, `if let _ = someValue { ... }` is forbidden. Use `if someValue != nil { ... }`\ninstead.\n\nNote: If the conditional binding carries an explicit type annotation (e.g. `if let _: S? = expr`),\nwe skip the transformation. Such annotations can be necessary to drive generic type inference\nwhen a function mentions a type only in its return position.\n\nLint: `let _ = expr` inside a condition list will yield a lint error.\n\nFormat: `let _ = expr` inside a condition list will be replaced by `expr != nil`.\n"
+        },
+        "identicalOperands" : {
+          "allOf" : [
+            {
+              "$ref" : "#/$defs/lintOnlyBase"
+            }
+          ],
+          "description" : "Comparing two identical operands is almost always a copy-paste bug.\n\nCatches expressions like `x == x`, `foo.bar < foo.bar`, and `$0 != $0`.\nCompares operands by their non-trivia token text so internal whitespace\nand formatting differences are ignored.\n\nLint: When both operands of a comparison operator are textually identical\n(ignoring whitespace), a warning is raised.\n [opt-in]",
+          "unevaluatedProperties" : false
         },
         "noParensAroundConditions" : {
           "allOf" : [
@@ -545,6 +581,24 @@
         }
       ],
       "description" : "All public or open declarations must have a top-level documentation comment.\n\nLint: If a public declaration is missing a documentation comment, a lint error is raised.\n",
+      "unevaluatedProperties" : false
+    },
+    "duplicateConditions" : {
+      "allOf" : [
+        {
+          "$ref" : "#/$defs/lintOnlyBase"
+        }
+      ],
+      "description" : "The same condition appearing twice in an if/else-if chain or switch is dead code.\n\nWalks each top-level if/else-if chain and groups branches by their normalized\ncondition set (order-insensitive). Any condition appearing in more than one\nbranch is flagged.\n\nWalks each switch's case list and groups case items by their normalized\n`pattern + where`. Any case item appearing more than once is flagged.\n\nLint: When the same condition or case appears multiple times in the same\nbranch instruction, an error is raised.\n",
+      "unevaluatedProperties" : false
+    },
+    "duplicateDictionaryKeys" : {
+      "allOf" : [
+        {
+          "$ref" : "#/$defs/lintOnlyBase"
+        }
+      ],
+      "description" : "Dictionary literals with duplicate keys silently overwrite earlier values.\n\nThe Swift compiler accepts duplicate static keys but the resulting dictionary\nonly retains the *last* value for each key — almost always a copy-paste bug.\n\nOnly static keys are checked: literals, identifiers, and member access\nexpressions. Dynamic keys like `UUID()` or `#line` can legitimately produce\ndistinct values at runtime and are skipped.\n\nLint: When a static key appears more than once in the same dictionary\nliteral, every occurrence after the first is flagged.\n",
       "unevaluatedProperties" : false
     },
     "emptyExtensions" : {
@@ -743,6 +797,15 @@
       },
       "type" : "object"
     },
+    "identicalOperands" : {
+      "allOf" : [
+        {
+          "$ref" : "#/$defs/lintOnlyBase"
+        }
+      ],
+      "description" : "Comparing two identical operands is almost always a copy-paste bug.\n\nCatches expressions like `x == x`, `foo.bar < foo.bar`, and `$0 != $0`.\nCompares operands by their non-trivia token text so internal whitespace\nand formatting differences are ignored.\n\nLint: When both operands of a comparison operator are textually identical\n(ignoring whitespace), a warning is raised.\n [opt-in]",
+      "unevaluatedProperties" : false
+    },
     "identifiersMayOnlyUseASCII" : {
       "allOf" : [
         {
@@ -837,6 +900,15 @@
             }
           ],
           "description" : "Replace `forEach` with `for-in` loop unless its argument is a function reference.\n\nLint:  invalid use of `forEach` yield will yield a lint error.\n",
+          "unevaluatedProperties" : false
+        },
+        "retainNotificationObserver" : {
+          "allOf" : [
+            {
+              "$ref" : "#/$defs/lintOnlyBase"
+            }
+          ],
+          "description" : "`NotificationCenter.addObserver(forName:object:queue:using:)` returns an\nopaque token that must be retained to later remove the observer.\nDiscarding the return value leaks the observer.\n\nLint: When a call to `addObserver(forName:object:queue:...)` is used as a\nstatement (not stored, returned, or passed to another call), a warning is\nraised.\n [opt-in]",
           "unevaluatedProperties" : false
         }
       },
@@ -955,6 +1027,24 @@
       ],
       "description" : "Add `@available(*, unavailable)` to `required init(coder:)` that only calls `fatalError`.\n\nWhen a `UIView` or `UIViewController` subclass provides a `required init(coder:)` that\nimmediately calls `fatalError`, it should be marked `@available(*, unavailable)` so the\ncompiler prevents it from being called.\n\nLint: A `required init(coder:)` stub without `@available(*, unavailable)` yields a warning.\n\nFormat: The `@available(*, unavailable)` attribute is added.\n [opt-in]"
     },
+    "invisibleCharacters" : {
+      "allOf" : [
+        {
+          "$ref" : "#/$defs/lintOnlyBase"
+        }
+      ],
+      "description" : "Zero-width and other invisible Unicode characters in string literals are\nalmost always typos or paste artifacts. They're impossible to see in source\nand cause string equality, lookup, and URL parsing to silently fail.\n\nThe default character set is U+200B (zero-width space), U+200C (zero-width\nnon-joiner), and U+FEFF (BOM). Configure additional code points via\n`invisibleCharacters.additionalCodePoints` (an array of hex strings, e.g.\n`[\"00AD\", \"200D\"]`).\n\nLint: When a string literal segment contains any of the configured\ninvisible code points, an error is raised at the offending character.\n",
+      "properties" : {
+        "additionalCodePoints" : {
+          "description" : "additionalCodePoints",
+          "items" : {
+            "type" : "string"
+          },
+          "type" : "array"
+        }
+      },
+      "unevaluatedProperties" : false
+    },
     "leadingDotOperators" : {
       "allOf" : [
         {
@@ -1026,6 +1116,15 @@
       "additionalProperties" : false,
       "description" : "literals rule group.",
       "properties" : {
+        "duplicateDictionaryKeys" : {
+          "allOf" : [
+            {
+              "$ref" : "#/$defs/lintOnlyBase"
+            }
+          ],
+          "description" : "Dictionary literals with duplicate keys silently overwrite earlier values.\n\nThe Swift compiler accepts duplicate static keys but the resulting dictionary\nonly retains the *last* value for each key — almost always a copy-paste bug.\n\nOnly static keys are checked: literals, identifiers, and member access\nexpressions. Dynamic keys like `UUID()` or `#line` can legitimately produce\ndistinct values at runtime and are skipped.\n\nLint: When a static key appears more than once in the same dictionary\nliteral, every occurrence after the first is flagged.\n",
+          "unevaluatedProperties" : false
+        },
         "groupNumericLiterals" : {
           "allOf" : [
             {
@@ -1033,6 +1132,24 @@
             }
           ],
           "description" : "Numeric literals should be grouped with `_`s to delimit common separators.\n\nSpecifically, decimal numeric literals should be grouped every 3 numbers, hexadecimal every 4,\nand binary every 8.\n\nLint: If a numeric literal is too long and should be grouped, a lint error is raised.\n\nFormat: All numeric literals that should be grouped will have `_`s inserted where appropriate.\n\nTODO: Minimum numeric literal length bounds and numeric groupings have been selected arbitrarily;\nthese could be reevaluated.\nTODO: Handle floating point literals.\n"
+        },
+        "invisibleCharacters" : {
+          "allOf" : [
+            {
+              "$ref" : "#/$defs/lintOnlyBase"
+            }
+          ],
+          "description" : "Zero-width and other invisible Unicode characters in string literals are\nalmost always typos or paste artifacts. They're impossible to see in source\nand cause string equality, lookup, and URL parsing to silently fail.\n\nThe default character set is U+200B (zero-width space), U+200C (zero-width\nnon-joiner), and U+FEFF (BOM). Configure additional code points via\n`invisibleCharacters.additionalCodePoints` (an array of hex strings, e.g.\n`[\"00AD\", \"200D\"]`).\n\nLint: When a string literal segment contains any of the configured\ninvisible code points, an error is raised at the offending character.\n",
+          "properties" : {
+            "additionalCodePoints" : {
+              "description" : "additionalCodePoints",
+              "items" : {
+                "type" : "string"
+              },
+              "type" : "array"
+            }
+          },
+          "unevaluatedProperties" : false
         },
         "multiElementCollectionTrailingCommas" : {
           "description" : "Trailing commas in multi-element collection literals.",
@@ -1047,6 +1164,15 @@
             "keptAsWritten"
           ],
           "type" : "string"
+        },
+        "noLiteralProtocolInit" : {
+          "allOf" : [
+            {
+              "$ref" : "#/$defs/lintOnlyBase"
+            }
+          ],
+          "description" : "Initializers declared in `ExpressibleBy*` literal protocols are intended\nfor the compiler. Calling them directly (`Set(arrayLiteral: 1, 2)`) is\nalmost certainly a mistake — the literal form (`[1, 2]`) is shorter,\nfaster, and more idiomatic.\n\nLint: When a known standard-library or Foundation type is initialized via\na compiler-protocol label like `arrayLiteral`/`dictionaryLiteral`/\n`stringLiteral`, a warning is raised.\n",
+          "unevaluatedProperties" : false
         },
         "noPlaygroundLiterals" : {
           "allOf" : [
@@ -1127,6 +1253,15 @@
         }
       ],
       "description" : "Opening braces of multiline statements are wrapped to their own line.\n\nWhen a statement signature (conditions, parameters, etc.) spans multiple\nlines, the opening `{` is moved to its own line, aligned with the\nstatement keyword.\n\nLint: A `{` on the same line as a multiline statement signature raises a\n      warning.\n\nFormat: The `{` is moved to a new line aligned with the closing `}`.\n [opt-in]"
+    },
+    "mutableCapture" : {
+      "allOf" : [
+        {
+          "$ref" : "#/$defs/lintOnlyBase"
+        }
+      ],
+      "description" : "Capturing a `var` by name in a closure captures its current value, not the\nvariable. Subsequent mutations through the original binding are invisible\nto the closure, which is almost always surprising.\n\nThis rule is purely syntactic: it pre-scans the source file for `var`\ndeclarations (excluding `lazy var` and IUOs) and flags closure captures\nwhose name matches any such declaration. Captures with an explicit\ninitializer (`[x = self.x]`) and `weak`/`unowned` captures are not flagged.\n\nLint: When a closure captures a name that matches a `var` declaration in\nthe same file, a warning is raised.\n",
+      "unevaluatedProperties" : false
     },
     "naming" : {
       "additionalProperties" : false,
@@ -1312,6 +1447,15 @@
         }
       ],
       "description" : "Identifiers in declarations and patterns should not have leading underscores.\n\nThis is intended to avoid certain antipatterns; `self.member = member` should be preferred to\n`member = _member` and the leading underscore should not be used to signal access level.\n\nThis rule intentionally checks only the parameter variable names of a function declaration, not\nthe parameter labels. It also only checks identifiers at the declaration site, not at usage\nsites.\n\nLint: Declaring an identifier with a leading underscore yields a lint error.\n [opt-in]",
+      "unevaluatedProperties" : false
+    },
+    "noLiteralProtocolInit" : {
+      "allOf" : [
+        {
+          "$ref" : "#/$defs/lintOnlyBase"
+        }
+      ],
+      "description" : "Initializers declared in `ExpressibleBy*` literal protocols are intended\nfor the compiler. Calling them directly (`Set(arrayLiteral: 1, 2)`) is\nalmost certainly a mistake — the literal form (`[1, 2]`) is shorter,\nfaster, and more idiomatic.\n\nLint: When a known standard-library or Foundation type is initialized via\na compiler-protocol label like `arrayLiteral`/`dictionaryLiteral`/\n`stringLiteral`, a warning is raised.\n",
       "unevaluatedProperties" : false
     },
     "noParensAroundConditions" : {
@@ -1827,6 +1971,15 @@
           ],
           "description" : "Semicolons should not be present in Swift code.\n\nLint: If a semicolon appears anywhere, a lint error is raised.\n\nFormat: All semicolons will be replaced with line breaks.\n"
         },
+        "unusedControlFlowLabel" : {
+          "allOf" : [
+            {
+              "$ref" : "#/$defs/lintOnlyBase"
+            }
+          ],
+          "description" : "A label on a loop or switch (`outer: while …`, `label: switch …`) is only\nuseful if it's referenced by an inner `break label`/`continue label`.\nAn unreferenced label is dead syntax — usually a leftover from refactoring.\n\nLint: When a `LabeledStmt` carries a label that no nested `break` or\n`continue` uses, a warning is raised on the label.\n",
+          "unevaluatedProperties" : false
+        },
         "useImplicitInit" : {
           "allOf" : [
             {
@@ -2056,6 +2209,40 @@
       "description" : "All documentation comments must begin with a one-line summary of the declaration.\n\nLint: If a comment does not begin with a single-line summary, a lint error is raised.\n [opt-in]",
       "unevaluatedProperties" : false
     },
+    "requireSuperCall" : {
+      "allOf" : [
+        {
+          "$ref" : "#/$defs/lintOnlyBase"
+        }
+      ],
+      "description" : "Some `override`d methods on Apple frameworks rely on the parent class\nrunning its own implementation. Forgetting to call `super` is a common\nsource of subtle bugs (memory warnings ignored, view lifecycle skipped,\ntest setup not run).\n\nThe rule is opt-in. Configure the list of method names via\n`requireSuperCall.methodNames`. Defaults cover common UIKit/AppKit/XCTest\nmethods. Names use SwiftLint's resolved-name format: `viewDidLoad()`,\n`viewWillAppear(_:)`, `setEditing(_:animated:)`.\n\nLint: When an `override` of a configured method either omits the\n`super.<name>(...)` call or calls it more than once, a warning is raised.\n",
+      "properties" : {
+        "defaultMethodNames" : {
+          "description" : "defaultMethodNames",
+          "items" : {
+            "type" : "string"
+          },
+          "type" : "array"
+        },
+        "methodNames" : {
+          "description" : "methodNames",
+          "items" : {
+            "type" : "string"
+          },
+          "type" : "array"
+        }
+      },
+      "unevaluatedProperties" : false
+    },
+    "retainNotificationObserver" : {
+      "allOf" : [
+        {
+          "$ref" : "#/$defs/lintOnlyBase"
+        }
+      ],
+      "description" : "`NotificationCenter.addObserver(forName:object:queue:using:)` returns an\nopaque token that must be retained to later remove the observer.\nDiscarding the return value leaks the observer.\n\nLint: When a call to `addObserver(forName:object:queue:...)` is used as a\nstatement (not stored, returned, or passed to another call), a warning is\nraised.\n [opt-in]",
+      "unevaluatedProperties" : false
+    },
     "semicolons" : {
       "allOf" : [
         {
@@ -2213,7 +2400,18 @@
           "$ref" : "#/$defs/ruleBase"
         }
       ],
-      "description" : "Sort switch case items alphabetically within each case.\n\nWhen a case matches multiple patterns (e.g. `case .b, .a, .c:`), the patterns are sorted\nlexicographically. Numeric literals are compared by value (including hex, octal, and binary).\nCases with `where` clauses are only sorted if the `where` clause ends up on the last item.\n\nLint: If case items are not sorted, a lint warning is raised.\n\nFormat: The case items are reordered alphabetically.\n [opt-in]"
+      "description" : "Enforce switch case label indentation style.\n\nTwo styles are supported via `SwitchCaseIndentationConfiguration.Style`:\n- `flush`: `case` labels align with the `switch` keyword (default).\n- `indented`: `case` labels are indented one level from `switch`.\n\nLint: Raised when a `case` or `default` label doesn't match the configured style.\n\nFormat: Case labels, bodies, and the closing brace are reindented to match.\n [opt-in]",
+      "properties" : {
+        "style" : {
+          "default" : "flush",
+          "description" : "style Options: flush, indented.",
+          "enum" : [
+            "flush",
+            "indented"
+          ],
+          "type" : "string"
+        }
+      }
     },
     "testSuiteAccessControl" : {
       "allOf" : [
@@ -2334,6 +2532,15 @@
       },
       "type" : "object"
     },
+    "unhandledThrowingTask" : {
+      "allOf" : [
+        {
+          "$ref" : "#/$defs/lintOnlyBase"
+        }
+      ],
+      "description" : "`Task { try ... }` silently swallows thrown errors when the error type is\ninferred (or written as `_`).\n\nWithout an explicit `Failure` generic argument, a `Task` that throws an\nunhandled error doesn't surface the error anywhere — there is no `throws`\nsignature on the closure call site, and the value/result of the task is\nusually discarded.\n\nSee: https://forums.swift.org/t/task-initializer-with-throwing-closure-swallows-error/56066\n\nLint: When a `Task { ... }` (with implicit or wildcard error type) contains\nan unhandled `throw` or `try`, an error is raised. Tasks whose value or\nresult is consumed (`let t = Task { ... }`, `Task { ... }.value`,\n`return Task { ... }`) are exempt.\n [opt-in]",
+      "unevaluatedProperties" : false
+    },
     "unusedArguments" : {
       "allOf" : [
         {
@@ -2341,6 +2548,24 @@
         }
       ],
       "description" : "Mark unused function arguments with `_`.\n\nDetects unused parameters in functions, initializers, subscripts, closures,\nand for-loop variables, and replaces them with `_`.\n\nFor named function parameters, the internal name is replaced with `_`\n(e.g., `func foo(bar: Int)` → `func foo(bar _: Int)`). For unnamed\nparameters, the name is removed (`func foo(_ bar: Int)` → `func foo(_: Int)`).\n\nFor operator functions and subscripts, the parameter name is replaced\nwith `_` directly since external labels are unnecessary.\n\nLint: When a parameter or loop variable is unused.\n\nFormat: The unused parameter or variable is replaced with `_`.\n"
+    },
+    "unusedControlFlowLabel" : {
+      "allOf" : [
+        {
+          "$ref" : "#/$defs/lintOnlyBase"
+        }
+      ],
+      "description" : "A label on a loop or switch (`outer: while …`, `label: switch …`) is only\nuseful if it's referenced by an inner `break label`/`continue label`.\nAn unreferenced label is dead syntax — usually a leftover from refactoring.\n\nLint: When a `LabeledStmt` carries a label that no nested `break` or\n`continue` uses, a warning is raised on the label.\n",
+      "unevaluatedProperties" : false
+    },
+    "unusedSetterValue" : {
+      "allOf" : [
+        {
+          "$ref" : "#/$defs/lintOnlyBase"
+        }
+      ],
+      "description" : "A computed-property or subscript setter that never reads its parameter\n(`newValue` by default, or the bound name in `set(custom)`) is almost\nalways wrong — the assignment to the underlying storage uses some other\nexpression, leaving the actual incoming value silently dropped.\n\nException: empty `override` setters, e.g. `override var x: T { get { ... }\nset {} }`, are intentional no-ops to suppress the parent class's setter.\n\nLint: When a `set` accessor's body never references its parameter name,\na warning is raised.\n",
+      "unevaluatedProperties" : false
     },
     "uppercaseAcronyms" : {
       "allOf" : [
