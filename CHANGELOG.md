@@ -40,6 +40,7 @@
 - `sm update` doesn't sync rules in config
 - `AlignWrappedConditions`; align at normal indent when `beforeGuardConditions` break is set
 - Ternary breaks at `=` before breaking ternary parts
+- `guard` bindings should not wrap to next line ([#402](https://github.com/toba/swiftiomatic/issues/402))
 
 ### 🗜️ Tweaks
 
@@ -71,6 +72,7 @@
 - Add per-break `maxBlankLines` to `NewlineBehavior`; enables per-context blank line limits in layout
 - Rename `PrettyPrint` test folder to `Layout`; `assertPrettyPrintEqual` to `assertLayout`
 - Investigate redundant wrap rules ([#391](https://github.com/toba/swiftiomatic/issues/391))
+- Reorganize `Layout/Rules` into config-group folders
 
 ## Week of Apr 12 – Apr 18, 2026
 

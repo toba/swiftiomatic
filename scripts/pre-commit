@@ -2,6 +2,8 @@
 # Regenerate schema.json before every commit to keep it in sync with rule definitions.
 # swift-syntax is a binary dependency so this runs fast.
 
+"$(dirname "$0")/clean-stray-artifacts.sh"
+
 swift run Generator 2>/dev/null
 
 if ! git diff --quiet schema.json; then
