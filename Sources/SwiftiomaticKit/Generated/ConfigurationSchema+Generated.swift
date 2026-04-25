@@ -150,6 +150,14 @@ package enum ConfigurationSchema {
       "description" : "Overloads with only a closure argument should not be disambiguated by parameter labels.\n\nLint: If two overloaded functions with one closure parameter appear in the same scope, a lint\n      error is raised.\n",
       "unevaluatedProperties" : false
     },
+    "avoidNoneName" : {
+      "allOf" : [
+        {
+          "$ref" : "#/$defs/ruleBase"
+        }
+      ],
+      "description" : "Avoid naming enum cases or static members `none`.\n\nA `case none` or `static let none` (or `static var`/`class var`) can be confused with\n`Optional<T>.none`. Especially when the enclosing type itself becomes optional, the compiler\nwill silently prefer `Optional.none`, leading to subtle bugs.\n\nLint: A warning is raised for any `case none` (without associated values), or any `static`/\n`class` property named `none`.\n\nFormat: Not auto-fixed; renaming requires understanding the call sites.\n [opt-in]"
+    },
     "beforeAndAfterMark" : {
       "allOf" : [
         {
@@ -307,6 +315,14 @@ package enum ConfigurationSchema {
           ],
           "description" : "Capturing a `var` by name in a closure captures its current value, not the\nvariable. Subsequent mutations through the original binding are invisible\nto the closure, which is almost always surprising.\n\nThis rule is purely syntactic: it pre-scans the source file for `var`\ndeclarations (excluding `lazy var` and IUOs) and flags closure captures\nwhose name matches any such declaration. Captures with an explicit\ninitializer (`[x = self.x]`) and `weak`/`unowned` captures are not flagged.\n\nLint: When a closure captures a name that matches a `var` declaration in\nthe same file, a warning is raised.\n",
           "unevaluatedProperties" : false
+        },
+        "namedClosureParams" : {
+          "allOf" : [
+            {
+              "$ref" : "#/$defs/ruleBase"
+            }
+          ],
+          "description" : "Use named arguments in multi-line closures.\n\nInside a single-line closure, `$0`/`$1` is concise and idiomatic. Inside a multi-line closure\nthe anonymous form forces readers to track which argument is which by counting; an explicit\n`arg in` parameter list reads more clearly.\n\nLint: A warning is raised for each `$0`/`$1`/... reference inside a multi-line closure.\n\nFormat: Not auto-fixed; the rule cannot pick a meaningful parameter name.\n [opt-in]"
         },
         "noTrailingClosureParens" : {
           "allOf" : [
@@ -537,6 +553,14 @@ package enum ConfigurationSchema {
             }
           ],
           "description" : "Use ternary conditional expressions for simple if-else returns or assignments.\n\nWhen an `if`-`else` has exactly two branches, each containing a single\n`return` statement or a single assignment to the same variable, and the\ncondition is a simple expression (no else-if chains), the construct is\ncollapsed into a ternary conditional expression.\n\n```swift\n// Before\nif condition {\n    return trueValue\n} else {\n    return falseValue\n}\n// After\nreturn condition ? trueValue : falseValue\n\n// Before\nif condition {\n    result = trueValue\n} else {\n    result = falseValue\n}\n// After\nresult = condition ? trueValue : falseValue\n```\n\nLint: A simple if-else with single returns or same-variable assignments\n      in both branches raises a warning.\n\nFormat: The if-else is replaced with a ternary expression.\n [opt-in]"
+        },
+        "preferUnavailable" : {
+          "allOf" : [
+            {
+              "$ref" : "#/$defs/ruleBase"
+            }
+          ],
+          "description" : "Prefer `#unavailable(...)` over `#available(...) {} else { ... }`.\n\nInverting an availability check via an empty `if`-body and a non-empty `else`-body is harder to\nread than the direct `#unavailable` form (Swift 5.6+). This rule rewrites the simple shape; it\ndoes not touch chains where the `else` body has its own availability check (rewriting those is\nnot a simple inversion).\n\nLint: A warning is raised on `if #available(iOS X, *) {} else { body }`.\n\nFormat: The `if` is rewritten to `if #unavailable(iOS X, *) { body }`.\n"
         }
       },
       "type" : "object"
@@ -690,6 +714,14 @@ package enum ConfigurationSchema {
       "additionalProperties" : false,
       "description" : "forcing rule group.",
       "properties" : {
+        "noForceCast" : {
+          "allOf" : [
+            {
+              "$ref" : "#/$defs/ruleBase"
+            }
+          ],
+          "description" : "Force casts (`as!`) are forbidden.\n\nA force cast crashes at runtime if the conversion fails. Prefer the conditional cast (`as?`)\ncombined with optional handling (`if let`, `guard let`, nil-coalescing, etc.).\n\nThis rule complements `NoForceTry` and `NoForceUnwrap`.\n\nLint: A warning is raised for each `as!`.\n\nFormat: Not auto-fixed; the safe replacement depends on caller intent.\n [opt-in]"
+        },
         "noForceTry" : {
           "allOf" : [
             {
@@ -828,6 +860,14 @@ package enum ConfigurationSchema {
       "additionalProperties" : false,
       "description" : "idioms rule group.",
       "properties" : {
+        "avoidNoneName" : {
+          "allOf" : [
+            {
+              "$ref" : "#/$defs/ruleBase"
+            }
+          ],
+          "description" : "Avoid naming enum cases or static members `none`.\n\nA `case none` or `static let none` (or `static var`/`class var`) can be confused with\n`Optional<T>.none`. Especially when the enclosing type itself becomes optional, the compiler\nwill silently prefer `Optional.none`, leading to subtle bugs.\n\nLint: A warning is raised for any `case none` (without associated values), or any `static`/\n`class` property named `none`.\n\nFormat: Not auto-fixed; renaming requires understanding the call sites.\n [opt-in]"
+        },
         "noAssignmentInExpressions" : {
           "allOf" : [
             {
@@ -862,6 +902,22 @@ package enum ConfigurationSchema {
           "description" : "`@retroactive` conformances are forbidden.\n\nLint: Using `@retroactive` results in a lint error.\n",
           "unevaluatedProperties" : false
         },
+        "noVoidTernary" : {
+          "allOf" : [
+            {
+              "$ref" : "#/$defs/ruleBase"
+            }
+          ],
+          "description" : "Don't use a ternary expression to call void-returning functions.\n\n`condition ? doA() : doB()` reads as if it produces a value, but when both branches return\n`Void` it's effectively a hidden if/else with strictly worse readability. Use a proper\n`if`/`else` statement instead.\n\nLint: A warning is raised when a ternary appears as a statement and both branches are call\nexpressions.\n\nFormat: Not auto-fixed; the rewrite would change formatting beyond the scope of this rule.\n [opt-in]"
+        },
+        "preferCompoundAssignment" : {
+          "allOf" : [
+            {
+              "$ref" : "#/$defs/ruleBase"
+            }
+          ],
+          "description" : "Prefer compound assignment operators (`+=`, `-=`, `*=`, `/=`) over the long form.\n\n`x = x + y` is exactly equivalent to `x += y` for the supported operators (`+`, `-`, `*`, `/`).\nThe compound form is shorter and avoids repeating the LHS, which makes refactors safer when the\nreceiver is renamed.\n\nThe rule fires only when the LHS expression text matches the RHS's first operand exactly. It\ndoes not fire on `x = a + x` or `x = a + b` patterns.\n\nLint: A warning is raised for `x = x + y` etc.\n\nFormat: The expression is rewritten to `x += y`.\n"
+        },
         "preferCountWhere" : {
           "allOf" : [
             {
@@ -870,6 +926,14 @@ package enum ConfigurationSchema {
           ],
           "description" : "Prefer `count(where:)` over `filter(_:).count`.\n\nThe `count(where:)` method (Swift 6.0+) is more expressive and avoids allocating an\nintermediate array just to count its elements.\n\nLint: Using `.filter { ... }.count` raises a warning suggesting `count(where:)`.\n\nFormat: `.filter { ... }.count` is replaced with `.count(where: { ... })`.\n"
         },
+        "preferDotZero" : {
+          "allOf" : [
+            {
+              "$ref" : "#/$defs/ruleBase"
+            }
+          ],
+          "description" : "Prefer `.zero` over explicit zero-valued initializers.\n\n`CGPoint(x: 0, y: 0)`, `CGSize(width: 0, height: 0)`, `CGRect(x: 0, y: 0, width: 0, height: 0)`\nand similar are equivalent to the platform-provided `.zero` constant. The shorthand reads\nbetter and avoids subtle inconsistencies (e.g. `0.0` vs `0` literal kinds).\n\nRecognised types: `CGPoint`, `CGSize`, `CGRect`, `CGVector`, `UIEdgeInsets`, `NSEdgeInsets`,\n`NSPoint`, `NSSize`, `NSRect`.\n\nLint: A warning is raised on a fully-zero initializer.\n\nFormat: The call is replaced with `<Type>.zero`.\n"
+        },
         "preferFileID" : {
           "allOf" : [
             {
@@ -877,6 +941,14 @@ package enum ConfigurationSchema {
             }
           ],
           "description" : "Enforce consistent use of `#file` or `#fileID`.\n\nIn Swift 6+, `#file` and `#fileID` have identical behavior (both produce `Module/File.swift`).\nThis rule standardizes usage to `#fileID` by default. `#filePath` is unaffected.\n\nLint: Using the non-preferred file macro yields a lint warning.\n\nFormat: The macro is replaced with the preferred spelling.\n [opt-in]"
+        },
+        "preferIsDisjoint" : {
+          "allOf" : [
+            {
+              "$ref" : "#/$defs/ruleBase"
+            }
+          ],
+          "description" : "Prefer `Set.isDisjoint(with:)` over `Set.intersection(_:).isEmpty`.\n\n`isDisjoint(with:)` expresses intent more directly and can short-circuit on the first shared\nelement, whereas `intersection(_:)` always builds the full intersection set.\n\nLint: A warning is raised on `someSet.intersection(other).isEmpty`.\n\nFormat: Not auto-fixed; the receiver may not be a `Set`, so the rewrite is unsafe in general.\n [opt-in]"
         },
         "preferIsEmpty" : {
           "allOf" : [
@@ -894,6 +966,14 @@ package enum ConfigurationSchema {
           ],
           "description" : "Convert trivial `map { $0.foo }` closures to keyPath-based syntax.\n\nWhen a closure's only expression is a property access on `$0`, the closure can be\nreplaced with a keyPath expression: `map(\\.foo)`. This is more concise and expressive.\n\nApplies to `map`, `flatMap`, `compactMap`, `allSatisfy`, `filter`, and `contains(where:)`.\n\nOnly fires for simple property chains (not method calls, subscripts, or complex expressions).\n\nLint: A trivial `{ $0.property }` closure raises a warning.\n\nFormat: The closure is replaced with a keyPath expression.\n [opt-in]"
         },
+        "preferSelfType" : {
+          "allOf" : [
+            {
+              "$ref" : "#/$defs/ruleBase"
+            }
+          ],
+          "description" : "Prefer `Self` over `type(of: self)`.\n\nInside a class/struct/enum/actor, `Self` refers to the current type and is fully equivalent to\n`type(of: self)` for any non-polymorphic dispatch. The shorthand is more concise and avoids\nthe runtime call.\n\nThis rule does not fire at the top level of a file (where `self` does not refer to an enclosing\ntype) or for non-`self` arguments (`type(of: param)` is preserved).\n\nLint: A warning is raised for `type(of: self)` (also `Swift.type(of: self)`) inside a type.\n\nFormat: The call is replaced with `Self`.\n"
+        },
         "preferStaticOverClassFunc" : {
           "allOf" : [
             {
@@ -901,6 +981,14 @@ package enum ConfigurationSchema {
             }
           ],
           "description" : "Prefer `static` over `class` for type members of `final` classes.\n\nIn a `final` class, `class func` and `class var` are equivalent to `static func` and\n`static var` since the class cannot be subclassed. Using `static` makes the intent clearer.\n\nLint: If a `class` modifier is found on a member of a `final` class, a warning is raised.\n\nFormat: The `class` modifier is replaced with `static`.\n [opt-in]"
+        },
+        "preferToggle" : {
+          "allOf" : [
+            {
+              "$ref" : "#/$defs/ruleBase"
+            }
+          ],
+          "description" : "Prefer `someBool.toggle()` over `someBool = !someBool`.\n\n`Bool.toggle()` (Swift 4.2+) is more concise and clearly communicates the intent. The two forms\nare equivalent semantically; `toggle()` does not introduce any new evaluation hazards.\n\nLint: A warning is raised for `x = !x` patterns where the LHS and the negated RHS reference\nthe exact same expression text.\n\nFormat: The expression is rewritten to `x.toggle()`.\n"
         },
         "replaceForEachWithForLoop" : {
           "allOf" : [
@@ -910,6 +998,14 @@ package enum ConfigurationSchema {
           ],
           "description" : "Replace `forEach` with `for-in` loop unless its argument is a function reference.\n\nLint:  invalid use of `forEach` yield will yield a lint error.\n",
           "unevaluatedProperties" : false
+        },
+        "requireFatalErrorMessage" : {
+          "allOf" : [
+            {
+              "$ref" : "#/$defs/ruleBase"
+            }
+          ],
+          "description" : "`fatalError` calls should include a descriptive message.\n\nA bare `fatalError()` (or `fatalError(\"\")`) gives no context when the program crashes. Including\na message makes it far easier to diagnose the problem from the stack trace alone.\n\nLint: A warning is raised for `fatalError()` and `fatalError(\"\")`.\n\nFormat: Not auto-fixed; the message must be supplied by the author.\n [opt-in]"
         },
         "retainNotificationObserver" : {
           "allOf" : [
@@ -1272,6 +1368,14 @@ package enum ConfigurationSchema {
       "description" : "Capturing a `var` by name in a closure captures its current value, not the\nvariable. Subsequent mutations through the original binding are invisible\nto the closure, which is almost always surprising.\n\nThis rule is purely syntactic: it pre-scans the source file for `var`\ndeclarations (excluding `lazy var` and IUOs) and flags closure captures\nwhose name matches any such declaration. Captures with an explicit\ninitializer (`[x = self.x]`) and `weak`/`unowned` captures are not flagged.\n\nLint: When a closure captures a name that matches a `var` declaration in\nthe same file, a warning is raised.\n",
       "unevaluatedProperties" : false
     },
+    "namedClosureParams" : {
+      "allOf" : [
+        {
+          "$ref" : "#/$defs/ruleBase"
+        }
+      ],
+      "description" : "Use named arguments in multi-line closures.\n\nInside a single-line closure, `$0`/`$1` is concise and idiomatic. Inside a multi-line closure\nthe anonymous form forces readers to track which argument is which by counting; an explicit\n`arg in` parameter list reads more clearly.\n\nLint: A warning is raised for each `$0`/`$1`/... reference inside a multi-line closure.\n\nFormat: Not auto-fixed; the rule cannot pick a meaningful parameter name.\n [opt-in]"
+    },
     "naming" : {
       "additionalProperties" : false,
       "description" : "naming rule group.",
@@ -1408,6 +1512,14 @@ package enum ConfigurationSchema {
       ],
       "description" : "Cases that contain only the `fallthrough` statement are forbidden.\n\nLint: Cases containing only the `fallthrough` statement yield a lint error.\n\nFormat: The fall-through `case` is added as a prefix to the next case unless the next case is\n        `default`; in that case, the fallthrough `case` is deleted.\n"
     },
+    "noForceCast" : {
+      "allOf" : [
+        {
+          "$ref" : "#/$defs/ruleBase"
+        }
+      ],
+      "description" : "Force casts (`as!`) are forbidden.\n\nA force cast crashes at runtime if the conversion fails. Prefer the conditional cast (`as?`)\ncombined with optional handling (`if let`, `guard let`, nil-coalescing, etc.).\n\nThis rule complements `NoForceTry` and `NoForceUnwrap`.\n\nLint: A warning is raised for each `as!`.\n\nFormat: Not auto-fixed; the safe replacement depends on caller intent.\n [opt-in]"
+    },
     "noForceTry" : {
       "allOf" : [
         {
@@ -1518,6 +1630,14 @@ package enum ConfigurationSchema {
       ],
       "description" : "Functions that return `()` or `Void` should omit the return signature.\n\nLint: Function declarations that explicitly return `()` or `Void` will yield a lint error.\n\nFormat: Function declarations with explicit returns of `()` or `Void` will have their return\n        signature stripped.\n"
     },
+    "noVoidTernary" : {
+      "allOf" : [
+        {
+          "$ref" : "#/$defs/ruleBase"
+        }
+      ],
+      "description" : "Don't use a ternary expression to call void-returning functions.\n\n`condition ? doA() : doB()` reads as if it produces a value, but when both branches return\n`Void` it's effectively a hidden if/else with strictly worse readability. Use a proper\n`if`/`else` statement instead.\n\nLint: A warning is raised when a ternary appears as a statement and both branches are call\nexpressions.\n\nFormat: Not auto-fixed; the rewrite would change formatting beyond the scope of this rule.\n [opt-in]"
+    },
     "noYodaConditions" : {
       "allOf" : [
         {
@@ -1591,6 +1711,14 @@ package enum ConfigurationSchema {
       ],
       "description" : "Prefer comma over `&&` in `if`, `guard`, and `while` conditions.\n\nSwift condition lists use commas to separate independent boolean conditions,\nwhich short-circuit identically to `&&` but read more naturally and enable\nindividual conditions to use optional binding or pattern matching.\n\nThis rule only fires when `&&` is the top-level operator in a condition element\n(no `||` mixed in at the same precedence level, since that would change semantics).\n\nLint: Using `&&` in a condition list raises a warning.\n\nFormat: `&&` is replaced with commas, splitting the condition into separate\ncondition elements.\n"
     },
+    "preferCompoundAssignment" : {
+      "allOf" : [
+        {
+          "$ref" : "#/$defs/ruleBase"
+        }
+      ],
+      "description" : "Prefer compound assignment operators (`+=`, `-=`, `*=`, `/=`) over the long form.\n\n`x = x + y` is exactly equivalent to `x += y` for the supported operators (`+`, `-`, `*`, `/`).\nThe compound form is shorter and avoids repeating the LHS, which makes refactors safer when the\nreceiver is renamed.\n\nThe rule fires only when the LHS expression text matches the RHS's first operand exactly. It\ndoes not fire on `x = a + x` or `x = a + b` patterns.\n\nLint: A warning is raised for `x = x + y` etc.\n\nFormat: The expression is rewritten to `x += y`.\n"
+    },
     "preferConditionalExpression" : {
       "allOf" : [
         {
@@ -1606,6 +1734,14 @@ package enum ConfigurationSchema {
         }
       ],
       "description" : "Prefer `count(where:)` over `filter(_:).count`.\n\nThe `count(where:)` method (Swift 6.0+) is more expressive and avoids allocating an\nintermediate array just to count its elements.\n\nLint: Using `.filter { ... }.count` raises a warning suggesting `count(where:)`.\n\nFormat: `.filter { ... }.count` is replaced with `.count(where: { ... })`.\n"
+    },
+    "preferDotZero" : {
+      "allOf" : [
+        {
+          "$ref" : "#/$defs/ruleBase"
+        }
+      ],
+      "description" : "Prefer `.zero` over explicit zero-valued initializers.\n\n`CGPoint(x: 0, y: 0)`, `CGSize(width: 0, height: 0)`, `CGRect(x: 0, y: 0, width: 0, height: 0)`\nand similar are equivalent to the platform-provided `.zero` constant. The shorthand reads\nbetter and avoids subtle inconsistencies (e.g. `0.0` vs `0` literal kinds).\n\nRecognised types: `CGPoint`, `CGSize`, `CGRect`, `CGVector`, `UIEdgeInsets`, `NSEdgeInsets`,\n`NSPoint`, `NSSize`, `NSRect`.\n\nLint: A warning is raised on a fully-zero initializer.\n\nFormat: The call is replaced with `<Type>.zero`.\n"
     },
     "preferEarlyExits" : {
       "allOf" : [
@@ -1655,6 +1791,14 @@ package enum ConfigurationSchema {
       ],
       "description" : "Consecutive single-return `if` statements followed by a final `return` should\nbe expressed as a chained `if/else` expression.\n\nWhen a sequence of `if` statements each contain only a `return` and are\nfollowed by a trailing `return`, the chain is converted into a single\n`if/else if/.../else` expression (two or more `if` branches required).\n\n```swift\n// Before\nif case .spaces = $0 { return true }\nif case .tabs = $0 { return true }\nreturn false\n\n// After\nif case .spaces = $0 {\n    true\n} else if case .tabs = $0 {\n    true\n} else {\n    false\n}\n```\n\nLint: A chain of early-return `if` statements raises a warning.\n\nFormat: The chain is replaced with an `if/else` expression.\n"
     },
+    "preferIsDisjoint" : {
+      "allOf" : [
+        {
+          "$ref" : "#/$defs/ruleBase"
+        }
+      ],
+      "description" : "Prefer `Set.isDisjoint(with:)` over `Set.intersection(_:).isEmpty`.\n\n`isDisjoint(with:)` expresses intent more directly and can short-circuit on the first shared\nelement, whereas `intersection(_:)` always builds the full intersection set.\n\nLint: A warning is raised on `someSet.intersection(other).isEmpty`.\n\nFormat: Not auto-fixed; the receiver may not be a `Set`, so the rewrite is unsafe in general.\n [opt-in]"
+    },
     "preferIsEmpty" : {
       "allOf" : [
         {
@@ -1678,6 +1822,14 @@ package enum ConfigurationSchema {
         }
       ],
       "description" : "Replace `@UIApplicationMain` and `@NSApplicationMain` with `@main`.\n\nThese attributes were deprecated in favor of `@main` (SE-0383, Swift 5.3+).\n\nLint: Using `@UIApplicationMain` or `@NSApplicationMain` raises a warning.\n\nFormat: The attribute is replaced with `@main`.\n"
+    },
+    "preferSelfType" : {
+      "allOf" : [
+        {
+          "$ref" : "#/$defs/ruleBase"
+        }
+      ],
+      "description" : "Prefer `Self` over `type(of: self)`.\n\nInside a class/struct/enum/actor, `Self` refers to the current type and is fully equivalent to\n`type(of: self)` for any non-polymorphic dispatch. The shorthand is more concise and avoids\nthe runtime call.\n\nThis rule does not fire at the top level of a file (where `self` does not refer to an enclosing\ntype) or for non-`self` arguments (`type(of: param)` is preserved).\n\nLint: A warning is raised for `type(of: self)` (also `Swift.type(of: self)`) inside a type.\n\nFormat: The call is replaced with `Self`.\n"
     },
     "preferShorthandTypeNames" : {
       "allOf" : [
@@ -1728,6 +1880,14 @@ package enum ConfigurationSchema {
       ],
       "description" : "Use ternary conditional expressions for simple if-else returns or assignments.\n\nWhen an `if`-`else` has exactly two branches, each containing a single\n`return` statement or a single assignment to the same variable, and the\ncondition is a simple expression (no else-if chains), the construct is\ncollapsed into a ternary conditional expression.\n\n```swift\n// Before\nif condition {\n    return trueValue\n} else {\n    return falseValue\n}\n// After\nreturn condition ? trueValue : falseValue\n\n// Before\nif condition {\n    result = trueValue\n} else {\n    result = falseValue\n}\n// After\nresult = condition ? trueValue : falseValue\n```\n\nLint: A simple if-else with single returns or same-variable assignments\n      in both branches raises a warning.\n\nFormat: The if-else is replaced with a ternary expression.\n [opt-in]"
     },
+    "preferToggle" : {
+      "allOf" : [
+        {
+          "$ref" : "#/$defs/ruleBase"
+        }
+      ],
+      "description" : "Prefer `someBool.toggle()` over `someBool = !someBool`.\n\n`Bool.toggle()` (Swift 4.2+) is more concise and clearly communicates the intent. The two forms\nare equivalent semantically; `toggle()` does not introduce any new evaluation hazards.\n\nLint: A warning is raised for `x = !x` patterns where the LHS and the negated RHS reference\nthe exact same expression text.\n\nFormat: The expression is rewritten to `x.toggle()`.\n"
+    },
     "preferTrailingClosures" : {
       "allOf" : [
         {
@@ -1735,6 +1895,14 @@ package enum ConfigurationSchema {
         }
       ],
       "description" : "Use trailing closure syntax where applicable.\n\nWhen the last argument(s) to a function call are closure expressions, convert\nthem to trailing closure syntax. For a single trailing closure, the closure must\nbe unlabeled unless the function is in the \"always trailing\" list (e.g. `async`,\n`sync`, `autoreleasepool`). For multiple trailing closures, the first must be\nunlabeled and the rest must be labeled.\n\nLint: When closure arguments could use trailing closure syntax.\n\nFormat: The closure arguments are moved to trailing closure position.\n"
+    },
+    "preferUnavailable" : {
+      "allOf" : [
+        {
+          "$ref" : "#/$defs/ruleBase"
+        }
+      ],
+      "description" : "Prefer `#unavailable(...)` over `#available(...) {} else { ... }`.\n\nInverting an availability check via an empty `if`-body and a non-empty `else`-body is harder to\nread than the direct `#unavailable` form (Swift 5.6+). This rule rewrites the simple shape; it\ndoes not touch chains where the `else` body has its own availability check (rewriting those is\nnot a simple inversion).\n\nLint: A warning is raised on `if #available(iOS X, *) {} else { body }`.\n\nFormat: The `if` is rewritten to `if #unavailable(iOS X, *) { body }`.\n"
     },
     "preferVoidReturn" : {
       "allOf" : [
@@ -2208,6 +2376,14 @@ package enum ConfigurationSchema {
       ],
       "description" : "Replace `forEach` with `for-in` loop unless its argument is a function reference.\n\nLint:  invalid use of `forEach` yield will yield a lint error.\n",
       "unevaluatedProperties" : false
+    },
+    "requireFatalErrorMessage" : {
+      "allOf" : [
+        {
+          "$ref" : "#/$defs/ruleBase"
+        }
+      ],
+      "description" : "`fatalError` calls should include a descriptive message.\n\nA bare `fatalError()` (or `fatalError(\"\")`) gives no context when the program crashes. Including\na message makes it far easier to diagnose the problem from the stack trace alone.\n\nLint: A warning is raised for `fatalError()` and `fatalError(\"\")`.\n\nFormat: Not auto-fixed; the message must be supplied by the author.\n [opt-in]"
     },
     "requireSummary" : {
       "allOf" : [
