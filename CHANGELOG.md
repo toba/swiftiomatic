@@ -18,6 +18,7 @@
 - Formatter; preserve inline `nestedCallLayout`; don't wrap long strings pointlessly ([#444](https://github.com/toba/swiftiomatic/issues/444))
 - `sm format`; don't mangle closures and `reduce` expressions ([#443](https://github.com/toba/swiftiomatic/issues/443))
 - Member access chain assignment; chain `.` break now beats args `(` and `=` per documented precedence ([#454](https://github.com/toba/swiftiomatic/issues/454))
+- `KeepFunctionOutputTogether`; protocol method no longer wraps return arrow instead of keeping it with the signature ([#456](https://github.com/toba/swiftiomatic/issues/456))
 
 ### 🗜️ Tweaks
 

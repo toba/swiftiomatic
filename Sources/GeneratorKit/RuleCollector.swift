@@ -198,10 +198,42 @@ package final class RuleCollector {
                 visitedNodes: visitedNodes,
                 isOptIn: Self.extractIsOptIn(from: members),
                 customProperties: customProperties,
+                passClassification: Self.extractPassClassification(from: inheritanceClause),
             )
         }
 
         return nil
+    }
+
+    /// Reads the rule's inheritance clause and pulls out the pass-classification
+    /// markers it conforms to. Unknown identifiers are ignored. Returns `nil` when no
+    /// classification markers are present — the rule then defaults to the catch-all
+    /// pass per `PassPartitioner.partition`.
+    private static func extractPassClassification(
+        from clause: InheritanceClauseSyntax
+    ) -> PassClassification? {
+        var readLocality: String?
+        var writeSurface: String?
+        var markers: [String] = []
+        for inherited in clause.inheritedTypes {
+            guard let identifier = inherited.type.as(IdentifierTypeSyntax.self) else { continue }
+            let name = identifier.name.text
+            if PassMarker.readLocalities.contains(name) {
+                readLocality = name
+            } else if PassMarker.writeSurfaces.contains(name) {
+                writeSurface = name
+            } else if PassMarker.optionalMarkers.contains(name) {
+                markers.append(name)
+            }
+        }
+        guard readLocality != nil || writeSurface != nil || !markers.isEmpty else {
+            return nil
+        }
+        return PassClassification(
+            readLocality: readLocality,
+            writeSurface: writeSurface,
+            markers: markers
+        )
     }
 
     // MARK: - Custom property extraction

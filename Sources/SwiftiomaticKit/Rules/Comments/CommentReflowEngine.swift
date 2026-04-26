@@ -237,7 +237,16 @@ package enum CommentReflowEngine {
                 // nested under the previous item via continuation lines below.
                 // For simplicity we fold it into the previous item's `nested` blocks.
                 let nestedStart = i
-                let (nested, consumed, _) = parseList(lines, startingAt: nestedStart)
+                let (rawNested, consumed, _) = parseList(lines, startingAt: nestedStart)
+                // Strip leading whitespace from nested item markers; the parent's `continuation`
+                // prefix is the sole authoritative source of indentation when rendering nested
+                // blocks. Without this, the original leading spaces would compound with the
+                // parent's continuation, doubling the indent at each nesting level.
+                let nested = rawNested.map { item -> ListItem in
+                    var copy = item
+                    copy.marker = String(item.marker.drop(while: { $0 == " " }))
+                    return copy
+                }
                 if !items.isEmpty {
                     items[items.count - 1].nested.append(.list(items: nested, parameterBlock: false))
                 }
@@ -267,7 +276,12 @@ package enum CommentReflowEngine {
                 if nextLeading <= leading { break }
                 if let nm = listMarker(next), nextLeading > leading {
                     // nested list inside this item
-                    let (nested, consumed, _) = parseList(lines, startingAt: i)
+                    let (rawNested, consumed, _) = parseList(lines, startingAt: i)
+                    let nested = rawNested.map { item -> ListItem in
+                        var copy = item
+                        copy.marker = String(item.marker.drop(while: { $0 == " " }))
+                        return copy
+                    }
                     item.nested.append(.list(items: nested, parameterBlock: false))
                     _ = nm
                     i += consumed
@@ -329,14 +343,37 @@ package enum CommentReflowEngine {
                 i += 1
                 continue
             }
-            // Inline code span: ` ... ` (matches first closing backtick)
+            // Inline code span: a run of N backticks closes on the next run of exactly N
+            // backticks. Handles single-backtick code spans AND DocC double-backtick symbol
+            // references (``Foo/bar()``). Without this, `` ` `` would close on the second
+            // opening backtick, splitting the symbol reference into separate atoms and
+            // letting the wrapper insert spaces inside it.
             if c == "`" {
-                flush()
-                var j = i + 1
-                while j < scalars.count, scalars[j] != "`" { j += 1 }
-                if j < scalars.count {
-                    atoms.append(String(scalars[i...j]))
-                    i = j + 1
+                var openCount = 0
+                var k = i
+                while k < scalars.count, scalars[k] == "`" { openCount += 1; k += 1 }
+                // Search for a closing run of exactly `openCount` backticks.
+                var j = k
+                var closeStart: Int? = nil
+                while j < scalars.count {
+                    if scalars[j] == "`" {
+                        var run = 0
+                        var m = j
+                        while m < scalars.count, scalars[m] == "`" { run += 1; m += 1 }
+                        if run == openCount {
+                            closeStart = j
+                            break
+                        }
+                        j = m
+                        continue
+                    }
+                    j += 1
+                }
+                if let cs = closeStart {
+                    flush()
+                    let endExclusive = cs + openCount
+                    atoms.append(String(scalars[i..<endExclusive]))
+                    i = endExclusive
                     continue
                 }
             }

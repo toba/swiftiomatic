@@ -145,6 +145,29 @@ struct ReflowCommentsTests: RuleTesting {
             configuration: config(maxWidth: 100)
         )
     }
+
+    @Test func preservesParametersBlockIndentation() {
+        assertFormatting(
+            ReflowComments.self,
+            input: """
+                /// Handles an account change event.
+                ///
+                /// - Parameters:
+                ///   - syncEngine: The sync engine that generates the event.
+                ///   - changeType: The iCloud account's change type.
+                func handle() {}
+                """,
+            expected: """
+                /// Handles an account change event.
+                ///
+                /// - Parameters:
+                ///   - syncEngine: The sync engine that generates the event.
+                ///   - changeType: The iCloud account's change type.
+                func handle() {}
+                """,
+            configuration: config(maxWidth: 100)
+        )
+    }
 }
 
 @Suite
@@ -158,6 +181,30 @@ struct CommentReflowEngineTests {
     @Test func tokenizerKeepsInlineCodeAtomic() {
         let atoms = CommentReflowEngine.tokenize("one `two three` four")
         #expect(atoms == ["one", "`two three`", "four"])
+    }
+
+    @Test func tokenizerKeepsDocCSymbolReferenceAtomic() {
+        // DocC double-backtick symbol references must remain a single atom; otherwise
+        // the wrapper can split between the opening `` and the symbol name, inserting
+        // spaces that break Quick Help.
+        let atoms = CommentReflowEngine.tokenize("call ``SyncEngine/deleteLocalData()`` if needed")
+        #expect(atoms == ["call", "``SyncEngine/deleteLocalData()``", "if", "needed"])
+    }
+
+    @Test func reflowKeepsDocCSymbolReferenceWhole() {
+        // A long line containing a `` `` symbol reference must wrap around the
+        // reference, never inside it.
+        let r = CommentReflowEngine.reflow(
+            lines: [
+                "if they want to clear their local data or not, implement this method, and explicitly call ``SyncEngine/deleteLocalData()`` if/when the data should be cleared."
+            ],
+            availableWidth: 100
+        )
+        let joined = (r ?? []).joined(separator: "\n")
+        #expect(joined.contains("``SyncEngine/deleteLocalData()``"))
+        // The reference must not be split by a wrap inside the backticks.
+        #expect(!joined.contains("``\n"))
+        #expect(!joined.contains("\n``"))
     }
 
     @Test func tokenizerKeepsMarkdownLinkAtomic() {
@@ -235,5 +282,19 @@ struct CommentReflowEngineTests {
             availableWidth: 12
         )
         #expect(r == ["- aaa bbb", "  ccc ddd", "  eee fff"])
+    }
+
+    @Test func preservesNestedBulletListIndentation() {
+        // Nested bullet list: child items should be indented by exactly the
+        // parent marker width (2 spaces for "- "), not doubled.
+        let r = CommentReflowEngine.reflow(
+            lines: [
+                "- parent item",
+                "  - child one",
+                "  - child two",
+            ],
+            availableWidth: 80
+        )
+        #expect(r == nil || r == ["- parent item", "  - child one", "  - child two"])
     }
 }

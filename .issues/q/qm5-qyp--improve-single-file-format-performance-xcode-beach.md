@@ -2,14 +2,14 @@
 # qm5-qyp
 title: Improve single-file format performance (Xcode beachball)
 status: review
-type: bug
+type: epic
 priority: high
 created_at: 2026-04-26T20:11:57Z
-updated_at: 2026-04-26T20:45:58Z
+updated_at: 2026-04-26T21:23:41Z
 sync:
     github:
         issue_number: "458"
-        synced_at: "2026-04-26T20:49:02Z"
+        synced_at: "2026-04-26T22:01:42Z"
 ---
 
 ## Problem
@@ -298,3 +298,27 @@ SamePassOK(A, B)
 1. Picking the right base class for a new rule — same problem as picking an `interactionClass`, but constrained by what APIs the rule actually uses. The compiler refuses incorrect choices.
 2. Field-level overlap that's semantically order-dependent but syntactically disjoint (e.g., two rules producing a new `IfExprSyntax` with different bodies). Caught by golden-corpus diff harness, not the type system.
 3. The catch-all pass. Some rules genuinely won't fit any cell and live in `FileGlobalFormatRule` as solo passes — fine, the architecture admits them.
+
+
+
+---
+
+## Decision (supersedes prior Options A / B / C trade-offs above)
+
+Direction: **multi-pass rewrite pipeline with statically derived pass partition** (per `## Static-Validation Taxonomy` below). Not pursuing per-rule node-kind gating standalone, and not pursuing the all-or-nothing combined-pipeline variant. The earlier Options A, B, C sections are kept above for context but the recommendations in those sections are obsolete.
+
+Replace `RewritePipeline.rewrite()` (137 sequential walks) with ~10 passes. Each pass is one combined `SyntaxRewriter` walk that interleaves all rules assigned to it. Cross-pass behavior preserves today's full-tree visibility, so structural rules keep their guarantees.
+
+**Pass assignment is statically derived, not author-declared.** Pass membership comes from each rule's constrained base class (read-locality × write-surface, per the taxonomy) plus a tiny set of marker protocols. Codegen computes the partition. Misclassification is a compile error (constrained base classes deny APIs the rule shouldn't use), not a runtime bug.
+
+**Speedup target.** Today ≈ 22 ms × 137 = 3 s. With ~12 passes ≈ 22 ms × 12 = 264 ms ceiling — within the <200 ms target on a 1k-line file.
+
+**Safety net.** A golden-corpus diff harness exercises the existing pipeline against the entire test fixture corpus and snapshots the output; the multi-pass pipeline must produce byte-identical output on every CI run before any rule migration ships.
+
+### Implementation sequence
+
+1. Design constrained base classes per the taxonomy.
+2. Land golden-corpus diff harness against existing test fixtures.
+3. Land multi-pass `Generator` extension + driver, all rules initially in the catch-all (zero behavior change).
+4. Migrate pass 1 (token-only); verify golden corpus byte-identical; measure perf delta.
+5. Expand pass by pass, lowest-risk first. Stop when wall-clock hits target.

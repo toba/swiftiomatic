@@ -59,6 +59,10 @@ package struct GeneratePaths {
     /// The generated Swift file embedding the JSON Schema as a string literal.
     package let configurationSchemaSwiftFile: URL
 
+    /// The generated, human-readable manifest mapping rules to multi-pass
+    /// `RewritePipeline` passes. Reviewable in PRs.
+    package let passManifestFile: URL
+
     // MARK: - Initializers
 
     /// Creates paths rooted at the given package directory.
@@ -100,5 +104,7 @@ package struct GeneratePaths {
         tokenStreamStubsFile = outputDirectory.appending(path: "TokenStream+Generated.swift")
         configurationSchemaSwiftFile = outputDirectory.appending(
             path: "ConfigurationSchema+Generated.swift")
+        passManifestFile = packageRoot.appending(path: "Documentation")
+            .appending(path: "PassManifest.md")
     }
 }

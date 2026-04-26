@@ -1,0 +1,26 @@
+import Foundation
+
+func classify(_ value: Int) -> String {
+    if value < 0 {
+        return "negative"
+    } else if value == 0 {
+        return "zero"
+    } else {
+        return "positive"
+    }
+}
+
+func describe(_ kind: Kind) -> String {
+    switch kind {
+    case .alpha: return "a"
+    case .beta(let count) where count > 0: return "b+"
+    case .beta: return "b"
+    case .gamma(let label, let weight): return "\(label):\(weight)"
+    }
+}
+
+enum Kind {
+    case alpha
+    case beta(Int)
+    case gamma(String, Double)
+}

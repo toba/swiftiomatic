@@ -67,6 +67,15 @@ if !skipSchema {
 let schemaSwiftGenerator = ConfigurationSchemaSwiftGenerator(schemaGenerator: schemaGenerator)
 try schemaSwiftGenerator.generateFile(at: paths.configurationSchemaSwiftFile)
 
+// Generate the human-readable pass manifest for the multi-pass `RewritePipeline`.
+// Gated on `--skip-schema` because the build plugin sandbox can't write to
+// `Documentation/`; the manifest is a source-of-truth artifact that only the
+// standalone `swift run Generator` invocation regenerates.
+if !skipSchema {
+    let passManifestGenerator = PassManifestGenerator(collector: collector)
+    try passManifestGenerator.generateFile(at: paths.passManifestFile)
+}
+
 // Generate TokenStream forwarding stubs from TokenStream+*.swift extensions
 // and any extension TokenStream blocks co-located with layout rules.
 let stubCollector = SyntaxVisitorOverrideCollector()

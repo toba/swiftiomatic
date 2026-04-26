@@ -62,6 +62,11 @@ extension RuleCollector {
         /// for threshold rules) on the configuration type.
         var customProperties: [DetectedProperty] = []
 
+        /// Pass-classification protocol conformances declared on the rule, used by the
+        /// multi-pass `RewritePipeline` partitioner. `nil` when the rule declares no
+        /// classification — the rule lands in the catch-all pass.
+        var passClassification: PassClassification? = nil
+
         // Hashable/Equatable based on typeName only — customProperties are metadata.
         static func == (lhs: Self, rhs: Self) -> Bool { lhs.typeName == rhs.typeName }
         func hash(into hasher: inout Hasher) { hasher.combine(typeName) }

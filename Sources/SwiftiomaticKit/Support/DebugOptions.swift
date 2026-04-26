@@ -21,6 +21,14 @@ package struct DebugOptions: OptionSet, Sendable {
     /// Dumps a verbose representation of the raw pretty-printer token stream.
     package static let dumpTokenStream = DebugOptions(rawValue: 1 << 1)
 
+    /// Routes formatting through `MultiPassRewritePipeline` instead of the legacy
+    /// `RewritePipeline`. While the multi-pass migration is in progress (issues
+    /// `qm5-qyp`, `ain-794`, `7x2-5eg`) the new pipeline must produce byte-identical
+    /// output to the old one — verified by the golden-corpus harness (`m82-uu9`). Once
+    /// every rule is classified and the manifest stabilizes, the legacy pipeline is
+    /// removed and this flag goes with it.
+    package static let useMultiPassPipeline = DebugOptions(rawValue: 1 << 2)
+
     package let rawValue: Int
 
     package init(rawValue: Int) { self.rawValue = rawValue }
