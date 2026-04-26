@@ -183,17 +183,19 @@ struct AssignmentExprTests: LayoutTesting {
   }
 
   @Test func assignmentWithSimpleMemberAccessChain() {
-    // Keeps `components = path.split(` together, breaks inside args.
+    // The chain `.` (rank 2) wins over the function-call args break (rank 3): wrap before
+    // `.split` first; the args still overflow, so they wrap inside next.
     let input =
       """
       components = path.split(separator: "/", omittingEmptySubsequences: false).map { String($0) }
       """
     let expected =
       """
-      components = path.split(
-        separator: "/",
-        omittingEmptySubsequences: false
-      ).map { String($0) }
+      components = path
+        .split(
+          separator: "/",
+          omittingEmptySubsequences: false
+        ).map { String($0) }
 
       """
     assertLayout(input: input, expected: expected, linelength: 40)
@@ -201,19 +203,37 @@ struct AssignmentExprTests: LayoutTesting {
 
   @Test func assignmentWithMemberAccessLHSAndChainRHS() {
     // LHS is a short member access (`obj.property`); RHS is a long chain that overflows the
-    // line. The LHS must stay on one line and the `=` must stay attached to the start of the
-    // RHS — previously each LHS segment landed on its own line and the `=` dangled.
+    // line. Per documented break precedence, the chain `.` (rank 2) must fire before the
+    // function-call args break (rank 3) and before the `=` break (rank 4). Expect the wrap
+    // before `.decodeObject` rather than inside its argument list.
     let input =
       """
       queryOutput.debug_recordChangeTag = coder.decodeObject(of: NSNumber.self, forKey: "_recordChangeTag")?.intValue
       """
     let expected =
       """
-      queryOutput.debug_recordChangeTag = coder.decodeObject(
-        of: NSNumber.self, forKey: "_recordChangeTag")?.intValue
+      queryOutput.debug_recordChangeTag = coder
+        .decodeObject(of: NSNumber.self, forKey: "_recordChangeTag")?.intValue
 
       """
     assertLayout(input: input, expected: expected, linelength: 100)
+  }
+
+  @Test func assignmentWithMemberAccessLHSAndChainRHSShortLine() {
+    // At a shorter line length the chain should also break before `.intValue` (rank 2 again),
+    // before falling through to inner breaks.
+    let input =
+      """
+      queryOutput.debug_recordChangeTag = coder.decodeObject(of: NSNumber.self, forKey: "_recordChangeTag")?.intValue
+      """
+    let expected =
+      """
+      queryOutput.debug_recordChangeTag = coder
+        .decodeObject(of: NSNumber.self, forKey: "_recordChangeTag")?
+        .intValue
+
+      """
+    assertLayout(input: input, expected: expected, linelength: 70)
   }
 
   @Test func assignmentPatternBindingFromSequenceWithFunctionCalls() {

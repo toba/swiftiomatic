@@ -153,6 +153,7 @@ package final class LayoutCoordinator {
         )
         maxLineLength = configuration[LineLength.self]
         self.printTokenStream = printTokenStream
+            || ProcessInfo.processInfo.environment["SM_DUMP_TOKENS"] == "1"
         self.whitespaceOnly = whitespaceOnly
         outputBuffer = LayoutBuffer(
             maximumBlankLines: configuration[MaximumBlankLines.self],

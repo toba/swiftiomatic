@@ -51,6 +51,7 @@
 			"approachingExpirySeverity": "warn",
 			"approachingExpiryThreshold": 15
 		},
+		"reflowComments":  { "lint" : "no", "rewrite" : true },
 		"noBlockComments": { "lint": "warn" },
 		"noLocalDocComments": { "lint": "warn" },
 		"orphanedDocComment": { "lint": "warn" },

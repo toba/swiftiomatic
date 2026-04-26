@@ -17,7 +17,7 @@
 - Threshold lint rules; replace `lint` property with `enabled`; introduce `ThresholdRuleValue` ([#447](https://github.com/toba/swiftiomatic/issues/447))
 - Formatter; preserve inline `nestedCallLayout`; don't wrap long strings pointlessly ([#444](https://github.com/toba/swiftiomatic/issues/444))
 - `sm format`; don't mangle closures and `reduce` expressions ([#443](https://github.com/toba/swiftiomatic/issues/443))
-- Member access chain assignment; keep LHS on one line; bound `=` break chunk so chain absorbs the wrap ([#454](https://github.com/toba/swiftiomatic/issues/454))
+- Member access chain assignment; chain `.` break now beats args `(` and `=` per documented precedence ([#454](https://github.com/toba/swiftiomatic/issues/454))
 
 ### 🗜️ Tweaks
 

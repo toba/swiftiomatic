@@ -77,22 +77,25 @@ struct GuardStmtTests: LayoutTesting {
     let expected =
       """
       guard
-        let myvar = myClass.itsFunc(
-          first: .someStuff,
-          second: .moreStuff
-        ).first
+        let myvar = myClass
+          .itsFunc(
+            first: .someStuff,
+            second: .moreStuff
+          ).first
       else {
         // do stuff
       }
       guard
-        let myvar1 = myClass.itsFunc(
-          first: .someStuff,
-          second: .moreStuff
-        ).first,
-        let myvar2 = myClass.diffFunc(
-          first: .someStuff,
-          second: .moreStuff
-        ).first
+        let myvar1 = myClass
+          .itsFunc(
+            first: .someStuff,
+            second: .moreStuff
+          ).first,
+        let myvar2 = myClass
+          .diffFunc(
+            first: .someStuff,
+            second: .moreStuff
+          ).first
       else {
         // do stuff
       }

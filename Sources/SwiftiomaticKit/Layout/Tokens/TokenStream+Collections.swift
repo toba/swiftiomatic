@@ -181,18 +181,48 @@ extension TokenStream {
                 // When this function call is wrapped by a keyword-modified expression, the group applied
                 // when visiting that wrapping expression is sufficient. Adding another group here in that
                 // case can result in unnecessarily breaking after the modifier keyword.
-                if !(base.firstToken(viewMode: .sourceAccurate)?.previousToken(viewMode: .all)?
-                    .parent?.isProtocol(
-                        KeywordModifiedExprSyntax.self
-                    ) ?? false)
-                {
-                    before(base.firstToken(viewMode: .sourceAccurate), tokens: .open)
-                    after(
-                        calledMemberAccessExpr.declName.baseName.lastToken(
-                            viewMode: .sourceAccurate
-                        ),
-                        tokens: .close
-                    )
+                let isKeywordModified = base.firstToken(viewMode: .sourceAccurate)?
+                    .previousToken(viewMode: .all)?
+                    .parent?.isProtocol(KeywordModifiedExprSyntax.self) ?? false
+
+                // When this call is itself a step in an outer member-access chain (e.g.
+                // `coder.decodeObject(...)?.intValue`), grouping `base.method` here bounds the
+                // chunk of the contextual break before `.method` and suppresses it, so the args
+                // break or `=` break wins instead. Per documented break precedence, the chain
+                // `.` (rank 2) must beat the args break (rank 3) and `=` break (rank 4); skip
+                // the group so the chain break sees the full chunk and fires first.
+                // Only retarget the group when this call is a step in an outer chain AND has
+                // no trailing closure. Trailing-closure chains (e.g. SwiftUI builder chains)
+                // intentionally prefer to break inside closures rather than between method
+                // calls — extending the chain break across a trailing closure here would
+                // disrupt those layouts.
+                let isInOuterChain =
+                    node.trailingClosure == nil
+                    && node.additionalTrailingClosures.isEmpty
+                    && isPartOfOuterMemberAccessChain(node)
+
+                if !isKeywordModified {
+                    if isInOuterChain {
+                        // Place `.open` before the chain break (i.e., before the period of
+                        // `.method`) and `.close` after the call's right paren. This extends the
+                        // chain break's chunk across the entire `.method(args)`, so when the
+                        // outer chain doesn't fit, the chain break (`.` rank 2) fires before the
+                        // args break (rank 3) — matching documented break precedence.
+                        before(calledMemberAccessExpr.period, tokens: .open)
+                        if let rightParen = node.rightParen {
+                            after(rightParen, tokens: .close)
+                        } else {
+                            after(node.lastToken(viewMode: .sourceAccurate), tokens: .close)
+                        }
+                    } else {
+                        before(base.firstToken(viewMode: .sourceAccurate), tokens: .open)
+                        after(
+                            calledMemberAccessExpr.declName.baseName.lastToken(
+                                viewMode: .sourceAccurate
+                            ),
+                            tokens: .close
+                        )
+                    }
                 }
             }
         }

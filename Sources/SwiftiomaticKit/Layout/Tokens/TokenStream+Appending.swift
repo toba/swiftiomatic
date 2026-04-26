@@ -413,6 +413,34 @@ extension TokenStream {
         return expr.is(MemberAccessExprSyntax.self)
     }
 
+    /// Returns whether the given function call expression participates in an outer member-access
+    /// chain — that is, walking up through transparent postfix wrappers (`?`, `!`), the eventual
+    /// parent is a `MemberAccessExpr` that uses this call as its base. In that case, the call's
+    /// `.calledExpression` (e.g. `base.method`) should NOT be wrapped in a small open/close group,
+    /// because doing so bounds the chunk of the contextual break before `.method` and prevents the
+    /// outer chain break from firing per documented break precedence.
+    func isPartOfOuterMemberAccessChain(_ call: FunctionCallExprSyntax) -> Bool {
+        var current: Syntax = Syntax(call)
+        while let parent = current.parent {
+            switch parent.kind {
+            case .optionalChainingExpr, .forceUnwrapExpr, .postfixOperatorExpr,
+                .postfixIfConfigExpr:
+                current = parent
+            case .memberAccessExpr:
+                if let memberAccess = parent.as(MemberAccessExprSyntax.self),
+                    let base = memberAccess.base,
+                    base.id == current.id
+                {
+                    return true
+                }
+                return false
+            default:
+                return false
+            }
+        }
+        return false
+    }
+
     /// Whether an expression should use break precedence — `ignoresDiscretionary` + open/close
     /// grouping — so the formatter prefers inner operator breaks over the enclosing break position.
     /// Used for both assignment (`=`) and keyword (`guard`) breaks.

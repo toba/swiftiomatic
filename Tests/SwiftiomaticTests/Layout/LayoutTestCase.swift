@@ -10,6 +10,7 @@
 //
 //===----------------------------------------------------------------------===//
 
+import Foundation
 import Testing
 @_spi(ExperimentalLanguageFeatures) import SwiftParser
 import SwiftSyntax
@@ -122,7 +123,7 @@ private func prettyPrintedSource(
         context: context,
         source: source,
         node: transformedSyntax,
-        printTokenStream: false,
+        printTokenStream: ProcessInfo.processInfo.environment["DUMP_TOKENS"] == "1",
         whitespaceOnly: whitespaceOnly
     )
     return (printer.prettyPrint(), context)
