@@ -1,18 +1,18 @@
 ---
 # 0vr-yit
 title: '@DeclVisitor macro: Pattern B (scope) + Pattern C (KeyPath)'
-status: ready
+status: scrapped
 type: task
 priority: normal
 created_at: 2026-04-26T17:49:14Z
-updated_at: 2026-04-26T17:49:14Z
+updated_at: 2026-04-26T19:06:24Z
 parent: lhe-lqu
 blocked_by:
     - j5a-lnn
 sync:
     github:
         issue_number: "452"
-        synced_at: "2026-04-26T18:08:49Z"
+        synced_at: "2026-04-26T19:46:00Z"
 ---
 
 Phase 2 of `lhe-lqu`. Extends `@DeclVisitor` to cover the remaining two patterns identified in the parent issue. Blocked by `j5a-lnn` (Phase 1).

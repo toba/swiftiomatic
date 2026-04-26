@@ -425,7 +425,16 @@ extension TokenStream {
     }
 
     func visitFunctionSignature(_ node: FunctionSignatureSyntax) -> SyntaxVisitorContinueKind {
-        before(node.returnClause?.firstToken(viewMode: .sourceAccurate), tokens: .break)
+        // When KeepFunctionOutputTogether is enabled, the rule's purpose is to keep the return
+        // clause attached to the closing paren / effect specifiers. Ignore any pre-existing
+        // discretionary newline before `->` so a previously-broken signature gets re-attached.
+        let newlines: NewlineBehavior =
+            config[KeepFunctionOutputTogether.self]
+            ? .elective(ignoresDiscretionary: true) : .elective
+        before(
+            node.returnClause?.firstToken(viewMode: .sourceAccurate),
+            tokens: .break(.continue, newlines: newlines)
+        )
         return .visitChildren
     }
 

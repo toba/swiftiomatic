@@ -1,15 +1,15 @@
 ---
 # lhe-lqu
 title: '@DeclVisitor macro: eliminate 516 boilerplate visit overrides across 193 rules'
-status: draft
+status: scrapped
 type: epic
 priority: normal
 created_at: 2026-04-17T21:56:55Z
-updated_at: 2026-04-26T18:16:44Z
+updated_at: 2026-04-26T19:06:24Z
 sync:
     github:
         issue_number: "322"
-        synced_at: "2026-04-26T18:19:14Z"
+        synced_at: "2026-04-26T19:45:58Z"
 ---
 
 193 of 217 rules have fan-out visit() overrides (516 total) where each override is 3-6 lines calling the same helper. Roughly ~1,500–2,000 lines of mechanical boilerplate.
@@ -180,3 +180,83 @@ Issue **6wg-5eb** added a new `ThresholdRuleValue` protocol and a small extensio
 - `extractCustomProperties` now skips `enabled`/`warning`/`error` for threshold rules
 
 **Effect on the @DeclVisitor plan:** none structurally. The macro work targets the rule class's `visit(_:)` member walk at `Sources/GeneratorKit/RuleCollector.swift:154-162`, while the threshold change touches *configuration-struct* parsing further down. They share the same source-scan pass but do not overlap. When @DeclVisitor lands and the member-walk fallback is removed, `structConforms`/`isThreshold` should be preserved as-is — they are config-shape metadata, not rule-discovery metadata.
+
+
+
+## Reasons for Scrapping (2026-04-26 attempt)
+
+Full build of the macro infrastructure (Phases 1 + 2) was completed in a session and then **reverted entirely**. Preserved here so the next person doesn't repeat it.
+
+### What was built and tested
+
+- `SwiftiomaticMacroPlugin` (compiler plugin, `@main CompilerPlugin`) and `SwiftiomaticMacros` (re-export library) added to `Package.swift`. No new external deps — tests used `SwiftSyntaxMacrosTestSupport` from swift-syntax itself.
+- `@DeclVisitor` member macro with three styles:
+  - `.simple` — `helper(node)` (Pattern A)
+  - `.scoped(enter:, leave:)` — `enter(node); defer { leave() }; return super.visit(node)` (Pattern B)
+  - `.keyword` — `helper(of: node, keywordKeyPath: \.<field>)` with built-in keyword-field map covering all 18 declaration kinds, including irregular cases (`.variableDecl` → `bindingSpecifier`, `.associatedTypeDecl` → `associatedtypeKeyword`)
+- 6 macro diagnostics with 11 snapshot tests.
+- `RuleCollector` taught to read `@DeclVisitor` attributes; member-walk fallback retained so unmigrated rules continued to work.
+- 2 rules migrated as exemplars: `TripleSlashDocComments` (11 → 1) and `ModifiersOnSameLine` leaf decls (9 of 15 → 1).
+- Full suite passed at every step (2,962 tests).
+
+### Why this got reverted
+
+A systematic survey across all 217 rule files measured the actual distribution of visit-override body shapes. The parent epic's classification numbers (~115 Pattern A, ~30 Pattern B, ~1 Pattern C) were *significantly* optimistic. Real first-line distribution:
+
+```
+  39  let visited = super.visit(NODE)
+  11  diagnoseDocComments(in: DeclSyntax(NODE))
+  11  guard ... (per-kind multi-statement gating)
+  10  let visited = super.visit(NODE).cast(ClassDeclSyntax.self)
+  10  diagnoseIfNameStartsWithUnderscore(NODE.name)
+  10  switch mode { ... }
+   9  let visited = super.visit(NODE).cast(StructDeclSyntax.self)
+   6  diagnoseMissingDocComment(DeclSyntax(NODE), name: NODE.name.text, modifiers: NODE.modifiers)
+   5  DeclSyntax(reorderingModifiers(of: NODE, keyPath: \.modifiers))
+```
+
+The `helper(node)` shape the macro generates fits almost no rules without further work. Real overrides typically:
+
+1. Pass a *projection* of the node — `node.name`, `node.fullDeclName`, `node.modifiers`. Helper signatures vary per rule.
+2. Mix `.skipChildren` and `.visitChildren` returns within a single rule (`RequireDocCommentSummary`, `DocumentPublicDeclarations`).
+3. Pre-recurse with `super.visit(node).cast(SomeSyntax.self)` (~50 occurrences).
+4. Have per-kind multi-statement gating with `guard` or `switch`.
+5. Visit non-decl kinds (`ClosureParameterSyntax`, `IdentifierPatternSyntax`) outside the `NodeKind` enum.
+
+### LOC accounting
+
+| Item | Lines |
+|---|---|
+| Macro plugin source | ~370 |
+| Macro public surface | ~60 |
+| Macro tests | ~170 |
+| Package.swift + plugin target | ~25 |
+| RuleCollector attribute-scan | ~40 |
+| **Added** | **~665** |
+| `TripleSlashDocComments` saved | ~35 |
+| `ModifiersOnSameLine` saved | ~25 |
+| **Saved** | **~60** |
+| **Net** | **+605** |
+
+With only 2 rules migrated, infrastructure cost outweighs savings 11×. Break-even requires ~30+ more rules.
+
+### Why broader migration was infeasible
+
+Closing the gap required *either*:
+
+- **More macro styles**: `.fieldHelper(field:)` (~10 rules), per-kind return spec (~15), pre-recurse style (~30), expanded NodeKind (~10). By the third style, the macro is no longer clearer than the hand-written form.
+- **Refactoring helpers** in 50+ rules to take generic `some DeclSyntaxProtocol`. Mechanical but risky — helper refactors can subtly change behavior.
+
+Neither was justified. Hand-written boilerplate is mechanical but locally readable; every rule explains itself in its own file. The macro abstraction's cognitive load scales with the number of styles.
+
+### Recommendation for any future revisit
+
+The epic's own 2026-04-26 re-evaluation said: 'defer until macro infrastructure is needed for another purpose, so the setup cost can be amortized. The boilerplate is annoying when authoring new rules but is not a correctness or maintainability risk.' The implementation attempt confirmed that conclusion.
+
+**Do not re-attempt without first**:
+
+1. Identifying a *separate* motivation for adding macro infrastructure (e.g. a `@Rule(group:, customKey:, isOptIn:)` declarative metadata macro that subsumes scattered `static var group` / `static var key` / opt-in detection).
+2. Counting clean-fit rules by running the survey script first. The 60% Pattern A estimate was wrong by an order of magnitude.
+3. Sketching the full macro surface needed to cover actual body shapes. If more than 3 styles, abandon.
+
+Child issues `j5a-lnn`, `0vr-yit`, `okv-2q9` also scrapped.

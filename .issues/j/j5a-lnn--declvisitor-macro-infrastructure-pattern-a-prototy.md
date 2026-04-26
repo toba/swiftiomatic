@@ -1,16 +1,16 @@
 ---
 # j5a-lnn
 title: '@DeclVisitor macro: infrastructure + Pattern A prototype'
-status: ready
+status: scrapped
 type: task
 priority: high
 created_at: 2026-04-26T17:48:11Z
-updated_at: 2026-04-26T17:48:11Z
+updated_at: 2026-04-26T19:06:24Z
 parent: lhe-lqu
 sync:
     github:
         issue_number: "453"
-        synced_at: "2026-04-26T18:08:49Z"
+        synced_at: "2026-04-26T19:46:00Z"
 ---
 
 Phase 1 of `lhe-lqu`. Land the macro infrastructure end-to-end on a single rule before scaling.

@@ -194,6 +194,33 @@ struct ProtocolDeclTests: LayoutTesting {
     assertLayout(input: input, expected: expected, linelength: 30)
   }
 
+  @Test func protocolWithKeepFunctionOutputTogether_overridesExistingArrowNewline() {
+    // When KeepFunctionOutputTogether is enabled, an existing discretionary
+    // newline before `->` should be ignored — the rule's intent is to keep
+    // the return clause attached to `) async throws`.
+    let input =
+      """
+      protocol P {
+        func shareMetadata(for share: CKShare, shouldFetchRootRecord: Bool) async throws
+          -> ShareMetadata
+      }
+      """
+
+    let expected =
+      """
+      protocol P {
+        func shareMetadata(
+          for share: CKShare, shouldFetchRootRecord: Bool
+        ) async throws -> ShareMetadata
+      }
+
+      """
+
+    var config = Configuration.forTesting
+    config[KeepFunctionOutputTogether.self] = true
+    assertLayout(input: input, expected: expected, linelength: 60, configuration: config)
+  }
+
   @Test func protocolWithInitializers() {
     let input =
       """

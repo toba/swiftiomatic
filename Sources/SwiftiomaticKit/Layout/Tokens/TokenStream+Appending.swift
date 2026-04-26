@@ -359,10 +359,18 @@ extension TokenStream {
         _ expr: ExprSyntax,
         combiningOperator operatorExpr: ExprSyntax? = nil
     ) {
+        // For assignments, omit the surrounding group on member-access / subscript / function-call
+        // RHS so the `=` break's chunk is bounded by the chain's first inner break. With the group
+        // present, the `=` break sees the entire RHS as one chunk and fires prematurely instead of
+        // letting the chain absorb the wrap (precedence: inner `.` > `=`).
+        let isAssignment = operatorExpr.map(isAssigningOperator) ?? false
+
         switch Syntax(expr).kind {
         case .memberAccessExpr, .subscriptCallExpr:
-            before(expr.firstToken(viewMode: .sourceAccurate), tokens: .open)
-            after(expr.lastToken(viewMode: .sourceAccurate), tokens: .close)
+            if !isAssignment {
+                before(expr.firstToken(viewMode: .sourceAccurate), tokens: .open)
+                after(expr.lastToken(viewMode: .sourceAccurate), tokens: .close)
+            }
         default:
             break
         }
@@ -371,9 +379,7 @@ extension TokenStream {
         // function call so that the callee and open parenthesis can remain on the same line, if they
         // fit. This is a frequent enough case that the outcome looks better with the exception in
         // place.
-        if expr.is(FunctionCallExprSyntax.self),
-            let operatorExpr = operatorExpr, !isAssigningOperator(operatorExpr)
-        {
+        if expr.is(FunctionCallExprSyntax.self), !isAssignment {
             before(expr.firstToken(viewMode: .sourceAccurate), tokens: .open)
             after(expr.lastToken(viewMode: .sourceAccurate), tokens: .close)
         }
@@ -498,6 +504,18 @@ extension TokenStream {
     ///
     /// Assignment is defined as either being an assignment operator (i.e. `=`) or any operator that
     /// uses "assignment" precedence.
+    /// Returns whether the given expression is the left-hand side of an assignment operator
+    /// (`=`, `+=`, `-=`, etc.). Used to suppress contextual-break insertion in LHS chains so a
+    /// short member access target like `obj.member = …` is not split across multiple lines.
+    func isAssignmentLHS(_ expr: ExprSyntax) -> Bool {
+        guard let parent = expr.parent?.as(InfixOperatorExprSyntax.self),
+            parent.leftOperand.id == expr.id
+        else {
+            return false
+        }
+        return isAssigningOperator(parent.operator)
+    }
+
     func isAssigningOperator(_ operatorExpr: ExprSyntax) -> Bool {
         if operatorExpr.is(AssignmentExprSyntax.self) {
             return true

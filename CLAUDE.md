@@ -108,6 +108,30 @@ swift run Generator
 
 **Never edit `*+Generated.swift` directly.**
 
+## Layout & Break Precedence
+
+The pretty printer (Oppen-style, in `Sources/SwiftiomaticKit/Layout/`) uses a **break precedence** to decide where to wrap. From highest priority (fires first) to lowest (last resort):
+
+1. `&&` / `||` (logical operators) — handled by `stackedIndentationBehavior`
+2. `.` (period — member access) — handled by `.break(.contextual)` in `insertContextualBreaks`
+3. inner operator breaks (`+`, function args, etc.)
+4. **last resort**: `=` (assignment), `guard`/`if`/`while` keyword breaks
+
+The mechanism enforcing precedence is **chunk bounding via `.open` placement**:
+
+- Placing `.open` *before* a break makes that break's chunk extend until the matching `.close` (or the next break at the same delim-stack depth). A LARGER chunk means the break is MORE likely to fire. Use this only when you want the break to be eager.
+- Placing `.open` *after* a break (around the RHS / continuation only) bounds the break's chunk to the next inner break. A SMALLER chunk means the break is LESS likely to fire — inner breaks win. **This is the precedence trick** — see `arrangeAssignmentBreaks` (`canGroupBeforeBreak` branch) and `BeforeGuardConditions`.
+
+When debugging "wrong wrap" bugs:
+
+1. **Don't reinvent — find the existing precedence path first.** Search `arrangeAssignmentBreaks`, `stackedIndentationBehavior`, `shouldApplyBreakPrecedence`, `maybeGroupAroundSubexpression`, `isMemberAccessChain`. The mechanism almost certainly already exists; the bug is usually that some `.open` is mispositioned and over-extends a break's chunk.
+2. **Compare against upstream apple/swift-format** at `~/Developer/swiftiomatic-ref/swift-format/Sources/SwiftFormat/PrettyPrint/TokenStreamCreator.swift`. If upstream produces a sensible wrap and Swiftiomatic doesn't, the divergence is the bug.
+3. **Dump the token stream** to see actual chunk lengths — set `printTokenStream: true` when constructing `LayoutCoordinator`, or use `--debug-options dumpTokenStream` if exposed. Each break prints `Length: N` — that's the chunk used by `canFit`. If a break's length is unexpectedly large, look for an `.open` between it and the next break that's "swallowing" the chunk.
+4. **`maybeGroupAroundSubexpression` is a known footgun** — it adds `.open/.close` around member-access / subscript / function-call expressions. When the parent is an assignment `=`, this group extends the `=` break's chunk across the entire RHS and breaks the precedence. Assignment-RHS exemptions live in this function.
+5. **LHS member-access chains in assignments** need their own `.open/.close` wrap (in `visitInfixOperatorExpr`) so the LHS contextual break is bounded by the LHS group, not by end-of-stream. Without it, `obj.member = value` splits across lines.
+
+Existing issues with detailed background: `.issues/w/we9-2fx`, `.issues/w/wq2-tuv`, `.issues/8/886-v5f`, `.issues/l/l8i-scp`, `.issues/5/54v-hr2`.
+
 ## Versioning
 
 Managed via Homebrew formula. Version is the Cellar directory name (e.g. `0.26.11`).

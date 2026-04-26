@@ -30,6 +30,19 @@ extension TokenStream {
 
         if shouldRequireWhitespace(around: binOp) {
             if isAssigningOperator(binOp) {
+                // Wrap a member-access / subscript LHS chain in `.open/.close` so its contextual
+                // breaks have their break-chunk bounded by the LHS group instead of extending
+                // across the `=` and consuming the entire RHS. Without this bound, the LHS's first
+                // contextual break sees the whole assignment as its chunk and fires prematurely,
+                // splitting `obj.member = value` across multiple lines.
+                let lhs = node.leftOperand
+                if isMemberAccessChain(lhs),
+                    let lhsFirst = lhs.firstToken(viewMode: .sourceAccurate),
+                    let lhsLast = lhs.lastToken(viewMode: .sourceAccurate)
+                {
+                    before(lhsFirst, tokens: .open)
+                    after(lhsLast, tokens: .close)
+                }
                 if let equal = binOp.lastToken(viewMode: .sourceAccurate) {
                     arrangeAssignmentBreaks(
                         afterEqualToken: equal,

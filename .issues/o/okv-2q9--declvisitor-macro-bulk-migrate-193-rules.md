@@ -1,11 +1,11 @@
 ---
 # okv-2q9
 title: '@DeclVisitor macro: bulk migrate 193 rules'
-status: ready
+status: scrapped
 type: task
 priority: normal
 created_at: 2026-04-26T17:49:19Z
-updated_at: 2026-04-26T17:49:19Z
+updated_at: 2026-04-26T19:06:24Z
 parent: lhe-lqu
 blocked_by:
     - j5a-lnn
@@ -13,7 +13,7 @@ blocked_by:
 sync:
     github:
         issue_number: "451"
-        synced_at: "2026-04-26T18:08:49Z"
+        synced_at: "2026-04-26T19:46:00Z"
 ---
 
 Phase 3 of `lhe-lqu`. Bulk migration after the macro supports all three patterns. Blocked by `j5a-lnn` (Phase 1) and the Phase 2 task.
