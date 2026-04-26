@@ -8,7 +8,7 @@ import SwiftSyntax
 /// Lint: A switch case with multiple comma-separated items on a single line
 ///       raises a warning.
 ///
-/// Format: Each item is placed on its own line with alignment indentation.
+/// Rewrite: Each item is placed on its own line with alignment indentation.
 final class WrapCompoundCaseItems: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable {
     override static var key: String { "compoundCaseItems" }
     override static var group: ConfigurationGroup? { .wrap }

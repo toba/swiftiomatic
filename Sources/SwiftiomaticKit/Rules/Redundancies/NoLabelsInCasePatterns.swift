@@ -20,7 +20,7 @@ import SwiftSyntax
 /// Lint: Using a label in a case statement yields a lint error unless the label does not match the
 ///       binding identifier.
 ///
-/// Format: Redundant labels in case patterns are removed.
+/// Rewrite: Redundant labels in case patterns are removed.
 final class NoLabelsInCasePatterns: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable {
     override class var group: ConfigurationGroup? { .redundancies }
     override func visit(_ node: SwitchCaseLabelSyntax) -> SwitchCaseLabelSyntax {

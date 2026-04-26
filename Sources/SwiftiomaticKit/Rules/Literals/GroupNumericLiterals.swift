@@ -19,7 +19,7 @@ import SwiftSyntax
 ///
 /// Lint: If a numeric literal is too long and should be grouped, a lint error is raised.
 ///
-/// Format: All numeric literals that should be grouped will have `_`s inserted where appropriate.
+/// Rewrite: All numeric literals that should be grouped will have `_`s inserted where appropriate.
 ///
 /// TODO: Minimum numeric literal length bounds and numeric groupings have been selected arbitrarily;
 /// these could be reevaluated.

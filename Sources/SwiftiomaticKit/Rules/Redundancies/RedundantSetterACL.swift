@@ -13,7 +13,7 @@ import SwiftSyntax
 ///
 /// Lint: A finding is raised at the redundant `(set)` modifier.
 ///
-/// Format: The redundant `(set)` modifier is removed, transferring its leading trivia to the
+/// Rewrite: The redundant `(set)` modifier is removed, transferring its leading trivia to the
 ///         next modifier or the binding specifier.
 final class RedundantSetterACL: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable {
     override class var group: ConfigurationGroup? { .redundancies }

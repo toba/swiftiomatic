@@ -19,7 +19,7 @@ import SwiftSyntax
 /// Static properties of a type that return that type should not include a reference to their type.
 ///
 /// Lint:  Non-literal empty array initialization will yield a lint error.
-/// Format: All invalid use sites would be related with empty literal (with or without explicit type annotation).
+/// Rewrite: All invalid use sites would be related with empty literal (with or without explicit type annotation).
 final class EmptyCollectionLiteral: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable {
     override class var group: ConfigurationGroup? { .literals }
     override class var defaultValue: BasicRuleValue { BasicRuleValue(rewrite: false, lint: .no) }

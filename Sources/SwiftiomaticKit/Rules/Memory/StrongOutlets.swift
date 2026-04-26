@@ -8,7 +8,7 @@ import SwiftSyntax
 ///
 /// Lint: An `@IBOutlet` property with `weak` raises a warning.
 ///
-/// Format: The `weak` modifier is removed.
+/// Rewrite: The `weak` modifier is removed.
 final class StrongOutlets: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable {
     override class var group: ConfigurationGroup? { .memory }
 

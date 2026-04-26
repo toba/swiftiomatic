@@ -5,7 +5,7 @@ import SwiftSyntax
 ///
 /// Lint: A multiline chain where some dots share a line raises a warning.
 ///
-/// Format: Dots that share a line with a closing scope or another dot are
+/// Rewrite: Dots that share a line with a closing scope or another dot are
 ///         moved to their own line.
 final class WrapMultilineFunctionChains: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable {
     override class var key: String { "multilineFunctionChains" }

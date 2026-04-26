@@ -10,7 +10,7 @@ import SwiftSyntax
 /// Lint: A property followed by an exhaustive conditional assignment raises
 ///       a warning.
 ///
-/// Format: The separate statements are merged into a conditional expression
+/// Rewrite: The separate statements are merged into a conditional expression
 ///         assignment.
 final class PreferConditionalExpression: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable {
     override class var group: ConfigurationGroup? { .conditions }

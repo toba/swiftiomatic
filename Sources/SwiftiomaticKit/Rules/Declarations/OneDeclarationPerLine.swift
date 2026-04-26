@@ -19,7 +19,7 @@ import SwiftSyntax
 ///       raw values, or if a variable declaration declares multiple variables, a lint error is
 ///       raised.
 ///
-/// Format: Case declarations with associated values or raw values will be moved to their own case
+/// Rewrite: Case declarations with associated values or raw values will be moved to their own case
 ///         declarations. Variable declarations with multiple bindings will be split into individual
 ///         declarations.
 final class OneDeclarationPerLine: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable {

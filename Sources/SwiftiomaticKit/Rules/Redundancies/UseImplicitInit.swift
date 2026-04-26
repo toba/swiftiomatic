@@ -19,7 +19,7 @@ import SwiftSyntax
 ///
 /// Lint: A lint warning is raised when an explicit type can be replaced with implicit member syntax.
 ///
-/// Format: The explicit type is replaced with a leading dot.
+/// Rewrite: The explicit type is replaced with a leading dot.
 final class UseImplicitInit: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable {
   override class var group: ConfigurationGroup? { .redundancies }
 

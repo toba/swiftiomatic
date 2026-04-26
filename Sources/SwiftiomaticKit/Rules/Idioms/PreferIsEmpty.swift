@@ -9,11 +9,9 @@ import SwiftSyntax
 /// When the receiver is optional (`foo?.count == 0`), the replacement uses explicit boolean
 /// comparison (`foo?.isEmpty == true`) to preserve semantics.
 ///
-/// This rule is opt-in because not every type with a `count` property also provides `isEmpty`.
-///
 /// Lint: Using `.count == 0`, `.count != 0`, or `.count > 0` raises a warning.
 ///
-/// Format: The comparison is replaced with `.isEmpty` or `!.isEmpty`.
+/// Rewrite: The comparison is replaced with `.isEmpty` or `!.isEmpty`.
 final class PreferIsEmpty: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable {
     override static var group: ConfigurationGroup? { .idioms }
     override static var defaultValue: BasicRuleValue { .init(rewrite: false, lint: .no) }

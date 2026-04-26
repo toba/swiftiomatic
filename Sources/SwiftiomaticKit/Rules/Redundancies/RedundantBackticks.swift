@@ -10,7 +10,7 @@ import SwiftSyntax
 ///
 /// Lint: If unnecessary backticks are found, a finding is raised.
 ///
-/// Format: The backticks are removed.
+/// Rewrite: The backticks are removed.
 final class RedundantBackticks: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable {
     override class var group: ConfigurationGroup? { .redundancies }
 

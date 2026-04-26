@@ -16,7 +16,7 @@ import SwiftSyntax
 ///
 /// Lint: Cases containing only the `fallthrough` statement yield a lint error.
 ///
-/// Format: The fall-through `case` is added as a prefix to the next case unless the next case is
+/// Rewrite: The fall-through `case` is added as a prefix to the next case unless the next case is
 ///         `default`; in that case, the fallthrough `case` is deleted.
 final class NoFallThroughOnlyCases: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable {
     override class var group: ConfigurationGroup? { .redundancies }

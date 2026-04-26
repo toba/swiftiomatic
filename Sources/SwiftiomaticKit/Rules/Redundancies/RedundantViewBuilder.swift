@@ -16,7 +16,7 @@ import SwiftSyntax
 ///
 /// Lint: If a redundant `@ViewBuilder` is found, a lint warning is raised.
 ///
-/// Format: The redundant `@ViewBuilder` attribute is removed.
+/// Rewrite: The redundant `@ViewBuilder` attribute is removed.
 final class RedundantViewBuilder: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable {
   override class var group: ConfigurationGroup? { .redundancies }
 

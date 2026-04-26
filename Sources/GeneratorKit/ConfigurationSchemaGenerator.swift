@@ -135,8 +135,7 @@ package final class ConfigurationSchemaGenerator: FileGenerator {
     private static let lintModeValues = ["warn", "error", "no"]
 
     private func ruleSchemaNode(for rule: RuleCollector.DetectedSyntaxRule) -> JSONSchemaNode {
-        var desc = rule.description ?? (rule.canRewrite ? "Format rule." : "Lint rule.")
-        if rule.isOptIn { desc += " [opt-in]" }
+        let desc = rule.description ?? (rule.canRewrite ? "Format rule." : "Lint rule.")
 
         var node = JSONSchemaNode()
         node.description = desc

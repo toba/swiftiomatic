@@ -5,7 +5,7 @@ import SwiftSyntax
 /// Lint: A `//` or `///` comment that exceeds the line length raises a
 ///       warning.
 ///
-/// Format: The comment is word-wrapped, continuing on the next line with the
+/// Rewrite: The comment is word-wrapped, continuing on the next line with the
 ///         same prefix and indentation.
 final class WrapSingleLineComments: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable {
     override class var key: String { "singleLineComments" }

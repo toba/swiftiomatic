@@ -8,7 +8,7 @@ import SwiftSyntax
 ///
 /// Lint: A finding is raised at the parameter clause.
 ///
-/// Format: The parenthesized parameter list is converted to shorthand (`x, y`).
+/// Rewrite: The parenthesized parameter list is converted to shorthand (`x, y`).
 final class NoParensInClosureParams: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable {
     override class var group: ConfigurationGroup? { .closures }
 

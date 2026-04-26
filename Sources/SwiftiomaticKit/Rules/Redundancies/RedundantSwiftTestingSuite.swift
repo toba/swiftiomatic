@@ -9,7 +9,7 @@ import SwiftSyntax
 ///
 /// Lint: A warning is raised when `@Suite` or `@Suite()` is used without arguments.
 ///
-/// Format: The redundant `@Suite` attribute is removed.
+/// Rewrite: The redundant `@Suite` attribute is removed.
 final class RedundantSwiftTestingSuite: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable {
   override class var group: ConfigurationGroup? { .redundancies }
 

@@ -8,7 +8,7 @@ import SwiftSyntax
 ///
 /// Lint: When a regular comment should be a doc comment, or vice versa.
 ///
-/// Format: The comment style is corrected.
+/// Rewrite: The comment style is corrected.
 final class ConvertRegularCommentToDocC: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable {
     override static var group: ConfigurationGroup? { .comments }
     override static var defaultValue: BasicRuleValue { .init(rewrite: false, lint: .no) }

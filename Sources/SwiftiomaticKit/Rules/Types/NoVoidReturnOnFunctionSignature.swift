@@ -16,7 +16,7 @@ import SwiftSyntax
 ///
 /// Lint: Function declarations that explicitly return `()` or `Void` will yield a lint error.
 ///
-/// Format: Function declarations with explicit returns of `()` or `Void` will have their return
+/// Rewrite: Function declarations with explicit returns of `()` or `Void` will have their return
 ///         signature stripped.
 final class NoVoidReturnOnFunctionSignature: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable {
     override class var group: ConfigurationGroup? { .types }

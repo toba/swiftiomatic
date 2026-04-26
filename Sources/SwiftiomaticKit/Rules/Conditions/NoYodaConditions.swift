@@ -10,7 +10,7 @@ import SwiftSyntax
 ///
 /// Lint: A comparison with a constant on the left raises a warning.
 ///
-/// Format: The operands are swapped and the operator is flipped if necessary.
+/// Rewrite: The operands are swapped and the operator is flipped if necessary.
 final class NoYodaConditions: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable {
     override class var group: ConfigurationGroup? { .conditions }
 

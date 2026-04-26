@@ -8,11 +8,11 @@ import SwiftSyntax
 /// the file, before any blank line, doc comment, or code. Doc comments (`///`, `/** */`) are
 /// not considered file header comments.
 ///
-/// This rule is opt-in and requires configuration via `fileHeader.text` in the configuration file.
+/// Requires configuration via `fileHeader.text`.
 ///
 /// Lint: A warning is raised when the file header does not match the configured text.
 ///
-/// Format: The file header is replaced with (or cleared to) the configured text.
+/// Rewrite: The file header is replaced with (or cleared to) the configured text.
 final class FileHeader: RewriteSyntaxRule<FileHeaderConfiguration>, @unchecked Sendable {
   override class var group: ConfigurationGroup? { .comments }
 

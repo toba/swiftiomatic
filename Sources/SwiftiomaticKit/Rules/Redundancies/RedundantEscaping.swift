@@ -13,7 +13,7 @@ import SwiftSyntax
 ///
 /// Lint: A finding is raised at the `@escaping` attribute.
 ///
-/// Format: The `@escaping` attribute is removed.
+/// Rewrite: The `@escaping` attribute is removed.
 final class RedundantEscaping: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable {
     override class var group: ConfigurationGroup? { .redundancies }
     override class var defaultValue: BasicRuleValue { BasicRuleValue(rewrite: false, lint: .warn) }

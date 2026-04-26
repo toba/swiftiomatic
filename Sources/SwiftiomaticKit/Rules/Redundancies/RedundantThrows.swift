@@ -5,12 +5,12 @@ import SwiftSyntax
 /// If a function is marked `throws` but its body never uses `throw` or `try`, the `throws`
 /// is likely unnecessary.
 ///
-/// This rule is opt-in because some functions are intentionally throwing for protocol
-/// conformance or future-proofing even if they don't currently throw.
+/// Some functions are intentionally throwing for protocol conformance or future-proofing
+/// even if they don't currently throw.
 ///
 /// Lint: If a `throws` function has no `throw` or `try` in its body, a lint warning is raised.
 ///
-/// Format: The `throws` clause is removed.
+/// Rewrite: The `throws` clause is removed.
 final class RedundantThrows: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable {
   override class var group: ConfigurationGroup? { .redundancies }
 

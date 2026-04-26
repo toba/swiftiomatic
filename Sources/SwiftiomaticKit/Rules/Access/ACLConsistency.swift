@@ -10,7 +10,7 @@ import SwiftSyntax
 ///
 /// Lint: A finding is raised on the over-permissive ACL modifier.
 ///
-/// Format: `open` is downgraded to `public` when the parent is not also
+/// Rewrite: `open` is downgraded to `public` when the parent is not also
 ///         `open`; otherwise the redundant modifier is removed entirely.
 final class ACLConsistency: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable {
     override class var group: ConfigurationGroup? { .access }

@@ -12,7 +12,7 @@ import SwiftSyntax
 ///
 /// Lint: If a redundant property-then-return is found, a lint warning is raised.
 ///
-/// Format: The property declaration is removed and its value is inlined into
+/// Rewrite: The property declaration is removed and its value is inlined into
 ///         the return statement.
 final class RedundantProperty: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable {
   override class var group: ConfigurationGroup? { .redundancies }

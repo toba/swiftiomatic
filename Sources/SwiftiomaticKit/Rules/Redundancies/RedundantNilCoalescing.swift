@@ -6,7 +6,7 @@ import SwiftSyntax
 ///
 /// Lint: A finding is raised when `??` has a `nil` literal on the right-hand side.
 ///
-/// Format: The `??` operator and the `nil` right-hand side are removed.
+/// Rewrite: The `??` operator and the `nil` right-hand side are removed.
 final class RedundantNilCoalescing: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable {
     override class var group: ConfigurationGroup? { .redundancies }
 

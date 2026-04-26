@@ -27,7 +27,7 @@ import SwiftSyntax
 ///       not lexicographically ordered, or (optionally) not in the appropriate import group, a lint error is
 ///       raised.
 ///
-/// Format: Imports will be reordered and (optionally) grouped at the top of the file.
+/// Rewrite: Imports will be reordered and (optionally) grouped at the top of the file.
 final class SortImports: RewriteSyntaxRule<SortImportsConfiguration>, @unchecked Sendable {
     override class var key: String { "imports" }
     override class var group: ConfigurationGroup? { .sort }

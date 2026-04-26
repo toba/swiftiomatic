@@ -17,7 +17,7 @@ import SwiftSyntax
 /// Lint: If a function call with a trailing closure has an empty argument list with parentheses,
 ///       a lint error is raised.
 ///
-/// Format: Empty parentheses in function calls with trailing closures will be removed.
+/// Rewrite: Empty parentheses in function calls with trailing closures will be removed.
 final class NoTrailingClosureParens: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable {
     override class var group: ConfigurationGroup? { .closures }
 

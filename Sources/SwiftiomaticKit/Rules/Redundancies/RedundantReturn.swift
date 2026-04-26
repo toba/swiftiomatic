@@ -20,7 +20,7 @@ import SwiftSyntax
 ///
 /// Lint: `func <name>() { return ... }` and similar single expression constructs will yield a lint error.
 ///
-/// Format: `func <name>() { return ... }` constructs will be replaced with
+/// Rewrite: `func <name>() { return ... }` constructs will be replaced with
 ///         equivalent `func <name>() { ... }` constructs.
 final class RedundantReturn: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable {
     override static var group: ConfigurationGroup? { .redundancies }

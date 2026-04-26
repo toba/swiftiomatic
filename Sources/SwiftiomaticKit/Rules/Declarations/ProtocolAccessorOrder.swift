@@ -7,7 +7,7 @@ import SwiftSyntax
 /// Lint: A finding is raised when a protocol property's accessor block lists
 ///       `set` before `get`.
 ///
-/// Format: The accessors are reordered to `get set`.
+/// Rewrite: The accessors are reordered to `get set`.
 final class ProtocolAccessorOrder: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable {
     override class var group: ConfigurationGroup? { .declarations }
     override class var defaultValue: BasicRuleValue {

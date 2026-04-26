@@ -12,7 +12,7 @@ import SwiftSyntax
 ///
 /// Lint: If a redundant `@objc` is found, a lint warning is raised.
 ///
-/// Format: The redundant `@objc` attribute is removed.
+/// Rewrite: The redundant `@objc` attribute is removed.
 final class RedundantObjc: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable {
   override class var group: ConfigurationGroup? { .redundancies }
 

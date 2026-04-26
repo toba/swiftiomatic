@@ -21,7 +21,7 @@ import SwiftSyntax
 ///
 /// Lint: A lint error is raised when access control placement doesn't match the configuration.
 ///
-/// Format: Access control modifiers are moved to match the configured placement.
+/// Rewrite: Access control modifiers are moved to match the configured placement.
 final class ExtensionAccessLevel: RewriteSyntaxRule<ExtensionAccessControlConfiguration>, @unchecked Sendable {
     override class var group: ConfigurationGroup? { .access }
     private enum State {

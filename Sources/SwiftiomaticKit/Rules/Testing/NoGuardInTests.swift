@@ -15,7 +15,7 @@ import SwiftSyntax
 ///
 /// Lint: A warning is raised for each `guard` that can be converted.
 ///
-/// Format: The `guard` is replaced with assertion/unwrap statements and `throws` is added to
+/// Rewrite: The `guard` is replaced with assertion/unwrap statements and `throws` is added to
 /// the signature if needed.
 final class NoGuardInTests: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable {
     override class var group: ConfigurationGroup? { .testing }

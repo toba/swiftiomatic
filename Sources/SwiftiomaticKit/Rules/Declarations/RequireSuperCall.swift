@@ -5,8 +5,8 @@ import SwiftSyntax
 /// source of subtle bugs (memory warnings ignored, view lifecycle skipped,
 /// test setup not run).
 ///
-/// The rule is opt-in. Configure the list of method names via
-/// `requireSuperCall.methodNames`. Defaults cover common UIKit/AppKit/XCTest
+/// Configure the list of method names via `requireSuperCall.methodNames`.
+/// Defaults cover common UIKit/AppKit/XCTest
 /// methods. Names use SwiftLint's resolved-name format: `viewDidLoad()`,
 /// `viewWillAppear(_:)`, `setEditing(_:animated:)`.
 ///

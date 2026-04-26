@@ -10,12 +10,11 @@ import SwiftSyntax
 /// non-literal expressions are left alone. The `URL(string:relativeTo:)` and
 /// `URL(fileURLWithPath:)` initializers are not affected.
 ///
-/// This rule is opt-in and requires configuration via `urlMacro.macroName` and
-/// `urlMacro.moduleName` in the configuration file.
+/// Requires configuration via `urlMacro.macroName` and `urlMacro.moduleName`.
 ///
 /// Lint: A warning is raised for each `URL(string: "...")!` that can be converted.
 ///
-/// Format: The force-unwrapped URL initializer is replaced with the configured macro.
+/// Rewrite: The force-unwrapped URL initializer is replaced with the configured macro.
 final class URLMacro: RewriteSyntaxRule<URLMacroConfiguration>, @unchecked Sendable {
     override class var group: ConfigurationGroup? { .literals }
 

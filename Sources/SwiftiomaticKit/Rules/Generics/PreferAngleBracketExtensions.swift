@@ -11,7 +11,7 @@ import SwiftSyntax
 ///
 /// Lint: An extension with a `where` clause that can be replaced by angle brackets raises a warning.
 ///
-/// Format: The `where` clause constraints are moved into angle bracket syntax on the
+/// Rewrite: The `where` clause constraints are moved into angle bracket syntax on the
 /// extended type.
 final class PreferAngleBracketExtensions: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable {
     override class var group: ConfigurationGroup? { .generics }

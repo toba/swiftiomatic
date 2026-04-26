@@ -9,7 +9,7 @@ import SwiftSyntax
 ///
 /// Lint: If a MARK comment is missing a blank line before or after it, a lint warning is raised.
 ///
-/// Format: Blank lines are inserted around MARK comments.
+/// Rewrite: Blank lines are inserted around MARK comments.
 final class BlankLinesAroundMark: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable {
     override static var key: String { "aroundMark" }
     override static var group: ConfigurationGroup? { .blankLines }

@@ -9,7 +9,7 @@ import SwiftSyntax
 /// Lint: A `{` on the same line as a multiline statement signature raises a
 ///       warning.
 ///
-/// Format: The `{` is moved to a new line aligned with the closing `}`.
+/// Rewrite: The `{` is moved to a new line aligned with the closing `}`.
 final class WrapMultilineStatementBraces: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable {
     override class var key: String { "multilineStatementBraces" }
     override class var group: ConfigurationGroup? { .wrap }

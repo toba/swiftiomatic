@@ -8,7 +8,7 @@ import SwiftSyntax
 ///
 /// Lint: Using `assert(false, ...)` or `precondition(false, ...)` raises a warning.
 ///
-/// Format: The call is replaced with the corresponding `Failure` variant, removing the
+/// Rewrite: The call is replaced with the corresponding `Failure` variant, removing the
 /// `false` argument.
 final class PreferAssertionFailure: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable {
     override class var group: ConfigurationGroup? { .idioms }

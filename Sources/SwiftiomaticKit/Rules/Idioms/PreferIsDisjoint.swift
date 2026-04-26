@@ -7,7 +7,7 @@ import SwiftSyntax
 ///
 /// Lint: A warning is raised on `someSet.intersection(other).isEmpty`.
 ///
-/// Format: Not auto-fixed; the receiver may not be a `Set`, so the rewrite is unsafe in general.
+/// Rewrite: Not auto-fixed; the receiver may not be a `Set`, so the rewrite is unsafe in general.
 final class PreferIsDisjoint: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable {
     override class var group: ConfigurationGroup? { .idioms }
     override class var defaultValue: BasicRuleValue { .init(rewrite: false, lint: .warn) }

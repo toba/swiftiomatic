@@ -9,7 +9,7 @@ import SwiftSyntax
 ///
 /// Lint: A warning is raised for each `as!`.
 ///
-/// Format: Not auto-fixed; the safe replacement depends on caller intent.
+/// Rewrite: Not auto-fixed; the safe replacement depends on caller intent.
 final class NoForceCast: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable {
     override class var group: ConfigurationGroup? { .unsafety }
     override class var defaultValue: BasicRuleValue { .init(rewrite: false, lint: .warn) }

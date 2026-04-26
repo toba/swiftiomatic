@@ -9,7 +9,7 @@ import SwiftSyntax
 /// Lint: A warning is raised for any `case none` (without associated values), or any `static`/
 /// `class` property named `none`.
 ///
-/// Format: Not auto-fixed; renaming requires understanding the call sites.
+/// Rewrite: Not auto-fixed; renaming requires understanding the call sites.
 final class AvoidNoneName: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable {
     override class var group: ConfigurationGroup? { .idioms }
     override class var defaultValue: BasicRuleValue { .init(rewrite: false, lint: .warn) }

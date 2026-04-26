@@ -11,7 +11,7 @@ import SwiftSyntax
 /// Lint: If there are blank lines between consecutive guards, or no blank line after the
 ///       last guard before other code, a lint warning is raised.
 ///
-/// Format: Blank lines between consecutive guards are removed. A blank line is inserted
+/// Rewrite: Blank lines between consecutive guards are removed. A blank line is inserted
 ///         after the last guard when followed by non-guard code.
 final class BlankLinesAfterGuardStatements: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable {
     override static var key: String { "afterGuardStatements" }

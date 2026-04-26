@@ -11,7 +11,7 @@ import SwiftSyntax
 ///
 /// Lint: A `where` clause with a simple conformance constraint that could be inlined raises a warning.
 ///
-/// Format: The conformance constraint is moved from the `where` clause to the generic parameter.
+/// Rewrite: The conformance constraint is moved from the `where` clause to the generic parameter.
 final class SimplifyGenericConstraints: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable {
     override class var group: ConfigurationGroup? { .generics }
 

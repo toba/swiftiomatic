@@ -11,7 +11,7 @@ import SwiftSyntax
 ///
 /// Lint: A warning is raised for `x = x + y` etc.
 ///
-/// Format: The expression is rewritten to `x += y`.
+/// Rewrite: The expression is rewritten to `x += y`.
 final class PreferCompoundAssignment: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable {
     override class var group: ConfigurationGroup? { .idioms }
     override class var defaultValue: BasicRuleValue { .init(rewrite: true, lint: .warn) }

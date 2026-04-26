@@ -28,7 +28,7 @@ import SwiftSyntax
 ///
 /// Lint: A finding is emitted when a redundant `let` or `var` is found.
 ///
-/// Format: The redundant `let`/`var` keyword is removed.
+/// Rewrite: The redundant `let`/`var` keyword is removed.
 final class RedundantLet: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable {
   override class var group: ConfigurationGroup? { .redundancies }
 

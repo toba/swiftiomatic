@@ -11,7 +11,7 @@ import SwiftSyntax
 /// Lint: If a multi-line scoped declaration is not followed by a blank line, a lint
 ///       warning is raised.
 ///
-/// Format: A blank line is inserted after the declaration.
+/// Rewrite: A blank line is inserted after the declaration.
 final class BlankLinesBetweenScopes: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable {
     override static var key: String { "betweenScopes" }
     override static var group: ConfigurationGroup? { .blankLines }

@@ -11,7 +11,7 @@ import SwiftSyntax
 ///
 /// Lint: A struct or final class containing only static members raises a warning.
 ///
-/// Format: The `struct` or `final class` keyword is replaced with `enum`.
+/// Rewrite: The `struct` or `final class` keyword is replaced with `enum`.
 final class StaticStructShouldBeEnum: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable {
     override class var group: ConfigurationGroup? { .declarations }
 

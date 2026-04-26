@@ -39,7 +39,7 @@ import SwiftSyntax
 ///
 /// Lint: `if ... else { return/throw/break/continue }` constructs will yield a lint error.
 ///
-/// Format: `if ... else { return/throw/break/continue }` constructs will be replaced with
+/// Rewrite: `if ... else { return/throw/break/continue }` constructs will be replaced with
 ///         equivalent `guard ... else { return/throw/break/continue }` constructs.
 final class PreferEarlyExits: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable {
     override class var group: ConfigurationGroup? { .conditions }

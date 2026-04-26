@@ -16,7 +16,7 @@ import SwiftSyntax
 ///
 /// Lint: `for` loops that consist of a single `if` statement yield a lint error.
 ///
-/// Format: `for` loops that consist of a single `if` statement have the conditional of that
+/// Rewrite: `for` loops that consist of a single `if` statement have the conditional of that
 ///         statement factored out to a `where` clause.
 final class PreferWhereClausesInForLoops: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable {
     override class var group: ConfigurationGroup? { .idioms }

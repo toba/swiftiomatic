@@ -8,7 +8,7 @@ import SwiftSyntax
 ///
 /// Lint: A warning is raised for each `$0`/`$1`/... reference inside a multi-line closure.
 ///
-/// Format: Not auto-fixed; the rule cannot pick a meaningful parameter name.
+/// Rewrite: Not auto-fixed; the rule cannot pick a meaningful parameter name.
 final class NamedClosureParams: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable {
     override class var group: ConfigurationGroup? { .closures }
     override class var defaultValue: BasicRuleValue { .init(rewrite: false, lint: .warn) }

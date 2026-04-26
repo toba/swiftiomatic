@@ -6,12 +6,12 @@ import SwiftSyntax
 /// unnecessary. Removing it simplifies the API and removes the requirement for callers
 /// to use `await`.
 ///
-/// This rule is opt-in because some functions are intentionally async for protocol
-/// conformance or future-proofing even if they don't currently await.
+/// Some functions are intentionally async for protocol conformance or future-proofing
+/// even if they don't currently await.
 ///
 /// Lint: If an `async` function has no `await` in its body, a lint warning is raised.
 ///
-/// Format: The `async` specifier is removed.
+/// Rewrite: The `async` specifier is removed.
 final class RedundantAsync: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable {
     override class var defaultValue: BasicRuleValue { BasicRuleValue(rewrite: false, lint: .no) }
     override class var group: ConfigurationGroup? { .redundancies }

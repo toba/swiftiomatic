@@ -8,7 +8,7 @@ import SwiftSyntax
 ///
 /// Lint: A finding is emitted when a delimiter starts a line.
 ///
-/// Format: The delimiter is moved to the end of the previous line.
+/// Rewrite: The delimiter is moved to the end of the previous line.
 final class LeadingDotOperators: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable {
     override class var group: ConfigurationGroup? { .idioms }
 

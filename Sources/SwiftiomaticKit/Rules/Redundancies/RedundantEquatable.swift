@@ -9,11 +9,11 @@ import SwiftSyntax
 ///
 /// Closures, enums, and extension-based conformances are not handled.
 ///
-/// This rule is opt-in due to the heuristic nature (no type-checking).
+/// The detection is heuristic (no type-checking).
 ///
 /// Lint: A redundant `==` implementation raises a warning.
 ///
-/// Format: The `==` function is removed from the member block.
+/// Rewrite: The `==` function is removed from the member block.
 final class RedundantEquatable: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable {
     override class var defaultValue: BasicRuleValue { BasicRuleValue(rewrite: false, lint: .no) }
     override class var group: ConfigurationGroup? { .redundancies }

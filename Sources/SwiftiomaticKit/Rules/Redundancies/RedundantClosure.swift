@@ -14,7 +14,7 @@ import SwiftSyntax
 /// Lint: If a redundant immediately-invoked closure is found, a lint warning
 ///       is raised.
 ///
-/// Format: The closure wrapper and invocation are removed, leaving just the
+/// Rewrite: The closure wrapper and invocation are removed, leaving just the
 ///         expression.
 final class RedundantClosure: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable {
     override class var group: ConfigurationGroup? { .redundancies }

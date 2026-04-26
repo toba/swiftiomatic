@@ -11,7 +11,7 @@ import SwiftSyntax
 ///
 /// Lint: A warning is raised on a fully-zero initializer.
 ///
-/// Format: The call is replaced with `<Type>.zero`.
+/// Rewrite: The call is replaced with `<Type>.zero`.
 final class PreferDotZero: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable {
     override class var group: ConfigurationGroup? { .idioms }
     override class var defaultValue: BasicRuleValue { .init(rewrite: true, lint: .warn) }

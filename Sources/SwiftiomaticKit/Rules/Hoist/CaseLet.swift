@@ -23,7 +23,7 @@ import SwiftSyntax
 ///
 /// Lint: Using the non-preferred placement yields a lint error.
 ///
-/// Format: The `let`/`var` is repositioned to match the configured placement.
+/// Rewrite: The `let`/`var` is repositioned to match the configured placement.
 final class CaseLet: RewriteSyntaxRule<CaseLetConfiguration>, @unchecked Sendable {
     override static var group: ConfigurationGroup? { .hoist }
 

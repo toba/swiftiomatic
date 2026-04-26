@@ -7,7 +7,7 @@ import SwiftSyntax
 ///
 /// Lint: If a `final` modifier is found on a member of a `final` class, a warning is raised.
 ///
-/// Format: The redundant `final` modifier is removed.
+/// Rewrite: The redundant `final` modifier is removed.
 final class RedundantFinal: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable {
     override class var group: ConfigurationGroup? { .redundancies }
     override class var defaultValue: BasicRuleValue { .init(rewrite: false, lint: .warn) }

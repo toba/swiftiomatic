@@ -17,7 +17,7 @@ import SwiftSyntax
 /// Lint: Using a non-shorthand form (e.g. `Array<Element>`) yields a lint error unless the long
 ///       form is necessary (e.g. `Array<Element>.Index` cannot be shortened today.)
 ///
-/// Format: Where possible, shorthand types replace long form types; e.g. `Array<Element>` is
+/// Rewrite: Where possible, shorthand types replace long form types; e.g. `Array<Element>` is
 ///         converted to `[Element]`.
 final class PreferShorthandTypeNames: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable {
     override class var group: ConfigurationGroup? { .types }

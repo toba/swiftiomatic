@@ -30,7 +30,7 @@ import SwiftSyntax
 /// Lint: A simple if-else with single returns or same-variable assignments
 ///       in both branches raises a warning.
 ///
-/// Format: The if-else is replaced with a ternary expression.
+/// Rewrite: The if-else is replaced with a ternary expression.
 final class PreferTernary: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable {
     override class var group: ConfigurationGroup? { .conditions }
 

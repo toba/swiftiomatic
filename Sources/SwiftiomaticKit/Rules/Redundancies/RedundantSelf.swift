@@ -18,7 +18,7 @@ import SwiftSyntax
 ///
 /// Lint: A lint warning is raised for redundant `self.` usage.
 ///
-/// Format: The `self.` prefix is removed.
+/// Rewrite: The `self.` prefix is removed.
 final class RedundantSelf: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable {
   override class var group: ConfigurationGroup? { .redundancies }
 

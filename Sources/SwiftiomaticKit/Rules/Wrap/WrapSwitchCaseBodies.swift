@@ -27,7 +27,7 @@ import SwiftSyntax
 ///
 /// Lint: A case body whose formatting doesn't match the mode raises a warning.
 ///
-/// Format: The case body is wrapped or inlined to match the mode.
+/// Rewrite: The case body is wrapped or inlined to match the mode.
 final class WrapSwitchCaseBodies: RewriteSyntaxRule<SwitchCaseBodiesConfiguration>, @unchecked Sendable {
     override class var key: String { "switchCaseBodies" }
     override class var group: ConfigurationGroup? { .wrap }

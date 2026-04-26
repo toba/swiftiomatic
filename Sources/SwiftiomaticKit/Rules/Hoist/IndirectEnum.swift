@@ -17,7 +17,7 @@ import SwiftSyntax
 /// Lint: If every case of an enum is `indirect`, but the enum itself is not, a lint error is
 ///       raised.
 ///
-/// Format: Enums where all cases are `indirect` will be rewritten such that the enum is marked
+/// Rewrite: Enums where all cases are `indirect` will be rewritten such that the enum is marked
 ///         `indirect`, and each case is not.
 final class IndirectEnum: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable {
     override static var group: ConfigurationGroup? { .hoist }

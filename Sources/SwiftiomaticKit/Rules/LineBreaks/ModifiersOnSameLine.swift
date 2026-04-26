@@ -8,7 +8,7 @@ import SwiftSyntax
 /// Lint: If any modifier is on a different line than the declaration keyword, a lint warning
 /// is raised.
 ///
-/// Format: Newlines between modifiers and the declaration keyword are replaced with spaces.
+/// Rewrite: Newlines between modifiers and the declaration keyword are replaced with spaces.
 final class ModifiersOnSameLine: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable {
     override class var group: ConfigurationGroup? { .lineBreaks }
 

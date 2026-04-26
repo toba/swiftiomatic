@@ -7,7 +7,7 @@ import SwiftSyntax
 ///
 /// Lint: If a redundant typed throws is found, a lint warning is raised.
 ///
-/// Format: `throws(any Error)` is replaced with `throws`. `throws(Never)` is removed.
+/// Rewrite: `throws(any Error)` is replaced with `throws`. `throws(Never)` is removed.
 final class RedundantTypedThrows: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable {
   override class var group: ConfigurationGroup? { .redundancies }
 

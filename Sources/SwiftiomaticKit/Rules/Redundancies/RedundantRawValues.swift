@@ -19,7 +19,7 @@ import SwiftSyntax
 ///
 /// Lint: If a redundant raw value is found, a lint warning is raised.
 ///
-/// Format: The redundant raw value initializer is removed.
+/// Rewrite: The redundant raw value initializer is removed.
 final class RedundantRawValues: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable {
   override class var group: ConfigurationGroup? { .redundancies }
 

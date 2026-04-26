@@ -11,7 +11,7 @@ import SwiftSyntax
 ///
 /// Lint: A trivial `{ $0.property }` closure raises a warning.
 ///
-/// Format: The closure is replaced with a keyPath expression.
+/// Rewrite: The closure is replaced with a keyPath expression.
 final class PreferKeyPath: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable {
     override class var group: ConfigurationGroup? { .idioms }
   override class var defaultValue: BasicRuleValue { BasicRuleValue(rewrite: false, lint: .no) }

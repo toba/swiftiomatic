@@ -10,7 +10,7 @@ import SwiftSyntax
 /// Lint: If a multi-line control flow statement is not preceded by a blank line, a lint
 ///       warning is raised.
 ///
-/// Format: A blank line is inserted before the control flow statement.
+/// Rewrite: A blank line is inserted before the control flow statement.
 final class BlankLinesBeforeControlFlowBlocks: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable {
     override static var group: ConfigurationGroup? { .blankLines }
     override static var defaultValue: BasicRuleValue { .init(rewrite: false, lint: .no) }

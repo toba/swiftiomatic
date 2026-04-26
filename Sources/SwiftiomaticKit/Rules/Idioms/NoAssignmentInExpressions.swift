@@ -20,7 +20,7 @@ import SwiftSyntax
 /// Lint: If an assignment expression is found in a position other than a standalone statement, a
 ///       lint finding is emitted.
 ///
-/// Format: A `return` statement containing an assignment expression is expanded into two separate
+/// Rewrite: A `return` statement containing an assignment expression is expanded into two separate
 ///         statements.
 final class NoAssignmentInExpressions: RewriteSyntaxRule<NoAssignmentInExpressionsConfiguration>, @unchecked Sendable {
     override class var group: ConfigurationGroup? { .idioms }

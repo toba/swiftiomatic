@@ -15,7 +15,7 @@ import SwiftSyntaxBuilder
 ///
 /// Lint: A finding is raised on the `override` keyword.
 ///
-/// Format: The entire `override` declaration is removed, preserving surrounding trivia.
+/// Rewrite: The entire `override` declaration is removed, preserving surrounding trivia.
 final class RedundantOverride: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable {
     override class var group: ConfigurationGroup? { .redundancies }
     override class var defaultValue: BasicRuleValue { BasicRuleValue(rewrite: false, lint: .warn) }

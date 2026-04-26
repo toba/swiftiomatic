@@ -23,7 +23,7 @@ import SwiftSyntax
 ///       in a variable initializer, is surrounded by parentheses, and it does not include a function
 ///       call with a trailing closure, a lint error is raised.
 ///
-/// Format: Parentheses around such expressions are removed, if they do not cause a parse ambiguity.
+/// Rewrite: Parentheses around such expressions are removed, if they do not cause a parse ambiguity.
 ///         Specifically, parentheses are allowed if and only if the expression contains a function
 ///         call with a trailing closure.
 final class NoParensAroundConditions: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable {

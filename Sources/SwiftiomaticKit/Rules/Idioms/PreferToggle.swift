@@ -8,7 +8,7 @@ import SwiftSyntax
 /// Lint: A warning is raised for `x = !x` patterns where the LHS and the negated RHS reference
 /// the exact same expression text.
 ///
-/// Format: The expression is rewritten to `x.toggle()`.
+/// Rewrite: The expression is rewritten to `x.toggle()`.
 final class PreferToggle: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable {
     override class var group: ConfigurationGroup? { .idioms }
     override class var defaultValue: BasicRuleValue { .init(rewrite: true, lint: .warn) }

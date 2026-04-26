@@ -11,7 +11,7 @@ import SwiftSyntax
 ///
 /// Lint: A warning is raised for each XCTest pattern that can be converted.
 ///
-/// Format: The XCTest patterns are replaced with Swift Testing equivalents.
+/// Rewrite: The XCTest patterns are replaced with Swift Testing equivalents.
 final class PreferSwiftTesting: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable {
     override class var group: ConfigurationGroup? { .testing }
 

@@ -9,7 +9,7 @@ import SwiftSyntax
 ///
 /// Lint: A warning is raised on `if #available(iOS X, *) {} else { body }`.
 ///
-/// Format: The `if` is rewritten to `if #unavailable(iOS X, *) { body }`.
+/// Rewrite: The `if` is rewritten to `if #unavailable(iOS X, *) { body }`.
 final class PreferUnavailable: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable {
     override class var group: ConfigurationGroup? { .conditions }
     override class var defaultValue: BasicRuleValue { .init(rewrite: true, lint: .warn) }
