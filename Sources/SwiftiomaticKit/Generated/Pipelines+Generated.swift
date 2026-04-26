@@ -1339,6 +1339,7 @@ class LintPipeline: SyntaxVisitor {
     visitIfEnabled(OrphanedDocComment.visit, for: node)
     visitIfEnabled(PreferWeakCapture.visit, for: node)
     visitIfEnabled(RedundantBackticks.visit, for: node)
+    visitIfEnabled(ReflowComments.visit, for: node)
     visitIfEnabled(UppercaseAcronyms.visit, for: node)
     visitIfEnabled(WrapSingleLineComments.visit, for: node)
     return .visitChildren
@@ -1352,6 +1353,7 @@ class LintPipeline: SyntaxVisitor {
     onVisitPost(rule: OrphanedDocComment.self, for: node)
     onVisitPost(rule: PreferWeakCapture.self, for: node)
     onVisitPost(rule: RedundantBackticks.self, for: node)
+    onVisitPost(rule: ReflowComments.self, for: node)
     onVisitPost(rule: UppercaseAcronyms.self, for: node)
     onVisitPost(rule: WrapSingleLineComments.self, for: node)
   }
@@ -1799,6 +1801,9 @@ extension RewritePipeline {
     }
     if context.shouldFormat(RedundantViewBuilder.self, node: node) {
       node = RedundantViewBuilder(context: context).rewrite(node)
+    }
+    if context.shouldFormat(ReflowComments.self, node: node) {
+      node = ReflowComments(context: context).rewrite(node)
     }
     if context.shouldFormat(RequireFatalErrorMessage.self, node: node) {
       node = RequireFatalErrorMessage(context: context).rewrite(node)

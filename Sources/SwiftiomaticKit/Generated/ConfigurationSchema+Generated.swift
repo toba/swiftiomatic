@@ -614,6 +614,14 @@ package enum ConfigurationSchema {
           "description" : "Documentation comments must be attached to a declaration.\n\nA `///` or `/** */` doc comment that is followed by a regular `//` or `/* */` comment instead of a declaration is \"orphaned\" — the doc comment is detached from any code construct it could document.\n\nFile-header style comments (`////` and `/***`) are excluded.\n\nLint: If a doc comment is orphaned, a lint warning is raised.",
           "unevaluatedProperties" : false
         },
+        "reflowComments" : {
+          "allOf" : [
+            {
+              "$ref" : "#/$defs/ruleBase"
+            }
+          ],
+          "description" : "Reflows contiguous `///` and `//` comment runs to fit `lineLength`.\n\nDocC structures are preserved: parameter blocks, lists, code fences, block quotes, URLs, inline code spans, and Markdown links are never split mid-token. Continuation lines in `- Parameter:` blocks align under the description column.\n\nLint: A comment block whose lines could be redistributed to fit `lineLength` raises a warning.\n\nRewrite: The comment block is rebuilt with reflowed prose; code fences and atomic tokens are emitted verbatim."
+        },
         "requireDocCommentSummary" : {
           "allOf" : [
             {
@@ -3233,6 +3241,14 @@ package enum ConfigurationSchema {
         }
       ],
       "description" : "Remove `@ViewBuilder` when the body is a single expression.\n\n`@ViewBuilder` is unnecessary on computed properties and functions that return a single view expression, since Swift can infer the return type without the result builder.\n\nThis rule flags `@ViewBuilder` on:\n- Computed properties with a single-expression getter\n- Functions with a single-expression body\n\nIt does NOT flag `@ViewBuilder` on:\n- Closures (parameters)\n- Bodies with multiple statements, `if/else`, `switch`, or `ForEach`\n- Protocol requirements\n\nLint: If a redundant `@ViewBuilder` is found, a lint warning is raised.\n\nRewrite: The redundant `@ViewBuilder` attribute is removed."
+    },
+    "reflowComments" : {
+      "allOf" : [
+        {
+          "$ref" : "#/$defs/ruleBase"
+        }
+      ],
+      "description" : "Reflows contiguous `///` and `//` comment runs to fit `lineLength`.\n\nDocC structures are preserved: parameter blocks, lists, code fences, block quotes, URLs, inline code spans, and Markdown links are never split mid-token. Continuation lines in `- Parameter:` blocks align under the description column.\n\nLint: A comment block whose lines could be redistributed to fit `lineLength` raises a warning.\n\nRewrite: The comment block is rebuilt with reflowed prose; code fences and atomic tokens are emitted verbatim."
     },
     "replaceForEachWithForLoop" : {
       "allOf" : [

@@ -198,6 +198,7 @@ package enum ConfigurationRegistry {
         RedundantType.self,
         RedundantTypedThrows.self,
         RedundantViewBuilder.self,
+        ReflowComments.self,
         ReplaceForEachWithForLoop.self,
         RequireDocCommentSummary.self,
         RequireFatalErrorMessage.self,
