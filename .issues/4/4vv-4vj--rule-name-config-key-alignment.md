@@ -6,6 +6,10 @@ type: task
 priority: normal
 created_at: 2026-04-26T00:23:14Z
 updated_at: 2026-04-26T00:43:23Z
+sync:
+    github:
+        issue_number: "441"
+        synced_at: "2026-04-26T00:45:20Z"
 ---
 
 Align rule type names with config keys per /Users/jason/.claude/plans/i-want-a-careful-tingly-rabin.md. Batches:

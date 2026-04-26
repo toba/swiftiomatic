@@ -65,6 +65,7 @@
 
 ### 🗜️ Tweaks
 
+- Align rule type names with config keys; uniform grammar within each group, drop gratuitous key overrides
 - Rename `forcing` group to `unsafety`; add `memory` group; assign all previously-ungrouped rules to a group ([#440](https://github.com/toba/swiftiomatic/issues/440))
 - Swift review; JSON encoding, decoding, schema generation, schema validation ([#355](https://github.com/toba/swiftiomatic/issues/355))
 - Upstream citation review; level-set ([#357](https://github.com/toba/swiftiomatic/issues/357))
