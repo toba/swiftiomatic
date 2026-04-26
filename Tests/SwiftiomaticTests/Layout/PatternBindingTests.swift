@@ -28,8 +28,7 @@ struct PatternBindingTests: LayoutTesting {
       let someObject:
         (
           foo: Foo,
-          bar:
-            SomeVeryLongTypeNameThatDefinitelyBreaks,
+          bar: SomeVeryLongTypeNameThatDefinitelyBreaks,
           baz: Baz
         ) = foo(a, b, c, d)
 

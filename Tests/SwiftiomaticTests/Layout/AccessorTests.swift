@@ -381,8 +381,7 @@ struct AccessorTests: LayoutTesting {
         }
       }
       var x: T {
-        get
-          async
+        get async
           throws
         {
           foo()

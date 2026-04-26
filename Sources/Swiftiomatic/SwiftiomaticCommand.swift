@@ -24,6 +24,7 @@ struct SwiftiomaticCommand: ParsableCommand {
             DumpConfiguration.self,
             Format.self,
             Lint.self,
+            Link.self,
             Update.self,
         ],
         defaultSubcommand: Format.self

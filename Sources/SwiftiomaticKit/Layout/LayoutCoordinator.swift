@@ -425,7 +425,29 @@ package final class LayoutCoordinator {
 
                 let suppressBreaking = isBreakingSuppressed && !overrideBreakingSuppressed
 
-                if !suppressBreaking, !canFit(length) || mustBreak {
+                // If a continuation break would still leave the next chunk overflowing the line
+                // limit (because the chunk itself is longer than the limit), only fire it when it
+                // actually saves a meaningful number of columns. Otherwise the wrap is uglier than
+                // just letting the over-long token sit inline.
+                let breakSavesEnough: Bool
+                if mustBreak {
+                    breakSavesEnough = true
+                } else if case .continue = kind {
+                    let chunkAfterBreak = max(0, length - size)
+                    if chunkAfterBreak > maxLineLength {
+                        let indentColumns = currentIndentation.length(in: configuration)
+                        let postWrapEndColumn = indentColumns + chunkAfterBreak
+                        let unwrapEndColumn = outputBuffer.column + length
+                        let savings = unwrapEndColumn - postWrapEndColumn
+                        breakSavesEnough = savings >= 8
+                    } else {
+                        breakSavesEnough = true
+                    }
+                } else {
+                    breakSavesEnough = true
+                }
+
+                if !suppressBreaking, breakSavesEnough, !canFit(length) || mustBreak {
                     currentLineIsContinuation = isContinuationIfBreakFires
 
                     if case .escaped = newline {
@@ -438,6 +460,9 @@ package final class LayoutCoordinator {
                     )
                     lastBreak = true
                 } else {
+                    // If the heuristic above suppressed a break that would have otherwise fired,
+                    // still propagate the continuation state so subsequent indentation matches what
+                    // the broken layout would have produced.
                     if outputBuffer.isAtStartOfLine {
                         currentLineIsContinuation = isContinuationIfBreakFires
                     }
@@ -468,11 +493,34 @@ package final class LayoutCoordinator {
                         diagnose(.moveEndOfLineComment, category: .endOfLineComment)
                     }
                 }
+                // Preserve column 0 for standalone `//` comments authored at the start of a line
+                // (commented-out code), rather than re-indenting them to the surrounding scope.
+                // Comments authored at any other column are re-indented to match the scope, which
+                // is what authors expect for ordinary explanatory comments.
+                // Commented-out code typically has multiple leading spaces after `//` (matching the
+                // original code's indentation) and is left at the author's column. Prose comments
+                // ("// note:", "// TODO:") have one space and should be re-indented to scope.
+                let looksLikeCommentedOutCode =
+                    comment.text.first?.hasPrefix("    ") ?? false
+                let preserveColumn =
+                    comment.kind == .line && !wasEndOfLine
+                    && outputBuffer.isAtStartOfLine
+                    && comment.leadingIndent == .spaces(0)
+                    && currentIndentation.length(in: configuration) > 0
+                    && looksLikeCommentedOutCode
+                let savedIndent = outputBuffer.currentIndentation
+                if preserveColumn {
+                    outputBuffer.currentIndentation = []
+                }
+                let printIndent: [Indent] = preserveColumn ? [] : currentIndentation
                 outputBuffer.write(
                     comment.print(
-                        indent: currentIndentation,
+                        indent: printIndent,
                         shouldIndentBlankLines: configuration[IndentBlankLines.self]
                     ))
+                if preserveColumn {
+                    outputBuffer.currentIndentation = savedIndent
+                }
 
             case let .verbatim(verbatim):
                 outputBuffer.writeVerbatim(verbatim.print(indent: currentIndentation), length)

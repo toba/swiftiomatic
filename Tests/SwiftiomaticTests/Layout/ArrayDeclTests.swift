@@ -348,21 +348,17 @@ struct ArrayDeclTests: LayoutTesting {
       """
       let a:
         [
-          3 of
-            VeryLongGenericTypeNameThatCausesWrapping
+          3 of VeryLongGenericTypeNameThatCausesWrapping
         ]
       let a:
         [
-          3 of
-            [
-              3 of
-                VeryLongGenericTypeNameThatCausesWrapping
-            ]
+          3 of [
+            3 of VeryLongGenericTypeNameThatCausesWrapping
+          ]
         ]
       let a =
         [
-          3 of
-            VeryLongGenericTypeNameThatCausesWrapping
+          3 of VeryLongGenericTypeNameThatCausesWrapping
         ](
           repeating:
             foo

@@ -213,6 +213,45 @@ struct CommentTests: LayoutTesting {
     assertLayout(input: input, expected: expected, linelength: 45)
   }
 
+  @Test func standaloneLineCommentsPreserveOriginalColumn() {
+    // Standalone `//` comments should keep the column the author chose, not
+    // be re-indented to match the surrounding scope. See nmq-t64.
+    let input =
+      """
+      public extension KeyedDecodingContainer {
+      //    func decode<T: Decodable>(_ key: Key) throws -> T {
+      //        try decode(T.self, forKey: key)
+      //    }
+
+      //    func decode<T: DecodableWithConfiguration>(
+      //        _ key: Key,
+      //        with configuration: T.DecodingConfiguration
+      //    ) throws -> T {
+      //        try decode(T.self, forKey: key, configuration: configuration)
+      //    }
+      }
+      """
+
+    let expected =
+      """
+      public extension KeyedDecodingContainer {
+      //    func decode<T: Decodable>(_ key: Key) throws -> T {
+      //        try decode(T.self, forKey: key)
+      //    }
+
+      //    func decode<T: DecodableWithConfiguration>(
+      //        _ key: Key,
+      //        with configuration: T.DecodingConfiguration
+      //    ) throws -> T {
+      //        try decode(T.self, forKey: key, configuration: configuration)
+      //    }
+      }
+
+      """
+
+    assertLayout(input: input, expected: expected, linelength: 100)
+  }
+
   @Test func lineCommentsWithCustomLeadingSpaces() {
     let pairs: [(String, String)] = [
       (

@@ -829,6 +829,47 @@ struct StringTests: LayoutTesting {
     assertLayout(input: input, expected: expected, linelength: 20)
   }
 
+  // Regression: a long string-literal argument should not be wrapped onto its own line when
+  // wrapping doesn't bring the line below the limit. A continuation break before such a string
+  // is suppressed by the savings-threshold heuristic when wrapping wouldn't meaningfully shorten
+  // the line.
+  @Test func longStringArgumentStaysOnLabelLineWhenWrapDoesNotHelp() {
+    let input =
+      #"""
+      func expectNodesNotFound(_ ids: [Node.ID]) async throws {
+        let count = try await sqlite.read { try Int.fetchOne(
+          $0,
+          sql: "SELECT COUNT(*) FROM node WHERE id IN (\(repeatElement("?", count: ids.count).joined(separator: ", ")));",
+          arguments: StatementArguments(ids)
+        ) ?? 0 }
+
+        #expect(count == 0)
+      }
+      """#
+
+    // Closure body still expands onto its own line — that is a separate layout issue tracked
+    // outside this test. The point here is that `sql: "..."` does not get a wrap before the
+    // string literal: the string already overflows even at the wrapped column, so wrapping
+    // would just make the layout uglier without bringing the line under the limit.
+    let expected =
+      #"""
+      func expectNodesNotFound(_ ids: [Node.ID]) async throws {
+        let count = try await sqlite.read {
+          try Int.fetchOne(
+            $0,
+            sql: "SELECT COUNT(*) FROM node WHERE id IN (\(repeatElement("?", count: ids.count).joined(separator: ", ")));",
+            arguments: StatementArguments(ids)
+          ) ?? 0
+        }
+
+        #expect(count == 0)
+      }
+
+      """#
+
+    assertLayout(input: input, expected: expected, linelength: 100)
+  }
+
   @Test func multilineStringWithContinuations() {
     let input =
       ##"""

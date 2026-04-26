@@ -102,8 +102,7 @@ struct ExpressionModifierTests: LayoutTesting {
       let b =
         await longerAsynchronousFunction()
       let c =
-        await
-        evenLongerAndLongerAsynchronousFunction()
+        await evenLongerAndLongerAsynchronousFunction()
 
       """
 

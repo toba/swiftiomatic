@@ -62,6 +62,8 @@
 - `NestedCallLayout` silently deletes trailing-closure bodies when collapsing ([#413](https://github.com/toba/swiftiomatic/issues/413))
 - Format rule deletes trailing closure on `.reduce`; leaving call broken ([#416](https://github.com/toba/swiftiomatic/issues/416))
 - `singleLineBodies` inline doesn't collapse `for-in` body that fits on one line ([#414](https://github.com/toba/swiftiomatic/issues/414))
+- Commented-out code lines preserve author's column at column 0; don't re-indent to scope
+- Suppress continuation wraps that don't bring overflowing lines below the limit; long string args stay on their label line
 
 ### 🗜️ Tweaks
 

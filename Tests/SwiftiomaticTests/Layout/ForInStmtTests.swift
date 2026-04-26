@@ -431,8 +431,7 @@ struct ForInStmtTests: LayoutTesting {
 
     let expected10 =
       """
-      for
-        try
+      for try
         await
         unsafe x
         in xs

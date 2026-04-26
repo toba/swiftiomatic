@@ -493,8 +493,7 @@ struct IfStmtTests: LayoutTesting {
       if let someObject:
         (
           foo: Foo,
-          bar:
-            SomeVeryLongTypeNameThatDefinitelyBreaks,
+          bar: SomeVeryLongTypeNameThatDefinitelyBreaks,
           baz: Baz
         ) = foo(a, b, c, d)
       {
