@@ -385,6 +385,15 @@ package final class RuleCollector {
                 }
                 return .integer(description: scalarDesc, defaultValue: defaultValue)
             }
+            if typeName == "Lint" {
+                // Mirrors ConfigurationSchemaGenerator.lintModeValues — `Lint`
+                // lives in ConfigurationKit so it isn't found via local enum scan.
+                return .stringEnum(
+                    description: description,
+                    values: ["warn", "error", "no"],
+                    defaultValue: defaultCase ?? "warn"
+                )
+            }
             if typeName == "Bool" {
                 let defaultValue: Bool
                 if let boolLiteral = initValue?.as(BooleanLiteralExprSyntax.self) {

@@ -1,5 +1,25 @@
 # Changelog
 
+## Week of Apr 26 – May 02, 2026
+
+### ✨ Features
+
+- `guard ... else { stmt }`; keep inline body attached when conditions wrap
+- Cat 9 accessor & declaration patterns; 3 new rules ([#315](https://github.com/toba/swiftiomatic/issues/315))
+
+### 🐞 Fixes
+
+- `sm update`; respect rule sort order
+- Don't re-indent commented-out code lines ([#445](https://github.com/toba/swiftiomatic/issues/445))
+- `schema.json`; emit severity properties on lint-only rules with `Lint`-typed config
+- Formatter; preserve inline `nestedCallLayout`; don't wrap long strings pointlessly ([#444](https://github.com/toba/swiftiomatic/issues/444))
+- `sm format`; don't mangle closures and `reduce` expressions ([#443](https://github.com/toba/swiftiomatic/issues/443))
+
+### 🗜️ Tweaks
+
+- Port missing SwiftLint rules ([#308](https://github.com/toba/swiftiomatic/issues/308))
+- Align rule type names with config keys ([#441](https://github.com/toba/swiftiomatic/issues/441))
+
 ## Week of Apr 19 – Apr 25, 2026
 
 ### ✨ Features

@@ -45,17 +45,33 @@ extension TokenStream {
             )
         }
 
-        // Use `ignoresDiscretionary` so a user-entered newline before `else`
-        // does not pin it to its own line — the `.reset` semantics still force a
-        // break when the conditions wrap onto a continuation line, but when the
-        // entire `guard ... else {` fits we collapse it back to one line.
-        before(
-            node.elseKeyword,
-            tokens: .break(.reset, newlines: .elective(ignoresDiscretionary: true)),
-            .open
-        )
-        after(node.elseKeyword, tokens: .space)
-        before(node.body.leftBrace, tokens: .close)
+        // For an already-inline single-statement body (`else { stmt }`), wrap
+        // `else { stmt }` in an outer group spanning past the closing brace so
+        // the printer evaluates the whole inline form's length at the break
+        // point. With a `.same` (elective) break, `else { stmt }` stays glued
+        // to the closing condition when it fits, and drops to a fresh line at
+        // base indent when it doesn't.
+        //
+        // For multi-line / multi-statement bodies, keep the original `.reset`
+        // semantics so `else` stays visually separated from the wrapped
+        // continuation lines.
+        if node.body.isInlineSingleStatementBody {
+            before(
+                node.elseKeyword,
+                tokens: .break(.same, newlines: .elective(ignoresDiscretionary: true)),
+                .open
+            )
+            after(node.elseKeyword, tokens: .space)
+            after(node.body.rightBrace, tokens: .close)
+        } else {
+            before(
+                node.elseKeyword,
+                tokens: .break(.reset, newlines: .elective(ignoresDiscretionary: true)),
+                .open
+            )
+            after(node.elseKeyword, tokens: .space)
+            before(node.body.leftBrace, tokens: .close)
+        }
 
         arrangeBracesAndContents(
             of: node.body,

@@ -220,6 +220,171 @@ struct ConfigurationUpdateTextTests {
     #expect(result.contains("\"version\": 6"))
   }
 
+  // MARK: - Length-sort placement
+
+  /// Returns the index at which `key` first appears in `source`, or `nil` if absent.
+  private func indexOf(_ key: String, in source: String) -> String.Index? {
+    source.range(of: "\"\(key)\"")?.lowerBound
+  }
+
+  @Test func newRuleLandsInLengthSortedMiddle() throws {
+    // Existing keys length 5 (`short`) and 15 (`reallyLongRule1`). New key
+    // length 10 (`midLenRule`) belongs between them.
+    let original = """
+      {
+        "wrap": {
+          "short": { "lint": "warn" },
+          "reallyLongRule1": { "lint": "warn" }
+        }
+      }
+      """
+
+    let diff = Configuration.UpdateDiff(
+      toAdd: ["wrap.midLenRule"],
+      toRemove: [],
+      misplaced: []
+    )
+    let defaults: [String: JSONValue] = [
+      "wrap": .object(["midLenRule": .object(["lint": .string("warn")])])
+    ]
+
+    let result = try Configuration.applyUpdateText(diff, to: original, defaults: defaults)
+
+    let shortIdx = indexOf("short", in: result)!
+    let midIdx = indexOf("midLenRule", in: result)!
+    let longIdx = indexOf("reallyLongRule1", in: result)!
+    #expect(shortIdx < midIdx)
+    #expect(midIdx < longIdx)
+    _ = try parse(result)
+  }
+
+  @Test func newRuleShorterThanAllExistingLandsFirst() throws {
+    let original = """
+      {
+        "wrap": {
+          "midLenRule": { "lint": "warn" },
+          "reallyLongRule1": { "lint": "warn" }
+        }
+      }
+      """
+
+    let diff = Configuration.UpdateDiff(
+      toAdd: ["wrap.short"],
+      toRemove: [],
+      misplaced: []
+    )
+    let defaults: [String: JSONValue] = [
+      "wrap": .object(["short": .object(["lint": .string("warn")])])
+    ]
+
+    let result = try Configuration.applyUpdateText(diff, to: original, defaults: defaults)
+
+    let shortIdx = indexOf("short", in: result)!
+    let midIdx = indexOf("midLenRule", in: result)!
+    let longIdx = indexOf("reallyLongRule1", in: result)!
+    #expect(shortIdx < midIdx)
+    #expect(midIdx < longIdx)
+    _ = try parse(result)
+  }
+
+  @Test func newRuleLongerThanAllExistingLandsLast() throws {
+    let original = """
+      {
+        "wrap": {
+          "short": { "lint": "warn" },
+          "midLenRule": { "lint": "warn" }
+        }
+      }
+      """
+
+    let diff = Configuration.UpdateDiff(
+      toAdd: ["wrap.reallyLongRule1"],
+      toRemove: [],
+      misplaced: []
+    )
+    let defaults: [String: JSONValue] = [
+      "wrap": .object(["reallyLongRule1": .object(["lint": .string("warn")])])
+    ]
+
+    let result = try Configuration.applyUpdateText(diff, to: original, defaults: defaults)
+
+    let shortIdx = indexOf("short", in: result)!
+    let midIdx = indexOf("midLenRule", in: result)!
+    let longIdx = indexOf("reallyLongRule1", in: result)!
+    #expect(shortIdx < midIdx)
+    #expect(midIdx < longIdx)
+    _ = try parse(result)
+  }
+
+  @Test func multipleNewRulesInterleaveByLength() throws {
+    // Existing length 5 and 20. Add three new of varying lengths; all should
+    // land in length-sorted order among themselves and the existing siblings.
+    let original = """
+      {
+        "wrap": {
+          "short": { "lint": "warn" },
+          "extremelyVeryLongRule": { "lint": "warn" }
+        }
+      }
+      """
+
+    let diff = Configuration.UpdateDiff(
+      toAdd: ["wrap.eightLen", "wrap.twelveCharsX", "wrap.twelveCharsY"],
+      toRemove: [],
+      misplaced: []
+    )
+    let defaults: [String: JSONValue] = [
+      "wrap": .object([
+        "eightLen": .object(["lint": .string("warn")]),
+        "twelveCharsX": .object(["lint": .string("warn")]),
+        "twelveCharsY": .object(["lint": .string("warn")]),
+      ])
+    ]
+
+    let result = try Configuration.applyUpdateText(diff, to: original, defaults: defaults)
+
+    let i5 = indexOf("short", in: result)!
+    let i8 = indexOf("eightLen", in: result)!
+    let i12x = indexOf("twelveCharsX", in: result)!
+    let i12y = indexOf("twelveCharsY", in: result)!
+    let i20 = indexOf("extremelyVeryLongRule", in: result)!
+    #expect(i5 < i8)
+    #expect(i8 < i12x)
+    #expect(i12x < i12y)
+    #expect(i12y < i20)
+    _ = try parse(result)
+  }
+
+  @Test func newGroupChildrenAreLengthSorted() throws {
+    let original = """
+      {
+        "version": 6
+      }
+      """
+
+    let diff = Configuration.UpdateDiff(
+      toAdd: ["idioms.midLenRule", "idioms.short", "idioms.extremelyVeryLongRule"],
+      toRemove: [],
+      misplaced: []
+    )
+    let defaults: [String: JSONValue] = [
+      "idioms": .object([
+        "midLenRule": .object(["lint": .string("warn")]),
+        "short": .object(["lint": .string("warn")]),
+        "extremelyVeryLongRule": .object(["lint": .string("warn")]),
+      ])
+    ]
+
+    let result = try Configuration.applyUpdateText(diff, to: original, defaults: defaults)
+
+    let iShort = indexOf("short", in: result)!
+    let iMid = indexOf("midLenRule", in: result)!
+    let iLong = indexOf("extremelyVeryLongRule", in: result)!
+    #expect(iShort < iMid)
+    #expect(iMid < iLong)
+    _ = try parse(result)
+  }
+
   @Test func createsNewGroupWhenAbsent() throws {
     let original = """
       {

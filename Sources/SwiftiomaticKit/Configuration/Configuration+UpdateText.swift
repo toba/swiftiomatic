@@ -141,7 +141,9 @@ extension Configuration {
       switch target {
       case .root:
         edits.append(
-          insertion(into: layout, source: source, items: items, indent: rootChildIndent(layout))
+          contentsOf: insertion(
+            into: layout, source: source, items: items, indent: rootChildIndent(layout)
+          )
         )
 
       case .group(let groupName):
@@ -149,7 +151,7 @@ extension Configuration {
           let nested = groupMember.nested
         {
           edits.append(
-            insertion(
+            contentsOf: insertion(
               into: nested,
               source: source,
               items: items,
@@ -174,79 +176,119 @@ extension Configuration {
     return edits
   }
 
-  /// Insertion edit for adding `items` at the end of an existing object.
+  /// Insertion edits for adding `items` to an existing object, placing each
+  /// new key in length-sorted (length asc, alpha tiebreak) position relative
+  /// to the existing siblings — matching the file's canonical key order.
   private static func insertion(
     into container: JSON5Scanner.ObjectLayout,
     source: String,
     items: [(qualifiedKey: String, value: JSONValue)],
     indent: String
-  ) -> TextEdit {
-    var insert = ""
-
+  ) -> [TextEdit] {
     if container.members.isEmpty {
-      // Open and close braces are on the same logical site; emit children
-      // on their own lines using `indent`, with the closing brace de-indented.
+      // Empty container: emit all items on their own lines; sort by length+alpha.
+      let sorted = items.sorted { lengthLess(shortKey(forQualifiedKey: $0.qualifiedKey),
+                                             shortKey(forQualifiedKey: $1.qualifiedKey)) }
       let closeIndent = indentBeforeBrace(closeBrace: container.closeBrace, source: source)
-      insert += "\n"
-      for (i, item) in items.enumerated() {
+      var insert = "\n"
+      for (i, item) in sorted.enumerated() {
         let key = shortKey(forQualifiedKey: item.qualifiedKey)
         insert += "\(indent)\"\(key)\": \(prettyValue(item.value, indent: indent))"
-        if i < items.count - 1 { insert += "," }
+        if i < sorted.count - 1 { insert += "," }
         insert += "\n"
       }
       insert += closeIndent
-      return TextEdit(range: container.closeBrace..<container.closeBrace, replacement: insert)
+      return [TextEdit(range: container.closeBrace..<container.closeBrace, replacement: insert)]
     }
 
-    // Append after the existing last member's `fullRange`. The last member
-    // may or may not already have a trailing comma; we add one if missing.
-    let lastIndex = container.members.count - 1
-    let last = container.members[lastIndex]
-    let needsLeadingComma = last.trailingComma == nil
-
-    if needsLeadingComma {
-      // The previous last child has no trailing comma; we need to add one
-      // before our new entries. A single text edit covers the splice: it
-      // spans from just-after-the-value to just-before-the-close-brace,
-      // replacing the original whitespace between them with `,` + the
-      // original whitespace + the new items.
-      var itemsText = ""
-      for item in items {
-        let key = shortKey(forQualifiedKey: item.qualifiedKey)
-        itemsText += "\(indent)\"\(key)\": \(prettyValue(item.value, indent: indent)),\n"
-      }
-      // Drop the trailing `,\n` on the very last item so the file ends up
-      // without a trailing comma — matching the pre-existing style.
-      if itemsText.hasSuffix(",\n") {
-        itemsText.removeLast(2)
-        itemsText += "\n"
-      }
-      let from = last.valueRange.upperBound
-      let to = container.closeBrace
-      let between = String(source[from..<to])
-      return TextEdit(range: from..<to, replacement: "," + between + itemsText)
-    }
-
-    var itemsText = ""
+    // Bucket each new item by the existing member it should sit after, using
+    // length+alpha sort. `predIndex == -1` means "before the first member".
+    var buckets: [Int: [(qualifiedKey: String, value: JSONValue)]] = [:]
+    let existingKeys = container.members.map(\.key)
     for item in items {
-      let key = shortKey(forQualifiedKey: item.qualifiedKey)
-      itemsText += "\(indent)\"\(key)\": \(prettyValue(item.value, indent: indent)),\n"
+      let predIndex = predecessorIndex(
+        for: shortKey(forQualifiedKey: item.qualifiedKey),
+        among: existingKeys
+      )
+      buckets[predIndex, default: []].append(item)
     }
-    // Last item should not carry a trailing `,` if the original last child
-    // also had no trailing comma. But here we know `last.trailingComma != nil`,
-    // i.e. the existing last child already ends in `,`. So the new last item
-    // also ends without trailing comma to match the original style of the
-    // previous last child... Actually, the existing last child's comma is
-    // *what we're appending after*, so our items are now interior; trailing
-    // comma policy for the new very-last item: drop it.
-    if itemsText.hasSuffix(",\n") {
-      itemsText.removeLast(2)
-      itemsText += "\n"
+    // Sort within each bucket by length+alpha so multiple inserts at the
+    // same point land in canonical order.
+    for k in buckets.keys {
+      buckets[k]!.sort { lengthLess(shortKey(forQualifiedKey: $0.qualifiedKey),
+                                    shortKey(forQualifiedKey: $1.qualifiedKey)) }
     }
-    return TextEdit(
-      range: container.closeBrace..<container.closeBrace,
-      replacement: itemsText
-    )
+
+    let lastIndex = container.members.count - 1
+    var edits: [TextEdit] = []
+
+    for (predIndex, bucket) in buckets {
+      // Does this bucket become the new tail of the container? Only if its
+      // predecessor is the existing last member AND no new last existed before.
+      let becomesTail = (predIndex == lastIndex)
+
+      if predIndex == -1 {
+        // Insert before the first existing member, at its line start.
+        let first = container.members[0]
+        var text = ""
+        for item in bucket {
+          let key = shortKey(forQualifiedKey: item.qualifiedKey)
+          text += "\(indent)\"\(key)\": \(prettyValue(item.value, indent: indent)),\n"
+        }
+        edits.append(
+          TextEdit(range: first.fullRange.lowerBound..<first.fullRange.lowerBound,
+                   replacement: text)
+        )
+      } else {
+        // Insert after `members[predIndex]`. Ensure that member ends in a comma.
+        let pred = container.members[predIndex]
+        let needsLeadingComma = pred.trailingComma == nil
+
+        var text = ""
+        for item in bucket {
+          let key = shortKey(forQualifiedKey: item.qualifiedKey)
+          text += "\(indent)\"\(key)\": \(prettyValue(item.value, indent: indent)),\n"
+        }
+        if becomesTail, text.hasSuffix(",\n") {
+          // New tail of the container — strip the very last trailing comma to
+          // match the existing "no trailing comma on last member" style.
+          text.removeLast(2)
+          text += "\n"
+        }
+
+        if needsLeadingComma {
+          let from = pred.valueRange.upperBound
+          let to: String.Index = (predIndex == lastIndex)
+            ? container.closeBrace
+            : container.members[predIndex + 1].fullRange.lowerBound
+          let between = String(source[from..<to])
+          edits.append(TextEdit(range: from..<to, replacement: "," + between + text))
+        } else {
+          edits.append(
+            TextEdit(range: pred.fullRange.upperBound..<pred.fullRange.upperBound,
+                     replacement: text)
+          )
+        }
+      }
+    }
+
+    return edits
+  }
+
+  /// Returns the largest index `i` in `keys` such that `keys[i]` precedes
+  /// `newKey` in length+alpha order. Returns `-1` if `newKey` should sort
+  /// before every existing key.
+  private static func predecessorIndex(for newKey: String, among keys: [String]) -> Int {
+    var pred = -1
+    for (i, k) in keys.enumerated() where lengthLess(k, newKey) {
+      pred = i
+    }
+    return pred
+  }
+
+  /// Length-then-alpha key comparator. Mirrors `JSONValue.serialize(sortBy: .length)`.
+  private static func lengthLess(_ a: String, _ b: String) -> Bool {
+    a.count < b.count || (a.count == b.count && a < b)
   }
 
   /// Edit that creates a brand-new group at the end of root and seeds it
@@ -261,12 +303,16 @@ extension Configuration {
     let groupIndent = childIndent
     let innerIndent = childIndent + childIndent  // one extra step for nested
 
+    let sortedItems = items.sorted {
+      lengthLess(shortKey(forQualifiedKey: $0.qualifiedKey),
+                 shortKey(forQualifiedKey: $1.qualifiedKey))
+    }
     var body = ""
     body += "\"\(groupName)\": {\n"
-    for (i, item) in items.enumerated() {
+    for (i, item) in sortedItems.enumerated() {
       let key = shortKey(forQualifiedKey: item.qualifiedKey)
       body += "\(innerIndent)\"\(key)\": \(prettyValue(item.value, indent: innerIndent))"
-      if i < items.count - 1 { body += "," }
+      if i < sortedItems.count - 1 { body += "," }
       body += "\n"
     }
     body += "\(groupIndent)}"

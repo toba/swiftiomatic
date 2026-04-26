@@ -402,4 +402,77 @@ struct GuardStmtTests: LayoutTesting {
 
     assertLayout(input: input, expected: expected, linelength: 60)
   }
+
+  /// When `guard` conditions wrap onto continuation lines and the trailing
+  /// `else { stmt }` is already a single-statement single-line body that fits
+  /// on the same line as the closing condition, keep it attached rather than
+  /// forcing `else` down to its own line.
+  @Test func attachesInlineElseToWrappedConditions() {
+    let input =
+      """
+      guard let signature = closure.signature,
+        let captureClause = signature.capture
+      else { return false }
+      """
+
+    let expected =
+      """
+      guard let signature = closure.signature,
+        let captureClause = signature.capture else { return false }
+
+      """
+
+    assertLayout(input: input, expected: expected, linelength: 100)
+  }
+
+  /// When the inline `else { stmt }` would exceed the line length on the
+  /// closing condition's line, fall back to today's behavior: `else` drops
+  /// down to its own line at the guard's base indent.
+  @Test func breaksElseWhenInlineBodyExceedsLineLength() {
+    let input =
+      """
+      guard let signature = closure.signature,
+        let captureClause = signature.capture
+      else { return false }
+      """
+
+    // Line length 60: "  let captureClause = signature.capture else { return false }"
+    // is over 60 chars, so else must drop down.
+    let expected =
+      """
+      guard let signature = closure.signature,
+        let captureClause = signature.capture
+      else { return false }
+
+      """
+
+    assertLayout(input: input, expected: expected, linelength: 60)
+  }
+
+  /// Multi-statement bodies are not inline candidates; `else` should still
+  /// drop to its own line when conditions wrap.
+  @Test func multiStatementBodyAlwaysBreaksElse() {
+    let input =
+      """
+      guard let signature = closure.signature,
+        let captureClause = signature.capture
+      else {
+        log("missing")
+        return false
+      }
+      """
+
+    let expected =
+      """
+      guard let signature = closure.signature,
+        let captureClause = signature.capture
+      else {
+        log("missing")
+        return false
+      }
+
+      """
+
+    assertLayout(input: input, expected: expected, linelength: 100)
+  }
 }

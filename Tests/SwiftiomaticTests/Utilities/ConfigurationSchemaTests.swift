@@ -47,6 +47,20 @@ struct ConfigurationSchemaTests {
     #expect(rule["unevaluatedProperties"] == nil)
   }
 
+  /// `Lint`-typed config properties (e.g. per-finding severities) are emitted
+  /// as string enums matching the base `lint` property's values.
+  @Test func lintTypedSeverityPropertiesAppearInSchema() throws {
+    let properties = try #require(schema["properties"] as? [String: Any])
+    let rule = try #require(properties["expiringTodo"] as? [String: Any])
+    let custom = try #require(rule["properties"] as? [String: Any])
+    for key in ["approachingExpirySeverity", "expiredSeverity", "badFormattingSeverity"] {
+      let prop = try #require(custom[key] as? [String: Any], "missing \(key)")
+      #expect(prop["type"] as? String == "string")
+      let values = try #require(prop["enum"] as? [String])
+      #expect(Set(values) == ["warn", "error", "no"])
+    }
+  }
+
   /// The `lintOnlyBase` definition omits the `rewrite` property entirely.
   @Test func lintOnlyBaseHasNoRewriteProperty() throws {
     let defs = try #require(schema["$defs"] as? [String: Any])

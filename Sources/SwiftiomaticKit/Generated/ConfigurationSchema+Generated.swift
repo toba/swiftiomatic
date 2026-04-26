@@ -515,10 +515,30 @@ package enum ConfigurationSchema {
           ],
           "description" : "`TODO` and `FIXME` comments with a bracketed date should be resolved by that date.\n\nA trailing date in a configurable format (default `[MM/dd/yyyy]`) is parsed and compared to the current date. Comments approaching, past, or incorrectly formatted dates emit findings at independently-configured severities.\n\nLint: If a dated TODO/FIXME is approaching expiry, expired, or has a malformed date, a lint finding is raised.",
           "properties" : {
+            "approachingExpirySeverity" : {
+              "default" : "warn",
+              "description" : "Severity reported for TODOs whose expiry is within `approachingExpiryThreshold` days.\n\nOptions: warn, error, no.",
+              "enum" : [
+                "warn",
+                "error",
+                "no"
+              ],
+              "type" : "string"
+            },
             "approachingExpiryThreshold" : {
               "default" : 15,
               "description" : "Days before expiry at which the TODO starts being reported as approaching its deadline.",
               "type" : "integer"
+            },
+            "badFormattingSeverity" : {
+              "default" : "warn",
+              "description" : "Severity reported for TODOs whose date couldn't be parsed using `dateFormat` and the configured delimiters.\n\nOptions: warn, error, no.",
+              "enum" : [
+                "warn",
+                "error",
+                "no"
+              ],
+              "type" : "string"
             },
             "dateDelimitersClosing" : {
               "description" : "Closing delimiter that terminates the date inside the TODO comment.",
@@ -534,6 +554,16 @@ package enum ConfigurationSchema {
             },
             "dateSeparator" : {
               "description" : "Separator between date components.",
+              "type" : "string"
+            },
+            "expiredSeverity" : {
+              "default" : "error",
+              "description" : "Severity reported for TODOs whose expiry date has already passed.\n\nOptions: warn, error, no.",
+              "enum" : [
+                "warn",
+                "error",
+                "no"
+              ],
               "type" : "string"
             }
           },
@@ -865,10 +895,30 @@ package enum ConfigurationSchema {
       ],
       "description" : "`TODO` and `FIXME` comments with a bracketed date should be resolved by that date.\n\nA trailing date in a configurable format (default `[MM/dd/yyyy]`) is parsed and compared to the current date. Comments approaching, past, or incorrectly formatted dates emit findings at independently-configured severities.\n\nLint: If a dated TODO/FIXME is approaching expiry, expired, or has a malformed date, a lint finding is raised.",
       "properties" : {
+        "approachingExpirySeverity" : {
+          "default" : "warn",
+          "description" : "Severity reported for TODOs whose expiry is within `approachingExpiryThreshold` days.\n\nOptions: warn, error, no.",
+          "enum" : [
+            "warn",
+            "error",
+            "no"
+          ],
+          "type" : "string"
+        },
         "approachingExpiryThreshold" : {
           "default" : 15,
           "description" : "Days before expiry at which the TODO starts being reported as approaching its deadline.",
           "type" : "integer"
+        },
+        "badFormattingSeverity" : {
+          "default" : "warn",
+          "description" : "Severity reported for TODOs whose date couldn't be parsed using `dateFormat` and the configured delimiters.\n\nOptions: warn, error, no.",
+          "enum" : [
+            "warn",
+            "error",
+            "no"
+          ],
+          "type" : "string"
         },
         "dateDelimitersClosing" : {
           "description" : "Closing delimiter that terminates the date inside the TODO comment.",
@@ -884,6 +934,16 @@ package enum ConfigurationSchema {
         },
         "dateSeparator" : {
           "description" : "Separator between date components.",
+          "type" : "string"
+        },
+        "expiredSeverity" : {
+          "default" : "error",
+          "description" : "Severity reported for TODOs whose expiry date has already passed.\n\nOptions: warn, error, no.",
+          "enum" : [
+            "warn",
+            "error",
+            "no"
+          ],
           "type" : "string"
         }
       },

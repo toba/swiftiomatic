@@ -2,18 +2,19 @@
 	"$schema": "https://raw.githubusercontent.com/toba/swiftiomatic/refs/heads/main/schema.json",
 	"version": 6,
 	"access": {
+		"aclConsistency": { "lint": "warn", "rewrite": false },
+		"preferFinalClasses": { "lint": "warn", "rewrite": false },
 		"extensionAccessLevel": {
 			"lint": "no",
 			"rewrite": true,
 			"placement": "onExtension"
 		},
+		"privateStateVariables": { "lint": "no", "rewrite": true },
 		"fileScopedDeclarationPrivacy": {
 			"lint": "warn",
 			"rewrite": true,
 			"accessLevel": "private"
-		},
-		"preferFinalClasses": { "lint": "warn", "rewrite": false },
-		"privateStateVariables": { "lint": "no", "rewrite": true }
+		}
 	},
 	"blankLines": {
 		"aroundMark": { "lint": "no", "rewrite": false },
@@ -23,9 +24,9 @@
 		"maximumBlankLines": 1,
 		"commentAsBlankLine": true,
 		"afterGuardStatements": { "lint": "no", "rewrite": false },
-		"beforeControlFlowBlocks": { "lint": "no", "rewrite": true },
 		"closingBraceAsBlankLine": true,
-		"consistentSwitchCaseSpacing": { "lint": "no", "rewrite": false }
+		"consistentSwitchCaseSpacing": { "lint": "no", "rewrite": false },
+		"blankLinesBeforeControlFlowBlocks": { "lint": "no", "rewrite": false }
 	},
 	"closures": {
 		"mutableCapture": { "lint": "warn" },
@@ -39,7 +40,20 @@
 	},
 	"comments": {
 		"fileHeader": { "lint": "no", "rewrite": false },
+		"expiringTodo": {
+			"lint": "warn",
+			"dateFormat": "MM/dd/yyyy",
+			"dateSeparator": "/",
+			"expiredSeverity": "error",
+			"badFormattingSeverity": "warn",
+			"dateDelimitersClosing": "]",
+			"dateDelimitersOpening": "[",
+			"approachingExpirySeverity": "warn",
+			"approachingExpiryThreshold": 15
+		},
 		"noBlockComments": { "lint": "warn" },
+		"noLocalDocComments": { "lint": "warn" },
+		"orphanedDocComment": { "lint": "warn" },
 		"formatSpecialComments": { "lint": "warn", "rewrite": true },
 		"tripleSlashDocComments": { "lint": "warn", "rewrite": true },
 		"requireDocCommentSummary": { "lint": "no" },
@@ -62,13 +76,9 @@
 		"preferConditionalExpression": { "lint": "no", "rewrite": false }
 	},
 	"declarations": {
+		"accessorOrder": { "lint": "warn", "order": "get_set", "rewrite": false },
 		"modifierOrder": { "lint": "warn", "rewrite": true },
-		"unusedSetterValue": { "lint": "warn" },
-		"preferMainAttribute": { "lint": "warn", "rewrite": true },
-		"initCoderUnavailable": { "lint": "no", "rewrite": false },
-		"oneDeclarationPerLine": { "lint": "warn", "rewrite": true },
-		"staticStructShouldBeEnum": { "lint": "warn", "rewrite": true },
-		"preferSynthesizedInitializer": { "lint": "warn" },
+		"emptyExtensions": { "lint": "warn", "rewrite": true },
 		"requireSuperCall": {
 			"lint": "no",
 			"rewrite": false,
@@ -91,11 +101,17 @@
 				"setEditing(_:animated:)",
 				"didReceiveMemoryWarning()",
 				"prepareForInterfaceBuilder()",
-				"encodeRestorableState(with:)",
-				"decodeRestorableState(with:)"
+				"decodeRestorableState(with:)",
+				"encodeRestorableState(with:)"
 			]
 		},
-		"emptyExtensions": { "lint": "warn", "rewrite": true },
+		"unusedSetterValue": { "lint": "warn" },
+		"preferMainAttribute": { "lint": "warn", "rewrite": true },
+		"initCoderUnavailable": { "lint": "no", "rewrite": false },
+		"oneDeclarationPerLine": { "lint": "warn", "rewrite": true },
+		"protocolAccessorOrder": { "lint": "warn", "rewrite": false },
+		"staticStructShouldBeEnum": { "lint": "warn", "rewrite": true },
+		"preferSynthesizedInitializer": { "lint": "warn" },
 		"preferSingleLinePropertyGetter": { "lint": "warn", "rewrite": true }
 	},
 	"unsafety": {
@@ -109,7 +125,8 @@
 		"strongOutlets": { "lint": "warn", "rewrite": true },
 		"preferWeakCapture": { "lint": "no" },
 		"deinitObserverRemoval": { "lint": "warn" },
-		"delegateProtocolRequiresAnyObject": { "lint": "warn" }
+		"delegateProtocolRequiresAnyObject": { "lint": "warn" },
+		"retainNotificationObserver": { "lint": "no" }
 	},
 	"generics": {
 		"opaqueGenericParameters": { "lint": "no", "rewrite": false },
@@ -128,16 +145,23 @@
 			"rewrite": true,
 			"allowedFunctions": ["XCTAssertNoThrow"]
 		},
+		"preferMinMax": { "lint": "warn" },
 		"preferFileID": { "lint": "no", "rewrite": false },
+		"preferToggle": { "lint": "warn", "rewrite": true },
 		"preferIsEmpty": { "lint": "no", "rewrite": false },
 		"preferKeyPath": { "lint": "no", "rewrite": false },
-		"preferToggle": { "lint": "warn", "rewrite": true },
 		"preferDotZero": { "lint": "warn", "rewrite": true },
 		"avoidNoneName": { "lint": "warn", "rewrite": false },
 		"noVoidTernary": { "lint": "warn", "rewrite": false },
+		"preferFlatMap": { "lint": "warn" },
+		"preferContains": { "lint": "warn" },
 		"preferSelfType": { "lint": "warn", "rewrite": true },
+		"preferLastWhere": { "lint": "warn" },
+		"preferAllSatisfy": { "lint": "warn" },
+		"preferFirstWhere": { "lint": "warn" },
 		"preferCountWhere": { "lint": "warn", "rewrite": true },
 		"preferIsDisjoint": { "lint": "warn", "rewrite": false },
+		"preferReduceInto": { "lint": "warn" },
 		"noExplicitOwnership": { "lint": "no", "rewrite": false },
 		"preferExplicitFalse": { "lint": "no", "rewrite": false },
 		"leadingDotOperators": { "lint": "warn", "rewrite": true },
@@ -273,6 +297,7 @@
 		"spacesAroundRangeFormationOperators": false
 	},
 	"testing": {
+		"finalTestCase": { "lint": "warn" },
 		"noGuardInTests": { "lint": "no", "rewrite": false },
 		"validateTestCases": { "lint": "no", "rewrite": false },
 		"preferSwiftTesting": { "lint": "no", "rewrite": false },
@@ -303,5 +328,32 @@
 		"multilineFunctionChains": { "lint": "no", "rewrite": false },
 		"multilineStatementBraces": { "lint": "no", "rewrite": false },
 		"keepFunctionOutputTogether": true
+	},
+	"metrics": {
+		"tupleSize": { "lint": "warn", "error": 4, "warning": 3 },
+		"fileLength": {
+			"lint": "warn",
+			"error": 1000,
+			"warning": 400,
+			"ignoreCommentOnlyLines": true
+		},
+		"nestingDepth": { "lint": "warn", "typeLevel": 1, "functionLevel": 2 },
+		"parameterCount": {
+			"lint": "warn",
+			"error": 8,
+			"warning": 5,
+			"ignoresDefaultParameters": true
+		},
+		"typeBodyLength": { "lint": "warn", "error": 350, "warning": 250 },
+		"lineLengthLimit": { "lint": "warn", "error": 200, "warning": 120 },
+		"closureBodyLength": { "lint": "warn", "error": 50, "warning": 30 },
+		"functionBodyLength": { "lint": "warn", "error": 100, "warning": 50 },
+		"associatedValueCount": { "lint": "warn", "error": 6, "warning": 5 },
+		"cyclomaticComplexity": {
+			"lint": "warn",
+			"error": 20,
+			"warning": 10,
+			"ignoresCaseStatements": false
+		}
 	}
 }

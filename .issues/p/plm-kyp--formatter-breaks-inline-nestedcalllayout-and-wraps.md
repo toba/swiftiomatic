@@ -1,15 +1,15 @@
 ---
 # plm-kyp
 title: Formatter breaks inline nestedCallLayout and wraps long strings pointlessly
-status: review
+status: completed
 type: bug
 priority: normal
 created_at: 2026-04-26T03:04:24Z
-updated_at: 2026-04-26T04:07:19Z
+updated_at: 2026-04-26T17:00:47Z
 sync:
     github:
         issue_number: "444"
-        synced_at: "2026-04-26T04:09:22Z"
+        synced_at: "2026-04-26T18:08:47Z"
 ---
 
 ## Problem
