@@ -37,8 +37,8 @@ extension Finding.Message {
 
 // MARK: - Configuration
 
-package struct AssociatedValueCountConfiguration: SyntaxRuleValue {
-    package var lint: Lint = .warn
+package struct AssociatedValueCountConfiguration: ThresholdRuleValue {
+    package var enabled: Bool = true
     /// Enum cases with more than this many associated values emit a
     /// warning-severity finding.
     package var warning: Int = 5
@@ -46,22 +46,17 @@ package struct AssociatedValueCountConfiguration: SyntaxRuleValue {
     /// error-severity finding.
     package var error: Int = 6
 
-    package var rewrite: Bool {
-        get { false }
-        set { }
-    }
-
     package init() {}
 
     package init(from decoder: any Decoder) throws {
         self.init()
         let c = try decoder.container(keyedBy: CodingKeys.self)
-        if let v = try c.decodeIfPresent(Lint.self, forKey: .lint) { lint = v }
+        if let v = try c.decodeIfPresent(Bool.self, forKey: .enabled) { enabled = v }
         if let v = try c.decodeIfPresent(Int.self, forKey: .warning) { warning = v }
         if let v = try c.decodeIfPresent(Int.self, forKey: .error) { error = v }
     }
 
     private enum CodingKeys: String, CodingKey {
-        case lint, warning, error
+        case enabled, warning, error
     }
 }

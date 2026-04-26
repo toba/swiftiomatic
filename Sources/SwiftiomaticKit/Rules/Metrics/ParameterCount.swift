@@ -49,8 +49,8 @@ extension Finding.Message {
 
 // MARK: - Configuration
 
-package struct ParameterCountConfiguration: SyntaxRuleValue {
-    package var lint: Lint = .warn
+package struct ParameterCountConfiguration: ThresholdRuleValue {
+    package var enabled: Bool = true
     /// Functions with more than this many parameters emit a warning-severity finding.
     package var warning: Int = 5
     /// Functions with more than this many parameters emit an error-severity finding.
@@ -58,17 +58,12 @@ package struct ParameterCountConfiguration: SyntaxRuleValue {
     /// When `true`, parameters with a default value don't count toward the limit.
     package var ignoresDefaultParameters: Bool = true
 
-    package var rewrite: Bool {
-        get { false }
-        set { }
-    }
-
     package init() {}
 
     package init(from decoder: any Decoder) throws {
         self.init()
         let c = try decoder.container(keyedBy: CodingKeys.self)
-        if let v = try c.decodeIfPresent(Lint.self, forKey: .lint) { lint = v }
+        if let v = try c.decodeIfPresent(Bool.self, forKey: .enabled) { enabled = v }
         if let v = try c.decodeIfPresent(Int.self, forKey: .warning) { warning = v }
         if let v = try c.decodeIfPresent(Int.self, forKey: .error) { error = v }
         if let v = try c.decodeIfPresent(Bool.self, forKey: .ignoresDefaultParameters) {
@@ -77,6 +72,6 @@ package struct ParameterCountConfiguration: SyntaxRuleValue {
     }
 
     private enum CodingKeys: String, CodingKey {
-        case lint, warning, error, ignoresDefaultParameters
+        case enabled, warning, error, ignoresDefaultParameters
     }
 }

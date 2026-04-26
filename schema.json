@@ -34,6 +34,26 @@
         }
       },
       "type" : "object"
+    },
+    "thresholdLintBase" : {
+      "properties" : {
+        "enabled" : {
+          "default" : true,
+          "description" : "Whether the rule runs. False silences all findings.",
+          "type" : "boolean"
+        },
+        "error" : {
+          "default" : 0,
+          "description" : "Values at or above this threshold emit an error-severity finding.",
+          "type" : "integer"
+        },
+        "warning" : {
+          "default" : 0,
+          "description" : "Values at or above this threshold emit a warning-severity finding.",
+          "type" : "integer"
+        }
+      },
+      "type" : "object"
     }
   },
   "$id" : "https://raw.githubusercontent.com/toba/swiftiomatic/refs/heads/main/schema.json",
@@ -195,22 +215,10 @@
     "associatedValueCount" : {
       "allOf" : [
         {
-          "$ref" : "#/$defs/lintOnlyBase"
+          "$ref" : "#/$defs/thresholdLintBase"
         }
       ],
       "description" : "Enum cases should not declare too many associated values.",
-      "properties" : {
-        "error" : {
-          "default" : 6,
-          "description" : "Enum cases with more than this many associated values emit an error-severity finding.",
-          "type" : "integer"
-        },
-        "warning" : {
-          "default" : 5,
-          "description" : "Enum cases with more than this many associated values emit a warning-severity finding.",
-          "type" : "integer"
-        }
-      },
       "unevaluatedProperties" : false
     },
     "avoidNoneName" : {
@@ -360,22 +368,10 @@
     "closureBodyLength" : {
       "allOf" : [
         {
-          "$ref" : "#/$defs/lintOnlyBase"
+          "$ref" : "#/$defs/thresholdLintBase"
         }
       ],
       "description" : "Closures should not exceed a configurable body line length.",
-      "properties" : {
-        "error" : {
-          "default" : 50,
-          "description" : "Closure bodies longer than this many lines emit an error-severity finding.",
-          "type" : "integer"
-        },
-        "warning" : {
-          "default" : 30,
-          "description" : "Closure bodies longer than this many lines emit a warning-severity finding.",
-          "type" : "integer"
-        }
-      },
       "unevaluatedProperties" : false
     },
     "closures" : {
@@ -770,25 +766,15 @@
     "cyclomaticComplexity" : {
       "allOf" : [
         {
-          "$ref" : "#/$defs/lintOnlyBase"
+          "$ref" : "#/$defs/thresholdLintBase"
         }
       ],
       "description" : "Function bodies should have bounded cyclomatic complexity.\n\nCounts decision points (`if`, `for`, `while`, `guard`, `repeat`, `switch case`, `catch`, `fallthrough`) within each function or initializer body. Nested functions and initializers are excluded — they get their own measurement.\n\nLint: emits `.warn` when complexity exceeds the warning threshold and `.error` when it exceeds the error threshold.",
       "properties" : {
-        "error" : {
-          "default" : 20,
-          "description" : "Functions whose cyclomatic complexity exceeds this value emit an error-severity finding.",
-          "type" : "integer"
-        },
         "ignoresCaseStatements" : {
           "default" : false,
           "description" : "When `true`, individual `case` clauses inside a `switch` don't add to complexity (only the `switch` itself counts).",
           "type" : "boolean"
-        },
-        "warning" : {
-          "default" : 10,
-          "description" : "Functions whose cyclomatic complexity exceeds this value emit a warning-severity finding.",
-          "type" : "integer"
         }
       },
       "unevaluatedProperties" : false
@@ -984,25 +970,15 @@
     "fileLength" : {
       "allOf" : [
         {
-          "$ref" : "#/$defs/lintOnlyBase"
+          "$ref" : "#/$defs/thresholdLintBase"
         }
       ],
       "description" : "Files should not exceed a configurable total line count.",
       "properties" : {
-        "error" : {
-          "default" : 1000,
-          "description" : "Files with more than this many lines emit an error-severity finding.",
-          "type" : "integer"
-        },
         "ignoreCommentOnlyLines" : {
           "default" : false,
           "description" : "When `true`, lines that contain only a comment (or whitespace) don't count toward the line total.",
           "type" : "boolean"
-        },
-        "warning" : {
-          "default" : 400,
-          "description" : "Files with more than this many lines emit a warning-severity finding.",
-          "type" : "integer"
         }
       },
       "unevaluatedProperties" : false
@@ -1046,22 +1022,10 @@
     "functionBodyLength" : {
       "allOf" : [
         {
-          "$ref" : "#/$defs/lintOnlyBase"
+          "$ref" : "#/$defs/thresholdLintBase"
         }
       ],
       "description" : "Function bodies should not exceed a configurable line length.\n\nCounts source lines inside the body, excluding the lines containing the opening and closing braces. Comment-only and blank lines are excluded by default; tokens on the same line still count that line.\n\nLint: emits `.warn` over the warning threshold and `.error` over the error threshold.",
-      "properties" : {
-        "error" : {
-          "default" : 100,
-          "description" : "Function bodies longer than this many lines emit an error-severity finding.",
-          "type" : "integer"
-        },
-        "warning" : {
-          "default" : 50,
-          "description" : "Function bodies longer than this many lines emit a warning-severity finding.",
-          "type" : "integer"
-        }
-      },
       "unevaluatedProperties" : false
     },
     "generics" : {
@@ -1638,22 +1602,10 @@
     "lineLengthLimit" : {
       "allOf" : [
         {
-          "$ref" : "#/$defs/lintOnlyBase"
+          "$ref" : "#/$defs/thresholdLintBase"
         }
       ],
       "description" : "Source lines should not exceed a configurable character count.\n\nLint-only counterpart to the `lineLength` layout setting (which targets the pretty-printer's wrap point). This rule emits findings on lines that exceed `warning` / `error` thresholds.",
-      "properties" : {
-        "error" : {
-          "default" : 200,
-          "description" : "Lines longer than this many characters emit an error-severity finding.",
-          "type" : "integer"
-        },
-        "warning" : {
-          "default" : 120,
-          "description" : "Lines longer than this many characters emit a warning-severity finding.",
-          "type" : "integer"
-        }
-      },
       "unevaluatedProperties" : false
     },
     "literals" : {
@@ -1833,67 +1785,33 @@
         "associatedValueCount" : {
           "allOf" : [
             {
-              "$ref" : "#/$defs/lintOnlyBase"
+              "$ref" : "#/$defs/thresholdLintBase"
             }
           ],
           "description" : "Enum cases should not declare too many associated values.",
-          "properties" : {
-            "error" : {
-              "default" : 6,
-              "description" : "Enum cases with more than this many associated values emit an error-severity finding.",
-              "type" : "integer"
-            },
-            "warning" : {
-              "default" : 5,
-              "description" : "Enum cases with more than this many associated values emit a warning-severity finding.",
-              "type" : "integer"
-            }
-          },
           "unevaluatedProperties" : false
         },
         "closureBodyLength" : {
           "allOf" : [
             {
-              "$ref" : "#/$defs/lintOnlyBase"
+              "$ref" : "#/$defs/thresholdLintBase"
             }
           ],
           "description" : "Closures should not exceed a configurable body line length.",
-          "properties" : {
-            "error" : {
-              "default" : 50,
-              "description" : "Closure bodies longer than this many lines emit an error-severity finding.",
-              "type" : "integer"
-            },
-            "warning" : {
-              "default" : 30,
-              "description" : "Closure bodies longer than this many lines emit a warning-severity finding.",
-              "type" : "integer"
-            }
-          },
           "unevaluatedProperties" : false
         },
         "cyclomaticComplexity" : {
           "allOf" : [
             {
-              "$ref" : "#/$defs/lintOnlyBase"
+              "$ref" : "#/$defs/thresholdLintBase"
             }
           ],
           "description" : "Function bodies should have bounded cyclomatic complexity.\n\nCounts decision points (`if`, `for`, `while`, `guard`, `repeat`, `switch case`, `catch`, `fallthrough`) within each function or initializer body. Nested functions and initializers are excluded — they get their own measurement.\n\nLint: emits `.warn` when complexity exceeds the warning threshold and `.error` when it exceeds the error threshold.",
           "properties" : {
-            "error" : {
-              "default" : 20,
-              "description" : "Functions whose cyclomatic complexity exceeds this value emit an error-severity finding.",
-              "type" : "integer"
-            },
             "ignoresCaseStatements" : {
               "default" : false,
               "description" : "When `true`, individual `case` clauses inside a `switch` don't add to complexity (only the `switch` itself counts).",
               "type" : "boolean"
-            },
-            "warning" : {
-              "default" : 10,
-              "description" : "Functions whose cyclomatic complexity exceeds this value emit a warning-severity finding.",
-              "type" : "integer"
             }
           },
           "unevaluatedProperties" : false
@@ -1901,25 +1819,15 @@
         "fileLength" : {
           "allOf" : [
             {
-              "$ref" : "#/$defs/lintOnlyBase"
+              "$ref" : "#/$defs/thresholdLintBase"
             }
           ],
           "description" : "Files should not exceed a configurable total line count.",
           "properties" : {
-            "error" : {
-              "default" : 1000,
-              "description" : "Files with more than this many lines emit an error-severity finding.",
-              "type" : "integer"
-            },
             "ignoreCommentOnlyLines" : {
               "default" : false,
               "description" : "When `true`, lines that contain only a comment (or whitespace) don't count toward the line total.",
               "type" : "boolean"
-            },
-            "warning" : {
-              "default" : 400,
-              "description" : "Files with more than this many lines emit a warning-severity finding.",
-              "type" : "integer"
             }
           },
           "unevaluatedProperties" : false
@@ -1927,43 +1835,19 @@
         "functionBodyLength" : {
           "allOf" : [
             {
-              "$ref" : "#/$defs/lintOnlyBase"
+              "$ref" : "#/$defs/thresholdLintBase"
             }
           ],
           "description" : "Function bodies should not exceed a configurable line length.\n\nCounts source lines inside the body, excluding the lines containing the opening and closing braces. Comment-only and blank lines are excluded by default; tokens on the same line still count that line.\n\nLint: emits `.warn` over the warning threshold and `.error` over the error threshold.",
-          "properties" : {
-            "error" : {
-              "default" : 100,
-              "description" : "Function bodies longer than this many lines emit an error-severity finding.",
-              "type" : "integer"
-            },
-            "warning" : {
-              "default" : 50,
-              "description" : "Function bodies longer than this many lines emit a warning-severity finding.",
-              "type" : "integer"
-            }
-          },
           "unevaluatedProperties" : false
         },
         "lineLengthLimit" : {
           "allOf" : [
             {
-              "$ref" : "#/$defs/lintOnlyBase"
+              "$ref" : "#/$defs/thresholdLintBase"
             }
           ],
           "description" : "Source lines should not exceed a configurable character count.\n\nLint-only counterpart to the `lineLength` layout setting (which targets the pretty-printer's wrap point). This rule emits findings on lines that exceed `warning` / `error` thresholds.",
-          "properties" : {
-            "error" : {
-              "default" : 200,
-              "description" : "Lines longer than this many characters emit an error-severity finding.",
-              "type" : "integer"
-            },
-            "warning" : {
-              "default" : 120,
-              "description" : "Lines longer than this many characters emit a warning-severity finding.",
-              "type" : "integer"
-            }
-          },
           "unevaluatedProperties" : false
         },
         "nestingDepth" : {
@@ -1990,25 +1874,15 @@
         "parameterCount" : {
           "allOf" : [
             {
-              "$ref" : "#/$defs/lintOnlyBase"
+              "$ref" : "#/$defs/thresholdLintBase"
             }
           ],
           "description" : "Functions and initializers should not declare too many parameters.",
           "properties" : {
-            "error" : {
-              "default" : 8,
-              "description" : "Functions with more than this many parameters emit an error-severity finding.",
-              "type" : "integer"
-            },
             "ignoresDefaultParameters" : {
               "default" : true,
               "description" : "When `true`, parameters with a default value don't count toward the limit.",
               "type" : "boolean"
-            },
-            "warning" : {
-              "default" : 5,
-              "description" : "Functions with more than this many parameters emit a warning-severity finding.",
-              "type" : "integer"
             }
           },
           "unevaluatedProperties" : false
@@ -2016,43 +1890,19 @@
         "tupleSize" : {
           "allOf" : [
             {
-              "$ref" : "#/$defs/lintOnlyBase"
+              "$ref" : "#/$defs/thresholdLintBase"
             }
           ],
           "description" : "Tuples with many elements are hard to read; consider a struct instead.",
-          "properties" : {
-            "error" : {
-              "default" : 4,
-              "description" : "Tuples with more than this many elements emit an error-severity finding.",
-              "type" : "integer"
-            },
-            "warning" : {
-              "default" : 3,
-              "description" : "Tuples with more than this many elements emit a warning-severity finding.",
-              "type" : "integer"
-            }
-          },
           "unevaluatedProperties" : false
         },
         "typeBodyLength" : {
           "allOf" : [
             {
-              "$ref" : "#/$defs/lintOnlyBase"
+              "$ref" : "#/$defs/thresholdLintBase"
             }
           ],
           "description" : "Type bodies (class, struct, enum, actor, protocol, extension) should not exceed a configurable line length.",
-          "properties" : {
-            "error" : {
-              "default" : 350,
-              "description" : "Type bodies longer than this many lines emit an error-severity finding.",
-              "type" : "integer"
-            },
-            "warning" : {
-              "default" : 250,
-              "description" : "Type bodies (struct/class/enum/actor) longer than this many lines emit a warning-severity finding.",
-              "type" : "integer"
-            }
-          },
           "unevaluatedProperties" : false
         }
       },
@@ -2471,25 +2321,15 @@
     "parameterCount" : {
       "allOf" : [
         {
-          "$ref" : "#/$defs/lintOnlyBase"
+          "$ref" : "#/$defs/thresholdLintBase"
         }
       ],
       "description" : "Functions and initializers should not declare too many parameters.",
       "properties" : {
-        "error" : {
-          "default" : 8,
-          "description" : "Functions with more than this many parameters emit an error-severity finding.",
-          "type" : "integer"
-        },
         "ignoresDefaultParameters" : {
           "default" : true,
           "description" : "When `true`, parameters with a default value don't count toward the limit.",
           "type" : "boolean"
-        },
-        "warning" : {
-          "default" : 5,
-          "description" : "Functions with more than this many parameters emit a warning-severity finding.",
-          "type" : "integer"
         }
       },
       "unevaluatedProperties" : false
@@ -3709,22 +3549,10 @@
     "tupleSize" : {
       "allOf" : [
         {
-          "$ref" : "#/$defs/lintOnlyBase"
+          "$ref" : "#/$defs/thresholdLintBase"
         }
       ],
       "description" : "Tuples with many elements are hard to read; consider a struct instead.",
-      "properties" : {
-        "error" : {
-          "default" : 4,
-          "description" : "Tuples with more than this many elements emit an error-severity finding.",
-          "type" : "integer"
-        },
-        "warning" : {
-          "default" : 3,
-          "description" : "Tuples with more than this many elements emit a warning-severity finding.",
-          "type" : "integer"
-        }
-      },
       "unevaluatedProperties" : false
     },
     "typeAliases" : {
@@ -3738,22 +3566,10 @@
     "typeBodyLength" : {
       "allOf" : [
         {
-          "$ref" : "#/$defs/lintOnlyBase"
+          "$ref" : "#/$defs/thresholdLintBase"
         }
       ],
       "description" : "Type bodies (class, struct, enum, actor, protocol, extension) should not exceed a configurable line length.",
-      "properties" : {
-        "error" : {
-          "default" : 350,
-          "description" : "Type bodies longer than this many lines emit an error-severity finding.",
-          "type" : "integer"
-        },
-        "warning" : {
-          "default" : 250,
-          "description" : "Type bodies (struct/class/enum/actor) longer than this many lines emit a warning-severity finding.",
-          "type" : "integer"
-        }
-      },
       "unevaluatedProperties" : false
     },
     "typedCatchError" : {

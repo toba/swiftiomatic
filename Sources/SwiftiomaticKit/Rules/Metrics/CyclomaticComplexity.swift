@@ -88,8 +88,8 @@ extension Finding.Message {
 
 // MARK: - Configuration
 
-package struct CyclomaticComplexityConfiguration: SyntaxRuleValue {
-    package var lint: Lint = .warn
+package struct CyclomaticComplexityConfiguration: ThresholdRuleValue {
+    package var enabled: Bool = true
     /// Functions whose cyclomatic complexity exceeds this value emit a
     /// warning-severity finding.
     package var warning: Int = 10
@@ -100,17 +100,12 @@ package struct CyclomaticComplexityConfiguration: SyntaxRuleValue {
     /// complexity (only the `switch` itself counts).
     package var ignoresCaseStatements: Bool = false
 
-    package var rewrite: Bool {
-        get { false }
-        set { }  // lint-only
-    }
-
     package init() {}
 
     package init(from decoder: any Decoder) throws {
         self.init()
         let c = try decoder.container(keyedBy: CodingKeys.self)
-        if let v = try c.decodeIfPresent(Lint.self, forKey: .lint) { lint = v }
+        if let v = try c.decodeIfPresent(Bool.self, forKey: .enabled) { enabled = v }
         if let v = try c.decodeIfPresent(Int.self, forKey: .warning) { warning = v }
         if let v = try c.decodeIfPresent(Int.self, forKey: .error) { error = v }
         if let v = try c.decodeIfPresent(Bool.self, forKey: .ignoresCaseStatements) {
@@ -119,7 +114,7 @@ package struct CyclomaticComplexityConfiguration: SyntaxRuleValue {
     }
 
     private enum CodingKeys: String, CodingKey {
-        case lint
+        case enabled
         case warning
         case error
         case ignoresCaseStatements

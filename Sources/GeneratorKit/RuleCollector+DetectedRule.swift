@@ -48,13 +48,18 @@ extension RuleCollector {
         /// Indicates whether the rule can rewrite code (all rules can lint).
         let canRewrite: Bool
 
+        /// Indicates whether the rule's configuration uses dual numeric thresholds
+        /// (`enabled`/`warning`/`error`) instead of a single `lint` severity.
+        let isThreshold: Bool
+
         /// The syntax node types visited by the rule type.
         let visitedNodes: [String]
 
         /// Whether this rule is disabled by default (opt-in).
         let isOptIn: Bool
 
-        /// Custom properties beyond `rewrite`/`lint` on the configuration type.
+        /// Custom properties beyond `rewrite`/`lint` (or `enabled`/`warning`/`error`
+        /// for threshold rules) on the configuration type.
         var customProperties: [DetectedProperty] = []
 
         // Hashable/Equatable based on typeName only — customProperties are metadata.

@@ -37,6 +37,7 @@ package final class ConfigurationSchemaGenerator: FileGenerator {
         root.defs = [
             "ruleBase": Self.ruleBaseSchema(),
             "lintOnlyBase": Self.lintOnlyBaseSchema(),
+            "thresholdLintBase": Self.thresholdLintBaseSchema(),
         ]
 
         var schema: [String: JSONSchemaNode] = [:]
@@ -111,6 +112,30 @@ package final class ConfigurationSchemaGenerator: FileGenerator {
         )
     }
 
+    /// Base schema for threshold lint rules: `{ "enabled": bool, "warning": int,
+    /// "error": int }`. Severity is decided by the threshold a measured value
+    /// crosses, so there is no `lint` field.
+    private static func thresholdLintBaseSchema() -> JSONSchemaNode {
+        .object(
+            description: nil,
+            properties: [
+                "enabled": .boolean(
+                    description: "Whether the rule runs. False silences all findings.",
+                    defaultValue: true
+                ),
+                "warning": .integer(
+                    description: "Values at or above this threshold emit a warning-severity finding.",
+                    defaultValue: 0
+                ),
+                "error": .integer(
+                    description: "Values at or above this threshold emit an error-severity finding.",
+                    defaultValue: 0
+                ),
+            ],
+            additionalProperties: nil
+        )
+    }
+
     private func settingSchemaNode(for setting: RuleCollector.DetectedLayoutRule) -> JSONSchemaNode
     {
         let desc = setting.description ?? setting.configKey
@@ -141,7 +166,13 @@ package final class ConfigurationSchemaGenerator: FileGenerator {
         node.description = desc
 
         var ref = JSONSchemaNode()
-        ref.ref = rule.canRewrite ? "#/$defs/ruleBase" : "#/$defs/lintOnlyBase"
+        if rule.isThreshold {
+            ref.ref = "#/$defs/thresholdLintBase"
+        } else if rule.canRewrite {
+            ref.ref = "#/$defs/ruleBase"
+        } else {
+            ref.ref = "#/$defs/lintOnlyBase"
+        }
 
         node.allOf = [ref]
 

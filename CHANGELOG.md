@@ -12,6 +12,7 @@
 - `sm update`; respect rule sort order
 - Don't re-indent commented-out code lines ([#445](https://github.com/toba/swiftiomatic/issues/445))
 - `schema.json`; emit severity properties on lint-only rules with `Lint`-typed config
+- Threshold lint rules; replace `lint` property with `enabled`; introduce `ThresholdRuleValue` ([#447](https://github.com/toba/swiftiomatic/issues/447))
 - Formatter; preserve inline `nestedCallLayout`; don't wrap long strings pointlessly ([#444](https://github.com/toba/swiftiomatic/issues/444))
 - `sm format`; don't mangle closures and `reduce` expressions ([#443](https://github.com/toba/swiftiomatic/issues/443))
 
@@ -19,6 +20,7 @@
 
 - Port missing SwiftLint rules ([#308](https://github.com/toba/swiftiomatic/issues/308))
 - Align rule type names with config keys ([#441](https://github.com/toba/swiftiomatic/issues/441))
+- Rule configuration groups; rename `forcing`→`unsafety`; add `memory`; regroup ungrouped ([#440](https://github.com/toba/swiftiomatic/issues/440))
 
 ## Week of Apr 19 – Apr 25, 2026
 

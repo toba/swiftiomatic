@@ -163,12 +163,26 @@ package final class RuleCollector {
 
             guard !visitedNodes.isEmpty else { return nil }
 
+            // Detect threshold-style config (conforms to ThresholdRuleValue) so
+            // schema generation can pick the right base shape.
+            let isThreshold: Bool
+            if let configTypeName {
+                isThreshold = Self.structConforms(
+                    configTypeName,
+                    to: "ThresholdRuleValue",
+                    in: fileStatements
+                )
+            } else {
+                isThreshold = false
+            }
+
             // Extract custom properties from the configuration type.
             let customProperties: [DetectedProperty]
             if let configTypeName {
                 customProperties = Self.extractCustomProperties(
                     configTypeName: configTypeName,
-                    from: fileStatements
+                    from: fileStatements,
+                    isThreshold: isThreshold
                 )
             } else {
                 customProperties = []
@@ -180,6 +194,7 @@ package final class RuleCollector {
                 customKey: Self.extractStringLiteral(named: "key", from: members),
                 description: description.map { Self.normalizeDescription($0.text) },
                 canRewrite: canRewrite,
+                isThreshold: isThreshold,
                 visitedNodes: visitedNodes,
                 isOptIn: Self.extractIsOptIn(from: members),
                 customProperties: customProperties,
@@ -194,10 +209,34 @@ package final class RuleCollector {
     /// Base property keys that are already handled by `ruleBase`/`lintOnlyBase`.
     private static let basePropertyKeys: Set<String> = ["rewrite", "lint"]
 
+    /// Base property keys covered by `thresholdLintBase`.
+    private static let thresholdBasePropertyKeys: Set<String> = ["enabled", "warning", "error"]
+
+    /// Returns true when `configTypeName` (declared in `statements`) lists
+    /// `protocolName` in its inheritance clause.
+    static func structConforms(
+        _ configTypeName: String,
+        to protocolName: String,
+        in statements: CodeBlockItemListSyntax
+    ) -> Bool {
+        guard let configStruct = findStruct(named: configTypeName, in: statements),
+            let inheritance = configStruct.inheritanceClause
+        else { return false }
+        for inherited in inheritance.inheritedTypes {
+            if let ident = inherited.type.as(IdentifierTypeSyntax.self),
+                ident.name.text == protocolName
+            {
+                return true
+            }
+        }
+        return false
+    }
+
     /// Extracts custom properties from a configuration struct in the file.
     private static func extractCustomProperties(
         configTypeName: String,
-        from statements: CodeBlockItemListSyntax
+        from statements: CodeBlockItemListSyntax,
+        isThreshold: Bool
     ) -> [DetectedProperty] {
         // Find the config struct declaration.
         guard let configStruct = findStruct(named: configTypeName, in: statements) else {
@@ -226,6 +265,7 @@ package final class RuleCollector {
 
             let propertyName = pattern.identifier.text
             guard !basePropertyKeys.contains(propertyName) else { continue }
+            if isThreshold, thresholdBasePropertyKeys.contains(propertyName) { continue }
 
             let docComment = DocumentationCommentText(
                 extractedFrom: varDecl.leadingTrivia

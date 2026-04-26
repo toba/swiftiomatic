@@ -64,30 +64,25 @@ extension Finding.Message {
 
 // MARK: - Configuration
 
-package struct TypeBodyLengthConfiguration: SyntaxRuleValue {
-    package var lint: Lint = .warn
+package struct TypeBodyLengthConfiguration: ThresholdRuleValue {
+    package var enabled: Bool = true
     /// Type bodies (struct/class/enum/actor) longer than this many lines
     /// emit a warning-severity finding.
     package var warning: Int = 250
     /// Type bodies longer than this many lines emit an error-severity finding.
     package var error: Int = 350
 
-    package var rewrite: Bool {
-        get { false }
-        set { }
-    }
-
     package init() {}
 
     package init(from decoder: any Decoder) throws {
         self.init()
         let c = try decoder.container(keyedBy: CodingKeys.self)
-        if let v = try c.decodeIfPresent(Lint.self, forKey: .lint) { lint = v }
+        if let v = try c.decodeIfPresent(Bool.self, forKey: .enabled) { enabled = v }
         if let v = try c.decodeIfPresent(Int.self, forKey: .warning) { warning = v }
         if let v = try c.decodeIfPresent(Int.self, forKey: .error) { error = v }
     }
 
     private enum CodingKeys: String, CodingKey {
-        case lint, warning, error
+        case enabled, warning, error
     }
 }

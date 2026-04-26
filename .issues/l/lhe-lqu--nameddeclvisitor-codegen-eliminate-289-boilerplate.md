@@ -5,11 +5,11 @@ status: draft
 type: epic
 priority: normal
 created_at: 2026-04-17T21:56:55Z
-updated_at: 2026-04-26T17:46:58Z
+updated_at: 2026-04-26T18:16:44Z
 sync:
     github:
         issue_number: "322"
-        synced_at: "2026-04-26T18:08:47Z"
+        synced_at: "2026-04-26T18:19:14Z"
 ---
 
 193 of 217 rules have fan-out visit() overrides (516 total) where each override is 3-6 lines calling the same helper. Roughly ~1,500–2,000 lines of mechanical boilerplate.
@@ -168,3 +168,15 @@ Macro emits `MacroExpansionErrorMessage` for: empty kind list; unknown kind toke
 3. **Phase 3** — Bulk migrate the remaining ~190 rules. Remove the legacy member-walk fallback from `RuleCollector` once nothing uses it.
 
 Phase 4 (follow-up, only if measurably better): audit `Pipelines+Generated.swift`, `ConfigurationRegistry+Generated.swift`, `TokenStream+Generated.swift` for outputs that could move to macros.
+
+
+
+## Cross-reference: 6wg-5eb (threshold rules → ThresholdRuleValue)
+
+Issue **6wg-5eb** added a new `ThresholdRuleValue` protocol and a small extension to `RuleCollector`:
+
+- New `isThreshold: Bool` field on `DetectedSyntaxRule` (`Sources/GeneratorKit/RuleCollector+DetectedRule.swift`)
+- New helper `structConforms(_:to:in:)` (`Sources/GeneratorKit/RuleCollector.swift`) walks the config struct's inheritance clause for `ThresholdRuleValue`
+- `extractCustomProperties` now skips `enabled`/`warning`/`error` for threshold rules
+
+**Effect on the @DeclVisitor plan:** none structurally. The macro work targets the rule class's `visit(_:)` member walk at `Sources/GeneratorKit/RuleCollector.swift:154-162`, while the threshold change touches *configuration-struct* parsing further down. They share the same source-scan pass but do not overlap. When @DeclVisitor lands and the member-walk fallback is removed, `structConforms`/`isThreshold` should be preserved as-is — they are config-shape metadata, not rule-discovery metadata.
