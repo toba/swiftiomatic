@@ -218,7 +218,7 @@ extension TokenStream {
         if let genericWhereClause = genericWhereClause {
             before(
                 genericWhereClause.firstToken(viewMode: .sourceAccurate),
-                tokens: .break(.same),
+                tokens: .break(.continue),
                 .open
             )
             after(

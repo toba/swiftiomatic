@@ -199,6 +199,23 @@ struct AssignmentExprTests: LayoutTesting {
     assertLayout(input: input, expected: expected, linelength: 40)
   }
 
+  @Test func assignmentWithMemberAccessLHSAndChainRHS() {
+    // LHS is a short member access (`obj.property`); RHS is a long chain starting with a bare
+    // identifier. The LHS must stay on one line, and the break must fall inside the RHS chain
+    // rather than after `=` or between the LHS receiver and member.
+    let input =
+      """
+      queryOutput.debug_recordChangeTag = coder.decodeObject(of: NSNumber.self, forKey: "_recordChangeTag")?.intValue
+      """
+    let expected =
+      """
+      queryOutput.debug_recordChangeTag = coder
+        .decodeObject(of: NSNumber.self, forKey: "_recordChangeTag")?.intValue
+
+      """
+    assertLayout(input: input, expected: expected, linelength: 100)
+  }
+
   @Test func assignmentPatternBindingFromSequenceWithFunctionCalls() {
     let input =
       """

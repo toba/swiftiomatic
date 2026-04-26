@@ -161,7 +161,7 @@ extension TokenStream {
         if let genericWhereClause = node.genericWhereClause {
             before(
                 genericWhereClause.firstToken(viewMode: .sourceAccurate),
-                tokens: .break(.same),
+                tokens: .break(.continue),
                 .open
             )
             after(genericWhereClause.lastToken(viewMode: .sourceAccurate), tokens: .close)
@@ -208,7 +208,7 @@ extension TokenStream {
         if let genericWhereClause = genericWhereClause {
             before(
                 genericWhereClause.firstToken(viewMode: .sourceAccurate),
-                tokens: .break(.same),
+                tokens: .break(.continue),
                 .open
             )
             after(memberBlock.leftBrace, tokens: .close)

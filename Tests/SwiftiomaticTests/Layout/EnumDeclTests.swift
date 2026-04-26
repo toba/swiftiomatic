@@ -280,13 +280,14 @@ struct EnumDeclTests: LayoutTesting {
         let B: Double
       }
       enum MyEnum<S, T>
-      where S: Collection, T: ReallyLongEnumName {
+        where S: Collection, T: ReallyLongEnumName
+      {
         case firstCase
         let B: Double
       }
       enum MyEnum<S, T>
-      where
-        S: Collection, T: ReallyLongEnumName, U: AnotherLongEnum
+        where
+          S: Collection, T: ReallyLongEnumName, U: AnotherLongEnum
       {
         case firstCase
         let B: Double
@@ -321,16 +322,17 @@ struct EnumDeclTests: LayoutTesting {
         let B: Double
       }
       enum MyEnum<S, T>
-      where S: Collection, T: ReallyLongEnumName {
+        where S: Collection, T: ReallyLongEnumName
+      {
         case firstCase
         let B: Double
       }
       enum MyEnum<S, T>
-      where
-        S: Collection,
-        T: ReallyLongEnumName,
-        U: AnotherLongEnum,
-        W: AnotherReallyLongEnumName
+        where
+          S: Collection,
+          T: ReallyLongEnumName,
+          U: AnotherLongEnum,
+          W: AnotherReallyLongEnumName
       {
         case firstCase
         let B: Double
@@ -367,14 +369,15 @@ struct EnumDeclTests: LayoutTesting {
         let B: Double
       }
       enum MyEnum<S, T>: ProtoOne, ProtoTwo
-      where S: Collection, T: Protocol {
+        where S: Collection, T: Protocol
+      {
         case firstCase
         let B: Double
       }
       enum MyEnum<S, T>: ProtoOne, ProtoTwo
-      where
-        S: Collection, T: Protocol, T: ReallyLongEnumName,
-        U: LongerEnumName, W: AnotherReallyLongEnumName
+        where
+          S: Collection, T: Protocol, T: ReallyLongEnumName,
+          U: LongerEnumName, W: AnotherReallyLongEnumName
       {
         case firstCase
         let B: Double
@@ -409,17 +412,18 @@ struct EnumDeclTests: LayoutTesting {
         let B: Double
       }
       enum MyEnum<S, T>: ProtoOne, ProtoTwo
-      where S: Collection, T: Protocol {
+        where S: Collection, T: Protocol
+      {
         case firstCase
         let B: Double
       }
       enum MyEnum<S, T>: ProtoOne, ProtoTwo
-      where
-        S: Collection,
-        T: Protocol,
-        T: ReallyLongEnumName,
-        U: LongerEnumName,
-        W: AnotherReallyLongEnumName
+        where
+          S: Collection,
+          T: Protocol,
+          T: ReallyLongEnumName,
+          U: LongerEnumName,
+          W: AnotherReallyLongEnumName
       {
         case firstCase
         let B: Double
@@ -497,10 +501,10 @@ struct EnumDeclTests: LayoutTesting {
       >: MyContainerProtocolOne, MyContainerProtocolTwo,
         SomeoneElsesContainerProtocol,
         SomeFrameworkContainerProtocol
-      where
-        BaseCollection: Collection, BaseCollection: P,
-        BaseCollection.Element: Equatable,
-        BaseCollection.Element: SomeOtherProtocol
+        where
+          BaseCollection: Collection, BaseCollection: P,
+          BaseCollection.Element: Equatable,
+          BaseCollection.Element: SomeOtherProtocol
       {
         case firstCase
         let B: Double
@@ -530,11 +534,11 @@ struct EnumDeclTests: LayoutTesting {
       >: MyContainerProtocolOne, MyContainerProtocolTwo,
         SomeoneElsesContainerProtocol,
         SomeFrameworkContainerProtocol
-      where
-        BaseCollection: Collection,
-        BaseCollection: P,
-        BaseCollection.Element: Equatable,
-        BaseCollection.Element: SomeOtherProtocol
+        where
+          BaseCollection: Collection,
+          BaseCollection: P,
+          BaseCollection.Element: Equatable,
+          BaseCollection.Element: SomeOtherProtocol
       {
         case firstCase
         let B: Double

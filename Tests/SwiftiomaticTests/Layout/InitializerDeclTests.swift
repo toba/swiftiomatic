@@ -247,8 +247,7 @@ struct InitializerDeclTests: LayoutTesting {
         }
         public init<Elements: Collection, Element>(
           element: Element, in collection: Elements
-        )
-        where
+        ) where
           Elements.Element == Element, Element: P,
           Element: Equatable
         {
@@ -290,8 +289,7 @@ struct InitializerDeclTests: LayoutTesting {
         }
         public init<Elements: Collection, Element>(
           element: Element, in collection: Elements
-        )
-        where
+        ) where
           Elements.Element == Element,
           Element: P,
           Element: Equatable
@@ -371,8 +369,7 @@ struct InitializerDeclTests: LayoutTesting {
         >(
           element: Element,
           in collection: Elements
-        )
-        where
+        ) where
           Elements.Element == Element,
           Element: Equatable, Element: P
         {
@@ -408,8 +405,7 @@ struct InitializerDeclTests: LayoutTesting {
         >(
           element: Element,
           in collection: Elements
-        )
-        where
+        ) where
           Elements.Element == Element,
           Element: Equatable,
           Element: P

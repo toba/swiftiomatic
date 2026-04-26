@@ -184,24 +184,25 @@ struct MacroDeclTests: LayoutTesting {
         of element: Element, in collection: Elements
       ) -> Elements.Index? =
         #externalMacro(module: "Foo", type: "Bar")
-      where Elements.Element == Element
+        where Elements.Element == Element
 
       macro index<Elements: Collection, Element>(
         of element: Element,
         in collection: Elements
       ) -> Elements.Index? =
         #externalMacro(module: "Foo", type: "Bar")
-      where
-        Elements.Element == Element, Element: Equatable
+        where
+          Elements.Element == Element, Element: Equatable
 
       macro index<Elements: Collection, Element>(
         of element: Element,
         in collection: Elements
       ) -> Elements.Index? =
         #externalMacro(module: "Foo", type: "Bar")
-      where
-        Elements.Element == Element, Element: Equatable,
-        Element: ReallyLongProtocolName
+        where
+          Elements.Element == Element,
+          Element: Equatable,
+          Element: ReallyLongProtocolName
 
       """
 
@@ -234,26 +235,26 @@ struct MacroDeclTests: LayoutTesting {
         of element: Element, in collection: Elements
       ) -> Elements.Index? =
         #externalMacro(module: "Foo", type: "Bar")
-      where Elements.Element == Element
+        where Elements.Element == Element
 
       public macro index<Elements: Collection, Element>(
         of element: Element,
         in collection: Elements
       ) -> Elements.Index? =
         #externalMacro(module: "Foo", type: "Bar")
-      where
-        Elements.Element == Element,
-        Element: Equatable
+        where
+          Elements.Element == Element,
+          Element: Equatable
 
       public macro index<Elements: Collection, Element>(
         of element: Element,
         in collection: Elements
       ) -> Elements.Index? =
         #externalMacro(module: "Foo", type: "Bar")
-      where
-        Elements.Element == Element,
-        Element: Equatable,
-        Element: ReallyLongProtocolName
+        where
+          Elements.Element == Element,
+          Element: Equatable,
+          Element: ReallyLongProtocolName
 
       """
 

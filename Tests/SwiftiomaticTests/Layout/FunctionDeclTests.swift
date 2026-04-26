@@ -333,17 +333,7 @@ struct FunctionDeclTests: LayoutTesting {
       public func index<Elements: Collection, Element>(
         of element: Element, in collection: Elements
       ) -> Elements.Index?
-      where Elements.Element == Element {
-        let a = 123
-        let b = "abc"
-      }
-
-      public func index<Elements: Collection, Element>(
-        of element: Element,
-        in collection: Elements
-      ) -> Elements.Index?
-      where
-        Elements.Element == Element, Element: Equatable
+        where Elements.Element == Element
       {
         let a = 123
         let b = "abc"
@@ -353,9 +343,22 @@ struct FunctionDeclTests: LayoutTesting {
         of element: Element,
         in collection: Elements
       ) -> Elements.Index?
-      where
-        Elements.Element == Element, Element: Equatable,
-        Element: ReallyLongProtocolName
+        where
+          Elements.Element == Element,
+          Element: Equatable
+      {
+        let a = 123
+        let b = "abc"
+      }
+
+      public func index<Elements: Collection, Element>(
+        of element: Element,
+        in collection: Elements
+      ) -> Elements.Index?
+        where
+          Elements.Element == Element,
+          Element: Equatable,
+          Element: ReallyLongProtocolName
       {
         let a = 123
         let b = "abc"
@@ -400,18 +403,7 @@ struct FunctionDeclTests: LayoutTesting {
       public func index<Elements: Collection, Element>(
         of element: Element, in collection: Elements
       ) -> Elements.Index?
-      where Elements.Element == Element {
-        let a = 123
-        let b = "abc"
-      }
-
-      public func index<Elements: Collection, Element>(
-        of element: Element,
-        in collection: Elements
-      ) -> Elements.Index?
-      where
-        Elements.Element == Element,
-        Element: Equatable
+        where Elements.Element == Element
       {
         let a = 123
         let b = "abc"
@@ -421,10 +413,22 @@ struct FunctionDeclTests: LayoutTesting {
         of element: Element,
         in collection: Elements
       ) -> Elements.Index?
-      where
-        Elements.Element == Element,
-        Element: Equatable,
-        Element: ReallyLongProtocolName
+        where
+          Elements.Element == Element,
+          Element: Equatable
+      {
+        let a = 123
+        let b = "abc"
+      }
+
+      public func index<Elements: Collection, Element>(
+        of element: Element,
+        in collection: Elements
+      ) -> Elements.Index?
+        where
+          Elements.Element == Element,
+          Element: Equatable,
+          Element: ReallyLongProtocolName
       {
         let a = 123
         let b = "abc"
@@ -584,9 +588,11 @@ struct FunctionDeclTests: LayoutTesting {
         of element: Element,
         in collection: Elements
       ) -> Elements.Index?
-      where
-        Element: Foo, Element: Bar,
-        Elements.Element == Element
+        where
+          Element: Foo,
+          Element: Bar,
+          Elements.Element
+            == Element
       {
         let a = 123
         let b = "abc"
@@ -617,10 +623,11 @@ struct FunctionDeclTests: LayoutTesting {
         of element: Element,
         in collection: Elements
       ) -> Elements.Index?
-      where
-        Element: Foo,
-        Element: Bar,
-        Elements.Element == Element
+        where
+          Element: Foo,
+          Element: Bar,
+          Elements.Element
+            == Element
       {
         let a = 123
         let b = "abc"
@@ -860,11 +867,12 @@ struct FunctionDeclTests: LayoutTesting {
       """
       func name<R>(_ x: Int)
         throws -> R
-      where Foo == Bar
+        where Foo == Bar
 
       func name<R>(_ x: Int)
         throws -> R
-      where Foo == Bar {
+        where Foo == Bar
+      {
         statement
         statement
       }
@@ -886,13 +894,13 @@ struct FunctionDeclTests: LayoutTesting {
       """
       func name<R>(_ x: Int)
         throws -> R
-      where
-        Fooooooo == Barrrrr
+        where
+          Fooooooo == Barrrrr
 
       func name<R>(_ x: Int)
         throws -> R
-      where
-        Fooooooo == Barrrrr
+        where
+          Fooooooo == Barrrrr
       {
         statement
         statement
@@ -918,12 +926,13 @@ struct FunctionDeclTests: LayoutTesting {
       func name<R>(
         _ x: Int
       ) throws -> R
-      where Foo == Bar
+        where Foo == Bar
 
       func name<R>(
         _ x: Int
       ) throws -> R
-      where Foo == Bar {
+        where Foo == Bar
+      {
         statement
         statement
       }
@@ -948,14 +957,14 @@ struct FunctionDeclTests: LayoutTesting {
       func name<R>(
         _ x: Int
       ) throws -> R
-      where
-        Fooooooo == Barrrrr
+        where
+          Fooooooo == Barrrrr
 
       func name<R>(
         _ x: Int
       ) throws -> R
-      where
-        Fooooooo == Barrrrr
+        where
+          Fooooooo == Barrrrr
       {
         statement
         statement

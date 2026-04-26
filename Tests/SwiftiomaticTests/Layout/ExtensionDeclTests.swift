@@ -117,13 +117,14 @@ struct ExtensionDeclTests: LayoutTesting {
         let B: Double
       }
       extension MyExtension
-      where S: Collection, T: ReallyLongExtensionName {
+        where S: Collection, T: ReallyLongExtensionName
+      {
         let A: Int
         let B: Double
       }
       extension MyExtension
-      where
-        S: Collection, T: ReallyLongExtensionName, U: AnotherLongExtension
+        where
+          S: Collection, T: ReallyLongExtensionName, U: AnotherLongExtension
       {
         let A: Int
         let B: Double
@@ -158,16 +159,17 @@ struct ExtensionDeclTests: LayoutTesting {
         let B: Double
       }
       extension MyExtension
-      where S: Collection, T: ReallyLongExtensionName {
+        where S: Collection, T: ReallyLongExtensionName
+      {
         let A: Int
         let B: Double
       }
       extension MyExtension
-      where
-        S: Collection,
-        T: ReallyLongExtensionName,
-        U: AnotherLongExtension,
-        W: AnotherReallyLongExtensionName
+        where
+          S: Collection,
+          T: ReallyLongExtensionName,
+          U: AnotherLongExtension,
+          W: AnotherReallyLongExtensionName
       {
         let A: Int
         let B: Double
@@ -204,14 +206,15 @@ struct ExtensionDeclTests: LayoutTesting {
         let B: Double
       }
       extension MyExtension: ProtoOne, ProtoTwo
-      where S: Collection, T: Protocol {
+        where S: Collection, T: Protocol
+      {
         let A: Int
         let B: Double
       }
       extension MyExtension: ProtoOne, ProtoTwo
-      where
-        S: Collection, T: Protocol, T: ReallyLongExtensionName,
-        U: LongerExtensionName
+        where
+          S: Collection, T: Protocol, T: ReallyLongExtensionName,
+          U: LongerExtensionName
       {
         let A: Int
         let B: Double
@@ -246,16 +249,17 @@ struct ExtensionDeclTests: LayoutTesting {
         let B: Double
       }
       extension MyExtension: ProtoOne, ProtoTwo
-      where S: Collection, T: Protocol {
+        where S: Collection, T: Protocol
+      {
         let A: Int
         let B: Double
       }
       extension MyExtension: ProtoOne, ProtoTwo
-      where
-        S: Collection,
-        T: Protocol,
-        T: ReallyLongExtensionName,
-        U: LongerExtensionName
+        where
+          S: Collection,
+          T: Protocol,
+          T: ReallyLongExtensionName,
+          U: LongerExtensionName
       {
         let A: Int
         let B: Double
@@ -334,10 +338,10 @@ struct ExtensionDeclTests: LayoutTesting {
         MyContainerProtocolOne, MyContainerProtocolTwo,
         SomeoneElsesContainerProtocol,
         SomeFrameworkContainerProtocol
-      where
-        BaseCollection: Collection, BaseCollection: P,
-        BaseCollection.Element: Equatable,
-        BaseCollection.Element: SomeOtherProtocol
+        where
+          BaseCollection: Collection, BaseCollection: P,
+          BaseCollection.Element: Equatable,
+          BaseCollection.Element: SomeOtherProtocol
       {
         let A: Int
         let B: Double
@@ -364,11 +368,11 @@ struct ExtensionDeclTests: LayoutTesting {
         MyContainerProtocolOne, MyContainerProtocolTwo,
         SomeoneElsesContainerProtocol,
         SomeFrameworkContainerProtocol
-      where
-        BaseCollection: Collection,
-        BaseCollection: P,
-        BaseCollection.Element: Equatable,
-        BaseCollection.Element: SomeOtherProtocol
+        where
+          BaseCollection: Collection,
+          BaseCollection: P,
+          BaseCollection.Element: Equatable,
+          BaseCollection.Element: SomeOtherProtocol
       {
         let A: Int
         let B: Double

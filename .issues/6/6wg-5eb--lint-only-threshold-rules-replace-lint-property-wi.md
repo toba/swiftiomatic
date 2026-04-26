@@ -1,15 +1,15 @@
 ---
 # 6wg-5eb
 title: 'Lint-only threshold rules: replace ''lint'' property with ''enabled'''
-status: review
+status: completed
 type: bug
 priority: normal
 created_at: 2026-04-26T17:56:51Z
-updated_at: 2026-04-26T18:17:30Z
+updated_at: 2026-04-26T18:19:49Z
 sync:
     github:
         issue_number: "447"
-        synced_at: "2026-04-26T18:19:14Z"
+        synced_at: "2026-04-26T19:03:18Z"
 ---
 
 Lint-only rules with dual error/warning thresholds are configured like:

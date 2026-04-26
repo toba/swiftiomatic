@@ -129,7 +129,8 @@
       "mcp__xc-swift__swift_package_clean",
       "Bash(cp Sources/SwiftiomaticKit/Rules/Idioms/PreferStaticOverClassFunc.swift /tmp/before.swift)",
       "Bash(cp Sources/SwiftiomaticKit/Rules/Idioms/PreferStaticOverClassFunc.swift /tmp/repro.swift)",
-      "Bash(.build/arm64-apple-macosx/debug/sm format *)"
+      "Bash(.build/arm64-apple-macosx/debug/sm format *)",
+      "Bash(mkdir /tmp/sm-actuals)"
     ]
   },
   "enableAllProjectMcpServers": true,

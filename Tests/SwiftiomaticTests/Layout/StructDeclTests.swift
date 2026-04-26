@@ -202,14 +202,15 @@ struct StructDeclTests: LayoutTesting {
         let B: Double
       }
       struct MyStruct<S, T>
-      where S: Collection, T: ReallyLongStructName {
+        where S: Collection, T: ReallyLongStructName
+      {
         let A: Int
         let B: Double
       }
       struct MyStruct<S, T>
-      where
-        S: Collection, T: ReallyLongStructName,
-        U: AnotherLongStruct
+        where
+          S: Collection, T: ReallyLongStructName,
+          U: AnotherLongStruct
       {
         let A: Int
         let B: Double
@@ -244,15 +245,16 @@ struct StructDeclTests: LayoutTesting {
         let B: Double
       }
       struct MyStruct<S, T>
-      where S: Collection, T: ReallyLongStructName {
+        where S: Collection, T: ReallyLongStructName
+      {
         let A: Int
         let B: Double
       }
       struct MyStruct<S, T>
-      where
-        S: Collection,
-        T: ReallyLongStructName,
-        U: AnotherLongStruct
+        where
+          S: Collection,
+          T: ReallyLongStructName,
+          U: AnotherLongStruct
       {
         let A: Int
         let B: Double
@@ -289,14 +291,15 @@ struct StructDeclTests: LayoutTesting {
         let B: Double
       }
       struct MyStruct<S, T>: ProtoOne, ProtoTwo
-      where S: Collection, T: Protocol {
+        where S: Collection, T: Protocol
+      {
         let A: Int
         let B: Double
       }
       struct MyStruct<S, T>: ProtoOne, ProtoTwo
-      where
-        S: Collection, T: Protocol, T: ReallyLongProtocolName,
-        U: LongerProtocolName
+        where
+          S: Collection, T: Protocol, T: ReallyLongProtocolName,
+          U: LongerProtocolName
       {
         let A: Int
         let B: Double
@@ -331,16 +334,17 @@ struct StructDeclTests: LayoutTesting {
         let B: Double
       }
       struct MyStruct<S, T>: ProtoOne, ProtoTwo
-      where S: Collection, T: Protocol {
+        where S: Collection, T: Protocol
+      {
         let A: Int
         let B: Double
       }
       struct MyStruct<S, T>: ProtoOne, ProtoTwo
-      where
-        S: Collection,
-        T: Protocol,
-        T: ReallyLongProtocolName,
-        U: LongerProtocolName
+        where
+          S: Collection,
+          T: Protocol,
+          T: ReallyLongProtocolName,
+          U: LongerProtocolName
       {
         let A: Int
         let B: Double
@@ -417,10 +421,10 @@ struct StructDeclTests: LayoutTesting {
       >: MyContainerProtocolOne, MyContainerProtocolTwo,
         SomeoneElsesContainerProtocol,
         SomeFrameworkContainerProtocol
-      where
-        BaseCollection: Collection, BaseCollection: P,
-        BaseCollection.Element: Equatable,
-        BaseCollection.Element: SomeOtherProtocol
+        where
+          BaseCollection: Collection, BaseCollection: P,
+          BaseCollection.Element: Equatable,
+          BaseCollection.Element: SomeOtherProtocol
       {
         let A: Int
         let B: Double
@@ -450,11 +454,11 @@ struct StructDeclTests: LayoutTesting {
       >: MyContainerProtocolOne, MyContainerProtocolTwo,
         SomeoneElsesContainerProtocol,
         SomeFrameworkContainerProtocol
-      where
-        BaseCollection: Collection,
-        BaseCollection: P,
-        BaseCollection.Element: Equatable,
-        BaseCollection.Element: SomeOtherProtocol
+        where
+          BaseCollection: Collection,
+          BaseCollection: P,
+          BaseCollection.Element: Equatable,
+          BaseCollection.Element: SomeOtherProtocol
       {
         let A: Int
         let B: Double
