@@ -3,10 +3,10 @@ import SwiftiomaticTestSupport
 import Testing
 
 @Suite
-struct EnumNamespacesTests: RuleTesting {
+struct StaticStructShouldBeEnumTests: RuleTesting {
   @Test func structWithOnlyStaticMembers() {
     assertFormatting(
-      EnumNamespaces.self,
+      StaticStructShouldBeEnum.self,
       input: """
         struct 1️⃣Constants {
           static let foo = "foo"
@@ -27,7 +27,7 @@ struct EnumNamespacesTests: RuleTesting {
 
   @Test func finalClassWithOnlyStaticMembers() {
     assertFormatting(
-      EnumNamespaces.self,
+      StaticStructShouldBeEnum.self,
       input: """
         final class 1️⃣Constants {
           static let foo = "foo"
@@ -48,7 +48,7 @@ struct EnumNamespacesTests: RuleTesting {
 
   @Test func nonFinalClassNotModified() {
     assertFormatting(
-      EnumNamespaces.self,
+      StaticStructShouldBeEnum.self,
       input: """
         class Constants {
           static let foo = "foo"
@@ -65,7 +65,7 @@ struct EnumNamespacesTests: RuleTesting {
 
   @Test func structWithInstanceMember() {
     assertFormatting(
-      EnumNamespaces.self,
+      StaticStructShouldBeEnum.self,
       input: """
         struct Foo {
           static let bar = "bar"
@@ -84,7 +84,7 @@ struct EnumNamespacesTests: RuleTesting {
 
   @Test func structWithInitializer() {
     assertFormatting(
-      EnumNamespaces.self,
+      StaticStructShouldBeEnum.self,
       input: """
         struct Foo {
           static let bar = "bar"
@@ -103,7 +103,7 @@ struct EnumNamespacesTests: RuleTesting {
 
   @Test func structWithInheritance() {
     assertFormatting(
-      EnumNamespaces.self,
+      StaticStructShouldBeEnum.self,
       input: """
         struct Foo: Codable {
           static let bar = "bar"
@@ -120,7 +120,7 @@ struct EnumNamespacesTests: RuleTesting {
 
   @Test func structWithAttributes() {
     assertFormatting(
-      EnumNamespaces.self,
+      StaticStructShouldBeEnum.self,
       input: """
         @MainActor
         struct Foo {
@@ -139,7 +139,7 @@ struct EnumNamespacesTests: RuleTesting {
 
   @Test func emptyStructNotModified() {
     assertFormatting(
-      EnumNamespaces.self,
+      StaticStructShouldBeEnum.self,
       input: """
         struct Empty {}
         """,
@@ -152,7 +152,7 @@ struct EnumNamespacesTests: RuleTesting {
 
   @Test func enumNotModified() {
     assertFormatting(
-      EnumNamespaces.self,
+      StaticStructShouldBeEnum.self,
       input: """
         enum Constants {
           static let foo = "foo"
@@ -169,7 +169,7 @@ struct EnumNamespacesTests: RuleTesting {
 
   @Test func structWithNestedType() {
     assertFormatting(
-      EnumNamespaces.self,
+      StaticStructShouldBeEnum.self,
       input: """
         struct 1️⃣Namespace {
           static let value = 42
@@ -190,7 +190,7 @@ struct EnumNamespacesTests: RuleTesting {
 
   @Test func structWithInstanceFunc() {
     assertFormatting(
-      EnumNamespaces.self,
+      StaticStructShouldBeEnum.self,
       input: """
         struct Foo {
           static let bar = "bar"
@@ -209,7 +209,7 @@ struct EnumNamespacesTests: RuleTesting {
 
   @Test func genericStructNotModified() {
     assertFormatting(
-      EnumNamespaces.self,
+      StaticStructShouldBeEnum.self,
       input: """
         struct Foo<T> {
           static let bar = "bar"
@@ -228,7 +228,7 @@ struct EnumNamespacesTests: RuleTesting {
 
   @Test func finalClassWithInheritanceNotModified() {
     assertFormatting(
-      EnumNamespaces.self,
+      StaticStructShouldBeEnum.self,
       input: """
         private final class CustomUITableViewCell: UITableViewCell {}
         """,
@@ -242,7 +242,7 @@ struct EnumNamespacesTests: RuleTesting {
   @Test func classFunctionNotReplacedByEnum() {
     // class func implies inheritance — non-final class, skip
     assertFormatting(
-      EnumNamespaces.self,
+      StaticStructShouldBeEnum.self,
       input: """
         class Container {
           class func bar() {}
@@ -259,7 +259,7 @@ struct EnumNamespacesTests: RuleTesting {
 
   @Test func nestedNamespacesBothConvert() {
     assertFormatting(
-      EnumNamespaces.self,
+      StaticStructShouldBeEnum.self,
       input: """
         struct 1️⃣Namespace {
           struct 2️⃣NestedNamespace {
@@ -285,7 +285,7 @@ struct EnumNamespacesTests: RuleTesting {
 
   @Test func outerNamespaceWithNonNamespaceNested() {
     assertFormatting(
-      EnumNamespaces.self,
+      StaticStructShouldBeEnum.self,
       input: """
         struct 1️⃣Namespace {
           struct TypeNestedInNamespace {
@@ -310,7 +310,7 @@ struct EnumNamespacesTests: RuleTesting {
 
   @Test func localStructInsideStaticFunc() {
     assertFormatting(
-      EnumNamespaces.self,
+      StaticStructShouldBeEnum.self,
       input: """
         struct 1️⃣Namespace {
           static func staticFunction() {
@@ -337,7 +337,7 @@ struct EnumNamespacesTests: RuleTesting {
 
   @Test func localFunctionInsideStaticFunc() {
     assertFormatting(
-      EnumNamespaces.self,
+      StaticStructShouldBeEnum.self,
       input: """
         struct 1️⃣Namespace {
           static func staticFunction() {
@@ -360,7 +360,7 @@ struct EnumNamespacesTests: RuleTesting {
 
   @Test func structWithStaticFuncOnly() {
     assertFormatting(
-      EnumNamespaces.self,
+      StaticStructShouldBeEnum.self,
       input: """
         struct 1️⃣Constants {
           static func remoteConfig() -> Int {
@@ -383,7 +383,7 @@ struct EnumNamespacesTests: RuleTesting {
 
   @Test func structWithStaticAndInstanceFunction() {
     assertFormatting(
-      EnumNamespaces.self,
+      StaticStructShouldBeEnum.self,
       input: """
         struct Constants {
           static func remoteConfig() -> Int {
@@ -412,7 +412,7 @@ struct EnumNamespacesTests: RuleTesting {
 
   @Test func ifConfigWithInstanceFuncsNotModified() {
     assertFormatting(
-      EnumNamespaces.self,
+      StaticStructShouldBeEnum.self,
       input: """
         struct Foo {
           #if BAR
@@ -437,7 +437,7 @@ struct EnumNamespacesTests: RuleTesting {
 
   @Test func openClassNotModified() {
     assertFormatting(
-      EnumNamespaces.self,
+      StaticStructShouldBeEnum.self,
       input: """
         open class Foo {
           public static let bar = "bar"
@@ -454,7 +454,7 @@ struct EnumNamespacesTests: RuleTesting {
 
   @Test func finalClassAfterImport() {
     assertFormatting(
-      EnumNamespaces.self,
+      StaticStructShouldBeEnum.self,
       input: """
         import Foundation
 
@@ -477,7 +477,7 @@ struct EnumNamespacesTests: RuleTesting {
 
   @Test func objcAttributeSkipsConversion() {
     assertFormatting(
-      EnumNamespaces.self,
+      StaticStructShouldBeEnum.self,
       input: """
         @objc(NSFoo)
         final class Foo {
@@ -496,7 +496,7 @@ struct EnumNamespacesTests: RuleTesting {
 
   @Test func macroAttributeSkipsConversion() {
     assertFormatting(
-      EnumNamespaces.self,
+      StaticStructShouldBeEnum.self,
       input: """
         @FooBar
         struct Foo {
@@ -515,7 +515,7 @@ struct EnumNamespacesTests: RuleTesting {
 
   @Test func parameterizedMacroSkipsConversion() {
     assertFormatting(
-      EnumNamespaces.self,
+      StaticStructShouldBeEnum.self,
       input: """
         @FooMacro(arg: "Foo")
         struct Foo {
@@ -534,7 +534,7 @@ struct EnumNamespacesTests: RuleTesting {
 
   @Test func instanceSubscriptNotModified() {
     assertFormatting(
-      EnumNamespaces.self,
+      StaticStructShouldBeEnum.self,
       input: """
         struct MyStruct {
           subscript(key: String) -> String {
@@ -555,7 +555,7 @@ struct EnumNamespacesTests: RuleTesting {
 
   @Test func structInsideExtensionConverts() {
     assertFormatting(
-      EnumNamespaces.self,
+      StaticStructShouldBeEnum.self,
       input: """
         enum Namespace {}
         extension Namespace {

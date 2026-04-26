@@ -23,7 +23,6 @@ import SwiftSyntax
 ///         multiple lines without appearing on the same line as code, it will be replaced with
 ///         multiple doc line comments.
 final class TripleSlashDocComments: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable {
-    override static var key: String { "tripleSlashDocC" }
     override static var group: ConfigurationGroup? { .comments }
 
     override func visit(_ node: FunctionDeclSyntax) -> DeclSyntax {

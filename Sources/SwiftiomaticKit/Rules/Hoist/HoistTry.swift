@@ -16,7 +16,7 @@ import SwiftSyntax
 ///
 /// Format: `try` is removed from arguments and added to wrap the call expression.
 final class HoistTry: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable {
-    override static var key: String { "nestedTry" }
+    override static var key: String { "try" }
     override static var group: ConfigurationGroup? { .hoist }
 
     override func visit(_ node: FunctionCallExprSyntax) -> ExprSyntax {

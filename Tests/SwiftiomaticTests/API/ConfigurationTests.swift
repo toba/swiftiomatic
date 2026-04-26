@@ -175,7 +175,7 @@ struct ConfigurationTests {
     #expect(config[BeforeEachGenericRequirement.self] == true)
     #expect(config[BetweenDeclarationAttributes.self] == true)
     #expect(config[AroundMultilineExpressionChainComponents.self] == true)
-    #expect(config[LinebreakAtEndOfFile.self].lint == .warn)
+    #expect(config[EnsureLineBreakAtEOF.self].lint == .warn)
     // redundancies group
     #expect(config[RedundantSelf.self].lint == .error)
     #expect(config[RedundantInit.self].lint == .no)

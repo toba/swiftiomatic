@@ -3,11 +3,11 @@ import SwiftiomaticTestSupport
 import Testing
 
 @Suite
-struct DocCommentsBeforeModifiersTests: RuleTesting {
+struct DocCommentsPrecedeModifiersTests: RuleTesting {
 
   @Test func docCommentBeforeAttribute() {
     assertFormatting(
-      DocCommentsBeforeModifiers.self,
+      DocCommentsPrecedeModifiers.self,
       input: """
         @MainActor
         /// Doc comment on this type declaration
@@ -26,7 +26,7 @@ struct DocCommentsBeforeModifiersTests: RuleTesting {
 
   @Test func alreadyCorrect() {
     assertFormatting(
-      DocCommentsBeforeModifiers.self,
+      DocCommentsPrecedeModifiers.self,
       input: """
         /// Doc comment
         @MainActor
@@ -43,7 +43,7 @@ struct DocCommentsBeforeModifiersTests: RuleTesting {
 
   @Test func noAttributesOrModifiers() {
     assertFormatting(
-      DocCommentsBeforeModifiers.self,
+      DocCommentsPrecedeModifiers.self,
       input: """
         /// Doc comment
         struct Foo {}
@@ -58,7 +58,7 @@ struct DocCommentsBeforeModifiersTests: RuleTesting {
 
   @Test func docCommentBeforeModifier() {
     assertFormatting(
-      DocCommentsBeforeModifiers.self,
+      DocCommentsPrecedeModifiers.self,
       input: """
         public
         /// Doc comment
@@ -77,7 +77,7 @@ struct DocCommentsBeforeModifiersTests: RuleTesting {
 
   @Test func caseCommentsNotMangled() {
     assertFormatting(
-      DocCommentsBeforeModifiers.self,
+      DocCommentsPrecedeModifiers.self,
       input: """
         enum Symbol {
           /// A named variable
@@ -102,7 +102,7 @@ struct DocCommentsBeforeModifiersTests: RuleTesting {
 
   @Test func preservesRegularComments() {
     assertFormatting(
-      DocCommentsBeforeModifiers.self,
+      DocCommentsPrecedeModifiers.self,
       input: """
         @MainActor
         // Regular comment
@@ -119,7 +119,7 @@ struct DocCommentsBeforeModifiersTests: RuleTesting {
 
   @Test func multilineDocComment() {
     assertFormatting(
-      DocCommentsBeforeModifiers.self,
+      DocCommentsPrecedeModifiers.self,
       input: """
         @available(*, deprecated)
         /// Doc comment on this property declaration.

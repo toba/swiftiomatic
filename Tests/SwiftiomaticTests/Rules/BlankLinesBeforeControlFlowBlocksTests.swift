@@ -3,11 +3,11 @@ import SwiftiomaticTestSupport
 import Testing
 
 @Suite
-struct BlankLinesBeforeControlFlowTests: RuleTesting {
+struct BlankLinesBeforeControlFlowBlocksTests: RuleTesting {
 
   @Test func insertsBlankBeforeForLoop() {
     assertFormatting(
-      BlankLinesBeforeControlFlow.self,
+      BlankLinesBeforeControlFlowBlocks.self,
       input: """
         func test() {
             let items = getItems()
@@ -33,7 +33,7 @@ struct BlankLinesBeforeControlFlowTests: RuleTesting {
 
   @Test func insertsBlankBeforeWhileLoop() {
     assertFormatting(
-      BlankLinesBeforeControlFlow.self,
+      BlankLinesBeforeControlFlowBlocks.self,
       input: """
         func test() {
             var count = 0
@@ -59,7 +59,7 @@ struct BlankLinesBeforeControlFlowTests: RuleTesting {
 
   @Test func insertsBlankBeforeIfStatement() {
     assertFormatting(
-      BlankLinesBeforeControlFlow.self,
+      BlankLinesBeforeControlFlowBlocks.self,
       input: """
         func test() {
             let x = getValue()
@@ -85,7 +85,7 @@ struct BlankLinesBeforeControlFlowTests: RuleTesting {
 
   @Test func insertsBlankBeforeSwitchStatement() {
     assertFormatting(
-      BlankLinesBeforeControlFlow.self,
+      BlankLinesBeforeControlFlowBlocks.self,
       input: """
         func test() {
             let value = getValue()
@@ -117,7 +117,7 @@ struct BlankLinesBeforeControlFlowTests: RuleTesting {
 
   @Test func insertsBlankBeforeDoStatement() {
     assertFormatting(
-      BlankLinesBeforeControlFlow.self,
+      BlankLinesBeforeControlFlowBlocks.self,
       input: """
         func test() {
             let url = getURL()
@@ -149,7 +149,7 @@ struct BlankLinesBeforeControlFlowTests: RuleTesting {
 
   @Test func insertsBlankBeforeDeferStatement() {
     assertFormatting(
-      BlankLinesBeforeControlFlow.self,
+      BlankLinesBeforeControlFlowBlocks.self,
       input: """
         func test() {
             let resource = acquire()
@@ -175,7 +175,7 @@ struct BlankLinesBeforeControlFlowTests: RuleTesting {
 
   @Test func insertsBlankBeforeRepeatWhile() {
     assertFormatting(
-      BlankLinesBeforeControlFlow.self,
+      BlankLinesBeforeControlFlowBlocks.self,
       input: """
         func test() {
             var count = 0
@@ -201,7 +201,7 @@ struct BlankLinesBeforeControlFlowTests: RuleTesting {
 
   @Test func noBlankBeforeSingleLineControlFlow() {
     assertFormatting(
-      BlankLinesBeforeControlFlow.self,
+      BlankLinesBeforeControlFlowBlocks.self,
       input: """
         func test() {
             let x = 1
@@ -220,7 +220,7 @@ struct BlankLinesBeforeControlFlowTests: RuleTesting {
 
   @Test func noBlankWhenFirstStatement() {
     assertFormatting(
-      BlankLinesBeforeControlFlow.self,
+      BlankLinesBeforeControlFlowBlocks.self,
       input: """
         func test() {
             for item in items {
@@ -241,7 +241,7 @@ struct BlankLinesBeforeControlFlowTests: RuleTesting {
 
   @Test func alreadyHasBlankLine() {
     assertFormatting(
-      BlankLinesBeforeControlFlow.self,
+      BlankLinesBeforeControlFlowBlocks.self,
       input: """
         func test() {
             let items = getItems()
@@ -266,7 +266,7 @@ struct BlankLinesBeforeControlFlowTests: RuleTesting {
 
   @Test func multipleControlFlowStatements() {
     assertFormatting(
-      BlankLinesBeforeControlFlow.self,
+      BlankLinesBeforeControlFlowBlocks.self,
       input: """
         func test() {
             let x = getValue()
@@ -300,7 +300,7 @@ struct BlankLinesBeforeControlFlowTests: RuleTesting {
 
   @Test func insertsBlankInsideSwitchCase() {
     assertFormatting(
-      BlankLinesBeforeControlFlow.self,
+      BlankLinesBeforeControlFlowBlocks.self,
       input: """
         func test() {
             switch value {
@@ -347,11 +347,11 @@ struct BlankLinesBeforeControlFlowTests: RuleTesting {
   }
 
   @Test func closingBraceAsBlankLineSkipsInsertion() {
-    var config = Configuration.forTesting(enabledRule: BlankLinesBeforeControlFlow.self.key)
+    var config = Configuration.forTesting(enabledRule: BlankLinesBeforeControlFlowBlocks.self.key)
     config[ClosingBraceAsBlankLine.self] = true
 
     assertFormatting(
-      BlankLinesBeforeControlFlow.self,
+      BlankLinesBeforeControlFlowBlocks.self,
       input: """
         func test() {
             if condition {
@@ -379,7 +379,7 @@ struct BlankLinesBeforeControlFlowTests: RuleTesting {
 
   @Test func closingBraceAsBlankLineDefaultStillInserts() {
     assertFormatting(
-      BlankLinesBeforeControlFlow.self,
+      BlankLinesBeforeControlFlowBlocks.self,
       input: """
         func test() {
             if condition {
@@ -408,11 +408,11 @@ struct BlankLinesBeforeControlFlowTests: RuleTesting {
   }
 
   @Test func closingBraceAsBlankLineNonBracePrevious() {
-    var config = Configuration.forTesting(enabledRule: BlankLinesBeforeControlFlow.self.key)
+    var config = Configuration.forTesting(enabledRule: BlankLinesBeforeControlFlowBlocks.self.key)
     config[ClosingBraceAsBlankLine.self] = true
 
     assertFormatting(
-      BlankLinesBeforeControlFlow.self,
+      BlankLinesBeforeControlFlowBlocks.self,
       input: """
         func test() {
             let x = getValue()
@@ -439,7 +439,7 @@ struct BlankLinesBeforeControlFlowTests: RuleTesting {
 
   @Test func emptyCodeBlock() {
     assertFormatting(
-      BlankLinesBeforeControlFlow.self,
+      BlankLinesBeforeControlFlowBlocks.self,
       input: """
         func foo() {}
         """,
@@ -452,7 +452,7 @@ struct BlankLinesBeforeControlFlowTests: RuleTesting {
 
   @Test func emptyCodeBlockInStruct() {
     assertFormatting(
-      BlankLinesBeforeControlFlow.self,
+      BlankLinesBeforeControlFlowBlocks.self,
       input: """
         struct Foo {
             var x = 1
@@ -470,11 +470,11 @@ struct BlankLinesBeforeControlFlowTests: RuleTesting {
   }
 
   @Test func commentAsBlankLineSkipsInsertion() {
-    var config = Configuration.forTesting(enabledRule: BlankLinesBeforeControlFlow.self.key)
+    var config = Configuration.forTesting(enabledRule: BlankLinesBeforeControlFlowBlocks.self.key)
     config[CommentAsBlankLine.self] = true
 
     assertFormatting(
-      BlankLinesBeforeControlFlow.self,
+      BlankLinesBeforeControlFlowBlocks.self,
       input: """
         func test() {
             let items = getItems()
@@ -500,7 +500,7 @@ struct BlankLinesBeforeControlFlowTests: RuleTesting {
 
   @Test func commentAsBlankLineDefaultStillInserts() {
     assertFormatting(
-      BlankLinesBeforeControlFlow.self,
+      BlankLinesBeforeControlFlowBlocks.self,
       input: """
         func test() {
             let items = getItems()
@@ -528,7 +528,7 @@ struct BlankLinesBeforeControlFlowTests: RuleTesting {
 
   @Test func nestedControlFlow() {
     assertFormatting(
-      BlankLinesBeforeControlFlow.self,
+      BlankLinesBeforeControlFlowBlocks.self,
       input: """
         func test() {
             let items = getItems()

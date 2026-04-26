@@ -14,7 +14,7 @@ import SwiftSyntax
 
 /// Enforce consistent placement of `let`/`var` in case patterns.
 ///
-/// Controlled by `Configuration.patternLet.placement`:
+/// Controlled by `Configuration.caseLet.placement`:
 ///
 /// - `eachBinding` (default): Each variable has its own `let`/`var`:
 ///   `case .foo(let x, let y)`.
@@ -24,8 +24,7 @@ import SwiftSyntax
 /// Lint: Using the non-preferred placement yields a lint error.
 ///
 /// Format: The `let`/`var` is repositioned to match the configured placement.
-final class PatternLetPlacement: RewriteSyntaxRule<PatternLetConfiguration>, @unchecked Sendable {
-    override static var key: String { "caseLet" }
+final class CaseLet: RewriteSyntaxRule<CaseLetConfiguration>, @unchecked Sendable {
     override static var group: ConfigurationGroup? { .hoist }
 
     // MARK: - Visitors
@@ -97,7 +96,7 @@ final class PatternLetPlacement: RewriteSyntaxRule<PatternLetConfiguration>, @un
 
 // MARK: - Distribute (eachBinding mode)
 
-extension PatternLetPlacement {
+extension CaseLet {
     private enum OptionalPatternKind {
         case chained
         case forced
@@ -199,7 +198,7 @@ extension PatternLetPlacement {
 
 // MARK: - Hoist (outerPattern mode)
 
-extension PatternLetPlacement {
+extension CaseLet {
 
     /// Returns a rewritten version of the given pattern if bindings can be hoisted
     /// to the outer pattern level.
@@ -342,7 +341,7 @@ private final class UnbindIdentifiersRewriter: SyntaxRewriter {
 
 // MARK: - Configuration
 
-package struct PatternLetConfiguration: SyntaxRuleValue {
+package struct CaseLetConfiguration: SyntaxRuleValue {
     package enum Placement: String, Codable, Sendable {
         case eachBinding
         case outerPattern

@@ -6,7 +6,7 @@ import Testing
 struct AcronymsTests: RuleTesting {
   @Test func titlecasedUrl() {
     assertFormatting(
-      CapitalizeAcronyms.self,
+      UppercaseAcronyms.self,
       input: """
         let 1️⃣destinationUrl: String = ""
         """,
@@ -21,7 +21,7 @@ struct AcronymsTests: RuleTesting {
 
   @Test func titlecasedJson() {
     assertFormatting(
-      CapitalizeAcronyms.self,
+      UppercaseAcronyms.self,
       input: """
         struct 1️⃣JsonParser {}
         """,
@@ -36,7 +36,7 @@ struct AcronymsTests: RuleTesting {
 
   @Test func alreadyUppercased() {
     assertFormatting(
-      CapitalizeAcronyms.self,
+      UppercaseAcronyms.self,
       input: """
         let destinationURL: String = ""
         """,
@@ -49,7 +49,7 @@ struct AcronymsTests: RuleTesting {
 
   @Test func lowercaseNotModified() {
     assertFormatting(
-      CapitalizeAcronyms.self,
+      UppercaseAcronyms.self,
       input: """
         let urlRouter = foo()
         """,
@@ -62,7 +62,7 @@ struct AcronymsTests: RuleTesting {
 
   @Test func pluralAcronym() {
     assertFormatting(
-      CapitalizeAcronyms.self,
+      UppercaseAcronyms.self,
       input: """
         let 1️⃣screenIds: [String] = []
         """,
@@ -77,7 +77,7 @@ struct AcronymsTests: RuleTesting {
 
   @Test func functionName() {
     assertFormatting(
-      CapitalizeAcronyms.self,
+      UppercaseAcronyms.self,
       input: """
         func 1️⃣fetchJson() {}
         """,
@@ -94,7 +94,7 @@ struct AcronymsTests: RuleTesting {
 
   @Test func idAtEndOfIdentifier() {
     assertFormatting(
-      CapitalizeAcronyms.self,
+      UppercaseAcronyms.self,
       input: """
         let 1️⃣screenId = "screenId"
         """,
@@ -110,7 +110,7 @@ struct AcronymsTests: RuleTesting {
   @Test func acronymEdgeCaseNotModified() {
     // "Url" followed by lowercase — not a boundary
     assertFormatting(
-      CapitalizeAcronyms.self,
+      UppercaseAcronyms.self,
       input: """
         let validUrlschemes: Set<URL>
         """,
@@ -123,7 +123,7 @@ struct AcronymsTests: RuleTesting {
 
   @Test func structNameWithInteriorAcronym() {
     assertFormatting(
-      CapitalizeAcronyms.self,
+      UppercaseAcronyms.self,
       input: """
         struct 1️⃣UrlRouter {}
         """,
@@ -138,7 +138,7 @@ struct AcronymsTests: RuleTesting {
 
   @Test func multipleIdentifiersInOneFile() {
     assertFormatting(
-      CapitalizeAcronyms.self,
+      UppercaseAcronyms.self,
       input: """
         let url: URL
         let 1️⃣destinationUrl: URL
@@ -160,7 +160,7 @@ struct AcronymsTests: RuleTesting {
 
   @Test func alreadyUppercasedAcronymNotModified() {
     assertFormatting(
-      CapitalizeAcronyms.self,
+      UppercaseAcronyms.self,
       input: """
         var personIDs: [String]
         var ids: [UUID]
@@ -175,7 +175,7 @@ struct AcronymsTests: RuleTesting {
 
   @Test func pluralIdAcronym() {
     assertFormatting(
-      CapitalizeAcronyms.self,
+      UppercaseAcronyms.self,
       input: """
         var 1️⃣userIds: [Int]
         """,
@@ -191,7 +191,7 @@ struct AcronymsTests: RuleTesting {
   @Test func uniqueIdentifierNotModified() {
     // "unique" contains "u" but "uniqueIdentifier" doesn't have a titlecased acronym
     assertFormatting(
-      CapitalizeAcronyms.self,
+      UppercaseAcronyms.self,
       input: """
         let uniqueIdentifier = UUID()
         """,

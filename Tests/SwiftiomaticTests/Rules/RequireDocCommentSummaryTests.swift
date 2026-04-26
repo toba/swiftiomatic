@@ -19,12 +19,12 @@ import Testing
 struct BeginDocumentationCommentWithOneLineSummaryTests: RuleTesting {
   init() {
     // Reset this to false by default. Specific tests may override it.
-    DocCommentSummary._forcesFallbackModeForTesting = false
+    RequireDocCommentSummary._forcesFallbackModeForTesting = false
   }
 
   @Test func docLineCommentsWithoutOneSentenceSummary() {
     assertLint(
-      DocCommentSummary.self,
+      RequireDocCommentSummary.self,
       """
         /// Returns a bottle of Dr Pepper from the vending machine.
         public func drPepper(from vendingMachine: VendingMachine) -> Soda {}
@@ -78,7 +78,7 @@ struct BeginDocumentationCommentWithOneLineSummaryTests: RuleTesting {
 
   @Test func blockLineCommentsWithoutOneSentenceSummary() {
     assertLint(
-      DocCommentSummary.self,
+      RequireDocCommentSummary.self,
       """
         /**
          * Returns the numeric value.
@@ -134,10 +134,10 @@ struct BeginDocumentationCommentWithOneLineSummaryTests: RuleTesting {
 
   @Test func approximationsOnMacOS() {
     // Verify that the fallback (non-linguistic) mode also works.
-    DocCommentSummary._forcesFallbackModeForTesting = true
+    RequireDocCommentSummary._forcesFallbackModeForTesting = true
 
     assertLint(
-      DocCommentSummary.self,
+      RequireDocCommentSummary.self,
       """
       /// Returns a bottle of Dr Pepper from the vending machine.
       public func drPepper(from vendingMachine: VendingMachine) -> Soda {}
@@ -180,7 +180,7 @@ struct BeginDocumentationCommentWithOneLineSummaryTests: RuleTesting {
 
   @Test func sentenceTerminationInsideQuotes() {
     assertLint(
-      DocCommentSummary.self,
+      RequireDocCommentSummary.self,
       """
       /// Creates an instance with the same raw value as `x` failing iff `x.kind != Subject.kind`.
       struct TestBackTick {}
@@ -210,7 +210,7 @@ struct BeginDocumentationCommentWithOneLineSummaryTests: RuleTesting {
 
   @Test func nestedInsideStruct() {
     assertLint(
-      DocCommentSummary.self,
+      RequireDocCommentSummary.self,
       """
       struct MyContainer {
         /// This docline should not succeed.
@@ -226,7 +226,7 @@ struct BeginDocumentationCommentWithOneLineSummaryTests: RuleTesting {
 
   @Test func nestedInsideEnum() {
     assertLint(
-      DocCommentSummary.self,
+      RequireDocCommentSummary.self,
       """
       enum MyContainer {
         /// This docline should not succeed.
@@ -242,7 +242,7 @@ struct BeginDocumentationCommentWithOneLineSummaryTests: RuleTesting {
 
   @Test func nestedInsideClass() {
     assertLint(
-      DocCommentSummary.self,
+      RequireDocCommentSummary.self,
       """
       class MyContainer {
         /// This docline should not succeed.
@@ -258,7 +258,7 @@ struct BeginDocumentationCommentWithOneLineSummaryTests: RuleTesting {
 
   @Test func nestedInsideActor() {
     assertLint(
-      DocCommentSummary.self,
+      RequireDocCommentSummary.self,
       """
       actor MyContainer {
         /// This docline should not succeed.

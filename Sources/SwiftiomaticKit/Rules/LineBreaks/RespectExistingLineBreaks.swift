@@ -1,8 +1,7 @@
 import SwiftSyntax
 
 /// Preserve discretionary line breaks.
-package struct RespectsExistingLineBreaks: LayoutRule {
-    package static let key = "respectExisting"
+package struct RespectExistingLineBreaks: LayoutRule {
     package static let group: ConfigurationGroup? = .lineBreaks
     package static let description = "Preserve discretionary line breaks."
     package static let defaultValue = true
@@ -57,7 +56,7 @@ extension TokenStream {
     /// inserted after it, based on the presence of a semicolon and whether or not the formatter is
     /// respecting existing newlines.
     func shouldInsertNewline(basedOn semicolon: TokenSyntax?) -> Bool {
-        if config[RespectsExistingLineBreaks.self] {
+        if config[RespectExistingLineBreaks.self] {
             // If we are respecting existing newlines, then we only want to force a newline at the end of
             // statements and declarations that don't have a semicolon (i.e., where they are required).
             return semicolon == nil

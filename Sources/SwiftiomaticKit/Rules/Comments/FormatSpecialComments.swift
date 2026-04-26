@@ -10,7 +10,6 @@ import SwiftSyntax
 ///
 /// Format: The comment is reformatted to use the correct style.
 final class FormatSpecialComments: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable {
-    override static var key: String { "formatTypePrefix" }
     override static var group: ConfigurationGroup? { .comments }
 
     override func visit(_ token: TokenSyntax) -> TokenSyntax {

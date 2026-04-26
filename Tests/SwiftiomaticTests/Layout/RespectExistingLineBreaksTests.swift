@@ -16,7 +16,7 @@ import Testing
 /// Basic checks and regression tests for the `respectsExistingLineBreaks` configuration setting
 /// in both true and false states.
 @Suite
-struct RespectsExistingLineBreaksTests: LayoutTesting {
+struct RespectExistingLineBreaksTests: LayoutTesting {
   @Test func expressions() {
     let input =
       """
@@ -339,7 +339,7 @@ struct RespectsExistingLineBreaksTests: LayoutTesting {
   /// values for everything else.
   private func configuration(respectingExistingLineBreaks: Bool) -> Configuration {
     var config = Configuration.forTesting
-    config[RespectsExistingLineBreaks.self] = respectingExistingLineBreaks
+    config[RespectExistingLineBreaks.self] = respectingExistingLineBreaks
     return config
   }
 }

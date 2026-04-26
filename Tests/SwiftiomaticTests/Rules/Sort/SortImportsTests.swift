@@ -834,7 +834,7 @@ struct SortImportsTests: RuleTesting {
     assertFormatting(
       SortImports.self,
       input: """
-        // sm:ignore-file: NoSemicolons, FullyIndirectEnum
+        // sm:ignore-file: NoSemicolons, IndirectEnum
         import Zoo
         1️⃣import Arrays
 
@@ -843,7 +843,7 @@ struct SortImportsTests: RuleTesting {
         }
         """,
       expected: """
-        // sm:ignore-file: NoSemicolons, FullyIndirectEnum
+        // sm:ignore-file: NoSemicolons, IndirectEnum
 
         import Arrays
         import Zoo
@@ -862,7 +862,7 @@ struct SortImportsTests: RuleTesting {
     assertFormatting(
       SortImports.self,
       input: """
-        // sm:ignore-file: NoSemicolons, FullyIndirectEnum
+        // sm:ignore-file: NoSemicolons, IndirectEnum
         import Arrays
         import Zoo
 
@@ -871,7 +871,7 @@ struct SortImportsTests: RuleTesting {
         }
         """,
       expected: """
-        // sm:ignore-file: NoSemicolons, FullyIndirectEnum
+        // sm:ignore-file: NoSemicolons, IndirectEnum
 
         import Arrays
         import Zoo
@@ -888,7 +888,7 @@ struct SortImportsTests: RuleTesting {
       SortImports.self,
       input: """
         // We need to ignore this file because it is generated
-        // sm:ignore-file: NoSemicolons, FullyIndirectEnum
+        // sm:ignore-file: NoSemicolons, IndirectEnum
         // Line comment for Zoo
         import Zoo
         // Line comment for Array
@@ -900,7 +900,7 @@ struct SortImportsTests: RuleTesting {
         """,
       expected: """
         // We need to ignore this file because it is generated
-        // sm:ignore-file: NoSemicolons, FullyIndirectEnum
+        // sm:ignore-file: NoSemicolons, IndirectEnum
 
         // Line comment for Array
         import Arrays
@@ -923,7 +923,7 @@ struct SortImportsTests: RuleTesting {
       input: """
         // This file has important contents.
         // sm:ignore-file: NoSemicolons
-        // sm:ignore-file: FullyIndirectEnum
+        // sm:ignore-file: IndirectEnum
         // Everything in this file is ignored.
 
         import Zoo
@@ -936,7 +936,7 @@ struct SortImportsTests: RuleTesting {
       expected: """
         // This file has important contents.
         // sm:ignore-file: NoSemicolons
-        // sm:ignore-file: FullyIndirectEnum
+        // sm:ignore-file: IndirectEnum
         // Everything in this file is ignored.
 
         import Arrays

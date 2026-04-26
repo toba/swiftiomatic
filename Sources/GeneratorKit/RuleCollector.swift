@@ -178,7 +178,7 @@ package final class RuleCollector {
                 group: Self.extractGroup(from: members),
                 typeName: typeName,
                 customKey: Self.extractStringLiteral(named: "key", from: members),
-                description: description?.text,
+                description: description.map { Self.normalizeDescription($0.text) },
                 canRewrite: canRewrite,
                 visitedNodes: visitedNodes,
                 isOptIn: Self.extractIsOptIn(from: members),
@@ -229,7 +229,7 @@ package final class RuleCollector {
 
             let docComment = DocumentationCommentText(
                 extractedFrom: varDecl.leadingTrivia
-            )?.text.trimmingCharacters(in: .whitespacesAndNewlines)
+            ).map { Self.normalizeDescription($0.text) }
 
             // Determine the type from the annotation or initializer.
             guard
@@ -405,6 +405,39 @@ package final class RuleCollector {
         }
 
         return nil
+    }
+
+    /// Normalizes a doc-comment string for use as a JSON Schema description.
+    ///
+    /// Joins consecutive non-blank lines into a single paragraph (separated by a space),
+    /// preserves blank lines between paragraphs, and keeps bullet-list lines (`- `, `* `,
+    /// `• `) on their own line so lists render correctly in tooltips.
+    static func normalizeDescription(_ raw: String) -> String {
+        var paragraphs: [String] = []
+        var current: [String] = []
+
+        func flush() {
+            if !current.isEmpty {
+                paragraphs.append(current.joined(separator: " "))
+                current.removeAll()
+            }
+        }
+
+        for rawLine in raw.split(separator: "\n", omittingEmptySubsequences: false) {
+            let line = rawLine.trimmingCharacters(in: .whitespaces)
+            if line.isEmpty {
+                flush()
+                if paragraphs.last != "" { paragraphs.append("") }
+            } else if line.hasPrefix("- ") || line.hasPrefix("* ") || line.hasPrefix("• ") {
+                flush()
+                paragraphs.append(line)
+            } else {
+                current.append(line)
+            }
+        }
+        flush()
+        while paragraphs.last == "" { paragraphs.removeLast() }
+        return paragraphs.joined(separator: "\n")
     }
 
     /// Extracts a string literal for a named member.

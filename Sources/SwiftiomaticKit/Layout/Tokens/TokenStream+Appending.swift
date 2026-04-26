@@ -140,7 +140,7 @@ extension TokenStream {
                 guard !isStartOfFile else { break }
 
                 if requiresNextNewline
-                    || (config[RespectsExistingLineBreaks.self]
+                    || (config[RespectExistingLineBreaks.self]
                         && isDiscretionaryNewlineAllowed(before: token))
                 {
                     appendNewlines(.soft(count: count, discretionary: true))

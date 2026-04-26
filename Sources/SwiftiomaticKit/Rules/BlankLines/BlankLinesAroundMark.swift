@@ -11,7 +11,7 @@ import SwiftSyntax
 ///
 /// Format: Blank lines are inserted around MARK comments.
 final class BlankLinesAroundMark: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable {
-    override static var key: String { "beforeAndAfterMark" }
+    override static var key: String { "aroundMark" }
     override static var group: ConfigurationGroup? { .blankLines }
     override static var defaultValue: BasicRuleValue { .init(rewrite: false, lint: .no) }
 

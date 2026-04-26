@@ -15,10 +15,10 @@ import SwiftiomaticTestSupport
 import Testing
 
 @Suite
-struct FullyIndirectEnumTests: RuleTesting {
+struct IndirectEnumTests: RuleTesting {
   @Test func allIndirectCases() {
     assertFormatting(
-      FullyIndirectEnum.self,
+      IndirectEnum.self,
       input: """
         // Comment 1
         public 1️⃣enum DependencyGraphNode {
@@ -55,7 +55,7 @@ struct FullyIndirectEnumTests: RuleTesting {
 
   @Test func allIndirectCasesWithAttributes() {
     assertFormatting(
-      FullyIndirectEnum.self,
+      IndirectEnum.self,
       input: """
         // Comment 1
         public 1️⃣enum DependencyGraphNode {
@@ -99,7 +99,7 @@ struct FullyIndirectEnumTests: RuleTesting {
         case west
       }
       """
-    assertFormatting(FullyIndirectEnum.self, input: input, expected: input, findings: [])
+    assertFormatting(IndirectEnum.self, input: input, expected: input, findings: [])
   }
 
   @Test func alreadyIndirectEnum() {
@@ -111,7 +111,7 @@ struct FullyIndirectEnumTests: RuleTesting {
         case west
       }
       """
-    assertFormatting(FullyIndirectEnum.self, input: input, expected: input, findings: [])
+    assertFormatting(IndirectEnum.self, input: input, expected: input, findings: [])
   }
 
   @Test func caselessEnum() {
@@ -121,6 +121,6 @@ struct FullyIndirectEnumTests: RuleTesting {
         public static let bar = "bar"
       }
       """
-    assertFormatting(FullyIndirectEnum.self, input: input, expected: input, findings: [])
+    assertFormatting(IndirectEnum.self, input: input, expected: input, findings: [])
   }
 }

@@ -358,7 +358,7 @@ extension TokenStream {
         // breaks here. Using `.break(.open(kind: .continuation)) ... .break(.close)` pairs lets the
         // wrapped branches push a continuation indent so wrapped sub-expressions (e.g. `+` chains
         // inside a branch) align relative to the branch keyword, and keeps the breaks eligible for
-        // discretionary newlines via `RespectsExistingLineBreaks`.
+        // discretionary newlines via `RespectExistingLineBreaks`.
         before(node.questionMark, tokens: .break(.open(kind: .continuation)))
         after(node.questionMark, tokens: .space)
         before(

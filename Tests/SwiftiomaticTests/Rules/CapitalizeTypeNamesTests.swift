@@ -18,7 +18,7 @@ import Testing
 struct TypeNamesShouldBeCapitalizedTests: RuleTesting {
   @Test func construction() {
     assertLint(
-      CapitalizedTypeNames.self,
+      CapitalizeTypeNames.self,
       """
       struct 1️⃣a {}
       class 2️⃣klassName {
@@ -42,7 +42,7 @@ struct TypeNamesShouldBeCapitalizedTests: RuleTesting {
 
   @Test func actors() {
     assertLint(
-      CapitalizedTypeNames.self,
+      CapitalizeTypeNames.self,
       """
       actor 1️⃣myActor {}
       actor OtherActor {}
@@ -58,7 +58,7 @@ struct TypeNamesShouldBeCapitalizedTests: RuleTesting {
 
   @Test func associatedTypeandTypeAlias() {
     assertLint(
-      CapitalizedTypeNames.self,
+      CapitalizeTypeNames.self,
       """
       protocol P {
         associatedtype 1️⃣kind
@@ -86,7 +86,7 @@ struct TypeNamesShouldBeCapitalizedTests: RuleTesting {
 
   @Test func thatUnderscoredNamesAreDiagnosed() {
     assertLint(
-      CapitalizedTypeNames.self,
+      CapitalizeTypeNames.self,
       """
       protocol 1️⃣_p {
         associatedtype 2️⃣_value

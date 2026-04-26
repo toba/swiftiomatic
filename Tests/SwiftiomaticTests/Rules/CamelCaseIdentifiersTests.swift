@@ -15,10 +15,10 @@ import SwiftiomaticTestSupport
 import Testing
 
 @Suite
-struct AlwaysUseLowerCamelCaseTests: RuleTesting {
+struct CamelCaseIdentifiersTests: RuleTesting {
   @Test func invalidVariableCasing() {
     assertLint(
-      LowerCamelCase.self,
+      CamelCaseIdentifiers.self,
       """
       let 1️⃣Test = 1
       var foo = 2
@@ -36,7 +36,7 @@ struct AlwaysUseLowerCamelCaseTests: RuleTesting {
 
   @Test func invalidFunctionCasing() {
     assertLint(
-      LowerCamelCase.self,
+      CamelCaseIdentifiers.self,
       """
       struct Foo {
         func 1️⃣FooFunc() {}
@@ -62,7 +62,7 @@ struct AlwaysUseLowerCamelCaseTests: RuleTesting {
 
   @Test func invalidEnumCaseCasing() {
     assertLint(
-      LowerCamelCase.self,
+      CamelCaseIdentifiers.self,
       """
       enum FooBarCases {
         case 1️⃣UpperCamelCase
@@ -78,7 +78,7 @@ struct AlwaysUseLowerCamelCaseTests: RuleTesting {
 
   @Test func invalidClosureCasing() {
     assertLint(
-      LowerCamelCase.self,
+      CamelCaseIdentifiers.self,
       """
       var fooVar = [1, 2, 3, 4].first(where: { 1️⃣BadNameInFooVar -> Bool in
         let 2️⃣TerribleNameInFooVar = BadName
@@ -103,7 +103,7 @@ struct AlwaysUseLowerCamelCaseTests: RuleTesting {
 
   @Test func ignoresUnderscoresInTestNames() {
     assertLint(
-      LowerCamelCase.self,
+      CamelCaseIdentifiers.self,
       """
       import XCTest
 
@@ -133,7 +133,7 @@ struct AlwaysUseLowerCamelCaseTests: RuleTesting {
 
   @Test func ignoresUnderscoresInTestNamesWhenImportedConditionally() {
     assertLint(
-      LowerCamelCase.self,
+      CamelCaseIdentifiers.self,
       """
       #if SOME_FEATURE_FLAG
         import XCTest
@@ -165,7 +165,7 @@ struct AlwaysUseLowerCamelCaseTests: RuleTesting {
 
   @Test func ignoresUnderscoresInConditionalTestNames() {
     assertLint(
-      LowerCamelCase.self,
+      CamelCaseIdentifiers.self,
       """
       import XCTest
 
@@ -205,7 +205,7 @@ struct AlwaysUseLowerCamelCaseTests: RuleTesting {
 
   @Test func ignoresFunctionOverrides() {
     assertLint(
-      LowerCamelCase.self,
+      CamelCaseIdentifiers.self,
       """
       class ParentClass {
         var 1️⃣poorly_named_variable: Int = 5
@@ -226,7 +226,7 @@ struct AlwaysUseLowerCamelCaseTests: RuleTesting {
 
   @Test func ignoresFunctionsWithTestAttributes() {
     assertLint(
-      LowerCamelCase.self,
+      CamelCaseIdentifiers.self,
       """
       @Test
       func function_With_Test_Attribute() {}

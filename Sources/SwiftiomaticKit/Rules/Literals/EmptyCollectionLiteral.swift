@@ -22,7 +22,6 @@ import SwiftSyntax
 /// Format: All invalid use sites would be related with empty literal (with or without explicit type annotation).
 final class EmptyCollectionLiteral: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable {
     override class var group: ConfigurationGroup? { .literals }
-    override class var key: String { "useShortArrayLiteral" }
     override class var defaultValue: BasicRuleValue { BasicRuleValue(rewrite: false, lint: .no) }
 
     override func visit(_ node: PatternBindingSyntax) -> PatternBindingSyntax {

@@ -65,7 +65,7 @@ struct Foo {
 	   var bar = true
 }
 
-// sm:ignore: NoSemicolons, FullyIndirectEnum, PreferEarlyExits
+// sm:ignore: NoSemicolons, IndirectEnum, PreferEarlyExits
 func foo() {
 	    var bar = true
 }
@@ -81,7 +81,7 @@ You can also disable specific source transforming rules for an entire file
 by using the file-level ignore directive with a list of rule names. For example:
 
 ```swift
-// sm:ignore-file: NoSemicolons, FullyIndirectEnum
+// sm:ignore-file: NoSemicolons, IndirectEnum
 import Zoo
 import Arrays
 
@@ -89,7 +89,7 @@ struct Foo {
   func foo() { bar();baz(); }
 }
 ```
-In this case, only the NoSemicolons and FullyIndirectEnum rules are disabled
+In this case, only the NoSemicolons and IndirectEnum rules are disabled
 throughout the file, while all other formatting rules (such as line breaking and 
 indentation) remain active.
 

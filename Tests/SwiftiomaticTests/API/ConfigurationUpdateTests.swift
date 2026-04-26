@@ -35,7 +35,7 @@ struct ConfigurationUpdateTests {
     let diff = Configuration.computeUpdate(for: root)
 
     #expect(diff.toAdd.contains("idioms.preferIsEmpty"))
-    #expect(diff.toAdd.contains("redundancies.semicolons"))
+    #expect(diff.toAdd.contains("redundancies.noSemicolons"))
     #expect(diff.toRemove.isEmpty)
     #expect(diff.misplaced.isEmpty)
   }

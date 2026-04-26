@@ -6,7 +6,7 @@ import SwiftSyntax
 /// The pretty printer no longer makes wrapping decisions for ternaries — instead, this
 /// rule inserts discretionary newlines into the leading trivia of `?` and `:` whenever
 /// the ternary's last column would exceed `LineLength`. The pretty printer respects
-/// those newlines (see `RespectsExistingLineBreaks`) and applies a continuation indent
+/// those newlines (see `RespectExistingLineBreaks`) and applies a continuation indent
 /// to each wrapped branch, producing:
 ///
 /// ```swift

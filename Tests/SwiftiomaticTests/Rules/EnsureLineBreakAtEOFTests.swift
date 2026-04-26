@@ -3,11 +3,11 @@ import SwiftiomaticTestSupport
 import Testing
 
 @Suite
-struct LinebreakAtEndOfFileTests: RuleTesting {
+struct EnsureLineBreakAtEOFTests: RuleTesting {
 
   @Test func addsTrailingNewline() {
     assertFormatting(
-      LinebreakAtEndOfFile.self,
+      EnsureLineBreakAtEOF.self,
       input: "let foo = 1\nlet bar = 21️⃣",
       expected: "let foo = 1\nlet bar = 2\n",
       findings: [
@@ -18,7 +18,7 @@ struct LinebreakAtEndOfFileTests: RuleTesting {
 
   @Test func noChangeWhenTrailingNewlineExists() {
     assertFormatting(
-      LinebreakAtEndOfFile.self,
+      EnsureLineBreakAtEOF.self,
       input: "let foo = 1\nlet bar = 2\n",
       expected: "let foo = 1\nlet bar = 2\n",
       findings: []
@@ -27,7 +27,7 @@ struct LinebreakAtEndOfFileTests: RuleTesting {
 
   @Test func removesExtraTrailingNewlines() {
     assertFormatting(
-      LinebreakAtEndOfFile.self,
+      EnsureLineBreakAtEOF.self,
       input: "let foo = 1\nlet bar = 2\n\n\n1️⃣",
       expected: "let foo = 1\nlet bar = 2\n",
       findings: [
@@ -38,7 +38,7 @@ struct LinebreakAtEndOfFileTests: RuleTesting {
 
   @Test func emptyFileGetsNewline() {
     assertFormatting(
-      LinebreakAtEndOfFile.self,
+      EnsureLineBreakAtEOF.self,
       input: "1️⃣",
       expected: "\n",
       findings: [

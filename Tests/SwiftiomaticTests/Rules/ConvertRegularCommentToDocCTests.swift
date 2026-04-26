@@ -3,12 +3,12 @@ import SwiftiomaticTestSupport
 import Testing
 
 @Suite
-struct DocCommentsTests: RuleTesting {
+struct ConvertRegularCommentToDocCTests: RuleTesting {
 
   // MARK: - Convert // to /// for API Declarations
 
   @Test func convertSingleLineCommentToDocComment() {
-    assertFormatting(DocComments.self,
+    assertFormatting(ConvertRegularCommentToDocC.self,
       input: """
         // A function
         1️⃣func foo() {}
@@ -21,7 +21,7 @@ struct DocCommentsTests: RuleTesting {
   }
 
   @Test func convertMultilineCommentToDocComment() {
-    assertFormatting(DocComments.self,
+    assertFormatting(ConvertRegularCommentToDocC.self,
       input: """
         // A class
         // With some other details
@@ -36,7 +36,7 @@ struct DocCommentsTests: RuleTesting {
   }
 
   @Test func convertCommentBeforePropertyInType() {
-    assertFormatting(DocComments.self,
+    assertFormatting(ConvertRegularCommentToDocC.self,
       input: """
         class Foo {
             // A property
@@ -53,7 +53,7 @@ struct DocCommentsTests: RuleTesting {
   }
 
   @Test func convertCommentBeforeMethodInType() {
-    assertFormatting(DocComments.self,
+    assertFormatting(ConvertRegularCommentToDocC.self,
       input: """
         struct Foo {
             // A method
@@ -70,7 +70,7 @@ struct DocCommentsTests: RuleTesting {
   }
 
   @Test func convertCommentBeforeEnumCase() {
-    assertFormatting(DocComments.self,
+    assertFormatting(ConvertRegularCommentToDocC.self,
       input: """
         enum Foo {
             // A case
@@ -87,7 +87,7 @@ struct DocCommentsTests: RuleTesting {
   }
 
   @Test func convertCommentBeforeAssociatedType() {
-    assertFormatting(DocComments.self,
+    assertFormatting(ConvertRegularCommentToDocC.self,
       input: """
         protocol Foo {
             // An associated type
@@ -104,7 +104,7 @@ struct DocCommentsTests: RuleTesting {
   }
 
   @Test func convertCommentBeforeDeclarationWithAttribute() {
-    assertFormatting(DocComments.self,
+    assertFormatting(ConvertRegularCommentToDocC.self,
       input: """
         // A class with attribute
         1️⃣@objc
@@ -119,7 +119,7 @@ struct DocCommentsTests: RuleTesting {
   }
 
   @Test func convertBlockCommentToDocBlockComment() {
-    assertFormatting(DocComments.self,
+    assertFormatting(ConvertRegularCommentToDocC.self,
       input: """
         struct Foo {
             /* A method */
@@ -138,7 +138,7 @@ struct DocCommentsTests: RuleTesting {
   // MARK: - Convert /// to // Inside Function Bodies
 
   @Test func convertDocCommentToRegularInsideFunction() {
-    assertFormatting(DocComments.self,
+    assertFormatting(ConvertRegularCommentToDocC.self,
       input: """
         func foo() {
             /// A local variable
@@ -155,7 +155,7 @@ struct DocCommentsTests: RuleTesting {
   }
 
   @Test func convertDocCommentInsidePropertyGetter() {
-    assertFormatting(DocComments.self,
+    assertFormatting(ConvertRegularCommentToDocC.self,
       input: """
         class Foo {
             var bar: Int {
@@ -178,7 +178,7 @@ struct DocCommentsTests: RuleTesting {
   }
 
   @Test func convertDocCommentInsideDidSet() {
-    assertFormatting(DocComments.self,
+    assertFormatting(ConvertRegularCommentToDocC.self,
       input: """
         class Foo {
             var bar: Int {
@@ -205,7 +205,7 @@ struct DocCommentsTests: RuleTesting {
   }
 
   @Test func nestedFunctionGetsDocComment() {
-    assertFormatting(DocComments.self,
+    assertFormatting(ConvertRegularCommentToDocC.self,
       input: """
         // Parent function
         1️⃣func parentFunction() {
@@ -233,7 +233,7 @@ struct DocCommentsTests: RuleTesting {
   // MARK: - Blank Line Gap
 
   @Test func commentWithBlankLineNotConverted() {
-    assertFormatting(DocComments.self,
+    assertFormatting(ConvertRegularCommentToDocC.self,
       input: """
         // A comment
 
@@ -248,7 +248,7 @@ struct DocCommentsTests: RuleTesting {
   }
 
   @Test func docCommentWithBlankLineConvertedToRegular() {
-    assertFormatting(DocComments.self,
+    assertFormatting(ConvertRegularCommentToDocC.self,
       input: """
         /// Comment not associated with class
 
@@ -265,7 +265,7 @@ struct DocCommentsTests: RuleTesting {
   // MARK: - Directives
 
   @Test func markDirectiveNotConverted() {
-    assertFormatting(DocComments.self,
+    assertFormatting(ConvertRegularCommentToDocC.self,
       input: """
         // MARK: - Section
         func foo() {}
@@ -278,7 +278,7 @@ struct DocCommentsTests: RuleTesting {
   }
 
   @Test func todoDirectiveNotConverted() {
-    assertFormatting(DocComments.self,
+    assertFormatting(ConvertRegularCommentToDocC.self,
       input: """
         // TODO: Clean up this mess
         func doSomething() {}
@@ -291,7 +291,7 @@ struct DocCommentsTests: RuleTesting {
   }
 
   @Test func commentAfterTodoNotConverted() {
-    assertFormatting(DocComments.self,
+    assertFormatting(ConvertRegularCommentToDocC.self,
       input: """
         // TODO: Clean up this mess
         // because it's bothering me
@@ -306,7 +306,7 @@ struct DocCommentsTests: RuleTesting {
   }
 
   @Test func commentBeforeTodoNotConverted() {
-    assertFormatting(DocComments.self,
+    assertFormatting(ConvertRegularCommentToDocC.self,
       input: """
         // Something, something
         // TODO: Clean up this mess
@@ -321,7 +321,7 @@ struct DocCommentsTests: RuleTesting {
   }
 
   @Test func swiftformatDirectiveNotConverted() {
-    assertFormatting(DocComments.self,
+    assertFormatting(ConvertRegularCommentToDocC.self,
       input: """
         // swiftformat:disable some_rule
         let foo = 1
@@ -334,7 +334,7 @@ struct DocCommentsTests: RuleTesting {
   }
 
   @Test func noteCommentConverted() {
-    assertFormatting(DocComments.self,
+    assertFormatting(ConvertRegularCommentToDocC.self,
       input: """
         // Does something
         // Note: not really
@@ -351,7 +351,7 @@ struct DocCommentsTests: RuleTesting {
   // MARK: - Consecutive Declarations
 
   @Test func sectionHeaderNotConvertedBeforeConsecutiveProperties() {
-    assertFormatting(DocComments.self,
+    assertFormatting(ConvertRegularCommentToDocC.self,
       input: """
         struct PlanetNames {
             // Inner planets
@@ -372,7 +372,7 @@ struct DocCommentsTests: RuleTesting {
   }
 
   @Test func sectionHeaderNotConvertedBeforeConsecutiveCases() {
-    assertFormatting(DocComments.self,
+    assertFormatting(ConvertRegularCommentToDocC.self,
       input: """
         enum Planets {
             // Inner planets
@@ -393,7 +393,7 @@ struct DocCommentsTests: RuleTesting {
   }
 
   @Test func perDeclarationCommentsConvertedEvenIfConsecutive() {
-    assertFormatting(DocComments.self,
+    assertFormatting(ConvertRegularCommentToDocC.self,
       input: """
         enum Planets {
             // Mercury
@@ -424,7 +424,7 @@ struct DocCommentsTests: RuleTesting {
   // MARK: - Conditional Compilation
 
   @Test func docCommentInsideIfdef() {
-    assertFormatting(DocComments.self,
+    assertFormatting(ConvertRegularCommentToDocC.self,
       input: """
         #if DEBUG
         // A function
@@ -441,7 +441,7 @@ struct DocCommentsTests: RuleTesting {
   }
 
   @Test func docCommentInsideIfdefInFunctionBody() {
-    assertFormatting(DocComments.self,
+    assertFormatting(ConvertRegularCommentToDocC.self,
       input: """
         func foo() {
             #if DEBUG
@@ -464,7 +464,7 @@ struct DocCommentsTests: RuleTesting {
   // MARK: - Switch Case Bodies
 
   @Test func commentInsideSwitchCaseNotConverted() {
-    assertFormatting(DocComments.self,
+    assertFormatting(ConvertRegularCommentToDocC.self,
       input: """
         func foo() {
             switch bar {
@@ -499,7 +499,7 @@ struct DocCommentsTests: RuleTesting {
   // MARK: - Preserve Existing Doc Comments
 
   @Test func existingDocCommentsPreservedOnAPIDeclarations() {
-    assertFormatting(DocComments.self,
+    assertFormatting(ConvertRegularCommentToDocC.self,
       input: """
         /// Already a doc comment
         class Foo {}
@@ -512,7 +512,7 @@ struct DocCommentsTests: RuleTesting {
   }
 
   @Test func preserveDocCommentAfterMark() {
-    assertFormatting(DocComments.self,
+    assertFormatting(ConvertRegularCommentToDocC.self,
       input: """
         // MARK: - Foo
         /// A doc comment
@@ -533,7 +533,7 @@ struct DocCommentsTests: RuleTesting {
   // MARK: - Extension Members
 
   @Test func convertCommentInExtension() {
-    assertFormatting(DocComments.self,
+    assertFormatting(ConvertRegularCommentToDocC.self,
       input: """
         extension Foo {
             // A property

@@ -18,7 +18,7 @@ import Testing
 struct UseLetInEveryBoundCaseVariableTests: RuleTesting {
   @Test func switchCase() {
     assertFormatting(
-      PatternLetPlacement.self,
+      CaseLet.self,
       input: """
         switch DataPoint.labeled("hello", 100) {
         case 1️⃣let .labeled(label, value): break
@@ -82,7 +82,7 @@ struct UseLetInEveryBoundCaseVariableTests: RuleTesting {
 
   @Test func switchMultipleCases() {
     assertFormatting(
-      PatternLetPlacement.self,
+      CaseLet.self,
       input: """
         switch (start.representation, end.representation) {
         case 1️⃣let (.element(element), .separator(next: separator)):
@@ -128,7 +128,7 @@ struct UseLetInEveryBoundCaseVariableTests: RuleTesting {
 
   @Test func ifCase() {
     assertFormatting(
-      PatternLetPlacement.self,
+      CaseLet.self,
       input: """
         if case 1️⃣let .labeled(label, value) = DataPoint.labeled("hello", 100) {}
         if case .labeled(label, let value) = DataPoint.labeled("hello", 100) {}
@@ -188,7 +188,7 @@ struct UseLetInEveryBoundCaseVariableTests: RuleTesting {
 
   @Test func guardCase() {
     assertFormatting(
-      PatternLetPlacement.self,
+      CaseLet.self,
       input: """
         guard case 1️⃣let .labeled(label, value) = DataPoint.labeled("hello", 100) else {}
         guard case .labeled(label, let value) = DataPoint.labeled("hello", 100) else {}
@@ -248,7 +248,7 @@ struct UseLetInEveryBoundCaseVariableTests: RuleTesting {
 
   @Test func forCase() {
     assertFormatting(
-      PatternLetPlacement.self,
+      CaseLet.self,
       input: """
         for case 1️⃣let .labeled(label, value) in dataPoints {}
         for case .labeled(label, let value) in dataPoints {}
@@ -308,7 +308,7 @@ struct UseLetInEveryBoundCaseVariableTests: RuleTesting {
 
   @Test func whileCase() {
     assertFormatting(
-      PatternLetPlacement.self,
+      CaseLet.self,
       input: """
         while case 1️⃣let .labeled(label, value) = iter.next() {}
         while case .labeled(label, let value) = iter.next() {}
@@ -369,14 +369,14 @@ struct UseLetInEveryBoundCaseVariableTests: RuleTesting {
   // MARK: - outerPattern mode (hoist)
 
   private func hoistConfig() -> Configuration {
-    var config = Configuration.forTesting(enabledRule: PatternLetPlacement.self.key)
-    config[PatternLetPlacement.self].placement = .outerPattern
+    var config = Configuration.forTesting(enabledRule: CaseLet.self.key)
+    config[CaseLet.self].placement = .outerPattern
     return config
   }
 
   @Test func hoistSwitchCase() {
     assertFormatting(
-      PatternLetPlacement.self,
+      CaseLet.self,
       input: """
         switch DataPoint.labeled("hello", 100) {
         case 1️⃣.labeled(let label, let value): break
@@ -409,7 +409,7 @@ struct UseLetInEveryBoundCaseVariableTests: RuleTesting {
 
   @Test func hoistIfCase() {
     assertFormatting(
-      PatternLetPlacement.self,
+      CaseLet.self,
       input: """
         if case 1️⃣.labeled(let label, let value) = DataPoint.labeled("hello", 100) {}
         """,
@@ -428,7 +428,7 @@ struct UseLetInEveryBoundCaseVariableTests: RuleTesting {
 
   @Test func hoistVarSpecifier() {
     assertFormatting(
-      PatternLetPlacement.self,
+      CaseLet.self,
       input: """
         switch x {
         case 1️⃣.foo(var a, var b): break
@@ -453,7 +453,7 @@ struct UseLetInEveryBoundCaseVariableTests: RuleTesting {
     // Wildcard arguments may not be PatternExprSyntax in swift-syntax.
     // Only hoist when all arguments are explicit bindings.
     assertFormatting(
-      PatternLetPlacement.self,
+      CaseLet.self,
       input: """
         switch x {
         case .foo(let a, _): break
@@ -471,7 +471,7 @@ struct UseLetInEveryBoundCaseVariableTests: RuleTesting {
 
   @Test func noHoistMixedLetVar() {
     assertFormatting(
-      PatternLetPlacement.self,
+      CaseLet.self,
       input: """
         switch x {
         case .foo(let a, var b): break
@@ -489,7 +489,7 @@ struct UseLetInEveryBoundCaseVariableTests: RuleTesting {
 
   @Test func noHoistPartialBindings() {
     assertFormatting(
-      PatternLetPlacement.self,
+      CaseLet.self,
       input: """
         switch x {
         case .labeled(label, let value): break
@@ -507,7 +507,7 @@ struct UseLetInEveryBoundCaseVariableTests: RuleTesting {
 
   @Test func alreadyHoistedUnchanged() {
     assertFormatting(
-      PatternLetPlacement.self,
+      CaseLet.self,
       input: """
         switch x {
         case let .foo(a, b): break

@@ -8,7 +8,7 @@ extension Configuration {
     config[LineLength.self] = 100
     config[TabWidth.self] = 8
     config[IndentationSetting.self] = .spaces(2)
-    config[RespectsExistingLineBreaks.self] = true
+    config[RespectExistingLineBreaks.self] = true
     config[ElseCatchOnNewLine.self] = false
     config[BeforeEachArgument.self] = false
     config[BeforeEachGenericRequirement.self] = false
@@ -22,7 +22,7 @@ extension Configuration {
     config[MultiElementCollectionTrailingCommas.self] = true
     config[IndentBlankLines.self] = false
     config[ExtensionAccessLevel.self] = ExtensionAccessControlConfiguration()
-    config[PatternLetPlacement.self] = PatternLetConfiguration()
+    config[CaseLet.self] = CaseLetConfiguration()
     config[URLMacro.self] = URLMacroConfiguration()
     config[FileHeader.self] = FileHeaderConfiguration()
     config[WrapSingleLineBodies.self] = SingleLineBodiesConfiguration()
