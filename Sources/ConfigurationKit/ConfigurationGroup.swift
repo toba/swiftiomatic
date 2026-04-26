@@ -22,13 +22,15 @@ package struct ConfigurationGroup: Sendable, Hashable {
         case comments
         case conditions
         case declarations
-        case forcing
         case generics
         case hoist
         case idioms
         case indentation
+        /// Where line breaks are allowed or required (line length, break-before-X toggles).
+        /// Distinct from `wrap`, which controls how multi-line constructs are formatted.
         case lineBreaks
         case literals
+        case memory
         case metrics
         case naming
         case redundancies
@@ -36,6 +38,9 @@ package struct ConfigurationGroup: Sendable, Hashable {
         case spaces
         case testing
         case types
+        case unsafety
+        /// How multi-line constructs are formatted (function chains, switch bodies,
+        /// brace placement). Distinct from `lineBreaks`, which controls where breaks occur.
         case wrap
     }
 
@@ -47,13 +52,13 @@ package struct ConfigurationGroup: Sendable, Hashable {
     package static let comments = ConfigurationGroup(.comments)
     package static let conditions = ConfigurationGroup(.conditions)
     package static let declarations = ConfigurationGroup(.declarations)
-    package static let forcing = ConfigurationGroup(.forcing)
     package static let generics = ConfigurationGroup(.generics)
     package static let hoist = ConfigurationGroup(.hoist)
     package static let idioms = ConfigurationGroup(.idioms)
     package static let indentation = ConfigurationGroup(.indentation)
     package static let lineBreaks = ConfigurationGroup(.lineBreaks)
     package static let literals = ConfigurationGroup(.literals)
+    package static let memory = ConfigurationGroup(.memory)
     package static let metrics = ConfigurationGroup(.metrics)
     package static let naming = ConfigurationGroup(.naming)
     package static let redundancies = ConfigurationGroup(.redundancies)
@@ -61,5 +66,6 @@ package struct ConfigurationGroup: Sendable, Hashable {
     package static let spaces = ConfigurationGroup(.spaces)
     package static let testing = ConfigurationGroup(.testing)
     package static let types = ConfigurationGroup(.types)
+    package static let unsafety = ConfigurationGroup(.unsafety)
     package static let wrap = ConfigurationGroup(.wrap)
 }

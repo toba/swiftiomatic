@@ -1,15 +1,15 @@
 ---
 # qlt-10c
 title: Port missing SwiftLint rules to Swiftiomatic
-status: in-progress
+status: completed
 type: epic
 priority: normal
 created_at: 2026-04-15T00:25:10Z
-updated_at: 2026-04-25T17:21:56Z
+updated_at: 2026-04-26T00:03:12Z
 sync:
     github:
         issue_number: "308"
-        synced_at: "2026-04-25T17:39:14Z"
+        synced_at: "2026-04-26T00:18:51Z"
 ---
 
 ## Gap Analysis

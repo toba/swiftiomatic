@@ -58,6 +58,14 @@ package enum ConfigurationSchema {
       "additionalProperties" : false,
       "description" : "access rule group.",
       "properties" : {
+        "aclConsistency" : {
+          "allOf" : [
+            {
+              "$ref" : "#/$defs/ruleBase"
+            }
+          ],
+          "description" : "A declaration's access level must not exceed its enclosing nominal parent's\neffective access level. For example, a `public` method inside a `private`\nstruct can never be called from outside that struct, so the wider modifier\nis misleading.\n\nThe rule traverses upward to the nearest enclosing struct/class/actor/enum\n(or its enclosing extension) and compares effective access levels.\n\nLint: A finding is raised on the over-permissive ACL modifier.\n\nFormat: `open` is downgraded to `public` when the parent is not also\n        `open`; otherwise the redundant modifier is removed entirely.\n [opt-in]"
+        },
         "extensionAccessLevel" : {
           "allOf" : [
             {
@@ -114,6 +122,34 @@ package enum ConfigurationSchema {
         }
       },
       "type" : "object"
+    },
+    "accessorOrder" : {
+      "allOf" : [
+        {
+          "$ref" : "#/$defs/lintOnlyBase"
+        }
+      ],
+      "description" : "Computed properties and subscripts that declare both `get` and `set`\naccessors should list them in a consistent order. The default order is\n`get` then `set`, matching common Swift style.\n\nConfigure via `accessorOrder.order`:\n  - `\"get_set\"` (default): emit a finding when the setter precedes the getter.\n  - `\"set_get\"`: emit a finding when the getter precedes the setter.\n\nLint-only: this rule does not auto-fix because reordering accessors with\nnon-trivial bodies risks misplacing trailing comments and trivia.\n",
+      "properties" : {
+        "order" : {
+          "default" : "getSet",
+          "description" : "Required ordering for `get`/`set` accessors in computed properties and subscripts.\n\nOptions: getSet, setGet.",
+          "enum" : [
+            "getSet",
+            "setGet"
+          ],
+          "type" : "string"
+        }
+      },
+      "unevaluatedProperties" : false
+    },
+    "aclConsistency" : {
+      "allOf" : [
+        {
+          "$ref" : "#/$defs/ruleBase"
+        }
+      ],
+      "description" : "A declaration's access level must not exceed its enclosing nominal parent's\neffective access level. For example, a `public` method inside a `private`\nstruct can never be called from outside that struct, so the wider modifier\nis misleading.\n\nThe rule traverses upward to the nearest enclosing struct/class/actor/enum\n(or its enclosing extension) and compares effective access levels.\n\nLint: A finding is raised on the over-permissive ACL modifier.\n\nFormat: `open` is downgraded to `public` when the parent is not also\n        `open`; otherwise the redundant modifier is removed entirely.\n [opt-in]"
     },
     "afterGuardStatements" : {
       "allOf" : [
@@ -495,6 +531,20 @@ package enum ConfigurationSchema {
             }
           },
           "unevaluatedProperties" : false
+        },
+        "fileHeader" : {
+          "allOf" : [
+            {
+              "$ref" : "#/$defs/ruleBase"
+            }
+          ],
+          "description" : "Enforce a consistent file header comment, or remove file headers entirely.\n\nWhen configured with header text, any existing file header comment is replaced with the\nconfigured text. When configured with an empty string, any existing file header is removed.\nFile header comments are line comments (`//`) or block comments (`/* */`) at the start of\nthe file, before any blank line, doc comment, or code. Doc comments (`///`, `/** */`) are\nnot considered file header comments.\n\nThis rule is opt-in and requires configuration via `fileHeader.text` in the configuration file.\n\nLint: A warning is raised when the file header does not match the configured text.\n\nFormat: The file header is replaced with (or cleared to) the configured text.\n [opt-in]",
+          "properties" : {
+            "text" : {
+              "description" : "The exact header text every file must begin with. May contain newlines\nfor multi-line headers. When `nil` or empty, any existing file header\nis removed instead.",
+              "type" : "string"
+            }
+          }
         },
         "formatTypePrefix" : {
           "allOf" : [
@@ -919,37 +969,6 @@ package enum ConfigurationSchema {
       "description" : "XCTestCase subclasses should be `final`.\n\nMarking a test case `final` lets the runtime resolve test methods statically and avoids the\ndynamic-dispatch overhead Apple's docs call out for non-final test cases.\n\nLint: warns on a `class` (not `final`, not `open`) that inherits from a known test base class\n(`XCTestCase`, `QuickSpec`).\n",
       "unevaluatedProperties" : false
     },
-    "forcing" : {
-      "additionalProperties" : false,
-      "description" : "forcing rule group.",
-      "properties" : {
-        "noForceCast" : {
-          "allOf" : [
-            {
-              "$ref" : "#/$defs/ruleBase"
-            }
-          ],
-          "description" : "Force casts (`as!`) are forbidden.\n\nA force cast crashes at runtime if the conversion fails. Prefer the conditional cast (`as?`)\ncombined with optional handling (`if let`, `guard let`, nil-coalescing, etc.).\n\nThis rule complements `NoForceTry` and `NoForceUnwrap`.\n\nLint: A warning is raised for each `as!`.\n\nFormat: Not auto-fixed; the safe replacement depends on caller intent.\n [opt-in]"
-        },
-        "noForceTry" : {
-          "allOf" : [
-            {
-              "$ref" : "#/$defs/ruleBase"
-            }
-          ],
-          "description" : "Force-try (`try!`) is forbidden.\n\nIn test functions, `try!` is auto-fixed to `try` and `throws` is added to the function\nsignature if needed.\n\nIn non-test code, `try!` is diagnosed but not rewritten.\n\nTest functions are:\n- Functions annotated with `@Test` (Swift Testing)\n- Functions named `test*()` with no parameters inside `XCTestCase` subclasses\n\n`try!` inside closures or nested functions is left alone because the enclosing test function's\n`throws` does not propagate into those scopes.\n\nLint: A warning is raised for each `try!`.\n\nFormat: In test functions, `try!` is replaced with `try` and `throws` is added.\n [opt-in]"
-        },
-        "noForceUnwrap" : {
-          "allOf" : [
-            {
-              "$ref" : "#/$defs/ruleBase"
-            }
-          ],
-          "description" : "Force-unwraps are strongly discouraged and must be documented.\n\nIn test functions, force unwraps are auto-fixed:\n- `foo!` becomes `try XCTUnwrap(foo)` (XCTest) or `try #require(foo)` (Swift Testing)\n- `foo as! Bar` becomes `try XCTUnwrap(foo as? Bar)` or `try #require(foo as? Bar)`\n- `throws` is added to the function signature if needed\n\nIn non-test code, force unwraps are diagnosed but not rewritten.\n\nTest functions are:\n- Functions annotated with `@Test` (Swift Testing)\n- Functions named `test*()` with no parameters inside `XCTestCase` subclasses\n\nForce unwraps in closures, nested functions, and string interpolation are left alone because\n`try` cannot propagate out of those scopes.\n\nLint: A warning is raised for each force unwrap.\n\nFormat: In test functions, force unwraps are replaced with XCTUnwrap/#require.\n [opt-in]"
-        }
-      },
-      "type" : "object"
-    },
     "formatTypePrefix" : {
       "allOf" : [
         {
@@ -1098,6 +1117,14 @@ package enum ConfigurationSchema {
           ],
           "description" : "Avoid naming enum cases or static members `none`.\n\nA `case none` or `static let none` (or `static var`/`class var`) can be confused with\n`Optional<T>.none`. Especially when the enclosing type itself becomes optional, the compiler\nwill silently prefer `Optional.none`, leading to subtle bugs.\n\nLint: A warning is raised for any `case none` (without associated values), or any `static`/\n`class` property named `none`.\n\nFormat: Not auto-fixed; renaming requires understanding the call sites.\n [opt-in]"
         },
+        "leadingDotOperators" : {
+          "allOf" : [
+            {
+              "$ref" : "#/$defs/ruleBase"
+            }
+          ],
+          "description" : "Move leading delimiters to the end of the previous line.\n\nWhen a line starts with a comma or colon, the delimiter should instead be placed at the end\nof the previous line. This keeps the delimiter associated with the preceding expression rather\nthan the following one.\n\nLint: A finding is emitted when a delimiter starts a line.\n\nFormat: The delimiter is moved to the end of the previous line.\n"
+        },
         "noAssignmentInExpressions" : {
           "allOf" : [
             {
@@ -1149,6 +1176,14 @@ package enum ConfigurationSchema {
           "description" : "Prefer `allSatisfy` or `contains` over `reduce(true)` / `reduce(false)`.\n\n`reduce(true) { $0 && ... }` and `reduce(false) { $0 || ... }` are spellings of `allSatisfy`\nand `contains` that don't short-circuit. The dedicated methods stop as soon as the answer is\ndetermined.\n\nLint:\n- `xs.reduce(true) { ... }` / `xs.reduce(into: true) { ... }` → suggest `allSatisfy`\n- `xs.reduce(false) { ... }` / `xs.reduce(into: false) { ... }` → suggest `contains`\n",
           "unevaluatedProperties" : false
         },
+        "preferAssertionFailure" : {
+          "allOf" : [
+            {
+              "$ref" : "#/$defs/ruleBase"
+            }
+          ],
+          "description" : "Replace `assert(false, ...)` with `assertionFailure(...)` and\n`precondition(false, ...)` with `preconditionFailure(...)`.\n\nThe `Failure` variants more clearly express intent: the code path should never be reached.\nThey also have `Never` return type, enabling the compiler to prove exhaustiveness.\n\nLint: Using `assert(false, ...)` or `precondition(false, ...)` raises a warning.\n\nFormat: The call is replaced with the corresponding `Failure` variant, removing the\n`false` argument.\n"
+        },
         "preferCompoundAssignment" : {
           "allOf" : [
             {
@@ -1181,6 +1216,22 @@ package enum ConfigurationSchema {
             }
           ],
           "description" : "Prefer `.zero` over explicit zero-valued initializers.\n\n`CGPoint(x: 0, y: 0)`, `CGSize(width: 0, height: 0)`, `CGRect(x: 0, y: 0, width: 0, height: 0)`\nand similar are equivalent to the platform-provided `.zero` constant. The shorthand reads\nbetter and avoids subtle inconsistencies (e.g. `0.0` vs `0` literal kinds).\n\nRecognised types: `CGPoint`, `CGSize`, `CGRect`, `CGVector`, `UIEdgeInsets`, `NSEdgeInsets`,\n`NSPoint`, `NSSize`, `NSRect`.\n\nLint: A warning is raised on a fully-zero initializer.\n\nFormat: The call is replaced with `<Type>.zero`.\n"
+        },
+        "preferEnvironmentEntry" : {
+          "allOf" : [
+            {
+              "$ref" : "#/$defs/ruleBase"
+            }
+          ],
+          "description" : "Use `@Entry` macro for `EnvironmentValues` instead of manual `EnvironmentKey` conformance.\n\nRecognizes `EnvironmentKey`-conforming structs/enums paired with `EnvironmentValues` extension\nproperties and replaces them with `@Entry var` declarations.\n\nLint: A lint warning is raised when an `EnvironmentKey` property can be replaced with `@Entry`.\n\nFormat: The `EnvironmentKey` type is removed and the property is replaced with `@Entry var`.\n [opt-in]"
+        },
+        "preferExplicitFalse" : {
+          "allOf" : [
+            {
+              "$ref" : "#/$defs/ruleBase"
+            }
+          ],
+          "description" : "Prefer `== false` over `!` prefix negation.\n\nThe `!` prefix operator can be easy to miss, especially in complex conditions.\nUsing `== false` makes the negation explicit and more readable.\n\nLint: Using `!` prefix negation raises a warning.\n\nFormat: `!expression` is replaced with `expression == false`.\n [opt-in]"
         },
         "preferFileID" : {
           "allOf" : [
@@ -1283,6 +1334,14 @@ package enum ConfigurationSchema {
           ],
           "description" : "Prefer `someBool.toggle()` over `someBool = !someBool`.\n\n`Bool.toggle()` (Swift 4.2+) is more concise and clearly communicates the intent. The two forms\nare equivalent semantically; `toggle()` does not introduce any new evaluation hazards.\n\nLint: A warning is raised for `x = !x` patterns where the LHS and the negated RHS reference\nthe exact same expression text.\n\nFormat: The expression is rewritten to `x.toggle()`.\n"
         },
+        "preferWhereClausesInForLoops" : {
+          "allOf" : [
+            {
+              "$ref" : "#/$defs/ruleBase"
+            }
+          ],
+          "description" : "`for` loops that consist of a single `if` statement must use `where` clauses instead.\n\nLint: `for` loops that consist of a single `if` statement yield a lint error.\n\nFormat: `for` loops that consist of a single `if` statement have the conditional of that\n        statement factored out to a `where` clause.\n [opt-in]"
+        },
         "replaceForEachWithForLoop" : {
           "allOf" : [
             {
@@ -1299,15 +1358,6 @@ package enum ConfigurationSchema {
             }
           ],
           "description" : "`fatalError` calls should include a descriptive message.\n\nA bare `fatalError()` (or `fatalError(\"\")`) gives no context when the program crashes. Including\na message makes it far easier to diagnose the problem from the stack trace alone.\n\nLint: A warning is raised for `fatalError()` and `fatalError(\"\")`.\n\nFormat: Not auto-fixed; the message must be supplied by the author.\n [opt-in]"
-        },
-        "retainNotificationObserver" : {
-          "allOf" : [
-            {
-              "$ref" : "#/$defs/lintOnlyBase"
-            }
-          ],
-          "description" : "`NotificationCenter.addObserver(forName:object:queue:using:)` returns an\nopaque token that must be retained to later remove the observer.\nDiscarding the return value leaks the observer.\n\nLint: When a call to `addObserver(forName:object:queue:...)` is used as a\nstatement (not stored, returned, or passed to another call), a warning is\nraised.\n [opt-in]",
-          "unevaluatedProperties" : false
         }
       },
       "type" : "object"
@@ -1655,6 +1705,66 @@ package enum ConfigurationSchema {
             }
           ],
           "description" : "Never use `[<Type>]()` syntax. In call sites that should be replaced with `[]`,\nfor initializations use explicit type combined with empty array literal `let _: [<Type>] = []`\nStatic properties of a type that return that type should not include a reference to their type.\n\nLint:  Non-literal empty array initialization will yield a lint error.\nFormat: All invalid use sites would be related with empty literal (with or without explicit type annotation).\n [opt-in]"
+        }
+      },
+      "type" : "object"
+    },
+    "memory" : {
+      "additionalProperties" : false,
+      "description" : "memory rule group.",
+      "properties" : {
+        "deinitObserverRemoval" : {
+          "allOf" : [
+            {
+              "$ref" : "#/$defs/lintOnlyBase"
+            }
+          ],
+          "description" : "`NotificationCenter.default.removeObserver(self)` should only appear in `deinit`.\n\nRemoving the observer earlier (e.g. in `viewWillDisappear`) prevents notifications from being\ndelivered when the object is otherwise still alive. The correct place to detach is `deinit`,\nwhich runs exactly once at the end of the object's lifetime.\n\nLint: A call to `NotificationCenter.default.removeObserver(self)` outside `deinit` yields a\nwarning. Removing other observers (e.g. `removeObserver(otherObject)`) is allowed anywhere.\n",
+          "unevaluatedProperties" : false
+        },
+        "delegateProtocolRequiresAnyObject" : {
+          "allOf" : [
+            {
+              "$ref" : "#/$defs/lintOnlyBase"
+            }
+          ],
+          "description" : "Protocols whose name ends in `Delegate` should be class-constrained.\n\nDelegate properties are typically declared `weak` to avoid retain cycles. The `weak` modifier\nis only valid on class-bound references, so a delegate protocol must inherit from `AnyObject`\n(or `NSObjectProtocol`, `Actor`, another `*Delegate` protocol) — otherwise it cannot be held\nweakly.\n\nLint: A protocol whose name ends in `Delegate` and is not class-constrained yields a warning.\n",
+          "unevaluatedProperties" : false
+        },
+        "preferWeakCapture" : {
+          "allOf" : [
+            {
+              "$ref" : "#/$defs/lintOnlyBase"
+            }
+          ],
+          "description" : "Prefer `[weak self]` over `[unowned self]` in closure capture lists.\n\n`unowned` references crash when the captured object has been deallocated; `weak` returns `nil`\nsafely. Unless the closure's lifetime is provably shorter than the captured object's,\n`unowned` is a latent crash waiting for a refactor to expose.\n\nLint: A warning is raised on any `unowned` keyword that appears in a closure capture list.\n`unowned` stored properties (e.g. `unowned var owner: Foo`) are not flagged.\n",
+          "unevaluatedProperties" : false
+        },
+        "retainNotificationObserver" : {
+          "allOf" : [
+            {
+              "$ref" : "#/$defs/lintOnlyBase"
+            }
+          ],
+          "description" : "`NotificationCenter.addObserver(forName:object:queue:using:)` returns an\nopaque token that must be retained to later remove the observer.\nDiscarding the return value leaks the observer.\n\nLint: When a call to `addObserver(forName:object:queue:...)` is used as a\nstatement (not stored, returned, or passed to another call), a warning is\nraised.\n [opt-in]",
+          "unevaluatedProperties" : false
+        },
+        "strongOutlets" : {
+          "allOf" : [
+            {
+              "$ref" : "#/$defs/ruleBase"
+            }
+          ],
+          "description" : "Remove `weak` from `@IBOutlet` properties.\n\nAs per Apple's recommendation, `@IBOutlet` properties should be strong. The `weak`\nmodifier is preserved for delegate and data source outlets since those are typically\nowned elsewhere.\n\nLint: An `@IBOutlet` property with `weak` raises a warning.\n\nFormat: The `weak` modifier is removed.\n"
+        },
+        "weakDelegates" : {
+          "allOf" : [
+            {
+              "$ref" : "#/$defs/lintOnlyBase"
+            }
+          ],
+          "description" : "Properties whose name ends in `delegate` should be declared `weak` to avoid retain cycles.\n\nThis rule fires only on class instance properties. Local variables, struct/enum members,\ncomputed properties, protocol requirements, and properties marked with one of the SwiftUI\nadaptor attributes (`@UIApplicationDelegateAdaptor`, `@NSApplicationDelegateAdaptor`,\n`@WKExtensionDelegateAdaptor`) are excluded. Properties already marked `weak` or `unowned`\npass.\n\nLint: A class instance property named `*delegate` without a `weak`/`unowned` modifier yields\na warning.\n",
+          "unevaluatedProperties" : false
         }
       },
       "type" : "object"
@@ -2673,10 +2783,34 @@ package enum ConfigurationSchema {
       ],
       "description" : "Add `private` to `@State` properties without explicit access control.\n\nSwiftUI `@State` and `@StateObject` properties should be `private` because they are\nowned by the view and should not be set from outside. If no access control modifier is\npresent, `private` is added. Existing access modifiers (including `private(set)`) and\n`@Previewable` properties are left unchanged.\n\nLint: A `@State` or `@StateObject` property without access control raises a warning.\n\nFormat: The `private` modifier is added before the binding keyword.\n [opt-in]"
     },
+    "protocolAccessorOrder" : {
+      "allOf" : [
+        {
+          "$ref" : "#/$defs/ruleBase"
+        }
+      ],
+      "description" : "In protocol property requirements, accessors must be declared in `get set`\norder. The reverse — `set get` — is legal Swift but inconsistent with the\ncanonical form used throughout the standard library and the Swift book.\n\nLint: A finding is raised when a protocol property's accessor block lists\n      `set` before `get`.\n\nFormat: The accessors are reordered to `get set`.\n [opt-in]"
+    },
     "redundancies" : {
       "additionalProperties" : false,
       "description" : "redundancies rule group.",
       "properties" : {
+        "noBacktickedSelf" : {
+          "allOf" : [
+            {
+              "$ref" : "#/$defs/ruleBase"
+            }
+          ],
+          "description" : "Remove backticks around `self` in optional unwrap expressions.\n\nSince Swift 4.2, `guard let self = self` is valid without backticks.\nWriting `` guard let `self` = self `` is a holdover from older Swift versions.\n\nLint: If a backticked `self` is found in an optional binding, a finding is raised.\n\nFormat: The backticks are removed.\n"
+        },
+        "noFallThroughOnlyCases" : {
+          "allOf" : [
+            {
+              "$ref" : "#/$defs/ruleBase"
+            }
+          ],
+          "description" : "Cases that contain only the `fallthrough` statement are forbidden.\n\nLint: Cases containing only the `fallthrough` statement yield a lint error.\n\nFormat: The fall-through `case` is added as a prefix to the next case unless the next case is\n        `default`; in that case, the fallthrough `case` is deleted.\n"
+        },
         "noLabelsInCasePatterns" : {
           "allOf" : [
             {
@@ -2932,6 +3066,14 @@ package enum ConfigurationSchema {
             }
           ],
           "description" : "Semicolons should not be present in Swift code.\n\nLint: If a semicolon appears anywhere, a lint error is raised.\n\nFormat: All semicolons will be replaced with line breaks.\n"
+        },
+        "unusedArguments" : {
+          "allOf" : [
+            {
+              "$ref" : "#/$defs/ruleBase"
+            }
+          ],
+          "description" : "Mark unused function arguments with `_`.\n\nDetects unused parameters in functions, initializers, subscripts, closures,\nand for-loop variables, and replaces them with `_`.\n\nFor named function parameters, the internal name is replaced with `_`\n(e.g., `func foo(bar: Int)` → `func foo(bar _: Int)`). For unnamed\nparameters, the name is removed (`func foo(_ bar: Int)` → `func foo(_: Int)`).\n\nFor operator functions and subscripts, the parameter name is replaced\nwith `_` directly since external labels are unnecessary.\n\nLint: When a parameter or loop variable is unused.\n\nFormat: The unused parameter or variable is replaced with `_`.\n"
         },
         "unusedControlFlowLabel" : {
           "allOf" : [
@@ -3420,7 +3562,18 @@ package enum ConfigurationSchema {
           "$ref" : "#/$defs/ruleBase"
         }
       ],
-      "description" : "Sort switch case items alphabetically within each case.\n\nWhen a case matches multiple patterns (e.g. `case .b, .a, .c:`), the patterns are sorted\nlexicographically. Numeric literals are compared by value (including hex, octal, and binary).\nCases with `where` clauses are only sorted if the `where` clause ends up on the last item.\n\nLint: If case items are not sorted, a lint warning is raised.\n\nFormat: The case items are reordered alphabetically.\n [opt-in]"
+      "description" : "Enforce switch case label indentation style.\n\nTwo styles are supported via `SwitchCaseIndentationConfiguration.Style`:\n- `flush`: `case` labels align with the `switch` keyword (default).\n- `indented`: `case` labels are indented one level from `switch`.\n\nLint: Raised when a `case` or `default` label doesn't match the configured style.\n\nFormat: Case labels, bodies, and the closing brace are reindented to match.\n [opt-in]",
+      "properties" : {
+        "style" : {
+          "default" : "flush",
+          "description" : "`flush` aligns case labels with the `switch` keyword; `indented`\nindents them one level beneath it.\n\nOptions: flush, indented.",
+          "enum" : [
+            "flush",
+            "indented"
+          ],
+          "type" : "string"
+        }
+      }
     },
     "testSuiteAccessControl" : {
       "allOf" : [
@@ -3557,6 +3710,33 @@ package enum ConfigurationSchema {
       "additionalProperties" : false,
       "description" : "types rule group.",
       "properties" : {
+        "noImplicitlyUnwrappedOptionals" : {
+          "allOf" : [
+            {
+              "$ref" : "#/$defs/lintOnlyBase"
+            }
+          ],
+          "description" : "Implicitly unwrapped optionals (e.g. `var s: String!`) are forbidden.\n\nCertain properties (e.g. `@IBOutlet`) tied to the UI lifecycle are ignored.\n\nThis rule does not apply to test code, defined as code which:\n  * Contains the line `import XCTest`\n  * The function is marked with `@Test` attribute\n\nTODO: Create exceptions for other UI elements (ex: viewDidLoad)\n\nLint: Declaring a property with an implicitly unwrapped type yields a lint error.\n",
+          "unevaluatedProperties" : false
+        },
+        "noOptionalBool" : {
+          "allOf" : [
+            {
+              "$ref" : "#/$defs/lintOnlyBase"
+            }
+          ],
+          "description" : "Optional booleans are confusing — three states (`true`, `false`, `nil`) where two are usually\nenough. Prefer a non-optional `Bool` with a sensible default, or model the third state with an\nenum so the cases are named.\n\nLint: A warning is raised for any `Bool?` type annotation, `Bool?` written as an expression\ntype, or an `Optional<Bool>.some(...)` call wrapping a boolean literal.\n",
+          "unevaluatedProperties" : false
+        },
+        "noOptionalCollection" : {
+          "allOf" : [
+            {
+              "$ref" : "#/$defs/lintOnlyBase"
+            }
+          ],
+          "description" : "Optional collections like `[T]?`, `[K: V]?`, and `Set<T>?` add a state (`nil`) that is rarely\ndistinguishable from \"empty\". Prefer the non-optional collection and use `isEmpty` to check\nfor absence.\n\nLint: A warning is raised for any `OptionalTypeSyntax` whose wrapped type is an array,\ndictionary, or named `Array`/`Dictionary`/`Set`.\n",
+          "unevaluatedProperties" : false
+        },
         "noTypeRepetitionInStaticProperties" : {
           "allOf" : [
             {
@@ -3581,6 +3761,24 @@ package enum ConfigurationSchema {
             }
           ],
           "description" : "Prefer `AnyObject` over `class` for class-constrained protocols.\n\nThe `class` keyword in protocol inheritance clauses was replaced by `AnyObject` in Swift 4.1.\nUsing `AnyObject` is the modern, preferred spelling.\n\nLint: A protocol inheriting from `class` instead of `AnyObject` raises a warning.\n\nFormat: `class` is replaced with `AnyObject` in the inheritance clause.\n"
+        },
+        "preferFailableStringInit" : {
+          "allOf" : [
+            {
+              "$ref" : "#/$defs/lintOnlyBase"
+            }
+          ],
+          "description" : "`String(decoding: data, as: UTF8.self)` silently substitutes `U+FFFD` for invalid bytes,\nhiding decoding errors. Prefer the failable `String(bytes: data, encoding: .utf8)` initializer\nso the caller can handle invalid input explicitly.\n\nLint: A warning is raised for any call of the form `String(decoding:as:)` or\n`String.init(decoding:as:)` whose `as:` argument is `UTF8.self`. Other unicode codecs\n(`UTF16.self`, etc.) are not flagged.\n",
+          "unevaluatedProperties" : false
+        },
+        "preferNonOptionalDataInit" : {
+          "allOf" : [
+            {
+              "$ref" : "#/$defs/lintOnlyBase"
+            }
+          ],
+          "description" : "`String.data(using: .utf8)` returns `Data?`, even though UTF-8 encoding can never fail. Prefer\nthe non-optional `Data(_:)` initializer that takes a `String.UTF8View`:\n`Data(\"foo\".utf8)` instead of `\"foo\".data(using: .utf8)`.\n\nLint: A warning is raised for any call of the form `<expr>.data(using: .utf8)`. Other\nencodings (`.ascii`, `.unicode`, etc.) are not flagged because they really can fail.\n",
+          "unevaluatedProperties" : false
         },
         "preferShorthandTypeNames" : {
           "allOf" : [
@@ -3609,6 +3807,46 @@ package enum ConfigurationSchema {
       ],
       "description" : "`Task { try ... }` silently swallows thrown errors when the error type is\ninferred (or written as `_`).\n\nWithout an explicit `Failure` generic argument, a `Task` that throws an\nunhandled error doesn't surface the error anywhere — there is no `throws`\nsignature on the closure call site, and the value/result of the task is\nusually discarded.\n\nSee: https://forums.swift.org/t/task-initializer-with-throwing-closure-swallows-error/56066\n\nLint: When a `Task { ... }` (with implicit or wildcard error type) contains\nan unhandled `throw` or `try`, an error is raised. Tasks whose value or\nresult is consumed (`let t = Task { ... }`, `Task { ... }.value`,\n`return Task { ... }`) are exempt.\n [opt-in]",
       "unevaluatedProperties" : false
+    },
+    "unsafety" : {
+      "additionalProperties" : false,
+      "description" : "unsafety rule group.",
+      "properties" : {
+        "noForceCast" : {
+          "allOf" : [
+            {
+              "$ref" : "#/$defs/ruleBase"
+            }
+          ],
+          "description" : "Force casts (`as!`) are forbidden.\n\nA force cast crashes at runtime if the conversion fails. Prefer the conditional cast (`as?`)\ncombined with optional handling (`if let`, `guard let`, nil-coalescing, etc.).\n\nThis rule complements `NoForceTry` and `NoForceUnwrap`.\n\nLint: A warning is raised for each `as!`.\n\nFormat: Not auto-fixed; the safe replacement depends on caller intent.\n [opt-in]"
+        },
+        "noForceTry" : {
+          "allOf" : [
+            {
+              "$ref" : "#/$defs/ruleBase"
+            }
+          ],
+          "description" : "Force-try (`try!`) is forbidden.\n\nIn test functions, `try!` is auto-fixed to `try` and `throws` is added to the function\nsignature if needed.\n\nIn non-test code, `try!` is diagnosed but not rewritten.\n\nTest functions are:\n- Functions annotated with `@Test` (Swift Testing)\n- Functions named `test*()` with no parameters inside `XCTestCase` subclasses\n\n`try!` inside closures or nested functions is left alone because the enclosing test function's\n`throws` does not propagate into those scopes.\n\nLint: A warning is raised for each `try!`.\n\nFormat: In test functions, `try!` is replaced with `try` and `throws` is added.\n [opt-in]"
+        },
+        "noForceUnwrap" : {
+          "allOf" : [
+            {
+              "$ref" : "#/$defs/ruleBase"
+            }
+          ],
+          "description" : "Force-unwraps are strongly discouraged and must be documented.\n\nIn test functions, force unwraps are auto-fixed:\n- `foo!` becomes `try XCTUnwrap(foo)` (XCTest) or `try #require(foo)` (Swift Testing)\n- `foo as! Bar` becomes `try XCTUnwrap(foo as? Bar)` or `try #require(foo as? Bar)`\n- `throws` is added to the function signature if needed\n\nIn non-test code, force unwraps are diagnosed but not rewritten.\n\nTest functions are:\n- Functions annotated with `@Test` (Swift Testing)\n- Functions named `test*()` with no parameters inside `XCTestCase` subclasses\n\nForce unwraps in closures, nested functions, and string interpolation are left alone because\n`try` cannot propagate out of those scopes.\n\nLint: A warning is raised for each force unwrap.\n\nFormat: In test functions, force unwraps are replaced with XCTUnwrap/#require.\n [opt-in]"
+        },
+        "typedCatchError" : {
+          "allOf" : [
+            {
+              "$ref" : "#/$defs/lintOnlyBase"
+            }
+          ],
+          "description" : "`catch let error` (or any plain identifier-pattern catch) declares a binding of inferred type\n`any Error`, throwing away whatever concrete type `try` could have produced. Either omit the\nbinding (the implicit `error` constant is the same thing) or pattern-match a concrete error\ntype with `catch let e as MyError`.\n\nLint: A warning is raised on `catch` clauses whose only catch item is a bare identifier\npattern (`let error`, `var x`, `(let error)`) without a type cast or `where` clause. The\nimplicit `catch {}` form is fine.\n",
+          "unevaluatedProperties" : false
+        }
+      },
+      "type" : "object"
     },
     "unusedArguments" : {
       "allOf" : [

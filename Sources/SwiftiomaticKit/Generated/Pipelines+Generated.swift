@@ -37,10 +37,14 @@ class LintPipeline: SyntaxVisitor {
   }
 
   override func visit(_ node: AccessorBlockSyntax) -> SyntaxVisitorContinueKind {
+    visitIfEnabled(AccessorOrder.visit, for: node)
+    visitIfEnabled(ProtocolAccessorOrder.visit, for: node)
     visitIfEnabled(RedundantSelf.visit, for: node)
     return .visitChildren
   }
   override func visitPost(_ node: AccessorBlockSyntax) {
+    onVisitPost(rule: AccessorOrder.self, for: node)
+    onVisitPost(rule: ProtocolAccessorOrder.self, for: node)
     onVisitPost(rule: RedundantSelf.self, for: node)
   }
 
@@ -334,6 +338,14 @@ class LintPipeline: SyntaxVisitor {
   override func visitPost(_ node: ConditionElementSyntax) {
     onVisitPost(rule: ExplicitNilCheck.self, for: node)
     onVisitPost(rule: NoParensAroundConditions.self, for: node)
+  }
+
+  override func visit(_ node: DeclModifierSyntax) -> SyntaxVisitorContinueKind {
+    visitIfEnabled(ACLConsistency.visit, for: node)
+    return .visitChildren
+  }
+  override func visitPost(_ node: DeclModifierSyntax) {
+    onVisitPost(rule: ACLConsistency.self, for: node)
   }
 
   override func visit(_ node: DeclReferenceExprSyntax) -> SyntaxVisitorContinueKind {
@@ -1455,6 +1467,9 @@ extension RewritePipeline {
 
   func rewrite(_ node: Syntax) -> Syntax {
     var node = node
+    if context.shouldFormat(ACLConsistency.self, node: node) {
+      node = ACLConsistency(context: context).rewrite(node)
+    }
     if context.shouldFormat(AvoidNoneName.self, node: node) {
       node = AvoidNoneName(context: context).rewrite(node)
     }
@@ -1697,6 +1712,9 @@ extension RewritePipeline {
     }
     if context.shouldFormat(PrivateStateVariables.self, node: node) {
       node = PrivateStateVariables(context: context).rewrite(node)
+    }
+    if context.shouldFormat(ProtocolAccessorOrder.self, node: node) {
+      node = ProtocolAccessorOrder(context: context).rewrite(node)
     }
     if context.shouldFormat(RedundantAccessControl.self, node: node) {
       node = RedundantAccessControl(context: context).rewrite(node)

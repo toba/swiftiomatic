@@ -41,7 +41,9 @@ package enum ConfigurationRegistry {
 
     /// All known rule types.
     static let allRuleTypes: [any SyntaxRule.Type] = [
+        ACLConsistency.self,
         ASCIIIdentifiers.self,
+        AccessorOrder.self,
         AmbiguousTrailingClosureOverload.self,
         AssociatedValueCount.self,
         AvoidNoneName.self,
@@ -168,6 +170,7 @@ package enum ConfigurationRegistry {
         PreferWeakCapture.self,
         PreferWhereClausesInForLoops.self,
         PrivateStateVariables.self,
+        ProtocolAccessorOrder.self,
         RedundantAccessControl.self,
         RedundantAsync.self,
         RedundantBackticks.self,

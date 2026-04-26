@@ -45,7 +45,8 @@
 		"documentParameters": { "lint": "no" },
 		"disallowBlockComments": { "lint": "warn" },
 		"documentPublicDeclarations": { "lint": "no" },
-		"convertRegularCommentToDocC": { "lint": "no", "rewrite": false }
+		"convertRegularCommentToDocC": { "lint": "no", "rewrite": false },
+		"fileHeader": { "lint": "no", "rewrite": false }
 	},
 	"conditions": {
 		"preferTernary": { "lint": "no", "rewrite": true },
@@ -93,13 +94,22 @@
 				"tearDownWithError()",
 				"invokeTest()"
 			]
-		}
+		},
+		"emptyExtensions": { "lint": "warn", "rewrite": true },
+		"preferSingleLinePropertyGetter": { "lint": "warn", "rewrite": true }
 	},
-
-	"forcing": {
+	"unsafety": {
 		"noForceTry": { "lint": "no", "rewrite": false },
 		"noForceCast": { "lint": "warn", "rewrite": false },
-		"noForceUnwrap": { "lint": "no", "rewrite": false }
+		"noForceUnwrap": { "lint": "no", "rewrite": false },
+		"typedCatchError": { "lint": "warn" }
+	},
+	"memory": {
+		"weakDelegates": { "lint": "warn" },
+		"strongOutlets": { "lint": "warn", "rewrite": true },
+		"preferWeakCapture": { "lint": "no" },
+		"deinitObserverRemoval": { "lint": "warn" },
+		"delegateProtocolRequiresAnyObject": { "lint": "warn" }
 	},
 	"generics": {
 		"opaqueGenericParameters": { "lint": "no", "rewrite": false },
@@ -134,7 +144,11 @@
 		"preferSelfType": { "lint": "warn", "rewrite": true },
 		"preferToggle": { "lint": "warn", "rewrite": true },
 		"requireFatalErrorMessage": { "lint": "warn", "rewrite": false },
-		"retainNotificationObserver": { "lint": "no" }
+		"leadingDotOperators": { "lint": "warn", "rewrite": true },
+		"preferExplicitFalse": { "lint": "no", "rewrite": false },
+		"preferAssertionFailure": { "lint": "warn", "rewrite": true },
+		"preferEnvironmentEntry": { "lint": "no", "rewrite": false },
+		"preferWhereClausesInForLoops": { "lint": "no", "rewrite": true }
 	},
 	"indentation": {
 		"unit": { "spaces": 4 },
@@ -237,7 +251,10 @@
 		"redundantNilCoalescing": { "lint": "warn", "rewrite": true },
 		"redundantOverride": { "lint": "warn", "rewrite": false },
 		"redundantSetterACL": { "lint": "warn", "rewrite": false },
-		"unusedControlFlowLabel": { "lint": "warn" }
+		"unusedControlFlowLabel": { "lint": "warn" },
+		"noBacktickedSelf": { "lint": "warn", "rewrite": true },
+		"noFallThroughOnlyCases": { "lint": "warn", "rewrite": true },
+		"unusedArguments": { "lint": "warn", "rewrite": true }
 	},
 	"sort": {
 		"imports": {
@@ -257,46 +274,34 @@
 	},
 	"testing": {
 		"noGuardInTests": { "lint": "no", "rewrite": false },
+		"validateTestCases": { "lint": "no", "rewrite": false },
 		"preferSwiftTesting": { "lint": "no", "rewrite": false },
-		"swiftTestingTestCaseNames": { "lint": "no", "rewrite": false },
 		"testSuiteAccessControl": { "lint": "no", "rewrite": false },
-		"validateTestCases": { "lint": "no", "rewrite": false }
+		"swiftTestingTestCaseNames": { "lint": "no", "rewrite": false }
 	},
 	"types": {
 		"preferAnyObject": { "lint": "warn", "rewrite": true },
 		"preferVoidReturn": { "lint": "warn", "rewrite": true },
 		"preferShorthandTypeNames": { "lint": "warn", "rewrite": true },
 		"noVoidReturnOnFunctionSignature": { "lint": "warn", "rewrite": true },
-		"noTypeRepetitionInStaticProperties": { "lint": "warn" }
+		"noTypeRepetitionInStaticProperties": { "lint": "warn" },
+		"noImplicitlyUnwrappedOptionals": { "lint": "no" },
+		"noOptionalBool": { "lint": "no" },
+		"noOptionalCollection": { "lint": "no" },
+		"preferFailableStringInit": { "lint": "no" },
+		"preferNonOptionalDataInit": { "lint": "no" }
 	},
-	"unusedArguments": { "lint": "warn", "rewrite": true },
-
 	"wrap": {
-		"collapseSimpleEnums": { "lint": "no", "rewrite": true },
-		"collapseSimpleIfElse": { "lint": "no", "rewrite": true },
-		"compoundCaseItems": { "lint": "no", "rewrite": false },
-		"conditionalAssignment": { "lint": "no", "rewrite": false },
-		"keepFunctionOutputTogether": true,
-		"multilineFunctionChains": { "lint": "no", "rewrite": false },
-		"multilineStatementBraces": { "lint": "no", "rewrite": false },
 		"nestedCallLayout": { "lint": "no", "mode": "inline", "rewrite": true },
 		"singleLineBodies": { "lint": "no", "mode": "inline", "rewrite": true },
+		"switchCaseBodies": { "lint": "no", "mode": "adaptive", "rewrite": true },
+		"compoundCaseItems": { "lint": "no", "rewrite": false },
 		"singleLineComments": { "lint": "no", "rewrite": false },
-		"switchCaseBodies": { "lint": "no", "mode": "adaptive", "rewrite": true }
-	},
-	"strongOutlets": { "lint": "warn", "rewrite": true },
-	"emptyExtensions": { "lint": "warn", "rewrite": true },
-	"leadingDotOperators": { "lint": "warn", "rewrite": true },
-	"fileHeader": { "lint": "no", "rewrite": false },
-	"delegateProtocolRequiresAnyObject": { "lint": "warn" },
-	"weakDelegates": { "lint": "warn" },
-	"noBacktickedSelf": { "lint": "warn", "rewrite": true },
-	"noFallThroughOnlyCases": { "lint": "warn", "rewrite": true },
-	"deinitObserverRemoval": { "lint": "warn" },
-	"preferAssertionFailure": { "lint": "warn", "rewrite": true },
-	"preferEnvironmentEntry": { "lint": "no", "rewrite": false },
-	"preferExplicitFalse": { "lint": "no", "rewrite": false },
-	"preferWhereClausesInForLoops": { "lint": "no", "rewrite": true },
-	"noImplicitlyUnwrappedOptionals": { "lint": "no" },
-	"preferSingleLinePropertyGetter": { "lint": "warn", "rewrite": true }
+		"collapseSimpleEnums": { "lint": "no", "rewrite": true },
+		"collapseSimpleIfElse": { "lint": "no", "rewrite": true },
+		"conditionalAssignment": { "lint": "no", "rewrite": false },
+		"multilineFunctionChains": { "lint": "no", "rewrite": false },
+		"multilineStatementBraces": { "lint": "no", "rewrite": false },
+		"keepFunctionOutputTogether": true
+	}
 }

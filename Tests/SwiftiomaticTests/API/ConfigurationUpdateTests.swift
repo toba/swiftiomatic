@@ -89,8 +89,8 @@ struct ConfigurationUpdateTests {
     #expect(!diff.toAdd.contains("idioms.preferIsEmpty"))
   }
 
-  @Test func detectsUngroupedRulePlacedInGroup() throws {
-    // emptyExtensions is ungrouped (root-level); placing it in `wrap` is misplaced.
+  @Test func detectsRulePlacedInWrongGroup() throws {
+    // emptyExtensions belongs to `declarations`; placing it in `wrap` is misplaced.
     let root = try parse("""
       {
         "wrap": {
@@ -103,7 +103,7 @@ struct ConfigurationUpdateTests {
 
     let entry = try #require(diff.misplaced.first)
     #expect(entry.foundAt == "wrap.emptyExtensions")
-    #expect(entry.correctAt == "emptyExtensions")
+    #expect(entry.correctAt == "declarations.emptyExtensions")
   }
 
   @Test func detectsGroupedRulePlacedAtRoot() throws {
