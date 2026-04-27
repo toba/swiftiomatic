@@ -1,5 +1,7 @@
 // Auto-generated — do not edit.
 
+// sm:ignore-file: fileLength, typeBodyLength, closureBodyLength
+
 import Foundation
 
 /// The JSON Schema for `swiftiomatic.json` configuration files, embedded
@@ -3478,18 +3480,7 @@ package enum ConfigurationSchema {
           "$ref" : "#/$defs/ruleBase"
         }
       ],
-      "description" : "Enforce switch case label indentation style.\n\nTwo styles are supported via `SwitchCaseIndentationConfiguration.Style`:\n- `flush`: `case` labels align with the `switch` keyword (default).\n- `indented`: `case` labels are indented one level from `switch`.\n\nLint: Raised when a `case` or `default` label doesn't match the configured style.\n\nRewrite: Case labels, bodies, and the closing brace are reindented to match.",
-      "properties" : {
-        "style" : {
-          "default" : "flush",
-          "description" : "`flush` aligns case labels with the `switch` keyword; `indented` indents them one level beneath it.\n\nOptions: flush, indented.",
-          "enum" : [
-            "flush",
-            "indented"
-          ],
-          "type" : "string"
-        }
-      }
+      "description" : "Sort switch case items alphabetically within each case.\n\nWhen a case matches multiple patterns (e.g. `case .b, .a, .c:`), the patterns are sorted lexicographically. Numeric literals are compared by value (including hex, octal, and binary). Cases with `where` clauses are only sorted if the `where` clause ends up on the last item.\n\nLint: If case items are not sorted, a lint warning is raised.\n\nRewrite: The case items are reordered alphabetically."
     },
     "testSuiteAccessControl" : {
       "allOf" : [
