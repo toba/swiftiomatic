@@ -161,22 +161,5 @@ package final class LintCoordinator {
         )
         let pipeline = LintPipeline(context: context)
         pipeline.walk(Syntax(syntax))
-
-        if debugOptions.contains(.disablePrettyPrint) {
-            return
-        }
-
-        // Perform whitespace linting by comparing the input source text with the output of the
-        // pretty-printer.
-        let printer = LayoutCoordinator(
-            context: context,
-            source: source,
-            node: Syntax(syntax),
-            printTokenStream: debugOptions.contains(.dumpTokenStream),
-            whitespaceOnly: true
-        )
-        let formatted = printer.prettyPrint()
-        let ws = WhitespaceLinter(user: syntax.description, formatted: formatted, context: context)
-        ws.lint()
     }
 }

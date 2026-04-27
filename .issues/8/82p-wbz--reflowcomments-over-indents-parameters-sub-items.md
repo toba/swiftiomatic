@@ -1,15 +1,15 @@
 ---
 # 82p-wbz
 title: ReflowComments over-indents '- Parameters:' sub-items
-status: review
+status: completed
 type: bug
 priority: high
 created_at: 2026-04-26T21:39:10Z
-updated_at: 2026-04-26T21:49:23Z
+updated_at: 2026-04-27T18:02:42Z
 sync:
     github:
         issue_number: "459"
-        synced_at: "2026-04-26T22:01:42Z"
+        synced_at: "2026-04-27T18:34:22Z"
 ---
 
 ## Problem

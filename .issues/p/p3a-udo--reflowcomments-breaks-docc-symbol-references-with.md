@@ -1,15 +1,15 @@
 ---
 # p3a-udo
 title: ReflowComments breaks DocC '``Symbol``' references with stray spaces
-status: review
+status: completed
 type: bug
 priority: high
 created_at: 2026-04-26T21:49:14Z
-updated_at: 2026-04-26T21:49:14Z
+updated_at: 2026-04-27T18:02:52Z
 sync:
     github:
         issue_number: "460"
-        synced_at: "2026-04-26T22:01:42Z"
+        synced_at: "2026-04-27T18:34:22Z"
 ---
 
 ## Problem

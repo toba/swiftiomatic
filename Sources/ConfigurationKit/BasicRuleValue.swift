@@ -1,5 +1,5 @@
-/// Default value type for simple syntax rules that have no rule-specific
-/// configuration beyond rewrite and lint severity.
+/// Default value type for simple syntax rules that have no rule-specific configuration beyond
+/// rewrite and lint severity.
 ///
 /// ## JSON encoding
 ///

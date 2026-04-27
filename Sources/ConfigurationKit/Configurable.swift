@@ -1,7 +1,7 @@
 /// Derives a lowerCamelCase configuration key from a PascalCase type name.
 ///
-/// Lowercases a leading uppercase run, stopping before the last capital when it
-/// begins the next word: `URLMacro` → `urlMacro`, `BlankLines` → `blankLines`.
+/// Lowercases a leading uppercase run, stopping before the last capital when it begins the next
+/// word: `URLMacro` → `urlMacro` , `BlankLines` → `blankLines` .
 ///
 /// This is the single source of truth for the default key derivation used by both
 /// `Configurable.key` (runtime) and `DetectedRule.configKey` (build-time code generation).
@@ -13,8 +13,8 @@ package func configurationKey(forTypeName name: String) -> String {
 
 /// A configurable item with a key, default value, and optional group membership.
 ///
-/// Both syntax rules and layout settings conform to this protocol, unifying the
-/// concept of "something in the configuration that has a key and a default."
+/// Both syntax rules and layout settings conform to this protocol, unifying the concept of
+/// "something in the configuration that has a key and a default."
 package protocol Configurable {
     /// The type of the default value for this item.
     associatedtype Value: Sendable & Codable & Equatable
@@ -32,17 +32,15 @@ package protocol Configurable {
     static var defaultValue: Value { get }
 }
 
-extension Configurable {
+package extension Configurable {
     /// By default, the key is the name of the conforming type with a lowercase initial letter.
-    package static var key: String {
+    static var key: String {
         let name = String("\(self)".split(separator: ".").last ?? "")
         return configurationKey(forTypeName: name)
     }
-    package static var group: ConfigurationGroup? { nil }
-    package static var description: String { key }
+    static var group: ConfigurationGroup? { nil }
+    static var description: String { key }
 
     /// Fully qualified key: `group.key` for grouped items, bare `key` otherwise.
-    package static var qualifiedKey: String {
-        if let group { "\(group.key).\(key)" } else { key }
-    }
+    static var qualifiedKey: String { if let group { "\(group.key).\(key)" } else { key } }
 }

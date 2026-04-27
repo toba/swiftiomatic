@@ -1,23 +1,20 @@
 import Foundation
 
-// MARK: - Key Sort Order
 
 /// Controls the order of keys in serialized JSON output.
-public enum KeySortOrder: String, Sendable, CaseIterable {
+package enum KeySortOrder: String, Sendable, CaseIterable {
     /// Sort by key length ascending, alphabetical tiebreaker.
     case length
     /// Sort alphabetically (lexicographic).
     case alphabetical
 }
 
-// MARK: - JSON Value
-
 /// A JSON value suitable for schema validation, configuration encoding, and
 /// any context that needs a fully typed JSON representation without ObjC
 /// bridging (`[String: Any]`).
 ///
 /// `JSONDecoder` with `allowsJSON5` produces these directly.
-public enum JSONValue: Sendable, Equatable, Hashable {
+package enum JSONValue: Sendable, Equatable, Hashable {
     case string(String)
     case int(Int)
     case double(Double)

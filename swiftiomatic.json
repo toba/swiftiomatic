@@ -18,7 +18,7 @@
 	},
 	"blankLines": {
 		"aroundMark": { "lint": "no", "rewrite": false },
-		"afterImports": { "lint": "warn", "rewrite": true },
+		"afterImports": { "lint": "no", "rewrite": true },
 		"betweenScopes": { "lint": "no", "rewrite": false },
 		"afterSwitchCase": { "lint": "no", "rewrite": false },
 		"maximumBlankLines": 1,
@@ -51,12 +51,12 @@
 			"approachingExpirySeverity": "warn",
 			"approachingExpiryThreshold": 15
 		},
-		"reflowComments":  { "lint" : "no", "rewrite" : true },
+		"reflowComments": { "lint": "no", "rewrite": true },
 		"noBlockComments": { "lint": "warn" },
 		"noLocalDocComments": { "lint": "warn" },
 		"orphanedDocComment": { "lint": "warn" },
-		"formatSpecialComments": { "lint": "warn", "rewrite": true },
-		"tripleSlashDocComments": { "lint": "warn", "rewrite": true },
+		"formatSpecialComments": { "lint": "no", "rewrite": true },
+		"tripleSlashDocComments": { "lint": "no", "rewrite": true },
 		"requireDocCommentSummary": { "lint": "no" },
 		"documentPublicDeclarations": { "lint": "no" },
 		"docCommentsPrecedeModifiers": { "lint": "warn", "rewrite": true },
@@ -331,27 +331,27 @@
 		"keepFunctionOutputTogether": true
 	},
 	"metrics": {
-		"tupleSize": { "lint": "warn", "error": 4, "warning": 3 },
+		"tupleSize": { "enabled": true, "error": 4, "warning": 3 },
 		"fileLength": {
-			"lint": "warn",
+			"enabled": true,
 			"error": 1000,
 			"warning": 400,
 			"ignoreCommentOnlyLines": true
 		},
 		"nestingDepth": { "lint": "warn", "typeLevel": 1, "functionLevel": 2 },
 		"parameterCount": {
-			"lint": "warn",
+			"enabled": true,
 			"error": 8,
 			"warning": 5,
 			"ignoresDefaultParameters": true
 		},
-		"typeBodyLength": { "lint": "warn", "error": 350, "warning": 250 },
-		"lineLengthLimit": { "lint": "warn", "error": 200, "warning": 120 },
-		"closureBodyLength": { "lint": "warn", "error": 50, "warning": 30 },
-		"functionBodyLength": { "lint": "warn", "error": 100, "warning": 50 },
-		"associatedValueCount": { "lint": "warn", "error": 6, "warning": 5 },
+		"typeBodyLength": { "enabled": true, "error": 1000, "warning": 250 },
+		"lineLengthLimit": { "enabled": false, "error": 200, "warning": 120 },
+		"closureBodyLength": { "enabled": true, "error": 50, "warning": 30 },
+		"functionBodyLength": { "enabled": false, "error": 100, "warning": 50 },
+		"associatedValueCount": { "enabled": true, "error": 6, "warning": 5 },
 		"cyclomaticComplexity": {
-			"lint": "warn",
+			"enabled": true,
 			"error": 20,
 			"warning": 10,
 			"ignoresCaseStatements": false

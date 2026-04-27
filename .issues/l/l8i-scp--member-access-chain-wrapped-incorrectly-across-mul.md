@@ -1,15 +1,15 @@
 ---
 # l8i-scp
 title: Member access chain wrapped incorrectly across multiple lines
-status: review
+status: completed
 type: bug
 priority: normal
 created_at: 2026-04-26T18:42:10Z
-updated_at: 2026-04-26T20:48:13Z
+updated_at: 2026-04-27T18:02:28Z
 sync:
     github:
         issue_number: "454"
-        synced_at: "2026-04-26T20:49:02Z"
+        synced_at: "2026-04-27T18:34:22Z"
 ---
 
 ## Problem
