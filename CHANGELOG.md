@@ -18,13 +18,16 @@
 - Formatter; preserve inline `nestedCallLayout`; don't wrap long strings pointlessly ([#444](https://github.com/toba/swiftiomatic/issues/444))
 - `sm format`; don't mangle closures and `reduce` expressions ([#443](https://github.com/toba/swiftiomatic/issues/443))
 - Member access chain assignment; chain `.` break now beats args `(` and `=` per documented precedence ([#454](https://github.com/toba/swiftiomatic/issues/454))
-- `KeepFunctionOutputTogether`; protocol method no longer wraps return arrow instead of keeping it with the signature ([#456](https://github.com/toba/swiftiomatic/issues/456))
+- `KeepFunctionOutputTogether`; protocol method no longer wraps return arrow off the signature ([#456](https://github.com/toba/swiftiomatic/issues/456))
+- `ReflowComments`; preserve indentation on `- Parameters:` sub-items ([#459](https://github.com/toba/swiftiomatic/issues/459))
+- `ReflowComments`; keep DocC `` ``Symbol`` `` references intact instead of splitting with stray spaces ([#460](https://github.com/toba/swiftiomatic/issues/460))
 
 ### 🗜️ Tweaks
 
 - Port missing SwiftLint rules ([#308](https://github.com/toba/swiftiomatic/issues/308))
 - Align rule type names with config keys ([#441](https://github.com/toba/swiftiomatic/issues/441))
 - Rule configuration groups; rename `forcing`→`unsafety`; add `memory`; regroup ungrouped ([#440](https://github.com/toba/swiftiomatic/issues/440))
+- Add golden-corpus diff harness for format pipeline ([#461](https://github.com/toba/swiftiomatic/issues/461))
 
 ## Week of Apr 19 – Apr 25, 2026
 

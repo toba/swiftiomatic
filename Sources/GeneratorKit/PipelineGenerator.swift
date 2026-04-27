@@ -121,42 +121,6 @@ package final class PipelineGenerator: FileGenerator {
               }
             }
 
-            extension MultiPassRewritePipeline {
-
-              func rewrite(_ node: Syntax) -> Syntax {
-                var node = node
-
-            """
-
-        let detected = collector.rewritingSyntaxRules.map {
-            (typeName: $0.typeName, classification: $0.passClassification)
-        }
-        let passes = PassPartitioner.partition(rules: detected)
-        for pass in passes {
-            result += "        // Pass: \(pass.label)\n"
-            switch pass.kind {
-                case .soloPerRule:
-                    for ruleName in pass.ruleTypeNames {
-                        result += """
-                                if context.shouldFormat(\(ruleName).self, node: node) {
-                                  node = \(ruleName)(context: context).rewrite(node)
-                                }
-
-                            """
-                    }
-                case .combined:
-                    // Combined-rewriter codegen lands with `7x2-5eg` (token-only
-                    // migration). Today every classified rule still falls into the
-                    // catch-all so this branch is unreachable.
-                    result += "        // (combined codegen pending)\n"
-            }
-        }
-
-        result += """
-                return node
-              }
-            }
-
             """
         return result
     }

@@ -141,12 +141,7 @@ let package = Package(
                 .product(name: "SwiftSyntax", package: "swift-syntax"),
                 .product(name: "SwiftSyntaxBuilder", package: "swift-syntax"),
             ],
-            exclude: [
-                "README.md",
-                "GoldenCorpus/README.md",
-                "GoldenCorpus/Inputs",
-                "GoldenCorpus/Snapshots",
-            ]
+            exclude: ["README.md"]
         ),
     ],
     swiftLanguageModes: [.v6]

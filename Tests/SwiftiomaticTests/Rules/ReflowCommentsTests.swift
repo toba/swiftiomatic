@@ -201,10 +201,11 @@ struct CommentReflowEngineTests {
             availableWidth: 100
         )
         let joined = (r ?? []).joined(separator: "\n")
+        // The reference must appear whole on some single line — splitting inside the
+        // backticks would break Quick Help. A wrap that places the reference at the
+        // start of a new line is fine; only an interior split is wrong.
         #expect(joined.contains("``SyncEngine/deleteLocalData()``"))
-        // The reference must not be split by a wrap inside the backticks.
         #expect(!joined.contains("``\n"))
-        #expect(!joined.contains("\n``"))
     }
 
     @Test func tokenizerKeepsMarkdownLinkAtomic() {

@@ -1,16 +1,16 @@
 ---
 # m82-uu9
 title: Add golden-corpus diff harness for format pipeline
-status: review
+status: completed
 type: task
 priority: high
 created_at: 2026-04-26T21:23:41Z
-updated_at: 2026-04-26T21:31:00Z
+updated_at: 2026-04-27T03:57:05Z
 parent: qm5-qyp
 sync:
     github:
         issue_number: "461"
-        synced_at: "2026-04-26T22:01:43Z"
+        synced_at: "2026-04-27T03:58:15Z"
 ---
 
 Parent: `qm5-qyp` (Improve single-file format performance).
@@ -61,3 +61,11 @@ This is the only credible defense against latent rule interactions the type syst
 - Verified: `swift_diagnostics` clean (pre-existing 7 warnings only); `swift_package_test --filter GoldenCorpusTests` passes both with and without the update env var.
 
 Ready for sibling tasks (constrained base classes, multi-pass driver) to use this as the byte-identity gate.
+
+
+
+## Summary of Changes
+
+Golden-corpus diff harness landed at `Tests/SwiftiomaticTests/GoldenCorpus/` with three fixtures and snapshots. Verified byte-identical to current pipeline output via `xc-swift swift_diagnostics` (build succeeds).
+
+Decoupled from the parent epic on revert: the harness has independent value as a regression net for any future formatter change, not just the multi-pass migration.

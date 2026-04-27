@@ -1,15 +1,15 @@
 ---
 # qm5-qyp
 title: Improve single-file format performance (Xcode beachball)
-status: review
+status: scrapped
 type: epic
 priority: high
 created_at: 2026-04-26T20:11:57Z
-updated_at: 2026-04-26T21:23:41Z
+updated_at: 2026-04-27T03:57:05Z
 sync:
     github:
         issue_number: "458"
-        synced_at: "2026-04-26T22:01:42Z"
+        synced_at: "2026-04-27T03:58:14Z"
 ---
 
 ## Problem
@@ -322,3 +322,26 @@ Replace `RewritePipeline.rewrite()` (137 sequential walks) with ~10 passes. Each
 3. Land multi-pass `Generator` extension + driver, all rules initially in the catch-all (zero behavior change).
 4. Migrate pass 1 (token-only); verify golden corpus byte-identical; measure perf delta.
 5. Expand pass by pass, lowest-risk first. Stop when wall-clock hits target.
+
+
+## Reasons for Scrapping
+
+The multi-pass architecture's premise — that ~137 format rules cluster into ~10 wide combined-rewriter passes — is empirically refuted by the rule corpus.
+
+Audit results:
+- 48 rules read `.parent` / `.previousToken` / `.nextToken`.
+- 12 carry mutable instance state across visits.
+- 18 span multiple node kinds for one cross-cutting concern.
+- 9 reshape parent collections.
+
+That's 87 of 137 rules disqualified from any combined pass before semantic write-disjointness analysis even begins. The remaining ~50 rules fragment across token / node / decl / block locality buckets:
+- Pass 1 (TokenLocalFormatRule): 3 rules, all on the same trivia channel — co-walk requires monotonicity proofs the rules don't have. Save: ~44 ms.
+- Pass 2 (NodeLocalFormatRule): ~8 rules, two of them collide on `OptionalBindingConditionSyntax`. Save: ~154 ms.
+- Combined pass-1 + pass-2 ceiling ≈ 200 ms against a 3 s baseline ≈ 7%, not the 11× the epic targeted.
+
+The infrastructure landed (markers, driver, codegen, manifest) cannot earn its keep on this rule population. Reverted in a follow-up commit. The golden-corpus harness from `m82-uu9` is preserved — it's an independent regression net useful for any future formatter change.
+
+Better paths for follow-up perf work:
+- Per-rule node-kind gating (the rejected "Option B"): coarse precheck driven by `RuleCollector.syntaxNodeLinters`. Skips a rule's full-tree walk when the file contains zero relevant node kinds. Estimated 20–40% wall-clock reduction with no semantic risk.
+- Rule-architecture refactor that pushes more rules toward node-local by removing `.parent` reads — multi-quarter effort.
+- Daemon mode (was out of scope) — sidesteps per-invocation cost; needs Xcode-side cooperation.

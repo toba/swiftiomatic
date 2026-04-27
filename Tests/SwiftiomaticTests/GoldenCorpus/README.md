@@ -2,8 +2,6 @@
 
 Byte-identity safety net for `RewriteCoordinator` output.
 
-Tracks issue [`m82-uu9`](../../../.issues/m/m82-uu9--add-golden-corpus-diff-harness-for-format-pipeline.md) under epic [`qm5-qyp`](../../../.issues/q/qm5-qyp--improve-single-file-format-performance-xcode-beach.md).
-
 ## Layout
 
 - `Inputs/<name>.swift.fixture` — source inputs.
@@ -37,5 +35,4 @@ SWIFTIOMATIC_UPDATE_GOLDEN=1 swift test --filter GoldenCorpusTests
 
 Pick something narrow and self-contained. The corpus is for catching architectural
 regressions, not for replacing per-rule unit tests. Aim for a few dozen short files that
-collectively exercise the rules you care about (token-only first; expression-local,
-structural, blank-line, etc. as later passes land).
+collectively exercise the rules you care about.

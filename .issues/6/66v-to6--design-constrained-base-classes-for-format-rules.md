@@ -1,16 +1,16 @@
 ---
 # 66v-to6
 title: Design constrained base classes for format rules
-status: review
+status: scrapped
 type: task
 priority: high
 created_at: 2026-04-26T21:23:41Z
-updated_at: 2026-04-26T21:43:13Z
+updated_at: 2026-04-27T03:57:05Z
 parent: qm5-qyp
 sync:
     github:
         issue_number: "462"
-        synced_at: "2026-04-26T22:01:43Z"
+        synced_at: "2026-04-27T03:58:15Z"
 ---
 
 Parent: `qm5-qyp` (Improve single-file format performance).
@@ -78,3 +78,9 @@ The issue prefers Option 2 — typed accessor structs that physically deny forbi
 - New file `Sources/SwiftiomaticKit/PassClassification/PassClassification.swift` — read-locality protocols (`TokenLocalFormatRule`, `NodeLocalFormatRule`, `DeclLocalFormatRule`, `BlockLocalFormatRule`, `FileGlobalFormatRule`), write-surface protocols (`TriviaOnlyFormatRule` w/ static `channel`, `TokenTextFormatRule`, `ExpressionRewriteFormatRule`, `DeclRewriteFormatRule`, `ListReshapingFormatRule` w/ `CollectionKind` associated type), markers (`IdempotentFormatRule`, `MonotonicWriteFormatRule`, `MustRunAfterFormatRule`, `MustNotShareWithFormatRule`), `TriviaChannel` and `MonotonicDirection` enums.
 - Sandbox examples in `Sources/SwiftiomaticKit/PassClassification/Examples/ExamplePassClassifications.swift` — one per locality bucket. Live outside `Rules/` so `RuleCollector` ignores them; they're documentation-by-example, not registered rules.
 - Build: `swift_diagnostics` succeeds. Test suite: 2979 passed, 0 failed via `swift_package_test` (no behavior change). Performance baseline locked: full pipeline avg 2.283s, rewrite-only 2.143s — confirms ~94% of cost is in `RewritePipeline.rewrite()`.
+
+
+
+## Reasons for Scrapping
+
+Parent epic `qm5-qyp` scrapped after audit refuted the multi-pass architecture's payback assumptions. See parent issue's `## Reasons for Scrapping` for full analysis.

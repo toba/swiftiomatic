@@ -4,9 +4,7 @@ import Testing
 
 /// Locks in byte-identical output of `RewriteCoordinator` against a curated corpus.
 ///
-/// Background: see issue `qm5-qyp` and child `m82-uu9`. The multi-pass rewrite-pipeline
-/// migration must preserve formatter output exactly. This harness is the safety net —
-/// every fixture under `Inputs/` is formatted with the default configuration and compared
+/// Every fixture under `Inputs/` is formatted with the default configuration and compared
 /// to the snapshot under `Snapshots/`. Drift fails the test with a unified diff.
 ///
 /// Regenerate snapshots intentionally by setting `SWIFTIOMATIC_UPDATE_GOLDEN=1` in the
@@ -16,22 +14,13 @@ import Testing
 struct GoldenCorpusTests {
     @Test(arguments: GoldenCorpus.fixtures)
     func formatMatchesSnapshot(_ fixture: GoldenCorpus.Fixture) throws {
-        try check(fixture: fixture, useMultiPass: false)
+        try check(fixture: fixture)
     }
 
-    /// Same corpus, but routed through `MultiPassRewritePipeline`. Until every rule is
-    /// classified into a real pass, the multi-pass driver runs the same one-walk-per-rule
-    /// shape as the legacy pipeline, so output must remain byte-identical.
-    @Test(arguments: GoldenCorpus.fixtures)
-    func multiPassMatchesSnapshot(_ fixture: GoldenCorpus.Fixture) throws {
-        try check(fixture: fixture, useMultiPass: true)
-    }
-
-    private func check(fixture: GoldenCorpus.Fixture, useMultiPass: Bool) throws {
+    private func check(fixture: GoldenCorpus.Fixture) throws {
         let source = try String(contentsOf: fixture.input, encoding: .utf8)
         var actual = ""
         let coordinator = RewriteCoordinator(configuration: Configuration())
-        if useMultiPass { coordinator.debugOptions.insert(.useMultiPassPipeline) }
         do {
             try coordinator.format(
                 source: source,

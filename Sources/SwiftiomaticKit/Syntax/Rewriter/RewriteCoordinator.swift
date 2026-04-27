@@ -173,14 +173,8 @@ package final class RewriteCoordinator {
             sourceFileSyntax: syntax,
             source: source
         )
-        let transformedSyntax: Syntax
-        if debugOptions.contains(.useMultiPassPipeline) {
-            let pipeline = MultiPassRewritePipeline(context: context)
-            transformedSyntax = pipeline.rewrite(Syntax(syntax))
-        } else {
-            let pipeline = RewritePipeline(context: context)
-            transformedSyntax = pipeline.rewrite(Syntax(syntax))
-        }
+        let pipeline = RewritePipeline(context: context)
+        let transformedSyntax = pipeline.rewrite(Syntax(syntax))
 
         if debugOptions.contains(.disablePrettyPrint) {
             outputStream.write(transformedSyntax.description)

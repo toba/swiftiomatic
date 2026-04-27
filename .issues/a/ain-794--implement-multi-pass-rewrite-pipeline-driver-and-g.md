@@ -1,11 +1,11 @@
 ---
 # ain-794
 title: Implement multi-pass rewrite pipeline driver and Generator codegen
-status: review
+status: scrapped
 type: task
 priority: high
 created_at: 2026-04-26T21:23:45Z
-updated_at: 2026-04-26T21:56:43Z
+updated_at: 2026-04-27T03:57:05Z
 parent: qm5-qyp
 blocked_by:
     - 66v-to6
@@ -13,7 +13,7 @@ blocked_by:
 sync:
     github:
         issue_number: "463"
-        synced_at: "2026-04-26T22:01:43Z"
+        synced_at: "2026-04-27T03:58:16Z"
 ---
 
 Parent: `qm5-qyp` (Improve single-file format performance).
@@ -91,3 +91,9 @@ Infrastructure landed; **no rule migrations** in this issue (per spec — that's
 ### Combined-rewriter codegen deferred
 
 `PassPartitioner` returns one catch-all `soloPerRule` pass. The codegen for combined `SyntaxRewriter` per pass (interleaving multiple rules in one walk) is the missing piece needed for actual perf gain; lands with `7x2-5eg` alongside the first real migration so the codegen is exercised by real conformances rather than designed in a vacuum.
+
+
+
+## Reasons for Scrapping
+
+Parent epic `qm5-qyp` scrapped after audit refuted the multi-pass architecture's payback assumptions. See parent issue's `## Reasons for Scrapping` for full analysis.

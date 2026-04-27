@@ -1,18 +1,18 @@
 ---
 # 7x2-5eg
 title: Migrate token-only rules to first multi-pass walk
-status: ready
+status: scrapped
 type: task
 priority: high
 created_at: 2026-04-26T21:23:50Z
-updated_at: 2026-04-26T21:59:10Z
+updated_at: 2026-04-27T03:57:05Z
 parent: qm5-qyp
 blocked_by:
     - ain-794
 sync:
     github:
         issue_number: "464"
-        synced_at: "2026-04-26T22:01:43Z"
+        synced_at: "2026-04-27T03:58:15Z"
 ---
 
 Parent: `qm5-qyp` (Improve single-file format performance).
@@ -100,3 +100,48 @@ What this issue still needs:
 3. **Decide how to handle node-local-but-cheap rules.** If pass 1 ends up with very few token-only rules, the perf win is small. Consider whether `NodeLocalFormatRule` rules (bigger candidate pool) should also share the first combined walk despite the issue scoping pass 1 to token-only.
 
 Gap is documented; reset to ready for a fresh attempt with this context.
+
+
+## Audit Results (2026-04-26)
+
+Walked all 137 format rules. True `TokenLocalFormatRule` candidates eligible for a combined pass-1 walk:
+
+| Rule | File | Visits | Writes |
+|---|---|---|---|
+| `FormatSpecialComments` | `Comments/FormatSpecialComments.swift` | `TokenSyntax` | leading trivia (line/doc comments) |
+| `ReflowComments` | `Comments/ReflowComments.swift` | `TokenSyntax` | leading trivia (line/doc comments) |
+| `WrapSingleLineComments` | `Wrap/WrapSingleLineComments.swift` | `TokenSyntax` | leading trivia (line/doc comments) |
+
+Disqualified candidates and reasons:
+
+- `RedundantBackticks` — reads `.parent` and `.previousToken()` for context.
+- `LeadingDotOperators` — instance state (`pendingLeadingTrivia`, `pendingComment`) across visits.
+- `NoSemicolons` — visits a list collection and inspects siblings, not token-local.
+- `BlankLinesAroundMark` — calls `.previousToken()`.
+- `UppercaseAcronyms` — token-local but opt-in (default off → no perf win).
+- `PreferFileID` — node-local on `MacroExpansionExprSyntax`, not a token visitor.
+
+### Implications
+
+Pass 1 with the 3 candidates would save ≈ 22 ms × 2 = ≈ 44 ms on the 1k-line baseline. Epic target is < 200 ms (need ≈ 11× total speedup). Pass 1 alone delivers < 1.5%. The proof-point therefore validates the codegen mechanically but does not move the headline number.
+
+All 3 candidates write to the same surface (leading trivia, line/doc comment channels). Combining them in one walk is **not write-disjoint** — `ReflowComments` and `WrapSingleLineComments` both rewrite the same comment runs and could oscillate. Co-walk requires either:
+
+1. Static proof that exactly one rule fires per comment run (none of the three currently has such a guarantee), or
+2. A `MonotonicWriteFormatRule` ordering contract between them, or
+3. Solo passes inside the multi-pass driver (no perf win — same shape as today).
+
+### Recommendation
+
+Reset `7x2-5eg` to `draft` and split:
+
+- New task: extend audit to `NodeLocalFormatRule` candidates (broader pool — `EmptyCollectionLiteral`, `CollapseSimpleIfElse`, `ExplicitNilCheck`, `CaseLet`, `AvoidNoneName`, etc.). Pass 2 (expression-local) is the more promising proof-point.
+- New task: trivia-channel write-disjointness analysis for the 3 token-local comment rules before co-walking.
+
+Closing the parent epic on infrastructure-complete + this audit; migration work is sequenced in follow-ups.
+
+
+
+## Reasons for Scrapping
+
+Parent epic `qm5-qyp` scrapped after audit refuted the multi-pass architecture's payback assumptions. See parent issue's `## Reasons for Scrapping` for full analysis.
