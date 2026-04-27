@@ -16,6 +16,8 @@ package final class ConfigurationSchemaSwiftGenerator: FileGenerator {
         return """
             // Auto-generated — do not edit.
 
+            // sm:ignore-file: fileLength, typeBodyLength, closureBodyLength
+
             import Foundation
 
             /// The JSON Schema for `swiftiomatic.json` configuration files, embedded

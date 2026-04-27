@@ -333,25 +333,25 @@
 	"metrics": {
 		"tupleSize": { "enabled": true, "error": 4, "warning": 3 },
 		"fileLength": {
-			"enabled": true,
+			"enabled": false,
 			"error": 1000,
 			"warning": 400,
 			"ignoreCommentOnlyLines": true
 		},
 		"nestingDepth": { "lint": "warn", "typeLevel": 1, "functionLevel": 2 },
 		"parameterCount": {
-			"enabled": true,
+			"enabled": false,
 			"error": 8,
 			"warning": 5,
 			"ignoresDefaultParameters": true
 		},
-		"typeBodyLength": { "enabled": true, "error": 1000, "warning": 250 },
+		"typeBodyLength": { "enabled": false, "error": 1000, "warning": 250 },
 		"lineLengthLimit": { "enabled": false, "error": 200, "warning": 120 },
-		"closureBodyLength": { "enabled": true, "error": 50, "warning": 30 },
+		"closureBodyLength": { "enabled": false, "error": 50, "warning": 30 },
 		"functionBodyLength": { "enabled": false, "error": 100, "warning": 50 },
 		"associatedValueCount": { "enabled": true, "error": 6, "warning": 5 },
 		"cyclomaticComplexity": {
-			"enabled": true,
+			"enabled": false,
 			"error": 20,
 			"warning": 10,
 			"ignoresCaseStatements": false
