@@ -8,5 +8,6 @@ Package.resolved
 .index-build
 *.d
 *.dia
+*.o
 *.swiftdeps
 *.swiftmodule

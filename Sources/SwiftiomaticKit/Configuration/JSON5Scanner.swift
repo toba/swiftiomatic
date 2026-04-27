@@ -44,8 +44,8 @@ struct JSON5Scanner {
 
     struct Token {
         var kind: TokenKind
-        /// Range covering the token text in the source. For `eof` , both bounds equal `source.endIndex`
-        /// .
+        /// Range covering the token text in the source. For `eof` , both bounds equal
+        /// `source.endIndex` .
         var range: Range<String.Index>
     }
 
@@ -63,9 +63,10 @@ struct JSON5Scanner {
         var valueRange: Range<String.Index>
         /// Single-character range covering the trailing `,` , if present.
         var trailingComma: Range<String.Index>?
-        /// Range covering the whole member as a logical block, suitable for deletion: from the start of
-        /// the line containing the key (whitespace before the key on that line is included) through one
-        /// trailing `\n` after the value's trailing comma (or after the value, if no comma).
+        /// Range covering the whole member as a logical block, suitable for deletion: from the
+        /// start of the line containing the key (whitespace before the key on that line is
+        /// included) through one trailing `\n` after the value's trailing comma (or after the
+        /// value, if no comma).
         var fullRange: Range<String.Index>
         /// Whitespace at the start of the line containing the key.
         var indent: Substring
@@ -126,8 +127,8 @@ struct JSON5Scanner {
                 try lexer.advance()
             }
 
-            // Extend full range to one trailing newline (if present) following any horizontal trivia on
-            // the member's line.
+            // Extend full range to one trailing newline (if present) following any horizontal
+            // trivia on the member's line.
             lexer.skipHorizontalAndLineComments()
             var endOfMember = lexer.peek().range.lowerBound
             if lexer.matches(.newline) {
@@ -144,8 +145,7 @@ struct JSON5Scanner {
                     fullRange: memberLineStart..<endOfMember,
                     indent: indent,
                     nested: nested
-                )
-            )
+                ))
 
             lexer.skipInsignificant()
         }
@@ -153,6 +153,7 @@ struct JSON5Scanner {
         let closeTok = try lexer.expect(.braceRight)
         let closeBrace = closeTok.range.lowerBound
         try lexer.advance()
+
         return .init(openBrace: openBrace, closeBrace: closeBrace, members: members)
     }
 
@@ -194,6 +195,7 @@ struct JSON5Scanner {
         while !lexer.matches(.bracketRight, .eof) {
             _ = try parseValue()
             lexer.skipInsignificant()
+
             if lexer.matches(.comma) {
                 try lexer.advance()
                 lexer.skipInsignificant()
@@ -202,8 +204,8 @@ struct JSON5Scanner {
         _ = try lexer.consume(.bracketRight)
     }
 
-    /// Decodes a `"..."` or `'...'` string literal. Handles common escapes; unsupported escapes pass
-    /// through as their literal escaped character.
+    /// Decodes a `"..."` or `'...'` string literal. Handles common escapes; unsupported escapes
+    /// pass through as their literal escaped character.
     private func decodeStringLiteral(at range: Range<String.Index>) -> String {
         guard range.lowerBound < range.upperBound else { return "" }
         let quote = source[range.lowerBound]
@@ -248,8 +250,9 @@ struct JSON5Scanner {
 
     // MARK: - lineStart
 
-    /// Walks back from `i` to the character just past the previous `\n` , or to `startIndex` if there
-    /// is no preceding newline. The result points at the first column of the line containing `i` .
+    /// Walks back from `i` to the character just past the previous `\n` , or to `startIndex` if
+    /// there is no preceding newline. The result points at the first column of the line containing
+    /// `i` .
     private func lineStart(of i: String.Index) -> String.Index {
         var p = i
         while p > source.startIndex {
@@ -264,14 +267,17 @@ struct JSON5Scanner {
 // MARK: - Lexer
 
 extension JSON5Scanner {
-    /// JSON5 lexer with explicit token stream. Matches the structure of `croct-tech/json5-parser-js`
-    /// — an iterator with `peek/next/consume/ expect/matches/skipInsignificant` . Tokens carry source
-    /// ranges; all state advances are explicit so the scanner can attach token positions directly to
-    /// surgical edits.
+    /// JSON5 lexer with explicit token stream. Matches the structure of
+    /// `croct-tech/json5-parser-js` — an iterator with
+    /// `peek/next/consume/ expect/matches/skipInsignificant` . Tokens carry source ranges; all
+    /// state advances are explicit so the scanner can attach token positions directly to surgical
+    /// edits.
     struct Lexer {
         let source: String
         private var cursor: String.Index
         private var current: Token
+
+        var isEOF: Bool { current.kind == .eof }
 
         init(source: String) {
             self.source = source
@@ -280,10 +286,7 @@ extension JSON5Scanner {
             current = Token(kind: .eof, range: source.startIndex..<source.startIndex)
         }
 
-        var isEOF: Bool { current.kind == .eof }
-
         func peek() -> Token { current }
-
         func matches(_ kinds: TokenKind...) -> Bool { kinds.contains(current.kind) }
 
         /// Throws unless the current token has one of `kinds` , then returns it without advancing.
@@ -313,8 +316,8 @@ extension JSON5Scanner {
             while matches(.whitespace, .newline, .lineComment, .blockComment) { try? advance() }
         }
 
-        /// Skips horizontal whitespace and inline line comments — used between a value and its trailing
-        /// `,` to keep multi-line members coherent.
+        /// Skips horizontal whitespace and inline line comments — used between a value and its
+        /// trailing `,` to keep multi-line members coherent.
         mutating func skipHorizontalAndLineComments() {
             while matches(.whitespace, .lineComment) { try? advance() }
         }
@@ -352,8 +355,8 @@ extension JSON5Scanner {
                 default: break
             }
 
-            // Newlines (counted as their own token so the scanner can pin the end of a member to the
-            // right line).
+            // Newlines (counted as their own token so the scanner can pin the end of a member to
+            // the right line).
             if c == "\r" {
                 cursor = source.index(after: cursor)
                 if cursor < source.endIndex, source[cursor] == "\n" {
@@ -406,8 +409,8 @@ extension JSON5Scanner {
                         throw Error.unexpectedEOF
                     }
                 }
-                // Bare `/` is not a valid token at the structural level. Fall through to scalar so the
-                // parser surfaces the right error.
+                // Bare `/` is not a valid token at the structural level. Fall through to scalar so
+                // the parser surfaces the right error.
             }
 
             // Strings (single or double quoted).
@@ -418,8 +421,8 @@ extension JSON5Scanner {
 
             // Identifier / scalar — distinguished by leading character.
             if isIdentifierStart(c) {
-                // Could be a JSON5 keyword (true/false/null/Infinity/NaN) or an unquoted identifier key.
-                // Same scan, then classify.
+                // Could be a JSON5 keyword (true/false/null/Infinity/NaN) or an unquoted identifier
+                // key. Same scan, then classify.
                 while cursor < source.endIndex, isIdentifierPart(source[cursor]) {
                     cursor = source.index(after: cursor)
                 }
@@ -437,7 +440,6 @@ extension JSON5Scanner {
                 try lexNumber()
                 return
             }
-
             throw Error.unexpected(c, at: start)
         }
 
@@ -452,10 +454,13 @@ extension JSON5Scanner {
         private mutating func lexString(quote: Character) throws(JSON5Scanner.Error) {
             let start = cursor
             cursor = source.index(after: cursor)  // consume opening quote
+
             while cursor < source.endIndex {
                 let c = source[cursor]
+
                 if c == "\\" {
                     cursor = source.index(after: cursor)
+
                     if cursor < source.endIndex {
                         // Handle \r\n as a single escape continuation.
                         if source[cursor] == "\r" {
@@ -474,8 +479,8 @@ extension JSON5Scanner {
                     current = Token(kind: .string, range: start..<cursor)
                     return
                 }
-                // JSON5 disallows raw newlines inside strings; we still terminate on them defensively to
-                // keep the lexer well-behaved on malformed input.
+                // JSON5 disallows raw newlines inside strings; we still terminate on them
+                // defensively to keep the lexer well-behaved on malformed input.
                 if c == "\n" || c == "\r" { break }
                 cursor = source.index(after: cursor)
             }
@@ -503,6 +508,7 @@ extension JSON5Scanner {
                next == "x" || next == "X"
             {
                 cursor = source.index(after: source.index(after: cursor))
+
                 while cursor < source.endIndex, source[cursor].isHexDigit {
                     cursor = source.index(after: cursor)
                 }
@@ -513,6 +519,7 @@ extension JSON5Scanner {
             // Generic numeric scan: digits, dot, exponent.
             while cursor < source.endIndex {
                 let c = source[cursor]
+
                 if c.isASCIIDigit || c == "." || c == "e" || c == "E" || c == "+" || c == "-" {
                     cursor = source.index(after: cursor)
                 } else {
@@ -529,29 +536,22 @@ extension JSON5Scanner {
             switch c {
                 case " ", "\t", "\u{0B}", "\u{0C}", "\u{A0}", "\u{FEFF}",
                     "\u{1680}", "\u{2028}", "\u{2029}", "\u{202F}", "\u{205F}", "\u{3000}":
-                    return true
+                    true
                 default:
                     if let s = c.unicodeScalars.first, s.value >= 0x2000, s.value <= 0x200A {
-                        return true
+                        true
+                    } else {
+                        false
                     }
-                    return false
             }
         }
 
         private func isIdentifierStart(_ c: Character) -> Bool {
-            if c == "$" || c == "_" {
-                true
-            } else if c.isLetter {
-                true
-            } else {
-                false
-            }
+            if c == "$" || c == "_" { true } else if c.isLetter { true } else { false }
         }
 
         private func isIdentifierPart(_ c: Character) -> Bool {
-            if isIdentifierStart(c) {
-                true
-            } else if c.isASCIIDigit {
+            if isIdentifierStart(c) || c.isASCIIDigit {
                 true
             } else if let s = c.unicodeScalars.first, s.value == 0x200C || s.value == 0x200D {
                 true
@@ -567,8 +567,9 @@ extension JSON5Scanner {
 fileprivate extension Character {
     var isASCIIDigit: Bool {
         if let s = unicodeScalars.first, s.value >= 0x30, s.value <= 0x39 {
-            return unicodeScalars.count == 1
+            unicodeScalars.count == 1
+        } else {
+            false
         }
-        return false
     }
 }

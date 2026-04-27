@@ -43,6 +43,24 @@ extension LintPipeline {
         }
     }
 
+    /// Dispatches `visitPost` to a cached lint rule instance and cleans up
+    /// `shouldSkipChildren` bookkeeping. Lint rules with stateful visitors rely
+    /// on this to balance their `visit`/`visitPost` enter/leave pairs.
+    func onVisitPost<V: SyntaxRuleValue, Rule: LintSyntaxRule<V>, Node: SyntaxProtocol>(
+        _ visitor: (Rule) -> (Node) -> Void,
+        for node: Node
+    ) {
+        let ruleId = ObjectIdentifier(Rule.self)
+        if case .some(let skipNode) = self.shouldSkipChildren[ruleId],
+            node.id == skipNode.id
+        {
+            self.shouldSkipChildren.removeValue(forKey: ruleId)
+        }
+        if let cached = ruleCache[ruleId] as? Rule {
+            visitor(cached)(node)
+        }
+    }
+
     /// Retrieves an instance of a lint or format rule based on its type.
     private func rule<R: SyntaxRule>(_ type: R.Type) -> R {
         let identifier = ObjectIdentifier(type)

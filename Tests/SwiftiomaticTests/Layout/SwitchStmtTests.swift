@@ -246,7 +246,7 @@ struct SwitchStmtTests: LayoutTesting {
       case let (x, y) where x == -y:
         print("Opposite sign")
       case let (reallyLongName, anotherLongName)
-      where reallyLongName == -anotherLongName:
+        where reallyLongName == -anotherLongName:
         print("Opposite sign")
       case let (x, y): print("Arbitrary value")
       }
@@ -254,6 +254,29 @@ struct SwitchStmtTests: LayoutTesting {
       """
 
     assertLayout(input: input, expected: expected, linelength: 45)
+  }
+
+  @Test func switchCaseWhereClauseIndentsPastCase() {
+    let input =
+      """
+      switch pair {
+      case (.break(let breakKind, _, .soft(1, _, _)), .comment(let c2, _)) where breakAllowsCommentMerge(breakKind) && (c2.kind == .docLine || c2.kind == .line):
+        merge()
+      }
+      """
+
+    let expected =
+      """
+      switch pair {
+      case (.break(let breakKind, _, .soft(1, _, _)), .comment(let c2, _))
+        where breakAllowsCommentMerge(breakKind)
+        && (c2.kind == .docLine || c2.kind == .line):
+        merge()
+      }
+
+      """
+
+    assertLayout(input: input, expected: expected, linelength: 80)
   }
 
   @Test func switchExpression1() {
@@ -429,7 +452,7 @@ struct SwitchStmtTests: LayoutTesting {
           + quxxe:
         break
       case baz
-      where bar
+        where bar
         && (quxxe
           + 10000):
         break

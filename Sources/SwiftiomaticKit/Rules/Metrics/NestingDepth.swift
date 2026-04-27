@@ -110,8 +110,8 @@ package struct NestingDepthConfiguration: SyntaxRuleValue {
     /// Maximum permitted nesting depth for type declarations
     /// (struct/class/enum/actor/protocol inside another type).
     package var typeLevel: Int = 1
-    /// Maximum permitted nesting depth for control-flow blocks inside a
-    /// function body (if/for/while/switch/closure).
+    /// Maximum permitted nesting depth for nested function-like declarations
+    /// (`func`, `init`, `subscript`).
     package var functionLevel: Int = 2
 
     package var rewrite: Bool {

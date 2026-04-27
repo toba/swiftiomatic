@@ -1,17 +1,17 @@
-//===----------------------------------------------------------------------===//
+// ===----------------------------------------------------------------------===//
 //
 // This source file is part of the Swift.org open source project
 //
-// Copyright (c) 2014 - 2019 Apple Inc. and the Swift project authors
-// Licensed under Apache License v2.0 with Runtime Library Exception
+// Copyright (c) 2014 - 2019 Apple Inc. and the Swift project authors Licensed under Apache License
+// v2.0 with Runtime Library Exception
 //
-// See https://swift.org/LICENSE.txt for license information
-// See https://swift.org/CONTRIBUTORS.txt for the list of Swift project authors
+// See https://swift.org/LICENSE.txt for license information See https://swift.org/CONTRIBUTORS.txt
+// for the list of Swift project authors
 //
-//===----------------------------------------------------------------------===//
+// ===----------------------------------------------------------------------===//
 
-import SwiftOperators
 import SwiftSyntax
+import SwiftOperators
 
 extension TokenStream {
     func extractLeadingTrivia(_ token: TokenSyntax) {
@@ -30,155 +30,151 @@ extension TokenStream {
             trivia = token.leadingTrivia
         }
 
-        // If we're at the end of the file, determine at which index to stop checking trivia pieces to
-        // prevent trailing newlines.
-        var cutoffIndex: Int? = nil
+        // If we're at the end of the file, determine at which index to stop checking trivia pieces
+        // to prevent trailing newlines.
+        var cutoffIndex: Int?
         if token.tokenKind == TokenKind.endOfFile {
             cutoffIndex = 0
             for (index, piece) in trivia.enumerated() {
                 switch piece {
-                case .newlines(_), .carriageReturns(_), .carriageReturnLineFeeds(_):
-                    continue
-                default:
-                    cutoffIndex = index + 1
+                    case .newlines, .carriageReturns, .carriageReturnLineFeeds: continue
+                    default: cutoffIndex = index + 1
                 }
             }
         }
 
         // Updated throughout the loop to indicate whether the next newline *must* be honored (for
-        // example, even if discretionary newlines are discarded). This is the case when the preceding
-        // trivia was a line comment or garbage text.
+        // example, even if discretionary newlines are discarded). This is the case when the
+        // preceding trivia was a line comment or garbage text.
         var requiresNextNewline = false
-        // Tracking whether or not the last piece was leading indentation. A newline is considered
-        // a 0-space indentation; used for nesting/un-nesting block comments during formatting.
-        var leadingIndent: Indent? = nil
+
+        // Tracking whether or not the last piece was leading indentation. A newline is considered a
+        // 0-space indentation; used for nesting/un-nesting block comments during formatting.
+        var leadingIndent: Indent?
 
         for (index, piece) in trivia.enumerated() {
             if let cutoff = cutoffIndex, index == cutoff { break }
 
             switch piece {
-            case .lineComment(let text):
-                if index > 0 || isStartOfFile {
+                case let .lineComment(text):
+                    if index > 0 || isStartOfFile {
+                        generateEnableFormattingIfNecessary(
+                            position..<position + piece.sourceLength)
+                        appendToken(
+                            .comment(
+                                Comment(kind: .line, leadingIndent: leadingIndent, text: text),
+                                wasEndOfLine: false
+                            ))
+                        generateDisableFormattingIfNecessary(position + piece.sourceLength)
+                        appendNewlines(.soft)
+                        isStartOfFile = false
+                    }
+                    requiresNextNewline = true
+                    leadingIndent = nil
+
+                case let .blockComment(text):
+                    if index > 0 || isStartOfFile {
+                        let isStandaloneLeadingComment = leadingIndent != nil || isStartOfFile
+                        generateEnableFormattingIfNecessary(
+                            position..<position + piece.sourceLength)
+                        appendToken(
+                            .comment(
+                                Comment(kind: .block, leadingIndent: leadingIndent, text: text),
+                                wasEndOfLine: false
+                            ))
+                        generateDisableFormattingIfNecessary(position + piece.sourceLength)
+                        // There is always a break after the comment to allow a discretionary newline
+                        // after it.
+                        var breakSize = 0
+                        if index + 1 < trivia.endIndex {
+                            let nextPiece = trivia[index + 1]
+                            // The original number of spaces is intentionally discarded, but 1 space is
+                            // allowed in case the comment is followed by another token instead of a
+                            // newline.
+                            if case .spaces = nextPiece { breakSize = 1 }
+                        }
+                        appendToken(.break(.same, size: breakSize))
+                        isStartOfFile = false
+                        requiresNextNewline = isStandaloneLeadingComment
+                    } else {
+                        requiresNextNewline = false
+                    }
+                    leadingIndent = nil
+
+                case let .docLineComment(text):
                     generateEnableFormattingIfNecessary(position..<position + piece.sourceLength)
                     appendToken(
                         .comment(
-                            Comment(kind: .line, leadingIndent: leadingIndent, text: text),
+                            Comment(kind: .docLine, leadingIndent: leadingIndent, text: text),
                             wasEndOfLine: false
-                        )
-                    )
+                        ))
                     generateDisableFormattingIfNecessary(position + piece.sourceLength)
                     appendNewlines(.soft)
                     isStartOfFile = false
-                }
-                requiresNextNewline = true
-                leadingIndent = nil
+                    requiresNextNewline = true
+                    leadingIndent = nil
 
-            case .blockComment(let text):
-                if index > 0 || isStartOfFile {
-                    let isStandaloneLeadingComment = leadingIndent != nil || isStartOfFile
+                case let .docBlockComment(text):
                     generateEnableFormattingIfNecessary(position..<position + piece.sourceLength)
                     appendToken(
                         .comment(
-                            Comment(kind: .block, leadingIndent: leadingIndent, text: text),
+                            Comment(kind: .docBlock, leadingIndent: leadingIndent, text: text),
                             wasEndOfLine: false
-                        )
-                    )
+                        ))
                     generateDisableFormattingIfNecessary(position + piece.sourceLength)
-                    // There is always a break after the comment to allow a discretionary newline after it.
-                    var breakSize = 0
-                    if index + 1 < trivia.endIndex {
-                        let nextPiece = trivia[index + 1]
-                        // The original number of spaces is intentionally discarded, but 1 space is allowed in
-                        // case the comment is followed by another token instead of a newline.
-                        if case .spaces = nextPiece { breakSize = 1 }
-                    }
-                    appendToken(.break(.same, size: breakSize))
+                    appendNewlines(.soft)
                     isStartOfFile = false
-                    requiresNextNewline = isStandaloneLeadingComment
-                } else {
                     requiresNextNewline = false
-                }
-                leadingIndent = nil
+                    leadingIndent = nil
 
-            case .docLineComment(let text):
-                generateEnableFormattingIfNecessary(position..<position + piece.sourceLength)
-                appendToken(
-                    .comment(
-                        Comment(kind: .docLine, leadingIndent: leadingIndent, text: text),
-                        wasEndOfLine: false
-                    )
-                )
-                generateDisableFormattingIfNecessary(position + piece.sourceLength)
-                appendNewlines(.soft)
-                isStartOfFile = false
-                requiresNextNewline = true
-                leadingIndent = nil
-
-            case .docBlockComment(let text):
-                generateEnableFormattingIfNecessary(position..<position + piece.sourceLength)
-                appendToken(
-                    .comment(
-                        Comment(kind: .docBlock, leadingIndent: leadingIndent, text: text),
-                        wasEndOfLine: false
-                    )
-                )
-                generateDisableFormattingIfNecessary(position + piece.sourceLength)
-                appendNewlines(.soft)
-                isStartOfFile = false
-                requiresNextNewline = false
-                leadingIndent = nil
-
-            case .newlines(let count), .carriageReturns(let count),
-                .carriageReturnLineFeeds(let count):
-                if config[IndentBlankLines.self],
-                    let leadingIndent, leadingIndent.count > 0
-                {
-                    requiresNextNewline = true
-                }
-
-                leadingIndent = .spaces(0)
-                guard !isStartOfFile else { break }
-
-                if requiresNextNewline
-                    || (config[RespectExistingLineBreaks.self]
-                        && isDiscretionaryNewlineAllowed(before: token))
-                {
-                    appendNewlines(.soft(count: count, discretionary: true))
-                } else {
-                    // Even if discretionary line breaks are not being respected, we still respect multiple
-                    // line breaks in order to keep blank separator lines that the user might want.
-                    // TODO: It would be nice to restrict this to only allow multiple lines between statements
-                    // and declarations; as currently implemented, multiple newlines will locally ignore the
-                    // configuration setting.
-                    if count > 1 {
-                        appendNewlines(.soft(count: count, discretionary: true))
+                case let .newlines(count), let .carriageReturns(count),
+                    let .carriageReturnLineFeeds(count):
+                    if config[IndentBlankLines.self],
+                       let leadingIndent, leadingIndent.count > 0
+                    {
+                        requiresNextNewline = true
                     }
-                }
 
-            case .unexpectedText(let text):
-                // Garbage text in leading trivia might be something meaningful that would be disruptive to
-                // throw away when formatting the file, like a hashbang line or Unicode byte-order marker at
-                // the beginning of a file, or source control conflict markers. Keep it as verbatim text so
-                // that it is printed exactly as we got it.
-                appendToken(.verbatim(Verbatim(text: text, indentingBehavior: .none)))
+                    leadingIndent = .spaces(0)
+                    guard !isStartOfFile else { break }
 
-                // Unicode byte-order markers shouldn't allow leading newlines to otherwise appear in the
-                // file, nor should they modify our detection of the beginning of the file.
-                let isBOM = text == "\u{feff}"
-                requiresNextNewline = !isBOM
-                isStartOfFile = isStartOfFile && isBOM
-                leadingIndent = nil
+                    if requiresNextNewline
+                        || (config[RespectExistingLineBreaks.self]
+                            && isDiscretionaryNewlineAllowed(before: token))
+                    {
+                        appendNewlines(.soft(count: count, discretionary: true))
+                    } else {
+                        // Even if discretionary line breaks are not being respected, we still respect multiple
+                        // line breaks in order to keep blank separator lines that the user might want.
+                        // TODO: It would be nice to restrict this to only allow multiple lines between statements
+                        // and declarations; as currently implemented, multiple newlines will locally ignore the
+                        // configuration setting.
+                        if count > 1 { appendNewlines(.soft(count: count, discretionary: true)) }
+                    }
 
-            case .backslashes, .formfeeds, .pounds, .verticalTabs:
-                leadingIndent = nil
+                case let .unexpectedText(text):
+                    // Garbage text in leading trivia might be something meaningful that would be
+                    // disruptive to throw away when formatting the file, like a hashbang line or
+                    // Unicode byte-order marker at the beginning of a file, or source control conflict
+                    // markers. Keep it as verbatim text so that it is printed exactly as we got it.
+                    appendToken(.verbatim(Verbatim(text: text, indentingBehavior: .none)))
 
-            case .spaces(let n):
-                guard leadingIndent == .spaces(0) else { break }
-                leadingIndent = .spaces(n)
+                    // Unicode byte-order markers shouldn't allow leading newlines to otherwise appear
+                    // in the file, nor should they modify our detection of the beginning of the file.
+                    let isBOM = text == "\u{feff}"
+                    requiresNextNewline = !isBOM
+                    isStartOfFile = isStartOfFile && isBOM
+                    leadingIndent = nil
 
-            case .tabs(let n):
-                guard leadingIndent == .spaces(0) else { break }
-                leadingIndent = .tabs(n)
+                case .backslashes, .formfeeds, .pounds, .verticalTabs: leadingIndent = nil
+
+                case let .spaces(n):
+                    guard leadingIndent == .spaces(0) else { break }
+                    leadingIndent = .spaces(n)
+
+                case let .tabs(n):
+                    guard leadingIndent == .spaces(0) else { break }
+                    leadingIndent = .tabs(n)
             }
             position += piece.sourceLength
         }
@@ -191,18 +187,18 @@ extension TokenStream {
     /// - Overwriting the newlines of the most recent break.
     /// - Appending to the newlines of the most recent break.
     func appendNewlines(_ newlines: NewlineBehavior) {
-        guard let lastBreakIndex = lastBreakIndex else {
-            // When there haven't been any breaks yet, there can't be any indentation to maintain so a
-            // same break is safe here.
+        guard let lastBreakIndex else {
+            // When there haven't been any breaks yet, there can't be any indentation to maintain so
+            // a same break is safe here.
             appendToken(.break(.same, size: 0, newlines: newlines))
             return
         }
 
         let lastBreak = tokens[lastBreakIndex]
-        // `lastBreakIndex` is internal bookkeeping maintained by `appendToken`; reaching
-        // this branch with a non-break token means the bookkeeping is broken (programmer
-        // error), not malformed input. Skip silently in release.
-        guard case .break(let kind, let size, let existingNewlines) = lastBreak else {
+        // `lastBreakIndex` is internal bookkeeping maintained by `appendToken` ; reaching this
+        // branch with a non-break token means the bookkeeping is broken (programmer error), not
+        // malformed input. Skip silently in release.
+        guard case let .break(kind, size, existingNewlines) = lastBreak else {
             assertionFailure("Found non-break token at lastBreakIndex. TokenStream is invalid.")
             return
         }
@@ -214,11 +210,10 @@ extension TokenStream {
 
         // Otherwise, create and insert a new break whose `kind` is compatible with last break.
         let compatibleKind: BreakKind
+
         switch kind {
-        case .open, .close, .reset, .same:
-            compatibleKind = .same
-        case .continue, .contextual:
-            compatibleKind = kind
+            case .open, .close, .reset, .same: compatibleKind = .same
+            case .continue, .contextual: compatibleKind = kind
         }
         appendToken(.break(compatibleKind, size: 0, newlines: newlines))
     }
@@ -229,64 +224,63 @@ extension TokenStream {
     /// desired, like merging adjacent comments and newlines.
     func appendToken(_ token: Token) {
         func breakAllowsCommentMerge(_ breakKind: BreakKind) -> Bool {
-            return breakKind == .same || breakKind == .continue || breakKind == .contextual
+            breakKind == .same || breakKind == .continue || breakKind == .contextual
         }
 
         if let last = tokens.last {
             switch (last, token) {
-            case (.break(_, _, .escaped), _), (_, .break(_, _, .escaped)):
-                lastBreakIndex = tokens.endIndex
-                // Don't allow merging for .escaped breaks
-                canMergeNewlinesIntoLastBreak = false
-                tokens.append(token)
-                return
-            case (.break(let breakKind, _, .soft(1, _, _)), .comment(let c2, _))
-            where breakAllowsCommentMerge(breakKind) && (c2.kind == .docLine || c2.kind == .line):
-                // we are search for the pattern of [line comment] - [soft break 1] - [line comment]
-                // where the comment type is the same; these can be merged into a single comment
-                if let nextToLast = tokens.dropLast().last,
-                    case .comment(let c1, false) = nextToLast,
-                    c1.kind == c2.kind
-                {
-                    var mergedComment = c1
-                    mergedComment.addText(c2.text)
-                    tokens.removeLast()  // remove the soft break
-                    // replace the original comment with the merged one
-                    tokens[tokens.count - 1] = .comment(mergedComment, wasEndOfLine: false)
-
-                    // need to fix lastBreakIndex because we just removed the last break
-                    lastBreakIndex = tokens.lastIndex(where: {
-                        switch $0 {
-                        case .break: return true
-                        default: return false
-                        }
-                    })
+                case (.break(_, _, .escaped), _), (_, .break(_, _, .escaped)):
+                    lastBreakIndex = tokens.endIndex
+                    // Don't allow merging for .escaped breaks
                     canMergeNewlinesIntoLastBreak = false
-
+                    tokens.append(token)
                     return
-                }
+                case (.break(let breakKind, _, .soft(1, _, _)), .comment(let c2, _))
+                    where breakAllowsCommentMerge(breakKind)
+                        && (c2.kind == .docLine || c2.kind == .line):
+                    // we are search for the pattern of [line comment] - [soft break 1] - [line comment]
+                    // where the comment type is the same; these can be merged into a single comment
+                    if let nextToLast = tokens.dropLast().last,
+                       case .comment(let c1, false) = nextToLast,
+                       c1.kind == c2.kind
+                    {
+                        var mergedComment = c1
+                        mergedComment.addText(c2.text)
+                        tokens.removeLast()  // remove the soft break
+                        // replace the original comment with the merged one
+                        tokens[tokens.count - 1] = .comment(mergedComment, wasEndOfLine: false)
 
-            // If we see a pair of spaces where one or both are flexible, combine them into a new token
-            // with the maximum of their counts.
-            case (.space(let first, let firstFlexible), .space(let second, let secondFlexible))
-            where firstFlexible || secondFlexible:
-                tokens[tokens.count - 1] = .space(size: max(first, second), flexible: true)
-                return
+                        // need to fix lastBreakIndex because we just removed the last break
+                        lastBreakIndex = tokens.lastIndex(where: {
+                            switch $0 {
+                                case .break: true
+                                default: false
+                            }
+                        })
+                        canMergeNewlinesIntoLastBreak = false
 
-            default:
-                break
+                        return
+                    }
+
+                // If we see a pair of spaces where one or both are flexible, combine them into a new
+                // token with the maximum of their counts.
+                case (.space(let first, let firstFlexible), .space(let second, let secondFlexible))
+                where firstFlexible || secondFlexible:
+                    tokens[tokens.count - 1] = .space(size: max(first, second), flexible: true)
+                    return
+
+                default: break
             }
         }
 
         switch token {
-        case .break:
-            lastBreakIndex = tokens.endIndex
-            canMergeNewlinesIntoLastBreak = true
-        case .open, .printerControl, .contextualBreakingStart, .enableFormatting,
-            .disableFormatting:
-            break
-        default:
-            canMergeNewlinesIntoLastBreak = false
+            case .break:
+                lastBreakIndex = tokens.endIndex
+                canMergeNewlinesIntoLastBreak = true
+            case .open, .printerControl, .contextualBreakingStart, .enableFormatting,
+                .disableFormatting:
+                break
+            default: canMergeNewlinesIntoLastBreak = false
         }
         tokens.append(token)
     }
@@ -296,13 +290,13 @@ extension TokenStream {
     func startsWithOpenDelimiter(_ node: Syntax) -> Bool {
         guard let token = node.firstToken(viewMode: .sourceAccurate) else { return false }
         switch token.tokenKind {
-        case .leftBrace, .leftParen, .leftSquare: return true
-        default: return false
+            case .leftBrace, .leftParen, .leftSquare: return true
+            default: return false
         }
     }
 
-    /// Returns true if open/close breaks should be inserted around the entire function call argument
-    /// list.
+    /// Returns true if open/close breaks should be inserted around the entire function call
+    /// argument list.
     func shouldGroupAroundArgumentList(_ arguments: LabeledExprListSyntax) -> Bool {
         let argumentCount = arguments.count
 
@@ -324,23 +318,22 @@ extension TokenStream {
         of expr: T,
         argumentListPath: KeyPath<T, LabeledExprListSyntax>
     ) -> Bool {
-        guard
-            let parent = expr.parent,
-            parent.is(MemberAccessExprSyntax.self) || parent.is(PostfixIfConfigExprSyntax.self)
+        guard let parent = expr.parent,
+              parent.is(MemberAccessExprSyntax.self) || parent.is(PostfixIfConfigExprSyntax.self)
         else { return false }
 
         let argumentList = expr[keyPath: argumentListPath]
 
-        // When there's a single compact argument, there is no extra indentation for the argument and
-        // the argument's own internal reset break will reset indentation.
+        // When there's a single compact argument, there is no extra indentation for the argument
+        // and the argument's own internal reset break will reset indentation.
         return !isCompactSingleFunctionCallArgument(argumentList)
     }
 
     /// Returns true if the argument list can be compacted, even if it spans multiple lines (where
     /// compact means that it can start immediately after the open parenthesis).
     ///
-    /// This is true for any argument list that contains a single argument (labeled or unlabeled) that
-    /// is an array, dictionary, or closure literal.
+    /// This is true for any argument list that contains a single argument (labeled or unlabeled)
+    /// that is an array, dictionary, or closure literal.
     func isCompactSingleFunctionCallArgument(_ argumentList: LabeledExprListSyntax) -> Bool {
         guard argumentList.count == 1 else { return false }
 
@@ -353,8 +346,8 @@ extension TokenStream {
     ///
     /// Adding groups around these expressions allows them to prefer breaking onto a newline before
     /// the expression, keeping the entire expression together when possible, before breaking inside
-    /// the expression. This is a hand-crafted list of expressions that generally look better when the
-    /// break(s) before the expression fire before breaks inside of the expression.
+    /// the expression. This is a hand-crafted list of expressions that generally look better when
+    /// the break(s) before the expression fire before breaks inside of the expression.
     func maybeGroupAroundSubexpression(
         _ expr: ExprSyntax,
         combiningOperator operatorExpr: ExprSyntax? = nil
@@ -362,49 +355,46 @@ extension TokenStream {
         // For assignments, omit the surrounding group on member-access / subscript / function-call
         // RHS so the `=` break's chunk is bounded by the chain's first inner break. With the group
         // present, the `=` break sees the entire RHS as one chunk and fires prematurely instead of
-        // letting the chain absorb the wrap (precedence: inner `.` > `=`).
+        // letting the chain absorb the wrap (precedence: inner `.` > `=` ).
         let isAssignment = operatorExpr.map(isAssigningOperator) ?? false
 
         switch Syntax(expr).kind {
-        case .memberAccessExpr, .subscriptCallExpr:
-            if !isAssignment {
-                before(expr.firstToken(viewMode: .sourceAccurate), tokens: .open)
-                after(expr.lastToken(viewMode: .sourceAccurate), tokens: .close)
-            }
-        default:
-            break
+            case .memberAccessExpr, .subscriptCallExpr:
+                if !isAssignment {
+                    before(expr.firstToken(viewMode: .sourceAccurate), tokens: .open)
+                    after(expr.lastToken(viewMode: .sourceAccurate), tokens: .close)
+                }
+            default: break
         }
 
         // When a function call expression is assigned to an lvalue, we omit the group around the
-        // function call so that the callee and open parenthesis can remain on the same line, if they
-        // fit. This is a frequent enough case that the outcome looks better with the exception in
-        // place.
+        // function call so that the callee and open parenthesis can remain on the same line, if
+        // they fit. This is a frequent enough case that the outcome looks better with the exception
+        // in place.
         if expr.is(FunctionCallExprSyntax.self), !isAssignment {
             before(expr.firstToken(viewMode: .sourceAccurate), tokens: .open)
             after(expr.lastToken(viewMode: .sourceAccurate), tokens: .close)
         }
     }
 
-    /// Returns whether the given expression consists of multiple subexpressions. Certain expressions
-    /// that are known to wrap an expression, e.g. try expressions, are handled by checking the
-    /// expression that they contain.
+    /// Returns whether the given expression consists of multiple subexpressions. Certain
+    /// expressions that are known to wrap an expression, e.g. try expressions, are handled by
+    /// checking the expression that they contain.
     func isCompoundExpression(_ expr: ExprSyntax) -> Bool {
         if let modifiedExpr = expr.asProtocol(KeywordModifiedExprSyntax.self) {
             return isCompoundExpression(modifiedExpr.expression)
         }
         switch Syntax(expr).as(SyntaxEnum.self) {
-        case .infixOperatorExpr, .ternaryExpr, .isExpr, .asExpr:
-            return true
-        case .tupleExpr(let tupleExpr) where tupleExpr.elements.count == 1:
-            return isCompoundExpression(tupleExpr.elements.first!.expression)
-        default:
-            return false
+            case .infixOperatorExpr, .ternaryExpr, .isExpr, .asExpr: return true
+            case let .tupleExpr(tupleExpr) where tupleExpr.elements.count == 1:
+                return isCompoundExpression(tupleExpr.elements.first!.expression)
+            default: return false
         }
     }
 
     /// Returns whether the given expression is or begins with a member access chain (e.g.
-    /// `foo.bar(...)`, `foo.bar(...).baz(...)`). Used to detect method-chaining RHS expressions
-    /// in assignments so the formatter prefers breaking at dots rather than after `=`.
+    /// `foo.bar(...)` , `foo.bar(...).baz(...)` ). Used to detect method-chaining RHS expressions
+    /// in assignments so the formatter prefers breaking at dots rather than after `=` .
     func isMemberAccessChain(_ expr: ExprSyntax) -> Bool {
         if let callingExpr = expr.asProtocol(CallingExprSyntax.self) {
             return callingExpr.calledExpression.is(MemberAccessExprSyntax.self)
@@ -414,28 +404,27 @@ extension TokenStream {
     }
 
     /// Returns whether the given function call expression participates in an outer member-access
-    /// chain — that is, walking up through transparent postfix wrappers (`?`, `!`), the eventual
+    /// chain — that is, walking up through transparent postfix wrappers ( `?` , `!` ), the eventual
     /// parent is a `MemberAccessExpr` that uses this call as its base. In that case, the call's
-    /// `.calledExpression` (e.g. `base.method`) should NOT be wrapped in a small open/close group,
+    /// `.calledExpression` (e.g. `base.method` ) should NOT be wrapped in a small open/close group,
     /// because doing so bounds the chunk of the contextual break before `.method` and prevents the
     /// outer chain break from firing per documented break precedence.
     func isPartOfOuterMemberAccessChain(_ call: FunctionCallExprSyntax) -> Bool {
-        var current: Syntax = Syntax(call)
+        var current = Syntax(call)
         while let parent = current.parent {
             switch parent.kind {
-            case .optionalChainingExpr, .forceUnwrapExpr, .postfixOperatorExpr,
-                .postfixIfConfigExpr:
-                current = parent
-            case .memberAccessExpr:
-                if let memberAccess = parent.as(MemberAccessExprSyntax.self),
-                    let base = memberAccess.base,
-                    base.id == current.id
-                {
-                    return true
-                }
-                return false
-            default:
-                return false
+                case .optionalChainingExpr, .forceUnwrapExpr, .postfixOperatorExpr,
+                    .postfixIfConfigExpr:
+                    current = parent
+                case .memberAccessExpr:
+                    if let memberAccess = parent.as(MemberAccessExprSyntax.self),
+                       let base = memberAccess.base,
+                       base.id == current.id
+                    {
+                        return true
+                    }
+                    return false
+                default: return false
             }
         }
         return false
@@ -443,7 +432,7 @@ extension TokenStream {
 
     /// Whether an expression should use break precedence — `ignoresDiscretionary` + open/close
     /// grouping — so the formatter prefers inner operator breaks over the enclosing break position.
-    /// Used for both assignment (`=`) and keyword (`guard`) breaks.
+    /// Used for both assignment ( `=` ) and keyword ( `guard` ) breaks.
     func shouldApplyBreakPrecedence(_ expr: ExprSyntax) -> Bool {
         isCompoundExpression(expr)
             && leftmostMultilineStringLiteral(of: expr) == nil
@@ -451,11 +440,13 @@ extension TokenStream {
     }
 
     /// Places break tokens after an assignment-style operator and matching close tokens around the
-    /// RHS. Shared by `InfixOperatorExpr` (assigning operators) and `PatternBinding` (`let/var = …`).
+    /// RHS. Shared by `InfixOperatorExpr` (assigning operators) and `PatternBinding` (
+    /// `let/var = …` ).
     ///
     /// Strategies, in priority order:
-    /// - Ternary RHS: skips stacked indent so the engine prefers `?`/`:` breaks over `=`.
-    /// - Stacked indent (parens, `&&`/`||`): wraps the RHS scope with stacked continuation indent.
+    /// - Ternary RHS: skips stacked indent so the engine prefers `?` / `:` breaks over `=` .
+    /// - Stacked indent (parens, `&&` / `||` ): wraps the RHS scope with stacked continuation
+    ///   indent.
     /// - Group-before-break (chains, binary operators): places `.open` before the break so inner
     ///   operator breaks get priority over the `=` break.
     /// - Otherwise: a simple continuation break.
@@ -464,32 +455,26 @@ extension TokenStream {
         rhs: ExprSyntax,
         operatorExpr: ExprSyntax? = nil
     ) {
-        let isCompound =
-            isCompoundExpression(rhs) && leftmostMultilineStringLiteral(of: rhs) == nil
+        let isCompound = isCompoundExpression(rhs) && leftmostMultilineStringLiteral(of: rhs) == nil
         let hasMemberChain = isMemberAccessChain(rhs)
-        let canGroupBeforeBreak =
-            (isCompound || hasMemberChain) && !hasLeadingLineComments(rhs)
+        let canGroupBeforeBreak = (isCompound || hasMemberChain) && !hasLeadingLineComments(rhs)
         let isTernaryRhs = rhs.is(TernaryExprSyntax.self)
 
         if !isTernaryRhs,
-            let (unindentingNode, _, breakKind, shouldGroup) =
-                stackedIndentationBehavior(after: operatorExpr, rhs: rhs)
+           let (unindentingNode, _, breakKind, shouldGroup) =
+               stackedIndentationBehavior(after: operatorExpr, rhs: rhs)
         {
             var openTokens: [Token] = [
                 .break(
                     .open(kind: breakKind),
                     newlines: .elective(ignoresDiscretionary: true)
-                ),
+                )
             ]
-            if shouldGroup {
-                openTokens.append(.open)
-            }
+            if shouldGroup { openTokens.append(.open) }
             after(equal, tokens: openTokens)
 
             var closeTokens: [Token] = [.break(.close(mustBreak: false), size: 0)]
-            if shouldGroup {
-                closeTokens.append(.close)
-            }
+            if shouldGroup { closeTokens.append(.close) }
             after(unindentingNode.lastToken(viewMode: .sourceAccurate), tokens: closeTokens)
 
             if isCompound {
@@ -519,39 +504,32 @@ extension TokenStream {
         guard let firstToken = expr.firstToken(viewMode: .sourceAccurate) else { return false }
         return firstToken.leadingTrivia.contains { piece in
             switch piece {
-            case .lineComment, .blockComment, .docLineComment, .docBlockComment:
-                return true
-            default:
-                return false
+                case .lineComment, .blockComment, .docLineComment, .docBlockComment: true
+                default: false
             }
         }
     }
 
-    /// Returns whether the given operator behaves as an assignment, to assign a right-hand-side to a
-    /// left-hand-side in a `InfixOperatorExpr`.
+    /// Returns whether the given operator behaves as an assignment, to assign a right-hand-side to
+    /// a left-hand-side in a `InfixOperatorExpr` .
     ///
-    /// Assignment is defined as either being an assignment operator (i.e. `=`) or any operator that
-    /// uses "assignment" precedence.
-    /// Returns whether the given expression is the left-hand side of an assignment operator
-    /// (`=`, `+=`, `-=`, etc.). Used to suppress contextual-break insertion in LHS chains so a
-    /// short member access target like `obj.member = …` is not split across multiple lines.
+    /// Assignment is defined as either being an assignment operator (i.e. `=` ) or any operator
+    /// that uses "assignment" precedence. Returns whether the given expression is the left-hand
+    /// side of an assignment operator ( `=` , `+=` , `-=` , etc.). Used to suppress
+    /// contextual-break insertion in LHS chains so a short member access target like
+    /// `obj.member = …` is not split across multiple lines.
     func isAssignmentLHS(_ expr: ExprSyntax) -> Bool {
         guard let parent = expr.parent?.as(InfixOperatorExprSyntax.self),
-            parent.leftOperand.id == expr.id
-        else {
-            return false
-        }
+              parent.leftOperand.id == expr.id else { return false }
         return isAssigningOperator(parent.operator)
     }
 
     func isAssigningOperator(_ operatorExpr: ExprSyntax) -> Bool {
-        if operatorExpr.is(AssignmentExprSyntax.self) {
-            return true
-        }
+        if operatorExpr.is(AssignmentExprSyntax.self) { return true }
         if let binOpExpr = operatorExpr.as(BinaryOperatorExprSyntax.self) {
             if let binOp = operatorTable.infixOperator(named: binOpExpr.operator.text),
-                let precedenceGroup = binOp.precedenceGroup,
-                precedenceGroup == "AssignmentPrecedence"
+               let precedenceGroup = binOp.precedenceGroup,
+               precedenceGroup == "AssignmentPrecedence"
             {
                 return true
             }
@@ -564,18 +542,15 @@ extension TokenStream {
     ///
     /// - Parameter expr: The expression whose parenthesized leftmost subexpression should be
     ///   returned.
-    /// - Returns: The parenthesized leftmost subexpression, or nil if the leftmost subexpression was
-    ///   not parenthesized.
+    /// - Returns: The parenthesized leftmost subexpression, or nil if the leftmost subexpression
+    ///   was not parenthesized.
     func parenthesizedLeftmostExpr(of expr: ExprSyntax) -> TupleExprSyntax? {
         switch Syntax(expr).as(SyntaxEnum.self) {
-        case .tupleExpr(let tupleExpr) where tupleExpr.elements.count == 1:
-            return tupleExpr
-        case .infixOperatorExpr(let infixOperatorExpr):
-            return parenthesizedLeftmostExpr(of: infixOperatorExpr.leftOperand)
-        case .ternaryExpr(let ternaryExpr):
-            return parenthesizedLeftmostExpr(of: ternaryExpr.condition)
-        default:
-            return nil
+            case let .tupleExpr(tupleExpr) where tupleExpr.elements.count == 1: tupleExpr
+            case let .infixOperatorExpr(infixOperatorExpr):
+                parenthesizedLeftmostExpr(of: infixOperatorExpr.leftOperand)
+            case let .ternaryExpr(ternaryExpr): parenthesizedLeftmostExpr(of: ternaryExpr.condition)
+            default: nil
         }
     }
 
@@ -590,36 +565,35 @@ extension TokenStream {
         of expr: ExprSyntax,
         ifMatching predicate: (ExprSyntax) -> Bool
     ) -> ExprSyntax? {
-        if predicate(expr) {
-            return expr
-        }
+        if predicate(expr) { return expr }
         switch Syntax(expr).as(SyntaxEnum.self) {
-        case .infixOperatorExpr(let infixOperatorExpr):
-            return leftmostExpr(of: infixOperatorExpr.leftOperand, ifMatching: predicate)
-        case .asExpr(let asExpr):
-            return leftmostExpr(of: asExpr.expression, ifMatching: predicate)
-        case .isExpr(let isExpr):
-            return leftmostExpr(of: isExpr.expression, ifMatching: predicate)
-        case .forceUnwrapExpr(let forcedValueExpr):
-            return leftmostExpr(of: forcedValueExpr.expression, ifMatching: predicate)
-        case .optionalChainingExpr(let optionalChainingExpr):
-            return leftmostExpr(of: optionalChainingExpr.expression, ifMatching: predicate)
-        case .postfixOperatorExpr(let postfixUnaryExpr):
-            return leftmostExpr(of: postfixUnaryExpr.expression, ifMatching: predicate)
-        case .prefixOperatorExpr(let prefixOperatorExpr):
-            return leftmostExpr(of: prefixOperatorExpr.expression, ifMatching: predicate)
-        case .ternaryExpr(let ternaryExpr):
-            return leftmostExpr(of: ternaryExpr.condition, ifMatching: predicate)
-        case .functionCallExpr(let functionCallExpr):
-            return leftmostExpr(of: functionCallExpr.calledExpression, ifMatching: predicate)
-        case .subscriptCallExpr(let subscriptExpr):
-            return leftmostExpr(of: subscriptExpr.calledExpression, ifMatching: predicate)
-        case .memberAccessExpr(let memberAccessExpr):
-            return memberAccessExpr.base.flatMap { leftmostExpr(of: $0, ifMatching: predicate) }
-        case .postfixIfConfigExpr(let postfixIfConfigExpr):
-            return postfixIfConfigExpr.base.flatMap { leftmostExpr(of: $0, ifMatching: predicate) }
-        default:
-            return nil
+            case let .infixOperatorExpr(infixOperatorExpr):
+                return leftmostExpr(of: infixOperatorExpr.leftOperand, ifMatching: predicate)
+            case let .asExpr(asExpr):
+                return leftmostExpr(of: asExpr.expression, ifMatching: predicate)
+            case let .isExpr(isExpr):
+                return leftmostExpr(of: isExpr.expression, ifMatching: predicate)
+            case let .forceUnwrapExpr(forcedValueExpr):
+                return leftmostExpr(of: forcedValueExpr.expression, ifMatching: predicate)
+            case let .optionalChainingExpr(optionalChainingExpr):
+                return leftmostExpr(of: optionalChainingExpr.expression, ifMatching: predicate)
+            case let .postfixOperatorExpr(postfixUnaryExpr):
+                return leftmostExpr(of: postfixUnaryExpr.expression, ifMatching: predicate)
+            case let .prefixOperatorExpr(prefixOperatorExpr):
+                return leftmostExpr(of: prefixOperatorExpr.expression, ifMatching: predicate)
+            case let .ternaryExpr(ternaryExpr):
+                return leftmostExpr(of: ternaryExpr.condition, ifMatching: predicate)
+            case let .functionCallExpr(functionCallExpr):
+                return leftmostExpr(of: functionCallExpr.calledExpression, ifMatching: predicate)
+            case let .subscriptCallExpr(subscriptExpr):
+                return leftmostExpr(of: subscriptExpr.calledExpression, ifMatching: predicate)
+            case let .memberAccessExpr(memberAccessExpr):
+                return memberAccessExpr.base.flatMap { leftmostExpr(of: $0, ifMatching: predicate) }
+            case let .postfixIfConfigExpr(postfixIfConfigExpr):
+                return postfixIfConfigExpr.base.flatMap {
+                    leftmostExpr(of: $0, ifMatching: predicate)
+                }
+            default: return nil
         }
     }
 
@@ -631,7 +605,7 @@ extension TokenStream {
     /// - Returns: The leftmost multiline string literal, or nil if the leftmost subexpression was
     ///   not a multiline string literal.
     func leftmostMultilineStringLiteral(of expr: ExprSyntax) -> StringLiteralExprSyntax? {
-        return leftmostExpr(of: expr) {
+        leftmostExpr(of: expr) {
             $0.as(StringLiteralExprSyntax.self)?.openingQuote.tokenKind == .multilineStringQuote
         }?.as(StringLiteralExprSyntax.self)
     }
@@ -641,19 +615,14 @@ extension TokenStream {
     /// returned node's `lastToken` are delimiter tokens that shouldn't be preceded by a break.
     func outermostEnclosingNode(from node: Syntax) -> Syntax? {
         guard let afterToken = node.lastToken(viewMode: .sourceAccurate)?.nextToken(viewMode: .all),
-            closingDelimiterTokens.contains(afterToken)
-        else {
-            return nil
-        }
+              closingDelimiterTokens.contains(afterToken) else { return nil }
         var parenthesizedExpr = afterToken.parent
         while let nextToken = parenthesizedExpr?.lastToken(viewMode: .sourceAccurate)?.nextToken(
             viewMode: .all
         ),
-            closingDelimiterTokens.contains(nextToken),
-            let nextExpr = nextToken.parent
-        {
-            parenthesizedExpr = nextExpr
-        }
+              closingDelimiterTokens.contains(nextToken),
+              let nextExpr = nextToken.parent
+        { parenthesizedExpr = nextExpr }
         return parenthesizedExpr
     }
 
@@ -663,9 +632,9 @@ extension TokenStream {
     /// should be placed around the operator and the expression.
     ///
     /// Stacking is applied around parenthesized expressions, but also for low-precedence operators
-    /// that frequently occur in long chains, such as logical AND (`&&`) and OR (`||`) in conditional
-    /// statements. In this case, the extra level of indentation helps to improve readability with the
-    /// operators inside those conditions even when parentheses are not used.
+    /// that frequently occur in long chains, such as logical AND ( `&&` ) and OR ( `||` ) in
+    /// conditional statements. In this case, the extra level of indentation helps to improve
+    /// readability with the operators inside those conditions even when parentheses are not used.
     func stackedIndentationBehavior(
         after operatorExpr: ExprSyntax? = nil,
         rhs: ExprSyntax
@@ -673,21 +642,21 @@ extension TokenStream {
     {
         // Check for logical operators first, and if it's that kind of operator, stack indentation
         // around the entire right-hand-side. We have to do this check before checking the RHS for
-        // parentheses because if the user writes something like `... && (foo) > bar || ...`, we don't
-        // want the indentation stacking that starts before the `&&` to stop after the closing
-        // parenthesis in `(foo)`.
+        // parentheses because if the user writes something like `... && (foo) > bar || ...` , we
+        // don't want the indentation stacking that starts before the `&&` to stop after the closing
+        // parenthesis in `(foo)` .
         //
         // We also want to reset after undoing the stacked indentation so that we have a visual
         // indication that the subexpression has ended.
         if let binOpExpr = operatorExpr?.as(BinaryOperatorExprSyntax.self) {
             if let binOp = operatorTable.infixOperator(named: binOpExpr.operator.text),
-                let precedenceGroup = binOp.precedenceGroup,
-                precedenceGroup == "LogicalConjunctionPrecedence"
-                    || precedenceGroup == "LogicalDisjunctionPrecedence"
+               let precedenceGroup = binOp.precedenceGroup,
+               precedenceGroup == "LogicalConjunctionPrecedence"
+                   || precedenceGroup == "LogicalDisjunctionPrecedence"
             {
-                // When `rhs` side is the last sequence in an enclosing parenthesized expression, absorb the
-                // paren into the right hand side by unindenting after the final closing paren. This glues
-                // the paren to the last token of `rhs`.
+                // When `rhs` side is the last sequence in an enclosing parenthesized expression,
+                // absorb the paren into the right hand side by unindenting after the final closing
+                // paren. This glues the paren to the last token of `rhs` .
                 if let unindentingParenExpr = outermostEnclosingNode(from: Syntax(rhs)) {
                     return (
                         unindentingNode: unindentingParenExpr,
@@ -708,8 +677,8 @@ extension TokenStream {
         // If the right-hand-side is a ternary expression, stack indentation around the condition so
         // that it is indented relative to the `?` and `:` tokens.
         if let ternaryExpr = rhs.as(TernaryExprSyntax.self) {
-            // We don't try to absorb any parens in this case, because the condition of a ternary cannot
-            // be grouped with any exprs outside of the condition.
+            // We don't try to absorb any parens in this case, because the condition of a ternary
+            // cannot be grouped with any exprs outside of the condition.
             return (
                 unindentingNode: Syntax(ternaryExpr.condition),
                 shouldReset: false,
@@ -718,13 +687,14 @@ extension TokenStream {
             )
         }
 
-        // If the right-hand-side of the operator is or starts with a parenthesized expression, stack
-        // indentation around the operator and those parentheses. We don't need to reset here because
-        // the parentheses are sufficient to provide a visual indication of the nesting relationship.
+        // If the right-hand-side of the operator is or starts with a parenthesized expression,
+        // stack indentation around the operator and those parentheses. We don't need to reset here
+        // because the parentheses are sufficient to provide a visual indication of the nesting
+        // relationship.
         if let parenthesizedExpr = parenthesizedLeftmostExpr(of: rhs) {
-            // When `rhs` side is the last sequence in an enclosing parenthesized expression, absorb the
-            // paren into the right hand side by unindenting after the final closing paren. This glues the
-            // paren to the last token of `rhs`.
+            // When `rhs` side is the last sequence in an enclosing parenthesized expression, absorb
+            // the paren into the right hand side by unindenting after the final closing paren. This
+            // glues the paren to the last token of `rhs` .
             if let unindentingParenExpr = outermostEnclosingNode(from: Syntax(rhs)) {
                 return (
                     unindentingNode: unindentingParenExpr,
@@ -735,8 +705,8 @@ extension TokenStream {
             }
 
             if let innerExpr = parenthesizedExpr.elements.first?.expression,
-                let stringLiteralExpr = innerExpr.as(StringLiteralExprSyntax.self),
-                stringLiteralExpr.openingQuote.tokenKind == .multilineStringQuote
+               let stringLiteralExpr = innerExpr.as(StringLiteralExprSyntax.self),
+               stringLiteralExpr.openingQuote.tokenKind == .multilineStringQuote
             {
                 pendingMultilineStringBreakKinds[stringLiteralExpr] = .continue
                 return nil
@@ -779,5 +749,4 @@ extension TokenStream {
         // Otherwise, don't stack--use regular continuation breaks instead.
         return nil
     }
-
 }

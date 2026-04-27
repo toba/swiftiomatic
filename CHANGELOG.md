@@ -22,6 +22,8 @@
 - `ReflowComments`; preserve indentation on `- Parameters:` sub-items ([#459](https://github.com/toba/swiftiomatic/issues/459))
 - `ReflowComments`; keep DocC `` ``Symbol`` `` references intact instead of splitting with stray spaces ([#460](https://github.com/toba/swiftiomatic/issues/460))
 - Suppress whitespace findings during `sm lint`; indentation no longer surfaces as warnings in Xcode ([#465](https://github.com/toba/swiftiomatic/issues/465))
+- `case ... where ...`; indent the `where` keyword past `case` when the clause wraps
+- `NestingDepth`; depth counter now decrements on `visitPost`
 
 ### 🗜️ Tweaks
 

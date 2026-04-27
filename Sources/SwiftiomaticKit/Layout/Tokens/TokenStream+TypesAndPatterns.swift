@@ -397,15 +397,23 @@ extension TokenStream {
         //     }
         //
         let wherePrecedingBreak: Token
+        let whereTrailingBreak: Token
         if !config[ElseCatchOnNewLine.self],
             let parent = node.parent, parent.is(CatchItemSyntax.self)
         {
             wherePrecedingBreak = .break(.continue)
+            whereTrailingBreak = .break
+        } else if let parent = node.parent, parent.is(SwitchCaseItemSyntax.self) {
+            // Indent `where` past `case` when it wraps, and indent the
+            // condition continuation one further level if it also wraps.
+            wherePrecedingBreak = .break(.continue)
+            whereTrailingBreak = .break(.continue)
         } else {
             wherePrecedingBreak = .break(.same)
+            whereTrailingBreak = .break
         }
         before(node.whereKeyword, tokens: wherePrecedingBreak, .open)
-        after(node.whereKeyword, tokens: .break)
+        after(node.whereKeyword, tokens: whereTrailingBreak)
         after(node.lastToken(viewMode: .sourceAccurate), tokens: .close)
         return .visitChildren
     }
