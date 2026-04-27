@@ -1,14 +1,14 @@
-//===----------------------------------------------------------------------===//
+// ===----------------------------------------------------------------------===//
 //
 // This source file is part of the Swift.org open source project
 //
-// Copyright (c) 2014 - 2019 Apple Inc. and the Swift project authors
-// Licensed under Apache License v2.0 with Runtime Library Exception
+// Copyright (c) 2014 - 2019 Apple Inc. and the Swift project authors Licensed under Apache License
+// v2.0 with Runtime Library Exception
 //
-// See https://swift.org/LICENSE.txt for license information
-// See https://swift.org/CONTRIBUTORS.txt for the list of Swift project authors
+// See https://swift.org/LICENSE.txt for license information See https://swift.org/CONTRIBUTORS.txt
+// for the list of Swift project authors
 //
-//===----------------------------------------------------------------------===//
+// ===----------------------------------------------------------------------===//
 
 import SwiftSyntax
 
@@ -21,35 +21,35 @@ extension TokenStream {
     }
 
     func visitTupleExpr(_ node: TupleExprSyntax) -> SyntaxVisitorContinueKind {
-        // We'll do nothing if it's a zero-element tuple, because we just want to keep the empty `()`
-        // together.
+        // We'll do nothing if it's a zero-element tuple, because we just want to keep the empty
+        // `()` together.
         let elementCount = node.elements.count
 
         if elementCount == 1 {
-            // A tuple with one element is a parenthesized expression; add a group around it to keep it
-            // together when possible, but breaks are handled elsewhere (see calls to
-            // `stackedIndentationBehavior`).
+            // A tuple with one element is a parenthesized expression; add a group around it to keep
+            // it together when possible, but breaks are handled elsewhere (see calls to
+            // `stackedIndentationBehavior` ).
             after(node.leftParen, tokens: .open)
             before(node.rightParen, tokens: .close)
             closingDelimiterTokens.insert(node.rightParen)
 
-            // When there's a comment inside of a parenthesized expression, we want to allow the comment
-            // to exist at the EOL with the left paren or on its own line. The contents are always
-            // indented on the following lines, since parens always create a scope. An open/close break
-            // pair isn't used here to avoid forcing the closing paren down onto a new line.
+            // When there's a comment inside of a parenthesized expression, we want to allow the
+            // comment to exist at the EOL with the left paren or on its own line. The contents are
+            // always indented on the following lines, since parens always create a scope. An
+            // open/close break pair isn't used here to avoid forcing the closing paren down onto a
+            // new line.
             if node.leftParen.nextToken(viewMode: .all)?.hasPrecedingLineComment ?? false {
                 after(node.leftParen, tokens: .break(.continue, size: 0))
             }
         } else if elementCount > 1 {
-            // Tuples with more than one element are "true" tuples, and should indent as block structures.
+            // Tuples with more than one element are "true" tuples, and should indent as block
+            // structures.
             after(node.leftParen, tokens: .break(.open, size: 0), .open)
             before(node.rightParen, tokens: .break(.close, size: 0), .close)
 
             insertTokens(.break(.same), betweenElementsOf: node.elements)
 
-            for element in node.elements {
-                arrangeAsTupleExprElement(element)
-            }
+            for element in node.elements { arrangeAsTupleExprElement(element) }
         }
 
         return .visitChildren
@@ -60,12 +60,7 @@ extension TokenStream {
         return .visitChildren
     }
 
-    func visitLabeledExpr(_ node: LabeledExprSyntax) -> SyntaxVisitorContinueKind {
-        // Intentionally do nothing here. Since `TupleExprElement`s are used both in tuple expressions
-        // and function argument lists, which need to be formatted, differently, those nodes manually
-        // loop over the nodes and arrange them in those contexts.
-        return .visitChildren
-    }
+    func visitLabeledExpr(_: LabeledExprSyntax) -> SyntaxVisitorContinueKind { .visitChildren }
 
     /// Arranges the given tuple expression element as a tuple element (rather than a function call
     /// argument).
@@ -75,9 +70,7 @@ extension TokenStream {
         before(node.firstToken(viewMode: .sourceAccurate), tokens: .open)
         after(node.colon, tokens: .break)
         after(node.lastToken(viewMode: .sourceAccurate), tokens: .close)
-        if let trailingComma = node.trailingComma {
-            closingDelimiterTokens.insert(trailingComma)
-        }
+        if let trailingComma = node.trailingComma { closingDelimiterTokens.insert(trailingComma) }
     }
 
     func visitArrayExpr(_ node: ArrayExprSyntax) -> SyntaxVisitorContinueKind {
@@ -103,13 +96,11 @@ extension TokenStream {
         return .visitChildren
     }
 
-    func visitArrayElement(_ node: ArrayElementSyntax) -> SyntaxVisitorContinueKind {
-        return .visitChildren
-    }
+    func visitArrayElement(_: ArrayElementSyntax) -> SyntaxVisitorContinueKind { .visitChildren }
 
     func visitDictionaryExpr(_ node: DictionaryExprSyntax) -> SyntaxVisitorContinueKind {
-        // The node's content is either a `DictionaryElementListSyntax` or a `TokenSyntax` for a colon
-        // token (for an empty dictionary).
+        // The node's content is either a `DictionaryElementListSyntax` or a `TokenSyntax` for a
+        // colon token (for an empty dictionary).
         if !(node.content.as(DictionaryElementListSyntax.self)?.isEmpty ?? true)
             || node.content.hasAnyPrecedingComment
             || node.rightSquare.hasAnyPrecedingComment
@@ -120,7 +111,9 @@ extension TokenStream {
         return .visitChildren
     }
 
-    func visitDictionaryElementList(_ node: DictionaryElementListSyntax) -> SyntaxVisitorContinueKind {
+    func visitDictionaryElementList(
+        _ node: DictionaryElementListSyntax
+    ) -> SyntaxVisitorContinueKind {
         insertTokens(.break(.same), betweenElementsOf: node)
 
         for element in node {
@@ -141,8 +134,8 @@ extension TokenStream {
         return .visitChildren
     }
 
-    func visitDictionaryElement(_ node: DictionaryElementSyntax) -> SyntaxVisitorContinueKind {
-        return .visitChildren
+    func visitDictionaryElement(_: DictionaryElementSyntax) -> SyntaxVisitorContinueKind {
+        .visitChildren
     }
 
     func visitMemberAccessExpr(_ node: MemberAccessExprSyntax) -> SyntaxVisitorContinueKind {
@@ -168,9 +161,7 @@ extension TokenStream {
 
         // If there are multiple trailing closures, force all the closures in the call to break.
         if !node.additionalTrailingClosures.isEmpty {
-            if let closure = node.trailingClosure {
-                forcedBreakingClosures.insert(closure.id)
-            }
+            if let closure = node.trailingClosure { forcedBreakingClosures.insert(closure.id) }
             for additionalTrailingClosure in node.additionalTrailingClosures {
                 forcedBreakingClosures.insert(additionalTrailingClosure.closure.id)
             }
@@ -178,36 +169,35 @@ extension TokenStream {
 
         if let calledMemberAccessExpr = node.calledExpression.as(MemberAccessExprSyntax.self) {
             if let base = calledMemberAccessExpr.base, base.is(DeclReferenceExprSyntax.self) {
-                // When this function call is wrapped by a keyword-modified expression, the group applied
-                // when visiting that wrapping expression is sufficient. Adding another group here in that
-                // case can result in unnecessarily breaking after the modifier keyword.
+                // When this function call is wrapped by a keyword-modified expression, the group
+                // applied when visiting that wrapping expression is sufficient. Adding another
+                // group here in that case can result in unnecessarily breaking after the modifier
+                // keyword.
                 let isKeywordModified = base.firstToken(viewMode: .sourceAccurate)?
                     .previousToken(viewMode: .all)?
                     .parent?.isProtocol(KeywordModifiedExprSyntax.self) ?? false
 
                 // When this call is itself a step in an outer member-access chain (e.g.
-                // `coder.decodeObject(...)?.intValue`), grouping `base.method` here bounds the
+                // `coder.decodeObject(...)?.intValue` ), grouping `base.method` here bounds the
                 // chunk of the contextual break before `.method` and suppresses it, so the args
-                // break or `=` break wins instead. Per documented break precedence, the chain
-                // `.` (rank 2) must beat the args break (rank 3) and `=` break (rank 4); skip
-                // the group so the chain break sees the full chunk and fires first.
-                // Only retarget the group when this call is a step in an outer chain AND has
-                // no trailing closure. Trailing-closure chains (e.g. SwiftUI builder chains)
-                // intentionally prefer to break inside closures rather than between method
-                // calls — extending the chain break across a trailing closure here would
-                // disrupt those layouts.
-                let isInOuterChain =
-                    node.trailingClosure == nil
+                // break or `=` break wins instead. Per documented break precedence, the chain `.`
+                // (rank 2) must beat the args break (rank 3) and `=` break (rank 4); skip the group
+                // so the chain break sees the full chunk and fires first. Only retarget the group
+                // when this call is a step in an outer chain AND has no trailing closure.
+                // Trailing-closure chains (e.g. SwiftUI builder chains) intentionally prefer to
+                // break inside closures rather than between method calls — extending the chain
+                // break across a trailing closure here would disrupt those layouts.
+                let isInOuterChain = node.trailingClosure == nil
                     && node.additionalTrailingClosures.isEmpty
                     && isPartOfOuterMemberAccessChain(node)
 
                 if !isKeywordModified {
                     if isInOuterChain {
                         // Place `.open` before the chain break (i.e., before the period of
-                        // `.method`) and `.close` after the call's right paren. This extends the
-                        // chain break's chunk across the entire `.method(args)`, so when the
-                        // outer chain doesn't fit, the chain break (`.` rank 2) fires before the
-                        // args break (rank 3) — matching documented break precedence.
+                        // `.method` ) and `.close` after the call's right paren. This extends the
+                        // chain break's chunk across the entire `.method(args)` , so when the outer
+                        // chain doesn't fit, the chain break ( `.` rank 2) fires before the args
+                        // break (rank 3) — matching documented break precedence.
                         before(calledMemberAccessExpr.period, tokens: .open)
                         if let rightParen = node.rightParen {
                             after(rightParen, tokens: .close)
@@ -262,8 +252,8 @@ extension TokenStream {
         return .visitChildren
     }
 
-    /// Arrange the given argument list (or equivalently, tuple expression list) as a list of function
-    /// arguments.
+    /// Arrange the given argument list (or equivalently, tuple expression list) as a list of
+    /// function arguments.
     ///
     /// - Parameters:
     ///   - arguments: The argument list/tuple expression list to arrange.
@@ -271,7 +261,8 @@ extension TokenStream {
     ///   - rightDelimiter: The right parenthesis or bracket surrounding the arguments, if any.
     ///   - forcesBreakBeforeRightDelimiter: True if a line break should be forced before the right
     ///     right delimiter if a line break occurred after the left delimiter, or false if the right
-    ///     delimiter is allowed to hang on the same line as the final argument. # ignore-unacceptable-language
+    ///     delimiter is allowed to hang on the same line as the final argument. #
+    ///     ignore-unacceptable-language
     func arrangeFunctionCallArgumentList(
         _ arguments: LabeledExprListSyntax,
         leftDelimiter: TokenSyntax?,
@@ -306,20 +297,19 @@ extension TokenStream {
     ///
     /// - Parameters:
     ///   - node: The tuple expression element.
-    ///   - shouldGroup: If true, group around the argument to prefer keeping it together if possible.
+    ///   - shouldGroup: If true, group around the argument to prefer keeping it together if
+    ///     possible.
     func arrangeAsFunctionCallArgument(
         _ node: LabeledExprSyntax,
         shouldGroup: Bool
     ) {
-        if shouldGroup {
-            before(node.firstToken(viewMode: .sourceAccurate), tokens: .open)
-        }
+        if shouldGroup { before(node.firstToken(viewMode: .sourceAccurate), tokens: .open) }
 
         var additionalEndTokens = [Token]()
         if let colon = node.colon {
-            // If we have an open delimiter following the colon, use a space instead of a continuation
-            // break so that we don't awkwardly shift the delimiter down and indent it further if it
-            // wraps.
+            // If we have an open delimiter following the colon, use a space instead of a
+            // continuation break so that we don't awkwardly shift the delimiter down and indent it
+            // further if it wraps.
             var tokensAfterColon: [Token] = [
                 startsWithOpenDelimiter(Syntax(node.expression)) ? .space : .break
             ]
@@ -335,9 +325,7 @@ extension TokenStream {
         if let trailingComma = node.trailingComma {
             before(trailingComma, tokens: additionalEndTokens)
             var afterTrailingComma: [Token] = [.break(.same)]
-            if shouldGroup {
-                afterTrailingComma.insert(.close, at: 0)
-            }
+            if shouldGroup { afterTrailingComma.insert(.close, at: 0) }
             after(trailingComma, tokens: afterTrailingComma)
         } else if shouldGroup {
             after(node.lastToken(viewMode: .sourceAccurate), tokens: additionalEndTokens + [.close])

@@ -2,27 +2,27 @@ import SwiftSyntax
 
 /// Prefer `final class` unless a class is designed for subclassing.
 ///
-/// Classes should be `final` by default to communicate that they are not designed to be
-/// subclassed. Classes are left non-final if they are `open`, have "Base" in the name,
-/// have a comment mentioning "base" or "subclass", or are subclassed within the same file.
+/// Classes should be `final` by default to communicate that they are not designed to be subclassed.
+/// Classes are left non-final if they are `open` , have "Base" in the name, have a comment
+/// mentioning "base" or "subclass", or are subclassed within the same file.
 ///
-/// When a class is made `final`, any `open` members are converted to `public` since
-/// `final` classes cannot have `open` members.
+/// When a class is made `final` , any `open` members are converted to `public` since `final`
+/// classes cannot have `open` members.
 ///
 /// Lint: A non-final, non-open class declaration raises a warning.
 ///
-/// Rewrite: The `final` modifier is added and `open` members are converted to `public`.
+/// Rewrite: The `final` modifier is added and `open` members are converted to `public` .
 final class PreferFinalClasses: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable {
     override static var group: ConfigurationGroup? { .access }
-    override static var defaultValue: BasicRuleValue { BasicRuleValue(rewrite: false, lint: .no) }
+    override static var defaultValue: BasicRuleValue { .init(rewrite: false, lint: .no) }
 
     /// Class names that appear as a superclass in some class declaration within the file.
     ///
-    /// **Lifecycle**: per-file. Reset (overwritten) at the top of `visit(_:SourceFileSyntax)`,
-    /// which is always the visitor's first call. Rule instances are constructed per-file by
-    /// the pipeline, so this state cannot leak across files in the current architecture; the
-    /// reset in `visit(_:SourceFileSyntax)` keeps the invariant explicit if a future caller
-    /// reuses an instance.
+    /// **Lifecycle**: per-file. Reset (overwritten) at the top of `visit(_:SourceFileSyntax)` ,
+    /// which is always the visitor's first call. Rule instances are constructed per-file by the
+    /// pipeline, so this state cannot leak across files in the current architecture; the reset in
+    /// `visit(_:SourceFileSyntax)` keeps the invariant explicit if a future caller reuses an
+    /// instance.
     private var subclassedNames = Set<String>()
 
     override func visit(_ node: SourceFileSyntax) -> SourceFileSyntax {
@@ -34,14 +34,10 @@ final class PreferFinalClasses: RewriteSyntaxRule<BasicRuleValue>, @unchecked Se
         let visited = super.visit(node).cast(ClassDeclSyntax.self)
 
         // Already final
-        if visited.modifiers.contains(.final) {
-            return DeclSyntax(visited)
-        }
+        if visited.modifiers.contains(.final) { return DeclSyntax(visited) }
 
         // Open classes are designed for subclassing
-        if visited.modifiers.contains(.open) {
-            return DeclSyntax(visited)
-        }
+        if visited.modifiers.contains(.open) { return DeclSyntax(visited) }
 
         // Name contains "Base" — convention for base classes
         if visited.name.text.contains("Base") { return DeclSyntax(visited) }
@@ -57,8 +53,7 @@ final class PreferFinalClasses: RewriteSyntaxRule<BasicRuleValue>, @unchecked Se
         var result = visited
 
         // Add `final` modifier
-        var finalModifier = DeclModifierSyntax(
-            name: .keyword(.final, trailingTrivia: .space))
+        var finalModifier = DeclModifierSyntax(name: .keyword(.final, trailingTrivia: .space))
 
         if result.modifiers.isEmpty {
             finalModifier.leadingTrivia = result.classKeyword.leadingTrivia
@@ -84,7 +79,7 @@ final class PreferFinalClasses: RewriteSyntaxRule<BasicRuleValue>, @unchecked Se
 
     private func collectSubclassedNamesRecursive(in node: Syntax, into names: inout Set<String>) {
         if let classDecl = node.as(ClassDeclSyntax.self),
-            let inheritanceClause = classDecl.inheritanceClause
+           let inheritanceClause = classDecl.inheritanceClause
         {
             for inherited in inheritanceClause.inheritedTypes {
                 if let identType = inherited.type.as(IdentifierTypeSyntax.self) {
@@ -104,9 +99,9 @@ final class PreferFinalClasses: RewriteSyntaxRule<BasicRuleValue>, @unchecked Se
         let text = node.leadingTrivia.pieces
             .compactMap { piece -> String? in
                 switch piece {
-                    case .docLineComment(let text), .docBlockComment(let text),
-                        .lineComment(let text),
-                        .blockComment(let text):
+                    case let .docLineComment(text), let .docBlockComment(text),
+                        let .lineComment(text),
+                        let .blockComment(text):
                         text
                     default: nil
                 }
@@ -134,31 +129,31 @@ final class PreferFinalClasses: RewriteSyntaxRule<BasicRuleValue>, @unchecked Se
 
     private func replaceOpenModifier(in decl: DeclSyntax) -> DeclSyntax? {
         if var funcDecl = decl.as(FunctionDeclSyntax.self),
-            let modifiers = openToPublic(funcDecl.modifiers)
+           let modifiers = openToPublic(funcDecl.modifiers)
         {
             funcDecl.modifiers = modifiers
             return DeclSyntax(funcDecl)
         }
         if var varDecl = decl.as(VariableDeclSyntax.self),
-            let modifiers = openToPublic(varDecl.modifiers)
+           let modifiers = openToPublic(varDecl.modifiers)
         {
             varDecl.modifiers = modifiers
             return DeclSyntax(varDecl)
         }
         if var subscriptDecl = decl.as(SubscriptDeclSyntax.self),
-            let modifiers = openToPublic(subscriptDecl.modifiers)
+           let modifiers = openToPublic(subscriptDecl.modifiers)
         {
             subscriptDecl.modifiers = modifiers
             return DeclSyntax(subscriptDecl)
         }
         if var initDecl = decl.as(InitializerDeclSyntax.self),
-            let modifiers = openToPublic(initDecl.modifiers)
+           let modifiers = openToPublic(initDecl.modifiers)
         {
             initDecl.modifiers = modifiers
             return DeclSyntax(initDecl)
         }
         if var typeAliasDecl = decl.as(TypeAliasDeclSyntax.self),
-            let modifiers = openToPublic(typeAliasDecl.modifiers)
+           let modifiers = openToPublic(typeAliasDecl.modifiers)
         {
             typeAliasDecl.modifiers = modifiers
             return DeclSyntax(typeAliasDecl)
@@ -166,11 +161,10 @@ final class PreferFinalClasses: RewriteSyntaxRule<BasicRuleValue>, @unchecked Se
         return nil
     }
 
-    /// Returns a new modifier list with `open` replaced by `public`, or nil if no change needed.
+    /// Returns a new modifier list with `open` replaced by `public` , or nil if no change needed.
     private func openToPublic(_ modifiers: DeclModifierListSyntax) -> DeclModifierListSyntax? {
-        guard modifiers.contains(where: { $0.name.tokenKind == .keyword(.open) }) else {
-            return nil
-        }
+        guard modifiers.contains(where: { $0.name.tokenKind == .keyword(.open) })
+        else { return nil }
         return DeclModifierListSyntax(
             modifiers.map { mod in
                 guard mod.name.tokenKind == .keyword(.open) else { return mod }
@@ -185,7 +179,7 @@ final class PreferFinalClasses: RewriteSyntaxRule<BasicRuleValue>, @unchecked Se
     }
 }
 
-extension Finding.Message {
-    fileprivate static let preferFinalClass: Finding.Message =
+fileprivate extension Finding.Message {
+    static let preferFinalClass: Finding.Message =
         "prefer 'final class' unless designed for subclassing"
 }

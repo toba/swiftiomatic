@@ -1,35 +1,37 @@
-//===----------------------------------------------------------------------===//
+// ===----------------------------------------------------------------------===//
 //
 // This source file is part of the Swift.org open source project
 //
-// Copyright (c) 2014 - 2019 Apple Inc. and the Swift project authors
-// Licensed under Apache License v2.0 with Runtime Library Exception
+// Copyright (c) 2014 - 2019 Apple Inc. and the Swift project authors Licensed under Apache License
+// v2.0 with Runtime Library Exception
 //
-// See https://swift.org/LICENSE.txt for license information
-// See https://swift.org/CONTRIBUTORS.txt for the list of Swift project authors
+// See https://swift.org/LICENSE.txt for license information See https://swift.org/CONTRIBUTORS.txt
+// for the list of Swift project authors
 //
-//===----------------------------------------------------------------------===//
+// ===----------------------------------------------------------------------===//
 
 import SwiftSyntax
 
 /// Controls placement of access level modifiers on extensions vs. their members.
 ///
-/// The behavior of this rule is controlled by `Configuration.extensionAccessControl.placement`:
+/// The behavior of this rule is controlled by `Configuration.extensionAccessControl.placement` :
 ///
 /// - `onMembers` (default): Access levels on extensions are moved to individual members.
-/// - `onExtension`: When all members share the same access level, it is hoisted to the extension.
+/// - `onExtension` : When all members share the same access level, it is hoisted to the extension.
 ///
 /// Lint: A lint error is raised when access control placement doesn't match the configuration.
 ///
 /// Rewrite: Access control modifiers are moved to match the configured placement.
-final class ExtensionAccessLevel: RewriteSyntaxRule<ExtensionAccessControlConfiguration>, @unchecked Sendable {
+final class ExtensionAccessLevel: RewriteSyntaxRule<ExtensionAccessControlConfiguration>,
+    @unchecked Sendable
+{
     override class var group: ConfigurationGroup? { .access }
     private enum State {
         /// The rule is currently visiting top-level declarations.
         case topLevel
 
-        /// The rule is currently inside an extension that has the given access level keyword.
-        /// Used in `onMembers` mode to add the keyword to members.
+        /// The rule is currently inside an extension that has the given access level keyword. Used
+        /// in `onMembers` mode to add the keyword to members.
         case insideExtension(accessKeyword: Keyword)
 
         /// The rule is currently inside an extension where members' access level is being hoisted.
@@ -48,70 +50,65 @@ final class ExtensionAccessLevel: RewriteSyntaxRule<ExtensionAccessControlConfig
         guard case .topLevel = state else { return DeclSyntax(node) }
 
         switch ruleConfig.placement {
-        case .onMembers:
-            return visitOnDeclarations(node)
-        case .onExtension:
-            return visitOnExtension(node)
+            case .onMembers: return visitOnDeclarations(node)
+            case .onExtension: return visitOnExtension(node)
         }
     }
 
     // MARK: - onMembers mode (push access from extension to members)
 
     private func visitOnDeclarations(_ node: ExtensionDeclSyntax) -> DeclSyntax {
-        guard
-            let accessKeyword = node.modifiers.accessLevelModifier,
-            case .keyword(let keyword) = accessKeyword.name.tokenKind
-        else {
-            return DeclSyntax(node)
-        }
+        guard let accessKeyword = node.modifiers.accessLevelModifier,
+              case let .keyword(keyword) = accessKeyword.name.tokenKind
+        else { return DeclSyntax(node) }
 
-        self.notesFromRewrittenMembers = []
+        notesFromRewrittenMembers = []
 
         let keywordToAdd: Keyword?
         let message: Finding.Message
 
         switch keyword {
-        case .public, .private, .fileprivate, .package:
-            // These access level modifiers need to be moved to members. Additionally, `private` is a
-            // special case, because the *effective* access level for a top-level private extension is
-            // `fileprivate`, so we need to preserve that when we apply it to the members.
-            if keyword == .private {
-                keywordToAdd = .fileprivate
-                message = .moveAccessKeywordAndMakeFileprivate(keyword: accessKeyword.name.text)
-            } else {
-                keywordToAdd = keyword
-                message = .moveAccessKeyword(keyword: accessKeyword.name.text)
-            }
+            case .public, .private, .fileprivate, .package:
+                // These access level modifiers need to be moved to members. Additionally, `private` is
+                // a special case, because the *effective* access level for a top-level private
+                // extension is `fileprivate` , so we need to preserve that when we apply it to the
+                // members.
+                if keyword == .private {
+                    keywordToAdd = .fileprivate
+                    message = .moveAccessKeywordAndMakeFileprivate(keyword: accessKeyword.name.text)
+                } else {
+                    keywordToAdd = keyword
+                    message = .moveAccessKeyword(keyword: accessKeyword.name.text)
+                }
 
-        case .internal:
-            // If the access level keyword was `internal`, then it's redundant and we can just remove it.
-            // We don't need to modify the members at all in this case.
-            message = .removeRedundantAccessKeyword
-            keywordToAdd = nil
+            case .internal:
+                // If the access level keyword was `internal` , then it's redundant and we can just
+                // remove it. We don't need to modify the members at all in this case.
+                message = .removeRedundantAccessKeyword
+                keywordToAdd = nil
 
-        default:
-            // For anything else, just return the extension and its members unchanged.
-            return DeclSyntax(node)
+            default: return DeclSyntax(node)
         }
 
-        // We don't have to worry about maintaining a stack here; even though extensions can nest from
-        // a valid parse point of view, we ignore nested extensions because they're obviously wrong
-        // semantically (and would be an error later during compilation).
+        // We don't have to worry about maintaining a stack here; even though extensions can nest
+        // from a valid parse point of view, we ignore nested extensions because they're obviously
+        // wrong semantically (and would be an error later during compilation).
         var result: ExtensionDeclSyntax
         if let keywordToAdd {
             // Visit the children in the new state to add the keyword to the extension members.
-            self.state = .insideExtension(accessKeyword: keywordToAdd)
-            defer { self.state = .topLevel }
+            state = .insideExtension(accessKeyword: keywordToAdd)
+            defer { state = .topLevel }
 
             result = super.visit(node).as(ExtensionDeclSyntax.self)!
         } else {
-            // We don't need to visit the children in this case, and we don't need to update the state.
+            // We don't need to visit the children in this case, and we don't need to update the
+            // state.
             result = node
         }
 
-        // Finally, emit the finding (which includes notes from any rewritten members) and remove the
-        // access level keyword from the extension itself.
-        diagnose(message, on: accessKeyword, notes: self.notesFromRewrittenMembers)
+        // Finally, emit the finding (which includes notes from any rewritten members) and remove
+        // the access level keyword from the extension itself.
+        diagnose(message, on: accessKeyword, notes: notesFromRewrittenMembers)
         result.modifiers.remove(anyOf: [keyword])
         result.extensionKeyword.leadingTrivia = accessKeyword.leadingTrivia
         return DeclSyntax(result)
@@ -123,16 +120,18 @@ final class ExtensionAccessLevel: RewriteSyntaxRule<ExtensionAccessControlConfig
         // Only process extensions that don't already have an access level modifier.
         guard node.modifiers.accessLevelModifier == nil else { return DeclSyntax(node) }
 
-        // Check if all members share the same hoistable access level.
-        guard let commonAccess = commonMemberAccessLevel(node.memberBlock) else {
-            return DeclSyntax(node)
-        }
+        // Swift forbids access modifiers on extensions that declare protocol conformance.
+        guard node.inheritanceClause == nil else { return DeclSyntax(node) }
 
-        self.notesFromRewrittenMembers = []
+        // Check if all members share the same hoistable access level.
+        guard let commonAccess = commonMemberAccessLevel(node.memberBlock)
+        else { return DeclSyntax(node) }
+
+        notesFromRewrittenMembers = []
 
         // Visit children to remove the access keyword from each member.
-        self.state = .hoistingFromExtension(accessKeyword: commonAccess)
-        defer { self.state = .topLevel }
+        state = .hoistingFromExtension(accessKeyword: commonAccess)
+        defer { state = .topLevel }
 
         var result = super.visit(node).as(ExtensionDeclSyntax.self)!
 
@@ -155,7 +154,7 @@ final class ExtensionAccessLevel: RewriteSyntaxRule<ExtensionAccessControlConfig
         diagnose(
             .hoistAccessKeyword(keyword: TokenSyntax.keyword(commonAccess).text),
             on: node.extensionKeyword,
-            notes: self.notesFromRewrittenMembers
+            notes: notesFromRewrittenMembers
         )
         return DeclSyntax(result)
     }
@@ -163,9 +162,9 @@ final class ExtensionAccessLevel: RewriteSyntaxRule<ExtensionAccessControlConfig
     /// Returns the common access level keyword shared by all direct members, or `nil` if members
     /// have mixed or non-hoistable access levels.
     ///
-    /// Only `public`, `package`, and `fileprivate` are hoistable. `private` is not hoisted because
-    /// it would change semantics (extension-level `private` means `fileprivate`). `internal` is
-    /// not hoisted because it's redundant on an extension.
+    /// Only `public` , `package` , and `fileprivate` are hoistable. `private` is not hoisted
+    /// because it would change semantics (extension-level `private` means `fileprivate` ).
+    /// `internal` is not hoisted because it's redundant on an extension.
     private func commonMemberAccessLevel(_ memberBlock: MemberBlockSyntax) -> Keyword? {
         guard !memberBlock.members.isEmpty else { return nil }
 
@@ -179,17 +178,12 @@ final class ExtensionAccessLevel: RewriteSyntaxRule<ExtensionAccessControlConfig
 
             // Get the access level of this member.
             guard let modifiers = decl.asProtocol(WithModifiersSyntax.self)?.modifiers,
-                let accessModifier = modifiers.accessLevelModifier,
-                case .keyword(let keyword) = accessModifier.name.tokenKind
-            else {
-                // Member has no explicit access level — can't determine a common level.
-                return nil
-            }
+                  let accessModifier = modifiers.accessLevelModifier,
+                  case let .keyword(keyword) = accessModifier.name.tokenKind else { return nil }
 
             // Only hoist public, package, or fileprivate.
-            guard keyword == .public || keyword == .package || keyword == .fileprivate else {
-                return nil
-            }
+            guard keyword == .public || keyword == .package || keyword == .fileprivate
+            else { return nil }
 
             if let existing = commonAccess {
                 guard existing == keyword else { return nil }
@@ -204,39 +198,39 @@ final class ExtensionAccessLevel: RewriteSyntaxRule<ExtensionAccessControlConfig
     // MARK: - Member visitors
 
     override func visit(_ node: ActorDeclSyntax) -> DeclSyntax {
-        return processExtensionMember(node, declKeywordKeyPath: \.actorKeyword)
+        processExtensionMember(node, declKeywordKeyPath: \.actorKeyword)
     }
 
     override func visit(_ node: ClassDeclSyntax) -> DeclSyntax {
-        return processExtensionMember(node, declKeywordKeyPath: \.classKeyword)
+        processExtensionMember(node, declKeywordKeyPath: \.classKeyword)
     }
 
     override func visit(_ node: EnumDeclSyntax) -> DeclSyntax {
-        return processExtensionMember(node, declKeywordKeyPath: \.enumKeyword)
+        processExtensionMember(node, declKeywordKeyPath: \.enumKeyword)
     }
 
     override func visit(_ node: FunctionDeclSyntax) -> DeclSyntax {
-        return processExtensionMember(node, declKeywordKeyPath: \.funcKeyword)
+        processExtensionMember(node, declKeywordKeyPath: \.funcKeyword)
     }
 
     override func visit(_ node: InitializerDeclSyntax) -> DeclSyntax {
-        return processExtensionMember(node, declKeywordKeyPath: \.initKeyword)
+        processExtensionMember(node, declKeywordKeyPath: \.initKeyword)
     }
 
     override func visit(_ node: StructDeclSyntax) -> DeclSyntax {
-        return processExtensionMember(node, declKeywordKeyPath: \.structKeyword)
+        processExtensionMember(node, declKeywordKeyPath: \.structKeyword)
     }
 
     override func visit(_ node: SubscriptDeclSyntax) -> DeclSyntax {
-        return processExtensionMember(node, declKeywordKeyPath: \.subscriptKeyword)
+        processExtensionMember(node, declKeywordKeyPath: \.subscriptKeyword)
     }
 
     override func visit(_ node: TypeAliasDeclSyntax) -> DeclSyntax {
-        return processExtensionMember(node, declKeywordKeyPath: \.typealiasKeyword)
+        processExtensionMember(node, declKeywordKeyPath: \.typealiasKeyword)
     }
 
     override func visit(_ node: VariableDeclSyntax) -> DeclSyntax {
-        return processExtensionMember(node, declKeywordKeyPath: \.bindingSpecifier)
+        processExtensionMember(node, declKeywordKeyPath: \.bindingSpecifier)
     }
 
     // MARK: - Member processing
@@ -247,20 +241,19 @@ final class ExtensionAccessLevel: RewriteSyntaxRule<ExtensionAccessControlConfig
         declKeywordKeyPath: WritableKeyPath<Decl, TokenSyntax>
     ) -> DeclSyntax {
         switch state {
-        case .topLevel:
-            return DeclSyntax(decl)
-        case .insideExtension(let accessKeyword):
-            return applyingAccessModifierIfNone(
-                accessKeyword,
-                to: decl,
-                declKeywordKeyPath: declKeywordKeyPath
-            )
-        case .hoistingFromExtension(let accessKeyword):
-            return removingAccessModifier(
-                accessKeyword,
-                from: decl,
-                declKeywordKeyPath: declKeywordKeyPath
-            )
+            case .topLevel: DeclSyntax(decl)
+            case let .insideExtension(accessKeyword):
+                applyingAccessModifierIfNone(
+                    accessKeyword,
+                    to: decl,
+                    declKeywordKeyPath: declKeywordKeyPath
+                )
+            case let .hoistingFromExtension(accessKeyword):
+                removingAccessModifier(
+                    accessKeyword,
+                    from: decl,
+                    declKeywordKeyPath: declKeywordKeyPath
+                )
         }
     }
 
@@ -273,29 +266,30 @@ final class ExtensionAccessLevel: RewriteSyntaxRule<ExtensionAccessControlConfig
         // If there's already an access modifier among the modifier list, bail out.
         guard decl.modifiers.accessLevelModifier == nil else { return DeclSyntax(decl) }
 
-        self.notesFromRewrittenMembers.append(
+        notesFromRewrittenMembers.append(
             Finding.Note(
                 message: .addModifierToExtensionMember(keyword: TokenSyntax.keyword(modifier).text),
                 location:
                     Finding.Location(decl.startLocation(converter: context.sourceLocationConverter))
-            )
-        )
+            ))
 
         var result = decl
         var modifier = DeclModifierSyntax(name: .keyword(modifier))
         modifier.trailingTrivia = [.spaces(1)]
 
         guard var firstModifier = decl.modifiers.first else {
-            // If there are no modifiers at all, add the one being requested, moving the leading trivia
-            // from the decl keyword to that modifier (to preserve leading comments, newlines, etc.).
+            // If there are no modifiers at all, add the one being requested, moving the leading
+            // trivia from the decl keyword to that modifier (to preserve leading comments,
+            // newlines, etc.).
             modifier.leadingTrivia = decl[keyPath: declKeywordKeyPath].leadingTrivia
             result[keyPath: declKeywordKeyPath].leadingTrivia = []
             result.modifiers = .init([modifier])
             return DeclSyntax(result)
         }
 
-        // Otherwise, insert the modifier at the front of the modifier list, moving the (original) first
-        // modifier's leading trivia to the new one (to preserve leading comments, newlines, etc.).
+        // Otherwise, insert the modifier at the front of the modifier list, moving the (original)
+        // first modifier's leading trivia to the new one (to preserve leading comments, newlines,
+        // etc.).
         modifier.leadingTrivia = firstModifier.leadingTrivia
         firstModifier.leadingTrivia = []
         result.modifiers[result.modifiers.startIndex] = firstModifier
@@ -310,18 +304,15 @@ final class ExtensionAccessLevel: RewriteSyntaxRule<ExtensionAccessControlConfig
         declKeywordKeyPath: WritableKeyPath<Decl, TokenSyntax>
     ) -> DeclSyntax {
         guard let accessModifier = decl.modifiers.accessLevelModifier,
-            case .keyword(keyword) = accessModifier.name.tokenKind
-        else {
-            return DeclSyntax(decl)
-        }
+              case .keyword(keyword) = accessModifier.name.tokenKind
+        else { return DeclSyntax(decl) }
 
-        self.notesFromRewrittenMembers.append(
+        notesFromRewrittenMembers.append(
             Finding.Note(
                 message: .removeModifierFromExtensionMember(keyword: accessModifier.name.text),
                 location:
                     Finding.Location(decl.startLocation(converter: context.sourceLocationConverter))
-            )
-        )
+            ))
 
         var result = decl
         let savedLeadingTrivia = accessModifier.leadingTrivia
@@ -340,28 +331,27 @@ final class ExtensionAccessLevel: RewriteSyntaxRule<ExtensionAccessControlConfig
     }
 }
 
-extension Finding.Message {
-    fileprivate static let removeRedundantAccessKeyword: Finding.Message =
+fileprivate extension Finding.Message {
+    static let removeRedundantAccessKeyword: Finding.Message =
         "remove this redundant 'internal' access modifier from this extension"
 
-    fileprivate static func moveAccessKeyword(keyword: String) -> Finding.Message {
+    static func moveAccessKeyword(keyword: String) -> Finding.Message {
         "move this '\(keyword)' access modifier to precede each member inside this extension"
     }
 
-    fileprivate static func moveAccessKeywordAndMakeFileprivate(keyword: String) -> Finding.Message
-    {
+    static func moveAccessKeywordAndMakeFileprivate(keyword: String) -> Finding.Message {
         "remove this '\(keyword)' access modifier and declare each member inside this extension as 'fileprivate'"
     }
 
-    fileprivate static func addModifierToExtensionMember(keyword: String) -> Finding.Message {
+    static func addModifierToExtensionMember(keyword: String) -> Finding.Message {
         "add '\(keyword)' access modifier to this declaration"
     }
 
-    fileprivate static func hoistAccessKeyword(keyword: String) -> Finding.Message {
+    static func hoistAccessKeyword(keyword: String) -> Finding.Message {
         "hoist '\(keyword)' access modifier from members to this extension"
     }
 
-    fileprivate static func removeModifierFromExtensionMember(keyword: String) -> Finding.Message {
+    static func removeModifierFromExtensionMember(keyword: String) -> Finding.Message {
         "remove '\(keyword)' access modifier from this declaration"
     }
 }
@@ -376,8 +366,8 @@ package struct ExtensionAccessControlConfiguration: SyntaxRuleValue {
 
     package var rewrite = true
     package var lint: Lint = .warn
-    /// Where to attach the access-level modifier: on each member of an
-    /// extension, or hoisted onto the extension itself when uniform.
+    /// Where to attach the access-level modifier: on each member of an extension, or hoisted onto
+    /// the extension itself when uniform.
     package var placement: Placement = .onMembers
 
     package init() {}
@@ -385,10 +375,11 @@ package struct ExtensionAccessControlConfiguration: SyntaxRuleValue {
     package init(from decoder: any Decoder) throws {
         self.init()
         let container = try decoder.container(keyedBy: CodingKeys.self)
-        if let rewrite = try container.decodeIfPresent(Bool.self, forKey: .rewrite) { self.rewrite = rewrite }
+        if let rewrite = try container.decodeIfPresent(Bool.self, forKey: .rewrite) {
+            self.rewrite = rewrite
+        }
         if let lint = try container.decodeIfPresent(Lint.self, forKey: .lint) { self.lint = lint }
-        self.placement =
-            try container.decodeIfPresent(Placement.self, forKey: .placement)
+        placement = try container.decodeIfPresent(Placement.self, forKey: .placement)
             ?? .onMembers
     }
 }

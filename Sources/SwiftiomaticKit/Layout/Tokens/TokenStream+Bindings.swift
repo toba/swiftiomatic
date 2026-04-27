@@ -1,14 +1,14 @@
-//===----------------------------------------------------------------------===//
+// ===----------------------------------------------------------------------===//
 //
 // This source file is part of the Swift.org open source project
 //
-// Copyright (c) 2014 - 2019 Apple Inc. and the Swift project authors
-// Licensed under Apache License v2.0 with Runtime Library Exception
+// Copyright (c) 2014 - 2019 Apple Inc. and the Swift project authors Licensed under Apache License
+// v2.0 with Runtime Library Exception
 //
-// See https://swift.org/LICENSE.txt for license information
-// See https://swift.org/CONTRIBUTORS.txt for the list of Swift project authors
+// See https://swift.org/LICENSE.txt for license information See https://swift.org/CONTRIBUTORS.txt
+// for the list of Swift project authors
 //
-//===----------------------------------------------------------------------===//
+// ===----------------------------------------------------------------------===//
 
 import SwiftSyntax
 
@@ -20,15 +20,15 @@ extension TokenStream {
         )
 
         if node.bindings.count == 1 {
-            // If there is only a single binding, don't allow a break between the `let/var` keyword and
-            // the identifier; there are better places to break later on.
+            // If there is only a single binding, don't allow a break between the `let/var` keyword
+            // and the identifier; there are better places to break later on.
             after(node.bindingSpecifier, tokens: .space)
         } else {
-            // If there is more than one binding, we permit an open-break after `let/var` so that each of
-            // the comma-delimited items will potentially receive indentation. We also add a group around
-            // the individual bindings to bind them together better. (This is done here, not in
-            // `visit(_: PatternBindingSyntax)`, because we only want that behavior when there are
-            // multiple bindings.)
+            // If there is more than one binding, we permit an open-break after `let/var` so that
+            // each of the comma-delimited items will potentially receive indentation. We also add a
+            // group around the individual bindings to bind them together better. (This is done
+            // here, not in `visit(_: PatternBindingSyntax)` , because we only want that behavior
+            // when there are multiple bindings.)
             after(node.bindingSpecifier, tokens: .break(.open))
 
             for binding in node.bindings {
@@ -46,10 +46,10 @@ extension TokenStream {
     func visitPatternBinding(_ node: PatternBindingSyntax) -> SyntaxVisitorContinueKind {
         // If the type annotation and/or the initializer clause need to wrap, we want those
         // continuations to stack to improve readability. So, we need to keep track of how many open
-        // breaks we create (so we can close them at the end of the binding) and also keep track of the
-        // right-most token that will anchor the close breaks.
+        // breaks we create (so we can close them at the end of the binding) and also keep track of
+        // the right-most token that will anchor the close breaks.
         var closesNeeded: Int = 0
-        var closeAfterToken: TokenSyntax? = nil
+        var closeAfterToken: TokenSyntax?
 
         if let typeAnnotation = node.typeAnnotation, !typeAnnotation.type.is(MissingTypeSyntax.self)
         {
@@ -71,14 +71,15 @@ extension TokenStream {
 
         if let accessorBlock = node.accessorBlock {
             switch accessorBlock.accessors {
-            case .accessors(let accessors):
-                arrangeBracesAndContents(
-                    leftBrace: accessorBlock.leftBrace,
-                    accessors: accessors,
-                    rightBrace: accessorBlock.rightBrace
-                )
-            case .getter:
-                arrangeBracesAndContents(of: accessorBlock, contentsKeyPath: \.getterCodeBlockItems)
+                case let .accessors(accessors):
+                    arrangeBracesAndContents(
+                        leftBrace: accessorBlock.leftBrace,
+                        accessors: accessors,
+                        rightBrace: accessorBlock.rightBrace
+                    )
+                case .getter:
+                    arrangeBracesAndContents(
+                        of: accessorBlock, contentsKeyPath: \.getterCodeBlockItems)
             }
         } else if let trailingComma = node.trailingComma {
             // If this is one of multiple comma-delimited bindings, move any pending close breaks to
@@ -87,7 +88,7 @@ extension TokenStream {
             closingDelimiterTokens.insert(trailingComma)
         }
 
-        if closeAfterToken != nil && closesNeeded > 0 {
+        if closeAfterToken != nil, closesNeeded > 0 {
             let closeTokens = [Token](repeatElement(.break(.close, size: 0), count: closesNeeded))
             after(closeAfterToken, tokens: closeTokens)
         }
@@ -124,9 +125,9 @@ extension TokenStream {
         return .visitChildren
     }
 
-    func visitTypeInitializerClause(_ node: TypeInitializerClauseSyntax)
-        -> SyntaxVisitorContinueKind
-    {
+    func visitTypeInitializerClause(
+        _ node: TypeInitializerClauseSyntax
+    ) -> SyntaxVisitorContinueKind {
         before(node.equal, tokens: .space)
         after(node.equal, tokens: .break)
         return .visitChildren
@@ -159,19 +160,17 @@ extension TokenStream {
         return .visitChildren
     }
 
-    func visitDeclReferenceExpr(_ node: DeclReferenceExprSyntax) -> SyntaxVisitorContinueKind {
-        return .visitChildren
+    func visitDeclReferenceExpr(_: DeclReferenceExprSyntax) -> SyntaxVisitorContinueKind {
+        .visitChildren
     }
 
-    func visitNilLiteralExpr(_ node: NilLiteralExprSyntax) -> SyntaxVisitorContinueKind {
-        return .visitChildren
+    func visitNilLiteralExpr(_: NilLiteralExprSyntax) -> SyntaxVisitorContinueKind {
+        .visitChildren
     }
 
-    func visitGenericSpecializationExpr(_ node: GenericSpecializationExprSyntax)
-        -> SyntaxVisitorContinueKind
-    {
-        return .visitChildren
-    }
+    func visitGenericSpecializationExpr(
+        _: GenericSpecializationExprSyntax
+    ) -> SyntaxVisitorContinueKind { .visitChildren }
 
     func visitTypeAnnotation(_ node: TypeAnnotationSyntax) -> SyntaxVisitorContinueKind {
         before(node.type.firstToken(viewMode: .sourceAccurate), tokens: .open)
@@ -184,16 +183,16 @@ extension TokenStream {
         return .visitChildren
     }
 
-    func visitCompositionType(_ node: CompositionTypeSyntax) -> SyntaxVisitorContinueKind {
-        return .visitChildren
+    func visitCompositionType(_: CompositionTypeSyntax) -> SyntaxVisitorContinueKind {
+        .visitChildren
     }
 
-    func visitFallThroughStmt(_ node: FallThroughStmtSyntax) -> SyntaxVisitorContinueKind {
-        return .visitChildren
+    func visitFallThroughStmt(_: FallThroughStmtSyntax) -> SyntaxVisitorContinueKind {
+        .visitChildren
     }
 
-    func visitForceUnwrapExpr(_ node: ForceUnwrapExprSyntax) -> SyntaxVisitorContinueKind {
-        return .visitChildren
+    func visitForceUnwrapExpr(_: ForceUnwrapExprSyntax) -> SyntaxVisitorContinueKind {
+        .visitChildren
     }
 
     func visitGenericArgument(_ node: GenericArgumentSyntax) -> SyntaxVisitorContinueKind {
@@ -206,16 +205,16 @@ extension TokenStream {
         return .visitChildren
     }
 
-    func visitWildcardPattern(_ node: WildcardPatternSyntax) -> SyntaxVisitorContinueKind {
-        return .visitChildren
+    func visitWildcardPattern(_: WildcardPatternSyntax) -> SyntaxVisitorContinueKind {
+        .visitChildren
     }
 
-    func visitDeclNameArgument(_ node: DeclNameArgumentSyntax) -> SyntaxVisitorContinueKind {
-        return .visitChildren
+    func visitDeclNameArgument(_: DeclNameArgumentSyntax) -> SyntaxVisitorContinueKind {
+        .visitChildren
     }
 
-    func visitFloatLiteralExpr(_ node: FloatLiteralExprSyntax) -> SyntaxVisitorContinueKind {
-        return .visitChildren
+    func visitFloatLiteralExpr(_: FloatLiteralExprSyntax) -> SyntaxVisitorContinueKind {
+        .visitChildren
     }
 
     func visitGenericParameter(_ node: GenericParameterSyntax) -> SyntaxVisitorContinueKind {
@@ -230,9 +229,9 @@ extension TokenStream {
         return .visitChildren
     }
 
-    func visitPrimaryAssociatedType(_ node: PrimaryAssociatedTypeSyntax)
-        -> SyntaxVisitorContinueKind
-    {
+    func visitPrimaryAssociatedType(
+        _ node: PrimaryAssociatedTypeSyntax
+    ) -> SyntaxVisitorContinueKind {
         before(node.firstToken(viewMode: .sourceAccurate), tokens: .open)
         if let trailingComma = node.trailingComma {
             after(trailingComma, tokens: .close, .break(.same))
@@ -243,13 +242,15 @@ extension TokenStream {
     }
 
     func visitPackElementExpr(_ node: PackElementExprSyntax) -> SyntaxVisitorContinueKind {
-        // `each` cannot be separated from the following token, or it is parsed as an identifier itself.
+        // `each` cannot be separated from the following token, or it is parsed as an identifier
+        // itself.
         after(node.eachKeyword, tokens: .space)
         return .visitChildren
     }
 
     func visitPackElementType(_ node: PackElementTypeSyntax) -> SyntaxVisitorContinueKind {
-        // `each` cannot be separated from the following token, or it is parsed as an identifier itself.
+        // `each` cannot be separated from the following token, or it is parsed as an identifier
+        // itself.
         after(node.eachKeyword, tokens: .space)
         return .visitChildren
     }
@@ -264,8 +265,8 @@ extension TokenStream {
         return .visitChildren
     }
 
-    func visitExpressionPattern(_ node: ExpressionPatternSyntax) -> SyntaxVisitorContinueKind {
-        return .visitChildren
+    func visitExpressionPattern(_: ExpressionPatternSyntax) -> SyntaxVisitorContinueKind {
+        .visitChildren
     }
 
     func visitValueBindingPattern(_ node: ValueBindingPatternSyntax) -> SyntaxVisitorContinueKind {
@@ -273,8 +274,8 @@ extension TokenStream {
         return .visitChildren
     }
 
-    func visitIdentifierPattern(_ node: IdentifierPatternSyntax) -> SyntaxVisitorContinueKind {
-        return .visitChildren
+    func visitIdentifierPattern(_: IdentifierPatternSyntax) -> SyntaxVisitorContinueKind {
+        .visitChildren
     }
 
     func visitInitializerClause(_ node: InitializerClauseSyntax) -> SyntaxVisitorContinueKind {
@@ -284,9 +285,9 @@ extension TokenStream {
         // OptionalBindingConditionSyntax are already handled in the latter node, to ensure that
         // continuations stack appropriately.
         if let parent = node.parent,
-            !parent.is(PatternBindingSyntax.self)
-                && !parent.is(OptionalBindingConditionSyntax.self)
-                && !parent.is(EnumCaseElementSyntax.self)
+           !parent.is(PatternBindingSyntax.self),
+           !parent.is(OptionalBindingConditionSyntax.self),
+           !parent.is(EnumCaseElementSyntax.self)
         {
             after(node.equal, tokens: .break)
         }

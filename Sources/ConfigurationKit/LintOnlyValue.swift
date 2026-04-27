@@ -1,11 +1,11 @@
 /// Value type for lint-only syntax rules that cannot rewrite source code.
 ///
-/// Unlike ``LintValue``, this type only encodes the `lint` severity.
-/// The `rewrite` property always returns `false` and its setter is a no-op.
+/// Unlike ``LintValue`` , this type only encodes the `lint` severity. The `rewrite` property always
+/// returns `false` and its setter is a no-op.
 ///
 /// ## JSON encoding
 ///
-/// Always an object with only `lint`:
+/// Always an object with only `lint` :
 /// ```json
 /// "someRule": { "lint": "warn" }
 /// ```
@@ -17,11 +17,10 @@ package struct LintOnlyValue: SyntaxRuleValue {
     /// Always `false` for lint-only rules.
     package var rewrite: Bool {
         get { false }
-        set { } // lint-only rules cannot rewrite
+        set {}  // lint-only rules cannot rewrite
     }
 
     package init() { lint = .warn }
-
     package init(lint: Lint) { self.lint = lint }
 }
 
@@ -36,7 +35,5 @@ extension LintOnlyValue: Codable {
         try container.encode(lint, forKey: .lint)
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case lint
-    }
+    private enum CodingKeys: String, CodingKey { case lint }
 }

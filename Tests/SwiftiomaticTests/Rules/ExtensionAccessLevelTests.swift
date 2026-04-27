@@ -652,6 +652,26 @@ struct ExtensionAccessLevelTests: RuleTesting {
     )
   }
 
+  @Test func protocolConformanceExtensionNotHoisted() {
+    assertFormatting(
+      ExtensionAccessLevel.self,
+      input: """
+        extension JSONValue: Codable {
+          package init(from decoder: any Decoder) throws {}
+          package func encode(to encoder: any Encoder) throws {}
+        }
+        """,
+      expected: """
+        extension JSONValue: Codable {
+          package init(from decoder: any Decoder) throws {}
+          package func encode(to encoder: any Encoder) throws {}
+        }
+        """,
+      findings: [],
+      configuration: onExtensionConfig()
+    )
+  }
+
   @Test func ifConfigBlocksPreventsHoist() {
     assertFormatting(
       ExtensionAccessLevel.self,

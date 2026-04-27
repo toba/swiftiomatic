@@ -1,6 +1,5 @@
 import Foundation
 
-
 /// Controls the order of keys in serialized JSON output.
 package enum KeySortOrder: String, Sendable, CaseIterable {
     /// Sort by key length ascending, alphabetical tiebreaker.
@@ -9,9 +8,8 @@ package enum KeySortOrder: String, Sendable, CaseIterable {
     case alphabetical
 }
 
-/// A JSON value suitable for schema validation, configuration encoding, and
-/// any context that needs a fully typed JSON representation without ObjC
-/// bridging (`[String: Any]`).
+/// A JSON value suitable for schema validation, configuration encoding, and any context that needs
+/// a fully typed JSON representation without ObjC bridging ( `[String: Any]` ).
 ///
 /// `JSONDecoder` with `allowsJSON5` produces these directly.
 package enum JSONValue: Sendable, Equatable, Hashable {
@@ -25,7 +23,7 @@ package enum JSONValue: Sendable, Equatable, Hashable {
 }
 
 extension JSONValue: Codable {
-    public init(from decoder: any Decoder) throws {
+    package init(from decoder: any Decoder) throws {
         let container = try decoder.singleValueContainer()
         if container.decodeNil() {
             self = .null
@@ -46,33 +44,32 @@ extension JSONValue: Codable {
                 .init(
                     codingPath: decoder.codingPath,
                     debugDescription: "Unsupported JSON value"
-                )
-            )
+                ))
         }
     }
 
-    public func encode(to encoder: any Encoder) throws {
+    package func encode(to encoder: any Encoder) throws {
         var container = encoder.singleValueContainer()
         switch self {
-            case .string(let v): try container.encode(v)
-            case .int(let v): try container.encode(v)
-            case .double(let v): try container.encode(v)
-            case .bool(let v): try container.encode(v)
-            case .array(let v): try container.encode(v)
-            case .object(let v): try container.encode(v)
+            case let .string(v): try container.encode(v)
+            case let .int(v): try container.encode(v)
+            case let .double(v): try container.encode(v)
+            case let .bool(v): try container.encode(v)
+            case let .array(v): try container.encode(v)
+            case let .object(v): try container.encode(v)
             case .null: try container.encodeNil()
         }
     }
 }
 
-extension JSONValue {
+package extension JSONValue {
     /// Human-readable description for error messages.
-    public var displayDescription: String {
+    var displayDescription: String {
         switch self {
-            case .string(let s): s
-            case .int(let n): "\(n)"
-            case .double(let n): "\(n)"
-            case .bool(let b): b ? "true" : "false"
+            case let .string(s): s
+            case let .int(n): "\(n)"
+            case let .double(n): "\(n)"
+            case let .bool(b): b ? "true" : "false"
             case .object: "{...}"
             case .array: "[...]"
             case .null: "null"
@@ -80,7 +77,7 @@ extension JSONValue {
     }
 
     /// The JSON Schema type name for this value.
-    public var schemaTypeName: String {
+    var schemaTypeName: String {
         switch self {
             case .string: "string"
             case .int: "integer"
@@ -93,7 +90,7 @@ extension JSONValue {
     }
 
     /// Whether this value matches the given JSON Schema type name.
-    public func matches(schemaType type: String) -> Bool {
+    func matches(schemaType type: String) -> Bool {
         switch type {
             case "string": if case .string = self { return true }
             case "integer": if case .int = self { return true }
@@ -112,10 +109,10 @@ extension JSONValue {
     }
 
     /// Numeric value for comparisons, if applicable.
-    public var numericValue: Double? {
+    var numericValue: Double? {
         switch self {
-            case .int(let n): Double(n)
-            case .double(let n): n
+            case let .int(n): Double(n)
+            case let .double(n): n
             default: nil
         }
     }
@@ -124,7 +121,7 @@ extension JSONValue {
 // MARK: - Serialization
 
 extension JSONValue {
-    /// Serialize to a pretty-printed JSON string with keys ordered by `sortBy`.
+    /// Serialize to a pretty-printed JSON string with keys ordered by `sortBy` .
     public func serialize(sortBy order: KeySortOrder = .length) -> String {
         var output = ""
         write(to: &output, indent: 0, sortBy: order)
@@ -133,19 +130,15 @@ extension JSONValue {
 
     private func write(to output: inout String, indent: Int, sortBy order: KeySortOrder) {
         switch self {
-            case .string(let s):
+            case let .string(s):
                 output += "\""
                 output += escapeJSON(s)
                 output += "\""
-            case .int(let n):
-                output += "\(n)"
-            case .double(let n):
-                output += "\(n)"
-            case .bool(let b):
-                output += b ? "true" : "false"
-            case .null:
-                output += "null"
-            case .array(let elements):
+            case let .int(n): output += "\(n)"
+            case let .double(n): output += "\(n)"
+            case let .bool(b): output += b ? "true" : "false"
+            case .null: output += "null"
+            case let .array(elements):
                 if elements.isEmpty {
                     output += "[]"
                     return
@@ -160,7 +153,7 @@ extension JSONValue {
                 }
                 output += String(repeating: " ", count: indent)
                 output += "]"
-            case .object(let dict):
+            case let .object(dict):
                 if dict.isEmpty {
                     output += "{}"
                     return
@@ -174,8 +167,7 @@ extension JSONValue {
                     let remaining = dict.keys.filter { !pinnedSet.contains($0) }
                     switch order {
                         case .length:
-                            sortedKeys =
-                                pinnedPresent
+                            sortedKeys = pinnedPresent
                                 + remaining.sorted {
                                     $0.count < $1.count || ($0.count == $1.count && $0 < $1)
                                 }
@@ -221,11 +213,10 @@ extension JSONValue {
                 case "\u{08}": result += "\\b"
                 case "\u{0C}": result += "\\f"
                 default:
-                    if c.value < 0x20 {
-                        result += String(format: "\\u%04x", c.value)
-                    } else {
-                        result += String(c)
-                    }
+                    result += c.value < 0x20
+                        ? String(format: "\\u%04x", c.value)
+                        : String(c)
+
             }
         }
         return result

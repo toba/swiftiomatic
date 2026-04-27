@@ -2,27 +2,27 @@ import SwiftSyntax
 
 /// Insert a blank line before control flow statements with multi-line bodies.
 ///
-/// When a `for`, `while`, `repeat`, `if`, `switch`, `do`, or `defer` statement has a
+/// When a `for` , `while` , `repeat` , `if` , `switch` , `do` , or `defer` statement has a
 /// multi-line body and is preceded by another statement, a blank line before it improves
 /// readability. Single-line (inline) control flow is excluded. Guard statements are excluded
 /// because `BlankLinesAfterGuardStatements` already handles spacing around guards.
 ///
-/// Lint: If a multi-line control flow statement is not preceded by a blank line, a lint
-///       warning is raised.
+/// Lint: If a multi-line control flow statement is not preceded by a blank line, a lint warning is
+/// raised.
 ///
 /// Rewrite: A blank line is inserted before the control flow statement.
-final class BlankLinesBeforeControlFlowBlocks: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable {
+final class BlankLinesBeforeControlFlowBlocks: RewriteSyntaxRule<BasicRuleValue>,
+    @unchecked Sendable
+{
     override static var group: ConfigurationGroup? { .blankLines }
     override static var defaultValue: BasicRuleValue { .init(rewrite: false, lint: .no) }
 
     override func visit(_ node: CodeBlockSyntax) -> CodeBlockSyntax {
         let originalItems = Array(node.statements)
         let visited = super.visit(node)
-        guard
-            let statements = insertBlankLines(
-                in: originalItems, visited: Array(visited.statements)
-            )
-        else { return visited }
+        guard let statements = insertBlankLines(
+            in: originalItems, visited: Array(visited.statements)
+        ) else { return visited }
         var result = visited
         result.statements = CodeBlockItemListSyntax(statements)
         return result
@@ -31,11 +31,9 @@ final class BlankLinesBeforeControlFlowBlocks: RewriteSyntaxRule<BasicRuleValue>
     override func visit(_ node: SwitchCaseSyntax) -> SwitchCaseSyntax {
         let originalItems = Array(node.statements)
         let visited = super.visit(node)
-        guard
-            let statements = insertBlankLines(
-                in: originalItems, visited: Array(visited.statements)
-            )
-        else { return visited }
+        guard let statements = insertBlankLines(
+            in: originalItems, visited: Array(visited.statements)
+        ) else { return visited }
         var result = visited
         result.statements = CodeBlockItemListSyntax(statements)
         return result
@@ -77,14 +75,13 @@ final class BlankLinesBeforeControlFlowBlocks: RewriteSyntaxRule<BasicRuleValue>
     /// Whether the item's last token is `}` on its own line.
     private func endsSolitaryBrace(_ item: CodeBlockItemSyntax) -> Bool {
         guard let lastToken = item.lastToken(viewMode: .sourceAccurate),
-            lastToken.tokenKind == .rightBrace
-        else { return false }
+              lastToken.tokenKind == .rightBrace else { return false }
         return lastToken.leadingTrivia.containsNewlines
     }
 
     private func isMultiLineControlFlow(_ item: CodeBlockItemSyntax.Item) -> Bool {
         switch item {
-            case .stmt(let stmt):
+            case let .stmt(stmt):
                 if let forStmt = stmt.as(ForStmtSyntax.self) {
                     return isMultiLineBody(forStmt.body)
                 }
@@ -104,20 +101,19 @@ final class BlankLinesBeforeControlFlowBlocks: RewriteSyntaxRule<BasicRuleValue>
                     return isMultiLineControlFlowExpr(exprStmt.expression)
                 }
                 return false
-            case .expr(let expr):
-                return isMultiLineControlFlowExpr(expr)
-            default:
-                return false
+            case let .expr(expr): return isMultiLineControlFlowExpr(expr)
+            default: return false
         }
     }
 
     private func isMultiLineControlFlowExpr(_ expr: ExprSyntax) -> Bool {
-        if let ifExpr = expr.as(IfExprSyntax.self) { return isMultiLineBody(ifExpr.body) }
-
-        if let switchExpr = expr.as(SwitchExprSyntax.self) {
-            return switchExpr.rightBrace.leadingTrivia.containsNewlines
+        if let ifExpr = expr.as(IfExprSyntax.self) {
+            isMultiLineBody(ifExpr.body)
+        } else if let switchExpr = expr.as(SwitchExprSyntax.self) {
+            switchExpr.rightBrace.leadingTrivia.containsNewlines
+        } else {
+            false
         }
-        return false
     }
 
     private func isMultiLineBody(_ body: CodeBlockSyntax) -> Bool {
@@ -125,7 +121,7 @@ final class BlankLinesBeforeControlFlowBlocks: RewriteSyntaxRule<BasicRuleValue>
     }
 }
 
-extension Finding.Message {
-    fileprivate static let insertBlankLineBeforeControlFlow: Finding.Message =
+fileprivate extension Finding.Message {
+    static let insertBlankLineBeforeControlFlow: Finding.Message =
         "insert blank line before control flow statement"
 }

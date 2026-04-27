@@ -6,6 +6,7 @@ swift-format.xcodeproj/
 Package.resolved
 /.vscode
 .index-build
+Sources/SwiftiomaticKit/Generated/
 *.d
 *.dia
 *.o

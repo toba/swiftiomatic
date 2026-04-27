@@ -1,17 +1,17 @@
-//===----------------------------------------------------------------------===//
+// ===----------------------------------------------------------------------===//
 //
 // This source file is part of the Swift.org open source project
 //
-// Copyright (c) 2014 - 2019 Apple Inc. and the Swift project authors
-// Licensed under Apache License v2.0 with Runtime Library Exception
+// Copyright (c) 2014 - 2019 Apple Inc. and the Swift project authors Licensed under Apache License
+// v2.0 with Runtime Library Exception
 //
-// See https://swift.org/LICENSE.txt for license information
-// See https://swift.org/CONTRIBUTORS.txt for the list of Swift project authors
+// See https://swift.org/LICENSE.txt for license information See https://swift.org/CONTRIBUTORS.txt
+// for the list of Swift project authors
 //
-//===----------------------------------------------------------------------===//
+// ===----------------------------------------------------------------------===//
 
-import Foundation
 import Markdown
+import Foundation
 import SwiftSyntax
 
 /// Documentation comments must be complete and valid.
@@ -19,17 +19,17 @@ import SwiftSyntax
 /// "Command + Option + /" in Xcode produces a minimal valid documentation comment.
 ///
 /// Lint: Documentation comments that are incomplete (e.g. missing parameter documentation) or
-///       invalid (uses `Parameters` when there is only one parameter) will yield a lint error.
+/// invalid (uses `Parameters` when there is only one parameter) will yield a lint error.
 final class RequireParameterDocumentation: LintSyntaxRule<LintOnlyValue>, @unchecked Sendable {
     override class var group: ConfigurationGroup? { .comments }
 
     /// Identifies this rule as being opt-in. Accurate and complete documentation comments are
     /// important, but this rule isn't able to handle situations where portions of documentation are
     /// redundant. For example when the returns clause is redundant for a simple declaration.
-    override class var defaultValue: LintOnlyValue { LintOnlyValue(lint: .no) }
+    override class var defaultValue: LintOnlyValue { .init(lint: .no) }
 
     override func visit(_ node: InitializerDeclSyntax) -> SyntaxVisitorContinueKind {
-        return checkFunctionLikeDocumentation(
+        checkFunctionLikeDocumentation(
             DeclSyntax(node),
             name: "init",
             signature: node.signature
@@ -37,7 +37,7 @@ final class RequireParameterDocumentation: LintSyntaxRule<LintOnlyValue>, @unche
     }
 
     override func visit(_ node: FunctionDeclSyntax) -> SyntaxVisitorContinueKind {
-        return checkFunctionLikeDocumentation(
+        checkFunctionLikeDocumentation(
             DeclSyntax(node),
             name: node.name.text,
             signature: node.signature,
@@ -51,19 +51,13 @@ final class RequireParameterDocumentation: LintSyntaxRule<LintOnlyValue>, @unche
         signature: FunctionSignatureSyntax,
         returnClause: ReturnClauseSyntax? = nil
     ) -> SyntaxVisitorContinueKind {
-        guard
-            let docComment = DocumentationComment(extractedFrom: node),
-            !docComment.parameters.isEmpty
-        else {
-            return .skipChildren
-        }
+        guard let docComment = DocumentationComment(extractedFrom: node),
+              !docComment.parameters.isEmpty else { return .skipChildren }
 
-        // If a single sentence summary is the only documentation, parameter(s) and
-        // returns tags may be omitted.
-        if docComment.briefSummary != nil
-            && docComment.bodyNodes.isEmpty
-            && docComment.parameters.isEmpty
-            && docComment.returns == nil
+        // If a single sentence summary is the only documentation, parameter(s) and returns tags may
+        // be omitted.
+        if docComment.briefSummary != nil, docComment.bodyNodes.isEmpty,
+           docComment.parameters.isEmpty, docComment.returns == nil
         {
             return .skipChildren
         }
@@ -82,19 +76,18 @@ final class RequireParameterDocumentation: LintSyntaxRule<LintOnlyValue>, @unche
         )
         let funcParameters = funcParametersIdentifiers(in: signature.parameterClause.parameters)
 
-        // If the documentation of the parameters is wrong 'docCommentInfo' won't
-        // parse the parameters correctly. First the documentation has to be fix
-        // in order to validate the other conditions.
-        if docComment.parameterLayout != .separated && funcParameters.count == 1 {
+        // If the documentation of the parameters is wrong 'docCommentInfo' won't parse the
+        // parameters correctly. First the documentation has to be fix in order to validate the
+        // other conditions.
+        if docComment.parameterLayout != .separated, funcParameters.count == 1 {
             diagnose(.useSingularParameter, on: node)
             return .skipChildren
-        } else if docComment.parameterLayout != .outline && funcParameters.count > 1 {
+        } else if docComment.parameterLayout != .outline, funcParameters.count > 1 {
             diagnose(.usePluralParameters, on: node)
             return .skipChildren
         }
 
-        // Ensures that the parameters of the documentation and the function signature
-        // are the same.
+        // Ensures that the parameters of the documentation and the function signature are the same.
         if (docComment.parameters.count != funcParameters.count)
             || !parametersAreEqual(params: docComment.parameters, funcParam: funcParameters)
         {
@@ -104,19 +97,18 @@ final class RequireParameterDocumentation: LintSyntaxRule<LintOnlyValue>, @unche
         return .skipChildren
     }
 
-    /// Ensures the function has a return documentation if it actually returns
-    /// a value.
+    /// Ensures the function has a return documentation if it actually returns a value.
     private func validateReturn(
         _ returnClause: ReturnClauseSyntax?,
         name: String,
         returnsDescription: Paragraph?,
         node: DeclSyntax
     ) {
-        if returnClause == nil && returnsDescription != nil {
+        if returnClause == nil, returnsDescription != nil {
             diagnose(.removeReturnComment(funcName: name), on: node)
-        } else if let returnClause = returnClause, returnsDescription == nil {
+        } else if let returnClause, returnsDescription == nil {
             if let returnTypeIdentifier = returnClause.type.as(IdentifierTypeSyntax.self),
-                returnTypeIdentifier.name.text == "Never"
+               returnTypeIdentifier.name.text == "Never"
             {
                 return
             }
@@ -124,86 +116,78 @@ final class RequireParameterDocumentation: LintSyntaxRule<LintOnlyValue>, @unche
         }
     }
 
-    /// Ensures the function has throws documentation if it may actually throw
-    /// an error.
+    /// Ensures the function has throws documentation if it may actually throw an error.
     private func validateThrows(
         _ throwsOrRethrowsKeyword: TokenSyntax?,
         name: String,
         throwsDescription: Paragraph?,
         node: DeclSyntax
     ) {
-        // Documentation is required for functions marked as `throws`.
-        // For functions marked as `rethrows`, documentation is not enforced
-        // since they don’t introduce new errors of their own.
-        // However, it can still be included if needed.
+        // Documentation is required for functions marked as `throws` . For functions marked as
+        // `rethrows` , documentation is not enforced since they don’t introduce new errors of their
+        // own. However, it can still be included if needed.
         let needsThrowsDesc = throwsOrRethrowsKeyword?.tokenKind == .keyword(.throws)
 
-        if throwsOrRethrowsKeyword == nil && throwsDescription != nil {
+        if throwsOrRethrowsKeyword == nil, throwsDescription != nil {
             diagnose(
                 .removeThrowsComment(funcName: name),
                 on: throwsOrRethrowsKeyword ?? node.firstToken(viewMode: .sourceAccurate)
             )
-        } else if needsThrowsDesc && throwsDescription == nil {
+        } else if needsThrowsDesc, throwsDescription == nil {
             diagnose(.documentErrorsThrown(funcName: name), on: throwsOrRethrowsKeyword)
         }
     }
 }
 
-/// Iterates through every parameter of paramList and returns a list of the
-/// parameters identifiers.
+/// Iterates through every parameter of paramList and returns a list of the parameters identifiers.
 private func funcParametersIdentifiers(in paramList: FunctionParameterListSyntax) -> [String] {
     var funcParameters = [String]()
     for parameter in paramList {
-        // If there is a label and an identifier, then the identifier (`secondName`) is the name that
-        // should be documented. Otherwise, the label and identifier are the same, occupying
-        // `firstName`.
+        // If there is a label and an identifier, then the identifier ( `secondName` ) is the name
+        // that should be documented. Otherwise, the label and identifier are the same, occupying
+        // `firstName` .
         let parameterIdentifier = parameter.secondName ?? parameter.firstName
         funcParameters.append(parameterIdentifier.text)
     }
     return funcParameters
 }
 
-/// Indicates if the parameters name from the documentation and the parameters
-/// from the declaration are the same.
+/// Indicates if the parameters name from the documentation and the parameters from the declaration
+/// are the same.
 private func parametersAreEqual(
     params: [DocumentationComment.Parameter],
     funcParam: [String]
 ) -> Bool {
-    for index in 0..<params.count {
-        if params[index].name != funcParam[index] {
-            return false
-        }
-    }
+    for index in 0..<params.count where params[index].name != funcParam[index] { return false }
     return true
 }
 
-extension Finding.Message {
-    fileprivate static func documentReturnValue(funcName: String) -> Finding.Message {
+fileprivate extension Finding.Message {
+    static func documentReturnValue(funcName: String) -> Finding.Message {
         "add a 'Returns:' section to document the return value of '\(funcName)'"
     }
 
-    fileprivate static func removeReturnComment(funcName: String) -> Finding.Message {
+    static func removeReturnComment(funcName: String) -> Finding.Message {
         "remove the 'Returns:' section of '\(funcName)'; it does not return a value"
     }
 
-    fileprivate static func parametersDontMatch(funcName: String) -> Finding.Message {
+    static func parametersDontMatch(funcName: String) -> Finding.Message {
         "change the parameters of the documentation of '\(funcName)' to match its parameters"
     }
 
-    fileprivate static let useSingularParameter: Finding.Message =
+    static let useSingularParameter: Finding.Message =
         "replace the plural 'Parameters:' section with a singular inline 'Parameter' section"
 
-    fileprivate static let usePluralParameters: Finding.Message =
-        """
+    static let usePluralParameters: Finding.Message = """
         replace the singular inline 'Parameter' section with a plural 'Parameters:' section \
         that has the parameters nested inside it
         """
 
-    fileprivate static func removeThrowsComment(funcName: String) -> Finding.Message {
+    static func removeThrowsComment(funcName: String) -> Finding.Message {
         "remove the 'Throws:' sections of '\(funcName)'; it does not throw any errors"
     }
 
-    fileprivate static func documentErrorsThrown(funcName: String) -> Finding.Message {
+    static func documentErrorsThrown(funcName: String) -> Finding.Message {
         "add a 'Throws:' section to document the errors thrown by '\(funcName)'"
     }
 }

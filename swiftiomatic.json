@@ -30,7 +30,7 @@
 	},
 	"closures": {
 		"mutableCapture": { "lint": "warn" },
-		"namedClosureParams": { "lint": "warn", "rewrite": false },
+		"namedClosureParams": { "lint": "no", "rewrite": false },
 		"unhandledThrowingTask": { "lint": "no" },
 		"preferTrailingClosures": { "lint": "warn", "rewrite": true },
 		"noParensInClosureParams": { "lint": "warn", "rewrite": true },
@@ -254,11 +254,11 @@
 		"redundantFinal": { "lint": "warn", "rewrite": false },
 		"redundantReturn": { "lint": "no", "rewrite": true },
 		"redundantThrows": { "lint": "no", "rewrite": false },
-		"unusedArguments": { "lint": "warn", "rewrite": true },
+		"unusedArguments": { "lint": "no", "rewrite": true },
 		"useImplicitInit": { "lint": "warn", "rewrite": true },
 		"noBacktickedSelf": { "lint": "warn", "rewrite": true },
 		"redundantClosure": { "lint": "warn", "rewrite": true },
-		"redundantNilInit": { "lint": "warn", "rewrite": true },
+		"redundantNilInit": { "lint": "no", "rewrite": true },
 		"redundantPattern": { "lint": "warn", "rewrite": true },
 		"redundantEscaping": { "lint": "warn", "rewrite": false },
 		"redundantSendable": { "lint": "no", "rewrite": false },
@@ -338,7 +338,7 @@
 			"warning": 500,
 			"ignoreCommentOnlyLines": true
 		},
-		"nestingDepth": { "lint": "warn", "typeLevel": 1, "functionLevel": 2 },
+		"nestingDepth": { "lint": "warn", "typeLevel": 2, "functionLevel": 3 },
 		"parameterCount": {
 			"enabled": false,
 			"error": 8,
