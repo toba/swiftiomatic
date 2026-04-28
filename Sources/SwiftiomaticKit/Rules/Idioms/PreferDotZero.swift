@@ -30,12 +30,20 @@ final class PreferDotZero: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendabl
     ]
 
     override func visit(_ node: FunctionCallExprSyntax) -> ExprSyntax {
+        let parent = Syntax(node).parent
         let visited = super.visit(node)
-        guard let call = visited.as(FunctionCallExprSyntax.self),
-            let typeName = matchedTypeName(call)
-        else { return visited }
+        guard let concrete = visited.as(FunctionCallExprSyntax.self) else { return visited }
+        return Self.transform(concrete, parent: parent, context: context)
+    }
 
-        diagnose(.preferDotZero(type: typeName), on: call)
+    static func transform(
+        _ call: FunctionCallExprSyntax,
+        parent: Syntax?,
+        context: Context
+    ) -> ExprSyntax {
+        guard let typeName = matchedTypeName(call) else { return ExprSyntax(call) }
+
+        Self.diagnose(.preferDotZero(type: typeName), on: call, context: context)
 
         let zeroAccess = MemberAccessExprSyntax(
             base: ExprSyntax(DeclReferenceExprSyntax(baseName: .identifier(typeName))),
@@ -49,7 +57,7 @@ final class PreferDotZero: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendabl
         return result
     }
 
-    private func matchedTypeName(_ call: FunctionCallExprSyntax) -> String? {
+    private static func matchedTypeName(_ call: FunctionCallExprSyntax) -> String? {
         guard let identifier = call.calledExpression.as(DeclReferenceExprSyntax.self) else {
             return nil
         }
@@ -62,7 +70,7 @@ final class PreferDotZero: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendabl
         return name
     }
 
-    private func isZeroLiteral(_ expr: ExprSyntax) -> Bool {
+    private static func isZeroLiteral(_ expr: ExprSyntax) -> Bool {
         if let intLit = expr.as(IntegerLiteralExprSyntax.self) {
             return intLit.literal.text == "0"
         }

@@ -13,13 +13,24 @@ final class RequireFatalErrorMessage: RewriteSyntaxRule<BasicRuleValue>, @unchec
     override class var defaultValue: BasicRuleValue { .init(rewrite: false, lint: .warn) }
 
     override func visit(_ node: FunctionCallExprSyntax) -> ExprSyntax {
-        if isUnnamedFatalError(node) {
-            diagnose(.fatalErrorNeedsMessage, on: node)
-        }
-        return super.visit(node)
+        let parent = Syntax(node).parent
+        let visited = super.visit(node)
+        guard let concrete = visited.as(FunctionCallExprSyntax.self) else { return visited }
+        return Self.transform(concrete, parent: parent, context: context)
     }
 
-    private func isUnnamedFatalError(_ node: FunctionCallExprSyntax) -> Bool {
+    static func transform(
+        _ node: FunctionCallExprSyntax,
+        parent: Syntax?,
+        context: Context
+    ) -> ExprSyntax {
+        if isUnnamedFatalError(node) {
+            Self.diagnose(.fatalErrorNeedsMessage, on: node, context: context)
+        }
+        return ExprSyntax(node)
+    }
+
+    private static func isUnnamedFatalError(_ node: FunctionCallExprSyntax) -> Bool {
         guard let callee = node.calledExpression.as(DeclReferenceExprSyntax.self),
             callee.baseName.text == "fatalError"
         else { return false }
@@ -36,7 +47,7 @@ final class RequireFatalErrorMessage: RewriteSyntaxRule<BasicRuleValue>, @unchec
         return false
     }
 
-    private func isEmptyStringLiteral(_ node: StringLiteralExprSyntax) -> Bool {
+    private static func isEmptyStringLiteral(_ node: StringLiteralExprSyntax) -> Bool {
         // No segments at all, or a single empty string segment.
         if node.segments.isEmpty { return true }
         for segment in node.segments {

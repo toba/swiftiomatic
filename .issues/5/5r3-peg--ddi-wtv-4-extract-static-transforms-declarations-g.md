@@ -5,7 +5,7 @@ status: in-progress
 type: task
 priority: normal
 created_at: 2026-04-28T02:42:45Z
-updated_at: 2026-04-28T03:46:07Z
+updated_at: 2026-04-28T03:57:09Z
 parent: ddi-wtv
 blocked_by:
     - ogx-lb7
@@ -46,17 +46,17 @@ Per-rule audit (parent-walking, instance state, recursive visit() — friction p
 - [ ] `Generics/SimplifyGenericConstraints`
 - [ ] `Hoist/CaseLet` (3 visits)
 - [x] `Hoist/IndirectEnum` - EnumDeclSyntax
-- [ ] `Idioms/AvoidNoneName`
-- [ ] `Idioms/NoExplicitOwnership`
+- [x] `Idioms/AvoidNoneName` - EnumCaseElementSyntax + VariableDeclSyntax
+- [x] `Idioms/NoExplicitOwnership` - FunctionDeclSyntax + AttributedTypeSyntax
 - [ ] `Idioms/PreferAssertionFailure` (3 visits)
-- [ ] `Idioms/PreferCompoundAssignment`
-- [ ] `Idioms/PreferDotZero`
-- [ ] `Idioms/PreferFileID`
-- [ ] `Idioms/PreferIsEmpty`
-- [ ] `Idioms/PreferKeyPath`
-- [ ] `Idioms/PreferStaticOverClassFunc`
+- [x] `Idioms/PreferCompoundAssignment` - InfixOperatorExprSyntax
+- [x] `Idioms/PreferDotZero` - FunctionCallExprSyntax
+- [x] `Idioms/PreferFileID` - MacroExpansionExprSyntax
+- [x] `Idioms/PreferIsEmpty` - InfixOperatorExprSyntax
+- [x] `Idioms/PreferKeyPath` - FunctionCallExprSyntax
+- [x] `Idioms/PreferStaticOverClassFunc` - ClassDeclSyntax
 - [ ] `Idioms/PreferWhereClausesInForLoops`
-- [ ] `Idioms/RequireFatalErrorMessage`
+- [x] `Idioms/RequireFatalErrorMessage` - FunctionCallExprSyntax
 - [ ] `Literals/EmptyCollectionLiteral`
 - [ ] `Literals/GroupNumericLiterals`
 

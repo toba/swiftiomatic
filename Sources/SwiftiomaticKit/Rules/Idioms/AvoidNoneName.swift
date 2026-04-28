@@ -15,14 +15,33 @@ final class AvoidNoneName: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendabl
     override class var defaultValue: BasicRuleValue { .init(rewrite: false, lint: .warn) }
 
     override func visit(_ node: EnumCaseElementSyntax) -> EnumCaseElementSyntax {
+        Self.transform(super.visit(node), parent: Syntax(node).parent, context: context)
+    }
+
+    static func transform(
+        _ node: EnumCaseElementSyntax,
+        parent: Syntax?,
+        context: Context
+    ) -> EnumCaseElementSyntax {
         let hasParameters = !(node.parameterClause?.parameters.isEmpty ?? true)
         if !hasParameters, isNoneIdentifier(node.name) {
-            diagnose(.avoidNoneEnumCase, on: node.name)
+            Self.diagnose(.avoidNoneEnumCase, on: node.name, context: context)
         }
-        return super.visit(node)
+        return node
     }
 
     override func visit(_ node: VariableDeclSyntax) -> DeclSyntax {
+        let parent = Syntax(node).parent
+        let visited = super.visit(node)
+        guard let concrete = visited.as(VariableDeclSyntax.self) else { return visited }
+        return Self.transform(concrete, parent: parent, context: context)
+    }
+
+    static func transform(
+        _ node: VariableDeclSyntax,
+        parent: Syntax?,
+        context: Context
+    ) -> DeclSyntax {
         let kind: String? = {
             if node.modifiers.contains(.class) {
                 return "class"
@@ -38,14 +57,18 @@ final class AvoidNoneName: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendabl
                 guard let pattern = binding.pattern.as(IdentifierPatternSyntax.self),
                     isNoneIdentifier(pattern.identifier)
                 else { continue }
-                diagnose(.avoidNoneStaticMember(kind: kind), on: pattern.identifier)
+                Self.diagnose(
+                    .avoidNoneStaticMember(kind: kind),
+                    on: pattern.identifier,
+                    context: context
+                )
             }
         }
 
-        return super.visit(node)
+        return DeclSyntax(node)
     }
 
-    private func isNoneIdentifier(_ token: TokenSyntax) -> Bool {
+    private static func isNoneIdentifier(_ token: TokenSyntax) -> Bool {
         token.tokenKind == .identifier("none") || token.tokenKind == .identifier("`none`")
     }
 }

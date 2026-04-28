@@ -17,12 +17,19 @@ final class PreferIsEmpty: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendabl
     override static var defaultValue: BasicRuleValue { .init(rewrite: false, lint: .no) }
 
     override func visit(_ node: InfixOperatorExprSyntax) -> ExprSyntax {
+        let parent = Syntax(node).parent
         let visited = super.visit(node)
+        guard let concrete = visited.as(InfixOperatorExprSyntax.self) else { return visited }
+        return Self.transform(concrete, parent: parent, context: context)
+    }
 
-        guard let infixNode = visited.as(InfixOperatorExprSyntax.self),
-              let binOp = infixNode.operator.as(BinaryOperatorExprSyntax.self)
-        else {
-            return visited
+    static func transform(
+        _ infixNode: InfixOperatorExprSyntax,
+        parent: Syntax?,
+        context: Context
+    ) -> ExprSyntax {
+        guard let binOp = infixNode.operator.as(BinaryOperatorExprSyntax.self) else {
+            return ExprSyntax(infixNode)
         }
 
         let op = binOp.operator.text
@@ -35,7 +42,8 @@ final class PreferIsEmpty: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendabl
             if let result = transformCountComparison(
                 infixNode: infixNode,
                 memberAccess: memberAccess,
-                op: op
+                op: op,
+                context: context
             ) {
                 return result
             }
@@ -53,25 +61,27 @@ final class PreferIsEmpty: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendabl
                 case "==": flippedOp = "=="
                 case "!=": flippedOp = "!="
                 case "<": flippedOp = ">"  // 0 < count === count > 0
-                default: return visited
+                default: return ExprSyntax(infixNode)
             }
             if let result = transformCountComparison(
                 infixNode: infixNode,
                 memberAccess: memberAccess,
-                op: flippedOp
+                op: flippedOp,
+                context: context
             ) {
                 return result
             }
         }
 
-        return visited
+        return ExprSyntax(infixNode)
     }
 
     /// Transforms a `.count` comparison into an `.isEmpty` expression.
-    private func transformCountComparison(
+    private static func transformCountComparison(
         infixNode: InfixOperatorExprSyntax,
         memberAccess: MemberAccessExprSyntax,
-        op: String
+        op: String,
+        context: Context
     ) -> ExprSyntax? {
         let wantIsEmpty: Bool
 
@@ -89,7 +99,11 @@ final class PreferIsEmpty: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendabl
         replacement = wantIsEmpty
             ? isOptionalChain ? ".isEmpty == true" : ".isEmpty"
             : isOptionalChain ? ".isEmpty != true" : "!.isEmpty"
-        diagnose(.useIsEmpty(replacement: replacement), on: memberAccess.declName)
+        Self.diagnose(
+            .useIsEmpty(replacement: replacement),
+            on: memberAccess.declName,
+            context: context
+        )
 
         // Build .isEmpty member access, replacing .count
         let isEmptyAccess = memberAccess.with(
@@ -143,13 +157,13 @@ final class PreferIsEmpty: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendabl
     }
 
     /// Returns `true` if the expression is the integer literal `0`.
-    private func isZeroLiteral(_ expr: ExprSyntax) -> Bool {
+    private static func isZeroLiteral(_ expr: ExprSyntax) -> Bool {
         guard let literal = expr.as(IntegerLiteralExprSyntax.self) else { return false }
         return literal.literal.text == "0"
     }
 
     /// Returns `true` if the member access chain contains optional chaining (`?`).
-    private func hasOptionalChaining(_ memberAccess: MemberAccessExprSyntax) -> Bool {
+    private static func hasOptionalChaining(_ memberAccess: MemberAccessExprSyntax) -> Bool {
         var current: ExprSyntax? = memberAccess.base
 
         while let expr = current {

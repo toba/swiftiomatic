@@ -19,17 +19,40 @@ final class NoExplicitOwnership: RewriteSyntaxRule<BasicRuleValue>, @unchecked S
     // MARK: - Declaration modifiers (e.g. `consuming func move()`)
 
     override func visit(_ node: FunctionDeclSyntax) -> DeclSyntax {
-        // Must call super.visit to recurse into parameter types where AttributedTypeSyntax lives.
-        let visited = super.visit(node).cast(FunctionDeclSyntax.self)
-        return DeclSyntax(removingOwnershipModifier(from: visited, keywordKeyPath: \.funcKeyword))
+        let parent = Syntax(node).parent
+        let visited = super.visit(node)
+        guard let concrete = visited.as(FunctionDeclSyntax.self) else { return visited }
+        return Self.transform(concrete, parent: parent, context: context)
+    }
+
+    static func transform(
+        _ visited: FunctionDeclSyntax,
+        parent: Syntax?,
+        context: Context
+    ) -> DeclSyntax {
+        DeclSyntax(
+            removingOwnershipModifier(
+                from: visited,
+                keywordKeyPath: \.funcKeyword,
+                context: context
+            )
+        )
     }
 
     // MARK: - Type specifiers (e.g. `consuming Foo` in parameter types)
 
     override func visit(_ node: AttributedTypeSyntax) -> TypeSyntax {
+        let parent = Syntax(node).parent
         let visited = super.visit(node)
-        guard let attributed = visited.as(AttributedTypeSyntax.self) else { return visited }
+        guard let concrete = visited.as(AttributedTypeSyntax.self) else { return visited }
+        return Self.transform(concrete, parent: parent, context: context)
+    }
 
+    static func transform(
+        _ attributed: AttributedTypeSyntax,
+        parent: Syntax?,
+        context: Context
+    ) -> TypeSyntax {
         let ownershipIndices = attributed.specifiers.enumerated().compactMap {
             index, element -> Int? in
             guard case let .simpleTypeSpecifier(simple) = element,
@@ -37,15 +60,18 @@ final class NoExplicitOwnership: RewriteSyntaxRule<BasicRuleValue>, @unchecked S
                   Self.ownershipKeywords.contains(kw) else { return nil }
             return index
         }
-        guard !ownershipIndices.isEmpty else { return visited }
+        guard !ownershipIndices.isEmpty else { return TypeSyntax(attributed) }
 
         // Diagnose each ownership specifier.
         for index in ownershipIndices {
             if case let .simpleTypeSpecifier(simple) = attributed.specifiers[
                 attributed.specifiers.index(attributed.specifiers.startIndex, offsetBy: index)
             ] {
-                diagnose(
-                    .removeOwnershipModifier(keyword: simple.specifier.text), on: simple.specifier)
+                Self.diagnose(
+                    .removeOwnershipModifier(keyword: simple.specifier.text),
+                    on: simple.specifier,
+                    context: context
+                )
             }
         }
 
@@ -71,18 +97,23 @@ final class NoExplicitOwnership: RewriteSyntaxRule<BasicRuleValue>, @unchecked S
 
     // MARK: - Helper
 
-    private func removingOwnershipModifier<Decl: DeclSyntaxProtocol & WithModifiersSyntax>(
+    private static func removingOwnershipModifier<
+        Decl: DeclSyntaxProtocol & WithModifiersSyntax
+    >(
         from decl: Decl,
-        keywordKeyPath: WritableKeyPath<Decl, TokenSyntax>
+        keywordKeyPath: WritableKeyPath<Decl, TokenSyntax>,
+        context: Context
     ) -> Decl {
         guard let ownershipModifier = decl.modifiers.first(where: { modifier in
             guard case let .keyword(kw) = modifier.name.tokenKind else { return false }
             return Self.ownershipKeywords.contains(kw)
         }) else { return decl }
 
-        diagnose(
+        Self.diagnose(
             .removeOwnershipModifier(keyword: ownershipModifier.name.text),
-            on: ownershipModifier.name)
+            on: ownershipModifier.name,
+            context: context
+        )
 
         return decl.removingModifiers(Self.ownershipKeywords, keyword: keywordKeyPath)
     }

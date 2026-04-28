@@ -17,7 +17,17 @@ final class PreferStaticOverClassFunc: RewriteSyntaxRule<BasicRuleValue>, @unche
     override class var defaultValue: BasicRuleValue { .init(rewrite: false, lint: .warn) }
 
     override func visit(_ node: ClassDeclSyntax) -> DeclSyntax {
-        let visited = super.visit(node).cast(ClassDeclSyntax.self)
+        let parent = Syntax(node).parent
+        let visited = super.visit(node)
+        guard let concrete = visited.as(ClassDeclSyntax.self) else { return visited }
+        return Self.transform(concrete, parent: parent, context: context)
+    }
+
+    static func transform(
+        _ visited: ClassDeclSyntax,
+        parent: Syntax?,
+        context: Context
+    ) -> DeclSyntax {
         guard visited.modifiers.contains(anyOf: [.final]) else {
             return DeclSyntax(visited)
         }
@@ -26,7 +36,7 @@ final class PreferStaticOverClassFunc: RewriteSyntaxRule<BasicRuleValue>, @unche
         result.memberBlock.members = MemberBlockItemListSyntax(
             result.memberBlock.members.map { member in
                 guard let classModifier = classModifier(in: member.decl) else { return member }
-                diagnose(.preferStatic, on: classModifier)
+                Self.diagnose(.preferStatic, on: classModifier, context: context)
                 var item = member
                 item.decl = replaceClassWithStatic(in: member.decl)
                 return item
@@ -34,7 +44,7 @@ final class PreferStaticOverClassFunc: RewriteSyntaxRule<BasicRuleValue>, @unche
         return DeclSyntax(result)
     }
 
-    private func classModifier(in decl: DeclSyntax) -> DeclModifierSyntax? {
+    private static func classModifier(in decl: DeclSyntax) -> DeclModifierSyntax? {
         guard let withModifiers = decl.asProtocol(WithModifiersSyntax.self) else { return nil }
         if withModifiers.modifiers.contains(.override) {
             return nil
@@ -42,7 +52,7 @@ final class PreferStaticOverClassFunc: RewriteSyntaxRule<BasicRuleValue>, @unche
         return withModifiers.modifiers.first { $0.name.tokenKind == .keyword(.class) }
     }
 
-    private func replaceClassWithStatic(in decl: DeclSyntax) -> DeclSyntax {
+    private static func replaceClassWithStatic(in decl: DeclSyntax) -> DeclSyntax {
         func replace<D: DeclSyntaxProtocol & WithModifiersSyntax>(_ node: D) -> DeclSyntax {
             var result = node
             result.modifiers = DeclModifierListSyntax(

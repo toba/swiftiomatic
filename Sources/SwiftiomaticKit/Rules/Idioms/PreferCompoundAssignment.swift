@@ -19,16 +19,29 @@ final class PreferCompoundAssignment: RewriteSyntaxRule<BasicRuleValue>, @unchec
     private static let supportedOperators: Set<String> = ["+", "-", "*", "/"]
 
     override func visit(_ node: InfixOperatorExprSyntax) -> ExprSyntax {
+        let parent = Syntax(node).parent
         let visited = super.visit(node)
-        guard let infix = visited.as(InfixOperatorExprSyntax.self),
-            infix.operator.is(AssignmentExprSyntax.self),
+        guard let concrete = visited.as(InfixOperatorExprSyntax.self) else { return visited }
+        return Self.transform(concrete, parent: parent, context: context)
+    }
+
+    static func transform(
+        _ infix: InfixOperatorExprSyntax,
+        parent: Syntax?,
+        context: Context
+    ) -> ExprSyntax {
+        guard infix.operator.is(AssignmentExprSyntax.self),
             let rhsInfix = infix.rightOperand.as(InfixOperatorExprSyntax.self),
             let rhsBinOp = rhsInfix.operator.as(BinaryOperatorExprSyntax.self),
             Self.supportedOperators.contains(rhsBinOp.operator.text),
             infix.leftOperand.trimmedDescription == rhsInfix.leftOperand.trimmedDescription
-        else { return visited }
+        else { return ExprSyntax(infix) }
 
-        diagnose(.preferCompoundAssignment(op: rhsBinOp.operator.text), on: infix.leftOperand)
+        Self.diagnose(
+            .preferCompoundAssignment(op: rhsBinOp.operator.text),
+            on: infix.leftOperand,
+            context: context
+        )
 
         // Build `<lhs> <op>= <rhsRight>` while preserving outer trivia. Strip the LHS's trailing
         // trivia and the new RHS's leading trivia so the new operator can supply its own spacing.

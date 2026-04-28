@@ -132,8 +132,31 @@ package final class CompactStageOneRewriterGenerator: FileGenerator {
         if Self.declSyntaxKinds.contains(nodeType) { return "DeclSyntax" }
         if Self.exprSyntaxKinds.contains(nodeType) { return "ExprSyntax" }
         if Self.stmtSyntaxKinds.contains(nodeType) { return "StmtSyntax" }
+        if Self.typeSyntaxKinds.contains(nodeType) { return "TypeSyntax" }
         return nodeType
     }
+
+    /// Concrete `*TypeSyntax` kinds whose `SyntaxRewriter.visit` returns `TypeSyntax`.
+    private static let typeSyntaxKinds: Set<String> = [
+        "ArrayTypeSyntax",
+        "AttributedTypeSyntax",
+        "ClassRestrictionTypeSyntax",
+        "CompositionTypeSyntax",
+        "DictionaryTypeSyntax",
+        "FunctionTypeSyntax",
+        "IdentifierTypeSyntax",
+        "ImplicitlyUnwrappedOptionalTypeSyntax",
+        "MemberTypeSyntax",
+        "MetatypeTypeSyntax",
+        "MissingTypeSyntax",
+        "NamedOpaqueReturnTypeSyntax",
+        "OptionalTypeSyntax",
+        "PackElementTypeSyntax",
+        "PackExpansionTypeSyntax",
+        "SomeOrAnyTypeSyntax",
+        "SuppressedTypeSyntax",
+        "TupleTypeSyntax",
+    ]
 
     /// Concrete `*DeclSyntax` kinds whose `SyntaxRewriter.visit` returns `DeclSyntax`.
     /// Sourced from the swift-syntax declarations matching the `*DeclSyntax` naming

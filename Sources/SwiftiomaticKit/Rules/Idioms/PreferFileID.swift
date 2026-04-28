@@ -13,6 +13,17 @@ final class PreferFileID: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable
     override static var defaultValue: BasicRuleValue { .init(rewrite: false, lint: .no) }
 
     override func visit(_ node: MacroExpansionExprSyntax) -> ExprSyntax {
+        let parent = Syntax(node).parent
+        let visited = super.visit(node)
+        guard let concrete = visited.as(MacroExpansionExprSyntax.self) else { return visited }
+        return Self.transform(concrete, parent: parent, context: context)
+    }
+
+    static func transform(
+        _ node: MacroExpansionExprSyntax,
+        parent: Syntax?,
+        context: Context
+    ) -> ExprSyntax {
         // Only handle bare #file / #fileID (no arguments, no trailing closure).
         guard node.arguments.isEmpty,
             node.trailingClosure == nil,
@@ -25,7 +36,7 @@ final class PreferFileID: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable
 
         switch macroName {
             case "file":
-                diagnose(.preferFileID, on: node)
+                Self.diagnose(.preferFileID, on: node, context: context)
                 var result = node
                 result.macroName = result.macroName.with(\.tokenKind, .identifier("fileID"))
                 return ExprSyntax(result)

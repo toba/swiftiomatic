@@ -21,20 +21,29 @@ final class PreferKeyPath: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendabl
     ]
 
     override func visit(_ node: FunctionCallExprSyntax) -> ExprSyntax {
+        let parent = Syntax(node).parent
         let visited = super.visit(node)
-        guard let callNode = visited.as(FunctionCallExprSyntax.self) else { return visited }
+        guard let concrete = visited.as(FunctionCallExprSyntax.self) else { return visited }
+        return Self.transform(concrete, parent: parent, context: context)
+    }
 
+    static func transform(
+        _ callNode: FunctionCallExprSyntax,
+        parent: Syntax?,
+        context: Context
+    ) -> ExprSyntax {
         // Must be a method call (member access)
         guard let memberAccess = callNode.calledExpression.as(MemberAccessExprSyntax.self) else {
-            return visited
+            return ExprSyntax(callNode)
         }
 
         let methodName = memberAccess.declName.baseName.text
-        guard Self.eligibleMethods.contains(methodName) else { return visited }
+        guard Self.eligibleMethods.contains(methodName) else { return ExprSyntax(callNode) }
 
         // Handle `contains(where:)` form
         if methodName == "contains" {
-            return handleContainsWhere(callNode, memberAccess: memberAccess) ?? visited
+            return handleContainsWhere(callNode, memberAccess: memberAccess, context: context)
+                ?? ExprSyntax(callNode)
         }
 
         // Handle trailing closure: map { $0.foo } Skip multiple trailing closures (can't use
@@ -43,7 +52,7 @@ final class PreferKeyPath: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendabl
            callNode.additionalTrailingClosures.isEmpty,
            let chain = extractPropertyChain(from: closure)
         {
-            diagnose(.preferKeyPath(method: methodName), on: closure)
+            Self.diagnose(.preferKeyPath(method: methodName), on: closure, context: context)
 
             let keyPath = buildKeyPath(from: chain)
             let arg = LabeledExprSyntax(expression: ExprSyntax(keyPath))
@@ -60,8 +69,8 @@ final class PreferKeyPath: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendabl
             )
 
             var result = ExprSyntax(newCall)
-            result.leadingTrivia = node.leadingTrivia
-            result.trailingTrivia = node.trailingTrivia
+            result.leadingTrivia = callNode.leadingTrivia
+            result.trailingTrivia = callNode.trailingTrivia
             return result
         }
 
@@ -72,32 +81,41 @@ final class PreferKeyPath: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendabl
            let closureExpr = firstArg.expression.as(ClosureExprSyntax.self),
            let chain = extractPropertyChain(from: closureExpr)
         {
-            diagnose(.preferKeyPath(method: methodName), on: firstArg.expression)
+            Self.diagnose(
+                .preferKeyPath(method: methodName),
+                on: firstArg.expression,
+                context: context
+            )
 
             let keyPath = buildKeyPath(from: chain)
             let newArg = firstArg.with(\.expression, ExprSyntax(keyPath))
             let newCall = callNode.with(\.arguments, LabeledExprListSyntax([newArg]))
 
             var result = ExprSyntax(newCall)
-            result.leadingTrivia = node.leadingTrivia
-            result.trailingTrivia = node.trailingTrivia
+            result.leadingTrivia = callNode.leadingTrivia
+            result.trailingTrivia = callNode.trailingTrivia
             return result
         }
 
-        return visited
+        return ExprSyntax(callNode)
     }
 
     /// Handles `contains(where: { $0.foo })` → `contains(where: \.foo)`
-    private func handleContainsWhere(
+    private static func handleContainsWhere(
         _ callNode: FunctionCallExprSyntax,
-        memberAccess _: MemberAccessExprSyntax
+        memberAccess _: MemberAccessExprSyntax,
+        context: Context
     ) -> ExprSyntax? {
         guard let firstArg = callNode.arguments.first,
               firstArg.label?.text == "where",
               let closureExpr = firstArg.expression.as(ClosureExprSyntax.self),
               let chain = extractPropertyChain(from: closureExpr) else { return nil }
 
-        diagnose(.preferKeyPath(method: "contains(where:)"), on: firstArg.expression)
+        Self.diagnose(
+            .preferKeyPath(method: "contains(where:)"),
+            on: firstArg.expression,
+            context: context
+        )
 
         let keyPath = buildKeyPath(from: chain)
         let newArg = firstArg.with(
@@ -110,7 +128,7 @@ final class PreferKeyPath: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendabl
     }
 
     /// Extracts the property chain from a `{ $0.foo.bar }` closure, returning `["foo", "bar"]` .
-    private func extractPropertyChain(from closure: ClosureExprSyntax) -> [String]? {
+    private static func extractPropertyChain(from closure: ClosureExprSyntax) -> [String]? {
         // Must have no explicit parameters (uses $0 shorthand)
         guard closure.signature == nil else { return nil }
 
@@ -123,7 +141,7 @@ final class PreferKeyPath: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendabl
     }
 
     /// Recursively extracts property names from a `$0.a.b.c` chain.
-    private func extractChain(_ expr: ExprSyntax) -> [String]? {
+    private static func extractChain(_ expr: ExprSyntax) -> [String]? {
         guard let memberAccess = expr.as(MemberAccessExprSyntax.self),
               let base = memberAccess.base else { return nil }
 
@@ -139,7 +157,7 @@ final class PreferKeyPath: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendabl
     }
 
     /// Builds a `KeyPathExprSyntax` from a property chain like `["foo", "bar"]` → `\.foo.bar` .
-    private func buildKeyPath(from chain: [String]) -> KeyPathExprSyntax {
+    private static func buildKeyPath(from chain: [String]) -> KeyPathExprSyntax {
         let components = chain.map { name in
             KeyPathComponentSyntax(
                 period: .periodToken(),
