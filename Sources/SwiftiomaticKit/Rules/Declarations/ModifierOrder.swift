@@ -53,50 +53,127 @@ final class ModifierOrder: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendabl
     // MARK: - Visitors
 
     override func visit(_ node: FunctionDeclSyntax) -> DeclSyntax {
-        DeclSyntax(reorderingModifiers(of: node, keyPath: \.modifiers))
+        Self.transform(node, parent: Syntax(node).parent, context: context)
+    }
+
+    static func transform(
+        _ node: FunctionDeclSyntax,
+        parent: Syntax?,
+        context: Context
+    ) -> DeclSyntax {
+        DeclSyntax(reorderingModifiers(of: node, keyPath: \.modifiers, context: context))
     }
 
     override func visit(_ node: VariableDeclSyntax) -> DeclSyntax {
-        DeclSyntax(reorderingModifiers(of: node, keyPath: \.modifiers))
+        Self.transform(node, parent: Syntax(node).parent, context: context)
+    }
+
+    static func transform(
+        _ node: VariableDeclSyntax,
+        parent: Syntax?,
+        context: Context
+    ) -> DeclSyntax {
+        DeclSyntax(reorderingModifiers(of: node, keyPath: \.modifiers, context: context))
     }
 
     override func visit(_ node: ClassDeclSyntax) -> DeclSyntax {
+        let parent = Syntax(node).parent
         let visited = super.visit(node).cast(ClassDeclSyntax.self)
-        return DeclSyntax(reorderingModifiers(of: visited, keyPath: \.modifiers))
+        return Self.transform(visited, parent: parent, context: context)
+    }
+
+    static func transform(
+        _ node: ClassDeclSyntax,
+        parent: Syntax?,
+        context: Context
+    ) -> DeclSyntax {
+        DeclSyntax(reorderingModifiers(of: node, keyPath: \.modifiers, context: context))
     }
 
     override func visit(_ node: StructDeclSyntax) -> DeclSyntax {
+        let parent = Syntax(node).parent
         let visited = super.visit(node).cast(StructDeclSyntax.self)
-        return DeclSyntax(reorderingModifiers(of: visited, keyPath: \.modifiers))
+        return Self.transform(visited, parent: parent, context: context)
+    }
+
+    static func transform(
+        _ node: StructDeclSyntax,
+        parent: Syntax?,
+        context: Context
+    ) -> DeclSyntax {
+        DeclSyntax(reorderingModifiers(of: node, keyPath: \.modifiers, context: context))
     }
 
     override func visit(_ node: EnumDeclSyntax) -> DeclSyntax {
+        let parent = Syntax(node).parent
         let visited = super.visit(node).cast(EnumDeclSyntax.self)
-        return DeclSyntax(reorderingModifiers(of: visited, keyPath: \.modifiers))
+        return Self.transform(visited, parent: parent, context: context)
+    }
+
+    static func transform(
+        _ node: EnumDeclSyntax,
+        parent: Syntax?,
+        context: Context
+    ) -> DeclSyntax {
+        DeclSyntax(reorderingModifiers(of: node, keyPath: \.modifiers, context: context))
     }
 
     override func visit(_ node: ActorDeclSyntax) -> DeclSyntax {
+        let parent = Syntax(node).parent
         let visited = super.visit(node).cast(ActorDeclSyntax.self)
-        return DeclSyntax(reorderingModifiers(of: visited, keyPath: \.modifiers))
+        return Self.transform(visited, parent: parent, context: context)
+    }
+
+    static func transform(
+        _ node: ActorDeclSyntax,
+        parent: Syntax?,
+        context: Context
+    ) -> DeclSyntax {
+        DeclSyntax(reorderingModifiers(of: node, keyPath: \.modifiers, context: context))
     }
 
     override func visit(_ node: InitializerDeclSyntax) -> DeclSyntax {
-        DeclSyntax(reorderingModifiers(of: node, keyPath: \.modifiers))
+        Self.transform(node, parent: Syntax(node).parent, context: context)
+    }
+
+    static func transform(
+        _ node: InitializerDeclSyntax,
+        parent: Syntax?,
+        context: Context
+    ) -> DeclSyntax {
+        DeclSyntax(reorderingModifiers(of: node, keyPath: \.modifiers, context: context))
     }
 
     override func visit(_ node: SubscriptDeclSyntax) -> DeclSyntax {
-        DeclSyntax(reorderingModifiers(of: node, keyPath: \.modifiers))
+        Self.transform(node, parent: Syntax(node).parent, context: context)
+    }
+
+    static func transform(
+        _ node: SubscriptDeclSyntax,
+        parent: Syntax?,
+        context: Context
+    ) -> DeclSyntax {
+        DeclSyntax(reorderingModifiers(of: node, keyPath: \.modifiers, context: context))
     }
 
     override func visit(_ node: TypeAliasDeclSyntax) -> DeclSyntax {
-        DeclSyntax(reorderingModifiers(of: node, keyPath: \.modifiers))
+        Self.transform(node, parent: Syntax(node).parent, context: context)
+    }
+
+    static func transform(
+        _ node: TypeAliasDeclSyntax,
+        parent: Syntax?,
+        context: Context
+    ) -> DeclSyntax {
+        DeclSyntax(reorderingModifiers(of: node, keyPath: \.modifiers, context: context))
     }
 
     // MARK: - Reordering
 
-    private func reorderingModifiers<Decl: DeclSyntaxProtocol>(
+    private static func reorderingModifiers<Decl: DeclSyntaxProtocol>(
         of node: Decl,
-        keyPath: WritableKeyPath<Decl, DeclModifierListSyntax>
+        keyPath: WritableKeyPath<Decl, DeclModifierListSyntax>,
+        context: Context
     ) -> Decl {
         let modifiers = node[keyPath: keyPath]
         guard modifiers.count > 1 else { return node }
@@ -114,7 +191,7 @@ final class ModifierOrder: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendabl
         let originalIndices = Array(0..<modifiers.count)
         guard sortedIndices != originalIndices else { return node }
 
-        diagnose(.reorderModifiers, on: modifiers.first!)
+        Self.diagnose(.reorderModifiers, on: modifiers.first!, context: context)
 
         // Build new modifier list preserving trivia from original positions.
         var reordered = sorted.map(\.element)

@@ -14,8 +14,19 @@ final class PreferAssertionFailure: RewriteSyntaxRule<BasicRuleValue>, @unchecke
     override class var group: ConfigurationGroup? { .idioms }
 
     override func visit(_ node: FunctionCallExprSyntax) -> ExprSyntax {
+        let parent = Syntax(node).parent
+        let visited = super.visit(node)
+        guard let concrete = visited.as(FunctionCallExprSyntax.self) else { return visited }
+        return Self.transform(concrete, parent: parent, context: context)
+    }
+
+    static func transform(
+        _ node: FunctionCallExprSyntax,
+        parent: Syntax?,
+        context: Context
+    ) -> ExprSyntax {
         guard let callee = node.calledExpression.as(DeclReferenceExprSyntax.self) else {
-            return super.visit(node)
+            return ExprSyntax(node)
         }
         let name = callee.baseName.text
         let replacement: String
@@ -23,7 +34,7 @@ final class PreferAssertionFailure: RewriteSyntaxRule<BasicRuleValue>, @unchecke
         switch name {
             case "assert": replacement = "assertionFailure"
             case "precondition": replacement = "preconditionFailure"
-            default: return super.visit(node)
+            default: return ExprSyntax(node)
         }
 
         // First argument must be `false`
@@ -32,10 +43,14 @@ final class PreferAssertionFailure: RewriteSyntaxRule<BasicRuleValue>, @unchecke
             let boolLiteral = firstArg.expression.as(BooleanLiteralExprSyntax.self),
             boolLiteral.literal.tokenKind == .keyword(.false)
         else {
-            return super.visit(node)
+            return ExprSyntax(node)
         }
 
-        diagnose(.useFailureVariant(name: name, replacement: replacement), on: callee.baseName)
+        Self.diagnose(
+            .useFailureVariant(name: name, replacement: replacement),
+            on: callee.baseName,
+            context: context
+        )
 
         // Build new argument list without the `false` argument
         var newArguments = Array(node.arguments.dropFirst())

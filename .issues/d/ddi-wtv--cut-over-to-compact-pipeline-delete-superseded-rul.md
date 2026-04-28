@@ -5,7 +5,7 @@ status: in-progress
 type: feature
 priority: high
 created_at: 2026-04-28T01:41:38Z
-updated_at: 2026-04-28T02:41:45Z
+updated_at: 2026-04-28T04:18:02Z
 parent: iv7-r5g
 blocked_by:
     - eti-yt2
@@ -15,6 +15,33 @@ sync:
     github:
         issue_number: "480"
         synced_at: "2026-04-28T02:56:05Z"
+---
+
+## Continuation Brief (for fresh sessions)
+
+**Current state (rough):**
+
+- ✅ Dispatch scaffold: `RewriteCoordinator.runCompactPipeline` exists; legacy `RewritePipeline` still runs the work (`q4d-ya9`).
+- ✅ Generator emits `CompactStageOneRewriter+Generated.swift` (`ogx-lb7`).
+- ✅ Architectural friction resolved: 3-arg `transform(_:parent:context:)` signature (`3zw-l17`).
+- ⏳ Rule porting in progress:
+  - Cluster 1 `vz0-31g`: 10/15 in scope ported.
+  - Cluster 2 `5r3-peg`: ✅ all 31 clean ported (completed).
+  - Cluster 3 `r0w-l4r`: not started (~64 in scope, see issue body for audit).
+- ❌ Final cutover steps not started: `g6t-gcm` (wire combined rewriter into RewriteCoordinator + 13 structural-pass ordering), `fkt-mgf` (golden-corpus diff + perf gate), `dil-cew` (delete legacy).
+
+**Key files:**
+
+- `Sources/GeneratorKit/RuleCollector.swift` — detects 3-arg `transform` shape.
+- `Sources/GeneratorKit/CompactStageOneRewriterGenerator.swift` — emits the combined rewriter.
+- `Sources/SwiftiomaticKit/Syntax/Rewriter/RewriteCoordinator.swift` — dispatch site (`runCompactPipeline`).
+- `Sources/SwiftiomaticKit/Syntax/SyntaxRule.swift` — static `Self.diagnose(_:on:context:)` helper.
+- Generated output: `.build/plugins/outputs/swiftiomatic/SwiftiomaticKit/destination/GenerateCode/CompactStageOneRewriter+Generated.swift`
+
+**Per-cluster handoff briefs:** see `5r3-peg` and `r0w-l4r` issue bodies — each has a self-contained Continuation Brief covering the signature contract, friction patterns, reference rules to copy from, and verification commands.
+
+**Behavior is unchanged today:** the combined rewriter is generated but not wired in; ported rules continue running through legacy `RewritePipeline`. Tests must pass throughout cluster work.
+
 ---
 
 ## Goal

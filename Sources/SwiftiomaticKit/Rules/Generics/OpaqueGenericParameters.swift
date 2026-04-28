@@ -19,7 +19,16 @@ final class OpaqueGenericParameters: RewriteSyntaxRule<BasicRuleValue>, @uncheck
     // MARK: - Visitors
 
     override func visit(_ node: FunctionDeclSyntax) -> DeclSyntax {
+        let parent = Syntax(node).parent
         let visited = super.visit(node).cast(FunctionDeclSyntax.self)
+        return Self.transform(visited, parent: parent, context: context)
+    }
+
+    static func transform(
+        _ visited: FunctionDeclSyntax,
+        parent: Syntax?,
+        context: Context
+    ) -> DeclSyntax {
         guard let genericClause = visited.genericParameterClause else { return DeclSyntax(visited) }
 
         let analysis = analyzeGenericParams(
@@ -35,7 +44,7 @@ final class OpaqueGenericParameters: RewriteSyntaxRule<BasicRuleValue>, @uncheck
         let eligible = analysis.filter(\.eligible)
         guard !eligible.isEmpty else { return DeclSyntax(visited) }
 
-        diagnose(.useOpaqueGenericParameters, on: node.funcKeyword)
+        Self.diagnose(.useOpaqueGenericParameters, on: visited.funcKeyword, context: context)
 
         var result = visited
         result.signature.parameterClause = applyReplacements(
@@ -70,7 +79,16 @@ final class OpaqueGenericParameters: RewriteSyntaxRule<BasicRuleValue>, @uncheck
     }
 
     override func visit(_ node: InitializerDeclSyntax) -> DeclSyntax {
+        let parent = Syntax(node).parent
         let visited = super.visit(node).cast(InitializerDeclSyntax.self)
+        return Self.transform(visited, parent: parent, context: context)
+    }
+
+    static func transform(
+        _ visited: InitializerDeclSyntax,
+        parent: Syntax?,
+        context: Context
+    ) -> DeclSyntax {
         guard let genericClause = visited.genericParameterClause else { return DeclSyntax(visited) }
 
         let analysis = analyzeGenericParams(
@@ -86,7 +104,7 @@ final class OpaqueGenericParameters: RewriteSyntaxRule<BasicRuleValue>, @uncheck
         let eligible = analysis.filter(\.eligible)
         guard !eligible.isEmpty else { return DeclSyntax(visited) }
 
-        diagnose(.useOpaqueGenericParameters, on: node.initKeyword)
+        Self.diagnose(.useOpaqueGenericParameters, on: visited.initKeyword, context: context)
 
         var result = visited
         result.signature.parameterClause = applyReplacements(
@@ -121,7 +139,16 @@ final class OpaqueGenericParameters: RewriteSyntaxRule<BasicRuleValue>, @uncheck
     }
 
     override func visit(_ node: SubscriptDeclSyntax) -> DeclSyntax {
+        let parent = Syntax(node).parent
         let visited = super.visit(node).cast(SubscriptDeclSyntax.self)
+        return Self.transform(visited, parent: parent, context: context)
+    }
+
+    static func transform(
+        _ visited: SubscriptDeclSyntax,
+        parent: Syntax?,
+        context: Context
+    ) -> DeclSyntax {
         guard let genericClause = visited.genericParameterClause else { return DeclSyntax(visited) }
 
         let analysis = analyzeGenericParams(
@@ -137,7 +164,7 @@ final class OpaqueGenericParameters: RewriteSyntaxRule<BasicRuleValue>, @uncheck
         let eligible = analysis.filter(\.eligible)
         guard !eligible.isEmpty else { return DeclSyntax(visited) }
 
-        diagnose(.useOpaqueGenericParameters, on: node.subscriptKeyword)
+        Self.diagnose(.useOpaqueGenericParameters, on: visited.subscriptKeyword, context: context)
 
         var result = visited
         result.parameterClause = applyReplacements(eligible, to: visited.parameterClause)
@@ -190,7 +217,7 @@ final class OpaqueGenericParameters: RewriteSyntaxRule<BasicRuleValue>, @uncheck
         }
     }
 
-    private func analyzeGenericParams(
+    private static func analyzeGenericParams(
         genericClause: GenericParameterClauseSyntax,
         whereClause: GenericWhereClauseSyntax?,
         parameterClause: FunctionParameterClauseSyntax,
@@ -359,17 +386,17 @@ final class OpaqueGenericParameters: RewriteSyntaxRule<BasicRuleValue>, @uncheck
 
     // MARK: - Helpers
 
-    private func countOccurrences(of name: String, in node: Syntax) -> Int {
+    private static func countOccurrences(of name: String, in node: Syntax) -> Int {
         node.tokens(viewMode: .sourceAccurate)
             .count(where: { $0.tokenKind == .identifier(name) })
     }
 
-    private func contains(name: String, in node: Syntax) -> Bool {
+    private static func contains(name: String, in node: Syntax) -> Bool {
         node.tokens(viewMode: .sourceAccurate)
             .contains { $0.tokenKind == .identifier(name) }
     }
 
-    private func isClosureType(_ type: TypeSyntax) -> Bool {
+    private static func isClosureType(_ type: TypeSyntax) -> Bool {
         if type.is(FunctionTypeSyntax.self) {
             true
         } else if let attributed = type.as(AttributedTypeSyntax.self) {
@@ -383,7 +410,7 @@ final class OpaqueGenericParameters: RewriteSyntaxRule<BasicRuleValue>, @uncheck
         }
     }
 
-    private func containsAnyExistential(name: String, in type: TypeSyntax) -> Bool {
+    private static func containsAnyExistential(name: String, in type: TypeSyntax) -> Bool {
         if let someOrAny = type.as(SomeOrAnyTypeSyntax.self),
            someOrAny.someOrAnySpecifier.tokenKind == .keyword(.any),
            contains(name: name, in: Syntax(someOrAny.constraint))
@@ -399,7 +426,7 @@ final class OpaqueGenericParameters: RewriteSyntaxRule<BasicRuleValue>, @uncheck
         return false
     }
 
-    private func preambleSyntax(
+    private static func preambleSyntax(
         attributes: AttributeListSyntax,
         modifiers: DeclModifierListSyntax
     ) -> [Syntax] {
@@ -411,7 +438,7 @@ final class OpaqueGenericParameters: RewriteSyntaxRule<BasicRuleValue>, @uncheck
 
     // MARK: - Rewriting
 
-    private func applyReplacements(
+    private static func applyReplacements(
         _ eligible: [TypeInfo],
         to parameterClause: FunctionParameterClauseSyntax
     ) -> FunctionParameterClauseSyntax {
@@ -433,7 +460,7 @@ final class OpaqueGenericParameters: RewriteSyntaxRule<BasicRuleValue>, @uncheck
         return result
     }
 
-    private func replaceGenericInType(
+    private static func replaceGenericInType(
         _ type: TypeSyntax, name: String, with replacement: TypeSyntax
     ) -> TypeSyntax? {
         // Direct: T → replacement
@@ -474,7 +501,7 @@ final class OpaqueGenericParameters: RewriteSyntaxRule<BasicRuleValue>, @uncheck
         return nil
     }
 
-    private func wrapInParens(_ type: TypeSyntax, leadingTrivia: Trivia) -> TypeSyntax {
+    private static func wrapInParens(_ type: TypeSyntax, leadingTrivia: Trivia) -> TypeSyntax {
         TypeSyntax(
             TupleTypeSyntax(
                 leftParen: .leftParenToken(leadingTrivia: leadingTrivia),
@@ -483,7 +510,7 @@ final class OpaqueGenericParameters: RewriteSyntaxRule<BasicRuleValue>, @uncheck
             ))
     }
 
-    private func rebuildGenericClause(
+    private static func rebuildGenericClause(
         _ clause: GenericParameterClauseSyntax,
         removing indices: Set<Int>
     ) -> GenericParameterClauseSyntax? {
@@ -509,7 +536,7 @@ final class OpaqueGenericParameters: RewriteSyntaxRule<BasicRuleValue>, @uncheck
         return result
     }
 
-    private func rebuildWhereClause(
+    private static func rebuildWhereClause(
         _ clause: GenericWhereClauseSyntax?,
         removing indices: Set<Int>
     ) -> GenericWhereClauseSyntax? {

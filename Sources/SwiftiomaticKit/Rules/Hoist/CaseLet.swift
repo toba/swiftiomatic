@@ -30,30 +30,62 @@ final class CaseLet: RewriteSyntaxRule<CaseLetConfiguration>, @unchecked Sendabl
     // MARK: - Visitors
 
     override func visit(_ node: MatchingPatternConditionSyntax) -> MatchingPatternConditionSyntax {
-        switch ruleConfig.placement {
+        let parent = Syntax(node).parent
+        let visited = super.visit(node)
+        return Self.transform(visited, parent: parent, context: context)
+    }
+
+    static func transform(
+        _ node: MatchingPatternConditionSyntax,
+        parent: Syntax?,
+        context: Context
+    ) -> MatchingPatternConditionSyntax {
+        switch context.configuration[Self.self].placement {
             case .eachBinding:
                 if let (replacement, specifier) = distributeLetVarThroughPattern(node.pattern) {
-                    diagnose(.distributeLetInBoundCaseVariables(specifier), on: node.pattern)
+                    Self.diagnose(
+                        .distributeLetInBoundCaseVariables(specifier),
+                        on: node.pattern,
+                        context: context
+                    )
                     var result = node
                     result.pattern = PatternSyntax(replacement)
                     return result
                 }
             case .outerPattern:
                 if let (replacement, specifier) = hoistLetVarFromPattern(node.pattern) {
-                    diagnose(.hoistLetFromBoundCaseVariables(specifier), on: node.pattern)
+                    Self.diagnose(
+                        .hoistLetFromBoundCaseVariables(specifier),
+                        on: node.pattern,
+                        context: context
+                    )
                     var result = node
                     result.pattern = PatternSyntax(replacement)
                     return result
                 }
         }
-        return super.visit(node)
+        return node
     }
 
     override func visit(_ node: SwitchCaseItemSyntax) -> SwitchCaseItemSyntax {
-        switch ruleConfig.placement {
+        let parent = Syntax(node).parent
+        let visited = super.visit(node)
+        return Self.transform(visited, parent: parent, context: context)
+    }
+
+    static func transform(
+        _ node: SwitchCaseItemSyntax,
+        parent: Syntax?,
+        context: Context
+    ) -> SwitchCaseItemSyntax {
+        switch context.configuration[Self.self].placement {
             case .eachBinding:
                 if let (replacement, specifier) = distributeLetVarThroughPattern(node.pattern) {
-                    diagnose(.distributeLetInBoundCaseVariables(specifier), on: node.pattern)
+                    Self.diagnose(
+                        .distributeLetInBoundCaseVariables(specifier),
+                        on: node.pattern,
+                        context: context
+                    )
                     var result = node
                     result.pattern = PatternSyntax(replacement)
                     result.leadingTrivia = node.leadingTrivia
@@ -61,36 +93,59 @@ final class CaseLet: RewriteSyntaxRule<CaseLetConfiguration>, @unchecked Sendabl
                 }
             case .outerPattern:
                 if let (replacement, specifier) = hoistLetVarFromPattern(node.pattern) {
-                    diagnose(.hoistLetFromBoundCaseVariables(specifier), on: node.pattern)
+                    Self.diagnose(
+                        .hoistLetFromBoundCaseVariables(specifier),
+                        on: node.pattern,
+                        context: context
+                    )
                     var result = node
                     result.pattern = PatternSyntax(replacement)
                     result.leadingTrivia = node.leadingTrivia
                     return result
                 }
         }
-        return super.visit(node)
+        return node
     }
 
     override func visit(_ node: ForStmtSyntax) -> StmtSyntax {
-        guard node.caseKeyword != nil else { return super.visit(node) }
+        let parent = Syntax(node).parent
+        let visited = super.visit(node)
+        guard let concrete = visited.as(ForStmtSyntax.self) else { return visited }
+        return Self.transform(concrete, parent: parent, context: context)
+    }
 
-        switch ruleConfig.placement {
+    static func transform(
+        _ node: ForStmtSyntax,
+        parent: Syntax?,
+        context: Context
+    ) -> StmtSyntax {
+        guard node.caseKeyword != nil else { return StmtSyntax(node) }
+
+        switch context.configuration[Self.self].placement {
             case .eachBinding:
                 if let (replacement, specifier) = distributeLetVarThroughPattern(node.pattern) {
-                    diagnose(.distributeLetInBoundCaseVariables(specifier), on: node.pattern)
+                    Self.diagnose(
+                        .distributeLetInBoundCaseVariables(specifier),
+                        on: node.pattern,
+                        context: context
+                    )
                     var result = node
                     result.pattern = PatternSyntax(replacement)
                     return StmtSyntax(result)
                 }
             case .outerPattern:
                 if let (replacement, specifier) = hoistLetVarFromPattern(node.pattern) {
-                    diagnose(.hoistLetFromBoundCaseVariables(specifier), on: node.pattern)
+                    Self.diagnose(
+                        .hoistLetFromBoundCaseVariables(specifier),
+                        on: node.pattern,
+                        context: context
+                    )
                     var result = node
                     result.pattern = PatternSyntax(replacement)
                     return StmtSyntax(result)
                 }
         }
-        return super.visit(node)
+        return StmtSyntax(node)
     }
 }
 
@@ -104,7 +159,7 @@ extension CaseLet {
 
     /// Wraps the given expression in the optional chaining and/or force
     /// unwrapping expressions, as described by the specified stack.
-    private func restoreOptionalChainingAndForcing(
+    private static func restoreOptionalChainingAndForcing(
         _ expr: ExprSyntax,
         patternStack: [(OptionalPatternKind, Trivia)]
     ) -> ExprSyntax {
@@ -136,7 +191,7 @@ extension CaseLet {
 
     /// Returns a rewritten version of the given pattern if bindings can be moved
     /// into bound cases.
-    private func distributeLetVarThroughPattern(
+    private static func distributeLetVarThroughPattern(
         _ pattern: PatternSyntax
     ) -> (ExpressionPatternSyntax, TokenSyntax)? {
         guard let bindingPattern = pattern.as(ValueBindingPatternSyntax.self),
@@ -202,7 +257,7 @@ extension CaseLet {
 
     /// Returns a rewritten version of the given pattern if bindings can be hoisted
     /// to the outer pattern level.
-    private func hoistLetVarFromPattern(
+    private static func hoistLetVarFromPattern(
         _ pattern: PatternSyntax
     ) -> (ValueBindingPatternSyntax, TokenSyntax)? {
         // Already hoisted — nothing to do.
@@ -228,7 +283,7 @@ extension CaseLet {
     }
 
     /// Checks if all arguments have the same binding specifier and returns a hoisted pattern.
-    private func hoistFromArguments(
+    private static func hoistFromArguments(
         _ arguments: LabeledExprListSyntax,
         exprPattern: ExpressionPatternSyntax
     ) -> (ValueBindingPatternSyntax, TokenSyntax)? {
