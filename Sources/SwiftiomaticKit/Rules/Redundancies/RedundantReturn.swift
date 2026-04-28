@@ -27,66 +27,102 @@ final class RedundantReturn: RewriteSyntaxRule<BasicRuleValue>, @unchecked Senda
     override static var defaultValue: BasicRuleValue { .init(rewrite: false, lint: .no) }
 
     override func visit(_ node: FunctionDeclSyntax) -> DeclSyntax {
+        let parent = Syntax(node).parent
         let decl = super.visit(node)
+        guard let concrete = decl.as(FunctionDeclSyntax.self) else { return decl }
+        return Self.transform(concrete, parent: parent, context: context)
+    }
 
-        guard var funcDecl = decl.as(FunctionDeclSyntax.self),
+    static func transform(
+        _ node: FunctionDeclSyntax,
+        parent: Syntax?,
+        context: Context
+    ) -> DeclSyntax {
+        guard var funcDecl = Optional(node),
               let body = funcDecl.body
-        else { return decl }
+        else { return DeclSyntax(node) }
 
         if let returnStmt = containsSingleReturn(body.statements) {
             funcDecl.body?.statements = rewrapReturnedExpression(returnStmt)
-            diagnose(.omitReturnStatement, on: returnStmt)
+            Self.diagnose(.omitReturnStatement, on: returnStmt, context: context)
         } else if let item = containsExhaustiveReturn(body.statements) {
-            funcDecl.body?.statements = CodeBlockItemListSyntax([stripReturns(from: item)])
+            funcDecl.body?.statements = CodeBlockItemListSyntax([stripReturns(from: item, context: context)])
         } else {
-            return decl
+            return DeclSyntax(node)
         }
 
         return .init(funcDecl)
     }
 
     override func visit(_ node: SubscriptDeclSyntax) -> DeclSyntax {
+        let parent = Syntax(node).parent
         let decl = super.visit(node)
+        guard let concrete = decl.as(SubscriptDeclSyntax.self) else { return decl }
+        return Self.transform(concrete, parent: parent, context: context)
+    }
 
-        guard var subscriptDecl = decl.as(SubscriptDeclSyntax.self),
-              let accessorBlock = subscriptDecl.accessorBlock,
-              let transformed = transformAccessorBlock(accessorBlock)
-        else { return decl }
+    static func transform(
+        _ node: SubscriptDeclSyntax,
+        parent: Syntax?,
+        context: Context
+    ) -> DeclSyntax {
+        var subscriptDecl = node
+        guard let accessorBlock = subscriptDecl.accessorBlock,
+              let transformed = transformAccessorBlock(accessorBlock, context: context)
+        else { return DeclSyntax(node) }
 
         subscriptDecl.accessorBlock = transformed
         return .init(subscriptDecl)
     }
 
     override func visit(_ node: PatternBindingSyntax) -> PatternBindingSyntax {
+        Self.transform(node, parent: Syntax(node).parent, context: context)
+    }
+
+    static func transform(
+        _ node: PatternBindingSyntax,
+        parent: Syntax?,
+        context: Context
+    ) -> PatternBindingSyntax {
         var binding = node
 
         guard let accessorBlock = binding.accessorBlock,
-              let transformed = transformAccessorBlock(accessorBlock)
-        else { return super.visit(node) }
+              let transformed = transformAccessorBlock(accessorBlock, context: context)
+        else { return node }
 
         binding.accessorBlock = transformed
         return binding
     }
 
     override func visit(_ node: ClosureExprSyntax) -> ExprSyntax {
+        let parent = Syntax(node).parent
         let expr = super.visit(node)
+        guard let concrete = expr.as(ClosureExprSyntax.self) else { return expr }
+        return Self.transform(concrete, parent: parent, context: context)
+    }
 
-        guard var closureExpr = expr.as(ClosureExprSyntax.self) else { return expr }
+    static func transform(
+        _ node: ClosureExprSyntax,
+        parent: Syntax?,
+        context: Context
+    ) -> ExprSyntax {
+        var closureExpr = node
 
         if let returnStmt = containsSingleReturn(closureExpr.statements) {
             closureExpr.statements = rewrapReturnedExpression(returnStmt)
-            diagnose(.omitReturnStatement, on: returnStmt)
+            Self.diagnose(.omitReturnStatement, on: returnStmt, context: context)
         } else if let item = containsExhaustiveReturn(closureExpr.statements) {
-            closureExpr.statements = CodeBlockItemListSyntax([stripReturns(from: item)])
+            closureExpr.statements = CodeBlockItemListSyntax([stripReturns(from: item, context: context)])
         } else {
-            return expr
+            return ExprSyntax(node)
         }
 
         return .init(closureExpr)
     }
 
-    private func transformAccessorBlock(
-        _ accessorBlock: AccessorBlockSyntax
+    private static func transformAccessorBlock(
+        _ accessorBlock: AccessorBlockSyntax,
+        context: Context
     ) -> AccessorBlockSyntax? {
         switch accessorBlock.accessors {
             case var .accessors(accessors):
@@ -101,9 +137,9 @@ final class RedundantReturn: RewriteSyntaxRule<BasicRuleValue>, @unchecked Senda
 
                 if let returnStmt = containsSingleReturn(body.statements) {
                     getter.body?.statements = rewrapReturnedExpression(returnStmt)
-                    diagnose(.omitReturnStatement, on: returnStmt)
+                    Self.diagnose(.omitReturnStatement, on: returnStmt, context: context)
                 } else if let item = containsExhaustiveReturn(body.statements) {
-                    getter.body?.statements = CodeBlockItemListSyntax([stripReturns(from: item)])
+                    getter.body?.statements = CodeBlockItemListSyntax([stripReturns(from: item, context: context)])
                 } else {
                     return nil
                 }
@@ -115,14 +151,14 @@ final class RedundantReturn: RewriteSyntaxRule<BasicRuleValue>, @unchecked Senda
 
             case let .getter(getter):
                 if let returnStmt = containsSingleReturn(getter) {
-                    diagnose(.omitReturnStatement, on: returnStmt)
+                    Self.diagnose(.omitReturnStatement, on: returnStmt, context: context)
                     var newBlock = accessorBlock
                     newBlock.accessors = .getter(rewrapReturnedExpression(returnStmt))
                     return newBlock
                 } else if let item = containsExhaustiveReturn(getter) {
                     var newBlock = accessorBlock
                     newBlock
-                        .accessors = .getter(CodeBlockItemListSyntax([stripReturns(from: item)]))
+                        .accessors = .getter(CodeBlockItemListSyntax([stripReturns(from: item, context: context)]))
                     return newBlock
                 } else {
                     return nil
@@ -134,7 +170,7 @@ final class RedundantReturn: RewriteSyntaxRule<BasicRuleValue>, @unchecked Senda
 
     /// Returns the single `CodeBlockItemSyntax` if it's an exhaustive `if`/`switch`
     /// where every terminal branch is a single `return <expr>`.
-    private func containsExhaustiveReturn(_ body: CodeBlockItemListSyntax) -> CodeBlockItemSyntax? {
+    private static func containsExhaustiveReturn(_ body: CodeBlockItemListSyntax) -> CodeBlockItemSyntax? {
         guard let element = body.firstAndOnly,
               let expr = expressionFromItem(element)
         else { return nil }
@@ -148,7 +184,7 @@ final class RedundantReturn: RewriteSyntaxRule<BasicRuleValue>, @unchecked Senda
         return nil
     }
 
-    private func allBranchesReturn(_ ifExpr: IfExprSyntax) -> Bool {
+    private static func allBranchesReturn(_ ifExpr: IfExprSyntax) -> Bool {
         guard branchReturns(ifExpr.body.statements) else { return false }
 
         switch ifExpr.elseBody {
@@ -158,7 +194,7 @@ final class RedundantReturn: RewriteSyntaxRule<BasicRuleValue>, @unchecked Senda
         }
     }
 
-    private func allCasesReturn(_ switchExpr: SwitchExprSyntax) -> Bool {
+    private static func allCasesReturn(_ switchExpr: SwitchExprSyntax) -> Bool {
         guard !switchExpr.cases.isEmpty else { return false }
 
         for caseItem in switchExpr.cases {
@@ -171,7 +207,7 @@ final class RedundantReturn: RewriteSyntaxRule<BasicRuleValue>, @unchecked Senda
 
     /// Whether a branch contains a single `return <expr>`, a `Never`-returning call
     /// (e.g. `fatalError`), or a single nested exhaustive if/switch where every branch returns.
-    private func branchReturns(_ statements: CodeBlockItemListSyntax) -> Bool {
+    private static func branchReturns(_ statements: CodeBlockItemListSyntax) -> Bool {
         guard let only = statements.firstAndOnly else { return false }
 
         if let returnStmt = only.item.as(ReturnStmtSyntax.self) {
@@ -194,7 +230,7 @@ final class RedundantReturn: RewriteSyntaxRule<BasicRuleValue>, @unchecked Senda
     ]
 
     /// Whether the statement is a call to a `Never`-returning function like `fatalError`.
-    private func isFatalCall(_ item: CodeBlockItemSyntax) -> Bool {
+    private static func isFatalCall(_ item: CodeBlockItemSyntax) -> Bool {
         let expr: ExprSyntax
 
         if let exprStmt = item.item.as(ExpressionStmtSyntax.self) {
@@ -213,46 +249,46 @@ final class RedundantReturn: RewriteSyntaxRule<BasicRuleValue>, @unchecked Senda
     }
 
     /// Unwraps `ExpressionStmtSyntax` to get the underlying expression.
-    private func expressionFromItem(_ item: CodeBlockItemSyntax) -> ExprSyntax? {
+    private static func expressionFromItem(_ item: CodeBlockItemSyntax) -> ExprSyntax? {
         if let exprStmt = item.item.as(ExpressionStmtSyntax.self) { return exprStmt.expression }
         return item.item.as(ExprSyntax.self)
     }
 
     /// Recursively strips `return` from every terminal branch, emitting a diagnostic on each.
-    private func stripReturns(from item: CodeBlockItemSyntax) -> CodeBlockItemSyntax {
+    private static func stripReturns(from item: CodeBlockItemSyntax, context: Context) -> CodeBlockItemSyntax {
         guard let expr = expressionFromItem(item) else { return item }
 
         if let ifExpr = expr.as(IfExprSyntax.self) {
-            return item.with(\.item, .expr(ExprSyntax(stripReturnsFromIf(ifExpr))))
+            return item.with(\.item, .expr(ExprSyntax(stripReturnsFromIf(ifExpr, context: context))))
         } else if let switchExpr = expr.as(SwitchExprSyntax.self) {
-            return item.with(\.item, .expr(ExprSyntax(stripReturnsFromSwitch(switchExpr))))
+            return item.with(\.item, .expr(ExprSyntax(stripReturnsFromSwitch(switchExpr, context: context))))
         }
 
         return item
     }
 
-    private func stripReturnsFromIf(_ ifExpr: IfExprSyntax) -> IfExprSyntax {
+    private static func stripReturnsFromIf(_ ifExpr: IfExprSyntax, context: Context) -> IfExprSyntax {
         var result = ifExpr
-        result.body.statements = stripBranch(ifExpr.body.statements)
+        result.body.statements = stripBranch(ifExpr.body.statements, context: context)
 
         switch ifExpr.elseBody {
             case var .codeBlock(elseBlock):
-                elseBlock.statements = stripBranch(elseBlock.statements)
+                elseBlock.statements = stripBranch(elseBlock.statements, context: context)
                 result.elseBody = .codeBlock(elseBlock)
-            case let .ifExpr(elseIf): result.elseBody = .ifExpr(stripReturnsFromIf(elseIf))
+            case let .ifExpr(elseIf): result.elseBody = .ifExpr(stripReturnsFromIf(elseIf, context: context))
             case nil: break
         }
 
         return result
     }
 
-    private func stripReturnsFromSwitch(_ switchExpr: SwitchExprSyntax) -> SwitchExprSyntax {
+    private static func stripReturnsFromSwitch(_ switchExpr: SwitchExprSyntax, context: Context) -> SwitchExprSyntax {
         var result = switchExpr
         var newCases = [SwitchCaseListSyntax.Element]()
 
         for caseItem in switchExpr.cases {
             if var switchCase = caseItem.as(SwitchCaseSyntax.self) {
-                switchCase.statements = stripBranch(switchCase.statements)
+                switchCase.statements = stripBranch(switchCase.statements, context: context)
                 newCases.append(.switchCase(switchCase))
             } else {
                 newCases.append(caseItem)
@@ -265,14 +301,14 @@ final class RedundantReturn: RewriteSyntaxRule<BasicRuleValue>, @unchecked Senda
 
     /// Strips `return` from the single statement in a branch.
     /// Fatal branches (`fatalError`, etc.) are left unchanged.
-    private func stripBranch(_ statements: CodeBlockItemListSyntax) -> CodeBlockItemListSyntax {
+    private static func stripBranch(_ statements: CodeBlockItemListSyntax, context: Context) -> CodeBlockItemListSyntax {
         guard let only = statements.firstAndOnly else { return statements }
 
         // Never-returning calls don't have a `return` to strip.
         if isFatalCall(only) { return statements }
 
         if let returnStmt = only.item.as(ReturnStmtSyntax.self), let expr = returnStmt.expression {
-            diagnose(.omitReturnStatement, on: returnStmt)
+            Self.diagnose(.omitReturnStatement, on: returnStmt, context: context)
             return CodeBlockItemListSyntax([
                 CodeBlockItemSyntax(
                     leadingTrivia: returnStmt.leadingTrivia,
@@ -288,12 +324,12 @@ final class RedundantReturn: RewriteSyntaxRule<BasicRuleValue>, @unchecked Senda
 
         if let ifExpr = expr.as(IfExprSyntax.self) {
             return CodeBlockItemListSyntax([
-                only.with(\.item, .expr(ExprSyntax(stripReturnsFromIf(ifExpr))))
+                only.with(\.item, .expr(ExprSyntax(stripReturnsFromIf(ifExpr, context: context))))
             ])
         }
         if let switchExpr = expr.as(SwitchExprSyntax.self) {
             return CodeBlockItemListSyntax([
-                only.with(\.item, .expr(ExprSyntax(stripReturnsFromSwitch(switchExpr))))
+                only.with(\.item, .expr(ExprSyntax(stripReturnsFromSwitch(switchExpr, context: context))))
             ])
         }
 
@@ -302,7 +338,7 @@ final class RedundantReturn: RewriteSyntaxRule<BasicRuleValue>, @unchecked Senda
 
     // MARK: - Single-expression analysis
 
-    private func containsSingleReturn(_ body: CodeBlockItemListSyntax) -> ReturnStmtSyntax? {
+    private static func containsSingleReturn(_ body: CodeBlockItemListSyntax) -> ReturnStmtSyntax? {
         guard let element = body.firstAndOnly,
               let returnStmt = element.item.as(ReturnStmtSyntax.self)
         else { return nil }
@@ -311,7 +347,7 @@ final class RedundantReturn: RewriteSyntaxRule<BasicRuleValue>, @unchecked Senda
             ? returnStmt : nil
     }
 
-    private func rewrapReturnedExpression(
+    private static func rewrapReturnedExpression(
         _ returnStmt: ReturnStmtSyntax
     ) -> CodeBlockItemListSyntax {
         .init([

@@ -17,6 +17,14 @@ final class WrapConditionalAssignment: RewriteSyntaxRule<BasicRuleValue>, @unche
     // MARK: - let/var declarations
 
     override func visit(_ node: PatternBindingSyntax) -> PatternBindingSyntax {
+        Self.transform(node, parent: Syntax(node).parent, context: context)
+    }
+
+    static func transform(
+        _ node: PatternBindingSyntax,
+        parent: Syntax?,
+        context: Context
+    ) -> PatternBindingSyntax {
         guard let initializer = node.initializer else { return node }
         let value = initializer.value
         guard value.is(IfExprSyntax.self) || value.is(SwitchExprSyntax.self) else { return node }
@@ -27,7 +35,7 @@ final class WrapConditionalAssignment: RewriteSyntaxRule<BasicRuleValue>, @unche
 
         // Case 1: `=` is on a different line from the property — move it up
         if equal.leadingTrivia.containsNewlines {
-            diagnose(.wrapAfterAssignment, on: equal)
+            Self.diagnose(.wrapAfterAssignment, on: equal, context: context)
             var result = node
             var newInit = initializer
             // Move `=` 's leading trivia (comments, newlines) to the if/switch keyword
@@ -44,7 +52,7 @@ final class WrapConditionalAssignment: RewriteSyntaxRule<BasicRuleValue>, @unche
 
         // Case 2: No line break between `=` and `if` / `switch` — add one
         if !valueFirstToken.leadingTrivia.containsNewlines {
-            diagnose(.wrapAfterAssignment, on: equal)
+            Self.diagnose(.wrapAfterAssignment, on: equal, context: context)
             var result = node
             var newInit = initializer
             newInit.equal = equal.with(\.trailingTrivia, [])
@@ -61,6 +69,14 @@ final class WrapConditionalAssignment: RewriteSyntaxRule<BasicRuleValue>, @unche
     // MARK: - Reassignments (x = if/switch ...)
 
     override func visit(_ node: InfixOperatorExprSyntax) -> ExprSyntax {
+        Self.transform(node, parent: Syntax(node).parent, context: context)
+    }
+
+    static func transform(
+        _ node: InfixOperatorExprSyntax,
+        parent: Syntax?,
+        context: Context
+    ) -> ExprSyntax {
         guard let assignment = node.operator.as(AssignmentExprSyntax.self)
         else { return ExprSyntax(node) }
         let rhs = node.rightOperand
@@ -73,7 +89,7 @@ final class WrapConditionalAssignment: RewriteSyntaxRule<BasicRuleValue>, @unche
 
         // Case 1: `=` is on a different line from the LHS — move it up
         if equal.leadingTrivia.containsNewlines {
-            diagnose(.wrapAfterAssignment, on: equal)
+            Self.diagnose(.wrapAfterAssignment, on: equal, context: context)
             var result = node
             let movedTrivia = equal.leadingTrivia
             var newAssignment = assignment
@@ -89,7 +105,7 @@ final class WrapConditionalAssignment: RewriteSyntaxRule<BasicRuleValue>, @unche
 
         // Case 2: No line break between `=` and `if` / `switch` — add one
         if !rhsFirstToken.leadingTrivia.containsNewlines {
-            diagnose(.wrapAfterAssignment, on: equal)
+            Self.diagnose(.wrapAfterAssignment, on: equal, context: context)
             var result = node
             var newAssignment = assignment
             newAssignment.equal = equal.with(\.trailingTrivia, [])
@@ -107,7 +123,7 @@ final class WrapConditionalAssignment: RewriteSyntaxRule<BasicRuleValue>, @unche
 
     /// Returns `true` if the expression spans multiple lines (has internal newlines after the first
     /// token).
-    private func isMultiline(_ node: some SyntaxProtocol) -> Bool {
+    private static func isMultiline(_ node: some SyntaxProtocol) -> Bool {
         var tokens = node.tokens(viewMode: .sourceAccurate).makeIterator()
         _ = tokens.next()  // skip first token
         while let token = tokens.next() { if token.leadingTrivia.containsNewlines { return true } }

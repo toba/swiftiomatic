@@ -28,14 +28,23 @@ final class RedundantNilInit: RewriteSyntaxRule<BasicRuleValue>, @unchecked Send
   override class var group: ConfigurationGroup? { .redundancies }
 
   override func visit(_ node: VariableDeclSyntax) -> DeclSyntax {
+    Self.transform(node, parent: Syntax(node).parent, context: context)
+  }
+
+  static func transform(
+    _ node: VariableDeclSyntax,
+    parent: Syntax?,
+    context: Context
+  ) -> DeclSyntax {
     // Only applies to `var`, not `let`.
     guard node.bindingSpecifier.tokenKind == .keyword(.var) else {
-      return super.visit(node)
+      return DeclSyntax(node)
     }
 
     // Don't apply inside protocol declarations — those are requirements, not stored properties.
-    if node.parent?.parent?.is(ProtocolDeclSyntax.self) == true {
-      return super.visit(node)
+    // Walk the captured parent chain (post-recursion node.parent is nil).
+    if parent?.parent?.is(ProtocolDeclSyntax.self) == true {
+      return DeclSyntax(node)
     }
 
     var bindings = node.bindings
@@ -49,7 +58,7 @@ final class RedundantNilInit: RewriteSyntaxRule<BasicRuleValue>, @unchecked Send
         continue
       }
 
-      diagnose(.removeRedundantNilInit, on: initializer)
+      Self.diagnose(.removeRedundantNilInit, on: initializer, context: context)
 
       // Remove the initializer clause and clean up trivia. The type annotation's last token
       // has trailing trivia (typically a space before `=`) that is no longer needed.
@@ -65,7 +74,7 @@ final class RedundantNilInit: RewriteSyntaxRule<BasicRuleValue>, @unchecked Send
       didChange = true
     }
 
-    guard didChange else { return super.visit(node) }
+    guard didChange else { return DeclSyntax(node) }
 
     var newNode = node
     newNode.bindings = bindings
@@ -73,12 +82,12 @@ final class RedundantNilInit: RewriteSyntaxRule<BasicRuleValue>, @unchecked Send
   }
 
   /// Returns `true` if the expression is a `nil` literal.
-  private func isNilLiteral(_ expr: ExprSyntax) -> Bool {
+  private static func isNilLiteral(_ expr: ExprSyntax) -> Bool {
     expr.is(NilLiteralExprSyntax.self)
   }
 
   /// Returns `true` if the type is explicitly optional (`T?` or `Optional<T>`).
-  private func isOptionalType(_ type: TypeSyntax?) -> Bool {
+  private static func isOptionalType(_ type: TypeSyntax?) -> Bool {
     guard let type else { return false }
 
     // `T?` syntax

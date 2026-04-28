@@ -29,28 +29,36 @@ final class CollapseSimpleIfElse: RewriteSyntaxRule<BasicRuleValue>, @unchecked 
         BasicRuleValue(rewrite: false, lint: .no)
     }
 
-    private var maxLength: Int { context.configuration[LineLength.self] }
-
     override func visit(_ node: IfExprSyntax) -> ExprSyntax {
         // Recurse first so nested ifs collapse before we measure ourselves.
+        let parent = Syntax(node).parent
         let visited = super.visit(node)
         guard let ifNode = visited.as(IfExprSyntax.self) else { return visited }
+        return Self.transform(ifNode, parent: parent, context: context)
+    }
 
+    static func transform(
+        _ ifNode: IfExprSyntax,
+        parent: Syntax?,
+        context: Context
+    ) -> ExprSyntax {
         // Only act at the chain top — `else if` links are reached through the outer if.
-        if node.parent?.is(IfExprSyntax.self) == true { return visited }
+        // Use the captured pre-recursion parent (post-recursion node.parent is nil).
+        if parent?.is(IfExprSyntax.self) == true { return ExprSyntax(ifNode) }
 
         // Bare `if` with no else is `WrapSingleLineBodies`'s territory.
-        guard ifNode.elseBody != nil else { return visited }
+        guard ifNode.elseBody != nil else { return ExprSyntax(ifNode) }
 
-        if isAlreadyInline(ifNode) { return visited }
-        guard validateChain(ifNode) else { return visited }
+        if isAlreadyInline(ifNode) { return ExprSyntax(ifNode) }
+        guard validateChain(ifNode) else { return ExprSyntax(ifNode) }
 
+        let maxLength = context.configuration[LineLength.self]
         let indent = ifNode.ifKeyword.leadingTrivia.indentation
         guard indent.count + collapsedTextLength(of: ifNode) <= maxLength else {
-            return visited
+            return ExprSyntax(ifNode)
         }
 
-        diagnose(.collapseIfElse, on: ifNode.ifKeyword)
+        Self.diagnose(.collapseIfElse, on: ifNode.ifKeyword, context: context)
 
         return ExprSyntax(collapseChain(ifNode))
     }
@@ -61,7 +69,7 @@ final class CollapseSimpleIfElse: RewriteSyntaxRule<BasicRuleValue>, @unchecked 
 extension CollapseSimpleIfElse {
 
     /// Whether the entire chain is already on a single source line.
-    private func isAlreadyInline(_ node: IfExprSyntax) -> Bool {
+    fileprivate static func isAlreadyInline(_ node: IfExprSyntax) -> Bool {
         var current = node
         while true {
             if current.body.leftBrace.trailingTrivia.containsNewlines { return false }
@@ -82,7 +90,7 @@ extension CollapseSimpleIfElse {
     }
 
     /// Validates that every branch in the chain has exactly one statement and no comments.
-    private func validateChain(_ node: IfExprSyntax) -> Bool {
+    fileprivate static func validateChain(_ node: IfExprSyntax) -> Bool {
         var current = node
         while true {
             guard validateBody(current.body) else { return false }
@@ -97,7 +105,7 @@ extension CollapseSimpleIfElse {
         }
     }
 
-    private func validateBody(_ body: CodeBlockSyntax) -> Bool {
+    fileprivate static func validateBody(_ body: CodeBlockSyntax) -> Bool {
         guard body.statements.count == 1, let stmt = body.statements.first else { return false }
         if hasComment(body.leftBrace.leadingTrivia) { return false }
         if hasComment(body.leftBrace.trailingTrivia) { return false }
@@ -108,7 +116,7 @@ extension CollapseSimpleIfElse {
         return true
     }
 
-    private func hasComment(_ trivia: Trivia) -> Bool {
+    fileprivate static func hasComment(_ trivia: Trivia) -> Bool {
         for piece in trivia {
             switch piece {
             case .lineComment, .blockComment, .docLineComment, .docBlockComment:
@@ -126,7 +134,7 @@ extension CollapseSimpleIfElse {
 extension CollapseSimpleIfElse {
 
     /// Length of the rendered collapsed chain (excluding leading indentation).
-    private func collapsedTextLength(of node: IfExprSyntax) -> Int {
+    fileprivate static func collapsedTextLength(of node: IfExprSyntax) -> Int {
         var text = ""
         var current = node
         var first = true
@@ -155,7 +163,7 @@ extension CollapseSimpleIfElse {
 
 extension CollapseSimpleIfElse {
 
-    private func collapseChain(_ node: IfExprSyntax) -> IfExprSyntax {
+    fileprivate static func collapseChain(_ node: IfExprSyntax) -> IfExprSyntax {
         var result = node
         result.conditions = clearTrailingTrivia(result.conditions)
         let isTerminal = result.elseBody == nil
@@ -192,7 +200,7 @@ extension CollapseSimpleIfElse {
     /// Inlines a code block's content onto a single line. When `terminal` is
     /// false, strips the trailing trivia of the closing brace so the next
     /// `else` keyword sits one space away.
-    private func inlineBody(_ body: CodeBlockSyntax, terminal: Bool) -> CodeBlockSyntax {
+    fileprivate static func inlineBody(_ body: CodeBlockSyntax, terminal: Bool) -> CodeBlockSyntax {
         var result = body
         result.leftBrace =
             result.leftBrace
@@ -217,7 +225,7 @@ extension CollapseSimpleIfElse {
 
     /// Clears trailing trivia on the last condition element so the following
     /// left brace's leading `.space` doesn't produce a double space.
-    private func clearTrailingTrivia(
+    fileprivate static func clearTrailingTrivia(
         _ conditions: ConditionElementListSyntax
     ) -> ConditionElementListSyntax {
         guard var last = conditions.last else { return conditions }

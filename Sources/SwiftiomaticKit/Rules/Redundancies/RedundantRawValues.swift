@@ -24,8 +24,17 @@ final class RedundantRawValues: RewriteSyntaxRule<BasicRuleValue>, @unchecked Se
   override class var group: ConfigurationGroup? { .redundancies }
 
   override func visit(_ node: EnumCaseDeclSyntax) -> DeclSyntax {
+    Self.transform(node, parent: Syntax(node).parent, context: context)
+  }
+
+  static func transform(
+    _ node: EnumCaseDeclSyntax,
+    parent: Syntax?,
+    context: Context
+  ) -> DeclSyntax {
     // Only applies inside String-backed enums.
-    guard isInsideStringEnum(node) else {
+    // Walk the captured parent chain (post-recursion node.parent is nil).
+    guard isInsideStringEnum(parent: parent) else {
       return DeclSyntax(node)
     }
 
@@ -40,7 +49,7 @@ final class RedundantRawValues: RewriteSyntaxRule<BasicRuleValue>, @unchecked Se
         continue
       }
 
-      diagnose(.removeRedundantRawValue(name: element.name.text), on: rawValue)
+      Self.diagnose(.removeRedundantRawValue(name: element.name.text), on: rawValue, context: context)
 
       var newElement = element
       newElement.rawValue = nil
@@ -62,19 +71,20 @@ final class RedundantRawValues: RewriteSyntaxRule<BasicRuleValue>, @unchecked Se
   }
 
   /// Returns `true` if the given node is inside an enum with `String` raw type.
-  private func isInsideStringEnum(_ node: some SyntaxProtocol) -> Bool {
-    var current = node.parent
-    while let parent = current {
-      if let enumDecl = parent.as(EnumDeclSyntax.self) {
+  /// Walks the captured pre-recursion parent chain.
+  private static func isInsideStringEnum(parent: Syntax?) -> Bool {
+    var current = parent
+    while let p = current {
+      if let enumDecl = p.as(EnumDeclSyntax.self) {
         return hasStringRawType(enumDecl)
       }
-      current = parent.parent
+      current = p.parent
     }
     return false
   }
 
   /// Returns `true` if the enum declares `: String` in its inheritance clause.
-  private func hasStringRawType(_ enumDecl: EnumDeclSyntax) -> Bool {
+  private static func hasStringRawType(_ enumDecl: EnumDeclSyntax) -> Bool {
     guard let inheritanceClause = enumDecl.inheritanceClause else { return false }
     return inheritanceClause.inheritedTypes.contains { inherited in
       inherited.type.trimmedDescription == "String"
@@ -82,7 +92,7 @@ final class RedundantRawValues: RewriteSyntaxRule<BasicRuleValue>, @unchecked Se
   }
 
   /// Returns `true` if the string literal is a simple (non-interpolated) string matching the text.
-  private func isSimpleStringLiteral(_ literal: StringLiteralExprSyntax, matching text: String) -> Bool {
+  private static func isSimpleStringLiteral(_ literal: StringLiteralExprSyntax, matching text: String) -> Bool {
     // Must be a simple string with exactly one segment and no interpolation.
     guard literal.segments.count == 1,
       let segment = literal.segments.first?.as(StringSegmentSyntax.self)

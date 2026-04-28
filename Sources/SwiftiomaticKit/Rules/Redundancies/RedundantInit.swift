@@ -27,19 +27,30 @@ final class RedundantInit: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendabl
   override class var group: ConfigurationGroup? { .redundancies }
 
   override func visit(_ node: FunctionCallExprSyntax) -> ExprSyntax {
+    let parent = Syntax(node).parent
+    let visited = super.visit(node)
+    guard let concrete = visited.as(FunctionCallExprSyntax.self) else { return visited }
+    return Self.transform(concrete, parent: parent, context: context)
+  }
+
+  static func transform(
+    _ node: FunctionCallExprSyntax,
+    parent: Syntax?,
+    context: Context
+  ) -> ExprSyntax {
     guard let memberAccess = node.calledExpression.as(MemberAccessExprSyntax.self),
       memberAccess.declName.baseName.tokenKind == .keyword(.`init`),
       memberAccess.declName.argumentNames == nil,
       let base = memberAccess.base
     else {
-      return super.visit(node)
+      return ExprSyntax(node)
     }
 
     // Only fire when the base is a simple type reference or another member access (e.g. `Module.Type`),
     // not when it's `.init()` (no base) which is shorthand inference syntax.
     // Also skip if the base is a function call (e.g. `foo().init()`) — unusual but not redundant.
     guard !base.is(FunctionCallExprSyntax.self) else {
-      return super.visit(node)
+      return ExprSyntax(node)
     }
 
     // Skip `self.init(...)`, `Self.init(...)`, and `super.init(...)` — these are
@@ -47,16 +58,16 @@ final class RedundantInit: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendabl
     if let baseRef = base.as(DeclReferenceExprSyntax.self) {
       switch baseRef.baseName.tokenKind {
       case .keyword(.self), .keyword(.Self), .keyword(.super):
-        return super.visit(node)
+        return ExprSyntax(node)
       default:
         break
       }
     }
     if base.is(SuperExprSyntax.self) {
-      return super.visit(node)
+      return ExprSyntax(node)
     }
 
-    diagnose(.removeRedundantInit, on: memberAccess.period)
+    Self.diagnose(.removeRedundantInit, on: memberAccess.period, context: context)
 
     // Replace `Foo.init(args)` with `Foo(args)`.
     // Transfer the trailing trivia from `init` (typically empty) and preserve the base's trivia.

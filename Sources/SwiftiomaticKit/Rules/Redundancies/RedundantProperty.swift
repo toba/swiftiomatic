@@ -18,7 +18,14 @@ final class RedundantProperty: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sen
   override class var group: ConfigurationGroup? { .redundancies }
 
   override func visit(_ node: CodeBlockItemListSyntax) -> CodeBlockItemListSyntax {
-    let visited = super.visit(node)
+    Self.transform(super.visit(node), parent: Syntax(node).parent, context: context)
+  }
+
+  static func transform(
+    _ visited: CodeBlockItemListSyntax,
+    parent: Syntax?,
+    context: Context
+  ) -> CodeBlockItemListSyntax {
     let items = Array(visited)
     var newItems = [CodeBlockItemSyntax]()
     var i = 0
@@ -26,7 +33,7 @@ final class RedundantProperty: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sen
 
     while i < items.count {
       if i + 1 < items.count,
-        let merged = tryMerge(items[i], items[i + 1])
+        let merged = tryMerge(items[i], items[i + 1], context: context)
       {
         newItems.append(merged)
         changed = true
@@ -41,9 +48,10 @@ final class RedundantProperty: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sen
     return CodeBlockItemListSyntax(newItems)
   }
 
-  private func tryMerge(
+  private static func tryMerge(
     _ declItem: CodeBlockItemSyntax,
-    _ returnItem: CodeBlockItemSyntax
+    _ returnItem: CodeBlockItemSyntax,
+    context: Context
   ) -> CodeBlockItemSyntax? {
     // First item: `let identifier = value` (no type annotation, single binding)
     guard let varDecl = declItem.item.as(VariableDeclSyntax.self),
@@ -65,7 +73,7 @@ final class RedundantProperty: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sen
       declRef.argumentNames == nil
     else { return nil }
 
-    diagnose(.removeRedundantProperty(name: name), on: varDecl)
+    Self.diagnose(.removeRedundantProperty(name: name), on: varDecl, context: context)
 
     // Build: `return value` — transfer declaration's leading trivia (may include
     // preceding comments) to the return keyword, and use the original return

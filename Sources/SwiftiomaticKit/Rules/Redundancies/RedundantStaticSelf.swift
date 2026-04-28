@@ -20,37 +20,44 @@ final class RedundantStaticSelf: RewriteSyntaxRule<BasicRuleValue>, @unchecked S
   override class var defaultValue: BasicRuleValue { BasicRuleValue(rewrite: false, lint: .no) }
 
   override func visit(_ node: MemberAccessExprSyntax) -> ExprSyntax {
+    let parent = Syntax(node).parent
     let visited = super.visit(node)
-    guard let memberAccess = visited.as(MemberAccessExprSyntax.self) else {
-      return visited
-    }
+    guard let concrete = visited.as(MemberAccessExprSyntax.self) else { return visited }
+    return Self.transform(concrete, parent: parent, context: context)
+  }
 
+  static func transform(
+    _ memberAccess: MemberAccessExprSyntax,
+    parent: Syntax?,
+    context: Context
+  ) -> ExprSyntax {
     // Check if the base is `Self`.
     guard let base = memberAccess.base,
           let declRef = base.as(DeclReferenceExprSyntax.self),
           declRef.baseName.tokenKind == .keyword(.Self)
     else {
-      return visited
+      return ExprSyntax(memberAccess)
     }
 
     // Don't remove `Self` when used as an initializer: `Self()` or `Self.init()`.
     if memberAccess.declName.baseName.tokenKind == .keyword(.`init`) {
-      return visited
+      return ExprSyntax(memberAccess)
     }
 
 
     // Only remove if we're inside a static context.
-    guard isInStaticContext(node) else {
-      return visited
+    // Walk the captured pre-recursion parent chain.
+    guard isInStaticContext(parent: parent) else {
+      return ExprSyntax(memberAccess)
     }
 
     // Don't remove if a parameter or local variable shadows the member name.
     let memberName = memberAccess.declName.baseName.text
-    if isShadowed(name: memberName, at: node) {
-      return visited
+    if isShadowed(name: memberName, parent: parent) {
+      return ExprSyntax(memberAccess)
     }
 
-    diagnose(.removeRedundantStaticSelf, on: base)
+    Self.diagnose(.removeRedundantStaticSelf, on: base, context: context)
 
     // Replace `Self.member` with just `member` — a DeclReferenceExprSyntax.
     var result = DeclReferenceExprSyntax(
@@ -68,12 +75,13 @@ final class RedundantStaticSelf: RewriteSyntaxRule<BasicRuleValue>, @unchecked S
 
   /// Returns `true` if the node is inside a static method or static computed property.
   /// Nested functions inside a static context are still static (they can access static members).
-  private func isInStaticContext(_ node: some SyntaxProtocol) -> Bool {
-    var current = node.parent
-    while let parent = current {
+  /// Walks the captured pre-recursion parent chain.
+  private static func isInStaticContext(parent: Syntax?) -> Bool {
+    var current = parent
+    while let p = current {
       // For functions: if static/class → yes. If a direct member (parent is MemberBlock) and
       // NOT static → this is an instance method. If nested (parent is CodeBlock), continue.
-      if let funcDecl = parent.as(FunctionDeclSyntax.self) {
+      if let funcDecl = p.as(FunctionDeclSyntax.self) {
         if funcDecl.modifiers.contains(anyOf: [.static, .class]) {
           return true
         }
@@ -84,7 +92,7 @@ final class RedundantStaticSelf: RewriteSyntaxRule<BasicRuleValue>, @unchecked S
         // Nested function — continue walking up
       }
 
-      if let varDecl = parent.as(VariableDeclSyntax.self) {
+      if let varDecl = p.as(VariableDeclSyntax.self) {
         if varDecl.modifiers.contains(anyOf: [.static, .class]) {
           return true
         }
@@ -93,7 +101,7 @@ final class RedundantStaticSelf: RewriteSyntaxRule<BasicRuleValue>, @unchecked S
         }
       }
 
-      if let subDecl = parent.as(SubscriptDeclSyntax.self) {
+      if let subDecl = p.as(SubscriptDeclSyntax.self) {
         if subDecl.modifiers.contains(anyOf: [.static, .class]) {
           return true
         }
@@ -103,17 +111,17 @@ final class RedundantStaticSelf: RewriteSyntaxRule<BasicRuleValue>, @unchecked S
       }
 
       // Initializers are NOT static context — `Self.foo` in init is needed.
-      if parent.is(InitializerDeclSyntax.self) {
+      if p.is(InitializerDeclSyntax.self) {
         return false
       }
 
       // Stop at type boundaries — don't look past a struct/class/enum.
-      if parent.is(ClassDeclSyntax.self) || parent.is(StructDeclSyntax.self)
-        || parent.is(EnumDeclSyntax.self) || parent.is(ActorDeclSyntax.self)
+      if p.is(ClassDeclSyntax.self) || p.is(StructDeclSyntax.self)
+        || p.is(EnumDeclSyntax.self) || p.is(ActorDeclSyntax.self)
       {
         return false
       }
-      current = parent.parent
+      current = p.parent
     }
     return false
   }
@@ -121,12 +129,12 @@ final class RedundantStaticSelf: RewriteSyntaxRule<BasicRuleValue>, @unchecked S
   // MARK: - Shadowing detection
 
   /// Returns `true` if the given name is shadowed by a parameter or local variable
-  /// in the enclosing scope.
-  private func isShadowed(name: String, at node: some SyntaxProtocol) -> Bool {
-    var current = node.parent
-    while let parent = current {
+  /// in the enclosing scope. Walks the captured pre-recursion parent chain.
+  private static func isShadowed(name: String, parent: Syntax?) -> Bool {
+    var current = parent
+    while let p = current {
       // Check function parameters
-      if let funcDecl = parent.as(FunctionDeclSyntax.self) {
+      if let funcDecl = p.as(FunctionDeclSyntax.self) {
         for param in funcDecl.signature.parameterClause.parameters {
           let paramName = (param.secondName ?? param.firstName).text
           if paramName == name { return true }
@@ -134,7 +142,7 @@ final class RedundantStaticSelf: RewriteSyntaxRule<BasicRuleValue>, @unchecked S
         return false  // Stop at the function boundary
       }
       // Check subscript parameters
-      if let subDecl = parent.as(SubscriptDeclSyntax.self) {
+      if let subDecl = p.as(SubscriptDeclSyntax.self) {
         for param in subDecl.parameterClause.parameters {
           let paramName = (param.secondName ?? param.firstName).text
           if paramName == name { return true }
@@ -142,12 +150,12 @@ final class RedundantStaticSelf: RewriteSyntaxRule<BasicRuleValue>, @unchecked S
         return false
       }
       // Stop at type boundaries
-      if parent.is(ClassDeclSyntax.self) || parent.is(StructDeclSyntax.self)
-        || parent.is(EnumDeclSyntax.self) || parent.is(ActorDeclSyntax.self)
+      if p.is(ClassDeclSyntax.self) || p.is(StructDeclSyntax.self)
+        || p.is(EnumDeclSyntax.self) || p.is(ActorDeclSyntax.self)
       {
         return false
       }
-      current = parent.parent
+      current = p.parent
     }
     return false
   }

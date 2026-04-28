@@ -35,8 +35,15 @@ final class RedundantLet: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable
   // MARK: - Statement-level: let _ = expr → _ = expr
 
   override func visit(_ node: CodeBlockItemListSyntax) -> CodeBlockItemListSyntax {
-    let visited = super.visit(node)
-    guard !isLikelyResultBuilderContext(visited) else { return visited }
+    Self.transform(super.visit(node), parent: Syntax(node).parent, context: context)
+  }
+
+  static func transform(
+    _ visited: CodeBlockItemListSyntax,
+    parent: Syntax?,
+    context: Context
+  ) -> CodeBlockItemListSyntax {
+    guard !isLikelyResultBuilderContext(parent: parent) else { return visited }
 
     var newItems = [CodeBlockItemSyntax]()
     var changed = false
@@ -51,7 +58,7 @@ final class RedundantLet: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable
         continue
       }
 
-      diagnose(.removeRedundantLet, on: varDecl.bindingSpecifier)
+      Self.diagnose(.removeRedundantLet, on: varDecl.bindingSpecifier, context: context)
       changed = true
 
       // Build: _ = expr
@@ -76,7 +83,7 @@ final class RedundantLet: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable
   }
 
   /// Whether a `VariableDeclSyntax` is a redundant `let _ = expr`.
-  private func isRedundantLetDecl(_ node: VariableDeclSyntax) -> Bool {
+  private static func isRedundantLetDecl(_ node: VariableDeclSyntax) -> Bool {
     // Only `let`, not `var`.
     guard node.bindingSpecifier.tokenKind == .keyword(.let) else { return false }
 
@@ -108,41 +115,42 @@ final class RedundantLet: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable
   // MARK: - Result builder detection
 
   /// Crude heuristic: returns true if the code block is likely inside a result builder context.
-  /// Walks up the parent chain looking for closures whose call site suggests a result builder
-  /// (uppercase function name like `HStack { }`, macro expansions like `#Preview { }`).
-  private func isLikelyResultBuilderContext(_ statements: CodeBlockItemListSyntax) -> Bool {
-    var current: Syntax = Syntax(statements)
+  /// Walks up the captured pre-recursion parent chain looking for closures whose call site
+  /// suggests a result builder (uppercase function name like `HStack { }`, macro expansions like
+  /// `#Preview { }`).
+  private static func isLikelyResultBuilderContext(parent: Syntax?) -> Bool {
+    var current = parent
 
-    while let parent = current.parent {
+    while let p = current {
       // Closure body → check the call site
-      if let closure = parent.as(ClosureExprSyntax.self) {
+      if let closure = p.as(ClosureExprSyntax.self) {
         return isResultBuilderClosure(closure)
       }
       // Accessor body on a property → check for @ViewBuilder or `some View` return type
-      if let accessor = parent.as(AccessorDeclSyntax.self),
+      if let accessor = p.as(AccessorDeclSyntax.self),
          isResultBuilderAccessor(accessor)
       {
         return true
       }
       // Stop at type/extension boundaries — not a result builder context
-      if parent.is(ClassDeclSyntax.self) || parent.is(StructDeclSyntax.self)
-        || parent.is(EnumDeclSyntax.self) || parent.is(ActorDeclSyntax.self)
-        || parent.is(ExtensionDeclSyntax.self) || parent.is(ProtocolDeclSyntax.self)
+      if p.is(ClassDeclSyntax.self) || p.is(StructDeclSyntax.self)
+        || p.is(EnumDeclSyntax.self) || p.is(ActorDeclSyntax.self)
+        || p.is(ExtensionDeclSyntax.self) || p.is(ProtocolDeclSyntax.self)
       {
         return false
       }
       // Stop at function declarations (non-accessor)
-      if parent.is(FunctionDeclSyntax.self) {
+      if p.is(FunctionDeclSyntax.self) {
         return false
       }
-      current = parent
+      current = p.parent
     }
     return false
   }
 
   /// Whether a closure appears to be a result builder argument (e.g., `HStack { ... }`,
   /// `#Preview { ... }`).
-  private func isResultBuilderClosure(_ closure: ClosureExprSyntax) -> Bool {
+  private static func isResultBuilderClosure(_ closure: ClosureExprSyntax) -> Bool {
     guard let parent = closure.parent else { return false }
 
     // Trailing closure on a function call: `SomeName { ... }`
@@ -182,7 +190,7 @@ final class RedundantLet: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable
   }
 
   /// Whether an accessor is in a result builder context (e.g., `@ViewBuilder var body: some View`).
-  private func isResultBuilderAccessor(_ accessor: AccessorDeclSyntax) -> Bool {
+  private static func isResultBuilderAccessor(_ accessor: AccessorDeclSyntax) -> Bool {
     guard let accessorBlock = accessor.parent?.as(AccessorBlockSyntax.self),
           let property = accessorBlock.parent?.as(VariableDeclSyntax.self)
     else { return false }
@@ -212,6 +220,14 @@ final class RedundantLet: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable
   // MARK: - Case patterns: if case .foo(let _) → if case .foo(_)
 
   override func visit(_ node: LabeledExprSyntax) -> LabeledExprSyntax {
+    Self.transform(node, parent: Syntax(node).parent, context: context)
+  }
+
+  static func transform(
+    _ node: LabeledExprSyntax,
+    parent: Syntax?,
+    context: Context
+  ) -> LabeledExprSyntax {
     // In case patterns like `case .foo(let _)`, the AST has:
     //   LabeledExprSyntax → PatternExprSyntax → ValueBindingPatternSyntax(let, WildcardPatternSyntax)
     // The `let`/`var` is redundant when the inner pattern is just `_`.
@@ -225,7 +241,7 @@ final class RedundantLet: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable
       return node
     }
 
-    diagnose(.removeRedundantLetInCasePattern, on: binding.bindingSpecifier)
+    Self.diagnose(.removeRedundantLetInCasePattern, on: binding.bindingSpecifier, context: context)
 
     // Replace the pattern inside PatternExprSyntax with just the wildcard.
     var wildcard = binding.pattern

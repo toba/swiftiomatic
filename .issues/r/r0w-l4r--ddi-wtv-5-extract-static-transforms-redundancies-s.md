@@ -1,11 +1,11 @@
 ---
 # r0w-l4r
 title: 'ddi-wtv-5: extract static transforms (Redundancies + Sort + Wrap + remaining)'
-status: ready
+status: completed
 type: task
 priority: normal
 created_at: 2026-04-28T02:42:46Z
-updated_at: 2026-04-28T04:10:20Z
+updated_at: 2026-04-28T05:03:54Z
 parent: ddi-wtv
 blocked_by:
     - ogx-lb7
@@ -122,3 +122,37 @@ The combined rewriter still isn't wired in (`g6t-gcm` does that), so all behavio
 ## Done when
 
 All clean + parent-walking rules expose the 3-arg `transform`. Friction rules confirmed `[skip]` with their pattern documented. Build + tests green.
+
+
+
+## Summary of Changes
+
+38 rules ported to the 3-arg `static func transform(_:parent:context:)` contract. Build clean (`xc-swift swift_diagnostics`, 9 pre-existing warnings).
+
+### Ported (38)
+
+- **LineBreaks**: `ModifiersOnSameLine`
+- **Comments**: `DocCommentsPrecedeModifiers`, `TripleSlashDocComments`, `FormatSpecialComments`
+- **Wrap (clean)**: `WrapSwitchCaseBodies`, `CollapseSimpleEnums`, `WrapCompoundCaseItems`, `WrapConditionalAssignment`
+- **Wrap (parent-walking)**: `CollapseSimpleIfElse`, `WrapTernary`, `WrapSingleLineComments`
+- **Redundancies (clean, 21)**: `RedundantAsync`, `RedundantBreak`, `RedundantClosure`, `RedundantEnumerated`, `RedundantEquatable`, `RedundantInit`, `RedundantLetError`, `RedundantNilCoalescing`, `RedundantObjc`, `RedundantOptionalBinding`, `RedundantPattern`, `RedundantProperty`, `RedundantReturn`, `RedundantSendable`, `RedundantThrows`, `RedundantTypedThrows`, `RedundantType`, `RedundantViewBuilder`, `NoBacktickedSelf`, `NoLabelsInCasePatterns`, `UseImplicitInit`
+- **Redundancies (parent-walking, 7)**: `RedundantNilInit`, `RedundantRawValues`, `RedundantBackticks`, `RedundantLet`, `RedundantStaticSelf`, `UnusedArguments`, `RedundantSetterACL`
+
+### Skipped (escalated from "clean" — actually instance-state)
+
+- **`Testing/TestSuiteAccessControl`** — stores `framework: TestFramework?` set during `visit(SourceFileSyntax)` and consumed by later visits. The original brief audit mis-labelled this as clean; in practice it carries cross-visit state.
+- **`Wrap/WrapSingleLineBodies`** — heavy instance state (`currentIndent`, `chainBaseIndent`) mutated via `defer` blocks for nested wrapping context, plus manual `result.body.statements = visit(...)` recursion calls and `super.visit(node)` fallbacks. Cannot port without behavioral redesign.
+
+Both remain on legacy `RewritePipeline` and continue to work as before.
+
+### Skipped per audit (unchanged from brief)
+
+- Instance state: `Redundancies/RedundantAccessControl`, `Redundancies/RedundantSelf`, `Testing/{NoGuardInTests, PreferSwiftTesting, SwiftTestingTestCaseNames, ValidateTestCases}`
+- Recursive `rewrite()`: `Redundancies/NoSemicolons`
+- Structural pass: all `Sort/*`, `Comments/{FileHeader, ConvertRegularCommentToDocC, ReflowComments}`
+
+### Verification
+
+- `xc-swift swift_diagnostics --build-tests` → clean (9 pre-existing warnings, 0 errors)
+- Generated `CompactStageOneRewriter+Generated.swift` references all 38 ported rules (192 hits in file)
+- Legacy `override func visit` preserved on every rule — `RewritePipeline` continues to drive behavior until `g6t-gcm` flips dispatch

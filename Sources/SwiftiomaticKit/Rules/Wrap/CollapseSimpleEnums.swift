@@ -22,14 +22,21 @@ final class CollapseSimpleEnums: RewriteSyntaxRule<BasicRuleValue>, @unchecked S
     override static var group: ConfigurationGroup? { .wrap }
     override static var defaultValue: BasicRuleValue { .init(rewrite: false, lint: .no) }
 
-    private var maxLength: Int { context.configuration[LineLength.self] }
-
     override func visit(_ node: EnumDeclSyntax) -> DeclSyntax {
         // Recurse first so nested enums get a chance to collapse even when the
         // outer enum isn't collapsible (e.g. an enum with methods that contains
         // a nested `CodingKeys` enum).
+        let parent = Syntax(node).parent
         let recursed = super.visit(node).as(EnumDeclSyntax.self) ?? node
+        return Self.transform(recursed, parent: parent, context: context)
+    }
 
+    static func transform(
+        _ recursed: EnumDeclSyntax,
+        parent: Syntax?,
+        context: Context
+    ) -> DeclSyntax {
+        let maxLength = context.configuration[LineLength.self]
         guard isCollapsible(recursed) else { return DeclSyntax(recursed) }
 
         let allElements = collectElements(from: recursed)
@@ -51,7 +58,7 @@ final class CollapseSimpleEnums: RewriteSyntaxRule<BasicRuleValue>, @unchecked S
 
         guard indent.count + collapsedLength <= maxLength else { return DeclSyntax(recursed) }
 
-        diagnose(.collapseSimpleEnum, on: recursed)
+        Self.diagnose(.collapseSimpleEnum, on: recursed, context: context)
 
         // Build a single EnumCaseDeclSyntax with all elements comma-separated.
         let elements = EnumCaseElementListSyntax(
@@ -96,7 +103,7 @@ extension CollapseSimpleEnums {
     ]
 
     /// Whether the enum can be collapsed onto a single line.
-    private func isCollapsible(_ node: EnumDeclSyntax) -> Bool {
+    fileprivate static func isCollapsible(_ node: EnumDeclSyntax) -> Bool {
         let members = node.memberBlock.members
         // Must have at least one member, all must be case declarations.
         guard !members.isEmpty else { return false }
@@ -121,7 +128,7 @@ extension CollapseSimpleEnums {
     }
 
     /// Collects all `EnumCaseElementSyntax` from the enum's case declarations.
-    private func collectElements(from node: EnumDeclSyntax) -> [EnumCaseElementSyntax] {
+    fileprivate static func collectElements(from node: EnumDeclSyntax) -> [EnumCaseElementSyntax] {
         node.memberBlock.members.flatMap { member -> [EnumCaseElementSyntax] in
             guard let caseDecl = member.decl.as(EnumCaseDeclSyntax.self) else { return [] }
             return Array(caseDecl.elements)
@@ -129,7 +136,7 @@ extension CollapseSimpleEnums {
     }
 
     /// The text before the opening brace (e.g. "private enum Kind").
-    private func declPrefix(_ node: EnumDeclSyntax) -> String {
+    fileprivate static func declPrefix(_ node: EnumDeclSyntax) -> String {
         var text = ""
 
         for token in node.tokens(viewMode: .sourceAccurate) {

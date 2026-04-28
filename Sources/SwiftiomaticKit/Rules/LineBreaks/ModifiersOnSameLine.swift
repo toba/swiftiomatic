@@ -15,78 +15,205 @@ final class ModifiersOnSameLine: RewriteSyntaxRule<BasicRuleValue>, @unchecked S
     // MARK: - Container declarations
 
     override func visit(_ node: ClassDeclSyntax) -> DeclSyntax {
+        let parent = Syntax(node).parent
         let visited = super.visit(node).cast(ClassDeclSyntax.self)
-        return DeclSyntax(collapseModifierLines(of: visited, keywordKeyPath: \.classKeyword))
+        return Self.transform(visited, parent: parent, context: context)
+    }
+
+    static func transform(
+        _ node: ClassDeclSyntax,
+        parent: Syntax?,
+        context: Context
+    ) -> DeclSyntax {
+        DeclSyntax(collapseModifierLines(of: node, keywordKeyPath: \.classKeyword, context: context))
     }
 
     override func visit(_ node: StructDeclSyntax) -> DeclSyntax {
+        let parent = Syntax(node).parent
         let visited = super.visit(node).cast(StructDeclSyntax.self)
-        return DeclSyntax(collapseModifierLines(of: visited, keywordKeyPath: \.structKeyword))
+        return Self.transform(visited, parent: parent, context: context)
+    }
+
+    static func transform(
+        _ node: StructDeclSyntax,
+        parent: Syntax?,
+        context: Context
+    ) -> DeclSyntax {
+        DeclSyntax(collapseModifierLines(of: node, keywordKeyPath: \.structKeyword, context: context))
     }
 
     override func visit(_ node: EnumDeclSyntax) -> DeclSyntax {
+        let parent = Syntax(node).parent
         let visited = super.visit(node).cast(EnumDeclSyntax.self)
-        return DeclSyntax(collapseModifierLines(of: visited, keywordKeyPath: \.enumKeyword))
+        return Self.transform(visited, parent: parent, context: context)
+    }
+
+    static func transform(
+        _ node: EnumDeclSyntax,
+        parent: Syntax?,
+        context: Context
+    ) -> DeclSyntax {
+        DeclSyntax(collapseModifierLines(of: node, keywordKeyPath: \.enumKeyword, context: context))
     }
 
     override func visit(_ node: ActorDeclSyntax) -> DeclSyntax {
+        let parent = Syntax(node).parent
         let visited = super.visit(node).cast(ActorDeclSyntax.self)
-        return DeclSyntax(collapseModifierLines(of: visited, keywordKeyPath: \.actorKeyword))
+        return Self.transform(visited, parent: parent, context: context)
+    }
+
+    static func transform(
+        _ node: ActorDeclSyntax,
+        parent: Syntax?,
+        context: Context
+    ) -> DeclSyntax {
+        DeclSyntax(collapseModifierLines(of: node, keywordKeyPath: \.actorKeyword, context: context))
     }
 
     override func visit(_ node: ProtocolDeclSyntax) -> DeclSyntax {
+        let parent = Syntax(node).parent
         let visited = super.visit(node).cast(ProtocolDeclSyntax.self)
-        return DeclSyntax(collapseModifierLines(of: visited, keywordKeyPath: \.protocolKeyword))
+        return Self.transform(visited, parent: parent, context: context)
+    }
+
+    static func transform(
+        _ node: ProtocolDeclSyntax,
+        parent: Syntax?,
+        context: Context
+    ) -> DeclSyntax {
+        DeclSyntax(collapseModifierLines(of: node, keywordKeyPath: \.protocolKeyword, context: context))
     }
 
     override func visit(_ node: ExtensionDeclSyntax) -> DeclSyntax {
+        let parent = Syntax(node).parent
         let visited = super.visit(node).cast(ExtensionDeclSyntax.self)
-        return DeclSyntax(collapseModifierLines(of: visited, keywordKeyPath: \.extensionKeyword))
+        return Self.transform(visited, parent: parent, context: context)
+    }
+
+    static func transform(
+        _ node: ExtensionDeclSyntax,
+        parent: Syntax?,
+        context: Context
+    ) -> DeclSyntax {
+        DeclSyntax(collapseModifierLines(of: node, keywordKeyPath: \.extensionKeyword, context: context))
     }
 
     // MARK: - Leaf declarations
 
     override func visit(_ node: FunctionDeclSyntax) -> DeclSyntax {
-        DeclSyntax(collapseModifierLines(of: node, keywordKeyPath: \.funcKeyword))
+        Self.transform(node, parent: Syntax(node).parent, context: context)
+    }
+
+    static func transform(
+        _ node: FunctionDeclSyntax,
+        parent: Syntax?,
+        context: Context
+    ) -> DeclSyntax {
+        DeclSyntax(collapseModifierLines(of: node, keywordKeyPath: \.funcKeyword, context: context))
     }
 
     override func visit(_ node: VariableDeclSyntax) -> DeclSyntax {
-        DeclSyntax(collapseModifierLines(of: node, keywordKeyPath: \.bindingSpecifier))
+        Self.transform(node, parent: Syntax(node).parent, context: context)
+    }
+
+    static func transform(
+        _ node: VariableDeclSyntax,
+        parent: Syntax?,
+        context: Context
+    ) -> DeclSyntax {
+        DeclSyntax(collapseModifierLines(of: node, keywordKeyPath: \.bindingSpecifier, context: context))
     }
 
     override func visit(_ node: InitializerDeclSyntax) -> DeclSyntax {
-        DeclSyntax(collapseModifierLines(of: node, keywordKeyPath: \.initKeyword))
+        Self.transform(node, parent: Syntax(node).parent, context: context)
+    }
+
+    static func transform(
+        _ node: InitializerDeclSyntax,
+        parent: Syntax?,
+        context: Context
+    ) -> DeclSyntax {
+        DeclSyntax(collapseModifierLines(of: node, keywordKeyPath: \.initKeyword, context: context))
     }
 
     override func visit(_ node: SubscriptDeclSyntax) -> DeclSyntax {
-        DeclSyntax(collapseModifierLines(of: node, keywordKeyPath: \.subscriptKeyword))
+        Self.transform(node, parent: Syntax(node).parent, context: context)
+    }
+
+    static func transform(
+        _ node: SubscriptDeclSyntax,
+        parent: Syntax?,
+        context: Context
+    ) -> DeclSyntax {
+        DeclSyntax(collapseModifierLines(of: node, keywordKeyPath: \.subscriptKeyword, context: context))
     }
 
     override func visit(_ node: TypeAliasDeclSyntax) -> DeclSyntax {
-        DeclSyntax(collapseModifierLines(of: node, keywordKeyPath: \.typealiasKeyword))
+        Self.transform(node, parent: Syntax(node).parent, context: context)
+    }
+
+    static func transform(
+        _ node: TypeAliasDeclSyntax,
+        parent: Syntax?,
+        context: Context
+    ) -> DeclSyntax {
+        DeclSyntax(collapseModifierLines(of: node, keywordKeyPath: \.typealiasKeyword, context: context))
     }
 
     override func visit(_ node: EnumCaseDeclSyntax) -> DeclSyntax {
-        DeclSyntax(collapseModifierLines(of: node, keywordKeyPath: \.caseKeyword))
+        Self.transform(node, parent: Syntax(node).parent, context: context)
+    }
+
+    static func transform(
+        _ node: EnumCaseDeclSyntax,
+        parent: Syntax?,
+        context: Context
+    ) -> DeclSyntax {
+        DeclSyntax(collapseModifierLines(of: node, keywordKeyPath: \.caseKeyword, context: context))
     }
 
     override func visit(_ node: ImportDeclSyntax) -> DeclSyntax {
-        DeclSyntax(collapseModifierLines(of: node, keywordKeyPath: \.importKeyword))
+        Self.transform(node, parent: Syntax(node).parent, context: context)
+    }
+
+    static func transform(
+        _ node: ImportDeclSyntax,
+        parent: Syntax?,
+        context: Context
+    ) -> DeclSyntax {
+        DeclSyntax(collapseModifierLines(of: node, keywordKeyPath: \.importKeyword, context: context))
     }
 
     override func visit(_ node: DeinitializerDeclSyntax) -> DeclSyntax {
-        DeclSyntax(collapseModifierLines(of: node, keywordKeyPath: \.deinitKeyword))
+        Self.transform(node, parent: Syntax(node).parent, context: context)
+    }
+
+    static func transform(
+        _ node: DeinitializerDeclSyntax,
+        parent: Syntax?,
+        context: Context
+    ) -> DeclSyntax {
+        DeclSyntax(collapseModifierLines(of: node, keywordKeyPath: \.deinitKeyword, context: context))
     }
 
     override func visit(_ node: AssociatedTypeDeclSyntax) -> DeclSyntax {
-        DeclSyntax(collapseModifierLines(of: node, keywordKeyPath: \.associatedtypeKeyword))
+        Self.transform(node, parent: Syntax(node).parent, context: context)
+    }
+
+    static func transform(
+        _ node: AssociatedTypeDeclSyntax,
+        parent: Syntax?,
+        context: Context
+    ) -> DeclSyntax {
+        DeclSyntax(collapseModifierLines(of: node, keywordKeyPath: \.associatedtypeKeyword, context: context))
     }
 
     // MARK: - Helper
 
-    private func collapseModifierLines<Decl: DeclSyntaxProtocol & WithModifiersSyntax>(
+    private static func collapseModifierLines<Decl: DeclSyntaxProtocol & WithModifiersSyntax>(
         of decl: Decl,
-        keywordKeyPath: WritableKeyPath<Decl, TokenSyntax>
+        keywordKeyPath: WritableKeyPath<Decl, TokenSyntax>,
+        context: Context
     ) -> Decl {
         let modifiers = decl.modifiers
         guard !modifiers.isEmpty else { return decl }
@@ -112,7 +239,7 @@ final class ModifiersOnSameLine: RewriteSyntaxRule<BasicRuleValue>, @unchecked S
         }
         if decl[keyPath: keywordKeyPath].leadingTrivia.hasAnyComments { return decl }
 
-        diagnose(.modifiersNotOnSameLine, on: modifiers.first!)
+        Self.diagnose(.modifiersNotOnSameLine, on: modifiers.first!, context: context)
 
         var result = decl
         var newModifiers = Array(modifiers)

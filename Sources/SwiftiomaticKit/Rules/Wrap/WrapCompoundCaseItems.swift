@@ -15,6 +15,14 @@ final class WrapCompoundCaseItems: RewriteSyntaxRule<BasicRuleValue>, @unchecked
     override static var defaultValue: BasicRuleValue { .init(rewrite: false, lint: .no) }
 
     override func visit(_ node: SwitchCaseLabelSyntax) -> SwitchCaseLabelSyntax {
+        Self.transform(node, parent: Syntax(node).parent, context: context)
+    }
+
+    static func transform(
+        _ node: SwitchCaseLabelSyntax,
+        parent: Syntax?,
+        context: Context
+    ) -> SwitchCaseLabelSyntax {
         let items = node.caseItems
         guard items.count > 1 else { return node }
 
@@ -33,7 +41,7 @@ final class WrapCompoundCaseItems: RewriteSyntaxRule<BasicRuleValue>, @unchecked
 
         guard needsWrapping else { return node }
 
-        diagnose(.wrapSwitchCase, on: node.caseKeyword)
+        Self.diagnose(.wrapSwitchCase, on: node.caseKeyword, context: context)
 
         let alignIndent = node.caseKeyword.leadingTrivia.indentation
             + String(repeating: " ", count: "case ".count)

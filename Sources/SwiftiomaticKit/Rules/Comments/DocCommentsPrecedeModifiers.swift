@@ -14,62 +14,157 @@ final class DocCommentsPrecedeModifiers: RewriteSyntaxRule<BasicRuleValue>, @unc
     // MARK: - Container types (need super.visit)
 
     override func visit(_ node: StructDeclSyntax) -> DeclSyntax {
+        let parent = Syntax(node).parent
         let visited = super.visit(node).cast(StructDeclSyntax.self)
-        return DeclSyntax(moveDocComments(in: visited, keywordKeyPath: \.structKeyword))
+        return Self.transform(visited, parent: parent, context: context)
+    }
+
+    static func transform(
+        _ node: StructDeclSyntax,
+        parent: Syntax?,
+        context: Context
+    ) -> DeclSyntax {
+        DeclSyntax(moveDocComments(in: node, keywordKeyPath: \.structKeyword, context: context))
     }
 
     override func visit(_ node: ClassDeclSyntax) -> DeclSyntax {
+        let parent = Syntax(node).parent
         let visited = super.visit(node).cast(ClassDeclSyntax.self)
-        return DeclSyntax(moveDocComments(in: visited, keywordKeyPath: \.classKeyword))
+        return Self.transform(visited, parent: parent, context: context)
+    }
+
+    static func transform(
+        _ node: ClassDeclSyntax,
+        parent: Syntax?,
+        context: Context
+    ) -> DeclSyntax {
+        DeclSyntax(moveDocComments(in: node, keywordKeyPath: \.classKeyword, context: context))
     }
 
     override func visit(_ node: EnumDeclSyntax) -> DeclSyntax {
+        let parent = Syntax(node).parent
         let visited = super.visit(node).cast(EnumDeclSyntax.self)
-        return DeclSyntax(moveDocComments(in: visited, keywordKeyPath: \.enumKeyword))
+        return Self.transform(visited, parent: parent, context: context)
+    }
+
+    static func transform(
+        _ node: EnumDeclSyntax,
+        parent: Syntax?,
+        context: Context
+    ) -> DeclSyntax {
+        DeclSyntax(moveDocComments(in: node, keywordKeyPath: \.enumKeyword, context: context))
     }
 
     override func visit(_ node: ActorDeclSyntax) -> DeclSyntax {
+        let parent = Syntax(node).parent
         let visited = super.visit(node).cast(ActorDeclSyntax.self)
-        return DeclSyntax(moveDocComments(in: visited, keywordKeyPath: \.actorKeyword))
+        return Self.transform(visited, parent: parent, context: context)
+    }
+
+    static func transform(
+        _ node: ActorDeclSyntax,
+        parent: Syntax?,
+        context: Context
+    ) -> DeclSyntax {
+        DeclSyntax(moveDocComments(in: node, keywordKeyPath: \.actorKeyword, context: context))
     }
 
     override func visit(_ node: ProtocolDeclSyntax) -> DeclSyntax {
+        let parent = Syntax(node).parent
         let visited = super.visit(node).cast(ProtocolDeclSyntax.self)
-        return DeclSyntax(moveDocComments(in: visited, keywordKeyPath: \.protocolKeyword))
+        return Self.transform(visited, parent: parent, context: context)
+    }
+
+    static func transform(
+        _ node: ProtocolDeclSyntax,
+        parent: Syntax?,
+        context: Context
+    ) -> DeclSyntax {
+        DeclSyntax(moveDocComments(in: node, keywordKeyPath: \.protocolKeyword, context: context))
     }
 
     override func visit(_ node: ExtensionDeclSyntax) -> DeclSyntax {
+        let parent = Syntax(node).parent
         let visited = super.visit(node).cast(ExtensionDeclSyntax.self)
-        return DeclSyntax(moveDocComments(in: visited, keywordKeyPath: \.extensionKeyword))
+        return Self.transform(visited, parent: parent, context: context)
+    }
+
+    static func transform(
+        _ node: ExtensionDeclSyntax,
+        parent: Syntax?,
+        context: Context
+    ) -> DeclSyntax {
+        DeclSyntax(moveDocComments(in: node, keywordKeyPath: \.extensionKeyword, context: context))
     }
 
     // MARK: - Leaf declarations
 
     override func visit(_ node: FunctionDeclSyntax) -> DeclSyntax {
-        DeclSyntax(moveDocComments(in: node, keywordKeyPath: \.funcKeyword))
+        Self.transform(node, parent: Syntax(node).parent, context: context)
+    }
+
+    static func transform(
+        _ node: FunctionDeclSyntax,
+        parent: Syntax?,
+        context: Context
+    ) -> DeclSyntax {
+        DeclSyntax(moveDocComments(in: node, keywordKeyPath: \.funcKeyword, context: context))
     }
 
     override func visit(_ node: VariableDeclSyntax) -> DeclSyntax {
-        DeclSyntax(moveDocComments(in: node, keywordKeyPath: \.bindingSpecifier))
+        Self.transform(node, parent: Syntax(node).parent, context: context)
+    }
+
+    static func transform(
+        _ node: VariableDeclSyntax,
+        parent: Syntax?,
+        context: Context
+    ) -> DeclSyntax {
+        DeclSyntax(moveDocComments(in: node, keywordKeyPath: \.bindingSpecifier, context: context))
     }
 
     override func visit(_ node: TypeAliasDeclSyntax) -> DeclSyntax {
-        DeclSyntax(moveDocComments(in: node, keywordKeyPath: \.typealiasKeyword))
+        Self.transform(node, parent: Syntax(node).parent, context: context)
+    }
+
+    static func transform(
+        _ node: TypeAliasDeclSyntax,
+        parent: Syntax?,
+        context: Context
+    ) -> DeclSyntax {
+        DeclSyntax(moveDocComments(in: node, keywordKeyPath: \.typealiasKeyword, context: context))
     }
 
     override func visit(_ node: InitializerDeclSyntax) -> DeclSyntax {
-        DeclSyntax(moveDocComments(in: node, keywordKeyPath: \.initKeyword))
+        Self.transform(node, parent: Syntax(node).parent, context: context)
+    }
+
+    static func transform(
+        _ node: InitializerDeclSyntax,
+        parent: Syntax?,
+        context: Context
+    ) -> DeclSyntax {
+        DeclSyntax(moveDocComments(in: node, keywordKeyPath: \.initKeyword, context: context))
     }
 
     override func visit(_ node: SubscriptDeclSyntax) -> DeclSyntax {
-        DeclSyntax(moveDocComments(in: node, keywordKeyPath: \.subscriptKeyword))
+        Self.transform(node, parent: Syntax(node).parent, context: context)
+    }
+
+    static func transform(
+        _ node: SubscriptDeclSyntax,
+        parent: Syntax?,
+        context: Context
+    ) -> DeclSyntax {
+        DeclSyntax(moveDocComments(in: node, keywordKeyPath: \.subscriptKeyword, context: context))
     }
 
     // MARK: - Core logic
 
-    private func moveDocComments<D: SyntaxProtocol>(
+    private static func moveDocComments<D: SyntaxProtocol>(
         in decl: D,
-        keywordKeyPath: WritableKeyPath<D, TokenSyntax>
+        keywordKeyPath: WritableKeyPath<D, TokenSyntax>,
+        context: Context
     ) -> D where D: WithAttributesSyntax, D: WithModifiersSyntax {
         let hasAttributes = !decl.attributes.isEmpty
         let hasModifiers = !decl.modifiers.isEmpty
@@ -99,7 +194,7 @@ final class DocCommentsPrecedeModifiers: RewriteSyntaxRule<BasicRuleValue>, @unc
         result.modifiers = modifiers
 
         guard !collectedDoc.isEmpty else { return decl }
-        diagnose(.docCommentsBeforeModifiers, on: decl[keyPath: keywordKeyPath])
+        Self.diagnose(.docCommentsBeforeModifiers, on: decl[keyPath: keywordKeyPath], context: context)
 
         // Insert doc block into the first position's leading trivia
         if hasAttributes {
@@ -127,7 +222,7 @@ final class DocCommentsPrecedeModifiers: RewriteSyntaxRule<BasicRuleValue>, @unc
 
     /// Extract doc comment pieces from trivia.
     /// Returns nil if no doc comments found.
-    private func extractDocBlock(from trivia: Trivia) -> (cleaned: Trivia, docBlock: [TriviaPiece])?
+    private static func extractDocBlock(from trivia: Trivia) -> (cleaned: Trivia, docBlock: [TriviaPiece])?
     {
         let pieces = Array(trivia.pieces)
         guard pieces.contains(where: \.isDocComment) else { return nil }
@@ -192,7 +287,7 @@ final class DocCommentsPrecedeModifiers: RewriteSyntaxRule<BasicRuleValue>, @unc
     }
 
     /// Insert doc block pieces into target trivia, placing doc before the trailing indent.
-    private func insertDocBlock(_ docBlock: [TriviaPiece], into trivia: Trivia) -> Trivia {
+    private static func insertDocBlock(_ docBlock: [TriviaPiece], into trivia: Trivia) -> Trivia {
         let pieces = Array(trivia.pieces)
 
         // Split target into structural (newlines etc) and trailing indent (spaces/tabs)

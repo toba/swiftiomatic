@@ -13,6 +13,14 @@ final class RedundantTypedThrows: RewriteSyntaxRule<BasicRuleValue>, @unchecked 
 
   // Function declarations: `func foo() throws(any Error)`
   override func visit(_ node: FunctionEffectSpecifiersSyntax) -> FunctionEffectSpecifiersSyntax {
+    Self.transform(node, parent: Syntax(node).parent, context: context)
+  }
+
+  static func transform(
+    _ node: FunctionEffectSpecifiersSyntax,
+    parent: Syntax?,
+    context: Context
+  ) -> FunctionEffectSpecifiersSyntax {
     guard let throwsClause = node.throwsClause,
       let type = throwsClause.type
     else {
@@ -22,12 +30,12 @@ final class RedundantTypedThrows: RewriteSyntaxRule<BasicRuleValue>, @unchecked 
     let trimmed = type.trimmedDescription
 
     if trimmed == "any Error" {
-      diagnose(.replaceAnyErrorWithThrows, on: throwsClause)
+      Self.diagnose(.replaceAnyErrorWithThrows, on: throwsClause, context: context)
       return node.with(\.throwsClause, simplifyToPlainThrows(throwsClause))
     }
 
     if trimmed == "Never" {
-      diagnose(.removeThrowsNever, on: throwsClause)
+      Self.diagnose(.removeThrowsNever, on: throwsClause, context: context)
       return node.with(\.throwsClause, nil)
     }
 
@@ -36,25 +44,34 @@ final class RedundantTypedThrows: RewriteSyntaxRule<BasicRuleValue>, @unchecked 
 
   // Function types: `() throws(any Error) -> Void`
   override func visit(_ node: FunctionTypeSyntax) -> TypeSyntax {
+    let parent = Syntax(node).parent
     let visited = super.visit(node)
-    guard let funcType = visited.as(FunctionTypeSyntax.self),
-      let effectSpecifiers = funcType.effectSpecifiers,
+    guard let concrete = visited.as(FunctionTypeSyntax.self) else { return visited }
+    return Self.transform(concrete, parent: parent, context: context)
+  }
+
+  static func transform(
+    _ funcType: FunctionTypeSyntax,
+    parent: Syntax?,
+    context: Context
+  ) -> TypeSyntax {
+    guard let effectSpecifiers = funcType.effectSpecifiers,
       let throwsClause = effectSpecifiers.throwsClause,
       let type = throwsClause.type
     else {
-      return visited
+      return TypeSyntax(funcType)
     }
 
     let trimmed = type.trimmedDescription
 
     if trimmed == "any Error" {
-      diagnose(.replaceAnyErrorWithThrows, on: throwsClause)
+      Self.diagnose(.replaceAnyErrorWithThrows, on: throwsClause, context: context)
       let simplified = simplifyToPlainThrows(throwsClause)
       return TypeSyntax(funcType.with(\.effectSpecifiers, effectSpecifiers.with(\.throwsClause, simplified)))
     }
 
     if trimmed == "Never" {
-      diagnose(.removeThrowsNever, on: throwsClause)
+      Self.diagnose(.removeThrowsNever, on: throwsClause, context: context)
       var newSpecs = effectSpecifiers
       newSpecs.throwsClause = nil
       if newSpecs.asyncSpecifier == nil {
@@ -63,11 +80,11 @@ final class RedundantTypedThrows: RewriteSyntaxRule<BasicRuleValue>, @unchecked 
       return TypeSyntax(funcType.with(\.effectSpecifiers, newSpecs))
     }
 
-    return visited
+    return TypeSyntax(funcType)
   }
 
   /// Simplify `throws(any Error)` → `throws`, preserving trailing trivia from `)`.
-  private func simplifyToPlainThrows(_ clause: ThrowsClauseSyntax) -> ThrowsClauseSyntax {
+  private static func simplifyToPlainThrows(_ clause: ThrowsClauseSyntax) -> ThrowsClauseSyntax {
     let trailingTrivia = clause.rightParen?.trailingTrivia ?? []
     return clause
       .with(\.type, nil)

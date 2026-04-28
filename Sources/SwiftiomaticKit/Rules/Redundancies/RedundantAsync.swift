@@ -17,6 +17,14 @@ final class RedundantAsync: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendab
     override class var group: ConfigurationGroup? { .redundancies }
 
     override func visit(_ node: FunctionDeclSyntax) -> DeclSyntax {
+        Self.transform(node, parent: Syntax(node).parent, context: context)
+    }
+
+    static func transform(
+        _ node: FunctionDeclSyntax,
+        parent: Syntax?,
+        context: Context
+    ) -> DeclSyntax {
         guard let effectSpecifiers = node.signature.effectSpecifiers,
               let asyncSpecifier = effectSpecifiers.asyncSpecifier,
               asyncSpecifier.tokenKind == .keyword(.async),
@@ -24,7 +32,7 @@ final class RedundantAsync: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendab
 
         guard !containsAwait(body) else { return DeclSyntax(node) }
 
-        diagnose(.removeRedundantAsync, on: asyncSpecifier)
+        Self.diagnose(.removeRedundantAsync, on: asyncSpecifier, context: context)
 
         var newEffectSpecifiers = effectSpecifiers
         newEffectSpecifiers.asyncSpecifier = nil
@@ -49,7 +57,7 @@ final class RedundantAsync: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendab
 
     /// Returns `true` if the syntax tree contains an `await` expression, stopping at nested
     /// function/closure boundaries.
-    private func containsAwait(_ node: some SyntaxProtocol) -> Bool {
+    private static func containsAwait(_ node: some SyntaxProtocol) -> Bool {
         for child in node.children(viewMode: .sourceAccurate) {
             // Stop at nested function/closure boundaries — they have their own async context.
             if child.is(FunctionDeclSyntax.self) || child.is(ClosureExprSyntax.self) { continue }

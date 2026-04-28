@@ -26,54 +26,145 @@ final class TripleSlashDocComments: RewriteSyntaxRule<BasicRuleValue>, @unchecke
     override static var group: ConfigurationGroup? { .comments }
 
     override func visit(_ node: FunctionDeclSyntax) -> DeclSyntax {
-        convertDocBlockCommentToDocLineComment(DeclSyntax(node))
+        Self.transform(node, parent: Syntax(node).parent, context: context)
+    }
+
+    static func transform(
+        _ node: FunctionDeclSyntax,
+        parent: Syntax?,
+        context: Context
+    ) -> DeclSyntax {
+        convertDocBlockCommentToDocLineComment(DeclSyntax(node), context: context)
     }
 
     override func visit(_ node: EnumDeclSyntax) -> DeclSyntax {
-        convertDocBlockCommentToDocLineComment(DeclSyntax(node))
+        Self.transform(node, parent: Syntax(node).parent, context: context)
+    }
+
+    static func transform(
+        _ node: EnumDeclSyntax,
+        parent: Syntax?,
+        context: Context
+    ) -> DeclSyntax {
+        convertDocBlockCommentToDocLineComment(DeclSyntax(node), context: context)
     }
 
     override func visit(_ node: InitializerDeclSyntax) -> DeclSyntax {
-        convertDocBlockCommentToDocLineComment(DeclSyntax(node))
+        Self.transform(node, parent: Syntax(node).parent, context: context)
+    }
+
+    static func transform(
+        _ node: InitializerDeclSyntax,
+        parent: Syntax?,
+        context: Context
+    ) -> DeclSyntax {
+        convertDocBlockCommentToDocLineComment(DeclSyntax(node), context: context)
     }
 
     override func visit(_ node: DeinitializerDeclSyntax) -> DeclSyntax {
-        convertDocBlockCommentToDocLineComment(DeclSyntax(node))
+        Self.transform(node, parent: Syntax(node).parent, context: context)
+    }
+
+    static func transform(
+        _ node: DeinitializerDeclSyntax,
+        parent: Syntax?,
+        context: Context
+    ) -> DeclSyntax {
+        convertDocBlockCommentToDocLineComment(DeclSyntax(node), context: context)
     }
 
     override func visit(_ node: SubscriptDeclSyntax) -> DeclSyntax {
-        convertDocBlockCommentToDocLineComment(DeclSyntax(node))
+        Self.transform(node, parent: Syntax(node).parent, context: context)
+    }
+
+    static func transform(
+        _ node: SubscriptDeclSyntax,
+        parent: Syntax?,
+        context: Context
+    ) -> DeclSyntax {
+        convertDocBlockCommentToDocLineComment(DeclSyntax(node), context: context)
     }
 
     override func visit(_ node: ClassDeclSyntax) -> DeclSyntax {
-        convertDocBlockCommentToDocLineComment(DeclSyntax(node))
+        Self.transform(node, parent: Syntax(node).parent, context: context)
+    }
+
+    static func transform(
+        _ node: ClassDeclSyntax,
+        parent: Syntax?,
+        context: Context
+    ) -> DeclSyntax {
+        convertDocBlockCommentToDocLineComment(DeclSyntax(node), context: context)
     }
 
     override func visit(_ node: VariableDeclSyntax) -> DeclSyntax {
-        convertDocBlockCommentToDocLineComment(DeclSyntax(node))
+        Self.transform(node, parent: Syntax(node).parent, context: context)
+    }
+
+    static func transform(
+        _ node: VariableDeclSyntax,
+        parent: Syntax?,
+        context: Context
+    ) -> DeclSyntax {
+        convertDocBlockCommentToDocLineComment(DeclSyntax(node), context: context)
     }
 
     override func visit(_ node: StructDeclSyntax) -> DeclSyntax {
-        convertDocBlockCommentToDocLineComment(DeclSyntax(node))
+        Self.transform(node, parent: Syntax(node).parent, context: context)
+    }
+
+    static func transform(
+        _ node: StructDeclSyntax,
+        parent: Syntax?,
+        context: Context
+    ) -> DeclSyntax {
+        convertDocBlockCommentToDocLineComment(DeclSyntax(node), context: context)
     }
 
     override func visit(_ node: ProtocolDeclSyntax) -> DeclSyntax {
-        convertDocBlockCommentToDocLineComment(DeclSyntax(node))
+        Self.transform(node, parent: Syntax(node).parent, context: context)
+    }
+
+    static func transform(
+        _ node: ProtocolDeclSyntax,
+        parent: Syntax?,
+        context: Context
+    ) -> DeclSyntax {
+        convertDocBlockCommentToDocLineComment(DeclSyntax(node), context: context)
     }
 
     override func visit(_ node: TypeAliasDeclSyntax) -> DeclSyntax {
-        convertDocBlockCommentToDocLineComment(DeclSyntax(node))
+        Self.transform(node, parent: Syntax(node).parent, context: context)
+    }
+
+    static func transform(
+        _ node: TypeAliasDeclSyntax,
+        parent: Syntax?,
+        context: Context
+    ) -> DeclSyntax {
+        convertDocBlockCommentToDocLineComment(DeclSyntax(node), context: context)
     }
 
     override func visit(_ node: ExtensionDeclSyntax) -> DeclSyntax {
-        convertDocBlockCommentToDocLineComment(DeclSyntax(node))
+        Self.transform(node, parent: Syntax(node).parent, context: context)
+    }
+
+    static func transform(
+        _ node: ExtensionDeclSyntax,
+        parent: Syntax?,
+        context: Context
+    ) -> DeclSyntax {
+        convertDocBlockCommentToDocLineComment(DeclSyntax(node), context: context)
     }
 
     /// If the declaration has a doc block comment, return the declaration with the comment rewritten
     /// as a line comment.
     ///
     /// If the declaration had no comment or had only line comments, it is returned unchanged.
-    private func convertDocBlockCommentToDocLineComment(_ decl: DeclSyntax) -> DeclSyntax {
+    private static func convertDocBlockCommentToDocLineComment(
+        _ decl: DeclSyntax,
+        context: Context
+    ) -> DeclSyntax {
         guard
             let commentInfo = DocumentationCommentText(extractedFrom: decl.leadingTrivia),
             commentInfo.introducer != .line
@@ -81,7 +172,12 @@ final class TripleSlashDocComments: RewriteSyntaxRule<BasicRuleValue>, @unchecke
             return decl
         }
 
-        diagnose(.avoidDocBlockComment, on: decl, anchor: .leadingTrivia(commentInfo.startIndex))
+        Self.diagnose(
+            .avoidDocBlockComment,
+            on: decl,
+            context: context,
+            anchor: .leadingTrivia(commentInfo.startIndex)
+        )
 
         // Keep any trivia leading up to the doc comment.
         var pieces = Array(decl.leadingTrivia[..<commentInfo.startIndex])

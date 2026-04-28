@@ -25,6 +25,14 @@ final class RedundantType: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendabl
   override class var group: ConfigurationGroup? { .redundancies }
 
   override func visit(_ node: VariableDeclSyntax) -> DeclSyntax {
+    Self.transform(node, parent: Syntax(node).parent, context: context)
+  }
+
+  static func transform(
+    _ node: VariableDeclSyntax,
+    parent: Syntax?,
+    context: Context
+  ) -> DeclSyntax {
     var bindings = node.bindings
     var didChange = false
 
@@ -44,7 +52,7 @@ final class RedundantType: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendabl
         continue
       }
 
-      diagnose(.removeRedundantType(typeName: typeName), on: typeAnnotation)
+      Self.diagnose(.removeRedundantType(typeName: typeName), on: typeAnnotation, context: context)
 
       var newBinding = binding
       newBinding.typeAnnotation = nil
@@ -75,7 +83,7 @@ final class RedundantType: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendabl
   }
 
   /// Returns `true` if the type annotation is redundant given the initializer expression.
-  private func isRedundant(typeName: String, initializer: ExprSyntax) -> Bool {
+  private static func isRedundant(typeName: String, initializer: ExprSyntax) -> Bool {
     // `let x: Foo = Foo(...)` or `let x: Foo = Foo.init(...)`
     if let funcCall = initializer.as(FunctionCallExprSyntax.self) {
       if let calledName = simpleTypeName(from: funcCall.calledExpression) {
@@ -109,7 +117,7 @@ final class RedundantType: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendabl
   // MARK: - if/switch expression branch matching
 
   /// Returns `true` if all branches of an if expression produce values matching the type name.
-  private func allBranchesMatch(typeName: String, ifExpr: IfExprSyntax) -> Bool {
+  private static func allBranchesMatch(typeName: String, ifExpr: IfExprSyntax) -> Bool {
     // Check the `then` body
     guard allStatementsMatch(typeName: typeName, body: ifExpr.body) else { return false }
 
@@ -125,7 +133,7 @@ final class RedundantType: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendabl
   }
 
   /// Returns `true` if all cases of a switch expression produce values matching the type name.
-  private func allCasesMatch(typeName: String, switchExpr: SwitchExprSyntax) -> Bool {
+  private static func allCasesMatch(typeName: String, switchExpr: SwitchExprSyntax) -> Bool {
     guard !switchExpr.cases.isEmpty else { return false }
 
     for caseItem in switchExpr.cases {
@@ -143,12 +151,12 @@ final class RedundantType: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendabl
   }
 
   /// Returns `true` if the last expression in a code block matches the type name.
-  private func allStatementsMatch(typeName: String, body: CodeBlockSyntax) -> Bool {
+  private static func allStatementsMatch(typeName: String, body: CodeBlockSyntax) -> Bool {
     allStatementsMatch(typeName: typeName, statements: body.statements)
   }
 
   /// Returns `true` if the last expression in a statement list matches the type name.
-  private func allStatementsMatch(typeName: String, statements: CodeBlockItemListSyntax) -> Bool {
+  private static func allStatementsMatch(typeName: String, statements: CodeBlockItemListSyntax) -> Bool {
     guard let lastItem = statements.last else { return false }
 
     // Extract the expression from the code block item. In statement position, if/switch
@@ -172,7 +180,7 @@ final class RedundantType: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendabl
   /// Extracts the simple type name from a called expression, if it's a direct type reference.
   ///
   /// Returns `nil` for complex expressions like method calls, closures, etc.
-  private func simpleTypeName(from expr: ExprSyntax) -> String? {
+  private static func simpleTypeName(from expr: ExprSyntax) -> String? {
     // `Foo(...)` — DeclReferenceExpr with no argument names
     if let declRef = expr.as(DeclReferenceExprSyntax.self),
       declRef.argumentNames == nil
@@ -217,7 +225,7 @@ final class RedundantType: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendabl
 
   /// Returns `true` if the type name contains Void. Removing the annotation for Void-related
   /// types is unhelpful and potentially confusing.
-  private func isVoidType(_ typeName: String) -> Bool {
+  private static func isVoidType(_ typeName: String) -> Bool {
     typeName.contains("Void") || typeName.contains("()")
   }
 }

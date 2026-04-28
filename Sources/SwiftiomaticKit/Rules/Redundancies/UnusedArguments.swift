@@ -21,9 +21,19 @@ final class UnusedArguments: RewriteSyntaxRule<BasicRuleValue>, @unchecked Senda
     // MARK: - Functions
 
     override func visit(_ node: FunctionDeclSyntax) -> DeclSyntax {
+        let parent = Syntax(node).parent
         let visited = super.visit(node)
-        guard var result = visited.as(FunctionDeclSyntax.self) else { return visited }
-        guard let body = result.body else { return visited }
+        guard let concrete = visited.as(FunctionDeclSyntax.self) else { return visited }
+        return Self.transform(concrete, parent: parent, context: context)
+    }
+
+    static func transform(
+        _ node: FunctionDeclSyntax,
+        parent: Syntax?,
+        context: Context
+    ) -> DeclSyntax {
+        var result = node
+        guard let body = result.body else { return DeclSyntax(node) }
 
         let isOperator: Bool
 
@@ -40,12 +50,12 @@ final class UnusedArguments: RewriteSyntaxRule<BasicRuleValue>, @unchecked Senda
             guard !isNameUsed(name, in: body) else { continue }
 
             let nameToken = param.secondName ?? param.firstName
-            diagnose(.unusedArgument(name), on: nameToken)
+            Self.diagnose(.unusedArgument(name), on: nameToken, context: context)
             params[i] = markUnused(param, isOperator: isOperator)
             changed = true
         }
 
-        guard changed else { return visited }
+        guard changed else { return DeclSyntax(node) }
         result.signature.parameterClause.parameters = FunctionParameterListSyntax(params)
         return .init(result)
     }
@@ -53,9 +63,19 @@ final class UnusedArguments: RewriteSyntaxRule<BasicRuleValue>, @unchecked Senda
     // MARK: - Initializers
 
     override func visit(_ node: InitializerDeclSyntax) -> DeclSyntax {
+        let parent = Syntax(node).parent
         let visited = super.visit(node)
-        guard var result = visited.as(InitializerDeclSyntax.self) else { return visited }
-        guard let body = result.body else { return visited }
+        guard let concrete = visited.as(InitializerDeclSyntax.self) else { return visited }
+        return Self.transform(concrete, parent: parent, context: context)
+    }
+
+    static func transform(
+        _ node: InitializerDeclSyntax,
+        parent: Syntax?,
+        context: Context
+    ) -> DeclSyntax {
+        var result = node
+        guard let body = result.body else { return DeclSyntax(node) }
 
         var params = Array(result.signature.parameterClause.parameters)
         var changed = false
@@ -65,12 +85,12 @@ final class UnusedArguments: RewriteSyntaxRule<BasicRuleValue>, @unchecked Senda
             guard !isNameUsed(name, in: body) else { continue }
 
             let nameToken = param.secondName ?? param.firstName
-            diagnose(.unusedArgument(name), on: nameToken)
+            Self.diagnose(.unusedArgument(name), on: nameToken, context: context)
             params[i] = markUnused(param, isOperator: false)
             changed = true
         }
 
-        guard changed else { return visited }
+        guard changed else { return DeclSyntax(node) }
         result.signature.parameterClause.parameters = FunctionParameterListSyntax(params)
         return .init(result)
     }
@@ -78,8 +98,18 @@ final class UnusedArguments: RewriteSyntaxRule<BasicRuleValue>, @unchecked Senda
     // MARK: - Subscripts
 
     override func visit(_ node: SubscriptDeclSyntax) -> DeclSyntax {
+        let parent = Syntax(node).parent
         let visited = super.visit(node)
-        guard var result = visited.as(SubscriptDeclSyntax.self) else { return visited }
+        guard let concrete = visited.as(SubscriptDeclSyntax.self) else { return visited }
+        return Self.transform(concrete, parent: parent, context: context)
+    }
+
+    static func transform(
+        _ node: SubscriptDeclSyntax,
+        parent: Syntax?,
+        context: Context
+    ) -> DeclSyntax {
+        var result = node
 
         var params = Array(result.parameterClause.parameters)
         var changed = false
@@ -89,12 +119,12 @@ final class UnusedArguments: RewriteSyntaxRule<BasicRuleValue>, @unchecked Senda
             guard !isSubscriptParamUsed(name, in: result) else { continue }
 
             let nameToken = param.secondName ?? param.firstName
-            diagnose(.unusedArgument(name), on: nameToken)
+            Self.diagnose(.unusedArgument(name), on: nameToken, context: context)
             params[i] = markUnused(param, isOperator: true)
             changed = true
         }
 
-        guard changed else { return visited }
+        guard changed else { return DeclSyntax(node) }
         result.parameterClause.parameters = FunctionParameterListSyntax(params)
         return .init(result)
     }
@@ -102,10 +132,20 @@ final class UnusedArguments: RewriteSyntaxRule<BasicRuleValue>, @unchecked Senda
     // MARK: - Closures
 
     override func visit(_ node: ClosureExprSyntax) -> ExprSyntax {
+        let parent = Syntax(node).parent
         let visited = super.visit(node)
-        guard var result = visited.as(ClosureExprSyntax.self) else { return visited }
+        guard let concrete = visited.as(ClosureExprSyntax.self) else { return visited }
+        return Self.transform(concrete, parent: parent, context: context)
+    }
+
+    static func transform(
+        _ node: ClosureExprSyntax,
+        parent: Syntax?,
+        context: Context
+    ) -> ExprSyntax {
+        var result = node
         guard var signature = result.signature,
-              let paramClause = signature.parameterClause else { return visited }
+              let paramClause = signature.parameterClause else { return ExprSyntax(node) }
 
         switch paramClause {
             case let .simpleInput(params):
@@ -117,7 +157,7 @@ final class UnusedArguments: RewriteSyntaxRule<BasicRuleValue>, @unchecked Senda
                     guard name != "_", !name.hasPrefix("$") else { continue }
                     guard !isNameUsed(name, in: result.statements) else { continue }
 
-                    diagnose(.unusedClosureArgument(name), on: param.name)
+                    Self.diagnose(.unusedClosureArgument(name), on: param.name, context: context)
                     newParams[
                         i] = param.with(
                             \.name,
@@ -127,7 +167,7 @@ final class UnusedArguments: RewriteSyntaxRule<BasicRuleValue>, @unchecked Senda
                     changed = true
                 }
 
-                guard changed else { return visited }
+                guard changed else { return ExprSyntax(node) }
                 signature.parameterClause = .simpleInput(
                     ClosureShorthandParameterListSyntax(
                         newParams
@@ -145,12 +185,12 @@ final class UnusedArguments: RewriteSyntaxRule<BasicRuleValue>, @unchecked Senda
                     guard !isNameUsed(name, in: result.statements) else { continue }
 
                     let nameToken = param.secondName ?? param.firstName
-                    diagnose(.unusedClosureArgument(name), on: nameToken)
+                    Self.diagnose(.unusedClosureArgument(name), on: nameToken, context: context)
                     params[i] = markClosureUnused(param)
                     changed = true
                 }
 
-                guard changed else { return visited }
+                guard changed else { return ExprSyntax(node) }
                 clause.parameters = ClosureParameterListSyntax(params)
                 signature.parameterClause = .parameterClause(clause)
                 result.signature = signature
@@ -161,8 +201,19 @@ final class UnusedArguments: RewriteSyntaxRule<BasicRuleValue>, @unchecked Senda
     // MARK: - For Loops
 
     override func visit(_ node: ForStmtSyntax) -> StmtSyntax {
+        let parent = Syntax(node).parent
         let visited = super.visit(node)
-        guard var result = visited.as(ForStmtSyntax.self) else { return visited }
+        guard let concrete = visited.as(ForStmtSyntax.self) else { return visited }
+        return Self.transform(concrete, parent: parent, context: context)
+    }
+
+    static func transform(
+        _ node: ForStmtSyntax,
+        parent: Syntax?,
+        context: Context
+    ) -> StmtSyntax {
+        var result = node
+        let visited = StmtSyntax(node)
 
         // Skip pattern-matching for loops (for case ...)
         guard result.caseKeyword == nil else { return visited }
@@ -178,7 +229,7 @@ final class UnusedArguments: RewriteSyntaxRule<BasicRuleValue>, @unchecked Senda
             let usedInWhere = whereClause.map { isNameUsed(name, in: $0) } ?? false
             guard !usedInBody, !usedInWhere else { return visited }
 
-            diagnose(.unusedForLoopVariable(name), on: identPattern.identifier)
+            Self.diagnose(.unusedForLoopVariable(name), on: identPattern.identifier, context: context)
             result.pattern = PatternSyntax(
                 WildcardPatternSyntax(
                     wildcard: .wildcardToken(
@@ -199,7 +250,7 @@ final class UnusedArguments: RewriteSyntaxRule<BasicRuleValue>, @unchecked Senda
                 let usedInWhere = whereClause.map { isNameUsed(name, in: $0) } ?? false
                 guard !usedInBody, !usedInWhere else { continue }
 
-                diagnose(.unusedForLoopVariable(name), on: ident.identifier)
+                Self.diagnose(.unusedForLoopVariable(name), on: ident.identifier, context: context)
                 elements[
                     i] = element.with(
                         \.pattern,
@@ -227,7 +278,7 @@ final class UnusedArguments: RewriteSyntaxRule<BasicRuleValue>, @unchecked Senda
 
     /// Check if `name` is referenced as a variable (not member or label) anywhere in `syntax` ,
     /// excluding references shadowed by local declarations.
-    private func isNameUsed(_ name: String, in syntax: some SyntaxProtocol) -> Bool {
+    private static func isNameUsed(_ name: String, in syntax: some SyntaxProtocol) -> Bool {
         let boundaryID = Syntax(syntax).id
 
         // Check for shorthand optional bindings: `if let foo` is sugar for `if let foo = foo` and
@@ -257,7 +308,7 @@ final class UnusedArguments: RewriteSyntaxRule<BasicRuleValue>, @unchecked Senda
 
     /// Detect shorthand `if let name` / `guard let name` (no initializer) which implicitly
     /// references the outer variable.
-    private func hasShorthandBinding(
+    private static func hasShorthandBinding(
         _ name: String, in syntax: some SyntaxProtocol
     ) -> Bool {
         for child in syntax.children(viewMode: .sourceAccurate) {
@@ -273,7 +324,7 @@ final class UnusedArguments: RewriteSyntaxRule<BasicRuleValue>, @unchecked Senda
         return false
     }
 
-    private func matchesIdentifier(_ token: TokenSyntax, name: String) -> Bool {
+    private static func matchesIdentifier(_ token: TokenSyntax, name: String) -> Bool {
         switch token.tokenKind {
             case let .identifier(text):
                 if text == name { return true }
@@ -287,7 +338,7 @@ final class UnusedArguments: RewriteSyntaxRule<BasicRuleValue>, @unchecked Senda
     }
 
     /// Walk up from `ref` toward `boundaryID` , checking for shadowing declarations.
-    private func isShadowed(
+    private static func isShadowed(
         ref: DeclReferenceExprSyntax,
         name: String,
         boundaryID: SyntaxIdentifier
@@ -374,7 +425,7 @@ final class UnusedArguments: RewriteSyntaxRule<BasicRuleValue>, @unchecked Senda
 
     // MARK: - Shadow Helpers
 
-    private func statementDeclares(_ name: String, in stmt: CodeBlockItemSyntax) -> Bool {
+    private static func statementDeclares(_ name: String, in stmt: CodeBlockItemSyntax) -> Bool {
         if let varDecl = stmt.item.as(VariableDeclSyntax.self) {
             for binding in varDecl.bindings where patternContains(name, in: binding.pattern) {
                 return true
@@ -387,7 +438,7 @@ final class UnusedArguments: RewriteSyntaxRule<BasicRuleValue>, @unchecked Senda
         return false
     }
 
-    private func conditionBinds(_ name: String, in cond: ConditionElementSyntax) -> Bool {
+    private static func conditionBinds(_ name: String, in cond: ConditionElementSyntax) -> Bool {
         if let binding = cond.condition.as(OptionalBindingConditionSyntax.self) {
             patternContains(name, in: binding.pattern)
         } else if let matching = cond.condition.as(MatchingPatternConditionSyntax.self) {
@@ -397,7 +448,7 @@ final class UnusedArguments: RewriteSyntaxRule<BasicRuleValue>, @unchecked Senda
         }
     }
 
-    private func patternContains(_ name: String, in pattern: PatternSyntax) -> Bool {
+    private static func patternContains(_ name: String, in pattern: PatternSyntax) -> Bool {
         if let ident = pattern.as(IdentifierPatternSyntax.self) {
             ident.identifier.text == name
         } else if let tuple = pattern.as(TuplePatternSyntax.self) {
@@ -411,7 +462,7 @@ final class UnusedArguments: RewriteSyntaxRule<BasicRuleValue>, @unchecked Senda
         }
     }
 
-    private func expressionBinds(_ name: String, in expr: ExprSyntax) -> Bool {
+    private static func expressionBinds(_ name: String, in expr: ExprSyntax) -> Bool {
         if let call = expr.as(FunctionCallExprSyntax.self) {
             for arg in call.arguments {
                 if let patExpr = arg.expression.as(PatternExprSyntax.self) {
@@ -426,7 +477,7 @@ final class UnusedArguments: RewriteSyntaxRule<BasicRuleValue>, @unchecked Senda
         return false
     }
 
-    private func closureBinds(_ name: String, in closure: ClosureExprSyntax) -> Bool {
+    private static func closureBinds(_ name: String, in closure: ClosureExprSyntax) -> Bool {
         if let signature = closure.signature, let paramClause = signature.parameterClause {
             switch paramClause {
                 case let .simpleInput(params): params.contains { $0.name.text == name }
@@ -446,14 +497,14 @@ final class UnusedArguments: RewriteSyntaxRule<BasicRuleValue>, @unchecked Senda
 
     // MARK: - Parameter Name Extraction
 
-    private func internalName(of param: FunctionParameterSyntax) -> String? {
+    private static func internalName(of param: FunctionParameterSyntax) -> String? {
         if let secondName = param.secondName {
             return secondName.text == "_" ? nil : secondName.text
         }
         return param.firstName.text == "_" ? nil : param.firstName.text
     }
 
-    private func internalClosureName(of param: ClosureParameterSyntax) -> String? {
+    private static func internalClosureName(of param: ClosureParameterSyntax) -> String? {
         if let secondName = param.secondName {
             return secondName.text == "_" ? nil : secondName.text
         }
@@ -462,7 +513,7 @@ final class UnusedArguments: RewriteSyntaxRule<BasicRuleValue>, @unchecked Senda
 
     // MARK: - Parameter Modification
 
-    private func markUnused(
+    private static func markUnused(
         _ param: FunctionParameterSyntax,
         isOperator: Bool
     ) -> FunctionParameterSyntax {
@@ -498,7 +549,7 @@ final class UnusedArguments: RewriteSyntaxRule<BasicRuleValue>, @unchecked Senda
         return result
     }
 
-    private func markClosureUnused(
+    private static func markClosureUnused(
         _ param: ClosureParameterSyntax
     ) -> ClosureParameterSyntax {
         var result = param
@@ -527,7 +578,7 @@ final class UnusedArguments: RewriteSyntaxRule<BasicRuleValue>, @unchecked Senda
 
     // MARK: - Subscript Helpers
 
-    private func isSubscriptParamUsed(
+    private static func isSubscriptParamUsed(
         _ name: String, in sub: SubscriptDeclSyntax
     ) -> Bool {
         guard let accessorBlock = sub.accessorBlock else { return false }

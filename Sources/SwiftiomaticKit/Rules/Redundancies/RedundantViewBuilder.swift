@@ -25,6 +25,14 @@ final class RedundantViewBuilder: RewriteSyntaxRule<BasicRuleValue>, @unchecked 
   override class var defaultValue: BasicRuleValue { BasicRuleValue(rewrite: false, lint: .no) }
 
   override func visit(_ node: VariableDeclSyntax) -> DeclSyntax {
+    Self.transform(node, parent: Syntax(node).parent, context: context)
+  }
+
+  static func transform(
+    _ node: VariableDeclSyntax,
+    parent: Syntax?,
+    context: Context
+  ) -> DeclSyntax {
     guard let viewBuilderAttr = node.attributes.attribute(named: "ViewBuilder") else {
       return DeclSyntax(node)
     }
@@ -44,7 +52,7 @@ final class RedundantViewBuilder: RewriteSyntaxRule<BasicRuleValue>, @unchecked 
       return DeclSyntax(node)
     }
 
-    diagnose(.removeRedundantViewBuilder, on: viewBuilderAttr)
+    Self.diagnose(.removeRedundantViewBuilder, on: viewBuilderAttr, context: context)
     var result = node
     let savedTrivia = viewBuilderAttr.leadingTrivia
     result.attributes = node.attributes.removing(named: "ViewBuilder")
@@ -56,6 +64,14 @@ final class RedundantViewBuilder: RewriteSyntaxRule<BasicRuleValue>, @unchecked 
   }
 
   override func visit(_ node: FunctionDeclSyntax) -> DeclSyntax {
+    Self.transform(node, parent: Syntax(node).parent, context: context)
+  }
+
+  static func transform(
+    _ node: FunctionDeclSyntax,
+    parent: Syntax?,
+    context: Context
+  ) -> DeclSyntax {
     guard let viewBuilderAttr = node.attributes.attribute(named: "ViewBuilder") else {
       return DeclSyntax(node)
     }
@@ -69,7 +85,7 @@ final class RedundantViewBuilder: RewriteSyntaxRule<BasicRuleValue>, @unchecked 
       return DeclSyntax(node)
     }
 
-    diagnose(.removeRedundantViewBuilder, on: viewBuilderAttr)
+    Self.diagnose(.removeRedundantViewBuilder, on: viewBuilderAttr, context: context)
     var result = node
     let savedTrivia = viewBuilderAttr.leadingTrivia
     result.attributes = node.attributes.removing(named: "ViewBuilder")
@@ -85,7 +101,7 @@ final class RedundantViewBuilder: RewriteSyntaxRule<BasicRuleValue>, @unchecked 
   }
 
   /// Returns `true` if the code block contains exactly one expression statement.
-  private func isSingleExpression(_ statements: CodeBlockItemListSyntax) -> Bool {
+  private static func isSingleExpression(_ statements: CodeBlockItemListSyntax) -> Bool {
     guard statements.count == 1 else { return false }
     guard let item = statements.first else { return false }
     // Must be a single expression, not a declaration or control flow statement.

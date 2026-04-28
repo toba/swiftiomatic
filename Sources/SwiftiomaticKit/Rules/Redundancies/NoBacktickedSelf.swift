@@ -14,6 +14,14 @@ final class NoBacktickedSelf: RewriteSyntaxRule<BasicRuleValue>, @unchecked Send
     override func visit(
         _ node: OptionalBindingConditionSyntax
     ) -> OptionalBindingConditionSyntax {
+        Self.transform(node, parent: Syntax(node).parent, context: context)
+    }
+
+    static func transform(
+        _ node: OptionalBindingConditionSyntax,
+        parent: Syntax?,
+        context: Context
+    ) -> OptionalBindingConditionSyntax {
         // Match: let `self` = self
         guard let identifierPattern = node.pattern.as(IdentifierPatternSyntax.self),
               case let .identifier(text) = identifierPattern.identifier.tokenKind,
@@ -25,7 +33,7 @@ final class NoBacktickedSelf: RewriteSyntaxRule<BasicRuleValue>, @unchecked Send
             return node
         }
 
-        diagnose(.removeBackticksAroundSelf, on: identifierPattern.identifier)
+        Self.diagnose(.removeBackticksAroundSelf, on: identifierPattern.identifier, context: context)
 
         var result = node
         let newIdentifier = identifierPattern.identifier.with(\.tokenKind, .identifier("self"))

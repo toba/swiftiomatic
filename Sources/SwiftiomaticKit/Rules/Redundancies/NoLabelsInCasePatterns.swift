@@ -24,6 +24,14 @@ import SwiftSyntax
 final class NoLabelsInCasePatterns: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable {
     override class var group: ConfigurationGroup? { .redundancies }
     override func visit(_ node: SwitchCaseLabelSyntax) -> SwitchCaseLabelSyntax {
+        Self.transform(node, parent: Syntax(node).parent, context: context)
+    }
+
+    static func transform(
+        _ node: SwitchCaseLabelSyntax,
+        parent: Syntax?,
+        context: Context
+    ) -> SwitchCaseLabelSyntax {
         var newCaseItems: [SwitchCaseItemSyntax] = []
 
         for item in node.caseItems {
@@ -53,7 +61,7 @@ final class NoLabelsInCasePatterns: RewriteSyntaxRule<BasicRuleValue>, @unchecke
                     newArguments.append(argument)
                     continue
                 }
-                diagnose(.removeRedundantLabel(name: name), on: label)
+                Self.diagnose(.removeRedundantLabel(name: name), on: label, context: context)
 
                 var newArgument = argument
                 newArgument.label = nil

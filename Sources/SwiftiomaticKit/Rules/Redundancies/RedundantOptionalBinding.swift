@@ -26,6 +26,14 @@ final class RedundantOptionalBinding: RewriteSyntaxRule<BasicRuleValue>, @unchec
   override class var group: ConfigurationGroup? { .redundancies }
 
   override func visit(_ node: OptionalBindingConditionSyntax) -> OptionalBindingConditionSyntax {
+    Self.transform(node, parent: Syntax(node).parent, context: context)
+  }
+
+  static func transform(
+    _ node: OptionalBindingConditionSyntax,
+    parent: Syntax?,
+    context: Context
+  ) -> OptionalBindingConditionSyntax {
     guard let initializer = node.initializer,
       let identifierPattern = node.pattern.as(IdentifierPatternSyntax.self),
       let declRef = initializer.value.as(DeclReferenceExprSyntax.self),
@@ -36,7 +44,7 @@ final class RedundantOptionalBinding: RewriteSyntaxRule<BasicRuleValue>, @unchec
       return node
     }
 
-    diagnose(.removeRedundantOptionalBinding(name: identifierPattern.identifier.text), on: initializer)
+    Self.diagnose(.removeRedundantOptionalBinding(name: identifierPattern.identifier.text), on: initializer, context: context)
 
     var result = node
     result.initializer = nil

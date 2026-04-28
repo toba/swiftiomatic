@@ -17,6 +17,14 @@ final class RedundantThrows: RewriteSyntaxRule<BasicRuleValue>, @unchecked Senda
   override class var defaultValue: BasicRuleValue { BasicRuleValue(rewrite: false, lint: .no) }
 
   override func visit(_ node: FunctionDeclSyntax) -> DeclSyntax {
+    Self.transform(node, parent: Syntax(node).parent, context: context)
+  }
+
+  static func transform(
+    _ node: FunctionDeclSyntax,
+    parent: Syntax?,
+    context: Context
+  ) -> DeclSyntax {
     guard let effectSpecifiers = node.signature.effectSpecifiers,
       let throwsClause = effectSpecifiers.throwsClause,
       let body = node.body
@@ -28,7 +36,7 @@ final class RedundantThrows: RewriteSyntaxRule<BasicRuleValue>, @unchecked Senda
       return DeclSyntax(node)
     }
 
-    diagnose(.removeRedundantThrows, on: throwsClause)
+    Self.diagnose(.removeRedundantThrows, on: throwsClause, context: context)
 
     var newEffectSpecifiers = effectSpecifiers
     newEffectSpecifiers.throwsClause = nil
@@ -44,7 +52,7 @@ final class RedundantThrows: RewriteSyntaxRule<BasicRuleValue>, @unchecked Senda
 
   /// Returns `true` if the syntax tree contains a `throw` statement or `try` expression,
   /// stopping at nested function/closure boundaries.
-  private func containsThrowOrTry(_ node: some SyntaxProtocol) -> Bool {
+  private static func containsThrowOrTry(_ node: some SyntaxProtocol) -> Bool {
     for child in node.children(viewMode: .sourceAccurate) {
       if child.is(FunctionDeclSyntax.self) || child.is(ClosureExprSyntax.self) {
         continue

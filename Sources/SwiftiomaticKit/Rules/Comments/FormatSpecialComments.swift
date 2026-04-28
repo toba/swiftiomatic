@@ -13,6 +13,14 @@ final class FormatSpecialComments: RewriteSyntaxRule<BasicRuleValue>, @unchecked
     override static var group: ConfigurationGroup? { .comments }
 
     override func visit(_ token: TokenSyntax) -> TokenSyntax {
+        Self.transform(token, parent: Syntax(token).parent, context: context)
+    }
+
+    static func transform(
+        _ token: TokenSyntax,
+        parent: Syntax?,
+        context: Context
+    ) -> TokenSyntax {
         var result = token
         var leadingPieces = Array(token.leadingTrivia.pieces)
         var trailingPieces = Array(token.trailingTrivia.pieces)
@@ -23,7 +31,7 @@ final class FormatSpecialComments: RewriteSyntaxRule<BasicRuleValue>, @unchecked
             if let fixed = fixTriviaPiece(piece, index: index, pieces: leadingPieces) {
                 leadingPieces[index] = fixed
                 leadingChanged = true
-                diagnose(.formatTodoComment, on: token, anchor: .leadingTrivia(index))
+                Self.diagnose(.formatTodoComment, on: token, context: context, anchor: .leadingTrivia(index))
             }
         }
 
@@ -31,7 +39,7 @@ final class FormatSpecialComments: RewriteSyntaxRule<BasicRuleValue>, @unchecked
             if let fixed = fixTriviaPiece(piece, index: index, pieces: trailingPieces) {
                 trailingPieces[index] = fixed
                 trailingChanged = true
-                diagnose(.formatTodoComment, on: token, anchor: .trailingTrivia(index))
+                Self.diagnose(.formatTodoComment, on: token, context: context, anchor: .trailingTrivia(index))
             }
         }
 
@@ -43,7 +51,7 @@ final class FormatSpecialComments: RewriteSyntaxRule<BasicRuleValue>, @unchecked
     }
 
     /// Fix a single trivia piece if it contains a TODO/MARK/FIXME comment needing formatting.
-    private func fixTriviaPiece(
+    private static func fixTriviaPiece(
         _ piece: TriviaPiece,
         index: Int,
         pieces: [TriviaPiece]
@@ -71,7 +79,7 @@ final class FormatSpecialComments: RewriteSyntaxRule<BasicRuleValue>, @unchecked
     // MARK: - Line Comments
 
     /// Fix a `// ...` comment for TODO/MARK/FIXME formatting.
-    private func fixLineComment(_ text: String) -> String? {
+    private static func fixLineComment(_ text: String) -> String? {
         guard text.hasPrefix("//") else { return nil }
         let afterSlashes = text.dropFirst(2)
         let spaces = afterSlashes.prefix(while: { $0 == " " })
@@ -85,7 +93,7 @@ final class FormatSpecialComments: RewriteSyntaxRule<BasicRuleValue>, @unchecked
     // MARK: - Block Comments
 
     /// Fix a `/* ... */` comment for TODO/MARK/FIXME formatting.
-    private func fixBlockComment(_ text: String) -> String? {
+    private static func fixBlockComment(_ text: String) -> String? {
         guard text.hasPrefix("/*"), text.hasSuffix("*/") else { return nil }
         let inner = text.dropFirst(2).dropLast(2)
         // Only handle single-line block comments
@@ -106,7 +114,7 @@ final class FormatSpecialComments: RewriteSyntaxRule<BasicRuleValue>, @unchecked
     // MARK: - Doc Line Comments
 
     /// Fix a standalone `/// ...` comment by converting to `// ...` if it contains a tag.
-    private func fixDocLineComment(_ text: String) -> String? {
+    private static func fixDocLineComment(_ text: String) -> String? {
         guard text.hasPrefix("///") else { return nil }
         let afterSlashes = text.dropFirst(3)
         let spaces = afterSlashes.prefix(while: { $0 == " " })
@@ -122,7 +130,7 @@ final class FormatSpecialComments: RewriteSyntaxRule<BasicRuleValue>, @unchecked
     }
 
     /// Check whether a doc line comment at the given index is part of a multi-line `///` block.
-    private func isPartOfDocBlock(index: Int, pieces: [TriviaPiece]) -> Bool {
+    private static func isPartOfDocBlock(index: Int, pieces: [TriviaPiece]) -> Bool {
         // Check before
         for j in stride(from: index - 1, through: 0, by: -1) {
             switch pieces[j] {
@@ -153,7 +161,7 @@ final class FormatSpecialComments: RewriteSyntaxRule<BasicRuleValue>, @unchecked
     // MARK: - Comment Body Formatting
 
     /// Check if a comment body starts with a recognized tag (case-insensitive).
-    private func bodyStartsWithTag(_ body: String) -> Bool {
+    private static func bodyStartsWithTag(_ body: String) -> Bool {
         let lowered = body.lowercased()
         return ["todo", "fixme", "mark"].contains { tag in
             guard lowered.hasPrefix(tag) else { return false }
@@ -164,7 +172,7 @@ final class FormatSpecialComments: RewriteSyntaxRule<BasicRuleValue>, @unchecked
 
     /// Fix the body of a comment (after prefix and leading spaces) for tag formatting.
     /// Returns the fixed body, or nil if no change needed.
-    private func fixCommentBody(_ body: String) -> String? {
+    private static func fixCommentBody(_ body: String) -> String? {
         var normalized = body
 
         // Apply prefix replacements for tag normalization (case-insensitive)

@@ -20,18 +20,26 @@ final class RedundantClosure: RewriteSyntaxRule<BasicRuleValue>, @unchecked Send
     override class var group: ConfigurationGroup? { .redundancies }
 
     override func visit(_ node: FunctionCallExprSyntax) -> ExprSyntax {
+        let parent = Syntax(node).parent
         let visited = super.visit(node)
-        guard let callNode = visited.as(FunctionCallExprSyntax.self) else { return visited }
+        guard let concrete = visited.as(FunctionCallExprSyntax.self) else { return visited }
+        return Self.transform(concrete, parent: parent, context: context)
+    }
 
+    static func transform(
+        _ callNode: FunctionCallExprSyntax,
+        parent: Syntax?,
+        context: Context
+    ) -> ExprSyntax {
         // Must be a closure called with no arguments: `{ ... }()`
         guard let closureExpr = callNode.calledExpression.as(ClosureExprSyntax.self),
             callNode.arguments.isEmpty,
             callNode.additionalTrailingClosures.isEmpty,
             closureExpr.signature == nil
-        else { return visited }
+        else { return ExprSyntax(callNode) }
 
         // Must have exactly one statement
-        guard let onlyItem = closureExpr.statements.firstAndOnly else { return visited }
+        guard let onlyItem = closureExpr.statements.firstAndOnly else { return ExprSyntax(callNode) }
 
         // Extract the single expression (strip `return` if present)
         let innerExpr: ExprSyntax
@@ -44,20 +52,20 @@ final class RedundantClosure: RewriteSyntaxRule<BasicRuleValue>, @unchecked Send
         } else if let expr = onlyItem.item.as(ExprSyntax.self) {
             innerExpr = expr
         } else {
-            return visited
+            return ExprSyntax(callNode)
         }
 
         // Skip closures that call fatalError/preconditionFailure or throw
-        if containsNeverOrThrow(innerExpr) { return visited }
+        if containsNeverOrThrow(innerExpr) { return ExprSyntax(callNode) }
 
-        // Skip closures wrapped in try/await (complex interaction)
-        if node.parent?.as(TryExprSyntax.self) != nil
-            || node.parent?.as(AwaitExprSyntax.self) != nil
+        // Skip closures wrapped in try/await (complex interaction). Use captured pre-recursion parent.
+        if parent?.as(TryExprSyntax.self) != nil
+            || parent?.as(AwaitExprSyntax.self) != nil
         {
-            return visited
+            return ExprSyntax(callNode)
         }
 
-        diagnose(.removeRedundantClosure, on: closureExpr.leftBrace)
+        Self.diagnose(.removeRedundantClosure, on: closureExpr.leftBrace, context: context)
 
         // Replace { expr }() with expr, transferring boundary trivia
         var result = innerExpr.trimmed
@@ -68,7 +76,7 @@ final class RedundantClosure: RewriteSyntaxRule<BasicRuleValue>, @unchecked Send
 
     // MARK: - Helpers
 
-    private func containsNeverOrThrow(_ expr: ExprSyntax) -> Bool {
+    private static func containsNeverOrThrow(_ expr: ExprSyntax) -> Bool {
         if let call = expr.as(FunctionCallExprSyntax.self),
             let ref = call.calledExpression.as(DeclReferenceExprSyntax.self)
         {

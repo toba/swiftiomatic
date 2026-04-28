@@ -19,8 +19,16 @@ final class RedundantEquatable: RewriteSyntaxRule<BasicRuleValue>, @unchecked Se
     override class var group: ConfigurationGroup? { .redundancies }
 
     override func visit(_ node: StructDeclSyntax) -> DeclSyntax {
+        let parent = Syntax(node).parent
         let visited = super.visit(node).cast(StructDeclSyntax.self)
+        return Self.transform(visited, parent: parent, context: context)
+    }
 
+    static func transform(
+        _ visited: StructDeclSyntax,
+        parent: Syntax?,
+        context: Context
+    ) -> DeclSyntax {
         guard let inheritanceClause = visited.inheritanceClause,
             inheritanceClause.contains(named: "Equatable")
                 || inheritanceClause.contains(named: "Hashable")
@@ -29,7 +37,7 @@ final class RedundantEquatable: RewriteSyntaxRule<BasicRuleValue>, @unchecked Se
         guard let removal = findRemovableEquatable(in: visited.memberBlock.members)
         else { return DeclSyntax(visited) }
 
-        diagnose(.removeRedundantEquatable, on: removal.funcDecl)
+        Self.diagnose(.removeRedundantEquatable, on: removal.funcDecl, context: context)
 
         var result = visited
         result.memberBlock.members = removeItem(
@@ -46,7 +54,7 @@ final class RedundantEquatable: RewriteSyntaxRule<BasicRuleValue>, @unchecked Se
         let memberIndex: Int
     }
 
-    private func findRemovableEquatable(
+    private static func findRemovableEquatable(
         in members: MemberBlockItemListSyntax
     ) -> RemovableEquatable? {
         let storedProps = collectStoredPropertyNames(from: members)
@@ -72,7 +80,7 @@ final class RedundantEquatable: RewriteSyntaxRule<BasicRuleValue>, @unchecked Se
 
     // MARK: - Stored properties
 
-    private func collectStoredPropertyNames(
+    private static func collectStoredPropertyNames(
         from members: MemberBlockItemListSyntax
     ) -> Set<String> {
         var props = Set<String>()
@@ -106,7 +114,7 @@ final class RedundantEquatable: RewriteSyntaxRule<BasicRuleValue>, @unchecked Se
 
     // MARK: - Equatable function detection
 
-    private func isEquatableOperator(_ funcDecl: FunctionDeclSyntax) -> Bool {
+    private static func isEquatableOperator(_ funcDecl: FunctionDeclSyntax) -> Bool {
         guard funcDecl.name.tokenKind == .binaryOperator("=="),
             funcDecl.modifiers.contains(anyOf: [.static])
         else { return false }
@@ -129,7 +137,7 @@ final class RedundantEquatable: RewriteSyntaxRule<BasicRuleValue>, @unchecked Se
 
     // MARK: - Parse compared properties
 
-    private func parseComparedProperties(
+    private static func parseComparedProperties(
         from funcDecl: FunctionDeclSyntax
     ) -> Set<String>? {
         guard let body = funcDecl.body,
@@ -154,7 +162,7 @@ final class RedundantEquatable: RewriteSyntaxRule<BasicRuleValue>, @unchecked Se
         return props
     }
 
-    private func parseComparisons(
+    private static func parseComparisons(
         _ expr: ExprSyntax,
         into props: inout Set<String>
     ) -> Bool {
@@ -196,7 +204,7 @@ final class RedundantEquatable: RewriteSyntaxRule<BasicRuleValue>, @unchecked Se
 
     // MARK: - Member removal
 
-    private func removeItem(
+    private static func removeItem(
         at targetIndex: Int,
         from members: MemberBlockItemListSyntax
     ) -> MemberBlockItemListSyntax {

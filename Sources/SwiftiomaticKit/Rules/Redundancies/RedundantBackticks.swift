@@ -51,6 +51,14 @@ final class RedundantBackticks: RewriteSyntaxRule<BasicRuleValue>, @unchecked Se
     private static let neverUnescaped: Set<String> = ["_", "$"]
 
     override func visit(_ token: TokenSyntax) -> TokenSyntax {
+        Self.transform(token, parent: Syntax(token).parent, context: context)
+    }
+
+    static func transform(
+        _ token: TokenSyntax,
+        parent: Syntax?,
+        context: Context
+    ) -> TokenSyntax {
         guard case let .identifier(text) = token.tokenKind,
               text.hasPrefix("`"), text.hasSuffix("`"), text.count > 2 else { return token }
 
@@ -62,18 +70,19 @@ final class RedundantBackticks: RewriteSyntaxRule<BasicRuleValue>, @unchecked Se
         // `_` and `$` always need backticks.
         guard !Self.neverUnescaped.contains(bareName) else { return token }
 
-        guard !backticksRequired(for: bareName, token: token) else { return token }
+        guard !backticksRequired(for: bareName, token: token, parent: parent) else { return token }
 
-        diagnose(.removeRedundantBackticks(name: bareName), on: token)
+        Self.diagnose(.removeRedundantBackticks(name: bareName), on: token, context: context)
         return token.with(\.tokenKind, .identifier(bareName))
     }
 
     // MARK: - Context analysis
 
     /// Determines if backticks are required for the given bare name at the given token position.
-    private func backticksRequired(for bareName: String, token: TokenSyntax) -> Bool {
+    /// `parent` is the captured pre-recursion parent of `token` (post-recursion `token.parent` is nil).
+    private static func backticksRequired(for bareName: String, token: TokenSyntax, parent: Syntax?) -> Bool {
         // After `.` (member access): most keywords become identifiers.
-        if isAfterDot(token) { return Self.specialAfterDot.contains(bareName) }
+        if isAfterDot(token, parent: parent) { return Self.specialAfterDot.contains(bareName) }
 
         // After `::` (module selector): most keywords become identifiers.
         if isAfterModuleSelector(token) {
@@ -82,24 +91,24 @@ final class RedundantBackticks: RewriteSyntaxRule<BasicRuleValue>, @unchecked Se
 
         // In function/init/subscript argument label position: most keywords can be used without
         // backticks, but expression keywords and binding specifiers still need them.
-        if isArgumentLabel(token) {
+        if isArgumentLabel(token, parent: parent) {
             return Self.keywordsRequiringBackticksAsLabels.contains(bareName)
         }
 
         // Accessor keywords in accessor contexts need backticks regardless of keyword status.
-        if isAccessorKeyword(bareName), isInAccessorContext(token) { return true }
+        if isAccessorKeyword(bareName), isInAccessorContext(parent: parent) { return true }
 
         // Not a reserved keyword — check contextual keyword cases.
         if !Self.swiftKeywords.contains(bareName) {
             // `Any` in enum case declarations needs backticks.
-            if bareName == "Any", isInEnumCaseDecl(token) { return true }
+            if bareName == "Any", isInEnumCaseDecl(parent: parent) { return true }
 
             // `Type` inside a type declaration needs backticks (metatype conflict).
-            if bareName == "Type", isInsideTypeDeclaration(token) { return true }
+            if bareName == "Type", isInsideTypeDeclaration(parent: parent) { return true }
 
             // Contextual keywords like `actor` need backticks in declaration name position
             // (variable binding, function name) where the parser would see them as keywords.
-            if Self.contextualKeywordsInDeclPosition.contains(bareName), isDeclarationName(token) {
+            if Self.contextualKeywordsInDeclPosition.contains(bareName), isDeclarationName(token, parent: parent) {
                 return true
             }
 
@@ -108,11 +117,11 @@ final class RedundantBackticks: RewriteSyntaxRule<BasicRuleValue>, @unchecked Se
 
         // From here: bareName is a reserved keyword in a non-special position. `self` in variable
         // binding position (e.g., `let ` self `: URL` ): needs backticks.
-        if bareName == "self", isPropertyOrVariableBinding(token) { return true }
+        if bareName == "self", isPropertyOrVariableBinding(parent: parent) { return true }
 
         // `Self` and `Any` in type annotation position don't need backticks.
         if bareName == "Self" || bareName == "Any",
-           isInTypeAnnotationOrReturnPosition(token)
+           isInTypeAnnotationOrReturnPosition(parent: parent)
         {
             return false
         }
@@ -124,10 +133,11 @@ final class RedundantBackticks: RewriteSyntaxRule<BasicRuleValue>, @unchecked Se
     // MARK: - Position checks
 
     /// Token is after a `.` in member access (expression or type).
-    private func isAfterDot(_ token: TokenSyntax) -> Bool {
+    /// `parent` is the captured pre-recursion parent of `token`.
+    private static func isAfterDot(_ token: TokenSyntax, parent: Syntax?) -> Bool {
         // Expression member access: Foo.bar — only the `declName` (after the dot) qualifies, not
         // the `base` (before the dot).
-        if let declRef = token.parent?.as(DeclReferenceExprSyntax.self),
+        if let declRef = parent?.as(DeclReferenceExprSyntax.self),
            declRef.baseName.id == token.id
         {
             if let memberAccess = declRef.parent?.as(MemberAccessExprSyntax.self),
@@ -140,7 +150,7 @@ final class RedundantBackticks: RewriteSyntaxRule<BasicRuleValue>, @unchecked Se
             }
         }
         // Type member access: Foo.Type, Foo.Protocol
-        if let memberType = token.parent?.as(MemberTypeSyntax.self),
+        if let memberType = parent?.as(MemberTypeSyntax.self),
            memberType.name.id == token.id
         {
             return true
@@ -149,7 +159,7 @@ final class RedundantBackticks: RewriteSyntaxRule<BasicRuleValue>, @unchecked Se
     }
 
     /// Token is after a `::` module selector operator.
-    private func isAfterModuleSelector(_ token: TokenSyntax) -> Bool {
+    private static func isAfterModuleSelector(_ token: TokenSyntax) -> Bool {
         guard let prevToken = token.previousToken(viewMode: .sourceAccurate) else { return false }
         return prevToken.tokenKind == .colonColon
             || prevToken.text == "::"
@@ -157,10 +167,10 @@ final class RedundantBackticks: RewriteSyntaxRule<BasicRuleValue>, @unchecked Se
 
     /// Token is a function/init/subscript parameter label (firstName or secondName with a following
     /// `:` ).
-    private func isArgumentLabel(_ token: TokenSyntax) -> Bool {
-        if let param = token.parent?.as(FunctionParameterSyntax.self) {
+    private static func isArgumentLabel(_ token: TokenSyntax, parent: Syntax?) -> Bool {
+        if let param = parent?.as(FunctionParameterSyntax.self) {
             param.firstName.id == token.id || param.secondName?.id == token.id
-        } else if let param = token.parent?.as(EnumCaseParameterSyntax.self) {
+        } else if let param = parent?.as(EnumCaseParameterSyntax.self) {
             param.firstName?.id == token.id || param.secondName?.id == token.id
         } else {
             false
@@ -168,42 +178,42 @@ final class RedundantBackticks: RewriteSyntaxRule<BasicRuleValue>, @unchecked Se
     }
 
     /// Token is `Self` or `Any` in a type annotation (after `:` or `->` ) position.
-    private func isInTypeAnnotationOrReturnPosition(_ token: TokenSyntax) -> Bool {
+    private static func isInTypeAnnotationOrReturnPosition(parent: Syntax?) -> Bool {
         // Check if this identifier is used as a type name. The token would be inside an
         // IdentifierTypeSyntax that's a child of TypeAnnotationSyntax or ReturnClauseSyntax.
-        guard let identType = token.parent?.as(IdentifierTypeSyntax.self) else { return false }
-        let context = identType.parent
-        return context?.is(TypeAnnotationSyntax.self) == true
-            || context?.is(ReturnClauseSyntax.self) == true
-            || context?.is(FunctionParameterSyntax.self) == true
+        guard let identType = parent?.as(IdentifierTypeSyntax.self) else { return false }
+        let ctx = identType.parent
+        return ctx?.is(TypeAnnotationSyntax.self) == true
+            || ctx?.is(ReturnClauseSyntax.self) == true
+            || ctx?.is(FunctionParameterSyntax.self) == true
     }
 
     /// Token is in a property or variable binding pattern (e.g., `let ` self `: URL` ).
-    private func isPropertyOrVariableBinding(_ token: TokenSyntax) -> Bool {
-        token.parent?.is(IdentifierPatternSyntax.self) == true
+    private static func isPropertyOrVariableBinding(parent: Syntax?) -> Bool {
+        parent?.is(IdentifierPatternSyntax.self) == true
     }
 
     /// Token is a declaration name (variable binding, function name, type name, enum case).
-    private func isDeclarationName(_ token: TokenSyntax) -> Bool {
-        if token.parent?.is(IdentifierPatternSyntax.self) == true {
+    private static func isDeclarationName(_ token: TokenSyntax, parent: Syntax?) -> Bool {
+        if parent?.is(IdentifierPatternSyntax.self) == true {
             true
-        } else if let funcDecl = token.parent?.as(FunctionDeclSyntax.self),
+        } else if let funcDecl = parent?.as(FunctionDeclSyntax.self),
            funcDecl.name.id == token.id
         {
             true
-        } else if let classDecl = token.parent?.as(ClassDeclSyntax.self),
+        } else if let classDecl = parent?.as(ClassDeclSyntax.self),
            classDecl.name.id == token.id
         {
             true
-        } else if let structDecl = token.parent?.as(StructDeclSyntax.self),
+        } else if let structDecl = parent?.as(StructDeclSyntax.self),
            structDecl.name.id == token.id
         {
             true
-        } else if let enumDecl = token.parent?.as(EnumDeclSyntax.self),
+        } else if let enumDecl = parent?.as(EnumDeclSyntax.self),
            enumDecl.name.id == token.id
         {
             true
-        } else if let actorDecl = token.parent?.as(ActorDeclSyntax.self),
+        } else if let actorDecl = parent?.as(ActorDeclSyntax.self),
            actorDecl.name.id == token.id
         {
             true
@@ -213,25 +223,26 @@ final class RedundantBackticks: RewriteSyntaxRule<BasicRuleValue>, @unchecked Se
     }
 
     /// Token is inside a type's member block (not the type's own name).
-    private func isInsideTypeDeclaration(_ token: TokenSyntax) -> Bool {
-        var current: Syntax? = Syntax(token)
-        while let parent = current?.parent {
+    /// Walks the captured pre-recursion parent chain.
+    private static func isInsideTypeDeclaration(parent: Syntax?) -> Bool {
+        var current = parent
+        while let p = current {
             // A MemberBlockSyntax means we're inside a type body.
-            if parent.is(MemberBlockSyntax.self) { return true }
+            if p.is(MemberBlockSyntax.self) { return true }
             // Stop at source file level.
-            if parent.is(SourceFileSyntax.self) { return false }
-            current = parent
+            if p.is(SourceFileSyntax.self) { return false }
+            current = p.parent
         }
         return false
     }
 
     /// Token is the name in an enum case declaration.
-    private func isInEnumCaseDecl(_ token: TokenSyntax) -> Bool {
-        token.parent?.is(EnumCaseElementSyntax.self) == true
+    private static func isInEnumCaseDecl(parent: Syntax?) -> Bool {
+        parent?.is(EnumCaseElementSyntax.self) == true
     }
 
     /// Whether the name is an accessor keyword that becomes reserved in accessor contexts.
-    private func isAccessorKeyword(_ name: String) -> Bool {
+    private static func isAccessorKeyword(_ name: String) -> Bool {
         switch name {
             case "get", "set", "willSet", "didSet", "_modify": true
             default: false
@@ -239,21 +250,22 @@ final class RedundantBackticks: RewriteSyntaxRule<BasicRuleValue>, @unchecked Se
     }
 
     /// Token is inside an accessor block (computed property, subscript).
-    private func isInAccessorContext(_ token: TokenSyntax) -> Bool {
-        var current: Syntax? = Syntax(token)
-        while let parent = current?.parent {
-            if parent.is(AccessorBlockSyntax.self) { return true }
-            if parent.is(FunctionDeclSyntax.self) || parent.is(ClosureExprSyntax.self) {
+    /// Walks the captured pre-recursion parent chain.
+    private static func isInAccessorContext(parent: Syntax?) -> Bool {
+        var current = parent
+        while let p = current {
+            if p.is(AccessorBlockSyntax.self) { return true }
+            if p.is(FunctionDeclSyntax.self) || p.is(ClosureExprSyntax.self) {
                 return false
             }
-            current = parent
+            current = p.parent
         }
         return false
     }
 
     /// Checks if a bare name is a valid Swift identifier (no spaces, starts with letter/underscore,
     /// etc).
-    private func isValidBareIdentifier(_ name: String) -> Bool {
+    private static func isValidBareIdentifier(_ name: String) -> Bool {
         guard let first = name.unicodeScalars.first else { return false }
         guard first == "_" || first.properties.isXIDStart else { return false }
         return name.unicodeScalars.dropFirst().allSatisfy {

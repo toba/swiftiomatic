@@ -27,14 +27,22 @@ final class RedundantLetError: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sen
   override class var group: ConfigurationGroup? { .redundancies }
 
   override func visit(_ node: CatchClauseSyntax) -> CatchClauseSyntax {
+    Self.transform(super.visit(node), parent: Syntax(node).parent, context: context)
+  }
+
+  static func transform(
+    _ node: CatchClauseSyntax,
+    parent: Syntax?,
+    context: Context
+  ) -> CatchClauseSyntax {
     // Must have exactly one catch item.
     guard node.catchItems.count == 1, let catchItem = node.catchItems.first else {
-      return super.visit(node)
+      return node
     }
 
     // Must have no where clause.
     guard catchItem.whereClause == nil else {
-      return super.visit(node)
+      return node
     }
 
     // Pattern must be `let error`.
@@ -44,10 +52,10 @@ final class RedundantLetError: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sen
       let identifier = valueBinding.pattern.as(IdentifierPatternSyntax.self),
       identifier.identifier.text == "error"
     else {
-      return super.visit(node)
+      return node
     }
 
-    diagnose(.removeRedundantLetError, on: pattern)
+    Self.diagnose(.removeRedundantLetError, on: pattern, context: context)
 
     // Remove the catch items, leaving a bare `catch { ... }`.
     var newNode = node

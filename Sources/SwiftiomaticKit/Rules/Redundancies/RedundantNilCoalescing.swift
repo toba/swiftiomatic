@@ -11,14 +11,25 @@ final class RedundantNilCoalescing: RewriteSyntaxRule<BasicRuleValue>, @unchecke
     override class var group: ConfigurationGroup? { .redundancies }
 
     override func visit(_ node: InfixOperatorExprSyntax) -> ExprSyntax {
+        let parent = Syntax(node).parent
+        let visited = super.visit(node)
+        guard let concrete = visited.as(InfixOperatorExprSyntax.self) else { return visited }
+        return Self.transform(concrete, parent: parent, context: context)
+    }
+
+    static func transform(
+        _ node: InfixOperatorExprSyntax,
+        parent: Syntax?,
+        context: Context
+    ) -> ExprSyntax {
         guard let op = node.operator.as(BinaryOperatorExprSyntax.self),
             op.operator.tokenKind == .binaryOperator("??"),
             node.rightOperand.is(NilLiteralExprSyntax.self)
         else {
-            return super.visit(node)
+            return ExprSyntax(node)
         }
 
-        diagnose(.removeRedundantNilCoalescing, on: op.operator)
+        Self.diagnose(.removeRedundantNilCoalescing, on: op.operator, context: context)
 
         // Strip the operator's leading space (which was the space between LHS and `??`)
         // by clearing the LHS's trailing trivia.
@@ -26,7 +37,7 @@ final class RedundantNilCoalescing: RewriteSyntaxRule<BasicRuleValue>, @unchecke
         newLeft.trailingTrivia = []
         // Preserve any trailing trivia that was on the RHS `nil` (e.g. line break).
         newLeft.trailingTrivia += node.rightOperand.trailingTrivia
-        return super.visit(newLeft)
+        return newLeft
     }
 }
 

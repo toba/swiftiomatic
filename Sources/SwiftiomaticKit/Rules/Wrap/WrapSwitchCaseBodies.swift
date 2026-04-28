@@ -38,14 +38,19 @@ final class WrapSwitchCaseBodies: RewriteSyntaxRule<SwitchCaseBodiesConfiguratio
         return config
     }
 
-    private var mode: SwitchCaseBodiesConfiguration.Mode { ruleConfig.mode }
-
-    private var maxLength: Int { context.configuration[LineLength.self] }
-
     override func visit(_ node: SwitchCaseSyntax) -> SwitchCaseSyntax {
+        Self.transform(node, parent: Syntax(node).parent, context: context)
+    }
+
+    static func transform(
+        _ node: SwitchCaseSyntax,
+        parent: Syntax?,
+        context: Context
+    ) -> SwitchCaseSyntax {
+        let mode = context.configuration[Self.self].mode
         switch mode {
-        case .wrap: return wrapCase(node)
-        case .adaptive: return adaptiveCase(node)
+        case .wrap: return wrapCase(node, context: context)
+        case .adaptive: return adaptiveCase(node, context: context)
         }
     }
 }
@@ -54,12 +59,12 @@ final class WrapSwitchCaseBodies: RewriteSyntaxRule<SwitchCaseBodiesConfiguratio
 
 extension WrapSwitchCaseBodies {
 
-    private func wrapCase(_ node: SwitchCaseSyntax) -> SwitchCaseSyntax {
+    fileprivate static func wrapCase(_ node: SwitchCaseSyntax, context: Context) -> SwitchCaseSyntax {
         // Only act on cases that are currently inline (body on same line as label).
         guard isInline(node) else { return node }
         guard node.statements.count > 0 else { return node }
 
-        diagnose(.wrapCaseBody, on: node)
+        Self.diagnose(.wrapCaseBody, on: node, context: context)
 
         let baseIndent = caseIndent(node)
         let bodyIndent = baseIndent + "    "
@@ -85,7 +90,7 @@ extension WrapSwitchCaseBodies {
 
 extension WrapSwitchCaseBodies {
 
-    private func adaptiveCase(_ node: SwitchCaseSyntax) -> SwitchCaseSyntax {
+    fileprivate static func adaptiveCase(_ node: SwitchCaseSyntax, context: Context) -> SwitchCaseSyntax {
         // Only inline single-statement cases.
         guard node.statements.count == 1 else { return node }
         // Skip if already inline.
@@ -96,10 +101,11 @@ extension WrapSwitchCaseBodies {
 
         // "case .foo: body" or "default: body"
         let totalLength = caseIndent(node).count + labelText.count + " ".count + bodyText.count
+        let maxLength = context.configuration[LineLength.self]
 
         guard totalLength <= maxLength else { return node }
 
-        diagnose(.inlineCaseBody, on: node)
+        Self.diagnose(.inlineCaseBody, on: node, context: context)
 
         var result = node
 
@@ -119,18 +125,18 @@ extension WrapSwitchCaseBodies {
 extension WrapSwitchCaseBodies {
 
     /// Whether the case body is on the same line as the label (no newline before first statement).
-    private func isInline(_ node: SwitchCaseSyntax) -> Bool {
+    fileprivate static func isInline(_ node: SwitchCaseSyntax) -> Bool {
         guard let firstStmt = node.statements.first else { return true }
         return !firstStmt.leadingTrivia.containsNewlines
     }
 
     /// The indentation of the case label.
-    private func caseIndent(_ node: SwitchCaseSyntax) -> String {
+    fileprivate static func caseIndent(_ node: SwitchCaseSyntax) -> String {
         node.leadingTrivia.indentation
     }
 
     /// The text of the case label including the colon (e.g. "case .foo:" or "default:").
-    private func labelText(_ node: SwitchCaseSyntax) -> String {
+    fileprivate static func labelText(_ node: SwitchCaseSyntax) -> String {
         switch node.label {
         case .case(let caseLabel):
             return caseLabel.trimmedDescription

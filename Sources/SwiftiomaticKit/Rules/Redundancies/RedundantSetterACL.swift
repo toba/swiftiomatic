@@ -20,44 +20,52 @@ final class RedundantSetterACL: RewriteSyntaxRule<BasicRuleValue>, @unchecked Se
     override class var defaultValue: BasicRuleValue { BasicRuleValue(rewrite: false, lint: .warn) }
 
     override func visit(_ node: VariableDeclSyntax) -> DeclSyntax {
+        Self.transform(node, parent: Syntax(node).parent, context: context)
+    }
+
+    static func transform(
+        _ node: VariableDeclSyntax,
+        parent: Syntax?,
+        context: Context
+    ) -> DeclSyntax {
         guard let setMod = setterAccessModifier(in: node.modifiers),
             let setKeyword = setMod.keyword
         else {
-            return super.visit(node)
+            return DeclSyntax(node)
         }
 
         let getter = getterAccessModifier(in: node.modifiers)
 
         if let getter, let getKeyword = getter.keyword, setKeyword == getKeyword {
-            return removeModifier(setMod, from: node, reason: .matchesGetter)
+            return removeModifier(setMod, from: node, reason: .matchesGetter, context: context)
         }
 
         // No explicit getter modifier — check the enclosing context for `internal`/`fileprivate`.
-        guard getter == nil else { return super.visit(node) }
+        guard getter == nil else { return DeclSyntax(node) }
 
         switch setKeyword {
         case .internal:
-            if enclosingTypeIsEffectively(.internal, around: Syntax(node)) {
-                return removeModifier(setMod, from: node, reason: .matchesContext)
+            if enclosingTypeIsEffectively(.internal, parent: parent) {
+                return removeModifier(setMod, from: node, reason: .matchesContext, context: context)
             }
         case .fileprivate:
-            if enclosingTypeIsEffectively(.fileprivate, around: Syntax(node)) {
-                return removeModifier(setMod, from: node, reason: .matchesContext)
+            if enclosingTypeIsEffectively(.fileprivate, parent: parent) {
+                return removeModifier(setMod, from: node, reason: .matchesContext, context: context)
             }
         default:
             break
         }
 
-        return super.visit(node)
+        return DeclSyntax(node)
     }
 
     // MARK: - Modifier inspection
 
-    private func setterAccessModifier(in modifiers: DeclModifierListSyntax) -> DeclModifierSyntax? {
+    private static func setterAccessModifier(in modifiers: DeclModifierListSyntax) -> DeclModifierSyntax? {
         modifiers.first { $0.detail?.detail.tokenKind == .identifier("set") }
     }
 
-    private func getterAccessModifier(in modifiers: DeclModifierListSyntax) -> DeclModifierSyntax? {
+    private static func getterAccessModifier(in modifiers: DeclModifierListSyntax) -> DeclModifierSyntax? {
         modifiers.first { mod in
             guard mod.detail == nil, case .keyword(let kw) = mod.name.tokenKind else {
                 return false
@@ -72,14 +80,16 @@ final class RedundantSetterACL: RewriteSyntaxRule<BasicRuleValue>, @unchecked Se
 
     // MARK: - Rewrite
 
-    private func removeModifier(
+    private static func removeModifier(
         _ target: DeclModifierSyntax,
         from node: VariableDeclSyntax,
-        reason: RemovalReason
+        reason: RemovalReason,
+        context: Context
     ) -> DeclSyntax {
-        diagnose(
+        Self.diagnose(
             .removeRedundantSetterACL(keyword: target.name.text, reason: reason),
-            on: target
+            on: target,
+            context: context
         )
 
         var result = node
@@ -105,10 +115,10 @@ final class RedundantSetterACL: RewriteSyntaxRule<BasicRuleValue>, @unchecked Se
     /// - For `.internal`, the type may have no explicit modifier (default-internal),
     ///   or a non-public/non-package modifier where `internal` is the default.
     /// - For `.fileprivate`, the type must explicitly declare `fileprivate`.
-    private func enclosingTypeIsEffectively(_ level: Keyword, around node: Syntax) -> Bool {
-        var current = node.parent
-        while let parent = current {
-            if let typeModifiers = typeDeclModifiers(parent) {
+    private static func enclosingTypeIsEffectively(_ level: Keyword, parent: Syntax?) -> Bool {
+        var current = parent
+        while let p = current {
+            if let typeModifiers = typeDeclModifiers(p) {
                 let access = typeModifiers.first { mod in
                     mod.detail == nil
                         && {
@@ -131,13 +141,13 @@ final class RedundantSetterACL: RewriteSyntaxRule<BasicRuleValue>, @unchecked Se
                     return keyword == level
                 }
             }
-            current = parent.parent
+            current = p.parent
         }
         // Top-level: file scope is effectively `internal` for unqualified declarations.
         return level == .internal
     }
 
-    private func typeDeclModifiers(_ syntax: Syntax) -> DeclModifierListSyntax? {
+    private static func typeDeclModifiers(_ syntax: Syntax) -> DeclModifierListSyntax? {
         if let cls = syntax.as(ClassDeclSyntax.self) { return cls.modifiers }
         if let str = syntax.as(StructDeclSyntax.self) { return str.modifiers }
         if let enm = syntax.as(EnumDeclSyntax.self) { return enm.modifiers }

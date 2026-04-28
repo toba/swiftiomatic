@@ -16,7 +16,14 @@ final class RedundantBreak: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendab
     override static var group: ConfigurationGroup? { .redundancies }
 
     override func visit(_ node: SwitchCaseSyntax) -> SwitchCaseSyntax {
-        let visited = super.visit(node)
+        Self.transform(super.visit(node), parent: Syntax(node).parent, context: context)
+    }
+
+    static func transform(
+        _ visited: SwitchCaseSyntax,
+        parent: Syntax?,
+        context: Context
+    ) -> SwitchCaseSyntax {
         let statements = visited.statements
 
         // A case must have at least one statement. If `break` is the only statement, it's required.
@@ -28,7 +35,7 @@ final class RedundantBreak: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendab
               breakStmt.label == nil
         else { return visited }
 
-        diagnose(.removeRedundantBreak, on: breakStmt.breakKeyword)
+        Self.diagnose(.removeRedundantBreak, on: breakStmt.breakKeyword, context: context)
 
         // Remove the last statement (the redundant break).
         let newStatements = CodeBlockItemListSyntax(statements.dropLast())

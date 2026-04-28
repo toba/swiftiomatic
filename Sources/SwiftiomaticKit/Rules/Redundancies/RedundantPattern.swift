@@ -16,7 +16,15 @@ final class RedundantPattern: RewriteSyntaxRule<BasicRuleValue>, @unchecked Send
   // MARK: - Switch case items: case let .foo(_, _) → case .foo
 
   override func visit(_ node: SwitchCaseItemSyntax) -> SwitchCaseItemSyntax {
-    guard let simplified = simplifyEnumCasePattern(node.pattern) else {
+    Self.transform(node, parent: Syntax(node).parent, context: context)
+  }
+
+  static func transform(
+    _ node: SwitchCaseItemSyntax,
+    parent: Syntax?,
+    context: Context
+  ) -> SwitchCaseItemSyntax {
+    guard let simplified = simplifyEnumCasePattern(node.pattern, context: context) else {
       return node
     }
     var result = node
@@ -30,7 +38,15 @@ final class RedundantPattern: RewriteSyntaxRule<BasicRuleValue>, @unchecked Send
   override func visit(
     _ node: MatchingPatternConditionSyntax
   ) -> MatchingPatternConditionSyntax {
-    guard let simplified = simplifyEnumCasePattern(node.pattern) else {
+    Self.transform(node, parent: Syntax(node).parent, context: context)
+  }
+
+  static func transform(
+    _ node: MatchingPatternConditionSyntax,
+    parent: Syntax?,
+    context: Context
+  ) -> MatchingPatternConditionSyntax {
+    guard let simplified = simplifyEnumCasePattern(node.pattern, context: context) else {
       return node
     }
     var result = node
@@ -42,6 +58,14 @@ final class RedundantPattern: RewriteSyntaxRule<BasicRuleValue>, @unchecked Send
   // MARK: - Let/var bindings: let (_, _) = bar → let _ = bar
 
   override func visit(_ node: VariableDeclSyntax) -> DeclSyntax {
+    Self.transform(node, parent: Syntax(node).parent, context: context)
+  }
+
+  static func transform(
+    _ node: VariableDeclSyntax,
+    parent: Syntax?,
+    context: Context
+  ) -> DeclSyntax {
     guard node.bindings.count == 1,
       let binding = node.bindings.first,
       let tuplePattern = binding.pattern.as(TuplePatternSyntax.self),
@@ -51,7 +75,7 @@ final class RedundantPattern: RewriteSyntaxRule<BasicRuleValue>, @unchecked Send
       return DeclSyntax(node)
     }
 
-    diagnose(.redundantPatternBinding, on: tuplePattern)
+    Self.diagnose(.redundantPatternBinding, on: tuplePattern, context: context)
 
     let wildcard = WildcardPatternSyntax(
       wildcard: .wildcardToken(
@@ -72,7 +96,7 @@ final class RedundantPattern: RewriteSyntaxRule<BasicRuleValue>, @unchecked Send
 
   /// Simplifies an enum case pattern that has all-wildcard arguments.
   /// Returns the simplified pattern, or nil if no simplification is possible.
-  private func simplifyEnumCasePattern(_ pattern: PatternSyntax) -> PatternSyntax? {
+  private static func simplifyEnumCasePattern(_ pattern: PatternSyntax, context: Context) -> PatternSyntax? {
     // Hoisted: case let .foo(_, _) → case .foo
     if let binding = pattern.as(ValueBindingPatternSyntax.self),
       let exprPattern = binding.pattern.as(ExpressionPatternSyntax.self),
@@ -81,9 +105,9 @@ final class RedundantPattern: RewriteSyntaxRule<BasicRuleValue>, @unchecked Send
       allCallArgumentsAreWildcards(call.arguments)
     {
       if let leftParen = call.leftParen {
-        diagnose(.redundantPatternMatch, on: leftParen)
+        Self.diagnose(.redundantPatternMatch, on: leftParen, context: context)
       } else {
-        diagnose(.redundantPatternMatch, on: call.calledExpression)
+        Self.diagnose(.redundantPatternMatch, on: call.calledExpression, context: context)
       }
 
       let stripped = stripArguments(from: call)
@@ -99,9 +123,9 @@ final class RedundantPattern: RewriteSyntaxRule<BasicRuleValue>, @unchecked Send
       allCallArgumentsAreWildcards(call.arguments)
     {
       if let leftParen = call.leftParen {
-        diagnose(.redundantPatternMatch, on: leftParen)
+        Self.diagnose(.redundantPatternMatch, on: leftParen, context: context)
       } else {
-        diagnose(.redundantPatternMatch, on: call.calledExpression)
+        Self.diagnose(.redundantPatternMatch, on: call.calledExpression, context: context)
       }
 
       let stripped = stripArguments(from: call)
@@ -115,7 +139,7 @@ final class RedundantPattern: RewriteSyntaxRule<BasicRuleValue>, @unchecked Send
 
   /// Checks if all arguments in a function call are wildcards (with optional let/var).
   /// Returns false for empty argument lists.
-  private func allCallArgumentsAreWildcards(_ arguments: LabeledExprListSyntax) -> Bool {
+  private static func allCallArgumentsAreWildcards(_ arguments: LabeledExprListSyntax) -> Bool {
     guard !arguments.isEmpty else { return false }
     for arg in arguments {
       if isWildcardArgument(arg) { continue }
@@ -124,7 +148,7 @@ final class RedundantPattern: RewriteSyntaxRule<BasicRuleValue>, @unchecked Send
     return true
   }
 
-  private func isWildcardArgument(_ arg: LabeledExprSyntax) -> Bool {
+  private static func isWildcardArgument(_ arg: LabeledExprSyntax) -> Bool {
     // Real labels (with colon) mean named pattern matching, not redundant.
     if arg.label != nil, arg.colon != nil { return false }
 
@@ -152,7 +176,7 @@ final class RedundantPattern: RewriteSyntaxRule<BasicRuleValue>, @unchecked Send
   }
 
   /// Checks if an expression is a wildcard pattern (_, let _, var _).
-  private func isWildcardExpression(_ expr: ExprSyntax) -> Bool {
+  private static func isWildcardExpression(_ expr: ExprSyntax) -> Bool {
     // Plain wildcard: _
     if expr.is(DiscardAssignmentExprSyntax.self) { return true }
     // Pattern wildcard: _ or let _ or var _
@@ -166,7 +190,7 @@ final class RedundantPattern: RewriteSyntaxRule<BasicRuleValue>, @unchecked Send
   }
 
   /// Checks if all elements in a tuple pattern are wildcards.
-  private func allTupleElementsAreWildcards(_ elements: TuplePatternElementListSyntax) -> Bool {
+  private static func allTupleElementsAreWildcards(_ elements: TuplePatternElementListSyntax) -> Bool {
     guard !elements.isEmpty else { return false }
     for element in elements {
       guard element.pattern.is(WildcardPatternSyntax.self) else { return false }
@@ -175,7 +199,7 @@ final class RedundantPattern: RewriteSyntaxRule<BasicRuleValue>, @unchecked Send
   }
 
   /// Removes the argument list from a function call, keeping just the called expression.
-  private func stripArguments(from call: FunctionCallExprSyntax) -> ExprSyntax {
+  private static func stripArguments(from call: FunctionCallExprSyntax) -> ExprSyntax {
     var result = call.calledExpression
     // Transfer trailing trivia from the closing paren
     if let rightParen = call.rightParen {

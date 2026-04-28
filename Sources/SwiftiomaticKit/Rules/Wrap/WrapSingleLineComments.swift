@@ -12,6 +12,14 @@ final class WrapSingleLineComments: RewriteSyntaxRule<BasicRuleValue>, @unchecke
     override class var defaultValue: BasicRuleValue { .init(rewrite: false, lint: .no) }
 
     override func visit(_ token: TokenSyntax) -> TokenSyntax {
+        Self.transform(token, parent: Syntax(token).parent, context: context)
+    }
+
+    static func transform(
+        _ token: TokenSyntax,
+        parent: Syntax?,
+        context: Context
+    ) -> TokenSyntax {
         let maxWidth = context.configuration[LineLength.self]
         guard maxWidth > 3 else { return token }
 
@@ -30,7 +38,7 @@ final class WrapSingleLineComments: RewriteSyntaxRule<BasicRuleValue>, @unchecke
         // lines that overflow once layout adds indentation, requiring a second pass to wrap. By
         // taking the larger of the trivia column and the syntactic indent, the wrapped output is
         // a fixed point. See jig 5zd-wm4.
-        let layoutColumnFloor = syntacticIndentColumn(for: token)
+        let layoutColumnFloor = syntacticIndentColumn(parent: parent, context: context)
 
         while i < pieces.count {
             switch pieces[i] {
@@ -87,7 +95,7 @@ final class WrapSingleLineComments: RewriteSyntaxRule<BasicRuleValue>, @unchecke
             originalTrivia.startIndex,
             offsetBy: anchorOrigIdx
         )
-        diagnose(.wrapComment, on: token, anchor: .leadingTrivia(triviaIdx))
+        Self.diagnose(.wrapComment, on: token, context: context, anchor: .leadingTrivia(triviaIdx))
 
         return token.with(\.leadingTrivia, Trivia(pieces: pieces))
     }
@@ -102,7 +110,7 @@ final class WrapSingleLineComments: RewriteSyntaxRule<BasicRuleValue>, @unchecke
         var originalIndex: Int
     }
 
-    private func tryWrap(
+    private static func tryWrap(
         text: String,
         prefix: String,
         triviaKind: CommentKind,
@@ -163,9 +171,9 @@ final class WrapSingleLineComments: RewriteSyntaxRule<BasicRuleValue>, @unchecke
     /// closures, switch cases, accessor blocks) and converts the depth to a column count using
     /// the configured indentation unit. The result is a lower bound on the actual layout column;
     /// using `max(triviaColumn, this)` makes wrap decisions stable across passes.
-    private func syntacticIndentColumn(for token: TokenSyntax) -> Int {
+    private static func syntacticIndentColumn(parent: Syntax?, context: Context) -> Int {
         var depth = 0
-        var current: Syntax? = token.parent
+        var current: Syntax? = parent
         while let node = current {
             if node.is(CodeBlockSyntax.self)
                 || node.is(MemberBlockSyntax.self)
@@ -187,7 +195,7 @@ final class WrapSingleLineComments: RewriteSyntaxRule<BasicRuleValue>, @unchecke
     }
 
     /// Returns the indentation string before the comment at the given index.
-    private func indentationBefore(index: Int, in pieces: [TriviaPiece]) -> String {
+    private static func indentationBefore(index: Int, in pieces: [TriviaPiece]) -> String {
         var indent = ""
         var j = index - 1
         while j >= 0 {
@@ -206,7 +214,7 @@ final class WrapSingleLineComments: RewriteSyntaxRule<BasicRuleValue>, @unchecke
     }
 
     /// Converts an indentation string back to trivia pieces.
-    private func indentPieces(_ indent: String) -> [TriviaPiece] {
+    private static func indentPieces(_ indent: String) -> [TriviaPiece] {
         guard !indent.isEmpty else { return [] }
         let spaceCount = indent.count(where: { $0 == " " })
         let tabCount = indent.count(where: { $0 == "\t" })
@@ -217,7 +225,7 @@ final class WrapSingleLineComments: RewriteSyntaxRule<BasicRuleValue>, @unchecke
     }
 
     /// Word-wraps a comment to fit within maxWidth, returning multiple lines.
-    private func wrapComment(
+    private static func wrapComment(
         text: String,
         prefix: String,
         column: Int,
@@ -257,7 +265,7 @@ final class WrapSingleLineComments: RewriteSyntaxRule<BasicRuleValue>, @unchecke
     }
 
     /// Returns `true` if the comment is a directive that should not be wrapped.
-    private func isCommentDirective(_ text: String) -> Bool {
+    private static func isCommentDirective(_ text: String) -> Bool {
         let body = text.drop { $0 == "/" }.trimmingCharacters(in: .whitespaces)
         let directives = [
             "MARK:", "TODO:", "FIXME:", "WARNING:", "NOTE:", "HACK:",

@@ -18,14 +18,23 @@ final class RedundantSendable: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sen
     override class var defaultValue: BasicRuleValue { .init(rewrite: false, lint: .no) }
 
     override func visit(_ node: StructDeclSyntax) -> DeclSyntax {
+        let parent = Syntax(node).parent
         let visited = super.visit(node).cast(StructDeclSyntax.self)
+        return Self.transform(visited, parent: parent, context: context)
+    }
+
+    static func transform(
+        _ visited: StructDeclSyntax,
+        parent: Syntax?,
+        context: Context
+    ) -> DeclSyntax {
         guard !isPublicOrPackage(visited.modifiers),
             let inheritanceClause = visited.inheritanceClause,
             let inherited = inheritanceClause.inherited(named: "Sendable")
         else {
             return DeclSyntax(visited)
         }
-        diagnose(.removeRedundantSendable, on: inherited)
+        Self.diagnose(.removeRedundantSendable, on: inherited, context: context)
         var result = visited
         let newClause = inheritanceClause.removing(named: "Sendable")
         result.inheritanceClause = newClause
@@ -37,14 +46,23 @@ final class RedundantSendable: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sen
     }
 
     override func visit(_ node: EnumDeclSyntax) -> DeclSyntax {
+        let parent = Syntax(node).parent
         let visited = super.visit(node).cast(EnumDeclSyntax.self)
+        return Self.transform(visited, parent: parent, context: context)
+    }
+
+    static func transform(
+        _ visited: EnumDeclSyntax,
+        parent: Syntax?,
+        context: Context
+    ) -> DeclSyntax {
         guard !isPublicOrPackage(visited.modifiers),
             let inheritanceClause = visited.inheritanceClause,
             let inherited = inheritanceClause.inherited(named: "Sendable")
         else {
             return DeclSyntax(visited)
         }
-        diagnose(.removeRedundantSendable, on: inherited)
+        Self.diagnose(.removeRedundantSendable, on: inherited, context: context)
         var result = visited
         let newClause = inheritanceClause.removing(named: "Sendable")
         result.inheritanceClause = newClause
@@ -54,7 +72,7 @@ final class RedundantSendable: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sen
         return DeclSyntax(result)
     }
 
-    private func isPublicOrPackage(_ modifiers: DeclModifierListSyntax) -> Bool {
+    private static func isPublicOrPackage(_ modifiers: DeclModifierListSyntax) -> Bool {
         guard let accessModifier = modifiers.accessLevelModifier,
             case .keyword(let keyword) = accessModifier.name.tokenKind
         else { return false }

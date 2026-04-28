@@ -21,8 +21,16 @@ final class WrapTernary: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable 
     override class var group: ConfigurationGroup? { .lineBreaks }
 
     override func visit(_ node: TernaryExprSyntax) -> ExprSyntax {
+        let parent = Syntax(node).parent
         let visited = super.visit(node).cast(TernaryExprSyntax.self)
+        return Self.transform(visited, parent: parent, context: context)
+    }
 
+    static func transform(
+        _ visited: TernaryExprSyntax,
+        parent: Syntax?,
+        context: Context
+    ) -> ExprSyntax {
         let questionHasNewline = visited.questionMark.leadingTrivia.containsNewlines
         let colonHasNewline = visited.colon.leadingTrivia.containsNewlines
 
@@ -35,7 +43,7 @@ final class WrapTernary: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable 
             // Nested ternaries (those inside another ternary) only wrap when their intrinsic length
             // exceeds the line length on its own. Their actual column after the parent wraps is
             // not knowable here, and using the raw source column would over-wrap.
-            if hasAncestorTernary(visited) {
+            if hasAncestorTernary(parent: parent) {
                 needsWrap = length > lineLength
             } else {
                 let converter = context.sourceLocationConverter
@@ -48,11 +56,11 @@ final class WrapTernary: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable 
 
         var result = visited
         if !questionHasNewline {
-            diagnose(.wrapTernaryBranch, on: visited.questionMark)
+            Self.diagnose(.wrapTernaryBranch, on: visited.questionMark, context: context)
             result.questionMark.leadingTrivia = .newline + dropLeadingSpaces(result.questionMark.leadingTrivia)
         }
         if !colonHasNewline {
-            diagnose(.wrapTernaryBranch, on: visited.colon)
+            Self.diagnose(.wrapTernaryBranch, on: visited.colon, context: context)
             result.colon.leadingTrivia = .newline + dropLeadingSpaces(result.colon.leadingTrivia)
         }
         return ExprSyntax(result)
@@ -61,7 +69,7 @@ final class WrapTernary: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable 
     /// Strips a single leading run of horizontal whitespace from a trivia sequence so we
     /// don't end up with a redundant space after the inserted newline. The pretty printer
     /// recomputes indentation regardless.
-    private func dropLeadingSpaces(_ trivia: Trivia) -> Trivia {
+    private static func dropLeadingSpaces(_ trivia: Trivia) -> Trivia {
         guard let first = trivia.first else { return trivia }
         switch first {
         case .spaces, .tabs:
@@ -73,7 +81,7 @@ final class WrapTernary: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable 
 
     /// Returns the length of the ternary as if it were rendered on a single line — collapsing any
     /// internal newlines or multi-space runs to single spaces.
-    private func singleLineLength(of node: TernaryExprSyntax) -> Int {
+    private static func singleLineLength(of node: TernaryExprSyntax) -> Int {
         node.trimmedDescription
             .split(whereSeparator: { $0.isWhitespace })
             .joined(separator: " ")
@@ -81,11 +89,12 @@ final class WrapTernary: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable 
     }
 
     /// True if `node` is contained within another `TernaryExprSyntax`.
-    private func hasAncestorTernary(_ node: TernaryExprSyntax) -> Bool {
-        var current = node.parent
-        while let parent = current {
-            if parent.is(TernaryExprSyntax.self) { return true }
-            current = parent.parent
+    /// Walks the captured pre-recursion parent chain since the post-recursion node is detached.
+    private static func hasAncestorTernary(parent: Syntax?) -> Bool {
+        var current = parent
+        while let p = current {
+            if p.is(TernaryExprSyntax.self) { return true }
+            current = p.parent
         }
         return false
     }

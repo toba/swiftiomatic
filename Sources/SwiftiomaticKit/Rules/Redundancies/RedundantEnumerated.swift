@@ -18,6 +18,17 @@ final class RedundantEnumerated: RewriteSyntaxRule<BasicRuleValue>, @unchecked S
     override class var group: ConfigurationGroup? { .redundancies }
 
     override func visit(_ node: ForStmtSyntax) -> StmtSyntax {
+        let parent = Syntax(node).parent
+        let visited = super.visit(node)
+        guard let concrete = visited.as(ForStmtSyntax.self) else { return visited }
+        return Self.transform(concrete, parent: parent, context: context)
+    }
+
+    static func transform(
+        _ node: ForStmtSyntax,
+        parent: Syntax?,
+        context: Context
+    ) -> StmtSyntax {
         guard let tuple = node.pattern.as(TuplePatternSyntax.self),
             tuple.elements.count == 2,
             let first = tuple.elements.first,
@@ -30,28 +41,28 @@ final class RedundantEnumerated: RewriteSyntaxRule<BasicRuleValue>, @unchecked S
             call.trailingClosure == nil,
             call.additionalTrailingClosures.isEmpty
         else {
-            return super.visit(node)
+            return StmtSyntax(node)
         }
 
         let firstUnused = first.pattern.is(WildcardPatternSyntax.self)
         let secondUnused = second.pattern.is(WildcardPatternSyntax.self)
         // If both are wildcards or neither, the rule doesn't apply.
         guard firstUnused != secondUnused else {
-            return super.visit(node)
+            return StmtSyntax(node)
         }
 
         var result = node
 
         if firstUnused {
             // `for (_, x) in seq.enumerated()` → `for x in seq`
-            diagnose(.dropEnumeratedIndexUnused, on: first.pattern)
+            Self.diagnose(.dropEnumeratedIndexUnused, on: first.pattern, context: context)
             result.pattern = PatternSyntax(second.pattern.with(\.leadingTrivia, tuple.leadingTrivia)
                 .with(\.trailingTrivia, tuple.trailingTrivia))
             result.sequence = ExprSyntax(base.with(\.leadingTrivia, call.leadingTrivia)
                 .with(\.trailingTrivia, call.trailingTrivia))
         } else {
             // `for (i, _) in seq.enumerated()` → `for i in seq.indices`
-            diagnose(.useIndicesItemUnused, on: second.pattern)
+            Self.diagnose(.useIndicesItemUnused, on: second.pattern, context: context)
             result.pattern = PatternSyntax(first.pattern.with(\.leadingTrivia, tuple.leadingTrivia)
                 .with(\.trailingTrivia, tuple.trailingTrivia))
             var indicesAccess = member
@@ -64,7 +75,7 @@ final class RedundantEnumerated: RewriteSyntaxRule<BasicRuleValue>, @unchecked S
             result.sequence = indicesExpr
         }
 
-        return super.visit(result)
+        return StmtSyntax(result)
     }
 }
 

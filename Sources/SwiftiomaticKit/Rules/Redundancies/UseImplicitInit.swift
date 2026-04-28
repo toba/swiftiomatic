@@ -26,13 +26,21 @@ final class UseImplicitInit: RewriteSyntaxRule<BasicRuleValue>, @unchecked Senda
   // MARK: - Computed properties and stored properties with type annotations
 
   override func visit(_ node: PatternBindingSyntax) -> PatternBindingSyntax {
+    Self.transform(node, parent: Syntax(node).parent, context: context)
+  }
+
+  static func transform(
+    _ node: PatternBindingSyntax,
+    parent: Syntax?,
+    context: Context
+  ) -> PatternBindingSyntax {
     // Case 1: Stored property with type annotation and initializer
     // `let config: Config = Config(debug: true)` → `let config: Config = .init(debug: true)`
     if let typeAnnotation = node.typeAnnotation,
       let initializer = node.initializer
     {
       let typeName = typeAnnotation.type.trimmedDescription
-      if let rewritten = rewriteExpression(initializer.value, matchingType: typeName) {
+      if let rewritten = rewriteExpression(initializer.value, matchingType: typeName, context: context) {
         var result = node
         var newInitializer = initializer
         newInitializer.value = rewritten
@@ -50,7 +58,7 @@ final class UseImplicitInit: RewriteSyntaxRule<BasicRuleValue>, @unchecked Senda
 
       switch accessorBlock.accessors {
       case .getter(let body):
-        if let rewritten = rewriteCodeBlockItems(body, matchingType: typeName) {
+        if let rewritten = rewriteCodeBlockItems(body, matchingType: typeName, context: context) {
           var result = node
           var newAccessorBlock = accessorBlock
           newAccessorBlock.accessors = .getter(rewritten)
@@ -65,7 +73,7 @@ final class UseImplicitInit: RewriteSyntaxRule<BasicRuleValue>, @unchecked Senda
           guard accessor.accessorSpecifier.tokenKind == .keyword(.get),
             let body = accessor.body
           else { continue }
-          if let rewritten = rewriteCodeBlockItems(body.statements, matchingType: typeName) {
+          if let rewritten = rewriteCodeBlockItems(body.statements, matchingType: typeName, context: context) {
             var newAccessor = accessor
             var newBody = body
             newBody.statements = rewritten
@@ -91,11 +99,19 @@ final class UseImplicitInit: RewriteSyntaxRule<BasicRuleValue>, @unchecked Senda
   // MARK: - Function / method return types and default parameter values
 
   override func visit(_ node: FunctionDeclSyntax) -> DeclSyntax {
+    Self.transform(node, parent: Syntax(node).parent, context: context)
+  }
+
+  static func transform(
+    _ node: FunctionDeclSyntax,
+    parent: Syntax?,
+    context: Context
+  ) -> DeclSyntax {
     var result = node
     var didChange = false
 
     // Rewrite default parameter values
-    if let rewrittenParams = rewriteParameterDefaults(node.signature.parameterClause) {
+    if let rewrittenParams = rewriteParameterDefaults(node.signature.parameterClause, context: context) {
       var newSignature = result.signature
       newSignature.parameterClause = rewrittenParams
       result.signature = newSignature
@@ -105,7 +121,7 @@ final class UseImplicitInit: RewriteSyntaxRule<BasicRuleValue>, @unchecked Senda
     // Rewrite return expression
     if let returnType = result.signature.returnClause?.type.trimmedDescription,
       let body = result.body,
-      let rewritten = rewriteCodeBlockItems(body.statements, matchingType: returnType)
+      let rewritten = rewriteCodeBlockItems(body.statements, matchingType: returnType, context: context)
     {
       var newBody = body
       newBody.statements = rewritten
@@ -120,7 +136,15 @@ final class UseImplicitInit: RewriteSyntaxRule<BasicRuleValue>, @unchecked Senda
   // MARK: - Initializer default parameter values
 
   override func visit(_ node: InitializerDeclSyntax) -> DeclSyntax {
-    guard let rewrittenParams = rewriteParameterDefaults(node.signature.parameterClause) else {
+    Self.transform(node, parent: Syntax(node).parent, context: context)
+  }
+
+  static func transform(
+    _ node: InitializerDeclSyntax,
+    parent: Syntax?,
+    context: Context
+  ) -> DeclSyntax {
+    guard let rewrittenParams = rewriteParameterDefaults(node.signature.parameterClause, context: context) else {
       return DeclSyntax(node)
     }
     var result = node
@@ -133,6 +157,14 @@ final class UseImplicitInit: RewriteSyntaxRule<BasicRuleValue>, @unchecked Senda
   // MARK: - Subscript return types
 
   override func visit(_ node: SubscriptDeclSyntax) -> DeclSyntax {
+    Self.transform(node, parent: Syntax(node).parent, context: context)
+  }
+
+  static func transform(
+    _ node: SubscriptDeclSyntax,
+    parent: Syntax?,
+    context: Context
+  ) -> DeclSyntax {
     guard let accessorBlock = node.accessorBlock else {
       return DeclSyntax(node)
     }
@@ -141,7 +173,7 @@ final class UseImplicitInit: RewriteSyntaxRule<BasicRuleValue>, @unchecked Senda
 
     switch accessorBlock.accessors {
     case .getter(let body):
-      if let rewritten = rewriteCodeBlockItems(body, matchingType: typeName) {
+      if let rewritten = rewriteCodeBlockItems(body, matchingType: typeName, context: context) {
         var result = node
         var newAccessorBlock = accessorBlock
         newAccessorBlock.accessors = .getter(rewritten)
@@ -156,7 +188,7 @@ final class UseImplicitInit: RewriteSyntaxRule<BasicRuleValue>, @unchecked Senda
         guard accessor.accessorSpecifier.tokenKind == .keyword(.get),
           let body = accessor.body
         else { continue }
-        if let rewritten = rewriteCodeBlockItems(body.statements, matchingType: typeName) {
+        if let rewritten = rewriteCodeBlockItems(body.statements, matchingType: typeName, context: context) {
           var newAccessor = accessor
           var newBody = body
           newBody.statements = rewritten
@@ -181,8 +213,9 @@ final class UseImplicitInit: RewriteSyntaxRule<BasicRuleValue>, @unchecked Senda
   // MARK: - Default parameter values
 
   /// Rewrites default parameter values in a parameter clause.
-  private func rewriteParameterDefaults(
-    _ clause: FunctionParameterClauseSyntax
+  private static func rewriteParameterDefaults(
+    _ clause: FunctionParameterClauseSyntax,
+    context: Context
   ) -> FunctionParameterClauseSyntax? {
     var params = clause.parameters
     var didChange = false
@@ -190,7 +223,7 @@ final class UseImplicitInit: RewriteSyntaxRule<BasicRuleValue>, @unchecked Senda
     for (index, param) in params.enumerated() {
       guard let defaultValue = param.defaultValue else { continue }
       let typeName = param.type.trimmedDescription
-      guard let rewritten = rewriteExpression(defaultValue.value, matchingType: typeName) else {
+      guard let rewritten = rewriteExpression(defaultValue.value, matchingType: typeName, context: context) else {
         continue
       }
 
@@ -213,14 +246,14 @@ final class UseImplicitInit: RewriteSyntaxRule<BasicRuleValue>, @unchecked Senda
 
   /// Rewrites the last expression in a code block item list if it matches the type.
   /// Handles both implicit returns (single expression) and explicit `return` statements.
-  private func rewriteCodeBlockItems(
-    _ items: CodeBlockItemListSyntax, matchingType typeName: String
+  private static func rewriteCodeBlockItems(
+    _ items: CodeBlockItemListSyntax, matchingType typeName: String, context: Context
   ) -> CodeBlockItemListSyntax? {
     guard let lastItem = items.last else { return nil }
 
     // Extract the expression from the last item, unwrapping ExpressionStmtSyntax if needed.
     if let expr = expressionFromItem(lastItem) {
-      if let rewritten = rewriteExpression(expr, matchingType: typeName) {
+      if let rewritten = rewriteExpression(expr, matchingType: typeName, context: context) {
         var newItem = lastItem
         if let exprStmt = lastItem.item.as(ExpressionStmtSyntax.self) {
           var newExprStmt = exprStmt
@@ -237,7 +270,7 @@ final class UseImplicitInit: RewriteSyntaxRule<BasicRuleValue>, @unchecked Senda
     if let returnStmt = lastItem.item.as(ReturnStmtSyntax.self),
       let expr = returnStmt.expression
     {
-      if let rewritten = rewriteExpression(expr, matchingType: typeName) {
+      if let rewritten = rewriteExpression(expr, matchingType: typeName, context: context) {
         var newReturn = returnStmt
         newReturn.expression = rewritten
         var newItem = lastItem
@@ -250,7 +283,7 @@ final class UseImplicitInit: RewriteSyntaxRule<BasicRuleValue>, @unchecked Senda
   }
 
   /// Unwraps `ExpressionStmtSyntax` to get the underlying expression.
-  private func expressionFromItem(_ item: CodeBlockItemSyntax) -> ExprSyntax? {
+  private static func expressionFromItem(_ item: CodeBlockItemSyntax) -> ExprSyntax? {
     if let exprStmt = item.item.as(ExpressionStmtSyntax.self) {
       return exprStmt.expression
     }
@@ -259,25 +292,25 @@ final class UseImplicitInit: RewriteSyntaxRule<BasicRuleValue>, @unchecked Senda
 
   /// Attempts to rewrite an expression by replacing an explicit type with implicit member syntax.
   /// Returns `nil` if no rewrite applies.
-  private func rewriteExpression(
-    _ expr: ExprSyntax, matchingType typeName: String
+  private static func rewriteExpression(
+    _ expr: ExprSyntax, matchingType typeName: String, context: Context
   ) -> ExprSyntax? {
     // Case A: `Type(args)` → `.init(args)` — constructor call
     if let funcCall = expr.as(FunctionCallExprSyntax.self) {
-      return rewriteFunctionCall(funcCall, matchingType: typeName)
+      return rewriteFunctionCall(funcCall, matchingType: typeName, context: context)
     }
 
     // Case B: `Type.member` → `.member` — static member access (no call)
     if let memberAccess = expr.as(MemberAccessExprSyntax.self) {
-      return rewriteMemberAccess(memberAccess, matchingType: typeName)
+      return rewriteMemberAccess(memberAccess, matchingType: typeName, context: context)
     }
 
     return nil
   }
 
   /// Rewrites `Type(args)` → `.init(args)` or `Type.factory(args)` → `.factory(args)`.
-  private func rewriteFunctionCall(
-    _ call: FunctionCallExprSyntax, matchingType typeName: String
+  private static func rewriteFunctionCall(
+    _ call: FunctionCallExprSyntax, matchingType typeName: String, context: Context
   ) -> ExprSyntax? {
     let calledExpr = call.calledExpression
 
@@ -297,7 +330,7 @@ final class UseImplicitInit: RewriteSyntaxRule<BasicRuleValue>, @unchecked Senda
       declRef.baseName.text == typeName
     {
       let original = call.trimmedDescription
-      diagnose(.useImplicitInit(original: original, replacement: dotInitDescription(call)), on: declRef)
+      Self.diagnose(.useImplicitInit(original: original, replacement: dotInitDescription(call)), on: declRef, context: context)
 
       // Build `.init(args)` — MemberAccessExpr with no base
       let dotInit = MemberAccessExprSyntax(
@@ -315,7 +348,7 @@ final class UseImplicitInit: RewriteSyntaxRule<BasicRuleValue>, @unchecked Senda
       generic.trimmedDescription == typeName
     {
       let original = call.trimmedDescription
-      diagnose(.useImplicitInit(original: original, replacement: dotInitDescription(call)), on: generic)
+      Self.diagnose(.useImplicitInit(original: original, replacement: dotInitDescription(call)), on: generic, context: context)
 
       let dotInit = MemberAccessExprSyntax(
         leadingTrivia: generic.leadingTrivia,
@@ -339,12 +372,13 @@ final class UseImplicitInit: RewriteSyntaxRule<BasicRuleValue>, @unchecked Senda
       newMemberAccess.leadingTrivia = memberAccess.base?.leadingTrivia ?? memberAccess.leadingTrivia
       newMemberAccess.base = nil
 
-      diagnose(
+      Self.diagnose(
         .useImplicitInit(
           original: original,
           replacement: rewrittenCallDescription(call, newCalledExpression: ExprSyntax(newMemberAccess))
         ),
-        on: base
+        on: base,
+        context: context
       )
 
       var newCall = call
@@ -356,8 +390,8 @@ final class UseImplicitInit: RewriteSyntaxRule<BasicRuleValue>, @unchecked Senda
   }
 
   /// Rewrites `Type.member` → `.member` (static property access, no function call).
-  private func rewriteMemberAccess(
-    _ memberAccess: MemberAccessExprSyntax, matchingType typeName: String
+  private static func rewriteMemberAccess(
+    _ memberAccess: MemberAccessExprSyntax, matchingType typeName: String, context: Context
   ) -> ExprSyntax? {
     guard let base = memberAccess.base,
       baseMatchesType(base, typeName: typeName),
@@ -372,14 +406,14 @@ final class UseImplicitInit: RewriteSyntaxRule<BasicRuleValue>, @unchecked Senda
     newMemberAccess.base = nil
     let replacement = newMemberAccess.trimmedDescription
 
-    diagnose(.useImplicitInit(original: original, replacement: replacement), on: base)
+    Self.diagnose(.useImplicitInit(original: original, replacement: replacement), on: base, context: context)
     return ExprSyntax(newMemberAccess)
   }
 
   // MARK: - Type matching
 
   /// Returns `true` if the base expression matches the given type name.
-  private func baseMatchesType(_ base: ExprSyntax, typeName: String) -> Bool {
+  private static func baseMatchesType(_ base: ExprSyntax, typeName: String) -> Bool {
     // Simple type: `Foo`
     if let declRef = base.as(DeclReferenceExprSyntax.self) {
       return declRef.baseName.text == typeName
@@ -394,7 +428,7 @@ final class UseImplicitInit: RewriteSyntaxRule<BasicRuleValue>, @unchecked Senda
   // MARK: - Description helpers
 
   /// Builds the replacement description for a constructor rewrite: `.init(args)`
-  private func dotInitDescription(_ call: FunctionCallExprSyntax) -> String {
+  private static func dotInitDescription(_ call: FunctionCallExprSyntax) -> String {
     var newCall = call
     let dotInit = MemberAccessExprSyntax(
       period: .periodToken(),
@@ -405,7 +439,7 @@ final class UseImplicitInit: RewriteSyntaxRule<BasicRuleValue>, @unchecked Senda
   }
 
   /// Builds the replacement description for a factory call rewrite.
-  private func rewrittenCallDescription(
+  private static func rewrittenCallDescription(
     _ call: FunctionCallExprSyntax, newCalledExpression: ExprSyntax
   ) -> String {
     var newCall = call
