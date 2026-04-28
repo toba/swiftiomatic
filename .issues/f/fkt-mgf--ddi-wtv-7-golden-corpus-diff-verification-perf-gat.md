@@ -12,7 +12,7 @@ blocked_by:
 sync:
     github:
         issue_number: "489"
-        synced_at: "2026-04-28T02:56:06Z"
+        synced_at: "2026-04-28T16:43:53Z"
 ---
 
 Run the golden-corpus diff harness from `m82-uu9` against the compact pipeline and resolve any unexpected drift.

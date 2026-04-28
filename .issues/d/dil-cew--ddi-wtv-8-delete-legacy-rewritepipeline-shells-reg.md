@@ -14,7 +14,7 @@ blocked_by:
 sync:
     github:
         issue_number: "487"
-        synced_at: "2026-04-28T02:56:06Z"
+        synced_at: "2026-04-28T16:43:50Z"
 ---
 
 After verification (ddi-wtv-7) passes, remove the legacy code path.

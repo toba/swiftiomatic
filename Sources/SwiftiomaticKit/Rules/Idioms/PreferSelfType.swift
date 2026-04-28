@@ -16,33 +16,102 @@ final class PreferSelfType: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendab
     override class var group: ConfigurationGroup? { .idioms }
     override class var defaultValue: BasicRuleValue { .init(rewrite: true, lint: .warn) }
 
+    /// Per-file mutable state held in `Context.ruleState`.
+    final class State {
+        var typeDepth = 0
+    }
+
     private var typeContextDepth = 0
 
+    // MARK: - Scope hooks
+
+    static func willEnter(_: ClassDeclSyntax, context: Context) {
+        let state = context.ruleState(for: Self.self) { State() }
+        state.typeDepth += 1
+    }
+
+    static func didExit(_: ClassDeclSyntax, context: Context) {
+        let state = context.ruleState(for: Self.self) { State() }
+        state.typeDepth -= 1
+    }
+
+    static func willEnter(_: StructDeclSyntax, context: Context) {
+        let state = context.ruleState(for: Self.self) { State() }
+        state.typeDepth += 1
+    }
+
+    static func didExit(_: StructDeclSyntax, context: Context) {
+        let state = context.ruleState(for: Self.self) { State() }
+        state.typeDepth -= 1
+    }
+
+    static func willEnter(_: EnumDeclSyntax, context: Context) {
+        let state = context.ruleState(for: Self.self) { State() }
+        state.typeDepth += 1
+    }
+
+    static func didExit(_: EnumDeclSyntax, context: Context) {
+        let state = context.ruleState(for: Self.self) { State() }
+        state.typeDepth -= 1
+    }
+
+    static func willEnter(_: ActorDeclSyntax, context: Context) {
+        let state = context.ruleState(for: Self.self) { State() }
+        state.typeDepth += 1
+    }
+
+    static func didExit(_: ActorDeclSyntax, context: Context) {
+        let state = context.ruleState(for: Self.self) { State() }
+        state.typeDepth -= 1
+    }
+
+    static func willEnter(_: ExtensionDeclSyntax, context: Context) {
+        let state = context.ruleState(for: Self.self) { State() }
+        state.typeDepth += 1
+    }
+
+    static func didExit(_: ExtensionDeclSyntax, context: Context) {
+        let state = context.ruleState(for: Self.self) { State() }
+        state.typeDepth -= 1
+    }
+
+    // MARK: - Legacy delegators
+
     override func visit(_ node: ClassDeclSyntax) -> DeclSyntax {
+        Self.willEnter(node, context: context)
+        defer { Self.didExit(node, context: context) }
         typeContextDepth += 1
         defer { typeContextDepth -= 1 }
         return super.visit(node)
     }
 
     override func visit(_ node: StructDeclSyntax) -> DeclSyntax {
+        Self.willEnter(node, context: context)
+        defer { Self.didExit(node, context: context) }
         typeContextDepth += 1
         defer { typeContextDepth -= 1 }
         return super.visit(node)
     }
 
     override func visit(_ node: EnumDeclSyntax) -> DeclSyntax {
+        Self.willEnter(node, context: context)
+        defer { Self.didExit(node, context: context) }
         typeContextDepth += 1
         defer { typeContextDepth -= 1 }
         return super.visit(node)
     }
 
     override func visit(_ node: ActorDeclSyntax) -> DeclSyntax {
+        Self.willEnter(node, context: context)
+        defer { Self.didExit(node, context: context) }
         typeContextDepth += 1
         defer { typeContextDepth -= 1 }
         return super.visit(node)
     }
 
     override func visit(_ node: ExtensionDeclSyntax) -> DeclSyntax {
+        Self.willEnter(node, context: context)
+        defer { Self.didExit(node, context: context) }
         typeContextDepth += 1
         defer { typeContextDepth -= 1 }
         return super.visit(node)
@@ -65,6 +134,31 @@ final class PreferSelfType: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendab
     }
 
     private func isTypeOfSelfCall(_ call: FunctionCallExprSyntax) -> Bool {
+        Self.isTypeOfSelfCall(call)
+    }
+
+    // MARK: - Static transform
+
+    static func transform(
+        _ node: MemberAccessExprSyntax,
+        parent _: Syntax?,
+        context: Context
+    ) -> ExprSyntax {
+        let state = context.ruleState(for: Self.self) { State() }
+        guard state.typeDepth > 0,
+            let baseCall = node.base?.as(FunctionCallExprSyntax.self),
+            isTypeOfSelfCall(baseCall)
+        else { return ExprSyntax(node) }
+
+        Self.diagnose(.preferSelfType, on: baseCall, context: context)
+
+        let selfRef = DeclReferenceExprSyntax(baseName: .keyword(.Self))
+            .with(\.leadingTrivia, baseCall.leadingTrivia)
+            .with(\.trailingTrivia, baseCall.trailingTrivia)
+        return ExprSyntax(node.with(\.base, ExprSyntax(selfRef)))
+    }
+
+    private static func isTypeOfSelfCall(_ call: FunctionCallExprSyntax) -> Bool {
         guard call.arguments.count == 1,
             let firstArg = call.arguments.first,
             firstArg.label?.text == "of",

@@ -7,6 +7,10 @@ priority: high
 created_at: 2026-04-28T03:05:15Z
 updated_at: 2026-04-28T03:36:01Z
 parent: ddi-wtv
+sync:
+    github:
+        issue_number: "501"
+        synced_at: "2026-04-28T16:43:54Z"
 ---
 
 The static `transform` model in ddi-wtv-3 / 4 / 5 assumes a rule's logic is a pure function of a single node. Two patterns break that assumption.

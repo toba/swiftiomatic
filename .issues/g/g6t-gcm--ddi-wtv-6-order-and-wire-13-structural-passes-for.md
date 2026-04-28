@@ -14,7 +14,7 @@ blocked_by:
 sync:
     github:
         issue_number: "488"
-        synced_at: "2026-04-28T02:56:06Z"
+        synced_at: "2026-04-28T16:43:51Z"
 ---
 
 After the combined node-local rewriter is complete, the compact path runs a fixed list of structural passes in deterministic order.

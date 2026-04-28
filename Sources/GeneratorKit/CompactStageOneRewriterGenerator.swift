@@ -10,6 +10,19 @@ package final class CompactStageOneRewriterGenerator: FileGenerator {
 
     let collector: RuleCollector
 
+    /// Node types whose dispatch is hand-written as a free function
+    /// `rewrite<NodeType>(_:context:)` in `Sources/SwiftiomaticKit/Rewrites/`.
+    /// For these, the generator emits a `visit` override that calls the free
+    /// function instead of chaining per-rule static transforms.
+    ///
+    /// Per Phase 4 of `ddi-wtv`, sub-issues progressively migrate node types
+    /// from the per-rule chain to the merged free-function form. When all
+    /// node-local rules are merged, the per-rule dispatch path goes away.
+    private static let manuallyHandledNodeTypes: Set<String> = [
+        "SourceFileSyntax",
+        "TokenSyntax",
+    ]
+
     package init(collector: RuleCollector) {
         self.collector = collector
     }
@@ -60,7 +73,72 @@ package final class CompactStageOneRewriterGenerator: FileGenerator {
         allNodeTypes.formUnion(collector.nodeLocalWillEnter.keys)
         allNodeTypes.formUnion(collector.nodeLocalDidExit.keys)
 
+        // Include manually handled node types even if no rule registered transforms/hooks for them.
+        allNodeTypes.formUnion(Self.manuallyHandledNodeTypes)
+
         for nodeType in allNodeTypes.sorted() {
+            // Manually handled: emit a thin override that fires willEnter hooks
+            // before super.visit, calls the hand-written free function for the
+            // post-traversal transform, and fires didExit hooks afterward.
+            //
+            // The merged free function `rewrite<NodeType>(_:context:)` is
+            // responsible only for the transform; willEnter/didExit stay in the
+            // override so file-level pre-scan state (e.g. PreferSwiftTesting's
+            // bailOut flag) is populated BEFORE descendants are visited.
+            if Self.manuallyHandledNodeTypes.contains(nodeType) {
+                let funcName = "rewrite" + nodeType.replacingOccurrences(of: "Syntax", with: "")
+                let willEnterRules = (collector.nodeLocalWillEnter[nodeType] ?? []).sorted()
+                let didExitRules = (collector.nodeLocalDidExit[nodeType] ?? []).sorted()
+                let returnType = Self.returnType(for: nodeType)
+
+                var willEnterBlock = ""
+                for ruleName in willEnterRules {
+                    willEnterBlock += """
+                            if context.shouldFormat(\(ruleName).self, node: Syntax(node)) {
+                              \(ruleName).willEnter(node, context: context)
+                            }
+
+                        """
+                }
+                var didExitBlock = ""
+                for ruleName in didExitRules {
+                    didExitBlock += """
+                            if context.shouldFormat(\(ruleName).self, node: Syntax(node)) {
+                              \(ruleName).didExit(node, context: context)
+                            }
+
+                        """
+                }
+
+                if returnType == nodeType {
+                    result += """
+
+                          override func visit(_ node: \(nodeType)) -> \(returnType) {
+                        \(willEnterBlock)    let visited = super.visit(node)
+                            let result = \(funcName)(visited, context: context)
+                        \(didExitBlock)    return result
+                          }
+
+                        """
+                } else {
+                    result += """
+
+                          override func visit(_ node: \(nodeType)) -> \(returnType) {
+                        \(willEnterBlock)    let visited = super.visit(node)
+                            let result: \(returnType)
+                            if let concrete = visited.as(\(nodeType).self) {
+                              result = \(returnType)(\(funcName)(concrete, context: context))
+                            } else {
+                              result = visited
+                            }
+                        \(didExitBlock)    return result
+                          }
+
+                        """
+                }
+                continue
+            }
+
             let transformRules = collector.nodeLocalTransforms[nodeType] ?? []
             let willEnterRules = (collector.nodeLocalWillEnter[nodeType] ?? []).sorted()
             let didExitRules = (collector.nodeLocalDidExit[nodeType] ?? []).sorted()

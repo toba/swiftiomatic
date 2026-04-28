@@ -12,7 +12,7 @@ blocked_by:
 sync:
     github:
         issue_number: "493"
-        synced_at: "2026-04-28T02:56:06Z"
+        synced_at: "2026-04-28T16:43:51Z"
 ---
 
 Mechanical refactor: for each `RewriteSyntaxRule` in the listed directories, extract single-node logic into `static func transform(_ node: T, context: Context) -> T`. The existing `visit(_:)` method calls `super.visit(node)` then `Self.transform(visited, context: context)` so the legacy pipeline keeps working.

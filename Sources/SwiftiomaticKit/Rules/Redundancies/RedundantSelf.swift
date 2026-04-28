@@ -22,6 +22,28 @@ import SwiftSyntax
 final class RedundantSelf: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable {
     override class var group: ConfigurationGroup? { .redundancies }
 
+    /// Per-file mutable state held in `Context.ruleState`. Mirrors the three instance stacks so
+    /// the static `transform`/`willEnter`/`didExit` path tracks scope identically to the legacy
+    /// override path.
+    final class State {
+        /// Whether the immediately enclosing type is a reference type (class/actor).
+        var referenceTypeStack: [Bool] = []
+        /// Stack of implicit-self-allowed flags per scope (function/accessor/closure).
+        var implicitSelfStack: [Bool] = []
+        /// Stack of local name sets per scope.
+        var localNameStack: [Set<String>] = []
+        /// Per-scope-decl flag: did we actually push a frame on willEnter? Used so didExit only
+        /// pops when willEnter pushed (some scope-decl visits early-return without pushing).
+        var scopeFrameStack: [Bool] = []
+
+        var insideTypeBody: Bool { !referenceTypeStack.isEmpty }
+        var isReferenceType: Bool { referenceTypeStack.last ?? false }
+        var implicitSelfAllowed: Bool { implicitSelfStack.last ?? false }
+        var allLocalNames: Set<String> {
+            localNameStack.reduce(into: Set()) { $0.formUnion($1) }
+        }
+    }
+
     // MARK: - State
 
     /// Whether the immediately enclosing type is a reference type (class/actor).
@@ -81,60 +103,333 @@ final class RedundantSelf: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendabl
         return body()
     }
 
+    // MARK: - Static scope hooks
+
+    static func willEnter(_: StructDeclSyntax, context: Context) {
+        let state = context.ruleState(for: Self.self) { State() }
+        state.referenceTypeStack.append(false)
+    }
+
+    static func didExit(_: StructDeclSyntax, context: Context) {
+        let state = context.ruleState(for: Self.self) { State() }
+        if !state.referenceTypeStack.isEmpty { state.referenceTypeStack.removeLast() }
+    }
+
+    static func willEnter(_: EnumDeclSyntax, context: Context) {
+        let state = context.ruleState(for: Self.self) { State() }
+        state.referenceTypeStack.append(false)
+    }
+
+    static func didExit(_: EnumDeclSyntax, context: Context) {
+        let state = context.ruleState(for: Self.self) { State() }
+        if !state.referenceTypeStack.isEmpty { state.referenceTypeStack.removeLast() }
+    }
+
+    static func willEnter(_: ClassDeclSyntax, context: Context) {
+        let state = context.ruleState(for: Self.self) { State() }
+        state.referenceTypeStack.append(true)
+    }
+
+    static func didExit(_: ClassDeclSyntax, context: Context) {
+        let state = context.ruleState(for: Self.self) { State() }
+        if !state.referenceTypeStack.isEmpty { state.referenceTypeStack.removeLast() }
+    }
+
+    static func willEnter(_: ActorDeclSyntax, context: Context) {
+        let state = context.ruleState(for: Self.self) { State() }
+        state.referenceTypeStack.append(true)
+    }
+
+    static func didExit(_: ActorDeclSyntax, context: Context) {
+        let state = context.ruleState(for: Self.self) { State() }
+        if !state.referenceTypeStack.isEmpty { state.referenceTypeStack.removeLast() }
+    }
+
+    static func willEnter(_: ExtensionDeclSyntax, context: Context) {
+        let state = context.ruleState(for: Self.self) { State() }
+        state.referenceTypeStack.append(true)
+    }
+
+    static func didExit(_: ExtensionDeclSyntax, context: Context) {
+        let state = context.ruleState(for: Self.self) { State() }
+        if !state.referenceTypeStack.isEmpty { state.referenceTypeStack.removeLast() }
+    }
+
+    static func willEnter(_ node: FunctionDeclSyntax, context: Context) {
+        let state = context.ruleState(for: Self.self) { State() }
+        guard state.insideTypeBody else {
+            state.scopeFrameStack.append(false)
+            return
+        }
+        var names = Self.collectParamNames(from: node.signature.parameterClause)
+        if let body = node.body { names.formUnion(Self.collectLocalNames(in: Syntax(body))) }
+        state.localNameStack.append(names)
+        state.implicitSelfStack.append(true)
+        state.scopeFrameStack.append(true)
+    }
+
+    static func didExit(_: FunctionDeclSyntax, context: Context) {
+        let state = context.ruleState(for: Self.self) { State() }
+        if let didPush = state.scopeFrameStack.popLast(), didPush {
+            if !state.localNameStack.isEmpty { state.localNameStack.removeLast() }
+            if !state.implicitSelfStack.isEmpty { state.implicitSelfStack.removeLast() }
+        }
+    }
+
+    static func willEnter(_ node: InitializerDeclSyntax, context: Context) {
+        let state = context.ruleState(for: Self.self) { State() }
+        guard state.insideTypeBody else {
+            state.scopeFrameStack.append(false)
+            return
+        }
+        var names = Self.collectParamNames(from: node.signature.parameterClause)
+        if let body = node.body { names.formUnion(Self.collectLocalNames(in: Syntax(body))) }
+        state.localNameStack.append(names)
+        state.implicitSelfStack.append(true)
+        state.scopeFrameStack.append(true)
+    }
+
+    static func didExit(_: InitializerDeclSyntax, context: Context) {
+        let state = context.ruleState(for: Self.self) { State() }
+        if let didPush = state.scopeFrameStack.popLast(), didPush {
+            if !state.localNameStack.isEmpty { state.localNameStack.removeLast() }
+            if !state.implicitSelfStack.isEmpty { state.implicitSelfStack.removeLast() }
+        }
+    }
+
+    static func willEnter(_ node: SubscriptDeclSyntax, context: Context) {
+        let state = context.ruleState(for: Self.self) { State() }
+        guard state.insideTypeBody else {
+            state.scopeFrameStack.append(false)
+            return
+        }
+        let names = Self.collectParamNames(from: node.parameterClause)
+        state.localNameStack.append(names)
+        state.implicitSelfStack.append(true)
+        state.scopeFrameStack.append(true)
+    }
+
+    static func didExit(_: SubscriptDeclSyntax, context: Context) {
+        let state = context.ruleState(for: Self.self) { State() }
+        if let didPush = state.scopeFrameStack.popLast(), didPush {
+            if !state.localNameStack.isEmpty { state.localNameStack.removeLast() }
+            if !state.implicitSelfStack.isEmpty { state.implicitSelfStack.removeLast() }
+        }
+    }
+
+    static func willEnter(_ node: AccessorDeclSyntax, context: Context) {
+        let state = context.ruleState(for: Self.self) { State() }
+        guard state.insideTypeBody || !state.implicitSelfStack.isEmpty else {
+            state.scopeFrameStack.append(false)
+            return
+        }
+        var names = Set<String>()
+        let spec = node.accessorSpecifier.tokenKind
+        if let params = node.parameters {
+            names.insert(params.name.text)
+        } else {
+            switch spec {
+                case .keyword(.set), .keyword(.willSet): names.insert("newValue")
+                case .keyword(.didSet): names.insert("oldValue")
+                default: break
+            }
+        }
+        if spec == .keyword(.get) || spec == .keyword(.set) {
+            if let propName = Self.enclosingPropertyName(of: node) { names.insert(propName) }
+        }
+        if let body = node.body { names.formUnion(Self.collectLocalNames(in: Syntax(body))) }
+        state.localNameStack.append(names)
+        state.implicitSelfStack.append(true)
+        state.scopeFrameStack.append(true)
+    }
+
+    static func didExit(_: AccessorDeclSyntax, context: Context) {
+        let state = context.ruleState(for: Self.self) { State() }
+        if let didPush = state.scopeFrameStack.popLast(), didPush {
+            if !state.localNameStack.isEmpty { state.localNameStack.removeLast() }
+            if !state.implicitSelfStack.isEmpty { state.implicitSelfStack.removeLast() }
+        }
+    }
+
+    static func willEnter(_ node: VariableDeclSyntax, context: Context) {
+        let state = context.ruleState(for: Self.self) { State() }
+        guard state.insideTypeBody, node.modifiers.contains(anyOf: [.lazy]) else {
+            state.scopeFrameStack.append(false)
+            return
+        }
+        let allowed = !state.isReferenceType
+        state.localNameStack.append([])
+        state.implicitSelfStack.append(allowed)
+        state.scopeFrameStack.append(true)
+    }
+
+    static func didExit(_: VariableDeclSyntax, context: Context) {
+        let state = context.ruleState(for: Self.self) { State() }
+        if let didPush = state.scopeFrameStack.popLast(), didPush {
+            if !state.localNameStack.isEmpty { state.localNameStack.removeLast() }
+            if !state.implicitSelfStack.isEmpty { state.implicitSelfStack.removeLast() }
+        }
+    }
+
+    static func willEnter(_ node: AccessorBlockSyntax, context: Context) {
+        let state = context.ruleState(for: Self.self) { State() }
+        guard case let .getter(body) = node.accessors else {
+            state.scopeFrameStack.append(false)
+            return
+        }
+        guard state.insideTypeBody || !state.implicitSelfStack.isEmpty else {
+            state.scopeFrameStack.append(false)
+            return
+        }
+        var names = Self.collectLocalNames(in: Syntax(body))
+        if let propName = Self.enclosingPropertyName(of: node) { names.insert(propName) }
+        state.localNameStack.append(names)
+        state.implicitSelfStack.append(true)
+        state.scopeFrameStack.append(true)
+    }
+
+    static func didExit(_: AccessorBlockSyntax, context: Context) {
+        let state = context.ruleState(for: Self.self) { State() }
+        if let didPush = state.scopeFrameStack.popLast(), didPush {
+            if !state.localNameStack.isEmpty { state.localNameStack.removeLast() }
+            if !state.implicitSelfStack.isEmpty { state.implicitSelfStack.removeLast() }
+        }
+    }
+
+    static func willEnter(_ node: ClosureExprSyntax, context: Context) {
+        let state = context.ruleState(for: Self.self) { State() }
+        guard state.insideTypeBody else {
+            state.scopeFrameStack.append(false)
+            return
+        }
+        var names = Set<String>()
+        let allowsImplicitSelf: Bool = !state.isReferenceType ? true : Self.closureHasSelfCapture(node)
+
+        if let signature = node.signature {
+            names.formUnion(Self.collectClosureParamNames(from: signature))
+            if let captureClause = signature.capture {
+                for capture in captureClause.items {
+                    let name = capture.name.text
+                    if name != "self" { names.insert(name) }
+                }
+            }
+        }
+        names.formUnion(Self.collectLocalNames(in: Syntax(node.statements)))
+        state.localNameStack.append(names)
+        state.implicitSelfStack.append(allowsImplicitSelf)
+        state.scopeFrameStack.append(true)
+    }
+
+    static func didExit(_: ClosureExprSyntax, context: Context) {
+        let state = context.ruleState(for: Self.self) { State() }
+        if let didPush = state.scopeFrameStack.popLast(), didPush {
+            if !state.localNameStack.isEmpty { state.localNameStack.removeLast() }
+            if !state.implicitSelfStack.isEmpty { state.implicitSelfStack.removeLast() }
+        }
+    }
+
+    // MARK: - Static transform
+
+    static func transform(
+        _ node: MemberAccessExprSyntax,
+        parent _: Syntax?,
+        context: Context
+    ) -> ExprSyntax {
+        let state = context.ruleState(for: Self.self) { State() }
+
+        guard let base = node.base?.as(DeclReferenceExprSyntax.self),
+              base.baseName.tokenKind == .keyword(.self)
+        else { return ExprSyntax(node) }
+
+        let memberName = node.declName.baseName.text
+        guard memberName != "init",
+              !RedundantBackticks.swiftKeywords.contains(memberName)
+        else { return ExprSyntax(node) }
+
+        guard !state.implicitSelfStack.isEmpty else { return ExprSyntax(node) }
+        guard state.implicitSelfAllowed else { return ExprSyntax(node) }
+        guard !state.allLocalNames.contains(memberName) else { return ExprSyntax(node) }
+
+        Self.diagnose(.removeRedundantSelf, on: base, context: context)
+
+        var replacement = ExprSyntax(node.declName)
+        replacement.leadingTrivia = node.leadingTrivia
+        replacement.trailingTrivia = node.trailingTrivia
+        return replacement
+    }
+
     // MARK: - Type Declarations
 
     override func visit(_ node: StructDeclSyntax) -> DeclSyntax {
-        withTypeContext(isReference: false) { super.visit(node) }
+        Self.willEnter(node, context: context)
+        defer { Self.didExit(node, context: context) }
+        return withTypeContext(isReference: false) { super.visit(node) }
     }
 
     override func visit(_ node: EnumDeclSyntax) -> DeclSyntax {
-        withTypeContext(isReference: false) { super.visit(node) }
+        Self.willEnter(node, context: context)
+        defer { Self.didExit(node, context: context) }
+        return withTypeContext(isReference: false) { super.visit(node) }
     }
 
     override func visit(_ node: ClassDeclSyntax) -> DeclSyntax {
-        withTypeContext(isReference: true) { super.visit(node) }
+        Self.willEnter(node, context: context)
+        defer { Self.didExit(node, context: context) }
+        return withTypeContext(isReference: true) { super.visit(node) }
     }
 
     override func visit(_ node: ActorDeclSyntax) -> DeclSyntax {
-        withTypeContext(isReference: true) { super.visit(node) }
+        Self.willEnter(node, context: context)
+        defer { Self.didExit(node, context: context) }
+        return withTypeContext(isReference: true) { super.visit(node) }
     }
 
     override func visit(_ node: ExtensionDeclSyntax) -> DeclSyntax {
+        Self.willEnter(node, context: context)
+        defer { Self.didExit(node, context: context) }
         // Can't determine if value or reference type from extension alone.
         // Assume reference type (conservative — closures require explicit self).
-        withTypeContext(isReference: true) { super.visit(node) }
+        return withTypeContext(isReference: true) { super.visit(node) }
     }
 
     // MARK: - Function and Initializer Scopes
 
     override func visit(_ node: FunctionDeclSyntax) -> DeclSyntax {
+        Self.willEnter(node, context: context)
+        defer { Self.didExit(node, context: context) }
         guard insideTypeBody else { return super.visit(node) }
 
-        var names = collectParamNames(from: node.signature.parameterClause)
-        if let body = node.body { names.formUnion(collectLocalNames(in: Syntax(body))) }
+        var names = Self.collectParamNames(from: node.signature.parameterClause)
+        if let body = node.body { names.formUnion(Self.collectLocalNames(in: Syntax(body))) }
 
         return withScope(localNames: names, allowsImplicitSelf: true) { super.visit(node) }
     }
 
     override func visit(_ node: InitializerDeclSyntax) -> DeclSyntax {
+        Self.willEnter(node, context: context)
+        defer { Self.didExit(node, context: context) }
         guard insideTypeBody else { return super.visit(node) }
 
-        var names = collectParamNames(from: node.signature.parameterClause)
-        if let body = node.body { names.formUnion(collectLocalNames(in: Syntax(body))) }
+        var names = Self.collectParamNames(from: node.signature.parameterClause)
+        if let body = node.body { names.formUnion(Self.collectLocalNames(in: Syntax(body))) }
 
         return withScope(localNames: names, allowsImplicitSelf: true) { super.visit(node) }
     }
 
     override func visit(_ node: SubscriptDeclSyntax) -> DeclSyntax {
+        Self.willEnter(node, context: context)
+        defer { Self.didExit(node, context: context) }
         guard insideTypeBody else { return super.visit(node) }
 
-        let names = collectParamNames(from: node.parameterClause)
+        let names = Self.collectParamNames(from: node.parameterClause)
         return withScope(localNames: names, allowsImplicitSelf: true) { super.visit(node) }
     }
 
     // MARK: - Accessor Scopes (get/set/willSet/didSet)
 
     override func visit(_ node: AccessorDeclSyntax) -> DeclSyntax {
+        Self.willEnter(node, context: context)
+        defer { Self.didExit(node, context: context) }
         guard insideTypeBody || !implicitSelfStack.isEmpty else { return super.visit(node) }
 
         var names = Set<String>()
@@ -154,10 +449,10 @@ final class RedundantSelf: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendabl
         // In get/set, the property's own name is a "local" — using it
         // without self would cause infinite recursion.
         if spec == .keyword(.get) || spec == .keyword(.set) {
-            if let propName = enclosingPropertyName(of: node) { names.insert(propName) }
+            if let propName = Self.enclosingPropertyName(of: node) { names.insert(propName) }
         }
 
-        if let body = node.body { names.formUnion(collectLocalNames(in: Syntax(body))) }
+        if let body = node.body { names.formUnion(Self.collectLocalNames(in: Syntax(body))) }
 
         return withScope(localNames: names, allowsImplicitSelf: true) { super.visit(node) }
     }
@@ -165,6 +460,8 @@ final class RedundantSelf: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendabl
     // MARK: - Variable Declarations (lazy var)
 
     override func visit(_ node: VariableDeclSyntax) -> DeclSyntax {
+        Self.willEnter(node, context: context)
+        defer { Self.didExit(node, context: context) }
         guard insideTypeBody, node.modifiers.contains(anyOf: [.lazy]) else {
             return super.visit(node)
         }
@@ -178,31 +475,35 @@ final class RedundantSelf: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendabl
     // MARK: - Shorthand Computed Properties
 
     override func visit(_ node: AccessorBlockSyntax) -> AccessorBlockSyntax {
+        Self.willEnter(node, context: context)
+        defer { Self.didExit(node, context: context) }
         // Shorthand computed var: `var foo: Int { return self.bar }`
         // has .getter(CodeBlockItemListSyntax) with no AccessorDeclSyntax.
         guard case let .getter(body) = node.accessors else { return super.visit(node) }
         guard insideTypeBody || !implicitSelfStack.isEmpty else { return super.visit(node) }
 
-        var names = collectLocalNames(in: Syntax(body))
+        var names = Self.collectLocalNames(in: Syntax(body))
         // The property's own name is a "local" in its getter — using it without
         // self would cause infinite recursion.
-        if let propName = enclosingPropertyName(of: node) { names.insert(propName) }
+        if let propName = Self.enclosingPropertyName(of: node) { names.insert(propName) }
         return withScope(localNames: names, allowsImplicitSelf: true) { super.visit(node) }
     }
 
     // MARK: - Closure Scopes
 
     override func visit(_ node: ClosureExprSyntax) -> ExprSyntax {
+        Self.willEnter(node, context: context)
+        defer { Self.didExit(node, context: context) }
         guard insideTypeBody else { return super.visit(node) }
 
         var names = Set<String>()
         let allowsImplicitSelf: Bool
 
-        allowsImplicitSelf = !isReferenceType ? true : closureHasSelfCapture(node)
+        allowsImplicitSelf = !isReferenceType ? true : Self.closureHasSelfCapture(node)
 
         // Collect closure parameter names
         if let signature = node.signature {
-            names.formUnion(collectClosureParamNames(from: signature))
+            names.formUnion(Self.collectClosureParamNames(from: signature))
 
             // Capture list entries (except self) are also locals
             if let captureClause = signature.capture {
@@ -214,7 +515,7 @@ final class RedundantSelf: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendabl
         }
 
         // Collect names declared in the closure body
-        names.formUnion(collectLocalNames(in: Syntax(node.statements)))
+        names.formUnion(Self.collectLocalNames(in: Syntax(node.statements)))
 
         return withScope(localNames: names, allowsImplicitSelf: allowsImplicitSelf) {
             super.visit(node)
@@ -260,7 +561,7 @@ final class RedundantSelf: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendabl
 
     /// Determines if a closure captures `self` explicitly (strong or unowned).
     /// `[weak self]` returns false (conservative — requires guard let self detection).
-    private func closureHasSelfCapture(_ closure: ClosureExprSyntax) -> Bool {
+    private static func closureHasSelfCapture(_ closure: ClosureExprSyntax) -> Bool {
         guard let signature = closure.signature,
               let captureClause = signature.capture
         else { return false }
@@ -280,7 +581,7 @@ final class RedundantSelf: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendabl
     }
 
     /// Collects parameter internal names from a function parameter clause.
-    private func collectParamNames(
+    private static func collectParamNames(
         from clause: FunctionParameterClauseSyntax
     ) -> Set<String> {
         var names = Set<String>()
@@ -293,7 +594,7 @@ final class RedundantSelf: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendabl
     }
 
     /// Collects parameter names from a closure signature.
-    private func collectClosureParamNames(
+    private static func collectClosureParamNames(
         from signature: ClosureSignatureSyntax
     ) -> Set<String> {
         guard let paramClause = signature.parameterClause else { return [] }
@@ -313,7 +614,7 @@ final class RedundantSelf: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendabl
 
     /// Walks up from a node to find the enclosing property name.
     /// Used to prevent removing `self.` inside a computed property's own getter/setter.
-    private func enclosingPropertyName(of node: some SyntaxProtocol) -> String? {
+    private static func enclosingPropertyName(of node: some SyntaxProtocol) -> String? {
         var current = node.parent
         while let parent = current {
             if let binding = parent.as(PatternBindingSyntax.self),
@@ -328,7 +629,7 @@ final class RedundantSelf: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendabl
 
     /// Collects all declared names in a syntax subtree without descending into
     /// nested closures, functions, or type declarations (those have their own scope).
-    private func collectLocalNames(in syntax: Syntax) -> Set<String> {
+    private static func collectLocalNames(in syntax: Syntax) -> Set<String> {
         let collector = LocalNameCollector(viewMode: .sourceAccurate)
         collector.walk(syntax)
         return collector.names

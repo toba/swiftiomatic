@@ -86,16 +86,6 @@ final class OneDeclarationPerLine: RewriteSyntaxRule<BasicRuleValue>, @unchecked
     }
 
     override func visit(_ node: EnumDeclSyntax) -> DeclSyntax {
-        let parent = Syntax(node).parent
-        let visited = super.visit(node).cast(EnumDeclSyntax.self)
-        return Self.transform(visited, parent: parent, context: context)
-    }
-
-    static func transform(
-        _ node: EnumDeclSyntax,
-        parent: Syntax?,
-        context: Context
-    ) -> DeclSyntax {
         var newMembers: [MemberBlockItemSyntax] = []
 
         for member in node.memberBlock.members {
@@ -117,11 +107,7 @@ final class OneDeclarationPerLine: RewriteSyntaxRule<BasicRuleValue>, @unchecked
                     // Once we reach one of these, we need to write out the ones we've collected so
                     // far, then emit a separate case declaration with the associated/raw value
                     // element.
-                    Self.diagnose(
-                        .moveAssociatedOrRawValueCase(name: element.name.text),
-                        on: element,
-                        context: context
-                    )
+                    diagnose(.moveAssociatedOrRawValueCase(name: element.name.text), on: element)
 
                     if let caseDeclForCollectedElements = collector.makeCaseDeclAndReset() {
                         var newMember = member
@@ -158,9 +144,112 @@ final class OneDeclarationPerLine: RewriteSyntaxRule<BasicRuleValue>, @unchecked
     // MARK: - Variable declarations
 
     override func visit(_ node: CodeBlockItemListSyntax) -> CodeBlockItemListSyntax {
-        let parent = Syntax(node).parent
-        let visited = super.visit(node)
-        return Self.transform(visited, parent: parent, context: context)
+        guard node.contains(where: codeBlockItemHasMultipleVariableBindings)
+        else { return super.visit(node) }
+
+        var newItems = [CodeBlockItemSyntax]()
+        for codeBlockItem in node {
+            guard let varDecl = codeBlockItem.item.as(VariableDeclSyntax.self),
+                  varDecl.bindings.count > 1
+            else {
+                // It's not a variable declaration with multiple bindings, so visit it recursively
+                // (in case it's something that contains bindings that need to be split) but
+                // otherwise do nothing.
+                let newItem = super.visit(codeBlockItem)
+                newItems.append(newItem)
+                continue
+            }
+
+            diagnose(
+                .onlyOneVariableDeclaration(specifier: varDecl.bindingSpecifier.text), on: varDecl)
+
+            // Visit the decl recursively to make sure nested code block items in the bindings (for
+            // example, an initializer expression that contains a closure expression) are
+            // transformed first before we rewrite the decl itself.
+            let visitedDecl = super.visit(varDecl).as(VariableDeclSyntax.self)!
+            var splitter = VariableDeclSplitter {
+                CodeBlockItemSyntax(
+                    item: .decl(DeclSyntax($0)),
+                    semicolon: nil
+                )
+            }
+            newItems.append(contentsOf: splitter.nodes(bySplitting: visitedDecl))
+        }
+
+        return CodeBlockItemListSyntax(newItems)
+    }
+
+    /// Returns true if the given `CodeBlockItemSyntax` contains a `let` or `var` declaration with
+    /// multiple bindings.
+    private func codeBlockItemHasMultipleVariableBindings(
+        _ node: CodeBlockItemSyntax
+    ) -> Bool {
+        if let varDecl = node.item.as(VariableDeclSyntax.self),
+           varDecl.bindings.count > 1
+        {
+            return true
+        }
+        return false
+    }
+
+    // MARK: - Static transform (compact pipeline)
+
+    static func transform(
+        _ node: EnumDeclSyntax,
+        parent: Syntax?,
+        context: Context
+    ) -> DeclSyntax {
+        var newMembers: [MemberBlockItemSyntax] = []
+
+        for member in node.memberBlock.members {
+            // If it's not a case declaration, or it's a case declaration with only one element,
+            // leave it alone.
+            guard let caseDecl = member.decl.as(EnumCaseDeclSyntax.self),
+                  caseDecl.elements.count > 1
+            else {
+                newMembers.append(member)
+                continue
+            }
+
+            var collector = CaseElementCollector(basedOn: caseDecl)
+
+            for element in caseDecl.elements {
+                if element.parameterClause != nil || element.rawValue != nil {
+                    Self.diagnose(
+                        .moveAssociatedOrRawValueCase(name: element.name.text),
+                        on: element,
+                        context: context
+                    )
+
+                    if let caseDeclForCollectedElements = collector.makeCaseDeclAndReset() {
+                        var newMember = member
+                        newMember.decl = DeclSyntax(caseDeclForCollectedElements)
+                        newMembers.append(newMember)
+                    }
+
+                    var basisElement = element
+                    basisElement.trailingComma = nil
+                    let separatedCaseDecl = collector.makeCaseDeclFromBasis(elements: [basisElement]
+                    )
+
+                    var newMember = member
+                    newMember.decl = DeclSyntax(separatedCaseDecl)
+                    newMembers.append(newMember)
+                } else {
+                    collector.addElement(element)
+                }
+            }
+
+            if let caseDeclForCollectedElements = collector.makeCaseDeclAndReset() {
+                var newMember = member
+                newMember.decl = DeclSyntax(caseDeclForCollectedElements)
+                newMembers.append(newMember)
+            }
+        }
+
+        var result = node
+        result.memberBlock.members = MemberBlockItemListSyntax(newMembers)
+        return DeclSyntax(result)
     }
 
     static func transform(
@@ -168,15 +257,15 @@ final class OneDeclarationPerLine: RewriteSyntaxRule<BasicRuleValue>, @unchecked
         parent: Syntax?,
         context: Context
     ) -> CodeBlockItemListSyntax {
-        guard node.contains(where: codeBlockItemHasMultipleVariableBindings) else { return node }
+        guard node.contains(where: Self.codeBlockItemHasMultipleVariableBindings)
+        else { return node }
 
         var newItems = [CodeBlockItemSyntax]()
         for codeBlockItem in node {
             guard let varDecl = codeBlockItem.item.as(VariableDeclSyntax.self),
                   varDecl.bindings.count > 1
             else {
-                // Not a variable declaration with multiple bindings; children have already been
-                // visited by the combined rewriter / super.visit, so just keep it.
+                // Children already visited by the combined rewriter; no manual recursion needed.
                 newItems.append(codeBlockItem)
                 continue
             }
@@ -187,8 +276,7 @@ final class OneDeclarationPerLine: RewriteSyntaxRule<BasicRuleValue>, @unchecked
                 context: context
             )
 
-            // The decl's children (initializer expressions etc.) have already been recursed by
-            // the combined rewriter / super.visit, so split it as-is.
+            // Children already visited by the combined rewriter — trust the post-traversal input.
             var splitter = VariableDeclSplitter {
                 CodeBlockItemSyntax(
                     item: .decl(DeclSyntax($0)),
@@ -201,9 +289,7 @@ final class OneDeclarationPerLine: RewriteSyntaxRule<BasicRuleValue>, @unchecked
         return CodeBlockItemListSyntax(newItems)
     }
 
-    /// Returns true if the given `CodeBlockItemSyntax` contains a `let` or `var` declaration with
-    /// multiple bindings.
-    private static func codeBlockItemHasMultipleVariableBindings(
+    fileprivate static func codeBlockItemHasMultipleVariableBindings(
         _ node: CodeBlockItemSyntax
     ) -> Bool {
         if let varDecl = node.item.as(VariableDeclSyntax.self),

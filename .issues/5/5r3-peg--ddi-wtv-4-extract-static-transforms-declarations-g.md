@@ -12,7 +12,7 @@ blocked_by:
 sync:
     github:
         issue_number: "490"
-        synced_at: "2026-04-28T02:56:06Z"
+        synced_at: "2026-04-28T16:43:51Z"
 ---
 
 Continuation of the mechanical refactor. Same pattern as ddi-wtv-3.

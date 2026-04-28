@@ -12,7 +12,7 @@ blocked_by:
 sync:
     github:
         issue_number: "494"
-        synced_at: "2026-04-28T02:56:06Z"
+        synced_at: "2026-04-28T16:43:51Z"
 ---
 
 Final mechanical refactor batch — see `5r3-peg` for the previous cluster's continuation brief; the same contract applies here. The friction blocker (`3zw-l17`) is resolved.
