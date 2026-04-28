@@ -72,6 +72,23 @@ final class NoGuardInTests: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendab
         state.addedTryStatement = frame.addedTry
     }
 
+    // Don't recurse into closures — guard inside closures can't be fixed by
+    // making the outer function throw. Mirror the legacy override's
+    // short-circuit by pushing/popping `insideTestFunction = false` around
+    // the closure body in the compact pipeline.
+    static func willEnter(_: ClosureExprSyntax, context: Context) {
+        let state = context.ruleState(for: Self.self) { State() }
+        state.functionStack.append((state.insideTestFunction, state.addedTryStatement))
+        state.insideTestFunction = false
+    }
+
+    static func didExit(_: ClosureExprSyntax, context: Context) {
+        let state = context.ruleState(for: Self.self) { State() }
+        guard let frame = state.functionStack.popLast() else { return }
+        state.insideTestFunction = frame.insideTest
+        state.addedTryStatement = frame.addedTry
+    }
+
     // MARK: - Legacy delegators
 
     override func visit(_ node: SourceFileSyntax) -> SourceFileSyntax {
@@ -137,6 +154,19 @@ final class NoGuardInTests: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendab
             result = result.addingThrowsClause()
         }
         return DeclSyntax(result)
+    }
+
+    /// Compact-pipeline entry point. Only runs when inside a test function
+     /// (state populated by the `willEnter(FunctionDeclSyntax,…)` hook); the
+     /// state gating mirrors the legacy override.
+    static func transform(
+        _ node: CodeBlockItemListSyntax,
+        parent _: Syntax?,
+        context: Context
+    ) -> CodeBlockItemListSyntax {
+        let state = context.ruleState(for: Self.self) { State() }
+        guard state.insideTestFunction else { return node }
+        return Self.transformCodeBlockItemList(node, context: context)
     }
 
     private static func transformCodeBlockItemList(

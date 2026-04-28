@@ -71,5 +71,12 @@ func rewriteSubscriptDecl(
         transform: UseImplicitInit.transform
     )
 
+    // WrapSingleLineBodies — wrap or inline single-statement subscript getter.
+    applyRule(
+        WrapSingleLineBodies.self, to: &result,
+        parent: parent, context: context,
+        transform: WrapSingleLineBodies.transform
+    )
+
     return result
 }

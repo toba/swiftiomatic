@@ -45,5 +45,12 @@ func rewriteForStmt(
         transform: WrapMultilineStatementBraces.transform
     )
 
+    // WrapSingleLineBodies — wrap or inline single-statement for body.
+    applyRule(
+        WrapSingleLineBodies.self, to: &result,
+        parent: parent, context: context,
+        transform: WrapSingleLineBodies.transform
+    )
+
     return result
 }

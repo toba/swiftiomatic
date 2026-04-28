@@ -34,12 +34,12 @@ private func applyPreferVoidReturnToClosureSignature(
     _ node: ClosureSignatureSyntax,
     context: Context
 ) -> ClosureSignatureSyntax {
+    // Diagnostic emitted in `PreferVoidReturn.willEnter(_:context:)` against
+    // the pre-traversal node so finding locations come from the original tree.
     guard let returnClause = node.returnClause,
           let returnType = returnClause.type.as(TupleTypeSyntax.self),
           returnType.elements.isEmpty
     else { return node }
-
-    PreferVoidReturn.diagnose(.returnVoidClosure, on: returnType, context: context)
 
     if hasNonWhitespaceTrivia(returnType.leftParen, at: .trailing)
         || hasNonWhitespaceTrivia(returnType.rightParen, at: .leading)

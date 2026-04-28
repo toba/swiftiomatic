@@ -119,6 +119,27 @@ final class PreferVoidReturn: RewriteSyntaxRule<BasicRuleValue>, @unchecked Send
       genericArgumentClause: nil
     )
   }
+
+  // MARK: - Compact pipeline (willEnter diagnoses on the pre-traversal node so
+  // finding source locations come from the original tree, not the post-rewrite
+  // detached subtree). The merged `rewriteFunctionType` /
+  // `rewriteClosureSignature` only performs the rewrite — they no longer
+  // diagnose.
+
+  static func willEnter(_ node: FunctionTypeSyntax, context: Context) {
+    guard let returnType = node.returnClause.type.as(TupleTypeSyntax.self),
+      returnType.elements.isEmpty
+    else { return }
+    Self.diagnose(.returnVoid, on: returnType, context: context)
+  }
+
+  static func willEnter(_ node: ClosureSignatureSyntax, context: Context) {
+    guard let returnClause = node.returnClause,
+      let returnType = returnClause.type.as(TupleTypeSyntax.self),
+      returnType.elements.isEmpty
+    else { return }
+    Self.diagnose(.returnVoid, on: returnType, context: context)
+  }
 }
 
 extension Finding.Message {

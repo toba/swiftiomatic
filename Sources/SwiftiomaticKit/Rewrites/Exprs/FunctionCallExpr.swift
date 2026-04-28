@@ -16,17 +16,28 @@ func rewriteFunctionCallExpr(
 ) -> ExprSyntax {
     var result = node
 
-    applyRule(
-        HoistAwait.self, to: &result,
-        parent: parent, context: context,
-        transform: HoistAwait.transform
-    )
+    // HoistAwait — may widen `foo(await x)` to `await foo(x)` (an
+    // `AwaitExprSyntax`). Direct dispatch with early return when the kind
+    // changes, since subsequent rules in this chain expect a
+    // `FunctionCallExprSyntax`.
+    if context.shouldFormat(HoistAwait.self, node: Syntax(result)) {
+        let widened = HoistAwait.transform(result, parent: parent, context: context)
+        if let stillCall = widened.as(FunctionCallExprSyntax.self) {
+            result = stillCall
+        } else {
+            return widened
+        }
+    }
 
-    applyRule(
-        HoistTry.self, to: &result,
-        parent: parent, context: context,
-        transform: HoistTry.transform
-    )
+    // HoistTry — may widen `foo(try x)` to `try foo(x)` (a `TryExprSyntax`).
+    if context.shouldFormat(HoistTry.self, node: Syntax(result)) {
+        let widened = HoistTry.transform(result, parent: parent, context: context)
+        if let stillCall = widened.as(FunctionCallExprSyntax.self) {
+            result = stillCall
+        } else {
+            return widened
+        }
+    }
 
     applyRule(
         PreferAssertionFailure.self, to: &result,
@@ -34,11 +45,30 @@ func rewriteFunctionCallExpr(
         transform: PreferAssertionFailure.transform
     )
 
-    applyRule(
-        PreferDotZero.self, to: &result,
-        parent: parent, context: context,
-        transform: PreferDotZero.transform
-    )
+    // PreferSwiftTesting — converts `XCTAssert*` / `XCTUnwrap` / `XCTFail` /
+    // `Issue.record` calls to Swift Testing macros (`#expect`, `#require`).
+    // May widen `FunctionCallExpr` to `MacroExpansionExpr`. Direct dispatch
+    // with early return when the kind changes.
+    if context.shouldFormat(PreferSwiftTesting.self, node: Syntax(result)) {
+        let widened = PreferSwiftTesting.transform(result, parent: parent, context: context)
+        if let stillCall = widened.as(FunctionCallExprSyntax.self) {
+            result = stillCall
+        } else {
+            return widened
+        }
+    }
+
+    // PreferDotZero — may widen `CGRect(x: 0, y: 0, ...)` to `CGRect.zero`
+    // (a `MemberAccessExprSyntax`). Direct dispatch with early return when
+    // the kind changes.
+    if context.shouldFormat(PreferDotZero.self, node: Syntax(result)) {
+        let widened = PreferDotZero.transform(result, parent: parent, context: context)
+        if let stillCall = widened.as(FunctionCallExprSyntax.self) {
+            result = stillCall
+        } else {
+            return widened
+        }
+    }
 
     applyRule(
         PreferKeyPath.self, to: &result,
@@ -46,11 +76,16 @@ func rewriteFunctionCallExpr(
         transform: PreferKeyPath.transform
     )
 
-    applyRule(
-        RedundantClosure.self, to: &result,
-        parent: parent, context: context,
-        transform: RedundantClosure.transform
-    )
+    // RedundantClosure — may unwrap `{ x }()` to `x` (any `ExprSyntax`).
+    // Direct dispatch with early return when the kind changes.
+    if context.shouldFormat(RedundantClosure.self, node: Syntax(result)) {
+        let widened = RedundantClosure.transform(result, parent: parent, context: context)
+        if let stillCall = widened.as(FunctionCallExprSyntax.self) {
+            result = stillCall
+        } else {
+            return widened
+        }
+    }
 
     applyRule(
         RedundantInit.self, to: &result,

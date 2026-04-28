@@ -30,5 +30,14 @@ func rewriteGuardStmt(
         transform: WrapMultilineStatementBraces.transform
     )
 
+    // WrapSingleLineBodies — wrap or inline single-statement guard body. The
+    // transform returns `StmtSyntax` but the underlying node remains a
+    // `GuardStmtSyntax`, so `applyRule`'s cast-back succeeds.
+    applyRule(
+        WrapSingleLineBodies.self, to: &result,
+        parent: parent, context: context,
+        transform: WrapSingleLineBodies.transform
+    )
+
     return result
 }

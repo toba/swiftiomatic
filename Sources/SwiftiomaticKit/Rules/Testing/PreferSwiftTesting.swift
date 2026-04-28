@@ -24,6 +24,11 @@ final class PreferSwiftTesting: RewriteSyntaxRule<BasicRuleValue>, @unchecked Se
         /// Stack of `currentFunctionHasTry` saved values.
         var currentFunctionHasTryStack: [Bool] = []
         var currentFunctionHasTry = false
+        /// Stack of pre-traversal `FunctionCallExprSyntax` nodes captured by
+        /// the compact pipeline's `willEnter` so that the post-traversal
+        /// `transform` can use the original (still-attached) node for
+        /// finding source locations.
+        var originalCallStack: [FunctionCallExprSyntax] = []
     }
 
     // MARK: - Pre-scan
@@ -114,6 +119,49 @@ final class PreferSwiftTesting: RewriteSyntaxRule<BasicRuleValue>, @unchecked Se
         if let was = state.currentFunctionHasTryStack.popLast() {
             state.currentFunctionHasTry = was
         }
+    }
+
+    static func willEnter(_ node: FunctionCallExprSyntax, context: Context) {
+        let state = context.ruleState(for: Self.self) { State() }
+        guard state.hasXCTestImport, !state.bailOut else { return }
+        let calledName = node.calledExpression.trimmedDescription
+        guard calledName.hasPrefix("XCT") || calledName == "Issue.record" else { return }
+        state.originalCallStack.append(node)
+    }
+
+    static func didExit(_: FunctionCallExprSyntax, context: Context) {
+        let state = context.ruleState(for: Self.self) { State() }
+        // The matching `transform` already pops; this is a safety net in case
+        // the call wasn't actually transformed (e.g. arity mismatch).
+        _ = state.originalCallStack
+    }
+
+    static func transform(
+        _ node: FunctionCallExprSyntax,
+        parent: Syntax?,
+        context: Context
+    ) -> ExprSyntax {
+        let state = context.ruleState(for: Self.self) { State() }
+        guard state.hasXCTestImport, !state.bailOut else { return ExprSyntax(node) }
+
+        let calledName = node.calledExpression.trimmedDescription
+        guard calledName.hasPrefix("XCT") || calledName == "Issue.record" else {
+            return ExprSyntax(node)
+        }
+
+        // Pop the matching original (pre-recursion) node pushed in willEnter.
+        // The compact dispatcher visits children before this transform, so
+        // `node` is detached from its parent and its source locations would
+        // be wrong.
+        let originalNode: FunctionCallExprSyntax
+        if let last = state.originalCallStack.popLast() {
+            originalNode = last
+        } else {
+            originalNode = node
+        }
+        return Self.transformAssertion(
+            node, originalNode: originalNode, parent: parent, context: context
+        )
     }
 
     // MARK: - Legacy delegators
@@ -466,6 +514,126 @@ final class PreferSwiftTesting: RewriteSyntaxRule<BasicRuleValue>, @unchecked Se
                 arguments: LabeledExprListSyntax(requireArgs),
                 rightParen: .rightParenToken()
             ))
+    }
+
+    // MARK: - Compact-pipeline FunctionDecl transform
+
+    /// Compact-pipeline counterpart of the legacy `visit(FunctionDeclSyntax)`
+    /// override. State has been pushed in `willEnter(FunctionDeclSyntax)` and
+    /// children already visited, so the conversion helpers operate on the
+    /// post-traversal node directly (they take `visited` rather than calling
+    /// `super.visit`).
+    static func transform(
+        _ node: FunctionDeclSyntax,
+        parent _: Syntax?,
+        context: Context
+    ) -> DeclSyntax {
+        let state = context.ruleState(for: Self.self) { State() }
+        guard state.hasXCTestImport, !state.bailOut, state.insideXCTestCase else {
+            return DeclSyntax(node)
+        }
+
+        let name = node.name.text
+
+        if name == "setUp" || name == "setUpWithError", node.modifiers.contains(.override) {
+            return Self.convertSetUpStatic(node)
+        }
+        if name == "tearDown", node.modifiers.contains(.override) {
+            return Self.convertTearDownStatic(node)
+        }
+        if name.hasPrefix("test"), node.signature.parameterClause.parameters.isEmpty,
+           node.signature.returnClause == nil, !node.modifiers.contains(.static)
+        {
+            return Self.convertTestMethodStatic(node)
+        }
+
+        return DeclSyntax(node)
+    }
+
+    /// Static counterpart of `convertSetUp`. Operates on the already-visited
+    /// node (no `super.visit`); the legacy form's post-recursion logic is
+    /// preserved.
+    private static func convertSetUpStatic(_ node: FunctionDeclSyntax) -> DeclSyntax {
+        var result = node
+        result.modifiers = result.modifiers.filter {
+            $0.name.tokenKind != .keyword(.override)
+        }
+
+        if var body = result.body {
+            body.statements = Self.removeSuperCall(from: body.statements, methodName: node.name.text)
+            result.body = body
+        }
+
+        let initDecl = InitializerDeclSyntax(
+            attributes: result.attributes,
+            modifiers: result.modifiers,
+            initKeyword: .keyword(
+                .`init`,
+                leadingTrivia: node.leadingTrivia,
+                trailingTrivia: []),
+            signature: result.signature,
+            body: result.body)
+
+        return DeclSyntax(initDecl)
+    }
+
+    private static func convertTearDownStatic(_ node: FunctionDeclSyntax) -> DeclSyntax {
+        var result = node
+        result.modifiers = result.modifiers.filter {
+            $0.name.tokenKind != .keyword(.override)
+        }
+
+        if var body = result.body {
+            body.statements = Self.removeSuperCall(from: body.statements, methodName: "tearDown")
+            result.body = body
+        }
+
+        let deinitDecl = DeinitializerDeclSyntax(
+            attributes: result.attributes,
+            modifiers: result.modifiers,
+            deinitKeyword: .keyword(
+                .deinit,
+                leadingTrivia: node.leadingTrivia,
+                trailingTrivia: result.body?.leftBrace.leadingTrivia ?? .space),
+            body: result.body?.with(
+                \.leftBrace,
+                result.body!.leftBrace.with(\.leadingTrivia, .space)))
+
+        return DeclSyntax(deinitDecl)
+    }
+
+    private static func convertTestMethodStatic(_ node: FunctionDeclSyntax) -> DeclSyntax {
+        let bodyHasTry = node.body?.statements.contains(where: { stmt in
+            stmt.item.tokens(viewMode: .sourceAccurate).contains { $0.tokenKind == .keyword(.try) }
+        }) ?? false
+
+        let alreadyThrows = node.signature.effectSpecifiers?.throwsClause != nil
+
+        var result = node
+
+        let testAttr = AttributeSyntax(
+            atSign: .atSignToken(),
+            attributeName: IdentifierTypeSyntax(name: .identifier("Test")),
+            trailingTrivia: .space)
+
+        let funcTrivia = result.funcKeyword.leadingTrivia
+        result.funcKeyword = result.funcKeyword.with(\.leadingTrivia, [])
+
+        var attrList = [AttributeListSyntax.Element]()
+        attrList.append(
+            AttributeListSyntax.Element(
+                testAttr.with(
+                    \.atSign,
+                    .atSignToken(leadingTrivia: funcTrivia)
+                )))
+
+        for attr in result.attributes { attrList.append(attr) }
+
+        result.attributes = AttributeListSyntax(attrList)
+
+        if bodyHasTry, !alreadyThrows { result = result.addingThrowsClause() }
+
+        return DeclSyntax(result)
     }
 
     // MARK: - setUp/tearDown conversion (uses instance super.visit; kept on instance)

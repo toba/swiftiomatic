@@ -86,6 +86,34 @@ final class PreferEarlyExits: RewriteSyntaxRule<BasicRuleValue>, @unchecked Send
         return CodeBlockItemListSyntax(newItems)
     }
 
+    // MARK: - Compact pipeline
+
+    /// Diagnose on the pre-traversal node so finding source locations come from
+    /// the original tree. The merged `applyPreferEarlyExits` only performs the
+    /// rewrite — see `Sources/SwiftiomaticKit/Rewrites/Stmts/CodeBlockItemList.swift`.
+    static func willEnter(_ node: CodeBlockItemListSyntax, context: Context) {
+        for codeBlockItem in node {
+            guard let exprStmt = codeBlockItem.item.as(ExpressionStmtSyntax.self),
+                let ifStatement = exprStmt.expression.as(IfExprSyntax.self),
+                let elseBody = ifStatement.elseBody?.as(CodeBlockSyntax.self),
+                Self.codeBlockEndsWithEarlyExit(elseBody)
+            else { continue }
+            Self.diagnose(.useGuardStatement, on: ifStatement, context: context)
+        }
+    }
+
+    fileprivate static func codeBlockEndsWithEarlyExit(_ codeBlock: CodeBlockSyntax) -> Bool {
+        guard let lastStatement = codeBlock.statements.last else { return false }
+        switch lastStatement.item {
+            case let .stmt(stmt):
+                switch Syntax(stmt).as(SyntaxEnum.self) {
+                    case .returnStmt, .throwStmt, .breakStmt, .continueStmt: return true
+                    default: return false
+                }
+            default: return false
+        }
+    }
+
     /// Returns true if the last statement in the given code block is one that will cause an early
     /// exit from the control flow construct or function.
     private func codeBlockEndsWithEarlyExit(_ codeBlock: CodeBlockSyntax) -> Bool {

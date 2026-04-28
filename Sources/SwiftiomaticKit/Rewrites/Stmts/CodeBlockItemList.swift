@@ -65,6 +65,13 @@ func rewriteCodeBlockItemList(
         result = applyPreferEarlyExits(result, context: context)
     }
 
+    // NoGuardInTests — convert `guard` statements in test functions to
+    // `try #require(...)` / `#expect(...)` / XCTest equivalents. Gated on
+    // `state.insideTestFunction` set by the willEnter hooks.
+    if context.shouldFormat(NoGuardInTests.self, node: Syntax(result)) {
+        result = NoGuardInTests.transform(result, parent: parent, context: context)
+    }
+
     return result
 }
 
@@ -84,7 +91,8 @@ private func applyPreferEarlyExits(
             continue
         }
 
-        PreferEarlyExits.diagnose(.useGuardStatement, on: ifStatement, context: context)
+        // Diagnostic emitted in `PreferEarlyExits.willEnter(_:context:)` against
+        // the pre-traversal node so finding locations come from the original tree.
 
         let guardKeyword = TokenSyntax.keyword(
             .guard,

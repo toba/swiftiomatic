@@ -14,11 +14,17 @@ func rewriteForceUnwrapExpr(
 ) -> ExprSyntax {
     var result = node
 
-    applyRule(
-        URLMacro.self, to: &result,
-        parent: parent, context: context,
-        transform: URLMacro.transform
-    )
+    // URLMacro — may widen `URL(string: "x")!` to `#URL("x")` (a
+    // `MacroExpansionExprSyntax`). Direct dispatch with early return when
+    // the kind changes.
+    if context.shouldFormat(URLMacro.self, node: Syntax(result)) {
+        let widened = URLMacro.transform(result, parent: parent, context: context)
+        if let stillForce = widened.as(ForceUnwrapExprSyntax.self) {
+            result = stillForce
+        } else {
+            return widened
+        }
+    }
 
     // NoForceUnwrap — chain-top wrapping in test functions.
     // Helpers in `Rewrites/Exprs/NoForceUnwrapHelpers.swift`.

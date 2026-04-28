@@ -22,6 +22,13 @@ import SwiftSyntax
 final class PreferShorthandTypeNames: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable {
     override class var group: ConfigurationGroup? { .types }
 
+    /// Compact-pipeline support: when set, `visit(_:)` consults this instead of
+    /// `node.parent` (which is `nil` because the post-recursion node is detached
+    /// from the original tree). Set only by the static `transform` overloads
+    /// invoked from `CompactStageOneRewriter` via the per-node merged
+    /// rewrite functions in `Sources/SwiftiomaticKit/Rewrites/Exprs/`.
+    fileprivate var compactPipelineParent: Syntax?
+
     override func visit(_ node: IdentifierTypeSyntax) -> TypeSyntax {
         // Ignore types that don't have generic arguments.
         guard let genericArgumentClause = node.genericArgumentClause else {
@@ -34,7 +41,8 @@ final class PreferShorthandTypeNames: RewriteSyntaxRule<BasicRuleValue>, @unchec
         // `Foo<Array<Int>>.Bar` can still be transformed to `Foo<[Int]>.Bar` because the member
         // reference is not directly attached to the type that will be transformed, but we need to visit
         // the children so that we don't skip this).
-        guard let parent = node.parent, !parent.is(MemberTypeSyntax.self) else {
+        let effectiveParent = node.parent ?? compactPipelineParent
+        if let effectiveParent, effectiveParent.is(MemberTypeSyntax.self) {
             return super.visit(node)
         }
 
@@ -93,7 +101,12 @@ final class PreferShorthandTypeNames: RewriteSyntaxRule<BasicRuleValue>, @unchec
         }
 
         if let newNode = newNode {
-            diagnose(.useTypeShorthand(type: node.name.text), on: node)
+            // Compact pipeline emits findings via `willEnter(_:IdentifierTypeSyntax,context:)`
+            // (pre-recursion) so source locations are correct. Legacy still
+            // diagnoses here.
+            if compactPipelineParent == nil {
+                diagnose(.useTypeShorthand(type: node.name.text), on: node)
+            }
             return newNode
         }
 
@@ -128,7 +141,8 @@ final class PreferShorthandTypeNames: RewriteSyntaxRule<BasicRuleValue>, @unchec
         // that may need to be rewritten. For example, `Foo<Array<Int>>.Bar()` can still be transformed
         // to `Foo<[Int]>.Bar()` because the member reference is not directly attached to the type that
         // will be transformed, but we need to visit the children so that we don't skip this).
-        guard let parent = node.parent, !parent.is(MemberAccessExprSyntax.self) else {
+        let effectiveParent = node.parent ?? compactPipelineParent
+        if let effectiveParent, effectiveParent.is(MemberAccessExprSyntax.self) {
             return super.visit(node)
         }
 
@@ -187,7 +201,12 @@ final class PreferShorthandTypeNames: RewriteSyntaxRule<BasicRuleValue>, @unchec
         }
 
         if let newNode = newNode {
-            diagnose(.useTypeShorthand(type: expression.baseName.text), on: expression)
+            // Compact pipeline emits findings via
+            // `willEnter(_:GenericSpecializationExprSyntax,context:)` (pre-recursion);
+            // legacy still diagnoses here.
+            if compactPipelineParent == nil {
+                diagnose(.useTypeShorthand(type: expression.baseName.text), on: expression)
+            }
             return newNode
         }
 
@@ -637,13 +656,163 @@ final class PreferShorthandTypeNames: RewriteSyntaxRule<BasicRuleValue>, @unchec
     // an `ArrayType`/`DictionaryType`/`OptionalType` is a no-op for this rule),
     // so we forward to a fresh instance.
 
+    /// Diagnose on the pre-traversal node so finding source locations come from
+    /// the original tree. The transform fires post-recursion when actually
+    /// rewriting; this hook only emits findings.
+    static func willEnter(_ node: IdentifierTypeSyntax, context: Context) {
+        guard let genericArgumentClause = node.genericArgumentClause else { return }
+        if let parent = node.parent, parent.is(MemberTypeSyntax.self) { return }
+        let name = node.name.text
+        let arity = genericArgumentClause.arguments.count
+        switch name {
+            case "Array", "Optional":
+                guard arity == 1 else { return }
+            case "Dictionary":
+                guard arity == 2 else { return }
+            default: return
+        }
+        if name == "Optional", isUninitializedStoredVar(node: node) { return }
+        Self.diagnose(.useTypeShorthand(type: name), on: node, context: context)
+    }
+
+    static func willEnter(_ node: GenericSpecializationExprSyntax, context: Context) {
+        guard let expression = node.expression.as(DeclReferenceExprSyntax.self) else { return }
+        if let parent = node.parent, parent.is(MemberAccessExprSyntax.self) { return }
+        let name = expression.baseName.text
+        let arity = node.genericArgumentClause.arguments.count
+        switch name {
+            case "Array", "Optional":
+                guard arity == 1 else { return }
+            case "Dictionary":
+                guard arity == 2 else { return }
+            default: return
+        }
+        // In an expression context, every type argument must have a valid
+        // expression representation (e.g. `()` cannot become `()` as an
+        // expression because the parser interprets `()` as the void *value*).
+        for arg in node.genericArgumentClause.arguments {
+            if case .type(let typeArg) = arg.argument,
+                !hasValidExpressionRepresentation(typeArg)
+            {
+                return
+            }
+        }
+        Self.diagnose(.useTypeShorthand(type: name), on: expression, context: context)
+    }
+
+    /// Static counterpart to `expressionRepresentation(of:)` returning only
+    /// success/failure. Empty tuple types (`()`) have no expression
+    /// representation in an expression context.
+    fileprivate static func hasValidExpressionRepresentation(_ type: TypeSyntax) -> Bool {
+        switch Syntax(type).as(SyntaxEnum.self) {
+            case .tupleType(let tupleType):
+                if tupleType.elements.isEmpty { return false }
+                for elem in tupleType.elements {
+                    if !hasValidExpressionRepresentation(elem.type) { return false }
+                }
+                return true
+            case .arrayType(let arr):
+                return hasValidExpressionRepresentation(arr.element)
+            case .dictionaryType(let dict):
+                return hasValidExpressionRepresentation(dict.key)
+                    && hasValidExpressionRepresentation(dict.value)
+            case .optionalType(let opt):
+                return hasValidExpressionRepresentation(opt.wrappedType)
+            case .implicitlyUnwrappedOptionalType(let iuo):
+                return hasValidExpressionRepresentation(iuo.wrappedType)
+            case .memberType(let member):
+                return hasValidExpressionRepresentation(member.baseType)
+            case .functionType(let fnType):
+                for elem in fnType.parameters {
+                    if !hasValidExpressionRepresentation(elem.type) { return false }
+                }
+                return hasValidExpressionRepresentation(fnType.returnClause.type)
+            case .packElementType(let pack):
+                return hasValidExpressionRepresentation(pack.pack)
+            case .identifierType(let ident):
+                // The legacy pipeline recursively visits generic args first,
+                // shortening eligible ones. We mirror that: an IdentifierType
+                // that *would* be shortened to a form with no expression
+                // representation (e.g. `Optional<()>` → `()?`, which fails
+                // because `()` has no expression representation) cannot itself
+                // be expressed.
+                guard let clause = ident.genericArgumentClause else { return true }
+                let arity = clause.arguments.count
+                switch ident.name.text {
+                    case "Optional", "Array":
+                        guard arity == 1, case .type(let arg) = clause.arguments.first?.argument
+                        else { return true }
+                        return hasValidExpressionRepresentation(arg)
+                    case "Dictionary":
+                        guard arity == 2 else { return true }
+                        let args = Array(clause.arguments)
+                        if case .type(let k) = args[0].argument,
+                            case .type(let v) = args[1].argument
+                        {
+                            return hasValidExpressionRepresentation(k)
+                                && hasValidExpressionRepresentation(v)
+                        }
+                        return true
+                    default: return true
+                }
+            case .someOrAnyType, .attributedType, .metatypeType,
+                .compositionType, .classRestrictionType, .namedOpaqueReturnType,
+                .packExpansionType, .suppressedType:
+                return true
+            default:
+                return true
+        }
+    }
+
+    /// Static counterpart of `isTypeOfUninitializedStoredVar` that uses the
+    /// pre-traversal `node.parent` chain (which is intact during `willEnter`).
+    fileprivate static func isUninitializedStoredVar(node: IdentifierTypeSyntax) -> Bool {
+        guard let typeAnnotation = node.parent?.as(TypeAnnotationSyntax.self),
+            let patternBinding = nearestAncestor(of: typeAnnotation, type: PatternBindingSyntax.self),
+            isStoredProperty(patternBinding),
+            patternBinding.initializer == nil,
+            let variableDecl = nearestAncestor(of: patternBinding, type: VariableDeclSyntax.self),
+            variableDecl.bindingSpecifier.tokenKind == .keyword(.var)
+        else {
+            return false
+        }
+        return true
+    }
+
+    fileprivate static func isStoredProperty(_ node: PatternBindingSyntax) -> Bool {
+        guard let accessor = node.accessorBlock else { return true }
+        guard case .accessors(let accessors) = accessor.accessors else { return false }
+        for accessorDecl in accessors {
+            switch accessorDecl.accessorSpecifier.tokenKind {
+                case .keyword(.get), .keyword(.set), .keyword(.unsafeAddress),
+                    .keyword(.unsafeMutableAddress), .keyword(._read), .keyword(._modify):
+                    return false
+                default: return true
+            }
+        }
+        return false
+    }
+
+    fileprivate static func nearestAncestor<N: SyntaxProtocol, A: SyntaxProtocol>(
+        of node: N,
+        type: A.Type = A.self
+    ) -> A? {
+        var parent: Syntax? = Syntax(node)
+        while let p = parent {
+            if let typed = p.as(type) { return typed }
+            parent = p.parent
+        }
+        return nil
+    }
+
     static func transform(
         _ node: IdentifierTypeSyntax,
         parent: Syntax?,
         context: Context
     ) -> TypeSyntax {
-        _ = parent
-        return PreferShorthandTypeNames(context: context).visit(node)
+        let rule = PreferShorthandTypeNames(context: context)
+        rule.compactPipelineParent = parent
+        return rule.visit(node)
     }
 
     static func transform(
@@ -651,8 +820,9 @@ final class PreferShorthandTypeNames: RewriteSyntaxRule<BasicRuleValue>, @unchec
         parent: Syntax?,
         context: Context
     ) -> ExprSyntax {
-        _ = parent
-        return PreferShorthandTypeNames(context: context).visit(node)
+        let rule = PreferShorthandTypeNames(context: context)
+        rule.compactPipelineParent = parent
+        return rule.visit(node)
     }
 }
 

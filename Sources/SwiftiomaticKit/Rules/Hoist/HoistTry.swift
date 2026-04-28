@@ -81,10 +81,51 @@ final class HoistTry: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable {
         )
     }
 
+    /// Compact-pipeline state: per-AwaitExpr stack of pre-recursion
+    /// `(hadTryBefore, trailingTrivia)` snapshots, populated by
+    /// `willEnter(_:AwaitExprSyntax, context:)` and consumed by
+    /// `transform(_:AwaitExprSyntax, parent:context:)`. Reference type so it can
+    /// be cached on `Context.ruleState(for:)`.
+    final class AwaitState {
+        var hadTryBefore: [Bool] = []
+        var trailingTrivia: [Trivia] = []
+        init() {}
+    }
+
+    static func willEnter(_ node: AwaitExprSyntax, context: Context) {
+        let state = context.ruleState(for: HoistTry.self) { AwaitState() }
+        state.hadTryBefore.append(node.expression.is(TryExprSyntax.self))
+        state.trailingTrivia.append(node.trailingTrivia)
+    }
+
+    static func didExit(_ node: AwaitExprSyntax, context: Context) {
+        let state = context.ruleState(for: HoistTry.self) { AwaitState() }
+        if !state.hadTryBefore.isEmpty {
+            state.hadTryBefore.removeLast()
+        }
+        if !state.trailingTrivia.isEmpty {
+            state.trailingTrivia.removeLast()
+        }
+    }
+
+    static func transform(
+        _ node: AwaitExprSyntax,
+        parent: Syntax?,
+        context: Context
+    ) -> ExprSyntax {
+        _ = parent
+        let state = context.ruleState(for: HoistTry.self) { AwaitState() }
+        let hadTryBefore = state.hadTryBefore.last ?? node.expression.is(TryExprSyntax.self)
+        let originalTrailingTrivia = state.trailingTrivia.last ?? node.trailingTrivia
+        return Self.transformAwait(
+            node,
+            hadTryBefore: hadTryBefore,
+            originalTrailingTrivia: originalTrailingTrivia
+        )
+    }
+
     /// AwaitExpr-targeted helper. Takes `hadTryBefore` and the original trailing trivia
-    /// because both rely on the pre-recursion view of the node. Not exposed to the
-    /// combined-rewriter generator (signature mismatch is intentional — only the
-    /// `FunctionCallExprSyntax` transform participates in `CompactStageOneRewriter`).
+    /// because both rely on the pre-recursion view of the node.
     private static func transformAwait(
         _ awaitNode: AwaitExprSyntax,
         hadTryBefore: Bool,

@@ -12,8 +12,16 @@ func rewriteAccessorDecl(
     parent: Syntax?,
     context: Context
 ) -> AccessorDeclSyntax {
-    let result = node
-    // No node-local transforms registered for AccessorDeclSyntax — RedundantSelf
-    // only uses willEnter/didExit on this node, which the generator wires up.
+    var result = node
+    // RedundantSelf only uses willEnter/didExit on this node, which the
+    // generator wires up.
+
+    // WrapSingleLineBodies — inline didSet/willSet observer bodies.
+    applyRule(
+        WrapSingleLineBodies.self, to: &result,
+        parent: parent, context: context,
+        transform: WrapSingleLineBodies.transform
+    )
+
     return result
 }

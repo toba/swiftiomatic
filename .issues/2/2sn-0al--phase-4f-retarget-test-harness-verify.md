@@ -5,7 +5,7 @@ status: in-progress
 type: task
 priority: high
 created_at: 2026-04-28T15:50:30Z
-updated_at: 2026-04-28T22:42:07Z
+updated_at: 2026-04-28T23:57:15Z
 parent: ddi-wtv
 blocked_by:
     - 49k-dtg
@@ -198,3 +198,131 @@ Files: `Sources/SwiftiomaticKit/Configuration/Configuration.swift`, `Sources/Swi
 The remaining 445 single-rule failures cluster into the patterns the previous resume brief described: rules whose legacy `visit(_:)` short-circuits child recursion (no `super.visit`) — `PreferEarlyExits`, `StaticStructShouldBeEnum`, `PreferExplicitFalse`, `RedundantSelf`, `HoistAwait`, `PreferVoidReturn`, plus the ones already on the radar (`NoForceUnwrap`, `NoForceTry`, `PreferShorthandTypeNames`, `WrapMultilineStatementBraces`, `RedundantOverride` is now green). Each needs the `willEnter`/`Context.ruleState` / scope-flag mitigation tailored to its specific behavior.
 
 The visitAny fix was on the critical path for any of the structural-pass-driven failures. Without it, every rule running in stage 2 would emit findings even when disabled, so nothing else could be diagnosed reliably. Now the structural passes are correctly gated and remaining failures are about rule-specific recursion semantics, not configuration plumbing.
+
+
+
+## Update (2026-04-28) — More compact-pipeline rule fixes
+
+After the visitAny fix unblocked everything else, fixed several individual rule clusters. Common patterns + per-rule notes below.
+
+### Pattern A: kind-widening transforms (cast back to N fails silently)
+
+`applyRule` casts the rule's transform output back to the merged function's node kind. When the transform widens (e.g. `!x` → `x == false` is `InfixOperatorExpr` not `PrefixOperatorExpr`), the cast fails and the change is silently dropped.
+
+**Fix:** for known-widening rules, dispatch directly with an early-return path. Subsequent rules in the chain expect the original kind, so we exit the function once the kind changes.
+
+Rules fixed via this pattern:
+- `PreferExplicitFalse` on `PrefixOperatorExpr` → `InfixOperatorExpr` (changed `rewritePrefixOperatorExpr` to return `ExprSyntax`).
+- `StaticStructShouldBeEnum` on `StructDecl`/`ClassDecl` → `EnumDecl` (changed both rewrites to return `DeclSyntax` and run StaticStructShouldBeEnum last).
+- `HoistAwait` on `FunctionCallExpr` → `AwaitExpr`, and `HoistTry` on `FunctionCallExpr` → `TryExpr` (direct dispatch with early-return in `rewriteFunctionCallExpr`).
+- `RedundantSelf` on `MemberAccessExpr` → `DeclReferenceExpr` (direct dispatch in `rewriteMemberAccessExpr`).
+
+### Pattern B: diagnostics emitted on post-recursion detached node (wrong location)
+
+The merged `rewrite<NodeType>` runs after `super.visit(node)` recurses into children. When the rule's `diagnose(...)` runs in this phase, the node is detached from the original tree — its `startLocation(converter: sourceLocationConverter)` returns garbage (often line 1:1).
+
+**Fix:** add a static `willEnter(_:context:)` hook that emits findings on the pre-traversal node (which is still attached). The transform stays post-recursion and only rewrites — no diagnose. The generator's `RuleCollector` picks up the static `willEnter` automatically.
+
+Rules fixed via this pattern:
+- `PreferVoidReturn` on `FunctionTypeSyntax` and `ClosureSignatureSyntax` (return-clause emptiness check).
+- `PreferEarlyExits` on `CodeBlockItemListSyntax` (early-exit pattern check).
+- `PreferShorthandTypeNames` on `IdentifierTypeSyntax` and `GenericSpecializationExprSyntax` (predicate logic mirrored in willEnter, including arity, member-type guard, expression-context empty-tuple guard via static `hasValidExpressionRepresentation`).
+
+### Pattern C: legacy visit relies on `node.parent`, which is nil post-recursion
+
+Some rules consult `node.parent` inside `visit` to make decisions (e.g. `PreferShorthandTypeNames` skipping when parent is `MemberType`). Post-recursion, the node is detached and `parent` is nil, so the check silently falls through to the wrong branch.
+
+**Fix:** add a `compactPipelineParent: Syntax?` instance property on the rule, populated by the static `transform` from the captured `parent: Syntax?`. The visit body falls back to it when `node.parent` is nil.
+
+Applied to: `PreferShorthandTypeNames` (both `visit(_:IdentifierTypeSyntax)` and `visit(_:GenericSpecializationExprSyntax)`).
+
+### Pattern D: AwaitExpr post-rewrite reordering needs pre-recursion state
+
+`HoistTry.visit(_:AwaitExprSyntax)` reorders `await try X` → `try await X` when the `try` was introduced by hoisting (i.e. `try` was *not* present before recursion). The pre-recursion `hadTryBefore` flag and the original `trailingTrivia` are needed by the post-recursion transform.
+
+**Fix:** added `HoistTry.AwaitState` reference type stored via `Context.ruleState(for:)`, populated by static `willEnter(_:AwaitExprSyntax,context:)` and consumed by static `transform(_:AwaitExprSyntax,parent:context:)`. Static `didExit` pops the stack.
+
+### Verification
+
+- All previously-targeted clusters green: `RedundantOverrideTests` 9/9, `StaticStructShouldBeEnumTests` 28/28, `PreferExplicitFalseTests` 42/42, `PreferVoidReturnTests` 5/5, `HoistAwaitTests` 20/20, `HoistTryTests` 26/26, `RedundantSelfTests` 51/51, `PreferEarlyExitsTests` 5/5, `PreferShorthandTypeNamesTests` 18/18.
+- `CompactPipelineParityTests` stays green.
+
+### What's still pending in 4f
+
+The remaining failure clusters from the 445-failure full-suite run (post-visitAny-fix) likely follow one of the four patterns above. Next session should run `jig todo show 2sn-0al` and bisect by rule cluster, applying the appropriate pattern. Suspect candidates: `NoForceUnwrap` (still has a few failures from the original 25 list), the various `Wrap*` rules, `PreferTrailingClosures`, `RedundantClosure`, `UnusedArguments`, plus a long tail of less-commonly-used rules.
+
+### Files changed this session
+
+- `Sources/SwiftiomaticKit/Configuration/Configuration.swift` (isActive helper + cleanup)
+- `Sources/SwiftiomaticKit/Support/Context.swift` (non-generic shouldFormat overload)
+- `Sources/SwiftiomaticKit/Syntax/SyntaxRule.swift` (defaultIsActive)
+- `Sources/SwiftiomaticKit/Syntax/Rewriter/RewriteSyntaxRule.swift` (visitAny uses non-generic overload)
+- `Sources/SwiftiomaticKit/Rewrites/Decls/StructDecl.swift` (DeclSyntax return + reordered rules)
+- `Sources/SwiftiomaticKit/Rewrites/Decls/ClassDecl.swift` (DeclSyntax return + reordered rules)
+- `Sources/SwiftiomaticKit/Rewrites/Exprs/PrefixOperatorExpr.swift` (ExprSyntax return + direct dispatch)
+- `Sources/SwiftiomaticKit/Rewrites/Exprs/FunctionCallExpr.swift` (HoistAwait/HoistTry direct dispatch with widening early-return)
+- `Sources/SwiftiomaticKit/Rewrites/Exprs/MemberAccessExpr.swift` (RedundantSelf direct dispatch with widening early-return)
+- `Sources/SwiftiomaticKit/Rewrites/Exprs/FunctionType.swift` (diagnose moved to willEnter)
+- `Sources/SwiftiomaticKit/Rewrites/Exprs/ClosureSignature.swift` (diagnose moved to willEnter)
+- `Sources/SwiftiomaticKit/Rewrites/Stmts/CodeBlockItemList.swift` (PreferEarlyExits diagnose moved to willEnter)
+- `Sources/SwiftiomaticKit/Rules/Types/PreferVoidReturn.swift` (added willEnter for FunctionType + ClosureSignature)
+- `Sources/SwiftiomaticKit/Rules/Conditions/PreferEarlyExits.swift` (added willEnter for CodeBlockItemList)
+- `Sources/SwiftiomaticKit/Rules/Hoist/HoistTry.swift` (added AwaitState + willEnter/didExit/transform for AwaitExpr)
+- `Sources/SwiftiomaticKit/Rules/Types/PreferShorthandTypeNames.swift` (compactPipelineParent + willEnter + hasValidExpressionRepresentation static helpers)
+- `Tests/SwiftiomaticTests/Rules/LintOrFormatRuleTestCase.swift` (mismatch debug logging — temporary, can be removed before commit)
+
+
+
+## Update (2026-04-28) — More widening fixes + 4 missing dispatchers + RuleCollector extension scan
+
+Down from 304 → 48 single-rule failures (full suite, with compact branch enabled in `assertFormatting`).
+
+### Pattern A widening fixes (additional rules)
+
+Added direct-dispatch + early-return for:
+- `PreferToggle` (InfixOperator → FunctionCall) in `Rewrites/Exprs/InfixOperatorExpr.swift` (also widened the function's return to `ExprSyntax`).
+- `PreferIsEmpty` (InfixOperator → MemberAccess) — same file.
+- `RedundantNilCoalescing` (InfixOperator → ExprSyntax) — same file.
+- `PreferDotZero` (FunctionCall → MemberAccess) in `Rewrites/Exprs/FunctionCallExpr.swift`.
+- `RedundantClosure` (FunctionCall → ExprSyntax) — same file.
+- `PreferSwiftTesting` (FunctionCall → MacroExpansion) — same file.
+- `URLMacro` (ForceUnwrap → MacroExpansion) in `Rewrites/Exprs/ForceUnwrapExpr.swift`.
+- `PreferCountWhere` (MemberAccess → FunctionCall) in `Rewrites/Exprs/MemberAccessExpr.swift`.
+- `RedundantStaticSelf` (MemberAccess → DeclReference) — same file.
+
+Each follows the proven `if context.shouldFormat(...) { let widened = ...; if let stillKind = widened.as(N.self) { result = stillKind } else { return widened } }` shape.
+
+### RuleCollector extension scan
+
+`RuleCollector.detectSyntaxRule` now folds in members from file-level extensions of the same type. Without this, rules that organise their compact-pipeline hooks (`static transform`, `willEnter`, `didExit`) into extensions were invisible to the dispatcher generator. Surfaced because `WrapSingleLineBodies` keeps all its static transforms in extensions.
+
+### WrapSingleLineBodies dispatch
+
+Added explicit `applyRule` dispatch to all 7 manually-handled merged files (IfExpr, GuardStmt, FunctionDecl, InitializerDecl, SubscriptDecl, RepeatStmt, WhileStmt, ForStmt, AccessorDecl). For non-manually-handled types (PatternBindingSyntax) the auto-dispatcher now picks it up via the extension scan. Cleared 45 of 48 SingleLineBodies failures; 3 remaining are nested-body cases that depend on the legacy `currentIndent` instance state.
+
+### NoGuardInTests
+
+Added public `static func transform(_:CodeBlockItemListSyntax,parent:context:)` that gates on `state.insideTestFunction` and delegates to the existing private `transformCodeBlockItemList`. Added `willEnter`/`didExit` for `ClosureExprSyntax` to push `insideTestFunction = false` so guards inside closures aren't rewritten (mirrors the legacy override's recursion short-circuit). Added explicit dispatch in `Rewrites/Stmts/CodeBlockItemList.swift`. Cleared all 33 NoGuardInTests failures.
+
+### PreferSwiftTesting
+
+Added `originalCallStack` to `State` plus `willEnter`/`didExit` for `FunctionCallExprSyntax` so the post-traversal `transform` can use the original (still-attached) node for finding source locations. New static `transform(_:FunctionCallExprSyntax,parent:context:)` mirrors the legacy override's gate (`hasXCTestImport`, `!bailOut`, XCT-prefix check) then delegates to `transformAssertion`. New static `transform(_:FunctionDeclSyntax,parent:context:)` plus static counterparts `convertSetUpStatic` / `convertTearDownStatic` / `convertTestMethodStatic` (no `super.visit` since compact has already recursed). Added direct-dispatch + early-return in `Rewrites/Decls/FunctionDecl.swift` (widening to `InitializerDecl` / `DeinitializerDecl`). Cleared all 12 PreferSwiftTesting failures.
+
+### What's left (48 failures)
+
+Most remaining failures are **diagnostic location issues** — the "Unexpected finding ... was emitted (line:col 1:X)" pattern indicates the rule emitted its diagnostic on a post-recursion detached node (so `startLocation` returns ~line 1). Fix per Pattern B: move diagnose into a static `willEnter` so the location comes from the pre-traversal attached node. Affected rules:
+
+- `NoFallthroughOnlyCases` (2 tests)
+- `SwitchCaseIndentation` (3 tests)
+- `NoSemicolons` (2 tests)
+- `NoTrailingClosureParens` (1 test)
+- `NoParensAroundConditions` (1 test)
+- `OneDeclarationPerLine` (1 test)
+- `BlankLinesBeforeControlFlowBlocks` (1 test)
+
+Other remaining clusters:
+
+- `SingleLineBodies` (3 nested-body tests) — needs `currentIndent`-equivalent state (`Context.ruleState` push/pop in willEnter/didExit on the relevant node types) for nested wrap/inline calculations.
+- `NoForceUnwrap` (1 test `forceUnwrapInClosureIsNotModified`) — closure recursion semantics.
+- `GuardStmt` (2 pretty-printer-idempotency failures) — separate concern, not directly tied to compact pipeline.
+- A handful of one-offs in test-rewrite suites still pending investigation.

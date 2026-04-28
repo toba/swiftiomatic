@@ -180,7 +180,20 @@ package final class RuleCollector {
             var willEnterNodes = [String]()
             var didExitNodes = [String]()
 
-            for member in members {
+            // Gather members from the primary declaration plus any
+            // file-level extensions of the same type. Without this, rules
+            // that organise their `static transform`/`willEnter`/`didExit`
+            // hooks into extensions (e.g. `WrapSingleLineBodies`) would be
+            // invisible to the compact-pipeline dispatcher.
+            var allMembers = Array(members)
+            for fileItem in fileStatements {
+                guard let ext = fileItem.item.as(ExtensionDeclSyntax.self),
+                    ext.extendedType.as(IdentifierTypeSyntax.self)?.name.text == typeName
+                else { continue }
+                allMembers.append(contentsOf: ext.memberBlock.members)
+            }
+
+            for member in allMembers {
                 guard let function = member.decl.as(FunctionDeclSyntax.self) else { continue }
 
                 if function.name.text == "visit" {

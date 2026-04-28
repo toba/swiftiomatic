@@ -172,6 +172,31 @@ extension RuleTesting {
       selection: .infinite,
       to: &compactActual
     )
+    if compactActual != expected {
+      let log = """
+        === MISMATCH (\(sourceLocation.fileID):\(sourceLocation.line)) ===
+        --- INPUT ---
+        \(originalSource)
+        --- EXPECTED ---
+        \(expected)
+        --- LEGACY ---
+        \(pipelineActual)
+        --- COMPACT ---
+        \(compactActual)
+        === END ===
+
+        """
+      if let data = log.data(using: .utf8) {
+        if !FileManager.default.fileExists(atPath: "/tmp/compact-mismatches.log") {
+          FileManager.default.createFile(atPath: "/tmp/compact-mismatches.log", contents: nil)
+        }
+        if let fh = FileHandle(forWritingAtPath: "/tmp/compact-mismatches.log") {
+          fh.seekToEndOfFile()
+          fh.write(data)
+          try? fh.close()
+        }
+      }
+    }
     assertStringsEqualWithDiff(compactActual, expected, sourceLocation: sourceLocation)
     assertFindings(
       expected: findings,

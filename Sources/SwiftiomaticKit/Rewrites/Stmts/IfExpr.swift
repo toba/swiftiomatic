@@ -40,5 +40,14 @@ func rewriteIfExpr(
         transform: WrapMultilineStatementBraces.transform
     )
 
+    // WrapSingleLineBodies — wrap or inline single-statement if body. The
+    // transform returns `ExprSyntax`, but the underlying node remains an
+    // `IfExprSyntax`, so `applyRule`'s cast-back succeeds.
+    applyRule(
+        WrapSingleLineBodies.self, to: &result,
+        parent: parent, context: context,
+        transform: WrapSingleLineBodies.transform
+    )
+
     return result
 }

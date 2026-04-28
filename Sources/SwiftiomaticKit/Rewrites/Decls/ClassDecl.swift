@@ -4,11 +4,14 @@ import SwiftSyntax
 /// rule's logic is gated on `context.shouldFormat(<RuleType>.self, node:)`.
 ///
 /// Per Phase 4c of `ddi-wtv`.
+/// Returns `DeclSyntax` so `StaticStructShouldBeEnum` can widen a final class
+/// to an `EnumDeclSyntax`. All preceding rules preserve the `ClassDeclSyntax`
+/// kind; the kind-widening rule runs last and short-circuits any further work.
 func rewriteClassDecl(
     _ node: ClassDeclSyntax,
     parent: Syntax?,
     context: Context
-) -> ClassDeclSyntax {
+) -> DeclSyntax {
     var result = node
 
     applyRule(
@@ -57,12 +60,6 @@ func rewriteClassDecl(
         SimplifyGenericConstraints.self, to: &result,
         parent: parent, context: context,
         transform: SimplifyGenericConstraints.transform
-    )
-
-    applyRule(
-        StaticStructShouldBeEnum.self, to: &result,
-        parent: parent, context: context,
-        transform: StaticStructShouldBeEnum.transform
     )
 
     applyRule(
@@ -115,7 +112,14 @@ func rewriteClassDecl(
         transform: WrapMultilineStatementBraces.transform
     )
 
-    return result
+    // StaticStructShouldBeEnum — runs last because it can widen a final class
+    // to an `EnumDeclSyntax`. Subsequent rules in this function would all
+    // expect a `ClassDeclSyntax`, so this must come after them.
+    if context.shouldFormat(StaticStructShouldBeEnum.self, node: Syntax(result)) {
+        return StaticStructShouldBeEnum.transform(result, parent: parent, context: context)
+    }
+
+    return DeclSyntax(result)
 }
 
 private func applyRedundantFinal(

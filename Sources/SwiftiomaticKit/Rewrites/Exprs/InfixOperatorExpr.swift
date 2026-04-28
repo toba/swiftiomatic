@@ -11,7 +11,7 @@ func rewriteInfixOperatorExpr(
     _ node: InfixOperatorExprSyntax,
     parent: Syntax?,
     context: Context
-) -> InfixOperatorExprSyntax {
+) -> ExprSyntax {
     var result = node
 
     applyRule(
@@ -32,23 +32,40 @@ func rewriteInfixOperatorExpr(
         transform: PreferCompoundAssignment.transform
     )
 
-    applyRule(
-        PreferIsEmpty.self, to: &result,
-        parent: parent, context: context,
-        transform: PreferIsEmpty.transform
-    )
+    // PreferIsEmpty — may widen `foo.count == 0` to `foo.isEmpty` (a
+    // `MemberAccessExprSyntax`). Direct dispatch with early return when the
+    // kind changes.
+    if context.shouldFormat(PreferIsEmpty.self, node: Syntax(result)) {
+        let widened = PreferIsEmpty.transform(result, parent: parent, context: context)
+        if let stillInfix = widened.as(InfixOperatorExprSyntax.self) {
+            result = stillInfix
+        } else {
+            return widened
+        }
+    }
 
-    applyRule(
-        PreferToggle.self, to: &result,
-        parent: parent, context: context,
-        transform: PreferToggle.transform
-    )
+    // PreferToggle — may widen `x = !x` to `x.toggle()` (a
+    // `FunctionCallExprSyntax`). Direct dispatch with early return when the
+    // kind changes.
+    if context.shouldFormat(PreferToggle.self, node: Syntax(result)) {
+        let widened = PreferToggle.transform(result, parent: parent, context: context)
+        if let stillInfix = widened.as(InfixOperatorExprSyntax.self) {
+            result = stillInfix
+        } else {
+            return widened
+        }
+    }
 
-    applyRule(
-        RedundantNilCoalescing.self, to: &result,
-        parent: parent, context: context,
-        transform: RedundantNilCoalescing.transform
-    )
+    // RedundantNilCoalescing — may widen `x ?? nil` to just `x` (any
+    // `ExprSyntax`). Direct dispatch with early return when the kind changes.
+    if context.shouldFormat(RedundantNilCoalescing.self, node: Syntax(result)) {
+        let widened = RedundantNilCoalescing.transform(result, parent: parent, context: context)
+        if let stillInfix = widened.as(InfixOperatorExprSyntax.self) {
+            result = stillInfix
+        } else {
+            return widened
+        }
+    }
 
     applyRule(
         WrapConditionalAssignment.self, to: &result,
@@ -56,5 +73,5 @@ func rewriteInfixOperatorExpr(
         transform: WrapConditionalAssignment.transform
     )
 
-    return result
+    return ExprSyntax(result)
 }

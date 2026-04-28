@@ -7,18 +7,23 @@ import SwiftSyntax
 /// Per Phase 4e of `ddi-wtv` (sub-issue `mn8-do3`). The generator emits a
 /// thin override that delegates to this function — see
 /// `CompactStageOneRewriterGenerator.manuallyHandledNodeTypes`.
+///
+/// Returns `ExprSyntax` (not `PrefixOperatorExprSyntax`) because
+/// `PreferExplicitFalse` rewrites `!x` to `x == false` (an
+/// `InfixOperatorExprSyntax`). The standard `applyRule` helper can't widen the
+/// node kind, so we dispatch directly.
 func rewritePrefixOperatorExpr(
     _ node: PrefixOperatorExprSyntax,
     parent: Syntax?,
     context: Context
-) -> PrefixOperatorExprSyntax {
-    var result = node
+) -> ExprSyntax {
+    var result = ExprSyntax(node)
 
-    applyRule(
-        PreferExplicitFalse.self, to: &result,
-        parent: parent, context: context,
-        transform: PreferExplicitFalse.transform
-    )
+    if context.shouldFormat(PreferExplicitFalse.self, node: Syntax(result)) {
+        if let prefix = result.as(PrefixOperatorExprSyntax.self) {
+            result = PreferExplicitFalse.transform(prefix, parent: parent, context: context)
+        }
+    }
 
     return result
 }

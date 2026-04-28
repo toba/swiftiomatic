@@ -14,11 +14,17 @@ func rewriteMemberAccessExpr(
 ) -> ExprSyntax {
     var result = node
 
-    applyRule(
-        PreferCountWhere.self, to: &result,
-        parent: parent, context: context,
-        transform: PreferCountWhere.transform
-    )
+    // PreferCountWhere — may widen `arr.filter { ... }.count` to
+    // `arr.count(where: { ... })` (a `FunctionCallExprSyntax`). Direct
+    // dispatch with early return when the kind changes.
+    if context.shouldFormat(PreferCountWhere.self, node: Syntax(result)) {
+        let widened = PreferCountWhere.transform(result, parent: parent, context: context)
+        if let stillMember = widened.as(MemberAccessExprSyntax.self) {
+            result = stillMember
+        } else {
+            return widened
+        }
+    }
 
     applyRule(
         PreferIsDisjoint.self, to: &result,
@@ -32,17 +38,29 @@ func rewriteMemberAccessExpr(
         transform: PreferSelfType.transform
     )
 
-    applyRule(
-        RedundantSelf.self, to: &result,
-        parent: parent, context: context,
-        transform: RedundantSelf.transform
-    )
+    // RedundantSelf — may widen `self.bar` to `bar` (a `DeclReferenceExpr`).
+    // Direct dispatch with early return when the kind changes; subsequent
+    // rules in this chain expect a `MemberAccessExprSyntax`.
+    if context.shouldFormat(RedundantSelf.self, node: Syntax(result)) {
+        let widened = RedundantSelf.transform(result, parent: parent, context: context)
+        if let stillMember = widened.as(MemberAccessExprSyntax.self) {
+            result = stillMember
+        } else {
+            return widened
+        }
+    }
 
-    applyRule(
-        RedundantStaticSelf.self, to: &result,
-        parent: parent, context: context,
-        transform: RedundantStaticSelf.transform
-    )
+    // RedundantStaticSelf — may widen `Self.foo` (member access) to `foo`
+    // (a `DeclReferenceExpr`). Direct dispatch with early return when the
+    // kind changes.
+    if context.shouldFormat(RedundantStaticSelf.self, node: Syntax(result)) {
+        let widened = RedundantStaticSelf.transform(result, parent: parent, context: context)
+        if let stillMember = widened.as(MemberAccessExprSyntax.self) {
+            result = stillMember
+        } else {
+            return widened
+        }
+    }
 
     // NoForceUnwrap — chain-top wrapping for force-unwrap chains. Helpers in
     // `Rewrites/Exprs/NoForceUnwrapHelpers.swift`.

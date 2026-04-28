@@ -147,6 +147,26 @@ func rewriteFunctionDecl(
         transform: WrapMultilineStatementBraces.transform
     )
 
+    // WrapSingleLineBodies — wrap or inline single-statement function body.
+    applyRule(
+        WrapSingleLineBodies.self, to: &result,
+        parent: parent, context: context,
+        transform: WrapSingleLineBodies.transform
+    )
+
+    // PreferSwiftTesting — convert XCTestCase setUp/tearDown/test methods to
+    // Swift Testing equivalents. May widen `FunctionDecl` to
+    // `InitializerDecl`/`DeinitializerDecl`. Direct dispatch with early
+    // return when the kind changes.
+    if context.shouldFormat(PreferSwiftTesting.self, node: Syntax(result)) {
+        let widened = PreferSwiftTesting.transform(result, parent: parent, context: context)
+        if let stillFunc = widened.as(FunctionDeclSyntax.self) {
+            result = stillFunc
+        } else {
+            return widened
+        }
+    }
+
     // RedundantOverride — delete `override` declarations that only forward to
     // `super` with identical args. Returns an empty DeclSyntax (just trivia)
     // when removal applies; that propagates through the override's DeclSyntax

@@ -32,11 +32,11 @@ private func applyPreferVoidReturn(
     _ node: FunctionTypeSyntax,
     context: Context
 ) -> FunctionTypeSyntax {
+    // Diagnostic emitted in `PreferVoidReturn.willEnter(_:context:)` against
+    // the pre-traversal node so finding locations come from the original tree.
     guard let returnType = node.returnClause.type.as(TupleTypeSyntax.self),
           returnType.elements.isEmpty
     else { return node }
-
-    PreferVoidReturn.diagnose(.returnVoid, on: returnType, context: context)
 
     if hasNonWhitespaceTrivia(returnType.leftParen, at: .trailing)
         || hasNonWhitespaceTrivia(returnType.rightParen, at: .leading)
