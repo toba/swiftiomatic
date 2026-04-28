@@ -6,13 +6,6 @@ import SwiftSyntax
 /// Guard statements in tests obscure the test intent behind control flow. Replacing them with
 /// direct assertions or unwraps makes the test linear and the failure message immediate.
 ///
-/// This rule applies to:
-/// - Functions annotated with `@Test` (Swift Testing)
-/// - Functions named `test*()` with no parameters inside `XCTestCase` subclasses
-///
-/// Guards inside closures or nested functions are left alone because the enclosing test function's
-/// `throws` does not propagate into those scopes.
-///
 /// Lint: A warning is raised for each `guard` that can be converted.
 ///
 /// Rewrite: The `guard` is replaced with assertion/unwrap statements and `throws` is added to
@@ -21,25 +14,79 @@ final class NoGuardInTests: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendab
     override class var group: ConfigurationGroup? { .testing }
     override class var defaultValue: BasicRuleValue { .init(rewrite: false, lint: .no) }
 
-    private var testContext = TestContextTracker()
-    private var insideTestFunction = false
-    private var addedTryStatement = false
-
-    // MARK: - Scope tracking
-
-    override func visit(_ node: ImportDeclSyntax) -> DeclSyntax {
-        testContext.visitImport(node)
-        return DeclSyntax(node)
+    /// Per-file mutable state held in `Context.ruleState`.
+    final class State {
+        var testContext = TestContextTracker()
+        /// Stack of `(insideTestFunction, addedTryStatement)` frames pushed at function entry.
+        var functionStack: [(insideTest: Bool, addedTry: Bool)] = []
+        /// Stack of previous `insideXCTestCase` values pushed at class entry.
+        var classStack: [Bool] = []
+        var insideTestFunction = false
+        var addedTryStatement = false
     }
 
+    // MARK: - Pre-scan / scope tracking
+
+    static func willEnter(_ node: SourceFileSyntax, context: Context) {
+        let state = context.ruleState(for: Self.self) { State() }
+        state.testContext.visitSourceFile(node, context: context)
+        for stmt in node.statements {
+            if let importDecl = stmt.item.as(ImportDeclSyntax.self) {
+                state.testContext.visitImport(importDecl)
+            }
+        }
+    }
+
+    static func willEnter(_ node: ClassDeclSyntax, context: Context) {
+        let state = context.ruleState(for: Self.self) { State() }
+        let was = state.testContext.pushClass(node, context: context)
+        // Stash via stack — use functionStack as a generic stack? Use a dedicated stack instead.
+        state.classStack.append(was)
+    }
+
+    static func didExit(_ node: ClassDeclSyntax, context: Context) {
+        _ = node
+        let state = context.ruleState(for: Self.self) { State() }
+        guard let was = state.classStack.popLast() else { return }
+        state.testContext.popClass(was: was)
+    }
+
+    static func willEnter(_ node: FunctionDeclSyntax, context: Context) {
+        let state = context.ruleState(for: Self.self) { State() }
+        state.functionStack.append((state.insideTestFunction, state.addedTryStatement))
+        if state.testContext.isTestFunction(node), node.body != nil {
+            state.insideTestFunction = true
+            state.addedTryStatement = false
+        } else {
+            // Nested or non-test function: shadow the test-function context so guards in
+            // nested helpers aren't rewritten (they belong to the inner function's scope).
+            state.insideTestFunction = false
+            state.addedTryStatement = false
+        }
+    }
+
+    static func didExit(_: FunctionDeclSyntax, context: Context) {
+        let state = context.ruleState(for: Self.self) { State() }
+        guard let frame = state.functionStack.popLast() else { return }
+        state.insideTestFunction = frame.insideTest
+        state.addedTryStatement = frame.addedTry
+    }
+
+    // MARK: - Legacy delegators
+
     override func visit(_ node: SourceFileSyntax) -> SourceFileSyntax {
-        testContext.visitSourceFile(node, context: context)
+        Self.willEnter(node, context: context)
         return super.visit(node)
     }
 
+    override func visit(_ node: ImportDeclSyntax) -> DeclSyntax {
+        // Imports are pre-scanned in willEnter(SourceFileSyntax). No-op transform.
+        DeclSyntax(node)
+    }
+
     override func visit(_ node: ClassDeclSyntax) -> DeclSyntax {
-        let was = testContext.pushClass(node, context: context)
-        defer { testContext.popClass(was: was) }
+        Self.willEnter(node, context: context)
+        defer { Self.didExit(node, context: context) }
         return super.visit(node)
     }
 
@@ -49,51 +96,61 @@ final class NoGuardInTests: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendab
         ExprSyntax(node)
     }
 
-    // MARK: - Function-level: detect test, add throws
-
     override func visit(_ node: FunctionDeclSyntax) -> DeclSyntax {
-        guard testContext.isTestFunction(node), node.body != nil else {
+        Self.willEnter(node, context: context)
+        let visited = super.visit(node)
+        let parent = Syntax(node).parent
+        let result = Self.transform(
+            visited.cast(FunctionDeclSyntax.self),
+            parent: parent,
+            context: context
+        )
+        Self.didExit(node, context: context)
+        return result
+    }
+
+    override func visit(_ node: CodeBlockItemListSyntax) -> CodeBlockItemListSyntax {
+        let state = context.ruleState(for: Self.self) { State() }
+        guard state.insideTestFunction else { return super.visit(node) }
+        let visited = super.visit(node)
+        return Self.transformCodeBlockItemList(visited, context: context)
+    }
+
+    // MARK: - Static transforms
+
+    /// Wraps the original `visit(FunctionDeclSyntax)` post-recursion logic. State has already been
+    /// pushed in willEnter; we read `addedTryStatement` set during child traversal.
+    static func transform(
+        _ node: FunctionDeclSyntax,
+        parent _: Syntax?,
+        context: Context
+    ) -> DeclSyntax {
+        let state = context.ruleState(for: Self.self) { State() }
+        // Only proceed if this is a test function (matches what willEnter detected).
+        guard state.testContext.isTestFunction(node), node.body != nil else {
             return DeclSyntax(node)
         }
+        guard state.addedTryStatement else { return DeclSyntax(node) }
 
-        let wasInsideTest = insideTestFunction
-        let wasAddedTry = addedTryStatement
-        insideTestFunction = true
-        addedTryStatement = false
-        defer {
-            insideTestFunction = wasInsideTest
-            addedTryStatement = wasAddedTry
-        }
-
-        let visited = super.visit(node)
-        guard var result = visited.as(FunctionDeclSyntax.self) else { return visited }
-
-        guard addedTryStatement else {
-            return DeclSyntax(result)
-        }
-
+        var result = node
         if result.signature.effectSpecifiers?.throwsClause == nil {
             result = result.addingThrowsClause()
         }
-
         return DeclSyntax(result)
     }
 
-    // MARK: - Guard replacement
-
-    override func visit(_ node: CodeBlockItemListSyntax) -> CodeBlockItemListSyntax {
-        guard insideTestFunction else { return super.visit(node) }
-
-        let visited = super.visit(node)
-        let items = Array(visited)
+    private static func transformCodeBlockItemList(
+        _ node: CodeBlockItemListSyntax,
+        context: Context
+    ) -> CodeBlockItemListSyntax {
+        let state = context.ruleState(for: Self.self) { State() }
+        let items = Array(node)
         var newItems = [CodeBlockItemSyntax]()
         var changed = false
 
-        // Collect variable names declared before each guard for shadowing detection
         var declaredNames = Set<String>()
 
         for item in items {
-            // Track variable declarations for shadowing
             collectDeclaredNames(from: item, into: &declaredNames)
 
             guard let guardStmt = item.item.as(GuardStmtSyntax.self) else {
@@ -105,7 +162,9 @@ final class NoGuardInTests: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendab
                 let replacement = convertGuard(
                     guardStmt,
                     item: item,
-                    declaredNames: declaredNames
+                    declaredNames: declaredNames,
+                    state: state,
+                    context: context
                 )
             else {
                 newItems.append(item)
@@ -116,56 +175,49 @@ final class NoGuardInTests: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendab
             changed = true
         }
 
-        guard changed else { return visited }
+        guard changed else { return node }
         return CodeBlockItemListSyntax(newItems)
     }
 
     // MARK: - Guard analysis and conversion
 
-    private func convertGuard(
+    private static func convertGuard(
         _ guard: GuardStmtSyntax,
         item: CodeBlockItemSyntax,
-        declaredNames: Set<String>
+        declaredNames: Set<String>,
+        state: State,
+        context: Context
     ) -> [CodeBlockItemSyntax]? {
-        // Check else body is a valid pattern (just return, or XCTFail()/Issue.record() + return)
         guard isValidElseBlock(`guard`.body) else { return nil }
 
         let conditions = Array(`guard`.conditions)
 
-        // Skip if any condition has await, pattern matching, or variable shadowing
         for condition in conditions {
             switch condition.condition {
-            case .optionalBinding(let binding):
-                let name = binding.pattern.trimmedDescription
-                // Skip if the binding name shadows an existing declaration
-                if declaredNames.contains(name) { return nil }
-                // Skip if the binding value contains await
-                if binding.initializer?.value.containsAwait == true { return nil }
-                // Shorthand `guard let foo` has no initializer — skip if the name is already declared
-                // (this is the shadowing case for shorthand syntax)
-                if binding.initializer == nil && declaredNames.contains(name) { return nil }
-            case .matchingPattern:
-                return nil
-            case .expression(let expr):
-                if expr.containsAwait { return nil }
-            case .availability:
-                return nil
-            #if compiler(>=6.0)
-                @unknown default:
+                case .optionalBinding(let binding):
+                    let name = binding.pattern.trimmedDescription
+                    if declaredNames.contains(name) { return nil }
+                    if binding.initializer?.value.containsAwait == true { return nil }
+                    if binding.initializer == nil && declaredNames.contains(name) { return nil }
+                case .matchingPattern:
                     return nil
-            #endif
+                case .expression(let expr):
+                    if expr.containsAwait { return nil }
+                case .availability:
+                    return nil
+                #if compiler(>=6.0)
+                    @unknown default:
+                        return nil
+                #endif
             }
         }
 
-        // Extract assertion message from XCTFail/Issue.record in else body
         let assertionMessage = extractAssertionMessage(from: `guard`.body)
-        let useSwiftTesting = testContext.importsTesting
+        let useSwiftTesting = state.testContext.importsTesting
         let fullLeadingTrivia = item.leadingTrivia
-        // Extract just the indentation (spaces/tabs) from the leading trivia
         let indentTrivia = extractIndentation(from: fullLeadingTrivia)
 
-        // Diagnose on the guard keyword
-        diagnose(.convertGuard, on: `guard`.guardKeyword)
+        Self.diagnose(.convertGuard, on: `guard`.guardKeyword, context: context)
 
         var replacements = [CodeBlockItemSyntax]()
 
@@ -174,29 +226,29 @@ final class NoGuardInTests: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendab
             let trivia = isFirst ? fullLeadingTrivia : .newline + indentTrivia
 
             switch condition.condition {
-            case .optionalBinding(let binding):
-                let stmt = buildUnwrapStatement(
-                    from: binding,
-                    useSwiftTesting: useSwiftTesting,
-                    assertionMessage: assertionMessage
-                )
-                var codeBlockItem = CodeBlockItemSyntax(item: .decl(DeclSyntax(stmt)))
-                codeBlockItem.leadingTrivia = trivia
-                replacements.append(codeBlockItem)
-                addedTryStatement = true
+                case .optionalBinding(let binding):
+                    let stmt = buildUnwrapStatement(
+                        from: binding,
+                        useSwiftTesting: useSwiftTesting,
+                        assertionMessage: assertionMessage
+                    )
+                    var codeBlockItem = CodeBlockItemSyntax(item: .decl(DeclSyntax(stmt)))
+                    codeBlockItem.leadingTrivia = trivia
+                    replacements.append(codeBlockItem)
+                    state.addedTryStatement = true
 
-            case .expression(let expr):
-                let assertExpr = buildAssertExpr(
-                    for: expr,
-                    useSwiftTesting: useSwiftTesting,
-                    assertionMessage: assertionMessage
-                )
-                var codeBlockItem = CodeBlockItemSyntax(item: .expr(assertExpr))
-                codeBlockItem.leadingTrivia = trivia
-                replacements.append(codeBlockItem)
+                case .expression(let expr):
+                    let assertExpr = buildAssertExpr(
+                        for: expr,
+                        useSwiftTesting: useSwiftTesting,
+                        assertionMessage: assertionMessage
+                    )
+                    var codeBlockItem = CodeBlockItemSyntax(item: .expr(assertExpr))
+                    codeBlockItem.leadingTrivia = trivia
+                    replacements.append(codeBlockItem)
 
-            default:
-                break
+                default:
+                    break
             }
         }
 
@@ -205,27 +257,19 @@ final class NoGuardInTests: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendab
 
     // MARK: - Else block validation
 
-    /// Returns `true` if the guard's else block is one of:
-    /// - `{ return }`
-    /// - `{ XCTFail(...); return }`
-    /// - `{ Issue.record(...); return }`
-    private func isValidElseBlock(_ body: CodeBlockSyntax) -> Bool {
+    private static func isValidElseBlock(_ body: CodeBlockSyntax) -> Bool {
         let stmts = body.statements.map(\.item)
         let nonTrivial = stmts.filter { stmt in
-            // Skip items that are just whitespace/semicolons
             stmt.trimmedDescription.isEmpty == false
         }
 
-        // Just `return`
         if nonTrivial.count == 1, nonTrivial[0].is(ReturnStmtSyntax.self) {
             return true
         }
 
-        // Must end with return
         guard nonTrivial.last?.is(ReturnStmtSyntax.self) == true else { return false }
 
         if nonTrivial.count == 2 {
-            // XCTFail(...); return  OR  Issue.record(...); return
             if let callExpr = extractFunctionCall(from: nonTrivial[0]) {
                 let name = callExpr.calledExpression.trimmedDescription
                 return name == "XCTFail" || name == "Issue.record"
@@ -235,15 +279,15 @@ final class NoGuardInTests: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendab
         return false
     }
 
-    /// Extracts the assertion message string tokens from XCTFail("...") or Issue.record("...").
-    private func extractAssertionMessage(from body: CodeBlockSyntax) -> LabeledExprListSyntax? {
+    private static func extractAssertionMessage(
+        from body: CodeBlockSyntax
+    ) -> LabeledExprListSyntax? {
         for stmt in body.statements {
             if let callExpr = extractFunctionCall(from: stmt.item) {
                 let name = callExpr.calledExpression.trimmedDescription
                 if name == "XCTFail" || name == "Issue.record",
                     !callExpr.arguments.isEmpty
                 {
-                    // Check the argument is a string literal (or string-like expression)
                     return callExpr.arguments
                 }
             }
@@ -251,8 +295,9 @@ final class NoGuardInTests: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendab
         return nil
     }
 
-    private func extractFunctionCall(from item: CodeBlockItemSyntax.Item) -> FunctionCallExprSyntax?
-    {
+    private static func extractFunctionCall(
+        from item: CodeBlockItemSyntax.Item
+    ) -> FunctionCallExprSyntax? {
         if let callExpr = item.as(FunctionCallExprSyntax.self) {
             return callExpr
         }
@@ -264,7 +309,7 @@ final class NoGuardInTests: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendab
 
     // MARK: - Statement builders
 
-    private func buildUnwrapStatement(
+    private static func buildUnwrapStatement(
         from binding: OptionalBindingConditionSyntax,
         useSwiftTesting: Bool,
         assertionMessage: LabeledExprListSyntax?
@@ -272,18 +317,15 @@ final class NoGuardInTests: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendab
         let keyword = binding.bindingSpecifier
         let patternText = binding.pattern.trimmedDescription
 
-        // Determine the expression to unwrap
         let unwrapExpr: ExprSyntax
         if let initializer = binding.initializer {
             unwrapExpr = initializer.value.trimmed
         } else {
-            // Shorthand: `guard let foo` → unwrap `foo` itself
             unwrapExpr = ExprSyntax(
                 DeclReferenceExprSyntax(baseName: .identifier(patternText))
             )
         }
 
-        // Build: try XCTUnwrap(expr) or try #require(expr)
         let callExpr: ExprSyntax
         if useSwiftTesting {
             callExpr = buildMacroCall(
@@ -309,7 +351,6 @@ final class NoGuardInTests: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendab
             value: ExprSyntax(tryExpr)
         )
 
-        // Build type annotation if present, trimming stale trivia from the guard condition
         let typeAnnotation: TypeAnnotationSyntax? = binding.typeAnnotation.map {
             $0.with(\.colon, $0.colon.with(\.leadingTrivia, []).with(\.trailingTrivia, .space))
                 .with(\.type, $0.type.trimmed)
@@ -331,7 +372,7 @@ final class NoGuardInTests: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendab
         )
     }
 
-    private func buildAssertExpr(
+    private static func buildAssertExpr(
         for expr: ExprSyntax,
         useSwiftTesting: Bool,
         assertionMessage: LabeledExprListSyntax?
@@ -362,14 +403,13 @@ final class NoGuardInTests: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendab
         }
     }
 
-    private func buildArgList(
+    private static func buildArgList(
         expression: ExprSyntax,
         assertionMessage: LabeledExprListSyntax?
     ) -> LabeledExprListSyntax {
         var args = [LabeledExprSyntax]()
 
         if let message = assertionMessage {
-            // Expression arg with trailing comma
             args.append(
                 LabeledExprSyntax(
                     expression: expression,
@@ -379,7 +419,6 @@ final class NoGuardInTests: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendab
             for (i, arg) in message.enumerated() {
                 var msgArg = arg.trimmed
                 msgArg.leadingTrivia = .space
-                // Remove trailing comma from last message arg
                 if i == message.count - 1 {
                     msgArg.trailingComma = nil
                 }
@@ -392,7 +431,7 @@ final class NoGuardInTests: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendab
         return LabeledExprListSyntax(args)
     }
 
-    private func buildMacroCall(
+    private static func buildMacroCall(
         name: String,
         expression: ExprSyntax,
         assertionMessage: LabeledExprListSyntax?
@@ -408,7 +447,7 @@ final class NoGuardInTests: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendab
         )
     }
 
-    private func buildFunctionCall(
+    private static func buildFunctionCall(
         name: String,
         expression: ExprSyntax,
         assertionMessage: LabeledExprListSyntax?
@@ -427,26 +466,20 @@ final class NoGuardInTests: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendab
 
     // MARK: - Helpers
 
-    /// Extracts just the indentation whitespace (spaces/tabs) from leading trivia,
-    /// discarding newlines, comments, etc.
-    private func extractIndentation(from trivia: Trivia) -> Trivia {
+    private static func extractIndentation(from trivia: Trivia) -> Trivia {
         var pieces = [TriviaPiece]()
-        // Walk backwards from the end to find trailing spaces/tabs (the indentation)
         for piece in trivia.pieces.reversed() {
             switch piece {
-            case .spaces, .tabs:
-                pieces.insert(piece, at: 0)
-            default:
-                // Stop at the first non-whitespace piece going backwards
-                if !pieces.isEmpty { return Trivia(pieces: pieces) }
-                break
+                case .spaces, .tabs:
+                    pieces.insert(piece, at: 0)
+                default:
+                    if !pieces.isEmpty { return Trivia(pieces: pieces) }
             }
         }
         return Trivia(pieces: pieces)
     }
 
-    /// Collect variable names declared in a code block item (for shadowing detection).
-    private func collectDeclaredNames(
+    private static func collectDeclaredNames(
         from item: CodeBlockItemSyntax,
         into names: inout Set<String>
     ) {
@@ -457,8 +490,6 @@ final class NoGuardInTests: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendab
                 }
             }
         }
-        // Also check function parameters from the enclosing function
-        // (handled by the parent function traversal context)
     }
 }
 

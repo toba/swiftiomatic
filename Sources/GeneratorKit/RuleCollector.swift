@@ -33,6 +33,17 @@ package final class RuleCollector {
     /// to run inside `CompactStageOneRewriter` (issue `ogx-lb7`).
     var nodeLocalTransforms = [String: [String]]()
 
+    /// Maps a syntax node type name to the rules that expose a
+    /// `static func willEnter(_:context:)` for that node. The combined rewriter
+    /// invokes these *before* `super.visit(node)` so scope-tracking rules can
+    /// push state that descendants will see (issue `ddi-wtv-9`).
+    var nodeLocalWillEnter = [String: [String]]()
+
+    /// Maps a syntax node type name to the rules that expose a
+    /// `static func didExit(_:context:)` for that node. Invoked *after* the
+    /// chained `transform` calls so scope-tracking rules can pop state.
+    var nodeLocalDidExit = [String: [String]]()
+
     package init() {}
 
     /// Populates the internal collections with rules in the given directory.
@@ -57,6 +68,12 @@ package final class RuleCollector {
                 for transformedNode in rule.transformedNodes {
                     self.nodeLocalTransforms[transformedNode, default: []]
                         .append(rule.typeName)
+                }
+                for node in rule.willEnterNodes {
+                    self.nodeLocalWillEnter[node, default: []].append(rule.typeName)
+                }
+                for node in rule.didExitNodes {
+                    self.nodeLocalDidExit[node, default: []].append(rule.typeName)
                 }
             }
         }
@@ -160,6 +177,8 @@ package final class RuleCollector {
 
             var visitedNodes = [String]()
             var transformedNodes = [String]()
+            var willEnterNodes = [String]()
+            var didExitNodes = [String]()
 
             for member in members {
                 guard let function = member.decl.as(FunctionDeclSyntax.self) else { continue }
@@ -186,6 +205,28 @@ package final class RuleCollector {
                         params.contains(where: { $0.firstName.text == "context" })
                     {
                         transformedNodes.append(firstType.name.text)
+                    }
+                }
+
+                // Scope-tracking hooks: `static func willEnter(_ node: T, context: Context)`
+                // and `static func didExit(_ node: T, context: Context)`. The combined
+                // rewriter calls `willEnter` before `super.visit` and `didExit` after the
+                // chained transforms, letting rules push/pop state around the descendant
+                // walk (issue `ddi-wtv-9`).
+                if (function.name.text == "willEnter" || function.name.text == "didExit"),
+                    function.modifiers.contains(where: {
+                        $0.name.tokenKind == .keyword(.static)
+                    })
+                {
+                    let params = Array(function.signature.parameterClause.parameters)
+                    if let firstType = params.first?.type.as(IdentifierTypeSyntax.self),
+                        params.contains(where: { $0.firstName.text == "context" })
+                    {
+                        if function.name.text == "willEnter" {
+                            willEnterNodes.append(firstType.name.text)
+                        } else {
+                            didExitNodes.append(firstType.name.text)
+                        }
                     }
                 }
             }
@@ -228,6 +269,8 @@ package final class RuleCollector {
                 isOptIn: Self.extractIsOptIn(from: members),
                 customProperties: customProperties,
                 transformedNodes: transformedNodes,
+                willEnterNodes: willEnterNodes,
+                didExitNodes: didExitNodes,
             )
         }
 

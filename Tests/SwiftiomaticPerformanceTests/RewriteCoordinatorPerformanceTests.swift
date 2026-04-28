@@ -102,4 +102,70 @@ final class RewriteCoordinatorPerformanceTests: XCTestCase {
       _ = pipeline.rewrite(Syntax(sourceFile))
     }
   }
+
+  /// Compares the legacy `RewritePipeline` against the new two-stage compact
+  /// pipeline (`CompactStageOneRewriter` + 13 ordered structural passes) on
+  /// `LayoutCoordinator.swift` — the largest source file in the repo and the
+  /// perf gate from epic `iv7-r5g`.
+  ///
+  /// The two-stage path must finish well under 200 ms wall-clock when running
+  /// release-built. Rewrite-only timing is reported via `measure`; visual
+  /// inspection of the `XCTest` performance baseline confirms the budget.
+  func testTwoStageCompactPipelineOnLayoutCoordinator() throws {
+    let layoutCoordinator = URL(fileURLWithPath: #filePath)
+      .deletingLastPathComponent()  // SwiftiomaticPerformanceTests
+      .deletingLastPathComponent()  // Tests
+      .deletingLastPathComponent()  // repo root
+      .appendingPathComponent("Sources/SwiftiomaticKit/Layout/LayoutCoordinator.swift")
+
+    let source = try String(contentsOf: layoutCoordinator, encoding: .utf8)
+    let sourceFile = Parser.parse(source: source)
+
+    measureIfNotInCI {
+      let context = makeTestContext(
+        sourceFileSyntax: sourceFile,
+        selection: .infinite,
+        findingConsumer: { _ in }
+      )
+      var current = CompactStageOneRewriter(context: context).rewrite(Syntax(sourceFile))
+      current = SortImports(context: context).rewrite(current)
+      current = BlankLinesAfterImports(context: context).rewrite(current)
+      current = FileScopedDeclarationPrivacy(context: context).rewrite(current)
+      current = ExtensionAccessLevel(context: context).rewrite(current)
+      current = PreferFinalClasses(context: context).rewrite(current)
+      current = ConvertRegularCommentToDocC(context: context).rewrite(current)
+      current = BlankLinesBetweenScopes(context: context).rewrite(current)
+      current = ConsistentSwitchCaseSpacing(context: context).rewrite(current)
+      current = SortDeclarations(context: context).rewrite(current)
+      current = SortSwitchCases(context: context).rewrite(current)
+      current = SortTypeAliases(context: context).rewrite(current)
+      current = FileHeader(context: context).rewrite(current)
+      current = ReflowComments(context: context).rewrite(current)
+      _ = current
+    }
+  }
+
+  /// Companion to `testTwoStageCompactPipelineOnLayoutCoordinator`: runs the
+  /// legacy `RewritePipeline` over the same file so the two timings can be
+  /// compared apples-to-apples.
+  func testLegacyPipelineOnLayoutCoordinator() throws {
+    let layoutCoordinator = URL(fileURLWithPath: #filePath)
+      .deletingLastPathComponent()
+      .deletingLastPathComponent()
+      .deletingLastPathComponent()
+      .appendingPathComponent("Sources/SwiftiomaticKit/Layout/LayoutCoordinator.swift")
+
+    let source = try String(contentsOf: layoutCoordinator, encoding: .utf8)
+    let sourceFile = Parser.parse(source: source)
+
+    measureIfNotInCI {
+      let context = makeTestContext(
+        sourceFileSyntax: sourceFile,
+        selection: .infinite,
+        findingConsumer: { _ in }
+      )
+      let pipeline = RewritePipeline(context: context)
+      _ = pipeline.rewrite(Syntax(sourceFile))
+    }
+  }
 }

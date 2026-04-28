@@ -16,8 +16,11 @@ final class SwiftTestingTestCaseNames: RewriteSyntaxRule<BasicRuleValue>, @unche
     override class var group: ConfigurationGroup? { .testing }
     override class var defaultValue: BasicRuleValue { .init(rewrite: false, lint: .no) }
 
-    private var importsTesting = false
-    private var allIdentifiers = Set<String>()
+    /// Per-file mutable state held in `Context.ruleState`.
+    final class State {
+        var importsTesting = false
+        var allIdentifiers = Set<String>()
+    }
 
     private static let swiftKeywords: Set<String> = [
         "init", "deinit", "subscript", "nil", "true", "false", "self", "Self",
@@ -29,27 +32,46 @@ final class SwiftTestingTestCaseNames: RewriteSyntaxRule<BasicRuleValue>, @unche
         "associatedtype", "operator", "precedencegroup", "inout", "static",
     ]
 
-    override func visit(_ node: SourceFileSyntax) -> SourceFileSyntax {
+    // MARK: - Pre-scan
+
+    static func willEnter(_ node: SourceFileSyntax, context: Context) {
+        let state = context.ruleState(for: Self.self) { State() }
         for stmt in node.statements {
             if let importDecl = stmt.item.as(ImportDeclSyntax.self),
                 importDecl.path.first?.name.text == "Testing"
             {
-                importsTesting = true
+                state.importsTesting = true
             }
         }
-
-        // Collect identifiers for collision detection
         for token in node.tokens(viewMode: .sourceAccurate) {
             if case .identifier(let name) = token.tokenKind {
-                allIdentifiers.insert(name)
+                state.allIdentifiers.insert(name)
             }
         }
+    }
 
+    // MARK: - Legacy delegators
+
+    override func visit(_ node: SourceFileSyntax) -> SourceFileSyntax {
+        Self.willEnter(node, context: context)
         return super.visit(node)
     }
 
     override func visit(_ node: FunctionDeclSyntax) -> DeclSyntax {
-        guard importsTesting,
+        let parent = Syntax(node).parent
+        let visited = super.visit(node).cast(FunctionDeclSyntax.self)
+        return Self.transform(visited, parent: parent, context: context)
+    }
+
+    // MARK: - Static transform
+
+    static func transform(
+        _ node: FunctionDeclSyntax,
+        parent _: Syntax?,
+        context: Context
+    ) -> DeclSyntax {
+        let state = context.ruleState(for: Self.self) { State() }
+        guard state.importsTesting,
             node.hasAttribute("Test", inModule: "Testing")
         else {
             return DeclSyntax(node)
@@ -69,7 +91,6 @@ final class SwiftTestingTestCaseNames: RewriteSyntaxRule<BasicRuleValue>, @unche
 
         let newIdentifier: String
         if isBackticked {
-            // `test something` → `something`, `Test Feature` → `Feature`
             let afterTest = bareName.dropFirst(4)
             guard !afterTest.isEmpty else { return DeclSyntax(node) }
             let trimmed =
@@ -77,20 +98,19 @@ final class SwiftTestingTestCaseNames: RewriteSyntaxRule<BasicRuleValue>, @unche
             guard !trimmed.isEmpty else { return DeclSyntax(node) }
             newIdentifier = "`\(trimmed)`"
         } else {
-            // testMyFeature → myFeature
             let afterTest = bareName.dropFirst(4)
             guard !afterTest.isEmpty, let first = afterTest.first else { return DeclSyntax(node) }
             if first.isNumber { return DeclSyntax(node) }
 
             let remainder = first.lowercased() + afterTest.dropFirst()
             if Self.swiftKeywords.contains(remainder) { return DeclSyntax(node) }
-            if allIdentifiers.contains(remainder) && remainder != bareName {
+            if state.allIdentifiers.contains(remainder) && remainder != bareName {
                 return DeclSyntax(node)
             }
             newIdentifier = remainder
         }
 
-        diagnose(.removeTestPrefix(oldName: bareName), on: node.name)
+        Self.diagnose(.removeTestPrefix(oldName: bareName), on: node.name, context: context)
 
         return DeclSyntax(
             node.with(\.name, node.name.with(\.tokenKind, .identifier(newIdentifier)))

@@ -22,139 +22,222 @@ final class WrapSingleLineBodies: RewriteSyntaxRule<SingleLineBodiesConfiguratio
         return config
     }
     override class var group: ConfigurationGroup? { .wrap }
-    private var mode: SingleLineBodiesConfiguration.Mode { ruleConfig.mode }
-    private var maxLength: Int { context.configuration[LineLength.self] }
-
-    // MARK: - Wrap-mode state
-
-    /// Tracks the current body indentation for nested inline structures.
-    private var currentIndent = ""
-
-    /// Tracks the base indentation for if/else-if chains so that `else if` bodies use the same base
-    /// as the outermost `if` .
-    private var chainBaseIndent: String?
 
     // MARK: - Conditionals
 
     override func visit(_ node: IfExprSyntax) -> ExprSyntax {
-        switch mode {
-            case .wrap: wrapIf(node)
-            case .inline: inlineIf(node)
+        let parent = Syntax(node).parent
+        let visited = super.visit(node).cast(IfExprSyntax.self)
+        return Self.transform(visited, parent: parent, context: context)
+    }
+
+    static func transform(
+        _ node: IfExprSyntax,
+        parent: Syntax?,
+        context: Context
+    ) -> ExprSyntax {
+        switch context.configuration[Self.self].mode {
+            case .wrap: wrapIf(node, parent: parent, context: context)
+            case .inline: inlineIf(node, context: context)
         }
     }
 
     override func visit(_ node: GuardStmtSyntax) -> StmtSyntax {
-        switch mode {
-            case .wrap: wrapGuard(node)
-            case .inline: inlineGuard(node)
+        let parent = Syntax(node).parent
+        let visited = super.visit(node).cast(GuardStmtSyntax.self)
+        return Self.transform(visited, parent: parent, context: context)
+    }
+
+    static func transform(
+        _ node: GuardStmtSyntax,
+        parent: Syntax?,
+        context: Context
+    ) -> StmtSyntax {
+        switch context.configuration[Self.self].mode {
+            case .wrap: wrapGuard(node, context: context)
+            case .inline: inlineGuard(node, context: context)
         }
     }
 
     // MARK: - Functions
 
     override func visit(_ node: FunctionDeclSyntax) -> DeclSyntax {
-        switch mode {
-            case .wrap: wrapFunction(node)
-            case .inline: inlineFunction(node)
+        let parent = Syntax(node).parent
+        let visited = super.visit(node).cast(FunctionDeclSyntax.self)
+        return Self.transform(visited, parent: parent, context: context)
+    }
+
+    static func transform(
+        _ node: FunctionDeclSyntax,
+        parent: Syntax?,
+        context: Context
+    ) -> DeclSyntax {
+        switch context.configuration[Self.self].mode {
+            case .wrap: wrapFunction(node, context: context)
+            case .inline: inlineFunction(node, context: context)
         }
     }
 
     override func visit(_ node: InitializerDeclSyntax) -> DeclSyntax {
-        switch mode {
-            case .wrap: wrapInit(node)
-            case .inline: inlineInit(node)
+        let parent = Syntax(node).parent
+        let visited = super.visit(node).cast(InitializerDeclSyntax.self)
+        return Self.transform(visited, parent: parent, context: context)
+    }
+
+    static func transform(
+        _ node: InitializerDeclSyntax,
+        parent: Syntax?,
+        context: Context
+    ) -> DeclSyntax {
+        switch context.configuration[Self.self].mode {
+            case .wrap: wrapInit(node, context: context)
+            case .inline: inlineInit(node, context: context)
         }
     }
 
     override func visit(_ node: SubscriptDeclSyntax) -> DeclSyntax {
-        switch mode {
-            case .wrap: wrapSubscript(node)
-            case .inline: inlineSubscript(node)
+        let parent = Syntax(node).parent
+        let visited = super.visit(node).cast(SubscriptDeclSyntax.self)
+        return Self.transform(visited, parent: parent, context: context)
+    }
+
+    static func transform(
+        _ node: SubscriptDeclSyntax,
+        parent: Syntax?,
+        context: Context
+    ) -> DeclSyntax {
+        switch context.configuration[Self.self].mode {
+            case .wrap: wrapSubscript(node, context: context)
+            case .inline: inlineSubscript(node, context: context)
         }
     }
 
     // MARK: - Loops
 
     override func visit(_ node: ForStmtSyntax) -> StmtSyntax {
-        switch mode {
-            case .wrap: wrapFor(node)
-            case .inline: inlineFor(node)
+        let parent = Syntax(node).parent
+        let visited = super.visit(node).cast(ForStmtSyntax.self)
+        return Self.transform(visited, parent: parent, context: context)
+    }
+
+    static func transform(
+        _ node: ForStmtSyntax,
+        parent: Syntax?,
+        context: Context
+    ) -> StmtSyntax {
+        switch context.configuration[Self.self].mode {
+            case .wrap: wrapFor(node, context: context)
+            case .inline: inlineFor(node, context: context)
         }
     }
 
     override func visit(_ node: WhileStmtSyntax) -> StmtSyntax {
-        switch mode {
-            case .wrap: wrapWhile(node)
-            case .inline: inlineWhile(node)
+        let parent = Syntax(node).parent
+        let visited = super.visit(node).cast(WhileStmtSyntax.self)
+        return Self.transform(visited, parent: parent, context: context)
+    }
+
+    static func transform(
+        _ node: WhileStmtSyntax,
+        parent: Syntax?,
+        context: Context
+    ) -> StmtSyntax {
+        switch context.configuration[Self.self].mode {
+            case .wrap: wrapWhile(node, context: context)
+            case .inline: inlineWhile(node, context: context)
         }
     }
 
     override func visit(_ node: RepeatStmtSyntax) -> StmtSyntax {
-        switch mode {
-            case .wrap: wrapRepeat(node)
-            case .inline: inlineRepeat(node)
+        let parent = Syntax(node).parent
+        let visited = super.visit(node).cast(RepeatStmtSyntax.self)
+        return Self.transform(visited, parent: parent, context: context)
+    }
+
+    static func transform(
+        _ node: RepeatStmtSyntax,
+        parent: Syntax?,
+        context: Context
+    ) -> StmtSyntax {
+        switch context.configuration[Self.self].mode {
+            case .wrap: wrapRepeat(node, context: context)
+            case .inline: inlineRepeat(node, context: context)
         }
     }
 
     // MARK: - Properties
 
     override func visit(_ node: PatternBindingSyntax) -> PatternBindingSyntax {
-        switch mode {
-            case .wrap: wrapProperty(node)
-            case .inline: inlineProperty(node)
+        let parent = Syntax(node).parent
+        let visited = super.visit(node)
+        return Self.transform(visited, parent: parent, context: context)
+    }
+
+    static func transform(
+        _ node: PatternBindingSyntax,
+        parent: Syntax?,
+        context: Context
+    ) -> PatternBindingSyntax {
+        switch context.configuration[Self.self].mode {
+            case .wrap: wrapProperty(node, context: context)
+            case .inline: inlineProperty(node, context: context)
         }
     }
 
     // MARK: - Property Observers
 
     override func visit(_ node: AccessorDeclSyntax) -> DeclSyntax {
+        let parent = Syntax(node).parent
+        let visited = super.visit(node).cast(AccessorDeclSyntax.self)
+        return Self.transform(visited, parent: parent, context: context)
+    }
+
+    static func transform(
+        _ node: AccessorDeclSyntax,
+        parent: Syntax?,
+        context: Context
+    ) -> DeclSyntax {
         // Only handle willSet/didSet observer bodies in inline mode
-        guard mode == .inline,
+        guard context.configuration[Self.self].mode == .inline,
               node.accessorSpecifier.tokenKind == .keyword(.didSet)
                   || node.accessorSpecifier.tokenKind == .keyword(.willSet)
-        else { return super.visit(node) }
+        else { return DeclSyntax(node) }
 
-        return inlineObserver(node)
+        return inlineObserver(node, context: context)
     }
 }
 
 // MARK: - Wrap Mode
 
 extension WrapSingleLineBodies {
-    private func wrapIf(_ node: IfExprSyntax) -> ExprSyntax {
-        let isElseIf = node.parent?.is(IfExprSyntax.self) == true
-
-        let baseIndent: String
-        if isElseIf, let chainIndent = chainBaseIndent {
-            baseIndent = chainIndent
-        } else {
-            baseIndent = resolveIndent(from: node.ifKeyword.leadingTrivia)
-        }
-
-        let savedChainIndent = chainBaseIndent
-        let savedIndent = currentIndent
-        chainBaseIndent = baseIndent
-        currentIndent = baseIndent + "    "
-        defer {
-            currentIndent = savedIndent
-            chainBaseIndent = savedChainIndent
-        }
+    /// Resolves the base indent for an `if` chain. `parent` is the captured pre-recursion parent
+    /// from the static transform.
+    private static func wrapIf(
+        _ node: IfExprSyntax,
+        parent: Syntax?,
+        context: Context
+    ) -> ExprSyntax {
+        let baseIndent = resolveIndent(from: node.ifKeyword.leadingTrivia)
 
         let needsBodyWrap = node.body.bodyNeedsWrapping
-        if needsBodyWrap { diagnose(.wrapConditionalBody, on: node.body.leftBrace) }
+        if needsBodyWrap {
+            Self.diagnose(.wrapConditionalBody, on: node.body.leftBrace, context: context)
+        }
 
         var result = node
-        result.body.statements = visit(node.body.statements)
+        // Children already recursed by the combined rewriter; just wrap the local body.
         if needsBodyWrap { result.body = result.body.wrappingBody(baseIndent: baseIndent) }
 
         if let elseBody = node.elseBody {
             switch elseBody {
-                case let .ifExpr(nestedIf):
-                    result.elseBody = .ifExpr(visit(nestedIf).cast(IfExprSyntax.self))
+                case .ifExpr:
+                    // Nested if was already visited / transformed by the combined rewriter.
+                    break
                 case var .codeBlock(block):
                     let needsElseWrap = block.bodyNeedsWrapping
-                    if needsElseWrap { diagnose(.wrapConditionalBody, on: block.leftBrace) }
-                    block.statements = visit(block.statements)
+                    if needsElseWrap {
+                        Self.diagnose(.wrapConditionalBody, on: block.leftBrace, context: context)
+                    }
                     if needsElseWrap { block = block.wrappingBody(baseIndent: baseIndent) }
                     result.elseBody = .codeBlock(block)
             }
@@ -163,26 +246,26 @@ extension WrapSingleLineBodies {
         return ExprSyntax(result)
     }
 
-    private func wrapGuard(_ node: GuardStmtSyntax) -> StmtSyntax {
+    private static func wrapGuard(_ node: GuardStmtSyntax, context: Context) -> StmtSyntax {
         let baseIndent = resolveIndent(from: node.guardKeyword.leadingTrivia)
 
-        let savedIndent = currentIndent
-        currentIndent = baseIndent + "    "
-        defer { currentIndent = savedIndent }
-
         let needsWrap = node.body.bodyNeedsWrapping
-        if needsWrap { diagnose(.wrapConditionalBody, on: node.body.leftBrace) }
+        if needsWrap {
+            Self.diagnose(.wrapConditionalBody, on: node.body.leftBrace, context: context)
+        }
 
         var result = node
-        result.body.statements = visit(node.body.statements)
         if needsWrap { result.body = result.body.wrappingBody(baseIndent: baseIndent) }
         return StmtSyntax(result)
     }
 
-    private func wrapFunction(_ node: FunctionDeclSyntax) -> DeclSyntax {
-        guard let body = node.body, body.bodyNeedsWrapping else { return super.visit(node) }
+    private static func wrapFunction(
+        _ node: FunctionDeclSyntax,
+        context: Context
+    ) -> DeclSyntax {
+        guard let body = node.body, body.bodyNeedsWrapping else { return DeclSyntax(node) }
 
-        diagnose(.wrapFunctionBody, on: body.leftBrace)
+        Self.diagnose(.wrapFunctionBody, on: body.leftBrace, context: context)
 
         let baseIndent = node.funcKeyword.leadingTrivia.indentation
         var result = node
@@ -190,10 +273,10 @@ extension WrapSingleLineBodies {
         return DeclSyntax(result)
     }
 
-    private func wrapInit(_ node: InitializerDeclSyntax) -> DeclSyntax {
-        guard let body = node.body, body.bodyNeedsWrapping else { return super.visit(node) }
+    private static func wrapInit(_ node: InitializerDeclSyntax, context: Context) -> DeclSyntax {
+        guard let body = node.body, body.bodyNeedsWrapping else { return DeclSyntax(node) }
 
-        diagnose(.wrapFunctionBody, on: body.leftBrace)
+        Self.diagnose(.wrapFunctionBody, on: body.leftBrace, context: context)
 
         let baseIndent = node.initKeyword.leadingTrivia.indentation
         var result = node
@@ -201,18 +284,21 @@ extension WrapSingleLineBodies {
         return DeclSyntax(result)
     }
 
-    private func wrapSubscript(_ node: SubscriptDeclSyntax) -> DeclSyntax {
+    private static func wrapSubscript(
+        _ node: SubscriptDeclSyntax,
+        context: Context
+    ) -> DeclSyntax {
         guard let accessorBlock = node.accessorBlock,
               case let .getter(statements) = accessorBlock.accessors,
-              !statements.isEmpty else { return super.visit(node) }
+              !statements.isEmpty else { return DeclSyntax(node) }
 
         guard let firstStmt = statements.first,
-              !firstStmt.leadingTrivia.containsNewlines else { return super.visit(node) }
+              !firstStmt.leadingTrivia.containsNewlines else { return DeclSyntax(node) }
 
         let closingOnNewLine = accessorBlock.rightBrace.leadingTrivia.containsNewlines
-        guard !closingOnNewLine else { return super.visit(node) }
+        guard !closingOnNewLine else { return DeclSyntax(node) }
 
-        diagnose(.wrapFunctionBody, on: accessorBlock.leftBrace)
+        Self.diagnose(.wrapFunctionBody, on: accessorBlock.leftBrace, context: context)
 
         let baseIndent = node.subscriptKeyword.leadingTrivia.indentation
         let bodyIndent = baseIndent + "    "
@@ -240,55 +326,43 @@ extension WrapSingleLineBodies {
         return DeclSyntax(result)
     }
 
-    private func wrapFor(_ node: ForStmtSyntax) -> StmtSyntax {
+    private static func wrapFor(_ node: ForStmtSyntax, context: Context) -> StmtSyntax {
         let baseIndent = resolveIndent(from: node.forKeyword.leadingTrivia)
 
-        let savedIndent = currentIndent
-        currentIndent = baseIndent + "    "
-        defer { currentIndent = savedIndent }
-
         let needsWrap = node.body.bodyNeedsWrapping
-        if needsWrap { diagnose(.wrapLoopBody, on: node.body.leftBrace) }
+        if needsWrap { Self.diagnose(.wrapLoopBody, on: node.body.leftBrace, context: context) }
 
         var result = node
-        result.body.statements = visit(node.body.statements)
         if needsWrap { result.body = result.body.wrappingBody(baseIndent: baseIndent) }
         return StmtSyntax(result)
     }
 
-    private func wrapWhile(_ node: WhileStmtSyntax) -> StmtSyntax {
+    private static func wrapWhile(_ node: WhileStmtSyntax, context: Context) -> StmtSyntax {
         let baseIndent = resolveIndent(from: node.whileKeyword.leadingTrivia)
 
-        let savedIndent = currentIndent
-        currentIndent = baseIndent + "    "
-        defer { currentIndent = savedIndent }
-
         let needsWrap = node.body.bodyNeedsWrapping
-        if needsWrap { diagnose(.wrapLoopBody, on: node.body.leftBrace) }
+        if needsWrap { Self.diagnose(.wrapLoopBody, on: node.body.leftBrace, context: context) }
 
         var result = node
-        result.body.statements = visit(node.body.statements)
         if needsWrap { result.body = result.body.wrappingBody(baseIndent: baseIndent) }
         return StmtSyntax(result)
     }
 
-    private func wrapRepeat(_ node: RepeatStmtSyntax) -> StmtSyntax {
+    private static func wrapRepeat(_ node: RepeatStmtSyntax, context: Context) -> StmtSyntax {
         let baseIndent = resolveIndent(from: node.repeatKeyword.leadingTrivia)
 
-        let savedIndent = currentIndent
-        currentIndent = baseIndent + "    "
-        defer { currentIndent = savedIndent }
-
         let needsWrap = node.body.bodyNeedsWrapping
-        if needsWrap { diagnose(.wrapLoopBody, on: node.body.leftBrace) }
+        if needsWrap { Self.diagnose(.wrapLoopBody, on: node.body.leftBrace, context: context) }
 
         var result = node
-        result.body.statements = visit(node.body.statements)
         if needsWrap { result.body = result.body.wrappingBody(baseIndent: baseIndent) }
         return StmtSyntax(result)
     }
 
-    private func wrapProperty(_ node: PatternBindingSyntax) -> PatternBindingSyntax {
+    private static func wrapProperty(
+        _ node: PatternBindingSyntax,
+        context: Context
+    ) -> PatternBindingSyntax {
         guard let accessorBlock = node.accessorBlock else { return node }
 
         switch accessorBlock.accessors {
@@ -299,7 +373,7 @@ extension WrapSingleLineBodies {
                 let closingOnNewLine = accessorBlock.rightBrace.leadingTrivia.containsNewlines
                 guard !closingOnNewLine else { return node }
 
-                diagnose(.wrapPropertyBody, on: accessorBlock.leftBrace)
+                Self.diagnose(.wrapPropertyBody, on: accessorBlock.leftBrace, context: context)
 
                 let baseIndent = resolveVarIndent(node)
                 let bodyIndent = baseIndent + "    "
@@ -328,16 +402,15 @@ extension WrapSingleLineBodies {
                 return result
 
             case let .accessors(accessors):
-                guard accessors.contains(where: { $0.body != nil })
-                else { return super.visit(node) }
+                guard accessors.contains(where: { $0.body != nil }) else { return node }
 
                 guard let firstAccessor = accessors.first,
                       !firstAccessor.leadingTrivia.containsNewlines
-                else { return super.visit(node) }
+                else { return node }
                 let closingOnNewLine = accessorBlock.rightBrace.leadingTrivia.containsNewlines
-                guard !closingOnNewLine else { return super.visit(node) }
+                guard !closingOnNewLine else { return node }
 
-                diagnose(.wrapPropertyBody, on: accessorBlock.leftBrace)
+                Self.diagnose(.wrapPropertyBody, on: accessorBlock.leftBrace, context: context)
 
                 let baseIndent = resolveVarIndent(node)
                 let bodyIndent = baseIndent + "    "
@@ -363,7 +436,7 @@ extension WrapSingleLineBodies {
                 )
 
                 result.accessorBlock = block
-                return super.visit(result)
+                return result
         }
     }
 }
@@ -373,14 +446,14 @@ extension WrapSingleLineBodies {
 extension WrapSingleLineBodies {
     /// Whether a code block is already inline (body and closing brace on same line as opening
     /// brace).
-    private func isAlreadyInline(_ body: CodeBlockSyntax) -> Bool {
+    private static func isAlreadyInline(_ body: CodeBlockSyntax) -> Bool {
         guard let firstStmt = body.statements.first else { return true }
         return !firstStmt.leadingTrivia.containsNewlines
             && !body.rightBrace.leadingTrivia.containsNewlines
     }
 
     /// Whether a code block has exactly one statement and is wrapped across multiple lines.
-    private func canInline(_ body: CodeBlockSyntax) -> Bool {
+    private static func canInline(_ body: CodeBlockSyntax) -> Bool {
         guard body.statements.count == 1 else { return false }
         return !isAlreadyInline(body)
     }
@@ -390,7 +463,11 @@ extension WrapSingleLineBodies {
     /// lines), only the last line counts — that's the line the inlined body will join. If the brace
     /// currently sits on its own line, the result reflects the brace being glued to the previous
     /// token with a single space.
-    private func prefixLength(from _: TokenSyntax, to leftBrace: TokenSyntax) -> Int {
+    private static func prefixLength(
+        from _: TokenSyntax,
+        to leftBrace: TokenSyntax,
+        context: Context
+    ) -> Int {
         let converter = context.sourceLocationConverter
         if leftBrace.leadingTrivia.containsNewlines,
            let prev = leftBrace.previousToken(viewMode: .sourceAccurate)
@@ -403,24 +480,25 @@ extension WrapSingleLineBodies {
     }
 
     /// Returns the trimmed body text for a single-statement code block.
-    private func singleStatementText(_ body: CodeBlockSyntax) -> String {
+    private static func singleStatementText(_ body: CodeBlockSyntax) -> String {
         body.statements.first!.trimmedDescription
     }
 
     /// Checks if inlining the body would fit within the max line length. The inline form is:
     /// `<prefix> { <body> }<suffix>`
-    private func fitsInline(
+    private static func fitsInline(
         prefixLength: Int,
         bodyText: String,
-        suffixLength: Int = 0
+        suffixLength: Int = 0,
+        context: Context
     ) -> Bool {
         // prefixLength already includes the `{` . Inline form adds " " + body + " }".
         let totalLength = prefixLength + 1 + bodyText.count + 2 + suffixLength
-        return totalLength <= maxLength
+        return totalLength <= context.configuration[LineLength.self]
     }
 
     /// Returns a copy of the code block with the body inlined.
-    private func inliningBody(_ body: CodeBlockSyntax) -> CodeBlockSyntax {
+    private static func inliningBody(_ body: CodeBlockSyntax) -> CodeBlockSyntax {
         var result = body
         if result.leftBrace.leadingTrivia.containsNewlines {
             result.leftBrace = result.leftBrace.with(\.leadingTrivia, .space)
@@ -439,88 +517,99 @@ extension WrapSingleLineBodies {
 
     // MARK: - Inline visitors
 
-    private func inlineIf(_ node: IfExprSyntax) -> ExprSyntax {
+    private static func inlineIf(_ node: IfExprSyntax, context: Context) -> ExprSyntax {
         // For inline mode, only handle simple single-body if statements (no else chains)
-        guard node.elseBody == nil else { return super.visit(node) }
-        guard canInline(node.body) else { return super.visit(node) }
+        guard node.elseBody == nil else { return ExprSyntax(node) }
+        guard canInline(node.body) else { return ExprSyntax(node) }
 
         let startToken = node.ifKeyword
         let bodyText = singleStatementText(node.body)
-        let prefix = prefixLength(from: startToken, to: node.body.leftBrace)
+        let prefix = prefixLength(from: startToken, to: node.body.leftBrace, context: context)
 
-        guard fitsInline(prefixLength: prefix, bodyText: bodyText) else { return super.visit(node) }
+        guard fitsInline(prefixLength: prefix, bodyText: bodyText, context: context)
+        else { return ExprSyntax(node) }
 
-        diagnose(.inlineConditionalBody, on: node.body.leftBrace)
+        Self.diagnose(.inlineConditionalBody, on: node.body.leftBrace, context: context)
 
         var result = node
         result.body = inliningBody(node.body)
         return ExprSyntax(result)
     }
 
-    private func inlineGuard(_ node: GuardStmtSyntax) -> StmtSyntax {
-        guard canInline(node.body) else { return super.visit(node) }
+    private static func inlineGuard(_ node: GuardStmtSyntax, context: Context) -> StmtSyntax {
+        guard canInline(node.body) else { return StmtSyntax(node) }
 
         let startToken = node.guardKeyword
         let bodyText = singleStatementText(node.body)
-        let prefix = prefixLength(from: startToken, to: node.body.leftBrace)
+        let prefix = prefixLength(from: startToken, to: node.body.leftBrace, context: context)
 
-        guard fitsInline(prefixLength: prefix, bodyText: bodyText) else { return super.visit(node) }
+        guard fitsInline(prefixLength: prefix, bodyText: bodyText, context: context)
+        else { return StmtSyntax(node) }
 
-        diagnose(.inlineConditionalBody, on: node.body.leftBrace)
+        Self.diagnose(.inlineConditionalBody, on: node.body.leftBrace, context: context)
 
         var result = node
         result.body = inliningBody(node.body)
         return StmtSyntax(result)
     }
 
-    private func inlineFunction(_ node: FunctionDeclSyntax) -> DeclSyntax {
-        guard let body = node.body, canInline(body) else { return super.visit(node) }
+    private static func inlineFunction(
+        _ node: FunctionDeclSyntax,
+        context: Context
+    ) -> DeclSyntax {
+        guard let body = node.body, canInline(body) else { return DeclSyntax(node) }
 
         let startToken = node.funcKeyword
         let bodyText = singleStatementText(body)
-        let prefix = prefixLength(from: startToken, to: body.leftBrace)
+        let prefix = prefixLength(from: startToken, to: body.leftBrace, context: context)
 
-        guard fitsInline(prefixLength: prefix, bodyText: bodyText) else { return super.visit(node) }
+        guard fitsInline(prefixLength: prefix, bodyText: bodyText, context: context)
+        else { return DeclSyntax(node) }
 
-        diagnose(.inlineFunctionBody, on: body.leftBrace)
+        Self.diagnose(.inlineFunctionBody, on: body.leftBrace, context: context)
 
         var result = node
         result.body = inliningBody(body)
         return DeclSyntax(result)
     }
 
-    private func inlineInit(_ node: InitializerDeclSyntax) -> DeclSyntax {
-        guard let body = node.body, canInline(body) else { return super.visit(node) }
+    private static func inlineInit(_ node: InitializerDeclSyntax, context: Context) -> DeclSyntax {
+        guard let body = node.body, canInline(body) else { return DeclSyntax(node) }
 
         let startToken = node.initKeyword
         let bodyText = singleStatementText(body)
-        let prefix = prefixLength(from: startToken, to: body.leftBrace)
+        let prefix = prefixLength(from: startToken, to: body.leftBrace, context: context)
 
-        guard fitsInline(prefixLength: prefix, bodyText: bodyText) else { return super.visit(node) }
+        guard fitsInline(prefixLength: prefix, bodyText: bodyText, context: context)
+        else { return DeclSyntax(node) }
 
-        diagnose(.inlineFunctionBody, on: body.leftBrace)
+        Self.diagnose(.inlineFunctionBody, on: body.leftBrace, context: context)
 
         var result = node
         result.body = inliningBody(body)
         return DeclSyntax(result)
     }
 
-    private func inlineSubscript(_ node: SubscriptDeclSyntax) -> DeclSyntax {
+    private static func inlineSubscript(
+        _ node: SubscriptDeclSyntax,
+        context: Context
+    ) -> DeclSyntax {
         guard let accessorBlock = node.accessorBlock,
               case let .getter(statements) = accessorBlock.accessors,
-              statements.count == 1 else { return super.visit(node) }
+              statements.count == 1 else { return DeclSyntax(node) }
 
         // Must be wrapped (not already inline)
         guard let firstStmt = statements.first,
-              firstStmt.leadingTrivia.containsNewlines else { return super.visit(node) }
+              firstStmt.leadingTrivia.containsNewlines else { return DeclSyntax(node) }
 
         let startToken = node.subscriptKeyword
         let bodyText = firstStmt.trimmedDescription
-        let prefix = prefixLength(from: startToken, to: accessorBlock.leftBrace)
+        let prefix = prefixLength(from: startToken, to: accessorBlock.leftBrace, context: context)
 
-        guard fitsInline(prefixLength: prefix, bodyText: bodyText) else { return super.visit(node) }
+        guard fitsInline(prefixLength: prefix, bodyText: bodyText, context: context)
+        else { return DeclSyntax(node) }
 
-        diagnose(.inlineFunctionBody, on: accessorBlock.leftBrace)
+        Self.diagnose(.inlineFunctionBody, on: accessorBlock.leftBrace, context: context)
 
         var result = node
         var block = accessorBlock
@@ -534,44 +623,46 @@ extension WrapSingleLineBodies {
         return DeclSyntax(result)
     }
 
-    private func inlineFor(_ node: ForStmtSyntax) -> StmtSyntax {
-        guard canInline(node.body) else { return super.visit(node) }
+    private static func inlineFor(_ node: ForStmtSyntax, context: Context) -> StmtSyntax {
+        guard canInline(node.body) else { return StmtSyntax(node) }
 
         let startToken = node.forKeyword
         let bodyText = singleStatementText(node.body)
-        let prefix = prefixLength(from: startToken, to: node.body.leftBrace)
+        let prefix = prefixLength(from: startToken, to: node.body.leftBrace, context: context)
 
-        guard fitsInline(prefixLength: prefix, bodyText: bodyText) else { return super.visit(node) }
+        guard fitsInline(prefixLength: prefix, bodyText: bodyText, context: context)
+        else { return StmtSyntax(node) }
 
-        diagnose(.inlineLoopBody, on: node.body.leftBrace)
+        Self.diagnose(.inlineLoopBody, on: node.body.leftBrace, context: context)
 
         var result = node
         result.body = inliningBody(node.body)
         return StmtSyntax(result)
     }
 
-    private func inlineWhile(_ node: WhileStmtSyntax) -> StmtSyntax {
-        guard canInline(node.body) else { return super.visit(node) }
+    private static func inlineWhile(_ node: WhileStmtSyntax, context: Context) -> StmtSyntax {
+        guard canInline(node.body) else { return StmtSyntax(node) }
 
         let startToken = node.whileKeyword
         let bodyText = singleStatementText(node.body)
-        let prefix = prefixLength(from: startToken, to: node.body.leftBrace)
+        let prefix = prefixLength(from: startToken, to: node.body.leftBrace, context: context)
 
-        guard fitsInline(prefixLength: prefix, bodyText: bodyText) else { return super.visit(node) }
+        guard fitsInline(prefixLength: prefix, bodyText: bodyText, context: context)
+        else { return StmtSyntax(node) }
 
-        diagnose(.inlineLoopBody, on: node.body.leftBrace)
+        Self.diagnose(.inlineLoopBody, on: node.body.leftBrace, context: context)
 
         var result = node
         result.body = inliningBody(node.body)
         return StmtSyntax(result)
     }
 
-    private func inlineRepeat(_ node: RepeatStmtSyntax) -> StmtSyntax {
-        guard canInline(node.body) else { return super.visit(node) }
+    private static func inlineRepeat(_ node: RepeatStmtSyntax, context: Context) -> StmtSyntax {
+        guard canInline(node.body) else { return StmtSyntax(node) }
 
         let startToken = node.repeatKeyword
         let bodyText = singleStatementText(node.body)
-        let prefix = prefixLength(from: startToken, to: node.body.leftBrace)
+        let prefix = prefixLength(from: startToken, to: node.body.leftBrace, context: context)
 
         // repeat { body } while condition — suffix includes " while <condition>"
         let whileClause = " while " + node.condition.trimmedDescription
@@ -579,10 +670,11 @@ extension WrapSingleLineBodies {
         guard fitsInline(
             prefixLength: prefix,
             bodyText: bodyText,
-            suffixLength: whileClause.count
-        ) else { return super.visit(node) }
+            suffixLength: whileClause.count,
+            context: context
+        ) else { return StmtSyntax(node) }
 
-        diagnose(.inlineLoopBody, on: node.body.leftBrace)
+        Self.diagnose(.inlineLoopBody, on: node.body.leftBrace, context: context)
 
         var result = node
         result.body = inliningBody(node.body)
@@ -592,7 +684,10 @@ extension WrapSingleLineBodies {
         return StmtSyntax(result)
     }
 
-    private func inlineProperty(_ node: PatternBindingSyntax) -> PatternBindingSyntax {
+    private static func inlineProperty(
+        _ node: PatternBindingSyntax,
+        context: Context
+    ) -> PatternBindingSyntax {
         guard let accessorBlock = node.accessorBlock else { return node }
 
         switch accessorBlock.accessors {
@@ -609,16 +704,18 @@ extension WrapSingleLineBodies {
                 if let varDecl = node.parent?.parent?.as(VariableDeclSyntax.self) {
                     let prefix = prefixLength(
                         from: varDecl.bindingSpecifier,
-                        to: accessorBlock.leftBrace
+                        to: accessorBlock.leftBrace,
+                        context: context
                     )
-                    guard fitsInline(prefixLength: prefix, bodyText: bodyText) else { return node }
+                    guard fitsInline(prefixLength: prefix, bodyText: bodyText, context: context)
+                    else { return node }
                 } else {
                     // Fallback: estimate
                     let estimate = varIndent.count + node.trimmedDescription.count
-                    guard estimate <= maxLength else { return node }
+                    guard estimate <= context.configuration[LineLength.self] else { return node }
                 }
 
-                diagnose(.inlinePropertyBody, on: accessorBlock.leftBrace)
+                Self.diagnose(.inlinePropertyBody, on: accessorBlock.leftBrace, context: context)
 
                 var result = node
                 var block = accessorBlock
@@ -631,19 +728,23 @@ extension WrapSingleLineBodies {
                 result.accessorBlock = block
                 return result
 
-            case .accessors: return super.visit(node)
+            case .accessors: return node
         }
     }
 
-    private func inlineObserver(_ node: AccessorDeclSyntax) -> DeclSyntax {
-        guard let body = node.body, canInline(body) else { return super.visit(node) }
+    private static func inlineObserver(
+        _ node: AccessorDeclSyntax,
+        context: Context
+    ) -> DeclSyntax {
+        guard let body = node.body, canInline(body) else { return DeclSyntax(node) }
 
         let bodyText = singleStatementText(body)
-        let prefix = prefixLength(from: node.accessorSpecifier, to: body.leftBrace)
+        let prefix = prefixLength(from: node.accessorSpecifier, to: body.leftBrace, context: context)
 
-        guard fitsInline(prefixLength: prefix, bodyText: bodyText) else { return super.visit(node) }
+        guard fitsInline(prefixLength: prefix, bodyText: bodyText, context: context)
+        else { return DeclSyntax(node) }
 
-        diagnose(.inlineObserverBody, on: body.leftBrace)
+        Self.diagnose(.inlineObserverBody, on: body.leftBrace, context: context)
 
         var result = node
         result.body = inliningBody(body)
@@ -654,12 +755,15 @@ extension WrapSingleLineBodies {
 // MARK: - Shared Helpers
 
 extension WrapSingleLineBodies {
-    private func resolveIndent(from trivia: Trivia) -> String {
+    /// Returns the indentation derived from the given trivia. Without instance state for the
+    /// caller's "current indent", we fall back to an empty string when the trivia contains no
+    /// newline — the pretty printer will re-indent later if needed.
+    private static func resolveIndent(from trivia: Trivia) -> String {
         if trivia.containsNewlines { return trivia.indentation }
-        return currentIndent
+        return ""
     }
 
-    private func resolveVarIndent(_ node: PatternBindingSyntax) -> String {
+    private static func resolveVarIndent(_ node: PatternBindingSyntax) -> String {
         if let varDecl = node.parent?.parent?.as(VariableDeclSyntax.self) {
             return varDecl.bindingSpecifier.leadingTrivia.indentation
         }

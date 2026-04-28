@@ -5,11 +5,12 @@ status: ready
 type: task
 priority: normal
 created_at: 2026-04-28T02:43:08Z
-updated_at: 2026-04-28T02:43:11Z
+updated_at: 2026-04-28T05:36:09Z
 parent: ddi-wtv
 blocked_by:
     - g6t-gcm
     - fkt-mgf
+    - 7fp-ghy
 sync:
     github:
         issue_number: "487"

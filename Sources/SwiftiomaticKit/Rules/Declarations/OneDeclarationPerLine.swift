@@ -86,6 +86,16 @@ final class OneDeclarationPerLine: RewriteSyntaxRule<BasicRuleValue>, @unchecked
     }
 
     override func visit(_ node: EnumDeclSyntax) -> DeclSyntax {
+        let parent = Syntax(node).parent
+        let visited = super.visit(node).cast(EnumDeclSyntax.self)
+        return Self.transform(visited, parent: parent, context: context)
+    }
+
+    static func transform(
+        _ node: EnumDeclSyntax,
+        parent: Syntax?,
+        context: Context
+    ) -> DeclSyntax {
         var newMembers: [MemberBlockItemSyntax] = []
 
         for member in node.memberBlock.members {
@@ -107,7 +117,11 @@ final class OneDeclarationPerLine: RewriteSyntaxRule<BasicRuleValue>, @unchecked
                     // Once we reach one of these, we need to write out the ones we've collected so
                     // far, then emit a separate case declaration with the associated/raw value
                     // element.
-                    diagnose(.moveAssociatedOrRawValueCase(name: element.name.text), on: element)
+                    Self.diagnose(
+                        .moveAssociatedOrRawValueCase(name: element.name.text),
+                        on: element,
+                        context: context
+                    )
 
                     if let caseDeclForCollectedElements = collector.makeCaseDeclAndReset() {
                         var newMember = member
@@ -144,36 +158,44 @@ final class OneDeclarationPerLine: RewriteSyntaxRule<BasicRuleValue>, @unchecked
     // MARK: - Variable declarations
 
     override func visit(_ node: CodeBlockItemListSyntax) -> CodeBlockItemListSyntax {
-        guard node.contains(where: codeBlockItemHasMultipleVariableBindings)
-        else { return super.visit(node) }
+        let parent = Syntax(node).parent
+        let visited = super.visit(node)
+        return Self.transform(visited, parent: parent, context: context)
+    }
+
+    static func transform(
+        _ node: CodeBlockItemListSyntax,
+        parent: Syntax?,
+        context: Context
+    ) -> CodeBlockItemListSyntax {
+        guard node.contains(where: codeBlockItemHasMultipleVariableBindings) else { return node }
 
         var newItems = [CodeBlockItemSyntax]()
         for codeBlockItem in node {
             guard let varDecl = codeBlockItem.item.as(VariableDeclSyntax.self),
                   varDecl.bindings.count > 1
             else {
-                // It's not a variable declaration with multiple bindings, so visit it recursively
-                // (in case it's something that contains bindings that need to be split) but
-                // otherwise do nothing.
-                let newItem = super.visit(codeBlockItem)
-                newItems.append(newItem)
+                // Not a variable declaration with multiple bindings; children have already been
+                // visited by the combined rewriter / super.visit, so just keep it.
+                newItems.append(codeBlockItem)
                 continue
             }
 
-            diagnose(
-                .onlyOneVariableDeclaration(specifier: varDecl.bindingSpecifier.text), on: varDecl)
+            Self.diagnose(
+                .onlyOneVariableDeclaration(specifier: varDecl.bindingSpecifier.text),
+                on: varDecl,
+                context: context
+            )
 
-            // Visit the decl recursively to make sure nested code block items in the bindings (for
-            // example, an initializer expression that contains a closure expression) are
-            // transformed first before we rewrite the decl itself.
-            let visitedDecl = super.visit(varDecl).as(VariableDeclSyntax.self)!
+            // The decl's children (initializer expressions etc.) have already been recursed by
+            // the combined rewriter / super.visit, so split it as-is.
             var splitter = VariableDeclSplitter {
                 CodeBlockItemSyntax(
                     item: .decl(DeclSyntax($0)),
                     semicolon: nil
                 )
             }
-            newItems.append(contentsOf: splitter.nodes(bySplitting: visitedDecl))
+            newItems.append(contentsOf: splitter.nodes(bySplitting: varDecl))
         }
 
         return CodeBlockItemListSyntax(newItems)
@@ -181,7 +203,7 @@ final class OneDeclarationPerLine: RewriteSyntaxRule<BasicRuleValue>, @unchecked
 
     /// Returns true if the given `CodeBlockItemSyntax` contains a `let` or `var` declaration with
     /// multiple bindings.
-    private func codeBlockItemHasMultipleVariableBindings(
+    private static func codeBlockItemHasMultipleVariableBindings(
         _ node: CodeBlockItemSyntax
     ) -> Bool {
         if let varDecl = node.item.as(VariableDeclSyntax.self),

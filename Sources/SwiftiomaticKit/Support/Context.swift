@@ -47,6 +47,11 @@ package final class Context {
     /// Contains the rules have been disabled by comments for certain line numbers.
     let ruleMask: RuleMask
 
+    /// Per-file, per-rule mutable state cache. Keyed by `ObjectIdentifier(R.self)`.
+    /// Access only through `ruleState(for:initialize:)`.
+    private let ruleStateLock = NSLock()
+    private var ruleStateStorage: [ObjectIdentifier: AnyObject] = [:]
+
     /// Creates a new Context with the provided configuration, diagnostic engine, and file URL.
     package init(
         configuration: Configuration,
@@ -87,4 +92,26 @@ package final class Context {
 
     /// Returns the configured lint severity for the given rule type.
     func severity<R: SyntaxRule>(of _: R.Type) -> Lint { configuration[R.self].lint }
+
+    /// Returns a per-file, per-rule mutable state object, lazily initialised on
+    /// first access. Used by rules ported to the combined `CompactStageOneRewriter`
+    /// that need to carry state across multiple `static func transform` calls
+    /// (file-level pre-scans, scope stacks, accumulated flags).
+    ///
+    /// The cache lives on `Context`, which is constructed fresh per file by
+    /// `RewriteCoordinator.format(syntax:...)`, so each file starts with an empty
+    /// cache. State objects must be reference types — mutations made via the
+    /// returned reference are visible to subsequent callers within the same file.
+    package func ruleState<R, S: AnyObject>(
+        for _: R.Type,
+        initialize: () -> S
+    ) -> S {
+        ruleStateLock.lock()
+        defer { ruleStateLock.unlock() }
+        let key = ObjectIdentifier(R.self)
+        if let cached = ruleStateStorage[key] as? S { return cached }
+        let fresh = initialize()
+        ruleStateStorage[key] = fresh
+        return fresh
+    }
 }

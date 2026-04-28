@@ -19,18 +19,16 @@ import SwiftSyntax
 /// Rewrite: All semicolons will be replaced with line breaks.
 final class NoSemicolons: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable {
     override class var group: ConfigurationGroup? { .redundancies }
-    /// Creates a new version of the given node which doesn't contain any semicolons. The node's
-    /// items are recursively modified to remove semicolons, replacing with line breaks where
-    /// needed. Items are checked recursively to support items that contain code blocks, which may
-    /// have semicolons to be removed.
+
+    /// Creates a new version of the given node which doesn't contain any semicolons.
     ///
-    /// - Parameters:
-    ///   - node: A node that contains items which may have semicolons or nested code blocks.
-    ///   - nodeCreator: A closure that creates a new node given an array of items.
-    private func nodeByRemovingSemicolons<
+    /// In the static-transform model, child items have already been recursed by the combined
+    /// rewriter (or by `super.visit` in the legacy delegator). We just process each item
+    /// in-place, removing semicolons and re-flowing trivia where needed.
+    private static func nodeByRemovingSemicolons<
         ItemType: SyntaxProtocol & WithSemicolonSyntax & Equatable,
         NodeType: SyntaxCollection
-    >(from node: NodeType) -> NodeType where NodeType.Element == ItemType {
+    >(from node: NodeType, context: Context) -> NodeType where NodeType.Element == ItemType {
         var newItems = Array(node)
 
         // Keeps track of trailing trivia after a semicolon when it needs to be moved to precede the
@@ -38,13 +36,11 @@ final class NoSemicolons: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable
         var pendingTrivia = Trivia()
 
         for (idx, item) in node.enumerated() {
-            // Check for semicolons in statements inside of the item, because code blocks may be
-            // nested inside of other code blocks.
-            guard var newItem = rewrite(Syntax(item)).as(ItemType.self) else { return node }
+            // Children have already been recursed; the item is the post-recursion view.
+            var newItem = item
 
             // Check if we need to make any modifications (removing semicolon/adding newlines).
-            guard newItem != item || item.semicolon != nil || !pendingTrivia.isEmpty
-            else { continue }
+            guard item.semicolon != nil || !pendingTrivia.isEmpty else { continue }
 
             // Check if the leading trivia for this statement needs a new line.
             if !pendingTrivia.isEmpty {
@@ -70,10 +66,10 @@ final class NoSemicolons: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable
                 {
                     hasNextStatement = true
                     pendingTrivia = [.newlines(1)]
-                    diagnose(.removeSemicolonAndMove, on: semicolon)
+                    Self.diagnose(.removeSemicolonAndMove, on: semicolon, context: context)
                 } else {
                     hasNextStatement = false
-                    diagnose(.removeSemicolon, on: semicolon)
+                    Self.diagnose(.removeSemicolon, on: semicolon, context: context)
                 }
 
                 // We treat block comments after the semicolon slightly differently from end-of-line
@@ -97,16 +93,36 @@ final class NoSemicolons: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable
     }
 
     override func visit(_ node: CodeBlockItemListSyntax) -> CodeBlockItemListSyntax {
-        nodeByRemovingSemicolons(from: node)
+        let parent = Syntax(node).parent
+        let visited = super.visit(node)
+        return Self.transform(visited, parent: parent, context: context)
+    }
+
+    static func transform(
+        _ node: CodeBlockItemListSyntax,
+        parent: Syntax?,
+        context: Context
+    ) -> CodeBlockItemListSyntax {
+        nodeByRemovingSemicolons(from: node, context: context)
     }
 
     override func visit(_ node: MemberBlockItemListSyntax) -> MemberBlockItemListSyntax {
-        nodeByRemovingSemicolons(from: node)
+        let parent = Syntax(node).parent
+        let visited = super.visit(node)
+        return Self.transform(visited, parent: parent, context: context)
+    }
+
+    static func transform(
+        _ node: MemberBlockItemListSyntax,
+        parent: Syntax?,
+        context: Context
+    ) -> MemberBlockItemListSyntax {
+        nodeByRemovingSemicolons(from: node, context: context)
     }
 
     /// Returns true if the given syntax node is a `CodeBlockItem` containing a statement node of
     /// the given type.
-    private func isCodeBlockItem(
+    private static func isCodeBlockItem(
         _ node: some SyntaxProtocol,
         containingStmtType stmtType: StmtSyntaxProtocol.Type
     ) -> Bool {

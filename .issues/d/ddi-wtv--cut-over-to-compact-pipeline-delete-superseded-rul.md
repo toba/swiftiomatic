@@ -5,7 +5,7 @@ status: in-progress
 type: feature
 priority: high
 created_at: 2026-04-28T01:41:38Z
-updated_at: 2026-04-28T05:17:28Z
+updated_at: 2026-04-28T05:25:18Z
 parent: iv7-r5g
 blocked_by:
     - eti-yt2
@@ -29,7 +29,8 @@ sync:
   - Cluster 2 `5r3-peg`: ✅ all 31 clean ported (completed).
   - Cluster 3 `r0w-l4r`: ✅ 38 rules ported (completed). 2 "clean" rules reclassified as instance-state (`Testing/TestSuiteAccessControl`, `Wrap/WrapSingleLineBodies`) — left on legacy.
 - ✅ `g6t-gcm`: two-stage compact pipeline wired behind `DebugOptions.useCompactPipeline`. Parity test green on current 3-fixture golden corpus (byte-identical to legacy).
-- ❌ Remaining: `fkt-mgf` (expand corpus + perf gate), `dil-cew` (flip default + delete legacy).
+- ✅ `fkt-mgf`: parity test green; perf shows ~5.9× speedup on `LayoutCoordinator.swift` (legacy 4.591s → two-stage 0.778s, debug build).
+- ❌ Remaining: `dil-cew` (flip default + delete legacy).
 
 **Key files:**
 

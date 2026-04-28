@@ -12,22 +12,32 @@ import SwiftSyntax
 final class LeadingDotOperators: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable {
     override class var group: ConfigurationGroup? { .idioms }
 
-    /// Trivia (newline + indentation) saved from a leading delimiter, to be prepended to the
-    /// next token's leading trivia.
-    private var pendingLeadingTrivia: Trivia?
+    /// Per-file mutable state held in `Context.ruleState`.
+    final class State {
+        /// Trivia (newline + indentation) saved from a leading delimiter, to be prepended to the
+        /// next token's leading trivia.
+        var pendingLeadingTrivia: Trivia?
 
-    /// Trailing comment trivia saved from the token before a leading delimiter. When the previous
-    /// line ends with a comment (`5 // first\n    ,`), the comma should be inserted before
-    /// the comment: `5, // first\n    bar`.
-    private var pendingComment: Trivia?
+        /// Trailing comment trivia saved from the token before a leading delimiter.
+        var pendingComment: Trivia?
+    }
 
     override func visit(_ token: TokenSyntax) -> TokenSyntax {
+        Self.transform(token, parent: Syntax(token).parent, context: context)
+    }
+
+    static func transform(
+        _ token: TokenSyntax,
+        parent _: Syntax?,
+        context: Context
+    ) -> TokenSyntax {
+        let state = context.ruleState(for: Self.self) { State() }
         var result = token
 
         // 1. Apply pending trivia from a previous leading delimiter
-        if let pending = pendingLeadingTrivia {
+        if let pending = state.pendingLeadingTrivia {
             result = result.with(\.leadingTrivia, pending + result.leadingTrivia)
-            pendingLeadingTrivia = nil
+            state.pendingLeadingTrivia = nil
         }
 
         // 2. Check if this token precedes a leading delimiter and has a trailing line comment.
@@ -36,29 +46,29 @@ final class LeadingDotOperators: RewriteSyntaxRule<BasicRuleValue>, @unchecked S
            isLeadingDelimiter(nextToken),
            result.trailingTrivia.hasLineComment
         {
-            pendingComment = result.trailingTrivia
+            state.pendingComment = result.trailingTrivia
             result = result.with(\.trailingTrivia, Trivia())
         }
 
         // 3. If this is a leading delimiter, rearrange trivia
         guard isLeadingDelimiter(token) else { return result }
 
-        diagnose(.moveDelimiterToEndOfPreviousLine, on: token)
+        Self.diagnose(.moveDelimiterToEndOfPreviousLine, on: token, context: context)
 
         // Save the newline + indentation for the next token. Also include any non-space trailing
         // trivia (e.g., block comments that follow the delimiter).
         let trailingNonSpace = result.trailingTrivia.withoutLeadingSpaces()
 
-        pendingLeadingTrivia = trailingNonSpace.isEmpty
+        state.pendingLeadingTrivia = trailingNonSpace.isEmpty
             ? token.leadingTrivia : token.leadingTrivia + trailingNonSpace
 
         // Clear the delimiter's leading trivia (it now sits at the end of the previous line)
         result = result.with(\.leadingTrivia, Trivia())
 
         // Apply saved trailing comment, or clear trailing trivia
-        if let comment = pendingComment {
+        if let comment = state.pendingComment {
             result = result.with(\.trailingTrivia, comment)
-            pendingComment = nil
+            state.pendingComment = nil
         } else {
             result = result.with(\.trailingTrivia, Trivia())
         }
@@ -68,7 +78,7 @@ final class LeadingDotOperators: RewriteSyntaxRule<BasicRuleValue>, @unchecked S
 
     /// Returns `true` if the token is a comma or colon with a newline in its leading trivia,
     /// meaning it starts a new line (leading delimiter).
-    private func isLeadingDelimiter(_ token: TokenSyntax) -> Bool {
+    private static func isLeadingDelimiter(_ token: TokenSyntax) -> Bool {
         switch token.tokenKind {
             case .comma, .colon: token.leadingTrivia.containsNewlines
             default: false

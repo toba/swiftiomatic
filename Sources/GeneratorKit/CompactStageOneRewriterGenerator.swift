@@ -53,9 +53,45 @@ package final class CompactStageOneRewriterGenerator: FileGenerator {
 
             """
 
-        for (nodeType, ruleNames) in collector.nodeLocalTransforms.sorted(by: { $0.key < $1.key }) {
+        // Union of every node type that any rule has opted into via
+        // `transform`, `willEnter`, or `didExit`. We need an override for each
+        // so that scope-only rules (no transform) still get their hooks fired.
+        var allNodeTypes = Set(collector.nodeLocalTransforms.keys)
+        allNodeTypes.formUnion(collector.nodeLocalWillEnter.keys)
+        allNodeTypes.formUnion(collector.nodeLocalDidExit.keys)
+
+        for nodeType in allNodeTypes.sorted() {
+            let transformRules = collector.nodeLocalTransforms[nodeType] ?? []
+            let willEnterRules = (collector.nodeLocalWillEnter[nodeType] ?? []).sorted()
+            let didExitRules = (collector.nodeLocalDidExit[nodeType] ?? []).sorted()
             let returnType = Self.returnType(for: nodeType)
             let isErased = returnType != nodeType
+
+            // willEnter calls fire before `super.visit` so scope-tracking rules
+            // can push state that descendants observe. They take the *original*
+            // node, not the post-recursion one.
+            var willEnterBlock = ""
+            for ruleName in willEnterRules {
+                willEnterBlock += """
+                        if context.shouldFormat(\(ruleName).self, node: Syntax(node)) {
+                          \(ruleName).willEnter(node, context: context)
+                        }
+
+                    """
+            }
+
+            // didExit calls fire after the chained transforms so scope-tracking
+            // rules can pop state. We pass the *original* node (pre-rewrite) so
+            // pop logic remains identity-stable across transforms.
+            var didExitBlock = ""
+            for ruleName in didExitRules {
+                didExitBlock += """
+                        if context.shouldFormat(\(ruleName).self, node: Syntax(node)) {
+                          \(ruleName).didExit(node, context: context)
+                        }
+
+                    """
+            }
 
             if isErased {
                 // The override signature returns an erased type (DeclSyntax/ExprSyntax/StmtSyntax),
@@ -70,10 +106,10 @@ package final class CompactStageOneRewriterGenerator: FileGenerator {
 
                       override func visit(_ node: \(nodeType)) -> \(returnType) {
                         let parent = Syntax(node).parent
-                        var current: \(returnType) = super.visit(node)
+                    \(willEnterBlock)    var current: \(returnType) = super.visit(node)
 
                     """
-                for ruleName in ruleNames.sorted() {
+                for ruleName in transformRules.sorted() {
                     result += """
                             if let concrete = current.as(\(nodeType).self),
                               context.shouldFormat(\(ruleName).self, node: Syntax(concrete))
@@ -84,7 +120,7 @@ package final class CompactStageOneRewriterGenerator: FileGenerator {
                         """
                 }
                 result += """
-                        return current
+                    \(didExitBlock)    return current
                       }
 
                     """
@@ -93,10 +129,10 @@ package final class CompactStageOneRewriterGenerator: FileGenerator {
 
                       override func visit(_ node: \(nodeType)) -> \(returnType) {
                         let parent = Syntax(node).parent
-                        var node = super.visit(node)
+                    \(willEnterBlock)    var node = super.visit(node)
 
                     """
-                for ruleName in ruleNames.sorted() {
+                for ruleName in transformRules.sorted() {
                     result += """
                             if context.shouldFormat(\(ruleName).self, node: Syntax(node)) {
                               node = \(ruleName).transform(node, parent: parent, context: context)
@@ -105,7 +141,7 @@ package final class CompactStageOneRewriterGenerator: FileGenerator {
                         """
                 }
                 result += """
-                        return node
+                    \(didExitBlock)    return node
                       }
 
                     """

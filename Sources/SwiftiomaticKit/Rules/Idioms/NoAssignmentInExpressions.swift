@@ -24,139 +24,150 @@ import SwiftSyntax
 ///         statements.
 final class NoAssignmentInExpressions: RewriteSyntaxRule<NoAssignmentInExpressionsConfiguration>, @unchecked Sendable {
     override class var group: ConfigurationGroup? { .idioms }
-  override func visit(_ node: InfixOperatorExprSyntax) -> ExprSyntax {
-    // Diagnose any assignment that isn't directly a child of a `CodeBlockItem` (which would be the
-    // case if it was its own statement).
-    if isAssignmentExpression(node)
-      && !isStandaloneAssignmentStatement(node)
-      && !isInAllowedFunction(node)
-    {
-      diagnose(.moveAssignmentToOwnStatement, on: node)
+
+    override func visit(_ node: InfixOperatorExprSyntax) -> ExprSyntax {
+        let parent = Syntax(node).parent
+        let visited = super.visit(node)
+        guard let concrete = visited.as(InfixOperatorExprSyntax.self) else { return visited }
+        return Self.transform(concrete, parent: parent, context: context)
     }
-    return ExprSyntax(node)
-  }
 
-  override func visit(_ node: CodeBlockItemListSyntax) -> CodeBlockItemListSyntax {
-    var newItems = [CodeBlockItemSyntax]()
-    newItems.reserveCapacity(node.count)
+    static func transform(
+        _ node: InfixOperatorExprSyntax,
+        parent: Syntax?,
+        context: Context
+    ) -> ExprSyntax {
+        // Diagnose any assignment that isn't directly a child of a `CodeBlockItem` (which would be the
+        // case if it was its own statement).
+        if isAssignmentExpression(node, context: context)
+            && !isStandaloneAssignmentStatement(parent: parent)
+            && !isInAllowedFunction(parent: parent, context: context)
+        {
+            Self.diagnose(.moveAssignmentToOwnStatement, on: node, context: context)
+        }
+        return ExprSyntax(node)
+    }
 
-    for item in node {
-      // Make sure to visit recursively so that any nested decls get processed first.
-      let visitedItem = visit(item)
+    override func visit(_ node: CodeBlockItemListSyntax) -> CodeBlockItemListSyntax {
+        let parent = Syntax(node).parent
+        let visited = super.visit(node)
+        return Self.transform(visited, parent: parent, context: context)
+    }
 
-      // Rewrite any `return <assignment>` expressions as `<assignment><newline>return`.
-      switch visitedItem.item {
-      case .stmt(let stmt):
-        guard
-          var returnStmt = stmt.as(ReturnStmtSyntax.self),
-          let assignmentExpr = assignmentExpression(from: returnStmt)
-        else {
-          // Head to the default case where we just keep the original item.
-          fallthrough
+    static func transform(
+        _ node: CodeBlockItemListSyntax,
+        parent: Syntax?,
+        context: Context
+    ) -> CodeBlockItemListSyntax {
+        var newItems = [CodeBlockItemSyntax]()
+        newItems.reserveCapacity(node.count)
+
+        for visitedItem in node {
+            // Items have already been recursively visited by the combined rewriter's super.visit
+            // (or by RewriteSyntaxRule.super.visit when called from the visit override).
+
+            // Rewrite any `return <assignment>` expressions as `<assignment><newline>return`.
+            switch visitedItem.item {
+                case .stmt(let stmt):
+                    guard
+                        var returnStmt = stmt.as(ReturnStmtSyntax.self),
+                        let assignmentExpr = assignmentExpression(
+                            from: returnStmt,
+                            context: context
+                        )
+                    else {
+                        // Head to the default case where we just keep the original item.
+                        fallthrough
+                    }
+
+                    // Move the leading trivia from the `return` statement to the new assignment
+                    // statement, since that's a more sensible place than between the two.
+                    var assignmentItem = CodeBlockItemSyntax(item: .expr(ExprSyntax(assignmentExpr)))
+                    assignmentItem.leadingTrivia =
+                        returnStmt.leadingTrivia
+                        + returnStmt.returnKeyword.trailingTrivia.withoutLeadingSpaces()
+                        + assignmentExpr.leadingTrivia
+                    assignmentItem.trailingTrivia = []
+
+                    let trailingTrivia = returnStmt.trailingTrivia
+                    returnStmt.expression = nil
+                    returnStmt.returnKeyword.trailingTrivia = []
+                    var returnItem = CodeBlockItemSyntax(item: .stmt(StmtSyntax(returnStmt)))
+                    returnItem.leadingTrivia = [.newlines(1)]
+                    returnItem.trailingTrivia = trailingTrivia
+
+                    newItems.append(assignmentItem)
+                    newItems.append(returnItem)
+
+                default:
+                    newItems.append(visitedItem)
+            }
         }
 
-        // Move the leading trivia from the `return` statement to the new assignment statement,
-        // since that's a more sensible place than between the two.
-        var assignmentItem = CodeBlockItemSyntax(item: .expr(ExprSyntax(assignmentExpr)))
-        assignmentItem.leadingTrivia =
-          returnStmt.leadingTrivia
-          + returnStmt.returnKeyword.trailingTrivia.withoutLeadingSpaces()
-          + assignmentExpr.leadingTrivia
-        assignmentItem.trailingTrivia = []
-
-        let trailingTrivia = returnStmt.trailingTrivia
-        returnStmt.expression = nil
-        returnStmt.returnKeyword.trailingTrivia = []
-        var returnItem = CodeBlockItemSyntax(item: .stmt(StmtSyntax(returnStmt)))
-        returnItem.leadingTrivia = [.newlines(1)]
-        returnItem.trailingTrivia = trailingTrivia
-
-        newItems.append(assignmentItem)
-        newItems.append(returnItem)
-
-      default:
-        newItems.append(visitedItem)
-      }
+        return CodeBlockItemListSyntax(newItems)
     }
 
-    return CodeBlockItemListSyntax(newItems)
-  }
-
-  /// Extracts and returns the assignment expression in the given `return` statement, if there was
-  /// one.
-  ///
-  /// If the `return` statement did not have an expression or if its expression was not an
-  /// assignment expression, nil is returned.
-  private func assignmentExpression(from returnStmt: ReturnStmtSyntax) -> InfixOperatorExprSyntax? {
-    guard
-      let returnExpr = returnStmt.expression,
-      let infixOperatorExpr = returnExpr.as(InfixOperatorExprSyntax.self)
-    else {
-      return nil
-    }
-    return isAssignmentExpression(infixOperatorExpr) ? infixOperatorExpr : nil
-  }
-
-  /// Returns a value indicating whether the given infix operator expression is an assignment
-  /// expression (either simple assignment with `=` or compound assignment with an operator like
-  /// `+=`).
-  private func isAssignmentExpression(_ expr: InfixOperatorExprSyntax) -> Bool {
-    if expr.operator.is(AssignmentExprSyntax.self) {
-      return true
-    }
-    guard let binaryOp = expr.operator.as(BinaryOperatorExprSyntax.self) else {
-      return false
-    }
-    return context.operatorTable.infixOperator(named: binaryOp.operator.text)?.precedenceGroup
-      == "AssignmentPrecedence"
-  }
-
-  /// Returns a value indicating whether the given node is a standalone assignment statement.
-  ///
-  /// This function considers try/await/unsafe expressions and automatically walks up through them
-  /// as needed. This is because `try f().x = y` should still be a standalone assignment for our
-  /// purposes, even though a `TryExpr` will wrap the `InfixOperatorExpr` and thus would not be
-  /// considered a standalone assignment if we only checked the infix expression for a
-  /// `CodeBlockItem` parent.
-  private func isStandaloneAssignmentStatement(_ node: InfixOperatorExprSyntax) -> Bool {
-    var node = Syntax(node)
-    while let parent = node.parent,
-      parent.is(TryExprSyntax.self) || parent.is(AwaitExprSyntax.self) || parent.is(UnsafeExprSyntax.self)
-    {
-      node = parent
+    /// Extracts and returns the assignment expression in the given `return` statement, if there was
+    /// one.
+    private static func assignmentExpression(
+        from returnStmt: ReturnStmtSyntax,
+        context: Context
+    ) -> InfixOperatorExprSyntax? {
+        guard
+            let returnExpr = returnStmt.expression,
+            let infixOperatorExpr = returnExpr.as(InfixOperatorExprSyntax.self)
+        else { return nil }
+        return isAssignmentExpression(infixOperatorExpr, context: context)
+            ? infixOperatorExpr
+            : nil
     }
 
-    guard let parent = node.parent else {
-      // This shouldn't happen under normal circumstances (i.e., unless the expression is detached
-      // from the rest of a tree). In that case, we may as well consider it to be "standalone".
-      return true
+    /// Returns a value indicating whether the given infix operator expression is an assignment
+    /// expression (either simple assignment with `=` or compound assignment with an operator like
+    /// `+=`).
+    private static func isAssignmentExpression(
+        _ expr: InfixOperatorExprSyntax,
+        context: Context
+    ) -> Bool {
+        if expr.operator.is(AssignmentExprSyntax.self) { return true }
+        guard let binaryOp = expr.operator.as(BinaryOperatorExprSyntax.self) else { return false }
+        return context.operatorTable.infixOperator(named: binaryOp.operator.text)?.precedenceGroup
+            == "AssignmentPrecedence"
     }
-    return parent.is(CodeBlockItemSyntax.self)
-  }
 
-  /// Returns true if the infix operator expression is in the (non-closure) parameters of an allowed
-  /// function call.
-  private func isInAllowedFunction(_ node: InfixOperatorExprSyntax) -> Bool {
-    let allowedFunctions = ruleConfig.allowedFunctions
-    // Walk up the tree until we find a FunctionCallExprSyntax, and if the name matches, return
-    // true. However, stop early if we hit a CodeBlockItemSyntax first; this would represent a
-    // closure context where we *don't* want the exception to apply (for example, in
-    // `someAllowedFunction(a, b) { return c = d }`, the `c = d` is a descendent of a function call
-    // but we want it to be evaluated in its own context.
-    var node = Syntax(node)
-    while let parent = node.parent {
-      node = parent
-      if node.is(CodeBlockItemSyntax.self) {
-        break
-      }
-      if let functionCallExpr = node.as(FunctionCallExprSyntax.self),
-        allowedFunctions.contains(functionCallExpr.calledExpression.trimmedDescription)
-      {
-        return true
-      }
+    /// Returns a value indicating whether the given node is a standalone assignment statement.
+    /// Walks the captured pre-recursion parent chain.
+    private static func isStandaloneAssignmentStatement(parent: Syntax?) -> Bool {
+        var current = parent
+        while let p = current,
+            p.is(TryExprSyntax.self) || p.is(AwaitExprSyntax.self) || p.is(UnsafeExprSyntax.self)
+        {
+            current = p.parent
+        }
+
+        guard let p = current else {
+            // The expression is detached from the rest of the tree; consider it standalone.
+            return true
+        }
+        return p.is(CodeBlockItemSyntax.self)
     }
-    return false
-  }
+
+    /// Returns true if the infix operator expression is in the (non-closure) parameters of an
+    /// allowed function call. Walks the captured pre-recursion parent chain.
+    private static func isInAllowedFunction(parent: Syntax?, context: Context) -> Bool {
+        let allowedFunctions = context.configuration[Self.self].allowedFunctions
+        var current = parent
+        while let p = current {
+            if p.is(CodeBlockItemSyntax.self) { break }
+            if let functionCallExpr = p.as(FunctionCallExprSyntax.self),
+                allowedFunctions.contains(functionCallExpr.calledExpression.trimmedDescription)
+            {
+                return true
+            }
+            current = p.parent
+        }
+        return false
+    }
 }
 
 extension Finding.Message {

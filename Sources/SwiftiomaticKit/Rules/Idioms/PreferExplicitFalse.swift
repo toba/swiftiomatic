@@ -13,35 +13,43 @@ final class PreferExplicitFalse: RewriteSyntaxRule<BasicRuleValue>, @unchecked S
     override static var defaultValue: BasicRuleValue { .init(rewrite: false, lint: .no) }
 
     override func visit(_ node: PrefixOperatorExprSyntax) -> ExprSyntax {
-        guard node.operator.text == "!" else { return super.visit(node) }
+        let parent = Syntax(node).parent
+        let visited = super.visit(node)
+        guard let concrete = visited.as(PrefixOperatorExprSyntax.self) else { return visited }
+        return Self.transform(concrete, parent: parent, context: context)
+    }
+
+    static func transform(
+        _ node: PrefixOperatorExprSyntax,
+        parent: Syntax?,
+        context: Context
+    ) -> ExprSyntax {
+        guard node.operator.text == "!" else { return ExprSyntax(node) }
 
         // Skip double negation: !!x (outer !)
         if node.expression.as(PrefixOperatorExprSyntax.self)?.operator.text == "!" {
-            return super.visit(node)
+            return ExprSyntax(node)
         }
 
-        // Skip inner ! of double negation
-        if let parentPrefix = node.parent?.as(PrefixOperatorExprSyntax.self),
+        // Skip inner ! of double negation — check the captured original-tree parent.
+        if let parentPrefix = parent?.as(PrefixOperatorExprSyntax.self),
             parentPrefix.operator.text == "!"
         {
-            return super.visit(node)
+            return ExprSyntax(node)
         }
 
         // Skip #if conditions
-        if isInsideIfConfigCondition(node) { return super.visit(node) }
+        if isInsideIfConfigCondition(parent: parent) { return ExprSyntax(node) }
 
         // Skip if adjacent to comparison or casting operators
-        if isAdjacentToComparisonOrCasting(node) { return super.visit(node) }
+        if isAdjacentToComparisonOrCasting(parent: parent) { return ExprSyntax(node) }
 
-        let visited = super.visit(node)
-        guard let prefixNode = visited.as(PrefixOperatorExprSyntax.self) else { return visited }
-
-        diagnose(.preferExplicitFalse, on: prefixNode.operator)
+        Self.diagnose(.preferExplicitFalse, on: node.operator, context: context)
 
         // Build: expression == false
-        var operandExpr = prefixNode.expression
+        var operandExpr = node.expression
         let savedTrailingTrivia = operandExpr.trailingTrivia
-        operandExpr.leadingTrivia = prefixNode.leadingTrivia
+        operandExpr.leadingTrivia = node.leadingTrivia
         operandExpr.trailingTrivia = []
 
         let binOp = BinaryOperatorExprSyntax(
@@ -65,24 +73,30 @@ final class PreferExplicitFalse: RewriteSyntaxRule<BasicRuleValue>, @unchecked S
         "==", "!=", "===", "!==", "~=", "<", ">", "<=", ">=",
     ]
 
-    /// Returns true if the node is inside the condition of an `#if` directive.
-    private func isInsideIfConfigCondition(_ node: some SyntaxProtocol) -> Bool {
-        var current = Syntax(node)
-
-        while let parent = current.parent {
-            if let ifConfig = parent.as(IfConfigClauseSyntax.self) {
-                if let condition = ifConfig.condition, condition.id == current.id { return true }
+    /// Returns true if the node is inside the condition of an `#if` directive. Walks the
+    /// captured pre-recursion parent chain.
+    private static func isInsideIfConfigCondition(parent: Syntax?) -> Bool {
+        // Walk parent upward; the first IfConfigClause we hit determines membership.
+        // If our walked-from-child id equals `ifConfig.condition?.id`, we are the condition.
+        var prev: Syntax? = nil
+        var current = parent
+        while let p = current {
+            if let ifConfig = p.as(IfConfigClauseSyntax.self) {
+                if let condition = ifConfig.condition, let prev, condition.id == prev.id {
+                    return true
+                }
                 return false
             }
-            current = parent
+            prev = p
+            current = p.parent
         }
         return false
     }
 
     /// Returns true if the node is an operand of a comparison (`==`, `!=`, etc.)
-    /// or a type-casting expression (`is`, `as`).
-    private func isAdjacentToComparisonOrCasting(_ node: PrefixOperatorExprSyntax) -> Bool {
-        guard let parent = node.parent else { return false }
+    /// or a type-casting expression (`is`, `as`). Uses the captured pre-recursion parent.
+    private static func isAdjacentToComparisonOrCasting(parent: Syntax?) -> Bool {
+        guard let parent else { return false }
 
         if let infix = parent.as(InfixOperatorExprSyntax.self) {
             if let binOp = infix.operator.as(BinaryOperatorExprSyntax.self) {

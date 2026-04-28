@@ -15,43 +15,49 @@ final class ProtocolAccessorOrder: RewriteSyntaxRule<BasicRuleValue>, @unchecked
     }
 
     override func visit(_ node: AccessorBlockSyntax) -> AccessorBlockSyntax {
-        guard hasViolation(node), inProtocolDecl(node) else {
-            return super.visit(node)
-        }
+        let parent = Syntax(node).parent
+        let visited = super.visit(node)
+        return Self.transform(visited, parent: parent, context: context)
+    }
 
-        diagnose(.swapAccessorOrder, on: node.accessors)
+    static func transform(
+        _ node: AccessorBlockSyntax,
+        parent: Syntax?,
+        context: Context
+    ) -> AccessorBlockSyntax {
+        guard hasViolation(node), inProtocolDecl(parent: parent) else { return node }
 
-        guard case .accessors(let accessors) = node.accessors else {
-            return super.visit(node)
-        }
+        Self.diagnose(.swapAccessorOrder, on: node.accessors, context: context)
+
+        guard case .accessors(let accessors) = node.accessors else { return node }
         let reversed = AccessorDeclListSyntax(Array(accessors.reversed()))
         var result = node
         result.accessors = .accessors(reversed)
-        return super.visit(result)
+        return result
     }
 
-    private func hasViolation(_ node: AccessorBlockSyntax) -> Bool {
+    private static func hasViolation(_ node: AccessorBlockSyntax) -> Bool {
         guard case .accessors(let accessors) = node.accessors else { return false }
         return accessors.count == 2
             && accessors.allSatisfy({ $0.body == nil })
             && accessors.first?.accessorSpecifier.tokenKind == .keyword(.set)
     }
 
-    private func inProtocolDecl(_ node: AccessorBlockSyntax) -> Bool {
-        var current: Syntax? = node.parent
-        while let parent = current {
-            if parent.is(ProtocolDeclSyntax.self) { return true }
+    private static func inProtocolDecl(parent: Syntax?) -> Bool {
+        var current: Syntax? = parent
+        while let p = current {
+            if p.is(ProtocolDeclSyntax.self) { return true }
             // Stop at the nearest non-protocol type declaration to avoid false positives
             // for properties inside nested non-protocol types.
-            if parent.is(StructDeclSyntax.self)
-                || parent.is(ClassDeclSyntax.self)
-                || parent.is(EnumDeclSyntax.self)
-                || parent.is(ActorDeclSyntax.self)
-                || parent.is(ExtensionDeclSyntax.self)
+            if p.is(StructDeclSyntax.self)
+                || p.is(ClassDeclSyntax.self)
+                || p.is(EnumDeclSyntax.self)
+                || p.is(ActorDeclSyntax.self)
+                || p.is(ExtensionDeclSyntax.self)
             {
                 return false
             }
-            current = parent.parent
+            current = p.parent
         }
         return false
     }
