@@ -1,18 +1,18 @@
 ---
 # zvf-rsq
 title: 'Phase 4d: merge Stmt rewrites'
-status: ready
+status: in-progress
 type: task
 priority: high
 created_at: 2026-04-28T15:49:54Z
-updated_at: 2026-04-28T15:49:54Z
+updated_at: 2026-04-28T17:09:55Z
 parent: ddi-wtv
 blocked_by:
     - 7fp-ghy
 sync:
     github:
         issue_number: "500"
-        synced_at: "2026-04-28T16:43:51Z"
+        synced_at: "2026-04-28T17:19:44Z"
 ---
 
 Phase 4d of `ddi-wtv` collapse plan: merge all rewrite logic that operates on statement node types into hand-written `rewrite<NodeType>` functions in `Sources/SwiftiomaticKit/Rewrites/Stmts/`.
@@ -50,3 +50,11 @@ Inventory exact list at start of work.
 ## Notes
 
 - `WrapSingleLineBodies` had Phase 1 divergences flagged (lacks instance `currentIndent`/`chainBaseIndent` — see `7fp-ghy` notes). Resolve here by maintaining indent state via local variables in the merged function (no class instance state needed; everything threads through the function args + Context).
+
+
+
+## Progress (2026-04-28)
+
+13 stmt-related node types added to `manuallyHandledNodeTypes` and merged via per-file functions in `Sources/SwiftiomaticKit/Rewrites/Stmts/`. Each forwards to existing static transforms in alphabetical order with audit-only `shouldFormat` calls for unported rules. Build clean (17 warnings — likely unused `nodeSyntax` locals); parity test green (0.420s).
+
+Class shells stay; deletion deferred to 4g.
