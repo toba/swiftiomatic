@@ -15,8 +15,14 @@ final class EmptyExtensions: RewriteSyntaxRule<BasicRuleValue>, @unchecked Senda
     override class var group: ConfigurationGroup? { .declarations }
 
     override func visit(_ node: CodeBlockItemListSyntax) -> CodeBlockItemListSyntax {
-        let visited = super.visit(node)
+        Self.transform(super.visit(node), parent: Syntax(node).parent, context: context)
+    }
 
+    static func transform(
+        _ visited: CodeBlockItemListSyntax,
+        parent: Syntax?,
+        context: Context
+    ) -> CodeBlockItemListSyntax {
         var newItems = [CodeBlockItemSyntax]()
         var changed = false
         var removedFirst = false
@@ -25,9 +31,10 @@ final class EmptyExtensions: RewriteSyntaxRule<BasicRuleValue>, @unchecked Senda
             if let ext = item.item.as(ExtensionDeclSyntax.self),
                 isRemovableEmptyExtension(ext)
             {
-                diagnose(
+                Self.diagnose(
                     .removeEmptyExtension(name: ext.extendedType.trimmedDescription),
-                    on: ext.extensionKeyword
+                    on: ext.extensionKeyword,
+                    context: context
                 )
                 changed = true
                 if index == 0 { removedFirst = true }
@@ -59,7 +66,7 @@ final class EmptyExtensions: RewriteSyntaxRule<BasicRuleValue>, @unchecked Senda
 
     /// Returns `true` if the extension is empty, adds no protocol conformance, and contains
     /// no comments.
-    private func isRemovableEmptyExtension(_ ext: ExtensionDeclSyntax) -> Bool {
+    private static func isRemovableEmptyExtension(_ ext: ExtensionDeclSyntax) -> Bool {
         // Must have no members.
         guard ext.memberBlock.members.isEmpty else { return false }
 

@@ -11,6 +11,14 @@ final class PreferMainAttribute: RewriteSyntaxRule<BasicRuleValue>, @unchecked S
     override class var group: ConfigurationGroup? { .declarations }
 
     override func visit(_ node: AttributeSyntax) -> AttributeSyntax {
+        Self.transform(super.visit(node), parent: Syntax(node).parent, context: context)
+    }
+
+    static func transform(
+        _ node: AttributeSyntax,
+        parent: Syntax?,
+        context: Context
+    ) -> AttributeSyntax {
         guard let identType = node.attributeName.as(IdentifierTypeSyntax.self) else {
             return node
         }
@@ -20,7 +28,7 @@ final class PreferMainAttribute: RewriteSyntaxRule<BasicRuleValue>, @unchecked S
             return node
         }
 
-        diagnose(.useMainAttribute(replacing: name), on: node.atSign)
+        Self.diagnose(.useMainAttribute(replacing: name), on: node.atSign, context: context)
 
         let newIdent = identType.with(
             \.name,

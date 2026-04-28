@@ -23,6 +23,17 @@ final class IndirectEnum: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable
     override static var group: ConfigurationGroup? { .hoist }
 
     override func visit(_ node: EnumDeclSyntax) -> DeclSyntax {
+        let parent = Syntax(node).parent
+        let visited = super.visit(node)
+        guard let concrete = visited.as(EnumDeclSyntax.self) else { return visited }
+        return Self.transform(concrete, parent: parent, context: context)
+    }
+
+    static func transform(
+        _ node: EnumDeclSyntax,
+        parent: Syntax?,
+        context: Context
+    ) -> DeclSyntax {
         let enumMembers = node.memberBlock.members
 
         guard !node.modifiers.contains(anyOf: [.indirect]),
@@ -36,13 +47,14 @@ final class IndirectEnum: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable
             Finding.Note(
                 message: .removeIndirect,
                 location: Finding.Location(
-                    modifier.startLocation(converter: self.context.sourceLocationConverter)
+                    modifier.startLocation(converter: context.sourceLocationConverter)
                 )
             )
         }
-        diagnose(
+        Self.diagnose(
             .moveIndirectKeywordToEnumDecl(name: node.name.text),
             on: node.enumKeyword,
+            context: context,
             notes: notes
         )
 
@@ -96,7 +108,7 @@ final class IndirectEnum: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable
     /// Returns a value indicating whether all enum cases in the given list are indirect.
     ///
     /// Note that if the enum has no cases, this returns false.
-    private func indirectModifiersIfAllCasesIndirect(
+    private static func indirectModifiersIfAllCasesIndirect(
         in members: MemberBlockItemListSyntax
     ) -> [DeclModifierSyntax] {
         var indirectModifiers = [DeclModifierSyntax]()
@@ -117,7 +129,7 @@ final class IndirectEnum: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable
     }
 
     /// Transfers given leading trivia to the first token in the case declaration.
-    private func rearrangeLeadingTrivia(
+    private static func rearrangeLeadingTrivia(
         _ leadingTrivia: Trivia,
         on enumCaseDecl: EnumCaseDeclSyntax
     ) -> EnumCaseDeclSyntax {

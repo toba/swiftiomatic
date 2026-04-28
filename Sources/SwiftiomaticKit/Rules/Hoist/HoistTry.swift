@@ -20,19 +20,27 @@ final class HoistTry: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable {
     override static var group: ConfigurationGroup? { .hoist }
 
     override func visit(_ node: FunctionCallExprSyntax) -> ExprSyntax {
-        // Check parent on original node before visiting children
-        if isWrappedInTry(ExprSyntax(node)) { return super.visit(node) }
-
+        let parent = Syntax(node).parent
         let visited = super.visit(node)
-        guard let callNode = visited.as(FunctionCallExprSyntax.self) else { return visited }
+        guard let concrete = visited.as(FunctionCallExprSyntax.self) else { return visited }
+        return Self.transform(concrete, parent: parent, context: context)
+    }
+
+    static func transform(
+        _ callNode: FunctionCallExprSyntax,
+        parent: Syntax?,
+        context: Context
+    ) -> ExprSyntax {
+        // Check parent on the captured original-tree parent (post-recursion the node is detached).
+        if isWrappedInTry(parent: parent) { return ExprSyntax(callNode) }
 
         // Find the first plain try in arguments
-        guard let firstTry = findFirstTryInArguments(callNode) else { return visited }
+        guard let firstTry = findFirstTryInArguments(callNode) else { return ExprSyntax(callNode) }
 
         // Only hoist plain `try` (not `try?` or `try!`)
-        guard firstTry.questionOrExclamationMark == nil else { return visited }
+        guard firstTry.questionOrExclamationMark == nil else { return ExprSyntax(callNode) }
 
-        diagnose(.hoistTry, on: firstTry.tryKeyword)
+        Self.diagnose(.hoistTry, on: firstTry.tryKeyword, context: context)
 
         // Strip try from all arguments
         let newArgs = callNode.arguments.map { arg -> LabeledExprSyntax in
@@ -46,26 +54,47 @@ final class HoistTry: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable {
         callExpr.leadingTrivia = []
 
         let tryExpr = TryExprSyntax(
-            tryKeyword: .keyword(.try, leadingTrivia: node.leadingTrivia, trailingTrivia: .space),
+            tryKeyword: .keyword(
+                .try,
+                leadingTrivia: callNode.leadingTrivia,
+                trailingTrivia: .space
+            ),
             expression: callExpr
         )
 
         var result = ExprSyntax(tryExpr)
-        result.trailingTrivia = node.trailingTrivia
+        result.trailingTrivia = callNode.trailingTrivia
         return result
     }
 
     /// Reorders `await try X` → `try await X` when `try` was introduced by hoisting
     /// (not already present in the source).
     override func visit(_ node: AwaitExprSyntax) -> ExprSyntax {
+        let parent = Syntax(node).parent
         let hadTryBefore = node.expression.is(TryExprSyntax.self)
         let visited = super.visit(node)
+        guard let awaitNode = visited.as(AwaitExprSyntax.self) else { return visited }
+        return Self.transformAwait(
+            awaitNode,
+            hadTryBefore: hadTryBefore,
+            originalTrailingTrivia: node.trailingTrivia
+        )
+    }
 
-        guard let awaitNode = visited.as(AwaitExprSyntax.self),
+    /// AwaitExpr-targeted helper. Takes `hadTryBefore` and the original trailing trivia
+    /// because both rely on the pre-recursion view of the node. Not exposed to the
+    /// combined-rewriter generator (signature mismatch is intentional — only the
+    /// `FunctionCallExprSyntax` transform participates in `CompactStageOneRewriter`).
+    private static func transformAwait(
+        _ awaitNode: AwaitExprSyntax,
+        hadTryBefore: Bool,
+        originalTrailingTrivia: Trivia
+    ) -> ExprSyntax {
+        guard
             !hadTryBefore,
             let tryExpr = awaitNode.expression.as(TryExprSyntax.self)
         else {
-            return visited
+            return ExprSyntax(awaitNode)
         }
 
         // Move try outside await
@@ -78,12 +107,12 @@ final class HoistTry: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable {
             expression: ExprSyntax(newAwait)
         )
         var result = ExprSyntax(newTry)
-        result.trailingTrivia = node.trailingTrivia
+        result.trailingTrivia = originalTrailingTrivia
         return result
     }
 
     /// Strips `try` from the expression, handling `await try` nesting.
-    private func stripTry(from expr: ExprSyntax) -> ExprSyntax {
+    private static func stripTry(from expr: ExprSyntax) -> ExprSyntax {
         if let tryExpr = expr.as(TryExprSyntax.self),
             tryExpr.questionOrExclamationMark == nil
         {
@@ -103,7 +132,9 @@ final class HoistTry: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable {
     }
 
     /// Returns the first `TryExprSyntax` found as a direct argument expression.
-    private func findFirstTryInArguments(_ call: FunctionCallExprSyntax) -> TryExprSyntax? {
+    private static func findFirstTryInArguments(
+        _ call: FunctionCallExprSyntax
+    ) -> TryExprSyntax? {
         for arg in call.arguments {
             if let tryExpr = arg.expression.as(TryExprSyntax.self) { return tryExpr }
 
@@ -116,19 +147,20 @@ final class HoistTry: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable {
         return nil
     }
 
-    /// Returns `true` if the expression is wrapped in a `TryExprSyntax` ancestor.
-    private func isWrappedInTry(_ expr: ExprSyntax) -> Bool {
-        var current = Syntax(expr)
+    /// Returns `true` if the expression is wrapped in a `TryExprSyntax` ancestor. Walks the
+    /// captured pre-recursion parent chain (post-recursion parent is nil).
+    private static func isWrappedInTry(parent: Syntax?) -> Bool {
+        var current = parent
 
-        while let parent = current.parent {
-            if parent.is(TryExprSyntax.self) { return true }
+        while let p = current {
+            if p.is(TryExprSyntax.self) { return true }
 
-            if parent.is(AwaitExprSyntax.self)
-                || parent.is(LabeledExprSyntax.self)
-                || parent.is(LabeledExprListSyntax.self)
-                || parent.is(FunctionCallExprSyntax.self)
+            if p.is(AwaitExprSyntax.self)
+                || p.is(LabeledExprSyntax.self)
+                || p.is(LabeledExprListSyntax.self)
+                || p.is(FunctionCallExprSyntax.self)
             {
-                current = parent
+                current = p.parent
                 continue
             }
             break

@@ -16,7 +16,17 @@ final class StaticStructShouldBeEnum: RewriteSyntaxRule<BasicRuleValue>, @unchec
     override class var group: ConfigurationGroup? { .declarations }
 
     override func visit(_ node: StructDeclSyntax) -> DeclSyntax {
-        let visited = super.visit(node).cast(StructDeclSyntax.self)
+        let parent = Syntax(node).parent
+        let visited = super.visit(node)
+        guard let concrete = visited.as(StructDeclSyntax.self) else { return visited }
+        return Self.transform(concrete, parent: parent, context: context)
+    }
+
+    static func transform(
+        _ visited: StructDeclSyntax,
+        parent: Syntax?,
+        context: Context
+    ) -> DeclSyntax {
         guard
             shouldBeEnum(
                 attributes: visited.attributes,
@@ -29,7 +39,7 @@ final class StaticStructShouldBeEnum: RewriteSyntaxRule<BasicRuleValue>, @unchec
             return DeclSyntax(visited)
         }
 
-        diagnose(.useEnumNamespace, on: visited.name)
+        Self.diagnose(.useEnumNamespace, on: visited.name, context: context)
 
         let enumDecl = EnumDeclSyntax(
             modifiers: visited.modifiers,
@@ -45,8 +55,17 @@ final class StaticStructShouldBeEnum: RewriteSyntaxRule<BasicRuleValue>, @unchec
     }
 
     override func visit(_ node: ClassDeclSyntax) -> DeclSyntax {
-        let visited = super.visit(node).cast(ClassDeclSyntax.self)
+        let parent = Syntax(node).parent
+        let visited = super.visit(node)
+        guard let concrete = visited.as(ClassDeclSyntax.self) else { return visited }
+        return Self.transform(concrete, parent: parent, context: context)
+    }
 
+    static func transform(
+        _ visited: ClassDeclSyntax,
+        parent: Syntax?,
+        context: Context
+    ) -> DeclSyntax {
         // Only final classes can be converted — non-final classes might be subclassed
         let isFinal = visited.modifiers.contains { $0.name.tokenKind == .keyword(.final) }
         guard isFinal else { return DeclSyntax(visited) }
@@ -63,7 +82,7 @@ final class StaticStructShouldBeEnum: RewriteSyntaxRule<BasicRuleValue>, @unchec
             return DeclSyntax(visited)
         }
 
-        diagnose(.useEnumNamespace, on: visited.name)
+        Self.diagnose(.useEnumNamespace, on: visited.name, context: context)
 
         // Remove the `final` modifier, transferring its trivia to the enum keyword
         let modifiers = DeclModifierListSyntax(
@@ -83,7 +102,7 @@ final class StaticStructShouldBeEnum: RewriteSyntaxRule<BasicRuleValue>, @unchec
         return DeclSyntax(enumDecl)
     }
 
-    private func shouldBeEnum(
+    private static func shouldBeEnum(
         attributes: AttributeListSyntax,
         inheritanceClause: InheritanceClauseSyntax?,
         genericParameterClause: GenericParameterClauseSyntax?,
@@ -97,7 +116,7 @@ final class StaticStructShouldBeEnum: RewriteSyntaxRule<BasicRuleValue>, @unchec
         return members.allSatisfy { hostsOnlyStaticContent($0.decl) }
     }
 
-    private func hostsOnlyStaticContent(_ decl: DeclSyntax) -> Bool {
+    private static func hostsOnlyStaticContent(_ decl: DeclSyntax) -> Bool {
         if decl.is(StructDeclSyntax.self) || decl.is(ClassDeclSyntax.self)
             || decl.is(EnumDeclSyntax.self) || decl.is(ActorDeclSyntax.self)
             || decl.is(ProtocolDeclSyntax.self) || decl.is(TypeAliasDeclSyntax.self)
@@ -125,7 +144,7 @@ final class StaticStructShouldBeEnum: RewriteSyntaxRule<BasicRuleValue>, @unchec
         return true
     }
 
-    private func hasStaticModifier(_ modifiers: DeclModifierListSyntax) -> Bool {
+    private static func hasStaticModifier(_ modifiers: DeclModifierListSyntax) -> Bool {
         modifiers.contains { $0.name.tokenKind == .keyword(.static) }
     }
 }

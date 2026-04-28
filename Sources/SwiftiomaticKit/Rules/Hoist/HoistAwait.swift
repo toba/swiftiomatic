@@ -19,16 +19,26 @@ final class HoistAwait: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable {
     override class var group: ConfigurationGroup? { .hoist }
 
     override func visit(_ node: FunctionCallExprSyntax) -> ExprSyntax {
-        // Check parent on original node before visiting children
-        if isWrappedInAwait(ExprSyntax(node)) { return super.visit(node) }
-
+        let parent = Syntax(node).parent
         let visited = super.visit(node)
-        guard let callNode = visited.as(FunctionCallExprSyntax.self) else { return visited }
+        guard let concrete = visited.as(FunctionCallExprSyntax.self) else { return visited }
+        return Self.transform(concrete, parent: parent, context: context)
+    }
+
+    static func transform(
+        _ callNode: FunctionCallExprSyntax,
+        parent: Syntax?,
+        context: Context
+    ) -> ExprSyntax {
+        // Check parent on the captured original-tree parent (post-recursion the node is detached).
+        if isWrappedInAwait(parent: parent) { return ExprSyntax(callNode) }
 
         // Find the first await in arguments
-        guard let firstAwait = findFirstAwaitInArguments(callNode) else { return visited }
+        guard let firstAwait = findFirstAwaitInArguments(callNode) else {
+            return ExprSyntax(callNode)
+        }
 
-        diagnose(.hoistAwait, on: firstAwait.awaitKeyword)
+        Self.diagnose(.hoistAwait, on: firstAwait.awaitKeyword, context: context)
 
         // Strip await from all arguments
         let newArgs = callNode.arguments.map { arg -> LabeledExprSyntax in
@@ -44,19 +54,19 @@ final class HoistAwait: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable {
         let awaitExpr = AwaitExprSyntax(
             awaitKeyword: .keyword(
                 .await,
-                leadingTrivia: node.leadingTrivia,
+                leadingTrivia: callNode.leadingTrivia,
                 trailingTrivia: .space
             ),
             expression: callExpr
         )
 
         var result = ExprSyntax(awaitExpr)
-        result.trailingTrivia = node.trailingTrivia
+        result.trailingTrivia = callNode.trailingTrivia
         return result
     }
 
     /// Strips `await` from the expression, handling `try await` nesting.
-    private func stripAwait(from expr: ExprSyntax) -> ExprSyntax {
+    private static func stripAwait(from expr: ExprSyntax) -> ExprSyntax {
         if let awaitExpr = expr.as(AwaitExprSyntax.self) {
             var inner = awaitExpr.expression
             inner.leadingTrivia = expr.leadingTrivia
@@ -73,7 +83,9 @@ final class HoistAwait: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable {
     }
 
     /// Returns the first `AwaitExprSyntax` found as a direct argument expression.
-    private func findFirstAwaitInArguments(_ call: FunctionCallExprSyntax) -> AwaitExprSyntax? {
+    private static func findFirstAwaitInArguments(
+        _ call: FunctionCallExprSyntax
+    ) -> AwaitExprSyntax? {
         for arg in call.arguments {
             if let awaitExpr = arg.expression.as(AwaitExprSyntax.self) { return awaitExpr }
             if let tryExpr = arg.expression.as(TryExprSyntax.self),
@@ -85,18 +97,19 @@ final class HoistAwait: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable {
         return nil
     }
 
-    /// Returns `true` if the expression is wrapped in an `AwaitExprSyntax` ancestor.
-    private func isWrappedInAwait(_ expr: ExprSyntax) -> Bool {
-        var current = Syntax(expr)
-        
-        while let parent = current.parent {
-            if parent.is(AwaitExprSyntax.self) { return true }
-            if parent.is(TryExprSyntax.self)
-                || parent.is(LabeledExprSyntax.self)
-                || parent.is(LabeledExprListSyntax.self)
-                || parent.is(FunctionCallExprSyntax.self)
+    /// Returns `true` if the expression is wrapped in an `AwaitExprSyntax` ancestor. Walks the
+    /// captured pre-recursion parent chain (post-recursion parent is nil).
+    private static func isWrappedInAwait(parent: Syntax?) -> Bool {
+        var current = parent
+
+        while let p = current {
+            if p.is(AwaitExprSyntax.self) { return true }
+            if p.is(TryExprSyntax.self)
+                || p.is(LabeledExprSyntax.self)
+                || p.is(LabeledExprListSyntax.self)
+                || p.is(FunctionCallExprSyntax.self)
             {
-                current = parent
+                current = p.parent
                 continue
             }
             break

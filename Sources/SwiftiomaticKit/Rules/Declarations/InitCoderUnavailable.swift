@@ -14,9 +14,20 @@ final class InitCoderUnavailable: RewriteSyntaxRule<BasicRuleValue>, @unchecked 
     override class var defaultValue: BasicRuleValue { .init(rewrite: false, lint: .no) }
 
     override func visit(_ node: InitializerDeclSyntax) -> DeclSyntax {
+        let parent = Syntax(node).parent
+        let visited = super.visit(node)
+        guard let concrete = visited.as(InitializerDeclSyntax.self) else { return visited }
+        return Self.transform(concrete, parent: parent, context: context)
+    }
+
+    static func transform(
+        _ node: InitializerDeclSyntax,
+        parent: Syntax?,
+        context: Context
+    ) -> DeclSyntax {
         guard isCoderInitStub(node), !hasUnavailableAttribute(node) else { return DeclSyntax(node) }
 
-        diagnose(.addUnavailableToInitCoder, on: node.initKeyword)
+        Self.diagnose(.addUnavailableToInitCoder, on: node.initKeyword, context: context)
 
         var result = node
 
@@ -58,7 +69,7 @@ final class InitCoderUnavailable: RewriteSyntaxRule<BasicRuleValue>, @unchecked 
 
     /// Returns `true` if this is a `required init(coder: NSCoder)` whose body only calls
     /// `fatalError(...)` .
-    private func isCoderInitStub(_ node: InitializerDeclSyntax) -> Bool {
+    private static func isCoderInitStub(_ node: InitializerDeclSyntax) -> Bool {
         // Must have `required` modifier.
         guard node.modifiers.contains(where: {
             $0.name.tokenKind == .keyword(.required)
@@ -87,7 +98,7 @@ final class InitCoderUnavailable: RewriteSyntaxRule<BasicRuleValue>, @unchecked 
     }
 
     /// Returns `true` if the initializer already has `@available(*, unavailable)` .
-    private func hasUnavailableAttribute(_ node: InitializerDeclSyntax) -> Bool {
+    private static func hasUnavailableAttribute(_ node: InitializerDeclSyntax) -> Bool {
         node.attributes.contains { element in
             guard let attr = element.as(AttributeSyntax.self),
                   let name = attr.attributeName.as(IdentifierTypeSyntax.self),

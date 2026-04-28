@@ -21,6 +21,14 @@ final class PreferSingleLinePropertyGetter: RewriteSyntaxRule<BasicRuleValue>, @
   override class var group: ConfigurationGroup? { .declarations }
 
   override func visit(_ node: PatternBindingSyntax) -> PatternBindingSyntax {
+    Self.transform(super.visit(node), parent: Syntax(node).parent, context: context)
+  }
+
+  static func transform(
+    _ node: PatternBindingSyntax,
+    parent: Syntax?,
+    context: Context
+  ) -> PatternBindingSyntax {
     guard
       let accessorBlock = node.accessorBlock,
       case .accessors(let accessors) = accessorBlock.accessors,
@@ -33,7 +41,7 @@ final class PreferSingleLinePropertyGetter: RewriteSyntaxRule<BasicRuleValue>, @
       acc.effectSpecifiers == nil
     else { return node }
 
-    diagnose(.removeExtraneousGetBlock, on: acc)
+    Self.diagnose(.removeExtraneousGetBlock, on: acc, context: context)
 
     var result = node
     result.accessorBlock?.accessors = .getter(body.statements.trimmed)

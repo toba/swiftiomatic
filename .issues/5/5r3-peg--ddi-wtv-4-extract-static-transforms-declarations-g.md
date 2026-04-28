@@ -5,7 +5,7 @@ status: in-progress
 type: task
 priority: normal
 created_at: 2026-04-28T02:42:45Z
-updated_at: 2026-04-28T03:36:04Z
+updated_at: 2026-04-28T03:46:07Z
 parent: ddi-wtv
 blocked_by:
     - ogx-lb7
@@ -35,17 +35,17 @@ Per-rule audit (parent-walking, instance state, recursive visit() — friction p
 
 - [x] `Idioms/PreferIsDisjoint` - MemberAccessExprSyntax
 - [x] `Idioms/PreferToggle` - InfixOperatorExprSyntax
-- [ ] `Declarations/EmptyExtensions`
-- [ ] `Declarations/InitCoderUnavailable`
+- [x] `Declarations/EmptyExtensions` - CodeBlockItemListSyntax
+- [x] `Declarations/InitCoderUnavailable` - InitializerDeclSyntax
 - [ ] `Declarations/ModifierOrder` (4 visits)
-- [ ] `Declarations/PreferMainAttribute`
-- [ ] `Declarations/PreferSingleLinePropertyGetter`
-- [ ] `Declarations/StaticStructShouldBeEnum`
+- [x] `Declarations/PreferMainAttribute` - AttributeSyntax
+- [x] `Declarations/PreferSingleLinePropertyGetter` - PatternBindingSyntax
+- [x] `Declarations/StaticStructShouldBeEnum` - StructDeclSyntax + ClassDeclSyntax
 - [ ] `Generics/OpaqueGenericParameters` (3 visits, large)
 - [ ] `Generics/PreferAngleBracketExtensions`
 - [ ] `Generics/SimplifyGenericConstraints`
 - [ ] `Hoist/CaseLet` (3 visits)
-- [ ] `Hoist/IndirectEnum`
+- [x] `Hoist/IndirectEnum` - EnumDeclSyntax
 - [ ] `Idioms/AvoidNoneName`
 - [ ] `Idioms/NoExplicitOwnership`
 - [ ] `Idioms/PreferAssertionFailure` (3 visits)
@@ -65,8 +65,8 @@ Per-rule audit (parent-walking, instance state, recursive visit() — friction p
 These rules read `node.parent` (or walk the ancestor chain). The combined rewriter's default ordering (super.visit before transform) detaches the node from its parent before transform runs, breaking these rules silently.
 
 - [skip] `Declarations/ProtocolAccessorOrder`
-- [skip] `Hoist/HoistAwait`
-- [skip] `Hoist/HoistTry`
+- [x] `Hoist/HoistAwait` - FunctionCallExprSyntax (uses captured `parent` for ancestor walk)
+- [x] `Hoist/HoistTry` - FunctionCallExprSyntax (parent walk via 3-arg signature; AwaitExpr re-ordering kept on legacy)
 - [skip] `Idioms/NoAssignmentInExpressions`
 - [skip] `Idioms/NoVoidTernary`
 - [skip] `Idioms/PreferCountWhere`
