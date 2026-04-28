@@ -1,11 +1,11 @@
 ---
 # ddi-wtv
 title: Cut over to `compact` pipeline; delete superseded rule files
-status: ready
+status: in-progress
 type: feature
 priority: high
 created_at: 2026-04-28T01:41:38Z
-updated_at: 2026-04-28T02:36:39Z
+updated_at: 2026-04-28T02:41:45Z
 parent: iv7-r5g
 blocked_by:
     - eti-yt2
@@ -14,7 +14,7 @@ blocked_by:
 sync:
     github:
         issue_number: "480"
-        synced_at: "2026-04-28T02:40:01Z"
+        synced_at: "2026-04-28T02:56:05Z"
 ---
 
 ## Goal

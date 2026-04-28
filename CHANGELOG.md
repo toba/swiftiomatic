@@ -44,6 +44,8 @@
 - Inventory format rules; node-local vs structural vs deletable
 - Design `compact` style spec
 - Stub `roomy` style; reserve name only
+- Scaffold compact dispatch in `RewriteCoordinator`
+- Emit `CompactStageOneRewriter+Generated.swift`
 
 ## Week of Apr 19 – Apr 25, 2026
 

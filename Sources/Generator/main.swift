@@ -53,6 +53,11 @@ try collector.collectLayoutRules(from: paths.layoutRulesFolder)
 let pipelineGenerator = PipelineGenerator(collector: collector)
 try pipelineGenerator.generateFile(at: paths.pipelineFile)
 
+// Generate the combined `compact` stage-one rewriter (issue `ogx-lb7`). With zero
+// `transform` adopters this is just an empty class — see the generator for layout.
+let compactGenerator = CompactStageOneRewriterGenerator(collector: collector)
+try compactGenerator.generateFile(at: paths.compactStageOneRewriterFile)
+
 // Generate the unified rule registry (type arrays, defaults, name cache).
 let registryGenerator = ConfigurationGenerator(collector: collector)
 try registryGenerator.generateFile(at: paths.ruleRegistryFile)

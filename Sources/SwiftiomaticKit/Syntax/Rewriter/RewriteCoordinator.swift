@@ -175,8 +175,13 @@ package final class RewriteCoordinator {
             sourceFileSyntax: syntax,
             source: source
         )
-        let pipeline = RewritePipeline(context: context)
-        let transformedSyntax = pipeline.rewrite(Syntax(syntax))
+        let transformedSyntax: Syntax
+        switch configuration[StyleSetting.self] {
+            case .compact:
+                transformedSyntax = runCompactPipeline(Syntax(syntax), context: context)
+            case .roomy:
+                throw .styleNotImplemented(Style.roomy.rawValue)
+        }
 
         if debugOptions.contains(.disablePrettyPrint) {
             outputStream.write(transformedSyntax.description)
@@ -191,5 +196,16 @@ package final class RewriteCoordinator {
             whitespaceOnly: false
         )
         outputStream.write(printer.prettyPrint())
+    }
+
+    /// Runs the `compact` style's rewrite stage and returns the transformed tree.
+    ///
+    /// Currently delegates to the legacy `RewritePipeline`; sub-issues `ogx-lb7` and
+    /// `g6t-gcm` replace the body with the combined node-local rewriter plus the
+    /// ordered structural passes. Centralising the entry point here lets that work
+    /// land additively without touching `format(syntax:...)`.
+    private func runCompactPipeline(_ node: Syntax, context: Context) -> Syntax {
+        let pipeline = RewritePipeline(context: context)
+        return pipeline.rewrite(node)
     }
 }

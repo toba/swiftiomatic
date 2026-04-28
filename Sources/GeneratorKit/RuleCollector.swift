@@ -28,6 +28,11 @@ package final class RuleCollector {
     /// A list of all the format-only rules found in the code base.
     var rewritingSyntaxRules = Set<DetectedSyntaxRule>()
 
+    /// Maps a syntax node type name to the rules that expose a
+    /// `static func transform(_:context:)` for that node — i.e. the rules eligible
+    /// to run inside `CompactStageOneRewriter` (issue `ogx-lb7`).
+    var nodeLocalTransforms = [String: [String]]()
+
     package init() {}
 
     /// Populates the internal collections with rules in the given directory.
@@ -48,6 +53,10 @@ package final class RuleCollector {
 
                 for visitedNode in rule.visitedNodes {
                     self.syntaxNodeLinters[visitedNode, default: []].append(rule.typeName)
+                }
+                for transformedNode in rule.transformedNodes {
+                    self.nodeLocalTransforms[transformedNode, default: []]
+                        .append(rule.typeName)
                 }
             }
         }
@@ -150,15 +159,31 @@ package final class RuleCollector {
                 .name.text
 
             var visitedNodes = [String]()
+            var transformedNodes = [String]()
 
             for member in members {
                 guard let function = member.decl.as(FunctionDeclSyntax.self) else { continue }
-                guard function.name.text == "visit" else { continue }
-                let params = function.signature.parameterClause.parameters
-                guard let firstType = params.firstAndOnly?.type.as(IdentifierTypeSyntax.self) else {
+
+                if function.name.text == "visit" {
+                    let params = function.signature.parameterClause.parameters
+                    if let firstType = params.firstAndOnly?.type.as(IdentifierTypeSyntax.self) {
+                        visitedNodes.append(firstType.name.text)
+                    }
                     continue
                 }
-                visitedNodes.append(firstType.name.text)
+
+                if function.name.text == "transform",
+                    function.modifiers.contains(where: {
+                        $0.name.tokenKind == .keyword(.static)
+                    })
+                {
+                    let params = Array(function.signature.parameterClause.parameters)
+                    if let firstType = params.first?.type.as(IdentifierTypeSyntax.self),
+                        params.contains(where: { $0.firstName.text == "context" })
+                    {
+                        transformedNodes.append(firstType.name.text)
+                    }
+                }
             }
 
             guard !visitedNodes.isEmpty else { return nil }
@@ -198,6 +223,7 @@ package final class RuleCollector {
                 visitedNodes: visitedNodes,
                 isOptIn: Self.extractIsOptIn(from: members),
                 customProperties: customProperties,
+                transformedNodes: transformedNodes,
             )
         }
 

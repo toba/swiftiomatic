@@ -33,4 +33,23 @@ struct StyleTests {
         let config = try Configuration(data: json)
         #expect(config[StyleSetting.self] == .roomy)
     }
+
+    /// Smoke test for the compact-pipeline dispatch site (`q4d-ya9`). With the default
+    /// style (`.compact`), `RewriteCoordinator.format(...)` produces non-empty output —
+    /// proving the new switch routes to `runCompactPipeline` without breaking existing
+    /// behavior.
+    @Test func compactPipelineDispatchProducesOutput() throws {
+        let coordinator = RewriteCoordinator(
+            configuration: Configuration(),
+            findingConsumer: { _ in }
+        )
+        var out = ""
+        try coordinator.format(
+            source: "let x = 1\n",
+            assumingFileURL: nil,
+            selection: .infinite,
+            to: &out
+        )
+        #expect(!out.isEmpty)
+    }
 }

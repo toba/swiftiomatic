@@ -33,12 +33,13 @@ struct GeneratePlugin: BuildToolPlugin {
             }
             .map(\.url)
 
-        // The four generated Swift files.
+        // The five generated Swift files.
         let outputFiles = [
             outputDir.appending(path: "Pipelines+Generated.swift"),
             outputDir.appending(path: "ConfigurationRegistry+Generated.swift"),
             outputDir.appending(path: "TokenStream+Generated.swift"),
             outputDir.appending(path: "ConfigurationSchema+Generated.swift"),
+            outputDir.appending(path: "CompactStageOneRewriter+Generated.swift"),
         ]
 
         return [
