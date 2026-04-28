@@ -17,6 +17,14 @@ extension SyntaxRule {
     /// This rule's configuration value, sugar for `context.configuration[Self.self]`.
     var ruleConfig: Value { context.configuration[Self.self] }
 
+    /// Whether this rule's `defaultValue` is active (rewrite or lint enabled). Reachable
+    /// via existential dispatch from `any SyntaxRule.Type`, which preserves dynamic
+    /// type binding when `RewriteSyntaxRule.visitAny` calls into `Context` for per-node
+    /// gating. Generic dispatch via `<R: SyntaxRule>` does NOT preserve the dynamic
+    /// type when the generic parameter is inferred from `type(of: self)` inside a
+    /// non-final base class — see `Context.shouldFormat(ruleType:node:)`.
+    static var defaultIsActive: Bool { Self.defaultValue.isActive }
+
     /// Emits the given finding.
     ///
     /// - Parameters:

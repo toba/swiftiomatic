@@ -21,9 +21,16 @@ class RewriteSyntaxRule<V: SyntaxRuleValue>: SyntaxRewriter, SyntaxRule, @unchec
     required init(context: Context) { self.context = context }
 
     override func visitAny(_ node: Syntax) -> Syntax? {
-        // If the rule is not enabled, then return the node unmodified; otherwise, returning nil tells
-        // SwiftSyntax to continue with the standard dispatch.
-        guard context.shouldFormat(type(of: self), node: node) else { return node }
+        // If the rule is not enabled, return the node unmodified to short-circuit the
+        // typed visit and child recursion. Otherwise return nil to fall through to the
+        // standard dispatch.
+        //
+        // We must use the non-generic `shouldFormat(ruleType:node:)` overload here:
+        // this method runs on `RewriteSyntaxRule<V>`, so a generic `<R>` overload
+        // would bind R to the static base type and look up the wrong configuration
+        // key (e.g. `"rewriteSyntaxRule<BasicRuleValue>"`). The non-generic overload
+        // takes `any SyntaxRule.Type`, which preserves the dynamic subclass identity.
+        guard context.shouldFormat(ruleType: type(of: self), node: node) else { return node }
         return nil
     }
 }

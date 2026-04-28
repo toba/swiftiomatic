@@ -42,6 +42,27 @@ package struct Configuration: Sendable, Equatable {
         }
     }
 
+    /// Returns whether the given rule is active, using existential dispatch on the
+    /// runtime metatype.
+    ///
+    /// This is the dynamic-type-correct counterpart to `configuration[R.self].isActive`.
+    /// The generic subscript binds `C` from the static call-site type — when called
+    /// from inside a generic base class (e.g. `RewriteSyntaxRule.visitAny`), `C` is
+    /// the static base type and `C.key`/`C.defaultValue` lookups resolve against the
+    /// base class's witness, NOT the dynamic subclass. That returns the wrong rule key
+    /// (`"rewriteSyntaxRule<BasicRuleValue>"`) and a default of `(rewrite: true, lint:
+    /// .warn)`, which causes disabled rules to fire.
+    ///
+    /// This helper avoids that footgun by going through `any SyntaxRule.Type`, whose
+    /// member access dispatches on the runtime metatype.
+    func isActive(rule: any SyntaxRule.Type) -> Bool {
+        let qualified = rule.group.map { "\($0.key).\(rule.key)" } ?? rule.key
+        if let stored = values[qualified] as? any SyntaxRuleValue {
+            return stored.isActive
+        }
+        return rule.defaultIsActive
+    }
+
     // MARK: - Layout setting registry
 
     private typealias SettingDecoder =

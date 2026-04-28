@@ -80,12 +80,22 @@ package final class Context {
     /// Given a rule's name and the node it is examining, determine if the rule is disabled at this
     /// location or not. Also makes sure the entire node is contained inside any selection.
     func shouldFormat<R: SyntaxRule>(_ rule: R.Type, node: Syntax) -> Bool {
+        shouldFormat(ruleType: rule, node: node)
+    }
+
+    /// Non-generic counterpart to `shouldFormat<R>(_:node:)` that uses existential
+    /// dispatch on the rule's runtime metatype.
+    ///
+    /// Use this from generic base-class contexts (e.g. `RewriteSyntaxRule.visitAny`)
+    /// where the generic parameter would otherwise bind to the static base type and
+    /// look up the wrong configuration key. See `Configuration.isActive(rule:)`.
+    func shouldFormat(ruleType rule: any SyntaxRule.Type, node: Syntax) -> Bool {
         guard node.isInsideSelection(selection) else { return false }
         let loc = node.startLocation(converter: sourceLocationConverter)
-        let ruleName = ConfigurationRegistry.ruleNameCache[ObjectIdentifier(rule)] ?? R.key
+        let ruleName = ConfigurationRegistry.ruleNameCache[ObjectIdentifier(rule)] ?? rule.key
 
         switch ruleMask.ruleState(ruleName, at: loc) {
-            case .default: return configuration[R.self].isActive
+            case .default: return configuration.isActive(rule: rule)
             case .disabled: return false
         }
     }

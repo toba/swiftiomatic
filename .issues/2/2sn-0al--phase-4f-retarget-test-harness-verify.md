@@ -5,7 +5,7 @@ status: in-progress
 type: task
 priority: high
 created_at: 2026-04-28T15:50:30Z
-updated_at: 2026-04-28T20:44:08Z
+updated_at: 2026-04-28T22:42:07Z
 parent: ddi-wtv
 blocked_by:
     - 49k-dtg
@@ -165,3 +165,36 @@ xc-swift swift_package_test --filter CompactPipelineParityTests
 # Targeted regression after each fix:
 xc-swift swift_package_test --filter "<RuleName>Tests"
 ```
+
+
+
+## Update (2026-04-28) — Root-cause fix for visitAny gating
+
+Found and fixed a long-standing bug in `RewriteSyntaxRule.visitAny` that surfaced once the compact pipeline started running structural passes without outer per-rule gates: every disabled `RewriteSyntaxRule` subclass was still firing on every node.
+
+### The bug
+
+`visitAny` called `context.shouldFormat(type(of: self), node)`. `shouldFormat` is generic `<R: SyntaxRule>`. When invoked from inside the base class `RewriteSyntaxRule<V>`, R bound to the **static** base type, not the dynamic subclass. Inside the generic, `R.key` returned `"rewriteSyntaxRule<BasicRuleValue>"` (the base's stringified type) and `R.defaultValue` returned `BasicRuleValue()` = `(rewrite: true, lint: .warn)` — i.e. `isActive = true`. So `configuration[R.self]` looked up the wrong key, found nothing, fell through to the base default, and reported the rule as enabled regardless of the actual configuration.
+
+In the legacy `RewritePipeline` this was masked because the generated dispatcher already gated with `if context.shouldFormat(ConcreteRule.self, node) { … }` (concrete static R, correct lookup) before `rule.rewrite(node)` ran. In the compact pipeline's `runTwoStageCompactPipeline`, the structural passes are invoked unconditionally as `PreferFinalClasses(context: context).rewrite(current)` — so the only gate is `visitAny`'s shouldFormat call, which was broken.
+
+Concrete symptom: every `RedundantOverride` test in single-rule mode produced `final class Foo: Bar { }` instead of `class Foo: Bar { }` — the disabled `PreferFinalClasses` was firing because its own visitAny said `isActive=true`.
+
+### The fix
+
+Added a non-generic `Context.shouldFormat(ruleType: any SyntaxRule.Type, node: Syntax) -> Bool` and a backing `Configuration.isActive(rule: any SyntaxRule.Type) -> Bool` plus `SyntaxRule.defaultIsActive` static. These dispatch through the existential metatype, which preserves the dynamic type. `RewriteSyntaxRule.visitAny` now uses the new overload. Comments cross-reference the footgun at all three sites.
+
+Files: `Sources/SwiftiomaticKit/Configuration/Configuration.swift`, `Sources/SwiftiomaticKit/Support/Context.swift`, `Sources/SwiftiomaticKit/Syntax/SyntaxRule.swift`, `Sources/SwiftiomaticKit/Syntax/Rewriter/RewriteSyntaxRule.swift`.
+
+### Impact
+
+- Targeted regression filter (`NoForceUnwrap|NoForceTry|RedundantOverride|RedundantEscaping|WrapMultilineStatementBraces|NestedCallLayout|PreferShorthandTypeNames`): **74 → 36 failures**.
+- Full suite with the compact branch enabled in `assertFormatting`: 2579 pass, 445 fail. The 445 number is much larger than the 25 quoted earlier because adding the compact branch in `assertFormatting` covers every rule test, not just the originally tracked clusters.
+- `CompactPipelineParityTests` stays green (the multi-rule corpus already had every rule "enabled", so the bug was invisible to it).
+- Targeted rule clusters that passed before still pass.
+
+### What's left for 4f
+
+The remaining 445 single-rule failures cluster into the patterns the previous resume brief described: rules whose legacy `visit(_:)` short-circuits child recursion (no `super.visit`) — `PreferEarlyExits`, `StaticStructShouldBeEnum`, `PreferExplicitFalse`, `RedundantSelf`, `HoistAwait`, `PreferVoidReturn`, plus the ones already on the radar (`NoForceUnwrap`, `NoForceTry`, `PreferShorthandTypeNames`, `WrapMultilineStatementBraces`, `RedundantOverride` is now green). Each needs the `willEnter`/`Context.ruleState` / scope-flag mitigation tailored to its specific behavior.
+
+The visitAny fix was on the critical path for any of the structural-pass-driven failures. Without it, every rule running in stage 2 would emit findings even when disabled, so nothing else could be diagnosed reliably. Now the structural passes are correctly gated and remaining failures are about rule-specific recursion semantics, not configuration plumbing.
