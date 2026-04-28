@@ -30,8 +30,13 @@ final class PreferIfElseChain: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sen
     override class var group: ConfigurationGroup? { .conditions }
 
     override func visit(_ node: CodeBlockItemListSyntax) -> CodeBlockItemListSyntax {
-        let visited = super.visit(node)
+        Self.transform(super.visit(node), context: context)
+    }
 
+    static func transform(
+        _ visited: CodeBlockItemListSyntax,
+        context: Context
+    ) -> CodeBlockItemListSyntax {
         // The rewrite turns explicit `return` statements into bare-expression branches of an
         // if-expression. That only preserves semantics when the expression's value is the implicit
         // return of the enclosing scope, which requires (1) the chain occupies the entire item list and
@@ -42,7 +47,7 @@ final class PreferIfElseChain: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sen
         guard let chain = tryBuildChain(items: items, startingAt: 0),
               chain.endIndex == items.count else { return visited }
 
-        diagnose(.useIfElseChain, on: chain.firstIf)
+        Self.diagnose(.useIfElseChain, on: chain.firstIf, context: context)
         return CodeBlockItemListSyntax([
             CodeBlockItemSyntax(
                 leadingTrivia: items[0].leadingTrivia,
@@ -54,7 +59,7 @@ final class PreferIfElseChain: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sen
 
     /// Whether the items list sits in a position where a trailing bare expression becomes the
     /// enclosing scope's implicit return value.
-    private func parentAllowsImplicitReturn(_ list: CodeBlockItemListSyntax) -> Bool {
+    private static func parentAllowsImplicitReturn(_ list: CodeBlockItemListSyntax) -> Bool {
         guard let parent = list.parent else { return false }
 
         // Closure body, computed-property accessor block, and top-level scripts host the items list
@@ -87,7 +92,7 @@ final class PreferIfElseChain: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sen
 
     /// Tries to build a chain starting at `startIndex` . Requires at least two `if` statements (each
     /// with a single `return` body and no `else` ) followed by a trailing `return` statement.
-    private func tryBuildChain(
+    private static func tryBuildChain(
         items: [CodeBlockItemSyntax],
         startingAt startIndex: Int
     ) -> Chain? {
@@ -174,7 +179,7 @@ final class PreferIfElseChain: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sen
 
     // MARK: - Helpers
 
-    private func extractIfStatement(from item: CodeBlockItemSyntax) -> IfExprSyntax? {
+    private static func extractIfStatement(from item: CodeBlockItemSyntax) -> IfExprSyntax? {
         if let exprStmt = item.item.as(ExpressionStmtSyntax.self) {
             return exprStmt.expression.as(IfExprSyntax.self)
         }
@@ -183,7 +188,7 @@ final class PreferIfElseChain: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sen
 
     /// Returns the single return value from an if body, or nil if the body isn't a single return
     /// statement.
-    private func singleReturnValue(from body: CodeBlockSyntax) -> ExprSyntax? {
+    private static func singleReturnValue(from body: CodeBlockSyntax) -> ExprSyntax? {
         guard let onlyItem = body.statements.firstAndOnly else { return nil }
 
         if let returnStmt = onlyItem.item.as(ReturnStmtSyntax.self) { return returnStmt.expression }
@@ -196,7 +201,7 @@ final class PreferIfElseChain: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sen
     }
 
     /// Extracts the return value from a standalone return statement.
-    private func extractReturnValue(from item: CodeBlockItemSyntax) -> ExprSyntax? {
+    private static func extractReturnValue(from item: CodeBlockItemSyntax) -> ExprSyntax? {
         if let returnStmt = item.item.as(ReturnStmtSyntax.self) {
             returnStmt.expression
         } else if let stmtItem = item.item.as(StmtSyntax.self),

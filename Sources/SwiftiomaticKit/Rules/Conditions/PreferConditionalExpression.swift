@@ -14,7 +14,13 @@ final class PreferConditionalExpression: RewriteSyntaxRule<BasicRuleValue>, @unc
     override class var defaultValue: BasicRuleValue { .init(rewrite: false, lint: .no) }
 
     override func visit(_ node: CodeBlockItemListSyntax) -> CodeBlockItemListSyntax {
-        let visited = super.visit(node)
+        Self.transform(super.visit(node), context: context)
+    }
+
+    static func transform(
+        _ visited: CodeBlockItemListSyntax,
+        context: Context
+    ) -> CodeBlockItemListSyntax {
         let items = Array(visited)
         var newItems = [CodeBlockItemSyntax]()
         var i = 0
@@ -22,7 +28,7 @@ final class PreferConditionalExpression: RewriteSyntaxRule<BasicRuleValue>, @unc
 
         while i < items.count {
             if i + 1 < items.count,
-               let merged = tryMerge(items[i], items[i + 1])
+               let merged = tryMerge(items[i], items[i + 1], context: context)
             {
                 newItems.append(merged)
                 changed = true
@@ -39,9 +45,10 @@ final class PreferConditionalExpression: RewriteSyntaxRule<BasicRuleValue>, @unc
 
     // MARK: - Merge
 
-    private func tryMerge(
+    private static func tryMerge(
         _ declItem: CodeBlockItemSyntax,
-        _ condItem: CodeBlockItemSyntax
+        _ condItem: CodeBlockItemSyntax,
+        context: Context
     ) -> CodeBlockItemSyntax? {
         // First item: property with type annotation and no initializer
         guard let varDecl = declItem.item.as(VariableDeclSyntax.self),
@@ -75,7 +82,7 @@ final class PreferConditionalExpression: RewriteSyntaxRule<BasicRuleValue>, @unc
             return nil
         }
 
-        diagnose(.useConditionalExpression, on: condExpr)
+        Self.diagnose(.useConditionalExpression, on: condExpr, context: context)
 
         // Build merged declaration: `let x: Type = if/switch { ... }`
         let initializer = InitializerClauseSyntax(
@@ -96,7 +103,7 @@ final class PreferConditionalExpression: RewriteSyntaxRule<BasicRuleValue>, @unc
 
     // MARK: - Exhaustive assignment checking
 
-    private func isExhaustiveIfAssignment(
+    private static func isExhaustiveIfAssignment(
         _ ifExpr: IfExprSyntax,
         assigningTo name: String
     ) -> Bool {
@@ -111,7 +118,7 @@ final class PreferConditionalExpression: RewriteSyntaxRule<BasicRuleValue>, @unc
         }
     }
 
-    private func isExhaustiveSwitchAssignment(
+    private static func isExhaustiveSwitchAssignment(
         _ switchExpr: SwitchExprSyntax,
         assigningTo name: String
     ) -> Bool {
@@ -124,7 +131,7 @@ final class PreferConditionalExpression: RewriteSyntaxRule<BasicRuleValue>, @unc
         return true
     }
 
-    private func isSingleStatementAssignment(
+    private static func isSingleStatementAssignment(
         _ statements: CodeBlockItemListSyntax,
         assigningTo name: String
     ) -> Bool {
@@ -145,7 +152,7 @@ final class PreferConditionalExpression: RewriteSyntaxRule<BasicRuleValue>, @unc
         return false
     }
 
-    private func isAssignment(_ item: CodeBlockItemSyntax, to name: String) -> Bool {
+    private static func isAssignment(_ item: CodeBlockItemSyntax, to name: String) -> Bool {
         guard let infixExpr = extractExpression(from: item)?.as(InfixOperatorExprSyntax.self),
               infixExpr.operator.is(AssignmentExprSyntax.self),
               let lhs = infixExpr.leftOperand.as(DeclReferenceExprSyntax.self),
@@ -156,7 +163,7 @@ final class PreferConditionalExpression: RewriteSyntaxRule<BasicRuleValue>, @unc
 
     // MARK: - Assignment removal
 
-    private func removeAssignments(from ifExpr: IfExprSyntax, name: String) -> IfExprSyntax {
+    private static func removeAssignments(from ifExpr: IfExprSyntax, name: String) -> IfExprSyntax {
         var result = ifExpr
         result.body = removeAssignment(from: ifExpr.body, name: name)
 
@@ -171,7 +178,7 @@ final class PreferConditionalExpression: RewriteSyntaxRule<BasicRuleValue>, @unc
         return result
     }
 
-    private func removeAssignments(
+    private static func removeAssignments(
         from switchExpr: SwitchExprSyntax,
         name: String
     ) -> SwitchExprSyntax {
@@ -192,7 +199,7 @@ final class PreferConditionalExpression: RewriteSyntaxRule<BasicRuleValue>, @unc
         return result
     }
 
-    private func removeAssignment(
+    private static func removeAssignment(
         from block: CodeBlockSyntax,
         name: String
     ) -> CodeBlockSyntax {
@@ -201,7 +208,7 @@ final class PreferConditionalExpression: RewriteSyntaxRule<BasicRuleValue>, @unc
         return result
     }
 
-    private func removeAssignmentFromStatements(
+    private static func removeAssignmentFromStatements(
         _ statements: CodeBlockItemListSyntax,
         name: String
     ) -> CodeBlockItemListSyntax {
@@ -241,7 +248,7 @@ final class PreferConditionalExpression: RewriteSyntaxRule<BasicRuleValue>, @unc
 
     // MARK: - Helpers
 
-    private func extractExpression(from item: CodeBlockItemSyntax) -> ExprSyntax? {
+    private static func extractExpression(from item: CodeBlockItemSyntax) -> ExprSyntax? {
         if let exprStmt = item.item.as(ExpressionStmtSyntax.self) { return exprStmt.expression }
         return item.item.as(ExprSyntax.self)
     }

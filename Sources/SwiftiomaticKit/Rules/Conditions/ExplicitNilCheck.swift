@@ -29,6 +29,13 @@ import SwiftSyntaxBuilder
 final class ExplicitNilCheck: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable {
     override class var group: ConfigurationGroup? { .conditions }
     override func visit(_ node: ConditionElementSyntax) -> ConditionElementSyntax {
+        Self.transform(node, context: context)
+    }
+
+    static func transform(
+        _ node: ConditionElementSyntax,
+        context: Context
+    ) -> ConditionElementSyntax {
         switch node.condition {
         case .optionalBinding(let optionalBindingCondition):
             guard
@@ -39,7 +46,7 @@ final class ExplicitNilCheck: RewriteSyntaxRule<BasicRuleValue>, @unchecked Send
                 return node
             }
 
-            diagnose(.useExplicitNilComparison, on: optionalBindingCondition)
+            Self.diagnose(.useExplicitNilComparison, on: optionalBindingCondition, context: context)
 
             // Since we're moving the initializer value from the RHS to the LHS of an expression/pattern,
             // preserve the relative position of the trailing trivia. Similarly, preserve the leading
@@ -69,7 +76,7 @@ final class ExplicitNilCheck: RewriteSyntaxRule<BasicRuleValue>, @unchecked Send
 
     /// Returns true if the given pattern is a discarding assignment expression (for example, the `_`
     /// in `let _ = x`).
-    private func isDiscardedAssignmentPattern(_ pattern: PatternSyntax) -> Bool {
+    private static func isDiscardedAssignmentPattern(_ pattern: PatternSyntax) -> Bool {
         guard let exprPattern = pattern.as(ExpressionPatternSyntax.self) else {
             return false
         }
@@ -81,7 +88,7 @@ final class ExplicitNilCheck: RewriteSyntaxRule<BasicRuleValue>, @unchecked Send
     ///
     /// Specifically, if `expr` is a `try` expression, ternary expression, or an infix operator with
     /// the same or lower precedence, we wrap it.
-    private func addingParenthesesIfNecessary(to expr: ExprSyntax) -> ExprSyntax {
+    private static func addingParenthesesIfNecessary(to expr: ExprSyntax) -> ExprSyntax {
         func addingParentheses(to expr: ExprSyntax) -> ExprSyntax {
             var expr = expr
             let leadingTrivia = expr.leadingTrivia

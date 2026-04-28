@@ -35,13 +35,19 @@ final class PreferTernary: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendabl
     override class var defaultValue: BasicRuleValue { .init(rewrite: false, lint: .no) }
 
     override func visit(_ node: CodeBlockItemListSyntax) -> CodeBlockItemListSyntax {
-        let visited = super.visit(node)
+        Self.transform(super.visit(node), context: context)
+    }
+
+    static func transform(
+        _ visited: CodeBlockItemListSyntax,
+        context: Context
+    ) -> CodeBlockItemListSyntax {
         let items = Array(visited)
         var newItems = [CodeBlockItemSyntax]()
         var changed = false
 
         for item in items {
-            if let replacement = tryConvert(item) {
+            if let replacement = tryConvert(item, context: context) {
                 newItems.append(replacement)
                 changed = true
             } else {
@@ -55,7 +61,10 @@ final class PreferTernary: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendabl
 
     // MARK: - Conversion
 
-    private func tryConvert(_ item: CodeBlockItemSyntax) -> CodeBlockItemSyntax? {
+    private static func tryConvert(
+        _ item: CodeBlockItemSyntax,
+        context: Context
+    ) -> CodeBlockItemSyntax? {
         guard let ifExpr = extractIfExpr(from: item) else { return nil }
 
         // Must be a simple if-else (no else-if chains)
@@ -81,7 +90,8 @@ final class PreferTernary: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendabl
                 item: item,
                 ifExpr: ifExpr,
                 thenExpr: thenReturn,
-                elseExpr: elseReturn)
+                elseExpr: elseReturn,
+                context: context)
         }
 
         // Both branches assign to the same variable
@@ -94,7 +104,8 @@ final class PreferTernary: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendabl
                 ifExpr: ifExpr,
                 lhs: lhs,
                 thenExpr: thenRHS,
-                elseExpr: elseRHS)
+                elseExpr: elseRHS,
+                context: context)
         }
 
         return nil
@@ -102,7 +113,7 @@ final class PreferTernary: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendabl
 
     // MARK: - Extraction
 
-    private func extractIfExpr(from item: CodeBlockItemSyntax) -> IfExprSyntax? {
+    private static func extractIfExpr(from item: CodeBlockItemSyntax) -> IfExprSyntax? {
         if let exprStmt = item.item.as(ExpressionStmtSyntax.self) {
             exprStmt.expression.as(IfExprSyntax.self)
         } else {
@@ -111,7 +122,7 @@ final class PreferTernary: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendabl
     }
 
     /// Extracts the expression from a `return expr` statement.
-    private func extractReturn(from item: CodeBlockItemSyntax) -> ExprSyntax? {
+    private static func extractReturn(from item: CodeBlockItemSyntax) -> ExprSyntax? {
         if let returnStmt = item.item.as(ReturnStmtSyntax.self),
            let expr = returnStmt.expression
         {
@@ -122,7 +133,9 @@ final class PreferTernary: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendabl
     }
 
     /// Extracts the LHS and RHS from an assignment like `result = expr` .
-    private func extractAssignment(from item: CodeBlockItemSyntax) -> (ExprSyntax, ExprSyntax)? {
+    private static func extractAssignment(
+        from item: CodeBlockItemSyntax
+    ) -> (ExprSyntax, ExprSyntax)? {
         let expr: ExprSyntax?
         if let exprStmt = item.item.as(ExpressionStmtSyntax.self) {
             expr = exprStmt.expression
@@ -136,13 +149,14 @@ final class PreferTernary: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendabl
 
     // MARK: - Building ternary
 
-    private func buildTernaryReturn(
+    private static func buildTernaryReturn(
         item: CodeBlockItemSyntax,
         ifExpr: IfExprSyntax,
         thenExpr: ExprSyntax,
-        elseExpr: ExprSyntax
+        elseExpr: ExprSyntax,
+        context: Context
     ) -> CodeBlockItemSyntax {
-        diagnose(.useTernary, on: ifExpr.ifKeyword)
+        Self.diagnose(.useTernary, on: ifExpr.ifKeyword, context: context)
 
         let ternary = buildTernaryExpr(
             condition: ifExpr.conditions,
@@ -159,14 +173,15 @@ final class PreferTernary: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendabl
             trailingTrivia: item.trailingTrivia)
     }
 
-    private func buildTernaryAssignment(
+    private static func buildTernaryAssignment(
         item: CodeBlockItemSyntax,
         ifExpr: IfExprSyntax,
         lhs: ExprSyntax,
         thenExpr: ExprSyntax,
-        elseExpr: ExprSyntax
+        elseExpr: ExprSyntax,
+        context: Context
     ) -> CodeBlockItemSyntax {
-        diagnose(.useTernary, on: ifExpr.ifKeyword)
+        Self.diagnose(.useTernary, on: ifExpr.ifKeyword, context: context)
 
         let ternary = buildTernaryExpr(
             condition: ifExpr.conditions,
@@ -186,7 +201,7 @@ final class PreferTernary: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendabl
             trailingTrivia: item.trailingTrivia)
     }
 
-    private func buildTernaryExpr(
+    private static func buildTernaryExpr(
         condition: ConditionElementListSyntax,
         thenExpr: ExprSyntax,
         elseExpr: ExprSyntax

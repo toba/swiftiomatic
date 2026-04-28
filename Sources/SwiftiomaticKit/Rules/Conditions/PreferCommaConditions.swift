@@ -16,8 +16,13 @@ final class PreferCommaConditions: RewriteSyntaxRule<BasicRuleValue>, @unchecked
     override class var group: ConfigurationGroup? { .conditions }
 
     override func visit(_ node: ConditionElementListSyntax) -> ConditionElementListSyntax {
-        let visited = super.visit(node)
+        Self.transform(super.visit(node), context: context)
+    }
 
+    static func transform(
+        _ visited: ConditionElementListSyntax,
+        context: Context
+    ) -> ConditionElementListSyntax {
         // Check if any element has a top-level &&
         guard visited.contains(where: { elementHasTopLevelAnd($0) }) else { return visited }
 
@@ -33,7 +38,7 @@ final class PreferCommaConditions: RewriteSyntaxRule<BasicRuleValue>, @unchecked
 
             // Diagnose on the first && token
             if let firstAnd = firstAndOperator(in: expr) {
-                diagnose(.preferCommaOverAnd, on: firstAnd)
+                Self.diagnose(.preferCommaOverAnd, on: firstAnd, context: context)
             }
 
             // Flatten the && chain into individual expressions
@@ -62,13 +67,13 @@ final class PreferCommaConditions: RewriteSyntaxRule<BasicRuleValue>, @unchecked
     }
 
     /// Returns `true` if the condition element has a top-level `&&` operator.
-    private func elementHasTopLevelAnd(_ element: ConditionElementSyntax) -> Bool {
+    private static func elementHasTopLevelAnd(_ element: ConditionElementSyntax) -> Bool {
         guard case let .expression(expr) = element.condition else { return false }
         return hasTopLevelAnd(expr)
     }
 
     /// Returns `true` if the expression is an `&&` at the top level.
-    private func hasTopLevelAnd(_ expr: ExprSyntax) -> Bool {
+    private static func hasTopLevelAnd(_ expr: ExprSyntax) -> Bool {
         if let infix = expr.as(InfixOperatorExprSyntax.self),
            let binOp = infix.operator.as(BinaryOperatorExprSyntax.self)
         {
@@ -79,7 +84,7 @@ final class PreferCommaConditions: RewriteSyntaxRule<BasicRuleValue>, @unchecked
     }
 
     /// Recursively flattens an `&&` chain into individual operands.
-    private func flattenAndChain(_ expr: ExprSyntax, into operands: inout [ExprSyntax]) {
+    private static func flattenAndChain(_ expr: ExprSyntax, into operands: inout [ExprSyntax]) {
         guard let infix = expr.as(InfixOperatorExprSyntax.self),
               let binOp = infix.operator.as(BinaryOperatorExprSyntax.self),
               binOp.operator.text == "&&"
@@ -92,7 +97,7 @@ final class PreferCommaConditions: RewriteSyntaxRule<BasicRuleValue>, @unchecked
     }
 
     /// Returns the first `&&` operator token in the expression tree.
-    private func firstAndOperator(in expr: ExprSyntax) -> TokenSyntax? {
+    private static func firstAndOperator(in expr: ExprSyntax) -> TokenSyntax? {
         guard let infix = expr.as(InfixOperatorExprSyntax.self),
               let binOp = infix.operator.as(BinaryOperatorExprSyntax.self),
               binOp.operator.text == "&&" else { return nil }

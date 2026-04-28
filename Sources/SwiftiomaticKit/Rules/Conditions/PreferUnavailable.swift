@@ -16,20 +16,29 @@ final class PreferUnavailable: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sen
 
     override func visit(_ node: IfExprSyntax) -> ExprSyntax {
         let visited = super.visit(node)
-        guard let ifExpr = visited.as(IfExprSyntax.self),
-            ifExpr.body.statements.isEmpty,
+        guard let ifExpr = visited.as(IfExprSyntax.self) else { return visited }
+        return Self.transform(ifExpr, context: context)
+    }
+
+    static func transform(_ node: IfExprSyntax, context: Context) -> ExprSyntax {
+        let ifExpr = node
+        guard ifExpr.body.statements.isEmpty,
             let onlyCondition = ifExpr.conditions.firstAndOnly,
             case .availability(let availability) = onlyCondition.condition,
             let elseBody = ifExpr.elseBody,
             case .codeBlock(let elseBlock) = elseBody,
             !elseAvailabilityCheckChainInvolved(elseBlock)
-        else { return visited }
+        else { return ExprSyntax(ifExpr) }
 
         let isAvailable = availability.availabilityKeyword.tokenKind == .poundAvailable
         let isUnavailable = availability.availabilityKeyword.tokenKind == .poundUnavailable
-        guard isAvailable || isUnavailable else { return visited }
+        guard isAvailable || isUnavailable else { return ExprSyntax(ifExpr) }
 
-        diagnose(.preferUnavailable(currentlyAvailable: isAvailable), on: availability)
+        Self.diagnose(
+            .preferUnavailable(currentlyAvailable: isAvailable),
+            on: availability,
+            context: context
+        )
 
         // Build the inverted availability keyword.
         let newKeyword: TokenSyntax =
@@ -68,7 +77,7 @@ final class PreferUnavailable: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sen
 
     /// True when the else body itself contains another `if`-with-availability — we don't rewrite
     /// chained availability ladders.
-    private func elseAvailabilityCheckChainInvolved(_ elseBlock: CodeBlockSyntax) -> Bool {
+    private static func elseAvailabilityCheckChainInvolved(_ elseBlock: CodeBlockSyntax) -> Bool {
         // The classic pattern is `else if #available(...)`; in syntax that becomes a code block
         // with a single ExpressionStmt wrapping an IfExpr. We're conservative: any `if` with any
         // availability condition somewhere in its conditions disqualifies the rewrite.
@@ -83,7 +92,7 @@ final class PreferUnavailable: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sen
         return false
     }
 
-    private func hasAvailabilityCondition(_ ifExpr: IfExprSyntax) -> Bool {
+    private static func hasAvailabilityCondition(_ ifExpr: IfExprSyntax) -> Bool {
         for condition in ifExpr.conditions {
             if case .availability = condition.condition { return true }
         }

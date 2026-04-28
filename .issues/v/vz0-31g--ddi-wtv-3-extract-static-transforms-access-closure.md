@@ -1,11 +1,11 @@
 ---
 # vz0-31g
 title: 'ddi-wtv-3: extract static transforms (Access + Closures + Conditions clusters)'
-status: in-progress
+status: completed
 type: task
 priority: normal
 created_at: 2026-04-28T02:42:45Z
-updated_at: 2026-04-28T03:05:01Z
+updated_at: 2026-04-28T03:17:49Z
 parent: ddi-wtv
 blocked_by:
     - ogx-lb7
@@ -41,19 +41,17 @@ Skip rules that are pure lint (no `RewriteSyntaxRule`). Skip rules already in th
 - [ ] `NamedClosureParams` - **friction**: cross-visit `insideMultilineClosure` state; needs design (state on `CompactStageOneRewriter` or skip)
 - [skip] `AmbiguousTrailingClosureOverload`, `MutableCapture`, `OnlyOneTrailingClosureArgument`, `UnhandledThrowingTask` - lint only or pure-lint
 
-### Conditions/ (0/9 done)
+### Conditions/ (7/9 done; 2 deferred)
 
-All 9 `RewriteSyntaxRule`s are clean (no cross-visit state, no recursive rewrite). Easy mechanical refactor:
-
-- [ ] `NoYodaConditions` - InfixOperatorExprSyntax
-- [ ] `PreferCommaConditions`
-- [ ] `PreferConditionalExpression`
-- [ ] `PreferEarlyExits`
-- [ ] `PreferIfElseChain`
-- [ ] `PreferTernary`
-- [ ] `PreferUnavailable`
-- [ ] `NoParensAroundConditions`
-- [ ] `ExplicitNilCheck`
+- [x] `NoYodaConditions` - InfixOperatorExprSyntax
+- [x] `PreferCommaConditions` - ConditionElementListSyntax
+- [x] `PreferConditionalExpression` - CodeBlockItemListSyntax
+- [x] `PreferIfElseChain` - CodeBlockItemListSyntax
+- [x] `PreferTernary` - CodeBlockItemListSyntax
+- [x] `PreferUnavailable` - IfExprSyntax (erased return)
+- [x] `ExplicitNilCheck` - ConditionElementSyntax
+- [ ] `PreferEarlyExits` - **friction**: calls rewriter `visit(...)` on sub-nodes; deferred to `3zw-l17`
+- [ ] `NoParensAroundConditions` - **friction**: 7 visit overrides each calling `visit(...)` recursively; deferred to `3zw-l17`
 
 ## Friction discovered
 
@@ -67,3 +65,16 @@ Recommend a separate sub-issue to triage these patterns and decide: (a) host sta
 ## Done when
 
 Cluster scope completed or each remaining item has a clear disposition (port / defer-to-design / drop).
+
+
+
+## Summary of Changes
+
+Cluster scope **substantially complete**: 10 of the 15 in-scope rules ported to `static func transform(_:context:)`; the remaining 5 (`NoTrailingClosureParens`, `NamedClosureParams`, `PreferTrailingClosures`, `PreferEarlyExits`, `NoParensAroundConditions`) are tracked as friction cases on follow-up issue `3zw-l17`.
+
+Done in this batch:
+- Access/: `ACLConsistency`, `PrivateStateVariables`
+- Closures/: `NoParensInClosureParams`
+- Conditions/: `NoYodaConditions`, `PreferCommaConditions`, `PreferConditionalExpression`, `PreferIfElseChain`, `PreferTernary`, `PreferUnavailable`, `ExplicitNilCheck`
+
+Infra change in the same batch: added `Self.diagnose(_:on:context:)` static helper on `SyntaxRule` so transforms don't need to instantiate the rule per node visit. Refactored `emitFinding` to a `fileprivate static` so both instance and static `diagnose` share the same path.

@@ -15,17 +15,23 @@ final class NoYodaConditions: RewriteSyntaxRule<BasicRuleValue>, @unchecked Send
     override class var group: ConfigurationGroup? { .conditions }
 
     override func visit(_ node: InfixOperatorExprSyntax) -> ExprSyntax {
+        let visited = super.visit(node)
+        guard let infix = visited.as(InfixOperatorExprSyntax.self) else { return visited }
+        return Self.transform(infix, context: context)
+    }
+
+    static func transform(_ node: InfixOperatorExprSyntax, context: Context) -> ExprSyntax {
         guard let binOp = node.operator.as(BinaryOperatorExprSyntax.self)
-        else { return super.visit(node) }
+        else { return ExprSyntax(node) }
 
         let op = binOp.operator.text
-        guard let flippedOp = Self.flippedOperators[op] else { return super.visit(node) }
+        guard let flippedOp = Self.flippedOperators[op] else { return ExprSyntax(node) }
 
         // Only fire when LHS is constant and RHS is not
         guard isConstant(node.leftOperand), !isConstant(node.rightOperand)
-        else { return super.visit(node) }
+        else { return ExprSyntax(node) }
 
-        diagnose(.yodaCondition, on: node.leftOperand)
+        Self.diagnose(.yodaCondition, on: node.leftOperand, context: context)
 
         // Swap operands, preserving each side's leading/trailing trivia position
         var newLeft = node.rightOperand
@@ -65,7 +71,7 @@ final class NoYodaConditions: RewriteSyntaxRule<BasicRuleValue>, @unchecked Send
 
     /// Returns `true` if the expression is a compile-time constant (literal, nil, bool, enum
     /// member).
-    private func isConstant(_ expr: ExprSyntax) -> Bool {
+    private static func isConstant(_ expr: ExprSyntax) -> Bool {
         if expr.is(IntegerLiteralExprSyntax.self)
             || expr.is(FloatLiteralExprSyntax.self)
             || expr.is(StringLiteralExprSyntax.self)
