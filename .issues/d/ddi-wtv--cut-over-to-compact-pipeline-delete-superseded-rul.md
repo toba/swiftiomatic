@@ -5,7 +5,7 @@ status: in-progress
 type: feature
 priority: high
 created_at: 2026-04-28T01:41:38Z
-updated_at: 2026-04-28T05:04:00Z
+updated_at: 2026-04-28T05:17:28Z
 parent: iv7-r5g
 blocked_by:
     - eti-yt2
@@ -28,7 +28,8 @@ sync:
   - Cluster 1 `vz0-31g`: 10/15 in scope ported.
   - Cluster 2 `5r3-peg`: ✅ all 31 clean ported (completed).
   - Cluster 3 `r0w-l4r`: ✅ 38 rules ported (completed). 2 "clean" rules reclassified as instance-state (`Testing/TestSuiteAccessControl`, `Wrap/WrapSingleLineBodies`) — left on legacy.
-- ❌ Final cutover steps not started: `g6t-gcm` (wire combined rewriter into RewriteCoordinator + 13 structural-pass ordering), `fkt-mgf` (golden-corpus diff + perf gate), `dil-cew` (delete legacy).
+- ✅ `g6t-gcm`: two-stage compact pipeline wired behind `DebugOptions.useCompactPipeline`. Parity test green on current 3-fixture golden corpus (byte-identical to legacy).
+- ❌ Remaining: `fkt-mgf` (expand corpus + perf gate), `dil-cew` (flip default + delete legacy).
 
 **Key files:**
 

@@ -21,6 +21,12 @@ package struct DebugOptions: OptionSet, Sendable {
     /// Dumps a verbose representation of the raw pretty-printer token stream.
     package static let dumpTokenStream = DebugOptions(rawValue: 1 << 1)
 
+    /// Routes the `compact` style through the new two-stage pipeline
+    /// (`CompactStageOneRewriter` + ordered structural passes) instead of the
+    /// legacy `RewritePipeline`. Until issue `fkt-mgf` validates parity on the
+    /// golden corpus, this remains opt-in.
+    package static let useCompactPipeline = DebugOptions(rawValue: 1 << 2)
+
     package let rawValue: Int
 
     package init(rawValue: Int) { self.rawValue = rawValue }
