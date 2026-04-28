@@ -5,7 +5,7 @@ status: in-progress
 type: feature
 priority: high
 created_at: 2026-04-28T01:41:38Z
-updated_at: 2026-04-28T15:42:14Z
+updated_at: 2026-04-28T17:51:57Z
 parent: iv7-r5g
 blocked_by:
     - eti-yt2
@@ -14,7 +14,7 @@ blocked_by:
 sync:
     github:
         issue_number: "480"
-        synced_at: "2026-04-28T16:43:49Z"
+        synced_at: "2026-04-28T17:53:15Z"
 ---
 
 ## Continuation Brief (for fresh sessions)
@@ -298,3 +298,168 @@ No incremental verification gate between Phase 1 (today) and Phase 4 (full merge
 - All 18 deferred rules ported to static transforms (Phase 1 complete via `7fp-ghy`).
 - 28 rules remain class-only (no static transform). Phase 4 ports them directly into the merged node-type functions, skipping the intermediate.
 - 13 structural passes stay as separate `SyntaxRewriter` subclasses.
+
+
+
+## Resume Brief (2026-04-28, end of session)
+
+### Status
+
+Phase 1 (`7fp-ghy`) complete. Phase 4 foundations landed for sub-issues `49k-dtg` (4a — SourceFile), `95z-bgr` (4b — Token), `np6-piu` (4c — 14 decl types), `zvf-rsq` (4d — 13 stmt types), `mn8-do3` (4e — 19 expr/type types). 48 node types now route through hand-written `rewrite<NodeType>(_:context:)` functions in `Sources/SwiftiomaticKit/Rewrites/{Files,Tokens,Decls,Stmts,Exprs}/`. Build clean; `CompactPipelineParityTests` green throughout.
+
+### Architecture as of now
+
+- **Generator hook**: `Sources/GeneratorKit/CompactStageOneRewriterGenerator.swift` has `private static let manuallyHandledNodeTypes: Set<String>` (currently 48 entries). For each, the generator emits a `visit` override that:
+  1. Fires `willEnter` hooks for any rule registered via `static func willEnter(_ <NodeType>, context:)`.
+  2. Calls `super.visit(node)` to recurse children.
+  3. Calls the hand-written `rewrite<NodeType>(_:context:)` free function on the post-traversal node.
+  4. Fires `didExit` hooks.
+- **Merged functions** forward to existing ported static transforms (`<RuleType>.transform(...)`) in alphabetical rule order. Unported rules have audit-only `_ = context.shouldFormat(<RuleType>.self, node: Syntax(result))` placeholders.
+- **willEnter/didExit ordering bug fixed mid-session**: file-level pre-scan state must populate BEFORE descendants are visited. Prior generator emitted `let node = super.visit(node); return rewrite<NodeType>(node, context:)` which fired willEnter inside the merged function (post-traversal). Generator now emits willEnter before super.visit. `rewriteSourceFile` was edited to remove its (then-duplicate) willEnter section.
+- **Filename collision risk**: Swift package can't have two `<Name>.swift` with the same basename (.o file conflict). `Layout/Tokens/Token.swift` already existed, so the Token merged file is `Rewrites/Tokens/TokenRewrites.swift`. All other merged files use the bare node-type name (`SourceFile.swift`, `ImportDecl.swift`, etc.) — verify no future collisions.
+
+### Sub-issue status
+
+| ID | Phase | Status | What's left |
+|---|---|---|---|
+| `7fp-ghy` | Phase 1 | completed | — |
+| `49k-dtg` | 4a | in-progress | Inline NoForceTry/NoForceUnwrap SourceFile pre-scan into merged function (currently no-op). Otherwise foundation done. |
+| `95z-bgr` | 4b | in-progress | NestedCallLayout/WrapMultilineFunctionChains/WrapMultilineStatementBraces left as audit-only at Token level — but their actual work is on structural nodes (handled in 4c/4d/4e foundations). Inline BlankLinesAroundMark and UppercaseAcronyms are done as fileprivate helpers. |
+| `np6-piu` | 4c | in-progress | All 14 decl types have merged functions. Audit-only entries for unported rules: `RedundantOverride`, `RedundantFinal`, `RedundantEscaping`, `PreferAnyObject`, `StrongOutlets`, `WrapMultilineStatementBraces` (10 decl types), `RedundantSwiftTestingSuite` (instance-state pre-scan), `NoForceTry`/`NoForceUnwrap` (instance-state). |
+| `zvf-rsq` | 4d | in-progress | All 13 stmt types have merged functions. Audit-only: `WrapMultilineStatementBraces` (most), `NoParensAroundConditions` (If/Guard/While/Repeat/Return/SwitchExpr/ConditionElement), `PreferEarlyExits` (CodeBlockItemList), `BlankLinesBefore/AfterControlFlow*`, `BlankLinesAfterSwitchCase`, `SwitchCaseIndentation`, `NoFallThroughOnlyCases`. |
+| `mn8-do3` | 4e | in-progress | All 19 expr/type types have merged functions. Audit-only: `NoForceUnwrap` (11 types), `NoForceTry`, `NoForceCast`, `NamedClosureParams`, `NoTrailingClosureParens`, `PreferTrailingClosures`, `NestedCallLayout`, `WrapMultilineFunctionChains`, `PreferShorthandTypeNames`, `PreferVoidReturn`, `NoVoidReturnOnFunctionSignature`. |
+| `2sn-0al` | 4f | ready (blocked by 4a-4e) | Test harness retarget — see below. |
+| `dal-dmw` | 4g | ready (blocked by 4f) | Delete legacy — see below. |
+
+### Remaining work, ordered
+
+#### Step 1: Inline unported rule logic into merged functions
+
+The audit-only `shouldFormat` calls in the merged functions are placeholders. The actual rewrite logic for these 28 rules still lives only in their `RewriteSyntaxRule` subclass `override func visit(_:)` bodies. The compact pipeline doesn't run them.
+
+**Highest priority** (most pervasive):
+- `WrapMultilineStatementBraces` — touches 10 decl types + most stmt types. Requires handling `else if` chains, brace placement, multi-line condition detection. Look at the existing `override func visit(_:)` bodies in `Sources/SwiftiomaticKit/Rules/Wrap/WrapMultilineStatementBraces.swift` for the logic.
+- `NoForceUnwrap` — touches 11 node types (ForceUnwrapExpr, plus pre-scan via SourceFile/ImportDecl/Class/Function/Closure/StringLiteral/AsExpr/MemberAccess/FunctionCall/SubscriptCall). The instance `testContext: TestContextTracker` needs migration to `Context.ruleState`. Replace `testContext.visitImport(node)` etc. with state-cached equivalents.
+- `NoForceTry` — same pattern as NoForceUnwrap (TestContextTracker instance state).
+- `NoForceCast` — single node type (`AsExpr`), simpler.
+
+**Lower priority** (single-node-type rules):
+- `RedundantOverride`, `RedundantFinal`, `RedundantEscaping` — FunctionDecl/ClassDecl/etc.
+- `PreferAnyObject` (ProtocolDecl), `PreferShorthandTypeNames` (IdentifierType + others), `PreferVoidReturn`, `NoVoidReturnOnFunctionSignature`.
+- `RedundantSwiftTestingSuite` — uses instance `importsTesting` flag set during `visit(_ ImportDeclSyntax)`. Migrate to `Context.ruleState`.
+- `StrongOutlets` (VariableDecl), `UppercaseAcronyms` (Token — already inlined as `applyUppercaseAcronyms` in 4b), `EnsureLineBreakAtEOF` (SourceFile — already inlined).
+- `BlankLinesAroundMark` (Token — already inlined). `BlankLinesBeforeControlFlowBlocks`, `BlankLinesAfterSwitchCase`, `BlankLinesAfterGuardStatements` — multi-stmt-type logic.
+- `NoParensAroundConditions`, `PreferEarlyExits`, `NoFallThroughOnlyCases`, `SwitchCaseIndentation`.
+- `NamedClosureParams`, `NoTrailingClosureParens`, `PreferTrailingClosures`, `NestedCallLayout`, `WrapMultilineFunctionChains`.
+
+**Pattern for each rule**:
+1. Read the rule's `override func visit(_:)` body.
+2. Translate to a `fileprivate static func applyXxx(_ node:, context:) -> NodeType` inside the corresponding merged file (or as a free function in same file).
+3. Replace the audit-only `shouldFormat` call with a real gated invocation:
+```swift
+if context.shouldFormat(<Rule>.self, node: Syntax(result)) {
+    result = applyXxx(result, context: context)
+}
+```
+4. For instance state (e.g. `TestContextTracker`, `importsTesting`), use `Context.ruleState(for: <Rule>.self) { ... }` — see `Sources/SwiftiomaticKit/Rules/Testing/PreferSwiftTesting.swift` for the established pattern.
+5. Findings: emit via `<Rule>.diagnose(.message, on: node, context: context)` if the rule has a static helper, or duplicate the message into the merged file as `fileprivate extension Finding.Message`.
+
+#### Step 2: 4f — test harness retarget (`2sn-0al`)
+
+Once unported rules are inlined and the compact pipeline matches legacy behavior:
+
+1. Edit `Tests/SwiftiomaticTests/Rules/LintOrFormatRuleTestCase.swift`:
+   - In the `assertFormatting` pipeline path (around line 136), add `pipeline.debugOptions.insert(.useCompactPipeline)`.
+   - This was attempted earlier and surfaced 20 failures because 28 unported rules weren't in compact pipeline. After Step 1, those should pass.
+
+2. Run full suite: `xc-swift swift_package_test`. Expect 3022+ passes.
+
+3. Per-rule isolation issue: a few existing tests rely on multi-rule combinations. They may need `additionalRules: [String]` parameter on the helper. Address case-by-case as failures surface.
+
+4. Run perf test: `Tests/SwiftiomaticPerformanceTests/RewriteCoordinatorPerformanceTests.swift::testTwoStageCompactPipelineOnLayoutCoordinator`. Target < 200 ms (legacy was 4.7s).
+
+#### Step 3: 4g — delete legacy (`dal-dmw`)
+
+1. `RewriteCoordinator.runCompactPipeline`: drop the `useCompactPipeline` debug-option branch; call `runTwoStageCompactPipeline` unconditionally.
+2. Delete `DebugOptions.useCompactPipeline`.
+3. Delete `Sources/SwiftiomaticKit/Syntax/Rewriter/RewritePipeline.swift`.
+4. Delete `RewriteSyntaxRule` from `Sources/SwiftiomaticKit/Syntax/SyntaxRule.swift` (keep `SyntaxLintRule`).
+5. Delete `Tests/SwiftiomaticTests/Sanity/CompactPipelineParityTests.swift`.
+6. Remove the rewrite section of `Sources/SwiftiomaticKit/Generated/Pipelines+Generated.swift`.
+7. Update `Sources/GeneratorKit/RuleCollector.swift` — drop legacy rewrite-rule detection; keep lint-rule discovery and `transform`/`willEnter`/`didExit` collection.
+8. Delete the 122 rewrite rule class shells. For dual lint+rewrite rules, keep the lint half.
+9. Remove the `static func transform` from rules whose logic is now inlined in merged functions (else they're duplicated).
+10. Verify: full suite green, perf < 200 ms, `sm format Sources/` empty diff.
+
+### Reference materials
+
+- **Pattern reference for new merged functions**: `Sources/SwiftiomaticKit/Rewrites/Decls/ImportDecl.swift` (smallest), `Sources/SwiftiomaticKit/Rewrites/Files/SourceFile.swift` (largest). Both use `context.shouldFormat(<Rule>.self, node:)` and `<Rule>.transform(result, parent: parent, context: context).as(<NodeType>Syntax.self)` patterns.
+- **Pattern reference for `Context.ruleState`**: `Sources/SwiftiomaticKit/Rules/Testing/PreferSwiftTesting.swift` (file-level state + scope stacks), `Sources/SwiftiomaticKit/Rules/Idioms/LeadingDotOperators.swift` (token-level transient state).
+- **Generator details**: `Sources/GeneratorKit/CompactStageOneRewriterGenerator.swift` lines 102-154 contain the manually-handled-type emission. The non-handled path (line 156+) emits the per-rule chain.
+- **`Context.shouldFormat` API**: defined on Context — checks rule mask + ignore directives. Pass the rule type as `<Rule>.self`. Equivalent to "is this rule enabled at this node?".
+- **Generated dispatch reference**: `.build/plugins/outputs/swiftiomatic/SwiftiomaticKit/destination/GenerateCode/CompactStageOneRewriter+Generated.swift` — inspect to see exactly which rules dispatch on each node type and in what order.
+
+### Verification commands
+
+After every chunk of inlining work:
+```sh
+xc-swift swift_diagnostics --no-include-lint
+xc-swift swift_package_test --filter CompactPipelineParityTests
+```
+
+Once all unported rules are inlined, also:
+```sh
+xc-swift swift_package_test
+```
+(Full suite — check for regressions in legacy-pipeline tests; compact-pipeline tests should also pass once `useCompactPipeline` is set in test harness.)
+
+### Open questions for next session
+
+1. `WrapSingleLineBodies` divergence flagged in Phase 1 (lacks instance `currentIndent`/`chainBaseIndent`). Phase 1 added a static transform, but it's missing nested-conditional indent state. When this rule's logic is merged into the relevant `Rewrites/Stmts/` files, that state needs to be threaded through function args or kept in a local `var` declared at the top of `rewriteIfExpr`/`rewriteGuardStmt`/etc.
+2. `WrapMultilineStatementBraces` is the heaviest remaining unported rule (10+ node types). May warrant its own sub-issue (`Phase 4c.1` style) so the inlining can be reviewed in isolation.
+3. The 122 rule files still have their `RewriteSyntaxRule` subclass shells. Some have `static func transform` (Phase 1 ports) AND legacy `override func visit(_:)`. After Step 3 (4g), both go. Until then, both run in their respective paths — fine.
+
+
+
+## Progress (2026-04-28, session continuation)
+
+- Inlined `NoForceCast` (lint-only diagnostic on `as!`) into `Sources/SwiftiomaticKit/Rewrites/Exprs/AsExpr.swift`. Pattern: gate via `context.shouldFormat(NoForceCast.self, node:)`, emit through `NoForceCast.diagnose(_:on:context:)`, message extension `fileprivate` in the merged file. Build clean (`xc-swift swift_diagnostics`).
+- Per-node removal rules (`RedundantOverride`, `RedundantFinal`) don't fit the merged-function shape — `rewriteFunctionDecl` returns `FunctionDeclSyntax` so it can't yield an empty `DeclSyntax` to splice out the decl. Removal needs to migrate to the parent-list level (`MemberBlockItemList`, `CodeBlockItemList`) — flag for next session.
+- `NoForceUnwrap`/`NoForceTry` require migrating instance `TestContextTracker`/`insideTestFunction`/`addedTryExpression` flags to `Context.ruleState` across SourceFile/ImportDecl/Class/Function/Closure/StringLiteral/AsExpr/MemberAccess/FunctionCall/SubscriptCall/ForceUnwrap. Significant — own sub-issue or batch.
+
+
+
+### Additional inlines (same session)
+
+- `PreferAnyObject` → `Rewrites/Decls/ProtocolDecl.swift` (`applyPreferAnyObject`).
+- `StrongOutlets` → `Rewrites/Decls/VariableDecl.swift` (`applyStrongOutlets`).
+- `NoVoidReturnOnFunctionSignature` → `Rewrites/Exprs/FunctionSignature.swift` (`applyNoVoidReturnOnFunctionSignature`).
+
+All three follow the established pattern: `if context.shouldFormat(<Rule>.self, node:) { result = apply<Rule>(result, context:) }`, with the helper as a fileprivate function in the same file and the `Finding.Message` extension scoped fileprivate to avoid clashes with the legacy rule file's identical extension. Build clean after each.
+
+
+
+### More inlines (same session)
+
+- `NoTrailingClosureParens` → `Rewrites/Exprs/FunctionCallExpr.swift`. Dropped the rule's manual `rewrite(...)` re-recursion calls — children are already visited by the generator's `super.visit` before the merged function runs.
+- `BlankLinesAfterGuardStatements` → `Rewrites/Stmts/CodeBlock.swift`.
+- `BlankLinesAfterSwitchCase` → `Rewrites/Stmts/SwitchExpr.swift`.
+
+Session total: 7 single-node rules now run through the compact pipeline (`NoForceCast`, `PreferAnyObject`, `StrongOutlets`, `NoVoidReturnOnFunctionSignature`, `NoTrailingClosureParens`, `BlankLinesAfterGuardStatements`, `BlankLinesAfterSwitchCase`). Build clean, warning count steady (~27).
+
+
+
+### Even more inlines (same session)
+
+- `NoFallThroughOnlyCases` → `Rewrites/Stmts/SwitchCaseList.swift`. Dropped re-recursion via legacy `visit(...)` calls.
+- `RedundantFinal` → `Rewrites/Decls/ClassDecl.swift` (`applyRedundantFinal` + `removeFinalFromMember`). Earlier note that this rule needed parent-list deletion was wrong — it operates on a `ClassDecl` and rewrites its inner `MemberBlockItemList`, returning a `ClassDecl`, which fits the merged-function shape cleanly.
+
+Session total: 9 single-/inner-node rules now route through compact pipeline (added `NoFallThroughOnlyCases`, `RedundantFinal`).
+
+### Confirmed not-yet-tractable
+
+- `RedundantOverride` — the rule replaces the entire `FunctionDecl` with an empty `DeclSyntax` to delete it. `rewriteFunctionDecl` returns `FunctionDeclSyntax`, so deletion has to happen at the parent `MemberBlockItemList` / `CodeBlockItemList` level. Defer until a parent-list pass or a different merged shape is in place.
+- `RedundantEscaping` — hybrid `SyntaxVisitor` with state across multiple node types and `visitPost` hooks. Needs scope hooks ported to `Context.ruleState` (similar to RedundantSelf pattern).
+- `PreferShorthandTypeNames` — ~640 lines, multi-node. Better to add a static `transform` to the existing class than to inline.
+- `NoParensAroundConditions` — touches 8 stmt/expr node types. Needs a shared helpers file in `Rewrites/Shared/` to avoid duplication.
+- `BlankLinesBeforeControlFlowBlocks` — touches both `CodeBlock` and `SwitchCase`; needs shared helpers.

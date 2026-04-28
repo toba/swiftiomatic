@@ -90,18 +90,64 @@ func rewriteFunctionCallExpr(
         }
     }
 
-    // Unported rules touching FunctionCallExprSyntax — tracked for sub-issue
-    // 4f. Audit-only `shouldFormat` calls preserve rule-mask gating:
+    // NoTrailingClosureParens — strips empty parens before a trailing closure
+    // when the call has no arguments. Inlined from
+    // `Sources/SwiftiomaticKit/Rules/Closures/NoTrailingClosureParens.swift`.
+    if context.shouldFormat(NoTrailingClosureParens.self, node: Syntax(result)) {
+        result = applyNoTrailingClosureParens(result, context: context)
+    }
+
+    // Unported rules — tracked for sub-issue 4f. Audit-only:
     //   - NoForceUnwrap (file-level pre-scan, instance state)
-    //   - NoTrailingClosureParens (no static transform)
     //   - PreferTrailingClosures (no static transform)
     //   - NestedCallLayout (no static transform)
     //   - WrapMultilineFunctionChains (no static transform)
     _ = context.shouldFormat(NoForceUnwrap.self, node: Syntax(result))
-    _ = context.shouldFormat(NoTrailingClosureParens.self, node: Syntax(result))
     _ = context.shouldFormat(PreferTrailingClosures.self, node: Syntax(result))
     _ = context.shouldFormat(NestedCallLayout.self, node: Syntax(result))
     _ = context.shouldFormat(WrapMultilineFunctionChains.self, node: Syntax(result))
 
     return result
+}
+
+private func applyNoTrailingClosureParens(
+    _ node: FunctionCallExprSyntax,
+    context: Context
+) -> FunctionCallExprSyntax {
+    guard node.arguments.isEmpty,
+          let trailingClosure = node.trailingClosure,
+          let leftParen = node.leftParen,
+          let rightParen = node.rightParen,
+          !leftParen.trailingTrivia.hasAnyComments,
+          !rightParen.leadingTrivia.hasAnyComments,
+          let name = node.calledExpression.lastToken(viewMode: .sourceAccurate),
+          // Keep parens in curried calls so the trailing closure doesn't
+          // associate with the inner call.
+          !node.calledExpression.is(FunctionCallExprSyntax.self),
+          !node.calledExpression.is(SubscriptCallExprSyntax.self)
+    else {
+        return node
+    }
+    _ = trailingClosure  // referenced for the early-out guard
+
+    NoTrailingClosureParens.diagnose(
+        .removeEmptyTrailingParentheses(name: "\(name.trimmedDescription)"),
+        on: leftParen,
+        context: context
+    )
+
+    var rewrittenCalledExpr = node.calledExpression
+    rewrittenCalledExpr.trailingTrivia = [.spaces(1)]
+
+    var result = node
+    result.leftParen = nil
+    result.rightParen = nil
+    result.calledExpression = rewrittenCalledExpr
+    return result
+}
+
+extension Finding.Message {
+    fileprivate static func removeEmptyTrailingParentheses(name: String) -> Finding.Message {
+        "remove the empty parentheses following '\(name)'"
+    }
 }

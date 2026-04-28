@@ -119,16 +119,110 @@ func rewriteClassDecl(
         }
     }
 
-    // Unported rules touching ClassDeclSyntax — tracked for sub-issue 4f:
-    //   - RedundantFinal (no static transform)
+    // RedundantFinal — strips redundant `final` from members of a `final`
+    // class. Inlined from
+    // `Sources/SwiftiomaticKit/Rules/Redundancies/RedundantFinal.swift`.
+    if context.shouldFormat(RedundantFinal.self, node: Syntax(result)) {
+        result = applyRedundantFinal(result, context: context)
+    }
+
+    // Unported rules — tracked for sub-issue 4f. Audit-only:
     //   - RedundantSwiftTestingSuite (instance state)
     //   - NoForceTry / NoForceUnwrap (file-level pre-scan, instance state)
     //   - WrapMultilineStatementBraces (no static transform)
-    _ = context.shouldFormat(RedundantFinal.self, node: Syntax(result))
     _ = context.shouldFormat(RedundantSwiftTestingSuite.self, node: Syntax(result))
     _ = context.shouldFormat(NoForceTry.self, node: Syntax(result))
     _ = context.shouldFormat(NoForceUnwrap.self, node: Syntax(result))
     _ = context.shouldFormat(WrapMultilineStatementBraces.self, node: Syntax(result))
 
     return result
+}
+
+private func applyRedundantFinal(
+    _ node: ClassDeclSyntax,
+    context: Context
+) -> ClassDeclSyntax {
+    guard node.modifiers.contains(anyOf: [.final]) else { return node }
+
+    var result = node
+    result.memberBlock.members = MemberBlockItemListSyntax(
+        result.memberBlock.members.map { member in
+            guard let cleaned = removeFinalFromMember(member.decl, context: context) else {
+                return member
+            }
+            var item = member
+            item.decl = cleaned
+            return item
+        }
+    )
+    return result
+}
+
+private func removeFinalFromMember(_ decl: DeclSyntax, context: Context) -> DeclSyntax? {
+    if let funcDecl = decl.as(FunctionDeclSyntax.self),
+       funcDecl.modifiers.contains(anyOf: [.final])
+    {
+        RedundantFinal.diagnose(
+            .removeFinal,
+            on: funcDecl.modifiers.first { $0.name.tokenKind == .keyword(.final) },
+            context: context
+        )
+        return DeclSyntax(funcDecl.removingModifiers([.final], keyword: \.funcKeyword))
+    }
+    if let varDecl = decl.as(VariableDeclSyntax.self),
+       varDecl.modifiers.contains(anyOf: [.final])
+    {
+        RedundantFinal.diagnose(
+            .removeFinal,
+            on: varDecl.modifiers.first { $0.name.tokenKind == .keyword(.final) },
+            context: context
+        )
+        return DeclSyntax(varDecl.removingModifiers([.final], keyword: \.bindingSpecifier))
+    }
+    if let subscriptDecl = decl.as(SubscriptDeclSyntax.self),
+       subscriptDecl.modifiers.contains(anyOf: [.final])
+    {
+        RedundantFinal.diagnose(
+            .removeFinal,
+            on: subscriptDecl.modifiers.first { $0.name.tokenKind == .keyword(.final) },
+            context: context
+        )
+        return DeclSyntax(subscriptDecl.removingModifiers([.final], keyword: \.subscriptKeyword))
+    }
+    if let classDecl = decl.as(ClassDeclSyntax.self),
+       classDecl.modifiers.contains(anyOf: [.final])
+    {
+        RedundantFinal.diagnose(
+            .removeFinal,
+            on: classDecl.modifiers.first { $0.name.tokenKind == .keyword(.final) },
+            context: context
+        )
+        return DeclSyntax(classDecl.removingModifiers([.final], keyword: \.classKeyword))
+    }
+    if let initDecl = decl.as(InitializerDeclSyntax.self),
+       initDecl.modifiers.contains(anyOf: [.final])
+    {
+        RedundantFinal.diagnose(
+            .removeFinal,
+            on: initDecl.modifiers.first { $0.name.tokenKind == .keyword(.final) },
+            context: context
+        )
+        return DeclSyntax(initDecl.removingModifiers([.final], keyword: \.initKeyword))
+    }
+    if let typeAliasDecl = decl.as(TypeAliasDeclSyntax.self),
+       typeAliasDecl.modifiers.contains(anyOf: [.final])
+    {
+        RedundantFinal.diagnose(
+            .removeFinal,
+            on: typeAliasDecl.modifiers.first { $0.name.tokenKind == .keyword(.final) },
+            context: context
+        )
+        return DeclSyntax(typeAliasDecl.removingModifiers([.final], keyword: \.typealiasKeyword))
+    }
+    return nil
+}
+
+extension Finding.Message {
+    fileprivate static let removeFinal: Finding.Message =
+        "remove 'final'; members of a final class are implicitly final"
 }

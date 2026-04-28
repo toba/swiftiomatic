@@ -19,10 +19,50 @@ func rewriteFunctionSignature(
     // No ported rules currently register `static transform` for
     // FunctionSignatureSyntax.
 
-    // NoVoidReturnOnFunctionSignature — unported (legacy `SyntaxFormatRule`
-    // visit override). Audit-only `shouldFormat` call preserves rule-mask
-    // gating; deferred to 4f.
-    _ = context.shouldFormat(NoVoidReturnOnFunctionSignature.self, node: Syntax(result))
+    // NoVoidReturnOnFunctionSignature — strips an explicit `-> Void` / `-> ()`
+    // return clause. Inlined from
+    // `Sources/SwiftiomaticKit/Rules/Types/NoVoidReturnOnFunctionSignature.swift`.
+    if context.shouldFormat(NoVoidReturnOnFunctionSignature.self, node: Syntax(result)) {
+        result = applyNoVoidReturnOnFunctionSignature(result, context: context)
+    }
 
     return result
+}
+
+private func applyNoVoidReturnOnFunctionSignature(
+    _ node: FunctionSignatureSyntax,
+    context: Context
+) -> FunctionSignatureSyntax {
+    guard let returnType = node.returnClause?.type else { return node }
+
+    if let identifierType = returnType.as(IdentifierTypeSyntax.self),
+       identifierType.name.text == "Void",
+       identifierType.genericArgumentClause?.arguments.isEmpty ?? true
+    {
+        NoVoidReturnOnFunctionSignature.diagnose(
+            .removeRedundantReturn("Void"),
+            on: identifierType,
+            context: context
+        )
+        var result = node
+        result.returnClause = nil
+        return result
+    }
+    if let tupleType = returnType.as(TupleTypeSyntax.self), tupleType.elements.isEmpty {
+        NoVoidReturnOnFunctionSignature.diagnose(
+            .removeRedundantReturn("()"),
+            on: tupleType,
+            context: context
+        )
+        var result = node
+        result.returnClause = nil
+        return result
+    }
+    return node
+}
+
+extension Finding.Message {
+    fileprivate static func removeRedundantReturn(_ type: String) -> Finding.Message {
+        "remove the explicit return type '\(type)' from this function"
+    }
 }

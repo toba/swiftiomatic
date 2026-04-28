@@ -46,6 +46,13 @@
 - Stub `roomy` style; reserve name only
 - Scaffold compact dispatch in `RewriteCoordinator`
 - Emit `CompactStageOneRewriter+Generated.swift`
+- Extract static transforms; Access + Closures + Conditions clusters ([#493](https://github.com/toba/swiftiomatic/issues/493))
+- Extract static transforms; Declarations + Generics + Hoist + Idioms + Literals ([#490](https://github.com/toba/swiftiomatic/issues/490))
+- Extract static transforms; Redundancies + Sort + Wrap ([#494](https://github.com/toba/swiftiomatic/issues/494))
+- Order and wire 13 structural passes for `compact` ([#488](https://github.com/toba/swiftiomatic/issues/488))
+- Convert deferred rules; complete the rule port ([#496](https://github.com/toba/swiftiomatic/issues/496))
+- Golden-corpus diff verification and perf gate ([#489](https://github.com/toba/swiftiomatic/issues/489))
+- Triage rules with cross-visit state and recursive rewriter calls ([#501](https://github.com/toba/swiftiomatic/issues/501))
 
 ## Week of Apr 19 – Apr 25, 2026
 
