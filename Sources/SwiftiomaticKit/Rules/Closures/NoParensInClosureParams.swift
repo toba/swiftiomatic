@@ -13,11 +13,14 @@ final class NoParensInClosureParams: RewriteSyntaxRule<BasicRuleValue>, @uncheck
     override class var group: ConfigurationGroup? { .closures }
 
     override func visit(_ node: ClosureSignatureSyntax) -> ClosureSignatureSyntax {
-        super.visit(Self.transform(node, context: context))
+        super.visit(
+            Self.transform(node, parent: Syntax(node).parent, context: context)
+        )
     }
 
     static func transform(
         _ node: ClosureSignatureSyntax,
+        parent: Syntax?,
         context: Context
     ) -> ClosureSignatureSyntax {
         guard let clause = node.parameterClause?.as(ClosureParameterClauseSyntax.self),

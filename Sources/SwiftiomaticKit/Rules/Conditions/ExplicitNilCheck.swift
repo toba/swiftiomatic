@@ -29,11 +29,12 @@ import SwiftSyntaxBuilder
 final class ExplicitNilCheck: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable {
     override class var group: ConfigurationGroup? { .conditions }
     override func visit(_ node: ConditionElementSyntax) -> ConditionElementSyntax {
-        Self.transform(node, context: context)
+        Self.transform(node, parent: Syntax(node).parent, context: context)
     }
 
     static func transform(
         _ node: ConditionElementSyntax,
+        parent: Syntax?,
         context: Context
     ) -> ConditionElementSyntax {
         switch node.condition {

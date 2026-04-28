@@ -1,11 +1,11 @@
 ---
 # 5r3-peg
 title: 'ddi-wtv-4: extract static transforms (Declarations + Generics + Hoist + Idioms + Literals)'
-status: ready
+status: in-progress
 type: task
 priority: normal
 created_at: 2026-04-28T02:42:45Z
-updated_at: 2026-04-28T02:42:45Z
+updated_at: 2026-04-28T03:36:04Z
 parent: ddi-wtv
 blocked_by:
     - ogx-lb7
@@ -19,14 +19,77 @@ Continuation of the mechanical refactor. Same pattern as ddi-wtv-3.
 
 ## Scope
 
-- `Sources/SwiftiomaticKit/Rules/Declarations/`
-- `Sources/SwiftiomaticKit/Rules/Generics/`
-- `Sources/SwiftiomaticKit/Rules/Hoist/`
-- `Sources/SwiftiomaticKit/Rules/Idioms/`
-- `Sources/SwiftiomaticKit/Rules/Literals/`
+- `Sources/SwiftiomaticKit/Rules/Declarations/` (8 RewriteSyntaxRule)
+- `Sources/SwiftiomaticKit/Rules/Generics/` (3)
+- `Sources/SwiftiomaticKit/Rules/Hoist/` (4)
+- `Sources/SwiftiomaticKit/Rules/Idioms/` (20)
+- `Sources/SwiftiomaticKit/Rules/Literals/` (3)
 
-Skip pure lint rules and structural-pass rules.
+Total: 38 RewriteSyntaxRule subclasses.
+
+## Friction audit
+
+Per-rule audit (parent-walking, instance state, recursive visit() — friction patterns blocked on `3zw-l17`):
+
+### Clean (26)
+
+- [x] `Idioms/PreferIsDisjoint` - MemberAccessExprSyntax
+- [x] `Idioms/PreferToggle` - InfixOperatorExprSyntax
+- [ ] `Declarations/EmptyExtensions`
+- [ ] `Declarations/InitCoderUnavailable`
+- [ ] `Declarations/ModifierOrder` (4 visits)
+- [ ] `Declarations/PreferMainAttribute`
+- [ ] `Declarations/PreferSingleLinePropertyGetter`
+- [ ] `Declarations/StaticStructShouldBeEnum`
+- [ ] `Generics/OpaqueGenericParameters` (3 visits, large)
+- [ ] `Generics/PreferAngleBracketExtensions`
+- [ ] `Generics/SimplifyGenericConstraints`
+- [ ] `Hoist/CaseLet` (3 visits)
+- [ ] `Hoist/IndirectEnum`
+- [ ] `Idioms/AvoidNoneName`
+- [ ] `Idioms/NoExplicitOwnership`
+- [ ] `Idioms/PreferAssertionFailure` (3 visits)
+- [ ] `Idioms/PreferCompoundAssignment`
+- [ ] `Idioms/PreferDotZero`
+- [ ] `Idioms/PreferFileID`
+- [ ] `Idioms/PreferIsEmpty`
+- [ ] `Idioms/PreferKeyPath`
+- [ ] `Idioms/PreferStaticOverClassFunc`
+- [ ] `Idioms/PreferWhereClausesInForLoops`
+- [ ] `Idioms/RequireFatalErrorMessage`
+- [ ] `Literals/EmptyCollectionLiteral`
+- [ ] `Literals/GroupNumericLiterals`
+
+### Parent-walking — defer to `3zw-l17` (7)
+
+These rules read `node.parent` (or walk the ancestor chain). The combined rewriter's default ordering (super.visit before transform) detaches the node from its parent before transform runs, breaking these rules silently.
+
+- [skip] `Declarations/ProtocolAccessorOrder`
+- [skip] `Hoist/HoistAwait`
+- [skip] `Hoist/HoistTry`
+- [skip] `Idioms/NoAssignmentInExpressions`
+- [skip] `Idioms/NoVoidTernary`
+- [skip] `Idioms/PreferCountWhere`
+- [skip] `Idioms/PreferExplicitFalse`
+
+### Cross-visit instance state — defer to `3zw-l17` (5)
+
+- [skip] `Declarations/OneDeclarationPerLine` (multiple nested rewriter classes with state)
+- [skip] `Idioms/LeadingDotOperators` (`pendingLeadingTrivia`)
+- [skip] `Idioms/PreferEnvironmentEntry` (collects keys across visits)
+- [skip] `Idioms/PreferSelfType` (`typeContextDepth`)
+- [skip] `Literals/URLMacro` (`madeReplacements`, `hasModuleImport`)
+
+## Architectural finding
+
+The static-transform model has three real friction patterns, listed above. **Parent-walking is the most pervasive**: 7 rules in this cluster alone, and the existing `Access/ACLConsistency` rule (already ported in `vz0-31g`) has the same issue but happens to work today because its legacy `visit` does pre-recursion (`super.visit(modified)` last). `3zw-l17` needs to decide:
+
+- **(d) Pre-recursion ordering**: emit the combined rewriter as `Self.transform(node, context: context)` first, then `super.visit(transformed)`. Preserves parent access for the *first* transform invocation per node, but successive transforms in a chain see modified-but-detached nodes.
+- **(e) Pass parent explicitly**: extend the `transform` signature to `transform(_ node: T, parent: Syntax?, context: Context)`. The combined rewriter captures `node.parent` before super.visit and forwards it.
+- **(f) Per-rule opt-in to pre-recursion**: rules that need parent declare it via a static flag; generator emits two visit-body shapes accordingly.
+
+(e) is the cleanest, but it changes the `transform` signature for every rule. Punt to triage.
 
 ## Done when
 
-All in-scope rules expose `static transform`; existing test suite green.
+26 clean rules ported, friction list logged, follow-ups created on `3zw-l17`.

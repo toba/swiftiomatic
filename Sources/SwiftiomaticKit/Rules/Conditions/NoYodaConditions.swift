@@ -15,12 +15,17 @@ final class NoYodaConditions: RewriteSyntaxRule<BasicRuleValue>, @unchecked Send
     override class var group: ConfigurationGroup? { .conditions }
 
     override func visit(_ node: InfixOperatorExprSyntax) -> ExprSyntax {
+        let parent = Syntax(node).parent
         let visited = super.visit(node)
         guard let infix = visited.as(InfixOperatorExprSyntax.self) else { return visited }
-        return Self.transform(infix, context: context)
+        return Self.transform(infix, parent: parent, context: context)
     }
 
-    static func transform(_ node: InfixOperatorExprSyntax, context: Context) -> ExprSyntax {
+    static func transform(
+        _ node: InfixOperatorExprSyntax,
+        parent: Syntax?,
+        context: Context
+    ) -> ExprSyntax {
         guard let binOp = node.operator.as(BinaryOperatorExprSyntax.self)
         else { return ExprSyntax(node) }
 

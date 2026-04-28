@@ -18,10 +18,14 @@ final class PrivateStateVariables: RewriteSyntaxRule<BasicRuleValue>, @unchecked
     private static let stateAttributes: Set<String> = ["State", "StateObject"]
 
     override func visit(_ node: VariableDeclSyntax) -> DeclSyntax {
-        Self.transform(node, context: context)
+        Self.transform(node, parent: Syntax(node).parent, context: context)
     }
 
-    static func transform(_ node: VariableDeclSyntax, context: Context) -> DeclSyntax {
+    static func transform(
+        _ node: VariableDeclSyntax,
+        parent: Syntax?,
+        context: Context
+    ) -> DeclSyntax {
         // Must have @State or @StateObject attribute
         guard hasStateAttribute(node) else { return DeclSyntax(node) }
 

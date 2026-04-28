@@ -14,18 +14,28 @@ final class PreferToggle: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable
     override class var defaultValue: BasicRuleValue { .init(rewrite: true, lint: .warn) }
 
     override func visit(_ node: InfixOperatorExprSyntax) -> ExprSyntax {
+        let parent = Syntax(node).parent
         let visited = super.visit(node)
-        guard let infix = visited.as(InfixOperatorExprSyntax.self),
-            infix.operator.is(AssignmentExprSyntax.self),
+        guard let concrete = visited.as(InfixOperatorExprSyntax.self) else { return visited }
+        return Self.transform(concrete, parent: parent, context: context)
+    }
+
+    static func transform(
+        _ node: InfixOperatorExprSyntax,
+        parent: Syntax?,
+        context: Context
+    ) -> ExprSyntax {
+        let infix = node
+        guard infix.operator.is(AssignmentExprSyntax.self),
             let prefix = infix.rightOperand.as(PrefixOperatorExprSyntax.self),
             prefix.operator.text == "!"
-        else { return visited }
+        else { return ExprSyntax(infix) }
 
         let lhsText = infix.leftOperand.trimmedDescription
         let rhsInner = prefix.expression.trimmedDescription
-        guard lhsText == rhsInner else { return visited }
+        guard lhsText == rhsInner else { return ExprSyntax(infix) }
 
-        diagnose(.preferToggle, on: infix.leftOperand)
+        Self.diagnose(.preferToggle, on: infix.leftOperand, context: context)
 
         // Build `<lhs>.toggle()` while preserving the surrounding trivia.
         var lhs = infix.leftOperand

@@ -15,43 +15,60 @@ final class NoVoidTernary: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendabl
     override class var defaultValue: BasicRuleValue { .init(rewrite: false, lint: .warn) }
 
     override func visit(_ node: TernaryExprSyntax) -> ExprSyntax {
-        if isStandaloneStatementTernary(node),
+        let parent = Syntax(node).parent
+        if let concrete = super.visit(node).as(TernaryExprSyntax.self) {
+            return Self.transform(concrete, parent: parent, context: context)
+        }
+        return super.visit(node)
+    }
+
+    static func transform(
+        _ node: TernaryExprSyntax,
+        parent: Syntax?,
+        context: Context
+    ) -> ExprSyntax {
+        if isStandaloneStatementTernary(node, parent: parent),
            node.thenExpression.is(FunctionCallExprSyntax.self),
            node.elseExpression.is(FunctionCallExprSyntax.self)
         {
-            diagnose(.noVoidTernary, on: node.questionMark)
+            Self.diagnose(.noVoidTernary, on: node.questionMark, context: context)
         }
-        return super.visit(node)
+        return ExprSyntax(node)
     }
 
     /// Returns true if this ternary is at the statement boundary (its enclosing CodeBlockItem has
     /// more than just this expression — i.e. it isn't an implicit return) — or, more simply, the
     /// ternary is the top expression of a CodeBlockItem that contains multiple statements (so it
     /// can't be an implicit return) or whose enclosing context doesn't allow implicit returns.
-    private func isStandaloneStatementTernary(_ node: TernaryExprSyntax) -> Bool {
-        // Walk up to find the enclosing CodeBlockItem.
-        var current = Syntax(node)
-        while let parent = current.parent {
-            if parent.is(CodeBlockItemSyntax.self) {
-                guard let blockItem = parent.as(CodeBlockItemSyntax.self) else { return false }
+    ///
+    /// Walks the chain starting from `parent` (the original-tree parent of `node` captured before
+    /// `super.visit` detached it).
+    private static func isStandaloneStatementTernary(
+        _ node: TernaryExprSyntax,
+        parent: Syntax?
+    ) -> Bool {
+        var current = parent
+        while let p = current {
+            if p.is(CodeBlockItemSyntax.self) {
+                guard let blockItem = p.as(CodeBlockItemSyntax.self) else { return false }
                 // The ternary must be the entire item expression (no assignment etc.).
                 guard let itemExpr = blockItem.item.as(ExprSyntax.self) else { return false }
                 guard isExprChainTopOf(node, expr: itemExpr) else { return false }
                 return !isImplicitReturn(blockItem)
             }
             // If we hit an assignment or other infix, this is part of an expression — bail.
-            if parent.is(InfixOperatorExprSyntax.self) { return false }
-            if parent.is(AssignmentExprSyntax.self) { return false }
-            if parent.is(LabeledExprSyntax.self) { return false }
-            if parent.is(FunctionCallExprSyntax.self) { return false }
-            current = parent
+            if p.is(InfixOperatorExprSyntax.self) { return false }
+            if p.is(AssignmentExprSyntax.self) { return false }
+            if p.is(LabeledExprSyntax.self) { return false }
+            if p.is(FunctionCallExprSyntax.self) { return false }
+            current = p.parent
         }
         return false
     }
 
     /// True if `inner` is reachable from `outer` purely through ExprSyntax wrapping (i.e. the
     /// ternary IS the entire expression of the CodeBlockItem).
-    private func isExprChainTopOf(_ inner: TernaryExprSyntax, expr: ExprSyntax) -> Bool {
+    private static func isExprChainTopOf(_ inner: TernaryExprSyntax, expr: ExprSyntax) -> Bool {
         if expr.id == ExprSyntax(inner).id {
             true
         } else if let tuple = expr.as(TupleExprSyntax.self),
@@ -66,7 +83,7 @@ final class NoVoidTernary: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendabl
 
     /// Determine if the enclosing CodeBlockItem is the only statement in a context that allows
     /// implicit return (so a ternary there is a value-producing expression, not a statement).
-    private func isImplicitReturn(_ item: CodeBlockItemSyntax) -> Bool {
+    private static func isImplicitReturn(_ item: CodeBlockItemSyntax) -> Bool {
         guard let listSyntax = item.parent?.as(CodeBlockItemListSyntax.self) else { return false }
         // Multiple statements -> definitely a statement, not implicit return.
         if listSyntax.children(viewMode: .sourceAccurate).count != 1 { return false }

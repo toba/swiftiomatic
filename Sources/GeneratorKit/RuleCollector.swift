@@ -178,7 +178,11 @@ package final class RuleCollector {
                     })
                 {
                     let params = Array(function.signature.parameterClause.parameters)
+                    // The compact-pipeline contract is `transform(_ node: T, parent: Syntax?,
+                    // context: Context)`. Reject 2-arg or differently-named shapes — those are
+                    // not yet ported (see issue `3zw-l17`).
                     if let firstType = params.first?.type.as(IdentifierTypeSyntax.self),
+                        params.contains(where: { $0.firstName.text == "parent" }),
                         params.contains(where: { $0.firstName.text == "context" })
                     {
                         transformedNodes.append(firstType.name.text)

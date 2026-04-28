@@ -16,11 +16,14 @@ final class ACLConsistency: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendab
     override class var defaultValue: BasicRuleValue { .init(rewrite: false, lint: .warn) }
 
     override func visit(_ node: DeclModifierSyntax) -> DeclModifierSyntax {
-        super.visit(Self.transform(node, context: context))
+        super.visit(
+            Self.transform(node, parent: Syntax(node).parent, context: context)
+        )
     }
 
     static func transform(
         _ node: DeclModifierSyntax,
+        parent: Syntax?,
         context: Context
     ) -> DeclModifierSyntax {
         guard node.isHigherACLThanParent else { return node }

@@ -30,11 +30,12 @@ final class PreferIfElseChain: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sen
     override class var group: ConfigurationGroup? { .conditions }
 
     override func visit(_ node: CodeBlockItemListSyntax) -> CodeBlockItemListSyntax {
-        Self.transform(super.visit(node), context: context)
+        Self.transform(super.visit(node), parent: Syntax(node).parent, context: context)
     }
 
     static func transform(
         _ visited: CodeBlockItemListSyntax,
+        parent: Syntax?,
         context: Context
     ) -> CodeBlockItemListSyntax {
         // The rewrite turns explicit `return` statements into bare-expression branches of an

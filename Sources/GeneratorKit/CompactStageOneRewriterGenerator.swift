@@ -62,9 +62,14 @@ package final class CompactStageOneRewriterGenerator: FileGenerator {
                 // which means a transform may produce a different concrete kind. Each rule still
                 // takes the concrete input kind, so we re-cast after every step and stop chaining
                 // once the kind changes (later transforms wouldn't apply anyway).
+                //
+                // Capture `Syntax(node).parent` *before* `super.visit` — the post-recursion node
+                // is detached from its parent, so transforms that need ancestor context (issue
+                // `3zw-l17` Pattern 1) get the original parent here.
                 result += """
 
                       override func visit(_ node: \(nodeType)) -> \(returnType) {
+                        let parent = Syntax(node).parent
                         var current: \(returnType) = super.visit(node)
 
                     """
@@ -73,7 +78,7 @@ package final class CompactStageOneRewriterGenerator: FileGenerator {
                             if let concrete = current.as(\(nodeType).self),
                               context.shouldFormat(\(ruleName).self, node: Syntax(concrete))
                             {
-                              current = \(ruleName).transform(concrete, context: context)
+                              current = \(ruleName).transform(concrete, parent: parent, context: context)
                             }
 
                         """
@@ -87,13 +92,14 @@ package final class CompactStageOneRewriterGenerator: FileGenerator {
                 result += """
 
                       override func visit(_ node: \(nodeType)) -> \(returnType) {
+                        let parent = Syntax(node).parent
                         var node = super.visit(node)
 
                     """
                 for ruleName in ruleNames.sorted() {
                     result += """
                             if context.shouldFormat(\(ruleName).self, node: Syntax(node)) {
-                              node = \(ruleName).transform(node, context: context)
+                              node = \(ruleName).transform(node, parent: parent, context: context)
                             }
 
                         """

@@ -13,14 +13,25 @@ final class PreferIsDisjoint: RewriteSyntaxRule<BasicRuleValue>, @unchecked Send
     override class var defaultValue: BasicRuleValue { .init(rewrite: false, lint: .warn) }
 
     override func visit(_ node: MemberAccessExprSyntax) -> ExprSyntax {
+        let parent = Syntax(node).parent
+        let visited = super.visit(node)
+        guard let concrete = visited.as(MemberAccessExprSyntax.self) else { return visited }
+        return Self.transform(concrete, parent: parent, context: context)
+    }
+
+    static func transform(
+        _ node: MemberAccessExprSyntax,
+        parent: Syntax?,
+        context: Context
+    ) -> ExprSyntax {
         if node.declName.baseName.text == "isEmpty",
             let baseCall = node.base?.as(FunctionCallExprSyntax.self),
             let baseCallee = baseCall.calledExpression.as(MemberAccessExprSyntax.self),
             baseCallee.declName.baseName.text == "intersection"
         {
-            diagnose(.preferIsDisjoint, on: baseCallee.declName.baseName)
+            Self.diagnose(.preferIsDisjoint, on: baseCallee.declName.baseName, context: context)
         }
-        return super.visit(node)
+        return ExprSyntax(node)
     }
 }
 

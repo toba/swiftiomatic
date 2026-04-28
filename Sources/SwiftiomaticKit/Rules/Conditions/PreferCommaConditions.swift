@@ -16,11 +16,12 @@ final class PreferCommaConditions: RewriteSyntaxRule<BasicRuleValue>, @unchecked
     override class var group: ConfigurationGroup? { .conditions }
 
     override func visit(_ node: ConditionElementListSyntax) -> ConditionElementListSyntax {
-        Self.transform(super.visit(node), context: context)
+        Self.transform(super.visit(node), parent: Syntax(node).parent, context: context)
     }
 
     static func transform(
         _ visited: ConditionElementListSyntax,
+        parent: Syntax?,
         context: Context
     ) -> ConditionElementListSyntax {
         // Check if any element has a top-level &&
