@@ -55,25 +55,55 @@ package final class CompactStageOneRewriterGenerator: FileGenerator {
 
         for (nodeType, ruleNames) in collector.nodeLocalTransforms.sorted(by: { $0.key < $1.key }) {
             let returnType = Self.returnType(for: nodeType)
-            result += """
+            let isErased = returnType != nodeType
 
-                  override func visit(_ node: \(nodeType)) -> \(returnType) {
-                    var node = super.visit(node)
-
-                """
-            for ruleName in ruleNames.sorted() {
+            if isErased {
+                // The override signature returns an erased type (DeclSyntax/ExprSyntax/StmtSyntax),
+                // which means a transform may produce a different concrete kind. Each rule still
+                // takes the concrete input kind, so we re-cast after every step and stop chaining
+                // once the kind changes (later transforms wouldn't apply anyway).
                 result += """
-                        if context.shouldFormat(\(ruleName).self, node: Syntax(node)) {
-                          node = \(ruleName).transform(node, context: context)
-                        }
+
+                      override func visit(_ node: \(nodeType)) -> \(returnType) {
+                        var current: \(returnType) = super.visit(node)
+
+                    """
+                for ruleName in ruleNames.sorted() {
+                    result += """
+                            if let concrete = current.as(\(nodeType).self),
+                              context.shouldFormat(\(ruleName).self, node: Syntax(concrete))
+                            {
+                              current = \(ruleName).transform(concrete, context: context)
+                            }
+
+                        """
+                }
+                result += """
+                        return current
+                      }
+
+                    """
+            } else {
+                result += """
+
+                      override func visit(_ node: \(nodeType)) -> \(returnType) {
+                        var node = super.visit(node)
+
+                    """
+                for ruleName in ruleNames.sorted() {
+                    result += """
+                            if context.shouldFormat(\(ruleName).self, node: Syntax(node)) {
+                              node = \(ruleName).transform(node, context: context)
+                            }
+
+                        """
+                }
+                result += """
+                        return node
+                      }
 
                     """
             }
-            result += """
-                    return \(Self.wrapForReturn(nodeType: nodeType, returnType: returnType))
-                  }
-
-                """
         }
 
         result += """
@@ -97,12 +127,6 @@ package final class CompactStageOneRewriterGenerator: FileGenerator {
         if Self.exprSyntaxKinds.contains(nodeType) { return "ExprSyntax" }
         if Self.stmtSyntaxKinds.contains(nodeType) { return "StmtSyntax" }
         return nodeType
-    }
-
-    /// When the override returns a protocol-erased type but the node remains the
-    /// concrete kind, wrap it in the constructor; otherwise return as-is.
-    private static func wrapForReturn(nodeType: String, returnType: String) -> String {
-        returnType == nodeType ? "node" : "\(returnType)(node)"
     }
 
     /// Concrete `*DeclSyntax` kinds whose `SyntaxRewriter.visit` returns `DeclSyntax`.

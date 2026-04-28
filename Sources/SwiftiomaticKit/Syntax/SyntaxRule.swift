@@ -35,12 +35,35 @@ extension SyntaxRule {
     ) {
         let severity = context.severity(of: type(of: self))
         guard severity.isActive else { return }
-        emitFinding(
+        Self.emitFinding(
             message,
             on: node,
             severity: severity,
             anchor: anchor,
-            notes: notes
+            notes: notes,
+            context: context
+        )
+    }
+
+    /// Static counterpart to `diagnose(_:on:anchor:notes:)`. Used by combined-pipeline
+    /// `static func transform(_:context:)` overloads (issue `iv7-r5g`/`ddi-wtv`) so they
+    /// don't need to instantiate the rule per node visit.
+    static func diagnose<SyntaxType: SyntaxProtocol>(
+        _ message: Finding.Message,
+        on node: SyntaxType?,
+        context: Context,
+        anchor: FindingAnchor = .start,
+        notes: [Finding.Note] = []
+    ) {
+        let severity = context.severity(of: Self.self)
+        guard severity.isActive else { return }
+        Self.emitFinding(
+            message,
+            on: node,
+            severity: severity,
+            anchor: anchor,
+            notes: notes,
+            context: context
         )
     }
 
@@ -59,21 +82,23 @@ extension SyntaxRule {
     ) {
         let configured = context.severity(of: type(of: self))
         guard configured.isActive, severity.isActive else { return }
-        emitFinding(
+        Self.emitFinding(
             message,
             on: node,
             severity: severity,
             anchor: anchor,
-            notes: notes
+            notes: notes,
+            context: context
         )
     }
 
-    private func emitFinding<SyntaxType: SyntaxProtocol>(
+    fileprivate static func emitFinding<SyntaxType: SyntaxProtocol>(
         _ message: Finding.Message,
         on node: SyntaxType?,
         severity: Lint,
         anchor: FindingAnchor,
-        notes: [Finding.Note]
+        notes: [Finding.Note],
+        context: Context
     ) {
 
         let syntaxLocation: SourceLocation?
@@ -97,7 +122,7 @@ extension SyntaxRule {
             syntaxLocation = nil
         }
 
-        let category = SyntaxFindingCategory(ruleType: type(of: self))
+        let category = SyntaxFindingCategory(ruleType: Self.self)
 
         context.findingEmitter.emit(
             message,

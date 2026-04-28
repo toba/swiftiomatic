@@ -13,12 +13,19 @@ final class NoParensInClosureParams: RewriteSyntaxRule<BasicRuleValue>, @uncheck
     override class var group: ConfigurationGroup? { .closures }
 
     override func visit(_ node: ClosureSignatureSyntax) -> ClosureSignatureSyntax {
+        super.visit(Self.transform(node, context: context))
+    }
+
+    static func transform(
+        _ node: ClosureSignatureSyntax,
+        context: Context
+    ) -> ClosureSignatureSyntax {
         guard let clause = node.parameterClause?.as(ClosureParameterClauseSyntax.self),
               !clause.parameters.isEmpty,
               clause.parameters.allSatisfy({ $0.type == nil && $0.attributes.isEmpty })
-        else { return super.visit(node) }
+        else { return node }
 
-        diagnose(.removeClosureParamParens, on: clause)
+        Self.diagnose(.removeClosureParamParens, on: clause, context: context)
 
         let count = clause.parameters.count
         let shorthand = clause.parameters.enumerated().map {
@@ -38,7 +45,7 @@ final class NoParensInClosureParams: RewriteSyntaxRule<BasicRuleValue>, @uncheck
 
         var result = node
         result.parameterClause = ClosureSignatureSyntax.ParameterClause(shorthandList)
-        return super.visit(result)
+        return result
     }
 }
 

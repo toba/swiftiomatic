@@ -18,6 +18,10 @@ final class PrivateStateVariables: RewriteSyntaxRule<BasicRuleValue>, @unchecked
     private static let stateAttributes: Set<String> = ["State", "StateObject"]
 
     override func visit(_ node: VariableDeclSyntax) -> DeclSyntax {
+        Self.transform(node, context: context)
+    }
+
+    static func transform(_ node: VariableDeclSyntax, context: Context) -> DeclSyntax {
         // Must have @State or @StateObject attribute
         guard hasStateAttribute(node) else { return DeclSyntax(node) }
 
@@ -27,7 +31,7 @@ final class PrivateStateVariables: RewriteSyntaxRule<BasicRuleValue>, @unchecked
         // Skip @Previewable properties
         guard !hasAttribute(named: "Previewable", on: node) else { return DeclSyntax(node) }
 
-        diagnose(.addPrivateToStateProperty, on: node.bindingSpecifier)
+        Self.diagnose(.addPrivateToStateProperty, on: node.bindingSpecifier, context: context)
 
         var result = node
         var privateModifier = DeclModifierSyntax(name: .keyword(.private, trailingTrivia: .space))
@@ -42,7 +46,7 @@ final class PrivateStateVariables: RewriteSyntaxRule<BasicRuleValue>, @unchecked
         return DeclSyntax(result)
     }
 
-    private func hasStateAttribute(_ node: VariableDeclSyntax) -> Bool {
+    private static func hasStateAttribute(_ node: VariableDeclSyntax) -> Bool {
         node.attributes.contains { element in
             guard let attr = element.as(AttributeSyntax.self),
                   let name = attr.attributeName.as(IdentifierTypeSyntax.self) else { return false }
@@ -50,7 +54,7 @@ final class PrivateStateVariables: RewriteSyntaxRule<BasicRuleValue>, @unchecked
         }
     }
 
-    private func hasAttribute(named name: String, on node: VariableDeclSyntax) -> Bool {
+    private static func hasAttribute(named name: String, on node: VariableDeclSyntax) -> Bool {
         node.attributes.contains { element in
             guard let attr = element.as(AttributeSyntax.self),
                   let attrName = attr.attributeName.as(IdentifierTypeSyntax.self)

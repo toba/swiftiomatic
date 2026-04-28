@@ -16,9 +16,16 @@ final class ACLConsistency: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendab
     override class var defaultValue: BasicRuleValue { .init(rewrite: false, lint: .warn) }
 
     override func visit(_ node: DeclModifierSyntax) -> DeclModifierSyntax {
-        guard node.isHigherACLThanParent else { return super.visit(node) }
+        super.visit(Self.transform(node, context: context))
+    }
 
-        diagnose(.lowerACLThanParent, on: node)
+    static func transform(
+        _ node: DeclModifierSyntax,
+        context: Context
+    ) -> DeclModifierSyntax {
+        guard node.isHigherACLThanParent else { return node }
+
+        Self.diagnose(.lowerACLThanParent, on: node, context: context)
 
         if node.name.tokenKind == .keyword(.open) {
             var replacement = node
@@ -27,7 +34,7 @@ final class ACLConsistency: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendab
                 leadingTrivia: node.leadingTrivia,
                 trailingTrivia: node.trailingTrivia
             )
-            return super.visit(replacement)
+            return replacement
         }
 
         // Replace the modifier with an empty identifier so the surrounding list can be flattened by
@@ -35,7 +42,7 @@ final class ACLConsistency: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendab
         var replacement = node
         replacement.name = .identifier("", leadingTrivia: node.leadingTrivia, trailingTrivia: [])
         replacement.detail = nil
-        return super.visit(replacement)
+        return replacement
     }
 }
 
