@@ -27,8 +27,17 @@ final class PreferAngleBracketExtensions: RewriteSyntaxRule<BasicRuleValue>, @un
   ]
 
   override func visit(_ node: ExtensionDeclSyntax) -> DeclSyntax {
-    let visited = super.visit(node).cast(ExtensionDeclSyntax.self)
+    let parent = Syntax(node).parent
+    let visited = super.visit(node)
+    guard let concrete = visited.as(ExtensionDeclSyntax.self) else { return visited }
+    return Self.transform(concrete, parent: parent, context: context)
+  }
 
+  static func transform(
+    _ visited: ExtensionDeclSyntax,
+    parent: Syntax?,
+    context: Context
+  ) -> DeclSyntax {
     // Must have a where clause
     guard let whereClause = visited.genericWhereClause else {
       return DeclSyntax(visited)
@@ -71,7 +80,11 @@ final class PreferAngleBracketExtensions: RewriteSyntaxRule<BasicRuleValue>, @un
       return DeclSyntax(visited)
     }
 
-    diagnose(.useAngleBracketSyntax(type: typeName), on: whereClause.whereKeyword)
+    Self.diagnose(
+      .useAngleBracketSyntax(type: typeName),
+      on: whereClause.whereKeyword,
+      context: context
+    )
 
     // Build generic argument clause: <Foo> or <String, Int>
     let genericArgs = requiredParams.enumerated().map { (i, param) -> GenericArgumentSyntax in

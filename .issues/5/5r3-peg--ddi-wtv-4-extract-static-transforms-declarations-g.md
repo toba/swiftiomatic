@@ -5,7 +5,7 @@ status: in-progress
 type: task
 priority: normal
 created_at: 2026-04-28T02:42:45Z
-updated_at: 2026-04-28T03:57:09Z
+updated_at: 2026-04-28T04:08:02Z
 parent: ddi-wtv
 blocked_by:
     - ogx-lb7
@@ -42,23 +42,23 @@ Per-rule audit (parent-walking, instance state, recursive visit() — friction p
 - [x] `Declarations/PreferSingleLinePropertyGetter` - PatternBindingSyntax
 - [x] `Declarations/StaticStructShouldBeEnum` - StructDeclSyntax + ClassDeclSyntax
 - [ ] `Generics/OpaqueGenericParameters` (3 visits, large)
-- [ ] `Generics/PreferAngleBracketExtensions`
+- [x] `Generics/PreferAngleBracketExtensions` - ExtensionDeclSyntax
 - [ ] `Generics/SimplifyGenericConstraints`
 - [ ] `Hoist/CaseLet` (3 visits)
 - [x] `Hoist/IndirectEnum` - EnumDeclSyntax
 - [x] `Idioms/AvoidNoneName` - EnumCaseElementSyntax + VariableDeclSyntax
 - [x] `Idioms/NoExplicitOwnership` - FunctionDeclSyntax + AttributedTypeSyntax
-- [ ] `Idioms/PreferAssertionFailure` (3 visits)
+- [ ] `Idioms/PreferAssertionFailure` (3 visits, deferred)
 - [x] `Idioms/PreferCompoundAssignment` - InfixOperatorExprSyntax
 - [x] `Idioms/PreferDotZero` - FunctionCallExprSyntax
 - [x] `Idioms/PreferFileID` - MacroExpansionExprSyntax
 - [x] `Idioms/PreferIsEmpty` - InfixOperatorExprSyntax
 - [x] `Idioms/PreferKeyPath` - FunctionCallExprSyntax
 - [x] `Idioms/PreferStaticOverClassFunc` - ClassDeclSyntax
-- [ ] `Idioms/PreferWhereClausesInForLoops`
+- [x] `Idioms/PreferWhereClausesInForLoops` - ForStmtSyntax
 - [x] `Idioms/RequireFatalErrorMessage` - FunctionCallExprSyntax
-- [ ] `Literals/EmptyCollectionLiteral`
-- [ ] `Literals/GroupNumericLiterals`
+- [x] `Literals/EmptyCollectionLiteral` - PatternBindingSyntax + FunctionParameterSyntax
+- [x] `Literals/GroupNumericLiterals` - IntegerLiteralExprSyntax
 
 ### Parent-walking — defer to `3zw-l17` (7)
 
@@ -69,7 +69,7 @@ These rules read `node.parent` (or walk the ancestor chain). The combined rewrit
 - [x] `Hoist/HoistTry` - FunctionCallExprSyntax (parent walk via 3-arg signature; AwaitExpr re-ordering kept on legacy)
 - [skip] `Idioms/NoAssignmentInExpressions`
 - [skip] `Idioms/NoVoidTernary`
-- [skip] `Idioms/PreferCountWhere`
+- [x] `Idioms/PreferCountWhere` - MemberAccessExprSyntax (uses captured parent)
 - [skip] `Idioms/PreferExplicitFalse`
 
 ### Cross-visit instance state — defer to `3zw-l17` (5)

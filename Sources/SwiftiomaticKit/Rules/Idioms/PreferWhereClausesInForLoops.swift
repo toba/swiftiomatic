@@ -26,31 +26,41 @@ final class PreferWhereClausesInForLoops: RewriteSyntaxRule<BasicRuleValue>, @un
     override static var defaultValue: BasicRuleValue { .init(rewrite: false, lint: .no) }
 
     override func visit(_ node: ForStmtSyntax) -> StmtSyntax {
+        let parent = Syntax(node).parent
+        let visited = super.visit(node)
+        guard let concrete = visited.as(ForStmtSyntax.self) else { return visited }
+        return Self.transform(concrete, parent: parent, context: context)
+    }
+
+    static func transform(
+        _ node: ForStmtSyntax,
+        parent: Syntax?,
+        context: Context
+    ) -> StmtSyntax {
         // Extract IfStmt node if it's the only node in the function's body.
         guard !node.body.statements.isEmpty else { return StmtSyntax(node) }
         let firstStatement = node.body.statements.first!
 
         // Ignore for-loops with a `where` clause already.
-        // TODO: Create an `&&` expression with both conditions?
         guard node.whereClause == nil else { return StmtSyntax(node) }
 
-        // Match:
-        //  - If the for loop has 1 statement, and it is an IfStmt, with a single
-        //    condition.
-        //  - If the for loop has 1 or more statement, and the first is a GuardStmt
-        //    with a single condition whose body is just `continue`.
         switch firstStatement.item {
             case let .stmt(statement):
                 return StmtSyntax(
-                    diagnoseAndUpdateForInStatement(firstStmt: statement, forInStmt: node))
+                    diagnoseAndUpdateForInStatement(
+                        firstStmt: statement,
+                        forInStmt: node,
+                        context: context
+                    ))
             default:
                 return StmtSyntax(node)
         }
     }
 
-    private func diagnoseAndUpdateForInStatement(
+    private static func diagnoseAndUpdateForInStatement(
         firstStmt: StmtSyntax,
-        forInStmt: ForStmtSyntax
+        forInStmt: ForStmtSyntax,
+        context: Context
     ) -> ForStmtSyntax {
         switch Syntax(firstStmt).as(SyntaxEnum.self) {
             case let .expressionStmt(exprStmt):
@@ -64,7 +74,7 @@ final class PreferWhereClausesInForLoops: RewriteSyntaxRule<BasicRuleValue>, @un
                         guard let condition = conditionElement.condition.as(ExprSyntax.self) else {
                             return forInStmt
                         }
-                        diagnose(.useWhereInsteadOfIf, on: ifExpr)
+                        Self.diagnose(.useWhereInsteadOfIf, on: ifExpr, context: context)
                         return updateWithWhereCondition(
                             node: forInStmt,
                             condition: condition,
@@ -82,7 +92,7 @@ final class PreferWhereClausesInForLoops: RewriteSyntaxRule<BasicRuleValue>, @un
                 guard let condition = conditionElement.condition.as(ExprSyntax.self) else {
                     return forInStmt
                 }
-                diagnose(.useWhereInsteadOfGuard, on: guardStmt)
+                Self.diagnose(.useWhereInsteadOfGuard, on: guardStmt, context: context)
                 return updateWithWhereCondition(
                     node: forInStmt,
                     condition: condition,

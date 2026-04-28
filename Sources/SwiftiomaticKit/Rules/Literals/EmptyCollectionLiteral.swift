@@ -25,28 +25,52 @@ final class EmptyCollectionLiteral: RewriteSyntaxRule<BasicRuleValue>, @unchecke
     override class var defaultValue: BasicRuleValue { .init(rewrite: false, lint: .no) }
 
     override func visit(_ node: PatternBindingSyntax) -> PatternBindingSyntax {
+        Self.transform(super.visit(node), parent: Syntax(node).parent, context: context)
+    }
+
+    static func transform(
+        _ node: PatternBindingSyntax,
+        parent: Syntax?,
+        context: Context
+    ) -> PatternBindingSyntax {
         guard let initializer = node.initializer,
               let type = isRewritable(initializer) else { return node }
 
-        if let type = type.as(ArrayTypeSyntax.self) { return rewrite(node, type: type) }
-        if let type = type.as(DictionaryTypeSyntax.self) { return rewrite(node, type: type) }
+        if let type = type.as(ArrayTypeSyntax.self) {
+            return rewrite(node, type: type, context: context)
+        }
+        if let type = type.as(DictionaryTypeSyntax.self) {
+            return rewrite(node, type: type, context: context)
+        }
 
         return node
     }
 
     override func visit(_ param: FunctionParameterSyntax) -> FunctionParameterSyntax {
+        Self.transform(super.visit(param), parent: Syntax(param).parent, context: context)
+    }
+
+    static func transform(
+        _ param: FunctionParameterSyntax,
+        parent: Syntax?,
+        context: Context
+    ) -> FunctionParameterSyntax {
         guard let initializer = param.defaultValue,
               let type = isRewritable(initializer) else { return param }
 
-        if let type = type.as(ArrayTypeSyntax.self) { return rewrite(param, type: type) }
-        if let type = type.as(DictionaryTypeSyntax.self) { return rewrite(param, type: type) }
+        if let type = type.as(ArrayTypeSyntax.self) {
+            return rewrite(param, type: type, context: context)
+        }
+        if let type = type.as(DictionaryTypeSyntax.self) {
+            return rewrite(param, type: type, context: context)
+        }
 
         return param
     }
 
     /// Check whether the initializer is `[<Type>]()` and, if so, it could be rewritten to use an
     /// empty collection literal. Return a type of the collection.
-    func isRewritable(_ initializer: InitializerClauseSyntax) -> TypeSyntax? {
+    static func isRewritable(_ initializer: InitializerClauseSyntax) -> TypeSyntax? {
         guard let initCall = initializer.value.as(FunctionCallExprSyntax.self),
               initCall.arguments.isEmpty else { return nil }
 
@@ -60,13 +84,14 @@ final class EmptyCollectionLiteral: RewriteSyntaxRule<BasicRuleValue>, @unchecke
         return nil
     }
 
-    private func rewrite(
+    private static func rewrite(
         _ node: PatternBindingSyntax,
-        type: ArrayTypeSyntax
+        type: ArrayTypeSyntax,
+        context: Context
     ) -> PatternBindingSyntax {
         var replacement = node
 
-        diagnose(node, type: type)
+        diagnose(node, type: type, context: context)
 
         if replacement.typeAnnotation == nil {
             // Drop trailing trivia after pattern because ':' has to appear connected to it.
@@ -87,13 +112,14 @@ final class EmptyCollectionLiteral: RewriteSyntaxRule<BasicRuleValue>, @unchecke
         return replacement
     }
 
-    private func rewrite(
+    private static func rewrite(
         _ node: PatternBindingSyntax,
-        type: DictionaryTypeSyntax
+        type: DictionaryTypeSyntax,
+        context: Context
     ) -> PatternBindingSyntax {
         var replacement = node
 
-        diagnose(node, type: type)
+        diagnose(node, type: type, context: context)
 
         if replacement.typeAnnotation == nil {
             // Drop trailing trivia after pattern because ':' has to appear connected to it.
@@ -113,47 +139,76 @@ final class EmptyCollectionLiteral: RewriteSyntaxRule<BasicRuleValue>, @unchecke
         return replacement
     }
 
-    private func rewrite(
+    private static func rewrite(
         _ param: FunctionParameterSyntax,
-        type _: ArrayTypeSyntax
+        type _: ArrayTypeSyntax,
+        context: Context
     ) -> FunctionParameterSyntax {
         guard let initializer = param.defaultValue else { return param }
 
-        emitDiagnostic(replace: "\(initializer.value)", with: "[]", on: initializer.value)
+        emitDiagnostic(
+            replace: "\(initializer.value)",
+            with: "[]",
+            on: initializer.value,
+            context: context
+        )
         return param.with(\.defaultValue, initializer.with(\.value, getEmptyArrayLiteral()))
     }
 
-    private func rewrite(
+    private static func rewrite(
         _ param: FunctionParameterSyntax,
-        type _: DictionaryTypeSyntax
+        type _: DictionaryTypeSyntax,
+        context: Context
     ) -> FunctionParameterSyntax {
         guard let initializer = param.defaultValue else { return param }
 
-        emitDiagnostic(replace: "\(initializer.value)", with: "[:]", on: initializer.value)
+        emitDiagnostic(
+            replace: "\(initializer.value)",
+            with: "[:]",
+            on: initializer.value,
+            context: context
+        )
         return param.with(\.defaultValue, initializer.with(\.value, getEmptyDictionaryLiteral()))
     }
 
-    private func diagnose(_ node: PatternBindingSyntax, type: ArrayTypeSyntax) {
+    private static func diagnose(
+        _ node: PatternBindingSyntax,
+        type: ArrayTypeSyntax,
+        context: Context
+    ) {
         var withFixIt = "[]"
         if node.typeAnnotation == nil { withFixIt = ": \(type) = []" }
 
         let initCall = node.initializer!.value
-        emitDiagnostic(replace: "\(initCall)", with: withFixIt, on: initCall)
+        emitDiagnostic(replace: "\(initCall)", with: withFixIt, on: initCall, context: context)
     }
 
-    private func diagnose(_ node: PatternBindingSyntax, type: DictionaryTypeSyntax) {
+    private static func diagnose(
+        _ node: PatternBindingSyntax,
+        type: DictionaryTypeSyntax,
+        context: Context
+    ) {
         var withFixIt = "[:]"
         if node.typeAnnotation == nil { withFixIt = ": \(type) = [:]" }
 
         let initCall = node.initializer!.value
-        emitDiagnostic(replace: "\(initCall)", with: withFixIt, on: initCall)
+        emitDiagnostic(replace: "\(initCall)", with: withFixIt, on: initCall, context: context)
     }
 
-    private func emitDiagnostic(replace: String, with fixIt: String, on: ExprSyntax?) {
-        diagnose(.refactorIntoEmptyLiteral(replace: replace, with: fixIt), on: on)
+    private static func emitDiagnostic(
+        replace: String,
+        with fixIt: String,
+        on: ExprSyntax?,
+        context: Context
+    ) {
+        Self.diagnose(
+            .refactorIntoEmptyLiteral(replace: replace, with: fixIt),
+            on: on,
+            context: context
+        )
     }
 
-    private func getLiteralType(_ arrayLiteral: ArrayExprSyntax) -> TypeSyntax? {
+    private static func getLiteralType(_ arrayLiteral: ArrayExprSyntax) -> TypeSyntax? {
         guard arrayLiteral.elements.count == 1 else { return nil }
 
         var parser = Parser(arrayLiteral.description)
@@ -164,7 +219,7 @@ final class EmptyCollectionLiteral: RewriteSyntaxRule<BasicRuleValue>, @unchecke
         return elementType
     }
 
-    private func getLiteralType(_ dictLiteral: DictionaryExprSyntax) -> TypeSyntax? {
+    private static func getLiteralType(_ dictLiteral: DictionaryExprSyntax) -> TypeSyntax? {
         var parser = Parser(dictLiteral.description)
         let elementType = TypeSyntax.parse(from: &parser)
 
@@ -173,11 +228,11 @@ final class EmptyCollectionLiteral: RewriteSyntaxRule<BasicRuleValue>, @unchecke
         return elementType
     }
 
-    private func getEmptyArrayLiteral() -> ExprSyntax {
+    private static func getEmptyArrayLiteral() -> ExprSyntax {
         ExprSyntax(ArrayExprSyntax(elements: ArrayElementListSyntax([])))
     }
 
-    private func getEmptyDictionaryLiteral() -> ExprSyntax {
+    private static func getEmptyDictionaryLiteral() -> ExprSyntax {
         ExprSyntax(DictionaryExprSyntax(content: .colon(.colonToken())))
     }
 }

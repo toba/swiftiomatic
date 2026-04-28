@@ -12,26 +12,34 @@ final class PreferCountWhere: RewriteSyntaxRule<BasicRuleValue>, @unchecked Send
     override static var group: ConfigurationGroup? { .idioms }
 
     override func visit(_ node: MemberAccessExprSyntax) -> ExprSyntax {
+        let parent = Syntax(node).parent
+        let visited = super.visit(node)
+        guard let concrete = visited.as(MemberAccessExprSyntax.self) else { return visited }
+        return Self.transform(concrete, parent: parent, context: context)
+    }
+
+    static func transform(
+        _ memberNode: MemberAccessExprSyntax,
+        parent: Syntax?,
+        context: Context
+    ) -> ExprSyntax {
         // If .count is a method call (parent is FunctionCallExprSyntax with this as calledExpression),
-        // skip — check on original node before visiting children.
-        if let parent = node.parent?.as(FunctionCallExprSyntax.self),
-           parent.calledExpression.id == ExprSyntax(node).id
+        // skip — uses the captured pre-recursion parent since the post-visit node is detached.
+        if let parentCall = parent?.as(FunctionCallExprSyntax.self),
+           parentCall.calledExpression.id == ExprSyntax(memberNode).id
         {
-            return super.visit(node)
+            return ExprSyntax(memberNode)
         }
 
-        let visited = super.visit(node)
-        guard let memberNode = visited.as(MemberAccessExprSyntax.self) else { return visited }
-
         // Match .count property access
-        guard memberNode.declName.baseName.text == "count" else { return visited }
+        guard memberNode.declName.baseName.text == "count" else { return ExprSyntax(memberNode) }
 
         // Base must be a .filter call
         guard let filterCall = memberNode.base?.as(FunctionCallExprSyntax.self),
               let filterAccess = filterCall.calledExpression.as(MemberAccessExprSyntax.self),
               filterAccess.declName.baseName.text == "filter"
         else {
-            return visited
+            return ExprSyntax(memberNode)
         }
 
         // Extract the closure (trailing or inline single arg)
@@ -44,10 +52,10 @@ final class PreferCountWhere: RewriteSyntaxRule<BasicRuleValue>, @unchecked Send
         {
             closure = closureExpr
         } else {
-            return visited
+            return ExprSyntax(memberNode)
         }
 
-        diagnose(.preferCountWhere, on: filterAccess.declName)
+        Self.diagnose(.preferCountWhere, on: filterAccess.declName, context: context)
 
         // Build: <originalBase>.count(where: { ... })
         let countAccess = MemberAccessExprSyntax(
@@ -74,8 +82,8 @@ final class PreferCountWhere: RewriteSyntaxRule<BasicRuleValue>, @unchecked Send
         )
 
         var result = ExprSyntax(countCall)
-        result.leadingTrivia = node.leadingTrivia
-        result.trailingTrivia = node.trailingTrivia
+        result.leadingTrivia = memberNode.leadingTrivia
+        result.trailingTrivia = memberNode.trailingTrivia
         return result
     }
 }

@@ -27,6 +27,17 @@ import SwiftSyntax
 final class GroupNumericLiterals: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable {
     override class var group: ConfigurationGroup? { .literals }
     override func visit(_ node: IntegerLiteralExprSyntax) -> ExprSyntax {
+        let parent = Syntax(node).parent
+        let visited = super.visit(node)
+        guard let concrete = visited.as(IntegerLiteralExprSyntax.self) else { return visited }
+        return Self.transform(concrete, parent: parent, context: context)
+    }
+
+    static func transform(
+        _ node: IntegerLiteralExprSyntax,
+        parent: Syntax?,
+        context: Context
+    ) -> ExprSyntax {
         var originalDigits = node.literal.text
         guard !originalDigits.contains("_") else { return ExprSyntax(node) }
 
@@ -40,19 +51,31 @@ final class GroupNumericLiterals: RewriteSyntaxRule<BasicRuleValue>, @unchecked 
                 // Hexadecimal
                 let digitsNoPrefix = String(originalDigits.dropFirst(2))
                 guard digitsNoPrefix.count >= 8 else { return ExprSyntax(node) }
-                diagnose(.groupNumericLiteral(every: 4, base: "hexadecimal"), on: node)
+                Self.diagnose(
+                    .groupNumericLiteral(every: 4, base: "hexadecimal"),
+                    on: node,
+                    context: context
+                )
                 newDigits = "0x" + digits(digitsNoPrefix, groupedEvery: 4)
             case "0b":
                 // Binary
                 let digitsNoPrefix = String(originalDigits.dropFirst(2))
                 guard digitsNoPrefix.count >= 10 else { return ExprSyntax(node) }
-                diagnose(.groupNumericLiteral(every: 8, base: "binary"), on: node)
+                Self.diagnose(
+                    .groupNumericLiteral(every: 8, base: "binary"),
+                    on: node,
+                    context: context
+                )
                 newDigits = "0b" + digits(digitsNoPrefix, groupedEvery: 8)
             case "0o": return ExprSyntax(node)
             default:
                 // Decimal
                 guard originalDigits.count >= 7 else { return ExprSyntax(node) }
-                diagnose(.groupNumericLiteral(every: 3, base: "decimal"), on: node)
+                Self.diagnose(
+                    .groupNumericLiteral(every: 3, base: "decimal"),
+                    on: node,
+                    context: context
+                )
                 newDigits = digits(originalDigits, groupedEvery: 3)
         }
 
@@ -66,7 +89,7 @@ final class GroupNumericLiterals: RewriteSyntaxRule<BasicRuleValue>, @unchecked 
     /// of `stride` digits, counting from the right.
     ///
     /// Precondition: `digits` does not already contain underscores.
-    private func digits(_ digits: String, groupedEvery stride: Int) -> String {
+    private static func digits(_ digits: String, groupedEvery stride: Int) -> String {
         let chars = Array(digits)
         var result = [Character]()
         result.reserveCapacity(chars.count + chars.count / stride)
