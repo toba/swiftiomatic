@@ -55,14 +55,20 @@ extension TokenStream {
         // For multi-line / multi-statement bodies, keep the original `.reset`
         // semantics so `else` stays visually separated from the wrapped
         // continuation lines.
-        if node.body.isInlineSingleStatementBody {
+        if node.body.hasInlineIntentSingleStatementBody
+            && !config[AlignWrappedConditions.self]
+        {
             before(
                 node.elseKeyword,
                 tokens: .break(.same, newlines: .elective(ignoresDiscretionary: true)),
                 .open
             )
             after(node.elseKeyword, tokens: .space)
-            after(node.body.rightBrace, tokens: .close)
+            before(
+                node.body.leftBrace,
+                tokens: .close,
+                .printerControl(kind: .clearContinuation)
+            )
         } else {
             before(
                 node.elseKeyword,

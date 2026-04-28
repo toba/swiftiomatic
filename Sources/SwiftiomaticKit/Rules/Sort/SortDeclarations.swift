@@ -32,9 +32,9 @@ final class SortDeclarations: RewriteSyntaxRule<BasicRuleValue>, @unchecked Send
         return sorted.map(CodeBlockItemListSyntax.init) ?? visited
     }
 
-    /// Sorts items inside `swiftiomatic:sort:begin`/`end` regions in-place,
-    /// preserving each position's leading trivia (so the begin/end markers stay put).
-    /// Returns `nil` if there are no regions to sort or all regions are already sorted.
+    /// Sorts items inside `swiftiomatic:sort:begin` / `end` regions in-place, preserving each
+    /// position's leading trivia (so the begin/end markers stay put). Returns `nil` if there are no
+    /// regions to sort or all regions are already sorted.
     private func sortMarkedRegions<Element: SyntaxProtocol>(
         items: [Element],
         name: (Element) -> String?
@@ -92,55 +92,49 @@ final class SortDeclarations: RewriteSyntaxRule<BasicRuleValue>, @unchecked Send
 
     private func hasMarker(_ marker: String, in trivia: Trivia) -> Bool {
         trivia.pieces.contains { piece in
-            if case .lineComment(let text) = piece { return text.contains(marker) }
-            if case .blockComment(let text) = piece { return text.contains(marker) }
-            return false
+            if case let .lineComment(text) = piece {
+                text.contains(marker)
+            } else if case let .blockComment(text) = piece {
+                text.contains(marker)
+            } else {
+                false
+            }
         }
     }
 
     /// Extract the sortable name from a declaration.
     private func declarationName(_ decl: DeclSyntax) -> String? {
         if let enumCase = decl.as(EnumCaseDeclSyntax.self) {
-            return enumCase.elements.first?.name.text
-        }
-        if let variable = decl.as(VariableDeclSyntax.self) {
-            return variable.bindings.first?.pattern.as(IdentifierPatternSyntax.self)?.identifier
+            enumCase.elements.first?.name.text
+        } else if let variable = decl.as(VariableDeclSyntax.self) {
+            variable.bindings.first?.pattern.as(IdentifierPatternSyntax.self)?.identifier
                 .text
+        } else if let function = decl.as(FunctionDeclSyntax.self) {
+            function.name.text
+        } else if let typeAlias = decl.as(TypeAliasDeclSyntax.self) {
+            typeAlias.name.text
+        } else if let structDecl = decl.as(StructDeclSyntax.self) {
+            structDecl.name.text
+        } else if let classDecl = decl.as(ClassDeclSyntax.self) {
+            classDecl.name.text
+        } else if let enumDecl = decl.as(EnumDeclSyntax.self) {
+            enumDecl.name.text
+        } else if let protocolDecl = decl.as(ProtocolDeclSyntax.self) {
+            protocolDecl.name.text
+        } else if let initDecl = decl.as(InitializerDeclSyntax.self) {
+            initDecl.initKeyword.text
+        } else {
+            nil
         }
-        if let function = decl.as(FunctionDeclSyntax.self) {
-            return function.name.text
-        }
-        if let typeAlias = decl.as(TypeAliasDeclSyntax.self) {
-            return typeAlias.name.text
-        }
-        if let structDecl = decl.as(StructDeclSyntax.self) {
-            return structDecl.name.text
-        }
-        if let classDecl = decl.as(ClassDeclSyntax.self) {
-            return classDecl.name.text
-        }
-        if let enumDecl = decl.as(EnumDeclSyntax.self) {
-            return enumDecl.name.text
-        }
-        if let protocolDecl = decl.as(ProtocolDeclSyntax.self) {
-            return protocolDecl.name.text
-        }
-        if let initDecl = decl.as(InitializerDeclSyntax.self) {
-            return initDecl.initKeyword.text
-        }
-        return nil
     }
 
     /// Extract the sortable name from a code block item.
     private func codeBlockItemName(_ item: CodeBlockItemSyntax) -> String? {
-        if let decl = item.item.as(DeclSyntax.self) {
-            return declarationName(decl)
-        }
+        if let decl = item.item.as(DeclSyntax.self) { return declarationName(decl) }
         return nil
     }
 }
 
-extension Finding.Message {
-    fileprivate static let sortDeclarations: Finding.Message =
-        "sort declarations alphabetically"
+fileprivate extension Finding.Message {
+    static let sortDeclarations: Finding.Message = "sort declarations alphabetically"
 }

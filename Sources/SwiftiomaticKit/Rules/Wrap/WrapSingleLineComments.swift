@@ -2,15 +2,14 @@ import SwiftSyntax
 
 /// Single-line comments that exceed the configured line length are wrapped.
 ///
-/// Lint: A `//` or `///` comment that exceeds the line length raises a
-///       warning.
+/// Lint: A `//` or `///` comment that exceeds the line length raises a warning.
 ///
-/// Rewrite: The comment is word-wrapped, continuing on the next line with the
-///         same prefix and indentation.
+/// Rewrite: The comment is word-wrapped, continuing on the next line with the same prefix and
+/// indentation.
 final class WrapSingleLineComments: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable {
     override class var key: String { "singleLineComments" }
     override class var group: ConfigurationGroup? { .wrap }
-    override class var defaultValue: BasicRuleValue { BasicRuleValue(rewrite: false, lint: .no) }
+    override class var defaultValue: BasicRuleValue { .init(rewrite: false, lint: .no) }
 
     override func visit(_ token: TokenSyntax) -> TokenSyntax {
         let maxWidth = context.configuration[LineLength.self]
@@ -25,50 +24,59 @@ final class WrapSingleLineComments: RewriteSyntaxRule<BasicRuleValue>, @unchecke
         var originalIndexMap = Array(0..<pieces.count)
         var i = 0
 
+        // Conservative column floor: comments in leading trivia are re-indented by the pretty
+        // printer to the syntactic indentation of the enclosing scope, regardless of their
+        // column in the source trivia. Wrapping based on a stale source-trivia column produces
+        // lines that overflow once layout adds indentation, requiring a second pass to wrap. By
+        // taking the larger of the trivia column and the syntactic indent, the wrapped output is
+        // a fixed point. See jig 5zd-wm4.
+        let layoutColumnFloor = syntacticIndentColumn(for: token)
+
         while i < pieces.count {
             switch pieces[i] {
-            case .lineComment(let text):
-                let result = tryWrap(
-                    text: text,
-                    prefix: "//",
-                    triviaKind: .lineComment,
-                    index: i,
-                    pieces: &pieces,
-                    originalIndexMap: &originalIndexMap,
-                    maxWidth: maxWidth
-                )
-                if result.didChange {
-                    changed = true
-                    if firstCommentOriginalIndex == nil {
-                        firstCommentOriginalIndex = result.originalIndex
+                case let .lineComment(text):
+                    let result = tryWrap(
+                        text: text,
+                        prefix: "//",
+                        triviaKind: .lineComment,
+                        index: i,
+                        pieces: &pieces,
+                        originalIndexMap: &originalIndexMap,
+                        maxWidth: maxWidth,
+                        layoutColumnFloor: layoutColumnFloor
+                    )
+                    if result.didChange {
+                        changed = true
+                        if firstCommentOriginalIndex == nil {
+                            firstCommentOriginalIndex = result.originalIndex
+                        }
+                        i += result.advance
+                    } else {
+                        i += 1
                     }
-                    i += result.advance
-                } else {
-                    i += 1
-                }
 
-            case .docLineComment(let text):
-                let result = tryWrap(
-                    text: text,
-                    prefix: "///",
-                    triviaKind: .docLineComment,
-                    index: i,
-                    pieces: &pieces,
-                    originalIndexMap: &originalIndexMap,
-                    maxWidth: maxWidth
-                )
-                if result.didChange {
-                    changed = true
-                    if firstCommentOriginalIndex == nil {
-                        firstCommentOriginalIndex = result.originalIndex
+                case let .docLineComment(text):
+                    let result = tryWrap(
+                        text: text,
+                        prefix: "///",
+                        triviaKind: .docLineComment,
+                        index: i,
+                        pieces: &pieces,
+                        originalIndexMap: &originalIndexMap,
+                        maxWidth: maxWidth,
+                        layoutColumnFloor: layoutColumnFloor
+                    )
+                    if result.didChange {
+                        changed = true
+                        if firstCommentOriginalIndex == nil {
+                            firstCommentOriginalIndex = result.originalIndex
+                        }
+                        i += result.advance
+                    } else {
+                        i += 1
                     }
-                    i += result.advance
-                } else {
-                    i += 1
-                }
 
-            default:
-                i += 1
+                default: i += 1
             }
         }
 
@@ -86,10 +94,7 @@ final class WrapSingleLineComments: RewriteSyntaxRule<BasicRuleValue>, @unchecke
 
     // MARK: - Wrapping logic
 
-    private enum CommentKind {
-        case lineComment
-        case docLineComment
-    }
+    private enum CommentKind { case lineComment, docLineComment }
 
     private struct WrapResult {
         var didChange: Bool
@@ -104,25 +109,26 @@ final class WrapSingleLineComments: RewriteSyntaxRule<BasicRuleValue>, @unchecke
         index: Int,
         pieces: inout [TriviaPiece],
         originalIndexMap: inout [Int],
-        maxWidth: Int
+        maxWidth: Int,
+        layoutColumnFloor: Int
     ) -> WrapResult {
         let indent = indentationBefore(index: index, in: pieces)
-        let column = indent.count
-        guard column + text.count > maxWidth else {
-            return WrapResult(didChange: false, advance: 1, originalIndex: 0)
-        }
-        guard !isCommentDirective(text) else {
-            return WrapResult(didChange: false, advance: 1, originalIndex: 0)
-        }
+        let column = max(indent.count, layoutColumnFloor)
+
+        guard column + text.count > maxWidth
+        else { return WrapResult(didChange: false, advance: 1, originalIndex: 0) }
+
+        guard !isCommentDirective(text)
+        else { return WrapResult(didChange: false, advance: 1, originalIndex: 0) }
+
         let wrapped = wrapComment(
             text: text,
             prefix: prefix,
             column: column,
             maxWidth: maxWidth
         )
-        guard wrapped.count > 1 else {
-            return WrapResult(didChange: false, advance: 1, originalIndex: 0)
-        }
+        guard wrapped.count > 1
+        else { return WrapResult(didChange: false, advance: 1, originalIndex: 0) }
 
         let origIdx = originalIndexMap[index]
 
@@ -131,14 +137,12 @@ final class WrapSingleLineComments: RewriteSyntaxRule<BasicRuleValue>, @unchecke
         for (j, line) in wrapped.enumerated() {
             if j > 0 {
                 replacement.append(.newlines(1))
-                if !indent.isEmpty {
-                    replacement.append(contentsOf: indentPieces(indent))
-                }
+                if !indent.isEmpty { replacement.append(contentsOf: indentPieces(indent)) }
             }
             let piece: TriviaPiece =
                 switch triviaKind {
-                case .lineComment: .lineComment(line)
-                case .docLineComment: .docLineComment(line)
+                    case .lineComment: .lineComment(line)
+                    case .docLineComment: .docLineComment(line)
                 }
             replacement.append(piece)
         }
@@ -149,10 +153,38 @@ final class WrapSingleLineComments: RewriteSyntaxRule<BasicRuleValue>, @unchecke
 
         pieces.replaceSubrange(index...index, with: replacement)
 
-        return WrapResult(didChange: true, advance: replacement.count, originalIndex: origIdx)
+        return .init(didChange: true, advance: replacement.count, originalIndex: origIdx)
     }
 
     // MARK: - Helpers
+
+    /// Returns a conservative estimate of the column the pretty printer will indent the comment
+    /// to. Walks ancestor nodes counting indent-introducing scopes (code blocks, member blocks,
+    /// closures, switch cases, accessor blocks) and converts the depth to a column count using
+    /// the configured indentation unit. The result is a lower bound on the actual layout column;
+    /// using `max(triviaColumn, this)` makes wrap decisions stable across passes.
+    private func syntacticIndentColumn(for token: TokenSyntax) -> Int {
+        var depth = 0
+        var current: Syntax? = token.parent
+        while let node = current {
+            if node.is(CodeBlockSyntax.self)
+                || node.is(MemberBlockSyntax.self)
+                || node.is(ClosureExprSyntax.self)
+                || node.is(AccessorBlockSyntax.self)
+                || node.is(SwitchCaseSyntax.self)
+            {
+                depth += 1
+            }
+            current = node.parent
+        }
+        let unit = context.configuration[IndentationSetting.self]
+        let width: Int
+        switch unit {
+            case let .spaces(n): width = n
+            case let .tabs(n): width = n * context.configuration[TabWidth.self]
+        }
+        return depth * width
+    }
 
     /// Returns the indentation string before the comment at the given index.
     private func indentationBefore(index: Int, in pieces: [TriviaPiece]) -> String {
@@ -160,16 +192,14 @@ final class WrapSingleLineComments: RewriteSyntaxRule<BasicRuleValue>, @unchecke
         var j = index - 1
         while j >= 0 {
             switch pieces[j] {
-            case .spaces(let n):
-                indent = String(repeating: " ", count: n) + indent
-                j -= 1
-            case .tabs(let n):
-                indent = String(repeating: "\t", count: n) + indent
-                j -= 1
-            case .newlines, .carriageReturns, .carriageReturnLineFeeds:
-                return indent
-            default:
-                return indent
+                case let .spaces(n):
+                    indent = String(repeating: " ", count: n) + indent
+                    j -= 1
+                case let .tabs(n):
+                    indent = String(repeating: "\t", count: n) + indent
+                    j -= 1
+                case .newlines, .carriageReturns, .carriageReturnLineFeeds: return indent
+                default: return indent
             }
         }
         return indent
@@ -178,8 +208,8 @@ final class WrapSingleLineComments: RewriteSyntaxRule<BasicRuleValue>, @unchecke
     /// Converts an indentation string back to trivia pieces.
     private func indentPieces(_ indent: String) -> [TriviaPiece] {
         guard !indent.isEmpty else { return [] }
-        let spaceCount = indent.filter { $0 == " " }.count
-        let tabCount = indent.filter { $0 == "\t" }.count
+        let spaceCount = indent.count(where: { $0 == " " })
+        let tabCount = indent.count(where: { $0 == "\t" })
         var result = [TriviaPiece]()
         if tabCount > 0 { result.append(.tabs(tabCount)) }
         if spaceCount > 0 { result.append(.spaces(spaceCount)) }
@@ -238,7 +268,6 @@ final class WrapSingleLineComments: RewriteSyntaxRule<BasicRuleValue>, @unchecke
     }
 }
 
-extension Finding.Message {
-    fileprivate static let wrapComment: Finding.Message =
-        "wrap comment to fit within line length"
+fileprivate extension Finding.Message {
+    static let wrapComment: Finding.Message = "wrap comment to fit within line length"
 }

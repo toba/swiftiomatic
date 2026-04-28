@@ -1,14 +1,14 @@
-//===----------------------------------------------------------------------===//
+// ===----------------------------------------------------------------------===//
 //
 // This source file is part of the Swift.org open source project
 //
-// Copyright (c) 2014 - 2019 Apple Inc. and the Swift project authors
-// Licensed under Apache License v2.0 with Runtime Library Exception
+// Copyright (c) 2014 - 2019 Apple Inc. and the Swift project authors Licensed under Apache License
+// v2.0 with Runtime Library Exception
 //
-// See https://swift.org/LICENSE.txt for license information
-// See https://swift.org/CONTRIBUTORS.txt for the list of Swift project authors
+// See https://swift.org/LICENSE.txt for license information See https://swift.org/CONTRIBUTORS.txt
+// for the list of Swift project authors
 //
-//===----------------------------------------------------------------------===//
+// ===----------------------------------------------------------------------===//
 
 import SwiftSyntax
 
@@ -20,7 +20,7 @@ extension TokenStream {
 
         // Prioritize keeping ") throws -> <return_type>" together (or ") throws -> <return_type> {"
         // when there's a body). We can only do this if the function has arguments.
-        if hasArguments && config[KeepFunctionOutputTogether.self] && !hasBody {
+        if hasArguments, config[KeepFunctionOutputTogether.self], !hasBody {
             // Due to visitation order, the matching .open break is added in ParameterClauseSyntax.
             after(node.signature.lastToken(viewMode: .sourceAccurate), tokens: .close)
         }
@@ -31,10 +31,10 @@ extension TokenStream {
             forcesBreakBeforeRightParen: mustBreak
         )
 
-        // Prioritize keeping "<modifiers> func <name>(" together. Also include the ")" if the parameter
-        // list is empty.
-        let firstTokenAfterAttributes =
-            node.modifiers.firstToken(viewMode: .sourceAccurate) ?? node.funcKeyword
+        // Prioritize keeping "<modifiers> func <name>(" together. Also include the ")" if the
+        // parameter list is empty.
+        let firstTokenAfterAttributes = node.modifiers.firstToken(viewMode: .sourceAccurate)
+            ?? node.funcKeyword
         before(firstTokenAfterAttributes, tokens: .open)
         after(node.funcKeyword, tokens: .break)
         if hasArguments || node.genericParameterClause != nil {
@@ -43,10 +43,10 @@ extension TokenStream {
             after(node.signature.parameterClause.rightParen, tokens: .close)
         }
 
-        // Add a non-breaking space after the identifier if it's an operator, to separate it visually
-        // from the following parenthesis or generic argument list. Note that even if the function is
-        // defining a prefix or postfix operator, the token kind always comes through as
-        // `binaryOperator`.
+        // Add a non-breaking space after the identifier if it's an operator, to separate it
+        // visually from the following parenthesis or generic argument list. Note that even if the
+        // function is defining a prefix or postfix operator, the token kind always comes through as
+        // `binaryOperator` .
         if case .binaryOperator = node.name.tokenKind {
             after(node.name.lastToken(viewMode: .sourceAccurate), tokens: .space)
         }
@@ -59,10 +59,11 @@ extension TokenStream {
             bodyContentsKeyPath: \.statements
         )
 
-        // When the function has a body, close the keepFunctionOutputTogether group after the opening
-        // brace. This must be called after arrangeFunctionLikeDecl so that (due to afterMap reversal)
-        // the .close is emitted immediately after '{', before the body's .break/.open tokens.
-        if hasArguments && config[KeepFunctionOutputTogether.self] && hasBody {
+        // When the function has a body, close the keepFunctionOutputTogether group after the
+        // opening brace. This must be called after arrangeFunctionLikeDecl so that (due to afterMap
+        // reversal) the .close is emitted immediately after '{', before the body's .break/.open
+        // tokens.
+        if hasArguments, config[KeepFunctionOutputTogether.self], hasBody {
             after(node.body!.leftBrace, tokens: .close)
         }
 
@@ -73,10 +74,9 @@ extension TokenStream {
         let hasArguments = !node.signature.parameterClause.parameters.isEmpty
         let hasBody = node.body != nil
 
-        // Prioritize keeping ") throws" together (or ") throws {" when there's a body).
-        // We can only do this if the initializer has arguments.
-        if hasArguments && config[KeepFunctionOutputTogether.self] && !hasBody {
-            // Due to visitation order, the matching .open break is added in ParameterClauseSyntax.
+        // Prioritize keeping ") throws" together (or ") throws {" when there's a body). We can only
+        // do this if the initializer has arguments.
+        if hasArguments, config[KeepFunctionOutputTogether.self], !hasBody {
             after(node.signature.lastToken(viewMode: .sourceAccurate), tokens: .close)
         }
 
@@ -86,8 +86,8 @@ extension TokenStream {
         )
 
         // Prioritize keeping "<modifiers> init<punctuation>" together.
-        let firstTokenAfterAttributes =
-            node.modifiers.firstToken(viewMode: .sourceAccurate) ?? node.initKeyword
+        let firstTokenAfterAttributes = node.modifiers.firstToken(viewMode: .sourceAccurate)
+            ?? node.initKeyword
         before(firstTokenAfterAttributes, tokens: .open)
 
         if hasArguments || node.genericParameterClause != nil {
@@ -106,7 +106,7 @@ extension TokenStream {
 
         // When the initializer has a body, close the keepFunctionOutputTogether group after the
         // opening brace (must be after arrangeFunctionLikeDecl for correct afterMap ordering).
-        if hasArguments && config[KeepFunctionOutputTogether.self] && hasBody {
+        if hasArguments, config[KeepFunctionOutputTogether.self], hasBody {
             after(node.body!.leftBrace, tokens: .close)
         }
 
@@ -140,9 +140,9 @@ extension TokenStream {
             }
         }
 
-        // Prioritize keeping ") -> <return_type>" together. We can only do this if the subscript has
-        // arguments.
-        if hasArguments && config[KeepFunctionOutputTogether.self] {
+        // Prioritize keeping ") -> <return_type>" together. We can only do this if the subscript
+        // has arguments.
+        if hasArguments, config[KeepFunctionOutputTogether.self] {
             // Due to visitation order, the matching .open break is added in ParameterClauseSyntax.
             after(node.returnClause.lastToken(viewMode: .sourceAccurate), tokens: .close)
         }
@@ -165,14 +165,15 @@ extension TokenStream {
 
         if let accessorBlock = node.accessorBlock {
             switch accessorBlock.accessors {
-            case .accessors(let accessors):
-                arrangeBracesAndContents(
-                    leftBrace: accessorBlock.leftBrace,
-                    accessors: accessors,
-                    rightBrace: accessorBlock.rightBrace
-                )
-            case .getter:
-                arrangeBracesAndContents(of: accessorBlock, contentsKeyPath: \.getterCodeBlockItems)
+                case let .accessors(accessors):
+                    arrangeBracesAndContents(
+                        leftBrace: accessorBlock.leftBrace,
+                        accessors: accessors,
+                        rightBrace: accessorBlock.rightBrace
+                    )
+                case .getter:
+                    arrangeBracesAndContents(
+                        of: accessorBlock, contentsKeyPath: \.getterCodeBlockItems)
             }
         }
 
@@ -183,17 +184,23 @@ extension TokenStream {
         return .visitChildren
     }
 
-    func visitAccessorEffectSpecifiers(_ node: AccessorEffectSpecifiersSyntax) -> SyntaxVisitorContinueKind {
+    func visitAccessorEffectSpecifiers(
+        _ node: AccessorEffectSpecifiersSyntax
+    ) -> SyntaxVisitorContinueKind {
         arrangeEffectSpecifiers(node)
         return .visitChildren
     }
 
-    func visitFunctionEffectSpecifiers(_ node: FunctionEffectSpecifiersSyntax) -> SyntaxVisitorContinueKind {
+    func visitFunctionEffectSpecifiers(
+        _ node: FunctionEffectSpecifiersSyntax
+    ) -> SyntaxVisitorContinueKind {
         arrangeEffectSpecifiers(node)
         return .visitChildren
     }
 
-    func visitTypeEffectSpecifiers(_ node: TypeEffectSpecifiersSyntax) -> SyntaxVisitorContinueKind {
+    func visitTypeEffectSpecifiers(
+        _ node: TypeEffectSpecifiersSyntax
+    ) -> SyntaxVisitorContinueKind {
         arrangeEffectSpecifiers(node)
         return .visitChildren
     }
@@ -215,7 +222,7 @@ extension TokenStream {
         )
         arrangeBracesAndContents(of: body, contentsKeyPath: bodyContentsKeyPath)
 
-        if let genericWhereClause = genericWhereClause {
+        if let genericWhereClause {
             before(
                 genericWhereClause.firstToken(viewMode: .sourceAccurate),
                 tokens: .break(.continue),
@@ -236,7 +243,7 @@ extension TokenStream {
         before(node.throwsClause?.throwsSpecifier, tokens: .break)
         // Keep them together if both `async` and `throws` are present.
         if let asyncSpecifier = node.asyncSpecifier,
-            let throwsSpecifier = node.throwsClause?.throwsSpecifier
+           let throwsSpecifier = node.throwsClause?.throwsSpecifier
         {
             before(asyncSpecifier, tokens: .open)
             after(throwsSpecifier, tokens: .close)
@@ -247,9 +254,9 @@ extension TokenStream {
 
     func visitAccessorDeclList(_ node: AccessorDeclListSyntax) -> SyntaxVisitorContinueKind {
         for child in node.dropLast() {
-            // If the child doesn't have a body (it's just the `get`/`set` keyword), then we're in a
-            // protocol and we want to let them be placed on the same line if possible. Otherwise, we
-            // place a newline between each accessor.
+            // If the child doesn't have a body (it's just the `get` / `set` keyword), then we're in
+            // a protocol and we want to let them be placed on the same line if possible. Otherwise,
+            // we place a newline between each accessor.
             let newlines: NewlineBehavior = child.body == nil ? .elective : .soft
             after(
                 child.lastToken(viewMode: .sourceAccurate),
@@ -268,7 +275,7 @@ extension TokenStream {
         return .visitChildren
     }
 
-    func visitAccessorParameters(_ node: AccessorParametersSyntax) -> SyntaxVisitorContinueKind {
-        return .visitChildren
+    func visitAccessorParameters(_: AccessorParametersSyntax) -> SyntaxVisitorContinueKind {
+        .visitChildren
     }
 }

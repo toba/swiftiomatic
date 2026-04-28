@@ -10,13 +10,11 @@ extension LintPipeline {
         for node: Node
     ) {
         guard context.shouldFormat(Rule.self, node: Syntax(node)) else { return }
-        let ruleId = ObjectIdentifier(Rule.self)
-        guard self.shouldSkipChildren[ruleId] == nil else { return }
+        let ruleID = ObjectIdentifier(Rule.self)
+        guard shouldSkipChildren[ruleID] == nil else { return }
         let rule = self.rule(Rule.self)
         let continueKind = visitor(rule)(node)
-        if case .skipChildren = continueKind {
-            self.shouldSkipChildren[ruleId] = node
-        }
+        if case .skipChildren = continueKind { shouldSkipChildren[ruleID] = node }
     }
 
     /// Calls the `visit` method of a rewrite rule for the given node if that rule is enabled.
@@ -25,7 +23,7 @@ extension LintPipeline {
         for node: Node
     ) {
         guard context.shouldFormat(Rule.self, node: Syntax(node)) else { return }
-        guard self.shouldSkipChildren[ObjectIdentifier(Rule.self)] == nil else { return }
+        guard shouldSkipChildren[ObjectIdentifier(Rule.self)] == nil else { return }
         let rule = self.rule(Rule.self)
         _ = visitor(rule)(node)
     }
@@ -36,37 +34,31 @@ extension LintPipeline {
         for node: Node
     ) {
         let rule = ObjectIdentifier(rule)
-        if case .some(let skipNode) = self.shouldSkipChildren[rule] {
-            if node.id == skipNode.id {
-                self.shouldSkipChildren.removeValue(forKey: rule)
-            }
+        if case let .some(skipNode) = shouldSkipChildren[rule] {
+            if node.id == skipNode.id { shouldSkipChildren.removeValue(forKey: rule) }
         }
     }
 
-    /// Dispatches `visitPost` to a cached lint rule instance and cleans up
-    /// `shouldSkipChildren` bookkeeping. Lint rules with stateful visitors rely
-    /// on this to balance their `visit`/`visitPost` enter/leave pairs.
+    /// Dispatches `visitPost` to a cached lint rule instance and cleans up `shouldSkipChildren`
+    /// bookkeeping. Lint rules with stateful visitors rely on this to balance their `visit` /
+    /// `visitPost` enter/leave pairs.
     func onVisitPost<V: SyntaxRuleValue, Rule: LintSyntaxRule<V>, Node: SyntaxProtocol>(
         _ visitor: (Rule) -> (Node) -> Void,
         for node: Node
     ) {
-        let ruleId = ObjectIdentifier(Rule.self)
-        if case .some(let skipNode) = self.shouldSkipChildren[ruleId],
-            node.id == skipNode.id
+        let ruleID = ObjectIdentifier(Rule.self)
+        if case let .some(skipNode) = shouldSkipChildren[ruleID],
+           node.id == skipNode.id
         {
-            self.shouldSkipChildren.removeValue(forKey: ruleId)
+            shouldSkipChildren.removeValue(forKey: ruleID)
         }
-        if let cached = ruleCache[ruleId] as? Rule {
-            visitor(cached)(node)
-        }
+        if let cached = ruleCache[ruleID] as? Rule { visitor(cached)(node) }
     }
 
     /// Retrieves an instance of a lint or format rule based on its type.
     private func rule<R: SyntaxRule>(_ type: R.Type) -> R {
         let identifier = ObjectIdentifier(type)
-        if let cachedRule = ruleCache[identifier] {
-            return cachedRule as! R
-        }
+        if let cachedRule = ruleCache[identifier] { return cachedRule as! R }
         let rule = R(context: context)
         ruleCache[identifier] = rule
         return rule

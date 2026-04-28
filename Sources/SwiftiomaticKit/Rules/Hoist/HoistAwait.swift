@@ -2,14 +2,14 @@ import SwiftSyntax
 
 /// Move inline `await` keyword(s) to the start of the expression.
 ///
-/// When `await` appears inside function call arguments, it can be hoisted to wrap the
-/// entire call expression. This is clearer and avoids redundant `await` keywords when
-/// multiple arguments are async.
+/// When `await` appears inside function call arguments, it can be hoisted to wrap the entire call
+/// expression. This is clearer and avoids redundant `await` keywords when multiple arguments are
+/// async.
 ///
-/// For example, `foo(await bar(), await baz())` should be `await foo(bar(), baz())`.
+/// For example, `foo(await bar(), await baz())` should be `await foo(bar(), baz())` .
 ///
-/// This rule does not flag `await` inside closures (which have their own async context)
-/// or when the call is already wrapped in `await`.
+/// This rule does not flag `await` inside closures (which have their own async context) or when the
+/// call is already wrapped in `await` .
 ///
 /// Lint: Using `await` inside a function call argument raises a warning.
 ///
@@ -20,9 +20,7 @@ final class HoistAwait: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable {
 
     override func visit(_ node: FunctionCallExprSyntax) -> ExprSyntax {
         // Check parent on original node before visiting children
-        if isWrappedInAwait(ExprSyntax(node)) {
-            return super.visit(node)
-        }
+        if isWrappedInAwait(ExprSyntax(node)) { return super.visit(node) }
 
         let visited = super.visit(node)
         guard let callNode = visited.as(FunctionCallExprSyntax.self) else { return visited }
@@ -65,7 +63,7 @@ final class HoistAwait: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable {
             return inner
         }
         if let tryExpr = expr.as(TryExprSyntax.self),
-            let awaitExpr = tryExpr.expression.as(AwaitExprSyntax.self)
+           let awaitExpr = tryExpr.expression.as(AwaitExprSyntax.self)
         {
             var inner = awaitExpr.expression
             inner.leadingTrivia = awaitExpr.leadingTrivia
@@ -77,11 +75,9 @@ final class HoistAwait: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable {
     /// Returns the first `AwaitExprSyntax` found as a direct argument expression.
     private func findFirstAwaitInArguments(_ call: FunctionCallExprSyntax) -> AwaitExprSyntax? {
         for arg in call.arguments {
-            if let awaitExpr = arg.expression.as(AwaitExprSyntax.self) {
-                return awaitExpr
-            }
+            if let awaitExpr = arg.expression.as(AwaitExprSyntax.self) { return awaitExpr }
             if let tryExpr = arg.expression.as(TryExprSyntax.self),
-                let awaitExpr = tryExpr.expression.as(AwaitExprSyntax.self)
+               let awaitExpr = tryExpr.expression.as(AwaitExprSyntax.self)
             {
                 return awaitExpr
             }
@@ -91,11 +87,10 @@ final class HoistAwait: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable {
 
     /// Returns `true` if the expression is wrapped in an `AwaitExprSyntax` ancestor.
     private func isWrappedInAwait(_ expr: ExprSyntax) -> Bool {
-        var current: Syntax = Syntax(expr)
+        var current = Syntax(expr)
+        
         while let parent = current.parent {
-            if parent.is(AwaitExprSyntax.self) {
-                return true
-            }
+            if parent.is(AwaitExprSyntax.self) { return true }
             if parent.is(TryExprSyntax.self)
                 || parent.is(LabeledExprSyntax.self)
                 || parent.is(LabeledExprListSyntax.self)
@@ -110,7 +105,6 @@ final class HoistAwait: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable {
     }
 }
 
-extension Finding.Message {
-    fileprivate static let hoistAwait: Finding.Message =
-        "move 'await' to the start of the expression"
+fileprivate extension Finding.Message {
+    static let hoistAwait: Finding.Message = "move 'await' to the start of the expression"
 }

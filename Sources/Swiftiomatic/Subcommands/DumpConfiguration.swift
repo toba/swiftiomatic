@@ -48,7 +48,7 @@ extension SwiftiomaticCommand {
       let diagnosticPrinter = StderrDiagnosticPrinter(colorMode: .auto)
       let diagnosticsEngine = DiagnosticsEngine(diagnosticsHandlers: [diagnosticPrinter.printDiagnostic])
 
-      let configuration: Configuration
+      var configuration: Configuration
       if effective {
         var configurationProvider = Frontend.ConfigurationProvider(diagnosticsEngine: diagnosticsEngine)
 
@@ -66,9 +66,12 @@ extension SwiftiomaticCommand {
       } else {
         configuration = Configuration()
       }
+      if let styleOverride = configurationOptions.style {
+        configuration[StyleSetting.self] = styleOverride
+      }
 
       do {
-        print(try configuration.asJsonString(sortBy: sort))
+        print(try configuration.asJSONString(sortBy: sort))
       } catch {
         diagnosticsEngine.emitError("\(error.localizedDescription)")
         throw ExitCode.failure

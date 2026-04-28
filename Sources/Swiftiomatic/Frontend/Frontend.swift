@@ -270,13 +270,16 @@ class Frontend: @unchecked Sendable {
     let assumedUrl = lintFormatOptions.assumeFilename.map(URL.init(fileURLWithPath:))
 
     guard
-      let configuration = configurationProvider.provide(
+      var configuration = configurationProvider.provide(
         forConfigPathOrString: configurationOptions.configuration,
         orForSwiftFileAt: assumedUrl
       )
     else {
       // Already diagnosed in the called method.
       return
+    }
+    if let styleOverride = configurationOptions.style {
+      configuration[StyleSetting.self] = styleOverride
     }
 
     let selection: Selection
@@ -332,13 +335,16 @@ class Frontend: @unchecked Sendable {
     }
 
     guard
-      let configuration = configurationProvider.provide(
+      var configuration = configurationProvider.provide(
         forConfigPathOrString: configurationOptions.configuration,
         orForSwiftFileAt: url
       )
     else {
       // Already diagnosed in the called method.
       return nil
+    }
+    if let styleOverride = configurationOptions.style {
+      configuration[StyleSetting.self] = styleOverride
     }
 
     let selection: Selection

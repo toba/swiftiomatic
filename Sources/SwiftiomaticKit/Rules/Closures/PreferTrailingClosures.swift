@@ -2,11 +2,10 @@ import SwiftSyntax
 
 /// Use trailing closure syntax where applicable.
 ///
-/// When the last argument(s) to a function call are closure expressions, convert
-/// them to trailing closure syntax. For a single trailing closure, the closure must
-/// be unlabeled unless the function is in the "always trailing" list (e.g. `async`,
-/// `sync`, `autoreleasepool`). For multiple trailing closures, the first must be
-/// unlabeled and the rest must be labeled.
+/// When the last argument(s) to a function call are closure expressions, convert them to trailing
+/// closure syntax. For a single trailing closure, the closure must be unlabeled unless the function
+/// is in the "always trailing" list (e.g. `async` , `sync` , `autoreleasepool` ). For multiple
+/// trailing closures, the first must be unlabeled and the rest must be labeled.
 ///
 /// Lint: When closure arguments could use trailing closure syntax.
 ///
@@ -55,22 +54,20 @@ final class PreferTrailingClosures: RewriteSyntaxRule<BasicRuleValue>, @unchecke
         let closureArgs = Array(args.suffix(trailingCount))
         let remainingArgs = Array(args.dropLast(trailingCount))
 
-        if trailingCount == 1 {
-            return convertSingle(
+        return trailingCount == 1
+            ? convertSingle(
                 callNode: callNode,
                 closureArg: closureArgs[0],
                 remainingArgs: remainingArgs,
                 funcName: funcName,
                 originalNode: node
             )
-        } else {
-            return convertMultiple(
+            : convertMultiple(
                 callNode: callNode,
                 closureArgs: closureArgs,
                 remainingArgs: remainingArgs,
                 originalNode: node
             )
-        }
     }
 
     // MARK: - Single Trailing Closure
@@ -83,14 +80,12 @@ final class PreferTrailingClosures: RewriteSyntaxRule<BasicRuleValue>, @unchecke
         originalNode: FunctionCallExprSyntax
     ) -> ExprSyntax {
         if closureArg.label != nil {
-            guard let funcName, Self.useTrailing.contains(funcName) else {
-                return ExprSyntax(callNode)
-            }
+            guard let funcName, Self.useTrailing.contains(funcName)
+            else { return ExprSyntax(callNode) }
         }
 
-        guard let closure = closureArg.expression.as(ClosureExprSyntax.self) else {
-            return ExprSyntax(callNode)
-        }
+        guard let closure = closureArg.expression.as(ClosureExprSyntax.self)
+        else { return ExprSyntax(callNode) }
 
         diagnose(.useTrailingClosure, on: originalNode)
 
@@ -102,17 +97,16 @@ final class PreferTrailingClosures: RewriteSyntaxRule<BasicRuleValue>, @unchecke
         var result = callNode
 
         if remainingArgs.isEmpty {
-            result =
-                result
+            result = result
                 .with(\.leftParen, nil)
                 .with(\.rightParen, nil)
                 .with(\.arguments, LabeledExprListSyntax([]))
         } else {
             var newArgs = remainingArgs
-            newArgs[newArgs.count - 1] = newArgs[newArgs.count - 1]
+            newArgs[
+                newArgs.count - 1] = newArgs[newArgs.count - 1]
                 .with(\.trailingComma, nil)
-            result =
-                result
+            result = result
                 .with(\.arguments, LabeledExprListSyntax(newArgs))
                 .with(\.rightParen, .rightParenToken())
         }
@@ -130,12 +124,11 @@ final class PreferTrailingClosures: RewriteSyntaxRule<BasicRuleValue>, @unchecke
     ) -> ExprSyntax {
         // First must be unlabeled, rest must be labeled
         guard closureArgs[0].label == nil,
-            closureArgs.dropFirst().allSatisfy({ $0.label != nil })
+              closureArgs.dropFirst().allSatisfy({ $0.label != nil })
         else { return ExprSyntax(callNode) }
 
-        guard let firstClosure = closureArgs[0].expression.as(ClosureExprSyntax.self) else {
-            return ExprSyntax(callNode)
-        }
+        guard let firstClosure = closureArgs[0].expression.as(ClosureExprSyntax.self)
+        else { return ExprSyntax(callNode) }
 
         diagnose(.useTrailingClosure, on: originalNode)
 
@@ -146,38 +139,34 @@ final class PreferTrailingClosures: RewriteSyntaxRule<BasicRuleValue>, @unchecke
 
         for arg in closureArgs.dropFirst() {
             guard let closure = arg.expression.as(ClosureExprSyntax.self),
-                let label = arg.label
-            else { continue }
+                  let label = arg.label else { continue }
 
             additionalElements.append(
                 MultipleTrailingClosureElementSyntax(
                     label: .identifier(label.text, leadingTrivia: .space),
                     colon: .colonToken(trailingTrivia: .space),
                     closure: closure.trimmed
-                )
-            )
+                ))
         }
 
         var result = callNode
 
         if remainingArgs.isEmpty {
-            result =
-                result
+            result = result
                 .with(\.leftParen, nil)
                 .with(\.rightParen, nil)
                 .with(\.arguments, LabeledExprListSyntax([]))
         } else {
             var newArgs = remainingArgs
-            newArgs[newArgs.count - 1] = newArgs[newArgs.count - 1]
+            newArgs[
+                newArgs.count - 1] = newArgs[newArgs.count - 1]
                 .with(\.trailingComma, nil)
-            result =
-                result
+            result = result
                 .with(\.arguments, LabeledExprListSyntax(newArgs))
                 .with(\.rightParen, .rightParenToken())
         }
 
-        result =
-            result
+        result = result
             .with(\.trailingClosure, trailingClosure)
             .with(
                 \.additionalTrailingClosures,
@@ -191,21 +180,21 @@ final class PreferTrailingClosures: RewriteSyntaxRule<BasicRuleValue>, @unchecke
     // MARK: - Helpers
 
     private static func functionName(of expr: ExprSyntax) -> String? {
-        if let ref = expr.as(DeclReferenceExprSyntax.self) { return ref.baseName.text }
-        if let member = expr.as(MemberAccessExprSyntax.self) {
-            return member.declName.baseName.text
+        if let ref = expr.as(DeclReferenceExprSyntax.self) {
+            ref.baseName.text
+        } else if let member = expr.as(MemberAccessExprSyntax.self) {
+            member.declName.baseName.text
+        } else if let optional = expr.as(OptionalChainingExprSyntax.self) {
+            functionName(of: optional.expression)
+        } else if let force = expr.as(ForceUnwrapExprSyntax.self) {
+            functionName(of: force.expression)
+        } else {
+            nil
         }
-        if let optional = expr.as(OptionalChainingExprSyntax.self) {
-            return functionName(of: optional.expression)
-        }
-        if let force = expr.as(ForceUnwrapExprSyntax.self) {
-            return functionName(of: force.expression)
-        }
-        return nil
     }
 
-    /// Whether the call is in a context where trailing closure syntax would
-    /// be ambiguous (condition expressions, for-in sequences, switch subjects).
+    /// Whether the call is in a context where trailing closure syntax would be ambiguous (condition
+    /// expressions, for-in sequences, switch subjects).
     private func isInConditionalContext(_ node: some SyntaxProtocol) -> Bool {
         var current = Syntax(node).parent
 
@@ -225,6 +214,6 @@ final class PreferTrailingClosures: RewriteSyntaxRule<BasicRuleValue>, @unchecke
     }
 }
 
-extension Finding.Message {
-    fileprivate static let useTrailingClosure: Finding.Message = "use trailing closure syntax"
+fileprivate extension Finding.Message {
+    static let useTrailingClosure: Finding.Message = "use trailing closure syntax"
 }

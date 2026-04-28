@@ -48,6 +48,12 @@ extension LayoutTesting {
             experimentalFeatures: experimentalFeatures,
             findingConsumer: { emittedFindings.append($0) }
         )
+        if formatted != expected {
+            let id = "\(sourceLocation.fileID):\(sourceLocation.line)".replacingOccurrences(of: "/", with: "_")
+            try? FileManager.default.createDirectory(atPath: "/tmp/sm-test-diffs", withIntermediateDirectories: true)
+            let body = "===ACTUAL===\n\(formatted)\n===EXPECTED===\n\(expected)\n===END===\n"
+            try? body.write(toFile: "/tmp/sm-test-diffs/\(id).txt", atomically: true, encoding: .utf8)
+        }
         assertStringsEqualWithDiff(
             formatted,
             expected,

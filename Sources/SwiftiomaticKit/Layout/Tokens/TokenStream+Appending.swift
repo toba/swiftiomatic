@@ -460,9 +460,14 @@ extension TokenStream {
         let canGroupBeforeBreak = (isCompound || hasMemberChain) && !hasLeadingLineComments(rhs)
         let isTernaryRhs = rhs.is(TernaryExprSyntax.self)
 
-        if !isTernaryRhs,
-           let (unindentingNode, _, breakKind, shouldGroup) =
-               stackedIndentationBehavior(after: operatorExpr, rhs: rhs)
+        if isTernaryRhs {
+            // Ternary RHS: bound the `=` break's chunk to the next inner break (the ternary
+            // `?`) by NOT wrapping the RHS in an `.open`/`.close` group. That keeps the chunk
+            // small enough that `=` only fires when the prefix `... = <condition>` itself
+            // overflows; otherwise the inner `?`/`:` breaks fire and `=` stays glued.
+            after(equal, tokens: .break(.continue, newlines: .elective(ignoresDiscretionary: true)))
+        } else if let (unindentingNode, _, breakKind, shouldGroup) =
+            stackedIndentationBehavior(after: operatorExpr, rhs: rhs)
         {
             var openTokens: [Token] = [
                 .break(

@@ -1,19 +1,17 @@
 import SwiftSyntax
 
-/// Multiline conditional assignment expressions are wrapped after the
-/// assignment operator.
+/// Multiline conditional assignment expressions are wrapped after the assignment operator.
 ///
-/// When assigning an `if` or `switch` expression that spans multiple lines,
-/// the `=` should be on the same line as the property, and a line break
-/// should follow `=` before the `if`/`switch` keyword.
+/// When assigning an `if` or `switch` expression that spans multiple lines, the `=` should be on
+/// the same line as the property, and a line break should follow `=` before the `if` / `switch`
+/// keyword.
 ///
-/// Lint: A multiline `if`/`switch` expression on the same line as `=` raises
-///       a warning.
+/// Lint: A multiline `if` / `switch` expression on the same line as `=` raises a warning.
 ///
-/// Rewrite: A line break is inserted after `=`.
+/// Rewrite: A line break is inserted after `=` .
 final class WrapConditionalAssignment: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable {
     override class var key: String { "conditionalAssignment" }
-    override class var defaultValue: BasicRuleValue { BasicRuleValue(rewrite: false, lint: .no) }
+    override class var defaultValue: BasicRuleValue { .init(rewrite: false, lint: .no) }
     override class var group: ConfigurationGroup? { .wrap }
 
     // MARK: - let/var declarations
@@ -32,10 +30,9 @@ final class WrapConditionalAssignment: RewriteSyntaxRule<BasicRuleValue>, @unche
             diagnose(.wrapAfterAssignment, on: equal)
             var result = node
             var newInit = initializer
-            // Move `=`'s leading trivia (comments, newlines) to the if/switch keyword
+            // Move `=` 's leading trivia (comments, newlines) to the if/switch keyword
             let movedTrivia = equal.leadingTrivia
-            newInit.equal =
-                equal
+            newInit.equal = equal
                 .with(\.leadingTrivia, .space)
                 .with(\.trailingTrivia, [])
             var newValue = value
@@ -45,7 +42,7 @@ final class WrapConditionalAssignment: RewriteSyntaxRule<BasicRuleValue>, @unche
             return result
         }
 
-        // Case 2: No line break between `=` and `if`/`switch` — add one
+        // Case 2: No line break between `=` and `if` / `switch` — add one
         if !valueFirstToken.leadingTrivia.containsNewlines {
             diagnose(.wrapAfterAssignment, on: equal)
             var result = node
@@ -64,13 +61,11 @@ final class WrapConditionalAssignment: RewriteSyntaxRule<BasicRuleValue>, @unche
     // MARK: - Reassignments (x = if/switch ...)
 
     override func visit(_ node: InfixOperatorExprSyntax) -> ExprSyntax {
-        guard let assignment = node.operator.as(AssignmentExprSyntax.self) else {
-            return ExprSyntax(node)
-        }
+        guard let assignment = node.operator.as(AssignmentExprSyntax.self)
+        else { return ExprSyntax(node) }
         let rhs = node.rightOperand
-        guard rhs.is(IfExprSyntax.self) || rhs.is(SwitchExprSyntax.self) else {
-            return ExprSyntax(node)
-        }
+        guard rhs.is(IfExprSyntax.self) || rhs.is(SwitchExprSyntax.self)
+        else { return ExprSyntax(node) }
         guard isMultiline(rhs) else { return ExprSyntax(node) }
 
         let equal = assignment.equal
@@ -82,8 +77,7 @@ final class WrapConditionalAssignment: RewriteSyntaxRule<BasicRuleValue>, @unche
             var result = node
             let movedTrivia = equal.leadingTrivia
             var newAssignment = assignment
-            newAssignment.equal =
-                equal
+            newAssignment.equal = equal
                 .with(\.leadingTrivia, .space)
                 .with(\.trailingTrivia, [])
             result.operator = ExprSyntax(newAssignment)
@@ -93,7 +87,7 @@ final class WrapConditionalAssignment: RewriteSyntaxRule<BasicRuleValue>, @unche
             return ExprSyntax(result)
         }
 
-        // Case 2: No line break between `=` and `if`/`switch` — add one
+        // Case 2: No line break between `=` and `if` / `switch` — add one
         if !rhsFirstToken.leadingTrivia.containsNewlines {
             diagnose(.wrapAfterAssignment, on: equal)
             var result = node
@@ -111,19 +105,17 @@ final class WrapConditionalAssignment: RewriteSyntaxRule<BasicRuleValue>, @unche
 
     // MARK: - Helpers
 
-    /// Returns `true` if the expression spans multiple lines (has internal
-    /// newlines after the first token).
+    /// Returns `true` if the expression spans multiple lines (has internal newlines after the first
+    /// token).
     private func isMultiline(_ node: some SyntaxProtocol) -> Bool {
         var tokens = node.tokens(viewMode: .sourceAccurate).makeIterator()
         _ = tokens.next()  // skip first token
-        while let token = tokens.next() {
-            if token.leadingTrivia.containsNewlines { return true }
-        }
+        while let token = tokens.next() { if token.leadingTrivia.containsNewlines { return true } }
         return false
     }
 }
 
-extension Finding.Message {
-    fileprivate static let wrapAfterAssignment: Finding.Message =
+fileprivate extension Finding.Message {
+    static let wrapAfterAssignment: Finding.Message =
         "wrap multiline conditional assignment after '='"
 }

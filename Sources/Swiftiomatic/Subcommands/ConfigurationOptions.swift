@@ -11,6 +11,7 @@
 //===----------------------------------------------------------------------===//
 
 import ArgumentParser
+import SwiftiomaticKit
 
 /// Common arguments used by the `lint`, `format` and `dump-configuration` subcommands.
 struct ConfigurationOptions: ParsableArguments {
@@ -25,4 +26,15 @@ struct ConfigurationOptions: ParsableArguments {
       """
   )
   var configuration: String?
+
+  /// The formatting style to apply, overriding any `style` value in the loaded configuration.
+  ///
+  /// Defaults to `compact` when neither this flag nor a configuration file specifies one.
+  @Option(
+    name: .customLong("style"),
+    help: "Formatting style. One of: compact, roomy. Overrides 'style' in the configuration."
+  )
+  var style: Style?
 }
+
+extension Style: ExpressibleByArgument {}

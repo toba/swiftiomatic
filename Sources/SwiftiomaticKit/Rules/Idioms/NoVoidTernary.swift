@@ -3,8 +3,8 @@ import SwiftSyntax
 /// Don't use a ternary expression to call void-returning functions.
 ///
 /// `condition ? doA() : doB()` reads as if it produces a value, but when both branches return
-/// `Void` it's effectively a hidden if/else with strictly worse readability. Use a proper
-/// `if`/`else` statement instead.
+/// `Void` it's effectively a hidden if/else with strictly worse readability. Use a proper `if` /
+/// `else` statement instead.
 ///
 /// Lint: A warning is raised when a ternary appears as a statement and both branches are call
 /// expressions.
@@ -16,22 +16,21 @@ final class NoVoidTernary: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendabl
 
     override func visit(_ node: TernaryExprSyntax) -> ExprSyntax {
         if isStandaloneStatementTernary(node),
-            node.thenExpression.is(FunctionCallExprSyntax.self),
-            node.elseExpression.is(FunctionCallExprSyntax.self)
+           node.thenExpression.is(FunctionCallExprSyntax.self),
+           node.elseExpression.is(FunctionCallExprSyntax.self)
         {
             diagnose(.noVoidTernary, on: node.questionMark)
         }
         return super.visit(node)
     }
 
-    /// Returns true if this ternary is at the statement boundary (its enclosing CodeBlockItem
-    /// has more than just this expression — i.e. it isn't an implicit return) — or, more simply,
-    /// the ternary is the top expression of a CodeBlockItem that contains multiple statements
-    /// (so it can't be an implicit return) or whose enclosing context doesn't allow implicit
-    /// returns.
+    /// Returns true if this ternary is at the statement boundary (its enclosing CodeBlockItem has
+    /// more than just this expression — i.e. it isn't an implicit return) — or, more simply, the
+    /// ternary is the top expression of a CodeBlockItem that contains multiple statements (so it
+    /// can't be an implicit return) or whose enclosing context doesn't allow implicit returns.
     private func isStandaloneStatementTernary(_ node: TernaryExprSyntax) -> Bool {
         // Walk up to find the enclosing CodeBlockItem.
-        var current: Syntax = Syntax(node)
+        var current = Syntax(node)
         while let parent = current.parent {
             if parent.is(CodeBlockItemSyntax.self) {
                 guard let blockItem = parent.as(CodeBlockItemSyntax.self) else { return false }
@@ -53,14 +52,16 @@ final class NoVoidTernary: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendabl
     /// True if `inner` is reachable from `outer` purely through ExprSyntax wrapping (i.e. the
     /// ternary IS the entire expression of the CodeBlockItem).
     private func isExprChainTopOf(_ inner: TernaryExprSyntax, expr: ExprSyntax) -> Bool {
-        if expr.id == ExprSyntax(inner).id { return true }
-        if let tuple = expr.as(TupleExprSyntax.self),
-            tuple.elements.count == 1,
-            let onlyExpr = tuple.elements.first?.expression
+        if expr.id == ExprSyntax(inner).id {
+            true
+        } else if let tuple = expr.as(TupleExprSyntax.self),
+           tuple.elements.count == 1,
+           let onlyExpr = tuple.elements.first?.expression
         {
-            return isExprChainTopOf(inner, expr: onlyExpr)
+            isExprChainTopOf(inner, expr: onlyExpr)
+        } else {
+            false
         }
-        return false
     }
 
     /// Determine if the enclosing CodeBlockItem is the only statement in a context that allows
@@ -74,8 +75,8 @@ final class NoVoidTernary: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendabl
         // Closure: implicit return.
         if grandparent.is(ClosureExprSyntax.self) { return true }
 
-        // Variable/subscript getter shorthand: `var x: T { expr }` or `subscript ... { expr }`
-        // — the CodeBlockItemList is directly inside an AccessorBlockSyntax.
+        // Variable/subscript getter shorthand: `var x: T { expr }` or `subscript ... { expr }` —
+        // the CodeBlockItemList is directly inside an AccessorBlockSyntax.
         if grandparent.is(AccessorBlockSyntax.self) { return true }
 
         // CodeBlock: check what owns it.
@@ -99,25 +100,23 @@ final class NoVoidTernary: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendabl
     }
 }
 
-extension Finding.Message {
-    fileprivate static let noVoidTernary: Finding.Message =
+fileprivate extension Finding.Message {
+    static let noVoidTernary: Finding.Message =
         "use 'if'/'else' instead of a ternary to call void-returning functions"
 }
 
 private extension FunctionSignatureSyntax {
-    var allowsImplicitReturns: Bool {
-        returnClause?.allowsImplicitReturns ?? false
-    }
+    var allowsImplicitReturns: Bool { returnClause?.allowsImplicitReturns ?? false }
 }
 
 private extension ReturnClauseSyntax {
     var allowsImplicitReturns: Bool {
         if let simple = type.as(IdentifierTypeSyntax.self) {
-            return simple.name.text != "Void" && simple.name.text != "Never"
+            simple.name.text != "Void" && simple.name.text != "Never"
+        } else if let tuple = type.as(TupleTypeSyntax.self) {
+            !tuple.elements.isEmpty
+        } else {
+            true
         }
-        if let tuple = type.as(TupleTypeSyntax.self) {
-            return !tuple.elements.isEmpty
-        }
-        return true
     }
 }

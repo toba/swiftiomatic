@@ -548,6 +548,8 @@ package final class LayoutCoordinator {
                         }
                     case .enableBreaking:
                         activeBreakSuppressionCount -= 1
+                    case .clearContinuation:
+                        currentLineIsContinuation = false
                 }
 
             case .commaDelimitedRegionStart:

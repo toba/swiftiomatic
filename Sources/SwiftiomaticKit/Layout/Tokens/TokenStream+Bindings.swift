@@ -44,12 +44,16 @@ extension TokenStream {
     }
 
     func visitPatternBinding(_ node: PatternBindingSyntax) -> SyntaxVisitorContinueKind {
-        // If the type annotation and/or the initializer clause need to wrap, we want those
-        // continuations to stack to improve readability. So, we need to keep track of how many open
-        // breaks we create (so we can close them at the end of the binding) and also keep track of
-        // the right-most token that will anchor the close breaks.
+        // If the type annotation and/or the initializer clause need to wrap, stack the
+        // continuations to improve readability. The type-annotation continuation break is closed
+        // after the binding's last token so the `:` chunk extends through the initializer; that
+        // makes `:` an eager wrap point when the whole binding overflows. For ternary RHSes the
+        // chunk is kept short (close after the type) so the inner `?`/`:` breaks fire first
+        // instead of wrapping the type annotation onto its own line.
         var closesNeeded: Int = 0
         var closeAfterToken: TokenSyntax?
+
+        let initializerIsTernary = node.initializer?.value.is(TernaryExprSyntax.self) ?? false
 
         if let typeAnnotation = node.typeAnnotation, !typeAnnotation.type.is(MissingTypeSyntax.self)
         {
@@ -60,8 +64,15 @@ extension TokenStream {
                     newlines: .elective(ignoresDiscretionary: true)
                 )
             )
-            closesNeeded += 1
-            closeAfterToken = typeAnnotation.lastToken(viewMode: .sourceAccurate)
+            if initializerIsTernary {
+                after(
+                    typeAnnotation.lastToken(viewMode: .sourceAccurate),
+                    tokens: .break(.close(mustBreak: false), size: 0)
+                )
+            } else {
+                closesNeeded += 1
+                closeAfterToken = typeAnnotation.lastToken(viewMode: .sourceAccurate)
+            }
         }
         if let initializer = node.initializer {
             let expr = initializer.value

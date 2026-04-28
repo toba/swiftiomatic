@@ -1,14 +1,14 @@
-//===----------------------------------------------------------------------===//
+// ===----------------------------------------------------------------------===//
 //
 // This source file is part of the Swift.org open source project
 //
-// Copyright (c) 2014 - 2020 Apple Inc. and the Swift project authors
-// Licensed under Apache License v2.0 with Runtime Library Exception
+// Copyright (c) 2014 - 2020 Apple Inc. and the Swift project authors Licensed under Apache License
+// v2.0 with Runtime Library Exception
 //
-// See https://swift.org/LICENSE.txt for license information
-// See https://swift.org/CONTRIBUTORS.txt for the list of Swift project authors
+// See https://swift.org/LICENSE.txt for license information See https://swift.org/CONTRIBUTORS.txt
+// for the list of Swift project authors
 //
-//===----------------------------------------------------------------------===//
+// ===----------------------------------------------------------------------===//
 
 /// A sequence that lazily computes the longest possible subsequences of a collection, in order,
 /// around elements equal to a specific element.
@@ -24,8 +24,8 @@ struct LazySplitSequence<Base: Collection>: Sequence where Base.Element: Equatab
 
     var underestimatedCount: Int { count }
 
-    /// Creates a new sequence that lazily computes the longest possible subsequences of a collection,
-    /// in order, around elements equal to the given element.
+    /// Creates a new sequence that lazily computes the longest possible subsequences of a
+    /// collection, in order, around elements equal to the given element.
     fileprivate init(base: Base, separator: Base.Element) {
         self.base = base
         self.separator = separator
@@ -36,7 +36,7 @@ struct LazySplitSequence<Base: Collection>: Sequence where Base.Element: Equatab
         self.count = count
     }
 
-    func makeIterator() -> Iterator { Iterator(base: base, separator: separator) }
+    func makeIterator() -> Iterator { .init(base: base, separator: separator) }
 
     struct Iterator: IteratorProtocol {
         private let base: Base
@@ -86,8 +86,8 @@ struct LazySplitSequence<Base: Collection>: Sequence where Base.Element: Equatab
 }
 
 extension Collection where Element: Equatable {
-    /// Returns a `Sequence` that lazily computes the longest possible subsequences of the collection,
-    /// in order, around elements equal to the given element.
+    /// Returns a `Sequence` that lazily computes the longest possible subsequences of the
+    /// collection, in order, around elements equal to the given element.
     ///
     /// - Parameter separator: The element that should be split upon.
     /// - Returns: A sequence of subsequences, split from this collection’s elements.

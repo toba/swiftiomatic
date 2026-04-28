@@ -7,6 +7,9 @@
 - `ReflowComments` rule; rewrap regular and DocC comments to line length
 - `guard ... else { stmt }`; keep inline body attached when conditions wrap
 - Cat 9 accessor & declaration patterns; 3 new rules ([#315](https://github.com/toba/swiftiomatic/issues/315))
+- Configuration schema redesign; `style` + universal parameters
+- CLI; replace `--rules` plumbing with `--style`
+- Spike combined `SyntaxRewriter`; single walk for node-local rules
 
 ### 🐞 Fixes
 
@@ -25,6 +28,12 @@
 - `case ... where ...`; indent the `where` keyword past `case` when the clause wraps
 - `NestingDepth`; depth counter now decrements on `visitPost`
 - `ExtensionAccessLevel`; don't hoist access modifier onto extensions that declare protocol conformance
+- `guard` with single-line body; wrap body onto next line instead of splitting the condition
+- `RedundantBackticks`; suppress false positive on `guard` used as a property name
+- `NoSelfReference`; preserve `self.` before keyword-named methods like `is(_:)`
+- Fix 8 failing layout tests
+- `return`; break after the keyword instead of before the first chained call
+- Comment wrapping; converge in a single formatter pass
 
 ### 🗜️ Tweaks
 
@@ -32,6 +41,9 @@
 - Align rule type names with config keys ([#441](https://github.com/toba/swiftiomatic/issues/441))
 - Rule configuration groups; rename `forcing`→`unsafety`; add `memory`; regroup ungrouped ([#440](https://github.com/toba/swiftiomatic/issues/440))
 - Add golden-corpus diff harness for format pipeline ([#461](https://github.com/toba/swiftiomatic/issues/461))
+- Inventory format rules; node-local vs structural vs deletable
+- Design `compact` style spec
+- Stub `roomy` style; reserve name only
 
 ## Week of Apr 19 – Apr 25, 2026
 

@@ -1,14 +1,14 @@
-//===----------------------------------------------------------------------===//
+// ===----------------------------------------------------------------------===//
 //
 // This source file is part of the Swift.org open source project
 //
-// Copyright (c) 2014 - 2019 Apple Inc. and the Swift project authors
-// Licensed under Apache License v2.0 with Runtime Library Exception
+// Copyright (c) 2014 - 2019 Apple Inc. and the Swift project authors Licensed under Apache License
+// v2.0 with Runtime Library Exception
 //
-// See https://swift.org/LICENSE.txt for license information
-// See https://swift.org/CONTRIBUTORS.txt for the list of Swift project authors
+// See https://swift.org/LICENSE.txt for license information See https://swift.org/CONTRIBUTORS.txt
+// for the list of Swift project authors
 //
-//===----------------------------------------------------------------------===//
+// ===----------------------------------------------------------------------===//
 
 import SwiftSyntax
 
@@ -16,19 +16,18 @@ import SwiftSyntax
 ///
 /// Combines four checks:
 ///
-/// 1. **Redundant `internal`** — removes explicit `internal` since it is the default.
-///    Does NOT remove `internal(set)`, which is meaningful on properties with a higher
-///    getter access level (e.g. `public internal(set) var`).
+/// 1. **Redundant `internal` ** — removes explicit `internal` since it is the default. Does NOT
+///    remove `internal(set)` , which is meaningful on properties with a higher getter access level
+///    (e.g. `public internal(set) var` ).
 ///
-/// 2. **Redundant `public`** — removes `public` on members inside non-public types
-///    where it has no effect. Does NOT flag members of `public` or `package` types.
+/// 2. **Redundant `public` ** — removes `public` on members inside non-public types where it has no
+///    effect. Does NOT flag members of `public` or `package` types.
 ///
-/// 3. **Redundant extension ACL** — removes access control on extension members that
-///    match the extension's own access level.
+/// 3. **Redundant extension ACL** — removes access control on extension members that match the
+///    extension's own access level.
 ///
-/// 4. **Redundant `fileprivate`** — converts `fileprivate` to `private` where equivalent.
-///    Only applies when the file contains a single logical type with no nested type
-///    declarations.
+/// 4. **Redundant `fileprivate` ** — converts `fileprivate` to `private` where equivalent. Only
+///    applies when the file contains a single logical type with no nested type declarations.
 ///
 /// Lint: Raises warnings for any of the above redundancies.
 ///
@@ -36,7 +35,7 @@ import SwiftSyntax
 final class RedundantAccessControl: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable {
     override class var group: ConfigurationGroup? { .redundancies }
 
-    override class var defaultValue: BasicRuleValue { BasicRuleValue(rewrite: false, lint: .no) }
+    override class var defaultValue: BasicRuleValue { .init(rewrite: false, lint: .no) }
 
     // MARK: - RedundantFileprivate State
 
@@ -55,9 +54,7 @@ final class RedundantAccessControl: RewriteSyntaxRule<BasicRuleValue>, @unchecke
         // Always visit children so the other checks (internal, public, extension ACL) run.
         var result = super.visit(node)
 
-        guard singleTypeName != nil, !hasNestedTypes else {
-            return result
-        }
+        guard singleTypeName != nil, !hasNestedTypes else { return result }
 
         // Phase 2: Rewrite fileprivate → private on members inside the type and its extensions.
         result.statements = rewriteStatements(result.statements)
@@ -85,11 +82,11 @@ final class RedundantAccessControl: RewriteSyntaxRule<BasicRuleValue>, @unchecke
     }
 
     override func visit(_ node: FunctionDeclSyntax) -> DeclSyntax {
-        return DeclSyntax(removeRedundantInternal(from: node, keywordKeyPath: \.funcKeyword))
+        DeclSyntax(removeRedundantInternal(from: node, keywordKeyPath: \.funcKeyword))
     }
 
     override func visit(_ node: InitializerDeclSyntax) -> DeclSyntax {
-        return DeclSyntax(removeRedundantInternal(from: node, keywordKeyPath: \.initKeyword))
+        DeclSyntax(removeRedundantInternal(from: node, keywordKeyPath: \.initKeyword))
     }
 
     override func visit(_ node: ProtocolDeclSyntax) -> DeclSyntax {
@@ -104,15 +101,15 @@ final class RedundantAccessControl: RewriteSyntaxRule<BasicRuleValue>, @unchecke
     }
 
     override func visit(_ node: SubscriptDeclSyntax) -> DeclSyntax {
-        return DeclSyntax(removeRedundantInternal(from: node, keywordKeyPath: \.subscriptKeyword))
+        DeclSyntax(removeRedundantInternal(from: node, keywordKeyPath: \.subscriptKeyword))
     }
 
     override func visit(_ node: TypeAliasDeclSyntax) -> DeclSyntax {
-        return DeclSyntax(removeRedundantInternal(from: node, keywordKeyPath: \.typealiasKeyword))
+        DeclSyntax(removeRedundantInternal(from: node, keywordKeyPath: \.typealiasKeyword))
     }
 
     override func visit(_ node: VariableDeclSyntax) -> DeclSyntax {
-        return DeclSyntax(removeRedundantInternal(from: node, keywordKeyPath: \.bindingSpecifier))
+        DeclSyntax(removeRedundantInternal(from: node, keywordKeyPath: \.bindingSpecifier))
     }
 
     // MARK: - RedundantExtensionACL: ExtensionDeclSyntax Visitor
@@ -122,10 +119,8 @@ final class RedundantAccessControl: RewriteSyntaxRule<BasicRuleValue>, @unchecke
 
         // Only check extensions that have an explicit access level.
         guard let extensionModifier = visited.modifiers.accessLevelModifier,
-            case .keyword(let extensionKeyword) = extensionModifier.name.tokenKind
-        else {
-            return DeclSyntax(visited)
-        }
+              case let .keyword(extensionKeyword) = extensionModifier.name.tokenKind
+        else { return DeclSyntax(visited) }
 
         var modified = false
         let newMembers = visited.memberBlock.members.map { member -> MemberBlockItemSyntax in
@@ -156,22 +151,20 @@ final class RedundantAccessControl: RewriteSyntaxRule<BasicRuleValue>, @unchecke
         keywordKeyPath: WritableKeyPath<Decl, TokenSyntax>
     ) -> Decl {
         guard let internalModifier = decl.modifiers.accessLevelModifier,
-            internalModifier.name.tokenKind == .keyword(.internal),
-            internalModifier.detail == nil  // skip `internal(set)`
-        else {
-            return decl
-        }
+              internalModifier.name.tokenKind == .keyword(.internal),
+              internalModifier.detail == nil  // skip `internal(set)`
+        else { return decl }
 
         diagnose(.removeRedundantInternal, on: internalModifier.name)
 
         var result = decl
         result.modifiers.remove(anyOf: [.internal])
 
-        // Transfer the leading trivia from the removed modifier to the next token
-        // (either the next modifier or the declaration keyword).
+        // Transfer the leading trivia from the removed modifier to the next token (either the next
+        // modifier or the declaration keyword).
         if result.modifiers.first != nil {
-            result.modifiers[result.modifiers.startIndex].leadingTrivia =
-                internalModifier.leadingTrivia
+            result.modifiers[result.modifiers.startIndex].leadingTrivia = internalModifier
+                .leadingTrivia
         } else {
             result[keyPath: keywordKeyPath].leadingTrivia = internalModifier.leadingTrivia
         }
@@ -186,8 +179,8 @@ final class RedundantAccessControl: RewriteSyntaxRule<BasicRuleValue>, @unchecke
     >(of decl: Decl) -> Decl {
         // Only check non-public types.
         if let accessModifier = decl.modifiers.accessLevelModifier,
-            case .keyword(let keyword) = accessModifier.name.tokenKind,
-            keyword == .public || keyword == .package
+           case let .keyword(keyword) = accessModifier.name.tokenKind,
+           keyword == .public || keyword == .package
         {
             return decl
         }
@@ -209,27 +202,27 @@ final class RedundantAccessControl: RewriteSyntaxRule<BasicRuleValue>, @unchecke
 
     private func rewrittenDeclForPublic(_ decl: DeclSyntax) -> DeclSyntax {
         switch Syntax(decl).as(SyntaxEnum.self) {
-        case .functionDecl(let functionDecl):
-            return DeclSyntax(removePublic(from: functionDecl, keywordKeyPath: \.funcKeyword))
-        case .variableDecl(let variableDecl):
-            return DeclSyntax(removePublic(from: variableDecl, keywordKeyPath: \.bindingSpecifier))
-        case .classDecl(let classDecl):
-            return DeclSyntax(removePublic(from: classDecl, keywordKeyPath: \.classKeyword))
-        case .structDecl(let structDecl):
-            return DeclSyntax(removePublic(from: structDecl, keywordKeyPath: \.structKeyword))
-        case .enumDecl(let enumDecl):
-            return DeclSyntax(removePublic(from: enumDecl, keywordKeyPath: \.enumKeyword))
-        case .protocolDecl(let protocolDecl):
-            return DeclSyntax(removePublic(from: protocolDecl, keywordKeyPath: \.protocolKeyword))
-        case .typeAliasDecl(let typeAliasDecl):
-            return DeclSyntax(removePublic(from: typeAliasDecl, keywordKeyPath: \.typealiasKeyword))
-        case .initializerDecl(let initializerDecl):
-            return DeclSyntax(removePublic(from: initializerDecl, keywordKeyPath: \.initKeyword))
-        case .subscriptDecl(let subscriptDecl):
-            return DeclSyntax(removePublic(from: subscriptDecl, keywordKeyPath: \.subscriptKeyword))
-        case .actorDecl(let actorDecl):
-            return DeclSyntax(removePublic(from: actorDecl, keywordKeyPath: \.actorKeyword))
-        default: return decl
+            case let .functionDecl(functionDecl):
+                DeclSyntax(removePublic(from: functionDecl, keywordKeyPath: \.funcKeyword))
+            case let .variableDecl(variableDecl):
+                DeclSyntax(removePublic(from: variableDecl, keywordKeyPath: \.bindingSpecifier))
+            case let .classDecl(classDecl):
+                DeclSyntax(removePublic(from: classDecl, keywordKeyPath: \.classKeyword))
+            case let .structDecl(structDecl):
+                DeclSyntax(removePublic(from: structDecl, keywordKeyPath: \.structKeyword))
+            case let .enumDecl(enumDecl):
+                DeclSyntax(removePublic(from: enumDecl, keywordKeyPath: \.enumKeyword))
+            case let .protocolDecl(protocolDecl):
+                DeclSyntax(removePublic(from: protocolDecl, keywordKeyPath: \.protocolKeyword))
+            case let .typeAliasDecl(typeAliasDecl):
+                DeclSyntax(removePublic(from: typeAliasDecl, keywordKeyPath: \.typealiasKeyword))
+            case let .initializerDecl(initializerDecl):
+                DeclSyntax(removePublic(from: initializerDecl, keywordKeyPath: \.initKeyword))
+            case let .subscriptDecl(subscriptDecl):
+                DeclSyntax(removePublic(from: subscriptDecl, keywordKeyPath: \.subscriptKeyword))
+            case let .actorDecl(actorDecl):
+                DeclSyntax(removePublic(from: actorDecl, keywordKeyPath: \.actorKeyword))
+            default: decl
         }
     }
 
@@ -238,11 +231,8 @@ final class RedundantAccessControl: RewriteSyntaxRule<BasicRuleValue>, @unchecke
         keywordKeyPath: WritableKeyPath<Decl, TokenSyntax>
     ) -> Decl {
         guard let memberModifier = decl.modifiers.accessLevelModifier,
-            memberModifier.detail == nil,
-            case .keyword(.public) = memberModifier.name.tokenKind
-        else {
-            return decl
-        }
+              memberModifier.detail == nil,
+              case .keyword(.public) = memberModifier.name.tokenKind else { return decl }
 
         diagnose(.removeRedundantPublic, on: memberModifier.name)
 
@@ -259,91 +249,81 @@ final class RedundantAccessControl: RewriteSyntaxRule<BasicRuleValue>, @unchecke
 
     // MARK: - RedundantExtensionACL: Helpers
 
-    private func rewrittenDeclForExtensionACL(_ decl: DeclSyntax, extensionKeyword: Keyword)
-        -> DeclSyntax
-    {
+    private func rewrittenDeclForExtensionACL(
+        _ decl: DeclSyntax, extensionKeyword: Keyword
+    ) -> DeclSyntax {
         switch Syntax(decl).as(SyntaxEnum.self) {
-        case .functionDecl(let functionDecl):
-            return DeclSyntax(
-                removeExtensionACLModifier(
-                    from: functionDecl,
-                    keyword: extensionKeyword,
-                    keywordKeyPath: \.funcKeyword
-                )
-            )
-        case .variableDecl(let variableDecl):
-            return DeclSyntax(
-                removeExtensionACLModifier(
-                    from: variableDecl,
-                    keyword: extensionKeyword,
-                    keywordKeyPath: \.bindingSpecifier
-                )
-            )
-        case .classDecl(let classDecl):
-            return DeclSyntax(
-                removeExtensionACLModifier(
-                    from: classDecl,
-                    keyword: extensionKeyword,
-                    keywordKeyPath: \.classKeyword
-                )
-            )
-        case .structDecl(let structDecl):
-            return DeclSyntax(
-                removeExtensionACLModifier(
-                    from: structDecl,
-                    keyword: extensionKeyword,
-                    keywordKeyPath: \.structKeyword
-                )
-            )
-        case .enumDecl(let enumDecl):
-            return DeclSyntax(
-                removeExtensionACLModifier(
-                    from: enumDecl,
-                    keyword: extensionKeyword,
-                    keywordKeyPath: \.enumKeyword
-                )
-            )
-        case .protocolDecl(let protocolDecl):
-            return DeclSyntax(
-                removeExtensionACLModifier(
-                    from: protocolDecl,
-                    keyword: extensionKeyword,
-                    keywordKeyPath: \.protocolKeyword
-                )
-            )
-        case .typeAliasDecl(let typeAliasDecl):
-            return DeclSyntax(
-                removeExtensionACLModifier(
-                    from: typeAliasDecl,
-                    keyword: extensionKeyword,
-                    keywordKeyPath: \.typealiasKeyword
-                )
-            )
-        case .initializerDecl(let initializerDecl):
-            return DeclSyntax(
-                removeExtensionACLModifier(
-                    from: initializerDecl,
-                    keyword: extensionKeyword,
-                    keywordKeyPath: \.initKeyword
-                )
-            )
-        case .subscriptDecl(let subscriptDecl):
-            return DeclSyntax(
-                removeExtensionACLModifier(
-                    from: subscriptDecl,
-                    keyword: extensionKeyword,
-                    keywordKeyPath: \.subscriptKeyword
-                )
-            )
-        case .actorDecl(let actorDecl):
-            return DeclSyntax(
-                removeExtensionACLModifier(
-                    from: actorDecl,
-                    keyword: extensionKeyword,
-                    keywordKeyPath: \.actorKeyword
-                )
-            )
-        default: return decl
+            case let .functionDecl(functionDecl):
+                DeclSyntax(
+                    removeExtensionACLModifier(
+                        from: functionDecl,
+                        keyword: extensionKeyword,
+                        keywordKeyPath: \.funcKeyword
+                    ))
+            case let .variableDecl(variableDecl):
+                DeclSyntax(
+                    removeExtensionACLModifier(
+                        from: variableDecl,
+                        keyword: extensionKeyword,
+                        keywordKeyPath: \.bindingSpecifier
+                    ))
+            case let .classDecl(classDecl):
+                DeclSyntax(
+                    removeExtensionACLModifier(
+                        from: classDecl,
+                        keyword: extensionKeyword,
+                        keywordKeyPath: \.classKeyword
+                    ))
+            case let .structDecl(structDecl):
+                DeclSyntax(
+                    removeExtensionACLModifier(
+                        from: structDecl,
+                        keyword: extensionKeyword,
+                        keywordKeyPath: \.structKeyword
+                    ))
+            case let .enumDecl(enumDecl):
+                DeclSyntax(
+                    removeExtensionACLModifier(
+                        from: enumDecl,
+                        keyword: extensionKeyword,
+                        keywordKeyPath: \.enumKeyword
+                    ))
+            case let .protocolDecl(protocolDecl):
+                DeclSyntax(
+                    removeExtensionACLModifier(
+                        from: protocolDecl,
+                        keyword: extensionKeyword,
+                        keywordKeyPath: \.protocolKeyword
+                    ))
+            case let .typeAliasDecl(typeAliasDecl):
+                DeclSyntax(
+                    removeExtensionACLModifier(
+                        from: typeAliasDecl,
+                        keyword: extensionKeyword,
+                        keywordKeyPath: \.typealiasKeyword
+                    ))
+            case let .initializerDecl(initializerDecl):
+                DeclSyntax(
+                    removeExtensionACLModifier(
+                        from: initializerDecl,
+                        keyword: extensionKeyword,
+                        keywordKeyPath: \.initKeyword
+                    ))
+            case let .subscriptDecl(subscriptDecl):
+                DeclSyntax(
+                    removeExtensionACLModifier(
+                        from: subscriptDecl,
+                        keyword: extensionKeyword,
+                        keywordKeyPath: \.subscriptKeyword
+                    ))
+            case let .actorDecl(actorDecl):
+                DeclSyntax(
+                    removeExtensionACLModifier(
+                        from: actorDecl,
+                        keyword: extensionKeyword,
+                        keywordKeyPath: \.actorKeyword
+                    ))
+            default: decl
         }
     }
 
@@ -353,12 +333,9 @@ final class RedundantAccessControl: RewriteSyntaxRule<BasicRuleValue>, @unchecke
         keywordKeyPath: WritableKeyPath<Decl, TokenSyntax>
     ) -> Decl {
         guard let memberModifier = decl.modifiers.accessLevelModifier,
-            memberModifier.detail == nil,  // skip `public(set)` etc.
-            case .keyword(let memberKeyword) = memberModifier.name.tokenKind,
-            memberKeyword == extensionKeyword
-        else {
-            return decl
-        }
+              memberModifier.detail == nil,  // skip `public(set)` etc.
+              case let .keyword(memberKeyword) = memberModifier.name.tokenKind,
+              memberKeyword == extensionKeyword else { return decl }
 
         diagnose(
             .removeRedundantExtensionACL(keyword: memberModifier.name.text),
@@ -384,31 +361,29 @@ final class RedundantAccessControl: RewriteSyntaxRule<BasicRuleValue>, @unchecke
 
         for item in statements {
             switch item.item {
-            case .decl(let decl):
-                if let name = topLevelTypeName(decl) {
-                    if primaryTypeName == nil {
-                        primaryTypeName = name
-                    } else if primaryTypeName != name {
-                        // Multiple different type names — not a single-type file.
+                case let .decl(decl):
+                    if let name = topLevelTypeName(decl) {
+                        if primaryTypeName == nil {
+                            primaryTypeName = name
+                        } else if primaryTypeName != name {
+                            // Multiple different type names — not a single-type file.
+                            singleTypeName = nil
+                            return
+                        }
+                    } else if decl.is(ImportDeclSyntax.self) {
+                        continue
+                    } else if let ifConfig = decl.as(IfConfigDeclSyntax.self) {
+                        analyzeIfConfig(ifConfig, primaryTypeName: &primaryTypeName)
+                        if singleTypeName == nil, primaryTypeName == nil { return }
+                    } else {
+                        // Top-level code (functions, variables, etc.) — not a single-type file.
                         singleTypeName = nil
                         return
                     }
-                } else if decl.is(ImportDeclSyntax.self) {
-                    continue
-                } else if let ifConfig = decl.as(IfConfigDeclSyntax.self) {
-                    analyzeIfConfig(ifConfig, primaryTypeName: &primaryTypeName)
-                    if singleTypeName == nil && primaryTypeName == nil {
-                        return
-                    }
-                } else {
-                    // Top-level code (functions, variables, etc.) — not a single-type file.
+                default:
+                    // Expressions, statements at file scope — not a single-type file.
                     singleTypeName = nil
                     return
-                }
-            default:
-                // Expressions, statements at file scope — not a single-type file.
-                singleTypeName = nil
-                return
             }
         }
 
@@ -418,7 +393,7 @@ final class RedundantAccessControl: RewriteSyntaxRule<BasicRuleValue>, @unchecke
 
         // Check for nested types in the primary type and its extensions.
         for item in statements {
-            guard case .decl(let decl) = item.item else { continue }
+            guard case let .decl(decl) = item.item else { continue }
             if let ifConfig = decl.as(IfConfigDeclSyntax.self) {
                 if ifConfigHasNestedTypes(ifConfig) {
                     hasNestedTypes = true
@@ -439,7 +414,7 @@ final class RedundantAccessControl: RewriteSyntaxRule<BasicRuleValue>, @unchecke
         for clause in ifConfig.clauses {
             guard case .statements(let stmts)? = clause.elements else { continue }
             for item in stmts {
-                guard case .decl(let decl) = item.item else {
+                guard case let .decl(decl) = item.item else {
                     singleTypeName = nil
                     return
                 }
@@ -454,9 +429,7 @@ final class RedundantAccessControl: RewriteSyntaxRule<BasicRuleValue>, @unchecke
                     continue
                 } else if let nested = decl.as(IfConfigDeclSyntax.self) {
                     analyzeIfConfig(nested, primaryTypeName: &primaryTypeName)
-                    if singleTypeName == nil && primaryTypeName == nil {
-                        return
-                    }
+                    if singleTypeName == nil, primaryTypeName == nil { return }
                 } else {
                     singleTypeName = nil
                     return
@@ -509,7 +482,7 @@ final class RedundantAccessControl: RewriteSyntaxRule<BasicRuleValue>, @unchecke
         for clause in ifConfig.clauses {
             guard case .statements(let stmts)? = clause.elements else { continue }
             for item in stmts {
-                guard case .decl(let decl) = item.item else { continue }
+                guard case let .decl(decl) = item.item else { continue }
                 if let nested = decl.as(IfConfigDeclSyntax.self) {
                     if ifConfigHasNestedTypes(nested) { return true }
                 } else if declHasNestedTypes(decl) {
@@ -536,7 +509,7 @@ final class RedundantAccessControl: RewriteSyntaxRule<BasicRuleValue>, @unchecke
         _ statements: CodeBlockItemListSyntax
     ) -> CodeBlockItemListSyntax {
         let newItems = statements.map { item -> CodeBlockItemSyntax in
-            guard case .decl(let decl) = item.item else { return item }
+            guard case let .decl(decl) = item.item else { return item }
 
             if let ifConfig = decl.as(IfConfigDeclSyntax.self) {
                 var result = item
@@ -621,9 +594,7 @@ final class RedundantAccessControl: RewriteSyntaxRule<BasicRuleValue>, @unchecke
     private func replaceFileprivate<Decl: DeclSyntaxProtocol & WithModifiersSyntax>(
         on decl: Decl
     ) -> Decl {
-        guard decl.modifiers.contains(anyOf: [.fileprivate]) else {
-            return decl
-        }
+        guard decl.modifiers.contains(anyOf: [.fileprivate]) else { return decl }
 
         let newModifiers = decl.modifiers.map { modifier -> DeclModifierSyntax in
             var modifier = modifier
@@ -642,17 +613,17 @@ final class RedundantAccessControl: RewriteSyntaxRule<BasicRuleValue>, @unchecke
 
 // MARK: - Finding Messages
 
-extension Finding.Message {
-    fileprivate static let removeRedundantInternal: Finding.Message =
+fileprivate extension Finding.Message {
+    static let removeRedundantInternal: Finding.Message =
         "remove redundant 'internal' access modifier"
 
-    fileprivate static let removeRedundantPublic: Finding.Message =
+    static let removeRedundantPublic: Finding.Message =
         "remove redundant 'public'; the enclosing type is not public"
 
-    fileprivate static func removeRedundantExtensionACL(keyword: String) -> Finding.Message {
+    static func removeRedundantExtensionACL(keyword: String) -> Finding.Message {
         "remove redundant '\(keyword)'; it matches the extension's access level"
     }
 
-    fileprivate static let replaceFileprivateWithPrivate: Finding.Message =
+    static let replaceFileprivateWithPrivate: Finding.Message =
         "replace 'fileprivate' with 'private'; no other type in this file needs broader access"
 }

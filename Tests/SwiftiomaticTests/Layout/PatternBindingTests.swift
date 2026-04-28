@@ -57,6 +57,23 @@ struct PatternBindingTests: LayoutTesting {
     assertLayout(input: input, expected: expected, linelength: 28)
   }
 
+  @Test func typeAnnotationStaysOnSameLineWithTernaryRHS() {
+    let input =
+      """
+      let newlines: NewlineBehavior = config[KeepFunctionOutputTogether.self] ? .elective(ignoresDiscretionary: true) : .elective
+      """
+
+    let expected =
+      """
+      let newlines: NewlineBehavior = config[KeepFunctionOutputTogether.self]
+        ? .elective(ignoresDiscretionary: true)
+        : .elective
+
+      """
+
+    assertLayout(input: input, expected: expected, linelength: 100)
+  }
+
   @Test func groupingIncludesTrailingComma() {
     let input =
       """

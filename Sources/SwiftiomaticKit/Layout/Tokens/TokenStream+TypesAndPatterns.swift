@@ -1,38 +1,42 @@
-//===----------------------------------------------------------------------===//
+// ===----------------------------------------------------------------------===//
 //
 // This source file is part of the Swift.org open source project
 //
-// Copyright (c) 2014 - 2019 Apple Inc. and the Swift project authors
-// Licensed under Apache License v2.0 with Runtime Library Exception
+// Copyright (c) 2014 - 2019 Apple Inc. and the Swift project authors Licensed under Apache License
+// v2.0 with Runtime Library Exception
 //
-// See https://swift.org/LICENSE.txt for license information
-// See https://swift.org/CONTRIBUTORS.txt for the list of Swift project authors
+// See https://swift.org/LICENSE.txt for license information See https://swift.org/CONTRIBUTORS.txt
+// for the list of Swift project authors
 //
-//===----------------------------------------------------------------------===//
+// ===----------------------------------------------------------------------===//
 
 import SwiftSyntax
 
 extension TokenStream {
-    func visitGenericParameterClause(_ node: GenericParameterClauseSyntax) -> SyntaxVisitorContinueKind {
+    func visitGenericParameterClause(
+        _ node: GenericParameterClauseSyntax
+    ) -> SyntaxVisitorContinueKind {
         after(node.leftAngle, tokens: .break(.open, size: 0), .open(argumentListConsistency()))
         before(node.rightAngle, tokens: .break(.close, size: 0), .close)
         return .visitChildren
     }
 
-    func visitGenericParameterList(_ node: GenericParameterListSyntax) -> SyntaxVisitorContinueKind {
+    func visitGenericParameterList(
+        _ node: GenericParameterListSyntax
+    ) -> SyntaxVisitorContinueKind {
         markCommaDelimitedRegion(node, isCollectionLiteral: false)
         return .visitChildren
     }
 
-    func visitPrimaryAssociatedTypeClause(_ node: PrimaryAssociatedTypeClauseSyntax) -> SyntaxVisitorContinueKind {
+    func visitPrimaryAssociatedTypeClause(
+        _ node: PrimaryAssociatedTypeClauseSyntax
+    ) -> SyntaxVisitorContinueKind {
         after(node.leftAngle, tokens: .break(.open, size: 0), .open(argumentListConsistency()))
         before(node.rightAngle, tokens: .break(.close, size: 0), .close)
         return .visitChildren
     }
 
-    func visitArrayType(_ node: ArrayTypeSyntax) -> SyntaxVisitorContinueKind {
-        return .visitChildren
-    }
+    func visitArrayType(_: ArrayTypeSyntax) -> SyntaxVisitorContinueKind { .visitChildren }
 
     func visitInlineArrayType(_ node: InlineArrayTypeSyntax) -> SyntaxVisitorContinueKind {
         after(node.leftSquare, tokens: .break(.open, size: 0), .open)
@@ -70,7 +74,9 @@ extension TokenStream {
         return .visitChildren
     }
 
-    func visitGenericArgumentClause(_ node: GenericArgumentClauseSyntax) -> SyntaxVisitorContinueKind {
+    func visitGenericArgumentClause(
+        _ node: GenericArgumentClauseSyntax
+    ) -> SyntaxVisitorContinueKind {
         after(node.leftAngle, tokens: .break(.open, size: 0), .open)
         before(node.rightAngle, tokens: .break(.close, size: 0), .close)
         return .visitChildren
@@ -82,7 +88,9 @@ extension TokenStream {
         return .visitChildren
     }
 
-    func visitTuplePatternElementList(_ node: TuplePatternElementListSyntax) -> SyntaxVisitorContinueKind {
+    func visitTuplePatternElementList(
+        _ node: TuplePatternElementListSyntax
+    ) -> SyntaxVisitorContinueKind {
         markCommaDelimitedRegion(node, isCollectionLiteral: false)
         return .visitChildren
     }
@@ -96,7 +104,7 @@ extension TokenStream {
         // Check for an anchor token inside of the expression to end a group starting with the `try`
         // keyword.
         if !(node.parent?.isProtocol(KeywordModifiedExprSyntax.self) ?? false),
-            let anchorToken = connectingTokenForKeywordModifiedExpr(inSubExpr: node.expression)
+           let anchorToken = connectingTokenForKeywordModifiedExpr(inSubExpr: node.expression)
         {
             before(node.tryKeyword, tokens: .open)
             after(anchorToken, tokens: .close)
@@ -111,10 +119,10 @@ extension TokenStream {
             tokens: .break(.continue, newlines: .elective(ignoresDiscretionary: true))
         )
 
-        // Check for an anchor token inside of the expression to end a group starting with the `await`
-        // keyword.
+        // Check for an anchor token inside of the expression to end a group starting with the
+        // `await` keyword.
         if !(node.parent?.isProtocol(KeywordModifiedExprSyntax.self) ?? false),
-            let anchorToken = connectingTokenForKeywordModifiedExpr(inSubExpr: node.expression)
+           let anchorToken = connectingTokenForKeywordModifiedExpr(inSubExpr: node.expression)
         {
             before(node.awaitKeyword, tokens: .open)
             after(anchorToken, tokens: .close)
@@ -124,14 +132,14 @@ extension TokenStream {
     }
 
     func visitUnsafeExpr(_ node: UnsafeExprSyntax) -> SyntaxVisitorContinueKind {
-        // Unlike `try` and `await`, `unsafe` is a contextual keyword that may not be separated from
-        // the following token by a line break. Keep them glued together with `.space`.
+        // Unlike `try` and `await` , `unsafe` is a contextual keyword that may not be separated
+        // from the following token by a line break. Keep them glued together with `.space` .
         before(node.expression.firstToken(viewMode: .sourceAccurate), tokens: .space)
 
-        // Check for an anchor token inside of the expression to end a group starting with the `unsafe`
-        // keyword.
+        // Check for an anchor token inside of the expression to end a group starting with the
+        // `unsafe` keyword.
         if !(node.parent?.isProtocol(KeywordModifiedExprSyntax.self) ?? false),
-            let anchorToken = connectingTokenForKeywordModifiedExpr(inSubExpr: node.expression)
+           let anchorToken = connectingTokenForKeywordModifiedExpr(inSubExpr: node.expression)
         {
             before(node.unsafeKeyword, tokens: .open)
             after(anchorToken, tokens: .close)
@@ -148,19 +156,19 @@ extension TokenStream {
     ///   nil if there should be no group.
     func connectingTokenForKeywordModifiedExpr(inSubExpr expr: ExprSyntax) -> TokenSyntax? {
         if let modifiedExpr = expr.asProtocol(KeywordModifiedExprSyntax.self) {
-            // If we were called from a keyword-modified expression like `try`, `await`, or `unsafe`,
-            // recursively drill into the child expression.
+            // If we were called from a keyword-modified expression like `try` , `await` , or
+            // `unsafe` , recursively drill into the child expression.
             return connectingTokenForKeywordModifiedExpr(inSubExpr: modifiedExpr.expression)
         }
         if let callingExpr = expr.asProtocol(CallingExprSyntax.self) {
             return connectingTokenForKeywordModifiedExpr(inSubExpr: callingExpr.calledExpression)
         }
         if let memberAccessExpr = expr.as(MemberAccessExprSyntax.self),
-            let base = memberAccessExpr.base
+           let base = memberAccessExpr.base
         {
-            // When there's a simple base (i.e. identifier), group the entire `try/await <base>.<name>`
-            // sequence. This check has to happen here so that the `MemberAccessExprSyntax.name` is
-            // available.
+            // When there's a simple base (i.e. identifier), group the entire
+            // `try/await <base>.<name>` sequence. This check has to happen here so that the
+            // `MemberAccessExprSyntax.name` is available.
             if base.is(DeclReferenceExprSyntax.self) {
                 return memberAccessExpr.declName.baseName.lastToken(viewMode: .sourceAccurate)
             }
@@ -172,64 +180,71 @@ extension TokenStream {
         return nil
     }
 
-    func visitTypeExpr(_ node: TypeExprSyntax) -> SyntaxVisitorContinueKind {
-        return .visitChildren
-    }
+    func visitTypeExpr(_: TypeExprSyntax) -> SyntaxVisitorContinueKind { .visitChildren }
 
     func visitAttribute(_ node: AttributeSyntax) -> SyntaxVisitorContinueKind {
         before(node.firstToken(viewMode: .sourceAccurate), tokens: .open)
         switch node.arguments {
-        case .argumentList(let argumentList)?:
-            if let leftParen = node.leftParen, let rightParen = node.rightParen {
-                arrangeFunctionCallArgumentList(
-                    argumentList,
-                    leftDelimiter: leftParen,
-                    rightDelimiter: rightParen,
-                    forcesBreakBeforeRightDelimiter: false
+            case .argumentList(let argumentList)?:
+                if let leftParen = node.leftParen, let rightParen = node.rightParen {
+                    arrangeFunctionCallArgumentList(
+                        argumentList,
+                        leftDelimiter: leftParen,
+                        rightDelimiter: rightParen,
+                        forcesBreakBeforeRightDelimiter: false
+                    )
+                }
+            case .some:
+                // Wrap the attribute's arguments in their own group, so arguments stay together with a
+                // higher affinity than the overall attribute (e.g. allows a break after the opening "("
+                // and then having the entire argument list on 1 line). Necessary spaces and breaks are
+                // added inside of the argument, using type specific visitor methods.
+                after(
+                    node.leftParen, tokens: .break(.open, size: 0), .open(argumentListConsistency())
                 )
-            }
-        case .some:
-            // Wrap the attribute's arguments in their own group, so arguments stay together with a higher
-            // affinity than the overall attribute (e.g. allows a break after the opening "(" and then
-            // having the entire argument list on 1 line). Necessary spaces and breaks are added inside of
-            // the argument, using type specific visitor methods.
-            after(node.leftParen, tokens: .break(.open, size: 0), .open(argumentListConsistency()))
-            before(node.rightParen, tokens: .break(.close, size: 0), .close)
-        case nil:
-            break
+                before(node.rightParen, tokens: .break(.close, size: 0), .close)
+            case nil: break
         }
         after(node.lastToken(viewMode: .sourceAccurate), tokens: .close)
         return .visitChildren
     }
 
-    func visitAvailabilityArgumentList(_ node: AvailabilityArgumentListSyntax) -> SyntaxVisitorContinueKind {
+    func visitAvailabilityArgumentList(
+        _ node: AvailabilityArgumentListSyntax
+    ) -> SyntaxVisitorContinueKind {
         insertTokens(.break(.same, size: 1), betweenElementsOf: node)
         return .visitChildren
     }
 
-    func visitOriginallyDefinedInAttributeArguments(_ node: OriginallyDefinedInAttributeArgumentsSyntax)
-        -> SyntaxVisitorContinueKind {
+    func visitOriginallyDefinedInAttributeArguments(
+        _ node: OriginallyDefinedInAttributeArgumentsSyntax
+    ) -> SyntaxVisitorContinueKind {
         after(node.colon.lastToken(viewMode: .sourceAccurate), tokens: .break(.same, size: 1))
         after(node.comma.lastToken(viewMode: .sourceAccurate), tokens: .break(.same, size: 1))
         return .visitChildren
     }
 
-    func visitDocumentationAttributeArgument(_ node: DocumentationAttributeArgumentSyntax) -> SyntaxVisitorContinueKind {
+    func visitDocumentationAttributeArgument(
+        _ node: DocumentationAttributeArgumentSyntax
+    ) -> SyntaxVisitorContinueKind {
         after(node.colon, tokens: .break(.same, size: 1))
         return .visitChildren
     }
 
-    func visitAvailabilityLabeledArgument(_ node: AvailabilityLabeledArgumentSyntax) -> SyntaxVisitorContinueKind {
+    func visitAvailabilityLabeledArgument(
+        _ node: AvailabilityLabeledArgumentSyntax
+    ) -> SyntaxVisitorContinueKind {
         before(node.label, tokens: .open)
 
         let tokensAfterColon: [Token]
         let endTokens: [Token]
 
-        if case .string(let string) = node.value,
-            string.openingQuote.tokenKind == .multilineStringQuote
+        if case let .string(string) = node.value,
+           string.openingQuote.tokenKind == .multilineStringQuote
         {
-            tokensAfterColon =
-                [.break(.open(kind: .block), newlines: .elective(ignoresDiscretionary: true))]
+            tokensAfterColon = [
+                .break(.open(kind: .block), newlines: .elective(ignoresDiscretionary: true))
+            ]
             endTokens = [.break(.close(mustBreak: false), size: 0), .close]
         } else {
             tokensAfterColon = [.break(.continue, newlines: .elective(ignoresDiscretionary: true))]
@@ -255,7 +270,9 @@ extension TokenStream {
         return .visitChildren
     }
 
-    func visitBackDeployedAttributeArguments(_ node: BackDeployedAttributeArgumentsSyntax) -> SyntaxVisitorContinueKind {
+    func visitBackDeployedAttributeArguments(
+        _ node: BackDeployedAttributeArgumentsSyntax
+    ) -> SyntaxVisitorContinueKind {
         before(
             node.platforms.firstToken(viewMode: .sourceAccurate),
             tokens: .break(.open, size: 1),
@@ -280,9 +297,7 @@ extension TokenStream {
         return .visitChildren
     }
 
-    func visitInOutExpr(_ node: InOutExprSyntax) -> SyntaxVisitorContinueKind {
-        return .visitChildren
-    }
+    func visitInOutExpr(_: InOutExprSyntax) -> SyntaxVisitorContinueKind { .visitChildren }
 
     func visitImportDecl(_ node: ImportDeclSyntax) -> SyntaxVisitorContinueKind {
         // Import declarations should never be wrapped.
@@ -310,21 +325,21 @@ extension TokenStream {
 
     func visitKeyPathComponent(_ node: KeyPathComponentSyntax) -> SyntaxVisitorContinueKind {
         // If this is the first component (immediately after the backslash), allow a break after the
-        // slash only if a typename follows it. Do not break in the middle of `\.`.
+        // slash only if a typename follows it. Do not break in the middle of `\.` .
         var breakBeforePeriod = true
         if let keyPathComponents = node.parent?.as(KeyPathComponentListSyntax.self),
-            let keyPathExpr = keyPathComponents.parent?.as(KeyPathExprSyntax.self),
-            node == keyPathExpr.components.first, keyPathExpr.root == nil
+           let keyPathExpr = keyPathComponents.parent?.as(KeyPathExprSyntax.self),
+           node == keyPathExpr.components.first, keyPathExpr.root == nil
         {
             breakBeforePeriod = false
         }
-        if breakBeforePeriod {
-            before(node.period, tokens: .break(.continue, size: 0))
-        }
+        if breakBeforePeriod { before(node.period, tokens: .break(.continue, size: 0)) }
         return .visitChildren
     }
 
-    func visitKeyPathSubscriptComponent(_ node: KeyPathSubscriptComponentSyntax) -> SyntaxVisitorContinueKind {
+    func visitKeyPathSubscriptComponent(
+        _ node: KeyPathSubscriptComponentSyntax
+    ) -> SyntaxVisitorContinueKind {
         var breakBeforeRightParen = !isCompactSingleFunctionCallArgument(node.arguments)
         if let component = node.parent?.as(KeyPathComponentSyntax.self) {
             breakBeforeRightParen = !isLastKeyPathComponent(component)
@@ -339,15 +354,11 @@ extension TokenStream {
         return .visitChildren
     }
 
-    /// Returns a value indicating whether the given key path component was the last component in the
-    /// list containing it.
+    /// Returns a value indicating whether the given key path component was the last component in
+    /// the list containing it.
     func isLastKeyPathComponent(_ component: KeyPathComponentSyntax) -> Bool {
-        guard
-            let componentList = component.parent?.as(KeyPathComponentListSyntax.self),
-            let lastComponent = componentList.last
-        else {
-            return false
-        }
+        guard let componentList = component.parent?.as(KeyPathComponentListSyntax.self),
+              let lastComponent = componentList.last else { return false }
         return component == lastComponent
     }
 
@@ -358,7 +369,7 @@ extension TokenStream {
         // breaks here. Using `.break(.open(kind: .continuation)) ... .break(.close)` pairs lets the
         // wrapped branches push a continuation indent so wrapped sub-expressions (e.g. `+` chains
         // inside a branch) align relative to the branch keyword, and keeps the breaks eligible for
-        // discretionary newlines via `RespectExistingLineBreaks`.
+        // discretionary newlines via `RespectExistingLineBreaks` .
         before(node.questionMark, tokens: .break(.open(kind: .continuation)))
         after(node.questionMark, tokens: .space)
         before(
@@ -379,33 +390,26 @@ extension TokenStream {
     }
 
     func visitWhereClause(_ node: WhereClauseSyntax) -> SyntaxVisitorContinueKind {
-        // We need to special case `where`-clauses associated with `catch` blocks when
-        // `elseCatchOnNewLine == false`, because that's the one situation where we
-        // want the `where` keyword to be treated as a continuation; that way, we get this:
+        // We need to special case `where` -clauses associated with `catch` blocks when
+        // `elseCatchOnNewLine == false` , because that's the one situation where we want the
+        // `where` keyword to be treated as a continuation; that way, we get this:
         //
-        //     } catch LongExceptionName
-        //       where longCondition
-        //     {
-        //       ...
-        //     }
+        // } catch LongExceptionName where longCondition { ... }
         //
         // instead of this:
         //
-        //     } catch LongExceptionName
-        //     where longCondition {
-        //       ...
-        //     }
+        // } catch LongExceptionName where longCondition { ... }
         //
         let wherePrecedingBreak: Token
         let whereTrailingBreak: Token
         if !config[ElseCatchOnNewLine.self],
-            let parent = node.parent, parent.is(CatchItemSyntax.self)
+           let parent = node.parent, parent.is(CatchItemSyntax.self)
         {
             wherePrecedingBreak = .break(.continue)
             whereTrailingBreak = .break
         } else if let parent = node.parent, parent.is(SwitchCaseItemSyntax.self) {
-            // Indent `where` past `case` when it wraps, and indent the
-            // condition continuation one further level if it also wraps.
+            // Indent `where` past `case` when it wraps, and indent the condition continuation one
+            // further level if it also wraps.
             wherePrecedingBreak = .break(.continue)
             whereTrailingBreak = .break(.continue)
         } else {
@@ -419,15 +423,13 @@ extension TokenStream {
     }
 
     func visitDeclModifier(_ node: DeclModifierSyntax) -> SyntaxVisitorContinueKind {
-        // Due to the way we currently use spaces after let/var keywords in variable bindings, we need
-        // this special exception for `async let` statements to avoid breaking prematurely between the
-        // `async` and `let` keywords.
+        // Due to the way we currently use spaces after let/var keywords in variable bindings, we
+        // need this special exception for `async let` statements to avoid breaking prematurely
+        // between the `async` and `let` keywords.
         let breakOrSpace: Token
-        if node.name.tokenKind == .keyword(.async) {
-            breakOrSpace = .space
-        } else {
-            breakOrSpace = .break
-        }
+        breakOrSpace = node.name.tokenKind == .keyword(.async)
+            ? .space
+            : .break
         after(node.lastToken(viewMode: .sourceAccurate), tokens: breakOrSpace)
         return .visitChildren
     }
@@ -436,9 +438,10 @@ extension TokenStream {
         // When KeepFunctionOutputTogether is enabled, the rule's purpose is to keep the return
         // clause attached to the closing paren / effect specifiers. Ignore any pre-existing
         // discretionary newline before `->` so a previously-broken signature gets re-attached.
-        let newlines: NewlineBehavior =
-            config[KeepFunctionOutputTogether.self]
-            ? .elective(ignoresDiscretionary: true) : .elective
+        let newlines:
+            NewlineBehavior = config[KeepFunctionOutputTogether.self]
+                ? .elective(ignoresDiscretionary: true)
+                : .elective
         before(
             node.returnClause?.firstToken(viewMode: .sourceAccurate),
             tokens: .break(.continue, newlines: newlines)
@@ -446,11 +449,7 @@ extension TokenStream {
         return .visitChildren
     }
 
-    func visitMetatypeType(_ node: MetatypeTypeSyntax) -> SyntaxVisitorContinueKind {
-        return .visitChildren
-    }
+    func visitMetatypeType(_: MetatypeTypeSyntax) -> SyntaxVisitorContinueKind { .visitChildren }
 
-    func visitOptionalType(_ node: OptionalTypeSyntax) -> SyntaxVisitorContinueKind {
-        return .visitChildren
-    }
+    func visitOptionalType(_: OptionalTypeSyntax) -> SyntaxVisitorContinueKind { .visitChildren }
 }

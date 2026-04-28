@@ -1175,4 +1175,43 @@ struct RedundantSelfTests: RuleTesting {
         FindingSpec("1️⃣", message: "remove redundant 'self.' prefix")
       ])
   }
+
+  // MARK: - Keyword Member Names
+
+  @Test func keepSelfBeforeIs() {
+    let source = """
+      extension ExprSyntax {
+          func check() -> Bool {
+              if self.is(StringLiteralExprSyntax.self) { return true }
+              return false
+          }
+      }
+      """
+    assertFormatting(RedundantSelf.self, input: source, expected: source, findings: [])
+  }
+
+  @Test func keepSelfBeforeAs() {
+    let source = """
+      extension ExprSyntax {
+          func check() -> FunctionCallExprSyntax? {
+              return self.as(FunctionCallExprSyntax.self)
+          }
+      }
+      """
+    assertFormatting(RedundantSelf.self, input: source, expected: source, findings: [])
+  }
+
+  @Test func keepSelfBeforeTry() {
+    // `try` is a reserved keyword; a member literally named `try` would require
+    // backticks to call bare, so `self.try(...)` must be left alone.
+    let source = """
+      struct Foo {
+          func `try`() {}
+          func run() {
+              self.try()
+          }
+      }
+      """
+    assertFormatting(RedundantSelf.self, input: source, expected: source, findings: [])
+  }
 }

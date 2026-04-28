@@ -20,14 +20,30 @@ extension CodeBlockSyntax {
     var isInlineSingleStatementBody: Bool {
         var iter = statements.makeIterator()
         guard let first = iter.next(), iter.next() == nil else { return false }
-        if leftBrace.trailingTrivia.containsNewlines { return false }
-        if first.leadingTrivia.containsNewlines { return false }
-        if first.trailingTrivia.containsNewlines { return false }
-        if rightBrace.leadingTrivia.containsNewlines { return false }
+        // Comments inside the body force it to a multi-line layout — never inline.
         if leftBrace.trailingTrivia.hasAnyComments { return false }
         if first.leadingTrivia.hasAnyComments { return false }
         if first.trailingTrivia.hasAnyComments { return false }
         if rightBrace.leadingTrivia.hasAnyComments { return false }
+        // Newlines in the trivia don't disqualify — the formatter may add/remove them
+        // each pass; treating the body as an inline candidate based on statement count
+        // alone keeps formatting idempotent.
+        return true
+    }
+
+    /// Like `isInlineSingleStatementBody`, but also requires the user's input to
+    /// signal inline intent — `{`, the statement, and `}` all on the same source
+    /// line (no newlines in surrounding trivia, no internal newlines in the
+    /// statement). Used to opt-in to keeping `else { stmt }` glued when the
+    /// surrounding control-flow conditions wrap.
+    var hasInlineIntentSingleStatementBody: Bool {
+        guard isInlineSingleStatementBody else { return false }
+        guard let first = statements.first else { return false }
+        if leftBrace.trailingTrivia.containsNewlines { return false }
+        if first.leadingTrivia.containsNewlines { return false }
+        if first.trailingTrivia.containsNewlines { return false }
+        if rightBrace.leadingTrivia.containsNewlines { return false }
+        if first.trimmedDescription.contains("\n") { return false }
         return true
     }
 

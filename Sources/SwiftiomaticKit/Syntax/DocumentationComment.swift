@@ -1,14 +1,14 @@
-//===----------------------------------------------------------------------===//
+// ===----------------------------------------------------------------------===//
 //
 // This source file is part of the Swift.org open source project
 //
-// Copyright (c) 2014 - 2023 Apple Inc. and the Swift project authors
-// Licensed under Apache License v2.0 with Runtime Library Exception
+// Copyright (c) 2014 - 2023 Apple Inc. and the Swift project authors Licensed under Apache License
+// v2.0 with Runtime Library Exception
 //
-// See https://swift.org/LICENSE.txt for license information
-// See https://swift.org/CONTRIBUTORS.txt for the list of Swift project authors
+// See https://swift.org/LICENSE.txt for license information See https://swift.org/CONTRIBUTORS.txt
+// for the list of Swift project authors
 //
-//===----------------------------------------------------------------------===//
+// ===----------------------------------------------------------------------===//
 
 import Markdown
 import SwiftSyntax
@@ -27,9 +27,9 @@ package struct DocumentationComment {
 
         /// The documentation comment of the parameter.
         ///
-        /// Typically, only the `briefSummary` field of this value will be populated. However, for more
-        /// complex cases like parameters whose types are functions, the grammar permits full
-        /// descriptions including `Parameter(s)`, `Returns`, and `Throws` fields to be present.
+        /// Typically, only the `briefSummary` field of this value will be populated. However, for
+        /// more complex cases like parameters whose types are functions, the grammar permits full
+        /// descriptions including `Parameter(s)` , `Returns` , and `Throws` fields to be present.
         package var comment: DocumentationComment
     }
 
@@ -63,20 +63,19 @@ package struct DocumentationComment {
     /// `Throws:` prefix removed for convenience.
     package var `throws`: Paragraph?
 
-    /// Creates a new `DocumentationComment` with information extracted from the leading trivia of the
-    /// given syntax node.
+    /// Creates a new `DocumentationComment` with information extracted from the leading trivia of
+    /// the given syntax node.
     ///
     /// If the syntax node does not have a preceding documentation comment, this initializer returns
-    /// `nil`.
+    /// `nil` .
     ///
     /// - Parameter node: The syntax node from which the documentation comment should be extracted.
     package init?<Node: SyntaxProtocol>(extractedFrom node: Node) {
-        guard let commentInfo = DocumentationCommentText(extractedFrom: node.leadingTrivia) else {
-            return nil
-        }
+        guard let commentInfo = DocumentationCommentText(extractedFrom: node.leadingTrivia)
+        else { return nil }
 
-        // Disable smart quotes and dash conversion since we want to preserve the original content of
-        // the comments instead of doing documentation generation.
+        // Disable smart quotes and dash conversion since we want to preserve the original content
+        // of the comments instead of doing documentation generation.
         let doc = Document(parsing: commentInfo.text, options: [.disableSmartOpts])
         self.init(markup: doc)
     }
@@ -99,20 +98,15 @@ package struct DocumentationComment {
             if var list = child.detachedFromParent as? UnorderedList {
                 // An unordered list could be one of the following:
                 //
-                // 1.  A parameter outline:
-                //     - Parameters:
-                //       - x: ...
-                //       - y: ...
+                // 1. A parameter outline: - Parameters: - x: ... - y: ...
                 //
-                // 2.  An exploded parameter list:
-                //     - Parameter x: ...
-                //     - Parameter y: ...
+                // 2. An exploded parameter list: - Parameter x: ... - Parameter y: ...
                 //
-                // 3.  Some other simple field, like `Returns:`.
+                // 3. Some other simple field, like `Returns:` .
                 //
-                // Note that the order of execution of these two functions matters for the correct value of
-                // `parameterLayout` to be computed. If these ever change, make sure to update that
-                // computation inside the functions.
+                // Note that the order of execution of these two functions matters for the correct
+                // value of `parameterLayout` to be computed. If these ever change, make sure to
+                // update that computation inside the functions.
                 extractParameterOutline(from: &list)
                 extractSeparatedParameters(from: &list)
 
@@ -155,10 +149,7 @@ package struct DocumentationComment {
                     guard let paramField = parameterField(
                         extractedFrom: sublistItem,
                         expectParameterLabel: false
-                    )
-                    else {
-                        continue
-                    }
+                    ) else { continue }
                     parameters.append(paramField)
                     parameterLayout = .outline
                 }
@@ -197,8 +188,8 @@ package struct DocumentationComment {
         list = list.withUncheckedChildren(unprocessedChildren) as! UnorderedList
     }
 
-    /// Returns a new `ParameterField` containing parameter information extracted from the given list
-    /// item, or `nil` if it was not a valid parameter field.
+    /// Returns a new `ParameterField` containing parameter information extracted from the given
+    /// list item, or `nil` if it was not a valid parameter field.
     private func parameterField(
         extractedFrom listItem: ListItem,
         expectParameterLabel: Bool
@@ -208,8 +199,7 @@ package struct DocumentationComment {
             expectParameterLabel: expectParameterLabel
         )
         guard let newListItem = listItem.accept(&rewriter) as? ListItem,
-              let name = rewriter.parameterName
-        else { return nil }
+              let name = rewriter.parameterName else { return nil }
 
         return Parameter(name: name, comment: DocumentationComment(markup: newListItem))
     }
@@ -251,14 +241,16 @@ private struct ParameterOutlineMarkupRewriter: MarkupRewriter {
     /// The list item to which the rewriter will be applied.
     let origin: ListItem
 
-    /// If true, the `Parameter` prefix is expected on the list item content and it should be dropped.
+    /// If true, the `Parameter` prefix is expected on the list item content and it should be
+    /// dropped.
     let expectParameterLabel: Bool
 
     /// Populated if the list item to which this is applied represents a valid parameter field.
     private(set) var parameterName: String?
 
     mutating func visitListItem(_ listItem: ListItem) -> Markup? {
-        // Only recurse into the exact list item we're applying this to; otherwise, return it unchanged.
+        // Only recurse into the exact list item we're applying this to; otherwise, return it
+        // unchanged.
         guard listItem.isIdentical(to: origin) else { return listItem }
         return defaultVisit(listItem)
     }
@@ -280,7 +272,8 @@ private struct ParameterOutlineMarkupRewriter: MarkupRewriter {
         }
 
         let string = expectParameterLabel
-            ? text.string.dropFirst(parameterPrefix.count) : text.string[...]
+            ? text.string.dropFirst(parameterPrefix.count)
+            : text.string[...]
         let nameAndRemainder = string.split(separator: ":", maxSplits: 1)
         guard nameAndRemainder.count == 2 else { return text }
 
@@ -305,7 +298,8 @@ private struct SimpleFieldMarkupRewriter: MarkupRewriter {
     private(set) var paragraph: Paragraph?
 
     mutating func visitListItem(_ listItem: ListItem) -> Markup? {
-        // Only recurse into the exact list item we're applying this to; otherwise, return it unchanged.
+        // Only recurse into the exact list item we're applying this to; otherwise, return it
+        // unchanged.
         guard listItem.isIdentical(to: origin) else { return listItem }
         return defaultVisit(listItem)
     }

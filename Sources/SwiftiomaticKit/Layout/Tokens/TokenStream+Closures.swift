@@ -1,25 +1,23 @@
-//===----------------------------------------------------------------------===//
+// ===----------------------------------------------------------------------===//
 //
 // This source file is part of the Swift.org open source project
 //
-// Copyright (c) 2014 - 2019 Apple Inc. and the Swift project authors
-// Licensed under Apache License v2.0 with Runtime Library Exception
+// Copyright (c) 2014 - 2019 Apple Inc. and the Swift project authors Licensed under Apache License
+// v2.0 with Runtime Library Exception
 //
-// See https://swift.org/LICENSE.txt for license information
-// See https://swift.org/CONTRIBUTORS.txt for the list of Swift project authors
+// See https://swift.org/LICENSE.txt for license information See https://swift.org/CONTRIBUTORS.txt
+// for the list of Swift project authors
 //
-//===----------------------------------------------------------------------===//
+// ===----------------------------------------------------------------------===//
 
 import SwiftSyntax
 
 extension TokenStream {
     func visitClosureExpr(_ node: ClosureExprSyntax) -> SyntaxVisitorContinueKind {
         let newlineBehavior: NewlineBehavior
-        if forcedBreakingClosures.remove(node.id) != nil || node.statements.count > 1 {
-            newlineBehavior = .soft
-        } else {
-            newlineBehavior = .elective
-        }
+        newlineBehavior = forcedBreakingClosures.remove(node.id) != nil || node.statements.count > 1
+            ? .soft
+            : .elective
 
         if let signature = node.signature {
             after(node.leftBrace, tokens: .break(.open))
@@ -34,10 +32,10 @@ extension TokenStream {
             before(node.rightBrace, tokens: .break(.close))
         } else {
             // Closures without signatures can have their contents laid out identically to any other
-            // braced structure. The leading reset is skipped because the layout depends on whether it is
-            // a trailing closure of a function call (in which case that function call supplies the reset)
-            // or part of some other expression (where we want that expression's same/continue behavior to
-            // apply).
+            // braced structure. The leading reset is skipped because the layout depends on whether
+            // it is a trailing closure of a function call (in which case that function call
+            // supplies the reset) or part of some other expression (where we want that expression's
+            // same/continue behavior to apply).
             arrangeBracesAndContents(
                 of: node,
                 contentsKeyPath: \.statements,
@@ -48,7 +46,9 @@ extension TokenStream {
         return .visitChildren
     }
 
-    func visitClosureShorthandParameter(_ node: ClosureShorthandParameterSyntax) -> SyntaxVisitorContinueKind {
+    func visitClosureShorthandParameter(
+        _ node: ClosureShorthandParameterSyntax
+    ) -> SyntaxVisitorContinueKind {
         after(node.trailingComma, tokens: .break(.same))
         return .visitChildren
     }
@@ -62,30 +62,31 @@ extension TokenStream {
         )
 
         if let parameterClause = node.parameterClause {
-            // We unconditionally put a break before the `in` keyword below, so we should only put a break
-            // after the capture list's right bracket if there are arguments following it or we'll end up
-            // with an extra space if the line doesn't wrap.
+            // We unconditionally put a break before the `in` keyword below, so we should only put a
+            // break after the capture list's right bracket if there are arguments following it or
+            // we'll end up with an extra space if the line doesn't wrap.
             after(node.capture?.rightSquare, tokens: .break(.same))
 
-            // When it's parenthesized, the parameterClause is a `ParameterClauseSyntax`. Otherwise, it's a
-            // `ClosureParamListSyntax`. The parenthesized version is wrapped in open/close breaks so that
-            // the parens create an extra level of indentation.
+            // When it's parenthesized, the parameterClause is a `ParameterClauseSyntax` .
+            // Otherwise, it's a `ClosureParamListSyntax` . The parenthesized version is wrapped in
+            // open/close breaks so that the parens create an extra level of indentation.
             if let closureParameterClause = parameterClause.as(ClosureParameterClauseSyntax.self) {
-                // Whether we should prioritize keeping ") throws -> <return_type>" together. We can only do
-                // this if the closure has arguments.
-                let keepOutputTogether =
-                    !closureParameterClause.parameters.isEmpty
+                // Whether we should prioritize keeping ") throws -> <return_type>" together. We can
+                // only do this if the closure has arguments.
+                let keepOutputTogether = !closureParameterClause.parameters.isEmpty
                     && config[KeepFunctionOutputTogether.self]
 
-                // Keep the output together by grouping from the right paren to the end of the output.
+                // Keep the output together by grouping from the right paren to the end of the
+                // output.
                 if keepOutputTogether {
-                    // Due to visitation order, the matching .open break is added in ParameterClauseSyntax.
-                    // Since the output clause is optional but the in-token is required, placing the .close
-                    // before `inTok` ensures the close gets into the token stream.
+                    // Due to visitation order, the matching .open break is added in
+                    // ParameterClauseSyntax. Since the output clause is optional but the in-token
+                    // is required, placing the .close before `inTok` ensures the close gets into
+                    // the token stream.
                     before(node.inKeyword, tokens: .close)
                 } else {
-                    // Group outside of the parens, so that the argument list together, preferring to break
-                    // between the argument list and the output.
+                    // Group outside of the parens, so that the argument list together, preferring
+                    // to break between the argument list and the output.
                     before(parameterClause.firstToken(viewMode: .sourceAccurate), tokens: .open)
                     after(parameterClause.lastToken(viewMode: .sourceAccurate), tokens: .close)
                 }
@@ -95,8 +96,8 @@ extension TokenStream {
                     forcesBreakBeforeRightParen: true
                 )
             } else {
-                // Group around the arguments, but don't use open/close breaks because there are no parens
-                // to create a new scope.
+                // Group around the arguments, but don't use open/close breaks because there are no
+                // parens to create a new scope.
                 before(
                     parameterClause.firstToken(viewMode: .sourceAccurate),
                     tokens: .open(argumentListConsistency())
@@ -111,7 +112,9 @@ extension TokenStream {
         return .visitChildren
     }
 
-    func visitClosureCaptureClause(_ node: ClosureCaptureClauseSyntax) -> SyntaxVisitorContinueKind {
+    func visitClosureCaptureClause(
+        _ node: ClosureCaptureClauseSyntax
+    ) -> SyntaxVisitorContinueKind {
         after(node.leftSquare, tokens: .break(.open, size: 0), .open)
         before(node.rightSquare, tokens: .break(.close, size: 0), .close)
         return .visitChildren
@@ -151,8 +154,7 @@ extension TokenStream {
 
         // If there is a trailing closure, force the right bracket down to the next line so it stays
         // with the open curly brace.
-        let breakBeforeRightBracket =
-            node.trailingClosure != nil
+        let breakBeforeRightBracket = node.trailingClosure != nil
             || mustBreakBeforeClosingDelimiter(of: node, argumentListPath: \.arguments)
 
         before(
@@ -226,40 +228,44 @@ extension TokenStream {
         return .visitChildren
     }
 
-    func visitClosureParameterClause(_ node: ClosureParameterClauseSyntax) -> SyntaxVisitorContinueKind {
-        // Prioritize keeping ") throws -> <return_type>" together. We can only do this if the function
-        // has arguments.
-        if !node.parameters.isEmpty && config[KeepFunctionOutputTogether.self] {
-            // Due to visitation order, this .open corresponds to a .close added in FunctionDeclSyntax
-            // or SubscriptDeclSyntax.
+    func visitClosureParameterClause(
+        _ node: ClosureParameterClauseSyntax
+    ) -> SyntaxVisitorContinueKind {
+        // Prioritize keeping ") throws -> <return_type>" together. We can only do this if the
+        // function has arguments.
+        if !node.parameters.isEmpty, config[KeepFunctionOutputTogether.self] {
             before(node.rightParen, tokens: .open)
         }
 
         return .visitChildren
     }
 
-    func visitEnumCaseParameterClause(_ node: EnumCaseParameterClauseSyntax) -> SyntaxVisitorContinueKind {
-        return .visitChildren
-    }
+    func visitEnumCaseParameterClause(
+        _: EnumCaseParameterClauseSyntax
+    ) -> SyntaxVisitorContinueKind { .visitChildren }
 
-    func visitEnumCaseParameterList(_ node: EnumCaseParameterListSyntax) -> SyntaxVisitorContinueKind {
+    func visitEnumCaseParameterList(
+        _ node: EnumCaseParameterListSyntax
+    ) -> SyntaxVisitorContinueKind {
         markCommaDelimitedRegion(node, isCollectionLiteral: false)
         return .visitChildren
     }
 
-    func visitFunctionParameterClause(_ node: FunctionParameterClauseSyntax) -> SyntaxVisitorContinueKind {
-        // Prioritize keeping ") throws -> <return_type>" together. We can only do this if the function
-        // has arguments.
-        if !node.parameters.isEmpty && config[KeepFunctionOutputTogether.self] {
-            // Due to visitation order, this .open corresponds to a .close added in FunctionDeclSyntax
-            // or SubscriptDeclSyntax.
+    func visitFunctionParameterClause(
+        _ node: FunctionParameterClauseSyntax
+    ) -> SyntaxVisitorContinueKind {
+        // Prioritize keeping ") throws -> <return_type>" together. We can only do this if the
+        // function has arguments.
+        if !node.parameters.isEmpty, config[KeepFunctionOutputTogether.self] {
             before(node.rightParen, tokens: .open)
         }
 
         return .visitChildren
     }
 
-    func visitFunctionParameterList(_ node: FunctionParameterListSyntax) -> SyntaxVisitorContinueKind {
+    func visitFunctionParameterList(
+        _ node: FunctionParameterListSyntax
+    ) -> SyntaxVisitorContinueKind {
         markCommaDelimitedRegion(node, isCollectionLiteral: false)
         return .visitChildren
     }
@@ -316,18 +322,17 @@ extension TokenStream {
 
     func visitReturnClause(_ node: ReturnClauseSyntax) -> SyntaxVisitorContinueKind {
         if node.parent?.is(FunctionTypeSyntax.self) ?? false {
-            // `FunctionTypeSyntax` used to not use `ReturnClauseSyntax` and had
-            // slightly different formatting behavior than the normal
-            // `ReturnClauseSyntax`. To maintain the previous formatting behavior,
-            // add a special case.
+            // `FunctionTypeSyntax` used to not use `ReturnClauseSyntax` and had slightly different
+            // formatting behavior than the normal `ReturnClauseSyntax` . To maintain the previous
+            // formatting behavior, add a special case.
             before(node.arrow, tokens: .break)
             before(node.type.firstToken(viewMode: .sourceAccurate), tokens: .break)
         } else {
             after(node.arrow, tokens: .space)
         }
 
-        // Member type identifier is used when the return type is a member of another type. Add a group
-        // here so that the base, dot, and member type are kept together when they fit.
+        // Member type identifier is used when the return type is a member of another type. Add a
+        // group here so that the base, dot, and member type are kept together when they fit.
         if node.type.is(MemberTypeSyntax.self) {
             before(node.type.firstToken(viewMode: .sourceAccurate), tokens: .open)
             after(node.type.lastToken(viewMode: .sourceAccurate), tokens: .close)

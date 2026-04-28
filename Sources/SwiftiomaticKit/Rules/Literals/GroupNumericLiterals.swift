@@ -1,14 +1,14 @@
-//===----------------------------------------------------------------------===//
+// ===----------------------------------------------------------------------===//
 //
 // This source file is part of the Swift.org open source project
 //
-// Copyright (c) 2014 - 2019 Apple Inc. and the Swift project authors
-// Licensed under Apache License v2.0 with Runtime Library Exception
+// Copyright (c) 2014 - 2019 Apple Inc. and the Swift project authors Licensed under Apache License
+// v2.0 with Runtime Library Exception
 //
-// See https://swift.org/LICENSE.txt for license information
-// See https://swift.org/CONTRIBUTORS.txt for the list of Swift project authors
+// See https://swift.org/LICENSE.txt for license information See https://swift.org/CONTRIBUTORS.txt
+// for the list of Swift project authors
 //
-//===----------------------------------------------------------------------===//
+// ===----------------------------------------------------------------------===//
 
 import SwiftSyntax
 
@@ -36,26 +36,24 @@ final class GroupNumericLiterals: RewriteSyntaxRule<BasicRuleValue>, @unchecked 
         var newDigits = ""
 
         switch originalDigits.prefix(2) {
-        case "0x":
-            // Hexadecimal
-            let digitsNoPrefix = String(originalDigits.dropFirst(2))
-            guard digitsNoPrefix.count >= 8 else { return ExprSyntax(node) }
-            diagnose(.groupNumericLiteral(every: 4, base: "hexadecimal"), on: node)
-            newDigits = "0x" + digits(digitsNoPrefix, groupedEvery: 4)
-        case "0b":
-            // Binary
-            let digitsNoPrefix = String(originalDigits.dropFirst(2))
-            guard digitsNoPrefix.count >= 10 else { return ExprSyntax(node) }
-            diagnose(.groupNumericLiteral(every: 8, base: "binary"), on: node)
-            newDigits = "0b" + digits(digitsNoPrefix, groupedEvery: 8)
-        case "0o":
-            // Octal
-            return ExprSyntax(node)
-        default:
-            // Decimal
-            guard originalDigits.count >= 7 else { return ExprSyntax(node) }
-            diagnose(.groupNumericLiteral(every: 3, base: "decimal"), on: node)
-            newDigits = digits(originalDigits, groupedEvery: 3)
+            case "0x":
+                // Hexadecimal
+                let digitsNoPrefix = String(originalDigits.dropFirst(2))
+                guard digitsNoPrefix.count >= 8 else { return ExprSyntax(node) }
+                diagnose(.groupNumericLiteral(every: 4, base: "hexadecimal"), on: node)
+                newDigits = "0x" + digits(digitsNoPrefix, groupedEvery: 4)
+            case "0b":
+                // Binary
+                let digitsNoPrefix = String(originalDigits.dropFirst(2))
+                guard digitsNoPrefix.count >= 10 else { return ExprSyntax(node) }
+                diagnose(.groupNumericLiteral(every: 8, base: "binary"), on: node)
+                newDigits = "0b" + digits(digitsNoPrefix, groupedEvery: 8)
+            case "0o": return ExprSyntax(node)
+            default:
+                // Decimal
+                guard originalDigits.count >= 7 else { return ExprSyntax(node) }
+                diagnose(.groupNumericLiteral(every: 3, base: "decimal"), on: node)
+                newDigits = digits(originalDigits, groupedEvery: 3)
         }
 
         newDigits = isNegative ? "-" + newDigits : newDigits
@@ -64,18 +62,17 @@ final class GroupNumericLiterals: RewriteSyntaxRule<BasicRuleValue>, @unchecked 
         return ExprSyntax(result)
     }
 
-    /// Returns a copy of the given string with an underscore (`_`) inserted between every group of
-    /// `stride` digits, counting from the right.
+    /// Returns a copy of the given string with an underscore ( `_` ) inserted between every group
+    /// of `stride` digits, counting from the right.
     ///
     /// Precondition: `digits` does not already contain underscores.
     private func digits(_ digits: String, groupedEvery stride: Int) -> String {
         let chars = Array(digits)
         var result = [Character]()
         result.reserveCapacity(chars.count + chars.count / stride)
+
         for (i, char) in chars.reversed().enumerated() {
-            if i > 0 && i % stride == 0 {
-                result.append("_")
-            }
+            if i > 0, i % stride == 0 { result.append("_") }
             result.append(char)
         }
         result.reverse()
@@ -83,9 +80,8 @@ final class GroupNumericLiterals: RewriteSyntaxRule<BasicRuleValue>, @unchecked 
     }
 }
 
-extension Finding.Message {
-    fileprivate static func groupNumericLiteral(every stride: Int, base: String) -> Finding.Message
-    {
-        return "group every \(stride) digits in this \(base) literal using a '_' separator"
+fileprivate extension Finding.Message {
+    static func groupNumericLiteral(every stride: Int, base: String) -> Finding.Message {
+        "group every \(stride) digits in this \(base) literal using a '_' separator"
     }
 }

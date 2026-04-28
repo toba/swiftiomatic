@@ -1,16 +1,15 @@
 import SwiftSyntax
 
-/// Chained function calls are wrapped consistently: if any dot in the chain
-/// is on a different line, all dots are placed on separate lines.
+/// Chained function calls are wrapped consistently: if any dot in the chain is on a different line,
+/// all dots are placed on separate lines.
 ///
 /// Lint: A multiline chain where some dots share a line raises a warning.
 ///
-/// Rewrite: Dots that share a line with a closing scope or another dot are
-///         moved to their own line.
+/// Rewrite: Dots that share a line with a closing scope or another dot are moved to their own line.
 final class WrapMultilineFunctionChains: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable {
     override class var key: String { "multilineFunctionChains" }
     override class var group: ConfigurationGroup? { .wrap }
-    override class var defaultValue: BasicRuleValue { BasicRuleValue(rewrite: false, lint: .no) }
+    override class var defaultValue: BasicRuleValue { .init(rewrite: false, lint: .no) }
 
     override func visit(_ node: FunctionCallExprSyntax) -> ExprSyntax {
         let visited = super.visit(node)
@@ -34,11 +33,10 @@ final class WrapMultilineFunctionChains: RewriteSyntaxRule<BasicRuleValue>, @unc
         let hasNewline = periods.contains { $0.leadingTrivia.containsNewlines }
         guard hasNewline else { return visited }
 
-        // Find periods that need wrapping using SwiftFormat's approach:
-        // For each dot, check if a closing scope (`}`, `)`, `]`) immediately
-        // precedes it on the same line — if so, that dot needs its own line.
-        // Also check if the next dot in the chain is on the same line — if so,
-        // the next dot needs its own line.
+        // Find periods that need wrapping using SwiftFormat's approach: For each dot, check if a
+        // closing scope ( `}` , `)` , `]` ) immediately precedes it on the same line — if so, that
+        // dot needs its own line. Also check if the next dot in the chain is on the same line — if
+        // so, the next dot needs its own line.
         var periodsToWrap = Set<SyntaxIdentifier>()
         for (i, period) in periods.enumerated() {
             if period.leadingTrivia.containsNewlines { continue }
@@ -50,14 +48,13 @@ final class WrapMultilineFunctionChains: RewriteSyntaxRule<BasicRuleValue>, @unc
                 continue
             }
 
-            // Case 2: the next dot is on the same line as this dot — wrap the
-            // next dot (split two dots that share a line)
+            // Case 2: the next dot is on the same line as this dot — wrap the next dot (split two
+            // dots that share a line)
             if i + 1 < periods.count {
                 let nextPeriod = periods[i + 1]
                 if !nextPeriod.leadingTrivia.containsNewlines,
-                    !isTypeAccess(after: nextPeriod)
+                   !isTypeAccess(after: nextPeriod)
                 {
-                    // Two consecutive dots on the same line in a multiline chain
                     periodsToWrap.insert(nextPeriod.id)
                 }
             }
@@ -69,9 +66,9 @@ final class WrapMultilineFunctionChains: RewriteSyntaxRule<BasicRuleValue>, @unc
         guard !orderedToWrap.isEmpty else { return visited }
 
         // Determine indentation from an existing wrapped period
-        let indent: String =
-            periods.first { $0.leadingTrivia.containsNewlines }?
-            .leadingTrivia.indentation ?? "    "
+        let indent:
+            String = periods.first { $0.leadingTrivia.containsNewlines }?
+                .leadingTrivia.indentation ?? "    "
 
         diagnose(.wrapChain, on: orderedToWrap[0])
 
@@ -89,8 +86,8 @@ final class WrapMultilineFunctionChains: RewriteSyntaxRule<BasicRuleValue>, @unc
 
     // MARK: - Chain collection
 
-    /// Recursively walks the chain from outermost call to base, collecting
-    /// all `.period` tokens and tracking whether function calls exist.
+    /// Recursively walks the chain from outermost call to base, collecting all `.period` tokens and
+    /// tracking whether function calls exist.
     private func collectChain(
         _ expr: ExprSyntax,
         periods: inout [TokenSyntax],
@@ -135,8 +132,8 @@ final class WrapMultilineFunctionChains: RewriteSyntaxRule<BasicRuleValue>, @unc
         guard let parent = expr.parent else { return false }
         if parent.as(MemberAccessExprSyntax.self) != nil {
             if let grandparent = parent.parent,
-                grandparent.is(FunctionCallExprSyntax.self)
-                    || grandparent.is(SubscriptCallExprSyntax.self)
+               grandparent.is(FunctionCallExprSyntax.self)
+                   || grandparent.is(SubscriptCallExprSyntax.self)
             {
                 return true
             }
@@ -154,39 +151,32 @@ final class WrapMultilineFunctionChains: RewriteSyntaxRule<BasicRuleValue>, @unc
     /// Returns the previous non-space/comment token before the given token.
     private func previousNonSpaceToken(before token: TokenSyntax) -> TokenSyntax? {
         let current = token.previousToken(viewMode: .sourceAccurate)
-        while let tok = current {
-            // Skip space-only trivia tokens — in swift-syntax, spaces between
-            // tokens are in trivia, not separate tokens. But we need to handle
-            // the case where the period's leading trivia has spaces.
-            return tok
-        }
+        while let tok = current { return tok }
         return nil
     }
 
     /// Returns the next period in the collected chain after the given period.
-    private func nextPeriodInChain(after period: TokenSyntax, in periods: [TokenSyntax])
-        -> TokenSyntax?
-    {
+    private func nextPeriodInChain(
+        after period: TokenSyntax, in periods: [TokenSyntax]
+    ) -> TokenSyntax? {
         guard let idx = periods.firstIndex(where: { $0.id == period.id }),
-            idx + 1 < periods.count
-        else { return nil }
+              idx + 1 < periods.count else { return nil }
         return periods[idx + 1]
     }
 
-    /// Returns `true` if the token is a closing scope (`)`, `}`, `]`).
+    /// Returns `true` if the token is a closing scope ( `)` , `}` , `]` ).
     private func isClosingScope(_ token: TokenSyntax) -> Bool {
         switch token.tokenKind {
-        case .rightParen, .rightBrace, .rightSquare: return true
-        default: return false
+            case .rightParen, .rightBrace, .rightSquare: true
+            default: false
         }
     }
 
     /// Returns `true` if the token after the period is a capitalized identifier.
     private func isTypeAccess(after period: TokenSyntax) -> Bool {
         guard let next = period.nextToken(viewMode: .sourceAccurate),
-            case .identifier(let name) = next.tokenKind,
-            let first = name.first, first.isUppercase
-        else { return false }
+              case let .identifier(name) = next.tokenKind,
+              let first = name.first, first.isUppercase else { return false }
         return true
     }
 
@@ -202,7 +192,7 @@ final class WrapMultilineFunctionChains: RewriteSyntaxRule<BasicRuleValue>, @unc
 }
 
 /// Replaces leading trivia on a specific token.
-private class PeriodTriviaRewriter: SyntaxRewriter {
+private final class PeriodTriviaRewriter: SyntaxRewriter {
     let targetID: SyntaxIdentifier
     let newTrivia: Trivia
 
@@ -212,14 +202,11 @@ private class PeriodTriviaRewriter: SyntaxRewriter {
     }
 
     override func visit(_ token: TokenSyntax) -> TokenSyntax {
-        if token.id == targetID {
-            return token.with(\.leadingTrivia, newTrivia)
-        }
+        if token.id == targetID { return token.with(\.leadingTrivia, newTrivia) }
         return token
     }
 }
 
-extension Finding.Message {
-    fileprivate static let wrapChain: Finding.Message =
-        "wrap multiline function chain consistently"
+fileprivate extension Finding.Message {
+    static let wrapChain: Finding.Message = "wrap multiline function chain consistently"
 }

@@ -1,26 +1,29 @@
-//===----------------------------------------------------------------------===//
+// ===----------------------------------------------------------------------===//
 //
 // This source file is part of the Swift.org open source project
 //
-// Copyright (c) 2014 - 2020 Apple Inc. and the Swift project authors
-// Licensed under Apache License v2.0 with Runtime Library Exception
+// Copyright (c) 2014 - 2020 Apple Inc. and the Swift project authors Licensed under Apache License
+// v2.0 with Runtime Library Exception
 //
-// See https://swift.org/LICENSE.txt for license information
-// See https://swift.org/CONTRIBUTORS.txt for the list of Swift project authors
+// See https://swift.org/LICENSE.txt for license information See https://swift.org/CONTRIBUTORS.txt
+// for the list of Swift project authors
 //
-//===----------------------------------------------------------------------===//
+// ===----------------------------------------------------------------------===//
 
 import SwiftSyntax
 
 /// Declarations at file scope with effective private access should be consistently declared as
-/// either `fileprivate` or `private`, determined by configuration.
+/// either `fileprivate` or `private` , determined by configuration.
 ///
 /// Lint: If a file-scoped declaration has formal access opposite to the desired access level in the
-///       formatter's configuration, a lint error is raised.
+/// formatter's configuration, a lint error is raised.
 ///
-/// Rewrite: File-scoped declarations that have formal access opposite to the desired access level in
-///         the formatter's configuration will have their access level changed.
-final class FileScopedDeclarationPrivacy: RewriteSyntaxRule<FileScopedDeclarationPrivacyConfiguration>, @unchecked Sendable {
+/// Rewrite: File-scoped declarations that have formal access opposite to the desired access level
+/// in the formatter's configuration will have their access level changed.
+final class FileScopedDeclarationPrivacy: RewriteSyntaxRule<
+    FileScopedDeclarationPrivacyConfiguration
+>, @unchecked Sendable
+{
     override class var group: ConfigurationGroup? { .access }
     override func visit(_ node: SourceFileSyntax) -> SourceFileSyntax {
         var result = node
@@ -30,7 +33,7 @@ final class FileScopedDeclarationPrivacy: RewriteSyntaxRule<FileScopedDeclaratio
 
     /// Returns a list of code block items equivalent to the given list, but where any file-scoped
     /// declarations with effective private access have had their formal access level rewritten, if
-    /// necessary, to be either `private` or `fileprivate`, as determined by the formatter
+    /// necessary, to be either `private` or `fileprivate` , as determined by the formatter
     /// configuration.
     ///
     /// - Parameter codeBlockItems: The list of code block items to rewrite.
@@ -40,12 +43,11 @@ final class FileScopedDeclarationPrivacy: RewriteSyntaxRule<FileScopedDeclaratio
     ) -> CodeBlockItemListSyntax {
         let newCodeBlockItems = codeBlockItems.map { codeBlockItem -> CodeBlockItemSyntax in
             switch codeBlockItem.item {
-            case .decl(let decl):
-                var result = codeBlockItem
-                result.item = .decl(rewrittenDecl(decl))
-                return result
-            default:
-                return codeBlockItem
+                case let .decl(decl):
+                    var result = codeBlockItem
+                    result.item = .decl(rewrittenDecl(decl))
+                    return result
+                default: return codeBlockItem
             }
         }
         return CodeBlockItemListSyntax(newCodeBlockItems)
@@ -53,40 +55,21 @@ final class FileScopedDeclarationPrivacy: RewriteSyntaxRule<FileScopedDeclaratio
 
     private func rewrittenDecl(_ decl: DeclSyntax) -> DeclSyntax {
         switch Syntax(decl).as(SyntaxEnum.self) {
-        case .ifConfigDecl(let ifConfigDecl):
-            // We need to look through `#if/#elseif/#else` blocks because the decls directly inside
-            // them are still considered file-scope for our purposes.
-            return DeclSyntax(rewrittenIfConfigDecl(ifConfigDecl))
-
-        case .functionDecl(let functionDecl):
-            return DeclSyntax(rewrittenDecl(functionDecl))
-
-        case .variableDecl(let variableDecl):
-            return DeclSyntax(rewrittenDecl(variableDecl))
-
-        case .classDecl(let classDecl):
-            return DeclSyntax(rewrittenDecl(classDecl))
-
-        case .structDecl(let structDecl):
-            return DeclSyntax(rewrittenDecl(structDecl))
-
-        case .enumDecl(let enumDecl):
-            return DeclSyntax(rewrittenDecl(enumDecl))
-
-        case .protocolDecl(let protocolDecl):
-            return DeclSyntax(rewrittenDecl(protocolDecl))
-
-        case .typeAliasDecl(let typealiasDecl):
-            return DeclSyntax(rewrittenDecl(typealiasDecl))
-
-        default:
-            return decl
+            case let .ifConfigDecl(ifConfigDecl): DeclSyntax(rewrittenIfConfigDecl(ifConfigDecl))
+            case let .functionDecl(functionDecl): DeclSyntax(rewrittenDecl(functionDecl))
+            case let .variableDecl(variableDecl): DeclSyntax(rewrittenDecl(variableDecl))
+            case let .classDecl(classDecl): DeclSyntax(rewrittenDecl(classDecl))
+            case let .structDecl(structDecl): DeclSyntax(rewrittenDecl(structDecl))
+            case let .enumDecl(enumDecl): DeclSyntax(rewrittenDecl(enumDecl))
+            case let .protocolDecl(protocolDecl): DeclSyntax(rewrittenDecl(protocolDecl))
+            case let .typeAliasDecl(typealiasDecl): DeclSyntax(rewrittenDecl(typealiasDecl))
+            default: decl
         }
     }
 
     /// Returns a new `IfConfigDeclSyntax` equivalent to the given node, but where any file-scoped
     /// declarations with effective private access have had their formal access level rewritten, if
-    /// necessary, to be either `private` or `fileprivate`, as determined by the formatter
+    /// necessary, to be either `private` or `fileprivate` , as determined by the formatter
     /// configuration.
     ///
     /// - Parameter ifConfigDecl: The `IfConfigDeclSyntax` to rewrite.
@@ -94,12 +77,11 @@ final class FileScopedDeclarationPrivacy: RewriteSyntaxRule<FileScopedDeclaratio
     private func rewrittenIfConfigDecl(_ ifConfigDecl: IfConfigDeclSyntax) -> IfConfigDeclSyntax {
         let newClauses = ifConfigDecl.clauses.map { clause -> IfConfigClauseSyntax in
             switch clause.elements {
-            case .statements(let codeBlockItemList)?:
-                var result = clause
-                result.elements = .statements(rewrittenCodeBlockItems(codeBlockItemList))
-                return result
-            default:
-                return clause
+                case .statements(let codeBlockItemList)?:
+                    var result = clause
+                    result.elements = .statements(rewrittenCodeBlockItems(codeBlockItemList))
+                    return result
+                default: return clause
             }
         }
 
@@ -116,10 +98,10 @@ final class FileScopedDeclarationPrivacy: RewriteSyntaxRule<FileScopedDeclaratio
     ///
     /// - Parameters:
     ///   - decl: The declaration to possibly rewrite.
-    ///   - modifiers: The modifier list of the declaration (i.e., `decl.modifiers`).
-    ///   - factory: A reference to the `decl`'s `withModifiers` instance method that is called to
+    ///   - modifiers: The modifier list of the declaration (i.e., `decl.modifiers` ).
+    ///   - factory: A reference to the `decl` 's `withModifiers` instance method that is called to
     ///     rewrite the node if needed.
-    /// - Returns: A new node if the modifiers were rewritten, or the original node if not.
+    ///   - Returns: A new node if the modifiers were rewritten, or the original node if not.
     private func rewrittenDecl<DeclType: DeclSyntaxProtocol & WithModifiersSyntax>(
         _ decl: DeclType
     ) -> DeclType {
@@ -128,19 +110,17 @@ final class FileScopedDeclarationPrivacy: RewriteSyntaxRule<FileScopedDeclaratio
         let diagnostic: Finding.Message
 
         switch ruleConfig.accessLevel {
-        case .private:
-            invalidAccess = .fileprivate
-            validAccess = .private
-            diagnostic = .replaceFileprivateWithPrivate
-        case .fileprivate:
-            invalidAccess = .private
-            validAccess = .fileprivate
-            diagnostic = .replacePrivateWithFileprivate
+            case .private:
+                invalidAccess = .fileprivate
+                validAccess = .private
+                diagnostic = .replaceFileprivateWithPrivate
+            case .fileprivate:
+                invalidAccess = .private
+                validAccess = .fileprivate
+                diagnostic = .replacePrivateWithFileprivate
         }
 
-        guard decl.modifiers.contains(anyOf: [invalidAccess]) else {
-            return decl
-        }
+        guard decl.modifiers.contains(anyOf: [invalidAccess]) else { return decl }
 
         let newModifiers = decl.modifiers.map { modifier -> DeclModifierSyntax in
             var modifier = modifier
@@ -159,11 +139,11 @@ final class FileScopedDeclarationPrivacy: RewriteSyntaxRule<FileScopedDeclaratio
     }
 }
 
-extension Finding.Message {
-    fileprivate static let replacePrivateWithFileprivate: Finding.Message =
+fileprivate extension Finding.Message {
+    static let replacePrivateWithFileprivate: Finding.Message =
         "replace 'private' with 'fileprivate' on file-scoped declarations"
 
-    fileprivate static let replaceFileprivateWithPrivate: Finding.Message =
+    static let replaceFileprivateWithPrivate: Finding.Message =
         "replace 'fileprivate' with 'private' on file-scoped declarations"
 }
 
@@ -177,8 +157,8 @@ package struct FileScopedDeclarationPrivacyConfiguration: SyntaxRuleValue {
 
     package var rewrite = true
     package var lint: Lint = .warn
-    /// Preferred modifier for file-scoped declarations whose effective access
-    /// is private to the file.
+    /// Preferred modifier for file-scoped declarations whose effective access is private to the
+    /// file.
     package var accessLevel: AccessLevel = .private
 
     package init() {}
@@ -186,10 +166,12 @@ package struct FileScopedDeclarationPrivacyConfiguration: SyntaxRuleValue {
     package init(from decoder: any Decoder) throws {
         self.init()
         let container = try decoder.container(keyedBy: CodingKeys.self)
-        if let rewrite = try container.decodeIfPresent(Bool.self, forKey: .rewrite) { self.rewrite = rewrite }
+        if let rewrite = try container.decodeIfPresent(Bool.self, forKey: .rewrite) {
+            self.rewrite = rewrite
+        }
         if let lint = try container.decodeIfPresent(Lint.self, forKey: .lint) { self.lint = lint }
-        self.accessLevel =
-            try container.decodeIfPresent(AccessLevel.self, forKey: .accessLevel)
+
+        accessLevel = try container.decodeIfPresent(AccessLevel.self, forKey: .accessLevel)
             ?? .private
     }
 }

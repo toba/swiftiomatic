@@ -128,6 +128,23 @@ struct GuardStmtTests: LayoutTesting {
     assertLayout(input: input, expected: expected, linelength: 60)
   }
 
+  @Test func guardWithInlineBodyWrapsBodyNotElse() {
+    let input =
+      """
+      guard column + text.count > maxWidth else { return WrapResult(didChange: false, advance: 1, originalIndex: 0) }
+      """
+
+    let expected =
+      """
+      guard column + text.count > maxWidth else {
+        return WrapResult(didChange: false, advance: 1, originalIndex: 0)
+      }
+
+      """
+
+    assertLayout(input: input, expected: expected, linelength: 80)
+  }
+
   @Test func continuationLineBreaking() {
     let input =
       """
@@ -207,8 +224,9 @@ struct GuardStmtTests: LayoutTesting {
             bar:
               SomeVeryLongTypeNameThatBreaks,
             baz: Baz
-          ) = foo(a, b, c, d)
-      else { return nil }
+          ) = foo(a, b, c, d) else {
+        return nil
+      }
 
       """
 
@@ -429,8 +447,9 @@ struct GuardStmtTests: LayoutTesting {
   }
 
   /// When the inline `else { stmt }` would exceed the line length on the
-  /// closing condition's line, fall back to today's behavior: `else` drops
-  /// down to its own line at the guard's base indent.
+  /// closing condition's line, prefer wrapping the body inside the braces
+  /// over breaking before `else`. Keyword breaks (before `else`) are a
+  /// last-resort precedence; body wrapping fires first.
   @Test func breaksElseWhenInlineBodyExceedsLineLength() {
     let input =
       """
@@ -439,13 +458,15 @@ struct GuardStmtTests: LayoutTesting {
       else { return false }
       """
 
-    // Line length 60: "  let captureClause = signature.capture else { return false }"
-    // is over 60 chars, so else must drop down.
+    // Line length 60: "  let captureClause = signature.capture else {" fits,
+    // but the full inline `... else { return false }` does not, so the body
+    // wraps onto its own lines while `else {` stays glued to the condition.
     let expected =
       """
       guard let signature = closure.signature,
-        let captureClause = signature.capture
-      else { return false }
+        let captureClause = signature.capture else {
+        return false
+      }
 
       """
 

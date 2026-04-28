@@ -1,25 +1,27 @@
-//===----------------------------------------------------------------------===//
+// ===----------------------------------------------------------------------===//
 //
 // This source file is part of the Swift.org open source project
 //
-// Copyright (c) 2014 - 2025 Apple Inc. and the Swift project authors
-// Licensed under Apache License v2.0 with Runtime Library Exception
+// Copyright (c) 2014 - 2025 Apple Inc. and the Swift project authors Licensed under Apache License
+// v2.0 with Runtime Library Exception
 //
-// See https://swift.org/LICENSE.txt for license information
-// See https://swift.org/CONTRIBUTORS.txt for the list of Swift project authors
+// See https://swift.org/LICENSE.txt for license information See https://swift.org/CONTRIBUTORS.txt
+// for the list of Swift project authors
 //
-//===----------------------------------------------------------------------===//
+// ===----------------------------------------------------------------------===//
 
-@_exported import enum ConfigurationKit.KeySortOrder
 import Foundation
+@_exported import enum ConfigurationKit.KeySortOrder
 
 extension Configuration {
     /// Return the configuration as a JSON string with a `$schema` reference.
     ///
     /// Rule objects that fit within 100 columns are printed on a single line.
-    package func asJsonString(sortBy order: KeySortOrder = .length) throws(SwiftiomaticError) -> String {
-        // Encode to JSONValue, then serialize with key ordering.
-        // $schema is emitted by encode(to:), pinned to the top by the serializer.
+    package func asJSONString(
+        sortBy order: KeySortOrder = .length
+    ) throws(SwiftiomaticError) -> String {
+        // Encode to JSONValue, then serialize with key ordering. $schema is emitted by encode(to:),
+        // pinned to the top by the serializer.
         let jsonValue: JSONValue
         do {
             let data = try JSONEncoder().encode(self)
@@ -34,8 +36,8 @@ extension Configuration {
         return jsonString
     }
 
-    /// Collapses multi-line JSON objects onto a single line when they fit
-    /// within `maxWidth` columns and contain only scalar values.
+    /// Collapses multi-line JSON objects onto a single line when they fit within `maxWidth` columns
+    /// and contain only scalar values.
     private func compactSmallObjects(in json: String, maxWidth: Int) -> String {
         let lines = json.components(separatedBy: "\n")
         var result: [String] = []
@@ -45,25 +47,28 @@ extension Configuration {
             let line = lines[i]
             let trimmed = line.trimmingCharacters(in: .whitespaces)
 
-            // Look for a line ending with `{` that starts a potential compact object.
-            // Must be a keyed value like `"key" : {` — not a bare `{`.
-            if trimmed.hasSuffix("{") && trimmed.contains("\"") {
-                // Collect lines until we find the matching `}`.
+            // Look for a line ending with `{` that starts a potential compact object. Must be a
+            // keyed value like `"key" : {` — not a bare `{` .
+            if trimmed.hasSuffix("{"), trimmed.contains("\"") {
+                // Collect lines until we find the matching `}` .
                 var objectLines = [line]
                 var depth = 1
                 var j = i + 1
                 var hasNestedObject = false
 
-                while j < lines.count && depth > 0 {
+                while j < lines.count, depth > 0 {
                     let inner = lines[j].trimmingCharacters(in: .whitespaces)
-                    if inner.contains("{") { depth += 1; hasNestedObject = true }
+                    if inner.contains("{") {
+                        depth += 1
+                        hasNestedObject = true
+                    }
                     if inner.contains("}") { depth -= 1 }
                     objectLines.append(lines[j])
                     j += 1
                 }
 
                 // Only compact if no nested objects and it fits on one line.
-                if !hasNestedObject && depth == 0 {
+                if !hasNestedObject, depth == 0 {
                     let compact = compactObject(objectLines)
                     if compact.count <= maxWidth {
                         result.append(compact)

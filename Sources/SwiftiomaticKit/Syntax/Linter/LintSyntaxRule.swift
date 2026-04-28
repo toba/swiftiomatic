@@ -1,6 +1,6 @@
-import ConfigurationKit
 import Foundation
 import SwiftSyntax
+import ConfigurationKit
 
 /// A rule that lints a given file.
 class LintSyntaxRule<V: SyntaxRuleValue>: SyntaxVisitor, SyntaxRule, @unchecked Sendable {

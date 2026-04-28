@@ -256,6 +256,34 @@ struct RedundantBackticksTests: RuleTesting {
     )
   }
 
+  @Test func keepBackticksOnKeywordAsMemberAccessBase() {
+    // `guard` is the base of the member access — backticks are required.
+    assertFormatting(
+      RedundantBackticks.self,
+      input: """
+        let x = isValidElseBlock(`guard`.body)
+        """,
+      expected: """
+        let x = isValidElseBlock(`guard`.body)
+        """,
+      findings: []
+    )
+  }
+
+  @Test func keepBackticksOnKeywordAsBareExpression() {
+    // `guard` referenced as a bare expression (no member access) — backticks are required.
+    assertFormatting(
+      RedundantBackticks.self,
+      input: """
+        let x = `guard`
+        """,
+      expected: """
+        let x = `guard`
+        """,
+      findings: []
+    )
+  }
+
   @Test func removeBackticksAroundKeywordProperty() {
     assertFormatting(
       RedundantBackticks.self,

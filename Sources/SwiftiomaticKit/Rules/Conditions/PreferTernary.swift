@@ -2,10 +2,9 @@ import SwiftSyntax
 
 /// Use ternary conditional expressions for simple if-else returns or assignments.
 ///
-/// When an `if`-`else` has exactly two branches, each containing a single
-/// `return` statement or a single assignment to the same variable, and the
-/// condition is a simple expression (no else-if chains), the construct is
-/// collapsed into a ternary conditional expression.
+/// When an `if` - `else` has exactly two branches, each containing a single `return` statement or a
+/// single assignment to the same variable, and the condition is a simple expression (no else-if
+/// chains), the construct is collapsed into a ternary conditional expression.
 ///
 /// ```swift
 /// // Before
@@ -27,14 +26,13 @@ import SwiftSyntax
 /// result = condition ? trueValue : falseValue
 /// ```
 ///
-/// Lint: A simple if-else with single returns or same-variable assignments
-///       in both branches raises a warning.
+/// Lint: A simple if-else with single returns or same-variable assignments in both branches raises
+/// a warning.
 ///
 /// Rewrite: The if-else is replaced with a ternary expression.
 final class PreferTernary: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable {
     override class var group: ConfigurationGroup? { .conditions }
-
-    override class var defaultValue: BasicRuleValue { BasicRuleValue(rewrite: false, lint: .no) }
+    override class var defaultValue: BasicRuleValue { .init(rewrite: false, lint: .no) }
 
     override func visit(_ node: CodeBlockItemListSyntax) -> CodeBlockItemListSyntax {
         let visited = super.visit(node)
@@ -63,23 +61,21 @@ final class PreferTernary: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendabl
         // Must be a simple if-else (no else-if chains)
         guard let elseBlock = ifExpr.elseBody?.as(CodeBlockSyntax.self) else { return nil }
 
-        // Condition must be a single boolean expression (not optional binding,
-        // pattern matching, availability check, etc.)
+        // Condition must be a single boolean expression (not optional binding, pattern matching,
+        // availability check, etc.)
         guard let onlyCondition = ifExpr.conditions.firstAndOnly,
-            case .expression = onlyCondition.condition
-        else { return nil }
+              case .expression = onlyCondition.condition else { return nil }
 
         let thenStatements = ifExpr.body.statements
         let elseStatements = elseBlock.statements
 
         // Each branch must have exactly one statement
         guard let thenOnly = thenStatements.firstAndOnly,
-            let elseOnly = elseStatements.firstAndOnly
-        else { return nil }
+              let elseOnly = elseStatements.firstAndOnly else { return nil }
 
         // Both branches are return statements
         if let thenReturn = extractReturn(from: thenOnly),
-            let elseReturn = extractReturn(from: elseOnly)
+           let elseReturn = extractReturn(from: elseOnly)
         {
             return buildTernaryReturn(
                 item: item,
@@ -90,8 +86,8 @@ final class PreferTernary: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendabl
 
         // Both branches assign to the same variable
         if let (lhs, thenRHS) = extractAssignment(from: thenOnly),
-            let (elseLHS, elseRHS) = extractAssignment(from: elseOnly),
-            lhs.trimmedDescription == elseLHS.trimmedDescription
+           let (elseLHS, elseRHS) = extractAssignment(from: elseOnly),
+           lhs.trimmedDescription == elseLHS.trimmedDescription
         {
             return buildTernaryAssignment(
                 item: item,
@@ -108,20 +104,24 @@ final class PreferTernary: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendabl
 
     private func extractIfExpr(from item: CodeBlockItemSyntax) -> IfExprSyntax? {
         if let exprStmt = item.item.as(ExpressionStmtSyntax.self) {
-            return exprStmt.expression.as(IfExprSyntax.self)
+            exprStmt.expression.as(IfExprSyntax.self)
+        } else {
+            item.item.as(IfExprSyntax.self)
         }
-        return item.item.as(IfExprSyntax.self)
     }
 
     /// Extracts the expression from a `return expr` statement.
     private func extractReturn(from item: CodeBlockItemSyntax) -> ExprSyntax? {
-        guard let returnStmt = item.item.as(ReturnStmtSyntax.self),
-            let expr = returnStmt.expression
-        else { return nil }
-        return expr
+        if let returnStmt = item.item.as(ReturnStmtSyntax.self),
+           let expr = returnStmt.expression
+        {
+            expr
+        } else {
+            nil
+        }
     }
 
-    /// Extracts the LHS and RHS from an assignment like `result = expr`.
+    /// Extracts the LHS and RHS from an assignment like `result = expr` .
     private func extractAssignment(from item: CodeBlockItemSyntax) -> (ExprSyntax, ExprSyntax)? {
         let expr: ExprSyntax?
         if let exprStmt = item.item.as(ExpressionStmtSyntax.self) {
@@ -130,8 +130,7 @@ final class PreferTernary: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendabl
             expr = item.item.as(ExprSyntax.self)
         }
         guard let infixExpr = expr?.as(InfixOperatorExprSyntax.self),
-            infixExpr.operator.is(AssignmentExprSyntax.self)
-        else { return nil }
+              infixExpr.operator.is(AssignmentExprSyntax.self) else { return nil }
         return (infixExpr.leftOperand, infixExpr.rightOperand)
     }
 
@@ -154,7 +153,7 @@ final class PreferTernary: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendabl
             returnKeyword: .keyword(.return, trailingTrivia: .space),
             expression: ternary)
 
-        return CodeBlockItemSyntax(
+        return .init(
             leadingTrivia: item.leadingTrivia,
             item: .stmt(StmtSyntax(returnStmt)),
             trailingTrivia: item.trailingTrivia)
@@ -176,11 +175,12 @@ final class PreferTernary: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendabl
 
         let assignment = InfixOperatorExprSyntax(
             leftOperand: lhs.with(\.leadingTrivia, []).with(\.trailingTrivia, .space),
-            operator: ExprSyntax(AssignmentExprSyntax(
-                equal: .equalToken(trailingTrivia: .space))),
+            operator: ExprSyntax(
+                AssignmentExprSyntax(
+                    equal: .equalToken(trailingTrivia: .space))),
             rightOperand: ternary)
 
-        return CodeBlockItemSyntax(
+        return .init(
             leadingTrivia: item.leadingTrivia,
             item: .expr(ExprSyntax(assignment)),
             trailingTrivia: item.trailingTrivia)
@@ -193,7 +193,7 @@ final class PreferTernary: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendabl
     ) -> ExprSyntax {
         // The caller already verified a single expression condition.
         let onlyCondition = condition.first!
-        guard case .expression(let conditionExpr) = onlyCondition.condition
+        guard case let .expression(conditionExpr) = onlyCondition.condition
         else { return ExprSyntax(DeclReferenceExprSyntax(baseName: .identifier("false"))) }
 
         let ternary = TernaryExprSyntax(
@@ -207,7 +207,6 @@ final class PreferTernary: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendabl
     }
 }
 
-extension Finding.Message {
-    fileprivate static let useTernary: Finding.Message =
-        "use ternary conditional expression for simple if-else"
+fileprivate extension Finding.Message {
+    static let useTernary: Finding.Message = "use ternary conditional expression for simple if-else"
 }

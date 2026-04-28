@@ -1,11 +1,10 @@
-import ConfigurationKit
 import SwiftSyntax
+import ConfigurationKit
 
 /// Source lines should not exceed a configurable character count.
 ///
-/// Lint-only counterpart to the `lineLength` layout setting (which targets the
-/// pretty-printer's wrap point). This rule emits findings on lines that exceed
-/// `warning` / `error` thresholds.
+/// Lint-only counterpart to the `lineLength` layout setting (which targets the pretty-printer's
+/// wrap point). This rule emits findings on lines that exceed `warning` / `error` thresholds.
 final class LineLengthLimit: LintSyntaxRule<LineLengthLimitConfiguration>, @unchecked Sendable {
     override class var group: ConfigurationGroup? { .metrics }
 
@@ -15,8 +14,7 @@ final class LineLengthLimit: LintSyntaxRule<LineLengthLimitConfiguration>, @unch
         var index = source.startIndex
         while index < source.endIndex {
             lineNumber += 1
-            let lineEnd =
-                source[index...].firstIndex(of: "\n") ?? source.endIndex
+            let lineEnd = source[index...].firstIndex(of: "\n") ?? source.endIndex
             let line = source[index..<lineEnd]
             let length = line.count
             if let severity = metricSeverity(
@@ -48,8 +46,8 @@ final class LineLengthLimit: LintSyntaxRule<LineLengthLimitConfiguration>, @unch
     }
 }
 
-extension Finding.Message {
-    fileprivate static func lineTooLong(length: Int, limit: Int) -> Finding.Message {
+fileprivate extension Finding.Message {
+    static func lineTooLong(length: Int, limit: Int) -> Finding.Message {
         "line is \(length) characters; limit is \(limit)"
     }
 }
@@ -57,7 +55,7 @@ extension Finding.Message {
 // MARK: - Configuration
 
 package struct LineLengthLimitConfiguration: ThresholdRuleValue {
-    package var enabled: Bool = true
+    package var enabled = true
     /// Lines longer than this many characters emit a warning-severity finding.
     package var warning: Int = 120
     /// Lines longer than this many characters emit an error-severity finding.

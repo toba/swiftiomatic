@@ -1,14 +1,14 @@
-//===----------------------------------------------------------------------===//
+// ===----------------------------------------------------------------------===//
 //
 // This source file is part of the Swift.org open source project
 //
-// Copyright (c) 2014 - 2019 Apple Inc. and the Swift project authors
-// Licensed under Apache License v2.0 with Runtime Library Exception
+// Copyright (c) 2014 - 2019 Apple Inc. and the Swift project authors Licensed under Apache License
+// v2.0 with Runtime Library Exception
 //
-// See https://swift.org/LICENSE.txt for license information
-// See https://swift.org/CONTRIBUTORS.txt for the list of Swift project authors
+// See https://swift.org/LICENSE.txt for license information See https://swift.org/CONTRIBUTORS.txt
+// for the list of Swift project authors
 //
-//===----------------------------------------------------------------------===//
+// ===----------------------------------------------------------------------===//
 
 import SwiftSyntax
 
@@ -22,12 +22,12 @@ enum Token: Sendable {
     case verbatim(Verbatim)
     case printerControl(kind: PrinterControlKind)
 
-    /// Marks the beginning of a comma delimited collection, where a trailing comma should be inserted
-    /// at `commaDelimitedRegionEnd` if and only if the collection spans multiple lines.
+    /// Marks the beginning of a comma delimited collection, where a trailing comma should be
+    /// inserted at `commaDelimitedRegionEnd` if and only if the collection spans multiple lines.
     case commaDelimitedRegionStart
 
-    /// Marks the end of a comma delimited collection, where a trailing comma should be inserted
-    /// if and only if the collection spans multiple lines and has multiple elements.
+    /// Marks the end of a comma delimited collection, where a trailing comma should be inserted if
+    /// and only if the collection spans multiple lines and has multiple elements.
     case commaDelimitedRegionEnd(isCollection: Bool, hasTrailingComma: Bool, isSingleElement: Bool)
 
     /// Starts a scope where `contextual` breaks have consistent behavior.
@@ -36,8 +36,8 @@ enum Token: Sendable {
     /// Ends a scope where `contextual` breaks have consistent behavior.
     case contextualBreakingEnd
 
-    /// Turn formatting back on at the given position in the original file
-    /// nil is used to indicate the rest of the file should be output
+    /// Turn formatting back on at the given position in the original file nil is used to indicate
+    /// the rest of the file should be output
     case enableFormatting(AbsolutePosition?)
 
     /// Turn formatting off at the given position in the original file.
@@ -46,42 +46,31 @@ enum Token: Sendable {
     // Convenience overloads for the enum types
     static let open = Token.open(.inconsistent, 0)
 
-    static func open(_ breakStyle: GroupBreakStyle, _ offset: Int) -> Token {
-        return Token.open(breakStyle)
-    }
+    static func open(_ breakStyle: GroupBreakStyle, _: Int) -> Token { Token.open(breakStyle) }
 
     static let space = Token.space(size: 1, flexible: false)
 
-    static func space(size: Int) -> Token {
-        return .space(size: size, flexible: false)
-    }
+    static func space(size: Int) -> Token { .space(size: size, flexible: false) }
 
     static let `break` = Token.break(.continue, size: 1, newlines: .elective)
 
     static func `break`(_ kind: BreakKind, size: Int = 1) -> Token {
-        return .break(kind, size: size, newlines: .elective)
+        .break(kind, size: size, newlines: .elective)
     }
 
     static func `break`(_ kind: BreakKind, newlines: NewlineBehavior) -> Token {
-        return .break(kind, size: 1, newlines: newlines)
+        .break(kind, size: 1, newlines: newlines)
     }
 }
 
 // MARK: - Support
 
-enum GroupBreakStyle: Sendable {
-    /// A consistent break indicates that the break will always be finalized as a newline
-    /// if wrapping occurs.
-    case consistent
-
-    /// Inconsistent breaks will only be expressed as a newline if they're required to be wrapped as
-    /// their addition to the line would go past the line length limit.
-    case inconsistent
-}
+enum GroupBreakStyle: Sendable { case consistent, inconsistent }
 
 enum OpenBreakKind: Equatable, Sendable {
-    /// An open break that applies a block indent to its scope and is allowed to apply a continuation
-    /// indent if and only if the line on which the open break occurs is a continuation line.
+    /// An open break that applies a block indent to its scope and is allowed to apply a
+    /// continuation indent if and only if the line on which the open break occurs is a continuation
+    /// line.
     case block
 
     /// An open break that always applies up to one continuation indent to its scope. A continuation
@@ -90,8 +79,8 @@ enum OpenBreakKind: Equatable, Sendable {
     case continuation
 
     /// An open break that applies a fixed number of spaces as indentation instead of the configured
-    /// indent unit. Used to align wrapped conditions to the column after a keyword (e.g. `if `,
-    /// `guard `, `while `). Behaves like `.continuation` for break-firing logic.
+    /// indent unit. Used to align wrapped conditions to the column after a keyword (e.g. `if ` ,
+    /// `guard ` , `while ` ). Behaves like `.continuation` for break-firing logic.
     case alignment(spaces: Int)
 }
 
@@ -106,10 +95,10 @@ enum BreakKind: Equatable, Sendable {
     /// If `mustBreak` is true, then this break will always produce a line break when it occurs on a
     /// different line than its corresponding `open` break. This is the behavior one typically wants
     /// when laying out curly-brace delimited blocks or array/dictionary literals. If `mustBreak` is
-    /// false, then this break will only produce a line break when absolutely necessary (i.e., if the
-    /// rest of the line's length required it). This behavior is desirable for the parentheses around
-    /// function calls, where there is not typically a need for a line break before the closing
-    /// parenthesis.
+    /// false, then this break will only produce a line break when absolutely necessary (i.e., if
+    /// the rest of the line's length required it). This behavior is desirable for the parentheses
+    /// around function calls, where there is not typically a need for a line break before the
+    /// closing parenthesis.
     ///
     /// In either case above, the base indentation level of subsequent tokens is still adjusted.
     case close(mustBreak: Bool)
@@ -173,9 +162,10 @@ enum BreakKind: Equatable, Sendable {
 
     /// A `contextual` break acts as either a `continue` break or maintains the existing level of
     /// indentation when it fires. The contextual breaking behavior of a given contextual breaking
-    /// scope (i.e. inside a `contextualBreakingStart`/`contextualBreakingEnd` region) is set by the
-    /// first child `contextualBreakingStart`/`contextualBreakingEnd` pair. When the first child is
-    /// multiline the contextual breaks maintain indentation and they are continuations otherwise.
+    /// scope (i.e. inside a `contextualBreakingStart` / `contextualBreakingEnd` region) is set by
+    /// the first child `contextualBreakingStart` / `contextualBreakingEnd` pair. When the first
+    /// child is multiline the contextual breaks maintain indentation and they are continuations
+    /// otherwise.
     ///
     /// These are used when multiple related breaks need to exhibit the same behavior based the
     /// context in which they appear. For example, when breaks exist between expressions that are
@@ -197,8 +187,8 @@ enum NewlineBehavior: Sendable {
     /// Breaking onto a newline is allowed if necessary, but is not required. `ignoresDiscretionary`
     /// specifies whether a user-entered discretionary newline should be respected.
     ///
-    /// `maxBlankLines` overrides the global `MaximumBlankLines` setting when this break merges
-    /// with discretionary newlines from source trivia.
+    /// `maxBlankLines` overrides the global `MaximumBlankLines` setting when this break merges with
+    /// discretionary newlines from source trivia.
     case elective(ignoresDiscretionary: Bool, maxBlankLines: Int? = nil)
 
     /// Breaking onto a newline `count` times is required, unless it would create more blank lines
@@ -215,8 +205,10 @@ enum NewlineBehavior: Sendable {
     /// newlines and the configured maximum number of blank lines.
     case hard(count: Int)
 
-    /// Break onto a new line is allowed if necessary. If a line break is emitted, it will be escaped with a '\', and this breaks whitespace will be printed prior to the
-    /// escaped line break. This is useful in multiline strings where we don't want newlines printed in syntax to appear in the literal.
+    /// Break onto a new line is allowed if necessary. If a line break is emitted, it will be
+    /// escaped with a '\', and this breaks whitespace will be printed prior to the escaped line
+    /// break. This is useful in multiline strings where we don't want newlines printed in syntax to
+    /// appear in the literal.
     case escaped
 
     /// An elective newline that respects discretionary newlines from the user-entered text.
@@ -231,59 +223,58 @@ enum NewlineBehavior: Sendable {
     /// Returns a copy of this newline behavior with the given maxBlankLines applied.
     func withMaxBlankLines(_ max: Int) -> NewlineBehavior {
         switch self {
-        case .elective(let ignores, let existing):
-            .elective(ignoresDiscretionary: ignores, maxBlankLines: mergeMax(max, existing))
-        case .soft(let count, let disc, let existing):
-            .soft(count: count, discretionary: disc, maxBlankLines: mergeMax(max, existing))
-        case .hard, .escaped:
-            self
+            case let .elective(ignores, existing):
+                .elective(ignoresDiscretionary: ignores, maxBlankLines: mergeMax(max, existing))
+            case let .soft(count, disc, existing):
+                .soft(count: count, discretionary: disc, maxBlankLines: mergeMax(max, existing))
+            case .hard, .escaped: self
         }
     }
 
     static func + (lhs: NewlineBehavior, rhs: NewlineBehavior) -> NewlineBehavior {
         switch (lhs, rhs) {
-        case (.elective(_, let max), _):
-            // `rhs` is either also elective or a required newline, which overwrites elective.
-            // Carry maxBlankLines through if the rhs is soft.
-            if let max, case .soft(let c, let d, let rhsMax) = rhs {
-                return .soft(count: c, discretionary: d, maxBlankLines: mergeMax(max, rhsMax))
-            }
-            return rhs
-        case (_, .elective(_, let max)):
-            // `lhs` is either also elective or a required newline, which overwrites elective.
-            if let max, case .soft(let c, let d, let lhsMax) = lhs {
-                return .soft(count: c, discretionary: d, maxBlankLines: mergeMax(max, lhsMax))
-            }
-            return lhs
+            case (.elective(_, let max), _):
+                // `rhs` is either also elective or a required newline, which overwrites elective. Carry
+                // maxBlankLines through if the rhs is soft.
+                if let max, case let .soft(c, d, rhsMax) = rhs {
+                    return .soft(count: c, discretionary: d, maxBlankLines: mergeMax(max, rhsMax))
+                }
+                return rhs
+            case (_, .elective(_, let max)):
+                // `lhs` is either also elective or a required newline, which overwrites elective.
+                if let max, case let .soft(c, d, lhsMax) = lhs {
+                    return .soft(count: c, discretionary: d, maxBlankLines: mergeMax(max, lhsMax))
+                }
+                return lhs
 
-        case (.escaped, _):
-            return rhs
-        case (_, .escaped):
-            return lhs
-        case (.soft(let lhsCount, let lhsDiscretionary, let lhsMax),
-              .soft(let rhsCount, let rhsDiscretionary, let rhsMax)):
-            let mergedCount: Int
-            if lhsDiscretionary && rhsDiscretionary {
-                mergedCount = lhsCount + rhsCount
-            } else if lhsDiscretionary {
-                mergedCount = lhsCount
-            } else if rhsDiscretionary {
-                mergedCount = rhsCount
-            } else {
-                mergedCount = max(lhsCount, rhsCount)
-            }
-            return .soft(
-                count: mergedCount,
-                discretionary: lhsDiscretionary || rhsDiscretionary,
-                maxBlankLines: mergeMax(lhsMax, rhsMax)
-            )
+            case (.escaped, _): return rhs
+            case (_, .escaped): return lhs
+            case (
+                .soft(let lhsCount, let lhsDiscretionary, let lhsMax),
+                .soft(let rhsCount, let rhsDiscretionary, let rhsMax)
+            ):
+                let mergedCount: Int
+                if lhsDiscretionary, rhsDiscretionary {
+                    mergedCount = lhsCount + rhsCount
+                } else if lhsDiscretionary {
+                    mergedCount = lhsCount
+                } else if rhsDiscretionary {
+                    mergedCount = rhsCount
+                } else {
+                    mergedCount = max(lhsCount, rhsCount)
+                }
+                return .soft(
+                    count: mergedCount,
+                    discretionary: lhsDiscretionary || rhsDiscretionary,
+                    maxBlankLines: mergeMax(lhsMax, rhsMax)
+                )
 
-        case (.soft(let softCount, _, _), .hard(let hardCount)),
-            (.hard(let hardCount), .soft(let softCount, _, _)):
-            return .hard(count: max(softCount, hardCount))
+            case (.soft(let softCount, _, _), .hard(let hardCount)),
+                (.hard(let hardCount), .soft(let softCount, _, _)):
+                return .hard(count: max(softCount, hardCount))
 
-        case (.hard(let lhsCount), .hard(let rhsCount)):
-            return .hard(count: lhsCount + rhsCount)
+            case (.hard(let lhsCount), .hard(let rhsCount)):
+                return .hard(count: lhsCount + rhsCount)
         }
     }
 }
@@ -291,25 +282,30 @@ enum NewlineBehavior: Sendable {
 /// Returns the most restrictive (smallest) of two optional maxBlankLines values.
 private func mergeMax(_ a: Int?, _ b: Int?) -> Int? {
     switch (a, b) {
-    case (let a?, let b?): min(a, b)
-    case (let a?, nil), (nil, let a?): a
-    case (nil, nil): nil
+        case let (a?, b?): min(a, b)
+        case (let a?, nil), (nil, let a?): a
+        case (nil, nil): nil
     }
 }
 
-/// Kinds of printer control tokens that can be used to customize the pretty printer's behavior in
-/// a subsection of a token stream.
+/// Kinds of printer control tokens that can be used to customize the pretty printer's behavior in a
+/// subsection of a token stream.
 enum PrinterControlKind: Sendable {
-    /// A signal that break tokens shouldn't be allowed to fire until a corresponding enable breaking
-    /// control token is encountered.
+    /// A signal that break tokens shouldn't be allowed to fire until a corresponding enable
+    /// breaking control token is encountered.
     ///
     /// It's valid to nest `disableBreaking` and `enableBreaking` tokens. Breaks will be suppressed
-    /// long as there is at least 1 unmatched disable token. If `allowDiscretionary` is `true`, then
-    /// discretionary breaks aren't effected. An `allowDiscretionary` value of true never overrides a
-    /// value of false. Hard breaks are always inserted no matter what.
+    /// long as there is at least 1 unmatched disable token. If `allowDiscretionary` is `true` ,
+    /// then discretionary breaks aren't effected. An `allowDiscretionary` value of true never
+    /// overrides a value of false. Hard breaks are always inserted no matter what.
     case disableBreaking(allowDiscretionary: Bool)
 
     /// A signal that break tokens should be allowed to fire following this token, as long as there
     /// are no other unmatched disable tokens.
     case enableBreaking
+
+    /// Clears the printer's "current line is a continuation" flag. Used at boundaries (e.g.
+    /// between wrapped guard conditions and the body's `{`) where a subsequent block-kind open
+    /// break should contribute only block indent, not continuation indent on top of it.
+    case clearContinuation
 }

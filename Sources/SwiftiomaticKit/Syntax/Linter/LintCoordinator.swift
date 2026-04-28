@@ -100,6 +100,8 @@ package final class LintCoordinator {
         experimentalFeatures: Set<String> = [],
         parsingDiagnosticHandler: ((Diagnostic, SourceLocation) -> Void)? = nil
     ) throws(SwiftiomaticError) {
+        try configuration.validateStyleSupported()
+
         // If the file or input string is completely empty, do nothing. This prevents even a trailing
         // newline from being diagnosed for an empty file. (This is consistent with clang-format, which
         // also does not touch an empty file even if the setting to add trailing newlines is enabled.)

@@ -1,14 +1,14 @@
-//===----------------------------------------------------------------------===//
+// ===----------------------------------------------------------------------===//
 //
 // This source file is part of the Swift.org open source project
 //
-// Copyright (c) 2014 - 2019 Apple Inc. and the Swift project authors
-// Licensed under Apache License v2.0 with Runtime Library Exception
+// Copyright (c) 2014 - 2019 Apple Inc. and the Swift project authors Licensed under Apache License
+// v2.0 with Runtime Library Exception
 //
-// See https://swift.org/LICENSE.txt for license information
-// See https://swift.org/CONTRIBUTORS.txt for the list of Swift project authors
+// See https://swift.org/LICENSE.txt for license information See https://swift.org/CONTRIBUTORS.txt
+// for the list of Swift project authors
 //
-//===----------------------------------------------------------------------===//
+// ===----------------------------------------------------------------------===//
 
 import SwiftSyntax
 
@@ -19,20 +19,22 @@ extension TokenStream {
     }
 
     func visitIfExpr(_ node: IfExprSyntax) -> SyntaxVisitorContinueKind {
-        // There may be a consistent breaking group around this node, see `CodeBlockItemSyntax`. This
-        // group is necessary so that breaks around and inside of the conditions aren't forced to break
-        // when the if-stmt spans multiple lines.
+        // There may be a consistent breaking group around this node, see `CodeBlockItemSyntax` .
+        // This group is necessary so that breaks around and inside of the conditions aren't forced
+        // to break when the if-stmt spans multiple lines.
         before(node.conditions.firstToken(viewMode: .sourceAccurate), tokens: .open)
         after(node.conditions.lastToken(viewMode: .sourceAccurate), tokens: .close)
 
         after(node.ifKeyword, tokens: .space)
 
-        // Add break groups, using open continuation breaks, around any conditions after the first so
-        // that continuations inside of the conditions can stack in addition to continuations between
-        // the conditions. There are no breaks around the first condition because if-statements look
-        // better without a break between the "if" and the first condition.
-        let ifBreakKind: OpenBreakKind =
-            config[AlignWrappedConditions.self] ? .alignment(spaces: 3) : .continuation
+        // Add break groups, using open continuation breaks, around any conditions after the first
+        // so that continuations inside of the conditions can stack in addition to continuations
+        // between the conditions. There are no breaks around the first condition because
+        // if-statements look better without a break between the "if" and the first condition.
+        let ifBreakKind:
+            OpenBreakKind = config[AlignWrappedConditions.self]
+                ? .alignment(spaces: 3)
+                : .continuation
         for condition in node.conditions.dropFirst() {
             before(
                 condition.firstToken(viewMode: .sourceAccurate),
@@ -47,8 +49,8 @@ extension TokenStream {
         arrangeBracesAndContents(of: node.body, contentsKeyPath: \.statements)
 
         if let elseKeyword = node.elseKeyword {
-            // Add a token before the else keyword. Breaking before `else` is explicitly allowed when
-            // there's a comment.
+            // Add a token before the else keyword. Breaking before `else` is explicitly allowed
+            // when there's a comment.
             if config[ElseCatchOnNewLine.self] {
                 before(elseKeyword, tokens: .break(.same, newlines: .soft))
             } else if elseKeyword.hasPrecedingLineComment {
@@ -57,10 +59,10 @@ extension TokenStream {
                 before(elseKeyword, tokens: .space)
             }
 
-            // Breaks are only allowed after `else` when there's a comment; otherwise there shouldn't be
-            // any newlines between `else` and the open brace or a following `if`.
+            // Breaks are only allowed after `else` when there's a comment; otherwise there
+            // shouldn't be any newlines between `else` and the open brace or a following `if` .
             if let tokenAfterElse = elseKeyword.nextToken(viewMode: .all),
-                tokenAfterElse.hasPrecedingLineComment
+               tokenAfterElse.hasPrecedingLineComment
             {
                 after(node.elseKeyword, tokens: .break(.same, size: 1))
             } else if let elseBody = node.elseBody, elseBody.is(IfExprSyntax.self) {
@@ -78,9 +80,9 @@ extension TokenStream {
 
     func visitForStmt(_ node: ForStmtSyntax) -> SyntaxVisitorContinueKind {
         // If we have a `(try) await` or `unsafe` clause, allow breaking after the `for` so that the
-        // modifiers can fall onto the next line if needed, and if multiple modifiers are present, keep
-        // them together. Otherwise, keep `for` glued to the token after it so that we break somewhere
-        // later on the line.
+        // modifiers can fall onto the next line if needed, and if multiple modifiers are present,
+        // keep them together. Otherwise, keep `for` glued to the token after it so that we break
+        // somewhere later on the line.
         let modifiers = [node.tryKeyword, node.awaitKeyword, node.unsafeKeyword].compactMap { $0 }
         if let first = modifiers.first, let last = modifiers.last {
             after(node.forKeyword, tokens: .break)
@@ -88,9 +90,7 @@ extension TokenStream {
                 after(first, tokens: .break)
             } else {
                 before(first, tokens: .open)
-                for modifier in modifiers.dropLast() {
-                    after(modifier, tokens: .break)
-                }
+                for modifier in modifiers.dropLast() { after(modifier, tokens: .break) }
                 after(last, tokens: .close, .break)
             }
         } else {
@@ -123,16 +123,17 @@ extension TokenStream {
     func visitWhileStmt(_ node: WhileStmtSyntax) -> SyntaxVisitorContinueKind {
         after(node.whileKeyword, tokens: .space)
 
-        // Add break groups, using open continuation breaks, around any conditions after the first so
-        // that continuations inside of the conditions can stack in addition to continuations between
-        // the conditions. There are no breaks around the first condition because there was historically
-        // not break after the while token and adding such a break would cause excessive changes to
-        // previously formatted code.
-        // This has the side effect that the label + `while` + tokens up to the first break in the first
-        // condition could be longer than the column limit since there are no breaks between the label
-        // or while token.
-        let whileBreakKind: OpenBreakKind =
-            config[AlignWrappedConditions.self] ? .alignment(spaces: 6) : .continuation
+        // Add break groups, using open continuation breaks, around any conditions after the first
+        // so that continuations inside of the conditions can stack in addition to continuations
+        // between the conditions. There are no breaks around the first condition because there was
+        // historically not break after the while token and adding such a break would cause
+        // excessive changes to previously formatted code. This has the side effect that the label +
+        // `while` + tokens up to the first break in the first condition could be longer than the
+        // column limit since there are no breaks between the label or while token.
+        let whileBreakKind:
+            OpenBreakKind = config[AlignWrappedConditions.self]
+                ? .alignment(spaces: 6)
+                : .continuation
         for condition in node.conditions.dropFirst() {
             before(
                 condition.firstToken(viewMode: .sourceAccurate),
@@ -169,22 +170,20 @@ extension TokenStream {
     }
 
     func visitDoStmt(_ node: DoStmtSyntax) -> SyntaxVisitorContinueKind {
-        if node.throwsClause != nil {
-            after(node.doKeyword, tokens: .break(.same, size: 1))
-        }
+        if node.throwsClause != nil { after(node.doKeyword, tokens: .break(.same, size: 1)) }
         arrangeBracesAndContents(of: node.body, contentsKeyPath: \.statements)
         return .visitChildren
     }
 
     func visitCatchClause(_ node: CatchClauseSyntax) -> SyntaxVisitorContinueKind {
-        let catchPrecedingBreak =
-            config[ElseCatchOnNewLine.self]
-            ? Token.break(.same, newlines: .soft) : Token.space
+        let catchPrecedingBreak = config[ElseCatchOnNewLine.self]
+            ? Token.break(.same, newlines: .soft)
+            : Token.space
         before(node.catchKeyword, tokens: catchPrecedingBreak)
 
         // If there are multiple items in the `catch` clause, wrap each in open/close breaks so that
-        // their internal breaks stack correctly. Otherwise, if there is only a single clause, use the
-        // old (pre-SE-0276) behavior (a fixed space after the `catch` keyword).
+        // their internal breaks stack correctly. Otherwise, if there is only a single clause, use
+        // the old (pre-SE-0276) behavior (a fixed space after the `catch` keyword).
         if node.catchItems.count > 1 {
             for catchItem in node.catchItems {
                 before(
@@ -217,22 +216,43 @@ extension TokenStream {
 
     func visitReturnStmt(_ node: ReturnStmtSyntax) -> SyntaxVisitorContinueKind {
         if let expression = node.expression {
-            if leftmostMultilineStringLiteral(of: expression) != nil {
-                before(expression.firstToken(viewMode: .sourceAccurate), tokens: .break(.open))
-                after(
-                    expression.lastToken(viewMode: .sourceAccurate),
-                    tokens: .break(.close(mustBreak: false))
-                )
-            } else {
-                before(expression.firstToken(viewMode: .sourceAccurate), tokens: .break)
-            }
+            arrangeKeywordOperandBreak(expression: expression)
         }
         return .visitChildren
     }
 
     func visitThrowStmt(_ node: ThrowStmtSyntax) -> SyntaxVisitorContinueKind {
-        before(node.expression.firstToken(viewMode: .sourceAccurate), tokens: .break)
+        arrangeKeywordOperandBreak(expression: node.expression)
         return .visitChildren
+    }
+
+    /// Emits the break between a statement keyword (`return`, `throw`) and its operand.
+    /// For member-access chains and compound expressions, bounds the break's chunk via `.open`/
+    /// `.close` so inner operator/`.` breaks fire first — matches `arrangeAssignmentBreaks`.
+    private func arrangeKeywordOperandBreak(expression: ExprSyntax) {
+        if leftmostMultilineStringLiteral(of: expression) != nil {
+            before(expression.firstToken(viewMode: .sourceAccurate), tokens: .break(.open))
+            after(
+                expression.lastToken(viewMode: .sourceAccurate),
+                tokens: .break(.close(mustBreak: false))
+            )
+            return
+        }
+
+        let isCompound = isCompoundExpression(expression)
+        let hasMemberChain = isMemberAccessChain(expression)
+        let canGroupBeforeBreak =
+            (isCompound || hasMemberChain) && !hasLeadingLineComments(expression)
+
+        if canGroupBeforeBreak {
+            before(
+                expression.firstToken(viewMode: .sourceAccurate),
+                tokens: .open, .break(.continue, newlines: .elective(ignoresDiscretionary: true))
+            )
+            after(expression.lastToken(viewMode: .sourceAccurate), tokens: .close)
+        } else {
+            before(expression.firstToken(viewMode: .sourceAccurate), tokens: .break)
+        }
     }
 
     func visitContinueStmt(_ node: ContinueStmtSyntax) -> SyntaxVisitorContinueKind {
@@ -260,8 +280,10 @@ extension TokenStream {
             }
         }
 
-        let newlines: NewlineBehavior =
-            areBracesCompletelyEmpty(node, contentsKeyPath: \.cases) ? .elective : .soft
+        let newlines:
+            NewlineBehavior = areBracesCompletelyEmpty(node, contentsKeyPath: \.cases)
+                ? .elective
+                : .soft
         before(node.rightBrace, tokens: .break(.same, size: 0, newlines: newlines))
 
         return .visitChildren
@@ -271,11 +293,9 @@ extension TokenStream {
         // If switch/case labels were configured to be indented, use an `open` break; otherwise, use
         // the default `same` break.
         let openBreak: Token
-        if config[SwitchCaseIndentation.self].style == .indented {
-            openBreak = .break(.open, newlines: .elective)
-        } else {
-            openBreak = .break(.same, newlines: .soft)
-        }
+        openBreak = config[SwitchCaseIndentation.self].style == .indented
+            ? .break(.open, newlines: .elective)
+            : .break(.same, newlines: .soft)
         before(node.firstToken(viewMode: .sourceAccurate), tokens: openBreak)
 
         after(node.attribute?.lastToken(viewMode: .sourceAccurate), tokens: .space)
@@ -294,10 +314,10 @@ extension TokenStream {
         }
 
         // If the case contains statements, add the closing tokens after the last token of the case.
-        // Otherwise, add the closing tokens before the next case (or the end of the switch) to have the
-        // same effect. If instead the opening and closing tokens were omitted completely in the absence
-        // of statements, comments within the empty case would be incorrectly indented to the same level
-        // as the case label.
+        // Otherwise, add the closing tokens before the next case (or the end of the switch) to have
+        // the same effect. If instead the opening and closing tokens were omitted completely in the
+        // absence of statements, comments within the empty case would be incorrectly indented to
+        // the same level as the case label.
         if node.label.lastToken(viewMode: .sourceAccurate)
             != node.lastToken(viewMode: .sourceAccurate)
         {
@@ -313,17 +333,19 @@ extension TokenStream {
         before(node.caseKeyword, tokens: .open)
         after(node.caseKeyword, tokens: .space)
 
-        // If an item with a `where` clause follows an item without a `where` clause, the compiler emits
-        // a warning telling the user that they should insert a newline between them to disambiguate
-        // their appearance. We enforce that "requirement" here to avoid spurious warnings, especially
-        // following a `NoCasesWithOnlyFallthrough` transformation that might merge cases.
+        // If an item with a `where` clause follows an item without a `where` clause, the compiler
+        // emits a warning telling the user that they should insert a newline between them to
+        // disambiguate their appearance. We enforce that "requirement" here to avoid spurious
+        // warnings, especially following a `NoCasesWithOnlyFallthrough` transformation that might
+        // merge cases.
         let caseItems = Array(node.caseItems)
         for (index, item) in caseItems.enumerated() {
             before(item.firstToken(viewMode: .sourceAccurate), tokens: .open)
             if let trailingComma = item.trailingComma {
-                // Insert a newline before the next item if it has a where clause and this item doesn't.
-                let nextItemHasWhereClause =
-                    index + 1 < caseItems.endIndex && caseItems[index + 1].whereClause != nil
+                // Insert a newline before the next item if it has a where clause and this item
+                // doesn't.
+                let nextItemHasWhereClause = index + 1 < caseItems.endIndex
+                    && caseItems[index + 1].whereClause != nil
                 let requiresNewline = item.whereClause == nil && nextItemHasWhereClause
                 let newlines: NewlineBehavior = requiresNewline ? .soft : .elective
                 after(trailingComma, tokens: .close, .break(.continue, size: 1, newlines: newlines))
@@ -338,8 +360,8 @@ extension TokenStream {
     }
 
     func visitYieldStmt(_ node: YieldStmtSyntax) -> SyntaxVisitorContinueKind {
-        // As of https://github.com/swiftlang/swift-syntax/pull/895, the token following a `yield` keyword
-        // *must* be on the same line, so we cannot break here.
+        // As of https://github.com/swiftlang/swift-syntax/pull/895, the token following a `yield`
+        // keyword *must* be on the same line, so we cannot break here.
         after(node.yieldKeyword, tokens: .space)
         return .visitChildren
     }

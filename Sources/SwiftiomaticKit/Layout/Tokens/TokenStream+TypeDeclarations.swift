@@ -1,14 +1,14 @@
-//===----------------------------------------------------------------------===//
+// ===----------------------------------------------------------------------===//
 //
 // This source file is part of the Swift.org open source project
 //
-// Copyright (c) 2014 - 2019 Apple Inc. and the Swift project authors
-// Licensed under Apache License v2.0 with Runtime Library Exception
+// Copyright (c) 2014 - 2019 Apple Inc. and the Swift project authors Licensed under Apache License
+// v2.0 with Runtime Library Exception
 //
-// See https://swift.org/LICENSE.txt for license information
-// See https://swift.org/CONTRIBUTORS.txt for the list of Swift project authors
+// See https://swift.org/LICENSE.txt for license information See https://swift.org/CONTRIBUTORS.txt
+// for the list of Swift project authors
 //
-//===----------------------------------------------------------------------===//
+// ===----------------------------------------------------------------------===//
 
 import SwiftSyntax
 
@@ -98,9 +98,9 @@ extension TokenStream {
     }
 
     func visitExtensionDecl(_ node: ExtensionDeclSyntax) -> SyntaxVisitorContinueKind {
-        // Parser recovery on a malformed `extension` declaration can occasionally yield
-        // an extendedType with no tokens; skip rather than crash so the rest of the file
-        // still formats.
+        // Parser recovery on a malformed `extension` declaration can occasionally yield an
+        // extendedType with no tokens; skip rather than crash so the rest of the file still
+        // formats.
         guard let lastTokenOfExtendedType = node.extendedType.lastToken(viewMode: .sourceAccurate)
         else {
             assertionFailure("ExtensionDeclSyntax.extendedType must have at least one token")
@@ -121,9 +121,9 @@ extension TokenStream {
     }
 
     func visitMacroDecl(_ node: MacroDeclSyntax) -> SyntaxVisitorContinueKind {
-        // Macro declarations have a syntax that combines the best parts of types and functions while
-        // adding their own unique flavor, so we have to copy and adapt the relevant parts of those
-        // `arrange*` functions here.
+        // Macro declarations have a syntax that combines the best parts of types and functions
+        // while adding their own unique flavor, so we have to copy and adapt the relevant parts of
+        // those `arrange*` functions here.
         before(node.firstToken(viewMode: .sourceAccurate), tokens: .open)
 
         arrangeAttributeList(
@@ -135,7 +135,7 @@ extension TokenStream {
 
         // Prioritize keeping ") -> <return_type>" together. We can only do this if the macro has
         // arguments.
-        if hasArguments && config[KeepFunctionOutputTogether.self] {
+        if hasArguments, config[KeepFunctionOutputTogether.self] {
             // Due to visitation order, the matching .open break is added in ParameterClauseSyntax.
             after(node.signature.lastToken(viewMode: .sourceAccurate), tokens: .close)
         }
@@ -148,8 +148,8 @@ extension TokenStream {
 
         // Prioritize keeping "<modifiers> macro <name>(" together. Also include the ")" if the
         // parameter list is empty.
-        let firstTokenAfterAttributes =
-            node.modifiers.firstToken(viewMode: .sourceAccurate) ?? node.macroKeyword
+        let firstTokenAfterAttributes = node.modifiers.firstToken(viewMode: .sourceAccurate)
+            ?? node.macroKeyword
         before(firstTokenAfterAttributes, tokens: .open)
         after(node.macroKeyword, tokens: .break)
         if hasArguments || node.genericParameterClause != nil {
@@ -167,7 +167,8 @@ extension TokenStream {
             after(genericWhereClause.lastToken(viewMode: .sourceAccurate), tokens: .close)
         }
         if let definition = node.definition {
-            // Start the group *after* the `=` so that it all wraps onto its own line if it doesn't fit.
+            // Start the group *after* the `=` so that it all wraps onto its own line if it doesn't
+            // fit.
             after(definition.equal, tokens: .open)
             after(definition.lastToken(viewMode: .sourceAccurate), tokens: .close)
         }
@@ -197,15 +198,15 @@ extension TokenStream {
         )
 
         // Prioritize keeping "<modifiers> <keyword> <name>:" together (corresponding group close is
-        // below at `lastTokenBeforeBrace`).
-        let firstTokenAfterAttributes =
-            modifiers?.firstToken(viewMode: .sourceAccurate) ?? typeKeyword
+        // below at `lastTokenBeforeBrace` ).
+        let firstTokenAfterAttributes = modifiers?.firstToken(viewMode: .sourceAccurate)
+            ?? typeKeyword
         before(firstTokenAfterAttributes, tokens: .open)
         after(typeKeyword, tokens: .break)
 
         arrangeBracesAndContents(of: memberBlock, contentsKeyPath: \.members)
 
-        if let genericWhereClause = genericWhereClause {
+        if let genericWhereClause {
             before(
                 genericWhereClause.firstToken(viewMode: .sourceAccurate),
                 tokens: .break(.continue),
@@ -214,8 +215,7 @@ extension TokenStream {
             after(memberBlock.leftBrace, tokens: .close)
         }
 
-        let lastTokenBeforeBrace =
-            inheritanceClause?.colon
+        let lastTokenBeforeBrace = inheritanceClause?.colon
             ?? genericParameterOrPrimaryAssociatedTypeClause?.lastToken(viewMode: .sourceAccurate)
             ?? identifier
         after(lastTokenBeforeBrace, tokens: .close)

@@ -1,20 +1,20 @@
 import SwiftSyntax
 
-/// Mark unused function arguments with `_`.
+/// Mark unused function arguments with `_` .
 ///
-/// Detects unused parameters in functions, initializers, subscripts, closures,
-/// and for-loop variables, and replaces them with `_`.
+/// Detects unused parameters in functions, initializers, subscripts, closures, and for-loop
+/// variables, and replaces them with `_` .
 ///
-/// For named function parameters, the internal name is replaced with `_`
-/// (e.g., `func foo(bar: Int)` → `func foo(bar _: Int)`). For unnamed
-/// parameters, the name is removed (`func foo(_ bar: Int)` → `func foo(_: Int)`).
+/// For named function parameters, the internal name is replaced with `_` (e.g.,
+/// `func foo(bar: Int)` → `func foo(bar _: Int)` ). For unnamed parameters, the name is removed (
+/// `func foo(_ bar: Int)` → `func foo(_: Int)` ).
 ///
-/// For operator functions and subscripts, the parameter name is replaced
-/// with `_` directly since external labels are unnecessary.
+/// For operator functions and subscripts, the parameter name is replaced with `_` directly since
+/// external labels are unnecessary.
 ///
 /// Lint: When a parameter or loop variable is unused.
 ///
-/// Rewrite: The unused parameter or variable is replaced with `_`.
+/// Rewrite: The unused parameter or variable is replaced with `_` .
 final class UnusedArguments: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable {
     override class var group: ConfigurationGroup? { .redundancies }
 
@@ -28,10 +28,8 @@ final class UnusedArguments: RewriteSyntaxRule<BasicRuleValue>, @unchecked Senda
         let isOperator: Bool
 
         switch node.name.tokenKind {
-            case .binaryOperator, .prefixOperator, .postfixOperator:
-                isOperator = true
-            default:
-                isOperator = false
+            case .binaryOperator, .prefixOperator, .postfixOperator: isOperator = true
+            default: isOperator = false
         }
 
         var params = Array(result.signature.parameterClause.parameters)
@@ -107,8 +105,7 @@ final class UnusedArguments: RewriteSyntaxRule<BasicRuleValue>, @unchecked Senda
         let visited = super.visit(node)
         guard var result = visited.as(ClosureExprSyntax.self) else { return visited }
         guard var signature = result.signature,
-            let paramClause = signature.parameterClause
-        else { return visited }
+              let paramClause = signature.parameterClause else { return visited }
 
         switch paramClause {
             case let .simpleInput(params):
@@ -121,17 +118,20 @@ final class UnusedArguments: RewriteSyntaxRule<BasicRuleValue>, @unchecked Senda
                     guard !isNameUsed(name, in: result.statements) else { continue }
 
                     diagnose(.unusedClosureArgument(name), on: param.name)
-                    newParams[i] = param.with(
-                        \.name,
-                        .wildcardToken(
-                            leadingTrivia: param.name.leadingTrivia,
-                            trailingTrivia: param.name.trailingTrivia))
+                    newParams[
+                        i] = param.with(
+                            \.name,
+                            .wildcardToken(
+                                leadingTrivia: param.name.leadingTrivia,
+                                trailingTrivia: param.name.trailingTrivia))
                     changed = true
                 }
 
                 guard changed else { return visited }
                 signature.parameterClause = .simpleInput(
-                    ClosureShorthandParameterListSyntax(newParams))
+                    ClosureShorthandParameterListSyntax(
+                        newParams
+                    ))
                 result.signature = signature
                 return ExprSyntax(result)
 
@@ -141,8 +141,7 @@ final class UnusedArguments: RewriteSyntaxRule<BasicRuleValue>, @unchecked Senda
 
                 for (i, param) in params.enumerated() {
                     guard let name = internalClosureName(of: param),
-                        name != "_", !name.hasPrefix("$")
-                    else { continue }
+                          name != "_", !name.hasPrefix("$") else { continue }
                     guard !isNameUsed(name, in: result.statements) else { continue }
 
                     let nameToken = param.secondName ?? param.firstName
@@ -184,9 +183,9 @@ final class UnusedArguments: RewriteSyntaxRule<BasicRuleValue>, @unchecked Senda
                 WildcardPatternSyntax(
                     wildcard: .wildcardToken(
                         leadingTrivia: identPattern.identifier.leadingTrivia,
-                        trailingTrivia: identPattern.identifier.trailingTrivia)))
+                        trailingTrivia: identPattern.identifier.trailingTrivia
+                    )))
             return StmtSyntax(result)
-
         } else if let tuplePattern = result.pattern.as(TuplePatternSyntax.self) {
             var elements = Array(tuplePattern.elements)
             var changed = false
@@ -201,13 +200,14 @@ final class UnusedArguments: RewriteSyntaxRule<BasicRuleValue>, @unchecked Senda
                 guard !usedInBody, !usedInWhere else { continue }
 
                 diagnose(.unusedForLoopVariable(name), on: ident.identifier)
-                elements[i] = element.with(
-                    \.pattern,
-                    PatternSyntax(
-                        WildcardPatternSyntax(
-                            wildcard: .wildcardToken(
-                                leadingTrivia: ident.identifier.leadingTrivia,
-                                trailingTrivia: ident.identifier.trailingTrivia))))
+                elements[
+                    i] = element.with(
+                        \.pattern,
+                        PatternSyntax(
+                            WildcardPatternSyntax(
+                                wildcard: .wildcardToken(
+                                    leadingTrivia: ident.identifier.leadingTrivia,
+                                    trailingTrivia: ident.identifier.trailingTrivia))))
                 changed = true
             }
 
@@ -215,7 +215,8 @@ final class UnusedArguments: RewriteSyntaxRule<BasicRuleValue>, @unchecked Senda
             result.pattern = PatternSyntax(
                 tuplePattern.with(
                     \.elements,
-                    TuplePatternElementListSyntax(elements)))
+                    TuplePatternElementListSyntax(elements)
+                ))
             return StmtSyntax(result)
         }
 
@@ -224,26 +225,24 @@ final class UnusedArguments: RewriteSyntaxRule<BasicRuleValue>, @unchecked Senda
 
     // MARK: - Usage Detection
 
-    /// Check if `name` is referenced as a variable (not member or label)
-    /// anywhere in `syntax`, excluding references shadowed by local declarations.
+    /// Check if `name` is referenced as a variable (not member or label) anywhere in `syntax` ,
+    /// excluding references shadowed by local declarations.
     private func isNameUsed(_ name: String, in syntax: some SyntaxProtocol) -> Bool {
         let boundaryID = Syntax(syntax).id
 
-        // Check for shorthand optional bindings: `if let foo` is sugar for `if let foo = foo`
-        // and counts as a use of the outer `foo`.
+        // Check for shorthand optional bindings: `if let foo` is sugar for `if let foo = foo` and
+        // counts as a use of the outer `foo` .
         if hasShorthandBinding(name, in: syntax) { return true }
 
         for token in syntax.tokens(viewMode: .sourceAccurate)
         where matchesIdentifier(token, name: name) {
-
             // Must be DeclReferenceExprSyntax.baseName
             guard let declRef = token.parent?.as(DeclReferenceExprSyntax.self),
-                declRef.baseName.id == token.id
-            else { continue }
+                  declRef.baseName.id == token.id else { continue }
 
             // Exclude member access position (foo.bar — bar is not a variable use)
             if let memberAccess = declRef.parent?.as(MemberAccessExprSyntax.self),
-                memberAccess.declName.id == declRef.id
+               memberAccess.declName.id == declRef.id
             {
                 continue
             }
@@ -256,16 +255,16 @@ final class UnusedArguments: RewriteSyntaxRule<BasicRuleValue>, @unchecked Senda
         return false
     }
 
-    /// Detect shorthand `if let name` / `guard let name` (no initializer)
-    /// which implicitly references the outer variable.
+    /// Detect shorthand `if let name` / `guard let name` (no initializer) which implicitly
+    /// references the outer variable.
     private func hasShorthandBinding(
         _ name: String, in syntax: some SyntaxProtocol
     ) -> Bool {
         for child in syntax.children(viewMode: .sourceAccurate) {
             if let binding = child.as(OptionalBindingConditionSyntax.self),
-                binding.initializer == nil,
-                let ident = binding.pattern.as(IdentifierPatternSyntax.self),
-                ident.identifier.text == name
+               binding.initializer == nil,
+               let ident = binding.pattern.as(IdentifierPatternSyntax.self),
+               ident.identifier.text == name
             {
                 return true
             }
@@ -283,12 +282,11 @@ final class UnusedArguments: RewriteSyntaxRule<BasicRuleValue>, @unchecked Senda
                     return String(text.dropFirst().dropLast()) == name
                 }
                 return false
-            default:
-                return false
+            default: return false
         }
     }
 
-    /// Walk up from `ref` toward `boundaryID`, checking for shadowing declarations.
+    /// Walk up from `ref` toward `boundaryID` , checking for shadowing declarations.
     private func isShadowed(
         ref: DeclReferenceExprSyntax,
         name: String,
@@ -333,14 +331,14 @@ final class UnusedArguments: RewriteSyntaxRule<BasicRuleValue>, @unchecked Senda
 
             // If-expression: conditions shadow inside the body
             if let ifExpr = parent.as(IfExprSyntax.self),
-                current.id == Syntax(ifExpr.body).id
+               current.id == Syntax(ifExpr.body).id
             {
                 for cond in ifExpr.conditions where conditionBinds(name, in: cond) { return true }
             }
 
             // Switch case pattern binds the name
             if let switchCase = parent.as(SwitchCaseSyntax.self),
-                let caseLabel = switchCase.label.as(SwitchCaseLabelSyntax.self)
+               let caseLabel = switchCase.label.as(SwitchCaseLabelSyntax.self)
             {
                 for item in caseLabel.caseItems where patternContains(name, in: item.pattern) {
                     return true
@@ -349,7 +347,7 @@ final class UnusedArguments: RewriteSyntaxRule<BasicRuleValue>, @unchecked Senda
 
             // Nested function parameters shadow in the body
             if let funcDecl = parent.as(FunctionDeclSyntax.self),
-                let body = funcDecl.body, current.id == Syntax(body).id
+               let body = funcDecl.body, current.id == Syntax(body).id
             {
                 if funcDecl.signature.parameterClause.parameters.contains(where: {
                     internalName(of: $0) == name
@@ -360,7 +358,7 @@ final class UnusedArguments: RewriteSyntaxRule<BasicRuleValue>, @unchecked Senda
 
             // Nested initializer parameters shadow in the body
             if let initDecl = parent.as(InitializerDeclSyntax.self),
-                let body = initDecl.body, current.id == Syntax(body).id
+               let body = initDecl.body, current.id == Syntax(body).id
             {
                 if initDecl.signature.parameterClause.parameters.contains(where: {
                     internalName(of: $0) == name
@@ -391,28 +389,26 @@ final class UnusedArguments: RewriteSyntaxRule<BasicRuleValue>, @unchecked Senda
 
     private func conditionBinds(_ name: String, in cond: ConditionElementSyntax) -> Bool {
         if let binding = cond.condition.as(OptionalBindingConditionSyntax.self) {
-            return patternContains(name, in: binding.pattern)
+            patternContains(name, in: binding.pattern)
+        } else if let matching = cond.condition.as(MatchingPatternConditionSyntax.self) {
+            patternContains(name, in: matching.pattern)
+        } else {
+            false
         }
-        if let matching = cond.condition.as(MatchingPatternConditionSyntax.self) {
-            return patternContains(name, in: matching.pattern)
-        }
-        return false
     }
 
     private func patternContains(_ name: String, in pattern: PatternSyntax) -> Bool {
         if let ident = pattern.as(IdentifierPatternSyntax.self) {
-            return ident.identifier.text == name
+            ident.identifier.text == name
+        } else if let tuple = pattern.as(TuplePatternSyntax.self) {
+            tuple.elements.contains { patternContains(name, in: $0.pattern) }
+        } else if let binding = pattern.as(ValueBindingPatternSyntax.self) {
+            patternContains(name, in: binding.pattern)
+        } else if let expr = pattern.as(ExpressionPatternSyntax.self) {
+            expressionBinds(name, in: expr.expression)
+        } else {
+            false
         }
-        if let tuple = pattern.as(TuplePatternSyntax.self) {
-            return tuple.elements.contains { patternContains(name, in: $0.pattern) }
-        }
-        if let binding = pattern.as(ValueBindingPatternSyntax.self) {
-            return patternContains(name, in: binding.pattern)
-        }
-        if let expr = pattern.as(ExpressionPatternSyntax.self) {
-            return expressionBinds(name, in: expr.expression)
-        }
-        return false
     }
 
     private func expressionBinds(_ name: String, in expr: ExprSyntax) -> Bool {
@@ -433,8 +429,7 @@ final class UnusedArguments: RewriteSyntaxRule<BasicRuleValue>, @unchecked Senda
     private func closureBinds(_ name: String, in closure: ClosureExprSyntax) -> Bool {
         if let signature = closure.signature, let paramClause = signature.parameterClause {
             switch paramClause {
-                case let .simpleInput(params):
-                    params.contains { $0.name.text == name }
+                case let .simpleInput(params): params.contains { $0.name.text == name }
                 case let .parameterClause(clause):
                     clause.parameters.contains { param in
                         if let secondName = param.secondName {
@@ -538,8 +533,7 @@ final class UnusedArguments: RewriteSyntaxRule<BasicRuleValue>, @unchecked Senda
         guard let accessorBlock = sub.accessorBlock else { return false }
 
         switch accessorBlock.accessors {
-            case let .getter(stmts):
-                return isNameUsed(name, in: stmts)
+            case let .getter(stmts): return isNameUsed(name, in: stmts)
             case let .accessors(accessors):
                 for accessor in accessors {
                     if let body = accessor.body, isNameUsed(name, in: body) { return true }
@@ -549,16 +543,16 @@ final class UnusedArguments: RewriteSyntaxRule<BasicRuleValue>, @unchecked Senda
     }
 }
 
-extension Finding.Message {
-    fileprivate static func unusedArgument(_ name: String) -> Finding.Message {
+fileprivate extension Finding.Message {
+    static func unusedArgument(_ name: String) -> Finding.Message {
         "parameter '\(name)' is unused"
     }
 
-    fileprivate static func unusedClosureArgument(_ name: String) -> Finding.Message {
+    static func unusedClosureArgument(_ name: String) -> Finding.Message {
         "closure parameter '\(name)' is unused"
     }
 
-    fileprivate static func unusedForLoopVariable(_ name: String) -> Finding.Message {
+    static func unusedForLoopVariable(_ name: String) -> Finding.Message {
         "for-loop variable '\(name)' is unused"
     }
 }

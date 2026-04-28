@@ -1,18 +1,17 @@
-//===----------------------------------------------------------------------===//
+// ===----------------------------------------------------------------------===//
 //
 // This source file is part of the Swift.org open source project
 //
-// Copyright (c) 2014 - 2021 Apple Inc. and the Swift project authors
-// Licensed under Apache License v2.0 with Runtime Library Exception
+// Copyright (c) 2014 - 2021 Apple Inc. and the Swift project authors Licensed under Apache License
+// v2.0 with Runtime Library Exception
 //
-// See https://swift.org/LICENSE.txt for license information
-// See https://swift.org/CONTRIBUTORS.txt for the list of Swift project authors
+// See https://swift.org/LICENSE.txt for license information See https://swift.org/CONTRIBUTORS.txt
+// for the list of Swift project authors
 //
-//===----------------------------------------------------------------------===//
+// ===----------------------------------------------------------------------===//
 
 /// A problem with the style or syntax of the source code discovered during linting or formatting.
 package struct Finding: Sendable {
-
     /// The file path and location in that file where a finding was encountered.
     package struct Location: Sendable {
         /// The file path of the finding.
@@ -36,8 +35,9 @@ package struct Finding: Sendable {
     ///
     /// Finding messages are strongly typed so that they can act as an extensible namespace for
     /// messages defined by rules and other components of the formatter. To accomplish this, declare
-    /// an `extension` of the `Finding.Message` type and add `static` properties or functions of type
-    /// `Finding.Message`; these can be initialized using string literals or string interpolations.
+    /// an `extension` of the `Finding.Message` type and add `static` properties or functions of
+    /// type `Finding.Message` ; these can be initialized using string literals or string
+    /// interpolations.
     package struct Message:
         CustomStringConvertible, ExpressibleByStringLiteral, ExpressibleByStringInterpolation,
         Sendable
@@ -47,12 +47,10 @@ package struct Finding: Sendable {
 
         package var description: String { text }
 
-        package init(stringLiteral string: String) {
-            self.text = string
-        }
+        package init(stringLiteral string: String) { text = string }
 
         package init(stringInterpolation: DefaultStringInterpolation) {
-            self.text = String(describing: stringInterpolation)
+            text = String(describing: stringInterpolation)
         }
     }
 
@@ -86,8 +84,7 @@ package struct Finding: Sendable {
     /// Notes that provide additional detail about the finding.
     package let notes: [Note]
 
-    /// Creates a new finding with the given category, message, optional location, and
-    /// notes.
+    /// Creates a new finding with the given category, message, optional location, and notes.
     init(
         category: FindingCategorizing,
         message: Message,

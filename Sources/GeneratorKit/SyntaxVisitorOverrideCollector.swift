@@ -58,7 +58,10 @@ package final class SyntaxVisitorOverrideCollector {
 
         // Skip helper methods that happen to start with "visit" but aren't visitor overrides.
         // Visitor methods always have a single parameter whose type ends in "Syntax".
-        let paramLabel = param.secondName?.text ?? param.firstName.text
+        // Fall back to "node" when the source uses the anonymous form `_: SomeSyntax` —
+        // the forwarding stub needs a real identifier to pass through.
+        let rawLabel = param.secondName?.text ?? param.firstName.text
+        let paramLabel = rawLabel == "_" ? "node" : rawLabel
 
         return DetectedOverride(
             isPost: isPost,

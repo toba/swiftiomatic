@@ -232,9 +232,12 @@ final class RedundantSelf: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendabl
               base.baseName.tokenKind == .keyword(.self)
         else { return visited }
 
-        // Never remove self.init (delegating initializer call)
+        // Never remove self. when the member name is 'init' (delegating initializer call)
+        // or a reserved keyword that can't appear bare (e.g. self.is(_:), self.as(_:)).
         let memberName = access.declName.baseName.text
-        guard memberName != "init" else { return visited }
+        guard memberName != "init",
+              !RedundantBackticks.swiftKeywords.contains(memberName)
+        else { return visited }
 
         // Must be inside a type body with a function/accessor/closure scope
         guard !implicitSelfStack.isEmpty else { return visited }
