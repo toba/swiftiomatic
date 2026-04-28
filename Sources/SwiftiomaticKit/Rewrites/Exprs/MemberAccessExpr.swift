@@ -9,61 +9,46 @@ import SwiftSyntax
 /// `CompactStageOneRewriterGenerator.manuallyHandledNodeTypes`.
 func rewriteMemberAccessExpr(
     _ node: MemberAccessExprSyntax,
+    parent: Syntax?,
     context: Context
-) -> MemberAccessExprSyntax {
+) -> ExprSyntax {
     var result = node
-    let parent: Syntax? = nil
-    let nodeSyntax = Syntax(result)
-    _ = nodeSyntax  // used by audit-only calls below.
 
-    // PreferCountWhere
-    if context.shouldFormat(PreferCountWhere.self, node: Syntax(result)) {
-        if let next = PreferCountWhere.transform(
-            result, parent: parent, context: context
-        ).as(MemberAccessExprSyntax.self) {
-            result = next
-        }
+    applyRule(
+        PreferCountWhere.self, to: &result,
+        parent: parent, context: context,
+        transform: PreferCountWhere.transform
+    )
+
+    applyRule(
+        PreferIsDisjoint.self, to: &result,
+        parent: parent, context: context,
+        transform: PreferIsDisjoint.transform
+    )
+
+    applyRule(
+        PreferSelfType.self, to: &result,
+        parent: parent, context: context,
+        transform: PreferSelfType.transform
+    )
+
+    applyRule(
+        RedundantSelf.self, to: &result,
+        parent: parent, context: context,
+        transform: RedundantSelf.transform
+    )
+
+    applyRule(
+        RedundantStaticSelf.self, to: &result,
+        parent: parent, context: context,
+        transform: RedundantStaticSelf.transform
+    )
+
+    // NoForceUnwrap — chain-top wrapping for force-unwrap chains. Helpers in
+    // `Rewrites/Exprs/NoForceUnwrapHelpers.swift`.
+    if context.shouldFormat(NoForceUnwrap.self, node: Syntax(result)) {
+        return noForceUnwrapRewriteMemberAccess(result, context: context)
     }
 
-    // PreferIsDisjoint
-    if context.shouldFormat(PreferIsDisjoint.self, node: Syntax(result)) {
-        if let next = PreferIsDisjoint.transform(
-            result, parent: parent, context: context
-        ).as(MemberAccessExprSyntax.self) {
-            result = next
-        }
-    }
-
-    // PreferSelfType
-    if context.shouldFormat(PreferSelfType.self, node: Syntax(result)) {
-        if let next = PreferSelfType.transform(
-            result, parent: parent, context: context
-        ).as(MemberAccessExprSyntax.self) {
-            result = next
-        }
-    }
-
-    // RedundantSelf
-    if context.shouldFormat(RedundantSelf.self, node: Syntax(result)) {
-        if let next = RedundantSelf.transform(
-            result, parent: parent, context: context
-        ).as(MemberAccessExprSyntax.self) {
-            result = next
-        }
-    }
-
-    // RedundantStaticSelf
-    if context.shouldFormat(RedundantStaticSelf.self, node: Syntax(result)) {
-        if let next = RedundantStaticSelf.transform(
-            result, parent: parent, context: context
-        ).as(MemberAccessExprSyntax.self) {
-            result = next
-        }
-    }
-
-    // NoForceUnwrap — unported (file-level pre-scan, instance state).
-    // Audit-only; deferred to 4f.
-    _ = context.shouldFormat(NoForceUnwrap.self, node: Syntax(result))
-
-    return result
+    return ExprSyntax(result)
 }

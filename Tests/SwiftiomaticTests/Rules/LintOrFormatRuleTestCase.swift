@@ -155,6 +155,31 @@ extension RuleTesting {
       context: context,
       sourceLocation: sourceLocation
     )
+
+    var emittedCompactFindings = [Finding]()
+    let compactPipeline = RewriteCoordinator(
+      configuration: configuration,
+      findingConsumer: { emittedCompactFindings.append($0) }
+    )
+    compactPipeline.debugOptions.insert(.disablePrettyPrint)
+    compactPipeline.debugOptions.insert(.useCompactPipeline)
+    var compactActual = ""
+    try! compactPipeline.format(
+      syntax: sourceFileSyntax,
+      source: originalSource,
+      operatorTable: OperatorTable.standardOperators,
+      assumingFileURL: nil,
+      selection: .infinite,
+      to: &compactActual
+    )
+    assertStringsEqualWithDiff(compactActual, expected, sourceLocation: sourceLocation)
+    assertFindings(
+      expected: findings,
+      markerLocations: markedInput.markers,
+      emittedFindings: emittedCompactFindings,
+      context: context,
+      sourceLocation: sourceLocation
+    )
   }
 }
 

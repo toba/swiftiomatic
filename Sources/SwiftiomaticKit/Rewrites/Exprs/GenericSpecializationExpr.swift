@@ -9,20 +9,18 @@ import SwiftSyntax
 /// `CompactStageOneRewriterGenerator.manuallyHandledNodeTypes`.
 func rewriteGenericSpecializationExpr(
     _ node: GenericSpecializationExprSyntax,
+    parent: Syntax?,
     context: Context
-) -> GenericSpecializationExprSyntax {
-    var result = node
-    let parent: Syntax? = nil
-    let nodeSyntax = Syntax(result)
-    _ = nodeSyntax  // used by audit-only calls below.
+) -> ExprSyntax {
+    var result: ExprSyntax = ExprSyntax(node)
 
-    // No ported rules currently register `static transform` for
-    // GenericSpecializationExprSyntax.
-
-    // PreferShorthandTypeNames — unported (legacy `SyntaxFormatRule.visit`
-    // override). Audit-only `shouldFormat` call preserves rule-mask gating;
-    // deferred to 4f.
-    _ = context.shouldFormat(PreferShorthandTypeNames.self, node: Syntax(result))
+    // PreferShorthandTypeNames — `Array<T>()`/`Dictionary<K,V>()`/`Optional<T>()`
+    // expression-context shorthand. May change the concrete expression kind.
+    if context.shouldFormat(PreferShorthandTypeNames.self, node: Syntax(result)),
+       let typed = result.as(GenericSpecializationExprSyntax.self)
+    {
+        result = PreferShorthandTypeNames.transform(typed, parent: parent, context: context)
+    }
 
     return result
 }

@@ -6,32 +6,30 @@ import SwiftSyntax
 /// Per Phase 4c of `ddi-wtv`.
 func rewriteDeinitializerDecl(
     _ node: DeinitializerDeclSyntax,
+    parent: Syntax?,
     context: Context
 ) -> DeinitializerDeclSyntax {
     var result = node
-    let parent: Syntax? = nil
 
-    // ModifiersOnSameLine
-    if context.shouldFormat(ModifiersOnSameLine.self, node: Syntax(result)) {
-        if let next = ModifiersOnSameLine.transform(
-            result, parent: parent, context: context
-        ).as(DeinitializerDeclSyntax.self) {
-            result = next
-        }
-    }
+    applyRule(
+        ModifiersOnSameLine.self, to: &result,
+        parent: parent, context: context,
+        transform: ModifiersOnSameLine.transform
+    )
 
-    // TripleSlashDocComments
-    if context.shouldFormat(TripleSlashDocComments.self, node: Syntax(result)) {
-        if let next = TripleSlashDocComments.transform(
-            result, parent: parent, context: context
-        ).as(DeinitializerDeclSyntax.self) {
-            result = next
-        }
-    }
+    applyRule(
+        TripleSlashDocComments.self, to: &result,
+        parent: parent, context: context,
+        transform: TripleSlashDocComments.transform
+    )
 
-    // Unported rules touching DeinitializerDeclSyntax — tracked for sub-issue 4f:
-    //   - WrapMultilineStatementBraces (no static transform)
-    _ = context.shouldFormat(WrapMultilineStatementBraces.self, node: Syntax(result))
+    // Unported rules touching DeinitializerDeclSyntax — tracked for sub-issue 4f:    // WrapMultilineStatementBraces — wrap opening brace of a multiline
+    // statement onto its own line aligned with the closing brace.
+    applyRule(
+        WrapMultilineStatementBraces.self, to: &result,
+        parent: parent, context: context,
+        transform: WrapMultilineStatementBraces.transform
+    )
 
     return result
 }

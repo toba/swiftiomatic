@@ -5,7 +5,7 @@ status: in-progress
 type: task
 priority: high
 created_at: 2026-04-28T15:49:40Z
-updated_at: 2026-04-28T17:02:18Z
+updated_at: 2026-04-28T18:46:06Z
 parent: ddi-wtv
 blocked_by:
     - 7fp-ghy
@@ -63,3 +63,17 @@ Inventory the precise rule list per node type from `.build/.../CompactStageOneRe
 - Inline unported rule logic where it touches decl node types: `RedundantOverride` (FunctionDecl), `RedundantFinal` (ClassDecl), `RedundantEscaping` (FunctionDecl/InitializerDecl), `PreferAnyObject` (ProtocolDecl), `StrongOutlets` (VariableDecl), `WrapMultilineStatementBraces` (10 decl types). All currently audit-only.
 - Several unported rules use instance state (e.g. `RedundantSwiftTestingSuite.importsTesting`) that needs `Context.ruleState` migration to work in compact pipeline. Defer to 4f (test-state migration) or to dedicated follow-ups.
 - Class-shell deletion deferred to 4g.
+
+
+
+## Update (2026-04-28)
+
+Inlined unported rules into the Phase 4c merged decl files:
+
+- `PreferAnyObject` → `Rewrites/Decls/ProtocolDecl.swift` (`applyPreferAnyObject`).
+- `StrongOutlets` → `Rewrites/Decls/VariableDecl.swift` (`applyStrongOutlets` + `hasIBOutletAttribute`).
+- `RedundantFinal` → `Rewrites/Decls/ClassDecl.swift` (`applyRedundantFinal` + `removeFinalFromMember` covering Function/Variable/Subscript/Class/Initializer/TypeAlias members).
+- `RedundantSwiftTestingSuite` → new `Rewrites/Decls/RedundantSwiftTestingSuiteHelpers.swift` with `Context.ruleState` for `importsTesting` flag; wired in `ImportDecl`, `StructDecl`, `ClassDecl`, `EnumDecl`, `ActorDecl`.
+- `NoForceTry` (FunctionDecl post-process + ImportDecl pre-scan + ClassDecl willEnter/didExit) → `noForceTryAfterFunctionDecl` + `noForceTryVisitImport`. ClassDecl scope tracking (XCTestCase detection) wired via generator-emitted `willEnter`/`didExit` hooks on `NoForceTry`. Helpers in `Rewrites/Exprs/NoForceTryHelpers.swift`.
+
+Audit-only entries remaining in this directory: `RedundantOverride` (parent-list deletion), `RedundantEscaping` (hybrid SyntaxVisitor), `WrapMultilineStatementBraces` (large multi-node), `NoForceUnwrap` (still pending — will follow the `NoForceTry` shape).

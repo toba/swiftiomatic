@@ -8,46 +8,42 @@ import SwiftSyntax
 /// `CompactStageOneRewriterGenerator.manuallyHandledNodeTypes`.
 func rewriteForStmt(
     _ node: ForStmtSyntax,
+    parent: Syntax?,
     context: Context
 ) -> ForStmtSyntax {
     var result = node
-    let parent: Syntax? = nil
-    let nodeSyntax = Syntax(result)
-    _ = nodeSyntax
 
-    // CaseLet
-    if context.shouldFormat(CaseLet.self, node: Syntax(result)) {
-        if let next = CaseLet.transform(result, parent: parent, context: context).as(ForStmtSyntax.self) {
-            result = next
-        }
-    }
+    applyRule(
+        CaseLet.self, to: &result,
+        parent: parent, context: context,
+        transform: CaseLet.transform
+    )
 
-    // PreferWhereClausesInForLoops
-    if context.shouldFormat(PreferWhereClausesInForLoops.self, node: Syntax(result)) {
-        if let next = PreferWhereClausesInForLoops.transform(result, parent: parent, context: context).as(ForStmtSyntax.self) {
-            result = next
-        }
-    }
+    applyRule(
+        PreferWhereClausesInForLoops.self, to: &result,
+        parent: parent, context: context,
+        transform: PreferWhereClausesInForLoops.transform
+    )
 
-    // RedundantEnumerated
-    if context.shouldFormat(RedundantEnumerated.self, node: Syntax(result)) {
-        if let next = RedundantEnumerated.transform(result, parent: parent, context: context).as(ForStmtSyntax.self) {
-            result = next
-        }
-    }
+    applyRule(
+        RedundantEnumerated.self, to: &result,
+        parent: parent, context: context,
+        transform: RedundantEnumerated.transform
+    )
 
-    // UnusedArguments
-    if context.shouldFormat(UnusedArguments.self, node: Syntax(result)) {
-        if let next = UnusedArguments.transform(result, parent: parent, context: context).as(ForStmtSyntax.self) {
-            result = next
-        }
-    }
+    applyRule(
+        UnusedArguments.self, to: &result,
+        parent: parent, context: context,
+        transform: UnusedArguments.transform
+    )
 
-    // WrapMultilineStatementBraces — unported (legacy
-    // `SyntaxFormatRule.visit` override across multiple statement node
-    // types). Audit-only `shouldFormat` call preserves rule-mask gating;
-    // deferred to 4f.
-    _ = context.shouldFormat(WrapMultilineStatementBraces.self, node: Syntax(result))
+    // WrapMultilineStatementBraces — wrap opening brace of a multiline
+    // statement onto its own line aligned with the closing brace.
+    applyRule(
+        WrapMultilineStatementBraces.self, to: &result,
+        parent: parent, context: context,
+        transform: WrapMultilineStatementBraces.transform
+    )
 
     return result
 }

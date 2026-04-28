@@ -8,35 +8,37 @@ import SwiftSyntax
 /// `CompactStageOneRewriterGenerator.manuallyHandledNodeTypes`.
 func rewriteIfExpr(
     _ node: IfExprSyntax,
+    parent: Syntax?,
     context: Context
 ) -> IfExprSyntax {
     var result = node
-    let parent: Syntax? = nil
-    let nodeSyntax = Syntax(result)
-    _ = nodeSyntax
+    applyRule(
+        CollapseSimpleIfElse.self, to: &result,
+        parent: parent, context: context,
+        transform: CollapseSimpleIfElse.transform
+    )
 
-    // CollapseSimpleIfElse
-    if context.shouldFormat(CollapseSimpleIfElse.self, node: Syntax(result)) {
-        if let next = CollapseSimpleIfElse.transform(result, parent: parent, context: context).as(IfExprSyntax.self) {
-            result = next
-        }
+    applyRule(
+        PreferUnavailable.self, to: &result,
+        parent: parent, context: context,
+        transform: PreferUnavailable.transform
+    )
+
+    // NoParensAroundConditions — ensures `if` keyword has a trailing space
+    // after a paren-stripped condition list. The actual paren stripping for
+    // each ConditionElement happens in `rewriteConditionElement`. Helpers in
+    // `NoParensAroundConditionsHelpers.swift`.
+    if context.shouldFormat(NoParensAroundConditions.self, node: Syntax(result)) {
+        noParensFixKeywordTrailingTrivia(&result.ifKeyword.trailingTrivia)
     }
 
-    // PreferUnavailable
-    if context.shouldFormat(PreferUnavailable.self, node: Syntax(result)) {
-        if let next = PreferUnavailable.transform(result, parent: parent, context: context).as(IfExprSyntax.self) {
-            result = next
-        }
-    }
-
-    // NoParensAroundConditions — unported (legacy `SyntaxFormatRule.visit`
-    // override across multiple statement node types). Audit-only
-    // `shouldFormat` call preserves rule-mask gating; deferred to 4f.
-    _ = context.shouldFormat(NoParensAroundConditions.self, node: Syntax(result))
-
-    // WrapMultilineStatementBraces — unported (same reasons as above).
-    // Audit-only; deferred to 4f.
-    _ = context.shouldFormat(WrapMultilineStatementBraces.self, node: Syntax(result))
+    // WrapMultilineStatementBraces — wrap opening brace of a multiline
+    // statement onto its own line aligned with the closing brace.
+    applyRule(
+        WrapMultilineStatementBraces.self, to: &result,
+        parent: parent, context: context,
+        transform: WrapMultilineStatementBraces.transform
+    )
 
     return result
 }

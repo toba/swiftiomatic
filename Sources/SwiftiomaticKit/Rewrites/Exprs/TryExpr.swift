@@ -8,20 +8,18 @@ import SwiftSyntax
 /// `CompactStageOneRewriterGenerator.manuallyHandledNodeTypes`.
 func rewriteTryExpr(
     _ node: TryExprSyntax,
+    parent: Syntax?,
     context: Context
 ) -> TryExprSyntax {
     var result = node
-    let parent: Syntax? = nil
-    _ = parent
-    let nodeSyntax = Syntax(result)
-    _ = nodeSyntax  // used by audit-only calls below.
-
     // No ported rules currently register `static transform` for TryExprSyntax.
 
-    // NoForceTry — unported (file-level pre-scan, instance state).
-    // Audit-only `shouldFormat` call preserves rule-mask gating; deferred to
-    // 4f.
-    _ = context.shouldFormat(NoForceTry.self, node: Syntax(result))
+    // NoForceTry — diagnose / rewrite `try!` based on the current scope
+    // state (test function vs. non-test vs. inside closure). Helpers in
+    // `NoForceTryHelpers.swift`.
+    if context.shouldFormat(NoForceTry.self, node: Syntax(result)) {
+        result = noForceTryRewriteTryExpr(result, context: context)
+    }
 
     return result
 }

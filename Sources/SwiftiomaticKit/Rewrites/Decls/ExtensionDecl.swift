@@ -6,59 +6,48 @@ import SwiftSyntax
 /// Per Phase 4c of `ddi-wtv`.
 func rewriteExtensionDecl(
     _ node: ExtensionDeclSyntax,
+    parent: Syntax?,
     context: Context
 ) -> ExtensionDeclSyntax {
     var result = node
-    let parent: Syntax? = nil
 
-    // DocCommentsPrecedeModifiers
-    if context.shouldFormat(DocCommentsPrecedeModifiers.self, node: Syntax(result)) {
-        if let next = DocCommentsPrecedeModifiers.transform(
-            result, parent: parent, context: context
-        ).as(ExtensionDeclSyntax.self) {
-            result = next
-        }
-    }
+    applyRule(
+        DocCommentsPrecedeModifiers.self, to: &result,
+        parent: parent, context: context,
+        transform: DocCommentsPrecedeModifiers.transform
+    )
 
-    // ModifiersOnSameLine
-    if context.shouldFormat(ModifiersOnSameLine.self, node: Syntax(result)) {
-        if let next = ModifiersOnSameLine.transform(
-            result, parent: parent, context: context
-        ).as(ExtensionDeclSyntax.self) {
-            result = next
-        }
-    }
+    applyRule(
+        ModifiersOnSameLine.self, to: &result,
+        parent: parent, context: context,
+        transform: ModifiersOnSameLine.transform
+    )
 
-    // PreferAngleBracketExtensions
-    if context.shouldFormat(PreferAngleBracketExtensions.self, node: Syntax(result)) {
-        if let next = PreferAngleBracketExtensions.transform(
-            result, parent: parent, context: context
-        ).as(ExtensionDeclSyntax.self) {
-            result = next
-        }
-    }
+    applyRule(
+        PreferAngleBracketExtensions.self, to: &result,
+        parent: parent, context: context,
+        transform: PreferAngleBracketExtensions.transform
+    )
 
-    // RedundantAccessControl
-    if context.shouldFormat(RedundantAccessControl.self, node: Syntax(result)) {
-        if let next = RedundantAccessControl.transform(
-            result, parent: parent, context: context
-        ).as(ExtensionDeclSyntax.self) {
-            result = next
-        }
-    }
+    applyRule(
+        RedundantAccessControl.self, to: &result,
+        parent: parent, context: context,
+        transform: RedundantAccessControl.transform
+    )
 
-    // TripleSlashDocComments
-    if context.shouldFormat(TripleSlashDocComments.self, node: Syntax(result)) {
-        if let next = TripleSlashDocComments.transform(
-            result, parent: parent, context: context
-        ).as(ExtensionDeclSyntax.self) {
-            result = next
-        }
-    }
+    applyRule(
+        TripleSlashDocComments.self, to: &result,
+        parent: parent, context: context,
+        transform: TripleSlashDocComments.transform
+    )
 
-    // Unported rules touching ExtensionDeclSyntax — tracked for sub-issue 4f:
-    //   - WrapMultilineStatementBraces (no static transform)
-    _ = context.shouldFormat(WrapMultilineStatementBraces.self, node: Syntax(result))
+    // Unported rules touching ExtensionDeclSyntax — tracked for sub-issue 4f:    // WrapMultilineStatementBraces — wrap opening brace of a multiline
+    // statement onto its own line aligned with the closing brace.
+    applyRule(
+        WrapMultilineStatementBraces.self, to: &result,
+        parent: parent, context: context,
+        transform: WrapMultilineStatementBraces.transform
+    )
 
     return result
 }

@@ -93,6 +93,36 @@ final class NoForceTry: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable {
     // Don't recurse into closures — try! inside closures can't be fixed by making
     // the outer function throw.
     override func visit(_ node: ClosureExprSyntax) -> ExprSyntax { .init(node) }
+
+    // MARK: - Compact-pipeline scope hooks
+
+    static func willEnter(_ node: SourceFileSyntax, context: Context) {
+        noForceTryVisitSourceFile(node, context: context)
+    }
+
+    static func willEnter(_ node: ClassDeclSyntax, context: Context) {
+        noForceTryPushClass(node, context: context)
+    }
+
+    static func didExit(_: ClassDeclSyntax, context: Context) {
+        noForceTryPopClass(context: context)
+    }
+
+    static func willEnter(_ node: FunctionDeclSyntax, context: Context) {
+        noForceTryPushFunction(node, context: context)
+    }
+
+    static func didExit(_: FunctionDeclSyntax, context: Context) {
+        noForceTryPopFunction(context: context)
+    }
+
+    static func willEnter(_: ClosureExprSyntax, context: Context) {
+        noForceTryPushClosure(context: context)
+    }
+
+    static func didExit(_: ClosureExprSyntax, context: Context) {
+        noForceTryPopClosure(context: context)
+    }
 }
 
 fileprivate extension Finding.Message {

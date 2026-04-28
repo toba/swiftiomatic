@@ -9,20 +9,18 @@ import SwiftSyntax
 /// `CompactStageOneRewriterGenerator.manuallyHandledNodeTypes`.
 func rewriteIdentifierType(
     _ node: IdentifierTypeSyntax,
+    parent: Syntax?,
     context: Context
-) -> IdentifierTypeSyntax {
-    var result = node
-    let parent: Syntax? = nil
-    let nodeSyntax = Syntax(result)
-    _ = nodeSyntax  // used by audit-only calls below.
+) -> TypeSyntax {
+    var result: TypeSyntax = TypeSyntax(node)
 
-    // No ported rules currently register `static transform` for
-    // IdentifierTypeSyntax.
-
-    // PreferShorthandTypeNames — unported (legacy `SyntaxFormatRule.visit`
-    // override). Audit-only `shouldFormat` call preserves rule-mask gating;
-    // deferred to 4f.
-    _ = context.shouldFormat(PreferShorthandTypeNames.self, node: Syntax(result))
+    // PreferShorthandTypeNames — `Array<T>`/`Dictionary<K,V>`/`Optional<T>` →
+    // `[T]`/`[K: V]`/`T?`. May change the concrete type to ArrayType, etc.
+    if context.shouldFormat(PreferShorthandTypeNames.self, node: Syntax(result)),
+       let typed = result.as(IdentifierTypeSyntax.self)
+    {
+        result = PreferShorthandTypeNames.transform(typed, parent: parent, context: context)
+    }
 
     return result
 }

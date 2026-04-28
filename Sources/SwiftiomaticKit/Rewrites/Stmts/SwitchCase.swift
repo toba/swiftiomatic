@@ -8,13 +8,10 @@ import SwiftSyntax
 /// `CompactStageOneRewriterGenerator.manuallyHandledNodeTypes`.
 func rewriteSwitchCase(
     _ node: SwitchCaseSyntax,
+    parent: Syntax?,
     context: Context
 ) -> SwitchCaseSyntax {
     var result = node
-    let parent: Syntax? = nil
-    let nodeSyntax = Syntax(result)
-    _ = nodeSyntax
-
     // RedundantBreak
     if context.shouldFormat(RedundantBreak.self, node: Syntax(result)) {
         result = RedundantBreak.transform(result, parent: parent, context: context)
@@ -25,11 +22,17 @@ func rewriteSwitchCase(
         result = WrapSwitchCaseBodies.transform(result, parent: parent, context: context)
     }
 
-    // BlankLinesBeforeControlFlowBlocks — unported (legacy
-    // `SyntaxFormatRule.visit` override; trivia handling not yet migrated
-    // to a static `transform`). Audit-only `shouldFormat` call preserves
-    // rule-mask gating; deferred to 4f.
-    _ = context.shouldFormat(BlankLinesBeforeControlFlowBlocks.self, node: Syntax(result))
+    // BlankLinesBeforeControlFlowBlocks — inserts a blank line before
+    // multi-line control-flow statements within a case body. Helpers in
+    // `BlankLinesBeforeControlFlowHelpers.swift`.
+    if context.shouldFormat(BlankLinesBeforeControlFlowBlocks.self, node: Syntax(result)) {
+        if let updated = blankLinesBeforeControlFlowInsertBlankLines(
+            in: Array(result.statements),
+            context: context
+        ) {
+            result.statements = CodeBlockItemListSyntax(updated)
+        }
+    }
 
     return result
 }

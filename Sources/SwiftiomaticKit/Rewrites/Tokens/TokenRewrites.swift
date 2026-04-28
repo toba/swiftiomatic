@@ -27,7 +27,9 @@ import SwiftSyntax
 /// `IfExprSyntax`). Those rules are noted in comments so the audit is explicit
 /// but no work is done at the token level for them; their structural-node
 /// merges happen in Phase 4c/4d/4e.
-func rewriteToken(_ node: TokenSyntax, context: Context) -> TokenSyntax {
+func rewriteToken(_ node: TokenSyntax,
+    parent: Syntax?,
+    context: Context) -> TokenSyntax {
     var result = node
     let parent = Syntax(node).parent
 
@@ -75,11 +77,9 @@ func rewriteToken(_ node: TokenSyntax, context: Context) -> TokenSyntax {
         result = applyUppercaseAcronyms(result, context: context)
     }
 
-    // 7. WrapMultilineFunctionChains — NOT a token-level rewrite. The rule's
-    //    `visit` overrides target `FunctionCallExprSyntax` (the private
-    //    `PeriodTriviaRewriter` is an internal helper). No-op here; the
-    //    structural merge happens in Phase 4c/4d/4e.
-    _ = context.shouldFormat(WrapMultilineFunctionChains.self, node: Syntax(result))
+    // 7. WrapMultilineFunctionChains — NOT a token-level rewrite; the rule
+    //    operates on `FunctionCallExprSyntax` (see
+    //    `Rewrites/Exprs/FunctionCallExpr.swift::applyWrapMultilineFunctionChains`).
 
     // 8. WrapMultilineStatementBraces — NOT a token-level rewrite. The rule's
     //    `visit` overrides target many statement / decl nodes (IfExprSyntax,

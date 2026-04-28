@@ -9,21 +9,13 @@ import SwiftSyntax
 /// `CompactStageOneRewriterGenerator.manuallyHandledNodeTypes`.
 func rewriteStringLiteralExpr(
     _ node: StringLiteralExprSyntax,
+    parent: Syntax?,
     context: Context
 ) -> StringLiteralExprSyntax {
-    var result = node
-    let parent: Syntax? = nil
-    _ = parent
-    let nodeSyntax = Syntax(result)
-    _ = nodeSyntax  // used by audit-only calls below.
+    let result = node
 
-    // No ported rules currently register `static transform` for
-    // StringLiteralExprSyntax.
-
-    // NoForceUnwrap — unported (file-level pre-scan, instance state).
-    // Audit-only `shouldFormat` call preserves rule-mask gating; deferred
-    // to 4f.
-    _ = context.shouldFormat(NoForceUnwrap.self, node: Syntax(result))
+    // NoForceUnwrap — string-interpolation depth tracked via
+    // generator-emitted `willEnter`/`didExit` hooks; no transform here.
 
     return result
 }

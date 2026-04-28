@@ -9,18 +9,21 @@ import SwiftSyntax
 /// `CompactStageOneRewriterGenerator.manuallyHandledNodeTypes`.
 func rewriteDeclReferenceExpr(
     _ node: DeclReferenceExprSyntax,
+    parent: Syntax?,
     context: Context
 ) -> DeclReferenceExprSyntax {
-    var result = node
-    let parent: Syntax? = nil
-    let nodeSyntax = Syntax(result)
-    _ = nodeSyntax  // used by audit-only calls below.
+    let result = node
 
     // No ported rules currently register `static transform` for
     // DeclReferenceExprSyntax.
 
-    // NamedClosureParams — unported. Audit-only; deferred to 4f.
-    _ = context.shouldFormat(NamedClosureParams.self, node: Syntax(result))
+    // NamedClosureParams — diagnose `$N` references inside multi-line
+    // closures. Closure depth/multi-line tracking happens in the
+    // generator-emitted `ClosureExpr` hooks. Helpers in
+    // `NamedClosureParamsHelpers.swift`.
+    if context.shouldFormat(NamedClosureParams.self, node: Syntax(result)) {
+        namedClosureParamsRewriteDeclReference(result, context: context)
+    }
 
     return result
 }

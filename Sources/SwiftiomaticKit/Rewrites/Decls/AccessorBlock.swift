@@ -8,10 +8,10 @@ import SwiftSyntax
 /// performs only the post-traversal transforms.
 func rewriteAccessorBlock(
     _ node: AccessorBlockSyntax,
+    parent: Syntax?,
     context: Context
 ) -> AccessorBlockSyntax {
     var result = node
-    let parent: Syntax? = nil
 
     // ProtocolAccessorOrder
     if context.shouldFormat(ProtocolAccessorOrder.self, node: Syntax(result)) {

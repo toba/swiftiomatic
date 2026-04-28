@@ -8,127 +8,88 @@ import SwiftSyntax
 /// Per Phase 4c of `ddi-wtv`.
 func rewriteVariableDecl(
     _ node: VariableDeclSyntax,
+    parent: Syntax?,
     context: Context
 ) -> VariableDeclSyntax {
     var result = node
-    let parent: Syntax? = nil
 
-    // AvoidNoneName
-    if context.shouldFormat(AvoidNoneName.self, node: Syntax(result)) {
-        if let next = AvoidNoneName.transform(
-            result, parent: parent, context: context
-        ).as(VariableDeclSyntax.self) {
-            result = next
-        }
-    }
+    applyRule(
+        AvoidNoneName.self, to: &result,
+        parent: parent, context: context,
+        transform: AvoidNoneName.transform
+    )
 
-    // DocCommentsPrecedeModifiers
-    if context.shouldFormat(DocCommentsPrecedeModifiers.self, node: Syntax(result)) {
-        if let next = DocCommentsPrecedeModifiers.transform(
-            result, parent: parent, context: context
-        ).as(VariableDeclSyntax.self) {
-            result = next
-        }
-    }
+    applyRule(
+        DocCommentsPrecedeModifiers.self, to: &result,
+        parent: parent, context: context,
+        transform: DocCommentsPrecedeModifiers.transform
+    )
 
-    // ModifierOrder
-    if context.shouldFormat(ModifierOrder.self, node: Syntax(result)) {
-        if let next = ModifierOrder.transform(
-            result, parent: parent, context: context
-        ).as(VariableDeclSyntax.self) {
-            result = next
-        }
-    }
+    applyRule(
+        ModifierOrder.self, to: &result,
+        parent: parent, context: context,
+        transform: ModifierOrder.transform
+    )
 
-    // ModifiersOnSameLine
-    if context.shouldFormat(ModifiersOnSameLine.self, node: Syntax(result)) {
-        if let next = ModifiersOnSameLine.transform(
-            result, parent: parent, context: context
-        ).as(VariableDeclSyntax.self) {
-            result = next
-        }
-    }
+    applyRule(
+        ModifiersOnSameLine.self, to: &result,
+        parent: parent, context: context,
+        transform: ModifiersOnSameLine.transform
+    )
 
-    // PrivateStateVariables
-    if context.shouldFormat(PrivateStateVariables.self, node: Syntax(result)) {
-        if let next = PrivateStateVariables.transform(
-            result, parent: parent, context: context
-        ).as(VariableDeclSyntax.self) {
-            result = next
-        }
-    }
+    applyRule(
+        PrivateStateVariables.self, to: &result,
+        parent: parent, context: context,
+        transform: PrivateStateVariables.transform
+    )
 
-    // RedundantAccessControl
-    if context.shouldFormat(RedundantAccessControl.self, node: Syntax(result)) {
-        if let next = RedundantAccessControl.transform(
-            result, parent: parent, context: context
-        ).as(VariableDeclSyntax.self) {
-            result = next
-        }
-    }
+    applyRule(
+        RedundantAccessControl.self, to: &result,
+        parent: parent, context: context,
+        transform: RedundantAccessControl.transform
+    )
 
-    // RedundantNilInit
-    if context.shouldFormat(RedundantNilInit.self, node: Syntax(result)) {
-        if let next = RedundantNilInit.transform(
-            result, parent: parent, context: context
-        ).as(VariableDeclSyntax.self) {
-            result = next
-        }
-    }
+    applyRule(
+        RedundantNilInit.self, to: &result,
+        parent: parent, context: context,
+        transform: RedundantNilInit.transform
+    )
 
-    // RedundantObjc
-    if context.shouldFormat(RedundantObjc.self, node: Syntax(result)) {
-        if let next = RedundantObjc.transform(
-            result, parent: parent, context: context
-        ).as(VariableDeclSyntax.self) {
-            result = next
-        }
-    }
+    applyRule(
+        RedundantObjc.self, to: &result,
+        parent: parent, context: context,
+        transform: RedundantObjc.transform
+    )
 
-    // RedundantPattern
-    if context.shouldFormat(RedundantPattern.self, node: Syntax(result)) {
-        if let next = RedundantPattern.transform(
-            result, parent: parent, context: context
-        ).as(VariableDeclSyntax.self) {
-            result = next
-        }
-    }
+    applyRule(
+        RedundantPattern.self, to: &result,
+        parent: parent, context: context,
+        transform: RedundantPattern.transform
+    )
 
-    // RedundantSetterACL
-    if context.shouldFormat(RedundantSetterACL.self, node: Syntax(result)) {
-        if let next = RedundantSetterACL.transform(
-            result, parent: parent, context: context
-        ).as(VariableDeclSyntax.self) {
-            result = next
-        }
-    }
+    applyRule(
+        RedundantSetterACL.self, to: &result,
+        parent: parent, context: context,
+        transform: RedundantSetterACL.transform
+    )
 
-    // RedundantType
-    if context.shouldFormat(RedundantType.self, node: Syntax(result)) {
-        if let next = RedundantType.transform(
-            result, parent: parent, context: context
-        ).as(VariableDeclSyntax.self) {
-            result = next
-        }
-    }
+    applyRule(
+        RedundantType.self, to: &result,
+        parent: parent, context: context,
+        transform: RedundantType.transform
+    )
 
-    // RedundantViewBuilder
-    if context.shouldFormat(RedundantViewBuilder.self, node: Syntax(result)) {
-        if let next = RedundantViewBuilder.transform(
-            result, parent: parent, context: context
-        ).as(VariableDeclSyntax.self) {
-            result = next
-        }
-    }
+    applyRule(
+        RedundantViewBuilder.self, to: &result,
+        parent: parent, context: context,
+        transform: RedundantViewBuilder.transform
+    )
 
-    // TripleSlashDocComments
-    if context.shouldFormat(TripleSlashDocComments.self, node: Syntax(result)) {
-        if let next = TripleSlashDocComments.transform(
-            result, parent: parent, context: context
-        ).as(VariableDeclSyntax.self) {
-            result = next
-        }
-    }
+    applyRule(
+        TripleSlashDocComments.self, to: &result,
+        parent: parent, context: context,
+        transform: TripleSlashDocComments.transform
+    )
 
     // StrongOutlets — removes `weak` from `@IBOutlet` properties (preserves
     // it for delegate/dataSource outlets). Inlined from
@@ -155,15 +116,17 @@ private func applyStrongOutlets(
         }
     }
 
-    StrongOutlets.diagnose(
-        .removeWeakFromOutlet,
-        on: node.modifiers.first(where: { $0.name.tokenKind == .keyword(.weak) })!.name,
-        context: context
-    )
+    guard let weakModifier = node.modifiers.first(where: {
+        $0.name.tokenKind == .keyword(.weak)
+    }) else {
+        return node
+    }
+
+    StrongOutlets.diagnose(.removeWeakFromOutlet, on: weakModifier.name, context: context)
 
     var result = node
     let weakIsFirst = result.modifiers.first?.name.tokenKind == .keyword(.weak)
-    let savedLeadingTrivia = weakIsFirst ? result.modifiers.first!.leadingTrivia : Trivia()
+    let savedLeadingTrivia = weakIsFirst ? weakModifier.leadingTrivia : Trivia()
 
     result.modifiers.remove(anyOf: [.weak])
 

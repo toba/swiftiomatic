@@ -11,20 +11,24 @@ import SwiftSyntax
 /// `transform` form. The unported entries below are tracked in 4f.
 func rewriteWhileStmt(
     _ node: WhileStmtSyntax,
+    parent: Syntax?,
     context: Context
 ) -> WhileStmtSyntax {
     var result = node
-    let nodeSyntax = Syntax(result)
-    _ = nodeSyntax
+    // NoParensAroundConditions — ensures `while` keyword has a trailing
+    // space after paren-stripped conditions. Helpers in
+    // `NoParensAroundConditionsHelpers.swift`.
+    if context.shouldFormat(NoParensAroundConditions.self, node: Syntax(result)) {
+        noParensFixKeywordTrailingTrivia(&result.whileKeyword.trailingTrivia)
+    }
 
-    // NoParensAroundConditions — unported (legacy `SyntaxFormatRule.visit`
-    // override across multiple statement node types). Audit-only
-    // `shouldFormat` call preserves rule-mask gating; deferred to 4f.
-    _ = context.shouldFormat(NoParensAroundConditions.self, node: Syntax(result))
-
-    // WrapMultilineStatementBraces — unported (same reasons as above).
-    // Audit-only; deferred to 4f.
-    _ = context.shouldFormat(WrapMultilineStatementBraces.self, node: Syntax(result))
+    // WrapMultilineStatementBraces — wrap opening brace of a multiline
+    // statement onto its own line aligned with the closing brace.
+    applyRule(
+        WrapMultilineStatementBraces.self, to: &result,
+        parent: parent, context: context,
+        transform: WrapMultilineStatementBraces.transform
+    )
 
     return result
 }

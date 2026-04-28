@@ -11,17 +11,18 @@ import SwiftSyntax
 /// `transform` form. The unported entries below are tracked in 4f.
 func rewriteDoStmt(
     _ node: DoStmtSyntax,
+    parent: Syntax?,
     context: Context
 ) -> DoStmtSyntax {
     var result = node
-    let nodeSyntax = Syntax(result)
-    _ = nodeSyntax
 
-    // WrapMultilineStatementBraces — unported (legacy
-    // `SyntaxFormatRule.visit` override across multiple statement node
-    // types). Audit-only `shouldFormat` call preserves rule-mask gating;
-    // deferred to 4f.
-    _ = context.shouldFormat(WrapMultilineStatementBraces.self, node: Syntax(result))
+    // WrapMultilineStatementBraces — wrap opening brace of a multiline
+    // statement onto its own line aligned with the closing brace.
+    applyRule(
+        WrapMultilineStatementBraces.self, to: &result,
+        parent: parent, context: context,
+        transform: WrapMultilineStatementBraces.transform
+    )
 
     return result
 }

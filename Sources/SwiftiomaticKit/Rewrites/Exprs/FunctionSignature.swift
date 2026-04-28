@@ -9,13 +9,10 @@ import SwiftSyntax
 /// `CompactStageOneRewriterGenerator.manuallyHandledNodeTypes`.
 func rewriteFunctionSignature(
     _ node: FunctionSignatureSyntax,
+    parent: Syntax?,
     context: Context
 ) -> FunctionSignatureSyntax {
     var result = node
-    let parent: Syntax? = nil
-    let nodeSyntax = Syntax(result)
-    _ = nodeSyntax  // used by audit-only calls below.
-
     // No ported rules currently register `static transform` for
     // FunctionSignatureSyntax.
 

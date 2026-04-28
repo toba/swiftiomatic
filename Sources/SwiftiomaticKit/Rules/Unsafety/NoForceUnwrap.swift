@@ -449,6 +449,79 @@ final class NoForceUnwrap: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendabl
             ))
     }
 
+    // MARK: - Compact-pipeline scope hooks
+
+    static func willEnter(_ node: SourceFileSyntax, context: Context) {
+        noForceUnwrapVisitSourceFile(node, context: context)
+    }
+
+    static func willEnter(_ node: ImportDeclSyntax, context: Context) {
+        noForceUnwrapVisitImport(node, context: context)
+    }
+
+    static func willEnter(_ node: ClassDeclSyntax, context: Context) {
+        noForceUnwrapPushClass(node, context: context)
+    }
+    static func didExit(_: ClassDeclSyntax, context: Context) {
+        noForceUnwrapPopClass(context: context)
+    }
+
+    static func willEnter(_ node: FunctionDeclSyntax, context: Context) {
+        noForceUnwrapPushFunction(node, context: context)
+    }
+    static func didExit(_: FunctionDeclSyntax, context: Context) {
+        noForceUnwrapPopFunction(context: context)
+    }
+
+    static func willEnter(_: ClosureExprSyntax, context: Context) {
+        noForceUnwrapPushClosure(context: context)
+    }
+    static func didExit(_: ClosureExprSyntax, context: Context) {
+        noForceUnwrapPopClosure(context: context)
+    }
+
+    static func willEnter(_: StringLiteralExprSyntax, context: Context) {
+        noForceUnwrapPushStringLiteral(context: context)
+    }
+    static func didExit(_: StringLiteralExprSyntax, context: Context) {
+        noForceUnwrapPopStringLiteral(context: context)
+    }
+
+    static func willEnter(_ node: MemberAccessExprSyntax, context: Context) {
+        noForceUnwrapPushMemberAccess(node, context: context)
+    }
+    static func didExit(_ node: MemberAccessExprSyntax, context: Context) {
+        noForceUnwrapPopMemberAccess(node, context: context)
+    }
+
+    static func willEnter(_ node: FunctionCallExprSyntax, context: Context) {
+        noForceUnwrapPushChainNode(Syntax(node), context: context)
+    }
+    static func didExit(_ node: FunctionCallExprSyntax, context: Context) {
+        noForceUnwrapPopChainNode(Syntax(node), context: context)
+    }
+
+    static func willEnter(_ node: SubscriptCallExprSyntax, context: Context) {
+        noForceUnwrapPushChainNode(Syntax(node), context: context)
+    }
+    static func didExit(_ node: SubscriptCallExprSyntax, context: Context) {
+        noForceUnwrapPopChainNode(Syntax(node), context: context)
+    }
+
+    static func willEnter(_ node: ForceUnwrapExprSyntax, context: Context) {
+        noForceUnwrapPushChainNode(Syntax(node), context: context)
+    }
+    static func didExit(_ node: ForceUnwrapExprSyntax, context: Context) {
+        noForceUnwrapPopChainNode(Syntax(node), context: context)
+    }
+
+    static func willEnter(_ node: AsExprSyntax, context: Context) {
+        noForceUnwrapPushChainNode(Syntax(node), context: context)
+    }
+    static func didExit(_ node: AsExprSyntax, context: Context) {
+        noForceUnwrapPopChainNode(Syntax(node), context: context)
+    }
+
     /// Find a force cast (as!) anywhere in the expression tree.
     private func findForceCast(in expr: ExprSyntax) -> AsExprSyntax? {
         if let asExpr = expr.as(AsExprSyntax.self),

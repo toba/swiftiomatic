@@ -5,7 +5,7 @@ status: in-progress
 type: task
 priority: high
 created_at: 2026-04-28T15:49:54Z
-updated_at: 2026-04-28T17:09:55Z
+updated_at: 2026-04-28T18:46:06Z
 parent: ddi-wtv
 blocked_by:
     - 7fp-ghy
@@ -58,3 +58,19 @@ Inventory exact list at start of work.
 13 stmt-related node types added to `manuallyHandledNodeTypes` and merged via per-file functions in `Sources/SwiftiomaticKit/Rewrites/Stmts/`. Each forwards to existing static transforms in alphabetical order with audit-only `shouldFormat` calls for unported rules. Build clean (17 warnings — likely unused `nodeSyntax` locals); parity test green (0.420s).
 
 Class shells stay; deletion deferred to 4g.
+
+
+
+## Update (2026-04-28)
+
+Inlined unported rules into the Phase 4d merged stmt files:
+
+- `BlankLinesAfterGuardStatements` → `Rewrites/Stmts/CodeBlock.swift` (`applyBlankLinesAfterGuardStatements`).
+- `BlankLinesAfterSwitchCase` → `Rewrites/Stmts/SwitchExpr.swift` (`applyBlankLinesAfterSwitchCase`).
+- `NoFallThroughOnlyCases` → `Rewrites/Stmts/SwitchCaseList.swift` (`applyNoFallThroughOnlyCases` + the merge / classification helpers).
+- `PreferEarlyExits` → `Rewrites/Stmts/CodeBlockItemList.swift` (`applyPreferEarlyExits` + `codeBlockEndsWithEarlyExit`).
+- `SwitchCaseIndentation` → `Rewrites/Stmts/SwitchExpr.swift` (`applySwitchCaseIndentation` + `reindentCase` + `replaceIndentation` + `lineIndentation`); reads `context.configuration[SwitchCaseIndentation.self].style` and `context.configuration[IndentationSetting.self]`.
+- `NoParensAroundConditions` → new `Rewrites/Stmts/NoParensAroundConditionsHelpers.swift` with `noParensMinimalSingleExpression` and `noParensFixKeywordTrailingTrivia`; wired across `IfExpr`, `ConditionElement`, `GuardStmt`, `WhileStmt`, `RepeatStmt`, `SwitchExpr`, `ReturnStmt`, `InitializerClause` (the last lives in `Rewrites/Exprs/` but uses the same helpers).
+- `BlankLinesBeforeControlFlowBlocks` → new `Rewrites/Stmts/BlankLinesBeforeControlFlowHelpers.swift` with `blankLinesBeforeControlFlowInsertBlankLines`; wired in `CodeBlock` and `SwitchCase`.
+
+Audit-only entries remaining: `WrapMultilineStatementBraces` (16 occurrences across stmt and decl files; warrants own sub-issue).

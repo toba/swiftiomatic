@@ -8,174 +8,153 @@ import SwiftSyntax
 /// Per Phase 4c of `ddi-wtv`.
 func rewriteFunctionDecl(
     _ node: FunctionDeclSyntax,
+    parent: Syntax?,
     context: Context
-) -> FunctionDeclSyntax {
+) -> DeclSyntax {
     var result = node
-    let parent: Syntax? = nil
 
-    // DocCommentsPrecedeModifiers
-    if context.shouldFormat(DocCommentsPrecedeModifiers.self, node: Syntax(result)) {
-        if let next = DocCommentsPrecedeModifiers.transform(
-            result, parent: parent, context: context
-        ).as(FunctionDeclSyntax.self) {
-            result = next
-        }
+    applyRule(
+        DocCommentsPrecedeModifiers.self, to: &result,
+        parent: parent, context: context,
+        transform: DocCommentsPrecedeModifiers.transform
+    )
+
+    applyRule(
+        ModifierOrder.self, to: &result,
+        parent: parent, context: context,
+        transform: ModifierOrder.transform
+    )
+
+    applyRule(
+        ModifiersOnSameLine.self, to: &result,
+        parent: parent, context: context,
+        transform: ModifiersOnSameLine.transform
+    )
+
+    applyRule(
+        NoExplicitOwnership.self, to: &result,
+        parent: parent, context: context,
+        transform: NoExplicitOwnership.transform
+    )
+
+    applyRule(
+        NoGuardInTests.self, to: &result,
+        parent: parent, context: context,
+        transform: NoGuardInTests.transform
+    )
+
+    applyRule(
+        OpaqueGenericParameters.self, to: &result,
+        parent: parent, context: context,
+        transform: OpaqueGenericParameters.transform
+    )
+
+    applyRule(
+        RedundantAccessControl.self, to: &result,
+        parent: parent, context: context,
+        transform: RedundantAccessControl.transform
+    )
+
+    applyRule(
+        RedundantAsync.self, to: &result,
+        parent: parent, context: context,
+        transform: RedundantAsync.transform
+    )
+
+    applyRule(
+        RedundantObjc.self, to: &result,
+        parent: parent, context: context,
+        transform: RedundantObjc.transform
+    )
+
+    applyRule(
+        RedundantReturn.self, to: &result,
+        parent: parent, context: context,
+        transform: RedundantReturn.transform
+    )
+
+    applyRule(
+        RedundantThrows.self, to: &result,
+        parent: parent, context: context,
+        transform: RedundantThrows.transform
+    )
+
+    applyRule(
+        RedundantViewBuilder.self, to: &result,
+        parent: parent, context: context,
+        transform: RedundantViewBuilder.transform
+    )
+
+    applyRule(
+        SimplifyGenericConstraints.self, to: &result,
+        parent: parent, context: context,
+        transform: SimplifyGenericConstraints.transform
+    )
+
+    applyRule(
+        SwiftTestingTestCaseNames.self, to: &result,
+        parent: parent, context: context,
+        transform: SwiftTestingTestCaseNames.transform
+    )
+
+    applyRule(
+        TripleSlashDocComments.self, to: &result,
+        parent: parent, context: context,
+        transform: TripleSlashDocComments.transform
+    )
+
+    applyRule(
+        UnusedArguments.self, to: &result,
+        parent: parent, context: context,
+        transform: UnusedArguments.transform
+    )
+
+    applyRule(
+        UseImplicitInit.self, to: &result,
+        parent: parent, context: context,
+        transform: UseImplicitInit.transform
+    )
+
+    // NoForceTry — after children visit, add a `throws` clause if any inner
+    // `try!` was converted. Scope state pushed/popped by the
+    // generator-emitted `willEnter`/`didExit` hooks; this site only finalises
+    // the function. Helpers in `Rewrites/Exprs/NoForceTryHelpers.swift`.
+    if context.shouldFormat(NoForceTry.self, node: Syntax(result)) {
+        result = noForceTryAfterFunctionDecl(result, context: context)
     }
 
-    // ModifierOrder
-    if context.shouldFormat(ModifierOrder.self, node: Syntax(result)) {
-        if let next = ModifierOrder.transform(
-            result, parent: parent, context: context
-        ).as(FunctionDeclSyntax.self) {
-            result = next
-        }
+    // NoForceUnwrap — after children visit, add a `throws` clause if any
+    // inner force unwrap was wrapped. Scope state pushed/popped by the
+    // generator-emitted `willEnter`/`didExit` hooks; this site only finalises
+    // the function. Helpers in `Rewrites/Exprs/NoForceUnwrapHelpers.swift`.
+    if context.shouldFormat(NoForceUnwrap.self, node: Syntax(result)) {
+        result = noForceUnwrapAfterFunctionDecl(result, context: context)
     }
 
-    // ModifiersOnSameLine
-    if context.shouldFormat(ModifiersOnSameLine.self, node: Syntax(result)) {
-        if let next = ModifiersOnSameLine.transform(
-            result, parent: parent, context: context
-        ).as(FunctionDeclSyntax.self) {
-            result = next
-        }
+    // RedundantEscaping — strip redundant `@escaping` from non-escaping
+    // closure parameters.
+    applyRule(
+        RedundantEscaping.self, to: &result,
+        parent: parent, context: context,
+        transform: RedundantEscaping.transform
+    )
+
+    // WrapMultilineStatementBraces — wrap opening brace of a multiline
+    // statement onto its own line aligned with the closing brace.
+    applyRule(
+        WrapMultilineStatementBraces.self, to: &result,
+        parent: parent, context: context,
+        transform: WrapMultilineStatementBraces.transform
+    )
+
+    // RedundantOverride — delete `override` declarations that only forward to
+    // `super` with identical args. Returns an empty DeclSyntax (just trivia)
+    // when removal applies; that propagates through the override's DeclSyntax
+    // return and is handled by the parent member-block / code-block list as a
+    // missing decl.
+    if context.shouldFormat(RedundantOverride.self, node: Syntax(result)) {
+        return RedundantOverride.transform(result, parent: parent, context: context)
     }
 
-    // NoExplicitOwnership
-    if context.shouldFormat(NoExplicitOwnership.self, node: Syntax(result)) {
-        if let next = NoExplicitOwnership.transform(
-            result, parent: parent, context: context
-        ).as(FunctionDeclSyntax.self) {
-            result = next
-        }
-    }
-
-    // NoGuardInTests
-    if context.shouldFormat(NoGuardInTests.self, node: Syntax(result)) {
-        if let next = NoGuardInTests.transform(
-            result, parent: parent, context: context
-        ).as(FunctionDeclSyntax.self) {
-            result = next
-        }
-    }
-
-    // OpaqueGenericParameters
-    if context.shouldFormat(OpaqueGenericParameters.self, node: Syntax(result)) {
-        if let next = OpaqueGenericParameters.transform(
-            result, parent: parent, context: context
-        ).as(FunctionDeclSyntax.self) {
-            result = next
-        }
-    }
-
-    // RedundantAccessControl
-    if context.shouldFormat(RedundantAccessControl.self, node: Syntax(result)) {
-        if let next = RedundantAccessControl.transform(
-            result, parent: parent, context: context
-        ).as(FunctionDeclSyntax.self) {
-            result = next
-        }
-    }
-
-    // RedundantAsync
-    if context.shouldFormat(RedundantAsync.self, node: Syntax(result)) {
-        if let next = RedundantAsync.transform(
-            result, parent: parent, context: context
-        ).as(FunctionDeclSyntax.self) {
-            result = next
-        }
-    }
-
-    // RedundantObjc
-    if context.shouldFormat(RedundantObjc.self, node: Syntax(result)) {
-        if let next = RedundantObjc.transform(
-            result, parent: parent, context: context
-        ).as(FunctionDeclSyntax.self) {
-            result = next
-        }
-    }
-
-    // RedundantReturn
-    if context.shouldFormat(RedundantReturn.self, node: Syntax(result)) {
-        if let next = RedundantReturn.transform(
-            result, parent: parent, context: context
-        ).as(FunctionDeclSyntax.self) {
-            result = next
-        }
-    }
-
-    // RedundantThrows
-    if context.shouldFormat(RedundantThrows.self, node: Syntax(result)) {
-        if let next = RedundantThrows.transform(
-            result, parent: parent, context: context
-        ).as(FunctionDeclSyntax.self) {
-            result = next
-        }
-    }
-
-    // RedundantViewBuilder
-    if context.shouldFormat(RedundantViewBuilder.self, node: Syntax(result)) {
-        if let next = RedundantViewBuilder.transform(
-            result, parent: parent, context: context
-        ).as(FunctionDeclSyntax.self) {
-            result = next
-        }
-    }
-
-    // SimplifyGenericConstraints
-    if context.shouldFormat(SimplifyGenericConstraints.self, node: Syntax(result)) {
-        if let next = SimplifyGenericConstraints.transform(
-            result, parent: parent, context: context
-        ).as(FunctionDeclSyntax.self) {
-            result = next
-        }
-    }
-
-    // SwiftTestingTestCaseNames
-    if context.shouldFormat(SwiftTestingTestCaseNames.self, node: Syntax(result)) {
-        if let next = SwiftTestingTestCaseNames.transform(
-            result, parent: parent, context: context
-        ).as(FunctionDeclSyntax.self) {
-            result = next
-        }
-    }
-
-    // TripleSlashDocComments
-    if context.shouldFormat(TripleSlashDocComments.self, node: Syntax(result)) {
-        if let next = TripleSlashDocComments.transform(
-            result, parent: parent, context: context
-        ).as(FunctionDeclSyntax.self) {
-            result = next
-        }
-    }
-
-    // UnusedArguments
-    if context.shouldFormat(UnusedArguments.self, node: Syntax(result)) {
-        if let next = UnusedArguments.transform(
-            result, parent: parent, context: context
-        ).as(FunctionDeclSyntax.self) {
-            result = next
-        }
-    }
-
-    // UseImplicitInit
-    if context.shouldFormat(UseImplicitInit.self, node: Syntax(result)) {
-        if let next = UseImplicitInit.transform(
-            result, parent: parent, context: context
-        ).as(FunctionDeclSyntax.self) {
-            result = next
-        }
-    }
-
-    // Unported rules touching FunctionDeclSyntax — tracked for sub-issue 4f:
-    //   - RedundantOverride (no static transform)
-    //   - RedundantEscaping (no static transform)
-    //   - NoForceTry / NoForceUnwrap (file-level pre-scan, instance state)
-    //   - WrapMultilineStatementBraces (no static transform)
-    _ = context.shouldFormat(RedundantOverride.self, node: Syntax(result))
-    _ = context.shouldFormat(RedundantEscaping.self, node: Syntax(result))
-    _ = context.shouldFormat(NoForceTry.self, node: Syntax(result))
-    _ = context.shouldFormat(NoForceUnwrap.self, node: Syntax(result))
-    _ = context.shouldFormat(WrapMultilineStatementBraces.self, node: Syntax(result))
-
-    return result
+    return DeclSyntax(result)
 }

@@ -9,6 +9,7 @@ import SwiftSyntax
 /// hooks for `RedundantSelf`).
 func rewriteAccessorDecl(
     _ node: AccessorDeclSyntax,
+    parent: Syntax?,
     context: Context
 ) -> AccessorDeclSyntax {
     let result = node

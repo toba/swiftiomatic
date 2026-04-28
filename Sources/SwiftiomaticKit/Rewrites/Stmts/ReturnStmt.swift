@@ -11,16 +11,21 @@ import SwiftSyntax
 /// `transform` form. The unported entries below are tracked in 4f.
 func rewriteReturnStmt(
     _ node: ReturnStmtSyntax,
+    parent: Syntax?,
     context: Context
 ) -> ReturnStmtSyntax {
     var result = node
-    let nodeSyntax = Syntax(result)
-    _ = nodeSyntax
 
-    // NoParensAroundConditions — unported (legacy `SyntaxFormatRule.visit`
-    // override across multiple statement node types). Audit-only
-    // `shouldFormat` call preserves rule-mask gating; deferred to 4f.
-    _ = context.shouldFormat(NoParensAroundConditions.self, node: Syntax(result))
+    // NoParensAroundConditions — strips parens around a return value and
+    // ensures `return` keyword has a trailing space. Helpers in
+    // `NoParensAroundConditionsHelpers.swift`.
+    if context.shouldFormat(NoParensAroundConditions.self, node: Syntax(result)),
+       let expression = result.expression,
+       let stripped = noParensMinimalSingleExpression(expression, context: context)
+    {
+        result.expression = stripped
+        noParensFixKeywordTrailingTrivia(&result.returnKeyword.trailingTrivia)
+    }
 
     return result
 }

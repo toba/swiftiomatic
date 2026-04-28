@@ -9,14 +9,19 @@ import SwiftSyntax
 /// `CompactStageOneRewriterGenerator.manuallyHandledNodeTypes`.
 func rewriteInitializerClause(
     _ node: InitializerClauseSyntax,
+    parent: Syntax?,
     context: Context
 ) -> InitializerClauseSyntax {
-    let result = node
-    let parent: Syntax? = nil
-    _ = parent
+    var result = node
 
-    // No ported rules currently register `static transform` for
-    // InitializerClauseSyntax. Generator-emitted hooks only.
+    // NoParensAroundConditions — strips parens around an initializer's
+    // value (e.g. `let x = (foo)` → `let x = foo`). Helpers in
+    // `Rewrites/Stmts/NoParensAroundConditionsHelpers.swift`.
+    if context.shouldFormat(NoParensAroundConditions.self, node: Syntax(result)),
+       let stripped = noParensMinimalSingleExpression(result.value, context: context)
+    {
+        result.value = stripped
+    }
 
     return result
 }

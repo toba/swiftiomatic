@@ -8,11 +8,10 @@ import SwiftSyntax
 /// `CompactStageOneRewriterGenerator.manuallyHandledNodeTypes`.
 func rewriteIsExpr(
     _ node: IsExprSyntax,
+    parent: Syntax?,
     context: Context
 ) -> IsExprSyntax {
     let result = node
-    let parent: Syntax? = nil
-    _ = parent
 
     // No ported rules currently register `static transform` for
     // IsExprSyntax. Generator-emitted hooks only.

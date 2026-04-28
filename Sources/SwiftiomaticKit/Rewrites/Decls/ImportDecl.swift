@@ -12,10 +12,10 @@ import SwiftSyntax
 /// inside this function.
 func rewriteImportDecl(
     _ node: ImportDeclSyntax,
+    parent: Syntax?,
     context: Context
 ) -> ImportDeclSyntax {
     var result = node
-    let parent: Syntax? = nil  // ImportDecl rules don't need parent context.
     let nodeSyntax = Syntax(node)
 
     // ModifiersOnSameLine
@@ -36,14 +36,24 @@ func rewriteImportDecl(
         }
     }
 
-    // Unported file-level pre-scan rules (NoForceTry, NoForceUnwrap,
-    // RedundantSwiftTestingSuite) use instance state in the legacy path.
-    // Their compact equivalents need `Context.ruleState` infrastructure;
-    // tracked in 4f for the test-state migration. Audit-only `shouldFormat`
-    // calls preserved so rule-mask gating stays consistent.
-    _ = context.shouldFormat(NoForceTry.self, node: nodeSyntax)
-    _ = context.shouldFormat(NoForceUnwrap.self, node: nodeSyntax)
-    _ = context.shouldFormat(RedundantSwiftTestingSuite.self, node: nodeSyntax)
+    // RedundantSwiftTestingSuite — record `import Testing` for later use by
+    // the rule's struct/class/enum/actor visits. Helpers in
+    // `RedundantSwiftTestingSuiteHelpers.swift`.
+    if context.shouldFormat(RedundantSwiftTestingSuite.self, node: nodeSyntax) {
+        redundantSwiftTestingSuiteVisitImport(result, context: context)
+    }
+
+    // NoForceTry — record `import Testing` for later test-context detection.
+    // Helpers in `Rewrites/Exprs/NoForceTryHelpers.swift`.
+    if context.shouldFormat(NoForceTry.self, node: nodeSyntax) {
+        noForceTryVisitImport(result, context: context)
+    }
+
+    // NoForceUnwrap — record `import Testing` for later test-context detection.
+    // Helpers in `Rewrites/Exprs/NoForceUnwrapHelpers.swift`.
+    if context.shouldFormat(NoForceUnwrap.self, node: nodeSyntax) {
+        noForceUnwrapVisitImport(result, context: context)
+    }
 
     return result
 }

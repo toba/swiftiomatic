@@ -11,16 +11,19 @@ import SwiftSyntax
 /// `transform` form. The unported entries below are tracked in 4f.
 func rewriteRepeatStmt(
     _ node: RepeatStmtSyntax,
+    parent: Syntax?,
     context: Context
 ) -> RepeatStmtSyntax {
     var result = node
-    let nodeSyntax = Syntax(result)
-    _ = nodeSyntax
-
-    // NoParensAroundConditions — unported (legacy `SyntaxFormatRule.visit`
-    // override across multiple statement node types). Audit-only
-    // `shouldFormat` call preserves rule-mask gating; deferred to 4f.
-    _ = context.shouldFormat(NoParensAroundConditions.self, node: Syntax(result))
+    // NoParensAroundConditions — strips parens around the `while` condition
+    // and ensures `while` keyword has a trailing space. Helpers in
+    // `NoParensAroundConditionsHelpers.swift`.
+    if context.shouldFormat(NoParensAroundConditions.self, node: Syntax(result)) {
+        if let stripped = noParensMinimalSingleExpression(result.condition, context: context) {
+            result.condition = stripped
+            noParensFixKeywordTrailingTrivia(&result.whileKeyword.trailingTrivia)
+        }
+    }
 
     return result
 }

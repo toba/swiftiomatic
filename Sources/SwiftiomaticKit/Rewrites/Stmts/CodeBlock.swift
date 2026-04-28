@@ -11,12 +11,10 @@ import SwiftSyntax
 /// `transform` form. The unported entries below are tracked in 4f.
 func rewriteCodeBlock(
     _ node: CodeBlockSyntax,
+    parent: Syntax?,
     context: Context
 ) -> CodeBlockSyntax {
     var result = node
-    let nodeSyntax = Syntax(result)
-    _ = nodeSyntax
-
     // BlankLinesAfterGuardStatements — collapses blank lines between
     // consecutive guard statements and inserts a blank line after the last
     // guard. Inlined from
@@ -25,8 +23,17 @@ func rewriteCodeBlock(
         result = applyBlankLinesAfterGuardStatements(result, context: context)
     }
 
-    // BlankLinesBeforeControlFlowBlocks — unported. Audit-only.
-    _ = context.shouldFormat(BlankLinesBeforeControlFlowBlocks.self, node: Syntax(result))
+    // BlankLinesBeforeControlFlowBlocks — inserts a blank line before
+    // multi-line control-flow statements. Helpers in
+    // `BlankLinesBeforeControlFlowHelpers.swift`.
+    if context.shouldFormat(BlankLinesBeforeControlFlowBlocks.self, node: Syntax(result)) {
+        if let updated = blankLinesBeforeControlFlowInsertBlankLines(
+            in: Array(result.statements),
+            context: context
+        ) {
+            result.statements = CodeBlockItemListSyntax(updated)
+        }
+    }
 
     return result
 }

@@ -8,18 +8,13 @@ import SwiftSyntax
 /// `CompactStageOneRewriterGenerator.manuallyHandledNodeTypes`.
 func rewriteAsExpr(
     _ node: AsExprSyntax,
+    parent: Syntax?,
     context: Context
-) -> AsExprSyntax {
-    var result = node
-    let parent: Syntax? = nil
-    let nodeSyntax = Syntax(result)
-    _ = nodeSyntax  // used by audit-only calls below.
-
-    // No ported rules currently register `static transform` for AsExprSyntax.
+) -> ExprSyntax {
+    let result = node
 
     // NoForceCast — diagnostic-only (lint warning on `as!`). No rewrite; the
-    // safe replacement depends on caller intent. Inlined from
-    // `Sources/SwiftiomaticKit/Rules/Unsafety/NoForceCast.swift`.
+    // safe replacement depends on caller intent.
     if context.shouldFormat(NoForceCast.self, node: Syntax(result)),
        result.questionOrExclamationMark?.tokenKind == .exclamationMark
     {
@@ -30,11 +25,15 @@ func rewriteAsExpr(
         )
     }
 
-    // NoForceUnwrap — unported (legacy `SyntaxFormatRule.visit` override
-    // with file-level pre-scan state). Audit-only; deferred to 4f.
-    _ = context.shouldFormat(NoForceUnwrap.self, node: Syntax(result))
+    // NoForceUnwrap — `as!` → `as?` plus chain-top wrapping in test functions.
+    // Helpers in `Rewrites/Exprs/NoForceUnwrapHelpers.swift`.
+    if context.shouldFormat(NoForceUnwrap.self, node: Syntax(result)),
+       result.questionOrExclamationMark?.tokenKind == .exclamationMark
+    {
+        return noForceUnwrapRewriteAsExpr(result, context: context)
+    }
 
-    return result
+    return ExprSyntax(result)
 }
 
 extension Finding.Message {

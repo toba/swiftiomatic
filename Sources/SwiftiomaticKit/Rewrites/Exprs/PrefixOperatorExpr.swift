@@ -9,19 +9,16 @@ import SwiftSyntax
 /// `CompactStageOneRewriterGenerator.manuallyHandledNodeTypes`.
 func rewritePrefixOperatorExpr(
     _ node: PrefixOperatorExprSyntax,
+    parent: Syntax?,
     context: Context
 ) -> PrefixOperatorExprSyntax {
     var result = node
-    let parent: Syntax? = nil
 
-    // PreferExplicitFalse
-    if context.shouldFormat(PreferExplicitFalse.self, node: Syntax(result)) {
-        if let next = PreferExplicitFalse.transform(
-            result, parent: parent, context: context
-        ).as(PrefixOperatorExprSyntax.self) {
-            result = next
-        }
-    }
+    applyRule(
+        PreferExplicitFalse.self, to: &result,
+        parent: parent, context: context,
+        transform: PreferExplicitFalse.transform
+    )
 
     return result
 }

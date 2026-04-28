@@ -5,7 +5,7 @@ status: in-progress
 type: task
 priority: high
 created_at: 2026-04-28T15:49:12Z
-updated_at: 2026-04-28T16:37:29Z
+updated_at: 2026-04-28T18:46:06Z
 parent: ddi-wtv
 blocked_by:
     - 7fp-ghy
@@ -89,3 +89,12 @@ override func visit(_ node: SourceFileSyntax) -> SourceFileSyntax {
 …and `rewriteSourceFile` then ran the willEnter hooks. But `super.visit(node)` already recursed into children, meaning file-level pre-scan state (e.g. `PreferSwiftTesting.bailOut`) was empty during descendant visits. Parity test stayed green only because the 3-fixture corpus doesn't exercise that path.
 
 **Fix**: generator now emits willEnter BEFORE `super.visit`, calls the merged function with the post-traversal node, then emits didExit. The merged function is responsible only for transforms; willEnter/didExit hooks stay in the generator's override. Updated `rewriteSourceFile` to remove its (duplicate) willEnter section. `rewriteToken` had no willEnter calls so was unaffected. Build clean; parity green.
+
+
+
+## Update (2026-04-28)
+
+Inlined into `Rewrites/Files/SourceFile.swift`:
+- `NoForceTry` — file-level `importsXCTest` pre-scan via `noForceTryVisitSourceFile(...)`.
+
+`NoForceUnwrap` SourceFile-level pre-scan still audit-only (same shape will follow once `NoForceUnwrap` ports its TestContextTracker + chain-top wrapping to `Context.ruleState`).

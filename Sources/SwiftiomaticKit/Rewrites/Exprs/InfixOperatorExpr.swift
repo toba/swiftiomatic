@@ -9,73 +9,52 @@ import SwiftSyntax
 /// `CompactStageOneRewriterGenerator.manuallyHandledNodeTypes`.
 func rewriteInfixOperatorExpr(
     _ node: InfixOperatorExprSyntax,
+    parent: Syntax?,
     context: Context
 ) -> InfixOperatorExprSyntax {
     var result = node
-    let parent: Syntax? = nil
 
-    // NoAssignmentInExpressions
-    if context.shouldFormat(NoAssignmentInExpressions.self, node: Syntax(result)) {
-        if let next = NoAssignmentInExpressions.transform(
-            result, parent: parent, context: context
-        ).as(InfixOperatorExprSyntax.self) {
-            result = next
-        }
-    }
+    applyRule(
+        NoAssignmentInExpressions.self, to: &result,
+        parent: parent, context: context,
+        transform: NoAssignmentInExpressions.transform
+    )
 
-    // NoYodaConditions
-    if context.shouldFormat(NoYodaConditions.self, node: Syntax(result)) {
-        if let next = NoYodaConditions.transform(
-            result, parent: parent, context: context
-        ).as(InfixOperatorExprSyntax.self) {
-            result = next
-        }
-    }
+    applyRule(
+        NoYodaConditions.self, to: &result,
+        parent: parent, context: context,
+        transform: NoYodaConditions.transform
+    )
 
-    // PreferCompoundAssignment
-    if context.shouldFormat(PreferCompoundAssignment.self, node: Syntax(result)) {
-        if let next = PreferCompoundAssignment.transform(
-            result, parent: parent, context: context
-        ).as(InfixOperatorExprSyntax.self) {
-            result = next
-        }
-    }
+    applyRule(
+        PreferCompoundAssignment.self, to: &result,
+        parent: parent, context: context,
+        transform: PreferCompoundAssignment.transform
+    )
 
-    // PreferIsEmpty
-    if context.shouldFormat(PreferIsEmpty.self, node: Syntax(result)) {
-        if let next = PreferIsEmpty.transform(
-            result, parent: parent, context: context
-        ).as(InfixOperatorExprSyntax.self) {
-            result = next
-        }
-    }
+    applyRule(
+        PreferIsEmpty.self, to: &result,
+        parent: parent, context: context,
+        transform: PreferIsEmpty.transform
+    )
 
-    // PreferToggle
-    if context.shouldFormat(PreferToggle.self, node: Syntax(result)) {
-        if let next = PreferToggle.transform(
-            result, parent: parent, context: context
-        ).as(InfixOperatorExprSyntax.self) {
-            result = next
-        }
-    }
+    applyRule(
+        PreferToggle.self, to: &result,
+        parent: parent, context: context,
+        transform: PreferToggle.transform
+    )
 
-    // RedundantNilCoalescing
-    if context.shouldFormat(RedundantNilCoalescing.self, node: Syntax(result)) {
-        if let next = RedundantNilCoalescing.transform(
-            result, parent: parent, context: context
-        ).as(InfixOperatorExprSyntax.self) {
-            result = next
-        }
-    }
+    applyRule(
+        RedundantNilCoalescing.self, to: &result,
+        parent: parent, context: context,
+        transform: RedundantNilCoalescing.transform
+    )
 
-    // WrapConditionalAssignment
-    if context.shouldFormat(WrapConditionalAssignment.self, node: Syntax(result)) {
-        if let next = WrapConditionalAssignment.transform(
-            result, parent: parent, context: context
-        ).as(InfixOperatorExprSyntax.self) {
-            result = next
-        }
-    }
+    applyRule(
+        WrapConditionalAssignment.self, to: &result,
+        parent: parent, context: context,
+        transform: WrapConditionalAssignment.transform
+    )
 
     return result
 }

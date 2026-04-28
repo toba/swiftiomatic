@@ -629,6 +629,31 @@ final class PreferShorthandTypeNames: RewriteSyntaxRule<BasicRuleValue>, @unchec
         }
         return nil
     }
+
+    // MARK: - Compact-pipeline static transforms
+    //
+    // The rule's internal `visit(genericArgumentList.arguments)` recursive
+    // descent is harmless when called on already-rewritten children (visiting
+    // an `ArrayType`/`DictionaryType`/`OptionalType` is a no-op for this rule),
+    // so we forward to a fresh instance.
+
+    static func transform(
+        _ node: IdentifierTypeSyntax,
+        parent: Syntax?,
+        context: Context
+    ) -> TypeSyntax {
+        _ = parent
+        return PreferShorthandTypeNames(context: context).visit(node)
+    }
+
+    static func transform(
+        _ node: GenericSpecializationExprSyntax,
+        parent: Syntax?,
+        context: Context
+    ) -> ExprSyntax {
+        _ = parent
+        return PreferShorthandTypeNames(context: context).visit(node)
+    }
 }
 
 extension Finding.Message {

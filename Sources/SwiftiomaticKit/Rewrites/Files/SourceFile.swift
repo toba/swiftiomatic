@@ -24,10 +24,10 @@ import SwiftSyntax
 /// continues to compile. We forward to those `static` helpers from here.
 func rewriteSourceFile(
     _ node: SourceFileSyntax,
+    parent: Syntax?,
     context: Context
 ) -> SourceFileSyntax {
     var result = node
-    let nodeSyntax = Syntax(node)
 
     // willEnter hooks (file-level pre-scan) are emitted by the generator
     // BEFORE super.visit, so descendants observe the populated state. They
@@ -40,20 +40,19 @@ func rewriteSourceFile(
         result = ensureLineBreakAtEOF(result, context: context)
     }
 
-    // 2. NoForceTry: the legacy rule's `visit(_ SourceFileSyntax)` only
-    //    forwards to its instance `TestContextTracker` and otherwise returns
-    //    `super.visit(node)` — there is no SourceFile-level rewrite. The
-    //    recursive `try!` rewrite logic (function/expr nodes) still runs in
-    //    the legacy `RewritePipeline` path; Phase 4f/4g will port it.
-    //    No-op here, kept for the merge audit.
-    _ = context.shouldFormat(NoForceTry.self, node: Syntax(result))
+    // 2. NoForceTry: file-level pre-scan — populate `importsXCTest` so test
+    //    classes can be identified during traversal. Helpers in
+    //    `Rewrites/Exprs/NoForceTryHelpers.swift`.
+    if context.shouldFormat(NoForceTry.self, node: Syntax(result)) {
+        noForceTryVisitSourceFile(result, context: context)
+    }
 
-    // 3. NoForceUnwrap: same as NoForceTry. The SourceFile-level visit only
-    //    forwards to the rule-local `TestContextTracker.visitSourceFile`,
-    //    which does not transform the node. The recursive force-unwrap /
-    //    `as!` rewriting + chain-top wrapping remains on the legacy instance
-    //    rule until Phase 4f/4g.
-    _ = context.shouldFormat(NoForceUnwrap.self, node: Syntax(result))
+    // 3. NoForceUnwrap: file-level pre-scan — populate `importsXCTest` so
+    //    test classes can be identified during traversal. Helpers in
+    //    `Rewrites/Exprs/NoForceUnwrapHelpers.swift`.
+    if context.shouldFormat(NoForceUnwrap.self, node: Syntax(result)) {
+        noForceUnwrapVisitSourceFile(result, context: context)
+    }
 
     // 4. PreferEnvironmentEntry: rewrite `EnvironmentValues` extensions to
     //    use `@Entry` and remove the matched `EnvironmentKey` types.

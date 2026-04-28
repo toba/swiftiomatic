@@ -12,12 +12,10 @@ import SwiftSyntax
 /// compact `transform` form. The unported entries below are tracked in 4f.
 func rewriteSwitchCaseList(
     _ node: SwitchCaseListSyntax,
+    parent: Syntax?,
     context: Context
 ) -> SwitchCaseListSyntax {
     var result = node
-    let nodeSyntax = Syntax(result)
-    _ = nodeSyntax
-
     // NoFallThroughOnlyCases — collapses `case`s whose only statement is
     // `fallthrough` into the following case's pattern list. Inlined from
     // `Sources/SwiftiomaticKit/Rules/Redundancies/NoFallThroughOnlyCases.swift`.

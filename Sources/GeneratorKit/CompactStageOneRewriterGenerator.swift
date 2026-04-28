@@ -160,8 +160,9 @@ package final class CompactStageOneRewriterGenerator: FileGenerator {
                     result += """
 
                           override func visit(_ node: \(nodeType)) -> \(returnType) {
+                            let parent = Syntax(node).parent
                         \(willEnterBlock)    let visited = super.visit(node)
-                            let result = \(funcName)(visited, context: context)
+                            let result = \(funcName)(visited, parent: parent, context: context)
                         \(didExitBlock)    return result
                           }
 
@@ -170,10 +171,11 @@ package final class CompactStageOneRewriterGenerator: FileGenerator {
                     result += """
 
                           override func visit(_ node: \(nodeType)) -> \(returnType) {
+                            let parent = Syntax(node).parent
                         \(willEnterBlock)    let visited = super.visit(node)
                             let result: \(returnType)
                             if let concrete = visited.as(\(nodeType).self) {
-                              result = \(returnType)(\(funcName)(concrete, context: context))
+                              result = \(returnType)(\(funcName)(concrete, parent: parent, context: context))
                             } else {
                               result = visited
                             }
@@ -235,10 +237,14 @@ package final class CompactStageOneRewriterGenerator: FileGenerator {
                     """
                 for ruleName in transformRules.sorted() {
                     result += """
-                            if let concrete = current.as(\(nodeType).self),
-                              context.shouldFormat(\(ruleName).self, node: Syntax(concrete))
-                            {
-                              current = \(ruleName).transform(concrete, parent: parent, context: context)
+                            if let concrete = current.as(\(nodeType).self) {
+                              if context.shouldFormat(\(ruleName).self, node: Syntax(concrete)) {
+                                current = \(ruleName).transform(concrete, parent: parent, context: context)
+                              }
+                            } else {
+                              assertionFailure(
+                                "\(ruleName): preceding rule widened \(nodeType) to \\(type(of: current)); all subsequent rules in this chain are skipped"
+                              )
                             }
 
                         """

@@ -77,6 +77,15 @@ final class NestedCallLayout: RewriteSyntaxRule<NestedCallLayoutConfiguration>, 
 
         return ExprSyntax(node)
     }
+
+    static func transform(
+        _ node: FunctionCallExprSyntax,
+        parent: Syntax?,
+        context: Context
+    ) -> ExprSyntax {
+        _ = parent
+        return NestedCallLayout(context: context).visit(node)
+    }
 }
 
 // MARK: - Nested Call Detection

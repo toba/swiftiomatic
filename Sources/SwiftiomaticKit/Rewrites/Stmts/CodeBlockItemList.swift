@@ -9,13 +9,10 @@ import SwiftSyntax
 /// `CompactStageOneRewriterGenerator.manuallyHandledNodeTypes`.
 func rewriteCodeBlockItemList(
     _ node: CodeBlockItemListSyntax,
+    parent: Syntax?,
     context: Context
 ) -> CodeBlockItemListSyntax {
     var result = node
-    let parent: Syntax? = nil
-    let nodeSyntax = Syntax(result)
-    _ = nodeSyntax  // used by audit-only calls below.
-
     // EmptyExtensions
     if context.shouldFormat(EmptyExtensions.self, node: Syntax(result)) {
         result = EmptyExtensions.transform(result, parent: parent, context: context)
@@ -61,10 +58,67 @@ func rewriteCodeBlockItemList(
         result = RedundantProperty.transform(result, parent: parent, context: context)
     }
 
-    // PreferEarlyExits — unported (legacy `SyntaxFormatRule.visit` override
-    // not yet migrated to a static `transform`). Audit-only `shouldFormat`
-    // call preserves rule-mask gating; deferred to 4f.
-    _ = context.shouldFormat(PreferEarlyExits.self, node: Syntax(result))
+    // PreferEarlyExits — converts `if cond { ... } else { ...; return/throw/
+    // break/continue }` into `guard cond else { ... }; ...`. Inlined from
+    // `Sources/SwiftiomaticKit/Rules/Conditions/PreferEarlyExits.swift`.
+    if context.shouldFormat(PreferEarlyExits.self, node: Syntax(result)) {
+        result = applyPreferEarlyExits(result, context: context)
+    }
 
     return result
+}
+
+private func applyPreferEarlyExits(
+    _ node: CodeBlockItemListSyntax,
+    context: Context
+) -> CodeBlockItemListSyntax {
+    var newItems = [CodeBlockItemSyntax]()
+
+    for codeBlockItem in node {
+        guard let exprStmt = codeBlockItem.item.as(ExpressionStmtSyntax.self),
+              let ifStatement = exprStmt.expression.as(IfExprSyntax.self),
+              let elseBody = ifStatement.elseBody?.as(CodeBlockSyntax.self),
+              codeBlockEndsWithEarlyExit(elseBody)
+        else {
+            newItems.append(codeBlockItem)
+            continue
+        }
+
+        PreferEarlyExits.diagnose(.useGuardStatement, on: ifStatement, context: context)
+
+        let guardKeyword = TokenSyntax.keyword(
+            .guard,
+            leadingTrivia: ifStatement.ifKeyword.leadingTrivia,
+            trailingTrivia: .spaces(1)
+        )
+        let guardStatement = GuardStmtSyntax(
+            guardKeyword: guardKeyword,
+            conditions: ifStatement.conditions,
+            elseKeyword: TokenSyntax.keyword(.else, trailingTrivia: .spaces(1)),
+            body: elseBody
+        )
+
+        newItems.append(CodeBlockItemSyntax(item: .stmt(StmtSyntax(guardStatement))))
+
+        for trueStmt in ifStatement.body.statements { newItems.append(trueStmt) }
+    }
+
+    return CodeBlockItemListSyntax(newItems)
+}
+
+private func codeBlockEndsWithEarlyExit(_ codeBlock: CodeBlockSyntax) -> Bool {
+    guard let lastStatement = codeBlock.statements.last else { return false }
+    switch lastStatement.item {
+        case let .stmt(stmt):
+            switch Syntax(stmt).as(SyntaxEnum.self) {
+                case .returnStmt, .throwStmt, .breakStmt, .continueStmt: return true
+                default: return false
+            }
+        default: return false
+    }
+}
+
+extension Finding.Message {
+    fileprivate static let useGuardStatement: Finding.Message =
+        "replace this 'if/else' block with a 'guard' statement containing the early exit"
 }

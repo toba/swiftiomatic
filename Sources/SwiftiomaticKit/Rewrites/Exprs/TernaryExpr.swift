@@ -8,28 +8,22 @@ import SwiftSyntax
 /// `CompactStageOneRewriterGenerator.manuallyHandledNodeTypes`.
 func rewriteTernaryExpr(
     _ node: TernaryExprSyntax,
+    parent: Syntax?,
     context: Context
 ) -> TernaryExprSyntax {
     var result = node
-    let parent: Syntax? = nil
 
-    // NoVoidTernary
-    if context.shouldFormat(NoVoidTernary.self, node: Syntax(result)) {
-        if let next = NoVoidTernary.transform(
-            result, parent: parent, context: context
-        ).as(TernaryExprSyntax.self) {
-            result = next
-        }
-    }
+    applyRule(
+        NoVoidTernary.self, to: &result,
+        parent: parent, context: context,
+        transform: NoVoidTernary.transform
+    )
 
-    // WrapTernary
-    if context.shouldFormat(WrapTernary.self, node: Syntax(result)) {
-        if let next = WrapTernary.transform(
-            result, parent: parent, context: context
-        ).as(TernaryExprSyntax.self) {
-            result = next
-        }
-    }
+    applyRule(
+        WrapTernary.self, to: &result,
+        parent: parent, context: context,
+        transform: WrapTernary.transform
+    )
 
     return result
 }

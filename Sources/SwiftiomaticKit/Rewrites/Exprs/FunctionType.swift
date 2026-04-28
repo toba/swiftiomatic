@@ -8,26 +8,70 @@ import SwiftSyntax
 /// `CompactStageOneRewriterGenerator.manuallyHandledNodeTypes`.
 func rewriteFunctionType(
     _ node: FunctionTypeSyntax,
+    parent: Syntax?,
     context: Context
 ) -> FunctionTypeSyntax {
     var result = node
-    let parent: Syntax? = nil
-    let nodeSyntax = Syntax(result)
-    _ = nodeSyntax  // used by audit-only calls below.
+    applyRule(
+        RedundantTypedThrows.self, to: &result,
+        parent: parent, context: context,
+        transform: RedundantTypedThrows.transform
+    )
 
-    // RedundantTypedThrows
-    if context.shouldFormat(RedundantTypedThrows.self, node: Syntax(result)) {
-        if let next = RedundantTypedThrows.transform(
-            result, parent: parent, context: context
-        ).as(FunctionTypeSyntax.self) {
-            result = next
-        }
+    // PreferVoidReturn — replaces `-> ()` with `-> Void` in function-type
+    // signatures. Inlined from
+    // `Sources/SwiftiomaticKit/Rules/Types/PreferVoidReturn.swift`.
+    if context.shouldFormat(PreferVoidReturn.self, node: Syntax(result)) {
+        result = applyPreferVoidReturn(result, context: context)
     }
 
-    // PreferVoidReturn — unported (legacy `SyntaxFormatRule.visit` override).
-    // Audit-only `shouldFormat` call preserves rule-mask gating; deferred to
-    // 4f.
-    _ = context.shouldFormat(PreferVoidReturn.self, node: Syntax(result))
-
     return result
+}
+
+private func applyPreferVoidReturn(
+    _ node: FunctionTypeSyntax,
+    context: Context
+) -> FunctionTypeSyntax {
+    guard let returnType = node.returnClause.type.as(TupleTypeSyntax.self),
+          returnType.elements.isEmpty
+    else { return node }
+
+    PreferVoidReturn.diagnose(.returnVoid, on: returnType, context: context)
+
+    if hasNonWhitespaceTrivia(returnType.leftParen, at: .trailing)
+        || hasNonWhitespaceTrivia(returnType.rightParen, at: .leading)
+    {
+        return node
+    }
+
+    let voidKeyword = makeVoidIdentifierType(toReplace: returnType)
+    var rewritten = node
+    rewritten.returnClause.type = TypeSyntax(voidKeyword)
+    return rewritten
+}
+
+func hasNonWhitespaceTrivia(_ token: TokenSyntax, at position: TriviaPosition) -> Bool {
+    for piece in position == .leading ? token.leadingTrivia : token.trailingTrivia {
+        switch piece {
+            case .blockComment, .docBlockComment, .docLineComment, .unexpectedText, .lineComment:
+                return true
+            default: break
+        }
+    }
+    return false
+}
+
+func makeVoidIdentifierType(toReplace node: TupleTypeSyntax) -> IdentifierTypeSyntax {
+    IdentifierTypeSyntax(
+        name: TokenSyntax.identifier(
+            "Void",
+            leadingTrivia: node.firstToken(viewMode: .sourceAccurate)?.leadingTrivia ?? [],
+            trailingTrivia: node.lastToken(viewMode: .sourceAccurate)?.trailingTrivia ?? []
+        ),
+        genericArgumentClause: nil
+    )
+}
+
+extension Finding.Message {
+    fileprivate static let returnVoid: Finding.Message = "replace '()' with 'Void'"
 }

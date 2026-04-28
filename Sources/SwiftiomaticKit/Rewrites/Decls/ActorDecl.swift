@@ -6,61 +6,57 @@ import SwiftSyntax
 /// Per Phase 4c of `ddi-wtv`.
 func rewriteActorDecl(
     _ node: ActorDeclSyntax,
+    parent: Syntax?,
     context: Context
 ) -> ActorDeclSyntax {
     var result = node
-    let parent: Syntax? = nil
 
-    // DocCommentsPrecedeModifiers
-    if context.shouldFormat(DocCommentsPrecedeModifiers.self, node: Syntax(result)) {
-        if let next = DocCommentsPrecedeModifiers.transform(
-            result, parent: parent, context: context
-        ).as(ActorDeclSyntax.self) {
-            result = next
-        }
+    applyRule(
+        DocCommentsPrecedeModifiers.self, to: &result,
+        parent: parent, context: context,
+        transform: DocCommentsPrecedeModifiers.transform
+    )
+
+    applyRule(
+        ModifierOrder.self, to: &result,
+        parent: parent, context: context,
+        transform: ModifierOrder.transform
+    )
+
+    applyRule(
+        ModifiersOnSameLine.self, to: &result,
+        parent: parent, context: context,
+        transform: ModifiersOnSameLine.transform
+    )
+
+    applyRule(
+        RedundantAccessControl.self, to: &result,
+        parent: parent, context: context,
+        transform: RedundantAccessControl.transform
+    )
+
+    applyRule(
+        SimplifyGenericConstraints.self, to: &result,
+        parent: parent, context: context,
+        transform: SimplifyGenericConstraints.transform
+    )
+
+    // RedundantSwiftTestingSuite — strip a no-argument `@Suite` attribute
+    // when `import Testing` is present. Helpers in
+    // `RedundantSwiftTestingSuiteHelpers.swift`.
+    if context.shouldFormat(RedundantSwiftTestingSuite.self, node: Syntax(result)) {
+        result = redundantSwiftTestingSuiteRemoveSuite(
+            from: result, keyword: \.actorKeyword, context: context
+        )
     }
 
-    // ModifierOrder
-    if context.shouldFormat(ModifierOrder.self, node: Syntax(result)) {
-        if let next = ModifierOrder.transform(
-            result, parent: parent, context: context
-        ).as(ActorDeclSyntax.self) {
-            result = next
-        }
-    }
-
-    // ModifiersOnSameLine
-    if context.shouldFormat(ModifiersOnSameLine.self, node: Syntax(result)) {
-        if let next = ModifiersOnSameLine.transform(
-            result, parent: parent, context: context
-        ).as(ActorDeclSyntax.self) {
-            result = next
-        }
-    }
-
-    // RedundantAccessControl
-    if context.shouldFormat(RedundantAccessControl.self, node: Syntax(result)) {
-        if let next = RedundantAccessControl.transform(
-            result, parent: parent, context: context
-        ).as(ActorDeclSyntax.self) {
-            result = next
-        }
-    }
-
-    // SimplifyGenericConstraints
-    if context.shouldFormat(SimplifyGenericConstraints.self, node: Syntax(result)) {
-        if let next = SimplifyGenericConstraints.transform(
-            result, parent: parent, context: context
-        ).as(ActorDeclSyntax.self) {
-            result = next
-        }
-    }
-
-    // Unported rules touching ActorDeclSyntax — tracked for sub-issue 4f:
-    //   - RedundantSwiftTestingSuite (instance state, file-level pre-scan)
-    //   - WrapMultilineStatementBraces (no static transform yet)
-    _ = context.shouldFormat(RedundantSwiftTestingSuite.self, node: Syntax(result))
-    _ = context.shouldFormat(WrapMultilineStatementBraces.self, node: Syntax(result))
+    // WrapMultilineStatementBraces — wrap opening brace of a multiline
+    // statement onto its own line aligned with the closing brace.
+    applyRule(
+        WrapMultilineStatementBraces.self, to: &result,
+        parent: parent, context: context,
+        transform: WrapMultilineStatementBraces.transform
+    )
 
     return result
 }

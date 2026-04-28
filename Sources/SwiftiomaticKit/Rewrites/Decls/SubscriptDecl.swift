@@ -6,100 +6,70 @@ import SwiftSyntax
 /// Per Phase 4c of `ddi-wtv`.
 func rewriteSubscriptDecl(
     _ node: SubscriptDeclSyntax,
+    parent: Syntax?,
     context: Context
 ) -> SubscriptDeclSyntax {
     var result = node
-    let parent: Syntax? = nil
 
-    // DocCommentsPrecedeModifiers
-    if context.shouldFormat(DocCommentsPrecedeModifiers.self, node: Syntax(result)) {
-        if let next = DocCommentsPrecedeModifiers.transform(
-            result, parent: parent, context: context
-        ).as(SubscriptDeclSyntax.self) {
-            result = next
-        }
-    }
+    applyRule(
+        DocCommentsPrecedeModifiers.self, to: &result,
+        parent: parent, context: context,
+        transform: DocCommentsPrecedeModifiers.transform
+    )
 
-    // ModifierOrder
-    if context.shouldFormat(ModifierOrder.self, node: Syntax(result)) {
-        if let next = ModifierOrder.transform(
-            result, parent: parent, context: context
-        ).as(SubscriptDeclSyntax.self) {
-            result = next
-        }
-    }
+    applyRule(
+        ModifierOrder.self, to: &result,
+        parent: parent, context: context,
+        transform: ModifierOrder.transform
+    )
 
-    // ModifiersOnSameLine
-    if context.shouldFormat(ModifiersOnSameLine.self, node: Syntax(result)) {
-        if let next = ModifiersOnSameLine.transform(
-            result, parent: parent, context: context
-        ).as(SubscriptDeclSyntax.self) {
-            result = next
-        }
-    }
+    applyRule(
+        ModifiersOnSameLine.self, to: &result,
+        parent: parent, context: context,
+        transform: ModifiersOnSameLine.transform
+    )
 
-    // OpaqueGenericParameters
-    if context.shouldFormat(OpaqueGenericParameters.self, node: Syntax(result)) {
-        if let next = OpaqueGenericParameters.transform(
-            result, parent: parent, context: context
-        ).as(SubscriptDeclSyntax.self) {
-            result = next
-        }
-    }
+    applyRule(
+        OpaqueGenericParameters.self, to: &result,
+        parent: parent, context: context,
+        transform: OpaqueGenericParameters.transform
+    )
 
-    // RedundantAccessControl
-    if context.shouldFormat(RedundantAccessControl.self, node: Syntax(result)) {
-        if let next = RedundantAccessControl.transform(
-            result, parent: parent, context: context
-        ).as(SubscriptDeclSyntax.self) {
-            result = next
-        }
-    }
+    applyRule(
+        RedundantAccessControl.self, to: &result,
+        parent: parent, context: context,
+        transform: RedundantAccessControl.transform
+    )
 
-    // RedundantObjc
-    if context.shouldFormat(RedundantObjc.self, node: Syntax(result)) {
-        if let next = RedundantObjc.transform(
-            result, parent: parent, context: context
-        ).as(SubscriptDeclSyntax.self) {
-            result = next
-        }
-    }
+    applyRule(
+        RedundantObjc.self, to: &result,
+        parent: parent, context: context,
+        transform: RedundantObjc.transform
+    )
 
-    // RedundantReturn
-    if context.shouldFormat(RedundantReturn.self, node: Syntax(result)) {
-        if let next = RedundantReturn.transform(
-            result, parent: parent, context: context
-        ).as(SubscriptDeclSyntax.self) {
-            result = next
-        }
-    }
+    applyRule(
+        RedundantReturn.self, to: &result,
+        parent: parent, context: context,
+        transform: RedundantReturn.transform
+    )
 
-    // TripleSlashDocComments
-    if context.shouldFormat(TripleSlashDocComments.self, node: Syntax(result)) {
-        if let next = TripleSlashDocComments.transform(
-            result, parent: parent, context: context
-        ).as(SubscriptDeclSyntax.self) {
-            result = next
-        }
-    }
+    applyRule(
+        TripleSlashDocComments.self, to: &result,
+        parent: parent, context: context,
+        transform: TripleSlashDocComments.transform
+    )
 
-    // UnusedArguments
-    if context.shouldFormat(UnusedArguments.self, node: Syntax(result)) {
-        if let next = UnusedArguments.transform(
-            result, parent: parent, context: context
-        ).as(SubscriptDeclSyntax.self) {
-            result = next
-        }
-    }
+    applyRule(
+        UnusedArguments.self, to: &result,
+        parent: parent, context: context,
+        transform: UnusedArguments.transform
+    )
 
-    // UseImplicitInit
-    if context.shouldFormat(UseImplicitInit.self, node: Syntax(result)) {
-        if let next = UseImplicitInit.transform(
-            result, parent: parent, context: context
-        ).as(SubscriptDeclSyntax.self) {
-            result = next
-        }
-    }
+    applyRule(
+        UseImplicitInit.self, to: &result,
+        parent: parent, context: context,
+        transform: UseImplicitInit.transform
+    )
 
     return result
 }

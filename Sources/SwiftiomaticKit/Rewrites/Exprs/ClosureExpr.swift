@@ -11,39 +11,34 @@ import SwiftSyntax
 /// generator before/after `super.visit`, not from inside this function.
 func rewriteClosureExpr(
     _ node: ClosureExprSyntax,
+    parent: Syntax?,
     context: Context
 ) -> ClosureExprSyntax {
     var result = node
-    let parent: Syntax? = nil
-    let nodeSyntax = Syntax(result)
-    _ = nodeSyntax  // used by audit-only calls below.
 
-    // RedundantReturn
-    if context.shouldFormat(RedundantReturn.self, node: Syntax(result)) {
-        if let next = RedundantReturn.transform(
-            result, parent: parent, context: context
-        ).as(ClosureExprSyntax.self) {
-            result = next
-        }
-    }
+    applyRule(
+        RedundantReturn.self, to: &result,
+        parent: parent, context: context,
+        transform: RedundantReturn.transform
+    )
 
-    // UnusedArguments
-    if context.shouldFormat(UnusedArguments.self, node: Syntax(result)) {
-        if let next = UnusedArguments.transform(
-            result, parent: parent, context: context
-        ).as(ClosureExprSyntax.self) {
-            result = next
-        }
-    }
+    applyRule(
+        UnusedArguments.self, to: &result,
+        parent: parent, context: context,
+        transform: UnusedArguments.transform
+    )
 
-    // NoForceTry / NoForceUnwrap — unported (file-level pre-scan, instance
-    // state). Audit-only `shouldFormat` calls preserve rule-mask gating;
-    // deferred to 4f.
-    _ = context.shouldFormat(NoForceTry.self, node: Syntax(result))
-    _ = context.shouldFormat(NoForceUnwrap.self, node: Syntax(result))
+    // NoForceTry — closure depth tracked via generator-emitted
+    // `willEnter`/`didExit` hooks; the rule's `TryExpr` handler bails out
+    // when `closureDepth > 0` to match the legacy non-recursion behavior.
 
-    // NamedClosureParams — unported. Audit-only; deferred to 4f.
-    _ = context.shouldFormat(NamedClosureParams.self, node: Syntax(result))
+    // NoForceUnwrap — closure depth tracked via generator-emitted
+    // `willEnter`/`didExit` hooks; no transform here.
+
+    // NamedClosureParams — multi-line tracking handled by the
+    // generator-emitted `willEnter(_ ClosureExpr)` / `didExit(_ ClosureExpr)`
+    // hooks; the diagnose call lives in `rewriteDeclReferenceExpr`. Helpers
+    // in `NamedClosureParamsHelpers.swift`.
 
     return result
 }

@@ -144,6 +144,15 @@ final class RedundantOverride: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sen
             .with(\.leadingTrivia, node.leadingTrivia)
             .with(\.trailingTrivia, node.trailingTrivia)
     }
+
+    static func transform(
+        _ node: FunctionDeclSyntax,
+        parent: Syntax?,
+        context: Context
+    ) -> DeclSyntax {
+        _ = parent
+        return RedundantOverride(context: context).visit(node)
+    }
 }
 
 extension Finding.Message {

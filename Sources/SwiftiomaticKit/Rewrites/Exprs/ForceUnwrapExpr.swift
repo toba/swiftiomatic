@@ -9,25 +9,22 @@ import SwiftSyntax
 /// `CompactStageOneRewriterGenerator.manuallyHandledNodeTypes`.
 func rewriteForceUnwrapExpr(
     _ node: ForceUnwrapExprSyntax,
+    parent: Syntax?,
     context: Context
-) -> ForceUnwrapExprSyntax {
+) -> ExprSyntax {
     var result = node
-    let parent: Syntax? = nil
-    let nodeSyntax = Syntax(result)
-    _ = nodeSyntax  // used by audit-only calls below.
 
-    // URLMacro
-    if context.shouldFormat(URLMacro.self, node: Syntax(result)) {
-        if let next = URLMacro.transform(
-            result, parent: parent, context: context
-        ).as(ForceUnwrapExprSyntax.self) {
-            result = next
-        }
+    applyRule(
+        URLMacro.self, to: &result,
+        parent: parent, context: context,
+        transform: URLMacro.transform
+    )
+
+    // NoForceUnwrap — chain-top wrapping in test functions.
+    // Helpers in `Rewrites/Exprs/NoForceUnwrapHelpers.swift`.
+    if context.shouldFormat(NoForceUnwrap.self, node: Syntax(result)) {
+        return noForceUnwrapRewriteForceUnwrap(result, context: context)
     }
 
-    // NoForceUnwrap — unported (file-level pre-scan, instance state).
-    // Audit-only; deferred to 4f.
-    _ = context.shouldFormat(NoForceUnwrap.self, node: Syntax(result))
-
-    return result
+    return ExprSyntax(result)
 }

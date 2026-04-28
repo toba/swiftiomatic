@@ -6,118 +6,82 @@ import SwiftSyntax
 /// Per Phase 4c of `ddi-wtv`.
 func rewriteClassDecl(
     _ node: ClassDeclSyntax,
+    parent: Syntax?,
     context: Context
 ) -> ClassDeclSyntax {
     var result = node
-    let parent: Syntax? = nil
 
-    // DocCommentsPrecedeModifiers
-    if context.shouldFormat(DocCommentsPrecedeModifiers.self, node: Syntax(result)) {
-        if let next = DocCommentsPrecedeModifiers.transform(
-            result, parent: parent, context: context
-        ).as(ClassDeclSyntax.self) {
-            result = next
-        }
-    }
+    applyRule(
+        DocCommentsPrecedeModifiers.self, to: &result,
+        parent: parent, context: context,
+        transform: DocCommentsPrecedeModifiers.transform
+    )
 
-    // ModifierOrder
-    if context.shouldFormat(ModifierOrder.self, node: Syntax(result)) {
-        if let next = ModifierOrder.transform(
-            result, parent: parent, context: context
-        ).as(ClassDeclSyntax.self) {
-            result = next
-        }
-    }
+    applyRule(
+        ModifierOrder.self, to: &result,
+        parent: parent, context: context,
+        transform: ModifierOrder.transform
+    )
 
-    // ModifiersOnSameLine
-    if context.shouldFormat(ModifiersOnSameLine.self, node: Syntax(result)) {
-        if let next = ModifiersOnSameLine.transform(
-            result, parent: parent, context: context
-        ).as(ClassDeclSyntax.self) {
-            result = next
-        }
-    }
+    applyRule(
+        ModifiersOnSameLine.self, to: &result,
+        parent: parent, context: context,
+        transform: ModifiersOnSameLine.transform
+    )
 
-    // PreferStaticOverClassFunc
-    if context.shouldFormat(PreferStaticOverClassFunc.self, node: Syntax(result)) {
-        if let next = PreferStaticOverClassFunc.transform(
-            result, parent: parent, context: context
-        ).as(ClassDeclSyntax.self) {
-            result = next
-        }
-    }
+    applyRule(
+        PreferStaticOverClassFunc.self, to: &result,
+        parent: parent, context: context,
+        transform: PreferStaticOverClassFunc.transform
+    )
 
-    // PreferSwiftTesting
-    if context.shouldFormat(PreferSwiftTesting.self, node: Syntax(result)) {
-        if let next = PreferSwiftTesting.transform(
-            result, parent: parent, context: context
-        ).as(ClassDeclSyntax.self) {
-            result = next
-        }
-    }
+    applyRule(
+        PreferSwiftTesting.self, to: &result,
+        parent: parent, context: context,
+        transform: PreferSwiftTesting.transform
+    )
 
-    // RedundantAccessControl
-    if context.shouldFormat(RedundantAccessControl.self, node: Syntax(result)) {
-        if let next = RedundantAccessControl.transform(
-            result, parent: parent, context: context
-        ).as(ClassDeclSyntax.self) {
-            result = next
-        }
-    }
+    applyRule(
+        RedundantAccessControl.self, to: &result,
+        parent: parent, context: context,
+        transform: RedundantAccessControl.transform
+    )
 
-    // RedundantObjc
-    if context.shouldFormat(RedundantObjc.self, node: Syntax(result)) {
-        if let next = RedundantObjc.transform(
-            result, parent: parent, context: context
-        ).as(ClassDeclSyntax.self) {
-            result = next
-        }
-    }
+    applyRule(
+        RedundantObjc.self, to: &result,
+        parent: parent, context: context,
+        transform: RedundantObjc.transform
+    )
 
-    // SimplifyGenericConstraints
-    if context.shouldFormat(SimplifyGenericConstraints.self, node: Syntax(result)) {
-        if let next = SimplifyGenericConstraints.transform(
-            result, parent: parent, context: context
-        ).as(ClassDeclSyntax.self) {
-            result = next
-        }
-    }
+    applyRule(
+        SimplifyGenericConstraints.self, to: &result,
+        parent: parent, context: context,
+        transform: SimplifyGenericConstraints.transform
+    )
 
-    // StaticStructShouldBeEnum
-    if context.shouldFormat(StaticStructShouldBeEnum.self, node: Syntax(result)) {
-        if let next = StaticStructShouldBeEnum.transform(
-            result, parent: parent, context: context
-        ).as(ClassDeclSyntax.self) {
-            result = next
-        }
-    }
+    applyRule(
+        StaticStructShouldBeEnum.self, to: &result,
+        parent: parent, context: context,
+        transform: StaticStructShouldBeEnum.transform
+    )
 
-    // TestSuiteAccessControl
-    if context.shouldFormat(TestSuiteAccessControl.self, node: Syntax(result)) {
-        if let next = TestSuiteAccessControl.transform(
-            result, parent: parent, context: context
-        ).as(ClassDeclSyntax.self) {
-            result = next
-        }
-    }
+    applyRule(
+        TestSuiteAccessControl.self, to: &result,
+        parent: parent, context: context,
+        transform: TestSuiteAccessControl.transform
+    )
 
-    // TripleSlashDocComments
-    if context.shouldFormat(TripleSlashDocComments.self, node: Syntax(result)) {
-        if let next = TripleSlashDocComments.transform(
-            result, parent: parent, context: context
-        ).as(ClassDeclSyntax.self) {
-            result = next
-        }
-    }
+    applyRule(
+        TripleSlashDocComments.self, to: &result,
+        parent: parent, context: context,
+        transform: TripleSlashDocComments.transform
+    )
 
-    // ValidateTestCases
-    if context.shouldFormat(ValidateTestCases.self, node: Syntax(result)) {
-        if let next = ValidateTestCases.transform(
-            result, parent: parent, context: context
-        ).as(ClassDeclSyntax.self) {
-            result = next
-        }
-    }
+    applyRule(
+        ValidateTestCases.self, to: &result,
+        parent: parent, context: context,
+        transform: ValidateTestCases.transform
+    )
 
     // RedundantFinal — strips redundant `final` from members of a `final`
     // class. Inlined from
@@ -126,14 +90,30 @@ func rewriteClassDecl(
         result = applyRedundantFinal(result, context: context)
     }
 
-    // Unported rules — tracked for sub-issue 4f. Audit-only:
-    //   - RedundantSwiftTestingSuite (instance state)
-    //   - NoForceTry / NoForceUnwrap (file-level pre-scan, instance state)
-    //   - WrapMultilineStatementBraces (no static transform)
-    _ = context.shouldFormat(RedundantSwiftTestingSuite.self, node: Syntax(result))
-    _ = context.shouldFormat(NoForceTry.self, node: Syntax(result))
-    _ = context.shouldFormat(NoForceUnwrap.self, node: Syntax(result))
-    _ = context.shouldFormat(WrapMultilineStatementBraces.self, node: Syntax(result))
+    // RedundantSwiftTestingSuite — strip a no-argument `@Suite` attribute
+    // when `import Testing` is present. Helpers in
+    // `RedundantSwiftTestingSuiteHelpers.swift`.
+    if context.shouldFormat(RedundantSwiftTestingSuite.self, node: Syntax(result)) {
+        result = redundantSwiftTestingSuiteRemoveSuite(
+            from: result, keyword: \.classKeyword, context: context
+        )
+    }
+
+    // NoForceTry — XCTestCase scope tracking happens in the generator-emitted
+    // `willEnter(_ ClassDecl, context:)` / `didExit(_ ClassDecl, context:)`
+    // hooks; no transform work needed here.
+
+    // NoForceUnwrap — XCTestCase scope tracking via generator-emitted
+    // `willEnter(_ ClassDecl)` / `didExit(_ ClassDecl)` hooks; no transform
+    // work needed here.
+
+    // WrapMultilineStatementBraces — wrap opening brace of a multiline
+    // statement onto its own line aligned with the closing brace.
+    applyRule(
+        WrapMultilineStatementBraces.self, to: &result,
+        parent: parent, context: context,
+        transform: WrapMultilineStatementBraces.transform
+    )
 
     return result
 }

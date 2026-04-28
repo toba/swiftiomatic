@@ -132,6 +132,26 @@ final class RedundantEscaping: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sen
         }
         return false
     }
+
+    // MARK: - Compact-pipeline static transforms
+
+    static func transform(
+        _ node: FunctionDeclSyntax,
+        parent: Syntax?,
+        context: Context
+    ) -> DeclSyntax {
+        _ = parent
+        return RedundantEscaping(context: context).visit(node)
+    }
+
+    static func transform(
+        _ node: InitializerDeclSyntax,
+        parent: Syntax?,
+        context: Context
+    ) -> DeclSyntax {
+        _ = parent
+        return RedundantEscaping(context: context).visit(node)
+    }
 }
 
 // MARK: - Escape Analysis

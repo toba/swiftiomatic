@@ -9,22 +9,24 @@ import SwiftSyntax
 /// `CompactStageOneRewriterGenerator.manuallyHandledNodeTypes`.
 func rewriteConditionElement(
     _ node: ConditionElementSyntax,
+    parent: Syntax?,
     context: Context
 ) -> ConditionElementSyntax {
     var result = node
-    let parent: Syntax? = nil
-    let nodeSyntax = Syntax(result)
-    _ = nodeSyntax
-
     // ExplicitNilCheck
     if context.shouldFormat(ExplicitNilCheck.self, node: Syntax(result)) {
         result = ExplicitNilCheck.transform(result, parent: parent, context: context)
     }
 
-    // NoParensAroundConditions — unported (legacy `SyntaxFormatRule.visit`
-    // override across multiple statement node types). Audit-only
-    // `shouldFormat` call preserves rule-mask gating; deferred to 4f.
-    _ = context.shouldFormat(NoParensAroundConditions.self, node: Syntax(result))
+    // NoParensAroundConditions — strips redundant parens around the
+    // expression form of a condition element. Helpers in
+    // `NoParensAroundConditionsHelpers.swift`.
+    if context.shouldFormat(NoParensAroundConditions.self, node: Syntax(result)),
+       case .expression(let condition) = result.condition,
+       let stripped = noParensMinimalSingleExpression(condition, context: context)
+    {
+        result.condition = .expression(stripped)
+    }
 
     return result
 }

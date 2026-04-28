@@ -41,6 +41,16 @@ final class NamedClosureParams: RewriteSyntaxRule<BasicRuleValue>, @unchecked Se
         }
         return super.visit(node)
     }
+
+    // MARK: - Compact-pipeline scope hooks
+
+    static func willEnter(_ node: ClosureExprSyntax, context: Context) {
+        namedClosureParamsPushClosure(node, context: context)
+    }
+
+    static func didExit(_: ClosureExprSyntax, context: Context) {
+        namedClosureParamsPopClosure(context: context)
+    }
 }
 
 extension Finding.Message {
