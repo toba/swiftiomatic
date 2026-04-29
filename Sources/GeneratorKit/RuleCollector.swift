@@ -244,15 +244,13 @@ package final class RuleCollector {
                 }
             }
 
-            // A rule is only useful if it visits or transforms or hooks at least one node.
-            // After Phase 4g, rules that only expose static `transform` / `willEnter` /
-            // `didExit` (no legacy `visit` overrides) are valid and must be picked up by
-            // the compact-pipeline dispatcher.
-            guard !visitedNodes.isEmpty
-                || !transformedNodes.isEmpty
-                || !willEnterNodes.isEmpty
-                || !didExitNodes.isEmpty
-            else { return nil }
+            // A rule with no visit / transform / willEnter / didExit methods is still
+            // a valid registration target. Some rules (e.g. `BlankLinesAroundMark`,
+            // `UppercaseAcronyms`) live entirely as inlined `private func apply...` in
+            // a merged `Rewrites/<Group>/<NodeType>.swift` file — the rule class only
+            // exists so configuration (key, group, defaultValue) is still registered.
+            // Keep registering them so `enableRule(named:)` and `shouldFormat` find
+            // them; they simply won't be wired into the compact-pipeline dispatcher.
 
             // Detect threshold-style config (conforms to ThresholdRuleValue) so
             // schema generation can pick the right base shape.

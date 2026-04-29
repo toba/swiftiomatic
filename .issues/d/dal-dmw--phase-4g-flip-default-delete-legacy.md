@@ -5,7 +5,7 @@ status: in-progress
 type: task
 priority: high
 created_at: 2026-04-28T15:50:43Z
-updated_at: 2026-04-29T03:13:11Z
+updated_at: 2026-04-29T03:36:57Z
 parent: ddi-wtv
 blocked_by:
     - 2sn-0al
@@ -143,3 +143,29 @@ Remaining `override func visit(_:)` cases require per-rule conversion (not bulk 
 - Real logic without a counterpart `static transform` (e.g. `FileHeader`, `UppercaseAcronyms`, `RedundantOverride`, `PreferEarlyExits`).
 - Rules with instance-state machines (`RedundantSelf`, `WrapMultilineStatementBraces`, `WrapSingleLineBodies`, `PreferEnvironmentEntry`, `CaseLet`).
 - Lint rules (`SyntaxLintRule` subclasses) — out of scope for this strip.
+
+
+
+## Update 2026-04-29 (continued, session 5) — RuleCollector fix + inlined-rule strip
+
+`RuleCollector.detectSyntaxRule` previously rejected rules with no `visit` / `transform` / `willEnter` / `didExit` methods (lines 251-255). That guard was incompatible with rules whose logic is fully inlined as `private func apply...` in a merged `Rewrites/<Group>/<NodeType>.swift` file: the rule class still needs registration so `Configuration.enableRule(named:)` and `Context.shouldFormat` can find it, but it has no visit-shaped methods left. Without registration, `Configuration.disableAllRules` skips it (no entry), `enableRule` no-ops (no entry), and `shouldFormat` falls through to `defaultIsActive` — the rule's compact-pipeline gate goes silent.
+
+Removed the empty-rule guard. RuleCollector now registers any class extending `RewriteSyntaxRule` / `LintSyntaxRule`, regardless of its method surface. Empty-rule registration is the new floor.
+
+### Stripped (174 deletions across 3 rule files)
+
+- `BlankLinesAroundMark` — `visit(_ TokenSyntax)` + 2 helpers (`findNewlinesBefore`, `findNewlinesAfter`) + 2 `Finding.Message` strings. The compact pipeline runs `applyBlankLinesAroundMark` from `Rewrites/Tokens/TokenRewrites.swift::rewriteToken`.
+- `UppercaseAcronyms` — `visit(_ TokenSyntax)` + 3 helpers (`capitalizeAcronyms`, `replaceAcronym`, `isAcronymBoundary`) + 1 `Finding.Message`. The compact pipeline runs `applyUppercaseAcronyms` from `TokenRewrites.swift`.
+- `NoSemicolons` — both `visit(_:)` overrides (`CodeBlockItemListSyntax` + `MemberBlockItemListSyntax`). The static `transform`/`willEnter` overloads + `removingSemicolons` helper handle compact-pipeline rewrite + diagnostics.
+
+### Verification
+
+- `xc-swift swift_diagnostics --no-include-lint` — Build succeeded, 13 warnings (unchanged baseline).
+- `BlankLinesAroundMarkTests | UppercaseAcronymsTests | NoSemicolons` filter: **28 pass**, all green.
+- Full suite: **3012 pass, 2 fail** (the 2 pre-existing `Layout/GuardStmtTests` pretty-printer-idempotency failures, unrelated).
+
+### What's still left in 4g
+
+- Rules with real per-rule logic in their override and no usable `static transform` (e.g. `FileHeader` — but it's also in the structural-pass list so its instance is invoked via `runCompactPipeline` directly; not a strip candidate).
+- Rules with multiple complex overrides + state machines (`RedundantSelf`, `WrapMultilineStatementBraces`, `WrapSingleLineBodies`, `PreferEnvironmentEntry`, `CaseLet`, `RedundantOverride`, `RedundantReturn`).
+- Lint rules (`SyntaxLintRule`) — out of scope.

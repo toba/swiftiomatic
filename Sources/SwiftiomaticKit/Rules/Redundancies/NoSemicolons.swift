@@ -96,14 +96,6 @@ final class NoSemicolons: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable
         return NodeType(newItems)
     }
 
-    override func visit(_ node: CodeBlockItemListSyntax) -> CodeBlockItemListSyntax {
-        nodeByRemovingSemicolons(from: node)
-    }
-
-    override func visit(_ node: MemberBlockItemListSyntax) -> MemberBlockItemListSyntax {
-        nodeByRemovingSemicolons(from: node)
-    }
-
     static func transform(
         _ node: CodeBlockItemListSyntax,
         parent: Syntax?,
