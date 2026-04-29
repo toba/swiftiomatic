@@ -109,7 +109,7 @@ final class NoSemicolons: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable
         parent: Syntax?,
         context: Context
     ) -> CodeBlockItemListSyntax {
-        Self.removingSemicolons(from: node, context: context)
+        Self.removingSemicolons(from: node, context: context, diagnose: false)
     }
 
     static func transform(
@@ -117,7 +117,17 @@ final class NoSemicolons: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable
         parent: Syntax?,
         context: Context
     ) -> MemberBlockItemListSyntax {
-        Self.removingSemicolons(from: node, context: context)
+        Self.removingSemicolons(from: node, context: context, diagnose: false)
+    }
+
+    // Diagnose against the pre-traversal (still-attached) node so finding
+    // source locations are accurate. The transform handles the rewrite only.
+    static func willEnter(_ node: CodeBlockItemListSyntax, context: Context) {
+        _ = Self.removingSemicolons(from: node, context: context, diagnose: true)
+    }
+
+    static func willEnter(_ node: MemberBlockItemListSyntax, context: Context) {
+        _ = Self.removingSemicolons(from: node, context: context, diagnose: true)
     }
 
     /// Static counterpart of `nodeByRemovingSemicolons` for the compact pipeline. Children have
@@ -125,7 +135,9 @@ final class NoSemicolons: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable
     fileprivate static func removingSemicolons<
         ItemType: SyntaxProtocol & WithSemicolonSyntax & Equatable,
         NodeType: SyntaxCollection
-    >(from node: NodeType, context: Context) -> NodeType where NodeType.Element == ItemType {
+    >(from node: NodeType, context: Context, diagnose: Bool = true) -> NodeType
+        where NodeType.Element == ItemType
+    {
         var newItems = Array(node)
         var pendingTrivia = Trivia()
 
@@ -153,10 +165,14 @@ final class NoSemicolons: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable
                 {
                     hasNextStatement = true
                     pendingTrivia = [.newlines(1)]
-                    Self.diagnose(.removeSemicolonAndMove, on: semicolon, context: context)
+                    if diagnose {
+                        Self.diagnose(.removeSemicolonAndMove, on: semicolon, context: context)
+                    }
                 } else {
                     hasNextStatement = false
-                    Self.diagnose(.removeSemicolon, on: semicolon, context: context)
+                    if diagnose {
+                        Self.diagnose(.removeSemicolon, on: semicolon, context: context)
+                    }
                 }
 
                 let trailingTrivia = newItem.trailingTrivia

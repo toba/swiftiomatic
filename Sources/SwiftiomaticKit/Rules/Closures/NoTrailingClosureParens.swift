@@ -21,6 +21,27 @@ import SwiftSyntax
 final class NoTrailingClosureParens: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable {
     override class var group: ConfigurationGroup? { .closures }
 
+    // Diagnose against the pre-traversal node so finding source locations
+    // are accurate. The compact-pipeline rewrite (applyNoTrailingClosureParens
+    // in Rewrites/Exprs/FunctionCallExpr.swift) handles the rewrite only.
+    static func willEnter(_ node: FunctionCallExprSyntax, context: Context) {
+        guard node.arguments.isEmpty,
+              node.trailingClosure != nil,
+              let leftParen = node.leftParen,
+              let rightParen = node.rightParen,
+              !leftParen.trailingTrivia.hasAnyComments,
+              !rightParen.leadingTrivia.hasAnyComments,
+              let name = node.calledExpression.lastToken(viewMode: .sourceAccurate),
+              !node.calledExpression.is(FunctionCallExprSyntax.self),
+              !node.calledExpression.is(SubscriptCallExprSyntax.self)
+        else { return }
+        Self.diagnose(
+            .removeEmptyTrailingParentheses(name: "\(name.trimmedDescription)"),
+            on: leftParen,
+            context: context
+        )
+    }
+
     override func visit(_ node: FunctionCallExprSyntax) -> ExprSyntax {
         guard node.arguments.isEmpty else { return super.visit(node) }
 

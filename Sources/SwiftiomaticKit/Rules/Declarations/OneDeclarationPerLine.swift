@@ -194,6 +194,38 @@ final class OneDeclarationPerLine: RewriteSyntaxRule<BasicRuleValue>, @unchecked
 
     // MARK: - Static transform (compact pipeline)
 
+    // Diagnose against the pre-traversal node so finding source locations
+    // are accurate. The transform handles the rewrite only.
+    static func willEnter(_ node: EnumDeclSyntax, context: Context) {
+        for member in node.memberBlock.members {
+            guard let caseDecl = member.decl.as(EnumCaseDeclSyntax.self),
+                  caseDecl.elements.count > 1
+            else { continue }
+            for element in caseDecl.elements {
+                if element.parameterClause != nil || element.rawValue != nil {
+                    Self.diagnose(
+                        .moveAssociatedOrRawValueCase(name: element.name.text),
+                        on: element,
+                        context: context
+                    )
+                }
+            }
+        }
+    }
+
+    static func willEnter(_ node: CodeBlockItemListSyntax, context: Context) {
+        for codeBlockItem in node {
+            guard let varDecl = codeBlockItem.item.as(VariableDeclSyntax.self),
+                  varDecl.bindings.count > 1
+            else { continue }
+            Self.diagnose(
+                .onlyOneVariableDeclaration(specifier: varDecl.bindingSpecifier.text),
+                on: varDecl,
+                context: context
+            )
+        }
+    }
+
     static func transform(
         _ node: EnumDeclSyntax,
         parent: Syntax?,
@@ -215,11 +247,7 @@ final class OneDeclarationPerLine: RewriteSyntaxRule<BasicRuleValue>, @unchecked
 
             for element in caseDecl.elements {
                 if element.parameterClause != nil || element.rawValue != nil {
-                    Self.diagnose(
-                        .moveAssociatedOrRawValueCase(name: element.name.text),
-                        on: element,
-                        context: context
-                    )
+                    // Diagnose emitted in willEnter against the pre-traversal node.
 
                     if let caseDeclForCollectedElements = collector.makeCaseDeclAndReset() {
                         var newMember = member
@@ -270,11 +298,7 @@ final class OneDeclarationPerLine: RewriteSyntaxRule<BasicRuleValue>, @unchecked
                 continue
             }
 
-            Self.diagnose(
-                .onlyOneVariableDeclaration(specifier: varDecl.bindingSpecifier.text),
-                on: varDecl,
-                context: context
-            )
+            // Diagnose emitted in willEnter against the pre-traversal node.
 
             // Children already visited by the combined rewriter — trust the post-traversal input.
             var splitter = VariableDeclSplitter {

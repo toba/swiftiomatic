@@ -147,7 +147,7 @@ private func applyNoTrailingClosureParens(
           let rightParen = node.rightParen,
           !leftParen.trailingTrivia.hasAnyComments,
           !rightParen.leadingTrivia.hasAnyComments,
-          let name = node.calledExpression.lastToken(viewMode: .sourceAccurate),
+          node.calledExpression.lastToken(viewMode: .sourceAccurate) != nil,
           // Keep parens in curried calls so the trailing closure doesn't
           // associate with the inner call.
           !node.calledExpression.is(FunctionCallExprSyntax.self),
@@ -157,11 +157,8 @@ private func applyNoTrailingClosureParens(
     }
     _ = trailingClosure  // referenced for the early-out guard
 
-    NoTrailingClosureParens.diagnose(
-        .removeEmptyTrailingParentheses(name: "\(name.trimmedDescription)"),
-        on: leftParen,
-        context: context
-    )
+    // Diagnose emitted in `NoTrailingClosureParens.willEnter` against the
+    // pre-traversal node so the source location is correct.
 
     var rewrittenCalledExpr = node.calledExpression
     rewrittenCalledExpr.trailingTrivia = [.spaces(1)]

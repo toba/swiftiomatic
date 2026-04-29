@@ -11,7 +11,8 @@ import SwiftSyntax
 /// and `commentAsBlankLine` configuration flags.
 func blankLinesBeforeControlFlowInsertBlankLines(
     in items: [CodeBlockItemSyntax],
-    context: Context
+    context: Context,
+    diagnose: Bool = false
 ) -> [CodeBlockItemSyntax]? {
     guard items.count > 1 else { return nil }
 
@@ -28,11 +29,13 @@ func blankLinesBeforeControlFlowInsertBlankLines(
         if braceIsBlank, endsSolitaryBrace(items[i - 1]) { continue }
         if commentIsBlank, item.leadingTrivia.startsWithComment { continue }
 
-        BlankLinesBeforeControlFlowBlocks.diagnose(
-            .insertBlankLineBeforeControlFlow,
-            on: items[i].item,
-            context: context
-        )
+        if diagnose {
+            BlankLinesBeforeControlFlowBlocks.diagnose(
+                .insertBlankLineBeforeControlFlow,
+                on: items[i].item,
+                context: context
+            )
+        }
         var next = item
         next.leadingTrivia = .newline + item.leadingTrivia
         statements[i] = next

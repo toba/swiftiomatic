@@ -148,9 +148,7 @@ private func applySwitchCaseIndentation(
                 let currentCaseIndent = switchCase.leadingTrivia.indentation
 
                 if currentCaseIndent != expectedCaseIndent {
-                    let message: Finding.Message =
-                        style == .flush ? .alignCaseWithSwitch : .indentCaseFromSwitch
-                    SwitchCaseIndentation.diagnose(message, on: switchCase.label, context: context)
+                    // Diagnose emitted in willEnter against the pre-traversal node.
                     switchCase = reindentCase(
                         switchCase,
                         caseIndent: expectedCaseIndent,

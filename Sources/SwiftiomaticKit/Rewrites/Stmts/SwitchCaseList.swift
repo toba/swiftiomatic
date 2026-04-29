@@ -26,9 +26,27 @@ func rewriteSwitchCaseList(
     return result
 }
 
+/// Pre-traversal scan used by `NoFallThroughOnlyCases.willEnter` to emit
+/// findings against the original (still-attached) node so source locations
+/// are accurate.
+func noFallThroughOnlyCasesDiagnoseInPlace(
+    _ node: SwitchCaseListSyntax,
+    context: Context
+) {
+    _ = applyNoFallThroughOnlyCasesImpl(node, context: context, diagnose: true)
+}
+
 private func applyNoFallThroughOnlyCases(
     _ node: SwitchCaseListSyntax,
     context: Context
+) -> SwitchCaseListSyntax {
+    applyNoFallThroughOnlyCasesImpl(node, context: context, diagnose: false)
+}
+
+private func applyNoFallThroughOnlyCasesImpl(
+    _ node: SwitchCaseListSyntax,
+    context: Context,
+    diagnose: Bool
 ) -> SwitchCaseListSyntax {
     var newChildren: [SwitchCaseListSyntax.Element] = []
     var fallThroughOnlyCases: [SwitchCaseSyntax] = []
@@ -57,12 +75,20 @@ private func applyNoFallThroughOnlyCases(
             if canMergeWithPreviousCases(switchCase) {
                 newChildren.append(
                     .switchCase(
-                        mergedCases(fallThroughOnlyCases + [switchCase], context: context)
+                        mergedCases(
+                            fallThroughOnlyCases + [switchCase],
+                            context: context,
+                            diagnose: diagnose
+                        )
                     )
                 )
             } else {
                 newChildren.append(
-                    .switchCase(mergedCases(fallThroughOnlyCases, context: context))
+                    .switchCase(
+                        mergedCases(
+                            fallThroughOnlyCases, context: context, diagnose: diagnose
+                        )
+                    )
                 )
                 newChildren.append(.switchCase(switchCase))
             }
@@ -125,7 +151,8 @@ private func isMergeableFallThroughOnly(_ switchCase: SwitchCaseSyntax) -> Bool 
 
 private func mergedCases(
     _ cases: [SwitchCaseSyntax],
-    context: Context
+    context: Context,
+    diagnose: Bool = false
 ) -> SwitchCaseSyntax {
     precondition(!cases.isEmpty, "Must have at least one case to merge")
     if cases.count == 1 { return cases.first! }
@@ -134,7 +161,9 @@ private func mergedCases(
     let labels = cases.lazy.compactMap { $0.label.as(SwitchCaseLabelSyntax.self) }
 
     for label in labels.dropLast() {
-        NoFallThroughOnlyCases.diagnose(.collapseCase, on: label, context: context)
+        if diagnose {
+            NoFallThroughOnlyCases.diagnose(.collapseCase, on: label, context: context)
+        }
 
         newCaseItems.append(contentsOf: label.caseItems.dropLast())
 

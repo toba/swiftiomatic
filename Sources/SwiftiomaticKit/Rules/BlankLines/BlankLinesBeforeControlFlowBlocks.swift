@@ -17,6 +17,26 @@ final class BlankLinesBeforeControlFlowBlocks: RewriteSyntaxRule<BasicRuleValue>
     override static var group: ConfigurationGroup? { .blankLines }
     override static var defaultValue: BasicRuleValue { .init(rewrite: false, lint: .no) }
 
+    // Diagnose against the pre-traversal (still-attached) node so finding
+    // source locations are accurate. The compact-pipeline rewrite (in
+    // `Rewrites/Stmts/BlankLinesBeforeControlFlowHelpers.swift`) handles
+    // the rewrite without diagnose.
+    static func willEnter(_ node: CodeBlockSyntax, context: Context) {
+        _ = blankLinesBeforeControlFlowInsertBlankLines(
+            in: Array(node.statements),
+            context: context,
+            diagnose: true
+        )
+    }
+
+    static func willEnter(_ node: SwitchCaseSyntax, context: Context) {
+        _ = blankLinesBeforeControlFlowInsertBlankLines(
+            in: Array(node.statements),
+            context: context,
+            diagnose: true
+        )
+    }
+
     override func visit(_ node: CodeBlockSyntax) -> CodeBlockSyntax {
         let originalItems = Array(node.statements)
         let visited = super.visit(node)

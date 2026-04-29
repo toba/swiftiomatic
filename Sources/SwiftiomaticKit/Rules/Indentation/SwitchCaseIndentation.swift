@@ -22,6 +22,39 @@ final class SwitchCaseIndentation: RewriteSyntaxRule<SwitchCaseIndentationConfig
 
     private var style: SwitchCaseIndentationConfiguration.Style { ruleConfig.style }
 
+    // Diagnose against the pre-traversal node so finding source locations
+    // are accurate. The compact-pipeline rewrite (in
+    // `Rewrites/Stmts/SwitchExpr.swift::applySwitchCaseIndentation`) handles
+    // the rewrite without diagnose.
+    static func willEnter(_ node: SwitchExprSyntax, context: Context) {
+        let style = context.configuration[Self.self].style
+        let switchIndent = Self.lineIndentationOf(node.switchKeyword)
+        let indent: String =
+            switch context.configuration[IndentationSetting.self] {
+                case .spaces(let count): String(repeating: " ", count: count)
+                case .tabs(let count): String(repeating: "\t", count: count)
+            }
+
+        let expectedCaseIndent: String
+        switch style {
+            case .flush: expectedCaseIndent = switchIndent
+            case .indented: expectedCaseIndent = switchIndent + indent
+        }
+
+        for caseListItem in node.cases {
+            switch caseListItem {
+                case .switchCase(let switchCase):
+                    let currentCaseIndent = switchCase.leadingTrivia.indentation
+                    if currentCaseIndent != expectedCaseIndent {
+                        let message: Finding.Message = style == .flush
+                            ? .alignCaseWithSwitch : .indentCaseFromSwitch
+                        Self.diagnose(message, on: switchCase.label, context: context)
+                    }
+                case .ifConfigDecl: break
+            }
+        }
+    }
+
     override func visit(_ node: SwitchExprSyntax) -> ExprSyntax {
         let visited = super.visit(node)
         guard var switchExpr = visited.as(SwitchExprSyntax.self) else { return visited }
@@ -162,6 +195,19 @@ final class SwitchCaseIndentation: RewriteSyntaxRule<SwitchCaseIndentationConfig
         case .spaces(let count): return String(repeating: " ", count: count)
         case .tabs(let count): return String(repeating: "\t", count: count)
         }
+    }
+
+    /// Static counterpart of `lineIndentation` used by the compact-pipeline
+    /// `willEnter`. Same algorithm, callable from the static context.
+    fileprivate static func lineIndentationOf(_ token: TokenSyntax) -> String {
+        var current = token
+        while !current.leadingTrivia.containsNewlines {
+            guard let prev = current.previousToken(viewMode: .sourceAccurate) else {
+                return ""
+            }
+            current = prev
+        }
+        return current.leadingTrivia.indentation
     }
 
     /// Returns the indentation string of the line on which `token` resides.

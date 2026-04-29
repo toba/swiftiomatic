@@ -21,6 +21,14 @@ import SwiftSyntax
 final class NoFallThroughOnlyCases: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable {
     override class var group: ConfigurationGroup? { .redundancies }
 
+    // Diagnose against the pre-traversal node so finding source locations
+    // are accurate. The compact-pipeline rewrite (in
+    // `Rewrites/Stmts/SwitchCaseList.swift::applyNoFallThroughOnlyCases`)
+    // handles the rewrite without diagnose.
+    static func willEnter(_ node: SwitchCaseListSyntax, context: Context) {
+        noFallThroughOnlyCasesDiagnoseInPlace(node, context: context)
+    }
+
     override func visit(_ node: SwitchCaseListSyntax) -> SwitchCaseListSyntax {
         var newChildren: [SwitchCaseListSyntax.Element] = []
         var fallThroughOnlyCases: [SwitchCaseSyntax] = []
