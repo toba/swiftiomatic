@@ -26,13 +26,6 @@ final class PreferAngleBracketExtensions: RewriteSyntaxRule<BasicRuleValue>, @un
     "Dictionary": ["Key", "Value"],
   ]
 
-  override func visit(_ node: ExtensionDeclSyntax) -> DeclSyntax {
-    let parent = Syntax(node).parent
-    let visited = super.visit(node)
-    guard let concrete = visited.as(ExtensionDeclSyntax.self) else { return visited }
-    return Self.transform(concrete, parent: parent, context: context)
-  }
-
   static func transform(
     _ visited: ExtensionDeclSyntax,
     parent: Syntax?,

@@ -40,13 +40,6 @@ final class RedundantTypedThrows: RewriteSyntaxRule<BasicRuleValue>, @unchecked 
   }
 
   // Function types: `() throws(any Error) -> Void`
-  override func visit(_ node: FunctionTypeSyntax) -> TypeSyntax {
-    let parent = Syntax(node).parent
-    let visited = super.visit(node)
-    guard let concrete = visited.as(FunctionTypeSyntax.self) else { return visited }
-    return Self.transform(concrete, parent: parent, context: context)
-  }
-
   static func transform(
     _ funcType: FunctionTypeSyntax,
     parent: Syntax?,

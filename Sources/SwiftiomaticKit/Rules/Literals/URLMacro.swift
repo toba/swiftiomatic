@@ -49,14 +49,6 @@ final class URLMacro: RewriteSyntaxRule<URLMacroConfiguration>, @unchecked Senda
         }
     }
 
-    // MARK: - Legacy delegators
-
-    override func visit(_ node: SourceFileSyntax) -> SourceFileSyntax {
-        Self.willEnter(node, context: context)
-        let visited = super.visit(node)
-        return Self.transform(visited, parent: nil, context: context)
-    }
-
     // MARK: - File-level: add import after processing children
 
     static func transform(

@@ -14,14 +14,6 @@ final class NoVoidTernary: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendabl
     override class var group: ConfigurationGroup? { .idioms }
     override class var defaultValue: BasicRuleValue { .init(rewrite: false, lint: .warn) }
 
-    override func visit(_ node: TernaryExprSyntax) -> ExprSyntax {
-        let parent = Syntax(node).parent
-        if let concrete = super.visit(node).as(TernaryExprSyntax.self) {
-            return Self.transform(concrete, parent: parent, context: context)
-        }
-        return super.visit(node)
-    }
-
     static func transform(
         _ node: TernaryExprSyntax,
         parent: Syntax?,

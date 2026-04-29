@@ -12,12 +12,6 @@ import SwiftSyntax
 final class NoParensInClosureParams: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable {
     override class var group: ConfigurationGroup? { .closures }
 
-    override func visit(_ node: ClosureSignatureSyntax) -> ClosureSignatureSyntax {
-        super.visit(
-            Self.transform(node, parent: Syntax(node).parent, context: context)
-        )
-    }
-
     static func transform(
         _ node: ClosureSignatureSyntax,
         parent: Syntax?,

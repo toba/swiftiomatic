@@ -15,12 +15,6 @@ final class ACLConsistency: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendab
     override class var group: ConfigurationGroup? { .access }
     override class var defaultValue: BasicRuleValue { .init(rewrite: false, lint: .warn) }
 
-    override func visit(_ node: DeclModifierSyntax) -> DeclModifierSyntax {
-        super.visit(
-            Self.transform(node, parent: Syntax(node).parent, context: context)
-        )
-    }
-
     static func transform(
         _ node: DeclModifierSyntax,
         parent: Syntax?,

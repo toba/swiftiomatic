@@ -50,10 +50,6 @@ final class RedundantBackticks: RewriteSyntaxRule<BasicRuleValue>, @unchecked Se
     /// Identifiers that should never have backticks removed.
     private static let neverUnescaped: Set<String> = ["_", "$"]
 
-    override func visit(_ token: TokenSyntax) -> TokenSyntax {
-        Self.transform(token, parent: Syntax(token).parent, context: context)
-    }
-
     static func transform(
         _ token: TokenSyntax,
         parent: Syntax?,

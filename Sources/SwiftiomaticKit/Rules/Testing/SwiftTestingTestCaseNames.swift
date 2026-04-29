@@ -50,13 +50,6 @@ final class SwiftTestingTestCaseNames: RewriteSyntaxRule<BasicRuleValue>, @unche
         }
     }
 
-    // MARK: - Legacy delegators
-
-    override func visit(_ node: SourceFileSyntax) -> SourceFileSyntax {
-        Self.willEnter(node, context: context)
-        return super.visit(node)
-    }
-
     // MARK: - Static transform
 
     static func transform(

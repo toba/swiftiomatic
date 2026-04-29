@@ -11,10 +11,6 @@ final class WrapSingleLineComments: RewriteSyntaxRule<BasicRuleValue>, @unchecke
     override class var group: ConfigurationGroup? { .wrap }
     override class var defaultValue: BasicRuleValue { .init(rewrite: false, lint: .no) }
 
-    override func visit(_ token: TokenSyntax) -> TokenSyntax {
-        Self.transform(token, parent: Syntax(token).parent, context: context)
-    }
-
     static func transform(
         _ token: TokenSyntax,
         parent: Syntax?,

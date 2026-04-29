@@ -41,14 +41,6 @@ final class RedundantAccessControl: RewriteSyntaxRule<BasicRuleValue>, @unchecke
         state.analyzed = true
     }
 
-    // MARK: - Legacy delegators
-
-    override func visit(_ node: SourceFileSyntax) -> SourceFileSyntax {
-        Self.willEnter(node, context: context)
-        let visited = super.visit(node)
-        return Self.transform(visited, parent: nil, context: context)
-    }
-
     // MARK: - Static transforms (per-decl)
 
     static func transform(

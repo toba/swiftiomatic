@@ -12,10 +12,6 @@ import SwiftSyntax
 final class FormatSpecialComments: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable {
     override static var group: ConfigurationGroup? { .comments }
 
-    override func visit(_ token: TokenSyntax) -> TokenSyntax {
-        Self.transform(token, parent: Syntax(token).parent, context: context)
-    }
-
     static func transform(
         _ token: TokenSyntax,
         parent: Syntax?,

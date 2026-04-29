@@ -19,13 +19,6 @@ final class RedundantStaticSelf: RewriteSyntaxRule<BasicRuleValue>, @unchecked S
 
   override class var defaultValue: BasicRuleValue { BasicRuleValue(rewrite: false, lint: .no) }
 
-  override func visit(_ node: MemberAccessExprSyntax) -> ExprSyntax {
-    let parent = Syntax(node).parent
-    let visited = super.visit(node)
-    guard let concrete = visited.as(MemberAccessExprSyntax.self) else { return visited }
-    return Self.transform(concrete, parent: parent, context: context)
-  }
-
   static func transform(
     _ memberAccess: MemberAccessExprSyntax,
     parent: Syntax?,

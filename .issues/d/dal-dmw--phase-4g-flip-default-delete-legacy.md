@@ -5,7 +5,7 @@ status: in-progress
 type: task
 priority: high
 created_at: 2026-04-28T15:50:43Z
-updated_at: 2026-04-29T02:51:59Z
+updated_at: 2026-04-29T03:03:53Z
 parent: ddi-wtv
 blocked_by:
     - 2sn-0al
@@ -98,3 +98,26 @@ Also dropped a stray blank line in `Sources/SwiftiomaticKit/Syntax/Rewriter/Comb
 - More complex `visit` overrides remain across rules with pre-recursion state, conditional gating, or unique node-kind widening. These need per-rule conversion, not bulk strip.
 - Delete `RewriteSyntaxRule` base class entirely.
 - Update `RuleCollector` to drop legacy rewrite-rule detection paths.
+
+
+
+## Update 2026-04-29 (continued, session 3) — third strip pass
+
+Stripped 17 more dead-shell `override func visit(_:)` delegates across 17 rule files (111 deletions). Two new patterns surfaced beyond the simple cast-back dispatch:
+
+1. **willEnter delegators** — overrides whose body was just `Self.willEnter(node, context:); return super.visit(node)`. The dispatcher already calls `<Rule>.willEnter` before `super.visit` for every registered rule, so these are dead. Stripped from `ValidateTestCases`, `TestSuiteAccessControl`, `SwiftTestingTestCaseNames`.
+2. **willEnter + transform combo** — overrides whose body was `Self.willEnter(node, context:); let visited = super.visit(node); return Self.transform(visited, parent: nil, context:)`. Both halves are wired up by the compact pipeline (willEnter via the dispatcher, transform via `rewriteSourceFile` in `Rewrites/Files/SourceFile.swift`). Stripped from `RedundantAccessControl`, `URLMacro`.
+
+Plus the usual cast-back/widening dispatch shells: `RedundantTypedThrows`, `RedundantStaticSelf`, `RedundantInit`, `NoVoidTernary`, `RedundantBackticks`, `WrapSingleLineComments`, `FormatSpecialComments`, `PreferUnavailable`, `NoYodaConditions`, `PreferAngleBracketExtensions`, plus the `super.visit(transform(node))` form (transform-then-recurse, where transform examines parent chain only) in `NoParensInClosureParams` and `ACLConsistency`.
+
+### Verification
+
+- `xc-swift swift_diagnostics --no-include-lint` — Build succeeded, 14 warnings (unchanged baseline).
+- Full suite: **3012 pass, 2 fail** (the 2 pre-existing `Layout/GuardStmtTests` pretty-printer-idempotency failures, unrelated).
+
+### What's still left in 4g
+
+Remaining `override func visit(_:)` cases in rule files require per-rule analysis:
+- Real logic inside the override (e.g. `PreferExplicitFalse`, `CollapseSimpleIfElse`, `CollapseSimpleEnums`, `RedundantOverride`).
+- Rules with state machines maintained on the instance (e.g. `RedundantSelf`, `WrapMultilineStatementBraces`, `WrapSingleLineBodies`, `PreferEnvironmentEntry`).
+- Lint rules (`SyntaxLintRule` subclasses) — not part of this strip; these legitimately drive their own traversal.

@@ -14,13 +14,6 @@ import SwiftSyntax
 final class NoYodaConditions: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable {
     override class var group: ConfigurationGroup? { .conditions }
 
-    override func visit(_ node: InfixOperatorExprSyntax) -> ExprSyntax {
-        let parent = Syntax(node).parent
-        let visited = super.visit(node)
-        guard let infix = visited.as(InfixOperatorExprSyntax.self) else { return visited }
-        return Self.transform(infix, parent: parent, context: context)
-    }
-
     static func transform(
         _ node: InfixOperatorExprSyntax,
         parent: Syntax?,

@@ -25,13 +25,6 @@ final class TestSuiteAccessControl: RewriteSyntaxRule<BasicRuleValue>, @unchecke
         state.framework = detectTestFramework(in: node)
     }
 
-    // MARK: - Legacy delegators
-
-    override func visit(_ node: SourceFileSyntax) -> SourceFileSyntax {
-        Self.willEnter(node, context: context)
-        return super.visit(node)
-    }
-
     // MARK: - Static transforms
 
     static func transform(

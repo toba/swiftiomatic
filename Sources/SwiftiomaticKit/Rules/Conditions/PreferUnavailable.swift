@@ -14,13 +14,6 @@ final class PreferUnavailable: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sen
     override class var group: ConfigurationGroup? { .conditions }
     override class var defaultValue: BasicRuleValue { .init(rewrite: true, lint: .warn) }
 
-    override func visit(_ node: IfExprSyntax) -> ExprSyntax {
-        let parent = Syntax(node).parent
-        let visited = super.visit(node)
-        guard let ifExpr = visited.as(IfExprSyntax.self) else { return visited }
-        return Self.transform(ifExpr, parent: parent, context: context)
-    }
-
     static func transform(
         _ node: IfExprSyntax,
         parent: Syntax?,
