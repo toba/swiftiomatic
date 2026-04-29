@@ -5,7 +5,7 @@ status: in-progress
 type: task
 priority: high
 created_at: 2026-04-28T15:50:43Z
-updated_at: 2026-04-29T04:12:24Z
+updated_at: 2026-04-29T04:22:25Z
 parent: ddi-wtv
 blocked_by:
     - 2sn-0al
@@ -226,3 +226,25 @@ Stripped 5 more rule files of dead-shell instance `override func visit(_:)` over
 - Fresh-instance pattern rules (`PreferShorthandTypeNames`, `NestedCallLayout`) — the override IS the rewrite, called via `<Rule>(context:).visit(node)` from `static transform`. Cannot be stripped without first inlining the visit body into a static helper.
 - `WrapTernary` — kept until layout test harness is retargeted.
 - Structural-pass rules — out of scope for stage-1 strip.
+
+
+
+## Update 2026-04-29 (continued, session 8) — eighth strip pass
+
+Stripped 5 more rule files of dead-shell instance `override func visit(_:)` overrides + their orphan instance helpers and `Finding.Message` extensions (326 deletions). All inlined rules whose compact-pipeline path lives in the merged `Rewrites/<Group>/<NodeType>.swift` files.
+
+### Stripped
+
+- **NoParensAroundConditions** — 8 `visit(_:)` overrides (IfExpr, ConditionElement, GuardStmt, SwitchExpr, RepeatStmt, WhileStmt, ReturnStmt, InitializerClause) + 2 instance helpers (`fixKeywordTrailingTrivia`, `minimalSingleExpression`) + the file-scope `removeParensAroundExpression` Finding extension. Compact path: 5 `static willEnter` overloads (kept) drive diagnostics + `noParensMinimalSingleExpression` / `noParensFixKeywordTrailingTrivia` helpers in `Rewrites/Stmts/NoParensAroundConditionsHelpers.swift` perform the rewrites across IfExpr/GuardStmt/WhileStmt/SwitchExpr/RepeatStmt/ReturnStmt/InitializerClause/ConditionElement.
+- **RedundantSwiftTestingSuite** — 5 `visit(_:)` overrides (ImportDecl, StructDecl, ClassDecl, EnumDecl, ActorDecl) + `importsTesting` instance var + 2 helpers (`removeRedundantSuite`, `isRedundant`) + file-scope `removeRedundantSuite` Finding extension. Compact path: `RedundantSwiftTestingSuiteHelpers.swift` (`Context.ruleState` for the import flag + `redundantSwiftTestingSuiteRemoveSuite` helper) called from 5 `Decls/<Type>.swift` rewrite files.
+- **RedundantFinal** — `visit(_ ClassDeclSyntax)` + `removeFinal` instance helper + file-scope `removeFinal` Finding extension. Compact path: `applyRedundantFinal` + `removeFinalFromMember` in `Rewrites/Decls/ClassDecl.swift` (own fileprivate Finding.Message).
+- **BlankLinesAfterGuardStatements** — `visit(_ CodeBlockSyntax)` + 2 file-scope Finding messages. Compact path: `applyBlankLinesAfterGuardStatements` in `Rewrites/Stmts/CodeBlock.swift`.
+- **BlankLinesAfterSwitchCase** — `visit(_ SwitchExprSyntax)` + 2 file-scope Finding messages. Compact path: `applyBlankLinesAfterSwitchCase` in `Rewrites/Stmts/SwitchExpr.swift`.
+
+### Verification
+
+- `xc-swift swift_diagnostics --no-include-lint` — Build succeeded, 13 warnings (unchanged baseline).
+- Targeted regression filter (`NoParensAroundConditions|RedundantSwiftTestingSuite|RedundantFinal|BlankLinesAfterGuard|BlankLinesAfterSwitchCase`): **62 pass**, all green.
+- Full suite: **3012 pass, 2 fail** (the 2 pre-existing `Layout/GuardStmtTests` pretty-printer-idempotency failures, unrelated).
+
+`override func visit` total in `Sources/SwiftiomaticKit/Rules/`: **276** (down from 292 at session start).
