@@ -33,6 +33,12 @@ func rewriteClassDecl(
     )
 
     applyRule(
+        PreferFinalClasses.self, to: &result,
+        parent: parent, context: context,
+        transform: PreferFinalClasses.transform
+    )
+
+    applyRule(
         PreferStaticOverClassFunc.self, to: &result,
         parent: parent, context: context,
         transform: PreferStaticOverClassFunc.transform

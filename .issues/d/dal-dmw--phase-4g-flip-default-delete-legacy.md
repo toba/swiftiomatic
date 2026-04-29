@@ -5,7 +5,7 @@ status: in-progress
 type: task
 priority: high
 created_at: 2026-04-28T15:50:43Z
-updated_at: 2026-04-29T05:00:46Z
+updated_at: 2026-04-29T05:09:58Z
 parent: ddi-wtv
 blocked_by:
     - 2sn-0al
@@ -331,3 +331,31 @@ Remaining 21 `RewriteSyntaxRule` files with `override func visit` need actual po
 - **State-machine rules** — `RedundantSelf` (22), `WrapMultilineStatementBraces` (16), `NoForceUnwrap` (11), `WrapSingleLineBodies` (already done in session 10).
 - **Structural-pass rules** (out of scope for stage-1 strip; run as ordered `SyntaxRewriter` instances in stage 2) — `SortImports`, `SortTypeAliases`, `SortSwitchCases`, `SortDeclarations`, `ExtensionAccessLevel`, `FileScopedDeclarationPrivacy`, `BlankLinesBetweenScopes`, `BlankLinesAfterImports`, `FileHeader`, `CaseLet` (the inner private `BindIdentifiersRewriter`/`UnbindIdentifiersRewriter` are infrastructure, not the rule's visit).
 - `WrapTernary` — kept until layout test harness retargeted.
+
+
+
+## Update 2026-04-29 (continued, session 12) — port PreferFinalClasses
+
+Ported **PreferFinalClasses** into the compact pipeline (file-state-bearing rule with two visit overrides). 256 → 253 instance overrides.
+
+### Changes
+
+- **Created** `Sources/SwiftiomaticKit/Rewrites/Decls/PreferFinalClassesHelpers.swift`:
+  - `PreferFinalClassesState` (ref class with `subclassedNames: Set<String>`).
+  - `preferFinalClassesCollect(_ SourceFileSyntax, context:)` — pre-scans the file for class names appearing in inheritance clauses and stores them in `Context.ruleState`.
+  - `applyPreferFinalClasses(_ ClassDeclSyntax, context:)` — the rewrite (gates on state, modifiers, name, and comment heuristics; adds `final`; converts `open` → `public` on members).
+  - All instance helpers (`commentMentionsSubclassing`, `convertOpenToPublic`, `replaceOpenModifier`, `openToPublic`) lifted to file-private free functions.
+- **Stripped** `Sources/SwiftiomaticKit/Rules/Access/PreferFinalClasses.swift` to a 30-line shell with `static willEnter(_ SourceFileSyntax, context:)` (calls `preferFinalClassesCollect`) and `static transform(_ ClassDeclSyntax, parent:context:) -> DeclSyntax` (calls `applyPreferFinalClasses`). Removed the `subclassedNames` instance var, both `override func visit` methods, the four instance helpers, and the file-scope `preferFinalClass` Finding extension (moved to the helpers file).
+- **Wired** `applyRule(PreferFinalClasses.self, ...)` into `Rewrites/Decls/ClassDecl.swift::rewriteClassDecl` (between `ModifiersOnSameLine` and `PreferStaticOverClassFunc`). Generator picks up the new `static willEnter(_ SourceFileSyntax, context:)` automatically — confirmed in `CompactStageOneRewriter+Generated.swift:926`.
+
+### Verification
+
+- `xc-swift swift_diagnostics --no-include-lint` — Build succeeded, 13 warnings (unchanged baseline).
+- `PreferFinalClassesTests`: **30 pass**, all green.
+- Full suite: **3012 pass, 2 fail** (the 2 pre-existing `Layout/GuardStmtTests` pretty-printer-idempotency failures, unrelated).
+
+`override func visit` total in `Sources/SwiftiomaticKit/Rules/`: **253** (down from 255 at session start; net 2 instance overrides gone — `visit(_ SourceFileSyntax)` and `visit(_ ClassDeclSyntax)`).
+
+### Pattern reused
+
+`PreferFinalClassesState` follows the **`RedundantSwiftTestingSuiteState`** template (file-level state populated by a SourceFile pre-scan, consumed by per-decl transforms). The pre-scan helper differs in that it walks the entire syntax tree at SourceFile-time to populate the set; the per-decl transform reads the populated state without touching it. No `didExit` needed because state is file-scoped, not stack-based.
