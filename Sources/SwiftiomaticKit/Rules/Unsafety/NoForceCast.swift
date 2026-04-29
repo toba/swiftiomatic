@@ -13,17 +13,4 @@ import SwiftSyntax
 final class NoForceCast: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable {
     override class var group: ConfigurationGroup? { .unsafety }
     override class var defaultValue: BasicRuleValue { .init(rewrite: false, lint: .warn) }
-
-    override func visit(_ node: AsExprSyntax) -> ExprSyntax {
-        if node.questionOrExclamationMark?.tokenKind == .exclamationMark {
-            diagnose(.doNotForceCast(name: node.type.trimmedDescription), on: node.asKeyword)
-        }
-        return super.visit(node)
-    }
-}
-
-extension Finding.Message {
-    fileprivate static func doNotForceCast(name: String) -> Finding.Message {
-        "do not force cast to '\(name)'"
-    }
 }

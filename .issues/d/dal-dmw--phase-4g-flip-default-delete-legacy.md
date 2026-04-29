@@ -5,7 +5,7 @@ status: in-progress
 type: task
 priority: high
 created_at: 2026-04-28T15:50:43Z
-updated_at: 2026-04-29T04:22:25Z
+updated_at: 2026-04-29T04:34:31Z
 parent: ddi-wtv
 blocked_by:
     - 2sn-0al
@@ -248,3 +248,32 @@ Stripped 5 more rule files of dead-shell instance `override func visit(_:)` over
 - Full suite: **3012 pass, 2 fail** (the 2 pre-existing `Layout/GuardStmtTests` pretty-printer-idempotency failures, unrelated).
 
 `override func visit` total in `Sources/SwiftiomaticKit/Rules/`: **276** (down from 292 at session start).
+
+
+
+## Update 2026-04-29 (continued, session 9) — ninth strip pass
+
+Stripped 8 more rule files of dead-shell instance `override func visit(_:)` overrides + their orphan instance helpers, state vars, and `Finding.Message` extensions (812 deletions). All inlined rules whose compact-pipeline path lives in the merged `Rewrites/<Group>/<NodeType>.swift` files.
+
+### Stripped
+
+- **PreferTrailingClosures** — `visit(_ FunctionCallExprSyntax)` (~70 lines), `convertSingle`/`convertMultiple` (~110 lines), static `useTrailing`/`neverTrailing` allowlists, static `functionName`, instance `isInConditionalContext`, file-scope `useTrailingClosure` Finding extension. Compact path: `applyPreferTrailingClosures` in `Rewrites/Exprs/FunctionCallExpr.swift`.
+- **PreferEnvironmentEntry** — `visit(_ SourceFileSyntax)` + 9 instance helpers (`collectEnvironmentKeys`, `collectIfEnvironmentKey`, `extractDefaultValue`, `rewriteStatements`, `rewriteEnvironmentValuesExtension`, `rewriteEnvironmentProperty`, `hasGetterAndSetter`, `addEntryAttribute`) + 2 instance state vars (`environmentKeys`, `matchedKeys`). Compact path: static `transform(_ SourceFileSyntax, parent:context:)` invoked from `Rewrites/Files/SourceFile.swift` + static `willEnter` populates `Context.ruleState`.
+- **SwitchCaseIndentation** — `visit(_ SwitchExprSyntax)` + 5 instance helpers (`reindentCase`, `replaceIndentation`, `reindentToken`, `indentUnit`, `lineIndentation`) + private `style` computed property. The configuration struct (`SwitchCaseIndentationConfiguration`) and the static `lineIndentationOf` helper used by `willEnter` are kept. Compact path: `applySwitchCaseIndentation` in `Rewrites/Stmts/SwitchExpr.swift` + static `willEnter` for diagnostics.
+- **EnsureLineBreakAtEOF** — `visit(_ SourceFileSyntax)` + Finding extension (`addTrailingNewline`, `removeExtraTrailingNewlines`). Compact path: inline body in `Rewrites/Files/SourceFile.swift` (with renamed Finding messages `eofAddTrailingNewline` / `eofRemoveExtraTrailingNewlines`).
+- **StrongOutlets** — `visit(_ VariableDeclSyntax)` + `hasIBOutletAttribute` helper + `removeWeakFromOutlet` Finding extension. Compact path: `applyStrongOutlets` in `Rewrites/Decls/VariableDecl.swift`.
+- **NoVoidReturnOnFunctionSignature** — `visit(_ FunctionSignatureSyntax)` + `removingReturnClause` helper + `removeRedundantReturn(_:)` Finding extension. Compact path: `applyNoVoidReturnOnFunctionSignature` in `Rewrites/Exprs/FunctionSignature.swift`.
+- **PreferAnyObject** — `visit(_ ProtocolDeclSyntax)` + `preferAnyObject` Finding extension. Compact path: `applyPreferAnyObject` in `Rewrites/Decls/ProtocolDecl.swift`.
+- **NoForceCast** — `visit(_ AsExprSyntax)` (lint-only diagnose) + `doNotForceCast(name:)` Finding extension. Compact path: lint emission in `Rewrites/Exprs/AsExpr.swift`.
+
+### Verification
+
+- `xc-swift swift_diagnostics --no-include-lint` — Build succeeded, 13 warnings (unchanged baseline).
+- Targeted regression filter (8 stripped rules): **87 pass**, all green.
+- Full suite: **3012 pass, 2 fail** (the 2 pre-existing `Layout/GuardStmtTests` pretty-printer-idempotency failures, unrelated).
+
+`override func visit` total in `Sources/SwiftiomaticKit/Rules/`: **268** (down from 276 at session start; net 8 instance overrides gone — the rest of the deletion count is helpers / state / Finding extensions).
+
+### Skipped this pass
+
+- **RedundantOverride** — fresh-instance pattern. The static `transform` calls `RedundantOverride(context: context).visit(node)`, so the instance `visit` IS the rewrite. Cannot strip without first inlining the visit body into a static helper.

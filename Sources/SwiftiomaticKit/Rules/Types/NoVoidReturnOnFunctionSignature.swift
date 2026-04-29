@@ -20,39 +20,4 @@ import SwiftSyntax
 ///         signature stripped.
 final class NoVoidReturnOnFunctionSignature: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable {
     override class var group: ConfigurationGroup? { .types }
-  /// Remove the `-> Void` return type for function signatures. Do not remove
-  /// it for closure signatures, because that may introduce an ambiguity when closure signatures
-  /// are inferred.
-  override func visit(_ node: FunctionSignatureSyntax) -> FunctionSignatureSyntax {
-    guard let returnType = node.returnClause?.type else { return node }
-
-    if let identifierType = returnType.as(IdentifierTypeSyntax.self),
-      identifierType.name.text == "Void",
-      identifierType.genericArgumentClause?.arguments.isEmpty ?? true
-    {
-      diagnose(.removeRedundantReturn("Void"), on: identifierType)
-      return removingReturnClause(from: node)
-    }
-    if let tupleType = returnType.as(TupleTypeSyntax.self), tupleType.elements.isEmpty {
-      diagnose(.removeRedundantReturn("()"), on: tupleType)
-      return removingReturnClause(from: node)
-    }
-
-    return node
-  }
-
-  /// Returns a copy of the given function signature with the return clause removed.
-  private func removingReturnClause(
-    from signature: FunctionSignatureSyntax
-  ) -> FunctionSignatureSyntax {
-    var result = signature
-    result.returnClause = nil
-    return result
-  }
-}
-
-extension Finding.Message {
-  fileprivate static func removeRedundantReturn(_ type: String) -> Finding.Message {
-    "remove the explicit return type '\(type)' from this function"
-  }
 }
