@@ -5,14 +5,14 @@ status: in-progress
 type: task
 priority: high
 created_at: 2026-04-28T15:50:43Z
-updated_at: 2026-04-29T05:40:41Z
+updated_at: 2026-04-29T17:18:22Z
 parent: ddi-wtv
 blocked_by:
     - 2sn-0al
 sync:
     github:
         issue_number: "497"
-        synced_at: "2026-04-29T05:35:27Z"
+        synced_at: "2026-04-29T17:25:05Z"
 ---
 
 Phase 4g of `ddi-wtv` collapse plan: flip the default to compact and delete all legacy infrastructure in one landing.
@@ -470,3 +470,19 @@ Ported **RedundantEscaping** out of the fresh-instance pattern into proper stati
 ### Pattern note
 
 Fresh-instance rules with no per-recursion state (other than the visited-tree walk done by inner SyntaxVisitor / SyntaxRewriter helpers) port cleanly to a `apply<Rule>` free function. The inner SyntaxVisitor / SyntaxRewriter classes can be lifted as-is to the helpers file.
+
+
+
+## Update 2026-04-29 (session 21) — layout test harness retargeted, WrapTernary instance override stripped
+
+Detail: child issue `id5-1y3`.
+
+- **`Tests/SwiftiomaticTests/Layout/LayoutTestCase.swift`** — replaced `WrapTernary(context: context).rewrite(...)` with a private `WrapTernaryHarnessRewriter: SyntaxRewriter` that walks ternaries and applies `WrapTernary.transform` post-recursion (mirrors the compact pipeline's call shape, scoped to the layout harness).
+- **`Sources/SwiftiomaticKit/Rules/Wrap/WrapTernary.swift`** — stripped the `override func visit(_ TernaryExprSyntax)` dead-shell; the rule is now class-declaration + `group` override + a single `static transform` overload.
+
+`override func visit` total in `Sources/SwiftiomaticKit/Rules/`: **197** (down from 198 at session start). All remaining overrides on `RewriteSyntaxRule` subclasses are structural-pass rules (out of scope for the stage-1 strip) plus `PreferShorthandTypeNames` (kept by design — recursion into generic-argument children is fundamental).
+
+### Remaining unresolved 4g items
+
+- **Delete `RewriteSyntaxRule` base class** — would require migrating ~120 rules (most are static-only conformers that don't need `SyntaxRewriter`; structural-pass rules + `PreferShorthandTypeNames` would still need it). Substantial refactor; consider scoping as a follow-up.
+- **`RuleCollector` legacy detection paths** — `canRewrite`/`visitedNodes`/`rewritingSyntaxRules` are still in use by `PipelineGenerator` for the lint-pipeline dispatch (`visitIfEnabled(<RewriteRule>.visit, ...)`), since rewrite rules with instance `visit` overrides still emit findings via the lint pass. Cannot drop without first deciding the post-cutover lint-mode finding strategy.

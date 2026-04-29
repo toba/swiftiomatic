@@ -60,6 +60,7 @@
 - Phase 4e; merge expression rewrites ([#499](https://github.com/toba/swiftiomatic/issues/499))
 - Phase 4f; retarget test harness and verify ([#498](https://github.com/toba/swiftiomatic/issues/498))
 - Phase 4 swift review; refactor merged compact-pipeline files
+- `WrapTernary`; retarget layout test harness off the rule's instance override
 
 ## Week of Apr 19 – Apr 25, 2026
 

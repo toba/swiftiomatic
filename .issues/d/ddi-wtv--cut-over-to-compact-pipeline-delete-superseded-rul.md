@@ -2,10 +2,10 @@
 # ddi-wtv
 title: Cut over to `compact` pipeline; delete superseded rule files
 status: in-progress
-type: feature
+type: epic
 priority: high
 created_at: 2026-04-28T01:41:38Z
-updated_at: 2026-04-29T06:12:13Z
+updated_at: 2026-04-29T17:20:17Z
 parent: iv7-r5g
 blocked_by:
     - eti-yt2
@@ -14,7 +14,7 @@ blocked_by:
 sync:
     github:
         issue_number: "480"
-        synced_at: "2026-04-29T05:35:26Z"
+        synced_at: "2026-04-29T17:25:04Z"
 ---
 
 ## Goal
@@ -289,3 +289,20 @@ After dropping the lint-only count, the remaining `RewriteSyntaxRule` overrides 
 - Structural-pass rules (`SortImports`, `SortTypeAliases`, `SortSwitchCases`, `SortDeclarations`, `BlankLinesAfterImports`, `BlankLinesBetweenScopes`, `ExtensionAccessLevel`, `FileScopedDeclarationPrivacy`, `FileHeader`, `CaseLet`).
 
 The `RewriteSyntaxRule` base class itself can now be evaluated for elimination (the structural-pass rules currently inherit from it, but they don't need the compact-pipeline static-hook wiring; they could become plain `SyntaxRewriter` subclasses with rule registration via a different path).
+
+
+
+## Update 2026-04-29 (continued, session 21) — retarget layout test harness, strip WrapTernary override
+
+Retargeted the layout test harness off `WrapTernary(context:).rewrite(...)` and stripped the rule's instance `override func visit`. 198 → 197 `override func visit` total in `Sources/SwiftiomaticKit/Rules/`. Detail: child issue `id5-1y3`.
+
+### What's still left in 4g
+
+- **`PreferShorthandTypeNames`** (2 overrides, kept by design) — recursion is fundamental; `visit(_ IdentifierTypeSyntax)` calls `visit(genericArgumentClause.arguments)` to rewrite generic-argument children. Can stay as fresh-instance (`static transform` already wires it into the compact pipeline).
+- **Structural-pass rules** (out of scope for stage-1 strip; `SortImports`, `SortTypeAliases`, `SortSwitchCases`, `SortDeclarations`, `BlankLinesAfterImports`, `BlankLinesBetweenScopes`, `ExtensionAccessLevel`, `FileScopedDeclarationPrivacy`, `FileHeader`, `CaseLet`).
+- **Lint rules** (`SyntaxLintRule` subclasses) — out of scope.
+- The remaining 9 `override func visit` in `RedundantSelf.swift` are on the inner `LocalNameCollector: SyntaxVisitor` helper class, not the rule class itself; that's a helper and stays.
+
+### Open question
+
+`RewriteSyntaxRule` base class elimination — most rules now only define `static transform`/`willEnter`/`didExit` and don't need `SyntaxRewriter` machinery. Could become `SyntaxRule`-only conformers (e.g. `enum FooRule: SyntaxRule`). Structural-pass rules + `PreferShorthandTypeNames` would still need `SyntaxRewriter`. Worth scoping as a separate follow-up.

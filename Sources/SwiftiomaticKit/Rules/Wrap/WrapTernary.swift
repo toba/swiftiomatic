@@ -20,15 +20,6 @@ import SwiftSyntax
 final class WrapTernary: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable {
     override class var group: ConfigurationGroup? { .lineBreaks }
 
-    // Layout tests invoke WrapTernary directly via `WrapTernary(context: context).rewrite(_:)`
-    // (see Tests/SwiftiomaticTests/Layout/LayoutTestCase.swift). The compact pipeline does not
-    // need this override, but the layout harness does — keep it until that harness is retargeted.
-    override func visit(_ node: TernaryExprSyntax) -> ExprSyntax {
-        let parent = Syntax(node).parent
-        let visited = super.visit(node).cast(TernaryExprSyntax.self)
-        return Self.transform(visited, parent: parent, context: context)
-    }
-
     static func transform(
         _ visited: TernaryExprSyntax,
         parent: Syntax?,

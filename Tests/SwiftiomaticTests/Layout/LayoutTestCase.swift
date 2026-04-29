@@ -121,7 +121,8 @@ private func prettyPrintedSource(
     // remain focused on PP behavior.
     let transformedSyntax: Syntax
     if context.shouldFormat(WrapTernary.self, node: Syntax(sourceFileSyntax)) {
-        transformedSyntax = WrapTernary(context: context).rewrite(Syntax(sourceFileSyntax))
+        transformedSyntax = WrapTernaryHarnessRewriter(context: context)
+            .rewrite(Syntax(sourceFileSyntax))
     } else {
         transformedSyntax = Syntax(sourceFileSyntax)
     }
@@ -133,4 +134,20 @@ private func prettyPrintedSource(
         whitespaceOnly: whitespaceOnly
     )
     return (printer.prettyPrint(), context)
+}
+
+/// Tree walker that applies `WrapTernary.transform` post-recursion. Mirrors the
+/// compact pipeline's call shape (`super.visit` then `transform`) but as a one-shot
+/// rewriter scoped to layout tests, so the rule itself doesn't need an instance
+/// `override func visit`.
+private final class WrapTernaryHarnessRewriter: SyntaxRewriter {
+    let context: Context
+
+    init(context: Context) { self.context = context }
+
+    override func visit(_ node: TernaryExprSyntax) -> ExprSyntax {
+        let parent = Syntax(node).parent
+        let visited = super.visit(node).cast(TernaryExprSyntax.self)
+        return WrapTernary.transform(visited, parent: parent, context: context)
+    }
 }
