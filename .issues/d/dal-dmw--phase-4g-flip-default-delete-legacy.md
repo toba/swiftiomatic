@@ -5,7 +5,7 @@ status: in-progress
 type: task
 priority: high
 created_at: 2026-04-28T15:50:43Z
-updated_at: 2026-04-29T04:50:41Z
+updated_at: 2026-04-29T05:00:46Z
 parent: ddi-wtv
 blocked_by:
     - 2sn-0al
@@ -300,3 +300,34 @@ Stripped 2 more rule files of dead-shell instance `override func visit(_:)` over
 ### Skipped
 
 - **RedundantEscaping** — fresh-instance pattern. The static `transform` calls `RedundantEscaping(context: context).visit(node)`, so the instance `visit` IS the rewrite (the inner `EscapeChecker: SyntaxVisitor` analysis is fully encapsulated). Cannot strip without first inlining the visit body into a static helper or porting `EscapeChecker` into `Context.ruleState`.
+
+
+
+## Update 2026-04-29 (continued, session 11) — eleventh strip pass
+
+Ported **ConsistentSwitchCaseSpacing** into the compact pipeline and stripped its instance `override func visit(_ SwitchExprSyntax)`.
+
+### Changes
+
+- **Inlined** `applyConsistentSwitchCaseSpacing(_:context:)` into `Sources/SwiftiomaticKit/Rewrites/Stmts/SwitchExpr.swift` with `fileprivate` Finding messages (`switchSpacingAddBlankLine` / `switchSpacingRemoveBlankLine`). Added the gate (`context.shouldFormat(ConsistentSwitchCaseSpacing.self, ...)`) to `rewriteSwitchExpr` after the existing `WrapMultilineStatementBraces` block.
+- **Stripped** `Sources/SwiftiomaticKit/Rules/BlankLines/ConsistentSwitchCaseSpacing.swift` to a 17-line shell (just the rule class declaration + `group` / `defaultValue` overrides). Removed the `override func visit(_ SwitchExprSyntax)` body, the `addBlankLineForConsistency` / `removeBlankLineForConsistency` Finding extension, and the orphaned MARK comments.
+
+Diagnose calls run inline (post-recursion) the same way `BlankLinesAfterSwitchCase` does — both targeting `cases[nextIndex]` and the right brace within the switch.
+
+### Verification
+
+- `xc-swift swift_diagnostics --no-include-lint` — Build succeeded, 13 warnings (unchanged baseline).
+- `ConsistentSwitchCaseSpacingTests`: **6 pass**, all green.
+- Full suite: **3012 pass, 2 fail** (the 2 pre-existing `Layout/GuardStmtTests` pretty-printer-idempotency failures, unrelated).
+
+`override func visit` total in `Sources/SwiftiomaticKit/Rules/`: **255** (down from 256 at session start). Net 1 instance override gone — the rest of the strip work for this rule was the Finding extension, which moved files.
+
+### What's still left in 4g
+
+Remaining 21 `RewriteSyntaxRule` files with `override func visit` need actual porting (not bulk strip):
+
+- **Fresh-instance pattern, simple** — `ReflowComments`, `ConvertRegularCommentToDocC`, `PreferFinalClasses` (file-state-bearing). Body sits in `override func visit`; needs extraction to a static helper or `apply<Rule>` free function plus rule-class `static` shell.
+- **Fresh-instance pattern, complex** — `RedundantOverride`, `RedundantEscaping`, `NestedCallLayout`, `PreferShorthandTypeNames`. The override IS the rewrite; static `transform` calls back into `<Rule>(context: context).visit(node)`. Can't be stripped without first inlining the visit body.
+- **State-machine rules** — `RedundantSelf` (22), `WrapMultilineStatementBraces` (16), `NoForceUnwrap` (11), `WrapSingleLineBodies` (already done in session 10).
+- **Structural-pass rules** (out of scope for stage-1 strip; run as ordered `SyntaxRewriter` instances in stage 2) — `SortImports`, `SortTypeAliases`, `SortSwitchCases`, `SortDeclarations`, `ExtensionAccessLevel`, `FileScopedDeclarationPrivacy`, `BlankLinesBetweenScopes`, `BlankLinesAfterImports`, `FileHeader`, `CaseLet` (the inner private `BindIdentifiersRewriter`/`UnbindIdentifiersRewriter` are infrastructure, not the rule's visit).
+- `WrapTernary` — kept until layout test harness retargeted.

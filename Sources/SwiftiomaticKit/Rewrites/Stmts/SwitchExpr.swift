@@ -48,7 +48,76 @@ func rewriteSwitchExpr(
         transform: WrapMultilineStatementBraces.transform
     )
 
+    // ConsistentSwitchCaseSpacing — normalize blank-line spacing among cases
+    // to whichever style is used by the majority. Inlined from
+    // `Sources/SwiftiomaticKit/Rules/BlankLines/ConsistentSwitchCaseSpacing.swift`.
+    if context.shouldFormat(ConsistentSwitchCaseSpacing.self, node: Syntax(result)) {
+        result = applyConsistentSwitchCaseSpacing(result, context: context)
+    }
+
     return result
+}
+
+private func applyConsistentSwitchCaseSpacing(
+    _ node: SwitchExprSyntax,
+    context: Context
+) -> SwitchExprSyntax {
+    var switchExpr = node
+    let cases = Array(switchExpr.cases)
+    // Need at least 2 cases (last case is excluded from spacing decisions).
+    guard cases.count >= 2 else { return node }
+
+    var withBlank = 0
+    var withoutBlank = 0
+
+    for i in 0..<(cases.count - 1) {
+        if cases[i + 1].leadingTrivia.hasBlankLine {
+            withBlank += 1
+        } else {
+            withoutBlank += 1
+        }
+    }
+
+    // Majority wins; ties favor blank lines.
+    let shouldHaveBlankLines = withBlank >= withoutBlank
+
+    var modifiedCases = cases
+    var modified = false
+
+    for i in 0..<(cases.count - 1) {
+        let nextIndex = i + 1
+        let currentlyHasBlank = cases[nextIndex].leadingTrivia.hasBlankLine
+
+        if shouldHaveBlankLines, !currentlyHasBlank {
+            ConsistentSwitchCaseSpacing.diagnose(
+                .switchSpacingAddBlankLine,
+                on: cases[nextIndex],
+                context: context
+            )
+            modifiedCases[nextIndex] = modifiedCases[nextIndex].prependingNewline()
+            modified = true
+        } else if !shouldHaveBlankLines, currentlyHasBlank {
+            ConsistentSwitchCaseSpacing.diagnose(
+                .switchSpacingRemoveBlankLine,
+                on: cases[nextIndex],
+                context: context
+            )
+            modifiedCases[nextIndex] = modifiedCases[nextIndex].removingBlankLines()
+            modified = true
+        }
+    }
+
+    guard modified else { return node }
+    switchExpr.cases = SwitchCaseListSyntax(modifiedCases)
+    return switchExpr
+}
+
+extension Finding.Message {
+    fileprivate static let switchSpacingAddBlankLine: Finding.Message =
+        "add blank line between switch cases for consistency"
+
+    fileprivate static let switchSpacingRemoveBlankLine: Finding.Message =
+        "remove blank line between switch cases for consistency"
 }
 
 private func applyBlankLinesAfterSwitchCase(
