@@ -5,7 +5,7 @@ status: in-progress
 type: task
 priority: high
 created_at: 2026-04-28T15:50:43Z
-updated_at: 2026-04-29T05:17:25Z
+updated_at: 2026-04-29T05:24:24Z
 parent: ddi-wtv
 blocked_by:
     - 2sn-0al
@@ -391,3 +391,27 @@ For stateless rules whose visit overrides reduce to `let visited = super.visit(n
 5. Strip the override + helpers + Finding extension from the rule file.
 
 No `manuallyHandledNodeTypes` change, no `applyRule` wiring, no state class. The generator's per-rule chained dispatch picks up the new transform automatically next build.
+
+
+
+## Update 2026-04-29 (continued, session 14) — port ReflowComments
+
+Ported **ReflowComments** into the compact pipeline (single TokenSyntax visit, stateless apart from configuration access). 251 → 250 instance overrides.
+
+### Changes
+
+- **Created** `Sources/SwiftiomaticKit/Rewrites/Tokens/ReflowCommentsHelpers.swift` with `applyReflowComments(_ TokenSyntax, context:)` plus all instance helpers lifted to file-private free functions (`commentKind`, `commentText`, `makePiece`, `stripPrefix`, `isDirective`, `syntacticIndentColumn`, `indentationBefore`, `indentTrivia`, `CommentRunKind` enum). Configuration reads (`LineLength`, `IndentationSetting`, `TabWidth`) flow through the `context: Context` parameter. Diagnose location preserved via `ReflowComments.diagnose(.reflowComment, on: token, context: context, anchor: .leadingTrivia(triviaIdx))`.
+- **Wired** the gate into `Rewrites/Tokens/TokenRewrites.swift::rewriteToken` between `RedundantBackticks` and `UppercaseAcronyms` (kept alphabetical-ish ordering with the other comment rules).
+- **Stripped** `Sources/SwiftiomaticKit/Rules/Comments/ReflowComments.swift` to a 16-line shell (rule class declaration + `group` / `defaultValue` overrides). Removed the `override func visit(_ TokenSyntax)`, all 8 instance helpers, the `CommentRunKind` enum, and the file-scope `reflowComment` Finding extension (moved).
+
+### Verification
+
+- `xc-swift swift_diagnostics --no-include-lint` — Build succeeded, 13 warnings (unchanged baseline).
+- `ReflowCommentsTests`: **22 pass**, all green.
+- Full suite: **3012 pass, 2 fail** (the 2 pre-existing `Layout/GuardStmtTests` pretty-printer-idempotency failures, unrelated).
+
+`override func visit` total in `Sources/SwiftiomaticKit/Rules/`: **250** (down from 251).
+
+### Pattern
+
+Token-level rewrites without state class follow the BlankLinesAroundMark / UppercaseAcronyms shape: an `applyXxx` free function in a per-rule helpers file under `Rewrites/Tokens/`, plus a `context.shouldFormat` gate in `rewriteToken`. No `static transform`/`willEnter` needed because the token-level dispatch is fully manual via the merged `rewriteToken`.

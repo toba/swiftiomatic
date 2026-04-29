@@ -66,6 +66,13 @@ func rewriteToken(_ node: TokenSyntax,
         result = RedundantBackticks.transform(result, parent: parent, context: context)
     }
 
+    // 5a. ReflowComments — inlined (no `static func transform`). Reflows
+    //     contiguous `//` and `///` comment runs in leading trivia to fit
+    //     `lineLength`. Helpers in `ReflowCommentsHelpers.swift`.
+    if context.shouldFormat(ReflowComments.self, node: Syntax(result)) {
+        result = applyReflowComments(result, context: context)
+    }
+
     // 6. UppercaseAcronyms — inlined (no `static func transform`). Replaces
     //    titlecased acronyms (`Url`, `Json`) with fully uppercased forms
     //    (`URL`, `JSON`) inside identifier tokens. Pulls the configurable
