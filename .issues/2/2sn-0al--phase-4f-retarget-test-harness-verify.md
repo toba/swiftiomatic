@@ -5,7 +5,7 @@ status: in-progress
 type: task
 priority: high
 created_at: 2026-04-28T15:50:30Z
-updated_at: 2026-04-28T23:57:15Z
+updated_at: 2026-04-29T00:33:36Z
 parent: ddi-wtv
 blocked_by:
     - 49k-dtg
@@ -326,3 +326,33 @@ Other remaining clusters:
 - `NoForceUnwrap` (1 test `forceUnwrapInClosureIsNotModified`) — closure recursion semantics.
 - `GuardStmt` (2 pretty-printer-idempotency failures) — separate concern, not directly tied to compact pipeline.
 - A handful of one-offs in test-rewrite suites still pending investigation.
+
+
+
+## Update (2026-04-28) — Down to 5 failures
+
+After the Pattern B + non-test depth fixes, only 5 failures remain:
+
+- `SingleLineBodiesTests.nestedForLoopsWrap`, `nestedGuardElseGuardWraps`, `nestedGuardElseIfWraps` — nested-body cases. Static `resolveIndent` returns "" for inner nodes (their keyword trivia has no newline) so when the outer for/guard later wraps, the inner body's already-wrapped indent isn't increased to match. Fix sketch: add a per-rule indent stack via `Context.ruleState` plus `willEnter`/`didExit` on `ForStmt` / `WhileStmt` / `RepeatStmt` / `IfExpr` / `GuardStmt` / `FunctionDecl` / `InitializerDecl` that pushes the node's baseIndent (computed from stack top + 4 spaces, or from trivia if stack empty), reads it in the transform, pops in didExit. Mirrors the legacy `currentIndent` instance state exactly.
+
+- `GuardStmtTests.optionalBindingConditions`, `breaksElseWhenInlineBodyExceedsLineLength` — "Pretty printer is not idempotent". This is a pretty-printer concern, not the compact pipeline per se. Worth checking whether the legacy pipeline also reproduces when forced through the compact path (it likely does — these are pre-existing pretty-printer issues).
+
+### What's done
+
+- 304 → 5 failures across the session.
+- All clusters tracked in earlier updates are cleared:
+  - widening cast-back (PreferToggle, PreferIsEmpty, RedundantNilCoalescing, PreferDotZero, RedundantClosure, URLMacro, PreferCountWhere, RedundantStaticSelf, PreferSwiftTesting)
+  - extension-collected hooks (RuleCollector now scans same-file extensions)
+  - WrapSingleLineBodies dispatch on all 7 manually-handled merged files
+  - NoGuardInTests + PreferSwiftTesting compact transforms
+  - diagnostic location moved to willEnter (NoSemicolons, OneDeclarationPerLine, BlankLinesBeforeControlFlowBlocks, NoTrailingClosureParens, SwitchCaseIndentation, NoFallThroughOnlyCases, NoParensAroundConditions)
+  - NoForceUnwrap chain-eligible parent depth gate for non-test code
+
+### Recommended next-session order
+
+1. Tackle `SingleLineBodies` indent stack via `Context.ruleState` (~30 min).
+2. Inspect the 2 `GuardStmt` pretty-printer-idempotency failures; if reproducible against the legacy pipeline too, file as separate issues and proceed.
+3. Run the full test suite to confirm 0 failures.
+4. Retire the temporary debug logging in `Tests/SwiftiomaticTests/Rules/LintOrFormatRuleTestCase.swift` (the `/tmp/compact-mismatches.log` writer block).
+5. Drop the legacy `RewriteCoordinator` branch + direct-instance branch in `assertFormatting`, leaving only the compact pipeline assertion.
+6. Hand off to phase 4g (`dal-dmw`).
