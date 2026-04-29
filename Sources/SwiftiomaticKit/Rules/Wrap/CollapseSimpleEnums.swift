@@ -22,15 +22,6 @@ final class CollapseSimpleEnums: RewriteSyntaxRule<BasicRuleValue>, @unchecked S
     override static var group: ConfigurationGroup? { .wrap }
     override static var defaultValue: BasicRuleValue { .init(rewrite: false, lint: .no) }
 
-    override func visit(_ node: EnumDeclSyntax) -> DeclSyntax {
-        // Recurse first so nested enums get a chance to collapse even when the
-        // outer enum isn't collapsible (e.g. an enum with methods that contains
-        // a nested `CodingKeys` enum).
-        let parent = Syntax(node).parent
-        let recursed = super.visit(node).as(EnumDeclSyntax.self) ?? node
-        return Self.transform(recursed, parent: parent, context: context)
-    }
-
     static func transform(
         _ recursed: EnumDeclSyntax,
         parent: Syntax?,

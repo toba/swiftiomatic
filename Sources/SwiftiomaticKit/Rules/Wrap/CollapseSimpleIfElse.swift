@@ -29,14 +29,6 @@ final class CollapseSimpleIfElse: RewriteSyntaxRule<BasicRuleValue>, @unchecked 
         BasicRuleValue(rewrite: false, lint: .no)
     }
 
-    override func visit(_ node: IfExprSyntax) -> ExprSyntax {
-        // Recurse first so nested ifs collapse before we measure ourselves.
-        let parent = Syntax(node).parent
-        let visited = super.visit(node)
-        guard let ifNode = visited.as(IfExprSyntax.self) else { return visited }
-        return Self.transform(ifNode, parent: parent, context: context)
-    }
-
     static func transform(
         _ ifNode: IfExprSyntax,
         parent: Syntax?,

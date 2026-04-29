@@ -5,7 +5,7 @@ status: in-progress
 type: task
 priority: high
 created_at: 2026-04-28T15:50:43Z
-updated_at: 2026-04-29T03:03:53Z
+updated_at: 2026-04-29T03:13:11Z
 parent: ddi-wtv
 blocked_by:
     - 2sn-0al
@@ -121,3 +121,25 @@ Remaining `override func visit(_:)` cases in rule files require per-rule analysi
 - Real logic inside the override (e.g. `PreferExplicitFalse`, `CollapseSimpleIfElse`, `CollapseSimpleEnums`, `RedundantOverride`).
 - Rules with state machines maintained on the instance (e.g. `RedundantSelf`, `WrapMultilineStatementBraces`, `WrapSingleLineBodies`, `PreferEnvironmentEntry`).
 - Lint rules (`SyntaxLintRule` subclasses) — not part of this strip; these legitimately drive their own traversal.
+
+
+
+## Update 2026-04-29 (continued, session 4) — fourth strip pass
+
+Stripped 5 more dead-shell `override func visit(_:)` delegates across 5 rule files (112 deletions). Pattern variants:
+
+- **Pre-recursion-parent capture + cast-back** — overrides whose body was `let parent = Syntax(node).parent; let visited = super.visit(node); guard let concrete = visited.as(...) else { return visited }; return Self.transform(concrete, parent: parent, context:)`. The compact dispatcher captures the same parent and calls the merged free function with it. Stripped from `CollapseSimpleIfElse`, `CollapseSimpleEnums`, `HoistTry` (its `AwaitExprSyntax` override; the `static willEnter`/`didExit`/`transform` are already wired via `CompactStageOneRewriter+Generated`).
+- **Trivial dispatch shell** — same as the previous bulk passes. Stripped from `LeadingDotOperators`.
+- **Logic duplicated to `static transform`** — `PreferExplicitFalse` had near-identical logic in both `override func visit` and `static transform` (the override pre-dated the static). Stripped the override + its three obsolete instance helpers (`isInsideIfConfigCondition(_ node:)`, `isAdjacentToComparisonOrCasting(_ node:)`, and the redundant body) — kept the static-only versions that the compact pipeline uses.
+
+### Verification
+
+- `xc-swift swift_diagnostics --no-include-lint` — Build succeeded, 13 warnings (one fewer than baseline; the unused-instance-helpers warning cleared).
+- Full suite: **3012 pass, 2 fail** (the 2 pre-existing `Layout/GuardStmtTests` pretty-printer-idempotency failures, unrelated).
+
+### What's still left in 4g
+
+Remaining `override func visit(_:)` cases require per-rule conversion (not bulk strip):
+- Real logic without a counterpart `static transform` (e.g. `FileHeader`, `UppercaseAcronyms`, `RedundantOverride`, `PreferEarlyExits`).
+- Rules with instance-state machines (`RedundantSelf`, `WrapMultilineStatementBraces`, `WrapSingleLineBodies`, `PreferEnvironmentEntry`, `CaseLet`).
+- Lint rules (`SyntaxLintRule` subclasses) — out of scope for this strip.

@@ -60,20 +60,6 @@ final class HoistTry: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable {
         return result
     }
 
-    /// Reorders `await try X` → `try await X` when `try` was introduced by hoisting
-    /// (not already present in the source).
-    override func visit(_ node: AwaitExprSyntax) -> ExprSyntax {
-        let parent = Syntax(node).parent
-        let hadTryBefore = node.expression.is(TryExprSyntax.self)
-        let visited = super.visit(node)
-        guard let awaitNode = visited.as(AwaitExprSyntax.self) else { return visited }
-        return Self.transformAwait(
-            awaitNode,
-            hadTryBefore: hadTryBefore,
-            originalTrailingTrivia: node.trailingTrivia
-        )
-    }
-
     /// Compact-pipeline state: per-AwaitExpr stack of pre-recursion
     /// `(hadTryBefore, trailingTrivia)` snapshots, populated by
     /// `willEnter(_:AwaitExprSyntax, context:)` and consumed by
