@@ -5,7 +5,7 @@ status: in-progress
 type: task
 priority: high
 created_at: 2026-04-28T15:50:43Z
-updated_at: 2026-04-29T17:18:22Z
+updated_at: 2026-04-29T17:34:03Z
 parent: ddi-wtv
 blocked_by:
     - 2sn-0al
@@ -486,3 +486,31 @@ Detail: child issue `id5-1y3`.
 
 - **Delete `RewriteSyntaxRule` base class** — would require migrating ~120 rules (most are static-only conformers that don't need `SyntaxRewriter`; structural-pass rules + `PreferShorthandTypeNames` would still need it). Substantial refactor; consider scoping as a follow-up.
 - **`RuleCollector` legacy detection paths** — `canRewrite`/`visitedNodes`/`rewritingSyntaxRules` are still in use by `PipelineGenerator` for the lint-pipeline dispatch (`visitIfEnabled(<RewriteRule>.visit, ...)`), since rewrite rules with instance `visit` overrides still emit findings via the lint pass. Cannot drop without first deciding the post-cutover lint-mode finding strategy.
+
+
+
+## Update 2026-04-29 (continued, session 22) — drop dead structural-pass entries
+
+Removed four redundant structural-pass calls from `RewriteCoordinator.runCompactPipeline` whose underlying rules were inlined into compact stage 1 in earlier sessions:
+
+- `PreferFinalClasses(context: context).rewrite(current)` — inlined session 12 (`static willEnter` + `static transform` + `applyRule` wired into `Rewrites/Decls/ClassDecl.swift`).
+- `ConvertRegularCommentToDocC(context: context).rewrite(current)` — inlined session 13 (two `static transform` overloads picked up via per-rule chained dispatch on `MemberBlockItem`/`CodeBlockItem`).
+- `ConsistentSwitchCaseSpacing(context: context).rewrite(current)` — inlined session 11 (`applyConsistentSwitchCaseSpacing` invoked from `Rewrites/Stmts/SwitchExpr.swift`).
+- `ReflowComments(context: context).rewrite(current)` — inlined session 14 (`applyReflowComments` invoked from `Rewrites/Tokens/TokenRewrites.swift`).
+
+After their `override func visit` shells were stripped (sessions 11/12/13/14), each `Rule(context:).rewrite(current)` call walked the entire tree and produced no transformation — pure waste. Verified each rule is dispatched in `CompactStageOneRewriter+Generated.swift` (e.g. `PreferFinalClasses.willEnter` at line 944, `ConvertRegularCommentToDocC.transform` at lines 296 + 828) before deletion.
+
+Updated the doc comment on `runCompactPipeline` to record the inlining history (was 13 structural passes; now 9).
+
+### Verification
+
+- `xc-swift swift_diagnostics --no-include-lint` — Build succeeded, 13 warnings (unchanged baseline).
+- Targeted regression filter (4 inlined rules): **87 pass**, all green.
+- Full suite: **3012 pass, 2 fail** (the 2 pre-existing `Layout/GuardStmtTests` pretty-printer-idempotency failures, unrelated).
+- `testFullFormatPipelinePerformance` 0.38s → 0.341s — small but measurable speedup from skipping 4 dead tree walks.
+
+### What's still left in 4g
+
+Unchanged from session 21:
+- Delete `RewriteSyntaxRule` base class — substantial refactor.
+- `RuleCollector` legacy detection paths — depends on post-cutover lint-mode finding strategy.

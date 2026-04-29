@@ -199,24 +199,25 @@ package final class RewriteCoordinator {
     }
 
     /// The two-stage compact pipeline: combined node-local rewriter, then the
-    /// 13 structural passes in the order specified by `2kl-d04` §2. Each pass
+    /// structural passes in the order specified by `2kl-d04` §2. Each pass
     /// instantiates a fresh rewriter (some passes carry in-walk state that
     /// must reset between files).
+    ///
+    /// Rules previously dispatched here as structural passes — `PreferFinalClasses`,
+    /// `ConvertRegularCommentToDocC`, `ConsistentSwitchCaseSpacing`, `ReflowComments` —
+    /// were inlined into stage 1 (sessions 11–14 of `ddi-wtv` Phase 4g) and removed
+    /// from this list once their `override func visit` shells were stripped.
     private func runCompactPipeline(_ node: Syntax, context: Context) -> Syntax {
         var current = CompactStageOneRewriter(context: context).rewrite(node)
         current = SortImports(context: context).rewrite(current)
         current = BlankLinesAfterImports(context: context).rewrite(current)
         current = FileScopedDeclarationPrivacy(context: context).rewrite(current)
         current = ExtensionAccessLevel(context: context).rewrite(current)
-        current = PreferFinalClasses(context: context).rewrite(current)
-        current = ConvertRegularCommentToDocC(context: context).rewrite(current)
         current = BlankLinesBetweenScopes(context: context).rewrite(current)
-        current = ConsistentSwitchCaseSpacing(context: context).rewrite(current)
         current = SortDeclarations(context: context).rewrite(current)
         current = SortSwitchCases(context: context).rewrite(current)
         current = SortTypeAliases(context: context).rewrite(current)
         current = FileHeader(context: context).rewrite(current)
-        current = ReflowComments(context: context).rewrite(current)
         return current
     }
 }
