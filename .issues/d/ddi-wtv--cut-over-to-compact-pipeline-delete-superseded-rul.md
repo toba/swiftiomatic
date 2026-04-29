@@ -5,7 +5,7 @@ status: in-progress
 type: feature
 priority: high
 created_at: 2026-04-28T01:41:38Z
-updated_at: 2026-04-29T04:13:14Z
+updated_at: 2026-04-29T05:49:17Z
 parent: iv7-r5g
 blocked_by:
     - eti-yt2
@@ -161,3 +161,35 @@ Build clean at 13 warnings (unchanged). Full suite: 3012 pass / 2 pre-existing G
 - Fresh-instance pattern: PreferShorthandTypeNames, NestedCallLayout (the override IS the rewrite).
 - WrapTernary (kept until layout test harness retargeted).
 - After all overrides are gone: delete `RewriteSyntaxRule` base class itself + drop legacy detection paths in `RuleCollector`.
+
+
+
+## Update 2026-04-29 (continued, session 17) — port RedundantOverride
+
+Ported **RedundantOverride** out of the fresh-instance pattern. 230 → 229 instance overrides.
+
+### Changes
+
+- **Created** `Sources/SwiftiomaticKit/Rewrites/Decls/RedundantOverrideHelpers.swift` with `applyRedundantOverride(_ FunctionDeclSyntax, parent:context:) -> DeclSyntax` plus all 6 instance helpers lifted to file-private free functions (`redundantOverrideIsRedundantFunctionOverride`, `redundantOverrideHasOverride`, `redundantOverrideHasStaticOrClass`, `redundantOverrideForwardsToSuper`, `redundantOverrideExtractCall`, `redundantOverrideUnwrapCall`, `redundantOverrideRemoved`) plus the `redundantOverrideExcludedMethods` set. Diagnose now uses `RedundantOverride.diagnose(...)` (Self.diagnose pattern); Finding extension moved as fileprivate.
+- **Stripped** `Sources/SwiftiomaticKit/Rules/Redundancies/RedundantOverride.swift` from 162 → 28 lines: just rule class declaration + `group` / `defaultValue` overrides + `static transform(_ FunctionDeclSyntax, parent:context:)` delegating to the helper. Removed `override func visit(_ FunctionDeclSyntax)`, the `excludedMethods` set, all 6 instance helpers, and the file-scope `removeRedundantOverride` Finding extension.
+
+The post-recursion call site in `rewriteFunctionDecl` (the `if context.shouldFormat(RedundantOverride.self, ...)` branch with early return when removal applies) is unchanged — `RedundantOverride.transform` still returns a `DeclSyntax` that may not be a `FunctionDeclSyntax` (the empty-trivia decl on removal).
+
+### Verification
+
+- `xc-swift swift_diagnostics --no-include-lint` — Build succeeded, 13 warnings (unchanged baseline).
+- `RedundantOverride` filter: **9 pass**, all green.
+- Full suite: **3012 pass, 2 fail** (the 2 pre-existing `Layout/GuardStmtTests` pretty-printer-idempotency failures, unrelated).
+
+`override func visit` total in `Sources/SwiftiomaticKit/Rules/`: **229** (down from 230 at session start).
+
+### Pattern
+
+Fresh-instance rules whose `static transform` redirects to `<Rule>(context:).visit(node)` port mechanically when the body is stateless (only inputs are the visited node + context):
+
+1. Lift the body verbatim into `apply<Rule>(_ N, parent:context:) -> Out` in a `Helpers.swift` file under `Rewrites/<Group>/`.
+2. Lift instance helpers and constants to file-private free functions / lets, namespaced to avoid collision.
+3. Replace `self.diagnose(...)` with `<RuleName>.diagnose(..., context: context)`.
+4. Strip the rule class to: declaration, `group`/`defaultValue` overrides, `static transform` calling the helper.
+
+No `applyRule` wiring needed when the call site (e.g. `rewriteFunctionDecl`) already invokes `<Rule>.transform` directly.
