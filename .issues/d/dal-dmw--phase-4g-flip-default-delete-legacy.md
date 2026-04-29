@@ -5,7 +5,7 @@ status: in-progress
 type: task
 priority: high
 created_at: 2026-04-28T15:50:43Z
-updated_at: 2026-04-29T04:34:31Z
+updated_at: 2026-04-29T04:50:41Z
 parent: ddi-wtv
 blocked_by:
     - 2sn-0al
@@ -277,3 +277,26 @@ Stripped 8 more rule files of dead-shell instance `override func visit(_:)` over
 ### Skipped this pass
 
 - **RedundantOverride** — fresh-instance pattern. The static `transform` calls `RedundantOverride(context: context).visit(node)`, so the instance `visit` IS the rewrite. Cannot strip without first inlining the visit body into a static helper.
+
+
+
+## Update 2026-04-29 (continued, session 10) — tenth strip pass
+
+Stripped 2 more rule files of dead-shell instance `override func visit(_:)` overrides + their orphan instance helpers, state vars, and inner SyntaxRewriter classes (842 deletions). Both rules' compact-pipeline paths use static `transform`/`willEnter`/`didExit` + `Context.ruleState` already in place earlier this phase.
+
+### Stripped
+
+- **WrapMultilineFunctionChains** (199 deletions) — `visit(_ FunctionCallExprSyntax)` (~70 lines) + 7 instance helpers (`collectChain`, `isInnerChainCall`, `previousNonSpaceToken`, `nextPeriodInChain`, `isClosingScope`, `isTypeAccess`, `replacePeriodTrivia`) + private inner `PeriodTriviaRewriter: SyntaxRewriter` class + Finding extension. Compact path: `applyWrapMultilineFunctionChains` + namespaced helpers (`wrapMultilineChainsCollect`, `wrapMultilineChainsIsInnerChainCall`, `wrapMultilineChainsIsTypeAccess`, `wrapMultilineChainsIsClosingScope`) + `WrapMultilineChainsPeriodTriviaRewriter` in `Rewrites/Exprs/FunctionCallExpr.swift`.
+- **WrapSingleLineBodies** (643 deletions) — 10 `visit(_:)` overrides (IfExpr, GuardStmt, FunctionDecl, InitializerDecl, SubscriptDecl, ForStmt, WhileStmt, RepeatStmt, PatternBinding, AccessorDecl) + 2 instance computed props (`mode`, `maxLength`) + 2 instance state vars (`currentIndent`, `chainBaseIndent`) + entire `Wrap Mode` extension (10 instance wrap helpers) + entire `Inline Mode` extension (12 instance inline helpers) + entire `Shared Helpers` extension (2 instance helpers). Compact path: 10 `static transform` overloads dispatching to `static wrap*`/`inline*` helpers + `Context.ruleState` (`WrapSingleLineBodiesState.indentStack`) populated by `static willEnter`/`didExit` for IfExpr/GuardStmt/ForStmt/WhileStmt/RepeatStmt.
+
+### Verification
+
+- `xc-swift swift_diagnostics --no-include-lint` — Build succeeded, 13 warnings (unchanged baseline).
+- Targeted regression filter (`WrapSingleLineBodies|WrapMultilineFunctionChains`): **13 pass**, all green.
+- Full suite: **3012 pass, 2 fail** (the 2 pre-existing `Layout/GuardStmtTests` pretty-printer-idempotency failures, unrelated).
+
+`override func visit` total in `Sources/SwiftiomaticKit/Rules/`: **256** (down from 268 at session start).
+
+### Skipped
+
+- **RedundantEscaping** — fresh-instance pattern. The static `transform` calls `RedundantEscaping(context: context).visit(node)`, so the instance `visit` IS the rewrite (the inner `EscapeChecker: SyntaxVisitor` analysis is fully encapsulated). Cannot strip without first inlining the visit body into a static helper or porting `EscapeChecker` into `Context.ruleState`.
