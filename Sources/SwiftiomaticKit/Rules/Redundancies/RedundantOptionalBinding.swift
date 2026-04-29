@@ -25,10 +25,6 @@ import SwiftSyntax
 final class RedundantOptionalBinding: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable {
   override class var group: ConfigurationGroup? { .redundancies }
 
-  override func visit(_ node: OptionalBindingConditionSyntax) -> OptionalBindingConditionSyntax {
-    Self.transform(node, parent: Syntax(node).parent, context: context)
-  }
-
   static func transform(
     _ node: OptionalBindingConditionSyntax,
     parent: Syntax?,

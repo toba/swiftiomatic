@@ -34,10 +34,6 @@ final class RedundantLet: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable
 
   // MARK: - Statement-level: let _ = expr → _ = expr
 
-  override func visit(_ node: CodeBlockItemListSyntax) -> CodeBlockItemListSyntax {
-    Self.transform(super.visit(node), parent: Syntax(node).parent, context: context)
-  }
-
   static func transform(
     _ visited: CodeBlockItemListSyntax,
     parent: Syntax?,
@@ -218,10 +214,6 @@ final class RedundantLet: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable
   }
 
   // MARK: - Case patterns: if case .foo(let _) → if case .foo(_)
-
-  override func visit(_ node: LabeledExprSyntax) -> LabeledExprSyntax {
-    Self.transform(node, parent: Syntax(node).parent, context: context)
-  }
 
   static func transform(
     _ node: LabeledExprSyntax,

@@ -24,10 +24,6 @@ final class RedundantViewBuilder: RewriteSyntaxRule<BasicRuleValue>, @unchecked 
   /// false positives in codebases that use custom result builders named `ViewBuilder`.
   override class var defaultValue: BasicRuleValue { BasicRuleValue(rewrite: false, lint: .no) }
 
-  override func visit(_ node: VariableDeclSyntax) -> DeclSyntax {
-    Self.transform(node, parent: Syntax(node).parent, context: context)
-  }
-
   static func transform(
     _ node: VariableDeclSyntax,
     parent: Syntax?,
@@ -61,10 +57,6 @@ final class RedundantViewBuilder: RewriteSyntaxRule<BasicRuleValue>, @unchecked 
       result.bindingSpecifier.leadingTrivia = savedTrivia
     }
     return DeclSyntax(result)
-  }
-
-  override func visit(_ node: FunctionDeclSyntax) -> DeclSyntax {
-    Self.transform(node, parent: Syntax(node).parent, context: context)
   }
 
   static func transform(

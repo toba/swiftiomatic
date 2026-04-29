@@ -1,11 +1,11 @@
 ---
 # eot-edv
 title: 'Phase 4 swift review: refactor merged compact-pipeline files'
-status: review
+status: completed
 type: task
 priority: normal
 created_at: 2026-04-28T20:48:51Z
-updated_at: 2026-04-28T21:12:10Z
+updated_at: 2026-04-29T02:37:44Z
 parent: ddi-wtv
 ---
 

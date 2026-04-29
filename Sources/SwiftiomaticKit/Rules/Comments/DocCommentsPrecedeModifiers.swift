@@ -13,24 +13,12 @@ final class DocCommentsPrecedeModifiers: RewriteSyntaxRule<BasicRuleValue>, @unc
 
     // MARK: - Container types (need super.visit)
 
-    override func visit(_ node: StructDeclSyntax) -> DeclSyntax {
-        let parent = Syntax(node).parent
-        let visited = super.visit(node).cast(StructDeclSyntax.self)
-        return Self.transform(visited, parent: parent, context: context)
-    }
-
     static func transform(
         _ node: StructDeclSyntax,
         parent: Syntax?,
         context: Context
     ) -> DeclSyntax {
         DeclSyntax(moveDocComments(in: node, keywordKeyPath: \.structKeyword, context: context))
-    }
-
-    override func visit(_ node: ClassDeclSyntax) -> DeclSyntax {
-        let parent = Syntax(node).parent
-        let visited = super.visit(node).cast(ClassDeclSyntax.self)
-        return Self.transform(visited, parent: parent, context: context)
     }
 
     static func transform(
@@ -41,24 +29,12 @@ final class DocCommentsPrecedeModifiers: RewriteSyntaxRule<BasicRuleValue>, @unc
         DeclSyntax(moveDocComments(in: node, keywordKeyPath: \.classKeyword, context: context))
     }
 
-    override func visit(_ node: EnumDeclSyntax) -> DeclSyntax {
-        let parent = Syntax(node).parent
-        let visited = super.visit(node).cast(EnumDeclSyntax.self)
-        return Self.transform(visited, parent: parent, context: context)
-    }
-
     static func transform(
         _ node: EnumDeclSyntax,
         parent: Syntax?,
         context: Context
     ) -> DeclSyntax {
         DeclSyntax(moveDocComments(in: node, keywordKeyPath: \.enumKeyword, context: context))
-    }
-
-    override func visit(_ node: ActorDeclSyntax) -> DeclSyntax {
-        let parent = Syntax(node).parent
-        let visited = super.visit(node).cast(ActorDeclSyntax.self)
-        return Self.transform(visited, parent: parent, context: context)
     }
 
     static func transform(
@@ -69,24 +45,12 @@ final class DocCommentsPrecedeModifiers: RewriteSyntaxRule<BasicRuleValue>, @unc
         DeclSyntax(moveDocComments(in: node, keywordKeyPath: \.actorKeyword, context: context))
     }
 
-    override func visit(_ node: ProtocolDeclSyntax) -> DeclSyntax {
-        let parent = Syntax(node).parent
-        let visited = super.visit(node).cast(ProtocolDeclSyntax.self)
-        return Self.transform(visited, parent: parent, context: context)
-    }
-
     static func transform(
         _ node: ProtocolDeclSyntax,
         parent: Syntax?,
         context: Context
     ) -> DeclSyntax {
         DeclSyntax(moveDocComments(in: node, keywordKeyPath: \.protocolKeyword, context: context))
-    }
-
-    override func visit(_ node: ExtensionDeclSyntax) -> DeclSyntax {
-        let parent = Syntax(node).parent
-        let visited = super.visit(node).cast(ExtensionDeclSyntax.self)
-        return Self.transform(visited, parent: parent, context: context)
     }
 
     static func transform(
@@ -99,20 +63,12 @@ final class DocCommentsPrecedeModifiers: RewriteSyntaxRule<BasicRuleValue>, @unc
 
     // MARK: - Leaf declarations
 
-    override func visit(_ node: FunctionDeclSyntax) -> DeclSyntax {
-        Self.transform(node, parent: Syntax(node).parent, context: context)
-    }
-
     static func transform(
         _ node: FunctionDeclSyntax,
         parent: Syntax?,
         context: Context
     ) -> DeclSyntax {
         DeclSyntax(moveDocComments(in: node, keywordKeyPath: \.funcKeyword, context: context))
-    }
-
-    override func visit(_ node: VariableDeclSyntax) -> DeclSyntax {
-        Self.transform(node, parent: Syntax(node).parent, context: context)
     }
 
     static func transform(
@@ -123,10 +79,6 @@ final class DocCommentsPrecedeModifiers: RewriteSyntaxRule<BasicRuleValue>, @unc
         DeclSyntax(moveDocComments(in: node, keywordKeyPath: \.bindingSpecifier, context: context))
     }
 
-    override func visit(_ node: TypeAliasDeclSyntax) -> DeclSyntax {
-        Self.transform(node, parent: Syntax(node).parent, context: context)
-    }
-
     static func transform(
         _ node: TypeAliasDeclSyntax,
         parent: Syntax?,
@@ -135,20 +87,12 @@ final class DocCommentsPrecedeModifiers: RewriteSyntaxRule<BasicRuleValue>, @unc
         DeclSyntax(moveDocComments(in: node, keywordKeyPath: \.typealiasKeyword, context: context))
     }
 
-    override func visit(_ node: InitializerDeclSyntax) -> DeclSyntax {
-        Self.transform(node, parent: Syntax(node).parent, context: context)
-    }
-
     static func transform(
         _ node: InitializerDeclSyntax,
         parent: Syntax?,
         context: Context
     ) -> DeclSyntax {
         DeclSyntax(moveDocComments(in: node, keywordKeyPath: \.initKeyword, context: context))
-    }
-
-    override func visit(_ node: SubscriptDeclSyntax) -> DeclSyntax {
-        Self.transform(node, parent: Syntax(node).parent, context: context)
     }
 
     static func transform(

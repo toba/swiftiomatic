@@ -23,9 +23,6 @@ import SwiftSyntax
 /// Rewrite: Redundant labels in case patterns are removed.
 final class NoLabelsInCasePatterns: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable {
     override class var group: ConfigurationGroup? { .redundancies }
-    override func visit(_ node: SwitchCaseLabelSyntax) -> SwitchCaseLabelSyntax {
-        Self.transform(node, parent: Syntax(node).parent, context: context)
-    }
 
     static func transform(
         _ node: SwitchCaseLabelSyntax,

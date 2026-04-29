@@ -29,10 +29,6 @@ import SwiftSyntax
 final class PreferIfElseChain: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable {
     override class var group: ConfigurationGroup? { .conditions }
 
-    override func visit(_ node: CodeBlockItemListSyntax) -> CodeBlockItemListSyntax {
-        Self.transform(super.visit(node), parent: Syntax(node).parent, context: context)
-    }
-
     static func transform(
         _ visited: CodeBlockItemListSyntax,
         parent: Syntax?,

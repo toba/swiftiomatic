@@ -49,62 +49,6 @@ final class RedundantAccessControl: RewriteSyntaxRule<BasicRuleValue>, @unchecke
         return Self.transform(visited, parent: nil, context: context)
     }
 
-    override func visit(_ node: ActorDeclSyntax) -> DeclSyntax {
-        let parent = Syntax(node).parent
-        let visited = super.visit(node).cast(ActorDeclSyntax.self)
-        return Self.transform(visited, parent: parent, context: context)
-    }
-
-    override func visit(_ node: ClassDeclSyntax) -> DeclSyntax {
-        let parent = Syntax(node).parent
-        let visited = super.visit(node).cast(ClassDeclSyntax.self)
-        return Self.transform(visited, parent: parent, context: context)
-    }
-
-    override func visit(_ node: EnumDeclSyntax) -> DeclSyntax {
-        let parent = Syntax(node).parent
-        let visited = super.visit(node).cast(EnumDeclSyntax.self)
-        return Self.transform(visited, parent: parent, context: context)
-    }
-
-    override func visit(_ node: FunctionDeclSyntax) -> DeclSyntax {
-        Self.transform(node, parent: Syntax(node).parent, context: context)
-    }
-
-    override func visit(_ node: InitializerDeclSyntax) -> DeclSyntax {
-        Self.transform(node, parent: Syntax(node).parent, context: context)
-    }
-
-    override func visit(_ node: ProtocolDeclSyntax) -> DeclSyntax {
-        let parent = Syntax(node).parent
-        let visited = super.visit(node).cast(ProtocolDeclSyntax.self)
-        return Self.transform(visited, parent: parent, context: context)
-    }
-
-    override func visit(_ node: StructDeclSyntax) -> DeclSyntax {
-        let parent = Syntax(node).parent
-        let visited = super.visit(node).cast(StructDeclSyntax.self)
-        return Self.transform(visited, parent: parent, context: context)
-    }
-
-    override func visit(_ node: SubscriptDeclSyntax) -> DeclSyntax {
-        Self.transform(node, parent: Syntax(node).parent, context: context)
-    }
-
-    override func visit(_ node: TypeAliasDeclSyntax) -> DeclSyntax {
-        Self.transform(node, parent: Syntax(node).parent, context: context)
-    }
-
-    override func visit(_ node: VariableDeclSyntax) -> DeclSyntax {
-        Self.transform(node, parent: Syntax(node).parent, context: context)
-    }
-
-    override func visit(_ node: ExtensionDeclSyntax) -> DeclSyntax {
-        let parent = Syntax(node).parent
-        let visited = super.visit(node).cast(ExtensionDeclSyntax.self)
-        return Self.transform(visited, parent: parent, context: context)
-    }
-
     // MARK: - Static transforms (per-decl)
 
     static func transform(

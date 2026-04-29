@@ -15,10 +15,6 @@ import SwiftSyntax
 final class RedundantBreak: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable {
     override static var group: ConfigurationGroup? { .redundancies }
 
-    override func visit(_ node: SwitchCaseSyntax) -> SwitchCaseSyntax {
-        Self.transform(super.visit(node), parent: Syntax(node).parent, context: context)
-    }
-
     static func transform(
         _ visited: SwitchCaseSyntax,
         parent: Syntax?,

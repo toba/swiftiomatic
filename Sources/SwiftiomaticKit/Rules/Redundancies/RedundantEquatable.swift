@@ -18,12 +18,6 @@ final class RedundantEquatable: RewriteSyntaxRule<BasicRuleValue>, @unchecked Se
     override class var defaultValue: BasicRuleValue { BasicRuleValue(rewrite: false, lint: .no) }
     override class var group: ConfigurationGroup? { .redundancies }
 
-    override func visit(_ node: StructDeclSyntax) -> DeclSyntax {
-        let parent = Syntax(node).parent
-        let visited = super.visit(node).cast(StructDeclSyntax.self)
-        return Self.transform(visited, parent: parent, context: context)
-    }
-
     static func transform(
         _ visited: StructDeclSyntax,
         parent: Syntax?,

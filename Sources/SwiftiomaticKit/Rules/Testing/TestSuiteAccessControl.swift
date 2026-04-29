@@ -32,18 +32,6 @@ final class TestSuiteAccessControl: RewriteSyntaxRule<BasicRuleValue>, @unchecke
         return super.visit(node)
     }
 
-    override func visit(_ node: ClassDeclSyntax) -> DeclSyntax {
-        let parent = Syntax(node).parent
-        let visited = super.visit(node).cast(ClassDeclSyntax.self)
-        return Self.transform(visited, parent: parent, context: context)
-    }
-
-    override func visit(_ node: StructDeclSyntax) -> DeclSyntax {
-        let parent = Syntax(node).parent
-        let visited = super.visit(node).cast(StructDeclSyntax.self)
-        return Self.transform(visited, parent: parent, context: context)
-    }
-
     // MARK: - Static transforms
 
     static func transform(

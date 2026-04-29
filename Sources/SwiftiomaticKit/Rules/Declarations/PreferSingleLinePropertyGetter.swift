@@ -20,10 +20,6 @@ import SwiftSyntax
 final class PreferSingleLinePropertyGetter: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable {
   override class var group: ConfigurationGroup? { .declarations }
 
-  override func visit(_ node: PatternBindingSyntax) -> PatternBindingSyntax {
-    Self.transform(super.visit(node), parent: Syntax(node).parent, context: context)
-  }
-
   static func transform(
     _ node: PatternBindingSyntax,
     parent: Syntax?,

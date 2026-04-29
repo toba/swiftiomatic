@@ -52,20 +52,12 @@ final class ModifierOrder: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendabl
 
     // MARK: - Visitors
 
-    override func visit(_ node: FunctionDeclSyntax) -> DeclSyntax {
-        Self.transform(node, parent: Syntax(node).parent, context: context)
-    }
-
     static func transform(
         _ node: FunctionDeclSyntax,
         parent: Syntax?,
         context: Context
     ) -> DeclSyntax {
         DeclSyntax(reorderingModifiers(of: node, keyPath: \.modifiers, context: context))
-    }
-
-    override func visit(_ node: VariableDeclSyntax) -> DeclSyntax {
-        Self.transform(node, parent: Syntax(node).parent, context: context)
     }
 
     static func transform(
@@ -76,24 +68,12 @@ final class ModifierOrder: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendabl
         DeclSyntax(reorderingModifiers(of: node, keyPath: \.modifiers, context: context))
     }
 
-    override func visit(_ node: ClassDeclSyntax) -> DeclSyntax {
-        let parent = Syntax(node).parent
-        let visited = super.visit(node).cast(ClassDeclSyntax.self)
-        return Self.transform(visited, parent: parent, context: context)
-    }
-
     static func transform(
         _ node: ClassDeclSyntax,
         parent: Syntax?,
         context: Context
     ) -> DeclSyntax {
         DeclSyntax(reorderingModifiers(of: node, keyPath: \.modifiers, context: context))
-    }
-
-    override func visit(_ node: StructDeclSyntax) -> DeclSyntax {
-        let parent = Syntax(node).parent
-        let visited = super.visit(node).cast(StructDeclSyntax.self)
-        return Self.transform(visited, parent: parent, context: context)
     }
 
     static func transform(
@@ -104,24 +84,12 @@ final class ModifierOrder: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendabl
         DeclSyntax(reorderingModifiers(of: node, keyPath: \.modifiers, context: context))
     }
 
-    override func visit(_ node: EnumDeclSyntax) -> DeclSyntax {
-        let parent = Syntax(node).parent
-        let visited = super.visit(node).cast(EnumDeclSyntax.self)
-        return Self.transform(visited, parent: parent, context: context)
-    }
-
     static func transform(
         _ node: EnumDeclSyntax,
         parent: Syntax?,
         context: Context
     ) -> DeclSyntax {
         DeclSyntax(reorderingModifiers(of: node, keyPath: \.modifiers, context: context))
-    }
-
-    override func visit(_ node: ActorDeclSyntax) -> DeclSyntax {
-        let parent = Syntax(node).parent
-        let visited = super.visit(node).cast(ActorDeclSyntax.self)
-        return Self.transform(visited, parent: parent, context: context)
     }
 
     static func transform(
@@ -132,10 +100,6 @@ final class ModifierOrder: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendabl
         DeclSyntax(reorderingModifiers(of: node, keyPath: \.modifiers, context: context))
     }
 
-    override func visit(_ node: InitializerDeclSyntax) -> DeclSyntax {
-        Self.transform(node, parent: Syntax(node).parent, context: context)
-    }
-
     static func transform(
         _ node: InitializerDeclSyntax,
         parent: Syntax?,
@@ -144,20 +108,12 @@ final class ModifierOrder: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendabl
         DeclSyntax(reorderingModifiers(of: node, keyPath: \.modifiers, context: context))
     }
 
-    override func visit(_ node: SubscriptDeclSyntax) -> DeclSyntax {
-        Self.transform(node, parent: Syntax(node).parent, context: context)
-    }
-
     static func transform(
         _ node: SubscriptDeclSyntax,
         parent: Syntax?,
         context: Context
     ) -> DeclSyntax {
         DeclSyntax(reorderingModifiers(of: node, keyPath: \.modifiers, context: context))
-    }
-
-    override func visit(_ node: TypeAliasDeclSyntax) -> DeclSyntax {
-        Self.transform(node, parent: Syntax(node).parent, context: context)
     }
 
     static func transform(

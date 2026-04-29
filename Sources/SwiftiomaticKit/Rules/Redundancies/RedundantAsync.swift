@@ -16,10 +16,6 @@ final class RedundantAsync: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendab
     override class var defaultValue: BasicRuleValue { .init(rewrite: false, lint: .no) }
     override class var group: ConfigurationGroup? { .redundancies }
 
-    override func visit(_ node: FunctionDeclSyntax) -> DeclSyntax {
-        Self.transform(node, parent: Syntax(node).parent, context: context)
-    }
-
     static func transform(
         _ node: FunctionDeclSyntax,
         parent: Syntax?,

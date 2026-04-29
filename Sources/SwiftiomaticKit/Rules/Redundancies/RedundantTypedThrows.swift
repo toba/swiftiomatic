@@ -12,9 +12,6 @@ final class RedundantTypedThrows: RewriteSyntaxRule<BasicRuleValue>, @unchecked 
   override class var group: ConfigurationGroup? { .redundancies }
 
   // Function declarations: `func foo() throws(any Error)`
-  override func visit(_ node: FunctionEffectSpecifiersSyntax) -> FunctionEffectSpecifiersSyntax {
-    Self.transform(node, parent: Syntax(node).parent, context: context)
-  }
 
   static func transform(
     _ node: FunctionEffectSpecifiersSyntax,

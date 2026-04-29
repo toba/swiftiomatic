@@ -16,10 +16,6 @@ final class WrapConditionalAssignment: RewriteSyntaxRule<BasicRuleValue>, @unche
 
     // MARK: - let/var declarations
 
-    override func visit(_ node: PatternBindingSyntax) -> PatternBindingSyntax {
-        Self.transform(node, parent: Syntax(node).parent, context: context)
-    }
-
     static func transform(
         _ node: PatternBindingSyntax,
         parent: Syntax?,
@@ -67,10 +63,6 @@ final class WrapConditionalAssignment: RewriteSyntaxRule<BasicRuleValue>, @unche
     }
 
     // MARK: - Reassignments (x = if/switch ...)
-
-    override func visit(_ node: InfixOperatorExprSyntax) -> ExprSyntax {
-        Self.transform(node, parent: Syntax(node).parent, context: context)
-    }
 
     static func transform(
         _ node: InfixOperatorExprSyntax,

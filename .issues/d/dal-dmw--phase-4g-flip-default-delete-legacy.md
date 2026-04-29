@@ -5,7 +5,7 @@ status: in-progress
 type: task
 priority: high
 created_at: 2026-04-28T15:50:43Z
-updated_at: 2026-04-29T01:21:26Z
+updated_at: 2026-04-29T02:51:59Z
 parent: ddi-wtv
 blocked_by:
     - 2sn-0al
@@ -77,3 +77,24 @@ Stripped 42 dead-shell `override func visit` delegates across 29 files (commit 5
 Loosened `RuleCollector.detectSyntaxRule` to accept rules with `static transform`/`willEnter`/`didExit` and no instance `visit` overrides — required for the static-only rules to be picked up by the dispatcher.
 
 Remaining instances of `override func visit` in `Sources/SwiftiomaticKit/Rules/`: 158 (from non-shell overrides — rules with pre-recursion state setup, conditional gating, or inline logic that hasn't been extracted to `static transform`). These need per-rule conversion.
+
+
+
+## Update 2026-04-29 (continued, session 2) — second strip pass
+
+Stripped 44 more dead-shell `override func visit(_:)` delegates across 44 rule files (525 deletions). Pattern: rules whose `visit` override was a single-line dispatch to `Self.transform(super.visit(node), parent: ..., context: context)`. With the compact pipeline calling `transform()` directly via the generated dispatcher, these instance overrides are dead.
+
+Exception: `WrapTernary` keeps its `visit(_ TernaryExprSyntax)` override. The layout test harness in `Tests/SwiftiomaticTests/Layout/LayoutTestCase.swift::prettyPrintedSource` invokes `WrapTernary(context: context).rewrite(...)` directly (the only rule the layout pipeline runs). Annotated with a comment noting it can be removed once the harness is retargeted.
+
+Also dropped a stray blank line in `Sources/SwiftiomaticKit/Syntax/Rewriter/CombinedRewriter.swift`.
+
+### Verification
+
+- `xc-swift swift_diagnostics --no-include-lint` — Build succeeded, 14 warnings (unchanged baseline).
+- Full suite: **3012 pass, 2 fail** (the 2 pre-existing `Layout/GuardStmtTests` pretty-printer-idempotency failures, unrelated).
+
+### What's still left in 4g
+
+- More complex `visit` overrides remain across rules with pre-recursion state, conditional gating, or unique node-kind widening. These need per-rule conversion, not bulk strip.
+- Delete `RewriteSyntaxRule` base class entirely.
+- Update `RuleCollector` to drop legacy rewrite-rule detection paths.

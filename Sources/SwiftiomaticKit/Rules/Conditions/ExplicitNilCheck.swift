@@ -28,9 +28,6 @@ import SwiftSyntaxBuilder
 /// Rewrite: `let _ = expr` inside a condition list will be replaced by `expr != nil`.
 final class ExplicitNilCheck: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable {
     override class var group: ConfigurationGroup? { .conditions }
-    override func visit(_ node: ConditionElementSyntax) -> ConditionElementSyntax {
-        Self.transform(node, parent: Syntax(node).parent, context: context)
-    }
 
     static func transform(
         _ node: ConditionElementSyntax,

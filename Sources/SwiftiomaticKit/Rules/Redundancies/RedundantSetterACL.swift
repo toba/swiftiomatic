@@ -19,10 +19,6 @@ final class RedundantSetterACL: RewriteSyntaxRule<BasicRuleValue>, @unchecked Se
     override class var group: ConfigurationGroup? { .redundancies }
     override class var defaultValue: BasicRuleValue { BasicRuleValue(rewrite: false, lint: .warn) }
 
-    override func visit(_ node: VariableDeclSyntax) -> DeclSyntax {
-        Self.transform(node, parent: Syntax(node).parent, context: context)
-    }
-
     static func transform(
         _ node: VariableDeclSyntax,
         parent: Syntax?,

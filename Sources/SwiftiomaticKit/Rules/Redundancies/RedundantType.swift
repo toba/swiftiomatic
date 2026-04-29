@@ -24,10 +24,6 @@ import SwiftSyntax
 final class RedundantType: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable {
   override class var group: ConfigurationGroup? { .redundancies }
 
-  override func visit(_ node: VariableDeclSyntax) -> DeclSyntax {
-    Self.transform(node, parent: Syntax(node).parent, context: context)
-  }
-
   static func transform(
     _ node: VariableDeclSyntax,
     parent: Syntax?,

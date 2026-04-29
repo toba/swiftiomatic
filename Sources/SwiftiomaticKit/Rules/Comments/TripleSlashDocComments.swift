@@ -25,20 +25,12 @@ import SwiftSyntax
 final class TripleSlashDocComments: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable {
     override static var group: ConfigurationGroup? { .comments }
 
-    override func visit(_ node: FunctionDeclSyntax) -> DeclSyntax {
-        Self.transform(node, parent: Syntax(node).parent, context: context)
-    }
-
     static func transform(
         _ node: FunctionDeclSyntax,
         parent: Syntax?,
         context: Context
     ) -> DeclSyntax {
         convertDocBlockCommentToDocLineComment(DeclSyntax(node), context: context)
-    }
-
-    override func visit(_ node: EnumDeclSyntax) -> DeclSyntax {
-        Self.transform(node, parent: Syntax(node).parent, context: context)
     }
 
     static func transform(
@@ -49,20 +41,12 @@ final class TripleSlashDocComments: RewriteSyntaxRule<BasicRuleValue>, @unchecke
         convertDocBlockCommentToDocLineComment(DeclSyntax(node), context: context)
     }
 
-    override func visit(_ node: InitializerDeclSyntax) -> DeclSyntax {
-        Self.transform(node, parent: Syntax(node).parent, context: context)
-    }
-
     static func transform(
         _ node: InitializerDeclSyntax,
         parent: Syntax?,
         context: Context
     ) -> DeclSyntax {
         convertDocBlockCommentToDocLineComment(DeclSyntax(node), context: context)
-    }
-
-    override func visit(_ node: DeinitializerDeclSyntax) -> DeclSyntax {
-        Self.transform(node, parent: Syntax(node).parent, context: context)
     }
 
     static func transform(
@@ -73,20 +57,12 @@ final class TripleSlashDocComments: RewriteSyntaxRule<BasicRuleValue>, @unchecke
         convertDocBlockCommentToDocLineComment(DeclSyntax(node), context: context)
     }
 
-    override func visit(_ node: SubscriptDeclSyntax) -> DeclSyntax {
-        Self.transform(node, parent: Syntax(node).parent, context: context)
-    }
-
     static func transform(
         _ node: SubscriptDeclSyntax,
         parent: Syntax?,
         context: Context
     ) -> DeclSyntax {
         convertDocBlockCommentToDocLineComment(DeclSyntax(node), context: context)
-    }
-
-    override func visit(_ node: ClassDeclSyntax) -> DeclSyntax {
-        Self.transform(node, parent: Syntax(node).parent, context: context)
     }
 
     static func transform(
@@ -97,20 +73,12 @@ final class TripleSlashDocComments: RewriteSyntaxRule<BasicRuleValue>, @unchecke
         convertDocBlockCommentToDocLineComment(DeclSyntax(node), context: context)
     }
 
-    override func visit(_ node: VariableDeclSyntax) -> DeclSyntax {
-        Self.transform(node, parent: Syntax(node).parent, context: context)
-    }
-
     static func transform(
         _ node: VariableDeclSyntax,
         parent: Syntax?,
         context: Context
     ) -> DeclSyntax {
         convertDocBlockCommentToDocLineComment(DeclSyntax(node), context: context)
-    }
-
-    override func visit(_ node: StructDeclSyntax) -> DeclSyntax {
-        Self.transform(node, parent: Syntax(node).parent, context: context)
     }
 
     static func transform(
@@ -121,10 +89,6 @@ final class TripleSlashDocComments: RewriteSyntaxRule<BasicRuleValue>, @unchecke
         convertDocBlockCommentToDocLineComment(DeclSyntax(node), context: context)
     }
 
-    override func visit(_ node: ProtocolDeclSyntax) -> DeclSyntax {
-        Self.transform(node, parent: Syntax(node).parent, context: context)
-    }
-
     static func transform(
         _ node: ProtocolDeclSyntax,
         parent: Syntax?,
@@ -133,20 +97,12 @@ final class TripleSlashDocComments: RewriteSyntaxRule<BasicRuleValue>, @unchecke
         convertDocBlockCommentToDocLineComment(DeclSyntax(node), context: context)
     }
 
-    override func visit(_ node: TypeAliasDeclSyntax) -> DeclSyntax {
-        Self.transform(node, parent: Syntax(node).parent, context: context)
-    }
-
     static func transform(
         _ node: TypeAliasDeclSyntax,
         parent: Syntax?,
         context: Context
     ) -> DeclSyntax {
         convertDocBlockCommentToDocLineComment(DeclSyntax(node), context: context)
-    }
-
-    override func visit(_ node: ExtensionDeclSyntax) -> DeclSyntax {
-        Self.transform(node, parent: Syntax(node).parent, context: context)
     }
 
     static func transform(

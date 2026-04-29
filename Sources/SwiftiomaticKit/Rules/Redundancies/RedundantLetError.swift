@@ -26,10 +26,6 @@ import SwiftSyntax
 final class RedundantLetError: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable {
   override class var group: ConfigurationGroup? { .redundancies }
 
-  override func visit(_ node: CatchClauseSyntax) -> CatchClauseSyntax {
-    Self.transform(super.visit(node), parent: Syntax(node).parent, context: context)
-  }
-
   static func transform(
     _ node: CatchClauseSyntax,
     parent: Syntax?,

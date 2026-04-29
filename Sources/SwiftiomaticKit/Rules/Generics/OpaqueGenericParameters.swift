@@ -18,12 +18,6 @@ final class OpaqueGenericParameters: RewriteSyntaxRule<BasicRuleValue>, @uncheck
 
     // MARK: - Visitors
 
-    override func visit(_ node: FunctionDeclSyntax) -> DeclSyntax {
-        let parent = Syntax(node).parent
-        let visited = super.visit(node).cast(FunctionDeclSyntax.self)
-        return Self.transform(visited, parent: parent, context: context)
-    }
-
     static func transform(
         _ visited: FunctionDeclSyntax,
         parent: Syntax?,
@@ -78,12 +72,6 @@ final class OpaqueGenericParameters: RewriteSyntaxRule<BasicRuleValue>, @uncheck
         return DeclSyntax(result)
     }
 
-    override func visit(_ node: InitializerDeclSyntax) -> DeclSyntax {
-        let parent = Syntax(node).parent
-        let visited = super.visit(node).cast(InitializerDeclSyntax.self)
-        return Self.transform(visited, parent: parent, context: context)
-    }
-
     static func transform(
         _ visited: InitializerDeclSyntax,
         parent: Syntax?,
@@ -136,12 +124,6 @@ final class OpaqueGenericParameters: RewriteSyntaxRule<BasicRuleValue>, @uncheck
         }
 
         return DeclSyntax(result)
-    }
-
-    override func visit(_ node: SubscriptDeclSyntax) -> DeclSyntax {
-        let parent = Syntax(node).parent
-        let visited = super.visit(node).cast(SubscriptDeclSyntax.self)
-        return Self.transform(visited, parent: parent, context: context)
     }
 
     static func transform(

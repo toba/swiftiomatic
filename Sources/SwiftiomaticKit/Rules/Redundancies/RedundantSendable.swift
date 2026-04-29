@@ -17,12 +17,6 @@ final class RedundantSendable: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sen
     override class var group: ConfigurationGroup? { .redundancies }
     override class var defaultValue: BasicRuleValue { .init(rewrite: false, lint: .no) }
 
-    override func visit(_ node: StructDeclSyntax) -> DeclSyntax {
-        let parent = Syntax(node).parent
-        let visited = super.visit(node).cast(StructDeclSyntax.self)
-        return Self.transform(visited, parent: parent, context: context)
-    }
-
     static func transform(
         _ visited: StructDeclSyntax,
         parent: Syntax?,
@@ -43,12 +37,6 @@ final class RedundantSendable: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sen
             result.memberBlock.leftBrace.leadingTrivia = .space
         }
         return DeclSyntax(result)
-    }
-
-    override func visit(_ node: EnumDeclSyntax) -> DeclSyntax {
-        let parent = Syntax(node).parent
-        let visited = super.visit(node).cast(EnumDeclSyntax.self)
-        return Self.transform(visited, parent: parent, context: context)
     }
 
     static func transform(

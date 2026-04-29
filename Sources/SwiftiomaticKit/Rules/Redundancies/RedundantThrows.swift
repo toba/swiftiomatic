@@ -16,10 +16,6 @@ final class RedundantThrows: RewriteSyntaxRule<BasicRuleValue>, @unchecked Senda
 
   override class var defaultValue: BasicRuleValue { BasicRuleValue(rewrite: false, lint: .no) }
 
-  override func visit(_ node: FunctionDeclSyntax) -> DeclSyntax {
-    Self.transform(node, parent: Syntax(node).parent, context: context)
-  }
-
   static func transform(
     _ node: FunctionDeclSyntax,
     parent: Syntax?,

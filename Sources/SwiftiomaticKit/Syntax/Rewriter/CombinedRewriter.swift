@@ -16,7 +16,6 @@ import SwiftSyntax
 /// Findings are intentionally omitted — the spike measures rewrite throughput only. The
 /// production combined rewriter (`ddi-wtv`) will route diagnostics through `Context`.
 package final class CombinedRewriter: SyntaxRewriter {
-
     override package func visit(_ node: SwitchCaseSyntax) -> SwitchCaseSyntax {
         let visited = super.visit(node)
         let statements = visited.statements

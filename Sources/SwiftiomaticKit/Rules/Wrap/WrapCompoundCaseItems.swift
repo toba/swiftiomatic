@@ -14,10 +14,6 @@ final class WrapCompoundCaseItems: RewriteSyntaxRule<BasicRuleValue>, @unchecked
     override static var group: ConfigurationGroup? { .wrap }
     override static var defaultValue: BasicRuleValue { .init(rewrite: false, lint: .no) }
 
-    override func visit(_ node: SwitchCaseLabelSyntax) -> SwitchCaseLabelSyntax {
-        Self.transform(node, parent: Syntax(node).parent, context: context)
-    }
-
     static func transform(
         _ node: SwitchCaseLabelSyntax,
         parent: Syntax?,

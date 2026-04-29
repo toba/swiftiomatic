@@ -24,10 +24,6 @@ final class EmptyCollectionLiteral: RewriteSyntaxRule<BasicRuleValue>, @unchecke
     override class var group: ConfigurationGroup? { .literals }
     override class var defaultValue: BasicRuleValue { .init(rewrite: false, lint: .no) }
 
-    override func visit(_ node: PatternBindingSyntax) -> PatternBindingSyntax {
-        Self.transform(super.visit(node), parent: Syntax(node).parent, context: context)
-    }
-
     static func transform(
         _ node: PatternBindingSyntax,
         parent: Syntax?,
@@ -44,10 +40,6 @@ final class EmptyCollectionLiteral: RewriteSyntaxRule<BasicRuleValue>, @unchecke
         }
 
         return node
-    }
-
-    override func visit(_ param: FunctionParameterSyntax) -> FunctionParameterSyntax {
-        Self.transform(super.visit(param), parent: Syntax(param).parent, context: context)
     }
 
     static func transform(

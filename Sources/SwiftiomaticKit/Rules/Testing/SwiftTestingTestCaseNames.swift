@@ -57,12 +57,6 @@ final class SwiftTestingTestCaseNames: RewriteSyntaxRule<BasicRuleValue>, @unche
         return super.visit(node)
     }
 
-    override func visit(_ node: FunctionDeclSyntax) -> DeclSyntax {
-        let parent = Syntax(node).parent
-        let visited = super.visit(node).cast(FunctionDeclSyntax.self)
-        return Self.transform(visited, parent: parent, context: context)
-    }
-
     // MARK: - Static transform
 
     static func transform(

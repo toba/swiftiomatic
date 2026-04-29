@@ -15,10 +15,6 @@ final class RedundantPattern: RewriteSyntaxRule<BasicRuleValue>, @unchecked Send
 
   // MARK: - Switch case items: case let .foo(_, _) → case .foo
 
-  override func visit(_ node: SwitchCaseItemSyntax) -> SwitchCaseItemSyntax {
-    Self.transform(node, parent: Syntax(node).parent, context: context)
-  }
-
   static func transform(
     _ node: SwitchCaseItemSyntax,
     parent: Syntax?,
@@ -56,10 +52,6 @@ final class RedundantPattern: RewriteSyntaxRule<BasicRuleValue>, @unchecked Send
   }
 
   // MARK: - Let/var bindings: let (_, _) = bar → let _ = bar
-
-  override func visit(_ node: VariableDeclSyntax) -> DeclSyntax {
-    Self.transform(node, parent: Syntax(node).parent, context: context)
-  }
 
   static func transform(
     _ node: VariableDeclSyntax,

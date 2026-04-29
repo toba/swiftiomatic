@@ -23,10 +23,6 @@ import SwiftSyntax
 final class RedundantRawValues: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable {
   override class var group: ConfigurationGroup? { .redundancies }
 
-  override func visit(_ node: EnumCaseDeclSyntax) -> DeclSyntax {
-    Self.transform(node, parent: Syntax(node).parent, context: context)
-  }
-
   static func transform(
     _ node: EnumCaseDeclSyntax,
     parent: Syntax?,

@@ -25,10 +25,6 @@ final class UseImplicitInit: RewriteSyntaxRule<BasicRuleValue>, @unchecked Senda
 
   // MARK: - Computed properties and stored properties with type annotations
 
-  override func visit(_ node: PatternBindingSyntax) -> PatternBindingSyntax {
-    Self.transform(node, parent: Syntax(node).parent, context: context)
-  }
-
   static func transform(
     _ node: PatternBindingSyntax,
     parent: Syntax?,
@@ -98,10 +94,6 @@ final class UseImplicitInit: RewriteSyntaxRule<BasicRuleValue>, @unchecked Senda
 
   // MARK: - Function / method return types and default parameter values
 
-  override func visit(_ node: FunctionDeclSyntax) -> DeclSyntax {
-    Self.transform(node, parent: Syntax(node).parent, context: context)
-  }
-
   static func transform(
     _ node: FunctionDeclSyntax,
     parent: Syntax?,
@@ -135,10 +127,6 @@ final class UseImplicitInit: RewriteSyntaxRule<BasicRuleValue>, @unchecked Senda
 
   // MARK: - Initializer default parameter values
 
-  override func visit(_ node: InitializerDeclSyntax) -> DeclSyntax {
-    Self.transform(node, parent: Syntax(node).parent, context: context)
-  }
-
   static func transform(
     _ node: InitializerDeclSyntax,
     parent: Syntax?,
@@ -155,10 +143,6 @@ final class UseImplicitInit: RewriteSyntaxRule<BasicRuleValue>, @unchecked Senda
   }
 
   // MARK: - Subscript return types
-
-  override func visit(_ node: SubscriptDeclSyntax) -> DeclSyntax {
-    Self.transform(node, parent: Syntax(node).parent, context: context)
-  }
 
   static func transform(
     _ node: SubscriptDeclSyntax,

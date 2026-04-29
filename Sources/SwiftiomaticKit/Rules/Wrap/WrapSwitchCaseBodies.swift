@@ -38,10 +38,6 @@ final class WrapSwitchCaseBodies: RewriteSyntaxRule<SwitchCaseBodiesConfiguratio
         return config
     }
 
-    override func visit(_ node: SwitchCaseSyntax) -> SwitchCaseSyntax {
-        Self.transform(node, parent: Syntax(node).parent, context: context)
-    }
-
     static func transform(
         _ node: SwitchCaseSyntax,
         parent: Syntax?,

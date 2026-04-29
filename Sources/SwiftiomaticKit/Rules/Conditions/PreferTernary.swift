@@ -34,10 +34,6 @@ final class PreferTernary: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendabl
     override class var group: ConfigurationGroup? { .conditions }
     override class var defaultValue: BasicRuleValue { .init(rewrite: false, lint: .no) }
 
-    override func visit(_ node: CodeBlockItemListSyntax) -> CodeBlockItemListSyntax {
-        Self.transform(super.visit(node), parent: Syntax(node).parent, context: context)
-    }
-
     static func transform(
         _ visited: CodeBlockItemListSyntax,
         parent: Syntax?,

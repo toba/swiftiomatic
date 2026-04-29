@@ -14,10 +14,6 @@ final class AvoidNoneName: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendabl
     override class var group: ConfigurationGroup? { .idioms }
     override class var defaultValue: BasicRuleValue { .init(rewrite: false, lint: .warn) }
 
-    override func visit(_ node: EnumCaseElementSyntax) -> EnumCaseElementSyntax {
-        Self.transform(super.visit(node), parent: Syntax(node).parent, context: context)
-    }
-
     static func transform(
         _ node: EnumCaseElementSyntax,
         parent: Syntax?,
