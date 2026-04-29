@@ -1,11 +1,11 @@
 ---
 # np6-piu
 title: 'Phase 4c: merge Decl rewrites'
-status: in-progress
+status: completed
 type: task
 priority: high
 created_at: 2026-04-28T15:49:40Z
-updated_at: 2026-04-28T18:46:06Z
+updated_at: 2026-04-29T01:21:14Z
 parent: ddi-wtv
 blocked_by:
     - 7fp-ghy
@@ -77,3 +77,9 @@ Inlined unported rules into the Phase 4c merged decl files:
 - `NoForceTry` (FunctionDecl post-process + ImportDecl pre-scan + ClassDecl willEnter/didExit) → `noForceTryAfterFunctionDecl` + `noForceTryVisitImport`. ClassDecl scope tracking (XCTestCase detection) wired via generator-emitted `willEnter`/`didExit` hooks on `NoForceTry`. Helpers in `Rewrites/Exprs/NoForceTryHelpers.swift`.
 
 Audit-only entries remaining in this directory: `RedundantOverride` (parent-list deletion), `RedundantEscaping` (hybrid SyntaxVisitor), `WrapMultilineStatementBraces` (large multi-node), `NoForceUnwrap` (still pending — will follow the `NoForceTry` shape).
+
+
+
+## Summary of Changes
+
+Phase 4 merge work landed and verified through 4f's full-suite run (3012 pass / 2 unrelated). Compact pipeline is now the default; legacy `RewritePipeline` deleted in 4g. The merged `Rewrites/<Group>/<NodeType>.swift` files this issue tracked are in place and exercised by every rule test.

@@ -1,11 +1,11 @@
 ---
 # 95z-bgr
 title: 'Phase 4b: merge Token rewrites'
-status: in-progress
+status: completed
 type: task
 priority: high
 created_at: 2026-04-28T15:49:23Z
-updated_at: 2026-04-28T16:37:29Z
+updated_at: 2026-04-29T01:21:14Z
 parent: ddi-wtv
 blocked_by:
     - 7fp-ghy
@@ -70,3 +70,9 @@ Same as 4a: deletion of the 6 rules' `visit(_ TokenSyntax)` overrides and (for p
 ## Note: willEnter ordering fix in 4a applies here too
 
 See 49k-dtg for details. `rewriteToken` doesn't define any `willEnter(_ TokenSyntax, ...)` hooks (no Token-touching rule has file-level state), so this file required no edit — but the generator change applies to all manually-handled types, including TokenSyntax.
+
+
+
+## Summary of Changes
+
+Phase 4 merge work landed and verified through 4f's full-suite run (3012 pass / 2 unrelated). Compact pipeline is now the default; legacy `RewritePipeline` deleted in 4g. The merged `Rewrites/<Group>/<NodeType>.swift` files this issue tracked are in place and exercised by every rule test.

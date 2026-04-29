@@ -5,7 +5,7 @@ status: ready
 type: task
 priority: high
 created_at: 2026-04-29T01:05:14Z
-updated_at: 2026-04-29T01:05:14Z
+updated_at: 2026-04-29T01:21:26Z
 parent: ddi-wtv
 ---
 
@@ -31,3 +31,11 @@ Continuation of `dal-dmw` (Phase 4g) for the larger surgery.
 ## Context
 
 Parent: `ddi-wtv`. Sibling done: `dal-dmw` (which landed the smaller flip-default work).
+
+
+
+## Update 2026-04-29
+
+Initial wave done in `dal-dmw` (parent issue): 42 trivial-shell overrides stripped + collector loosened.
+
+Remaining work focuses on the 158 non-shell `override func visit` overrides — these require per-rule analysis since the body contains real logic that needs extraction into static helpers before the override can be deleted.

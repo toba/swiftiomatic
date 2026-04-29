@@ -5,7 +5,7 @@ status: in-progress
 type: task
 priority: high
 created_at: 2026-04-28T15:50:43Z
-updated_at: 2026-04-29T01:04:59Z
+updated_at: 2026-04-29T01:21:26Z
 parent: ddi-wtv
 blocked_by:
     - 2sn-0al
@@ -68,3 +68,12 @@ Phase 4g of `ddi-wtv` collapse plan: flip the default to compact and delete all 
 - Convert all 122 rule classes from `final class FooRule: RewriteSyntaxRule<X>` to a static-only form. The static `transform`/`willEnter`/`didExit` methods are already in place; the legacy instance overrides (`override func visit(...)`) become dead and need to be removed.
 - Update `RuleCollector` to drop legacy rewrite-rule detection paths (`Sources/GeneratorKit/RuleCollector.swift`).
 - Decide on `SyntaxRule` protocol shape post-cutover (instance `context` + `init(context:)` are no longer needed for compact-pipeline rules — only static methods).
+
+
+
+## Update 2026-04-29 (continued) — dead-shell strip
+
+Stripped 42 dead-shell `override func visit` delegates across 29 files (commit 55bfa7a1).
+Loosened `RuleCollector.detectSyntaxRule` to accept rules with `static transform`/`willEnter`/`didExit` and no instance `visit` overrides — required for the static-only rules to be picked up by the dispatcher.
+
+Remaining instances of `override func visit` in `Sources/SwiftiomaticKit/Rules/`: 158 (from non-shell overrides — rules with pre-recursion state setup, conditional gating, or inline logic that hasn't been extracted to `static transform`). These need per-rule conversion.

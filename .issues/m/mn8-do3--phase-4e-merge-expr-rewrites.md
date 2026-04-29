@@ -1,11 +1,11 @@
 ---
 # mn8-do3
 title: 'Phase 4e: merge Expr rewrites'
-status: in-progress
+status: completed
 type: task
 priority: high
 created_at: 2026-04-28T15:50:14Z
-updated_at: 2026-04-28T20:03:13Z
+updated_at: 2026-04-29T01:21:14Z
 parent: ddi-wtv
 blocked_by:
     - 7fp-ghy
@@ -136,3 +136,9 @@ Audit-only counts (after this work): `WrapMultilineStatementBraces` 16, `NestedC
 Verification: build clean (12 warnings); parity test green; 28 targeted tests pass (RedundantOverride + WrapMultilineStatementBraces + parity).
 
 **All 4 previously-unported rules are now inlined. Audit-only count: 16 → 0** real entries (2 token-level no-op markers remain by design — `NestedCallLayout` and `WrapMultilineStatementBraces` placeholders in `Rewrites/Tokens/TokenRewrites.swift` since these rules transform structural nodes, not tokens; the markers preserve rule-mask gating semantics).
+
+
+
+## Summary of Changes
+
+Phase 4 merge work landed and verified through 4f's full-suite run (3012 pass / 2 unrelated). Compact pipeline is now the default; legacy `RewritePipeline` deleted in 4g. The merged `Rewrites/<Group>/<NodeType>.swift` files this issue tracked are in place and exercised by every rule test.
