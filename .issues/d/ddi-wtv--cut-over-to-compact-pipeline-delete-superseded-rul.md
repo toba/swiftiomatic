@@ -5,7 +5,7 @@ status: in-progress
 type: feature
 priority: high
 created_at: 2026-04-28T01:41:38Z
-updated_at: 2026-04-29T05:49:17Z
+updated_at: 2026-04-29T05:57:37Z
 parent: iv7-r5g
 blocked_by:
     - eti-yt2
@@ -193,3 +193,32 @@ Fresh-instance rules whose `static transform` redirects to `<Rule>(context:).vis
 4. Strip the rule class to: declaration, `group`/`defaultValue` overrides, `static transform` calling the helper.
 
 No `applyRule` wiring needed when the call site (e.g. `rewriteFunctionDecl`) already invokes `<Rule>.transform` directly.
+
+
+
+## Update 2026-04-29 (continued, session 18) — port NestedCallLayout
+
+Ported **NestedCallLayout** out of the fresh-instance pattern. 229 → 227 instance overrides.
+
+### Changes
+
+- **Created** `Sources/SwiftiomaticKit/Rewrites/Exprs/NestedCallLayoutHelpers.swift` (~530 lines) with `applyNestedCallLayout(_ FunctionCallExprSyntax, context:)` plus all helpers lifted to file-private free functions. Helper names namespaced with `nestedCallLayout` prefix to avoid collisions:
+  - Detection: `nestedCallLayoutCollectChain`, `nestedCallLayoutSoleArgumentCall`, `nestedCallLayoutIsCanonicalFullyNested`, `nestedCallLayoutIsInnerNestedCall`.
+  - Inline mode: `nestedCallLayoutInlineLayout`, `nestedCallLayoutInlineArgText`, `nestedCallLayoutArgumentLabelPrefix`, `nestedCallLayoutBuildFullyInlineText`, `nestedCallLayoutBuildOuterInlinePrefix`, `nestedCallLayoutBuildInnerInlineText`, `nestedCallLayoutBuildWrappedArgs`, `nestedCallLayoutRebuildFullyInline`, `nestedCallLayoutRebuildSingleCallInline`, `nestedCallLayoutRebuildOuterInlineInnerWrapped`, `nestedCallLayoutRebuildFullyWrappedInnerInline`.
+  - Hug fallback: `nestedCallLayoutTryHugSingleArg`, `nestedCallLayoutReindentLabeledExpr`, private final `NestedCallLayoutIndentShiftRewriter: SyntaxRewriter`.
+  - Wrap mode: `nestedCallLayoutWrapLayout`, `nestedCallLayoutIsFullyNested`, `nestedCallLayoutRebuildFullyNested`.
+  - Shared utilities: `nestedCallLayoutColumnOffset`, `nestedCallLayoutLineIndentation`, `nestedCallLayoutRebuildCallWithWrappedArgs`.
+  - Internal `NestedCallLevel` struct (was `CallLevel`).
+  - Constant `nestedCallLayoutIndentUnit = "    "`.
+  - `Trivia.shiftingNestedCallIndentation(by:)` (was `shiftingIndentation`) renamed to avoid collision.
+- Configuration access (mode, maxLength) now reads via `context.configuration[NestedCallLayout.self].mode` and `context.configuration[LineLength.self]` directly in `applyNestedCallLayout` / `nestedCallLayoutInlineLayout`.
+- Diagnose calls switched from `self.diagnose(...)` to `NestedCallLayout.diagnose(..., context: context)` (Self.diagnose pattern). Finding extension moved to fileprivate in helpers file.
+- **Stripped** `Sources/SwiftiomaticKit/Rules/Wrap/NestedCallLayout.swift` from 749 → 84 lines: rule class declaration + `key` / `group` / `defaultValue` overrides + `static transform(_ FunctionCallExprSyntax, parent:context:)` delegating to `applyNestedCallLayout`. Configuration struct kept at the bottom.
+
+### Verification
+
+- `xc-swift swift_diagnostics --no-include-lint` — Build succeeded, 13 warnings (unchanged baseline).
+- `NestedCallLayout` filter: **23 pass**, all green.
+- Full suite: **3012 pass, 2 fail** (the 2 pre-existing `Layout/GuardStmtTests` pretty-printer-idempotency failures, unrelated).
+
+`override func visit` total in `Sources/SwiftiomaticKit/Rules/`: **227** (down from 229; one of the 2 stripped is the rule's `visit` override, the other is the inner private `IndentShiftRewriter.visit(_ TokenSyntax)` which moved into the helpers file as `NestedCallLayoutIndentShiftRewriter`).
