@@ -5,7 +5,7 @@ status: in-progress
 type: feature
 priority: high
 created_at: 2026-04-28T01:41:38Z
-updated_at: 2026-04-29T06:05:51Z
+updated_at: 2026-04-29T06:12:13Z
 parent: iv7-r5g
 blocked_by:
     - eti-yt2
@@ -255,3 +255,37 @@ guard let typed = visited.as(N.self) else { return visited }
 ```
 
 …the lift is mechanical. The helper takes the *already-recursed* node (no `super.visit`), performs only the per-type adjustment, and returns the result widened to the parent type. Each `static transform` becomes a one-liner delegating to the helper.
+
+
+
+## Update 2026-04-29 (continued, session 20) — strip RedundantSelf dead-shells
+
+Stripped **all instance state stacks and 13 `override func visit`** dead-shells from `RedundantSelf` (~258 deletions). The rule's compact pipeline path was already complete: every scope-bearing visit had matching `static willEnter`/`static didExit` hooks driving the `State` class via `Context.ruleState`, and `static transform(_ MemberAccessExprSyntax, ...)` already implemented the rewrite. The override visits maintained a parallel set of instance stacks (`referenceTypeStack`, `implicitSelfStack`, `localNameStack`) that were dead in the compact pipeline.
+
+### Stripped
+
+- 3 instance state stacks: `referenceTypeStack`, `implicitSelfStack`, `localNameStack` + 4 instance computed properties (`insideTypeBody`, `isReferenceType`, `implicitSelfAllowed`, `allLocalNames`).
+- 2 instance scope helpers: `withTypeContext(isReference:_:)`, `withScope(localNames:allowsImplicitSelf:_:)`.
+- 13 `override func visit(_:)` dead-shells: 5 type decls (Struct/Enum/Class/Actor/Extension), 3 function-like (Function/Initializer/Subscript), Accessor, Variable, AccessorBlock, Closure, MemberAccessExpr.
+
+### Verification
+
+- `xc-swift swift_diagnostics --no-include-lint` — Build succeeded, 13 warnings (unchanged baseline).
+- `RedundantSelf` filter: **51 pass**, all green.
+- Full suite: **3012 pass, 2 fail** (the 2 pre-existing `Layout/GuardStmtTests` pretty-printer-idempotency failures, unrelated).
+
+`override func visit` total in `Sources/SwiftiomaticKit/Rules/`: **198** (down from 211 at session start). RedundantSelf shrunk from 678 → 420 lines.
+
+### What's still left in 4g
+
+- **Fresh-instance pattern, recursive** — `PreferShorthandTypeNames` (recommended to keep as-is per parent issue: the SyntaxRewriter recursion is fundamental).
+- **Lint-only `override func visit` rules** — `SyntaxLintRule` subclasses, out of scope for this strip.
+- **Structural-pass rules** — out of scope.
+- `WrapTernary` — kept until layout test harness retargeted.
+
+After dropping the lint-only count, the remaining `RewriteSyntaxRule` overrides are:
+- `WrapTernary` (1, kept).
+- `PreferShorthandTypeNames` (2, kept by design).
+- Structural-pass rules (`SortImports`, `SortTypeAliases`, `SortSwitchCases`, `SortDeclarations`, `BlankLinesAfterImports`, `BlankLinesBetweenScopes`, `ExtensionAccessLevel`, `FileScopedDeclarationPrivacy`, `FileHeader`, `CaseLet`).
+
+The `RewriteSyntaxRule` base class itself can now be evaluated for elimination (the structural-pass rules currently inherit from it, but they don't need the compact-pipeline static-hook wiring; they could become plain `SyntaxRewriter` subclasses with rule registration via a different path).
