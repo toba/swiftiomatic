@@ -6,7 +6,7 @@ import SwiftSyntax
 ///
 /// Rewrite: The comment is word-wrapped, continuing on the next line with the same prefix and
 /// indentation.
-final class WrapSingleLineComments: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable {
+final class WrapSingleLineComments: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
     override class var key: String { "singleLineComments" }
     override class var group: ConfigurationGroup? { .wrap }
     override class var defaultValue: BasicRuleValue { .init(rewrite: false, lint: .no) }

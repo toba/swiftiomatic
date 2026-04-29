@@ -11,7 +11,7 @@ import SwiftSyntax
 /// Lint: If any case's spacing is inconsistent with the majority, a lint warning is raised.
 ///
 /// Rewrite: Blank lines are added or removed to make spacing consistent.
-final class ConsistentSwitchCaseSpacing: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable {
+final class ConsistentSwitchCaseSpacing: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
     override static var group: ConfigurationGroup? { .blankLines }
     override static var defaultValue: BasicRuleValue { .init(rewrite: false, lint: .no) }
 }

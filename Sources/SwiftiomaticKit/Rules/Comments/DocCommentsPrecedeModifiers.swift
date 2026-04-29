@@ -8,7 +8,7 @@ import SwiftSyntax
 /// Lint: If a doc comment appears after an attribute or modifier, a lint warning is raised.
 ///
 /// Rewrite: The doc comment is moved before all attributes and modifiers.
-final class DocCommentsPrecedeModifiers: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable {
+final class DocCommentsPrecedeModifiers: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
     override static var group: ConfigurationGroup? { .comments }
 
     // MARK: - Container types (need super.visit)

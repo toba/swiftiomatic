@@ -14,7 +14,7 @@ import SwiftSyntax
 /// Lint: A redundant `==` implementation raises a warning.
 ///
 /// Rewrite: The `==` function is removed from the member block.
-final class RedundantEquatable: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable {
+final class RedundantEquatable: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
     override class var defaultValue: BasicRuleValue { BasicRuleValue(rewrite: false, lint: .no) }
     override class var group: ConfigurationGroup? { .redundancies }
 

@@ -10,7 +10,7 @@ import SwiftSyntax
 ///
 /// Rewrite: The comment block is rebuilt with reflowed prose; code fences and atomic tokens are
 /// emitted verbatim.
-final class ReflowComments: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable {
+final class ReflowComments: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
     override class var group: ConfigurationGroup? { .comments }
     override class var defaultValue: BasicRuleValue { .init(rewrite: false, lint: .no) }
 }

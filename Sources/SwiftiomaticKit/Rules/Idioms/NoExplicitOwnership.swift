@@ -9,7 +9,7 @@ import SwiftSyntax
 /// Lint: If an explicit `borrowing` or `consuming` modifier is found, a lint warning is raised.
 ///
 /// Rewrite: The ownership modifier is removed.
-final class NoExplicitOwnership: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable {
+final class NoExplicitOwnership: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
     override class var group: ConfigurationGroup? { .idioms }
 
     override class var defaultValue: BasicRuleValue { .init(rewrite: false, lint: .no) }

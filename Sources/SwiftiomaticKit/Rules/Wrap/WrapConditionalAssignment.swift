@@ -9,7 +9,7 @@ import SwiftSyntax
 /// Lint: A multiline `if` / `switch` expression on the same line as `=` raises a warning.
 ///
 /// Rewrite: A line break is inserted after `=` .
-final class WrapConditionalAssignment: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable {
+final class WrapConditionalAssignment: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
     override class var key: String { "conditionalAssignment" }
     override class var defaultValue: BasicRuleValue { .init(rewrite: false, lint: .no) }
     override class var group: ConfigurationGroup? { .wrap }

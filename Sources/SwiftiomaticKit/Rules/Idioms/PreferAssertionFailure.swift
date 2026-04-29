@@ -10,7 +10,7 @@ import SwiftSyntax
 ///
 /// Rewrite: The call is replaced with the corresponding `Failure` variant, removing the
 /// `false` argument.
-final class PreferAssertionFailure: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable {
+final class PreferAssertionFailure: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
     override class var group: ConfigurationGroup? { .idioms }
 
     static func transform(

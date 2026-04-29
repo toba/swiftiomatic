@@ -10,6 +10,6 @@ import SwiftSyntax
 /// Lint: When closure arguments could use trailing closure syntax.
 ///
 /// Rewrite: The closure arguments are moved to trailing closure position.
-final class PreferTrailingClosures: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable {
+final class PreferTrailingClosures: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
     override static var group: ConfigurationGroup? { .closures }
 }

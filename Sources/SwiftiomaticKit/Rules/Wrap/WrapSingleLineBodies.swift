@@ -19,7 +19,7 @@ final class WrapSingleLineBodiesState {
 /// Lint: A body whose formatting doesn't match the mode raises a warning.
 ///
 /// Rewrite: The body is wrapped or inlined to match the mode.
-final class WrapSingleLineBodies: RewriteSyntaxRule<SingleLineBodiesConfiguration>,
+final class WrapSingleLineBodies: StaticFormatRule<SingleLineBodiesConfiguration>,
     @unchecked Sendable
 {
     override class var key: String { "singleLineBodies" }

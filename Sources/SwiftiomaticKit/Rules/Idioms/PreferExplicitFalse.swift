@@ -8,7 +8,7 @@ import SwiftSyntax
 /// Lint: Using `!` prefix negation raises a warning.
 ///
 /// Rewrite: `!expression` is replaced with `expression == false`.
-final class PreferExplicitFalse: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable {
+final class PreferExplicitFalse: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
     override class var group: ConfigurationGroup? { .idioms }
     override static var defaultValue: BasicRuleValue { .init(rewrite: false, lint: .no) }
 

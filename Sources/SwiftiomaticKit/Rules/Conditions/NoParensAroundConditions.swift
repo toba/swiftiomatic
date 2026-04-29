@@ -26,7 +26,7 @@ import SwiftSyntax
 /// Rewrite: Parentheses around such expressions are removed, if they do not cause a parse ambiguity.
 ///         Specifically, parentheses are allowed if and only if the expression contains a function
 ///         call with a trailing closure.
-final class NoParensAroundConditions: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable {
+final class NoParensAroundConditions: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
     override class var group: ConfigurationGroup? { .conditions }
 
   // Diagnose against the pre-traversal node so finding source locations are

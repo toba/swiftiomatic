@@ -9,7 +9,7 @@ import SwiftSyntax
 ///       raises a warning.
 ///
 /// Rewrite: Each item is placed on its own line with alignment indentation.
-final class WrapCompoundCaseItems: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable {
+final class WrapCompoundCaseItems: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
     override static var key: String { "compoundCaseItems" }
     override static var group: ConfigurationGroup? { .wrap }
     override static var defaultValue: BasicRuleValue { .init(rewrite: false, lint: .no) }

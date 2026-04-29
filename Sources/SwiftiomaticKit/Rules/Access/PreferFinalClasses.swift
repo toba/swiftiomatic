@@ -12,7 +12,7 @@ import SwiftSyntax
 /// Lint: A non-final, non-open class declaration raises a warning.
 ///
 /// Rewrite: The `final` modifier is added and `open` members are converted to `public`.
-final class PreferFinalClasses: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable {
+final class PreferFinalClasses: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
     override static var group: ConfigurationGroup? { .access }
     override static var defaultValue: BasicRuleValue { .init(rewrite: false, lint: .no) }
 

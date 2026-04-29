@@ -20,7 +20,7 @@ import SwiftSyntax
 ///
 /// Lint: Non-literal empty array initialization will yield a lint error. Rewrite: All invalid use
 /// sites would be related with empty literal (with or without explicit type annotation).
-final class EmptyCollectionLiteral: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable {
+final class EmptyCollectionLiteral: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
     override class var group: ConfigurationGroup? { .literals }
     override class var defaultValue: BasicRuleValue { .init(rewrite: false, lint: .no) }
 

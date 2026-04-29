@@ -41,7 +41,7 @@ import SwiftSyntax
 ///
 /// Rewrite: `if ... else { return/throw/break/continue }` constructs will be replaced with
 /// equivalent `guard ... else { return/throw/break/continue }` constructs.
-final class PreferEarlyExits: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable {
+final class PreferEarlyExits: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
     override class var group: ConfigurationGroup? { .conditions }
 
     /// Identifies this rule as being opt-in. This rule is experimental and not yet stable enough to

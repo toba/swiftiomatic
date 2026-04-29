@@ -12,7 +12,7 @@ import SwiftSyntax
 /// Lint: A warning is raised for `type(of: self)` (also `Swift.type(of: self)`) inside a type.
 ///
 /// Rewrite: The call is replaced with `Self`.
-final class PreferSelfType: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable {
+final class PreferSelfType: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
     override class var group: ConfigurationGroup? { .idioms }
     override class var defaultValue: BasicRuleValue { .init(rewrite: true, lint: .warn) }
 

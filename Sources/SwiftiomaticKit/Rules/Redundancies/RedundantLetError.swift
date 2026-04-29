@@ -23,7 +23,7 @@ import SwiftSyntax
 /// Lint: If `catch let error` is found, a lint warning is raised.
 ///
 /// Rewrite: The redundant `let error` pattern is removed.
-final class RedundantLetError: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable {
+final class RedundantLetError: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
   override class var group: ConfigurationGroup? { .redundancies }
 
   static func transform(

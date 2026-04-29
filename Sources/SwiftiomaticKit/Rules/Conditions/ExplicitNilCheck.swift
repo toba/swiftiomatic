@@ -26,7 +26,7 @@ import SwiftSyntaxBuilder
 /// Lint: `let _ = expr` inside a condition list will yield a lint error.
 ///
 /// Rewrite: `let _ = expr` inside a condition list will be replaced by `expr != nil`.
-final class ExplicitNilCheck: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable {
+final class ExplicitNilCheck: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
     override class var group: ConfigurationGroup? { .conditions }
 
     static func transform(

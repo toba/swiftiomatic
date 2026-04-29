@@ -71,8 +71,13 @@ extension RuleTesting {
   }
 
   /// Asserts that the result of applying a formatter to the provided input code yields the output.
+  ///
+  /// `formatType` accepts any rule conforming to `SyntaxRule` — both `RewriteSyntaxRule`
+  /// subclasses (which still inherit `SyntaxRewriter`) and `StaticFormatRule` subclasses
+  /// (which don't). The pipeline runs the full compact rewriter regardless, so the
+  /// `SyntaxRewriter` constraint that previously gated this helper was vestigial.
   func assertFormatting(
-    _ formatType: (some SyntaxRule & SyntaxRewriter).Type,
+    _ formatType: (some SyntaxRule).Type,
     input: String,
     expected: String,
     findings: [FindingSpec] = [],

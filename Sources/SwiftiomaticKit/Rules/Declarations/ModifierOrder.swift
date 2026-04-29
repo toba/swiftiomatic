@@ -9,7 +9,7 @@ import SwiftSyntax
 /// Lint: If modifiers are out of order, a lint warning is raised.
 ///
 /// Rewrite: The modifiers are reordered to match the canonical order.
-final class ModifierOrder: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable {
+final class ModifierOrder: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
     override class var group: ConfigurationGroup? { .declarations }
 
     /// Canonical modifier order. Modifiers not in this list keep their relative position

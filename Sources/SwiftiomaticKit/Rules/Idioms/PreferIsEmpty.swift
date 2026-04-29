@@ -12,7 +12,7 @@ import SwiftSyntax
 /// Lint: Using `.count == 0`, `.count != 0`, or `.count > 0` raises a warning.
 ///
 /// Rewrite: The comparison is replaced with `.isEmpty` or `!.isEmpty`.
-final class PreferIsEmpty: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable {
+final class PreferIsEmpty: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
     override static var group: ConfigurationGroup? { .idioms }
     override static var defaultValue: BasicRuleValue { .init(rewrite: false, lint: .no) }
 

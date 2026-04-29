@@ -11,7 +11,7 @@ import SwiftSyntax
 /// Lint: A comparison with a constant on the left raises a warning.
 ///
 /// Rewrite: The operands are swapped and the operator is flipped if necessary.
-final class NoYodaConditions: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable {
+final class NoYodaConditions: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
     override class var group: ConfigurationGroup? { .conditions }
 
     static func transform(

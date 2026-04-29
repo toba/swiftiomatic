@@ -23,7 +23,7 @@ import SwiftSyntax
 ///       collapsed form fits within line length raises a warning.
 ///
 /// Rewrite: The chain is collapsed onto a single line.
-final class CollapseSimpleIfElse: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable {
+final class CollapseSimpleIfElse: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
     override class var group: ConfigurationGroup? { .wrap }
     override class var defaultValue: BasicRuleValue {
         BasicRuleValue(rewrite: false, lint: .no)

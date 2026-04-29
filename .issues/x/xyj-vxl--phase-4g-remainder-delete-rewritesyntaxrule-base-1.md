@@ -1,11 +1,11 @@
 ---
 # xyj-vxl
 title: 'Phase 4g remainder: delete RewriteSyntaxRule base + 122 rule shells'
-status: ready
+status: scrapped
 type: task
 priority: high
 created_at: 2026-04-29T01:05:14Z
-updated_at: 2026-04-29T01:21:26Z
+updated_at: 2026-04-29T18:22:52Z
 parent: ddi-wtv
 sync:
     github:
@@ -43,3 +43,16 @@ Parent: `ddi-wtv`. Sibling done: `dal-dmw` (which landed the smaller flip-defaul
 Initial wave done in `dal-dmw` (parent issue): 42 trivial-shell overrides stripped + collector loosened.
 
 Remaining work focuses on the 158 non-shell `override func visit` overrides — these require per-rule analysis since the body contains real logic that needs extraction into static helpers before the override can be deleted.
+
+
+
+## Reasons for Scrapping
+
+Superseded by sibling `2tv-v3y`, which took the more nuanced split-protocol approach and landed:
+
+- `SyntaxRule` slimmed to type-level identity.
+- New `InstanceSyntaxRule` sub-protocol for lint + structural-pass rules.
+- New `StaticFormatRule<V>` base class for the 127 static-only rules.
+- `RuleCollector` extended to detect the new pattern.
+
+`RewriteSyntaxRule` was NOT deleted — it's still required by 10 structural-pass rules + `PreferShorthandTypeNames`. The original goal of this issue ("delete RewriteSyntaxRule base + 122 rule shells") was always going to leave at least those 11 rules behind, so `2tv-v3y`'s framing is more accurate. See `2tv-v3y` for the landed state.

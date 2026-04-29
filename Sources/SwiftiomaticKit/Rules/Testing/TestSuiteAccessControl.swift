@@ -8,7 +8,7 @@ import SwiftSyntax
 /// Lint: A warning is raised for incorrect access control on test suite members.
 ///
 /// Rewrite: Access control is corrected.
-final class TestSuiteAccessControl: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable {
+final class TestSuiteAccessControl: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
     override class var group: ConfigurationGroup? { .testing }
 
     override class var defaultValue: BasicRuleValue { BasicRuleValue(rewrite: false, lint: .no) }

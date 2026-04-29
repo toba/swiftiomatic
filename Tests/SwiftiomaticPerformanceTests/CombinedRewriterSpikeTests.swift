@@ -70,21 +70,12 @@ final class CombinedRewriterSpikeTests: XCTestCase {
         }
     }
 
-    func testSequentialRewritersPerformance() {
-        let source = Self.representativeSource
-        let sourceFile = Parser.parse(source: source)
-        let context = makeTestContext(
-            sourceFileSyntax: sourceFile,
-            selection: .infinite,
-            findingConsumer: { _ in }
-        )
-        measureIfNotInCI {
-            var node = Syntax(sourceFile)
-            node = RedundantBreak(context: context).rewrite(node)
-            node = NoBacktickedSelf(context: context).rewrite(node)
-            node = RedundantNilInit(context: context).rewrite(node)
-        }
-    }
+    // testSequentialRewritersPerformance was the pre-cutover sequential baseline
+    // (three independent SyntaxRewriter walks). Removed: the rules involved
+    // (RedundantBreak, NoBacktickedSelf, RedundantNilInit) no longer inherit
+    // SyntaxRewriter — they are StaticFormatRule subclasses dispatched through
+    // CompactStageOneRewriter. The spike's purpose (validating the combined
+    // rewriter premise) was satisfied by ddi-wtv landing the compact pipeline.
 
     /// Bench against the project's worst-case file (`LayoutCoordinator.swift`, ~956 lines)
     /// per the spike's stated baseline in `eti-yt2`.

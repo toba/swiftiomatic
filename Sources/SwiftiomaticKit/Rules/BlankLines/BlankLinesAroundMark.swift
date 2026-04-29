@@ -14,7 +14,7 @@ import SwiftSyntax
 /// `Rewrites/Tokens/TokenRewrites.swift`. This class only exists so the rule
 /// is registered (configuration key, group, default value). It has no visit /
 /// transform / willEnter / didExit methods — `RuleCollector` allows that.
-final class BlankLinesAroundMark: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable {
+final class BlankLinesAroundMark: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
     override static var key: String { "aroundMark" }
     override static var group: ConfigurationGroup? { .blankLines }
     override static var defaultValue: BasicRuleValue { .init(rewrite: false, lint: .no) }

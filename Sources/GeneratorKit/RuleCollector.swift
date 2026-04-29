@@ -163,7 +163,7 @@ package final class RuleCollector {
             switch identifier.name.text {
                 case "LintSyntaxRule":
                     canRewrite = false
-                case "RewriteSyntaxRule":
+                case "RewriteSyntaxRule", "StaticFormatRule":
                     canRewrite = true
                 default:
                     continue

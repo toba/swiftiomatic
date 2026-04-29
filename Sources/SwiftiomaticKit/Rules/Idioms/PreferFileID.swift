@@ -8,7 +8,7 @@ import SwiftSyntax
 /// Lint: Using the non-preferred file macro yields a lint warning.
 ///
 /// Rewrite: The macro is replaced with the preferred spelling.
-final class PreferFileID: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable {
+final class PreferFileID: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
     override static var group: ConfigurationGroup? { .idioms }
     override static var defaultValue: BasicRuleValue { .init(rewrite: false, lint: .no) }
 

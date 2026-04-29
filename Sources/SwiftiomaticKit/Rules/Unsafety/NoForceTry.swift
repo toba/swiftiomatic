@@ -17,7 +17,7 @@ import SwiftSyntax
 /// Lint: A warning is raised for each `try!`.
 ///
 /// Rewrite: In test functions, `try!` is replaced with `try` and `throws` is added.
-final class NoForceTry: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable {
+final class NoForceTry: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
     override static var group: ConfigurationGroup? { .unsafety }
     override static var defaultValue: BasicRuleValue { .init(rewrite: false, lint: .no) }
 

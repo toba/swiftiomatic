@@ -9,7 +9,7 @@ import SwiftSyntax
 /// Lint: If a special comment tag is not correctly formatted, a lint warning is raised.
 ///
 /// Rewrite: The comment is reformatted to use the correct style.
-final class FormatSpecialComments: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable {
+final class FormatSpecialComments: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
     override static var group: ConfigurationGroup? { .comments }
 
     static func transform(

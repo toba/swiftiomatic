@@ -9,7 +9,7 @@ import SwiftSyntax
 /// the exact same expression text.
 ///
 /// Rewrite: The expression is rewritten to `x.toggle()`.
-final class PreferToggle: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable {
+final class PreferToggle: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
     override class var group: ConfigurationGroup? { .idioms }
     override class var defaultValue: BasicRuleValue { .init(rewrite: true, lint: .warn) }
 

@@ -16,7 +16,7 @@ import SwiftSyntax
 ///
 /// Rewrite: The closure wrapper and invocation are removed, leaving just the
 ///         expression.
-final class RedundantClosure: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable {
+final class RedundantClosure: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
     override class var group: ConfigurationGroup? { .redundancies }
 
     static func transform(

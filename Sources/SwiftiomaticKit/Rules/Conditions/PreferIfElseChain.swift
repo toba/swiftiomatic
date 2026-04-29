@@ -26,7 +26,7 @@ import SwiftSyntax
 /// Lint: A chain of early-return `if` statements raises a warning.
 ///
 /// Rewrite: The chain is replaced with an `if/else` expression.
-final class PreferIfElseChain: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable {
+final class PreferIfElseChain: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
     override class var group: ConfigurationGroup? { .conditions }
 
     static func transform(

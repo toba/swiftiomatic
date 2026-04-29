@@ -12,7 +12,7 @@ import SwiftSyntax
 /// Lint: A warning is raised for `@Test` functions with a `test` prefix.
 ///
 /// Rewrite: The `test` prefix is removed and the first letter is lowercased.
-final class SwiftTestingTestCaseNames: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable {
+final class SwiftTestingTestCaseNames: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
     override class var group: ConfigurationGroup? { .testing }
     override class var defaultValue: BasicRuleValue { .init(rewrite: false, lint: .no) }
 

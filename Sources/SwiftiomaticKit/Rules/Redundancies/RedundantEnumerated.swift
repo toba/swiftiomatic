@@ -14,7 +14,7 @@ import SwiftSyntax
 ///
 /// Rewrite: `.enumerated()` is removed (or replaced with `.indices`) and the binding pattern
 ///         is collapsed to a single identifier.
-final class RedundantEnumerated: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable {
+final class RedundantEnumerated: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
     override class var group: ConfigurationGroup? { .redundancies }
 
     static func transform(

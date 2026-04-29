@@ -11,7 +11,7 @@ import SwiftSyntax
 ///
 /// Rewrite: `open` is downgraded to `public` when the parent is not also `open` ; otherwise the
 /// redundant modifier is removed entirely.
-final class ACLConsistency: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable {
+final class ACLConsistency: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
     override class var group: ConfigurationGroup? { .access }
     override class var defaultValue: BasicRuleValue { .init(rewrite: false, lint: .warn) }
 

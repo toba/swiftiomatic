@@ -14,7 +14,7 @@ import SwiftSyntax
 /// Lint: If a redundant `Self.` is found in a static context, a finding is raised.
 ///
 /// Rewrite: The `Self.` prefix is removed.
-final class RedundantStaticSelf: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable {
+final class RedundantStaticSelf: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
   override class var group: ConfigurationGroup? { .redundancies }
 
   override class var defaultValue: BasicRuleValue { BasicRuleValue(rewrite: false, lint: .no) }

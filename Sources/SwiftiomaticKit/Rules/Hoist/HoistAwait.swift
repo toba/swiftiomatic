@@ -14,7 +14,7 @@ import SwiftSyntax
 /// Lint: Using `await` inside a function call argument raises a warning.
 ///
 /// Rewrite: `await` is removed from arguments and added to wrap the call expression.
-final class HoistAwait: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable {
+final class HoistAwait: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
     override class var key: String { "await" }
     override class var group: ConfigurationGroup? { .hoist }
 

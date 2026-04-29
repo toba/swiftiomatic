@@ -18,7 +18,7 @@ import SwiftSyntax
 ///
 /// Rewrite: The fall-through `case` is added as a prefix to the next case unless the next case is
 ///         `default`; in that case, the fallthrough `case` is deleted.
-final class NoFallThroughOnlyCases: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable {
+final class NoFallThroughOnlyCases: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
     override class var group: ConfigurationGroup? { .redundancies }
 
     // Diagnose against the pre-traversal node so finding source locations

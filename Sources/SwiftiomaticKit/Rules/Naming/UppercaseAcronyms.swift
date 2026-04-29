@@ -15,7 +15,7 @@ import SwiftSyntax
 /// `Rewrites/Tokens/TokenRewrites.swift`. This class only exists so the rule
 /// is registered (configuration key, group, default value). It has no visit /
 /// transform / willEnter / didExit methods — `RuleCollector` allows that.
-final class UppercaseAcronyms: RewriteSyntaxRule<AcronymsConfiguration>, @unchecked Sendable {
+final class UppercaseAcronyms: StaticFormatRule<AcronymsConfiguration>, @unchecked Sendable {
     override static var group: ConfigurationGroup? { .naming }
     override static var defaultValue: AcronymsConfiguration {
         var config = AcronymsConfiguration()

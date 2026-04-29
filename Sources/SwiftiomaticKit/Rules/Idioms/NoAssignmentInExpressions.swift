@@ -22,7 +22,7 @@ import SwiftSyntax
 ///
 /// Rewrite: A `return` statement containing an assignment expression is expanded into two separate
 ///         statements.
-final class NoAssignmentInExpressions: RewriteSyntaxRule<NoAssignmentInExpressionsConfiguration>, @unchecked Sendable {
+final class NoAssignmentInExpressions: StaticFormatRule<NoAssignmentInExpressionsConfiguration>, @unchecked Sendable {
     override class var group: ConfigurationGroup? { .idioms }
 
     static func transform(

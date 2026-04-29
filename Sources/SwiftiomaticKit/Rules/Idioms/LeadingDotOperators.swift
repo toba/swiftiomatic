@@ -9,7 +9,7 @@ import SwiftSyntax
 /// Lint: A finding is emitted when a delimiter starts a line.
 ///
 /// Rewrite: The delimiter is moved to the end of the previous line.
-final class LeadingDotOperators: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable {
+final class LeadingDotOperators: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
     override class var group: ConfigurationGroup? { .idioms }
 
     /// Per-file mutable state held in `Context.ruleState`.

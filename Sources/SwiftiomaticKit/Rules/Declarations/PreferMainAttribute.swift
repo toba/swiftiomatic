@@ -7,7 +7,7 @@ import SwiftSyntax
 /// Lint: Using `@UIApplicationMain` or `@NSApplicationMain` raises a warning.
 ///
 /// Rewrite: The attribute is replaced with `@main`.
-final class PreferMainAttribute: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable {
+final class PreferMainAttribute: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
     override class var group: ConfigurationGroup? { .declarations }
 
     static func transform(

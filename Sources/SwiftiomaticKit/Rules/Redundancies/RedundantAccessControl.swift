@@ -17,7 +17,7 @@ import SwiftSyntax
 /// Combines four checks: redundant `internal`, redundant `public` on members of non-public types,
 /// redundant access control on extension members matching the extension's level, and redundant
 /// `fileprivate` (converted to `private` in single-type files).
-final class RedundantAccessControl: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable {
+final class RedundantAccessControl: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
     override class var group: ConfigurationGroup? { .redundancies }
 
     override class var defaultValue: BasicRuleValue { .init(rewrite: false, lint: .no) }

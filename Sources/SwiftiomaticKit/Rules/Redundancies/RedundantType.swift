@@ -21,7 +21,7 @@ import SwiftSyntax
 /// Lint: If a redundant type annotation is found, a lint warning is raised.
 ///
 /// Rewrite: The redundant type annotation is removed.
-final class RedundantType: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable {
+final class RedundantType: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
   override class var group: ConfigurationGroup? { .redundancies }
 
   static func transform(

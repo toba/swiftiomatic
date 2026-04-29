@@ -12,7 +12,7 @@ import SwiftSyntax
 /// Lint: If unnecessary backticks are found, a finding is raised.
 ///
 /// Rewrite: The backticks are removed.
-final class RedundantBackticks: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable {
+final class RedundantBackticks: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
     override class var group: ConfigurationGroup? { .redundancies }
 
     /// Swift reserved keywords that always require backticks when used as identifiers (unless in a

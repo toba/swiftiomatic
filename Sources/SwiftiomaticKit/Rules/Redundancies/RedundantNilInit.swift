@@ -24,7 +24,7 @@ import SwiftSyntax
 /// Lint: If `= nil` is found on an eligible optional `var`, a lint warning is raised.
 ///
 /// Rewrite: The redundant `= nil` initializer is removed.
-final class RedundantNilInit: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable {
+final class RedundantNilInit: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
   override class var group: ConfigurationGroup? { .redundancies }
 
   static func transform(

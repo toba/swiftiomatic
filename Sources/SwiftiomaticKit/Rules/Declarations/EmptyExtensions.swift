@@ -11,7 +11,7 @@ import SwiftSyntax
 /// Lint: If an empty, non-conforming extension is found, a lint warning is raised.
 ///
 /// Rewrite: The entire extension declaration is removed.
-final class EmptyExtensions: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable {
+final class EmptyExtensions: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
     override class var group: ConfigurationGroup? { .declarations }
 
     static func transform(

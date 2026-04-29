@@ -18,6 +18,6 @@ import SwiftSyntax
 ///
 /// Rewrite: Function declarations with explicit returns of `()` or `Void` will have their return
 ///         signature stripped.
-final class NoVoidReturnOnFunctionSignature: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable {
+final class NoVoidReturnOnFunctionSignature: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
     override class var group: ConfigurationGroup? { .types }
 }

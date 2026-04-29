@@ -3,7 +3,7 @@ import SwiftSyntax
 import ConfigurationKit
 
 /// A rule that lints a given file.
-class LintSyntaxRule<V: SyntaxRuleValue>: SyntaxVisitor, SyntaxRule, @unchecked Sendable {
+class LintSyntaxRule<V: SyntaxRuleValue>: SyntaxVisitor, InstanceSyntaxRule, @unchecked Sendable {
     typealias Value = V
 
     /// The context in which the rule is executed.

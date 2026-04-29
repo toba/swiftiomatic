@@ -12,7 +12,7 @@ import SwiftSyntax
 /// Lint: Using `&&` in a condition list raises a warning.
 ///
 /// Rewrite: `&&` is replaced with commas, splitting the condition into separate condition elements.
-final class PreferCommaConditions: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable {
+final class PreferCommaConditions: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
     override class var group: ConfigurationGroup? { .conditions }
 
     static func transform(

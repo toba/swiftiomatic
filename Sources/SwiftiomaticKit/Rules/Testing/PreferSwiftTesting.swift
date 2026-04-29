@@ -8,7 +8,7 @@ import SwiftSyntax
 ///
 /// Bails out entirely if the file contains unsupported XCTest functionality (expectations,
 /// performance tests, unknown overrides, async/throws tearDown, XCTestCase extensions).
-final class PreferSwiftTesting: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable {
+final class PreferSwiftTesting: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
     override class var group: ConfigurationGroup? { .testing }
 
     override class var defaultValue: BasicRuleValue { .init(rewrite: false, lint: .no) }

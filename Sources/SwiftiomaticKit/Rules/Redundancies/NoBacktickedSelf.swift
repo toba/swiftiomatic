@@ -8,7 +8,7 @@ import SwiftSyntax
 /// Lint: If a backticked `self` is found in an optional binding, a finding is raised.
 ///
 /// Rewrite: The backticks are removed.
-final class NoBacktickedSelf: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable {
+final class NoBacktickedSelf: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
     override class var group: ConfigurationGroup? { .redundancies }
 
     static func transform(

@@ -8,7 +8,7 @@ import SwiftSyntax
 ///       `set` before `get`.
 ///
 /// Rewrite: The accessors are reordered to `get set`.
-final class ProtocolAccessorOrder: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable {
+final class ProtocolAccessorOrder: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
     override class var group: ConfigurationGroup? { .declarations }
     override class var defaultValue: BasicRuleValue {
         BasicRuleValue(rewrite: false, lint: .warn)

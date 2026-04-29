@@ -11,7 +11,7 @@ import SwiftSyntax
 /// Lint: If a `throws` function has no `throw` or `try` in its body, a lint warning is raised.
 ///
 /// Rewrite: The `throws` clause is removed.
-final class RedundantThrows: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable {
+final class RedundantThrows: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
   override class var group: ConfigurationGroup? { .redundancies }
 
   override class var defaultValue: BasicRuleValue { BasicRuleValue(rewrite: false, lint: .no) }

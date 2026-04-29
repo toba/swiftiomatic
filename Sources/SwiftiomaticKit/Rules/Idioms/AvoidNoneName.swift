@@ -10,7 +10,7 @@ import SwiftSyntax
 /// `class` property named `none`.
 ///
 /// Rewrite: Not auto-fixed; renaming requires understanding the call sites.
-final class AvoidNoneName: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable {
+final class AvoidNoneName: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
     override class var group: ConfigurationGroup? { .idioms }
     override class var defaultValue: BasicRuleValue { .init(rewrite: false, lint: .warn) }
 

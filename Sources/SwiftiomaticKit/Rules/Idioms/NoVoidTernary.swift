@@ -10,7 +10,7 @@ import SwiftSyntax
 /// expressions.
 ///
 /// Rewrite: Not auto-fixed; the rewrite would change formatting beyond the scope of this rule.
-final class NoVoidTernary: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable {
+final class NoVoidTernary: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
     override class var group: ConfigurationGroup? { .idioms }
     override class var defaultValue: BasicRuleValue { .init(rewrite: false, lint: .warn) }
 

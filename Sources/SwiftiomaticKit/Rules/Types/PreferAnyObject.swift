@@ -8,6 +8,6 @@ import SwiftSyntax
 /// Lint: A protocol inheriting from `class` instead of `AnyObject` raises a warning.
 ///
 /// Rewrite: `class` is replaced with `AnyObject` in the inheritance clause.
-final class PreferAnyObject: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable {
+final class PreferAnyObject: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
     override static var group: ConfigurationGroup? { .types }
 }

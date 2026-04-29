@@ -117,15 +117,11 @@ final class RewriteCoordinatorPerformanceTests: XCTestCase {
       current = BlankLinesAfterImports(context: context).rewrite(current)
       current = FileScopedDeclarationPrivacy(context: context).rewrite(current)
       current = ExtensionAccessLevel(context: context).rewrite(current)
-      current = PreferFinalClasses(context: context).rewrite(current)
-      current = ConvertRegularCommentToDocC(context: context).rewrite(current)
       current = BlankLinesBetweenScopes(context: context).rewrite(current)
-      current = ConsistentSwitchCaseSpacing(context: context).rewrite(current)
       current = SortDeclarations(context: context).rewrite(current)
       current = SortSwitchCases(context: context).rewrite(current)
       current = SortTypeAliases(context: context).rewrite(current)
       current = FileHeader(context: context).rewrite(current)
-      current = ReflowComments(context: context).rewrite(current)
       _ = current
     }
   }

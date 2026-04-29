@@ -15,7 +15,7 @@ import SwiftSyntax
 /// Lint: When a parameter or loop variable is unused.
 ///
 /// Rewrite: The unused parameter or variable is replaced with `_` .
-final class UnusedArguments: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable {
+final class UnusedArguments: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
     override class var group: ConfigurationGroup? { .redundancies }
 
     // MARK: - Functions

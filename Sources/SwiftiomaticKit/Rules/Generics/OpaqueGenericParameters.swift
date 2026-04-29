@@ -11,7 +11,7 @@ import SwiftSyntax
 /// parameter.
 ///
 /// Rewrite: The generic parameter is replaced with `some Protocol` in the parameter type.
-final class OpaqueGenericParameters: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable {
+final class OpaqueGenericParameters: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
     override class var group: ConfigurationGroup? { .generics }
 
     override class var defaultValue: BasicRuleValue { .init(rewrite: false, lint: .no) }

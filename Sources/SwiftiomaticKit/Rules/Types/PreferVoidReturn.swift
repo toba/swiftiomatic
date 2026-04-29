@@ -20,7 +20,7 @@ import SwiftSyntax
 /// Lint: Returning `()` in a signature yields a lint error.
 ///
 /// Rewrite: `-> ()` is replaced with `-> Void`
-final class PreferVoidReturn: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable {
+final class PreferVoidReturn: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
     override class var group: ConfigurationGroup? { .types }
 
   // MARK: - Compact pipeline (willEnter diagnoses on the pre-traversal node so

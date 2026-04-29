@@ -13,7 +13,7 @@ import SwiftSyntax
 ///
 /// Rewrite: Blank lines between consecutive guards are removed. A blank line is inserted
 ///         after the last guard when followed by non-guard code.
-final class BlankLinesAfterGuardStatements: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable {
+final class BlankLinesAfterGuardStatements: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
     override static var key: String { "afterGuardStatements" }
     override static var group: ConfigurationGroup? { .blankLines }
     override static var defaultValue: BasicRuleValue { .init(rewrite: false, lint: .no) }

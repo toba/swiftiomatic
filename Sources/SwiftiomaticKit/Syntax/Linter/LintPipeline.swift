@@ -56,7 +56,7 @@ extension LintPipeline {
     }
 
     /// Retrieves an instance of a lint or format rule based on its type.
-    private func rule<R: SyntaxRule>(_ type: R.Type) -> R {
+    private func rule<R: InstanceSyntaxRule>(_ type: R.Type) -> R {
         let identifier = ObjectIdentifier(type)
         if let cachedRule = ruleCache[identifier] { return cachedRule as! R }
         let rule = R(context: context)

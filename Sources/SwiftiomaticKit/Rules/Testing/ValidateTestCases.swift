@@ -10,7 +10,7 @@ import SwiftSyntax
 /// Lint: A warning is raised for each test method missing the correct prefix or attribute.
 ///
 /// Rewrite: The `test` prefix or `@Test` attribute is added.
-final class ValidateTestCases: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable {
+final class ValidateTestCases: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
     override class var group: ConfigurationGroup? { .testing }
 
     override class var defaultValue: BasicRuleValue { BasicRuleValue(rewrite: false, lint: .no) }

@@ -21,7 +21,7 @@ import SwiftSyntax
 ///       binding identifier.
 ///
 /// Rewrite: Redundant labels in case patterns are removed.
-final class NoLabelsInCasePatterns: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable {
+final class NoLabelsInCasePatterns: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
     override class var group: ConfigurationGroup? { .redundancies }
 
     static func transform(

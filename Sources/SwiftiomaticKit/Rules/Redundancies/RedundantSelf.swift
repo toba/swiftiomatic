@@ -19,7 +19,7 @@ import SwiftSyntax
 /// Lint: A lint warning is raised for redundant `self.` usage.
 ///
 /// Rewrite: The `self.` prefix is removed.
-final class RedundantSelf: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable {
+final class RedundantSelf: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
     override class var group: ConfigurationGroup? { .redundancies }
 
     /// Per-file mutable state held in `Context.ruleState`. Mirrors the three instance stacks so

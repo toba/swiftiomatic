@@ -8,7 +8,7 @@ import SwiftSyntax
 /// Lint: A warning is raised for `fatalError()` and `fatalError("")`.
 ///
 /// Rewrite: Not auto-fixed; the message must be supplied by the author.
-final class RequireFatalErrorMessage: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable {
+final class RequireFatalErrorMessage: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
     override class var group: ConfigurationGroup? { .idioms }
     override class var defaultValue: BasicRuleValue { .init(rewrite: false, lint: .warn) }
 

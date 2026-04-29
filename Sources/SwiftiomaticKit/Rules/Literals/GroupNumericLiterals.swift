@@ -24,7 +24,7 @@ import SwiftSyntax
 /// TODO: Minimum numeric literal length bounds and numeric groupings have been selected arbitrarily;
 /// these could be reevaluated.
 /// TODO: Handle floating point literals.
-final class GroupNumericLiterals: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable {
+final class GroupNumericLiterals: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
     override class var group: ConfigurationGroup? { .literals }
 
     static func transform(

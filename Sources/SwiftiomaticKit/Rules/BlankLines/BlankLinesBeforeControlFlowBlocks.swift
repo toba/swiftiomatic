@@ -11,7 +11,7 @@ import SwiftSyntax
 /// raised.
 ///
 /// Rewrite: A blank line is inserted before the control flow statement.
-final class BlankLinesBeforeControlFlowBlocks: RewriteSyntaxRule<BasicRuleValue>,
+final class BlankLinesBeforeControlFlowBlocks: StaticFormatRule<BasicRuleValue>,
     @unchecked Sendable
 {
     override static var group: ConfigurationGroup? { .blankLines }

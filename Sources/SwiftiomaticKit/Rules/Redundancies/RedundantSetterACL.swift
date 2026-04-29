@@ -15,7 +15,7 @@ import SwiftSyntax
 ///
 /// Rewrite: The redundant `(set)` modifier is removed, transferring its leading trivia to the
 ///         next modifier or the binding specifier.
-final class RedundantSetterACL: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable {
+final class RedundantSetterACL: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
     override class var group: ConfigurationGroup? { .redundancies }
     override class var defaultValue: BasicRuleValue { BasicRuleValue(rewrite: false, lint: .warn) }
 

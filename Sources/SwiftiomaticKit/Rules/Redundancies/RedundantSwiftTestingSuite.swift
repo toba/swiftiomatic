@@ -10,7 +10,7 @@ import SwiftSyntax
 /// Lint: A warning is raised when `@Suite` or `@Suite()` is used without arguments.
 ///
 /// Rewrite: The redundant `@Suite` attribute is removed.
-final class RedundantSwiftTestingSuite: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable {
+final class RedundantSwiftTestingSuite: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
   override class var group: ConfigurationGroup? { .redundancies }
 
   override class var defaultValue: BasicRuleValue { BasicRuleValue(rewrite: false, lint: .no) }

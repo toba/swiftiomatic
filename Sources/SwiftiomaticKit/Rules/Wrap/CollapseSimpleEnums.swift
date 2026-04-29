@@ -18,7 +18,7 @@ import SwiftSyntax
 /// line length. Enums with associated values, explicit raw value assignments,
 /// raw-value types (e.g. `: Int`, `: String`), computed properties, methods,
 /// or any non-case member are left untouched.
-final class CollapseSimpleEnums: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable {
+final class CollapseSimpleEnums: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
     override static var group: ConfigurationGroup? { .wrap }
     override static var defaultValue: BasicRuleValue { .init(rewrite: false, lint: .no) }
 

@@ -17,7 +17,7 @@ import SwiftSyntax
 /// Lint: Read-only computed properties with explicit `get` blocks yield a lint error.
 ///
 /// Rewrite: Explicit `get` blocks are rendered implicit by removing the `get`.
-final class PreferSingleLinePropertyGetter: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable {
+final class PreferSingleLinePropertyGetter: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
   override class var group: ConfigurationGroup? { .declarations }
 
   static func transform(
