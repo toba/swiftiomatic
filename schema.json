@@ -75,7 +75,7 @@
               "$ref" : "#/$defs/ruleBase"
             }
           ],
-          "description" : "A declaration's access level must not exceed its enclosing nominal parent's effective access level. For example, a `public` method inside a `private` struct can never be called from outside that struct, so the wider modifier is misleading.\n\nThe rule traverses upward to the nearest enclosing struct/class/actor/enum (or its enclosing extension) and compares effective access levels.\n\nLint: A finding is raised on the over-permissive ACL modifier.\n\nRewrite: `open` is downgraded to `public` when the parent is not also `open`; otherwise the redundant modifier is removed entirely."
+          "description" : "A declaration's access level must not exceed its enclosing nominal parent's effective access level. For example, a `public` method inside a `private` struct can never be called from outside that struct, so the wider modifier is misleading.\n\nThe rule traverses upward to the nearest enclosing struct/class/actor/enum (or its enclosing extension) and compares effective access levels.\n\nLint: A finding is raised on the over-permissive ACL modifier.\n\nRewrite: `open` is downgraded to `public` when the parent is not also `open` ; otherwise the redundant modifier is removed entirely."
         },
         "extensionAccessLevel" : {
           "allOf" : [
@@ -83,7 +83,7 @@
               "$ref" : "#/$defs/ruleBase"
             }
           ],
-          "description" : "Controls placement of access level modifiers on extensions vs. their members.\n\nThe behavior of this rule is controlled by `Configuration.extensionAccessControl.placement`:\n\n- `onMembers` (default): Access levels on extensions are moved to individual members.\n- `onExtension`: When all members share the same access level, it is hoisted to the extension.\n\nLint: A lint error is raised when access control placement doesn't match the configuration.\n\nRewrite: Access control modifiers are moved to match the configured placement.",
+          "description" : "Controls placement of access level modifiers on extensions vs. their members.\n\nThe behavior of this rule is controlled by `Configuration.extensionAccessControl.placement` :\n\n- `onMembers` (default): Access levels on extensions are moved to individual members.\n- `onExtension` : When all members share the same access level, it is hoisted to the extension.\n\nLint: A lint error is raised when access control placement doesn't match the configuration.\n\nRewrite: Access control modifiers are moved to match the configured placement.",
           "properties" : {
             "placement" : {
               "default" : "onMembers",
@@ -102,7 +102,7 @@
               "$ref" : "#/$defs/ruleBase"
             }
           ],
-          "description" : "Declarations at file scope with effective private access should be consistently declared as either `fileprivate` or `private`, determined by configuration.\n\nLint: If a file-scoped declaration has formal access opposite to the desired access level in the formatter's configuration, a lint error is raised.\n\nRewrite: File-scoped declarations that have formal access opposite to the desired access level in the formatter's configuration will have their access level changed.",
+          "description" : "Declarations at file scope with effective private access should be consistently declared as either `fileprivate` or `private` , determined by configuration.\n\nLint: If a file-scoped declaration has formal access opposite to the desired access level in the formatter's configuration, a lint error is raised.\n\nRewrite: File-scoped declarations that have formal access opposite to the desired access level in the formatter's configuration will have their access level changed.",
           "properties" : {
             "accessLevel" : {
               "default" : "private",
@@ -129,7 +129,7 @@
               "$ref" : "#/$defs/ruleBase"
             }
           ],
-          "description" : "Add `private` to `@State` properties without explicit access control.\n\nSwiftUI `@State` and `@StateObject` properties should be `private` because they are owned by the view and should not be set from outside. If no access control modifier is present, `private` is added. Existing access modifiers (including `private(set)`) and `@Previewable` properties are left unchanged.\n\nLint: A `@State` or `@StateObject` property without access control raises a warning.\n\nRewrite: The `private` modifier is added before the binding keyword."
+          "description" : "Add `private` to `@State` properties without explicit access control.\n\nSwiftUI `@State` and `@StateObject` properties should be `private` because they are owned by the view and should not be set from outside. If no access control modifier is present, `private` is added. Existing access modifiers (including `private(set)` ) and `@Previewable` properties are left unchanged.\n\nLint: A `@State` or `@StateObject` property without access control raises a warning.\n\nRewrite: The `private` modifier is added before the binding keyword."
         }
       },
       "type" : "object"
@@ -140,11 +140,11 @@
           "$ref" : "#/$defs/lintOnlyBase"
         }
       ],
-      "description" : "Computed properties and subscripts that declare both `get` and `set` accessors should list them in a consistent order. The default order is `get` then `set`, matching common Swift style.\n\nConfigure via `accessorOrder.order`:\n- `\"get_set\"` (default): emit a finding when the setter precedes the getter.\n- `\"set_get\"`: emit a finding when the getter precedes the setter.\n\nLint-only: this rule does not auto-fix because reordering accessors with non-trivial bodies risks misplacing trailing comments and trivia.",
+      "description" : "Computed properties and subscripts that declare both `get` and `set` accessors should list them in a consistent order. The default order is `get` then `set` , matching common Swift style.\n\nConfigure via `accessorOrder.order` :\n- `\"get_set\"` (default): emit a finding when the setter precedes the getter.\n- `\"set_get\"` : emit a finding when the getter precedes the setter.\n\nLint-only: this rule does not auto-fix because reordering accessors with non-trivial bodies risks misplacing trailing comments and trivia.",
       "properties" : {
         "order" : {
           "default" : "getSet",
-          "description" : "Required ordering for `get`/`set` accessors in computed properties and subscripts.\n\nOptions: getSet, setGet.",
+          "description" : "Required ordering for `get` / `set` accessors in computed properties and subscripts.\n\nOptions: getSet, setGet.",
           "enum" : [
             "getSet",
             "setGet"
@@ -160,7 +160,7 @@
           "$ref" : "#/$defs/ruleBase"
         }
       ],
-      "description" : "A declaration's access level must not exceed its enclosing nominal parent's effective access level. For example, a `public` method inside a `private` struct can never be called from outside that struct, so the wider modifier is misleading.\n\nThe rule traverses upward to the nearest enclosing struct/class/actor/enum (or its enclosing extension) and compares effective access levels.\n\nLint: A finding is raised on the over-permissive ACL modifier.\n\nRewrite: `open` is downgraded to `public` when the parent is not also `open`; otherwise the redundant modifier is removed entirely."
+      "description" : "A declaration's access level must not exceed its enclosing nominal parent's effective access level. For example, a `public` method inside a `private` struct can never be called from outside that struct, so the wider modifier is misleading.\n\nThe rule traverses upward to the nearest enclosing struct/class/actor/enum (or its enclosing extension) and compares effective access levels.\n\nLint: A finding is raised on the over-permissive ACL modifier.\n\nRewrite: `open` is downgraded to `public` when the parent is not also `open` ; otherwise the redundant modifier is removed entirely."
     },
     "afterGuardStatements" : {
       "allOf" : [
@@ -201,7 +201,7 @@
           "$ref" : "#/$defs/ruleBase"
         }
       ],
-      "description" : "Insert blank lines before and after `// MARK:` comments.\n\nMARK comments serve as section dividers. Surrounding them with blank lines makes the visual separation clear. A blank line before MARK is skipped when the MARK immediately follows an opening brace (start of scope). A blank line after MARK is skipped when the MARK immediately precedes a closing brace (end of scope) or end of file.\n\nLint: If a MARK comment is missing a blank line before or after it, a lint warning is raised.\n\nRewrite: Blank lines are inserted around MARK comments."
+      "description" : "Insert blank lines before and after `// MARK:` comments.\n\nMARK comments serve as section dividers. Surrounding them with blank lines makes the visual separation clear. A blank line before MARK is skipped when the MARK immediately follows an opening brace (start of scope). A blank line after MARK is skipped when the MARK immediately precedes a closing brace (end of scope) or end of file.\n\nLint: If a MARK comment is missing a blank line before or after it, a lint warning is raised.\n\nRewrite: Blank lines are inserted around MARK comments. The compact pipeline calls `applyBlankLinesAroundMark` directly from `Rewrites/Tokens/TokenRewrites.swift`. This class only exists so the rule is registered (configuration key, group, default value). It has no visit / transform / willEnter / didExit methods — `RuleCollector` allows that."
     },
     "asciiIdentifiers" : {
       "allOf" : [
@@ -235,7 +235,7 @@
           "$ref" : "#/$defs/ruleBase"
         }
       ],
-      "description" : "Move inline `await` keyword(s) to the start of the expression.\n\nWhen `await` appears inside function call arguments, it can be hoisted to wrap the entire call expression. This is clearer and avoids redundant `await` keywords when multiple arguments are async.\n\nFor example, `foo(await bar(), await baz())` should be `await foo(bar(), baz())`.\n\nThis rule does not flag `await` inside closures (which have their own async context) or when the call is already wrapped in `await`.\n\nLint: Using `await` inside a function call argument raises a warning.\n\nRewrite: `await` is removed from arguments and added to wrap the call expression."
+      "description" : "Move inline `await` keyword(s) to the start of the expression.\n\nWhen `await` appears inside function call arguments, it can be hoisted to wrap the entire call expression. This is clearer and avoids redundant `await` keywords when multiple arguments are async.\n\nFor example, `foo(await bar(), await baz())` should be `await foo(bar(), baz())` .\n\nThis rule does not flag `await` inside closures (which have their own async context) or when the call is already wrapped in `await` .\n\nLint: Using `await` inside a function call argument raises a warning.\n\nRewrite: `await` is removed from arguments and added to wrap the call expression."
     },
     "betweenScopes" : {
       "allOf" : [
@@ -279,7 +279,7 @@
               "$ref" : "#/$defs/ruleBase"
             }
           ],
-          "description" : "Insert blank lines before and after `// MARK:` comments.\n\nMARK comments serve as section dividers. Surrounding them with blank lines makes the visual separation clear. A blank line before MARK is skipped when the MARK immediately follows an opening brace (start of scope). A blank line after MARK is skipped when the MARK immediately precedes a closing brace (end of scope) or end of file.\n\nLint: If a MARK comment is missing a blank line before or after it, a lint warning is raised.\n\nRewrite: Blank lines are inserted around MARK comments."
+          "description" : "Insert blank lines before and after `// MARK:` comments.\n\nMARK comments serve as section dividers. Surrounding them with blank lines makes the visual separation clear. A blank line before MARK is skipped when the MARK immediately follows an opening brace (start of scope). A blank line after MARK is skipped when the MARK immediately precedes a closing brace (end of scope) or end of file.\n\nLint: If a MARK comment is missing a blank line before or after it, a lint warning is raised.\n\nRewrite: Blank lines are inserted around MARK comments. The compact pipeline calls `applyBlankLinesAroundMark` directly from `Rewrites/Tokens/TokenRewrites.swift`. This class only exists so the rule is registered (configuration key, group, default value). It has no visit / transform / willEnter / didExit methods — `RuleCollector` allows that."
         },
         "betweenScopes" : {
           "allOf" : [
@@ -295,7 +295,7 @@
               "$ref" : "#/$defs/ruleBase"
             }
           ],
-          "description" : "Insert a blank line before control flow statements with multi-line bodies.\n\nWhen a `for`, `while`, `repeat`, `if`, `switch`, `do`, or `defer` statement has a multi-line body and is preceded by another statement, a blank line before it improves readability. Single-line (inline) control flow is excluded. Guard statements are excluded because `BlankLinesAfterGuardStatements` already handles spacing around guards.\n\nLint: If a multi-line control flow statement is not preceded by a blank line, a lint warning is raised.\n\nRewrite: A blank line is inserted before the control flow statement."
+          "description" : "Insert a blank line before control flow statements with multi-line bodies.\n\nWhen a `for` , `while` , `repeat` , `if` , `switch` , `do` , or `defer` statement has a multi-line body and is preceded by another statement, a blank line before it improves readability. Single-line (inline) control flow is excluded. Guard statements are excluded because `BlankLinesAfterGuardStatements` already handles spacing around guards.\n\nLint: If a multi-line control flow statement is not preceded by a blank line, a lint warning is raised.\n\nRewrite: A blank line is inserted before the control flow statement."
         },
         "closingBraceAsBlankLine" : {
           "description" : "Treat a solitary closing brace as a blank line.",
@@ -326,7 +326,7 @@
           "$ref" : "#/$defs/ruleBase"
         }
       ],
-      "description" : "Insert a blank line before control flow statements with multi-line bodies.\n\nWhen a `for`, `while`, `repeat`, `if`, `switch`, `do`, or `defer` statement has a multi-line body and is preceded by another statement, a blank line before it improves readability. Single-line (inline) control flow is excluded. Guard statements are excluded because `BlankLinesAfterGuardStatements` already handles spacing around guards.\n\nLint: If a multi-line control flow statement is not preceded by a blank line, a lint warning is raised.\n\nRewrite: A blank line is inserted before the control flow statement."
+      "description" : "Insert a blank line before control flow statements with multi-line bodies.\n\nWhen a `for` , `while` , `repeat` , `if` , `switch` , `do` , or `defer` statement has a multi-line body and is preceded by another statement, a blank line before it improves readability. Single-line (inline) control flow is excluded. Guard statements are excluded because `BlankLinesAfterGuardStatements` already handles spacing around guards.\n\nLint: If a multi-line control flow statement is not preceded by a blank line, a lint warning is raised.\n\nRewrite: A blank line is inserted before the control flow statement."
     },
     "camelCaseIdentifiers" : {
       "allOf" : [
@@ -410,7 +410,7 @@
               "$ref" : "#/$defs/ruleBase"
             }
           ],
-          "description" : "Remove parentheses around closure parameter lists when no parameter has a type annotation.\n\n`{ (x, y) in ... }` is equivalent to `{ x, y in ... }` when the parameters are untyped — the parens add visual noise. Typed parameter lists (`{ (x: Int) in }`) keep the parens because shorthand parameters can't carry types.\n\nLint: A finding is raised at the parameter clause.\n\nRewrite: The parenthesized parameter list is converted to shorthand (`x, y`)."
+          "description" : "Remove parentheses around closure parameter lists when no parameter has a type annotation.\n\n`{ (x, y) in ... }` is equivalent to `{ x, y in ... }` when the parameters are untyped — the parens add visual noise. Typed parameter lists ( `{ (x: Int) in }` ) keep the parens because shorthand parameters can't carry types.\n\nLint: A finding is raised at the parameter clause.\n\nRewrite: The parenthesized parameter list is converted to shorthand ( `x, y` )."
         },
         "noTrailingClosureParens" : {
           "allOf" : [
@@ -435,7 +435,7 @@
               "$ref" : "#/$defs/ruleBase"
             }
           ],
-          "description" : "Use trailing closure syntax where applicable.\n\nWhen the last argument(s) to a function call are closure expressions, convert them to trailing closure syntax. For a single trailing closure, the closure must be unlabeled unless the function is in the \"always trailing\" list (e.g. `async`, `sync`, `autoreleasepool`). For multiple trailing closures, the first must be unlabeled and the rest must be labeled.\n\nLint: When closure arguments could use trailing closure syntax.\n\nRewrite: The closure arguments are moved to trailing closure position."
+          "description" : "Use trailing closure syntax where applicable.\n\nWhen the last argument(s) to a function call are closure expressions, convert them to trailing closure syntax. For a single trailing closure, the closure must be unlabeled unless the function is in the \"always trailing\" list (e.g. `async` , `sync` , `autoreleasepool` ). For multiple trailing closures, the first must be unlabeled and the rest must be labeled.\n\nLint: When closure arguments could use trailing closure syntax.\n\nRewrite: The closure arguments are moved to trailing closure position."
         },
         "unhandledThrowingTask" : {
           "allOf" : [
@@ -443,7 +443,7 @@
               "$ref" : "#/$defs/lintOnlyBase"
             }
           ],
-          "description" : "`Task { try ... }` silently swallows thrown errors when the error type is inferred (or written as `_`).\n\nWithout an explicit `Failure` generic argument, a `Task` that throws an unhandled error doesn't surface the error anywhere — there is no `throws` signature on the closure call site, and the value/result of the task is usually discarded.\n\nSee: https://forums.swift.org/t/task-initializer-with-throwing-closure-swallows-error/56066\n\nLint: When a `Task { ... }` (with implicit or wildcard error type) contains an unhandled `throw` or `try`, an error is raised. Tasks whose value or result is consumed (`let t = Task { ... }`, `Task { ... }.value`, `return Task { ... }`) are exempt.",
+          "description" : "`Task { try ... }` silently swallows thrown errors when the error type is inferred (or written as `_` ).\n\nWithout an explicit `Failure` generic argument, a `Task` that throws an unhandled error doesn't surface the error anywhere — there is no `throws` signature on the closure call site, and the value/result of the task is usually discarded.\n\nSee: https://forums.swift.org/t/task-initializer-with-throwing-closure-swallows-error/56066\n\nLint: When a `Task { ... }` (with implicit or wildcard error type) contains an unhandled `throw` or `try` , an error is raised. Tasks whose value or result is consumed ( `let t = Task { ... }` , `Task { ... }.value` , `return Task { ... }` ) are exempt.",
           "unevaluatedProperties" : false
         }
       },
@@ -656,7 +656,7 @@
           "$ref" : "#/$defs/ruleBase"
         }
       ],
-      "description" : "Multiline conditional assignment expressions are wrapped after the assignment operator.\n\nWhen assigning an `if` or `switch` expression that spans multiple lines, the `=` should be on the same line as the property, and a line break should follow `=` before the `if`/`switch` keyword.\n\nLint: A multiline `if`/`switch` expression on the same line as `=` raises a warning.\n\nRewrite: A line break is inserted after `=`."
+      "description" : "Multiline conditional assignment expressions are wrapped after the assignment operator.\n\nWhen assigning an `if` or `switch` expression that spans multiple lines, the `=` should be on the same line as the property, and a line break should follow `=` before the `if` / `switch` keyword.\n\nLint: A multiline `if` / `switch` expression on the same line as `=` raises a warning.\n\nRewrite: A line break is inserted after `=` ."
     },
     "conditions" : {
       "additionalProperties" : false,
@@ -685,7 +685,7 @@
               "$ref" : "#/$defs/lintOnlyBase"
             }
           ],
-          "description" : "Comparing two identical operands is almost always a copy-paste bug.\n\nCatches expressions like `x == x`, `foo.bar < foo.bar`, and `$0 != $0`. Compares operands by their non-trivia token text so internal whitespace and formatting differences are ignored.\n\nLint: When both operands of a comparison operator are textually identical (ignoring whitespace), a warning is raised.",
+          "description" : "Comparing two identical operands is almost always a copy-paste bug.\n\nCatches expressions like `x == x` , `foo.bar < foo.bar` , and `$0 != $0` . Compares operands by their non-trivia token text so internal whitespace and formatting differences are ignored.\n\nLint: When both operands of a comparison operator are textually identical (ignoring whitespace), a warning is raised.",
           "unevaluatedProperties" : false
         },
         "noParensAroundConditions" : {
@@ -702,7 +702,7 @@
               "$ref" : "#/$defs/ruleBase"
             }
           ],
-          "description" : "Prefer the constant value on the right-hand side of comparison expressions.\n\n\"Yoda conditions\" place the constant on the left (`0 == x`), which reads unnaturally. The conventional Swift style places the variable first (`x == 0`).\n\nFor ordered comparisons (`<`, `<=`, `>`, `>=`), the operator is flipped when swapping sides so the semantics are preserved.\n\nLint: A comparison with a constant on the left raises a warning.\n\nRewrite: The operands are swapped and the operator is flipped if necessary."
+          "description" : "Prefer the constant value on the right-hand side of comparison expressions.\n\n\"Yoda conditions\" place the constant on the left ( `0 == x` ), which reads unnaturally. The conventional Swift style places the variable first ( `x == 0` ).\n\nFor ordered comparisons ( `<` , `<=` , `>` , `>=` ), the operator is flipped when swapping sides so the semantics are preserved.\n\nLint: A comparison with a constant on the left raises a warning.\n\nRewrite: The operands are swapped and the operator is flipped if necessary."
         },
         "preferCommaConditions" : {
           "allOf" : [
@@ -710,7 +710,7 @@
               "$ref" : "#/$defs/ruleBase"
             }
           ],
-          "description" : "Prefer comma over `&&` in `if`, `guard`, and `while` conditions.\n\nSwift condition lists use commas to separate independent boolean conditions, which short-circuit identically to `&&` but read more naturally and enable individual conditions to use optional binding or pattern matching.\n\nThis rule only fires when `&&` is the top-level operator in a condition element (no `||` mixed in at the same precedence level, since that would change semantics).\n\nLint: Using `&&` in a condition list raises a warning.\n\nRewrite: `&&` is replaced with commas, splitting the condition into separate condition elements."
+          "description" : "Prefer comma over `&&` in `if` , `guard` , and `while` conditions.\n\nSwift condition lists use commas to separate independent boolean conditions, which short-circuit identically to `&&` but read more naturally and enable individual conditions to use optional binding or pattern matching.\n\nThis rule only fires when `&&` is the top-level operator in a condition element (no `||` mixed in at the same precedence level, since that would change semantics).\n\nLint: Using `&&` in a condition list raises a warning.\n\nRewrite: `&&` is replaced with commas, splitting the condition into separate condition elements."
         },
         "preferConditionalExpression" : {
           "allOf" : [
@@ -734,7 +734,7 @@
               "$ref" : "#/$defs/ruleBase"
             }
           ],
-          "description" : "Consecutive single-return `if` statements followed by a final `return` should be expressed as a chained `if/else` expression.\n\nWhen a sequence of `if` statements each contain only a `return` and are followed by a trailing `return`, the chain is converted into a single `if/else if/.../else` expression (two or more `if` branches required).\n\n```swift // Before if case .spaces = $0 { return true } if case .tabs = $0 { return true } return false\n\n// After if case .spaces = $0 { true } else if case .tabs = $0 { true } else { false } ```\n\nLint: A chain of early-return `if` statements raises a warning.\n\nRewrite: The chain is replaced with an `if/else` expression."
+          "description" : "Consecutive single-return `if` statements followed by a final `return` should be expressed as a chained `if/else` expression.\n\nWhen a sequence of `if` statements each contain only a `return` and are followed by a trailing `return` , the chain is converted into a single `if/else if/.../else` expression (two or more `if` branches required).\n\n```swift // Before if case .spaces = $0 { return true } if case .tabs = $0 { return true } return false\n\n// After if case .spaces = $0 { true } else if case .tabs = $0 { true } else { false } ```\n\nLint: A chain of early-return `if` statements raises a warning.\n\nRewrite: The chain is replaced with an `if/else` expression."
         },
         "preferTernary" : {
           "allOf" : [
@@ -742,7 +742,7 @@
               "$ref" : "#/$defs/ruleBase"
             }
           ],
-          "description" : "Use ternary conditional expressions for simple if-else returns or assignments.\n\nWhen an `if`-`else` has exactly two branches, each containing a single `return` statement or a single assignment to the same variable, and the condition is a simple expression (no else-if chains), the construct is collapsed into a ternary conditional expression.\n\n```swift // Before if condition { return trueValue } else { return falseValue } // After return condition ? trueValue : falseValue\n\n// Before if condition { result = trueValue } else { result = falseValue } // After result = condition ? trueValue : falseValue ```\n\nLint: A simple if-else with single returns or same-variable assignments in both branches raises a warning.\n\nRewrite: The if-else is replaced with a ternary expression."
+          "description" : "Use ternary conditional expressions for simple if-else returns or assignments.\n\nWhen an `if` - `else` has exactly two branches, each containing a single `return` statement or a single assignment to the same variable, and the condition is a simple expression (no else-if chains), the construct is collapsed into a ternary conditional expression.\n\n```swift // Before if condition { return trueValue } else { return falseValue } // After return condition ? trueValue : falseValue\n\n// Before if condition { result = trueValue } else { result = falseValue } // After result = condition ? trueValue : falseValue ```\n\nLint: A simple if-else with single returns or same-variable assignments in both branches raises a warning.\n\nRewrite: The if-else is replaced with a ternary expression."
         },
         "preferUnavailable" : {
           "allOf" : [
@@ -854,7 +854,7 @@
           "$ref" : "#/$defs/ruleBase"
         }
       ],
-      "description" : "Never use `[<Type>]()` syntax. In call sites that should be replaced with `[]`, for initializations use explicit type combined with empty array literal `let _: [<Type>] = []` Static properties of a type that return that type should not include a reference to their type.\n\nLint:  Non-literal empty array initialization will yield a lint error. Rewrite: All invalid use sites would be related with empty literal (with or without explicit type annotation)."
+      "description" : "Never use `[<Type>]()` syntax. In call sites that should be replaced with `[]` , for initializations use explicit type combined with empty array literal `let _: [<Type>] = []` Static properties of a type that return that type should not include a reference to their type.\n\nLint: Non-literal empty array initialization will yield a lint error. Rewrite: All invalid use sites would be related with empty literal (with or without explicit type annotation)."
     },
     "emptyExtensions" : {
       "allOf" : [
@@ -948,7 +948,7 @@
           "$ref" : "#/$defs/ruleBase"
         }
       ],
-      "description" : "Controls placement of access level modifiers on extensions vs. their members.\n\nThe behavior of this rule is controlled by `Configuration.extensionAccessControl.placement`:\n\n- `onMembers` (default): Access levels on extensions are moved to individual members.\n- `onExtension`: When all members share the same access level, it is hoisted to the extension.\n\nLint: A lint error is raised when access control placement doesn't match the configuration.\n\nRewrite: Access control modifiers are moved to match the configured placement.",
+      "description" : "Controls placement of access level modifiers on extensions vs. their members.\n\nThe behavior of this rule is controlled by `Configuration.extensionAccessControl.placement` :\n\n- `onMembers` (default): Access levels on extensions are moved to individual members.\n- `onExtension` : When all members share the same access level, it is hoisted to the extension.\n\nLint: A lint error is raised when access control placement doesn't match the configuration.\n\nRewrite: Access control modifiers are moved to match the configured placement.",
       "properties" : {
         "placement" : {
           "default" : "onMembers",
@@ -997,7 +997,7 @@
           "$ref" : "#/$defs/ruleBase"
         }
       ],
-      "description" : "Declarations at file scope with effective private access should be consistently declared as either `fileprivate` or `private`, determined by configuration.\n\nLint: If a file-scoped declaration has formal access opposite to the desired access level in the formatter's configuration, a lint error is raised.\n\nRewrite: File-scoped declarations that have formal access opposite to the desired access level in the formatter's configuration will have their access level changed.",
+      "description" : "Declarations at file scope with effective private access should be consistently declared as either `fileprivate` or `private` , determined by configuration.\n\nLint: If a file-scoped declaration has formal access opposite to the desired access level in the formatter's configuration, a lint error is raised.\n\nRewrite: File-scoped declarations that have formal access opposite to the desired access level in the formatter's configuration will have their access level changed.",
       "properties" : {
         "accessLevel" : {
           "default" : "private",
@@ -1046,7 +1046,7 @@
               "$ref" : "#/$defs/ruleBase"
             }
           ],
-          "description" : "Use opaque generic parameters (`some Protocol`) instead of named generic parameters with constraints (`<T: Protocol>`) where equivalent.\n\nThis rule applies to `func`, `init`, and `subscript` declarations. A generic type parameter is eligible for conversion when it appears exactly once in the parameter list and is not referenced in the return type, function body, attributes, typed throws, or other generic constraints.\n\nLint: A lint warning is raised when a generic parameter can be replaced with an opaque parameter.\n\nRewrite: The generic parameter is replaced with `some Protocol` in the parameter type."
+          "description" : "Use opaque generic parameters ( `some Protocol` ) instead of named generic parameters with constraints ( `<T: Protocol>` ) where equivalent.\n\nThis rule applies to `func` , `init` , and `subscript` declarations. A generic type parameter is eligible for conversion when it appears exactly once in the parameter list and is not referenced in the return type, function body, attributes, typed throws, or other generic constraints.\n\nLint: A lint warning is raised when a generic parameter can be replaced with an opaque parameter.\n\nRewrite: The generic parameter is replaced with `some Protocol` in the parameter type."
         },
         "preferAngleBracketExtensions" : {
           "allOf" : [
@@ -1085,7 +1085,7 @@
               "$ref" : "#/$defs/ruleBase"
             }
           ],
-          "description" : "Move inline `await` keyword(s) to the start of the expression.\n\nWhen `await` appears inside function call arguments, it can be hoisted to wrap the entire call expression. This is clearer and avoids redundant `await` keywords when multiple arguments are async.\n\nFor example, `foo(await bar(), await baz())` should be `await foo(bar(), baz())`.\n\nThis rule does not flag `await` inside closures (which have their own async context) or when the call is already wrapped in `await`.\n\nLint: Using `await` inside a function call argument raises a warning.\n\nRewrite: `await` is removed from arguments and added to wrap the call expression."
+          "description" : "Move inline `await` keyword(s) to the start of the expression.\n\nWhen `await` appears inside function call arguments, it can be hoisted to wrap the entire call expression. This is clearer and avoids redundant `await` keywords when multiple arguments are async.\n\nFor example, `foo(await bar(), await baz())` should be `await foo(bar(), baz())` .\n\nThis rule does not flag `await` inside closures (which have their own async context) or when the call is already wrapped in `await` .\n\nLint: Using `await` inside a function call argument raises a warning.\n\nRewrite: `await` is removed from arguments and added to wrap the call expression."
         },
         "caseLet" : {
           "allOf" : [
@@ -1131,7 +1131,7 @@
           "$ref" : "#/$defs/lintOnlyBase"
         }
       ],
-      "description" : "Comparing two identical operands is almost always a copy-paste bug.\n\nCatches expressions like `x == x`, `foo.bar < foo.bar`, and `$0 != $0`. Compares operands by their non-trivia token text so internal whitespace and formatting differences are ignored.\n\nLint: When both operands of a comparison operator are textually identical (ignoring whitespace), a warning is raised.",
+      "description" : "Comparing two identical operands is almost always a copy-paste bug.\n\nCatches expressions like `x == x` , `foo.bar < foo.bar` , and `$0 != $0` . Compares operands by their non-trivia token text so internal whitespace and formatting differences are ignored.\n\nLint: When both operands of a comparison operator are textually identical (ignoring whitespace), a warning is raised.",
       "unevaluatedProperties" : false
     },
     "idioms" : {
@@ -1177,7 +1177,7 @@
               "$ref" : "#/$defs/ruleBase"
             }
           ],
-          "description" : "Remove explicit `borrowing` and `consuming` ownership modifiers.\n\nOwnership modifiers are an advanced feature that most code does not need. When present on function declarations (e.g. `consuming func move()`) or parameter types (e.g. `func foo(_ bar: consuming Bar)`), they are removed.\n\nLint: If an explicit `borrowing` or `consuming` modifier is found, a lint warning is raised.\n\nRewrite: The ownership modifier is removed."
+          "description" : "Remove explicit `borrowing` and `consuming` ownership modifiers.\n\nOwnership modifiers are an advanced feature that most code does not need. When present on function declarations (e.g. `consuming func move()` ) or parameter types (e.g. `func foo(_ bar: consuming Bar)` ), they are removed.\n\nLint: If an explicit `borrowing` or `consuming` modifier is found, a lint warning is raised.\n\nRewrite: The ownership modifier is removed."
         },
         "noRetroactiveConformances" : {
           "allOf" : [
@@ -1194,7 +1194,7 @@
               "$ref" : "#/$defs/ruleBase"
             }
           ],
-          "description" : "Don't use a ternary expression to call void-returning functions.\n\n`condition ? doA() : doB()` reads as if it produces a value, but when both branches return `Void` it's effectively a hidden if/else with strictly worse readability. Use a proper `if`/`else` statement instead.\n\nLint: A warning is raised when a ternary appears as a statement and both branches are call expressions.\n\nRewrite: Not auto-fixed; the rewrite would change formatting beyond the scope of this rule."
+          "description" : "Don't use a ternary expression to call void-returning functions.\n\n`condition ? doA() : doB()` reads as if it produces a value, but when both branches return `Void` it's effectively a hidden if/else with strictly worse readability. Use a proper `if` / `else` statement instead.\n\nLint: A warning is raised when a ternary appears as a statement and both branches are call expressions.\n\nRewrite: Not auto-fixed; the rewrite would change formatting beyond the scope of this rule."
         },
         "preferAllSatisfy" : {
           "allOf" : [
@@ -1310,7 +1310,7 @@
               "$ref" : "#/$defs/ruleBase"
             }
           ],
-          "description" : "Convert trivial `map { $0.foo }` closures to keyPath-based syntax.\n\nWhen a closure's only expression is a property access on `$0`, the closure can be replaced with a keyPath expression: `map(\\.foo)`. This is more concise and expressive.\n\nApplies to `map`, `flatMap`, `compactMap`, `allSatisfy`, `filter`, and `contains(where:)`.\n\nOnly fires for simple property chains (not method calls, subscripts, or complex expressions).\n\nLint: A trivial `{ $0.property }` closure raises a warning.\n\nRewrite: The closure is replaced with a keyPath expression."
+          "description" : "Convert trivial `map { $0.foo }` closures to keyPath-based syntax.\n\nWhen a closure's only expression is a property access on `$0` , the closure can be replaced with a keyPath expression: `map(\\.foo)` . This is more concise and expressive.\n\nApplies to `map` , `flatMap` , `compactMap` , `allSatisfy` , `filter` , and `contains(where:)` .\n\nOnly fires for simple property chains (not method calls, subscripts, or complex expressions).\n\nLint: A trivial `{ $0.property }` closure raises a warning.\n\nRewrite: The closure is replaced with a keyPath expression."
         },
         "preferLastWhere" : {
           "allOf" : [
@@ -1397,16 +1397,16 @@
           "$ref" : "#/$defs/ruleBase"
         }
       ],
-      "description" : "Imports must be lexicographically ordered and (optionally) logically grouped at the top of each source file. The order of the import groups is 1) regular imports, 2) declaration imports, 3) @\\_implementationOnly imports, and 4) @testable imports. These groups are separated by a single blank line. Blank lines in between the import declarations are removed.\n\nLogical grouping is enabled by default but can be disabled via the `sortImports.shouldGroupImports` configuration option to limit this rule to lexicographic ordering.\n\nBy default, imports within conditional compilation blocks (`#if`, `#elseif`, `#else`) are not ordered. This behavior can be controlled via the `sortImports.includeConditionalImports` configuration option.\n\nLint: If an import appears anywhere other than the beginning of the file it resides in, not lexicographically ordered, or (optionally) not in the appropriate import group, a lint error is raised.\n\nRewrite: Imports will be reordered and (optionally) grouped at the top of the file.",
+      "description" : "Imports must be lexicographically ordered and (optionally) logically grouped at the top of each source file. The order of the import groups is 1) regular imports, 2) declaration imports, 3) @\\_implementationOnly imports, and 4) @testable imports. These groups are separated by a single blank line. Blank lines in between the import declarations are removed.\n\nLogical grouping is enabled by default but can be disabled via the `sortImports.shouldGroupImports` configuration option to limit this rule to lexicographic ordering.\n\nBy default, imports within conditional compilation blocks ( `#if` , `#elseif` , `#else` ) are not ordered. This behavior can be controlled via the `sortImports.includeConditionalImports` configuration option.\n\nLint: If an import appears anywhere other than the beginning of the file it resides in, not lexicographically ordered, or (optionally) not in the appropriate import group, a lint error is raised.\n\nRewrite: Imports will be reordered and (optionally) grouped at the top of the file.",
       "properties" : {
         "includeConditionalImports" : {
           "default" : false,
-          "description" : "When `true`, imports inside `#if` conditional blocks are also sorted. When `false`, conditional imports are left in source order.",
+          "description" : "When `true` , imports inside `#if` conditional blocks are also sorted. When `false` , conditional imports are left in source order.",
           "type" : "boolean"
         },
         "shouldGroupImports" : {
           "default" : true,
-          "description" : "When `true`, imports are split into groups (regular, `@testable`, etc.) separated by a blank line, and sorted within each group.",
+          "description" : "When `true` , imports are split into groups (regular, `@testable` , etc.) separated by a blank line, and sorted within each group.",
           "type" : "boolean"
         },
         "sortOrder" : {
@@ -1512,7 +1512,7 @@
           "$ref" : "#/$defs/ruleBase"
         }
       ],
-      "description" : "Add `@available(*, unavailable)` to `required init(coder:)` that only calls `fatalError`.\n\nWhen a `UIView` or `UIViewController` subclass provides a `required init(coder:)` that immediately calls `fatalError`, it should be marked `@available(*, unavailable)` so the compiler prevents it from being called.\n\nLint: A `required init(coder:)` stub without `@available(*, unavailable)` yields a warning.\n\nRewrite: The `@available(*, unavailable)` attribute is added."
+      "description" : "Add `@available(*, unavailable)` to `required init(coder:)` that only calls `fatalError` .\n\nWhen a `UIView` or `UIViewController` subclass provides a `required init(coder:)` that immediately calls `fatalError` , it should be marked `@available(*, unavailable)` so the compiler prevents it from being called.\n\nLint: A `required init(coder:)` stub without `@available(*, unavailable)` yields a warning.\n\nRewrite: The `@available(*, unavailable)` attribute is added."
     },
     "invisibleCharacters" : {
       "allOf" : [
@@ -1520,10 +1520,10 @@
           "$ref" : "#/$defs/lintOnlyBase"
         }
       ],
-      "description" : "Zero-width and other invisible Unicode characters in string literals are almost always typos or paste artifacts. They're impossible to see in source and cause string equality, lookup, and URL parsing to silently fail.\n\nThe default character set is U+200B (zero-width space), U+200C (zero-width non-joiner), and U+FEFF (BOM). Configure additional code points via `invisibleCharacters.additionalCodePoints` (an array of hex strings, e.g. `[\"00AD\", \"200D\"]`).\n\nLint: When a string literal segment contains any of the configured invisible code points, an error is raised at the offending character.",
+      "description" : "Zero-width and other invisible Unicode characters in string literals are almost always typos or paste artifacts. They're impossible to see in source and cause string equality, lookup, and URL parsing to silently fail.\n\nThe default character set is U+200B (zero-width space), U+200C (zero-width non-joiner), and U+FEFF (BOM). Configure additional code points via `invisibleCharacters.additionalCodePoints` (an array of hex strings, e.g. `[\"00AD\", \"200D\"]` ).\n\nLint: When a string literal segment contains any of the configured invisible code points, an error is raised at the offending character.",
       "properties" : {
         "additionalCodePoints" : {
-          "description" : "Extra invisible code points to flag, beyond the built-in set (U+200B zero-width space, U+200C zero-width non-joiner, U+FEFF BOM). Each entry is a hex string with no prefix, e.g. `\"00AD\"`, `\"200D\"`.",
+          "description" : "Extra invisible code points to flag, beyond the built-in set (U+200B zero-width space, U+200C zero-width non-joiner, U+FEFF BOM). Each entry is a hex string with no prefix, e.g. `\"00AD\"` , `\"200D\"` .",
           "items" : {
             "type" : "string"
           },
@@ -1635,7 +1635,7 @@
               "$ref" : "#/$defs/ruleBase"
             }
           ],
-          "description" : "Never use `[<Type>]()` syntax. In call sites that should be replaced with `[]`, for initializations use explicit type combined with empty array literal `let _: [<Type>] = []` Static properties of a type that return that type should not include a reference to their type.\n\nLint:  Non-literal empty array initialization will yield a lint error. Rewrite: All invalid use sites would be related with empty literal (with or without explicit type annotation)."
+          "description" : "Never use `[<Type>]()` syntax. In call sites that should be replaced with `[]` , for initializations use explicit type combined with empty array literal `let _: [<Type>] = []` Static properties of a type that return that type should not include a reference to their type.\n\nLint: Non-literal empty array initialization will yield a lint error. Rewrite: All invalid use sites would be related with empty literal (with or without explicit type annotation)."
         },
         "groupNumericLiterals" : {
           "allOf" : [
@@ -1651,10 +1651,10 @@
               "$ref" : "#/$defs/lintOnlyBase"
             }
           ],
-          "description" : "Zero-width and other invisible Unicode characters in string literals are almost always typos or paste artifacts. They're impossible to see in source and cause string equality, lookup, and URL parsing to silently fail.\n\nThe default character set is U+200B (zero-width space), U+200C (zero-width non-joiner), and U+FEFF (BOM). Configure additional code points via `invisibleCharacters.additionalCodePoints` (an array of hex strings, e.g. `[\"00AD\", \"200D\"]`).\n\nLint: When a string literal segment contains any of the configured invisible code points, an error is raised at the offending character.",
+          "description" : "Zero-width and other invisible Unicode characters in string literals are almost always typos or paste artifacts. They're impossible to see in source and cause string equality, lookup, and URL parsing to silently fail.\n\nThe default character set is U+200B (zero-width space), U+200C (zero-width non-joiner), and U+FEFF (BOM). Configure additional code points via `invisibleCharacters.additionalCodePoints` (an array of hex strings, e.g. `[\"00AD\", \"200D\"]` ).\n\nLint: When a string literal segment contains any of the configured invisible code points, an error is raised at the offending character.",
           "properties" : {
             "additionalCodePoints" : {
-              "description" : "Extra invisible code points to flag, beyond the built-in set (U+200B zero-width space, U+200C zero-width non-joiner, U+FEFF BOM). Each entry is a hex string with no prefix, e.g. `\"00AD\"`, `\"200D\"`.",
+              "description" : "Extra invisible code points to flag, beyond the built-in set (U+200B zero-width space, U+200C zero-width non-joiner, U+FEFF BOM). Each entry is a hex string with no prefix, e.g. `\"00AD\"` , `\"200D\"` .",
               "items" : {
                 "type" : "string"
               },
@@ -1868,7 +1868,7 @@
           "properties" : {
             "functionLevel" : {
               "default" : 2,
-              "description" : "Maximum permitted nesting depth for control-flow blocks inside a function body (if/for/while/switch/closure).",
+              "description" : "Maximum permitted nesting depth for nested function-like declarations (`func`, `init`, `subscript`).",
               "type" : "integer"
             },
             "typeLevel" : {
@@ -1946,7 +1946,7 @@
           "$ref" : "#/$defs/ruleBase"
         }
       ],
-      "description" : "Opening braces of multiline statements are wrapped to their own line.\n\nWhen a statement signature (conditions, parameters, etc.) spans multiple lines, the opening `{` is moved to its own line, aligned with the statement keyword.\n\nLint: A `{` on the same line as a multiline statement signature raises a warning.\n\nRewrite: The `{` is moved to a new line aligned with the closing `}`."
+      "description" : "Opening braces of multiline statements are wrapped to their own line.\n\nWhen a statement signature (conditions, parameters, etc.) spans multiple lines, the opening `{` is moved to its own line, aligned with the statement keyword.\n\nLint: A `{` on the same line as a multiline statement signature raises a warning.\n\nRewrite: The `{` is moved to a new line aligned with the closing `}` ."
     },
     "mutableCapture" : {
       "allOf" : [
@@ -2011,7 +2011,7 @@
               "$ref" : "#/$defs/ruleBase"
             }
           ],
-          "description" : "Capitalize acronyms when the first character is capitalized.\n\nWhen an identifier contains a titlecased acronym (e.g. `Url`, `Json`, `Id`), it should be fully uppercased (e.g. `URL`, `JSON`, `ID`) for consistency with Swift naming conventions.\n\nThe list of recognized acronyms is configurable via `Configuration.acronyms`.\n\nLint: An identifier with a titlecased acronym raises a warning.\n\nRewrite: The titlecased acronym is replaced with the uppercased form.",
+          "description" : "Capitalize acronyms when the first character is capitalized.\n\nWhen an identifier contains a titlecased acronym (e.g. `Url`, `Json`, `Id`), it should be fully uppercased (e.g. `URL`, `JSON`, `ID`) for consistency with Swift naming conventions.\n\nThe list of recognized acronyms is configurable via `Configuration.acronyms`.\n\nLint: An identifier with a titlecased acronym raises a warning.\n\nRewrite: The titlecased acronym is replaced with the uppercased form. The compact pipeline calls `applyUppercaseAcronyms` directly from `Rewrites/Tokens/TokenRewrites.swift`. This class only exists so the rule is registered (configuration key, group, default value). It has no visit / transform / willEnter / didExit methods — `RuleCollector` allows that.",
           "properties" : {
             "words" : {
               "description" : "Acronyms that should be fully uppercased when they appear at the start of an identifier already written in PascalCase. Replace this list to override the defaults; entries should be uppercase, e.g. `\"URL\"`, `\"ID\"`.",
@@ -2054,7 +2054,7 @@
       "properties" : {
         "functionLevel" : {
           "default" : 2,
-          "description" : "Maximum permitted nesting depth for control-flow blocks inside a function body (if/for/while/switch/closure).",
+          "description" : "Maximum permitted nesting depth for nested function-like declarations (`func`, `init`, `subscript`).",
           "type" : "integer"
         },
         "typeLevel" : {
@@ -2105,7 +2105,7 @@
           "$ref" : "#/$defs/ruleBase"
         }
       ],
-      "description" : "Remove explicit `borrowing` and `consuming` ownership modifiers.\n\nOwnership modifiers are an advanced feature that most code does not need. When present on function declarations (e.g. `consuming func move()`) or parameter types (e.g. `func foo(_ bar: consuming Bar)`), they are removed.\n\nLint: If an explicit `borrowing` or `consuming` modifier is found, a lint warning is raised.\n\nRewrite: The ownership modifier is removed."
+      "description" : "Remove explicit `borrowing` and `consuming` ownership modifiers.\n\nOwnership modifiers are an advanced feature that most code does not need. When present on function declarations (e.g. `consuming func move()` ) or parameter types (e.g. `func foo(_ bar: consuming Bar)` ), they are removed.\n\nLint: If an explicit `borrowing` or `consuming` modifier is found, a lint warning is raised.\n\nRewrite: The ownership modifier is removed."
     },
     "noFallThroughOnlyCases" : {
       "allOf" : [
@@ -2145,7 +2145,7 @@
           "$ref" : "#/$defs/ruleBase"
         }
       ],
-      "description" : "Convert `guard` statements in test functions to `try #require(...)`/`#expect(...)` (Swift Testing) or `try XCTUnwrap(...)`/`XCTAssert(...)` (XCTest).\n\nGuard statements in tests obscure the test intent behind control flow. Replacing them with direct assertions or unwraps makes the test linear and the failure message immediate.\n\nThis rule applies to:\n- Functions annotated with `@Test` (Swift Testing)\n- Functions named `test*()` with no parameters inside `XCTestCase` subclasses\n\nGuards inside closures or nested functions are left alone because the enclosing test function's `throws` does not propagate into those scopes.\n\nLint: A warning is raised for each `guard` that can be converted.\n\nRewrite: The `guard` is replaced with assertion/unwrap statements and `throws` is added to the signature if needed."
+      "description" : "Convert `guard` statements in test functions to `try #require(...)`/`#expect(...)` (Swift Testing) or `try XCTUnwrap(...)`/`XCTAssert(...)` (XCTest).\n\nGuard statements in tests obscure the test intent behind control flow. Replacing them with direct assertions or unwraps makes the test linear and the failure message immediate.\n\nLint: A warning is raised for each `guard` that can be converted.\n\nRewrite: The `guard` is replaced with assertion/unwrap statements and `throws` is added to the signature if needed."
     },
     "noImplicitlyUnwrappedOptionals" : {
       "allOf" : [
@@ -2223,7 +2223,7 @@
           "$ref" : "#/$defs/ruleBase"
         }
       ],
-      "description" : "Remove parentheses around closure parameter lists when no parameter has a type annotation.\n\n`{ (x, y) in ... }` is equivalent to `{ x, y in ... }` when the parameters are untyped — the parens add visual noise. Typed parameter lists (`{ (x: Int) in }`) keep the parens because shorthand parameters can't carry types.\n\nLint: A finding is raised at the parameter clause.\n\nRewrite: The parenthesized parameter list is converted to shorthand (`x, y`)."
+      "description" : "Remove parentheses around closure parameter lists when no parameter has a type annotation.\n\n`{ (x, y) in ... }` is equivalent to `{ x, y in ... }` when the parameters are untyped — the parens add visual noise. Typed parameter lists ( `{ (x: Int) in }` ) keep the parens because shorthand parameters can't carry types.\n\nLint: A finding is raised at the parameter clause.\n\nRewrite: The parenthesized parameter list is converted to shorthand ( `x, y` )."
     },
     "noPlaygroundLiterals" : {
       "allOf" : [
@@ -2282,7 +2282,7 @@
           "$ref" : "#/$defs/ruleBase"
         }
       ],
-      "description" : "Don't use a ternary expression to call void-returning functions.\n\n`condition ? doA() : doB()` reads as if it produces a value, but when both branches return `Void` it's effectively a hidden if/else with strictly worse readability. Use a proper `if`/`else` statement instead.\n\nLint: A warning is raised when a ternary appears as a statement and both branches are call expressions.\n\nRewrite: Not auto-fixed; the rewrite would change formatting beyond the scope of this rule."
+      "description" : "Don't use a ternary expression to call void-returning functions.\n\n`condition ? doA() : doB()` reads as if it produces a value, but when both branches return `Void` it's effectively a hidden if/else with strictly worse readability. Use a proper `if` / `else` statement instead.\n\nLint: A warning is raised when a ternary appears as a statement and both branches are call expressions.\n\nRewrite: Not auto-fixed; the rewrite would change formatting beyond the scope of this rule."
     },
     "noYodaConditions" : {
       "allOf" : [
@@ -2290,7 +2290,7 @@
           "$ref" : "#/$defs/ruleBase"
         }
       ],
-      "description" : "Prefer the constant value on the right-hand side of comparison expressions.\n\n\"Yoda conditions\" place the constant on the left (`0 == x`), which reads unnaturally. The conventional Swift style places the variable first (`x == 0`).\n\nFor ordered comparisons (`<`, `<=`, `>`, `>=`), the operator is flipped when swapping sides so the semantics are preserved.\n\nLint: A comparison with a constant on the left raises a warning.\n\nRewrite: The operands are swapped and the operator is flipped if necessary."
+      "description" : "Prefer the constant value on the right-hand side of comparison expressions.\n\n\"Yoda conditions\" place the constant on the left ( `0 == x` ), which reads unnaturally. The conventional Swift style places the variable first ( `x == 0` ).\n\nFor ordered comparisons ( `<` , `<=` , `>` , `>=` ), the operator is flipped when swapping sides so the semantics are preserved.\n\nLint: A comparison with a constant on the left raises a warning.\n\nRewrite: The operands are swapped and the operator is flipped if necessary."
     },
     "oneDeclarationPerLine" : {
       "allOf" : [
@@ -2315,7 +2315,7 @@
           "$ref" : "#/$defs/ruleBase"
         }
       ],
-      "description" : "Use opaque generic parameters (`some Protocol`) instead of named generic parameters with constraints (`<T: Protocol>`) where equivalent.\n\nThis rule applies to `func`, `init`, and `subscript` declarations. A generic type parameter is eligible for conversion when it appears exactly once in the parameter list and is not referenced in the return type, function body, attributes, typed throws, or other generic constraints.\n\nLint: A lint warning is raised when a generic parameter can be replaced with an opaque parameter.\n\nRewrite: The generic parameter is replaced with `some Protocol` in the parameter type."
+      "description" : "Use opaque generic parameters ( `some Protocol` ) instead of named generic parameters with constraints ( `<T: Protocol>` ) where equivalent.\n\nThis rule applies to `func` , `init` , and `subscript` declarations. A generic type parameter is eligible for conversion when it appears exactly once in the parameter list and is not referenced in the return type, function body, attributes, typed throws, or other generic constraints.\n\nLint: A lint warning is raised when a generic parameter can be replaced with an opaque parameter.\n\nRewrite: The generic parameter is replaced with `some Protocol` in the parameter type."
     },
     "orphanedDocComment" : {
       "allOf" : [
@@ -2381,7 +2381,7 @@
           "$ref" : "#/$defs/ruleBase"
         }
       ],
-      "description" : "Prefer comma over `&&` in `if`, `guard`, and `while` conditions.\n\nSwift condition lists use commas to separate independent boolean conditions, which short-circuit identically to `&&` but read more naturally and enable individual conditions to use optional binding or pattern matching.\n\nThis rule only fires when `&&` is the top-level operator in a condition element (no `||` mixed in at the same precedence level, since that would change semantics).\n\nLint: Using `&&` in a condition list raises a warning.\n\nRewrite: `&&` is replaced with commas, splitting the condition into separate condition elements."
+      "description" : "Prefer comma over `&&` in `if` , `guard` , and `while` conditions.\n\nSwift condition lists use commas to separate independent boolean conditions, which short-circuit identically to `&&` but read more naturally and enable individual conditions to use optional binding or pattern matching.\n\nThis rule only fires when `&&` is the top-level operator in a condition element (no `||` mixed in at the same precedence level, since that would change semantics).\n\nLint: Using `&&` in a condition list raises a warning.\n\nRewrite: `&&` is replaced with commas, splitting the condition into separate condition elements."
     },
     "preferCompoundAssignment" : {
       "allOf" : [
@@ -2497,7 +2497,7 @@
           "$ref" : "#/$defs/ruleBase"
         }
       ],
-      "description" : "Consecutive single-return `if` statements followed by a final `return` should be expressed as a chained `if/else` expression.\n\nWhen a sequence of `if` statements each contain only a `return` and are followed by a trailing `return`, the chain is converted into a single `if/else if/.../else` expression (two or more `if` branches required).\n\n```swift // Before if case .spaces = $0 { return true } if case .tabs = $0 { return true } return false\n\n// After if case .spaces = $0 { true } else if case .tabs = $0 { true } else { false } ```\n\nLint: A chain of early-return `if` statements raises a warning.\n\nRewrite: The chain is replaced with an `if/else` expression."
+      "description" : "Consecutive single-return `if` statements followed by a final `return` should be expressed as a chained `if/else` expression.\n\nWhen a sequence of `if` statements each contain only a `return` and are followed by a trailing `return` , the chain is converted into a single `if/else if/.../else` expression (two or more `if` branches required).\n\n```swift // Before if case .spaces = $0 { return true } if case .tabs = $0 { return true } return false\n\n// After if case .spaces = $0 { true } else if case .tabs = $0 { true } else { false } ```\n\nLint: A chain of early-return `if` statements raises a warning.\n\nRewrite: The chain is replaced with an `if/else` expression."
     },
     "preferIsDisjoint" : {
       "allOf" : [
@@ -2521,7 +2521,7 @@
           "$ref" : "#/$defs/ruleBase"
         }
       ],
-      "description" : "Convert trivial `map { $0.foo }` closures to keyPath-based syntax.\n\nWhen a closure's only expression is a property access on `$0`, the closure can be replaced with a keyPath expression: `map(\\.foo)`. This is more concise and expressive.\n\nApplies to `map`, `flatMap`, `compactMap`, `allSatisfy`, `filter`, and `contains(where:)`.\n\nOnly fires for simple property chains (not method calls, subscripts, or complex expressions).\n\nLint: A trivial `{ $0.property }` closure raises a warning.\n\nRewrite: The closure is replaced with a keyPath expression."
+      "description" : "Convert trivial `map { $0.foo }` closures to keyPath-based syntax.\n\nWhen a closure's only expression is a property access on `$0` , the closure can be replaced with a keyPath expression: `map(\\.foo)` . This is more concise and expressive.\n\nApplies to `map` , `flatMap` , `compactMap` , `allSatisfy` , `filter` , and `contains(where:)` .\n\nOnly fires for simple property chains (not method calls, subscripts, or complex expressions).\n\nLint: A trivial `{ $0.property }` closure raises a warning.\n\nRewrite: The closure is replaced with a keyPath expression."
     },
     "preferLastWhere" : {
       "allOf" : [
@@ -2605,7 +2605,7 @@
           "$ref" : "#/$defs/ruleBase"
         }
       ],
-      "description" : "Convert XCTest suites to Swift Testing.\n\nReplaces `import XCTest` with `import Testing` + `import Foundation`, removes `XCTestCase` conformance, converts `setUp`/`tearDown` to `init`/`deinit`, adds `@Test` to test methods, and converts XCT assertions to `#expect`/`#require`.\n\nBails out entirely if the file contains unsupported XCTest functionality (expectations, performance tests, unknown overrides, async/throws tearDown, XCTestCase extensions).\n\nLint: A warning is raised for each XCTest pattern that can be converted.\n\nRewrite: The XCTest patterns are replaced with Swift Testing equivalents."
+      "description" : "Convert XCTest suites to Swift Testing.\n\nReplaces `import XCTest` with `import Testing` + `import Foundation` , removes `XCTestCase` conformance, converts `setUp` / `tearDown` to `init` / `deinit` , adds `@Test` to test methods, and converts XCT assertions to `#expect` / `#require` .\n\nBails out entirely if the file contains unsupported XCTest functionality (expectations, performance tests, unknown overrides, async/throws tearDown, XCTestCase extensions)."
     },
     "preferSynthesizedInitializer" : {
       "allOf" : [
@@ -2622,7 +2622,7 @@
           "$ref" : "#/$defs/ruleBase"
         }
       ],
-      "description" : "Use ternary conditional expressions for simple if-else returns or assignments.\n\nWhen an `if`-`else` has exactly two branches, each containing a single `return` statement or a single assignment to the same variable, and the condition is a simple expression (no else-if chains), the construct is collapsed into a ternary conditional expression.\n\n```swift // Before if condition { return trueValue } else { return falseValue } // After return condition ? trueValue : falseValue\n\n// Before if condition { result = trueValue } else { result = falseValue } // After result = condition ? trueValue : falseValue ```\n\nLint: A simple if-else with single returns or same-variable assignments in both branches raises a warning.\n\nRewrite: The if-else is replaced with a ternary expression."
+      "description" : "Use ternary conditional expressions for simple if-else returns or assignments.\n\nWhen an `if` - `else` has exactly two branches, each containing a single `return` statement or a single assignment to the same variable, and the condition is a simple expression (no else-if chains), the construct is collapsed into a ternary conditional expression.\n\n```swift // Before if condition { return trueValue } else { return falseValue } // After return condition ? trueValue : falseValue\n\n// Before if condition { result = trueValue } else { result = falseValue } // After result = condition ? trueValue : falseValue ```\n\nLint: A simple if-else with single returns or same-variable assignments in both branches raises a warning.\n\nRewrite: The if-else is replaced with a ternary expression."
     },
     "preferToggle" : {
       "allOf" : [
@@ -2638,7 +2638,7 @@
           "$ref" : "#/$defs/ruleBase"
         }
       ],
-      "description" : "Use trailing closure syntax where applicable.\n\nWhen the last argument(s) to a function call are closure expressions, convert them to trailing closure syntax. For a single trailing closure, the closure must be unlabeled unless the function is in the \"always trailing\" list (e.g. `async`, `sync`, `autoreleasepool`). For multiple trailing closures, the first must be unlabeled and the rest must be labeled.\n\nLint: When closure arguments could use trailing closure syntax.\n\nRewrite: The closure arguments are moved to trailing closure position."
+      "description" : "Use trailing closure syntax where applicable.\n\nWhen the last argument(s) to a function call are closure expressions, convert them to trailing closure syntax. For a single trailing closure, the closure must be unlabeled unless the function is in the \"always trailing\" list (e.g. `async` , `sync` , `autoreleasepool` ). For multiple trailing closures, the first must be unlabeled and the rest must be labeled.\n\nLint: When closure arguments could use trailing closure syntax.\n\nRewrite: The closure arguments are moved to trailing closure position."
     },
     "preferUnavailable" : {
       "allOf" : [
@@ -2679,7 +2679,7 @@
           "$ref" : "#/$defs/ruleBase"
         }
       ],
-      "description" : "Add `private` to `@State` properties without explicit access control.\n\nSwiftUI `@State` and `@StateObject` properties should be `private` because they are owned by the view and should not be set from outside. If no access control modifier is present, `private` is added. Existing access modifiers (including `private(set)`) and `@Previewable` properties are left unchanged.\n\nLint: A `@State` or `@StateObject` property without access control raises a warning.\n\nRewrite: The `private` modifier is added before the binding keyword."
+      "description" : "Add `private` to `@State` properties without explicit access control.\n\nSwiftUI `@State` and `@StateObject` properties should be `private` because they are owned by the view and should not be set from outside. If no access control modifier is present, `private` is added. Existing access modifiers (including `private(set)` ) and `@Previewable` properties are left unchanged.\n\nLint: A `@State` or `@StateObject` property without access control raises a warning.\n\nRewrite: The `private` modifier is added before the binding keyword."
     },
     "protocolAccessorOrder" : {
       "allOf" : [
@@ -2731,7 +2731,7 @@
               "$ref" : "#/$defs/ruleBase"
             }
           ],
-          "description" : "Unified rule that removes or replaces redundant access control modifiers.\n\nCombines four checks:\n\n1. **Redundant `internal`** — removes explicit `internal` since it is the default. Does NOT remove `internal(set)`, which is meaningful on properties with a higher getter access level (e.g. `public internal(set) var`).\n\n2. **Redundant `public`** — removes `public` on members inside non-public types where it has no effect. Does NOT flag members of `public` or `package` types.\n\n3. **Redundant extension ACL** — removes access control on extension members that match the extension's own access level.\n\n4. **Redundant `fileprivate`** — converts `fileprivate` to `private` where equivalent. Only applies when the file contains a single logical type with no nested type declarations.\n\nLint: Raises warnings for any of the above redundancies.\n\nRewrite: Removes or replaces the redundant modifier."
+          "description" : "Unified rule that removes or replaces redundant access control modifiers.\n\nCombines four checks: redundant `internal`, redundant `public` on members of non-public types, redundant access control on extension members matching the extension's level, and redundant `fileprivate` (converted to `private` in single-type files)."
         },
         "redundantAsync" : {
           "allOf" : [
@@ -2739,7 +2739,7 @@
               "$ref" : "#/$defs/ruleBase"
             }
           ],
-          "description" : "Remove `async` from functions that contain no `await` expressions.\n\nIf a function is marked `async` but its body never uses `await`, the `async` is likely unnecessary. Removing it simplifies the API and removes the requirement for callers to use `await`.\n\nSome functions are intentionally async for protocol conformance or future-proofing even if they don't currently await.\n\nLint: If an `async` function has no `await` in its body, a lint warning is raised.\n\nRewrite: The `async` specifier is removed."
+          "description" : "Remove `async` from functions that contain no `await` expressions.\n\nIf a function is marked `async` but its body never uses `await` , the `async` is likely unnecessary. Removing it simplifies the API and removes the requirement for callers to use `await` .\n\nSome functions are intentionally async for protocol conformance or future-proofing even if they don't currently await.\n\nLint: If an `async` function has no `await` in its body, a lint warning is raised.\n\nRewrite: The `async` specifier is removed."
         },
         "redundantBackticks" : {
           "allOf" : [
@@ -2747,7 +2747,7 @@
               "$ref" : "#/$defs/ruleBase"
             }
           ],
-          "description" : "Remove unnecessary backticks around identifiers.\n\nBackticks are required when an identifier is a Swift reserved keyword used in a position that expects an identifier. They are redundant when the identifier is:\n- Not a keyword at all (e.g., `` `myFunc` `` → `myFunc`)\n- A keyword used after `.` in member access (e.g., `Foo.`default`` → `Foo.default`)\n- A keyword used as a function argument label (e.g., `func foo(`default`: Int)` → `func foo(default: Int)`)\n\nLint: If unnecessary backticks are found, a finding is raised.\n\nRewrite: The backticks are removed."
+          "description" : "Remove unnecessary backticks around identifiers.\n\nBackticks are required when an identifier is a Swift reserved keyword used in a position that expects an identifier. They are redundant when the identifier is:\n- Not a keyword at all (e.g., `` `myFunc` `` → `myFunc` )\n- A keyword used after `.` in member access (e.g., `Foo.` default` ` → ` Foo.default`)\n- A keyword used as a function argument label (e.g., `func foo(` default `: Int)` →\n`func foo(default: Int)` )\n\nLint: If unnecessary backticks are found, a finding is raised.\n\nRewrite: The backticks are removed."
         },
         "redundantBreak" : {
           "allOf" : [
@@ -2971,7 +2971,7 @@
               "$ref" : "#/$defs/ruleBase"
             }
           ],
-          "description" : "Mark unused function arguments with `_`.\n\nDetects unused parameters in functions, initializers, subscripts, closures, and for-loop variables, and replaces them with `_`.\n\nFor named function parameters, the internal name is replaced with `_` (e.g., `func foo(bar: Int)` → `func foo(bar _: Int)`). For unnamed parameters, the name is removed (`func foo(_ bar: Int)` → `func foo(_: Int)`).\n\nFor operator functions and subscripts, the parameter name is replaced with `_` directly since external labels are unnecessary.\n\nLint: When a parameter or loop variable is unused.\n\nRewrite: The unused parameter or variable is replaced with `_`."
+          "description" : "Mark unused function arguments with `_` .\n\nDetects unused parameters in functions, initializers, subscripts, closures, and for-loop variables, and replaces them with `_` .\n\nFor named function parameters, the internal name is replaced with `_` (e.g., `func foo(bar: Int)` → `func foo(bar _: Int)` ). For unnamed parameters, the name is removed ( `func foo(_ bar: Int)` → `func foo(_: Int)` ).\n\nFor operator functions and subscripts, the parameter name is replaced with `_` directly since external labels are unnecessary.\n\nLint: When a parameter or loop variable is unused.\n\nRewrite: The unused parameter or variable is replaced with `_` ."
         },
         "unusedControlFlowLabel" : {
           "allOf" : [
@@ -2999,7 +2999,7 @@
           "$ref" : "#/$defs/ruleBase"
         }
       ],
-      "description" : "Unified rule that removes or replaces redundant access control modifiers.\n\nCombines four checks:\n\n1. **Redundant `internal`** — removes explicit `internal` since it is the default. Does NOT remove `internal(set)`, which is meaningful on properties with a higher getter access level (e.g. `public internal(set) var`).\n\n2. **Redundant `public`** — removes `public` on members inside non-public types where it has no effect. Does NOT flag members of `public` or `package` types.\n\n3. **Redundant extension ACL** — removes access control on extension members that match the extension's own access level.\n\n4. **Redundant `fileprivate`** — converts `fileprivate` to `private` where equivalent. Only applies when the file contains a single logical type with no nested type declarations.\n\nLint: Raises warnings for any of the above redundancies.\n\nRewrite: Removes or replaces the redundant modifier."
+      "description" : "Unified rule that removes or replaces redundant access control modifiers.\n\nCombines four checks: redundant `internal`, redundant `public` on members of non-public types, redundant access control on extension members matching the extension's level, and redundant `fileprivate` (converted to `private` in single-type files)."
     },
     "redundantAsync" : {
       "allOf" : [
@@ -3007,7 +3007,7 @@
           "$ref" : "#/$defs/ruleBase"
         }
       ],
-      "description" : "Remove `async` from functions that contain no `await` expressions.\n\nIf a function is marked `async` but its body never uses `await`, the `async` is likely unnecessary. Removing it simplifies the API and removes the requirement for callers to use `await`.\n\nSome functions are intentionally async for protocol conformance or future-proofing even if they don't currently await.\n\nLint: If an `async` function has no `await` in its body, a lint warning is raised.\n\nRewrite: The `async` specifier is removed."
+      "description" : "Remove `async` from functions that contain no `await` expressions.\n\nIf a function is marked `async` but its body never uses `await` , the `async` is likely unnecessary. Removing it simplifies the API and removes the requirement for callers to use `await` .\n\nSome functions are intentionally async for protocol conformance or future-proofing even if they don't currently await.\n\nLint: If an `async` function has no `await` in its body, a lint warning is raised.\n\nRewrite: The `async` specifier is removed."
     },
     "redundantBackticks" : {
       "allOf" : [
@@ -3015,7 +3015,7 @@
           "$ref" : "#/$defs/ruleBase"
         }
       ],
-      "description" : "Remove unnecessary backticks around identifiers.\n\nBackticks are required when an identifier is a Swift reserved keyword used in a position that expects an identifier. They are redundant when the identifier is:\n- Not a keyword at all (e.g., `` `myFunc` `` → `myFunc`)\n- A keyword used after `.` in member access (e.g., `Foo.`default`` → `Foo.default`)\n- A keyword used as a function argument label (e.g., `func foo(`default`: Int)` → `func foo(default: Int)`)\n\nLint: If unnecessary backticks are found, a finding is raised.\n\nRewrite: The backticks are removed."
+      "description" : "Remove unnecessary backticks around identifiers.\n\nBackticks are required when an identifier is a Swift reserved keyword used in a position that expects an identifier. They are redundant when the identifier is:\n- Not a keyword at all (e.g., `` `myFunc` `` → `myFunc` )\n- A keyword used after `.` in member access (e.g., `Foo.` default` ` → ` Foo.default`)\n- A keyword used as a function argument label (e.g., `func foo(` default `: Int)` →\n`func foo(default: Int)` )\n\nLint: If unnecessary backticks are found, a finding is raised.\n\nRewrite: The backticks are removed."
     },
     "redundantBreak" : {
       "allOf" : [
@@ -3363,16 +3363,16 @@
               "$ref" : "#/$defs/ruleBase"
             }
           ],
-          "description" : "Imports must be lexicographically ordered and (optionally) logically grouped at the top of each source file. The order of the import groups is 1) regular imports, 2) declaration imports, 3) @\\_implementationOnly imports, and 4) @testable imports. These groups are separated by a single blank line. Blank lines in between the import declarations are removed.\n\nLogical grouping is enabled by default but can be disabled via the `sortImports.shouldGroupImports` configuration option to limit this rule to lexicographic ordering.\n\nBy default, imports within conditional compilation blocks (`#if`, `#elseif`, `#else`) are not ordered. This behavior can be controlled via the `sortImports.includeConditionalImports` configuration option.\n\nLint: If an import appears anywhere other than the beginning of the file it resides in, not lexicographically ordered, or (optionally) not in the appropriate import group, a lint error is raised.\n\nRewrite: Imports will be reordered and (optionally) grouped at the top of the file.",
+          "description" : "Imports must be lexicographically ordered and (optionally) logically grouped at the top of each source file. The order of the import groups is 1) regular imports, 2) declaration imports, 3) @\\_implementationOnly imports, and 4) @testable imports. These groups are separated by a single blank line. Blank lines in between the import declarations are removed.\n\nLogical grouping is enabled by default but can be disabled via the `sortImports.shouldGroupImports` configuration option to limit this rule to lexicographic ordering.\n\nBy default, imports within conditional compilation blocks ( `#if` , `#elseif` , `#else` ) are not ordered. This behavior can be controlled via the `sortImports.includeConditionalImports` configuration option.\n\nLint: If an import appears anywhere other than the beginning of the file it resides in, not lexicographically ordered, or (optionally) not in the appropriate import group, a lint error is raised.\n\nRewrite: Imports will be reordered and (optionally) grouped at the top of the file.",
           "properties" : {
             "includeConditionalImports" : {
               "default" : false,
-              "description" : "When `true`, imports inside `#if` conditional blocks are also sorted. When `false`, conditional imports are left in source order.",
+              "description" : "When `true` , imports inside `#if` conditional blocks are also sorted. When `false` , conditional imports are left in source order.",
               "type" : "boolean"
             },
             "shouldGroupImports" : {
               "default" : true,
-              "description" : "When `true`, imports are split into groups (regular, `@testable`, etc.) separated by a blank line, and sorted within each group.",
+              "description" : "When `true` , imports are split into groups (regular, `@testable` , etc.) separated by a blank line, and sorted within each group.",
               "type" : "boolean"
             },
             "sortOrder" : {
@@ -3436,6 +3436,15 @@
       ],
       "description" : "Remove `weak` from `@IBOutlet` properties.\n\nAs per Apple's recommendation, `@IBOutlet` properties should be strong. The `weak` modifier is preserved for delegate and data source outlets since those are typically owned elsewhere.\n\nLint: An `@IBOutlet` property with `weak` raises a warning.\n\nRewrite: The `weak` modifier is removed."
     },
+    "style" : {
+      "default" : "compact",
+      "description" : "Formatting style. Drives normalization and layout choices.\n\nOptions: compact, roomy.",
+      "enum" : [
+        "compact",
+        "roomy"
+      ],
+      "type" : "string"
+    },
     "swiftTestingTestCaseNames" : {
       "allOf" : [
         {
@@ -3469,7 +3478,18 @@
           "$ref" : "#/$defs/ruleBase"
         }
       ],
-      "description" : "Sort switch case items alphabetically within each case.\n\nWhen a case matches multiple patterns (e.g. `case .b, .a, .c:`), the patterns are sorted lexicographically. Numeric literals are compared by value (including hex, octal, and binary). Cases with `where` clauses are only sorted if the `where` clause ends up on the last item.\n\nLint: If case items are not sorted, a lint warning is raised.\n\nRewrite: The case items are reordered alphabetically."
+      "description" : "Enforce switch case label indentation style.\n\nTwo styles are supported via `SwitchCaseIndentationConfiguration.Style`:\n- `flush`: `case` labels align with the `switch` keyword (default).\n- `indented`: `case` labels are indented one level from `switch`.\n\nLint: Raised when a `case` or `default` label doesn't match the configured style.\n\nRewrite: Case labels, bodies, and the closing brace are reindented to match.",
+      "properties" : {
+        "style" : {
+          "default" : "flush",
+          "description" : "`flush` aligns case labels with the `switch` keyword; `indented` indents them one level beneath it.\n\nOptions: flush, indented.",
+          "enum" : [
+            "flush",
+            "indented"
+          ],
+          "type" : "string"
+        }
+      }
     },
     "testSuiteAccessControl" : {
       "allOf" : [
@@ -3498,7 +3518,7 @@
               "$ref" : "#/$defs/ruleBase"
             }
           ],
-          "description" : "Convert `guard` statements in test functions to `try #require(...)`/`#expect(...)` (Swift Testing) or `try XCTUnwrap(...)`/`XCTAssert(...)` (XCTest).\n\nGuard statements in tests obscure the test intent behind control flow. Replacing them with direct assertions or unwraps makes the test linear and the failure message immediate.\n\nThis rule applies to:\n- Functions annotated with `@Test` (Swift Testing)\n- Functions named `test*()` with no parameters inside `XCTestCase` subclasses\n\nGuards inside closures or nested functions are left alone because the enclosing test function's `throws` does not propagate into those scopes.\n\nLint: A warning is raised for each `guard` that can be converted.\n\nRewrite: The `guard` is replaced with assertion/unwrap statements and `throws` is added to the signature if needed."
+          "description" : "Convert `guard` statements in test functions to `try #require(...)`/`#expect(...)` (Swift Testing) or `try XCTUnwrap(...)`/`XCTAssert(...)` (XCTest).\n\nGuard statements in tests obscure the test intent behind control flow. Replacing them with direct assertions or unwraps makes the test linear and the failure message immediate.\n\nLint: A warning is raised for each `guard` that can be converted.\n\nRewrite: The `guard` is replaced with assertion/unwrap statements and `throws` is added to the signature if needed."
         },
         "preferSwiftTesting" : {
           "allOf" : [
@@ -3506,7 +3526,7 @@
               "$ref" : "#/$defs/ruleBase"
             }
           ],
-          "description" : "Convert XCTest suites to Swift Testing.\n\nReplaces `import XCTest` with `import Testing` + `import Foundation`, removes `XCTestCase` conformance, converts `setUp`/`tearDown` to `init`/`deinit`, adds `@Test` to test methods, and converts XCT assertions to `#expect`/`#require`.\n\nBails out entirely if the file contains unsupported XCTest functionality (expectations, performance tests, unknown overrides, async/throws tearDown, XCTestCase extensions).\n\nLint: A warning is raised for each XCTest pattern that can be converted.\n\nRewrite: The XCTest patterns are replaced with Swift Testing equivalents."
+          "description" : "Convert XCTest suites to Swift Testing.\n\nReplaces `import XCTest` with `import Testing` + `import Foundation` , removes `XCTestCase` conformance, converts `setUp` / `tearDown` to `init` / `deinit` , adds `@Test` to test methods, and converts XCT assertions to `#expect` / `#require` .\n\nBails out entirely if the file contains unsupported XCTest functionality (expectations, performance tests, unknown overrides, async/throws tearDown, XCTestCase extensions)."
         },
         "swiftTestingTestCaseNames" : {
           "allOf" : [
@@ -3530,7 +3550,7 @@
               "$ref" : "#/$defs/ruleBase"
             }
           ],
-          "description" : "Ensure test methods have the correct `test` prefix or `@Test` attribute.\n\nFor XCTest: functions in `XCTestCase` subclasses that look like tests get a `test` prefix. For Swift Testing: functions in test suite types get a `@Test` attribute.\n\nA \"test suite\" type is one whose name ends with `Tests`, `TestCase`, or `Suite`.\n\nFunctions are skipped if they:\n- Have parameters or a return type\n- Are `override`, `@objc`, `static`, or `private`/`fileprivate`\n- Start with a disabled prefix (`disable_`, `skip_`, `x_`, `_`, etc.)\n- Are referenced elsewhere in the file (XCTest only — they're helpers)\n- Are in a type with a parameterized initializer\n- Are in an `open` base class or one with \"Base\"/\"base\"/\"subclass\" in name/doc comment\n\nLint: A warning is raised for each test method missing the correct prefix or attribute.\n\nRewrite: The `test` prefix or `@Test` attribute is added."
+          "description" : "Ensure test methods have the correct `test` prefix or `@Test` attribute.\n\nFor XCTest: functions in `XCTestCase` subclasses that look like tests get a `test` prefix. For Swift Testing: functions in test suite types get a `@Test` attribute.\n\nA \"test suite\" type is one whose name ends with `Tests`, `TestCase`, or `Suite`.\n\nLint: A warning is raised for each test method missing the correct prefix or attribute.\n\nRewrite: The `test` prefix or `@Test` attribute is added."
         }
       },
       "type" : "object"
@@ -3685,7 +3705,7 @@
           "$ref" : "#/$defs/lintOnlyBase"
         }
       ],
-      "description" : "`Task { try ... }` silently swallows thrown errors when the error type is inferred (or written as `_`).\n\nWithout an explicit `Failure` generic argument, a `Task` that throws an unhandled error doesn't surface the error anywhere — there is no `throws` signature on the closure call site, and the value/result of the task is usually discarded.\n\nSee: https://forums.swift.org/t/task-initializer-with-throwing-closure-swallows-error/56066\n\nLint: When a `Task { ... }` (with implicit or wildcard error type) contains an unhandled `throw` or `try`, an error is raised. Tasks whose value or result is consumed (`let t = Task { ... }`, `Task { ... }.value`, `return Task { ... }`) are exempt.",
+      "description" : "`Task { try ... }` silently swallows thrown errors when the error type is inferred (or written as `_` ).\n\nWithout an explicit `Failure` generic argument, a `Task` that throws an unhandled error doesn't surface the error anywhere — there is no `throws` signature on the closure call site, and the value/result of the task is usually discarded.\n\nSee: https://forums.swift.org/t/task-initializer-with-throwing-closure-swallows-error/56066\n\nLint: When a `Task { ... }` (with implicit or wildcard error type) contains an unhandled `throw` or `try` , an error is raised. Tasks whose value or result is consumed ( `let t = Task { ... }` , `Task { ... }.value` , `return Task { ... }` ) are exempt.",
       "unevaluatedProperties" : false
     },
     "unsafety" : {
@@ -3734,7 +3754,7 @@
           "$ref" : "#/$defs/ruleBase"
         }
       ],
-      "description" : "Mark unused function arguments with `_`.\n\nDetects unused parameters in functions, initializers, subscripts, closures, and for-loop variables, and replaces them with `_`.\n\nFor named function parameters, the internal name is replaced with `_` (e.g., `func foo(bar: Int)` → `func foo(bar _: Int)`). For unnamed parameters, the name is removed (`func foo(_ bar: Int)` → `func foo(_: Int)`).\n\nFor operator functions and subscripts, the parameter name is replaced with `_` directly since external labels are unnecessary.\n\nLint: When a parameter or loop variable is unused.\n\nRewrite: The unused parameter or variable is replaced with `_`."
+      "description" : "Mark unused function arguments with `_` .\n\nDetects unused parameters in functions, initializers, subscripts, closures, and for-loop variables, and replaces them with `_` .\n\nFor named function parameters, the internal name is replaced with `_` (e.g., `func foo(bar: Int)` → `func foo(bar _: Int)` ). For unnamed parameters, the name is removed ( `func foo(_ bar: Int)` → `func foo(_: Int)` ).\n\nFor operator functions and subscripts, the parameter name is replaced with `_` directly since external labels are unnecessary.\n\nLint: When a parameter or loop variable is unused.\n\nRewrite: The unused parameter or variable is replaced with `_` ."
     },
     "unusedControlFlowLabel" : {
       "allOf" : [
@@ -3760,7 +3780,7 @@
           "$ref" : "#/$defs/ruleBase"
         }
       ],
-      "description" : "Capitalize acronyms when the first character is capitalized.\n\nWhen an identifier contains a titlecased acronym (e.g. `Url`, `Json`, `Id`), it should be fully uppercased (e.g. `URL`, `JSON`, `ID`) for consistency with Swift naming conventions.\n\nThe list of recognized acronyms is configurable via `Configuration.acronyms`.\n\nLint: An identifier with a titlecased acronym raises a warning.\n\nRewrite: The titlecased acronym is replaced with the uppercased form.",
+      "description" : "Capitalize acronyms when the first character is capitalized.\n\nWhen an identifier contains a titlecased acronym (e.g. `Url`, `Json`, `Id`), it should be fully uppercased (e.g. `URL`, `JSON`, `ID`) for consistency with Swift naming conventions.\n\nThe list of recognized acronyms is configurable via `Configuration.acronyms`.\n\nLint: An identifier with a titlecased acronym raises a warning.\n\nRewrite: The titlecased acronym is replaced with the uppercased form. The compact pipeline calls `applyUppercaseAcronyms` directly from `Rewrites/Tokens/TokenRewrites.swift`. This class only exists so the rule is registered (configuration key, group, default value). It has no visit / transform / willEnter / didExit methods — `RuleCollector` allows that.",
       "properties" : {
         "words" : {
           "description" : "Acronyms that should be fully uppercased when they appear at the start of an identifier already written in PascalCase. Replace this list to override the defaults; entries should be uppercase, e.g. `\"URL\"`, `\"ID\"`.",
@@ -3803,7 +3823,7 @@
           "$ref" : "#/$defs/ruleBase"
         }
       ],
-      "description" : "Ensure test methods have the correct `test` prefix or `@Test` attribute.\n\nFor XCTest: functions in `XCTestCase` subclasses that look like tests get a `test` prefix. For Swift Testing: functions in test suite types get a `@Test` attribute.\n\nA \"test suite\" type is one whose name ends with `Tests`, `TestCase`, or `Suite`.\n\nFunctions are skipped if they:\n- Have parameters or a return type\n- Are `override`, `@objc`, `static`, or `private`/`fileprivate`\n- Start with a disabled prefix (`disable_`, `skip_`, `x_`, `_`, etc.)\n- Are referenced elsewhere in the file (XCTest only — they're helpers)\n- Are in a type with a parameterized initializer\n- Are in an `open` base class or one with \"Base\"/\"base\"/\"subclass\" in name/doc comment\n\nLint: A warning is raised for each test method missing the correct prefix or attribute.\n\nRewrite: The `test` prefix or `@Test` attribute is added."
+      "description" : "Ensure test methods have the correct `test` prefix or `@Test` attribute.\n\nFor XCTest: functions in `XCTestCase` subclasses that look like tests get a `test` prefix. For Swift Testing: functions in test suite types get a `@Test` attribute.\n\nA \"test suite\" type is one whose name ends with `Tests`, `TestCase`, or `Suite`.\n\nLint: A warning is raised for each test method missing the correct prefix or attribute.\n\nRewrite: The `test` prefix or `@Test` attribute is added."
     },
     "version" : {
       "default" : 6,
@@ -3854,7 +3874,7 @@
               "$ref" : "#/$defs/ruleBase"
             }
           ],
-          "description" : "Multiline conditional assignment expressions are wrapped after the assignment operator.\n\nWhen assigning an `if` or `switch` expression that spans multiple lines, the `=` should be on the same line as the property, and a line break should follow `=` before the `if`/`switch` keyword.\n\nLint: A multiline `if`/`switch` expression on the same line as `=` raises a warning.\n\nRewrite: A line break is inserted after `=`."
+          "description" : "Multiline conditional assignment expressions are wrapped after the assignment operator.\n\nWhen assigning an `if` or `switch` expression that spans multiple lines, the `=` should be on the same line as the property, and a line break should follow `=` before the `if` / `switch` keyword.\n\nLint: A multiline `if` / `switch` expression on the same line as `=` raises a warning.\n\nRewrite: A line break is inserted after `=` ."
         },
         "keepFunctionOutputTogether" : {
           "description" : "Keep return type with closing parenthesis.",
@@ -3874,7 +3894,7 @@
               "$ref" : "#/$defs/ruleBase"
             }
           ],
-          "description" : "Opening braces of multiline statements are wrapped to their own line.\n\nWhen a statement signature (conditions, parameters, etc.) spans multiple lines, the opening `{` is moved to its own line, aligned with the statement keyword.\n\nLint: A `{` on the same line as a multiline statement signature raises a warning.\n\nRewrite: The `{` is moved to a new line aligned with the closing `}`."
+          "description" : "Opening braces of multiline statements are wrapped to their own line.\n\nWhen a statement signature (conditions, parameters, etc.) spans multiple lines, the opening `{` is moved to its own line, aligned with the statement keyword.\n\nLint: A `{` on the same line as a multiline statement signature raises a warning.\n\nRewrite: The `{` is moved to a new line aligned with the closing `}` ."
         },
         "nestedCallLayout" : {
           "allOf" : [
