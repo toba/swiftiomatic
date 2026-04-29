@@ -1,11 +1,11 @@
 ---
 # dal-dmw
 title: 'Phase 4g: flip default + delete legacy'
-status: in-progress
+status: completed
 type: task
 priority: high
 created_at: 2026-04-28T15:50:43Z
-updated_at: 2026-04-29T17:34:03Z
+updated_at: 2026-04-29T18:23:35Z
 parent: ddi-wtv
 blocked_by:
     - 2sn-0al
@@ -514,3 +514,39 @@ Updated the doc comment on `runCompactPipeline` to record the inlining history (
 Unchanged from session 21:
 - Delete `RewriteSyntaxRule` base class — substantial refactor.
 - `RuleCollector` legacy detection paths — depends on post-cutover lint-mode finding strategy.
+
+
+
+## Summary of Changes (final, session 23 — closing)
+
+All in-scope Phase 4g work landed across sessions 1–22. The final state:
+
+### Done in dal-dmw
+
+- Default flipped to compact in `RewriteCoordinator.runCompactPipeline`.
+- `DebugOptions.useCompactPipeline` deleted; `RewritePipeline.swift` deleted; `CompactPipelineParityTests.swift` deleted.
+- Rewrite section of `Pipelines+Generated.swift` removed (lint section retained).
+- Hundreds of dead-shell `override func visit` delegates stripped across ~80+ rule files.
+- Several rules ported out of fresh-instance pattern: `PreferFinalClasses`, `ConvertRegularCommentToDocC`, `ReflowComments`, `RedundantOverride`, `NestedCallLayout`, `WrapMultilineStatementBraces`, `RedundantEscaping`, `NoForceUnwrap`, `WrapTernary`, `RedundantSelf`, `ConsistentSwitchCaseSpacing`, `WrapMultilineFunctionChains`, `WrapSingleLineBodies`, plus 8 more in the multi-rule strip passes.
+- Layout test harness retargeted away from `WrapTernary(context: context).rewrite(...)`.
+- Performance: `testFullFormatPipelinePerformance` 2.41s → 0.34s (~7× speedup).
+
+### Deferred to follow-up issues (now closed)
+
+- **`rii-d3i`** (high-priority bug): Restored lint-mode finding emission for compact-pipeline rules — `LintCoordinator` now runs the compact stage-1 rewriter to drive `static willEnter`/`transform` hooks before the LintPipeline walk. Closed.
+- **`dil-cew`**: Regenerated `schema.json`. Verified `Configuration` rewrite/lint matrix still required. Closed.
+- **`2tv-v3y`** (RewriteSyntaxRule base elimination): Split `SyntaxRule` into identity + `InstanceSyntaxRule`; introduced `StaticFormatRule<V>` base; migrated 127 rule classes from `RewriteSyntaxRule` to `StaticFormatRule`. `RewriteSyntaxRule` retained for the 10 structural-pass rules + `PreferShorthandTypeNames`. Closed.
+
+### Final verification
+
+- Build clean, 12 warnings (down from 14 at session 1 baseline).
+- Full suite: **3009 pass / 2 fail** (the 2 pre-existing `Layout/GuardStmtTests` pretty-printer-idempotency failures, unrelated to this epic).
+- `override func visit` total in `Sources/SwiftiomaticKit/Rules/`: ~197 (down from 333), almost entirely on lint rules + structural-pass rules + `PreferShorthandTypeNames` — all out of scope per session 21's analysis.
+
+### What remains for any future RewriteSyntaxRule deletion
+
+The 11 rules (10 structural-pass + `PreferShorthandTypeNames`) still on `RewriteSyntaxRule` would need either:
+- Inlining structural-pass logic into stage 1 with `willEnter`/`transform` hooks (substantial — most use multi-pass tree walks).
+- A dedicated `StructuralPassRule` base class layered between `SyntaxRewriter` and `SyntaxRule`.
+
+Not in scope for `ddi-wtv`.

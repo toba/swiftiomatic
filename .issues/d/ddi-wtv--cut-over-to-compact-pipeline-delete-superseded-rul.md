@@ -1,11 +1,11 @@
 ---
 # ddi-wtv
 title: Cut over to `compact` pipeline; delete superseded rule files
-status: in-progress
+status: completed
 type: epic
 priority: high
 created_at: 2026-04-28T01:41:38Z
-updated_at: 2026-04-29T17:20:17Z
+updated_at: 2026-04-29T18:24:14Z
 parent: iv7-r5g
 blocked_by:
     - eti-yt2
@@ -306,3 +306,32 @@ Retargeted the layout test harness off `WrapTernary(context:).rewrite(...)` and 
 ### Open question
 
 `RewriteSyntaxRule` base class elimination — most rules now only define `static transform`/`willEnter`/`didExit` and don't need `SyntaxRewriter` machinery. Could become `SyntaxRule`-only conformers (e.g. `enum FooRule: SyntaxRule`). Structural-pass rules + `PreferShorthandTypeNames` would still need `SyntaxRewriter`. Worth scoping as a separate follow-up.
+
+
+
+## Summary of Changes (epic closure, 2026-04-29)
+
+All 21 child issues completed or scrapped. The compact pipeline cutover is fully landed:
+
+### Architecture
+
+- `RewritePipeline` deleted; `CompactStageOneRewriter` is the single rewrite path.
+- 13-pass legacy structural list collapsed to 9 passes after inlining `PreferFinalClasses`, `ConvertRegularCommentToDocC`, `ConsistentSwitchCaseSpacing`, `ReflowComments` into stage 1.
+- `SyntaxRule` split into identity + `InstanceSyntaxRule`; new `StaticFormatRule<V>` base for 127 static-only rules.
+- `RewriteSyntaxRule` retained for the 10 structural-pass rules + `PreferShorthandTypeNames` (where `override func visit` carries actual rule logic).
+- Lint-mode finding emission restored: `LintCoordinator` runs the compact stage-1 rewriter to drive `static willEnter`/`transform` hooks, then walks LintPipeline for lint-only and structural-pass rules.
+
+### Performance
+
+- `testFullFormatPipelinePerformance` 4.7s (legacy) → 0.34s (~14× speedup), well under the 200ms-per-rule target from `eti-yt2`'s spike numbers.
+
+### Test surface
+
+- 3009 pass / 2 pre-existing GuardStmt pretty-printer-idempotency failures (unrelated, predate this epic).
+
+### What did NOT happen
+
+- `RewriteSyntaxRule` base class was not deleted — it remains required by the 11 structural-pass + fresh-instance rules. Eliminating those would require either inlining structural-pass logic into stage 1 (substantial refactor — most use multi-pass walks) or introducing a dedicated `StructuralPassRule` base class. Out of scope for this epic.
+- `RuleCollector` legacy rewrite-rule detection paths were not deleted. The lint-pipeline dispatcher still references `canRewrite`/`visitedNodes`/`rewritingSyntaxRules` for rules that emit findings via instance `visit` overrides. Out of scope.
+
+The remaining work is tracked outside this epic if/when it surfaces.
