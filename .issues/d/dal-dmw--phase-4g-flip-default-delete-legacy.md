@@ -5,7 +5,7 @@ status: in-progress
 type: task
 priority: high
 created_at: 2026-04-28T15:50:43Z
-updated_at: 2026-04-29T05:09:58Z
+updated_at: 2026-04-29T05:17:25Z
 parent: ddi-wtv
 blocked_by:
     - 2sn-0al
@@ -359,3 +359,35 @@ Ported **PreferFinalClasses** into the compact pipeline (file-state-bearing rule
 ### Pattern reused
 
 `PreferFinalClassesState` follows the **`RedundantSwiftTestingSuiteState`** template (file-level state populated by a SourceFile pre-scan, consumed by per-decl transforms). The pre-scan helper differs in that it walks the entire syntax tree at SourceFile-time to populate the set; the per-decl transform reads the populated state without touching it. No `didExit` needed because state is file-scoped, not stack-based.
+
+
+
+## Update 2026-04-29 (continued, session 13) — port ConvertRegularCommentToDocC
+
+Ported **ConvertRegularCommentToDocC** into the compact pipeline (stateless rule with two visit overrides). 253 → 251 instance overrides.
+
+### Changes
+
+- **Created** `Sources/SwiftiomaticKit/Rewrites/Decls/ConvertRegularCommentToDocCHelpers.swift` with `applyConvertRegularCommentToDocC` overloads for `MemberBlockItemSyntax` and `CodeBlockItemSyntax`, plus all instance helpers lifted to file-private free functions (`processTrivia`, `convertRegularToDoc`, `convertDocToRegular`, `isDocCommentableDeclaration`, `isAtFileScope`, `containsDirective`, `hasBlankLineBeforeDeclaration`, `isFollowedByConsecutiveMember`, `isFollowedByConsecutiveCodeItem`) and the `directivePrefixes` constant. Diagnoses now use `ConvertRegularCommentToDocC.diagnose(...)` (Self.diagnose pattern); Finding messages moved to fileprivate extension in the helpers file.
+- **Stripped** `Sources/SwiftiomaticKit/Rules/Comments/ConvertRegularCommentToDocC.swift` to a 30-line shell: rule class declaration + `static transform(_ MemberBlockItemSyntax, parent:context:)` + `static transform(_ CodeBlockItemSyntax, parent:context:)`.
+- No `applyRule` wiring needed — the per-rule chained dispatch path picks up the new `static transform` overloads automatically (neither `MemberBlockItemSyntax` nor `CodeBlockItemSyntax` is in `manuallyHandledNodeTypes`).
+
+### Verification
+
+- `xc-swift swift_diagnostics --no-include-lint` — Build succeeded, 13 warnings (unchanged baseline).
+- `ConvertRegularCommentToDocCTests`: **29 pass**, all green.
+- Full suite: **3012 pass, 2 fail** (the 2 pre-existing `Layout/GuardStmtTests` pretty-printer-idempotency failures, unrelated).
+
+`override func visit` total in `Sources/SwiftiomaticKit/Rules/`: **251** (down from 253; both visit overrides on this rule gone).
+
+### Pattern observation
+
+For stateless rules whose visit overrides reduce to `let visited = super.visit(node); return self.applyLogic(visited, original: node)`, the migration is purely mechanical:
+
+1. Lift the body verbatim into a `applyXxx(_ N, context:)` free function in a `Helpers.swift` file under `Rewrites/<Group>/`.
+2. Lift instance `private func` helpers into file-private free functions.
+3. Replace `self.diagnose(...)` with `<RuleName>.diagnose(..., context: context)`.
+4. Add `static transform(_ N, parent:context:) -> N` on the rule class that calls the helper.
+5. Strip the override + helpers + Finding extension from the rule file.
+
+No `manuallyHandledNodeTypes` change, no `applyRule` wiring, no state class. The generator's per-rule chained dispatch picks up the new transform automatically next build.
