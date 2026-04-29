@@ -161,6 +161,16 @@ package final class LintCoordinator {
             sourceFileSyntax: syntax,
             source: source
         )
+
+        // Drive finding emission for compact-pipeline rules (those with `static
+        // willEnter`/`transform` hooks but no `override func visit`). After the
+        // `ddi-wtv` cutover, most rewrite rules emit findings exclusively through
+        // these static hooks invoked by `CompactStageOneRewriter`. Running the
+        // rewriter and discarding its output is the simplest way to fire those
+        // hooks during `sm lint`. The LintPipeline below still handles lint-only
+        // rules and the structural-pass rules that retain instance `visit` overrides.
+        _ = CompactStageOneRewriter(context: context).rewrite(Syntax(syntax))
+
         let pipeline = LintPipeline(context: context)
         pipeline.walk(Syntax(syntax))
     }

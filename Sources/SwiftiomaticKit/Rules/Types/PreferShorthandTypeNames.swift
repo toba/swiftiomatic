@@ -101,12 +101,10 @@ final class PreferShorthandTypeNames: RewriteSyntaxRule<BasicRuleValue>, @unchec
         }
 
         if let newNode = newNode {
-            // Compact pipeline emits findings via `willEnter(_:IdentifierTypeSyntax,context:)`
-            // (pre-recursion) so source locations are correct. Legacy still
-            // diagnoses here.
-            if compactPipelineParent == nil {
-                diagnose(.useTypeShorthand(type: node.name.text), on: node)
-            }
+            // Findings emitted via `static willEnter(_:IdentifierTypeSyntax,context:)`
+            // — fires in both rewrite mode (CompactStageOneRewriter pre-recursion)
+            // and lint mode (LintCoordinator runs the compact rewriter to drive
+            // these hooks). No instance-side diagnose needed.
             return newNode
         }
 
@@ -201,12 +199,9 @@ final class PreferShorthandTypeNames: RewriteSyntaxRule<BasicRuleValue>, @unchec
         }
 
         if let newNode = newNode {
-            // Compact pipeline emits findings via
-            // `willEnter(_:GenericSpecializationExprSyntax,context:)` (pre-recursion);
-            // legacy still diagnoses here.
-            if compactPipelineParent == nil {
-                diagnose(.useTypeShorthand(type: expression.baseName.text), on: expression)
-            }
+            // Findings emitted via `static willEnter(_:GenericSpecializationExprSyntax,context:)`
+            // — fires in both rewrite mode and lint mode (see comment above on
+            // the IdentifierTypeSyntax overload).
             return newNode
         }
 
