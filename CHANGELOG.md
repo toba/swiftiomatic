@@ -53,6 +53,13 @@
 - Convert deferred rules; complete the rule port ([#496](https://github.com/toba/swiftiomatic/issues/496))
 - Golden-corpus diff verification and perf gate ([#489](https://github.com/toba/swiftiomatic/issues/489))
 - Triage rules with cross-visit state and recursive rewriter calls ([#501](https://github.com/toba/swiftiomatic/issues/501))
+- Phase 4a; merge `SourceFile` rewrites ([#502](https://github.com/toba/swiftiomatic/issues/502))
+- Phase 4b; merge token rewrites ([#503](https://github.com/toba/swiftiomatic/issues/503))
+- Phase 4c; merge declaration rewrites ([#495](https://github.com/toba/swiftiomatic/issues/495))
+- Phase 4d; merge statement rewrites ([#500](https://github.com/toba/swiftiomatic/issues/500))
+- Phase 4e; merge expression rewrites ([#499](https://github.com/toba/swiftiomatic/issues/499))
+- Phase 4f; retarget test harness and verify ([#498](https://github.com/toba/swiftiomatic/issues/498))
+- Phase 4 swift review; refactor merged compact-pipeline files
 
 ## Week of Apr 19 – Apr 25, 2026
 

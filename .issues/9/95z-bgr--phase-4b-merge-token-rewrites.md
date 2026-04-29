@@ -12,7 +12,7 @@ blocked_by:
 sync:
     github:
         issue_number: "503"
-        synced_at: "2026-04-28T16:43:53Z"
+        synced_at: "2026-04-29T05:35:27Z"
 ---
 
 Phase 4b of `ddi-wtv` collapse plan: merge all rewrite logic that operates on `TokenSyntax` into a hand-written function `rewriteToken(_:context:)` in `Sources/SwiftiomaticKit/Rewrites/Tokens/Token.swift`.

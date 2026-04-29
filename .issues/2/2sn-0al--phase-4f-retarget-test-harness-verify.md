@@ -16,7 +16,7 @@ blocked_by:
 sync:
     github:
         issue_number: "498"
-        synced_at: "2026-04-28T16:43:51Z"
+        synced_at: "2026-04-29T05:35:27Z"
 ---
 
 Phase 4f of `ddi-wtv` collapse plan: retarget the test harness at the compact pipeline and verify the full suite is green.

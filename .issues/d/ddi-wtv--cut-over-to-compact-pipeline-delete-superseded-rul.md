@@ -14,7 +14,7 @@ blocked_by:
 sync:
     github:
         issue_number: "480"
-        synced_at: "2026-04-28T17:53:15Z"
+        synced_at: "2026-04-29T05:35:26Z"
 ---
 
 ## Goal

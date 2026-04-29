@@ -12,7 +12,7 @@ blocked_by:
 sync:
     github:
         issue_number: "500"
-        synced_at: "2026-04-28T17:19:44Z"
+        synced_at: "2026-04-29T05:35:27Z"
 ---
 
 Phase 4d of `ddi-wtv` collapse plan: merge all rewrite logic that operates on statement node types into hand-written `rewrite<NodeType>` functions in `Sources/SwiftiomaticKit/Rewrites/Stmts/`.

@@ -7,6 +7,10 @@ priority: normal
 created_at: 2026-04-28T20:48:51Z
 updated_at: 2026-04-29T02:37:44Z
 parent: ddi-wtv
+sync:
+    github:
+        issue_number: "504"
+        synced_at: "2026-04-29T05:35:28Z"
 ---
 
 ## Goal

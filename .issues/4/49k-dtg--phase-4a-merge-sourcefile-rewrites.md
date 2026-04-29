@@ -12,7 +12,7 @@ blocked_by:
 sync:
     github:
         issue_number: "502"
-        synced_at: "2026-04-28T16:43:53Z"
+        synced_at: "2026-04-29T05:35:27Z"
 ---
 
 Phase 4a of `ddi-wtv` collapse plan: merge all rewrite logic that operates on `SourceFileSyntax` into a single hand-written function `rewriteSourceFile(_:context:)` in `Sources/SwiftiomaticKit/Rewrites/Files/SourceFile.swift`.
