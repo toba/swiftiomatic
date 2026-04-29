@@ -5,7 +5,7 @@ status: in-progress
 type: feature
 priority: high
 created_at: 2026-04-28T01:41:38Z
-updated_at: 2026-04-28T20:03:25Z
+updated_at: 2026-04-29T00:35:18Z
 parent: iv7-r5g
 blocked_by:
     - eti-yt2
@@ -121,3 +121,23 @@ xc-swift swift_package_test
 - `Sources/SwiftiomaticKit/Rules/Idioms/LeadingDotOperators.swift` — pattern for token-level transient state.
 - `Sources/SwiftiomaticKit/Rules/Redundancies/RedundantSelf.swift` — pattern for multi-stack scope tracking via `willEnter`/`didExit`.
 - `~/.claude/plans/in-that-case-let-glittery-hopper.md` — Batch 1/2/3 strategy and the `Context.ruleState` + `willEnter`/`didExit` infrastructure design.
+
+
+
+## Session 2026-04-28 — Phase 4f near-completion
+
+`2sn-0al` (Phase 4f) drove single-rule failures **304 → 5** with the compact pipeline enabled in `assertFormatting`. See that issue for the full failure-cluster breakdown and per-fix log.
+
+### Patterns established this session
+
+1. **Widening cast-back (Pattern A)**: when a rule's `transform` returns a different concrete kind than its input, `applyRule` silently drops the result. Replace with direct dispatch + early return when the kind changes. Applied to PreferToggle, PreferIsEmpty, RedundantNilCoalescing, PreferDotZero, RedundantClosure, URLMacro, PreferCountWhere, RedundantStaticSelf, PreferSwiftTesting.
+2. **RuleCollector extension scan**: `detectSyntaxRule` now folds in members from same-file extensions of the rule type. Without this, rules whose hooks live in extensions (e.g. WrapSingleLineBodies) were invisible to the dispatcher generator.
+3. **Diagnostic location (Pattern B)**: move `diagnose(...)` calls into a static `willEnter` so finding source locations come from the pre-traversal (still-attached) node. The transform stays post-recursion and only rewrites. Applied to NoSemicolons, OneDeclarationPerLine, BlankLinesBeforeControlFlowBlocks, NoTrailingClosureParens, SwitchCaseIndentation, NoFallThroughOnlyCases, NoParensAroundConditions.
+4. **Recursion-skip mimicry**: legacy rules that short-circuit `super.visit` in certain contexts (NoForceUnwrap in non-test code through chain-eligible parents; NoGuardInTests inside closures) need state-stack hooks (`willEnter` push, `didExit` pop) to suppress descendant work in compact mode.
+
+### Remaining 5 failures (all on 2sn-0al's plate)
+
+- 3 SingleLineBodies nested-body indent — need a per-rule indent stack via `Context.ruleState`.
+- 2 GuardStmt pretty-printer-idempotency — likely pre-existing, separate concern.
+
+Phase 4g (`dal-dmw`) remains blocked on 4f's full closure.
