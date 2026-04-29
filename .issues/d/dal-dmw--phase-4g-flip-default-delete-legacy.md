@@ -5,7 +5,7 @@ status: in-progress
 type: task
 priority: high
 created_at: 2026-04-28T15:50:43Z
-updated_at: 2026-04-29T05:24:24Z
+updated_at: 2026-04-29T05:31:51Z
 parent: ddi-wtv
 blocked_by:
     - 2sn-0al
@@ -415,3 +415,30 @@ Ported **ReflowComments** into the compact pipeline (single TokenSyntax visit, s
 ### Pattern
 
 Token-level rewrites without state class follow the BlankLinesAroundMark / UppercaseAcronyms shape: an `applyXxx` free function in a per-rule helpers file under `Rewrites/Tokens/`, plus a `context.shouldFormat` gate in `rewriteToken`. No `static transform`/`willEnter` needed because the token-level dispatch is fully manual via the merged `rewriteToken`.
+
+
+
+## Update 2026-04-29 (continued, session 15) — strip NoForceUnwrap dead-shells
+
+Stripped **all 11 instance `override func visit`** delegates from `NoForceUnwrap` plus 4 instance state vars, 7 instance helpers, the inner `ChainTopContext` enum, and the file-scope Finding extension (533 deletions). The compact pipeline already covered this rule completely.
+
+### Discovery
+
+NoForceUnwrap was already fully wired into the compact pipeline:
+
+- All scope tracking (SourceFile/Import/ClassDecl/FunctionDecl/ClosureExpr/StringLiteralExpr/MemberAccess/FunctionCallExpr/SubscriptCallExpr/ForceUnwrapExpr/AsExpr) → 11 `static willEnter` + 9 `static didExit` overloads with `Context.ruleState` (`NoForceUnwrapState`).
+- Force-unwrap rewrite + diagnose → `Rewrites/Exprs/ForceUnwrapExpr.swift` calling `Rewrites/Exprs/NoForceUnwrapHelpers.swift` (specifically `noForceUnwrapDiagnoseForceUnwrap`, `noForceUnwrapPushChainNode`/`noForceUnwrapPopChainNode`).
+- `as!` rewrite + diagnose → `Rewrites/Exprs/AsExpr.swift` calling helpers (`noForceUnwrapDiagnoseAsExpr`).
+- Chain-top wrapping → covered in `MemberAccessExpr.swift`, `FunctionCallExpr.swift`, `SubscriptCallExpr.swift` calling helpers.
+- `addThrowsClause` post-recursion → `noForceUnwrapAfterFunctionDecl` in `Rewrites/Decls/FunctionDecl.swift`.
+- All 4 Finding messages duplicated into `NoForceUnwrapHelpers.swift` (`fileprivate` extension at lines 631-639).
+
+After the legacy pipeline removal in commit 92672ce4, the instance overrides are unreachable. They were dead-shell delegators sitting next to the static hooks that already do the work. Stripped them.
+
+### Verification
+
+- `xc-swift swift_diagnostics --no-include-lint` — Build succeeded, 13 warnings (unchanged baseline).
+- `NoForceUnwrap` filter: **28 pass**, all green.
+- Full suite: **3012 pass, 2 fail** (the 2 pre-existing `Layout/GuardStmtTests` pretty-printer-idempotency failures, unrelated).
+
+`override func visit` total in `Sources/SwiftiomaticKit/Rules/`: **239** (down from 250 at session start; 11 instance overrides gone — biggest single-rule strip yet). File shrunk from 563 → 105 lines.
