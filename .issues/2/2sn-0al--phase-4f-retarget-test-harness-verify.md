@@ -5,7 +5,7 @@ status: in-progress
 type: task
 priority: high
 created_at: 2026-04-28T15:50:30Z
-updated_at: 2026-04-29T00:33:36Z
+updated_at: 2026-04-29T00:49:36Z
 parent: ddi-wtv
 blocked_by:
     - 49k-dtg
@@ -356,3 +356,24 @@ After the Pattern B + non-test depth fixes, only 5 failures remain:
 4. Retire the temporary debug logging in `Tests/SwiftiomaticTests/Rules/LintOrFormatRuleTestCase.swift` (the `/tmp/compact-mismatches.log` writer block).
 5. Drop the legacy `RewriteCoordinator` branch + direct-instance branch in `assertFormatting`, leaving only the compact pipeline assertion.
 6. Hand off to phase 4g (`dal-dmw`).
+
+
+
+## Session 2026-04-29 — SingleLineBodies indent stack + temp logging removal
+
+### Done
+
+- Added `WrapSingleLineBodiesState` (file-level reference type with `indentStack: [String]`) cached via `Context.ruleState(for: WrapSingleLineBodies.self)`.
+- Static `willEnter`/`didExit` hooks for `IfExpr`, `GuardStmt`, `ForStmt`, `WhileStmt`, `RepeatStmt` push/pop a computed baseIndent. `computeBaseIndent` rules: trivia-newline → use trivia indentation; isElseIf → reuse outer's baseIndent (top of stack); else → outer's baseIndent + `"    "`. Mirrors legacy `currentIndent`/`chainBaseIndent` exactly.
+- `wrapIf`, `wrapGuard`, `wrapFor`, `wrapWhile`, `wrapRepeat` now read `state.indentStack.last` instead of recomputing from trivia. The dispatcher's call order (`willEnter` → `super.visit` → `transform` → `didExit`) guarantees that when `transform` runs, the top of the stack is self's just-pushed baseIndent.
+- Removed the temporary `/tmp/compact-mismatches.log` writer block in `Tests/SwiftiomaticTests/Rules/LintOrFormatRuleTestCase.swift`.
+
+### Verification
+
+- `SingleLineBodiesTests` 78/78 pass (was 75/78).
+- Full suite: **3022 pass, 2 fail**. Remaining 2 failures are `Tests/SwiftiomaticTests/Layout/GuardStmtTests.swift::optionalBindingConditions` and `breaksElseWhenInlineBodyExceedsLineLength` — `assertLayout` calls (pretty-printer direct, no rules), unrelated to compact pipeline. "Pretty printer is not idempotent" — pre-existing concern.
+
+### What's left
+
+- Layout-test pretty-printer-idempotency failures (2) — file as separate issues; not on 4f's path.
+- Step 5 of the prior resume brief (drop legacy `RewriteCoordinator` + direct-instance branches in `assertFormatting`) is deferred to Phase 4g (`dal-dmw`) where it fits the broader cleanup of `RewritePipeline` / `RewriteSyntaxRule`.

@@ -1,5 +1,13 @@
 import SwiftSyntax
 
+/// Per-file state for the compact-pipeline `WrapSingleLineBodies` rule. The
+/// `indentStack` tracks the baseIndent of each enclosing wrapping construct
+/// (`for` / `while` / `repeat` / `guard` / `if`) so a same-line nested
+/// construct can derive its own baseIndent when its trivia carries no newline.
+final class WrapSingleLineBodiesState {
+    var indentStack: [String] = []
+}
+
 /// Controls whether single-statement bodies are kept inline or wrapped to multiple lines.
 ///
 /// **Wrap mode** (default): Single-line bodies in conditionals, functions, loops, and properties
@@ -792,10 +800,32 @@ extension WrapSingleLineBodies {
 
     // MARK: Wrap helpers (static)
 
-    /// Static counterpart of `resolveIndent`. The compact pipeline runs post-order so
-    /// no `currentIndent` instance state is available — we fall back to "" when the
-    /// trivia carries no newline. This is a known divergence from the legacy override
-    /// for nested inline structures.
+    /// Mirrors the legacy `currentIndent`/`chainBaseIndent` instance state via
+    /// `Context.ruleState`. The compact pipeline runs post-order, so a `for` /
+    /// `while` / `repeat` / `guard` / `if` whose keyword sits on the same line as
+    /// its enclosing `{` cannot derive its baseIndent from trivia. The static
+    /// `willEnter` hooks push each construct's baseIndent onto `indentStack`
+    /// before children are visited; `didExit` pops it. The wrap helpers read
+    /// `indentStack.last` rather than recomputing from trivia.
+    fileprivate static func state(_ context: Context) -> WrapSingleLineBodiesState {
+        context.ruleState(for: WrapSingleLineBodies.self) { WrapSingleLineBodiesState() }
+    }
+
+    /// Computes a wrapping construct's baseIndent. Trivia wins when it contains
+    /// a newline; otherwise we synthesize from the enclosing construct's own
+    /// baseIndent (one level deeper). For else-if chains the inner `if` reuses
+    /// the outer `if`'s baseIndent (matches legacy `chainBaseIndent`).
+    fileprivate static func computeBaseIndent(
+        trivia: Trivia,
+        isElseIf: Bool,
+        state: WrapSingleLineBodiesState
+    ) -> String {
+        if isElseIf, let outer = state.indentStack.last { return outer }
+        if trivia.containsNewlines { return trivia.indentation }
+        if let outer = state.indentStack.last { return outer + "    " }
+        return ""
+    }
+
     fileprivate static func resolveIndent(from trivia: Trivia) -> String {
         if trivia.containsNewlines { return trivia.indentation }
         return ""
@@ -816,9 +846,9 @@ extension WrapSingleLineBodies {
         parent: Syntax?,
         context: Context
     ) -> ExprSyntax {
-        let isElseIf = parent?.is(IfExprSyntax.self) == true
-        let baseIndent: String =
-            isElseIf ? "" : Self.resolveIndent(from: node.ifKeyword.leadingTrivia)
+        // willEnter has already pushed self's baseIndent onto the stack.
+        let baseIndent = Self.state(context).indentStack.last ?? ""
+        _ = parent
 
         let needsBodyWrap = node.body.bodyNeedsWrapping
         if needsBodyWrap {
@@ -848,7 +878,7 @@ extension WrapSingleLineBodies {
         _ node: GuardStmtSyntax,
         context: Context
     ) -> StmtSyntax {
-        let baseIndent = Self.resolveIndent(from: node.guardKeyword.leadingTrivia)
+        let baseIndent = Self.state(context).indentStack.last ?? ""
 
         let needsWrap = node.body.bodyNeedsWrapping
         if needsWrap {
@@ -934,7 +964,7 @@ extension WrapSingleLineBodies {
         _ node: ForStmtSyntax,
         context: Context
     ) -> StmtSyntax {
-        let baseIndent = Self.resolveIndent(from: node.forKeyword.leadingTrivia)
+        let baseIndent = Self.state(context).indentStack.last ?? ""
 
         let needsWrap = node.body.bodyNeedsWrapping
         if needsWrap { Self.diagnose(.wrapLoopBody, on: node.body.leftBrace, context: context) }
@@ -948,7 +978,7 @@ extension WrapSingleLineBodies {
         _ node: WhileStmtSyntax,
         context: Context
     ) -> StmtSyntax {
-        let baseIndent = Self.resolveIndent(from: node.whileKeyword.leadingTrivia)
+        let baseIndent = Self.state(context).indentStack.last ?? ""
 
         let needsWrap = node.body.bodyNeedsWrapping
         if needsWrap { Self.diagnose(.wrapLoopBody, on: node.body.leftBrace, context: context) }
@@ -962,7 +992,7 @@ extension WrapSingleLineBodies {
         _ node: RepeatStmtSyntax,
         context: Context
     ) -> StmtSyntax {
-        let baseIndent = Self.resolveIndent(from: node.repeatKeyword.leadingTrivia)
+        let baseIndent = Self.state(context).indentStack.last ?? ""
 
         let needsWrap = node.body.bodyNeedsWrapping
         if needsWrap { Self.diagnose(.wrapLoopBody, on: node.body.leftBrace, context: context) }
@@ -1388,6 +1418,86 @@ extension WrapSingleLineBodies {
         var result = node
         result.body = Self.inliningBody(body)
         return DeclSyntax(result)
+    }
+}
+
+// MARK: - Compact-pipeline scope hooks
+
+extension WrapSingleLineBodies {
+    static func willEnter(_ node: IfExprSyntax, context: Context) {
+        let isElseIf = Syntax(node).parent?.is(IfExprSyntax.self) == true
+        let state = Self.state(context)
+        state.indentStack.append(
+            Self.computeBaseIndent(
+                trivia: node.ifKeyword.leadingTrivia,
+                isElseIf: isElseIf,
+                state: state
+            )
+        )
+    }
+
+    static func didExit(_: IfExprSyntax, context: Context) {
+        Self.state(context).indentStack.popLast()
+    }
+
+    static func willEnter(_ node: GuardStmtSyntax, context: Context) {
+        let state = Self.state(context)
+        state.indentStack.append(
+            Self.computeBaseIndent(
+                trivia: node.guardKeyword.leadingTrivia,
+                isElseIf: false,
+                state: state
+            )
+        )
+    }
+
+    static func didExit(_: GuardStmtSyntax, context: Context) {
+        Self.state(context).indentStack.popLast()
+    }
+
+    static func willEnter(_ node: ForStmtSyntax, context: Context) {
+        let state = Self.state(context)
+        state.indentStack.append(
+            Self.computeBaseIndent(
+                trivia: node.forKeyword.leadingTrivia,
+                isElseIf: false,
+                state: state
+            )
+        )
+    }
+
+    static func didExit(_: ForStmtSyntax, context: Context) {
+        Self.state(context).indentStack.popLast()
+    }
+
+    static func willEnter(_ node: WhileStmtSyntax, context: Context) {
+        let state = Self.state(context)
+        state.indentStack.append(
+            Self.computeBaseIndent(
+                trivia: node.whileKeyword.leadingTrivia,
+                isElseIf: false,
+                state: state
+            )
+        )
+    }
+
+    static func didExit(_: WhileStmtSyntax, context: Context) {
+        Self.state(context).indentStack.popLast()
+    }
+
+    static func willEnter(_ node: RepeatStmtSyntax, context: Context) {
+        let state = Self.state(context)
+        state.indentStack.append(
+            Self.computeBaseIndent(
+                trivia: node.repeatKeyword.leadingTrivia,
+                isElseIf: false,
+                state: state
+            )
+        )
+    }
+
+    static func didExit(_: RepeatStmtSyntax, context: Context) {
+        Self.state(context).indentStack.popLast()
     }
 }
 
