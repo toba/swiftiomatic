@@ -5,7 +5,7 @@ status: in-progress
 type: task
 priority: high
 created_at: 2026-04-28T15:50:43Z
-updated_at: 2026-04-29T03:51:54Z
+updated_at: 2026-04-29T04:12:24Z
 parent: ddi-wtv
 blocked_by:
     - 2sn-0al
@@ -199,3 +199,30 @@ Stripped 9 more dead-shell rule files containing instance `override func visit(_
 - Rules where the compact-pipeline path uses the fresh-instance pattern (`PreferShorthandTypeNames`, `NestedCallLayout`) — the override IS the rewrite, called via `<Rule>(context:).visit(node)` from `static transform`. These cannot be stripped without first inlining the visit body into a static helper.
 - `WrapTernary` — kept until layout test harness is retargeted.
 - Structural-pass rules — out of scope for stage-1 strip (they run as ordered `SyntaxRewriter` instances in stage 2).
+
+
+
+## Update 2026-04-29 (continued, session 7) — seventh strip pass
+
+Stripped 5 more rule files of dead-shell instance `override func visit(_:)` overrides + their orphan instance helpers/state vars (741 deletions). All inlined rules whose static `willEnter`/`didExit`/`transform` + `Context.ruleState` covers the compact-pipeline path.
+
+### Stripped
+
+- **RedundantReturn** — 4 `visit(_:)` overrides (FunctionDecl, SubscriptDecl, PatternBinding, ClosureExpr) + ~12 instance private helpers (`transformAccessorBlock`, `containsExhaustiveReturn`, `allBranchesReturn`, `allCasesReturn`, `branchReturns`, `isFatalCall`, `expressionFromItem`, `stripReturns`, `stripReturnsFromIf`, `stripReturnsFromSwitch`, `stripBranch`, `containsSingleReturn`, `rewrapReturnedExpression`). Static counterparts already in place.
+- **NoFallThroughOnlyCases** — `visit(_ SwitchCaseListSyntax)` + 5 instance helpers (`canMergeWithPreviousCases`, two `containsValueBindingPattern` overloads, `isMergeableFallThroughOnly`, `mergedCases`). Compact path: `willEnter` (diagnose) + `applyNoFallThroughOnlyCases` (rewrite) in `Rewrites/Stmts/SwitchCaseList.swift`.
+- **NoForceTry** — 6 `visit(_:)` overrides (ImportDecl, SourceFile, ClassDecl, FunctionDecl, TryExpr, ClosureExpr) + 3 instance vars (`testContext`, `insideTestFunction`, `convertedForceTry`). Compact path: 7 `willEnter`/`didExit` hooks maintain `NoForceTryState` in `Context.ruleState`; `noForceTryRewriteTryExpr` + `noForceTryAfterFunctionDecl` in helper file.
+- **NoGuardInTests** — 6 `visit(_:)` delegators (SourceFile, ImportDecl, ClassDecl, ClosureExpr, FunctionDecl, CodeBlockItemList). Static counterparts already in place; the dispatcher's `willEnter` → `super.visit` → `transform` → `didExit` ordering matches the legacy semantics exactly (including closure recursion-skip via state push/pop).
+- **PreferSwiftTesting** — 6 `visit(_:)` overrides (SourceFile, ImportDecl, ClassDecl, ExtensionDecl, FunctionDecl, FunctionCallExpr) + 3 instance helpers (`convertSetUp`, `convertTearDown`, `convertTestMethod` — the `Static` counterparts handle the same conversion in compact mode). Compact path: `willEnter`/`didExit` set `hasXCTestImport`/`insideXCTestCase` via `Context.ruleState`; static `transform` overloads gate on state and dispatch to `convertSetUpStatic`/`convertTearDownStatic`/`convertTestMethodStatic` + `transformAssertion`.
+
+### Verification
+
+- `xc-swift swift_diagnostics --no-include-lint` — Build succeeded, 13 warnings (unchanged baseline).
+- Targeted regression filter (`NoForceTry|NoGuardInTests|RedundantReturn|NoFallThroughOnlyCases`): **66 pass**, all green.
+- Full suite: **3012 pass, 2 fail** (the 2 pre-existing `Layout/GuardStmtTests` pretty-printer-idempotency failures, unrelated).
+
+### What's still left in 4g
+
+- Rules with non-trivial conditional logic remaining: `RedundantSelf` (22), `WrapMultilineStatementBraces` (16), `NoForceUnwrap` (11), `WrapSingleLineBodies` (10), `RedundantEscaping` (9), `NoParensAroundConditions` (8). Each needs per-rule analysis to determine whether the `override func visit` shells are dead (covered by static `willEnter`+helpers) or whether they still carry pre-recursion state that the compact path doesn't have.
+- Fresh-instance pattern rules (`PreferShorthandTypeNames`, `NestedCallLayout`) — the override IS the rewrite, called via `<Rule>(context:).visit(node)` from `static transform`. Cannot be stripped without first inlining the visit body into a static helper.
+- `WrapTernary` — kept until layout test harness is retargeted.
+- Structural-pass rules — out of scope for stage-1 strip.

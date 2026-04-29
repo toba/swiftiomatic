@@ -89,50 +89,6 @@ final class NoGuardInTests: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendab
         state.addedTryStatement = frame.addedTry
     }
 
-    // MARK: - Legacy delegators
-
-    override func visit(_ node: SourceFileSyntax) -> SourceFileSyntax {
-        Self.willEnter(node, context: context)
-        return super.visit(node)
-    }
-
-    override func visit(_ node: ImportDeclSyntax) -> DeclSyntax {
-        // Imports are pre-scanned in willEnter(SourceFileSyntax). No-op transform.
-        DeclSyntax(node)
-    }
-
-    override func visit(_ node: ClassDeclSyntax) -> DeclSyntax {
-        Self.willEnter(node, context: context)
-        defer { Self.didExit(node, context: context) }
-        return super.visit(node)
-    }
-
-    // Don't recurse into closures — guard inside closures can't be fixed by making the outer
-    // function throw.
-    override func visit(_ node: ClosureExprSyntax) -> ExprSyntax {
-        ExprSyntax(node)
-    }
-
-    override func visit(_ node: FunctionDeclSyntax) -> DeclSyntax {
-        Self.willEnter(node, context: context)
-        let visited = super.visit(node)
-        let parent = Syntax(node).parent
-        let result = Self.transform(
-            visited.cast(FunctionDeclSyntax.self),
-            parent: parent,
-            context: context
-        )
-        Self.didExit(node, context: context)
-        return result
-    }
-
-    override func visit(_ node: CodeBlockItemListSyntax) -> CodeBlockItemListSyntax {
-        let state = context.ruleState(for: Self.self) { State() }
-        guard state.insideTestFunction else { return super.visit(node) }
-        let visited = super.visit(node)
-        return Self.transformCodeBlockItemList(visited, context: context)
-    }
-
     // MARK: - Static transforms
 
     /// Wraps the original `visit(FunctionDeclSyntax)` post-recursion logic. State has already been
