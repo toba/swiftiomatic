@@ -31,12 +31,6 @@ final class RedundantPattern: RewriteSyntaxRule<BasicRuleValue>, @unchecked Send
 
   // MARK: - If/guard/while case: if case let .foo(_, _) = bar → if case .foo = bar
 
-  override func visit(
-    _ node: MatchingPatternConditionSyntax
-  ) -> MatchingPatternConditionSyntax {
-    Self.transform(node, parent: Syntax(node).parent, context: context)
-  }
-
   static func transform(
     _ node: MatchingPatternConditionSyntax,
     parent: Syntax?,

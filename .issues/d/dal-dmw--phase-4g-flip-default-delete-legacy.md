@@ -5,7 +5,7 @@ status: in-progress
 type: task
 priority: high
 created_at: 2026-04-28T15:50:43Z
-updated_at: 2026-04-29T03:36:57Z
+updated_at: 2026-04-29T03:51:54Z
 parent: ddi-wtv
 blocked_by:
     - 2sn-0al
@@ -169,3 +169,33 @@ Removed the empty-rule guard. RuleCollector now registers any class extending `R
 - Rules with real per-rule logic in their override and no usable `static transform` (e.g. `FileHeader` — but it's also in the structural-pass list so its instance is invoked via `runCompactPipeline` directly; not a strip candidate).
 - Rules with multiple complex overrides + state machines (`RedundantSelf`, `WrapMultilineStatementBraces`, `WrapSingleLineBodies`, `PreferEnvironmentEntry`, `CaseLet`, `RedundantOverride`, `RedundantReturn`).
 - Lint rules (`SyntaxLintRule`) — out of scope.
+
+
+
+## Update 2026-04-29 (continued, session 6) — sixth strip pass
+
+Stripped 9 more dead-shell rule files containing instance `override func visit(_:)` overrides plus their now-orphan instance helpers (500 deletions). All inlined rules whose static `willEnter` + free-function `apply<Rule>` pair (or `static transform`) covers the compact-pipeline path.
+
+### Stripped
+
+- **PreferEarlyExits** — `visit(_ CodeBlockItemListSyntax)` + private instance `codeBlockEndsWithEarlyExit`. Compact path: `willEnter` (diagnose) + `applyPreferEarlyExits` (rewrite) in `Rewrites/Stmts/CodeBlockItemList.swift`.
+- **NoTrailingClosureParens** — `visit(_ FunctionCallExprSyntax)`. Compact path: `willEnter` (diagnose) + `applyNoTrailingClosureParens` (rewrite) in `Rewrites/Exprs/FunctionCallExpr.swift`.
+- **OneDeclarationPerLine** — `visit(_ EnumDeclSyntax)` + `visit(_ CodeBlockItemListSyntax)` + private instance `codeBlockItemHasMultipleVariableBindings`. Compact path: two `willEnter` + two `static transform` overloads.
+- **BlankLinesBeforeControlFlowBlocks** — both `visit(_:)` overrides + 4 private instance helpers (`insertBlankLines`, `endsSolitaryBrace`, `isMultiLineControlFlow`, `isMultiLineControlFlowExpr`, `isMultiLineBody`). Compact path: two `willEnter` (diagnose) + `blankLinesBeforeControlFlowInsertBlankLines` helper in `Rewrites/Stmts/BlankLinesBeforeControlFlowHelpers.swift`.
+- **PreferVoidReturn** — both `visit(_:)` overrides + 2 private helpers (`hasNonWhitespaceTrivia`, `makeVoidIdentifierType`). Compact path: two `willEnter` + two `apply<…>` in `Rewrites/Exprs/FunctionType.swift` / `ClosureSignature.swift`.
+- **NamedClosureParams** — both `visit(_:)` overrides + private `insideMultilineClosure` instance var. Compact path: `willEnter`/`didExit` push/pop stack in `Context.ruleState` + diagnose at the leaf via helper in `Rewrites/Exprs/NamedClosureParamsHelpers.swift`.
+- **PreferSelfType** — 5 `override func visit` decl-shells (Class/Struct/Enum/Actor/Extension) that just delegated to `willEnter`/`didExit` + a duplicated `typeContextDepth` increment. Plus `visit(_ MemberAccessExprSyntax)` (logic mirrored in static transform), instance `typeContextDepth` var, and instance `isTypeOfSelfCall` wrapper. Compact path: 5 `willEnter`/`didExit` pairs maintain `State.typeDepth` in `Context.ruleState`; `static transform` reads it.
+- **RedundantPattern** — `visit(_ MatchingPatternConditionSyntax)` (delegate to `Self.transform`).
+- **NoBacktickedSelf** — `visit(_ OptionalBindingConditionSyntax)` (delegate to `Self.transform`).
+
+### Verification
+
+- `xc-swift swift_diagnostics --no-include-lint` — Build succeeded, 13 warnings (unchanged baseline).
+- Full suite: **3012 pass, 2 fail** (the 2 pre-existing `Layout/GuardStmtTests` pretty-printer-idempotency failures, unrelated).
+
+### What's still left in 4g
+
+- Rules with instance state-machines or non-trivial conditional logic in `override func visit` (`RedundantSelf` (22), `WrapMultilineStatementBraces` (16), `NoForceUnwrap` (11), `WrapSingleLineBodies` (10), `RedundantEscaping` (9), `NoParensAroundConditions` (8), `NoForceTry` (6), `PreferSwiftTesting` (6), `NoGuardInTests` (6), `RedundantReturn` (4), …) — per-rule analysis.
+- Rules where the compact-pipeline path uses the fresh-instance pattern (`PreferShorthandTypeNames`, `NestedCallLayout`) — the override IS the rewrite, called via `<Rule>(context:).visit(node)` from `static transform`. These cannot be stripped without first inlining the visit body into a static helper.
+- `WrapTernary` — kept until layout test harness is retargeted.
+- Structural-pass rules — out of scope for stage-1 strip (they run as ordered `SyntaxRewriter` instances in stage 2).

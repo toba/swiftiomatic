@@ -42,42 +42,6 @@ final class NoTrailingClosureParens: RewriteSyntaxRule<BasicRuleValue>, @uncheck
         )
     }
 
-    override func visit(_ node: FunctionCallExprSyntax) -> ExprSyntax {
-        guard node.arguments.isEmpty else { return super.visit(node) }
-
-        guard let trailingClosure = node.trailingClosure,
-              let leftParen = node.leftParen,
-              let rightParen = node.rightParen,
-              node.arguments.isEmpty,
-              !leftParen.trailingTrivia.hasAnyComments,
-              !rightParen.leadingTrivia.hasAnyComments else { return super.visit(node) }
-
-        guard let name = node.calledExpression.lastToken(viewMode: .sourceAccurate) else {
-            return super.visit(node)
-        }
-
-        // Keep the empty parentheses when in a curried call to avoid the trailing closure getting
-        // associated with the called call expression.
-        guard !node.calledExpression.is(FunctionCallExprSyntax.self),
-              !node.calledExpression.is(SubscriptCallExprSyntax.self)
-        else { return super.visit(node) }
-
-        diagnose(.removeEmptyTrailingParentheses(name: "\(name.trimmedDescription)"), on: leftParen)
-
-        // Need to visit `calledExpression` before creating a new node so that the location data
-        // (column and line numbers) is available.
-        guard var rewrittenCalledExpr = ExprSyntax(rewrite(Syntax(node.calledExpression))) else {
-            return super.visit(node)
-        }
-        rewrittenCalledExpr.trailingTrivia = [.spaces(1)]
-
-        var result = node
-        result.leftParen = nil
-        result.rightParen = nil
-        result.calledExpression = rewrittenCalledExpr
-        result.trailingClosure = rewrite(trailingClosure).as(ClosureExprSyntax.self)
-        return ExprSyntax(result)
-    }
 }
 
 fileprivate extension Finding.Message {

@@ -21,8 +21,6 @@ final class PreferSelfType: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendab
         var typeDepth = 0
     }
 
-    private var typeContextDepth = 0
-
     // MARK: - Scope hooks
 
     static func willEnter(_: ClassDeclSyntax, context: Context) {
@@ -73,68 +71,6 @@ final class PreferSelfType: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendab
     static func didExit(_: ExtensionDeclSyntax, context: Context) {
         let state = context.ruleState(for: Self.self) { State() }
         state.typeDepth -= 1
-    }
-
-    // MARK: - Legacy delegators
-
-    override func visit(_ node: ClassDeclSyntax) -> DeclSyntax {
-        Self.willEnter(node, context: context)
-        defer { Self.didExit(node, context: context) }
-        typeContextDepth += 1
-        defer { typeContextDepth -= 1 }
-        return super.visit(node)
-    }
-
-    override func visit(_ node: StructDeclSyntax) -> DeclSyntax {
-        Self.willEnter(node, context: context)
-        defer { Self.didExit(node, context: context) }
-        typeContextDepth += 1
-        defer { typeContextDepth -= 1 }
-        return super.visit(node)
-    }
-
-    override func visit(_ node: EnumDeclSyntax) -> DeclSyntax {
-        Self.willEnter(node, context: context)
-        defer { Self.didExit(node, context: context) }
-        typeContextDepth += 1
-        defer { typeContextDepth -= 1 }
-        return super.visit(node)
-    }
-
-    override func visit(_ node: ActorDeclSyntax) -> DeclSyntax {
-        Self.willEnter(node, context: context)
-        defer { Self.didExit(node, context: context) }
-        typeContextDepth += 1
-        defer { typeContextDepth -= 1 }
-        return super.visit(node)
-    }
-
-    override func visit(_ node: ExtensionDeclSyntax) -> DeclSyntax {
-        Self.willEnter(node, context: context)
-        defer { Self.didExit(node, context: context) }
-        typeContextDepth += 1
-        defer { typeContextDepth -= 1 }
-        return super.visit(node)
-    }
-
-    override func visit(_ node: MemberAccessExprSyntax) -> ExprSyntax {
-        let visited = super.visit(node)
-        guard typeContextDepth > 0,
-            let memberAccess = visited.as(MemberAccessExprSyntax.self),
-            let baseCall = memberAccess.base?.as(FunctionCallExprSyntax.self),
-            isTypeOfSelfCall(baseCall)
-        else { return visited }
-
-        diagnose(.preferSelfType, on: baseCall)
-
-        let selfRef = DeclReferenceExprSyntax(baseName: .keyword(.Self))
-            .with(\.leadingTrivia, baseCall.leadingTrivia)
-            .with(\.trailingTrivia, baseCall.trailingTrivia)
-        return ExprSyntax(memberAccess.with(\.base, ExprSyntax(selfRef)))
-    }
-
-    private func isTypeOfSelfCall(_ call: FunctionCallExprSyntax) -> Bool {
-        Self.isTypeOfSelfCall(call)
     }
 
     // MARK: - Static transform
