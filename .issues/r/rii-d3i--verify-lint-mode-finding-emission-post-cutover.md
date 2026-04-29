@@ -10,7 +10,7 @@ parent: ddi-wtv
 sync:
     github:
         issue_number: "506"
-        synced_at: "2026-04-29T17:25:06Z"
+        synced_at: "2026-04-29T22:39:24Z"
 ---
 
 After the `ddi-wtv` cutover and the dead-shell strip passes, most rewrite rules no longer have an instance `override func visit(_:)`. Their finding emission lives in `static willEnter`/`static transform` invoked by the compact pipeline.

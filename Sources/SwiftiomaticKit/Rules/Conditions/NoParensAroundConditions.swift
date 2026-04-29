@@ -29,30 +29,82 @@ import SwiftSyntax
 final class NoParensAroundConditions: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
     override class var group: ConfigurationGroup? { .conditions }
 
-  // Diagnose against the pre-traversal node so finding source locations are
-  // accurate. The compact-pipeline rewrite (in
-  // `Rewrites/Stmts/NoParensAroundConditionsHelpers.swift`) handles the
-  // rewrite without diagnose.
-  static func willEnter(_ node: ConditionElementSyntax, context: Context) {
-    guard case .expression(let expr) = node.condition else { return }
-    _ = noParensMinimalSingleExpression(expr, context: context, diagnose: true)
-  }
-
-  static func willEnter(_ node: SwitchExprSyntax, context: Context) {
-    _ = noParensMinimalSingleExpression(node.subject, context: context, diagnose: true)
-  }
-
-  static func willEnter(_ node: RepeatStmtSyntax, context: Context) {
-    _ = noParensMinimalSingleExpression(node.condition, context: context, diagnose: true)
-  }
-
-  static func willEnter(_ node: ReturnStmtSyntax, context: Context) {
-    if let expr = node.expression {
-      _ = noParensMinimalSingleExpression(expr, context: context, diagnose: true)
+    // Diagnose against the pre-traversal node so finding source locations are
+    // accurate. The compact-pipeline rewrite calls in
+    // `Rewrites/Stmts/{ConditionElement,SwitchExpr,RepeatStmt,ReturnStmt,IfExpr,WhileStmt,GuardStmt}.swift`
+    // and `Rewrites/Exprs/InitializerClause.swift` handle the rewrite without diagnose.
+    static func willEnter(_ node: ConditionElementSyntax, context: Context) {
+        guard case .expression(let expr) = node.condition else { return }
+        _ = minimalSingleExpression(expr, context: context, diagnose: true)
     }
-  }
 
-  static func willEnter(_ node: InitializerClauseSyntax, context: Context) {
-    _ = noParensMinimalSingleExpression(node.value, context: context, diagnose: true)
-  }
+    static func willEnter(_ node: SwitchExprSyntax, context: Context) {
+        _ = minimalSingleExpression(node.subject, context: context, diagnose: true)
+    }
+
+    static func willEnter(_ node: RepeatStmtSyntax, context: Context) {
+        _ = minimalSingleExpression(node.condition, context: context, diagnose: true)
+    }
+
+    static func willEnter(_ node: ReturnStmtSyntax, context: Context) {
+        if let expr = node.expression {
+            _ = minimalSingleExpression(expr, context: context, diagnose: true)
+        }
+    }
+
+    static func willEnter(_ node: InitializerClauseSyntax, context: Context) {
+        _ = minimalSingleExpression(node.value, context: context, diagnose: true)
+    }
+
+    /// Strip the wrapping single-element tuple from `original` if doing so would
+    /// not introduce a parse ambiguity. Returns the inner expression with the
+    /// outer parens' trivia transferred onto it, or `nil` if no stripping is
+    /// possible.
+    ///
+    /// Emits a `removeParensAroundExpression` finding when stripping is performed
+    /// and `diagnose` is `true`.
+    static func minimalSingleExpression(
+        _ original: ExprSyntax,
+        context: Context,
+        diagnose: Bool = false
+    ) -> ExprSyntax? {
+        guard let tuple = original.as(TupleExprSyntax.self),
+              tuple.elements.count == 1,
+              let expr = tuple.elements.first?.expression
+        else {
+            return nil
+        }
+
+        if let fnCall = expr.as(FunctionCallExprSyntax.self) {
+            if fnCall.trailingClosure != nil {
+                // Trailing closure — removing parens would change parsing.
+                return nil
+            }
+            if fnCall.calledExpression.as(ClosureExprSyntax.self) != nil {
+                // Immediately-called closure — same reason.
+                return nil
+            }
+        }
+
+        if diagnose {
+            Self.diagnose(.removeParensAroundExpression, on: tuple.leftParen, context: context)
+        }
+
+        var result = expr
+        result.leadingTrivia = tuple.leftParen.leadingTrivia
+        result.trailingTrivia = tuple.rightParen.trailingTrivia
+        return result
+    }
+
+    /// Ensure the trailing trivia of a control-flow keyword has at least one
+    /// space after parens are removed from the following expression.
+    static func fixKeywordTrailingTrivia(_ trivia: inout Trivia) {
+        guard trivia.isEmpty else { return }
+        trivia = [.spaces(1)]
+    }
+}
+
+extension Finding.Message {
+    fileprivate static let removeParensAroundExpression: Finding.Message =
+        "remove the parentheses around this expression"
 }

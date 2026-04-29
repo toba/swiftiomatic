@@ -116,11 +116,10 @@ func rewriteFunctionDecl(
     )
 
     // NoForceTry — after children visit, add a `throws` clause if any inner
-    // `try!` was converted. Scope state pushed/popped by the
-    // generator-emitted `willEnter`/`didExit` hooks; this site only finalises
-    // the function. Helpers in `Rewrites/Exprs/NoForceTryHelpers.swift`.
+    // `try!` was converted. Scope state pushed/popped by `willEnter`/`didExit`
+    // hooks on the rule; this site only finalises the function.
     if context.shouldFormat(NoForceTry.self, node: Syntax(result)) {
-        result = noForceTryAfterFunctionDecl(result, context: context)
+        result = NoForceTry.afterFunctionDecl(result, context: context)
     }
 
     // NoForceUnwrap — after children visit, add a `throws` clause if any
@@ -128,7 +127,7 @@ func rewriteFunctionDecl(
     // generator-emitted `willEnter`/`didExit` hooks; this site only finalises
     // the function. Helpers in `Rewrites/Exprs/NoForceUnwrapHelpers.swift`.
     if context.shouldFormat(NoForceUnwrap.self, node: Syntax(result)) {
-        result = noForceUnwrapAfterFunctionDecl(result, context: context)
+        result = NoForceUnwrap.afterFunctionDecl(result, context: context)
     }
 
     // RedundantEscaping — strip redundant `@escaping` from non-escaping

@@ -62,22 +62,6 @@ extension RuleCollector {
         /// for threshold rules) on the configuration type.
         var customProperties: [DetectedProperty] = []
 
-        /// Syntax node types this rule transforms via a `static func transform(_:context:)`
-        /// signature. Rules that opt into this signature can be invoked from the
-        /// `CompactStageOneRewriter` (see issue `ogx-lb7`); rules without it stay on the
-        /// legacy `RewritePipeline` path.
-        var transformedNodes: [String] = []
-
-        /// Syntax node types this rule wants to receive a `static func willEnter(_:context:)`
-        /// callback for. The combined rewriter invokes these *before* `super.visit(node)` so
-        /// scope-tracking rules can push state that descendants will see.
-        var willEnterNodes: [String] = []
-
-        /// Syntax node types this rule wants to receive a `static func didExit(_:context:)`
-        /// callback for. The combined rewriter invokes these *after* the chained transforms
-        /// so scope-tracking rules can pop state.
-        var didExitNodes: [String] = []
-
         // Hashable/Equatable based on typeName only — customProperties are metadata.
         static func == (lhs: Self, rhs: Self) -> Bool { lhs.typeName == rhs.typeName }
         func hash(into hasher: inout Hasher) { hasher.combine(typeName) }

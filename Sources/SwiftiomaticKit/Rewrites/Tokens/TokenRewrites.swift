@@ -68,9 +68,9 @@ func rewriteToken(_ node: TokenSyntax,
 
     // 5a. ReflowComments — inlined (no `static func transform`). Reflows
     //     contiguous `//` and `///` comment runs in leading trivia to fit
-    //     `lineLength`. Helpers in `ReflowCommentsHelpers.swift`.
+    //     `lineLength`.
     if context.shouldFormat(ReflowComments.self, node: Syntax(result)) {
-        result = applyReflowComments(result, context: context)
+        result = ReflowComments.reflow(result, context: context)
     }
 
     // 6. UppercaseAcronyms — inlined (no `static func transform`). Replaces

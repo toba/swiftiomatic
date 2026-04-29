@@ -7,13 +7,6 @@ import SwiftSyntax
 /// users can still toggle individual behaviors via configuration
 /// (the rule-name strings survive as configuration keys).
 ///
-/// Per Phase 4a of `ddi-wtv` (sub-issue `49k-dtg`), this replaces the per-rule
-/// `RewriteSyntaxRule.visit(_ SourceFileSyntax)` overrides + the
-/// `static func transform` chain that `CompactStageOneRewriter` would otherwise
-/// generate for `SourceFileSyntax`. The generator now emits a single `visit`
-/// override that delegates to this free function (see
-/// `CompactStageOneRewriterGenerator.manuallyHandledNodeTypes`).
-///
 /// Rule order is alphabetical by rule name. Pre-scan / state-setup blocks
 /// (formerly `willEnter(_ SourceFileSyntax, context:)`) run first so that
 /// `Context.ruleState` is populated before any rewrites are attempted.
@@ -40,17 +33,16 @@ func rewriteSourceFile(
     }
 
     // 2. NoForceTry: file-level pre-scan — populate `importsXCTest` so test
-    //    classes can be identified during traversal. Helpers in
-    //    `Rewrites/Exprs/NoForceTryHelpers.swift`.
+    //    classes can be identified during traversal.
     if context.shouldFormat(NoForceTry.self, node: Syntax(result)) {
-        noForceTryVisitSourceFile(result, context: context)
+        setImportsXCTest(context: context, sourceFile: result)
     }
 
     // 3. NoForceUnwrap: file-level pre-scan — populate `importsXCTest` so
     //    test classes can be identified during traversal. Helpers in
     //    `Rewrites/Exprs/NoForceUnwrapHelpers.swift`.
     if context.shouldFormat(NoForceUnwrap.self, node: Syntax(result)) {
-        noForceUnwrapVisitSourceFile(result, context: context)
+        NoForceUnwrap.visitSourceFile(result, context: context)
     }
 
     // 4. PreferEnvironmentEntry: rewrite `EnvironmentValues` extensions to

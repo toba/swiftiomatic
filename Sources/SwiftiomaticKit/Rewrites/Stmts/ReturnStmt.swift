@@ -3,10 +3,6 @@ import SwiftSyntax
 /// Compact-pipeline merge of all `ReturnStmtSyntax` rewrites. Each former
 /// rule's logic is gated on `context.shouldFormat(<RuleType>.self, node:)`.
 ///
-/// Per Phase 4d of `ddi-wtv` (sub-issue `zvf-rsq`). The generator emits a
-/// thin override that delegates to this function — see
-/// `CompactStageOneRewriterGenerator.manuallyHandledNodeTypes`.
-///
 /// No node-local rules currently target `ReturnStmtSyntax` via the compact
 /// `transform` form. The unported entries below are tracked in 4f.
 func rewriteReturnStmt(
@@ -17,14 +13,13 @@ func rewriteReturnStmt(
     var result = node
 
     // NoParensAroundConditions — strips parens around a return value and
-    // ensures `return` keyword has a trailing space. Helpers in
-    // `NoParensAroundConditionsHelpers.swift`.
+    // ensures `return` keyword has a trailing space.
     if context.shouldFormat(NoParensAroundConditions.self, node: Syntax(result)),
        let expression = result.expression,
-       let stripped = noParensMinimalSingleExpression(expression, context: context)
+       let stripped = NoParensAroundConditions.minimalSingleExpression(expression, context: context)
     {
         result.expression = stripped
-        noParensFixKeywordTrailingTrivia(&result.returnKeyword.trailingTrivia)
+        NoParensAroundConditions.fixKeywordTrailingTrivia(&result.returnKeyword.trailingTrivia)
     }
 
     return result

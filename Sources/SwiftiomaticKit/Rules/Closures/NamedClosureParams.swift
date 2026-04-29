@@ -13,14 +13,50 @@ final class NamedClosureParams: StaticFormatRule<BasicRuleValue>, @unchecked Sen
     override class var group: ConfigurationGroup? { .closures }
     override class var defaultValue: BasicRuleValue { .init(rewrite: false, lint: .warn) }
 
+    /// Per-file mutable state held in `Context.ruleState`.
+    final class State {
+        /// Stack of `insideMultilineClosure` flags — one entry per nested
+        /// `ClosureExprSyntax`. The top of the stack is the innermost closure;
+        /// when the stack is empty, we're not inside a closure at all.
+        var stack: [Bool] = []
+
+        /// Convenience: whether the innermost enclosing closure is multi-line.
+        var insideMultilineClosure: Bool { stack.last ?? false }
+    }
+
+    static func state(_ context: Context) -> State {
+        context.ruleState(for: Self.self) { State() }
+    }
+
     // MARK: - Compact-pipeline scope hooks
 
+    /// Push the multi-line flag for `node` onto the state stack.
     static func willEnter(_ node: ClosureExprSyntax, context: Context) {
-        namedClosureParamsPushClosure(node, context: context)
+        let converter = context.sourceLocationConverter
+        let startLine = converter.location(
+            for: node.leftBrace.positionAfterSkippingLeadingTrivia
+        ).line
+        let endLine = converter.location(
+            for: node.rightBrace.endPositionBeforeTrailingTrivia
+        ).line
+        state(context).stack.append(startLine != endLine)
     }
 
     static func didExit(_: ClosureExprSyntax, context: Context) {
-        namedClosureParamsPopClosure(context: context)
+        let s = state(context)
+        if !s.stack.isEmpty { s.stack.removeLast() }
+    }
+
+    /// Diagnose `$N` references at the current closure scope.
+    static func rewriteDeclReference(_ node: DeclReferenceExprSyntax, context: Context) {
+        guard state(context).insideMultilineClosure,
+              case .dollarIdentifier = node.baseName.tokenKind
+        else { return }
+        Self.diagnose(
+            .preferNamedClosureParam(name: node.baseName.text),
+            on: node.baseName,
+            context: context
+        )
     }
 }
 

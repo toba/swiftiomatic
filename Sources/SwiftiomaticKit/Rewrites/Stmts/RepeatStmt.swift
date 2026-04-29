@@ -3,10 +3,6 @@ import SwiftSyntax
 /// Compact-pipeline merge of all `RepeatStmtSyntax` rewrites. Each former
 /// rule's logic is gated on `context.shouldFormat(<RuleType>.self, node:)`.
 ///
-/// Per Phase 4d of `ddi-wtv` (sub-issue `zvf-rsq`). The generator emits a
-/// thin override that delegates to this function — see
-/// `CompactStageOneRewriterGenerator.manuallyHandledNodeTypes`.
-///
 /// No node-local rules currently target `RepeatStmtSyntax` via the compact
 /// `transform` form. The unported entries below are tracked in 4f.
 func rewriteRepeatStmt(
@@ -16,12 +12,11 @@ func rewriteRepeatStmt(
 ) -> RepeatStmtSyntax {
     var result = node
     // NoParensAroundConditions — strips parens around the `while` condition
-    // and ensures `while` keyword has a trailing space. Helpers in
-    // `NoParensAroundConditionsHelpers.swift`.
+    // and ensures `while` keyword has a trailing space.
     if context.shouldFormat(NoParensAroundConditions.self, node: Syntax(result)) {
-        if let stripped = noParensMinimalSingleExpression(result.condition, context: context) {
+        if let stripped = NoParensAroundConditions.minimalSingleExpression(result.condition, context: context) {
             result.condition = stripped
-            noParensFixKeywordTrailingTrivia(&result.whileKeyword.trailingTrivia)
+            NoParensAroundConditions.fixKeywordTrailingTrivia(&result.whileKeyword.trailingTrivia)
         }
     }
 

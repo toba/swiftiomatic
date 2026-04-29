@@ -2,10 +2,6 @@ import SwiftSyntax
 
 /// Compact-pipeline merge of all `SwitchCaseSyntax` rewrites. Each former
 /// rule's logic is gated on `context.shouldFormat(<RuleType>.self, node:)`.
-///
-/// Per Phase 4d of `ddi-wtv` (sub-issue `zvf-rsq`). The generator emits a
-/// thin override that delegates to this function — see
-/// `CompactStageOneRewriterGenerator.manuallyHandledNodeTypes`.
 func rewriteSwitchCase(
     _ node: SwitchCaseSyntax,
     parent: Syntax?,
@@ -23,10 +19,9 @@ func rewriteSwitchCase(
     }
 
     // BlankLinesBeforeControlFlowBlocks — inserts a blank line before
-    // multi-line control-flow statements within a case body. Helpers in
-    // `BlankLinesBeforeControlFlowHelpers.swift`.
+    // multi-line control-flow statements within a case body.
     if context.shouldFormat(BlankLinesBeforeControlFlowBlocks.self, node: Syntax(result)) {
-        if let updated = blankLinesBeforeControlFlowInsertBlankLines(
+        if let updated = BlankLinesBeforeControlFlowBlocks.insertBlankLines(
             in: Array(result.statements),
             context: context
         ) {

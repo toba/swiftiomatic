@@ -10,7 +10,7 @@ parent: ddi-wtv
 sync:
     github:
         issue_number: "508"
-        synced_at: "2026-04-29T17:25:06Z"
+        synced_at: "2026-04-29T22:39:24Z"
 ---
 
 Follow-up to phase 4g (`dal-dmw`). All in-scope strip work landed; the `RewriteSyntaxRule` base class is now used by:

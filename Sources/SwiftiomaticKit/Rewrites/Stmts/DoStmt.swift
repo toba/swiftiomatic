@@ -3,10 +3,6 @@ import SwiftSyntax
 /// Compact-pipeline merge of all `DoStmtSyntax` rewrites. Each former
 /// rule's logic is gated on `context.shouldFormat(<RuleType>.self, node:)`.
 ///
-/// Per Phase 4d of `ddi-wtv` (sub-issue `zvf-rsq`). The generator emits a
-/// thin override that delegates to this function — see
-/// `CompactStageOneRewriterGenerator.manuallyHandledNodeTypes`.
-///
 /// No node-local rules currently target `DoStmtSyntax` via the compact
 /// `transform` form. The unported entries below are tracked in 4f.
 func rewriteDoStmt(

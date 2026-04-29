@@ -2,10 +2,6 @@ import SwiftSyntax
 
 /// Compact-pipeline merge of all `IfExprSyntax` rewrites. Each former
 /// rule's logic is gated on `context.shouldFormat(<RuleType>.self, node:)`.
-///
-/// Per Phase 4d of `ddi-wtv` (sub-issue `zvf-rsq`). The generator emits a
-/// thin override that delegates to this function — see
-/// `CompactStageOneRewriterGenerator.manuallyHandledNodeTypes`.
 func rewriteIfExpr(
     _ node: IfExprSyntax,
     parent: Syntax?,
@@ -26,10 +22,9 @@ func rewriteIfExpr(
 
     // NoParensAroundConditions — ensures `if` keyword has a trailing space
     // after a paren-stripped condition list. The actual paren stripping for
-    // each ConditionElement happens in `rewriteConditionElement`. Helpers in
-    // `NoParensAroundConditionsHelpers.swift`.
+    // each ConditionElement happens in `rewriteConditionElement`.
     if context.shouldFormat(NoParensAroundConditions.self, node: Syntax(result)) {
-        noParensFixKeywordTrailingTrivia(&result.ifKeyword.trailingTrivia)
+        NoParensAroundConditions.fixKeywordTrailingTrivia(&result.ifKeyword.trailingTrivia)
     }
 
     // WrapMultilineStatementBraces — wrap opening brace of a multiline

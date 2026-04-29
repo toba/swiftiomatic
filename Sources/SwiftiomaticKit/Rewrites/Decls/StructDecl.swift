@@ -82,10 +82,9 @@ func rewriteStructDecl(
     )
 
     // RedundantSwiftTestingSuite — strip a no-argument `@Suite` attribute
-    // when `import Testing` is present. Helpers in
-    // `RedundantSwiftTestingSuiteHelpers.swift`.
+    // when `import Testing` is present.
     if context.shouldFormat(RedundantSwiftTestingSuite.self, node: Syntax(result)) {
-        result = redundantSwiftTestingSuiteRemoveSuite(
+        result = RedundantSwiftTestingSuite.removeSuite(
             from: result, keyword: \.structKeyword, context: context
         )
     }

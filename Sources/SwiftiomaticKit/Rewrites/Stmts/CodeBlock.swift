@@ -3,10 +3,6 @@ import SwiftSyntax
 /// Compact-pipeline merge of all `CodeBlockSyntax` rewrites. Each former
 /// rule's logic is gated on `context.shouldFormat(<RuleType>.self, node:)`.
 ///
-/// Per Phase 4d of `ddi-wtv` (sub-issue `zvf-rsq`). The generator emits a
-/// thin override that delegates to this function — see
-/// `CompactStageOneRewriterGenerator.manuallyHandledNodeTypes`.
-///
 /// No node-local rules currently target `CodeBlockSyntax` via the compact
 /// `transform` form. The unported entries below are tracked in 4f.
 func rewriteCodeBlock(
@@ -24,10 +20,9 @@ func rewriteCodeBlock(
     }
 
     // BlankLinesBeforeControlFlowBlocks — inserts a blank line before
-    // multi-line control-flow statements. Helpers in
-    // `BlankLinesBeforeControlFlowHelpers.swift`.
+    // multi-line control-flow statements.
     if context.shouldFormat(BlankLinesBeforeControlFlowBlocks.self, node: Syntax(result)) {
-        if let updated = blankLinesBeforeControlFlowInsertBlankLines(
+        if let updated = BlankLinesBeforeControlFlowBlocks.insertBlankLines(
             in: Array(result.statements),
             context: context
         ) {

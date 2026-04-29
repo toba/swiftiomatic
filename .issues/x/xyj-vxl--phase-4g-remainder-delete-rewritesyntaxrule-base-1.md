@@ -10,7 +10,7 @@ parent: ddi-wtv
 sync:
     github:
         issue_number: "505"
-        synced_at: "2026-04-29T05:35:27Z"
+        synced_at: "2026-04-29T22:39:24Z"
 ---
 
 Continuation of `dal-dmw` (Phase 4g) for the larger surgery.

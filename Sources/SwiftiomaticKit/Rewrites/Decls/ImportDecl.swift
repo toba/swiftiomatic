@@ -3,10 +3,6 @@ import SwiftSyntax
 /// Compact-pipeline merge of all `ImportDeclSyntax` rewrites. Each former
 /// rule's logic is gated on `context.shouldFormat(<RuleType>.self, node:)`.
 ///
-/// Per Phase 4c of `ddi-wtv` (sub-issue `np6-piu`). The generator emits a
-/// thin override that delegates to this function — see
-/// `CompactStageOneRewriterGenerator.manuallyHandledNodeTypes`.
-///
 /// `willEnter`/`didExit` hooks (none currently registered for `ImportDecl`)
 /// would be emitted by the generator before/after `super.visit`, not from
 /// inside this function.
@@ -37,22 +33,20 @@ func rewriteImportDecl(
     }
 
     // RedundantSwiftTestingSuite — record `import Testing` for later use by
-    // the rule's struct/class/enum/actor visits. Helpers in
-    // `RedundantSwiftTestingSuiteHelpers.swift`.
+    // the rule's struct/class/enum/actor visits.
     if context.shouldFormat(RedundantSwiftTestingSuite.self, node: nodeSyntax) {
-        redundantSwiftTestingSuiteVisitImport(result, context: context)
+        RedundantSwiftTestingSuite.visitImport(result, context: context)
     }
 
     // NoForceTry — record `import Testing` for later test-context detection.
-    // Helpers in `Rewrites/Exprs/NoForceTryHelpers.swift`.
     if context.shouldFormat(NoForceTry.self, node: nodeSyntax) {
-        noForceTryVisitImport(result, context: context)
+        NoForceTry.visitImport(result, context: context)
     }
 
     // NoForceUnwrap — record `import Testing` for later test-context detection.
     // Helpers in `Rewrites/Exprs/NoForceUnwrapHelpers.swift`.
     if context.shouldFormat(NoForceUnwrap.self, node: nodeSyntax) {
-        noForceUnwrapVisitImport(result, context: context)
+        NoForceUnwrap.visitImport(result, context: context)
     }
 
     return result

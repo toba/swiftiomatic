@@ -59,10 +59,6 @@ package struct GeneratePaths {
     /// The generated Swift file embedding the JSON Schema as a string literal.
     package let configurationSchemaSwiftFile: URL
 
-    /// The generated `CompactStageOneRewriter` (issue `ogx-lb7`) that combines all
-    /// node-local rewrite rules into a single tree walk.
-    package let compactStageOneRewriterFile: URL
-
     // MARK: - Initializers
 
     /// Creates paths rooted at the given package directory.
@@ -104,7 +100,5 @@ package struct GeneratePaths {
         tokenStreamStubsFile = outputDirectory.appending(path: "TokenStream+Generated.swift")
         configurationSchemaSwiftFile = outputDirectory.appending(
             path: "ConfigurationSchema+Generated.swift")
-        compactStageOneRewriterFile = outputDirectory.appending(
-            path: "CompactStageOneRewriter+Generated.swift")
     }
 }

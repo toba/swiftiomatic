@@ -3,10 +3,6 @@ import SwiftSyntax
 /// Compact-pipeline merge of all `SwitchExprSyntax` rewrites. Each former
 /// rule's logic is gated on `context.shouldFormat(<RuleType>.self, node:)`.
 ///
-/// Per Phase 4d of `ddi-wtv` (sub-issue `zvf-rsq`). The generator emits a
-/// thin override that delegates to this function — see
-/// `CompactStageOneRewriterGenerator.manuallyHandledNodeTypes`.
-///
 /// No node-local rules currently target `SwitchExprSyntax` via the compact
 /// `transform` form. The unported entries below are tracked in 4f.
 func rewriteSwitchExpr(
@@ -23,12 +19,11 @@ func rewriteSwitchExpr(
     }
 
     // NoParensAroundConditions — strips parens around the `switch` subject
-    // and ensures `switch` keyword has a trailing space. Helpers in
-    // `NoParensAroundConditionsHelpers.swift`.
+    // and ensures `switch` keyword has a trailing space.
     if context.shouldFormat(NoParensAroundConditions.self, node: Syntax(result)) {
-        if let stripped = noParensMinimalSingleExpression(result.subject, context: context) {
+        if let stripped = NoParensAroundConditions.minimalSingleExpression(result.subject, context: context) {
             result.subject = stripped
-            noParensFixKeywordTrailingTrivia(&result.switchKeyword.trailingTrivia)
+            NoParensAroundConditions.fixKeywordTrailingTrivia(&result.switchKeyword.trailingTrivia)
         }
     }
 

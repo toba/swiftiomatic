@@ -2,10 +2,6 @@ import SwiftSyntax
 
 /// Compact-pipeline merge of all `ForStmtSyntax` rewrites. Each former
 /// rule's logic is gated on `context.shouldFormat(<RuleType>.self, node:)`.
-///
-/// Per Phase 4d of `ddi-wtv` (sub-issue `zvf-rsq`). The generator emits a
-/// thin override that delegates to this function — see
-/// `CompactStageOneRewriterGenerator.manuallyHandledNodeTypes`.
 func rewriteForStmt(
     _ node: ForStmtSyntax,
     parent: Syntax?,

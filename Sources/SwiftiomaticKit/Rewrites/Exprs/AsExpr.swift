@@ -2,10 +2,6 @@ import SwiftSyntax
 
 /// Compact-pipeline merge of all `AsExprSyntax` rewrites. Each former
 /// rule's logic is gated on `context.shouldFormat(<RuleType>.self, node:)`.
-///
-/// Per Phase 4e of `ddi-wtv` (sub-issue `mn8-do3`). The generator emits a
-/// thin override that delegates to this function — see
-/// `CompactStageOneRewriterGenerator.manuallyHandledNodeTypes`.
 func rewriteAsExpr(
     _ node: AsExprSyntax,
     parent: Syntax?,
@@ -30,7 +26,7 @@ func rewriteAsExpr(
     if context.shouldFormat(NoForceUnwrap.self, node: Syntax(result)),
        result.questionOrExclamationMark?.tokenKind == .exclamationMark
     {
-        return noForceUnwrapRewriteAsExpr(result, context: context)
+        return NoForceUnwrap.rewriteAsExpr(result, context: context)
     }
 
     return ExprSyntax(result)

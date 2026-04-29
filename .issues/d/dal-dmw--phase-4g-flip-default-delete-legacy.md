@@ -12,7 +12,7 @@ blocked_by:
 sync:
     github:
         issue_number: "497"
-        synced_at: "2026-04-29T17:25:05Z"
+        synced_at: "2026-04-29T22:39:25Z"
 ---
 
 Phase 4g of `ddi-wtv` collapse plan: flip the default to compact and delete all legacy infrastructure in one landing.

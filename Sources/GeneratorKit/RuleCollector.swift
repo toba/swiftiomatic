@@ -28,22 +28,6 @@ package final class RuleCollector {
     /// A list of all the format-only rules found in the code base.
     var rewritingSyntaxRules = Set<DetectedSyntaxRule>()
 
-    /// Maps a syntax node type name to the rules that expose a
-    /// `static func transform(_:context:)` for that node — i.e. the rules eligible
-    /// to run inside `CompactStageOneRewriter` (issue `ogx-lb7`).
-    var nodeLocalTransforms = [String: [String]]()
-
-    /// Maps a syntax node type name to the rules that expose a
-    /// `static func willEnter(_:context:)` for that node. The combined rewriter
-    /// invokes these *before* `super.visit(node)` so scope-tracking rules can
-    /// push state that descendants will see (issue `ddi-wtv-9`).
-    var nodeLocalWillEnter = [String: [String]]()
-
-    /// Maps a syntax node type name to the rules that expose a
-    /// `static func didExit(_:context:)` for that node. Invoked *after* the
-    /// chained `transform` calls so scope-tracking rules can pop state.
-    var nodeLocalDidExit = [String: [String]]()
-
     package init() {}
 
     /// Populates the internal collections with rules in the given directory.
@@ -64,16 +48,6 @@ package final class RuleCollector {
 
                 for visitedNode in rule.visitedNodes {
                     self.syntaxNodeLinters[visitedNode, default: []].append(rule.typeName)
-                }
-                for transformedNode in rule.transformedNodes {
-                    self.nodeLocalTransforms[transformedNode, default: []]
-                        .append(rule.typeName)
-                }
-                for node in rule.willEnterNodes {
-                    self.nodeLocalWillEnter[node, default: []].append(rule.typeName)
-                }
-                for node in rule.didExitNodes {
-                    self.nodeLocalDidExit[node, default: []].append(rule.typeName)
                 }
             }
         }
@@ -176,81 +150,17 @@ package final class RuleCollector {
                 .name.text
 
             var visitedNodes = [String]()
-            var transformedNodes = [String]()
-            var willEnterNodes = [String]()
-            var didExitNodes = [String]()
 
-            // Gather members from the primary declaration plus any
-            // file-level extensions of the same type. Without this, rules
-            // that organise their `static transform`/`willEnter`/`didExit`
-            // hooks into extensions (e.g. `WrapSingleLineBodies`) would be
-            // invisible to the compact-pipeline dispatcher.
-            var allMembers = Array(members)
-            for fileItem in fileStatements {
-                guard let ext = fileItem.item.as(ExtensionDeclSyntax.self),
-                    ext.extendedType.as(IdentifierTypeSyntax.self)?.name.text == typeName
+            for member in members {
+                guard let function = member.decl.as(FunctionDeclSyntax.self),
+                    function.name.text == "visit"
                 else { continue }
-                allMembers.append(contentsOf: ext.memberBlock.members)
-            }
 
-            for member in allMembers {
-                guard let function = member.decl.as(FunctionDeclSyntax.self) else { continue }
-
-                if function.name.text == "visit" {
-                    let params = function.signature.parameterClause.parameters
-                    if let firstType = params.firstAndOnly?.type.as(IdentifierTypeSyntax.self) {
-                        visitedNodes.append(firstType.name.text)
-                    }
-                    continue
-                }
-
-                if function.name.text == "transform",
-                    function.modifiers.contains(where: {
-                        $0.name.tokenKind == .keyword(.static)
-                    })
-                {
-                    let params = Array(function.signature.parameterClause.parameters)
-                    // The compact-pipeline contract is `transform(_ node: T, parent: Syntax?,
-                    // context: Context)`. Reject 2-arg or differently-named shapes — those are
-                    // not yet ported (see issue `3zw-l17`).
-                    if let firstType = params.first?.type.as(IdentifierTypeSyntax.self),
-                        params.contains(where: { $0.firstName.text == "parent" }),
-                        params.contains(where: { $0.firstName.text == "context" })
-                    {
-                        transformedNodes.append(firstType.name.text)
-                    }
-                }
-
-                // Scope-tracking hooks: `static func willEnter(_ node: T, context: Context)`
-                // and `static func didExit(_ node: T, context: Context)`. The combined
-                // rewriter calls `willEnter` before `super.visit` and `didExit` after the
-                // chained transforms, letting rules push/pop state around the descendant
-                // walk (issue `ddi-wtv-9`).
-                if (function.name.text == "willEnter" || function.name.text == "didExit"),
-                    function.modifiers.contains(where: {
-                        $0.name.tokenKind == .keyword(.static)
-                    })
-                {
-                    let params = Array(function.signature.parameterClause.parameters)
-                    if let firstType = params.first?.type.as(IdentifierTypeSyntax.self),
-                        params.contains(where: { $0.firstName.text == "context" })
-                    {
-                        if function.name.text == "willEnter" {
-                            willEnterNodes.append(firstType.name.text)
-                        } else {
-                            didExitNodes.append(firstType.name.text)
-                        }
-                    }
+                let params = function.signature.parameterClause.parameters
+                if let firstType = params.firstAndOnly?.type.as(IdentifierTypeSyntax.self) {
+                    visitedNodes.append(firstType.name.text)
                 }
             }
-
-            // A rule with no visit / transform / willEnter / didExit methods is still
-            // a valid registration target. Some rules (e.g. `BlankLinesAroundMark`,
-            // `UppercaseAcronyms`) live entirely as inlined `private func apply...` in
-            // a merged `Rewrites/<Group>/<NodeType>.swift` file — the rule class only
-            // exists so configuration (key, group, defaultValue) is still registered.
-            // Keep registering them so `enableRule(named:)` and `shouldFormat` find
-            // them; they simply won't be wired into the compact-pipeline dispatcher.
 
             // Detect threshold-style config (conforms to ThresholdRuleValue) so
             // schema generation can pick the right base shape.
@@ -287,9 +197,6 @@ package final class RuleCollector {
                 visitedNodes: visitedNodes,
                 isOptIn: Self.extractIsOptIn(from: members),
                 customProperties: customProperties,
-                transformedNodes: transformedNodes,
-                willEnterNodes: willEnterNodes,
-                didExitNodes: didExitNodes,
             )
         }
 

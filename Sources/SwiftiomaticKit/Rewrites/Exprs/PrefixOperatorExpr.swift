@@ -4,10 +4,6 @@ import SwiftSyntax
 /// former rule's logic is gated on
 /// `context.shouldFormat(<RuleType>.self, node:)`.
 ///
-/// Per Phase 4e of `ddi-wtv` (sub-issue `mn8-do3`). The generator emits a
-/// thin override that delegates to this function — see
-/// `CompactStageOneRewriterGenerator.manuallyHandledNodeTypes`.
-///
 /// Returns `ExprSyntax` (not `PrefixOperatorExprSyntax`) because
 /// `PreferExplicitFalse` rewrites `!x` to `x == false` (an
 /// `InfixOperatorExprSyntax`). The standard `applyRule` helper can't widen the

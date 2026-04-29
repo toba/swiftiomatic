@@ -3,10 +3,6 @@ import SwiftSyntax
 /// Compact-pipeline merge of all `ClosureExprSyntax` rewrites. Each former
 /// rule's logic is gated on `context.shouldFormat(<RuleType>.self, node:)`.
 ///
-/// Per Phase 4e of `ddi-wtv` (sub-issue `mn8-do3`). The generator emits a
-/// thin override that delegates to this function — see
-/// `CompactStageOneRewriterGenerator.manuallyHandledNodeTypes`.
-///
 /// `willEnter`/`didExit` hooks (e.g. `RedundantSelf`) are emitted by the
 /// generator before/after `super.visit`, not from inside this function.
 func rewriteClosureExpr(
