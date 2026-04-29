@@ -5,7 +5,7 @@ status: in-progress
 type: feature
 priority: high
 created_at: 2026-04-28T01:41:38Z
-updated_at: 2026-04-29T05:57:37Z
+updated_at: 2026-04-29T06:05:51Z
 parent: iv7-r5g
 blocked_by:
     - eti-yt2
@@ -222,3 +222,36 @@ Ported **NestedCallLayout** out of the fresh-instance pattern. 229 → 227 insta
 - Full suite: **3012 pass, 2 fail** (the 2 pre-existing `Layout/GuardStmtTests` pretty-printer-idempotency failures, unrelated).
 
 `override func visit` total in `Sources/SwiftiomaticKit/Rules/`: **227** (down from 229; one of the 2 stripped is the rule's `visit` override, the other is the inner private `IndentShiftRewriter.visit(_ TokenSyntax)` which moved into the helpers file as `NestedCallLayoutIndentShiftRewriter`).
+
+
+
+## Update 2026-04-29 (continued, session 19) — port WrapMultilineStatementBraces
+
+Ported **WrapMultilineStatementBraces** out of the fresh-instance pattern. 227 → 211 instance overrides (biggest single-rule strip yet).
+
+### Changes
+
+- **Created** `Sources/SwiftiomaticKit/Rewrites/Wrap/WrapMultilineStatementBracesHelpers.swift` (369 lines) with 15 `applyWrapMultilineStatementBraces(_ N, context:)` overloads — one per node type (IfExpr, GuardStmt, ForStmt, WhileStmt, DoStmt, SwitchExpr, FunctionDecl, InitializerDecl, DeinitializerDecl, ClassDecl, StructDecl, EnumDecl, ActorDecl, ProtocolDecl, ExtensionDecl). Plus the four core helpers — `wrapMultilineStatementBracesWrappedBrace`, `wrapMultilineStatementBracesStripTrailingOnLastSigToken`, `wrapMultilineStatementBracesLineIndentation`, `wrapMultilineStatementBracesStripBeforeBrace` — and the private `WrapMultilineStatementBracesTokenStripper: SyntaxRewriter` (renamed from `TokenStripper`). Finding extension moved as fileprivate.
+- The helpers operate directly on the post-recursion node (no `super.visit` call); the compact dispatcher already performed the child traversal before invoking `static transform`. The legacy fresh-instance pattern was effectively double-recursing (idempotent but wasteful) — eliminated by this port.
+- Diagnose calls switched from `self.diagnose(...)` to `WrapMultilineStatementBraces.diagnose(..., context: context)` (Self.diagnose pattern).
+- **Stripped** `Sources/SwiftiomaticKit/Rules/Wrap/WrapMultilineStatementBraces.swift` from 449 → 108 lines: rule class declaration + 3 overrides (`key`/`group`/`defaultValue`) + 15 `static transform` overloads delegating to the helpers. Removed all 15 `override func visit` methods, the 3 instance helpers (`wrappedBrace`, `stripTrailingOnLastSigToken`, `lineIndentation`), the file-private `stripBeforeBrace`/`stripTrailingWhitespaceBeforeBrace` free functions, the private `TokenStripper` class, and the file-scope `wrapOpeningBrace` Finding extension.
+
+### Verification
+
+- `xc-swift swift_diagnostics --no-include-lint` — Build succeeded, 13 warnings (unchanged baseline).
+- `WrapMultilineStatementBraces` filter: **18 pass**, all green.
+- Full suite: **3012 pass, 2 fail** (the 2 pre-existing `Layout/GuardStmtTests` pretty-printer-idempotency failures, unrelated).
+
+`override func visit` total in `Sources/SwiftiomaticKit/Rules/`: **211** (down from 227 at session start; 15 rule overrides + 1 inner `TokenStripper.visit` moved to the helpers file).
+
+### Pattern note
+
+For multi-node-type rules where each `override func visit(_ N)` does:
+
+```swift
+let visited = super.visit(node)
+guard let typed = visited.as(N.self) else { return visited }
+// ... per-type adjustment ...
+```
+
+…the lift is mechanical. The helper takes the *already-recursed* node (no `super.visit`), performs only the per-type adjustment, and returns the result widened to the parent type. Each `static transform` becomes a one-liner delegating to the helper.
