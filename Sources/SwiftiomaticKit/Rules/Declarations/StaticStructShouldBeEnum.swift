@@ -15,13 +15,6 @@ import SwiftSyntax
 final class StaticStructShouldBeEnum: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable {
     override class var group: ConfigurationGroup? { .declarations }
 
-    override func visit(_ node: StructDeclSyntax) -> DeclSyntax {
-        let parent = Syntax(node).parent
-        let visited = super.visit(node)
-        guard let concrete = visited.as(StructDeclSyntax.self) else { return visited }
-        return Self.transform(concrete, parent: parent, context: context)
-    }
-
     static func transform(
         _ visited: StructDeclSyntax,
         parent: Syntax?,
@@ -52,13 +45,6 @@ final class StaticStructShouldBeEnum: RewriteSyntaxRule<BasicRuleValue>, @unchec
             memberBlock: visited.memberBlock
         )
         return DeclSyntax(enumDecl)
-    }
-
-    override func visit(_ node: ClassDeclSyntax) -> DeclSyntax {
-        let parent = Syntax(node).parent
-        let visited = super.visit(node)
-        guard let concrete = visited.as(ClassDeclSyntax.self) else { return visited }
-        return Self.transform(concrete, parent: parent, context: context)
     }
 
     static func transform(

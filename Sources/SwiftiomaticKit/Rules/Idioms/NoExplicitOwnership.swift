@@ -18,13 +18,6 @@ final class NoExplicitOwnership: RewriteSyntaxRule<BasicRuleValue>, @unchecked S
 
     // MARK: - Declaration modifiers (e.g. `consuming func move()`)
 
-    override func visit(_ node: FunctionDeclSyntax) -> DeclSyntax {
-        let parent = Syntax(node).parent
-        let visited = super.visit(node)
-        guard let concrete = visited.as(FunctionDeclSyntax.self) else { return visited }
-        return Self.transform(concrete, parent: parent, context: context)
-    }
-
     static func transform(
         _ visited: FunctionDeclSyntax,
         parent: Syntax?,
@@ -40,13 +33,6 @@ final class NoExplicitOwnership: RewriteSyntaxRule<BasicRuleValue>, @unchecked S
     }
 
     // MARK: - Type specifiers (e.g. `consuming Foo` in parameter types)
-
-    override func visit(_ node: AttributedTypeSyntax) -> TypeSyntax {
-        let parent = Syntax(node).parent
-        let visited = super.visit(node)
-        guard let concrete = visited.as(AttributedTypeSyntax.self) else { return visited }
-        return Self.transform(concrete, parent: parent, context: context)
-    }
 
     static func transform(
         _ attributed: AttributedTypeSyntax,

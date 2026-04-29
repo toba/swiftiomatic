@@ -11,13 +11,6 @@ import SwiftSyntax
 final class PreferCountWhere: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable {
     override static var group: ConfigurationGroup? { .idioms }
 
-    override func visit(_ node: MemberAccessExprSyntax) -> ExprSyntax {
-        let parent = Syntax(node).parent
-        let visited = super.visit(node)
-        guard let concrete = visited.as(MemberAccessExprSyntax.self) else { return visited }
-        return Self.transform(concrete, parent: parent, context: context)
-    }
-
     static func transform(
         _ memberNode: MemberAccessExprSyntax,
         parent: Syntax?,

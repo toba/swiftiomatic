@@ -16,13 +16,6 @@ final class PreferIsEmpty: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendabl
     override static var group: ConfigurationGroup? { .idioms }
     override static var defaultValue: BasicRuleValue { .init(rewrite: false, lint: .no) }
 
-    override func visit(_ node: InfixOperatorExprSyntax) -> ExprSyntax {
-        let parent = Syntax(node).parent
-        let visited = super.visit(node)
-        guard let concrete = visited.as(InfixOperatorExprSyntax.self) else { return visited }
-        return Self.transform(concrete, parent: parent, context: context)
-    }
-
     static func transform(
         _ infixNode: InfixOperatorExprSyntax,
         parent: Syntax?,

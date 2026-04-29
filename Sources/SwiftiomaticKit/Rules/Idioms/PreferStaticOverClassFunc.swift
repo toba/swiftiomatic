@@ -16,13 +16,6 @@ final class PreferStaticOverClassFunc: RewriteSyntaxRule<BasicRuleValue>, @unche
     override class var group: ConfigurationGroup? { .idioms }
     override class var defaultValue: BasicRuleValue { .init(rewrite: false, lint: .warn) }
 
-    override func visit(_ node: ClassDeclSyntax) -> DeclSyntax {
-        let parent = Syntax(node).parent
-        let visited = super.visit(node)
-        guard let concrete = visited.as(ClassDeclSyntax.self) else { return visited }
-        return Self.transform(concrete, parent: parent, context: context)
-    }
-
     static func transform(
         _ visited: ClassDeclSyntax,
         parent: Syntax?,

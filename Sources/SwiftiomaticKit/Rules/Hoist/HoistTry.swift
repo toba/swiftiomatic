@@ -19,13 +19,6 @@ final class HoistTry: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable {
     override static var key: String { "try" }
     override static var group: ConfigurationGroup? { .hoist }
 
-    override func visit(_ node: FunctionCallExprSyntax) -> ExprSyntax {
-        let parent = Syntax(node).parent
-        let visited = super.visit(node)
-        guard let concrete = visited.as(FunctionCallExprSyntax.self) else { return visited }
-        return Self.transform(concrete, parent: parent, context: context)
-    }
-
     static func transform(
         _ callNode: FunctionCallExprSyntax,
         parent: Syntax?,

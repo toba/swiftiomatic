@@ -30,13 +30,6 @@ final class AvoidNoneName: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendabl
         return node
     }
 
-    override func visit(_ node: VariableDeclSyntax) -> DeclSyntax {
-        let parent = Syntax(node).parent
-        let visited = super.visit(node)
-        guard let concrete = visited.as(VariableDeclSyntax.self) else { return visited }
-        return Self.transform(concrete, parent: parent, context: context)
-    }
-
     static func transform(
         _ node: VariableDeclSyntax,
         parent: Syntax?,

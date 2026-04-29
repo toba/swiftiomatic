@@ -26,12 +26,6 @@ import SwiftSyntax
 /// TODO: Handle floating point literals.
 final class GroupNumericLiterals: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable {
     override class var group: ConfigurationGroup? { .literals }
-    override func visit(_ node: IntegerLiteralExprSyntax) -> ExprSyntax {
-        let parent = Syntax(node).parent
-        let visited = super.visit(node)
-        guard let concrete = visited.as(IntegerLiteralExprSyntax.self) else { return visited }
-        return Self.transform(concrete, parent: parent, context: context)
-    }
 
     static func transform(
         _ node: IntegerLiteralExprSyntax,

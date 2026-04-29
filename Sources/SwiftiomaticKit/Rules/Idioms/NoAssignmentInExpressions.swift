@@ -25,13 +25,6 @@ import SwiftSyntax
 final class NoAssignmentInExpressions: RewriteSyntaxRule<NoAssignmentInExpressionsConfiguration>, @unchecked Sendable {
     override class var group: ConfigurationGroup? { .idioms }
 
-    override func visit(_ node: InfixOperatorExprSyntax) -> ExprSyntax {
-        let parent = Syntax(node).parent
-        let visited = super.visit(node)
-        guard let concrete = visited.as(InfixOperatorExprSyntax.self) else { return visited }
-        return Self.transform(concrete, parent: parent, context: context)
-    }
-
     static func transform(
         _ node: InfixOperatorExprSyntax,
         parent: Syntax?,
@@ -46,12 +39,6 @@ final class NoAssignmentInExpressions: RewriteSyntaxRule<NoAssignmentInExpressio
             Self.diagnose(.moveAssignmentToOwnStatement, on: node, context: context)
         }
         return ExprSyntax(node)
-    }
-
-    override func visit(_ node: CodeBlockItemListSyntax) -> CodeBlockItemListSyntax {
-        let parent = Syntax(node).parent
-        let visited = super.visit(node)
-        return Self.transform(visited, parent: parent, context: context)
     }
 
     static func transform(

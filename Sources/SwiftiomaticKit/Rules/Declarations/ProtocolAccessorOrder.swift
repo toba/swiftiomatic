@@ -14,12 +14,6 @@ final class ProtocolAccessorOrder: RewriteSyntaxRule<BasicRuleValue>, @unchecked
         BasicRuleValue(rewrite: false, lint: .warn)
     }
 
-    override func visit(_ node: AccessorBlockSyntax) -> AccessorBlockSyntax {
-        let parent = Syntax(node).parent
-        let visited = super.visit(node)
-        return Self.transform(visited, parent: parent, context: context)
-    }
-
     static func transform(
         _ node: AccessorBlockSyntax,
         parent: Syntax?,

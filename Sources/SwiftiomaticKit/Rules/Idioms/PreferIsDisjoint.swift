@@ -12,13 +12,6 @@ final class PreferIsDisjoint: RewriteSyntaxRule<BasicRuleValue>, @unchecked Send
     override class var group: ConfigurationGroup? { .idioms }
     override class var defaultValue: BasicRuleValue { .init(rewrite: false, lint: .warn) }
 
-    override func visit(_ node: MemberAccessExprSyntax) -> ExprSyntax {
-        let parent = Syntax(node).parent
-        let visited = super.visit(node)
-        guard let concrete = visited.as(MemberAccessExprSyntax.self) else { return visited }
-        return Self.transform(concrete, parent: parent, context: context)
-    }
-
     static func transform(
         _ node: MemberAccessExprSyntax,
         parent: Syntax?,

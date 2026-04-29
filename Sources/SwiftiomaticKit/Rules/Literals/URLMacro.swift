@@ -57,13 +57,6 @@ final class URLMacro: RewriteSyntaxRule<URLMacroConfiguration>, @unchecked Senda
         return Self.transform(visited, parent: nil, context: context)
     }
 
-    override func visit(_ node: ForceUnwrapExprSyntax) -> ExprSyntax {
-        let parent = Syntax(node).parent
-        let visited = super.visit(node)
-        guard let concrete = visited.as(ForceUnwrapExprSyntax.self) else { return visited }
-        return Self.transform(concrete, parent: parent, context: context)
-    }
-
     // MARK: - File-level: add import after processing children
 
     static func transform(

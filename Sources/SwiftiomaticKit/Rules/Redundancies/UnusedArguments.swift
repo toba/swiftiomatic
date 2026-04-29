@@ -20,13 +20,6 @@ final class UnusedArguments: RewriteSyntaxRule<BasicRuleValue>, @unchecked Senda
 
     // MARK: - Functions
 
-    override func visit(_ node: FunctionDeclSyntax) -> DeclSyntax {
-        let parent = Syntax(node).parent
-        let visited = super.visit(node)
-        guard let concrete = visited.as(FunctionDeclSyntax.self) else { return visited }
-        return Self.transform(concrete, parent: parent, context: context)
-    }
-
     static func transform(
         _ node: FunctionDeclSyntax,
         parent: Syntax?,
@@ -62,13 +55,6 @@ final class UnusedArguments: RewriteSyntaxRule<BasicRuleValue>, @unchecked Senda
 
     // MARK: - Initializers
 
-    override func visit(_ node: InitializerDeclSyntax) -> DeclSyntax {
-        let parent = Syntax(node).parent
-        let visited = super.visit(node)
-        guard let concrete = visited.as(InitializerDeclSyntax.self) else { return visited }
-        return Self.transform(concrete, parent: parent, context: context)
-    }
-
     static func transform(
         _ node: InitializerDeclSyntax,
         parent: Syntax?,
@@ -97,13 +83,6 @@ final class UnusedArguments: RewriteSyntaxRule<BasicRuleValue>, @unchecked Senda
 
     // MARK: - Subscripts
 
-    override func visit(_ node: SubscriptDeclSyntax) -> DeclSyntax {
-        let parent = Syntax(node).parent
-        let visited = super.visit(node)
-        guard let concrete = visited.as(SubscriptDeclSyntax.self) else { return visited }
-        return Self.transform(concrete, parent: parent, context: context)
-    }
-
     static func transform(
         _ node: SubscriptDeclSyntax,
         parent: Syntax?,
@@ -130,13 +109,6 @@ final class UnusedArguments: RewriteSyntaxRule<BasicRuleValue>, @unchecked Senda
     }
 
     // MARK: - Closures
-
-    override func visit(_ node: ClosureExprSyntax) -> ExprSyntax {
-        let parent = Syntax(node).parent
-        let visited = super.visit(node)
-        guard let concrete = visited.as(ClosureExprSyntax.self) else { return visited }
-        return Self.transform(concrete, parent: parent, context: context)
-    }
 
     static func transform(
         _ node: ClosureExprSyntax,
@@ -199,13 +171,6 @@ final class UnusedArguments: RewriteSyntaxRule<BasicRuleValue>, @unchecked Senda
     }
 
     // MARK: - For Loops
-
-    override func visit(_ node: ForStmtSyntax) -> StmtSyntax {
-        let parent = Syntax(node).parent
-        let visited = super.visit(node)
-        guard let concrete = visited.as(ForStmtSyntax.self) else { return visited }
-        return Self.transform(concrete, parent: parent, context: context)
-    }
 
     static func transform(
         _ node: ForStmtSyntax,

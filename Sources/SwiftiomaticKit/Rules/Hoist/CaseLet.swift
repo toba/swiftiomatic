@@ -29,12 +29,6 @@ final class CaseLet: RewriteSyntaxRule<CaseLetConfiguration>, @unchecked Sendabl
 
     // MARK: - Visitors
 
-    override func visit(_ node: MatchingPatternConditionSyntax) -> MatchingPatternConditionSyntax {
-        let parent = Syntax(node).parent
-        let visited = super.visit(node)
-        return Self.transform(visited, parent: parent, context: context)
-    }
-
     static func transform(
         _ node: MatchingPatternConditionSyntax,
         parent: Syntax?,
@@ -65,12 +59,6 @@ final class CaseLet: RewriteSyntaxRule<CaseLetConfiguration>, @unchecked Sendabl
                 }
         }
         return node
-    }
-
-    override func visit(_ node: SwitchCaseItemSyntax) -> SwitchCaseItemSyntax {
-        let parent = Syntax(node).parent
-        let visited = super.visit(node)
-        return Self.transform(visited, parent: parent, context: context)
     }
 
     static func transform(
@@ -105,13 +93,6 @@ final class CaseLet: RewriteSyntaxRule<CaseLetConfiguration>, @unchecked Sendabl
                 }
         }
         return node
-    }
-
-    override func visit(_ node: ForStmtSyntax) -> StmtSyntax {
-        let parent = Syntax(node).parent
-        let visited = super.visit(node)
-        guard let concrete = visited.as(ForStmtSyntax.self) else { return visited }
-        return Self.transform(concrete, parent: parent, context: context)
     }
 
     static func transform(

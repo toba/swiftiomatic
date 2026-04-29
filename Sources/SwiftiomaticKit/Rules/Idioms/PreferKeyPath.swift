@@ -20,13 +20,6 @@ final class PreferKeyPath: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendabl
         "map", "flatMap", "compactMap", "allSatisfy", "filter", "contains",
     ]
 
-    override func visit(_ node: FunctionCallExprSyntax) -> ExprSyntax {
-        let parent = Syntax(node).parent
-        let visited = super.visit(node)
-        guard let concrete = visited.as(FunctionCallExprSyntax.self) else { return visited }
-        return Self.transform(concrete, parent: parent, context: context)
-    }
-
     static func transform(
         _ callNode: FunctionCallExprSyntax,
         parent: Syntax?,

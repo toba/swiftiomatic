@@ -10,13 +10,6 @@ import SwiftSyntax
 final class RedundantNilCoalescing: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable {
     override class var group: ConfigurationGroup? { .redundancies }
 
-    override func visit(_ node: InfixOperatorExprSyntax) -> ExprSyntax {
-        let parent = Syntax(node).parent
-        let visited = super.visit(node)
-        guard let concrete = visited.as(InfixOperatorExprSyntax.self) else { return visited }
-        return Self.transform(concrete, parent: parent, context: context)
-    }
-
     static func transform(
         _ node: InfixOperatorExprSyntax,
         parent: Syntax?,

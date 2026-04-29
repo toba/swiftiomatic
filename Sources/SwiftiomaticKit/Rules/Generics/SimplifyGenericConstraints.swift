@@ -15,13 +15,6 @@ import SwiftSyntax
 final class SimplifyGenericConstraints: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable {
     override class var group: ConfigurationGroup? { .generics }
 
-    override func visit(_ node: FunctionDeclSyntax) -> DeclSyntax {
-        let parent = Syntax(node).parent
-        let visited = super.visit(node)
-        guard let concrete = visited.as(FunctionDeclSyntax.self) else { return visited }
-        return Self.transform(concrete, parent: parent, context: context)
-    }
-
     static func transform(
         _ visited: FunctionDeclSyntax,
         parent: Syntax?,
@@ -43,13 +36,6 @@ final class SimplifyGenericConstraints: RewriteSyntaxRule<BasicRuleValue>, @unch
         return DeclSyntax(result)
     }
 
-    override func visit(_ node: StructDeclSyntax) -> DeclSyntax {
-        let parent = Syntax(node).parent
-        let visited = super.visit(node)
-        guard let concrete = visited.as(StructDeclSyntax.self) else { return visited }
-        return Self.transform(concrete, parent: parent, context: context)
-    }
-
     static func transform(
         _ visited: StructDeclSyntax,
         parent: Syntax?,
@@ -61,13 +47,6 @@ final class SimplifyGenericConstraints: RewriteSyntaxRule<BasicRuleValue>, @unch
             whereClauseKeyPath: \.genericWhereClause,
             context: context
         ))
-    }
-
-    override func visit(_ node: ClassDeclSyntax) -> DeclSyntax {
-        let parent = Syntax(node).parent
-        let visited = super.visit(node)
-        guard let concrete = visited.as(ClassDeclSyntax.self) else { return visited }
-        return Self.transform(concrete, parent: parent, context: context)
     }
 
     static func transform(
@@ -83,13 +62,6 @@ final class SimplifyGenericConstraints: RewriteSyntaxRule<BasicRuleValue>, @unch
         ))
     }
 
-    override func visit(_ node: EnumDeclSyntax) -> DeclSyntax {
-        let parent = Syntax(node).parent
-        let visited = super.visit(node)
-        guard let concrete = visited.as(EnumDeclSyntax.self) else { return visited }
-        return Self.transform(concrete, parent: parent, context: context)
-    }
-
     static func transform(
         _ visited: EnumDeclSyntax,
         parent: Syntax?,
@@ -101,13 +73,6 @@ final class SimplifyGenericConstraints: RewriteSyntaxRule<BasicRuleValue>, @unch
             whereClauseKeyPath: \.genericWhereClause,
             context: context
         ))
-    }
-
-    override func visit(_ node: ActorDeclSyntax) -> DeclSyntax {
-        let parent = Syntax(node).parent
-        let visited = super.visit(node)
-        guard let concrete = visited.as(ActorDeclSyntax.self) else { return visited }
-        return Self.transform(concrete, parent: parent, context: context)
     }
 
     static func transform(

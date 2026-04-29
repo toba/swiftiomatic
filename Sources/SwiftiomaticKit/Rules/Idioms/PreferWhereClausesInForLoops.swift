@@ -25,13 +25,6 @@ final class PreferWhereClausesInForLoops: RewriteSyntaxRule<BasicRuleValue>, @un
     /// be enabled by default.
     override static var defaultValue: BasicRuleValue { .init(rewrite: false, lint: .no) }
 
-    override func visit(_ node: ForStmtSyntax) -> StmtSyntax {
-        let parent = Syntax(node).parent
-        let visited = super.visit(node)
-        guard let concrete = visited.as(ForStmtSyntax.self) else { return visited }
-        return Self.transform(concrete, parent: parent, context: context)
-    }
-
     static func transform(
         _ node: ForStmtSyntax,
         parent: Syntax?,

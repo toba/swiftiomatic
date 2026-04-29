@@ -18,13 +18,6 @@ final class PreferCompoundAssignment: RewriteSyntaxRule<BasicRuleValue>, @unchec
 
     private static let supportedOperators: Set<String> = ["+", "-", "*", "/"]
 
-    override func visit(_ node: InfixOperatorExprSyntax) -> ExprSyntax {
-        let parent = Syntax(node).parent
-        let visited = super.visit(node)
-        guard let concrete = visited.as(InfixOperatorExprSyntax.self) else { return visited }
-        return Self.transform(concrete, parent: parent, context: context)
-    }
-
     static func transform(
         _ infix: InfixOperatorExprSyntax,
         parent: Syntax?,

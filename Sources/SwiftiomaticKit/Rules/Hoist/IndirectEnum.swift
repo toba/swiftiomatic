@@ -22,13 +22,6 @@ import SwiftSyntax
 final class IndirectEnum: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable {
     override static var group: ConfigurationGroup? { .hoist }
 
-    override func visit(_ node: EnumDeclSyntax) -> DeclSyntax {
-        let parent = Syntax(node).parent
-        let visited = super.visit(node)
-        guard let concrete = visited.as(EnumDeclSyntax.self) else { return visited }
-        return Self.transform(concrete, parent: parent, context: context)
-    }
-
     static func transform(
         _ node: EnumDeclSyntax,
         parent: Syntax?,

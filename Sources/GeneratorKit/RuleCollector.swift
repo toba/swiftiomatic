@@ -244,7 +244,15 @@ package final class RuleCollector {
                 }
             }
 
-            guard !visitedNodes.isEmpty else { return nil }
+            // A rule is only useful if it visits or transforms or hooks at least one node.
+            // After Phase 4g, rules that only expose static `transform` / `willEnter` /
+            // `didExit` (no legacy `visit` overrides) are valid and must be picked up by
+            // the compact-pipeline dispatcher.
+            guard !visitedNodes.isEmpty
+                || !transformedNodes.isEmpty
+                || !willEnterNodes.isEmpty
+                || !didExitNodes.isEmpty
+            else { return nil }
 
             // Detect threshold-style config (conforms to ThresholdRuleValue) so
             // schema generation can pick the right base shape.
