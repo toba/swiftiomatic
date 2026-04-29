@@ -5,7 +5,7 @@ status: in-progress
 type: task
 priority: high
 created_at: 2026-04-28T15:50:43Z
-updated_at: 2026-04-29T05:31:51Z
+updated_at: 2026-04-29T05:40:41Z
 parent: ddi-wtv
 blocked_by:
     - 2sn-0al
@@ -442,3 +442,31 @@ After the legacy pipeline removal in commit 92672ce4, the instance overrides are
 - Full suite: **3012 pass, 2 fail** (the 2 pre-existing `Layout/GuardStmtTests` pretty-printer-idempotency failures, unrelated).
 
 `override func visit` total in `Sources/SwiftiomaticKit/Rules/`: **239** (down from 250 at session start; 11 instance overrides gone — biggest single-rule strip yet). File shrunk from 563 → 105 lines.
+
+
+
+## Update 2026-04-29 (continued, session 16) — port RedundantEscaping
+
+Ported **RedundantEscaping** out of the fresh-instance pattern into proper static helpers. 239 → 230 instance overrides in `Rules/`.
+
+### Changes
+
+- **Created** `Sources/SwiftiomaticKit/Rewrites/Decls/RedundantEscapingHelpers.swift`:
+  - `applyRedundantEscaping(_ FunctionDeclSyntax, parent:context:)` and `applyRedundantEscaping(_ InitializerDeclSyntax, parent:context:)` free functions.
+  - `redundantEscapingRewriteParameterClause`, `redundantEscapingAttribute`, `redundantEscapingHasAttribute`, `redundantEscapingAttributeName`, `redundantEscapingIsInsideProtocol` — instance helpers lifted to file-private free functions, namespaced to avoid collision.
+  - The private `EscapeChecker: SyntaxVisitor` (with 7 visit/visitPost overrides for the conservative escape analysis) and its associated state — moved verbatim into the helpers file.
+  - `removeRedundantEscaping(name:)` Finding extension moved.
+- **Stripped** `Sources/SwiftiomaticKit/Rules/Redundancies/RedundantEscaping.swift` to a 36-line shell: rule class declaration + two `static transform` overloads that delegate to the helpers. Removed both `override func visit` (FunctionDecl + InitializerDecl), 5 instance helpers, the inner `EscapeChecker` class, and the file-scope Finding extension.
+- The protocol-context check now correctly uses the `parent: Syntax?` passed into the static transform (the original parent captured before `super.visit`), which actually fixes a latent bug in the fresh-instance path where `Syntax(node).parent` was nil after detachment.
+
+### Verification
+
+- `xc-swift swift_diagnostics --no-include-lint` — Build succeeded, 13 warnings (unchanged baseline).
+- `RedundantEscaping` filter: **7 pass**, all green.
+- Full suite: **3012 pass, 2 fail** (the 2 pre-existing `Layout/GuardStmtTests` pretty-printer-idempotency failures, unrelated).
+
+`override func visit` total in `Sources/SwiftiomaticKit/Rules/`: **230** (down from 239 at session start; 2 rule-class overrides + 7 inner-`EscapeChecker` overrides moved out of Rules/ into Rewrites/Decls/).
+
+### Pattern note
+
+Fresh-instance rules with no per-recursion state (other than the visited-tree walk done by inner SyntaxVisitor / SyntaxRewriter helpers) port cleanly to a `apply<Rule>` free function. The inner SyntaxVisitor / SyntaxRewriter classes can be lifted as-is to the helpers file.
