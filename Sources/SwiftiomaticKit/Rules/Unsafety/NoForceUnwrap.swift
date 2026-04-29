@@ -488,24 +488,33 @@ final class NoForceUnwrap: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendabl
     }
 
     static func willEnter(_ node: MemberAccessExprSyntax, context: Context) {
+        noForceUnwrapState(context).nonTestChainParentDepth += 1
         noForceUnwrapPushMemberAccess(node, context: context)
     }
     static func didExit(_ node: MemberAccessExprSyntax, context: Context) {
         noForceUnwrapPopMemberAccess(node, context: context)
+        let state = noForceUnwrapState(context)
+        if state.nonTestChainParentDepth > 0 { state.nonTestChainParentDepth -= 1 }
     }
 
     static func willEnter(_ node: FunctionCallExprSyntax, context: Context) {
+        noForceUnwrapState(context).nonTestChainParentDepth += 1
         noForceUnwrapPushChainNode(Syntax(node), context: context)
     }
     static func didExit(_ node: FunctionCallExprSyntax, context: Context) {
         noForceUnwrapPopChainNode(Syntax(node), context: context)
+        let state = noForceUnwrapState(context)
+        if state.nonTestChainParentDepth > 0 { state.nonTestChainParentDepth -= 1 }
     }
 
     static func willEnter(_ node: SubscriptCallExprSyntax, context: Context) {
+        noForceUnwrapState(context).nonTestChainParentDepth += 1
         noForceUnwrapPushChainNode(Syntax(node), context: context)
     }
     static func didExit(_ node: SubscriptCallExprSyntax, context: Context) {
         noForceUnwrapPopChainNode(Syntax(node), context: context)
+        let state = noForceUnwrapState(context)
+        if state.nonTestChainParentDepth > 0 { state.nonTestChainParentDepth -= 1 }
     }
 
     static func willEnter(_ node: ForceUnwrapExprSyntax, context: Context) {

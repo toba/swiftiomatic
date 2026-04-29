@@ -28,6 +28,34 @@ import SwiftSyntax
 ///         call with a trailing closure.
 final class NoParensAroundConditions: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable {
     override class var group: ConfigurationGroup? { .conditions }
+
+  // Diagnose against the pre-traversal node so finding source locations are
+  // accurate. The compact-pipeline rewrite (in
+  // `Rewrites/Stmts/NoParensAroundConditionsHelpers.swift`) handles the
+  // rewrite without diagnose.
+  static func willEnter(_ node: ConditionElementSyntax, context: Context) {
+    guard case .expression(let expr) = node.condition else { return }
+    _ = noParensMinimalSingleExpression(expr, context: context, diagnose: true)
+  }
+
+  static func willEnter(_ node: SwitchExprSyntax, context: Context) {
+    _ = noParensMinimalSingleExpression(node.subject, context: context, diagnose: true)
+  }
+
+  static func willEnter(_ node: RepeatStmtSyntax, context: Context) {
+    _ = noParensMinimalSingleExpression(node.condition, context: context, diagnose: true)
+  }
+
+  static func willEnter(_ node: ReturnStmtSyntax, context: Context) {
+    if let expr = node.expression {
+      _ = noParensMinimalSingleExpression(expr, context: context, diagnose: true)
+    }
+  }
+
+  static func willEnter(_ node: InitializerClauseSyntax, context: Context) {
+    _ = noParensMinimalSingleExpression(node.value, context: context, diagnose: true)
+  }
+
   override func visit(_ node: IfExprSyntax) -> ExprSyntax {
     var result = node
     fixKeywordTrailingTrivia(&result.ifKeyword.trailingTrivia)

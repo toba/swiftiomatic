@@ -14,7 +14,8 @@ import SwiftSyntax
 /// Emits a `removeParensAroundExpression` finding when stripping is performed.
 func noParensMinimalSingleExpression(
     _ original: ExprSyntax,
-    context: Context
+    context: Context,
+    diagnose: Bool = false
 ) -> ExprSyntax? {
     guard let tuple = original.as(TupleExprSyntax.self),
           tuple.elements.count == 1,
@@ -34,11 +35,13 @@ func noParensMinimalSingleExpression(
         }
     }
 
-    NoParensAroundConditions.diagnose(
-        .removeParensAroundExpression,
-        on: tuple.leftParen,
-        context: context
-    )
+    if diagnose {
+        NoParensAroundConditions.diagnose(
+            .removeParensAroundExpression,
+            on: tuple.leftParen,
+            context: context
+        )
+    }
 
     var result = expr
     result.leadingTrivia = tuple.leftParen.leadingTrivia

@@ -51,6 +51,13 @@ final class NoForceUnwrapState {
     /// MemberAccess only: whether the original base was `(force-cast)` —
     /// determines if we need to add an optional-chain on the base.
     var memberHadForceCastStack: [Bool] = []
+    /// Number of chain-eligible parents (FunctionCall, MemberAccess,
+    /// SubscriptCall) currently on the stack. Used to suppress diagnostics
+    /// in non-test code: legacy short-circuits recursion at these nodes (see
+    /// `NoForceUnwrap.visit(_ FunctionCallExprSyntax)` etc.), so descendants
+    /// never reach the ForceUnwrap visitor. We mimic by skipping diagnose
+    /// when `nonTestChainParentDepth > 0` and `!insideTestFunction`.
+    var nonTestChainParentDepth = 0
 }
 
 enum NoForceUnwrapChainTopContext { case wrap, noWrap, propagate }
@@ -192,8 +199,12 @@ private func noForceUnwrapDiagnoseForceUnwrap(
     }
 
     // Non-test code: legacy diagnoses without recursing, so only the chain top
-    // emits a finding.
+    // emits a finding. Additionally, legacy short-circuits recursion through
+    // chain-eligible parents (FunctionCall/MemberAccess/SubscriptCall) in
+    // non-test code, so a ForceUnwrap nested inside one never reaches
+    // visit_ForceUnwrap. Mirror that here.
     guard isTop else { return }
+    if state.nonTestChainParentDepth > 0 { return }
     NoForceUnwrap.diagnose(
         .doNotForceUnwrap(name: node.expression.trimmedDescription),
         on: node, context: context
@@ -212,6 +223,7 @@ private func noForceUnwrapDiagnoseAsExpr(
         return
     }
     guard isTop else { return }
+    if state.nonTestChainParentDepth > 0 { return }
     NoForceUnwrap.diagnose(
         .doNotForceCast(name: node.type.trimmedDescription),
         on: node, context: context
