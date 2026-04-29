@@ -5,7 +5,7 @@ status: in-progress
 type: feature
 priority: high
 created_at: 2026-04-28T01:41:38Z
-updated_at: 2026-04-29T00:35:18Z
+updated_at: 2026-04-29T04:13:14Z
 parent: iv7-r5g
 blocked_by:
     - eti-yt2
@@ -141,3 +141,23 @@ xc-swift swift_package_test
 - 2 GuardStmt pretty-printer-idempotency — likely pre-existing, separate concern.
 
 Phase 4g (`dal-dmw`) remains blocked on 4f's full closure.
+
+
+
+## Session 2026-04-29 (continued) — strip passes 6 + 7
+
+Two more dead-shell strip passes landed (commits 356e4b3f, 0e23222a):
+
+- **Pass 6** (9 rule files, 500 deletions): PreferEarlyExits, NoTrailingClosureParens, OneDeclarationPerLine, BlankLinesBeforeControlFlowBlocks, PreferVoidReturn, NamedClosureParams, PreferSelfType (6 decl-shells + member-access), RedundantPattern, NoBacktickedSelf.
+- **Pass 7** (5 rule files, 741 deletions): RedundantReturn (4 visits + ~12 helpers), NoFallThroughOnlyCases (1 + 5), NoForceTry (6 + 3 instance vars), NoGuardInTests (6 delegators), PreferSwiftTesting (6 + 3 conversion helpers).
+
+Build clean at 13 warnings (unchanged). Full suite: 3012 pass / 2 pre-existing GuardStmt pretty-printer-idempotency failures.
+
+`override func visit` total in `Sources/SwiftiomaticKit/Rules/`: **292** (down from 333 at session start).
+
+### Remaining 4g work
+
+- Per-rule analysis (state-machines / conditional logic): RedundantSelf (22), WrapMultilineStatementBraces (16), NoForceUnwrap (11), WrapSingleLineBodies (10), RedundantEscaping (9), NoParensAroundConditions (8).
+- Fresh-instance pattern: PreferShorthandTypeNames, NestedCallLayout (the override IS the rewrite).
+- WrapTernary (kept until layout test harness retargeted).
+- After all overrides are gone: delete `RewriteSyntaxRule` base class itself + drop legacy detection paths in `RuleCollector`.
