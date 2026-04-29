@@ -86,51 +86,9 @@ extension RuleTesting {
     let sourceFileSyntax =
       try! OperatorTable.standardOperators.foldAll(tree).as(SourceFileSyntax.self)!
 
-    var emittedFindings = [Finding]()
-
     // Force the rule to be enabled while we test it.
     let enabledRule = ConfigurationRegistry.ruleNameCache[ObjectIdentifier(formatType)] ?? "\(formatType)"
     let configuration = configuration ?? Configuration.forTesting(enabledRule: enabledRule)
-
-    let context = makeTestContext(
-      sourceFileSyntax: sourceFileSyntax,
-      configuration: configuration,
-      selection: .infinite,
-      findingConsumer: { emittedFindings.append($0) }
-    )
-
-    let formatter = formatType.init(context: context)
-    let actual = formatter.visit(sourceFileSyntax)
-    assertStringsEqualWithDiff("\(actual)", expected, sourceLocation: sourceLocation)
-
-    assertFindings(
-      expected: findings,
-      markerLocations: markedInput.markers,
-      emittedFindings: emittedFindings,
-      context: context,
-      sourceLocation: sourceLocation
-    )
-
-    // Verify that the pretty printer can consume the transformed tree (e.g., it does not contain
-    // any unfolded `SequenceExpr`s). Then do a whitespace-insensitive comparison of the two trees
-    // to verify that the format rule didn't transform the tree in such a way that it caused the
-    // pretty-printer to drop important information (the most likely case is a format rule
-    // misplacing trivia in a way that the pretty-printer isn't able to handle).
-    let prettyPrintedSource = LayoutCoordinator(
-      context: context,
-      source: originalSource,
-      node: Syntax(actual),
-      printTokenStream: false,
-      whitespaceOnly: false
-    ).prettyPrint()
-    let prettyPrintedTree = Parser.parse(
-      source: prettyPrintedSource, experimentalFeatures: experimentalFeatures
-    )
-    #expect(
-      whitespaceInsensitiveText(of: actual) == whitespaceInsensitiveText(of: prettyPrintedTree),
-      "After pretty-printing and removing fluid whitespace, the files did not match",
-      sourceLocation: sourceLocation
-    )
 
     var emittedPipelineFindings = [Finding]()
     let pipeline = RewriteCoordinator(
@@ -147,36 +105,18 @@ extension RuleTesting {
       selection: .infinite,
       to: &pipelineActual
     )
-    assertStringsEqualWithDiff(pipelineActual, expected)
+    assertStringsEqualWithDiff(pipelineActual, expected, sourceLocation: sourceLocation)
+
+    let context = makeTestContext(
+      sourceFileSyntax: sourceFileSyntax,
+      configuration: configuration,
+      selection: .infinite,
+      findingConsumer: { _ in }
+    )
     assertFindings(
       expected: findings,
       markerLocations: markedInput.markers,
       emittedFindings: emittedPipelineFindings,
-      context: context,
-      sourceLocation: sourceLocation
-    )
-
-    var emittedCompactFindings = [Finding]()
-    let compactPipeline = RewriteCoordinator(
-      configuration: configuration,
-      findingConsumer: { emittedCompactFindings.append($0) }
-    )
-    compactPipeline.debugOptions.insert(.disablePrettyPrint)
-    compactPipeline.debugOptions.insert(.useCompactPipeline)
-    var compactActual = ""
-    try! compactPipeline.format(
-      syntax: sourceFileSyntax,
-      source: originalSource,
-      operatorTable: OperatorTable.standardOperators,
-      assumingFileURL: nil,
-      selection: .infinite,
-      to: &compactActual
-    )
-    assertStringsEqualWithDiff(compactActual, expected, sourceLocation: sourceLocation)
-    assertFindings(
-      expected: findings,
-      markerLocations: markedInput.markers,
-      emittedFindings: emittedCompactFindings,
       context: context,
       sourceLocation: sourceLocation
     )

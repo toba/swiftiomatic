@@ -198,27 +198,11 @@ package final class RewriteCoordinator {
         outputStream.write(printer.prettyPrint())
     }
 
-    /// Runs the `compact` style's rewrite stage and returns the transformed tree.
-    ///
-    /// The default path delegates to the legacy `RewritePipeline`. When the
-    /// `useCompactPipeline` debug option is set, the two-stage architecture from
-    /// epic `iv7-r5g` runs instead: a single combined node-local rewriter
-    /// (`CompactStageOneRewriter`) followed by the 13 structural passes in the
-    /// fixed order from spec `2kl-d04` §2. Issue `fkt-mgf` validates parity with
-    /// the legacy path on the golden corpus before this becomes the default
-    /// (`dil-cew` then deletes the legacy pipeline).
-    private func runCompactPipeline(_ node: Syntax, context: Context) -> Syntax {
-        if debugOptions.contains(.useCompactPipeline) {
-            return runTwoStageCompactPipeline(node, context: context)
-        }
-        return RewritePipeline(context: context).rewrite(node)
-    }
-
     /// The two-stage compact pipeline: combined node-local rewriter, then the
     /// 13 structural passes in the order specified by `2kl-d04` §2. Each pass
     /// instantiates a fresh rewriter (some passes carry in-walk state that
     /// must reset between files).
-    private func runTwoStageCompactPipeline(_ node: Syntax, context: Context) -> Syntax {
+    private func runCompactPipeline(_ node: Syntax, context: Context) -> Syntax {
         var current = CompactStageOneRewriter(context: context).rewrite(node)
         current = SortImports(context: context).rewrite(current)
         current = BlankLinesAfterImports(context: context).rewrite(current)

@@ -16,11 +16,8 @@ import SwiftSyntax
 ///
 /// Rule order is alphabetical by rule name. The token has already been
 /// post-traversed by `super.visit` — its children (none, for a leaf token)
-/// are already done. Helpers used during these rewrites are kept on the
-/// original rule types so the legacy `RewritePipeline` path (still active
-/// during the transition) continues to compile. We forward to those `static`
-/// helpers from here for already-ported rules; for unported rules the
-/// per-token logic is inlined as a fileprivate free function.
+/// are already done. Helpers used during these rewrites live as `static`
+/// members on the original rule types and are forwarded to from here.
 ///
 /// Some rules from the merge list don't actually have token-level visits —
 /// their `visit` overrides target structural nodes (e.g. `FunctionCallExprSyntax`,

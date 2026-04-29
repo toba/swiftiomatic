@@ -19,9 +19,9 @@ import XCTest
 /// Locks in baseline timing for full single-file format (parse + rewrite pipeline + pretty-print),
 /// the operation invoked when Xcode's "Format with swift-format" runs against the active file.
 ///
-/// See `.issues/q/qm5-qyp` — the dominant cost is `RewritePipeline.rewrite()` running each of
-/// ~137 format rules sequentially over the entire AST. Use this benchmark to detect regressions
-/// or measure improvements (e.g. coalescing rule passes).
+/// The compact pipeline (`CompactStageOneRewriter` + 13 ordered structural passes from epic
+/// `iv7-r5g`/`ddi-wtv`) replaced the legacy per-rule sequential walk and brought the rewrite
+/// phase well under 200 ms even on the largest file in the repo.
 final class RewriteCoordinatorPerformanceTests: XCTestCase {
   /// In CI, just exercise the path; locally, capture timing.
   private func measureIfNotInCI(_ block: () -> Void) {
@@ -89,24 +89,9 @@ final class RewriteCoordinatorPerformanceTests: XCTestCase {
     }
   }
 
-  func testRewritePipelineOnlyPerformance() throws {
-    let source = Self.representativeSource
-    let sourceFile = Parser.parse(source: source)
-    measureIfNotInCI {
-      let context = makeTestContext(
-        sourceFileSyntax: sourceFile,
-        selection: .infinite,
-        findingConsumer: { _ in }
-      )
-      let pipeline = RewritePipeline(context: context)
-      _ = pipeline.rewrite(Syntax(sourceFile))
-    }
-  }
-
-  /// Compares the legacy `RewritePipeline` against the new two-stage compact
-  /// pipeline (`CompactStageOneRewriter` + 13 ordered structural passes) on
-  /// `LayoutCoordinator.swift` — the largest source file in the repo and the
-  /// perf gate from epic `iv7-r5g`.
+  /// The compact pipeline (`CompactStageOneRewriter` + 13 ordered structural
+  /// passes) on `LayoutCoordinator.swift` — the largest source file in the
+  /// repo and the perf gate from epic `iv7-r5g`.
   ///
   /// The two-stage path must finish well under 200 ms wall-clock when running
   /// release-built. Rewrite-only timing is reported via `measure`; visual
@@ -145,27 +130,4 @@ final class RewriteCoordinatorPerformanceTests: XCTestCase {
     }
   }
 
-  /// Companion to `testTwoStageCompactPipelineOnLayoutCoordinator`: runs the
-  /// legacy `RewritePipeline` over the same file so the two timings can be
-  /// compared apples-to-apples.
-  func testLegacyPipelineOnLayoutCoordinator() throws {
-    let layoutCoordinator = URL(fileURLWithPath: #filePath)
-      .deletingLastPathComponent()
-      .deletingLastPathComponent()
-      .deletingLastPathComponent()
-      .appendingPathComponent("Sources/SwiftiomaticKit/Layout/LayoutCoordinator.swift")
-
-    let source = try String(contentsOf: layoutCoordinator, encoding: .utf8)
-    let sourceFile = Parser.parse(source: source)
-
-    measureIfNotInCI {
-      let context = makeTestContext(
-        sourceFileSyntax: sourceFile,
-        selection: .infinite,
-        findingConsumer: { _ in }
-      )
-      let pipeline = RewritePipeline(context: context)
-      _ = pipeline.rewrite(Syntax(sourceFile))
-    }
-  }
 }

@@ -19,9 +19,8 @@ import SwiftSyntax
 /// `Context.ruleState` is populated before any rewrites are attempted.
 /// SourceFile-level rewrites then run in the same alphabetical order.
 ///
-/// Helpers used during these rewrites are kept on the original rule types so
-/// the legacy `RewritePipeline` path (still active during the transition)
-/// continues to compile. We forward to those `static` helpers from here.
+/// Helpers used during these rewrites live as `static` members on the
+/// original rule types; we forward to them from here.
 func rewriteSourceFile(
     _ node: SourceFileSyntax,
     parent: Syntax?,

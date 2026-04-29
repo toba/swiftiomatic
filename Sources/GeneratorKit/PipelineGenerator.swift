@@ -112,25 +112,6 @@ package final class PipelineGenerator: FileGenerator {
         result += """
             }
 
-            extension RewritePipeline {
-
-              func rewrite(_ node: Syntax) -> Syntax {
-                var node = node
-
-            """
-        for ruleName in collector.rewritingSyntaxRules.map({ $0.typeName }).sorted() {
-            result += """
-                    if context.shouldFormat(\(ruleName).self, node: node) {
-                      node = \(ruleName)(context: context).rewrite(node)
-                    }
-
-                """
-        }
-        result += """
-                return node
-              }
-            }
-
             """
         return result
     }

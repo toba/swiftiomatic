@@ -115,23 +115,6 @@ final class CombinedRewriterSpikeTests: XCTestCase {
         }
     }
 
-    func testFullRewritePipelineOnLayoutCoordinator() {
-        let source = loadLayoutCoordinator()
-        guard !source.isEmpty else {
-            XCTFail("could not locate LayoutCoordinator.swift baseline")
-            return
-        }
-        let sourceFile = Parser.parse(source: source)
-        measureIfNotInCI {
-            let context = makeTestContext(
-                sourceFileSyntax: sourceFile,
-                selection: .infinite,
-                findingConsumer: { _ in }
-            )
-            let pipeline = RewritePipeline(context: context)
-            _ = pipeline.rewrite(Syntax(sourceFile))
-        }
-    }
 
     /// Sanity check: the combined rewriter actually applies the three transformations.
     func testCombinedRewriterAppliesAllThree() throws {

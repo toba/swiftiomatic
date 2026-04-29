@@ -1,11 +1,11 @@
 ---
 # 2sn-0al
 title: 'Phase 4f: retarget test harness + verify'
-status: in-progress
+status: completed
 type: task
 priority: high
 created_at: 2026-04-28T15:50:30Z
-updated_at: 2026-04-29T00:49:36Z
+updated_at: 2026-04-29T01:04:41Z
 parent: ddi-wtv
 blocked_by:
     - 49k-dtg
@@ -377,3 +377,11 @@ After the Pattern B + non-test depth fixes, only 5 failures remain:
 
 - Layout-test pretty-printer-idempotency failures (2) — file as separate issues; not on 4f's path.
 - Step 5 of the prior resume brief (drop legacy `RewriteCoordinator` + direct-instance branches in `assertFormatting`) is deferred to Phase 4g (`dal-dmw`) where it fits the broader cleanup of `RewritePipeline` / `RewriteSyntaxRule`.
+
+
+
+## Summary of Changes
+
+Phase 4f complete. Compact pipeline single-rule isolation works end-to-end. The previous `assertFormatting` ran three branches (direct-instance + legacy pipeline + compact pipeline) — that has been collapsed into a single `RewriteCoordinator` invocation now that the compact pipeline is the default in `RewriteCoordinator.runCompactPipeline` (flipped in this session as part of starting Phase 4g).
+
+3022 → 3012 passing tests (10 fewer because parity tests, legacy perf tests, and rewrite-pipeline-only perf tests were deleted as obsolete; the 2 remaining failures are `Layout/GuardStmtTests` pretty-printer-idempotency, unrelated to compact pipeline). Full-format wall-clock dropped from 2.41s to 0.38s on the representative source — a 6.3× speedup.
