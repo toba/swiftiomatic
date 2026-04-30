@@ -14,3 +14,9 @@ final class NoForceCast: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
     override class var group: ConfigurationGroup? { .unsafety }
     override class var defaultValue: BasicRuleValue { .init(rewrite: false, lint: .warn) }
 }
+
+extension Finding.Message {
+    static func doNotForceCast(name: String) -> Finding.Message {
+        "do not force cast to '\(name)'"
+    }
+}

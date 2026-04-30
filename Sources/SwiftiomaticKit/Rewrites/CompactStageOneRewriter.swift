@@ -80,13 +80,27 @@ final class CompactStageOneRewriter: SyntaxRewriter {
   }
 
   override func visit(_ node: AsExprSyntax) -> ExprSyntax {
-    let parent = Syntax(node).parent
     let runNoForceUnwrap = context.shouldRewrite(NoForceUnwrap.self, at: Syntax(node))
     if runNoForceUnwrap { NoForceUnwrap.willEnter(node, context: context) }
     let visited = super.visit(node)
     let result: ExprSyntax
     if let concrete = visited.as(AsExprSyntax.self) {
-      result = ExprSyntax(rewriteAsExpr(concrete, parent: parent, context: context))
+      if context.shouldRewrite(NoForceCast.self, at: Syntax(concrete)),
+         concrete.questionOrExclamationMark?.tokenKind == .exclamationMark
+      {
+        NoForceCast.diagnose(
+          .doNotForceCast(name: concrete.type.trimmedDescription),
+          on: concrete.asKeyword, context: context
+        )
+      }
+      if context.shouldRewrite(NoForceUnwrap.self, at: Syntax(concrete)),
+         concrete.questionOrExclamationMark?.tokenKind == .exclamationMark
+      {
+        let widened = NoForceUnwrap.rewriteAsExpr(concrete, context: context)
+        if runNoForceUnwrap { NoForceUnwrap.didExit(node, context: context) }
+        return widened
+      }
+      result = ExprSyntax(concrete)
     } else {
       result = visited
     }
@@ -261,12 +275,20 @@ final class CompactStageOneRewriter: SyntaxRewriter {
   }
 
   override func visit(_ node: CodeBlockSyntax) -> CodeBlockSyntax {
-    let parent = Syntax(node).parent
     if context.shouldRewrite(BlankLinesBeforeControlFlowBlocks.self, at: Syntax(node)) {
       BlankLinesBeforeControlFlowBlocks.willEnter(node, context: context)
     }
-    let visited = super.visit(node)
-    let result = rewriteCodeBlock(visited, parent: parent, context: context)
+    var result = super.visit(node)
+    if context.shouldRewrite(BlankLinesAfterGuardStatements.self, at: Syntax(result)) {
+      result = BlankLinesAfterGuardStatements.apply(result, context: context)
+    }
+    if context.shouldRewrite(BlankLinesBeforeControlFlowBlocks.self, at: Syntax(result)),
+       let updated = BlankLinesBeforeControlFlowBlocks.insertBlankLines(
+         in: Array(result.statements), context: context
+       )
+    {
+      result.statements = CodeBlockItemListSyntax(updated)
+    }
     return result
   }
 
@@ -284,8 +306,16 @@ final class CompactStageOneRewriter: SyntaxRewriter {
     if context.shouldRewrite(NoParensAroundConditions.self, at: Syntax(node)) {
       NoParensAroundConditions.willEnter(node, context: context)
     }
-    let visited = super.visit(node)
-    let result = rewriteConditionElement(visited, parent: parent, context: context)
+    var result = super.visit(node)
+    if context.shouldRewrite(ExplicitNilCheck.self, at: Syntax(result)) {
+      result = ExplicitNilCheck.transform(result, parent: parent, context: context)
+    }
+    if context.shouldRewrite(NoParensAroundConditions.self, at: Syntax(result)),
+       case .expression(let condition) = result.condition,
+       let stripped = NoParensAroundConditions.minimalSingleExpression(condition, context: context)
+    {
+      result.condition = .expression(stripped)
+    }
     return result
   }
 
@@ -299,15 +329,13 @@ final class CompactStageOneRewriter: SyntaxRewriter {
   }
 
   override func visit(_ node: DeclReferenceExprSyntax) -> ExprSyntax {
-    let parent = Syntax(node).parent
     let visited = super.visit(node)
-    let result: ExprSyntax
-    if let concrete = visited.as(DeclReferenceExprSyntax.self) {
-      result = ExprSyntax(rewriteDeclReferenceExpr(concrete, parent: parent, context: context))
-    } else {
-      result = visited
+    if let concrete = visited.as(DeclReferenceExprSyntax.self),
+       context.shouldRewrite(NamedClosureParams.self, at: Syntax(concrete))
+    {
+      NamedClosureParams.rewriteDeclReference(concrete, context: context)
     }
-    return result
+    return visited
   }
 
   override func visit(_ node: DeinitializerDeclSyntax) -> DeclSyntax {
@@ -431,8 +459,32 @@ final class CompactStageOneRewriter: SyntaxRewriter {
     if runWrapSingleLineBodies { WrapSingleLineBodies.willEnter(node, context: context) }
     let visited = super.visit(node)
     let result: StmtSyntax
-    if let concrete = visited.as(ForStmtSyntax.self) {
-      result = StmtSyntax(rewriteForStmt(concrete, parent: parent, context: context))
+    if var concrete = visited.as(ForStmtSyntax.self) {
+      context.applyRewrite(
+        CaseLet.self, to: &concrete,
+        parent: parent, transform: CaseLet.transform
+      )
+      context.applyRewrite(
+        PreferWhereClausesInForLoops.self, to: &concrete,
+        parent: parent, transform: PreferWhereClausesInForLoops.transform
+      )
+      context.applyRewrite(
+        RedundantEnumerated.self, to: &concrete,
+        parent: parent, transform: RedundantEnumerated.transform
+      )
+      context.applyRewrite(
+        UnusedArguments.self, to: &concrete,
+        parent: parent, transform: UnusedArguments.transform
+      )
+      context.applyRewrite(
+        WrapMultilineStatementBraces.self, to: &concrete,
+        parent: parent, transform: WrapMultilineStatementBraces.transform
+      )
+      context.applyRewrite(
+        WrapSingleLineBodies.self, to: &concrete,
+        parent: parent, transform: WrapSingleLineBodies.transform
+      )
+      result = StmtSyntax(concrete)
     } else {
       result = visited
     }
@@ -446,8 +498,21 @@ final class CompactStageOneRewriter: SyntaxRewriter {
     if runNoForceUnwrap { NoForceUnwrap.willEnter(node, context: context) }
     let visited = super.visit(node)
     let result: ExprSyntax
-    if let concrete = visited.as(ForceUnwrapExprSyntax.self) {
-      result = ExprSyntax(rewriteForceUnwrapExpr(concrete, parent: parent, context: context))
+    if var concrete = visited.as(ForceUnwrapExprSyntax.self) {
+      if context.shouldRewrite(URLMacro.self, at: Syntax(concrete)) {
+        let widened = URLMacro.transform(concrete, parent: parent, context: context)
+        if let stillForce = widened.as(ForceUnwrapExprSyntax.self) {
+          concrete = stillForce
+        } else {
+          if runNoForceUnwrap { NoForceUnwrap.didExit(node, context: context) }
+          return widened
+        }
+      }
+      if context.shouldRewrite(NoForceUnwrap.self, at: Syntax(concrete)) {
+        result = NoForceUnwrap.rewriteForceUnwrap(concrete, context: context)
+      } else {
+        result = ExprSyntax(concrete)
+      }
     } else {
       result = visited
     }
@@ -548,12 +613,11 @@ final class CompactStageOneRewriter: SyntaxRewriter {
     if context.shouldRewrite(PreferShorthandTypeNames.self, at: Syntax(node)) {
       PreferShorthandTypeNames.willEnter(node, context: context)
     }
-    let visited = super.visit(node)
-    let result: ExprSyntax
-    if let concrete = visited.as(GenericSpecializationExprSyntax.self) {
-      result = ExprSyntax(rewriteGenericSpecializationExpr(concrete, parent: parent, context: context))
-    } else {
-      result = visited
+    var result: ExprSyntax = super.visit(node)
+    if context.shouldRewrite(PreferShorthandTypeNames.self, at: Syntax(result)),
+       let typed = result.as(GenericSpecializationExprSyntax.self)
+    {
+      result = PreferShorthandTypeNames.transform(typed, parent: parent, context: context)
     }
     return result
   }
@@ -589,12 +653,11 @@ final class CompactStageOneRewriter: SyntaxRewriter {
     if context.shouldRewrite(PreferShorthandTypeNames.self, at: Syntax(node)) {
       PreferShorthandTypeNames.willEnter(node, context: context)
     }
-    let visited = super.visit(node)
-    let result: TypeSyntax
-    if let concrete = visited.as(IdentifierTypeSyntax.self) {
-      result = TypeSyntax(rewriteIdentifierType(concrete, parent: parent, context: context))
-    } else {
-      result = visited
+    var result: TypeSyntax = super.visit(node)
+    if context.shouldRewrite(PreferShorthandTypeNames.self, at: Syntax(result)),
+       let typed = result.as(IdentifierTypeSyntax.self)
+    {
+      result = PreferShorthandTypeNames.transform(typed, parent: parent, context: context)
     }
     return result
   }
@@ -605,8 +668,27 @@ final class CompactStageOneRewriter: SyntaxRewriter {
     if runWrapSingleLineBodies { WrapSingleLineBodies.willEnter(node, context: context) }
     let visited = super.visit(node)
     let result: ExprSyntax
-    if let concrete = visited.as(IfExprSyntax.self) {
-      result = ExprSyntax(rewriteIfExpr(concrete, parent: parent, context: context))
+    if var concrete = visited.as(IfExprSyntax.self) {
+      context.applyRewrite(
+        CollapseSimpleIfElse.self, to: &concrete,
+        parent: parent, transform: CollapseSimpleIfElse.transform
+      )
+      context.applyRewrite(
+        PreferUnavailable.self, to: &concrete,
+        parent: parent, transform: PreferUnavailable.transform
+      )
+      if context.shouldRewrite(NoParensAroundConditions.self, at: Syntax(concrete)) {
+        NoParensAroundConditions.fixKeywordTrailingTrivia(&concrete.ifKeyword.trailingTrivia)
+      }
+      context.applyRewrite(
+        WrapMultilineStatementBraces.self, to: &concrete,
+        parent: parent, transform: WrapMultilineStatementBraces.transform
+      )
+      context.applyRewrite(
+        WrapSingleLineBodies.self, to: &concrete,
+        parent: parent, transform: WrapSingleLineBodies.transform
+      )
+      result = ExprSyntax(concrete)
     } else {
       result = visited
     }
@@ -632,22 +714,60 @@ final class CompactStageOneRewriter: SyntaxRewriter {
   override func visit(_ node: InfixOperatorExprSyntax) -> ExprSyntax {
     let parent = Syntax(node).parent
     let visited = super.visit(node)
-    let result: ExprSyntax
-    if let concrete = visited.as(InfixOperatorExprSyntax.self) {
-      result = ExprSyntax(rewriteInfixOperatorExpr(concrete, parent: parent, context: context))
-    } else {
-      result = visited
+    guard var concrete = visited.as(InfixOperatorExprSyntax.self) else { return visited }
+    context.applyRewrite(
+      NoAssignmentInExpressions.self, to: &concrete,
+      parent: parent, transform: NoAssignmentInExpressions.transform
+    )
+    context.applyRewrite(
+      NoYodaConditions.self, to: &concrete,
+      parent: parent, transform: NoYodaConditions.transform
+    )
+    context.applyRewrite(
+      PreferCompoundAssignment.self, to: &concrete,
+      parent: parent, transform: PreferCompoundAssignment.transform
+    )
+    if context.shouldRewrite(PreferIsEmpty.self, at: Syntax(concrete)) {
+      let widened = PreferIsEmpty.transform(concrete, parent: parent, context: context)
+      if let stillInfix = widened.as(InfixOperatorExprSyntax.self) {
+        concrete = stillInfix
+      } else {
+        return widened
+      }
     }
-    return result
+    if context.shouldRewrite(PreferToggle.self, at: Syntax(concrete)) {
+      let widened = PreferToggle.transform(concrete, parent: parent, context: context)
+      if let stillInfix = widened.as(InfixOperatorExprSyntax.self) {
+        concrete = stillInfix
+      } else {
+        return widened
+      }
+    }
+    if context.shouldRewrite(RedundantNilCoalescing.self, at: Syntax(concrete)) {
+      let widened = RedundantNilCoalescing.transform(concrete, parent: parent, context: context)
+      if let stillInfix = widened.as(InfixOperatorExprSyntax.self) {
+        concrete = stillInfix
+      } else {
+        return widened
+      }
+    }
+    context.applyRewrite(
+      WrapConditionalAssignment.self, to: &concrete,
+      parent: parent, transform: WrapConditionalAssignment.transform
+    )
+    return ExprSyntax(concrete)
   }
 
   override func visit(_ node: InitializerClauseSyntax) -> InitializerClauseSyntax {
-    let parent = Syntax(node).parent
     if context.shouldRewrite(NoParensAroundConditions.self, at: Syntax(node)) {
       NoParensAroundConditions.willEnter(node, context: context)
     }
-    let visited = super.visit(node)
-    let result = rewriteInitializerClause(visited, parent: parent, context: context)
+    var result = super.visit(node)
+    if context.shouldRewrite(NoParensAroundConditions.self, at: Syntax(result)),
+       let stripped = NoParensAroundConditions.minimalSingleExpression(result.value, context: context)
+    {
+      result.value = stripped
+    }
     return result
   }
 
@@ -682,15 +802,7 @@ final class CompactStageOneRewriter: SyntaxRewriter {
   }
 
   override func visit(_ node: IsExprSyntax) -> ExprSyntax {
-    let parent = Syntax(node).parent
-    let visited = super.visit(node)
-    let result: ExprSyntax
-    if let concrete = visited.as(IsExprSyntax.self) {
-      result = ExprSyntax(rewriteIsExpr(concrete, parent: parent, context: context))
-    } else {
-      result = visited
-    }
-    return result
+    super.visit(node)
   }
 
   override func visit(_ node: LabeledExprSyntax) -> LabeledExprSyntax {
@@ -734,14 +846,49 @@ final class CompactStageOneRewriter: SyntaxRewriter {
     let runNoForceUnwrap = context.shouldRewrite(NoForceUnwrap.self, at: Syntax(node))
     if runNoForceUnwrap { NoForceUnwrap.willEnter(node, context: context) }
     let visited = super.visit(node)
-    let result: ExprSyntax
-    if let concrete = visited.as(MemberAccessExprSyntax.self) {
-      result = ExprSyntax(rewriteMemberAccessExpr(concrete, parent: parent, context: context))
-    } else {
-      result = visited
+    func finishExit(_ result: ExprSyntax) -> ExprSyntax {
+      if runNoForceUnwrap { NoForceUnwrap.didExit(node, context: context) }
+      return result
     }
-    if runNoForceUnwrap { NoForceUnwrap.didExit(node, context: context) }
-    return result
+    guard var concrete = visited.as(MemberAccessExprSyntax.self) else {
+      return finishExit(visited)
+    }
+    if context.shouldRewrite(PreferCountWhere.self, at: Syntax(concrete)) {
+      let widened = PreferCountWhere.transform(concrete, parent: parent, context: context)
+      if let stillMember = widened.as(MemberAccessExprSyntax.self) {
+        concrete = stillMember
+      } else {
+        return finishExit(widened)
+      }
+    }
+    context.applyRewrite(
+      PreferIsDisjoint.self, to: &concrete,
+      parent: parent, transform: PreferIsDisjoint.transform
+    )
+    context.applyRewrite(
+      PreferSelfType.self, to: &concrete,
+      parent: parent, transform: PreferSelfType.transform
+    )
+    if context.shouldRewrite(RedundantSelf.self, at: Syntax(concrete)) {
+      let widened = RedundantSelf.transform(concrete, parent: parent, context: context)
+      if let stillMember = widened.as(MemberAccessExprSyntax.self) {
+        concrete = stillMember
+      } else {
+        return finishExit(widened)
+      }
+    }
+    if context.shouldRewrite(RedundantStaticSelf.self, at: Syntax(concrete)) {
+      let widened = RedundantStaticSelf.transform(concrete, parent: parent, context: context)
+      if let stillMember = widened.as(MemberAccessExprSyntax.self) {
+        concrete = stillMember
+      } else {
+        return finishExit(widened)
+      }
+    }
+    if context.shouldRewrite(NoForceUnwrap.self, at: Syntax(concrete)) {
+      return finishExit(NoForceUnwrap.rewriteMemberAccess(concrete, context: context))
+    }
+    return finishExit(ExprSyntax(concrete))
   }
 
   override func visit(_ node: MemberBlockItemListSyntax) -> MemberBlockItemListSyntax {
@@ -803,12 +950,11 @@ final class CompactStageOneRewriter: SyntaxRewriter {
 
   override func visit(_ node: PrefixOperatorExprSyntax) -> ExprSyntax {
     let parent = Syntax(node).parent
-    let visited = super.visit(node)
-    let result: ExprSyntax
-    if let concrete = visited.as(PrefixOperatorExprSyntax.self) {
-      result = ExprSyntax(rewritePrefixOperatorExpr(concrete, parent: parent, context: context))
-    } else {
-      result = visited
+    var result: ExprSyntax = super.visit(node)
+    if context.shouldRewrite(PreferExplicitFalse.self, at: Syntax(result)),
+       let prefix = result.as(PrefixOperatorExprSyntax.self)
+    {
+      result = PreferExplicitFalse.transform(prefix, parent: parent, context: context)
     }
     return result
   }
@@ -854,14 +1000,20 @@ final class CompactStageOneRewriter: SyntaxRewriter {
   }
 
   override func visit(_ node: ReturnStmtSyntax) -> StmtSyntax {
-    let parent = Syntax(node).parent
     if context.shouldRewrite(NoParensAroundConditions.self, at: Syntax(node)) {
       NoParensAroundConditions.willEnter(node, context: context)
     }
     let visited = super.visit(node)
     let result: StmtSyntax
-    if let concrete = visited.as(ReturnStmtSyntax.self) {
-      result = StmtSyntax(rewriteReturnStmt(concrete, parent: parent, context: context))
+    if var concrete = visited.as(ReturnStmtSyntax.self) {
+      if context.shouldRewrite(NoParensAroundConditions.self, at: Syntax(concrete)),
+         let expression = concrete.expression,
+         let stripped = NoParensAroundConditions.minimalSingleExpression(expression, context: context)
+      {
+        concrete.expression = stripped
+        NoParensAroundConditions.fixKeywordTrailingTrivia(&concrete.returnKeyword.trailingTrivia)
+      }
+      result = StmtSyntax(concrete)
     } else {
       result = visited
     }
@@ -909,16 +1061,9 @@ final class CompactStageOneRewriter: SyntaxRewriter {
   }
 
   override func visit(_ node: StringLiteralExprSyntax) -> ExprSyntax {
-    let parent = Syntax(node).parent
     let runNoForceUnwrap = context.shouldRewrite(NoForceUnwrap.self, at: Syntax(node))
     if runNoForceUnwrap { NoForceUnwrap.willEnter(node, context: context) }
-    let visited = super.visit(node)
-    let result: ExprSyntax
-    if let concrete = visited.as(StringLiteralExprSyntax.self) {
-      result = ExprSyntax(rewriteStringLiteralExpr(concrete, parent: parent, context: context))
-    } else {
-      result = visited
-    }
+    let result = super.visit(node)
     if runNoForceUnwrap { NoForceUnwrap.didExit(node, context: context) }
     return result
   }
@@ -942,13 +1087,16 @@ final class CompactStageOneRewriter: SyntaxRewriter {
   }
 
   override func visit(_ node: SubscriptCallExprSyntax) -> ExprSyntax {
-    let parent = Syntax(node).parent
     let runNoForceUnwrap = context.shouldRewrite(NoForceUnwrap.self, at: Syntax(node))
     if runNoForceUnwrap { NoForceUnwrap.willEnter(node, context: context) }
     let visited = super.visit(node)
     let result: ExprSyntax
     if let concrete = visited.as(SubscriptCallExprSyntax.self) {
-      result = ExprSyntax(rewriteSubscriptCallExpr(concrete, parent: parent, context: context))
+      if context.shouldRewrite(NoForceUnwrap.self, at: Syntax(concrete)) {
+        result = NoForceUnwrap.rewriteSubscriptCallTop(concrete, context: context)
+      } else {
+        result = ExprSyntax(concrete)
+      }
     } else {
       result = visited
     }
@@ -1010,8 +1158,20 @@ final class CompactStageOneRewriter: SyntaxRewriter {
     if context.shouldRewrite(BlankLinesBeforeControlFlowBlocks.self, at: Syntax(node)) {
       BlankLinesBeforeControlFlowBlocks.willEnter(node, context: context)
     }
-    let visited = super.visit(node)
-    let result = rewriteSwitchCase(visited, parent: parent, context: context)
+    var result = super.visit(node)
+    if context.shouldRewrite(RedundantBreak.self, at: Syntax(result)) {
+      result = RedundantBreak.transform(result, parent: parent, context: context)
+    }
+    if context.shouldRewrite(WrapSwitchCaseBodies.self, at: Syntax(result)) {
+      result = WrapSwitchCaseBodies.transform(result, parent: parent, context: context)
+    }
+    if context.shouldRewrite(BlankLinesBeforeControlFlowBlocks.self, at: Syntax(result)),
+       let updated = BlankLinesBeforeControlFlowBlocks.insertBlankLines(
+         in: Array(result.statements), context: context
+       )
+    {
+      result.statements = CodeBlockItemListSyntax(updated)
+    }
     return result
   }
 
@@ -1061,15 +1221,14 @@ final class CompactStageOneRewriter: SyntaxRewriter {
   }
 
   override func visit(_ node: TryExprSyntax) -> ExprSyntax {
-    let parent = Syntax(node).parent
     let visited = super.visit(node)
-    let result: ExprSyntax
-    if let concrete = visited.as(TryExprSyntax.self) {
-      result = ExprSyntax(rewriteTryExpr(concrete, parent: parent, context: context))
-    } else {
-      result = visited
+    if var concrete = visited.as(TryExprSyntax.self) {
+      if context.shouldRewrite(NoForceTry.self, at: Syntax(concrete)) {
+        concrete = NoForceTry.rewriteTryExpr(concrete, context: context)
+      }
+      return ExprSyntax(concrete)
     }
-    return result
+    return visited
   }
 
   override func visit(_ node: TypeAliasDeclSyntax) -> DeclSyntax {

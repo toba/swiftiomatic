@@ -722,9 +722,6 @@ extension Finding.Message {
     fileprivate static func doNotForceUnwrap(name: String) -> Finding.Message {
         "do not force unwrap '\(name)'"
     }
-    fileprivate static func doNotForceCast(name: String) -> Finding.Message {
-        "do not force cast to '\(name)'"
-    }
     fileprivate static let replaceForceUnwrap: Finding.Message =
         "replace force unwrap in test with 'XCTUnwrap' or '#require'"
     fileprivate static let replaceForceCast: Finding.Message =
