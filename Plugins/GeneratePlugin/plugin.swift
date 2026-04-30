@@ -14,17 +14,14 @@ struct GeneratePlugin: BuildToolPlugin {
         let generator = try context.tool(named: "Generator")
         let outputDir = context.pluginWorkDirectoryURL
 
-        // TokenStream stubs scan `TokenStream+*.swift` plus any extension
-        // TokenStream blocks co-located with layout rules. Pipelines and
-        // configuration registry generation live in GeneratePipelinesPlugin.
         let packageDir = context.package.directoryURL
         let kitDir =
             packageDir
             .appending(path: "Sources/SwiftiomaticKit")
 
         let inputDirectories = [
-            kitDir.appending(path: "Layout/Tokens"),
             kitDir.appending(path: "Rules"),
+            kitDir.appending(path: "Layout/Tokens"),
         ]
 
         let inputFiles = sourceTarget.sourceFiles
@@ -36,18 +33,20 @@ struct GeneratePlugin: BuildToolPlugin {
             .map(\.url)
 
         let outputFiles = [
+            outputDir.appending(path: "Pipelines+Generated.swift"),
+            outputDir.appending(path: "ConfigurationRegistry+Generated.swift"),
             outputDir.appending(path: "TokenStream+Generated.swift"),
+            outputDir.appending(path: "ConfigurationSchema+Generated.swift"),
         ]
 
         return [
             .buildCommand(
-                displayName: "Generate TokenStream forwarding stubs",
+                displayName: "Generate SwiftiomaticKit pipelines and registry",
                 executable: generator.url,
                 arguments: [
                     packageDir.path(),
                     outputDir.path(),
                     "--skip-schema",
-                    "--mode", "tokens",
                 ],
                 inputFiles: inputFiles,
                 outputFiles: outputFiles

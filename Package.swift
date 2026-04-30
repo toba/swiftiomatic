@@ -40,7 +40,6 @@ let package = Package(
             exclude: ["README.md", "Generated"],
             plugins: [
                 "GenerateCode",
-                "GeneratePipelines",
                 .plugin(name: "SwiftiomaticBuildToolPlugin", package: "swiftiomatic-plugins"),
             ]
         ),
@@ -100,12 +99,6 @@ let package = Package(
             capability: .buildTool(),
             dependencies: [.target(name: "Generator")],
             path: "Plugins/GeneratePlugin"
-        ),
-        .plugin(
-            name: "GeneratePipelines",
-            capability: .buildTool(),
-            dependencies: [.target(name: "Generator")],
-            path: "Plugins/GeneratePipelinesPlugin"
         ),
         .executableTarget(
             name: "Generator",

@@ -14,25 +14,10 @@ import CryptoKit
 import Foundation
 import GeneratorKit
 
-// Parse arguments: Generator [package-root output-dir] [--skip-schema] [--mode all|tokens|pipelines]
+// Parse arguments: Generator [package-root output-dir] [--skip-schema]
 let arguments = Array(CommandLine.arguments.dropFirst())
 let skipSchema = arguments.contains("--skip-schema")
 let positional = arguments.filter { !$0.hasPrefix("--") }
-
-enum Mode: String {
-    case all
-    case tokens
-    case pipelines
-}
-
-let mode: Mode = {
-    if let i = arguments.firstIndex(of: "--mode"), i + 1 < arguments.count,
-        let m = Mode(rawValue: arguments[i + 1])
-    {
-        return m
-    }
-    return .all
-}()
 
 let paths: GeneratePaths
 if positional.count >= 2 {
@@ -51,58 +36,53 @@ if positional.count >= 2 {
 // rule file mtimes change but content doesn't (git checkouts, formatter runs).
 let stampFile = paths.pipelineFile
     .deletingLastPathComponent()
-    .appending(path: ".generator-fingerprint-\(mode.rawValue)")
+    .appending(path: ".generator-fingerprint")
 let inputFingerprint = fingerprint(
     of: [paths.syntaxRulesFolder, paths.layoutRulesFolder, paths.tokenFolder],
-    skipSchema: skipSchema,
-    mode: mode
+    skipSchema: skipSchema
 )
 if let saved = try? String(contentsOf: stampFile, encoding: .utf8), saved == inputFingerprint {
     exit(0)
 }
 
-if mode == .all || mode == .pipelines {
-    let collector = RuleCollector()
-    try collector.collectSyntaxRules(from: paths.syntaxRulesFolder)
-    try collector.collectLayoutRules(from: paths.layoutRulesFolder)
+let collector = RuleCollector()
+try collector.collectSyntaxRules(from: paths.syntaxRulesFolder)
+try collector.collectLayoutRules(from: paths.layoutRulesFolder)
 
-    // Generate a file with extensions for the lint and format pipelines.
-    let pipelineGenerator = PipelineGenerator(collector: collector)
-    try pipelineGenerator.generateFile(at: paths.pipelineFile)
+// Generate a file with extensions for the lint and format pipelines.
+let pipelineGenerator = PipelineGenerator(collector: collector)
+try pipelineGenerator.generateFile(at: paths.pipelineFile)
 
-    // Generate the unified rule registry (type arrays, defaults, name cache).
-    let registryGenerator = ConfigurationGenerator(collector: collector)
-    try registryGenerator.generateFile(at: paths.ruleRegistryFile)
+// Generate the unified rule registry (type arrays, defaults, name cache).
+let registryGenerator = ConfigurationGenerator(collector: collector)
+try registryGenerator.generateFile(at: paths.ruleRegistryFile)
 
-    // Generate the JSON Schema for configuration files.
-    let schemaGenerator = ConfigurationSchemaGenerator(collector: collector)
-    if !skipSchema {
-        try schemaGenerator.generateFile(at: paths.configurationSchemaFile)
-    }
-
-    // Generate the embedded schema Swift file for runtime validation.
-    let schemaSwiftGenerator = ConfigurationSchemaSwiftGenerator(schemaGenerator: schemaGenerator)
-    try schemaSwiftGenerator.generateFile(at: paths.configurationSchemaSwiftFile)
+// Generate the JSON Schema for configuration files.
+let schemaGenerator = ConfigurationSchemaGenerator(collector: collector)
+if !skipSchema {
+    try schemaGenerator.generateFile(at: paths.configurationSchemaFile)
 }
 
-if mode == .all || mode == .tokens {
-    // Generate TokenStream forwarding stubs from TokenStream+*.swift extensions
-    // and any extension TokenStream blocks co-located with layout rules.
-    let stubCollector = SyntaxVisitorOverrideCollector()
-    try stubCollector.collect(from: paths.tokenFolder)
-    try stubCollector.collectExtensions(from: paths.layoutRulesFolder)
-    let stubGenerator = TokenStreamStubGenerator(collector: stubCollector)
-    try stubGenerator.generateFile(at: paths.tokenStreamStubsFile)
-}
+// Generate the embedded schema Swift file for runtime validation.
+let schemaSwiftGenerator = ConfigurationSchemaSwiftGenerator(schemaGenerator: schemaGenerator)
+try schemaSwiftGenerator.generateFile(at: paths.configurationSchemaSwiftFile)
+
+// Generate TokenStream forwarding stubs from TokenStream+*.swift extensions
+// and any extension TokenStream blocks co-located with layout rules.
+let stubCollector = SyntaxVisitorOverrideCollector()
+try stubCollector.collect(from: paths.tokenFolder)
+try stubCollector.collectExtensions(from: paths.layoutRulesFolder)
+let stubGenerator = TokenStreamStubGenerator(collector: stubCollector)
+try stubGenerator.generateFile(at: paths.tokenStreamStubsFile)
 
 // Persist the fingerprint so the next run can early-exit if inputs are unchanged.
 try? inputFingerprint.write(to: stampFile, atomically: true, encoding: .utf8)
 
 /// Computes a SHA-256 over every `.swift` file under the given roots, plus
 /// flags that affect output. Sort by path so the result is deterministic.
-private func fingerprint(of roots: [URL], skipSchema: Bool, mode: Mode) -> String {
+private func fingerprint(of roots: [URL], skipSchema: Bool) -> String {
     var hasher = SHA256()
-    hasher.update(data: Data("schema=\(skipSchema)\nmode=\(mode.rawValue)\n".utf8))
+    hasher.update(data: Data("schema=\(skipSchema)\n".utf8))
     var files: [URL] = []
     for root in roots {
         guard

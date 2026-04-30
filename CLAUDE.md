@@ -8,6 +8,7 @@ AST-accurate Swift linting, formatting, and code analysis — used from the IDE,
 - Create a jig issue before starting work. Keep it updated as you go.
 - Test first: before writing any fix or feature code, create a test that reproduces the bug or asserts the desired behavior. Confirm it fails (or is absent), then implement the solution, then confirm the test passes.
 - Build/test with xc-mcp **only at session end or when asked**. Batch changes, verify once.
+- **When iterating on a fix, always pass `filter: "<TestClass>"` to `swift_package_test`** — the unfiltered suite is ~3000 tests and ~30s of test runtime on top of the build, while a filtered run is sub-second. A typical edit→test loop is ~18s filtered vs ~50s unfiltered. Only run the full suite once at the end to confirm no regressions.
 - Multiple agents work on this repo concurrently. Expect compile errors and uncommitted changes in files outside your scope — ignore them. Only modify files directly related to your current task.
 - Never git stash to dodge an error — fix it.
 - On `/commit`, commit **everything** in the working tree — not just the files you touched. The user only invokes `/commit` when the whole project is ready, so leaving other agents' work uncommitted defeats the purpose. Exclude only `.claude/worktrees/` and obvious junk (build artifacts, secrets).
