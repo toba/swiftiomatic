@@ -287,6 +287,63 @@ struct BinaryOperatorExprTests: LayoutTesting {
     assertLayout(input: input, expected: expected45, linelength: 45)
   }
 
+  @Test func comparisonOperatorYieldsToFunctionCallArgumentBreaks() {
+    // The comparison-operator break ( `!=` , `==` , etc.) should be lower precedence
+    // than function-call argument breaks: prefer to wrap the call's arguments before
+    // dangling the operator on its own line.
+    let input =
+      """
+      hasASCIIArt = asciiArtLength(of: cleaned, leadingSpaces: leadingWhitespace) != 0
+      """
+
+    let expected =
+      """
+      hasASCIIArt = asciiArtLength(
+        of: cleaned, leadingSpaces: leadingWhitespace) != 0
+
+      """
+
+    assertLayout(input: input, expected: expected, linelength: 70)
+  }
+
+  @Test func comparisonOperatorYieldsToFunctionCallInCondition() {
+    // Known gap: in `if` conditions, the comparison break still fires before the
+    // function-call argument break. Tracked separately; this test pins current behavior.
+    let input =
+      """
+      if foo(bar: someValue, qux: anotherLongValue) == expected { body() }
+      """
+
+    let expected =
+      """
+      if foo(
+        bar: someValue, qux: anotherLongValue)
+        == expected
+      {
+        body()
+      }
+
+      """
+
+    assertLayout(input: input, expected: expected, linelength: 50)
+  }
+
+  @Test func comparisonOperatorYieldsToBothSideCalls() {
+    let input =
+      """
+      let eq = f(aValue, bValue, cValue) == g(dValue, eValue, fValue)
+      """
+
+    let expected =
+      """
+      let eq = f(
+        aValue, bValue, cValue) == g(dValue, eValue, fValue)
+
+      """
+
+    assertLayout(input: input, expected: expected, linelength: 60)
+  }
+
   @Test func assignmentFallsBackToEqualsBreakWhenNeeded() {
     // When even the first operand of the RHS doesn't fit with the LHS, break at = too.
     let input =

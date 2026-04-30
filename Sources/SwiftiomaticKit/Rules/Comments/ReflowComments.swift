@@ -28,6 +28,11 @@ final class ReflowComments: StaticFormatRule<BasicRuleValue>, @unchecked Sendabl
         // and leaves wrapped lines that overflow once layout adds indentation, requiring a second
         // pass to settle. See jig 5zd-wm4.
         let layoutColumnFloor = syntacticIndentColumn(for: token, context: context)
+        // The file header (leading `//` and `/* */` comments at the very top of the file) is owned
+        // by FileHeader and must not be reflowed here. Only the first token in the source file can
+        // carry a header in its leading trivia; for that token, compute the header span so
+        // line-comment runs starting inside it are skipped.
+        let headerEnd: Int = isFirstTokenInFile(token) ? fileHeaderEnd(in: pieces) : 0
 
         while i < pieces.count {
             guard let kind = commentKind(of: pieces[i]) else {
@@ -62,6 +67,10 @@ final class ReflowComments: StaticFormatRule<BasicRuleValue>, @unchecked Sendabl
                 commentIndices.append(k)
             }
             if bodies.contains(where: { isDirective($0) }) {
+                i = lastCommentIndex + 1
+                continue
+            }
+            if kind == .line, runStart < headerEnd {
                 i = lastCommentIndex + 1
                 continue
             }
@@ -182,6 +191,35 @@ final class ReflowComments: StaticFormatRule<BasicRuleValue>, @unchecked Sendabl
         case .tabs(let n): width = n * context.configuration[TabWidth.self]
         }
         return depth * width
+    }
+
+    /// True when `token` is the first token in the source file — i.e. its leading
+    /// trivia may contain the file header.
+    private static func isFirstTokenInFile(_ token: TokenSyntax) -> Bool {
+        token.previousToken(viewMode: .sourceAccurate) == nil
+    }
+
+    /// Index in `pieces` where the file header ends. Mirrors the boundary logic in
+    /// `FileHeader.findHeaderEnd`: consecutive `.lineComment`, `.blockComment`,
+    /// `.docBlockComment` pieces at the start of the trivia, separated only by
+    /// single newlines and whitespace. `.docLineComment` is never part of the header.
+    private static func fileHeaderEnd(in pieces: [TriviaPiece]) -> Int {
+        var lastCommentEnd = 0
+        var i = 0
+        while i < pieces.count {
+            switch pieces[i] {
+            case .lineComment, .blockComment, .docBlockComment:
+                lastCommentEnd = i + 1
+                i += 1
+            case .spaces, .tabs:
+                i += 1
+            case .newlines(1), .carriageReturns(1), .carriageReturnLineFeeds(1):
+                i += 1
+            default:
+                return lastCommentEnd
+            }
+        }
+        return lastCommentEnd
     }
 
     private static func indentationBefore(index: Int, in pieces: [TriviaPiece]) -> String {

@@ -542,6 +542,45 @@ extension TokenStream {
         return false
     }
 
+    /// Returns whether the given operator uses `ComparisonPrecedence` ( `==` , `!=` , `<` , `>` ,
+    /// `<=` , `>=` , `===` , `!==` , `~=` , and any user-defined operator opting into the same
+    /// precedence group). Comparison operators get last-resort break precedence: their break chunk
+    /// is bounded around the RHS so inner breaks (e.g. function-call argument lists) fire first.
+    func isComparisonOperator(_ operatorExpr: ExprSyntax) -> Bool {
+        guard let binOpExpr = operatorExpr.as(BinaryOperatorExprSyntax.self),
+              let binOp = operatorTable.infixOperator(named: binOpExpr.operator.text),
+              let precedenceGroup = binOp.precedenceGroup
+        else { return false }
+        return precedenceGroup == "ComparisonPrecedence"
+    }
+
+    /// Returns whether the expression syntactically contains a function-call or subscript with at
+    /// least one argument — i.e. a place the formatter could wrap by breaking the argument list.
+    /// Used to gate the comparison-operator break-precedence treatment so it only fires when there
+    /// is actually an inner argument-list break to prefer over the comparison break.
+    func containsCallOrSubscriptArgList(_ expr: ExprSyntax) -> Bool {
+        var found = false
+        for node in expr.children(viewMode: .sourceAccurate) {
+            if found { break }
+            if let call = node.as(FunctionCallExprSyntax.self), !call.arguments.isEmpty {
+                found = true
+                break
+            }
+            if let sub = node.as(SubscriptCallExprSyntax.self), !sub.arguments.isEmpty {
+                found = true
+                break
+            }
+            if let childExpr = node.as(ExprSyntax.self),
+               containsCallOrSubscriptArgList(childExpr)
+            {
+                found = true
+            }
+        }
+        if let call = expr.as(FunctionCallExprSyntax.self), !call.arguments.isEmpty { return true }
+        if let sub = expr.as(SubscriptCallExprSyntax.self), !sub.arguments.isEmpty { return true }
+        return found
+    }
+
     /// Walks the expression and returns the leftmost subexpression if it is parenthesized (which
     /// might be the expression itself).
     ///

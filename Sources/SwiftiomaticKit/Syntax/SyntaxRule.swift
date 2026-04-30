@@ -3,15 +3,14 @@ import SwiftSyntax
 
 /// A Rule is a linting or formatting pass — type-level identity only.
 ///
-/// Every rule conforms to `SyntaxRule` (directly or via a base class). Most
-/// compact-pipeline rules conform via `StaticFormatRule` and never instantiate;
-/// rules whose findings are emitted from instance traversal (lint rules and the
-/// structural-pass rewriters) conform via `InstanceSyntaxRule` so the
-/// `LintPipeline` cache can construct them.
+/// Every rule conforms to `SyntaxRule` (directly or via a base class). Most compact-pipeline rules
+/// conform via `StaticFormatRule` and never instantiate; rules whose findings are emitted from
+/// instance traversal (lint rules and the structural-pass rewriters) conform via
+/// `InstanceSyntaxRule` so the `LintPipeline` cache can construct them.
 protocol SyntaxRule: Configurable, Sendable where Value: SyntaxRuleValue {}
 
-/// A rule that owns a `Context`-bound instance — used by `LintSyntaxRule` and
-/// `StructuralFormatRule`. Static-only rules conform to bare `SyntaxRule` instead.
+/// A rule that owns a `Context` -bound instance — used by `LintSyntaxRule` and
+/// `StructuralFormatRule` . Static-only rules conform to bare `SyntaxRule` instead.
 protocol InstanceSyntaxRule: SyntaxRule {
     /// The context in which the rule is executed.
     var context: Context { get }
@@ -21,20 +20,20 @@ protocol InstanceSyntaxRule: SyntaxRule {
 }
 
 extension SyntaxRule {
-    /// Default value from the `SyntaxRuleValue`'s `init()`.
+    /// Default value from the `SyntaxRuleValue` 's `init()` .
     static var defaultValue: Value { .init() }
 
-    /// Whether this rule's `defaultValue` is active (rewrite or lint enabled). Reachable
-    /// via existential dispatch from `any SyntaxRule.Type`, which preserves dynamic
-    /// type binding when `StructuralFormatRule.visitAny` calls into `Context` for per-node
-    /// gating. Generic dispatch via `<R: SyntaxRule>` does NOT preserve the dynamic
-    /// type when the generic parameter is inferred from `type(of: self)` inside a
-    /// non-final base class — see `Context.shouldFormat(ruleType:node:)`.
+    /// Whether this rule's `defaultValue` is active (rewrite or lint enabled). Reachable via
+    /// existential dispatch from `any SyntaxRule.Type` , which preserves dynamic type binding when
+    /// `StructuralFormatRule.visitAny` calls into `Context` for per-node gating. Generic dispatch
+    /// via `<R: SyntaxRule>` does NOT preserve the dynamic type when the generic parameter is
+    /// inferred from `type(of: self)` inside a non-final base class — see
+    /// `Context.shouldFormat(ruleType:node:)` .
     static var defaultIsActive: Bool { Self.defaultValue.isActive }
 
     /// Static counterpart to `diagnose(_:on:anchor:notes:)`. Used by combined-pipeline
-    /// `static func transform(_:context:)` overloads (issue `iv7-r5g`/`ddi-wtv`) so they
-    /// don't need to instantiate the rule per node visit.
+    /// `static func transform(_:context:)` overloads (issue `iv7-r5g` / `ddi-wtv` ) so they don't
+    /// need to instantiate the rule per node visit.
     static func diagnose<SyntaxType: SyntaxProtocol>(
         _ message: Finding.Message,
         on node: SyntaxType?,
@@ -63,7 +62,6 @@ extension SyntaxRule {
         notes: [Finding.Note],
         context: Context
     ) {
-
         let syntaxLocation: SourceLocation?
 
         if let node {
@@ -98,16 +96,16 @@ extension SyntaxRule {
 }
 
 extension InstanceSyntaxRule {
-    /// This rule's configuration value, sugar for `context.configuration[Self.self]`.
+    /// This rule's configuration value, sugar for `context.configuration[Self.self]` .
     var ruleConfig: Value { context.configuration[Self.self] }
 
     /// Emits the given finding.
     ///
     /// - Parameters:
     ///   - message: The finding message to emit.
-    ///   - node: The syntax node to which the finding should be attached. The finding's location will
-    ///     be set to the start of the node (excluding leading trivia, unless `leadingTriviaIndex` is
-    ///     provided).
+    ///   - node: The syntax node to which the finding should be attached. The finding's location
+    ///     will be set to the start of the node (excluding leading trivia, unless
+    ///     `leadingTriviaIndex` is provided).
     ///   - anchor: The part of the node where the finding should be anchored. Defaults to the start
     ///     of the node's content (after any leading trivia).
     ///   - notes: An array of notes that provide additional detail about the finding.
@@ -130,12 +128,12 @@ extension InstanceSyntaxRule {
         )
     }
 
-    /// Emits a finding at an explicit severity, overriding the rule's configured
-    /// `lint` value. The rule's master setting still gates emission — if the rule
-    /// is disabled (`lint == .no`), nothing is emitted regardless of the override.
+    /// Emits a finding at an explicit severity, overriding the rule's configured `lint` value. The
+    /// rule's master setting still gates emission — if the rule is disabled ( `lint == .no` ),
+    /// nothing is emitted regardless of the override.
     ///
-    /// Used by metrics rules that emit at `.warn` over a warning threshold and
-    /// `.error` over an error threshold within a single configured rule.
+    /// Used by metrics rules that emit at `.warn` over a warning threshold and `.error` over an
+    /// error threshold within a single configured rule.
     func diagnose<SyntaxType: SyntaxProtocol>(
         _ message: Finding.Message,
         on node: SyntaxType?,

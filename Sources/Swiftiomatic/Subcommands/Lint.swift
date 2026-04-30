@@ -11,6 +11,8 @@
 //===----------------------------------------------------------------------===//
 
 import ArgumentParser
+import Foundation
+import SwiftiomaticKit
 
 extension SwiftiomaticCommand {
   /// Emits style diagnostics for one or more files containing Swift code.
@@ -32,11 +34,27 @@ extension SwiftiomaticCommand {
     )
     var strict: Bool = false
 
+    @Flag(
+      name: .long,
+      help: """
+        Disable the on-disk lint cache. By default, lint findings are cached under \
+        .build/sm-lint-cache/ keyed by file content hash and configuration fingerprint, so \
+        unchanged files skip re-linting on the next run.
+        """
+    )
+    var noCache: Bool = false
+
     func run() throws {
+      let cacheDisabledByEnv =
+        ProcessInfo.processInfo.environment["SM_LINT_NO_CACHE"].map { !$0.isEmpty && $0 != "0" }
+        ?? false
+      let cache: LintCache? = (noCache || cacheDisabledByEnv) ? nil : LintCache()
+
       let frontend = LintFrontend(
         configurationOptions: configurationOptions,
         lintFormatOptions: lintOptions,
-        treatWarningsAsErrors: strict
+        treatWarningsAsErrors: strict,
+        cache: cache
       )
       frontend.run()
 

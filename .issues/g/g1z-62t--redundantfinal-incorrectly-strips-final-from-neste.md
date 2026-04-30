@@ -1,15 +1,15 @@
 ---
 # g1z-62t
 title: RedundantFinal incorrectly strips 'final' from nested class decls
-status: review
+status: completed
 type: bug
 priority: normal
 created_at: 2026-04-30T03:59:48Z
-updated_at: 2026-04-30T04:00:10Z
+updated_at: 2026-04-30T05:23:09Z
 sync:
     github:
         issue_number: "527"
-        synced_at: "2026-04-30T04:23:37Z"
+        synced_at: "2026-04-30T05:51:02Z"
 ---
 
 RedundantFinal removes 'final' from any member of a final class, including nested class declarations. But finality of the outer class only prevents subclassing of the outer type — a nested class is a distinct type that can still be subclassed independently, so 'final' on it is NOT redundant.

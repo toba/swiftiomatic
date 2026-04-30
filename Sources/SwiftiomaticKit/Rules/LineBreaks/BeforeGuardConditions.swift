@@ -21,7 +21,6 @@ extension TokenStream {
                 node.conditions.firstToken(viewMode: .sourceAccurate),
                 tokens: .open(.consistent)
             )
-            after(node.conditions.lastToken(viewMode: .sourceAccurate), tokens: .close)
         }
 
         // Add break groups, using open continuation breaks, around conditions so that continuations
@@ -56,6 +55,17 @@ extension TokenStream {
             )
         }
 
+        // Close the consistent group AFTER the per-condition close breaks above.
+        // afterMap appends groups in declaration order but emits them reversed, so
+        // adding `.close` after the loop emits it BEFORE the last condition's
+        // `.break(.close)`. This pops the consistent group's force-break flag
+        // before the close break is evaluated, so the close break — and the
+        // subsequent break before `else` — see the outer (unforced) state and
+        // can stay inline when the inline body fits.
+        if node.conditions.count > 1 {
+            after(node.conditions.lastToken(viewMode: .sourceAccurate), tokens: .close)
+        }
+
         // For an already-inline single-statement body (`else { stmt }`), wrap
         // `else { stmt }` in an outer `.open(.inconsistent)` group spanning
         // past the closing brace so the printer evaluates the inline form's
@@ -68,7 +78,8 @@ extension TokenStream {
         if node.body.isInlineSingleStatementBody {
             before(
                 node.elseKeyword,
-                tokens: .break(.same, newlines: .elective(ignoresDiscretionary: true)),
+                tokens: .printerControl(kind: .clearContinuation),
+                .break(.same, size: 1, newlines: .elective(ignoresDiscretionary: true)),
                 .open
             )
             after(node.elseKeyword, tokens: .space)

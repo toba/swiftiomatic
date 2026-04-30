@@ -47,13 +47,24 @@ extension TokenStream {
         // If the type annotation and/or the initializer clause need to wrap, stack the
         // continuations to improve readability. The type-annotation continuation break is closed
         // after the binding's last token so the `:` chunk extends through the initializer; that
-        // makes `:` an eager wrap point when the whole binding overflows. For ternary RHSes the
-        // chunk is kept short (close after the type) so the inner `?`/`:` breaks fire first
-        // instead of wrapping the type annotation onto its own line.
+        // makes `:` an eager wrap point when the whole binding overflows. When the RHS carries its
+        // own inner break points (ternary, function call, member-access chain, infix operator,
+        // closure, …) the chunk is kept short (close after the type) so the inner breaks fire
+        // first instead of wrapping the type annotation onto its own line.
         var closesNeeded: Int = 0
         var closeAfterToken: TokenSyntax?
 
-        let initializerIsTernary = node.initializer?.value.is(TernaryExprSyntax.self) ?? false
+        let rhsHasInnerBreaks: Bool =
+            node.initializer.map { initializer in
+                let expr = initializer.value
+                return expr.is(TernaryExprSyntax.self)
+                    || expr.is(FunctionCallExprSyntax.self)
+                    || expr.is(MemberAccessExprSyntax.self)
+                    || expr.is(SubscriptCallExprSyntax.self)
+                    || expr.is(SequenceExprSyntax.self)
+                    || expr.is(InfixOperatorExprSyntax.self)
+                    || expr.is(ClosureExprSyntax.self)
+            } ?? false
 
         if let typeAnnotation = node.typeAnnotation, !typeAnnotation.type.is(MissingTypeSyntax.self)
         {
@@ -64,7 +75,7 @@ extension TokenStream {
                     newlines: .elective(ignoresDiscretionary: true)
                 )
             )
-            if initializerIsTernary {
+            if rhsHasInnerBreaks {
                 after(
                     typeAnnotation.lastToken(viewMode: .sourceAccurate),
                     tokens: .break(.close(mustBreak: false), size: 0)
@@ -76,7 +87,19 @@ extension TokenStream {
         }
         if let initializer = node.initializer {
             let expr = initializer.value
-            arrangeAssignmentBreaks(afterEqualToken: initializer.equal, rhs: expr)
+            if rhsHasInnerBreaks {
+                // Type-annotation break was closed after the type to demote it. Use a simple
+                // continuation break for `=` (no surrounding `.open`/`.close` group around the
+                // RHS) so the `=` break's chunk is bounded by the next inner break — function
+                // call args, ternary `?`, member-access `.`, etc. — and those fire first
+                // instead of wrapping at `=`.
+                after(
+                    initializer.equal,
+                    tokens: .break(.continue, newlines: .elective(ignoresDiscretionary: true))
+                )
+            } else {
+                arrangeAssignmentBreaks(afterEqualToken: initializer.equal, rhs: expr)
+            }
             closeAfterToken = initializer.lastToken(viewMode: .sourceAccurate)
         }
 

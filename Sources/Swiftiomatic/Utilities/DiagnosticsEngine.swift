@@ -115,6 +115,34 @@ final class DiagnosticsEngine: Sendable {
         }
     }
 
+    /// Replays a previously cached finding (and its notes) through the same emit path
+    /// `consumeFinding` uses, so cached and freshly-linted runs produce byte-identical output and
+    /// identical exit-code accounting.
+    func consumeCachedEntry(_ cached: LintCache.Entry) {
+        let severity: Diagnostic.Severity =
+            switch cached.severity {
+            case .error: .error
+            case .warn, .no: .warning
+            }
+        emit(
+            Diagnostic(
+                severity: severity,
+                location: cached.location.map { Diagnostic.Location($0.asFindingLocation) },
+                category: cached.category,
+                message: cached.message
+            )
+        )
+        for note in cached.notes {
+            emit(
+                Diagnostic(
+                    severity: .note,
+                    location: note.location.map { Diagnostic.Location($0.asFindingLocation) },
+                    message: note.message
+                )
+            )
+        }
+    }
+
     /// Emits a diagnostic from the syntax parser and any of its associated notes.
     ///
     /// - Parameter diagnostic: The syntax parser diagnostic that should be emitted.

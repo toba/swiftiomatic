@@ -2,9 +2,8 @@ import SwiftSyntax
 
 /// Enforce consistent ordering for declaration modifiers.
 ///
-/// Modifiers should appear in a canonical order: access control, then `override`, then
-/// `class`/`static`, then other modifiers. For example, `public static func` not
-/// `static public func`.
+/// Modifiers should appear in a canonical order: access control, then `override` , then `class` /
+/// `static` , then other modifiers. For example, `public static func` not `static public func` .
 ///
 /// Lint: If modifiers are out of order, a lint warning is raised.
 ///
@@ -12,8 +11,8 @@ import SwiftSyntax
 final class ModifierOrder: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
     override class var group: ConfigurationGroup? { .declarations }
 
-    /// Canonical modifier order. Modifiers not in this list keep their relative position
-    /// after all listed modifiers.
+    /// Canonical modifier order. Modifiers not in this list keep their relative position after all
+    /// listed modifiers.
     private static let canonicalOrder: [Keyword] = [
         // Access control
         .open, .public, .package, .internal, .fileprivate, .private,
@@ -44,9 +43,7 @@ final class ModifierOrder: StaticFormatRule<BasicRuleValue>, @unchecked Sendable
     /// Maps each keyword to its canonical position for O(1) lookup.
     private static let orderIndex: [Keyword: Int] = {
         var map = [Keyword: Int]()
-        for (index, keyword) in canonicalOrder.enumerated() {
-            map[keyword] = index
-        }
+        for (index, keyword) in canonicalOrder.enumerated() { map[keyword] = index }
         return map
     }()
 
@@ -54,7 +51,7 @@ final class ModifierOrder: StaticFormatRule<BasicRuleValue>, @unchecked Sendable
 
     static func transform(
         _ node: FunctionDeclSyntax,
-        parent: Syntax?,
+        parent _: Syntax?,
         context: Context
     ) -> DeclSyntax {
         DeclSyntax(reorderingModifiers(of: node, keyPath: \.modifiers, context: context))
@@ -62,7 +59,7 @@ final class ModifierOrder: StaticFormatRule<BasicRuleValue>, @unchecked Sendable
 
     static func transform(
         _ node: VariableDeclSyntax,
-        parent: Syntax?,
+        parent _: Syntax?,
         context: Context
     ) -> DeclSyntax {
         DeclSyntax(reorderingModifiers(of: node, keyPath: \.modifiers, context: context))
@@ -70,7 +67,7 @@ final class ModifierOrder: StaticFormatRule<BasicRuleValue>, @unchecked Sendable
 
     static func transform(
         _ node: ClassDeclSyntax,
-        parent: Syntax?,
+        parent _: Syntax?,
         context: Context
     ) -> DeclSyntax {
         DeclSyntax(reorderingModifiers(of: node, keyPath: \.modifiers, context: context))
@@ -78,7 +75,7 @@ final class ModifierOrder: StaticFormatRule<BasicRuleValue>, @unchecked Sendable
 
     static func transform(
         _ node: StructDeclSyntax,
-        parent: Syntax?,
+        parent _: Syntax?,
         context: Context
     ) -> DeclSyntax {
         DeclSyntax(reorderingModifiers(of: node, keyPath: \.modifiers, context: context))
@@ -86,7 +83,7 @@ final class ModifierOrder: StaticFormatRule<BasicRuleValue>, @unchecked Sendable
 
     static func transform(
         _ node: EnumDeclSyntax,
-        parent: Syntax?,
+        parent _: Syntax?,
         context: Context
     ) -> DeclSyntax {
         DeclSyntax(reorderingModifiers(of: node, keyPath: \.modifiers, context: context))
@@ -94,7 +91,7 @@ final class ModifierOrder: StaticFormatRule<BasicRuleValue>, @unchecked Sendable
 
     static func transform(
         _ node: ActorDeclSyntax,
-        parent: Syntax?,
+        parent _: Syntax?,
         context: Context
     ) -> DeclSyntax {
         DeclSyntax(reorderingModifiers(of: node, keyPath: \.modifiers, context: context))
@@ -102,7 +99,7 @@ final class ModifierOrder: StaticFormatRule<BasicRuleValue>, @unchecked Sendable
 
     static func transform(
         _ node: InitializerDeclSyntax,
-        parent: Syntax?,
+        parent _: Syntax?,
         context: Context
     ) -> DeclSyntax {
         DeclSyntax(reorderingModifiers(of: node, keyPath: \.modifiers, context: context))
@@ -110,7 +107,7 @@ final class ModifierOrder: StaticFormatRule<BasicRuleValue>, @unchecked Sendable
 
     static func transform(
         _ node: SubscriptDeclSyntax,
-        parent: Syntax?,
+        parent _: Syntax?,
         context: Context
     ) -> DeclSyntax {
         DeclSyntax(reorderingModifiers(of: node, keyPath: \.modifiers, context: context))
@@ -118,7 +115,7 @@ final class ModifierOrder: StaticFormatRule<BasicRuleValue>, @unchecked Sendable
 
     static func transform(
         _ node: TypeAliasDeclSyntax,
-        parent: Syntax?,
+        parent _: Syntax?,
         context: Context
     ) -> DeclSyntax {
         DeclSyntax(reorderingModifiers(of: node, keyPath: \.modifiers, context: context))
@@ -134,8 +131,8 @@ final class ModifierOrder: StaticFormatRule<BasicRuleValue>, @unchecked Sendable
         let modifiers = node[keyPath: keyPath]
         guard modifiers.count > 1 else { return node }
 
-        // Assign a sort key to each modifier based on canonical order.
-        // Modifiers not in the canonical list get a high index to preserve relative position.
+        // Assign a sort key to each modifier based on canonical order. Modifiers not in the
+        // canonical list get a high index to preserve relative position.
         let sorted = modifiers.enumerated().sorted { lhs, rhs in
             let lhsOrder = Self.sortKey(for: lhs.element, at: lhs.offset)
             let rhsOrder = Self.sortKey(for: rhs.element, at: rhs.offset)
@@ -152,18 +149,17 @@ final class ModifierOrder: StaticFormatRule<BasicRuleValue>, @unchecked Sendable
         // Build new modifier list preserving trivia from original positions.
         var reordered = sorted.map(\.element)
 
-        // The first modifier in the new list should get the leading trivia from the
-        // original first modifier (newline + indentation).
+        // The first modifier in the new list should get the leading trivia from the original first
+        // modifier (newline + indentation).
         let originalLeadingTrivia = modifiers.first!.leadingTrivia
-        reordered[0] = reordered[0]
+        reordered[
+            0] = reordered[0]
             .with(\.leadingTrivia, originalLeadingTrivia)
 
-        // Non-first modifiers should have a single space as leading trivia
-        // (removing any original leading indentation they might have had).
-        for i in 1..<reordered.count {
-            if !reordered[i].leadingTrivia.isEmpty {
-                reordered[i] = reordered[i].with(\.leadingTrivia, [])
-            }
+        // Non-first modifiers should have a single space as leading trivia (removing any original
+        // leading indentation they might have had).
+        for i in 1..<reordered.count where !reordered[i].leadingTrivia.isEmpty {
+            reordered[i] = reordered[i].with(\.leadingTrivia, [])
         }
 
         var result = node
@@ -171,20 +167,21 @@ final class ModifierOrder: StaticFormatRule<BasicRuleValue>, @unchecked Sendable
         return result
     }
 
-    /// Returns a sort key for a modifier. Known modifiers use their canonical index;
-    /// unknown modifiers use a high index + their original position to preserve relative order.
+    /// Returns a sort key for a modifier. Known modifiers use their canonical index; unknown
+    /// modifiers use a high index + their original position to preserve relative order.
     private static func sortKey(for modifier: DeclModifierSyntax, at originalIndex: Int) -> Int {
-        if case .keyword(let keyword) = modifier.name.tokenKind,
-            let index = orderIndex[keyword]
+        if case let .keyword(keyword) = modifier.name.tokenKind,
+           let index = orderIndex[keyword]
         {
-            return index
+            index
+        } else {
+            // Unknown modifiers sort after all known ones, preserving relative order.
+            canonicalOrder.count + originalIndex
         }
-        // Unknown modifiers sort after all known ones, preserving relative order.
-        return canonicalOrder.count + originalIndex
     }
 }
 
-extension Finding.Message {
-    fileprivate static let reorderModifiers: Finding.Message =
+fileprivate extension Finding.Message {
+    static let reorderModifiers: Finding.Message =
         "reorder declaration modifiers to follow canonical order"
 }

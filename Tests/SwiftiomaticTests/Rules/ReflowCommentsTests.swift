@@ -146,6 +146,38 @@ struct ReflowCommentsTests: RuleTesting {
         )
     }
 
+    @Test func preservesFileHeaderComment() {
+        // A `//` comment block at the very top of the file is the file header
+        // (license, copyright, etc.) and must be preserved verbatim, even when
+        // its lines could otherwise be redistributed to fit the width.
+        let header = """
+            // Copyright (c) 2026 Example Corp.
+            // Some short line.
+            // Another short line that, combined with the lines above, could be reflowed.
+            """
+        assertFormatting(
+            ReflowComments.self,
+            input: """
+                \(header)
+
+                1️⃣/// Wraps any `CloudDatabase` in a concrete class so it can be stored in
+                /// non-generic contexts (e.g. dictionaries keyed by database scope).
+                /// Identity-based equality: two wrappers are equal iff they wrap the same object.
+                let x = 1
+                """,
+            expected: """
+                \(header)
+
+                /// Wraps any `CloudDatabase` in a concrete class so it can be stored in non-generic contexts (e.g.
+                /// dictionaries keyed by database scope). Identity-based equality: two wrappers are equal iff they
+                /// wrap the same object.
+                let x = 1
+                """,
+            findings: [FindingSpec("1️⃣", message: "reflow comment to fit line length")],
+            configuration: config(maxWidth: 100)
+        )
+    }
+
     @Test func preservesParametersBlockIndentation() {
         assertFormatting(
             ReflowComments.self,

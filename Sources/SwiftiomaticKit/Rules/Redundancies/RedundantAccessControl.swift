@@ -14,7 +14,7 @@ import SwiftSyntax
 
 /// Unified rule that removes or replaces redundant access control modifiers.
 ///
-/// Combines four checks: redundant `internal`, redundant `public` on members of non-public types,
+/// Combines four checks: redundant `internal` , redundant `public` on members of non-public types,
 /// redundant access control on extension members matching the extension's level, and redundant
 /// `fileprivate` (converted to `private` in single-type files).
 final class RedundantAccessControl: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
@@ -22,7 +22,7 @@ final class RedundantAccessControl: StaticFormatRule<BasicRuleValue>, @unchecked
 
     override class var defaultValue: BasicRuleValue { .init(rewrite: false, lint: .no) }
 
-    /// Per-file mutable state held as a typed lazy property on `Context`.
+    /// Per-file mutable state held as a typed lazy property on `Context` .
     final class State {
         /// The name of the single logical type in the file, if any.
         var singleTypeName: String?
@@ -56,96 +56,125 @@ final class RedundantAccessControl: StaticFormatRule<BasicRuleValue>, @unchecked
     }
 
     static func transform(
-        _ node: ActorDeclSyntax, parent _: Syntax?, context: Context
+        _ node: ActorDeclSyntax,
+        parent _: Syntax?,
+        context: Context
     ) -> DeclSyntax {
-        DeclSyntax(removePublicFromMembers(
-            of: removeRedundantInternal(node, keyword: \.actorKeyword, context: context),
-            context: context
-        ))
+        DeclSyntax(
+            removePublicFromMembers(
+                of: removeRedundantInternal(node, keyword: \.actorKeyword, context: context),
+                context: context
+            ))
     }
 
     static func transform(
-        _ node: ClassDeclSyntax, parent _: Syntax?, context: Context
+        _ node: ClassDeclSyntax,
+        parent _: Syntax?,
+        context: Context
     ) -> DeclSyntax {
-        DeclSyntax(removePublicFromMembers(
-            of: removeRedundantInternal(node, keyword: \.classKeyword, context: context),
-            context: context
-        ))
+        DeclSyntax(
+            removePublicFromMembers(
+                of: removeRedundantInternal(node, keyword: \.classKeyword, context: context),
+                context: context
+            ))
     }
 
     static func transform(
-        _ node: EnumDeclSyntax, parent _: Syntax?, context: Context
+        _ node: EnumDeclSyntax,
+        parent _: Syntax?,
+        context: Context
     ) -> DeclSyntax {
-        DeclSyntax(removePublicFromMembers(
-            of: removeRedundantInternal(node, keyword: \.enumKeyword, context: context),
-            context: context
-        ))
+        DeclSyntax(
+            removePublicFromMembers(
+                of: removeRedundantInternal(node, keyword: \.enumKeyword, context: context),
+                context: context
+            ))
     }
 
     static func transform(
-        _ node: FunctionDeclSyntax, parent _: Syntax?, context: Context
+        _ node: FunctionDeclSyntax,
+        parent _: Syntax?,
+        context: Context
     ) -> DeclSyntax {
         DeclSyntax(removeRedundantInternal(node, keyword: \.funcKeyword, context: context))
     }
 
     static func transform(
-        _ node: InitializerDeclSyntax, parent _: Syntax?, context: Context
+        _ node: InitializerDeclSyntax,
+        parent _: Syntax?,
+        context: Context
     ) -> DeclSyntax {
         DeclSyntax(removeRedundantInternal(node, keyword: \.initKeyword, context: context))
     }
 
     static func transform(
-        _ node: ProtocolDeclSyntax, parent _: Syntax?, context: Context
+        _ node: ProtocolDeclSyntax,
+        parent _: Syntax?,
+        context: Context
     ) -> DeclSyntax {
         DeclSyntax(removeRedundantInternal(node, keyword: \.protocolKeyword, context: context))
     }
 
     static func transform(
-        _ node: StructDeclSyntax, parent _: Syntax?, context: Context
+        _ node: StructDeclSyntax,
+        parent _: Syntax?,
+        context: Context
     ) -> DeclSyntax {
-        DeclSyntax(removePublicFromMembers(
-            of: removeRedundantInternal(node, keyword: \.structKeyword, context: context),
-            context: context
-        ))
+        DeclSyntax(
+            removePublicFromMembers(
+                of: removeRedundantInternal(node, keyword: \.structKeyword, context: context),
+                context: context
+            ))
     }
 
     static func transform(
-        _ node: SubscriptDeclSyntax, parent _: Syntax?, context: Context
+        _ node: SubscriptDeclSyntax,
+        parent _: Syntax?,
+        context: Context
     ) -> DeclSyntax {
         DeclSyntax(removeRedundantInternal(node, keyword: \.subscriptKeyword, context: context))
     }
 
     static func transform(
-        _ node: TypeAliasDeclSyntax, parent _: Syntax?, context: Context
+        _ node: TypeAliasDeclSyntax,
+        parent _: Syntax?,
+        context: Context
     ) -> DeclSyntax {
         DeclSyntax(removeRedundantInternal(node, keyword: \.typealiasKeyword, context: context))
     }
 
     static func transform(
-        _ node: VariableDeclSyntax, parent _: Syntax?, context: Context
+        _ node: VariableDeclSyntax,
+        parent _: Syntax?,
+        context: Context
     ) -> DeclSyntax {
         DeclSyntax(removeRedundantInternal(node, keyword: \.bindingSpecifier, context: context))
     }
 
     static func transform(
-        _ node: ExtensionDeclSyntax, parent _: Syntax?, context: Context
+        _ node: ExtensionDeclSyntax,
+        parent _: Syntax?,
+        context: Context
     ) -> DeclSyntax {
         guard let extensionModifier = node.modifiers.accessLevelModifier,
               case let .keyword(extensionKeyword) = extensionModifier.name.tokenKind
         else { return DeclSyntax(node) }
-        let message: Finding.Message =
-            .removeRedundantExtensionACL(keyword: extensionModifier.name.text)
-        return DeclSyntax(rewriteMemberBlock(of: node) { decl in
-            removeMatchingAccessControl(
-                from: decl, matching: extensionKeyword,
-                message: message, context: context
-            )
-        })
+        let message:
+            Finding.Message = .removeRedundantExtensionACL(
+                keyword: extensionModifier.name.text)
+
+        return DeclSyntax(
+            rewriteMemberBlock(of: node) { decl in
+                removeMatchingAccessControl(
+                    from: decl, matching: extensionKeyword,
+                    message: message, context: context
+                )
+            })
     }
 
     // MARK: - Helpers
 
-    /// Removes a redundant `internal` modifier from `decl`, diagnosing the modifier.
+    /// Removes a redundant `internal` modifier from `decl` , diagnosing the modifier.
     private static func removeRedundantInternal<Decl: DeclSyntaxProtocol & WithModifiersSyntax>(
         _ decl: Decl,
         keyword: WritableKeyPath<Decl, TokenSyntax>,
@@ -155,6 +184,7 @@ final class RedundantAccessControl: StaticFormatRule<BasicRuleValue>, @unchecked
               mod.name.tokenKind == .keyword(.internal),
               mod.detail == nil
         else { return decl }
+
         Self.diagnose(.removeRedundantInternal, on: mod.name, context: context)
         return decl.removingModifiers([.internal], keyword: keyword)
     }
@@ -177,9 +207,9 @@ final class RedundantAccessControl: StaticFormatRule<BasicRuleValue>, @unchecked
         }
     }
 
-    /// Removes the access modifier matching `keyword` from a member decl, when
-    /// it equals the enclosing type or extension's access level. Dispatches via
-    /// `DeclSyntax.removingModifiers(_:)`.
+    /// Removes the access modifier matching `keyword` from a member decl, when it equals the
+    /// enclosing type or extension's access level. Dispatches via
+    /// `DeclSyntax.removingModifiers(_:)` .
     private static func removeMatchingAccessControl(
         from decl: DeclSyntax,
         matching keyword: Keyword,
@@ -196,10 +226,11 @@ final class RedundantAccessControl: StaticFormatRule<BasicRuleValue>, @unchecked
         return decl.removingModifiers([keyword])
     }
 
-    /// Maps over the member block of `decl`, applying `transform` to each
-    /// member's decl. Returns `decl` unchanged when no member changes.
+    /// Maps over the member block of `decl` , applying `transform` to each member's decl. Returns
+    /// `decl` unchanged when no member changes.
     private static func rewriteMemberBlock<Decl: DeclGroupSyntax>(
-        of decl: Decl, _ transform: (DeclSyntax) -> DeclSyntax
+        of decl: Decl,
+        _ transform: (DeclSyntax) -> DeclSyntax
     ) -> Decl {
         var modified = false
         let newMembers = decl.memberBlock.members.map { member -> MemberBlockItemSyntax in
@@ -255,6 +286,7 @@ final class RedundantAccessControl: StaticFormatRule<BasicRuleValue>, @unchecked
         // Check for nested types in the primary type and its extensions.
         for item in statements {
             guard case let .decl(decl) = item.item else { continue }
+
             if let ifConfig = decl.as(IfConfigDeclSyntax.self) {
                 if ifConfigHasNestedTypes(ifConfig) {
                     state.hasNestedTypes = true
@@ -274,6 +306,7 @@ final class RedundantAccessControl: StaticFormatRule<BasicRuleValue>, @unchecked
     ) {
         for clause in ifConfig.clauses {
             guard case .statements(let stmts)? = clause.elements else { continue }
+
             for item in stmts {
                 guard case let .decl(decl) = item.item else {
                     state.singleTypeName = nil
@@ -317,6 +350,7 @@ final class RedundantAccessControl: StaticFormatRule<BasicRuleValue>, @unchecked
 
     private static func declHasNestedTypes(_ decl: DeclSyntax) -> Bool {
         let members: MemberBlockItemListSyntax?
+
         if let structDecl = decl.as(StructDeclSyntax.self) {
             members = structDecl.memberBlock.members
         } else if let classDecl = decl.as(ClassDeclSyntax.self) {
@@ -338,8 +372,10 @@ final class RedundantAccessControl: StaticFormatRule<BasicRuleValue>, @unchecked
     private static func ifConfigHasNestedTypes(_ ifConfig: IfConfigDeclSyntax) -> Bool {
         for clause in ifConfig.clauses {
             guard case .statements(let stmts)? = clause.elements else { continue }
+
             for item in stmts {
                 guard case let .decl(decl) = item.item else { continue }
+
                 if let nested = decl.as(IfConfigDeclSyntax.self) {
                     if ifConfigHasNestedTypes(nested) { return true }
                 } else if declHasNestedTypes(decl) {
@@ -401,24 +437,24 @@ final class RedundantAccessControl: StaticFormatRule<BasicRuleValue>, @unchecked
         context: Context
     ) -> DeclSyntax? {
         if var structDecl = decl.as(StructDeclSyntax.self) {
-            structDecl.memberBlock.members =
-                rewriteMembers(structDecl.memberBlock.members, context: context)
+            structDecl.memberBlock.members = rewriteMembers(
+                structDecl.memberBlock.members, context: context)
             return DeclSyntax(structDecl)
         } else if var classDecl = decl.as(ClassDeclSyntax.self) {
-            classDecl.memberBlock.members =
-                rewriteMembers(classDecl.memberBlock.members, context: context)
+            classDecl.memberBlock.members = rewriteMembers(
+                classDecl.memberBlock.members, context: context)
             return DeclSyntax(classDecl)
         } else if var enumDecl = decl.as(EnumDeclSyntax.self) {
-            enumDecl.memberBlock.members =
-                rewriteMembers(enumDecl.memberBlock.members, context: context)
+            enumDecl.memberBlock.members = rewriteMembers(
+                enumDecl.memberBlock.members, context: context)
             return DeclSyntax(enumDecl)
         } else if var actorDecl = decl.as(ActorDeclSyntax.self) {
-            actorDecl.memberBlock.members =
-                rewriteMembers(actorDecl.memberBlock.members, context: context)
+            actorDecl.memberBlock.members = rewriteMembers(
+                actorDecl.memberBlock.members, context: context)
             return DeclSyntax(actorDecl)
         } else if var extDecl = decl.as(ExtensionDeclSyntax.self) {
-            extDecl.memberBlock.members =
-                rewriteMembers(extDecl.memberBlock.members, context: context)
+            extDecl.memberBlock.members = rewriteMembers(
+                extDecl.memberBlock.members, context: context)
             return DeclSyntax(extDecl)
         }
         return nil
@@ -430,6 +466,7 @@ final class RedundantAccessControl: StaticFormatRule<BasicRuleValue>, @unchecked
     ) -> MemberBlockItemListSyntax {
         let newMembers = members.map { member -> MemberBlockItemSyntax in
             let decl = member.decl
+
             guard let rewritten = rewriteFileprivate(on: decl, context: context) else {
                 return member
             }
@@ -452,8 +489,8 @@ final class RedundantAccessControl: StaticFormatRule<BasicRuleValue>, @unchecked
             return DeclSyntax(replaceFileprivate(on: initDecl, context: context))
         } else if let subscriptDecl = decl.as(SubscriptDeclSyntax.self) {
             return DeclSyntax(replaceFileprivate(on: subscriptDecl, context: context))
-        } else if let typealiasDecl = decl.as(TypeAliasDeclSyntax.self) {
-            return DeclSyntax(replaceFileprivate(on: typealiasDecl, context: context))
+        } else if let typeAliasDecl = decl.as(TypeAliasDeclSyntax.self) {
+            return DeclSyntax(replaceFileprivate(on: typeAliasDecl, context: context))
         }
         return nil
     }

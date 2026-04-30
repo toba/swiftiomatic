@@ -1,4 +1,4 @@
-//===----------------------------------------------------------------------===//
+// ===----------------------------------------------------------------------===//
 //
 // This source file is part of the Swift.org open source project
 //
@@ -8,7 +8,7 @@
 // See https://swift.org/LICENSE.txt for license information
 // See https://swift.org/CONTRIBUTORS.txt for the list of Swift project authors
 //
-//===----------------------------------------------------------------------===//
+// ===----------------------------------------------------------------------===//
 
 import SwiftSyntax
 
@@ -22,10 +22,10 @@ extension MemberBlockItemSyntax: WithSemicolonSyntax {}
 
 extension SyntaxProtocol {
     func asProtocol(_: WithSemicolonSyntax.Protocol) -> WithSemicolonSyntax? {
-        return Syntax(self).asProtocol(SyntaxProtocol.self) as? WithSemicolonSyntax
+        Syntax(self).asProtocol(SyntaxProtocol.self) as? WithSemicolonSyntax
     }
 
     func isProtocol(_: WithSemicolonSyntax.Protocol) -> Bool {
-        return self.asProtocol(WithSemicolonSyntax.self) != nil
+        asProtocol(WithSemicolonSyntax.self) != nil
     }
 }

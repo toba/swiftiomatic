@@ -74,6 +74,22 @@ struct PatternBindingTests: LayoutTesting {
     assertLayout(input: input, expected: expected, linelength: 100)
   }
 
+  @Test func typeAnnotationStaysOnSameLineWithFunctionCallRHS() {
+    let input =
+      """
+      let message: Finding.Message = .removeRedundantExtensionACL(keyword: extensionModifier.name.text)
+      """
+
+    let expected =
+      """
+      let message: Finding.Message = .removeRedundantExtensionACL(
+        keyword: extensionModifier.name.text)
+
+      """
+
+    assertLayout(input: input, expected: expected, linelength: 80)
+  }
+
   @Test func groupingIncludesTrailingComma() {
     let input =
       """

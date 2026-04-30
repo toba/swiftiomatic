@@ -80,6 +80,28 @@ extension TokenStream {
                     unindentingNode.lastToken(viewMode: .sourceAccurate),
                     tokens: closeBreakTokens
                 )
+            } else if isComparisonOperator(binOp),
+                      containsCallOrSubscriptArgList(node.leftOperand)
+                          || containsCallOrSubscriptArgList(rhs)
+            {
+                // Bound the comparison-operator break's chunk to the RHS so any inner break
+                // (e.g. a function-call argument-list break in either operand) fires first.
+                // Mirrors the assignment precedence treatment in `arrangeAssignmentBreaks`
+                // ( `canGroupBeforeBreak` branch). Gated on the presence of a call/subscript
+                // arg list so simple comparisons like `mod.detail == nil` are not affected.
+                if wrapsBeforeOperator {
+                    before(
+                        binOp.firstToken(viewMode: .sourceAccurate),
+                        tokens: .open, .break(.continue)
+                    )
+                    after(rhs.lastToken(viewMode: .sourceAccurate), tokens: .close)
+                } else {
+                    after(
+                        binOp.lastToken(viewMode: .sourceAccurate),
+                        tokens: .open, .break(.continue)
+                    )
+                    after(rhs.lastToken(viewMode: .sourceAccurate), tokens: .close)
+                }
             } else {
                 if wrapsBeforeOperator {
                     before(binOp.firstToken(viewMode: .sourceAccurate), tokens: .break(.continue))

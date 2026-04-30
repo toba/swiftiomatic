@@ -1,15 +1,15 @@
 ---
 # wpg-h5c
 title: 'Speed up swift package test wall-time: prebuild lint plugin dominates'
-status: review
+status: completed
 type: task
 priority: high
 created_at: 2026-04-30T03:54:34Z
-updated_at: 2026-04-30T04:02:27Z
+updated_at: 2026-04-30T05:23:11Z
 sync:
     github:
         issue_number: "528"
-        synced_at: "2026-04-30T04:23:37Z"
+        synced_at: "2026-04-30T05:51:02Z"
 ---
 
 ## Problem

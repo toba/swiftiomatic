@@ -87,6 +87,7 @@ package struct DocumentationCommentText {
                     if cleaned.hasSuffix("*/") { cleaned = cleaned.dropLast(2) }
 
                     var hasASCIIArt = false
+
                     if cleaned.hasPrefix("\n") {
                         cleaned = cleaned.dropFirst()
                         hasASCIIArt = asciiArtLength(of: cleaned, leadingSpaces: leadingWhitespace)
@@ -104,7 +105,8 @@ package struct DocumentationCommentText {
                             index = cleaned.firstIndex(where: \.isNewline) ?? cleaned.endIndex
                         }
 
-                        // Don't add an unnecessary blank line at the end when `*/` is on its own line.
+                        // Don't add an unnecessary blank line at the end when `*/` is on its own
+                        // line.
                         guard cleaned.firstIndex(where: { !$0.isWhitespace }) != nil else { break }
 
                         let line = cleaned.prefix(upTo: index)
@@ -120,19 +122,21 @@ package struct DocumentationCommentText {
         // be present.
         guard let introducer,
               !lines.isEmpty,
-              let firstLineIndex = lines.firstIndex(where: { !$0.text.isEmpty }) else { return nil }
+              let firstLineIndex = lines.firstIndex(where: { !$0.text.isEmpty })
+        else { return nil }
 
         let initialIndentation = indentationDistance(of: lines[firstLineIndex].text)
         var result = ""
+
         for line in lines[firstLineIndex...] {
             let countToDrop = min(initialIndentation, line.firstNonSpaceDistance)
             result.append(contentsOf: "\(line.text.dropFirst(countToDrop))\n")
         }
-
         guard !result.isEmpty else { return nil }
 
         let commentStartDistance = triviaArray.distance(
             from: triviaArray.startIndex, to: commentStartIndex)
+
         text = result
         startIndex = trivia.index(trivia.startIndex, offsetBy: commentStartDistance)
         self.introducer = introducer

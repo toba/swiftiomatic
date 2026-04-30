@@ -123,8 +123,7 @@ struct GuardStmtTests: LayoutTesting {
       """
       guard
         let foo = something,
-        let bar = somethingElse
-      else {
+        let bar = somethingElse else {
         body()
       }
 
@@ -198,8 +197,7 @@ struct GuardStmtTests: LayoutTesting {
       guard
         let object1 = fetchingFunc(foo),
         let object2 = fetchingFunc(bar),
-        let object3 = fetchingFunc(baz)
-      else {
+        let object3 = fetchingFunc(baz) else {
         return nil
       }
 
@@ -446,8 +444,7 @@ struct GuardStmtTests: LayoutTesting {
       """
       guard
         let signature = closure.signature,
-        let captureClause = signature.capture
-      else { return false }
+        let captureClause = signature.capture else { return false }
 
       """
 
@@ -473,8 +470,9 @@ struct GuardStmtTests: LayoutTesting {
       """
       guard
         let signature = closure.signature,
-        let captureClause = signature.capture
-      else { return false }
+        let captureClause = signature.capture else {
+        return false
+      }
 
       """
 
@@ -500,8 +498,7 @@ struct GuardStmtTests: LayoutTesting {
     let expected =
       """
       guard let signature = closure.signature,
-            let captureClause = signature.capture
-      else { return false }
+            let captureClause = signature.capture else { return false }
 
       """
 
@@ -526,12 +523,40 @@ struct GuardStmtTests: LayoutTesting {
     let expected =
       """
       guard let signature = closure.signature,
-            let captureClause = signature.capture
-      else { return false }
+            let captureClause = signature.capture else {
+        return false
+      }
 
       """
 
     assertLayout(input: input, expected: expected, linelength: 60, configuration: configuration)
+  }
+
+  /// Three aligned conditions where the inline `else { stmt }` body fits on
+  /// the last condition's line. `else` must glue to the last condition rather
+  /// than dropping to its own line. Regression test for `4pf-bov`.
+  @Test func threeConditionsGlueElseWhenInlineBodyFits() {
+    var configuration = Configuration.forTesting
+    configuration[AlignWrappedConditions.self] = true
+    configuration[BeforeGuardConditions.self] = false
+
+    let input =
+      """
+      guard let mod = decl.modifiers.accessLevelModifier,
+            mod.name.tokenKind == .keyword(.internal),
+            mod.detail == nil
+      else { return decl }
+      """
+
+    let expected =
+      """
+      guard let mod = decl.modifiers.accessLevelModifier,
+            mod.name.tokenKind == .keyword(.internal),
+            mod.detail == nil else { return decl }
+
+      """
+
+    assertLayout(input: input, expected: expected, linelength: 100, configuration: configuration)
   }
 
   /// Multi-statement bodies are not inline candidates; `else` should still

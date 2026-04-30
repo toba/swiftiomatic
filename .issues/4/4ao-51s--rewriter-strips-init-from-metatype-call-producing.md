@@ -1,15 +1,15 @@
 ---
 # 4ao-51s
 title: Rewriter strips .init from metatype call, producing invalid Swift
-status: review
+status: completed
 type: bug
 priority: normal
 created_at: 2026-04-30T03:23:51Z
-updated_at: 2026-04-30T03:30:55Z
+updated_at: 2026-04-30T05:23:07Z
 sync:
     github:
         issue_number: "520"
-        synced_at: "2026-04-30T03:34:38Z"
+        synced_at: "2026-04-30T05:51:02Z"
 ---
 
 ## Repro

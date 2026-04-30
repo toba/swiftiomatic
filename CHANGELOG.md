@@ -5,7 +5,7 @@
 ### ✨ Features
 
 - `ReflowComments` rule; rewrap regular and DocC comments to line length
-- `guard ... else { stmt }`; keep inline body attached when conditions wrap
+- `guard ... else { stmt }`; keep inline body attached when conditions wrap ([#530](https://github.com/toba/swiftiomatic/issues/530))
 - Cat 9 accessor & declaration patterns; 3 new rules ([#315](https://github.com/toba/swiftiomatic/issues/315))
 - Configuration schema redesign; `style` + universal parameters
 - CLI; replace `--rules` plumbing with `--style`

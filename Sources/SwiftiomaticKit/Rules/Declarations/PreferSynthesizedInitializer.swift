@@ -2,11 +2,11 @@
 //
 // This source file is part of the Swift.org open source project
 //
-// Copyright (c) 2014 - 2019 Apple Inc. and the Swift project authors Licensed under Apache License
-// v2.0 with Runtime Library Exception
+// Copyright (c) 2014 - 2019 Apple Inc. and the Swift project authors
+// Licensed under Apache License v2.0 with Runtime Library Exception
 //
-// See https://swift.org/LICENSE.txt for license information See https://swift.org/CONTRIBUTORS.txt
-// for the list of Swift project authors
+// See https://swift.org/LICENSE.txt for license information
+// See https://swift.org/CONTRIBUTORS.txt for the list of Swift project authors
 //
 // ===----------------------------------------------------------------------===//
 
@@ -44,9 +44,10 @@ final class PreferSynthesizedInitializer: LintSyntaxRule<LintOnlyValue>, @unchec
         // Collects all of the initializers that could be replaced by the synthesized memberwise
         // initializer(s).
         var extraneousInitializers = [InitializerDeclSyntax]()
+
         for initializer in initializers {
-            guard // Attributes signify intent that isn't automatically synthesized by the compiler.
-            initializer.attributes.isEmpty,
+            // Attributes signify intent that isn't automatically synthesized by the compiler.
+            guard initializer.attributes.isEmpty,
                   matchesPropertyList(
                       parameters: initializer.signature.parameterClause.parameters,
                       properties: storedProperties
@@ -58,17 +59,19 @@ final class PreferSynthesizedInitializer: LintSyntaxRule<LintOnlyValue>, @unchec
                   matchesAccessLevel(
                       modifiers: initializer.modifiers,
                       properties: storedProperties
-                  ) else { continue }
+                  )
+            else { continue }
 
             extraneousInitializers.append(initializer)
         }
 
-        // The synthesized memberwise initializer(s) are only created when there are no initializers. If
-        // there are other initializers that cannot be replaced by a synthesized memberwise initializer,
-        // then all of the initializers must remain.
+        // The synthesized memberwise initializer(s) are only created when there are no
+        // initializers. If there are other initializers that cannot be replaced by a synthesized
+        // memberwise initializer, then all of the initializers must remain.
         let initializersCount = node.memberBlock.members.count(where: {
             $0.decl.is(InitializerDeclSyntax.self)
         })
+
         if extraneousInitializers.count == initializersCount {
             for initializer in extraneousInitializers {
                 diagnose(.removeRedundantInitializer, on: initializer)
@@ -84,13 +87,15 @@ final class PreferSynthesizedInitializer: LintSyntaxRule<LintOnlyValue>, @unchec
     /// - Parameters:
     ///   - modifiers: The modifier list from the initializer.
     ///   - properties: The properties from the enclosing type.
-    ///   - Returns: Whether the initializer has the same access level as the synthesized initializer.
+    ///   - Returns: Whether the initializer has the same access level as the synthesized
+    ///     initializer.
     private func matchesAccessLevel(
         modifiers: DeclModifierListSyntax?,
         properties: [VariableDeclSyntax]
     ) -> Bool {
         let synthesizedAccessLevel = synthesizedInitAccessLevel(using: properties)
         let accessLevel = modifiers?.accessLevelModifier
+
         switch synthesizedAccessLevel {
             case .internal:
                 // No explicit access level or internal are equivalent.
@@ -108,6 +113,7 @@ final class PreferSynthesizedInitializer: LintSyntaxRule<LintOnlyValue>, @unchec
         properties: [VariableDeclSyntax]
     ) -> Bool {
         guard parameters.count == properties.count else { return false }
+
         for (idx, parameter) in parameters.enumerated() {
             guard parameter.secondName == nil else { return false }
 
@@ -115,14 +121,16 @@ final class PreferSynthesizedInitializer: LintSyntaxRule<LintOnlyValue>, @unchec
             let propertyID = property.firstIdentifier
             guard let propertyType = property.firstType else { return false }
 
-            // Ensure that parameters that correspond to properties declared using 'var' have a default
-            // argument that is identical to the property's default value. Otherwise, a default argument
-            // doesn't match the memberwise initializer.
+            // Ensure that parameters that correspond to properties declared using 'var' have a
+            // default argument that is identical to the property's default value. Otherwise, a
+            // default argument doesn't match the memberwise initializer.
             let isVarDecl = property.bindingSpecifier.tokenKind == .keyword(.var)
+
             if isVarDecl, let initializer = property.firstInitializer {
                 guard let defaultArg = parameter.defaultValue else { return false }
-                guard initializer.value.description == defaultArg.value.description
-                else { return false }
+                guard initializer.value.description == defaultArg.value.description else {
+                    return false
+                }
             } else if parameter.defaultValue != nil {
                 return false
             }
@@ -147,9 +155,11 @@ final class PreferSynthesizedInitializer: LintSyntaxRule<LintOnlyValue>, @unchec
         guard variables.count == initBody.statements.count else { return false }
 
         var statements: [String] = []
+
         for statement in initBody.statements {
             guard let expr = statement.item.as(InfixOperatorExprSyntax.self),
-                  expr.operator.is(AssignmentExprSyntax.self) else { return false }
+                  expr.operator.is(AssignmentExprSyntax.self)
+            else { return false }
 
             var leftName = ""
             var rightName = ""
@@ -175,8 +185,8 @@ final class PreferSynthesizedInitializer: LintSyntaxRule<LintOnlyValue>, @unchec
         }
 
         // Multiset compare: each variable must consume exactly one matching statement, and no
-        // statements may be left over. Previously, `firstIndex(of:)` + `remove(at:)` per variable was
-        // O(n²) on the statements list.
+        // statements may be left over. Previously, `firstIndex(of:)` + `remove(at:)` per variable
+        // was O(n²) on the statements list.
         var statementCounts: [String: Int] = [:]
         for stmt in statements { statementCounts[stmt, default: 0] += 1 }
         var remaining = statements.count
@@ -184,6 +194,7 @@ final class PreferSynthesizedInitializer: LintSyntaxRule<LintOnlyValue>, @unchec
         for variable in variables {
             let id = variable.firstIdentifier.identifier.text
             guard let count = statementCounts[id], count > 0 else { return false }
+
             if count == 1 {
                 statementCounts.removeValue(forKey: id)
             } else {
@@ -213,6 +224,7 @@ private enum AccessLevel { case `internal`, `fileprivate`, `private` }
 /// - Returns: The synthesized memberwise initializer's access level.
 private func synthesizedInitAccessLevel(using properties: [VariableDeclSyntax]) -> AccessLevel {
     var hasFileprivate = false
+
     for property in properties {
         // Private takes precedence, so finding 1 private property defines the access level.
         if property.modifiers.contains(where: {
@@ -224,7 +236,6 @@ private func synthesizedInitAccessLevel(using properties: [VariableDeclSyntax]) 
             $0.name.tokenKind == .keyword(.fileprivate) && $0.detail == nil
         }) {
             hasFileprivate = true
-            // Can't break here because a later property might be private.
         }
     }
     return hasFileprivate ? .fileprivate : .internal

@@ -1,14 +1,14 @@
-//===----------------------------------------------------------------------===//
+// ===----------------------------------------------------------------------===//
 //
 // This source file is part of the Swift.org open source project
 //
-// Copyright (c) 2014 - 2025 Apple Inc. and the Swift project authors
-// Licensed under Apache License v2.0 with Runtime Library Exception
+// Copyright (c) 2014 - 2025 Apple Inc. and the Swift project authors Licensed under Apache License
+// v2.0 with Runtime Library Exception
 //
-// See https://swift.org/LICENSE.txt for license information
-// See https://swift.org/CONTRIBUTORS.txt for the list of Swift project authors
+// See https://swift.org/LICENSE.txt for license information See https://swift.org/CONTRIBUTORS.txt
+// for the list of Swift project authors
 //
-//===----------------------------------------------------------------------===//
+// ===----------------------------------------------------------------------===//
 
 import SwiftSyntax
 
@@ -39,7 +39,7 @@ extension ExprSyntax {
 }
 
 /// Common protocol implemented by expression syntax types that are expressed as a modified
-/// subexpression of the form `<keyword> <subexpr>`.
+/// subexpression of the form `<keyword> <subexpr>` .
 protocol KeywordModifiedExprSyntax: ExprSyntaxProtocol {
     var expression: ExprSyntax { get }
 }
@@ -66,10 +66,10 @@ extension ExprSyntax {
     }
 }
 
-/// Common protocol implemented by comma-separated lists whose elements
-/// support a `trailingComma`.
+/// Common protocol implemented by comma-separated lists whose elements support a `trailingComma` .
 protocol CommaSeparatedListSyntax: SyntaxCollection
-where Element: WithTrailingCommaSyntax & Equatable {
+    where Element: WithTrailingCommaSyntax & Equatable
+{
     /// The node used for trailing comma handling; inserted immediately after this node.
     var lastNodeForTrailingComma: SyntaxProtocol? { get }
 }
@@ -85,20 +85,12 @@ extension LabeledExprListSyntax: CommaSeparatedListSyntax {
 }
 extension ClosureCaptureListSyntax: CommaSeparatedListSyntax {
     var lastNodeForTrailingComma: SyntaxProtocol? {
-        if let initializer = last?.initializer {
-            initializer
-        } else {
-            last?.name
-        }
+        if let initializer = last?.initializer { initializer } else { last?.name }
     }
 }
 extension EnumCaseParameterListSyntax: CommaSeparatedListSyntax {
     var lastNodeForTrailingComma: SyntaxProtocol? {
-        if let defaultValue = last?.defaultValue {
-            defaultValue
-        } else {
-            last?.type
-        }
+        if let defaultValue = last?.defaultValue { defaultValue } else { last?.type }
     }
 }
 extension FunctionParameterListSyntax: CommaSeparatedListSyntax {
@@ -114,11 +106,7 @@ extension FunctionParameterListSyntax: CommaSeparatedListSyntax {
 }
 extension GenericParameterListSyntax: CommaSeparatedListSyntax {
     var lastNodeForTrailingComma: SyntaxProtocol? {
-        if let inheritedType = last?.inheritedType {
-            inheritedType
-        } else {
-            last?.name
-        }
+        if let inheritedType = last?.inheritedType { inheritedType } else { last?.name }
     }
 }
 extension TuplePatternElementListSyntax: CommaSeparatedListSyntax {

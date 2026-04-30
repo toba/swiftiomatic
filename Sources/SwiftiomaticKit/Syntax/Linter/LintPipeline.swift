@@ -47,11 +47,13 @@ extension LintPipeline {
         for node: Node
     ) {
         let ruleID = ObjectIdentifier(Rule.self)
+
         if case let .some(skipNode) = shouldSkipChildren[ruleID],
            node.id == skipNode.id
         {
             shouldSkipChildren.removeValue(forKey: ruleID)
         }
+
         if let cached = ruleCache[ruleID] as? Rule { visitor(cached)(node) }
     }
 

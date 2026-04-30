@@ -1,15 +1,15 @@
 ---
 # p33-rch
 title: Cache lint results by file content hash
-status: in-progress
+status: completed
 type: feature
 priority: high
 created_at: 2026-04-30T04:15:35Z
-updated_at: 2026-04-30T04:23:11Z
+updated_at: 2026-04-30T04:39:24Z
 sync:
     github:
         issue_number: "526"
-        synced_at: "2026-04-30T04:23:37Z"
+        synced_at: "2026-04-30T05:51:02Z"
 ---
 
 ## Problem
@@ -46,3 +46,39 @@ This unblocks re-attaching the prebuild lint plugin to `SwiftiomaticKit` (curren
 ## References
 
 - wpg-h5c — Speed up swift package test wall-time: prebuild lint plugin dominates
+
+
+
+## Summary of Changes
+
+Added a content-addressed lint cache that turns no-change `sm lint` runs into hash-and-replay.
+
+**New:** `Sources/SwiftiomaticKit/Support/LintCache.swift` — `LintCache.Record` (Codable), `LintCache.Entry` (flattened finding primitives, since `Finding.category` is a non-Codable protocol), SHA-256 content + configuration fingerprint, on-disk layout `.build/sm-lint-cache/<fingerprint[..16]>/<key>.json`. Atomic write-then-rename. Memoizes the per-`Configuration` fingerprint via `Mutex` so the typical single-config tree pays the JSON-encode + hash exactly once per run.
+
+**Engine fingerprint** = SHA-256 of (sorted `ConfigurationRegistry.allRuleTypes` reflected names + JSON-encoded `Configuration` with sortedKeys + cache schema version). Adding/removing/renaming a rule (binary rebuild) or changing config orphans every prior subtree. `swift package clean` clears them.
+
+**Wired into:** `Sources/Swiftiomatic/Frontend/LintFrontend.swift` — looks up by `(absolutePath, contentHash, fingerprint)` before constructing `LintCoordinator`. On hit, replays cached entries via new `DiagnosticsEngine.consumeCachedEntry(_:)` (same `emit(Diagnostic)` path → byte-identical stderr + identical `hasErrors`/`hasWarnings` accounting). On miss, captures findings via `CapturingFindingConsumer` while forwarding them, then persists. Bypassed for `--lines`/`--offsets`, stdin, `--ignoreUnparsableFiles`, and any file the parser couldn't parse (avoids poisoning the cache with a record that suppresses real findings).
+
+**Flag:** `--no-cache` on `sm lint` (also `SM_LINT_NO_CACHE=1` env var).
+
+**Plugin re-attached:** `Package.swift` — `SwiftiomaticBuildToolPlugin` is back on `SwiftiomaticKit.plugins` (after `GenerateCode`). The cache makes warm prebuild runs cheap enough that this no longer regresses wpg-h5c.
+
+## Measured impact
+
+On `Sources/SwiftiomaticKit/` (305 files, release build of `sm`):
+
+| Run | Wall | CPU |
+|---|---|---|
+| Cold (cache cleared) | 7.33s | 45.25s |
+| Warm (cache hit) | **0.24s** | 1.61s |
+| `--no-cache` | 6.85s | 50.36s |
+
+~30× wall-time speedup on no-change runs. Sorted output is byte-identical between cold and warm (280 lines, diff empty).
+
+## Out of scope (deferred)
+
+- Caching `sm format` rewrites.
+- Shared cache across `format` and `lint`.
+- User-cache fallback (`~/Library/Caches/sm/...`).
+- Cache size cap / eviction.
+- Unit tests for `LintCache` directly (covered indirectly by warm-run output equality).
