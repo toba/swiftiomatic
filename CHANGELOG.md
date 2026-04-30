@@ -110,6 +110,15 @@
 - Compact rewriter; dedupe and perf-tune visit overrides ([#521](https://github.com/toba/swiftiomatic/issues/521))
 - Remove vestigial `CombinedRewriter` spike ([#517](https://github.com/toba/swiftiomatic/issues/517))
 - Generator no longer emits duplicate `shouldRewrite` checks per node ([#519](https://github.com/toba/swiftiomatic/issues/519))
+- `LintCache.Entry`; store `Lint` directly; drop parallel `Severity` enum ([#540](https://github.com/toba/swiftiomatic/issues/540))
+- `LintCache`; promote `Entry.Location` and `Entry.Note` to top-level types ([#542](https://github.com/toba/swiftiomatic/issues/542))
+- `LintCache`; document concurrent writer race; last-writer-wins ([#548](https://github.com/toba/swiftiomatic/issues/548))
+- `CapturingFindingConsumer`; document single-thread invariant ([#547](https://github.com/toba/swiftiomatic/issues/547))
+- `Context.preparedAcronyms`; verified gated by `shouldRewrite` when `UppercaseAcronyms` disabled ([#545](https://github.com/toba/swiftiomatic/issues/545))
+- `Mutex` shape on `LintCache.lastFingerprint`; verified ([#544](https://github.com/toba/swiftiomatic/issues/544))
+- Audit `LintSyntaxRule` subclasses for `final` and `static`; documented `class var` requirement ([#538](https://github.com/toba/swiftiomatic/issues/538))
+- Audit lint-flagged IIFE patterns; simplify `preparedAcronyms` initializer ([#541](https://github.com/toba/swiftiomatic/issues/541))
+- Verify `consumeFinding` and `consumeCachedEntry` produce byte-identical output; add `LintCache` schema round-trip tests ([#553](https://github.com/toba/swiftiomatic/issues/553))
 
 ## Week of Apr 19 – Apr 25, 2026
 

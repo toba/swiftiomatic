@@ -88,12 +88,17 @@ package final class Context {
     /// sorted longest-first so longer acronyms match before shorter
     /// substrings. Computed once per file; reused for every identifier
     /// token visited.
-    lazy var preparedAcronyms: [(titlecased: String, uppercased: String)] = {
+    ///
+    /// Lazy so a config that disables `UppercaseAcronyms` never pays the
+    /// `uppercased() + sorted + map` cost. The single access site
+    /// (`LayoutWriter.applyUppercaseAcronyms`) is gated by
+    /// `context.shouldRewrite(UppercaseAcronyms.self, ...)`, so when the rule
+    /// is disabled this lazy var is never realized.
+    lazy var preparedAcronyms: [(titlecased: String, uppercased: String)] =
         configuration[UppercaseAcronyms.self].words
             .filter { $0.count >= 2 }
             .sorted { $0.count > $1.count }
             .map { (titlecased: $0.capitalized, uppercased: $0.uppercased()) }
-    }()
 
     /// Creates a new Context with the provided configuration, diagnostic engine, and file URL.
     package init(

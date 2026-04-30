@@ -1,16 +1,16 @@
 ---
 # uhz-elr
 title: 'N5: Audit lint-flagged IIFE patterns in Context and LintCache'
-status: ready
+status: completed
 type: task
 priority: low
 created_at: 2026-04-30T15:59:51Z
-updated_at: 2026-04-30T15:59:51Z
+updated_at: 2026-04-30T19:49:19Z
 parent: 6xi-be2
 sync:
     github:
         issue_number: "541"
-        synced_at: "2026-04-30T16:27:54Z"
+        synced_at: "2026-04-30T20:01:23Z"
 ---
 
 **Location:** `Sources/SwiftiomaticKit/Support/Context.swift:1` (likely the `preparedAcronyms` IIFE) and `Sources/SwiftiomaticKit/Support/LintCache.swift:96` (`ruleSetIdentifier`)
@@ -24,3 +24,13 @@ None — readability / lint cleanliness only.
 ## Reason deferred
 
 Cosmetic. Mostly a question of which rules to keep loud and which to silence with rationale. Bundle with the next round of lint-flag triage.
+
+
+
+## Summary of Changes
+
+Audited the two flagged sites:
+
+1. **`Context.preparedAcronyms`** (`Sources/SwiftiomaticKit/Support/Context.swift`): removed the IIFE wrapper. The single-expression chain (`filter().sorted().map()`) reads cleanly as a direct `lazy var x: T = expr` initializer. Same behavior, simpler shape, no longer trips `RedundantClosure`.
+
+2. **`LintCache.ruleSetIdentifier`** (`Sources/SwiftiomaticKit/Support/LintCache.swift:96`): kept as IIFE. The closure body is multi-statement (`var hasher`, `hasher.update` … sequenced operations on a mutable hasher), so `RedundantClosure.transform` short-circuits at the `firstAndOnly` check (RedundantClosure.swift:35). Not flagged in practice.

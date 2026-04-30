@@ -16,6 +16,14 @@ import SwiftParser
 import SwiftSyntax
 import Synchronization
 
+/// Common configuration- and file-handling plumbing for the lint and format subcommands.
+///
+/// All stored properties are `let`-bound and `Sendable` (or value types of `Sendable`
+/// elements). The `@unchecked` is required only because Swift forbids a non-final class
+/// from synthesizing a checked `Sendable` conformance — subclasses (`LintFrontend`,
+/// `FormatFrontend`) could in principle add unsynchronized mutable state. Both current
+/// subclasses are `final` and similarly all-`let`, so the conformance is in practice safe;
+/// any future subclass needs to maintain that invariant.
 class Frontend: @unchecked Sendable {
   /// Provides formatter configurations for given `.swift` source files, configuration files or configuration strings.
   struct ConfigurationProvider: Sendable {

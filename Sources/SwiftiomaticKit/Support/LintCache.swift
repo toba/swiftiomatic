@@ -14,41 +14,50 @@ import Synchronization
 /// `fingerprint` invalidates the entire subtree for a given `(rule set + configuration)`. Stale
 /// fingerprint subdirectories from prior rule/config versions are simply orphaned — `swift package
 /// clean` removes them along with the rest of `.build`.
+///
+/// **Concurrent writers**: two `sm lint` processes linting the same file with the same
+/// configuration will land on the same record path. `store(_:)` writes with `.atomic`
+/// (write-then-rename), so readers always see either the previous record or the new one,
+/// never a torn file. When both writers race, the last `rename` wins; both inputs are by
+/// construction equivalent (same content hash + same fingerprint ⇒ same findings), so the
+/// surviving record is always valid. This is documented because there is no inter-process
+/// lock; future consumers should not assume one.
 package final class LintCache: Sendable {
+    package struct Location: Codable, Sendable {
+        package var file: String
+        package var line: Int
+        package var column: Int
+
+        package init(file: String, line: Int, column: Int) {
+            self.file = file
+            self.line = line
+            self.column = column
+        }
+    }
+
+    package struct Note: Codable, Sendable {
+        package var message: String
+        package var location: Location?
+
+        package init(message: String, location: Location?) {
+            self.message = message
+            self.location = location
+        }
+    }
+
     /// One emitted diagnostic preserved across runs. `Finding.category` is a protocol-typed value
     /// that isn't directly Codable, so the cache stores the flattened primitives that
     /// `DiagnosticsEngine` ultimately consumes.
     package struct Entry: Codable, Sendable {
-        package enum Severity: String, Codable, Sendable { case error, warn, no }
-
-        package struct Location: Codable, Sendable {
-            package var file: String
-            package var line: Int
-            package var column: Int
-
-            package init(file: String, line: Int, column: Int) {
-                self.file = file
-                self.line = line
-                self.column = column
-            }
-        }
-
-        package struct Note: Codable, Sendable {
-            package var message: String
-            package var location: Location?
-
-            package init(message: String, location: Location?) {
-                self.message = message
-                self.location = location
-            }
-        }
-
         /// Human-readable category string (e.g. `"NoBlockComments"`). Equivalent to
         /// `"\(finding.category)"` at capture time.
         package var category: String
 
         /// Severity as configured for the rule that emitted the finding.
-        package var severity: Severity
+        ///
+        /// Stored as the live `Lint` value directly. The string raw values (`error`, `warn`, `no`)
+        /// match the prior `Entry.Severity` shape, so cache records written under v1 still decode.
+        package var severity: Lint
 
         /// Finding message text.
         package var message: String
@@ -61,7 +70,7 @@ package final class LintCache: Sendable {
 
         package init(
             category: String,
-            severity: Severity,
+            severity: Lint,
             message: String,
             location: Location?,
             notes: [Note]
@@ -266,7 +275,7 @@ package final class LintCache: Sendable {
     }
 }
 
-extension LintCache.Entry.Location {
+extension LintCache.Location {
     /// Round-trips a `Finding.Location` through the cache schema.
     package init(_ findingLocation: Finding.Location) {
         self.init(
@@ -279,24 +288,5 @@ extension LintCache.Entry.Location {
     /// Materializes the cached location as a `Finding.Location`.
     package var asFindingLocation: Finding.Location {
         Finding.Location(file: file, line: line, column: column)
-    }
-}
-
-extension LintCache.Entry.Severity {
-    package init(_ severity: Lint) {
-        self =
-            switch severity {
-            case .error: .error
-            case .warn: .warn
-            case .no: .no
-            }
-    }
-
-    package var asLint: Lint {
-        switch self {
-        case .error: .error
-        case .warn: .warn
-        case .no: .no
-        }
     }
 }

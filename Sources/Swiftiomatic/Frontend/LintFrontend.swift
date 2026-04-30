@@ -145,6 +145,12 @@ final class LintFrontend: Frontend, @unchecked Sendable {
 }
 
 /// Wraps a finding consumer to record every forwarded finding in cache-ready form.
+///
+/// Single-thread use only. One instance is created per file inside `processFile` and is
+/// invoked synchronously from `LintCoordinator.lint(...)` on the same worker thread that
+/// constructed it. `entries` is intentionally not synchronized; if a future change hands
+/// this consumer to a concurrent worker, the mutable state needs a `Mutex` and the type
+/// needs a `Sendable` conformance.
 private final class CapturingFindingConsumer {
   private let forward: (Finding) -> Void
   private var entries: [LintCache.Entry] = []
@@ -156,13 +162,13 @@ private final class CapturingFindingConsumer {
   func consume(_ finding: Finding) {
     let entry = LintCache.Entry(
       category: "\(finding.category)",
-      severity: LintCache.Entry.Severity(finding.severity),
+      severity: finding.severity,
       message: finding.message.text,
-      location: finding.location.map(LintCache.Entry.Location.init),
+      location: finding.location.map(LintCache.Location.init),
       notes: finding.notes.map { note in
-        LintCache.Entry.Note(
+        LintCache.Note(
           message: note.message.text,
-          location: note.location.map(LintCache.Entry.Location.init)
+          location: note.location.map(LintCache.Location.init)
         )
       }
     )
