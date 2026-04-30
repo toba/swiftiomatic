@@ -56,168 +56,110 @@ final class RedundantAccessControl: StaticFormatRule<BasicRuleValue>, @unchecked
     }
 
     static func transform(
-        _ node: ActorDeclSyntax,
-        parent _: Syntax?,
-        context: Context
+        _ node: ActorDeclSyntax, parent _: Syntax?, context: Context
     ) -> DeclSyntax {
-        let afterInternal = removeRedundantInternal(
-            from: node, keywordKeyPath: \.actorKeyword, context: context
-        )
-        return DeclSyntax(removePublicFromMembers(of: afterInternal, context: context))
-    }
-
-    static func transform(
-        _ node: ClassDeclSyntax,
-        parent _: Syntax?,
-        context: Context
-    ) -> DeclSyntax {
-        let afterInternal = removeRedundantInternal(
-            from: node, keywordKeyPath: \.classKeyword, context: context
-        )
-        return DeclSyntax(removePublicFromMembers(of: afterInternal, context: context))
-    }
-
-    static func transform(
-        _ node: EnumDeclSyntax,
-        parent _: Syntax?,
-        context: Context
-    ) -> DeclSyntax {
-        let afterInternal = removeRedundantInternal(
-            from: node, keywordKeyPath: \.enumKeyword, context: context
-        )
-        return DeclSyntax(removePublicFromMembers(of: afterInternal, context: context))
-    }
-
-    static func transform(
-        _ node: FunctionDeclSyntax,
-        parent _: Syntax?,
-        context: Context
-    ) -> DeclSyntax {
-        DeclSyntax(removeRedundantInternal(
-            from: node, keywordKeyPath: \.funcKeyword, context: context
+        DeclSyntax(removePublicFromMembers(
+            of: removeRedundantInternal(node, keyword: \.actorKeyword, context: context),
+            context: context
         ))
     }
 
     static func transform(
-        _ node: InitializerDeclSyntax,
-        parent _: Syntax?,
-        context: Context
+        _ node: ClassDeclSyntax, parent _: Syntax?, context: Context
     ) -> DeclSyntax {
-        DeclSyntax(removeRedundantInternal(
-            from: node, keywordKeyPath: \.initKeyword, context: context
+        DeclSyntax(removePublicFromMembers(
+            of: removeRedundantInternal(node, keyword: \.classKeyword, context: context),
+            context: context
         ))
     }
 
     static func transform(
-        _ node: ProtocolDeclSyntax,
-        parent _: Syntax?,
-        context: Context
+        _ node: EnumDeclSyntax, parent _: Syntax?, context: Context
     ) -> DeclSyntax {
-        DeclSyntax(removeRedundantInternal(
-            from: node, keywordKeyPath: \.protocolKeyword, context: context
+        DeclSyntax(removePublicFromMembers(
+            of: removeRedundantInternal(node, keyword: \.enumKeyword, context: context),
+            context: context
         ))
     }
 
     static func transform(
-        _ node: StructDeclSyntax,
-        parent _: Syntax?,
-        context: Context
+        _ node: FunctionDeclSyntax, parent _: Syntax?, context: Context
     ) -> DeclSyntax {
-        let afterInternal = removeRedundantInternal(
-            from: node, keywordKeyPath: \.structKeyword, context: context
-        )
-        return DeclSyntax(removePublicFromMembers(of: afterInternal, context: context))
+        DeclSyntax(removeRedundantInternal(node, keyword: \.funcKeyword, context: context))
     }
 
     static func transform(
-        _ node: SubscriptDeclSyntax,
-        parent _: Syntax?,
-        context: Context
+        _ node: InitializerDeclSyntax, parent _: Syntax?, context: Context
     ) -> DeclSyntax {
-        DeclSyntax(removeRedundantInternal(
-            from: node, keywordKeyPath: \.subscriptKeyword, context: context
+        DeclSyntax(removeRedundantInternal(node, keyword: \.initKeyword, context: context))
+    }
+
+    static func transform(
+        _ node: ProtocolDeclSyntax, parent _: Syntax?, context: Context
+    ) -> DeclSyntax {
+        DeclSyntax(removeRedundantInternal(node, keyword: \.protocolKeyword, context: context))
+    }
+
+    static func transform(
+        _ node: StructDeclSyntax, parent _: Syntax?, context: Context
+    ) -> DeclSyntax {
+        DeclSyntax(removePublicFromMembers(
+            of: removeRedundantInternal(node, keyword: \.structKeyword, context: context),
+            context: context
         ))
     }
 
     static func transform(
-        _ node: TypeAliasDeclSyntax,
-        parent _: Syntax?,
-        context: Context
+        _ node: SubscriptDeclSyntax, parent _: Syntax?, context: Context
     ) -> DeclSyntax {
-        DeclSyntax(removeRedundantInternal(
-            from: node, keywordKeyPath: \.typealiasKeyword, context: context
-        ))
+        DeclSyntax(removeRedundantInternal(node, keyword: \.subscriptKeyword, context: context))
     }
 
     static func transform(
-        _ node: VariableDeclSyntax,
-        parent _: Syntax?,
-        context: Context
+        _ node: TypeAliasDeclSyntax, parent _: Syntax?, context: Context
     ) -> DeclSyntax {
-        DeclSyntax(removeRedundantInternal(
-            from: node, keywordKeyPath: \.bindingSpecifier, context: context
-        ))
+        DeclSyntax(removeRedundantInternal(node, keyword: \.typealiasKeyword, context: context))
     }
 
     static func transform(
-        _ node: ExtensionDeclSyntax,
-        parent _: Syntax?,
-        context: Context
+        _ node: VariableDeclSyntax, parent _: Syntax?, context: Context
     ) -> DeclSyntax {
-        // Only check extensions that have an explicit access level.
+        DeclSyntax(removeRedundantInternal(node, keyword: \.bindingSpecifier, context: context))
+    }
+
+    static func transform(
+        _ node: ExtensionDeclSyntax, parent _: Syntax?, context: Context
+    ) -> DeclSyntax {
         guard let extensionModifier = node.modifiers.accessLevelModifier,
               case let .keyword(extensionKeyword) = extensionModifier.name.tokenKind
         else { return DeclSyntax(node) }
-
-        var modified = false
-        let newMembers = node.memberBlock.members.map { member -> MemberBlockItemSyntax in
-            let rewritten = rewrittenDeclForExtensionACL(
-                member.decl,
-                extensionKeyword: extensionKeyword,
-                context: context
+        let message: Finding.Message =
+            .removeRedundantExtensionACL(keyword: extensionModifier.name.text)
+        return DeclSyntax(rewriteMemberBlock(of: node) { decl in
+            removeMatchingAccessControl(
+                from: decl, matching: extensionKeyword,
+                message: message, context: context
             )
-            guard rewritten.id != member.decl.id else { return member }
-            modified = true
-            return member.with(\.decl, rewritten)
-        }
-
-        guard modified else { return DeclSyntax(node) }
-        let newMemberBlock = node.memberBlock.with(
-            \.members,
-            MemberBlockItemListSyntax(newMembers)
-        )
-        return DeclSyntax(node.with(\.memberBlock, newMemberBlock))
+        })
     }
 
-    // MARK: - RedundantInternal: Helpers
+    // MARK: - Helpers
 
+    /// Removes a redundant `internal` modifier from `decl`, diagnosing the modifier.
     private static func removeRedundantInternal<Decl: DeclSyntaxProtocol & WithModifiersSyntax>(
-        from decl: Decl,
-        keywordKeyPath: WritableKeyPath<Decl, TokenSyntax>,
+        _ decl: Decl,
+        keyword: WritableKeyPath<Decl, TokenSyntax>,
         context: Context
     ) -> Decl {
-        guard let internalModifier = decl.modifiers.accessLevelModifier,
-              internalModifier.name.tokenKind == .keyword(.internal),
-              internalModifier.detail == nil
+        guard let mod = decl.modifiers.accessLevelModifier,
+              mod.name.tokenKind == .keyword(.internal),
+              mod.detail == nil
         else { return decl }
-
-        Self.diagnose(.removeRedundantInternal, on: internalModifier.name, context: context)
-
-        var result = decl
-        result.modifiers.remove(anyOf: [.internal])
-
-        if result.modifiers.first != nil {
-            result.modifiers[result.modifiers.startIndex].leadingTrivia = internalModifier
-                .leadingTrivia
-        } else {
-            result[keyPath: keywordKeyPath].leadingTrivia = internalModifier.leadingTrivia
-        }
-
-        return result
+        Self.diagnose(.removeRedundantInternal, on: mod.name, context: context)
+        return decl.removingModifiers([.internal], keyword: keyword)
     }
 
-    // MARK: - RedundantPublic: Helpers
-
+    /// Removes redundant `public` modifiers from members of a non-public type.
     private static func removePublicFromMembers<
         Decl: DeclGroupSyntax & WithModifiersSyntax
     >(of decl: Decl, context: Context) -> Decl {
@@ -227,158 +169,50 @@ final class RedundantAccessControl: StaticFormatRule<BasicRuleValue>, @unchecked
         {
             return decl
         }
+        return rewriteMemberBlock(of: decl) { member in
+            removeMatchingAccessControl(
+                from: member, matching: .public,
+                message: .removeRedundantPublic, context: context
+            )
+        }
+    }
 
+    /// Removes the access modifier matching `keyword` from a member decl, when
+    /// it equals the enclosing type or extension's access level. Dispatches via
+    /// `DeclSyntax.removingModifiers(_:)`.
+    private static func removeMatchingAccessControl(
+        from decl: DeclSyntax,
+        matching keyword: Keyword,
+        message: Finding.Message,
+        context: Context
+    ) -> DeclSyntax {
+        guard let mods = decl.modifiersOrNil,
+              let mod = mods.accessLevelModifier,
+              mod.detail == nil,
+              case let .keyword(modKeyword) = mod.name.tokenKind,
+              modKeyword == keyword
+        else { return decl }
+        Self.diagnose(message, on: mod.name, context: context)
+        return decl.removingModifiers([keyword])
+    }
+
+    /// Maps over the member block of `decl`, applying `transform` to each
+    /// member's decl. Returns `decl` unchanged when no member changes.
+    private static func rewriteMemberBlock<Decl: DeclGroupSyntax>(
+        of decl: Decl, _ transform: (DeclSyntax) -> DeclSyntax
+    ) -> Decl {
         var modified = false
         let newMembers = decl.memberBlock.members.map { member -> MemberBlockItemSyntax in
-            let rewritten = rewrittenDeclForPublic(member.decl, context: context)
+            let rewritten = transform(member.decl)
             guard rewritten.id != member.decl.id else { return member }
             modified = true
             return member.with(\.decl, rewritten)
         }
-
         guard modified else { return decl }
         return decl.with(
             \.memberBlock,
             decl.memberBlock.with(\.members, MemberBlockItemListSyntax(newMembers))
         )
-    }
-
-    private static func rewrittenDeclForPublic(
-        _ decl: DeclSyntax, context: Context
-    ) -> DeclSyntax {
-        switch Syntax(decl).as(SyntaxEnum.self) {
-            case let .functionDecl(d):
-                DeclSyntax(removePublic(from: d, keywordKeyPath: \.funcKeyword, context: context))
-            case let .variableDecl(d):
-                DeclSyntax(removePublic(from: d, keywordKeyPath: \.bindingSpecifier, context: context))
-            case let .classDecl(d):
-                DeclSyntax(removePublic(from: d, keywordKeyPath: \.classKeyword, context: context))
-            case let .structDecl(d):
-                DeclSyntax(removePublic(from: d, keywordKeyPath: \.structKeyword, context: context))
-            case let .enumDecl(d):
-                DeclSyntax(removePublic(from: d, keywordKeyPath: \.enumKeyword, context: context))
-            case let .protocolDecl(d):
-                DeclSyntax(removePublic(from: d, keywordKeyPath: \.protocolKeyword, context: context))
-            case let .typeAliasDecl(d):
-                DeclSyntax(removePublic(from: d, keywordKeyPath: \.typealiasKeyword, context: context))
-            case let .initializerDecl(d):
-                DeclSyntax(removePublic(from: d, keywordKeyPath: \.initKeyword, context: context))
-            case let .subscriptDecl(d):
-                DeclSyntax(removePublic(from: d, keywordKeyPath: \.subscriptKeyword, context: context))
-            case let .actorDecl(d):
-                DeclSyntax(removePublic(from: d, keywordKeyPath: \.actorKeyword, context: context))
-            default: decl
-        }
-    }
-
-    private static func removePublic<Decl: DeclSyntaxProtocol & WithModifiersSyntax>(
-        from decl: Decl,
-        keywordKeyPath: WritableKeyPath<Decl, TokenSyntax>,
-        context: Context
-    ) -> Decl {
-        guard let memberModifier = decl.modifiers.accessLevelModifier,
-              memberModifier.detail == nil,
-              case .keyword(.public) = memberModifier.name.tokenKind else { return decl }
-
-        Self.diagnose(.removeRedundantPublic, on: memberModifier.name, context: context)
-
-        var result = decl
-        let savedTrivia = memberModifier.leadingTrivia
-        result.modifiers.remove(anyOf: [.public])
-        if result.modifiers.first != nil {
-            result.modifiers[result.modifiers.startIndex].leadingTrivia = savedTrivia
-        } else {
-            result[keyPath: keywordKeyPath].leadingTrivia = savedTrivia
-        }
-        return result
-    }
-
-    // MARK: - RedundantExtensionACL: Helpers
-
-    private static func rewrittenDeclForExtensionACL(
-        _ decl: DeclSyntax, extensionKeyword: Keyword, context: Context
-    ) -> DeclSyntax {
-        switch Syntax(decl).as(SyntaxEnum.self) {
-            case let .functionDecl(d):
-                DeclSyntax(removeExtensionACLModifier(
-                    from: d, keyword: extensionKeyword,
-                    keywordKeyPath: \.funcKeyword, context: context
-                ))
-            case let .variableDecl(d):
-                DeclSyntax(removeExtensionACLModifier(
-                    from: d, keyword: extensionKeyword,
-                    keywordKeyPath: \.bindingSpecifier, context: context
-                ))
-            case let .classDecl(d):
-                DeclSyntax(removeExtensionACLModifier(
-                    from: d, keyword: extensionKeyword,
-                    keywordKeyPath: \.classKeyword, context: context
-                ))
-            case let .structDecl(d):
-                DeclSyntax(removeExtensionACLModifier(
-                    from: d, keyword: extensionKeyword,
-                    keywordKeyPath: \.structKeyword, context: context
-                ))
-            case let .enumDecl(d):
-                DeclSyntax(removeExtensionACLModifier(
-                    from: d, keyword: extensionKeyword,
-                    keywordKeyPath: \.enumKeyword, context: context
-                ))
-            case let .protocolDecl(d):
-                DeclSyntax(removeExtensionACLModifier(
-                    from: d, keyword: extensionKeyword,
-                    keywordKeyPath: \.protocolKeyword, context: context
-                ))
-            case let .typeAliasDecl(d):
-                DeclSyntax(removeExtensionACLModifier(
-                    from: d, keyword: extensionKeyword,
-                    keywordKeyPath: \.typealiasKeyword, context: context
-                ))
-            case let .initializerDecl(d):
-                DeclSyntax(removeExtensionACLModifier(
-                    from: d, keyword: extensionKeyword,
-                    keywordKeyPath: \.initKeyword, context: context
-                ))
-            case let .subscriptDecl(d):
-                DeclSyntax(removeExtensionACLModifier(
-                    from: d, keyword: extensionKeyword,
-                    keywordKeyPath: \.subscriptKeyword, context: context
-                ))
-            case let .actorDecl(d):
-                DeclSyntax(removeExtensionACLModifier(
-                    from: d, keyword: extensionKeyword,
-                    keywordKeyPath: \.actorKeyword, context: context
-                ))
-            default: decl
-        }
-    }
-
-    private static func removeExtensionACLModifier<Decl: DeclSyntaxProtocol & WithModifiersSyntax>(
-        from decl: Decl,
-        keyword extensionKeyword: Keyword,
-        keywordKeyPath: WritableKeyPath<Decl, TokenSyntax>,
-        context: Context
-    ) -> Decl {
-        guard let memberModifier = decl.modifiers.accessLevelModifier,
-              memberModifier.detail == nil,
-              case let .keyword(memberKeyword) = memberModifier.name.tokenKind,
-              memberKeyword == extensionKeyword else { return decl }
-
-        Self.diagnose(
-            .removeRedundantExtensionACL(keyword: memberModifier.name.text),
-            on: memberModifier.name,
-            context: context
-        )
-
-        var result = decl
-        let savedTrivia = memberModifier.leadingTrivia
-        result.modifiers.remove(anyOf: [extensionKeyword])
-        if result.modifiers.first != nil {
-            result.modifiers[result.modifiers.startIndex].leadingTrivia = savedTrivia
-        } else {
-            result[keyPath: keywordKeyPath].leadingTrivia = savedTrivia
-        }
-        return result
     }
 
     // MARK: - RedundantFileprivate: Phase 1 — File Structure Analysis

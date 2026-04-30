@@ -23,6 +23,10 @@ final class FindingEmitter {
     /// An optional function that will be called and passed a finding each time one is emitted.
     private let consumer: ((Finding) -> Void)?
 
+    /// Whether a consumer is attached. Callers can short-circuit expensive work
+    /// (e.g. source-location resolution) when no one is listening.
+    var isAttached: Bool { consumer != nil }
+
     /// Creates a new finding emitter with the given consumer function.
     ///
     /// - Parameter consumer: An optional function that will be called and passed a finding each time

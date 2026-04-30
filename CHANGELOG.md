@@ -37,6 +37,7 @@
 - `return`; break after the keyword instead of before the first chained call
 - Comment wrapping; converge in a single formatter pass
 - `BeforeGuardConditions`; pretty printer is now idempotent for guard `else` placement (single-statement bodies always glue `else {` to the closing condition when it fits)
+- Lint-mode finding emission; verify behavior after compact-pipeline cutover ([#506](https://github.com/toba/swiftiomatic/issues/506))
 
 ### 🗜️ Tweaks
 
@@ -62,14 +63,17 @@
 - Phase 4d; merge statement rewrites ([#500](https://github.com/toba/swiftiomatic/issues/500))
 - Phase 4e; merge expression rewrites ([#499](https://github.com/toba/swiftiomatic/issues/499))
 - Phase 4f; retarget test harness and verify ([#498](https://github.com/toba/swiftiomatic/issues/498))
-- Phase 4 swift review; refactor merged compact-pipeline files
-- `WrapTernary`; retarget layout test harness off the rule's instance override
+- Phase 4 swift review; refactor merged compact-pipeline files ([#504](https://github.com/toba/swiftiomatic/issues/504))
+- `WrapTernary`; retarget layout test harness off the rule's instance override ([#507](https://github.com/toba/swiftiomatic/issues/507))
 - Cut over to `compact` pipeline; delete superseded rule files ([#480](https://github.com/toba/swiftiomatic/issues/480))
 - Replace discrete rules with style-driven pipelines ([#470](https://github.com/toba/swiftiomatic/issues/470))
 - Update README, `CLAUDE.md`, and sub-target READMEs for the style model ([#483](https://github.com/toba/swiftiomatic/issues/483))
-- Drop `applyRule` ladders; push selection / `sm:ignore` checks into the dispatcher
-- Replace metatype-keyed `Context.ruleState(for:)` with typed state properties
-- Rename `RewriteSyntaxRule` to `StructuralFormatRule`; hoist gating to dispatcher
+- Drop `applyRule` ladders; push selection / `sm:ignore` checks into the dispatcher ([#514](https://github.com/toba/swiftiomatic/issues/514))
+- Replace metatype-keyed `Context.ruleState(for:)` with typed state properties ([#513](https://github.com/toba/swiftiomatic/issues/513))
+- Rename `RewriteSyntaxRule` to `StructuralFormatRule`; hoist gating to dispatcher ([#511](https://github.com/toba/swiftiomatic/issues/511))
+- Delete legacy `RewritePipeline` shells; regen `schema.json` ([#487](https://github.com/toba/swiftiomatic/issues/487))
+- Phase 4g; flip default and delete legacy ([#497](https://github.com/toba/swiftiomatic/issues/497))
+- Collapse rewrite pipeline boilerplate; let the generator do the work ([#510](https://github.com/toba/swiftiomatic/issues/510))
 
 ## Week of Apr 19 – Apr 25, 2026
 

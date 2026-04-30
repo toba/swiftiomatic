@@ -1,15 +1,15 @@
 ---
 # uqb-m5z
 title: Collapse rewrite pipeline boilerplate; let the generator do the work
-status: ready
+status: review
 type: task
 priority: high
 created_at: 2026-04-30T00:20:51Z
-updated_at: 2026-04-30T00:20:51Z
+updated_at: 2026-04-30T00:44:42Z
 sync:
     github:
         issue_number: "510"
-        synced_at: "2026-04-30T00:29:43Z"
+        synced_at: "2026-04-30T00:55:14Z"
 ---
 
 ## Summary
@@ -115,3 +115,32 @@ After (1)-(3) the typical reader's path through a format pipeline reduces from "
 - Layout/`TokenStream+*.swift` files. These are large but each token-stream extension does substantive, non-duplicated work; collapsing them would obscure rather than clarify. Same for `LayoutCoordinator.swift`. The pretty printer is already a single direct walk.
 - `LintPipeline` — driven by the generator and already minimal.
 - Schema/configuration generation — orthogonal to the rewrite hot path.
+
+
+
+## Summary of Changes
+
+Picked off the contained, high-impact items from the plan. Steps 2/3 (delete `Rewrites/{Decls,Exprs,Stmts}/*.swift` + remove `applyRewrite`) and step 5 (cache `shouldRewrite` per visit) remain — those are larger mechanical changes touching every visit method and 50+ wrapper files; deferred to follow-ups.
+
+### Done
+
+**Step 1 — `RedundantAccessControl` collapsed (663 → 491 lines).**
+- Replaced three near-identical generic helpers (`removeRedundantInternal`, `removePublic`, `removeExtensionACLModifier`) with the existing `removingModifiers(_:keyword:)` extension (already lived in `Sources/SwiftiomaticKit/Extensions/ModifierListSyntax+Convenience.swift`).
+- Replaced the two SyntaxEnum-switching helpers (`rewrittenDeclForPublic`, `rewrittenDeclForExtensionACL`) with a single `DeclSyntax.removingModifiers(_:)` extension that dispatches once via `SyntaxEnum`.
+- The 11 `transform` overloads are now one-line passthroughs to `removeRedundantInternal` (+ `removePublicFromMembers` for type decls). The extension transform delegates to a unified `removeMatchingAccessControl` + `rewriteMemberBlock` helper that takes the finding message from the caller (so the extension keyword finding stays distinct from the redundant-public finding).
+
+**Step 4 — `ClassDecl.removeFinalFromMember` collapsed (60 lines → 6).**
+- The 7 near-identical `if let funcDecl = decl.as(...) { ... }` blocks are now a single `decl.modifiersOrNil`/`decl.removingModifiers([.final])` call using the new `DeclSyntax` extension.
+
+**Step 6 — Diagnose location lookup gated on attached emitter.**
+- Added `FindingEmitter.isAttached` and short-circuit `SyntaxRule.diagnose` (both static and instance variants) on it, so `startLocation(converter:)` is skipped for runs with no consumer attached.
+
+### Deferred to follow-ups
+
+- **Step 2/3** — delete `Rewrites/{Decls,Exprs,Stmts}/*.swift` and `Context.applyRewrite`; inline rule transforms directly into the hand-written `CompactStageOneRewriter.swift` visit methods. ~3300 lines to relocate; should be its own change so review can focus on it.
+- **Step 5** — cache `shouldRewrite` per visit. Mechanical pass over every `visit(_:)` method in `CompactStageOneRewriter.swift` to extract `let canRun<Rule> = context.shouldRewrite(...)` once.
+- **Step 7** — replace per-rule `lazy var ...State` properties on `Context` with a typed dictionary. Low priority per the plan — only touch when adding state becomes friction.
+
+### Validation
+
+- `swift_package_test` clean: 3010 passed, 0 failed.

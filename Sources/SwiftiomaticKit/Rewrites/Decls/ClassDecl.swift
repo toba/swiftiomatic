@@ -137,67 +137,11 @@ private func applyRedundantFinal(
 }
 
 private func removeFinalFromMember(_ decl: DeclSyntax, context: Context) -> DeclSyntax? {
-    if let funcDecl = decl.as(FunctionDeclSyntax.self),
-       funcDecl.modifiers.contains(anyOf: [.final])
-    {
-        RedundantFinal.diagnose(
-            .removeFinal,
-            on: funcDecl.modifiers.first { $0.name.tokenKind == .keyword(.final) },
-            context: context
-        )
-        return DeclSyntax(funcDecl.removingModifiers([.final], keyword: \.funcKeyword))
-    }
-    if let varDecl = decl.as(VariableDeclSyntax.self),
-       varDecl.modifiers.contains(anyOf: [.final])
-    {
-        RedundantFinal.diagnose(
-            .removeFinal,
-            on: varDecl.modifiers.first { $0.name.tokenKind == .keyword(.final) },
-            context: context
-        )
-        return DeclSyntax(varDecl.removingModifiers([.final], keyword: \.bindingSpecifier))
-    }
-    if let subscriptDecl = decl.as(SubscriptDeclSyntax.self),
-       subscriptDecl.modifiers.contains(anyOf: [.final])
-    {
-        RedundantFinal.diagnose(
-            .removeFinal,
-            on: subscriptDecl.modifiers.first { $0.name.tokenKind == .keyword(.final) },
-            context: context
-        )
-        return DeclSyntax(subscriptDecl.removingModifiers([.final], keyword: \.subscriptKeyword))
-    }
-    if let classDecl = decl.as(ClassDeclSyntax.self),
-       classDecl.modifiers.contains(anyOf: [.final])
-    {
-        RedundantFinal.diagnose(
-            .removeFinal,
-            on: classDecl.modifiers.first { $0.name.tokenKind == .keyword(.final) },
-            context: context
-        )
-        return DeclSyntax(classDecl.removingModifiers([.final], keyword: \.classKeyword))
-    }
-    if let initDecl = decl.as(InitializerDeclSyntax.self),
-       initDecl.modifiers.contains(anyOf: [.final])
-    {
-        RedundantFinal.diagnose(
-            .removeFinal,
-            on: initDecl.modifiers.first { $0.name.tokenKind == .keyword(.final) },
-            context: context
-        )
-        return DeclSyntax(initDecl.removingModifiers([.final], keyword: \.initKeyword))
-    }
-    if let typeAliasDecl = decl.as(TypeAliasDeclSyntax.self),
-       typeAliasDecl.modifiers.contains(anyOf: [.final])
-    {
-        RedundantFinal.diagnose(
-            .removeFinal,
-            on: typeAliasDecl.modifiers.first { $0.name.tokenKind == .keyword(.final) },
-            context: context
-        )
-        return DeclSyntax(typeAliasDecl.removingModifiers([.final], keyword: \.typealiasKeyword))
-    }
-    return nil
+    guard let mods = decl.modifiersOrNil,
+          let finalModifier = mods.first(where: { $0.name.tokenKind == .keyword(.final) })
+    else { return nil }
+    RedundantFinal.diagnose(.removeFinal, on: finalModifier, context: context)
+    return decl.removingModifiers([.final])
 }
 
 extension Finding.Message {

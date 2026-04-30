@@ -42,6 +42,7 @@ extension SyntaxRule {
         anchor: FindingAnchor = .start,
         notes: [Finding.Note] = []
     ) {
+        guard context.findingEmitter.isAttached else { return }
         let severity = context.severity(of: Self.self)
         guard severity.isActive else { return }
         Self.emitFinding(
@@ -116,6 +117,7 @@ extension InstanceSyntaxRule {
         anchor: FindingAnchor = .start,
         notes: [Finding.Note] = []
     ) {
+        guard context.findingEmitter.isAttached else { return }
         let severity = context.severity(of: type(of: self))
         guard severity.isActive else { return }
         Self.emitFinding(
@@ -141,6 +143,7 @@ extension InstanceSyntaxRule {
         anchor: FindingAnchor = .start,
         notes: [Finding.Note] = []
     ) {
+        guard context.findingEmitter.isAttached else { return }
         let configured = context.severity(of: type(of: self))
         guard configured.isActive, severity.isActive else { return }
         Self.emitFinding(

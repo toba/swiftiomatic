@@ -32,22 +32,18 @@ final class CompactStageOneRewriter: SyntaxRewriter {
 
   override func visit(_ node: AccessorBlockSyntax) -> AccessorBlockSyntax {
     let parent = Syntax(node).parent
-    if context.shouldRewrite(RedundantSelf.self, at: Syntax(node)) {
-      RedundantSelf.willEnter(node, context: context)
-    }
+    let runRedundantSelf = context.shouldRewrite(RedundantSelf.self, at: Syntax(node))
+    if runRedundantSelf { RedundantSelf.willEnter(node, context: context) }
     let visited = super.visit(node)
     let result = rewriteAccessorBlock(visited, parent: parent, context: context)
-    if context.shouldRewrite(RedundantSelf.self, at: Syntax(node)) {
-      RedundantSelf.didExit(node, context: context)
-    }
+    if runRedundantSelf { RedundantSelf.didExit(node, context: context) }
     return result
   }
 
   override func visit(_ node: AccessorDeclSyntax) -> DeclSyntax {
     let parent = Syntax(node).parent
-    if context.shouldRewrite(RedundantSelf.self, at: Syntax(node)) {
-      RedundantSelf.willEnter(node, context: context)
-    }
+    let runRedundantSelf = context.shouldRewrite(RedundantSelf.self, at: Syntax(node))
+    if runRedundantSelf { RedundantSelf.willEnter(node, context: context) }
     let visited = super.visit(node)
     let result: DeclSyntax
     if let concrete = visited.as(AccessorDeclSyntax.self) {
@@ -55,20 +51,16 @@ final class CompactStageOneRewriter: SyntaxRewriter {
     } else {
       result = visited
     }
-    if context.shouldRewrite(RedundantSelf.self, at: Syntax(node)) {
-      RedundantSelf.didExit(node, context: context)
-    }
+    if runRedundantSelf { RedundantSelf.didExit(node, context: context) }
     return result
   }
 
   override func visit(_ node: ActorDeclSyntax) -> DeclSyntax {
     let parent = Syntax(node).parent
-    if context.shouldRewrite(PreferSelfType.self, at: Syntax(node)) {
-      PreferSelfType.willEnter(node, context: context)
-    }
-    if context.shouldRewrite(RedundantSelf.self, at: Syntax(node)) {
-      RedundantSelf.willEnter(node, context: context)
-    }
+    let runPreferSelfType = context.shouldRewrite(PreferSelfType.self, at: Syntax(node))
+    let runRedundantSelf = context.shouldRewrite(RedundantSelf.self, at: Syntax(node))
+    if runPreferSelfType { PreferSelfType.willEnter(node, context: context) }
+    if runRedundantSelf { RedundantSelf.willEnter(node, context: context) }
     let visited = super.visit(node)
     let result: DeclSyntax
     if let concrete = visited.as(ActorDeclSyntax.self) {
@@ -76,20 +68,15 @@ final class CompactStageOneRewriter: SyntaxRewriter {
     } else {
       result = visited
     }
-    if context.shouldRewrite(PreferSelfType.self, at: Syntax(node)) {
-      PreferSelfType.didExit(node, context: context)
-    }
-    if context.shouldRewrite(RedundantSelf.self, at: Syntax(node)) {
-      RedundantSelf.didExit(node, context: context)
-    }
+    if runPreferSelfType { PreferSelfType.didExit(node, context: context) }
+    if runRedundantSelf { RedundantSelf.didExit(node, context: context) }
     return result
   }
 
   override func visit(_ node: AsExprSyntax) -> ExprSyntax {
     let parent = Syntax(node).parent
-    if context.shouldRewrite(NoForceUnwrap.self, at: Syntax(node)) {
-      NoForceUnwrap.willEnter(node, context: context)
-    }
+    let runNoForceUnwrap = context.shouldRewrite(NoForceUnwrap.self, at: Syntax(node))
+    if runNoForceUnwrap { NoForceUnwrap.willEnter(node, context: context) }
     let visited = super.visit(node)
     let result: ExprSyntax
     if let concrete = visited.as(AsExprSyntax.self) {
@@ -97,9 +84,7 @@ final class CompactStageOneRewriter: SyntaxRewriter {
     } else {
       result = visited
     }
-    if context.shouldRewrite(NoForceUnwrap.self, at: Syntax(node)) {
-      NoForceUnwrap.didExit(node, context: context)
-    }
+    if runNoForceUnwrap { NoForceUnwrap.didExit(node, context: context) }
     return result
   }
 
@@ -144,9 +129,8 @@ final class CompactStageOneRewriter: SyntaxRewriter {
 
   override func visit(_ node: AwaitExprSyntax) -> ExprSyntax {
     let parent = Syntax(node).parent
-    if context.shouldRewrite(HoistTry.self, at: Syntax(node)) {
-      HoistTry.willEnter(node, context: context)
-    }
+    let runHoistTry = context.shouldRewrite(HoistTry.self, at: Syntax(node))
+    if runHoistTry { HoistTry.willEnter(node, context: context) }
     var current: ExprSyntax = super.visit(node)
     if let concrete = current.as(AwaitExprSyntax.self) {
       if context.shouldRewrite(HoistTry.self, at: Syntax(concrete)) {
@@ -157,9 +141,7 @@ final class CompactStageOneRewriter: SyntaxRewriter {
         "HoistTry: preceding rule widened AwaitExprSyntax to \(type(of: current)); all subsequent rules in this chain are skipped"
       )
     }
-    if context.shouldRewrite(HoistTry.self, at: Syntax(node)) {
-      HoistTry.didExit(node, context: context)
-    }
+    if runHoistTry { HoistTry.didExit(node, context: context) }
     return current
   }
 
@@ -174,24 +156,18 @@ final class CompactStageOneRewriter: SyntaxRewriter {
 
   override func visit(_ node: ClassDeclSyntax) -> DeclSyntax {
     let parent = Syntax(node).parent
-    if context.shouldRewrite(NoForceTry.self, at: Syntax(node)) {
-      NoForceTry.willEnter(node, context: context)
-    }
-    if context.shouldRewrite(NoForceUnwrap.self, at: Syntax(node)) {
-      NoForceUnwrap.willEnter(node, context: context)
-    }
-    if context.shouldRewrite(NoGuardInTests.self, at: Syntax(node)) {
-      NoGuardInTests.willEnter(node, context: context)
-    }
-    if context.shouldRewrite(PreferSelfType.self, at: Syntax(node)) {
-      PreferSelfType.willEnter(node, context: context)
-    }
-    if context.shouldRewrite(PreferSwiftTesting.self, at: Syntax(node)) {
-      PreferSwiftTesting.willEnter(node, context: context)
-    }
-    if context.shouldRewrite(RedundantSelf.self, at: Syntax(node)) {
-      RedundantSelf.willEnter(node, context: context)
-    }
+    let runNoForceTry = context.shouldRewrite(NoForceTry.self, at: Syntax(node))
+    let runNoForceUnwrap = context.shouldRewrite(NoForceUnwrap.self, at: Syntax(node))
+    let runNoGuardInTests = context.shouldRewrite(NoGuardInTests.self, at: Syntax(node))
+    let runPreferSelfType = context.shouldRewrite(PreferSelfType.self, at: Syntax(node))
+    let runPreferSwiftTesting = context.shouldRewrite(PreferSwiftTesting.self, at: Syntax(node))
+    let runRedundantSelf = context.shouldRewrite(RedundantSelf.self, at: Syntax(node))
+    if runNoForceTry { NoForceTry.willEnter(node, context: context) }
+    if runNoForceUnwrap { NoForceUnwrap.willEnter(node, context: context) }
+    if runNoGuardInTests { NoGuardInTests.willEnter(node, context: context) }
+    if runPreferSelfType { PreferSelfType.willEnter(node, context: context) }
+    if runPreferSwiftTesting { PreferSwiftTesting.willEnter(node, context: context) }
+    if runRedundantSelf { RedundantSelf.willEnter(node, context: context) }
     let visited = super.visit(node)
     let result: DeclSyntax
     if let concrete = visited.as(ClassDeclSyntax.self) {
@@ -199,44 +175,27 @@ final class CompactStageOneRewriter: SyntaxRewriter {
     } else {
       result = visited
     }
-    if context.shouldRewrite(NoForceTry.self, at: Syntax(node)) {
-      NoForceTry.didExit(node, context: context)
-    }
-    if context.shouldRewrite(NoForceUnwrap.self, at: Syntax(node)) {
-      NoForceUnwrap.didExit(node, context: context)
-    }
-    if context.shouldRewrite(NoGuardInTests.self, at: Syntax(node)) {
-      NoGuardInTests.didExit(node, context: context)
-    }
-    if context.shouldRewrite(PreferSelfType.self, at: Syntax(node)) {
-      PreferSelfType.didExit(node, context: context)
-    }
-    if context.shouldRewrite(PreferSwiftTesting.self, at: Syntax(node)) {
-      PreferSwiftTesting.didExit(node, context: context)
-    }
-    if context.shouldRewrite(RedundantSelf.self, at: Syntax(node)) {
-      RedundantSelf.didExit(node, context: context)
-    }
+    if runNoForceTry { NoForceTry.didExit(node, context: context) }
+    if runNoForceUnwrap { NoForceUnwrap.didExit(node, context: context) }
+    if runNoGuardInTests { NoGuardInTests.didExit(node, context: context) }
+    if runPreferSelfType { PreferSelfType.didExit(node, context: context) }
+    if runPreferSwiftTesting { PreferSwiftTesting.didExit(node, context: context) }
+    if runRedundantSelf { RedundantSelf.didExit(node, context: context) }
     return result
   }
 
   override func visit(_ node: ClosureExprSyntax) -> ExprSyntax {
     let parent = Syntax(node).parent
-    if context.shouldRewrite(NamedClosureParams.self, at: Syntax(node)) {
-      NamedClosureParams.willEnter(node, context: context)
-    }
-    if context.shouldRewrite(NoForceTry.self, at: Syntax(node)) {
-      NoForceTry.willEnter(node, context: context)
-    }
-    if context.shouldRewrite(NoForceUnwrap.self, at: Syntax(node)) {
-      NoForceUnwrap.willEnter(node, context: context)
-    }
-    if context.shouldRewrite(NoGuardInTests.self, at: Syntax(node)) {
-      NoGuardInTests.willEnter(node, context: context)
-    }
-    if context.shouldRewrite(RedundantSelf.self, at: Syntax(node)) {
-      RedundantSelf.willEnter(node, context: context)
-    }
+    let runNamedClosureParams = context.shouldRewrite(NamedClosureParams.self, at: Syntax(node))
+    let runNoForceTry = context.shouldRewrite(NoForceTry.self, at: Syntax(node))
+    let runNoForceUnwrap = context.shouldRewrite(NoForceUnwrap.self, at: Syntax(node))
+    let runNoGuardInTests = context.shouldRewrite(NoGuardInTests.self, at: Syntax(node))
+    let runRedundantSelf = context.shouldRewrite(RedundantSelf.self, at: Syntax(node))
+    if runNamedClosureParams { NamedClosureParams.willEnter(node, context: context) }
+    if runNoForceTry { NoForceTry.willEnter(node, context: context) }
+    if runNoForceUnwrap { NoForceUnwrap.willEnter(node, context: context) }
+    if runNoGuardInTests { NoGuardInTests.willEnter(node, context: context) }
+    if runRedundantSelf { RedundantSelf.willEnter(node, context: context) }
     let visited = super.visit(node)
     let result: ExprSyntax
     if let concrete = visited.as(ClosureExprSyntax.self) {
@@ -244,21 +203,11 @@ final class CompactStageOneRewriter: SyntaxRewriter {
     } else {
       result = visited
     }
-    if context.shouldRewrite(NamedClosureParams.self, at: Syntax(node)) {
-      NamedClosureParams.didExit(node, context: context)
-    }
-    if context.shouldRewrite(NoForceTry.self, at: Syntax(node)) {
-      NoForceTry.didExit(node, context: context)
-    }
-    if context.shouldRewrite(NoForceUnwrap.self, at: Syntax(node)) {
-      NoForceUnwrap.didExit(node, context: context)
-    }
-    if context.shouldRewrite(NoGuardInTests.self, at: Syntax(node)) {
-      NoGuardInTests.didExit(node, context: context)
-    }
-    if context.shouldRewrite(RedundantSelf.self, at: Syntax(node)) {
-      RedundantSelf.didExit(node, context: context)
-    }
+    if runNamedClosureParams { NamedClosureParams.didExit(node, context: context) }
+    if runNoForceTry { NoForceTry.didExit(node, context: context) }
+    if runNoForceUnwrap { NoForceUnwrap.didExit(node, context: context) }
+    if runNoGuardInTests { NoGuardInTests.didExit(node, context: context) }
+    if runRedundantSelf { RedundantSelf.didExit(node, context: context) }
     return result
   }
 
@@ -406,15 +355,13 @@ final class CompactStageOneRewriter: SyntaxRewriter {
 
   override func visit(_ node: EnumDeclSyntax) -> DeclSyntax {
     let parent = Syntax(node).parent
+    let runPreferSelfType = context.shouldRewrite(PreferSelfType.self, at: Syntax(node))
+    let runRedundantSelf = context.shouldRewrite(RedundantSelf.self, at: Syntax(node))
     if context.shouldRewrite(OneDeclarationPerLine.self, at: Syntax(node)) {
       OneDeclarationPerLine.willEnter(node, context: context)
     }
-    if context.shouldRewrite(PreferSelfType.self, at: Syntax(node)) {
-      PreferSelfType.willEnter(node, context: context)
-    }
-    if context.shouldRewrite(RedundantSelf.self, at: Syntax(node)) {
-      RedundantSelf.willEnter(node, context: context)
-    }
+    if runPreferSelfType { PreferSelfType.willEnter(node, context: context) }
+    if runRedundantSelf { RedundantSelf.willEnter(node, context: context) }
     let visited = super.visit(node)
     let result: DeclSyntax
     if let concrete = visited.as(EnumDeclSyntax.self) {
@@ -422,26 +369,19 @@ final class CompactStageOneRewriter: SyntaxRewriter {
     } else {
       result = visited
     }
-    if context.shouldRewrite(PreferSelfType.self, at: Syntax(node)) {
-      PreferSelfType.didExit(node, context: context)
-    }
-    if context.shouldRewrite(RedundantSelf.self, at: Syntax(node)) {
-      RedundantSelf.didExit(node, context: context)
-    }
+    if runPreferSelfType { PreferSelfType.didExit(node, context: context) }
+    if runRedundantSelf { RedundantSelf.didExit(node, context: context) }
     return result
   }
 
   override func visit(_ node: ExtensionDeclSyntax) -> DeclSyntax {
     let parent = Syntax(node).parent
-    if context.shouldRewrite(PreferSelfType.self, at: Syntax(node)) {
-      PreferSelfType.willEnter(node, context: context)
-    }
-    if context.shouldRewrite(PreferSwiftTesting.self, at: Syntax(node)) {
-      PreferSwiftTesting.willEnter(node, context: context)
-    }
-    if context.shouldRewrite(RedundantSelf.self, at: Syntax(node)) {
-      RedundantSelf.willEnter(node, context: context)
-    }
+    let runPreferSelfType = context.shouldRewrite(PreferSelfType.self, at: Syntax(node))
+    let runPreferSwiftTesting = context.shouldRewrite(PreferSwiftTesting.self, at: Syntax(node))
+    let runRedundantSelf = context.shouldRewrite(RedundantSelf.self, at: Syntax(node))
+    if runPreferSelfType { PreferSelfType.willEnter(node, context: context) }
+    if runPreferSwiftTesting { PreferSwiftTesting.willEnter(node, context: context) }
+    if runRedundantSelf { RedundantSelf.willEnter(node, context: context) }
     let visited = super.visit(node)
     let result: DeclSyntax
     if let concrete = visited.as(ExtensionDeclSyntax.self) {
@@ -449,23 +389,16 @@ final class CompactStageOneRewriter: SyntaxRewriter {
     } else {
       result = visited
     }
-    if context.shouldRewrite(PreferSelfType.self, at: Syntax(node)) {
-      PreferSelfType.didExit(node, context: context)
-    }
-    if context.shouldRewrite(PreferSwiftTesting.self, at: Syntax(node)) {
-      PreferSwiftTesting.didExit(node, context: context)
-    }
-    if context.shouldRewrite(RedundantSelf.self, at: Syntax(node)) {
-      RedundantSelf.didExit(node, context: context)
-    }
+    if runPreferSelfType { PreferSelfType.didExit(node, context: context) }
+    if runPreferSwiftTesting { PreferSwiftTesting.didExit(node, context: context) }
+    if runRedundantSelf { RedundantSelf.didExit(node, context: context) }
     return result
   }
 
   override func visit(_ node: ForStmtSyntax) -> StmtSyntax {
     let parent = Syntax(node).parent
-    if context.shouldRewrite(WrapSingleLineBodies.self, at: Syntax(node)) {
-      WrapSingleLineBodies.willEnter(node, context: context)
-    }
+    let runWrapSingleLineBodies = context.shouldRewrite(WrapSingleLineBodies.self, at: Syntax(node))
+    if runWrapSingleLineBodies { WrapSingleLineBodies.willEnter(node, context: context) }
     let visited = super.visit(node)
     let result: StmtSyntax
     if let concrete = visited.as(ForStmtSyntax.self) {
@@ -473,17 +406,14 @@ final class CompactStageOneRewriter: SyntaxRewriter {
     } else {
       result = visited
     }
-    if context.shouldRewrite(WrapSingleLineBodies.self, at: Syntax(node)) {
-      WrapSingleLineBodies.didExit(node, context: context)
-    }
+    if runWrapSingleLineBodies { WrapSingleLineBodies.didExit(node, context: context) }
     return result
   }
 
   override func visit(_ node: ForceUnwrapExprSyntax) -> ExprSyntax {
     let parent = Syntax(node).parent
-    if context.shouldRewrite(NoForceUnwrap.self, at: Syntax(node)) {
-      NoForceUnwrap.willEnter(node, context: context)
-    }
+    let runNoForceUnwrap = context.shouldRewrite(NoForceUnwrap.self, at: Syntax(node))
+    if runNoForceUnwrap { NoForceUnwrap.willEnter(node, context: context) }
     let visited = super.visit(node)
     let result: ExprSyntax
     if let concrete = visited.as(ForceUnwrapExprSyntax.self) {
@@ -491,23 +421,19 @@ final class CompactStageOneRewriter: SyntaxRewriter {
     } else {
       result = visited
     }
-    if context.shouldRewrite(NoForceUnwrap.self, at: Syntax(node)) {
-      NoForceUnwrap.didExit(node, context: context)
-    }
+    if runNoForceUnwrap { NoForceUnwrap.didExit(node, context: context) }
     return result
   }
 
   override func visit(_ node: FunctionCallExprSyntax) -> ExprSyntax {
     let parent = Syntax(node).parent
-    if context.shouldRewrite(NoForceUnwrap.self, at: Syntax(node)) {
-      NoForceUnwrap.willEnter(node, context: context)
-    }
+    let runNoForceUnwrap = context.shouldRewrite(NoForceUnwrap.self, at: Syntax(node))
+    let runPreferSwiftTesting = context.shouldRewrite(PreferSwiftTesting.self, at: Syntax(node))
+    if runNoForceUnwrap { NoForceUnwrap.willEnter(node, context: context) }
     if context.shouldRewrite(NoTrailingClosureParens.self, at: Syntax(node)) {
       NoTrailingClosureParens.willEnter(node, context: context)
     }
-    if context.shouldRewrite(PreferSwiftTesting.self, at: Syntax(node)) {
-      PreferSwiftTesting.willEnter(node, context: context)
-    }
+    if runPreferSwiftTesting { PreferSwiftTesting.willEnter(node, context: context) }
     let visited = super.visit(node)
     let result: ExprSyntax
     if let concrete = visited.as(FunctionCallExprSyntax.self) {
@@ -515,32 +441,23 @@ final class CompactStageOneRewriter: SyntaxRewriter {
     } else {
       result = visited
     }
-    if context.shouldRewrite(NoForceUnwrap.self, at: Syntax(node)) {
-      NoForceUnwrap.didExit(node, context: context)
-    }
-    if context.shouldRewrite(PreferSwiftTesting.self, at: Syntax(node)) {
-      PreferSwiftTesting.didExit(node, context: context)
-    }
+    if runNoForceUnwrap { NoForceUnwrap.didExit(node, context: context) }
+    if runPreferSwiftTesting { PreferSwiftTesting.didExit(node, context: context) }
     return result
   }
 
   override func visit(_ node: FunctionDeclSyntax) -> DeclSyntax {
     let parent = Syntax(node).parent
-    if context.shouldRewrite(NoForceTry.self, at: Syntax(node)) {
-      NoForceTry.willEnter(node, context: context)
-    }
-    if context.shouldRewrite(NoForceUnwrap.self, at: Syntax(node)) {
-      NoForceUnwrap.willEnter(node, context: context)
-    }
-    if context.shouldRewrite(NoGuardInTests.self, at: Syntax(node)) {
-      NoGuardInTests.willEnter(node, context: context)
-    }
-    if context.shouldRewrite(PreferSwiftTesting.self, at: Syntax(node)) {
-      PreferSwiftTesting.willEnter(node, context: context)
-    }
-    if context.shouldRewrite(RedundantSelf.self, at: Syntax(node)) {
-      RedundantSelf.willEnter(node, context: context)
-    }
+    let runNoForceTry = context.shouldRewrite(NoForceTry.self, at: Syntax(node))
+    let runNoForceUnwrap = context.shouldRewrite(NoForceUnwrap.self, at: Syntax(node))
+    let runNoGuardInTests = context.shouldRewrite(NoGuardInTests.self, at: Syntax(node))
+    let runPreferSwiftTesting = context.shouldRewrite(PreferSwiftTesting.self, at: Syntax(node))
+    let runRedundantSelf = context.shouldRewrite(RedundantSelf.self, at: Syntax(node))
+    if runNoForceTry { NoForceTry.willEnter(node, context: context) }
+    if runNoForceUnwrap { NoForceUnwrap.willEnter(node, context: context) }
+    if runNoGuardInTests { NoGuardInTests.willEnter(node, context: context) }
+    if runPreferSwiftTesting { PreferSwiftTesting.willEnter(node, context: context) }
+    if runRedundantSelf { RedundantSelf.willEnter(node, context: context) }
     let visited = super.visit(node)
     let result: DeclSyntax
     if let concrete = visited.as(FunctionDeclSyntax.self) {
@@ -548,21 +465,11 @@ final class CompactStageOneRewriter: SyntaxRewriter {
     } else {
       result = visited
     }
-    if context.shouldRewrite(NoForceTry.self, at: Syntax(node)) {
-      NoForceTry.didExit(node, context: context)
-    }
-    if context.shouldRewrite(NoForceUnwrap.self, at: Syntax(node)) {
-      NoForceUnwrap.didExit(node, context: context)
-    }
-    if context.shouldRewrite(NoGuardInTests.self, at: Syntax(node)) {
-      NoGuardInTests.didExit(node, context: context)
-    }
-    if context.shouldRewrite(PreferSwiftTesting.self, at: Syntax(node)) {
-      PreferSwiftTesting.didExit(node, context: context)
-    }
-    if context.shouldRewrite(RedundantSelf.self, at: Syntax(node)) {
-      RedundantSelf.didExit(node, context: context)
-    }
+    if runNoForceTry { NoForceTry.didExit(node, context: context) }
+    if runNoForceUnwrap { NoForceUnwrap.didExit(node, context: context) }
+    if runNoGuardInTests { NoGuardInTests.didExit(node, context: context) }
+    if runPreferSwiftTesting { PreferSwiftTesting.didExit(node, context: context) }
+    if runRedundantSelf { RedundantSelf.didExit(node, context: context) }
     return result
   }
 
@@ -623,9 +530,8 @@ final class CompactStageOneRewriter: SyntaxRewriter {
 
   override func visit(_ node: GuardStmtSyntax) -> StmtSyntax {
     let parent = Syntax(node).parent
-    if context.shouldRewrite(WrapSingleLineBodies.self, at: Syntax(node)) {
-      WrapSingleLineBodies.willEnter(node, context: context)
-    }
+    let runWrapSingleLineBodies = context.shouldRewrite(WrapSingleLineBodies.self, at: Syntax(node))
+    if runWrapSingleLineBodies { WrapSingleLineBodies.willEnter(node, context: context) }
     let visited = super.visit(node)
     let result: StmtSyntax
     if let concrete = visited.as(GuardStmtSyntax.self) {
@@ -633,9 +539,7 @@ final class CompactStageOneRewriter: SyntaxRewriter {
     } else {
       result = visited
     }
-    if context.shouldRewrite(WrapSingleLineBodies.self, at: Syntax(node)) {
-      WrapSingleLineBodies.didExit(node, context: context)
-    }
+    if runWrapSingleLineBodies { WrapSingleLineBodies.didExit(node, context: context) }
     return result
   }
 
@@ -656,9 +560,8 @@ final class CompactStageOneRewriter: SyntaxRewriter {
 
   override func visit(_ node: IfExprSyntax) -> ExprSyntax {
     let parent = Syntax(node).parent
-    if context.shouldRewrite(WrapSingleLineBodies.self, at: Syntax(node)) {
-      WrapSingleLineBodies.willEnter(node, context: context)
-    }
+    let runWrapSingleLineBodies = context.shouldRewrite(WrapSingleLineBodies.self, at: Syntax(node))
+    if runWrapSingleLineBodies { WrapSingleLineBodies.willEnter(node, context: context) }
     let visited = super.visit(node)
     let result: ExprSyntax
     if let concrete = visited.as(IfExprSyntax.self) {
@@ -666,9 +569,7 @@ final class CompactStageOneRewriter: SyntaxRewriter {
     } else {
       result = visited
     }
-    if context.shouldRewrite(WrapSingleLineBodies.self, at: Syntax(node)) {
-      WrapSingleLineBodies.didExit(node, context: context)
-    }
+    if runWrapSingleLineBodies { WrapSingleLineBodies.didExit(node, context: context) }
     return result
   }
 
@@ -711,9 +612,8 @@ final class CompactStageOneRewriter: SyntaxRewriter {
 
   override func visit(_ node: InitializerDeclSyntax) -> DeclSyntax {
     let parent = Syntax(node).parent
-    if context.shouldRewrite(RedundantSelf.self, at: Syntax(node)) {
-      RedundantSelf.willEnter(node, context: context)
-    }
+    let runRedundantSelf = context.shouldRewrite(RedundantSelf.self, at: Syntax(node))
+    if runRedundantSelf { RedundantSelf.willEnter(node, context: context) }
     let visited = super.visit(node)
     let result: DeclSyntax
     if let concrete = visited.as(InitializerDeclSyntax.self) {
@@ -721,9 +621,7 @@ final class CompactStageOneRewriter: SyntaxRewriter {
     } else {
       result = visited
     }
-    if context.shouldRewrite(RedundantSelf.self, at: Syntax(node)) {
-      RedundantSelf.didExit(node, context: context)
-    }
+    if runRedundantSelf { RedundantSelf.didExit(node, context: context) }
     return result
   }
 
@@ -792,9 +690,8 @@ final class CompactStageOneRewriter: SyntaxRewriter {
 
   override func visit(_ node: MemberAccessExprSyntax) -> ExprSyntax {
     let parent = Syntax(node).parent
-    if context.shouldRewrite(NoForceUnwrap.self, at: Syntax(node)) {
-      NoForceUnwrap.willEnter(node, context: context)
-    }
+    let runNoForceUnwrap = context.shouldRewrite(NoForceUnwrap.self, at: Syntax(node))
+    if runNoForceUnwrap { NoForceUnwrap.willEnter(node, context: context) }
     let visited = super.visit(node)
     let result: ExprSyntax
     if let concrete = visited.as(MemberAccessExprSyntax.self) {
@@ -802,9 +699,7 @@ final class CompactStageOneRewriter: SyntaxRewriter {
     } else {
       result = visited
     }
-    if context.shouldRewrite(NoForceUnwrap.self, at: Syntax(node)) {
-      NoForceUnwrap.didExit(node, context: context)
-    }
+    if runNoForceUnwrap { NoForceUnwrap.didExit(node, context: context) }
     return result
   }
 
@@ -891,12 +786,11 @@ final class CompactStageOneRewriter: SyntaxRewriter {
 
   override func visit(_ node: RepeatStmtSyntax) -> StmtSyntax {
     let parent = Syntax(node).parent
+    let runWrapSingleLineBodies = context.shouldRewrite(WrapSingleLineBodies.self, at: Syntax(node))
     if context.shouldRewrite(NoParensAroundConditions.self, at: Syntax(node)) {
       NoParensAroundConditions.willEnter(node, context: context)
     }
-    if context.shouldRewrite(WrapSingleLineBodies.self, at: Syntax(node)) {
-      WrapSingleLineBodies.willEnter(node, context: context)
-    }
+    if runWrapSingleLineBodies { WrapSingleLineBodies.willEnter(node, context: context) }
     let visited = super.visit(node)
     let result: StmtSyntax
     if let concrete = visited.as(RepeatStmtSyntax.self) {
@@ -904,9 +798,7 @@ final class CompactStageOneRewriter: SyntaxRewriter {
     } else {
       result = visited
     }
-    if context.shouldRewrite(WrapSingleLineBodies.self, at: Syntax(node)) {
-      WrapSingleLineBodies.didExit(node, context: context)
-    }
+    if runWrapSingleLineBodies { WrapSingleLineBodies.didExit(node, context: context) }
     return result
   }
 
@@ -967,9 +859,8 @@ final class CompactStageOneRewriter: SyntaxRewriter {
 
   override func visit(_ node: StringLiteralExprSyntax) -> ExprSyntax {
     let parent = Syntax(node).parent
-    if context.shouldRewrite(NoForceUnwrap.self, at: Syntax(node)) {
-      NoForceUnwrap.willEnter(node, context: context)
-    }
+    let runNoForceUnwrap = context.shouldRewrite(NoForceUnwrap.self, at: Syntax(node))
+    if runNoForceUnwrap { NoForceUnwrap.willEnter(node, context: context) }
     let visited = super.visit(node)
     let result: ExprSyntax
     if let concrete = visited.as(StringLiteralExprSyntax.self) {
@@ -977,20 +868,16 @@ final class CompactStageOneRewriter: SyntaxRewriter {
     } else {
       result = visited
     }
-    if context.shouldRewrite(NoForceUnwrap.self, at: Syntax(node)) {
-      NoForceUnwrap.didExit(node, context: context)
-    }
+    if runNoForceUnwrap { NoForceUnwrap.didExit(node, context: context) }
     return result
   }
 
   override func visit(_ node: StructDeclSyntax) -> DeclSyntax {
     let parent = Syntax(node).parent
-    if context.shouldRewrite(PreferSelfType.self, at: Syntax(node)) {
-      PreferSelfType.willEnter(node, context: context)
-    }
-    if context.shouldRewrite(RedundantSelf.self, at: Syntax(node)) {
-      RedundantSelf.willEnter(node, context: context)
-    }
+    let runPreferSelfType = context.shouldRewrite(PreferSelfType.self, at: Syntax(node))
+    let runRedundantSelf = context.shouldRewrite(RedundantSelf.self, at: Syntax(node))
+    if runPreferSelfType { PreferSelfType.willEnter(node, context: context) }
+    if runRedundantSelf { RedundantSelf.willEnter(node, context: context) }
     let visited = super.visit(node)
     let result: DeclSyntax
     if let concrete = visited.as(StructDeclSyntax.self) {
@@ -998,20 +885,15 @@ final class CompactStageOneRewriter: SyntaxRewriter {
     } else {
       result = visited
     }
-    if context.shouldRewrite(PreferSelfType.self, at: Syntax(node)) {
-      PreferSelfType.didExit(node, context: context)
-    }
-    if context.shouldRewrite(RedundantSelf.self, at: Syntax(node)) {
-      RedundantSelf.didExit(node, context: context)
-    }
+    if runPreferSelfType { PreferSelfType.didExit(node, context: context) }
+    if runRedundantSelf { RedundantSelf.didExit(node, context: context) }
     return result
   }
 
   override func visit(_ node: SubscriptCallExprSyntax) -> ExprSyntax {
     let parent = Syntax(node).parent
-    if context.shouldRewrite(NoForceUnwrap.self, at: Syntax(node)) {
-      NoForceUnwrap.willEnter(node, context: context)
-    }
+    let runNoForceUnwrap = context.shouldRewrite(NoForceUnwrap.self, at: Syntax(node))
+    if runNoForceUnwrap { NoForceUnwrap.willEnter(node, context: context) }
     let visited = super.visit(node)
     let result: ExprSyntax
     if let concrete = visited.as(SubscriptCallExprSyntax.self) {
@@ -1019,17 +901,14 @@ final class CompactStageOneRewriter: SyntaxRewriter {
     } else {
       result = visited
     }
-    if context.shouldRewrite(NoForceUnwrap.self, at: Syntax(node)) {
-      NoForceUnwrap.didExit(node, context: context)
-    }
+    if runNoForceUnwrap { NoForceUnwrap.didExit(node, context: context) }
     return result
   }
 
   override func visit(_ node: SubscriptDeclSyntax) -> DeclSyntax {
     let parent = Syntax(node).parent
-    if context.shouldRewrite(RedundantSelf.self, at: Syntax(node)) {
-      RedundantSelf.willEnter(node, context: context)
-    }
+    let runRedundantSelf = context.shouldRewrite(RedundantSelf.self, at: Syntax(node))
+    if runRedundantSelf { RedundantSelf.willEnter(node, context: context) }
     let visited = super.visit(node)
     let result: DeclSyntax
     if let concrete = visited.as(SubscriptDeclSyntax.self) {
@@ -1037,9 +916,7 @@ final class CompactStageOneRewriter: SyntaxRewriter {
     } else {
       result = visited
     }
-    if context.shouldRewrite(RedundantSelf.self, at: Syntax(node)) {
-      RedundantSelf.didExit(node, context: context)
-    }
+    if runRedundantSelf { RedundantSelf.didExit(node, context: context) }
     return result
   }
 
@@ -1189,9 +1066,8 @@ final class CompactStageOneRewriter: SyntaxRewriter {
 
   override func visit(_ node: VariableDeclSyntax) -> DeclSyntax {
     let parent = Syntax(node).parent
-    if context.shouldRewrite(RedundantSelf.self, at: Syntax(node)) {
-      RedundantSelf.willEnter(node, context: context)
-    }
+    let runRedundantSelf = context.shouldRewrite(RedundantSelf.self, at: Syntax(node))
+    if runRedundantSelf { RedundantSelf.willEnter(node, context: context) }
     let visited = super.visit(node)
     let result: DeclSyntax
     if let concrete = visited.as(VariableDeclSyntax.self) {
@@ -1199,17 +1075,14 @@ final class CompactStageOneRewriter: SyntaxRewriter {
     } else {
       result = visited
     }
-    if context.shouldRewrite(RedundantSelf.self, at: Syntax(node)) {
-      RedundantSelf.didExit(node, context: context)
-    }
+    if runRedundantSelf { RedundantSelf.didExit(node, context: context) }
     return result
   }
 
   override func visit(_ node: WhileStmtSyntax) -> StmtSyntax {
     let parent = Syntax(node).parent
-    if context.shouldRewrite(WrapSingleLineBodies.self, at: Syntax(node)) {
-      WrapSingleLineBodies.willEnter(node, context: context)
-    }
+    let runWrapSingleLineBodies = context.shouldRewrite(WrapSingleLineBodies.self, at: Syntax(node))
+    if runWrapSingleLineBodies { WrapSingleLineBodies.willEnter(node, context: context) }
     let visited = super.visit(node)
     let result: StmtSyntax
     if let concrete = visited.as(WhileStmtSyntax.self) {
@@ -1217,9 +1090,7 @@ final class CompactStageOneRewriter: SyntaxRewriter {
     } else {
       result = visited
     }
-    if context.shouldRewrite(WrapSingleLineBodies.self, at: Syntax(node)) {
-      WrapSingleLineBodies.didExit(node, context: context)
-    }
+    if runWrapSingleLineBodies { WrapSingleLineBodies.didExit(node, context: context) }
     return result
   }
 }
