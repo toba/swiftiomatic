@@ -22,8 +22,7 @@ final class NoTrailingClosureParens: StaticFormatRule<BasicRuleValue>, @unchecke
     override class var group: ConfigurationGroup? { .closures }
 
     // Diagnose against the pre-traversal node so finding source locations
-    // are accurate. The compact-pipeline rewrite (applyNoTrailingClosureParens
-    // in Rewrites/Exprs/FunctionCallExpr.swift) handles the rewrite only.
+    // are accurate.
     static func willEnter(_ node: FunctionCallExprSyntax, context: Context) {
         guard node.arguments.isEmpty,
               node.trailingClosure != nil,
@@ -42,6 +41,35 @@ final class NoTrailingClosureParens: StaticFormatRule<BasicRuleValue>, @unchecke
         )
     }
 
+    /// Strip empty parens before a trailing closure when the call has no
+    /// arguments. Called from
+    /// `CompactStageOneRewriter.visit(_: FunctionCallExprSyntax)`.
+    static func apply(
+        _ node: FunctionCallExprSyntax,
+        context: Context
+    ) -> FunctionCallExprSyntax {
+        guard node.arguments.isEmpty,
+              node.trailingClosure != nil,
+              let leftParen = node.leftParen,
+              let rightParen = node.rightParen,
+              !leftParen.trailingTrivia.hasAnyComments,
+              !rightParen.leadingTrivia.hasAnyComments,
+              node.calledExpression.lastToken(viewMode: .sourceAccurate) != nil,
+              !node.calledExpression.is(FunctionCallExprSyntax.self),
+              !node.calledExpression.is(SubscriptCallExprSyntax.self)
+        else {
+            return node
+        }
+
+        var rewrittenCalledExpr = node.calledExpression
+        rewrittenCalledExpr.trailingTrivia = [.spaces(1)]
+
+        var result = node
+        result.leftParen = nil
+        result.rightParen = nil
+        result.calledExpression = rewrittenCalledExpr
+        return result
+    }
 }
 
 fileprivate extension Finding.Message {

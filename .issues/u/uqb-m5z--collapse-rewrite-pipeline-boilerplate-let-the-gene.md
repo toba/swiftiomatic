@@ -1,15 +1,15 @@
 ---
 # uqb-m5z
 title: Collapse rewrite pipeline boilerplate; let the generator do the work
-status: review
+status: completed
 type: task
 priority: high
 created_at: 2026-04-30T00:20:51Z
-updated_at: 2026-04-30T00:44:42Z
+updated_at: 2026-04-30T02:09:23Z
 sync:
     github:
         issue_number: "510"
-        synced_at: "2026-04-30T00:55:14Z"
+        synced_at: "2026-04-30T02:10:47Z"
 ---
 
 ## Summary

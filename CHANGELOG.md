@@ -74,6 +74,8 @@
 - Delete legacy `RewritePipeline` shells; regen `schema.json` ([#487](https://github.com/toba/swiftiomatic/issues/487))
 - Phase 4g; flip default and delete legacy ([#497](https://github.com/toba/swiftiomatic/issues/497))
 - Collapse rewrite pipeline boilerplate; let the generator do the work ([#510](https://github.com/toba/swiftiomatic/issues/510))
+- Cache `shouldRewrite` per visit in `CompactStageOneRewriter` ([#516](https://github.com/toba/swiftiomatic/issues/516))
+- Inline compact-pipeline rule transforms; delete `applyRewrite` shim ([#515](https://github.com/toba/swiftiomatic/issues/515))
 
 ## Week of Apr 19 – Apr 25, 2026
 

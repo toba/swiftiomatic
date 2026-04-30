@@ -20,10 +20,8 @@ final class SwitchCaseIndentation: StaticFormatRule<SwitchCaseIndentationConfigu
         return config
     }
 
-    // Diagnose against the pre-traversal node so finding source locations
-    // are accurate. The compact-pipeline rewrite (in
-    // `Rewrites/Stmts/SwitchExpr.swift::applySwitchCaseIndentation`) handles
-    // the rewrite without diagnose.
+    /// Diagnose against the pre-traversal node so finding source locations
+    /// are accurate.
     static func willEnter(_ node: SwitchExprSyntax, context: Context) {
         let style = context.configuration[Self.self].style
         let switchIndent = Self.lineIndentationOf(node.switchKeyword)
@@ -53,8 +51,128 @@ final class SwitchCaseIndentation: StaticFormatRule<SwitchCaseIndentationConfigu
         }
     }
 
+    /// Reindent `case` labels, bodies, and the closing brace to match the
+    /// configured style. Called from
+    /// `CompactStageOneRewriter.visit(_: SwitchExprSyntax)`.
+    static func apply(_ node: SwitchExprSyntax, context: Context) -> SwitchExprSyntax {
+        var switchExpr = node
+        let style = context.configuration[Self.self].style
+        let switchIndent = lineIndentationOf(switchExpr.switchKeyword)
+        let indent: String =
+            switch context.configuration[IndentationSetting.self] {
+                case .spaces(let count): String(repeating: " ", count: count)
+                case .tabs(let count): String(repeating: "\t", count: count)
+            }
+
+        let expectedCaseIndent: String
+        let expectedBodyIndent: String
+
+        switch style {
+            case .flush:
+                expectedCaseIndent = switchIndent
+                expectedBodyIndent = switchIndent + indent
+            case .indented:
+                expectedCaseIndent = switchIndent + indent
+                expectedBodyIndent = switchIndent + indent + indent
+        }
+
+        let cases = Array(switchExpr.cases)
+        guard !cases.isEmpty else { return node }
+
+        var modifiedCases = cases
+        var modified = false
+
+        for i in 0..<cases.count {
+            switch cases[i] {
+                case .switchCase(var switchCase):
+                    let currentCaseIndent = switchCase.leadingTrivia.indentation
+
+                    if currentCaseIndent != expectedCaseIndent {
+                        switchCase = reindentCase(
+                            switchCase,
+                            caseIndent: expectedCaseIndent,
+                            bodyIndent: expectedBodyIndent
+                        )
+                        modifiedCases[i] = .switchCase(switchCase)
+                        modified = true
+                    }
+
+                case .ifConfigDecl: break
+            }
+        }
+
+        if modified { switchExpr.cases = SwitchCaseListSyntax(modifiedCases) }
+
+        let braceIndent = switchExpr.rightBrace.leadingTrivia.indentation
+        if braceIndent != switchIndent {
+            switchExpr.rightBrace = switchExpr.rightBrace.with(
+                \.leadingTrivia,
+                replaceIndentation(in: switchExpr.rightBrace.leadingTrivia, with: switchIndent)
+            )
+            modified = true
+        }
+
+        return modified ? switchExpr : node
+    }
+
+    private static func reindentCase(
+        _ switchCase: SwitchCaseSyntax,
+        caseIndent: String,
+        bodyIndent: String
+    ) -> SwitchCaseSyntax {
+        var result = switchCase
+
+        result = result.with(
+            \.leadingTrivia,
+            replaceIndentation(in: switchCase.leadingTrivia, with: caseIndent)
+        )
+
+        let stmts = Array(result.statements)
+        var modifiedStmts = stmts
+        for j in 0..<stmts.count {
+            let stmt = stmts[j]
+            modifiedStmts[j] = stmt.with(
+                \.leadingTrivia,
+                replaceIndentation(in: stmt.leadingTrivia, with: bodyIndent)
+            )
+        }
+        result.statements = CodeBlockItemListSyntax(modifiedStmts)
+        return result
+    }
+
+    private static func replaceIndentation(in trivia: Trivia, with indent: String) -> Trivia {
+        var pieces = Array(trivia.pieces)
+
+        if let lastNewlineIndex = pieces.lastIndex(where: {
+            if case .newlines = $0 { return true }
+            if case .carriageReturns = $0 { return true }
+            if case .carriageReturnLineFeeds = $0 { return true }
+            return false
+        }) {
+            let afterNewline = lastNewlineIndex + 1
+            while afterNewline < pieces.count {
+                switch pieces[afterNewline] {
+                    case .spaces, .tabs: pieces.remove(at: afterNewline)
+                    default: break
+                }
+                if afterNewline < pieces.count {
+                    switch pieces[afterNewline] {
+                        case .spaces, .tabs: continue
+                        default: break
+                    }
+                }
+                break
+            }
+            if !indent.isEmpty {
+                pieces.insert(.spaces(indent.count), at: afterNewline)
+            }
+        }
+
+        return Trivia(pieces: pieces)
+    }
+
     /// Static counterpart of the legacy instance `lineIndentation`, used by
-    /// the compact-pipeline `willEnter`.
+    /// the compact-pipeline `willEnter` and `apply`.
     static func lineIndentationOf(_ token: TokenSyntax) -> String {
         var current = token
         while !current.leadingTrivia.containsNewlines {
@@ -73,7 +191,7 @@ package struct SwitchCaseIndentationConfiguration: SyntaxRuleValue {
     package enum Style: String, Codable, Sendable {
         /// Case labels align with the `switch` keyword.
         case flush
-        /// Case labels are indented one level from the `switch` keyword.
+        /// Case labels are indented one level beneath it.
         case indented
     }
 

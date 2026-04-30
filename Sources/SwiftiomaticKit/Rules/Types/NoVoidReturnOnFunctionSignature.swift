@@ -20,4 +20,45 @@ import SwiftSyntax
 ///         signature stripped.
 final class NoVoidReturnOnFunctionSignature: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
     override class var group: ConfigurationGroup? { .types }
+
+    /// Strip an explicit `-> Void` / `-> ()` return clause from a function
+    /// signature. Called from
+    /// `CompactStageOneRewriter.visit(_: FunctionSignatureSyntax)`.
+    static func apply(
+        _ node: FunctionSignatureSyntax,
+        context: Context
+    ) -> FunctionSignatureSyntax {
+        guard let returnType = node.returnClause?.type else { return node }
+
+        if let identifierType = returnType.as(IdentifierTypeSyntax.self),
+           identifierType.name.text == "Void",
+           identifierType.genericArgumentClause?.arguments.isEmpty ?? true
+        {
+            Self.diagnose(
+                .removeRedundantReturn("Void"),
+                on: identifierType,
+                context: context
+            )
+            var result = node
+            result.returnClause = nil
+            return result
+        }
+        if let tupleType = returnType.as(TupleTypeSyntax.self), tupleType.elements.isEmpty {
+            Self.diagnose(
+                .removeRedundantReturn("()"),
+                on: tupleType,
+                context: context
+            )
+            var result = node
+            result.returnClause = nil
+            return result
+        }
+        return node
+    }
+}
+
+extension Finding.Message {
+    fileprivate static func removeRedundantReturn(_ type: String) -> Finding.Message {
+        "remove the explicit return type '\(type)' from this function"
+    }
 }

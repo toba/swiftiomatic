@@ -15,4 +15,58 @@ final class BlankLinesAfterSwitchCase: StaticFormatRule<BasicRuleValue>, @unchec
     override static var key: String { "afterSwitchCase" }
     override static var group: ConfigurationGroup? { .blankLines }
     override static var defaultValue: BasicRuleValue { .init(rewrite: false, lint: .no) }
+
+    /// Insert blank lines after multiline cases and strip a blank line before
+    /// the closing brace. Called from
+    /// `CompactStageOneRewriter.visit(_: SwitchExprSyntax)`.
+    static func apply(_ node: SwitchExprSyntax, context: Context) -> SwitchExprSyntax {
+        var switchExpr = node
+        let cases = Array(switchExpr.cases)
+        guard !cases.isEmpty else { return node }
+
+        var modifiedCases = cases
+        var modified = false
+
+        for i in 0..<(cases.count - 1) {
+            guard case .switchCase(let switchCase) = cases[i],
+                  switchCase.statements.count > 1
+            else { continue }
+
+            let nextIndex = i + 1
+            guard !cases[nextIndex].leadingTrivia.hasBlankLine else { continue }
+
+            Self.diagnose(
+                .insertBlankLineAfterCase,
+                on: switchCase.label,
+                context: context
+            )
+            modifiedCases[nextIndex] = modifiedCases[nextIndex].prependingNewline()
+            modified = true
+        }
+
+        if modified { switchExpr.cases = SwitchCaseListSyntax(modifiedCases) }
+
+        if switchExpr.rightBrace.leadingTrivia.hasBlankLine {
+            Self.diagnose(
+                .removeBlankLineBeforeClosingBrace,
+                on: switchExpr.rightBrace,
+                context: context
+            )
+            switchExpr.rightBrace = switchExpr.rightBrace.with(
+                \.leadingTrivia,
+                switchExpr.rightBrace.leadingTrivia.reducingToSingleNewlines
+            )
+            modified = true
+        }
+
+        return modified ? switchExpr : node
+    }
+}
+
+extension Finding.Message {
+    fileprivate static let insertBlankLineAfterCase: Finding.Message =
+        "insert blank line after multiline switch case"
+
+    fileprivate static let removeBlankLineBeforeClosingBrace: Finding.Message =
+        "remove blank line before closing brace"
 }

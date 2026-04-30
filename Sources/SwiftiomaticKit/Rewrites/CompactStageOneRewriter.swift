@@ -49,10 +49,11 @@ final class CompactStageOneRewriter: SyntaxRewriter {
     let visited = super.visit(node)
     let result: DeclSyntax
     if var concrete = visited.as(AccessorDeclSyntax.self) {
-      context.applyRewrite(
-        WrapSingleLineBodies.self, to: &concrete,
-        parent: parent, transform: WrapSingleLineBodies.transform
-      )
+      if context.shouldRewrite(WrapSingleLineBodies.self, at: Syntax(concrete)),
+         let next = WrapSingleLineBodies.transform(concrete, parent: parent, context: context).as(AccessorDeclSyntax.self)
+      {
+        concrete = next
+      }
       result = DeclSyntax(concrete)
     } else {
       result = visited
@@ -69,8 +70,43 @@ final class CompactStageOneRewriter: SyntaxRewriter {
     if runRedundantSelf { RedundantSelf.willEnter(node, context: context) }
     let visited = super.visit(node)
     let result: DeclSyntax
-    if let concrete = visited.as(ActorDeclSyntax.self) {
-      result = DeclSyntax(rewriteActorDecl(concrete, parent: parent, context: context))
+    if var concrete = visited.as(ActorDeclSyntax.self) {
+      if context.shouldRewrite(DocCommentsPrecedeModifiers.self, at: Syntax(concrete)),
+         let next = DocCommentsPrecedeModifiers.transform(concrete, parent: parent, context: context).as(ActorDeclSyntax.self)
+      {
+        concrete = next
+      }
+      if context.shouldRewrite(ModifierOrder.self, at: Syntax(concrete)),
+         let next = ModifierOrder.transform(concrete, parent: parent, context: context).as(ActorDeclSyntax.self)
+      {
+        concrete = next
+      }
+      if context.shouldRewrite(ModifiersOnSameLine.self, at: Syntax(concrete)),
+         let next = ModifiersOnSameLine.transform(concrete, parent: parent, context: context).as(ActorDeclSyntax.self)
+      {
+        concrete = next
+      }
+      if context.shouldRewrite(RedundantAccessControl.self, at: Syntax(concrete)),
+         let next = RedundantAccessControl.transform(concrete, parent: parent, context: context).as(ActorDeclSyntax.self)
+      {
+        concrete = next
+      }
+      if context.shouldRewrite(SimplifyGenericConstraints.self, at: Syntax(concrete)),
+         let next = SimplifyGenericConstraints.transform(concrete, parent: parent, context: context).as(ActorDeclSyntax.self)
+      {
+        concrete = next
+      }
+      if context.shouldRewrite(RedundantSwiftTestingSuite.self, at: Syntax(concrete)) {
+        concrete = RedundantSwiftTestingSuite.removeSuite(
+          from: concrete, keyword: \.actorKeyword, context: context
+        )
+      }
+      if context.shouldRewrite(WrapMultilineStatementBraces.self, at: Syntax(concrete)),
+         let next = WrapMultilineStatementBraces.transform(concrete, parent: parent, context: context).as(ActorDeclSyntax.self)
+      {
+        concrete = next
+      }
+      result = DeclSyntax(concrete)
     } else {
       result = visited
     }
@@ -190,8 +226,87 @@ final class CompactStageOneRewriter: SyntaxRewriter {
     if runRedundantSelf { RedundantSelf.willEnter(node, context: context) }
     let visited = super.visit(node)
     let result: DeclSyntax
-    if let concrete = visited.as(ClassDeclSyntax.self) {
-      result = DeclSyntax(rewriteClassDecl(concrete, parent: parent, context: context))
+    if var concrete = visited.as(ClassDeclSyntax.self) {
+      if context.shouldRewrite(DocCommentsPrecedeModifiers.self, at: Syntax(concrete)),
+         let next = DocCommentsPrecedeModifiers.transform(concrete, parent: parent, context: context).as(ClassDeclSyntax.self)
+      {
+        concrete = next
+      }
+      if context.shouldRewrite(ModifierOrder.self, at: Syntax(concrete)),
+         let next = ModifierOrder.transform(concrete, parent: parent, context: context).as(ClassDeclSyntax.self)
+      {
+        concrete = next
+      }
+      if context.shouldRewrite(ModifiersOnSameLine.self, at: Syntax(concrete)),
+         let next = ModifiersOnSameLine.transform(concrete, parent: parent, context: context).as(ClassDeclSyntax.self)
+      {
+        concrete = next
+      }
+      if context.shouldRewrite(PreferFinalClasses.self, at: Syntax(concrete)),
+         let next = PreferFinalClasses.transform(concrete, parent: parent, context: context).as(ClassDeclSyntax.self)
+      {
+        concrete = next
+      }
+      if context.shouldRewrite(PreferStaticOverClassFunc.self, at: Syntax(concrete)),
+         let next = PreferStaticOverClassFunc.transform(concrete, parent: parent, context: context).as(ClassDeclSyntax.self)
+      {
+        concrete = next
+      }
+      if context.shouldRewrite(PreferSwiftTesting.self, at: Syntax(concrete)),
+         let next = PreferSwiftTesting.transform(concrete, parent: parent, context: context).as(ClassDeclSyntax.self)
+      {
+        concrete = next
+      }
+      if context.shouldRewrite(RedundantAccessControl.self, at: Syntax(concrete)),
+         let next = RedundantAccessControl.transform(concrete, parent: parent, context: context).as(ClassDeclSyntax.self)
+      {
+        concrete = next
+      }
+      if context.shouldRewrite(RedundantObjc.self, at: Syntax(concrete)),
+         let next = RedundantObjc.transform(concrete, parent: parent, context: context).as(ClassDeclSyntax.self)
+      {
+        concrete = next
+      }
+      if context.shouldRewrite(SimplifyGenericConstraints.self, at: Syntax(concrete)),
+         let next = SimplifyGenericConstraints.transform(concrete, parent: parent, context: context).as(ClassDeclSyntax.self)
+      {
+        concrete = next
+      }
+      if context.shouldRewrite(TestSuiteAccessControl.self, at: Syntax(concrete)),
+         let next = TestSuiteAccessControl.transform(concrete, parent: parent, context: context).as(ClassDeclSyntax.self)
+      {
+        concrete = next
+      }
+      if context.shouldRewrite(TripleSlashDocComments.self, at: Syntax(concrete)),
+         let next = TripleSlashDocComments.transform(concrete, parent: parent, context: context).as(ClassDeclSyntax.self)
+      {
+        concrete = next
+      }
+      if context.shouldRewrite(ValidateTestCases.self, at: Syntax(concrete)),
+         let next = ValidateTestCases.transform(concrete, parent: parent, context: context).as(ClassDeclSyntax.self)
+      {
+        concrete = next
+      }
+      if context.shouldRewrite(RedundantFinal.self, at: Syntax(concrete)) {
+        concrete = RedundantFinal.apply(concrete, context: context)
+      }
+      if context.shouldRewrite(RedundantSwiftTestingSuite.self, at: Syntax(concrete)) {
+        concrete = RedundantSwiftTestingSuite.removeSuite(
+          from: concrete, keyword: \.classKeyword, context: context
+        )
+      }
+      if context.shouldRewrite(WrapMultilineStatementBraces.self, at: Syntax(concrete)),
+         let next = WrapMultilineStatementBraces.transform(concrete, parent: parent, context: context).as(ClassDeclSyntax.self)
+      {
+        concrete = next
+      }
+      // StaticStructShouldBeEnum runs last because it can widen the class
+      // to an `EnumDeclSyntax`.
+      if context.shouldRewrite(StaticStructShouldBeEnum.self, at: Syntax(concrete)) {
+        result = StaticStructShouldBeEnum.transform(concrete, parent: parent, context: context)
+      } else {
+        result = DeclSyntax(concrete)
+      }
     } else {
       result = visited
     }
@@ -219,14 +334,16 @@ final class CompactStageOneRewriter: SyntaxRewriter {
     let visited = super.visit(node)
     let result: ExprSyntax
     if var concrete = visited.as(ClosureExprSyntax.self) {
-      context.applyRewrite(
-        RedundantReturn.self, to: &concrete,
-        parent: parent, transform: RedundantReturn.transform
-      )
-      context.applyRewrite(
-        UnusedArguments.self, to: &concrete,
-        parent: parent, transform: UnusedArguments.transform
-      )
+      if context.shouldRewrite(RedundantReturn.self, at: Syntax(concrete)),
+         let next = RedundantReturn.transform(concrete, parent: parent, context: context).as(ClosureExprSyntax.self)
+      {
+        concrete = next
+      }
+      if context.shouldRewrite(UnusedArguments.self, at: Syntax(concrete)),
+         let next = UnusedArguments.transform(concrete, parent: parent, context: context).as(ClosureExprSyntax.self)
+      {
+        concrete = next
+      }
       result = ExprSyntax(concrete)
     } else {
       result = visited
@@ -244,8 +361,13 @@ final class CompactStageOneRewriter: SyntaxRewriter {
     if context.shouldRewrite(PreferVoidReturn.self, at: Syntax(node)) {
       PreferVoidReturn.willEnter(node, context: context)
     }
-    let visited = super.visit(node)
-    let result = rewriteClosureSignature(visited, parent: parent, context: context)
+    var result = super.visit(node)
+    if context.shouldRewrite(NoParensInClosureParams.self, at: Syntax(result)) {
+      result = NoParensInClosureParams.transform(result, parent: parent, context: context)
+    }
+    if context.shouldRewrite(PreferVoidReturn.self, at: Syntax(result)) {
+      result = PreferVoidReturn.apply(result, context: context)
+    }
     return result
   }
 
@@ -260,8 +382,40 @@ final class CompactStageOneRewriter: SyntaxRewriter {
     if context.shouldRewrite(PreferEarlyExits.self, at: Syntax(node)) {
       PreferEarlyExits.willEnter(node, context: context)
     }
-    let visited = super.visit(node)
-    let result = rewriteCodeBlockItemList(visited, parent: parent, context: context)
+    var result = super.visit(node)
+    if context.shouldRewrite(EmptyExtensions.self, at: Syntax(result)) {
+      result = EmptyExtensions.transform(result, parent: parent, context: context)
+    }
+    if context.shouldRewrite(NoAssignmentInExpressions.self, at: Syntax(result)) {
+      result = NoAssignmentInExpressions.transform(result, parent: parent, context: context)
+    }
+    if context.shouldRewrite(NoSemicolons.self, at: Syntax(result)) {
+      result = NoSemicolons.transform(result, parent: parent, context: context)
+    }
+    if context.shouldRewrite(OneDeclarationPerLine.self, at: Syntax(result)) {
+      result = OneDeclarationPerLine.transform(result, parent: parent, context: context)
+    }
+    if context.shouldRewrite(PreferConditionalExpression.self, at: Syntax(result)) {
+      result = PreferConditionalExpression.transform(result, parent: parent, context: context)
+    }
+    if context.shouldRewrite(PreferIfElseChain.self, at: Syntax(result)) {
+      result = PreferIfElseChain.transform(result, parent: parent, context: context)
+    }
+    if context.shouldRewrite(PreferTernary.self, at: Syntax(result)) {
+      result = PreferTernary.transform(result, parent: parent, context: context)
+    }
+    if context.shouldRewrite(RedundantLet.self, at: Syntax(result)) {
+      result = RedundantLet.transform(result, parent: parent, context: context)
+    }
+    if context.shouldRewrite(RedundantProperty.self, at: Syntax(result)) {
+      result = RedundantProperty.transform(result, parent: parent, context: context)
+    }
+    if context.shouldRewrite(PreferEarlyExits.self, at: Syntax(result)) {
+      result = PreferEarlyExits.apply(result, context: context)
+    }
+    if context.shouldRewrite(NoGuardInTests.self, at: Syntax(result)) {
+      result = NoGuardInTests.transform(result, parent: parent, context: context)
+    }
     return result
   }
 
@@ -343,18 +497,21 @@ final class CompactStageOneRewriter: SyntaxRewriter {
     let visited = super.visit(node)
     let result: DeclSyntax
     if var concrete = visited.as(DeinitializerDeclSyntax.self) {
-      context.applyRewrite(
-        ModifiersOnSameLine.self, to: &concrete,
-        parent: parent, transform: ModifiersOnSameLine.transform
-      )
-      context.applyRewrite(
-        TripleSlashDocComments.self, to: &concrete,
-        parent: parent, transform: TripleSlashDocComments.transform
-      )
-      context.applyRewrite(
-        WrapMultilineStatementBraces.self, to: &concrete,
-        parent: parent, transform: WrapMultilineStatementBraces.transform
-      )
+      if context.shouldRewrite(ModifiersOnSameLine.self, at: Syntax(concrete)),
+         let next = ModifiersOnSameLine.transform(concrete, parent: parent, context: context).as(DeinitializerDeclSyntax.self)
+      {
+        concrete = next
+      }
+      if context.shouldRewrite(TripleSlashDocComments.self, at: Syntax(concrete)),
+         let next = TripleSlashDocComments.transform(concrete, parent: parent, context: context).as(DeinitializerDeclSyntax.self)
+      {
+        concrete = next
+      }
+      if context.shouldRewrite(WrapMultilineStatementBraces.self, at: Syntax(concrete)),
+         let next = WrapMultilineStatementBraces.transform(concrete, parent: parent, context: context).as(DeinitializerDeclSyntax.self)
+      {
+        concrete = next
+      }
       result = DeclSyntax(concrete)
     } else {
       result = visited
@@ -367,10 +524,11 @@ final class CompactStageOneRewriter: SyntaxRewriter {
     let visited = super.visit(node)
     let result: StmtSyntax
     if var concrete = visited.as(DoStmtSyntax.self) {
-      context.applyRewrite(
-        WrapMultilineStatementBraces.self, to: &concrete,
-        parent: parent, transform: WrapMultilineStatementBraces.transform
-      )
+      if context.shouldRewrite(WrapMultilineStatementBraces.self, at: Syntax(concrete)),
+         let next = WrapMultilineStatementBraces.transform(concrete, parent: parent, context: context).as(DoStmtSyntax.self)
+      {
+        concrete = next
+      }
       result = StmtSyntax(concrete)
     } else {
       result = visited
@@ -422,8 +580,78 @@ final class CompactStageOneRewriter: SyntaxRewriter {
     if runRedundantSelf { RedundantSelf.willEnter(node, context: context) }
     let visited = super.visit(node)
     let result: DeclSyntax
-    if let concrete = visited.as(EnumDeclSyntax.self) {
-      result = DeclSyntax(rewriteEnumDecl(concrete, parent: parent, context: context))
+    if var concrete = visited.as(EnumDeclSyntax.self) {
+      if context.shouldRewrite(CollapseSimpleEnums.self, at: Syntax(concrete)),
+         let next = CollapseSimpleEnums.transform(concrete, parent: parent, context: context).as(EnumDeclSyntax.self)
+      {
+        concrete = next
+      }
+      if context.shouldRewrite(DocCommentsPrecedeModifiers.self, at: Syntax(concrete)),
+         let next = DocCommentsPrecedeModifiers.transform(concrete, parent: parent, context: context).as(EnumDeclSyntax.self)
+      {
+        concrete = next
+      }
+      if context.shouldRewrite(IndirectEnum.self, at: Syntax(concrete)),
+         let next = IndirectEnum.transform(concrete, parent: parent, context: context).as(EnumDeclSyntax.self)
+      {
+        concrete = next
+      }
+      if context.shouldRewrite(ModifierOrder.self, at: Syntax(concrete)),
+         let next = ModifierOrder.transform(concrete, parent: parent, context: context).as(EnumDeclSyntax.self)
+      {
+        concrete = next
+      }
+      if context.shouldRewrite(ModifiersOnSameLine.self, at: Syntax(concrete)),
+         let next = ModifiersOnSameLine.transform(concrete, parent: parent, context: context).as(EnumDeclSyntax.self)
+      {
+        concrete = next
+      }
+      if context.shouldRewrite(OneDeclarationPerLine.self, at: Syntax(concrete)),
+         let next = OneDeclarationPerLine.transform(concrete, parent: parent, context: context).as(EnumDeclSyntax.self)
+      {
+        concrete = next
+      }
+      if context.shouldRewrite(RedundantAccessControl.self, at: Syntax(concrete)),
+         let next = RedundantAccessControl.transform(concrete, parent: parent, context: context).as(EnumDeclSyntax.self)
+      {
+        concrete = next
+      }
+      if context.shouldRewrite(RedundantObjc.self, at: Syntax(concrete)),
+         let next = RedundantObjc.transform(concrete, parent: parent, context: context).as(EnumDeclSyntax.self)
+      {
+        concrete = next
+      }
+      if context.shouldRewrite(RedundantSendable.self, at: Syntax(concrete)),
+         let next = RedundantSendable.transform(concrete, parent: parent, context: context).as(EnumDeclSyntax.self)
+      {
+        concrete = next
+      }
+      if context.shouldRewrite(SimplifyGenericConstraints.self, at: Syntax(concrete)),
+         let next = SimplifyGenericConstraints.transform(concrete, parent: parent, context: context).as(EnumDeclSyntax.self)
+      {
+        concrete = next
+      }
+      if context.shouldRewrite(TripleSlashDocComments.self, at: Syntax(concrete)),
+         let next = TripleSlashDocComments.transform(concrete, parent: parent, context: context).as(EnumDeclSyntax.self)
+      {
+        concrete = next
+      }
+      if context.shouldRewrite(ValidateTestCases.self, at: Syntax(concrete)),
+         let next = ValidateTestCases.transform(concrete, parent: parent, context: context).as(EnumDeclSyntax.self)
+      {
+        concrete = next
+      }
+      if context.shouldRewrite(RedundantSwiftTestingSuite.self, at: Syntax(concrete)) {
+        concrete = RedundantSwiftTestingSuite.removeSuite(
+          from: concrete, keyword: \.enumKeyword, context: context
+        )
+      }
+      if context.shouldRewrite(WrapMultilineStatementBraces.self, at: Syntax(concrete)),
+         let next = WrapMultilineStatementBraces.transform(concrete, parent: parent, context: context).as(EnumDeclSyntax.self)
+      {
+        concrete = next
+      }
+      result = DeclSyntax(concrete)
     } else {
       result = visited
     }
@@ -442,8 +670,38 @@ final class CompactStageOneRewriter: SyntaxRewriter {
     if runRedundantSelf { RedundantSelf.willEnter(node, context: context) }
     let visited = super.visit(node)
     let result: DeclSyntax
-    if let concrete = visited.as(ExtensionDeclSyntax.self) {
-      result = DeclSyntax(rewriteExtensionDecl(concrete, parent: parent, context: context))
+    if var concrete = visited.as(ExtensionDeclSyntax.self) {
+      if context.shouldRewrite(DocCommentsPrecedeModifiers.self, at: Syntax(concrete)),
+         let next = DocCommentsPrecedeModifiers.transform(concrete, parent: parent, context: context).as(ExtensionDeclSyntax.self)
+      {
+        concrete = next
+      }
+      if context.shouldRewrite(ModifiersOnSameLine.self, at: Syntax(concrete)),
+         let next = ModifiersOnSameLine.transform(concrete, parent: parent, context: context).as(ExtensionDeclSyntax.self)
+      {
+        concrete = next
+      }
+      if context.shouldRewrite(PreferAngleBracketExtensions.self, at: Syntax(concrete)),
+         let next = PreferAngleBracketExtensions.transform(concrete, parent: parent, context: context).as(ExtensionDeclSyntax.self)
+      {
+        concrete = next
+      }
+      if context.shouldRewrite(RedundantAccessControl.self, at: Syntax(concrete)),
+         let next = RedundantAccessControl.transform(concrete, parent: parent, context: context).as(ExtensionDeclSyntax.self)
+      {
+        concrete = next
+      }
+      if context.shouldRewrite(TripleSlashDocComments.self, at: Syntax(concrete)),
+         let next = TripleSlashDocComments.transform(concrete, parent: parent, context: context).as(ExtensionDeclSyntax.self)
+      {
+        concrete = next
+      }
+      if context.shouldRewrite(WrapMultilineStatementBraces.self, at: Syntax(concrete)),
+         let next = WrapMultilineStatementBraces.transform(concrete, parent: parent, context: context).as(ExtensionDeclSyntax.self)
+      {
+        concrete = next
+      }
+      result = DeclSyntax(concrete)
     } else {
       result = visited
     }
@@ -460,30 +718,36 @@ final class CompactStageOneRewriter: SyntaxRewriter {
     let visited = super.visit(node)
     let result: StmtSyntax
     if var concrete = visited.as(ForStmtSyntax.self) {
-      context.applyRewrite(
-        CaseLet.self, to: &concrete,
-        parent: parent, transform: CaseLet.transform
-      )
-      context.applyRewrite(
-        PreferWhereClausesInForLoops.self, to: &concrete,
-        parent: parent, transform: PreferWhereClausesInForLoops.transform
-      )
-      context.applyRewrite(
-        RedundantEnumerated.self, to: &concrete,
-        parent: parent, transform: RedundantEnumerated.transform
-      )
-      context.applyRewrite(
-        UnusedArguments.self, to: &concrete,
-        parent: parent, transform: UnusedArguments.transform
-      )
-      context.applyRewrite(
-        WrapMultilineStatementBraces.self, to: &concrete,
-        parent: parent, transform: WrapMultilineStatementBraces.transform
-      )
-      context.applyRewrite(
-        WrapSingleLineBodies.self, to: &concrete,
-        parent: parent, transform: WrapSingleLineBodies.transform
-      )
+      if context.shouldRewrite(CaseLet.self, at: Syntax(concrete)),
+         let next = CaseLet.transform(concrete, parent: parent, context: context).as(ForStmtSyntax.self)
+      {
+        concrete = next
+      }
+      if context.shouldRewrite(PreferWhereClausesInForLoops.self, at: Syntax(concrete)),
+         let next = PreferWhereClausesInForLoops.transform(concrete, parent: parent, context: context).as(ForStmtSyntax.self)
+      {
+        concrete = next
+      }
+      if context.shouldRewrite(RedundantEnumerated.self, at: Syntax(concrete)),
+         let next = RedundantEnumerated.transform(concrete, parent: parent, context: context).as(ForStmtSyntax.self)
+      {
+        concrete = next
+      }
+      if context.shouldRewrite(UnusedArguments.self, at: Syntax(concrete)),
+         let next = UnusedArguments.transform(concrete, parent: parent, context: context).as(ForStmtSyntax.self)
+      {
+        concrete = next
+      }
+      if context.shouldRewrite(WrapMultilineStatementBraces.self, at: Syntax(concrete)),
+         let next = WrapMultilineStatementBraces.transform(concrete, parent: parent, context: context).as(ForStmtSyntax.self)
+      {
+        concrete = next
+      }
+      if context.shouldRewrite(WrapSingleLineBodies.self, at: Syntax(concrete)),
+         let next = WrapSingleLineBodies.transform(concrete, parent: parent, context: context).as(ForStmtSyntax.self)
+      {
+        concrete = next
+      }
       result = StmtSyntax(concrete)
     } else {
       result = visited
@@ -531,8 +795,97 @@ final class CompactStageOneRewriter: SyntaxRewriter {
     if runPreferSwiftTesting { PreferSwiftTesting.willEnter(node, context: context) }
     let visited = super.visit(node)
     let result: ExprSyntax
-    if let concrete = visited.as(FunctionCallExprSyntax.self) {
-      result = ExprSyntax(rewriteFunctionCallExpr(concrete, parent: parent, context: context))
+    if var concrete = visited.as(FunctionCallExprSyntax.self) {
+      func finishExit(_ value: ExprSyntax) -> ExprSyntax {
+        if runNoForceUnwrap { NoForceUnwrap.didExit(node, context: context) }
+        if runPreferSwiftTesting { PreferSwiftTesting.didExit(node, context: context) }
+        return value
+      }
+      // HoistAwait may widen `foo(await x)` to `await foo(x)`.
+      if context.shouldRewrite(HoistAwait.self, at: Syntax(concrete)) {
+        let widened = HoistAwait.transform(concrete, parent: parent, context: context)
+        if let stillCall = widened.as(FunctionCallExprSyntax.self) {
+          concrete = stillCall
+        } else {
+          return finishExit(widened)
+        }
+      }
+      // HoistTry may widen `foo(try x)` to `try foo(x)`.
+      if context.shouldRewrite(HoistTry.self, at: Syntax(concrete)) {
+        let widened = HoistTry.transform(concrete, parent: parent, context: context)
+        if let stillCall = widened.as(FunctionCallExprSyntax.self) {
+          concrete = stillCall
+        } else {
+          return finishExit(widened)
+        }
+      }
+      if context.shouldRewrite(PreferAssertionFailure.self, at: Syntax(concrete)),
+         let next = PreferAssertionFailure.transform(concrete, parent: parent, context: context).as(FunctionCallExprSyntax.self)
+      {
+        concrete = next
+      }
+      // PreferSwiftTesting may widen `FunctionCallExpr` to `MacroExpansionExpr`.
+      if context.shouldRewrite(PreferSwiftTesting.self, at: Syntax(concrete)) {
+        let widened = PreferSwiftTesting.transform(concrete, parent: parent, context: context)
+        if let stillCall = widened.as(FunctionCallExprSyntax.self) {
+          concrete = stillCall
+        } else {
+          return finishExit(widened)
+        }
+      }
+      // PreferDotZero may widen the call to a `MemberAccessExpr`.
+      if context.shouldRewrite(PreferDotZero.self, at: Syntax(concrete)) {
+        let widened = PreferDotZero.transform(concrete, parent: parent, context: context)
+        if let stillCall = widened.as(FunctionCallExprSyntax.self) {
+          concrete = stillCall
+        } else {
+          return finishExit(widened)
+        }
+      }
+      if context.shouldRewrite(PreferKeyPath.self, at: Syntax(concrete)),
+         let next = PreferKeyPath.transform(concrete, parent: parent, context: context).as(FunctionCallExprSyntax.self)
+      {
+        concrete = next
+      }
+      // RedundantClosure may unwrap `{ x }()` to `x` (any `ExprSyntax`).
+      if context.shouldRewrite(RedundantClosure.self, at: Syntax(concrete)) {
+        let widened = RedundantClosure.transform(concrete, parent: parent, context: context)
+        if let stillCall = widened.as(FunctionCallExprSyntax.self) {
+          concrete = stillCall
+        } else {
+          return finishExit(widened)
+        }
+      }
+      if context.shouldRewrite(RedundantInit.self, at: Syntax(concrete)),
+         let next = RedundantInit.transform(concrete, parent: parent, context: context).as(FunctionCallExprSyntax.self)
+      {
+        concrete = next
+      }
+      if context.shouldRewrite(RequireFatalErrorMessage.self, at: Syntax(concrete)),
+         let next = RequireFatalErrorMessage.transform(concrete, parent: parent, context: context).as(FunctionCallExprSyntax.self)
+      {
+        concrete = next
+      }
+      if context.shouldRewrite(NoTrailingClosureParens.self, at: Syntax(concrete)) {
+        concrete = NoTrailingClosureParens.apply(concrete, context: context)
+      }
+      if context.shouldRewrite(PreferTrailingClosures.self, at: Syntax(concrete)) {
+        concrete = PreferTrailingClosures.apply(concrete, context: context)
+      }
+      if context.shouldRewrite(WrapMultilineFunctionChains.self, at: Syntax(concrete)) {
+        concrete = WrapMultilineFunctionChains.apply(concrete, context: context)
+      }
+      // NestedCallLayout may produce a different ExprSyntax kind.
+      var resultExpr: ExprSyntax = ExprSyntax(concrete)
+      if context.shouldRewrite(NestedCallLayout.self, at: Syntax(concrete)) {
+        resultExpr = NestedCallLayout.transform(concrete, parent: parent, context: context)
+        if let typed = resultExpr.as(FunctionCallExprSyntax.self) { concrete = typed }
+      }
+      // NoForceUnwrap chain-top wrapping at this call.
+      if context.shouldRewrite(NoForceUnwrap.self, at: Syntax(concrete)) {
+        return finishExit(NoForceUnwrap.rewriteFunctionCallTop(concrete, context: context))
+      }
+      result = resultExpr
     } else {
       result = visited
     }
@@ -555,8 +908,142 @@ final class CompactStageOneRewriter: SyntaxRewriter {
     if runRedundantSelf { RedundantSelf.willEnter(node, context: context) }
     let visited = super.visit(node)
     let result: DeclSyntax
-    if let concrete = visited.as(FunctionDeclSyntax.self) {
-      result = DeclSyntax(rewriteFunctionDecl(concrete, parent: parent, context: context))
+    if var concrete = visited.as(FunctionDeclSyntax.self) {
+      if context.shouldRewrite(DocCommentsPrecedeModifiers.self, at: Syntax(concrete)),
+         let next = DocCommentsPrecedeModifiers.transform(concrete, parent: parent, context: context).as(FunctionDeclSyntax.self)
+      {
+        concrete = next
+      }
+      if context.shouldRewrite(ModifierOrder.self, at: Syntax(concrete)),
+         let next = ModifierOrder.transform(concrete, parent: parent, context: context).as(FunctionDeclSyntax.self)
+      {
+        concrete = next
+      }
+      if context.shouldRewrite(ModifiersOnSameLine.self, at: Syntax(concrete)),
+         let next = ModifiersOnSameLine.transform(concrete, parent: parent, context: context).as(FunctionDeclSyntax.self)
+      {
+        concrete = next
+      }
+      if context.shouldRewrite(NoExplicitOwnership.self, at: Syntax(concrete)),
+         let next = NoExplicitOwnership.transform(concrete, parent: parent, context: context).as(FunctionDeclSyntax.self)
+      {
+        concrete = next
+      }
+      if context.shouldRewrite(NoGuardInTests.self, at: Syntax(concrete)),
+         let next = NoGuardInTests.transform(concrete, parent: parent, context: context).as(FunctionDeclSyntax.self)
+      {
+        concrete = next
+      }
+      if context.shouldRewrite(OpaqueGenericParameters.self, at: Syntax(concrete)),
+         let next = OpaqueGenericParameters.transform(concrete, parent: parent, context: context).as(FunctionDeclSyntax.self)
+      {
+        concrete = next
+      }
+      if context.shouldRewrite(RedundantAccessControl.self, at: Syntax(concrete)),
+         let next = RedundantAccessControl.transform(concrete, parent: parent, context: context).as(FunctionDeclSyntax.self)
+      {
+        concrete = next
+      }
+      if context.shouldRewrite(RedundantAsync.self, at: Syntax(concrete)),
+         let next = RedundantAsync.transform(concrete, parent: parent, context: context).as(FunctionDeclSyntax.self)
+      {
+        concrete = next
+      }
+      if context.shouldRewrite(RedundantObjc.self, at: Syntax(concrete)),
+         let next = RedundantObjc.transform(concrete, parent: parent, context: context).as(FunctionDeclSyntax.self)
+      {
+        concrete = next
+      }
+      if context.shouldRewrite(RedundantReturn.self, at: Syntax(concrete)),
+         let next = RedundantReturn.transform(concrete, parent: parent, context: context).as(FunctionDeclSyntax.self)
+      {
+        concrete = next
+      }
+      if context.shouldRewrite(RedundantThrows.self, at: Syntax(concrete)),
+         let next = RedundantThrows.transform(concrete, parent: parent, context: context).as(FunctionDeclSyntax.self)
+      {
+        concrete = next
+      }
+      if context.shouldRewrite(RedundantViewBuilder.self, at: Syntax(concrete)),
+         let next = RedundantViewBuilder.transform(concrete, parent: parent, context: context).as(FunctionDeclSyntax.self)
+      {
+        concrete = next
+      }
+      if context.shouldRewrite(SimplifyGenericConstraints.self, at: Syntax(concrete)),
+         let next = SimplifyGenericConstraints.transform(concrete, parent: parent, context: context).as(FunctionDeclSyntax.self)
+      {
+        concrete = next
+      }
+      if context.shouldRewrite(SwiftTestingTestCaseNames.self, at: Syntax(concrete)),
+         let next = SwiftTestingTestCaseNames.transform(concrete, parent: parent, context: context).as(FunctionDeclSyntax.self)
+      {
+        concrete = next
+      }
+      if context.shouldRewrite(TripleSlashDocComments.self, at: Syntax(concrete)),
+         let next = TripleSlashDocComments.transform(concrete, parent: parent, context: context).as(FunctionDeclSyntax.self)
+      {
+        concrete = next
+      }
+      if context.shouldRewrite(UnusedArguments.self, at: Syntax(concrete)),
+         let next = UnusedArguments.transform(concrete, parent: parent, context: context).as(FunctionDeclSyntax.self)
+      {
+        concrete = next
+      }
+      if context.shouldRewrite(UseImplicitInit.self, at: Syntax(concrete)),
+         let next = UseImplicitInit.transform(concrete, parent: parent, context: context).as(FunctionDeclSyntax.self)
+      {
+        concrete = next
+      }
+      // NoForceTry — after children visit, add a `throws` clause if any inner
+      // `try!` was converted.
+      if context.shouldRewrite(NoForceTry.self, at: Syntax(concrete)) {
+        concrete = NoForceTry.afterFunctionDecl(concrete, context: context)
+      }
+      // NoForceUnwrap — same pattern.
+      if context.shouldRewrite(NoForceUnwrap.self, at: Syntax(concrete)) {
+        concrete = NoForceUnwrap.afterFunctionDecl(concrete, context: context)
+      }
+      if context.shouldRewrite(RedundantEscaping.self, at: Syntax(concrete)),
+         let next = RedundantEscaping.transform(concrete, parent: parent, context: context).as(FunctionDeclSyntax.self)
+      {
+        concrete = next
+      }
+      if context.shouldRewrite(WrapMultilineStatementBraces.self, at: Syntax(concrete)),
+         let next = WrapMultilineStatementBraces.transform(concrete, parent: parent, context: context).as(FunctionDeclSyntax.self)
+      {
+        concrete = next
+      }
+      if context.shouldRewrite(WrapSingleLineBodies.self, at: Syntax(concrete)),
+         let next = WrapSingleLineBodies.transform(concrete, parent: parent, context: context).as(FunctionDeclSyntax.self)
+      {
+        concrete = next
+      }
+      // PreferSwiftTesting may widen `FunctionDecl` to
+      // `InitializerDecl`/`DeinitializerDecl`; early-return on kind change.
+      if context.shouldRewrite(PreferSwiftTesting.self, at: Syntax(concrete)) {
+        let widened = PreferSwiftTesting.transform(concrete, parent: parent, context: context)
+        if let stillFunc = widened.as(FunctionDeclSyntax.self) {
+          concrete = stillFunc
+        } else {
+          if runNoForceTry { NoForceTry.didExit(node, context: context) }
+          if runNoForceUnwrap { NoForceUnwrap.didExit(node, context: context) }
+          if runNoGuardInTests { NoGuardInTests.didExit(node, context: context) }
+          if runPreferSwiftTesting { PreferSwiftTesting.didExit(node, context: context) }
+          if runRedundantSelf { RedundantSelf.didExit(node, context: context) }
+          return widened
+        }
+      }
+      // RedundantOverride may delete `override` declarations entirely.
+      if context.shouldRewrite(RedundantOverride.self, at: Syntax(concrete)) {
+        let after = RedundantOverride.transform(concrete, parent: parent, context: context)
+        if runNoForceTry { NoForceTry.didExit(node, context: context) }
+        if runNoForceUnwrap { NoForceUnwrap.didExit(node, context: context) }
+        if runNoGuardInTests { NoGuardInTests.didExit(node, context: context) }
+        if runPreferSwiftTesting { PreferSwiftTesting.didExit(node, context: context) }
+        if runRedundantSelf { RedundantSelf.didExit(node, context: context) }
+        return after
+      }
+      result = DeclSyntax(concrete)
     } else {
       result = visited
     }
@@ -587,9 +1074,10 @@ final class CompactStageOneRewriter: SyntaxRewriter {
   }
 
   override func visit(_ node: FunctionSignatureSyntax) -> FunctionSignatureSyntax {
-    let parent = Syntax(node).parent
-    let visited = super.visit(node)
-    let result = rewriteFunctionSignature(visited, parent: parent, context: context)
+    var result = super.visit(node)
+    if context.shouldRewrite(NoVoidReturnOnFunctionSignature.self, at: Syntax(result)) {
+      result = NoVoidReturnOnFunctionSignature.apply(result, context: context)
+    }
     return result
   }
 
@@ -600,8 +1088,16 @@ final class CompactStageOneRewriter: SyntaxRewriter {
     }
     let visited = super.visit(node)
     let result: TypeSyntax
-    if let concrete = visited.as(FunctionTypeSyntax.self) {
-      result = TypeSyntax(rewriteFunctionType(concrete, parent: parent, context: context))
+    if var concrete = visited.as(FunctionTypeSyntax.self) {
+      if context.shouldRewrite(RedundantTypedThrows.self, at: Syntax(concrete)),
+         let next = RedundantTypedThrows.transform(concrete, parent: parent, context: context).as(FunctionTypeSyntax.self)
+      {
+        concrete = next
+      }
+      if context.shouldRewrite(PreferVoidReturn.self, at: Syntax(concrete)) {
+        concrete = PreferVoidReturn.apply(concrete, context: context)
+      }
+      result = TypeSyntax(concrete)
     } else {
       result = visited
     }
@@ -632,14 +1128,16 @@ final class CompactStageOneRewriter: SyntaxRewriter {
       if context.shouldRewrite(NoParensAroundConditions.self, at: Syntax(concrete)) {
         NoParensAroundConditions.fixKeywordTrailingTrivia(&concrete.guardKeyword.trailingTrivia)
       }
-      context.applyRewrite(
-        WrapMultilineStatementBraces.self, to: &concrete,
-        parent: parent, transform: WrapMultilineStatementBraces.transform
-      )
-      context.applyRewrite(
-        WrapSingleLineBodies.self, to: &concrete,
-        parent: parent, transform: WrapSingleLineBodies.transform
-      )
+      if context.shouldRewrite(WrapMultilineStatementBraces.self, at: Syntax(concrete)),
+         let next = WrapMultilineStatementBraces.transform(concrete, parent: parent, context: context).as(GuardStmtSyntax.self)
+      {
+        concrete = next
+      }
+      if context.shouldRewrite(WrapSingleLineBodies.self, at: Syntax(concrete)),
+         let next = WrapSingleLineBodies.transform(concrete, parent: parent, context: context).as(GuardStmtSyntax.self)
+      {
+        concrete = next
+      }
       result = StmtSyntax(concrete)
     } else {
       result = visited
@@ -669,25 +1167,29 @@ final class CompactStageOneRewriter: SyntaxRewriter {
     let visited = super.visit(node)
     let result: ExprSyntax
     if var concrete = visited.as(IfExprSyntax.self) {
-      context.applyRewrite(
-        CollapseSimpleIfElse.self, to: &concrete,
-        parent: parent, transform: CollapseSimpleIfElse.transform
-      )
-      context.applyRewrite(
-        PreferUnavailable.self, to: &concrete,
-        parent: parent, transform: PreferUnavailable.transform
-      )
+      if context.shouldRewrite(CollapseSimpleIfElse.self, at: Syntax(concrete)),
+         let next = CollapseSimpleIfElse.transform(concrete, parent: parent, context: context).as(IfExprSyntax.self)
+      {
+        concrete = next
+      }
+      if context.shouldRewrite(PreferUnavailable.self, at: Syntax(concrete)),
+         let next = PreferUnavailable.transform(concrete, parent: parent, context: context).as(IfExprSyntax.self)
+      {
+        concrete = next
+      }
       if context.shouldRewrite(NoParensAroundConditions.self, at: Syntax(concrete)) {
         NoParensAroundConditions.fixKeywordTrailingTrivia(&concrete.ifKeyword.trailingTrivia)
       }
-      context.applyRewrite(
-        WrapMultilineStatementBraces.self, to: &concrete,
-        parent: parent, transform: WrapMultilineStatementBraces.transform
-      )
-      context.applyRewrite(
-        WrapSingleLineBodies.self, to: &concrete,
-        parent: parent, transform: WrapSingleLineBodies.transform
-      )
+      if context.shouldRewrite(WrapMultilineStatementBraces.self, at: Syntax(concrete)),
+         let next = WrapMultilineStatementBraces.transform(concrete, parent: parent, context: context).as(IfExprSyntax.self)
+      {
+        concrete = next
+      }
+      if context.shouldRewrite(WrapSingleLineBodies.self, at: Syntax(concrete)),
+         let next = WrapSingleLineBodies.transform(concrete, parent: parent, context: context).as(IfExprSyntax.self)
+      {
+        concrete = next
+      }
       result = ExprSyntax(concrete)
     } else {
       result = visited
@@ -703,8 +1205,27 @@ final class CompactStageOneRewriter: SyntaxRewriter {
     }
     let visited = super.visit(node)
     let result: DeclSyntax
-    if let concrete = visited.as(ImportDeclSyntax.self) {
-      result = DeclSyntax(rewriteImportDecl(concrete, parent: parent, context: context))
+    if var concrete = visited.as(ImportDeclSyntax.self) {
+      if context.shouldRewrite(ModifiersOnSameLine.self, at: Syntax(concrete)),
+         let next = ModifiersOnSameLine.transform(concrete, parent: parent, context: context).as(ImportDeclSyntax.self)
+      {
+        concrete = next
+      }
+      if context.shouldRewrite(PreferSwiftTesting.self, at: Syntax(concrete)),
+         let next = PreferSwiftTesting.transform(concrete, parent: parent, context: context).as(ImportDeclSyntax.self)
+      {
+        concrete = next
+      }
+      if context.shouldRewrite(RedundantSwiftTestingSuite.self, at: Syntax(concrete)) {
+        RedundantSwiftTestingSuite.visitImport(concrete, context: context)
+      }
+      if context.shouldRewrite(NoForceTry.self, at: Syntax(concrete)) {
+        NoForceTry.visitImport(concrete, context: context)
+      }
+      if context.shouldRewrite(NoForceUnwrap.self, at: Syntax(concrete)) {
+        NoForceUnwrap.visitImport(concrete, context: context)
+      }
+      result = DeclSyntax(concrete)
     } else {
       result = visited
     }
@@ -715,18 +1236,21 @@ final class CompactStageOneRewriter: SyntaxRewriter {
     let parent = Syntax(node).parent
     let visited = super.visit(node)
     guard var concrete = visited.as(InfixOperatorExprSyntax.self) else { return visited }
-    context.applyRewrite(
-      NoAssignmentInExpressions.self, to: &concrete,
-      parent: parent, transform: NoAssignmentInExpressions.transform
-    )
-    context.applyRewrite(
-      NoYodaConditions.self, to: &concrete,
-      parent: parent, transform: NoYodaConditions.transform
-    )
-    context.applyRewrite(
-      PreferCompoundAssignment.self, to: &concrete,
-      parent: parent, transform: PreferCompoundAssignment.transform
-    )
+    if context.shouldRewrite(NoAssignmentInExpressions.self, at: Syntax(concrete)),
+       let next = NoAssignmentInExpressions.transform(concrete, parent: parent, context: context).as(InfixOperatorExprSyntax.self)
+    {
+      concrete = next
+    }
+    if context.shouldRewrite(NoYodaConditions.self, at: Syntax(concrete)),
+       let next = NoYodaConditions.transform(concrete, parent: parent, context: context).as(InfixOperatorExprSyntax.self)
+    {
+      concrete = next
+    }
+    if context.shouldRewrite(PreferCompoundAssignment.self, at: Syntax(concrete)),
+       let next = PreferCompoundAssignment.transform(concrete, parent: parent, context: context).as(InfixOperatorExprSyntax.self)
+    {
+      concrete = next
+    }
     if context.shouldRewrite(PreferIsEmpty.self, at: Syntax(concrete)) {
       let widened = PreferIsEmpty.transform(concrete, parent: parent, context: context)
       if let stillInfix = widened.as(InfixOperatorExprSyntax.self) {
@@ -751,10 +1275,11 @@ final class CompactStageOneRewriter: SyntaxRewriter {
         return widened
       }
     }
-    context.applyRewrite(
-      WrapConditionalAssignment.self, to: &concrete,
-      parent: parent, transform: WrapConditionalAssignment.transform
-    )
+    if context.shouldRewrite(WrapConditionalAssignment.self, at: Syntax(concrete)),
+       let next = WrapConditionalAssignment.transform(concrete, parent: parent, context: context).as(InfixOperatorExprSyntax.self)
+    {
+      concrete = next
+    }
     return ExprSyntax(concrete)
   }
 
@@ -777,8 +1302,73 @@ final class CompactStageOneRewriter: SyntaxRewriter {
     if runRedundantSelf { RedundantSelf.willEnter(node, context: context) }
     let visited = super.visit(node)
     let result: DeclSyntax
-    if let concrete = visited.as(InitializerDeclSyntax.self) {
-      result = DeclSyntax(rewriteInitializerDecl(concrete, parent: parent, context: context))
+    if var concrete = visited.as(InitializerDeclSyntax.self) {
+      if context.shouldRewrite(DocCommentsPrecedeModifiers.self, at: Syntax(concrete)),
+         let next = DocCommentsPrecedeModifiers.transform(concrete, parent: parent, context: context).as(InitializerDeclSyntax.self)
+      {
+        concrete = next
+      }
+      if context.shouldRewrite(InitCoderUnavailable.self, at: Syntax(concrete)),
+         let next = InitCoderUnavailable.transform(concrete, parent: parent, context: context).as(InitializerDeclSyntax.self)
+      {
+        concrete = next
+      }
+      if context.shouldRewrite(ModifierOrder.self, at: Syntax(concrete)),
+         let next = ModifierOrder.transform(concrete, parent: parent, context: context).as(InitializerDeclSyntax.self)
+      {
+        concrete = next
+      }
+      if context.shouldRewrite(ModifiersOnSameLine.self, at: Syntax(concrete)),
+         let next = ModifiersOnSameLine.transform(concrete, parent: parent, context: context).as(InitializerDeclSyntax.self)
+      {
+        concrete = next
+      }
+      if context.shouldRewrite(OpaqueGenericParameters.self, at: Syntax(concrete)),
+         let next = OpaqueGenericParameters.transform(concrete, parent: parent, context: context).as(InitializerDeclSyntax.self)
+      {
+        concrete = next
+      }
+      if context.shouldRewrite(RedundantAccessControl.self, at: Syntax(concrete)),
+         let next = RedundantAccessControl.transform(concrete, parent: parent, context: context).as(InitializerDeclSyntax.self)
+      {
+        concrete = next
+      }
+      if context.shouldRewrite(RedundantObjc.self, at: Syntax(concrete)),
+         let next = RedundantObjc.transform(concrete, parent: parent, context: context).as(InitializerDeclSyntax.self)
+      {
+        concrete = next
+      }
+      if context.shouldRewrite(TripleSlashDocComments.self, at: Syntax(concrete)),
+         let next = TripleSlashDocComments.transform(concrete, parent: parent, context: context).as(InitializerDeclSyntax.self)
+      {
+        concrete = next
+      }
+      if context.shouldRewrite(UnusedArguments.self, at: Syntax(concrete)),
+         let next = UnusedArguments.transform(concrete, parent: parent, context: context).as(InitializerDeclSyntax.self)
+      {
+        concrete = next
+      }
+      if context.shouldRewrite(UseImplicitInit.self, at: Syntax(concrete)),
+         let next = UseImplicitInit.transform(concrete, parent: parent, context: context).as(InitializerDeclSyntax.self)
+      {
+        concrete = next
+      }
+      if context.shouldRewrite(RedundantEscaping.self, at: Syntax(concrete)),
+         let next = RedundantEscaping.transform(concrete, parent: parent, context: context).as(InitializerDeclSyntax.self)
+      {
+        concrete = next
+      }
+      if context.shouldRewrite(WrapMultilineStatementBraces.self, at: Syntax(concrete)),
+         let next = WrapMultilineStatementBraces.transform(concrete, parent: parent, context: context).as(InitializerDeclSyntax.self)
+      {
+        concrete = next
+      }
+      if context.shouldRewrite(WrapSingleLineBodies.self, at: Syntax(concrete)),
+         let next = WrapSingleLineBodies.transform(concrete, parent: parent, context: context).as(InitializerDeclSyntax.self)
+      {
+        concrete = next
+      }
+      result = DeclSyntax(concrete)
     } else {
       result = visited
     }
@@ -861,14 +1451,16 @@ final class CompactStageOneRewriter: SyntaxRewriter {
         return finishExit(widened)
       }
     }
-    context.applyRewrite(
-      PreferIsDisjoint.self, to: &concrete,
-      parent: parent, transform: PreferIsDisjoint.transform
-    )
-    context.applyRewrite(
-      PreferSelfType.self, to: &concrete,
-      parent: parent, transform: PreferSelfType.transform
-    )
+    if context.shouldRewrite(PreferIsDisjoint.self, at: Syntax(concrete)),
+       let next = PreferIsDisjoint.transform(concrete, parent: parent, context: context).as(MemberAccessExprSyntax.self)
+    {
+      concrete = next
+    }
+    if context.shouldRewrite(PreferSelfType.self, at: Syntax(concrete)),
+       let next = PreferSelfType.transform(concrete, parent: parent, context: context).as(MemberAccessExprSyntax.self)
+    {
+      concrete = next
+    }
     if context.shouldRewrite(RedundantSelf.self, at: Syntax(concrete)) {
       let widened = RedundantSelf.transform(concrete, parent: parent, context: context)
       if let stillMember = widened.as(MemberAccessExprSyntax.self) {
@@ -963,8 +1555,36 @@ final class CompactStageOneRewriter: SyntaxRewriter {
     let parent = Syntax(node).parent
     let visited = super.visit(node)
     let result: DeclSyntax
-    if let concrete = visited.as(ProtocolDeclSyntax.self) {
-      result = DeclSyntax(rewriteProtocolDecl(concrete, parent: parent, context: context))
+    if var concrete = visited.as(ProtocolDeclSyntax.self) {
+      if context.shouldRewrite(DocCommentsPrecedeModifiers.self, at: Syntax(concrete)),
+         let next = DocCommentsPrecedeModifiers.transform(concrete, parent: parent, context: context).as(ProtocolDeclSyntax.self)
+      {
+        concrete = next
+      }
+      if context.shouldRewrite(ModifiersOnSameLine.self, at: Syntax(concrete)),
+         let next = ModifiersOnSameLine.transform(concrete, parent: parent, context: context).as(ProtocolDeclSyntax.self)
+      {
+        concrete = next
+      }
+      if context.shouldRewrite(RedundantAccessControl.self, at: Syntax(concrete)),
+         let next = RedundantAccessControl.transform(concrete, parent: parent, context: context).as(ProtocolDeclSyntax.self)
+      {
+        concrete = next
+      }
+      if context.shouldRewrite(TripleSlashDocComments.self, at: Syntax(concrete)),
+         let next = TripleSlashDocComments.transform(concrete, parent: parent, context: context).as(ProtocolDeclSyntax.self)
+      {
+        concrete = next
+      }
+      if context.shouldRewrite(PreferAnyObject.self, at: Syntax(concrete)) {
+        concrete = PreferAnyObject.apply(concrete, context: context)
+      }
+      if context.shouldRewrite(WrapMultilineStatementBraces.self, at: Syntax(concrete)),
+         let next = WrapMultilineStatementBraces.transform(concrete, parent: parent, context: context).as(ProtocolDeclSyntax.self)
+      {
+        concrete = next
+      }
+      result = DeclSyntax(concrete)
     } else {
       result = visited
     }
@@ -987,10 +1607,11 @@ final class CompactStageOneRewriter: SyntaxRewriter {
         concrete.condition = stripped
         NoParensAroundConditions.fixKeywordTrailingTrivia(&concrete.whileKeyword.trailingTrivia)
       }
-      context.applyRewrite(
-        WrapSingleLineBodies.self, to: &concrete,
-        parent: parent, transform: WrapSingleLineBodies.transform
-      )
+      if context.shouldRewrite(WrapSingleLineBodies.self, at: Syntax(concrete)),
+         let next = WrapSingleLineBodies.transform(concrete, parent: parent, context: context).as(RepeatStmtSyntax.self)
+      {
+        concrete = next
+      }
       result = StmtSyntax(concrete)
     } else {
       result = visited
@@ -1076,8 +1697,79 @@ final class CompactStageOneRewriter: SyntaxRewriter {
     if runRedundantSelf { RedundantSelf.willEnter(node, context: context) }
     let visited = super.visit(node)
     let result: DeclSyntax
-    if let concrete = visited.as(StructDeclSyntax.self) {
-      result = DeclSyntax(rewriteStructDecl(concrete, parent: parent, context: context))
+    if var concrete = visited.as(StructDeclSyntax.self) {
+      if context.shouldRewrite(DocCommentsPrecedeModifiers.self, at: Syntax(concrete)),
+         let next = DocCommentsPrecedeModifiers.transform(concrete, parent: parent, context: context).as(StructDeclSyntax.self)
+      {
+        concrete = next
+      }
+      if context.shouldRewrite(ModifierOrder.self, at: Syntax(concrete)),
+         let next = ModifierOrder.transform(concrete, parent: parent, context: context).as(StructDeclSyntax.self)
+      {
+        concrete = next
+      }
+      if context.shouldRewrite(ModifiersOnSameLine.self, at: Syntax(concrete)),
+         let next = ModifiersOnSameLine.transform(concrete, parent: parent, context: context).as(StructDeclSyntax.self)
+      {
+        concrete = next
+      }
+      if context.shouldRewrite(RedundantAccessControl.self, at: Syntax(concrete)),
+         let next = RedundantAccessControl.transform(concrete, parent: parent, context: context).as(StructDeclSyntax.self)
+      {
+        concrete = next
+      }
+      if context.shouldRewrite(RedundantEquatable.self, at: Syntax(concrete)),
+         let next = RedundantEquatable.transform(concrete, parent: parent, context: context).as(StructDeclSyntax.self)
+      {
+        concrete = next
+      }
+      if context.shouldRewrite(RedundantObjc.self, at: Syntax(concrete)),
+         let next = RedundantObjc.transform(concrete, parent: parent, context: context).as(StructDeclSyntax.self)
+      {
+        concrete = next
+      }
+      if context.shouldRewrite(RedundantSendable.self, at: Syntax(concrete)),
+         let next = RedundantSendable.transform(concrete, parent: parent, context: context).as(StructDeclSyntax.self)
+      {
+        concrete = next
+      }
+      if context.shouldRewrite(SimplifyGenericConstraints.self, at: Syntax(concrete)),
+         let next = SimplifyGenericConstraints.transform(concrete, parent: parent, context: context).as(StructDeclSyntax.self)
+      {
+        concrete = next
+      }
+      if context.shouldRewrite(TestSuiteAccessControl.self, at: Syntax(concrete)),
+         let next = TestSuiteAccessControl.transform(concrete, parent: parent, context: context).as(StructDeclSyntax.self)
+      {
+        concrete = next
+      }
+      if context.shouldRewrite(TripleSlashDocComments.self, at: Syntax(concrete)),
+         let next = TripleSlashDocComments.transform(concrete, parent: parent, context: context).as(StructDeclSyntax.self)
+      {
+        concrete = next
+      }
+      if context.shouldRewrite(ValidateTestCases.self, at: Syntax(concrete)),
+         let next = ValidateTestCases.transform(concrete, parent: parent, context: context).as(StructDeclSyntax.self)
+      {
+        concrete = next
+      }
+      if context.shouldRewrite(RedundantSwiftTestingSuite.self, at: Syntax(concrete)) {
+        concrete = RedundantSwiftTestingSuite.removeSuite(
+          from: concrete, keyword: \.structKeyword, context: context
+        )
+      }
+      if context.shouldRewrite(WrapMultilineStatementBraces.self, at: Syntax(concrete)),
+         let next = WrapMultilineStatementBraces.transform(concrete, parent: parent, context: context).as(StructDeclSyntax.self)
+      {
+        concrete = next
+      }
+      // StaticStructShouldBeEnum runs last because it can widen
+      // `StructDeclSyntax` to `EnumDeclSyntax`.
+      if context.shouldRewrite(StaticStructShouldBeEnum.self, at: Syntax(concrete)) {
+        result = StaticStructShouldBeEnum.transform(concrete, parent: parent, context: context)
+      } else {
+        result = DeclSyntax(concrete)
+      }
     } else {
       result = visited
     }
@@ -1110,8 +1802,63 @@ final class CompactStageOneRewriter: SyntaxRewriter {
     if runRedundantSelf { RedundantSelf.willEnter(node, context: context) }
     let visited = super.visit(node)
     let result: DeclSyntax
-    if let concrete = visited.as(SubscriptDeclSyntax.self) {
-      result = DeclSyntax(rewriteSubscriptDecl(concrete, parent: parent, context: context))
+    if var concrete = visited.as(SubscriptDeclSyntax.self) {
+      if context.shouldRewrite(DocCommentsPrecedeModifiers.self, at: Syntax(concrete)),
+         let next = DocCommentsPrecedeModifiers.transform(concrete, parent: parent, context: context).as(SubscriptDeclSyntax.self)
+      {
+        concrete = next
+      }
+      if context.shouldRewrite(ModifierOrder.self, at: Syntax(concrete)),
+         let next = ModifierOrder.transform(concrete, parent: parent, context: context).as(SubscriptDeclSyntax.self)
+      {
+        concrete = next
+      }
+      if context.shouldRewrite(ModifiersOnSameLine.self, at: Syntax(concrete)),
+         let next = ModifiersOnSameLine.transform(concrete, parent: parent, context: context).as(SubscriptDeclSyntax.self)
+      {
+        concrete = next
+      }
+      if context.shouldRewrite(OpaqueGenericParameters.self, at: Syntax(concrete)),
+         let next = OpaqueGenericParameters.transform(concrete, parent: parent, context: context).as(SubscriptDeclSyntax.self)
+      {
+        concrete = next
+      }
+      if context.shouldRewrite(RedundantAccessControl.self, at: Syntax(concrete)),
+         let next = RedundantAccessControl.transform(concrete, parent: parent, context: context).as(SubscriptDeclSyntax.self)
+      {
+        concrete = next
+      }
+      if context.shouldRewrite(RedundantObjc.self, at: Syntax(concrete)),
+         let next = RedundantObjc.transform(concrete, parent: parent, context: context).as(SubscriptDeclSyntax.self)
+      {
+        concrete = next
+      }
+      if context.shouldRewrite(RedundantReturn.self, at: Syntax(concrete)),
+         let next = RedundantReturn.transform(concrete, parent: parent, context: context).as(SubscriptDeclSyntax.self)
+      {
+        concrete = next
+      }
+      if context.shouldRewrite(TripleSlashDocComments.self, at: Syntax(concrete)),
+         let next = TripleSlashDocComments.transform(concrete, parent: parent, context: context).as(SubscriptDeclSyntax.self)
+      {
+        concrete = next
+      }
+      if context.shouldRewrite(UnusedArguments.self, at: Syntax(concrete)),
+         let next = UnusedArguments.transform(concrete, parent: parent, context: context).as(SubscriptDeclSyntax.self)
+      {
+        concrete = next
+      }
+      if context.shouldRewrite(UseImplicitInit.self, at: Syntax(concrete)),
+         let next = UseImplicitInit.transform(concrete, parent: parent, context: context).as(SubscriptDeclSyntax.self)
+      {
+        concrete = next
+      }
+      if context.shouldRewrite(WrapSingleLineBodies.self, at: Syntax(concrete)),
+         let next = WrapSingleLineBodies.transform(concrete, parent: parent, context: context).as(SubscriptDeclSyntax.self)
+      {
+        concrete = next
+      }
+      result = DeclSyntax(concrete)
     } else {
       result = visited
     }
@@ -1144,12 +1891,13 @@ final class CompactStageOneRewriter: SyntaxRewriter {
   }
 
   override func visit(_ node: SwitchCaseListSyntax) -> SwitchCaseListSyntax {
-    let parent = Syntax(node).parent
     if context.shouldRewrite(NoFallThroughOnlyCases.self, at: Syntax(node)) {
       NoFallThroughOnlyCases.willEnter(node, context: context)
     }
-    let visited = super.visit(node)
-    let result = rewriteSwitchCaseList(visited, parent: parent, context: context)
+    var result = super.visit(node)
+    if context.shouldRewrite(NoFallThroughOnlyCases.self, at: Syntax(result)) {
+      result = NoFallThroughOnlyCases.apply(result, context: context)
+    }
     return result
   }
 
@@ -1185,8 +1933,28 @@ final class CompactStageOneRewriter: SyntaxRewriter {
     }
     let visited = super.visit(node)
     let result: ExprSyntax
-    if let concrete = visited.as(SwitchExprSyntax.self) {
-      result = ExprSyntax(rewriteSwitchExpr(concrete, parent: parent, context: context))
+    if var concrete = visited.as(SwitchExprSyntax.self) {
+      if context.shouldRewrite(BlankLinesAfterSwitchCase.self, at: Syntax(concrete)) {
+        concrete = BlankLinesAfterSwitchCase.apply(concrete, context: context)
+      }
+      if context.shouldRewrite(NoParensAroundConditions.self, at: Syntax(concrete)),
+         let stripped = NoParensAroundConditions.minimalSingleExpression(concrete.subject, context: context)
+      {
+        concrete.subject = stripped
+        NoParensAroundConditions.fixKeywordTrailingTrivia(&concrete.switchKeyword.trailingTrivia)
+      }
+      if context.shouldRewrite(SwitchCaseIndentation.self, at: Syntax(concrete)) {
+        concrete = SwitchCaseIndentation.apply(concrete, context: context)
+      }
+      if context.shouldRewrite(WrapMultilineStatementBraces.self, at: Syntax(concrete)),
+         let next = WrapMultilineStatementBraces.transform(concrete, parent: parent, context: context).as(SwitchExprSyntax.self)
+      {
+        concrete = next
+      }
+      if context.shouldRewrite(ConsistentSwitchCaseSpacing.self, at: Syntax(concrete)) {
+        concrete = ConsistentSwitchCaseSpacing.apply(concrete, context: context)
+      }
+      result = ExprSyntax(concrete)
     } else {
       result = visited
     }
@@ -1198,14 +1966,16 @@ final class CompactStageOneRewriter: SyntaxRewriter {
     let visited = super.visit(node)
     let result: ExprSyntax
     if var concrete = visited.as(TernaryExprSyntax.self) {
-      context.applyRewrite(
-        NoVoidTernary.self, to: &concrete,
-        parent: parent, transform: NoVoidTernary.transform
-      )
-      context.applyRewrite(
-        WrapTernary.self, to: &concrete,
-        parent: parent, transform: WrapTernary.transform
-      )
+      if context.shouldRewrite(NoVoidTernary.self, at: Syntax(concrete)),
+         let next = NoVoidTernary.transform(concrete, parent: parent, context: context).as(TernaryExprSyntax.self)
+      {
+        concrete = next
+      }
+      if context.shouldRewrite(WrapTernary.self, at: Syntax(concrete)),
+         let next = WrapTernary.transform(concrete, parent: parent, context: context).as(TernaryExprSyntax.self)
+      {
+        concrete = next
+      }
       result = ExprSyntax(concrete)
     } else {
       result = visited
@@ -1288,8 +2058,76 @@ final class CompactStageOneRewriter: SyntaxRewriter {
     if runRedundantSelf { RedundantSelf.willEnter(node, context: context) }
     let visited = super.visit(node)
     let result: DeclSyntax
-    if let concrete = visited.as(VariableDeclSyntax.self) {
-      result = DeclSyntax(rewriteVariableDecl(concrete, parent: parent, context: context))
+    if var concrete = visited.as(VariableDeclSyntax.self) {
+      if context.shouldRewrite(AvoidNoneName.self, at: Syntax(concrete)),
+         let next = AvoidNoneName.transform(concrete, parent: parent, context: context).as(VariableDeclSyntax.self)
+      {
+        concrete = next
+      }
+      if context.shouldRewrite(DocCommentsPrecedeModifiers.self, at: Syntax(concrete)),
+         let next = DocCommentsPrecedeModifiers.transform(concrete, parent: parent, context: context).as(VariableDeclSyntax.self)
+      {
+        concrete = next
+      }
+      if context.shouldRewrite(ModifierOrder.self, at: Syntax(concrete)),
+         let next = ModifierOrder.transform(concrete, parent: parent, context: context).as(VariableDeclSyntax.self)
+      {
+        concrete = next
+      }
+      if context.shouldRewrite(ModifiersOnSameLine.self, at: Syntax(concrete)),
+         let next = ModifiersOnSameLine.transform(concrete, parent: parent, context: context).as(VariableDeclSyntax.self)
+      {
+        concrete = next
+      }
+      if context.shouldRewrite(PrivateStateVariables.self, at: Syntax(concrete)),
+         let next = PrivateStateVariables.transform(concrete, parent: parent, context: context).as(VariableDeclSyntax.self)
+      {
+        concrete = next
+      }
+      if context.shouldRewrite(RedundantAccessControl.self, at: Syntax(concrete)),
+         let next = RedundantAccessControl.transform(concrete, parent: parent, context: context).as(VariableDeclSyntax.self)
+      {
+        concrete = next
+      }
+      if context.shouldRewrite(RedundantNilInit.self, at: Syntax(concrete)),
+         let next = RedundantNilInit.transform(concrete, parent: parent, context: context).as(VariableDeclSyntax.self)
+      {
+        concrete = next
+      }
+      if context.shouldRewrite(RedundantObjc.self, at: Syntax(concrete)),
+         let next = RedundantObjc.transform(concrete, parent: parent, context: context).as(VariableDeclSyntax.self)
+      {
+        concrete = next
+      }
+      if context.shouldRewrite(RedundantPattern.self, at: Syntax(concrete)),
+         let next = RedundantPattern.transform(concrete, parent: parent, context: context).as(VariableDeclSyntax.self)
+      {
+        concrete = next
+      }
+      if context.shouldRewrite(RedundantSetterACL.self, at: Syntax(concrete)),
+         let next = RedundantSetterACL.transform(concrete, parent: parent, context: context).as(VariableDeclSyntax.self)
+      {
+        concrete = next
+      }
+      if context.shouldRewrite(RedundantType.self, at: Syntax(concrete)),
+         let next = RedundantType.transform(concrete, parent: parent, context: context).as(VariableDeclSyntax.self)
+      {
+        concrete = next
+      }
+      if context.shouldRewrite(RedundantViewBuilder.self, at: Syntax(concrete)),
+         let next = RedundantViewBuilder.transform(concrete, parent: parent, context: context).as(VariableDeclSyntax.self)
+      {
+        concrete = next
+      }
+      if context.shouldRewrite(TripleSlashDocComments.self, at: Syntax(concrete)),
+         let next = TripleSlashDocComments.transform(concrete, parent: parent, context: context).as(VariableDeclSyntax.self)
+      {
+        concrete = next
+      }
+      if context.shouldRewrite(StrongOutlets.self, at: Syntax(concrete)) {
+        concrete = StrongOutlets.apply(concrete, context: context)
+      }
+      result = DeclSyntax(concrete)
     } else {
       result = visited
     }
@@ -1307,14 +2145,16 @@ final class CompactStageOneRewriter: SyntaxRewriter {
       if context.shouldRewrite(NoParensAroundConditions.self, at: Syntax(concrete)) {
         NoParensAroundConditions.fixKeywordTrailingTrivia(&concrete.whileKeyword.trailingTrivia)
       }
-      context.applyRewrite(
-        WrapMultilineStatementBraces.self, to: &concrete,
-        parent: parent, transform: WrapMultilineStatementBraces.transform
-      )
-      context.applyRewrite(
-        WrapSingleLineBodies.self, to: &concrete,
-        parent: parent, transform: WrapSingleLineBodies.transform
-      )
+      if context.shouldRewrite(WrapMultilineStatementBraces.self, at: Syntax(concrete)),
+         let next = WrapMultilineStatementBraces.transform(concrete, parent: parent, context: context).as(WhileStmtSyntax.self)
+      {
+        concrete = next
+      }
+      if context.shouldRewrite(WrapSingleLineBodies.self, at: Syntax(concrete)),
+         let next = WrapSingleLineBodies.transform(concrete, parent: parent, context: context).as(WhileStmtSyntax.self)
+      {
+        concrete = next
+      }
       result = StmtSyntax(concrete)
     } else {
       result = visited

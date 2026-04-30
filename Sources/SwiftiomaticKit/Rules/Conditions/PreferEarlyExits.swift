@@ -51,8 +51,7 @@ final class PreferEarlyExits: StaticFormatRule<BasicRuleValue>, @unchecked Senda
     // MARK: - Compact pipeline
 
     /// Diagnose on the pre-traversal node so finding source locations come from
-    /// the original tree. The merged `applyPreferEarlyExits` only performs the
-    /// rewrite — see `Sources/SwiftiomaticKit/Rewrites/Stmts/CodeBlockItemList.swift`.
+    /// the original tree.
     static func willEnter(_ node: CodeBlockItemListSyntax, context: Context) {
         for codeBlockItem in node {
             guard let exprStmt = codeBlockItem.item.as(ExpressionStmtSyntax.self),
@@ -62,6 +61,44 @@ final class PreferEarlyExits: StaticFormatRule<BasicRuleValue>, @unchecked Senda
             else { continue }
             Self.diagnose(.useGuardStatement, on: ifStatement, context: context)
         }
+    }
+
+    /// Replace `if/else { early-exit }` blocks with `guard ... else { ... }`.
+    /// Called from `CompactStageOneRewriter.visit(_: CodeBlockItemListSyntax)`.
+    static func apply(
+        _ node: CodeBlockItemListSyntax,
+        context: Context
+    ) -> CodeBlockItemListSyntax {
+        var newItems = [CodeBlockItemSyntax]()
+
+        for codeBlockItem in node {
+            guard let exprStmt = codeBlockItem.item.as(ExpressionStmtSyntax.self),
+                  let ifStatement = exprStmt.expression.as(IfExprSyntax.self),
+                  let elseBody = ifStatement.elseBody?.as(CodeBlockSyntax.self),
+                  codeBlockEndsWithEarlyExit(elseBody)
+            else {
+                newItems.append(codeBlockItem)
+                continue
+            }
+
+            let guardKeyword = TokenSyntax.keyword(
+                .guard,
+                leadingTrivia: ifStatement.ifKeyword.leadingTrivia,
+                trailingTrivia: .spaces(1)
+            )
+            let guardStatement = GuardStmtSyntax(
+                guardKeyword: guardKeyword,
+                conditions: ifStatement.conditions,
+                elseKeyword: TokenSyntax.keyword(.else, trailingTrivia: .spaces(1)),
+                body: elseBody
+            )
+
+            newItems.append(CodeBlockItemSyntax(item: .stmt(StmtSyntax(guardStatement))))
+
+            for trueStmt in ifStatement.body.statements { newItems.append(trueStmt) }
+        }
+
+        return CodeBlockItemListSyntax(newItems)
     }
 
     fileprivate static func codeBlockEndsWithEarlyExit(_ codeBlock: CodeBlockSyntax) -> Bool {

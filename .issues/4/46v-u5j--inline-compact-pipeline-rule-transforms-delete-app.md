@@ -1,17 +1,17 @@
 ---
 # 46v-u5j
 title: Inline compact-pipeline rule transforms; delete applyRewrite shim
-status: in-progress
+status: completed
 type: task
 priority: high
 created_at: 2026-04-30T00:45:06Z
-updated_at: 2026-04-30T01:30:22Z
+updated_at: 2026-04-30T02:08:23Z
 blocked_by:
     - uqb-m5z
 sync:
     github:
         issue_number: "515"
-        synced_at: "2026-04-30T01:30:24Z"
+        synced_at: "2026-04-30T02:10:47Z"
 ---
 
 ## Summary
@@ -89,3 +89,78 @@ Inlined a further 19 wrappers and deleted their files (28 total this issue):
 ### Validation
 
 - `swift_package_test` clean: 3010 passed, 0 failed.
+
+
+
+## Progress (round 3)
+
+Inlined the remaining 18 wrappers and removed all three wrapper directories. Migrated their non-trivial helpers into the rules they belong to.
+
+### Inlined and deleted
+
+- **Decls (11)**: `ActorDecl`, `ClassDecl`, `EnumDecl`, `ExtensionDecl`, `FunctionDecl`, `ImportDecl`, `InitializerDecl`, `ProtocolDecl`, `StructDecl`, `SubscriptDecl`, `VariableDecl`
+- **Exprs (4)**: `ClosureSignature`, `FunctionCallExpr`, `FunctionSignature`, `FunctionType`
+- **Stmts (3)**: `CodeBlockItemList`, `SwitchCaseList`, `SwitchExpr`
+
+`Sources/SwiftiomaticKit/Rewrites/{Decls,Exprs,Stmts}/` are gone (step 3 complete).
+
+### Helper migrations into rule classes
+
+- `applyRedundantFinal` → `RedundantFinal.apply`
+- `applyPreferAnyObject` → `PreferAnyObject.apply`
+- `applyStrongOutlets` (+ `hasIBOutletAttribute`) → `StrongOutlets.apply`
+- `applyPreferVoidReturn` / `applyPreferVoidReturnToClosureSignature` (+ shared `hasNonWhitespaceTrivia`/`makeVoidIdentifierType`) → `PreferVoidReturn.apply` (overloaded for `FunctionTypeSyntax` and `ClosureSignatureSyntax`)
+- `applyNoVoidReturnOnFunctionSignature` → `NoVoidReturnOnFunctionSignature.apply`
+- `applyNoTrailingClosureParens` → `NoTrailingClosureParens.apply`
+- `applyPreferTrailingClosures` (+ all helpers) → `PreferTrailingClosures.apply`
+- `applyWrapMultilineFunctionChains` (+ all helpers and `PeriodTriviaRewriter`) → `WrapMultilineFunctionChains.apply`
+- `applyPreferEarlyExits` (+ `codeBlockEndsWithEarlyExit`) → `PreferEarlyExits.apply`
+- `applyNoFallThroughOnlyCases` (+ all helpers) → `NoFallThroughOnlyCases.apply` (with `applyImpl` shared between `apply` and `willEnter`)
+- `applyBlankLinesAfterSwitchCase` → `BlankLinesAfterSwitchCase.apply`
+- `applyConsistentSwitchCaseSpacing` → `ConsistentSwitchCaseSpacing.apply`
+- `applySwitchCaseIndentation` (+ `reindentCase`/`replaceIndentation`/`lineIndentation`) → `SwitchCaseIndentation.apply`
+
+### Remaining
+
+**Step 2 — delete `Context.applyRewrite`** still pending. The shim is still alive at 161 call sites in `CompactStageOneRewriter.swift`. Inlining each is mechanical:
+
+```swift
+context.applyRewrite(R.self, to: &n, parent: parent, transform: R.transform)
+```
+becomes
+```swift
+if context.shouldRewrite(R.self, at: Syntax(n)),
+   let next = R.transform(n, parent: parent, context: context).as(type(of: n)) {
+  n = next
+}
+```
+
+(For non-widening rules — most of them — the `.as(...)` narrowing is unnecessary and the simpler `n = R.transform(n, parent: parent, context: context)` works.) Deferred to a follow-up because the rule-by-rule signature audit doesn't fit cleanly with the wrapper-deletion work.
+
+### Validation
+
+- `swift_package_test` clean: 3010 passed, 0 failed.
+
+
+
+## Progress (round 4 — completion)
+
+Step 2 (delete `Context.applyRewrite`) is done. All 161 call sites in `CompactStageOneRewriter.swift` were rewritten to use `shouldRewrite` + `.transform(...).as(NodeType.self)` directly. The shim `applyRewrite` has been removed from `Context.swift`.
+
+The conversion was driven by a Python script that:
+1. Walked the file, tracking each `if/guard var concrete = visited.as(NodeType.self)` binding and `var result = super.visit(node)` (typed by the visit's return type) so we could resolve each call site's variable type.
+2. Replaced each `context.applyRewrite(R.self, to: &VAR, parent: parent, transform: R.transform)` with the explicit `if context.shouldRewrite(R.self, at: Syntax(VAR)), let next = R.transform(VAR, parent: parent, context: context).as(NodeType.self) { VAR = next }` form.
+
+Six sites under `guard var concrete = visited.as(...) else { return ... }` weren't bound by the script (it only tracked `if var`) and were fixed by hand: three in `InfixOperatorExpr` (`NoAssignmentInExpressions`, `NoYodaConditions`, `PreferCompoundAssignment`, `WrapConditionalAssignment`) and two in `MemberAccessExpr` (`PreferIsDisjoint`, `PreferSelfType`).
+
+### Validation
+
+- `swift_package_build` clean.
+- `swift_package_test` clean: 3010 passed, 0 failed.
+
+## Summary of Changes
+
+- Inlined every per-decl-type `rewrite<NodeType>` wrapper from `Sources/SwiftiomaticKit/Rewrites/{Decls,Exprs,Stmts}/` directly into `CompactStageOneRewriter.visit(_:)` overrides (28 files across three rounds, 161 transform call sites).
+- Migrated 14 wrapper-private helpers into the rules they belong to: `RedundantFinal.apply`, `PreferAnyObject.apply`, `StrongOutlets.apply`, `PreferVoidReturn.apply` (overloaded), `NoVoidReturnOnFunctionSignature.apply`, `NoTrailingClosureParens.apply`, `PreferTrailingClosures.apply`, `WrapMultilineFunctionChains.apply`, `PreferEarlyExits.apply`, `NoFallThroughOnlyCases.apply`, `BlankLinesAfterSwitchCase.apply`, `ConsistentSwitchCaseSpacing.apply`, `SwitchCaseIndentation.apply`, plus `BlankLinesAfterGuardStatements.apply` from round 2.
+- Deleted `Context.applyRewrite` and the now-empty `Sources/SwiftiomaticKit/Rewrites/{Decls,Exprs,Stmts}/` directories.
+- All 3010 tests pass.

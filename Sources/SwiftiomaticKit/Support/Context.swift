@@ -133,22 +133,6 @@ package final class Context {
         shouldFormat(rule, node: node)
     }
 
-    /// Apply a compact-pipeline rewrite rule's static `transform` to `node`,
-    /// gated by `shouldRewrite`. Re-narrows the result to the input's
-    /// concrete type — widening rewrites use `shouldRewrite` directly and
-    /// handle the typed result themselves.
-    func applyRewrite<R: SyntaxRule, N: SyntaxProtocol, Out: SyntaxProtocol>(
-        _ rule: R.Type,
-        to node: inout N,
-        parent: Syntax? = nil,
-        transform: (N, Syntax?, Context) -> Out
-    ) {
-        guard shouldRewrite(rule, at: Syntax(node)) else { return }
-        if let next = transform(node, parent, self).as(N.self) {
-            node = next
-        }
-    }
-
     /// Returns the configured lint severity for the given rule type.
     func severity<R: SyntaxRule>(of _: R.Type) -> Lint { configuration[R.self].lint }
 }
