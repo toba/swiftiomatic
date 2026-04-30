@@ -17,7 +17,7 @@ final class ConsistentSwitchCaseSpacing: StaticFormatRule<BasicRuleValue>, @unch
 
     /// Normalize blank-line spacing among switch cases to whichever style is
     /// used by the majority. Called from
-    /// `CompactStageOneRewriter.visit(_: SwitchExprSyntax)`.
+    /// `CompactSyntaxRewriter.visit(_: SwitchExprSyntax)`.
     static func apply(_ node: SwitchExprSyntax, context: Context) -> SwitchExprSyntax {
         var switchExpr = node
         let cases = Array(switchExpr.cases)

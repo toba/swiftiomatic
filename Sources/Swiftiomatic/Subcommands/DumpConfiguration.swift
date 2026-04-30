@@ -66,10 +66,6 @@ extension SwiftiomaticCommand {
       } else {
         configuration = Configuration()
       }
-      if let styleOverride = configurationOptions.style {
-        configuration[StyleSetting.self] = styleOverride
-      }
-
       do {
         print(try configuration.asJSONString(sortBy: sort))
       } catch {

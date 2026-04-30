@@ -64,7 +64,7 @@ final class PreferEarlyExits: StaticFormatRule<BasicRuleValue>, @unchecked Senda
     }
 
     /// Replace `if/else { early-exit }` blocks with `guard ... else { ... }`.
-    /// Called from `CompactStageOneRewriter.visit(_: CodeBlockItemListSyntax)`.
+    /// Called from `CompactSyntaxRewriter.visit(_: CodeBlockItemListSyntax)`.
     static func apply(
         _ node: CodeBlockItemListSyntax,
         context: Context

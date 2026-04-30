@@ -176,6 +176,43 @@ struct RedundantInitTests: RuleTesting {
     )
   }
 
+  @Test func metatypeValueInitNotModified() {
+    // `rule` is a metatype value (e.g. `rule: R.Type`). `rule.init(...)` cannot
+    // be rewritten to `rule(...)` — that calls the metatype as a function,
+    // which is invalid Swift.
+    assertFormatting(
+      RedundantInit.self,
+      input: """
+        func make<R>(_ rule: R.Type) -> R {
+          return rule.init()
+        }
+        """,
+      expected: """
+        func make<R>(_ rule: R.Type) -> R {
+          return rule.init()
+        }
+        """,
+      findings: []
+    )
+  }
+
+  @Test func metatypeValueInitWithArgsNotModified() {
+    assertFormatting(
+      RedundantInit.self,
+      input: """
+        func run<V, R: StructuralFormatRule<V>>(_ rule: R.Type, context: Context) -> Syntax {
+          return rule.init(context: context).rewrite(node)
+        }
+        """,
+      expected: """
+        func run<V, R: StructuralFormatRule<V>>(_ rule: R.Type, context: Context) -> Syntax {
+          return rule.init(context: context).rewrite(node)
+        }
+        """,
+      findings: []
+    )
+  }
+
   @Test func superInitNotModified() {
     assertFormatting(
       RedundantInit.self,

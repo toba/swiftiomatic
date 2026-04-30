@@ -13,7 +13,7 @@ final class RedundantFinal: StaticFormatRule<BasicRuleValue>, @unchecked Sendabl
     override class var defaultValue: BasicRuleValue { .init(rewrite: false, lint: .warn) }
 
     /// Strip `final` from members of a `final` class. Called from
-    /// `CompactStageOneRewriter.visit(_: ClassDeclSyntax)`.
+    /// `CompactSyntaxRewriter.visit(_: ClassDeclSyntax)`.
     static func apply(_ node: ClassDeclSyntax, context: Context) -> ClassDeclSyntax {
         guard node.modifiers.contains(anyOf: [.final]) else { return node }
 

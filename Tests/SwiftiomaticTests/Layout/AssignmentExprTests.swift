@@ -236,6 +236,26 @@ struct AssignmentExprTests: LayoutTesting {
     assertLayout(input: input, expected: expected, linelength: 70)
   }
 
+  @Test func assignmentWithChainAsCallArgumentFitsOnOneLine() {
+    // The RHS is `.init(type: chain)` where the chain
+    // `type.with(\.leadingTrivia, .space).with(\.trailingTrivia, .space)` fits within the
+    // indented argument body. Regression guard: the inner second `.with(...)` must NOT
+    // break its arg list one-per-line — the chain stays intact on a single line. The
+    // closing `))` collapses onto the chain line per the project's chain-fits convention
+    // (see `assignmentWithMemberAccessChain` ).
+    let input =
+      """
+      replacement.typeAnnotation = .init(type: type.with(\\.leadingTrivia, .space).with(\\.trailingTrivia, .space))
+      """
+    let expected =
+      """
+      replacement.typeAnnotation = .init(
+        type: type.with(\\.leadingTrivia, .space).with(\\.trailingTrivia, .space))
+
+      """
+    assertLayout(input: input, expected: expected, linelength: 100)
+  }
+
   @Test func assignmentPatternBindingFromSequenceWithFunctionCalls() {
     let input =
       """

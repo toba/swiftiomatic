@@ -12,7 +12,7 @@ final class WrapMultilineFunctionChains: StaticFormatRule<BasicRuleValue>, @unch
     override class var defaultValue: BasicRuleValue { .init(rewrite: false, lint: .no) }
 
     /// Wrap dots in a multiline call chain so each one is on its own line.
-    /// Called from `CompactStageOneRewriter.visit(_: FunctionCallExprSyntax)`.
+    /// Called from `CompactSyntaxRewriter.visit(_: FunctionCallExprSyntax)`.
     static func apply(
         _ node: FunctionCallExprSyntax,
         context: Context

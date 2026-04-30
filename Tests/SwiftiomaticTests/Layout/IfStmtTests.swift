@@ -299,6 +299,24 @@ struct IfStmtTests: LayoutTesting {
     assertLayout(input: input, expected: expected, linelength: 30)
   }
 
+  // q3p-snb: a short `if let` chain with a member-access call on the RHS used to be split
+  // across lines (with `{` pushed to its own line) by the full pipeline, even though the whole
+  // condition + brace fit on one line. Layout-only test passes; the full pipeline regresses.
+  @Test func shortIfLetWithMemberAccessCallStaysOnOneLine() {
+    let input =
+      """
+      func decode(_ hex: String) {
+        var set = Set<Unicode.Scalar>()
+        if let value = UInt32(hex, radix: 16), let scalar = Unicode.Scalar(value) {
+          set.insert(scalar)
+        }
+      }
+
+      """
+
+    assertFullPipeline(input: input, expected: input, linelength: 100)
+  }
+
   @Test func ifLetStatements() {
     let input =
       """

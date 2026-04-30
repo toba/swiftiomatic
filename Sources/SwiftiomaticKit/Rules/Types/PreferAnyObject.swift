@@ -12,7 +12,7 @@ final class PreferAnyObject: StaticFormatRule<BasicRuleValue>, @unchecked Sendab
     override static var group: ConfigurationGroup? { .types }
 
     /// Replace `class` with `AnyObject` in a protocol's inheritance clause. Called from
-    /// `CompactStageOneRewriter.visit(_: ProtocolDeclSyntax)`.
+    /// `CompactSyntaxRewriter.visit(_: ProtocolDeclSyntax)`.
     static func apply(_ node: ProtocolDeclSyntax, context: Context) -> ProtocolDeclSyntax {
         guard let inheritanceClause = node.inheritanceClause else { return node }
 

@@ -22,6 +22,40 @@ import SwiftiomaticTestSupport
 protocol LayoutTesting {}
 
 extension LayoutTesting {
+    /// Asserts that the input string, when run through the full format pipeline (all stage 1
+    /// static / stage 2 structural rewrites + the pretty printer), equals the expected string.
+    /// Use this when a layout-only `assertLayout` would miss interactions with rewrite rules.
+    func assertFullPipeline(
+        input: String,
+        expected: String,
+        linelength: Int,
+        configuration: Configuration = .forTesting,
+        sourceLocation: TestSourceLocation = #_sourceLocation
+    ) {
+        var configuration = configuration
+        configuration[LineLength.self] = linelength
+
+        let formatter = RewriteCoordinator(configuration: configuration)
+        let tree = Parser.parse(source: input)
+        let foldedTree = OperatorTable.standardOperators.foldAll(tree) { _ in }
+            .as(SourceFileSyntax.self)!
+        var output = ""
+        try! formatter.format(
+            syntax: foldedTree,
+            source: input,
+            operatorTable: .standardOperators,
+            assumingFileURL: nil,
+            selection: .infinite,
+            to: &output
+        )
+        assertStringsEqualWithDiff(
+            output,
+            expected,
+            "Full-pipeline result was not what was expected",
+            sourceLocation: sourceLocation
+        )
+    }
+
     /// Asserts that the input string, when pretty printed, is equal to the expected string.
     func assertLayout(
         input: String,

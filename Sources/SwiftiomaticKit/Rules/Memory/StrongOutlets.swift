@@ -14,7 +14,7 @@ final class StrongOutlets: StaticFormatRule<BasicRuleValue>, @unchecked Sendable
 
     /// Strip `weak` from `@IBOutlet` declarations (preserving it for `delegate`
     /// / `dataSource` outlets). Called from
-    /// `CompactStageOneRewriter.visit(_: VariableDeclSyntax)`.
+    /// `CompactSyntaxRewriter.visit(_: VariableDeclSyntax)`.
     static func apply(_ node: VariableDeclSyntax, context: Context) -> VariableDeclSyntax {
         guard hasIBOutletAttribute(node), node.modifiers.contains(.weak) else {
             return node

@@ -1,33 +1,23 @@
 # Swiftiomatic
 
-AST-accurate Swift linting, formatting, and code analysis. A fork of [apple/swift-format](https://github.com/swiftlang/swift-format) with rules drawn from [SwiftFormat](https://github.com/nicklockwood/swiftformat) and [SwiftLint](https://github.com/realm/swiftlint), reorganised around a style-driven format pipeline.
+AST-accurate Swift linting, formatting, and code analysis. A fork of [apple/swift-format](https://github.com/swiftlang/swift-format) with additional rules drawn from [SwiftFormat](https://github.com/nicklockwood/swiftformat) and [SwiftLint](https://github.com/realm/swiftlint).
 
 The `sm` binary is a drop-in replacement for `swift-format`: the same `format`, `lint`, and `dump-configuration` subcommands and flags, plus extras (`doctor`, `link`, `update`).
 
-## Style-driven configuration
+## Configuration
 
-Formatting is selected by a single `style` value rather than ~140 individual rule toggles. Universal layout settings (line length, indentation, line breaks) live alongside it.
+Configuration is JSON5. Format and lint are both per-rule, with universal layout settings (line length, indentation, line breaks) alongside.
 
 ```jsonc
 {
     "$schema": "https://raw.githubusercontent.com/toba/swiftiomatic/refs/heads/main/schema.json",
-    "version": 7,
-    "style": "compact",
+    "version": 8,
     "indentation": { "unit": { "spaces": 4 }, "tabWidth": 8 },
     "lineBreaks": { "lineLength": 100, "respectExistingLineBreaks": true }
 }
 ```
 
-Available styles:
-
-| Style | Status |
-|---|---|
-| `compact` | Default. Prefers single-line constructs; wraps only when exceeding the line length. |
-| `roomy` | Reserved name; not yet implemented. Selecting it fails fast. |
-
-The CLI flag `--style <name>` overrides the configured style for a single invocation.
-
-Lint behaviour is still configurable per-rule (`"lint": "no" | "warn" | "error"`) — rules-as-toggles only went away on the format side.
+Each rule accepts `"rewrite": true | false` (format side) and `"lint": "no" | "warn" | "error"` (lint side). Format rules default to active; lint rules default to `"warn"`.
 
 ## CLI
 

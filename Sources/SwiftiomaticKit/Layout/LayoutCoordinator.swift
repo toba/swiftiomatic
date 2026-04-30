@@ -368,14 +368,11 @@ package final class LayoutCoordinator {
                             || wasContinuationWhenOpened
                         isContinuationIfBreakFires = wasContinuationWhenOpened
 
-                    case .continue:
-                        isContinuationIfBreakFires = true
+                    case .continue: isContinuationIfBreakFires = true
 
-                    case .same:
-                        break
+                    case .same: break
 
-                    case .reset:
-                        mustBreak = currentLineIsContinuation
+                    case .reset: mustBreak = currentLineIsContinuation
 
                     case .contextual:
                         // When the last context spanned multiple lines, move the next context (in
@@ -412,8 +409,7 @@ package final class LayoutCoordinator {
 
                         if let activeBreakingContext = activeBreakingContexts.last {
                             switch activeBreakingContext.contextualBreakingBehavior {
-                                case .unset, .continuation:
-                                    isContinuationIfBreakFires = true
+                                case .unset, .continuation: isContinuationIfBreakFires = true
                                 case .maintain:
                                     isContinuationIfBreakFires = currentLineIsContinuation
                             }
@@ -515,7 +511,7 @@ package final class LayoutCoordinator {
                 // is what authors expect for ordinary explanatory comments. Commented-out code
                 // typically has multiple leading spaces after `//` (matching the original code's
                 // indentation) and is left at the author's column. Prose comments ("// note:", "//
-                // TODO:") have one space and should be re-indented to scope.
+                // TODO: ") have one space and should be re-indented to scope.
                 let looksLikeCommentedOutCode = comment.text.first?.hasPrefix("    ") ?? false
                 let preserveColumn = comment.kind == .line && !wasEndOfLine
                     && outputBuffer.isAtStartOfLine
@@ -546,10 +542,8 @@ package final class LayoutCoordinator {
                         if activeBreakSuppressionCount == 1 || allowSuppressedDiscretionaryBreaks {
                             allowSuppressedDiscretionaryBreaks = allowDiscretionary
                         }
-                    case .enableBreaking:
-                        activeBreakSuppressionCount -= 1
-                    case .clearContinuation:
-                        currentLineIsContinuation = false
+                    case .enableBreaking: activeBreakSuppressionCount -= 1
+                    case .clearContinuation: currentLineIsContinuation = false
                 }
 
             case .commaDelimitedRegionStart:
@@ -681,15 +675,15 @@ package final class LayoutCoordinator {
                     if let index = delimiterIndices.last,
                        case .break(_, _, let lastNewline) = tokens[index]
                     {
-                        // If the last break and this break are both `.escaped` we add an extra 1
-                        // to the total for the last `.escaped` break. This is to handle situations
-                        // where adding the `\` for an escaped line break would put us over the
-                        // line length. For example, consider the token sequence:
+                        // If the last break and this break are both `.escaped` we add an extra 1 to
+                        // the total for the last `.escaped` break. This is to handle situations
+                        // where adding the `\` for an escaped line break would put us over the line
+                        // length. For example, consider the token sequence:
                         // `[.syntax("this fits"), .break(.escaped), .syntax("this fits in line length"), .break(.escaped)]`
-                        // The naive layout of these tokens will incorrectly print as: """ this
-                        // fits this fits in line length \ """ which will be too long because of
-                        // the '\' character. Instead we have to print it as: """ this fits \ this
-                        // fits in line length """
+                        // The naive layout of these tokens will incorrectly print as: """ this fits
+                        // this fits in line length \ """ which will be too long because of the '\'
+                        // character. Instead we have to print it as: """ this fits \ this fits in
+                        // line length """
                         //
                         // While not prematurely inserting a line in situations where a hard line
                         // break is occurring, such as:
@@ -709,13 +703,8 @@ package final class LayoutCoordinator {
                     delimiterIndices.append(i)
 
                     switch newline {
-                        case .elective, .escaped:
-                            total += size
-                        default:
-                            // `size` is never used in this case, because the break always fires.
-                            // Use `maxLineLength` to ensure enclosing groups are large enough to
-                            // force preceding breaks to fire.
-                            total += maxLineLength
+                        case .elective, .escaped: total += size
+                        default: total += maxLineLength
                     }
 
                 // Space tokens have a length equal to its size.
@@ -816,10 +805,8 @@ package final class LayoutCoordinator {
                 printDebugIndent()
 
                 switch breakstyle {
-                    case .consistent:
-                        print("[OPEN Consistent Length: \(length) Idx: \(idx)]")
-                    case .inconsistent:
-                        print("[OPEN Inconsistent Length: \(length) Idx: \(idx)]")
+                    case .consistent: print("[OPEN Consistent Length: \(length) Idx: \(idx)]")
+                    case .inconsistent: print("[OPEN Inconsistent Length: \(length) Idx: \(idx)]")
                 }
                 debugIndent.append(.spaces(2))
 

@@ -1,15 +1,15 @@
 ---
 # q3p-snb
 title: Formatter splits short if-let conditions across lines instead of keeping on one line
-status: ready
+status: in-progress
 type: bug
 priority: normal
 created_at: 2026-04-28T00:21:18Z
-updated_at: 2026-04-28T00:21:18Z
+updated_at: 2026-04-30T03:15:26Z
 sync:
     github:
         issue_number: "473"
-        synced_at: "2026-04-28T02:39:59Z"
+        synced_at: "2026-04-30T03:34:38Z"
 ---
 
 ## Problem

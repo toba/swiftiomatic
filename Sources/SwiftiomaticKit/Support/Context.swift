@@ -73,6 +73,17 @@ package final class Context {
     lazy var validateTestCasesState = ValidateTestCases.State()
     lazy var wrapSingleLineBodiesState = WrapSingleLineBodiesState()
 
+    /// Pre-built `(titlecased, uppercased)` pairs for `UppercaseAcronyms`,
+    /// sorted longest-first so longer acronyms match before shorter
+    /// substrings. Computed once per file; reused for every identifier
+    /// token visited.
+    lazy var preparedAcronyms: [(titlecased: String, uppercased: String)] = {
+        configuration[UppercaseAcronyms.self].words
+            .filter { $0.count >= 2 }
+            .sorted { $0.count > $1.count }
+            .map { (titlecased: $0.capitalized, uppercased: $0.uppercased()) }
+    }()
+
     /// Creates a new Context with the provided configuration, diagnostic engine, and file URL.
     package init(
         configuration: Configuration,
@@ -121,14 +132,10 @@ package final class Context {
         }
     }
 
-    /// Rewrite-path entry point for the gate check; equivalent to
-    /// `shouldFormat(_:node:)`. The user-visible "compact-style rules apply
-    /// unconditionally; no per-rule toggle" semantic is delivered by the
-    /// configuration schema (which omits toggles for compact-pipeline rules),
-    /// not by skipping the runtime `Configuration.isActive` check — tests
-    /// rely on per-rule activation via `Configuration.forTesting(enabledRule:)`,
-    /// and opt-in rules (`defaultIsActive: false`) need the configured value
-    /// consulted to honour their default-off semantic.
+    /// Rewrite-path entry point for the gate check; equivalent to `shouldFormat(_:node:)`.
+    /// Returns whether the rule should run on this node, consulting `RuleMask` (`// sm:ignore`)
+    /// and `Configuration.isActive(rule:)` (per-rule `rewrite` flag, with `defaultIsActive: false`
+    /// honouring opt-in rules and `Configuration.forTesting(enabledRule:)` honouring tests).
     func shouldRewrite<R: SyntaxRule>(_ rule: R.Type, at node: Syntax) -> Bool {
         shouldFormat(rule, node: node)
     }

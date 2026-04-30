@@ -25,7 +25,7 @@ final class PreferShorthandTypeNames: StructuralFormatRule<BasicRuleValue>, @unc
     /// Compact-pipeline support: when set, `visit(_:)` consults this instead of
     /// `node.parent` (which is `nil` because the post-recursion node is detached
     /// from the original tree). Set only by the static `transform` overloads
-    /// invoked from `CompactStageOneRewriter` via the per-node merged
+    /// invoked from `CompactSyntaxRewriter` via the per-node merged
     /// rewrite functions in `Sources/SwiftiomaticKit/Rewrites/Exprs/`.
     fileprivate var compactPipelineParent: Syntax?
 
@@ -102,7 +102,7 @@ final class PreferShorthandTypeNames: StructuralFormatRule<BasicRuleValue>, @unc
 
         if let newNode = newNode {
             // Findings emitted via `static willEnter(_:IdentifierTypeSyntax,context:)`
-            // — fires in both rewrite mode (CompactStageOneRewriter pre-recursion)
+            // — fires in both rewrite mode (CompactSyntaxRewriter pre-recursion)
             // and lint mode (LintCoordinator runs the compact rewriter to drive
             // these hooks). No instance-side diagnose needed.
             return newNode

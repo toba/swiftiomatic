@@ -34,9 +34,6 @@ package enum SwiftiomaticError: LocalizedError {
     /// The provided configuration version is not supported by this version of the formatter.
     case unsupportedConfigurationVersion(Int, highestSupported: Int)
 
-    /// The selected style is reserved but not yet implemented.
-    case styleNotImplemented(String)
-
     package var errorDescription: String? {
         switch self {
             case .fileNotReadable:
@@ -51,8 +48,6 @@ package enum SwiftiomaticError: LocalizedError {
                 "dumping configuration failed: \(message)"
             case .unsupportedConfigurationVersion(let version, let highestSupported):
                 "This version of the formatter does not support configuration version \(version). The highest supported version is \(highestSupported)."
-            case .styleNotImplemented(let name):
-                "Style '\(name)' is reserved but not yet implemented. Use 'compact' or omit `style`."
         }
     }
 }

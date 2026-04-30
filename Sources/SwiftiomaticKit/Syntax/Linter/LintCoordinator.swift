@@ -100,8 +100,6 @@ package final class LintCoordinator {
         experimentalFeatures: Set<String> = [],
         parsingDiagnosticHandler: ((Diagnostic, SourceLocation) -> Void)? = nil
     ) throws(SwiftiomaticError) {
-        try configuration.validateStyleSupported()
-
         // If the file or input string is completely empty, do nothing. This prevents even a trailing
         // newline from being diagnosed for an empty file. (This is consistent with clang-format, which
         // also does not touch an empty file even if the setting to add trailing newlines is enabled.)
@@ -165,11 +163,11 @@ package final class LintCoordinator {
         // Drive finding emission for compact-pipeline rules (those with `static
         // willEnter`/`transform` hooks but no `override func visit`). After the
         // `ddi-wtv` cutover, most rewrite rules emit findings exclusively through
-        // these static hooks invoked by `CompactStageOneRewriter`. Running the
+        // these static hooks invoked by `CompactSyntaxRewriter`. Running the
         // rewriter and discarding its output is the simplest way to fire those
         // hooks during `sm lint`. The LintPipeline below still handles lint-only
         // rules and the structural-pass rules that retain instance `visit` overrides.
-        _ = CompactStageOneRewriter(context: context).rewrite(Syntax(syntax))
+        _ = RewritePipeline(context: context).rewrite(Syntax(syntax))
 
         let pipeline = LintPipeline(context: context)
         pipeline.walk(Syntax(syntax))

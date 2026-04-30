@@ -60,6 +60,16 @@ final class RedundantInit: StaticFormatRule<BasicRuleValue>, @unchecked Sendable
       return ExprSyntax(node)
     }
 
+    // Skip metatype values: when the base is a value of metatype type (e.g. a
+    // parameter `rule: R.Type` called as `rule.init(...)`), `.init` is required —
+    // dropping it produces `rule(...)`, which doesn't compile. We can't tell
+    // value-vs-type from syntax alone, so use the Swift convention: type names
+    // are UpperCamelCase, value identifiers are lowerCamelCase. Only fire when
+    // the leftmost identifier in the base looks like a type.
+    guard leftmostIdentifierIsType(base) else {
+      return ExprSyntax(node)
+    }
+
     Self.diagnose(.removeRedundantInit, on: memberAccess.period, context: context)
 
     // Replace `Foo.init(args)` with `Foo(args)`.
@@ -69,6 +79,32 @@ final class RedundantInit: StaticFormatRule<BasicRuleValue>, @unchecked Sendable
     newBase.trailingTrivia = memberAccess.declName.baseName.trailingTrivia
     newNode.calledExpression = ExprSyntax(newBase)
     return ExprSyntax(newNode)
+  }
+}
+
+extension RedundantInit {
+  /// Walks down a base expression to its leftmost identifier and returns `true`
+  /// if that identifier looks like a type by Swift convention (UpperCamelCase).
+  /// Returns `false` for value-typed receivers like `rule.init(...)`.
+  fileprivate static func leftmostIdentifierIsType(_ base: ExprSyntax) -> Bool {
+    var current: ExprSyntax = base
+    while true {
+      if let memberAccess = current.as(MemberAccessExprSyntax.self), let inner = memberAccess.base {
+        current = inner
+        continue
+      }
+      if let generic = current.as(GenericSpecializationExprSyntax.self) {
+        current = generic.expression
+        continue
+      }
+      break
+    }
+    guard let declRef = current.as(DeclReferenceExprSyntax.self),
+      let first = declRef.baseName.text.first
+    else {
+      return false
+    }
+    return first.isUppercase || first == "_"
   }
 }
 

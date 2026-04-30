@@ -1,15 +1,15 @@
 ---
 # kf9-83w
 title: Fix 8 failing layout tests
-status: review
+status: completed
 type: bug
 priority: normal
 created_at: 2026-04-28T00:22:40Z
-updated_at: 2026-04-28T00:45:41Z
+updated_at: 2026-04-30T02:24:36Z
 sync:
     github:
         issue_number: "474"
-        synced_at: "2026-04-28T02:39:59Z"
+        synced_at: "2026-04-30T03:34:38Z"
 ---
 
 Build succeeds. 8 tests fail in the layout/pretty-print suite — all related to guard/condition wrapping and string handling.

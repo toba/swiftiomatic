@@ -1,7 +1,7 @@
 /// Convenience accessors for layout setting types.
 ///
-/// The authoritative list lives in ``ConfigurationRegistry/allSettingTypes`` (generated).
-/// This enum provides filtered views used by ``Configuration`` and schema generators.
+/// The authoritative list lives in ``ConfigurationRegistry/allSettingTypes`` (generated). This enum
+/// provides filtered views used by ``Configuration`` and schema generators.
 package enum LayoutRegistry {
     package static var all: [any LayoutRule.Type] { ConfigurationRegistry.allSettingTypes }
 

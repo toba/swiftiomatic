@@ -53,7 +53,7 @@ final class SwitchCaseIndentation: StaticFormatRule<SwitchCaseIndentationConfigu
 
     /// Reindent `case` labels, bodies, and the closing brace to match the
     /// configured style. Called from
-    /// `CompactStageOneRewriter.visit(_: SwitchExprSyntax)`.
+    /// `CompactSyntaxRewriter.visit(_: SwitchExprSyntax)`.
     static func apply(_ node: SwitchExprSyntax, context: Context) -> SwitchExprSyntax {
         var switchExpr = node
         let style = context.configuration[Self.self].style

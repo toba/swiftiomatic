@@ -43,7 +43,7 @@ final class NoTrailingClosureParens: StaticFormatRule<BasicRuleValue>, @unchecke
 
     /// Strip empty parens before a trailing closure when the call has no
     /// arguments. Called from
-    /// `CompactStageOneRewriter.visit(_: FunctionCallExprSyntax)`.
+    /// `CompactSyntaxRewriter.visit(_: FunctionCallExprSyntax)`.
     static func apply(
         _ node: FunctionCallExprSyntax,
         context: Context

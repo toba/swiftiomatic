@@ -10,7 +10,7 @@ Scans rule source files under `Sources/SwiftiomaticKit/Rules/` and `Sources/Swif
 
 | Generator | Output | Purpose |
 |---|---|---|
-| `PipelineGenerator` | `Pipelines+Generated.swift`, `CompactStageOneRewriter+Generated.swift` | `visit()` dispatchers for `LintPipeline` and the stage-1 compact rewriter |
+| `PipelineGenerator` | `Pipelines+Generated.swift` | `visit()`/`visitPost()` dispatchers for `LintPipeline` |
 | `ConfigurationGenerator` | `ConfigurationRegistry+Generated.swift` | Type arrays for all rules and settings |
 | `ConfigurationSchemaGenerator` | `schema.json` | JSON Schema for the configuration |
 | `ConfigurationSchemaSwiftGenerator` | `ConfigurationSchema+Generated.swift` | Embedded schema for runtime validation |

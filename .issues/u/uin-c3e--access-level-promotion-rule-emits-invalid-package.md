@@ -1,15 +1,15 @@
 ---
 # uin-c3e
 title: Access-level promotion rule emits invalid 'package' on protocol-conformance extension
-status: review
+status: completed
 type: bug
 priority: high
 created_at: 2026-04-27T20:24:59Z
-updated_at: 2026-04-27T20:31:52Z
+updated_at: 2026-04-30T02:24:34Z
 sync:
     github:
         issue_number: "468"
-        synced_at: "2026-04-27T20:36:22Z"
+        synced_at: "2026-04-30T03:34:38Z"
 ---
 
 The access-level promotion rule rewrote a protocol-conformance extension as `package extension JSONValue: Codable`, which Swift rejects:

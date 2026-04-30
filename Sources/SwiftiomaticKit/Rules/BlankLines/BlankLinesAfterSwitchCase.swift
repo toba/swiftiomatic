@@ -18,7 +18,7 @@ final class BlankLinesAfterSwitchCase: StaticFormatRule<BasicRuleValue>, @unchec
 
     /// Insert blank lines after multiline cases and strip a blank line before
     /// the closing brace. Called from
-    /// `CompactStageOneRewriter.visit(_: SwitchExprSyntax)`.
+    /// `CompactSyntaxRewriter.visit(_: SwitchExprSyntax)`.
     static func apply(_ node: SwitchExprSyntax, context: Context) -> SwitchExprSyntax {
         var switchExpr = node
         let cases = Array(switchExpr.cases)

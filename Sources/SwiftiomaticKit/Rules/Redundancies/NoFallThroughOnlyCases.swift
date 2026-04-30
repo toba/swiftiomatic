@@ -29,7 +29,7 @@ final class NoFallThroughOnlyCases: StaticFormatRule<BasicRuleValue>, @unchecked
 
     /// Collapse `case`s whose only statement is `fallthrough` into the
     /// following case's pattern list. Called from
-    /// `CompactStageOneRewriter.visit(_: SwitchCaseListSyntax)`.
+    /// `CompactSyntaxRewriter.visit(_: SwitchCaseListSyntax)`.
     static func apply(_ node: SwitchCaseListSyntax, context: Context) -> SwitchCaseListSyntax {
         applyImpl(node, context: context, diagnose: false)
     }

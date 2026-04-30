@@ -276,7 +276,7 @@ package struct Configuration: Sendable, Equatable {
 
 /// A version number that can be specified in the configuration file, which allows us to change the
 /// format in the future if desired and still support older files.
-private let highestSupportedConfigurationVersion = 7
+private let highestSupportedConfigurationVersion = 8
 
 extension Configuration {
     /// The URL of the JSON schema hosted on GitHub. Embedded as `$schema` by `encode(to:)`.

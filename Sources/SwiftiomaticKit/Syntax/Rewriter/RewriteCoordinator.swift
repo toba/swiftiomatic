@@ -1,19 +1,19 @@
-//===----------------------------------------------------------------------===//
+// ===----------------------------------------------------------------------===//
 //
 // This source file is part of the Swift.org open source project
 //
-// Copyright (c) 2014 - 2024 Apple Inc. and the Swift project authors
-// Licensed under Apache License v2.0 with Runtime Library Exception
+// Copyright (c) 2014 - 2024 Apple Inc. and the Swift project authors Licensed under Apache License
+// v2.0 with Runtime Library Exception
 //
-// See https://swift.org/LICENSE.txt for license information
-// See https://swift.org/CONTRIBUTORS.txt for the list of Swift project authors
+// See https://swift.org/LICENSE.txt for license information See https://swift.org/CONTRIBUTORS.txt
+// for the list of Swift project authors
 //
-//===----------------------------------------------------------------------===//
+// ===----------------------------------------------------------------------===//
 
 import Foundation
-import SwiftDiagnostics
-import SwiftOperators
 import SwiftSyntax
+import SwiftOperators
+import SwiftDiagnostics
 
 /// Formats Swift source code or syntax trees according to the Swift style guidelines.
 package final class RewriteCoordinator {
@@ -23,17 +23,17 @@ package final class RewriteCoordinator {
     /// An optional callback that will be notified with any findings encountered during formatting.
     package let findingConsumer: ((Finding) -> Void)?
 
-    /// Advanced options that are useful when debugging the formatter's behavior but are not meant for
-    /// general use.
+    /// Advanced options that are useful when debugging the formatter's behavior but are not meant
+    /// for general use.
     package var debugOptions: DebugOptions = []
 
     /// Creates a new Swift code formatter with the given configuration.
     ///
     /// - Parameters:
     ///   - configuration: The configuration settings that control the formatter's behavior.
-    ///   - findingConsumer: An optional callback that will be notified with any findings encountered
-    ///     during formatting. Unlike the `Linter` API, this defaults to nil for formatting because
-    ///     findings are typically less useful than the final formatted output.
+    ///   - findingConsumer: An optional callback that will be notified with any findings
+    ///     encountered during formatting. Unlike the `Linter` API, this defaults to nil for
+    ///     formatting because findings are typically less useful than the final formatted output.
     package init(configuration: Configuration, findingConsumer: ((Finding) -> Void)? = nil) {
         self.configuration = configuration
         self.findingConsumer = findingConsumer
@@ -41,18 +41,19 @@ package final class RewriteCoordinator {
 
     /// Formats the Swift code at the given file URL and writes the result to an output stream.
     ///
-    /// This form of the `format` function automatically folds expressions using the default operator
-    /// set defined in Swift. If you need more control over this—for example, to provide the correct
-    /// precedence relationships for custom operators—you must parse and fold the syntax tree
-    /// manually and then call ``format(syntax:source:operatorTable:assumingFileURL:selection:to:)``.
+    /// This form of the `format` function automatically folds expressions using the default
+    /// operator set defined in Swift. If you need more control over this—for example, to provide
+    /// the correct precedence relationships for custom operators—you must parse and fold the syntax
+    /// tree manually and then call
+    /// ``format(syntax:source:operatorTable:assumingFileURL:selection:to:)`` .
     ///
     /// - Parameters:
     ///   - url: The URL of the file containing the code to format.
-    ///   - outputStream: A value conforming to `TextOutputStream` to which the formatted output will
-    ///     be written.
+    ///   - outputStream: A value conforming to `TextOutputStream` to which the formatted output
+    ///     will be written.
     ///   - parsingDiagnosticHandler: An optional callback that will be notified if there are any
     ///     errors when parsing the source code.
-    /// - Throws: If an unrecoverable error occurs when formatting the code.
+    ///   - Throws: If an unrecoverable error occurs when formatting the code.
     package func format<Output: TextOutputStream>(
         contentsOf url: URL,
         to outputStream: inout Output,
@@ -84,10 +85,11 @@ package final class RewriteCoordinator {
 
     /// Formats the given Swift source code and writes the result to an output stream.
     ///
-    /// This form of the `format` function automatically folds expressions using the default operator
-    /// set defined in Swift. If you need more control over this—for example, to provide the correct
-    /// precedence relationships for custom operators—you must parse and fold the syntax tree
-    /// manually and then call ``format(syntax:source:operatorTable:assumingFileURL:selection:to:)``.
+    /// This form of the `format` function automatically folds expressions using the default
+    /// operator set defined in Swift. If you need more control over this—for example, to provide
+    /// the correct precedence relationships for custom operators—you must parse and fold the syntax
+    /// tree manually and then call
+    /// ``format(syntax:source:operatorTable:assumingFileURL:selection:to:)`` .
     ///
     /// - Parameters:
     ///   - source: The Swift source code to be formatted.
@@ -97,13 +99,13 @@ package final class RewriteCoordinator {
     ///   - selection: The ranges to format
     ///   - experimentalFeatures: The set of experimental features that should be enabled in the
     ///     parser. These names must be from the set of parser-recognized experimental language
-    ///     features in `SwiftParser`'s `Parser.ExperimentalFeatures` enum, which match the spelling
-    ///     defined in the compiler's `Features.def` file.
-    ///   - outputStream: A value conforming to `TextOutputStream` to which the formatted output will
-    ///     be written.
+    ///     features in `SwiftParser` 's `Parser.ExperimentalFeatures` enum, which match the
+    ///     spelling defined in the compiler's `Features.def` file.
+    ///   - outputStream: A value conforming to `TextOutputStream` to which the formatted output
+    ///     will be written.
     ///   - parsingDiagnosticHandler: An optional callback that will be notified if there are any
     ///     errors when parsing the source code.
-    /// - Throws: If an unrecoverable error occurs when formatting the code.
+    ///   - Throws: If an unrecoverable error occurs when formatting the code.
     package func format<Output: TextOutputStream>(
         source: String,
         assumingFileURL url: URL?,
@@ -112,11 +114,10 @@ package final class RewriteCoordinator {
         to outputStream: inout Output,
         parsingDiagnosticHandler: ((Diagnostic, SourceLocation) -> Void)? = nil
     ) throws(SwiftiomaticError) {
-        try configuration.validateStyleSupported()
-
-        // If the file or input string is completely empty, do nothing. This prevents even a trailing
-        // newline from being emitted for an empty file. (This is consistent with clang-format, which
-        // also does not touch an empty file even if the setting to add trailing newlines is enabled.)
+        // If the file or input string is completely empty, do nothing. This prevents even a
+        // trailing newline from being emitted for an empty file. (This is consistent with
+        // clang-format, which also does not touch an empty file even if the setting to add trailing
+        // newlines is enabled.)
         guard !source.isEmpty else { return }
 
         let sourceFile = try parseAndEmitDiagnostics(
@@ -139,7 +140,7 @@ package final class RewriteCoordinator {
     /// Formats the given Swift syntax tree and writes the result to an output stream.
     ///
     /// This form of the `format` function does not perform any additional processing on the given
-    /// syntax tree. The tree **must** have all expressions folded using an `OperatorTable`, and no
+    /// syntax tree. The tree **must** have all expressions folded using an `OperatorTable` , and no
     /// detection of warnings/errors is performed.
     ///
     /// - Note: The formatter may be faster using the source text, if it's available.
@@ -148,15 +149,15 @@ package final class RewriteCoordinator {
     ///   - syntax: The Swift syntax tree to be converted to source code and formatted.
     ///   - source: The original Swift source code used to build the syntax tree.
     ///   - operatorTable: The table that defines the operators and their precedence relationships.
-    ///     This must be the same operator table that was used to fold the expressions in the `syntax`
-    ///     argument.
+    ///     This must be the same operator table that was used to fold the expressions in the
+    ///     `syntax` argument.
     ///   - url: A file URL denoting the filename/path that should be assumed for this syntax tree,
     ///     which is associated with any diagnostics emitted during formatting. If this is nil, a
     ///     dummy value will be used.
     ///   - selection: The ranges to format
-    ///   - outputStream: A value conforming to `TextOutputStream` to which the formatted output will
-    ///     be written.
-    /// - Throws: If an unrecoverable error occurs when formatting the code.
+    ///   - outputStream: A value conforming to `TextOutputStream` to which the formatted output
+    ///     will be written.
+    ///   - Throws: If an unrecoverable error occurs when formatting the code.
     package func format<Output: TextOutputStream>(
         syntax: SourceFileSyntax,
         source: String,
@@ -175,13 +176,7 @@ package final class RewriteCoordinator {
             sourceFileSyntax: syntax,
             source: source
         )
-        let transformedSyntax: Syntax
-        switch configuration[StyleSetting.self] {
-            case .compact:
-                transformedSyntax = runCompactPipeline(Syntax(syntax), context: context)
-            case .roomy:
-                throw .styleNotImplemented(Style.roomy.rawValue)
-        }
+        let transformedSyntax = runPipeline(Syntax(syntax), context: context)
 
         if debugOptions.contains(.disablePrettyPrint) {
             outputStream.write(transformedSyntax.description)
@@ -198,22 +193,22 @@ package final class RewriteCoordinator {
         outputStream.write(printer.prettyPrint())
     }
 
-    /// The two-stage compact pipeline: combined node-local rewriter, then the
-    /// structural passes in the order specified by `2kl-d04` §2. Each pass
-    /// instantiates a fresh rewriter (some passes carry in-walk state that
-    /// must reset between files) and is gated at file level via
-    /// `context.shouldFormat` — the per-pass `visitAny` shim that used to
-    /// live on `StructuralFormatRule` was hoisted here in `2uk-cll`.
+    /// The two-stage compact pipeline: combined node-local rewriter, then the structural passes in
+    /// the order specified by `2kl-d04` §2. Each pass instantiates a fresh rewriter (some passes
+    /// carry in-walk state that must reset between files) and is gated at file level via
+    /// `context.shouldFormat` — the per-pass `visitAny` shim that used to live on
+    /// `StructuralFormatRule` was hoisted here in `2uk-cll` .
     ///
-    /// Rules previously dispatched here as structural passes — `PreferFinalClasses`,
-    /// `ConvertRegularCommentToDocC`, `ConsistentSwitchCaseSpacing`, `ReflowComments` —
-    /// were inlined into stage 1 (sessions 11–14 of `ddi-wtv` Phase 4g) and removed
-    /// from this list once their `override func visit` shells were stripped.
-    private func runCompactPipeline(_ node: Syntax, context: Context) -> Syntax {
-        var current = CompactStageOneRewriter(context: context).rewrite(node)
+    /// Rules previously dispatched here as structural passes — `PreferFinalClasses` ,
+    /// `ConvertRegularCommentToDocC` , `ConsistentSwitchCaseSpacing` , `ReflowComments` — were
+    /// inlined into stage 1 (sessions 11–14 of `ddi-wtv` Phase 4g) and removed from this list once
+    /// their `override func visit` shells were stripped.
+    private func runPipeline(_ node: Syntax, context: Context) -> Syntax {
+        var current = RewritePipeline(context: context).rewrite(node)
         current = runStructuralPass(SortImports.self, on: current, context: context)
         current = runStructuralPass(BlankLinesAfterImports.self, on: current, context: context)
-        current = runStructuralPass(FileScopedDeclarationPrivacy.self, on: current, context: context)
+        current = runStructuralPass(
+            FileScopedDeclarationPrivacy.self, on: current, context: context)
         current = runStructuralPass(ExtensionAccessLevel.self, on: current, context: context)
         current = runStructuralPass(BlankLinesBetweenScopes.self, on: current, context: context)
         current = runStructuralPass(SortDeclarations.self, on: current, context: context)

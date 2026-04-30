@@ -1,15 +1,15 @@
 ---
 # cda-6ba
 title: guard with single-line body should wrap body onto next line, not split condition
-status: review
+status: completed
 type: bug
 priority: normal
 created_at: 2026-04-27T20:45:35Z
-updated_at: 2026-04-27T21:02:27Z
+updated_at: 2026-04-30T02:24:37Z
 sync:
     github:
         issue_number: "471"
-        synced_at: "2026-04-28T02:39:59Z"
+        synced_at: "2026-04-30T03:34:38Z"
 ---
 
 ## Problem

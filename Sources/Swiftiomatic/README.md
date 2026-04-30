@@ -17,8 +17,6 @@ Provides the user-facing CLI that parses arguments, loads configuration, iterate
 | `sm link` | Install the Xcode toolchain symlink for "Format with swift-format" |
 | `sm update` | Migrate a configuration file to the current schema version |
 
-`format`, `lint`, and `dump-configuration` accept `--style <compact|roomy>` to override the configured formatting style for a single invocation.
-
 ## Structure
 
 | Directory | Purpose |

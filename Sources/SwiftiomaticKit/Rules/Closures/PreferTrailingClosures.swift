@@ -26,7 +26,7 @@ final class PreferTrailingClosures: StaticFormatRule<BasicRuleValue>, @unchecked
     ]
 
     /// Move trailing closure-typed arguments out of the parens. Called from
-    /// `CompactStageOneRewriter.visit(_: FunctionCallExprSyntax)`.
+    /// `CompactSyntaxRewriter.visit(_: FunctionCallExprSyntax)`.
     static func apply(
         _ node: FunctionCallExprSyntax,
         context: Context

@@ -1,14 +1,14 @@
-//===----------------------------------------------------------------------===//
+// ===----------------------------------------------------------------------===//
 //
 // This source file is part of the Swift.org open source project
 //
-// Copyright (c) 2014 - 2019 Apple Inc. and the Swift project authors
-// Licensed under Apache License v2.0 with Runtime Library Exception
+// Copyright (c) 2014 - 2019 Apple Inc. and the Swift project authors Licensed under Apache License
+// v2.0 with Runtime Library Exception
 //
-// See https://swift.org/LICENSE.txt for license information
-// See https://swift.org/CONTRIBUTORS.txt for the list of Swift project authors
+// See https://swift.org/LICENSE.txt for license information See https://swift.org/CONTRIBUTORS.txt
+// for the list of Swift project authors
 //
-//===----------------------------------------------------------------------===//
+// ===----------------------------------------------------------------------===//
 
 import SwiftSyntax
 
@@ -21,7 +21,7 @@ package final class WhitespaceLinter {
     /// The text of the input source code to be linted.
     private let userText: [UTF8.CodeUnit]
 
-    /// The formatted version of `userText`.
+    /// The formatted version of `userText` .
     private let formattedText: [UTF8.CodeUnit]
 
     /// The Context object containing the DiagnosticEngine.
@@ -34,7 +34,7 @@ package final class WhitespaceLinter {
     ///
     /// - Parameters:
     ///   - user: The text of the Swift source code to be linted.
-    ///   - formatted: The formatted text to compare to `user`.
+    ///   - formatted: The formatted text to compare to `user` .
     ///   - context: The context object containing the DiagnosticEngine instance we wish to use.
     package init(user: String, formatted: String, context: Context) {
         userText = Array(user.utf8)
@@ -78,24 +78,24 @@ package final class WhitespaceLinter {
     ///
     /// Note: properly formatted whitespace will always be some number of newline characters
     /// followed by some number of spaces in the absence of trailing whitespace (which the
-    /// pretty-printer ensures). e.g. "\n ", "\n\n  ", "\n", " ". The user's whitespace could have
-    /// spaces and newlines in any order. e.g. " \n ", "  \n", etc.
+    /// pretty-printer ensures). e.g. "\n ", "\n\n ", "\n", " ". The user's whitespace could have
+    /// spaces and newlines in any order. e.g. " \n ", " \n", etc.
     ///
     /// - Parameters:
     ///   - userWhitespace: A slice of user text representing the current span of contiguous
     ///     whitespace.
-    ///   - formattedWhitespace: A slice of formatted text representing the current span of contiguous
-    ///     whitespace that will be compared to the user whitespace.
+    ///   - formattedWhitespace: A slice of formatted text representing the current span of
+    ///     contiguous whitespace that will be compared to the user whitespace.
     private func compareWhitespace(
         userWhitespace: ArraySlice<UTF8.CodeUnit>,
         formattedWhitespace: ArraySlice<UTF8.CodeUnit>
     ) {
         // We use a custom-crafted lazy-splitting iterator here instead of the standard
-        // `Collection.split` function because Time Profiler indicated that a very large proportion of
-        // the runtime of this function was spent allocating arrays inside `split` and then subsequently
-        // deallocating those arrays. For the sizes of whitespace runs we're likely to work with, it is
-        // much faster to pre-scan to count the number of runs and then do a single pass again over the
-        // whitespace without allocating any intermediate storage.
+        // `Collection.split` function because Time Profiler indicated that a very large proportion
+        // of the runtime of this function was spent allocating arrays inside `split` and then
+        // subsequently deallocating those arrays. For the sizes of whitespace runs we're likely to
+        // work with, it is much faster to pre-scan to count the number of runs and then do a single
+        // pass again over the whitespace without allocating any intermediate storage.
         let userRuns = userWhitespace.lazilySplit(separator: utf8Newline)
         let formattedRuns = formattedWhitespace.lazilySplit(separator: utf8Newline)
 
@@ -117,10 +117,10 @@ package final class WhitespaceLinter {
             let userRun = userRunsIterator.next()!
             let formattedRun = formattedRunsIterator.next()!
 
-            // If there was only a single whitespace run in each input, then that means there weren't any
-            // newlines. Therefore, we're looking at inter-token spacing, unless the whitespace runs
-            // preceded the first token in the file (i.e., offset == 0), in which case we ignore it here
-            // and handle it as an indentation check below.
+            // If there was only a single whitespace run in each input, then that means there
+            // weren't any newlines. Therefore, we're looking at inter-token spacing, unless the
+            // whitespace runs preceded the first token in the file (i.e., offset == 0), in which
+            // case we ignore it here and handle it as an indentation check below.
             if userIndex > 0 {
                 checkForSpacingErrors(
                     userIndex: userIndex,
@@ -136,15 +136,16 @@ package final class WhitespaceLinter {
                 let possibleFormattedRun = formattedRunsIterator.next()
 
                 if runIndex < excessUserLines {
-                    // If there were excess newlines in the user input, tell the user to remove them. This
-                    // short-circuits the trailing whitespace check below; we don't bother telling the user
-                    // about trailing whitespace on a line that we're also telling them to delete.
+                    // If there were excess newlines in the user input, tell the user to remove
+                    // them. This short-circuits the trailing whitespace check below; we don't
+                    // bother telling the user about trailing whitespace on a line that we're also
+                    // telling them to delete.
                     diagnose(.removeLineError, category: .removeLine, utf8Offset: userIndex)
                     userIndex += userRun.count + 1
                 } else if runIndex != userRuns.count - 1 {
                     if let formattedRun = possibleFormattedRun {
-                        // If this isn't the last whitespace run, then it must precede a newline, so we check
-                        // for trailing whitespace violations.
+                        // If this isn't the last whitespace run, then it must precede a newline, so
+                        // we check for trailing whitespace violations.
                         checkForTrailingWhitespaceErrors(
                             userIndex: userIndex,
                             userRun: userRun,
@@ -200,9 +201,7 @@ package final class WhitespaceLinter {
         // Only run this check at the start of a line.
         guard (userRuns.count > 1 && formattedRuns.count > 1)
             || (userRuns.count == 1 && formattedRuns.count == 1 && userIndex == 0)
-        else {
-            return
-        }
+        else { return }
 
         let lengthLimit = context.configuration[LineLength.self]
 
@@ -264,9 +263,7 @@ package final class WhitespaceLinter {
     ///
     /// Example:
     ///
-    ///     func myFun() {
-    ///     let a = 123  // Indentation error on this line
-    ///     }
+    /// func myFun() { let a = 123 // Indentation error on this line }
     ///
     /// - Parameters:
     ///   - userIndex: The current character offset within the user text.
@@ -308,7 +305,7 @@ package final class WhitespaceLinter {
     ///
     /// Example:
     ///
-    ///     let a : Int = 123  // Spacing error before the colon
+    /// let a : Int = 123 // Spacing error before the colon
     ///
     /// - Parameters:
     ///   - userIndex: The current character offset within the user text.
@@ -335,14 +332,14 @@ package final class WhitespaceLinter {
     /// the character.
     ///
     /// If the character at `offset` is whitespace, we scan forward until we find a non-whitespace
-    /// character. We then return the new offset, the character we landed on, and a string containing
-    /// the character's leading whitespace.
+    /// character. We then return the new offset, the character we landed on, and a string
+    /// containing the character's leading whitespace.
     ///
     /// - Parameters:
     ///   - offset: The printable character offset within the string.
     ///   - data: The input string.
-    /// - Returns: A slice of `data` that covers the contiguous whitespace starting at the given
-    ///   index.
+    ///   - Returns: A slice of `data` that covers the contiguous whitespace starting at the given
+    ///     index.
     private func contiguousWhitespace(
         startingAt offset: Int,
         in data: [UTF8.CodeUnit]
@@ -361,8 +358,8 @@ package final class WhitespaceLinter {
         index != data.endIndex ? data[index] : nil
     }
 
-    /// Emits a finding with the given message and category. The message will correspond to a specific
-    /// location (line and column number) in the input Swift source file (`userText`).
+    /// Emits a finding with the given message and category. The message will correspond to a
+    /// specific location (line and column number) in the input Swift source file ( `userText` ).
     ///
     /// - Parameters:
     ///   - message: The message we wish to emit.
@@ -383,8 +380,8 @@ package final class WhitespaceLinter {
         )
     }
 
-    /// Returns the indentation that represents the indentation of the given whitespace, which is the
-    /// leading spacing for a line.
+    /// Returns the indentation that represents the indentation of the given whitespace, which is
+    /// the leading spacing for a line.
     private func indentation(of whitespace: ArraySlice<UTF8.CodeUnit>) -> WhitespaceIndentation {
         if whitespace.isEmpty { return .none }
 
@@ -487,9 +484,9 @@ fileprivate extension Finding.Message {
                     }
                     // Intentionally fall-through to the heterogeneous indentation diagnostic below.
                 }
-                // Otherwise, the change can't be described by a simple add/remove N spaces/tabs. It's easier
-                // to instruct the user to remove the existing whitespace and add the appropriate sequence of
-                // indenting characters.
+                // Otherwise, the change can't be described by a simple add/remove N spaces/tabs.
+                // It's easier to instruct the user to remove the existing whitespace and add the
+                // appropriate sequence of indenting characters.
                 let expectedDescription = expectedIndentation.diagnosticDescription
                 return "replace leading whitespace with \(expectedDescription)"
         }

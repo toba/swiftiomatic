@@ -23,7 +23,7 @@ final class NoVoidReturnOnFunctionSignature: StaticFormatRule<BasicRuleValue>, @
 
     /// Strip an explicit `-> Void` / `-> ()` return clause from a function
     /// signature. Called from
-    /// `CompactStageOneRewriter.visit(_: FunctionSignatureSyntax)`.
+    /// `CompactSyntaxRewriter.visit(_: FunctionSignatureSyntax)`.
     static func apply(
         _ node: FunctionSignatureSyntax,
         context: Context

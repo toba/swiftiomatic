@@ -2,7 +2,7 @@ import ConfigurationKit
 import SwiftSyntax
 
 /// A rule that formats and/or lints, dispatched entirely through static
-/// `transform`/`willEnter`/`didExit` hooks invoked by `CompactStageOneRewriter`.
+/// `transform`/`willEnter`/`didExit` hooks invoked by `CompactSyntaxRewriter`.
 ///
 /// `StaticFormatRule` carries no per-file state — `Context` is threaded through
 /// each static call. The base class exists only as a registration target so

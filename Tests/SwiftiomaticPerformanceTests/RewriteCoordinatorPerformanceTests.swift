@@ -19,7 +19,7 @@ import XCTest
 /// Locks in baseline timing for full single-file format (parse + rewrite pipeline + pretty-print),
 /// the operation invoked when Xcode's "Format with swift-format" runs against the active file.
 ///
-/// The compact pipeline (`CompactStageOneRewriter` + 13 ordered structural passes from epic
+/// The compact pipeline (`CompactSyntaxRewriter` + 13 ordered structural passes from epic
 /// `iv7-r5g`/`ddi-wtv`) replaced the legacy per-rule sequential walk and brought the rewrite
 /// phase well under 200 ms even on the largest file in the repo.
 final class RewriteCoordinatorPerformanceTests: XCTestCase {
@@ -89,7 +89,7 @@ final class RewriteCoordinatorPerformanceTests: XCTestCase {
     }
   }
 
-  /// The compact pipeline (`CompactStageOneRewriter` + 13 ordered structural
+  /// The compact pipeline (`CompactSyntaxRewriter` + 13 ordered structural
   /// passes) on `LayoutCoordinator.swift` — the largest source file in the
   /// repo and the perf gate from epic `iv7-r5g`.
   ///
@@ -112,7 +112,7 @@ final class RewriteCoordinatorPerformanceTests: XCTestCase {
         selection: .infinite,
         findingConsumer: { _ in }
       )
-      var current = CompactStageOneRewriter(context: context).rewrite(Syntax(sourceFile))
+      var current = RewritePipeline(context: context).rewrite(Syntax(sourceFile))
       current = SortImports(context: context).rewrite(current)
       current = BlankLinesAfterImports(context: context).rewrite(current)
       current = FileScopedDeclarationPrivacy(context: context).rewrite(current)
