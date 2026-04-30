@@ -63,8 +63,8 @@ final class HoistTry: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
     /// Compact-pipeline state: per-AwaitExpr stack of pre-recursion
     /// `(hadTryBefore, trailingTrivia)` snapshots, populated by
     /// `willEnter(_:AwaitExprSyntax, context:)` and consumed by
-    /// `transform(_:AwaitExprSyntax, parent:context:)`. Reference type so it can
-    /// be cached on `Context.ruleState(for:)`.
+    /// `transform(_:AwaitExprSyntax, parent:context:)`. Reference type so it
+    /// can be stored as a typed lazy property on `Context`.
     final class AwaitState {
         var hadTryBefore: [Bool] = []
         var trailingTrivia: [Trivia] = []
@@ -72,13 +72,13 @@ final class HoistTry: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
     }
 
     static func willEnter(_ node: AwaitExprSyntax, context: Context) {
-        let state = context.ruleState(for: HoistTry.self) { AwaitState() }
+        let state = context.hoistTryState
         state.hadTryBefore.append(node.expression.is(TryExprSyntax.self))
         state.trailingTrivia.append(node.trailingTrivia)
     }
 
     static func didExit(_ node: AwaitExprSyntax, context: Context) {
-        let state = context.ruleState(for: HoistTry.self) { AwaitState() }
+        let state = context.hoistTryState
         if !state.hadTryBefore.isEmpty {
             state.hadTryBefore.removeLast()
         }
@@ -93,7 +93,7 @@ final class HoistTry: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
         context: Context
     ) -> ExprSyntax {
         _ = parent
-        let state = context.ruleState(for: HoistTry.self) { AwaitState() }
+        let state = context.hoistTryState
         let hadTryBefore = state.hadTryBefore.last ?? node.expression.is(TryExprSyntax.self)
         let originalTrailingTrivia = state.trailingTrivia.last ?? node.trailingTrivia
         return Self.transformAwait(

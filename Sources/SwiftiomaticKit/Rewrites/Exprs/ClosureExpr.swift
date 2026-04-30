@@ -1,7 +1,7 @@
 import SwiftSyntax
 
 /// Compact-pipeline merge of all `ClosureExprSyntax` rewrites. Each former
-/// rule's logic is gated on `context.shouldFormat(<RuleType>.self, node:)`.
+/// rule's logic is gated on `context.shouldRewrite(<RuleType>.self, at:)`.
 ///
 /// `willEnter`/`didExit` hooks (e.g. `RedundantSelf`) are emitted by the
 /// generator before/after `super.visit`, not from inside this function.
@@ -12,16 +12,14 @@ func rewriteClosureExpr(
 ) -> ClosureExprSyntax {
     var result = node
 
-    applyRule(
+    context.applyRewrite(
         RedundantReturn.self, to: &result,
-        parent: parent, context: context,
-        transform: RedundantReturn.transform
+        parent: parent, transform: RedundantReturn.transform
     )
 
-    applyRule(
+    context.applyRewrite(
         UnusedArguments.self, to: &result,
-        parent: parent, context: context,
-        transform: UnusedArguments.transform
+        parent: parent, transform: UnusedArguments.transform
     )
 
     // NoForceTry — closure depth tracked via generator-emitted

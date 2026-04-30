@@ -1,7 +1,7 @@
 import SwiftSyntax
 
 /// Compact-pipeline merge of all `IsExprSyntax` rewrites. Each former rule's
-/// logic is gated on `context.shouldFormat(<RuleType>.self, node:)`.
+/// logic is gated on `context.shouldRewrite(<RuleType>.self, at:)`.
 func rewriteIsExpr(
     _ node: IsExprSyntax,
     parent: Syntax?,

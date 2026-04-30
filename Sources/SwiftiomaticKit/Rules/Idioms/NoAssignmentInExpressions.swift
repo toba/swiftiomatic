@@ -51,7 +51,7 @@ final class NoAssignmentInExpressions: StaticFormatRule<NoAssignmentInExpression
 
         for visitedItem in node {
             // Items have already been recursively visited by the combined rewriter's super.visit
-            // (or by RewriteSyntaxRule.super.visit when called from the visit override).
+            // (or by StructuralFormatRule.super.visit when called from the visit override).
 
             // Rewrite any `return <assignment>` expressions as `<assignment><newline>return`.
             switch visitedItem.item {

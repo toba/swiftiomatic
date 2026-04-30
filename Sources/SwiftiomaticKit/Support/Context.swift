@@ -47,10 +47,31 @@ package final class Context {
     /// Contains the rules have been disabled by comments for certain line numbers.
     let ruleMask: RuleMask
 
-    /// Per-file, per-rule mutable state cache. Keyed by `ObjectIdentifier(R.self)`.
-    /// Access only through `ruleState(for:initialize:)`.
-    private let ruleStateLock = NSLock()
-    private var ruleStateStorage: [ObjectIdentifier: AnyObject] = [:]
+    // MARK: - Per-rule mutable state
+    //
+    // One typed lazy property per stateful compact-pipeline rewrite. Each is
+    // initialised on first access; the Context itself is constructed fresh
+    // per file by `RewriteCoordinator.format(syntax:...)`, so every file
+    // starts with empty state.
+
+    lazy var hoistTryState = HoistTry.AwaitState()
+    lazy var leadingDotOperatorsState = LeadingDotOperators.State()
+    lazy var namedClosureParamsState = NamedClosureParams.State()
+    lazy var noForceTryState = NoForceTry.State()
+    lazy var noForceUnwrapState = NoForceUnwrap.State()
+    lazy var noGuardInTestsState = NoGuardInTests.State()
+    lazy var preferEnvironmentEntryState = PreferEnvironmentEntry.State()
+    lazy var preferFinalClassesState = PreferFinalClasses.State()
+    lazy var preferSelfTypeState = PreferSelfType.State()
+    lazy var preferSwiftTestingState = PreferSwiftTesting.State()
+    lazy var redundantAccessControlState = RedundantAccessControl.State()
+    lazy var redundantSelfState = RedundantSelf.State()
+    lazy var redundantSwiftTestingSuiteState = RedundantSwiftTestingSuite.State()
+    lazy var swiftTestingTestCaseNamesState = SwiftTestingTestCaseNames.State()
+    lazy var testSuiteAccessControlState = TestSuiteAccessControl.State()
+    lazy var urlMacroState = URLMacro.State()
+    lazy var validateTestCasesState = ValidateTestCases.State()
+    lazy var wrapSingleLineBodiesState = WrapSingleLineBodiesState()
 
     /// Creates a new Context with the provided configuration, diagnostic engine, and file URL.
     package init(
@@ -86,9 +107,9 @@ package final class Context {
     /// Non-generic counterpart to `shouldFormat<R>(_:node:)` that uses existential
     /// dispatch on the rule's runtime metatype.
     ///
-    /// Use this from generic base-class contexts (e.g. `RewriteSyntaxRule.visitAny`)
-    /// where the generic parameter would otherwise bind to the static base type and
-    /// look up the wrong configuration key. See `Configuration.isActive(rule:)`.
+    /// Use this from contexts where a generic `<R>` overload would bind R to the
+    /// static base type and look up the wrong configuration key. See
+    /// `Configuration.isActive(rule:)`.
     func shouldFormat(ruleType rule: any SyntaxRule.Type, node: Syntax) -> Bool {
         guard node.isInsideSelection(selection) else { return false }
         let loc = node.startLocation(converter: sourceLocationConverter)
@@ -100,28 +121,34 @@ package final class Context {
         }
     }
 
+    /// Rewrite-path entry point for the gate check; equivalent to
+    /// `shouldFormat(_:node:)`. The user-visible "compact-style rules apply
+    /// unconditionally; no per-rule toggle" semantic is delivered by the
+    /// configuration schema (which omits toggles for compact-pipeline rules),
+    /// not by skipping the runtime `Configuration.isActive` check — tests
+    /// rely on per-rule activation via `Configuration.forTesting(enabledRule:)`,
+    /// and opt-in rules (`defaultIsActive: false`) need the configured value
+    /// consulted to honour their default-off semantic.
+    func shouldRewrite<R: SyntaxRule>(_ rule: R.Type, at node: Syntax) -> Bool {
+        shouldFormat(rule, node: node)
+    }
+
+    /// Apply a compact-pipeline rewrite rule's static `transform` to `node`,
+    /// gated by `shouldRewrite`. Re-narrows the result to the input's
+    /// concrete type — widening rewrites use `shouldRewrite` directly and
+    /// handle the typed result themselves.
+    func applyRewrite<R: SyntaxRule, N: SyntaxProtocol, Out: SyntaxProtocol>(
+        _ rule: R.Type,
+        to node: inout N,
+        parent: Syntax? = nil,
+        transform: (N, Syntax?, Context) -> Out
+    ) {
+        guard shouldRewrite(rule, at: Syntax(node)) else { return }
+        if let next = transform(node, parent, self).as(N.self) {
+            node = next
+        }
+    }
+
     /// Returns the configured lint severity for the given rule type.
     func severity<R: SyntaxRule>(of _: R.Type) -> Lint { configuration[R.self].lint }
-
-    /// Returns a per-file, per-rule mutable state object, lazily initialised on
-    /// first access. Used by rules ported to the combined `CompactStageOneRewriter`
-    /// that need to carry state across multiple `static func transform` calls
-    /// (file-level pre-scans, scope stacks, accumulated flags).
-    ///
-    /// The cache lives on `Context`, which is constructed fresh per file by
-    /// `RewriteCoordinator.format(syntax:...)`, so each file starts with an empty
-    /// cache. State objects must be reference types — mutations made via the
-    /// returned reference are visible to subsequent callers within the same file.
-    package func ruleState<R, S: AnyObject>(
-        for _: R.Type,
-        initialize: () -> S
-    ) -> S {
-        ruleStateLock.lock()
-        defer { ruleStateLock.unlock() }
-        let key = ObjectIdentifier(R.self)
-        if let cached = ruleStateStorage[key] as? S { return cached }
-        let fresh = initialize()
-        ruleStateStorage[key] = fresh
-        return fresh
-    }
 }

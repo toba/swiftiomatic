@@ -1,18 +1,18 @@
 ---
 # wru-y41
 title: Collapse compact-pipeline rule shells into pure helpers
-status: in-progress
+status: completed
 type: feature
 priority: high
 created_at: 2026-04-29T19:44:53Z
-updated_at: 2026-04-29T22:37:24Z
+updated_at: 2026-04-29T22:45:09Z
 parent: iv7-r5g
 blocked_by:
     - ddi-wtv
 sync:
     github:
         issue_number: "509"
-        synced_at: "2026-04-29T22:39:23Z"
+        synced_at: "2026-04-30T00:29:45Z"
 ---
 
 ## Goal
@@ -421,3 +421,27 @@ Verification: `xc-swift swift_diagnostics --no-include-lint` clean (12 warnings 
 2. **Replace `Context.ruleState(for:)` (metatype-keyed)** with typed state on `Context`.
 3. **Migrate structural-pass rules** off `RewriteSyntaxRule<V>` to plain `SyntaxRewriter` subclasses, then delete `RewriteSyntaxRule`.
 4. **Reformat `CompactStageOneRewriter.swift`** from 2-space → 4-space indent for consistency.
+
+
+
+## Summary of Changes
+
+Original goal — collapse compact-pipeline rule shells, eliminate the generator path, kill discoverability machinery the closed rule set no longer needs — shipped across this issue's sessions:
+
+- **All 13 `*Helpers.swift` files folded** back into their rule classes. `Sources/SwiftiomaticKit/Rewrites/RewriteHelpers.swift` is the only `*Helpers.swift` left in `Rewrites/` (infrastructure for `applyRule`).
+- **`CompactStageOneRewriter` is now hand-written** (`Sources/SwiftiomaticKit/Rewrites/CompactStageOneRewriter.swift`); generator deleted.
+- **`CompactStageOneRewriterGenerator` deleted** + removed from `GeneratePaths`, `Generator/main.swift`, and `GeneratePlugin`'s outputs (5 → 4 generated files).
+- **`RuleCollector` ~70 lines smaller** — `nodeLocalTransforms`/`nodeLocalWillEnter`/`nodeLocalDidExit` collections + the per-rule transform/willEnter/didExit AST extraction path are gone.
+- **34 dispatcher headers cleaned** of stale `CompactStageOneRewriterGenerator.manuallyHandledNodeTypes` doc comments.
+
+Build clean (12-warning baseline) at every step. Test suite parity (2 pre-existing pretty-printer-idempotency failures unrelated to this work).
+
+## Follow-ups
+
+The original issue body listed several deeper cleanups that are independent of the goal above. Split into separate tasks under parent `iv7-r5g`:
+
+- `6ji-ue3` — Drop `applyRule` ladders in compact-pipeline dispatchers; delete `applyRule`.
+- `c6i-b47` — Replace metatype-keyed `Context.ruleState(for:)` with typed state properties (blocked-by `6ji-ue3`).
+- `2uk-cll` — Migrate structural-pass rules off `RewriteSyntaxRule\<V\>`, delete the base class.
+
+Cosmetic deferred: reformat `CompactStageOneRewriter.swift` from 2-space → 4-space indent.

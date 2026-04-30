@@ -2,7 +2,7 @@ import SwiftSyntax
 
 /// Compact-pipeline merge of all `FunctionSignatureSyntax` rewrites. Each
 /// former rule's logic is gated on
-/// `context.shouldFormat(<RuleType>.self, node:)`.
+/// `context.shouldRewrite(<RuleType>.self, at:)`.
 func rewriteFunctionSignature(
     _ node: FunctionSignatureSyntax,
     parent: Syntax?,
@@ -15,7 +15,7 @@ func rewriteFunctionSignature(
     // NoVoidReturnOnFunctionSignature — strips an explicit `-> Void` / `-> ()`
     // return clause. Inlined from
     // `Sources/SwiftiomaticKit/Rules/Types/NoVoidReturnOnFunctionSignature.swift`.
-    if context.shouldFormat(NoVoidReturnOnFunctionSignature.self, node: Syntax(result)) {
+    if context.shouldRewrite(NoVoidReturnOnFunctionSignature.self, at: Syntax(result)) {
         result = applyNoVoidReturnOnFunctionSignature(result, context: context)
     }
 

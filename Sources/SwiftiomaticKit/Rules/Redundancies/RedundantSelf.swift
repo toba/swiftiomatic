@@ -22,7 +22,7 @@ import SwiftSyntax
 final class RedundantSelf: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
     override class var group: ConfigurationGroup? { .redundancies }
 
-    /// Per-file mutable state held in `Context.ruleState`. Mirrors the three instance stacks so
+    /// Per-file mutable state held as a typed lazy property on `Context`. Mirrors the three instance stacks so
     /// the static `transform`/`willEnter`/`didExit` path tracks scope identically to the legacy
     /// override path.
     final class State {
@@ -47,57 +47,57 @@ final class RedundantSelf: StaticFormatRule<BasicRuleValue>, @unchecked Sendable
     // MARK: - Static scope hooks
 
     static func willEnter(_: StructDeclSyntax, context: Context) {
-        let state = context.ruleState(for: Self.self) { State() }
+        let state = context.redundantSelfState
         state.referenceTypeStack.append(false)
     }
 
     static func didExit(_: StructDeclSyntax, context: Context) {
-        let state = context.ruleState(for: Self.self) { State() }
+        let state = context.redundantSelfState
         if !state.referenceTypeStack.isEmpty { state.referenceTypeStack.removeLast() }
     }
 
     static func willEnter(_: EnumDeclSyntax, context: Context) {
-        let state = context.ruleState(for: Self.self) { State() }
+        let state = context.redundantSelfState
         state.referenceTypeStack.append(false)
     }
 
     static func didExit(_: EnumDeclSyntax, context: Context) {
-        let state = context.ruleState(for: Self.self) { State() }
+        let state = context.redundantSelfState
         if !state.referenceTypeStack.isEmpty { state.referenceTypeStack.removeLast() }
     }
 
     static func willEnter(_: ClassDeclSyntax, context: Context) {
-        let state = context.ruleState(for: Self.self) { State() }
+        let state = context.redundantSelfState
         state.referenceTypeStack.append(true)
     }
 
     static func didExit(_: ClassDeclSyntax, context: Context) {
-        let state = context.ruleState(for: Self.self) { State() }
+        let state = context.redundantSelfState
         if !state.referenceTypeStack.isEmpty { state.referenceTypeStack.removeLast() }
     }
 
     static func willEnter(_: ActorDeclSyntax, context: Context) {
-        let state = context.ruleState(for: Self.self) { State() }
+        let state = context.redundantSelfState
         state.referenceTypeStack.append(true)
     }
 
     static func didExit(_: ActorDeclSyntax, context: Context) {
-        let state = context.ruleState(for: Self.self) { State() }
+        let state = context.redundantSelfState
         if !state.referenceTypeStack.isEmpty { state.referenceTypeStack.removeLast() }
     }
 
     static func willEnter(_: ExtensionDeclSyntax, context: Context) {
-        let state = context.ruleState(for: Self.self) { State() }
+        let state = context.redundantSelfState
         state.referenceTypeStack.append(true)
     }
 
     static func didExit(_: ExtensionDeclSyntax, context: Context) {
-        let state = context.ruleState(for: Self.self) { State() }
+        let state = context.redundantSelfState
         if !state.referenceTypeStack.isEmpty { state.referenceTypeStack.removeLast() }
     }
 
     static func willEnter(_ node: FunctionDeclSyntax, context: Context) {
-        let state = context.ruleState(for: Self.self) { State() }
+        let state = context.redundantSelfState
         guard state.insideTypeBody else {
             state.scopeFrameStack.append(false)
             return
@@ -110,7 +110,7 @@ final class RedundantSelf: StaticFormatRule<BasicRuleValue>, @unchecked Sendable
     }
 
     static func didExit(_: FunctionDeclSyntax, context: Context) {
-        let state = context.ruleState(for: Self.self) { State() }
+        let state = context.redundantSelfState
         if let didPush = state.scopeFrameStack.popLast(), didPush {
             if !state.localNameStack.isEmpty { state.localNameStack.removeLast() }
             if !state.implicitSelfStack.isEmpty { state.implicitSelfStack.removeLast() }
@@ -118,7 +118,7 @@ final class RedundantSelf: StaticFormatRule<BasicRuleValue>, @unchecked Sendable
     }
 
     static func willEnter(_ node: InitializerDeclSyntax, context: Context) {
-        let state = context.ruleState(for: Self.self) { State() }
+        let state = context.redundantSelfState
         guard state.insideTypeBody else {
             state.scopeFrameStack.append(false)
             return
@@ -131,7 +131,7 @@ final class RedundantSelf: StaticFormatRule<BasicRuleValue>, @unchecked Sendable
     }
 
     static func didExit(_: InitializerDeclSyntax, context: Context) {
-        let state = context.ruleState(for: Self.self) { State() }
+        let state = context.redundantSelfState
         if let didPush = state.scopeFrameStack.popLast(), didPush {
             if !state.localNameStack.isEmpty { state.localNameStack.removeLast() }
             if !state.implicitSelfStack.isEmpty { state.implicitSelfStack.removeLast() }
@@ -139,7 +139,7 @@ final class RedundantSelf: StaticFormatRule<BasicRuleValue>, @unchecked Sendable
     }
 
     static func willEnter(_ node: SubscriptDeclSyntax, context: Context) {
-        let state = context.ruleState(for: Self.self) { State() }
+        let state = context.redundantSelfState
         guard state.insideTypeBody else {
             state.scopeFrameStack.append(false)
             return
@@ -151,7 +151,7 @@ final class RedundantSelf: StaticFormatRule<BasicRuleValue>, @unchecked Sendable
     }
 
     static func didExit(_: SubscriptDeclSyntax, context: Context) {
-        let state = context.ruleState(for: Self.self) { State() }
+        let state = context.redundantSelfState
         if let didPush = state.scopeFrameStack.popLast(), didPush {
             if !state.localNameStack.isEmpty { state.localNameStack.removeLast() }
             if !state.implicitSelfStack.isEmpty { state.implicitSelfStack.removeLast() }
@@ -159,7 +159,7 @@ final class RedundantSelf: StaticFormatRule<BasicRuleValue>, @unchecked Sendable
     }
 
     static func willEnter(_ node: AccessorDeclSyntax, context: Context) {
-        let state = context.ruleState(for: Self.self) { State() }
+        let state = context.redundantSelfState
         guard state.insideTypeBody || !state.implicitSelfStack.isEmpty else {
             state.scopeFrameStack.append(false)
             return
@@ -185,7 +185,7 @@ final class RedundantSelf: StaticFormatRule<BasicRuleValue>, @unchecked Sendable
     }
 
     static func didExit(_: AccessorDeclSyntax, context: Context) {
-        let state = context.ruleState(for: Self.self) { State() }
+        let state = context.redundantSelfState
         if let didPush = state.scopeFrameStack.popLast(), didPush {
             if !state.localNameStack.isEmpty { state.localNameStack.removeLast() }
             if !state.implicitSelfStack.isEmpty { state.implicitSelfStack.removeLast() }
@@ -193,7 +193,7 @@ final class RedundantSelf: StaticFormatRule<BasicRuleValue>, @unchecked Sendable
     }
 
     static func willEnter(_ node: VariableDeclSyntax, context: Context) {
-        let state = context.ruleState(for: Self.self) { State() }
+        let state = context.redundantSelfState
         guard state.insideTypeBody, node.modifiers.contains(anyOf: [.lazy]) else {
             state.scopeFrameStack.append(false)
             return
@@ -205,7 +205,7 @@ final class RedundantSelf: StaticFormatRule<BasicRuleValue>, @unchecked Sendable
     }
 
     static func didExit(_: VariableDeclSyntax, context: Context) {
-        let state = context.ruleState(for: Self.self) { State() }
+        let state = context.redundantSelfState
         if let didPush = state.scopeFrameStack.popLast(), didPush {
             if !state.localNameStack.isEmpty { state.localNameStack.removeLast() }
             if !state.implicitSelfStack.isEmpty { state.implicitSelfStack.removeLast() }
@@ -213,7 +213,7 @@ final class RedundantSelf: StaticFormatRule<BasicRuleValue>, @unchecked Sendable
     }
 
     static func willEnter(_ node: AccessorBlockSyntax, context: Context) {
-        let state = context.ruleState(for: Self.self) { State() }
+        let state = context.redundantSelfState
         guard case let .getter(body) = node.accessors else {
             state.scopeFrameStack.append(false)
             return
@@ -230,7 +230,7 @@ final class RedundantSelf: StaticFormatRule<BasicRuleValue>, @unchecked Sendable
     }
 
     static func didExit(_: AccessorBlockSyntax, context: Context) {
-        let state = context.ruleState(for: Self.self) { State() }
+        let state = context.redundantSelfState
         if let didPush = state.scopeFrameStack.popLast(), didPush {
             if !state.localNameStack.isEmpty { state.localNameStack.removeLast() }
             if !state.implicitSelfStack.isEmpty { state.implicitSelfStack.removeLast() }
@@ -238,7 +238,7 @@ final class RedundantSelf: StaticFormatRule<BasicRuleValue>, @unchecked Sendable
     }
 
     static func willEnter(_ node: ClosureExprSyntax, context: Context) {
-        let state = context.ruleState(for: Self.self) { State() }
+        let state = context.redundantSelfState
         guard state.insideTypeBody else {
             state.scopeFrameStack.append(false)
             return
@@ -262,7 +262,7 @@ final class RedundantSelf: StaticFormatRule<BasicRuleValue>, @unchecked Sendable
     }
 
     static func didExit(_: ClosureExprSyntax, context: Context) {
-        let state = context.ruleState(for: Self.self) { State() }
+        let state = context.redundantSelfState
         if let didPush = state.scopeFrameStack.popLast(), didPush {
             if !state.localNameStack.isEmpty { state.localNameStack.removeLast() }
             if !state.implicitSelfStack.isEmpty { state.implicitSelfStack.removeLast() }
@@ -276,7 +276,7 @@ final class RedundantSelf: StaticFormatRule<BasicRuleValue>, @unchecked Sendable
         parent _: Syntax?,
         context: Context
     ) -> ExprSyntax {
-        let state = context.ruleState(for: Self.self) { State() }
+        let state = context.redundantSelfState
 
         guard let base = node.base?.as(DeclReferenceExprSyntax.self),
               base.baseName.tokenKind == .keyword(.self)

@@ -1,8 +1,7 @@
 import SwiftSyntax
 
 /// Compact-pipeline merge of all `CodeBlockItemListSyntax` rewrites. Each
-/// former rule's logic is gated on `context.shouldFormat(<RuleType>.self,
-/// node:)`.
+/// former rule's logic is gated on `context.shouldRewrite(<RuleType>.self, at:)`.
 func rewriteCodeBlockItemList(
     _ node: CodeBlockItemListSyntax,
     parent: Syntax?,
@@ -10,61 +9,61 @@ func rewriteCodeBlockItemList(
 ) -> CodeBlockItemListSyntax {
     var result = node
     // EmptyExtensions
-    if context.shouldFormat(EmptyExtensions.self, node: Syntax(result)) {
+    if context.shouldRewrite(EmptyExtensions.self, at: Syntax(result)) {
         result = EmptyExtensions.transform(result, parent: parent, context: context)
     }
 
     // NoAssignmentInExpressions
-    if context.shouldFormat(NoAssignmentInExpressions.self, node: Syntax(result)) {
+    if context.shouldRewrite(NoAssignmentInExpressions.self, at: Syntax(result)) {
         result = NoAssignmentInExpressions.transform(result, parent: parent, context: context)
     }
 
     // NoSemicolons
-    if context.shouldFormat(NoSemicolons.self, node: Syntax(result)) {
+    if context.shouldRewrite(NoSemicolons.self, at: Syntax(result)) {
         result = NoSemicolons.transform(result, parent: parent, context: context)
     }
 
     // OneDeclarationPerLine
-    if context.shouldFormat(OneDeclarationPerLine.self, node: Syntax(result)) {
+    if context.shouldRewrite(OneDeclarationPerLine.self, at: Syntax(result)) {
         result = OneDeclarationPerLine.transform(result, parent: parent, context: context)
     }
 
     // PreferConditionalExpression
-    if context.shouldFormat(PreferConditionalExpression.self, node: Syntax(result)) {
+    if context.shouldRewrite(PreferConditionalExpression.self, at: Syntax(result)) {
         result = PreferConditionalExpression.transform(result, parent: parent, context: context)
     }
 
     // PreferIfElseChain
-    if context.shouldFormat(PreferIfElseChain.self, node: Syntax(result)) {
+    if context.shouldRewrite(PreferIfElseChain.self, at: Syntax(result)) {
         result = PreferIfElseChain.transform(result, parent: parent, context: context)
     }
 
     // PreferTernary
-    if context.shouldFormat(PreferTernary.self, node: Syntax(result)) {
+    if context.shouldRewrite(PreferTernary.self, at: Syntax(result)) {
         result = PreferTernary.transform(result, parent: parent, context: context)
     }
 
     // RedundantLet
-    if context.shouldFormat(RedundantLet.self, node: Syntax(result)) {
+    if context.shouldRewrite(RedundantLet.self, at: Syntax(result)) {
         result = RedundantLet.transform(result, parent: parent, context: context)
     }
 
     // RedundantProperty
-    if context.shouldFormat(RedundantProperty.self, node: Syntax(result)) {
+    if context.shouldRewrite(RedundantProperty.self, at: Syntax(result)) {
         result = RedundantProperty.transform(result, parent: parent, context: context)
     }
 
     // PreferEarlyExits — converts `if cond { ... } else { ...; return/throw/
     // break/continue }` into `guard cond else { ... }; ...`. Inlined from
     // `Sources/SwiftiomaticKit/Rules/Conditions/PreferEarlyExits.swift`.
-    if context.shouldFormat(PreferEarlyExits.self, node: Syntax(result)) {
+    if context.shouldRewrite(PreferEarlyExits.self, at: Syntax(result)) {
         result = applyPreferEarlyExits(result, context: context)
     }
 
     // NoGuardInTests — convert `guard` statements in test functions to
     // `try #require(...)` / `#expect(...)` / XCTest equivalents. Gated on
     // `state.insideTestFunction` set by the willEnter hooks.
-    if context.shouldFormat(NoGuardInTests.self, node: Syntax(result)) {
+    if context.shouldRewrite(NoGuardInTests.self, at: Syntax(result)) {
         result = NoGuardInTests.transform(result, parent: parent, context: context)
     }
 

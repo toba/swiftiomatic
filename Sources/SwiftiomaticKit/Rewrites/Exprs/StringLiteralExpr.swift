@@ -2,7 +2,7 @@ import SwiftSyntax
 
 /// Compact-pipeline merge of all `StringLiteralExprSyntax` rewrites. Each
 /// former rule's logic is gated on
-/// `context.shouldFormat(<RuleType>.self, node:)`.
+/// `context.shouldRewrite(<RuleType>.self, at:)`.
 func rewriteStringLiteralExpr(
     _ node: StringLiteralExprSyntax,
     parent: Syntax?,

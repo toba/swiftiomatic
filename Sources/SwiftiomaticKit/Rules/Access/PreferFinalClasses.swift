@@ -16,7 +16,7 @@ final class PreferFinalClasses: StaticFormatRule<BasicRuleValue>, @unchecked Sen
     override static var group: ConfigurationGroup? { .access }
     override static var defaultValue: BasicRuleValue { .init(rewrite: false, lint: .no) }
 
-    /// Per-file mutable state held in `Context.ruleState`.
+    /// Per-file mutable state held as a typed lazy property on `Context`.
     final class State {
         var subclassedNames: Set<String> = []
     }
@@ -26,7 +26,7 @@ final class PreferFinalClasses: StaticFormatRule<BasicRuleValue>, @unchecked Sen
     /// Pre-scan the file for class names that appear in inheritance clauses, so a
     /// later `ClassDecl` visit can leave those classes non-final.
     static func willEnter(_ node: SourceFileSyntax, context: Context) {
-        let state = context.ruleState(for: Self.self) { State() }
+        let state = context.preferFinalClassesState
         collectSubclassedNamesRecursive(in: Syntax(node), into: &state.subclassedNames)
     }
 
@@ -40,7 +40,7 @@ final class PreferFinalClasses: StaticFormatRule<BasicRuleValue>, @unchecked Sen
         if node.name.text.contains("Base") { return DeclSyntax(node) }
         if commentMentionsSubclassing(node) { return DeclSyntax(node) }
 
-        let state = context.ruleState(for: Self.self) { State() }
+        let state = context.preferFinalClassesState
         if state.subclassedNames.contains(node.name.text) { return DeclSyntax(node) }
 
         Self.diagnose(.preferFinalClass, on: node.classKeyword, context: context)

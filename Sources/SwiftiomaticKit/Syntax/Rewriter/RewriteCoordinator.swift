@@ -201,7 +201,9 @@ package final class RewriteCoordinator {
     /// The two-stage compact pipeline: combined node-local rewriter, then the
     /// structural passes in the order specified by `2kl-d04` §2. Each pass
     /// instantiates a fresh rewriter (some passes carry in-walk state that
-    /// must reset between files).
+    /// must reset between files) and is gated at file level via
+    /// `context.shouldFormat` — the per-pass `visitAny` shim that used to
+    /// live on `StructuralFormatRule` was hoisted here in `2uk-cll`.
     ///
     /// Rules previously dispatched here as structural passes — `PreferFinalClasses`,
     /// `ConvertRegularCommentToDocC`, `ConsistentSwitchCaseSpacing`, `ReflowComments` —
@@ -209,15 +211,22 @@ package final class RewriteCoordinator {
     /// from this list once their `override func visit` shells were stripped.
     private func runCompactPipeline(_ node: Syntax, context: Context) -> Syntax {
         var current = CompactStageOneRewriter(context: context).rewrite(node)
-        current = SortImports(context: context).rewrite(current)
-        current = BlankLinesAfterImports(context: context).rewrite(current)
-        current = FileScopedDeclarationPrivacy(context: context).rewrite(current)
-        current = ExtensionAccessLevel(context: context).rewrite(current)
-        current = BlankLinesBetweenScopes(context: context).rewrite(current)
-        current = SortDeclarations(context: context).rewrite(current)
-        current = SortSwitchCases(context: context).rewrite(current)
-        current = SortTypeAliases(context: context).rewrite(current)
-        current = FileHeader(context: context).rewrite(current)
+        current = runStructuralPass(SortImports.self, on: current, context: context)
+        current = runStructuralPass(BlankLinesAfterImports.self, on: current, context: context)
+        current = runStructuralPass(FileScopedDeclarationPrivacy.self, on: current, context: context)
+        current = runStructuralPass(ExtensionAccessLevel.self, on: current, context: context)
+        current = runStructuralPass(BlankLinesBetweenScopes.self, on: current, context: context)
+        current = runStructuralPass(SortDeclarations.self, on: current, context: context)
+        current = runStructuralPass(SortSwitchCases.self, on: current, context: context)
+        current = runStructuralPass(SortTypeAliases.self, on: current, context: context)
+        current = runStructuralPass(FileHeader.self, on: current, context: context)
         return current
+    }
+
+    private func runStructuralPass<V, R: StructuralFormatRule<V>>(
+        _ rule: R.Type, on node: Syntax, context: Context
+    ) -> Syntax {
+        guard context.shouldRewrite(rule, at: node) else { return node }
+        return rule.init(context: context).rewrite(node)
     }
 }

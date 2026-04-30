@@ -47,7 +47,7 @@ package struct Configuration: Sendable, Equatable {
     ///
     /// This is the dynamic-type-correct counterpart to `configuration[R.self].isActive`.
     /// The generic subscript binds `C` from the static call-site type — when called
-    /// from inside a generic base class (e.g. `RewriteSyntaxRule.visitAny`), `C` is
+    /// from inside a generic base class (e.g. `StructuralFormatRule.visitAny`), `C` is
     /// the static base type and `C.key`/`C.defaultValue` lookups resolve against the
     /// base class's witness, NOT the dynamic subclass. That returns the wrong rule key
     /// (`"rewriteSyntaxRule<BasicRuleValue>"`) and a default of `(rewrite: true, lint:

@@ -1,23 +1,22 @@
 import SwiftSyntax
 
 /// Compact-pipeline merge of all `FunctionTypeSyntax` rewrites. Each former
-/// rule's logic is gated on `context.shouldFormat(<RuleType>.self, node:)`.
+/// rule's logic is gated on `context.shouldRewrite(<RuleType>.self, at:)`.
 func rewriteFunctionType(
     _ node: FunctionTypeSyntax,
     parent: Syntax?,
     context: Context
 ) -> FunctionTypeSyntax {
     var result = node
-    applyRule(
+    context.applyRewrite(
         RedundantTypedThrows.self, to: &result,
-        parent: parent, context: context,
-        transform: RedundantTypedThrows.transform
+        parent: parent, transform: RedundantTypedThrows.transform
     )
 
     // PreferVoidReturn — replaces `-> ()` with `-> Void` in function-type
     // signatures. Inlined from
     // `Sources/SwiftiomaticKit/Rules/Types/PreferVoidReturn.swift`.
-    if context.shouldFormat(PreferVoidReturn.self, node: Syntax(result)) {
+    if context.shouldRewrite(PreferVoidReturn.self, at: Syntax(result)) {
         result = applyPreferVoidReturn(result, context: context)
     }
 

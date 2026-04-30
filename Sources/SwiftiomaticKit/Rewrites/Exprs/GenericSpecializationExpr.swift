@@ -2,7 +2,7 @@ import SwiftSyntax
 
 /// Compact-pipeline merge of all `GenericSpecializationExprSyntax` rewrites.
 /// Each former rule's logic is gated on
-/// `context.shouldFormat(<RuleType>.self, node:)`.
+/// `context.shouldRewrite(<RuleType>.self, at:)`.
 func rewriteGenericSpecializationExpr(
     _ node: GenericSpecializationExprSyntax,
     parent: Syntax?,
@@ -12,7 +12,7 @@ func rewriteGenericSpecializationExpr(
 
     // PreferShorthandTypeNames — `Array<T>()`/`Dictionary<K,V>()`/`Optional<T>()`
     // expression-context shorthand. May change the concrete expression kind.
-    if context.shouldFormat(PreferShorthandTypeNames.self, node: Syntax(result)),
+    if context.shouldRewrite(PreferShorthandTypeNames.self, at: Syntax(result)),
        let typed = result.as(GenericSpecializationExprSyntax.self)
     {
         result = PreferShorthandTypeNames.transform(typed, parent: parent, context: context)

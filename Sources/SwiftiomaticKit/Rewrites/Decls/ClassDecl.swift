@@ -1,7 +1,7 @@
 import SwiftSyntax
 
 /// Compact-pipeline merge of all `ClassDeclSyntax` rewrites. Each former
-/// rule's logic is gated on `context.shouldFormat(<RuleType>.self, node:)`.
+/// rule's logic is gated on `context.shouldRewrite(<RuleType>.self, at:)`.
 ///
 /// Per Phase 4c of `ddi-wtv`.
 /// Returns `DeclSyntax` so `StaticStructShouldBeEnum` can widen a final class
@@ -14,88 +14,76 @@ func rewriteClassDecl(
 ) -> DeclSyntax {
     var result = node
 
-    applyRule(
+    context.applyRewrite(
         DocCommentsPrecedeModifiers.self, to: &result,
-        parent: parent, context: context,
-        transform: DocCommentsPrecedeModifiers.transform
+        parent: parent, transform: DocCommentsPrecedeModifiers.transform
     )
 
-    applyRule(
+    context.applyRewrite(
         ModifierOrder.self, to: &result,
-        parent: parent, context: context,
-        transform: ModifierOrder.transform
+        parent: parent, transform: ModifierOrder.transform
     )
 
-    applyRule(
+    context.applyRewrite(
         ModifiersOnSameLine.self, to: &result,
-        parent: parent, context: context,
-        transform: ModifiersOnSameLine.transform
+        parent: parent, transform: ModifiersOnSameLine.transform
     )
 
-    applyRule(
+    context.applyRewrite(
         PreferFinalClasses.self, to: &result,
-        parent: parent, context: context,
-        transform: PreferFinalClasses.transform
+        parent: parent, transform: PreferFinalClasses.transform
     )
 
-    applyRule(
+    context.applyRewrite(
         PreferStaticOverClassFunc.self, to: &result,
-        parent: parent, context: context,
-        transform: PreferStaticOverClassFunc.transform
+        parent: parent, transform: PreferStaticOverClassFunc.transform
     )
 
-    applyRule(
+    context.applyRewrite(
         PreferSwiftTesting.self, to: &result,
-        parent: parent, context: context,
-        transform: PreferSwiftTesting.transform
+        parent: parent, transform: PreferSwiftTesting.transform
     )
 
-    applyRule(
+    context.applyRewrite(
         RedundantAccessControl.self, to: &result,
-        parent: parent, context: context,
-        transform: RedundantAccessControl.transform
+        parent: parent, transform: RedundantAccessControl.transform
     )
 
-    applyRule(
+    context.applyRewrite(
         RedundantObjc.self, to: &result,
-        parent: parent, context: context,
-        transform: RedundantObjc.transform
+        parent: parent, transform: RedundantObjc.transform
     )
 
-    applyRule(
+    context.applyRewrite(
         SimplifyGenericConstraints.self, to: &result,
-        parent: parent, context: context,
-        transform: SimplifyGenericConstraints.transform
+        parent: parent, transform: SimplifyGenericConstraints.transform
     )
 
-    applyRule(
+    context.applyRewrite(
         TestSuiteAccessControl.self, to: &result,
-        parent: parent, context: context,
-        transform: TestSuiteAccessControl.transform
+        parent: parent, transform: TestSuiteAccessControl.transform
     )
 
-    applyRule(
+    context.applyRewrite(
         TripleSlashDocComments.self, to: &result,
-        parent: parent, context: context,
-        transform: TripleSlashDocComments.transform
+        parent: parent, transform: TripleSlashDocComments.transform
     )
 
-    applyRule(
+    context.applyRewrite(
         ValidateTestCases.self, to: &result,
-        parent: parent, context: context,
-        transform: ValidateTestCases.transform
+        parent: parent, transform: ValidateTestCases.transform
     )
 
     // RedundantFinal — strips redundant `final` from members of a `final`
     // class. Inlined from
     // `Sources/SwiftiomaticKit/Rules/Redundancies/RedundantFinal.swift`.
-    if context.shouldFormat(RedundantFinal.self, node: Syntax(result)) {
+    if context.shouldRewrite(RedundantFinal.self, at: Syntax(result)) {
         result = applyRedundantFinal(result, context: context)
     }
 
     // RedundantSwiftTestingSuite — strip a no-argument `@Suite` attribute
     // when `import Testing` is present.
-    if context.shouldFormat(RedundantSwiftTestingSuite.self, node: Syntax(result)) {
+    if context.shouldRewrite(RedundantSwiftTestingSuite.self, at: Syntax(result)) {
         result = RedundantSwiftTestingSuite.removeSuite(
             from: result, keyword: \.classKeyword, context: context
         )
@@ -111,16 +99,15 @@ func rewriteClassDecl(
 
     // WrapMultilineStatementBraces — wrap opening brace of a multiline
     // statement onto its own line aligned with the closing brace.
-    applyRule(
+    context.applyRewrite(
         WrapMultilineStatementBraces.self, to: &result,
-        parent: parent, context: context,
-        transform: WrapMultilineStatementBraces.transform
+        parent: parent, transform: WrapMultilineStatementBraces.transform
     )
 
     // StaticStructShouldBeEnum — runs last because it can widen a final class
     // to an `EnumDeclSyntax`. Subsequent rules in this function would all
     // expect a `ClassDeclSyntax`, so this must come after them.
-    if context.shouldFormat(StaticStructShouldBeEnum.self, node: Syntax(result)) {
+    if context.shouldRewrite(StaticStructShouldBeEnum.self, at: Syntax(result)) {
         return StaticStructShouldBeEnum.transform(result, parent: parent, context: context)
     }
 

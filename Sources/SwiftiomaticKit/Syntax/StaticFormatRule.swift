@@ -7,10 +7,10 @@ import SwiftSyntax
 /// `StaticFormatRule` carries no per-file state — `Context` is threaded through
 /// each static call. The base class exists only as a registration target so
 /// `RuleCollector` can detect the rule via inheritance pattern, identical to the
-/// way `LintSyntaxRule` and `RewriteSyntaxRule` are recognised.
+/// way `LintSyntaxRule` and `StructuralFormatRule` are recognised.
 ///
 /// Use this base class for the vast majority of compact-pipeline rules. Use
-/// `RewriteSyntaxRule` only when the rule needs `SyntaxRewriter` machinery for
+/// `StructuralFormatRule` only when the rule needs `SyntaxRewriter` machinery for
 /// instance-level traversal (structural-pass rules, fresh-instance rewriters
 /// like `PreferShorthandTypeNames`).
 class StaticFormatRule<V: SyntaxRuleValue>: SyntaxRule, @unchecked Sendable {

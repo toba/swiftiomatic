@@ -2,7 +2,7 @@ import SwiftSyntax
 
 /// Compact-pipeline merge of all `InfixOperatorExprSyntax` rewrites. Each
 /// former rule's logic is gated on
-/// `context.shouldFormat(<RuleType>.self, node:)`.
+/// `context.shouldRewrite(<RuleType>.self, at:)`.
 func rewriteInfixOperatorExpr(
     _ node: InfixOperatorExprSyntax,
     parent: Syntax?,
@@ -10,28 +10,25 @@ func rewriteInfixOperatorExpr(
 ) -> ExprSyntax {
     var result = node
 
-    applyRule(
+    context.applyRewrite(
         NoAssignmentInExpressions.self, to: &result,
-        parent: parent, context: context,
-        transform: NoAssignmentInExpressions.transform
+        parent: parent, transform: NoAssignmentInExpressions.transform
     )
 
-    applyRule(
+    context.applyRewrite(
         NoYodaConditions.self, to: &result,
-        parent: parent, context: context,
-        transform: NoYodaConditions.transform
+        parent: parent, transform: NoYodaConditions.transform
     )
 
-    applyRule(
+    context.applyRewrite(
         PreferCompoundAssignment.self, to: &result,
-        parent: parent, context: context,
-        transform: PreferCompoundAssignment.transform
+        parent: parent, transform: PreferCompoundAssignment.transform
     )
 
     // PreferIsEmpty — may widen `foo.count == 0` to `foo.isEmpty` (a
     // `MemberAccessExprSyntax`). Direct dispatch with early return when the
     // kind changes.
-    if context.shouldFormat(PreferIsEmpty.self, node: Syntax(result)) {
+    if context.shouldRewrite(PreferIsEmpty.self, at: Syntax(result)) {
         let widened = PreferIsEmpty.transform(result, parent: parent, context: context)
         if let stillInfix = widened.as(InfixOperatorExprSyntax.self) {
             result = stillInfix
@@ -43,7 +40,7 @@ func rewriteInfixOperatorExpr(
     // PreferToggle — may widen `x = !x` to `x.toggle()` (a
     // `FunctionCallExprSyntax`). Direct dispatch with early return when the
     // kind changes.
-    if context.shouldFormat(PreferToggle.self, node: Syntax(result)) {
+    if context.shouldRewrite(PreferToggle.self, at: Syntax(result)) {
         let widened = PreferToggle.transform(result, parent: parent, context: context)
         if let stillInfix = widened.as(InfixOperatorExprSyntax.self) {
             result = stillInfix
@@ -54,7 +51,7 @@ func rewriteInfixOperatorExpr(
 
     // RedundantNilCoalescing — may widen `x ?? nil` to just `x` (any
     // `ExprSyntax`). Direct dispatch with early return when the kind changes.
-    if context.shouldFormat(RedundantNilCoalescing.self, node: Syntax(result)) {
+    if context.shouldRewrite(RedundantNilCoalescing.self, at: Syntax(result)) {
         let widened = RedundantNilCoalescing.transform(result, parent: parent, context: context)
         if let stillInfix = widened.as(InfixOperatorExprSyntax.self) {
             result = stillInfix
@@ -63,10 +60,9 @@ func rewriteInfixOperatorExpr(
         }
     }
 
-    applyRule(
+    context.applyRewrite(
         WrapConditionalAssignment.self, to: &result,
-        parent: parent, context: context,
-        transform: WrapConditionalAssignment.transform
+        parent: parent, transform: WrapConditionalAssignment.transform
     )
 
     return ExprSyntax(result)

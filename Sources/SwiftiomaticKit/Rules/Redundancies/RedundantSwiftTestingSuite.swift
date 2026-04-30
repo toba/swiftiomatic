@@ -14,7 +14,7 @@ final class RedundantSwiftTestingSuite: StaticFormatRule<BasicRuleValue>, @unche
     override class var group: ConfigurationGroup? { .redundancies }
     override class var defaultValue: BasicRuleValue { BasicRuleValue(rewrite: false, lint: .no) }
 
-    /// Per-file mutable state held in `Context.ruleState`.
+    /// Per-file mutable state held as a typed lazy property on `Context`.
     final class State {
         var importsTesting = false
     }
@@ -23,7 +23,7 @@ final class RedundantSwiftTestingSuite: StaticFormatRule<BasicRuleValue>, @unche
     /// scope. Called from `rewriteImportDecl`.
     static func visitImport(_ node: ImportDeclSyntax, context: Context) {
         if node.path.first?.name.text == "Testing" {
-            context.ruleState(for: Self.self) { State() }.importsTesting = true
+            context.redundantSwiftTestingSuiteState.importsTesting = true
         }
     }
 
@@ -36,7 +36,7 @@ final class RedundantSwiftTestingSuite: StaticFormatRule<BasicRuleValue>, @unche
         keyword: WritableKeyPath<Decl, TokenSyntax>,
         context: Context
     ) -> Decl {
-        let state = context.ruleState(for: Self.self) { State() }
+        let state = context.redundantSwiftTestingSuiteState
         guard state.importsTesting,
               let attr = node.attributes.attribute(named: "Suite"),
               isRedundantSuiteAttribute(attr)

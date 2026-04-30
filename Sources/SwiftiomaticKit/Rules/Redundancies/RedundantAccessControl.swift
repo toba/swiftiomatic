@@ -22,7 +22,7 @@ final class RedundantAccessControl: StaticFormatRule<BasicRuleValue>, @unchecked
 
     override class var defaultValue: BasicRuleValue { .init(rewrite: false, lint: .no) }
 
-    /// Per-file mutable state held in `Context.ruleState`.
+    /// Per-file mutable state held as a typed lazy property on `Context`.
     final class State {
         /// The name of the single logical type in the file, if any.
         var singleTypeName: String?
@@ -35,7 +35,7 @@ final class RedundantAccessControl: StaticFormatRule<BasicRuleValue>, @unchecked
     // MARK: - Pre-scan
 
     static func willEnter(_ node: SourceFileSyntax, context: Context) {
-        let state = context.ruleState(for: Self.self) { State() }
+        let state = context.redundantAccessControlState
         guard !state.analyzed else { return }
         analyzeFileStructure(node.statements, state: state)
         state.analyzed = true
@@ -48,7 +48,7 @@ final class RedundantAccessControl: StaticFormatRule<BasicRuleValue>, @unchecked
         parent _: Syntax?,
         context: Context
     ) -> SourceFileSyntax {
-        let state = context.ruleState(for: Self.self) { State() }
+        let state = context.redundantAccessControlState
         guard state.singleTypeName != nil, !state.hasNestedTypes else { return node }
         var result = node
         result.statements = rewriteStatements(result.statements, context: context)

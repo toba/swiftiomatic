@@ -1,8 +1,7 @@
 import SwiftSyntax
 
 /// Compact-pipeline merge of all `ConditionElementSyntax` rewrites. Each
-/// former rule's logic is gated on `context.shouldFormat(<RuleType>.self,
-/// node:)`.
+/// former rule's logic is gated on `context.shouldRewrite(<RuleType>.self, at:)`.
 func rewriteConditionElement(
     _ node: ConditionElementSyntax,
     parent: Syntax?,
@@ -10,13 +9,13 @@ func rewriteConditionElement(
 ) -> ConditionElementSyntax {
     var result = node
     // ExplicitNilCheck
-    if context.shouldFormat(ExplicitNilCheck.self, node: Syntax(result)) {
+    if context.shouldRewrite(ExplicitNilCheck.self, at: Syntax(result)) {
         result = ExplicitNilCheck.transform(result, parent: parent, context: context)
     }
 
     // NoParensAroundConditions — strips redundant parens around the
     // expression form of a condition element.
-    if context.shouldFormat(NoParensAroundConditions.self, node: Syntax(result)),
+    if context.shouldRewrite(NoParensAroundConditions.self, at: Syntax(result)),
        case .expression(let condition) = result.condition,
        let stripped = NoParensAroundConditions.minimalSingleExpression(condition, context: context)
     {

@@ -1,7 +1,7 @@
 import SwiftSyntax
 
 /// Compact-pipeline merge of all `SwitchExprSyntax` rewrites. Each former
-/// rule's logic is gated on `context.shouldFormat(<RuleType>.self, node:)`.
+/// rule's logic is gated on `context.shouldRewrite(<RuleType>.self, at:)`.
 ///
 /// No node-local rules currently target `SwitchExprSyntax` via the compact
 /// `transform` form. The unported entries below are tracked in 4f.
@@ -14,13 +14,13 @@ func rewriteSwitchExpr(
     // BlankLinesAfterSwitchCase — inserts a blank line after multiline cases
     // and removes the blank line before the closing brace. Inlined from
     // `Sources/SwiftiomaticKit/Rules/BlankLines/BlankLinesAfterSwitchCase.swift`.
-    if context.shouldFormat(BlankLinesAfterSwitchCase.self, node: Syntax(result)) {
+    if context.shouldRewrite(BlankLinesAfterSwitchCase.self, at: Syntax(result)) {
         result = applyBlankLinesAfterSwitchCase(result, context: context)
     }
 
     // NoParensAroundConditions — strips parens around the `switch` subject
     // and ensures `switch` keyword has a trailing space.
-    if context.shouldFormat(NoParensAroundConditions.self, node: Syntax(result)) {
+    if context.shouldRewrite(NoParensAroundConditions.self, at: Syntax(result)) {
         if let stripped = NoParensAroundConditions.minimalSingleExpression(result.subject, context: context) {
             result.subject = stripped
             NoParensAroundConditions.fixKeywordTrailingTrivia(&result.switchKeyword.trailingTrivia)
@@ -31,22 +31,21 @@ func rewriteSwitchExpr(
     // configured style (`flush` aligns with `switch`; `indented` indents one
     // level). Inlined from
     // `Sources/SwiftiomaticKit/Rules/Indentation/SwitchCaseIndentation.swift`.
-    if context.shouldFormat(SwitchCaseIndentation.self, node: Syntax(result)) {
+    if context.shouldRewrite(SwitchCaseIndentation.self, at: Syntax(result)) {
         result = applySwitchCaseIndentation(result, context: context)
     }
 
     // WrapMultilineStatementBraces — wrap opening brace of a multiline
     // statement onto its own line aligned with the closing brace.
-    applyRule(
+    context.applyRewrite(
         WrapMultilineStatementBraces.self, to: &result,
-        parent: parent, context: context,
-        transform: WrapMultilineStatementBraces.transform
+        parent: parent, transform: WrapMultilineStatementBraces.transform
     )
 
     // ConsistentSwitchCaseSpacing — normalize blank-line spacing among cases
     // to whichever style is used by the majority. Inlined from
     // `Sources/SwiftiomaticKit/Rules/BlankLines/ConsistentSwitchCaseSpacing.swift`.
-    if context.shouldFormat(ConsistentSwitchCaseSpacing.self, node: Syntax(result)) {
+    if context.shouldRewrite(ConsistentSwitchCaseSpacing.self, at: Syntax(result)) {
         result = applyConsistentSwitchCaseSpacing(result, context: context)
     }
 

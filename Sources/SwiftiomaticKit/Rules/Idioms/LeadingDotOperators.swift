@@ -12,7 +12,7 @@ import SwiftSyntax
 final class LeadingDotOperators: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
     override class var group: ConfigurationGroup? { .idioms }
 
-    /// Per-file mutable state held in `Context.ruleState`.
+    /// Per-file mutable state held as a typed lazy property on `Context`.
     final class State {
         /// Trivia (newline + indentation) saved from a leading delimiter, to be prepended to the
         /// next token's leading trivia.
@@ -27,7 +27,7 @@ final class LeadingDotOperators: StaticFormatRule<BasicRuleValue>, @unchecked Se
         parent _: Syntax?,
         context: Context
     ) -> TokenSyntax {
-        let state = context.ruleState(for: Self.self) { State() }
+        let state = context.leadingDotOperatorsState
         var result = token
 
         // 1. Apply pending trivia from a previous leading delimiter

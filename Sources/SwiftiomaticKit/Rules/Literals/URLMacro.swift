@@ -25,7 +25,7 @@ final class URLMacro: StaticFormatRule<URLMacroConfiguration>, @unchecked Sendab
         return config
     }
 
-    /// Per-file mutable state held in `Context.ruleState`.
+    /// Per-file mutable state held as a typed lazy property on `Context`.
     final class State {
         /// Whether any replacements were made (drives import addition).
         var madeReplacements = false
@@ -36,7 +36,7 @@ final class URLMacro: StaticFormatRule<URLMacroConfiguration>, @unchecked Sendab
     // MARK: - Pre-scan
 
     static func willEnter(_ node: SourceFileSyntax, context: Context) {
-        let state = context.ruleState(for: Self.self) { State() }
+        let state = context.urlMacroState
         let config = context.configuration[Self.self]
         guard let moduleName = config.moduleName else { return }
         for stmt in node.statements {
@@ -56,7 +56,7 @@ final class URLMacro: StaticFormatRule<URLMacroConfiguration>, @unchecked Sendab
         parent _: Syntax?,
         context: Context
     ) -> SourceFileSyntax {
-        let state = context.ruleState(for: Self.self) { State() }
+        let state = context.urlMacroState
         let config = context.configuration[Self.self]
         guard config.macroName != nil else { return node }
 
@@ -151,7 +151,7 @@ final class URLMacro: StaticFormatRule<URLMacroConfiguration>, @unchecked Sendab
 
         Self.diagnose(.replaceWithURLMacro, on: node, context: context)
 
-        let state = context.ruleState(for: Self.self) { State() }
+        let state = context.urlMacroState
         state.madeReplacements = true
 
         // Strip the `#` prefix from macroName if present for the token

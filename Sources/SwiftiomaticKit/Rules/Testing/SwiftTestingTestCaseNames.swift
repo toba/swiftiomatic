@@ -16,7 +16,7 @@ final class SwiftTestingTestCaseNames: StaticFormatRule<BasicRuleValue>, @unchec
     override class var group: ConfigurationGroup? { .testing }
     override class var defaultValue: BasicRuleValue { .init(rewrite: false, lint: .no) }
 
-    /// Per-file mutable state held in `Context.ruleState`.
+    /// Per-file mutable state held as a typed lazy property on `Context`.
     final class State {
         var importsTesting = false
         var allIdentifiers = Set<String>()
@@ -35,7 +35,7 @@ final class SwiftTestingTestCaseNames: StaticFormatRule<BasicRuleValue>, @unchec
     // MARK: - Pre-scan
 
     static func willEnter(_ node: SourceFileSyntax, context: Context) {
-        let state = context.ruleState(for: Self.self) { State() }
+        let state = context.swiftTestingTestCaseNamesState
         for stmt in node.statements {
             if let importDecl = stmt.item.as(ImportDeclSyntax.self),
                 importDecl.path.first?.name.text == "Testing"
@@ -57,7 +57,7 @@ final class SwiftTestingTestCaseNames: StaticFormatRule<BasicRuleValue>, @unchec
         parent _: Syntax?,
         context: Context
     ) -> DeclSyntax {
-        let state = context.ruleState(for: Self.self) { State() }
+        let state = context.swiftTestingTestCaseNamesState
         guard state.importsTesting,
             node.hasAttribute("Test", inModule: "Testing")
         else {

@@ -20,7 +20,7 @@ import SwiftSyntax
 ///
 /// Rewrite: File-scoped declarations that have formal access opposite to the desired access level
 /// in the formatter's configuration will have their access level changed.
-final class FileScopedDeclarationPrivacy: RewriteSyntaxRule<
+final class FileScopedDeclarationPrivacy: StructuralFormatRule<
     FileScopedDeclarationPrivacyConfiguration
 >, @unchecked Sendable
 {

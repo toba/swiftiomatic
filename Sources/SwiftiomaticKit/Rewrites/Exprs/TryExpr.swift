@@ -1,7 +1,7 @@
 import SwiftSyntax
 
 /// Compact-pipeline merge of all `TryExprSyntax` rewrites. Each former
-/// rule's logic is gated on `context.shouldFormat(<RuleType>.self, node:)`.
+/// rule's logic is gated on `context.shouldRewrite(<RuleType>.self, at:)`.
 func rewriteTryExpr(
     _ node: TryExprSyntax,
     parent: Syntax?,
@@ -12,7 +12,7 @@ func rewriteTryExpr(
 
     // NoForceTry — diagnose / rewrite `try!` based on the current scope
     // state (test function vs. non-test vs. inside closure).
-    if context.shouldFormat(NoForceTry.self, node: Syntax(result)) {
+    if context.shouldRewrite(NoForceTry.self, at: Syntax(result)) {
         result = NoForceTry.rewriteTryExpr(result, context: context)
     }
 

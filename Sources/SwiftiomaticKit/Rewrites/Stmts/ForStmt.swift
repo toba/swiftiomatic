@@ -1,7 +1,7 @@
 import SwiftSyntax
 
 /// Compact-pipeline merge of all `ForStmtSyntax` rewrites. Each former
-/// rule's logic is gated on `context.shouldFormat(<RuleType>.self, node:)`.
+/// rule's logic is gated on `context.shouldRewrite(<RuleType>.self, at:)`.
 func rewriteForStmt(
     _ node: ForStmtSyntax,
     parent: Syntax?,
@@ -9,43 +9,37 @@ func rewriteForStmt(
 ) -> ForStmtSyntax {
     var result = node
 
-    applyRule(
+    context.applyRewrite(
         CaseLet.self, to: &result,
-        parent: parent, context: context,
-        transform: CaseLet.transform
+        parent: parent, transform: CaseLet.transform
     )
 
-    applyRule(
+    context.applyRewrite(
         PreferWhereClausesInForLoops.self, to: &result,
-        parent: parent, context: context,
-        transform: PreferWhereClausesInForLoops.transform
+        parent: parent, transform: PreferWhereClausesInForLoops.transform
     )
 
-    applyRule(
+    context.applyRewrite(
         RedundantEnumerated.self, to: &result,
-        parent: parent, context: context,
-        transform: RedundantEnumerated.transform
+        parent: parent, transform: RedundantEnumerated.transform
     )
 
-    applyRule(
+    context.applyRewrite(
         UnusedArguments.self, to: &result,
-        parent: parent, context: context,
-        transform: UnusedArguments.transform
+        parent: parent, transform: UnusedArguments.transform
     )
 
     // WrapMultilineStatementBraces — wrap opening brace of a multiline
     // statement onto its own line aligned with the closing brace.
-    applyRule(
+    context.applyRewrite(
         WrapMultilineStatementBraces.self, to: &result,
-        parent: parent, context: context,
-        transform: WrapMultilineStatementBraces.transform
+        parent: parent, transform: WrapMultilineStatementBraces.transform
     )
 
     // WrapSingleLineBodies — wrap or inline single-statement for body.
-    applyRule(
+    context.applyRewrite(
         WrapSingleLineBodies.self, to: &result,
-        parent: parent, context: context,
-        transform: WrapSingleLineBodies.transform
+        parent: parent, transform: WrapSingleLineBodies.transform
     )
 
     return result

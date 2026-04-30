@@ -13,7 +13,7 @@ final class TestSuiteAccessControl: StaticFormatRule<BasicRuleValue>, @unchecked
 
     override class var defaultValue: BasicRuleValue { BasicRuleValue(rewrite: false, lint: .no) }
 
-    /// Per-file mutable state held in `Context.ruleState`.
+    /// Per-file mutable state held as a typed lazy property on `Context`.
     final class State {
         var framework: TestFramework?
     }
@@ -21,7 +21,7 @@ final class TestSuiteAccessControl: StaticFormatRule<BasicRuleValue>, @unchecked
     // MARK: - Pre-scan
 
     static func willEnter(_ node: SourceFileSyntax, context: Context) {
-        let state = context.ruleState(for: Self.self) { State() }
+        let state = context.testSuiteAccessControlState
         state.framework = detectTestFramework(in: node)
     }
 
@@ -32,7 +32,7 @@ final class TestSuiteAccessControl: StaticFormatRule<BasicRuleValue>, @unchecked
         parent _: Syntax?,
         context: Context
     ) -> DeclSyntax {
-        let state = context.ruleState(for: Self.self) { State() }
+        let state = context.testSuiteAccessControlState
         guard let framework = state.framework else { return DeclSyntax(node) }
         guard SwiftiomaticKit.isTestSuite(
             name: node.name.text,
@@ -57,7 +57,7 @@ final class TestSuiteAccessControl: StaticFormatRule<BasicRuleValue>, @unchecked
         parent _: Syntax?,
         context: Context
     ) -> DeclSyntax {
-        let state = context.ruleState(for: Self.self) { State() }
+        let state = context.testSuiteAccessControlState
         guard let framework = state.framework else { return DeclSyntax(node) }
         guard SwiftiomaticKit.isTestSuite(
             name: node.name.text,

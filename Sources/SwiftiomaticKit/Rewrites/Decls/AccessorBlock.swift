@@ -1,7 +1,7 @@
 import SwiftSyntax
 
 /// Compact-pipeline merge of all `AccessorBlockSyntax` rewrites. Each former
-/// rule's logic is gated on `context.shouldFormat(<RuleType>.self, node:)`.
+/// rule's logic is gated on `context.shouldRewrite(<RuleType>.self, at:)`.
 ///
 /// Per Phase 4c of `ddi-wtv`. The generator emits a thin override that fires
 /// `willEnter`/`didExit` hooks before/after `super.visit`; this function
@@ -14,7 +14,7 @@ func rewriteAccessorBlock(
     var result = node
 
     // ProtocolAccessorOrder
-    if context.shouldFormat(ProtocolAccessorOrder.self, node: Syntax(result)) {
+    if context.shouldRewrite(ProtocolAccessorOrder.self, at: Syntax(result)) {
         result = ProtocolAccessorOrder.transform(result, parent: parent, context: context)
     }
 

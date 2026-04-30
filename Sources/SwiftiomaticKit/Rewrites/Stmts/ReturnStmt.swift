@@ -1,7 +1,7 @@
 import SwiftSyntax
 
 /// Compact-pipeline merge of all `ReturnStmtSyntax` rewrites. Each former
-/// rule's logic is gated on `context.shouldFormat(<RuleType>.self, node:)`.
+/// rule's logic is gated on `context.shouldRewrite(<RuleType>.self, at:)`.
 ///
 /// No node-local rules currently target `ReturnStmtSyntax` via the compact
 /// `transform` form. The unported entries below are tracked in 4f.
@@ -14,7 +14,7 @@ func rewriteReturnStmt(
 
     // NoParensAroundConditions — strips parens around a return value and
     // ensures `return` keyword has a trailing space.
-    if context.shouldFormat(NoParensAroundConditions.self, node: Syntax(result)),
+    if context.shouldRewrite(NoParensAroundConditions.self, at: Syntax(result)),
        let expression = result.expression,
        let stripped = NoParensAroundConditions.minimalSingleExpression(expression, context: context)
     {

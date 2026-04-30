@@ -31,23 +31,7 @@ extension CodeBlockSyntax {
         return true
     }
 
-    /// Like `isInlineSingleStatementBody`, but also requires the user's input to
-    /// signal inline intent — `{`, the statement, and `}` all on the same source
-    /// line (no newlines in surrounding trivia, no internal newlines in the
-    /// statement). Used to opt-in to keeping `else { stmt }` glued when the
-    /// surrounding control-flow conditions wrap.
-    var hasInlineIntentSingleStatementBody: Bool {
-        guard isInlineSingleStatementBody else { return false }
-        guard let first = statements.first else { return false }
-        if leftBrace.trailingTrivia.containsNewlines { return false }
-        if first.leadingTrivia.containsNewlines { return false }
-        if first.trailingTrivia.containsNewlines { return false }
-        if rightBrace.leadingTrivia.containsNewlines { return false }
-        if first.trimmedDescription.contains("\n") { return false }
-        return true
-    }
-
-    /// Whether this code block's content needs to be wrapped onto new lines.
+/// Whether this code block's content needs to be wrapped onto new lines.
     /// Returns `true` if the body is non-empty and the first statement or closing
     /// brace is on the same line as the opening brace.
     var bodyNeedsWrapping: Bool {

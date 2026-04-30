@@ -21,7 +21,7 @@ final class NoForceTry: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
     override static var group: ConfigurationGroup? { .unsafety }
     override static var defaultValue: BasicRuleValue { .init(rewrite: false, lint: .no) }
 
-    /// Per-file mutable state held in `Context.ruleState`.
+    /// Per-file mutable state held as a typed lazy property on `Context`.
     final class State {
         var importsTesting = false
         var insideXCTestCase = false
@@ -44,7 +44,7 @@ final class NoForceTry: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
     }
 
     static func state(_ context: Context) -> State {
-        context.ruleState(for: Self.self) { State() }
+        context.noForceTryState
     }
 
     // MARK: - Compact-pipeline scope hooks

@@ -3,13 +3,13 @@ import SwiftSyntax
 // sm:ignore-file: fileLength, functionBodyLength
 
 /// Compact-pipeline merge of all `SourceFileSyntax` rewrites. Each former
-/// rule's logic is gated on `context.shouldFormat(<RuleType>.self, node:)` so
+/// rule's logic is gated on `context.shouldRewrite(<RuleType>.self, at:)` so
 /// users can still toggle individual behaviors via configuration
 /// (the rule-name strings survive as configuration keys).
 ///
 /// Rule order is alphabetical by rule name. Pre-scan / state-setup blocks
 /// (formerly `willEnter(_ SourceFileSyntax, context:)`) run first so that
-/// `Context.ruleState` is populated before any rewrites are attempted.
+/// a typed property on `Context` is populated before any rewrites are attempted.
 /// SourceFile-level rewrites then run in the same alphabetical order.
 ///
 /// Helpers used during these rewrites live as `static` members on the
@@ -28,26 +28,26 @@ func rewriteSourceFile(
     // MARK: SourceFile rewrites (alphabetical)
 
     // 1. EnsureLineBreakAtEOF: ensure file ends with exactly one newline.
-    if context.shouldFormat(EnsureLineBreakAtEOF.self, node: Syntax(result)) {
+    if context.shouldRewrite(EnsureLineBreakAtEOF.self, at: Syntax(result)) {
         result = ensureLineBreakAtEOF(result, context: context)
     }
 
     // 2. NoForceTry: file-level pre-scan — populate `importsXCTest` so test
     //    classes can be identified during traversal.
-    if context.shouldFormat(NoForceTry.self, node: Syntax(result)) {
+    if context.shouldRewrite(NoForceTry.self, at: Syntax(result)) {
         setImportsXCTest(context: context, sourceFile: result)
     }
 
     // 3. NoForceUnwrap: file-level pre-scan — populate `importsXCTest` so
     //    test classes can be identified during traversal. Helpers in
     //    `Rewrites/Exprs/NoForceUnwrapHelpers.swift`.
-    if context.shouldFormat(NoForceUnwrap.self, node: Syntax(result)) {
+    if context.shouldRewrite(NoForceUnwrap.self, at: Syntax(result)) {
         NoForceUnwrap.visitSourceFile(result, context: context)
     }
 
     // 4. PreferEnvironmentEntry: rewrite `EnvironmentValues` extensions to
     //    use `@Entry` and remove the matched `EnvironmentKey` types.
-    if context.shouldFormat(PreferEnvironmentEntry.self, node: Syntax(result)) {
+    if context.shouldRewrite(PreferEnvironmentEntry.self, at: Syntax(result)) {
         result = PreferEnvironmentEntry.transform(result, parent: nil, context: context)
     }
 
@@ -55,14 +55,14 @@ func rewriteSourceFile(
     //    single-type files (the per-decl ACL stripping for redundant
     //    `internal`/`public`/extension-matching ACL still runs against the
     //    decl nodes via the generator-emitted dispatch).
-    if context.shouldFormat(RedundantAccessControl.self, node: Syntax(result)) {
+    if context.shouldRewrite(RedundantAccessControl.self, at: Syntax(result)) {
         result = RedundantAccessControl.transform(result, parent: nil, context: context)
     }
 
     // 6. URLMacro: if any `URL(string:)!` was rewritten to `#URL(...)` during
     //    the descent (recorded via `ruleState.madeReplacements`), insert the
     //    configured module import at the top of the file.
-    if context.shouldFormat(URLMacro.self, node: Syntax(result)) {
+    if context.shouldRewrite(URLMacro.self, at: Syntax(result)) {
         result = URLMacro.transform(result, parent: nil, context: context)
     }
 

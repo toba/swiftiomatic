@@ -1,7 +1,7 @@
 import SwiftSyntax
 
 /// Compact-pipeline merge of all `AsExprSyntax` rewrites. Each former
-/// rule's logic is gated on `context.shouldFormat(<RuleType>.self, node:)`.
+/// rule's logic is gated on `context.shouldRewrite(<RuleType>.self, at:)`.
 func rewriteAsExpr(
     _ node: AsExprSyntax,
     parent: Syntax?,
@@ -11,7 +11,7 @@ func rewriteAsExpr(
 
     // NoForceCast — diagnostic-only (lint warning on `as!`). No rewrite; the
     // safe replacement depends on caller intent.
-    if context.shouldFormat(NoForceCast.self, node: Syntax(result)),
+    if context.shouldRewrite(NoForceCast.self, at: Syntax(result)),
        result.questionOrExclamationMark?.tokenKind == .exclamationMark
     {
         NoForceCast.diagnose(
@@ -23,7 +23,7 @@ func rewriteAsExpr(
 
     // NoForceUnwrap — `as!` → `as?` plus chain-top wrapping in test functions.
     // Helpers in `Rewrites/Exprs/NoForceUnwrapHelpers.swift`.
-    if context.shouldFormat(NoForceUnwrap.self, node: Syntax(result)),
+    if context.shouldRewrite(NoForceUnwrap.self, at: Syntax(result)),
        result.questionOrExclamationMark?.tokenKind == .exclamationMark
     {
         return NoForceUnwrap.rewriteAsExpr(result, context: context)

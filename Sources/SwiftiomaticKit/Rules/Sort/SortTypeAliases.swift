@@ -9,7 +9,7 @@ import SwiftSyntax
 /// Lint: If the composition types are not sorted, a lint warning is raised.
 ///
 /// Rewrite: The types are reordered alphabetically and duplicates are removed.
-final class SortTypeAliases: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable {
+final class SortTypeAliases: StructuralFormatRule<BasicRuleValue>, @unchecked Sendable {
     override class var key: String { "typeAliases" }
     override class var group: ConfigurationGroup? { .sort }
 

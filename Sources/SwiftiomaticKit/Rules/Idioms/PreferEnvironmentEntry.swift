@@ -15,21 +15,21 @@ final class PreferEnvironmentEntry: StaticFormatRule<BasicRuleValue>, @unchecked
 
     // MARK: - Types
 
-    private struct KeyInfo {
+    struct KeyInfo {
         let name: String
         let defaultValue: DefaultValue?
         let statementIndex: Int
     }
 
-    private enum DefaultValue {
+    enum DefaultValue {
         case expression(ExprSyntax)
         case closureBody(statements: CodeBlockItemListSyntax, rightBraceTrivia: Trivia)
     }
 
     // MARK: - State
 
-    /// Per-file mutable state held in `Context.ruleState`.
-    private final class State {
+    /// Per-file mutable state held as a typed lazy property on `Context`.
+    final class State {
         var environmentKeys: [String: KeyInfo] = [:]
         var matchedKeys: Set<String> = []
     }
@@ -37,7 +37,7 @@ final class PreferEnvironmentEntry: StaticFormatRule<BasicRuleValue>, @unchecked
     // MARK: - Pre-scan
 
     static func willEnter(_ node: SourceFileSyntax, context: Context) {
-        let state = context.ruleState(for: Self.self) { State() }
+        let state = context.preferEnvironmentEntryState
         Self.collectEnvironmentKeys(from: node.statements, into: &state.environmentKeys)
     }
 
@@ -48,7 +48,7 @@ final class PreferEnvironmentEntry: StaticFormatRule<BasicRuleValue>, @unchecked
         parent _: Syntax?,
         context: Context
     ) -> SourceFileSyntax {
-        let state = context.ruleState(for: Self.self) { State() }
+        let state = context.preferEnvironmentEntryState
         guard !state.environmentKeys.isEmpty else { return node }
 
         let newStatements = rewriteStatements(

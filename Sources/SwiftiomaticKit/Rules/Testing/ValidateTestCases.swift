@@ -15,7 +15,7 @@ final class ValidateTestCases: StaticFormatRule<BasicRuleValue>, @unchecked Send
 
     override class var defaultValue: BasicRuleValue { BasicRuleValue(rewrite: false, lint: .no) }
 
-    /// Per-file mutable state held in `Context.ruleState`.
+    /// Per-file mutable state held as a typed lazy property on `Context`.
     final class State {
         var framework: TestFramework?
         var identifierCounts = [String: Int]()
@@ -24,7 +24,7 @@ final class ValidateTestCases: StaticFormatRule<BasicRuleValue>, @unchecked Send
     // MARK: - Pre-scan
 
     static func willEnter(_ node: SourceFileSyntax, context: Context) {
-        let state = context.ruleState(for: Self.self) { State() }
+        let state = context.validateTestCasesState
         setImportsXCTest(context: context, sourceFile: node)
         state.framework = detectTestFramework(in: node)
 
@@ -44,7 +44,7 @@ final class ValidateTestCases: StaticFormatRule<BasicRuleValue>, @unchecked Send
         parent _: Syntax?,
         context: Context
     ) -> DeclSyntax {
-        let state = context.ruleState(for: Self.self) { State() }
+        let state = context.validateTestCasesState
         guard let framework = state.framework else { return DeclSyntax(node) }
         guard SwiftiomaticKit.isTestSuite(
             name: node.name.text,
@@ -70,7 +70,7 @@ final class ValidateTestCases: StaticFormatRule<BasicRuleValue>, @unchecked Send
         parent _: Syntax?,
         context: Context
     ) -> DeclSyntax {
-        let state = context.ruleState(for: Self.self) { State() }
+        let state = context.validateTestCasesState
         guard let framework = state.framework else { return DeclSyntax(node) }
         guard SwiftiomaticKit.isTestSuite(
             name: node.name.text,
@@ -96,7 +96,7 @@ final class ValidateTestCases: StaticFormatRule<BasicRuleValue>, @unchecked Send
         parent _: Syntax?,
         context: Context
     ) -> DeclSyntax {
-        let state = context.ruleState(for: Self.self) { State() }
+        let state = context.validateTestCasesState
         guard let framework = state.framework else { return DeclSyntax(node) }
         guard SwiftiomaticKit.isTestSuite(
             name: node.name.text,

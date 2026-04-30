@@ -9,7 +9,7 @@ import SwiftSyntax
 /// Lint: If the first non-import declaration is not preceded by a blank line, a lint warning is raised.
 ///
 /// Rewrite: A blank line is inserted after the last import statement.
-final class BlankLinesAfterImports: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable {
+final class BlankLinesAfterImports: StructuralFormatRule<BasicRuleValue>, @unchecked Sendable {
     override static var key: String { "afterImports" }
     override static var group: ConfigurationGroup? { .blankLines }
 

@@ -4,7 +4,7 @@ import SwiftSyntax
 
 /// Compact-pipeline merge of all `FunctionCallExprSyntax` rewrites. Each
 /// former rule's logic is gated on
-/// `context.shouldFormat(<RuleType>.self, node:)`.
+/// `context.shouldRewrite(<RuleType>.self, at:)`.
 func rewriteFunctionCallExpr(
     _ node: FunctionCallExprSyntax,
     parent: Syntax?,
@@ -16,7 +16,7 @@ func rewriteFunctionCallExpr(
     // `AwaitExprSyntax`). Direct dispatch with early return when the kind
     // changes, since subsequent rules in this chain expect a
     // `FunctionCallExprSyntax`.
-    if context.shouldFormat(HoistAwait.self, node: Syntax(result)) {
+    if context.shouldRewrite(HoistAwait.self, at: Syntax(result)) {
         let widened = HoistAwait.transform(result, parent: parent, context: context)
         if let stillCall = widened.as(FunctionCallExprSyntax.self) {
             result = stillCall
@@ -26,7 +26,7 @@ func rewriteFunctionCallExpr(
     }
 
     // HoistTry — may widen `foo(try x)` to `try foo(x)` (a `TryExprSyntax`).
-    if context.shouldFormat(HoistTry.self, node: Syntax(result)) {
+    if context.shouldRewrite(HoistTry.self, at: Syntax(result)) {
         let widened = HoistTry.transform(result, parent: parent, context: context)
         if let stillCall = widened.as(FunctionCallExprSyntax.self) {
             result = stillCall
@@ -35,17 +35,16 @@ func rewriteFunctionCallExpr(
         }
     }
 
-    applyRule(
+    context.applyRewrite(
         PreferAssertionFailure.self, to: &result,
-        parent: parent, context: context,
-        transform: PreferAssertionFailure.transform
+        parent: parent, transform: PreferAssertionFailure.transform
     )
 
     // PreferSwiftTesting — converts `XCTAssert*` / `XCTUnwrap` / `XCTFail` /
     // `Issue.record` calls to Swift Testing macros (`#expect`, `#require`).
     // May widen `FunctionCallExpr` to `MacroExpansionExpr`. Direct dispatch
     // with early return when the kind changes.
-    if context.shouldFormat(PreferSwiftTesting.self, node: Syntax(result)) {
+    if context.shouldRewrite(PreferSwiftTesting.self, at: Syntax(result)) {
         let widened = PreferSwiftTesting.transform(result, parent: parent, context: context)
         if let stillCall = widened.as(FunctionCallExprSyntax.self) {
             result = stillCall
@@ -57,7 +56,7 @@ func rewriteFunctionCallExpr(
     // PreferDotZero — may widen `CGRect(x: 0, y: 0, ...)` to `CGRect.zero`
     // (a `MemberAccessExprSyntax`). Direct dispatch with early return when
     // the kind changes.
-    if context.shouldFormat(PreferDotZero.self, node: Syntax(result)) {
+    if context.shouldRewrite(PreferDotZero.self, at: Syntax(result)) {
         let widened = PreferDotZero.transform(result, parent: parent, context: context)
         if let stillCall = widened.as(FunctionCallExprSyntax.self) {
             result = stillCall
@@ -66,15 +65,14 @@ func rewriteFunctionCallExpr(
         }
     }
 
-    applyRule(
+    context.applyRewrite(
         PreferKeyPath.self, to: &result,
-        parent: parent, context: context,
-        transform: PreferKeyPath.transform
+        parent: parent, transform: PreferKeyPath.transform
     )
 
     // RedundantClosure — may unwrap `{ x }()` to `x` (any `ExprSyntax`).
     // Direct dispatch with early return when the kind changes.
-    if context.shouldFormat(RedundantClosure.self, node: Syntax(result)) {
+    if context.shouldRewrite(RedundantClosure.self, at: Syntax(result)) {
         let widened = RedundantClosure.transform(result, parent: parent, context: context)
         if let stillCall = widened.as(FunctionCallExprSyntax.self) {
             result = stillCall
@@ -83,42 +81,40 @@ func rewriteFunctionCallExpr(
         }
     }
 
-    applyRule(
+    context.applyRewrite(
         RedundantInit.self, to: &result,
-        parent: parent, context: context,
-        transform: RedundantInit.transform
+        parent: parent, transform: RedundantInit.transform
     )
 
-    applyRule(
+    context.applyRewrite(
         RequireFatalErrorMessage.self, to: &result,
-        parent: parent, context: context,
-        transform: RequireFatalErrorMessage.transform
+        parent: parent, transform: RequireFatalErrorMessage.transform
     )
 
     // NoTrailingClosureParens — strips empty parens before a trailing closure
     // when the call has no arguments. Inlined from
     // `Sources/SwiftiomaticKit/Rules/Closures/NoTrailingClosureParens.swift`.
-    if context.shouldFormat(NoTrailingClosureParens.self, node: Syntax(result)) {
+    if context.shouldRewrite(NoTrailingClosureParens.self, at: Syntax(result)) {
         result = applyNoTrailingClosureParens(result, context: context)
     }
 
     // PreferTrailingClosures — moves trailing closure-typed arguments out of
     // the parens. Inlined from
     // `Sources/SwiftiomaticKit/Rules/Closures/PreferTrailingClosures.swift`.
-    if context.shouldFormat(PreferTrailingClosures.self, node: Syntax(result)) {
+    if context.shouldRewrite(PreferTrailingClosures.self, at: Syntax(result)) {
         result = applyPreferTrailingClosures(result, context: context)
     }
 
     // WrapMultilineFunctionChains — when a chain spans multiple lines, place
     // every dot on its own line. Inlined from
     // `Sources/SwiftiomaticKit/Rules/Wrap/WrapMultilineFunctionChains.swift`.
-    if context.shouldFormat(WrapMultilineFunctionChains.self, node: Syntax(result)) {
+    if context.shouldRewrite(WrapMultilineFunctionChains.self, at: Syntax(result)) {
         result = applyWrapMultilineFunctionChains(result, context: context)
     }
 
     // NestedCallLayout — reformat nested function-call chains.
     var resultExpr: ExprSyntax = ExprSyntax(result)
-    if context.shouldFormat(NestedCallLayout.self, node: Syntax(result)) {
+    if context.shouldRewrite(NestedCallLayout.self, at: Syntax(result)) {
         resultExpr = NestedCallLayout.transform(result, parent: parent, context: context)
         if let typed = resultExpr.as(FunctionCallExprSyntax.self) { result = typed }
     }
@@ -126,7 +122,7 @@ func rewriteFunctionCallExpr(
     // NoForceUnwrap — chain-top wrapping when an inner force-unwrap requires
     // wrapping at this call (the chain top). Helpers in
     // `Rewrites/Exprs/NoForceUnwrapHelpers.swift`.
-    if context.shouldFormat(NoForceUnwrap.self, node: Syntax(result)) {
+    if context.shouldRewrite(NoForceUnwrap.self, at: Syntax(result)) {
         return NoForceUnwrap.rewriteFunctionCallTop(result, context: context)
     }
 

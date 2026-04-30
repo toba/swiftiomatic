@@ -16,7 +16,7 @@ final class PreferSelfType: StaticFormatRule<BasicRuleValue>, @unchecked Sendabl
     override class var group: ConfigurationGroup? { .idioms }
     override class var defaultValue: BasicRuleValue { .init(rewrite: true, lint: .warn) }
 
-    /// Per-file mutable state held in `Context.ruleState`.
+    /// Per-file mutable state held as a typed lazy property on `Context`.
     final class State {
         var typeDepth = 0
     }
@@ -24,52 +24,52 @@ final class PreferSelfType: StaticFormatRule<BasicRuleValue>, @unchecked Sendabl
     // MARK: - Scope hooks
 
     static func willEnter(_: ClassDeclSyntax, context: Context) {
-        let state = context.ruleState(for: Self.self) { State() }
+        let state = context.preferSelfTypeState
         state.typeDepth += 1
     }
 
     static func didExit(_: ClassDeclSyntax, context: Context) {
-        let state = context.ruleState(for: Self.self) { State() }
+        let state = context.preferSelfTypeState
         state.typeDepth -= 1
     }
 
     static func willEnter(_: StructDeclSyntax, context: Context) {
-        let state = context.ruleState(for: Self.self) { State() }
+        let state = context.preferSelfTypeState
         state.typeDepth += 1
     }
 
     static func didExit(_: StructDeclSyntax, context: Context) {
-        let state = context.ruleState(for: Self.self) { State() }
+        let state = context.preferSelfTypeState
         state.typeDepth -= 1
     }
 
     static func willEnter(_: EnumDeclSyntax, context: Context) {
-        let state = context.ruleState(for: Self.self) { State() }
+        let state = context.preferSelfTypeState
         state.typeDepth += 1
     }
 
     static func didExit(_: EnumDeclSyntax, context: Context) {
-        let state = context.ruleState(for: Self.self) { State() }
+        let state = context.preferSelfTypeState
         state.typeDepth -= 1
     }
 
     static func willEnter(_: ActorDeclSyntax, context: Context) {
-        let state = context.ruleState(for: Self.self) { State() }
+        let state = context.preferSelfTypeState
         state.typeDepth += 1
     }
 
     static func didExit(_: ActorDeclSyntax, context: Context) {
-        let state = context.ruleState(for: Self.self) { State() }
+        let state = context.preferSelfTypeState
         state.typeDepth -= 1
     }
 
     static func willEnter(_: ExtensionDeclSyntax, context: Context) {
-        let state = context.ruleState(for: Self.self) { State() }
+        let state = context.preferSelfTypeState
         state.typeDepth += 1
     }
 
     static func didExit(_: ExtensionDeclSyntax, context: Context) {
-        let state = context.ruleState(for: Self.self) { State() }
+        let state = context.preferSelfTypeState
         state.typeDepth -= 1
     }
 
@@ -80,7 +80,7 @@ final class PreferSelfType: StaticFormatRule<BasicRuleValue>, @unchecked Sendabl
         parent _: Syntax?,
         context: Context
     ) -> ExprSyntax {
-        let state = context.ruleState(for: Self.self) { State() }
+        let state = context.preferSelfTypeState
         guard state.typeDepth > 0,
             let baseCall = node.base?.as(FunctionCallExprSyntax.self),
             isTypeOfSelfCall(baseCall)

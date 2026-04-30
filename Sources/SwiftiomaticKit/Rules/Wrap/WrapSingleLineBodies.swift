@@ -158,14 +158,14 @@ extension WrapSingleLineBodies {
     // MARK: Wrap helpers (static)
 
     /// Mirrors the legacy `currentIndent`/`chainBaseIndent` instance state via
-    /// `Context.ruleState`. The compact pipeline runs post-order, so a `for` /
+    /// a typed property on `Context`. The compact pipeline runs post-order, so a `for` /
     /// `while` / `repeat` / `guard` / `if` whose keyword sits on the same line as
     /// its enclosing `{` cannot derive its baseIndent from trivia. The static
     /// `willEnter` hooks push each construct's baseIndent onto `indentStack`
     /// before children are visited; `didExit` pops it. The wrap helpers read
     /// `indentStack.last` rather than recomputing from trivia.
     fileprivate static func state(_ context: Context) -> WrapSingleLineBodiesState {
-        context.ruleState(for: WrapSingleLineBodies.self) { WrapSingleLineBodiesState() }
+        context.wrapSingleLineBodiesState
     }
 
     /// Computes a wrapping construct's baseIndent. Trivia wins when it contains

@@ -2,7 +2,7 @@ import SwiftSyntax
 
 /// Compact-pipeline merge of all `IdentifierTypeSyntax` rewrites. Each
 /// former rule's logic is gated on
-/// `context.shouldFormat(<RuleType>.self, node:)`.
+/// `context.shouldRewrite(<RuleType>.self, at:)`.
 func rewriteIdentifierType(
     _ node: IdentifierTypeSyntax,
     parent: Syntax?,
@@ -12,7 +12,7 @@ func rewriteIdentifierType(
 
     // PreferShorthandTypeNames — `Array<T>`/`Dictionary<K,V>`/`Optional<T>` →
     // `[T]`/`[K: V]`/`T?`. May change the concrete type to ArrayType, etc.
-    if context.shouldFormat(PreferShorthandTypeNames.self, node: Syntax(result)),
+    if context.shouldRewrite(PreferShorthandTypeNames.self, at: Syntax(result)),
        let typed = result.as(IdentifierTypeSyntax.self)
     {
         result = PreferShorthandTypeNames.transform(typed, parent: parent, context: context)

@@ -1,7 +1,7 @@
 import SwiftSyntax
 
 /// Compact-pipeline merge of all `AccessorDeclSyntax` rewrites. Each former
-/// rule's logic is gated on `context.shouldFormat(<RuleType>.self, node:)`.
+/// rule's logic is gated on `context.shouldRewrite(<RuleType>.self, at:)`.
 ///
 /// Per Phase 4c of `ddi-wtv`. The generator emits a thin override that fires
 /// `willEnter`/`didExit` hooks before/after `super.visit`; this function
@@ -17,10 +17,9 @@ func rewriteAccessorDecl(
     // generator wires up.
 
     // WrapSingleLineBodies — inline didSet/willSet observer bodies.
-    applyRule(
+    context.applyRewrite(
         WrapSingleLineBodies.self, to: &result,
-        parent: parent, context: context,
-        transform: WrapSingleLineBodies.transform
+        parent: parent, transform: WrapSingleLineBodies.transform
     )
 
     return result

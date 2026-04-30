@@ -10,6 +10,8 @@
 - Configuration schema redesign; `style` + universal parameters
 - CLI; replace `--rules` plumbing with `--style`
 - Spike combined `SyntaxRewriter`; single walk for node-local rules
+- Collapse compact-pipeline rule shells into pure helpers ([#509](https://github.com/toba/swiftiomatic/issues/509))
+- Eliminate `RewriteSyntaxRule` base class ([#508](https://github.com/toba/swiftiomatic/issues/508))
 
 ### 🐞 Fixes
 
@@ -34,6 +36,7 @@
 - Fix 8 failing layout tests
 - `return`; break after the keyword instead of before the first chained call
 - Comment wrapping; converge in a single formatter pass
+- `BeforeGuardConditions`; pretty printer is now idempotent for guard `else` placement (single-statement bodies always glue `else {` to the closing condition when it fits)
 
 ### 🗜️ Tweaks
 
@@ -61,6 +64,12 @@
 - Phase 4f; retarget test harness and verify ([#498](https://github.com/toba/swiftiomatic/issues/498))
 - Phase 4 swift review; refactor merged compact-pipeline files
 - `WrapTernary`; retarget layout test harness off the rule's instance override
+- Cut over to `compact` pipeline; delete superseded rule files ([#480](https://github.com/toba/swiftiomatic/issues/480))
+- Replace discrete rules with style-driven pipelines ([#470](https://github.com/toba/swiftiomatic/issues/470))
+- Update README, `CLAUDE.md`, and sub-target READMEs for the style model ([#483](https://github.com/toba/swiftiomatic/issues/483))
+- Drop `applyRule` ladders; push selection / `sm:ignore` checks into the dispatcher
+- Replace metatype-keyed `Context.ruleState(for:)` with typed state properties
+- Rename `RewriteSyntaxRule` to `StructuralFormatRule`; hoist gating to dispatcher
 
 ## Week of Apr 19 – Apr 25, 2026
 

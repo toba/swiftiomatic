@@ -1,8 +1,7 @@
 import SwiftSyntax
 
 /// Compact-pipeline merge of all `SwitchCaseListSyntax` rewrites. Each
-/// former rule's logic is gated on `context.shouldFormat(<RuleType>.self,
-/// node:)`.
+/// former rule's logic is gated on `context.shouldRewrite(<RuleType>.self, at:)`.
 ///
 /// No node-local rules currently target `SwitchCaseListSyntax` via the
 /// compact `transform` form. The unported entries below are tracked in 4f.
@@ -15,7 +14,7 @@ func rewriteSwitchCaseList(
     // NoFallThroughOnlyCases — collapses `case`s whose only statement is
     // `fallthrough` into the following case's pattern list. Inlined from
     // `Sources/SwiftiomaticKit/Rules/Redundancies/NoFallThroughOnlyCases.swift`.
-    if context.shouldFormat(NoFallThroughOnlyCases.self, node: Syntax(result)) {
+    if context.shouldRewrite(NoFallThroughOnlyCases.self, at: Syntax(result)) {
         result = applyNoFallThroughOnlyCases(result, context: context)
     }
 

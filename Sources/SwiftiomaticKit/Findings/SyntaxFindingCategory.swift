@@ -12,7 +12,7 @@
 
 /// A finding category that wraps a `Rule` type.
 ///
-/// Findings emitted by `SyntaxLintRule` and `RewriteSyntaxRule` subclasses automatically emit their
+/// Findings emitted by `SyntaxLintRule` and `StructuralFormatRule` subclasses automatically emit their
 /// findings using this category type, via an instance that wraps the calling rule. The displayable
 /// name of the category is the same as the rule's name provided by the `ruleName` property (which
 /// defaults to the rule's type name).

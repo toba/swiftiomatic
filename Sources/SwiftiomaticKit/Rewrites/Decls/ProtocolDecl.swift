@@ -1,7 +1,7 @@
 import SwiftSyntax
 
 /// Compact-pipeline merge of all `ProtocolDeclSyntax` rewrites. Each former
-/// rule's logic is gated on `context.shouldFormat(<RuleType>.self, node:)`.
+/// rule's logic is gated on `context.shouldRewrite(<RuleType>.self, at:)`.
 ///
 /// Per Phase 4c of `ddi-wtv`.
 func rewriteProtocolDecl(
@@ -11,40 +11,35 @@ func rewriteProtocolDecl(
 ) -> ProtocolDeclSyntax {
     var result = node
 
-    applyRule(
+    context.applyRewrite(
         DocCommentsPrecedeModifiers.self, to: &result,
-        parent: parent, context: context,
-        transform: DocCommentsPrecedeModifiers.transform
+        parent: parent, transform: DocCommentsPrecedeModifiers.transform
     )
-    applyRule(
+    context.applyRewrite(
         ModifiersOnSameLine.self, to: &result,
-        parent: parent, context: context,
-        transform: ModifiersOnSameLine.transform
+        parent: parent, transform: ModifiersOnSameLine.transform
     )
-    applyRule(
+    context.applyRewrite(
         RedundantAccessControl.self, to: &result,
-        parent: parent, context: context,
-        transform: RedundantAccessControl.transform
+        parent: parent, transform: RedundantAccessControl.transform
     )
-    applyRule(
+    context.applyRewrite(
         TripleSlashDocComments.self, to: &result,
-        parent: parent, context: context,
-        transform: TripleSlashDocComments.transform
+        parent: parent, transform: TripleSlashDocComments.transform
     )
 
     // PreferAnyObject — replaces `class` keyword with `AnyObject` in
     // class-constrained protocol inheritance. Inlined from
     // `Sources/SwiftiomaticKit/Rules/Types/PreferAnyObject.swift`.
-    if context.shouldFormat(PreferAnyObject.self, node: Syntax(result)) {
+    if context.shouldRewrite(PreferAnyObject.self, at: Syntax(result)) {
         result = applyPreferAnyObject(result, context: context)
     }
 
     // WrapMultilineStatementBraces — wrap opening brace of a multiline
     // statement onto its own line aligned with the closing brace.
-    applyRule(
+    context.applyRewrite(
         WrapMultilineStatementBraces.self, to: &result,
-        parent: parent, context: context,
-        transform: WrapMultilineStatementBraces.transform
+        parent: parent, transform: WrapMultilineStatementBraces.transform
     )
 
     return result

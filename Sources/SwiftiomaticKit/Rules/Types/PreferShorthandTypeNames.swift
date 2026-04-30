@@ -19,7 +19,7 @@ import SwiftSyntax
 ///
 /// Rewrite: Where possible, shorthand types replace long form types; e.g. `Array<Element>` is
 ///         converted to `[Element]`.
-final class PreferShorthandTypeNames: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable {
+final class PreferShorthandTypeNames: StructuralFormatRule<BasicRuleValue>, @unchecked Sendable {
     override class var group: ConfigurationGroup? { .types }
 
     /// Compact-pipeline support: when set, `visit(_:)` consults this instead of

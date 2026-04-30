@@ -13,7 +13,7 @@ import SwiftSyntax
 /// Lint: A warning is raised when the file header does not match the configured text.
 ///
 /// Rewrite: The file header is replaced with (or cleared to) the configured text.
-final class FileHeader: RewriteSyntaxRule<FileHeaderConfiguration>, @unchecked Sendable {
+final class FileHeader: StructuralFormatRule<FileHeaderConfiguration>, @unchecked Sendable {
   override class var group: ConfigurationGroup? { .comments }
 
   override class var defaultValue: FileHeaderConfiguration {

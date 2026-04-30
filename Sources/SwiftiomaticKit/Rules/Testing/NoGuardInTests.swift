@@ -14,7 +14,7 @@ final class NoGuardInTests: StaticFormatRule<BasicRuleValue>, @unchecked Sendabl
     override class var group: ConfigurationGroup? { .testing }
     override class var defaultValue: BasicRuleValue { .init(rewrite: false, lint: .no) }
 
-    /// Per-file mutable state held in `Context.ruleState`.
+    /// Per-file mutable state held as a typed lazy property on `Context`.
     final class State {
         var testContext = TestContextTracker()
         /// Stack of `(insideTestFunction, addedTryStatement)` frames pushed at function entry.
@@ -28,7 +28,7 @@ final class NoGuardInTests: StaticFormatRule<BasicRuleValue>, @unchecked Sendabl
     // MARK: - Pre-scan / scope tracking
 
     static func willEnter(_ node: SourceFileSyntax, context: Context) {
-        let state = context.ruleState(for: Self.self) { State() }
+        let state = context.noGuardInTestsState
         state.testContext.visitSourceFile(node, context: context)
         for stmt in node.statements {
             if let importDecl = stmt.item.as(ImportDeclSyntax.self) {
@@ -38,7 +38,7 @@ final class NoGuardInTests: StaticFormatRule<BasicRuleValue>, @unchecked Sendabl
     }
 
     static func willEnter(_ node: ClassDeclSyntax, context: Context) {
-        let state = context.ruleState(for: Self.self) { State() }
+        let state = context.noGuardInTestsState
         let was = state.testContext.pushClass(node, context: context)
         // Stash via stack — use functionStack as a generic stack? Use a dedicated stack instead.
         state.classStack.append(was)
@@ -46,13 +46,13 @@ final class NoGuardInTests: StaticFormatRule<BasicRuleValue>, @unchecked Sendabl
 
     static func didExit(_ node: ClassDeclSyntax, context: Context) {
         _ = node
-        let state = context.ruleState(for: Self.self) { State() }
+        let state = context.noGuardInTestsState
         guard let was = state.classStack.popLast() else { return }
         state.testContext.popClass(was: was)
     }
 
     static func willEnter(_ node: FunctionDeclSyntax, context: Context) {
-        let state = context.ruleState(for: Self.self) { State() }
+        let state = context.noGuardInTestsState
         state.functionStack.append((state.insideTestFunction, state.addedTryStatement))
         if state.testContext.isTestFunction(node), node.body != nil {
             state.insideTestFunction = true
@@ -66,7 +66,7 @@ final class NoGuardInTests: StaticFormatRule<BasicRuleValue>, @unchecked Sendabl
     }
 
     static func didExit(_: FunctionDeclSyntax, context: Context) {
-        let state = context.ruleState(for: Self.self) { State() }
+        let state = context.noGuardInTestsState
         guard let frame = state.functionStack.popLast() else { return }
         state.insideTestFunction = frame.insideTest
         state.addedTryStatement = frame.addedTry
@@ -77,13 +77,13 @@ final class NoGuardInTests: StaticFormatRule<BasicRuleValue>, @unchecked Sendabl
     // short-circuit by pushing/popping `insideTestFunction = false` around
     // the closure body in the compact pipeline.
     static func willEnter(_: ClosureExprSyntax, context: Context) {
-        let state = context.ruleState(for: Self.self) { State() }
+        let state = context.noGuardInTestsState
         state.functionStack.append((state.insideTestFunction, state.addedTryStatement))
         state.insideTestFunction = false
     }
 
     static func didExit(_: ClosureExprSyntax, context: Context) {
-        let state = context.ruleState(for: Self.self) { State() }
+        let state = context.noGuardInTestsState
         guard let frame = state.functionStack.popLast() else { return }
         state.insideTestFunction = frame.insideTest
         state.addedTryStatement = frame.addedTry
@@ -98,7 +98,7 @@ final class NoGuardInTests: StaticFormatRule<BasicRuleValue>, @unchecked Sendabl
         parent _: Syntax?,
         context: Context
     ) -> DeclSyntax {
-        let state = context.ruleState(for: Self.self) { State() }
+        let state = context.noGuardInTestsState
         // Only proceed if this is a test function (matches what willEnter detected).
         guard state.testContext.isTestFunction(node), node.body != nil else {
             return DeclSyntax(node)
@@ -120,7 +120,7 @@ final class NoGuardInTests: StaticFormatRule<BasicRuleValue>, @unchecked Sendabl
         parent _: Syntax?,
         context: Context
     ) -> CodeBlockItemListSyntax {
-        let state = context.ruleState(for: Self.self) { State() }
+        let state = context.noGuardInTestsState
         guard state.insideTestFunction else { return node }
         return Self.transformCodeBlockItemList(node, context: context)
     }
@@ -129,7 +129,7 @@ final class NoGuardInTests: StaticFormatRule<BasicRuleValue>, @unchecked Sendabl
         _ node: CodeBlockItemListSyntax,
         context: Context
     ) -> CodeBlockItemListSyntax {
-        let state = context.ruleState(for: Self.self) { State() }
+        let state = context.noGuardInTestsState
         let items = Array(node)
         var newItems = [CodeBlockItemSyntax]()
         var changed = false

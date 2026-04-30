@@ -21,7 +21,7 @@ import SwiftSyntax
 /// Lint: If case items are not sorted, a lint warning is raised.
 ///
 /// Rewrite: The case items are reordered alphabetically.
-final class SortSwitchCases: RewriteSyntaxRule<BasicRuleValue>, @unchecked Sendable {
+final class SortSwitchCases: StructuralFormatRule<BasicRuleValue>, @unchecked Sendable {
     override class var key: String { "switchCases" }
     override class var group: ConfigurationGroup? { .sort }
   override class var defaultValue: BasicRuleValue { BasicRuleValue(rewrite: false, lint: .no) }

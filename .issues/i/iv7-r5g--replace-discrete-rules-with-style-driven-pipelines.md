@@ -1,15 +1,15 @@
 ---
 # iv7-r5g
 title: Replace discrete rules with style-driven pipelines
-status: in-progress
+status: completed
 type: epic
 priority: high
 created_at: 2026-04-28T01:16:14Z
-updated_at: 2026-04-28T01:49:27Z
+updated_at: 2026-04-30T00:14:39Z
 sync:
     github:
         issue_number: "470"
-        synced_at: "2026-04-28T02:39:59Z"
+        synced_at: "2026-04-30T00:29:43Z"
 ---
 
 ## Premise
@@ -123,3 +123,51 @@ Tri-state `off|warn|error` replaces today's `Bool` — folds severity into the t
 The combined stage-1 `SyntaxRewriter` doesn't have to be a single megafile. Make it a thin dispatcher whose `visit(_:)` overrides delegate to free functions / extension methods organised by aspect, mirroring today's `Sources/SwiftiomaticKit/Rules/<Group>/` layout (`Modifiers.swift`, `Comments.swift`, `EmptyLiterals.swift`, etc.). Same per-file logic, called inside one walk instead of one-rewriter-per-rule. Zero perf cost — static calls into extension methods are cheaper than instantiating a `SyntaxRewriter` per rule.
 
 Performance stays top priority; this just preserves discoverability.
+
+
+
+## Summary of Changes (epic closure)
+
+All 13 child issues are completed or scrapped:
+
+- `kl0-8b8` — Inventory format rules: node-local vs structural vs deletable. completed.
+- `2kl-d04` — Design `compact` style spec. completed.
+- `0ev-1u9` — Stub `roomy` style (name reservation only). completed.
+- `eti-yt2` — Spike: combined SyntaxRewriter for node-local rules. completed.
+- `o72-vx7` — Configuration schema redesign: `style` + universal parameters. completed.
+- `e4v-075` — CLI: replace --rules plumbing with --style. completed.
+- `ddi-wtv` — Cut over to compact pipeline; delete superseded rule files. completed.
+- `wru-y41` — Collapse compact-pipeline rule shells into pure helpers. completed.
+- `6ji-ue3` — Drop applyRule + shouldFormat gating; push selection/sm:ignore checks out. completed.
+- `c6i-b47` — Replace metatype-keyed Context.ruleState(for:) with typed state properties. completed.
+- `2uk-cll` — Rename RewriteSyntaxRule to StructuralFormatRule; hoist gating to dispatcher. completed.
+- `edy-7hr` — Make compact-style rewrites always-on; remove Configuration.isActive from rewrite path. scrapped.
+- `0we-lcr` — Update DocC, README, list-rules / generate-docs for style model. completed.
+
+### Final pipeline shape
+
+- Stage 1: `CompactStageOneRewriter` — single tree walk dispatching every `StaticFormatRule` (`willEnter` → `super.visit` → `rewrite<NodeType>` → `didExit`).
+- Stage 2: ≤9 `StructuralFormatRule` passes (`SortImports`, blank-line policy, `ExtensionAccessLevel`, `FileScopedDeclarationPrivacy`, `FileHeader`, `CaseLet`, …).
+- Pretty-print: unchanged Oppen-style `LayoutCoordinator`.
+
+### Configuration
+
+- `style` enum (`compact` default, `roomy` reserved) + universal layout settings drive formatting.
+- Lint side stays per-rule (`"lint": "no" | "warn" | "error"`).
+- `--style` CLI flag overrides the configured style for a single invocation.
+
+### Performance
+
+- `testFullFormatPipelinePerformance`: 4.7s (legacy) → ~0.32s — ~14× speedup, well under the 200 ms target.
+
+### Test surface
+
+- 3008 pass / 2 pre-existing `Layout/GuardStmtTests` pretty-printer-idempotency failures (predate this epic, unrelated).
+
+### Out of scope (deferred)
+
+- Implementing `roomy`.
+- Eliminating the `StructuralFormatRule` base class.
+- Migrating remaining `RuleCollector` legacy detection paths.
+
+The doc-update task (`0we-lcr`) closed out the user-facing surface: README, sub-target READMEs, `CLAUDE.md`, and removal of the dead `DocumentationGenerator.swift`.

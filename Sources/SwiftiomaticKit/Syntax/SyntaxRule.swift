@@ -11,7 +11,7 @@ import SwiftSyntax
 protocol SyntaxRule: Configurable, Sendable where Value: SyntaxRuleValue {}
 
 /// A rule that owns a `Context`-bound instance — used by `LintSyntaxRule` and
-/// `RewriteSyntaxRule`. Static-only rules conform to bare `SyntaxRule` instead.
+/// `StructuralFormatRule`. Static-only rules conform to bare `SyntaxRule` instead.
 protocol InstanceSyntaxRule: SyntaxRule {
     /// The context in which the rule is executed.
     var context: Context { get }
@@ -26,7 +26,7 @@ extension SyntaxRule {
 
     /// Whether this rule's `defaultValue` is active (rewrite or lint enabled). Reachable
     /// via existential dispatch from `any SyntaxRule.Type`, which preserves dynamic
-    /// type binding when `RewriteSyntaxRule.visitAny` calls into `Context` for per-node
+    /// type binding when `StructuralFormatRule.visitAny` calls into `Context` for per-node
     /// gating. Generic dispatch via `<R: SyntaxRule>` does NOT preserve the dynamic
     /// type when the generic parameter is inferred from `type(of: self)` inside a
     /// non-final base class — see `Context.shouldFormat(ruleType:node:)`.

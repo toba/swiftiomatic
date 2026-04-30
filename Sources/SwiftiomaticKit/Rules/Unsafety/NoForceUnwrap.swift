@@ -77,7 +77,7 @@ final class NoForceUnwrap: StaticFormatRule<BasicRuleValue>, @unchecked Sendable
     enum ChainTopContext { case wrap, noWrap, propagate }
 
     static func state(_ context: Context) -> State {
-        context.ruleState(for: NoForceUnwrap.self) { State() }
+        context.noForceUnwrapState
     }
 
     // MARK: - Compact-pipeline scope hooks

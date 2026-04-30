@@ -13,7 +13,7 @@ final class NamedClosureParams: StaticFormatRule<BasicRuleValue>, @unchecked Sen
     override class var group: ConfigurationGroup? { .closures }
     override class var defaultValue: BasicRuleValue { .init(rewrite: false, lint: .warn) }
 
-    /// Per-file mutable state held in `Context.ruleState`.
+    /// Per-file mutable state held as a typed lazy property on `Context`.
     final class State {
         /// Stack of `insideMultilineClosure` flags — one entry per nested
         /// `ClosureExprSyntax`. The top of the stack is the innermost closure;
@@ -25,7 +25,7 @@ final class NamedClosureParams: StaticFormatRule<BasicRuleValue>, @unchecked Sen
     }
 
     static func state(_ context: Context) -> State {
-        context.ruleState(for: Self.self) { State() }
+        context.namedClosureParamsState
     }
 
     // MARK: - Compact-pipeline scope hooks

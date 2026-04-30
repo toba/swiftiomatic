@@ -2,7 +2,7 @@ import SwiftSyntax
 
 /// Compact-pipeline merge of all `PrefixOperatorExprSyntax` rewrites. Each
 /// former rule's logic is gated on
-/// `context.shouldFormat(<RuleType>.self, node:)`.
+/// `context.shouldRewrite(<RuleType>.self, at:)`.
 ///
 /// Returns `ExprSyntax` (not `PrefixOperatorExprSyntax`) because
 /// `PreferExplicitFalse` rewrites `!x` to `x == false` (an
@@ -15,7 +15,7 @@ func rewritePrefixOperatorExpr(
 ) -> ExprSyntax {
     var result = ExprSyntax(node)
 
-    if context.shouldFormat(PreferExplicitFalse.self, node: Syntax(result)) {
+    if context.shouldRewrite(PreferExplicitFalse.self, at: Syntax(result)) {
         if let prefix = result.as(PrefixOperatorExprSyntax.self) {
             result = PreferExplicitFalse.transform(prefix, parent: parent, context: context)
         }

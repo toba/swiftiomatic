@@ -18,7 +18,7 @@ extension LintPipeline {
     }
 
     /// Calls the `visit` method of a rewrite rule for the given node if that rule is enabled.
-    func visitIfEnabled<V: SyntaxRuleValue, Rule: RewriteSyntaxRule<V>, Node: SyntaxProtocol>(
+    func visitIfEnabled<V: SyntaxRuleValue, Rule: StructuralFormatRule<V>, Node: SyntaxProtocol>(
         _ visitor: (Rule) -> (Node) -> Any,
         for node: Node
     ) {

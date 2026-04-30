@@ -1,32 +1,46 @@
-# Swiftiomatic
+# SwiftiomaticKit
 
-The core library for AST-accurate Swift linting, formatting, and code analysis.
+The core library for AST-accurate Swift linting and formatting.
 
 ## What It Does
 
-Parses Swift source files into syntax trees (via swift-syntax) and applies 100+ rules to lint, format, and suggest improvements. This is the engine behind the `sm` CLI, SPM plugins, and direct API consumers.
+Parses Swift source files into syntax trees (via swift-syntax) and applies the configured `style` to format them, while also emitting lint findings. This is the engine behind the `sm` CLI, the SPM plugins, and direct API consumers.
+
+## Pipeline
+
+Formatting is two stages, driven by the selected `style`:
+
+1. **Stage 1 — `CompactStageOneRewriter`**: a single tree walk that performs every node-local syntactic normalization the style demands (modifier order, redundant-self stripping, doc-comment conversion, accessor order, semicolon removal, etc.).
+2. **Stage 2 — Structural passes** (≤9): reshapers that need a settled tree (`SortImports`, blank-line policy, `ExtensionAccessLevel`, `FileScopedDeclarationPrivacy`, `FileHeader`, `CaseLet`, …). Each is its own ordered pass.
+3. **Pretty-print** (`LayoutCoordinator`): an Oppen-style token-stream printer that decides line breaks and indentation based on the configured line length.
+
+Linting walks the tree once via `LintPipeline`, interleaving every active lint rule per node.
 
 ## Structure
 
 | Directory | Purpose |
 |---|---|
-| `Configuration/` | JSON config serialization, defaults, and rule toggles |
-| `Core/` | Rule infrastructure, context/finding emission, parsing helpers, and auto-generated pipelines |
-| `Formatter/` | `SwiftiomaticFormatter`, `FormatPipeline`, and `SyntaxFormatRule` base class |
-| `Linter/` | `SwiftiomaticLinter`, `LintPipeline`, and `SyntaxLintRule` base class |
-| `PrettyPrint/` | Token-stream re-indentation and line-breaking engine |
-| `Rules/` | All lint and format rule implementations, organized by category |
-| `Support/` | `Finding`, `Selection`, error types, and debugging options |
+| `Configuration/` | JSON config (de)serialization, schema validation, type-erased value store |
+| `Extensions/` | swift-syntax helpers and small utility extensions |
+| `Findings/` | `Finding`, `FindingEmitter`, finding categories |
+| `Generated/` | Build-plugin output (`Pipelines+Generated.swift`, `CompactStageOneRewriter+Generated.swift`, `ConfigurationRegistry+Generated.swift`, `TokenStream+Generated.swift`) — never edit by hand |
+| `Layout/` | Pretty-print engine: `LayoutCoordinator`, token types, whitespace linter |
+| `Rewrites/` | Hand-written `rewrite<NodeType>(_:context:)` free functions invoked by stage 1 |
+| `Rules/` | Rule definitions (lint + format), organized by category, plus `Style.swift` |
+| `Support/` | `Context`, `DebugOptions`, `Selection`, error types |
+| `Syntax/` | `SyntaxRule` / `StaticFormatRule` base machinery, lint and rewrite coordinators, `RuleMask`, `RuleState` |
 
 ## Key Concepts
 
-- **SyntaxLintRule** -- read-only visitor that emits findings via `diagnose()`.
-- **SyntaxFormatRule** -- syntax rewriter that transforms code AND emits findings.
-- **LintPipeline** -- interleaves all lint rules in a single tree walk for efficiency.
-- **FormatPipeline** -- runs format rules sequentially, each over the full tree.
-- **PrettyPrinter** -- handles whitespace, indentation, and line-break decisions after rules run.
-- **RuleMask** -- honors `// sm:ignore` comments to suppress rules per-line.
+- **`Style`** -- enum that drives stage-1 normalization and pretty-printer break preferences. Currently `compact` is the only implemented value; `roomy` is reserved.
+- **`SyntaxRule`** -- base protocol for every rule, lint or format.
+- **`StaticFormatRule`** -- format rule with a `static transform(_:parent:context:)` (and optional `willEnter`/`didExit` hooks); collected by the build plugin and dispatched from `CompactStageOneRewriter`.
+- **`StructuralFormatRule`** -- the small set of rules that still subclass `SyntaxRewriter` and run as ordered post-stage-1 passes.
+- **`LintSyntaxRule`** -- read-only visitor that emits findings via `diagnose()`.
+- **`LintPipeline`** -- interleaves lint rules in a single tree walk for efficiency.
+- **`LayoutCoordinator`** -- pretty-print engine; handles whitespace, indentation, and line-break decisions after rewrites.
+- **`RuleMask`** -- honours `// sm:ignore` comments to suppress findings/rewrites per-line or per-file.
 
 ## Where It Fits
 
-This is the main product library. The `sm` CLI and both SPM plugins depend on it. The `Generators` target also imports it to introspect rule types at build time. Test targets validate its behavior.
+This is the main product library. The `sm` CLI and both SPM plugins depend on it. The `Generator` executable (build plugin) imports `GeneratorKit` to introspect rule types and emit the files in `Generated/`. Test targets validate behaviour.

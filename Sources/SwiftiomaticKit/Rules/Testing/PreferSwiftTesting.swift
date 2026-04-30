@@ -13,7 +13,7 @@ final class PreferSwiftTesting: StaticFormatRule<BasicRuleValue>, @unchecked Sen
 
     override class var defaultValue: BasicRuleValue { .init(rewrite: false, lint: .no) }
 
-    /// Per-file mutable state held in `Context.ruleState`.
+    /// Per-file mutable state held as a typed lazy property on `Context`.
     final class State {
         var bailOut = false
         var hasXCTestImport = false
@@ -34,7 +34,7 @@ final class PreferSwiftTesting: StaticFormatRule<BasicRuleValue>, @unchecked Sen
     // MARK: - Pre-scan
 
     static func willEnter(_ node: SourceFileSyntax, context: Context) {
-        let state = context.ruleState(for: Self.self) { State() }
+        let state = context.preferSwiftTestingState
 
         for stmt in node.statements {
             if let importDecl = stmt.item.as(ImportDeclSyntax.self) {
@@ -72,7 +72,7 @@ final class PreferSwiftTesting: StaticFormatRule<BasicRuleValue>, @unchecked Sen
     }
 
     static func willEnter(_ node: ClassDeclSyntax, context: Context) {
-        let state = context.ruleState(for: Self.self) { State() }
+        let state = context.preferSwiftTestingState
         guard state.hasXCTestImport, !state.bailOut else { return }
         state.insideXCTestCaseStack.append(state.insideXCTestCase)
         if let inheritance = node.inheritanceClause,
@@ -83,7 +83,7 @@ final class PreferSwiftTesting: StaticFormatRule<BasicRuleValue>, @unchecked Sen
     }
 
     static func didExit(_: ClassDeclSyntax, context: Context) {
-        let state = context.ruleState(for: Self.self) { State() }
+        let state = context.preferSwiftTestingState
         guard state.hasXCTestImport, !state.bailOut else { return }
         if let was = state.insideXCTestCaseStack.popLast() {
             state.insideXCTestCase = was
@@ -91,7 +91,7 @@ final class PreferSwiftTesting: StaticFormatRule<BasicRuleValue>, @unchecked Sen
     }
 
     static func willEnter(_ node: ExtensionDeclSyntax, context: Context) {
-        let state = context.ruleState(for: Self.self) { State() }
+        let state = context.preferSwiftTestingState
         guard state.hasXCTestImport, !state.bailOut else { return }
         state.insideXCTestCaseStack.append(state.insideXCTestCase)
         let extName = node.extendedType.trimmedDescription
@@ -101,7 +101,7 @@ final class PreferSwiftTesting: StaticFormatRule<BasicRuleValue>, @unchecked Sen
     }
 
     static func didExit(_: ExtensionDeclSyntax, context: Context) {
-        let state = context.ruleState(for: Self.self) { State() }
+        let state = context.preferSwiftTestingState
         guard state.hasXCTestImport, !state.bailOut else { return }
         if let was = state.insideXCTestCaseStack.popLast() {
             state.insideXCTestCase = was
@@ -109,20 +109,20 @@ final class PreferSwiftTesting: StaticFormatRule<BasicRuleValue>, @unchecked Sen
     }
 
     static func willEnter(_: FunctionDeclSyntax, context: Context) {
-        let state = context.ruleState(for: Self.self) { State() }
+        let state = context.preferSwiftTestingState
         state.currentFunctionHasTryStack.append(state.currentFunctionHasTry)
         state.currentFunctionHasTry = false
     }
 
     static func didExit(_: FunctionDeclSyntax, context: Context) {
-        let state = context.ruleState(for: Self.self) { State() }
+        let state = context.preferSwiftTestingState
         if let was = state.currentFunctionHasTryStack.popLast() {
             state.currentFunctionHasTry = was
         }
     }
 
     static func willEnter(_ node: FunctionCallExprSyntax, context: Context) {
-        let state = context.ruleState(for: Self.self) { State() }
+        let state = context.preferSwiftTestingState
         guard state.hasXCTestImport, !state.bailOut else { return }
         let calledName = node.calledExpression.trimmedDescription
         guard calledName.hasPrefix("XCT") || calledName == "Issue.record" else { return }
@@ -130,7 +130,7 @@ final class PreferSwiftTesting: StaticFormatRule<BasicRuleValue>, @unchecked Sen
     }
 
     static func didExit(_: FunctionCallExprSyntax, context: Context) {
-        let state = context.ruleState(for: Self.self) { State() }
+        let state = context.preferSwiftTestingState
         // The matching `transform` already pops; this is a safety net in case
         // the call wasn't actually transformed (e.g. arity mismatch).
         _ = state.originalCallStack
@@ -141,7 +141,7 @@ final class PreferSwiftTesting: StaticFormatRule<BasicRuleValue>, @unchecked Sen
         parent: Syntax?,
         context: Context
     ) -> ExprSyntax {
-        let state = context.ruleState(for: Self.self) { State() }
+        let state = context.preferSwiftTestingState
         guard state.hasXCTestImport, !state.bailOut else { return ExprSyntax(node) }
 
         let calledName = node.calledExpression.trimmedDescription
@@ -171,7 +171,7 @@ final class PreferSwiftTesting: StaticFormatRule<BasicRuleValue>, @unchecked Sen
         parent _: Syntax?,
         context: Context
     ) -> DeclSyntax {
-        let state = context.ruleState(for: Self.self) { State() }
+        let state = context.preferSwiftTestingState
         guard state.hasXCTestImport, !state.bailOut else { return DeclSyntax(node) }
 
         if node.path.first?.name.text == "XCTest" {
@@ -189,7 +189,7 @@ final class PreferSwiftTesting: StaticFormatRule<BasicRuleValue>, @unchecked Sen
         parent _: Syntax?,
         context: Context
     ) -> DeclSyntax {
-        let state = context.ruleState(for: Self.self) { State() }
+        let state = context.preferSwiftTestingState
         guard state.hasXCTestImport, !state.bailOut else { return DeclSyntax(node) }
         guard let inheritance = node.inheritanceClause,
               inheritance.contains(named: "XCTestCase") else { return DeclSyntax(node) }
@@ -458,7 +458,7 @@ final class PreferSwiftTesting: StaticFormatRule<BasicRuleValue>, @unchecked Sen
         parent _: Syntax?,
         context: Context
     ) -> DeclSyntax {
-        let state = context.ruleState(for: Self.self) { State() }
+        let state = context.preferSwiftTestingState
         guard state.hasXCTestImport, !state.bailOut, state.insideXCTestCase else {
             return DeclSyntax(node)
         }

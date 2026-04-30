@@ -1,7 +1,7 @@
 import SwiftSyntax
 
 /// Compact-pipeline merge of all `SubscriptDeclSyntax` rewrites. Each former
-/// rule's logic is gated on `context.shouldFormat(<RuleType>.self, node:)`.
+/// rule's logic is gated on `context.shouldRewrite(<RuleType>.self, at:)`.
 ///
 /// Per Phase 4c of `ddi-wtv`.
 func rewriteSubscriptDecl(
@@ -11,71 +11,60 @@ func rewriteSubscriptDecl(
 ) -> SubscriptDeclSyntax {
     var result = node
 
-    applyRule(
+    context.applyRewrite(
         DocCommentsPrecedeModifiers.self, to: &result,
-        parent: parent, context: context,
-        transform: DocCommentsPrecedeModifiers.transform
+        parent: parent, transform: DocCommentsPrecedeModifiers.transform
     )
 
-    applyRule(
+    context.applyRewrite(
         ModifierOrder.self, to: &result,
-        parent: parent, context: context,
-        transform: ModifierOrder.transform
+        parent: parent, transform: ModifierOrder.transform
     )
 
-    applyRule(
+    context.applyRewrite(
         ModifiersOnSameLine.self, to: &result,
-        parent: parent, context: context,
-        transform: ModifiersOnSameLine.transform
+        parent: parent, transform: ModifiersOnSameLine.transform
     )
 
-    applyRule(
+    context.applyRewrite(
         OpaqueGenericParameters.self, to: &result,
-        parent: parent, context: context,
-        transform: OpaqueGenericParameters.transform
+        parent: parent, transform: OpaqueGenericParameters.transform
     )
 
-    applyRule(
+    context.applyRewrite(
         RedundantAccessControl.self, to: &result,
-        parent: parent, context: context,
-        transform: RedundantAccessControl.transform
+        parent: parent, transform: RedundantAccessControl.transform
     )
 
-    applyRule(
+    context.applyRewrite(
         RedundantObjc.self, to: &result,
-        parent: parent, context: context,
-        transform: RedundantObjc.transform
+        parent: parent, transform: RedundantObjc.transform
     )
 
-    applyRule(
+    context.applyRewrite(
         RedundantReturn.self, to: &result,
-        parent: parent, context: context,
-        transform: RedundantReturn.transform
+        parent: parent, transform: RedundantReturn.transform
     )
 
-    applyRule(
+    context.applyRewrite(
         TripleSlashDocComments.self, to: &result,
-        parent: parent, context: context,
-        transform: TripleSlashDocComments.transform
+        parent: parent, transform: TripleSlashDocComments.transform
     )
 
-    applyRule(
+    context.applyRewrite(
         UnusedArguments.self, to: &result,
-        parent: parent, context: context,
-        transform: UnusedArguments.transform
+        parent: parent, transform: UnusedArguments.transform
     )
 
-    applyRule(
+    context.applyRewrite(
         UseImplicitInit.self, to: &result,
-        parent: parent, context: context,
-        transform: UseImplicitInit.transform
+        parent: parent, transform: UseImplicitInit.transform
     )
 
     // WrapSingleLineBodies — wrap or inline single-statement subscript getter.
-    applyRule(
+    context.applyRewrite(
         WrapSingleLineBodies.self, to: &result,
-        parent: parent, context: context,
-        transform: WrapSingleLineBodies.transform
+        parent: parent, transform: WrapSingleLineBodies.transform
     )
 
     return result

@@ -750,8 +750,7 @@ struct StringTests: LayoutTesting {
         let x = """
           blah
           blah
-          """.data(using: .utf8)
-      else {
+          """.data(using: .utf8) else {
         print(x)
       }
 

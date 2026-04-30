@@ -118,8 +118,7 @@ struct GuardStmtTests: LayoutTesting {
     let expected =
       """
       guard let foo = something,
-        let bar = somethingElse
-      else {
+        let bar = somethingElse else {
         body()
       }
 
@@ -191,8 +190,7 @@ struct GuardStmtTests: LayoutTesting {
       }
       guard let object1 = fetchingFunc(foo),
         let object2 = fetchingFunc(bar),
-        let object3 = fetchingFunc(baz)
-      else {
+        let object3 = fetchingFunc(baz) else {
         return nil
       }
 
@@ -364,8 +362,7 @@ struct GuardStmtTests: LayoutTesting {
       }
       guard veryLongConditionName
         && anotherLongCondition
-        || yetAnotherCondition
-      else {
+        || yetAnotherCondition else {
         return
       }
 

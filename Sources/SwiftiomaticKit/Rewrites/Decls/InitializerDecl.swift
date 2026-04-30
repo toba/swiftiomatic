@@ -1,9 +1,7 @@
 import SwiftSyntax
 
 /// Compact-pipeline merge of all `InitializerDeclSyntax` rewrites. Each former
-/// rule's logic is gated on `context.shouldFormat(<RuleType>.self, node:)`.
-///
-/// Per Phase 4c of `ddi-wtv`.
+/// rule's logic is gated on `context.shouldRewrite(<RuleType>.self, at:)`.
 func rewriteInitializerDecl(
     _ node: InitializerDeclSyntax,
     parent: Syntax?,
@@ -11,87 +9,74 @@ func rewriteInitializerDecl(
 ) -> InitializerDeclSyntax {
     var result = node
 
-    applyRule(
+    context.applyRewrite(
         DocCommentsPrecedeModifiers.self, to: &result,
-        parent: parent, context: context,
-        transform: DocCommentsPrecedeModifiers.transform
+        parent: parent, transform: DocCommentsPrecedeModifiers.transform
     )
 
-    applyRule(
+    context.applyRewrite(
         InitCoderUnavailable.self, to: &result,
-        parent: parent, context: context,
-        transform: InitCoderUnavailable.transform
+        parent: parent, transform: InitCoderUnavailable.transform
     )
 
-    applyRule(
+    context.applyRewrite(
         ModifierOrder.self, to: &result,
-        parent: parent, context: context,
-        transform: ModifierOrder.transform
+        parent: parent, transform: ModifierOrder.transform
     )
 
-    applyRule(
+    context.applyRewrite(
         ModifiersOnSameLine.self, to: &result,
-        parent: parent, context: context,
-        transform: ModifiersOnSameLine.transform
+        parent: parent, transform: ModifiersOnSameLine.transform
     )
 
-    applyRule(
+    context.applyRewrite(
         OpaqueGenericParameters.self, to: &result,
-        parent: parent, context: context,
-        transform: OpaqueGenericParameters.transform
+        parent: parent, transform: OpaqueGenericParameters.transform
     )
 
-    applyRule(
+    context.applyRewrite(
         RedundantAccessControl.self, to: &result,
-        parent: parent, context: context,
-        transform: RedundantAccessControl.transform
+        parent: parent, transform: RedundantAccessControl.transform
     )
 
-    applyRule(
+    context.applyRewrite(
         RedundantObjc.self, to: &result,
-        parent: parent, context: context,
-        transform: RedundantObjc.transform
+        parent: parent, transform: RedundantObjc.transform
     )
 
-    applyRule(
+    context.applyRewrite(
         TripleSlashDocComments.self, to: &result,
-        parent: parent, context: context,
-        transform: TripleSlashDocComments.transform
+        parent: parent, transform: TripleSlashDocComments.transform
     )
 
-    applyRule(
+    context.applyRewrite(
         UnusedArguments.self, to: &result,
-        parent: parent, context: context,
-        transform: UnusedArguments.transform
+        parent: parent, transform: UnusedArguments.transform
     )
 
-    applyRule(
+    context.applyRewrite(
         UseImplicitInit.self, to: &result,
-        parent: parent, context: context,
-        transform: UseImplicitInit.transform
+        parent: parent, transform: UseImplicitInit.transform
     )
 
     // RedundantEscaping — strip redundant `@escaping` from non-escaping
     // closure parameters.
-    applyRule(
+    context.applyRewrite(
         RedundantEscaping.self, to: &result,
-        parent: parent, context: context,
-        transform: RedundantEscaping.transform
+        parent: parent, transform: RedundantEscaping.transform
     )
 
     // WrapMultilineStatementBraces — wrap opening brace of a multiline
     // statement onto its own line aligned with the closing brace.
-    applyRule(
+    context.applyRewrite(
         WrapMultilineStatementBraces.self, to: &result,
-        parent: parent, context: context,
-        transform: WrapMultilineStatementBraces.transform
+        parent: parent, transform: WrapMultilineStatementBraces.transform
     )
 
     // WrapSingleLineBodies — wrap or inline single-statement init body.
-    applyRule(
+    context.applyRewrite(
         WrapSingleLineBodies.self, to: &result,
-        parent: parent, context: context,
-        transform: WrapSingleLineBodies.transform
+        parent: parent, transform: WrapSingleLineBodies.transform
     )
 
     return result

@@ -2,7 +2,7 @@ import SwiftSyntax
 
 /// Compact-pipeline merge of all `ClosureSignatureSyntax` rewrites. Each
 /// former rule's logic is gated on
-/// `context.shouldFormat(<RuleType>.self, node:)`.
+/// `context.shouldRewrite(<RuleType>.self, at:)`.
 func rewriteClosureSignature(
     _ node: ClosureSignatureSyntax,
     parent: Syntax?,
@@ -10,7 +10,7 @@ func rewriteClosureSignature(
 ) -> ClosureSignatureSyntax {
     var result = node
     // NoParensInClosureParams
-    if context.shouldFormat(NoParensInClosureParams.self, node: Syntax(result)) {
+    if context.shouldRewrite(NoParensInClosureParams.self, at: Syntax(result)) {
         result = NoParensInClosureParams.transform(result, parent: parent, context: context)
     }
 
@@ -19,7 +19,7 @@ func rewriteClosureSignature(
     // `Sources/SwiftiomaticKit/Rules/Types/PreferVoidReturn.swift`.
     // Helpers `hasNonWhitespaceTrivia` and `makeVoidIdentifierType` live in
     // `Rewrites/Exprs/FunctionType.swift`.
-    if context.shouldFormat(PreferVoidReturn.self, node: Syntax(result)) {
+    if context.shouldRewrite(PreferVoidReturn.self, at: Syntax(result)) {
         result = applyPreferVoidReturnToClosureSignature(result, context: context)
     }
 

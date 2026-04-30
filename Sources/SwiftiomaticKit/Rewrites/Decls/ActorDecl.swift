@@ -1,7 +1,7 @@
 import SwiftSyntax
 
 /// Compact-pipeline merge of all `ActorDeclSyntax` rewrites. Each former
-/// rule's logic is gated on `context.shouldFormat(<RuleType>.self, node:)`.
+/// rule's logic is gated on `context.shouldRewrite(<RuleType>.self, at:)`.
 ///
 /// Per Phase 4c of `ddi-wtv`.
 func rewriteActorDecl(
@@ -11,39 +11,34 @@ func rewriteActorDecl(
 ) -> ActorDeclSyntax {
     var result = node
 
-    applyRule(
+    context.applyRewrite(
         DocCommentsPrecedeModifiers.self, to: &result,
-        parent: parent, context: context,
-        transform: DocCommentsPrecedeModifiers.transform
+        parent: parent, transform: DocCommentsPrecedeModifiers.transform
     )
 
-    applyRule(
+    context.applyRewrite(
         ModifierOrder.self, to: &result,
-        parent: parent, context: context,
-        transform: ModifierOrder.transform
+        parent: parent, transform: ModifierOrder.transform
     )
 
-    applyRule(
+    context.applyRewrite(
         ModifiersOnSameLine.self, to: &result,
-        parent: parent, context: context,
-        transform: ModifiersOnSameLine.transform
+        parent: parent, transform: ModifiersOnSameLine.transform
     )
 
-    applyRule(
+    context.applyRewrite(
         RedundantAccessControl.self, to: &result,
-        parent: parent, context: context,
-        transform: RedundantAccessControl.transform
+        parent: parent, transform: RedundantAccessControl.transform
     )
 
-    applyRule(
+    context.applyRewrite(
         SimplifyGenericConstraints.self, to: &result,
-        parent: parent, context: context,
-        transform: SimplifyGenericConstraints.transform
+        parent: parent, transform: SimplifyGenericConstraints.transform
     )
 
     // RedundantSwiftTestingSuite — strip a no-argument `@Suite` attribute
     // when `import Testing` is present.
-    if context.shouldFormat(RedundantSwiftTestingSuite.self, node: Syntax(result)) {
+    if context.shouldRewrite(RedundantSwiftTestingSuite.self, at: Syntax(result)) {
         result = RedundantSwiftTestingSuite.removeSuite(
             from: result, keyword: \.actorKeyword, context: context
         )
@@ -51,10 +46,9 @@ func rewriteActorDecl(
 
     // WrapMultilineStatementBraces — wrap opening brace of a multiline
     // statement onto its own line aligned with the closing brace.
-    applyRule(
+    context.applyRewrite(
         WrapMultilineStatementBraces.self, to: &result,
-        parent: parent, context: context,
-        transform: WrapMultilineStatementBraces.transform
+        parent: parent, transform: WrapMultilineStatementBraces.transform
     )
 
     return result

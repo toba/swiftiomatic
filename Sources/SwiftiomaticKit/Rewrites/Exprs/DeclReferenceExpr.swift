@@ -2,7 +2,7 @@ import SwiftSyntax
 
 /// Compact-pipeline merge of all `DeclReferenceExprSyntax` rewrites. Each
 /// former rule's logic is gated on
-/// `context.shouldFormat(<RuleType>.self, node:)`.
+/// `context.shouldRewrite(<RuleType>.self, at:)`.
 func rewriteDeclReferenceExpr(
     _ node: DeclReferenceExprSyntax,
     parent: Syntax?,
@@ -16,7 +16,7 @@ func rewriteDeclReferenceExpr(
     // NamedClosureParams — diagnose `$N` references inside multi-line
     // closures. Closure depth/multi-line tracking happens in
     // `NamedClosureParams.willEnter`/`didExit` on `ClosureExpr`.
-    if context.shouldFormat(NamedClosureParams.self, node: Syntax(result)) {
+    if context.shouldRewrite(NamedClosureParams.self, at: Syntax(result)) {
         NamedClosureParams.rewriteDeclReference(result, context: context)
     }
 

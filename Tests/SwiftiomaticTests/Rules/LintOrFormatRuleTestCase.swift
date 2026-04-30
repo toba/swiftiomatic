@@ -72,7 +72,7 @@ extension RuleTesting {
 
   /// Asserts that the result of applying a formatter to the provided input code yields the output.
   ///
-  /// `formatType` accepts any rule conforming to `SyntaxRule` — both `RewriteSyntaxRule`
+  /// `formatType` accepts any rule conforming to `SyntaxRule` — both `StructuralFormatRule`
   /// subclasses (which still inherit `SyntaxRewriter`) and `StaticFormatRule` subclasses
   /// (which don't). The pipeline runs the full compact rewriter regardless, so the
   /// `SyntaxRewriter` constraint that previously gated this helper was vestigial.

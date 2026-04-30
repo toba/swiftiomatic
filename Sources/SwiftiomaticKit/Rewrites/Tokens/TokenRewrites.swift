@@ -3,12 +3,12 @@ import SwiftSyntax
 // sm:ignore-file: fileLength, functionBodyLength
 
 /// Compact-pipeline merge of all `TokenSyntax` rewrites. Each former rule's
-/// logic is gated on `context.shouldFormat(<RuleType>.self, node:)` so users
+/// logic is gated on `context.shouldRewrite(<RuleType>.self, at:)` so users
 /// can still toggle individual behaviors via configuration (the rule-name
 /// strings survive as configuration keys).
 ///
 /// Per Phase 4b of `ddi-wtv` (sub-issue `95z-bgr`), this replaces the per-rule
-/// `RewriteSyntaxRule.visit(_ TokenSyntax)` overrides + the `static func
+/// `StructuralFormatRule.visit(_ TokenSyntax)` overrides + the `static func
 /// transform` chain that `CompactStageOneRewriter` would otherwise generate
 /// for `TokenSyntax`. The generator's `manuallyHandledNodeTypes` includes
 /// `TokenSyntax`, and the emitted `visit(_ TokenSyntax)` override delegates
@@ -34,20 +34,20 @@ func rewriteToken(_ node: TokenSyntax,
     //    Adds blank lines before/after `// MARK:` comments in the token's
     //    leading trivia. Token-level: looks at leadingTrivia + previous/next
     //    token kind only.
-    if context.shouldFormat(BlankLinesAroundMark.self, node: Syntax(result)) {
+    if context.shouldRewrite(BlankLinesAroundMark.self, at: Syntax(result)) {
         result = applyBlankLinesAroundMark(result, context: context)
     }
 
     // 2. FormatSpecialComments — ported. Normalizes TODO/MARK/FIXME comment
     //    formatting in leading and trailing trivia.
-    if context.shouldFormat(FormatSpecialComments.self, node: Syntax(result)) {
+    if context.shouldRewrite(FormatSpecialComments.self, at: Syntax(result)) {
         result = FormatSpecialComments.transform(result, parent: parent, context: context)
     }
 
-    // 3. LeadingDotOperators — ported. Uses `Context.ruleState` to thread
+    // 3. LeadingDotOperators — ported. Uses a typed property on `Context` to thread
     //    pending trivia between adjacent token visits. The static transform
     //    already handles the state plumbing correctly.
-    if context.shouldFormat(LeadingDotOperators.self, node: Syntax(result)) {
+    if context.shouldRewrite(LeadingDotOperators.self, at: Syntax(result)) {
         result = LeadingDotOperators.transform(result, parent: parent, context: context)
     }
 
@@ -57,19 +57,19 @@ func rewriteToken(_ node: TokenSyntax,
     //    internally by the rule, which the compact pipeline doesn't reach
     //    via this entry point. No-op here, kept for the merge audit.
     //    Phase 4c/4d/4e will port the FunctionCallExprSyntax visit.
-    _ = context.shouldFormat(NestedCallLayout.self, node: Syntax(result))
+    _ = context.shouldRewrite(NestedCallLayout.self, at: Syntax(result))
 
     // 5. RedundantBackticks — ported. Strips redundant backticks from
     //    identifier tokens. Uses captured pre-recursion parent for context
     //    analysis (member access, argument label, etc.).
-    if context.shouldFormat(RedundantBackticks.self, node: Syntax(result)) {
+    if context.shouldRewrite(RedundantBackticks.self, at: Syntax(result)) {
         result = RedundantBackticks.transform(result, parent: parent, context: context)
     }
 
     // 5a. ReflowComments — inlined (no `static func transform`). Reflows
     //     contiguous `//` and `///` comment runs in leading trivia to fit
     //     `lineLength`.
-    if context.shouldFormat(ReflowComments.self, node: Syntax(result)) {
+    if context.shouldRewrite(ReflowComments.self, at: Syntax(result)) {
         result = ReflowComments.reflow(result, context: context)
     }
 
@@ -77,7 +77,7 @@ func rewriteToken(_ node: TokenSyntax,
     //    titlecased acronyms (`Url`, `Json`) with fully uppercased forms
     //    (`URL`, `JSON`) inside identifier tokens. Pulls the configurable
     //    word list from `AcronymsConfiguration`.
-    if context.shouldFormat(UppercaseAcronyms.self, node: Syntax(result)) {
+    if context.shouldRewrite(UppercaseAcronyms.self, at: Syntax(result)) {
         result = applyUppercaseAcronyms(result, context: context)
     }
 
@@ -90,14 +90,14 @@ func rewriteToken(_ node: TokenSyntax,
     //    GuardStmtSyntax, FunctionDeclSyntax, ClassDeclSyntax, …). The
     //    private `TokenStripper` is an internal helper. No-op here; the
     //    structural merges happen in Phase 4c/4d/4e.
-    _ = context.shouldFormat(WrapMultilineStatementBraces.self, node: Syntax(result))
+    _ = context.shouldRewrite(WrapMultilineStatementBraces.self, at: Syntax(result))
 
     // 9. WrapSingleLineComments — ported. Word-wraps over-long `//` and
     //    `///` comments in leading trivia. Run AFTER FormatSpecialComments
     //    so directive detection (TODO/MARK/FIXME) sees normalized prefixes,
     //    matching the legacy pipeline's alphabetical ordering coincidence
     //    (`Format…` < `Wrap…`).
-    if context.shouldFormat(WrapSingleLineComments.self, node: Syntax(result)) {
+    if context.shouldRewrite(WrapSingleLineComments.self, at: Syntax(result)) {
         result = WrapSingleLineComments.transform(result, parent: parent, context: context)
     }
 

@@ -4,7 +4,7 @@ The command-line interface for Swiftiomatic -- a drop-in replacement for `swift-
 
 ## What It Does
 
-Provides the user-facing CLI that parses arguments, loads configuration, iterates source files, and delegates to the `Swiftiomatic` library for formatting, linting, and analysis.
+Provides the user-facing CLI that parses arguments, loads configuration, iterates source files, and delegates to `SwiftiomaticKit` for formatting and linting.
 
 ## Subcommands
 
@@ -12,10 +12,12 @@ Provides the user-facing CLI that parses arguments, loads configuration, iterate
 |---|---|
 | `sm format` | Auto-fix formatting issues in-place |
 | `sm lint` | Report lint findings without modifying files |
-| `sm analyze` | Format + lint + suggest in a single pass |
 | `sm dump-configuration` | Print the resolved configuration as JSON |
-| `sm list-rules` | List all available rules |
-| `sm generate-docs` | Generate rule reference documentation |
+| `sm doctor` | Diagnose installation and configuration issues |
+| `sm link` | Install the Xcode toolchain symlink for "Format with swift-format" |
+| `sm update` | Migrate a configuration file to the current schema version |
+
+`format`, `lint`, and `dump-configuration` accept `--style <compact|roomy>` to override the configured formatting style for a single invocation.
 
 ## Structure
 
@@ -27,6 +29,6 @@ Provides the user-facing CLI that parses arguments, loads configuration, iterate
 
 ## Where It Fits
 
-This is the main executable product. Xcode invokes it as `swift-format` (via symlink), SPM plugins call it by name, and users run it directly from the terminal. It depends on the `Swiftiomatic` library for all rule logic and the `ArgumentParser` package for CLI parsing.
+This is the main executable product. Xcode invokes it as `swift-format` (via symlink), SPM plugins call it by name, and users run it directly from the terminal. It depends on the `SwiftiomaticKit` library for all rule logic and the `ArgumentParser` package for CLI parsing.
 
 **Critical:** The `format`, `lint`, and `dump-configuration` subcommands and all their flags must remain compatible with upstream `swift-format` -- Xcode depends on this contract.
