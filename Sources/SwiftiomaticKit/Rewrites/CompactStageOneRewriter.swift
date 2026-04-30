@@ -34,8 +34,10 @@ final class CompactStageOneRewriter: SyntaxRewriter {
     let parent = Syntax(node).parent
     let runRedundantSelf = context.shouldRewrite(RedundantSelf.self, at: Syntax(node))
     if runRedundantSelf { RedundantSelf.willEnter(node, context: context) }
-    let visited = super.visit(node)
-    let result = rewriteAccessorBlock(visited, parent: parent, context: context)
+    var result = super.visit(node)
+    if context.shouldRewrite(ProtocolAccessorOrder.self, at: Syntax(result)) {
+      result = ProtocolAccessorOrder.transform(result, parent: parent, context: context)
+    }
     if runRedundantSelf { RedundantSelf.didExit(node, context: context) }
     return result
   }
@@ -46,8 +48,12 @@ final class CompactStageOneRewriter: SyntaxRewriter {
     if runRedundantSelf { RedundantSelf.willEnter(node, context: context) }
     let visited = super.visit(node)
     let result: DeclSyntax
-    if let concrete = visited.as(AccessorDeclSyntax.self) {
-      result = DeclSyntax(rewriteAccessorDecl(concrete, parent: parent, context: context))
+    if var concrete = visited.as(AccessorDeclSyntax.self) {
+      context.applyRewrite(
+        WrapSingleLineBodies.self, to: &concrete,
+        parent: parent, transform: WrapSingleLineBodies.transform
+      )
+      result = DeclSyntax(concrete)
     } else {
       result = visited
     }
@@ -198,8 +204,16 @@ final class CompactStageOneRewriter: SyntaxRewriter {
     if runRedundantSelf { RedundantSelf.willEnter(node, context: context) }
     let visited = super.visit(node)
     let result: ExprSyntax
-    if let concrete = visited.as(ClosureExprSyntax.self) {
-      result = ExprSyntax(rewriteClosureExpr(concrete, parent: parent, context: context))
+    if var concrete = visited.as(ClosureExprSyntax.self) {
+      context.applyRewrite(
+        RedundantReturn.self, to: &concrete,
+        parent: parent, transform: RedundantReturn.transform
+      )
+      context.applyRewrite(
+        UnusedArguments.self, to: &concrete,
+        parent: parent, transform: UnusedArguments.transform
+      )
+      result = ExprSyntax(concrete)
     } else {
       result = visited
     }
@@ -300,8 +314,20 @@ final class CompactStageOneRewriter: SyntaxRewriter {
     let parent = Syntax(node).parent
     let visited = super.visit(node)
     let result: DeclSyntax
-    if let concrete = visited.as(DeinitializerDeclSyntax.self) {
-      result = DeclSyntax(rewriteDeinitializerDecl(concrete, parent: parent, context: context))
+    if var concrete = visited.as(DeinitializerDeclSyntax.self) {
+      context.applyRewrite(
+        ModifiersOnSameLine.self, to: &concrete,
+        parent: parent, transform: ModifiersOnSameLine.transform
+      )
+      context.applyRewrite(
+        TripleSlashDocComments.self, to: &concrete,
+        parent: parent, transform: TripleSlashDocComments.transform
+      )
+      context.applyRewrite(
+        WrapMultilineStatementBraces.self, to: &concrete,
+        parent: parent, transform: WrapMultilineStatementBraces.transform
+      )
+      result = DeclSyntax(concrete)
     } else {
       result = visited
     }
@@ -312,8 +338,12 @@ final class CompactStageOneRewriter: SyntaxRewriter {
     let parent = Syntax(node).parent
     let visited = super.visit(node)
     let result: StmtSyntax
-    if let concrete = visited.as(DoStmtSyntax.self) {
-      result = StmtSyntax(rewriteDoStmt(concrete, parent: parent, context: context))
+    if var concrete = visited.as(DoStmtSyntax.self) {
+      context.applyRewrite(
+        WrapMultilineStatementBraces.self, to: &concrete,
+        parent: parent, transform: WrapMultilineStatementBraces.transform
+      )
+      result = StmtSyntax(concrete)
     } else {
       result = visited
     }
@@ -534,8 +564,19 @@ final class CompactStageOneRewriter: SyntaxRewriter {
     if runWrapSingleLineBodies { WrapSingleLineBodies.willEnter(node, context: context) }
     let visited = super.visit(node)
     let result: StmtSyntax
-    if let concrete = visited.as(GuardStmtSyntax.self) {
-      result = StmtSyntax(rewriteGuardStmt(concrete, parent: parent, context: context))
+    if var concrete = visited.as(GuardStmtSyntax.self) {
+      if context.shouldRewrite(NoParensAroundConditions.self, at: Syntax(concrete)) {
+        NoParensAroundConditions.fixKeywordTrailingTrivia(&concrete.guardKeyword.trailingTrivia)
+      }
+      context.applyRewrite(
+        WrapMultilineStatementBraces.self, to: &concrete,
+        parent: parent, transform: WrapMultilineStatementBraces.transform
+      )
+      context.applyRewrite(
+        WrapSingleLineBodies.self, to: &concrete,
+        parent: parent, transform: WrapSingleLineBodies.transform
+      )
+      result = StmtSyntax(concrete)
     } else {
       result = visited
     }
@@ -793,8 +834,18 @@ final class CompactStageOneRewriter: SyntaxRewriter {
     if runWrapSingleLineBodies { WrapSingleLineBodies.willEnter(node, context: context) }
     let visited = super.visit(node)
     let result: StmtSyntax
-    if let concrete = visited.as(RepeatStmtSyntax.self) {
-      result = StmtSyntax(rewriteRepeatStmt(concrete, parent: parent, context: context))
+    if var concrete = visited.as(RepeatStmtSyntax.self) {
+      if context.shouldRewrite(NoParensAroundConditions.self, at: Syntax(concrete)),
+         let stripped = NoParensAroundConditions.minimalSingleExpression(concrete.condition, context: context)
+      {
+        concrete.condition = stripped
+        NoParensAroundConditions.fixKeywordTrailingTrivia(&concrete.whileKeyword.trailingTrivia)
+      }
+      context.applyRewrite(
+        WrapSingleLineBodies.self, to: &concrete,
+        parent: parent, transform: WrapSingleLineBodies.transform
+      )
+      result = StmtSyntax(concrete)
     } else {
       result = visited
     }
@@ -986,8 +1037,16 @@ final class CompactStageOneRewriter: SyntaxRewriter {
     let parent = Syntax(node).parent
     let visited = super.visit(node)
     let result: ExprSyntax
-    if let concrete = visited.as(TernaryExprSyntax.self) {
-      result = ExprSyntax(rewriteTernaryExpr(concrete, parent: parent, context: context))
+    if var concrete = visited.as(TernaryExprSyntax.self) {
+      context.applyRewrite(
+        NoVoidTernary.self, to: &concrete,
+        parent: parent, transform: NoVoidTernary.transform
+      )
+      context.applyRewrite(
+        WrapTernary.self, to: &concrete,
+        parent: parent, transform: WrapTernary.transform
+      )
+      result = ExprSyntax(concrete)
     } else {
       result = visited
     }
@@ -1085,8 +1144,19 @@ final class CompactStageOneRewriter: SyntaxRewriter {
     if runWrapSingleLineBodies { WrapSingleLineBodies.willEnter(node, context: context) }
     let visited = super.visit(node)
     let result: StmtSyntax
-    if let concrete = visited.as(WhileStmtSyntax.self) {
-      result = StmtSyntax(rewriteWhileStmt(concrete, parent: parent, context: context))
+    if var concrete = visited.as(WhileStmtSyntax.self) {
+      if context.shouldRewrite(NoParensAroundConditions.self, at: Syntax(concrete)) {
+        NoParensAroundConditions.fixKeywordTrailingTrivia(&concrete.whileKeyword.trailingTrivia)
+      }
+      context.applyRewrite(
+        WrapMultilineStatementBraces.self, to: &concrete,
+        parent: parent, transform: WrapMultilineStatementBraces.transform
+      )
+      context.applyRewrite(
+        WrapSingleLineBodies.self, to: &concrete,
+        parent: parent, transform: WrapSingleLineBodies.transform
+      )
+      result = StmtSyntax(concrete)
     } else {
       result = visited
     }
