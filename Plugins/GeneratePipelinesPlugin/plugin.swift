@@ -2,7 +2,7 @@ import Foundation
 import PackagePlugin
 
 @main
-struct GeneratePlugin: BuildToolPlugin {
+struct GeneratePipelinesPlugin: BuildToolPlugin {
     func createBuildCommands(
         context: PluginContext,
         target: Target
@@ -14,16 +14,14 @@ struct GeneratePlugin: BuildToolPlugin {
         let generator = try context.tool(named: "Generator")
         let outputDir = context.pluginWorkDirectoryURL
 
-        // TokenStream stubs scan `TokenStream+*.swift` plus any extension
-        // TokenStream blocks co-located with layout rules. Pipelines and
-        // configuration registry generation live in GeneratePipelinesPlugin.
+        // Pipelines and rule registry generation scan rule files. Token
+        // stream stub generation is handled by GeneratePlugin.
         let packageDir = context.package.directoryURL
         let kitDir =
             packageDir
             .appending(path: "Sources/SwiftiomaticKit")
 
         let inputDirectories = [
-            kitDir.appending(path: "Layout/Tokens"),
             kitDir.appending(path: "Rules"),
         ]
 
@@ -36,18 +34,20 @@ struct GeneratePlugin: BuildToolPlugin {
             .map(\.url)
 
         let outputFiles = [
-            outputDir.appending(path: "TokenStream+Generated.swift"),
+            outputDir.appending(path: "Pipelines+Generated.swift"),
+            outputDir.appending(path: "ConfigurationRegistry+Generated.swift"),
+            outputDir.appending(path: "ConfigurationSchema+Generated.swift"),
         ]
 
         return [
             .buildCommand(
-                displayName: "Generate TokenStream forwarding stubs",
+                displayName: "Generate pipelines and rule registry",
                 executable: generator.url,
                 arguments: [
                     packageDir.path(),
                     outputDir.path(),
                     "--skip-schema",
-                    "--mode", "tokens",
+                    "--mode", "pipelines",
                 ],
                 inputFiles: inputFiles,
                 outputFiles: outputFiles
