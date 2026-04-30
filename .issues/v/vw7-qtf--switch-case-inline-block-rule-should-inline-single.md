@@ -1,17 +1,17 @@
 ---
 # vw7-qtf
 title: 'switch case: inline block rule should inline single-statement body even with wrapped patterns'
-status: review
+status: completed
 type: bug
 priority: normal
 created_at: 2026-04-30T16:52:43Z
-updated_at: 2026-04-30T18:05:58Z
+updated_at: 2026-04-30T18:27:43Z
 blocked_by:
     - fo7-8mu
 sync:
     github:
         issue_number: "559"
-        synced_at: "2026-04-30T18:07:55Z"
+        synced_at: "2026-04-30T19:41:42Z"
 ---
 
 ## Problem

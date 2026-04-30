@@ -1,15 +1,15 @@
 ---
 # am0-lx7
 title: Nested call args wrap unnecessarily when outer call already wraps
-status: review
+status: completed
 type: bug
 priority: normal
 created_at: 2026-04-30T16:49:27Z
-updated_at: 2026-04-30T18:05:58Z
+updated_at: 2026-04-30T18:27:45Z
 sync:
     github:
         issue_number: "562"
-        synced_at: "2026-04-30T18:07:55Z"
+        synced_at: "2026-04-30T19:41:41Z"
 ---
 
 ## Problem

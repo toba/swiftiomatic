@@ -1,15 +1,15 @@
 ---
 # ojf-4w0
 title: 'for-where clause: brace placement and indentation wrong when for header wraps'
-status: review
+status: completed
 type: bug
 priority: normal
 created_at: 2026-04-30T16:47:23Z
-updated_at: 2026-04-30T18:05:49Z
+updated_at: 2026-04-30T18:27:47Z
 sync:
     github:
         issue_number: "565"
-        synced_at: "2026-04-30T18:07:55Z"
+        synced_at: "2026-04-30T19:41:41Z"
 ---
 
 ## Problem

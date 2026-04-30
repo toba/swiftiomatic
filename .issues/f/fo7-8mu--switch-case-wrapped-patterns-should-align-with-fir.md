@@ -1,15 +1,15 @@
 ---
 # fo7-8mu
 title: 'switch case: wrapped patterns should align with first pattern, not indent'
-status: review
+status: completed
 type: bug
 priority: normal
 created_at: 2026-04-30T16:51:20Z
-updated_at: 2026-04-30T18:05:58Z
+updated_at: 2026-04-30T18:27:41Z
 sync:
     github:
         issue_number: "564"
-        synced_at: "2026-04-30T18:07:55Z"
+        synced_at: "2026-04-30T19:41:42Z"
 ---
 
 ## Problem

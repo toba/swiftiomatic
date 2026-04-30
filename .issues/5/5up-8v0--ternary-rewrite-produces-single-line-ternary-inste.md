@@ -1,15 +1,15 @@
 ---
 # 5up-8v0
 title: Ternary rewrite produces single-line ternary instead of wrapped form
-status: review
+status: completed
 type: bug
 priority: normal
 created_at: 2026-04-30T17:02:55Z
-updated_at: 2026-04-30T17:59:49Z
+updated_at: 2026-04-30T18:27:39Z
 sync:
     github:
         issue_number: "560"
-        synced_at: "2026-04-30T18:07:55Z"
+        synced_at: "2026-04-30T19:41:41Z"
 ---
 
 ## Problem

@@ -6,6 +6,10 @@ type: task
 priority: normal
 created_at: 2026-04-30T18:28:56Z
 updated_at: 2026-04-30T19:39:10Z
+sync:
+    github:
+        issue_number: "566"
+        synced_at: "2026-04-30T19:41:42Z"
 ---
 
 Split the monolithic `SwiftiomaticKit` target (297 files / ~52k LOC, 306 object files, ~114s cold compile) into smaller targets so SPM can parallelize compilation and incremental edits don't retype the whole module.

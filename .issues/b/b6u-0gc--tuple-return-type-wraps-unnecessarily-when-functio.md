@@ -1,15 +1,15 @@
 ---
 # b6u-0gc
 title: Tuple return type wraps unnecessarily when function signature already wraps
-status: review
+status: completed
 type: bug
 priority: normal
 created_at: 2026-04-30T17:04:28Z
-updated_at: 2026-04-30T17:59:49Z
+updated_at: 2026-04-30T18:27:38Z
 sync:
     github:
         issue_number: "561"
-        synced_at: "2026-04-30T18:07:55Z"
+        synced_at: "2026-04-30T19:41:41Z"
 ---
 
 ## Problem

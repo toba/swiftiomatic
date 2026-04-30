@@ -23,9 +23,13 @@ extension LintPipeline {
         for node: Node
     ) {
         guard context.shouldFormat(Rule.self, node: Syntax(node)) else { return }
+
         if !shouldSkipChildren.isEmpty,
            shouldSkipChildren[ObjectIdentifier(Rule.self)] != nil
-        { return }
+        {
+            return
+        }
+
         let rule = self.rule(Rule.self)
         _ = visitor(rule)(node)
     }
@@ -37,6 +41,7 @@ extension LintPipeline {
     ) {
         guard !shouldSkipChildren.isEmpty else { return }
         let rule = ObjectIdentifier(rule)
+
         if case let .some(skipNode) = shouldSkipChildren[rule] {
             if node.id == skipNode.id { shouldSkipChildren.removeValue(forKey: rule) }
         }
