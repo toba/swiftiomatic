@@ -40,6 +40,23 @@ final class PreferIfElseChain: StaticFormatRule<BasicRuleValue>, @unchecked Send
         guard parentAllowsImplicitReturn(visited) else { return visited }
 
         let items = Array(visited)
+
+        // Guard-prefix variant: `guard <conds> else { return X }; return Y` →
+        // `if <conds> { Y } else { X }`. Restricted to the exact two-statement form so
+        // intermediate code that depends on guard-bound names is never moved.
+        if items.count == 2,
+           let guardChain = tryBuildGuardChain(items: items)
+        {
+            Self.diagnose(.useIfElseChain, on: guardChain.anchor, context: context)
+            return CodeBlockItemListSyntax([
+                CodeBlockItemSyntax(
+                    leadingTrivia: items[0].leadingTrivia,
+                    item: .expr(ExprSyntax(guardChain.ifExpr)),
+                    trailingTrivia: items[1].trailingTrivia
+                )
+            ])
+        }
+
         guard let chain = tryBuildChain(items: items, startingAt: 0),
               chain.endIndex == items.count else { return visited }
 
@@ -170,6 +187,72 @@ final class PreferIfElseChain: StaticFormatRule<BasicRuleValue>, @unchecked Send
         }
 
         return nil  // unreachable
+    }
+
+    // MARK: - Guard-prefix variant
+
+    private struct GuardChain {
+        let ifExpr: IfExprSyntax
+        let anchor: TokenSyntax
+    }
+
+    private static func tryBuildGuardChain(items: [CodeBlockItemSyntax]) -> GuardChain? {
+        guard items.count == 2,
+              let guardStmt = extractGuardStatement(from: items[0]),
+              let elseValue = singleReturnValue(from: guardStmt.body),
+              let trailingValue = extractReturnValue(from: items[1])
+        else { return nil }
+
+        // Strip the trailing trivia on the last condition so the synthesized `{` placement
+        // is deterministic — the source guard's last condition typically has no trailing
+        // trivia (the space sits on `else`'s leading trivia), but in some forms it does.
+        let elements = Array(guardStmt.conditions)
+        let normalizedConditions: ConditionElementListSyntax = {
+            guard let last = elements.last else { return guardStmt.conditions }
+            var mutable = elements
+            mutable[mutable.count - 1] = last.with(\.trailingTrivia, [])
+            return ConditionElementListSyntax(mutable)
+        }()
+
+        let body = CodeBlockSyntax(
+            leftBrace: .leftBraceToken(leadingTrivia: .space, trailingTrivia: .newline),
+            statements: CodeBlockItemListSyntax([
+                CodeBlockItemSyntax(
+                    leadingTrivia: .spaces(2),
+                    item: .expr(trailingValue.with(\.leadingTrivia, []).with(\.trailingTrivia, [])),
+                    trailingTrivia: .newline
+                )
+            ]),
+            rightBrace: .rightBraceToken()
+        )
+
+        let elseBlock = CodeBlockSyntax(
+            leftBrace: .leftBraceToken(leadingTrivia: .space, trailingTrivia: .newline),
+            statements: CodeBlockItemListSyntax([
+                CodeBlockItemSyntax(
+                    leadingTrivia: .spaces(2),
+                    item: .expr(elseValue.with(\.leadingTrivia, []).with(\.trailingTrivia, [])),
+                    trailingTrivia: .newline
+                )
+            ]),
+            rightBrace: .rightBraceToken()
+        )
+
+        let ifExpr = IfExprSyntax(
+            ifKeyword: .keyword(.if, trailingTrivia: .space),
+            conditions: normalizedConditions,
+            body: body,
+            elseKeyword: .keyword(.else, leadingTrivia: .space),
+            elseBody: .codeBlock(elseBlock)
+        )
+
+        return GuardChain(ifExpr: ifExpr, anchor: guardStmt.guardKeyword)
+    }
+
+    private static func extractGuardStatement(from item: CodeBlockItemSyntax) -> GuardStmtSyntax? {
+        if let guardStmt = item.item.as(GuardStmtSyntax.self) { return guardStmt }
+        if let stmt = item.item.as(StmtSyntax.self) { return GuardStmtSyntax(stmt) }
+        return nil
     }
 
     // MARK: - Helpers

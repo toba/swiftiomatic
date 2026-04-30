@@ -236,6 +236,93 @@ struct PreferIfElseChainTests: RuleTesting {
     assertFormatting(PreferIfElseChain.self, input: input, expected: input, findings: [])
   }
 
+  @Test func guardPlusFinalReturnInClosure() {
+    assertFormatting(
+      PreferIfElseChain.self,
+      input: """
+        let f: (Int?) -> Int = { x in
+          1️⃣guard let y = x else { return 0 }
+          return y * 2
+        }
+        """,
+      expected: """
+        let f: (Int?) -> Int = { x in
+          if let y = x {
+          y * 2
+        } else {
+          0
+        }
+        }
+        """,
+      findings: [
+        FindingSpec("1️⃣", message: "replace early-return chain with if/else expression"),
+      ]
+    )
+  }
+
+  @Test func guardPlusFinalReturnInFunctionBody() {
+    assertFormatting(
+      PreferIfElseChain.self,
+      input: """
+        func f(_ x: Int?) -> Int {
+          1️⃣guard let y = x else { return -1 }
+          return y * 2
+        }
+        """,
+      expected: """
+        func f(_ x: Int?) -> Int {
+          if let y = x {
+          y * 2
+        } else {
+          -1
+        }
+        }
+        """,
+      findings: [
+        FindingSpec("1️⃣", message: "replace early-return chain with if/else expression"),
+      ]
+    )
+  }
+
+  @Test func guardWithIntermediateStatementDoesNotFire() {
+    let input = """
+      func f(_ x: Int?) -> Int {
+        guard let y = x else { return -1 }
+        let z = y * 2
+        return z
+      }
+      """
+    assertFormatting(PreferIfElseChain.self, input: input, expected: input, findings: [])
+  }
+
+  @Test func guardElseWithMultipleStatementsDoesNotFire() {
+    let input = """
+      func f(_ x: Int?) -> Int {
+        guard let y = x else {
+          print("nope")
+          return -1
+        }
+        return y * 2
+      }
+      """
+    assertFormatting(PreferIfElseChain.self, input: input, expected: input, findings: [])
+  }
+
+  @Test func guardInsideSwitchCaseDoesNotFire() {
+    let input = """
+      func f(_ x: Int?) -> Int {
+        switch x {
+        case .some:
+          guard let y = x else { return -1 }
+          return y * 2
+        default:
+          return 0
+        }
+      }
+      """
+    assertFormatting(PreferIfElseChain.self, input: input, expected: input, findings: [])
+  }
+
   @Test func chainWithFollowingStatementDoesNotMatch() {
     // Statements after the chain mean the if/else expression's value would be
     // discarded rather than implicitly returned.
