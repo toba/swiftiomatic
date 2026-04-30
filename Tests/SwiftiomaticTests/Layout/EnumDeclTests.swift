@@ -129,7 +129,10 @@ struct EnumDeclTests: LayoutTesting {
           fifth
         case sixth(Int)
         case seventh(
-          a: Int, b: Bool, c: Double)
+          a: Int,
+          b: Bool,
+          c: Double
+        )
       }
 
       """

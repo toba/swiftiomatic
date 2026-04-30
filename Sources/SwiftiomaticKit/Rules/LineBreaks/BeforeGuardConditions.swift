@@ -13,6 +13,17 @@ extension TokenStream {
     func visitGuardStmt(_ node: GuardStmtSyntax) -> SyntaxVisitorContinueKind {
         after(node.guardKeyword, tokens: .space)
 
+        // Outer consistent group: once any condition wraps, every condition wraps.
+        // Only meaningful with multiple conditions; a single condition has no inter-element
+        // break to coordinate, and an extra group can perturb the surrounding `else` heuristic.
+        if node.conditions.count > 1 {
+            before(
+                node.conditions.firstToken(viewMode: .sourceAccurate),
+                tokens: .open(.consistent)
+            )
+            after(node.conditions.lastToken(viewMode: .sourceAccurate), tokens: .close)
+        }
+
         // Add break groups, using open continuation breaks, around conditions so that continuations
         // inside of the conditions can stack in addition to continuations between the conditions.
         // When `lineBreakBeforeGuardConditions` is false, skip the first condition (like if-statements)
@@ -46,18 +57,15 @@ extension TokenStream {
         }
 
         // For an already-inline single-statement body (`else { stmt }`), wrap
-        // `else { stmt }` in an outer group spanning past the closing brace so
-        // the printer evaluates the whole inline form's length at the break
-        // point. With a `.same` (elective) break, `else { stmt }` stays glued
-        // to the closing condition when it fits, and drops to a fresh line at
-        // base indent when it doesn't.
+        // `else { stmt }` in an outer `.open(.inconsistent)` group spanning
+        // past the closing brace so the printer evaluates the inline form's
+        // length at the break point: glue to the closing condition when it
+        // fits, drop `else` to base indent when it doesn't.
         //
-        // For multi-line / multi-statement bodies, keep the original `.reset`
-        // semantics so `else` stays visually separated from the wrapped
-        // continuation lines.
-        if node.body.isInlineSingleStatementBody
-            && !config[AlignWrappedConditions.self]
-        {
+        // For multi-line / multi-statement bodies, keep the `.reset` semantics
+        // so `else` stays visually separated from the wrapped continuation
+        // lines.
+        if node.body.isInlineSingleStatementBody {
             before(
                 node.elseKeyword,
                 tokens: .break(.same, newlines: .elective(ignoresDiscretionary: true)),

@@ -46,7 +46,6 @@ final class PreferFinalClasses: StaticFormatRule<BasicRuleValue>, @unchecked Sen
         Self.diagnose(.preferFinalClass, on: node.classKeyword, context: context)
 
         var result = node
-
         var finalModifier = DeclModifierSyntax(name: .keyword(.final, trailingTrivia: .space))
 
         if result.modifiers.isEmpty {
@@ -55,7 +54,6 @@ final class PreferFinalClasses: StaticFormatRule<BasicRuleValue>, @unchecked Sen
         }
 
         result.modifiers.append(finalModifier)
-
         result.memberBlock.members = convertOpenToPublic(in: result.memberBlock.members)
 
         return DeclSyntax(result)

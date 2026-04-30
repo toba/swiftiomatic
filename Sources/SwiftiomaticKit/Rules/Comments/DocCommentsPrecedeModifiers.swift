@@ -2,8 +2,8 @@ import SwiftSyntax
 
 /// Place doc comments before any declaration modifiers or attributes.
 ///
-/// Doc comments (`///` or `/** */`) should appear before all attributes and access modifiers,
-/// not between them.
+/// Doc comments ( `///` or `/** */` ) should appear before all attributes and access modifiers, not
+/// between them.
 ///
 /// Lint: If a doc comment appears after an attribute or modifier, a lint warning is raised.
 ///
@@ -15,7 +15,7 @@ final class DocCommentsPrecedeModifiers: StaticFormatRule<BasicRuleValue>, @unch
 
     static func transform(
         _ node: StructDeclSyntax,
-        parent: Syntax?,
+        parent _: Syntax?,
         context: Context
     ) -> DeclSyntax {
         DeclSyntax(moveDocComments(in: node, keywordKeyPath: \.structKeyword, context: context))
@@ -23,7 +23,7 @@ final class DocCommentsPrecedeModifiers: StaticFormatRule<BasicRuleValue>, @unch
 
     static func transform(
         _ node: ClassDeclSyntax,
-        parent: Syntax?,
+        parent _: Syntax?,
         context: Context
     ) -> DeclSyntax {
         DeclSyntax(moveDocComments(in: node, keywordKeyPath: \.classKeyword, context: context))
@@ -31,7 +31,7 @@ final class DocCommentsPrecedeModifiers: StaticFormatRule<BasicRuleValue>, @unch
 
     static func transform(
         _ node: EnumDeclSyntax,
-        parent: Syntax?,
+        parent _: Syntax?,
         context: Context
     ) -> DeclSyntax {
         DeclSyntax(moveDocComments(in: node, keywordKeyPath: \.enumKeyword, context: context))
@@ -39,7 +39,7 @@ final class DocCommentsPrecedeModifiers: StaticFormatRule<BasicRuleValue>, @unch
 
     static func transform(
         _ node: ActorDeclSyntax,
-        parent: Syntax?,
+        parent _: Syntax?,
         context: Context
     ) -> DeclSyntax {
         DeclSyntax(moveDocComments(in: node, keywordKeyPath: \.actorKeyword, context: context))
@@ -47,7 +47,7 @@ final class DocCommentsPrecedeModifiers: StaticFormatRule<BasicRuleValue>, @unch
 
     static func transform(
         _ node: ProtocolDeclSyntax,
-        parent: Syntax?,
+        parent _: Syntax?,
         context: Context
     ) -> DeclSyntax {
         DeclSyntax(moveDocComments(in: node, keywordKeyPath: \.protocolKeyword, context: context))
@@ -55,17 +55,22 @@ final class DocCommentsPrecedeModifiers: StaticFormatRule<BasicRuleValue>, @unch
 
     static func transform(
         _ node: ExtensionDeclSyntax,
-        parent: Syntax?,
+        parent _: Syntax?,
         context: Context
     ) -> DeclSyntax {
-        DeclSyntax(moveDocComments(in: node, keywordKeyPath: \.extensionKeyword, context: context))
+        DeclSyntax(
+            moveDocComments(
+                in: node,
+                keywordKeyPath: \.extensionKeyword,
+                context: context
+            ))
     }
 
     // MARK: - Leaf declarations
 
     static func transform(
         _ node: FunctionDeclSyntax,
-        parent: Syntax?,
+        parent _: Syntax?,
         context: Context
     ) -> DeclSyntax {
         DeclSyntax(moveDocComments(in: node, keywordKeyPath: \.funcKeyword, context: context))
@@ -73,23 +78,33 @@ final class DocCommentsPrecedeModifiers: StaticFormatRule<BasicRuleValue>, @unch
 
     static func transform(
         _ node: VariableDeclSyntax,
-        parent: Syntax?,
+        parent _: Syntax?,
         context: Context
     ) -> DeclSyntax {
-        DeclSyntax(moveDocComments(in: node, keywordKeyPath: \.bindingSpecifier, context: context))
+        DeclSyntax(
+            moveDocComments(
+                in: node,
+                keywordKeyPath: \.bindingSpecifier,
+                context: context
+            ))
     }
 
     static func transform(
         _ node: TypeAliasDeclSyntax,
-        parent: Syntax?,
+        parent _: Syntax?,
         context: Context
     ) -> DeclSyntax {
-        DeclSyntax(moveDocComments(in: node, keywordKeyPath: \.typealiasKeyword, context: context))
+        DeclSyntax(
+            moveDocComments(
+                in: node,
+                keywordKeyPath: \.typealiasKeyword,
+                context: context
+            ))
     }
 
     static func transform(
         _ node: InitializerDeclSyntax,
-        parent: Syntax?,
+        parent _: Syntax?,
         context: Context
     ) -> DeclSyntax {
         DeclSyntax(moveDocComments(in: node, keywordKeyPath: \.initKeyword, context: context))
@@ -97,10 +112,15 @@ final class DocCommentsPrecedeModifiers: StaticFormatRule<BasicRuleValue>, @unch
 
     static func transform(
         _ node: SubscriptDeclSyntax,
-        parent: Syntax?,
+        parent _: Syntax?,
         context: Context
     ) -> DeclSyntax {
-        DeclSyntax(moveDocComments(in: node, keywordKeyPath: \.subscriptKeyword, context: context))
+        DeclSyntax(
+            moveDocComments(
+                in: node,
+                keywordKeyPath: \.subscriptKeyword,
+                context: context
+            ))
     }
 
     // MARK: - Core logic
@@ -138,7 +158,8 @@ final class DocCommentsPrecedeModifiers: StaticFormatRule<BasicRuleValue>, @unch
         result.modifiers = modifiers
 
         guard !collectedDoc.isEmpty else { return decl }
-        Self.diagnose(.docCommentsBeforeModifiers, on: decl[keyPath: keywordKeyPath], context: context)
+        Self.diagnose(
+            .docCommentsBeforeModifiers, on: decl[keyPath: keywordKeyPath], context: context)
 
         // Insert doc block into the first position's leading trivia
         if hasAttributes {
@@ -164,10 +185,10 @@ final class DocCommentsPrecedeModifiers: StaticFormatRule<BasicRuleValue>, @unch
 
     // MARK: - Trivia helpers
 
-    /// Extract doc comment pieces from trivia.
-    /// Returns nil if no doc comments found.
-    private static func extractDocBlock(from trivia: Trivia) -> (cleaned: Trivia, docBlock: [TriviaPiece])?
-    {
+    /// Extract doc comment pieces from trivia. Returns nil if no doc comments found.
+    private static func extractDocBlock(
+        from trivia: Trivia
+    ) -> (cleaned: Trivia, docBlock: [TriviaPiece])? {
         let pieces = Array(trivia.pieces)
         guard pieces.contains(where: \.isDocComment) else { return nil }
 
@@ -180,7 +201,8 @@ final class DocCommentsPrecedeModifiers: StaticFormatRule<BasicRuleValue>, @unch
             if piece.isDocComment {
                 if !foundDoc {
                     foundDoc = true
-                    // First doc: keep newlines in cleaned, take trailing spaces/tabs as indent for doc
+                    // First doc: keep newlines in cleaned, take trailing spaces/tabs as indent for
+                    // doc
                     var splitIdx = whitespaceBuffer.count
 
                     while splitIdx > 0, whitespaceBuffer[splitIdx - 1].isSpaceOrTab {
@@ -241,11 +263,11 @@ final class DocCommentsPrecedeModifiers: StaticFormatRule<BasicRuleValue>, @unch
         let structural = Array(pieces[..<indentStart])
         let indent = Array(pieces[indentStart...])
 
-        return Trivia(pieces: structural + docBlock + indent)
+        return .init(pieces: structural + docBlock + indent)
     }
 }
 
-extension Finding.Message {
-    fileprivate static let docCommentsBeforeModifiers: Finding.Message =
+fileprivate extension Finding.Message {
+    static let docCommentsBeforeModifiers: Finding.Message =
         "place doc comments before attributes and modifiers"
 }

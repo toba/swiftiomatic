@@ -369,13 +369,20 @@ extension TokenStream {
         // breaks here. Using `.break(.open(kind: .continuation)) ... .break(.close)` pairs lets the
         // wrapped branches push a continuation indent so wrapped sub-expressions (e.g. `+` chains
         // inside a branch) align relative to the branch keyword, and keeps the breaks eligible for
-        // discretionary newlines via `RespectExistingLineBreaks` .
-        before(node.questionMark, tokens: .break(.open(kind: .continuation)))
+        // discretionary newlines via `RespectExistingLineBreaks`.
+        //
+        // The extra `.open` after each operator's break (matched by `.close, .close` at the end of
+        // the else expression) bounds the chunk of break tokens *inside* each branch — so when the
+        // ternary itself wraps, sub-expression breaks within a branch (e.g., the `[`/`]` breaks of
+        // a single-element array literal) don't fire just because the outer ternary did. Mirrors
+        // upstream apple/swift-format's `visit(_:TernaryExprSyntax)`.
+        before(node.questionMark, tokens: .break(.open(kind: .continuation)), .open)
         after(node.questionMark, tokens: .space)
         before(
             node.colon,
             tokens: .break(.close(mustBreak: false), size: 0),
-            .break(.open(kind: .continuation))
+            .break(.open(kind: .continuation)),
+            .open
         )
         after(node.colon, tokens: .space)
 
@@ -385,7 +392,12 @@ extension TokenStream {
         } else {
             closeScopeToken = node.elseExpression.lastToken(viewMode: .sourceAccurate)
         }
-        after(closeScopeToken, tokens: .break(.close(mustBreak: false), size: 0))
+        after(
+            closeScopeToken,
+            tokens: .break(.close(mustBreak: false), size: 0),
+            .close,
+            .close
+        )
         return .visitChildren
     }
 

@@ -56,13 +56,52 @@ struct PreferIfElseChainTests: RuleTesting {
     )
   }
 
-  @Test func singleIfDoesNotMatch() {
-    // A single if + return is not a "chain" — leave it alone
-    let input = """
-      if x > 0 { return true }
-      return false
-      """
-    assertFormatting(PreferIfElseChain.self, input: input, expected: input, findings: [])
+  @Test func singleIfPlusFinalReturn() {
+    assertFormatting(
+      PreferIfElseChain.self,
+      input: """
+        func f(_ x: Int) -> Bool {
+          1️⃣if x > 0 { return true }
+          return false
+        }
+        """,
+      expected: """
+        func f(_ x: Int) -> Bool {
+          if x > 0 {
+          true
+        } else {
+          false
+        }
+        }
+        """,
+      findings: [
+        FindingSpec("1️⃣", message: "replace early-return chain with if/else expression"),
+      ]
+    )
+  }
+
+  @Test func singleIfCaseLetPlusFinalReturn() {
+    assertFormatting(
+      PreferIfElseChain.self,
+      input: """
+        func f(_ storage: Storage) -> Int {
+          1️⃣if case let .array(arr) = storage.value { return arr.count }
+          return 0
+        }
+        """,
+      expected: """
+        func f(_ storage: Storage) -> Int {
+          if case let .array(arr) = storage.value {
+          arr.count
+        } else {
+          0
+        }
+        }
+        """,
+      findings: [
+        FindingSpec("1️⃣", message: "replace early-return chain with if/else expression"),
+      ]
+    )
   }
 
   @Test func multiLineIfBodies() {

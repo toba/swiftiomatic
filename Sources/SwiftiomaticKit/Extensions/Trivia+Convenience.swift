@@ -68,13 +68,7 @@ extension Trivia {
     var containsSpaces: Bool {
         contains(
             where: {
-                if case .spaces = $0 {
-                    true
-                } else if case .tabs = $0 {
-                    true
-                } else {
-                    false
-                }
+                if case .spaces = $0 { true } else if case .tabs = $0 { true } else { false }
             })
     }
 
@@ -132,9 +126,7 @@ extension Trivia {
     var reducingToSingleNewlines: Trivia {
         var pieces = Array(self.pieces)
         for (i, piece) in pieces.enumerated() {
-            if case let .newlines(n) = piece, n > 1 {
-                pieces[i] = .newlines(1)
-            }
+            if case let .newlines(n) = piece, n > 1 { pieces[i] = .newlines(1) }
         }
         return .init(pieces: pieces)
     }

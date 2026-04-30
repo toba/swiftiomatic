@@ -35,6 +35,10 @@ final class RedundantFinal: StaticFormatRule<BasicRuleValue>, @unchecked Sendabl
         _ decl: DeclSyntax,
         context: Context
     ) -> DeclSyntax? {
+        // A nested class is a distinct type; the outer class's finality
+        // doesn't prevent subclassing of nested classes, so `final` is
+        // meaningful here.
+        if decl.is(ClassDeclSyntax.self) { return nil }
         guard let mods = decl.modifiersOrNil,
               let finalModifier = mods.first(where: { $0.name.tokenKind == .keyword(.final) })
         else { return nil }

@@ -84,7 +84,9 @@ struct FunctionDeclTests: LayoutTesting {
         let a = 23
       }
       func reallyLongName(
-        var1: Int, var2: Double, var3: Bool
+        var1: Int,
+        var2: Double,
+        var3: Bool
       ) {
         print("Hello World")
         let a = 23
@@ -132,7 +134,9 @@ struct FunctionDeclTests: LayoutTesting {
         return 1.0
       }
       func reallyLongName(
-        var1: Int, var2: Double, var3: Bool
+        var1: Int,
+        var2: Double,
+        var3: Bool
       ) -> Double {
         print("Hello World")
         return 1.0
@@ -192,7 +196,9 @@ struct FunctionDeclTests: LayoutTesting {
         return 1.0
       }
       func reallyLongName(
-        var1: Int, var2: Double, var3: Bool
+        var1: Int,
+        var2: Double,
+        var3: Bool
       ) throws -> Double {
         print("Hello World")
         if badCondition {
@@ -331,7 +337,8 @@ struct FunctionDeclTests: LayoutTesting {
     let expected =
       """
       public func index<Elements: Collection, Element>(
-        of element: Element, in collection: Elements
+        of element: Element,
+        in collection: Elements
       ) -> Elements.Index?
         where Elements.Element == Element
       {
@@ -401,7 +408,8 @@ struct FunctionDeclTests: LayoutTesting {
     let expected =
       """
       public func index<Elements: Collection, Element>(
-        of element: Element, in collection: Elements
+        of element: Element,
+        in collection: Elements
       ) -> Elements.Index?
         where Elements.Element == Element
       {
@@ -669,22 +677,28 @@ struct FunctionDeclTests: LayoutTesting {
       """
       struct X {
         static func + (
-          lhs: X, rhs: X
+          lhs: X,
+          rhs: X
         ) -> X {}
         static func + (
-          lhs: X, rhs: X
+          lhs: X,
+          rhs: X
         ) -> X {}
         static func ⊕ (
-          lhs: X, rhs: X
+          lhs: X,
+          rhs: X
         ) -> X {}
         static func ⊕ (
-          lhs: X, rhs: X
+          lhs: X,
+          rhs: X
         ) -> X {}
         static func * <T>(
-          lhs: X, rhs: T
+          lhs: X,
+          rhs: T
         ) -> T {}
         static func * <T>(
-          lhs: X, rhs: T
+          lhs: X,
+          rhs: T
         ) -> T {}
       }
 
@@ -990,7 +1004,8 @@ struct FunctionDeclTests: LayoutTesting {
       func MyFun(myvar: @escaping MyType)
 
       func MyFun(
-        myvar1: Int, myvar2: Double,
+        myvar1: Int,
+        myvar2: Double,
         myvar3: @escaping MyType
       ) -> Bool {
         // do stuff
@@ -1185,7 +1200,9 @@ struct FunctionDeclTests: LayoutTesting {
         return 1.0
       }
       func reallyLongName(
-        var1: Int, var2: Double, var3: Bool
+        var1: Int,
+        var2: Double,
+        var3: Bool
       ) async -> Double {
         print("Hello World")
         if badCondition {
@@ -1230,7 +1247,9 @@ struct FunctionDeclTests: LayoutTesting {
         return 1.0
       }
       func reallyLongName(
-        var1: Int, var2: Double, var3: Bool
+        var1: Int,
+        var2: Double,
+        var3: Bool
       ) async throws -> Double {
         print("Hello World")
         if badCondition {
@@ -1254,11 +1273,12 @@ struct FunctionDeclTests: LayoutTesting {
       }
       """
 
-    // With BeforeEachArgument=false (default test config), params pack inconsistently
+    // Parameter declarations always wrap consistently — once any param wraps, every param wraps.
     let expected =
       """
       fileprivate static func useFailureVariant(
-        name: String, replacement: String
+        name: String,
+        replacement: String
       ) -> Finding.Message {
         "replace '\\(name)(false, ...)' with '\\(replacement)(...)'";
       }

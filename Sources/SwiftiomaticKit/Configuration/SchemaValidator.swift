@@ -1,6 +1,5 @@
-// Adapted from kylef/JSONSchema.swift
-// Copyright (c) 2015, Kyle Fuller. All rights reserved.
-// BSD 3-Clause License. See https://github.com/kylef/JSONSchema.swift/blob/master/LICENSE
+// Adapted from kylef/JSONSchema.swift Copyright (c) 2015, Kyle Fuller. All rights reserved. BSD
+// 3-Clause License. See https://github.com/kylef/JSONSchema.swift/blob/master/LICENSE
 
 import Foundation
 
@@ -13,8 +12,7 @@ struct JSONPointer: Sendable {
     init() { components = [""] }
 
     init(path: String) {
-        components =
-            path
+        components = path
             .split(separator: "/", omittingEmptySubsequences: false)
             .map {
                 $0.replacingOccurrences(of: "~1", with: "/")
@@ -30,9 +28,9 @@ struct JSONPointer: Sendable {
             first = false
             for c in component {
                 switch c {
-                case "~": result.append("~0")
-                case "/": result.append("~1")
-                default: result.append(c)
+                    case "~": result.append("~0")
+                    case "/": result.append("~1")
+                    default: result.append(c)
                 }
             }
         }
@@ -60,7 +58,7 @@ private struct RefResolver: Sendable {
 
     init(schema: [String: JSONValue]) {
         var store: [String: JSONValue] = [:]
-        if case .object(let defs) = schema["$defs"] {
+        if case let .object(defs) = schema["$defs"] {
             for (key, value) in defs { store["#/$defs/\(key)"] = value }
         }
         self.store = store
@@ -80,7 +78,7 @@ private struct ValidationContext {
     init(resolver: RefResolver) { self.resolver = resolver }
 
     func error(_ message: String) -> SchemaValidationError {
-        SchemaValidationError(
+        .init(
             message: message,
             instanceLocation: instanceLocation.path,
             keywordLocation: keywordLocation.path
@@ -88,8 +86,8 @@ private struct ValidationContext {
     }
 
     mutating func validate(instance: JSONValue, schema: JSONValue) -> [SchemaValidationError] {
-        if case .bool(let flag) = schema { return flag ? [] : [error("Schema is false")] }
-        guard case .object(let schemaDict) = schema else { return [] }
+        if case let .bool(flag) = schema { return flag ? [] : [error("Schema is false")] }
+        guard case let .object(schemaDict) = schema else { return [] }
         return validate(instance: instance, schemaDict: schemaDict)
     }
 
@@ -103,30 +101,20 @@ private struct ValidationContext {
             defer { keywordLocation.pop() }
 
             switch keyword {
-                case "type":
-                    errors += validateType(value, instance: instance)
-                case "properties":
-                    errors += validateProperties(value, instance: instance)
+                case "type": errors += validateType(value, instance: instance)
+                case "properties": errors += validateProperties(value, instance: instance)
                 case "additionalProperties":
                     errors += validateAdditionalProperties(
                         value, instance: instance, schema: schemaDict
                     )
-                case "required":
-                    errors += validateRequired(value, instance: instance)
-                case "enum":
-                    errors += validateEnum(value, instance: instance)
-                case "allOf":
-                    errors += validateAllOf(value, instance: instance)
-                case "oneOf":
-                    errors += validateOneOf(value, instance: instance)
-                case "$ref":
-                    errors += validateRef(value, instance: instance)
-                case "items":
-                    errors += validateItems(value, instance: instance)
-                case "minimum":
-                    errors += validateMinimum(value, instance: instance)
-                default:
-                    break  // Ignore metadata keywords ($schema, $id, title, description, default, $defs, etc.)
+                case "required": errors += validateRequired(value, instance: instance)
+                case "enum": errors += validateEnum(value, instance: instance)
+                case "allOf": errors += validateAllOf(value, instance: instance)
+                case "oneOf": errors += validateOneOf(value, instance: instance)
+                case "$ref": errors += validateRef(value, instance: instance)
+                case "items": errors += validateItems(value, instance: instance)
+                case "minimum": errors += validateMinimum(value, instance: instance)
+                default: break
             }
         }
 
@@ -140,12 +128,10 @@ private struct ValidationContext {
     ) -> [SchemaValidationError] {
         let types: [String]
         switch type {
-            case .string(let single):
-                types = [single]
-            case .array(let array):
-                types = array.compactMap { if case .string(let s) = $0 { s } else { nil } }
-            default:
-                return []
+            case let .string(single): types = [single]
+            case let .array(array):
+                types = array.compactMap { if case let .string(s) = $0 { s } else { nil } }
+            default: return []
         }
 
         if types.contains(where: { instance.matches(schemaType: $0) }) { return [] }
@@ -157,11 +143,12 @@ private struct ValidationContext {
     private mutating func validateProperties(
         _ properties: JSONValue, instance: JSONValue
     ) -> [SchemaValidationError] {
-        guard case .object(let instanceDict) = instance,
-            case .object(let propertiesDict) = properties
+        guard case let .object(instanceDict) = instance,
+              case let .object(propertiesDict) = properties
         else { return [] }
 
         var errors: [SchemaValidationError] = []
+
         for (key, value) in instanceDict {
             if let subschema = propertiesDict[key] {
                 instanceLocation.push(key)
@@ -176,10 +163,10 @@ private struct ValidationContext {
         _ additionalProperties: JSONValue, instance: JSONValue,
         schema: [String: JSONValue]
     ) -> [SchemaValidationError] {
-        guard case .object(let instanceDict) = instance else { return [] }
+        guard case let .object(instanceDict) = instance else { return [] }
 
         var extraKeys = Set(instanceDict.keys)
-        if case .object(let properties) = schema["properties"] {
+        if case let .object(properties) = schema["properties"] {
             extraKeys.subtract(properties.keys)
         }
 
@@ -197,12 +184,12 @@ private struct ValidationContext {
     private func validateRequired(
         _ required: JSONValue, instance: JSONValue
     ) -> [SchemaValidationError] {
-        guard case .object(let instanceDict) = instance,
-            case .array(let requiredArray) = required
+        guard case let .object(instanceDict) = instance,
+              case let .array(requiredArray) = required
         else { return [] }
 
         return requiredArray.compactMap { element in
-            guard case .string(let key) = element else { return nil }
+            guard case let .string(key) = element else { return nil }
             guard !instanceDict.keys.contains(key) else { return nil }
             return error("Required property '\(key)' is missing")
         }
@@ -211,7 +198,7 @@ private struct ValidationContext {
     private func validateEnum(
         _ enumValues: JSONValue, instance: JSONValue
     ) -> [SchemaValidationError] {
-        guard case .array(let candidates) = enumValues else { return [] }
+        guard case let .array(candidates) = enumValues else { return [] }
         if candidates.contains(instance) { return [] }
         let allowed = candidates.map { "'\($0.displayDescription)'" }.joined(separator: ", ")
         return [error("'\(instance.displayDescription)' is not one of: \(allowed)")]
@@ -220,15 +207,16 @@ private struct ValidationContext {
     private mutating func validateAllOf(
         _ allOf: JSONValue, instance: JSONValue
     ) -> [SchemaValidationError] {
-        guard case .array(let schemas) = allOf else { return [] }
+        guard case let .array(schemas) = allOf else { return [] }
         return schemas.flatMap { validate(instance: instance, schema: $0) }
     }
 
     private mutating func validateOneOf(
         _ oneOf: JSONValue, instance: JSONValue
     ) -> [SchemaValidationError] {
-        guard case .array(let schemas) = oneOf else { return [] }
+        guard case let .array(schemas) = oneOf else { return [] }
         var validCount = 0
+
         for schema in schemas {
             // Use a copy so location state isn't polluted.
             var branch = self
@@ -241,8 +229,8 @@ private struct ValidationContext {
     private mutating func validateRef(
         _ ref: JSONValue, instance: JSONValue
     ) -> [SchemaValidationError] {
-        guard case .string(let refString) = ref,
-            let resolved = resolver.resolve(reference: refString)
+        guard case let .string(refString) = ref,
+              let resolved = resolver.resolve(reference: refString)
         else { return [] }
         return validate(instance: instance, schema: resolved)
     }
@@ -250,7 +238,7 @@ private struct ValidationContext {
     private mutating func validateItems(
         _ items: JSONValue, instance: JSONValue
     ) -> [SchemaValidationError] {
-        guard case .array(let elements) = instance else { return [] }
+        guard case let .array(elements) = instance else { return [] }
         var errors: [SchemaValidationError] = []
         for (index, element) in elements.enumerated() {
             instanceLocation.push("\(index)")
@@ -280,13 +268,13 @@ private struct ValidationContext {
 
 /// Validates a JSON value against a JSON Schema (Draft 2020-12 subset).
 ///
-/// Supports: `type`, `properties`, `additionalProperties`, `required`,
-/// `enum`, `allOf`, `oneOf`, `$ref`/`$defs`, `minimum`, `items`.
+/// Supports: `type` , `properties` , `additionalProperties` , `required` , `enum` , `allOf` ,
+/// `oneOf` , `$ref` / `$defs` , `minimum` , `items` .
 package func validateSchema(
     instance: JSONValue,
     schema: JSONValue
 ) -> [SchemaValidationError] {
-    guard case .object(let schemaDict) = schema else { return [] }
+    guard case let .object(schemaDict) = schema else { return [] }
     let resolver = RefResolver(schema: schemaDict)
     var context = ValidationContext(resolver: resolver)
     return context.validate(instance: instance, schema: schema)

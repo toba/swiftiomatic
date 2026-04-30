@@ -138,17 +138,38 @@ struct RedundantFinalTests: RuleTesting {
         )
     }
 
-    @Test func nestedFinalClassInFinalClass() {
+    @Test func nestedFinalClassInFinalClassPreserved() {
+        // A nested class is a distinct type; outer-class finality doesn't
+        // prevent subclassing of nested classes, so `final` is meaningful.
         assertFormatting(
             RedundantFinal.self,
             input: """
                 final class Outer {
-                    1️⃣final class Inner {}
+                    final class Inner {}
                 }
                 """,
             expected: """
                 final class Outer {
-                    class Inner {}
+                    final class Inner {}
+                }
+                """,
+            findings: []
+        )
+    }
+
+    @Test func finalFuncStrippedAdjacentToNestedFinalClass() {
+        assertFormatting(
+            RedundantFinal.self,
+            input: """
+                final class Outer {
+                    final class Inner {}
+                    1️⃣final func bar() {}
+                }
+                """,
+            expected: """
+                final class Outer {
+                    final class Inner {}
+                    func bar() {}
                 }
                 """,
             findings: [

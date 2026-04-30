@@ -125,7 +125,8 @@ struct SubscriptDeclTests: LayoutTesting {
         subscript<
           LongTypeName1, LongTypeName2, LongTypeName3
         >(
-          var1: LongTypeName1, var2: LongTypeName2,
+          var1: LongTypeName1,
+          var2: LongTypeName2,
           var3: LongTypeName3
         ) -> Int {
           return self.values[var1][var2][var3]
@@ -156,12 +157,14 @@ struct SubscriptDeclTests: LayoutTesting {
       """
       struct MyStruct {
         subscript<Elements: Collection, Element>(
-          var1: Element, var2: Elements
+          var1: Element,
+          var2: Elements
         ) -> Double where Elements.Element == Element {
           return 1.23
         }
         subscript<Elements: Collection, Element>(
-          var1: Element, var2: Elements
+          var1: Element,
+          var2: Elements
         ) -> Double
         where
           Elements.Element == Element,
@@ -195,12 +198,14 @@ struct SubscriptDeclTests: LayoutTesting {
       """
       struct MyStruct {
         subscript<Elements: Collection, Element>(
-          var1: Element, var2: Elements
+          var1: Element,
+          var2: Elements
         ) -> Double where Elements.Element == Element {
           return 1.23
         }
         subscript<Elements: Collection, Element>(
-          var1: Element, var2: Elements
+          var1: Element,
+          var2: Elements
         ) -> Double
         where
           Elements.Element == Element,

@@ -333,7 +333,8 @@ struct IfStmtTests: LayoutTesting {
     let expected =
       """
       if let SomeReallyLongVar = Some.More
-        .Stuff(), let a = myfunc()
+        .Stuff(),
+        let a = myfunc()
       {
         // do stuff
       }
@@ -683,14 +684,16 @@ struct IfStmtTests: LayoutTesting {
         } else {
           bar()
         }
-        if let foo = getmyfoo(), let bar = getmybar(),
+        if let foo = getmyfoo(),
+          let bar = getmybar(),
           foo.baz && bar.baz && someOtherCondition
         {
           foo()
         } else {
           bar()
         }
-        if let foo = getmyfoo(), let bar = getmybar(),
+        if let foo = getmyfoo(),
+          let bar = getmybar(),
           foo.baz && bar.baz && someOtherCondition
         {
           foo()

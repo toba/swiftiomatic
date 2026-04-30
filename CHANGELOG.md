@@ -39,6 +39,7 @@
 - `BeforeGuardConditions`; pretty printer is now idempotent for guard `else` placement (single-statement bodies always glue `else {` to the closing condition when it fits)
 - Lint-mode finding emission; verify behavior after compact-pipeline cutover ([#506](https://github.com/toba/swiftiomatic/issues/506))
 - Formatter; keep single chained trailing `.with()` call on one line instead of wrapping ([#477](https://github.com/toba/swiftiomatic/issues/477))
+- Wrapped comma lists; once any element wraps, every element wraps to its own line ([#529](https://github.com/toba/swiftiomatic/issues/529))
 
 ### 🗜️ Tweaks
 

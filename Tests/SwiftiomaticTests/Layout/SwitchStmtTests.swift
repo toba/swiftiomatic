@@ -147,8 +147,11 @@ struct SwitchStmtTests: LayoutTesting {
       case "a": print("a")
       case "b", "c":
         print("bc")
-      case "d", "e", "f",
-        "g", "h":
+      case "d",
+        "e",
+        "f",
+        "g",
+        "h":
         print("defgh")
       case someVeryLongVarName,
         someOtherLongVarName:
@@ -236,7 +239,8 @@ struct SwitchStmtTests: LayoutTesting {
       switch anotherPoint {
       case (let distance, 0), (0, let distance):
         print(distance)
-      case (let distance, 0), (0, let distance),
+      case (let distance, 0),
+        (0, let distance),
         (let distance, 10):
         print(distance)
       default: print("A message")
@@ -415,13 +419,15 @@ struct SwitchStmtTests: LayoutTesting {
         break
       case 4 where bar(), 5, 6:
         break
-      case 7, 8,
+      case 7,
+        8,
         9 where bar():
         break
       case 10 where bar(), 11 where bar(), 12 where bar():
         break
       case 13,
-        14 where bar(), 15,
+        14 where bar(),
+        15,
         16 where bar():
         break
       }

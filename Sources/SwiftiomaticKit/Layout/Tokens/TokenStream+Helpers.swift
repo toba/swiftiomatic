@@ -115,7 +115,9 @@ extension TokenStream {
         forcesBreakBeforeRightParen: Bool
     ) {
         guard !isEmpty else { return }
-        after(leftParen, tokens: .break(.open, size: 0), .open(argumentListConsistency()))
+        // Parameter declarations (function/closure/enum-case): always consistent — once any
+        // parameter wraps, every parameter wraps to its own line.
+        after(leftParen, tokens: .break(.open, size: 0), .open(.consistent))
         before(
             rightParen,
             tokens: .break(.close(mustBreak: forcesBreakBeforeRightParen), size: 0),
@@ -349,8 +351,8 @@ extension TokenStream {
                             wasEndOfLine: true
                         ),
                         // There must be a break with a soft newline after the comment, but it's
-                        // impossible to know which kind of break must be used. Adding this newline is
-                        // deferred until the comment is added to the token stream.
+                        // impossible to know which kind of break must be used. Adding this newline
+                        // is deferred until the comment is added to the token stream.
                     ]
                 )
 
@@ -363,9 +365,9 @@ extension TokenStream {
                             Comment(kind: .block, leadingIndent: nil, text: text),
                             wasEndOfLine: false
                         ),
-                        // We place a size-0 break after the comment to allow a discretionary newline
-                        // after the comment if the user places one here but the comment is otherwise
-                        // adjacent to a text token.
+                        // We place a size-0 break after the comment to allow a discretionary
+                        // newline after the comment if the user places one here but the comment is
+                        // otherwise adjacent to a text token.
                         .break(.same, size: 0),
                     ]
                 )
@@ -390,9 +392,11 @@ extension TokenStream {
                     .break(.contextual, _, _), .open:
                     break
                 default:
-                    return index > 0 ? (beforeTokens[..<index], beforeTokens[index...]) : (
-                        [], beforeTokens[...]
-                    )
+                    return index > 0
+                        ? (beforeTokens[..<index], beforeTokens[index...])
+                        : (
+                            [], beforeTokens[...]
+                        )
             }
         }
         // Never found a closing-scope token, so assume they're all opening-scope.

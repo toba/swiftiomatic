@@ -85,7 +85,8 @@ struct InitializerDeclTests: LayoutTesting {
           let a = 23
         }
         init(
-          reallyLongLabelVar1: Int, var2: Double,
+          reallyLongLabelVar1: Int,
+          var2: Double,
           var3: Bool
         ) {
           print("Hello World")
@@ -129,7 +130,8 @@ struct InitializerDeclTests: LayoutTesting {
           let a = 23
         }
         init!(
-          reallyLongLabelVar1: Int, var2: Double,
+          reallyLongLabelVar1: Int,
+          var2: Double,
           var3: Bool
         ) {
           print("Hello World")
@@ -168,7 +170,8 @@ struct InitializerDeclTests: LayoutTesting {
           print("Hello World")
         }
         init(
-          reallyLongLabelVar1: Int, var2: Double,
+          reallyLongLabelVar1: Int,
+          var2: Double,
           var3: Bool
         ) throws {
           print("Hello World")
@@ -240,13 +243,15 @@ struct InitializerDeclTests: LayoutTesting {
       """
       struct Struct {
         public init<Elements: Collection, Element>(
-          element: Element, in collection: Elements
+          element: Element,
+          in collection: Elements
         ) where Elements.Element == Element {
           let a = 123
           let b = "abc"
         }
         public init<Elements: Collection, Element>(
-          element: Element, in collection: Elements
+          element: Element,
+          in collection: Elements
         ) where
           Elements.Element == Element, Element: P,
           Element: Equatable
@@ -282,13 +287,15 @@ struct InitializerDeclTests: LayoutTesting {
       """
       struct Struct {
         public init<Elements: Collection, Element>(
-          element: Element, in collection: Elements
+          element: Element,
+          in collection: Elements
         ) where Elements.Element == Element {
           let a = 123
           let b = "abc"
         }
         public init<Elements: Collection, Element>(
-          element: Element, in collection: Elements
+          element: Element,
+          in collection: Elements
         ) where
           Elements.Element == Element,
           Element: P,

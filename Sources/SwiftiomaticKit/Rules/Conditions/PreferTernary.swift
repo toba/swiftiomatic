@@ -42,14 +42,26 @@ final class PreferTernary: StaticFormatRule<BasicRuleValue>, @unchecked Sendable
         let items = Array(visited)
         var newItems = [CodeBlockItemSyntax]()
         var changed = false
+        var index = 0
 
-        for item in items {
+        while index < items.count {
+            let item = items[index]
+            let next = index + 1 < items.count ? items[index + 1] : nil
+
+            if let next, let replacement = tryConvertIfReturnPair(item, next, context: context) {
+                newItems.append(replacement)
+                changed = true
+                index += 2
+                continue
+            }
+
             if let replacement = tryConvert(item, context: context) {
                 newItems.append(replacement)
                 changed = true
             } else {
                 newItems.append(item)
             }
+            index += 1
         }
 
         guard changed else { return visited }
@@ -106,6 +118,40 @@ final class PreferTernary: StaticFormatRule<BasicRuleValue>, @unchecked Sendable
         }
 
         return nil
+    }
+
+    /// Converts `if cond { return X }` followed by `return Y` into `return cond ? X : Y` .
+    private static func tryConvertIfReturnPair(
+        _ first: CodeBlockItemSyntax,
+        _ second: CodeBlockItemSyntax,
+        context: Context
+    ) -> CodeBlockItemSyntax? {
+        guard let ifExpr = extractIfExpr(from: first) else { return nil }
+        guard ifExpr.elseBody == nil else { return nil }
+
+        guard let onlyCondition = ifExpr.conditions.firstAndOnly,
+              case .expression = onlyCondition.condition else { return nil }
+
+        guard let thenOnly = ifExpr.body.statements.firstAndOnly,
+              let thenReturn = extractReturn(from: thenOnly) else { return nil }
+
+        guard let elseReturn = extractReturn(from: second) else { return nil }
+
+        Self.diagnose(.useTernary, on: ifExpr.ifKeyword, context: context)
+
+        let ternary = buildTernaryExpr(
+            condition: ifExpr.conditions,
+            thenExpr: thenReturn,
+            elseExpr: elseReturn)
+
+        let returnStmt = ReturnStmtSyntax(
+            returnKeyword: .keyword(.return, trailingTrivia: .space),
+            expression: ternary)
+
+        return .init(
+            leadingTrivia: first.leadingTrivia,
+            item: .stmt(StmtSyntax(returnStmt)),
+            trailingTrivia: second.trailingTrivia)
     }
 
     // MARK: - Extraction

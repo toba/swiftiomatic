@@ -396,6 +396,109 @@ struct PreferTernaryTests: RuleTesting {
                 """)
     }
 
+    // MARK: - if-return + trailing-return pair
+
+    @Test func convertsIfReturnFollowedByReturn() {
+        assertFormatting(
+            PreferTernary.self,
+            input: """
+                func test() -> [String] {
+                    1️⃣if validCount == 1 { return [] }
+                    return [error("Exactly one schema in 'oneOf' must match, but \\(validCount) matched")]
+                }
+                """,
+            expected: """
+                func test() -> [String] {
+                    return validCount == 1 ? [] : [error("Exactly one schema in 'oneOf' must match, but \\(validCount) matched")]
+                }
+                """,
+            findings: [
+                FindingSpec("1️⃣", message: "use ternary conditional expression for simple if-else")
+            ])
+    }
+
+    @Test func convertsIfReturnMultilineFollowedByReturn() {
+        assertFormatting(
+            PreferTernary.self,
+            input: """
+                func test() -> Int {
+                    1️⃣if flag {
+                        return 1
+                    }
+                    return 0
+                }
+                """,
+            expected: """
+                func test() -> Int {
+                    return flag ? 1 : 0
+                }
+                """,
+            findings: [
+                FindingSpec("1️⃣", message: "use ternary conditional expression for simple if-else")
+            ])
+    }
+
+    @Test func doesNotConvertIfReturnWithoutTrailingReturn() {
+        assertFormatting(
+            PreferTernary.self,
+            input: """
+                func test() {
+                    if condition {
+                        return
+                    }
+                    doSomething()
+                }
+                """,
+            expected: """
+                func test() {
+                    if condition {
+                        return
+                    }
+                    doSomething()
+                }
+                """)
+    }
+
+    @Test func doesNotConvertIfReturnPairWithOptionalBinding() {
+        assertFormatting(
+            PreferTernary.self,
+            input: """
+                func test() -> Int {
+                    if let value = optional { return value }
+                    return fallback
+                }
+                """,
+            expected: """
+                func test() -> Int {
+                    if let value = optional { return value }
+                    return fallback
+                }
+                """)
+    }
+
+    @Test func doesNotConvertIfReturnPairWithMultipleStatements() {
+        assertFormatting(
+            PreferTernary.self,
+            input: """
+                func test() -> Int {
+                    if condition {
+                        log("hi")
+                        return 1
+                    }
+                    return 0
+                }
+                """,
+            expected: """
+                func test() -> Int {
+                    if condition {
+                        log("hi")
+                        return 1
+                    }
+                    return 0
+                }
+                """)
+    }
+
     @Test func doesNotConvertOptionalBinding() {
         assertFormatting(
             PreferTernary.self,

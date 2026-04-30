@@ -124,8 +124,11 @@ struct ClosureExprTests: LayoutTesting {
       })
       funcCall(closure: {
         (
-          s1: String, s2: String, s3: String,
-          s4: String, s5: String
+          s1: String,
+          s2: String,
+          s3: String,
+          s4: String,
+          s5: String
         ) -> Bool in return s1 > s2
       })
 
@@ -158,8 +161,11 @@ struct ClosureExprTests: LayoutTesting {
       }
       funcCall(param1: 2) {
         (
-          s1: String, s2: String, s3: String,
-          s4: String, s5: String
+          s1: String,
+          s2: String,
+          s3: String,
+          s4: String,
+          s5: String
         ) -> Bool in return s1 > s2
       }
 
@@ -453,26 +459,34 @@ struct ClosureExprTests: LayoutTesting {
       """
       funcCall(closure: {
         (
-          s1: String, s2: String, s3: String
+          s1: String,
+          s2: String,
+          s3: String
         ) throws -> Bool in return s1 > s2
       })
       funcCall(closure: {
         (
-          s1: String, s2: String, s3: String
+          s1: String,
+          s2: String,
+          s3: String
         ) throws
           -> AVeryLongReturnTypeThatOverflowsFiftyColumns
         in return s1 > s2
       })
       funcCall(closure: {
         (
-          s1: String, s2: String, n: Int
+          s1: String,
+          s2: String,
+          n: Int
         ) async throws
           -> AVeryLongReturnTypeThatOverflowsFiftyColumns
         in return s1 > s2
       })
       funcCall(closure: {
         (
-          s1: String, s2: String, s3: String
+          s1: String,
+          s2: String,
+          s3: String
         ) async throws
           -> AVeryLongReturnTypeThatOverflowsFiftyColumns
         in return s1 > s2

@@ -196,7 +196,8 @@ struct CommentTests: LayoutTesting {
       }
 
       switch myvar {
-      case .one, .two,  // three
+      case .one,
+        .two,  // three
         .four:
         dostuff()
       default: ()
@@ -363,7 +364,8 @@ struct CommentTests: LayoutTesting {
         }
 
         switch myvar {
-        case .one, .two,   // three
+        case .one,
+          .two,   // three
           .four:
           dostuff()
         default: ()

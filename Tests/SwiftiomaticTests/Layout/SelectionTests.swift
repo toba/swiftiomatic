@@ -139,7 +139,8 @@ struct SelectionTests: LayoutTesting {
       """
       func foo() {
       if let SomeReallyLongVar = Some.More
-          .Stuff(), let a = myfunc() {
+          .Stuff(),
+          let a = myfunc() {
       // do stuff
       }
       }

@@ -130,7 +130,8 @@
       "Bash(cp Sources/SwiftiomaticKit/Rules/Idioms/PreferStaticOverClassFunc.swift /tmp/before.swift)",
       "Bash(cp Sources/SwiftiomaticKit/Rules/Idioms/PreferStaticOverClassFunc.swift /tmp/repro.swift)",
       "Bash(.build/arm64-apple-macosx/debug/sm format *)",
-      "Bash(mkdir /tmp/sm-actuals)"
+      "Bash(mkdir /tmp/sm-actuals)",
+      "Bash(mkdir -p /tmp/sm-test-diffs)"
     ]
   },
   "enableAllProjectMcpServers": true,

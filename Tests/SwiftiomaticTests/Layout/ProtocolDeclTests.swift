@@ -175,13 +175,16 @@ struct ProtocolDeclTests: LayoutTesting {
           anotherLongLabel: Bool
         ) -> Float
         func doAProtoThing(
-          first: Foo, second s: Bar)
+          first: Foo,
+          second s: Bar
+        )
         func doAThing(first: Foo)
           -> ResultType
         func doSomethingElse(
           firstArg: Foo,
           second secondArg: Bar,
-          third thirdArg: Baz)
+          third thirdArg: Baz
+        )
         func doStuff(
           firstArg: Foo,
           second second: Bar,
@@ -210,7 +213,8 @@ struct ProtocolDeclTests: LayoutTesting {
       """
       protocol P {
         func shareMetadata(
-          for share: CKShare, shouldFetchRootRecord: Bool
+          for share: CKShare,
+          shouldFetchRootRecord: Bool
         ) async throws -> ShareMetadata
       }
 
@@ -236,7 +240,8 @@ struct ProtocolDeclTests: LayoutTesting {
         init(bar: Int)
         init(
           reallyLongLabel: Int,
-          anotherLongLabel: Bool)
+          anotherLongLabel: Bool
+        )
       }
 
       """

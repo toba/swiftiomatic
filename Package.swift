@@ -40,7 +40,6 @@ let package = Package(
             exclude: ["README.md", "Generated"],
             plugins: [
                 "GenerateCode",
-                .plugin(name: "SwiftiomaticBuildToolPlugin", package: "swiftiomatic-plugins"),
             ]
         ),
         .target(

@@ -1,11 +1,10 @@
 import SwiftSyntax
 
-/// Consecutive single-return `if` statements followed by a final `return` should be expressed as a
-/// chained `if/else` expression.
+/// Single-return `if` statements followed by a final `return` should be expressed as an
+/// `if/else` expression.
 ///
-/// When a sequence of `if` statements each contain only a `return` and are followed by a trailing
-/// `return` , the chain is converted into a single `if/else if/.../else` expression (two or more
-/// `if` branches required).
+/// When one or more `if` statements each contain only a `return` and are followed by a trailing
+/// `return` , the sequence is converted into a single `if/else if/.../else` expression.
 ///
 /// ```swift
 /// // Before
@@ -87,7 +86,7 @@ final class PreferIfElseChain: StaticFormatRule<BasicRuleValue>, @unchecked Send
         let endIndex: Int
     }
 
-    /// Tries to build a chain starting at `startIndex` . Requires at least two `if` statements (each
+    /// Tries to build a chain starting at `startIndex` . Requires at least one `if` statement (each
     /// with a single `return` body and no `else` ) followed by a trailing `return` statement.
     private static func tryBuildChain(
         items: [CodeBlockItemSyntax],
@@ -106,8 +105,7 @@ final class PreferIfElseChain: StaticFormatRule<BasicRuleValue>, @unchecked Send
             j += 1
         }
 
-        // Need at least 2 if-branches.
-        guard ifBranches.count >= 2 else { return nil }
+        guard ifBranches.count >= 1 else { return nil }
 
         // The next item must be a trailing return statement.
         guard j < items.count, let fallbackValue = extractReturnValue(from: items[j])

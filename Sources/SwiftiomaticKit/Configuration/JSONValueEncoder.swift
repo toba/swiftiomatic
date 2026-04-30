@@ -1,13 +1,12 @@
 import Foundation
 
-/// Lightweight encoder that captures key-value pairs as `JSONValue`
-/// instead of `Any`, enabling type-safe equality and direct encoding
-/// without `JSONSerialization` round-trips.
+/// Lightweight encoder that captures key-value pairs as `JSONValue` instead of `Any` , enabling
+/// type-safe equality and direct encoding without `JSONSerialization` round-trips.
 ///
-/// **Invariant**: only used by `Configuration.encode(to:)` to project flat key/value
-/// rule and setting maps into a keyed container. Top-level unkeyed encoding,
-/// `superEncoder`, and nested containers are never reached on this path. If a future
-/// caller needs them, implement them rather than removing the trap.
+/// **Invariant**: only used by `Configuration.encode(to:)` to project flat key/value rule and
+/// setting maps into a keyed container. Top-level unkeyed encoding, `superEncoder` , and nested
+/// containers are never reached on this path. If a future caller needs them, implement them rather
+/// than removing the trap.
 final class JSONValueEncoder: Encoder {
     var codingPath: [CodingKey] = []
     var userInfo: [CodingUserInfoKey: Any] = [:]
@@ -63,21 +62,21 @@ final class JSONValueEncoder: Encoder {
 
 // MARK: - JSONValueBuilder
 
-/// Recursive `Encoder` that builds a `JSONValue` directly, without round-tripping
-/// through `JSONEncoder` + `JSONDecoder`. Used by `JSONValueEncoder` to convert
-/// `Encodable` rule and setting values into typed JSON.
+/// Recursive `Encoder` that builds a `JSONValue` directly, without round-tripping through
+/// `JSONEncoder` + `JSONDecoder` . Used by `JSONValueEncoder` to convert `Encodable` rule and
+/// setting values into typed JSON.
 final class JSONValueBuilder: Encoder {
     var codingPath: [CodingKey]
     var userInfo: [CodingUserInfoKey: Any] = [:]
 
-    final class Storage {
+    class Storage {
         var value: JSONValue = .null
     }
     fileprivate let storage: Storage
 
     init(codingPath: [CodingKey] = []) {
         self.codingPath = codingPath
-        self.storage = Storage()
+        storage = Storage()
     }
 
     var result: JSONValue { storage.value }
@@ -96,7 +95,7 @@ final class JSONValueBuilder: Encoder {
         SingleContainer(storage: storage, codingPath: codingPath)
     }
 
-    /// Encode any `Encodable` to a `JSONValue` without round-tripping through `Data`.
+    /// Encode any `Encodable` to a `JSONValue` without round-tripping through `Data` .
     static func build<T: Encodable>(_ value: T) throws -> JSONValue {
         switch value {
             case let v as String: return .string(v)
@@ -118,7 +117,7 @@ private struct KeyedContainer<Key: CodingKey>: KeyedEncodingContainerProtocol {
     var codingPath: [CodingKey]
 
     private func write(_ key: String, _ value: JSONValue) {
-        if case .object(var dict) = storage.value {
+        if case var .object(dict) = storage.value {
             dict[key] = value
             storage.value = .object(dict)
         } else {
@@ -134,9 +133,7 @@ private struct KeyedContainer<Key: CodingKey>: KeyedEncodingContainerProtocol {
         write(key.stringValue, .double(Double(v)))
     }
     mutating func encode(_ v: Int, forKey key: Key) throws { write(key.stringValue, .int(v)) }
-    mutating func encode(_ v: Int8, forKey key: Key) throws {
-        write(key.stringValue, .int(Int(v)))
-    }
+    mutating func encode(_ v: Int8, forKey key: Key) throws { write(key.stringValue, .int(Int(v))) }
     mutating func encode(_ v: Int16, forKey key: Key) throws {
         write(key.stringValue, .int(Int(v)))
     }
@@ -146,9 +143,7 @@ private struct KeyedContainer<Key: CodingKey>: KeyedEncodingContainerProtocol {
     mutating func encode(_ v: Int64, forKey key: Key) throws {
         write(key.stringValue, .int(Int(v)))
     }
-    mutating func encode(_ v: UInt, forKey key: Key) throws {
-        write(key.stringValue, .int(Int(v)))
-    }
+    mutating func encode(_ v: UInt, forKey key: Key) throws { write(key.stringValue, .int(Int(v))) }
     mutating func encode(_ v: UInt8, forKey key: Key) throws {
         write(key.stringValue, .int(Int(v)))
     }
@@ -187,12 +182,12 @@ private struct UnkeyedContainer: UnkeyedEncodingContainer {
     let storage: JSONValueBuilder.Storage
     var codingPath: [CodingKey]
     var count: Int {
-        if case .array(let arr) = storage.value { return arr.count }
+        if case let .array(arr) = storage.value { return arr.count }
         return 0
     }
 
     private func append(_ value: JSONValue) {
-        if case .array(var arr) = storage.value {
+        if case var .array(arr) = storage.value {
             arr.append(value)
             storage.value = .array(arr)
         } else {

@@ -54,7 +54,9 @@ struct MacroDeclTests: LayoutTesting {
       macro myFun(var1: Int, var2: Double) =
         #externalMacro(module: "Foo", type: "Bar")
       macro reallyLongName(
-        var1: Int, var2: Double, var3: Bool
+        var1: Int,
+        var2: Double,
+        var3: Bool
       ) = #externalMacro(module: "Foo", type: "Bar")
       macro myFun() = #externalMacro(module: "Foo", type: "Bar")
 
@@ -83,7 +85,9 @@ struct MacroDeclTests: LayoutTesting {
       macro reallyLongName(var1: Int, var2: Double, var3: Bool)
         -> Double = #externalMacro(module: "Foo", type: "Bar")
       macro reallyReallyLongName(
-        var1: Int, var2: Double, var3: Bool
+        var1: Int,
+        var2: Double,
+        var3: Bool
       ) -> Double = #externalMacro(module: "Foo", type: "Bar")
       macro tupleFunc() -> (
         one: Int, two: Double, three: Bool, four: String
@@ -149,7 +153,8 @@ struct MacroDeclTests: LayoutTesting {
       macro longerNameFun<
         ReallyLongTypeName: Conform, TypeName
       >(
-        var1: ReallyLongTypeName, var2: TypeName
+        var1: ReallyLongTypeName,
+        var2: TypeName
       ) =
         #externalMacro(module: "Foo", type: "Bar")
 
@@ -181,7 +186,8 @@ struct MacroDeclTests: LayoutTesting {
     let expected =
       """
       macro index<Elements: Collection, Element>(
-        of element: Element, in collection: Elements
+        of element: Element,
+        in collection: Elements
       ) -> Elements.Index? =
         #externalMacro(module: "Foo", type: "Bar")
         where Elements.Element == Element
@@ -232,7 +238,8 @@ struct MacroDeclTests: LayoutTesting {
     let expected =
       """
       public macro index<Elements: Collection, Element>(
-        of element: Element, in collection: Elements
+        of element: Element,
+        in collection: Elements
       ) -> Elements.Index? =
         #externalMacro(module: "Foo", type: "Bar")
         where Elements.Element == Element

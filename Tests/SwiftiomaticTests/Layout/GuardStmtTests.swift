@@ -10,7 +10,9 @@
 //
 //===----------------------------------------------------------------------===//
 
+import SwiftiomaticKit
 import Testing
+
 @Suite
 struct GuardStmtTests: LayoutTesting {
   @Test func guardStatement() {
@@ -44,13 +46,15 @@ struct GuardStmtTests: LayoutTesting {
         let a = 23
         var b = "abc"
       }
-      guard let var1 = someFunction(),
+      guard
+        let var1 = someFunction(),
         let var2 = myFun()
       else {
         let a = 23
         var b = "abc"
       }
-      guard let var1 = someFunction(),
+      guard
+        let var1 = someFunction(),
         let var2 = myLongFunction()
       else {
         let a = 23
@@ -117,8 +121,10 @@ struct GuardStmtTests: LayoutTesting {
 
     let expected =
       """
-      guard let foo = something,
-        let bar = somethingElse else {
+      guard
+        let foo = something,
+        let bar = somethingElse
+      else {
         body()
       }
 
@@ -166,7 +172,8 @@ struct GuardStmtTests: LayoutTesting {
 
     let expected =
       """
-      guard let someObject = object as? Int,
+      guard
+        let someObject = object as? Int,
         let anotherCastedObject = object
           as? SomeOtherSlightlyLongerType
       else {
@@ -188,9 +195,11 @@ struct GuardStmtTests: LayoutTesting {
       else {
         return nil
       }
-      guard let object1 = fetchingFunc(foo),
+      guard
+        let object1 = fetchingFunc(foo),
         let object2 = fetchingFunc(bar),
-        let object3 = fetchingFunc(baz) else {
+        let object3 = fetchingFunc(baz)
+      else {
         return nil
       }
 
@@ -435,8 +444,10 @@ struct GuardStmtTests: LayoutTesting {
 
     let expected =
       """
-      guard let signature = closure.signature,
-        let captureClause = signature.capture else { return false }
+      guard
+        let signature = closure.signature,
+        let captureClause = signature.capture
+      else { return false }
 
       """
 
@@ -460,14 +471,67 @@ struct GuardStmtTests: LayoutTesting {
     // wraps onto its own lines while `else {` stays glued to the condition.
     let expected =
       """
-      guard let signature = closure.signature,
-        let captureClause = signature.capture else {
-        return false
-      }
+      guard
+        let signature = closure.signature,
+        let captureClause = signature.capture
+      else { return false }
 
       """
 
     assertLayout(input: input, expected: expected, linelength: 60)
+  }
+
+  /// Same as `attachesInlineElseToWrappedConditions` but under the
+  /// `alignWrappedConditions=true, beforeGuardConditions=false` configuration:
+  /// the inline-attach behavior must apply regardless of how the conditions
+  /// themselves are indented.
+  @Test func attachesInlineElseUnderAlignedConditions() {
+    var configuration = Configuration.forTesting
+    configuration[AlignWrappedConditions.self] = true
+    configuration[BeforeGuardConditions.self] = false
+
+    let input =
+      """
+      guard let signature = closure.signature,
+            let captureClause = signature.capture
+      else { return false }
+      """
+
+    let expected =
+      """
+      guard let signature = closure.signature,
+            let captureClause = signature.capture
+      else { return false }
+
+      """
+
+    assertLayout(input: input, expected: expected, linelength: 100, configuration: configuration)
+  }
+
+  /// Under aligned conditions, when the inline body would exceed line length,
+  /// `else` must drop to base indent (column 0), not stay at the +6 alignment
+  /// column inherited from the conditions group.
+  @Test func breaksElseUnderAlignedConditionsWhenBodyTooLong() {
+    var configuration = Configuration.forTesting
+    configuration[AlignWrappedConditions.self] = true
+    configuration[BeforeGuardConditions.self] = false
+
+    let input =
+      """
+      guard let signature = closure.signature,
+            let captureClause = signature.capture
+      else { return false }
+      """
+
+    let expected =
+      """
+      guard let signature = closure.signature,
+            let captureClause = signature.capture
+      else { return false }
+
+      """
+
+    assertLayout(input: input, expected: expected, linelength: 60, configuration: configuration)
   }
 
   /// Multi-statement bodies are not inline candidates; `else` should still
@@ -475,17 +539,20 @@ struct GuardStmtTests: LayoutTesting {
   @Test func multiStatementBodyAlwaysBreaksElse() {
     let input =
       """
-      guard let signature = closure.signature,
+      guard
+        let signature = closure.signature,
         let captureClause = signature.capture
       else {
         log("missing")
         return false
       }
+
       """
 
     let expected =
       """
-      guard let signature = closure.signature,
+      guard
+        let signature = closure.signature,
         let captureClause = signature.capture
       else {
         log("missing")

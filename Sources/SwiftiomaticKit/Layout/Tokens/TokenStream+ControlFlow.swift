@@ -19,10 +19,15 @@ extension TokenStream {
     }
 
     func visitIfExpr(_ node: IfExprSyntax) -> SyntaxVisitorContinueKind {
-        // There may be a consistent breaking group around this node, see `CodeBlockItemSyntax` .
-        // This group is necessary so that breaks around and inside of the conditions aren't forced
-        // to break when the if-stmt spans multiple lines.
-        before(node.conditions.firstToken(viewMode: .sourceAccurate), tokens: .open)
+        // Outer group around the conditions. With multiple conditions, use `.consistent` so once
+        // any condition wraps, every condition wraps. With a single condition, fall back to the
+        // historical `.inconsistent` group (just so breaks around/inside aren't forced).
+        let conditionsGroupStyle: GroupBreakStyle =
+            node.conditions.count > 1 ? .consistent : .inconsistent
+        before(
+            node.conditions.firstToken(viewMode: .sourceAccurate),
+            tokens: .open(conditionsGroupStyle)
+        )
         after(node.conditions.lastToken(viewMode: .sourceAccurate), tokens: .close)
 
         after(node.ifKeyword, tokens: .space)
@@ -122,6 +127,16 @@ extension TokenStream {
 
     func visitWhileStmt(_ node: WhileStmtSyntax) -> SyntaxVisitorContinueKind {
         after(node.whileKeyword, tokens: .space)
+
+        // Outer consistent group: once any condition wraps, every condition wraps.
+        // Only useful with multiple conditions.
+        if node.conditions.count > 1 {
+            before(
+                node.conditions.firstToken(viewMode: .sourceAccurate),
+                tokens: .open(.consistent)
+            )
+            after(node.conditions.lastToken(viewMode: .sourceAccurate), tokens: .close)
+        }
 
         // Add break groups, using open continuation breaks, around any conditions after the first
         // so that continuations inside of the conditions can stack in addition to continuations
@@ -332,6 +347,16 @@ extension TokenStream {
     func visitSwitchCaseLabel(_ node: SwitchCaseLabelSyntax) -> SyntaxVisitorContinueKind {
         before(node.caseKeyword, tokens: .open)
         after(node.caseKeyword, tokens: .space)
+
+        // Outer consistent group around the case items: once any item wraps, every item wraps.
+        // Only meaningful with multiple items.
+        if node.caseItems.count > 1 {
+            before(
+                node.caseItems.firstToken(viewMode: .sourceAccurate),
+                tokens: .open(.consistent)
+            )
+            after(node.caseItems.lastToken(viewMode: .sourceAccurate), tokens: .close)
+        }
 
         // If an item with a `where` clause follows an item without a `where` clause, the compiler
         // emits a warning telling the user that they should insert a newline between them to

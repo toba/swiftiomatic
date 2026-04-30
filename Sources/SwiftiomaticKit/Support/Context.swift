@@ -50,7 +50,7 @@ package final class Context {
     // MARK: - Per-rule mutable state
     //
     // One typed lazy property per stateful compact-pipeline rewrite. Each is
-    // initialised on first access; the Context itself is constructed fresh
+    // initialized on first access; the Context itself is constructed fresh
     // per file by `RewriteCoordinator.format(syntax:...)`, so every file
     // starts with empty state.
 
@@ -135,7 +135,7 @@ package final class Context {
     /// Rewrite-path entry point for the gate check; equivalent to `shouldFormat(_:node:)`.
     /// Returns whether the rule should run on this node, consulting `RuleMask` (`// sm:ignore`)
     /// and `Configuration.isActive(rule:)` (per-rule `rewrite` flag, with `defaultIsActive: false`
-    /// honouring opt-in rules and `Configuration.forTesting(enabledRule:)` honouring tests).
+    /// honoring opt-in rules and `Configuration.forTesting(enabledRule:)` honoring tests).
     func shouldRewrite<R: SyntaxRule>(_ rule: R.Type, at node: Syntax) -> Bool {
         shouldFormat(rule, node: node)
     }

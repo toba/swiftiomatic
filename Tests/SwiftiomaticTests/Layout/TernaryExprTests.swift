@@ -279,4 +279,42 @@ struct TernaryExprTests: LayoutTesting {
 
     assertLayout(input: input, expected: expected, linelength: 50)
   }
+
+  @Test func ternaryFalseBranchSingleElementArrayStaysInline() {
+    // A single-element array literal in either branch of a wrapping ternary
+    // should stay on one line when it fits — the ternary's group must bound
+    // the array's internal break so the array does not split across lines.
+    let input =
+      """
+      let beforeTokens: [Token] = shouldGroup ? [.contextualBreakingStart, .open] : [.contextualBreakingStart]
+      """
+    let expected =
+      """
+      let beforeTokens: [Token] = shouldGroup
+        ? [.contextualBreakingStart, .open]
+        : [.contextualBreakingStart]
+
+      """
+
+    assertLayout(input: input, expected: expected, linelength: 80)
+  }
+
+  @Test func ternaryFalseBranchTupleStaysInline() {
+    // Same chunk-bounding requirement as the array-literal case: a tuple in the
+    // false branch must stay inline when it fits, instead of splitting across
+    // the parens because the outer ternary wrapped.
+    let input =
+      """
+      return index > 0 ? (beforeTokens[..<index], beforeTokens[index...]) : ([], beforeTokens[...])
+      """
+    let expected =
+      """
+      return index > 0
+        ? (beforeTokens[..<index], beforeTokens[index...])
+        : ([], beforeTokens[...])
+
+      """
+
+    assertLayout(input: input, expected: expected, linelength: 80)
+  }
 }
