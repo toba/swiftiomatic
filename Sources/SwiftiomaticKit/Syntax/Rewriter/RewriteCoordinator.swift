@@ -2,11 +2,11 @@
 //
 // This source file is part of the Swift.org open source project
 //
-// Copyright (c) 2014 - 2024 Apple Inc. and the Swift project authors Licensed under Apache License
-// v2.0 with Runtime Library Exception
+// Copyright (c) 2014 - 2024 Apple Inc. and the Swift project authors
+// Licensed under Apache License v2.0 with Runtime Library Exception
 //
-// See https://swift.org/LICENSE.txt for license information See https://swift.org/CONTRIBUTORS.txt
-// for the list of Swift project authors
+// See https://swift.org/LICENSE.txt for license information
+// See https://swift.org/CONTRIBUTORS.txt for the list of Swift project authors
 //
 // ===----------------------------------------------------------------------===//
 
@@ -63,11 +63,13 @@ package final class RewriteCoordinator {
             throw SwiftiomaticError.fileNotReadable
         }
         var isDir: ObjCBool = false
+
         if FileManager.default.fileExists(atPath: url.path, isDirectory: &isDir), isDir.boolValue {
             throw SwiftiomaticError.isDirectory
         }
 
         let source: String
+
         do {
             source = try String(contentsOf: url, encoding: .utf8)
         } catch {
@@ -219,7 +221,9 @@ package final class RewriteCoordinator {
     }
 
     private func runStructuralPass<V, R: StructuralFormatRule<V>>(
-        _ rule: R.Type, on node: Syntax, context: Context
+        _ rule: R.Type,
+        on node: Syntax,
+        context: Context
     ) -> Syntax {
         guard context.shouldRewrite(rule, at: node) else { return node }
         return rule.init(context: context).rewrite(node)

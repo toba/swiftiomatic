@@ -603,4 +603,61 @@ struct SwitchStmtTests: LayoutTesting {
       configuration: configuration
     )
   }
+
+  // fo7-8mu: when AlignWrappedConditions is enabled, wrapped switch case patterns
+  // should align under the first pattern (after `case `), not indent as continuation.
+  @Test func switchCaseMultiPatternAligns() {
+    let input =
+      """
+      switch piece {
+      case let .lineComment(t), let .blockComment(t), let .docBlockComment(t):
+        text = t
+      default: continue
+      }
+      """
+
+    let expected =
+      """
+      switch piece {
+      case let .lineComment(t),
+           let .blockComment(t),
+           let .docBlockComment(t):
+        text = t
+      default: continue
+      }
+
+      """
+
+    var configuration = Configuration.forTesting
+    configuration[AlignWrappedConditions.self] = true
+    assertLayout(input: input, expected: expected, linelength: 50, configuration: configuration)
+  }
+
+  // vw7-qtf: when patterns wrap across lines, a single-statement case body should
+  // remain inline after the colon (matching the inline-block behavior for
+  // single-pattern cases like `default: continue`).
+  @Test func switchCaseMultiPatternInlinesBody() {
+    let input =
+      """
+      switch piece {
+      case let .lineComment(t), let .blockComment(t), let .docBlockComment(t): text = t
+      default: continue
+      }
+      """
+
+    let expected =
+      """
+      switch piece {
+      case let .lineComment(t),
+           let .blockComment(t),
+           let .docBlockComment(t): text = t
+      default: continue
+      }
+
+      """
+
+    var configuration = Configuration.forTesting
+    configuration[AlignWrappedConditions.self] = true
+    assertLayout(input: input, expected: expected, linelength: 50, configuration: configuration)
+  }
 }

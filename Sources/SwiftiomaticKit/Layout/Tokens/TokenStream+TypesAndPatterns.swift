@@ -52,6 +52,13 @@ extension TokenStream {
         return .visitChildren
     }
 
+    func visitTupleTypeElementList(
+        _ node: TupleTypeElementListSyntax
+    ) -> SyntaxVisitorContinueKind {
+        markCommaDelimitedRegion(node, isCollectionLiteral: false)
+        return .visitChildren
+    }
+
     func visitTupleTypeElement(_ node: TupleTypeElementSyntax) -> SyntaxVisitorContinueKind {
         before(node.firstToken(viewMode: .sourceAccurate), tokens: .open)
         before(

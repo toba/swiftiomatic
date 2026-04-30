@@ -475,4 +475,27 @@ struct ForInStmtTests: LayoutTesting {
       """
     assertLayout(input: input, expected: expected, linelength: 20)
   }
+
+  // ojf-4w0: when a `for ... where ...` header wraps, the `where` clause should drop
+  // to its own line at the same indent as `for`. The opening `{` stays inline with the
+  // `where` clause when it fits.
+  @Test func forWhereWrapsHeader() {
+    let input =
+      """
+      for match in regex.matches(in: text, options: [], range: range) where match.numberOfRanges > 1 {
+        body()
+      }
+      """
+
+    let expected =
+      """
+      for match in regex.matches(in: text, options: [], range: range)
+      where match.numberOfRanges > 1 {
+        body()
+      }
+
+      """
+
+    assertLayout(input: input, expected: expected, linelength: 80)
+  }
 }

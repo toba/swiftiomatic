@@ -112,6 +112,9 @@ extension GenericParameterListSyntax: CommaSeparatedListSyntax {
 extension TuplePatternElementListSyntax: CommaSeparatedListSyntax {
     var lastNodeForTrailingComma: SyntaxProtocol? { last?.pattern }
 }
+extension TupleTypeElementListSyntax: CommaSeparatedListSyntax {
+    var lastNodeForTrailingComma: SyntaxProtocol? { last?.type }
+}
 
 extension SyntaxProtocol {
     func asProtocol(_: (any CommaSeparatedListSyntax).Protocol) -> (any CommaSeparatedListSyntax)? {

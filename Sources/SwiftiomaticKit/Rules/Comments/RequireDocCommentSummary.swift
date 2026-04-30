@@ -10,10 +10,10 @@
 //
 //===----------------------------------------------------------------------===//
 
-import Foundation
 import Markdown
-import NaturalLanguage
+import Foundation
 import SwiftSyntax
+import NaturalLanguage
 import Synchronization
 
 /// All documentation comments must begin with a one-line summary of the declaration.
@@ -35,7 +35,7 @@ final class RequireDocCommentSummary: LintSyntaxRule<LintOnlyValue>, @unchecked 
 
     /// Identifies this rule as being opt-in. Well written docs on declarations are important, but
     /// this rule isn't linguistically advanced enough on all platforms to be applied universally.
-    override class var defaultValue: LintOnlyValue { LintOnlyValue(lint: .no) }
+    override class var defaultValue: LintOnlyValue { .init(lint: .no) }
 
     override func visit(_ node: FunctionDeclSyntax) -> SyntaxVisitorContinueKind {
         diagnoseDocComments(in: DeclSyntax(node))
@@ -94,25 +94,26 @@ final class RequireDocCommentSummary: LintSyntaxRule<LintOnlyValue>, @unchecked 
 
     /// Diagnose documentation comments that don't start with one sentence summary.
     private func diagnoseDocComments(in decl: DeclSyntax) {
-        // Extract the summary from a documentation comment, if it exists, and strip
-        // out any inline code segments (which shouldn't be considered when looking
-        // for the end of a sentence).
+        // Extract the summary from a documentation comment, if it exists, and strip out any inline
+        // code segments (which shouldn't be considered when looking for the end of a sentence).
         var inlineCodeRemover = InlineCodeRemover()
-        guard
-            let docComment = DocumentationComment(extractedFrom: decl),
-            let briefSummary = docComment.briefSummary,
-            let noInlineCodeSummary = inlineCodeRemover.visit(briefSummary) as? Paragraph
-        else { return }
+        guard let docComment = DocumentationComment(extractedFrom: decl),
+              let briefSummary = docComment.briefSummary,
+              let noInlineCodeSummary = inlineCodeRemover.visit(briefSummary) as? Paragraph else {
+            return
+        }
 
         // For the purposes of checking the sentence structure of the comment, we can operate on the
         // plain text; we don't need any of the styling.
         let trimmedText = noInlineCodeSummary.plainText
             .trimmingCharacters(in: .whitespacesAndNewlines)
         let (commentSentences, trailingText) = sentences(in: trimmedText)
+
         if commentSentences.isEmpty {
             diagnose(.terminateSentenceWithPeriod(trimmedText), on: decl)
         } else if commentSentences.count > 1 {
             diagnose(.addBlankLineAfterFirstSentence(commentSentences[0]), on: decl)
+
             if !trailingText.isEmpty {
                 diagnose(.terminateSentenceWithPeriod(trailingText), on: decl)
             }
@@ -125,22 +126,21 @@ final class RequireDocCommentSummary: LintSyntaxRule<LintOnlyValue>, @unchecked 
     /// simpler (and less accurate) character-based string APIs are substituted.
     ///
     /// - Parameter text: The text from which sentences should be extracted.
-    /// - Returns: A tuple of two values: `sentences`, the array of sentences that were found, and
-    ///   `trailingText`, which is any non-whitespace text after the last sentence that was not
-    ///   terminated by sentence terminating punctuation. Note that if the entire string is a sequence
-    ///   of words that contains _no_ terminating punctuation, the returned array will be empty to
-    ///   indicate that there were no _complete_ sentences found, and `trailingText` will contain the
-    ///   actual text).
+    /// - Returns: A tuple of two values: `sentences` , the array of sentences that were found, and
+    ///   `trailingText` , which is any non-whitespace text after the last sentence that was not
+    ///   terminated by sentence terminating punctuation. Note that if the entire string is a
+    ///   sequence of words that contains _no_ terminating punctuation, the returned array will be
+    ///   empty to indicate that there were no _complete_ sentences found, and `trailingText` will
+    ///   contain the actual text).
     private func sentences(in text: String) -> (sentences: [String], trailingText: Substring) {
         if RequireDocCommentSummary._forcesFallbackModeForTesting {
             return nonLinguisticSentenceApproximations(in: text)
         }
-
         var sentences = [String]()
         var tags = [NLTag]()
         var tokenRanges = [Range<String.Index>]()
-
         let tagger = NLTagger(tagSchemes: [.lexicalClass])
+        
         tagger.string = text
         tagger.enumerateTags(
             in: text.startIndex..<text.endIndex,
@@ -167,6 +167,7 @@ final class RequireDocCommentSummary: LintSyntaxRule<LintOnlyValue>, @unchecked 
         }
 
         var previous = text.startIndex
+
         for index in sentenceTerminatorIndices {
             let sentenceRange = previous...index
             sentences.append(text[sentenceRange].trimmingCharacters(in: .whitespaces))
@@ -179,17 +180,17 @@ final class RequireDocCommentSummary: LintSyntaxRule<LintOnlyValue>, @unchecked 
     /// Returns the best approximation of sentences in the given text using string splitting around
     /// periods that are followed by spaces.
     ///
-    /// This method is a fallback for platforms (like Linux, currently) that does not
-    /// support `NaturalLanguage` and its related APIs. It will fail to catch certain kinds of
-    /// sentences (such as those containing abbreviations that are followed by a period, like "Dr.")
-    /// that the more advanced API can handle.
+    /// This method is a fallback for platforms (like Linux, currently) that does not support
+    /// `NaturalLanguage` and its related APIs. It will fail to catch certain kinds of sentences
+    /// (such as those containing abbreviations that are followed by a period, like "Dr.") that the
+    /// more advanced API can handle.
     private func nonLinguisticSentenceApproximations(
         in text: String
     ) -> (
         sentences: [String], trailingText: Substring
     ) {
-        // If we find a period followed by a space, then there is definitely one (approximate) sentence;
-        // there may be more.
+        // If we find a period followed by a space, then there is definitely one (approximate)
+        // sentence; there may be more.
         let possiblyHasMultipleSentences = text.range(of: ". ") != nil
 
         // If the string does not end in a period, then the text preceding it (up until the last
@@ -198,21 +199,21 @@ final class RequireDocCommentSummary: LintSyntaxRule<LintOnlyValue>, @unchecked 
         let hasTrailingText = !text.hasSuffix(".")
 
         if !possiblyHasMultipleSentences {
-            // If we didn't find a ". " sequence, then we either have trailing text (if there is no period
-            // at the end of the string) or we have a single sentence (if there is a final period).
-            if hasTrailingText {
-                return (sentences: [], trailingText: text[...])
-            } else {
-                return (sentences: [text], trailingText: "")
-            }
+            // If we didn't find a ". " sequence, then we either have trailing text (if there is no
+            // period at the end of the string) or we have a single sentence (if there is a final
+            // period).
+            return hasTrailingText
+                ? (sentences: [], trailingText: text[...])
+                : (sentences: [text], trailingText: "")
         }
 
         // Otherwise, split the string around ". " sequences. All of these but the last one are
-        // definitely (approximate) sentences. The last one is either trailing text or another sentence,
-        // depending on whether the entire string ended with a period.
+        // definitely (approximate) sentences. The last one is either trailing text or another
+        // sentence, depending on whether the entire string ended with a period.
         let splitText = text.components(separatedBy: ". ")
         let definiteApproximateSentences = splitText.dropLast().map { "\($0)." }
         let trailingText = splitText.last ?? ""
+
         if hasTrailingText {
             return (sentences: Array(definiteApproximateSentences), trailingText: trailingText[...])
         } else {
@@ -223,14 +224,12 @@ final class RequireDocCommentSummary: LintSyntaxRule<LintOnlyValue>, @unchecked 
     }
 }
 
-extension Finding.Message {
-    fileprivate static func terminateSentenceWithPeriod<Sentence: StringProtocol>(
+fileprivate extension Finding.Message {
+    static func terminateSentenceWithPeriod<Sentence: StringProtocol>(
         _ text: Sentence
-    ) -> Finding.Message {
-        "terminate this sentence with a period: \"\(text)\""
-    }
+    ) -> Finding.Message { "terminate this sentence with a period: \"\(text)\"" }
 
-    fileprivate static func addBlankLineAfterFirstSentence<Sentence: StringProtocol>(
+    static func addBlankLineAfterFirstSentence<Sentence: StringProtocol>(
         _ text: Sentence
     ) -> Finding.Message {
         "add a blank comment line after this sentence: \"\(text)\""
@@ -238,7 +237,5 @@ extension Finding.Message {
 }
 
 struct InlineCodeRemover: MarkupRewriter {
-    mutating func visitInlineCode(_ inlineCode: InlineCode) -> Markup? {
-        nil
-    }
+    mutating func visitInlineCode(_: InlineCode) -> Markup? { nil }
 }

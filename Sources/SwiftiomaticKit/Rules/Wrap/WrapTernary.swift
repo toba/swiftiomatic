@@ -37,6 +37,7 @@ final class WrapTernary: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
             // Nested ternaries (those inside another ternary) only wrap when their intrinsic length
             // exceeds the line length on its own. Their actual column after the parent wraps is
             // not knowable here, and using the raw source column would over-wrap.
+            //
             if hasAncestorTernary(parent: parent) {
                 needsWrap = length > lineLength
             } else {

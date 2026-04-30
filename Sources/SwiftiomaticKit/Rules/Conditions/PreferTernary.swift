@@ -142,7 +142,8 @@ final class PreferTernary: StaticFormatRule<BasicRuleValue>, @unchecked Sendable
         let ternary = buildTernaryExpr(
             condition: ifExpr.conditions,
             thenExpr: thenReturn,
-            elseExpr: elseReturn)
+            elseExpr: elseReturn,
+            context: context)
 
         let returnStmt = ReturnStmtSyntax(
             returnKeyword: .keyword(.return, trailingTrivia: .space),
@@ -204,7 +205,8 @@ final class PreferTernary: StaticFormatRule<BasicRuleValue>, @unchecked Sendable
         let ternary = buildTernaryExpr(
             condition: ifExpr.conditions,
             thenExpr: thenExpr,
-            elseExpr: elseExpr)
+            elseExpr: elseExpr,
+            context: context)
 
         let returnStmt = ReturnStmtSyntax(
             returnKeyword: .keyword(.return, trailingTrivia: .space),
@@ -229,7 +231,8 @@ final class PreferTernary: StaticFormatRule<BasicRuleValue>, @unchecked Sendable
         let ternary = buildTernaryExpr(
             condition: ifExpr.conditions,
             thenExpr: thenExpr,
-            elseExpr: elseExpr)
+            elseExpr: elseExpr,
+            context: context)
 
         let assignment = InfixOperatorExprSyntax(
             leftOperand: lhs.with(\.leadingTrivia, []).with(\.trailingTrivia, .space),
@@ -247,19 +250,37 @@ final class PreferTernary: StaticFormatRule<BasicRuleValue>, @unchecked Sendable
     private static func buildTernaryExpr(
         condition: ConditionElementListSyntax,
         thenExpr: ExprSyntax,
-        elseExpr: ExprSyntax
+        elseExpr: ExprSyntax,
+        context: Context
     ) -> ExprSyntax {
         // The caller already verified a single expression condition.
         let onlyCondition = condition.first!
         guard case let .expression(conditionExpr) = onlyCondition.condition
         else { return ExprSyntax(DeclReferenceExprSyntax(baseName: .identifier("false"))) }
 
-        let ternary = TernaryExprSyntax(
+        // Capture the original anchor column before detaching the condition, since
+        // startLocation on a detached/synthesized node is unreliable.
+        let anchorCol = conditionExpr.startLocation(converter: context.sourceLocationConverter).column
+
+        var ternary = TernaryExprSyntax(
             condition: conditionExpr.with(\.trailingTrivia, .space),
             questionMark: .infixQuestionMarkToken(trailingTrivia: .space),
             thenExpression: thenExpr.with(\.leadingTrivia, []).with(\.trailingTrivia, .space),
             colon: .colonToken(trailingTrivia: .space),
             elseExpression: elseExpr.with(\.leadingTrivia, []).with(\.trailingTrivia, []))
+
+        // The synthesized ternary is built inside a CodeBlockItemList rewrite, so the
+        // SyntaxRewriter never descends into it and WrapTernary's TernaryExpr visitor
+        // never fires. Mirror its policy here using the captured anchor column so both
+        // branches wrap together when the result would exceed the line length.
+        let lineLength = context.configuration[LineLength.self]
+        let singleLineLength = ternary.trimmedDescription
+            .split(whereSeparator: { $0.isWhitespace })
+            .joined(separator: " ").count
+        if (anchorCol - 1) + singleLineLength > lineLength {
+            ternary.questionMark.leadingTrivia = .newline + ternary.questionMark.leadingTrivia
+            ternary.colon.leadingTrivia = .newline + ternary.colon.leadingTrivia
+        }
 
         return ExprSyntax(ternary)
     }

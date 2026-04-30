@@ -112,8 +112,8 @@ private func applyBlankLinesAroundMark(
     _ token: TokenSyntax,
     context: Context
 ) -> TokenSyntax {
-    // Cheap precheck on the original Trivia to avoid materialising a `[TriviaPiece]`
-    // for the common case where this token has no `// MARK:` comment.
+    // Cheap precheck on the original Trivia to avoid materialising a `[TriviaPiece]` for the common
+    // case where this token has no `// MARK:` comment.
     guard token.leadingTrivia.pieces.contains(where: isMarkComment) else { return token }
 
     var pieces = Array(token.leadingTrivia.pieces)
@@ -165,10 +165,9 @@ private func isMarkComment(_ piece: TriviaPiece) -> Bool {
     return false
 }
 
-/// Walks `pieces` outward from `markIndex` in the requested direction, skipping
-/// spaces and tabs, returning the index of the first `.newlines` piece found.
-/// Returns `nil` if any other trivia kind (or the boundary of `pieces`) is
-/// reached first.
+/// Walks `pieces` outward from `markIndex` in the requested direction, skipping spaces and tabs,
+/// returning the index of the first `.newlines` piece found. Returns `nil` if any other trivia kind
+/// (or the boundary of `pieces` ) is reached first.
 private func findNewlinesAroundMark(
     _ markIndex: Int,
     in pieces: [TriviaPiece],
@@ -176,9 +175,13 @@ private func findNewlinesAroundMark(
 ) -> Int? {
     var j = before ? markIndex - 1 : markIndex + 1
     let step = before ? -1 : 1
+
     while j >= 0, j < pieces.count {
         if case .newlines = pieces[j] { return j }
-        if pieces[j].isSpaceOrTab { j += step; continue }
+        if pieces[j].isSpaceOrTab {
+            j += step
+            continue
+        }
         return nil
     }
     return nil
@@ -199,12 +202,12 @@ private func applyUppercaseAcronyms(
     context: Context
 ) -> TokenSyntax {
     guard case let .identifier(text) = token.tokenKind else { return token }
-    // Identifiers with no uppercase letter at all can never contain a
-    // titlecased acronym substring — short-circuit before iterating the
-    // acronym list.
+    // Identifiers with no uppercase letter at all can never contain a titlecased acronym substring
+    // — short-circuit before iterating the acronym list.
     guard text.contains(where: \.isUppercase) else { return token }
 
     var result = text
+
     for pair in context.preparedAcronyms {
         result = replaceAcronym(pair.titlecased, with: pair.uppercased, in: result)
     }
@@ -227,6 +230,7 @@ private func replaceAcronym(
 
         if remaining.hasPrefix(titlecased) {
             let afterMatch = text.index(index, offsetBy: titlecased.count)
+
             if isAcronymBoundary(text, at: afterMatch) {
                 result += uppercased
                 index = afterMatch

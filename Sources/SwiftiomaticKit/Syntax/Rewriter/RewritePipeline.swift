@@ -499,6 +499,7 @@ final class RewritePipeline: SyntaxRewriter {
         let parent = Syntax(node).parent
         let visited = super.visit(node)
         guard var concrete = visited.as(DeinitializerDeclSyntax.self) else { return visited }
+
         apply(ModifiersOnSameLine.self, to: &concrete, gate: gate) {
             ModifiersOnSameLine.transform($0, parent: parent, context: $1)
         }
@@ -526,12 +527,14 @@ final class RewritePipeline: SyntaxRewriter {
         guard let gate = context.gate(for: node) else { return super.visit(node) }
         let parent = Syntax(node).parent
         var current: DeclSyntax = super.visit(node)
+
         applyAsserting(
             ModifiersOnSameLine.self, to: &current, as: EnumCaseDeclSyntax.self, gate: gate
         ) { ModifiersOnSameLine.transform($0, parent: parent, context: $1) }
         applyAsserting(
             RedundantRawValues.self, to: &current, as: EnumCaseDeclSyntax.self, gate: gate
         ) { RedundantRawValues.transform($0, parent: parent, context: $1) }
+
         return current
     }
 
@@ -663,6 +666,7 @@ final class RewritePipeline: SyntaxRewriter {
         }
         let visited = super.visit(node)
         guard var concrete = visited.as(ForStmtSyntax.self) else { return visited }
+
         apply(CaseLet.self, to: &concrete, gate: gate) {
             CaseLet.transform($0, parent: parent, context: $1)
         }
@@ -801,6 +805,7 @@ final class RewritePipeline: SyntaxRewriter {
         }
         let visited = super.visit(node)
         guard var concrete = visited.as(FunctionDeclSyntax.self) else { return visited }
+
         apply(DocCommentsPrecedeModifiers.self, to: &concrete, gate: gate) {
             DocCommentsPrecedeModifiers.transform($0, parent: parent, context: $1)
         }
@@ -934,6 +939,7 @@ final class RewritePipeline: SyntaxRewriter {
             PreferShorthandTypeNames.willEnter(node, context: context)
         }
         var result: ExprSyntax = super.visit(node)
+
         if context.shouldRewrite(PreferShorthandTypeNames.self, gate: gate),
            let typed = result.as(GenericSpecializationExprSyntax.self)
         {
@@ -947,11 +953,13 @@ final class RewritePipeline: SyntaxRewriter {
         let parent = Syntax(node).parent
         let runWrapSingleLineBodies = context.shouldRewrite(WrapSingleLineBodies.self, gate: gate)
         if runWrapSingleLineBodies { WrapSingleLineBodies.willEnter(node, context: context) }
+
         defer {
             if runWrapSingleLineBodies { WrapSingleLineBodies.didExit(node, context: context) }
         }
         let visited = super.visit(node)
         guard var concrete = visited.as(GuardStmtSyntax.self) else { return visited }
+
         if context.shouldRewrite(NoParensAroundConditions.self, gate: gate) {
             NoParensAroundConditions.fixKeywordTrailingTrivia(&concrete.guardKeyword.trailingTrivia)
         }
@@ -1015,6 +1023,7 @@ final class RewritePipeline: SyntaxRewriter {
         }
         let visited = super.visit(node)
         guard var concrete = visited.as(ImportDeclSyntax.self) else { return visited }
+
         apply(ModifiersOnSameLine.self, to: &concrete, gate: gate) {
             ModifiersOnSameLine.transform($0, parent: parent, context: $1)
         }

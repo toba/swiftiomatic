@@ -348,38 +348,78 @@ extension TokenStream {
         before(node.caseKeyword, tokens: .open)
         after(node.caseKeyword, tokens: .space)
 
-        // Outer consistent group around the case items: once any item wraps, every item wraps.
-        // Only meaningful with multiple items.
-        if node.caseItems.count > 1 {
+        // Outer consistent group around case items: once any item wraps, every item wraps.
+        // The matching `.close` is `after` the LAST item's last token (before the colon),
+        // keeping the colon outside this group's force-break scope.
+        let caseItems = Array(node.caseItems)
+        if caseItems.count > 1 {
             before(
-                node.caseItems.firstToken(viewMode: .sourceAccurate),
+                caseItems.first!.firstToken(viewMode: .sourceAccurate),
                 tokens: .open(.consistent)
             )
-            after(node.caseItems.lastToken(viewMode: .sourceAccurate), tokens: .close)
+            after(caseItems.last!.lastToken(viewMode: .sourceAccurate), tokens: .close)
         }
 
-        // If an item with a `where` clause follows an item without a `where` clause, the compiler
-        // emits a warning telling the user that they should insert a newline between them to
-        // disambiguate their appearance. We enforce that "requirement" here to avoid spurious
-        // warnings, especially following a `NoCasesWithOnlyFallthrough` transformation that might
-        // merge cases.
-        let caseItems = Array(node.caseItems)
+        // Mirror upstream's per-item structure (per-item `.open`/`.close` group, `.break`
+        // between items via `after(trailingComma, ...)`). With `AlignWrappedConditions`,
+        // upgrade the inter-item break to `.break(.open(.alignment(5)))` so wrapped items
+        // align under the first pattern (after `case `). To keep only ONE alignment scope
+        // active at a time (and therefore a single shared alignment column for all wrapped
+        // items), each alignment-open break is closed by a `.break(.close)` enqueued just
+        // before the NEXT alignment-open break (or, for the final item, after the colon —
+        // outside the case-keyword group, so the colon stays glued to the last pattern).
+        //
+        // Disambiguation: if an item with a `where` clause follows an item without one, the
+        // compiler warns. Enforce a soft newline between such items to avoid the warning,
+        // especially after `NoCasesWithOnlyFallthrough` transforms that might merge cases.
+        let useAlignment = config[AlignWrappedConditions.self]
+        var hasOpenAlignmentBreak = false
         for (index, item) in caseItems.enumerated() {
             before(item.firstToken(viewMode: .sourceAccurate), tokens: .open)
             if let trailingComma = item.trailingComma {
-                // Insert a newline before the next item if it has a where clause and this item
-                // doesn't.
                 let nextItemHasWhereClause = index + 1 < caseItems.endIndex
                     && caseItems[index + 1].whereClause != nil
                 let requiresNewline = item.whereClause == nil && nextItemHasWhereClause
                 let newlines: NewlineBehavior = requiresNewline ? .soft : .elective
-                after(trailingComma, tokens: .close, .break(.continue, size: 1, newlines: newlines))
+                if useAlignment {
+                    var afterTokens: [Token] = [.close]  // close per-item
+                    if hasOpenAlignmentBreak {
+                        afterTokens.append(.break(.close(mustBreak: false), size: 0))
+                    }
+                    afterTokens.append(
+                        .break(
+                            .open(kind: .alignment(spaces: 5)),  // length of "case "
+                            size: 1,
+                            newlines: newlines
+                        )
+                    )
+                    after(trailingComma, tokens: afterTokens)
+                    hasOpenAlignmentBreak = true
+                } else {
+                    after(
+                        trailingComma,
+                        tokens: .close,
+                        .break(.continue, size: 1, newlines: newlines)
+                    )
+                }
             } else {
+                // Final item: close per-item group at its last token.
                 after(item.lastToken(viewMode: .sourceAccurate), tokens: .close)
             }
         }
 
-        after(node.colon, tokens: .close)
+        // Close the final alignment-open AFTER the last item but BEFORE the colon, so that
+        // the break-close lives outside the consistent-group's force-break scope (its
+        // `.close` was appended above on the last item's last token) and BEFORE the body's
+        // `.break(.open)` (added by `visitSwitchCase`'s `after(node.label.lastToken)`),
+        // keeping break depth properly nested.
+        if hasOpenAlignmentBreak {
+            after(
+                caseItems.last!.lastToken(viewMode: .sourceAccurate),
+                tokens: .break(.close(mustBreak: false), size: 0)
+            )
+        }
+        after(node.colon, tokens: .close)  // closes the outermost `.open` for caseKeyword
         closingDelimiterTokens.insert(node.colon)
         return .visitChildren
     }

@@ -44,8 +44,8 @@ struct Verbatim: Sendable {
             return
         }
 
-        // If our indenting behavior is `none`, then keep the original lines _exactly_ as is---don't
-        // attempt to calculate or trim their leading indentation.
+        // If our indenting behavior is `none` , then keep the original lines _exactly_ as
+        // is---don't attempt to calculate or trim their leading indentation.
         guard indentingBehavior != .none else {
             lines = originalLines.map(String.init)
             leadingWhitespaceCounts = [Int](repeating: 0, count: originalLines.count)
@@ -53,9 +53,9 @@ struct Verbatim: Sendable {
         }
 
         // Otherwise, we're in one of the indentation compensating modes. Get the number of leading
-        // whitespaces of the first line, and subtract this from the number of leading whitespaces for
-        // subsequent lines (if possible). Record the new leading whitespaces counts, and trim off
-        // whitespace from the ends of the strings.
+        // whitespaces of the first line, and subtract this from the number of leading whitespaces
+        // for subsequent lines (if possible). Record the new leading whitespaces counts, and trim
+        // off whitespace from the ends of the strings.
         let firstLineLeadingSpaceCount = numberOfLeadingSpaces(in: originalLines[index])
 
         leadingWhitespaceCounts = originalLines.map {
@@ -69,23 +69,24 @@ struct Verbatim: Sendable {
     /// Returns the length that the pretty printer should use when determining layout for this
     /// verbatim content.
     ///
-    /// Specifically, multiline content should have a length equal to the maximum (to force breaking),
-    /// while single-line content should have its natural length.
+    /// Specifically, multiline content should have a length equal to the maximum (to force
+    /// breaking), while single-line content should have its natural length.
     func prettyPrintingLength(maximum: Int) -> Int {
         if lines.isEmpty { 0 } else if lines.count > 1 { maximum } else { lines[0].count }
     }
 
     func print(indent: [Indent]) -> String {
-        // Hoist the indentation string and pre-compute the output capacity so the
-        // writer doesn't reallocate while concatenating each line.
+        // Hoist the indentation string and pre-compute the output capacity so the writer doesn't
+        // reallocate while concatenating each line.
         let indentation = indent.indentation()
         var capacity = 0
+
         for i in 0..<lines.count {
             let line = lines[i]
+
             if !line.isEmpty {
                 switch indentingBehavior {
-                    case .firstLine where i == 0, .allLines:
-                        capacity += indentation.utf8.count
+                    case .firstLine where i == 0, .allLines: capacity += indentation.utf8.count
                     case .none, .firstLine: break
                 }
                 capacity += leadingWhitespaceCounts[i] + line.utf8.count

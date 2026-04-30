@@ -2,11 +2,11 @@
 //
 // This source file is part of the Swift.org open source project
 //
-// Copyright (c) 2014 - 2019 Apple Inc. and the Swift project authors Licensed under Apache License
-// v2.0 with Runtime Library Exception
+// Copyright (c) 2014 - 2019 Apple Inc. and the Swift project authors
+// Licensed under Apache License v2.0 with Runtime Library Exception
 //
-// See https://swift.org/LICENSE.txt for license information See https://swift.org/CONTRIBUTORS.txt
-// for the list of Swift project authors
+// See https://swift.org/LICENSE.txt for license information
+// See https://swift.org/CONTRIBUTORS.txt for the list of Swift project authors
 //
 // ===----------------------------------------------------------------------===//
 
@@ -51,6 +51,7 @@ package final class WhitespaceLinter {
 
         repeat {
             userWhitespace = contiguousWhitespace(startingAt: userIndex, in: userText)
+
             let formattedWhitespace = contiguousWhitespace(
                 startingAt: formattedIndex,
                 in: formattedText
@@ -58,7 +59,8 @@ package final class WhitespaceLinter {
 
             // `userText` and `formattedText` should only differ in their whitespace characters.
             assert(
-                safeCodeUnit(at: userWhitespace.endIndex, in: userText)
+                safeCodeUnit(
+                    at: userWhitespace.endIndex, in: userText)
                     == safeCodeUnit(at: formattedWhitespace.endIndex, in: formattedText),
                 "Non-whitespace characters do not match"
             )
@@ -200,8 +202,7 @@ package final class WhitespaceLinter {
     ) {
         // Only run this check at the start of a line.
         guard (userRuns.count > 1 && formattedRuns.count > 1)
-            || (userRuns.count == 1 && formattedRuns.count == 1 && userIndex == 0)
-        else { return }
+            || (userRuns.count == 1 && formattedRuns.count == 1 && userIndex == 0) else { return }
 
         let lengthLimit = context.configuration[LineLength.self]
 
@@ -402,6 +403,7 @@ package final class WhitespaceLinter {
             run.char == utf8Tab ? Indent.tabs(run.count) : Indent.spaces(run.count)
         }
         if indents.count == 1, let onlyIndent = indents.first { return .homogeneous(onlyIndent) }
+
         return .heterogeneous(indents)
     }
 }
@@ -445,6 +447,7 @@ fileprivate extension WhitespaceIndentation {
             case let .heterogeneous(indents):
                 guard let first = indents.first else { return "no indentation" }
                 var description = first.diagnosticDescription
+
                 for i in 1..<indents.count {
                     description += ", " + indents[i].diagnosticDescription
                 }
@@ -463,7 +466,6 @@ fileprivate extension Finding.Message {
     ) -> Finding.Message {
         switch expectedIndentation {
             case .none: return "remove all leading whitespace"
-
             case .homogeneous, .heterogeneous:
                 if case let .homogeneous(expectedIndent) = expectedIndentation,
                    case let .homogeneous(actualIndent) = actualIndentation
@@ -488,6 +490,7 @@ fileprivate extension Finding.Message {
                 // It's easier to instruct the user to remove the existing whitespace and add the
                 // appropriate sequence of indenting characters.
                 let expectedDescription = expectedIndentation.diagnosticDescription
+
                 return "replace leading whitespace with \(expectedDescription)"
         }
     }

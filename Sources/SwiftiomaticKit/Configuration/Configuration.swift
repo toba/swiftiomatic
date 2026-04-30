@@ -20,10 +20,9 @@ package struct Configuration: Sendable, Equatable {
 
     /// Look up any `Configurable` value by type, falling back to its default.
     ///
-    /// A type mismatch in the underlying storage is a programmer error — typically a
-    /// duplicate key registered for two different `Configurable` types. The getter
-    /// traps with a diagnostic instead of silently returning the default, which
-    /// would hide the bug.
+    /// A type mismatch in the underlying storage is a programmer error — typically a duplicate key
+    /// registered for two different `Configurable` types. The getter traps with a diagnostic
+    /// instead of silently returning the default, which would hide the bug.
     package subscript<C: Configurable>(_: C.Type = C.self) -> C.Value {
         get {
             let key = C.group.map { "\($0.key).\(C.key)" } ?? C.key
@@ -42,24 +41,21 @@ package struct Configuration: Sendable, Equatable {
         }
     }
 
-    /// Returns whether the given rule is active, using existential dispatch on the
-    /// runtime metatype.
+    /// Returns whether the given rule is active, using existential dispatch on the runtime
+    /// metatype.
     ///
-    /// This is the dynamic-type-correct counterpart to `configuration[R.self].isActive`.
-    /// The generic subscript binds `C` from the static call-site type — when called
-    /// from inside a generic base class (e.g. `StructuralFormatRule.visitAny`), `C` is
-    /// the static base type and `C.key`/`C.defaultValue` lookups resolve against the
-    /// base class's witness, NOT the dynamic subclass. That returns the wrong rule key
-    /// (`"rewriteSyntaxRule<BasicRuleValue>"`) and a default of `(rewrite: true, lint:
-    /// .warn)`, which causes disabled rules to fire.
+    /// This is the dynamic-type-correct counterpart to `configuration[R.self].isActive` . The
+    /// generic subscript binds `C` from the static call-site type — when called from inside a
+    /// generic base class (e.g. `StructuralFormatRule.visitAny` ), `C` is the static base type and
+    /// `C.key` / `C.defaultValue` lookups resolve against the base class's witness, NOT the dynamic
+    /// subclass. That returns the wrong rule key ( `"rewriteSyntaxRule<BasicRuleValue>"` ) and a
+    /// default of `(rewrite: true, lint: .warn)` , which causes disabled rules to fire.
     ///
-    /// This helper avoids that footgun by going through `any SyntaxRule.Type`, whose
-    /// member access dispatches on the runtime metatype.
+    /// This helper avoids that footgun by going through `any SyntaxRule.Type` , whose member access
+    /// dispatches on the runtime metatype.
     func isActive(rule: any SyntaxRule.Type) -> Bool {
         let qualified = rule.group.map { "\($0.key).\(rule.key)" } ?? rule.key
-        if let stored = values[qualified] as? any SyntaxRuleValue {
-            return stored.isActive
-        }
+        if let stored = values[qualified] as? any SyntaxRuleValue { return stored.isActive }
         return rule.defaultIsActive
     }
 
@@ -83,14 +79,16 @@ package struct Configuration: Sendable, Equatable {
         let isEqual: @Sendable (Configuration, Configuration) -> Bool
     }
 
-    /// Builds the shared decode/encode/equality closures for any `Configurable` type.
-    /// Used by both `SettingEntry` and `RuleEntry` factories.
+    /// Builds the shared decode/encode/equality closures for any `Configurable` type. Used by both
+    /// `SettingEntry` and `RuleEntry` factories.
     private static func codingClosures<C: Configurable>(
         for _: C.Type
     ) -> (
-        decode: @Sendable (KeyedDecodingContainer<AnyCodingKey>, AnyCodingKey, inout Configuration)
+        decode:
+            @Sendable (KeyedDecodingContainer<AnyCodingKey>, AnyCodingKey, inout Configuration)
             throws -> Void,
-        encode: @Sendable (Configuration, inout KeyedEncodingContainer<AnyCodingKey>, AnyCodingKey)
+        encode:
+            @Sendable (Configuration, inout KeyedEncodingContainer<AnyCodingKey>, AnyCodingKey)
             throws -> Void,
         isEqual: @Sendable (Configuration, Configuration) -> Bool
     ) {
@@ -110,7 +108,7 @@ package struct Configuration: Sendable, Equatable {
     private static func entry(for type: any LayoutRule.Type) -> SettingEntry {
         func open<D: LayoutRule>(_: D.Type) -> SettingEntry {
             let codecs = codingClosures(for: D.self)
-            return SettingEntry(
+            return .init(
                 key: D.key,
                 groupKey: D.group?.key,
                 decode: codecs.decode,
@@ -127,8 +125,8 @@ package struct Configuration: Sendable, Equatable {
         uniqueKeysWithValues: settingEntries.map { ($0.key, $0) })
 
     private static let settingKeyNames: Set<String> = {
-        // Only include setting keys that don't collide with group names,
-        // so group keys still fall through to the group decoder.
+        // Only include setting keys that don't collide with group names, so group keys still fall
+        // through to the group decoder.
         var names = Set(settingEntries.map(\.key)).subtracting(groupKeyNames)
         names.insert("version")
         return names
@@ -139,7 +137,7 @@ package struct Configuration: Sendable, Equatable {
     private struct RuleEntry: Sendable {
         /// Short key used for JSON encoding within a group (or at root if ungrouped).
         let key: String
-        /// Qualified key (`group.key` or bare `key`) for unique internal lookup.
+        /// Qualified key ( `group.key` or bare `key` ) for unique internal lookup.
         let qualifiedKey: String
         let groupKey: ConfigurationGroup.Key?
         let decode:
@@ -156,7 +154,7 @@ package struct Configuration: Sendable, Equatable {
     private static func ruleEntry(for type: any SyntaxRule.Type) -> RuleEntry {
         func open<R: SyntaxRule>(_: R.Type) -> RuleEntry {
             let codecs = codingClosures(for: R.self)
-            return RuleEntry(
+            return .init(
                 key: R.key,
                 qualifiedKey: R.qualifiedKey,
                 groupKey: R.group?.key,
@@ -180,27 +178,28 @@ package struct Configuration: Sendable, Equatable {
         return open(type)
     }
 
-    private static let ruleEntries:
-        [RuleEntry] = ConfigurationRegistry.allRuleTypes.map { ruleEntry(for: $0) }
+    private static let ruleEntries: [RuleEntry] = ConfigurationRegistry.allRuleTypes.map {
+        ruleEntry(for: $0)
+    }
 
     private static let rulesByKey: [String: RuleEntry] = Dictionary(
         uniqueKeysWithValues: ruleEntries.map { ($0.qualifiedKey, $0) })
 
     // MARK: - Rule key metadata (for `sm update`)
 
-    /// All valid rule qualified keys (`group.key` or bare `key`).
+    /// All valid rule qualified keys ( `group.key` or bare `key` ).
     package static var allRuleQualifiedKeys: Set<String> { Set(ruleEntries.map(\.qualifiedKey)) }
 
-    /// Maps each rule's short key to its canonical qualified key.
-    /// If two rules share a short key (different groups), one is chosen arbitrarily.
+    /// Maps each rule's short key to its canonical qualified key. If two rules share a short key
+    /// (different groups), one is chosen arbitrarily.
     package static var qualifiedKeyByShortKey: [String: String] {
         var map: [String: String] = [:]
         for entry in ruleEntries { map[entry.key] = entry.qualifiedKey }
         return map
     }
 
-    /// All keys that are settings or meta fields (not rules or groups),
-    /// regardless of whether they're currently grouped or ungrouped.
+    /// All keys that are settings or meta fields (not rules or groups), regardless of whether
+    /// they're currently grouped or ungrouped.
     package static var allSettingAndMetaKeys: Set<String> {
         var keys = Set(settingEntries.map(\.key))
         keys.insert("version")
@@ -225,7 +224,7 @@ package struct Configuration: Sendable, Equatable {
         for entry in Self.ruleEntries { entry.disable(&self) }
     }
 
-    /// Enables a rule by qualified key (`group.key`) or short key (`key`).
+    /// Enables a rule by qualified key ( `group.key` ) or short key ( `key` ).
     package mutating func enableRule(named name: String) {
         if let entry = Self.rulesByKey[name] {
             entry.enable(&self)
@@ -262,6 +261,7 @@ package struct Configuration: Sendable, Equatable {
         {
             candidateDirectory.appendPathComponent("placeholder")
         }
+
         repeat {
             candidateDirectory.deleteLastPathComponent()
             let candidateFile = candidateDirectory.appendingPathComponent("swiftiomatic.json")
@@ -278,19 +278,18 @@ package struct Configuration: Sendable, Equatable {
 /// format in the future if desired and still support older files.
 private let highestSupportedConfigurationVersion = 8
 
-extension Configuration {
-    /// The URL of the JSON schema hosted on GitHub. Embedded as `$schema` by `encode(to:)`.
-    package static let schemaURL =
+package extension Configuration {
+    /// The URL of the JSON schema hosted on GitHub. Embedded as `$schema` by `encode(to:)` .
+    static let schemaURL =
         "https://raw.githubusercontent.com/toba/swiftiomatic/refs/heads/main/schema.json"
 }
 
-extension String {
-    /// Splits a qualified configuration key like `"group.name"` into `(group, name)` parts.
-    /// Returns `(nil, self)` when no group prefix is present.
-    package var qualifiedKeyParts: (group: String?, name: String) {
+package extension String {
+    /// Splits a qualified configuration key like `"group.name"` into `(group, name)` parts. Returns
+    /// `(nil, self)` when no group prefix is present.
+    var qualifiedKeyParts: (group: String?, name: String) {
         let parts = split(separator: ".", maxSplits: 1).map(String.init)
-        if parts.count == 2 { return (parts[0], parts[1]) }
-        return (nil, self)
+        return parts.count == 2 ? (parts[0], parts[1]) : (nil, self)
     }
 }
 
@@ -313,8 +312,8 @@ extension Configuration: Codable {
         var config = Configuration()
         config.version = version
 
-        // Decode root-level layout settings (including grouped settings placed at root).
-        // Skip any setting whose key collides with a group name (e.g. "blankLines").
+        // Decode root-level layout settings (including grouped settings placed at root). Skip any
+        // setting whose key collides with a group name (e.g. "blankLines").
         for entry in Self.settingEntries where !Self.groupKeyNames.contains(entry.key) {
             let codingKey = AnyCodingKey(entry.key)
             guard root.contains(codingKey) else { continue }

@@ -14,6 +14,6 @@
 ///
 /// A finding's category should have a human-readable string representation (by overriding the
 /// `description` property from the inherited `CustomStringConvertible` conformance). This is meant
-/// to be displayed as part of the diagnostic message when the finding is presented to the user.
-/// For example, the category `Indentation` in the message `[Indentation] Indent by 2 spaces`.
+/// to be displayed as part of the diagnostic message when the finding is presented to the user. For
+/// example, the category `Indentation` in the message `[Indentation] Indent by 2 spaces` .
 package protocol FindingCategorizing: CustomStringConvertible, Sendable {}

@@ -99,10 +99,11 @@ private func ensureLineBreakAtEOF(
         on: eof, context: context
     )
 
-    // Preserve any non-newline trivia (e.g. a trailing `// MARK:` comment)
-    // and emit exactly one newline at the end.
+    // Preserve any non-newline trivia (e.g. a trailing `// MARK:` comment) and emit exactly one
+    // newline at the end.
     var rebuilt: [TriviaPiece] = []
     rebuilt.reserveCapacity(pieces.count + 1)
+
     for piece in pieces {
         if case .newlines = piece { continue }
         rebuilt.append(piece)

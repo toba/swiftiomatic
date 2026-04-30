@@ -2,11 +2,11 @@
 //
 // This source file is part of the Swift.org open source project
 //
-// Copyright (c) 2014 - 2019 Apple Inc. and the Swift project authors Licensed under Apache License
-// v2.0 with Runtime Library Exception
+// Copyright (c) 2014 - 2019 Apple Inc. and the Swift project authors
+// Licensed under Apache License v2.0 with Runtime Library Exception
 //
-// See https://swift.org/LICENSE.txt for license information See https://swift.org/CONTRIBUTORS.txt
-// for the list of Swift project authors
+// See https://swift.org/LICENSE.txt for license information
+// See https://swift.org/CONTRIBUTORS.txt for the list of Swift project authors
 //
 // ===----------------------------------------------------------------------===//
 
@@ -23,7 +23,7 @@ extension StringProtocol {
     func trimmingTrailingWhitespace() -> String {
         if isEmpty { return String() }
         // Walk Characters from the end (StringProtocol is BidirectionalCollection) instead of
-        // materializing `Array(utf8)` . The set of whitespace recognised here matches the prior
+        // materializing `Array(utf8)`. The set of whitespace recognized here matches the prior
         // byte-level check: space, LF, tab, CR, VT, FF.
         var end = endIndex
 
@@ -34,8 +34,7 @@ extension StringProtocol {
                 || ch == "\u{0B}" || ch == "\u{0C}" else { break }
             end = prev
         }
-        if end == startIndex { return String() }
-        return String(self[..<end])
+        return end == startIndex ? String() : String(self[..<end])
     }
 }
 
@@ -45,9 +44,12 @@ extension UTF8.CodeUnit {
     /// - Returns: `true` if the code unit represents a whitespace character, otherwise `false` .
     var isWhitespace: Bool {
         switch self {
-            case UInt8(ascii: " "), UInt8(ascii: "\n"), UInt8(ascii: "\t"),
+            case UInt8(ascii: " "),
+                UInt8(ascii: "\n"),
+                UInt8(ascii: "\t"),
                 UInt8(ascii: "\r"), /*VT*/
-                0x0B, /*FF*/ 0x0C:
+                0x0B, /*FF*/
+                0x0C:
                 true
             default: false
         }
@@ -95,10 +97,11 @@ struct Comment: Sendable {
                 self.text[0].removeFirst(kind.prefixLength)
 
             case .block, .docBlock:
-                var fulltext: String = text
-                fulltext.removeFirst(kind.prefixLength)
-                fulltext.removeLast(2)
-                let lines = fulltext.split(separator: "\n", omittingEmptySubsequences: false)
+                var fullText: String = text
+                fullText.removeFirst(kind.prefixLength)
+                fullText.removeLast(2)
+
+                let lines = fullText.split(separator: "\n", omittingEmptySubsequences: false)
 
                 // The last line in a block style comment contains the "*/" pattern to end the
                 // comment. The trailing space(s) need to be kept in that line to have space between
@@ -123,7 +126,6 @@ struct Comment: Sendable {
                 // the current indentation level
                 if let leadingIndent {
                     let rest = text.dropFirst()
-
                     let hasLeading = rest.allSatisfy {
                         $0.hasPrefix(leadingIndent.text) || $0.isEmpty
                     }
@@ -139,7 +141,6 @@ struct Comment: Sendable {
                         return kind.prefix + first + separator + restStr + "*/"
                     }
                 }
-
                 return kind.prefix + text.joined(separator: separator) + "*/"
         }
     }

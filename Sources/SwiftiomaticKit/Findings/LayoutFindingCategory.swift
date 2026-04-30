@@ -20,8 +20,8 @@ enum LayoutFindingCategory: FindingCategorizing {
 
     var description: String {
         switch self {
-        case .endOfLineComment: return "EndOfLineComment"
-        case .trailingComma: return "TrailingComma"
+            case .endOfLineComment: "EndOfLineComment"
+            case .trailingComma: "TrailingComma"
         }
     }
 }

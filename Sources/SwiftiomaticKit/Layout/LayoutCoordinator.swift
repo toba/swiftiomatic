@@ -148,6 +148,7 @@ package final class LayoutCoordinator {
         self.context = context
         self.source = source
         let configuration = context.configuration
+        
         tokens = node.makeTokenStream(
             configuration: configuration,
             selection: context.selection,
@@ -336,16 +337,23 @@ package final class LayoutCoordinator {
                             //
                             // Likewise, we need to do this if we popped an old continuation state
                             // off the stack, even if the break *doesn't* fire.
-                            let matchingOpenBreakIndented = matchingOpenBreak
-                                .contributesContinuationIndent
-                                || matchingOpenBreak.contributesBlockIndent
+                            // Alignment breaks contribute indentation but should not propagate
+                            // continuation state — they align to a keyword column, not a
+                            // continuation scope, so the reset break before `{` (or before a
+                            // case body that fits inline) should not fire.
+                            let isAlignmentKind: Bool
+                            if case .alignment = matchingOpenBreak.kind {
+                                isAlignmentKind = true
+                            } else {
+                                isAlignmentKind = false
+                            }
+                            let matchingOpenBreakIndented = !isAlignmentKind
+                                && (matchingOpenBreak.contributesContinuationIndent
+                                    || matchingOpenBreak.contributesBlockIndent)
                             currentLineIsContinuation = matchingOpenBreakIndented
                                 && openedOnDifferentLine
                         }
 
-                        // Alignment breaks contribute indentation but should not propagate
-                        // continuation state — they align to a keyword column, not a continuation
-                        // scope, so the reset break before `{` should not fire.
                         let isAlignment: Bool
 
                         if case .alignment = matchingOpenBreak.kind {

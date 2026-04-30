@@ -391,4 +391,23 @@ struct FunctionCallTests: LayoutTesting {
 
     assertLayout(input: input, expected: expected, linelength: 23)
   }
+
+  // am0-lx7: when an outer call wraps and its single argument is itself a function
+  // call whose argument list fits within the available width, the inner arg list
+  // should stay inline rather than wrap unnecessarily.
+  @Test func nestedCallStaysInlineWhenOuterWraps() {
+    let input =
+      """
+      let location = Finding.Location(context.sourceLocationConverter.location(for: absolute))
+      """
+
+    let expected =
+      """
+      let location = Finding.Location(
+        context.sourceLocationConverter.location(for: absolute))
+
+      """
+
+    assertLayout(input: input, expected: expected, linelength: 80)
+  }
 }

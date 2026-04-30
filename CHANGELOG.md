@@ -60,6 +60,12 @@
 - Don't wrap type annotation in `let` with function-call RHS ([#535](https://github.com/toba/swiftiomatic/issues/535))
 - `case ... where ...`; continuation line indents past `case` ([#467](https://github.com/toba/swiftiomatic/issues/467))
 - `extension` where-clause; apply continuation indent on wrapped `where` ([#455](https://github.com/toba/swiftiomatic/issues/455))
+- `for ... where`; place `where` keyword on its own line at base indent when the header wraps
+- Nested call args; inner call no longer cascades into a redundant wrap when the outer call wraps
+- `switch case`; align wrapped patterns under the first pattern when `alignWrappedConditions` is set
+- `switch case`; keep inline single-statement body when wrapped patterns share an alignment column
+- Tuple return type; stay inline when the function signature already wraps
+- `WrapTernary`; produce wrapped form rather than collapsing to a single-line ternary
 
 ### 🗜️ Tweaks
 

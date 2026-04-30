@@ -23,17 +23,15 @@ final class FindingEmitter {
     /// An optional function that will be called and passed a finding each time one is emitted.
     private let consumer: ((Finding) -> Void)?
 
-    /// Whether a consumer is attached. Callers can short-circuit expensive work
-    /// (e.g. source-location resolution) when no one is listening.
+    /// Whether a consumer is attached. Callers can short-circuit expensive work (e.g.
+    /// source-location resolution) when no one is listening.
     var isAttached: Bool { consumer != nil }
 
     /// Creates a new finding emitter with the given consumer function.
     ///
-    /// - Parameter consumer: An optional function that will be called and passed a finding each time
-    ///   one is emitted.
-    package init(consumer: ((Finding) -> Void)?) {
-        self.consumer = consumer
-    }
+    /// - Parameter consumer: An optional function that will be called and passed a finding each
+    ///   time one is emitted.
+    package init(consumer: ((Finding) -> Void)?) { self.consumer = consumer }
 
     /// Emits a new finding.
     ///
@@ -42,8 +40,8 @@ final class FindingEmitter {
     ///   - category: A value that groups the finding into a category.
     ///   - location: The source location where the finding was encountered. In rare cases where the
     ///     finding does not apply to a particular location in the source code, this may be nil.
-    ///   - notes: Notes that provide additional detail about the finding, possibly referring to other
-    ///     related locations in the source file.
+    ///   - notes: Notes that provide additional detail about the finding, possibly referring to
+    ///     other related locations in the source file.
     package func emit(
         _ message: Finding.Message,
         category: FindingCategorizing,
@@ -60,7 +58,6 @@ final class FindingEmitter {
                 severity: severity,
                 location: location,
                 notes: notes
-            )
-        )
+            ))
     }
 }

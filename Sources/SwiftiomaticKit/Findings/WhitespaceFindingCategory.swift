@@ -35,13 +35,13 @@ enum WhitespaceFindingCategory: FindingCategorizing {
 
     var description: String {
         switch self {
-        case .trailingWhitespace: return "TrailingWhitespace"
-        case .indentation: return "Indentation"
-        case .spacing: return "Spacing"
-        case .spacingCharacter: return "SpacingCharacter"
-        case .removeLine: return "RemoveLine"
-        case .addLines: return "AddLines"
-        case .lineLength: return "LineLength"
+            case .trailingWhitespace: "TrailingWhitespace"
+            case .indentation: "Indentation"
+            case .spacing: "Spacing"
+            case .spacingCharacter: "SpacingCharacter"
+            case .removeLine: "RemoveLine"
+            case .addLines: "AddLines"
+            case .lineLength: "LineLength"
         }
     }
 }

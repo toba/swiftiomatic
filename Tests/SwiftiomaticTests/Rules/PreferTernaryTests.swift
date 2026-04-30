@@ -54,13 +54,15 @@ struct PreferTernaryTests: RuleTesting {
                 """,
             expected: """
                 func test() {
-                    return trailingCount == 1 ? convertSingle(
+                    return trailingCount == 1\(" ")
+                ? convertSingle(
                             callNode: callNode,
                             closureArg: closureArgs[0],
                             remainingArgs: remainingArgs,
                             funcName: funcName,
                             originalNode: node
-                        ) : convertMultiple(
+                        )\(" ")
+                : convertMultiple(
                             callNode: callNode,
                             closureArgs: closureArgs,
                             remainingArgs: remainingArgs,
@@ -287,12 +289,14 @@ struct PreferTernaryTests: RuleTesting {
                 """,
             expected: """
                 func test() {
-                    result = kind == .chained ? ExprSyntax(
+                    result = kind == .chained\(" ")
+                ? ExprSyntax(
                             OptionalChainingExprSyntax(
                                 expression: result,
                                 trailingTrivia: trivia
                             )
-                        ) : ExprSyntax(
+                        )\(" ")
+                : ExprSyntax(
                             ForceUnwrapExprSyntax(
                                 expression: result,
                                 trailingTrivia: trivia
@@ -409,7 +413,9 @@ struct PreferTernaryTests: RuleTesting {
                 """,
             expected: """
                 func test() -> [String] {
-                    return validCount == 1 ? [] : [error("Exactly one schema in 'oneOf' must match, but \\(validCount) matched")]
+                    return validCount == 1\(" ")
+                ? []\(" ")
+                : [error("Exactly one schema in 'oneOf' must match, but \\(validCount) matched")]
                 }
                 """,
             findings: [

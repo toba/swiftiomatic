@@ -12,9 +12,9 @@
 
 import Foundation
 
-/// Used by the LayoutCoordinator to actually assemble the output string. This struct
-/// tracks state specific to the output (line number, column, etc.) rather than the pretty
-/// printing algorithm itself.
+/// Used by the LayoutCoordinator to actually assemble the output string. This struct tracks state
+/// specific to the output (line number, column, etc.) rather than the pretty printing algorithm
+/// itself.
 struct LayoutBuffer {
     /// The maximum number of consecutive blank lines that may appear in a file.
     let maximumBlankLines: Int
@@ -22,8 +22,8 @@ struct LayoutBuffer {
     /// The width of the horizontal tab in spaces.
     let tabWidth: Int
 
-    /// If true, output is generated as normal. If false, the various state variables are
-    /// updated as normal but nothing is appended to the output (used by selection formatting).
+    /// If true, output is generated as normal. If false, the various state variables are updated as
+    /// normal but nothing is appended to the output (used by selection formatting).
     var isEnabled = true
 
     /// Indicates whether or not the printer is currently at the beginning of a line.
@@ -72,15 +72,16 @@ struct LayoutBuffer {
     ///
     /// - Parameters:
     ///   - newlines: The number and type of newlines to write.
-    ///   - shouldIndentBlankLines: A Boolean value indicating whether to insert spaces
-    ///     for blank lines based on the current indentation level.
+    ///   - shouldIndentBlankLines: A Boolean value indicating whether to insert spaces for blank
+    ///     lines based on the current indentation level.
     mutating func writeNewlines(_ newlines: NewlineBehavior, shouldIndentBlankLines: Bool) {
         let numberToPrint: Int
 
         switch newlines {
             case .elective: numberToPrint = consecutiveNewlineCount == 0 ? 1 : 0
             case .soft(let count, _, let maxBlankLines):
-                // We add 1 to the max blank lines because it takes 2 newlines to create the first blank line.
+                // We add 1 to the max blank lines because it takes 2 newlines to create the first
+                // blank line.
                 let effectiveMax = maxBlankLines ?? maximumBlankLines
                 numberToPrint = min(count, effectiveMax + 1) - consecutiveNewlineCount
             case let .hard(count): numberToPrint = count
@@ -117,8 +118,8 @@ struct LayoutBuffer {
         consecutiveNewlineCount = 0
         pendingSpaces = 0
 
-        // In case of comments, we may get a multi-line string. To account for that case, we need to correct the
-        // `lineNumber` count. The new `column` is the position within the last line.
+        // In case of comments, we may get a multi-line string. To account for that case, we need to
+        // correct the `lineNumber` count. The new `column` is the position within the last line.
 
         var lastNewlineIndex: String.Index?
 
@@ -153,9 +154,9 @@ struct LayoutBuffer {
         column += length
     }
 
-    /// Calls writeRaw, but also updates some state variables that are normally tracked by
-    /// higher level functions. This is used when we switch from disabled formatting to
-    /// enabled formatting, writing all the previous information as-is.
+    /// Calls writeRaw, but also updates some state variables that are normally tracked by higher
+    /// level functions. This is used when we switch from disabled formatting to enabled formatting,
+    /// writing all the previous information as-is.
     mutating func writeVerbatimAfterEnablingFormatting<S: StringProtocol>(_ str: S) {
         writeRaw(str)
 

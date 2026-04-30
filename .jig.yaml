@@ -20,6 +20,9 @@ nope:
     - name: bypassing-mcp
       pattern: 'swift (build|test)'
       message: "Use xc-mcp to build and test"
+    - name: bypassing-mcp2
+      pattern: 'xcrun xctest'
+      message: "Use xc-mcp to build and test"
     - name: altering-project
       pattern: '\.(xcode|pbx)proj'
       tools: ["Write", "Edit"]

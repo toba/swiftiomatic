@@ -15,16 +15,13 @@ package enum Indent: Hashable, Codable, Sendable {
     /// An indentation unit equal to the given number of tab characters.
     ///
     /// This value is independent of the actual tab width, which is set separately in the
-    /// `Configuration`.
+    /// `Configuration` .
     case tabs(Int)
 
     /// An indentation unit equal to the given number of spaces.
     case spaces(Int)
 
-    private enum CodingKeys: CodingKey {
-        case tabs
-        case spaces
-    }
+    private enum CodingKeys: CodingKey { case tabs, spaces }
 
     package init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
@@ -36,8 +33,7 @@ package enum Indent: Hashable, Codable, Sendable {
                 DecodingError.Context(
                     codingPath: decoder.codingPath,
                     debugDescription: "Only one of \"tabs\" or \"spaces\" may be specified"
-                )
-            )
+                ))
         }
         if let spacesCount {
             self = .spaces(spacesCount)
@@ -52,8 +48,7 @@ package enum Indent: Hashable, Codable, Sendable {
             DecodingError.Context(
                 codingPath: decoder.codingPath,
                 debugDescription: "One of \"tabs\" or \"spaces\" must be specified"
-            )
-        )
+            ))
     }
 
     package func encode(to encoder: Encoder) throws {
@@ -67,7 +62,8 @@ package enum Indent: Hashable, Codable, Sendable {
 
     /// Returns the number of units (tabs or spaces) that this indent represents.
     ///
-    /// Note that this does _not_ represent the physical number of spaces occupied by the indentation.
+    /// Note that this does _not_ represent the physical number of spaces occupied by the
+    /// indentation.
     package var count: Int {
         switch self {
             case let .spaces(count): count
