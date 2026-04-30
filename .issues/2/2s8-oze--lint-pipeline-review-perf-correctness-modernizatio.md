@@ -1,15 +1,15 @@
 ---
 # 2s8-oze
 title: 'Lint pipeline review: perf, correctness, modernization findings'
-status: ready
+status: completed
 type: task
 priority: high
 created_at: 2026-04-30T05:22:17Z
-updated_at: 2026-04-30T05:22:17Z
+updated_at: 2026-04-30T16:16:48Z
 sync:
     github:
         issue_number: "534"
-        synced_at: "2026-04-30T05:51:02Z"
+        synced_at: "2026-04-30T16:27:53Z"
 ---
 
 Code review of the lint pipeline (`Sources/SwiftiomaticKit/Syntax/Linter/`, `Sources/SwiftiomaticKit/Support/`, `Sources/Swiftiomatic/Frontend/LintFrontend.swift`, `Sources/Swiftiomatic/Subcommands/Lint.swift`, `Sources/Swiftiomatic/Utilities/DiagnosticsEngine.swift`, generated `Pipelines+Generated.swift`) per the `/swift` skill checklist. Focus: lint pipeline performance.
@@ -145,3 +145,43 @@ N/A — no CloudKit.
 - **Modernization:** 5 (M1-M5)
 
 **Most leverage**: P1 (precompute enabled-rules set), P3 (filter generated dispatch by enabled rules), P2 (eliminate the dual tree walk), P5 (faster hex), P9 (typed dispatch table). P1 + P3 likely give the largest single speedup for the lint hot path because they eliminate ~half the per-node-per-rule cost from disabled rules.
+
+
+## Summary of Changes
+
+Landed the high-leverage, lower-risk items from this review. Larger refactors (typed dispatch table, eliminating the dual tree walk, value-type rules, generator-driven enabled-rule gating, schema-bumping cache changes) are deferred to follow-up issues so they can land with their own perf measurements and tests.
+
+### Done
+
+- **P1** — `Context` precomputes `enabledRules: Set<ObjectIdentifier>` once per file from `ConfigurationRegistry.allRuleTypes` × `Configuration.isActive(rule:)`. `shouldFormat(ruleType:node:)` and the `Gate`-based `shouldRewrite` now short-circuit on disabled rules before paying for `startLocation` + `RuleMask` work — eliminating the per-rule per-node `Configuration.isActive` string concat for the ~half of rules that are off.
+- **P4** — `LintPipeline.visitIfEnabled` / `onVisitPost` short-circuit with `shouldSkipChildren.isEmpty` before probing the dictionary (the common case is empty).
+- **P5** — Replaced four `digest.map { String(format: "%02x", $0) }.joined()` sites with a single `LintCache.hexEncode(_:)` helper that pre-reserves the result string and writes hex pairs from a static UTF-8 table.
+- **P7** — `LintCache` now holds a Mutex-guarded `Coders` struct with reusable `JSONEncoder`/`JSONDecoder` (separate fingerprint encoder retains `.sortedKeys`). `lookup`, `store`, and `fingerprint` no longer instantiate fresh coders per call.
+- **C3** — Documented `Context.importsXCTest` thread-safety invariant (single `Context` per file, serial pipeline).
+- **M3** — Extracted `LintCache.isCacheEligible(url:lines:offsets:ignoreUnparsableFiles:)` so the eligibility rule lives next to the cache and is testable.
+- **M5** — Extracted `LintCache.disabledByEnvironment` static helper; `Lint.run()` now reads it instead of parsing the env var inline.
+- Added `LintCacheTests` covering `hexEncode`, `contentHash`, and the eligibility helper.
+
+### Deferred (follow-up issues recommended)
+
+- **P2** — Eliminating the dual tree walk in `LintCoordinator.lint` (compact-pipeline rewriter run for finding emission only) needs either a lint-only mode for `CompactSyntaxRewriter` or a parallel generated dispatcher. Significant generator change.
+- **P3** — Filtering generated dispatch by `enabledRules` (per-Context active dispatch table). Generator change.
+- **P6** — LRU memo for `LintCache.fingerprint` across multiple configurations.
+- **P8** — Replacing `lazy var` per-rule state slots with optional `let` initialized only when the rule is enabled.
+- **P9** — Typed dispatch table to remove `as! R` and the heterogeneous `ruleCache` dictionary.
+- **P10** — Value-type rules to cut per-file class allocations.
+- **P11/P12/P13/P14** — Verify `preparedAcronyms` access path; remove visitor closure indirection in generated code; move cache writes to a background queue; audit `RememberingIterator`/`LazySplitSequence` for hot-path use.
+- **C1/C2** — Drop or document `@unchecked Sendable` on `LintFrontend` (parent `Frontend` is also `@unchecked`, would need to migrate together) and `CapturingFindingConsumer`.
+- **C4** — Document concurrent-cache-write race in module docs.
+- **N1** — Rename overlapping `onVisitPost` overloads.
+- **N2** — Promote `LintCache.Entry.{Severity,Location,Note}` one nesting level.
+- **N3** — Make `LintSyntaxRule` and rule subclasses `final`; convert `class var` → `static var` where no override exists. Multiple subclasses use `class var` overrides today, so this needs an audit pass.
+- **N4** — Eliminate the force cast via P9.
+- **N5** — Audit lint-flagged IIFE patterns.
+- **M1** — Mutex generic for `lastFingerprint` is fine as-is.
+- **M2** — Store `Lint` directly in `LintCache.Entry` (drops the parallel `Severity` enum). Bumps cache schema version.
+- **M4** — Verify `consumeFinding` / `consumeCachedEntry` outputs match byte-for-byte.
+
+### Verification
+
+Main targets build cleanly. New `LintCacheTests` (6 tests) pass on the targeted slice. The 14 layout/pretty-printer tests currently failing are unrelated — they belong to another agent's in-flight changes to `TokenStream+Operators.swift` / `TokenStream+Appending.swift` and don't touch any code paths modified here.

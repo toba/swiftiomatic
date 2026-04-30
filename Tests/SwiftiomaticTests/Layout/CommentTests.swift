@@ -1116,8 +1116,7 @@ struct CommentTests: LayoutTesting {
     // these examples should be merged and formatted if/when there is comment formatting
     let input =
       """
-      let z =
-        // one comment
+      let z =  // one comment
         // and another comment
         1 + 2
 

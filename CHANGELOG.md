@@ -12,6 +12,13 @@
 - Spike combined `SyntaxRewriter`; single walk for node-local rules
 - Collapse compact-pipeline rule shells into pure helpers ([#509](https://github.com/toba/swiftiomatic/issues/509))
 - Eliminate `RewriteSyntaxRule` base class ([#508](https://github.com/toba/swiftiomatic/issues/508))
+- `singleLineBodies`; keep inline body when conditions wrap (guard/if) ([#448](https://github.com/toba/swiftiomatic/issues/448))
+- Configuration schema redesign; `style` + universal parameters ([#481](https://github.com/toba/swiftiomatic/issues/481))
+- CLI; replace `--rules` plumbing with `--style` ([#482](https://github.com/toba/swiftiomatic/issues/482))
+- Spike combined `SyntaxRewriter`; single walk for node-local rules ([#479](https://github.com/toba/swiftiomatic/issues/479))
+- Cache lint results by file content hash ([#526](https://github.com/toba/swiftiomatic/issues/526))
+- Comment reformatter; exclude file header comment ([#532](https://github.com/toba/swiftiomatic/issues/532))
+- `ReflowComments`; rewrap regular and DocC comments to fit print width ([#457](https://github.com/toba/swiftiomatic/issues/457))
 
 ### 🐞 Fixes
 
@@ -40,6 +47,19 @@
 - Lint-mode finding emission; verify behavior after compact-pipeline cutover ([#506](https://github.com/toba/swiftiomatic/issues/506))
 - Formatter; keep single chained trailing `.with()` call on one line instead of wrapping ([#477](https://github.com/toba/swiftiomatic/issues/477))
 - Wrapped comma lists; once any element wraps, every element wraps to its own line ([#529](https://github.com/toba/swiftiomatic/issues/529))
+- `RedundantFinal`; preserve `final` on nested class decls ([#527](https://github.com/toba/swiftiomatic/issues/527))
+- Wrap function call args before breaking comparison operators ([#533](https://github.com/toba/swiftiomatic/issues/533))
+- Keep short `if let` conditions on one line instead of splitting across lines ([#473](https://github.com/toba/swiftiomatic/issues/473))
+- Comparison operator no longer wraps before call args in `if` condition ([#531](https://github.com/toba/swiftiomatic/issues/531))
+- `if case let` early return now converts to if/else expression ([#524](https://github.com/toba/swiftiomatic/issues/524))
+- Don't wrap type annotation onto its own line in `let` with ternary RHS ([#476](https://github.com/toba/swiftiomatic/issues/476))
+- Single-element array literal stays inline ([#523](https://github.com/toba/swiftiomatic/issues/523))
+- Don't strip `.init` from metatype call; preserves valid Swift ([#520](https://github.com/toba/swiftiomatic/issues/520))
+- Inline `guard else { stmt }` body when `alignWrappedConditions = true` ([#525](https://github.com/toba/swiftiomatic/issues/525))
+- `PreferTernary`; convert if/return + return into ternary return ([#522](https://github.com/toba/swiftiomatic/issues/522))
+- Don't wrap type annotation in `let` with function-call RHS ([#535](https://github.com/toba/swiftiomatic/issues/535))
+- `case ... where ...`; continuation line indents past `case` ([#467](https://github.com/toba/swiftiomatic/issues/467))
+- `extension` where-clause; apply continuation indent on wrapped `where` ([#455](https://github.com/toba/swiftiomatic/issues/455))
 
 ### 🗜️ Tweaks
 
@@ -78,6 +98,12 @@
 - Collapse rewrite pipeline boilerplate; let the generator do the work ([#510](https://github.com/toba/swiftiomatic/issues/510))
 - Cache `shouldRewrite` per visit in `CompactStageOneRewriter` ([#516](https://github.com/toba/swiftiomatic/issues/516))
 - Inline compact-pipeline rule transforms; delete `applyRewrite` shim ([#515](https://github.com/toba/swiftiomatic/issues/515))
+- Speed up `swift package test` wall-time; prebuild lint plugin ([#528](https://github.com/toba/swiftiomatic/issues/528))
+- Lint pipeline review; perf, correctness, modernization findings ([#534](https://github.com/toba/swiftiomatic/issues/534))
+- Remove style configuration concept ([#518](https://github.com/toba/swiftiomatic/issues/518))
+- Compact rewriter; dedupe and perf-tune visit overrides ([#521](https://github.com/toba/swiftiomatic/issues/521))
+- Remove vestigial `CombinedRewriter` spike ([#517](https://github.com/toba/swiftiomatic/issues/517))
+- Generator no longer emits duplicate `shouldRewrite` checks per node ([#519](https://github.com/toba/swiftiomatic/issues/519))
 
 ## Week of Apr 19 – Apr 25, 2026
 

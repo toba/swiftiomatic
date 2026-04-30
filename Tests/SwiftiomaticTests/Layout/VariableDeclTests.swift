@@ -27,11 +27,11 @@ struct VariableDeclarationTests: LayoutTesting {
         + secondVariable
         / thirdVariable
         + fourthVariable
-      let y:
-        Int = anotherVar + moreVar
+      let y: Int = anotherVar
+        + moreVar
       let (w, z, s):
         (Int, Double, Bool) =
-          firstTuple + secondTuple
+        firstTuple + secondTuple
 
       """
 

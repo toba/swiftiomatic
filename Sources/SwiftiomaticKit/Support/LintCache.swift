@@ -103,7 +103,7 @@ package final class LintCache: Sendable {
             hasher.update(data: Data(name.utf8))
             hasher.update(data: Data([0]))
         }
-        return hasher.finalize().map { String(format: "%02x", $0) }.joined()
+        return hexEncode(hasher.finalize())
     }()
 
     /// Memoized fingerprint for the most recently seen configuration. The vast majority of runs
@@ -114,6 +114,19 @@ package final class LintCache: Sendable {
         var fingerprint: String
     }
     private let lastFingerprint = Mutex<FingerprintEntry?>(nil)
+
+    /// Shared encoder/decoder protected by a Mutex. Avoids the per-call init cost (date strategies,
+    /// userInfo, output formatting) on the hot lookup/store path.
+    private let coders = Mutex<Coders>(Coders())
+    private struct Coders {
+        var fingerprintEncoder: JSONEncoder = {
+            let encoder = JSONEncoder()
+            encoder.outputFormatting = [.sortedKeys]
+            return encoder
+        }()
+        var recordEncoder = JSONEncoder()
+        var recordDecoder = JSONDecoder()
+    }
 
     /// Root of the cache tree. Created lazily on first write.
     package let root: URL
@@ -132,8 +145,30 @@ package final class LintCache: Sendable {
 
     /// SHA-256 of file content, hex-encoded.
     package static func contentHash(of source: String) -> String {
-        let digest = SHA256.hash(data: Data(source.utf8))
-        return digest.map { String(format: "%02x", $0) }.joined()
+        hexEncode(SHA256.hash(data: Data(source.utf8)))
+    }
+
+    /// Returns `true` if the `SM_LINT_NO_CACHE` environment variable disables caching.
+    /// Any non-empty value other than `"0"` counts as on.
+    package static var disabledByEnvironment: Bool {
+        guard let raw = ProcessInfo.processInfo.environment["SM_LINT_NO_CACHE"] else { return false }
+        return !raw.isEmpty && raw != "0"
+    }
+
+    /// Whether `lint` for a given file URL plus options should be served by the cache. Cache values
+    /// are whole-file findings, so per-line/offset selections, stdin, and `--ignore-unparsable-files`
+    /// runs all bypass it.
+    package static func isCacheEligible(
+        url: URL,
+        lines: [ClosedRange<Int>],
+        offsets: [Range<Int>],
+        ignoreUnparsableFiles: Bool
+    ) -> Bool {
+        lines.isEmpty
+            && offsets.isEmpty
+            && !ignoreUnparsableFiles
+            && url.isFileURL
+            && url.path != "<stdin>"
     }
 
     /// Combined fingerprint of `(rule set + configuration + cache schema version)`.
@@ -150,13 +185,12 @@ package final class LintCache: Sendable {
         hasher.update(data: Data(Self.ruleSetIdentifier.utf8))
         hasher.update(data: Data([0]))
 
-        let encoder = JSONEncoder()
-        encoder.outputFormatting = [.sortedKeys]
-        if let json = try? encoder.encode(configuration) {
+        let encoded = coders.withLock { try? $0.fingerprintEncoder.encode(configuration) }
+        if let json = encoded {
             hasher.update(data: json)
         }
 
-        let fp = hasher.finalize().map { String(format: "%02x", $0) }.joined()
+        let fp = Self.hexEncode(hasher.finalize())
         lastFingerprint.withLock { $0 = FingerprintEntry(configuration: configuration, fingerprint: fp) }
         return fp
     }
@@ -178,7 +212,7 @@ package final class LintCache: Sendable {
         hasher.update(data: Data(absolutePath.utf8))
         hasher.update(data: Data([0]))
         hasher.update(data: Data(contentHash.utf8))
-        return hasher.finalize().map { String(format: "%02x", $0) }.joined()
+        return Self.hexEncode(hasher.finalize())
     }
 
     /// Looks up cached findings for the given file. Returns `nil` on any miss (including
@@ -189,8 +223,8 @@ package final class LintCache: Sendable {
             fileKey: fileKey(absolutePath: absolutePath, contentHash: contentHash)
         )
         guard let data = try? Data(contentsOf: url) else { return nil }
-        guard let record = try? JSONDecoder().decode(Record.self, from: data) else { return nil }
-        guard record.version == Record.currentVersion else { return nil }
+        let decoded = coders.withLock { try? $0.recordDecoder.decode(Record.self, from: data) }
+        guard let record = decoded, record.version == Record.currentVersion else { return nil }
         return record
     }
 
@@ -210,8 +244,25 @@ package final class LintCache: Sendable {
         try? FileManager.default.createDirectory(
             at: directory, withIntermediateDirectories: true)
 
-        guard let data = try? JSONEncoder().encode(record) else { return }
+        let encoded = coders.withLock { try? $0.recordEncoder.encode(record) }
+        guard let data = encoded else { return }
         try? data.write(to: url, options: [.atomic])
+    }
+
+    /// Encodes raw bytes as a lowercase hex string in a single allocation. Avoids the
+    /// `digest.map { String(format: "%02x", $0) }.joined()` pattern, which allocates a
+    /// `String` per byte plus an intermediate array.
+    static func hexEncode<S: Sequence>(_ bytes: S) -> String where S.Element == UInt8 {
+        let table: StaticString = "0123456789abcdef"
+        return table.withUTF8Buffer { hex in
+            var result = ""
+            result.reserveCapacity(64)
+            for byte in bytes {
+                result.append(Character(Unicode.Scalar(hex[Int(byte >> 4)])))
+                result.append(Character(Unicode.Scalar(hex[Int(byte & 0x0F)])))
+            }
+            return result
+        }
     }
 }
 

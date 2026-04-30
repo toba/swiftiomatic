@@ -1,15 +1,15 @@
 ---
 # q3p-snb
 title: Formatter splits short if-let conditions across lines instead of keeping on one line
-status: in-progress
+status: completed
 type: bug
 priority: normal
 created_at: 2026-04-28T00:21:18Z
-updated_at: 2026-04-30T03:15:26Z
+updated_at: 2026-04-30T16:11:25Z
 sync:
     github:
         issue_number: "473"
-        synced_at: "2026-04-30T03:34:38Z"
+        synced_at: "2026-04-30T16:27:52Z"
 ---
 
 ## Problem
@@ -45,3 +45,16 @@ The condition fits within the line limit, so it should remain on a single line w
 ## Repro
 
 Format the snippet above and observe the wrap.
+
+
+## Summary of Changes
+
+Verified the formatter now keeps short `if let` chains on a single line with the opening brace inline. Repro snippet from the issue formats as expected:
+
+```swift
+if let value = UInt32(hex, radix: 16), let scalar = Unicode.Scalar(value) {
+    set.insert(scalar)
+}
+```
+
+No additional code changes required — fix landed via earlier control-flow break work.

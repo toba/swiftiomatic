@@ -48,11 +48,12 @@ final class LintFrontend: Frontend, @unchecked Sendable {
     // run would surface diagnostics outside the requested scope.
     let cacheEligible =
       cache != nil
-      && lintFormatOptions.lines.isEmpty
-      && lintFormatOptions.offsets.isEmpty
-      && !lintFormatOptions.ignoreUnparsableFiles
-      && url.isFileURL
-      && url.path != "<stdin>"
+      && LintCache.isCacheEligible(
+        url: url,
+        lines: lintFormatOptions.lines,
+        offsets: lintFormatOptions.offsets,
+        ignoreUnparsableFiles: lintFormatOptions.ignoreUnparsableFiles
+      )
 
     if cacheEligible, let cache {
       let absolutePath = url.standardizedFileURL.path

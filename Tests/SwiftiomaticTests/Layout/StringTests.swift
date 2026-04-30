@@ -581,12 +581,12 @@ struct StringTests: LayoutTesting {
     let expected =
       #"""
       let x = """
-        this is a
+      this is a
+      multiline string
+      """ + """
+        this is more
         multiline string
-        """ + """
-          this is more
-          multiline string
-          """
+        """
 
       """#
 
@@ -661,20 +661,20 @@ struct StringTests: LayoutTesting {
     let expected =
       #"""
       let bytes = """
-        {
-          "key": "value"
-        }
-        """.utf8.count
+      {
+        "key": "value"
+      }
+      """.utf8.count
       let json = """
-        {
-          "key": "value"
-        }
-        """.data(using: .utf8)
+      {
+        "key": "value"
+      }
+      """.data(using: .utf8)
       let slice = """
-        {
-          "key": "value"
-        }
-        """[...]
+      {
+        "key": "value"
+      }
+      """[...]
       let forceUnwrap = """
         {
           "key": "value"

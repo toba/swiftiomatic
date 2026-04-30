@@ -1,15 +1,15 @@
 ---
 # 4pf-bov
 title: Guard with multiple conditions wraps 'else' to next line instead of keeping inline
-status: review
+status: completed
 type: bug
 priority: normal
 created_at: 2026-04-30T04:40:44Z
-updated_at: 2026-04-30T05:48:36Z
+updated_at: 2026-04-30T15:30:57Z
 sync:
     github:
         issue_number: "530"
-        synced_at: "2026-04-30T05:50:53Z"
+        synced_at: "2026-04-30T16:27:52Z"
 ---
 
 ## Problem

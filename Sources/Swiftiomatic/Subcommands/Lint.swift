@@ -45,10 +45,8 @@ extension SwiftiomaticCommand {
     var noCache: Bool = false
 
     func run() throws {
-      let cacheDisabledByEnv =
-        ProcessInfo.processInfo.environment["SM_LINT_NO_CACHE"].map { !$0.isEmpty && $0 != "0" }
-        ?? false
-      let cache: LintCache? = (noCache || cacheDisabledByEnv) ? nil : LintCache()
+      let cache: LintCache? =
+        (noCache || LintCache.disabledByEnvironment) ? nil : LintCache()
 
       let frontend = LintFrontend(
         configurationOptions: configurationOptions,

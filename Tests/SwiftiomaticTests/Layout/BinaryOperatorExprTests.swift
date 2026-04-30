@@ -307,8 +307,9 @@ struct BinaryOperatorExprTests: LayoutTesting {
   }
 
   @Test func comparisonOperatorYieldsToFunctionCallInCondition() {
-    // Known gap: in `if` conditions, the comparison break still fires before the
-    // function-call argument break. Tracked separately; this test pins current behavior.
+    // In an if-condition, the comparison-operator break is suppressed so that any required
+    // wrap happens inside the call's argument list — each arg on its own line, with the
+    // operator glued to the closing `)` rather than dangling on a new line.
     let input =
       """
       if foo(bar: someValue, qux: anotherLongValue) == expected { body() }
@@ -317,9 +318,9 @@ struct BinaryOperatorExprTests: LayoutTesting {
     let expected =
       """
       if foo(
-        bar: someValue, qux: anotherLongValue)
-        == expected
-      {
+        bar: someValue,
+        qux: anotherLongValue
+      ) == expected {
         body()
       }
 

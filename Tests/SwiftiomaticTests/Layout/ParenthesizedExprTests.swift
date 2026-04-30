@@ -117,7 +117,7 @@ struct ParenthesizedExprTests: LayoutTesting {
           + thirdTerm)
       let y =
         (firstTerm + secondTerm
-          + thirdTerm)
+        + thirdTerm)
         - (firstTerm + secondTerm
           + thirdTerm)
       let x = zerothTerm

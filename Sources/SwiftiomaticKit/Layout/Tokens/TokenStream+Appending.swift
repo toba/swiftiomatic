@@ -581,6 +581,41 @@ extension TokenStream {
         return found
     }
 
+    /// Returns whether the given infix-operator expression appears (transitively) inside an
+    /// `if` / `guard` / `while` condition list.
+    func isInConditionList(_ node: InfixOperatorExprSyntax) -> Bool {
+        var current: Syntax? = node.parent
+        while let parent = current {
+            if parent.is(ConditionElementSyntax.self) { return true }
+            if parent.asProtocol(SyntaxProtocol.self) is StmtSyntaxProtocol { return false }
+            if parent.asProtocol(SyntaxProtocol.self) is DeclSyntaxProtocol { return false }
+            if parent.is(CodeBlockSyntax.self) { return false }
+            if parent.is(CodeBlockItemSyntax.self) { return false }
+            current = parent.parent
+        }
+        return false
+    }
+
+    /// Returns the `GroupBreakStyle` to use for the given function-call argument list. Forces
+    /// `.consistent` when the surrounding context is a comparison-operator expression inside an
+    /// `if` / `guard` / `while` condition: the comparison break's chunk is bounded by the RHS
+    /// so it would otherwise win precedence over the call's myopic inconsistent inter-arg
+    /// breaks and dangle the operator on its own line. With consistent grouping, once any arg
+    /// breaks (the open-paren break must fire when the line doesn't fit), every arg breaks,
+    /// keeping the operator glued to the closing `)` .
+    func effectiveArgListConsistency(for arguments: LabeledExprListSyntax) -> GroupBreakStyle {
+        let defaultConsistency = argumentListConsistency()
+        guard defaultConsistency == .inconsistent else { return defaultConsistency }
+        guard let call = arguments.parent?.as(FunctionCallExprSyntax.self) else {
+            return defaultConsistency
+        }
+        guard let infix = call.parent?.as(InfixOperatorExprSyntax.self) else {
+            return defaultConsistency
+        }
+        guard isComparisonOperator(infix.operator) else { return defaultConsistency }
+        return isInConditionList(infix) ? .consistent : defaultConsistency
+    }
+
     /// Walks the expression and returns the leftmost subexpression if it is parenthesized (which
     /// might be the expression itself).
     ///

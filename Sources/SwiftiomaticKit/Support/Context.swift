@@ -39,6 +39,9 @@ package final class Context {
     let fileURL: URL
 
     /// Indicates whether the file is known to import XCTest.
+    ///
+    /// The lint and rewrite pipelines drive a single `Context` per file serially, so concurrent
+    /// reads/writes are not expected. If that invariant changes, this needs to become atomic.
     package var importsXCTest: XCTestImportState
 
     /// An object that converts `AbsolutePosition` values to `SourceLocation` values.
@@ -46,6 +49,14 @@ package final class Context {
 
     /// Contains the rules have been disabled by comments for certain line numbers.
     let ruleMask: RuleMask
+
+    /// Identifiers of every rule whose configuration is currently active for this run.
+    ///
+    /// Computed once per `Context` from `Configuration.isActive(rule:)`. `shouldFormat` and
+    /// `shouldRewrite` use this set to short-circuit disabled rules before paying for the
+    /// per-node `startLocation` + `ruleMask.ruleState` work — which is the bulk of the per-rule
+    /// per-node cost when ~half the rules are off.
+    let enabledRules: Set<ObjectIdentifier>
 
     // MARK: - Per-rule mutable state
     //
@@ -107,6 +118,13 @@ package final class Context {
             syntaxNode: Syntax(sourceFileSyntax),
             sourceLocationConverter: sourceLocationConverter
         )
+        var enabled: Set<ObjectIdentifier> = []
+        enabled.reserveCapacity(ConfigurationRegistry.allRuleTypes.count)
+        for ruleType in ConfigurationRegistry.allRuleTypes
+        where configuration.isActive(rule: ruleType) {
+            enabled.insert(ObjectIdentifier(ruleType))
+        }
+        enabledRules = enabled
     }
 
     /// Given a rule's name and the node it is examining, determine if the rule is disabled at this
@@ -122,14 +140,11 @@ package final class Context {
     /// static base type and look up the wrong configuration key. See
     /// `Configuration.isActive(rule:)`.
     func shouldFormat(ruleType rule: any SyntaxRule.Type, node: Syntax) -> Bool {
+        guard enabledRules.contains(ObjectIdentifier(rule)) else { return false }
         guard node.isInsideSelection(selection) else { return false }
         let loc = node.startLocation(converter: sourceLocationConverter)
         let ruleName = ConfigurationRegistry.ruleNameCache[ObjectIdentifier(rule)] ?? rule.key
-
-        switch ruleMask.ruleState(ruleName, at: loc) {
-            case .default: return configuration.isActive(rule: rule)
-            case .disabled: return false
-        }
+        return ruleMask.ruleState(ruleName, at: loc) == .default
     }
 
     /// Rewrite-path entry point for the gate check; equivalent to `shouldFormat(_:node:)`.

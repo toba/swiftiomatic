@@ -276,7 +276,7 @@ extension TokenStream {
             ]
 
             if shouldGroupAroundArgumentList(arguments) {
-                afterLeftDelimiter.append(.open(argumentListConsistency()))
+                afterLeftDelimiter.append(.open(effectiveArgListConsistency(for: arguments)))
                 beforeRightDelimiter.append(.close)
             }
 
