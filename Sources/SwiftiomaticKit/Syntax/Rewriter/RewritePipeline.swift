@@ -200,6 +200,12 @@ final class RewritePipeline: SyntaxRewriter {
         apply(PreferMainAttribute.self, to: &node, gate: gate) {
             PreferMainAttribute.transform($0, parent: parent, context: $1)
         }
+        apply(PreferOfficialCDecl.self, to: &node, gate: gate) {
+            PreferOfficialCDecl.transform($0, parent: parent, context: $1)
+        }
+        apply(PreferOfficialSpecialize.self, to: &node, gate: gate) {
+            PreferOfficialSpecialize.transform($0, parent: parent, context: $1)
+        }
         return node
     }
 
@@ -284,6 +290,9 @@ final class RewritePipeline: SyntaxRewriter {
         }
         apply(RedundantAccessControl.self, to: &concrete, gate: gate) {
             RedundantAccessControl.transform($0, parent: parent, context: $1)
+        }
+        apply(RedundantMainActorOnView.self, to: &concrete, gate: gate) {
+            RedundantMainActorOnView.transform($0, parent: parent, context: $1)
         }
         apply(RedundantObjc.self, to: &concrete, gate: gate) {
             RedundantObjc.transform($0, parent: parent, context: $1)
@@ -588,6 +597,9 @@ final class RewritePipeline: SyntaxRewriter {
         }
         apply(RedundantAccessControl.self, to: &concrete, gate: gate) {
             RedundantAccessControl.transform($0, parent: parent, context: $1)
+        }
+        apply(RedundantMainActorOnView.self, to: &concrete, gate: gate) {
+            RedundantMainActorOnView.transform($0, parent: parent, context: $1)
         }
         apply(RedundantObjc.self, to: &concrete, gate: gate) {
             RedundantObjc.transform($0, parent: parent, context: $1)
@@ -1432,6 +1444,9 @@ final class RewritePipeline: SyntaxRewriter {
         }
         apply(RedundantEquatable.self, to: &concrete, gate: gate) {
             RedundantEquatable.transform($0, parent: parent, context: $1)
+        }
+        apply(RedundantMainActorOnView.self, to: &concrete, gate: gate) {
+            RedundantMainActorOnView.transform($0, parent: parent, context: $1)
         }
         apply(RedundantObjc.self, to: &concrete, gate: gate) {
             RedundantObjc.transform($0, parent: parent, context: $1)

@@ -221,6 +221,15 @@
       "description" : "Enum cases should not declare too many associated values.",
       "unevaluatedProperties" : false
     },
+    "asyncStreamMissingTermination" : {
+      "allOf" : [
+        {
+          "$ref" : "#/$defs/lintOnlyBase"
+        }
+      ],
+      "description" : "Lint `AsyncStream { continuation in ... }` (and `AsyncThrowingStream`) initializer bodies that call `continuation.yield(...)` but never call `continuation.finish(...)` and never set `continuation.onTermination`.\n\nWithout termination handling the stream can leak when the consumer is cancelled — the producer keeps holding resources for a continuation that will never be drained.",
+      "unevaluatedProperties" : false
+    },
     "avoidNoneName" : {
       "allOf" : [
         {
@@ -483,7 +492,7 @@
               "$ref" : "#/$defs/ruleBase"
             }
           ],
-          "description" : "Place doc comments before any declaration modifiers or attributes.\n\nDoc comments (`///` or `/** */`) should appear before all attributes and access modifiers, not between them.\n\nLint: If a doc comment appears after an attribute or modifier, a lint warning is raised.\n\nRewrite: The doc comment is moved before all attributes and modifiers."
+          "description" : "Place doc comments before any declaration modifiers or attributes.\n\nDoc comments ( `///` or `/** */` ) should appear before all attributes and access modifiers, not between them.\n\nLint: If a doc comment appears after an attribute or modifier, a lint warning is raised.\n\nRewrite: The doc comment is moved before all attributes and modifiers."
         },
         "documentPublicDeclarations" : {
           "allOf" : [
@@ -500,7 +509,7 @@
               "$ref" : "#/$defs/lintOnlyBase"
             }
           ],
-          "description" : "`TODO` and `FIXME` comments with a bracketed date should be resolved by that date.\n\nA trailing date in a configurable format (default `[MM/dd/yyyy]`) is parsed and compared to the current date. Comments approaching, past, or incorrectly formatted dates emit findings at independently-configured severities.\n\nLint: If a dated TODO/FIXME is approaching expiry, expired, or has a malformed date, a lint finding is raised.",
+          "description" : "`TODO` and `FIXME` comments with a bracketed date should be resolved by that date.\n\nA trailing date in a configurable format (default `[MM/dd/yyyy]` ) is parsed and compared to the current date. Comments approaching, past, or incorrectly formatted dates emit findings at independently-configured severities.\n\nLint: If a dated TODO/FIXME is approaching expiry, expired, or has a malformed date, a lint finding is raised.",
           "properties" : {
             "approachingExpirySeverity" : {
               "default" : "warn",
@@ -527,22 +536,6 @@
               ],
               "type" : "string"
             },
-            "dateDelimitersClosing" : {
-              "description" : "Closing delimiter that terminates the date inside the TODO comment.",
-              "type" : "string"
-            },
-            "dateDelimitersOpening" : {
-              "description" : "Opening delimiter that introduces the date inside the TODO comment.",
-              "type" : "string"
-            },
-            "dateFormat" : {
-              "description" : "`DateFormatter` pattern used to parse the expiry date out of the comment.",
-              "type" : "string"
-            },
-            "dateSeparator" : {
-              "description" : "Separator between date components.",
-              "type" : "string"
-            },
             "expiredSeverity" : {
               "default" : "error",
               "description" : "Severity reported for TODOs whose expiry date has already passed.\n\nOptions: warn, error, no.",
@@ -562,7 +555,7 @@
               "$ref" : "#/$defs/ruleBase"
             }
           ],
-          "description" : "Enforce a consistent file header comment, or remove file headers entirely.\n\nWhen configured with header text, any existing file header comment is replaced with the configured text. When configured with an empty string, any existing file header is removed. File header comments are line comments (`//`) or block comments (`/* */`) at the start of the file, before any blank line, doc comment, or code. Doc comments (`///`, `/** */`) are not considered file header comments.\n\nRequires configuration via `fileHeader.text`.\n\nLint: A warning is raised when the file header does not match the configured text.\n\nRewrite: The file header is replaced with (or cleared to) the configured text.",
+          "description" : "Enforce a consistent file header comment, or remove file headers entirely.\n\nWhen configured with header text, any existing file header comment is replaced with the configured text. When configured with an empty string, any existing file header is removed. File header comments are line comments ( `//` ) or block comments ( `/* */` ) at the start of the file, before any blank line, doc comment, or code. Doc comments ( `///` , `/** */` ) are not considered file header comments.\n\nRequires configuration via `fileHeader.text` .\n\nLint: A warning is raised when the file header does not match the configured text.\n\nRewrite: The file header is replaced with (or cleared to) the configured text.",
           "properties" : {
             "text" : {
               "description" : "The exact header text every file must begin with. May contain newlines for multi-line headers. When `nil` or empty, any existing file header is removed instead.",
@@ -668,7 +661,7 @@
               "$ref" : "#/$defs/lintOnlyBase"
             }
           ],
-          "description" : "The same condition appearing twice in an if/else-if chain or switch is dead code.\n\nWalks each top-level if/else-if chain and groups branches by their normalized condition set (order-insensitive). Any condition appearing in more than one branch is flagged.\n\nWalks each switch's case list and groups case items by their normalized `pattern + where`. Any case item appearing more than once is flagged.\n\nLint: When the same condition or case appears multiple times in the same branch instruction, an error is raised.",
+          "description" : "The same condition appearing twice in an if/else-if chain or switch is dead code.\n\nWalks each top-level if/else-if chain and groups branches by their normalized condition set (order-insensitive). Any condition appearing in more than one branch is flagged.\n\nWalks each switch's case list and groups case items by their normalized `pattern + where` . Any case item appearing more than once is flagged.\n\nLint: When the same condition or case appears multiple times in the same branch instruction, an error is raised.",
           "unevaluatedProperties" : false
         },
         "explicitNilCheck" : {
@@ -734,7 +727,7 @@
               "$ref" : "#/$defs/ruleBase"
             }
           ],
-          "description" : "Consecutive single-return `if` statements followed by a final `return` should be expressed as a chained `if/else` expression.\n\nWhen a sequence of `if` statements each contain only a `return` and are followed by a trailing `return` , the chain is converted into a single `if/else if/.../else` expression (two or more `if` branches required).\n\n```swift // Before if case .spaces = $0 { return true } if case .tabs = $0 { return true } return false\n\n// After if case .spaces = $0 { true } else if case .tabs = $0 { true } else { false } ```\n\nLint: A chain of early-return `if` statements raises a warning.\n\nRewrite: The chain is replaced with an `if/else` expression."
+          "description" : "Single-return `if` statements followed by a final `return` should be expressed as an `if/else` expression.\n\nWhen one or more `if` statements each contain only a `return` and are followed by a trailing `return` , the sequence is converted into a single `if/else if/.../else` expression.\n\n```swift // Before if case .spaces = $0 { return true } if case .tabs = $0 { return true } return false\n\n// After if case .spaces = $0 { true } else if case .tabs = $0 { true } else { false } ```\n\nLint: A chain of early-return `if` statements raises a warning.\n\nRewrite: The chain is replaced with an `if/else` expression."
         },
         "preferTernary" : {
           "allOf" : [
@@ -810,7 +803,7 @@
           "$ref" : "#/$defs/lintOnlyBase"
         }
       ],
-      "description" : "Protocols whose name ends in `Delegate` should be class-constrained.\n\nDelegate properties are typically declared `weak` to avoid retain cycles. The `weak` modifier is only valid on class-bound references, so a delegate protocol must inherit from `AnyObject` (or `NSObjectProtocol`, `Actor`, another `*Delegate` protocol) — otherwise it cannot be held weakly.\n\nLint: A protocol whose name ends in `Delegate` and is not class-constrained yields a warning.",
+      "description" : "Protocols whose name ends in `Delegate` should be class-constrained.\n\nDelegate properties are typically declared `weak` to avoid retain cycles. The `weak` modifier is only valid on class-bound references, so a delegate protocol must inherit from `AnyObject` (or `NSObjectProtocol` , `Actor` , another `*Delegate` protocol) — otherwise it cannot be held weakly.\n\nLint: A protocol whose name ends in `Delegate` and is not class-constrained yields a warning.",
       "unevaluatedProperties" : false
     },
     "docCommentsPrecedeModifiers" : {
@@ -819,7 +812,7 @@
           "$ref" : "#/$defs/ruleBase"
         }
       ],
-      "description" : "Place doc comments before any declaration modifiers or attributes.\n\nDoc comments (`///` or `/** */`) should appear before all attributes and access modifiers, not between them.\n\nLint: If a doc comment appears after an attribute or modifier, a lint warning is raised.\n\nRewrite: The doc comment is moved before all attributes and modifiers."
+      "description" : "Place doc comments before any declaration modifiers or attributes.\n\nDoc comments ( `///` or `/** */` ) should appear before all attributes and access modifiers, not between them.\n\nLint: If a doc comment appears after an attribute or modifier, a lint warning is raised.\n\nRewrite: The doc comment is moved before all attributes and modifiers."
     },
     "documentPublicDeclarations" : {
       "allOf" : [
@@ -836,7 +829,7 @@
           "$ref" : "#/$defs/lintOnlyBase"
         }
       ],
-      "description" : "The same condition appearing twice in an if/else-if chain or switch is dead code.\n\nWalks each top-level if/else-if chain and groups branches by their normalized condition set (order-insensitive). Any condition appearing in more than one branch is flagged.\n\nWalks each switch's case list and groups case items by their normalized `pattern + where`. Any case item appearing more than once is flagged.\n\nLint: When the same condition or case appears multiple times in the same branch instruction, an error is raised.",
+      "description" : "The same condition appearing twice in an if/else-if chain or switch is dead code.\n\nWalks each top-level if/else-if chain and groups branches by their normalized condition set (order-insensitive). Any condition appearing in more than one branch is flagged.\n\nWalks each switch's case list and groups case items by their normalized `pattern + where` . Any case item appearing more than once is flagged.\n\nLint: When the same condition or case appears multiple times in the same branch instruction, an error is raised.",
       "unevaluatedProperties" : false
     },
     "duplicateDictionaryKeys" : {
@@ -878,7 +871,7 @@
           "$ref" : "#/$defs/lintOnlyBase"
         }
       ],
-      "description" : "`TODO` and `FIXME` comments with a bracketed date should be resolved by that date.\n\nA trailing date in a configurable format (default `[MM/dd/yyyy]`) is parsed and compared to the current date. Comments approaching, past, or incorrectly formatted dates emit findings at independently-configured severities.\n\nLint: If a dated TODO/FIXME is approaching expiry, expired, or has a malformed date, a lint finding is raised.",
+      "description" : "`TODO` and `FIXME` comments with a bracketed date should be resolved by that date.\n\nA trailing date in a configurable format (default `[MM/dd/yyyy]` ) is parsed and compared to the current date. Comments approaching, past, or incorrectly formatted dates emit findings at independently-configured severities.\n\nLint: If a dated TODO/FIXME is approaching expiry, expired, or has a malformed date, a lint finding is raised.",
       "properties" : {
         "approachingExpirySeverity" : {
           "default" : "warn",
@@ -903,22 +896,6 @@
             "error",
             "no"
           ],
-          "type" : "string"
-        },
-        "dateDelimitersClosing" : {
-          "description" : "Closing delimiter that terminates the date inside the TODO comment.",
-          "type" : "string"
-        },
-        "dateDelimitersOpening" : {
-          "description" : "Opening delimiter that introduces the date inside the TODO comment.",
-          "type" : "string"
-        },
-        "dateFormat" : {
-          "description" : "`DateFormatter` pattern used to parse the expiry date out of the comment.",
-          "type" : "string"
-        },
-        "dateSeparator" : {
-          "description" : "Separator between date components.",
           "type" : "string"
         },
         "expiredSeverity" : {
@@ -967,7 +944,7 @@
           "$ref" : "#/$defs/ruleBase"
         }
       ],
-      "description" : "Enforce a consistent file header comment, or remove file headers entirely.\n\nWhen configured with header text, any existing file header comment is replaced with the configured text. When configured with an empty string, any existing file header is removed. File header comments are line comments (`//`) or block comments (`/* */`) at the start of the file, before any blank line, doc comment, or code. Doc comments (`///`, `/** */`) are not considered file header comments.\n\nRequires configuration via `fileHeader.text`.\n\nLint: A warning is raised when the file header does not match the configured text.\n\nRewrite: The file header is replaced with (or cleared to) the configured text.",
+      "description" : "Enforce a consistent file header comment, or remove file headers entirely.\n\nWhen configured with header text, any existing file header comment is replaced with the configured text. When configured with an empty string, any existing file header is removed. File header comments are line comments ( `//` ) or block comments ( `/* */` ) at the start of the file, before any blank line, doc comment, or code. Doc comments ( `///` , `/** */` ) are not considered file header comments.\n\nRequires configuration via `fileHeader.text` .\n\nLint: A warning is raised when the file header does not match the configured text.\n\nRewrite: The file header is replaced with (or cleared to) the configured text.",
       "properties" : {
         "text" : {
           "description" : "The exact header text every file must begin with. May contain newlines for multi-line headers. When `nil` or empty, any existing file header is removed instead.",
@@ -1171,6 +1148,15 @@
             }
           }
         },
+        "noDataDropPrefixInLoop" : {
+          "allOf" : [
+            {
+              "$ref" : "#/$defs/lintOnlyBase"
+            }
+          ],
+          "description" : "Lint `dropFirst`/`dropLast`/`prefix`/`suffix` calls inside a loop body.\n\nOn value-typed collections like `Data` and `Array`, these methods copy the underlying storage. Calling them inside a loop produces quadratic cost. Prefer index-based iteration (`var idx = data.startIndex; while idx < end { ... }`) or a single slice computed before the loop.",
+          "unevaluatedProperties" : false
+        },
         "noExplicitOwnership" : {
           "allOf" : [
             {
@@ -1179,6 +1165,15 @@
           ],
           "description" : "Remove explicit `borrowing` and `consuming` ownership modifiers.\n\nOwnership modifiers are an advanced feature that most code does not need. When present on function declarations (e.g. `consuming func move()` ) or parameter types (e.g. `func foo(_ bar: consuming Bar)` ), they are removed.\n\nLint: If an explicit `borrowing` or `consuming` modifier is found, a lint warning is raised.\n\nRewrite: The ownership modifier is removed."
         },
+        "noFormatterInSwiftUIBody" : {
+          "allOf" : [
+            {
+              "$ref" : "#/$defs/lintOnlyBase"
+            }
+          ],
+          "description" : "Lint formatter initializers (`NumberFormatter`, `DateFormatter`, `MeasurementFormatter`) constructed inside a SwiftUI `body` accessor.\n\nSwiftUI re-evaluates `body` whenever its dependencies invalidate. Building a formatter inline allocates and configures a new instance on every render and discards it. Hoist to a `static let` or a parent-scoped property.",
+          "unevaluatedProperties" : false
+        },
         "noRetroactiveConformances" : {
           "allOf" : [
             {
@@ -1186,6 +1181,15 @@
             }
           ],
           "description" : "`@retroactive` conformances are forbidden.\n\nLint: Using `@retroactive` results in a lint error.",
+          "unevaluatedProperties" : false
+        },
+        "noSortFilterInForEachData" : {
+          "allOf" : [
+            {
+              "$ref" : "#/$defs/lintOnlyBase"
+            }
+          ],
+          "description" : "Lint inline `.sorted`/`.filter`/`.map`/`.compactMap`/`.reversed` chains in the data argument of `ForEach`. The expression is recomputed on every render — hoist into a `@State`/`@Observable` value or a computed property.",
           "unevaluatedProperties" : false
         },
         "noVoidTernary" : {
@@ -1213,6 +1217,15 @@
           ],
           "description" : "Replace `assert(false, ...)` with `assertionFailure(...)` and `precondition(false, ...)` with `preconditionFailure(...)`.\n\nThe `Failure` variants more clearly express intent: the code path should never be reached. They also have `Never` return type, enabling the compiler to prove exhaustiveness.\n\nLint: Using `assert(false, ...)` or `precondition(false, ...)` raises a warning.\n\nRewrite: The call is replaced with the corresponding `Failure` variant, removing the `false` argument."
         },
+        "preferClosureNotificationObserver" : {
+          "allOf" : [
+            {
+              "$ref" : "#/$defs/lintOnlyBase"
+            }
+          ],
+          "description" : "Lint selector-based `NotificationCenter.addObserver(_:selector:name:object:)`. Prefer the closure-based `addObserver(forName:object:queue:using:)` — it returns an opaque token, doesn't require an `@objc` handler, and integrates cleanly with structured concurrency.",
+          "unevaluatedProperties" : false
+        },
         "preferCompoundAssignment" : {
           "allOf" : [
             {
@@ -1228,6 +1241,15 @@
             }
           ],
           "description" : "Prefer `contains(where:)` over `filter`-then-count/isEmpty/first patterns, and `contains(_:)` over `range(of:) != nil`.\n\n`filter` allocates an intermediate collection just to ask a yes/no question; `contains` short-circuits at the first match. Likewise, `string.contains(needle)` is clearer and faster than building a `Range` only to check it for `nil`.\n\nLint: warns on:\n- `xs.filter { ... }.count [==/!=/>] 0`\n- `xs.filter { ... }.isEmpty`\n- `xs.first(where:) [==/!=] nil`, `xs.firstIndex(where:) [==/!=] nil`\n- `s.range(of: needle) [==/!=] nil` (skipped when `options:` is supplied, e.g. `.regularExpression`)",
+          "unevaluatedProperties" : false
+        },
+        "preferContinuousClockOverDate" : {
+          "allOf" : [
+            {
+              "$ref" : "#/$defs/lintOnlyBase"
+            }
+          ],
+          "description" : "Lint elapsed-time uses of `Date()` — prefer `ContinuousClock`.\n\nTwo patterns are flagged:\n- `Date().timeIntervalSince(start)`\n- `Date().timeIntervalSinceNow`\n\n`ContinuousClock.now` (paired with `start.duration(to: .now)` or `clock.measure { … }`) is monotonic, allocation-free, and unaffected by wall-clock adjustments.\n\nLint-only: autofixing requires rewriting the start-time site as well, which is outside the rule's single-node scope.",
           "unevaluatedProperties" : false
         },
         "preferCountWhere" : {
@@ -1321,6 +1343,15 @@
           "description" : "Prefer `.last(where:)` over `.filter { ... }.last`.\n\n`filter` allocates and populates an entire intermediate array; `last(where:)` walks the collection once and avoids the allocation.\n\nLint: `xs.filter { ... }.last` raises a warning suggesting `last(where:)`.",
           "unevaluatedProperties" : false
         },
+        "preferLazyForLongChain" : {
+          "allOf" : [
+            {
+              "$ref" : "#/$defs/lintOnlyBase"
+            }
+          ],
+          "description" : "Lint chains of 3+ collection transforms (`.map`, `.filter`, `.compactMap`, `.flatMap`, `.prefix`, `.dropFirst`). Each step allocates an intermediate `Array`. Inserting `.lazy` at the head of the chain forwards lazily and avoids the allocations.",
+          "unevaluatedProperties" : false
+        },
         "preferMinMax" : {
           "allOf" : [
             {
@@ -1363,6 +1394,15 @@
           ],
           "description" : "Prefer `someBool.toggle()` over `someBool = !someBool`.\n\n`Bool.toggle()` (Swift 4.2+) is more concise and clearly communicates the intent. The two forms are equivalent semantically; `toggle()` does not introduce any new evaluation hazards.\n\nLint: A warning is raised for `x = !x` patterns where the LHS and the negated RHS reference the exact same expression text.\n\nRewrite: The expression is rewritten to `x.toggle()`."
         },
+        "preferTypedThrowsOverResult" : {
+          "allOf" : [
+            {
+              "$ref" : "#/$defs/lintOnlyBase"
+            }
+          ],
+          "description" : "Lint functions returning `Result<T, E>` whose body is a single `do { return .success(...) } catch { return .failure(...) }`. The pattern is mechanical — `throws(E) -> T` expresses the same contract more directly.",
+          "unevaluatedProperties" : false
+        },
         "preferWhereClausesInForLoops" : {
           "allOf" : [
             {
@@ -1387,6 +1427,33 @@
             }
           ],
           "description" : "`fatalError` calls should include a descriptive message.\n\nA bare `fatalError()` (or `fatalError(\"\")`) gives no context when the program crashes. Including a message makes it far easier to diagnose the problem from the stack trace alone.\n\nLint: A warning is raised for `fatalError()` and `fatalError(\"\")`.\n\nRewrite: Not auto-fixed; the message must be supplied by the author."
+        },
+        "suggestOrderedSetForUniqueAppend" : {
+          "allOf" : [
+            {
+              "$ref" : "#/$defs/lintOnlyBase"
+            }
+          ],
+          "description" : "Lint the `if !collection.contains(x) { collection.append(x) }` pattern.\n\nMaintaining uniqueness in an `Array` via `contains` + `append` is O(n) per insertion. `OrderedSet` (swift-collections) preserves insertion order with O(1) average insertion and `contains`.\n\nLint-only: rewriting would change the variable's declared type, which is outside the rule's structural scope.",
+          "unevaluatedProperties" : false
+        },
+        "warnForEachIdSelf" : {
+          "allOf" : [
+            {
+              "$ref" : "#/$defs/lintOnlyBase"
+            }
+          ],
+          "description" : "Warn on `ForEach(_, id: \\.self)`. SwiftUI uses `id` to diff views across updates; using `\\.self` requires the element to be both `Hashable` and stable (its hash must not change when other state changes). Prefer making the element `Identifiable`.",
+          "unevaluatedProperties" : false
+        },
+        "warnSwapThenRemoveAll" : {
+          "allOf" : [
+            {
+              "$ref" : "#/$defs/lintOnlyBase"
+            }
+          ],
+          "description" : "Lint the `swap(&a, &b); a.removeAll(…)` (or `b.removeAll(…)`) pattern. It almost always indicates a hand-rolled alternating-buffer parser that loses `Array`/`Data` CoW guarantees and is brittle when refactored.",
+          "unevaluatedProperties" : false
         }
       },
       "type" : "object"
@@ -1438,7 +1505,7 @@
               "$ref" : "#/$defs/ruleBase"
             }
           ],
-          "description" : "Enforce switch case label indentation style.\n\nTwo styles are supported via `SwitchCaseIndentationConfiguration.Style`:\n- `flush`: `case` labels align with the `switch` keyword (default).\n- `indented`: `case` labels are indented one level from `switch`.\n\nLint: Raised when a `case` or `default` label doesn't match the configured style.\n\nRewrite: Case labels, bodies, and the closing brace are reindented to match.",
+          "description" : "Enforce switch case label indentation style.\n\nTwo styles are supported via `SwitchCaseIndentationConfiguration.Style` :\n- `flush` : `case` labels align with the `switch` keyword (default).\n- `indented` : `case` labels are indented one level from `switch` .\n\nLint: Raised when a `case` or `default` label doesn't match the configured style.\n\nRewrite: Case labels, bodies, and the closing brace are reindented to match.",
           "properties" : {
             "style" : {
               "default" : "flush",
@@ -1695,6 +1762,15 @@
           "description" : "The playground literals (`#colorLiteral`, `#fileLiteral`, and `#imageLiteral`) are forbidden.\n\nLint: Using a playground literal will yield a lint error with a suggestion of an API to replace it.",
           "unevaluatedProperties" : false
         },
+        "preferEmptyCollectionForArrayArgs" : {
+          "allOf" : [
+            {
+              "$ref" : "#/$defs/lintOnlyBase"
+            }
+          ],
+          "description" : "Suggest `EmptyCollection()` / `CollectionOfOne(x)` for `[]` and `[x]` array literals used as function-call arguments.\n\nWhen a callee accepts `some Collection`/`some Sequence` (or `any` of the same), passing an array literal allocates a heap-backed `Array`. The two adapter types in the standard library are zero-allocation alternatives.\n\nThis rule is lint-only and structural: it cannot see the parameter type, so it fires on every empty/single-element array literal passed to a function. Default level is `.no` (opt-in) because the false-positive rate is high in codebases that pass `Array` arguments by literal.",
+          "unevaluatedProperties" : false
+        },
         "reflowMultilineStringLiterals" : {
           "default" : "never",
           "description" : "Multiline string literal reflow mode.\n\nOptions: never, onlyLinesOverLength, always.",
@@ -1745,7 +1821,7 @@
               "$ref" : "#/$defs/lintOnlyBase"
             }
           ],
-          "description" : "Protocols whose name ends in `Delegate` should be class-constrained.\n\nDelegate properties are typically declared `weak` to avoid retain cycles. The `weak` modifier is only valid on class-bound references, so a delegate protocol must inherit from `AnyObject` (or `NSObjectProtocol`, `Actor`, another `*Delegate` protocol) — otherwise it cannot be held weakly.\n\nLint: A protocol whose name ends in `Delegate` and is not class-constrained yields a warning.",
+          "description" : "Protocols whose name ends in `Delegate` should be class-constrained.\n\nDelegate properties are typically declared `weak` to avoid retain cycles. The `weak` modifier is only valid on class-bound references, so a delegate protocol must inherit from `AnyObject` (or `NSObjectProtocol` , `Actor` , another `*Delegate` protocol) — otherwise it cannot be held weakly.\n\nLint: A protocol whose name ends in `Delegate` and is not class-constrained yields a warning.",
           "unevaluatedProperties" : false
         },
         "preferWeakCapture" : {
@@ -1922,7 +1998,7 @@
           "$ref" : "#/$defs/ruleBase"
         }
       ],
-      "description" : "Enforce consistent ordering for declaration modifiers.\n\nModifiers should appear in a canonical order: access control, then `override`, then `class`/`static`, then other modifiers. For example, `public static func` not `static public func`.\n\nLint: If modifiers are out of order, a lint warning is raised.\n\nRewrite: The modifiers are reordered to match the canonical order."
+      "description" : "Enforce consistent ordering for declaration modifiers.\n\nModifiers should appear in a canonical order: access control, then `override` , then `class` / `static` , then other modifiers. For example, `public static func` not `static public func` .\n\nLint: If modifiers are out of order, a lint warning is raised.\n\nRewrite: The modifiers are reordered to match the canonical order."
     },
     "modifiersOnSameLine" : {
       "allOf" : [
@@ -2082,6 +2158,15 @@
         }
       }
     },
+    "noAwaitInsideWithLock" : {
+      "allOf" : [
+        {
+          "$ref" : "#/$defs/lintOnlyBase"
+        }
+      ],
+      "description" : "Lint `withLock { ... await ... }` — holding a lock across suspension is a blocking/deadlock hazard.\n\nThe rule fires on any function call whose callee is `<receiver>.withLock` when the trailing closure (or first closure argument) contains an `await` expression at any nesting level *outside* of nested closures (a nested `Task { }` body is a separate isolation context and doesn't hold the lock).",
+      "unevaluatedProperties" : false
+    },
     "noBacktickedSelf" : {
       "allOf" : [
         {
@@ -2097,6 +2182,15 @@
         }
       ],
       "description" : "Block comments should be avoided in favor of line comments.\n\nLint: If a block comment appears, a lint error is raised.",
+      "unevaluatedProperties" : false
+    },
+    "noDataDropPrefixInLoop" : {
+      "allOf" : [
+        {
+          "$ref" : "#/$defs/lintOnlyBase"
+        }
+      ],
+      "description" : "Lint `dropFirst`/`dropLast`/`prefix`/`suffix` calls inside a loop body.\n\nOn value-typed collections like `Data` and `Array`, these methods copy the underlying storage. Calling them inside a loop produces quadratic cost. Prefer index-based iteration (`var idx = data.startIndex; while idx < end { ... }`) or a single slice computed before the loop.",
       "unevaluatedProperties" : false
     },
     "noExplicitOwnership" : {
@@ -2138,6 +2232,15 @@
         }
       ],
       "description" : "Force-unwraps are strongly discouraged and must be documented.\n\nIn test functions, force unwraps are auto-fixed:\n- `foo!` becomes `try XCTUnwrap(foo)` (XCTest) or `try #require(foo)` (Swift Testing)\n- `foo as! Bar` becomes `try XCTUnwrap(foo as? Bar)` or `try #require(foo as? Bar)`\n- `throws` is added to the function signature if needed\n\nIn non-test code, force unwraps are diagnosed but not rewritten.\n\nTest functions are:\n- Functions annotated with `@Test` (Swift Testing)\n- Functions named `test*()` with no parameters inside `XCTestCase` subclasses\n\nForce unwraps in closures, nested functions, and string interpolation are left alone because `try` cannot propagate out of those scopes.\n\nLint: A warning is raised for each force unwrap.\n\nRewrite: In test functions, force unwraps are replaced with XCTUnwrap/#require."
+    },
+    "noFormatterInSwiftUIBody" : {
+      "allOf" : [
+        {
+          "$ref" : "#/$defs/lintOnlyBase"
+        }
+      ],
+      "description" : "Lint formatter initializers (`NumberFormatter`, `DateFormatter`, `MeasurementFormatter`) constructed inside a SwiftUI `body` accessor.\n\nSwiftUI re-evaluates `body` whenever its dependencies invalidate. Building a formatter inline allocates and configures a new instance on every render and discards it. Hoist to a `static let` or a parent-scoped property.",
+      "unevaluatedProperties" : false
     },
     "noGuardInTests" : {
       "allOf" : [
@@ -2189,6 +2292,24 @@
         }
       ],
       "description" : "Doc comments (`///` and `/** */`) inside function, initializer, and accessor bodies should be regular comments (`//` or `/* */`).\n\nDocumentation comments are intended for API-level declarations. Inside an implementation body, a doc comment cannot document anything externally visible, so a regular comment is the correct form.\n\nNested function declarations are exempt — they are still declarations and may carry doc comments.\n\nLint: If a doc comment appears inside a body, a lint warning is raised.",
+      "unevaluatedProperties" : false
+    },
+    "noMutationOfIteratedCollection" : {
+      "allOf" : [
+        {
+          "$ref" : "#/$defs/lintOnlyBase"
+        }
+      ],
+      "description" : "Lint mutation of the loop subject inside a `for-in` loop. Mutating the iterated collection while the iterator is live is undefined behavior in Swift's `Sequence` model and a frequent source of crashes for `Array`.\n\nDetection: the loop subject must be either a `DeclReferenceExprSyntax` (e.g. `for x in items`) or a `MemberAccessExprSyntax` (e.g. `for x in self.items`). Inside the body, any call of the form `<subject>.<mutator>(...)` where `<mutator>` is a known Array/Dictionary/ Set mutating method is flagged.",
+      "unevaluatedProperties" : false
+    },
+    "noNestedWithLock" : {
+      "allOf" : [
+        {
+          "$ref" : "#/$defs/lintOnlyBase"
+        }
+      ],
+      "description" : "Lint nested `<receiver>.withLock { ... <receiver>.withLock { ... } ... }` on the same receiver. Re-entering a non-recursive lock (e.g. `Mutex`) is a guaranteed deadlock.",
       "unevaluatedProperties" : false
     },
     "noOptionalBool" : {
@@ -2250,6 +2371,15 @@
         }
       ],
       "description" : "Semicolons should not be present in Swift code.\n\nLint: If a semicolon appears anywhere, a lint error is raised.\n\nRewrite: All semicolons will be replaced with line breaks."
+    },
+    "noSortFilterInForEachData" : {
+      "allOf" : [
+        {
+          "$ref" : "#/$defs/lintOnlyBase"
+        }
+      ],
+      "description" : "Lint inline `.sorted`/`.filter`/`.map`/`.compactMap`/`.reversed` chains in the data argument of `ForEach`. The expression is recomputed on every render — hoist into a `@State`/`@Observable` value or a computed property.",
+      "unevaluatedProperties" : false
     },
     "noTrailingClosureParens" : {
       "allOf" : [
@@ -2375,6 +2505,15 @@
       ],
       "description" : "Replace `assert(false, ...)` with `assertionFailure(...)` and `precondition(false, ...)` with `preconditionFailure(...)`.\n\nThe `Failure` variants more clearly express intent: the code path should never be reached. They also have `Never` return type, enabling the compiler to prove exhaustiveness.\n\nLint: Using `assert(false, ...)` or `precondition(false, ...)` raises a warning.\n\nRewrite: The call is replaced with the corresponding `Failure` variant, removing the `false` argument."
     },
+    "preferClosureNotificationObserver" : {
+      "allOf" : [
+        {
+          "$ref" : "#/$defs/lintOnlyBase"
+        }
+      ],
+      "description" : "Lint selector-based `NotificationCenter.addObserver(_:selector:name:object:)`. Prefer the closure-based `addObserver(forName:object:queue:using:)` — it returns an opaque token, doesn't require an `@objc` handler, and integrates cleanly with structured concurrency.",
+      "unevaluatedProperties" : false
+    },
     "preferCommaConditions" : {
       "allOf" : [
         {
@@ -2408,6 +2547,15 @@
       "description" : "Prefer `contains(where:)` over `filter`-then-count/isEmpty/first patterns, and `contains(_:)` over `range(of:) != nil`.\n\n`filter` allocates an intermediate collection just to ask a yes/no question; `contains` short-circuits at the first match. Likewise, `string.contains(needle)` is clearer and faster than building a `Range` only to check it for `nil`.\n\nLint: warns on:\n- `xs.filter { ... }.count [==/!=/>] 0`\n- `xs.filter { ... }.isEmpty`\n- `xs.first(where:) [==/!=] nil`, `xs.firstIndex(where:) [==/!=] nil`\n- `s.range(of: needle) [==/!=] nil` (skipped when `options:` is supplied, e.g. `.regularExpression`)",
       "unevaluatedProperties" : false
     },
+    "preferContinuousClockOverDate" : {
+      "allOf" : [
+        {
+          "$ref" : "#/$defs/lintOnlyBase"
+        }
+      ],
+      "description" : "Lint elapsed-time uses of `Date()` — prefer `ContinuousClock`.\n\nTwo patterns are flagged:\n- `Date().timeIntervalSince(start)`\n- `Date().timeIntervalSinceNow`\n\n`ContinuousClock.now` (paired with `start.duration(to: .now)` or `clock.measure { … }`) is monotonic, allocation-free, and unaffected by wall-clock adjustments.\n\nLint-only: autofixing requires rewriting the start-time site as well, which is outside the rule's single-node scope.",
+      "unevaluatedProperties" : false
+    },
     "preferCountWhere" : {
       "allOf" : [
         {
@@ -2431,6 +2579,15 @@
         }
       ],
       "description" : "Early exits should be used whenever possible.\n\nThis means that `if ... else { return/throw/break/continue }` constructs should be replaced by `guard ... else { return/throw/break/continue }` constructs in order to keep indentation levels low. Specifically, code of the following form:\n\n```swift if condition { trueBlock } else { falseBlock return/throw/break/continue } ```\n\nwill be transformed into:\n\n```swift guard condition else { falseBlock return/throw/break/continue } trueBlock ```\n\nLint: `if ... else { return/throw/break/continue }` constructs will yield a lint error.\n\nRewrite: `if ... else { return/throw/break/continue }` constructs will be replaced with equivalent `guard ... else { return/throw/break/continue }` constructs."
+    },
+    "preferEmptyCollectionForArrayArgs" : {
+      "allOf" : [
+        {
+          "$ref" : "#/$defs/lintOnlyBase"
+        }
+      ],
+      "description" : "Suggest `EmptyCollection()` / `CollectionOfOne(x)` for `[]` and `[x]` array literals used as function-call arguments.\n\nWhen a callee accepts `some Collection`/`some Sequence` (or `any` of the same), passing an array literal allocates a heap-backed `Array`. The two adapter types in the standard library are zero-allocation alternatives.\n\nThis rule is lint-only and structural: it cannot see the parameter type, so it fires on every empty/single-element array literal passed to a function. Default level is `.no` (opt-in) because the false-positive rate is high in codebases that pass `Array` arguments by literal.",
+      "unevaluatedProperties" : false
     },
     "preferEnvironmentEntry" : {
       "allOf" : [
@@ -2497,7 +2654,7 @@
           "$ref" : "#/$defs/ruleBase"
         }
       ],
-      "description" : "Consecutive single-return `if` statements followed by a final `return` should be expressed as a chained `if/else` expression.\n\nWhen a sequence of `if` statements each contain only a `return` and are followed by a trailing `return` , the chain is converted into a single `if/else if/.../else` expression (two or more `if` branches required).\n\n```swift // Before if case .spaces = $0 { return true } if case .tabs = $0 { return true } return false\n\n// After if case .spaces = $0 { true } else if case .tabs = $0 { true } else { false } ```\n\nLint: A chain of early-return `if` statements raises a warning.\n\nRewrite: The chain is replaced with an `if/else` expression."
+      "description" : "Single-return `if` statements followed by a final `return` should be expressed as an `if/else` expression.\n\nWhen one or more `if` statements each contain only a `return` and are followed by a trailing `return` , the sequence is converted into a single `if/else if/.../else` expression.\n\n```swift // Before if case .spaces = $0 { return true } if case .tabs = $0 { return true } return false\n\n// After if case .spaces = $0 { true } else if case .tabs = $0 { true } else { false } ```\n\nLint: A chain of early-return `if` statements raises a warning.\n\nRewrite: The chain is replaced with an `if/else` expression."
     },
     "preferIsDisjoint" : {
       "allOf" : [
@@ -2532,6 +2689,15 @@
       "description" : "Prefer `.last(where:)` over `.filter { ... }.last`.\n\n`filter` allocates and populates an entire intermediate array; `last(where:)` walks the collection once and avoids the allocation.\n\nLint: `xs.filter { ... }.last` raises a warning suggesting `last(where:)`.",
       "unevaluatedProperties" : false
     },
+    "preferLazyForLongChain" : {
+      "allOf" : [
+        {
+          "$ref" : "#/$defs/lintOnlyBase"
+        }
+      ],
+      "description" : "Lint chains of 3+ collection transforms (`.map`, `.filter`, `.compactMap`, `.flatMap`, `.prefix`, `.dropFirst`). Each step allocates an intermediate `Array`. Inserting `.lazy` at the head of the chain forwards lazily and avoids the allocations.",
+      "unevaluatedProperties" : false
+    },
     "preferMainAttribute" : {
       "allOf" : [
         {
@@ -2557,6 +2723,22 @@
       ],
       "description" : "`String.data(using: .utf8)` returns `Data?`, even though UTF-8 encoding can never fail. Prefer the non-optional `Data(_:)` initializer that takes a `String.UTF8View`: `Data(\"foo\".utf8)` instead of `\"foo\".data(using: .utf8)`.\n\nLint: A warning is raised for any call of the form `<expr>.data(using: .utf8)`. Other encodings (`.ascii`, `.unicode`, etc.) are not flagged because they really can fail.",
       "unevaluatedProperties" : false
+    },
+    "preferOfficialCDecl" : {
+      "allOf" : [
+        {
+          "$ref" : "#/$defs/ruleBase"
+        }
+      ],
+      "description" : "Replace `@_cdecl` with `@c`.\n\n`@_cdecl` was the experimental, underscore-prefixed spelling. SE-0407 promoted it to the official `@c` attribute in Swift 6.3.\n\nLint: Using `@_cdecl` raises a warning.\n\nRewrite: The attribute is replaced with `@c`, preserving any argument list."
+    },
+    "preferOfficialSpecialize" : {
+      "allOf" : [
+        {
+          "$ref" : "#/$defs/ruleBase"
+        }
+      ],
+      "description" : "Replace `@_specialize` with `@specialize`.\n\n`@_specialize` was the experimental, underscore-prefixed spelling. The official `@specialize` attribute is available in Swift 6.3.\n\nLint: Using `@_specialize` raises a warning.\n\nRewrite: The attribute is replaced with `@specialize`, preserving its argument list (e.g. `where`, `exported:`, `kind:`)."
     },
     "preferReduceInto" : {
       "allOf" : [
@@ -2640,6 +2822,15 @@
       ],
       "description" : "Use trailing closure syntax where applicable.\n\nWhen the last argument(s) to a function call are closure expressions, convert them to trailing closure syntax. For a single trailing closure, the closure must be unlabeled unless the function is in the \"always trailing\" list (e.g. `async` , `sync` , `autoreleasepool` ). For multiple trailing closures, the first must be unlabeled and the rest must be labeled.\n\nLint: When closure arguments could use trailing closure syntax.\n\nRewrite: The closure arguments are moved to trailing closure position."
     },
+    "preferTypedThrowsOverResult" : {
+      "allOf" : [
+        {
+          "$ref" : "#/$defs/lintOnlyBase"
+        }
+      ],
+      "description" : "Lint functions returning `Result<T, E>` whose body is a single `do { return .success(...) } catch { return .failure(...) }`. The pattern is mechanical — `throws(E) -> T` expresses the same contract more directly.",
+      "unevaluatedProperties" : false
+    },
     "preferUnavailable" : {
       "allOf" : [
         {
@@ -2687,7 +2878,7 @@
           "$ref" : "#/$defs/ruleBase"
         }
       ],
-      "description" : "In protocol property requirements, accessors must be declared in `get set` order. The reverse — `set get` — is legal Swift but inconsistent with the canonical form used throughout the standard library and the Swift book.\n\nLint: A finding is raised when a protocol property's accessor block lists `set` before `get`.\n\nRewrite: The accessors are reordered to `get set`."
+      "description" : "In protocol property requirements, accessors must be declared in `get set` order. The reverse — `set get` — is legal Swift but inconsistent with the canonical form used throughout the standard library and the Swift book.\n\nLint: A finding is raised when a protocol property's accessor block lists `set` before `get` .\n\nRewrite: The accessors are reordered to `get set` ."
     },
     "redundancies" : {
       "additionalProperties" : false,
@@ -2731,7 +2922,7 @@
               "$ref" : "#/$defs/ruleBase"
             }
           ],
-          "description" : "Unified rule that removes or replaces redundant access control modifiers.\n\nCombines four checks: redundant `internal`, redundant `public` on members of non-public types, redundant access control on extension members matching the extension's level, and redundant `fileprivate` (converted to `private` in single-type files)."
+          "description" : "Unified rule that removes or replaces redundant access control modifiers.\n\nCombines four checks: redundant `internal` , redundant `public` on members of non-public types, redundant access control on extension members matching the extension's level, and redundant `fileprivate` (converted to `private` in single-type files)."
         },
         "redundantAsync" : {
           "allOf" : [
@@ -2820,6 +3011,14 @@
             }
           ],
           "description" : "Remove `let error` from `catch` clauses where `error` is implicitly bound.\n\nIn a `catch` clause without a pattern, the caught error is implicitly available as `error`. Writing `catch let error` is therefore redundant.\n\nThis rule only fires when the catch item is exactly `let error` (no type cast, no where clause, and no other catch items in the same clause).\n\nLint: If `catch let error` is found, a lint warning is raised.\n\nRewrite: The redundant `let error` pattern is removed."
+        },
+        "redundantMainActorOnView" : {
+          "allOf" : [
+            {
+              "$ref" : "#/$defs/ruleBase"
+            }
+          ],
+          "description" : "Remove `@MainActor` from SwiftUI `View`, `App`, and `Scene` conformers.\n\nSwiftUI implies `@MainActor` isolation on these protocols, so writing the attribute explicitly is redundant.\n\nDetection is conservative: an unqualified inheritance name `View`, `App`, or `Scene` matches. A custom protocol of the same name will be falsely flagged — match the philosophy of the rule library: prefer false positives over missed issues. Disable per-rule if needed.\n\nLint: A redundant `@MainActor` raises a warning.\n\nRewrite: The `@MainActor` attribute is removed."
         },
         "redundantNilCoalescing" : {
           "allOf" : [
@@ -2999,7 +3198,7 @@
           "$ref" : "#/$defs/ruleBase"
         }
       ],
-      "description" : "Unified rule that removes or replaces redundant access control modifiers.\n\nCombines four checks: redundant `internal`, redundant `public` on members of non-public types, redundant access control on extension members matching the extension's level, and redundant `fileprivate` (converted to `private` in single-type files)."
+      "description" : "Unified rule that removes or replaces redundant access control modifiers.\n\nCombines four checks: redundant `internal` , redundant `public` on members of non-public types, redundant access control on extension members matching the extension's level, and redundant `fileprivate` (converted to `private` in single-type files)."
     },
     "redundantAsync" : {
       "allOf" : [
@@ -3088,6 +3287,14 @@
         }
       ],
       "description" : "Remove `let error` from `catch` clauses where `error` is implicitly bound.\n\nIn a `catch` clause without a pattern, the caught error is implicitly available as `error`. Writing `catch let error` is therefore redundant.\n\nThis rule only fires when the catch item is exactly `let error` (no type cast, no where clause, and no other catch items in the same clause).\n\nLint: If `catch let error` is found, a lint warning is raised.\n\nRewrite: The redundant `let error` pattern is removed."
+    },
+    "redundantMainActorOnView" : {
+      "allOf" : [
+        {
+          "$ref" : "#/$defs/ruleBase"
+        }
+      ],
+      "description" : "Remove `@MainActor` from SwiftUI `View`, `App`, and `Scene` conformers.\n\nSwiftUI implies `@MainActor` isolation on these protocols, so writing the attribute explicitly is redundant.\n\nDetection is conservative: an unqualified inheritance name `View`, `App`, or `Scene` matches. A custom protocol of the same name will be falsely flagged — match the philosophy of the rule library: prefer false positives over missed issues. Disable per-rule if needed.\n\nLint: A redundant `@MainActor` raises a warning.\n\nRewrite: The `@MainActor` attribute is removed."
     },
     "redundantNilCoalescing" : {
       "allOf" : [
@@ -3436,14 +3643,14 @@
       ],
       "description" : "Remove `weak` from `@IBOutlet` properties.\n\nAs per Apple's recommendation, `@IBOutlet` properties should be strong. The `weak` modifier is preserved for delegate and data source outlets since those are typically owned elsewhere.\n\nLint: An `@IBOutlet` property with `weak` raises a warning.\n\nRewrite: The `weak` modifier is removed."
     },
-    "style" : {
-      "default" : "compact",
-      "description" : "Formatting style. Drives normalization and layout choices.\n\nOptions: compact, roomy.",
-      "enum" : [
-        "compact",
-        "roomy"
+    "suggestOrderedSetForUniqueAppend" : {
+      "allOf" : [
+        {
+          "$ref" : "#/$defs/lintOnlyBase"
+        }
       ],
-      "type" : "string"
+      "description" : "Lint the `if !collection.contains(x) { collection.append(x) }` pattern.\n\nMaintaining uniqueness in an `Array` via `contains` + `append` is O(n) per insertion. `OrderedSet` (swift-collections) preserves insertion order with O(1) average insertion and `contains`.\n\nLint-only: rewriting would change the variable's declared type, which is outside the rule's structural scope.",
+      "unevaluatedProperties" : false
     },
     "swiftTestingTestCaseNames" : {
       "allOf" : [
@@ -3478,18 +3685,7 @@
           "$ref" : "#/$defs/ruleBase"
         }
       ],
-      "description" : "Enforce switch case label indentation style.\n\nTwo styles are supported via `SwitchCaseIndentationConfiguration.Style`:\n- `flush`: `case` labels align with the `switch` keyword (default).\n- `indented`: `case` labels are indented one level from `switch`.\n\nLint: Raised when a `case` or `default` label doesn't match the configured style.\n\nRewrite: Case labels, bodies, and the closing brace are reindented to match.",
-      "properties" : {
-        "style" : {
-          "default" : "flush",
-          "description" : "`flush` aligns case labels with the `switch` keyword; `indented` indents them one level beneath it.\n\nOptions: flush, indented.",
-          "enum" : [
-            "flush",
-            "indented"
-          ],
-          "type" : "string"
-        }
-      }
+      "description" : "Sort switch case items alphabetically within each case.\n\nWhen a case matches multiple patterns (e.g. `case .b, .a, .c:`), the patterns are sorted lexicographically. Numeric literals are compared by value (including hex, octal, and binary). Cases with `where` clauses are only sorted if the `where` clause ends up on the last item.\n\nLint: If case items are not sorted, a lint warning is raised.\n\nRewrite: The case items are reordered alphabetically."
     },
     "testSuiteAccessControl" : {
       "allOf" : [
@@ -3712,6 +3908,24 @@
       "additionalProperties" : false,
       "description" : "unsafety rule group.",
       "properties" : {
+        "asyncStreamMissingTermination" : {
+          "allOf" : [
+            {
+              "$ref" : "#/$defs/lintOnlyBase"
+            }
+          ],
+          "description" : "Lint `AsyncStream { continuation in ... }` (and `AsyncThrowingStream`) initializer bodies that call `continuation.yield(...)` but never call `continuation.finish(...)` and never set `continuation.onTermination`.\n\nWithout termination handling the stream can leak when the consumer is cancelled — the producer keeps holding resources for a continuation that will never be drained.",
+          "unevaluatedProperties" : false
+        },
+        "noAwaitInsideWithLock" : {
+          "allOf" : [
+            {
+              "$ref" : "#/$defs/lintOnlyBase"
+            }
+          ],
+          "description" : "Lint `withLock { ... await ... }` — holding a lock across suspension is a blocking/deadlock hazard.\n\nThe rule fires on any function call whose callee is `<receiver>.withLock` when the trailing closure (or first closure argument) contains an `await` expression at any nesting level *outside* of nested closures (a nested `Task { }` body is a separate isolation context and doesn't hold the lock).",
+          "unevaluatedProperties" : false
+        },
         "noForceCast" : {
           "allOf" : [
             {
@@ -3736,6 +3950,24 @@
           ],
           "description" : "Force-unwraps are strongly discouraged and must be documented.\n\nIn test functions, force unwraps are auto-fixed:\n- `foo!` becomes `try XCTUnwrap(foo)` (XCTest) or `try #require(foo)` (Swift Testing)\n- `foo as! Bar` becomes `try XCTUnwrap(foo as? Bar)` or `try #require(foo as? Bar)`\n- `throws` is added to the function signature if needed\n\nIn non-test code, force unwraps are diagnosed but not rewritten.\n\nTest functions are:\n- Functions annotated with `@Test` (Swift Testing)\n- Functions named `test*()` with no parameters inside `XCTestCase` subclasses\n\nForce unwraps in closures, nested functions, and string interpolation are left alone because `try` cannot propagate out of those scopes.\n\nLint: A warning is raised for each force unwrap.\n\nRewrite: In test functions, force unwraps are replaced with XCTUnwrap/#require."
         },
+        "noMutationOfIteratedCollection" : {
+          "allOf" : [
+            {
+              "$ref" : "#/$defs/lintOnlyBase"
+            }
+          ],
+          "description" : "Lint mutation of the loop subject inside a `for-in` loop. Mutating the iterated collection while the iterator is live is undefined behavior in Swift's `Sequence` model and a frequent source of crashes for `Array`.\n\nDetection: the loop subject must be either a `DeclReferenceExprSyntax` (e.g. `for x in items`) or a `MemberAccessExprSyntax` (e.g. `for x in self.items`). Inside the body, any call of the form `<subject>.<mutator>(...)` where `<mutator>` is a known Array/Dictionary/ Set mutating method is flagged.",
+          "unevaluatedProperties" : false
+        },
+        "noNestedWithLock" : {
+          "allOf" : [
+            {
+              "$ref" : "#/$defs/lintOnlyBase"
+            }
+          ],
+          "description" : "Lint nested `<receiver>.withLock { ... <receiver>.withLock { ... } ... }` on the same receiver. Re-entering a non-recursive lock (e.g. `Mutex`) is a guaranteed deadlock.",
+          "unevaluatedProperties" : false
+        },
         "typedCatchError" : {
           "allOf" : [
             {
@@ -3743,6 +3975,15 @@
             }
           ],
           "description" : "`catch let error` (or any plain identifier-pattern catch) declares a binding of inferred type `any Error`, throwing away whatever concrete type `try` could have produced. Either omit the binding (the implicit `error` constant is the same thing) or pattern-match a concrete error type with `catch let e as MyError`.\n\nLint: A warning is raised on `catch` clauses whose only catch item is a bare identifier pattern (`let error`, `var x`, `(let error)`) without a type cast or `where` clause. The implicit `catch {}` form is fine.",
+          "unevaluatedProperties" : false
+        },
+        "warnRecursiveWithObservationTracking" : {
+          "allOf" : [
+            {
+              "$ref" : "#/$defs/lintOnlyBase"
+            }
+          ],
+          "description" : "Lint `withObservationTracking { ... } onChange: { … self.f() … }` where the `onChange` closure calls the enclosing function `f()`. The pattern is a recursive re-tracker that fires forever as observed values mutate. Use the `Observations` AsyncSequence instead.",
           "unevaluatedProperties" : false
         }
       },
@@ -3831,6 +4072,33 @@
       "minimum" : 1,
       "type" : "integer"
     },
+    "warnForEachIdSelf" : {
+      "allOf" : [
+        {
+          "$ref" : "#/$defs/lintOnlyBase"
+        }
+      ],
+      "description" : "Warn on `ForEach(_, id: \\.self)`. SwiftUI uses `id` to diff views across updates; using `\\.self` requires the element to be both `Hashable` and stable (its hash must not change when other state changes). Prefer making the element `Identifiable`.",
+      "unevaluatedProperties" : false
+    },
+    "warnRecursiveWithObservationTracking" : {
+      "allOf" : [
+        {
+          "$ref" : "#/$defs/lintOnlyBase"
+        }
+      ],
+      "description" : "Lint `withObservationTracking { ... } onChange: { … self.f() … }` where the `onChange` closure calls the enclosing function `f()`. The pattern is a recursive re-tracker that fires forever as observed values mutate. Use the `Observations` AsyncSequence instead.",
+      "unevaluatedProperties" : false
+    },
+    "warnSwapThenRemoveAll" : {
+      "allOf" : [
+        {
+          "$ref" : "#/$defs/lintOnlyBase"
+        }
+      ],
+      "description" : "Lint the `swap(&a, &b); a.removeAll(…)` (or `b.removeAll(…)`) pattern. It almost always indicates a hand-rolled alternating-buffer parser that loses `Array`/`Data` CoW guarantees and is brittle when refactored.",
+      "unevaluatedProperties" : false
+    },
     "weakDelegates" : {
       "allOf" : [
         {
@@ -3838,6 +4106,15 @@
         }
       ],
       "description" : "Properties whose name ends in `delegate` should be declared `weak` to avoid retain cycles.\n\nThis rule fires only on class instance properties. Local variables, struct/enum members, computed properties, protocol requirements, and properties marked with one of the SwiftUI adaptor attributes (`@UIApplicationDelegateAdaptor`, `@NSApplicationDelegateAdaptor`, `@WKExtensionDelegateAdaptor`) are excluded. Properties already marked `weak` or `unowned` pass.\n\nLint: A class instance property named `*delegate` without a `weak`/`unowned` modifier yields a warning.",
+      "unevaluatedProperties" : false
+    },
+    "weakLetForUnreassignedWeakVar" : {
+      "allOf" : [
+        {
+          "$ref" : "#/$defs/lintOnlyBase"
+        }
+      ],
+      "description" : "Flag `weak var` stored properties on classes/actors that are never reassigned (SE-0481). Such properties should be `weak let`.\n\nA property is considered \"never reassigned\" when no descendant of the enclosing type's body contains an assignment to its name (either bare or via `self.`). Initial values and assignments inside an initializer of the same type are allowed because `let` permits init-time assignment.\n\nLint-only: emitting the finding does not rewrite the declaration.",
       "unevaluatedProperties" : false
     },
     "wrap" : {
