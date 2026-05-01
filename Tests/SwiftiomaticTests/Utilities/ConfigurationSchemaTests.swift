@@ -61,6 +61,25 @@ struct ConfigurationSchemaTests {
     }
   }
 
+  /// String-typed config properties declared without a `: String` type annotation
+  /// (just `var foo = "bar"`) must still appear in the schema. The collector infers
+  /// the type from the string-literal initializer.
+  @Test func stringPropertiesWithoutTypeAnnotationAppearInSchema() throws {
+    let properties = try #require(schema["properties"] as? [String: Any])
+    let rule = try #require(properties["expiringTodo"] as? [String: Any])
+    let custom = try #require(rule["properties"] as? [String: Any])
+    for (key, expectedDefault) in [
+      ("dateFormat", "MM/dd/yyyy"),
+      ("dateDelimitersOpening", "["),
+      ("dateDelimitersClosing", "]"),
+      ("dateSeparator", "/"),
+    ] {
+      let prop = try #require(custom[key] as? [String: Any], "missing \(key)")
+      #expect(prop["type"] as? String == "string")
+      #expect(prop["default"] as? String == expectedDefault)
+    }
+  }
+
   /// The `lintOnlyBase` definition omits the `rewrite` property entirely.
   @Test func lintOnlyBaseHasNoRewriteProperty() throws {
     let defs = try #require(schema["$defs"] as? [String: Any])

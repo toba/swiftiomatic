@@ -76,6 +76,14 @@ extension JSONSchemaNode {
         return node
     }
 
+    static func string(description: String, defaultValue: String) -> JSONSchemaNode {
+        var node = JSONSchemaNode()
+        node.type = "string"
+        node.description = description
+        node.defaultValue = .string(defaultValue)
+        return node
+    }
+
     /// - Parameter description: Prose explaining what the property controls. The legal values are
     ///   appended automatically as `Options: a, b, c.` Pass `nil` to omit the prose and emit only
     ///   the options list.

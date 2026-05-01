@@ -133,7 +133,14 @@ package final class Context {
     func shouldFormat(ruleType rule: any SyntaxRule.Type, node: Syntax) -> Bool {
         guard enabledRules.contains(ObjectIdentifier(rule)) else { return false }
         guard node.isInsideSelection(selection) else { return false }
-        let loc = node.startLocation(converter: sourceLocationConverter)
+        // For file-wide rules attached to `SourceFileSyntax` (e.g. `FileLength`), gate at the
+        // end of file so any `// sm:ignore` directive in the file — at top or mid-file — covers
+        // the gate check. All other rules gate at their node's start, so a mid-file directive
+        // only suppresses the *following* node and beyond, as documented.
+        let loc =
+            node.is(SourceFileSyntax.self)
+                ? node.endLocation(converter: sourceLocationConverter)
+                : node.startLocation(converter: sourceLocationConverter)
         let ruleName = ConfigurationRegistry.ruleNameCache[ObjectIdentifier(rule)] ?? rule.key
         return ruleMask.ruleState(ruleName, at: loc) == .default
     }

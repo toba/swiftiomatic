@@ -1,6 +1,6 @@
 import SwiftSyntax
 
-// sm:ignore-file: functionBodyLength
+// sm:ignore functionBodyLength
 
 /// Opening braces of multiline statements are wrapped to their own line.
 ///

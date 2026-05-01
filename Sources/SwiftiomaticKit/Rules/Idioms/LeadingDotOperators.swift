@@ -74,11 +74,18 @@ final class LeadingDotOperators: StaticFormatRule<BasicRuleValue>, @unchecked Se
     }
 
     /// Returns `true` if the token is a comma or colon with a newline in its leading trivia,
-    /// meaning it starts a new line (leading delimiter).
+    /// meaning it starts a new line (leading delimiter). Excludes ternary `:` , which is part of
+    /// the conditional operator rather than a list/argument delimiter — moving it would corrupt
+    /// the surrounding expression layout (and in particular makes `WrapTernary` over-fire).
     private static func isLeadingDelimiter(_ token: TokenSyntax) -> Bool {
         switch token.tokenKind {
-            case .comma, .colon: token.leadingTrivia.containsNewlines
-            default: false
+            case .comma:
+                token.leadingTrivia.containsNewlines
+            case .colon:
+                token.leadingTrivia.containsNewlines
+                    && token.parent?.is(TernaryExprSyntax.self) != true
+            default:
+                false
         }
     }
 }

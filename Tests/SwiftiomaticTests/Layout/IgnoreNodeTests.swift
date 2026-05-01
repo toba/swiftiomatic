@@ -163,6 +163,7 @@ struct IgnoreNodeTests: LayoutTesting {
   }
 
   @Test func ignoresNestedMembers() {
+    // `// sm:ignore` in the file's leading trivia → whole file is preserved verbatim.
     let input =
       """
       // sm:ignore
@@ -182,29 +183,7 @@ struct IgnoreNodeTests: LayoutTesting {
           + (2 + 3)
       }
       """
-
-    let expected =
-      """
-      // sm:ignore
-      struct Foo {
-            private var baz: Bool {
-                return foo +
-                 bar + // poorly placed comment
-                  false
-            }
-
-            var a = true    // line comment
-                            // aligned line comment
-            var b = false  // correct trailing comment
-
-      var c = 0 +
-          1
-          + (2 + 3)
-      }
-
-      """
-
-    assertLayout(input: input, expected: expected, linelength: 50)
+    assertLayout(input: input, expected: input, linelength: 50)
   }
 
   @Test func invalidComment() {
@@ -245,6 +224,7 @@ struct IgnoreNodeTests: LayoutTesting {
   }
 
   @Test func validComment() {
+    // `// sm:ignore` in the file's leading trivia → whole file is preserved verbatim.
     let input =
       """
       // sm:ignore
@@ -260,25 +240,7 @@ struct IgnoreNodeTests: LayoutTesting {
       /* sm:ignore */
       x      =    a+1+2+3+4
       """
-
-    let expected =
-      """
-      // sm:ignore
-      x=y+b+c
-
-      /// Pragma mark: - Special Region
-
-      // sm:ignore
-      // x is important
-      x        =                  1 +
-      2
-
-      /* sm:ignore */
-      x      =    a+1+2+3+4
-
-      """
-
-    assertLayout(input: input, expected: expected, linelength: 50)
+    assertLayout(input: input, expected: input, linelength: 50)
   }
 
   @Test func ignoreInvalidAfterFirstToken() {
@@ -307,7 +269,7 @@ struct IgnoreNodeTests: LayoutTesting {
   @Test func ignoreWholeFile() {
     let input =
       """
-      // sm:ignore-file
+      // sm:ignore
       import Zoo
       import Aoo
       import foo
@@ -338,7 +300,7 @@ struct IgnoreNodeTests: LayoutTesting {
   @Test func ignoreWholeFileDoesNotTouchWhitespace() {
     let input =
       """
-      // sm:ignore-file
+      // sm:ignore
       /// foo bar
       \u{0020}
       // baz

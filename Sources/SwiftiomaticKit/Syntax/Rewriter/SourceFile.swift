@@ -1,6 +1,6 @@
 import SwiftSyntax
 
-// sm:ignore-file: fileLength, functionBodyLength
+// sm:ignore fileLength, functionBodyLength
 
 /// Compact-pipeline merge of all `SourceFileSyntax` rewrites. Each former rule's logic is gated on
 /// `context.shouldRewrite(<RuleType>.self, at:)` so users can still toggle individual behaviors via

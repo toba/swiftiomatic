@@ -349,6 +349,11 @@ package final class RuleCollector {
                 defaultValue: boolLiteral.literal.text == "true"
             )
         }
+        if let stringLiteral = initValue?.as(StringLiteralExprSyntax.self),
+           let segment = stringLiteral.segments.firstAndOnly?.as(StringSegmentSyntax.self)
+        {
+            return .string(description: scalarDesc, defaultValue: segment.content.text)
+        }
         if let defaultCase, let (cases, _) = enumTypes.first(where: { $1.contains(defaultCase) }) {
             return .stringEnum(
                 description: description,

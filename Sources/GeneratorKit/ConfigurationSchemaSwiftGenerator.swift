@@ -16,12 +16,12 @@ package final class ConfigurationSchemaSwiftGenerator: FileGenerator {
         return """
             // Auto-generated — do not edit.
 
-            // sm:ignore-file: fileLength, typeBodyLength, closureBodyLength
-
+            // sm:ignore fileLength
             import Foundation
 
-            /// The JSON Schema for `swiftiomatic.json` configuration files, embedded
-            /// as a decoded `JSONValue` for runtime validation.
+            /// The JSON Schema for the configuration, embedded as a decoded `JSONValue`
+            /// for runtime validation.
+            // sm:ignore typeBodyLength, closureBodyLength
             package enum ConfigurationSchema {
                 package static let schema: JSONValue = {
                     let json = ##\"\"\"

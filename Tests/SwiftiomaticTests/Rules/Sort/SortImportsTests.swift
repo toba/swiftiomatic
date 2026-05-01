@@ -331,99 +331,7 @@ struct SortImportsTests: RuleTesting {
     )
   }
 
-  @Test func disableSortImports() {
-    assertFormatting(
-      SortImports.self,
-      input: """
-        import C
-        1️⃣import B
-        // sm:ignore SortImports
-        import A
-        let a = 123
-        2️⃣import func Darwin.C.isatty
 
-        // sm:ignore
-        import a
-        """,
-      expected: """
-        import B
-        import C
-
-        // sm:ignore SortImports
-        import A
-
-        import func Darwin.C.isatty
-
-        let a = 123
-
-        // sm:ignore
-        import a
-        """,
-      findings: [
-        FindingSpec("1️⃣", message: "sort import statements lexicographically"),
-        FindingSpec("2️⃣", message: "place imports at the top of the file"),
-      ]
-    )
-  }
-
-  @Test func disableOrderedImportsMovingComments() {
-    assertFormatting(
-      SortImports.self,
-      input: """
-        import C  // Trailing comment about C
-        1️⃣import B
-        // Comment about ignored A
-        // sm:ignore SortImports
-        import A  // trailing comment about ignored A
-        // Comment about Z
-        import Z
-        2️⃣import D
-        // sm:ignore SortImports
-        // Comment about testable testA
-        @testable import testA
-        @testable import testZ  // trailing comment about testZ
-        3️⃣@testable import testC
-        // sm:ignore SortImports
-        @_implementationOnly import testB
-        // Comment about Bar
-        import enum Bar
-
-        let a = 2
-        """,
-      expected: """
-        import B
-        import C  // Trailing comment about C
-
-        // Comment about ignored A
-        // sm:ignore SortImports
-        import A  // trailing comment about ignored A
-
-        import D
-        // Comment about Z
-        import Z
-
-        // sm:ignore SortImports
-        // Comment about testable testA
-        @testable import testA
-
-        @testable import testC
-        @testable import testZ  // trailing comment about testZ
-
-        // sm:ignore SortImports
-        @_implementationOnly import testB
-
-        // Comment about Bar
-        import enum Bar
-
-        let a = 2
-        """,
-      findings: [
-        FindingSpec("1️⃣", message: "sort import statements lexicographically"),
-        FindingSpec("2️⃣", message: "sort import statements lexicographically"),
-        FindingSpec("3️⃣", message: "sort import statements lexicographically"),
-      ]
-    )
-  }
 
   @Test func emptyFile() {
     assertFormatting(
@@ -532,40 +440,6 @@ struct SortImportsTests: RuleTesting {
     )
   }
 
-  @Test func duplicateIgnoredImports() {
-    assertFormatting(
-      SortImports.self,
-      input: """
-        import AppKit
-        // sm:ignore SortImports
-        import CoreLocation
-        // Second CoreLocation import here.
-        import CoreLocation
-        // Comment about ZeeFramework.
-        import ZeeFramework
-        // sm:ignore SortImports
-        import ZeeFramework  // trailing comment
-        foo()
-        """,
-      expected: """
-        import AppKit
-
-        // sm:ignore SortImports
-        import CoreLocation
-
-        // Second CoreLocation import here.
-        import CoreLocation
-        // Comment about ZeeFramework.
-        import ZeeFramework
-
-        // sm:ignore SortImports
-        import ZeeFramework  // trailing comment
-
-        foo()
-        """,
-      findings: []
-    )
-  }
 
   @Test func duplicateAttributedImports() {
     assertFormatting(
@@ -767,8 +641,7 @@ struct SortImportsTests: RuleTesting {
         #elseif canImport(Glibc)
           import Glibc
         #endif
-        // sm:ignore
-        import Aardvarks
+        import Aardvarks  // sm:ignore SortImports
 
         foo()
         bar()
@@ -783,8 +656,7 @@ struct SortImportsTests: RuleTesting {
         #elseif canImport(Glibc)
           import Glibc
         #endif
-        // sm:ignore
-        import Aardvarks
+        import Aardvarks  // sm:ignore SortImports
 
         foo()
         bar()

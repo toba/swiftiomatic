@@ -137,19 +137,14 @@ final class CommentMovingRewriter: SyntaxRewriter {
 
 /// Returns whether the given trivia includes a directive to ignore formatting for the next node.
 ///
-/// - Parameters:
-///   - trivia: Leading trivia for a node that the formatter supports ignoring.
-///   - isWholeFile: Whether to search for a whole-file ignore directive or per-node ignore.
-///     Whole-file requires the legacy `sm:ignore-file` marker (kept distinct from `sm:ignore`
-///     so that putting `sm:ignore` before a node only suppresses formatting for that node).
-/// - Returns: Whether the trivia contains the specified type of ignore directive.
-func isFormatterIgnorePresent(inTrivia trivia: Trivia, isWholeFile: Bool) -> Bool {
+/// - Parameter trivia: Leading trivia for a node that the formatter supports ignoring.
+/// - Returns: Whether the trivia contains a bare `sm:ignore` directive (no rule names).
+func isFormatterIgnorePresent(inTrivia trivia: Trivia) -> Bool {
     func isFormatterIgnore(in commentText: String, prefix: String, suffix: String) -> Bool {
         let trimmed = commentText.dropFirst(prefix.count)
             .dropLast(suffix.count)
             .trimmingCharacters(in: .whitespaces)
-        let pattern = isWholeFile ? "sm:ignore-file" : "sm:ignore"
-        return trimmed == pattern
+        return trimmed == "sm:ignore"
     }
 
     for piece in trivia {
@@ -173,7 +168,7 @@ func isFormatterIgnorePresent(inTrivia trivia: Trivia, isWholeFile: Bool) -> Boo
 ///
 /// - Parameter node: A node that can be safely ignored.
 func shouldFormatterIgnore(node: Syntax) -> Bool {
-    isFormatterIgnorePresent(inTrivia: node.allPrecedingTrivia, isWholeFile: false)
+    isFormatterIgnorePresent(inTrivia: node.allPrecedingTrivia)
 }
 
 /// Returns whether the formatter should ignore the given file by printing it without changing the
@@ -182,5 +177,5 @@ func shouldFormatterIgnore(node: Syntax) -> Bool {
 ///
 /// - Parameter file: The root syntax node for a source file.
 func shouldFormatterIgnore(file: SourceFileSyntax) -> Bool {
-    isFormatterIgnorePresent(inTrivia: file.allPrecedingTrivia, isWholeFile: true)
+    isFormatterIgnorePresent(inTrivia: file.allPrecedingTrivia)
 }

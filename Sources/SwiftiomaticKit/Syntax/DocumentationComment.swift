@@ -1,4 +1,4 @@
-// sm:ignore-file: noForceCast
+// sm:ignore noForceCast
 // `withUncheckedChildren` returns the same node type widened to MarkupContainer; the cast back to
 // the concrete `UnorderedList` is invariant-preserving.
 // ===----------------------------------------------------------------------===//
