@@ -39,13 +39,21 @@ package final class Context {
     /// Contains the rules have been disabled by comments for certain line numbers.
     let ruleMask: RuleMask
 
-    /// Identifiers of every rule whose configuration is currently active for this run.
+    /// Identifiers of every rule whose configuration is currently active for this run — either
+    /// rewrite or lint enabled.
     ///
-    /// Computed once per `Context` from `Configuration.isActive(rule:)` . `shouldFormat` and
-    /// `shouldRewrite` use this set to short-circuit disabled rules before paying for the per-node
-    /// `startLocation` + `ruleMask.ruleState` work — which is the bulk of the per-rule per-node
-    /// cost when ~half the rules are off.
+    /// Computed once per `Context` from `Configuration.isActive(rule:)` . `shouldFormat` uses
+    /// this set to short-circuit disabled rules before paying for the per-node `startLocation`
+    /// + `ruleMask.ruleState` work — which is the bulk of the per-rule per-node cost when ~half
+    /// the rules are off. `shouldRewrite` consults the narrower `rewriteEnabledRules` so a rule
+    /// configured with `rewrite: false, lint: .warn` lints without rewriting.
     let enabledRules: Set<ObjectIdentifier>
+
+    /// Identifiers of every rule whose `rewrite` flag is currently active. Subset of
+    /// `enabledRules` ; populated alongside it in `init` . `shouldRewrite` consults this set so a
+    /// rule configured with `rewrite: false, lint: .warn` lints but never rewrites — independent of
+    /// the lint-or-rewrite gate used by `shouldFormat` .
+    let rewriteEnabledRules: Set<ObjectIdentifier>
 
     // MARK: - Per-rule mutable state
     //
@@ -113,10 +121,18 @@ package final class Context {
             sourceLocationConverter: sourceLocationConverter
         )
         var enabled: Set<ObjectIdentifier> = []
+        var rewriteEnabled: Set<ObjectIdentifier> = []
         enabled.reserveCapacity(ConfigurationRegistry.allRuleTypes.count)
+        rewriteEnabled.reserveCapacity(ConfigurationRegistry.allRuleTypes.count)
         for ruleType in ConfigurationRegistry.allRuleTypes
-        where configuration.isActive(rule: ruleType) { enabled.insert(ObjectIdentifier(ruleType)) }
+        where configuration.isActive(rule: ruleType) {
+            enabled.insert(ObjectIdentifier(ruleType))
+            if configuration.isRewriteActive(rule: ruleType) {
+                rewriteEnabled.insert(ObjectIdentifier(ruleType))
+            }
+        }
         enabledRules = enabled
+        rewriteEnabledRules = rewriteEnabled
     }
 
     /// Given a rule's name and the node it is examining, determine if the rule is disabled at this
@@ -145,12 +161,19 @@ package final class Context {
         return ruleMask.ruleState(ruleName, at: loc) == .default
     }
 
-    /// Rewrite-path entry point for the gate check; equivalent to `shouldFormat(_:node:)` . Returns
-    /// whether the rule should run on this node, consulting `RuleMask` ( `// sm:ignore` ) and
-    /// `Configuration.isActive(rule:)` (per-rule `rewrite` flag, with `defaultIsActive: false`
-    /// honoring opt-in rules and `Configuration.forTesting(enabledRule:)` honoring tests).
+    /// Rewrite-path entry point for the gate check. Returns whether the rule should rewrite on
+    /// this node, consulting `RuleMask` ( `// sm:ignore` ) and the per-rule `rewrite` flag via
+    /// `rewriteEnabledRules` . A rule configured with `rewrite: false, lint: .warn` will lint
+    /// (via `shouldFormat` ) but skip rewriting here.
     func shouldRewrite<R: SyntaxRule>(_ rule: R.Type, at node: Syntax) -> Bool {
-        shouldFormat(rule, node: node)
+        guard rewriteEnabledRules.contains(ObjectIdentifier(rule)) else { return false }
+        guard node.isInsideSelection(selection) else { return false }
+        let loc =
+            node.is(SourceFileSyntax.self)
+                ? node.endLocation(converter: sourceLocationConverter)
+                : node.startLocation(converter: sourceLocationConverter)
+        let ruleName = ConfigurationRegistry.ruleNameCache[ObjectIdentifier(rule)] ?? rule.key
+        return ruleMask.ruleState(ruleName, at: loc) == .default
     }
 
     /// Returns the configured lint severity for the given rule type.

@@ -23,7 +23,7 @@ extension Context {
     /// traversal and `startLocation` work by reusing the values cached on the gate.
     @inline(__always)
     func shouldRewrite<R: SyntaxRule>(_ rule: R.Type, gate: Gate) -> Bool {
-        guard enabledRules.contains(ObjectIdentifier(rule)) else { return false }
+        guard rewriteEnabledRules.contains(ObjectIdentifier(rule)) else { return false }
         let name = ConfigurationRegistry.ruleNameCache[ObjectIdentifier(rule)] ?? rule.key
         return ruleMask.ruleState(name, at: gate.location) == .default
     }

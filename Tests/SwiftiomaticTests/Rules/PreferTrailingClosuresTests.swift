@@ -243,6 +243,33 @@ struct TrailingClosuresTests: RuleTesting {
       findings: [])
   }
 
+  /// Regression test for wy7-t4q: bare `guard <call>({ ... }) else { ... }` was being made
+  /// trailing because `isInConditionalContext` walked `Syntax(node).parent` post- `super.visit`
+  /// (always nil after the rewriter detaches children). The fix routes the *original* parent
+  /// captured before `super.visit` into `apply` , so the `ConditionElementSyntax` ancestor is
+  /// detected and the rewrite is suppressed.
+  @Test func closureInBareGuardConditionNotMadeTrailing() {
+    assertFormatting(PreferTrailingClosures.self,
+      input: """
+        guard arr.allSatisfy({ $0 > 0 }) else { return }
+        """,
+      expected: """
+        guard arr.allSatisfy({ $0 > 0 }) else { return }
+        """,
+      findings: [])
+  }
+
+  @Test func closureInBareIfConditionNotMadeTrailing() {
+    assertFormatting(PreferTrailingClosures.self,
+      input: """
+        if arr.allSatisfy({ $0 > 0 }) {}
+        """,
+      expected: """
+        if arr.allSatisfy({ $0 > 0 }) {}
+        """,
+      findings: [])
+  }
+
   @Test func closureInGuardCaseLetNotMadeTrailing() {
     assertFormatting(PreferTrailingClosures.self,
       input: """

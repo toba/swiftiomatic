@@ -31,6 +31,10 @@ extension SyntaxRule {
     /// `Context.shouldFormat(ruleType:node:)` .
     static var defaultIsActive: Bool { Self.defaultValue.isActive }
 
+    /// Whether this rule's `defaultValue` rewrites by default. Used by `Context` to build the
+    /// `rewriteEnabledRules` set, which gates rewrite paths independently of lint emission.
+    static var defaultRewriteActive: Bool { Self.defaultValue.isRewriteActive }
+
     /// Static counterpart to `diagnose(_:on:anchor:notes:)` . Used by combined-pipeline
     /// `static func transform(_:context:)` overloads (issue `iv7-r5g` / `ddi-wtv` ) so they don't
     /// need to instantiate the rule per node visit.

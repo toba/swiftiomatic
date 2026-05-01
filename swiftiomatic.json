@@ -319,21 +319,21 @@
 	},
 	"testing": {
 		"finalTestCase": { "lint": "warn" },
-		"noGuardInTests": { "lint": "no", "rewrite": false },
-		"validateTestCases": { "lint": "no", "rewrite": false },
-		"preferSwiftTesting": { "lint": "no", "rewrite": false },
-		"testSuiteAccessControl": { "lint": "no", "rewrite": false },
-		"swiftTestingTestCaseNames": { "lint": "no", "rewrite": false }
+		"noGuardInTests": { "lint": "warn", "rewrite": false },
+		"validateTestCases": { "lint": "warn", "rewrite": false },
+		"preferSwiftTesting": { "lint": "warn", "rewrite": false },
+		"testSuiteAccessControl": { "lint": "warn", "rewrite": false },
+		"swiftTestingTestCaseNames": { "lint": "no", "rewrite": true }
 	},
 	"types": {
 		"noOptionalBool": { "lint": "no" },
 		"preferAnyObject": { "lint": "warn", "rewrite": true },
 		"preferVoidReturn": { "lint": "warn", "rewrite": true },
 		"noOptionalCollection": { "lint": "no" },
-		"preferFailableStringInit": { "lint": "no" },
+		"preferFailableStringInit": { "lint": "warn" },
 		"preferShorthandTypeNames": { "lint": "no", "rewrite": true },
-		"preferNonOptionalDataInit": { "lint": "no" },
-		"noImplicitlyUnwrappedOptionals": { "lint": "no" },
+		"preferNonOptionalDataInit": { "lint": "warn" },
+		"noImplicitlyUnwrappedOptionals": { "lint": "warn" },
 		"noVoidReturnOnFunctionSignature": { "lint": "warn", "rewrite": true },
 		"noTypeRepetitionInStaticProperties": { "lint": "warn" }
 	},
@@ -351,7 +351,7 @@
 		"keepFunctionOutputTogether": true
 	},
 	"metrics": {
-		"tupleSize": { "enabled": true, "error": 4, "warning": 3 },
+		"tupleSize": { "enabled": true, "error": 8, "warning": 3 },
 		"fileLength": {
 			"enabled": true,
 			"error": 2000,

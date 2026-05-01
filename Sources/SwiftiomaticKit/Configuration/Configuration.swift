@@ -59,6 +59,15 @@ package struct Configuration: Sendable, Equatable {
         return rule.defaultIsActive
     }
 
+    /// Returns whether the given rule's rewrite path is enabled. Mirrors `isActive(rule:)` but
+    /// consults only the `rewrite` flag, so a rule with `rewrite: false, lint: .warn` reports
+    /// findings without rewriting.
+    func isRewriteActive(rule: any SyntaxRule.Type) -> Bool {
+        let qualified = rule.group.map { "\($0.key).\(rule.key)" } ?? rule.key
+        if let stored = values[qualified] as? any SyntaxRuleValue { return stored.isRewriteActive }
+        return rule.defaultRewriteActive
+    }
+
     // MARK: - Layout setting registry
 
     private typealias SettingDecoder =

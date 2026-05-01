@@ -14,4 +14,9 @@ package protocol SyntaxRuleValue: Sendable, Codable, Equatable {
 package extension SyntaxRuleValue {
     /// Whether the rule should run at all (rewrite or lint).
     var isActive: Bool { rewrite || lint.isActive }
+
+    /// Whether the rule's rewrite path is active. Used by `Context.shouldRewrite` to gate auto-fix
+    /// independently of lint-only emission, so a rule with `rewrite: false, lint: .warn` reports
+    /// findings without modifying source.
+    var isRewriteActive: Bool { rewrite }
 }

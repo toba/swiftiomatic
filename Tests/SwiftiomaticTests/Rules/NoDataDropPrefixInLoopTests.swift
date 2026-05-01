@@ -72,4 +72,34 @@ struct NoDataDropPrefixInLoopTests: RuleTesting {
       findings: []
     )
   }
+
+  /// The receiver `typeName` is unrelated to the loop's iterated collection or any value mutated
+  /// in the body, so the rule should not fire — these are short String operations on a local
+  /// variable, not a quadratic copy of the iterated collection. (Issue 4dx-qkx.)
+  @Test func sliceOnUnrelatedIdentifierNotFlagged() {
+    assertLint(
+      NoDataDropPrefixInLoop.self,
+      """
+      for type in registry {
+        let typeName = String(describing: type)
+        let derivedKey = typeName.prefix(1).lowercased() + typeName.dropFirst()
+        register(derivedKey)
+      }
+      """,
+      findings: []
+    )
+  }
+
+  @Test func sliceOnUnrelatedIdentifierInWhileNotFlagged() {
+    assertLint(
+      NoDataDropPrefixInLoop.self,
+      """
+      while running {
+        let suffix = label.suffix(3)
+        emit(suffix)
+      }
+      """,
+      findings: []
+    )
+  }
 }

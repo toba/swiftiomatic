@@ -88,6 +88,12 @@
 - `switch case`; keep inline single-statement body when wrapped patterns share an alignment column
 - Tuple return type; stay inline when the function signature already wraps
 - `WrapTernary`; produce wrapped form rather than collapsing to a single-line ternary
+- `PreferTrailingClosures`; don't rewrite closures inside bare `guard`/`if` conditions ([#591](https://github.com/toba/swiftiomatic/issues/591))
+- `preferFinalClasses`; honor per-rule `rewrite: false` and skip the rewrite path ([#590](https://github.com/toba/swiftiomatic/issues/590))
+- `uppercaseAcronyms`; honor per-rule `rewrite: false` and skip the rewrite path ([#592](https://github.com/toba/swiftiomatic/issues/592))
+- `noDataDropPrefixInLoop`; restrict to receivers tied to the loop's iteration or shrink-in-place pattern ([#594](https://github.com/toba/swiftiomatic/issues/594))
+- `assertFormatting`; add regression coverage for the bare-guard/if conditional-context fix ([#593](https://github.com/toba/swiftiomatic/issues/593))
+- `schema.json`; emit string properties that omit an explicit `type` annotation ([#596](https://github.com/toba/swiftiomatic/issues/596))
 
 ### 🗜️ Tweaks
 
