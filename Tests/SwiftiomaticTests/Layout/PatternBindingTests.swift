@@ -60,12 +60,12 @@ struct PatternBindingTests: LayoutTesting {
   @Test func typeAnnotationStaysOnSameLineWithTernaryRHS() {
     let input =
       """
-      let newlines: NewlineBehavior = config[KeepFunctionOutputTogether.self] ? .elective(ignoresDiscretionary: true) : .elective
+      let newlines: NewlineBehavior = config[KeepReturnTypeWithSignature.self] ? .elective(ignoresDiscretionary: true) : .elective
       """
 
     let expected =
       """
-      let newlines: NewlineBehavior = config[KeepFunctionOutputTogether.self]
+      let newlines: NewlineBehavior = config[KeepReturnTypeWithSignature.self]
         ? .elective(ignoresDiscretionary: true)
         : .elective
 

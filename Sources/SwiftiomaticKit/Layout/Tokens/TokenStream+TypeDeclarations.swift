@@ -128,14 +128,14 @@ extension TokenStream {
 
         arrangeAttributeList(
             node.attributes,
-            separateByLineBreaks: config[BeforeEachArgument.self]
+            separateByLineBreaks: config[BreakBeforeEachArgument.self]
         )
 
         let hasArguments = !node.signature.parameterClause.parameters.isEmpty
 
         // Prioritize keeping ") -> <return_type>" together. We can only do this if the macro has
         // arguments.
-        if hasArguments, config[KeepFunctionOutputTogether.self] {
+        if hasArguments, config[KeepReturnTypeWithSignature.self] {
             // Due to visitation order, the matching .open break is added in ParameterClauseSyntax.
             after(node.signature.lastToken(viewMode: .sourceAccurate), tokens: .close)
         }
@@ -195,7 +195,7 @@ extension TokenStream {
 
         arrangeAttributeList(
             attributes,
-            separateByLineBreaks: config[BetweenDeclarationAttributes.self]
+            separateByLineBreaks: config[BreakBetweenDeclAttributes.self]
         )
 
         // Prioritize keeping "<modifiers> <keyword> <name>:" together (corresponding group close is

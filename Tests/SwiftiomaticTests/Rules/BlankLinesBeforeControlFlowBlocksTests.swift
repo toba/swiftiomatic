@@ -471,7 +471,7 @@ struct BlankLinesBeforeControlFlowBlocksTests: RuleTesting {
 
   @Test func commentAsBlankLineSkipsInsertion() {
     var config = Configuration.forTesting(enabledRule: BlankLinesBeforeControlFlowBlocks.self.key)
-    config[CommentAsBlankLine.self] = true
+    config[CountCommentAsBlankLine.self] = true
 
     assertFormatting(
       BlankLinesBeforeControlFlowBlocks.self,

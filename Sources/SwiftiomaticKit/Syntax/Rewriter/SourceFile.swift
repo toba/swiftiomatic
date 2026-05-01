@@ -43,24 +43,24 @@ func rewriteSourceFile(
         NoForceUnwrap.visitSourceFile(result, context: context)
     }
 
-    // 4. PreferEnvironmentEntry: rewrite `EnvironmentValues` extensions to use `@Entry` and remove
+    // 4. UseAtEntryNotEnvironmentKey: rewrite `EnvironmentValues` extensions to use `@Entry` and remove
     //    the matched `EnvironmentKey` types.
-    if context.shouldRewrite(PreferEnvironmentEntry.self, at: Syntax(result)) {
-        result = PreferEnvironmentEntry.transform(result, original: node, parent: nil, context: context)
+    if context.shouldRewrite(UseAtEntryNotEnvironmentKey.self, at: Syntax(result)) {
+        result = UseAtEntryNotEnvironmentKey.transform(result, original: node, parent: nil, context: context)
     }
 
-    // 5. RedundantAccessControl: replace `fileprivate` with `private` in single-type files (the
+    // 5. DropRedundantAccessControl: replace `fileprivate` with `private` in single-type files (the
     //    per-decl ACL stripping for redundant `internal` / `public` /extension-matching ACL still
     //    runs against the decl nodes via the generator-emitted dispatch).
-    if context.shouldRewrite(RedundantAccessControl.self, at: Syntax(result)) {
-        result = RedundantAccessControl.transform(result, original: node, parent: nil, context: context)
+    if context.shouldRewrite(DropRedundantAccessControl.self, at: Syntax(result)) {
+        result = DropRedundantAccessControl.transform(result, original: node, parent: nil, context: context)
     }
 
-    // 6. URLMacro: if any `URL(string:)!` was rewritten to `#URL(...)` during the descent (recorded
+    // 6. UseURLMacroForURLLiterals: if any `URL(string:)!` was rewritten to `#URL(...)` during the descent (recorded
     //    via `ruleState.madeReplacements` ), insert the configured module import at the top of the
     //    file.
-    if context.shouldRewrite(URLMacro.self, at: Syntax(result)) {
-        result = URLMacro.transform(result, original: node, parent: nil, context: context)
+    if context.shouldRewrite(UseURLMacroForURLLiterals.self, at: Syntax(result)) {
+        result = UseURLMacroForURLLiterals.transform(result, original: node, parent: nil, context: context)
     }
 
     return result

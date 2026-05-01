@@ -414,7 +414,7 @@ extension TokenStream {
 
     func visitWhereClause(_ node: WhereClauseSyntax) -> SyntaxVisitorContinueKind {
         // We need to special case `where` -clauses associated with `catch` blocks when
-        // `elseCatchOnNewLine == false` , because that's the one situation where we want the
+        // `placeElseCatchOnNewLine == false` , because that's the one situation where we want the
         // `where` keyword to be treated as a continuation; that way, we get this:
         //
         // } catch LongExceptionName where longCondition { ... }
@@ -426,7 +426,7 @@ extension TokenStream {
         let wherePrecedingBreak: Token
         let whereTrailingBreak: Token
 
-        if !config[ElseCatchOnNewLine.self],
+        if !config[PlaceElseCatchOnNewLine.self],
            let parent = node.parent,
            parent.is(CatchItemSyntax.self)
         {
@@ -460,10 +460,10 @@ extension TokenStream {
     }
 
     func visitFunctionSignature(_ node: FunctionSignatureSyntax) -> SyntaxVisitorContinueKind {
-        // When KeepFunctionOutputTogether is enabled, the rule's purpose is to keep the return
+        // When KeepReturnTypeWithSignature is enabled, the rule's purpose is to keep the return
         // clause attached to the closing paren / effect specifiers. Ignore any pre-existing
         // discretionary newline before `->` so a previously-broken signature gets re-attached.
-        let newlines: NewlineBehavior = config[KeepFunctionOutputTogether.self]
+        let newlines: NewlineBehavior = config[KeepReturnTypeWithSignature.self]
             ? .elective(ignoresDiscretionary: true)
             : .elective
         before(

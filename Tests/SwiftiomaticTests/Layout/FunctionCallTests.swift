@@ -69,7 +69,7 @@ struct FunctionCallTests: LayoutTesting {
       """
 
     var config = Configuration.forTesting
-    config[BeforeEachArgument.self] = true
+    config[BreakBeforeEachArgument.self] = true
     assertLayout(input: input, expected: expected, linelength: 45, configuration: config)
   }
 
@@ -107,7 +107,7 @@ struct FunctionCallTests: LayoutTesting {
       """
 
     var config = Configuration.forTesting
-    config[BeforeEachArgument.self] = false
+    config[BreakBeforeEachArgument.self] = false
     assertLayout(input: input, expected: expected, linelength: 45, configuration: config)
   }
 
@@ -142,7 +142,7 @@ struct FunctionCallTests: LayoutTesting {
 
       """
     var config = Configuration.forTesting
-    config[BeforeEachArgument.self] = false
+    config[BreakBeforeEachArgument.self] = false
     assertLayout(input: input, expected: expected, linelength: 45, configuration: config)
   }
 

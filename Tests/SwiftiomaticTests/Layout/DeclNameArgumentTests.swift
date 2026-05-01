@@ -56,7 +56,7 @@ struct DeclNameArgumentTests: LayoutTesting {
       """
 
     var config = Configuration.forTesting
-    config[BeforeEachArgument.self] = true
+    config[BreakBeforeEachArgument.self] = true
     assertLayout(input: input, expected: expected, linelength: 40, configuration: config)
   }
 
@@ -129,7 +129,7 @@ struct DeclNameArgumentTests: LayoutTesting {
       """
 
     var config = Configuration.forTesting
-    config[BeforeEachArgument.self] = true
+    config[BreakBeforeEachArgument.self] = true
     assertLayout(input: input, expected: expected, linelength: 40, configuration: config)
   }
 

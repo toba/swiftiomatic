@@ -1,6 +1,6 @@
 import SwiftSyntax
 
-/// Shared detection logic for test-related rules ( `ValidateTestCases` , `TestSuiteAccessControl` ,
+/// Shared detection logic for test-related rules ( `RequireTestFnPrefixOrAttribute` , `RequireSuiteAccessControl` ,
 /// `NoForceTry` ). The testing framework detected from imports.
 enum TestFramework { case xcTest, swiftTesting }
 

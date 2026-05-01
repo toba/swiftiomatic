@@ -42,7 +42,7 @@ final class BlankLinesBetweenScopes: StructuralFormatRule<BasicRuleValue>, @unch
         var items = original
         var modified = false
         let braceIsBlank = context.configuration[ClosingBraceAsBlankLine.self]
-        let commentIsBlank = context.configuration[CommentAsBlankLine.self]
+        let commentIsBlank = context.configuration[CountCommentAsBlankLine.self]
 
         for i in 0..<(original.count - 1) {
             guard case let .decl(decl) = original[i].item,
@@ -75,7 +75,7 @@ final class BlankLinesBetweenScopes: StructuralFormatRule<BasicRuleValue>, @unch
         var modified = false
 
         let braceIsBlank = context.configuration[ClosingBraceAsBlankLine.self]
-        let commentIsBlank = context.configuration[CommentAsBlankLine.self]
+        let commentIsBlank = context.configuration[CountCommentAsBlankLine.self]
 
         for i in 0..<(original.count - 1) where hasDeclMultiLineBody(original[i].decl) {
             let nextIndex = i + 1

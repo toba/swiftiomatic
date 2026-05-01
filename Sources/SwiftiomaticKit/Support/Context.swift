@@ -63,35 +63,35 @@ package final class Context {
     // starts with empty state.
 
     lazy var hoistTryState = HoistTry.AwaitState()
-    lazy var leadingDotOperatorsState = LeadingDotOperators.State()
-    lazy var namedClosureParamsState = NamedClosureParams.State()
+    lazy var leadingDotOperatorsState = BreakBeforeLeadingDot.State()
+    lazy var namedClosureParamsState = RequireNamedClosureParams.State()
     lazy var noForceTryState = NoForceTry.State()
     lazy var noForceUnwrapState = NoForceUnwrap.State()
     lazy var noGuardInTestsState = NoGuardInTests.State()
-    lazy var preferEnvironmentEntryState = PreferEnvironmentEntry.State()
+    lazy var preferEnvironmentEntryState = UseAtEntryNotEnvironmentKey.State()
     lazy var preferFinalClassesState = PreferFinalClasses.State()
-    lazy var preferSelfTypeState = PreferSelfType.State()
-    lazy var preferSwiftTestingState = PreferSwiftTesting.State()
-    lazy var redundantAccessControlState = RedundantAccessControl.State()
-    lazy var redundantSelfState = RedundantSelf.State()
-    lazy var redundantSwiftTestingSuiteState = RedundantSwiftTestingSuite.State()
-    lazy var swiftTestingTestCaseNamesState = SwiftTestingTestCaseNames.State()
-    lazy var testSuiteAccessControlState = TestSuiteAccessControl.State()
-    lazy var urlMacroState = URLMacro.State()
-    lazy var validateTestCasesState = ValidateTestCases.State()
+    lazy var preferSelfTypeState = UseSelfNotTypeName.State()
+    lazy var preferSwiftTestingState = UseSwiftTestingNotXCTest.State()
+    lazy var redundantAccessControlState = DropRedundantAccessControl.State()
+    lazy var redundantSelfState = DropRedundantSelf.State()
+    lazy var redundantSwiftTestingSuiteState = DropRedundantSwiftTestingSuite.State()
+    lazy var swiftTestingTestCaseNamesState = EnforceSwiftTestingNames.State()
+    lazy var testSuiteAccessControlState = RequireSuiteAccessControl.State()
+    lazy var urlMacroState = UseURLMacroForURLLiterals.State()
+    lazy var validateTestCasesState = RequireTestFnPrefixOrAttribute.State()
     lazy var wrapSingleLineBodiesState = WrapSingleLineBodiesState()
 
-    /// Pre-built `(titlecased, uppercased)` pairs for `UppercaseAcronyms` , sorted longest-first so
+    /// Pre-built `(titlecased, uppercased)` pairs for `UppercaseAcronymsInIdentifiers` , sorted longest-first so
     /// longer acronyms match before shorter substrings. Computed once per file; reused for every
     /// identifier token visited.
     ///
-    /// Lazy so a config that disables `UppercaseAcronyms` never pays the
+    /// Lazy so a config that disables `UppercaseAcronymsInIdentifiers` never pays the
     /// `uppercased() + sorted + map` cost. The single access site (
     /// `LayoutWriter.applyUppercaseAcronyms` ) is gated by
-    /// `context.shouldRewrite(UppercaseAcronyms.self, ...)` , so when the rule is disabled this
+    /// `context.shouldRewrite(UppercaseAcronymsInIdentifiers.self, ...)` , so when the rule is disabled this
     /// lazy var is never realized.
     lazy var preparedAcronyms: [(titlecased: String, uppercased: String)] = configuration[
-        UppercaseAcronyms.self
+        UppercaseAcronymsInIdentifiers.self
     ].words
         .filter { $0.count >= 2 }
         .sorted { $0.count > $1.count }

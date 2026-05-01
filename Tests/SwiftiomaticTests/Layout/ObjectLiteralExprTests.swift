@@ -42,7 +42,7 @@ struct ObjectLiteralExprTests: LayoutTesting {
       """
 
     var config = Configuration.forTesting
-    config[BeforeEachArgument.self] = true
+    config[BreakBeforeEachArgument.self] = true
     assertLayout(input: input, expected: expected, linelength: 25, configuration: config)
   }
 
@@ -68,7 +68,7 @@ struct ObjectLiteralExprTests: LayoutTesting {
       """
 
     var config = Configuration.forTesting
-    config[BeforeEachArgument.self] = false
+    config[BreakBeforeEachArgument.self] = false
     assertLayout(input: input, expected: expected, linelength: 25, configuration: config)
   }
 
@@ -95,7 +95,7 @@ struct ObjectLiteralExprTests: LayoutTesting {
       """
 
     var config = Configuration.forTesting
-    config[BeforeEachArgument.self] = true
+    config[BreakBeforeEachArgument.self] = true
     assertLayout(input: input, expected: expected, linelength: 38, configuration: config)
   }
 
@@ -121,7 +121,7 @@ struct ObjectLiteralExprTests: LayoutTesting {
       """
 
     var config = Configuration.forTesting
-    config[BeforeEachArgument.self] = false
+    config[BreakBeforeEachArgument.self] = false
     assertLayout(input: input, expected: expected, linelength: 38, configuration: config)
   }
 

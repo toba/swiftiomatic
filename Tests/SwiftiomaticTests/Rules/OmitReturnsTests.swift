@@ -18,7 +18,7 @@ import Testing
 struct OmitReturnsTests: RuleTesting {
   @Test func omitReturnInFunction() {
     assertFormatting(
-      RedundantReturn.self,
+      DropRedundantReturn.self,
       input: """
           func test() -> Bool {
             1️⃣return false
@@ -37,7 +37,7 @@ struct OmitReturnsTests: RuleTesting {
 
   @Test func omitReturnInClosure() {
     assertFormatting(
-      RedundantReturn.self,
+      DropRedundantReturn.self,
       input: """
           vals.filter {
             1️⃣return $0.count == 1
@@ -56,7 +56,7 @@ struct OmitReturnsTests: RuleTesting {
 
   @Test func omitReturnInSubscript() {
     assertFormatting(
-      RedundantReturn.self,
+      DropRedundantReturn.self,
       input: """
           struct Test {
             subscript(x: Int) -> Bool {
@@ -98,7 +98,7 @@ struct OmitReturnsTests: RuleTesting {
 
   @Test func omitReturnInComputedVars() {
     assertFormatting(
-      RedundantReturn.self,
+      DropRedundantReturn.self,
       input: """
           var x: Int {
             1️⃣return 42
@@ -136,7 +136,7 @@ struct OmitReturnsTests: RuleTesting {
 
   @Test func inVariableBindings() {
     assertFormatting(
-      RedundantReturn.self,
+      DropRedundantReturn.self,
       input: """
           var f = l.filter { 1️⃣return $0.a != o }
           var bar = l.filter {
@@ -158,7 +158,7 @@ struct OmitReturnsTests: RuleTesting {
 
   @Test func inVariableBindingWithTrailingTrivia() {
     assertFormatting(
-      RedundantReturn.self,
+      DropRedundantReturn.self,
       input: """
           var f = l.filter {
             1️⃣return $0.a != o // comment
@@ -180,7 +180,7 @@ struct OmitReturnsTests: RuleTesting {
   @Test
   func switchInClosure() {
     assertFormatting(
-      RedundantReturn.self,
+      DropRedundantReturn.self,
       input: """
           val.contains {
             switch $0 {
@@ -211,7 +211,7 @@ struct OmitReturnsTests: RuleTesting {
   @Test
   func switchInComputedProperty() {
     assertFormatting(
-      RedundantReturn.self,
+      DropRedundantReturn.self,
       input: """
           var x: Bool {
             switch self {
@@ -242,7 +242,7 @@ struct OmitReturnsTests: RuleTesting {
   @Test
   func ifElseInFunction() {
     assertFormatting(
-      RedundantReturn.self,
+      DropRedundantReturn.self,
       input: """
           func f(_ x: Bool) -> Int {
             if x {
@@ -271,7 +271,7 @@ struct OmitReturnsTests: RuleTesting {
   @Test
   func ifElseIfElseChain() {
     assertFormatting(
-      RedundantReturn.self,
+      DropRedundantReturn.self,
       input: """
           func f(_ x: Int) -> String {
             if x > 0 {
@@ -305,7 +305,7 @@ struct OmitReturnsTests: RuleTesting {
   @Test
   func nestedSwitchInIf() {
     assertFormatting(
-      RedundantReturn.self,
+      DropRedundantReturn.self,
       input: """
           func f(_ x: Bool, _ y: E) -> Int {
             if x {
@@ -345,7 +345,7 @@ struct OmitReturnsTests: RuleTesting {
   @Test
   func switchInExplicitGetter() {
     assertFormatting(
-      RedundantReturn.self,
+      DropRedundantReturn.self,
       input: """
           struct S {
             var x: Int {
@@ -386,7 +386,7 @@ struct OmitReturnsTests: RuleTesting {
   @Test
   func ifWithoutElseNotTransformed() {
     assertFormatting(
-      RedundantReturn.self,
+      DropRedundantReturn.self,
       input: """
           func f(_ x: Bool) -> Int {
             if x {
@@ -410,7 +410,7 @@ struct OmitReturnsTests: RuleTesting {
   @Test
   func switchWithNonReturnBranchNotTransformed() {
     assertFormatting(
-      RedundantReturn.self,
+      DropRedundantReturn.self,
       input: """
           func f(_ x: E) -> Int {
             switch x {
@@ -440,7 +440,7 @@ struct OmitReturnsTests: RuleTesting {
   @Test
   func switchWithFatalErrorBranch() {
     assertFormatting(
-      RedundantReturn.self,
+      DropRedundantReturn.self,
       input: """
           func contains(_ position: Int) -> Bool {
             switch self {
@@ -475,7 +475,7 @@ struct OmitReturnsTests: RuleTesting {
   @Test
   func ifElseWithPreconditionFailure() {
     assertFormatting(
-      RedundantReturn.self,
+      DropRedundantReturn.self,
       input: """
           func value() -> Int {
             if isValid {
@@ -504,7 +504,7 @@ struct OmitReturnsTests: RuleTesting {
   func allFatalBranchesNotTransformed() {
     // If no branch has a `return`, the rule shouldn't fire (nothing to strip).
     assertFormatting(
-      RedundantReturn.self,
+      DropRedundantReturn.self,
       input: """
           func f(_ x: E) -> Int {
             switch x {
@@ -532,7 +532,7 @@ struct OmitReturnsTests: RuleTesting {
   @Test
   func multiStatementBranchNotTransformed() {
     assertFormatting(
-      RedundantReturn.self,
+      DropRedundantReturn.self,
       input: """
           func f(_ x: Bool) -> Int {
             if x {

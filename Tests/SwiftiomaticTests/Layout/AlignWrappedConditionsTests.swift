@@ -115,11 +115,11 @@ struct AlignWrappedConditionsTests: LayoutTesting {
   // MARK: - guard
 
   /// Configuration that pairs `alignWrappedConditions = true` with
-  /// `beforeGuardConditions = false` so the +6 alignment under the first
+  /// `breakBeforeGuardConditions = false` so the +6 alignment under the first
   /// condition takes effect (the first condition stays on the `guard` line).
   private var guardAlignConfig: Configuration {
     var c = config
-    c[BeforeGuardConditions.self] = false
+    c[BreakBeforeGuardConditions.self] = false
     return c
   }
 
@@ -165,11 +165,11 @@ struct AlignWrappedConditionsTests: LayoutTesting {
     )
   }
 
-  /// When `beforeGuardConditions` is true, wrapped guard conditions should
+  /// When `breakBeforeGuardConditions` is true, wrapped guard conditions should
   /// fall back to the normal continuation indent rather than aligning at +6.
   @Test func guardBeforeGuardConditionsUsesNormalIndent() {
     var c = config
-    c[BeforeGuardConditions.self] = true
+    c[BreakBeforeGuardConditions.self] = true
     assertLayout(
       input: """
         guard let a = foo(), let b = bar() else {
@@ -191,7 +191,7 @@ struct AlignWrappedConditionsTests: LayoutTesting {
 
   @Test func guardBeforeGuardConditionsNestedUsesNormalIndent() {
     var c = config
-    c[BeforeGuardConditions.self] = true
+    c[BreakBeforeGuardConditions.self] = true
     assertLayout(
       input: """
         func foo() {

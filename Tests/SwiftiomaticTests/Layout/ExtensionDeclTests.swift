@@ -178,7 +178,7 @@ struct ExtensionDeclTests: LayoutTesting {
       """
 
     var config = Configuration.forTesting
-    config[BeforeEachGenericRequirement.self] = true
+    config[BreakBeforeGenericRequirement.self] = true
     assertLayout(input: input, expected: expected, linelength: 70, configuration: config)
   }
 
@@ -268,7 +268,7 @@ struct ExtensionDeclTests: LayoutTesting {
       """
 
     var config = Configuration.forTesting
-    config[BeforeEachGenericRequirement.self] = true
+    config[BreakBeforeGenericRequirement.self] = true
     assertLayout(input: input, expected: expected, linelength: 70, configuration: config)
   }
 
@@ -381,7 +381,7 @@ struct ExtensionDeclTests: LayoutTesting {
       """
 
     var config = Configuration.forTesting
-    config[BeforeEachGenericRequirement.self] = true
+    config[BreakBeforeGenericRequirement.self] = true
     assertLayout(input: input, expected: expected, linelength: 50, configuration: config)
   }
 

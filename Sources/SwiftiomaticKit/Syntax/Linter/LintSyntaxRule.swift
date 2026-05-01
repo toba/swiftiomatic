@@ -1,4 +1,4 @@
-// sm:ignore preferFinalClasses, preferStaticOverClassFunc
+// sm:ignore preferFinalClasses, useStaticNotClassFunc
 // Subclassed by every lint rule; `class var` is required so subclass overrides dispatch through
 // the vtable when accessed via `any SyntaxRule.Type` existentials.
 import Foundation

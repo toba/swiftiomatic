@@ -94,7 +94,7 @@ struct ClassDeclTests: LayoutTesting {
       """
 
     var config = Configuration.forTesting
-    config[BeforeEachArgument.self] = true
+    config[BreakBeforeEachArgument.self] = true
     assertLayout(input: input, expected: expected, linelength: 30, configuration: config)
   }
 
@@ -135,7 +135,7 @@ struct ClassDeclTests: LayoutTesting {
       """
 
     var config = Configuration.forTesting
-    config[BeforeEachArgument.self] = false
+    config[BreakBeforeEachArgument.self] = false
     assertLayout(input: input, expected: expected, linelength: 30, configuration: config)
   }
 
@@ -285,7 +285,7 @@ struct ClassDeclTests: LayoutTesting {
       """
 
     var config = Configuration.forTesting
-    config[BeforeEachGenericRequirement.self] = true
+    config[BreakBeforeGenericRequirement.self] = true
     assertLayout(input: input, expected: expected, linelength: 60, configuration: config)
   }
 
@@ -363,7 +363,7 @@ struct ClassDeclTests: LayoutTesting {
       """
 
     var config = Configuration.forTesting
-    config[BeforeEachGenericRequirement.self] = true
+    config[BreakBeforeGenericRequirement.self] = true
     assertLayout(input: input, expected: expected, linelength: 60, configuration: config)
   }
 
@@ -444,7 +444,7 @@ struct ClassDeclTests: LayoutTesting {
       """
 
     var config = Configuration.forTesting
-    config[BeforeEachArgument.self] = false
+    config[BreakBeforeEachArgument.self] = false
     assertLayout(input: input, expected: expected, linelength: 50, configuration: config)
   }
 
@@ -478,8 +478,8 @@ struct ClassDeclTests: LayoutTesting {
       """
 
     var config = Configuration.forTesting
-    config[BeforeEachArgument.self] = false
-    config[BeforeEachGenericRequirement.self] = true
+    config[BreakBeforeEachArgument.self] = false
+    config[BreakBeforeGenericRequirement.self] = true
     assertLayout(input: input, expected: expected, linelength: 50, configuration: config)
   }
 

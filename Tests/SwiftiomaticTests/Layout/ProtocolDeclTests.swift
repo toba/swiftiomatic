@@ -198,7 +198,7 @@ struct ProtocolDeclTests: LayoutTesting {
   }
 
   @Test func protocolWithKeepFunctionOutputTogether_overridesExistingArrowNewline() {
-    // When KeepFunctionOutputTogether is enabled, an existing discretionary
+    // When KeepReturnTypeWithSignature is enabled, an existing discretionary
     // newline before `->` should be ignored — the rule's intent is to keep
     // the return clause attached to `) async throws`.
     let input =
@@ -221,7 +221,7 @@ struct ProtocolDeclTests: LayoutTesting {
       """
 
     var config = Configuration.forTesting
-    config[KeepFunctionOutputTogether.self] = true
+    config[KeepReturnTypeWithSignature.self] = true
     assertLayout(input: input, expected: expected, linelength: 60, configuration: config)
   }
 
@@ -344,7 +344,7 @@ struct ProtocolDeclTests: LayoutTesting {
       """
 
     var config = Configuration.forTesting
-    config[BeforeEachArgument.self] = true
+    config[BreakBeforeEachArgument.self] = true
     assertLayout(input: input, expected: expected, linelength: 30, configuration: config)
   }
 
@@ -385,7 +385,7 @@ struct ProtocolDeclTests: LayoutTesting {
       """
 
     var config = Configuration.forTesting
-    config[BeforeEachArgument.self] = false
+    config[BreakBeforeEachArgument.self] = false
     assertLayout(input: input, expected: expected, linelength: 30, configuration: config)
   }
 }

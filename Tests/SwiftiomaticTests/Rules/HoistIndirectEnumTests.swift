@@ -1,0 +1,126 @@
+//===----------------------------------------------------------------------===//
+//
+// This source file is part of the Swift.org open source project
+//
+// Copyright (c) 2014 - 2025 Apple Inc. and the Swift project authors
+// Licensed under Apache License v2.0 with Runtime Library Exception
+//
+// See https://swift.org/LICENSE.txt for license information
+// See https://swift.org/CONTRIBUTORS.txt for the list of Swift project authors
+//
+//===----------------------------------------------------------------------===//
+
+@testable import SwiftiomaticKit
+import SwiftiomaticTestSupport
+import Testing
+
+@Suite
+struct HoistIndirectEnumTests: RuleTesting {
+  @Test func allIndirectCases() {
+    assertFormatting(
+      HoistIndirectEnum.self,
+      input: """
+        // Comment 1
+        public 1️⃣enum DependencyGraphNode {
+          internal 2️⃣indirect case userDefined(dependencies: [DependencyGraphNode])
+          // Comment 2
+          3️⃣indirect case synthesized(dependencies: [DependencyGraphNode])
+          4️⃣indirect case other(dependencies: [DependencyGraphNode])
+          var x: Int
+        }
+        """,
+      expected: """
+        // Comment 1
+        public indirect enum DependencyGraphNode {
+          internal case userDefined(dependencies: [DependencyGraphNode])
+          // Comment 2
+          case synthesized(dependencies: [DependencyGraphNode])
+          case other(dependencies: [DependencyGraphNode])
+          var x: Int
+        }
+        """,
+      findings: [
+        FindingSpec(
+          "1️⃣",
+          message: "declare enum 'DependencyGraphNode' itself as indirect when all cases are indirect",
+          notes: [
+            NoteSpec("2️⃣", message: "remove 'indirect' here"),
+            NoteSpec("3️⃣", message: "remove 'indirect' here"),
+            NoteSpec("4️⃣", message: "remove 'indirect' here"),
+          ]
+        )
+      ]
+    )
+  }
+
+  @Test func allIndirectCasesWithAttributes() {
+    assertFormatting(
+      HoistIndirectEnum.self,
+      input: """
+        // Comment 1
+        public 1️⃣enum DependencyGraphNode {
+          @someAttr internal 2️⃣indirect case userDefined(dependencies: [DependencyGraphNode])
+          // Comment 2
+          @someAttr 3️⃣indirect case synthesized(dependencies: [DependencyGraphNode])
+          @someAttr 4️⃣indirect case other(dependencies: [DependencyGraphNode])
+          var x: Int
+        }
+        """,
+      expected: """
+        // Comment 1
+        public indirect enum DependencyGraphNode {
+          @someAttr internal case userDefined(dependencies: [DependencyGraphNode])
+          // Comment 2
+          @someAttr case synthesized(dependencies: [DependencyGraphNode])
+          @someAttr case other(dependencies: [DependencyGraphNode])
+          var x: Int
+        }
+        """,
+      findings: [
+        FindingSpec(
+          "1️⃣",
+          message: "declare enum 'DependencyGraphNode' itself as indirect when all cases are indirect",
+          notes: [
+            NoteSpec("2️⃣", message: "remove 'indirect' here"),
+            NoteSpec("3️⃣", message: "remove 'indirect' here"),
+            NoteSpec("4️⃣", message: "remove 'indirect' here"),
+          ]
+        )
+      ]
+    )
+  }
+
+  @Test func notAllIndirectCases() {
+    let input = """
+      public enum CompassPoint {
+        case north
+        indirect case south
+        case east
+        case west
+      }
+      """
+    assertFormatting(HoistIndirectEnum.self, input: input, expected: input, findings: [])
+  }
+
+  @Test func alreadyIndirectEnum() {
+    let input = """
+      indirect enum CompassPoint {
+        case north
+        case south
+        case east
+        case west
+      }
+      """
+    assertFormatting(HoistIndirectEnum.self, input: input, expected: input, findings: [])
+  }
+
+  @Test func caselessEnum() {
+    let input = """
+      public enum Constants {
+        public static let foo = 5
+        public static let bar = "bar"
+      }
+      """
+    assertFormatting(HoistIndirectEnum.self, input: input, expected: input, findings: [])
+  }
+}

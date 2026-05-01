@@ -210,8 +210,8 @@ package final class RewriteCoordinator {
         current = runStructuralPass(SortImports.self, on: current, context: context)
         current = runStructuralPass(BlankLinesAfterImports.self, on: current, context: context)
         current = runStructuralPass(
-            FileScopedDeclarationPrivacy.self, on: current, context: context)
-        current = runStructuralPass(ExtensionAccessLevel.self, on: current, context: context)
+            UseFilePrivateForFileLocal.self, on: current, context: context)
+        current = runStructuralPass(HoistExtensionAccess.self, on: current, context: context)
         current = runStructuralPass(BlankLinesBetweenScopes.self, on: current, context: context)
         current = runStructuralPass(SortDeclarations.self, on: current, context: context)
         current = runStructuralPass(SortSwitchCases.self, on: current, context: context)

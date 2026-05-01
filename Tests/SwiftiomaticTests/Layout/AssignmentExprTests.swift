@@ -95,7 +95,7 @@ struct AssignmentExprTests: LayoutTesting {
       """
 
     var config = Configuration.forTesting
-    config[BeforeEachArgument.self] = false
+    config[BreakBeforeEachArgument.self] = false
     assertLayout(
       input: input,
       expected: expectedWithArgBinPacking,
@@ -143,7 +143,7 @@ struct AssignmentExprTests: LayoutTesting {
         ) + nextOp + lastOp
 
       """
-    config[BeforeEachArgument.self] = true
+    config[BreakBeforeEachArgument.self] = true
     assertLayout(
       input: input,
       expected: expectedWithBreakBeforeEachArg,
@@ -285,7 +285,7 @@ struct AssignmentExprTests: LayoutTesting {
       """
 
     var config = Configuration.forTesting
-    config[BeforeEachArgument.self] = false
+    config[BreakBeforeEachArgument.self] = false
     assertLayout(
       input: input,
       expected: expectedWithArgBinPacking,
@@ -321,7 +321,7 @@ struct AssignmentExprTests: LayoutTesting {
         ) + nextOp + lastOp
 
       """
-    config[BeforeEachArgument.self] = true
+    config[BreakBeforeEachArgument.self] = true
     assertLayout(
       input: input,
       expected: expectedWithBreakBeforeEachArg,

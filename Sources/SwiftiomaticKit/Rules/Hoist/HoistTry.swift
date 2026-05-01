@@ -14,7 +14,6 @@ import SwiftSyntax
 ///
 /// Rewrite: `try` is removed from arguments and added to wrap the call expression.
 final class HoistTry: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
-    override static var key: String { "try" }
     override static var group: ConfigurationGroup? { .hoist }
 
     static func transform(

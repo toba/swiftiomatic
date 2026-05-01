@@ -34,8 +34,8 @@ struct ConfigurationUpdateTests {
 
     let diff = Configuration.computeUpdate(for: root)
 
-    #expect(diff.toAdd.contains("idioms.preferIsEmpty"))
-    #expect(diff.toAdd.contains("redundancies.noSemicolons"))
+    #expect(diff.toAdd.contains("collections.preferIsEmpty"))
+    #expect(diff.toAdd.contains("redundancies.dropSemicolons"))
     #expect(diff.toRemove.isEmpty)
     #expect(diff.misplaced.isEmpty)
   }
@@ -71,7 +71,7 @@ struct ConfigurationUpdateTests {
   // MARK: - Misplaced rules
 
   @Test func detectsMisplacedRuleInWrongGroup() throws {
-    // preferIsEmpty belongs in `idioms`, not `wrap`.
+    // preferIsEmpty belongs in `collections`, not `wrap`.
     let root = try parse("""
       {
         "wrap": {
@@ -84,17 +84,17 @@ struct ConfigurationUpdateTests {
 
     let entry = try #require(diff.misplaced.first)
     #expect(entry.foundAt == "wrap.preferIsEmpty")
-    #expect(entry.correctAt == "idioms.preferIsEmpty")
+    #expect(entry.correctAt == "collections.preferIsEmpty")
     #expect(diff.toRemove.isEmpty)
-    #expect(!diff.toAdd.contains("idioms.preferIsEmpty"))
+    #expect(!diff.toAdd.contains("collections.preferIsEmpty"))
   }
 
   @Test func detectsRulePlacedInWrongGroup() throws {
-    // emptyExtensions belongs to `declarations`; placing it in `wrap` is misplaced.
+    // removeEmptyExtensions belongs to `declarations`; placing it in `wrap` is misplaced.
     let root = try parse("""
       {
         "wrap": {
-          "emptyExtensions": { "lint": "warn" }
+          "removeEmptyExtensions": { "lint": "warn" }
         }
       }
       """)
@@ -102,8 +102,8 @@ struct ConfigurationUpdateTests {
     let diff = Configuration.computeUpdate(for: root)
 
     let entry = try #require(diff.misplaced.first)
-    #expect(entry.foundAt == "wrap.emptyExtensions")
-    #expect(entry.correctAt == "declarations.emptyExtensions")
+    #expect(entry.foundAt == "wrap.removeEmptyExtensions")
+    #expect(entry.correctAt == "declarations.removeEmptyExtensions")
   }
 
   @Test func detectsGroupedRulePlacedAtRoot() throws {
@@ -115,7 +115,7 @@ struct ConfigurationUpdateTests {
 
     let entry = try #require(diff.misplaced.first)
     #expect(entry.foundAt == "preferIsEmpty")
-    #expect(entry.correctAt == "idioms.preferIsEmpty")
+    #expect(entry.correctAt == "collections.preferIsEmpty")
   }
 
   // MARK: - Apply preserves misplaced values
@@ -142,11 +142,11 @@ struct ConfigurationUpdateTests {
     }
 
     // New location has the user's original value, not the default.
-    guard case .object(let idiomsDict) = root["idioms"] else {
-      Issue.record("idioms group missing after apply")
+    guard case .object(let collectionsDict) = root["collections"] else {
+      Issue.record("collections group missing after apply")
       return
     }
-    #expect(idiomsDict["preferIsEmpty"] == originalValue)
+    #expect(collectionsDict["preferIsEmpty"] == originalValue)
   }
 
   @Test func applyRemovesUnknownRules() throws {

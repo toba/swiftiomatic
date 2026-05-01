@@ -80,7 +80,7 @@ struct ClosureExprTests: LayoutTesting {
       """
 
     var config = Configuration.forTesting
-    config[BeforeEachArgument.self] = true
+    config[BreakBeforeEachArgument.self] = true
     assertLayout(input: input, expected: expected, linelength: 42, configuration: config)
   }
 
@@ -135,7 +135,7 @@ struct ClosureExprTests: LayoutTesting {
       """
 
     var config = Configuration.forTesting
-    config[BeforeEachArgument.self] = false
+    config[BreakBeforeEachArgument.self] = false
     assertLayout(input: input, expected: expected, linelength: 42, configuration: config)
   }
 
@@ -172,7 +172,7 @@ struct ClosureExprTests: LayoutTesting {
       """
 
     var config = Configuration.forTesting
-    config[BeforeEachArgument.self] = false
+    config[BreakBeforeEachArgument.self] = false
     assertLayout(input: input, expected: expected, linelength: 40, configuration: config)
   }
 
@@ -508,7 +508,7 @@ struct ClosureExprTests: LayoutTesting {
       """
 
     var config = Configuration.forTesting
-    config[KeepFunctionOutputTogether.self] = true
+    config[KeepReturnTypeWithSignature.self] = true
     assertLayout(
       input: input,
       expected: expectedKeepingOutputTogether,

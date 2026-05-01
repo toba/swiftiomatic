@@ -7,21 +7,21 @@ import Testing
 
 /// Verifies that a rule configured with `rewrite: false, lint: .warn` reports findings without
 /// modifying source. Regression for issues x3m-t6u (preferFinalClasses) and a5z-211
-/// (uppercaseAcronyms), where the rewrite path was gated on the OR-of-lint-or-rewrite
+/// (uppercaseAcronymsInIdentifiers), where the rewrite path was gated on the OR-of-lint-or-rewrite
 /// `enabledRules` set and so fired even when the user had explicitly disabled the rewrite.
 @Suite
 struct RewriteGateTests {
-  /// `uppercaseAcronyms` lints `Url` → suggests `URL` , but with `rewrite: false` the source
+  /// `uppercaseAcronymsInIdentifiers` lints `Url` → suggests `URL` , but with `rewrite: false` the source
   /// must be left intact.
   @Test func uppercaseAcronymsLintsButDoesNotRewriteWhenRewriteFalse() throws {
     let source = "let myUrl = 0\n"
 
     var config = Configuration.forTesting
     config.disableAllRules()
-    var ruleValue = config[UppercaseAcronyms.self]
+    var ruleValue = config[UppercaseAcronymsInIdentifiers.self]
     ruleValue.rewrite = false
     ruleValue.lint = .warn
-    config[UppercaseAcronyms.self] = ruleValue
+    config[UppercaseAcronymsInIdentifiers.self] = ruleValue
 
     var findings: [Finding] = []
     let pipeline = RewriteCoordinator(

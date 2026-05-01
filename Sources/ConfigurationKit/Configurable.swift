@@ -1,7 +1,7 @@
 /// Derives a lowerCamelCase configuration key from a PascalCase type name.
 ///
 /// Lowercases a leading uppercase run, stopping before the last capital when it begins the next
-/// word: `URLMacro` → `urlMacro` , `BlankLines` → `blankLines` .
+/// word: `UseURLMacroForURLLiterals` → `useURLMacroForURLLiterals` , `BlankLines` → `blankLines` .
 ///
 /// This is the single source of truth for the default key derivation used by both
 /// `Configurable.key` (runtime) and `DetectedRule.configKey` (build-time code generation).

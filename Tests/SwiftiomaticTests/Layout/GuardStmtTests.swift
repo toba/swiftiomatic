@@ -480,13 +480,13 @@ struct GuardStmtTests: LayoutTesting {
   }
 
   /// Same as `attachesInlineElseToWrappedConditions` but under the
-  /// `alignWrappedConditions=true, beforeGuardConditions=false` configuration:
+  /// `alignWrappedConditions=true, breakBeforeGuardConditions=false` configuration:
   /// the inline-attach behavior must apply regardless of how the conditions
   /// themselves are indented.
   @Test func attachesInlineElseUnderAlignedConditions() {
     var configuration = Configuration.forTesting
     configuration[AlignWrappedConditions.self] = true
-    configuration[BeforeGuardConditions.self] = false
+    configuration[BreakBeforeGuardConditions.self] = false
 
     let input =
       """
@@ -511,7 +511,7 @@ struct GuardStmtTests: LayoutTesting {
   @Test func breaksElseUnderAlignedConditionsWhenBodyTooLong() {
     var configuration = Configuration.forTesting
     configuration[AlignWrappedConditions.self] = true
-    configuration[BeforeGuardConditions.self] = false
+    configuration[BreakBeforeGuardConditions.self] = false
 
     let input =
       """
@@ -538,7 +538,7 @@ struct GuardStmtTests: LayoutTesting {
   @Test func threeConditionsGlueElseWhenInlineBodyFits() {
     var configuration = Configuration.forTesting
     configuration[AlignWrappedConditions.self] = true
-    configuration[BeforeGuardConditions.self] = false
+    configuration[BreakBeforeGuardConditions.self] = false
 
     let input =
       """

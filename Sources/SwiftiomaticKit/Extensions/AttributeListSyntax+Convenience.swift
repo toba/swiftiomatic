@@ -21,8 +21,8 @@ extension AttributeListSyntax {
     /// Trivia from the removed attribute's leading position is transferred to the next kept
     /// element. When the list becomes empty (the removed attribute was the only one), the caller
     /// must transfer the attribute's leading trivia to the declaration keyword or next modifier.
-    /// This mirrors `DeclModifierListSyntax.remove(anyOf:)` — see `RedundantAccessControl` for the
-    /// modifier pattern and `RedundantViewBuilder` for the attribute pattern.
+    /// This mirrors `DeclModifierListSyntax.remove(anyOf:)` — see `DropRedundantAccessControl` for the
+    /// modifier pattern and `DropRedundantViewBuilder` for the attribute pattern.
     func removing(named name: String) -> AttributeListSyntax {
         guard let target = attribute(named: name) else { return self }
 

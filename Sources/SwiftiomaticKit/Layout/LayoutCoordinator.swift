@@ -386,7 +386,7 @@ package final class LayoutCoordinator {
                         // is used when the previous context includes a multiline trailing closure
                         // or multiline function argument list.
                         if let lastBreakingContext = lastEndedBreakingContext {
-                            if configuration[AroundMultilineExpressionChainComponents.self] {
+                            if configuration[BreakAroundMultilineChainParts.self] {
                                 mustBreak = lastBreakingContext.lineNumber
                                     != outputBuffer.lineNumber
                             }

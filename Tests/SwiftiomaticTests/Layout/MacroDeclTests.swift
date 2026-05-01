@@ -37,7 +37,7 @@ struct MacroDeclTests: LayoutTesting {
       """
 
     var config = Configuration.forTesting
-    config[BeforeEachArgument.self] = true
+    config[BreakBeforeEachArgument.self] = true
     assertLayout(input: input, expected: expected, linelength: 58, configuration: config)
   }
 
@@ -63,7 +63,7 @@ struct MacroDeclTests: LayoutTesting {
       """
 
     var config = Configuration.forTesting
-    config[BeforeEachArgument.self] = false
+    config[BreakBeforeEachArgument.self] = false
     assertLayout(input: input, expected: expected, linelength: 58, configuration: config)
   }
 
@@ -102,7 +102,7 @@ struct MacroDeclTests: LayoutTesting {
       """
 
     var config = Configuration.forTesting
-    config[BeforeEachArgument.self] = false
+    config[BreakBeforeEachArgument.self] = false
     assertLayout(input: input, expected: expected, linelength: 58, configuration: config)
   }
 
@@ -132,7 +132,7 @@ struct MacroDeclTests: LayoutTesting {
       """
 
     var config = Configuration.forTesting
-    config[BeforeEachArgument.self] = true
+    config[BreakBeforeEachArgument.self] = true
     assertLayout(input: input, expected: expected, linelength: 44, configuration: config)
   }
 
@@ -161,7 +161,7 @@ struct MacroDeclTests: LayoutTesting {
       """
 
     var config = Configuration.forTesting
-    config[BeforeEachArgument.self] = false
+    config[BreakBeforeEachArgument.self] = false
     assertLayout(input: input, expected: expected, linelength: 44, configuration: config)
   }
 
@@ -213,7 +213,7 @@ struct MacroDeclTests: LayoutTesting {
       """
 
     var config = Configuration.forTesting
-    config[BeforeEachArgument.self] = false
+    config[BreakBeforeEachArgument.self] = false
     assertLayout(input: input, expected: expected, linelength: 51, configuration: config)
   }
 
@@ -266,8 +266,8 @@ struct MacroDeclTests: LayoutTesting {
       """
 
     var config = Configuration.forTesting
-    config[BeforeEachArgument.self] = false
-    config[BeforeEachGenericRequirement.self] = true
+    config[BreakBeforeEachArgument.self] = false
+    config[BreakBeforeGenericRequirement.self] = true
     assertLayout(input: input, expected: expected, linelength: 50, configuration: config)
   }
 
@@ -353,7 +353,7 @@ struct MacroDeclTests: LayoutTesting {
 
       """
     var config = Configuration.forTesting
-    config[KeepFunctionOutputTogether.self] = true
+    config[KeepReturnTypeWithSignature.self] = true
     assertLayout(input: input, expected: expected, linelength: 23, configuration: config)
     assertLayout(input: input, expected: expected, linelength: 24, configuration: config)
     assertLayout(input: input, expected: expected, linelength: 27, configuration: config)
@@ -394,7 +394,7 @@ struct MacroDeclTests: LayoutTesting {
 
       """
     var config = Configuration.forTesting
-    config[KeepFunctionOutputTogether.self] = true
+    config[KeepReturnTypeWithSignature.self] = true
     assertLayout(input: input, expected: expected, linelength: 26, configuration: config)
   }
 

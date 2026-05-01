@@ -75,7 +75,7 @@ extension TokenStream {
                 // Whether we should prioritize keeping ") throws -> <return_type>" together. We can
                 // only do this if the closure has arguments.
                 let keepOutputTogether = !closureParameterClause.parameters.isEmpty
-                    && config[KeepFunctionOutputTogether.self]
+                    && config[KeepReturnTypeWithSignature.self]
 
                 // Keep the output together by grouping from the right paren to the end of the
                 // output.
@@ -190,7 +190,7 @@ extension TokenStream {
     func visitMacroExpansionDecl(_ node: MacroExpansionDeclSyntax) -> SyntaxVisitorContinueKind {
         arrangeAttributeList(
             node.attributes,
-            separateByLineBreaks: config[BetweenDeclarationAttributes.self]
+            separateByLineBreaks: config[BreakBetweenDeclAttributes.self]
         )
 
         before(
@@ -235,7 +235,7 @@ extension TokenStream {
     ) -> SyntaxVisitorContinueKind {
         // Prioritize keeping ") throws -> <return_type>" together. We can only do this if the
         // function has arguments.
-        if !node.parameters.isEmpty, config[KeepFunctionOutputTogether.self] {
+        if !node.parameters.isEmpty, config[KeepReturnTypeWithSignature.self] {
             before(node.rightParen, tokens: .open)
         }
 
@@ -258,7 +258,7 @@ extension TokenStream {
     ) -> SyntaxVisitorContinueKind {
         // Prioritize keeping ") throws -> <return_type>" together. We can only do this if the
         // function has arguments.
-        if !node.parameters.isEmpty, config[KeepFunctionOutputTogether.self] {
+        if !node.parameters.isEmpty, config[KeepReturnTypeWithSignature.self] {
             before(node.rightParen, tokens: .open)
         }
 

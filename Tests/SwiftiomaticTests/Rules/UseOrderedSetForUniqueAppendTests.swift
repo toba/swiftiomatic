@@ -1,0 +1,95 @@
+@testable import SwiftiomaticKit
+import SwiftiomaticTestSupport
+import Testing
+
+@Suite
+struct UseOrderedSetForUniqueAppendTests: RuleTesting {
+  @Test func bareIdentifierContainsAppend() {
+    assertLint(
+      UseOrderedSetForUniqueAppend.self,
+      """
+      func add(_ x: Int) {
+        1️⃣if !values.contains(x) {
+          values.append(x)
+        }
+      }
+      """,
+      findings: [
+        FindingSpec("1️⃣", message: "'!contains' + 'append' guards uniqueness in O(n) — consider 'OrderedSet' from swift-collections"),
+      ]
+    )
+  }
+
+  @Test func selfMemberContainsAppend() {
+    assertLint(
+      UseOrderedSetForUniqueAppend.self,
+      """
+      func add(_ x: Int) {
+        1️⃣if !self.values.contains(x) {
+          self.values.append(x)
+        }
+      }
+      """,
+      findings: [
+        FindingSpec("1️⃣", message: "'!contains' + 'append' guards uniqueness in O(n) — consider 'OrderedSet' from swift-collections"),
+      ]
+    )
+  }
+
+  @Test func differentArgumentNotFlagged() {
+    assertLint(
+      UseOrderedSetForUniqueAppend.self,
+      """
+      func add(_ x: Int, _ y: Int) {
+        if !values.contains(x) {
+          values.append(y)
+        }
+      }
+      """,
+      findings: []
+    )
+  }
+
+  @Test func differentCollectionNotFlagged() {
+    assertLint(
+      UseOrderedSetForUniqueAppend.self,
+      """
+      func add(_ x: Int) {
+        if !a.contains(x) {
+          b.append(x)
+        }
+      }
+      """,
+      findings: []
+    )
+  }
+
+  @Test func multiStatementBodyNotFlagged() {
+    assertLint(
+      UseOrderedSetForUniqueAppend.self,
+      """
+      func add(_ x: Int) {
+        if !values.contains(x) {
+          values.append(x)
+          print("added")
+        }
+      }
+      """,
+      findings: []
+    )
+  }
+
+  @Test func extraConditionsNotFlagged() {
+    assertLint(
+      UseOrderedSetForUniqueAppend.self,
+      """
+      func add(_ x: Int) {
+        if !values.contains(x), x > 0 {
+          values.append(x)
+        }
+      }
+      """,
+      findings: []
+    )
+  }
+}

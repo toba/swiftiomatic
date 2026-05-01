@@ -122,7 +122,7 @@ struct RepeatStmtTests: LayoutTesting {
       """
 
     var config = Configuration.forTesting
-    config[ElseCatchOnNewLine.self] = true
+    config[PlaceElseCatchOnNewLine.self] = true
     assertLayout(input: input, expected: expected, linelength: 25, configuration: config)
   }
 

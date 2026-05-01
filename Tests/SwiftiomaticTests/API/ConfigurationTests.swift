@@ -104,15 +104,15 @@ struct ConfigurationTests {
       {
         "redundancies": {
           "semicolons": { "lint": "warn" },
-          "redundantSelf": { "lint": "error" }
+          "dropRedundantSelf": { "lint": "error" }
         }
       }
       """.data(using: .utf8)!
 
     let config = try JSONDecoder().decode(Configuration.self, from: jsonData)
-    #expect(config[NoSemicolons.self].lint == .warn)
-    #expect(config[NoSemicolons.self].rewrite == true)
-    #expect(config[RedundantSelf.self].lint == .error)
+    #expect(config[DropSemicolons.self].lint == .warn)
+    #expect(config[DropSemicolons.self].rewrite == true)
+    #expect(config[DropRedundantSelf.self].lint == .error)
   }
 
   @Test func lintSeverityValues() {
@@ -148,17 +148,17 @@ struct ConfigurationTests {
           "betweenScopes": { "lint": "warn" }
         },
         "lineBreaks": {
-          "elseCatchOnNewLine": true,
-          "beforeEachArgument": true,
-          "beforeEachGenericRequirement": true,
-          "betweenDeclarationAttributes": true,
-          "aroundMultilineExpressionChainComponents": true,
+          "placeElseCatchOnNewLine": true,
+          "breakBeforeEachArgument": true,
+          "breakBeforeGenericRequirement": true,
+          "breakBetweenDeclAttributes": true,
+          "breakAroundMultilineChainParts": true,
           "atEndOfFile": { "lint": "warn" }
         },
         "redundancies": {
-          "redundantSelf": { "lint": "error" },
-          "redundantInit": { "lint": "no" },
-          "redundantBackticks": { "lint": "warn" }
+          "dropRedundantSelf": { "lint": "error" },
+          "dropRedundantInitCall": { "lint": "no" },
+          "dropRedundantBackticks": { "lint": "warn" }
         }
       }
       """.data(using: .utf8)!
@@ -170,24 +170,24 @@ struct ConfigurationTests {
     #expect(config[BlankLinesAfterImports.self].lint == .warn)
     #expect(config[BlankLinesBetweenScopes.self].lint == .warn)
     // lineBreaks group
-    #expect(config[ElseCatchOnNewLine.self] == true)
-    #expect(config[BeforeEachArgument.self] == true)
-    #expect(config[BeforeEachGenericRequirement.self] == true)
-    #expect(config[BetweenDeclarationAttributes.self] == true)
-    #expect(config[AroundMultilineExpressionChainComponents.self] == true)
+    #expect(config[PlaceElseCatchOnNewLine.self] == true)
+    #expect(config[BreakBeforeEachArgument.self] == true)
+    #expect(config[BreakBeforeGenericRequirement.self] == true)
+    #expect(config[BreakBetweenDeclAttributes.self] == true)
+    #expect(config[BreakAroundMultilineChainParts.self] == true)
     #expect(config[EnsureLineBreakAtEOF.self].lint == .warn)
     // redundancies group
-    #expect(config[RedundantSelf.self].lint == .error)
-    #expect(config[RedundantInit.self].lint == .no)
-    #expect(config[RedundantBackticks.self].lint == .warn)
+    #expect(config[DropRedundantSelf.self].lint == .error)
+    #expect(config[DropRedundantInitCall.self].lint == .no)
+    #expect(config[DropRedundantBackticks.self].lint == .warn)
   }
 
   // MARK: - Key derivation
 
   @Test(arguments: [
     ("BlankLines", "blankLines"),
-    ("URLMacro", "urlMacro"),
-    ("ASCIIIdentifiers", "asciiIdentifiers"),
+    ("UseURLMacroForURLLiterals", "useURLMacroForURLLiterals"),
+    ("RequireASCIIIdentifiers", "requireASCIIIdentifiers"),
     ("HTTPHeader", "httpHeader"),
     ("SortImports", "sortImports"),
     ("URL", "url"),
@@ -223,11 +223,11 @@ struct ConfigurationTests {
     var a = Configuration()
     var b = Configuration()
     #expect(a == b)
-    var ruleValue = a[NoSemicolons.self]
+    var ruleValue = a[DropSemicolons.self]
     ruleValue.lint = .error
-    a[NoSemicolons.self] = ruleValue
+    a[DropSemicolons.self] = ruleValue
     #expect(a != b)
-    b[NoSemicolons.self] = ruleValue
+    b[DropSemicolons.self] = ruleValue
     #expect(a == b)
   }
 }

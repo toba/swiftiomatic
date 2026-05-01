@@ -1,0 +1,461 @@
+@testable import SwiftiomaticKit
+import SwiftiomaticTestSupport
+import Testing
+
+@Suite
+struct EnvironmentEntryTests: RuleTesting {
+
+  @Test func basicKeyBeforeExtension() {
+    assertFormatting(
+      UseAtEntryNotEnvironmentKey.self,
+      input: """
+        struct ScreenNameEnvironmentKey: EnvironmentKey {
+            static var defaultValue: Identifier? {
+                .init("undefined")
+            }
+        }
+
+        extension EnvironmentValues {
+            1️⃣var screenName: Identifier? {
+                get { self[ScreenNameEnvironmentKey.self] }
+                set { self[ScreenNameEnvironmentKey.self] = newValue }
+            }
+        }
+        """,
+      expected: """
+        extension EnvironmentValues {
+            @Entry var screenName: Identifier? = .init("undefined")
+        }
+        """,
+      findings: [
+        FindingSpec("1️⃣", message: "use '@Entry' macro instead of manual 'EnvironmentKey' conformance"),
+      ]
+    )
+  }
+
+  @Test func keyAfterExtension() {
+    assertFormatting(
+      UseAtEntryNotEnvironmentKey.self,
+      input: """
+        extension EnvironmentValues {
+            1️⃣var screenName: Identifier? {
+                get { self[ScreenNameEnvironmentKey.self] }
+                set { self[ScreenNameEnvironmentKey.self] = newValue }
+            }
+        }
+
+        struct ScreenNameEnvironmentKey: EnvironmentKey {
+            static var defaultValue: Identifier? {
+                .init("undefined")
+            }
+        }
+        """,
+      expected: """
+        extension EnvironmentValues {
+            @Entry var screenName: Identifier? = .init("undefined")
+        }
+        """,
+      findings: [
+        FindingSpec("1️⃣", message: "use '@Entry' macro instead of manual 'EnvironmentKey' conformance"),
+      ]
+    )
+  }
+
+  @Test func multipleKeysAndExtensions() {
+    assertFormatting(
+      UseAtEntryNotEnvironmentKey.self,
+      input: """
+        extension EnvironmentValues {
+            1️⃣var isSelected: Bool {
+                get { self[IsSelectedEnvironmentKey.self] }
+                set { self[IsSelectedEnvironmentKey.self] = newValue }
+            }
+        }
+
+        struct IsSelectedEnvironmentKey: EnvironmentKey {
+            static var defaultValue: Bool { false }
+        }
+
+        extension EnvironmentValues {
+            2️⃣var screenName: Identifier? {
+                get { self[ScreenNameEnvironmentKey.self] }
+                set { self[ScreenNameEnvironmentKey.self] = newValue }
+            }
+        }
+
+        struct ScreenNameEnvironmentKey: EnvironmentKey {
+            static var defaultValue: Identifier? {
+                .init("undefined")
+            }
+        }
+        """,
+      expected: """
+        extension EnvironmentValues {
+            @Entry var isSelected: Bool = false
+        }
+
+        extension EnvironmentValues {
+            @Entry var screenName: Identifier? = .init("undefined")
+        }
+        """,
+      findings: [
+        FindingSpec("1️⃣", message: "use '@Entry' macro instead of manual 'EnvironmentKey' conformance"),
+        FindingSpec("2️⃣", message: "use '@Entry' macro instead of manual 'EnvironmentKey' conformance"),
+      ]
+    )
+  }
+
+  @Test func multiplePropertiesInSameExtension() {
+    assertFormatting(
+      UseAtEntryNotEnvironmentKey.self,
+      input: """
+        extension EnvironmentValues {
+            1️⃣var isSelected: Bool {
+                get { self[IsSelectedEnvironmentKey.self] }
+                set { self[IsSelectedEnvironmentKey.self] = newValue }
+            }
+
+            2️⃣var screenName: Identifier? {
+                get { self[ScreenNameEnvironmentKey.self] }
+                set { self[ScreenNameEnvironmentKey.self] = newValue }
+            }
+        }
+
+        struct IsSelectedEnvironmentKey: EnvironmentKey {
+            static var defaultValue: Bool { false }
+        }
+
+        struct ScreenNameEnvironmentKey: EnvironmentKey {
+            static var defaultValue: Identifier? {
+                .init("undefined")
+            }
+        }
+        """,
+      expected: """
+        extension EnvironmentValues {
+            @Entry var isSelected: Bool = false
+
+            @Entry var screenName: Identifier? = .init("undefined")
+        }
+        """,
+      findings: [
+        FindingSpec("1️⃣", message: "use '@Entry' macro instead of manual 'EnvironmentKey' conformance"),
+        FindingSpec("2️⃣", message: "use '@Entry' macro instead of manual 'EnvironmentKey' conformance"),
+      ]
+    )
+  }
+
+  @Test func keyNameDoesNotMatch() {
+    assertFormatting(
+      UseAtEntryNotEnvironmentKey.self,
+      input: """
+        extension EnvironmentValues {
+            var isSelected: Bool {
+                get { self[IsSelectedEnvironmentKey.self] }
+                set { self[IsSelectedEnvironmentKey.self] = newValue }
+            }
+        }
+
+        struct SelectedEnvironmentKey: EnvironmentKey {
+            static var defaultValue: Bool { false }
+        }
+        """,
+      expected: """
+        extension EnvironmentValues {
+            var isSelected: Bool {
+                get { self[IsSelectedEnvironmentKey.self] }
+                set { self[IsSelectedEnvironmentKey.self] = newValue }
+            }
+        }
+
+        struct SelectedEnvironmentKey: EnvironmentKey {
+            static var defaultValue: Bool { false }
+        }
+        """,
+      findings: []
+    )
+  }
+
+  @Test func multiLineDefaultValueWrappedInClosure() {
+    assertFormatting(
+      UseAtEntryNotEnvironmentKey.self,
+      input: """
+        struct ScreenNameEnvironmentKey: EnvironmentKey {
+            static var defaultValue: Identifier? {
+                let domain = "com.mycompany.myapp"
+                let base = "undefined"
+                return .init("\\(domain).\\(base)")
+            }
+        }
+
+        extension EnvironmentValues {
+            1️⃣var screenName: Identifier? {
+                get { self[ScreenNameEnvironmentKey.self] }
+                set { self[ScreenNameEnvironmentKey.self] = newValue }
+            }
+        }
+        """,
+      expected: """
+        extension EnvironmentValues {
+            @Entry var screenName: Identifier? = {
+                let domain = "com.mycompany.myapp"
+                let base = "undefined"
+                return .init("\\(domain).\\(base)")
+            }()
+        }
+        """,
+      findings: [
+        FindingSpec("1️⃣", message: "use '@Entry' macro instead of manual 'EnvironmentKey' conformance"),
+      ]
+    )
+  }
+
+  @Test func implicitNilDefaultValue() {
+    assertFormatting(
+      UseAtEntryNotEnvironmentKey.self,
+      input: """
+        struct ScreenNameEnvironmentKey: EnvironmentKey {
+            static var defaultValue: Identifier?
+        }
+
+        extension EnvironmentValues {
+            1️⃣var screenName: Identifier? {
+                get { self[ScreenNameEnvironmentKey.self] }
+                set { self[ScreenNameEnvironmentKey.self] = newValue }
+            }
+        }
+        """,
+      expected: """
+        extension EnvironmentValues {
+            @Entry var screenName: Identifier?
+        }
+        """,
+      findings: [
+        FindingSpec("1️⃣", message: "use '@Entry' macro instead of manual 'EnvironmentKey' conformance"),
+      ]
+    )
+  }
+
+  @Test func commentsOnPropertyPreserved() {
+    assertFormatting(
+      UseAtEntryNotEnvironmentKey.self,
+      input: """
+        struct ScreenNameEnvironmentKey: EnvironmentKey {
+            static var defaultValue: Identifier? {
+                .init("undefined")
+            }
+        }
+
+        extension EnvironmentValues {
+            /// The name provided to the outer most view representing a full screen width
+            1️⃣var screenName: Identifier? {
+                get { self[ScreenNameEnvironmentKey.self] }
+                set { self[ScreenNameEnvironmentKey.self] = newValue }
+            }
+        }
+        """,
+      expected: """
+        extension EnvironmentValues {
+            /// The name provided to the outer most view representing a full screen width
+            @Entry var screenName: Identifier? = .init("undefined")
+        }
+        """,
+      findings: [
+        FindingSpec("1️⃣", message: "use '@Entry' macro instead of manual 'EnvironmentKey' conformance"),
+      ]
+    )
+  }
+
+  @Test func nonComputedDefaultValue() {
+    assertFormatting(
+      UseAtEntryNotEnvironmentKey.self,
+      input: """
+        struct ScreenStyleEnvironmentKey: EnvironmentKey {
+            static var defaultValue: ScreenStyle = ScreenStyle()
+        }
+
+        extension EnvironmentValues {
+            1️⃣var screenStyle: ScreenStyle {
+                get { self[ScreenStyleEnvironmentKey.self] }
+                set { self[ScreenStyleEnvironmentKey.self] = newValue }
+            }
+        }
+        """,
+      expected: """
+        extension EnvironmentValues {
+            @Entry var screenStyle: ScreenStyle = ScreenStyle()
+        }
+        """,
+      findings: [
+        FindingSpec("1️⃣", message: "use '@Entry' macro instead of manual 'EnvironmentKey' conformance"),
+      ]
+    )
+  }
+
+  @Test func publicAccessModifierPreserved() {
+    assertFormatting(
+      UseAtEntryNotEnvironmentKey.self,
+      input: """
+        struct ScreenStyleEnvironmentKey: EnvironmentKey {
+            static var defaultValue: ScreenStyle { .init() }
+        }
+
+        extension EnvironmentValues {
+            1️⃣public var screenStyle: ScreenStyle {
+                get { self[ScreenStyleEnvironmentKey.self] }
+                set { self[ScreenStyleEnvironmentKey.self] = newValue }
+            }
+        }
+        """,
+      expected: """
+        extension EnvironmentValues {
+            @Entry public var screenStyle: ScreenStyle = .init()
+        }
+        """,
+      findings: [
+        FindingSpec("1️⃣", message: "use '@Entry' macro instead of manual 'EnvironmentKey' conformance"),
+      ]
+    )
+  }
+
+  @Test func keyWithoutEnvironmentKeySuffix() {
+    assertFormatting(
+      UseAtEntryNotEnvironmentKey.self,
+      input: """
+        struct ScreenStyle: EnvironmentKey {
+            static var defaultValue: Style { .init() }
+        }
+
+        extension EnvironmentValues {
+            1️⃣public var screenStyle: Style {
+                get { self[ScreenStyle.self] }
+                set { self[ScreenStyle.self] = newValue }
+            }
+        }
+        """,
+      expected: """
+        extension EnvironmentValues {
+            @Entry public var screenStyle: Style = .init()
+        }
+        """,
+      findings: [
+        FindingSpec("1️⃣", message: "use '@Entry' macro instead of manual 'EnvironmentKey' conformance"),
+      ]
+    )
+  }
+
+  @Test func enumEnvironmentKey() {
+    assertFormatting(
+      UseAtEntryNotEnvironmentKey.self,
+      input: """
+        private enum InputShouldChangeKey: EnvironmentKey {
+            static var defaultValue: InputShouldChangeHandler { nil }
+        }
+
+        extension EnvironmentValues {
+            1️⃣public var inputShouldChange: InputShouldChangeHandler {
+                get { self[InputShouldChangeKey.self] }
+                set { self[InputShouldChangeKey.self] = newValue }
+            }
+        }
+        """,
+      expected: """
+        extension EnvironmentValues {
+            @Entry public var inputShouldChange: InputShouldChangeHandler = nil
+        }
+        """,
+      findings: [
+        FindingSpec("1️⃣", message: "use '@Entry' macro instead of manual 'EnvironmentKey' conformance"),
+      ]
+    )
+  }
+
+  @Test func letDefaultValue() {
+    assertFormatting(
+      UseAtEntryNotEnvironmentKey.self,
+      input: """
+        private struct ScreenStyleKey: EnvironmentKey {
+            static let defaultValue: Style = .init()
+        }
+
+        extension EnvironmentValues {
+            1️⃣public var screenStyle: Style {
+                get { self[ScreenStyleKey.self] }
+                set { self[ScreenStyleKey.self] = newValue }
+            }
+        }
+        """,
+      expected: """
+        extension EnvironmentValues {
+            @Entry public var screenStyle: Style = .init()
+        }
+        """,
+      findings: [
+        FindingSpec("1️⃣", message: "use '@Entry' macro instead of manual 'EnvironmentKey' conformance"),
+      ]
+    )
+  }
+
+  @Test func defaultValueWithoutExplicitType() {
+    assertFormatting(
+      UseAtEntryNotEnvironmentKey.self,
+      input: """
+        private struct ScreenStyleKey: EnvironmentKey {
+            static let defaultValue = Style()
+        }
+
+        extension EnvironmentValues {
+            1️⃣public var screenStyle: Style {
+                get { self[ScreenStyleKey.self] }
+                set { self[ScreenStyleKey.self] = newValue }
+            }
+        }
+        """,
+      expected: """
+        extension EnvironmentValues {
+            @Entry public var screenStyle: Style = Style()
+        }
+        """,
+      findings: [
+        FindingSpec("1️⃣", message: "use '@Entry' macro instead of manual 'EnvironmentKey' conformance"),
+      ]
+    )
+  }
+
+  @Test func propertyWithoutSetterNotModified() {
+    assertFormatting(
+      UseAtEntryNotEnvironmentKey.self,
+      input: """
+        struct AEnvironmentKey: EnvironmentKey {
+            static var defaultValue: A = .default
+        }
+
+        extension EnvironmentValues {
+            public var fallbackA: A {
+                if self[AEnvironmentKey.self] {
+                    A()
+                } else {
+                    something()
+                }
+            }
+        }
+        """,
+      expected: """
+        struct AEnvironmentKey: EnvironmentKey {
+            static var defaultValue: A = .default
+        }
+
+        extension EnvironmentValues {
+            public var fallbackA: A {
+                if self[AEnvironmentKey.self] {
+                    A()
+                } else {
+                    something()
+                }
+            }
+        }
+        """,
+      findings: []
+    )
+  }
+}

@@ -73,7 +73,7 @@ extension TokenStream {
             // Declare the consistent-group `.close` AFTER the per-condition close breaks above.
             // `afterMap` reverses on emit, so this `.close` emits BEFORE the last condition's
             // `.break(.close)` — popping the consistent group's force-break flag before that break
-            // is evaluated. Mirrors the trick used in `BeforeGuardConditions` and
+            // is evaluated. Mirrors the trick used in `BreakBeforeGuardConditions` and
             // `visitSwitchCaseLabel`. Without this, when conditions wrap, the close-break inherits
             // the force and drops `{` onto its own line, defeating the inline body.
             after(node.conditions.lastToken(viewMode: .sourceAccurate), tokens: .close)
@@ -98,7 +98,7 @@ extension TokenStream {
         if let elseKeyword = node.elseKeyword {
             // Add a token before the else keyword. Breaking before `else` is explicitly allowed
             // when there's a comment.
-            if config[ElseCatchOnNewLine.self] {
+            if config[PlaceElseCatchOnNewLine.self] {
                 before(elseKeyword, tokens: .break(.same, newlines: .soft))
             } else if elseKeyword.hasPrecedingLineComment {
                 before(elseKeyword, tokens: .break(.same, size: 1))
@@ -212,7 +212,7 @@ extension TokenStream {
     func visitRepeatStmt(_ node: RepeatStmtSyntax) -> SyntaxVisitorContinueKind {
         arrangeBracesAndContents(of: node.body, contentsKeyPath: \.statements)
 
-        if config[ElseCatchOnNewLine.self] {
+        if config[PlaceElseCatchOnNewLine.self] {
             before(node.whileKeyword, tokens: .break(.same), .open)
             after(node.condition.lastToken(viewMode: .sourceAccurate), tokens: .close)
         } else {
@@ -235,7 +235,7 @@ extension TokenStream {
     }
 
     func visitCatchClause(_ node: CatchClauseSyntax) -> SyntaxVisitorContinueKind {
-        let catchPrecedingBreak = config[ElseCatchOnNewLine.self]
+        let catchPrecedingBreak = config[PlaceElseCatchOnNewLine.self]
             ? Token.break(.same, newlines: .soft)
             : Token.space
         before(node.catchKeyword, tokens: catchPrecedingBreak)

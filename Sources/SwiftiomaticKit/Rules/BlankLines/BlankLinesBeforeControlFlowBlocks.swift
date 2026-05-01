@@ -29,7 +29,7 @@ final class BlankLinesBeforeControlFlowBlocks: StaticFormatRule<BasicRuleValue>,
     }
 
     /// Insert a leading blank line before every multi-line control-flow statement that doesn't
-    /// already have one, respecting the `closingBraceAsBlankLine` and `commentAsBlankLine`
+    /// already have one, respecting the `closingBraceAsBlankLine` and `countCommentAsBlankLine`
     /// configuration flags.
     static func insertBlankLines(
         in items: [CodeBlockItemSyntax],
@@ -42,7 +42,7 @@ final class BlankLinesBeforeControlFlowBlocks: StaticFormatRule<BasicRuleValue>,
         var modified = false
 
         let braceIsBlank = context.configuration[ClosingBraceAsBlankLine.self]
-        let commentIsBlank = context.configuration[CommentAsBlankLine.self]
+        let commentIsBlank = context.configuration[CountCommentAsBlankLine.self]
 
         for i in 1..<items.count {
             let item = items[i]

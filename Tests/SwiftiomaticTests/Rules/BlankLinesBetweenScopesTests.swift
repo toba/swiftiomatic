@@ -287,7 +287,7 @@ struct BlankLinesBetweenScopesTests: RuleTesting {
 
   @Test func commentAsBlankLineSkipsInsertion() {
     var config = Configuration.forTesting(enabledRule: BlankLinesBetweenScopes.self.key)
-    config[CommentAsBlankLine.self] = true
+    config[CountCommentAsBlankLine.self] = true
 
     assertFormatting(
       BlankLinesBetweenScopes.self,
@@ -344,7 +344,7 @@ struct BlankLinesBetweenScopesTests: RuleTesting {
 
   @Test func commentAsBlankLineMemberBlock() {
     var config = Configuration.forTesting(enabledRule: BlankLinesBetweenScopes.self.key)
-    config[CommentAsBlankLine.self] = true
+    config[CountCommentAsBlankLine.self] = true
 
     assertFormatting(
       BlankLinesBetweenScopes.self,

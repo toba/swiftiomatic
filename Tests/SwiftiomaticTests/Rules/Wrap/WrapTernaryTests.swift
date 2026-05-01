@@ -13,8 +13,8 @@ struct WrapTernaryTests: RuleTesting {
     // Enable WrapTernary plus a couple of other rules that may modify trivia near the operator.
     config.disableAllRules()
     config.enableRule(named: "wrapTernary")
-    config.enableRule(named: "leadingDotOperators")
-    config.enableRule(named: "preferIfElseChain")
+    config.enableRule(named: "breakBeforeLeadingDot")
+    config.enableRule(named: "useIfElseNotSwitchOnBool")
     config.enableRule(named: "respectExistingLineBreaks")
     assertFormatting(
       WrapTernary.self,

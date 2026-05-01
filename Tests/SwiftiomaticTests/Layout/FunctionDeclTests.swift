@@ -56,7 +56,7 @@ struct FunctionDeclTests: LayoutTesting {
       """
 
     var config = Configuration.forTesting
-    config[BeforeEachArgument.self] = true
+    config[BreakBeforeEachArgument.self] = true
     assertLayout(input: input, expected: expected, linelength: 50, configuration: config)
   }
 
@@ -101,7 +101,7 @@ struct FunctionDeclTests: LayoutTesting {
       """
 
     var config = Configuration.forTesting
-    config[BeforeEachArgument.self] = false
+    config[BreakBeforeEachArgument.self] = false
     assertLayout(input: input, expected: expected, linelength: 50, configuration: config)
   }
 
@@ -163,7 +163,7 @@ struct FunctionDeclTests: LayoutTesting {
       """
 
     var config = Configuration.forTesting
-    config[BeforeEachArgument.self] = false
+    config[BreakBeforeEachArgument.self] = false
     assertLayout(input: input, expected: expected, linelength: 50, configuration: config)
   }
 
@@ -210,7 +210,7 @@ struct FunctionDeclTests: LayoutTesting {
       """
 
     var config = Configuration.forTesting
-    config[BeforeEachArgument.self] = false
+    config[BreakBeforeEachArgument.self] = false
     assertLayout(input: input, expected: expected, linelength: 50, configuration: config)
   }
 
@@ -257,7 +257,7 @@ struct FunctionDeclTests: LayoutTesting {
       """
 
     var config = Configuration.forTesting
-    config[BeforeEachArgument.self] = true
+    config[BreakBeforeEachArgument.self] = true
     assertLayout(input: input, expected: expected, linelength: 40, configuration: config)
   }
 
@@ -303,7 +303,7 @@ struct FunctionDeclTests: LayoutTesting {
       """
 
     var config = Configuration.forTesting
-    config[BeforeEachArgument.self] = false
+    config[BreakBeforeEachArgument.self] = false
     assertLayout(input: input, expected: expected, linelength: 40, configuration: config)
   }
 
@@ -374,7 +374,7 @@ struct FunctionDeclTests: LayoutTesting {
       """
 
     var config = Configuration.forTesting
-    config[BeforeEachArgument.self] = false
+    config[BreakBeforeEachArgument.self] = false
     assertLayout(input: input, expected: expected, linelength: 50, configuration: config)
   }
 
@@ -445,8 +445,8 @@ struct FunctionDeclTests: LayoutTesting {
       """
 
     var config = Configuration.forTesting
-    config[BeforeEachArgument.self] = false
-    config[BeforeEachGenericRequirement.self] = true
+    config[BreakBeforeEachArgument.self] = false
+    config[BreakBeforeGenericRequirement.self] = true
     assertLayout(input: input, expected: expected, linelength: 50, configuration: config)
   }
 
@@ -644,7 +644,7 @@ struct FunctionDeclTests: LayoutTesting {
       """
 
     var config = Configuration.forTesting
-    config[BeforeEachGenericRequirement.self] = true
+    config[BreakBeforeGenericRequirement.self] = true
     assertLayout(input: input, expected: expected, linelength: 30, configuration: config)
   }
 
@@ -776,7 +776,7 @@ struct FunctionDeclTests: LayoutTesting {
 
       """
     var config = Configuration.forTesting
-    config[KeepFunctionOutputTogether.self] = true
+    config[KeepReturnTypeWithSignature.self] = true
     assertLayout(input: input, expected: expected, linelength: 23, configuration: config)
 
     expected =
@@ -862,7 +862,7 @@ struct FunctionDeclTests: LayoutTesting {
 
       """
     var config = Configuration.forTesting
-    config[KeepFunctionOutputTogether.self] = true
+    config[KeepReturnTypeWithSignature.self] = true
     assertLayout(input: input, expected: expected, linelength: 23, configuration: config)
   }
 
@@ -953,7 +953,7 @@ struct FunctionDeclTests: LayoutTesting {
 
       """
     var config = Configuration.forTesting
-    config[KeepFunctionOutputTogether.self] = true
+    config[KeepReturnTypeWithSignature.self] = true
     assertLayout(input: input, expected: expected, linelength: 23, configuration: config)
 
     input =
@@ -1015,7 +1015,7 @@ struct FunctionDeclTests: LayoutTesting {
       """
 
     var config = Configuration.forTesting
-    config[BeforeEachArgument.self] = false
+    config[BreakBeforeEachArgument.self] = false
     assertLayout(input: input, expected: expected, linelength: 35, configuration: config)
   }
 
@@ -1214,7 +1214,7 @@ struct FunctionDeclTests: LayoutTesting {
       """
 
     var config = Configuration.forTesting
-    config[BeforeEachArgument.self] = false
+    config[BreakBeforeEachArgument.self] = false
     assertLayout(input: input, expected: expected, linelength: 49, configuration: config)
   }
 
@@ -1261,7 +1261,7 @@ struct FunctionDeclTests: LayoutTesting {
       """
 
     var config = Configuration.forTesting
-    config[BeforeEachArgument.self] = false
+    config[BreakBeforeEachArgument.self] = false
     assertLayout(input: input, expected: expected, linelength: 49, configuration: config)
   }
 
@@ -1285,10 +1285,10 @@ struct FunctionDeclTests: LayoutTesting {
 
       """
     var config = Configuration.forTesting
-    config[KeepFunctionOutputTogether.self] = true
+    config[KeepReturnTypeWithSignature.self] = true
     assertLayout(input: input, expected: expected, linelength: 50, configuration: config)
 
-    // With BeforeEachArgument=true, each param gets its own line
+    // With BreakBeforeEachArgument=true, each param gets its own line
     let expected2 =
       """
       fileprivate static func useFailureVariant(
@@ -1300,8 +1300,8 @@ struct FunctionDeclTests: LayoutTesting {
 
       """
     var config2 = Configuration.forTesting
-    config2[KeepFunctionOutputTogether.self] = true
-    config2[BeforeEachArgument.self] = true
+    config2[KeepReturnTypeWithSignature.self] = true
+    config2[BreakBeforeEachArgument.self] = true
     assertLayout(input: input, expected: expected2, linelength: 50, configuration: config2)
   }
 

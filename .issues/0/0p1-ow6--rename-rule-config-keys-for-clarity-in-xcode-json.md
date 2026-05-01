@@ -1,15 +1,15 @@
 ---
 # 0p1-ow6
 title: Rename rule config keys for clarity in Xcode JSON editor
-status: draft
+status: in-progress
 type: task
 priority: normal
 created_at: 2026-05-01T16:55:16Z
-updated_at: 2026-05-01T16:55:16Z
+updated_at: 2026-05-01T17:41:07Z
 sync:
     github:
-        issue_number: "603"
-        synced_at: "2026-05-01T17:11:51Z"
+        issue_number: "604"
+        synced_at: "2026-05-01T18:16:41Z"
 ---
 
 ## Goal
@@ -18,11 +18,11 @@ Make configuration keys self-documenting at a glance. Xcode's JSON editor doesn'
 
 ## Principles
 
-1. **Imperative verb leads.** Existing imperative prefixes are kept: `no…`, `prefer…`, `wrap…`, `collapse…`, `sort…`, `hoist…`, `reflow…`, `format…`, `require…`. New imperatives introduced for clarity: `drop…` (for autofix removals), `use…Not…` (when "prefer" alone is opaque), `flag…` (lint-only with no autofix and no obvious verb).
+1. **Imperative verb leads.** Existing imperative prefixes are kept: `no…` (ban a construct or pattern), `prefer…`, `wrap…`, `collapse…`, `sort…`, `hoist…`, `reflow…`, `format…`, `require…`. New imperatives introduced for clarity: `drop…` (for autofix removals), `use…Not…` (when "prefer" alone is opaque), `flag…` (lint-only with no autofix and no obvious verb). `forbid…` is deliberately not used — `no…` already reads as imperative and is the established convention.
 2. **Be specific about what's checked or rewritten.** A name like `preferAnyObject` doesn't say _on what_; `validateTestCases` doesn't say _what's validated_.
 3. **≤ 40 characters.**
 4. **Keep idiomatic Swift terms** (`flatMap`, `isEmpty`, `KeyPath`, `Self`, `@MainActor`) — those words already explain themselves.
-5. **Type names mirror keys 1:1** (PascalCase ↔ camelCase). E.g. `useAnyObjectOnDelegate` → `UseAnyObjectOnDelegate`.
+5. **Type names mirror keys 1:1** by simple capitalization of the first character — no abbreviation, no divergence. The Swift type name is exactly the config key with its first character uppercased. E.g. `useAnyObjectOnDelegate` ↔ `UseAnyObjectOnDelegate`, `requireTestFnPrefixOrAttribute` ↔ `RequireTestFnPrefixOrAttribute`. Acronyms follow Swift API guidelines (uniformly cased — all lowercase when leading a camelCase key, all uppercase elsewhere): `flagForEachIDSelfInView` ↔ `FlagForEachIDSelfInView`, `dropRedundantSetterACL` ↔ `DropRedundantSetterACL`, `useURLMacroForURLLiterals` ↔ `UseURLMacroForURLLiterals`.
 
 I left ~75% of rule names unchanged because they were already clear. Only changes are listed below — anything not mentioned stays as-is.
 
@@ -39,7 +39,7 @@ I left ~75% of rule names unchanged because they were already clear. Only change
 
 ## `blankLines`
 
-`commentAsBlankLine` → `treatCommentAsBlankLine`
+`commentAsBlankLine` → `countCommentAsBlankLine`
 
 ## `closures`
 
@@ -48,7 +48,7 @@ I left ~75% of rule names unchanged because they were already clear. Only change
 | `mutableCapture` | `flagMutableCapture` |
 | `namedClosureParams` | `requireNamedClosureParams` | 
 | `unhandledThrowingTask` | `flagUnhandledThrowingTask` |
-| `onlyOneTrailingClosureArgument` | `forbidMultiTrailingClosures` |
+| `onlyOneTrailingClosureArgument` | `noMultiTrailingClosures` |
 | `ambiguousTrailingClosureOverload` | `flagAmbiguousTrailingClosure` |
 
 ## `comments`
@@ -68,10 +68,10 @@ I left ~75% of rule names unchanged because they were already clear. Only change
 | before | after |
 |---|---|
 | `explicitNilCheck` | `useExplicitNilCheck` |
-| `identicalOperands` | `flagIdenticalOperands`* |
+| `identicalOperands` | `flagIdenticalOperands` |
 | `preferUnavailable` | `useUnavailableNotFatalError` |
 | `preferIfElseChain` | `useIfElseNotSwitchOnBool` |
-| `duplicateConditions` | `flagDuplicateConditions`* |
+| `duplicateConditions` | `flagDuplicateConditions` |
 | `preferCommaConditions` | `useCommaNotAndInConditions` |
 | `preferConditionalExpression` | `useIfElseAsExpression`* | 
 
@@ -88,7 +88,7 @@ I left ~75% of rule names unchanged because they were already clear. Only change
 | `initCoderUnavailable` | `markInitCoderUnavailable` |
 | `oneDeclarationPerLine` | `splitMultipleDeclsPerLine` |
 | `protocolAccessorOrder` | `orderProtocolAccessors` |
-| `preferOfficialSpecialize` | `useAtSpecializeNotUnderscore`* |
+| `preferOfficialSpecialize` | `useAtSpecializeNotUnderscore` |
 | `staticStructShouldBeEnum` | `convertStaticStructToEnum` |
 | `preferSynthesizedInitializer` | `useSynthesizedInit` |
 | `weakLetForUnreassignedWeakVar` | `useWeakLetForUnreassigned` |
@@ -96,106 +96,108 @@ I left ~75% of rule names unchanged because they were already clear. Only change
 
 ## `unsafety`
 
-| before | after | reason |
-|---|---|---|
-| `typedCatchError` | `useTypedCatchError` | imperative |
-| `asyncStreamMissingTermination` | `requireAsyncStreamFinish` | shorter, imperative |
-| `noMutationOfIteratedCollection` | `noMutationDuringIteration` | shorter |
-| `warnRecursiveWithObservationTracking` | `flagRecursiveObservationTracking` | shorter |
+| before | after |
+|---|---|
+| `typedCatchError` | `useTypedCatchError` |
+| `asyncStreamMissingTermination` | `requireAsyncStreamFinish` |
+| `noMutationOfIteratedCollection` | `noMutationDuringIteration` |
+| `warnRecursiveWithObservationTracking` | `flagRecursiveObservationTracking` |
 
 ## `memory`
 
-| before | after | reason |
-|---|---|---|
-| `weakDelegates` | `requireWeakDelegates` | imperative |
-| `strongOutlets` | `useStrongOutlets` | clarifies (rewrites `weak` IBOutlets to strong) |
-| `preferWeakCapture` | `useWeakSelfInClosures` | clarifies trigger |
-| `deinitObserverRemoval` | `requireObserverRemovalInDeinit` | clarifies |
-| `delegateProtocolRequiresAnyObject` | `requireAnyObjectOnDelegate` | shorter |
-| `retainNotificationObserver` | `requireRetainOfNotificationObserver` | clarifies |
+| before | after |
+|---|---|
+| `weakDelegates` | `requireWeakDelegates` |
+| `strongOutlets` | `useStrongOutlets` | 
+| `preferWeakCapture` | `useWeakSelfInClosures` |
+| `deinitObserverRemoval` | `requireObserverRemovalInDeinit` |
+| `delegateProtocolRequiresAnyObject` | `requireAnyObjectOnDelegate` |
+| `retainNotificationObserver` | `requireRetainOfNotificationObserver` |
 
 ## `generics`
 
-| before | after | reason |
-|---|---|---|
-| `opaqueGenericParameters` | `useSomeForGenericParameters` | clarifies (uses `some P` over `<T: P>`) |
-| `preferAngleBracketExtensions` | `useAngleBracketsOnExtensions` | imperative |
+| before | after |
+|---|---|
+| `opaqueGenericParameters` | `useSomeForGenericParameters` |
+| `preferAngleBracketExtensions` | `useAngleBracketsOnExtensions` |
 
 ## `hoist`
 
-`hoist.try`, `hoist.await`, `hoist.caseLet`, `hoist.indirectEnum` — all clear in context.
+Keep the group — group nesting aids organization. Rename the keys so each one mirrors its type under the strict-mirror rule (bare `try` / `await` are keywords and would otherwise diverge from `HoistTry` / `HoistAwait`):
+
+| before | after |
+|---|---|
+| `hoist.try` | `hoist.hoistTry` |
+| `hoist.await` | `hoist.hoistAwait` |
+| `hoist.caseLet` | `hoist.hoistCaseLet` |
+| `hoist.indirectEnum` | `hoist.hoistIndirectEnum` |
+
+Type names (`HoistTry`, `HoistAwait`, `HoistCaseLet`, `HoistIndirectEnum`) are unchanged. The `hoist.hoistTry` path is mildly redundant on the page but consistent with how every other group works (the group is purely organizational; the key carries the full type name).
 
 ## `idioms`
 
 Most `prefer…` names are already clear because they map to a well-known Swift idiom (`preferIsEmpty`, `preferKeyPath`, `preferFlatMap`, `preferContains`, `preferFirstWhere`, `preferLastWhere`, `preferAllSatisfy`, `preferCountWhere`, `preferIsDisjoint`, `preferReduceInto`, `preferMinMax`). Keep those.
 
-| before | after | reason |
-|---|---|---|
-| `preferFileID` | `useFileIDNotFile` | clarifies replacement |
-| `avoidNoneName` | `forbidNoneAsCaseName` | clarifies |
-| `noVoidTernary` | `forbidVoidTernary` | imperative |
-| `preferSelfType` | `useSelfNotTypeName` | clarifies |
-| `warnForEachIDSelf` | `flagForEachIdSelf` | imperative |
-| `noExplicitOwnership` | `forbidExplicitOwnershipModifiers` | clarifies |
-| `preferExplicitFalse` | `useExplicitFalseInGuards` | clarifies |
-| `leadingDotOperators` | `breakBeforeLeadingDot` | clarifies (this is a wrap rule) |
-| `warnSwapThenRemoveAll` | `flagSwapThenRemoveAll` | imperative |
-| `noDataDropPrefixInLoop` | `noDropFirstInForLoop` | clarifies (Data prefix is misleading) |
-| `preferEnvironmentEntry` | `useAtEntryNotEnvironmentKey` | clarifies |
-| `preferAssertionFailure` | `useAssertionFailureNotAssertFalse` | clarifies |
-| `preferLazyForLongChain` | `useLazyForLongChainOps` | minor |
-| `noFormatterInSwiftUIBody` | `noFormatterInViewBody` | shorter |
-| `preferCompoundAssignment` | `useCompoundAssignment` | imperative |
-| `noRetroactiveConformances` | `forbidRetroactiveConformances` | imperative |
-| `noSortFilterInForEachData` | `noSortFilterInForEach` | shorter |
-| `preferStaticOverClassFunc` | `useStaticNotClassFunc` | shorter |
-| `replaceForEachWithForLoop` | `useForLoopNotForEach` | shorter |
-| `preferTypedThrowsOverResult` | `useTypedThrowsNotResult` | shorter |
-| `preferWhereClausesInForLoops` | `useWhereClauseInForLoop` | shorter |
-| `preferContinuousClockOverDate` | `useContinuousClockNotDate` | shorter |
-| `suggestOrderedSetForUniqueAppend` | `useOrderedSetForUniqueAppend` | imperative |
-| `preferClosureNotificationObserver` | `useClosureNotificationObserver` | imperative |
+| before | after |
+|---|---|
+| `preferFileID` | `useFileIDNotFile` |
+| `avoidNoneName` | `noCaseNamedNone` |
+| `noVoidTernary` | `noVoidTernary` |
+| `preferSelfType` | `useSelfNotTypeName` |
+| `warnForEachIDSelf` | `flagForEachIDSelfInView` |
+| `noExplicitOwnership` | `noExplicitOwnershipModifiers` |
+| `preferExplicitFalse` | `useExplicitFalseInGuards` |
+| `leadingDotOperators` | `breakBeforeLeadingDot` |
+| `warnSwapThenRemoveAll` | `flagSwapThenRemoveAll`* |
+| `noDataDropPrefixInLoop` | `noDropFirstInForLoop`* |
+| `preferEnvironmentEntry` | `useAtEntryNotEnvironmentKey` |
+| `preferAssertionFailure` | `useAssertionFailureNotAssertFalse` |
+| `preferLazyForLongChain` | `useLazyForLongChainOps` |
+| `noFormatterInSwiftUIBody` | `noFormatterInViewBody` |
+| `preferCompoundAssignment` | `useCompoundAssignment` |
+| `noRetroactiveConformances` | `noRetroactiveConformances` |
+| `noSortFilterInForEachData` | `noSortFilterInForEach` |
+| `preferStaticOverClassFunc` | `useStaticNotClassFunc` |
+| `replaceForEachWithForLoop` | `useForLoopNotForEach` |
+| `preferTypedThrowsOverResult` | `useTypedThrowsNotResult` |
+| `preferWhereClausesInForLoops` | `useWhereClauseInForLoop` |
+| `preferContinuousClockOverDate` | `useContinuousClockNotDate` |
+| `suggestOrderedSetForUniqueAppend` | `useOrderedSetForUniqueAppend` |
+| `preferClosureNotificationObserver` | `useClosureNotificationObserver` |
 
 ## `lineBreaks`
 
-| before | after | reason |
-|---|---|---|
-| `beforeEachArgument` | `breakBeforeEachArgument` | clarifies it's a break-policy bool |
-| `elseCatchOnNewLine` | `placeElseCatchOnNewLine` | imperative |
-| `modifiersOnSameLine` | `keepModifiersOnSameLine` | imperative |
-| `beforeGuardConditions` | `breakBeforeGuardConditions` | imperative |
-| `beforeEachGenericRequirement` | `breakBeforeGenericRequirement` | imperative |
-| `betweenDeclarationAttributes` | `breakBetweenDeclAttributes` | shorter, imperative |
-| `aroundMultilineExpressionChainComponents` | `breakAroundMultilineChainParts` | imperative, shorter |
+| before | after |
+|---|---|
+| `beforeEachArgument` | `breakBeforeEachArgument` |
+| `elseCatchOnNewLine` | `placeElseCatchOnNewLine` |
+| `modifiersOnSameLine` | `keepModifiersOnSameLine` |
+| `beforeGuardConditions` | `breakBeforeGuardConditions` |
+| `beforeEachGenericRequirement` | `breakBeforeGenericRequirement` |
+| `betweenDeclarationAttributes` | `breakBetweenDeclAttributes` |
+| `aroundMultilineExpressionChainComponents` | `breakAroundMultilineChainParts` |
 
 ## `literals`
 
-| before | after | reason |
-|---|---|---|
-| `urlMacro` | `useUrlMacroForUrlLiterals` | clarifies trigger |
-| `invisibleCharacters` | `flagInvisibleCharacters` | imperative |
-| `noLiteralProtocolInit` | `noLiteralProtocolDirectInit` | clarifies |
-| `emptyCollectionLiteral` | `flagEmptyCollectionLiteral` | imperative |
-| `duplicateDictionaryKeys` | `flagDuplicateDictionaryKeys` | imperative |
-| `preferEmptyCollectionForArrayArgs` | `useEmptyArrayLiteralForArgs` | clarifies, shorter |
-| `multiElementCollectionTrailingCommas` | `addTrailingCommaInMultiElementColl` | imperative |
+| before | after |
+|---|---|
+| `urlMacro` | `useURLMacroForURLLiterals` |
+| `invisibleCharacters` | `flagInvisibleCharacters` |
+| `noLiteralProtocolInit` | `noLiteralProtocolDirectInit`* |
+| `emptyCollectionLiteral` | `flagEmptyCollectionLiteral` |
+| `duplicateDictionaryKeys` | `flagDuplicateDictionaryKeys` |
+| `preferEmptyCollectionForArrayArgs` | `useEmptyArrayLiteralForArgs` |
+| `multiElementCollectionTrailingCommas` | `addTrailingCommaInMultiElementColl` |
 
 ## `naming`
 
-| before | after | reason |
-|---|---|---|
-| `uppercaseAcronyms` | `uppercaseAcronymsInIdentifiers` | clarifies scope |
-| `asciiIdentifiers` | `requireAsciiIdentifiers` | imperative |
-| `camelCaseIdentifiers` | `requireCamelCaseIdentifiers` | imperative |
+| before | after |
+|---|---|
+| `uppercaseAcronyms` | `uppercaseAcronymsInIdentifiers` |
+| `asciiIdentifiers` | `requireASCIIIdentifiers` |
+| `camelCaseIdentifiers` | `requireCamelCaseIdentifiers` |
 
 ## `redundancies`
-
-This whole group is named "redundancies" (a noun). The actual rules _remove or flag_ redundant constructs. Two options:
-
-**Option A** — rename the group to `cleanup` or `dropRedundant`, keep the keys.
-**Option B** — keep the group, prefix every key with `drop…` to make the action explicit.
-
-Recommendation: **Option B**, because the keys then read as imperatives in any UI listing.
 
 | before | after |
 |---|---|
@@ -214,7 +216,7 @@ Recommendation: **Option B**, because the keys then read as imperatives in any U
 | `noBacktickedSelf` | `dropBacktickedSelf` |
 | `redundantClosure` | `dropRedundantClosureWrapper` |
 | `redundantNilInit` | `dropRedundantNilInit` |
-| `redundantPattern` | `dropRedundantPattern` |
+| `redundantPattern` | `dropRedundantCasePattern` |
 | `redundantEscaping` | `dropRedundantEscaping` |
 | `redundantSendable` | `dropRedundantSendable` |
 | `redundantLetError` | `dropRedundantLetError` |
@@ -223,7 +225,7 @@ Recommendation: **Option B**, because the keys then read as imperatives in any U
 | `redundantEquatable` | `dropRedundantEquatable` |
 | `redundantBackticks` | `dropRedundantBackticks` |
 | `redundantRawValues` | `dropRedundantRawValues` |
-| `redundantSetterACL` | `dropRedundantSetterAcl` |
+| `redundantSetterACL` | `dropRedundantSetterACL` |
 | `redundantEnumerated` | `dropRedundantEnumerated` |
 | `redundantStaticSelf` | `dropRedundantStaticSelf` |
 | `redundantViewBuilder` | `dropRedundantViewBuilder` |
@@ -243,49 +245,40 @@ Recommendation: **Option B**, because the keys then read as imperatives in any U
 
 ## `spaces`
 
-| before | after | reason |
-|---|---|---|
-| `spacesAroundRangeFormationOperators` | `spaceAroundRangeOperators` | shorter |
+| before | after |
+|---|---|
+| `spacesAroundRangeFormationOperators` | `spaceAroundRangeOperators` |
 
 ## `testing`
 
-| before | after | reason |
-|---|---|---|
-| `finalTestCase` | `requireFinalOnXctestCase` | clarifies |
-| **`validateTestCases`** | **`requireTestFnPrefixOrAttribute`** | matches user's example |
-| `preferSwiftTesting` | `useSwiftTestingNotXctest` | clarifies |
-| `testSuiteAccessControl` | `requireSuiteAccessControl` | clarifies |
-| `swiftTestingTestCaseNames` | `enforceSwiftTestingNames` | imperative |
+| before | after |
+|---|---|
+| `finalTestCase` | `requireFinalOnXCTestCase` |
+| **`validateTestCases`** | **`requireTestFnPrefixOrAttribute`** |
+| `preferSwiftTesting` | `useSwiftTestingNotXCTest` |
+| `testSuiteAccessControl` | `requireSuiteAccessControl`* |
+| `swiftTestingTestCaseNames` | `enforceSwiftTestingNames`* |
 
 ## `types`
 
-| before | after | reason |
-|---|---|---|
-| **`preferAnyObject`** | **`useAnyObjectOnDelegate`** | matches user's example |
-| `preferVoidReturn` | `useVoidNotEmptyTuple` | clarifies (replaces `()` with `Void` in returns) |
-| `preferFailableStringInit` | `useFailableStringInit` | imperative |
-| `preferShorthandTypeNames` | `useShorthandTypeNames` | imperative |
-| `preferNonOptionalDataInit` | `useNonOptionalDataInit` | imperative |
-| `noVoidReturnOnFunctionSignature` | `dropVoidReturnFromSignature` | shorter, imperative |
-| `noTypeRepetitionInStaticProperties` | `dropTypeInStaticProperty` | shorter |
+| before | after |
+|---|---|
+| **`preferAnyObject`** | **`useAnyObjectOnDelegate`** |
+| `preferVoidReturn` | `useVoidNotEmptyTuple` |
+| `preferFailableStringInit` | `useFailableStringInit` |
+| `preferShorthandTypeNames` | `useShorthandTypeNames` |
+| `preferNonOptionalDataInit` | `useNonOptionalDataInit` |
+| `noVoidReturnOnFunctionSignature` | `dropVoidReturnFromSignature` |
+| `noTypeRepetitionInStaticProperties` | `dropTypeInStaticProperty` |
 
 ## `wrap`
 
-The keys read as `wrap.singleLineBodies`, etc. — already imperative via the group. Recommend leaving as-is, except:
+| before | after |
+| `keepFunctionOutputTogether` | `keepReturnTypeWithSignature` |
 
-| before | after | reason |
-|---|---|---|
-| `keepFunctionOutputTogether` | `keepReturnTypeWithSignature` | clarifies what "output" means |
+## Group-names
 
-## `metrics`
-
-All keys end in noun forms because they describe a measured thing with `error`/`warning` thresholds — that pattern is fine. **Leave as-is.**
-
----
-
-## Group-name notes
-
-Groups are mostly fine. One borderline case: **`idioms`** is a catch-all and now contains 30+ rules. Possible split (deferred):
+Divide `idioms` into:
 
 - `swiftui` — `noFormatterInSwiftUIBody`, `preferEnvironmentEntry`, `warnForEachIDSelf`, `preferClosureNotificationObserver`, `redundantMainActorOnView`
 - `collections` — all the `prefer{First,Last,All,Count,Contains,IsEmpty,IsDisjoint,FlatMap,ReduceInto,MinMax}*` rules
@@ -294,4 +287,4 @@ Groups are mostly fine. One borderline case: **`idioms`** is a catch-all and now
 
 ## Migration
 
-Add a `Configuration+Update.swift`-style migration that maps every old key → new key on load, bumps `version` to 7. Existing user configs continue to work; `sm update` writes them out renamed.
+Agent will update current project swiftiomatic.json as it works.

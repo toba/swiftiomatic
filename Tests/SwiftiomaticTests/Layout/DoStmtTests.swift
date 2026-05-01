@@ -204,7 +204,7 @@ struct DoStmtTests: LayoutTesting {
       """
 
     var config = Configuration.forTesting
-    config[ElseCatchOnNewLine.self] = true
+    config[PlaceElseCatchOnNewLine.self] = true
     assertLayout(input: input, expected: expected, linelength: 40, configuration: config)
   }
 
@@ -255,7 +255,7 @@ struct DoStmtTests: LayoutTesting {
       """
 
     var config = Configuration.forTesting
-    config[ElseCatchOnNewLine.self] = true
+    config[PlaceElseCatchOnNewLine.self] = true
     assertLayout(input: input, expected: expected, linelength: 42, configuration: config)
   }
 

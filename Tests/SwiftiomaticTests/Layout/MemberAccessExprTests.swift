@@ -133,7 +133,7 @@ struct MemberAccessExprTests: LayoutTesting {
       """
 
     var configuration = Configuration.forTesting
-    configuration[AroundMultilineExpressionChainComponents.self] = true
+    configuration[BreakAroundMultilineChainParts.self] = true
     assertLayout(
       input: input,
       expected: expectedWithForcedBreaks,
@@ -250,7 +250,7 @@ struct MemberAccessExprTests: LayoutTesting {
       """
 
     var configuration = Configuration.forTesting
-    configuration[AroundMultilineExpressionChainComponents.self] = true
+    configuration[BreakAroundMultilineChainParts.self] = true
     assertLayout(
       input: input,
       expected: expectedWithForcedBreaking,
@@ -347,7 +347,7 @@ struct MemberAccessExprTests: LayoutTesting {
       """
 
     var configuration = Configuration.forTesting
-    configuration[AroundMultilineExpressionChainComponents.self] = true
+    configuration[BreakAroundMultilineChainParts.self] = true
     assertLayout(
       input: input,
       expected: expectedWithForcedBreaks,
@@ -443,7 +443,7 @@ struct MemberAccessExprTests: LayoutTesting {
       """
 
     var configuration = Configuration.forTesting
-    configuration[AroundMultilineExpressionChainComponents.self] = true
+    configuration[BreakAroundMultilineChainParts.self] = true
     assertLayout(
       input: input,
       expected: expectedWithForcedBreaks,
@@ -535,7 +535,7 @@ struct MemberAccessExprTests: LayoutTesting {
       """
 
     var configuration = Configuration.forTesting
-    configuration[AroundMultilineExpressionChainComponents.self] = true
+    configuration[BreakAroundMultilineChainParts.self] = true
     assertLayout(
       input: input,
       expected: expectedWithForcedBreaks,

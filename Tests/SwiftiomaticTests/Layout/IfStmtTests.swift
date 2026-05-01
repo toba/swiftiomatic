@@ -162,7 +162,7 @@ struct IfStmtTests: LayoutTesting {
       """
 
     var config = Configuration.forTesting
-    config[ElseCatchOnNewLine.self] = true
+    config[PlaceElseCatchOnNewLine.self] = true
     assertLayout(input: input, expected: expected, linelength: 20, configuration: config)
   }
 

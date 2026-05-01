@@ -64,7 +64,7 @@ struct BinaryOperatorExprTests: LayoutTesting {
       """
 
     var configuration = Configuration.forTesting
-    configuration[SpacesAroundRangeFormationOperators.self] = false
+    configuration[SpaceAroundRangeOperators.self] = false
     assertLayout(
       input: input,
       expected: expected,
@@ -96,7 +96,7 @@ struct BinaryOperatorExprTests: LayoutTesting {
       """
 
     var configuration = Configuration.forTesting
-    configuration[SpacesAroundRangeFormationOperators.self] = true
+    configuration[SpaceAroundRangeOperators.self] = true
     assertLayout(
       input: input,
       expected: expected,

@@ -32,8 +32,8 @@ struct ConfigurationSchemaTests {
   /// schema rejects a `rewrite` key — lint-only rules don't support rewriting.
   @Test func lintOnlyRuleRejectsRewriteProperty() throws {
     let properties = try #require(schema["properties"] as? [String: Any])
-    // `onlyOneTrailingClosureArgument` is a known lint-only rule.
-    let rule = try #require(properties["onlyOneTrailingClosureArgument"] as? [String: Any])
+    // `noMultiTrailingClosures` is a known lint-only rule.
+    let rule = try #require(properties["noMultiTrailingClosures"] as? [String: Any])
     let unevaluated = try #require(rule["unevaluatedProperties"] as? Bool)
     #expect(unevaluated == false)
   }
@@ -42,8 +42,8 @@ struct ConfigurationSchemaTests {
   /// since rewrite rules accept both `rewrite` and `lint` keys via `ruleBase`.
   @Test func rewriteRuleAllowsRewriteProperty() throws {
     let properties = try #require(schema["properties"] as? [String: Any])
-    // `redundantBreak` is a known rewrite rule.
-    let rule = try #require(properties["redundantBreak"] as? [String: Any])
+    // `dropRedundantBreak` is a known rewrite rule.
+    let rule = try #require(properties["dropRedundantBreak"] as? [String: Any])
     #expect(rule["unevaluatedProperties"] == nil)
   }
 
@@ -51,7 +51,7 @@ struct ConfigurationSchemaTests {
   /// as string enums matching the base `lint` property's values.
   @Test func lintTypedSeverityPropertiesAppearInSchema() throws {
     let properties = try #require(schema["properties"] as? [String: Any])
-    let rule = try #require(properties["expiringTodo"] as? [String: Any])
+    let rule = try #require(properties["flagExpiringTodo"] as? [String: Any])
     let custom = try #require(rule["properties"] as? [String: Any])
     for key in ["approachingExpirySeverity", "expiredSeverity", "badFormattingSeverity"] {
       let prop = try #require(custom[key] as? [String: Any], "missing \(key)")
@@ -66,7 +66,7 @@ struct ConfigurationSchemaTests {
   /// the type from the string-literal initializer.
   @Test func stringPropertiesWithoutTypeAnnotationAppearInSchema() throws {
     let properties = try #require(schema["properties"] as? [String: Any])
-    let rule = try #require(properties["expiringTodo"] as? [String: Any])
+    let rule = try #require(properties["flagExpiringTodo"] as? [String: Any])
     let custom = try #require(rule["properties"] as? [String: Any])
     for (key, expectedDefault) in [
       ("dateFormat", "MM/dd/yyyy"),

@@ -16,7 +16,7 @@ extension TokenStream {
     func visitAssociatedTypeDecl(_ node: AssociatedTypeDeclSyntax) -> SyntaxVisitorContinueKind {
         arrangeAttributeList(
             node.attributes,
-            separateByLineBreaks: config[BetweenDeclarationAttributes.self]
+            separateByLineBreaks: config[BreakBetweenDeclAttributes.self]
         )
 
         after(node.associatedtypeKeyword, tokens: .break)

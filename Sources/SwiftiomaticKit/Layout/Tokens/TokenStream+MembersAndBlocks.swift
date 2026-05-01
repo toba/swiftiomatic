@@ -65,7 +65,7 @@ extension TokenStream {
 
         arrangeAttributeList(
             node.attributes,
-            separateByLineBreaks: config[BetweenDeclarationAttributes.self]
+            separateByLineBreaks: config[BreakBetweenDeclAttributes.self]
         )
 
         after(node.caseKeyword, tokens: .break)

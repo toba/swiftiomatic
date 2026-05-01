@@ -132,7 +132,7 @@ extension TokenStream {
                 calledExpression, isTopLevel: false)
 
             let shouldGroup = hasMemberAccess && (hasCompoundExpression || !isTopLevel)
-                && config[AroundMultilineExpressionChainComponents.self]
+                && config[BreakAroundMultilineChainParts.self]
             let beforeTokens: [Token] = shouldGroup
                 ? [.contextualBreakingStart, .open]
                 : [

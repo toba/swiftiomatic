@@ -139,7 +139,7 @@ struct AttributeTests: LayoutTesting {
       """
 
     var configuration = Configuration.forTesting
-    configuration[BeforeEachArgument.self] = true
+    configuration[BreakBeforeEachArgument.self] = true
     assertLayout(
       input: input,
       expected: expected,
@@ -219,7 +219,7 @@ struct AttributeTests: LayoutTesting {
       """
 
     var configuration = Configuration.forTesting
-    configuration[BeforeEachArgument.self] = true
+    configuration[BreakBeforeEachArgument.self] = true
     assertLayout(
       input: input,
       expected: expected,
@@ -295,7 +295,7 @@ struct AttributeTests: LayoutTesting {
       """
 
     var configuration = Configuration.forTesting
-    configuration[BeforeEachArgument.self] = true
+    configuration[BreakBeforeEachArgument.self] = true
     assertLayout(
       input: input,
       expected: expected,
@@ -599,7 +599,7 @@ struct AttributeTests: LayoutTesting {
 
       """
     var configuration = Configuration.forTesting
-    configuration[BetweenDeclarationAttributes.self] = true
+    configuration[BreakBetweenDeclAttributes.self] = true
     assertLayout(input: input, expected: expected, linelength: 80, configuration: configuration)
   }
 

@@ -42,11 +42,11 @@ func rewriteToken(
         result = FormatSpecialComments.transform(result, original: node, parent: parent, context: context)
     }
 
-    // 3. LeadingDotOperators — ported. Uses a typed property on `Context` to thread pending trivia
+    // 3. BreakBeforeLeadingDot — ported. Uses a typed property on `Context` to thread pending trivia
     //    between adjacent token visits. The static transform already handles the state plumbing
     //    correctly.
-    if context.shouldRewrite(LeadingDotOperators.self, at: Syntax(result)) {
-        result = LeadingDotOperators.transform(result, original: node, parent: parent, context: context)
+    if context.shouldRewrite(BreakBeforeLeadingDot.self, at: Syntax(result)) {
+        result = BreakBeforeLeadingDot.transform(result, original: node, parent: parent, context: context)
     }
 
     // 4. NestedCallLayout — NOT a token-level rewrite. The rule's `visit` overrides target
@@ -56,10 +56,10 @@ func rewriteToken(
     //    will port the FunctionCallExprSyntax visit.
     _ = context.shouldRewrite(NestedCallLayout.self, at: Syntax(result))
 
-    // 5. RedundantBackticks — ported. Strips redundant backticks from identifier tokens. Uses
+    // 5. DropRedundantBackticks — ported. Strips redundant backticks from identifier tokens. Uses
     //    captured pre-recursion parent for context analysis (member access, argument label, etc.).
-    if context.shouldRewrite(RedundantBackticks.self, at: Syntax(result)) {
-        result = RedundantBackticks.transform(result, original: node, parent: parent, context: context)
+    if context.shouldRewrite(DropRedundantBackticks.self, at: Syntax(result)) {
+        result = DropRedundantBackticks.transform(result, original: node, parent: parent, context: context)
     }
 
     // 5a. ReflowComments — inlined (no `static func transform` ). Reflows contiguous `//` and `///`
@@ -68,10 +68,10 @@ func rewriteToken(
         result = ReflowComments.reflow(result, context: context)
     }
 
-    // 6. UppercaseAcronyms — inlined (no `static func transform` ). Replaces titlecased acronyms (
+    // 6. UppercaseAcronymsInIdentifiers — inlined (no `static func transform` ). Replaces titlecased acronyms (
     //    `Url` , `Json` ) with fully uppercased forms ( `URL` , `JSON` ) inside identifier tokens.
     //    Pulls the configurable word list from `AcronymsConfiguration` .
-    if context.shouldRewrite(UppercaseAcronyms.self, at: Syntax(result)) {
+    if context.shouldRewrite(UppercaseAcronymsInIdentifiers.self, at: Syntax(result)) {
         result = applyUppercaseAcronyms(result, context: context)
     }
 
@@ -188,10 +188,10 @@ private func findNewlinesAroundMark(
     return nil
 }
 
-// MARK: - UppercaseAcronyms (inlined)
+// MARK: - UppercaseAcronymsInIdentifiers (inlined)
 //
 // The original rule has no `static func transform`. Inlined from
-// `UppercaseAcronyms.visit(_ TokenSyntax)`. Pulls the configurable word list
+// `UppercaseAcronymsInIdentifiers.visit(_ TokenSyntax)`. Pulls the configurable word list
 // from `AcronymsConfiguration`. The `Finding.Message` is duplicated locally.
 
 fileprivate extension Finding.Message {
@@ -214,7 +214,7 @@ private func applyUppercaseAcronyms(
     }
     guard result != text else { return token }
 
-    UppercaseAcronyms.diagnose(.capitalizeAcronymInToken, on: token, context: context)
+    UppercaseAcronymsInIdentifiers.diagnose(.capitalizeAcronymInToken, on: token, context: context)
     return token.with(\.tokenKind, .identifier(result))
 }
 

@@ -18,8 +18,12 @@ package struct ConfigurationGroup: Sendable, Hashable {
         case access
         case blankLines
         case closures
+        /// Collection-API idioms (`isEmpty`, `flatMap`, `contains`, `first/last(where:)`, etc.).
+        case collections
         case comments
         case conditions
+        /// Loop and iteration shape (`for`-loop vs `forEach`, `where` clauses on `for`).
+        case controlFlow
         case declarations
         case generics
         case hoist
@@ -35,6 +39,8 @@ package struct ConfigurationGroup: Sendable, Hashable {
         case redundancies
         case sort
         case spaces
+        /// SwiftUI-specific patterns (`@Entry`, `View.body`, `ForEach(id:)`).
+        case swiftui
         case testing
         case types
         case unsafety
@@ -48,8 +54,10 @@ package struct ConfigurationGroup: Sendable, Hashable {
     package static let access = ConfigurationGroup(.access)
     package static let blankLines = ConfigurationGroup(.blankLines)
     package static let closures = ConfigurationGroup(.closures)
+    package static let collections = ConfigurationGroup(.collections)
     package static let comments = ConfigurationGroup(.comments)
     package static let conditions = ConfigurationGroup(.conditions)
+    package static let controlFlow = ConfigurationGroup(.controlFlow)
     package static let declarations = ConfigurationGroup(.declarations)
     package static let generics = ConfigurationGroup(.generics)
     package static let hoist = ConfigurationGroup(.hoist)
@@ -63,6 +71,7 @@ package struct ConfigurationGroup: Sendable, Hashable {
     package static let redundancies = ConfigurationGroup(.redundancies)
     package static let sort = ConfigurationGroup(.sort)
     package static let spaces = ConfigurationGroup(.spaces)
+    package static let swiftui = ConfigurationGroup(.swiftui)
     package static let testing = ConfigurationGroup(.testing)
     package static let types = ConfigurationGroup(.types)
     package static let unsafety = ConfigurationGroup(.unsafety)

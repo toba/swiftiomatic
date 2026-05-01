@@ -11,7 +11,7 @@ import ConfigurationKit
 ///
 /// Use this base class for the vast majority of compact-pipeline rules. Use `StructuralFormatRule`
 /// only when the rule needs `SyntaxRewriter` machinery for instance-level traversal
-/// (structural-pass rules, fresh-instance rewriters like `PreferShorthandTypeNames` ).
+/// (structural-pass rules, fresh-instance rewriters like `UseShorthandTypeNames` ).
 class StaticFormatRule<V: SyntaxRuleValue>: SyntaxRule, @unchecked Sendable {
     typealias Value = V
 
