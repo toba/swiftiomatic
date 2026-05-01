@@ -9,7 +9,6 @@ import SwiftSyntax
 ///
 /// Rewrite: The declarations are reordered alphabetically by name.
 final class SortDeclarations: StructuralFormatRule<BasicRuleValue>, @unchecked Sendable {
-    override class var key: String { "declarations" }
     override class var group: ConfigurationGroup? { .sort }
     private static let beginMarker = "swiftiomatic:sort:begin"
     private static let endMarker = "swiftiomatic:sort:end"

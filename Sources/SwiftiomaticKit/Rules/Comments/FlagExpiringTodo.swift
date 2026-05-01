@@ -11,7 +11,6 @@ import ConfigurationKit
 /// Lint: If a dated TODO/FIXME is approaching expiry, expired, or has a malformed date, a lint
 /// finding is raised.
 final class FlagExpiringTodo: LintSyntaxRule<ExpiringTodoConfiguration>, @unchecked Sendable {
-    override static var key: String { "flagExpiringTodo" }
     override static var group: ConfigurationGroup? { .comments }
 
     private enum ExpiryLevel { case approaching, expired, badFormatting }

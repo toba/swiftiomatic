@@ -373,7 +373,7 @@ extension TokenStream {
     }
 
     func visitTernaryExpr(_ node: TernaryExprSyntax) -> SyntaxVisitorContinueKind {
-        // Wrapping decisions for ternaries belong to the WrapTernary format rule, which inserts
+        // Wrapping decisions for ternaries belong to the WrapTernaryBranches format rule, which inserts
         // discretionary newlines into the leading trivia of `?` and `:` when the expression would
         // overflow the configured line length. The pretty printer only emits the operator-relative
         // breaks here. Using `.break(.open(kind: .continuation)) ... .break(.close)` pairs lets the

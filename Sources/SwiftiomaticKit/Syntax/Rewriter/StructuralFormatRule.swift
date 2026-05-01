@@ -1,4 +1,4 @@
-// sm:ignore preferFinalClasses, useStaticNotClassFunc
+// sm:ignore useFinalClasses, useStaticNotClassFunc
 // Subclassed by every structural format rule; `class var` is required so subclass overrides
 // dispatch through the vtable when accessed via `any SyntaxRule.Type` existentials.
 import SwiftSyntax

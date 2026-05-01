@@ -25,7 +25,7 @@ import SwiftSyntax
 final class HoistExtensionAccess: StructuralFormatRule<ExtensionAccessControlConfiguration>,
     @unchecked Sendable
 {
-    override class var group: ConfigurationGroup? { .access }
+    override class var group: ConfigurationGroup? { .hoist }
     private enum State {
         /// The rule is currently visiting top-level declarations.
         case topLevel
@@ -50,16 +50,17 @@ final class HoistExtensionAccess: StructuralFormatRule<ExtensionAccessControlCon
         guard case .topLevel = state else { return DeclSyntax(node) }
 
         switch ruleConfig.placement {
-            case .onMembers: return visitOnDeclarations(node)
-            case .onExtension: return visitOnExtension(node)
+        case .onMembers: return visitOnDeclarations(node)
+        case .onExtension: return visitOnExtension(node)
         }
     }
 
     // MARK: - onMembers mode (push access from extension to members)
 
     private func visitOnDeclarations(_ node: ExtensionDeclSyntax) -> DeclSyntax {
-        guard let accessKeyword = node.modifiers.accessLevelModifier,
-              case let .keyword(keyword) = accessKeyword.name.tokenKind else {
+        guard
+            let accessKeyword = node.modifiers.accessLevelModifier,
+            case .keyword(let keyword) = accessKeyword.name.tokenKind else {
             return DeclSyntax(node)
         }
 
@@ -69,26 +70,26 @@ final class HoistExtensionAccess: StructuralFormatRule<ExtensionAccessControlCon
         let message: Finding.Message
 
         switch keyword {
-            case .public, .private, .fileprivate, .package:
-                // These access level modifiers need to be moved to members. Additionally, `private`
-                // is a special case, because the *effective* access level for a top-level private
-                // extension is `fileprivate` , so we need to preserve that when we apply it to the
-                // members.
-                if keyword == .private {
-                    keywordToAdd = .fileprivate
-                    message = .moveAccessKeywordAndMakeFileprivate(keyword: accessKeyword.name.text)
-                } else {
-                    keywordToAdd = keyword
-                    message = .moveAccessKeyword(keyword: accessKeyword.name.text)
-                }
+        case .public, .private, .fileprivate, .package:
+            // These access level modifiers need to be moved to members. Additionally, `private`
+            // is a special case, because the *effective* access level for a top-level private
+            // extension is `fileprivate` , so we need to preserve that when we apply it to the
+            // members.
+            if keyword == .private {
+                keywordToAdd = .fileprivate
+                message = .moveAccessKeywordAndMakeFileprivate(keyword: accessKeyword.name.text)
+            } else {
+                keywordToAdd = keyword
+                message = .moveAccessKeyword(keyword: accessKeyword.name.text)
+            }
 
-            case .internal:
-                // If the access level keyword was `internal` , then it's redundant and we can just
-                // remove it. We don't need to modify the members at all in this case.
-                message = .removeRedundantAccessKeyword
-                keywordToAdd = nil
+        case .internal:
+            // If the access level keyword was `internal` , then it's redundant and we can just
+            // remove it. We don't need to modify the members at all in this case.
+            message = .removeRedundantAccessKeyword
+            keywordToAdd = nil
 
-            default: return DeclSyntax(node)
+        default: return DeclSyntax(node)
         }
 
         // We don't have to worry about maintaining a stack here; even though extensions can nest
@@ -180,9 +181,10 @@ final class HoistExtensionAccess: StructuralFormatRule<ExtensionAccessControlCon
             if decl.is(IfConfigDeclSyntax.self) { return nil }
 
             // Get the access level of this member.
-            guard let modifiers = decl.asProtocol(WithModifiersSyntax.self)?.modifiers,
-                  let accessModifier = modifiers.accessLevelModifier,
-                  case let .keyword(keyword) = accessModifier.name.tokenKind else { return nil }
+            guard
+                let modifiers = decl.asProtocol(WithModifiersSyntax.self)?.modifiers,
+                let accessModifier = modifiers.accessLevelModifier,
+                case .keyword(let keyword) = accessModifier.name.tokenKind else { return nil }
 
             // Only hoist public, package, or fileprivate.
             guard keyword == .public || keyword == .package || keyword == .fileprivate else {
@@ -245,19 +247,19 @@ final class HoistExtensionAccess: StructuralFormatRule<ExtensionAccessControlCon
         declKeywordKeyPath: WritableKeyPath<Decl, TokenSyntax>
     ) -> DeclSyntax {
         switch state {
-            case .topLevel: DeclSyntax(decl)
-            case let .insideExtension(accessKeyword):
-                applyingAccessModifierIfNone(
-                    accessKeyword,
-                    to: decl,
-                    declKeywordKeyPath: declKeywordKeyPath
-                )
-            case let .hoistingFromExtension(accessKeyword):
-                removingAccessModifier(
-                    accessKeyword,
-                    from: decl,
-                    declKeywordKeyPath: declKeywordKeyPath
-                )
+        case .topLevel: DeclSyntax(decl)
+        case .insideExtension(let accessKeyword):
+            applyingAccessModifierIfNone(
+                accessKeyword,
+                to: decl,
+                declKeywordKeyPath: declKeywordKeyPath
+            )
+        case .hoistingFromExtension(let accessKeyword):
+            removingAccessModifier(
+                accessKeyword,
+                from: decl,
+                declKeywordKeyPath: declKeywordKeyPath
+            )
         }
     }
 
@@ -270,12 +272,11 @@ final class HoistExtensionAccess: StructuralFormatRule<ExtensionAccessControlCon
         // If there's already an access modifier among the modifier list, bail out.
         guard decl.modifiers.accessLevelModifier == nil else { return DeclSyntax(decl) }
 
-        notesFromRewrittenMembers.append(
-            Finding.Note(
-                message: .addModifierToExtensionMember(keyword: TokenSyntax.keyword(modifier).text),
-                location:
-                    Finding.Location(decl.startLocation(converter: context.sourceLocationConverter))
-            ))
+        notesFromRewrittenMembers.append(Finding.Note(
+            message: .addModifierToExtensionMember(keyword: TokenSyntax.keyword(modifier).text),
+            location:
+                Finding.Location(decl.startLocation(converter: context.sourceLocationConverter))
+        ))
 
         var result = decl
         var modifier = DeclModifierSyntax(name: .keyword(modifier))
@@ -307,17 +308,17 @@ final class HoistExtensionAccess: StructuralFormatRule<ExtensionAccessControlCon
         from decl: Decl,
         declKeywordKeyPath: WritableKeyPath<Decl, TokenSyntax>
     ) -> DeclSyntax {
-        guard let accessModifier = decl.modifiers.accessLevelModifier,
-              case .keyword(keyword) = accessModifier.name.tokenKind else {
+        guard
+            let accessModifier = decl.modifiers.accessLevelModifier,
+            case .keyword(keyword) = accessModifier.name.tokenKind else {
             return DeclSyntax(decl)
         }
 
-        notesFromRewrittenMembers.append(
-            Finding.Note(
-                message: .removeModifierFromExtensionMember(keyword: accessModifier.name.text),
-                location:
-                    Finding.Location(decl.startLocation(converter: context.sourceLocationConverter))
-            ))
+        notesFromRewrittenMembers.append(Finding.Note(
+            message: .removeModifierFromExtensionMember(keyword: accessModifier.name.text),
+            location:
+                Finding.Location(decl.startLocation(converter: context.sourceLocationConverter))
+        ))
 
         var result = decl
         let savedLeadingTrivia = accessModifier.leadingTrivia
@@ -336,27 +337,28 @@ final class HoistExtensionAccess: StructuralFormatRule<ExtensionAccessControlCon
     }
 }
 
-fileprivate extension Finding.Message {
-    static let removeRedundantAccessKeyword: Finding.Message =
+extension Finding.Message {
+    fileprivate static let removeRedundantAccessKeyword: Finding.Message =
         "remove this redundant 'internal' access modifier from this extension"
 
-    static func moveAccessKeyword(keyword: String) -> Finding.Message {
+    fileprivate static func moveAccessKeyword(keyword: String) -> Finding.Message {
         "move this '\(keyword)' access modifier to precede each member inside this extension"
     }
 
-    static func moveAccessKeywordAndMakeFileprivate(keyword: String) -> Finding.Message {
+    fileprivate static func moveAccessKeywordAndMakeFileprivate(keyword: String) -> Finding.Message
+    {
         "remove this '\(keyword)' access modifier and declare each member inside this extension as 'fileprivate'"
     }
 
-    static func addModifierToExtensionMember(keyword: String) -> Finding.Message {
+    fileprivate static func addModifierToExtensionMember(keyword: String) -> Finding.Message {
         "add '\(keyword)' access modifier to this declaration"
     }
 
-    static func hoistAccessKeyword(keyword: String) -> Finding.Message {
+    fileprivate static func hoistAccessKeyword(keyword: String) -> Finding.Message {
         "hoist '\(keyword)' access modifier from members to this extension"
     }
 
-    static func removeModifierFromExtensionMember(keyword: String) -> Finding.Message {
+    fileprivate static func removeModifierFromExtensionMember(keyword: String) -> Finding.Message {
         "remove '\(keyword)' access modifier from this declaration"
     }
 }
@@ -380,6 +382,7 @@ package struct ExtensionAccessControlConfiguration: SyntaxRuleValue {
     package init(from decoder: any Decoder) throws {
         self.init()
         let container = try decoder.container(keyedBy: CodingKeys.self)
+
         if let rewrite = try container.decodeIfPresent(Bool.self, forKey: .rewrite) {
             self.rewrite = rewrite
         }

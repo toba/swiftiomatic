@@ -2,7 +2,6 @@ import SwiftSyntax
 
 /// Multiline string literal reflow mode.
 package struct ReflowMultilineStringLiterals: LayoutRule {
-    package static let key = "reflowMultilineStringLiterals"
     package static let group: ConfigurationGroup? = .literals
     package static let description = "Multiline string literal reflow mode."
     package static let defaultValue: MultilineStringReflowBehavior = .never

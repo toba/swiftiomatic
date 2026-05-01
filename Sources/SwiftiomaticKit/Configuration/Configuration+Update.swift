@@ -11,10 +11,10 @@ extension Configuration {
         package var misplaced: [Misplaced]
 
         package struct Misplaced: Sendable, Equatable {
-            /// The qualified key where the rule was found, e.g. `wrap.preferIsEmpty` . For
+            /// The qualified key where the rule was found, e.g. `wrap.useIsEmpty` . For
             /// ungrouped rules placed at root, this is the bare key.
             package var foundAt: String
-            /// The canonical qualified key for the rule, e.g. `idioms.preferIsEmpty` .
+            /// The canonical qualified key for the rule, e.g. `collections.useIsEmpty` .
             package var correctAt: String
             /// The user's existing value, to be preserved on relocation.
             package var value: JSONValue

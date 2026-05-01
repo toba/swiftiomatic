@@ -26,7 +26,6 @@ import SwiftSyntax
 ///
 /// Rewrite: The call tree is reformatted to match the mode.
 final class NestedCallLayout: StaticFormatRule<NestedCallLayoutConfiguration>, @unchecked Sendable {
-    override class var key: String { "nestedCallLayout" }
     override class var group: ConfigurationGroup? { .wrap }
     override class var defaultValue: NestedCallLayoutConfiguration {
         var config = NestedCallLayoutConfiguration()

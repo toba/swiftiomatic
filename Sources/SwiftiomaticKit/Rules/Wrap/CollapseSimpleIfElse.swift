@@ -3,7 +3,7 @@ import SwiftSyntax
 /// Collapses multi-line `if` / `else` (and `else if` chains) onto a single line when every branch
 /// contains exactly one statement and the collapsed form fits within the configured line length.
 ///
-/// Complements `PreferTernary` for cases ternary can't reach: `if let` / `if case` conditional
+/// Complements `UseTernary` for cases ternary can't reach: `if let` / `if case` conditional
 /// bindings, `if #available` , and multi-clause conditions.
 ///
 /// ```swift
@@ -36,7 +36,7 @@ final class CollapseSimpleIfElse: StaticFormatRule<BasicRuleValue>, @unchecked S
         // captured pre-recursion parent (post-recursion node.parent is nil).
         if parent?.is(IfExprSyntax.self) == true { return ExprSyntax(ifNode) }
 
-        // Bare `if` with no else is `WrapSingleLineBodies` 's territory.
+        // Bare `if` with no else is `LayoutSingleLineBodies` 's territory.
         guard ifNode.elseBody != nil else { return ExprSyntax(ifNode) }
 
         if isAlreadyInline(ifNode) { return ExprSyntax(ifNode) }

@@ -16,7 +16,7 @@ extension Configuration {
     config[IndentConditionalCompilationBlocks.self] = true
     config[BreakAroundMultilineChainParts.self] = false
     config[UseFilePrivateForFileLocal.self] = FileScopedDeclarationPrivacyConfiguration()
-    config[SwitchCaseIndentation.self] = SwitchCaseIndentationConfiguration()
+    config[IndentSwitchCases.self] = IndentSwitchCasesConfiguration()
     config[SpaceAroundRangeOperators.self] = false
     config[NoAssignmentInExpressions.self] = NoAssignmentInExpressionsConfiguration()
     config[MultiElementCollectionTrailingCommas.self] = true
@@ -25,8 +25,8 @@ extension Configuration {
     config[HoistCaseLet.self] = CaseLetConfiguration()
     config[UseURLMacroForURLLiterals.self] = URLMacroConfiguration()
     config[FileHeader.self] = FileHeaderConfiguration()
-    config[WrapSingleLineBodies.self] = SingleLineBodiesConfiguration()
-    config[WrapSwitchCaseBodies.self] = SwitchCaseBodiesConfiguration()
+    config[LayoutSingleLineBodies.self] = LayoutSingleLineBodiesConfiguration()
+    config[LayoutSwitchCaseBodies.self] = LayoutSwitchCaseBodiesConfiguration()
     config[NestedCallLayout.self] = NestedCallLayoutConfiguration()
     return config
   }

@@ -150,6 +150,7 @@
 - Audit `LintSyntaxRule` subclasses for `final` and `static`; documented `class var` requirement ([#538](https://github.com/toba/swiftiomatic/issues/538))
 - Audit lint-flagged IIFE patterns; simplify `preparedAcronyms` initializer ([#541](https://github.com/toba/swiftiomatic/issues/541))
 - Verify `consumeFinding` and `consumeCachedEntry` produce byte-identical output; add `LintCache` schema round-trip tests ([#553](https://github.com/toba/swiftiomatic/issues/553))
+- Rename DocC comment rules for self-documenting names; `convertRegularCommentToDocC`→`useDocCommentsOnAPI`, `useTripleSlashForDocComments`→`useTripleSlashOverDocBlock`, `requireDocCommentSummary`→`requireDocSummaryStructure`, `requireParameterDocs`→`requireParameterAndReturnDocs`, `noDocCommentsInsideFunctions`→`noDocCommentsInFunctionBodies`, `flagOrphanedDocComment`→`noOrphanedDocComment`
 
 ## Week of Apr 19 – Apr 25, 2026
 

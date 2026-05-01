@@ -69,17 +69,17 @@ package final class Context {
     lazy var noForceUnwrapState = NoForceUnwrap.State()
     lazy var noGuardInTestsState = NoGuardInTests.State()
     lazy var preferEnvironmentEntryState = UseAtEntryNotEnvironmentKey.State()
-    lazy var preferFinalClassesState = PreferFinalClasses.State()
+    lazy var useFinalClassesState = UseFinalClasses.State()
     lazy var preferSelfTypeState = UseSelfNotTypeName.State()
     lazy var preferSwiftTestingState = UseSwiftTestingNotXCTest.State()
     lazy var redundantAccessControlState = DropRedundantAccessControl.State()
     lazy var redundantSelfState = DropRedundantSelf.State()
     lazy var redundantSwiftTestingSuiteState = DropRedundantSwiftTestingSuite.State()
-    lazy var swiftTestingTestCaseNamesState = EnforceSwiftTestingNames.State()
+    lazy var swiftTestingTestCaseNamesState = UseSwiftTestingNames.State()
     lazy var testSuiteAccessControlState = RequireSuiteAccessControl.State()
     lazy var urlMacroState = UseURLMacroForURLLiterals.State()
     lazy var validateTestCasesState = RequireTestFnPrefixOrAttribute.State()
-    lazy var wrapSingleLineBodiesState = WrapSingleLineBodiesState()
+    lazy var layoutSingleLineBodiesState = LayoutSingleLineBodiesState()
 
     /// Pre-built `(titlecased, uppercased)` pairs for `UppercaseAcronymsInIdentifiers` , sorted longest-first so
     /// longer acronyms match before shorter substrings. Computed once per file; reused for every

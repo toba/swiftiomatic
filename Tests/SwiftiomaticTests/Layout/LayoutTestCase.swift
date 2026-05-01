@@ -150,12 +150,12 @@ private func prettyPrintedSource(
         findingConsumer: findingConsumer
     )
     // Apply layout-affecting format rules whose decisions live outside the pretty printer
-    // (currently just WrapTernary, which inserts discretionary newlines for ternaries that would
-    // overflow the line length). Other rules are intentionally skipped here so layout tests
+    // (currently just WrapTernaryBranches, which inserts discretionary newlines for ternaries that
+    // would overflow the line length). Other rules are intentionally skipped here so layout tests
     // remain focused on PP behavior.
     let transformedSyntax: Syntax
-    if context.shouldFormat(WrapTernary.self, node: Syntax(sourceFileSyntax)) {
-        transformedSyntax = WrapTernaryHarnessRewriter(context: context)
+    if context.shouldFormat(WrapTernaryBranches.self, node: Syntax(sourceFileSyntax)) {
+        transformedSyntax = WrapTernaryBranchesHarnessRewriter(context: context)
             .rewrite(Syntax(sourceFileSyntax))
     } else {
         transformedSyntax = Syntax(sourceFileSyntax)
@@ -170,11 +170,11 @@ private func prettyPrintedSource(
     return (printer.prettyPrint(), context)
 }
 
-/// Tree walker that applies `WrapTernary.transform` post-recursion. Mirrors the
+/// Tree walker that applies `WrapTernaryBranches.transform` post-recursion. Mirrors the
 /// compact pipeline's call shape (`super.visit` then `transform`) but as a one-shot
 /// rewriter scoped to layout tests, so the rule itself doesn't need an instance
 /// `override func visit`.
-private final class WrapTernaryHarnessRewriter: SyntaxRewriter {
+private final class WrapTernaryBranchesHarnessRewriter: SyntaxRewriter {
     let context: Context
 
     init(context: Context) { self.context = context }
@@ -182,6 +182,6 @@ private final class WrapTernaryHarnessRewriter: SyntaxRewriter {
     override func visit(_ node: TernaryExprSyntax) -> ExprSyntax {
         let parent = Syntax(node).parent
         let visited = super.visit(node).cast(TernaryExprSyntax.self)
-        return WrapTernary.transform(visited, original: node, parent: parent, context: context)
+        return WrapTernaryBranches.transform(visited, original: node, parent: parent, context: context)
     }
 }

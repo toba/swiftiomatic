@@ -22,7 +22,6 @@ import SwiftSyntax
 ///
 /// Rewrite: The case items are reordered alphabetically.
 final class SortSwitchCases: StructuralFormatRule<BasicRuleValue>, @unchecked Sendable {
-    override class var key: String { "switchCases" }
     override class var group: ConfigurationGroup? { .sort }
     override class var defaultValue: BasicRuleValue { .init(rewrite: false, lint: .no) }
 

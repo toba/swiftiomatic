@@ -62,7 +62,7 @@ struct CollapseSimpleIfElseTests: RuleTesting {
   }
 
   @Test func skipsIfWithoutElse() {
-    // Bare `if` is the responsibility of WrapSingleLineBodies (inline mode).
+    // Bare `if` is the responsibility of LayoutSingleLineBodies (inline mode).
     assertFormatting(
       CollapseSimpleIfElse.self,
       input: """

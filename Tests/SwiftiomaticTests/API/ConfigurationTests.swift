@@ -74,7 +74,7 @@ struct ConfigurationTests {
     let jsonData = """
       {
         "sort": {
-          "imports": { "lint": "no" }
+          "sortImports": { "lint": "no" }
         }
       }
       """.data(using: .utf8)!
@@ -88,7 +88,7 @@ struct ConfigurationTests {
     let jsonData = """
       {
         "sort": {
-          "imports": { "rewrite": false, "lint": "no" }
+          "sortImports": { "rewrite": false, "lint": "no" }
         }
       }
       """.data(using: .utf8)!
@@ -125,7 +125,7 @@ struct ConfigurationTests {
     let jsonData = """
       {
         "sort": {
-          "imports": { "lint": "none" }
+          "sortImports": { "lint": "none" }
         }
       }
       """.data(using: .utf8)!
@@ -141,11 +141,11 @@ struct ConfigurationTests {
       {
         "blankLines": {
           "maximumBlankLines": 2,
-          "afterGuardStatements": { "lint": "warn" },
-          "afterImports": { "lint": "warn" },
+          "insertBlankLineAfterGuard": { "lint": "warn" },
+          "insertBlankLineAfterImports": { "lint": "warn" },
           "betweenChainedFunctions": { "lint": "warn" },
           "betweenImports": { "lint": "no" },
-          "betweenScopes": { "lint": "warn" }
+          "insertBlankLineBetweenScopes": { "lint": "warn" }
         },
         "lineBreaks": {
           "placeElseCatchOnNewLine": true,
@@ -153,7 +153,7 @@ struct ConfigurationTests {
           "breakBeforeGenericRequirement": true,
           "breakBetweenDeclAttributes": true,
           "breakAroundMultilineChainParts": true,
-          "atEndOfFile": { "lint": "warn" }
+          "breakAtEndOfFile": { "lint": "warn" }
         },
         "redundancies": {
           "dropRedundantSelf": { "lint": "error" },
@@ -166,16 +166,16 @@ struct ConfigurationTests {
     let config = try JSONDecoder().decode(Configuration.self, from: jsonData)
     // blankLines group
     #expect(config[MaximumBlankLines.self] == 2)
-    #expect(config[BlankLinesAfterGuardStatements.self].lint == .warn)
-    #expect(config[BlankLinesAfterImports.self].lint == .warn)
-    #expect(config[BlankLinesBetweenScopes.self].lint == .warn)
+    #expect(config[InsertBlankLineAfterGuard.self].lint == .warn)
+    #expect(config[InsertBlankLineAfterImports.self].lint == .warn)
+    #expect(config[InsertBlankLineBetweenScopes.self].lint == .warn)
     // lineBreaks group
     #expect(config[PlaceElseCatchOnNewLine.self] == true)
     #expect(config[BreakBeforeEachArgument.self] == true)
     #expect(config[BreakBeforeGenericRequirement.self] == true)
     #expect(config[BreakBetweenDeclAttributes.self] == true)
     #expect(config[BreakAroundMultilineChainParts.self] == true)
-    #expect(config[EnsureLineBreakAtEOF.self].lint == .warn)
+    #expect(config[BreakAtEndOfFile.self].lint == .warn)
     // redundancies group
     #expect(config[DropRedundantSelf.self].lint == .error)
     #expect(config[DropRedundantInitCall.self].lint == .no)

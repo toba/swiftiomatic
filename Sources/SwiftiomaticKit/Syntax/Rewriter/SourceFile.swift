@@ -26,8 +26,8 @@ func rewriteSourceFile(
 
     // MARK: SourceFile rewrites (alphabetical)
 
-    // 1. EnsureLineBreakAtEOF: ensure file ends with exactly one newline.
-    if context.shouldRewrite(EnsureLineBreakAtEOF.self, at: Syntax(result)) {
+    // 1. BreakAtEndOfFile: ensure file ends with exactly one newline.
+    if context.shouldRewrite(BreakAtEndOfFile.self, at: Syntax(result)) {
         result = ensureLineBreakAtEOF(result, context: context)
     }
 
@@ -66,7 +66,7 @@ func rewriteSourceFile(
     return result
 }
 
-// MARK: - EnsureLineBreakAtEOF (inlined)
+// MARK: - BreakAtEndOfFile (inlined)
 //
 // The original rule has no `static func transform` because its only behavior
 // is the `visit(_ SourceFileSyntax)` override. Inlined here verbatim. The
@@ -94,7 +94,7 @@ private func ensureLineBreakAtEOF(
 
     if newlineCount == 1 { return node }
 
-    EnsureLineBreakAtEOF.diagnose(
+    BreakAtEndOfFile.diagnose(
         newlineCount == 0 ? .eofAddTrailingNewline : .eofRemoveExtraTrailingNewlines,
         on: eof, context: context
     )

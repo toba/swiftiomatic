@@ -29,11 +29,11 @@ func rewriteToken(
     var result = node
     let parent = Syntax(node).parent
 
-    // 1. BlankLinesAroundMark — inlined (no `static func transform` ). Adds blank lines
+    // 1. InsertBlankLinesAroundMark — inlined (no `static func transform` ). Adds blank lines
     //    before/after `// MARK:` comments in the token's leading trivia. Token-level: looks at
     //    leadingTrivia + previous/next token kind only.
-    if context.shouldRewrite(BlankLinesAroundMark.self, at: Syntax(result)) {
-        result = applyBlankLinesAroundMark(result, context: context)
+    if context.shouldRewrite(InsertBlankLinesAroundMark.self, at: Syntax(result)) {
+        result = applyInsertBlankLinesAroundMark(result, context: context)
     }
 
     // 2. FormatSpecialComments — ported. Normalizes TODO/MARK/FIXME comment formatting in leading
@@ -78,11 +78,11 @@ func rewriteToken(
     // 7. WrapMultilineFunctionChains — NOT a token-level rewrite; the rule operates on
     //    `FunctionCallExprSyntax` (see
     //    `Rewrites/Exprs/FunctionCallExpr.swift::applyWrapMultilineFunctionChains` ).
-    // 8. WrapMultilineStatementBraces — NOT a token-level rewrite. The rule's `visit` overrides
+    // 8. BreakBeforeMultilineBrace — NOT a token-level rewrite. The rule's `visit` overrides
     //    target many statement / decl nodes (IfExprSyntax, GuardStmtSyntax, FunctionDeclSyntax,
     //    ClassDeclSyntax, …). The private `TokenStripper` is an internal helper. No-op here; the
     //    structural merges happen in Phase 4c/4d/4e.
-    _ = context.shouldRewrite(WrapMultilineStatementBraces.self, at: Syntax(result))
+    _ = context.shouldRewrite(BreakBeforeMultilineBrace.self, at: Syntax(result))
 
     // 9. WrapSingleLineComments — ported. Word-wraps over-long `//` and `///` comments in leading
     //    trivia. Run AFTER FormatSpecialComments so directive detection (TODO/MARK/FIXME) sees
@@ -95,10 +95,10 @@ func rewriteToken(
     return result
 }
 
-// MARK: - BlankLinesAroundMark (inlined)
+// MARK: - InsertBlankLinesAroundMark (inlined)
 //
 // The original rule has no `static func transform`. Inlined verbatim from
-// `BlankLinesAroundMark.visit(_ TokenSyntax)` — only the leading-trivia /
+// `InsertBlankLinesAroundMark.visit(_ TokenSyntax)` — only the leading-trivia /
 // neighbor-token logic. The `Finding.Message` extensions in the rule file
 // are `fileprivate`, so the message strings are duplicated locally.
 
@@ -108,7 +108,7 @@ fileprivate extension Finding.Message {
     static let insertBlankLineAfterMark: Finding.Message = "insert blank line after MARK comment"
 }
 
-private func applyBlankLinesAroundMark(
+private func applyInsertBlankLinesAroundMark(
     _ token: TokenSyntax,
     context: Context
 ) -> TokenSyntax {
@@ -127,7 +127,7 @@ private func applyBlankLinesAroundMark(
 
     if !isAtStartOfScope, let idx = findNewlinesAroundMark(markIndex, in: pieces, before: true) {
         if case let .newlines(n) = pieces[idx], n < 2 {
-            BlankLinesAroundMark.diagnose(
+            InsertBlankLinesAroundMark.diagnose(
                 .insertBlankLineBeforeMark,
                 on: token,
                 context: context,
@@ -145,7 +145,7 @@ private func applyBlankLinesAroundMark(
     if !isAtEndOfScope, !isAtEndOfFile {
         if let idx = findNewlinesAroundMark(markIndex, in: pieces, before: false) {
             if case let .newlines(n) = pieces[idx], n < 2 {
-                BlankLinesAroundMark.diagnose(
+                InsertBlankLinesAroundMark.diagnose(
                     .insertBlankLineAfterMark,
                     on: token,
                     context: context

@@ -46,7 +46,7 @@ struct SwitchCaseIndentConfigTests: LayoutTesting {
     let expected = input
 
     var config = Configuration.forTesting
-    config[SwitchCaseIndentation.self].style = .flush
+    config[IndentSwitchCases.self].style = .flush
 
     assertLayout(input: input, expected: expected, linelength: 35, configuration: config)
   }
@@ -101,7 +101,7 @@ struct SwitchCaseIndentConfigTests: LayoutTesting {
       """
 
     var config = Configuration.forTesting
-    config[SwitchCaseIndentation.self].style = .flush
+    config[IndentSwitchCases.self].style = .flush
 
     assertLayout(input: input, expected: expected, linelength: 35, configuration: config)
   }
@@ -156,7 +156,7 @@ struct SwitchCaseIndentConfigTests: LayoutTesting {
       """
 
     var config = Configuration.forTesting
-    config[SwitchCaseIndentation.self].style = .indented
+    config[IndentSwitchCases.self].style = .indented
 
     assertLayout(input: input, expected: expected, linelength: 35, configuration: config)
   }
@@ -190,7 +190,7 @@ struct SwitchCaseIndentConfigTests: LayoutTesting {
     let expected = input
 
     var config = Configuration.forTesting
-    config[SwitchCaseIndentation.self].style = .indented
+    config[IndentSwitchCases.self].style = .indented
 
     assertLayout(input: input, expected: expected, linelength: 35, configuration: config)
   }
@@ -245,7 +245,7 @@ struct SwitchCaseIndentConfigTests: LayoutTesting {
       """
 
     var config = Configuration.forTesting
-    config[SwitchCaseIndentation.self].style = .flush
+    config[IndentSwitchCases.self].style = .flush
 
     assertLayout(input: input, expected: expected, linelength: 35, configuration: config)
   }
@@ -300,7 +300,7 @@ struct SwitchCaseIndentConfigTests: LayoutTesting {
       """
 
     var config = Configuration.forTesting
-    config[SwitchCaseIndentation.self].style = .indented
+    config[IndentSwitchCases.self].style = .indented
 
     assertLayout(input: input, expected: expected, linelength: 35, configuration: config)
   }
@@ -355,7 +355,7 @@ struct SwitchCaseIndentConfigTests: LayoutTesting {
       """
 
     var config = Configuration.forTesting
-    config[SwitchCaseIndentation.self].style = .indented
+    config[IndentSwitchCases.self].style = .indented
 
     assertLayout(input: input, expected: expected, linelength: 35, configuration: config)
   }
@@ -386,7 +386,7 @@ struct SwitchCaseIndentConfigTests: LayoutTesting {
     let expected = input
 
     var config = Configuration.forTesting
-    config[SwitchCaseIndentation.self].style = .indented
+    config[IndentSwitchCases.self].style = .indented
 
     assertLayout(input: input, expected: expected, linelength: 80, configuration: config)
   }

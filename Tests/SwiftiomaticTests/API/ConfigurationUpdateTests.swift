@@ -34,7 +34,7 @@ struct ConfigurationUpdateTests {
 
     let diff = Configuration.computeUpdate(for: root)
 
-    #expect(diff.toAdd.contains("collections.preferIsEmpty"))
+    #expect(diff.toAdd.contains("collections.useIsEmpty"))
     #expect(diff.toAdd.contains("redundancies.dropSemicolons"))
     #expect(diff.toRemove.isEmpty)
     #expect(diff.misplaced.isEmpty)
@@ -71,11 +71,11 @@ struct ConfigurationUpdateTests {
   // MARK: - Misplaced rules
 
   @Test func detectsMisplacedRuleInWrongGroup() throws {
-    // preferIsEmpty belongs in `collections`, not `wrap`.
+    // useIsEmpty belongs in `collections`, not `wrap`.
     let root = try parse("""
       {
         "wrap": {
-          "preferIsEmpty": { "lint": "warn", "rewrite": false }
+          "useIsEmpty": { "lint": "warn", "rewrite": false }
         }
       }
       """)
@@ -83,10 +83,10 @@ struct ConfigurationUpdateTests {
     let diff = Configuration.computeUpdate(for: root)
 
     let entry = try #require(diff.misplaced.first)
-    #expect(entry.foundAt == "wrap.preferIsEmpty")
-    #expect(entry.correctAt == "collections.preferIsEmpty")
+    #expect(entry.foundAt == "wrap.useIsEmpty")
+    #expect(entry.correctAt == "collections.useIsEmpty")
     #expect(diff.toRemove.isEmpty)
-    #expect(!diff.toAdd.contains("collections.preferIsEmpty"))
+    #expect(!diff.toAdd.contains("collections.useIsEmpty"))
   }
 
   @Test func detectsRulePlacedInWrongGroup() throws {
@@ -108,14 +108,14 @@ struct ConfigurationUpdateTests {
 
   @Test func detectsGroupedRulePlacedAtRoot() throws {
     let root = try parse("""
-      { "preferIsEmpty": { "lint": "warn", "rewrite": false } }
+      { "useIsEmpty": { "lint": "warn", "rewrite": false } }
       """)
 
     let diff = Configuration.computeUpdate(for: root)
 
     let entry = try #require(diff.misplaced.first)
-    #expect(entry.foundAt == "preferIsEmpty")
-    #expect(entry.correctAt == "collections.preferIsEmpty")
+    #expect(entry.foundAt == "useIsEmpty")
+    #expect(entry.correctAt == "collections.useIsEmpty")
   }
 
   // MARK: - Apply preserves misplaced values
@@ -124,13 +124,13 @@ struct ConfigurationUpdateTests {
     var root = try parse("""
       {
         "wrap": {
-          "preferIsEmpty": { "lint": "warn", "rewrite": false }
+          "useIsEmpty": { "lint": "warn", "rewrite": false }
         }
       }
       """)
     let originalValue: JSONValue? = {
       guard case .object(let d) = root["wrap"] else { return nil }
-      return d["preferIsEmpty"]
+      return d["useIsEmpty"]
     }()
 
     let diff = Configuration.computeUpdate(for: root)
@@ -138,7 +138,7 @@ struct ConfigurationUpdateTests {
 
     // Original location no longer has it.
     if case .object(let wrapDict) = root["wrap"] {
-      #expect(wrapDict["preferIsEmpty"] == nil)
+      #expect(wrapDict["useIsEmpty"] == nil)
     }
 
     // New location has the user's original value, not the default.
@@ -146,7 +146,7 @@ struct ConfigurationUpdateTests {
       Issue.record("collections group missing after apply")
       return
     }
-    #expect(collectionsDict["preferIsEmpty"] == originalValue)
+    #expect(collectionsDict["useIsEmpty"] == originalValue)
   }
 
   @Test func applyRemovesUnknownRules() throws {

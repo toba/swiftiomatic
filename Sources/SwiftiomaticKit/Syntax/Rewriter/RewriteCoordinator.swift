@@ -201,18 +201,18 @@ package final class RewriteCoordinator {
     /// `context.shouldFormat` — the per-pass `visitAny` shim that used to live on
     /// `StructuralFormatRule` was hoisted here in `2uk-cll` .
     ///
-    /// Rules previously dispatched here as structural passes — `PreferFinalClasses` ,
-    /// `ConvertRegularCommentToDocC` , `ConsistentSwitchCaseSpacing` , `ReflowComments` — were
+    /// Rules previously dispatched here as structural passes — `UseFinalClasses` ,
+    /// `UseDocCommentsOnAPI` , `NormalizeSwitchCaseSpacing` , `ReflowComments` — were
     /// inlined into stage 1 (sessions 11–14 of `ddi-wtv` Phase 4g) and removed from this list once
     /// their `override func visit` shells were stripped.
     private func runPipeline(_ node: Syntax, context: Context) -> Syntax {
         var current = RewritePipeline(context: context).rewrite(node)
         current = runStructuralPass(SortImports.self, on: current, context: context)
-        current = runStructuralPass(BlankLinesAfterImports.self, on: current, context: context)
+        current = runStructuralPass(InsertBlankLineAfterImports.self, on: current, context: context)
         current = runStructuralPass(
             UseFilePrivateForFileLocal.self, on: current, context: context)
         current = runStructuralPass(HoistExtensionAccess.self, on: current, context: context)
-        current = runStructuralPass(BlankLinesBetweenScopes.self, on: current, context: context)
+        current = runStructuralPass(InsertBlankLineBetweenScopes.self, on: current, context: context)
         current = runStructuralPass(SortDeclarations.self, on: current, context: context)
         current = runStructuralPass(SortSwitchCases.self, on: current, context: context)
         current = runStructuralPass(SortTypeAliases.self, on: current, context: context)

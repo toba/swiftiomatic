@@ -3,7 +3,6 @@ import SwiftOperators
 
 /// Force spaces around range operators.
 package struct SpaceAroundRangeOperators: LayoutRule {
-    package static let key = "spaceAroundRangeOperators"
     package static let group: ConfigurationGroup? = .spaces
     package static let description = "Force spaces around ... and ..<."
     package static let defaultValue = false

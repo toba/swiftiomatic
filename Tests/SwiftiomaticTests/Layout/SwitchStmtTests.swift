@@ -595,7 +595,7 @@ struct SwitchStmtTests: LayoutTesting {
       """
 
     var configuration = Configuration.forTesting
-    configuration[SwitchCaseIndentation.self].style = .indented
+    configuration[IndentSwitchCases.self].style = .indented
     assertLayout(
       input: input,
       expected: expected,

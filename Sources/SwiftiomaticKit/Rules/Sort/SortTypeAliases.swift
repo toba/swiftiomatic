@@ -10,7 +10,6 @@ import SwiftSyntax
 ///
 /// Rewrite: The types are reordered alphabetically and duplicates are removed.
 final class SortTypeAliases: StructuralFormatRule<BasicRuleValue>, @unchecked Sendable {
-    override class var key: String { "typeAliases" }
     override class var group: ConfigurationGroup? { .sort }
 
     override func visit(_ node: TypeAliasDeclSyntax) -> DeclSyntax {

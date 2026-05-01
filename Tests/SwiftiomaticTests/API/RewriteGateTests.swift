@@ -48,15 +48,15 @@ struct RewriteGateTests {
 
   /// `preferFinalClasses` lints `class C {}` and would normally add `final` , but with
   /// `rewrite: false` the source must be left intact.
-  @Test func preferFinalClassesLintsButDoesNotRewriteWhenRewriteFalse() throws {
+  @Test func useFinalClassesLintsButDoesNotRewriteWhenRewriteFalse() throws {
     let source = "class Widget {}\n"
 
     var config = Configuration.forTesting
     config.disableAllRules()
-    var ruleValue = config[PreferFinalClasses.self]
+    var ruleValue = config[UseFinalClasses.self]
     ruleValue.rewrite = false
     ruleValue.lint = .warn
-    config[PreferFinalClasses.self] = ruleValue
+    config[UseFinalClasses.self] = ruleValue
 
     var findings: [Finding] = []
     let pipeline = RewriteCoordinator(

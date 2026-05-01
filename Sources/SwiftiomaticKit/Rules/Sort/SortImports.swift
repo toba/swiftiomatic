@@ -31,7 +31,6 @@ import SwiftSyntax
 ///
 /// Rewrite: Imports will be reordered and (optionally) grouped at the top of the file.
 final class SortImports: StructuralFormatRule<SortImportsConfiguration>, @unchecked Sendable {
-    override class var key: String { "imports" }
     override class var group: ConfigurationGroup? { .sort }
 
     override func visit(_ node: SourceFileSyntax) -> SourceFileSyntax {

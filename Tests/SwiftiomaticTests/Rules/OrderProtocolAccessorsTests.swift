@@ -75,7 +75,7 @@ struct OrderProtocolAccessorsTests: RuleTesting {
   }
 
   @Test func nonTriggeringComputedProperty() {
-    // Outside a protocol with bodies — different rule's concern (OrderGetSetAccessors).
+    // Outside a protocol with bodies — different rule's concern (SortGetSetAccessors).
     assertFormatting(
       OrderProtocolAccessors.self,
       input: """

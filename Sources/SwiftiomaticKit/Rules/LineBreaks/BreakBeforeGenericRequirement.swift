@@ -1,6 +1,5 @@
 /// Break before each generic requirement when wrapping.
 package struct BreakBeforeGenericRequirement: LayoutRule {
-    package static let key = "breakBeforeGenericRequirement"
     package static let group: ConfigurationGroup? = .lineBreaks
     package static let description = "Break before each generic requirement when wrapping."
     package static let defaultValue = false
