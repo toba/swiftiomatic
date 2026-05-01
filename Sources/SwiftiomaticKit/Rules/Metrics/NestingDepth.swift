@@ -116,10 +116,7 @@ package struct NestingDepthConfiguration: SyntaxRuleValue {
     /// `subscript` ).
     package var functionLevel: Int = 2
 
-    package var rewrite: Bool {
-        get { false }
-        set {}
-    }
+    package var rewrite = false
 
     package init() {}
 
