@@ -18,11 +18,13 @@ import SwiftSyntax
 /// assigning a variable within a `return` statement exiting a `Void` function is prohibited.
 ///
 /// Lint: If an assignment expression is found in a position other than a standalone statement, a
-///       lint finding is emitted.
+/// lint finding is emitted.
 ///
 /// Rewrite: A `return` statement containing an assignment expression is expanded into two separate
-///         statements.
-final class NoAssignmentInExpressions: StaticFormatRule<NoAssignmentInExpressionsConfiguration>, @unchecked Sendable {
+/// statements.
+final class NoAssignmentInExpressions: StaticFormatRule<NoAssignmentInExpressionsConfiguration>,
+    @unchecked Sendable
+{
     override class var group: ConfigurationGroup? { .idioms }
 
     static func transform(
@@ -30,11 +32,11 @@ final class NoAssignmentInExpressions: StaticFormatRule<NoAssignmentInExpression
         parent: Syntax?,
         context: Context
     ) -> ExprSyntax {
-        // Diagnose any assignment that isn't directly a child of a `CodeBlockItem` (which would be the
-        // case if it was its own statement).
-        if isAssignmentExpression(node, context: context)
-            && !isStandaloneAssignmentStatement(parent: parent)
-            && !isInAllowedFunction(parent: parent, context: context)
+        // Diagnose any assignment that isn't directly a child of a `CodeBlockItem` (which would be
+        // the case if it was its own statement).
+        if isAssignmentExpression(node, context: context),
+           !isStandaloneAssignmentStatement(parent: parent),
+           !isInAllowedFunction(parent: parent, context: context)
         {
             Self.diagnose(.moveAssignmentToOwnStatement, on: node, context: context)
         }
@@ -43,7 +45,7 @@ final class NoAssignmentInExpressions: StaticFormatRule<NoAssignmentInExpression
 
     static func transform(
         _ node: CodeBlockItemListSyntax,
-        parent: Syntax?,
+        parent _: Syntax?,
         context: Context
     ) -> CodeBlockItemListSyntax {
         var newItems = [CodeBlockItemSyntax]()
@@ -51,27 +53,21 @@ final class NoAssignmentInExpressions: StaticFormatRule<NoAssignmentInExpression
 
         for visitedItem in node {
             // Items have already been recursively visited by the combined rewriter's super.visit
-            // (or by StructuralFormatRule.super.visit when called from the visit override).
-
-            // Rewrite any `return <assignment>` expressions as `<assignment><newline>return`.
+            // (or by StructuralFormatRule.super.visit when called from the visit override). Rewrite
+            // any `return <assignment>` expressions as `<assignment><newline>return` .
             switch visitedItem.item {
-                case .stmt(let stmt):
-                    guard
-                        var returnStmt = stmt.as(ReturnStmtSyntax.self),
-                        let assignmentExpr = assignmentExpression(
-                            from: returnStmt,
-                            context: context
-                        )
-                    else {
-                        // Head to the default case where we just keep the original item.
-                        fallthrough
-                    }
+                case let .stmt(stmt):
+                    guard var returnStmt = stmt.as(ReturnStmtSyntax.self),
+                          let assignmentExpr = assignmentExpression(
+                              from: returnStmt,
+                              context: context
+                          ) else { fallthrough }
 
                     // Move the leading trivia from the `return` statement to the new assignment
                     // statement, since that's a more sensible place than between the two.
-                    var assignmentItem = CodeBlockItemSyntax(item: .expr(ExprSyntax(assignmentExpr)))
-                    assignmentItem.leadingTrivia =
-                        returnStmt.leadingTrivia
+                    var assignmentItem = CodeBlockItemSyntax(
+                        item: .expr(ExprSyntax(assignmentExpr)))
+                    assignmentItem.leadingTrivia = returnStmt.leadingTrivia
                         + returnStmt.returnKeyword.trailingTrivia.withoutLeadingSpaces()
                         + assignmentExpr.leadingTrivia
                     assignmentItem.trailingTrivia = []
@@ -86,8 +82,7 @@ final class NoAssignmentInExpressions: StaticFormatRule<NoAssignmentInExpression
                     newItems.append(assignmentItem)
                     newItems.append(returnItem)
 
-                default:
-                    newItems.append(visitedItem)
+                default: newItems.append(visitedItem)
             }
         }
 
@@ -100,10 +95,10 @@ final class NoAssignmentInExpressions: StaticFormatRule<NoAssignmentInExpression
         from returnStmt: ReturnStmtSyntax,
         context: Context
     ) -> InfixOperatorExprSyntax? {
-        guard
-            let returnExpr = returnStmt.expression,
-            let infixOperatorExpr = returnExpr.as(InfixOperatorExprSyntax.self)
-        else { return nil }
+        guard let returnExpr = returnStmt.expression,
+              let infixOperatorExpr = returnExpr.as(InfixOperatorExprSyntax.self) else {
+            return nil
+        }
         return isAssignmentExpression(infixOperatorExpr, context: context)
             ? infixOperatorExpr
             : nil
@@ -111,14 +106,15 @@ final class NoAssignmentInExpressions: StaticFormatRule<NoAssignmentInExpression
 
     /// Returns a value indicating whether the given infix operator expression is an assignment
     /// expression (either simple assignment with `=` or compound assignment with an operator like
-    /// `+=`).
+    /// `+=` ).
     private static func isAssignmentExpression(
         _ expr: InfixOperatorExprSyntax,
         context: Context
     ) -> Bool {
         if expr.operator.is(AssignmentExprSyntax.self) { return true }
         guard let binaryOp = expr.operator.as(BinaryOperatorExprSyntax.self) else { return false }
-        return context.operatorTable.infixOperator(named: binaryOp.operator.text)?.precedenceGroup
+        return context.operatorTable.infixOperator(named: binaryOp.operator.text)?
+            .precedenceGroup
             == "AssignmentPrecedence"
     }
 
@@ -127,15 +123,10 @@ final class NoAssignmentInExpressions: StaticFormatRule<NoAssignmentInExpression
     private static func isStandaloneAssignmentStatement(parent: Syntax?) -> Bool {
         var current = parent
         while let p = current,
-            p.is(TryExprSyntax.self) || p.is(AwaitExprSyntax.self) || p.is(UnsafeExprSyntax.self)
-        {
-            current = p.parent
-        }
+              p.is(TryExprSyntax.self) || p.is(AwaitExprSyntax.self) || p.is(UnsafeExprSyntax.self)
+        { current = p.parent }
 
-        guard let p = current else {
-            // The expression is detached from the rest of the tree; consider it standalone.
-            return true
-        }
+        guard let p = current else { return true }
         return p.is(CodeBlockItemSyntax.self)
     }
 
@@ -144,10 +135,11 @@ final class NoAssignmentInExpressions: StaticFormatRule<NoAssignmentInExpression
     private static func isInAllowedFunction(parent: Syntax?, context: Context) -> Bool {
         let allowedFunctions = context.configuration[Self.self].allowedFunctions
         var current = parent
+
         while let p = current {
             if p.is(CodeBlockItemSyntax.self) { break }
             if let functionCallExpr = p.as(FunctionCallExprSyntax.self),
-                allowedFunctions.contains(functionCallExpr.calledExpression.trimmedDescription)
+               allowedFunctions.contains(functionCallExpr.calledExpression.trimmedDescription)
             {
                 return true
             }
@@ -157,30 +149,31 @@ final class NoAssignmentInExpressions: StaticFormatRule<NoAssignmentInExpression
     }
 }
 
-extension Finding.Message {
-  fileprivate static let moveAssignmentToOwnStatement: Finding.Message =
-    "move this assignment expression into its own statement"
+fileprivate extension Finding.Message {
+    static let moveAssignmentToOwnStatement: Finding.Message =
+        "move this assignment expression into its own statement"
 }
 
 // MARK: - Configuration
 
 package struct NoAssignmentInExpressionsConfiguration: SyntaxRuleValue {
-  package var rewrite = true
-  package var lint: Lint = .warn
-  /// Function names whose argument expressions may contain assignments
-  /// without triggering a finding (e.g. `XCTAssertNoThrow` accepts an
-  /// expression that legitimately produces side effects).
-  package var allowedFunctions: [String] = ["XCTAssertNoThrow"]
+    package var rewrite = true
+    package var lint: Lint = .warn
+    /// Function names whose argument expressions may contain assignments without triggering a
+    /// finding (e.g. `XCTAssertNoThrow` accepts an expression that legitimately produces side
+    /// effects).
+    package var allowedFunctions: [String] = ["XCTAssertNoThrow"]
 
-  package init() {}
+    package init() {}
 
-  package init(from decoder: any Decoder) throws {
-    self.init()
-    let container = try decoder.container(keyedBy: CodingKeys.self)
-    if let rewrite = try container.decodeIfPresent(Bool.self, forKey: .rewrite) { self.rewrite = rewrite }
-    if let lint = try container.decodeIfPresent(Lint.self, forKey: .lint) { self.lint = lint }
-    self.allowedFunctions =
-      try container.decodeIfPresent([String].self, forKey: .allowedFunctions)
-      ?? ["XCTAssertNoThrow"]
-  }
+    package init(from decoder: any Decoder) throws {
+        self.init()
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        if let rewrite = try container.decodeIfPresent(Bool.self, forKey: .rewrite) {
+            self.rewrite = rewrite
+        }
+        if let lint = try container.decodeIfPresent(Lint.self, forKey: .lint) { self.lint = lint }
+        allowedFunctions = try container.decodeIfPresent([String].self, forKey: .allowedFunctions)
+            ?? ["XCTAssertNoThrow"]
+    }
 }

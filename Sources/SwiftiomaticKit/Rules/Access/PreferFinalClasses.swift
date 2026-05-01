@@ -3,28 +3,28 @@ import SwiftSyntax
 /// Prefer `final class` unless a class is designed for subclassing.
 ///
 /// Classes should be `final` by default to communicate that they are not designed to be subclassed.
-/// Classes are left non-final if they are `open`, have "Base" in the name, have a comment
+/// Classes are left non-final if they are `open` , have "Base" in the name, have a comment
 /// mentioning "base" or "subclass", or are subclassed within the same file.
 ///
-/// When a class is made `final`, any `open` members are converted to `public` since `final`
+/// When a class is made `final` , any `open` members are converted to `public` since `final`
 /// classes cannot have `open` members.
 ///
 /// Lint: A non-final, non-open class declaration raises a warning.
 ///
-/// Rewrite: The `final` modifier is added and `open` members are converted to `public`.
+/// Rewrite: The `final` modifier is added and `open` members are converted to `public` .
 final class PreferFinalClasses: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
     override static var group: ConfigurationGroup? { .access }
     override static var defaultValue: BasicRuleValue { .init(rewrite: false, lint: .no) }
 
-    /// Per-file mutable state held as a typed lazy property on `Context`.
+    /// Per-file mutable state held as a typed lazy property on `Context` .
     final class State {
         var subclassedNames: Set<String> = []
     }
 
     // MARK: - Compact-pipeline scope hooks
 
-    /// Pre-scan the file for class names that appear in inheritance clauses, so a
-    /// later `ClassDecl` visit can leave those classes non-final.
+    /// Pre-scan the file for class names that appear in inheritance clauses, so a later `ClassDecl`
+    /// visit can leave those classes non-final.
     static func willEnter(_ node: SourceFileSyntax, context: Context) {
         let state = context.preferFinalClassesState
         collectSubclassedNamesRecursive(in: Syntax(node), into: &state.subclassedNames)
@@ -59,7 +59,10 @@ final class PreferFinalClasses: StaticFormatRule<BasicRuleValue>, @unchecked Sen
         return DeclSyntax(result)
     }
 
-    private static func collectSubclassedNamesRecursive(in node: Syntax, into names: inout Set<String>) {
+    private static func collectSubclassedNamesRecursive(
+        in node: Syntax,
+        into names: inout Set<String>
+    ) {
         if let classDecl = node.as(ClassDeclSyntax.self),
            let inheritanceClause = classDecl.inheritanceClause
         {
@@ -78,9 +81,10 @@ final class PreferFinalClasses: StaticFormatRule<BasicRuleValue>, @unchecked Sen
         let text = node.leadingTrivia.pieces
             .compactMap { piece -> String? in
                 switch piece {
-                    case let .docLineComment(text), let .docBlockComment(text),
-                        let .lineComment(text),
-                        let .blockComment(text):
+                    case let .docLineComment(text),
+                         let .docBlockComment(text),
+                         let .lineComment(text),
+                         let .blockComment(text):
                         text
                     default: nil
                 }
@@ -137,9 +141,12 @@ final class PreferFinalClasses: StaticFormatRule<BasicRuleValue>, @unchecked Sen
         return nil
     }
 
-    private static func openToPublic(_ modifiers: DeclModifierListSyntax) -> DeclModifierListSyntax? {
-        guard modifiers.contains(where: { $0.name.tokenKind == .keyword(.open) })
-        else { return nil }
+    private static func openToPublic(
+        _ modifiers: DeclModifierListSyntax
+    ) -> DeclModifierListSyntax? {
+        guard modifiers.contains(where: { $0.name.tokenKind == .keyword(.open) }) else {
+            return nil
+        }
         return DeclModifierListSyntax(
             modifiers.map { mod in
                 guard mod.name.tokenKind == .keyword(.open) else { return mod }
@@ -154,7 +161,7 @@ final class PreferFinalClasses: StaticFormatRule<BasicRuleValue>, @unchecked Sen
     }
 }
 
-extension Finding.Message {
-    fileprivate static let preferFinalClass: Finding.Message =
+fileprivate extension Finding.Message {
+    static let preferFinalClass: Finding.Message =
         "prefer 'final class' unless designed for subclassing"
 }

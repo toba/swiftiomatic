@@ -2,8 +2,8 @@ import SwiftSyntax
 
 /// Remove redundant `final` from members of `final` classes.
 ///
-/// When a class is declared `final`, all its members are implicitly final.
-/// Adding `final` to individual members is redundant.
+/// When a class is declared `final` , all its members are implicitly final. Adding `final` to
+/// individual members is redundant.
 ///
 /// Lint: If a `final` modifier is found on a member of a `final` class, a warning is raised.
 ///
@@ -13,7 +13,7 @@ final class RedundantFinal: StaticFormatRule<BasicRuleValue>, @unchecked Sendabl
     override class var defaultValue: BasicRuleValue { .init(rewrite: false, lint: .warn) }
 
     /// Strip `final` from members of a `final` class. Called from
-    /// `CompactSyntaxRewriter.visit(_: ClassDeclSyntax)`.
+    /// `CompactSyntaxRewriter.visit(_: ClassDeclSyntax)` .
     static func apply(_ node: ClassDeclSyntax, context: Context) -> ClassDeclSyntax {
         guard node.modifiers.contains(anyOf: [.final]) else { return node }
 
@@ -35,9 +35,8 @@ final class RedundantFinal: StaticFormatRule<BasicRuleValue>, @unchecked Sendabl
         _ decl: DeclSyntax,
         context: Context
     ) -> DeclSyntax? {
-        // A nested class is a distinct type; the outer class's finality
-        // doesn't prevent subclassing of nested classes, so `final` is
-        // meaningful here.
+        // A nested class is a distinct type; the outer class's finality doesn't prevent subclassing
+        // of nested classes, so `final` is meaningful here.
         if decl.is(ClassDeclSyntax.self) { return nil }
         guard let mods = decl.modifiersOrNil,
               let finalModifier = mods.first(where: { $0.name.tokenKind == .keyword(.final) })
@@ -47,7 +46,7 @@ final class RedundantFinal: StaticFormatRule<BasicRuleValue>, @unchecked Sendabl
     }
 }
 
-extension Finding.Message {
-    fileprivate static let removeFinal: Finding.Message =
+fileprivate extension Finding.Message {
+    static let removeFinal: Finding.Message =
         "remove 'final'; members of a final class are implicitly final"
 }

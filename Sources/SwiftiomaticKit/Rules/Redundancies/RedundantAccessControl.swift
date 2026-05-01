@@ -157,11 +157,11 @@ final class RedundantAccessControl: StaticFormatRule<BasicRuleValue>, @unchecked
         context: Context
     ) -> DeclSyntax {
         guard let extensionModifier = node.modifiers.accessLevelModifier,
-              case let .keyword(extensionKeyword) = extensionModifier.name.tokenKind
-        else { return DeclSyntax(node) }
-        let message:
-            Finding.Message = .removeRedundantExtensionACL(
-                keyword: extensionModifier.name.text)
+              case let .keyword(extensionKeyword) = extensionModifier.name.tokenKind else {
+            return DeclSyntax(node)
+        }
+        let message: Finding.Message = .removeRedundantExtensionACL(
+            keyword: extensionModifier.name.text)
 
         return DeclSyntax(
             rewriteMemberBlock(of: node) { decl in
@@ -182,8 +182,7 @@ final class RedundantAccessControl: StaticFormatRule<BasicRuleValue>, @unchecked
     ) -> Decl {
         guard let mod = decl.modifiers.accessLevelModifier,
               mod.name.tokenKind == .keyword(.internal),
-              mod.detail == nil
-        else { return decl }
+              mod.detail == nil else { return decl }
 
         Self.diagnose(.removeRedundantInternal, on: mod.name, context: context)
         return decl.removingModifiers([.internal], keyword: keyword)
@@ -220,8 +219,7 @@ final class RedundantAccessControl: StaticFormatRule<BasicRuleValue>, @unchecked
               let mod = mods.accessLevelModifier,
               mod.detail == nil,
               case let .keyword(modKeyword) = mod.name.tokenKind,
-              modKeyword == keyword
-        else { return decl }
+              modKeyword == keyword else { return decl }
         Self.diagnose(message, on: mod.name, context: context)
         return decl.removingModifiers([keyword])
     }

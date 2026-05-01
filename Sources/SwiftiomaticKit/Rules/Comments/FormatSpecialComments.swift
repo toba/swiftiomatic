@@ -1,6 +1,6 @@
 import SwiftSyntax
 
-/// Use correct formatting for `TODO:`, `MARK:`, and `FIXME:` comments.
+/// Use correct formatting for `TODO:` , `MARK:` , and `FIXME:` comments.
 ///
 /// These special comment tags must be uppercase, followed by a colon and a space. `MARK:` comments
 /// with a dash separator must use `// MARK: - text` format. Standalone `/// MARK:` doc comments are
@@ -14,7 +14,7 @@ final class FormatSpecialComments: StaticFormatRule<BasicRuleValue>, @unchecked 
 
     static func transform(
         _ token: TokenSyntax,
-        parent: Syntax?,
+        parent _: Syntax?,
         context: Context
     ) -> TokenSyntax {
         var result = token
@@ -27,7 +27,8 @@ final class FormatSpecialComments: StaticFormatRule<BasicRuleValue>, @unchecked 
             if let fixed = fixTriviaPiece(piece, index: index, pieces: leadingPieces) {
                 leadingPieces[index] = fixed
                 leadingChanged = true
-                Self.diagnose(.formatTodoComment, on: token, context: context, anchor: .leadingTrivia(index))
+                Self.diagnose(
+                    .formatTodoComment, on: token, context: context, anchor: .leadingTrivia(index))
             }
         }
 
@@ -35,7 +36,8 @@ final class FormatSpecialComments: StaticFormatRule<BasicRuleValue>, @unchecked 
             if let fixed = fixTriviaPiece(piece, index: index, pieces: trailingPieces) {
                 trailingPieces[index] = fixed
                 trailingChanged = true
-                Self.diagnose(.formatTodoComment, on: token, context: context, anchor: .trailingTrivia(index))
+                Self.diagnose(
+                    .formatTodoComment, on: token, context: context, anchor: .trailingTrivia(index))
             }
         }
 
@@ -53,22 +55,21 @@ final class FormatSpecialComments: StaticFormatRule<BasicRuleValue>, @unchecked 
         pieces: [TriviaPiece]
     ) -> TriviaPiece? {
         switch piece {
-            case .lineComment(let text):
+            case let .lineComment(text):
                 guard let fixed = fixLineComment(text) else { return nil }
                 return .lineComment(fixed)
 
-            case .blockComment(let text):
+            case let .blockComment(text):
                 guard let fixed = fixBlockComment(text) else { return nil }
                 return .blockComment(fixed)
 
-            case .docLineComment(let text):
+            case let .docLineComment(text):
                 // Only convert standalone /// with tags to //
                 guard !isPartOfDocBlock(index: index, pieces: pieces) else { return nil }
                 guard let fixed = fixDocLineComment(text) else { return nil }
                 return .lineComment(fixed)
 
-            default:
-                return nil
+            default: return nil
         }
     }
 
@@ -130,24 +131,18 @@ final class FormatSpecialComments: StaticFormatRule<BasicRuleValue>, @unchecked 
         // Check before
         for j in stride(from: index - 1, through: 0, by: -1) {
             switch pieces[j] {
-                case .newlines, .carriageReturns, .carriageReturnLineFeeds, .spaces, .tabs:
-                    continue
-                case .docLineComment:
-                    return true
-                default:
-                    break
+                case .newlines, .carriageReturns, .carriageReturnLineFeeds, .spaces, .tabs: continue
+                case .docLineComment: return true
+                default: break
             }
             break
         }
         // Check after
         for j in (index + 1)..<pieces.count {
             switch pieces[j] {
-                case .newlines, .carriageReturns, .carriageReturnLineFeeds, .spaces, .tabs:
-                    continue
-                case .docLineComment:
-                    return true
-                default:
-                    break
+                case .newlines, .carriageReturns, .carriageReturnLineFeeds, .spaces, .tabs: continue
+                case .docLineComment: return true
+                default: break
             }
             break
         }
@@ -166,8 +161,8 @@ final class FormatSpecialComments: StaticFormatRule<BasicRuleValue>, @unchecked 
         }
     }
 
-    /// Fix the body of a comment (after prefix and leading spaces) for tag formatting.
-    /// Returns the fixed body, or nil if no change needed.
+    /// Fix the body of a comment (after prefix and leading spaces) for tag formatting. Returns the
+    /// fixed body, or nil if no change needed.
     private static func fixCommentBody(_ body: String) -> String? {
         var normalized = body
 
@@ -217,7 +212,7 @@ final class FormatSpecialComments: StaticFormatRule<BasicRuleValue>, @unchecked 
     }
 }
 
-extension Finding.Message {
-    fileprivate static let formatTodoComment: Finding.Message =
+fileprivate extension Finding.Message {
+    static let formatTodoComment: Finding.Message =
         "use correct formatting for TODO/MARK/FIXME comment"
 }

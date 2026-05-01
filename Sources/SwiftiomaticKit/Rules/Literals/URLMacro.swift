@@ -2,15 +2,15 @@ import SwiftSyntax
 
 /// Replace force-unwrapped `URL(string:)` initializers with a configured URL macro.
 ///
-/// When configured with a macro name like `#URL` and module like `URLFoundation`, this rule
-/// converts `URL(string: "https://example.com")!` to `#URL("https://example.com")` and adds
-/// the module import if not already present.
+/// When configured with a macro name like `#URL` and module like `URLFoundation` , this rule
+/// converts `URL(string: "https://example.com")!` to `#URL("https://example.com")` and adds the
+/// module import if not already present.
 ///
 /// Only simple string literals are converted — string interpolations, concatenations, and
 /// non-literal expressions are left alone. The `URL(string:relativeTo:)` and
 /// `URL(fileURLWithPath:)` initializers are not affected.
 ///
-/// Requires configuration via `urlMacro.macroName` and `urlMacro.moduleName`.
+/// Requires configuration via `urlMacro.macroName` and `urlMacro.moduleName` .
 ///
 /// Lint: A warning is raised for each `URL(string: "...")!` that can be converted.
 ///
@@ -25,7 +25,7 @@ final class URLMacro: StaticFormatRule<URLMacroConfiguration>, @unchecked Sendab
         return config
     }
 
-    /// Per-file mutable state held as a typed lazy property on `Context`.
+    /// Per-file mutable state held as a typed lazy property on `Context` .
     final class State {
         /// Whether any replacements were made (drives import addition).
         var madeReplacements = false
@@ -39,9 +39,10 @@ final class URLMacro: StaticFormatRule<URLMacroConfiguration>, @unchecked Sendab
         let state = context.urlMacroState
         let config = context.configuration[Self.self]
         guard let moduleName = config.moduleName else { return }
+
         for stmt in node.statements {
             if let importDecl = stmt.item.as(ImportDeclSyntax.self),
-                importDecl.path.first?.name.text == moduleName
+               importDecl.path.first?.name.text == moduleName
             {
                 state.hasModuleImport = true
                 break
@@ -61,12 +62,9 @@ final class URLMacro: StaticFormatRule<URLMacroConfiguration>, @unchecked Sendab
         guard config.macroName != nil else { return node }
 
         guard state.madeReplacements,
-            !state.hasModuleImport,
-            let moduleName = config.moduleName,
-            !moduleName.isEmpty
-        else {
-            return node
-        }
+              !state.hasModuleImport,
+              let moduleName = config.moduleName,
+              !moduleName.isEmpty else { return node }
 
         // Build the import declaration
         let importDecl = ImportDeclSyntax(
@@ -85,15 +83,13 @@ final class URLMacro: StaticFormatRule<URLMacroConfiguration>, @unchecked Sendab
 
         // Insert before the first non-import statement, or at the top
         var insertIndex = 0
+
         for (i, stmt) in statements.enumerated() {
-            if stmt.item.is(ImportDeclSyntax.self) {
-                insertIndex = i + 1
-            } else {
-                break
-            }
+            if stmt.item.is(ImportDeclSyntax.self) { insertIndex = i + 1 } else { break }
         }
 
         var importWithTrivia = importItem
+
         if insertIndex > 0 {
             // Inserting after existing imports: just a newline to continue the import block
             importWithTrivia.leadingTrivia = .newline
@@ -128,26 +124,19 @@ final class URLMacro: StaticFormatRule<URLMacroConfiguration>, @unchecked Sendab
 
         // Called expression must be `URL`
         guard let declRef = call.calledExpression.as(DeclReferenceExprSyntax.self),
-            declRef.baseName.text == "URL"
-        else {
+              declRef.baseName.text == "URL" else {
             return ExprSyntax(node)
         }
 
         // Must have exactly one argument labeled `string:`
         let args = Array(call.arguments)
         guard args.count == 1,
-            let label = args[0].label,
-            label.text == "string"
-        else {
-            return ExprSyntax(node)
-        }
+              let label = args[0].label,
+              label.text == "string" else { return ExprSyntax(node) }
 
         // The argument value must be a simple string literal (no interpolation)
         guard let stringLiteral = args[0].expression.as(StringLiteralExprSyntax.self),
-            isSimpleStringLiteral(stringLiteral)
-        else {
-            return ExprSyntax(node)
-        }
+              isSimpleStringLiteral(stringLiteral) else { return ExprSyntax(node) }
 
         Self.diagnose(.replaceWithURLMacro, on: node, context: context)
 
@@ -177,17 +166,13 @@ final class URLMacro: StaticFormatRule<URLMacroConfiguration>, @unchecked Sendab
 
     /// Returns `true` if the string literal contains only plain text (no interpolation segments).
     private static func isSimpleStringLiteral(_ literal: StringLiteralExprSyntax) -> Bool {
-        for segment in literal.segments {
-            if !segment.is(StringSegmentSyntax.self) {
-                return false
-            }
-        }
+        for segment in literal.segments where !segment.is(StringSegmentSyntax.self) { return false }
         return true
     }
 }
 
-extension Finding.Message {
-    fileprivate static let replaceWithURLMacro: Finding.Message =
+fileprivate extension Finding.Message {
+    static let replaceWithURLMacro: Finding.Message =
         "replace force-unwrapped 'URL(string:)' with URL macro"
 }
 
@@ -196,11 +181,11 @@ extension Finding.Message {
 package struct URLMacroConfiguration: SyntaxRuleValue {
     package var rewrite = true
     package var lint: Lint = .warn
-    /// Name of the URL macro to substitute for `URL(string:)!`, e.g. `"URL"`
-    /// or `"#URL"`. When `nil`, the rule is inactive.
+    /// Name of the URL macro to substitute for `URL(string:)!` , e.g. `"URL"` or `"#URL"` . When
+    /// `nil` , the rule is inactive.
     package var macroName: String?
-    /// Module that defines `macroName`, used to insert an `import` statement
-    /// when applying the rewrite. When `nil`, no import is added.
+    /// Module that defines `macroName` , used to insert an `import` statement when applying the
+    /// rewrite. When `nil` , no import is added.
     package var moduleName: String?
 
     package init() {}
@@ -212,7 +197,7 @@ package struct URLMacroConfiguration: SyntaxRuleValue {
             self.rewrite = rewrite
         }
         if let lint = try container.decodeIfPresent(Lint.self, forKey: .lint) { self.lint = lint }
-        self.macroName = try container.decodeIfPresent(String.self, forKey: .macroName)
-        self.moduleName = try container.decodeIfPresent(String.self, forKey: .moduleName)
+        macroName = try container.decodeIfPresent(String.self, forKey: .macroName)
+        moduleName = try container.decodeIfPresent(String.self, forKey: .moduleName)
     }
 }

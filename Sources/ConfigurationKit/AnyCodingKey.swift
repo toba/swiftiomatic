@@ -5,9 +5,10 @@ import Foundation
 /// This avoids the need to predefine a [CodingKey enumeration][dev]. The implementation is based on
 /// [advanced-codable][git] and the accompanying [article][nap].
 ///
-/// [dev]: https://developer.apple.com/documentation/foundation/archives_and_serialization/encoding_and_decoding_custom_types#2904057
-/// [git]: https://github.com/rnapier/advanced-codable/tree/main
-/// [nap]: https://robnapier.net/anycodingkey
+/// [dev]:
+/// https://developer.apple.com/documentation/foundation/archives_and_serialization/encoding_and_decoding_custom_types#2904057
+/// [git]: https://github.com/rnapier/advanced-codable/tree/main [nap]:
+/// https://robnapier.net/anycodingkey
 package struct AnyCodingKey: CodingKey, CustomStringConvertible, ExpressibleByStringLiteral,
     ExpressibleByIntegerLiteral, Hashable, Comparable
 {
@@ -21,13 +22,8 @@ package struct AnyCodingKey: CodingKey, CustomStringConvertible, ExpressibleBySt
         self.intValue = intValue
     }
 
-    //    public init(_ base: some CodingKey) {
-    //        if let intValue = base.intValue {
-    //            self.init(intValue: intValue)
-    //        } else {
-    //            self.init(stringValue: base.stringValue)!
-    //        }
-    //    }
+    // public init(_ base: some CodingKey) { if let intValue = base.intValue { self.init(intValue:
+    // intValue) } else { self.init(stringValue: base.stringValue)! } }
 
     package init(stringLiteral value: String) { self.init(value) }
     package init(integerLiteral value: Int) { self.init(intValue: value) }
@@ -36,8 +32,8 @@ package struct AnyCodingKey: CodingKey, CustomStringConvertible, ExpressibleBySt
     }
 }
 
-extension Decoder {
-    package var anyKeyedContainer: KeyedDecodingContainer<AnyCodingKey> {
+package extension Decoder {
+    var anyKeyedContainer: KeyedDecodingContainer<AnyCodingKey> {
         get throws { try container(keyedBy: AnyCodingKey.self) }
     }
 }

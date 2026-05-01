@@ -12,18 +12,14 @@
 
 import Foundation
 
-/// Wraps a `FileHandle` so that it can be used by APIs that take a `TextOutputStream`-conforming
+/// Wraps a `FileHandle` so that it can be used by APIs that take a `TextOutputStream` -conforming
 /// type as an input.
 struct FileHandleTextOutputStream: TextOutputStream {
     /// The underlying file handle to which the text will be written.
     private var fileHandle: FileHandle
 
     /// Creates a new output stream that writes to the given file handle.
-    init(_ fileHandle: FileHandle) {
-        self.fileHandle = fileHandle
-    }
+    init(_ fileHandle: FileHandle) { self.fileHandle = fileHandle }
 
-    func write(_ string: String) {
-        fileHandle.write(string.data(using: .utf8)!)  // Conversion to UTF-8 cannot fail
-    }
+    func write(_ string: String) { fileHandle.write(string.data(using: .utf8)!) }
 }

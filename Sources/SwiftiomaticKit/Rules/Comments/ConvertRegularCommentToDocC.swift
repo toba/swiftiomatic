@@ -2,9 +2,9 @@ import SwiftSyntax
 
 /// Use doc comments for API declarations, otherwise use regular comments.
 ///
-/// Comments immediately before type declarations, properties, methods, and other
-/// API-level constructs use `///` doc comment syntax. Comments inside function
-/// bodies use `//` regular comment syntax, except for nested function declarations.
+/// Comments immediately before type declarations, properties, methods, and other API-level
+/// constructs use `///` doc comment syntax. Comments inside function bodies use `//` regular
+/// comment syntax, except for nested function declarations.
 ///
 /// Lint: When a regular comment should be a doc comment, or vice versa.
 ///
@@ -40,9 +40,8 @@ final class ConvertRegularCommentToDocC: StaticFormatRule<BasicRuleValue>, @unch
         parent _: Syntax?,
         context: Context
     ) -> CodeBlockItemSyntax {
-        guard case .decl(let decl) = node.item,
-            isDocCommentableDeclaration(decl)
-        else { return node }
+        guard case let .decl(decl) = node.item,
+              isDocCommentableDeclaration(decl) else { return node }
 
         if isAtFileScope(node) {
             let isConsecutive = isFollowedByConsecutiveCodeItem(node)
@@ -83,8 +82,9 @@ final class ConvertRegularCommentToDocC: StaticFormatRule<BasicRuleValue>, @unch
             if hasDirective { return node }
 
             if hasBlankLine { return convertDocToRegular(node, context: context) }
-            if preserveRegular { return node }
-            return convertRegularToDoc(node, context: context)
+            return preserveRegular
+                ? node
+                : convertRegularToDoc(node, context: context)
         } else {
             return convertDocToRegular(node, context: context)
         }
@@ -99,14 +99,13 @@ final class ConvertRegularCommentToDocC: StaticFormatRule<BasicRuleValue>, @unch
 
         for piece in node.leadingTrivia.pieces {
             switch piece {
-                case .lineComment(let text):
+                case let .lineComment(text):
                     newPieces.append(.docLineComment("/" + text))
                     modified = true
-                case .blockComment(let text):
+                case let .blockComment(text):
                     newPieces.append(.docBlockComment("/*" + "*" + String(text.dropFirst(2))))
                     modified = true
-                default:
-                    newPieces.append(piece)
+                default: newPieces.append(piece)
             }
         }
 
@@ -124,7 +123,7 @@ final class ConvertRegularCommentToDocC: StaticFormatRule<BasicRuleValue>, @unch
 
         for piece in node.leadingTrivia.pieces {
             switch piece {
-                case .docLineComment(let text):
+                case let .docLineComment(text):
                     let slashCount = text.prefix(while: { $0 == "/" }).count
                     guard slashCount <= 3 else {
                         newPieces.append(piece)
@@ -132,7 +131,7 @@ final class ConvertRegularCommentToDocC: StaticFormatRule<BasicRuleValue>, @unch
                     }
                     newPieces.append(.lineComment(String(text.dropFirst())))
                     modified = true
-                case .docBlockComment(let text):
+                case let .docBlockComment(text):
                     let starCount = text.dropFirst(2).prefix(while: { $0 == "*" }).count
                     guard starCount <= 1 else {
                         newPieces.append(piece)
@@ -140,8 +139,7 @@ final class ConvertRegularCommentToDocC: StaticFormatRule<BasicRuleValue>, @unch
                     }
                     newPieces.append(.blockComment("/*" + String(text.dropFirst(3))))
                     modified = true
-                default:
-                    newPieces.append(piece)
+                default: newPieces.append(piece)
             }
         }
 
@@ -172,7 +170,7 @@ final class ConvertRegularCommentToDocC: StaticFormatRule<BasicRuleValue>, @unch
 
     private static func containsDirective(_ trivia: Trivia) -> Bool {
         for piece in trivia.pieces {
-            guard case .lineComment(let text) = piece else { continue }
+            guard case let .lineComment(text) = piece else { continue }
             let body = text.dropFirst(2).drop(while: { $0 == " " })
 
             if directivePrefixes.contains(where: { body.hasPrefix($0) }) { return true }
@@ -196,9 +194,9 @@ final class ConvertRegularCommentToDocC: StaticFormatRule<BasicRuleValue>, @unch
 
         for piece in trivia.pieces[(idx + 1)...] {
             switch piece {
-                case .newlines(let n): newlines += n
-                case .carriageReturns(let n): newlines += n
-                case .carriageReturnLineFeeds(let n): newlines += n
+                case let .newlines(n): newlines += n
+                case let .carriageReturns(n): newlines += n
+                case let .carriageReturnLineFeeds(n): newlines += n
                 default: break
             }
         }
@@ -228,9 +226,7 @@ final class ConvertRegularCommentToDocC: StaticFormatRule<BasicRuleValue>, @unch
     }
 }
 
-extension Finding.Message {
-    fileprivate static let useDocComment: Finding.Message =
-        "use doc comment (///) for API declarations"
-    fileprivate static let useRegularComment: Finding.Message =
-        "use regular comment (//) inside implementation"
+fileprivate extension Finding.Message {
+    static let useDocComment: Finding.Message = "use doc comment (///) for API declarations"
+    static let useRegularComment: Finding.Message = "use regular comment (//) inside implementation"
 }

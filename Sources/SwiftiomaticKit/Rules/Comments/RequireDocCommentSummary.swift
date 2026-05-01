@@ -27,10 +27,10 @@ final class RequireDocCommentSummary: LintSyntaxRule<LintOnlyValue>, @unchecked 
     /// even on platforms that support the latter (currently only Apple OSes).
     ///
     /// This allows test runs on those platforms to test both implementations.
-    private static let _forcesFallbackStorage = Mutex(false)
-    package static var _forcesFallbackModeForTesting: Bool {
-        get { _forcesFallbackStorage.withLock { $0 } }
-        set { _forcesFallbackStorage.withLock { $0 = newValue } }
+    private static let forcesFallbackStorage = Mutex(false)
+    package static var forcesFallbackModeForTesting: Bool {
+        get { forcesFallbackStorage.withLock { $0 } }
+        set { forcesFallbackStorage.withLock { $0 = newValue } }
     }
 
     /// Identifies this rule as being opt-in. Well written docs on declarations are important, but
@@ -133,14 +133,14 @@ final class RequireDocCommentSummary: LintSyntaxRule<LintOnlyValue>, @unchecked 
     ///   empty to indicate that there were no _complete_ sentences found, and `trailingText` will
     ///   contain the actual text).
     private func sentences(in text: String) -> (sentences: [String], trailingText: Substring) {
-        if RequireDocCommentSummary._forcesFallbackModeForTesting {
+        if RequireDocCommentSummary.forcesFallbackModeForTesting {
             return nonLinguisticSentenceApproximations(in: text)
         }
         var sentences = [String]()
         var tags = [NLTag]()
         var tokenRanges = [Range<String.Index>]()
         let tagger = NLTagger(tagSchemes: [.lexicalClass])
-        
+
         tagger.string = text
         tagger.enumerateTags(
             in: text.startIndex..<text.endIndex,

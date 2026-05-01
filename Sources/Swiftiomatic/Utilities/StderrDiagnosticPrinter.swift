@@ -16,17 +16,7 @@ import Synchronization
 /// Manages printing of diagnostics to standard error.
 final class StderrDiagnosticPrinter: Sendable {
     /// Determines how colors are used in printed diagnostics.
-    enum ColorMode {
-        /// Colors are used if stderr is detected to be connected to a TTY; otherwise, colors will not
-        /// be used (for example, if stderr is redirected to a file).
-        case auto
-
-        /// Colors will not be used.
-        case off
-
-        /// Colors will always be used.
-        case on
-    }
+    enum ColorMode { case auto, off, on }
 
     /// Definitions of the ANSI "Select Graphic Rendition" sequences used in diagnostics.
     private enum ANSISGR: String {
@@ -47,24 +37,22 @@ final class StderrDiagnosticPrinter: Sendable {
     /// Creates a new standard error diagnostic printer with the given color mode.
     init(colorMode: ColorMode) {
         switch colorMode {
-        case .auto:
-            useColors = isTTY(FileHandle.standardError)
-        case .off:
-            useColors = false
-        case .on:
-            useColors = true
+            case .auto: useColors = isTTY(FileHandle.standardError)
+            case .off: useColors = false
+            case .on: useColors = true
         }
     }
 
     /// Prints a diagnostic to standard error.
     func printDiagnostic(_ diagnostic: Diagnostic) {
-        // Build the complete formatted message outside the lock so the lock only spans the
-        // single write call that needs ordering with concurrent producers.
+        // Build the complete formatted message outside the lock so the lock only spans the single
+        // write call that needs ordering with concurrent producers.
         var message = "\(ansiSGR(.reset))\(description(of: diagnostic.location)): "
+
         switch diagnostic.severity {
-        case .error: message += "\(ansiSGR(.boldRed))error: "
-        case .warning: message += "\(ansiSGR(.boldYellow))warning: "
-        case .note: message += "\(ansiSGR(.boldGray))note: "
+            case .error: message += "\(ansiSGR(.boldRed))error: "
+            case .warning: message += "\(ansiSGR(.boldYellow))warning: "
+            case .note: message += "\(ansiSGR(.boldGray))note: "
         }
         if let category = diagnostic.category {
             message += "\(ansiSGR(.boldMagenta))[\(category)] "
@@ -77,12 +65,10 @@ final class StderrDiagnosticPrinter: Sendable {
         }
     }
 
-    /// Returns a string representation of the given diagnostic location, or a fallback string if the
-    /// location was not known.
+    /// Returns a string representation of the given diagnostic location, or a fallback string if
+    /// the location was not known.
     private func description(of location: Diagnostic.Location?) -> String {
-        if let location = location {
-            return "\(location.file):\(location.line):\(location.column)"
-        }
+        if let location { return "\(location.file):\(location.line):\(location.column)" }
         return "<unknown>"
     }
 

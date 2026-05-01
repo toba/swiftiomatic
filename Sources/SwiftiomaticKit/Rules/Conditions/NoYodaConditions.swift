@@ -16,18 +16,20 @@ final class NoYodaConditions: StaticFormatRule<BasicRuleValue>, @unchecked Senda
 
     static func transform(
         _ node: InfixOperatorExprSyntax,
-        parent: Syntax?,
+        parent _: Syntax?,
         context: Context
     ) -> ExprSyntax {
-        guard let binOp = node.operator.as(BinaryOperatorExprSyntax.self)
-        else { return ExprSyntax(node) }
+        guard let binOp = node.operator.as(BinaryOperatorExprSyntax.self) else {
+            return ExprSyntax(node)
+        }
 
         let op = binOp.operator.text
         guard let flippedOp = Self.flippedOperators[op] else { return ExprSyntax(node) }
 
         // Only fire when LHS is constant and RHS is not
-        guard isConstant(node.leftOperand), !isConstant(node.rightOperand)
-        else { return ExprSyntax(node) }
+        guard isConstant(node.leftOperand), !isConstant(node.rightOperand) else {
+            return ExprSyntax(node)
+        }
 
         Self.diagnose(.yodaCondition, on: node.leftOperand, context: context)
 

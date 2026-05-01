@@ -29,11 +29,11 @@ final class WrapSingleLineComments: StaticFormatRule<BasicRuleValue>, @unchecked
         var i = 0
 
         // Conservative column floor: comments in leading trivia are re-indented by the pretty
-        // printer to the syntactic indentation of the enclosing scope, regardless of their
-        // column in the source trivia. Wrapping based on a stale source-trivia column produces
-        // lines that overflow once layout adds indentation, requiring a second pass to wrap. By
-        // taking the larger of the trivia column and the syntactic indent, the wrapped output is
-        // a fixed point. See jig 5zd-wm4.
+        // printer to the syntactic indentation of the enclosing scope, regardless of their column
+        // in the source trivia. Wrapping based on a stale source-trivia column produces lines that
+        // overflow once layout adds indentation, requiring a second pass to wrap. By taking the
+        // larger of the trivia column and the syntactic indent, the wrapped output is a fixed
+        // point. See jig 5zd-wm4.
         let layoutColumnFloor = syntacticIndentColumn(parent: parent, context: context)
 
         while i < pieces.count {
@@ -49,6 +49,7 @@ final class WrapSingleLineComments: StaticFormatRule<BasicRuleValue>, @unchecked
                         maxWidth: maxWidth,
                         layoutColumnFloor: layoutColumnFloor
                     )
+
                     if result.didChange {
                         changed = true
                         if firstCommentOriginalIndex == nil {
@@ -70,6 +71,7 @@ final class WrapSingleLineComments: StaticFormatRule<BasicRuleValue>, @unchecked
                         maxWidth: maxWidth,
                         layoutColumnFloor: layoutColumnFloor
                     )
+
                     if result.didChange {
                         changed = true
                         if firstCommentOriginalIndex == nil {
@@ -119,11 +121,13 @@ final class WrapSingleLineComments: StaticFormatRule<BasicRuleValue>, @unchecked
         let indent = indentationBefore(index: index, in: pieces)
         let column = max(indent.count, layoutColumnFloor)
 
-        guard column + text.count > maxWidth
-        else { return WrapResult(didChange: false, advance: 1, originalIndex: 0) }
+        guard column + text.count > maxWidth else {
+            return WrapResult(didChange: false, advance: 1, originalIndex: 0)
+        }
 
-        guard !isCommentDirective(text)
-        else { return WrapResult(didChange: false, advance: 1, originalIndex: 0) }
+        guard !isCommentDirective(text) else {
+            return WrapResult(didChange: false, advance: 1, originalIndex: 0)
+        }
 
         let wrapped = wrapComment(
             text: text,
@@ -131,13 +135,15 @@ final class WrapSingleLineComments: StaticFormatRule<BasicRuleValue>, @unchecked
             column: column,
             maxWidth: maxWidth
         )
-        guard wrapped.count > 1
-        else { return WrapResult(didChange: false, advance: 1, originalIndex: 0) }
+        guard wrapped.count > 1 else {
+            return WrapResult(didChange: false, advance: 1, originalIndex: 0)
+        }
 
         let origIdx = originalIndexMap[index]
 
         // Build replacement trivia pieces
         var replacement = [TriviaPiece]()
+
         for (j, line) in wrapped.enumerated() {
             if j > 0 {
                 replacement.append(.newlines(1))
@@ -162,14 +168,15 @@ final class WrapSingleLineComments: StaticFormatRule<BasicRuleValue>, @unchecked
 
     // MARK: - Helpers
 
-    /// Returns a conservative estimate of the column the pretty printer will indent the comment
-    /// to. Walks ancestor nodes counting indent-introducing scopes (code blocks, member blocks,
-    /// closures, switch cases, accessor blocks) and converts the depth to a column count using
-    /// the configured indentation unit. The result is a lower bound on the actual layout column;
-    /// using `max(triviaColumn, this)` makes wrap decisions stable across passes.
+    /// Returns a conservative estimate of the column the pretty printer will indent the comment to.
+    /// Walks ancestor nodes counting indent-introducing scopes (code blocks, member blocks,
+    /// closures, switch cases, accessor blocks) and converts the depth to a column count using the
+    /// configured indentation unit. The result is a lower bound on the actual layout column; using
+    /// `max(triviaColumn, this)` makes wrap decisions stable across passes.
     private static func syntacticIndentColumn(parent: Syntax?, context: Context) -> Int {
         var depth = 0
         var current: Syntax? = parent
+
         while let node = current {
             if node.is(CodeBlockSyntax.self)
                 || node.is(MemberBlockSyntax.self)
@@ -183,6 +190,7 @@ final class WrapSingleLineComments: StaticFormatRule<BasicRuleValue>, @unchecked
         }
         let unit = context.configuration[IndentationSetting.self]
         let width: Int
+
         switch unit {
             case let .spaces(n): width = n
             case let .tabs(n): width = n * context.configuration[TabWidth.self]
@@ -194,6 +202,7 @@ final class WrapSingleLineComments: StaticFormatRule<BasicRuleValue>, @unchecked
     private static func indentationBefore(index: Int, in pieces: [TriviaPiece]) -> String {
         var indent = ""
         var j = index - 1
+
         while j >= 0 {
             switch pieces[j] {
                 case let .spaces(n):
@@ -241,6 +250,7 @@ final class WrapSingleLineComments: StaticFormatRule<BasicRuleValue>, @unchecked
 
         for word in words {
             let wordLength = word.count + 1
+
             if currentLength + wordLength <= maxWidth
                 || column + continuationPrefix.count + word.count > maxWidth
             {

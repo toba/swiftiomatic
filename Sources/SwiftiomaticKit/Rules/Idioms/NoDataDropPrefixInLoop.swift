@@ -1,11 +1,11 @@
 import SwiftSyntax
 
-/// Lint `dropFirst`/`dropLast`/`prefix`/`suffix` calls inside a loop body.
+/// Lint `dropFirst` / `dropLast` / `prefix` / `suffix` calls inside a loop body.
 ///
-/// On value-typed collections like `Data` and `Array`, these methods copy the
-/// underlying storage. Calling them inside a loop produces quadratic cost.
-/// Prefer index-based iteration (`var idx = data.startIndex; while idx < end { ... }`)
-/// or a single slice computed before the loop.
+/// On value-typed collections like `Data` and `Array` , these methods copy the underlying storage.
+/// Calling them inside a loop produces quadratic cost. Prefer index-based iteration (
+/// `var idx = data.startIndex; while idx < end { ... }` ) or a single slice computed before the
+/// loop.
 final class NoDataDropPrefixInLoop: LintSyntaxRule<LintOnlyValue>, @unchecked Sendable {
     override class var group: ConfigurationGroup? { .idioms }
 
@@ -27,11 +27,10 @@ final class NoDataDropPrefixInLoop: LintSyntaxRule<LintOnlyValue>, @unchecked Se
     }
 
     private func check(loopBody: CodeBlockItemListSyntax) {
-        let collector = CopyingSliceCollector(methods: Self.copyingSliceMethods, viewMode: .sourceAccurate)
+        let collector = CopyingSliceCollector(
+            methods: Self.copyingSliceMethods, viewMode: .sourceAccurate)
         collector.walk(loopBody)
-        for hit in collector.matches {
-            diagnose(.copyingSliceInLoop(hit.method), on: hit.call)
-        }
+        for hit in collector.matches { diagnose(.copyingSliceInLoop(hit.method), on: hit.call) }
     }
 }
 
@@ -53,23 +52,17 @@ private final class CopyingSliceCollector: SyntaxVisitor {
         return .visitChildren
     }
 
-    // Don't descend into nested closures or nested loops — the latter are
-    // their own scope and reported by their own visit().
-    override func visit(_ node: ClosureExprSyntax) -> SyntaxVisitorContinueKind {
-        .skipChildren
-    }
+    // Don't descend into nested closures or nested loops — the latter are their own scope and
+    // reported by their own visit().
+    override func visit(_: ClosureExprSyntax) -> SyntaxVisitorContinueKind { .skipChildren }
 
-    override func visit(_ node: ForStmtSyntax) -> SyntaxVisitorContinueKind {
-        .skipChildren
-    }
+    override func visit(_: ForStmtSyntax) -> SyntaxVisitorContinueKind { .skipChildren }
 
-    override func visit(_ node: WhileStmtSyntax) -> SyntaxVisitorContinueKind {
-        .skipChildren
-    }
+    override func visit(_: WhileStmtSyntax) -> SyntaxVisitorContinueKind { .skipChildren }
 }
 
-extension Finding.Message {
-    fileprivate static func copyingSliceInLoop(_ method: String) -> Finding.Message {
+fileprivate extension Finding.Message {
+    static func copyingSliceInLoop(_ method: String) -> Finding.Message {
         "'.\(method)' inside a loop copies the collection on every iteration — use index advancement or a single slice"
     }
 }

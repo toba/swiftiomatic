@@ -1,11 +1,10 @@
 import SwiftSyntax
 
-/// Collapses multi-line `if`/`else` (and `else if` chains) onto a single line
-/// when every branch contains exactly one statement and the collapsed form fits
-/// within the configured line length.
+/// Collapses multi-line `if` / `else` (and `else if` chains) onto a single line when every branch
+/// contains exactly one statement and the collapsed form fits within the configured line length.
 ///
-/// Complements `PreferTernary` for cases ternary can't reach: `if let`/`if case`
-/// conditional bindings, `if #available`, and multi-clause conditions.
+/// Complements `PreferTernary` for cases ternary can't reach: `if let` / `if case` conditional
+/// bindings, `if #available` , and multi-clause conditions.
 ///
 /// ```swift
 /// // Before
@@ -19,26 +18,24 @@ import SwiftSyntax
 /// if let defaultValue = last?.defaultValue { defaultValue } else { last?.type }
 /// ```
 ///
-/// Lint: A multi-line if/else where each branch has a single statement and the
-///       collapsed form fits within line length raises a warning.
+/// Lint: A multi-line if/else where each branch has a single statement and the collapsed form fits
+/// within line length raises a warning.
 ///
 /// Rewrite: The chain is collapsed onto a single line.
 final class CollapseSimpleIfElse: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
     override class var group: ConfigurationGroup? { .wrap }
-    override class var defaultValue: BasicRuleValue {
-        BasicRuleValue(rewrite: false, lint: .no)
-    }
+    override class var defaultValue: BasicRuleValue { .init(rewrite: false, lint: .no) }
 
     static func transform(
         _ ifNode: IfExprSyntax,
         parent: Syntax?,
         context: Context
     ) -> ExprSyntax {
-        // Only act at the chain top — `else if` links are reached through the outer if.
-        // Use the captured pre-recursion parent (post-recursion node.parent is nil).
+        // Only act at the chain top — `else if` links are reached through the outer if. Use the
+        // captured pre-recursion parent (post-recursion node.parent is nil).
         if parent?.is(IfExprSyntax.self) == true { return ExprSyntax(ifNode) }
 
-        // Bare `if` with no else is `WrapSingleLineBodies`'s territory.
+        // Bare `if` with no else is `WrapSingleLineBodies` 's territory.
         guard ifNode.elseBody != nil else { return ExprSyntax(ifNode) }
 
         if isAlreadyInline(ifNode) { return ExprSyntax(ifNode) }
@@ -58,63 +55,58 @@ final class CollapseSimpleIfElse: StaticFormatRule<BasicRuleValue>, @unchecked S
 
 // MARK: - Validation
 
-extension CollapseSimpleIfElse {
-
+fileprivate extension CollapseSimpleIfElse {
     /// Whether the entire chain is already on a single source line.
-    fileprivate static func isAlreadyInline(_ node: IfExprSyntax) -> Bool {
+    static func isAlreadyInline(_ node: IfExprSyntax) -> Bool {
         var current = node
+
         while true {
             if current.body.leftBrace.trailingTrivia.containsNewlines { return false }
             if current.body.rightBrace.leadingTrivia.containsNewlines { return false }
+
             switch current.elseBody {
-            case nil:
-                return true
-            case .ifExpr(let next):
-                if next.ifKeyword.leadingTrivia.containsNewlines { return false }
-                current = next
-            case .codeBlock(let block):
-                if block.leftBrace.leadingTrivia.containsNewlines { return false }
-                if block.leftBrace.trailingTrivia.containsNewlines { return false }
-                if block.rightBrace.leadingTrivia.containsNewlines { return false }
-                return true
+                case nil: return true
+                case let .ifExpr(next):
+                    if next.ifKeyword.leadingTrivia.containsNewlines { return false }
+                    current = next
+                case let .codeBlock(block):
+                    if block.leftBrace.leadingTrivia.containsNewlines { return false }
+                    if block.leftBrace.trailingTrivia.containsNewlines { return false }
+                    return block.rightBrace.leadingTrivia.containsNewlines ? false : true
             }
         }
     }
 
     /// Validates that every branch in the chain has exactly one statement and no comments.
-    fileprivate static func validateChain(_ node: IfExprSyntax) -> Bool {
+    static func validateChain(_ node: IfExprSyntax) -> Bool {
         var current = node
+
         while true {
             guard validateBody(current.body) else { return false }
+
             switch current.elseBody {
-            case nil:
-                return true
-            case .ifExpr(let next):
-                current = next
-            case .codeBlock(let block):
-                return validateBody(block)
+                case nil: return true
+                case let .ifExpr(next): current = next
+                case let .codeBlock(block): return validateBody(block)
             }
         }
     }
 
-    fileprivate static func validateBody(_ body: CodeBlockSyntax) -> Bool {
+    static func validateBody(_ body: CodeBlockSyntax) -> Bool {
         guard body.statements.count == 1, let stmt = body.statements.first else { return false }
         if hasComment(body.leftBrace.leadingTrivia) { return false }
         if hasComment(body.leftBrace.trailingTrivia) { return false }
         if hasComment(stmt.leadingTrivia) { return false }
         if hasComment(stmt.trailingTrivia) { return false }
         if hasComment(body.rightBrace.leadingTrivia) { return false }
-        if hasComment(body.rightBrace.trailingTrivia) { return false }
-        return true
+        return hasComment(body.rightBrace.trailingTrivia) ? false : true
     }
 
-    fileprivate static func hasComment(_ trivia: Trivia) -> Bool {
+    static func hasComment(_ trivia: Trivia) -> Bool {
         for piece in trivia {
             switch piece {
-            case .lineComment, .blockComment, .docLineComment, .docBlockComment:
-                return true
-            default:
-                continue
+                case .lineComment, .blockComment, .docLineComment, .docBlockComment: return true
+                default: continue
             }
         }
         return false
@@ -123,13 +115,13 @@ extension CollapseSimpleIfElse {
 
 // MARK: - Length
 
-extension CollapseSimpleIfElse {
-
+fileprivate extension CollapseSimpleIfElse {
     /// Length of the rendered collapsed chain (excluding leading indentation).
-    fileprivate static func collapsedTextLength(of node: IfExprSyntax) -> Int {
+    static func collapsedTextLength(of node: IfExprSyntax) -> Int {
         var text = ""
         var current = node
         var first = true
+
         while true {
             if first {
                 text += "if " + current.conditions.trimmedDescription
@@ -138,14 +130,13 @@ extension CollapseSimpleIfElse {
                 text += " else if " + current.conditions.trimmedDescription
             }
             text += " { " + current.body.statements.first!.trimmedDescription + " }"
+
             switch current.elseBody {
-            case nil:
-                return text.count
-            case .ifExpr(let next):
-                current = next
-            case .codeBlock(let block):
-                text += " else { " + block.statements.first!.trimmedDescription + " }"
-                return text.count
+                case nil: return text.count
+                case let .ifExpr(next): current = next
+                case let .codeBlock(block):
+                    text += " else { " + block.statements.first!.trimmedDescription + " }"
+                    return text.count
             }
         }
     }
@@ -153,49 +144,45 @@ extension CollapseSimpleIfElse {
 
 // MARK: - Transformation
 
-extension CollapseSimpleIfElse {
-
-    fileprivate static func collapseChain(_ node: IfExprSyntax) -> IfExprSyntax {
+fileprivate extension CollapseSimpleIfElse {
+    static func collapseChain(_ node: IfExprSyntax) -> IfExprSyntax {
         var result = node
         result.conditions = clearTrailingTrivia(result.conditions)
         let isTerminal = result.elseBody == nil
         result.body = inlineBody(result.body, terminal: isTerminal)
 
         switch result.elseBody {
-        case nil:
-            return result
-        case .ifExpr(let next):
-            var collapsedNext = collapseChain(next)
-            collapsedNext.ifKeyword = collapsedNext.ifKeyword.with(\.leadingTrivia, [])
-            if let elseKeyword = result.elseKeyword {
-                result.elseKeyword =
-                    elseKeyword
-                    .with(\.leadingTrivia, .space)
-                    .with(\.trailingTrivia, .space)
-            }
-            result.elseBody = .ifExpr(collapsedNext)
-            return result
-        case .codeBlock(let block):
-            var newBlock = inlineBody(block, terminal: true)
-            newBlock.leftBrace = newBlock.leftBrace.with(\.leadingTrivia, .space)
-            if let elseKeyword = result.elseKeyword {
-                result.elseKeyword =
-                    elseKeyword
-                    .with(\.leadingTrivia, .space)
-                    .with(\.trailingTrivia, [])
-            }
-            result.elseBody = .codeBlock(newBlock)
-            return result
+            case nil: return result
+            case let .ifExpr(next):
+                var collapsedNext = collapseChain(next)
+                collapsedNext.ifKeyword = collapsedNext.ifKeyword.with(\.leadingTrivia, [])
+
+                if let elseKeyword = result.elseKeyword {
+                    result.elseKeyword = elseKeyword
+                        .with(\.leadingTrivia, .space)
+                        .with(\.trailingTrivia, .space)
+                }
+                result.elseBody = .ifExpr(collapsedNext)
+                return result
+            case let .codeBlock(block):
+                var newBlock = inlineBody(block, terminal: true)
+                newBlock.leftBrace = newBlock.leftBrace.with(\.leadingTrivia, .space)
+
+                if let elseKeyword = result.elseKeyword {
+                    result.elseKeyword = elseKeyword
+                        .with(\.leadingTrivia, .space)
+                        .with(\.trailingTrivia, [])
+                }
+                result.elseBody = .codeBlock(newBlock)
+                return result
         }
     }
 
-    /// Inlines a code block's content onto a single line. When `terminal` is
-    /// false, strips the trailing trivia of the closing brace so the next
-    /// `else` keyword sits one space away.
-    fileprivate static func inlineBody(_ body: CodeBlockSyntax, terminal: Bool) -> CodeBlockSyntax {
+    /// Inlines a code block's content onto a single line. When `terminal` is false, strips the
+    /// trailing trivia of the closing brace so the next `else` keyword sits one space away.
+    static func inlineBody(_ body: CodeBlockSyntax, terminal: Bool) -> CodeBlockSyntax {
         var result = body
-        result.leftBrace =
-            result.leftBrace
+        result.leftBrace = result.leftBrace
             .with(\.leadingTrivia, .space)
             .with(\.trailingTrivia, .space)
 
@@ -204,20 +191,17 @@ extension CollapseSimpleIfElse {
         stmts[stmts.count - 1].trailingTrivia = []
         result.statements = CodeBlockItemListSyntax(stmts)
 
-        if terminal {
-            result.rightBrace = result.rightBrace.with(\.leadingTrivia, .space)
-        } else {
-            result.rightBrace =
-                result.rightBrace
+        result.rightBrace = terminal
+            ? result.rightBrace.with(\.leadingTrivia, .space)
+            : result.rightBrace
                 .with(\.leadingTrivia, .space)
                 .with(\.trailingTrivia, [])
-        }
         return result
     }
 
-    /// Clears trailing trivia on the last condition element so the following
-    /// left brace's leading `.space` doesn't produce a double space.
-    fileprivate static func clearTrailingTrivia(
+    /// Clears trailing trivia on the last condition element so the following left brace's leading
+    /// `.space` doesn't produce a double space.
+    static func clearTrailingTrivia(
         _ conditions: ConditionElementListSyntax
     ) -> ConditionElementListSyntax {
         guard var last = conditions.last else { return conditions }
@@ -230,7 +214,6 @@ extension CollapseSimpleIfElse {
 
 // MARK: - Finding Messages
 
-extension Finding.Message {
-    fileprivate static let collapseIfElse: Finding.Message =
-        "collapse simple if/else onto a single line"
+fileprivate extension Finding.Message {
+    static let collapseIfElse: Finding.Message = "collapse simple if/else onto a single line"
 }

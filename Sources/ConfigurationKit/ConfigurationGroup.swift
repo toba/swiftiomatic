@@ -1,8 +1,7 @@
 /// A named group of related rules and settings in the configuration.
 ///
-/// Groups appear as JSON objects at the config root. Rules and settings that
-/// belong to a group are encoded inside their group's object; ungrouped items
-/// live at the config root.
+/// Groups appear as JSON objects at the config root. Rules and settings that belong to a group are
+/// encoded inside their group's object; ungrouped items live at the config root.
 package struct ConfigurationGroup: Sendable, Hashable {
     package let key: Key
 
@@ -27,7 +26,7 @@ package struct ConfigurationGroup: Sendable, Hashable {
         case idioms
         case indentation
         /// Where line breaks are allowed or required (line length, break-before-X toggles).
-        /// Distinct from `wrap`, which controls how multi-line constructs are formatted.
+        /// Distinct from `wrap` , which controls how multi-line constructs are formatted.
         case lineBreaks
         case literals
         case memory
@@ -39,8 +38,8 @@ package struct ConfigurationGroup: Sendable, Hashable {
         case testing
         case types
         case unsafety
-        /// How multi-line constructs are formatted (function chains, switch bodies,
-        /// brace placement). Distinct from `lineBreaks`, which controls where breaks occur.
+        /// How multi-line constructs are formatted (function chains, switch bodies, brace
+        /// placement). Distinct from `lineBreaks` , which controls where breaks occur.
         case wrap
     }
 

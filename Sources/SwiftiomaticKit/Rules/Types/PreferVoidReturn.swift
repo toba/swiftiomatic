@@ -12,10 +12,10 @@
 
 import SwiftSyntax
 
-/// Return `Void`, not `()`, in signatures.
+/// Return `Void` , not `()` , in signatures.
 ///
 /// Note that this rule does *not* apply to function declaration signatures in order to avoid
-/// conflicting with `NoVoidReturnOnFunctionSignature`.
+/// conflicting with `NoVoidReturnOnFunctionSignature` .
 ///
 /// Lint: Returning `()` in a signature yields a lint error.
 ///
@@ -30,24 +30,21 @@ final class PreferVoidReturn: StaticFormatRule<BasicRuleValue>, @unchecked Senda
 
     static func willEnter(_ node: FunctionTypeSyntax, context: Context) {
         guard let returnType = node.returnClause.type.as(TupleTypeSyntax.self),
-            returnType.elements.isEmpty
-        else { return }
+              returnType.elements.isEmpty else { return }
         Self.diagnose(.returnVoid, on: returnType, context: context)
     }
 
     static func willEnter(_ node: ClosureSignatureSyntax, context: Context) {
         guard let returnClause = node.returnClause,
-            let returnType = returnClause.type.as(TupleTypeSyntax.self),
-            returnType.elements.isEmpty
-        else { return }
+              let returnType = returnClause.type.as(TupleTypeSyntax.self),
+              returnType.elements.isEmpty else { return }
         Self.diagnose(.returnVoid, on: returnType, context: context)
     }
 
     /// Replace `-> ()` with `-> Void` on a function-type signature.
-    static func apply(_ node: FunctionTypeSyntax, context: Context) -> FunctionTypeSyntax {
+    static func apply(_ node: FunctionTypeSyntax, context _: Context) -> FunctionTypeSyntax {
         guard let returnType = node.returnClause.type.as(TupleTypeSyntax.self),
-              returnType.elements.isEmpty
-        else { return node }
+              returnType.elements.isEmpty else { return node }
 
         if hasNonWhitespaceTrivia(returnType.leftParen, at: .trailing)
             || hasNonWhitespaceTrivia(returnType.rightParen, at: .leading)
@@ -62,11 +59,13 @@ final class PreferVoidReturn: StaticFormatRule<BasicRuleValue>, @unchecked Senda
     }
 
     /// Replace `-> ()` with `-> Void` on a closure signature.
-    static func apply(_ node: ClosureSignatureSyntax, context: Context) -> ClosureSignatureSyntax {
+    static func apply(
+        _ node: ClosureSignatureSyntax,
+        context _: Context
+    ) -> ClosureSignatureSyntax {
         guard let returnClause = node.returnClause,
               let returnType = returnClause.type.as(TupleTypeSyntax.self),
-              returnType.elements.isEmpty
-        else { return node }
+              returnType.elements.isEmpty else { return node }
 
         if hasNonWhitespaceTrivia(returnType.leftParen, at: .trailing)
             || hasNonWhitespaceTrivia(returnType.rightParen, at: .leading)
@@ -89,7 +88,8 @@ final class PreferVoidReturn: StaticFormatRule<BasicRuleValue>, @unchecked Senda
     ) -> Bool {
         for piece in position == .leading ? token.leadingTrivia : token.trailingTrivia {
             switch piece {
-                case .blockComment, .docBlockComment, .docLineComment, .unexpectedText, .lineComment:
+                case .blockComment, .docBlockComment, .docLineComment, .unexpectedText, .lineComment
+                :
                     return true
                 default: break
             }
@@ -100,7 +100,7 @@ final class PreferVoidReturn: StaticFormatRule<BasicRuleValue>, @unchecked Senda
     private static func makeVoidIdentifierType(
         toReplace node: TupleTypeSyntax
     ) -> IdentifierTypeSyntax {
-        IdentifierTypeSyntax(
+        .init(
             name: TokenSyntax.identifier(
                 "Void",
                 leadingTrivia: node.firstToken(viewMode: .sourceAccurate)?.leadingTrivia ?? [],
@@ -111,6 +111,6 @@ final class PreferVoidReturn: StaticFormatRule<BasicRuleValue>, @unchecked Senda
     }
 }
 
-extension Finding.Message {
-    fileprivate static let returnVoid: Finding.Message = "replace '()' with 'Void'"
+fileprivate extension Finding.Message {
+    static let returnVoid: Finding.Message = "replace '()' with 'Void'"
 }

@@ -20,7 +20,7 @@ final class NoExplicitOwnership: StaticFormatRule<BasicRuleValue>, @unchecked Se
 
     static func transform(
         _ visited: FunctionDeclSyntax,
-        parent: Syntax?,
+        parent _: Syntax?,
         context: Context
     ) -> DeclSyntax {
         DeclSyntax(
@@ -28,15 +28,14 @@ final class NoExplicitOwnership: StaticFormatRule<BasicRuleValue>, @unchecked Se
                 from: visited,
                 keywordKeyPath: \.funcKeyword,
                 context: context
-            )
-        )
+            ))
     }
 
     // MARK: - Type specifiers (e.g. `consuming Foo` in parameter types)
 
     static func transform(
         _ attributed: AttributedTypeSyntax,
-        parent: Syntax?,
+        parent _: Syntax?,
         context: Context
     ) -> TypeSyntax {
         let ownershipIndices = attributed.specifiers.enumerated().compactMap {

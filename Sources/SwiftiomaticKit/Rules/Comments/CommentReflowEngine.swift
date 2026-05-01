@@ -40,7 +40,11 @@ package enum CommentReflowEngine {
                     if let close { out.append(close) }
                 case let .paragraph(text):
                     out.append(
-                        contentsOf: wrapParagraph(text: text, width: width, continuation: ""))
+                        contentsOf: wrapParagraph(
+                            text: text,
+                            width: width,
+                            continuation: ""
+                        ))
                 case .list(let items, _):
                     for item in items {
                         let marker = item.marker  // e.g. "- " or "  - " or "1. "
@@ -51,14 +55,17 @@ package enum CommentReflowEngine {
                             width: max(8, width - marker.count),
                             continuation: ""
                         )
+
                         if wrapped.isEmpty {
                             out.append(firstLineLeading.trimmingTrailingWhitespace())
                         } else {
                             out.append(firstLineLeading + wrapped[0])
                             for tail in wrapped.dropFirst() { out.append(continuation + tail) }
                         }
-                        // Render any nested blocks inside this list item, indented under the marker.
+                        // Render any nested blocks inside this list item, indented under the
+                        // marker.
                         var nestedOut: [String] = []
+
                         for nested in item.nested {
                             nested.render(into: &nestedOut, width: max(8, width - marker.count))
                         }
@@ -76,6 +83,7 @@ package enum CommentReflowEngine {
                     // First line of each contiguous non-blank run gets "> ", continuation lines get
                     // lazy indent (" "). Blank separator lines keep "> " (rendered as ">").
                     var pendingFirst = true
+
                     for line in nestedOut {
                         if line.isEmpty {
                             out.append(">")
@@ -103,6 +111,7 @@ package enum CommentReflowEngine {
     private static func parseBlocks(_ lines: [String]) -> [Block] {
         var blocks: [Block] = []
         var i = 0
+
         while i < lines.count {
             let line = lines[i]
             // Code fence
@@ -110,6 +119,7 @@ package enum CommentReflowEngine {
                 var body: [String] = []
                 var close: String?
                 i += 1
+
                 while i < lines.count {
                     if isFenceCloser(lines[i], opener: fenceMarker) {
                         close = lines[i]
@@ -130,6 +140,7 @@ package enum CommentReflowEngine {
             // Block quote: contiguous lines starting with ">".
             if line.hasPrefix(">") {
                 var quoted: [String] = []
+
                 while i < lines.count, lines[i].hasPrefix(">") {
                     let dropped = String(lines[i].dropFirst())
                     let stripped = dropped.hasPrefix(" ") ? String(dropped.dropFirst()) : dropped
@@ -149,6 +160,7 @@ package enum CommentReflowEngine {
             }
             // Paragraph: collect contiguous non-special lines.
             var paraLines: [String] = []
+
             while i < lines.count {
                 let l = lines[i]
                 if l.trimmingCharacters(in: .whitespaces).isEmpty { break }
@@ -163,12 +175,11 @@ package enum CommentReflowEngine {
         return blocks
     }
 
-    /// Returns the fence string (e.g. "`` `" or "~~~") if ` line` opens a fenced code block.
+    /// Returns the fence string (e.g. "` ` ` " or "~~~") if ` line` opens a fenced code block.
     private static func fenceOpener(_ line: String) -> String? {
         let trimmed = line.drop(while: { $0 == " " })
         if trimmed.hasPrefix("```") { return "```" }
-        if trimmed.hasPrefix("~~~") { return "~~~" }
-        return nil
+        return trimmed.hasPrefix("~~~") ? "~~~" : nil
     }
 
     private static func isFenceCloser(_ line: String, opener: String) -> Bool {
@@ -182,6 +193,7 @@ package enum CommentReflowEngine {
         // Allow up to 3 leading spaces of indent before the marker.
         var idx = line.startIndex
         var leading = 0
+
         while idx < line.endIndex, line[idx] == " ", leading < 3 {
             idx = line.index(after: idx)
             leading += 1
@@ -191,6 +203,7 @@ package enum CommentReflowEngine {
         // Bullet: -, *, +
         if ch == "-" || ch == "*" || ch == "+" {
             let next = line.index(after: idx)
+
             if next < line.endIndex, line[next] == " " {
                 let markerEnd = line.index(after: next)
                 let marker = String(line[line.startIndex..<markerEnd])
@@ -204,7 +217,9 @@ package enum CommentReflowEngine {
         if ch.isNumber {
             var j = idx
             while j < line.endIndex, line[j].isNumber { j = line.index(after: j) }
-            if j < line.endIndex, line[j] == ".",
+
+            if j < line.endIndex,
+               line[j] == ".",
                line.index(after: j) < line.endIndex,
                line[line.index(after: j)] == " "
             {
@@ -234,6 +249,7 @@ package enum CommentReflowEngine {
             let line = lines[i]
             guard let m = listMarker(line) else { break }
             let leading = line.prefix(while: { $0 == " " }).count
+
             if let baseline = firstItemMarkerIndent, leading > baseline {
                 // A more-indented marker is a nested list — handle by treating the next list as
                 // nested under the previous item via continuation lines below. For simplicity we
@@ -281,6 +297,7 @@ package enum CommentReflowEngine {
                 let nextLeading = next.prefix(while: { $0 == " " }).count
                 if nextLeading <= leading, listMarker(next) != nil { break }
                 if nextLeading <= leading { break }
+
                 if let nm = listMarker(next), nextLeading > leading {
                     // nested list inside this item
                     let (rawNested, consumed, _) = parseList(lines, startingAt: i)
@@ -316,6 +333,7 @@ package enum CommentReflowEngine {
         guard !atoms.isEmpty else { return [] }
         var lines: [String] = []
         var current = ""
+
         for atom in atoms {
             if current.isEmpty {
                 current = atom
@@ -348,6 +366,7 @@ package enum CommentReflowEngine {
         }
         while i < scalars.count {
             let c = scalars[i]
+
             if c == " " || c == "\t" {
                 flush()
                 i += 1
@@ -361,6 +380,7 @@ package enum CommentReflowEngine {
             if c == "`" {
                 var openCount = 0
                 var k = i
+
                 while k < scalars.count, scalars[k] == "`" {
                     openCount += 1
                     k += 1
@@ -368,10 +388,12 @@ package enum CommentReflowEngine {
                 // Search for a closing run of exactly `openCount` backticks.
                 var j = k
                 var closeStart: Int?
+
                 while j < scalars.count {
                     if scalars[j] == "`" {
                         var run = 0
                         var m = j
+
                         while m < scalars.count, scalars[m] == "`" {
                             run += 1
                             m += 1
@@ -431,6 +453,7 @@ package enum CommentReflowEngine {
         // [text](url)
         var j = i + 1
         var depth = 1
+
         while j < s.count {
             if s[j] == "[" {
                 depth += 1
@@ -443,6 +466,7 @@ package enum CommentReflowEngine {
         guard j < s.count, j + 1 < s.count, s[j + 1] == "(" else { return nil }
         var k = j + 2
         var pdepth = 1
+
         while k < s.count {
             if s[k] == "(" {
                 pdepth += 1
@@ -459,6 +483,7 @@ package enum CommentReflowEngine {
         var j = i + 1
         // Need at least one ":" before ">" to qualify as URL-ish.
         var sawColon = false
+
         while j < s.count, s[j] != ">", s[j] != " " {
             if s[j] == ":" { sawColon = true }
             j += 1
@@ -483,6 +508,7 @@ package enum CommentReflowEngine {
 fileprivate extension String {
     func trimmingTrailingWhitespace() -> String {
         var end = endIndex
+
         while end > startIndex {
             let prev = index(before: end)
             if self[prev] == " " || self[prev] == "\t" { end = prev } else { break }

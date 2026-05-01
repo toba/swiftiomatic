@@ -2,8 +2,8 @@ import SwiftSyntax
 
 /// Align wrapped conditions to the column after the keyword.
 ///
-/// When enabled, continuation conditions in `if`, `guard`, and `while` statements
-/// align to the first condition rather than using standard continuation indentation.
+/// When enabled, continuation conditions in `if` , `guard` , and `while` statements align to the
+/// first condition rather than using standard continuation indentation.
 ///
 /// ```swift
 /// // default (false):

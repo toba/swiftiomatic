@@ -90,12 +90,14 @@ package struct DocumentationCommentText {
 
                     if cleaned.hasPrefix("\n") {
                         cleaned = cleaned.dropFirst()
-                        hasASCIIArt = asciiArtLength(of: cleaned, leadingSpaces: leadingWhitespace)
+                        hasASCIIArt = asciiArtLength(
+                            of: cleaned, leadingSpaces: leadingWhitespace)
                             != 0
                     }
 
                     while !cleaned.isEmpty {
                         var index = cleaned.firstIndex(where: \.isNewline) ?? cleaned.endIndex
+
                         if hasASCIIArt {
                             cleaned = cleaned.dropFirst(
                                 asciiArtLength(
@@ -122,8 +124,7 @@ package struct DocumentationCommentText {
         // be present.
         guard let introducer,
               !lines.isEmpty,
-              let firstLineIndex = lines.firstIndex(where: { !$0.text.isEmpty })
-        else { return nil }
+              let firstLineIndex = lines.firstIndex(where: { !$0.text.isEmpty }) else { return nil }
 
         let initialIndentation = indentationDistance(of: lines[firstLineIndex].text)
         var result = ""
@@ -163,6 +164,7 @@ private func contiguousWhitespace(
     var whitespace = 0
     loop: while index != trivia.startIndex {
         index = trivia.index(before: index)
+
         switch trivia[index] {
             case let .spaces(count): whitespace += count
             case let .tabs(count): whitespace += count
@@ -181,8 +183,7 @@ private func asciiArtLength(of string: Substring, leadingSpaces: Int) -> Int {
 
     let string = string.dropFirst(leadingSpaces)
     if string.hasPrefix(" * ") { return leadingSpaces + 3 }
-    if string.hasPrefix(" *\n") { return leadingSpaces + 2 }
-    return 0
+    return string.hasPrefix(" *\n") ? leadingSpaces + 2 : 0
 }
 
 /// Returns the start index of the earliest comment in the Trivia if we work backwards and skip
@@ -200,9 +201,13 @@ private func findCommentStartIndex(_ triviaArray: [TriviaPiece]) -> Array<Trivia
 
     if let lastNonDocCommentIndex = triviaArray.lastIndex(where: {
         switch $0 {
-            case .docBlockComment, .docLineComment,
-                .newlines(1), .carriageReturns(1), .carriageReturnLineFeeds(1),
-                .spaces, .tabs:
+            case .docBlockComment,
+                 .docLineComment,
+                 .newlines(1),
+                 .carriageReturns(1),
+                 .carriageReturnLineFeeds(1),
+                 .spaces,
+                 .tabs:
                 false
             default: true
         }

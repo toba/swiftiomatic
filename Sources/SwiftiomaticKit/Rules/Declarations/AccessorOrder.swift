@@ -34,8 +34,9 @@ final class AccessorOrder: LintSyntaxRule<AccessorOrderConfiguration>, @unchecke
 
         let kinds = accessors.map(\.accessorSpecifier.tokenKind)
         if kinds == [.keyword(.get), .keyword(.set)] { return .getSet }
-        if kinds == [.keyword(.set), .keyword(.get)] { return .setGet }
-        return nil
+        return kinds == [.keyword(.set), .keyword(.get)]
+            ? .setGet
+            : nil
     }
 }
 
@@ -46,6 +47,7 @@ fileprivate extension Finding.Message {
     ) -> Finding.Message {
         let kind = isSubscript ? "subscripts" : "computed properties"
         let order: String
+
         switch expected {
             case .getSet: order = "getter and then the setter"
             case .setGet: order = "setter and then the getter"

@@ -23,7 +23,7 @@ extension StringProtocol {
     func trimmingTrailingWhitespace() -> String {
         if isEmpty { return String() }
         // Walk Characters from the end (StringProtocol is BidirectionalCollection) instead of
-        // materializing `Array(utf8)`. The set of whitespace recognized here matches the prior
+        // materializing `Array(utf8)` . The set of whitespace recognized here matches the prior
         // byte-level check: space, LF, tab, CR, VT, FF.
         var end = endIndex
 
@@ -45,11 +45,11 @@ extension UTF8.CodeUnit {
     var isWhitespace: Bool {
         switch self {
             case UInt8(ascii: " "),
-                UInt8(ascii: "\n"),
-                UInt8(ascii: "\t"),
-                UInt8(ascii: "\r"), /*VT*/
-                0x0B, /*FF*/
-                0x0C:
+                 UInt8(ascii: "\n"),
+                 UInt8(ascii: "\t"),
+                 UInt8(ascii: "\r"), /*VT*/
+                 0x0B, /*FF*/
+                 0x0C:
                 true
             default: false
         }

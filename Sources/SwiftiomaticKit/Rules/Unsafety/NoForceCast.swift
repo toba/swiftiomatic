@@ -1,13 +1,13 @@
 import SwiftSyntax
 
-/// Force casts (`as!`) are forbidden.
+/// Force casts ( `as!` ) are forbidden.
 ///
-/// A force cast crashes at runtime if the conversion fails. Prefer the conditional cast (`as?`)
-/// combined with optional handling (`if let`, `guard let`, nil-coalescing, etc.).
+/// A force cast crashes at runtime if the conversion fails. Prefer the conditional cast ( `as?` )
+/// combined with optional handling ( `if let` , `guard let` , nil-coalescing, etc.).
 ///
-/// This rule complements `NoForceTry` and `NoForceUnwrap`.
+/// This rule complements `NoForceTry` and `NoForceUnwrap` .
 ///
-/// Lint: A warning is raised for each `as!`.
+/// Lint: A warning is raised for each `as!` .
 ///
 /// Rewrite: Not auto-fixed; the safe replacement depends on caller intent.
 final class NoForceCast: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
@@ -16,7 +16,5 @@ final class NoForceCast: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
 }
 
 extension Finding.Message {
-    static func doNotForceCast(name: String) -> Finding.Message {
-        "do not force cast to '\(name)'"
-    }
+    static func doNotForceCast(name: String) -> Finding.Message { "do not force cast to '\(name)'" }
 }

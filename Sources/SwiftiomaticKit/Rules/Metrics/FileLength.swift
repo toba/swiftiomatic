@@ -1,5 +1,5 @@
-import ConfigurationKit
 import SwiftSyntax
+import ConfigurationKit
 
 /// Files should not exceed a configurable total line count.
 final class FileLength: LintSyntaxRule<FileLengthConfiguration>, @unchecked Sendable {
@@ -9,6 +9,7 @@ final class FileLength: LintSyntaxRule<FileLengthConfiguration>, @unchecked Send
         let converter = context.sourceLocationConverter
         let endLine = node.endLocation(converter: converter).line
         let count: Int
+
         if ruleConfig.ignoreCommentOnlyLines {
             var meaningful = Set<Int>()
             for token in node.tokens(viewMode: .sourceAccurate) {
@@ -19,13 +20,11 @@ final class FileLength: LintSyntaxRule<FileLengthConfiguration>, @unchecked Send
             count = endLine
         }
 
-        guard
-            let severity = metricSeverity(
-                value: count,
-                warning: ruleConfig.warning,
-                error: ruleConfig.error
-            )
-        else { return .skipChildren }
+        guard let severity = metricSeverity(
+            value: count,
+            warning: ruleConfig.warning,
+            error: ruleConfig.error
+        ) else { return .skipChildren }
         diagnose(
             .fileTooLong(
                 lines: count,
@@ -38,8 +37,8 @@ final class FileLength: LintSyntaxRule<FileLengthConfiguration>, @unchecked Send
     }
 }
 
-extension Finding.Message {
-    fileprivate static func fileTooLong(lines: Int, limit: Int) -> Finding.Message {
+fileprivate extension Finding.Message {
+    static func fileTooLong(lines: Int, limit: Int) -> Finding.Message {
         "file has \(lines) lines; limit is \(limit)"
     }
 }
@@ -47,14 +46,14 @@ extension Finding.Message {
 // MARK: - Configuration
 
 package struct FileLengthConfiguration: ThresholdRuleValue {
-    package var enabled: Bool = true
+    package var enabled = true
     /// Files with more than this many lines emit a warning-severity finding.
     package var warning: Int = 400
     /// Files with more than this many lines emit an error-severity finding.
     package var error: Int = 1000
-    /// When `true`, lines that contain only a comment (or whitespace) don't
-    /// count toward the line total.
-    package var ignoreCommentOnlyLines: Bool = false
+    /// When `true` , lines that contain only a comment (or whitespace) don't count toward the line
+    /// total.
+    package var ignoreCommentOnlyLines = false
 
     package init() {}
 

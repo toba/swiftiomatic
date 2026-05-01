@@ -1,13 +1,13 @@
 import SwiftSyntax
 
-/// Prefer `count(where:)` over `filter(_:).count`.
+/// Prefer `count(where:)` over `filter(_:).count` .
 ///
-/// The `count(where:)` method (Swift 6.0+) is more expressive and avoids allocating an
-/// intermediate array just to count its elements.
+/// The `count(where:)` method (Swift 6.0+) is more expressive and avoids allocating an intermediate
+/// array just to count its elements.
 ///
-/// Lint: Using `.filter { ... }.count` raises a warning suggesting `count(where:)`.
+/// Lint: Using `.filter { ... }.count` raises a warning suggesting `count(where:)` .
 ///
-/// Rewrite: `.filter { ... }.count` is replaced with `.count(where: { ... })`.
+/// Rewrite: `.filter { ... }.count` is replaced with `.count(where: { ... })` .
 final class PreferCountWhere: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
     override static var group: ConfigurationGroup? { .idioms }
 
@@ -16,8 +16,9 @@ final class PreferCountWhere: StaticFormatRule<BasicRuleValue>, @unchecked Senda
         parent: Syntax?,
         context: Context
     ) -> ExprSyntax {
-        // If .count is a method call (parent is FunctionCallExprSyntax with this as calledExpression),
-        // skip — uses the captured pre-recursion parent since the post-visit node is detached.
+        // If .count is a method call (parent is FunctionCallExprSyntax with this as
+        // calledExpression), skip — uses the captured pre-recursion parent since the post-visit
+        // node is detached.
         if let parentCall = parent?.as(FunctionCallExprSyntax.self),
            parentCall.calledExpression.id == ExprSyntax(memberNode).id
         {
@@ -30,8 +31,7 @@ final class PreferCountWhere: StaticFormatRule<BasicRuleValue>, @unchecked Senda
         // Base must be a .filter call
         guard let filterCall = memberNode.base?.as(FunctionCallExprSyntax.self),
               let filterAccess = filterCall.calledExpression.as(MemberAccessExprSyntax.self),
-              filterAccess.declName.baseName.text == "filter"
-        else {
+              filterAccess.declName.baseName.text == "filter" else {
             return ExprSyntax(memberNode)
         }
 

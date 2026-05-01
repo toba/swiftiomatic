@@ -103,16 +103,14 @@ package final class LayoutCoordinator {
     /// delimiters and whether or not the current line is a continuation line.
     private var currentIndentation: [Indent] {
         let indentation = configuration[IndentationSetting.self]
-        var totalIndentation:
-            [Indent] = activeOpenBreaks.flatMap { open -> [Indent] in
-                if case let .alignment(spaces) = open.kind, open.contributesContinuationIndent {
-                    return [.spaces(spaces)]
-                }
-                let count =
-                    (open.contributesBlockIndent ? 1 : 0)
-                    + (open.contributesContinuationIndent ? 1 : 0)
-                return Array(repeating: indentation, count: count)
+        var totalIndentation: [Indent] = activeOpenBreaks.flatMap { open -> [Indent] in
+            if case let .alignment(spaces) = open.kind, open.contributesContinuationIndent {
+                return [.spaces(spaces)]
             }
+            let count = (open.contributesBlockIndent ? 1 : 0)
+                + (open.contributesContinuationIndent ? 1 : 0)
+            return Array(repeating: indentation, count: count)
+        }
         if currentLineIsContinuation {
             totalIndentation.append(configuration[IndentationSetting.self])
         }
@@ -148,7 +146,7 @@ package final class LayoutCoordinator {
         self.context = context
         self.source = source
         let configuration = context.configuration
-        
+
         tokens = node.makeTokenStream(
             configuration: configuration,
             selection: context.selection,
@@ -336,12 +334,13 @@ package final class LayoutCoordinator {
                             // continuation line must happen regardless of whether this break fires.
                             //
                             // Likewise, we need to do this if we popped an old continuation state
-                            // off the stack, even if the break *doesn't* fire.
-                            // Alignment breaks contribute indentation but should not propagate
-                            // continuation state — they align to a keyword column, not a
-                            // continuation scope, so the reset break before `{` (or before a
-                            // case body that fits inline) should not fire.
+                            // off the stack, even if the break *doesn't* fire. Alignment breaks
+                            // contribute indentation but should not propagate continuation state —
+                            // they align to a keyword column, not a continuation scope, so the
+                            // reset break before `{` (or before a case body that fits inline)
+                            // should not fire.
                             let isAlignmentKind: Bool
+
                             if case .alignment = matchingOpenBreak.kind {
                                 isAlignmentKind = true
                             } else {
@@ -362,8 +361,7 @@ package final class LayoutCoordinator {
                             isAlignment = false
                         }
 
-                        let wasContinuationWhenOpened =
-                            (continuationStack.popLast() ?? false)
+                        let wasContinuationWhenOpened = (continuationStack.popLast() ?? false)
                             || (!isAlignment && matchingOpenBreak.contributesContinuationIndent)
                             // This ensures a continuation indent is propagated to following scope
                             // when an initial scope would've indented if the leading break wasn't
@@ -450,10 +448,12 @@ package final class LayoutCoordinator {
                 // actually saves a meaningful number of columns. Otherwise the wrap is uglier than
                 // just letting the over-long token sit inline.
                 let breakSavesEnough: Bool
+
                 if mustBreak {
                     breakSavesEnough = true
                 } else if case .continue = kind {
                     let chunkAfterBreak = max(0, length - size)
+
                     if chunkAfterBreak > maxLineLength {
                         let indentColumns = currentIndentation.length(in: configuration)
                         let postWrapEndColumn = indentColumns + chunkAfterBreak

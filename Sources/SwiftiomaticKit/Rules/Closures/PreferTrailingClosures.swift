@@ -13,8 +13,8 @@ import SwiftSyntax
 final class PreferTrailingClosures: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
     override static var group: ConfigurationGroup? { .closures }
 
-    /// Functions whose labelled trailing-closure argument is still safe to
-    /// convert to a trailing closure.
+    /// Functions whose labelled trailing-closure argument is still safe to convert to a trailing
+    /// closure.
     private static let useTrailing: Set<String> = [
         "async", "asyncAfter", "sync", "autoreleasepool",
     ]
@@ -26,23 +26,28 @@ final class PreferTrailingClosures: StaticFormatRule<BasicRuleValue>, @unchecked
     ]
 
     /// Move trailing closure-typed arguments out of the parens. Called from
-    /// `CompactSyntaxRewriter.visit(_: FunctionCallExprSyntax)`.
+    /// `CompactSyntaxRewriter.visit(_: FunctionCallExprSyntax)` .
+    ///
+    /// `parent` must be the *original* parent of the node, captured before `super.visit` runs.
+    /// `node.parent` is nil here because rewritten children produce a detached node, so we cannot
+    /// walk upward from the node itself.
     static func apply(
         _ node: FunctionCallExprSyntax,
+        parent: Syntax?,
         context: Context
     ) -> FunctionCallExprSyntax {
         guard node.trailingClosure == nil,
               node.leftParen != nil,
-              node.rightParen != nil
-        else { return node }
+              node.rightParen != nil else { return node }
 
         let funcName = functionName(of: node.calledExpression)
 
         if let funcName, neverTrailing.contains(funcName) { return node }
-        if isInConditionalContext(node) { return node }
+        if isInConditionalContext(parent: parent) { return node }
 
         let args = Array(node.arguments)
         var trailingCount = 0
+
         for arg in args.reversed() {
             guard arg.expression.is(ClosureExprSyntax.self) else { break }
             trailingCount += 1
@@ -76,11 +81,12 @@ final class PreferTrailingClosures: StaticFormatRule<BasicRuleValue>, @unchecked
         context: Context
     ) -> FunctionCallExprSyntax {
         if closureArg.label != nil {
-            guard let funcName, useTrailing.contains(funcName)
-            else { return callNode }
+            guard let funcName, useTrailing.contains(funcName) else { return callNode }
         }
 
-        guard let closure = closureArg.expression.as(ClosureExprSyntax.self) else { return callNode }
+        guard let closure = closureArg.expression.as(ClosureExprSyntax.self) else {
+            return callNode
+        }
 
         Self.diagnose(.useTrailingClosure, on: callNode, context: context)
 
@@ -114,11 +120,11 @@ final class PreferTrailingClosures: StaticFormatRule<BasicRuleValue>, @unchecked
         context: Context
     ) -> FunctionCallExprSyntax {
         guard closureArgs[0].label == nil,
-              closureArgs.dropFirst().allSatisfy({ $0.label != nil })
-        else { return callNode }
+              closureArgs.dropFirst().allSatisfy({ $0.label != nil }) else { return callNode }
 
-        guard let firstClosure = closureArgs[0].expression.as(ClosureExprSyntax.self)
-        else { return callNode }
+        guard let firstClosure = closureArgs[0].expression.as(ClosureExprSyntax.self) else {
+            return callNode
+        }
 
         Self.diagnose(.useTrailingClosure, on: callNode, context: context)
 
@@ -129,16 +135,14 @@ final class PreferTrailingClosures: StaticFormatRule<BasicRuleValue>, @unchecked
 
         for arg in closureArgs.dropFirst() {
             guard let closure = arg.expression.as(ClosureExprSyntax.self),
-                  let label = arg.label
-            else { continue }
+                  let label = arg.label else { continue }
 
             additionalElements.append(
                 MultipleTrailingClosureElementSyntax(
                     label: .identifier(label.text, leadingTrivia: .space),
                     colon: .colonToken(trailingTrivia: .space),
                     closure: closure.trimmed
-                )
-            )
+                ))
         }
 
         var result = callNode
@@ -181,8 +185,9 @@ final class PreferTrailingClosures: StaticFormatRule<BasicRuleValue>, @unchecked
         }
     }
 
-    private static func isInConditionalContext(_ node: some SyntaxProtocol) -> Bool {
-        var current = Syntax(node).parent
+    private static func isInConditionalContext(parent: Syntax?) -> Bool {
+        var current = parent
+
         while let parent = current {
             if parent.is(CodeBlockSyntax.self) || parent.is(ClosureExprSyntax.self)
                 || parent.is(MemberBlockSyntax.self) || parent.is(SwitchCaseSyntax.self)
@@ -198,6 +203,6 @@ final class PreferTrailingClosures: StaticFormatRule<BasicRuleValue>, @unchecked
     }
 }
 
-extension Finding.Message {
-    fileprivate static let useTrailingClosure: Finding.Message = "use trailing closure syntax"
+fileprivate extension Finding.Message {
+    static let useTrailingClosure: Finding.Message = "use trailing closure syntax"
 }

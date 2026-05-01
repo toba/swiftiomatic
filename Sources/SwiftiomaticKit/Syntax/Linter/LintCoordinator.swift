@@ -11,9 +11,9 @@
 //===----------------------------------------------------------------------===//
 
 import Foundation
-import SwiftDiagnostics
-import SwiftOperators
 import SwiftSyntax
+import SwiftOperators
+import SwiftDiagnostics
 
 /// Diagnoses and reports problems in Swift source code or syntax trees according to the Swift style
 /// guidelines.
@@ -44,13 +44,13 @@ package final class LintCoordinator {
     /// This form of the `lint` function automatically folds expressions using the default operator
     /// set defined in Swift. If you need more control over this—for example, to provide the correct
     /// precedence relationships for custom operators—you must parse and fold the syntax tree
-    /// manually and then call ``lint(syntax:source:operatorTable:assumingFileURL:)``.
+    /// manually and then call ``lint(syntax:source:operatorTable:assumingFileURL:)`` .
     ///
     /// - Parameters:
     ///   - url: The URL of the file containing the code to format.
     ///   - parsingDiagnosticHandler: An optional callback that will be notified if there are any
     ///     errors when parsing the source code.
-    /// - Throws: If an unrecoverable error occurs when formatting the code.
+    ///   - Throws: If an unrecoverable error occurs when formatting the code.
     package func lint(
         contentsOf url: URL,
         parsingDiagnosticHandler: ((Diagnostic, SourceLocation) -> Void)? = nil
@@ -64,6 +64,7 @@ package final class LintCoordinator {
         }
 
         let source: String
+
         do {
             source = try String(contentsOf: url, encoding: .utf8)
         } catch {
@@ -82,27 +83,28 @@ package final class LintCoordinator {
     /// This form of the `lint` function automatically folds expressions using the default operator
     /// set defined in Swift. If you need more control over this—for example, to provide the correct
     /// precedence relationships for custom operators—you must parse and fold the syntax tree
-    /// manually and then call ``lint(syntax:source:operatorTable:assumingFileURL:)``.
+    /// manually and then call ``lint(syntax:source:operatorTable:assumingFileURL:)`` .
     ///
     /// - Parameters:
     ///   - source: The Swift source code to be linted.
     ///   - url: A file URL denoting the filename/path that should be assumed for this source code.
     ///   - experimentalFeatures: The set of experimental features that should be enabled in the
     ///     parser. These names must be from the set of parser-recognized experimental language
-    ///     features in `SwiftParser`'s `Parser.ExperimentalFeatures` enum, which match the spelling
-    ///     defined in the compiler's `Features.def` file.
+    ///     features in `SwiftParser` 's `Parser.ExperimentalFeatures` enum, which match the
+    ///     spelling defined in the compiler's `Features.def` file.
     ///   - parsingDiagnosticHandler: An optional callback that will be notified if there are any
     ///     errors when parsing the source code.
-    /// - Throws: If an unrecoverable error occurs when formatting the code.
+    ///   - Throws: If an unrecoverable error occurs when formatting the code.
     package func lint(
         source: String,
         assumingFileURL url: URL,
         experimentalFeatures: Set<String> = [],
         parsingDiagnosticHandler: ((Diagnostic, SourceLocation) -> Void)? = nil
     ) throws(SwiftiomaticError) {
-        // If the file or input string is completely empty, do nothing. This prevents even a trailing
-        // newline from being diagnosed for an empty file. (This is consistent with clang-format, which
-        // also does not touch an empty file even if the setting to add trailing newlines is enabled.)
+        // If the file or input string is completely empty, do nothing. This prevents even a
+        // trailing newline from being diagnosed for an empty file. (This is consistent with
+        // clang-format, which also does not touch an empty file even if the setting to add trailing
+        // newlines is enabled.)
         guard !source.isEmpty else { return }
 
         let sourceFile = try parseAndEmitDiagnostics(
@@ -123,7 +125,7 @@ package final class LintCoordinator {
     /// Lints the given Swift syntax tree.
     ///
     /// This form of the `lint` function does not perform any additional processing on the given
-    /// syntax tree. The tree **must** have all expressions folded using an `OperatorTable`, and no
+    /// syntax tree. The tree **must** have all expressions folded using an `OperatorTable` , and no
     /// detection of warnings/errors is performed.
     ///
     /// - Note: The linter may be faster using the source text, if it's available.
@@ -132,10 +134,10 @@ package final class LintCoordinator {
     ///   - syntax: The Swift syntax tree to be converted to be linted.
     ///   - source: The Swift source code to be linted.
     ///   - operatorTable: The table that defines the operators and their precedence relationships.
-    ///     This must be the same operator table that was used to fold the expressions in the `syntax`
-    ///     argument.
+    ///     This must be the same operator table that was used to fold the expressions in the
+    ///     `syntax` argument.
     ///   - url: A file URL denoting the filename/path that should be assumed for this syntax tree.
-    /// - Throws: If an unrecoverable error occurs when formatting the code.
+    ///   - Throws: If an unrecoverable error occurs when formatting the code.
     package func lint(
         syntax: SourceFileSyntax,
         source: String,
@@ -160,12 +162,11 @@ package final class LintCoordinator {
             source: source
         )
 
-        // Drive finding emission for compact-pipeline rules (those with `static
-        // willEnter`/`transform` hooks but no `override func visit`). After the
-        // `ddi-wtv` cutover, most rewrite rules emit findings exclusively through
-        // these static hooks invoked by `CompactSyntaxRewriter`. Running the
-        // rewriter and discarding its output is the simplest way to fire those
-        // hooks during `sm lint`. The LintPipeline below still handles lint-only
+        // Drive finding emission for compact-pipeline rules (those with `static willEnter` /
+        // `transform` hooks but no `override func visit` ). After the `ddi-wtv` cutover, most
+        // rewrite rules emit findings exclusively through these static hooks invoked by
+        // `CompactSyntaxRewriter` . Running the rewriter and discarding its output is the simplest
+        // way to fire those hooks during `sm lint` . The LintPipeline below still handles lint-only
         // rules and the structural-pass rules that retain instance `visit` overrides.
         _ = RewritePipeline(context: context).rewrite(Syntax(syntax))
 

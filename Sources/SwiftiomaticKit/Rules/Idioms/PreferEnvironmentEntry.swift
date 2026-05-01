@@ -2,12 +2,12 @@ import SwiftSyntax
 
 /// Use `@Entry` macro for `EnvironmentValues` instead of manual `EnvironmentKey` conformance.
 ///
-/// Recognizes `EnvironmentKey`-conforming structs/enums paired with `EnvironmentValues` extension
+/// Recognizes `EnvironmentKey` -conforming structs/enums paired with `EnvironmentValues` extension
 /// properties and replaces them with `@Entry var` declarations.
 ///
-/// Lint: A lint warning is raised when an `EnvironmentKey` property can be replaced with `@Entry`.
+/// Lint: A lint warning is raised when an `EnvironmentKey` property can be replaced with `@Entry` .
 ///
-/// Rewrite: The `EnvironmentKey` type is removed and the property is replaced with `@Entry var`.
+/// Rewrite: The `EnvironmentKey` type is removed and the property is replaced with `@Entry var` .
 final class PreferEnvironmentEntry: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
     override class var group: ConfigurationGroup? { .idioms }
 
@@ -28,7 +28,7 @@ final class PreferEnvironmentEntry: StaticFormatRule<BasicRuleValue>, @unchecked
 
     // MARK: - State
 
-    /// Per-file mutable state held as a typed lazy property on `Context`.
+    /// Per-file mutable state held as a typed lazy property on `Context` .
     final class State {
         var environmentKeys: [String: KeyInfo] = [:]
         var matchedKeys: Set<String> = []
@@ -99,13 +99,12 @@ final class PreferEnvironmentEntry: StaticFormatRule<BasicRuleValue>, @unchecked
         into environmentKeys: inout [String: KeyInfo]
     ) {
         guard let inheritanceClause,
-            inheritanceClause.contains(named: "EnvironmentKey"),
-            let onlyMember = members.firstAndOnly,
-            let varDecl = onlyMember.decl.as(VariableDeclSyntax.self),
-            let binding = varDecl.bindings.first,
-            let pattern = binding.pattern.as(IdentifierPatternSyntax.self),
-            pattern.identifier.text == "defaultValue"
-        else { return }
+              inheritanceClause.contains(named: "EnvironmentKey"),
+              let onlyMember = members.firstAndOnly,
+              let varDecl = onlyMember.decl.as(VariableDeclSyntax.self),
+              let binding = varDecl.bindings.first,
+              let pattern = binding.pattern.as(IdentifierPatternSyntax.self),
+              pattern.identifier.text == "defaultValue" else { return }
 
         environmentKeys[name] = KeyInfo(
             name: name,
@@ -117,13 +116,15 @@ final class PreferEnvironmentEntry: StaticFormatRule<BasicRuleValue>, @unchecked
     private static func extractDefaultValue(from binding: PatternBindingSyntax) -> DefaultValue? {
         if let initializer = binding.initializer { return .expression(initializer.value.trimmed) }
         guard let accessorBlock = binding.accessorBlock else { return nil }
+
         switch accessorBlock.accessors {
             case let .getter(body):
                 if let onlyItem = body.firstAndOnly {
                     if case let .expr(expr) = onlyItem.item { return .expression(expr.trimmed) }
+
                     if case let .stmt(stmt) = onlyItem.item,
-                        let returnStmt = stmt.as(ReturnStmtSyntax.self),
-                        let expr = returnStmt.expression
+                       let returnStmt = stmt.as(ReturnStmtSyntax.self),
+                       let expr = returnStmt.expression
                     {
                         return .expression(expr.trimmed)
                     }
@@ -132,8 +133,7 @@ final class PreferEnvironmentEntry: StaticFormatRule<BasicRuleValue>, @unchecked
                     statements: body,
                     rightBraceTrivia: accessorBlock.rightBrace.leadingTrivia
                 )
-            case .accessors:
-                return nil
+            case .accessors: return nil
         }
     }
 
@@ -147,9 +147,8 @@ final class PreferEnvironmentEntry: StaticFormatRule<BasicRuleValue>, @unchecked
 
         for (index, item) in items.enumerated() {
             guard case let .decl(decl) = item.item,
-                let extDecl = decl.as(ExtensionDeclSyntax.self),
-                extDecl.extendedType.trimmedDescription == "EnvironmentValues"
-            else { continue }
+                  let extDecl = decl.as(ExtensionDeclSyntax.self),
+                  extDecl.extendedType.trimmedDescription == "EnvironmentValues" else { continue }
 
             let rewritten = rewriteEnvironmentValuesExtension(
                 extDecl,
@@ -198,13 +197,12 @@ final class PreferEnvironmentEntry: StaticFormatRule<BasicRuleValue>, @unchecked
         var capturedMatched = matchedKeys
         let newMembers = extDecl.memberBlock.members.map { member -> MemberBlockItemSyntax in
             guard let varDecl = member.decl.as(VariableDeclSyntax.self),
-                let rewritten = rewriteEnvironmentProperty(
-                    varDecl,
-                    environmentKeys: environmentKeys,
-                    matchedKeys: &capturedMatched,
-                    context: context
-                )
-            else { return member }
+                  let rewritten = rewriteEnvironmentProperty(
+                      varDecl,
+                      environmentKeys: environmentKeys,
+                      matchedKeys: &capturedMatched,
+                      context: context
+                  ) else { return member }
             var result = member
             result.decl = DeclSyntax(rewritten)
             return result
@@ -222,15 +220,13 @@ final class PreferEnvironmentEntry: StaticFormatRule<BasicRuleValue>, @unchecked
         context: Context
     ) -> VariableDeclSyntax? {
         guard let binding = varDecl.bindings.first,
-            let accessorBlock = binding.accessorBlock,
-            hasGetterAndSetter(accessorBlock)
-        else { return nil }
+              let accessorBlock = binding.accessorBlock,
+              hasGetterAndSetter(accessorBlock) else { return nil }
 
         let keyName = varDecl.tokens(viewMode: .sourceAccurate).lazy
             .compactMap { token -> String? in
                 guard case let .identifier(text) = token.tokenKind,
-                    environmentKeys[text] != nil
-                else { return nil }
+                      environmentKeys[text] != nil else { return nil }
                 return text
             }
             .first
@@ -269,8 +265,7 @@ final class PreferEnvironmentEntry: StaticFormatRule<BasicRuleValue>, @unchecked
                     equal: .equalToken(leadingTrivia: .space, trailingTrivia: .space),
                     value: ExprSyntax(call)
                 )
-            case nil:
-                break
+            case nil: break
         }
 
         var result = varDecl
@@ -310,9 +305,10 @@ final class PreferEnvironmentEntry: StaticFormatRule<BasicRuleValue>, @unchecked
             atSign: .atSignToken(leadingTrivia: savedTrivia),
             attributeName: IdentifierTypeSyntax(
                 name: TokenSyntax(
-                    .identifier("Entry"), trailingTrivia: .space, presence: .present
-                )
-            )
+                    .identifier("Entry"),
+                    trailingTrivia: .space,
+                    presence: .present
+                ))
         )
 
         var elements = Array(result.attributes)
@@ -321,10 +317,9 @@ final class PreferEnvironmentEntry: StaticFormatRule<BasicRuleValue>, @unchecked
 
         return result
     }
-
 }
 
-extension Finding.Message {
-    fileprivate static let useEntryMacro: Finding.Message =
+fileprivate extension Finding.Message {
+    static let useEntryMacro: Finding.Message =
         "use '@Entry' macro instead of manual 'EnvironmentKey' conformance"
 }

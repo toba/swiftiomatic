@@ -93,20 +93,16 @@ final class DocumentPublicDeclarations: LintSyntaxRule<LintOnlyValue>, @unchecke
         name: String,
         modifiers: DeclModifierListSyntax
     ) {
-        guard
-            DocumentationCommentText(extractedFrom: decl.leadingTrivia) == nil,
-            modifiers.contains(anyOf: [.public]),
-            !modifiers.contains(anyOf: [.override])
-        else {
-            return
-        }
+        guard DocumentationCommentText(extractedFrom: decl.leadingTrivia) == nil,
+              modifiers.contains(anyOf: [.public]),
+              !modifiers.contains(anyOf: [.override]) else { return }
 
         diagnose(.declRequiresComment(name), on: decl)
     }
 }
 
-extension Finding.Message {
-    fileprivate static func declRequiresComment(_ name: String) -> Finding.Message {
+fileprivate extension Finding.Message {
+    static func declRequiresComment(_ name: String) -> Finding.Message {
         "add a documentation comment for '\(name)'"
     }
 }

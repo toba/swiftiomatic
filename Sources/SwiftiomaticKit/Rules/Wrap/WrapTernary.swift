@@ -25,8 +25,15 @@ final class WrapTernary: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
         parent: Syntax?,
         context: Context
     ) -> ExprSyntax {
+        // Check whitespace on both sides of the operator: SwiftSyntax may attach a newline either
+        // to the operator's leading trivia or to the previous token's trailing trivia depending on
+        // the surrounding tokens. Either placement means the branch is already on its own line.
         let questionHasNewline = visited.questionMark.leadingTrivia.containsNewlines
+            || visited.condition.lastToken(viewMode: .sourceAccurate)?
+                .trailingTrivia.containsNewlines == true
         let colonHasNewline = visited.colon.leadingTrivia.containsNewlines
+            || visited.thenExpression.lastToken(viewMode: .sourceAccurate)?
+                .trailingTrivia.containsNewlines == true
 
         let needsWrap: Bool
         if questionHasNewline || colonHasNewline {

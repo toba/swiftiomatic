@@ -43,10 +43,10 @@ final class DuplicateConditions: LintSyntaxRule<LintOnlyValue>, @unchecked Senda
 
     override func visit(_ node: SwitchCaseListSyntax) -> SyntaxVisitorContinueKind {
         var byPattern: [String: [SwitchCaseItemSyntax]] = [:]
+
         for element in node {
             guard let switchCase = element.as(SwitchCaseSyntax.self),
-                  case let .case(label) = switchCase.label
-            else { continue }
+                  case let .case(label) = switchCase.label else { continue }
 
             for item in label.caseItems {
                 let pattern = item.pattern.trimmedDescription

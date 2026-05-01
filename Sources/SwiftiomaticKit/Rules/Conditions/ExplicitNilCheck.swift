@@ -13,76 +13,71 @@
 import SwiftSyntax
 import SwiftSyntaxBuilder
 
-/// When checking an optional value for `nil`-ness, prefer writing an explicit `nil` check rather
+/// When checking an optional value for `nil` -ness, prefer writing an explicit `nil` check rather
 /// than binding and immediately discarding the value.
 ///
 /// For example, `if let _ = someValue { ... }` is forbidden. Use `if someValue != nil { ... }`
 /// instead.
 ///
-/// Note: If the conditional binding carries an explicit type annotation (e.g. `if let _: S? = expr`),
-/// we skip the transformation. Such annotations can be necessary to drive generic type inference
+/// Note: If the conditional binding carries an explicit type annotation (e.g. `if let _: S? = expr`
+/// ), we skip the transformation. Such annotations can be necessary to drive generic type inference
 /// when a function mentions a type only in its return position.
 ///
 /// Lint: `let _ = expr` inside a condition list will yield a lint error.
 ///
-/// Rewrite: `let _ = expr` inside a condition list will be replaced by `expr != nil`.
+/// Rewrite: `let _ = expr` inside a condition list will be replaced by `expr != nil` .
 final class ExplicitNilCheck: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
     override class var group: ConfigurationGroup? { .conditions }
 
     static func transform(
         _ node: ConditionElementSyntax,
-        parent: Syntax?,
+        parent _: Syntax?,
         context: Context
     ) -> ConditionElementSyntax {
         switch node.condition {
-        case .optionalBinding(let optionalBindingCondition):
-            guard
-                let initializerClause = optionalBindingCondition.initializer,
-                isDiscardedAssignmentPattern(optionalBindingCondition.pattern),
-                optionalBindingCondition.typeAnnotation == nil
-            else {
-                return node
-            }
+            case let .optionalBinding(optionalBindingCondition):
+                guard let initializerClause = optionalBindingCondition.initializer,
+                      isDiscardedAssignmentPattern(optionalBindingCondition.pattern),
+                      optionalBindingCondition.typeAnnotation == nil else { return node }
 
-            Self.diagnose(.useExplicitNilComparison, on: optionalBindingCondition, context: context)
+                Self.diagnose(
+                    .useExplicitNilComparison, on: optionalBindingCondition, context: context)
 
-            // Since we're moving the initializer value from the RHS to the LHS of an expression/pattern,
-            // preserve the relative position of the trailing trivia. Similarly, preserve the leading
-            // trivia of the original node, since that token is being removed entirely.
-            var value = initializerClause.value
-            let trailingTrivia = value.trailingTrivia
-            value.trailingTrivia = [.spaces(1)]
+                // Since we're moving the initializer value from the RHS to the LHS of an
+                // expression/pattern, preserve the relative position of the trailing trivia. Similarly,
+                // preserve the leading trivia of the original node, since that token is being removed
+                // entirely.
+                var value = initializerClause.value
+                let trailingTrivia = value.trailingTrivia
+                value.trailingTrivia = [.spaces(1)]
 
-            var operatorExpr = BinaryOperatorExprSyntax(text: "!=")
-            operatorExpr.trailingTrivia = [.spaces(1)]
+                var operatorExpr = BinaryOperatorExprSyntax(text: "!=")
+                operatorExpr.trailingTrivia = [.spaces(1)]
 
-            var inequalExpr = InfixOperatorExprSyntax(
-                leftOperand: addingParenthesesIfNecessary(to: value),
-                operator: operatorExpr,
-                rightOperand: NilLiteralExprSyntax()
-            )
-            inequalExpr.leadingTrivia = node.leadingTrivia
-            inequalExpr.trailingTrivia = trailingTrivia
+                var inequalExpr = InfixOperatorExprSyntax(
+                    leftOperand: addingParenthesesIfNecessary(to: value),
+                    operator: operatorExpr,
+                    rightOperand: NilLiteralExprSyntax()
+                )
+                inequalExpr.leadingTrivia = node.leadingTrivia
+                inequalExpr.trailingTrivia = trailingTrivia
 
-            var result = node
-            result.condition = .expression(ExprSyntax(inequalExpr))
-            return result
-        default:
-            return node
+                var result = node
+                result.condition = .expression(ExprSyntax(inequalExpr))
+                return result
+            default: return node
         }
     }
 
-    /// Returns true if the given pattern is a discarding assignment expression (for example, the `_`
-    /// in `let _ = x`).
+    /// Returns true if the given pattern is a discarding assignment expression (for example, the
+    /// `_` in `let _ = x` ).
     private static func isDiscardedAssignmentPattern(_ pattern: PatternSyntax) -> Bool {
-        guard let exprPattern = pattern.as(ExpressionPatternSyntax.self) else {
-            return false
-        }
+        guard let exprPattern = pattern.as(ExpressionPatternSyntax.self) else { return false }
         return exprPattern.expression.is(DiscardAssignmentExprSyntax.self)
     }
 
     /// Adds parentheses around the given expression if necessary to ensure that it will be parsed
-    /// correctly when followed by `!= nil`.
+    /// correctly when followed by `!= nil` .
     ///
     /// Specifically, if `expr` is a `try` expression, ternary expression, or an infix operator with
     /// the same or lower precedence, we wrap it.
@@ -101,35 +96,33 @@ final class ExplicitNilCheck: StaticFormatRule<BasicRuleValue>, @unchecked Senda
         }
 
         switch Syntax(expr).as(SyntaxEnum.self) {
-        case .tryExpr, .ternaryExpr:
-            return addingParentheses(to: expr)
+            case .tryExpr, .ternaryExpr: return addingParentheses(to: expr)
 
-        case .infixOperatorExpr:
-            // There's no public API in SwiftSyntax to get the relationship between two precedence groups.
-            // Until that exists, here's a workaround I'm only mildly ashamed of: we reparse
-            // "\(expr) != nil" and then fold it. If the top-level node is anything but an
-            // `InfixOperatorExpr` whose operator is `!=` and whose RHS is `nil`, then it parsed
-            // incorrectly and we need to add parentheses around `expr`.
-            //
-            // Note that we could also cover the `tryExpr` and `ternaryExpr` cases above with this, but
-            // this reparsing trick is going to be slower so we should avoid it whenever we can.
-            let reparsedExpr = "\(expr) != nil" as ExprSyntax
-            if let infixExpr = reparsedExpr.as(InfixOperatorExprSyntax.self),
-                let binOp = infixExpr.operator.as(BinaryOperatorExprSyntax.self),
-                binOp.operator.text == "!=",
-                infixExpr.rightOperand.is(NilLiteralExprSyntax.self)
-            {
-                return expr
-            }
-            return addingParentheses(to: expr)
+            case .infixOperatorExpr:
+                // There's no public API in SwiftSyntax to get the relationship between two precedence
+                // groups. Until that exists, here's a workaround I'm only mildly ashamed of: we reparse
+                // "\(expr) != nil" and then fold it. If the top-level node is anything but an
+                // `InfixOperatorExpr` whose operator is `!=` and whose RHS is `nil` , then it parsed
+                // incorrectly and we need to add parentheses around `expr` .
+                //
+                // Note that we could also cover the `tryExpr` and `ternaryExpr` cases above with this,
+                // but this reparsing trick is going to be slower so we should avoid it whenever we can.
+                let reparsedExpr = "\(expr) != nil" as ExprSyntax
+                if let infixExpr = reparsedExpr.as(InfixOperatorExprSyntax.self),
+                   let binOp = infixExpr.operator.as(BinaryOperatorExprSyntax.self),
+                   binOp.operator.text == "!=",
+                   infixExpr.rightOperand.is(NilLiteralExprSyntax.self)
+                {
+                    return expr
+                }
+                return addingParentheses(to: expr)
 
-        default:
-            return expr
+            default: return expr
         }
     }
 }
 
-extension Finding.Message {
-    fileprivate static let useExplicitNilComparison: Finding.Message =
+fileprivate extension Finding.Message {
+    static let useExplicitNilComparison: Finding.Message =
         "compare this value using `!= nil` instead of binding and discarding it"
 }

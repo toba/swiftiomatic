@@ -1,5 +1,5 @@
-import ConfigurationKit
 import SwiftSyntax
+import ConfigurationKit
 
 /// Tuples with many elements are hard to read; consider a struct instead.
 final class TupleSize: LintSyntaxRule<TupleSizeConfiguration>, @unchecked Sendable {
@@ -11,13 +11,11 @@ final class TupleSize: LintSyntaxRule<TupleSizeConfiguration>, @unchecked Sendab
     }
 
     private func check(count: Int, on anchor: Syntax) {
-        guard
-            let severity = metricSeverity(
-                value: count,
-                warning: ruleConfig.warning,
-                error: ruleConfig.error
-            )
-        else { return }
+        guard let severity = metricSeverity(
+            value: count,
+            warning: ruleConfig.warning,
+            error: ruleConfig.error
+        ) else { return }
         diagnose(
             .tupleTooLarge(
                 count: count,
@@ -29,8 +27,8 @@ final class TupleSize: LintSyntaxRule<TupleSizeConfiguration>, @unchecked Sendab
     }
 }
 
-extension Finding.Message {
-    fileprivate static func tupleTooLarge(count: Int, limit: Int) -> Finding.Message {
+fileprivate extension Finding.Message {
+    static func tupleTooLarge(count: Int, limit: Int) -> Finding.Message {
         "tuple has \(count) elements; limit is \(limit)"
     }
 }
@@ -38,7 +36,7 @@ extension Finding.Message {
 // MARK: - Configuration
 
 package struct TupleSizeConfiguration: ThresholdRuleValue {
-    package var enabled: Bool = true
+    package var enabled = true
     /// Tuples with more than this many elements emit a warning-severity finding.
     package var warning: Int = 3
     /// Tuples with more than this many elements emit an error-severity finding.

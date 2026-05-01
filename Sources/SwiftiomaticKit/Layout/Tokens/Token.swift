@@ -234,8 +234,8 @@ enum NewlineBehavior: Sendable {
     static func + (lhs: NewlineBehavior, rhs: NewlineBehavior) -> NewlineBehavior {
         switch (lhs, rhs) {
             case (.elective(_, let max), _):
-                // `rhs` is either also elective or a required newline, which overwrites elective. Carry
-                // maxBlankLines through if the rhs is soft.
+                // `rhs` is either also elective or a required newline, which overwrites elective.
+                // Carry maxBlankLines through if the rhs is soft.
                 if let max, case let .soft(c, d, rhsMax) = rhs {
                     return .soft(count: c, discretionary: d, maxBlankLines: mergeMax(max, rhsMax))
                 }
@@ -254,6 +254,7 @@ enum NewlineBehavior: Sendable {
                 .soft(let rhsCount, let rhsDiscretionary, let rhsMax)
             ):
                 let mergedCount: Int
+
                 if lhsDiscretionary, rhsDiscretionary {
                     mergedCount = lhsCount + rhsCount
                 } else if lhsDiscretionary {
@@ -270,7 +271,7 @@ enum NewlineBehavior: Sendable {
                 )
 
             case (.soft(let softCount, _, _), .hard(let hardCount)),
-                (.hard(let hardCount), .soft(let softCount, _, _)):
+                 (.hard(let hardCount), .soft(let softCount, _, _)):
                 return .hard(count: max(softCount, hardCount))
 
             case (.hard(let lhsCount), .hard(let rhsCount)):
@@ -304,8 +305,8 @@ enum PrinterControlKind: Sendable {
     /// are no other unmatched disable tokens.
     case enableBreaking
 
-    /// Clears the printer's "current line is a continuation" flag. Used at boundaries (e.g.
-    /// between wrapped guard conditions and the body's `{`) where a subsequent block-kind open
-    /// break should contribute only block indent, not continuation indent on top of it.
+    /// Clears the printer's "current line is a continuation" flag. Used at boundaries (e.g. between
+    /// wrapped guard conditions and the body's `{` ) where a subsequent block-kind open break
+    /// should contribute only block indent, not continuation indent on top of it.
     case clearContinuation
 }

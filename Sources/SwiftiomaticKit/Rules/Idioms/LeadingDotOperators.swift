@@ -2,9 +2,9 @@ import SwiftSyntax
 
 /// Move leading delimiters to the end of the previous line.
 ///
-/// When a line starts with a comma or colon, the delimiter should instead be placed at the end
-/// of the previous line. This keeps the delimiter associated with the preceding expression rather
-/// than the following one.
+/// When a line starts with a comma or colon, the delimiter should instead be placed at the end of
+/// the previous line. This keeps the delimiter associated with the preceding expression rather than
+/// the following one.
 ///
 /// Lint: A finding is emitted when a delimiter starts a line.
 ///
@@ -12,7 +12,7 @@ import SwiftSyntax
 final class LeadingDotOperators: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
     override class var group: ConfigurationGroup? { .idioms }
 
-    /// Per-file mutable state held as a typed lazy property on `Context`.
+    /// Per-file mutable state held as a typed lazy property on `Context` .
     final class State {
         /// Trivia (newline + indentation) saved from a leading delimiter, to be prepended to the
         /// next token's leading trivia.
@@ -36,8 +36,8 @@ final class LeadingDotOperators: StaticFormatRule<BasicRuleValue>, @unchecked Se
             state.pendingLeadingTrivia = nil
         }
 
-        // 2. Check if this token precedes a leading delimiter and has a trailing line comment.
-        //    If so, strip the comment so it can be placed after the delimiter.
+        // 2. Check if this token precedes a leading delimiter and has a trailing line comment. If
+        //    so, strip the comment so it can be placed after the delimiter.
         if let nextToken = token.nextToken(viewMode: .sourceAccurate),
            isLeadingDelimiter(nextToken),
            result.trailingTrivia.hasLineComment
@@ -56,7 +56,8 @@ final class LeadingDotOperators: StaticFormatRule<BasicRuleValue>, @unchecked Se
         let trailingNonSpace = result.trailingTrivia.withoutLeadingSpaces()
 
         state.pendingLeadingTrivia = trailingNonSpace.isEmpty
-            ? token.leadingTrivia : token.leadingTrivia + trailingNonSpace
+            ? token.leadingTrivia
+            : token.leadingTrivia + trailingNonSpace
 
         // Clear the delimiter's leading trivia (it now sits at the end of the previous line)
         result = result.with(\.leadingTrivia, Trivia())

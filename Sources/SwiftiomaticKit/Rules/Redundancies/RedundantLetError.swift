@@ -14,7 +14,7 @@ import SwiftSyntax
 
 /// Remove `let error` from `catch` clauses where `error` is implicitly bound.
 ///
-/// In a `catch` clause without a pattern, the caught error is implicitly available as `error`.
+/// In a `catch` clause without a pattern, the caught error is implicitly available as `error` .
 /// Writing `catch let error` is therefore redundant.
 ///
 /// This rule only fires when the catch item is exactly `let error` (no type cast, no where clause,
@@ -24,44 +24,37 @@ import SwiftSyntax
 ///
 /// Rewrite: The redundant `let error` pattern is removed.
 final class RedundantLetError: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
-  override class var group: ConfigurationGroup? { .redundancies }
+    override class var group: ConfigurationGroup? { .redundancies }
 
-  static func transform(
-    _ node: CatchClauseSyntax,
-    parent: Syntax?,
-    context: Context
-  ) -> CatchClauseSyntax {
-    // Must have exactly one catch item.
-    guard node.catchItems.count == 1, let catchItem = node.catchItems.first else {
-      return node
+    static func transform(
+        _ node: CatchClauseSyntax,
+        parent _: Syntax?,
+        context: Context
+    ) -> CatchClauseSyntax {
+        // Must have exactly one catch item.
+        guard node.catchItems.count == 1, let catchItem = node.catchItems.first else { return node }
+
+        // Must have no where clause.
+        guard catchItem.whereClause == nil else { return node }
+
+        // Pattern must be `let error` .
+        guard let pattern = catchItem.pattern,
+              let valueBinding = pattern.as(ValueBindingPatternSyntax.self),
+              valueBinding.bindingSpecifier.tokenKind == .keyword(.let),
+              let identifier = valueBinding.pattern.as(IdentifierPatternSyntax.self),
+              identifier.identifier.text == "error" else { return node }
+
+        Self.diagnose(.removeRedundantLetError, on: pattern, context: context)
+
+        // Remove the catch items, leaving a bare `catch { ... }` .
+        var newNode = node
+        newNode.catchItems = CatchItemListSyntax([])
+        // The catch keyword already has trailing trivia (space), so `catch {` is correct.
+        return newNode
     }
-
-    // Must have no where clause.
-    guard catchItem.whereClause == nil else {
-      return node
-    }
-
-    // Pattern must be `let error`.
-    guard let pattern = catchItem.pattern,
-      let valueBinding = pattern.as(ValueBindingPatternSyntax.self),
-      valueBinding.bindingSpecifier.tokenKind == .keyword(.let),
-      let identifier = valueBinding.pattern.as(IdentifierPatternSyntax.self),
-      identifier.identifier.text == "error"
-    else {
-      return node
-    }
-
-    Self.diagnose(.removeRedundantLetError, on: pattern, context: context)
-
-    // Remove the catch items, leaving a bare `catch { ... }`.
-    var newNode = node
-    newNode.catchItems = CatchItemListSyntax([])
-    // The catch keyword already has trailing trivia (space), so `catch {` is correct.
-    return newNode
-  }
 }
 
-extension Finding.Message {
-  fileprivate static let removeRedundantLetError: Finding.Message =
-    "remove redundant 'let error' from catch clause; 'error' is implicitly available"
+fileprivate extension Finding.Message {
+    static let removeRedundantLetError: Finding.Message =
+        "remove redundant 'let error' from catch clause; 'error' is implicitly available"
 }

@@ -14,39 +14,35 @@ import SwiftSyntax
 
 /// Replace `forEach` with `for-in` loop unless its argument is a function reference.
 ///
-/// Lint:  invalid use of `forEach` yield will yield a lint error.
+/// Lint: invalid use of `forEach` yield will yield a lint error.
 final class ReplaceForEachWithForLoop: LintSyntaxRule<LintOnlyValue>, @unchecked Sendable {
     override class var group: ConfigurationGroup? { .idioms }
-  override func visit(_ node: FunctionCallExprSyntax) -> SyntaxVisitorContinueKind {
-    // We are only interested in calls with a single trailing closure
-    // argument.
-    if !node.arguments.isEmpty || node.trailingClosure == nil || !node.additionalTrailingClosures.isEmpty {
-      return .visitChildren
-    }
+    override func visit(_ node: FunctionCallExprSyntax) -> SyntaxVisitorContinueKind {
+        // We are only interested in calls with a single trailing closure argument.
+        if !node.arguments.isEmpty || node.trailingClosure == nil
+            || !node.additionalTrailingClosures.isEmpty
+        {
+            return .visitChildren
+        }
 
-    guard let member = node.calledExpression.as(MemberAccessExprSyntax.self) else {
-      return .visitChildren
-    }
+        guard let member = node.calledExpression.as(MemberAccessExprSyntax.self) else {
+            return .visitChildren
+        }
 
-    let memberName = member.declName.baseName
-    guard memberName.text == "forEach" else {
-      return .visitChildren
-    }
+        let memberName = member.declName.baseName
+        guard memberName.text == "forEach" else { return .visitChildren }
 
-    // If there is another chained member after `.forEach`,
-    // let's skip the diagnostic because resulting code might
-    // be less understandable.
-    if node.parent?.is(MemberAccessExprSyntax.self) == true {
-      return .visitChildren
-    }
+        // If there is another chained member after `.forEach` , let's skip the diagnostic because
+        // resulting code might be less understandable.
+        if node.parent?.is(MemberAccessExprSyntax.self) == true { return .visitChildren }
 
-    diagnose(.replaceForEachWithLoop(), on: memberName)
-    return .visitChildren
-  }
+        diagnose(.replaceForEachWithLoop(), on: memberName)
+        return .visitChildren
+    }
 }
 
-extension Finding.Message {
-  fileprivate static func replaceForEachWithLoop() -> Finding.Message {
-    "replace use of '.forEach { ... }' with for-in loop"
-  }
+fileprivate extension Finding.Message {
+    static func replaceForEachWithLoop() -> Finding.Message {
+        "replace use of '.forEach { ... }' with for-in loop"
+    }
 }

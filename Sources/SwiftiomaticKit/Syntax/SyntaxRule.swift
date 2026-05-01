@@ -31,7 +31,7 @@ extension SyntaxRule {
     /// `Context.shouldFormat(ruleType:node:)` .
     static var defaultIsActive: Bool { Self.defaultValue.isActive }
 
-    /// Static counterpart to `diagnose(_:on:anchor:notes:)`. Used by combined-pipeline
+    /// Static counterpart to `diagnose(_:on:anchor:notes:)` . Used by combined-pipeline
     /// `static func transform(_:context:)` overloads (issue `iv7-r5g` / `ddi-wtv` ) so they don't
     /// need to instantiate the rule per node visit.
     static func diagnose<SyntaxType: SyntaxProtocol>(

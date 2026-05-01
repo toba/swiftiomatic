@@ -12,9 +12,9 @@
 
 import SwiftSyntax
 
-/// `struct`, `class`, `enum` and `protocol` declarations should have a capitalized name.
+/// `struct` , `class` , `enum` and `protocol` declarations should have a capitalized name.
 ///
-/// Lint:  Types with un-capitalized names will yield a lint error.
+/// Lint: Types with un-capitalized names will yield a lint error.
 final class CapitalizeTypeNames: LintSyntaxRule<LintOnlyValue>, @unchecked Sendable {
     override static var group: ConfigurationGroup? { .naming }
 
@@ -61,15 +61,15 @@ final class CapitalizeTypeNames: LintSyntaxRule<LintOnlyValue>, @unchecked Senda
         let leadingUnderscores = name.text.prefix { $0 == "_" }
 
         if let firstChar = name.text[leadingUnderscores.endIndex...].first,
-            firstChar.uppercased() != String(firstChar)
+           firstChar.uppercased() != String(firstChar)
         {
             diagnose(.capitalizeTypeName(name: name.text, kind: kind), on: name)
         }
     }
 }
 
-extension Finding.Message {
-    fileprivate static func capitalizeTypeName(name: String, kind: String) -> Finding.Message {
+fileprivate extension Finding.Message {
+    static func capitalizeTypeName(name: String, kind: String) -> Finding.Message {
         var capitalized = name
         let leadingUnderscores = capitalized.prefix { $0 == "_" }
         let charAt = leadingUnderscores.endIndex

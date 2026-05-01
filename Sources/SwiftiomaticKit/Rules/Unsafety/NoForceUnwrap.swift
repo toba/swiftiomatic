@@ -32,53 +32,47 @@ final class NoForceUnwrap: StaticFormatRule<BasicRuleValue>, @unchecked Sendable
         var classStack: [Bool] = []
         /// Whether the innermost enclosing function is a test function.
         var insideTestFunction = false
-        /// Whether at least one force unwrap was wrapped (`XCTUnwrap`/`#require`)
-        /// in the current function frame, requiring `throws` injection.
+        /// Whether at least one force unwrap was wrapped ( `XCTUnwrap` / `#require` ) in the
+        /// current function frame, requiring `throws` injection.
         var addedTryExpression = false
         /// Saved `(insideTestFunction, addedTryExpression)` per nested function.
         var functionStack: [(Bool, Bool)] = []
         /// Number of function declarations currently on the stack.
         var functionDepth = 0
-        /// Number of closure expressions currently on the stack. Legacy didn't
-        /// recurse into closures inside test functions (`try` can't propagate);
-        /// we mimic by bailing in `ForceUnwrap`/`AsExpr` handlers when this is
-        /// non-zero.
+        /// Number of closure expressions currently on the stack. Legacy didn't recurse into
+        /// closures inside test functions ( `try` can't propagate); we mimic by bailing in
+        /// `ForceUnwrap` / `AsExpr` handlers when this is non-zero.
         var closureDepth = 0
-        /// Number of string-interpolation literals currently on the stack. Same
-        /// rationale as `closureDepth`.
+        /// Number of string-interpolation literals currently on the stack. Same rationale as
+        /// `closureDepth` .
         var stringInterpolationDepth = 0
 
-        /// Flag set by an inner `ForceUnwrap`/`AsExpr` to signal that the chain
-        /// top needs wrapping. Saved/restored at each chain-eligible parent's
-        /// `willEnter`/`rewrite` boundary.
+        /// Flag set by an inner `ForceUnwrap` / `AsExpr` to signal that the chain top needs
+        /// wrapping. Saved/restored at each chain-eligible parent's `willEnter` / `rewrite`
+        /// boundary.
         var chainNeedsWrapping = false
         /// Saved `chainNeedsWrapping` values per chain-eligible enclosing parent.
         var chainSaveStack: [Bool] = []
-        /// Whether each chain-eligible parent was the chain top in the original
-        /// (pre-recursion) tree. Captured by `willEnter` and consumed by
-        /// `rewrite<...>`.
+        /// Whether each chain-eligible parent was the chain top in the original (pre-recursion)
+        /// tree. Captured by `willEnter` and consumed by `rewrite<...>` .
         var chainTopStack: [Bool] = []
-        /// Pre-classified context (`wrap`/`noWrap`/`propagate`) per chain-top
-        /// node, captured by `willEnter` since the post-recursion node lacks the
-        /// original parent links.
+        /// Pre-classified context ( `wrap` / `noWrap` / `propagate` ) per chain-top node, captured
+        /// by `willEnter` since the post-recursion node lacks the original parent links.
         var chainContextStack: [ChainTopContext] = []
-        /// MemberAccess only: whether the original base was `(force-cast)` —
-        /// determines if we need to add an optional-chain on the base.
+        /// MemberAccess only: whether the original base was `(force-cast)` — determines if we need
+        /// to add an optional-chain on the base.
         var memberHadForceCastStack: [Bool] = []
-        /// Number of chain-eligible parents (FunctionCall, MemberAccess,
-        /// SubscriptCall) currently on the stack. Used to suppress diagnostics
-        /// in non-test code: legacy short-circuits recursion at these nodes (see
-        /// `NoForceUnwrap.visit(_ FunctionCallExprSyntax)` etc.), so descendants
-        /// never reach the ForceUnwrap visitor. We mimic by skipping diagnose
-        /// when `nonTestChainParentDepth > 0` and `!insideTestFunction`.
+        /// Number of chain-eligible parents (FunctionCall, MemberAccess, SubscriptCall) currently
+        /// on the stack. Used to suppress diagnostics in non-test code: legacy short-circuits
+        /// recursion at these nodes (see `NoForceUnwrap.visit(_ FunctionCallExprSyntax)` etc.), so
+        /// descendants never reach the ForceUnwrap visitor. We mimic by skipping diagnose when
+        /// `nonTestChainParentDepth > 0` and `!insideTestFunction` .
         var nonTestChainParentDepth = 0
     }
 
     enum ChainTopContext { case wrap, noWrap, propagate }
 
-    static func state(_ context: Context) -> State {
-        context.noForceUnwrapState
-    }
+    static func state(_ context: Context) -> State { context.noForceUnwrapState }
 
     // MARK: - Compact-pipeline scope hooks
 
@@ -93,23 +87,15 @@ final class NoForceUnwrap: StaticFormatRule<BasicRuleValue>, @unchecked Sendable
     static func willEnter(_ node: ClassDeclSyntax, context: Context) {
         pushClass(node, context: context)
     }
-    static func didExit(_: ClassDeclSyntax, context: Context) {
-        popClass(context: context)
-    }
+    static func didExit(_: ClassDeclSyntax, context: Context) { popClass(context: context) }
 
     static func willEnter(_ node: FunctionDeclSyntax, context: Context) {
         pushFunction(node, context: context)
     }
-    static func didExit(_: FunctionDeclSyntax, context: Context) {
-        popFunction(context: context)
-    }
+    static func didExit(_: FunctionDeclSyntax, context: Context) { popFunction(context: context) }
 
-    static func willEnter(_: ClosureExprSyntax, context: Context) {
-        pushClosure(context: context)
-    }
-    static func didExit(_: ClosureExprSyntax, context: Context) {
-        popClosure(context: context)
-    }
+    static func willEnter(_: ClosureExprSyntax, context: Context) { pushClosure(context: context) }
+    static func didExit(_: ClosureExprSyntax, context: Context) { popClosure(context: context) }
 
     static func willEnter(_: StringLiteralExprSyntax, context: Context) {
         pushStringLiteral(context: context)
@@ -165,9 +151,7 @@ final class NoForceUnwrap: StaticFormatRule<BasicRuleValue>, @unchecked Sendable
     // MARK: - File-level pre-scan
 
     static func visitImport(_ node: ImportDeclSyntax, context: Context) {
-        if node.path.first?.name.text == "Testing" {
-            state(context).importsTesting = true
-        }
+        if node.path.first?.name.text == "Testing" { state(context).importsTesting = true }
     }
 
     static func visitSourceFile(_ node: SourceFileSyntax, context: Context) {
@@ -196,6 +180,7 @@ final class NoForceUnwrap: StaticFormatRule<BasicRuleValue>, @unchecked Sendable
 
     private static func isTestFunction(_ node: FunctionDeclSyntax, state s: State) -> Bool {
         if s.importsTesting, node.hasAttribute("Test", inModule: "Testing") { return true }
+
         if s.insideXCTestCase {
             let name = node.name.text
             return name.hasPrefix("test")
@@ -215,6 +200,7 @@ final class NoForceUnwrap: StaticFormatRule<BasicRuleValue>, @unchecked Sendable
 
     static func popFunction(context: Context) {
         let s = state(context)
+
         if let (wasInside, wasAdded) = s.functionStack.popLast() {
             s.insideTestFunction = wasInside
             s.addedTryExpression = wasAdded
@@ -224,18 +210,14 @@ final class NoForceUnwrap: StaticFormatRule<BasicRuleValue>, @unchecked Sendable
 
     // MARK: - Closure / string-interpolation scope
 
-    static func pushClosure(context: Context) {
-        state(context).closureDepth += 1
-    }
+    static func pushClosure(context: Context) { state(context).closureDepth += 1 }
 
     static func popClosure(context: Context) {
         let s = state(context)
         if s.closureDepth > 0 { s.closureDepth -= 1 }
     }
 
-    static func pushStringLiteral(context: Context) {
-        state(context).stringInterpolationDepth += 1
-    }
+    static func pushStringLiteral(context: Context) { state(context).stringInterpolationDepth += 1 }
 
     static func popStringLiteral(context: Context) {
         let s = state(context)
@@ -245,9 +227,9 @@ final class NoForceUnwrap: StaticFormatRule<BasicRuleValue>, @unchecked Sendable
     // MARK: - Chain-eligible parent willEnter / didExit
 
     /// Push state at a chain-eligible parent (MemberAccess/FunctionCall/
-    /// SubscriptCall/ForceUnwrap/AsExpr): saves the current `chainNeedsWrapping`,
-    /// resets it to false so children's signals are isolated, and captures
-    /// chain-top status + classification from the pre-recursion node.
+    /// SubscriptCall/ForceUnwrap/AsExpr): saves the current `chainNeedsWrapping` , resets it to
+    /// false so children's signals are isolated, and captures chain-top status + classification
+    /// from the pre-recursion node.
     static func pushChainNode(_ originalNode: Syntax, context: Context) {
         let s = state(context)
         s.chainSaveStack.append(s.chainNeedsWrapping)
@@ -259,13 +241,13 @@ final class NoForceUnwrap: StaticFormatRule<BasicRuleValue>, @unchecked Sendable
             isTop ? classifyChainTopContext(originalNode) : .propagate
         )
 
-        // Emit findings here (during willEnter, with original positions). The
-        // legacy rule diagnoses/skips inside its `visit(_:)` BEFORE recursing —
-        // we mirror that timing so location info reflects the original tree.
+        // Emit findings here (during willEnter, with original positions). The legacy rule
+        // diagnoses/skips inside its `visit(_:)` BEFORE recursing — we mirror that timing so
+        // location info reflects the original tree.
         if let force = originalNode.as(ForceUnwrapExprSyntax.self) {
             diagnoseForceUnwrap(force, isTop: isTop, context: context)
         } else if let asExpr = originalNode.as(AsExprSyntax.self),
-                  asExpr.questionOrExclamationMark?.tokenKind == .exclamationMark
+           asExpr.questionOrExclamationMark?.tokenKind == .exclamationMark
         {
             diagnoseAsExpr(asExpr, isTop: isTop, context: context)
         }
@@ -291,11 +273,10 @@ final class NoForceUnwrap: StaticFormatRule<BasicRuleValue>, @unchecked Sendable
             return
         }
 
-        // Non-test code: legacy diagnoses without recursing, so only the chain top
-        // emits a finding. Additionally, legacy short-circuits recursion through
-        // chain-eligible parents (FunctionCall/MemberAccess/SubscriptCall) in
-        // non-test code, so a ForceUnwrap nested inside one never reaches
-        // visit_ForceUnwrap. Mirror that here.
+        // Non-test code: legacy diagnoses without recursing, so only the chain top emits a finding.
+        // Additionally, legacy short-circuits recursion through chain-eligible parents
+        // (FunctionCall/MemberAccess/SubscriptCall) in non-test code, so a ForceUnwrap nested
+        // inside one never reaches visit_ForceUnwrap. Mirror that here.
         guard isTop else { return }
         if s.nonTestChainParentDepth > 0 { return }
         Self.diagnose(
@@ -310,6 +291,7 @@ final class NoForceUnwrap: StaticFormatRule<BasicRuleValue>, @unchecked Sendable
         context: Context
     ) {
         let s = state(context)
+
         if s.insideTestFunction {
             if s.closureDepth > 0 || s.stringInterpolationDepth > 0 { return }
             Self.diagnose(.replaceForceCast, on: node.asKeyword, context: context)
@@ -323,9 +305,9 @@ final class NoForceUnwrap: StaticFormatRule<BasicRuleValue>, @unchecked Sendable
         )
     }
 
-    /// Restore the chain state stacks. Called from `didExit`. Note: the chain
-    /// rewrite functions read (without popping) via `.last`; this pop runs after
-    /// the rewrite. The propagation of `chainNeedsWrapping` happens here.
+    /// Restore the chain state stacks. Called from `didExit` . Note: the chain rewrite functions
+    /// read (without popping) via `.last` ; this pop runs after the rewrite. The propagation of
+    /// `chainNeedsWrapping` happens here.
     static func popChainNode(_ originalNode: Syntax, context: Context) {
         let s = state(context)
         assert(
@@ -339,16 +321,15 @@ final class NoForceUnwrap: StaticFormatRule<BasicRuleValue>, @unchecked Sendable
         _ = s.chainContextStack.popLast()
         _ = originalNode
 
-        if isTop {
-            s.chainNeedsWrapping = saved
-        } else {
-            s.chainNeedsWrapping = saved || s.chainNeedsWrapping
-        }
+        s.chainNeedsWrapping = isTop
+            ? saved
+            : saved || s.chainNeedsWrapping
     }
 
     static func pushMemberAccess(_ node: MemberAccessExprSyntax, context: Context) {
         let s = state(context)
         let hadForceCast: Bool
+
         if let base = node.base,
            let tupleExpr = base.as(TupleExprSyntax.self),
            tupleExpr.elements.count == 1,
@@ -407,18 +388,16 @@ final class NoForceUnwrap: StaticFormatRule<BasicRuleValue>, @unchecked Sendable
         if parent.is(CodeBlockItemSyntax.self) { return .noWrap }
         if parent.is(InitializerClauseSyntax.self) { return .wrap }
         if parent.is(ReturnStmtSyntax.self) { return .wrap }
-        if parent.is(ConditionElementSyntax.self) { return .wrap }
-        return .wrap
+        return parent.is(ConditionElementSyntax.self)
+            ? .wrap
+            : .wrap
     }
 
     private static func classifyArgContext(
         _ labeledExpr: LabeledExprSyntax
     ) -> ChainTopContext {
         guard let argList = labeledExpr.parent?.as(LabeledExprListSyntax.self),
-              let funcCall = argList.parent?.as(FunctionCallExprSyntax.self)
-        else {
-            return .wrap
-        }
+              let funcCall = argList.parent?.as(FunctionCallExprSyntax.self) else { return .wrap }
 
         let funcName = funcCall.calledExpression.trimmedDescription
         if funcName == "XCTAssertNil" { return .noWrap }
@@ -432,8 +411,7 @@ final class NoForceUnwrap: StaticFormatRule<BasicRuleValue>, @unchecked Sendable
     ) -> ChainTopContext {
         let op = infixExpr.operator
         if op.is(AssignmentExprSyntax.self) {
-            if infixExpr.leftOperand.id == chainExpr.id { return .noWrap }
-            return .wrap
+            return infixExpr.leftOperand.id == chainExpr.id ? .noWrap : .wrap
         }
         if let binOp = op.as(BinaryOperatorExprSyntax.self), binOp.operator.text == "==" {
             return .noWrap
@@ -447,6 +425,7 @@ final class NoForceUnwrap: StaticFormatRule<BasicRuleValue>, @unchecked Sendable
         {
             return asExpr
         }
+
         for child in expr.children(viewMode: .sourceAccurate) {
             if let childExpr = child.as(ExprSyntax.self),
                let found = findForceCast(in: childExpr)
@@ -459,9 +438,8 @@ final class NoForceUnwrap: StaticFormatRule<BasicRuleValue>, @unchecked Sendable
 
     // MARK: - Rewrite handlers
 
-    /// Apply the `ForceUnwrapExpr` rewrite. Diagnostics are emitted from
-    /// `willEnter` (with original tree positions) — this function only does the
-    /// rewrite based on accumulated state.
+    /// Apply the `ForceUnwrapExpr` rewrite. Diagnostics are emitted from `willEnter` (with original
+    /// tree positions) — this function only does the rewrite based on accumulated state.
     static func rewriteForceUnwrap(
         _ node: ForceUnwrapExprSyntax,
         context: Context
@@ -469,9 +447,7 @@ final class NoForceUnwrap: StaticFormatRule<BasicRuleValue>, @unchecked Sendable
         let s = state(context)
 
         guard s.insideTestFunction else { return ExprSyntax(node) }
-        if s.closureDepth > 0 || s.stringInterpolationDepth > 0 {
-            return ExprSyntax(node)
-        }
+        if s.closureDepth > 0 || s.stringInterpolationDepth > 0 { return ExprSyntax(node) }
 
         let isTop = s.chainTopStack.last ?? true
         let chainContext = s.chainContextStack.last ?? .wrap
@@ -519,8 +495,8 @@ final class NoForceUnwrap: StaticFormatRule<BasicRuleValue>, @unchecked Sendable
             ))
     }
 
-    /// Apply the `AsExpr` rewrite for `as!` force casts (called only when the
-    /// node is `as!`). Diagnostics are emitted from `willEnter`.
+    /// Apply the `AsExpr` rewrite for `as!` force casts (called only when the node is `as!` ).
+    /// Diagnostics are emitted from `willEnter` .
     static func rewriteAsExpr(
         _ node: AsExprSyntax,
         context: Context
@@ -531,9 +507,7 @@ final class NoForceUnwrap: StaticFormatRule<BasicRuleValue>, @unchecked Sendable
 
         let s = state(context)
         guard s.insideTestFunction else { return ExprSyntax(node) }
-        if s.closureDepth > 0 || s.stringInterpolationDepth > 0 {
-            return ExprSyntax(node)
-        }
+        if s.closureDepth > 0 || s.stringInterpolationDepth > 0 { return ExprSyntax(node) }
 
         var result = node
         result.questionOrExclamationMark = .postfixQuestionMarkToken(
@@ -553,8 +527,7 @@ final class NoForceUnwrap: StaticFormatRule<BasicRuleValue>, @unchecked Sendable
                         trailingTrivia: result.trailingTrivia,
                         state: s
                     )
-                case .noWrap:
-                    return ExprSyntax(result)
+                case .noWrap: return ExprSyntax(result)
                 case .propagate:
                     s.chainNeedsWrapping = true
                     return ExprSyntax(result)
@@ -565,8 +538,7 @@ final class NoForceUnwrap: StaticFormatRule<BasicRuleValue>, @unchecked Sendable
         return ExprSyntax(result)
     }
 
-    /// Apply the `MemberAccessExpr` chain-top wrapping. Called after children
-    /// have been visited.
+    /// Apply the `MemberAccessExpr` chain-top wrapping. Called after children have been visited.
     static func rewriteMemberAccess(
         _ node: MemberAccessExprSyntax,
         context: Context
@@ -574,10 +546,7 @@ final class NoForceUnwrap: StaticFormatRule<BasicRuleValue>, @unchecked Sendable
         let s = state(context)
         guard s.insideTestFunction,
               s.closureDepth == 0,
-              s.stringInterpolationDepth == 0
-        else {
-            return ExprSyntax(node)
-        }
+              s.stringInterpolationDepth == 0 else { return ExprSyntax(node) }
 
         let childChainNeedsWrapping = s.chainNeedsWrapping
         let isTop = s.chainTopStack.last ?? false
@@ -591,15 +560,11 @@ final class NoForceUnwrap: StaticFormatRule<BasicRuleValue>, @unchecked Sendable
             var result = node
             result.base = ExprSyntax(optionalBase)
 
-            if isTop, childChainNeedsWrapping {
-                return wrapIfNeeded(ExprSyntax(result), state: s)
-            }
+            if isTop, childChainNeedsWrapping { return wrapIfNeeded(ExprSyntax(result), state: s) }
             return ExprSyntax(result)
         }
 
-        if isTop, childChainNeedsWrapping {
-            return wrapIfNeeded(ExprSyntax(node), state: s)
-        }
+        if isTop, childChainNeedsWrapping { return wrapIfNeeded(ExprSyntax(node), state: s) }
 
         return ExprSyntax(node)
     }
@@ -611,16 +576,11 @@ final class NoForceUnwrap: StaticFormatRule<BasicRuleValue>, @unchecked Sendable
         let s = state(context)
         guard s.insideTestFunction,
               s.closureDepth == 0,
-              s.stringInterpolationDepth == 0
-        else {
-            return ExprSyntax(node)
-        }
+              s.stringInterpolationDepth == 0 else { return ExprSyntax(node) }
 
         let childChainNeedsWrapping = s.chainNeedsWrapping
         let isTop = s.chainTopStack.last ?? false
-        if isTop, childChainNeedsWrapping {
-            return wrapIfNeeded(ExprSyntax(node), state: s)
-        }
+        if isTop, childChainNeedsWrapping { return wrapIfNeeded(ExprSyntax(node), state: s) }
         return ExprSyntax(node)
     }
 
@@ -631,16 +591,11 @@ final class NoForceUnwrap: StaticFormatRule<BasicRuleValue>, @unchecked Sendable
         let s = state(context)
         guard s.insideTestFunction,
               s.closureDepth == 0,
-              s.stringInterpolationDepth == 0
-        else {
-            return ExprSyntax(node)
-        }
+              s.stringInterpolationDepth == 0 else { return ExprSyntax(node) }
 
         let childChainNeedsWrapping = s.chainNeedsWrapping
         let isTop = s.chainTopStack.last ?? false
-        if isTop, childChainNeedsWrapping {
-            return wrapIfNeeded(ExprSyntax(node), state: s)
-        }
+        if isTop, childChainNeedsWrapping { return wrapIfNeeded(ExprSyntax(node), state: s) }
         return ExprSyntax(node)
     }
 
@@ -651,6 +606,7 @@ final class NoForceUnwrap: StaticFormatRule<BasicRuleValue>, @unchecked Sendable
         state s: State
     ) -> ExprSyntax {
         let chainContext = s.chainContextStack.last ?? .wrap
+
         switch chainContext {
             case .wrap:
                 s.addedTryExpression = true
@@ -661,8 +617,7 @@ final class NoForceUnwrap: StaticFormatRule<BasicRuleValue>, @unchecked Sendable
             case .noWrap:
                 s.chainNeedsWrapping = false
                 return expr
-            case .propagate:
-                return expr
+            case .propagate: return expr
         }
     }
 
@@ -686,8 +641,10 @@ final class NoForceUnwrap: StaticFormatRule<BasicRuleValue>, @unchecked Sendable
             : ExprSyntax(
                 FunctionCallExprSyntax(
                     calledExpression: ExprSyntax(
-                        DeclReferenceExprSyntax(baseName: .identifier("XCTUnwrap"))
-                    ),
+                        DeclReferenceExprSyntax(
+                            baseName: .identifier(
+                                "XCTUnwrap"
+                            ))),
                     leftParen: .leftParenToken(),
                     arguments: LabeledExprListSyntax([
                         LabeledExprSyntax(expression: innerExpr)
@@ -704,26 +661,26 @@ final class NoForceUnwrap: StaticFormatRule<BasicRuleValue>, @unchecked Sendable
 
     // MARK: - FunctionDecl post-process
 
-    /// Add a `throws` clause if any force unwrap was wrapped inside the function
-    /// frame. Called from `rewriteFunctionDecl` AFTER children visited but BEFORE
-    /// `didExit` (which restores parent frame).
+    /// Add a `throws` clause if any force unwrap was wrapped inside the function frame. Called from
+    /// `rewriteFunctionDecl` AFTER children visited but BEFORE `didExit` (which restores parent
+    /// frame).
     static func afterFunctionDecl(
         _ node: FunctionDeclSyntax,
         context: Context
     ) -> FunctionDeclSyntax {
         let s = state(context)
         guard s.insideTestFunction, s.addedTryExpression else { return node }
-        if node.signature.effectSpecifiers?.throwsClause != nil { return node }
-        return node.addingThrowsClause()
+        return node.signature.effectSpecifiers?.throwsClause != nil
+            ? node
+            : node.addingThrowsClause()
     }
 }
 
-extension Finding.Message {
-    fileprivate static func doNotForceUnwrap(name: String) -> Finding.Message {
+fileprivate extension Finding.Message {
+    static func doNotForceUnwrap(name: String) -> Finding.Message {
         "do not force unwrap '\(name)'"
     }
-    fileprivate static let replaceForceUnwrap: Finding.Message =
+    static let replaceForceUnwrap: Finding.Message =
         "replace force unwrap in test with 'XCTUnwrap' or '#require'"
-    fileprivate static let replaceForceCast: Finding.Message =
-        "replace force cast in test with optional cast"
+    static let replaceForceCast: Finding.Message = "replace force cast in test with optional cast"
 }

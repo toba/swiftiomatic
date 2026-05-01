@@ -13,7 +13,7 @@
 import SwiftSyntax
 
 extension FunctionDeclSyntax {
-    /// Constructs a name for a function that includes parameter labels, i.e. `foo(_:bar:)`.
+    /// Constructs a name for a function that includes parameter labels, i.e. `foo(_:bar:)` .
     var fullDeclName: String {
         let params = signature.parameterClause.parameters.map { param in
             "\(param.firstName.text):"
@@ -23,7 +23,7 @@ extension FunctionDeclSyntax {
 
     /// Returns a copy with a `throws` clause added to the function signature.
     ///
-    /// If the function already has effect specifiers (e.g. `async`), `throws` is appended.
+    /// If the function already has effect specifiers (e.g. `async` ), `throws` is appended.
     /// Otherwise, new effect specifiers are created. Leading trivia from the body's `{` is
     /// transferred to the `throws` keyword, and the brace gets a single space.
     ///
@@ -33,8 +33,11 @@ extension FunctionDeclSyntax {
 
         var result = self
         let throwsClause = ThrowsClauseSyntax(
-            throwsSpecifier: .keyword(.throws, trailingTrivia: [])
-        )
+            throwsSpecifier: .keyword(
+                .throws,
+                trailingTrivia: []
+            ))
+
         if var effectSpecifiers = result.signature.effectSpecifiers {
             // Has async but no throws — insert throws after async, transfer body's leading trivia.
             if var body = result.body {
@@ -50,6 +53,7 @@ extension FunctionDeclSyntax {
             result.signature.effectSpecifiers = FunctionEffectSpecifiersSyntax(
                 throwsClause: throwsClause
             )
+
             if var body = result.body {
                 let bodyTrivia = body.leftBrace.leadingTrivia
                 result.signature.effectSpecifiers!.throwsClause!.throwsSpecifier.leadingTrivia =

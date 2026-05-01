@@ -18,7 +18,7 @@ import SwiftSyntax
 /// In practice, *all* case pattern labels should be redundant.
 ///
 /// Lint: Using a label in a case statement yields a lint error unless the label does not match the
-///       binding identifier.
+/// binding identifier.
 ///
 /// Rewrite: Redundant labels in case patterns are removed.
 final class NoLabelsInCasePatterns: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
@@ -26,27 +26,25 @@ final class NoLabelsInCasePatterns: StaticFormatRule<BasicRuleValue>, @unchecked
 
     static func transform(
         _ node: SwitchCaseLabelSyntax,
-        parent: Syntax?,
+        parent _: Syntax?,
         context: Context
     ) -> SwitchCaseLabelSyntax {
         var newCaseItems: [SwitchCaseItemSyntax] = []
 
         for item in node.caseItems {
-            guard
-                var exprPattern = item.pattern.as(ExpressionPatternSyntax.self),
-                var funcCall = exprPattern.expression.as(FunctionCallExprSyntax.self)
-            else {
+            guard var exprPattern = item.pattern.as(ExpressionPatternSyntax.self),
+                  var funcCall = exprPattern.expression.as(FunctionCallExprSyntax.self) else {
                 newCaseItems.append(item)
                 continue
             }
 
             // Search function call argument list for violations
             var newArguments = LabeledExprListSyntax()
+
             for argument in funcCall.arguments {
-                guard
-                    let label = argument.label,
-                    let unresolvedPat = argument.expression.as(PatternExprSyntax.self),
-                    let valueBinding = unresolvedPat.pattern.as(ValueBindingPatternSyntax.self)
+                guard let label = argument.label,
+                      let unresolvedPat = argument.expression.as(PatternExprSyntax.self),
+                      let valueBinding = unresolvedPat.pattern.as(ValueBindingPatternSyntax.self)
                 else {
                     newArguments.append(argument)
                     continue
@@ -79,8 +77,8 @@ final class NoLabelsInCasePatterns: StaticFormatRule<BasicRuleValue>, @unchecked
     }
 }
 
-extension Finding.Message {
-    fileprivate static func removeRedundantLabel(name: String) -> Finding.Message {
+fileprivate extension Finding.Message {
+    static func removeRedundantLabel(name: String) -> Finding.Message {
         "remove the label '\(name)' from this 'case' pattern"
     }
 }

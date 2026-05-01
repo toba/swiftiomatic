@@ -176,21 +176,20 @@ extension TokenStream {
             // When there's a simple base (i.e. identifier), group the entire
             // `try/await <base>.<name>` sequence. This check has to happen here so that the
             // `MemberAccessExprSyntax.name` is available.
-            if base.is(DeclReferenceExprSyntax.self) {
-                return memberAccessExpr.declName.baseName.lastToken(viewMode: .sourceAccurate)
-            }
-            return connectingTokenForKeywordModifiedExpr(inSubExpr: base)
+            return base.is(DeclReferenceExprSyntax.self)
+                ? memberAccessExpr.declName.baseName.lastToken(viewMode: .sourceAccurate)
+                : connectingTokenForKeywordModifiedExpr(inSubExpr: base)
         }
-        if expr.is(DeclReferenceExprSyntax.self) {
-            return expr.lastToken(viewMode: .sourceAccurate)
-        }
-        return nil
+        return expr.is(DeclReferenceExprSyntax.self)
+            ? expr.lastToken(viewMode: .sourceAccurate)
+            : nil
     }
 
     func visitTypeExpr(_: TypeExprSyntax) -> SyntaxVisitorContinueKind { .visitChildren }
 
     func visitAttribute(_ node: AttributeSyntax) -> SyntaxVisitorContinueKind {
         before(node.firstToken(viewMode: .sourceAccurate), tokens: .open)
+
         switch node.arguments {
             case .argumentList(let argumentList)?:
                 if let leftParen = node.leftParen, let rightParen = node.rightParen {
@@ -202,10 +201,10 @@ extension TokenStream {
                     )
                 }
             case .some:
-                // Wrap the attribute's arguments in their own group, so arguments stay together with a
-                // higher affinity than the overall attribute (e.g. allows a break after the opening "("
-                // and then having the entire argument list on 1 line). Necessary spaces and breaks are
-                // added inside of the argument, using type specific visitor methods.
+                // Wrap the attribute's arguments in their own group, so arguments stay together
+                // with a higher affinity than the overall attribute (e.g. allows a break after the
+                // opening "(" and then having the entire argument list on 1 line). Necessary spaces
+                // and breaks are added inside of the argument, using type specific visitor methods.
                 after(
                     node.leftParen, tokens: .break(.open, size: 0), .open(argumentListConsistency())
                 )
@@ -295,6 +294,7 @@ extension TokenStream {
 
     func visitConditionElement(_ node: ConditionElementSyntax) -> SyntaxVisitorContinueKind {
         before(node.firstToken(viewMode: .sourceAccurate), tokens: .open)
+
         if let comma = node.trailingComma {
             after(comma, tokens: .close, .break(.same))
             closingDelimiterTokens.insert(comma)
@@ -334,9 +334,11 @@ extension TokenStream {
         // If this is the first component (immediately after the backslash), allow a break after the
         // slash only if a typename follows it. Do not break in the middle of `\.` .
         var breakBeforePeriod = true
+
         if let keyPathComponents = node.parent?.as(KeyPathComponentListSyntax.self),
            let keyPathExpr = keyPathComponents.parent?.as(KeyPathExprSyntax.self),
-           node == keyPathExpr.components.first, keyPathExpr.root == nil
+           node == keyPathExpr.components.first,
+           keyPathExpr.root == nil
         {
             breakBeforePeriod = false
         }
@@ -348,6 +350,7 @@ extension TokenStream {
         _ node: KeyPathSubscriptComponentSyntax
     ) -> SyntaxVisitorContinueKind {
         var breakBeforeRightParen = !isCompactSingleFunctionCallArgument(node.arguments)
+
         if let component = node.parent?.as(KeyPathComponentSyntax.self) {
             breakBeforeRightParen = !isLastKeyPathComponent(component)
         }
@@ -376,13 +379,13 @@ extension TokenStream {
         // breaks here. Using `.break(.open(kind: .continuation)) ... .break(.close)` pairs lets the
         // wrapped branches push a continuation indent so wrapped sub-expressions (e.g. `+` chains
         // inside a branch) align relative to the branch keyword, and keeps the breaks eligible for
-        // discretionary newlines via `RespectExistingLineBreaks`.
+        // discretionary newlines via `RespectExistingLineBreaks` .
         //
         // The extra `.open` after each operator's break (matched by `.close, .close` at the end of
         // the else expression) bounds the chunk of break tokens *inside* each branch — so when the
-        // ternary itself wraps, sub-expression breaks within a branch (e.g., the `[`/`]` breaks of
-        // a single-element array literal) don't fire just because the outer ternary did. Mirrors
-        // upstream apple/swift-format's `visit(_:TernaryExprSyntax)`.
+        // ternary itself wraps, sub-expression breaks within a branch (e.g., the `[` / `]` breaks
+        // of a single-element array literal) don't fire just because the outer ternary did. Mirrors
+        // upstream apple/swift-format's `visit(_:TernaryExprSyntax)` .
         before(node.questionMark, tokens: .break(.open(kind: .continuation)), .open)
         after(node.questionMark, tokens: .space)
         before(
@@ -394,6 +397,7 @@ extension TokenStream {
         after(node.colon, tokens: .space)
 
         let closeScopeToken: TokenSyntax?
+
         if let parenExpr = outermostEnclosingNode(from: Syntax(node.elseExpression)) {
             closeScopeToken = parenExpr.lastToken(viewMode: .sourceAccurate)
         } else {
@@ -421,8 +425,10 @@ extension TokenStream {
         //
         let wherePrecedingBreak: Token
         let whereTrailingBreak: Token
+
         if !config[ElseCatchOnNewLine.self],
-           let parent = node.parent, parent.is(CatchItemSyntax.self)
+           let parent = node.parent,
+           parent.is(CatchItemSyntax.self)
         {
             wherePrecedingBreak = .break(.continue)
             whereTrailingBreak = .break
@@ -457,10 +463,9 @@ extension TokenStream {
         // When KeepFunctionOutputTogether is enabled, the rule's purpose is to keep the return
         // clause attached to the closing paren / effect specifiers. Ignore any pre-existing
         // discretionary newline before `->` so a previously-broken signature gets re-attached.
-        let newlines:
-            NewlineBehavior = config[KeepFunctionOutputTogether.self]
-                ? .elective(ignoresDiscretionary: true)
-                : .elective
+        let newlines: NewlineBehavior = config[KeepFunctionOutputTogether.self]
+            ? .elective(ignoresDiscretionary: true)
+            : .elective
         before(
             node.returnClause?.firstToken(viewMode: .sourceAccurate),
             tokens: .break(.continue, newlines: newlines)

@@ -44,22 +44,19 @@ final class CommentMovingRewriter: SyntaxRewriter {
     private let selection: Selection
 
     override func visit(_ node: SourceFileSyntax) -> SourceFileSyntax {
-        if shouldFormatterIgnore(file: node) { return node }
-        return super.visit(node)
+        shouldFormatterIgnore(file: node) ? node : super.visit(node)
     }
 
     override func visit(_ node: CodeBlockItemSyntax) -> CodeBlockItemSyntax {
-        if shouldFormatterIgnore(node: Syntax(node)) || !Syntax(node).isInsideSelection(selection) {
-            return node
-        }
-        return super.visit(node)
+        shouldFormatterIgnore(node: Syntax(node)) || !Syntax(node).isInsideSelection(selection)
+            ? node
+            : super.visit(node)
     }
 
     override func visit(_ node: MemberBlockItemSyntax) -> MemberBlockItemSyntax {
-        if shouldFormatterIgnore(node: Syntax(node)) || !Syntax(node).isInsideSelection(selection) {
-            return node
-        }
-        return super.visit(node)
+        shouldFormatterIgnore(node: Syntax(node)) || !Syntax(node).isInsideSelection(selection)
+            ? node
+            : super.visit(node)
     }
 
     override func visit(_ node: InfixOperatorExprSyntax) -> ExprSyntax {
@@ -76,6 +73,7 @@ final class CommentMovingRewriter: SyntaxRewriter {
         let rhsLeading = node.rightOperand.leadingTrivia
 
         let operatorTrailingLineComment: Trivia
+
         if operatorTrailing.hasLineComment {
             operatorTrailingLineComment = [operatorTrailing.pieces.last!]
             operatorTrailing = Trivia(pieces: operatorTrailing.dropLast())
@@ -110,8 +108,10 @@ final class CommentMovingRewriter: SyntaxRewriter {
         // Line comments and adjacent newlines are extracted so they can be moved to a different
         // token's leading trivia, while all other kinds of tokens are left as-is.
         var lastPiece: TriviaPiece?
+
         for piece in token.leadingTrivia {
             defer { lastPiece = piece }
+
             switch piece {
                 case .lineComment:
                     extractingPieces.append(contentsOf: pendingPieces)
@@ -137,17 +137,14 @@ final class CommentMovingRewriter: SyntaxRewriter {
 
 /// Returns whether the given trivia includes a directive to ignore formatting for the next node.
 ///
-/// - Parameters:
-///   - trivia: Leading trivia for a node that the formatter supports ignoring.
-///   - isWholeFile: Whether to search for a whole-file ignore directive or per node ignore.
-///   - Returns: Whether the trivia contains the specified type of ignore directive.
-func isFormatterIgnorePresent(inTrivia trivia: Trivia, isWholeFile: Bool) -> Bool {
+/// - Parameter trivia: Leading trivia for a node that the formatter supports ignoring.
+/// - Returns: Whether the trivia contains a `sm:ignore` directive.
+func isFormatterIgnorePresent(inTrivia trivia: Trivia) -> Bool {
     func isFormatterIgnore(in commentText: String, prefix: String, suffix: String) -> Bool {
         let trimmed = commentText.dropFirst(prefix.count)
             .dropLast(suffix.count)
             .trimmingCharacters(in: .whitespaces)
-        let pattern = isWholeFile ? "sm:ignore-file" : "sm:ignore"
-        return trimmed == pattern
+        return trimmed == "sm:ignore"
     }
 
     for piece in trivia {
@@ -171,9 +168,7 @@ func isFormatterIgnorePresent(inTrivia trivia: Trivia, isWholeFile: Bool) -> Boo
 ///
 /// - Parameter node: A node that can be safely ignored.
 func shouldFormatterIgnore(node: Syntax) -> Bool {
-    // Regardless of the level of nesting, if the ignore directive is present on the first token
-    // contained within the node then the entire node is eligible for ignoring.
-    isFormatterIgnorePresent(inTrivia: node.allPrecedingTrivia, isWholeFile: false)
+    isFormatterIgnorePresent(inTrivia: node.allPrecedingTrivia)
 }
 
 /// Returns whether the formatter should ignore the given file by printing it without changing the
@@ -182,5 +177,5 @@ func shouldFormatterIgnore(node: Syntax) -> Bool {
 ///
 /// - Parameter file: The root syntax node for a source file.
 func shouldFormatterIgnore(file: SourceFileSyntax) -> Bool {
-    isFormatterIgnorePresent(inTrivia: file.allPrecedingTrivia, isWholeFile: true)
+    isFormatterIgnorePresent(inTrivia: file.allPrecedingTrivia)
 }

@@ -13,7 +13,7 @@ final class PreferSwiftTesting: StaticFormatRule<BasicRuleValue>, @unchecked Sen
 
     override class var defaultValue: BasicRuleValue { .init(rewrite: false, lint: .no) }
 
-    /// Per-file mutable state held as a typed lazy property on `Context`.
+    /// Per-file mutable state held as a typed lazy property on `Context` .
     final class State {
         var bailOut = false
         var hasXCTestImport = false
@@ -24,10 +24,9 @@ final class PreferSwiftTesting: StaticFormatRule<BasicRuleValue>, @unchecked Sen
         /// Stack of `currentFunctionHasTry` saved values.
         var currentFunctionHasTryStack: [Bool] = []
         var currentFunctionHasTry = false
-        /// Stack of pre-traversal `FunctionCallExprSyntax` nodes captured by
-        /// the compact pipeline's `willEnter` so that the post-traversal
-        /// `transform` can use the original (still-attached) node for
-        /// finding source locations.
+        /// Stack of pre-traversal `FunctionCallExprSyntax` nodes captured by the compact pipeline's
+        /// `willEnter` so that the post-traversal `transform` can use the original (still-attached)
+        /// node for finding source locations.
         var originalCallStack: [FunctionCallExprSyntax] = []
     }
 
@@ -61,6 +60,7 @@ final class PreferSwiftTesting: StaticFormatRule<BasicRuleValue>, @unchecked Sen
         for stmt in node.statements {
             if let extDecl = stmt.item.as(ExtensionDeclSyntax.self) {
                 let extName = extDecl.extendedType.trimmedDescription
+
                 if extName == "XCTestCase" || state.xcTestCaseClassNames.contains(extName) {
                     if extName == "XCTestCase" {
                         state.bailOut = true
@@ -85,9 +85,7 @@ final class PreferSwiftTesting: StaticFormatRule<BasicRuleValue>, @unchecked Sen
     static func didExit(_: ClassDeclSyntax, context: Context) {
         let state = context.preferSwiftTestingState
         guard state.hasXCTestImport, !state.bailOut else { return }
-        if let was = state.insideXCTestCaseStack.popLast() {
-            state.insideXCTestCase = was
-        }
+        if let was = state.insideXCTestCaseStack.popLast() { state.insideXCTestCase = was }
     }
 
     static func willEnter(_ node: ExtensionDeclSyntax, context: Context) {
@@ -95,17 +93,13 @@ final class PreferSwiftTesting: StaticFormatRule<BasicRuleValue>, @unchecked Sen
         guard state.hasXCTestImport, !state.bailOut else { return }
         state.insideXCTestCaseStack.append(state.insideXCTestCase)
         let extName = node.extendedType.trimmedDescription
-        if state.xcTestCaseClassNames.contains(extName) {
-            state.insideXCTestCase = true
-        }
+        if state.xcTestCaseClassNames.contains(extName) { state.insideXCTestCase = true }
     }
 
     static func didExit(_: ExtensionDeclSyntax, context: Context) {
         let state = context.preferSwiftTestingState
         guard state.hasXCTestImport, !state.bailOut else { return }
-        if let was = state.insideXCTestCaseStack.popLast() {
-            state.insideXCTestCase = was
-        }
+        if let was = state.insideXCTestCaseStack.popLast() { state.insideXCTestCase = was }
     }
 
     static func willEnter(_: FunctionDeclSyntax, context: Context) {
@@ -131,8 +125,8 @@ final class PreferSwiftTesting: StaticFormatRule<BasicRuleValue>, @unchecked Sen
 
     static func didExit(_: FunctionCallExprSyntax, context: Context) {
         let state = context.preferSwiftTestingState
-        // The matching `transform` already pops; this is a safety net in case
-        // the call wasn't actually transformed (e.g. arity mismatch).
+        // The matching `transform` already pops; this is a safety net in case the call wasn't
+        // actually transformed (e.g. arity mismatch).
         _ = state.originalCallStack
     }
 
@@ -149,11 +143,11 @@ final class PreferSwiftTesting: StaticFormatRule<BasicRuleValue>, @unchecked Sen
             return ExprSyntax(node)
         }
 
-        // Pop the matching original (pre-recursion) node pushed in willEnter.
-        // The compact dispatcher visits children before this transform, so
-        // `node` is detached from its parent and its source locations would
-        // be wrong.
+        // Pop the matching original (pre-recursion) node pushed in willEnter. The compact
+        // dispatcher visits children before this transform, so `node` is detached from its parent
+        // and its source locations would be wrong.
         let originalNode: FunctionCallExprSyntax
+
         if let last = state.originalCallStack.popLast() {
             originalNode = last
         } else {
@@ -219,6 +213,7 @@ final class PreferSwiftTesting: StaticFormatRule<BasicRuleValue>, @unchecked Sen
         context: Context
     ) -> ExprSyntax {
         let calledName = originalNode.calledExpression.trimmedDescription
+
         if var replacement = convertAssertion(
             calledName,
             call: typedNode,
@@ -255,7 +250,8 @@ final class PreferSwiftTesting: StaticFormatRule<BasicRuleValue>, @unchecked Sen
                     ExprSyntax(
                         PrefixOperatorExprSyntax(
                             operator: .prefixOperator("!"),
-                            expression: wrapInParensIfNeeded(expr)))
+                            expression: wrapInParensIfNeeded(expr)
+                        ))
                 }
 
             case "XCTAssertNil":
@@ -268,8 +264,12 @@ final class PreferSwiftTesting: StaticFormatRule<BasicRuleValue>, @unchecked Sen
                             operator: ExprSyntax(
                                 BinaryOperatorExprSyntax(
                                     operator: .binaryOperator(
-                                        "==", leadingTrivia: .space, trailingTrivia: .space))),
-                            rightOperand: ExprSyntax(NilLiteralExprSyntax())))
+                                        "==",
+                                        leadingTrivia: .space,
+                                        trailingTrivia: .space
+                                    ))),
+                            rightOperand: ExprSyntax(NilLiteralExprSyntax())
+                        ))
                 }
 
             case "XCTAssertNotNil":
@@ -282,8 +282,12 @@ final class PreferSwiftTesting: StaticFormatRule<BasicRuleValue>, @unchecked Sen
                             operator: ExprSyntax(
                                 BinaryOperatorExprSyntax(
                                     operator: .binaryOperator(
-                                        "!=", leadingTrivia: .space, trailingTrivia: .space))),
-                            rightOperand: ExprSyntax(NilLiteralExprSyntax())))
+                                        "!=",
+                                        leadingTrivia: .space,
+                                        trailingTrivia: .space
+                                    ))),
+                            rightOperand: ExprSyntax(NilLiteralExprSyntax())
+                        ))
                 }
 
             case "XCTAssertEqual":
@@ -320,6 +324,7 @@ final class PreferSwiftTesting: StaticFormatRule<BasicRuleValue>, @unchecked Sen
         Self.diagnose(.convertAssertion, on: originalNode.calledExpression, context: context)
 
         var expectArgs = [LabeledExprSyntax]()
+
         if args.count == 2 {
             expectArgs.append(
                 LabeledExprSyntax(
@@ -360,12 +365,16 @@ final class PreferSwiftTesting: StaticFormatRule<BasicRuleValue>, @unchecked Sen
                 leftOperand: lhs,
                 operator: ExprSyntax(
                     BinaryOperatorExprSyntax(
-                        operator: .binaryOperator(op, leadingTrivia: .space, trailingTrivia: .space)
-                    )),
+                        operator: .binaryOperator(
+                            op,
+                            leadingTrivia: .space,
+                            trailingTrivia: .space
+                        ))),
                 rightOperand: rhs
             ))
 
         var expectArgs = [LabeledExprSyntax]()
+
         if args.count == 3 {
             expectArgs.append(
                 LabeledExprSyntax(
@@ -425,6 +434,7 @@ final class PreferSwiftTesting: StaticFormatRule<BasicRuleValue>, @unchecked Sen
         Self.diagnose(.convertAssertion, on: originalNode.calledExpression, context: context)
 
         var requireArgs = [LabeledExprSyntax]()
+
         if args.count == 2 {
             requireArgs.append(
                 LabeledExprSyntax(
@@ -448,11 +458,10 @@ final class PreferSwiftTesting: StaticFormatRule<BasicRuleValue>, @unchecked Sen
 
     // MARK: - Compact-pipeline FunctionDecl transform
 
-    /// Compact-pipeline counterpart of the legacy `visit(FunctionDeclSyntax)`
-    /// override. State has been pushed in `willEnter(FunctionDeclSyntax)` and
-    /// children already visited, so the conversion helpers operate on the
-    /// post-traversal node directly (they take `visited` rather than calling
-    /// `super.visit`).
+    /// Compact-pipeline counterpart of the legacy `visit(FunctionDeclSyntax)` override. State has
+    /// been pushed in `willEnter(FunctionDeclSyntax)` and children already visited, so the
+    /// conversion helpers operate on the post-traversal node directly (they take `visited` rather
+    /// than calling `super.visit` ).
     static func transform(
         _ node: FunctionDeclSyntax,
         parent _: Syntax?,
@@ -471,8 +480,10 @@ final class PreferSwiftTesting: StaticFormatRule<BasicRuleValue>, @unchecked Sen
         if name == "tearDown", node.modifiers.contains(.override) {
             return Self.convertTearDownStatic(node)
         }
-        if name.hasPrefix("test"), node.signature.parameterClause.parameters.isEmpty,
-           node.signature.returnClause == nil, !node.modifiers.contains(.static)
+        if name.hasPrefix("test"),
+           node.signature.parameterClause.parameters.isEmpty,
+           node.signature.returnClause == nil,
+           !node.modifiers.contains(.static)
         {
             return Self.convertTestMethodStatic(node)
         }
@@ -480,9 +491,8 @@ final class PreferSwiftTesting: StaticFormatRule<BasicRuleValue>, @unchecked Sen
         return DeclSyntax(node)
     }
 
-    /// Static counterpart of `convertSetUp`. Operates on the already-visited
-    /// node (no `super.visit`); the legacy form's post-recursion logic is
-    /// preserved.
+    /// Static counterpart of `convertSetUp` . Operates on the already-visited node (no
+    /// `super.visit` ); the legacy form's post-recursion logic is preserved.
     private static func convertSetUpStatic(_ node: FunctionDeclSyntax) -> DeclSyntax {
         var result = node
         result.modifiers = result.modifiers.filter {
@@ -490,7 +500,8 @@ final class PreferSwiftTesting: StaticFormatRule<BasicRuleValue>, @unchecked Sen
         }
 
         if var body = result.body {
-            body.statements = Self.removeSuperCall(from: body.statements, methodName: node.name.text)
+            body.statements = Self.removeSuperCall(
+                from: body.statements, methodName: node.name.text)
             result.body = body
         }
 
@@ -625,7 +636,8 @@ final class PreferSwiftTesting: StaticFormatRule<BasicRuleValue>, @unchecked Sen
     // MARK: - Helpers
 
     private static func removeSuperCall(
-        from statements: CodeBlockItemListSyntax, methodName: String
+        from statements: CodeBlockItemListSyntax,
+        methodName: String
     ) -> CodeBlockItemListSyntax {
         var items = Array(statements)
         items.removeAll { item in
@@ -660,11 +672,10 @@ final class PreferSwiftTesting: StaticFormatRule<BasicRuleValue>, @unchecked Sen
     }
 
     private static func wrapInParensIfNeeded(_ expr: ExprSyntax) -> ExprSyntax {
-        if expr.is(InfixOperatorExprSyntax.self)
+        expr.is(InfixOperatorExprSyntax.self)
             || expr.is(IsExprSyntax.self)
             || expr.is(TryExprSyntax.self)
-        {
-            return ExprSyntax(
+            ? ExprSyntax(
                 TupleExprSyntax(
                     leftParen: .leftParenToken(),
                     elements: LabeledExprListSyntax([
@@ -672,8 +683,7 @@ final class PreferSwiftTesting: StaticFormatRule<BasicRuleValue>, @unchecked Sen
                     ]),
                     rightParen: .rightParenToken()
                 ))
-        }
-        return expr
+            : expr
     }
 }
 

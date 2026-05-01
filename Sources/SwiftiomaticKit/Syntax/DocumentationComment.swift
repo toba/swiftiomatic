@@ -1,3 +1,6 @@
+// sm:ignore noForceCast
+// `withUncheckedChildren` returns the same node type widened to MarkupContainer; the cast back to
+// the concrete `UnorderedList` is invariant-preserving.
 // ===----------------------------------------------------------------------===//
 //
 // This source file is part of the Swift.org open source project
@@ -71,8 +74,9 @@ package struct DocumentationComment {
     ///
     /// - Parameter node: The syntax node from which the documentation comment should be extracted.
     package init?<Node: SyntaxProtocol>(extractedFrom node: Node) {
-        guard let commentInfo = DocumentationCommentText(extractedFrom: node.leadingTrivia)
-        else { return nil }
+        guard let commentInfo = DocumentationCommentText(extractedFrom: node.leadingTrivia) else {
+            return nil
+        }
 
         // Disable smart quotes and dash conversion since we want to preserve the original content
         // of the comments instead of doing documentation generation.
@@ -134,9 +138,9 @@ package struct DocumentationComment {
                       (0, Paragraph.self),
                       (0, Text.self),
                   ]) as? Text,
-                  firstText.string.trimmingCharacters(in: .whitespaces).lowercased()
-                      == "parameters:"
-            else {
+                  firstText.string.trimmingCharacters(in: .whitespaces)
+                      .lowercased()
+                      == "parameters:" else {
                 unprocessedChildren.append(child.detachedFromParent)
                 continue
             }
@@ -170,8 +174,7 @@ package struct DocumentationComment {
         for child in list.children {
             guard let listItem = child as? ListItem,
                   let paramField = parameterField(
-                      extractedFrom: listItem, expectParameterLabel: true)
-            else {
+                      extractedFrom: listItem, expectParameterLabel: true) else {
                 unprocessedChildren.append(child.detachedFromParent)
                 continue
             }
@@ -216,8 +219,7 @@ package struct DocumentationComment {
                   case var rewriter = SimpleFieldMarkupRewriter(origin: listItem),
                   listItem.accept(&rewriter) as? ListItem != nil,
                   let name = rewriter.fieldName,
-                  let paragraph = rewriter.paragraph
-            else {
+                  let paragraph = rewriter.paragraph else {
                 unprocessedChildren.append(child)
                 continue
             }

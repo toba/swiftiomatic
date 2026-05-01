@@ -23,6 +23,7 @@ extension Configuration {
         // Encode to JSONValue, then serialize with key ordering. $schema is emitted by encode(to:),
         // pinned to the top by the serializer.
         let jsonValue: JSONValue
+
         do {
             let data = try JSONEncoder().encode(self)
             jsonValue = try JSONDecoder().decode(JSONValue.self, from: data)
@@ -58,6 +59,7 @@ extension Configuration {
 
                 while j < lines.count, depth > 0 {
                     let inner = lines[j].trimmingCharacters(in: .whitespaces)
+
                     if inner.contains("{") {
                         depth += 1
                         hasNestedObject = true
@@ -70,6 +72,7 @@ extension Configuration {
                 // Only compact if no nested objects and it fits on one line.
                 if !hasNestedObject, depth == 0 {
                     let compact = compactObject(objectLines)
+
                     if compact.count <= maxWidth {
                         result.append(compact)
                         i = j
@@ -97,6 +100,7 @@ extension Configuration {
 
         // Gather interior key-value pairs.
         var pairs: [String] = []
+
         for line in lines.dropFirst().dropLast() {
             let trimmed = line.trimmingCharacters(in: .whitespaces)
             // Remove trailing comma if present.

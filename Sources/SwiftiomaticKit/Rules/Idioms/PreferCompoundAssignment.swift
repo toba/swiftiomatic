@@ -1,17 +1,17 @@
 import SwiftSyntax
 
-/// Prefer compound assignment operators (`+=`, `-=`, `*=`, `/=`) over the long form.
+/// Prefer compound assignment operators ( `+=` , `-=` , `*=` , `/=` ) over the long form.
 ///
-/// `x = x + y` is exactly equivalent to `x += y` for the supported operators (`+`, `-`, `*`, `/`).
-/// The compound form is shorter and avoids repeating the LHS, which makes refactors safer when the
-/// receiver is renamed.
+/// `x = x + y` is exactly equivalent to `x += y` for the supported operators ( `+` , `-` , `*` ,
+/// `/` ). The compound form is shorter and avoids repeating the LHS, which makes refactors safer
+/// when the receiver is renamed.
 ///
 /// The rule fires only when the LHS expression text matches the RHS's first operand exactly. It
 /// does not fire on `x = a + x` or `x = a + b` patterns.
 ///
 /// Lint: A warning is raised for `x = x + y` etc.
 ///
-/// Rewrite: The expression is rewritten to `x += y`.
+/// Rewrite: The expression is rewritten to `x += y` .
 final class PreferCompoundAssignment: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
     override class var group: ConfigurationGroup? { .idioms }
     override class var defaultValue: BasicRuleValue { .init(rewrite: true, lint: .warn) }
@@ -20,15 +20,16 @@ final class PreferCompoundAssignment: StaticFormatRule<BasicRuleValue>, @uncheck
 
     static func transform(
         _ infix: InfixOperatorExprSyntax,
-        parent: Syntax?,
+        parent _: Syntax?,
         context: Context
     ) -> ExprSyntax {
         guard infix.operator.is(AssignmentExprSyntax.self),
-            let rhsInfix = infix.rightOperand.as(InfixOperatorExprSyntax.self),
-            let rhsBinOp = rhsInfix.operator.as(BinaryOperatorExprSyntax.self),
-            Self.supportedOperators.contains(rhsBinOp.operator.text),
-            infix.leftOperand.trimmedDescription == rhsInfix.leftOperand.trimmedDescription
-        else { return ExprSyntax(infix) }
+              let rhsInfix = infix.rightOperand.as(InfixOperatorExprSyntax.self),
+              let rhsBinOp = rhsInfix.operator.as(BinaryOperatorExprSyntax.self),
+              Self.supportedOperators.contains(rhsBinOp.operator.text),
+              infix.leftOperand.trimmedDescription == rhsInfix.leftOperand.trimmedDescription else {
+            return ExprSyntax(infix)
+        }
 
         Self.diagnose(
             .preferCompoundAssignment(op: rhsBinOp.operator.text),
@@ -62,8 +63,8 @@ final class PreferCompoundAssignment: StaticFormatRule<BasicRuleValue>, @uncheck
     }
 }
 
-extension Finding.Message {
-    fileprivate static func preferCompoundAssignment(op: String) -> Finding.Message {
+fileprivate extension Finding.Message {
+    static func preferCompoundAssignment(op: String) -> Finding.Message {
         "prefer compound assignment '\(op)='"
     }
 }

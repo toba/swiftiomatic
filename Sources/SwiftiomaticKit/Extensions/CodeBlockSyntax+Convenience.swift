@@ -13,10 +13,9 @@
 import SwiftSyntax
 
 extension CodeBlockSyntax {
-    /// Whether the body is a single statement on a single line with no
-    /// internal comments — i.e. it can plausibly stay attached to the
-    /// preceding token (e.g. `else { return false }` glued to a wrapped
-    /// guard's last condition) rather than dropped onto its own line.
+    /// Whether the body is a single statement on a single line with no internal comments — i.e. it
+    /// can plausibly stay attached to the preceding token (e.g. `else { return false }` glued to a
+    /// wrapped guard's last condition) rather than dropped onto its own line.
     var isInlineSingleStatementBody: Bool {
         var iter = statements.makeIterator()
         guard let first = iter.next(), iter.next() == nil else { return false }
@@ -24,16 +23,14 @@ extension CodeBlockSyntax {
         if leftBrace.trailingTrivia.hasAnyComments { return false }
         if first.leadingTrivia.hasAnyComments { return false }
         if first.trailingTrivia.hasAnyComments { return false }
-        if rightBrace.leadingTrivia.hasAnyComments { return false }
-        // Newlines in the trivia don't disqualify — the formatter may add/remove them
-        // each pass; treating the body as an inline candidate based on statement count
-        // alone keeps formatting idempotent.
-        return true
+        return rightBrace.leadingTrivia.hasAnyComments
+            ? false
+            : true
     }
 
-/// Whether this code block's content needs to be wrapped onto new lines.
-    /// Returns `true` if the body is non-empty and the first statement or closing
-    /// brace is on the same line as the opening brace.
+    /// Whether this code block's content needs to be wrapped onto new lines. Returns `true` if the
+    /// body is non-empty and the first statement or closing brace is on the same line as the
+    /// opening brace.
     var bodyNeedsWrapping: Bool {
         guard let firstStmt = statements.first else { return false }
         let firstOnNewLine = firstStmt.leadingTrivia.containsNewlines
@@ -43,9 +40,9 @@ extension CodeBlockSyntax {
 
     /// Returns a copy with the body content wrapped onto new lines.
     ///
-    /// - Parameter baseIndent: The indentation string of the enclosing declaration.
-    ///   The body content is indented by `baseIndent + "    "` and the closing brace
-    ///   is placed at `baseIndent`.
+    /// - Parameter baseIndent: The indentation string of the enclosing declaration. The body
+    ///   content is indented by `baseIndent + "    "` and the closing brace is placed at
+    ///   `baseIndent` .
     func wrappingBody(baseIndent: String) -> CodeBlockSyntax {
         var result = self
         let bodyIndent = baseIndent + "    "

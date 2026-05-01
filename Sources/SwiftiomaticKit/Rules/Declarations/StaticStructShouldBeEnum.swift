@@ -2,35 +2,31 @@ import SwiftSyntax
 
 /// Convert types hosting only static members into enums.
 ///
-/// An empty enum is the canonical way to create a namespace in Swift because it cannot
-/// be instantiated. Structs and classes that contain only static members serve the same
-/// purpose but can be accidentally instantiated.
+/// An empty enum is the canonical way to create a namespace in Swift because it cannot be
+/// instantiated. Structs and classes that contain only static members serve the same purpose but
+/// can be accidentally instantiated.
 ///
-/// This rule skips types with inheritance clauses, attributes, generic parameters,
-/// initializers, or any instance members.
+/// This rule skips types with inheritance clauses, attributes, generic parameters, initializers, or
+/// any instance members.
 ///
 /// Lint: A struct or final class containing only static members raises a warning.
 ///
-/// Rewrite: The `struct` or `final class` keyword is replaced with `enum`.
+/// Rewrite: The `struct` or `final class` keyword is replaced with `enum` .
 final class StaticStructShouldBeEnum: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
     override class var group: ConfigurationGroup? { .declarations }
 
     static func transform(
         _ visited: StructDeclSyntax,
-        parent: Syntax?,
+        parent _: Syntax?,
         context: Context
     ) -> DeclSyntax {
-        guard
-            shouldBeEnum(
-                attributes: visited.attributes,
-                inheritanceClause: visited.inheritanceClause,
-                genericParameterClause: visited.genericParameterClause,
-                genericWhereClause: visited.genericWhereClause,
-                members: visited.memberBlock.members
-            )
-        else {
-            return DeclSyntax(visited)
-        }
+        guard shouldBeEnum(
+            attributes: visited.attributes,
+            inheritanceClause: visited.inheritanceClause,
+            genericParameterClause: visited.genericParameterClause,
+            genericWhereClause: visited.genericWhereClause,
+            members: visited.memberBlock.members
+        ) else { return DeclSyntax(visited) }
 
         Self.diagnose(.useEnumNamespace, on: visited.name, context: context)
 
@@ -49,24 +45,20 @@ final class StaticStructShouldBeEnum: StaticFormatRule<BasicRuleValue>, @uncheck
 
     static func transform(
         _ visited: ClassDeclSyntax,
-        parent: Syntax?,
+        parent _: Syntax?,
         context: Context
     ) -> DeclSyntax {
         // Only final classes can be converted — non-final classes might be subclassed
         let isFinal = visited.modifiers.contains { $0.name.tokenKind == .keyword(.final) }
         guard isFinal else { return DeclSyntax(visited) }
 
-        guard
-            shouldBeEnum(
-                attributes: visited.attributes,
-                inheritanceClause: visited.inheritanceClause,
-                genericParameterClause: visited.genericParameterClause,
-                genericWhereClause: visited.genericWhereClause,
-                members: visited.memberBlock.members
-            )
-        else {
-            return DeclSyntax(visited)
-        }
+        guard shouldBeEnum(
+            attributes: visited.attributes,
+            inheritanceClause: visited.inheritanceClause,
+            genericParameterClause: visited.genericParameterClause,
+            genericWhereClause: visited.genericWhereClause,
+            members: visited.memberBlock.members
+        ) else { return DeclSyntax(visited) }
 
         Self.diagnose(.useEnumNamespace, on: visited.name, context: context)
 
@@ -119,6 +111,7 @@ final class StaticStructShouldBeEnum: StaticFormatRule<BasicRuleValue>, @uncheck
         if let subDecl = decl.as(SubscriptDeclSyntax.self) {
             return hasStaticModifier(subDecl.modifiers)
         }
+
         if let ifConfig = decl.as(IfConfigDeclSyntax.self) {
             return ifConfig.clauses.allSatisfy { clause in
                 guard let elements = clause.elements?.as(MemberBlockItemListSyntax.self) else {
@@ -135,7 +128,7 @@ final class StaticStructShouldBeEnum: StaticFormatRule<BasicRuleValue>, @uncheck
     }
 }
 
-extension Finding.Message {
-    fileprivate static let useEnumNamespace: Finding.Message =
+fileprivate extension Finding.Message {
+    static let useEnumNamespace: Finding.Message =
         "use 'enum' instead of 'struct' or 'class' for types with only static members"
 }

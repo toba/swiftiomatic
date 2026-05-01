@@ -1,37 +1,26 @@
 import SwiftSyntax
 
-// sm:ignore-file: functionBodyLength
+// sm:ignore functionBodyLength
 
-/// Controls the layout of nested function/initializer calls where the sole
-/// argument to one call is another call.
+/// Controls the layout of nested function/initializer calls where the sole argument to one call is
+/// another call.
 ///
-/// **Inline mode**: Collapses deeply nested calls into the most compact form
-/// that fits the line width, trying each layout in order:
+/// **Inline mode**: Collapses deeply nested calls into the most compact form that fits the line
+/// width, trying each layout in order:
 ///
 /// 1. Fully inline:
-///    ```swift
-///    result = ExprSyntax(ForceUnwrapExprSyntax(expression: result, trailingTrivia: trivia))
-///    ```
+///    ```swift result = ExprSyntax(ForceUnwrapExprSyntax(expression: result, trailingTrivia: trivia)) ```
 ///
 /// 2. Outer inline, inner wrapped:
-///    ```swift
-///    result = ExprSyntax(ForceUnwrapExprSyntax(
-///        expression: result,
-///        trailingTrivia: trivia
-///    ))
-///    ```
+///    ```swift result = ExprSyntax(ForceUnwrapExprSyntax( expression: result, trailingTrivia: trivia )) ```
 ///
 /// 3. Fully wrapped (outer on new line, inner inline):
-///    ```swift
-///    result = ExprSyntax(
-///        ForceUnwrapExprSyntax(expression: result, trailingTrivia: trivia)
-///    )
-///    ```
+///    ```swift result = ExprSyntax( ForceUnwrapExprSyntax(expression: result, trailingTrivia: trivia) ) ```
 ///
 /// 4. Fully nested (no change).
 ///
-/// **Wrap mode**: Expands any compact form into the fully nested form with each
-/// call and its arguments on separate indented lines.
+/// **Wrap mode**: Expands any compact form into the fully nested form with each call and its
+/// arguments on separate indented lines.
 ///
 /// Lint: A nested call whose layout doesn't match the mode raises a warning.
 ///
@@ -55,7 +44,7 @@ final class NestedCallLayout: StaticFormatRule<NestedCallLayoutConfiguration>, @
 
     static func transform(
         _ node: FunctionCallExprSyntax,
-        parent: Syntax?,
+        parent _: Syntax?,
         context: Context
     ) -> ExprSyntax {
         // Only process outermost nested call.
@@ -65,35 +54,31 @@ final class NestedCallLayout: StaticFormatRule<NestedCallLayoutConfiguration>, @
 
         if let chain = collectChain(node), chain.count >= 2 {
             switch mode {
-            case .inline:
-                // Chain strategies rebuild from trimmed descriptions, which
-                // preserves args' internal whitespace. That only works when the
-                // input is in canonical fully-nested form. For non-canonical
-                // inputs (e.g., extra indent), hug instead.
-                if isCanonicalFullyNested(node) {
-                    if let result = inlineLayout(node, chain: chain, context: context) {
-                        return result
+                case .inline:
+                    // Chain strategies rebuild from trimmed descriptions, which preserves args'
+                    // internal whitespace. That only works when the input is in canonical fully-nested
+                    // form. For non-canonical inputs (e.g., extra indent), hug instead.
+                    if isCanonicalFullyNested(node) {
+                        if let result = inlineLayout(node, chain: chain, context: context) {
+                            return result
+                        }
+                        return ExprSyntax(node)
                     }
-                    return ExprSyntax(node)
-                }
-            case .wrap:
-                return wrapLayout(node, chain: chain, context: context)
+                case .wrap: return wrapLayout(node, chain: chain, context: context)
             }
         }
 
-        // Fallback: collapse the leading newline so the sole arg hugs the
-        // opening paren, re-indenting any continuation lines.
-        if mode == .inline, let hugged = tryHugSingleArg(node, context: context) {
-            return hugged
-        }
+        // Fallback: collapse the leading newline so the sole arg hugs the opening paren,
+        // re-indenting any continuation lines.
+        if mode == .inline, let hugged = tryHugSingleArg(node, context: context) { return hugged }
 
         return ExprSyntax(node)
     }
 
     // MARK: - Nested Call Detection
 
-    /// Collects the chain of nested calls from outermost to innermost.
-    /// Returns nil if the structure isn't a clean nested call chain.
+    /// Collects the chain of nested calls from outermost to innermost. Returns nil if the structure
+    /// isn't a clean nested call chain.
     private static func collectChain(_ node: FunctionCallExprSyntax) -> [Level]? {
         var chain = [Level]()
         var current: FunctionCallExprSyntax? = node
@@ -102,24 +87,20 @@ final class NestedCallLayout: StaticFormatRule<NestedCallLayoutConfiguration>, @
             chain.append(Level(call: call))
 
             // Check if the sole argument is another function call.
-            guard let inner = soleArgumentCall(call) else {
-                break
-            }
+            guard let inner = soleArgumentCall(call) else { break }
             current = inner
         }
 
         return chain.count >= 2 ? chain : nil
     }
 
-    /// Returns the inner `FunctionCallExprSyntax` if this call has exactly one
-    /// argument list item whose expression is a function call. Bails when the
-    /// inner call's `calledExpression` spans multiple lines (e.g., a chained
-    /// member access) — that's not a clean nested call chain.
+    /// Returns the inner `FunctionCallExprSyntax` if this call has exactly one argument list item
+    /// whose expression is a function call. Bails when the inner call's `calledExpression` spans
+    /// multiple lines (e.g., a chained member access) — that's not a clean nested call chain.
     ///
-    /// Also bails when either the outer or inner call carries a trailing
-    /// closure: the rebuild paths in this rule only stringify `arguments`, so
-    /// preserving a trailing closure isn't supported and a naive rebuild would
-    /// silently delete the closure body.
+    /// Also bails when either the outer or inner call carries a trailing closure: the rebuild paths
+    /// in this rule only stringify `arguments` , so preserving a trailing closure isn't supported
+    /// and a naive rebuild would silently delete the closure body.
     private static func soleArgumentCall(
         _ call: FunctionCallExprSyntax
     ) -> FunctionCallExprSyntax? {
@@ -128,13 +109,14 @@ final class NestedCallLayout: StaticFormatRule<NestedCallLayoutConfiguration>, @
         guard args.count == 1, let only = args.first else { return nil }
         guard let inner = only.expression.as(FunctionCallExprSyntax.self) else { return nil }
         if inner.trailingClosure != nil || !inner.additionalTrailingClosures.isEmpty { return nil }
-        if inner.calledExpression.trimmedDescription.contains("\n") { return nil }
-        return inner
+        return inner.calledExpression.trimmedDescription.contains("\n")
+            ? nil
+            : inner
     }
 
-    /// Returns true if the call's sole argument is on a line indented exactly
-    /// one level past the call itself (canonical form), or the whole call fits
-    /// on one line. Non-canonical inputs route through the hug fallback.
+    /// Returns true if the call's sole argument is on a line indented exactly one level past the
+    /// call itself (canonical form), or the whole call fits on one line. Non-canonical inputs route
+    /// through the hug fallback.
     private static func isCanonicalFullyNested(_ node: FunctionCallExprSyntax) -> Bool {
         guard node.description.contains("\n") else { return true }
         guard let firstArg = node.arguments.first else { return true }
@@ -144,15 +126,14 @@ final class NestedCallLayout: StaticFormatRule<NestedCallLayoutConfiguration>, @
         return argIndent.count == baseIndent.count + indentUnit.count
     }
 
-    /// Returns true if this call is an inner part of a nested call chain
-    /// (i.e., it's the sole argument of a parent function call).
+    /// Returns true if this call is an inner part of a nested call chain (i.e., it's the sole
+    /// argument of a parent function call).
     private static func isInnerNestedCall(_ node: FunctionCallExprSyntax) -> Bool {
         guard let argElement = node.parent?.as(LabeledExprSyntax.self),
               let argList = argElement.parent?.as(LabeledExprListSyntax.self),
               argList.count == 1,
               let parentCall = argList.parent?.as(FunctionCallExprSyntax.self),
-              soleArgumentCall(parentCall) != nil
-        else { return false }
+              soleArgumentCall(parentCall) != nil else { return false }
         return true
     }
 
@@ -174,6 +155,7 @@ final class NestedCallLayout: StaticFormatRule<NestedCallLayoutConfiguration>, @
 
         // Strategy 1: Fully inline.
         let fullyInlineLength = linePrefix + buildFullyInlineText(chain).count
+
         if fullyInlineLength <= maxLength {
             Self.diagnose(.collapseNestedCall, on: node, context: context)
             return rebuildFullyInline(node, chain: chain)
@@ -181,12 +163,14 @@ final class NestedCallLayout: StaticFormatRule<NestedCallLayoutConfiguration>, @
 
         // Strategy 2: Outer inline, inner arguments wrapped.
         let outerInlineLength = linePrefix + buildOuterInlinePrefix(chain).count
+
         if outerInlineLength <= maxLength {
             let innerArgs = buildWrappedArgs(
                 innermost,
                 indent: baseIndent + indentUnit
             )
             let strategy2MaxLine = innerArgs.split(separator: "\n").map(\.count).max() ?? 0
+
             if strategy2MaxLine <= maxLength {
                 Self.diagnose(.collapseNestedCall, on: node, context: context)
                 return rebuildOuterInlineInnerWrapped(
@@ -196,9 +180,9 @@ final class NestedCallLayout: StaticFormatRule<NestedCallLayoutConfiguration>, @
         }
 
         // Strategy 3: Fully wrapped — outer on new line, inner inline.
-        let innerInlineLength =
-            baseIndent.count + indentUnit.count
+        let innerInlineLength = baseIndent.count + indentUnit.count
             + buildInnerInlineText(chain).count
+
         if innerInlineLength <= maxLength {
             Self.diagnose(.collapseNestedCall, on: node, context: context)
             return rebuildFullyWrappedInnerInline(
@@ -215,7 +199,7 @@ final class NestedCallLayout: StaticFormatRule<NestedCallLayoutConfiguration>, @
         call.arguments.map(\.trimmedDescription).joined(separator: ", ")
     }
 
-    /// Returns `"label: "` if the sole argument has a label, otherwise `""`.
+    /// Returns `"label: "` if the sole argument has a label, otherwise `""` .
     private static func argumentLabelPrefix(_ call: FunctionCallExprSyntax) -> String {
         guard let label = call.arguments.first?.label else { return "" }
         return label.trimmedDescription + ": "
@@ -224,6 +208,7 @@ final class NestedCallLayout: StaticFormatRule<NestedCallLayoutConfiguration>, @
     /// Builds the text for a fully inlined version: `Outer(label: Inner(arg1: x, arg2: y))`
     private static func buildFullyInlineText(_ chain: [Level]) -> String {
         var result = ""
+
         for level in chain.dropLast() {
             result += level.call.calledExpression.trimmedDescription + "("
             result += argumentLabelPrefix(level.call)
@@ -238,6 +223,7 @@ final class NestedCallLayout: StaticFormatRule<NestedCallLayoutConfiguration>, @
     /// Builds just the prefix for strategy 2: `Outer(label: Inner(`
     private static func buildOuterInlinePrefix(_ chain: [Level]) -> String {
         var result = ""
+
         for level in chain.dropLast() {
             result += level.call.calledExpression.trimmedDescription + "("
             result += argumentLabelPrefix(level.call)
@@ -249,6 +235,7 @@ final class NestedCallLayout: StaticFormatRule<NestedCallLayoutConfiguration>, @
     /// Builds the inner call inline text for strategy 3: `Inner(arg1: x, arg2: y)`
     private static func buildInnerInlineText(_ chain: [Level]) -> String {
         var result = ""
+
         for level in chain.dropFirst().dropLast() {
             result += level.call.calledExpression.trimmedDescription + "("
             result += argumentLabelPrefix(level.call)
@@ -291,8 +278,7 @@ final class NestedCallLayout: StaticFormatRule<NestedCallLayoutConfiguration>, @
                     leftParen: .leftParenToken(),
                     arguments: [arg],
                     rightParen: .rightParenToken()
-                )
-            )
+                ))
         }
 
         return result
@@ -305,9 +291,11 @@ final class NestedCallLayout: StaticFormatRule<NestedCallLayoutConfiguration>, @
         _ call: FunctionCallExprSyntax
     ) -> ExprSyntax {
         var args = Array(call.arguments)
+
         for i in args.indices {
             // Remove newlines from leading trivia — just a space.
-            args[i] = args[i]
+            args[
+                i] = args[i]
                 .with(\.leadingTrivia, i == 0 ? [] : .space)
                 .with(\.trailingTrivia, [])
         }
@@ -317,8 +305,7 @@ final class NestedCallLayout: StaticFormatRule<NestedCallLayoutConfiguration>, @
                 leftParen: .leftParenToken(),
                 arguments: LabeledExprListSyntax(args),
                 rightParen: .rightParenToken()
-            )
-        )
+            ))
     }
 
     /// Strategy 2: Outer calls inline, innermost args wrapped.
@@ -353,8 +340,7 @@ final class NestedCallLayout: StaticFormatRule<NestedCallLayoutConfiguration>, @
                     leftParen: .leftParenToken(),
                     arguments: [arg],
                     rightParen: .rightParenToken()
-                )
-            )
+                ))
         }
 
         return result
@@ -374,6 +360,7 @@ final class NestedCallLayout: StaticFormatRule<NestedCallLayoutConfiguration>, @
 
         // Build inner calls fully inline.
         var innerExpr: ExprSyntax = rebuildSingleCallInline(chain.last!.call)
+
         for level in chain.dropFirst().dropLast().reversed() {
             let original = level.call.arguments.first!
             let arg = LabeledExprSyntax(
@@ -387,14 +374,14 @@ final class NestedCallLayout: StaticFormatRule<NestedCallLayoutConfiguration>, @
                     leftParen: .leftParenToken(),
                     arguments: [arg],
                     rightParen: .rightParenToken()
-                )
-            )
+                ))
         }
 
         // Wrap the outermost call.
         let outermost = chain.first!.call
         let outerOriginal = outermost.arguments.first!
         let arg: LabeledExprSyntax
+
         if let label = outerOriginal.label {
             arg = LabeledExprSyntax(
                 label: label.with(\.leadingTrivia, .newline + Trivia(stringLiteral: innerIndent)),
@@ -403,7 +390,8 @@ final class NestedCallLayout: StaticFormatRule<NestedCallLayoutConfiguration>, @
             )
         } else {
             arg = LabeledExprSyntax(
-                expression: innerExpr
+                expression:
+                    innerExpr
                     .with(\.leadingTrivia, .newline + Trivia(stringLiteral: innerIndent))
             )
         }
@@ -415,8 +403,7 @@ final class NestedCallLayout: StaticFormatRule<NestedCallLayoutConfiguration>, @
                 rightParen: .rightParenToken(
                     leadingTrivia: .newline + Trivia(stringLiteral: baseIndent)
                 )
-            )
-        )
+            ))
 
         return result
             .with(\.leadingTrivia, leadingTrivia)
@@ -425,60 +412,55 @@ final class NestedCallLayout: StaticFormatRule<NestedCallLayoutConfiguration>, @
 
     // MARK: - Hug Fallback
 
-    /// Collapses the leading newline of a single-arg call so the arg hugs the
-    /// opening paren, re-indenting any continuation lines to baseIndent +
-    /// indentUnit and placing the closing paren back at baseIndent.
+    /// Collapses the leading newline of a single-arg call so the arg hugs the opening paren,
+    /// re-indenting any continuation lines to baseIndent + indentUnit and placing the closing paren
+    /// back at baseIndent.
     ///
-    /// Returns nil when the call doesn't qualify (multiple args, single-line
-    /// arg, no surrounding parens, or already hugged).
+    /// Returns nil when the call doesn't qualify (multiple args, single-line arg, no surrounding
+    /// parens, or already hugged).
     private static func tryHugSingleArg(
         _ node: FunctionCallExprSyntax,
         context: Context
     ) -> ExprSyntax? {
         guard node.arguments.count == 1,
-            let arg = node.arguments.first,
-            node.leftParen != nil,
-            let rightParen = node.rightParen,
-            arg.leadingTrivia.containsNewlines,
-            arg.description.contains("\n")
-        else {
-            return nil
-        }
+              let arg = node.arguments.first,
+              node.leftParen != nil,
+              let rightParen = node.rightParen,
+              arg.leadingTrivia.containsNewlines,
+              arg.description.contains("\n") else { return nil }
 
         let baseIndent = lineIndentation(of: node)
         let argFirstLineIndent = arg.leadingTrivia.indentation
         let targetContinuationIndent = baseIndent + indentUnit
 
-        // Already in canonical fully-nested form (arg indented exactly one
-        // level past baseIndent) — leave as-is.
+        // Already in canonical fully-nested form (arg indented exactly one level past baseIndent) —
+        // leave as-is.
         if argFirstLineIndent.count == targetContinuationIndent.count { return nil }
 
         // Find the indent of the first continuation line inside the arg.
         var currentContinuationIndent: String?
-        for token in arg.tokens(viewMode: .sourceAccurate).dropFirst() {
-            if token.leadingTrivia.containsNewlines {
-                currentContinuationIndent = token.leadingTrivia.indentation
-                break
-            }
+
+        for token in arg.tokens(viewMode: .sourceAccurate).dropFirst()
+        where token.leadingTrivia.containsNewlines {
+            currentContinuationIndent = token.leadingTrivia.indentation
+            break
         }
 
-        // Anchor delta on first continuation indent so inner lines land at
-        // baseIndent + indentUnit; arg's first token is hugged separately.
+        // Anchor delta on first continuation indent so inner lines land at baseIndent + indentUnit;
+        // arg's first token is hugged separately.
         let referenceIndentCount = currentContinuationIndent?.count ?? argFirstLineIndent.count
         let delta = targetContinuationIndent.count - referenceIndentCount
-        if delta == 0 && argFirstLineIndent.isEmpty { return nil }
+        if delta == 0, argFirstLineIndent.isEmpty { return nil }
 
         let reindentedArg = reindentLabeledExpr(arg, delta: delta)
             .with(\.leadingTrivia, [])
 
         // Preserve rightParen layout: only re-indent if it was on its own line.
         let newRightParen: TokenSyntax
-        if rightParen.leadingTrivia.containsNewlines {
-            newRightParen = rightParen.with(
+        newRightParen = rightParen.leadingTrivia.containsNewlines
+            ? rightParen.with(
                 \.leadingTrivia, .newline + Trivia(stringLiteral: baseIndent))
-        } else {
-            newRightParen = rightParen
-        }
+            : rightParen
 
         Self.diagnose(.collapseNestedCall, on: node, context: context)
         return ExprSyntax(
@@ -487,11 +469,11 @@ final class NestedCallLayout: StaticFormatRule<NestedCallLayoutConfiguration>, @
                 .with(\.rightParen, newRightParen))
     }
 
-    /// Walks all tokens in a labeled expression and shifts the indentation of
-    /// every leading-trivia newline by `delta` (positive = add spaces, negative
-    /// = remove spaces; clamped at zero).
+    /// Walks all tokens in a labeled expression and shifts the indentation of every leading-trivia
+    /// newline by `delta` (positive = add spaces, negative = remove spaces; clamped at zero).
     private static func reindentLabeledExpr(
-        _ arg: LabeledExprSyntax, delta: Int
+        _ arg: LabeledExprSyntax,
+        delta: Int
     ) -> LabeledExprSyntax {
         guard delta != 0 else { return arg }
         let rewriter = IndentShiftRewriter(delta: delta)
@@ -508,16 +490,14 @@ final class NestedCallLayout: StaticFormatRule<NestedCallLayoutConfiguration>, @
         let baseIndent = lineIndentation(of: node)
 
         // Check if already in fully nested form.
-        if isFullyNested(chain, baseIndent: baseIndent) {
-            return ExprSyntax(node)
-        }
+        if isFullyNested(chain, baseIndent: baseIndent) { return ExprSyntax(node) }
 
         Self.diagnose(.expandNestedCall, on: node, context: context)
         return rebuildFullyNested(node, chain: chain, baseIndent: baseIndent)
     }
 
     /// Checks if the chain is already in fully nested form.
-    private static func isFullyNested(_ chain: [Level], baseIndent: String) -> Bool {
+    private static func isFullyNested(_ chain: [Level], baseIndent _: String) -> Bool {
         for (depth, level) in chain.enumerated() {
             let call = level.call
 
@@ -570,6 +550,7 @@ final class NestedCallLayout: StaticFormatRule<NestedCallLayoutConfiguration>, @
 
             let original = level.call.arguments.first!
             let arg: LabeledExprSyntax
+
             if let label = original.label {
                 arg = LabeledExprSyntax(
                     label: label.with(\.leadingTrivia, .newline + Trivia(stringLiteral: argIndent)),
@@ -578,7 +559,8 @@ final class NestedCallLayout: StaticFormatRule<NestedCallLayoutConfiguration>, @
                 )
             } else {
                 arg = LabeledExprSyntax(
-                    expression: result
+                    expression:
+                        result
                         .with(\.leadingTrivia, .newline + Trivia(stringLiteral: argIndent))
                 )
             }
@@ -591,8 +573,7 @@ final class NestedCallLayout: StaticFormatRule<NestedCallLayoutConfiguration>, @
                     rightParen: .rightParenToken(
                         leadingTrivia: .newline + Trivia(stringLiteral: currentIndent)
                     )
-                )
-            )
+                ))
         }
 
         return result
@@ -610,22 +591,22 @@ final class NestedCallLayout: StaticFormatRule<NestedCallLayoutConfiguration>, @
         // Count characters in the first token's leading trivia after the last newline.
         for piece in firstToken.leadingTrivia.reversed() {
             switch piece {
-            case .newlines, .carriageReturns, .carriageReturnLineFeeds: return count
-            default: count += piece.sourceLength.utf8Length
+                case .newlines, .carriageReturns, .carriageReturnLineFeeds: return count
+                default: count += piece.sourceLength.utf8Length
             }
         }
 
         // Walk backward through previous tokens.
         var token = firstToken.previousToken(viewMode: .sourceAccurate)
+
         while let t = token {
             count += t.text.count
-            for piece in t.trailingTrivia {
-                count += piece.sourceLength.utf8Length
-            }
+            for piece in t.trailingTrivia { count += piece.sourceLength.utf8Length }
+
             for piece in t.leadingTrivia.reversed() {
                 switch piece {
-                case .newlines, .carriageReturns, .carriageReturnLineFeeds: return count
-                default: count += piece.sourceLength.utf8Length
+                    case .newlines, .carriageReturns, .carriageReturnLineFeeds: return count
+                    default: count += piece.sourceLength.utf8Length
                 }
             }
             token = t.previousToken(viewMode: .sourceAccurate)
@@ -636,10 +617,9 @@ final class NestedCallLayout: StaticFormatRule<NestedCallLayoutConfiguration>, @
     /// Returns the indentation at the start of the line containing the node.
     private static func lineIndentation(of node: some SyntaxProtocol) -> String {
         var token = node.firstToken(viewMode: .sourceAccurate)
+
         while let t = token {
-            if t.leadingTrivia.containsNewlines {
-                return t.leadingTrivia.indentation
-            }
+            if t.leadingTrivia.containsNewlines { return t.leadingTrivia.indentation }
             token = t.previousToken(viewMode: .sourceAccurate)
         }
         // Start of file — no indentation.
@@ -653,8 +633,10 @@ final class NestedCallLayout: StaticFormatRule<NestedCallLayoutConfiguration>, @
         closingIndent: String
     ) -> ExprSyntax {
         var args = Array(call.arguments)
+
         for i in args.indices {
-            args[i] = args[i]
+            args[
+                i] = args[i]
                 .with(\.leadingTrivia, .newline + Trivia(stringLiteral: argIndent))
                 .with(\.trailingTrivia, [])
         }
@@ -666,8 +648,7 @@ final class NestedCallLayout: StaticFormatRule<NestedCallLayoutConfiguration>, @
                 rightParen: .rightParenToken(
                     leadingTrivia: .newline + Trivia(stringLiteral: closingIndent)
                 )
-            )
-        )
+            ))
     }
 }
 
@@ -683,8 +664,8 @@ package struct NestedCallLayoutConfiguration: SyntaxRuleValue {
 
     package var rewrite = true
     package var lint: Lint = .warn
-    /// `inline` collapses nested calls to the most compact form that fits;
-    /// `wrap` expands them to fully nested form.
+    /// `inline` collapses nested calls to the most compact form that fits; `wrap` expands them to
+    /// fully nested form.
     package var mode: Mode = .inline
 
     package init() {}
@@ -692,10 +673,11 @@ package struct NestedCallLayoutConfiguration: SyntaxRuleValue {
     package init(from decoder: any Decoder) throws {
         self.init()
         let container = try decoder.container(keyedBy: CodingKeys.self)
-        if let rewrite = try container.decodeIfPresent(Bool.self, forKey: .rewrite) { self.rewrite = rewrite }
+        if let rewrite = try container.decodeIfPresent(Bool.self, forKey: .rewrite) {
+            self.rewrite = rewrite
+        }
         if let lint = try container.decodeIfPresent(Lint.self, forKey: .lint) { self.lint = lint }
-        self.mode =
-            try container.decodeIfPresent(Mode.self, forKey: .mode)
+        mode = try container.decodeIfPresent(Mode.self, forKey: .mode)
             ?? .inline
     }
 }
@@ -712,40 +694,40 @@ private final class IndentShiftRewriter: SyntaxRewriter {
 
     override func visit(_ token: TokenSyntax) -> TokenSyntax {
         guard token.leadingTrivia.containsNewlines else { return token }
-        return token.with(\.leadingTrivia, token.leadingTrivia.shiftingNestedCallIndentation(by: delta))
+        return token.with(
+            \.leadingTrivia, token.leadingTrivia.shiftingNestedCallIndentation(by: delta))
     }
 }
 
-extension Trivia {
-    /// Shifts the indentation (spaces/tabs) immediately following each newline
-    /// piece by `delta`. Negative deltas clamp at zero.
-    fileprivate func shiftingNestedCallIndentation(by delta: Int) -> Trivia {
+fileprivate extension Trivia {
+    /// Shifts the indentation (spaces/tabs) immediately following each newline piece by `delta` .
+    /// Negative deltas clamp at zero.
+    func shiftingNestedCallIndentation(by delta: Int) -> Trivia {
         guard delta != 0 else { return self }
         var newPieces: [TriviaPiece] = []
         var afterNewline = false
+
         for piece in pieces {
             if afterNewline {
                 switch piece {
-                case .spaces(let n):
-                    let newCount = Swift.max(0, n + delta)
-                    if newCount > 0 { newPieces.append(.spaces(newCount)) }
-                    afterNewline = false
-                    continue
-                case .tabs(let n):
-                    let newCount = Swift.max(0, n + delta)
-                    if newCount > 0 { newPieces.append(.tabs(newCount)) }
-                    afterNewline = false
-                    continue
-                default:
-                    afterNewline = false
+                    case let .spaces(n):
+                        let newCount = Swift.max(0, n + delta)
+                        if newCount > 0 { newPieces.append(.spaces(newCount)) }
+                        afterNewline = false
+                        continue
+                    case let .tabs(n):
+                        let newCount = Swift.max(0, n + delta)
+                        if newCount > 0 { newPieces.append(.tabs(newCount)) }
+                        afterNewline = false
+                        continue
+                    default: afterNewline = false
                 }
             }
             newPieces.append(piece)
+
             switch piece {
-            case .newlines, .carriageReturns, .carriageReturnLineFeeds:
-                afterNewline = true
-            default:
-                break
+                case .newlines, .carriageReturns, .carriageReturnLineFeeds: afterNewline = true
+                default: break
             }
         }
         return .init(pieces: newPieces)
@@ -754,10 +736,8 @@ extension Trivia {
 
 // MARK: - Finding Messages
 
-extension Finding.Message {
-    fileprivate static let collapseNestedCall: Finding.Message =
-        "collapse nested call to fit on one line"
+fileprivate extension Finding.Message {
+    static let collapseNestedCall: Finding.Message = "collapse nested call to fit on one line"
 
-    fileprivate static let expandNestedCall: Finding.Message =
-        "expand nested call onto separate lines"
+    static let expandNestedCall: Finding.Message = "expand nested call onto separate lines"
 }

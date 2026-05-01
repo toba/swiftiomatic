@@ -22,8 +22,8 @@ extension TokenStream {
         // Outer group around the conditions. With multiple conditions, use `.consistent` so once
         // any condition wraps, every condition wraps. With a single condition, fall back to the
         // historical `.inconsistent` group (just so breaks around/inside aren't forced).
-        let conditionsGroupStyle: GroupBreakStyle =
-            node.conditions.count > 1 ? .consistent : .inconsistent
+        let conditionsGroupStyle: GroupBreakStyle = node.conditions.count > 1
+            ? .consistent : .inconsistent
         before(
             node.conditions.firstToken(viewMode: .sourceAccurate),
             tokens: .open(conditionsGroupStyle)
@@ -36,10 +36,10 @@ extension TokenStream {
         // so that continuations inside of the conditions can stack in addition to continuations
         // between the conditions. There are no breaks around the first condition because
         // if-statements look better without a break between the "if" and the first condition.
-        let ifBreakKind:
-            OpenBreakKind = config[AlignWrappedConditions.self]
-                ? .alignment(spaces: 3)
-                : .continuation
+        let ifBreakKind: OpenBreakKind = config[AlignWrappedConditions.self]
+            ? .alignment(spaces: 3)
+            : .continuation
+
         for condition in node.conditions.dropFirst() {
             before(
                 condition.firstToken(viewMode: .sourceAccurate),
@@ -89,8 +89,10 @@ extension TokenStream {
         // keep them together. Otherwise, keep `for` glued to the token after it so that we break
         // somewhere later on the line.
         let modifiers = [node.tryKeyword, node.awaitKeyword, node.unsafeKeyword].compactMap { $0 }
+
         if let first = modifiers.first, let last = modifiers.last {
             after(node.forKeyword, tokens: .break)
+
             if modifiers.count == 1 {
                 after(first, tokens: .break)
             } else {
@@ -128,8 +130,8 @@ extension TokenStream {
     func visitWhileStmt(_ node: WhileStmtSyntax) -> SyntaxVisitorContinueKind {
         after(node.whileKeyword, tokens: .space)
 
-        // Outer consistent group: once any condition wraps, every condition wraps.
-        // Only useful with multiple conditions.
+        // Outer consistent group: once any condition wraps, every condition wraps. Only useful with
+        // multiple conditions.
         if node.conditions.count > 1 {
             before(
                 node.conditions.firstToken(viewMode: .sourceAccurate),
@@ -145,10 +147,10 @@ extension TokenStream {
         // excessive changes to previously formatted code. This has the side effect that the label +
         // `while` + tokens up to the first break in the first condition could be longer than the
         // column limit since there are no breaks between the label or while token.
-        let whileBreakKind:
-            OpenBreakKind = config[AlignWrappedConditions.self]
-                ? .alignment(spaces: 6)
-                : .continuation
+        let whileBreakKind: OpenBreakKind = config[AlignWrappedConditions.self]
+            ? .alignment(spaces: 6)
+            : .continuation
+
         for condition in node.conditions.dropFirst() {
             before(
                 condition.firstToken(viewMode: .sourceAccurate),
@@ -230,9 +232,7 @@ extension TokenStream {
     }
 
     func visitReturnStmt(_ node: ReturnStmtSyntax) -> SyntaxVisitorContinueKind {
-        if let expression = node.expression {
-            arrangeKeywordOperandBreak(expression: expression)
-        }
+        if let expression = node.expression { arrangeKeywordOperandBreak(expression: expression) }
         return .visitChildren
     }
 
@@ -241,9 +241,9 @@ extension TokenStream {
         return .visitChildren
     }
 
-    /// Emits the break between a statement keyword (`return`, `throw`) and its operand.
-    /// For member-access chains and compound expressions, bounds the break's chunk via `.open`/
-    /// `.close` so inner operator/`.` breaks fire first — matches `arrangeAssignmentBreaks`.
+    /// Emits the break between a statement keyword ( `return` , `throw` ) and its operand. For
+    /// member-access chains and compound expressions, bounds the break's chunk via `.open` /
+    /// `.close` so inner operator/ `.` breaks fire first — matches `arrangeAssignmentBreaks` .
     private func arrangeKeywordOperandBreak(expression: ExprSyntax) {
         if leftmostMultilineStringLiteral(of: expression) != nil {
             before(expression.firstToken(viewMode: .sourceAccurate), tokens: .break(.open))
@@ -256,8 +256,8 @@ extension TokenStream {
 
         let isCompound = isCompoundExpression(expression)
         let hasMemberChain = isMemberAccessChain(expression)
-        let canGroupBeforeBreak =
-            (isCompound || hasMemberChain) && !hasLeadingLineComments(expression)
+        let canGroupBeforeBreak = (isCompound || hasMemberChain)
+            && !hasLeadingLineComments(expression)
 
         if canGroupBeforeBreak {
             before(
@@ -295,10 +295,9 @@ extension TokenStream {
             }
         }
 
-        let newlines:
-            NewlineBehavior = areBracesCompletelyEmpty(node, contentsKeyPath: \.cases)
-                ? .elective
-                : .soft
+        let newlines: NewlineBehavior = areBracesCompletelyEmpty(node, contentsKeyPath: \.cases)
+            ? .elective
+            : .soft
         before(node.rightBrace, tokens: .break(.same, size: 0, newlines: newlines))
 
         return .visitChildren
@@ -324,6 +323,7 @@ extension TokenStream {
         // If switch/case labels were configured to be indented, insert an extra `close` break after
         // the case body to match the `open` break above
         var afterLastTokenTokens: [Token] = [.break(.close, size: 0), .close]
+
         if config[SwitchCaseIndentation.self].style == .indented {
             afterLastTokenTokens.append(.break(.close, size: 0))
         }
@@ -333,7 +333,9 @@ extension TokenStream {
         // the same effect. If instead the opening and closing tokens were omitted completely in the
         // absence of statements, comments within the empty case would be incorrectly indented to
         // the same level as the case label.
-        if node.label.lastToken(viewMode: .sourceAccurate)
+        if node.label.lastToken(
+            viewMode: .sourceAccurate
+        )
             != node.lastToken(viewMode: .sourceAccurate)
         {
             after(node.lastToken(viewMode: .sourceAccurate), tokens: afterLastTokenTokens)
@@ -348,10 +350,11 @@ extension TokenStream {
         before(node.caseKeyword, tokens: .open)
         after(node.caseKeyword, tokens: .space)
 
-        // Outer consistent group around case items: once any item wraps, every item wraps.
-        // The matching `.close` is `after` the LAST item's last token (before the colon),
-        // keeping the colon outside this group's force-break scope.
+        // Outer consistent group around case items: once any item wraps, every item wraps. The
+        // matching `.close` is `after` the LAST item's last token (before the colon), keeping the
+        // colon outside this group's force-break scope.
         let caseItems = Array(node.caseItems)
+
         if caseItems.count > 1 {
             before(
                 caseItems.first!.firstToken(viewMode: .sourceAccurate),
@@ -360,39 +363,42 @@ extension TokenStream {
             after(caseItems.last!.lastToken(viewMode: .sourceAccurate), tokens: .close)
         }
 
-        // Mirror upstream's per-item structure (per-item `.open`/`.close` group, `.break`
-        // between items via `after(trailingComma, ...)`). With `AlignWrappedConditions`,
-        // upgrade the inter-item break to `.break(.open(.alignment(5)))` so wrapped items
-        // align under the first pattern (after `case `). To keep only ONE alignment scope
-        // active at a time (and therefore a single shared alignment column for all wrapped
-        // items), each alignment-open break is closed by a `.break(.close)` enqueued just
-        // before the NEXT alignment-open break (or, for the final item, after the colon —
-        // outside the case-keyword group, so the colon stays glued to the last pattern).
+        // Mirror upstream's per-item structure (per-item `.open` / `.close` group, `.break` between
+        // items via `after(trailingComma, ...)` ). With `AlignWrappedConditions` , upgrade the
+        // inter-item break to `.break(.open(.alignment(5)))` so wrapped items align under the first
+        // pattern (after `case ` ). To keep only ONE alignment scope active at a time (and
+        // therefore a single shared alignment column for all wrapped items), each alignment-open
+        // break is closed by a `.break(.close)` enqueued just before the NEXT alignment-open break
+        // (or, for the final item, after the colon — outside the case-keyword group, so the colon
+        // stays glued to the last pattern).
         //
         // Disambiguation: if an item with a `where` clause follows an item without one, the
         // compiler warns. Enforce a soft newline between such items to avoid the warning,
         // especially after `NoCasesWithOnlyFallthrough` transforms that might merge cases.
         let useAlignment = config[AlignWrappedConditions.self]
         var hasOpenAlignmentBreak = false
+
         for (index, item) in caseItems.enumerated() {
             before(item.firstToken(viewMode: .sourceAccurate), tokens: .open)
+
             if let trailingComma = item.trailingComma {
                 let nextItemHasWhereClause = index + 1 < caseItems.endIndex
                     && caseItems[index + 1].whereClause != nil
                 let requiresNewline = item.whereClause == nil && nextItemHasWhereClause
                 let newlines: NewlineBehavior = requiresNewline ? .soft : .elective
+
                 if useAlignment {
                     var afterTokens: [Token] = [.close]  // close per-item
+
                     if hasOpenAlignmentBreak {
                         afterTokens.append(.break(.close(mustBreak: false), size: 0))
                     }
                     afterTokens.append(
                         .break(
-                            .open(kind: .alignment(spaces: 5)),  // length of "case "
+                            .open(kind: .alignment(spaces: 5)),
                             size: 1,
                             newlines: newlines
-                        )
-                    )
+                        ))
                     after(trailingComma, tokens: afterTokens)
                     hasOpenAlignmentBreak = true
                 } else {
@@ -408,11 +414,11 @@ extension TokenStream {
             }
         }
 
-        // Close the final alignment-open AFTER the last item but BEFORE the colon, so that
-        // the break-close lives outside the consistent-group's force-break scope (its
-        // `.close` was appended above on the last item's last token) and BEFORE the body's
-        // `.break(.open)` (added by `visitSwitchCase`'s `after(node.label.lastToken)`),
-        // keeping break depth properly nested.
+        // Close the final alignment-open AFTER the last item but BEFORE the colon, so that the
+        // break-close lives outside the consistent-group's force-break scope (its `.close` was
+        // appended above on the last item's last token) and BEFORE the body's `.break(.open)`
+        // (added by `visitSwitchCase` 's `after(node.label.lastToken)` ), keeping break depth
+        // properly nested.
         if hasOpenAlignmentBreak {
             after(
                 caseItems.last!.lastToken(viewMode: .sourceAccurate),

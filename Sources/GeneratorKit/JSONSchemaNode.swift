@@ -1,17 +1,13 @@
-import ConfigurationKit
 import Foundation
+import ConfigurationKit
 
-/// Heap-allocated wrapper to break the recursive value type cycle in
-/// `JSONSchemaNode` (the `items` field references `JSONSchemaNode`).
+/// Heap-allocated wrapper to break the recursive value type cycle in `JSONSchemaNode` (the `items`
+/// field references `JSONSchemaNode` ).
 final class Indirect<Value: Codable>: Codable {
     let value: Value
     init(_ value: Value) { self.value = value }
-    convenience init(from decoder: any Decoder) throws {
-        try self.init(Value(from: decoder))
-    }
-    func encode(to encoder: any Encoder) throws {
-        try value.encode(to: encoder)
-    }
+    convenience init(from decoder: any Decoder) throws { try self.init(Value(from: decoder)) }
+    func encode(to encoder: any Encoder) throws { try value.encode(to: encoder) }
 }
 
 /// A JSON Schema node. Encode to produce standard JSON Schema output.
@@ -80,9 +76,9 @@ extension JSONSchemaNode {
         return node
     }
 
-    /// - Parameter description: Prose explaining what the property controls.
-    ///   The legal values are appended automatically as `Options: a, b, c.`
-    ///   Pass `nil` to omit the prose and emit only the options list.
+    /// - Parameter description: Prose explaining what the property controls. The legal values are
+    ///   appended automatically as `Options: a, b, c.` Pass `nil` to omit the prose and emit only
+    ///   the options list.
     static func stringEnum(
         description: String?,
         values: [String],
@@ -93,6 +89,7 @@ extension JSONSchemaNode {
         let options = "Options: \(values.joined(separator: ", "))."
         let trimmed = description?
             .trimmingCharacters(in: .whitespacesAndNewlines)
+
         if let trimmed, !trimmed.isEmpty {
             node.description = "\(trimmed)\n\n\(options)"
         } else {
@@ -126,9 +123,7 @@ extension JSONSchemaNode {
         var itemNode = JSONSchemaNode()
         itemNode.type = "string"
         node.items = Indirect(itemNode)
-        if let defaultValue {
-            node.defaultValue = .array(defaultValue.map { .string($0) })
-        }
+        if let defaultValue { node.defaultValue = .array(defaultValue.map { .string($0) }) }
         return node
     }
 }

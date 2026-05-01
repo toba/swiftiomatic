@@ -2,18 +2,16 @@ import SwiftSyntax
 
 /// Capitalize acronyms when the first character is capitalized.
 ///
-/// When an identifier contains a titlecased acronym (e.g. `Url`, `Json`, `Id`),
-/// it should be fully uppercased (e.g. `URL`, `JSON`, `ID`) for consistency with
-/// Swift naming conventions.
+/// When an identifier contains a titlecased acronym (e.g. `Url` , `Json` , `Id` ), it should be
+/// fully uppercased (e.g. `URL` , `JSON` , `ID` ) for consistency with Swift naming conventions.
 ///
-/// The list of recognized acronyms is configurable via `Configuration.acronyms`.
+/// The list of recognized acronyms is configurable via `Configuration.acronyms` .
 ///
 /// Lint: An identifier with a titlecased acronym raises a warning.
 ///
-/// Rewrite: The titlecased acronym is replaced with the uppercased form.
-/// The compact pipeline calls `applyUppercaseAcronyms` directly from
-/// `Rewrites/Tokens/TokenRewrites.swift`. This class only exists so the rule
-/// is registered (configuration key, group, default value). It has no visit /
+/// Rewrite: The titlecased acronym is replaced with the uppercased form. The compact pipeline calls
+/// `applyUppercaseAcronyms` directly from `Rewrites/Tokens/TokenRewrites.swift` . This class only
+/// exists so the rule is registered (configuration key, group, default value). It has no visit /
 /// transform / willEnter / didExit methods — `RuleCollector` allows that.
 final class UppercaseAcronyms: StaticFormatRule<AcronymsConfiguration>, @unchecked Sendable {
     override static var group: ConfigurationGroup? { .naming }
@@ -30,9 +28,9 @@ final class UppercaseAcronyms: StaticFormatRule<AcronymsConfiguration>, @uncheck
 package struct AcronymsConfiguration: SyntaxRuleValue {
     package var rewrite = true
     package var lint: Lint = .warn
-    /// Acronyms that should be fully uppercased when they appear at the start
-    /// of an identifier already written in PascalCase. Replace this list to
-    /// override the defaults; entries should be uppercase, e.g. `"URL"`, `"ID"`.
+    /// Acronyms that should be fully uppercased when they appear at the start of an identifier
+    /// already written in PascalCase. Replace this list to override the defaults; entries should be
+    /// uppercase, e.g. `"URL"` , `"ID"` .
     package var words: [String] = [
         "ID", "URL", "UUID", "HTTP", "HTTPS", "JSON", "XML", "HTML",
         "API", "TCP", "UDP", "DNS", "SSH", "FTP", "SQL", "CSS",
@@ -49,8 +47,7 @@ package struct AcronymsConfiguration: SyntaxRuleValue {
             self.rewrite = rewrite
         }
         if let lint = try container.decodeIfPresent(Lint.self, forKey: .lint) { self.lint = lint }
-        words =
-            try container.decodeIfPresent([String].self, forKey: .words)
+        words = try container.decodeIfPresent([String].self, forKey: .words)
             ?? AcronymsConfiguration().words
     }
 }

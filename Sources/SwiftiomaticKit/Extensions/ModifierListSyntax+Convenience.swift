@@ -17,12 +17,13 @@ extension DeclModifierListSyntax {
     var accessLevelModifier: DeclModifierSyntax? {
         for modifier in self {
             switch modifier.name.tokenKind {
-                case .keyword(.public), .keyword(.private), .keyword(.fileprivate),
-                    .keyword(.internal),
-                    .keyword(.package):
+                case .keyword(.public),
+                     .keyword(.private),
+                     .keyword(.fileprivate),
+                     .keyword(.internal),
+                     .keyword(.package):
                     return modifier
-                default:
-                    continue
+                default: continue
             }
         }
         return nil
@@ -37,8 +38,8 @@ extension DeclModifierListSyntax {
     func contains(anyOf keywords: Set<Keyword>) -> Bool {
         contains {
             switch $0.name.tokenKind {
-                case .keyword(let keyword): return keywords.contains(keyword)
-                default: return false
+                case let .keyword(keyword): keywords.contains(keyword)
+                default: false
             }
         }
     }
@@ -47,8 +48,8 @@ extension DeclModifierListSyntax {
     mutating func remove(anyOf keywords: Set<Keyword>) {
         self = filter {
             switch $0.name.tokenKind {
-                case .keyword(let keyword): return !keywords.contains(keyword)
-                default: return true
+                case let .keyword(keyword): !keywords.contains(keyword)
+                default: true
             }
         }
     }
@@ -57,8 +58,8 @@ extension DeclModifierListSyntax {
     func removing(anyOf keywords: Set<Keyword>) -> DeclModifierListSyntax {
         filter {
             switch $0.name.tokenKind {
-                case .keyword(let keyword): return !keywords.contains(keyword)
-                default: return true
+                case let .keyword(keyword): !keywords.contains(keyword)
+                default: true
             }
         }
     }
@@ -66,7 +67,8 @@ extension DeclModifierListSyntax {
 
 extension DeclSyntaxProtocol where Self: WithModifiersSyntax {
     /// Removes modifiers matching `keywords` and transfers leading trivia from the first removed
-    /// modifier to the next remaining modifier — or to the declaration keyword if no modifiers remain.
+    /// modifier to the next remaining modifier — or to the declaration keyword if no modifiers
+    /// remain.
     ///
     /// This is the standard pattern for removing access-level or other modifiers while preserving
     /// trivia (comments, whitespace) that was attached to the removed modifier.
@@ -74,12 +76,10 @@ extension DeclSyntaxProtocol where Self: WithModifiersSyntax {
         _ keywords: Set<Keyword>,
         keyword: WritableKeyPath<Self, TokenSyntax>
     ) -> Self {
-        guard
-            let removedIndex = modifiers.firstIndex(where: {
-                if case .keyword(let kw) = $0.name.tokenKind { return keywords.contains(kw) }
-                return false
-            })
-        else { return self }
+        guard let removedIndex = modifiers.firstIndex(where: {
+            if case let .keyword(kw) = $0.name.tokenKind { return keywords.contains(kw) }
+            return false
+        }) else { return self }
 
         let removedModifier = modifiers[removedIndex]
         let removedIsFirst = removedIndex == modifiers.startIndex
@@ -89,6 +89,7 @@ extension DeclSyntaxProtocol where Self: WithModifiersSyntax {
         if removedIsFirst {
             // Transfer the removed modifier's leading trivia to the next item.
             let savedTrivia = removedModifier.leadingTrivia
+
             if var firstModifier = result.modifiers.first {
                 firstModifier.leadingTrivia = savedTrivia
                 result.modifiers[result.modifiers.startIndex] = firstModifier
@@ -101,52 +102,51 @@ extension DeclSyntaxProtocol where Self: WithModifiersSyntax {
 }
 
 extension DeclSyntax {
-    /// The modifier list for `WithModifiersSyntax` decl kinds, or `nil` for kinds that
-    /// don't have a `modifiers` field.
+    /// The modifier list for `WithModifiersSyntax` decl kinds, or `nil` for kinds that don't have a
+    /// `modifiers` field.
     var modifiersOrNil: DeclModifierListSyntax? {
         switch Syntax(self).as(SyntaxEnum.self) {
-            case let .functionDecl(d): return d.modifiers
-            case let .variableDecl(d): return d.modifiers
-            case let .classDecl(d): return d.modifiers
-            case let .structDecl(d): return d.modifiers
-            case let .enumDecl(d): return d.modifiers
-            case let .protocolDecl(d): return d.modifiers
-            case let .typeAliasDecl(d): return d.modifiers
-            case let .initializerDecl(d): return d.modifiers
-            case let .subscriptDecl(d): return d.modifiers
-            case let .actorDecl(d): return d.modifiers
-            case let .extensionDecl(d): return d.modifiers
-            default: return nil
+            case let .functionDecl(d): d.modifiers
+            case let .variableDecl(d): d.modifiers
+            case let .classDecl(d): d.modifiers
+            case let .structDecl(d): d.modifiers
+            case let .enumDecl(d): d.modifiers
+            case let .protocolDecl(d): d.modifiers
+            case let .typeAliasDecl(d): d.modifiers
+            case let .initializerDecl(d): d.modifiers
+            case let .subscriptDecl(d): d.modifiers
+            case let .actorDecl(d): d.modifiers
+            case let .extensionDecl(d): d.modifiers
+            default: nil
         }
     }
 
-    /// Returns this decl with modifiers matching `keywords` removed (preserving trivia),
-    /// dispatched on the runtime decl kind. Returns `self` unchanged if the kind isn't
-    /// a known `WithModifiersSyntax` or no matching modifier exists.
+    /// Returns this decl with modifiers matching `keywords` removed (preserving trivia), dispatched
+    /// on the runtime decl kind. Returns `self` unchanged if the kind isn't a known
+    /// `WithModifiersSyntax` or no matching modifier exists.
     func removingModifiers(_ keywords: Set<Keyword>) -> DeclSyntax {
         switch Syntax(self).as(SyntaxEnum.self) {
             case let .functionDecl(d):
-                return DeclSyntax(d.removingModifiers(keywords, keyword: \.funcKeyword))
+                DeclSyntax(d.removingModifiers(keywords, keyword: \.funcKeyword))
             case let .variableDecl(d):
-                return DeclSyntax(d.removingModifiers(keywords, keyword: \.bindingSpecifier))
+                DeclSyntax(d.removingModifiers(keywords, keyword: \.bindingSpecifier))
             case let .classDecl(d):
-                return DeclSyntax(d.removingModifiers(keywords, keyword: \.classKeyword))
+                DeclSyntax(d.removingModifiers(keywords, keyword: \.classKeyword))
             case let .structDecl(d):
-                return DeclSyntax(d.removingModifiers(keywords, keyword: \.structKeyword))
+                DeclSyntax(d.removingModifiers(keywords, keyword: \.structKeyword))
             case let .enumDecl(d):
-                return DeclSyntax(d.removingModifiers(keywords, keyword: \.enumKeyword))
+                DeclSyntax(d.removingModifiers(keywords, keyword: \.enumKeyword))
             case let .protocolDecl(d):
-                return DeclSyntax(d.removingModifiers(keywords, keyword: \.protocolKeyword))
+                DeclSyntax(d.removingModifiers(keywords, keyword: \.protocolKeyword))
             case let .typeAliasDecl(d):
-                return DeclSyntax(d.removingModifiers(keywords, keyword: \.typealiasKeyword))
+                DeclSyntax(d.removingModifiers(keywords, keyword: \.typealiasKeyword))
             case let .initializerDecl(d):
-                return DeclSyntax(d.removingModifiers(keywords, keyword: \.initKeyword))
+                DeclSyntax(d.removingModifiers(keywords, keyword: \.initKeyword))
             case let .subscriptDecl(d):
-                return DeclSyntax(d.removingModifiers(keywords, keyword: \.subscriptKeyword))
+                DeclSyntax(d.removingModifiers(keywords, keyword: \.subscriptKeyword))
             case let .actorDecl(d):
-                return DeclSyntax(d.removingModifiers(keywords, keyword: \.actorKeyword))
-            default:
-                return self
+                DeclSyntax(d.removingModifiers(keywords, keyword: \.actorKeyword))
+            default: self
         }
     }
 }

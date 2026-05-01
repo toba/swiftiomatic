@@ -9,21 +9,20 @@ import SwiftSyntax
 /// chain remains open; switching to `static` would close that chain even though this class is
 /// final, and may break the override under generic specialization.
 ///
-/// Lint: If a `class` modifier is found on a non-override member of a `final` class, a warning is raised.
+/// Lint: If a `class` modifier is found on a non-override member of a `final` class, a warning is
+/// raised.
 ///
-/// Rewrite: The `class` modifier is replaced with `static`.
+/// Rewrite: The `class` modifier is replaced with `static` .
 final class PreferStaticOverClassFunc: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
     override class var group: ConfigurationGroup? { .idioms }
     override class var defaultValue: BasicRuleValue { .init(rewrite: false, lint: .warn) }
 
     static func transform(
         _ visited: ClassDeclSyntax,
-        parent: Syntax?,
+        parent _: Syntax?,
         context: Context
     ) -> DeclSyntax {
-        guard visited.modifiers.contains(anyOf: [.final]) else {
-            return DeclSyntax(visited)
-        }
+        guard visited.modifiers.contains(anyOf: [.final]) else { return DeclSyntax(visited) }
 
         var result = visited
         result.memberBlock.members = MemberBlockItemListSyntax(
@@ -39,10 +38,9 @@ final class PreferStaticOverClassFunc: StaticFormatRule<BasicRuleValue>, @unchec
 
     private static func classModifier(in decl: DeclSyntax) -> DeclModifierSyntax? {
         guard let withModifiers = decl.asProtocol(WithModifiersSyntax.self) else { return nil }
-        if withModifiers.modifiers.contains(.override) {
-            return nil
-        }
-        return withModifiers.modifiers.first { $0.name.tokenKind == .keyword(.class) }
+        return withModifiers.modifiers.contains(.override)
+            ? nil
+            : withModifiers.modifiers.first { $0.name.tokenKind == .keyword(.class) }
     }
 
     private static func replaceClassWithStatic(in decl: DeclSyntax) -> DeclSyntax {
@@ -68,7 +66,7 @@ final class PreferStaticOverClassFunc: StaticFormatRule<BasicRuleValue>, @unchec
     }
 }
 
-extension Finding.Message {
-    fileprivate static let preferStatic: Finding.Message =
+fileprivate extension Finding.Message {
+    static let preferStatic: Finding.Message =
         "use 'static' instead of 'class'; this class is final"
 }

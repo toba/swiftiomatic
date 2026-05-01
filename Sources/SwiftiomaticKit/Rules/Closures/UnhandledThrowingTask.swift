@@ -134,9 +134,7 @@ private final class ThrowsVisitor: SyntaxVisitor {
     }
 
     override func visitPost(_ node: TryExprSyntax) {
-        if node.questionOrExclamationMark == nil {
-            hasThrow = true
-        }
+        if node.questionOrExclamationMark == nil { hasThrow = true }
     }
 
     override func visitPost(_: ThrowStmtSyntax) { hasThrow = true }

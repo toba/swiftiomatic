@@ -49,22 +49,21 @@ extension TokenStream {
         // after the binding's last token so the `:` chunk extends through the initializer; that
         // makes `:` an eager wrap point when the whole binding overflows. When the RHS carries its
         // own inner break points (ternary, function call, member-access chain, infix operator,
-        // closure, …) the chunk is kept short (close after the type) so the inner breaks fire
-        // first instead of wrapping the type annotation onto its own line.
+        // closure, …) the chunk is kept short (close after the type) so the inner breaks fire first
+        // instead of wrapping the type annotation onto its own line.
         var closesNeeded: Int = 0
         var closeAfterToken: TokenSyntax?
 
-        let rhsHasInnerBreaks: Bool =
-            node.initializer.map { initializer in
-                let expr = initializer.value
-                return expr.is(TernaryExprSyntax.self)
-                    || expr.is(FunctionCallExprSyntax.self)
-                    || expr.is(MemberAccessExprSyntax.self)
-                    || expr.is(SubscriptCallExprSyntax.self)
-                    || expr.is(SequenceExprSyntax.self)
-                    || expr.is(InfixOperatorExprSyntax.self)
-                    || expr.is(ClosureExprSyntax.self)
-            } ?? false
+        let rhsHasInnerBreaks: Bool = node.initializer.map { initializer in
+            let expr = initializer.value
+            return expr.is(TernaryExprSyntax.self)
+                || expr.is(FunctionCallExprSyntax.self)
+                || expr.is(MemberAccessExprSyntax.self)
+                || expr.is(SubscriptCallExprSyntax.self)
+                || expr.is(SequenceExprSyntax.self)
+                || expr.is(InfixOperatorExprSyntax.self)
+                || expr.is(ClosureExprSyntax.self)
+        } ?? false
 
         if let typeAnnotation = node.typeAnnotation, !typeAnnotation.type.is(MissingTypeSyntax.self)
         {
@@ -75,6 +74,7 @@ extension TokenStream {
                     newlines: .elective(ignoresDiscretionary: true)
                 )
             )
+
             if rhsHasInnerBreaks {
                 after(
                     typeAnnotation.lastToken(viewMode: .sourceAccurate),
@@ -87,12 +87,13 @@ extension TokenStream {
         }
         if let initializer = node.initializer {
             let expr = initializer.value
+
             if rhsHasInnerBreaks {
                 // Type-annotation break was closed after the type to demote it. Use a simple
-                // continuation break for `=` (no surrounding `.open`/`.close` group around the
-                // RHS) so the `=` break's chunk is bounded by the next inner break — function
-                // call args, ternary `?`, member-access `.`, etc. — and those fire first
-                // instead of wrapping at `=`.
+                // continuation break for `=` (no surrounding `.open` / `.close` group around the
+                // RHS) so the `=` break's chunk is bounded by the next inner break — function call
+                // args, ternary `?` , member-access `.` , etc. — and those fire first instead of
+                // wrapping at `=` .
                 after(
                     initializer.equal,
                     tokens: .break(.continue, newlines: .elective(ignoresDiscretionary: true))
@@ -171,6 +172,7 @@ extension TokenStream {
         before(node.firstToken(viewMode: .sourceAccurate), tokens: .open)
 
         let breakToken: Token = .break(.continue, newlines: .elective(ignoresDiscretionary: true))
+
         for specifier in node.specifiers {
             after(
                 specifier.lastToken(viewMode: .sourceAccurate),
@@ -183,6 +185,7 @@ extension TokenStream {
             lineBreak: breakToken,
             shouldGroup: false
         )
+
         for specifier in node.lateSpecifiers {
             after(
                 specifier.lastToken(viewMode: .sourceAccurate),
@@ -231,6 +234,7 @@ extension TokenStream {
 
     func visitGenericArgument(_ node: GenericArgumentSyntax) -> SyntaxVisitorContinueKind {
         before(node.firstToken(viewMode: .sourceAccurate), tokens: .open)
+
         if let trailingComma = node.trailingComma {
             after(trailingComma, tokens: .close, .break(.same))
         } else {
@@ -255,6 +259,7 @@ extension TokenStream {
         before(node.firstToken(viewMode: .sourceAccurate), tokens: .open)
         after(node.specifier, tokens: .break)
         after(node.colon, tokens: .break)
+
         if let trailingComma = node.trailingComma {
             after(trailingComma, tokens: .close, .break(.same))
         } else {
@@ -267,6 +272,7 @@ extension TokenStream {
         _ node: PrimaryAssociatedTypeSyntax
     ) -> SyntaxVisitorContinueKind {
         before(node.firstToken(viewMode: .sourceAccurate), tokens: .open)
+
         if let trailingComma = node.trailingComma {
             after(trailingComma, tokens: .close, .break(.same))
         } else {

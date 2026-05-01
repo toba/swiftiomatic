@@ -15,7 +15,7 @@ import SwiftSyntax
 /// Function calls should never mix normal closure arguments and trailing closures.
 ///
 /// Lint: If a function call with a trailing closure also contains a non-trailing closure argument,
-///       a lint error is raised.
+/// a lint error is raised.
 final class OnlyOneTrailingClosureArgument: LintSyntaxRule<LintOnlyValue>, @unchecked Sendable {
     override static var group: ConfigurationGroup? { .closures }
 
@@ -29,7 +29,7 @@ final class OnlyOneTrailingClosureArgument: LintSyntaxRule<LintOnlyValue>, @unch
     }
 }
 
-extension Finding.Message {
-    fileprivate static let removeTrailingClosure: Finding.Message =
+fileprivate extension Finding.Message {
+    static let removeTrailingClosure: Finding.Message =
         "revise this function call to avoid using both closure arguments and a trailing closure"
 }

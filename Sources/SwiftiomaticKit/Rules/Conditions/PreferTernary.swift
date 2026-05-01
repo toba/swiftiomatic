@@ -36,7 +36,7 @@ final class PreferTernary: StaticFormatRule<BasicRuleValue>, @unchecked Sendable
 
     static func transform(
         _ visited: CodeBlockItemListSyntax,
-        parent: Syntax?,
+        parent _: Syntax?,
         context: Context
     ) -> CodeBlockItemListSyntax {
         let items = Array(visited)
@@ -181,6 +181,7 @@ final class PreferTernary: StaticFormatRule<BasicRuleValue>, @unchecked Sendable
         from item: CodeBlockItemSyntax
     ) -> (ExprSyntax, ExprSyntax)? {
         let expr: ExprSyntax?
+
         if let exprStmt = item.item.as(ExpressionStmtSyntax.self) {
             expr = exprStmt.expression
         } else {
@@ -236,9 +237,7 @@ final class PreferTernary: StaticFormatRule<BasicRuleValue>, @unchecked Sendable
 
         let assignment = InfixOperatorExprSyntax(
             leftOperand: lhs.with(\.leadingTrivia, []).with(\.trailingTrivia, .space),
-            operator: ExprSyntax(
-                AssignmentExprSyntax(
-                    equal: .equalToken(trailingTrivia: .space))),
+            operator: ExprSyntax(AssignmentExprSyntax(equal: .equalToken(trailingTrivia: .space))),
             rightOperand: ternary)
 
         return .init(
@@ -255,12 +254,14 @@ final class PreferTernary: StaticFormatRule<BasicRuleValue>, @unchecked Sendable
     ) -> ExprSyntax {
         // The caller already verified a single expression condition.
         let onlyCondition = condition.first!
-        guard case let .expression(conditionExpr) = onlyCondition.condition
-        else { return ExprSyntax(DeclReferenceExprSyntax(baseName: .identifier("false"))) }
+        guard case let .expression(conditionExpr) = onlyCondition.condition else {
+            return ExprSyntax(DeclReferenceExprSyntax(baseName: .identifier("false")))
+        }
 
-        // Capture the original anchor column before detaching the condition, since
-        // startLocation on a detached/synthesized node is unreliable.
-        let anchorCol = conditionExpr.startLocation(converter: context.sourceLocationConverter).column
+        // Capture the original anchor column before detaching the condition, since startLocation on
+        // a detached/synthesized node is unreliable.
+        let anchorCol = conditionExpr.startLocation(converter: context.sourceLocationConverter)
+            .column
 
         var ternary = TernaryExprSyntax(
             condition: conditionExpr.with(\.trailingTrivia, .space),
@@ -270,13 +271,14 @@ final class PreferTernary: StaticFormatRule<BasicRuleValue>, @unchecked Sendable
             elseExpression: elseExpr.with(\.leadingTrivia, []).with(\.trailingTrivia, []))
 
         // The synthesized ternary is built inside a CodeBlockItemList rewrite, so the
-        // SyntaxRewriter never descends into it and WrapTernary's TernaryExpr visitor
-        // never fires. Mirror its policy here using the captured anchor column so both
-        // branches wrap together when the result would exceed the line length.
+        // SyntaxRewriter never descends into it and WrapTernary's TernaryExpr visitor never fires.
+        // Mirror its policy here using the captured anchor column so both branches wrap together
+        // when the result would exceed the line length.
         let lineLength = context.configuration[LineLength.self]
         let singleLineLength = ternary.trimmedDescription
             .split(whereSeparator: { $0.isWhitespace })
             .joined(separator: " ").count
+
         if (anchorCol - 1) + singleLineLength > lineLength {
             ternary.questionMark.leadingTrivia = .newline + ternary.questionMark.leadingTrivia
             ternary.colon.leadingTrivia = .newline + ternary.colon.leadingTrivia

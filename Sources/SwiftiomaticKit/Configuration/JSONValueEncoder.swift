@@ -69,7 +69,7 @@ final class JSONValueBuilder: Encoder {
     var codingPath: [CodingKey]
     var userInfo: [CodingUserInfoKey: Any] = [:]
 
-    class Storage {
+    final class Storage {
         var value: JSONValue = .null
     }
     fileprivate let storage: Storage
@@ -163,7 +163,8 @@ private struct KeyedContainer<Key: CodingKey>: KeyedEncodingContainerProtocol {
     }
 
     mutating func nestedContainer<NestedKey: CodingKey>(
-        keyedBy _: NestedKey.Type, forKey _: Key
+        keyedBy _: NestedKey.Type,
+        forKey _: Key
     ) -> KeyedEncodingContainer<NestedKey> {
         preconditionFailure("JSONValueBuilder does not support nestedContainer.")
     }

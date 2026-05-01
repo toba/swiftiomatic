@@ -2,26 +2,25 @@ import CryptoKit
 import Foundation
 import Synchronization
 
-/// On-disk cache of lint findings keyed by `(file content hash, configuration fingerprint)`.
+/// On-disk cache of lint findings keyed by `(file content hash, configuration fingerprint)` .
 ///
 /// Linting a file is content-addressed: identical bytes through the same rule set with the same
-/// configuration will always produce identical findings. The cache turns a no-change `sm lint`
-/// run from "lint every file" into "hash every file and replay stored findings".
+/// configuration will always produce identical findings. The cache turns a no-change `sm lint` run
+/// from "lint every file" into "hash every file and replay stored findings".
 ///
-/// Layout under the cache root:
-///   `<root>/<fingerprint[..16]>/<fileKey>.json`
+/// Layout under the cache root: `<root>/<fingerprint[..16]>/<fileKey>.json`
 ///
-/// `fingerprint` invalidates the entire subtree for a given `(rule set + configuration)`. Stale
-/// fingerprint subdirectories from prior rule/config versions are simply orphaned — `swift package
-/// clean` removes them along with the rest of `.build`.
+/// `fingerprint` invalidates the entire subtree for a given `(rule set + configuration)` . Stale
+/// fingerprint subdirectories from prior rule/config versions are simply orphaned —
+/// `swift package clean` removes them along with the rest of `.build` .
 ///
 /// **Concurrent writers**: two `sm lint` processes linting the same file with the same
 /// configuration will land on the same record path. `store(_:)` writes with `.atomic`
-/// (write-then-rename), so readers always see either the previous record or the new one,
-/// never a torn file. When both writers race, the last `rename` wins; both inputs are by
-/// construction equivalent (same content hash + same fingerprint ⇒ same findings), so the
-/// surviving record is always valid. This is documented because there is no inter-process
-/// lock; future consumers should not assume one.
+/// (write-then-rename), so readers always see either the previous record or the new one, never a
+/// torn file. When both writers race, the last `rename` wins; both inputs are by construction
+/// equivalent (same content hash + same fingerprint ⇒ same findings), so the surviving record is
+/// always valid. This is documented because there is no inter-process lock; future consumers should
+/// not assume one.
 package final class LintCache: Sendable {
     package struct Location: Codable, Sendable {
         package var file: String
@@ -49,14 +48,15 @@ package final class LintCache: Sendable {
     /// that isn't directly Codable, so the cache stores the flattened primitives that
     /// `DiagnosticsEngine` ultimately consumes.
     package struct Entry: Codable, Sendable {
-        /// Human-readable category string (e.g. `"NoBlockComments"`). Equivalent to
+        /// Human-readable category string (e.g. `"NoBlockComments"` ). Equivalent to
         /// `"\(finding.category)"` at capture time.
         package var category: String
 
         /// Severity as configured for the rule that emitted the finding.
         ///
-        /// Stored as the live `Lint` value directly. The string raw values (`error`, `warn`, `no`)
-        /// match the prior `Entry.Severity` shape, so cache records written under v1 still decode.
+        /// Stored as the live `Lint` value directly. The string raw values ( `error` , `warn` ,
+        /// `no` ) match the prior `Entry.Severity` shape, so cache records written under v1 still
+        /// decode.
         package var severity: Lint
 
         /// Finding message text.
@@ -97,7 +97,7 @@ package final class LintCache: Sendable {
         }
     }
 
-    /// A binary-stable identifier for the rule set compiled into this `sm`.
+    /// A binary-stable identifier for the rule set compiled into this `sm` .
     ///
     /// Computed once per process from sorted rule type names. When the binary gains, loses, or
     /// renames a rule the value changes, which combined with the per-configuration JSON hash
@@ -115,9 +115,9 @@ package final class LintCache: Sendable {
         return hexEncode(hasher.finalize())
     }()
 
-    /// Memoized fingerprint for the most recently seen configuration. The vast majority of runs
-    /// see one configuration applied to many files; caching the encode + hash makes the per-file
-    /// path a pointer comparison + memcmp.
+    /// Memoized fingerprint for the most recently seen configuration. The vast majority of runs see
+    /// one configuration applied to many files; caching the encode + hash makes the per-file path a
+    /// pointer comparison + memcmp.
     private struct FingerprintEntry: Sendable {
         var configuration: Configuration
         var fingerprint: String
@@ -141,9 +141,7 @@ package final class LintCache: Sendable {
     package let root: URL
 
     /// Creates a cache rooted at the given directory. The directory is created on first write.
-    package init(root: URL) {
-        self.root = root
-    }
+    package init(root: URL) { self.root = root }
 
     /// Convenience: a cache rooted under `<cwd>/.build/sm-lint-cache/` if `.build` exists, else
     /// under `<cwd>/.build/sm-lint-cache/` anyway (the directory is created on demand).
@@ -157,16 +155,18 @@ package final class LintCache: Sendable {
         hexEncode(SHA256.hash(data: Data(source.utf8)))
     }
 
-    /// Returns `true` if the `SM_LINT_NO_CACHE` environment variable disables caching.
-    /// Any non-empty value other than `"0"` counts as on.
+    /// Returns `true` if the `SM_LINT_NO_CACHE` environment variable disables caching. Any
+    /// non-empty value other than `"0"` counts as on.
     package static var disabledByEnvironment: Bool {
-        guard let raw = ProcessInfo.processInfo.environment["SM_LINT_NO_CACHE"] else { return false }
+        guard let raw = ProcessInfo.processInfo.environment["SM_LINT_NO_CACHE"] else {
+            return false
+        }
         return !raw.isEmpty && raw != "0"
     }
 
     /// Whether `lint` for a given file URL plus options should be served by the cache. Cache values
-    /// are whole-file findings, so per-line/offset selections, stdin, and `--ignore-unparsable-files`
-    /// runs all bypass it.
+    /// are whole-file findings, so per-line/offset selections, stdin, and
+    /// `--ignore-unparsable-files` runs all bypass it.
     package static func isCacheEligible(
         url: URL,
         lines: [ClosedRange<Int>],
@@ -180,9 +180,9 @@ package final class LintCache: Sendable {
             && url.path != "<stdin>"
     }
 
-    /// Combined fingerprint of `(rule set + configuration + cache schema version)`.
+    /// Combined fingerprint of `(rule set + configuration + cache schema version)` .
     ///
-    /// Memoizes the result for the most recently seen `Configuration`. A different value triggers
+    /// Memoizes the result for the most recently seen `Configuration` . A different value triggers
     /// a re-encode + re-hash; a repeated value returns the cached string.
     package func fingerprint(for configuration: Configuration) -> String {
         if let memo = lastFingerprint.withLock({ $0 }), memo.configuration == configuration {
@@ -195,16 +195,17 @@ package final class LintCache: Sendable {
         hasher.update(data: Data([0]))
 
         let encoded = coders.withLock { try? $0.fingerprintEncoder.encode(configuration) }
-        if let json = encoded {
-            hasher.update(data: json)
-        }
+        if let json = encoded { hasher.update(data: json) }
 
         let fp = Self.hexEncode(hasher.finalize())
-        lastFingerprint.withLock { $0 = FingerprintEntry(configuration: configuration, fingerprint: fp) }
+        lastFingerprint.withLock {
+            $0 = FingerprintEntry(configuration: configuration, fingerprint: fp)
+        }
         return fp
     }
 
-    /// Returns the on-disk path for the cached record of the given file, under the given fingerprint.
+    /// Returns the on-disk path for the cached record of the given file, under the given
+    /// fingerprint.
     private func recordURL(fingerprint: String, fileKey: String) -> URL {
         // Truncate fingerprint to 16 chars for shorter paths; collisions are not security-relevant
         // (worst case: false sharing across different binaries/configs, which the per-file
@@ -224,8 +225,8 @@ package final class LintCache: Sendable {
         return Self.hexEncode(hasher.finalize())
     }
 
-    /// Looks up cached findings for the given file. Returns `nil` on any miss (including
-    /// unreadable or malformed cache files — corruption is treated as a miss, not a crash).
+    /// Looks up cached findings for the given file. Returns `nil` on any miss (including unreadable
+    /// or malformed cache files — corruption is treated as a miss, not a crash).
     package func lookup(absolutePath: String, contentHash: String, fingerprint: String) -> Record? {
         let url = recordURL(
             fingerprint: fingerprint,
@@ -259,8 +260,8 @@ package final class LintCache: Sendable {
     }
 
     /// Encodes raw bytes as a lowercase hex string in a single allocation. Avoids the
-    /// `digest.map { String(format: "%02x", $0) }.joined()` pattern, which allocates a
-    /// `String` per byte plus an intermediate array.
+    /// `digest.map { String(format: "%02x", $0) }.joined()` pattern, which allocates a `String` per
+    /// byte plus an intermediate array.
     static func hexEncode<S: Sequence>(_ bytes: S) -> String where S.Element == UInt8 {
         let table: StaticString = "0123456789abcdef"
         return table.withUTF8Buffer { hex in
@@ -275,9 +276,9 @@ package final class LintCache: Sendable {
     }
 }
 
-extension LintCache.Location {
+package extension LintCache.Location {
     /// Round-trips a `Finding.Location` through the cache schema.
-    package init(_ findingLocation: Finding.Location) {
+    init(_ findingLocation: Finding.Location) {
         self.init(
             file: findingLocation.file,
             line: findingLocation.line,
@@ -285,8 +286,8 @@ extension LintCache.Location {
         )
     }
 
-    /// Materializes the cached location as a `Finding.Location`.
-    package var asFindingLocation: Finding.Location {
+    /// Materializes the cached location as a `Finding.Location` .
+    var asFindingLocation: Finding.Location {
         Finding.Location(file: file, line: line, column: column)
     }
 }

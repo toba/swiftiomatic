@@ -23,6 +23,7 @@ extension TokenStream {
         // the `verbatim` token in order for the first token to be printed with correct indentation.
         // All following lines in the ignored node are printed as-is with no changes to indentation.
         var nodeText = node.description
+
         if let firstToken = node.firstToken(viewMode: .sourceAccurate) {
             extractLeadingTrivia(firstToken)
             let leadingTriviaText = firstToken.leadingTrivia.reduce(into: "") { $1.write(to: &$0) }
@@ -60,6 +61,7 @@ extension TokenStream {
     /// visited so that they can be skipped later.
     func preVisitInsertingContextualBreaks<T: ExprSyntaxProtocol & Equatable>(_ expr: T) {
         let exprID = expr.id
+
         if !preVisitedExprs.contains(exprID) {
             rootExprs.insert(exprID)
             insertContextualBreaks(ExprSyntax(expr), isTopLevel: true)
@@ -75,6 +77,7 @@ extension TokenStream {
         isTopLevel: Bool
     ) -> (hasCompoundExpression: Bool, hasMemberAccess: Bool) {
         preVisitedExprs.insert(expr.id)
+
         if let memberAccessExpr = expr.as(MemberAccessExprSyntax.self) {
             // When the member access is part of a calling expression, the break before the dot is
             // inserted when visiting the parent node instead so that the break is inserted before
@@ -90,6 +93,7 @@ extension TokenStream {
                 )
             }
             var hasCompoundExpression = false
+
             if let base = memberAccessExpr.base {
                 (hasCompoundExpression, _) = insertContextualBreaks(base, isTopLevel: false)
             }
@@ -163,6 +167,7 @@ extension TokenStream {
                 }
                 before(calledMemberAccessExpr.period, tokens: beforeTokens)
                 after(expr.lastToken(viewMode: .sourceAccurate), tokens: afterTokens)
+
                 if isTopLevel {
                     before(
                         expr.firstToken(viewMode: .sourceAccurate),

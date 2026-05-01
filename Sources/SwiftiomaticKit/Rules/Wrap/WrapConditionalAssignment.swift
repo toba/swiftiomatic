@@ -18,7 +18,7 @@ final class WrapConditionalAssignment: StaticFormatRule<BasicRuleValue>, @unchec
 
     static func transform(
         _ node: PatternBindingSyntax,
-        parent: Syntax?,
+        parent _: Syntax?,
         context: Context
     ) -> PatternBindingSyntax {
         guard let initializer = node.initializer else { return node }
@@ -66,14 +66,16 @@ final class WrapConditionalAssignment: StaticFormatRule<BasicRuleValue>, @unchec
 
     static func transform(
         _ node: InfixOperatorExprSyntax,
-        parent: Syntax?,
+        parent _: Syntax?,
         context: Context
     ) -> ExprSyntax {
-        guard let assignment = node.operator.as(AssignmentExprSyntax.self)
-        else { return ExprSyntax(node) }
+        guard let assignment = node.operator.as(AssignmentExprSyntax.self) else {
+            return ExprSyntax(node)
+        }
         let rhs = node.rightOperand
-        guard rhs.is(IfExprSyntax.self) || rhs.is(SwitchExprSyntax.self)
-        else { return ExprSyntax(node) }
+        guard rhs.is(IfExprSyntax.self) || rhs.is(SwitchExprSyntax.self) else {
+            return ExprSyntax(node)
+        }
         guard isMultiline(rhs) else { return ExprSyntax(node) }
 
         let equal = assignment.equal

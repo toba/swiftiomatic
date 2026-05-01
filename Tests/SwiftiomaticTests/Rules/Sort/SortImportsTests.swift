@@ -337,7 +337,7 @@ struct SortImportsTests: RuleTesting {
       input: """
         import C
         1️⃣import B
-        // sm:ignore: SortImports
+        // sm:ignore SortImports
         import A
         let a = 123
         2️⃣import func Darwin.C.isatty
@@ -349,7 +349,7 @@ struct SortImportsTests: RuleTesting {
         import B
         import C
 
-        // sm:ignore: SortImports
+        // sm:ignore SortImports
         import A
 
         import func Darwin.C.isatty
@@ -373,7 +373,7 @@ struct SortImportsTests: RuleTesting {
         import C  // Trailing comment about C
         1️⃣import B
         // Comment about ignored A
-        // sm:ignore: SortImports
+        // sm:ignore SortImports
         import A  // trailing comment about ignored A
         // Comment about Z
         import Z
@@ -395,7 +395,7 @@ struct SortImportsTests: RuleTesting {
         import C  // Trailing comment about C
 
         // Comment about ignored A
-        // sm:ignore: SortImports
+        // sm:ignore SortImports
         import A  // trailing comment about ignored A
 
         import D
@@ -834,7 +834,7 @@ struct SortImportsTests: RuleTesting {
     assertFormatting(
       SortImports.self,
       input: """
-        // sm:ignore-file: NoSemicolons, IndirectEnum
+        // sm:ignore NoSemicolons, IndirectEnum
         import Zoo
         1️⃣import Arrays
 
@@ -843,7 +843,7 @@ struct SortImportsTests: RuleTesting {
         }
         """,
       expected: """
-        // sm:ignore-file: NoSemicolons, IndirectEnum
+        // sm:ignore NoSemicolons, IndirectEnum
 
         import Arrays
         import Zoo
@@ -862,7 +862,7 @@ struct SortImportsTests: RuleTesting {
     assertFormatting(
       SortImports.self,
       input: """
-        // sm:ignore-file: NoSemicolons, IndirectEnum
+        // sm:ignore NoSemicolons, IndirectEnum
         import Arrays
         import Zoo
 
@@ -871,7 +871,7 @@ struct SortImportsTests: RuleTesting {
         }
         """,
       expected: """
-        // sm:ignore-file: NoSemicolons, IndirectEnum
+        // sm:ignore NoSemicolons, IndirectEnum
 
         import Arrays
         import Zoo
@@ -888,7 +888,7 @@ struct SortImportsTests: RuleTesting {
       SortImports.self,
       input: """
         // We need to ignore this file because it is generated
-        // sm:ignore-file: NoSemicolons, IndirectEnum
+        // sm:ignore NoSemicolons, IndirectEnum
         // Line comment for Zoo
         import Zoo
         // Line comment for Array
@@ -900,7 +900,7 @@ struct SortImportsTests: RuleTesting {
         """,
       expected: """
         // We need to ignore this file because it is generated
-        // sm:ignore-file: NoSemicolons, IndirectEnum
+        // sm:ignore NoSemicolons, IndirectEnum
 
         // Line comment for Array
         import Arrays
@@ -922,8 +922,8 @@ struct SortImportsTests: RuleTesting {
       SortImports.self,
       input: """
         // This file has important contents.
-        // sm:ignore-file: NoSemicolons
-        // sm:ignore-file: IndirectEnum
+        // sm:ignore NoSemicolons
+        // sm:ignore IndirectEnum
         // Everything in this file is ignored.
 
         import Zoo
@@ -935,8 +935,8 @@ struct SortImportsTests: RuleTesting {
         """,
       expected: """
         // This file has important contents.
-        // sm:ignore-file: NoSemicolons
-        // sm:ignore-file: IndirectEnum
+        // sm:ignore NoSemicolons
+        // sm:ignore IndirectEnum
         // Everything in this file is ignored.
 
         import Arrays

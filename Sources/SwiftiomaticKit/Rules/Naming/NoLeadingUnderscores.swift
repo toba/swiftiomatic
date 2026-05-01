@@ -26,9 +26,9 @@ final class NoLeadingUnderscores: LintSyntaxRule<LintOnlyValue>, @unchecked Send
     override static var group: ConfigurationGroup? { .naming }
 
     /// Identifies this rule as being opt-in. While leading underscores aren't meant to be used in
-    /// normal circumstances, there are situations where they can be used to hint which APIs should be
-    /// avoided by general users. In particular when APIs must be exported publicly, but the author
-    /// doesn't intend for arbitrary usage.
+    /// normal circumstances, there are situations where they can be used to hint which APIs should
+    /// be avoided by general users. In particular when APIs must be exported publicly, but the
+    /// author doesn't intend for arbitrary usage.
     override static var defaultValue: LintOnlyValue { .init(lint: .no) }
 
     override func visit(_ node: AssociatedTypeDeclSyntax) -> SyntaxVisitorContinueKind {
@@ -57,17 +57,17 @@ final class NoLeadingUnderscores: LintSyntaxRule<LintOnlyValue>, @unchecked Send
     }
 
     override func visit(_ node: ClosureParameterSyntax) -> SyntaxVisitorContinueKind {
-        // If both names are provided, we want to check `secondName`, which will be the parameter name
-        // (in that case, `firstName` is the label). If only one name is present, then it is recorded in
-        // `firstName`, and it is both the label and the parameter name.
+        // If both names are provided, we want to check `secondName` , which will be the parameter
+        // name (in that case, `firstName` is the label). If only one name is present, then it is
+        // recorded in `firstName` , and it is both the label and the parameter name.
         diagnoseIfNameStartsWithUnderscore(node.secondName ?? node.firstName)
         return .visitChildren
     }
 
     override func visit(_ node: EnumCaseParameterSyntax) -> SyntaxVisitorContinueKind {
-        // If both names are provided, we want to check `secondName`, which will be the parameter name
-        // (in that case, `firstName` is the label). If only one name is present, then it is recorded in
-        // `firstName`, and it is both the label and the parameter name.
+        // If both names are provided, we want to check `secondName` , which will be the parameter
+        // name (in that case, `firstName` is the label). If only one name is present, then it is
+        // recorded in `firstName` , and it is both the label and the parameter name.
         if let variableIdentifier = node.secondName ?? node.firstName {
             diagnoseIfNameStartsWithUnderscore(variableIdentifier)
         }
@@ -75,9 +75,9 @@ final class NoLeadingUnderscores: LintSyntaxRule<LintOnlyValue>, @unchecked Send
     }
 
     override func visit(_ node: FunctionParameterSyntax) -> SyntaxVisitorContinueKind {
-        // If both names are provided, we want to check `secondName`, which will be the parameter name
-        // (in that case, `firstName` is the label). If only one name is present, then it is recorded in
-        // `firstName`, and it is both the label and the parameter name.
+        // If both names are provided, we want to check `secondName` , which will be the parameter
+        // name (in that case, `firstName` is the label). If only one name is present, then it is
+        // recorded in `firstName` , and it is both the label and the parameter name.
         diagnoseIfNameStartsWithUnderscore(node.secondName ?? node.firstName)
         return .visitChildren
     }

@@ -10,19 +10,19 @@
 //
 //===----------------------------------------------------------------------===//
 
-import ConfigurationKit
 import Foundation
 import SwiftSyntax
+import ConfigurationKit
 
 extension RuleCollector {
     protocol DetectedRule: Hashable {
         /// The type name of the rule.
         var typeName: String { get }
-        /// The custom key from `static let key = "..."`, or `nil` to derive from `typeName`.
+        /// The custom key from `static let key = "..."` , or `nil` to derive from `typeName` .
         var customKey: String? { get }
 
-        /// The description of the rule, extracted from the rule class or struct DocC comment
-        /// with `DocumentationCommentText(extractedFrom:)`.
+        /// The description of the rule, extracted from the rule class or struct DocC comment with
+        /// `DocumentationCommentText(extractedFrom:)` .
         var description: String? { get }
         /// The config group this rule belongs to, or `nil` if ungrouped.
         var group: ConfigurationGroup? { get }
@@ -48,8 +48,8 @@ extension RuleCollector {
         /// Indicates whether the rule can rewrite code (all rules can lint).
         let canRewrite: Bool
 
-        /// Indicates whether the rule's configuration uses dual numeric thresholds
-        /// (`enabled`/`warning`/`error`) instead of a single `lint` severity.
+        /// Indicates whether the rule's configuration uses dual numeric thresholds ( `enabled` /
+        /// `warning` / `error` ) instead of a single `lint` severity.
         let isThreshold: Bool
 
         /// The syntax node types visited by the rule type.
@@ -58,8 +58,8 @@ extension RuleCollector {
         /// Whether this rule is disabled by default (opt-in).
         let isOptIn: Bool
 
-        /// Custom properties beyond `rewrite`/`lint` (or `enabled`/`warning`/`error`
-        /// for threshold rules) on the configuration type.
+        /// Custom properties beyond `rewrite` / `lint` (or `enabled` / `warning` / `error` for
+        /// threshold rules) on the configuration type.
         var customProperties: [DetectedProperty] = []
 
         // Hashable/Equatable based on typeName only — customProperties are metadata.
@@ -69,7 +69,7 @@ extension RuleCollector {
 
     /// Information about a detected layout rule.
     struct DetectedLayoutRule: DetectedRule {
-        /// The JSON Schema type inferred from a layout rule's `defaultValue`.
+        /// The JSON Schema type inferred from a layout rule's `defaultValue` .
         enum SchemaValueType: Sendable {
             case boolean
             case integer

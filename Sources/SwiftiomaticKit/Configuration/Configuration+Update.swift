@@ -11,18 +11,16 @@ extension Configuration {
         package var misplaced: [Misplaced]
 
         package struct Misplaced: Sendable, Equatable {
-            /// The qualified key where the rule was found, e.g. `wrap.preferIsEmpty`.
-            /// For ungrouped rules placed at root, this is the bare key.
+            /// The qualified key where the rule was found, e.g. `wrap.preferIsEmpty` . For
+            /// ungrouped rules placed at root, this is the bare key.
             package var foundAt: String
-            /// The canonical qualified key for the rule, e.g. `idioms.preferIsEmpty`.
+            /// The canonical qualified key for the rule, e.g. `idioms.preferIsEmpty` .
             package var correctAt: String
             /// The user's existing value, to be preserved on relocation.
             package var value: JSONValue
         }
 
-        package var hasChanges: Bool {
-            !toAdd.isEmpty || !toRemove.isEmpty || !misplaced.isEmpty
-        }
+        package var hasChanges: Bool { !toAdd.isEmpty || !toRemove.isEmpty || !misplaced.isEmpty }
     }
 
     /// Computes the diff between a parsed JSON config and the current rule registry.
@@ -37,9 +35,9 @@ extension Configuration {
         var foundCorrectKeys = Set<String>()
 
         func classify(shortKey: String, foundAt: String, value: JSONValue) {
-            // If the rule exists at exactly this qualified key, it's correctly placed.
-            // (Handles short-key collisions across groups, e.g. `sort.switchCases` and
-            // `indentation.switchCases`.)
+            // If the rule exists at exactly this qualified key, it's correctly placed. (Handles
+            // short-key collisions across groups, e.g. `sort.switchCases` and
+            // `indentation.switchCases` .)
             if validKeys.contains(foundAt) {
                 foundCorrectKeys.insert(foundAt)
                 return
@@ -52,12 +50,14 @@ extension Configuration {
         }
 
         for (key, value) in root {
-            // Group dispatch comes first — a setting key that collides with a group name
-            // (e.g. `blankLines`) at the root must be treated as the group, not a setting.
-            if groupNames.contains(key), case .object(let groupDict) = value,
-                let groupKey = ConfigurationGroup.Key(rawValue: key)
+            // Group dispatch comes first — a setting key that collides with a group name (e.g.
+            // `blankLines` ) at the root must be treated as the group, not a setting.
+            if groupNames.contains(key),
+               case let .object(groupDict) = value,
+               let groupKey = ConfigurationGroup.Key(rawValue: key)
             {
                 let groupSettingKeys = settingKeys(inGroup: groupKey)
+
                 for (childKey, childValue) in groupDict where !groupSettingKeys.contains(childKey) {
                     classify(
                         shortKey: childKey,
@@ -74,15 +74,15 @@ extension Configuration {
         let foundOrMisplacedCorrect = foundCorrectKeys.union(misplaced.map(\.correctAt))
         let toAdd = validKeys.subtracting(foundOrMisplacedCorrect).sorted()
 
-        return UpdateDiff(
+        return .init(
             toAdd: toAdd,
             toRemove: toRemove.sorted(),
             misplaced: misplaced.sorted { $0.foundAt < $1.foundAt }
         )
     }
 
-    /// Applies a diff to a JSON config dict in place. Default values for added rules come
-    /// from `defaults` (typically a freshly-encoded default `Configuration`).
+    /// Applies a diff to a JSON config dict in place. Default values for added rules come from
+    /// `defaults` (typically a freshly-encoded default `Configuration` ).
     package static func apply(
         _ diff: UpdateDiff,
         to root: inout [String: JSONValue],
@@ -95,9 +95,7 @@ extension Configuration {
         }
 
         // Removals: unknown keys.
-        for key in diff.toRemove {
-            removeKey(key, from: &root)
-        }
+        for key in diff.toRemove { removeKey(key, from: &root) }
 
         // Additions: pull default values from the encoded default Configuration.
         for key in diff.toAdd {
@@ -110,7 +108,8 @@ extension Configuration {
 
     private static func removeKey(_ qualifiedKey: String, from root: inout [String: JSONValue]) {
         let (group, name) = qualifiedKey.qualifiedKeyParts
-        if let group, case .object(var groupDict) = root[group] {
+
+        if let group, case var .object(groupDict) = root[group] {
             groupDict.removeValue(forKey: name)
             root[group] = .object(groupDict)
         } else {
@@ -124,8 +123,9 @@ extension Configuration {
         into root: inout [String: JSONValue]
     ) {
         let (group, name) = qualifiedKey.qualifiedKeyParts
+
         if let group {
-            if case .object(var groupDict) = root[group] {
+            if case var .object(groupDict) = root[group] {
                 groupDict[name] = value
                 root[group] = .object(groupDict)
             } else {
@@ -141,12 +141,10 @@ extension Configuration {
         defaults: [String: JSONValue]
     ) -> JSONValue {
         let (group, name) = key.qualifiedKeyParts
-        if let group, case .object(let groupDict) = defaults[group] {
+        if let group, case let .object(groupDict) = defaults[group] {
             return groupDict[name] ?? .object([:])
         }
-        if group == nil, let value = defaults[key] {
-            return value
-        }
+        if group == nil, let value = defaults[key] { return value }
         return .object([:])
     }
 }

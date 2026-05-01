@@ -188,7 +188,10 @@ extension Trivia {
                 }
             }
             // Remove spaces/tabs surrounded by newlines
-            if piece.isSpaceOrTab, index > 0, index < self.count - 1, self[index - 1].isNewline,
+            if piece.isSpaceOrTab,
+               index > 0,
+               index < self.count - 1,
+               self[index - 1].isNewline,
                self[index + 1].isNewline
             {
                 return partialResult

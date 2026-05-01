@@ -105,6 +105,7 @@ struct JSON5Scanner {
         lexer.skipInsignificant()
 
         var members: [Member] = []
+
         while !lexer.matches(.braceRight, .eof) {
             let memberStart = lexer.peek().range.lowerBound
             let memberLineStart = lineStart(of: memberStart)
@@ -122,6 +123,7 @@ struct JSON5Scanner {
             // Skip horizontal whitespace and inline line comments looking for `,` .
             lexer.skipHorizontalAndLineComments()
             var trailingComma: Range<String.Index>?
+
             if lexer.matches(.comma) {
                 trailingComma = lexer.peek().range
                 try lexer.advance()
@@ -131,6 +133,7 @@ struct JSON5Scanner {
             // trivia on the member's line.
             lexer.skipHorizontalAndLineComments()
             var endOfMember = lexer.peek().range.lowerBound
+
             if lexer.matches(.newline) {
                 endOfMember = lexer.peek().range.upperBound
                 try lexer.advance()
@@ -162,6 +165,7 @@ struct JSON5Scanner {
     /// quotes).
     private mutating func parseKey() throws(Error) -> (String, Range<String.Index>) {
         let tok = lexer.peek()
+
         switch tok.kind {
             case .string:
                 try lexer.advance()
@@ -177,6 +181,7 @@ struct JSON5Scanner {
     /// otherwise `nil` .
     private mutating func parseValue() throws(Error) -> ObjectLayout? {
         let tok = lexer.peek()
+
         switch tok.kind {
             case .braceLeft: return try parseObject()
             case .bracketLeft:
@@ -192,6 +197,7 @@ struct JSON5Scanner {
     private mutating func skipArray() throws(Error) {
         _ = try lexer.consume(.bracketLeft)
         lexer.skipInsignificant()
+
         while !lexer.matches(.bracketRight, .eof) {
             _ = try parseValue()
             lexer.skipInsignificant()
@@ -212,12 +218,16 @@ struct JSON5Scanner {
         let inside = source.index(after: range.lowerBound)..<source.index(before: range.upperBound)
         var out = ""
         var i = inside.lowerBound
+
         while i < inside.upperBound {
             let c = source[i]
+
             if c == "\\" {
                 let next = source.index(after: i)
+
                 if next < inside.upperBound {
                     let e = source[next]
+
                     switch e {
                         case "n": out.append("\n")
                         case "t": out.append("\t")
@@ -255,6 +265,7 @@ struct JSON5Scanner {
     /// `i` .
     private func lineStart(of i: String.Index) -> String.Index {
         var p = i
+
         while p > source.startIndex {
             let prev = source.index(before: p)
             if source[prev] == "\n" { return p }
@@ -383,11 +394,14 @@ extension JSON5Scanner {
             // Comments.
             if c == "/" {
                 let next = source.index(after: cursor)
+
                 if next < source.endIndex {
                     let n = source[next]
+
                     if n == "/" {
                         cursor = next
-                        while cursor < source.endIndex, source[cursor] != "\n",
+                        while cursor < source.endIndex,
+                              source[cursor] != "\n",
                               source[cursor] != "\r"
                         { cursor = source.index(after: cursor) }
                         current = Token(kind: .lineComment, range: start..<cursor)
@@ -395,6 +409,7 @@ extension JSON5Scanner {
                     }
                     if n == "*" {
                         cursor = source.index(after: next)
+
                         while cursor < source.endIndex {
                             if source[cursor] == "*",
                                source.index(after: cursor) < source.endIndex,
@@ -427,6 +442,7 @@ extension JSON5Scanner {
                     cursor = source.index(after: cursor)
                 }
                 let text = source[start..<cursor]
+
                 switch text {
                     case "true", "false", "null", "Infinity", "NaN":
                         current = Token(kind: .scalar, range: start..<cursor)
@@ -465,6 +481,7 @@ extension JSON5Scanner {
                         // Handle \r\n as a single escape continuation.
                         if source[cursor] == "\r" {
                             cursor = source.index(after: cursor)
+
                             if cursor < source.endIndex, source[cursor] == "\n" {
                                 cursor = source.index(after: cursor)
                             }
@@ -502,7 +519,8 @@ extension JSON5Scanner {
                 return
             }
             // Hex literal: 0x... / 0X...
-            if cursor < source.endIndex, source[cursor] == "0",
+            if cursor < source.endIndex,
+               source[cursor] == "0",
                source.index(after: cursor) < source.endIndex,
                let next = source[source.index(after: cursor)..<source.endIndex].first,
                next == "x" || next == "X"
@@ -534,8 +552,18 @@ extension JSON5Scanner {
 
         private func isHorizontalWhitespace(_ c: Character) -> Bool {
             switch c {
-                case " ", "\t", "\u{0B}", "\u{0C}", "\u{A0}", "\u{FEFF}",
-                    "\u{1680}", "\u{2028}", "\u{2029}", "\u{202F}", "\u{205F}", "\u{3000}":
+                case " ",
+                     "\t",
+                     "\u{0B}",
+                     "\u{0C}",
+                     "\u{A0}",
+                     "\u{FEFF}",
+                     "\u{1680}",
+                     "\u{2028}",
+                     "\u{2029}",
+                     "\u{202F}",
+                     "\u{205F}",
+                     "\u{3000}":
                     true
                 default:
                     if let s = c.unicodeScalars.first, s.value >= 0x2000, s.value <= 0x200A {

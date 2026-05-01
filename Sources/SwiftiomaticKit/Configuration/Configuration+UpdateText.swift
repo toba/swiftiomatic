@@ -1,6 +1,10 @@
 import Foundation
 
 extension Configuration {
+    // Not narrowed to `throws(JSON5Scanner.Error)` because the surrounding scanner type is
+    // file-internal; a `package` API may not advertise an internal-typed error. Promoting the
+    // scanner to `package` for one error type is too much surface area for the win.
+
     /// Apply an `UpdateDiff` to a configuration source string with surgical text edits, preserving
     /// original key order, indentation, and JSON5 comments.
     ///
@@ -8,9 +12,6 @@ extension Configuration {
     /// object for ungrouped keys); brand-new groups are appended at the end of the root. Removals
     /// delete the key's logical block and rebalance the trailing comma on the previous sibling when
     /// the removed key was the last child.
-    // Not narrowed to `throws(JSON5Scanner.Error)` because the surrounding scanner type is
-    // file-internal; a `package` API may not advertise an internal-typed error. Promoting the
-    // scanner to `package` for one error type is too much surface area for the win.
     package static func applyUpdateText(
         _ diff: UpdateDiff,
         to source: String,
@@ -40,6 +41,7 @@ extension Configuration {
         // Group inserts are batched per-group so multi-add into the same target produces
         // deterministic, append-order output.
         var insertionsByTarget: [InsertTarget: [(qualifiedKey: String, value: JSONValue)]] = [:]
+
         for qualifiedKey in diff.toAdd {
             let value = defaultValue(forQualifiedKey: qualifiedKey, defaults: defaults)
             let target = insertTarget(forQualifiedKey: qualifiedKey)
@@ -59,6 +61,7 @@ extension Configuration {
 
         // Apply right-to-left.
         var result = source
+
         for edit in edits.sorted(by: { $0.range.lowerBound > $1.range.lowerBound }) {
             result.replaceSubrange(edit.range, with: edit.replacement)
         }
@@ -87,11 +90,13 @@ extension Configuration {
         layout: JSON5Scanner.ObjectLayout
     ) -> TextEdit? {
         let (groupName, name) = qualifiedKey.qualifiedKeyParts
+
         if let groupName {
             guard let group = layout.members.first(where: { $0.key == groupName }),
                   let nested = group.nested,
-                  let memberIndex = nested.members.firstIndex(where: { $0.key == name })
-            else { return nil }
+                  let memberIndex = nested.members.firstIndex(where: { $0.key == name }) else {
+                return nil
+            }
             return removalEdit(memberIndex: memberIndex, container: nested, source: source)
         } else {
             guard let memberIndex = layout.members.firstIndex(where: { $0.key == qualifiedKey })
@@ -191,6 +196,7 @@ extension Configuration {
             }
             let closeIndent = indentBeforeBrace(closeBrace: container.closeBrace, source: source)
             var insert = "\n"
+
             for (i, item) in sorted.enumerated() {
                 let key = shortKey(forQualifiedKey: item.qualifiedKey)
                 insert += "\(indent)\"\(key)\": \(prettyValue(item.value, indent: indent))"
@@ -207,6 +213,7 @@ extension Configuration {
         // `predIndex == -1` means "before the first member".
         var buckets: [Int: [(qualifiedKey: String, value: JSONValue)]] = [:]
         let existingKeys = container.members.map(\.key)
+
         for item in items {
             let predIndex = predecessorIndex(
                 for: shortKey(forQualifiedKey: item.qualifiedKey),
@@ -236,6 +243,7 @@ extension Configuration {
                 // Insert before the first existing member, at its line start.
                 let first = container.members[0]
                 var text = ""
+
                 for item in bucket {
                     let key = shortKey(forQualifiedKey: item.qualifiedKey)
                     text += "\(indent)\"\(key)\": \(prettyValue(item.value, indent: indent)),\n"
@@ -251,6 +259,7 @@ extension Configuration {
                 let needsLeadingComma = pred.trailingComma == nil
 
                 var text = ""
+
                 for item in bucket {
                     let key = shortKey(forQualifiedKey: item.qualifiedKey)
                     text += "\(indent)\"\(key)\": \(prettyValue(item.value, indent: indent)),\n"
@@ -264,10 +273,9 @@ extension Configuration {
 
                 if needsLeadingComma {
                     let from = pred.valueRange.upperBound
-                    let to:
-                        String.Index = (predIndex == lastIndex)
-                            ? container.closeBrace
-                            : container.members[predIndex + 1].fullRange.lowerBound
+                    let to: String.Index = (predIndex == lastIndex)
+                        ? container.closeBrace
+                        : container.members[predIndex + 1].fullRange.lowerBound
                     let between = String(source[from..<to])
                     edits.append(TextEdit(range: from..<to, replacement: "," + between + text))
                 } else {
@@ -315,6 +323,7 @@ extension Configuration {
         }
         var body = ""
         body += "\"\(groupName)\": {\n"
+
         for (i, item) in sortedItems.enumerated() {
             let key = shortKey(forQualifiedKey: item.qualifiedKey)
             body += "\(innerIndent)\"\(key)\": \(prettyValue(item.value, indent: innerIndent))"
@@ -330,6 +339,7 @@ extension Configuration {
         }
 
         let last = layout.members[layout.members.count - 1]
+
         if last.trailingComma == nil {
             // Need to add a comma after previous last member, then add our group.
             let from = last.valueRange.upperBound
@@ -370,10 +380,12 @@ extension Configuration {
     private static func indentBeforeBrace(closeBrace: String.Index, source: String) -> String {
         var p = closeBrace
         var ws = ""
+
         while p > source.startIndex {
             let prev = source.index(before: p)
             let c = source[prev]
             if c == "\n" { break }
+
             if c == " " || c == "\t" {
                 ws = String(c) + ws
                 p = prev
@@ -406,16 +418,20 @@ extension Configuration {
         let lines = json.components(separatedBy: "\n")
         var result: [String] = []
         var i = 0
+
         while i < lines.count {
             let line = lines[i]
             let trimmed = line.trimmingCharacters(in: .whitespaces)
+
             if trimmed.hasSuffix("{") {
                 var objectLines = [line]
                 var depth = 1
                 var j = i + 1
                 var hasNested = false
+
                 while j < lines.count, depth > 0 {
                     let inner = lines[j].trimmingCharacters(in: .whitespaces)
+
                     if inner.contains("{") {
                         depth += 1
                         hasNested = true
@@ -426,6 +442,7 @@ extension Configuration {
                 }
                 if !hasNested, depth == 0 {
                     let compact = compactObject(objectLines)
+
                     if compact.count <= maxWidth {
                         result.append(compact)
                         i = j
@@ -456,7 +473,7 @@ extension Configuration {
         }
         let lastLine = lines.last!.trimmingCharacters(in: .whitespaces)
         let trailing = lastLine.hasSuffix(",") ? "," : ""
-        
+
         return "\(indent)\(keyPrefix) { \(pairs.joined(separator: ", ")) }\(trailing)"
     }
 

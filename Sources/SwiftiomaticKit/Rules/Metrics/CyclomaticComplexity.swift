@@ -1,28 +1,26 @@
-import ConfigurationKit
 import SwiftSyntax
+import ConfigurationKit
 
 /// Function bodies should have bounded cyclomatic complexity.
 ///
-/// Counts decision points (`if`, `for`, `while`, `guard`, `repeat`, `switch case`,
-/// `catch`, `fallthrough`) within each function or initializer body. Nested
-/// functions and initializers are excluded — they get their own measurement.
+/// Counts decision points ( `if` , `for` , `while` , `guard` , `repeat` , `switch case` , `catch` ,
+/// `fallthrough` ) within each function or initializer body. Nested functions and initializers are
+/// excluded — they get their own measurement.
 ///
-/// Lint: emits `.warn` when complexity exceeds the warning threshold and
-///       `.error` when it exceeds the error threshold.
-final class CyclomaticComplexity: LintSyntaxRule<CyclomaticComplexityConfiguration>, @unchecked Sendable {
+/// Lint: emits `.warn` when complexity exceeds the warning threshold and `.error` when it exceeds
+/// the error threshold.
+final class CyclomaticComplexity: LintSyntaxRule<CyclomaticComplexityConfiguration>,
+    @unchecked Sendable
+{
     override class var group: ConfigurationGroup? { .metrics }
 
     override func visit(_ node: FunctionDeclSyntax) -> SyntaxVisitorContinueKind {
-        if let body = node.body {
-            evaluate(body: body, anchor: Syntax(node.funcKeyword))
-        }
+        if let body = node.body { evaluate(body: body, anchor: Syntax(node.funcKeyword)) }
         return .visitChildren
     }
 
     override func visit(_ node: InitializerDeclSyntax) -> SyntaxVisitorContinueKind {
-        if let body = node.body {
-            evaluate(body: body, anchor: Syntax(node.initKeyword))
-        }
+        if let body = node.body { evaluate(body: body, anchor: Syntax(node.initKeyword)) }
         return .visitChildren
     }
 
@@ -33,13 +31,11 @@ final class CyclomaticComplexity: LintSyntaxRule<CyclomaticComplexityConfigurati
         visitor.walk(body)
         let complexity = visitor.complexity
 
-        guard
-            let severity = metricSeverity(
-                value: complexity,
-                warning: ruleConfig.warning,
-                error: ruleConfig.error
-            )
-        else { return }
+        guard let severity = metricSeverity(
+            value: complexity,
+            warning: ruleConfig.warning,
+            error: ruleConfig.error
+        ) else { return }
 
         diagnose(
             .complexityTooHigh(
@@ -68,9 +64,7 @@ private final class ComplexityVisitor: SyntaxVisitor {
     override func visitPost(_: WhileStmtSyntax) { complexity += 1 }
     override func visitPost(_: CatchClauseSyntax) { complexity += 1 }
 
-    override func visitPost(_: SwitchCaseSyntax) {
-        if !ignoresCaseStatements { complexity += 1 }
-    }
+    override func visitPost(_: SwitchCaseSyntax) { if !ignoresCaseStatements { complexity += 1 } }
 
     override func visitPost(_: FallThroughStmtSyntax) {
         if !ignoresCaseStatements { complexity -= 1 }
@@ -80,8 +74,8 @@ private final class ComplexityVisitor: SyntaxVisitor {
     override func visit(_: InitializerDeclSyntax) -> SyntaxVisitorContinueKind { .skipChildren }
 }
 
-extension Finding.Message {
-    fileprivate static func complexityTooHigh(complexity: Int, limit: Int) -> Finding.Message {
+fileprivate extension Finding.Message {
+    static func complexityTooHigh(complexity: Int, limit: Int) -> Finding.Message {
         "function has cyclomatic complexity \(complexity); limit is \(limit)"
     }
 }
@@ -89,16 +83,14 @@ extension Finding.Message {
 // MARK: - Configuration
 
 package struct CyclomaticComplexityConfiguration: ThresholdRuleValue {
-    package var enabled: Bool = true
-    /// Functions whose cyclomatic complexity exceeds this value emit a
-    /// warning-severity finding.
+    package var enabled = true
+    /// Functions whose cyclomatic complexity exceeds this value emit a warning-severity finding.
     package var warning: Int = 10
-    /// Functions whose cyclomatic complexity exceeds this value emit an
-    /// error-severity finding.
+    /// Functions whose cyclomatic complexity exceeds this value emit an error-severity finding.
     package var error: Int = 20
-    /// When `true`, individual `case` clauses inside a `switch` don't add to
-    /// complexity (only the `switch` itself counts).
-    package var ignoresCaseStatements: Bool = false
+    /// When `true` , individual `case` clauses inside a `switch` don't add to complexity (only the
+    /// `switch` itself counts).
+    package var ignoresCaseStatements = false
 
     package init() {}
 

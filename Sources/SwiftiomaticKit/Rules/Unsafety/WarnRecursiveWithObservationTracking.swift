@@ -1,20 +1,17 @@
 import SwiftSyntax
 
-/// Lint `withObservationTracking { ... } onChange: { … self.f() … }` where the
-/// `onChange` closure calls the enclosing function `f()`. The pattern is a
-/// recursive re-tracker that fires forever as observed values mutate. Use the
-/// `Observations` AsyncSequence instead.
-final class WarnRecursiveWithObservationTracking: LintSyntaxRule<LintOnlyValue>, @unchecked Sendable {
+/// Lint `withObservationTracking { ... } onChange: { … self.f() … }` where the `onChange` closure
+/// calls the enclosing function `f()` . The pattern is a recursive re-tracker that fires forever as
+/// observed values mutate. Use the `Observations` AsyncSequence instead.
+final class WarnRecursiveWithObservationTracking: LintSyntaxRule<LintOnlyValue>, @unchecked Sendable
+{
     override class var group: ConfigurationGroup? { .unsafety }
 
     override func visit(_ node: FunctionCallExprSyntax) -> SyntaxVisitorContinueKind {
         guard let ident = node.calledExpression.as(DeclReferenceExprSyntax.self),
               ident.baseName.text == "withObservationTracking",
               let onChangeClosure = onChangeClosure(of: node),
-              let enclosingName = enclosingFunctionName(of: node)
-        else {
-            return .visitChildren
-        }
+              let enclosingName = enclosingFunctionName(of: node) else { return .visitChildren }
         let collector = NameUseCollector(name: enclosingName, viewMode: .sourceAccurate)
         collector.walk(onChangeClosure.statements)
         if collector.found {
@@ -24,23 +21,21 @@ final class WarnRecursiveWithObservationTracking: LintSyntaxRule<LintOnlyValue>,
     }
 
     private func onChangeClosure(of call: FunctionCallExprSyntax) -> ClosureExprSyntax? {
-        for additional in call.additionalTrailingClosures where additional.label.text == "onChange" {
+        for additional in call.additionalTrailingClosures where additional.label.text == "onChange"
+        {
             return additional.closure
         }
         for arg in call.arguments where arg.label?.text == "onChange" {
-            if let closure = arg.expression.as(ClosureExprSyntax.self) {
-                return closure
-            }
+            if let closure = arg.expression.as(ClosureExprSyntax.self) { return closure }
         }
         return nil
     }
 
     private func enclosingFunctionName(of node: SyntaxProtocol) -> String? {
         var current: Syntax? = node.parent
+
         while let cursor = current {
-            if let funcDecl = cursor.as(FunctionDeclSyntax.self) {
-                return funcDecl.name.text
-            }
+            if let funcDecl = cursor.as(FunctionDeclSyntax.self) { return funcDecl.name.text }
             current = cursor.parent
         }
         return nil
@@ -62,8 +57,8 @@ private final class NameUseCollector: SyntaxVisitor {
     }
 }
 
-extension Finding.Message {
-    fileprivate static func recursiveObservationTracking(_ name: String) -> Finding.Message {
+fileprivate extension Finding.Message {
+    static func recursiveObservationTracking(_ name: String) -> Finding.Message {
         "'withObservationTracking' onChange calls enclosing '\(name)' — infinite re-tracking. Use 'Observations' AsyncSequence."
     }
 }

@@ -7,9 +7,9 @@ package struct BeforeEachGenericRequirement: LayoutRule {
 }
 
 extension TokenStream {
-    /// Returns the group consistency that should be used for generic requirement lists based on
-    /// the user's current configuration.
+    /// Returns the group consistency that should be used for generic requirement lists based on the
+    /// user's current configuration.
     func genericRequirementListConsistency() -> GroupBreakStyle {
-        return config[BeforeEachGenericRequirement.self] ? .consistent : .inconsistent
+        config[BeforeEachGenericRequirement.self] ? .consistent : .inconsistent
     }
 }

@@ -17,19 +17,17 @@ import SwiftSyntax
 /// Lint: Cases containing only the `fallthrough` statement yield a lint error.
 ///
 /// Rewrite: The fall-through `case` is added as a prefix to the next case unless the next case is
-///         `default`; in that case, the fallthrough `case` is deleted.
+/// `default` ; in that case, the fallthrough `case` is deleted.
 final class NoFallThroughOnlyCases: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
     override class var group: ConfigurationGroup? { .redundancies }
 
-    /// Diagnose against the pre-traversal node so finding source locations
-    /// are accurate.
+    /// Diagnose against the pre-traversal node so finding source locations are accurate.
     static func willEnter(_ node: SwitchCaseListSyntax, context: Context) {
         _ = applyImpl(node, context: context, diagnose: true)
     }
 
-    /// Collapse `case`s whose only statement is `fallthrough` into the
-    /// following case's pattern list. Called from
-    /// `CompactSyntaxRewriter.visit(_: SwitchCaseListSyntax)`.
+    /// Collapse `case` s whose only statement is `fallthrough` into the following case's pattern
+    /// list. Called from `CompactSyntaxRewriter.visit(_: SwitchCaseListSyntax)` .
     static func apply(_ node: SwitchCaseListSyntax, context: Context) -> SwitchCaseListSyntax {
         applyImpl(node, context: context, diagnose: false)
     }
@@ -70,17 +68,15 @@ final class NoFallThroughOnlyCases: StaticFormatRule<BasicRuleValue>, @unchecked
                                 fallThroughOnlyCases + [switchCase],
                                 context: context,
                                 diagnose: diagnose
-                            )
-                        )
-                    )
+                            )))
                 } else {
                     newChildren.append(
                         .switchCase(
                             mergedCases(
-                                fallThroughOnlyCases, context: context, diagnose: diagnose
-                            )
-                        )
-                    )
+                                fallThroughOnlyCases,
+                                context: context,
+                                diagnose: diagnose
+                            )))
                     newChildren.append(.switchCase(switchCase))
                 }
 
@@ -105,9 +101,8 @@ final class NoFallThroughOnlyCases: StaticFormatRule<BasicRuleValue>, @unchecked
 
     private static func containsValueBindingPattern(_ node: Syntax) -> Bool {
         if node.is(ValueBindingPatternSyntax.self) { return true }
-        for child in node.children(viewMode: .sourceAccurate) {
-            if containsValueBindingPattern(child) { return true }
-        }
+        for child in node.children(viewMode: .sourceAccurate)
+        where containsValueBindingPattern(child) { return true }
         return false
     }
 
@@ -115,10 +110,7 @@ final class NoFallThroughOnlyCases: StaticFormatRule<BasicRuleValue>, @unchecked
         guard switchCase.label.is(SwitchCaseLabelSyntax.self) else { return false }
 
         guard let onlyStatement = switchCase.statements.firstAndOnly,
-              onlyStatement.item.is(FallThroughStmtSyntax.self)
-        else {
-            return false
-        }
+              onlyStatement.item.is(FallThroughStmtSyntax.self) else { return false }
 
         if containsValueBindingPattern(switchCase.label) { return false }
 
@@ -132,12 +124,10 @@ final class NoFallThroughOnlyCases: StaticFormatRule<BasicRuleValue>, @unchecked
         {
             return false
         }
-        if onlyStatement.allFollowingTrivia
+        return onlyStatement.allFollowingTrivia
             .prefix(while: { !$0.isNewline }).contains(where: { $0.isComment })
-        {
-            return false
-        }
-        return true
+            ? false
+            : true
     }
 
     private static func mergedCases(
@@ -152,9 +142,7 @@ final class NoFallThroughOnlyCases: StaticFormatRule<BasicRuleValue>, @unchecked
         let labels = cases.lazy.compactMap { $0.label.as(SwitchCaseLabelSyntax.self) }
 
         for label in labels.dropLast() {
-            if diagnose {
-                Self.diagnose(.collapseCase, on: label, context: context)
-            }
+            if diagnose { Self.diagnose(.collapseCase, on: label, context: context) }
 
             newCaseItems.append(contentsOf: label.caseItems.dropLast())
 
@@ -170,8 +158,8 @@ final class NoFallThroughOnlyCases: StaticFormatRule<BasicRuleValue>, @unchecked
         var lastCase = cases.last!
         lastCase.label = .case(lastLabel)
 
-        lastCase.leadingTrivia =
-            cases.first!.leadingTrivia.withoutLastLine() + lastCase.leadingTrivia
+        lastCase.leadingTrivia = cases.first!.leadingTrivia.withoutLastLine()
+            + lastCase.leadingTrivia
         return lastCase
     }
 }
@@ -180,26 +168,22 @@ extension TriviaPiece {
     /// Returns whether this piece is any type of comment.
     var isComment: Bool {
         switch self {
-            case .lineComment, .blockComment, .docLineComment, .docBlockComment:
-                true
-            default:
-                false
+            case .lineComment, .blockComment, .docLineComment, .docBlockComment: true
+            default: false
         }
     }
 
     /// Returns whether this piece is a number of newlines.
     var isNewline: Bool {
         switch self {
-            case .newlines:
-                true
-            default:
-                false
+            case .newlines: true
+            default: false
         }
     }
 }
 
-extension Finding.Message {
-    fileprivate static var collapseCase: Finding.Message {
+fileprivate extension Finding.Message {
+    static var collapseCase: Finding.Message {
         "combine this fallthrough-only 'case' and the following 'case' into a single 'case'"
     }
 }

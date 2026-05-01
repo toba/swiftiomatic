@@ -11,16 +11,14 @@ package struct IndentConditionalCompilationBlocks: LayoutRule {
 extension TokenStream {
     func visitIfConfigClause(_ node: IfConfigClauseSyntax) -> SyntaxVisitorContinueKind {
         switch node.poundKeyword.tokenKind {
-        case .poundIf, .poundElseif:
-            after(node.poundKeyword, tokens: .space)
-        case .poundElse:
-            break
-        default:
-            preconditionFailure()
+            case .poundIf, .poundElseif: after(node.poundKeyword, tokens: .space)
+            case .poundElse: break
+            default: preconditionFailure()
         }
 
         let breakKindOpen: BreakKind
         let breakKindClose: BreakKind
+
         if config[IndentConditionalCompilationBlocks.self] {
             breakKindOpen = .open
             breakKindClose = .close
@@ -29,8 +27,8 @@ extension TokenStream {
             breakKindClose = .same
         }
 
-        let tokenToOpenWith =
-            node.condition?.lastToken(viewMode: .sourceAccurate) ?? node.poundKeyword
+        let tokenToOpenWith = node.condition?.lastToken(viewMode: .sourceAccurate)
+            ?? node.poundKeyword
         after(tokenToOpenWith, tokens: .break(breakKindOpen), .open)
 
         // Unlike other code blocks, where we may want a single statement to be laid out on the same

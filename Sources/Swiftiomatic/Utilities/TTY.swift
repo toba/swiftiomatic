@@ -14,8 +14,7 @@ import Foundation
 
 /// Returns a value indicating whether or not the stream is a TTY.
 func isTTY(_ fileHandle: FileHandle) -> Bool {
-  if ProcessInfo.processInfo.environment["TERM"] == "dumb" {
-    return false
-  }
-  return isatty(fileHandle.fileDescriptor) != 0
+    ProcessInfo.processInfo.environment["TERM"] == "dumb"
+        ? false
+        : isatty(fileHandle.fileDescriptor) != 0
 }

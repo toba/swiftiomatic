@@ -10,18 +10,16 @@
 //
 //===----------------------------------------------------------------------===//
 
-import ConfigurationKit
 import Foundation
+import ConfigurationKit
 
-/// Generates the rule registry file with type arrays for rules and settings.
-/// All metadata (names, defaults, groups) is derived at runtime from the types
-/// via protocol witness dispatch on the `Rule` existential.
+/// Generates the rule registry file with type arrays for rules and settings. All metadata (names,
+/// defaults, groups) is derived at runtime from the types via protocol witness dispatch on the
+/// `Rule` existential.
 package final class ConfigurationGenerator: FileGenerator {
     let collector: RuleCollector
 
-    package init(collector: RuleCollector) {
-        self.collector = collector
-    }
+    package init(collector: RuleCollector) { self.collector = collector }
 
     package func generateContent() -> String {
         let sortedRules = collector.lintingSyntaxRules.sorted(by: { $0.typeName < $1.typeName })
@@ -33,17 +31,13 @@ package final class ConfigurationGenerator: FileGenerator {
         // Setting types
         result += "    /// All known layout setting types.\n"
         result += "    package static let allSettingTypes: [any LayoutRule.Type] = [\n"
-        for setting in sortedSettings {
-            result += "        \(setting.typeName).self,\n"
-        }
+        for setting in sortedSettings { result += "        \(setting.typeName).self,\n" }
         result += "    ]\n\n"
 
         // Rule types (internal because Rule is internal)
         result += "    /// All known rule types.\n"
         result += "    static let allRuleTypes: [any SyntaxRule.Type] = [\n"
-        for rule in sortedRules {
-            result += "        \(rule.typeName).self,\n"
-        }
+        for rule in sortedRules { result += "        \(rule.typeName).self,\n" }
         result += "    ]\n"
 
         result += "}\n"

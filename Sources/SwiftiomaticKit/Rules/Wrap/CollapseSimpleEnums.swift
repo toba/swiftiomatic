@@ -1,7 +1,7 @@
 import SwiftSyntax
 
-/// Collapses simple enums with no associated values, no raw values, and no
-/// members other than cases onto a single line.
+/// Collapses simple enums with no associated values, no raw values, and no members other than cases
+/// onto a single line.
 ///
 /// ```swift
 /// // Before
@@ -14,17 +14,16 @@ import SwiftSyntax
 /// private enum Kind { case chained, forced }
 /// ```
 ///
-/// The rule only applies when the collapsed form fits within the configured
-/// line length. Enums with associated values, explicit raw value assignments,
-/// raw-value types (e.g. `: Int`, `: String`), computed properties, methods,
-/// or any non-case member are left untouched.
+/// The rule only applies when the collapsed form fits within the configured line length. Enums with
+/// associated values, explicit raw value assignments, raw-value types (e.g. `: Int` , `: String` ),
+/// computed properties, methods, or any non-case member are left untouched.
 final class CollapseSimpleEnums: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
     override static var group: ConfigurationGroup? { .wrap }
     override static var defaultValue: BasicRuleValue { .init(rewrite: false, lint: .no) }
 
     static func transform(
         _ recursed: EnumDeclSyntax,
-        parent: Syntax?,
+        parent _: Syntax?,
         context: Context
     ) -> DeclSyntax {
         let maxLength = context.configuration[LineLength.self]
@@ -55,8 +54,7 @@ final class CollapseSimpleEnums: StaticFormatRule<BasicRuleValue>, @unchecked Se
         let elements = EnumCaseElementListSyntax(
             allElements.enumerated().map { index, element in
                 var el = element.with(\.leadingTrivia, []).with(\.trailingTrivia, [])
-                el =
-                    index < allElements.count - 1
+                el = index < allElements.count - 1
                     ? el.with(\.trailingComma, .commaToken(trailingTrivia: .space))
                     : el.with(\.trailingComma, nil)
                 return el
@@ -101,13 +99,14 @@ extension CollapseSimpleEnums {
 
         for member in members {
             guard let caseDecl = member.decl.as(EnumCaseDeclSyntax.self) else { return false }
+
             for element in caseDecl.elements {
                 if element.parameterClause != nil { return false }
                 if element.rawValue != nil { return false }
             }
         }
 
-        // Reject enums with raw-value type inheritance (e.g. `: String`, `: Int`).
+        // Reject enums with raw-value type inheritance (e.g. `: String` , `: Int` ).
         if let inheritance = node.inheritanceClause {
             for inherited in inheritance.inheritedTypes {
                 let name = inherited.type.trimmedDescription

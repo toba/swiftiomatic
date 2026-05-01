@@ -40,6 +40,7 @@ final class NoVoidTernary: StaticFormatRule<BasicRuleValue>, @unchecked Sendable
         parent: Syntax?
     ) -> Bool {
         var current = parent
+
         while let p = current {
             if p.is(CodeBlockItemSyntax.self) {
                 guard let blockItem = p.as(CodeBlockItemSyntax.self) else { return false }

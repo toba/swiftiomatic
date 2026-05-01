@@ -13,11 +13,11 @@
 import SwiftSyntax
 
 extension SyntaxProtocol {
-    /// Returns the absolute position of the trivia piece at the given index in the receiver's leading
-    /// trivia collection.
+    /// Returns the absolute position of the trivia piece at the given index in the receiver's
+    /// leading trivia collection.
     ///
-    /// If the trivia piece spans multiple characters, the value returned is the position of the first
-    /// character.
+    /// If the trivia piece spans multiple characters, the value returned is the position of the
+    /// first character.
     ///
     /// - Precondition: `index` is a valid index in the receiver's leading trivia collection.
     ///
@@ -30,6 +30,7 @@ extension SyntaxProtocol {
         }
 
         var offset = SourceLength.zero
+
         for currentIndex in leadingTrivia.startIndex..<index {
             offset += leadingTrivia[currentIndex].sourceLength
         }
@@ -39,13 +40,13 @@ extension SyntaxProtocol {
     /// Returns the absolute position of the trivia piece at the given index in the receiver's
     /// trailing trivia collection.
     ///
-    /// If the trivia piece spans multiple characters, the value returned is the position of the first
-    /// character.
+    /// If the trivia piece spans multiple characters, the value returned is the position of the
+    /// first character.
     ///
     /// - Precondition: `index` is a valid index in the receiver's trailing trivia collection.
     ///
-    /// - Parameter index: The index of the trivia piece in the trailing trivia whose position should
-    ///   be returned.
+    /// - Parameter index: The index of the trivia piece in the trailing trivia whose position
+    ///   should be returned.
     /// - Returns: The absolute position of the trivia piece.
     func position(ofTrailingTriviaAt index: Trivia.Index) -> AbsolutePosition {
         guard trailingTrivia.indices.contains(index) else {
@@ -53,6 +54,7 @@ extension SyntaxProtocol {
         }
 
         var offset = SourceLength.zero
+
         for currentIndex in trailingTrivia.startIndex..<index {
             offset += trailingTrivia[currentIndex].sourceLength
         }
@@ -62,8 +64,8 @@ extension SyntaxProtocol {
     /// Returns the source location of the trivia piece at the given index in the receiver's leading
     /// trivia collection.
     ///
-    /// If the trivia piece spans multiple characters, the value returned is the location of the first
-    /// character.
+    /// If the trivia piece spans multiple characters, the value returned is the location of the
+    /// first character.
     ///
     /// - Precondition: `index` is a valid index in the receiver's leading trivia collection.
     ///
@@ -72,19 +74,17 @@ extension SyntaxProtocol {
     ///     returned.
     ///   - converter: The `SourceLocationConverter` that was previously initialized using the root
     ///     tree of this node.
-    /// - Returns: The source location of the trivia piece.
+    ///   - Returns: The source location of the trivia piece.
     func startLocation(
         ofLeadingTriviaAt index: Trivia.Index,
         converter: SourceLocationConverter
-    ) -> SourceLocation {
-        converter.location(for: position(ofLeadingTriviaAt: index))
-    }
+    ) -> SourceLocation { converter.location(for: position(ofLeadingTriviaAt: index)) }
 
-    /// Returns the source location of the trivia piece at the given index in the receiver's trailing
-    /// trivia collection.
+    /// Returns the source location of the trivia piece at the given index in the receiver's
+    /// trailing trivia collection.
     ///
-    /// If the trivia piece spans multiple characters, the value returned is the location of the first
-    /// character.
+    /// If the trivia piece spans multiple characters, the value returned is the location of the
+    /// first character.
     ///
     /// - Precondition: `index` is a valid index in the receiver's trailing trivia collection.
     ///
@@ -93,13 +93,11 @@ extension SyntaxProtocol {
     ///     returned.
     ///   - converter: The `SourceLocationConverter` that was previously initialized using the root
     ///     tree of this node.
-    /// - Returns: The source location of the trivia piece.
+    ///   - Returns: The source location of the trivia piece.
     func startLocation(
         ofTrailingTriviaAt index: Trivia.Index,
         converter: SourceLocationConverter
-    ) -> SourceLocation {
-        converter.location(for: position(ofTrailingTriviaAt: index))
-    }
+    ) -> SourceLocation { converter.location(for: position(ofTrailingTriviaAt: index)) }
 
     /// The collection of all contiguous trivia preceding this node; that is, the trailing trivia of
     /// the node before it and the leading trivia of the node itself.
@@ -126,11 +124,11 @@ extension SyntaxProtocol {
 
     /// Indicates whether the node has any preceding line comments.
     ///
-    /// Due to the way trivia is parsed, a preceding comment might be in either the leading trivia of
-    /// the node or the trailing trivia of the previous token.
+    /// Due to the way trivia is parsed, a preceding comment might be in either the leading trivia
+    /// of the node or the trailing trivia of the previous token.
     var hasPrecedingLineComment: Bool {
         if let previousTrailingTrivia = previousToken(viewMode: .sourceAccurate)?.trailingTrivia,
-            previousTrailingTrivia.hasLineComment
+           previousTrailingTrivia.hasLineComment
         {
             return true
         }
@@ -139,11 +137,11 @@ extension SyntaxProtocol {
 
     /// Indicates whether the node has any preceding comments of any kind.
     ///
-    /// Due to the way trivia is parsed, a preceding comment might be in either the leading trivia of
-    /// the node or the trailing trivia of the previous token.
+    /// Due to the way trivia is parsed, a preceding comment might be in either the leading trivia
+    /// of the node or the trailing trivia of the previous token.
     var hasAnyPrecedingComment: Bool {
         if let previousTrailingTrivia = previousToken(viewMode: .sourceAccurate)?.trailingTrivia,
-            previousTrailingTrivia.hasAnyComments
+           previousTrailingTrivia.hasAnyComments
         {
             return true
         }
@@ -155,7 +153,7 @@ extension SyntaxProtocol {
         var parent = self.parent
         while let existingParent = parent {
             if let functionDecl = existingParent.as(FunctionDeclSyntax.self),
-                functionDecl.hasAttribute("Test", inModule: "Testing")
+               functionDecl.hasAttribute("Test", inModule: "Testing")
             {
                 return true
             }
@@ -181,10 +179,10 @@ extension SwitchCaseListSyntax.Element {
     /// Returns a copy with an extra newline prepended to the leading trivia.
     func prependingNewline() -> SwitchCaseListSyntax.Element {
         switch self {
-            case .switchCase(var switchCase):
+            case var .switchCase(switchCase):
                 switchCase.leadingTrivia = .newline + switchCase.leadingTrivia
                 return .switchCase(switchCase)
-            case .ifConfigDecl(var ifConfig):
+            case var .ifConfigDecl(ifConfig):
                 ifConfig.leadingTrivia = .newline + ifConfig.leadingTrivia
                 return .ifConfigDecl(ifConfig)
         }
@@ -193,13 +191,12 @@ extension SwitchCaseListSyntax.Element {
     /// Returns a copy with multi-newlines collapsed to single newlines in leading trivia.
     func removingBlankLines() -> SwitchCaseListSyntax.Element {
         switch self {
-            case .switchCase(var switchCase):
+            case var .switchCase(switchCase):
                 switchCase.leadingTrivia = switchCase.leadingTrivia.reducingToSingleNewlines
                 return .switchCase(switchCase)
-            case .ifConfigDecl(var ifConfig):
+            case var .ifConfigDecl(ifConfig):
                 ifConfig.leadingTrivia = ifConfig.leadingTrivia.reducingToSingleNewlines
                 return .ifConfigDecl(ifConfig)
         }
     }
-
 }

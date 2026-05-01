@@ -1,7 +1,7 @@
 import Foundation
 
-/// Generates a Swift file that embeds the JSON Schema as a string literal,
-/// making it available at runtime without SPM resource bundles.
+/// Generates a Swift file that embeds the JSON Schema as a string literal, making it available at
+/// runtime without SPM resource bundles.
 package final class ConfigurationSchemaSwiftGenerator: FileGenerator {
     let schemaGenerator: ConfigurationSchemaGenerator
 
@@ -11,12 +11,12 @@ package final class ConfigurationSchemaSwiftGenerator: FileGenerator {
 
     package func generateContent() -> String {
         let schemaJSON = schemaGenerator.generateContent()
-        // Escape backslashes and interpolation in the raw string.
-        // Using a raw string literal (triple-quoted with #) avoids most escaping.
+        // Escape backslashes and interpolation in the raw string. Using a raw string literal
+        // (triple-quoted with #) avoids most escaping.
         return """
             // Auto-generated — do not edit.
 
-            // sm:ignore-file: fileLength, typeBodyLength, closureBodyLength
+            // sm:ignore fileLength, typeBodyLength, closureBodyLength
 
             import Foundation
 

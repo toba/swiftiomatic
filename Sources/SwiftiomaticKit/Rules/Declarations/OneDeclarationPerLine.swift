@@ -94,16 +94,15 @@ final class OneDeclarationPerLine: StaticFormatRule<BasicRuleValue>, @unchecked 
     static func willEnter(_ node: EnumDeclSyntax, context: Context) {
         for member in node.memberBlock.members {
             guard let caseDecl = member.decl.as(EnumCaseDeclSyntax.self),
-                  caseDecl.elements.count > 1
-            else { continue }
-            for element in caseDecl.elements {
-                if element.parameterClause != nil || element.rawValue != nil {
-                    Self.diagnose(
-                        .moveAssociatedOrRawValueCase(name: element.name.text),
-                        on: element,
-                        context: context
-                    )
-                }
+                  caseDecl.elements.count > 1 else { continue }
+
+            for element in caseDecl.elements
+            where element.parameterClause != nil || element.rawValue != nil {
+                Self.diagnose(
+                    .moveAssociatedOrRawValueCase(name: element.name.text),
+                    on: element,
+                    context: context
+                )
             }
         }
     }
@@ -111,8 +110,7 @@ final class OneDeclarationPerLine: StaticFormatRule<BasicRuleValue>, @unchecked 
     static func willEnter(_ node: CodeBlockItemListSyntax, context: Context) {
         for codeBlockItem in node {
             guard let varDecl = codeBlockItem.item.as(VariableDeclSyntax.self),
-                  varDecl.bindings.count > 1
-            else { continue }
+                  varDecl.bindings.count > 1 else { continue }
             Self.diagnose(
                 .onlyOneVariableDeclaration(specifier: varDecl.bindingSpecifier.text),
                 on: varDecl,
@@ -123,8 +121,8 @@ final class OneDeclarationPerLine: StaticFormatRule<BasicRuleValue>, @unchecked 
 
     static func transform(
         _ node: EnumDeclSyntax,
-        parent: Syntax?,
-        context: Context
+        parent _: Syntax?,
+        context _: Context
     ) -> DeclSyntax {
         var newMembers: [MemberBlockItemSyntax] = []
 
@@ -132,8 +130,7 @@ final class OneDeclarationPerLine: StaticFormatRule<BasicRuleValue>, @unchecked 
             // If it's not a case declaration, or it's a case declaration with only one element,
             // leave it alone.
             guard let caseDecl = member.decl.as(EnumCaseDeclSyntax.self),
-                  caseDecl.elements.count > 1
-            else {
+                  caseDecl.elements.count > 1 else {
                 newMembers.append(member)
                 continue
             }
@@ -177,25 +174,25 @@ final class OneDeclarationPerLine: StaticFormatRule<BasicRuleValue>, @unchecked 
 
     static func transform(
         _ node: CodeBlockItemListSyntax,
-        parent: Syntax?,
-        context: Context
+        parent _: Syntax?,
+        context _: Context
     ) -> CodeBlockItemListSyntax {
-        guard node.contains(where: Self.codeBlockItemHasMultipleVariableBindings)
-        else { return node }
+        guard node.contains(where: Self.codeBlockItemHasMultipleVariableBindings) else {
+            return node
+        }
 
         var newItems = [CodeBlockItemSyntax]()
+
         for codeBlockItem in node {
             guard let varDecl = codeBlockItem.item.as(VariableDeclSyntax.self),
-                  varDecl.bindings.count > 1
-            else {
+                  varDecl.bindings.count > 1 else {
                 // Children already visited by the combined rewriter; no manual recursion needed.
                 newItems.append(codeBlockItem)
                 continue
             }
 
-            // Diagnose emitted in willEnter against the pre-traversal node.
-
-            // Children already visited by the combined rewriter — trust the post-traversal input.
+            // Diagnose emitted in willEnter against the pre-traversal node. Children already
+            // visited by the combined rewriter — trust the post-traversal input.
             var splitter = VariableDeclSplitter {
                 CodeBlockItemSyntax(
                     item: .decl(DeclSyntax($0)),

@@ -1,8 +1,8 @@
 import Foundation
 import SwiftSyntax
 
-/// Scans `TokenStream+*.swift` extension files to discover visit methods that need
-/// forwarding stubs in the generated `TokenStream` subclass.
+/// Scans `TokenStream+*.swift` extension files to discover visit methods that need forwarding stubs
+/// in the generated `TokenStream` subclass.
 package final class SyntaxVisitorOverrideCollector {
     var overrides = [DetectedOverride]()
 
@@ -19,8 +19,8 @@ package final class SyntaxVisitorOverrideCollector {
         overrides.sort()
     }
 
-    /// Scans all Swift files in the given directory for `extension TokenStream`
-    /// visit methods. Unlike `collect(from:)`, this has no filename filter.
+    /// Scans all Swift files in the given directory for `extension TokenStream` visit methods.
+    /// Unlike `collect(from:)` , this has no filename filter.
     package func collectExtensions(from directory: URL) throws {
         try enumerateSwiftStatements(in: directory) { statement in
             collectOverrides(from: statement)
@@ -31,7 +31,7 @@ package final class SyntaxVisitorOverrideCollector {
 
     private func collectOverrides(from statement: CodeBlockItemSyntax) {
         guard let extensionDecl = statement.item.as(ExtensionDeclSyntax.self),
-            extensionDecl.extendedType.as(IdentifierTypeSyntax.self)?.name.text == "TokenStream"
+              extensionDecl.extendedType.as(IdentifierTypeSyntax.self)?.name.text == "TokenStream"
         else { return }
 
         for member in extensionDecl.memberBlock.members {
@@ -57,9 +57,9 @@ package final class SyntaxVisitorOverrideCollector {
         let isPost = !hasReturn
 
         // Skip helper methods that happen to start with "visit" but aren't visitor overrides.
-        // Visitor methods always have a single parameter whose type ends in "Syntax".
-        // Fall back to "node" when the source uses the anonymous form `_: SomeSyntax` —
-        // the forwarding stub needs a real identifier to pass through.
+        // Visitor methods always have a single parameter whose type ends in "Syntax". Fall back to
+        // "node" when the source uses the anonymous form `_: SomeSyntax` — the forwarding stub
+        // needs a real identifier to pass through.
         let rawLabel = param.secondName?.text ?? param.firstName.text
         let paramLabel = rawLabel == "_" ? "node" : rawLabel
 
@@ -80,7 +80,8 @@ extension SyntaxVisitorOverrideCollector {
         /// Whether this is a `visitPost` override (void return) vs a `visit` override.
         let isPost: Bool
 
-        /// The method name in the extension (e.g. "visitAccessorDeclList" or "visitPostFunctionCallExpr").
+        /// The method name in the extension (e.g. "visitAccessorDeclList" or
+        /// "visitPostFunctionCallExpr").
         let methodName: String
 
         /// The parameter label ("node" or "token").
@@ -90,8 +91,7 @@ extension SyntaxVisitorOverrideCollector {
         let paramType: String
 
         static func < (lhs: DetectedOverride, rhs: DetectedOverride) -> Bool {
-            if lhs.isPost != rhs.isPost { return !lhs.isPost }
-            return lhs.paramType < rhs.paramType
+            lhs.isPost != rhs.isPost ? !lhs.isPost : lhs.paramType < rhs.paramType
         }
     }
 }

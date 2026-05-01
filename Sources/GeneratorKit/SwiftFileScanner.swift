@@ -14,9 +14,7 @@ package func enumerateSwiftStatements(
     body: (CodeBlockItemSyntax) throws -> Void
 ) throws {
     try enumerateSwiftFiles(in: directory, filter: filter) { statements in
-        for statement in statements {
-            try body(statement)
-        }
+        for statement in statements { try body(statement) }
     }
 }
 

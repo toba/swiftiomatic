@@ -11,9 +11,9 @@
 //===----------------------------------------------------------------------===//
 
 import Foundation
-import SwiftDiagnostics
 import SwiftSyntax
 import SwiftiomaticKit
+import SwiftDiagnostics
 
 /// The frontend for formatting operations.
 final class FormatFrontend: Frontend, @unchecked Sendable {
@@ -31,8 +31,8 @@ final class FormatFrontend: Frontend, @unchecked Sendable {
 
     override func processFile(_ fileToProcess: FileToProcess) {
         // In format mode, the diagnostics engine is reserved for fatal messages. Pass nil as the
-        // finding consumer to ignore findings emitted while the syntax tree is processed because they
-        // will be fixed automatically if they can be, or ignored otherwise.
+        // finding consumer to ignore findings emitted while the syntax tree is processed because
+        // they will be fixed automatically if they can be, or ignored otherwise.
         let formatter = RewriteCoordinator(
             configuration: fileToProcess.configuration,
             findingConsumer: nil
@@ -48,14 +48,12 @@ final class FormatFrontend: Frontend, @unchecked Sendable {
         }
 
         let diagnosticHandler: (SwiftDiagnostics.Diagnostic, SourceLocation) -> Void = {
-            (diagnostic, location) in
-            guard !self.lintFormatOptions.ignoreUnparsableFiles else {
-                // No diagnostics should be emitted in this mode.
-                return
-            }
+            diagnostic, location in
+            guard !self.lintFormatOptions.ignoreUnparsableFiles else { return }
             self.diagnosticsEngine.consumeParserDiagnostic(diagnostic, location)
         }
         var stdoutStream = FileHandleTextOutputStream(FileHandle.standardOutput)
+
         do {
             if inPlace {
                 var buffer = ""
@@ -84,15 +82,12 @@ final class FormatFrontend: Frontend, @unchecked Sendable {
             }
         } catch SwiftiomaticError.fileContainsInvalidSyntax {
             guard !lintFormatOptions.ignoreUnparsableFiles else {
-                guard !inPlace else {
-                    // For in-place mode, nothing is expected to stdout and the file shouldn't be modified.
-                    return
-                }
+                guard !inPlace else { return }
                 stdoutStream.write(source)
                 return
             }
-            // Otherwise, relevant diagnostics about the problematic nodes have already been emitted; we
-            // don't need to print anything else.
+            // Otherwise, relevant diagnostics about the problematic nodes have already been
+            // emitted; we don't need to print anything else.
         } catch {
             diagnosticsEngine.emitError(
                 "Unable to format \(url.relativePath): \(error.localizedDescription)."

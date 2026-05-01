@@ -1,22 +1,22 @@
 import SwiftSyntax
 
-/// Prefer `Self` over `type(of: self)`.
+/// Prefer `Self` over `type(of: self)` .
 ///
 /// Inside a class/struct/enum/actor, `Self` refers to the current type and is fully equivalent to
-/// `type(of: self)` for any non-polymorphic dispatch. The shorthand is more concise and avoids
-/// the runtime call.
+/// `type(of: self)` for any non-polymorphic dispatch. The shorthand is more concise and avoids the
+/// runtime call.
 ///
 /// This rule does not fire at the top level of a file (where `self` does not refer to an enclosing
-/// type) or for non-`self` arguments (`type(of: param)` is preserved).
+/// type) or for non- `self` arguments ( `type(of: param)` is preserved).
 ///
-/// Lint: A warning is raised for `type(of: self)` (also `Swift.type(of: self)`) inside a type.
+/// Lint: A warning is raised for `type(of: self)` (also `Swift.type(of: self)` ) inside a type.
 ///
-/// Rewrite: The call is replaced with `Self`.
+/// Rewrite: The call is replaced with `Self` .
 final class PreferSelfType: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
     override class var group: ConfigurationGroup? { .idioms }
     override class var defaultValue: BasicRuleValue { .init(rewrite: true, lint: .warn) }
 
-    /// Per-file mutable state held as a typed lazy property on `Context`.
+    /// Per-file mutable state held as a typed lazy property on `Context` .
     final class State {
         var typeDepth = 0
     }
@@ -82,9 +82,8 @@ final class PreferSelfType: StaticFormatRule<BasicRuleValue>, @unchecked Sendabl
     ) -> ExprSyntax {
         let state = context.preferSelfTypeState
         guard state.typeDepth > 0,
-            let baseCall = node.base?.as(FunctionCallExprSyntax.self),
-            isTypeOfSelfCall(baseCall)
-        else { return ExprSyntax(node) }
+              let baseCall = node.base?.as(FunctionCallExprSyntax.self),
+              isTypeOfSelfCall(baseCall) else { return ExprSyntax(node) }
 
         Self.diagnose(.preferSelfType, on: baseCall, context: context)
 
@@ -96,15 +95,16 @@ final class PreferSelfType: StaticFormatRule<BasicRuleValue>, @unchecked Sendabl
 
     private static func isTypeOfSelfCall(_ call: FunctionCallExprSyntax) -> Bool {
         guard call.arguments.count == 1,
-            let firstArg = call.arguments.first,
-            firstArg.label?.text == "of",
-            firstArg.expression.as(DeclReferenceExprSyntax.self)?.baseName.tokenKind
-                == .keyword(.self)
-        else { return false }
+              let firstArg = call.arguments.first,
+              firstArg.label?.text == "of",
+              firstArg.expression.as(DeclReferenceExprSyntax.self)?.baseName
+                  .tokenKind
+                  == .keyword(.self) else { return false }
 
         if let identifier = call.calledExpression.as(DeclReferenceExprSyntax.self) {
             return identifier.baseName.text == "type"
         }
+
         if let memberAccess = call.calledExpression.as(MemberAccessExprSyntax.self) {
             return memberAccess.declName.baseName.text == "type"
                 && memberAccess.base?.as(DeclReferenceExprSyntax.self)?.baseName.text == "Swift"
@@ -113,7 +113,6 @@ final class PreferSelfType: StaticFormatRule<BasicRuleValue>, @unchecked Sendabl
     }
 }
 
-extension Finding.Message {
-    fileprivate static let preferSelfType: Finding.Message =
-        "prefer 'Self' over 'type(of: self)'"
+fileprivate extension Finding.Message {
+    static let preferSelfType: Finding.Message = "prefer 'Self' over 'type(of: self)'"
 }

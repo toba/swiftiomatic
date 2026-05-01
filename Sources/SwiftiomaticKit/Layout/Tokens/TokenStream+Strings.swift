@@ -18,6 +18,7 @@ extension TokenStream {
             // Looks up the correct break kind based on prior context.
             let breakKind = pendingMultilineStringBreakKinds[node, default: .same]
             after(node.openingQuote, tokens: .break(breakKind, size: 0, newlines: .hard(count: 1)))
+
             if !node.segments.isEmpty {
                 before(node.closingQuote, tokens: .break(breakKind, newlines: .hard(count: 1)))
             }
@@ -32,14 +33,16 @@ extension TokenStream {
         return .visitChildren
     }
 
-    func visitSimpleStringLiteralExpr(_ node: SimpleStringLiteralExprSyntax) -> SyntaxVisitorContinueKind {
+    func visitSimpleStringLiteralExpr(
+        _ node: SimpleStringLiteralExprSyntax
+    ) -> SyntaxVisitorContinueKind {
         if node.openingQuote.tokenKind == .multilineStringQuote {
             after(node.openingQuote, tokens: .break(.same, size: 0, newlines: .hard(count: 1)))
+
             if !node.segments.isEmpty {
                 before(node.closingQuote, tokens: .break(.same, newlines: .hard(count: 1)))
             }
         }
         return .visitChildren
     }
-
 }

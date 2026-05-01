@@ -210,7 +210,7 @@ struct IgnoreNodeTests: LayoutTesting {
   @Test func invalidComment() {
     let input =
       """
-      // sm:ignore: RuleName
+      // sm:ignore RuleName
       x        =                  1 +
       2
 
@@ -227,7 +227,7 @@ struct IgnoreNodeTests: LayoutTesting {
 
     let expected =
       """
-      // sm:ignore: RuleName
+      // sm:ignore RuleName
       x = 1 + 2
 
       /// sm:ignore
@@ -307,7 +307,7 @@ struct IgnoreNodeTests: LayoutTesting {
   @Test func ignoreWholeFile() {
     let input =
       """
-      // sm:ignore-file
+      // sm:ignore
       import Zoo
       import Aoo
       import foo
@@ -338,7 +338,7 @@ struct IgnoreNodeTests: LayoutTesting {
   @Test func ignoreWholeFileDoesNotTouchWhitespace() {
     let input =
       """
-      // sm:ignore-file
+      // sm:ignore
       /// foo bar
       \u{0020}
       // baz
@@ -346,64 +346,4 @@ struct IgnoreNodeTests: LayoutTesting {
     assertLayout(input: input, expected: input, linelength: 100)
   }
 
-  @Test func ignoreWholeFileInNestedNode() {
-    let input =
-      """
-      import Zoo
-      import Aoo
-      import foo
-
-      // sm:ignore-file
-          struct Foo {
-            private var baz: Bool {
-                return foo +
-                 bar + // poorly placed comment
-                  false
-            }
-
-            var a = true    // line comment
-                            // aligned line comment
-            var b = false  // correct trailing comment
-
-      var c = 0 +
-          1
-          + (2 + 3)
-      }
-
-            class Bar
-      {
-      // sm:ignore-file
-        var bazzle = 0 }
-      """
-
-    let expected =
-      """
-      import Zoo
-      import Aoo
-      import foo
-
-      // sm:ignore-file
-      struct Foo {
-        private var baz: Bool {
-          return foo + bar  // poorly placed comment
-            + false
-        }
-
-        var a = true  // line comment
-        // aligned line comment
-        var b = false  // correct trailing comment
-
-        var c = 0 + 1
-          + (2 + 3)
-      }
-
-      class Bar {
-        // sm:ignore-file
-        var bazzle = 0
-      }
-
-      """
-
-    assertLayout(input: input, expected: expected, linelength: 50)
-  }
 }

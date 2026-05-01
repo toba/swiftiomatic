@@ -22,7 +22,7 @@ final class UnusedArguments: StaticFormatRule<BasicRuleValue>, @unchecked Sendab
 
     static func transform(
         _ node: FunctionDeclSyntax,
-        parent: Syntax?,
+        parent _: Syntax?,
         context: Context
     ) -> DeclSyntax {
         var result = node
@@ -57,7 +57,7 @@ final class UnusedArguments: StaticFormatRule<BasicRuleValue>, @unchecked Sendab
 
     static func transform(
         _ node: InitializerDeclSyntax,
-        parent: Syntax?,
+        parent _: Syntax?,
         context: Context
     ) -> DeclSyntax {
         var result = node
@@ -85,7 +85,7 @@ final class UnusedArguments: StaticFormatRule<BasicRuleValue>, @unchecked Sendab
 
     static func transform(
         _ node: SubscriptDeclSyntax,
-        parent: Syntax?,
+        parent _: Syntax?,
         context: Context
     ) -> DeclSyntax {
         var result = node
@@ -112,7 +112,7 @@ final class UnusedArguments: StaticFormatRule<BasicRuleValue>, @unchecked Sendab
 
     static func transform(
         _ node: ClosureExprSyntax,
-        parent: Syntax?,
+        parent _: Syntax?,
         context: Context
     ) -> ExprSyntax {
         var result = node
@@ -153,7 +153,8 @@ final class UnusedArguments: StaticFormatRule<BasicRuleValue>, @unchecked Sendab
 
                 for (i, param) in params.enumerated() {
                     guard let name = internalClosureName(of: param),
-                          name != "_", !name.hasPrefix("$") else { continue }
+                          name != "_",
+                          !name.hasPrefix("$") else { continue }
                     guard !isNameUsed(name, in: result.statements) else { continue }
 
                     let nameToken = param.secondName ?? param.firstName
@@ -174,7 +175,7 @@ final class UnusedArguments: StaticFormatRule<BasicRuleValue>, @unchecked Sendab
 
     static func transform(
         _ node: ForStmtSyntax,
-        parent: Syntax?,
+        parent _: Syntax?,
         context: Context
     ) -> StmtSyntax {
         var result = node
@@ -194,7 +195,8 @@ final class UnusedArguments: StaticFormatRule<BasicRuleValue>, @unchecked Sendab
             let usedInWhere = whereClause.map { isNameUsed(name, in: $0) } ?? false
             guard !usedInBody, !usedInWhere else { return visited }
 
-            Self.diagnose(.unusedForLoopVariable(name), on: identPattern.identifier, context: context)
+            Self.diagnose(
+                .unusedForLoopVariable(name), on: identPattern.identifier, context: context)
             result.pattern = PatternSyntax(
                 WildcardPatternSyntax(
                     wildcard: .wildcardToken(
@@ -223,7 +225,8 @@ final class UnusedArguments: StaticFormatRule<BasicRuleValue>, @unchecked Sendab
                             WildcardPatternSyntax(
                                 wildcard: .wildcardToken(
                                     leadingTrivia: ident.identifier.leadingTrivia,
-                                    trailingTrivia: ident.identifier.trailingTrivia))))
+                                    trailingTrivia: ident.identifier.trailingTrivia
+                                ))))
                 changed = true
             }
 
@@ -274,7 +277,8 @@ final class UnusedArguments: StaticFormatRule<BasicRuleValue>, @unchecked Sendab
     /// Detect shorthand `if let name` / `guard let name` (no initializer) which implicitly
     /// references the outer variable.
     private static func hasShorthandBinding(
-        _ name: String, in syntax: some SyntaxProtocol
+        _ name: String,
+        in syntax: some SyntaxProtocol
     ) -> Bool {
         for child in syntax.children(viewMode: .sourceAccurate) {
             if let binding = child.as(OptionalBindingConditionSyntax.self),
@@ -363,7 +367,8 @@ final class UnusedArguments: StaticFormatRule<BasicRuleValue>, @unchecked Sendab
 
             // Nested function parameters shadow in the body
             if let funcDecl = parent.as(FunctionDeclSyntax.self),
-               let body = funcDecl.body, current.id == Syntax(body).id
+               let body = funcDecl.body,
+               current.id == Syntax(body).id
             {
                 if funcDecl.signature.parameterClause.parameters.contains(where: {
                     internalName(of: $0) == name
@@ -374,7 +379,8 @@ final class UnusedArguments: StaticFormatRule<BasicRuleValue>, @unchecked Sendab
 
             // Nested initializer parameters shadow in the body
             if let initDecl = parent.as(InitializerDeclSyntax.self),
-               let body = initDecl.body, current.id == Syntax(body).id
+               let body = initDecl.body,
+               current.id == Syntax(body).id
             {
                 if initDecl.signature.parameterClause.parameters.contains(where: {
                     internalName(of: $0) == name
@@ -544,7 +550,8 @@ final class UnusedArguments: StaticFormatRule<BasicRuleValue>, @unchecked Sendab
     // MARK: - Subscript Helpers
 
     private static func isSubscriptParamUsed(
-        _ name: String, in sub: SubscriptDeclSyntax
+        _ name: String,
+        in sub: SubscriptDeclSyntax
     ) -> Bool {
         guard let accessorBlock = sub.accessorBlock else { return false }
 

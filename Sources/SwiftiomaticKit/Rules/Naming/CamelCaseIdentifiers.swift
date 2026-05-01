@@ -12,15 +12,15 @@
 
 import SwiftSyntax
 
-/// All values should be written in lower camel-case (`lowerCamelCase`).
-/// Underscores (except at the beginning of an identifier) are disallowed.
+/// All values should be written in lower camel-case ( `lowerCamelCase` ). Underscores (except at
+/// the beginning of an identifier) are disallowed.
 ///
 /// This rule does not apply to test code, defined as code which:
 ///   * Contains the line `import XCTest`
 ///   * The function is marked with `@Test` attribute
 ///
 /// Lint: If an identifier contains underscores or begins with a capital letter, a lint error is
-///       raised.
+/// raised.
 final class CamelCaseIdentifiers: LintSyntaxRule<LintOnlyValue>, @unchecked Sendable {
     override static var group: ConfigurationGroup? { .naming }
 
@@ -28,7 +28,8 @@ final class CamelCaseIdentifiers: LintSyntaxRule<LintOnlyValue>, @unchecked Send
     private var testCaseFuncs = Set<FunctionDeclSyntax>()
 
     override func visit(_ node: SourceFileSyntax) -> SyntaxVisitorContinueKind {
-        // Tracks whether "XCTest" is imported in the source file before processing individual nodes.
+        // Tracks whether "XCTest" is imported in the source file before processing individual
+        // nodes.
         setImportsXCTest(context: context, sourceFile: node)
         return .visitChildren
     }
@@ -110,8 +111,8 @@ final class CamelCaseIdentifiers: LintSyntaxRule<LintOnlyValue>, @unchecked Send
 
         // We allow underscores in test names, because there's an existing convention of using
         // underscores to separate phrases in very detailed test names.
-        let allowUnderscores =
-            testCaseFuncs.contains(node) || node.hasAttribute("Test", inModule: "Testing")
+        let allowUnderscores = testCaseFuncs.contains(node)
+            || node.hasAttribute("Test", inModule: "Testing")
 
         diagnoseLowerCamelCaseViolations(
             node.name,
@@ -120,8 +121,8 @@ final class CamelCaseIdentifiers: LintSyntaxRule<LintOnlyValue>, @unchecked Send
         )
 
         for param in node.signature.parameterClause.parameters {
-            // These identifiers aren't described using `identifierDescription(for:)` because no single
-            // node can disambiguate the argument label from the parameter name.
+            // These identifiers aren't described using `identifierDescription(for:)` because no
+            // single node can disambiguate the argument label from the parameter name.
             diagnoseLowerCamelCaseViolations(
                 param.firstName,
                 allowUnderscores: false,
@@ -148,8 +149,8 @@ final class CamelCaseIdentifiers: LintSyntaxRule<LintOnlyValue>, @unchecked Send
         return .skipChildren
     }
 
-    /// Collects methods that look like XCTest test case methods from the given member list, inserting
-    /// them into the given set.
+    /// Collects methods that look like XCTest test case methods from the given member list,
+    /// inserting them into the given set.
     private func collectTestMethods(
         from members: MemberBlockItemListSyntax,
         into set: inout Set<FunctionDeclSyntax>
@@ -163,11 +164,11 @@ final class CamelCaseIdentifiers: LintSyntaxRule<LintOnlyValue>, @unchecked Send
                     }
                 }
             } else if let functionDecl = member.decl.as(FunctionDeclSyntax.self) {
-                // Identify test methods using the same heuristics as XCTest: name starts with "test", has
-                // no arguments, and returns a void type.
+                // Identify test methods using the same heuristics as XCTest: name starts with
+                // "test", has no arguments, and returns a void type.
                 if functionDecl.name.text.starts(with: "test"),
-                    functionDecl.signature.parameterClause.parameters.isEmpty,
-                    functionDecl.signature.returnClause.map(\.isVoid) ?? true
+                   functionDecl.signature.parameterClause.parameters.isEmpty,
+                   functionDecl.signature.returnClause.map(\.isVoid) ?? true
                 {
                     set.insert(functionDecl)
                 }
@@ -180,7 +181,7 @@ final class CamelCaseIdentifiers: LintSyntaxRule<LintOnlyValue>, @unchecked Send
         allowUnderscores: Bool,
         description: String
     ) {
-        guard case .identifier(let text) = identifier.tokenKind else { return }
+        guard case let .identifier(text) = identifier.tokenKind else { return }
         if text.isEmpty { return }
 
         if (text.dropFirst().contains("_") && !allowUnderscores)
@@ -201,18 +202,17 @@ private func identifierDescription<NodeType: SyntaxProtocol>(for node: NodeType)
         case .closureSignature: "closure parameter"
         case .enumCaseElement: "enum case"
         case .functionDecl: "function"
-        case .optionalBindingCondition(let binding):
+        case let .optionalBindingCondition(binding):
             binding.bindingSpecifier.tokenKind == .keyword(.var) ? "variable" : "constant"
-        case .variableDecl(let variableDecl):
+        case let .variableDecl(variableDecl):
             variableDecl.bindingSpecifier.tokenKind == .keyword(.var) ? "variable" : "constant"
-        default:
-            "identifier"
+        default: "identifier"
     }
 }
 
-extension ReturnClauseSyntax {
+fileprivate extension ReturnClauseSyntax {
     /// Whether this return clause specifies an explicit `Void` return type.
-    fileprivate var isVoid: Bool {
+    var isVoid: Bool {
         if let returnTypeIdentifier = type.as(IdentifierTypeSyntax.self) {
             return returnTypeIdentifier.name.text == "Void"
         }
@@ -223,8 +223,8 @@ extension ReturnClauseSyntax {
     }
 }
 
-extension Finding.Message {
-    fileprivate static func nameMustBeLowerCamelCase(
+fileprivate extension Finding.Message {
+    static func nameMustBeLowerCamelCase(
         _ name: String,
         description: String
     ) -> Finding.Message {

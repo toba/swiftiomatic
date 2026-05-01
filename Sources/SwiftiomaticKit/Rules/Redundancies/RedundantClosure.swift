@@ -2,20 +2,18 @@ import SwiftSyntax
 
 /// Remove immediately-invoked closures containing a single expression.
 ///
-/// A closure that is immediately called and contains only a single expression or return
-/// statement can be replaced with just the expression.
+/// A closure that is immediately called and contains only a single expression or return statement
+/// can be replaced with just the expression.
 ///
-/// For example: `let x = { return 42 }()` → `let x = 42`
-/// And: `let x = { someValue }()` → `let x = someValue`
+/// For example: `let x = { return 42 }()` → `let x = 42` And: `let x = { someValue }()` →
+/// `let x = someValue`
 ///
-/// Closures with parameters (`in` keyword), multiple statements, empty bodies,
-/// `fatalError`/`preconditionFailure` calls, or `throw` are preserved.
+/// Closures with parameters ( `in` keyword), multiple statements, empty bodies, `fatalError` /
+/// `preconditionFailure` calls, or `throw` are preserved.
 ///
-/// Lint: If a redundant immediately-invoked closure is found, a lint warning
-///       is raised.
+/// Lint: If a redundant immediately-invoked closure is found, a lint warning is raised.
 ///
-/// Rewrite: The closure wrapper and invocation are removed, leaving just the
-///         expression.
+/// Rewrite: The closure wrapper and invocation are removed, leaving just the expression.
 final class RedundantClosure: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
     override class var group: ConfigurationGroup? { .redundancies }
 
@@ -26,18 +24,20 @@ final class RedundantClosure: StaticFormatRule<BasicRuleValue>, @unchecked Senda
     ) -> ExprSyntax {
         // Must be a closure called with no arguments: `{ ... }()`
         guard let closureExpr = callNode.calledExpression.as(ClosureExprSyntax.self),
-            callNode.arguments.isEmpty,
-            callNode.additionalTrailingClosures.isEmpty,
-            closureExpr.signature == nil
-        else { return ExprSyntax(callNode) }
+              callNode.arguments.isEmpty,
+              callNode.additionalTrailingClosures.isEmpty,
+              closureExpr.signature == nil else { return ExprSyntax(callNode) }
 
         // Must have exactly one statement
-        guard let onlyItem = closureExpr.statements.firstAndOnly else { return ExprSyntax(callNode) }
+        guard let onlyItem = closureExpr.statements.firstAndOnly else {
+            return ExprSyntax(callNode)
+        }
 
         // Extract the single expression (strip `return` if present)
         let innerExpr: ExprSyntax
+
         if let returnStmt = onlyItem.item.as(ReturnStmtSyntax.self),
-            let returnExpr = returnStmt.expression
+           let returnExpr = returnStmt.expression
         {
             innerExpr = returnExpr
         } else if let exprStmt = onlyItem.item.as(ExpressionStmtSyntax.self) {
@@ -51,7 +51,8 @@ final class RedundantClosure: StaticFormatRule<BasicRuleValue>, @unchecked Senda
         // Skip closures that call fatalError/preconditionFailure or throw
         if containsNeverOrThrow(innerExpr) { return ExprSyntax(callNode) }
 
-        // Skip closures wrapped in try/await (complex interaction). Use captured pre-recursion parent.
+        // Skip closures wrapped in try/await (complex interaction). Use captured pre-recursion
+        // parent.
         if parent?.as(TryExprSyntax.self) != nil
             || parent?.as(AwaitExprSyntax.self) != nil
         {
@@ -71,18 +72,16 @@ final class RedundantClosure: StaticFormatRule<BasicRuleValue>, @unchecked Senda
 
     private static func containsNeverOrThrow(_ expr: ExprSyntax) -> Bool {
         if let call = expr.as(FunctionCallExprSyntax.self),
-            let ref = call.calledExpression.as(DeclReferenceExprSyntax.self)
+           let ref = call.calledExpression.as(DeclReferenceExprSyntax.self)
         {
             let name = ref.baseName.text
-            if name == "fatalError" || name == "preconditionFailure" {
-                return true
-            }
+            if name == "fatalError" || name == "preconditionFailure" { return true }
         }
 
         for child in expr.children(viewMode: .sourceAccurate) {
             if child.is(ThrowStmtSyntax.self) { return true }
             if let childExpr = child.as(ExprSyntax.self),
-                containsNeverOrThrow(childExpr)
+               containsNeverOrThrow(childExpr)
             {
                 return true
             }
@@ -91,7 +90,7 @@ final class RedundantClosure: StaticFormatRule<BasicRuleValue>, @unchecked Senda
     }
 }
 
-extension Finding.Message {
-    fileprivate static let removeRedundantClosure: Finding.Message =
+fileprivate extension Finding.Message {
+    static let removeRedundantClosure: Finding.Message =
         "remove immediately-invoked closure; use the expression directly"
 }

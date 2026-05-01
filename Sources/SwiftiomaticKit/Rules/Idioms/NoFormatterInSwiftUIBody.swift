@@ -1,11 +1,11 @@
 import SwiftSyntax
 
-/// Lint formatter initializers (`NumberFormatter`, `DateFormatter`,
-/// `MeasurementFormatter`) constructed inside a SwiftUI `body` accessor.
+/// Lint formatter initializers ( `NumberFormatter` , `DateFormatter` , `MeasurementFormatter` )
+/// constructed inside a SwiftUI `body` accessor.
 ///
-/// SwiftUI re-evaluates `body` whenever its dependencies invalidate. Building
-/// a formatter inline allocates and configures a new instance on every render
-/// and discards it. Hoist to a `static let` or a parent-scoped property.
+/// SwiftUI re-evaluates `body` whenever its dependencies invalidate. Building a formatter inline
+/// allocates and configures a new instance on every render and discards it. Hoist to a `static let`
+/// or a parent-scoped property.
 final class NoFormatterInSwiftUIBody: LintSyntaxRule<LintOnlyValue>, @unchecked Sendable {
     override class var group: ConfigurationGroup? { .idioms }
 
@@ -24,20 +24,15 @@ final class NoFormatterInSwiftUIBody: LintSyntaxRule<LintOnlyValue>, @unchecked 
         guard isSwiftUIBody(node),
               node.bindings.count == 1,
               let binding = node.bindings.first,
-              let accessor = binding.accessorBlock
-        else {
-            return .visitChildren
-        }
-        let collector = FormatterInitCollector(types: Self.formatterTypes, viewMode: .sourceAccurate)
+              let accessor = binding.accessorBlock else { return .visitChildren }
+        let collector = FormatterInitCollector(
+            types: Self.formatterTypes, viewMode: .sourceAccurate)
+
         switch accessor.accessors {
-        case .accessors(let block):
-            collector.walk(block)
-        case .getter(let stmts):
-            collector.walk(stmts)
+            case let .accessors(block): collector.walk(block)
+            case let .getter(stmts): collector.walk(stmts)
         }
-        for hit in collector.matches {
-            diagnose(.formatterInBody(hit.type), on: hit.call)
-        }
+        for hit in collector.matches { diagnose(.formatterInBody(hit.type), on: hit.call) }
         return .visitChildren
     }
 
@@ -48,10 +43,7 @@ final class NoFormatterInSwiftUIBody: LintSyntaxRule<LintOnlyValue>, @unchecked 
               pattern.identifier.text == "body",
               let typeAnnotation = binding.typeAnnotation,
               let some = typeAnnotation.type.as(SomeOrAnyTypeSyntax.self),
-              let ident = some.constraint.as(IdentifierTypeSyntax.self)
-        else {
-            return false
-        }
+              let ident = some.constraint.as(IdentifierTypeSyntax.self) else { return false }
         return ident.name.text == "View" || ident.name.text == "Scene"
     }
 }
@@ -75,8 +67,8 @@ private final class FormatterInitCollector: SyntaxVisitor {
     }
 }
 
-extension Finding.Message {
-    fileprivate static func formatterInBody(_ type: String) -> Finding.Message {
+fileprivate extension Finding.Message {
+    static func formatterInBody(_ type: String) -> Finding.Message {
         "'\(type)' is built inside SwiftUI 'body' — re-allocated on every render. Hoist to a static let."
     }
 }

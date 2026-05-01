@@ -1,6 +1,6 @@
 import SwiftSyntax
 
-/// Test methods should be `internal`; helper properties and functions should be `private`.
+/// Test methods should be `internal` ; helper properties and functions should be `private` .
 ///
 /// In test suites, test methods don't need explicit access control (internal is the default and
 /// correct level). Non-test helpers should be `private` since they're only used within the suite.
@@ -11,9 +11,9 @@ import SwiftSyntax
 final class TestSuiteAccessControl: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
     override class var group: ConfigurationGroup? { .testing }
 
-    override class var defaultValue: BasicRuleValue { BasicRuleValue(rewrite: false, lint: .no) }
+    override class var defaultValue: BasicRuleValue { .init(rewrite: false, lint: .no) }
 
-    /// Per-file mutable state held as a typed lazy property on `Context`.
+    /// Per-file mutable state held as a typed lazy property on `Context` .
     final class State {
         var framework: TestFramework?
     }
@@ -90,6 +90,7 @@ final class TestSuiteAccessControl: StaticFormatRule<BasicRuleValue>, @unchecked
         for member in memberBlock.members {
             if let funcDecl = member.decl.as(FunctionDeclSyntax.self) {
                 let rewritten = rewriteFunction(funcDecl, framework: framework, context: context)
+
                 if rewritten.description != funcDecl.description {
                     newMembers.append(member.with(\.decl, DeclSyntax(rewritten)))
                     changed = true
@@ -97,6 +98,7 @@ final class TestSuiteAccessControl: StaticFormatRule<BasicRuleValue>, @unchecked
                 }
             } else if let varDecl = member.decl.as(VariableDeclSyntax.self) {
                 let rewritten = rewriteProperty(varDecl, context: context)
+
                 if rewritten.description != varDecl.description {
                     newMembers.append(member.with(\.decl, DeclSyntax(rewritten)))
                     changed = true
@@ -108,6 +110,7 @@ final class TestSuiteAccessControl: StaticFormatRule<BasicRuleValue>, @unchecked
                     keyword: \.initKeyword,
                     context: context
                 )
+
                 if rewritten.description != initDecl.description {
                     newMembers.append(member.with(\.decl, DeclSyntax(rewritten)))
                     changed = true
@@ -128,7 +131,9 @@ final class TestSuiteAccessControl: StaticFormatRule<BasicRuleValue>, @unchecked
     ) -> FunctionDeclSyntax {
         let modifiers = funcDecl.modifiers
 
-        if modifiers.contains(where: { $0.name.tokenKind == .keyword(.override) }) { return funcDecl }
+        if modifiers.contains(where: { $0.name.tokenKind == .keyword(.override) }) {
+            return funcDecl
+        }
         if modifiers.contains(where: { $0.name.tokenKind == .keyword(.static) }) { return funcDecl }
         if funcDecl.attributes.attribute(named: "objc") != nil { return funcDecl }
         if hasDisabledPrefix(funcDecl.name.text) { return funcDecl }
@@ -137,22 +142,21 @@ final class TestSuiteAccessControl: StaticFormatRule<BasicRuleValue>, @unchecked
 
         if isTest {
             if framework == .xcTest,
-                modifiers.contains(where: {
-                    $0.name.tokenKind == .keyword(.private)
-                        || $0.name.tokenKind == .keyword(.fileprivate)
-                })
+               modifiers.contains(where: {
+                   $0.name.tokenKind == .keyword(.private)
+                       || $0.name.tokenKind == .keyword(.fileprivate)
+               })
             {
                 return funcDecl
             }
             return removeExplicitACL(from: funcDecl, keyword: \.funcKeyword, context: context)
         } else {
-            if modifiers.contains(where: {
+            return modifiers.contains(where: {
                 $0.name.tokenKind == .keyword(.private)
                     || $0.name.tokenKind == .keyword(.fileprivate)
-            }) {
-                return funcDecl
-            }
-            return ensurePrivate(on: funcDecl, keyword: \.funcKeyword, context: context)
+            })
+                ? funcDecl
+                : ensurePrivate(on: funcDecl, keyword: \.funcKeyword, context: context)
         }
     }
 
@@ -162,13 +166,15 @@ final class TestSuiteAccessControl: StaticFormatRule<BasicRuleValue>, @unchecked
     ) -> VariableDeclSyntax {
         let modifiers = varDecl.modifiers
         if modifiers.contains(where: { $0.name.tokenKind == .keyword(.static) }) { return varDecl }
-        if modifiers.contains(where: { $0.name.tokenKind == .keyword(.override) }) { return varDecl }
+        if modifiers.contains(where: { $0.name.tokenKind == .keyword(.override) }) {
+            return varDecl
+        }
         if varDecl.attributes.attribute(named: "objc") != nil { return varDecl }
-        if modifiers.contains(where: {
+        return modifiers.contains(where: {
             $0.name.tokenKind == .keyword(.private) || $0.name.tokenKind == .keyword(.fileprivate)
-        }) { return varDecl }
-
-        return ensurePrivate(on: varDecl, keyword: \.bindingSpecifier, context: context)
+        })
+            ? varDecl
+            : ensurePrivate(on: varDecl, keyword: \.bindingSpecifier, context: context)
     }
 
     // MARK: - Test Function Detection
@@ -178,26 +184,26 @@ final class TestSuiteAccessControl: StaticFormatRule<BasicRuleValue>, @unchecked
         framework: TestFramework
     ) -> Bool {
         if funcDecl.hasAttribute("Test", inModule: "Testing") { return true }
-        if framework == .xcTest {
-            return funcDecl.name.text.hasPrefix("test")
+        return framework == .xcTest
+            ? funcDecl.name.text.hasPrefix("test")
                 && funcDecl.signature.parameterClause.parameters.isEmpty
                 && funcDecl.signature.returnClause == nil
-        }
-        return false
+            : false
     }
 
     // MARK: - Access Control Helpers
 
-    private static let aclKeywords: Set<Keyword> =
-        [.public, .private, .fileprivate, .internal, .package]
+    private static let aclKeywords: Set<Keyword> = [
+        .public, .private, .fileprivate, .internal, .package,
+    ]
 
     private static func removePublicModifier<Decl: DeclSyntaxProtocol & WithModifiersSyntax>(
         from decl: Decl,
         keyword: WritableKeyPath<Decl, TokenSyntax>,
         context: Context
     ) -> Decl {
-        guard let publicMod = decl.modifiers.first(where: { $0.name.tokenKind == .keyword(.public) })
-        else { return decl }
+        guard let publicMod = decl.modifiers.first(where: { $0.name.tokenKind == .keyword(.public) }
+        ) else { return decl }
 
         Self.diagnose(.removePublicFromTestType, on: publicMod.name, context: context)
         return decl.removingModifiers([.public], keyword: keyword)
@@ -209,7 +215,7 @@ final class TestSuiteAccessControl: StaticFormatRule<BasicRuleValue>, @unchecked
         context: Context
     ) -> Decl {
         guard let aclMod = decl.modifiers.first(where: {
-            if case .keyword(let kw) = $0.name.tokenKind {
+            if case let .keyword(kw) = $0.name.tokenKind {
                 return Self.aclKeywords.contains(kw) && kw != .internal
             }
             return false
@@ -217,7 +223,7 @@ final class TestSuiteAccessControl: StaticFormatRule<BasicRuleValue>, @unchecked
 
         Self.diagnose(.removeACLFromTestMethod, on: aclMod.name, context: context)
 
-        guard case .keyword(let kwToRemove) = aclMod.name.tokenKind else { return decl }
+        guard case let .keyword(kwToRemove) = aclMod.name.tokenKind else { return decl }
         return decl.removingModifiers([kwToRemove], keyword: keyword)
     }
 
@@ -227,21 +233,23 @@ final class TestSuiteAccessControl: StaticFormatRule<BasicRuleValue>, @unchecked
         context: Context
     ) -> Decl {
         if let aclMod = decl.modifiers.first(where: {
-            if case .keyword(let kw) = $0.name.tokenKind { return Self.aclKeywords.contains(kw) }
+            if case let .keyword(kw) = $0.name.tokenKind { return Self.aclKeywords.contains(kw) }
             return false
         }) {
             Self.diagnose(.makePrivate, on: aclMod.name, context: context)
             var result = decl
             var newModifiers = Array(result.modifiers)
+
             if let idx = newModifiers.firstIndex(where: { $0.id == aclMod.id }) {
-                newModifiers[idx] = newModifiers[idx].with(
-                    \.name,
-                    .keyword(
-                        .private,
-                        leadingTrivia: aclMod.name.leadingTrivia,
-                        trailingTrivia: aclMod.name.trailingTrivia
+                newModifiers[
+                    idx] = newModifiers[idx].with(
+                        \.name,
+                        .keyword(
+                            .private,
+                            leadingTrivia: aclMod.name.leadingTrivia,
+                            trailingTrivia: aclMod.name.trailingTrivia
+                        )
                     )
-                )
             }
             result.modifiers = DeclModifierListSyntax(newModifiers)
             return result
@@ -259,11 +267,9 @@ final class TestSuiteAccessControl: StaticFormatRule<BasicRuleValue>, @unchecked
     }
 }
 
-extension Finding.Message {
-    fileprivate static let removePublicFromTestType: Finding.Message =
-        "remove 'public' from test suite type"
-    fileprivate static let removeACLFromTestMethod: Finding.Message =
+fileprivate extension Finding.Message {
+    static let removePublicFromTestType: Finding.Message = "remove 'public' from test suite type"
+    static let removeACLFromTestMethod: Finding.Message =
         "remove explicit access control from test method"
-    fileprivate static let makePrivate: Finding.Message =
-        "make test helper 'private'"
+    static let makePrivate: Finding.Message = "make test helper 'private'"
 }

@@ -26,6 +26,7 @@ struct JSONPointer: Sendable {
         for component in components {
             if !first { result.append("/") }
             first = false
+
             for c in component {
                 switch c {
                     case "~": result.append("~0")
@@ -58,6 +59,7 @@ private struct RefResolver: Sendable {
 
     init(schema: [String: JSONValue]) {
         var store: [String: JSONValue] = [:]
+
         if case let .object(defs) = schema["$defs"] {
             for (key, value) in defs { store["#/$defs/\(key)"] = value }
         }
@@ -92,7 +94,8 @@ private struct ValidationContext {
     }
 
     mutating func validate(
-        instance: JSONValue, schemaDict: [String: JSONValue]
+        instance: JSONValue,
+        schemaDict: [String: JSONValue]
     ) -> [SchemaValidationError] {
         var errors: [SchemaValidationError] = []
 
@@ -124,9 +127,11 @@ private struct ValidationContext {
     // MARK: - Keyword Validators
 
     private func validateType(
-        _ type: JSONValue, instance: JSONValue
+        _ type: JSONValue,
+        instance: JSONValue
     ) -> [SchemaValidationError] {
         let types: [String]
+
         switch type {
             case let .string(single): types = [single]
             case let .array(array):
@@ -141,11 +146,11 @@ private struct ValidationContext {
     }
 
     private mutating func validateProperties(
-        _ properties: JSONValue, instance: JSONValue
+        _ properties: JSONValue,
+        instance: JSONValue
     ) -> [SchemaValidationError] {
         guard case let .object(instanceDict) = instance,
-              case let .object(propertiesDict) = properties
-        else { return [] }
+              case let .object(propertiesDict) = properties else { return [] }
 
         var errors: [SchemaValidationError] = []
 
@@ -160,12 +165,14 @@ private struct ValidationContext {
     }
 
     private mutating func validateAdditionalProperties(
-        _ additionalProperties: JSONValue, instance: JSONValue,
+        _ additionalProperties: JSONValue,
+        instance: JSONValue,
         schema: [String: JSONValue]
     ) -> [SchemaValidationError] {
         guard case let .object(instanceDict) = instance else { return [] }
 
         var extraKeys = Set(instanceDict.keys)
+
         if case let .object(properties) = schema["properties"] {
             extraKeys.subtract(properties.keys)
         }
@@ -182,11 +189,11 @@ private struct ValidationContext {
     }
 
     private func validateRequired(
-        _ required: JSONValue, instance: JSONValue
+        _ required: JSONValue,
+        instance: JSONValue
     ) -> [SchemaValidationError] {
         guard case let .object(instanceDict) = instance,
-              case let .array(requiredArray) = required
-        else { return [] }
+              case let .array(requiredArray) = required else { return [] }
 
         return requiredArray.compactMap { element in
             guard case let .string(key) = element else { return nil }
@@ -196,7 +203,8 @@ private struct ValidationContext {
     }
 
     private func validateEnum(
-        _ enumValues: JSONValue, instance: JSONValue
+        _ enumValues: JSONValue,
+        instance: JSONValue
     ) -> [SchemaValidationError] {
         guard case let .array(candidates) = enumValues else { return [] }
         if candidates.contains(instance) { return [] }
@@ -205,14 +213,16 @@ private struct ValidationContext {
     }
 
     private mutating func validateAllOf(
-        _ allOf: JSONValue, instance: JSONValue
+        _ allOf: JSONValue,
+        instance: JSONValue
     ) -> [SchemaValidationError] {
         guard case let .array(schemas) = allOf else { return [] }
         return schemas.flatMap { validate(instance: instance, schema: $0) }
     }
 
     private mutating func validateOneOf(
-        _ oneOf: JSONValue, instance: JSONValue
+        _ oneOf: JSONValue,
+        instance: JSONValue
     ) -> [SchemaValidationError] {
         guard case let .array(schemas) = oneOf else { return [] }
         var validCount = 0
@@ -222,24 +232,27 @@ private struct ValidationContext {
             var branch = self
             if branch.validate(instance: instance, schema: schema).isEmpty { validCount += 1 }
         }
-        if validCount == 1 { return [] }
-        return [error("Exactly one schema in 'oneOf' must match, but \(validCount) matched")]
+        return validCount == 1
+            ? []
+            : [error("Exactly one schema in 'oneOf' must match, but \(validCount) matched")]
     }
 
     private mutating func validateRef(
-        _ ref: JSONValue, instance: JSONValue
+        _ ref: JSONValue,
+        instance: JSONValue
     ) -> [SchemaValidationError] {
         guard case let .string(refString) = ref,
-              let resolved = resolver.resolve(reference: refString)
-        else { return [] }
+              let resolved = resolver.resolve(reference: refString) else { return [] }
         return validate(instance: instance, schema: resolved)
     }
 
     private mutating func validateItems(
-        _ items: JSONValue, instance: JSONValue
+        _ items: JSONValue,
+        instance: JSONValue
     ) -> [SchemaValidationError] {
         guard case let .array(elements) = instance else { return [] }
         var errors: [SchemaValidationError] = []
+
         for (index, element) in elements.enumerated() {
             instanceLocation.push("\(index)")
             defer { instanceLocation.pop() }
@@ -249,18 +262,19 @@ private struct ValidationContext {
     }
 
     private func validateMinimum(
-        _ minimum: JSONValue, instance: JSONValue
+        _ minimum: JSONValue,
+        instance: JSONValue
     ) -> [SchemaValidationError] {
         guard let minVal = minimum.numericValue, let instVal = instance.numericValue else {
             return []
         }
-        if instVal >= minVal { return [] }
-
-        return [
-            error(
-                "'\(instance.displayDescription)' is less than minimum '\(minimum.displayDescription)'"
-            )
-        ]
+        return instVal >= minVal
+            ? []
+            : [
+                error(
+                    "'\(instance.displayDescription)' is less than minimum '\(minimum.displayDescription)'"
+                )
+            ]
     }
 }
 

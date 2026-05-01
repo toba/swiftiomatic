@@ -1,6 +1,6 @@
 import SwiftSyntax
 
-// sm:ignore-file: functionBodyLength
+// sm:ignore functionBodyLength
 
 /// Opening braces of multiline statements are wrapped to their own line.
 ///
@@ -18,7 +18,9 @@ final class WrapMultilineStatementBraces: StaticFormatRule<BasicRuleValue>, @unc
     // MARK: - Control flow statements
 
     static func transform(
-        _ node: IfExprSyntax, parent: Syntax?, context: Context
+        _ node: IfExprSyntax,
+        parent _: Syntax?,
+        context: Context
     ) -> ExprSyntax {
         guard let newBrace = wrappedBrace(
             leftBrace: node.body.leftBrace,
@@ -32,7 +34,9 @@ final class WrapMultilineStatementBraces: StaticFormatRule<BasicRuleValue>, @unc
     }
 
     static func transform(
-        _ node: GuardStmtSyntax, parent: Syntax?, context: Context
+        _ node: GuardStmtSyntax,
+        parent _: Syntax?,
+        context: Context
     ) -> StmtSyntax {
         guard let newBrace = wrappedBrace(
             leftBrace: node.body.leftBrace,
@@ -49,7 +53,9 @@ final class WrapMultilineStatementBraces: StaticFormatRule<BasicRuleValue>, @unc
     }
 
     static func transform(
-        _ node: ForStmtSyntax, parent: Syntax?, context: Context
+        _ node: ForStmtSyntax,
+        parent _: Syntax?,
+        context: Context
     ) -> StmtSyntax {
         guard let newBrace = wrappedBrace(
             leftBrace: node.body.leftBrace,
@@ -58,6 +64,7 @@ final class WrapMultilineStatementBraces: StaticFormatRule<BasicRuleValue>, @unc
         ) else { return StmtSyntax(node) }
         var result = node
         result.body.leftBrace = newBrace
+
         if let whereClause = result.whereClause {
             result.whereClause = whereClause.with(
                 \.trailingTrivia,
@@ -73,7 +80,9 @@ final class WrapMultilineStatementBraces: StaticFormatRule<BasicRuleValue>, @unc
     }
 
     static func transform(
-        _ node: WhileStmtSyntax, parent: Syntax?, context: Context
+        _ node: WhileStmtSyntax,
+        parent _: Syntax?,
+        context: Context
     ) -> StmtSyntax {
         guard let newBrace = wrappedBrace(
             leftBrace: node.body.leftBrace,
@@ -83,6 +92,7 @@ final class WrapMultilineStatementBraces: StaticFormatRule<BasicRuleValue>, @unc
         var result = node
         result.body.leftBrace = newBrace
         var conditions = Array(result.conditions)
+
         if var last = conditions.last {
             last.trailingTrivia = last.trailingTrivia.trimmingTrailingWhitespace
             conditions[conditions.count - 1] = last
@@ -92,7 +102,9 @@ final class WrapMultilineStatementBraces: StaticFormatRule<BasicRuleValue>, @unc
     }
 
     static func transform(
-        _ node: DoStmtSyntax, parent: Syntax?, context: Context
+        _ node: DoStmtSyntax,
+        parent _: Syntax?,
+        context: Context
     ) -> StmtSyntax {
         guard let newBrace = wrappedBrace(
             leftBrace: node.body.leftBrace,
@@ -109,7 +121,9 @@ final class WrapMultilineStatementBraces: StaticFormatRule<BasicRuleValue>, @unc
     }
 
     static func transform(
-        _ node: SwitchExprSyntax, parent: Syntax?, context: Context
+        _ node: SwitchExprSyntax,
+        parent _: Syntax?,
+        context: Context
     ) -> ExprSyntax {
         guard let newBrace = wrappedBrace(
             leftBrace: node.leftBrace,
@@ -128,17 +142,19 @@ final class WrapMultilineStatementBraces: StaticFormatRule<BasicRuleValue>, @unc
     // MARK: - Function-like declarations
 
     static func transform(
-        _ node: FunctionDeclSyntax, parent: Syntax?, context: Context
+        _ node: FunctionDeclSyntax,
+        parent _: Syntax?,
+        context: Context
     ) -> DeclSyntax {
         guard let body = node.body,
-            let newBrace = wrappedBrace(
-                leftBrace: body.leftBrace,
-                rightBrace: body.rightBrace,
-                context: context
-            )
-        else { return DeclSyntax(node) }
+              let newBrace = wrappedBrace(
+                  leftBrace: body.leftBrace,
+                  rightBrace: body.rightBrace,
+                  context: context
+              ) else { return DeclSyntax(node) }
         var result = node
         result.body!.leftBrace = newBrace
+
         if let whereClause = result.genericWhereClause {
             result.genericWhereClause = whereClause.with(
                 \.trailingTrivia,
@@ -154,17 +170,19 @@ final class WrapMultilineStatementBraces: StaticFormatRule<BasicRuleValue>, @unc
     }
 
     static func transform(
-        _ node: InitializerDeclSyntax, parent: Syntax?, context: Context
+        _ node: InitializerDeclSyntax,
+        parent _: Syntax?,
+        context: Context
     ) -> DeclSyntax {
         guard let body = node.body,
-            let newBrace = wrappedBrace(
-                leftBrace: body.leftBrace,
-                rightBrace: body.rightBrace,
-                context: context
-            )
-        else { return DeclSyntax(node) }
+              let newBrace = wrappedBrace(
+                  leftBrace: body.leftBrace,
+                  rightBrace: body.rightBrace,
+                  context: context
+              ) else { return DeclSyntax(node) }
         var result = node
         result.body!.leftBrace = newBrace
+
         if let whereClause = result.genericWhereClause {
             result.genericWhereClause = whereClause.with(
                 \.trailingTrivia,
@@ -180,15 +198,16 @@ final class WrapMultilineStatementBraces: StaticFormatRule<BasicRuleValue>, @unc
     }
 
     static func transform(
-        _ node: DeinitializerDeclSyntax, parent: Syntax?, context: Context
+        _ node: DeinitializerDeclSyntax,
+        parent _: Syntax?,
+        context: Context
     ) -> DeclSyntax {
         guard let body = node.body,
-            let newBrace = wrappedBrace(
-                leftBrace: body.leftBrace,
-                rightBrace: body.rightBrace,
-                context: context
-            )
-        else { return DeclSyntax(node) }
+              let newBrace = wrappedBrace(
+                  leftBrace: body.leftBrace,
+                  rightBrace: body.rightBrace,
+                  context: context
+              ) else { return DeclSyntax(node) }
         var result = node
         result.body!.leftBrace = newBrace
         result.deinitKeyword = result.deinitKeyword.with(
@@ -201,7 +220,9 @@ final class WrapMultilineStatementBraces: StaticFormatRule<BasicRuleValue>, @unc
     // MARK: - Type declarations
 
     static func transform(
-        _ node: ClassDeclSyntax, parent: Syntax?, context: Context
+        _ node: ClassDeclSyntax,
+        parent _: Syntax?,
+        context: Context
     ) -> DeclSyntax {
         guard let newBrace = wrappedBrace(
             leftBrace: node.memberBlock.leftBrace,
@@ -215,7 +236,9 @@ final class WrapMultilineStatementBraces: StaticFormatRule<BasicRuleValue>, @unc
     }
 
     static func transform(
-        _ node: StructDeclSyntax, parent: Syntax?, context: Context
+        _ node: StructDeclSyntax,
+        parent _: Syntax?,
+        context: Context
     ) -> DeclSyntax {
         guard let newBrace = wrappedBrace(
             leftBrace: node.memberBlock.leftBrace,
@@ -229,7 +252,9 @@ final class WrapMultilineStatementBraces: StaticFormatRule<BasicRuleValue>, @unc
     }
 
     static func transform(
-        _ node: EnumDeclSyntax, parent: Syntax?, context: Context
+        _ node: EnumDeclSyntax,
+        parent _: Syntax?,
+        context: Context
     ) -> DeclSyntax {
         guard let newBrace = wrappedBrace(
             leftBrace: node.memberBlock.leftBrace,
@@ -243,7 +268,9 @@ final class WrapMultilineStatementBraces: StaticFormatRule<BasicRuleValue>, @unc
     }
 
     static func transform(
-        _ node: ActorDeclSyntax, parent: Syntax?, context: Context
+        _ node: ActorDeclSyntax,
+        parent _: Syntax?,
+        context: Context
     ) -> DeclSyntax {
         guard let newBrace = wrappedBrace(
             leftBrace: node.memberBlock.leftBrace,
@@ -257,7 +284,9 @@ final class WrapMultilineStatementBraces: StaticFormatRule<BasicRuleValue>, @unc
     }
 
     static func transform(
-        _ node: ProtocolDeclSyntax, parent: Syntax?, context: Context
+        _ node: ProtocolDeclSyntax,
+        parent _: Syntax?,
+        context: Context
     ) -> DeclSyntax {
         guard let newBrace = wrappedBrace(
             leftBrace: node.memberBlock.leftBrace,
@@ -271,7 +300,9 @@ final class WrapMultilineStatementBraces: StaticFormatRule<BasicRuleValue>, @unc
     }
 
     static func transform(
-        _ node: ExtensionDeclSyntax, parent: Syntax?, context: Context
+        _ node: ExtensionDeclSyntax,
+        parent _: Syntax?,
+        context: Context
     ) -> DeclSyntax {
         guard let newBrace = wrappedBrace(
             leftBrace: node.memberBlock.leftBrace,
@@ -286,8 +317,8 @@ final class WrapMultilineStatementBraces: StaticFormatRule<BasicRuleValue>, @unc
 
     // MARK: - Core helpers
 
-    /// Returns a wrapped `leftBrace` token if the statement signature is multiline,
-    /// or `nil` if no wrapping is needed.
+    /// Returns a wrapped `leftBrace` token if the statement signature is multiline, or `nil` if no
+    /// wrapping is needed.
     private static func wrappedBrace(
         leftBrace: TokenSyntax,
         rightBrace: TokenSyntax,
@@ -299,8 +330,8 @@ final class WrapMultilineStatementBraces: StaticFormatRule<BasicRuleValue>, @unc
         // Body must be multiline.
         guard rightBrace.leadingTrivia.containsNewlines else { return nil }
 
-        // Compare indentation: the line containing the token before `{` must be
-        // indented more than the closing `}` line.
+        // Compare indentation: the line containing the token before `{` must be indented more than
+        // the closing `}` line.
         guard let prevToken = leftBrace.previousToken(viewMode: .sourceAccurate) else { return nil }
         let prevIndent = lineIndentation(of: prevToken)
         let closingIndent = rightBrace.leadingTrivia.indentation
@@ -311,25 +342,27 @@ final class WrapMultilineStatementBraces: StaticFormatRule<BasicRuleValue>, @unc
         return leftBrace.with(\.leadingTrivia, .newline + Trivia(stringLiteral: closingIndent))
     }
 
-    /// Strips trailing whitespace from the last token of a type declaration's
-    /// signature (before the member block).
+    /// Strips trailing whitespace from the last token of a type declaration's signature (before the
+    /// member block).
     private static func stripTrailingOnLastSigToken<D: DeclSyntaxProtocol>(_ decl: inout D) {
         guard let leftBrace = decl.children(viewMode: .sourceAccurate)
             .compactMap({ $0.as(MemberBlockSyntax.self) }).first?.leftBrace,
-            let prevToken = leftBrace.previousToken(viewMode: .sourceAccurate)
-        else { return }
+              let prevToken = leftBrace.previousToken(viewMode: .sourceAccurate) else { return }
 
         let trimmed = prevToken.trailingTrivia.trimmingTrailingWhitespace
         guard trimmed != prevToken.trailingTrivia else { return }
 
         let rewritten = TokenStripper(targetID: prevToken.id, newTrailing: trimmed)
-            .rewrite(Syntax(decl))
+            .rewrite(
+                Syntax(decl)
+            )
         decl = rewritten.cast(D.self)
     }
 
     /// Returns the indentation string of the line on which `token` resides.
     private static func lineIndentation(of token: TokenSyntax) -> String {
         var current = token
+
         while !current.leadingTrivia.containsNewlines {
             guard let prev = current.previousToken(viewMode: .sourceAccurate) else { return "" }
             current = prev
@@ -347,7 +380,9 @@ final class WrapMultilineStatementBraces: StaticFormatRule<BasicRuleValue>, @unc
         let trimmed = prevToken.trailingTrivia.trimmingTrailingWhitespace
         guard trimmed != prevToken.trailingTrivia else { return }
         node = TokenStripper(targetID: prevToken.id, newTrailing: trimmed)
-            .rewrite(Syntax(node)).cast(N.self)
+            .rewrite(
+                Syntax(node)
+            ).cast(N.self)
     }
 }
 
@@ -362,12 +397,11 @@ private final class TokenStripper: SyntaxRewriter {
     }
 
     override func visit(_ token: TokenSyntax) -> TokenSyntax {
-        if token.id == targetID { return token.with(\.trailingTrivia, newTrailing) }
-        return token
+        token.id == targetID ? token.with(\.trailingTrivia, newTrailing) : token
     }
 }
 
-extension Finding.Message {
-    fileprivate static let wrapOpeningBrace: Finding.Message =
+fileprivate extension Finding.Message {
+    static let wrapOpeningBrace: Finding.Message =
         "move opening brace to its own line for multiline statement"
 }

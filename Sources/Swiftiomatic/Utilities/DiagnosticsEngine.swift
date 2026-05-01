@@ -10,10 +10,10 @@
 //
 //===----------------------------------------------------------------------===//
 
-import SwiftDiagnostics
 import SwiftSyntax
 import SwiftiomaticKit
 import Synchronization
+import SwiftDiagnostics
 
 /// Unifies the handling of findings from the linter, parsing errors from the syntax parser, and
 /// generic errors from the frontend so that they are emitted in a uniform fashion.
@@ -39,12 +39,14 @@ final class DiagnosticsEngine: Sendable {
 
     /// Creates a new diagnostics engine with the given diagnostic handlers.
     ///
-    /// - Parameter diagnosticsHandlers: An array of functions, each of which takes a `Diagnostic` as
-    ///   its sole argument and returns `Void`. The functions are called whenever a diagnostic is
-    ///   received by the engine.
-    init(diagnosticsHandlers: [@Sendable (Diagnostic) -> Void], treatWarningsAsErrors: Bool = false)
-    {
-        self.handlers = diagnosticsHandlers
+    /// - Parameter diagnosticsHandlers: An array of functions, each of which takes a `Diagnostic`
+    ///   as its sole argument and returns `Void` . The functions are called whenever a diagnostic
+    ///   is received by the engine.
+    init(
+        diagnosticsHandlers: [@Sendable (Diagnostic) -> Void],
+        treatWarningsAsErrors: Bool = false
+    ) {
+        handlers = diagnosticsHandlers
         self.treatWarningsAsErrors = treatWarningsAsErrors
     }
 
@@ -52,50 +54,45 @@ final class DiagnosticsEngine: Sendable {
     /// error or warning diagnostic.
     private func emit(_ diagnostic: Diagnostic) {
         var diagnostic = diagnostic
-        if treatWarningsAsErrors, diagnostic.severity == .warning {
-            diagnostic.severity = .error
-        }
+        if treatWarningsAsErrors, diagnostic.severity == .warning { diagnostic.severity = .error }
+
         switch diagnostic.severity {
-        case .error: state.withLock { $0.hasErrors = true }
-        case .warning: state.withLock { $0.hasWarnings = true }
-        default: break
+            case .error: state.withLock { $0.hasErrors = true }
+            case .warning: state.withLock { $0.hasWarnings = true }
+            default: break
         }
 
-        for handler in handlers {
-            handler(diagnostic)
-        }
+        for handler in handlers { handler(diagnostic) }
     }
 
     /// Emits a generic error message.
     ///
     /// - Parameters:
     ///   - message: The message associated with the error.
-    ///   - location: The location in the source code associated with the error, or nil if there is no
-    ///     location associated with the error.
+    ///   - location: The location in the source code associated with the error, or nil if there is
+    ///     no location associated with the error.
     func emitError(_ message: String, location: SourceLocation? = nil) {
         emit(
             Diagnostic(
                 severity: .error,
                 location: location.map(Diagnostic.Location.init),
                 message: message
-            )
-        )
+            ))
     }
 
     /// Emits a generic warning message.
     ///
     /// - Parameters:
     ///   - message: The message associated with the error.
-    ///   - location: The location in the source code associated with the error, or nil if there is no
-    ///     location associated with the error.
+    ///   - location: The location in the source code associated with the error, or nil if there is
+    ///     no location associated with the error.
     func emitWarning(_ message: String, location: SourceLocation? = nil) {
         emit(
             Diagnostic(
                 severity: .warning,
                 location: location.map(Diagnostic.Location.init),
                 message: message
-            )
-        )
+            ))
     }
 
     /// Emits a finding from the linter and any of its associated notes as diagnostics.
@@ -110,8 +107,7 @@ final class DiagnosticsEngine: Sendable {
                     severity: .note,
                     location: note.location.map(Diagnostic.Location.init),
                     message: "\(note.message)"
-                )
-            )
+                ))
         }
     }
 
@@ -121,8 +117,8 @@ final class DiagnosticsEngine: Sendable {
     func consumeCachedEntry(_ cached: LintCache.Entry) {
         let severity: Diagnostic.Severity =
             switch cached.severity {
-            case .error: .error
-            case .warn, .no: .warning
+                case .error: .error
+                case .warn, .no: .warning
             }
         emit(
             Diagnostic(
@@ -130,16 +126,15 @@ final class DiagnosticsEngine: Sendable {
                 location: cached.location.map { Diagnostic.Location($0.asFindingLocation) },
                 category: cached.category,
                 message: cached.message
-            )
-        )
+            ))
+
         for note in cached.notes {
             emit(
                 Diagnostic(
                     severity: .note,
                     location: note.location.map { Diagnostic.Location($0.asFindingLocation) },
                     message: note.message
-                )
-            )
+                ))
         }
     }
 
@@ -149,9 +144,7 @@ final class DiagnosticsEngine: Sendable {
     func consumeParserDiagnostic(
         _ diagnostic: SwiftDiagnostics.Diagnostic,
         _ location: SourceLocation
-    ) {
-        emit(diagnosticMessage(for: diagnostic.diagMessage, at: location))
-    }
+    ) { emit(diagnosticMessage(for: diagnostic.diagMessage, at: location)) }
 
     /// Converts a diagnostic message from the syntax parser into a diagnostic message that can be
     /// used by the `TSCBasic` diagnostics engine and returns it.
@@ -160,13 +153,14 @@ final class DiagnosticsEngine: Sendable {
         at location: SourceLocation
     ) -> Diagnostic {
         let severity: Diagnostic.Severity
+
         switch message.severity {
-        case .error: severity = .error
-        case .warning: severity = .warning
-        case .note: severity = .note
-        case .remark: severity = .note  // should we model this?
+            case .error: severity = .error
+            case .warning: severity = .warning
+            case .note: severity = .note
+            case .remark: severity = .note  // should we model this?
         }
-        return Diagnostic(
+        return .init(
             severity: severity,
             location: Diagnostic.Location(location),
             category: nil,
@@ -179,10 +173,10 @@ final class DiagnosticsEngine: Sendable {
     private func diagnosticMessage(for finding: Finding) -> Diagnostic {
         let severity: Diagnostic.Severity =
             switch finding.severity {
-            case .error: .error
-            case .warn, .no: .warning
+                case .error: .error
+                case .warn, .no: .warning
             }
-        return Diagnostic(
+        return .init(
             severity: severity,
             location: finding.location.map(Diagnostic.Location.init),
             category: "\(finding.category)",

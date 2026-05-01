@@ -1,5 +1,5 @@
-import ConfigurationKit
 import SwiftSyntax
+import ConfigurationKit
 
 /// Closures should not exceed a configurable body line length.
 final class ClosureBodyLength: LintSyntaxRule<ClosureBodyLengthConfiguration>, @unchecked Sendable {
@@ -7,13 +7,11 @@ final class ClosureBodyLength: LintSyntaxRule<ClosureBodyLengthConfiguration>, @
 
     override func visit(_ node: ClosureExprSyntax) -> SyntaxVisitorContinueKind {
         let count = bodyLineCount(of: node, in: context.sourceLocationConverter)
-        guard
-            let severity = metricSeverity(
-                value: count,
-                warning: ruleConfig.warning,
-                error: ruleConfig.error
-            )
-        else { return .visitChildren }
+        guard let severity = metricSeverity(
+            value: count,
+            warning: ruleConfig.warning,
+            error: ruleConfig.error
+        ) else { return .visitChildren }
         diagnose(
             .closureBodyTooLong(
                 lines: count,
@@ -26,8 +24,8 @@ final class ClosureBodyLength: LintSyntaxRule<ClosureBodyLengthConfiguration>, @
     }
 }
 
-extension Finding.Message {
-    fileprivate static func closureBodyTooLong(lines: Int, limit: Int) -> Finding.Message {
+fileprivate extension Finding.Message {
+    static func closureBodyTooLong(lines: Int, limit: Int) -> Finding.Message {
         "closure body has \(lines) lines; limit is \(limit)"
     }
 }
@@ -35,7 +33,7 @@ extension Finding.Message {
 // MARK: - Configuration
 
 package struct ClosureBodyLengthConfiguration: ThresholdRuleValue {
-    package var enabled: Bool = true
+    package var enabled = true
     /// Closure bodies longer than this many lines emit a warning-severity finding.
     package var warning: Int = 30
     /// Closure bodies longer than this many lines emit an error-severity finding.

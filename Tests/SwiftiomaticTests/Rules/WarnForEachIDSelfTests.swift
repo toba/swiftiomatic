@@ -3,10 +3,10 @@ import SwiftiomaticTestSupport
 import Testing
 
 @Suite
-struct WarnForEachIdSelfTests: RuleTesting {
+struct WarnForEachIDSelfTests: RuleTesting {
   @Test func idSelfFlagged() {
     assertLint(
-      WarnForEachIdSelf.self,
+      WarnForEachIDSelf.self,
       """
       ForEach(items, id: 1️⃣\\.self) { item in
         Text(String(describing: item))
@@ -20,7 +20,7 @@ struct WarnForEachIdSelfTests: RuleTesting {
 
   @Test func idKeyPathToPropertyNotFlagged() {
     assertLint(
-      WarnForEachIdSelf.self,
+      WarnForEachIDSelf.self,
       """
       ForEach(items, id: \\.id) { item in
         Text(item.name)
@@ -32,7 +32,7 @@ struct WarnForEachIdSelfTests: RuleTesting {
 
   @Test func noIdArgumentNotFlagged() {
     assertLint(
-      WarnForEachIdSelf.self,
+      WarnForEachIDSelf.self,
       """
       ForEach(items) { item in
         Text(item.name)
@@ -44,7 +44,7 @@ struct WarnForEachIdSelfTests: RuleTesting {
 
   @Test func nonForEachNotFlagged() {
     assertLint(
-      WarnForEachIdSelf.self,
+      WarnForEachIDSelf.self,
       """
       List(items, id: \\.self) { item in
         Text(String(describing: item))

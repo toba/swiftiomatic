@@ -1,18 +1,18 @@
 import SwiftSyntax
 
-/// Remove blank lines between consecutive guard statements and insert a blank line after
-/// the last guard.
+/// Remove blank lines between consecutive guard statements and insert a blank line after the last
+/// guard.
 ///
-/// Guard blocks at the top of a function form a precondition section. Keeping them tight
-/// (no blank lines between them) and separated from the body (one blank line after) improves
-/// readability. Comments between guards break the "consecutive" chain — each guard followed
-/// by a comment gets its own trailing blank line.
+/// Guard blocks at the top of a function form a precondition section. Keeping them tight (no blank
+/// lines between them) and separated from the body (one blank line after) improves readability.
+/// Comments between guards break the "consecutive" chain — each guard followed by a comment gets
+/// its own trailing blank line.
 ///
-/// Lint: If there are blank lines between consecutive guards, or no blank line after the
-///       last guard before other code, a lint warning is raised.
+/// Lint: If there are blank lines between consecutive guards, or no blank line after the last guard
+/// before other code, a lint warning is raised.
 ///
-/// Rewrite: Blank lines between consecutive guards are removed. A blank line is inserted
-///         after the last guard when followed by non-guard code.
+/// Rewrite: Blank lines between consecutive guards are removed. A blank line is inserted after the
+/// last guard when followed by non-guard code.
 final class BlankLinesAfterGuardStatements: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
     override static var key: String { "afterGuardStatements" }
     override static var group: ConfigurationGroup? { .blankLines }
@@ -25,15 +25,14 @@ final class BlankLinesAfterGuardStatements: StaticFormatRule<BasicRuleValue>, @u
         var statements = originalStatements
         var modified = false
 
-        for i in 0..<originalStatements.count {
-            guard originalStatements[i].item.is(GuardStmtSyntax.self) else { continue }
-
+        for i in 0..<originalStatements.count
+        where originalStatements[i].item.is(GuardStmtSyntax.self) {
             let nextIndex = i + 1
             guard nextIndex < originalStatements.count else { continue }
 
             let nextStmt = originalStatements[nextIndex]
-            let nextIsConsecutiveGuard =
-                nextStmt.item.is(GuardStmtSyntax.self) && !nextStmt.leadingTrivia.hasAnyComments
+            let nextIsConsecutiveGuard = nextStmt.item.is(GuardStmtSyntax.self)
+                && !nextStmt.leadingTrivia.hasAnyComments
 
             if nextIsConsecutiveGuard {
                 guard nextStmt.leadingTrivia.hasBlankLine else { continue }
@@ -67,10 +66,10 @@ final class BlankLinesAfterGuardStatements: StaticFormatRule<BasicRuleValue>, @u
     }
 }
 
-extension Finding.Message {
-    fileprivate static let removeBlankLineBetweenGuards: Finding.Message =
+fileprivate extension Finding.Message {
+    static let removeBlankLineBetweenGuards: Finding.Message =
         "remove blank line between consecutive guard statements"
 
-    fileprivate static let insertBlankLineAfterGuard: Finding.Message =
+    static let insertBlankLineAfterGuard: Finding.Message =
         "insert blank line after guard statement"
 }

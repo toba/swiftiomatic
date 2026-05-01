@@ -152,6 +152,7 @@ extension TokenStream {
             ?? node.macroKeyword
         before(firstTokenAfterAttributes, tokens: .open)
         after(node.macroKeyword, tokens: .break)
+
         if hasArguments || node.genericParameterClause != nil {
             after(node.signature.parameterClause.leftParen, tokens: .close)
         } else {

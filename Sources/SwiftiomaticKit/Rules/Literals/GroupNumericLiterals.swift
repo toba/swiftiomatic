@@ -29,7 +29,7 @@ final class GroupNumericLiterals: StaticFormatRule<BasicRuleValue>, @unchecked S
 
     static func transform(
         _ node: IntegerLiteralExprSyntax,
-        parent: Syntax?,
+        parent _: Syntax?,
         context: Context
     ) -> ExprSyntax {
         var originalDigits = node.literal.text

@@ -1,5 +1,5 @@
-import ConfigurationKit
 import SwiftSyntax
+import ConfigurationKit
 
 /// Functions and initializers should not declare too many parameters.
 final class ParameterCount: LintSyntaxRule<ParameterCountConfiguration>, @unchecked Sendable {
@@ -18,18 +18,14 @@ final class ParameterCount: LintSyntaxRule<ParameterCountConfiguration>, @unchec
     private func check(parameters: FunctionParameterListSyntax, on anchor: Syntax) {
         let total = parameters.count
         let count: Int
-        if ruleConfig.ignoresDefaultParameters {
-            count = parameters.reduce(0) { $0 + ($1.defaultValue == nil ? 1 : 0) }
-        } else {
-            count = total
-        }
-        guard
-            let severity = metricSeverity(
-                value: count,
-                warning: ruleConfig.warning,
-                error: ruleConfig.error
-            )
-        else { return }
+        count = ruleConfig.ignoresDefaultParameters
+            ? parameters.reduce(0) { $0 + ($1.defaultValue == nil ? 1 : 0) }
+            : total
+        guard let severity = metricSeverity(
+            value: count,
+            warning: ruleConfig.warning,
+            error: ruleConfig.error
+        ) else { return }
         diagnose(
             .tooManyParameters(
                 count: count,
@@ -41,8 +37,8 @@ final class ParameterCount: LintSyntaxRule<ParameterCountConfiguration>, @unchec
     }
 }
 
-extension Finding.Message {
-    fileprivate static func tooManyParameters(count: Int, limit: Int) -> Finding.Message {
+fileprivate extension Finding.Message {
+    static func tooManyParameters(count: Int, limit: Int) -> Finding.Message {
         "function has \(count) parameters; limit is \(limit)"
     }
 }
@@ -50,13 +46,13 @@ extension Finding.Message {
 // MARK: - Configuration
 
 package struct ParameterCountConfiguration: ThresholdRuleValue {
-    package var enabled: Bool = true
+    package var enabled = true
     /// Functions with more than this many parameters emit a warning-severity finding.
     package var warning: Int = 5
     /// Functions with more than this many parameters emit an error-severity finding.
     package var error: Int = 8
-    /// When `true`, parameters with a default value don't count toward the limit.
-    package var ignoresDefaultParameters: Bool = true
+    /// When `true` , parameters with a default value don't count toward the limit.
+    package var ignoresDefaultParameters = true
 
     package init() {}
 

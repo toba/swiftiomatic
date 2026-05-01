@@ -45,8 +45,8 @@ final class SortImports: StructuralFormatRule<SortImportsConfiguration>, @unchec
     ) -> CodeBlockItemListSyntax {
         let lines = generateLines(codeBlockItemList: codeBlockItemList, context: context)
 
-        // Stores the formatted and sorted lines that will be used to reconstruct the list of code block
-        // items later.
+        // Stores the formatted and sorted lines that will be used to reconstruct the list of code
+        // block items later.
         var formattedLines: [Line] = []
 
         var regularImports: [Line] = []
@@ -99,28 +99,30 @@ final class SortImports: StructuralFormatRule<SortImportsConfiguration>, @unchec
         }
 
         var lastSliceStartIndex = 0
+
         for (index, line) in lines.enumerated() {
             if let syntaxNode = line.syntaxNode,
-               case .importCodeBlock(_, let sortable) = syntaxNode, !sortable
+               case .importCodeBlock(_, let sortable) = syntaxNode,
+               !sortable
             {
                 formatAndAppend(linesSection: lines[lastSliceStartIndex..<index])
                 formattedLines.append(line)
-                // Insert a blank line after the unsorted import to show that it's a separate "group" from
-                // the sorted imports.
+                // Insert a blank line after the unsorted import to show that it's a separate
+                // "group" from the sorted imports.
                 formattedLines.append(Line())
                 lastSliceStartIndex = index + 1  // Add 1 to skip the current line.
                 continue
             }
 
-            // Capture any leading comments as the file header. It is assumed to be separated from the
-            // rest of the file by a blank line.
+            // Capture any leading comments as the file header. It is assumed to be separated from
+            // the rest of the file by a blank line.
             if atStartOfFile {
                 switch line.type {
                     case .comment:
                         if line.description.contains(IgnoreDirective.file.description) {
-                            // If the file-level ignore directive is included in the comments of the import
-                            // statements, consider the comments before the file-level ignore directive as part of
-                            // the fileHeader.
+                            // If the file-level ignore directive is included in the comments of the
+                            // import statements, consider the comments before the file-level ignore
+                            // directive as part of the fileHeader.
                             fileHeader.append(contentsOf: commentBuffer)
                             fileHeader.append(line)
                             commentBuffer = []
@@ -159,7 +161,11 @@ final class SortImports: StructuralFormatRule<SortImportsConfiguration>, @unchec
 
                 ifConfigDecl.clauses = IfConfigClauseListSyntax(newClauses)
                 line.syntaxNode = .ifConfigCodeBlock(
-                    CodeBlockItemSyntax(item: .decl(DeclSyntax(ifConfigDecl))))
+                    CodeBlockItemSyntax(
+                        item: .decl(
+                            DeclSyntax(
+                                ifConfigDecl
+                            ))))
             }
 
             if ruleConfig.shouldGroupImports {
@@ -280,9 +286,9 @@ final class SortImports: StructuralFormatRule<SortImportsConfiguration>, @unchec
         }
     }
 
-    /// Sort the list of import lines by the configured sort order. Any comments above an import lines
-    /// should be associated with it, and move with the line during sorting. We also emit a linter
-    /// error if an import line is discovered to be out of order.
+    /// Sort the list of import lines by the configured sort order. Any comments above an import
+    /// lines should be associated with it, and move with the line during sorting. We also emit a
+    /// linter error if an import line is discovered to be out of order.
     private func formatImports(_ imports: [Line]) -> [Line] {
         let sortOrder = ruleConfig.sortOrder
         let importPrecedes: (Line, Line) -> Bool =
@@ -308,16 +314,16 @@ final class SortImports: StructuralFormatRule<SortImportsConfiguration>, @unchec
                     let fullyQualifiedImport = line.fullyQualifiedImport
                     // Check for duplicate imports and potentially remove them.
                     if let previousMatchingImportIndex = visitedImports[fullyQualifiedImport] {
-                        // Even if automatically removing this import is impossible, alert the user that this is a
-                        // duplicate so they can manually fix it.
+                        // Even if automatically removing this import is impossible, alert the user
+                        // that this is a duplicate so they can manually fix it.
                         diagnose(.removeDuplicateImport, on: line.firstToken)
                         var duplicateLine = linesWithLeadingComments[previousMatchingImportIndex]
 
-                        // We can combine multiple leading comments, but it's unsafe to combine trailing comments.
-                        // Any extra comments must go on a new line, and would be grouped with the next import.
+                        // We can combine multiple leading comments, but it's unsafe to combine
+                        // trailing comments. Any extra comments must go on a new line, and would be
+                        // grouped with the next import.
                         guard !duplicateLine.import.trailingTrivia.isEmpty,
-                              !line.trailingTrivia.isEmpty
-                        else {
+                              !line.trailingTrivia.isEmpty else {
                             duplicateLine.comments.append(contentsOf: commentBuffer)
                             commentBuffer = []
                             // Keep the Line that has the trailing comment, if there is one.
@@ -325,11 +331,12 @@ final class SortImports: StructuralFormatRule<SortImportsConfiguration>, @unchec
                             linesWithLeadingComments[previousMatchingImportIndex] = duplicateLine
                             continue
                         }
-                        // Otherwise, both lines have trailing trivia so it's not safe to automatically merge
-                        // them. Leave this duplicate import.
+                        // Otherwise, both lines have trailing trivia so it's not safe to
+                        // automatically merge them. Leave this duplicate import.
                     }
                     if let previousImport,
-                       importPrecedes(line, previousImport), !diagnosed,
+                       importPrecedes(line, previousImport),
+                       !diagnosed,
                        visitedImports[fullyQualifiedImport] == nil
                     {
                         diagnose(.sortImports, on: line.firstToken)
@@ -350,6 +357,7 @@ final class SortImports: StructuralFormatRule<SortImportsConfiguration>, @unchec
 
         // Unpack the tuples back into a list of Lines.
         var output: [Line] = []
+
         for lineTuple in linesWithLeadingComments {
             for comment in lineTuple.1 { output.append(comment) }
             output.append(lineTuple.0)
@@ -371,6 +379,7 @@ private func joinLines(_ inputLineLists: [Line]...) -> [Line] {
     lineLists.removeAll { $0.isEmpty }
     guard !lineLists.isEmpty else { return [] }
     var output: [Line] = lineLists.first ?? []
+
     for i in 1..<lineLists.count {
         let list = lineLists[i]
         if list.isEmpty { continue }
@@ -516,8 +525,8 @@ private final class Line {
         case ifConfigCodeBlock(CodeBlockItemSyntax)
     }
 
-    /// Stores line comments. `syntaxNode` need not be defined, since a comment can exist by itself on
-    /// a line.
+    /// Stores line comments. `syntaxNode` need not be defined, since a comment can exist by itself
+    /// on a line.
     var leadingTrivia: [TriviaPiece] = []
 
     /// Stores trailing line comments that follow normal code. `syntaxNode` should be defined.
@@ -527,9 +536,7 @@ private final class Line {
     var syntaxNode: SyntaxNode?
 
     /// A Line object can represent a blank line if all of its fields are empty.
-    var isBlankLine: Bool {
-        leadingTrivia.isEmpty && trailingTrivia.isEmpty && syntaxNode == nil
-    }
+    var isBlankLine: Bool { leadingTrivia.isEmpty && trailingTrivia.isEmpty && syntaxNode == nil }
 
     var type: LineType {
         if let syntaxNode {
@@ -537,35 +544,29 @@ private final class Line {
                 case .nonImportCodeBlocks, .ifConfigCodeBlock: return .codeBlock
                 case .importCodeBlock(let importCodeBlock, _):
                     guard let importDecl = importCodeBlock.item.as(ImportDeclSyntax.self) else {
-                        // Invalid `importCodeBlock` - fallback to treating it as a generic code block.
                         return .codeBlock
                     }
                     return importType(of: importDecl)
             }
         }
 
-        if leadingTrivia.contains(where: {
+        return leadingTrivia.contains(where: {
             switch $0 {
                 case .lineComment, .blockComment, .docLineComment, .docBlockComment: true
                 default: false
             }
-        }) {
-            return .comment
-        }
-
-        // There may be some whitespace in the leading trivia, but consider the line to be blank.
-        return .blankLine
+        })
+            ? .comment
+            : .blankLine
     }
 
     /// Returns a fully qualified description of this line's import if it's an import statement,
     /// including any attributes, modifiers, the import kind, and the import path. When this line
     /// isn't an import statement, returns an empty string.
     var fullyQualifiedImport: String {
-        guard let syntaxNode, case .importCodeBlock(let importCodeBlock, _) = syntaxNode,
-              let importDecl = importCodeBlock.item.as(ImportDeclSyntax.self)
-        else {
-            return ""
-        }
+        guard let syntaxNode,
+              case .importCodeBlock(let importCodeBlock, _) = syntaxNode,
+              let importDecl = importCodeBlock.item.as(ImportDeclSyntax.self) else { return "" }
         // Using the description is a reliable way to include all content from the import, but
         // description includes all leading and trailing trivia. It would be unusual to have any
         // non-whitespace trivia on the components of the import. Trim off the leading trivia, where
@@ -575,14 +576,12 @@ private final class Line {
         return declForDescription.description.trimmingCharacters(in: .whitespacesAndNewlines)
     }
 
-    /// Returns the path that is imported by this line's import statement if it's an import statement.
-    /// When this line isn't an import statement, returns an empty string.
+    /// Returns the path that is imported by this line's import statement if it's an import
+    /// statement. When this line isn't an import statement, returns an empty string.
     var importName: String {
-        guard let syntaxNode, case .importCodeBlock(let importCodeBlock, _) = syntaxNode,
-              let importDecl = importCodeBlock.item.as(ImportDeclSyntax.self)
-        else {
-            return ""
-        }
+        guard let syntaxNode,
+              case .importCodeBlock(let importCodeBlock, _) = syntaxNode,
+              let importDecl = importCodeBlock.item.as(ImportDeclSyntax.self) else { return "" }
         return importDecl.path.description.trimmingCharacters(in: .whitespacesAndNewlines)
     }
 
@@ -611,8 +610,7 @@ private final class Line {
 
         if importAttributeNames.contains("testable") { return .testableImport }
         if importAttributeNames.contains("_implementationOnly") { return .implementationOnlyImport }
-        if importDecl.importKindSpecifier != nil { return .declImport }
-        return .regularImport
+        return importDecl.importKindSpecifier != nil ? .declImport : .regularImport
     }
 }
 
@@ -621,6 +619,7 @@ extension Line: CustomStringConvertible {
         var description = ""
         if !leadingTrivia.isEmpty {
             var newlinesCount = 0
+
             for piece in leadingTrivia {
                 switch piece {
                     case let .newlines(count): newlinesCount += count
@@ -632,9 +631,7 @@ extension Line: CustomStringConvertible {
                         description += "\(piece) "
                 }
             }
-            if newlinesCount > 0 {
-                description += "\(newlinesCount) newlines "
-            }
+            if newlinesCount > 0 { description += "\(newlinesCount) newlines " }
         }
 
         if let syntaxNode {
@@ -647,12 +644,7 @@ extension Line: CustomStringConvertible {
             }
         }
 
-        if !trailingTrivia.isEmpty {
-            // Trailing trivia should just be comments, so just print each piece.
-            for piece in trailingTrivia {
-                description += "\(piece) "
-            }
-        }
+        if !trailingTrivia.isEmpty { for piece in trailingTrivia { description += "\(piece) " } }
 
         return description.trimmingCharacters(in: .whitespaces)
     }
@@ -679,8 +671,8 @@ package struct SortImportsConfiguration: SyntaxRuleValue {
     /// When `true` , imports inside `#if` conditional blocks are also sorted. When `false` ,
     /// conditional imports are left in source order.
     package var includeConditionalImports = false
-    /// When `true` , imports are split into groups (regular, `@testable` , etc.) separated by a blank
-    /// line, and sorted within each group.
+    /// When `true` , imports are split into groups (regular, `@testable` , etc.) separated by a
+    /// blank line, and sorted within each group.
     package var shouldGroupImports = true
     /// Sort key for imports inside a group: `alphabetical` by module name, or `length` (shortest
     /// first, ties broken alphabetically).

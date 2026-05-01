@@ -1,28 +1,27 @@
 import SwiftSyntax
 
-/// Prefer `someBool.toggle()` over `someBool = !someBool`.
+/// Prefer `someBool.toggle()` over `someBool = !someBool` .
 ///
 /// `Bool.toggle()` (Swift 4.2+) is more concise and clearly communicates the intent. The two forms
 /// are equivalent semantically; `toggle()` does not introduce any new evaluation hazards.
 ///
-/// Lint: A warning is raised for `x = !x` patterns where the LHS and the negated RHS reference
-/// the exact same expression text.
+/// Lint: A warning is raised for `x = !x` patterns where the LHS and the negated RHS reference the
+/// exact same expression text.
 ///
-/// Rewrite: The expression is rewritten to `x.toggle()`.
+/// Rewrite: The expression is rewritten to `x.toggle()` .
 final class PreferToggle: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
     override class var group: ConfigurationGroup? { .idioms }
     override class var defaultValue: BasicRuleValue { .init(rewrite: true, lint: .warn) }
 
     static func transform(
         _ node: InfixOperatorExprSyntax,
-        parent: Syntax?,
+        parent _: Syntax?,
         context: Context
     ) -> ExprSyntax {
         let infix = node
         guard infix.operator.is(AssignmentExprSyntax.self),
-            let prefix = infix.rightOperand.as(PrefixOperatorExprSyntax.self),
-            prefix.operator.text == "!"
-        else { return ExprSyntax(infix) }
+              let prefix = infix.rightOperand.as(PrefixOperatorExprSyntax.self),
+              prefix.operator.text == "!" else { return ExprSyntax(infix) }
 
         let lhsText = infix.leftOperand.trimmedDescription
         let rhsInner = prefix.expression.trimmedDescription
@@ -55,7 +54,6 @@ final class PreferToggle: StaticFormatRule<BasicRuleValue>, @unchecked Sendable 
     }
 }
 
-extension Finding.Message {
-    fileprivate static let preferToggle: Finding.Message =
-        "prefer 'toggle()' over assigning the negation"
+fileprivate extension Finding.Message {
+    static let preferToggle: Finding.Message = "prefer 'toggle()' over assigning the negation"
 }

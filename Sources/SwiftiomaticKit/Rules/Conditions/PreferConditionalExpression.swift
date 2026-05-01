@@ -15,7 +15,7 @@ final class PreferConditionalExpression: StaticFormatRule<BasicRuleValue>, @unch
 
     static func transform(
         _ visited: CodeBlockItemListSyntax,
-        parent: Syntax?,
+        parent _: Syntax?,
         context: Context
     ) -> CodeBlockItemListSyntax {
         let items = Array(visited)
@@ -69,6 +69,7 @@ final class PreferConditionalExpression: StaticFormatRule<BasicRuleValue>, @unch
         }
 
         let conditionalExpr: ExprSyntax
+
         if let ifExpr = condExpr.as(IfExprSyntax.self) {
             guard isExhaustiveIfAssignment(ifExpr, assigningTo: name) else { return nil }
             conditionalExpr = ExprSyntax(removeAssignments(from: ifExpr, name: name))
@@ -104,8 +105,9 @@ final class PreferConditionalExpression: StaticFormatRule<BasicRuleValue>, @unch
         _ ifExpr: IfExprSyntax,
         assigningTo name: String
     ) -> Bool {
-        guard isSingleStatementAssignment(ifExpr.body.statements, assigningTo: name)
-        else { return false }
+        guard isSingleStatementAssignment(ifExpr.body.statements, assigningTo: name) else {
+            return false
+        }
 
         switch ifExpr.elseBody {
             case let .codeBlock(elseBlock):
@@ -120,10 +122,12 @@ final class PreferConditionalExpression: StaticFormatRule<BasicRuleValue>, @unch
         assigningTo name: String
     ) -> Bool {
         guard !switchExpr.cases.isEmpty else { return false }
+
         for caseItem in switchExpr.cases {
             guard case let .switchCase(switchCase) = caseItem else { return false }
-            guard isSingleStatementAssignment(switchCase.statements, assigningTo: name)
-            else { return false }
+            guard isSingleStatementAssignment(switchCase.statements, assigningTo: name) else {
+                return false
+            }
         }
         return true
     }

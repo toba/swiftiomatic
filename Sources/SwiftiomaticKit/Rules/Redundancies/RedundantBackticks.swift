@@ -5,7 +5,7 @@ import SwiftSyntax
 /// Backticks are required when an identifier is a Swift reserved keyword used in a position that
 /// expects an identifier. They are redundant when the identifier is:
 /// - Not a keyword at all (e.g., `` `myFunc` `` → `myFunc` )
-/// - A keyword used after `.` in member access (e.g., `Foo.` default` ` → ` Foo.default`)
+/// - A keyword used after `.` in member access (e.g., `Foo.` default ` ` → ` Foo.default` )
 /// - A keyword used as a function argument label (e.g., `func foo(` default `: Int)` →
 ///   `func foo(default: Int)` )
 ///
@@ -56,7 +56,9 @@ final class RedundantBackticks: StaticFormatRule<BasicRuleValue>, @unchecked Sen
         context: Context
     ) -> TokenSyntax {
         guard case let .identifier(text) = token.tokenKind,
-              text.hasPrefix("`"), text.hasSuffix("`"), text.count > 2 else { return token }
+              text.hasPrefix("`"),
+              text.hasSuffix("`"),
+              text.count > 2 else { return token }
 
         let bareName = String(text.dropFirst().dropLast())
 
@@ -75,8 +77,13 @@ final class RedundantBackticks: StaticFormatRule<BasicRuleValue>, @unchecked Sen
     // MARK: - Context analysis
 
     /// Determines if backticks are required for the given bare name at the given token position.
-    /// `parent` is the captured pre-recursion parent of `token` (post-recursion `token.parent` is nil).
-    private static func backticksRequired(for bareName: String, token: TokenSyntax, parent: Syntax?) -> Bool {
+    /// `parent` is the captured pre-recursion parent of `token` (post-recursion `token.parent` is
+    /// nil).
+    private static func backticksRequired(
+        for bareName: String,
+        token: TokenSyntax,
+        parent: Syntax?
+    ) -> Bool {
         // After `.` (member access): most keywords become identifiers.
         if isAfterDot(token, parent: parent) { return Self.specialAfterDot.contains(bareName) }
 
@@ -104,7 +111,9 @@ final class RedundantBackticks: StaticFormatRule<BasicRuleValue>, @unchecked Sen
 
             // Contextual keywords like `actor` need backticks in declaration name position
             // (variable binding, function name) where the parser would see them as keywords.
-            if Self.contextualKeywordsInDeclPosition.contains(bareName), isDeclarationName(token, parent: parent) {
+            if Self.contextualKeywordsInDeclPosition.contains(bareName),
+               isDeclarationName(token, parent: parent)
+            {
                 return true
             }
 
@@ -128,8 +137,8 @@ final class RedundantBackticks: StaticFormatRule<BasicRuleValue>, @unchecked Sen
 
     // MARK: - Position checks
 
-    /// Token is after a `.` in member access (expression or type).
-    /// `parent` is the captured pre-recursion parent of `token`.
+    /// Token is after a `.` in member access (expression or type). `parent` is the captured
+    /// pre-recursion parent of `token` .
     private static func isAfterDot(_ token: TokenSyntax, parent: Syntax?) -> Bool {
         // Expression member access: Foo.bar — only the `declName` (after the dot) qualifies, not
         // the `base` (before the dot).
@@ -141,9 +150,7 @@ final class RedundantBackticks: StaticFormatRule<BasicRuleValue>, @unchecked Sen
             {
                 return true
             }
-            if declRef.parent?.is(KeyPathPropertyComponentSyntax.self) == true {
-                return true
-            }
+            if declRef.parent?.is(KeyPathPropertyComponentSyntax.self) == true { return true }
         }
         // Type member access: Foo.Type, Foo.Protocol
         if let memberType = parent?.as(MemberTypeSyntax.self),
@@ -218,10 +225,11 @@ final class RedundantBackticks: StaticFormatRule<BasicRuleValue>, @unchecked Sen
         }
     }
 
-    /// Token is inside a type's member block (not the type's own name).
-    /// Walks the captured pre-recursion parent chain.
+    /// Token is inside a type's member block (not the type's own name). Walks the captured
+    /// pre-recursion parent chain.
     private static func isInsideTypeDeclaration(parent: Syntax?) -> Bool {
         var current = parent
+
         while let p = current {
             // A MemberBlockSyntax means we're inside a type body.
             if p.is(MemberBlockSyntax.self) { return true }
@@ -245,15 +253,14 @@ final class RedundantBackticks: StaticFormatRule<BasicRuleValue>, @unchecked Sen
         }
     }
 
-    /// Token is inside an accessor block (computed property, subscript).
-    /// Walks the captured pre-recursion parent chain.
+    /// Token is inside an accessor block (computed property, subscript). Walks the captured
+    /// pre-recursion parent chain.
     private static func isInAccessorContext(parent: Syntax?) -> Bool {
         var current = parent
+
         while let p = current {
             if p.is(AccessorBlockSyntax.self) { return true }
-            if p.is(FunctionDeclSyntax.self) || p.is(ClosureExprSyntax.self) {
-                return false
-            }
+            if p.is(FunctionDeclSyntax.self) || p.is(ClosureExprSyntax.self) { return false }
             current = p.parent
         }
         return false

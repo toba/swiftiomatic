@@ -6,7 +6,8 @@ import SwiftSyntax
 /// line, readability suffers. This rule ensures exactly one blank line separates the import block
 /// from the rest of the code.
 ///
-/// Lint: If the first non-import declaration is not preceded by a blank line, a lint warning is raised.
+/// Lint: If the first non-import declaration is not preceded by a blank line, a lint warning is
+/// raised.
 ///
 /// Rewrite: A blank line is inserted after the last import statement.
 final class BlankLinesAfterImports: StructuralFormatRule<BasicRuleValue>, @unchecked Sendable {
@@ -23,11 +24,11 @@ final class BlankLinesAfterImports: StructuralFormatRule<BasicRuleValue>, @unche
 
         let nextStatement = statements[nextIndex]
 
-        // Count newlines in the leading trivia of the next statement.
-        // We need at least 2 newlines (end of import line + blank line).
+        // Count newlines in the leading trivia of the next statement. We need at least 2 newlines
+        // (end of import line + blank line).
         let newlineCount = nextStatement.leadingTrivia.pieces.reduce(0) { count, piece in
             switch piece {
-                case .newlines(let n): count + n
+                case let .newlines(n): count + n
                 default: count
             }
         }
@@ -56,7 +57,7 @@ final class BlankLinesAfterImports: StructuralFormatRule<BasicRuleValue>, @unche
             if statement.item.is(ImportDeclSyntax.self) {
                 lastImportIndex = index
             } else if let ifConfig = statement.item.as(IfConfigDeclSyntax.self),
-                containsOnlyImports(ifConfig)
+               containsOnlyImports(ifConfig)
             {
                 lastImportIndex = index
             } else {
@@ -72,17 +73,15 @@ final class BlankLinesAfterImports: StructuralFormatRule<BasicRuleValue>, @unche
     /// Check if an `#if` configuration block contains only import statements.
     private func containsOnlyImports(_ ifConfig: IfConfigDeclSyntax) -> Bool {
         for clause in ifConfig.clauses {
-            guard case .statements(let stmts) = clause.elements else { continue }
+            guard case let .statements(stmts) = clause.elements else { continue }
 
-            for stmt in stmts {
-                if !stmt.item.is(ImportDeclSyntax.self) { return false }
-            }
+            for stmt in stmts where !stmt.item.is(ImportDeclSyntax.self) { return false }
         }
         return true
     }
 }
 
-extension Finding.Message {
-    fileprivate static let insertBlankLineAfterImports: Finding.Message =
+fileprivate extension Finding.Message {
+    static let insertBlankLineAfterImports: Finding.Message =
         "insert blank line after import statements"
 }

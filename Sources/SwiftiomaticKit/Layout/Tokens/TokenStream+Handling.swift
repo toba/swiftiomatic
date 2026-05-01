@@ -43,6 +43,7 @@ extension TokenStream {
 
     func generateEnableFormattingIfNecessary(_ range: Range<AbsolutePosition>) {
         if case .infinite = selection { return }
+
         if !isInsideSelection, selection.overlapsOrTouches(range) {
             appendToken(.enableFormatting(range.lowerBound))
             isInsideSelection = true
@@ -51,6 +52,7 @@ extension TokenStream {
 
     func generateDisableFormattingIfNecessary(_ position: AbsolutePosition) {
         if case .infinite = selection { return }
+
         if isInsideSelection, !selection.contains(position) {
             appendToken(.disableFormatting(position))
             isInsideSelection = false
@@ -80,6 +82,7 @@ extension TokenStream {
     func appendTrailingTrivia(_ token: TokenSyntax, forced: Bool = false) {
         let trailingTrivia = Array(partitionTrailingTrivia(token.trailingTrivia).0)
         let lastIndex: Array<Trivia>.Index
+
         if forced {
             lastIndex = trailingTrivia.index(before: trailingTrivia.endIndex)
         } else {
@@ -89,6 +92,7 @@ extension TokenStream {
         }
 
         var verbatimText = ""
+
         for piece in trailingTrivia[...lastIndex] {
             switch piece {
                 case .unexpectedText, .spaces, .tabs, .formfeeds, .verticalTabs:
@@ -127,6 +131,7 @@ extension TokenStream {
         for after in afterGroups.reversed() {
             for afterToken in after {
                 var shouldExtractTrailingComment = false
+
                 if wasLineComment, !hasAppendedTrailingComment {
                     switch afterToken {
                         case .break(let kind, _, _):

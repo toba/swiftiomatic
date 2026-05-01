@@ -28,8 +28,8 @@ final class NoImplicitlyUnwrappedOptionals: LintSyntaxRule<LintOnlyValue>, @unch
 
     /// Identifies this rule as being opt-in. While accessing implicitly unwrapped optionals is an
     /// unsafe pattern (i.e. it can crash), there are valid contexts for using implicitly unwrapped
-    /// optionals where it won't crash. This rule can't evaluate the context around the usage to make
-    /// that determination.
+    /// optionals where it won't crash. This rule can't evaluate the context around the usage to
+    /// make that determination.
     override static var defaultValue: LintOnlyValue { .init(lint: .no) }
 
     // Checks if "XCTest" is an import statement
@@ -43,13 +43,10 @@ final class NoImplicitlyUnwrappedOptionals: LintSyntaxRule<LintOnlyValue>, @unch
         // Allow implicitly unwrapping if it is in a function marked with @Test attribute.
         if node.hasTestAncestor { return .skipChildren }
         // Ignores IBOutlet variables
-        for attribute in node.attributes {
-            if (attribute.as(AttributeSyntax.self))?.attributeName.as(IdentifierTypeSyntax.self)?
-                .name.text == "IBOutlet"
-            {
-                return .skipChildren
-            }
-        }
+        for attribute in node.attributes
+        where (attribute.as(AttributeSyntax.self))?.attributeName.as(IdentifierTypeSyntax.self)?
+            .name.text == "IBOutlet"
+        { return .skipChildren }
         // Finds type annotation for variable(s)
         for binding in node.bindings {
             guard let nodeTypeAnnotation = binding.typeAnnotation else { continue }
@@ -67,8 +64,8 @@ final class NoImplicitlyUnwrappedOptionals: LintSyntaxRule<LintOnlyValue>, @unch
     }
 }
 
-extension Finding.Message {
-    fileprivate static func doNotUseImplicitUnwrapping(identifier: String) -> Finding.Message {
+fileprivate extension Finding.Message {
+    static func doNotUseImplicitUnwrapping(identifier: String) -> Finding.Message {
         "use '\(identifier)' or '\(identifier)?' instead of '\(identifier)!'"
     }
 }

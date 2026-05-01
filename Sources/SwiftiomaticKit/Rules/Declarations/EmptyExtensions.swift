@@ -3,7 +3,7 @@ import SwiftSyntax
 /// Remove empty extensions that do not add protocol conformance.
 ///
 /// An extension with no members and no inheritance clause serves no purpose and should be removed.
-/// Extensions that add protocol conformance (e.g. `extension Foo: Equatable {}`) are kept even
+/// Extensions that add protocol conformance (e.g. `extension Foo: Equatable {}` ) are kept even
 /// when empty, because the conformance itself is meaningful.
 ///
 /// Extensions containing only comments are preserved.
@@ -16,7 +16,7 @@ final class EmptyExtensions: StaticFormatRule<BasicRuleValue>, @unchecked Sendab
 
     static func transform(
         _ visited: CodeBlockItemListSyntax,
-        parent: Syntax?,
+        parent _: Syntax?,
         context: Context
     ) -> CodeBlockItemListSyntax {
         var newItems = [CodeBlockItemSyntax]()
@@ -25,7 +25,7 @@ final class EmptyExtensions: StaticFormatRule<BasicRuleValue>, @unchecked Sendab
 
         for (index, item) in visited.enumerated() {
             if let ext = item.item.as(ExtensionDeclSyntax.self),
-                isRemovableEmptyExtension(ext)
+               isRemovableEmptyExtension(ext)
             {
                 Self.diagnose(
                     .removeEmptyExtension(name: ext.extendedType.trimmedDescription),
@@ -47,10 +47,9 @@ final class EmptyExtensions: StaticFormatRule<BasicRuleValue>, @unchecked Sendab
             first.leadingTrivia = Trivia(
                 pieces: first.leadingTrivia.drop {
                     switch $0 {
-                    case .newlines, .carriageReturns, .carriageReturnLineFeeds, .spaces, .tabs:
-                        true
-                    default:
-                        false
+                        case .newlines, .carriageReturns, .carriageReturnLineFeeds, .spaces, .tabs:
+                            true
+                        default: false
                     }
                 }
             )
@@ -60,8 +59,8 @@ final class EmptyExtensions: StaticFormatRule<BasicRuleValue>, @unchecked Sendab
         return CodeBlockItemListSyntax(newItems)
     }
 
-    /// Returns `true` if the extension is empty, adds no protocol conformance, and contains
-    /// no comments.
+    /// Returns `true` if the extension is empty, adds no protocol conformance, and contains no
+    /// comments.
     private static func isRemovableEmptyExtension(_ ext: ExtensionDeclSyntax) -> Bool {
         // Must have no members.
         guard ext.memberBlock.members.isEmpty else { return false }
@@ -70,18 +69,15 @@ final class EmptyExtensions: StaticFormatRule<BasicRuleValue>, @unchecked Sendab
         guard ext.inheritanceClause == nil else { return false }
 
         // Don't remove if there are comments inside the braces.
-        if ext.memberBlock.leftBrace.trailingTrivia.hasAnyComments
+        return ext.memberBlock.leftBrace.trailingTrivia.hasAnyComments
             || ext.memberBlock.rightBrace.leadingTrivia.hasAnyComments
-        {
-            return false
-        }
-
-        return true
+            ? false
+            : true
     }
 }
 
-extension Finding.Message {
-    fileprivate static func removeEmptyExtension(name: String) -> Finding.Message {
+fileprivate extension Finding.Message {
+    static func removeEmptyExtension(name: String) -> Finding.Message {
         "remove empty extension on '\(name)'"
     }
 }

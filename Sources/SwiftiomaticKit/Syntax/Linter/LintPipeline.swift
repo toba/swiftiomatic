@@ -1,3 +1,6 @@
+// sm:ignore noForceCast
+// `as! R` in `rule(_:)` is invariant-preserving: ruleCache is keyed by ObjectIdentifier(R), so the
+// cached value is by construction an R.
 import SwiftSyntax
 
 /// A syntax visitor that delegates to individual rules for linting.

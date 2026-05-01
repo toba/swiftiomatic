@@ -145,11 +145,11 @@ final class FileHeader: StructuralFormatRule<FileHeaderConfiguration>, @unchecke
         while let first = result.first {
             switch first {
                 case .newlines,
-                    .spaces,
-                    .tabs,
-                    .carriageReturns,
-                    .carriageReturnLineFeeds,
-                    .formfeeds:
+                     .spaces,
+                     .tabs,
+                     .carriageReturns,
+                     .carriageReturnLineFeeds,
+                     .formfeeds:
                     result.removeFirst()
                 default: return result
             }

@@ -22,6 +22,7 @@ final class InvisibleCharacters: LintSyntaxRule<InvisibleCharactersConfiguration
 
     override func visit(_ node: StringLiteralExprSyntax) -> SyntaxVisitorContinueKind {
         let invalidScalars = ruleConfig.resolvedScalars
+
         for segment in node.segments {
             guard let stringSegment = segment.as(StringSegmentSyntax.self) else { continue }
             for scalar in stringSegment.content.text.unicodeScalars
@@ -35,6 +36,7 @@ final class InvisibleCharacters: LintSyntaxRule<InvisibleCharactersConfiguration
     private func name(for scalar: Unicode.Scalar) -> String {
         let hex = String(scalar.value, radix: 16, uppercase: true)
         let padded = String(repeating: "0", count: max(0, 4 - hex.count)) + hex
+
         if let description = InvisibleCharactersConfiguration.builtinDescriptions[scalar] {
             return "U+\(padded) (\(description))"
         }

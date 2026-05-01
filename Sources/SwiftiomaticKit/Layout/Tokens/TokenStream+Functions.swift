@@ -21,7 +21,6 @@ extension TokenStream {
         // Prioritize keeping ") throws -> <return_type>" together (or ") throws -> <return_type> {"
         // when there's a body). We can only do this if the function has arguments.
         if hasArguments, config[KeepFunctionOutputTogether.self], !hasBody {
-            // Due to visitation order, the matching .open break is added in ParameterClauseSyntax.
             after(node.signature.lastToken(viewMode: .sourceAccurate), tokens: .close)
         }
 
@@ -37,6 +36,7 @@ extension TokenStream {
             ?? node.funcKeyword
         before(firstTokenAfterAttributes, tokens: .open)
         after(node.funcKeyword, tokens: .break)
+
         if hasArguments || node.genericParameterClause != nil {
             after(node.signature.parameterClause.leftParen, tokens: .close)
         } else {

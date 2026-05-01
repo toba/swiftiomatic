@@ -1,6 +1,6 @@
 import SwiftSyntax
 
-/// Reflows contiguous `///` and `//` comment runs to fit `lineLength`.
+/// Reflows contiguous `///` and `//` comment runs to fit `lineLength` .
 ///
 /// DocC structures are preserved: parameter blocks, lists, code fences, block quotes, URLs, inline
 /// code spans, and Markdown links are never split mid-token. Continuation lines in `- Parameter:`
@@ -45,8 +45,11 @@ final class ReflowComments: StaticFormatRule<BasicRuleValue>, @unchecked Sendabl
             var j = i + 1
             scan: while j < pieces.count {
                 switch pieces[j] {
-                    case .spaces, .tabs,
-                        .newlines, .carriageReturns, .carriageReturnLineFeeds:
+                    case .spaces,
+                         .tabs,
+                         .newlines,
+                         .carriageReturns,
+                         .carriageReturnLineFeeds:
                         j += 1
                     default:
                         if commentKind(of: pieces[j]) == kind {
@@ -61,6 +64,7 @@ final class ReflowComments: StaticFormatRule<BasicRuleValue>, @unchecked Sendabl
             let indentString = indentationBefore(index: runStart, in: pieces)
             var bodies: [String] = []
             var commentIndices: [Int] = []
+
             for k in runStart...runEnd where commentKind(of: pieces[k]) != nil {
                 let text = commentText(pieces[k]) ?? ""
                 bodies.append(stripPrefix(text, kind: kind))
@@ -85,6 +89,7 @@ final class ReflowComments: StaticFormatRule<BasicRuleValue>, @unchecked Sendabl
                 continue
             }
             var replacement: [TriviaPiece] = []
+
             for (idx, body) in reflowed.enumerated() {
                 if idx > 0 {
                     replacement.append(.newlines(1))
@@ -166,13 +171,14 @@ final class ReflowComments: StaticFormatRule<BasicRuleValue>, @unchecked Sendabl
         return directives.contains { trimmed.hasPrefix($0) }
     }
 
-    /// Conservative estimate of the column the pretty printer will indent the
-    /// comment to. Walks ancestor nodes counting indent-introducing scopes and
-    /// converts the depth using the configured indentation unit. Used to floor
-    /// the column so reflow budgets don't assume the stale source-trivia column.
+    /// Conservative estimate of the column the pretty printer will indent the comment to. Walks
+    /// ancestor nodes counting indent-introducing scopes and converts the depth using the
+    /// configured indentation unit. Used to floor the column so reflow budgets don't assume the
+    /// stale source-trivia column.
     private static func syntacticIndentColumn(for token: TokenSyntax, context: Context) -> Int {
         var depth = 0
         var current: Syntax? = token.parent
+
         while let node = current {
             if node.is(CodeBlockSyntax.self)
                 || node.is(MemberBlockSyntax.self)
@@ -186,37 +192,36 @@ final class ReflowComments: StaticFormatRule<BasicRuleValue>, @unchecked Sendabl
         }
         let unit = context.configuration[IndentationSetting.self]
         let width: Int
+
         switch unit {
-        case .spaces(let n): width = n
-        case .tabs(let n): width = n * context.configuration[TabWidth.self]
+            case let .spaces(n): width = n
+            case let .tabs(n): width = n * context.configuration[TabWidth.self]
         }
         return depth * width
     }
 
-    /// True when `token` is the first token in the source file — i.e. its leading
-    /// trivia may contain the file header.
+    /// True when `token` is the first token in the source file — i.e. its leading trivia may
+    /// contain the file header.
     private static func isFirstTokenInFile(_ token: TokenSyntax) -> Bool {
         token.previousToken(viewMode: .sourceAccurate) == nil
     }
 
     /// Index in `pieces` where the file header ends. Mirrors the boundary logic in
-    /// `FileHeader.findHeaderEnd`: consecutive `.lineComment`, `.blockComment`,
-    /// `.docBlockComment` pieces at the start of the trivia, separated only by
-    /// single newlines and whitespace. `.docLineComment` is never part of the header.
+    /// `FileHeader.findHeaderEnd` : consecutive `.lineComment` , `.blockComment` ,
+    /// `.docBlockComment` pieces at the start of the trivia, separated only by single newlines and
+    /// whitespace. `.docLineComment` is never part of the header.
     private static func fileHeaderEnd(in pieces: [TriviaPiece]) -> Int {
         var lastCommentEnd = 0
         var i = 0
+
         while i < pieces.count {
             switch pieces[i] {
-            case .lineComment, .blockComment, .docBlockComment:
-                lastCommentEnd = i + 1
-                i += 1
-            case .spaces, .tabs:
-                i += 1
-            case .newlines(1), .carriageReturns(1), .carriageReturnLineFeeds(1):
-                i += 1
-            default:
-                return lastCommentEnd
+                case .lineComment, .blockComment, .docBlockComment:
+                    lastCommentEnd = i + 1
+                    i += 1
+                case .spaces, .tabs: i += 1
+                case .newlines(1), .carriageReturns(1), .carriageReturnLineFeeds(1): i += 1
+                default: return lastCommentEnd
             }
         }
         return lastCommentEnd
@@ -225,6 +230,7 @@ final class ReflowComments: StaticFormatRule<BasicRuleValue>, @unchecked Sendabl
     private static func indentationBefore(index: Int, in pieces: [TriviaPiece]) -> String {
         var indent = ""
         var j = index - 1
+
         while j >= 0 {
             switch pieces[j] {
                 case let .spaces(n):
@@ -251,6 +257,6 @@ final class ReflowComments: StaticFormatRule<BasicRuleValue>, @unchecked Sendabl
     }
 }
 
-extension Finding.Message {
-    fileprivate static let reflowComment: Finding.Message = "reflow comment to fit line length"
+fileprivate extension Finding.Message {
+    static let reflowComment: Finding.Message = "reflow comment to fit line length"
 }

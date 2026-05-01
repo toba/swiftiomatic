@@ -12,7 +12,7 @@
 
 import SwiftSyntax
 
-/// A visitor that determines if the target source file imports `XCTest`.
+/// A visitor that determines if the target source file imports `XCTest` .
 private final class ImportsXCTestVisitor: SyntaxVisitor {
     private let context: Context
 
@@ -25,9 +25,9 @@ private final class ImportsXCTestVisitor: SyntaxVisitor {
         // If we already know whether or not `XCTest` is imported, don't bother doing anything else.
         guard context.importsXCTest == .notDetermined else { return .skipChildren }
 
-        // If the first import path component is the `XCTest` module, record that fact. Checking in this
-        // way lets us catch `import XCTest` but also specific decl imports like
-        // `import class XCTest.XCTestCase`, if someone wants to do that.
+        // If the first import path component is the `XCTest` module, record that fact. Checking in
+        // this way lets us catch `import XCTest` but also specific decl imports like
+        // `import class XCTest.XCTestCase` , if someone wants to do that.
         if node.path.first!.name.tokenKind == .identifier("XCTest") {
             context.importsXCTest = .importsXCTest
         }
@@ -36,7 +36,8 @@ private final class ImportsXCTestVisitor: SyntaxVisitor {
     }
 
     override func visitPost(_: SourceFileSyntax) {
-        // If we visited the entire source file and didn't find an `XCTest` import, record that fact.
+        // If we visited the entire source file and didn't find an `XCTest` import, record that
+        // fact.
         if context.importsXCTest == .notDetermined { context.importsXCTest = .doesNotImportXCTest }
     }
 }
@@ -45,7 +46,7 @@ private final class ImportsXCTestVisitor: SyntaxVisitor {
 /// whether the file contains test code or not.
 ///
 /// This setter will only run the visitor if another rule hasn't already called this function to
-/// determine if the source file imports `XCTest`.
+/// determine if the source file imports `XCTest` .
 ///
 /// - Parameters:
 ///   - context: The context information of the target source file.

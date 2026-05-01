@@ -2,15 +2,13 @@ import SwiftSyntax
 
 /// Move inline `try` keyword(s) to the start of the expression.
 ///
-/// When `try` appears inside function call arguments, it can be hoisted to wrap the
-/// entire call expression. This is clearer and avoids redundant `try` keywords when
-/// multiple arguments throw.
+/// When `try` appears inside function call arguments, it can be hoisted to wrap the entire call
+/// expression. This is clearer and avoids redundant `try` keywords when multiple arguments throw.
 ///
-/// For example, `foo(try bar(), try baz())` should be `try foo(bar(), baz())`.
+/// For example, `foo(try bar(), try baz())` should be `try foo(bar(), baz())` .
 ///
-/// This rule does not flag `try` inside closures (which have their own throwing context)
-/// or when the call is already wrapped in `try`. Only plain `try` is hoisted (not
-/// `try?` or `try!`).
+/// This rule does not flag `try` inside closures (which have their own throwing context) or when
+/// the call is already wrapped in `try` . Only plain `try` is hoisted (not `try?` or `try!` ).
 ///
 /// Lint: Using `try` inside a function call argument raises a warning.
 ///
@@ -30,7 +28,7 @@ final class HoistTry: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
         // Find the first plain try in arguments
         guard let firstTry = findFirstTryInArguments(callNode) else { return ExprSyntax(callNode) }
 
-        // Only hoist plain `try` (not `try?` or `try!`)
+        // Only hoist plain `try` (not `try?` or `try!` )
         guard firstTry.questionOrExclamationMark == nil else { return ExprSyntax(callNode) }
 
         Self.diagnose(.hoistTry, on: firstTry.tryKeyword, context: context)
@@ -63,8 +61,8 @@ final class HoistTry: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
     /// Compact-pipeline state: per-AwaitExpr stack of pre-recursion
     /// `(hadTryBefore, trailingTrivia)` snapshots, populated by
     /// `willEnter(_:AwaitExprSyntax, context:)` and consumed by
-    /// `transform(_:AwaitExprSyntax, parent:context:)`. Reference type so it
-    /// can be stored as a typed lazy property on `Context`.
+    /// `transform(_:AwaitExprSyntax, parent:context:)` . Reference type so it can be stored as a
+    /// typed lazy property on `Context` .
     final class AwaitState {
         var hadTryBefore: [Bool] = []
         var trailingTrivia: [Trivia] = []
@@ -77,14 +75,10 @@ final class HoistTry: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
         state.trailingTrivia.append(node.trailingTrivia)
     }
 
-    static func didExit(_ node: AwaitExprSyntax, context: Context) {
+    static func didExit(_: AwaitExprSyntax, context: Context) {
         let state = context.hoistTryState
-        if !state.hadTryBefore.isEmpty {
-            state.hadTryBefore.removeLast()
-        }
-        if !state.trailingTrivia.isEmpty {
-            state.trailingTrivia.removeLast()
-        }
+        if !state.hadTryBefore.isEmpty { state.hadTryBefore.removeLast() }
+        if !state.trailingTrivia.isEmpty { state.trailingTrivia.removeLast() }
     }
 
     static func transform(
@@ -103,17 +97,15 @@ final class HoistTry: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
         )
     }
 
-    /// AwaitExpr-targeted helper. Takes `hadTryBefore` and the original trailing trivia
-    /// because both rely on the pre-recursion view of the node.
+    /// AwaitExpr-targeted helper. Takes `hadTryBefore` and the original trailing trivia because
+    /// both rely on the pre-recursion view of the node.
     private static func transformAwait(
         _ awaitNode: AwaitExprSyntax,
         hadTryBefore: Bool,
         originalTrailingTrivia: Trivia
     ) -> ExprSyntax {
-        guard
-            !hadTryBefore,
-            let tryExpr = awaitNode.expression.as(TryExprSyntax.self)
-        else {
+        guard !hadTryBefore,
+              let tryExpr = awaitNode.expression.as(TryExprSyntax.self) else {
             return ExprSyntax(awaitNode)
         }
 
@@ -134,15 +126,15 @@ final class HoistTry: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
     /// Strips `try` from the expression, handling `await try` nesting.
     private static func stripTry(from expr: ExprSyntax) -> ExprSyntax {
         if let tryExpr = expr.as(TryExprSyntax.self),
-            tryExpr.questionOrExclamationMark == nil
+           tryExpr.questionOrExclamationMark == nil
         {
             var inner = tryExpr.expression
             inner.leadingTrivia = expr.leadingTrivia
             return inner
         }
         if let awaitExpr = expr.as(AwaitExprSyntax.self),
-            let tryExpr = awaitExpr.expression.as(TryExprSyntax.self),
-            tryExpr.questionOrExclamationMark == nil
+           let tryExpr = awaitExpr.expression.as(TryExprSyntax.self),
+           tryExpr.questionOrExclamationMark == nil
         {
             var inner = tryExpr.expression
             inner.leadingTrivia = tryExpr.leadingTrivia
@@ -159,7 +151,7 @@ final class HoistTry: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
             if let tryExpr = arg.expression.as(TryExprSyntax.self) { return tryExpr }
 
             if let awaitExpr = arg.expression.as(AwaitExprSyntax.self),
-                let tryExpr = awaitExpr.expression.as(TryExprSyntax.self)
+               let tryExpr = awaitExpr.expression.as(TryExprSyntax.self)
             {
                 return tryExpr
             }
@@ -189,6 +181,6 @@ final class HoistTry: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
     }
 }
 
-extension Finding.Message {
-    fileprivate static let hoistTry: Finding.Message = "move 'try' to the start of the expression"
+fileprivate extension Finding.Message {
+    static let hoistTry: Finding.Message = "move 'try' to the start of the expression"
 }

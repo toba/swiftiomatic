@@ -27,15 +27,15 @@ import SwiftParserDiagnostics
 ///   - source: The Swift source code to be formatted.
 ///   - operatorTable: The operator table to use for sequence folding.
 ///   - url: A file URL denoting the filename/path that should be assumed for this syntax tree,
-///     which is associated with any diagnostics emitted during formatting. If this is nil, a
-///     dummy value will be used.
+///     which is associated with any diagnostics emitted during formatting. If this is nil, a dummy
+///     value will be used.
 ///   - experimentalFeatures: The set of experimental features that should be enabled in the parser.
 ///     These names must be from the set of parser-recognized experimental language features in
-///     `SwiftParser`'s `Parser.ExperimentalFeatures` enum, which match the spelling defined in the
+///     `SwiftParser` 's `Parser.ExperimentalFeatures` enum, which match the spelling defined in the
 ///     compiler's `Features.def` file.
-///   - parsingDiagnosticHandler: An optional callback that will be notified if there are any
-///     errors when parsing the source code.
-/// - Throws: If an unrecoverable error occurs when formatting the code.
+///   - parsingDiagnosticHandler: An optional callback that will be notified if there are any errors
+///     when parsing the source code.
+///   - Throws: If an unrecoverable error occurs when formatting the code.
 func parseAndEmitDiagnostics(
     source: String,
     operatorTable: OperatorTable,
@@ -68,8 +68,8 @@ func parseAndEmitDiagnostics(
         for diagnostic in diagnostics {
             let location = diagnostic.location(converter: expectedConverter)
 
-            // Ignore editor placeholders, because it is useful to support formatting
-            // in-progress files that contain those.
+            // Ignore editor placeholders, because it is useful to support formatting in-progress
+            // files that contain those.
             if diagnostic.diagnosticID != StaticTokenError.editorPlaceholder.diagnosticID {
                 parsingDiagnosticHandler(diagnostic, location)
                 hasErrors = true

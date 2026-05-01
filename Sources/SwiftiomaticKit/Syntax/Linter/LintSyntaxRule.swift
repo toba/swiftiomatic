@@ -1,3 +1,6 @@
+// sm:ignore preferFinalClasses, preferStaticOverClassFunc
+// Subclassed by every lint rule; `class var` is required so subclass overrides dispatch through
+// the vtable when accessed via `any SyntaxRule.Type` existentials.
 import Foundation
 import SwiftSyntax
 import ConfigurationKit

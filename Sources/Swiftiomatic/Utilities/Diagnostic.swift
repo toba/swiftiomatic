@@ -17,11 +17,7 @@ import SwiftiomaticKit
 /// the message, allowing diagnostic printers that want to print those values separately to do so.
 struct Diagnostic {
     /// The severity of the diagnostic.
-    enum Severity {
-        case note
-        case warning
-        case error
-    }
+    enum Severity { case note, warning, error }
 
     /// Represents the location of a diagnostic.
     struct Location {
@@ -36,16 +32,16 @@ struct Diagnostic {
 
         /// Creates a new diagnostic location from the given source location.
         init(_ sourceLocation: SourceLocation) {
-            self.file = sourceLocation.file
-            self.line = sourceLocation.line
-            self.column = sourceLocation.column
+            file = sourceLocation.file
+            line = sourceLocation.line
+            column = sourceLocation.column
         }
 
         /// Creates a new diagnostic location with the given finding location.
         init(_ findingLocation: Finding.Location) {
-            self.file = findingLocation.file
-            self.line = findingLocation.line
-            self.column = findingLocation.column
+            file = findingLocation.file
+            line = findingLocation.line
+            column = findingLocation.column
         }
     }
 
@@ -61,16 +57,9 @@ struct Diagnostic {
     /// The message text associated with the diagnostic.
     var message: String
 
-    var description: String {
-        if let category = category {
-            return "[\(category)] \(message)"
-        } else {
-            return message
-        }
-    }
+    var description: String { if let category { "[\(category)] \(message)" } else { message } }
 
-    /// Creates a new diagnostic with the given severity, location, optional category, and
-    /// message.
+    /// Creates a new diagnostic with the given severity, location, optional category, and message.
     init(severity: Severity, location: Location?, category: String? = nil, message: String) {
         self.severity = severity
         self.location = location

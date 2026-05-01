@@ -13,6 +13,7 @@ package enum Lint: String, Hashable, Sendable, Codable {
     package init(from decoder: any Decoder) throws {
         let container = try decoder.singleValueContainer()
         let raw = try container.decode(String.self)
+
         switch raw {
             case "warn": self = .warn
             case "error": self = .error

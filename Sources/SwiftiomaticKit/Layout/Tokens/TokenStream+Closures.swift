@@ -21,6 +21,7 @@ extension TokenStream {
 
         if let signature = node.signature {
             after(node.leftBrace, tokens: .break(.open))
+
             if !node.statements.isEmpty {
                 after(signature.inKeyword, tokens: .break(.same, newlines: newlineBehavior))
             } else {
@@ -128,6 +129,7 @@ extension TokenStream {
     func visitClosureCapture(_ node: ClosureCaptureSyntax) -> SyntaxVisitorContinueKind {
         before(node.firstToken(viewMode: .sourceAccurate), tokens: .open)
         after(node.specifier?.lastToken(viewMode: .sourceAccurate), tokens: .break)
+
         if let trailingComma = node.trailingComma {
             before(trailingComma, tokens: .close)
             after(trailingComma, tokens: .break(.same))

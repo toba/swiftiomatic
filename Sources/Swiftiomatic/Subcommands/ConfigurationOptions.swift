@@ -13,17 +13,17 @@
 import ArgumentParser
 import SwiftiomaticKit
 
-/// Common arguments used by the `lint`, `format` and `dump-configuration` subcommands.
+/// Common arguments used by the `lint` , `format` and `dump-configuration` subcommands.
 struct ConfigurationOptions: ParsableArguments {
-  /// The path to the JSON configuration file that should be loaded.
-  ///
-  /// If not specified, the default configuration will be used.
-  @Option(
-    name: .customLong("configuration"),
-    help: """
-      The path to a JSON file containing the configuration of the linter/formatter or a JSON string containing the \
-      configuration directly.
-      """
-  )
-  var configuration: String?
+    /// The path to the JSON configuration file that should be loaded.
+    ///
+    /// If not specified, the default configuration will be used.
+    @Option(
+        name: .customLong("configuration"),
+        help: """
+            The path to a JSON file containing the configuration of the linter/formatter or a JSON string containing the \
+            configuration directly.
+            """
+    )
+    var configuration: String?
 }

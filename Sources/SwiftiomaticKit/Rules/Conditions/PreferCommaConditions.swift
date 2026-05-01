@@ -17,7 +17,7 @@ final class PreferCommaConditions: StaticFormatRule<BasicRuleValue>, @unchecked 
 
     static func transform(
         _ visited: ConditionElementListSyntax,
-        parent: Syntax?,
+        parent _: Syntax?,
         context: Context
     ) -> ConditionElementListSyntax {
         // Check if any element has a top-level &&
@@ -27,8 +27,7 @@ final class PreferCommaConditions: StaticFormatRule<BasicRuleValue>, @unchecked 
 
         for element in visited {
             guard elementHasTopLevelAnd(element),
-                  case let .expression(expr) = element.condition
-            else {
+                  case let .expression(expr) = element.condition else {
                 newElements.append(element)
                 continue
             }
@@ -84,8 +83,7 @@ final class PreferCommaConditions: StaticFormatRule<BasicRuleValue>, @unchecked 
     private static func flattenAndChain(_ expr: ExprSyntax, into operands: inout [ExprSyntax]) {
         guard let infix = expr.as(InfixOperatorExprSyntax.self),
               let binOp = infix.operator.as(BinaryOperatorExprSyntax.self),
-              binOp.operator.text == "&&"
-        else {
+              binOp.operator.text == "&&" else {
             operands.append(expr)
             return
         }

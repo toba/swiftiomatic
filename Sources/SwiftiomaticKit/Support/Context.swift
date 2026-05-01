@@ -8,20 +8,9 @@ import SwiftOperators
 /// Specifically, it is the container for the shared configuration, diagnostic consumer, and URL of
 /// the current file.
 package final class Context {
-
-    /// Tracks whether `XCTest` has been imported so that certain logic can be modified for files that
-    /// are known to be tests.
-    package enum XCTestImportState {
-
-        /// Whether `XCTest` is imported or not has not yet been determined.
-        case notDetermined
-
-        /// The file is known to import `XCTest`.
-        case importsXCTest
-
-        /// The file is known to not import `XCTest`.
-        case doesNotImportXCTest
-    }
+    /// Tracks whether `XCTest` has been imported so that certain logic can be modified for files
+    /// that are known to be tests.
+    package enum XCTestImportState { case notDetermined, importsXCTest, doesNotImportXCTest }
 
     /// The configuration for this run of the pipeline, provided by a configuration JSON file.
     let configuration: Configuration
@@ -52,10 +41,10 @@ package final class Context {
 
     /// Identifiers of every rule whose configuration is currently active for this run.
     ///
-    /// Computed once per `Context` from `Configuration.isActive(rule:)`. `shouldFormat` and
-    /// `shouldRewrite` use this set to short-circuit disabled rules before paying for the
-    /// per-node `startLocation` + `ruleMask.ruleState` work — which is the bulk of the per-rule
-    /// per-node cost when ~half the rules are off.
+    /// Computed once per `Context` from `Configuration.isActive(rule:)` . `shouldFormat` and
+    /// `shouldRewrite` use this set to short-circuit disabled rules before paying for the per-node
+    /// `startLocation` + `ruleMask.ruleState` work — which is the bulk of the per-rule per-node
+    /// cost when ~half the rules are off.
     let enabledRules: Set<ObjectIdentifier>
 
     // MARK: - Per-rule mutable state
@@ -84,21 +73,21 @@ package final class Context {
     lazy var validateTestCasesState = ValidateTestCases.State()
     lazy var wrapSingleLineBodiesState = WrapSingleLineBodiesState()
 
-    /// Pre-built `(titlecased, uppercased)` pairs for `UppercaseAcronyms`,
-    /// sorted longest-first so longer acronyms match before shorter
-    /// substrings. Computed once per file; reused for every identifier
-    /// token visited.
+    /// Pre-built `(titlecased, uppercased)` pairs for `UppercaseAcronyms` , sorted longest-first so
+    /// longer acronyms match before shorter substrings. Computed once per file; reused for every
+    /// identifier token visited.
     ///
     /// Lazy so a config that disables `UppercaseAcronyms` never pays the
-    /// `uppercased() + sorted + map` cost. The single access site
-    /// (`LayoutWriter.applyUppercaseAcronyms`) is gated by
-    /// `context.shouldRewrite(UppercaseAcronyms.self, ...)`, so when the rule
-    /// is disabled this lazy var is never realized.
-    lazy var preparedAcronyms: [(titlecased: String, uppercased: String)] =
-        configuration[UppercaseAcronyms.self].words
-            .filter { $0.count >= 2 }
-            .sorted { $0.count > $1.count }
-            .map { (titlecased: $0.capitalized, uppercased: $0.uppercased()) }
+    /// `uppercased() + sorted + map` cost. The single access site (
+    /// `LayoutWriter.applyUppercaseAcronyms` ) is gated by
+    /// `context.shouldRewrite(UppercaseAcronyms.self, ...)` , so when the rule is disabled this
+    /// lazy var is never realized.
+    lazy var preparedAcronyms: [(titlecased: String, uppercased: String)] = configuration[
+        UppercaseAcronyms.self
+    ].words
+        .filter { $0.count >= 2 }
+        .sorted { $0.count > $1.count }
+        .map { (titlecased: $0.capitalized, uppercased: $0.uppercased()) }
 
     /// Creates a new Context with the provided configuration, diagnostic engine, and file URL.
     package init(
@@ -116,8 +105,8 @@ package final class Context {
         self.fileURL = fileURL
         importsXCTest = .notDetermined
         let tree = source.map { Parser.parse(source: $0) } ?? sourceFileSyntax
-        sourceLocationConverter =
-            SourceLocationConverter(fileName: fileURL.relativePath, tree: tree)
+        sourceLocationConverter = SourceLocationConverter(
+            fileName: fileURL.relativePath, tree: tree)
         self.selection = selection.resolved(with: sourceLocationConverter)
         ruleMask = RuleMask(
             syntaxNode: Syntax(sourceFileSyntax),
@@ -126,9 +115,7 @@ package final class Context {
         var enabled: Set<ObjectIdentifier> = []
         enabled.reserveCapacity(ConfigurationRegistry.allRuleTypes.count)
         for ruleType in ConfigurationRegistry.allRuleTypes
-        where configuration.isActive(rule: ruleType) {
-            enabled.insert(ObjectIdentifier(ruleType))
-        }
+        where configuration.isActive(rule: ruleType) { enabled.insert(ObjectIdentifier(ruleType)) }
         enabledRules = enabled
     }
 
@@ -138,12 +125,11 @@ package final class Context {
         shouldFormat(ruleType: rule, node: node)
     }
 
-    /// Non-generic counterpart to `shouldFormat<R>(_:node:)` that uses existential
-    /// dispatch on the rule's runtime metatype.
+    /// Non-generic counterpart to `shouldFormat<R>(_:node:)` that uses existential dispatch on the
+    /// rule's runtime metatype.
     ///
-    /// Use this from contexts where a generic `<R>` overload would bind R to the
-    /// static base type and look up the wrong configuration key. See
-    /// `Configuration.isActive(rule:)`.
+    /// Use this from contexts where a generic `<R>` overload would bind R to the static base type
+    /// and look up the wrong configuration key. See `Configuration.isActive(rule:)` .
     func shouldFormat(ruleType rule: any SyntaxRule.Type, node: Syntax) -> Bool {
         guard enabledRules.contains(ObjectIdentifier(rule)) else { return false }
         guard node.isInsideSelection(selection) else { return false }
@@ -152,9 +138,9 @@ package final class Context {
         return ruleMask.ruleState(ruleName, at: loc) == .default
     }
 
-    /// Rewrite-path entry point for the gate check; equivalent to `shouldFormat(_:node:)`.
-    /// Returns whether the rule should run on this node, consulting `RuleMask` (`// sm:ignore`)
-    /// and `Configuration.isActive(rule:)` (per-rule `rewrite` flag, with `defaultIsActive: false`
+    /// Rewrite-path entry point for the gate check; equivalent to `shouldFormat(_:node:)` . Returns
+    /// whether the rule should run on this node, consulting `RuleMask` ( `// sm:ignore` ) and
+    /// `Configuration.isActive(rule:)` (per-rule `rewrite` flag, with `defaultIsActive: false`
     /// honoring opt-in rules and `Configuration.forTesting(enabledRule:)` honoring tests).
     func shouldRewrite<R: SyntaxRule>(_ rule: R.Type, at node: Syntax) -> Bool {
         shouldFormat(rule, node: node)

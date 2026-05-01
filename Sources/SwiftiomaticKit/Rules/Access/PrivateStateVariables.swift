@@ -19,7 +19,7 @@ final class PrivateStateVariables: StaticFormatRule<BasicRuleValue>, @unchecked 
 
     static func transform(
         _ node: VariableDeclSyntax,
-        parent: Syntax?,
+        parent _: Syntax?,
         context: Context
     ) -> DeclSyntax {
         // Must have @State or @StateObject attribute
@@ -57,8 +57,9 @@ final class PrivateStateVariables: StaticFormatRule<BasicRuleValue>, @unchecked 
     private static func hasAttribute(named name: String, on node: VariableDeclSyntax) -> Bool {
         node.attributes.contains { element in
             guard let attr = element.as(AttributeSyntax.self),
-                  let attrName = attr.attributeName.as(IdentifierTypeSyntax.self)
-            else { return false }
+                  let attrName = attr.attributeName.as(IdentifierTypeSyntax.self) else {
+                return false
+            }
             return attrName.name.text == name
         }
     }

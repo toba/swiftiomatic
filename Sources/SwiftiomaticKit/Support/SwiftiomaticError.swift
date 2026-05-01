@@ -15,7 +15,6 @@ import SwiftSyntax
 
 /// Errors that can be thrown by the `SwiftiomaticFormatter` and `SwiftiomaticLinter` APIs.
 package enum SwiftiomaticError: LocalizedError {
-
     /// The requested file was not readable or it did not exist.
     case fileNotReadable
 
@@ -36,17 +35,13 @@ package enum SwiftiomaticError: LocalizedError {
 
     package var errorDescription: String? {
         switch self {
-            case .fileNotReadable:
-                "file is not readable or does not exist"
-            case .isDirectory:
-                "requested path is a directory, not a file"
-            case .fileContainsInvalidSyntax:
-                "file contains invalid Swift syntax"
-            case .unrecognizedExperimentalFeature(let name):
+            case .fileNotReadable: "file is not readable or does not exist"
+            case .isDirectory: "requested path is a directory, not a file"
+            case .fileContainsInvalidSyntax: "file contains invalid Swift syntax"
+            case let .unrecognizedExperimentalFeature(name):
                 "experimental feature '\(name)' was not recognized by the Swift parser"
-            case .configurationDumpFailed(let message):
-                "dumping configuration failed: \(message)"
-            case .unsupportedConfigurationVersion(let version, let highestSupported):
+            case let .configurationDumpFailed(message): "dumping configuration failed: \(message)"
+            case let .unsupportedConfigurationVersion(version, highestSupported):
                 "This version of the formatter does not support configuration version \(version). The highest supported version is \(highestSupported)."
         }
     }

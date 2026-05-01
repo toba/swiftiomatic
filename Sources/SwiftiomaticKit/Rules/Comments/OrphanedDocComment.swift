@@ -2,11 +2,11 @@ import SwiftSyntax
 
 /// Documentation comments must be attached to a declaration.
 ///
-/// A `///` or `/** */` doc comment that is followed by a regular `//` or `/* */`
-/// comment instead of a declaration is "orphaned" — the doc comment is detached
-/// from any code construct it could document.
+/// A `///` or `/** */` doc comment that is followed by a regular `//` or `/* */` comment instead of
+/// a declaration is "orphaned" — the doc comment is detached from any code construct it could
+/// document.
 ///
-/// File-header style comments (`////` and `/***`) are excluded.
+/// File-header style comments ( `////` and `/***` ) are excluded.
 ///
 /// Lint: If a doc comment is orphaned, a lint warning is raised.
 final class OrphanedDocComment: LintSyntaxRule<LintOnlyValue>, @unchecked Sendable {
@@ -19,13 +19,13 @@ final class OrphanedDocComment: LintSyntaxRule<LintOnlyValue>, @unchecked Sendab
 
         while let (index, piece) = iterator.next() {
             switch piece {
-                case .docLineComment(let text), .docBlockComment(let text):
+                case let .docLineComment(text), let .docBlockComment(text):
                     if text.hasPrefix("////") || text.hasPrefix("/***") { continue }
+
                     if Self.isOrphaned(after: &iterator) {
                         diagnose(.orphanedDocComment, on: token, anchor: .leadingTrivia(index))
                     }
-                default:
-                    continue
+                default: continue
             }
         }
         return .visitChildren
@@ -36,21 +36,22 @@ final class OrphanedDocComment: LintSyntaxRule<LintOnlyValue>, @unchecked Sendab
     ) -> Bool {
         while let (_, piece) = iterator.next() {
             switch piece {
-                case .docLineComment, .docBlockComment,
-                    .newlines, .carriageReturns, .carriageReturnLineFeeds,
-                    .spaces, .tabs:
+                case .docLineComment,
+                     .docBlockComment,
+                     .newlines,
+                     .carriageReturns,
+                     .carriageReturnLineFeeds,
+                     .spaces,
+                     .tabs:
                     continue
-                case .lineComment, .blockComment:
-                    return true
-                default:
-                    return false
+                case .lineComment, .blockComment: return true
+                default: return false
             }
         }
         return false
     }
 }
 
-extension Finding.Message {
-    fileprivate static let orphanedDocComment: Finding.Message =
-        "doc comment is not attached to a declaration"
+fileprivate extension Finding.Message {
+    static let orphanedDocComment: Finding.Message = "doc comment is not attached to a declaration"
 }

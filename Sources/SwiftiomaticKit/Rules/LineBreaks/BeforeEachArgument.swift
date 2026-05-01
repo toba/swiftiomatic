@@ -10,6 +10,6 @@ extension TokenStream {
     /// Returns the group consistency that should be used for argument lists based on the user's
     /// current configuration.
     func argumentListConsistency() -> GroupBreakStyle {
-        return config[BeforeEachArgument.self] ? .consistent : .inconsistent
+        config[BeforeEachArgument.self] ? .consistent : .inconsistent
     }
 }

@@ -16,7 +16,7 @@ final class SwiftTestingTestCaseNames: StaticFormatRule<BasicRuleValue>, @unchec
     override class var group: ConfigurationGroup? { .testing }
     override class var defaultValue: BasicRuleValue { .init(rewrite: false, lint: .no) }
 
-    /// Per-file mutable state held as a typed lazy property on `Context`.
+    /// Per-file mutable state held as a typed lazy property on `Context` .
     final class State {
         var importsTesting = false
         var allIdentifiers = Set<String>()
@@ -36,17 +36,16 @@ final class SwiftTestingTestCaseNames: StaticFormatRule<BasicRuleValue>, @unchec
 
     static func willEnter(_ node: SourceFileSyntax, context: Context) {
         let state = context.swiftTestingTestCaseNamesState
+
         for stmt in node.statements {
             if let importDecl = stmt.item.as(ImportDeclSyntax.self),
-                importDecl.path.first?.name.text == "Testing"
+               importDecl.path.first?.name.text == "Testing"
             {
                 state.importsTesting = true
             }
         }
         for token in node.tokens(viewMode: .sourceAccurate) {
-            if case .identifier(let name) = token.tokenKind {
-                state.allIdentifiers.insert(name)
-            }
+            if case let .identifier(name) = token.tokenKind { state.allIdentifiers.insert(name) }
         }
     }
 
@@ -59,29 +58,23 @@ final class SwiftTestingTestCaseNames: StaticFormatRule<BasicRuleValue>, @unchec
     ) -> DeclSyntax {
         let state = context.swiftTestingTestCaseNamesState
         guard state.importsTesting,
-            node.hasAttribute("Test", inModule: "Testing")
-        else {
-            return DeclSyntax(node)
-        }
+              node.hasAttribute("Test", inModule: "Testing") else { return DeclSyntax(node) }
 
-        guard case .identifier(let rawIdent) = node.name.tokenKind else {
-            return DeclSyntax(node)
-        }
+        guard case let .identifier(rawIdent) = node.name.tokenKind else { return DeclSyntax(node) }
 
         let isBackticked = rawIdent.hasPrefix("`") && rawIdent.hasSuffix("`")
         let bareName = isBackticked ? String(rawIdent.dropFirst().dropLast()) : rawIdent
 
         let lowerName = bareName.lowercased()
-        guard lowerName.hasPrefix("test") else {
-            return DeclSyntax(node)
-        }
+        guard lowerName.hasPrefix("test") else { return DeclSyntax(node) }
 
         let newIdentifier: String
+
         if isBackticked {
             let afterTest = bareName.dropFirst(4)
             guard !afterTest.isEmpty else { return DeclSyntax(node) }
-            let trimmed =
-                afterTest.hasPrefix(" ") ? String(afterTest.dropFirst()) : String(afterTest)
+            let trimmed = afterTest.hasPrefix(" ")
+                ? String(afterTest.dropFirst()) : String(afterTest)
             guard !trimmed.isEmpty else { return DeclSyntax(node) }
             newIdentifier = "`\(trimmed)`"
         } else {
@@ -91,7 +84,7 @@ final class SwiftTestingTestCaseNames: StaticFormatRule<BasicRuleValue>, @unchec
 
             let remainder = first.lowercased() + afterTest.dropFirst()
             if Self.swiftKeywords.contains(remainder) { return DeclSyntax(node) }
-            if state.allIdentifiers.contains(remainder) && remainder != bareName {
+            if state.allIdentifiers.contains(remainder), remainder != bareName {
                 return DeclSyntax(node)
             }
             newIdentifier = remainder
@@ -100,13 +93,15 @@ final class SwiftTestingTestCaseNames: StaticFormatRule<BasicRuleValue>, @unchec
         Self.diagnose(.removeTestPrefix(oldName: bareName), on: node.name, context: context)
 
         return DeclSyntax(
-            node.with(\.name, node.name.with(\.tokenKind, .identifier(newIdentifier)))
-        )
+            node.with(
+                \.name,
+                node.name.with(\.tokenKind, .identifier(newIdentifier))
+            ))
     }
 }
 
-extension Finding.Message {
-    fileprivate static func removeTestPrefix(oldName: String) -> Finding.Message {
+fileprivate extension Finding.Message {
+    static func removeTestPrefix(oldName: String) -> Finding.Message {
         "remove 'test' prefix from '@Test' function '\(oldName)'"
     }
 }

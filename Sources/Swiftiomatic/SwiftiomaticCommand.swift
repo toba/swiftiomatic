@@ -12,8 +12,8 @@
 
 import ArgumentParser
 
-/// Collects the command line options that were passed to `sm` and dispatches to the
-/// appropriate subcommand.
+/// Collects the command line options that were passed to `sm` and dispatches to the appropriate
+/// subcommand.
 @main
 struct SwiftiomaticCommand: ParsableCommand {
     static let configuration = CommandConfiguration(

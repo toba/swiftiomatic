@@ -2,11 +2,11 @@ import SwiftSyntax
 
 /// Ensure all modifiers are on the same line as the declaration keyword.
 ///
-/// Modifiers (not attributes) that appear on separate lines from the declaration keyword
-/// are joined onto the same line. Attributes may remain on their own lines.
+/// Modifiers (not attributes) that appear on separate lines from the declaration keyword are joined
+/// onto the same line. Attributes may remain on their own lines.
 ///
-/// Lint: If any modifier is on a different line than the declaration keyword, a lint warning
-/// is raised.
+/// Lint: If any modifier is on a different line than the declaration keyword, a lint warning is
+/// raised.
 ///
 /// Rewrite: Newlines between modifiers and the declaration keyword are replaced with spaces.
 final class ModifiersOnSameLine: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
@@ -16,124 +16,199 @@ final class ModifiersOnSameLine: StaticFormatRule<BasicRuleValue>, @unchecked Se
 
     static func transform(
         _ node: ClassDeclSyntax,
-        parent: Syntax?,
+        parent _: Syntax?,
         context: Context
     ) -> DeclSyntax {
-        DeclSyntax(collapseModifierLines(of: node, keywordKeyPath: \.classKeyword, context: context))
+        DeclSyntax(
+            collapseModifierLines(
+                of: node,
+                keywordKeyPath: \.classKeyword,
+                context: context
+            ))
     }
 
     static func transform(
         _ node: StructDeclSyntax,
-        parent: Syntax?,
+        parent _: Syntax?,
         context: Context
     ) -> DeclSyntax {
-        DeclSyntax(collapseModifierLines(of: node, keywordKeyPath: \.structKeyword, context: context))
+        DeclSyntax(
+            collapseModifierLines(
+                of: node,
+                keywordKeyPath: \.structKeyword,
+                context: context
+            ))
     }
 
     static func transform(
         _ node: EnumDeclSyntax,
-        parent: Syntax?,
+        parent _: Syntax?,
         context: Context
     ) -> DeclSyntax {
-        DeclSyntax(collapseModifierLines(of: node, keywordKeyPath: \.enumKeyword, context: context))
+        DeclSyntax(
+            collapseModifierLines(
+                of: node,
+                keywordKeyPath: \.enumKeyword,
+                context: context
+            ))
     }
 
     static func transform(
         _ node: ActorDeclSyntax,
-        parent: Syntax?,
+        parent _: Syntax?,
         context: Context
     ) -> DeclSyntax {
-        DeclSyntax(collapseModifierLines(of: node, keywordKeyPath: \.actorKeyword, context: context))
+        DeclSyntax(
+            collapseModifierLines(
+                of: node,
+                keywordKeyPath: \.actorKeyword,
+                context: context
+            ))
     }
 
     static func transform(
         _ node: ProtocolDeclSyntax,
-        parent: Syntax?,
+        parent _: Syntax?,
         context: Context
     ) -> DeclSyntax {
-        DeclSyntax(collapseModifierLines(of: node, keywordKeyPath: \.protocolKeyword, context: context))
+        DeclSyntax(
+            collapseModifierLines(
+                of: node,
+                keywordKeyPath: \.protocolKeyword,
+                context: context
+            ))
     }
 
     static func transform(
         _ node: ExtensionDeclSyntax,
-        parent: Syntax?,
+        parent _: Syntax?,
         context: Context
     ) -> DeclSyntax {
-        DeclSyntax(collapseModifierLines(of: node, keywordKeyPath: \.extensionKeyword, context: context))
+        DeclSyntax(
+            collapseModifierLines(
+                of: node,
+                keywordKeyPath: \.extensionKeyword,
+                context: context
+            ))
     }
 
     // MARK: - Leaf declarations
 
     static func transform(
         _ node: FunctionDeclSyntax,
-        parent: Syntax?,
+        parent _: Syntax?,
         context: Context
     ) -> DeclSyntax {
-        DeclSyntax(collapseModifierLines(of: node, keywordKeyPath: \.funcKeyword, context: context))
+        DeclSyntax(
+            collapseModifierLines(
+                of: node,
+                keywordKeyPath: \.funcKeyword,
+                context: context
+            ))
     }
 
     static func transform(
         _ node: VariableDeclSyntax,
-        parent: Syntax?,
+        parent _: Syntax?,
         context: Context
     ) -> DeclSyntax {
-        DeclSyntax(collapseModifierLines(of: node, keywordKeyPath: \.bindingSpecifier, context: context))
+        DeclSyntax(
+            collapseModifierLines(
+                of: node,
+                keywordKeyPath: \.bindingSpecifier,
+                context: context
+            ))
     }
 
     static func transform(
         _ node: InitializerDeclSyntax,
-        parent: Syntax?,
+        parent _: Syntax?,
         context: Context
     ) -> DeclSyntax {
-        DeclSyntax(collapseModifierLines(of: node, keywordKeyPath: \.initKeyword, context: context))
+        DeclSyntax(
+            collapseModifierLines(
+                of: node,
+                keywordKeyPath: \.initKeyword,
+                context: context
+            ))
     }
 
     static func transform(
         _ node: SubscriptDeclSyntax,
-        parent: Syntax?,
+        parent _: Syntax?,
         context: Context
     ) -> DeclSyntax {
-        DeclSyntax(collapseModifierLines(of: node, keywordKeyPath: \.subscriptKeyword, context: context))
+        DeclSyntax(
+            collapseModifierLines(
+                of: node,
+                keywordKeyPath: \.subscriptKeyword,
+                context: context
+            ))
     }
 
     static func transform(
         _ node: TypeAliasDeclSyntax,
-        parent: Syntax?,
+        parent _: Syntax?,
         context: Context
     ) -> DeclSyntax {
-        DeclSyntax(collapseModifierLines(of: node, keywordKeyPath: \.typealiasKeyword, context: context))
+        DeclSyntax(
+            collapseModifierLines(
+                of: node,
+                keywordKeyPath: \.typealiasKeyword,
+                context: context
+            ))
     }
 
     static func transform(
         _ node: EnumCaseDeclSyntax,
-        parent: Syntax?,
+        parent _: Syntax?,
         context: Context
     ) -> DeclSyntax {
-        DeclSyntax(collapseModifierLines(of: node, keywordKeyPath: \.caseKeyword, context: context))
+        DeclSyntax(
+            collapseModifierLines(
+                of: node,
+                keywordKeyPath: \.caseKeyword,
+                context: context
+            ))
     }
 
     static func transform(
         _ node: ImportDeclSyntax,
-        parent: Syntax?,
+        parent _: Syntax?,
         context: Context
     ) -> DeclSyntax {
-        DeclSyntax(collapseModifierLines(of: node, keywordKeyPath: \.importKeyword, context: context))
+        DeclSyntax(
+            collapseModifierLines(
+                of: node,
+                keywordKeyPath: \.importKeyword,
+                context: context
+            ))
     }
 
     static func transform(
         _ node: DeinitializerDeclSyntax,
-        parent: Syntax?,
+        parent _: Syntax?,
         context: Context
     ) -> DeclSyntax {
-        DeclSyntax(collapseModifierLines(of: node, keywordKeyPath: \.deinitKeyword, context: context))
+        DeclSyntax(
+            collapseModifierLines(
+                of: node,
+                keywordKeyPath: \.deinitKeyword,
+                context: context
+            ))
     }
 
     static func transform(
         _ node: AssociatedTypeDeclSyntax,
-        parent: Syntax?,
+        parent _: Syntax?,
         context: Context
     ) -> DeclSyntax {
-        DeclSyntax(collapseModifierLines(of: node, keywordKeyPath: \.associatedtypeKeyword, context: context))
+        DeclSyntax(
+            collapseModifierLines(
+                of: node,
+                keywordKeyPath: \.associatedtypeKeyword,
+                context: context
+            ))
     }
 
     // MARK: - Helper
@@ -146,18 +221,19 @@ final class ModifiersOnSameLine: StaticFormatRule<BasicRuleValue>, @unchecked Se
         let modifiers = decl.modifiers
         guard !modifiers.isEmpty else { return decl }
 
-        // Check if any modifier (after the first) or the keyword has a newline in its leading trivia.
+        // Check if any modifier (after the first) or the keyword has a newline in its leading
+        // trivia.
         var needsFix = false
+
         for (index, modifier) in modifiers.enumerated() {
             if index == 0 { continue }
+
             if modifier.leadingTrivia.containsNewlines {
                 needsFix = true
                 break
             }
         }
-        if decl[keyPath: keywordKeyPath].leadingTrivia.containsNewlines {
-            needsFix = true
-        }
+        if decl[keyPath: keywordKeyPath].leadingTrivia.containsNewlines { needsFix = true }
         guard needsFix else { return decl }
 
         // If there are comments between modifiers, preserve existing formatting.
@@ -171,10 +247,8 @@ final class ModifiersOnSameLine: StaticFormatRule<BasicRuleValue>, @unchecked Se
 
         var result = decl
         var newModifiers = Array(modifiers)
-        for i in 1..<newModifiers.count {
-            if newModifiers[i].leadingTrivia.containsNewlines {
-                newModifiers[i].leadingTrivia = .space
-            }
+        for i in 1..<newModifiers.count where newModifiers[i].leadingTrivia.containsNewlines {
+            newModifiers[i].leadingTrivia = .space
         }
         result.modifiers = DeclModifierListSyntax(newModifiers)
 
@@ -186,7 +260,7 @@ final class ModifiersOnSameLine: StaticFormatRule<BasicRuleValue>, @unchecked Se
     }
 }
 
-extension Finding.Message {
-    fileprivate static let modifiersNotOnSameLine: Finding.Message =
+fileprivate extension Finding.Message {
+    static let modifiersNotOnSameLine: Finding.Message =
         "place all modifiers on the same line as the declaration keyword"
 }

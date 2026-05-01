@@ -17,7 +17,7 @@ final class ACLConsistency: StaticFormatRule<BasicRuleValue>, @unchecked Sendabl
 
     static func transform(
         _ node: DeclModifierSyntax,
-        parent: Syntax?,
+        parent _: Syntax?,
         context: Context
     ) -> DeclModifierSyntax {
         guard node.isHigherACLThanParent else { return node }
@@ -52,9 +52,7 @@ fileprivate extension Finding.Message {
 
 fileprivate extension DeclModifierSyntax {
     var isHigherACLThanParent: Bool {
-        guard let nearestNominalParent = parent?.nearestNominalParent() else {
-            return false
-        }
+        guard let nearestNominalParent = parent?.nearestNominalParent() else { return false }
 
         let parentModifiers = nearestNominalParent.declModifiers
         switch name.tokenKind {
@@ -62,10 +60,7 @@ fileprivate extension DeclModifierSyntax {
                 return true
             case .keyword(.internal) where parentModifiers?.effectiveAccessKeyword == nil:
                 guard let nominalExtension =
-                    nearestNominalParent.nearestNominalExtensionDeclParent()
-                else {
-                    return false
-                }
+                    nearestNominalParent.nearestNominalExtensionDeclParent() else { return false }
                 return nominalExtension.declModifiers?.containsPrivateOrFileprivate == true
             case .keyword(.public)
                 where parentModifiers?.containsPrivateOrFileprivate == true
@@ -73,10 +68,7 @@ fileprivate extension DeclModifierSyntax {
                 return true
             case .keyword(.public) where parentModifiers?.effectiveAccessKeyword == nil:
                 guard let nominalExtension =
-                    nearestNominalParent.nearestNominalExtensionDeclParent()
-                else {
-                    return true
-                }
+                    nearestNominalParent.nearestNominalExtensionDeclParent() else { return true }
                 return nominalExtension.declModifiers?.contains(.public) == false
                     && nominalExtension.declModifiers?.contains(.open) == false
             case .keyword(.open) where parentModifiers?.contains(.open) == false: return true
@@ -121,6 +113,7 @@ fileprivate extension DeclModifierListSyntax {
     var effectiveAccessKeyword: Keyword? {
         for mod in self {
             guard mod.detail == nil, case let .keyword(kw) = mod.name.tokenKind else { continue }
+
             switch kw {
                 case .public, .internal, .fileprivate, .private, .package, .open: return kw
                 default: continue

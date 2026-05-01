@@ -2,19 +2,18 @@ import SwiftSyntax
 
 /// Remove explicit `self.` where the compiler allows implicit self.
 ///
-/// In most contexts inside type bodies, `self.` is redundant when accessing members
-/// because Swift resolves bare identifiers to instance members. This rule removes
-/// the `self.` prefix when:
+/// In most contexts inside type bodies, `self.` is redundant when accessing members because Swift
+/// resolves bare identifiers to instance members. This rule removes the `self.` prefix when:
 /// - The access is inside a type member (method, computed property, init, subscript)
 /// - The member name is not shadowed by a local variable, parameter, or nested function
 /// - The scope allows implicit self (not a closure in a reference type without capture)
 ///
 /// For closures, implicit self is allowed per SE-0269 (Swift 5.3+) when:
 /// - The enclosing type is a value type (struct/enum)
-/// - The closure explicitly captures self: `[self]`, `[unowned self]`
+/// - The closure explicitly captures self: `[self]` , `[unowned self]`
 ///
-/// The `[weak self]` + `guard let self` pattern (SE-0365, Swift 5.8+) is handled
-/// conservatively: `self.` is kept in weak-self closures.
+/// The `[weak self]` + `guard let self` pattern (SE-0365, Swift 5.8+) is handled conservatively:
+/// `self.` is kept in weak-self closures.
 ///
 /// Lint: A lint warning is raised for redundant `self.` usage.
 ///
@@ -22,9 +21,9 @@ import SwiftSyntax
 final class RedundantSelf: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
     override class var group: ConfigurationGroup? { .redundancies }
 
-    /// Per-file mutable state held as a typed lazy property on `Context`. Mirrors the three instance stacks so
-    /// the static `transform`/`willEnter`/`didExit` path tracks scope identically to the legacy
-    /// override path.
+    /// Per-file mutable state held as a typed lazy property on `Context` . Mirrors the three
+    /// instance stacks so the static `transform` / `willEnter` / `didExit` path tracks scope
+    /// identically to the legacy override path.
     final class State {
         /// Whether the immediately enclosing type is a reference type (class/actor).
         var referenceTypeStack: [Bool] = []
@@ -39,9 +38,7 @@ final class RedundantSelf: StaticFormatRule<BasicRuleValue>, @unchecked Sendable
         var insideTypeBody: Bool { !referenceTypeStack.isEmpty }
         var isReferenceType: Bool { referenceTypeStack.last ?? false }
         var implicitSelfAllowed: Bool { implicitSelfStack.last ?? false }
-        var allLocalNames: Set<String> {
-            localNameStack.reduce(into: Set()) { $0.formUnion($1) }
-        }
+        var allLocalNames: Set<String> { localNameStack.reduce(into: Set()) { $0.formUnion($1) } }
     }
 
     // MARK: - Static scope hooks
@@ -111,6 +108,7 @@ final class RedundantSelf: StaticFormatRule<BasicRuleValue>, @unchecked Sendable
 
     static func didExit(_: FunctionDeclSyntax, context: Context) {
         let state = context.redundantSelfState
+
         if let didPush = state.scopeFrameStack.popLast(), didPush {
             if !state.localNameStack.isEmpty { state.localNameStack.removeLast() }
             if !state.implicitSelfStack.isEmpty { state.implicitSelfStack.removeLast() }
@@ -132,6 +130,7 @@ final class RedundantSelf: StaticFormatRule<BasicRuleValue>, @unchecked Sendable
 
     static func didExit(_: InitializerDeclSyntax, context: Context) {
         let state = context.redundantSelfState
+
         if let didPush = state.scopeFrameStack.popLast(), didPush {
             if !state.localNameStack.isEmpty { state.localNameStack.removeLast() }
             if !state.implicitSelfStack.isEmpty { state.implicitSelfStack.removeLast() }
@@ -152,6 +151,7 @@ final class RedundantSelf: StaticFormatRule<BasicRuleValue>, @unchecked Sendable
 
     static func didExit(_: SubscriptDeclSyntax, context: Context) {
         let state = context.redundantSelfState
+
         if let didPush = state.scopeFrameStack.popLast(), didPush {
             if !state.localNameStack.isEmpty { state.localNameStack.removeLast() }
             if !state.implicitSelfStack.isEmpty { state.implicitSelfStack.removeLast() }
@@ -166,6 +166,7 @@ final class RedundantSelf: StaticFormatRule<BasicRuleValue>, @unchecked Sendable
         }
         var names = Set<String>()
         let spec = node.accessorSpecifier.tokenKind
+
         if let params = node.parameters {
             names.insert(params.name.text)
         } else {
@@ -186,6 +187,7 @@ final class RedundantSelf: StaticFormatRule<BasicRuleValue>, @unchecked Sendable
 
     static func didExit(_: AccessorDeclSyntax, context: Context) {
         let state = context.redundantSelfState
+
         if let didPush = state.scopeFrameStack.popLast(), didPush {
             if !state.localNameStack.isEmpty { state.localNameStack.removeLast() }
             if !state.implicitSelfStack.isEmpty { state.implicitSelfStack.removeLast() }
@@ -206,6 +208,7 @@ final class RedundantSelf: StaticFormatRule<BasicRuleValue>, @unchecked Sendable
 
     static func didExit(_: VariableDeclSyntax, context: Context) {
         let state = context.redundantSelfState
+
         if let didPush = state.scopeFrameStack.popLast(), didPush {
             if !state.localNameStack.isEmpty { state.localNameStack.removeLast() }
             if !state.implicitSelfStack.isEmpty { state.implicitSelfStack.removeLast() }
@@ -231,6 +234,7 @@ final class RedundantSelf: StaticFormatRule<BasicRuleValue>, @unchecked Sendable
 
     static func didExit(_: AccessorBlockSyntax, context: Context) {
         let state = context.redundantSelfState
+
         if let didPush = state.scopeFrameStack.popLast(), didPush {
             if !state.localNameStack.isEmpty { state.localNameStack.removeLast() }
             if !state.implicitSelfStack.isEmpty { state.implicitSelfStack.removeLast() }
@@ -244,10 +248,13 @@ final class RedundantSelf: StaticFormatRule<BasicRuleValue>, @unchecked Sendable
             return
         }
         var names = Set<String>()
-        let allowsImplicitSelf: Bool = !state.isReferenceType ? true : Self.closureHasSelfCapture(node)
+        let allowsImplicitSelf: Bool = !state.isReferenceType
+            ? true
+            : Self.closureHasSelfCapture(node)
 
         if let signature = node.signature {
             names.formUnion(Self.collectClosureParamNames(from: signature))
+
             if let captureClause = signature.capture {
                 for capture in captureClause.items {
                     let name = capture.name.text
@@ -263,6 +270,7 @@ final class RedundantSelf: StaticFormatRule<BasicRuleValue>, @unchecked Sendable
 
     static func didExit(_: ClosureExprSyntax, context: Context) {
         let state = context.redundantSelfState
+
         if let didPush = state.scopeFrameStack.popLast(), didPush {
             if !state.localNameStack.isEmpty { state.localNameStack.removeLast() }
             if !state.implicitSelfStack.isEmpty { state.implicitSelfStack.removeLast() }
@@ -279,13 +287,13 @@ final class RedundantSelf: StaticFormatRule<BasicRuleValue>, @unchecked Sendable
         let state = context.redundantSelfState
 
         guard let base = node.base?.as(DeclReferenceExprSyntax.self),
-              base.baseName.tokenKind == .keyword(.self)
-        else { return ExprSyntax(node) }
+              base.baseName.tokenKind == .keyword(.self) else { return ExprSyntax(node) }
 
         let memberName = node.declName.baseName.text
         guard memberName != "init",
-              !RedundantBackticks.swiftKeywords.contains(memberName)
-        else { return ExprSyntax(node) }
+              !RedundantBackticks.swiftKeywords.contains(memberName) else {
+            return ExprSyntax(node)
+        }
 
         guard !state.implicitSelfStack.isEmpty else { return ExprSyntax(node) }
         guard state.implicitSelfAllowed else { return ExprSyntax(node) }
@@ -301,12 +309,11 @@ final class RedundantSelf: StaticFormatRule<BasicRuleValue>, @unchecked Sendable
 
     // MARK: - Helpers
 
-    /// Determines if a closure captures `self` explicitly (strong or unowned).
-    /// `[weak self]` returns false (conservative — requires guard let self detection).
+    /// Determines if a closure captures `self` explicitly (strong or unowned). `[weak self]`
+    /// returns false (conservative — requires guard let self detection).
     private static func closureHasSelfCapture(_ closure: ClosureExprSyntax) -> Bool {
         guard let signature = closure.signature,
-              let captureClause = signature.capture
-        else { return false }
+              let captureClause = signature.capture else { return false }
 
         for capture in captureClause.items where capture.name.tokenKind == .keyword(.self) {
             if let specifier = capture.specifier {
@@ -327,6 +334,7 @@ final class RedundantSelf: StaticFormatRule<BasicRuleValue>, @unchecked Sendable
         from clause: FunctionParameterClauseSyntax
     ) -> Set<String> {
         var names = Set<String>()
+
         for param in clause.parameters {
             let internalName = param.secondName ?? param.firstName
             guard internalName.tokenKind != .wildcard else { continue }
@@ -354,10 +362,11 @@ final class RedundantSelf: StaticFormatRule<BasicRuleValue>, @unchecked Sendable
         return names
     }
 
-    /// Walks up from a node to find the enclosing property name.
-    /// Used to prevent removing `self.` inside a computed property's own getter/setter.
+    /// Walks up from a node to find the enclosing property name. Used to prevent removing `self.`
+    /// inside a computed property's own getter/setter.
     private static func enclosingPropertyName(of node: some SyntaxProtocol) -> String? {
         var current = node.parent
+
         while let parent = current {
             if let binding = parent.as(PatternBindingSyntax.self),
                let ident = binding.pattern.as(IdentifierPatternSyntax.self)
@@ -369,8 +378,8 @@ final class RedundantSelf: StaticFormatRule<BasicRuleValue>, @unchecked Sendable
         return nil
     }
 
-    /// Collects all declared names in a syntax subtree without descending into
-    /// nested closures, functions, or type declarations (those have their own scope).
+    /// Collects all declared names in a syntax subtree without descending into nested closures,
+    /// functions, or type declarations (those have their own scope).
     private static func collectLocalNames(in syntax: Syntax) -> Set<String> {
         let collector = LocalNameCollector(viewMode: .sourceAccurate)
         collector.walk(syntax)
@@ -380,8 +389,8 @@ final class RedundantSelf: StaticFormatRule<BasicRuleValue>, @unchecked Sendable
 
 // MARK: - Local Name Collector
 
-/// Visitor that collects all identifiers introduced by bindings, patterns,
-/// and nested function declarations within a single scope level.
+/// Visitor that collects all identifiers introduced by bindings, patterns, and nested function
+/// declarations within a single scope level.
 private final class LocalNameCollector: SyntaxVisitor {
     var names: Set<String> = []
 

@@ -1,8 +1,8 @@
-import ConfigurationKit
 import SwiftSyntax
+import ConfigurationKit
 
-/// Type bodies (class, struct, enum, actor, protocol, extension) should not
-/// exceed a configurable line length.
+/// Type bodies (class, struct, enum, actor, protocol, extension) should not exceed a configurable
+/// line length.
 final class TypeBodyLength: LintSyntaxRule<TypeBodyLengthConfiguration>, @unchecked Sendable {
     override class var group: ConfigurationGroup? { .metrics }
 
@@ -38,13 +38,11 @@ final class TypeBodyLength: LintSyntaxRule<TypeBodyLengthConfiguration>, @unchec
 
     private func check(_ memberBlock: MemberBlockSyntax, on anchor: Syntax) {
         let count = bodyLineCount(of: memberBlock, in: context.sourceLocationConverter)
-        guard
-            let severity = metricSeverity(
-                value: count,
-                warning: ruleConfig.warning,
-                error: ruleConfig.error
-            )
-        else { return }
+        guard let severity = metricSeverity(
+            value: count,
+            warning: ruleConfig.warning,
+            error: ruleConfig.error
+        ) else { return }
         diagnose(
             .typeBodyTooLong(
                 lines: count,
@@ -56,8 +54,8 @@ final class TypeBodyLength: LintSyntaxRule<TypeBodyLengthConfiguration>, @unchec
     }
 }
 
-extension Finding.Message {
-    fileprivate static func typeBodyTooLong(lines: Int, limit: Int) -> Finding.Message {
+fileprivate extension Finding.Message {
+    static func typeBodyTooLong(lines: Int, limit: Int) -> Finding.Message {
         "type body has \(lines) lines; limit is \(limit)"
     }
 }
@@ -65,9 +63,9 @@ extension Finding.Message {
 // MARK: - Configuration
 
 package struct TypeBodyLengthConfiguration: ThresholdRuleValue {
-    package var enabled: Bool = true
-    /// Type bodies (struct/class/enum/actor) longer than this many lines
-    /// emit a warning-severity finding.
+    package var enabled = true
+    /// Type bodies (struct/class/enum/actor) longer than this many lines emit a warning-severity
+    /// finding.
     package var warning: Int = 250
     /// Type bodies longer than this many lines emit an error-severity finding.
     package var error: Int = 350

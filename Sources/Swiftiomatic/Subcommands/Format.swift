@@ -13,42 +13,42 @@
 import ArgumentParser
 
 extension SwiftiomaticCommand {
-  /// Formats one or more files containing Swift code.
-  struct Format: ParsableCommand {
-    static let configuration = CommandConfiguration(
-      abstract: "Format Swift source code",
-      discussion: "When no files are specified, it expects the source from standard input."
-    )
+    /// Formats one or more files containing Swift code.
+    struct Format: ParsableCommand {
+        static let configuration = CommandConfiguration(
+            abstract: "Format Swift source code",
+            discussion: "When no files are specified, it expects the source from standard input."
+        )
 
-    /// Whether or not to format the Swift file in-place.
-    ///
-    /// If specified, the current file is overwritten when formatting.
-    @Flag(
-      name: .shortAndLong,
-      help: "Overwrite the current file when formatting."
-    )
-    var inPlace: Bool = false
+        /// Whether or not to format the Swift file in-place.
+        ///
+        /// If specified, the current file is overwritten when formatting.
+        @Flag(
+            name: .shortAndLong,
+            help: "Overwrite the current file when formatting."
+        )
+        var inPlace = false
 
-    @OptionGroup()
-    var configurationOptions: ConfigurationOptions
+        @OptionGroup()
+        var configurationOptions: ConfigurationOptions
 
-    @OptionGroup()
-    var formatOptions: LintFormatOptions
+        @OptionGroup()
+        var formatOptions: LintFormatOptions
 
-    func validate() throws {
-      if inPlace && formatOptions.paths.isEmpty {
-        throw ValidationError("'--in-place' is only valid when formatting files")
-      }
+        func validate() throws {
+            if inPlace, formatOptions.paths.isEmpty {
+                throw ValidationError("'--in-place' is only valid when formatting files")
+            }
+        }
+
+        func run() throws {
+            let frontend = FormatFrontend(
+                configurationOptions: configurationOptions,
+                lintFormatOptions: formatOptions,
+                inPlace: inPlace
+            )
+            frontend.run()
+            if frontend.diagnosticsEngine.hasErrors { throw ExitCode.failure }
+        }
     }
-
-    func run() throws {
-      let frontend = FormatFrontend(
-        configurationOptions: configurationOptions,
-        lintFormatOptions: formatOptions,
-        inPlace: inPlace
-      )
-      frontend.run()
-      if frontend.diagnosticsEngine.hasErrors { throw ExitCode.failure }
-    }
-  }
 }

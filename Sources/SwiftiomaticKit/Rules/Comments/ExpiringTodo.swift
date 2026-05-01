@@ -41,9 +41,9 @@ final class ExpiringTodo: LintSyntaxRule<ExpiringTodoConfiguration>, @unchecked 
 
             switch piece {
                 case let .lineComment(t),
-                    let .blockComment(t),
-                    let .docLineComment(t),
-                    let .docBlockComment(t):
+                     let .blockComment(t),
+                     let .docLineComment(t),
+                     let .docBlockComment(t):
                     text = t
                 default: continue
             }

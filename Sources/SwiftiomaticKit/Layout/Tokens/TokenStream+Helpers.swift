@@ -75,6 +75,7 @@ extension TokenStream {
         var afterAttributeTokens = [Token]()
         if shouldGroup { afterAttributeTokens.append(.close) }
         if !suppressFinalBreak { afterAttributeTokens.append(lineBreak) }
+
         if !afterAttributeTokens.isEmpty {
             after(attributes.lastToken(viewMode: .sourceAccurate), tokens: afterAttributeTokens)
         }
@@ -217,6 +218,7 @@ extension TokenStream {
         guard let node, let contentsKeyPath else { return }
 
         if shouldResetBeforeLeftBrace { before(node.leftBrace, tokens: .break(.reset, size: 1)) }
+
         if !areBracesCompletelyEmpty(node, contentsKeyPath: contentsKeyPath) {
             arrangeNonEmptyBraces(node)
         } else {
@@ -243,6 +245,7 @@ extension TokenStream {
         guard let node, let contentsKeyPath else { return }
 
         if shouldResetBeforeLeftBrace { before(node.leftBrace, tokens: .break(.reset, size: 1)) }
+
         if !areBracesCompletelyEmpty(node, contentsKeyPath: contentsKeyPath) {
             arrangeNonEmptyBraces(node)
         } else {
@@ -388,8 +391,11 @@ extension TokenStream {
         // Find the first index of a non-opening-scope token, and split into the two sections.
         for (index, beforeToken) in beforeTokens.enumerated() {
             switch beforeToken {
-                case .break(.open, _, _), .break(.continue, _, _), .break(.same, _, _),
-                    .break(.contextual, _, _), .open:
+                case .break(.open, _, _),
+                     .break(.continue, _, _),
+                     .break(.same, _, _),
+                     .break(.contextual, _, _),
+                     .open:
                     break
                 default:
                     return index > 0

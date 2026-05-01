@@ -20,14 +20,14 @@ import SwiftSyntax
 /// Lint: If a doc block comment appears, a lint error is raised.
 ///
 /// Rewrite: If a doc block comment appears on its own on a line, or if a doc block comment spans
-///         multiple lines without appearing on the same line as code, it will be replaced with
-///         multiple doc line comments.
+/// multiple lines without appearing on the same line as code, it will be replaced with multiple doc
+/// line comments.
 final class TripleSlashDocComments: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
     override static var group: ConfigurationGroup? { .comments }
 
     static func transform(
         _ node: FunctionDeclSyntax,
-        parent: Syntax?,
+        parent _: Syntax?,
         context: Context
     ) -> DeclSyntax {
         convertDocBlockCommentToDocLineComment(DeclSyntax(node), context: context)
@@ -35,7 +35,7 @@ final class TripleSlashDocComments: StaticFormatRule<BasicRuleValue>, @unchecked
 
     static func transform(
         _ node: EnumDeclSyntax,
-        parent: Syntax?,
+        parent _: Syntax?,
         context: Context
     ) -> DeclSyntax {
         convertDocBlockCommentToDocLineComment(DeclSyntax(node), context: context)
@@ -43,7 +43,7 @@ final class TripleSlashDocComments: StaticFormatRule<BasicRuleValue>, @unchecked
 
     static func transform(
         _ node: InitializerDeclSyntax,
-        parent: Syntax?,
+        parent _: Syntax?,
         context: Context
     ) -> DeclSyntax {
         convertDocBlockCommentToDocLineComment(DeclSyntax(node), context: context)
@@ -51,7 +51,7 @@ final class TripleSlashDocComments: StaticFormatRule<BasicRuleValue>, @unchecked
 
     static func transform(
         _ node: DeinitializerDeclSyntax,
-        parent: Syntax?,
+        parent _: Syntax?,
         context: Context
     ) -> DeclSyntax {
         convertDocBlockCommentToDocLineComment(DeclSyntax(node), context: context)
@@ -59,7 +59,7 @@ final class TripleSlashDocComments: StaticFormatRule<BasicRuleValue>, @unchecked
 
     static func transform(
         _ node: SubscriptDeclSyntax,
-        parent: Syntax?,
+        parent _: Syntax?,
         context: Context
     ) -> DeclSyntax {
         convertDocBlockCommentToDocLineComment(DeclSyntax(node), context: context)
@@ -67,7 +67,7 @@ final class TripleSlashDocComments: StaticFormatRule<BasicRuleValue>, @unchecked
 
     static func transform(
         _ node: ClassDeclSyntax,
-        parent: Syntax?,
+        parent _: Syntax?,
         context: Context
     ) -> DeclSyntax {
         convertDocBlockCommentToDocLineComment(DeclSyntax(node), context: context)
@@ -75,7 +75,7 @@ final class TripleSlashDocComments: StaticFormatRule<BasicRuleValue>, @unchecked
 
     static func transform(
         _ node: VariableDeclSyntax,
-        parent: Syntax?,
+        parent _: Syntax?,
         context: Context
     ) -> DeclSyntax {
         convertDocBlockCommentToDocLineComment(DeclSyntax(node), context: context)
@@ -83,7 +83,7 @@ final class TripleSlashDocComments: StaticFormatRule<BasicRuleValue>, @unchecked
 
     static func transform(
         _ node: StructDeclSyntax,
-        parent: Syntax?,
+        parent _: Syntax?,
         context: Context
     ) -> DeclSyntax {
         convertDocBlockCommentToDocLineComment(DeclSyntax(node), context: context)
@@ -91,7 +91,7 @@ final class TripleSlashDocComments: StaticFormatRule<BasicRuleValue>, @unchecked
 
     static func transform(
         _ node: ProtocolDeclSyntax,
-        parent: Syntax?,
+        parent _: Syntax?,
         context: Context
     ) -> DeclSyntax {
         convertDocBlockCommentToDocLineComment(DeclSyntax(node), context: context)
@@ -99,7 +99,7 @@ final class TripleSlashDocComments: StaticFormatRule<BasicRuleValue>, @unchecked
 
     static func transform(
         _ node: TypeAliasDeclSyntax,
-        parent: Syntax?,
+        parent _: Syntax?,
         context: Context
     ) -> DeclSyntax {
         convertDocBlockCommentToDocLineComment(DeclSyntax(node), context: context)
@@ -107,26 +107,22 @@ final class TripleSlashDocComments: StaticFormatRule<BasicRuleValue>, @unchecked
 
     static func transform(
         _ node: ExtensionDeclSyntax,
-        parent: Syntax?,
+        parent _: Syntax?,
         context: Context
     ) -> DeclSyntax {
         convertDocBlockCommentToDocLineComment(DeclSyntax(node), context: context)
     }
 
-    /// If the declaration has a doc block comment, return the declaration with the comment rewritten
-    /// as a line comment.
+    /// If the declaration has a doc block comment, return the declaration with the comment
+    /// rewritten as a line comment.
     ///
     /// If the declaration had no comment or had only line comments, it is returned unchanged.
     private static func convertDocBlockCommentToDocLineComment(
         _ decl: DeclSyntax,
         context: Context
     ) -> DeclSyntax {
-        guard
-            let commentInfo = DocumentationCommentText(extractedFrom: decl.leadingTrivia),
-            commentInfo.introducer != .line
-        else {
-            return decl
-        }
+        guard let commentInfo = DocumentationCommentText(extractedFrom: decl.leadingTrivia),
+              commentInfo.introducer != .line else { return decl }
 
         Self.diagnose(
             .avoidDocBlockComment,
@@ -159,7 +155,7 @@ final class TripleSlashDocComments: StaticFormatRule<BasicRuleValue>, @unchecked
     }
 }
 
-extension Finding.Message {
-    fileprivate static let avoidDocBlockComment: Finding.Message =
+fileprivate extension Finding.Message {
+    static let avoidDocBlockComment: Finding.Message =
         "replace documentation block comments with documentation line comments"
 }

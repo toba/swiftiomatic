@@ -18,7 +18,7 @@ final class RedundantAsync: StaticFormatRule<BasicRuleValue>, @unchecked Sendabl
 
     static func transform(
         _ node: FunctionDeclSyntax,
-        parent: Syntax?,
+        parent _: Syntax?,
         context: Context
     ) -> DeclSyntax {
         guard let effectSpecifiers = node.signature.effectSpecifiers,

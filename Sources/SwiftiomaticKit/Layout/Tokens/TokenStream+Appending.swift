@@ -18,6 +18,7 @@ extension TokenStream {
         var isStartOfFile: Bool
         let trivia: Trivia
         var position = token.position
+
         if let previousToken = token.previousToken(viewMode: .sourceAccurate) {
             isStartOfFile = false
             // Find the first non-whitespace in the previous token's trailing and peel those off.
@@ -33,8 +34,10 @@ extension TokenStream {
         // If we're at the end of the file, determine at which index to stop checking trivia pieces
         // to prevent trailing newlines.
         var cutoffIndex: Int?
+
         if token.tokenKind == TokenKind.endOfFile {
             cutoffIndex = 0
+
             for (index, piece) in trivia.enumerated() {
                 switch piece {
                     case .newlines, .carriageReturns, .carriageReturnLineFeeds: continue
@@ -83,14 +86,15 @@ extension TokenStream {
                                 wasEndOfLine: false
                             ))
                         generateDisableFormattingIfNecessary(position + piece.sourceLength)
-                        // There is always a break after the comment to allow a discretionary newline
-                        // after it.
+                        // There is always a break after the comment to allow a discretionary
+                        // newline after it.
                         var breakSize = 0
+
                         if index + 1 < trivia.endIndex {
                             let nextPiece = trivia[index + 1]
-                            // The original number of spaces is intentionally discarded, but 1 space is
-                            // allowed in case the comment is followed by another token instead of a
-                            // newline.
+                            // The original number of spaces is intentionally discarded, but 1 space
+                            // is allowed in case the comment is followed by another token instead
+                            // of a newline.
                             if case .spaces = nextPiece { breakSize = 1 }
                         }
                         appendToken(.break(.same, size: breakSize))
@@ -127,10 +131,12 @@ extension TokenStream {
                     requiresNextNewline = false
                     leadingIndent = nil
 
-                case let .newlines(count), let .carriageReturns(count),
-                    let .carriageReturnLineFeeds(count):
+                case let .newlines(count),
+                     let .carriageReturns(count),
+                     let .carriageReturnLineFeeds(count):
                     if config[IndentBlankLines.self],
-                       let leadingIndent, leadingIndent.count > 0
+                       let leadingIndent,
+                       leadingIndent.count > 0
                     {
                         requiresNextNewline = true
                     }
@@ -155,12 +161,14 @@ extension TokenStream {
                 case let .unexpectedText(text):
                     // Garbage text in leading trivia might be something meaningful that would be
                     // disruptive to throw away when formatting the file, like a hashbang line or
-                    // Unicode byte-order marker at the beginning of a file, or source control conflict
-                    // markers. Keep it as verbatim text so that it is printed exactly as we got it.
+                    // Unicode byte-order marker at the beginning of a file, or source control
+                    // conflict markers. Keep it as verbatim text so that it is printed exactly as
+                    // we got it.
                     appendToken(.verbatim(Verbatim(text: text, indentingBehavior: .none)))
 
-                    // Unicode byte-order markers shouldn't allow leading newlines to otherwise appear
-                    // in the file, nor should they modify our detection of the beginning of the file.
+                    // Unicode byte-order markers shouldn't allow leading newlines to otherwise
+                    // appear in the file, nor should they modify our detection of the beginning of
+                    // the file.
                     let isBOM = text == "\u{feff}"
                     requiresNextNewline = !isBOM
                     isStartOfFile = isStartOfFile && isBOM
@@ -237,9 +245,10 @@ extension TokenStream {
                     return
                 case (.break(let breakKind, _, .soft(1, _, _)), .comment(let c2, _))
                     where breakAllowsCommentMerge(breakKind)
-                        && (c2.kind == .docLine || c2.kind == .line):
-                    // we are search for the pattern of [line comment] - [soft break 1] - [line comment]
-                    // where the comment type is the same; these can be merged into a single comment
+                    && (c2.kind == .docLine || c2.kind == .line):
+                    // we are search for the pattern of [line comment] - [soft break 1] - [line
+                    // comment] where the comment type is the same; these can be merged into a
+                    // single comment
                     if let nextToLast = tokens.dropLast().last,
                        case .comment(let c1, false) = nextToLast,
                        c1.kind == c2.kind
@@ -262,10 +271,10 @@ extension TokenStream {
                         return
                     }
 
-                // If we see a pair of spaces where one or both are flexible, combine them into a new
-                // token with the maximum of their counts.
+                // If we see a pair of spaces where one or both are flexible, combine them into a
+                // new token with the maximum of their counts.
                 case (.space(let first, let firstFlexible), .space(let second, let secondFlexible))
-                where firstFlexible || secondFlexible:
+                    where firstFlexible || secondFlexible:
                     tokens[tokens.count - 1] = .space(size: max(first, second), flexible: true)
                     return
 
@@ -277,8 +286,11 @@ extension TokenStream {
             case .break:
                 lastBreakIndex = tokens.endIndex
                 canMergeNewlinesIntoLastBreak = true
-            case .open, .printerControl, .contextualBreakingStart, .enableFormatting,
-                .disableFormatting:
+            case .open,
+                 .printerControl,
+                 .contextualBreakingStart,
+                 .enableFormatting,
+                 .disableFormatting:
                 break
             default: canMergeNewlinesIntoLastBreak = false
         }
@@ -289,6 +301,7 @@ extension TokenStream {
     /// special breaking behavior in some cases.
     func startsWithOpenDelimiter(_ node: Syntax) -> Bool {
         guard let token = node.firstToken(viewMode: .sourceAccurate) else { return false }
+
         switch token.tokenKind {
             case .leftBrace, .leftParen, .leftSquare: return true
             default: return false
@@ -304,9 +317,7 @@ extension TokenStream {
         if argumentCount == 0 { return false }
 
         // If there is more than one argument, we must open/close break around the whole list.
-        if argumentCount > 1 { return true }
-
-        return !isCompactSingleFunctionCallArgument(arguments)
+        return argumentCount > 1 ? true : !isCompactSingleFunctionCallArgument(arguments)
     }
 
     /// Returns whether the `reset` break before an expression's closing delimiter must break when
@@ -411,10 +422,13 @@ extension TokenStream {
     /// outer chain break from firing per documented break precedence.
     func isPartOfOuterMemberAccessChain(_ call: FunctionCallExprSyntax) -> Bool {
         var current = Syntax(call)
+
         while let parent = current.parent {
             switch parent.kind {
-                case .optionalChainingExpr, .forceUnwrapExpr, .postfixOperatorExpr,
-                    .postfixIfConfigExpr:
+                case .optionalChainingExpr,
+                     .forceUnwrapExpr,
+                     .postfixOperatorExpr,
+                     .postfixIfConfigExpr:
                     current = parent
                 case .memberAccessExpr:
                     if let memberAccess = parent.as(MemberAccessExprSyntax.self),
@@ -461,10 +475,10 @@ extension TokenStream {
         let isTernaryRhs = rhs.is(TernaryExprSyntax.self)
 
         if isTernaryRhs {
-            // Ternary RHS: bound the `=` break's chunk to the next inner break (the ternary
-            // `?`) by NOT wrapping the RHS in an `.open`/`.close` group. That keeps the chunk
-            // small enough that `=` only fires when the prefix `... = <condition>` itself
-            // overflows; otherwise the inner `?`/`:` breaks fire and `=` stays glued.
+            // Ternary RHS: bound the `=` break's chunk to the next inner break (the ternary `?` )
+            // by NOT wrapping the RHS in an `.open` / `.close` group. That keeps the chunk small
+            // enough that `=` only fires when the prefix `... = <condition>` itself overflows;
+            // otherwise the inner `?` / `:` breaks fire and `=` stays glued.
             after(equal, tokens: .break(.continue, newlines: .elective(ignoresDiscretionary: true)))
         } else if let (unindentingNode, _, breakKind, shouldGroup) =
             stackedIndentationBehavior(after: operatorExpr, rhs: rhs)
@@ -495,6 +509,7 @@ extension TokenStream {
             after(rhs.lastToken(viewMode: .sourceAccurate), tokens: .close)
         } else {
             after(equal, tokens: .break(.continue, newlines: .elective(ignoresDiscretionary: true)))
+
             if isCompound {
                 before(rhs.firstToken(viewMode: .sourceAccurate), tokens: .open)
                 after(rhs.lastToken(viewMode: .sourceAccurate), tokens: .close)
@@ -531,6 +546,7 @@ extension TokenStream {
 
     func isAssigningOperator(_ operatorExpr: ExprSyntax) -> Bool {
         if operatorExpr.is(AssignmentExprSyntax.self) { return true }
+
         if let binOpExpr = operatorExpr.as(BinaryOperatorExprSyntax.self) {
             if let binOp = operatorTable.infixOperator(named: binOpExpr.operator.text),
                let precedenceGroup = binOp.precedenceGroup,
@@ -549,8 +565,7 @@ extension TokenStream {
     func isComparisonOperator(_ operatorExpr: ExprSyntax) -> Bool {
         guard let binOpExpr = operatorExpr.as(BinaryOperatorExprSyntax.self),
               let binOp = operatorTable.infixOperator(named: binOpExpr.operator.text),
-              let precedenceGroup = binOp.precedenceGroup
-        else { return false }
+              let precedenceGroup = binOp.precedenceGroup else { return false }
         return precedenceGroup == "ComparisonPrecedence"
     }
 
@@ -560,8 +575,10 @@ extension TokenStream {
     /// is actually an inner argument-list break to prefer over the comparison break.
     func containsCallOrSubscriptArgList(_ expr: ExprSyntax) -> Bool {
         var found = false
+
         for node in expr.children(viewMode: .sourceAccurate) {
             if found { break }
+
             if let call = node.as(FunctionCallExprSyntax.self), !call.arguments.isEmpty {
                 found = true
                 break
@@ -581,10 +598,11 @@ extension TokenStream {
         return found
     }
 
-    /// Returns whether the given infix-operator expression appears (transitively) inside an
-    /// `if` / `guard` / `while` condition list.
+    /// Returns whether the given infix-operator expression appears (transitively) inside an `if` /
+    /// `guard` / `while` condition list.
     func isInConditionList(_ node: InfixOperatorExprSyntax) -> Bool {
         var current: Syntax? = node.parent
+
         while let parent = current {
             if parent.is(ConditionElementSyntax.self) { return true }
             if parent.asProtocol(SyntaxProtocol.self) is StmtSyntaxProtocol { return false }
@@ -598,11 +616,11 @@ extension TokenStream {
 
     /// Returns the `GroupBreakStyle` to use for the given function-call argument list. Forces
     /// `.consistent` when the surrounding context is a comparison-operator expression inside an
-    /// `if` / `guard` / `while` condition: the comparison break's chunk is bounded by the RHS
-    /// so it would otherwise win precedence over the call's myopic inconsistent inter-arg
-    /// breaks and dangle the operator on its own line. With consistent grouping, once any arg
-    /// breaks (the open-paren break must fire when the line doesn't fit), every arg breaks,
-    /// keeping the operator glued to the closing `)` .
+    /// `if` / `guard` / `while` condition: the comparison break's chunk is bounded by the RHS so it
+    /// would otherwise win precedence over the call's myopic inconsistent inter-arg breaks and
+    /// dangle the operator on its own line. With consistent grouping, once any arg breaks (the
+    /// open-paren break must fire when the line doesn't fit), every arg breaks, keeping the
+    /// operator glued to the closing `)` .
     func effectiveArgListConsistency(for arguments: LabeledExprListSyntax) -> GroupBreakStyle {
         let defaultConsistency = argumentListConsistency()
         guard defaultConsistency == .inconsistent else { return defaultConsistency }
@@ -645,6 +663,7 @@ extension TokenStream {
         ifMatching predicate: (ExprSyntax) -> Bool
     ) -> ExprSyntax? {
         if predicate(expr) { return expr }
+
         switch Syntax(expr).as(SyntaxEnum.self) {
             case let .infixOperatorExpr(infixOperatorExpr):
                 return leftmostExpr(of: infixOperatorExpr.leftOperand, ifMatching: predicate)

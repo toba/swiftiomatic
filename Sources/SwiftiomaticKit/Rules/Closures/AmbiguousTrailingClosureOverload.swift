@@ -15,7 +15,7 @@ import SwiftSyntax
 /// Overloads with only a closure argument should not be disambiguated by parameter labels.
 ///
 /// Lint: If two overloaded functions with one closure parameter appear in the same scope, a lint
-///       error is raised.
+/// error is raised.
 final class AmbiguousTrailingClosureOverload: LintSyntaxRule<LintOnlyValue>, @unchecked Sendable {
     override static var group: ConfigurationGroup? { .closures }
 
@@ -29,8 +29,9 @@ final class AmbiguousTrailingClosureOverload: LintSyntaxRule<LintOnlyValue>, @un
                     Finding.Note(
                         message: .otherAmbiguousOverloadHere(decl.fullDeclName),
                         location: Finding.Location(
-                            decl.name.startLocation(converter: self.context.sourceLocationConverter)
-                        )
+                            decl.name.startLocation(
+                                converter: self.context.sourceLocationConverter
+                            ))
                     )
                 }
             )
@@ -77,12 +78,12 @@ final class AmbiguousTrailingClosureOverload: LintSyntaxRule<LintOnlyValue>, @un
     }
 }
 
-extension Finding.Message {
-    fileprivate static func ambiguousTrailingClosureOverload(_ decl: String) -> Finding.Message {
+fileprivate extension Finding.Message {
+    static func ambiguousTrailingClosureOverload(_ decl: String) -> Finding.Message {
         "rename '\(decl)' so it is no longer ambiguous when called with a trailing closure"
     }
 
-    fileprivate static func otherAmbiguousOverloadHere(_ decl: String) -> Finding.Message {
+    static func otherAmbiguousOverloadHere(_ decl: String) -> Finding.Message {
         "ambiguous overload '\(decl)' is here"
     }
 }

@@ -21,8 +21,7 @@ import SwiftSyntax
 final class NoTrailingClosureParens: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
     override class var group: ConfigurationGroup? { .closures }
 
-    // Diagnose against the pre-traversal node so finding source locations
-    // are accurate.
+    // Diagnose against the pre-traversal node so finding source locations are accurate.
     static func willEnter(_ node: FunctionCallExprSyntax, context: Context) {
         guard node.arguments.isEmpty,
               node.trailingClosure != nil,
@@ -32,8 +31,7 @@ final class NoTrailingClosureParens: StaticFormatRule<BasicRuleValue>, @unchecke
               !rightParen.leadingTrivia.hasAnyComments,
               let name = node.calledExpression.lastToken(viewMode: .sourceAccurate),
               !node.calledExpression.is(FunctionCallExprSyntax.self),
-              !node.calledExpression.is(SubscriptCallExprSyntax.self)
-        else { return }
+              !node.calledExpression.is(SubscriptCallExprSyntax.self) else { return }
         Self.diagnose(
             .removeEmptyTrailingParentheses(name: "\(name.trimmedDescription)"),
             on: leftParen,
@@ -41,12 +39,11 @@ final class NoTrailingClosureParens: StaticFormatRule<BasicRuleValue>, @unchecke
         )
     }
 
-    /// Strip empty parens before a trailing closure when the call has no
-    /// arguments. Called from
-    /// `CompactSyntaxRewriter.visit(_: FunctionCallExprSyntax)`.
+    /// Strip empty parens before a trailing closure when the call has no arguments. Called from
+    /// `CompactSyntaxRewriter.visit(_: FunctionCallExprSyntax)` .
     static func apply(
         _ node: FunctionCallExprSyntax,
-        context: Context
+        context _: Context
     ) -> FunctionCallExprSyntax {
         guard node.arguments.isEmpty,
               node.trailingClosure != nil,
@@ -56,10 +53,7 @@ final class NoTrailingClosureParens: StaticFormatRule<BasicRuleValue>, @unchecke
               !rightParen.leadingTrivia.hasAnyComments,
               node.calledExpression.lastToken(viewMode: .sourceAccurate) != nil,
               !node.calledExpression.is(FunctionCallExprSyntax.self),
-              !node.calledExpression.is(SubscriptCallExprSyntax.self)
-        else {
-            return node
-        }
+              !node.calledExpression.is(SubscriptCallExprSyntax.self) else { return node }
 
         var rewrittenCalledExpr = node.calledExpression
         rewrittenCalledExpr.trailingTrivia = [.spaces(1)]

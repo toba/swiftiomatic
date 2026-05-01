@@ -3,13 +3,13 @@ import SwiftSyntax
 /// Insert a blank line after declarations with multi-line bodies.
 ///
 /// When a type declaration (class, struct, enum, extension, protocol, actor) or function
-/// declaration has a multi-line body, a blank line after it improves readability by
-/// visually separating it from the next declaration. Single-line (inline) bodies are
-/// excluded. This rule operates at the top level and inside type member blocks — not
-/// inside function bodies (if/for/while don't need separation).
+/// declaration has a multi-line body, a blank line after it improves readability by visually
+/// separating it from the next declaration. Single-line (inline) bodies are excluded. This rule
+/// operates at the top level and inside type member blocks — not inside function bodies
+/// (if/for/while don't need separation).
 ///
-/// Lint: If a multi-line scoped declaration is not followed by a blank line, a lint
-///       warning is raised.
+/// Lint: If a multi-line scoped declaration is not followed by a blank line, a lint warning is
+/// raised.
 ///
 /// Rewrite: A blank line is inserted after the declaration.
 final class BlankLinesBetweenScopes: StructuralFormatRule<BasicRuleValue>, @unchecked Sendable {
@@ -35,8 +35,9 @@ final class BlankLinesBetweenScopes: StructuralFormatRule<BasicRuleValue>, @unch
 
     // MARK: - CodeBlockItemListSyntax (top-level)
 
-    private func ensureBlankLines(in statements: CodeBlockItemListSyntax) -> CodeBlockItemListSyntax
-    {
+    private func ensureBlankLines(
+        in statements: CodeBlockItemListSyntax
+    ) -> CodeBlockItemListSyntax {
         let original = Array(statements)
         var items = original
         var modified = false
@@ -44,9 +45,8 @@ final class BlankLinesBetweenScopes: StructuralFormatRule<BasicRuleValue>, @unch
         let commentIsBlank = context.configuration[CommentAsBlankLine.self]
 
         for i in 0..<(original.count - 1) {
-            guard case .decl(let decl) = original[i].item,
-                hasDeclMultiLineBody(decl)
-            else { continue }
+            guard case let .decl(decl) = original[i].item,
+                  hasDeclMultiLineBody(decl) else { continue }
             let nextIndex = i + 1
             guard !original[nextIndex].leadingTrivia.hasBlankLine else { continue }
             if braceIsBlank { continue }
@@ -77,8 +77,7 @@ final class BlankLinesBetweenScopes: StructuralFormatRule<BasicRuleValue>, @unch
         let braceIsBlank = context.configuration[ClosingBraceAsBlankLine.self]
         let commentIsBlank = context.configuration[CommentAsBlankLine.self]
 
-        for i in 0..<(original.count - 1) {
-            guard hasDeclMultiLineBody(original[i].decl) else { continue }
+        for i in 0..<(original.count - 1) where hasDeclMultiLineBody(original[i].decl) {
             let nextIndex = i + 1
             guard !original[nextIndex].leadingTrivia.hasBlankLine else { continue }
             if braceIsBlank { continue }
@@ -97,18 +96,16 @@ final class BlankLinesBetweenScopes: StructuralFormatRule<BasicRuleValue>, @unch
 
     // MARK: - Helpers
 
-    /// A declaration has a multi-line body if its last token is `}` with newlines in its
-    /// leading trivia (meaning the closing brace is on a separate line from the content).
+    /// A declaration has a multi-line body if its last token is `}` with newlines in its leading
+    /// trivia (meaning the closing brace is on a separate line from the content).
     private func hasDeclMultiLineBody(_ decl: DeclSyntax) -> Bool {
         guard let lastToken = decl.lastToken(viewMode: .sourceAccurate),
-            lastToken.tokenKind == .rightBrace
-        else { return false }
+              lastToken.tokenKind == .rightBrace else { return false }
         return lastToken.leadingTrivia.containsNewlines
     }
-
 }
 
-extension Finding.Message {
-    fileprivate static let insertBlankLineAfterScope: Finding.Message =
+fileprivate extension Finding.Message {
+    static let insertBlankLineAfterScope: Finding.Message =
         "insert blank line after scoped declaration"
 }

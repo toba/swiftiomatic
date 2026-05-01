@@ -26,7 +26,7 @@ final class EmptyCollectionLiteral: StaticFormatRule<BasicRuleValue>, @unchecked
 
     static func transform(
         _ node: PatternBindingSyntax,
-        parent: Syntax?,
+        parent _: Syntax?,
         context: Context
     ) -> PatternBindingSyntax {
         guard let initializer = node.initializer,
@@ -44,7 +44,7 @@ final class EmptyCollectionLiteral: StaticFormatRule<BasicRuleValue>, @unchecked
 
     static func transform(
         _ param: FunctionParameterSyntax,
-        parent: Syntax?,
+        parent _: Syntax?,
         context: Context
     ) -> FunctionParameterSyntax {
         guard let initializer = param.defaultValue,

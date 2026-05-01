@@ -59,8 +59,9 @@ final class ExtensionAccessLevel: StructuralFormatRule<ExtensionAccessControlCon
 
     private func visitOnDeclarations(_ node: ExtensionDeclSyntax) -> DeclSyntax {
         guard let accessKeyword = node.modifiers.accessLevelModifier,
-              case let .keyword(keyword) = accessKeyword.name.tokenKind
-        else { return DeclSyntax(node) }
+              case let .keyword(keyword) = accessKeyword.name.tokenKind else {
+            return DeclSyntax(node)
+        }
 
         notesFromRewrittenMembers = []
 
@@ -69,8 +70,8 @@ final class ExtensionAccessLevel: StructuralFormatRule<ExtensionAccessControlCon
 
         switch keyword {
             case .public, .private, .fileprivate, .package:
-                // These access level modifiers need to be moved to members. Additionally, `private` is
-                // a special case, because the *effective* access level for a top-level private
+                // These access level modifiers need to be moved to members. Additionally, `private`
+                // is a special case, because the *effective* access level for a top-level private
                 // extension is `fileprivate` , so we need to preserve that when we apply it to the
                 // members.
                 if keyword == .private {
@@ -94,6 +95,7 @@ final class ExtensionAccessLevel: StructuralFormatRule<ExtensionAccessControlCon
         // from a valid parse point of view, we ignore nested extensions because they're obviously
         // wrong semantically (and would be an error later during compilation).
         var result: ExtensionDeclSyntax
+
         if let keywordToAdd {
             // Visit the children in the new state to add the keyword to the extension members.
             state = .insideExtension(accessKeyword: keywordToAdd)
@@ -124,8 +126,9 @@ final class ExtensionAccessLevel: StructuralFormatRule<ExtensionAccessControlCon
         guard node.inheritanceClause == nil else { return DeclSyntax(node) }
 
         // Check if all members share the same hoistable access level.
-        guard let commonAccess = commonMemberAccessLevel(node.memberBlock)
-        else { return DeclSyntax(node) }
+        guard let commonAccess = commonMemberAccessLevel(node.memberBlock) else {
+            return DeclSyntax(node)
+        }
 
         notesFromRewrittenMembers = []
 
@@ -182,8 +185,9 @@ final class ExtensionAccessLevel: StructuralFormatRule<ExtensionAccessControlCon
                   case let .keyword(keyword) = accessModifier.name.tokenKind else { return nil }
 
             // Only hoist public, package, or fileprivate.
-            guard keyword == .public || keyword == .package || keyword == .fileprivate
-            else { return nil }
+            guard keyword == .public || keyword == .package || keyword == .fileprivate else {
+                return nil
+            }
 
             if let existing = commonAccess {
                 guard existing == keyword else { return nil }
@@ -304,8 +308,9 @@ final class ExtensionAccessLevel: StructuralFormatRule<ExtensionAccessControlCon
         declKeywordKeyPath: WritableKeyPath<Decl, TokenSyntax>
     ) -> DeclSyntax {
         guard let accessModifier = decl.modifiers.accessLevelModifier,
-              case .keyword(keyword) = accessModifier.name.tokenKind
-        else { return DeclSyntax(decl) }
+              case .keyword(keyword) = accessModifier.name.tokenKind else {
+            return DeclSyntax(decl)
+        }
 
         notesFromRewrittenMembers.append(
             Finding.Note(

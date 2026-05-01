@@ -14,19 +14,21 @@ import SwiftSyntax
 
 /// Single-expression functions, closures, subscripts can omit `return` statement.
 ///
-/// This includes exhaustive `if`/`switch` expressions where every branch is a single
-/// `return <expr>` ([SE-0380](https://github.com/swiftlang/swift-evolution/blob/main/proposals/0380-if-switch-expressions.md),
-/// implemented in Swift 5.9).
+/// This includes exhaustive `if` / `switch` expressions where every branch is a single
+/// `return <expr>` (
+/// [SE-0380](https://github.com/swiftlang/swift-evolution/blob/main/proposals/0380-if-switch-expressions.md)
+/// , implemented in Swift 5.9).
 ///
-/// Lint: `func <name>() { return ... }` and similar single expression constructs will yield a lint error.
+/// Lint: `func <name>() { return ... }` and similar single expression constructs will yield a lint
+/// error.
 ///
-/// Rewrite: `func <name>() { return ... }` constructs will be replaced with
-///         equivalent `func <name>() { ... }` constructs.
+/// Rewrite: `func <name>() { return ... }` constructs will be replaced with equivalent
+/// `func <name>() { ... }` constructs.
 final class RedundantReturn: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
     override static var group: ConfigurationGroup? { .redundancies }
     override static var defaultValue: BasicRuleValue { .init(rewrite: false, lint: .no) }
 
-    /// Names of standard library functions that return `Never`.
+    /// Names of standard library functions that return `Never` .
     private static let neverReturningFunctions: Set<String> = [
         "fatalError", "preconditionFailure",
     ]
@@ -35,7 +37,7 @@ final class RedundantReturn: StaticFormatRule<BasicRuleValue>, @unchecked Sendab
 
     static func transform(
         _ node: FunctionDeclSyntax,
-        parent: Syntax?,
+        parent _: Syntax?,
         context: Context
     ) -> DeclSyntax {
         var funcDecl = node
@@ -57,13 +59,14 @@ final class RedundantReturn: StaticFormatRule<BasicRuleValue>, @unchecked Sendab
 
     static func transform(
         _ node: SubscriptDeclSyntax,
-        parent: Syntax?,
+        parent _: Syntax?,
         context: Context
     ) -> DeclSyntax {
         var subscriptDecl = node
         guard let accessorBlock = subscriptDecl.accessorBlock,
-              let transformed = Self.transformAccessorBlock(accessorBlock, context: context)
-        else { return DeclSyntax(node) }
+              let transformed = Self.transformAccessorBlock(accessorBlock, context: context) else {
+            return DeclSyntax(node)
+        }
 
         subscriptDecl.accessorBlock = transformed
         return DeclSyntax(subscriptDecl)
@@ -71,13 +74,14 @@ final class RedundantReturn: StaticFormatRule<BasicRuleValue>, @unchecked Sendab
 
     static func transform(
         _ node: PatternBindingSyntax,
-        parent: Syntax?,
+        parent _: Syntax?,
         context: Context
     ) -> PatternBindingSyntax {
         var binding = node
         guard let accessorBlock = binding.accessorBlock,
-              let transformed = Self.transformAccessorBlock(accessorBlock, context: context)
-        else { return node }
+              let transformed = Self.transformAccessorBlock(accessorBlock, context: context) else {
+            return node
+        }
 
         binding.accessorBlock = transformed
         return binding
@@ -85,7 +89,7 @@ final class RedundantReturn: StaticFormatRule<BasicRuleValue>, @unchecked Sendab
 
     static func transform(
         _ node: ClosureExprSyntax,
-        parent: Syntax?,
+        parent _: Syntax?,
         context: Context
     ) -> ExprSyntax {
         var closureExpr = node
@@ -112,14 +116,14 @@ final class RedundantReturn: StaticFormatRule<BasicRuleValue>, @unchecked Sendab
     ) -> AccessorBlockSyntax? {
         switch accessorBlock.accessors {
             case var .accessors(accessors):
-                guard var getter = accessors.filter({
-                    $0.accessorSpecifier.tokenKind == .keyword(.get)
-                }).first,
+                guard var getter = accessors
+                    .filter({
+                        $0.accessorSpecifier.tokenKind == .keyword(.get)
+                    }).first,
                       let getterAt = accessors.firstIndex(where: {
                           $0.accessorSpecifier.tokenKind == .keyword(.get)
                       }),
-                      let body = getter.body
-                else { return nil }
+                      let body = getter.body else { return nil }
 
                 if let returnStmt = Self.containsSingleReturn(body.statements) {
                     getter.body?.statements = Self.rewrapReturnedExpression(returnStmt)
@@ -146,8 +150,9 @@ final class RedundantReturn: StaticFormatRule<BasicRuleValue>, @unchecked Sendab
                 } else if let item = Self.containsExhaustiveReturn(getter) {
                     var newBlock = accessorBlock
                     newBlock.accessors = .getter(
-                        CodeBlockItemListSyntax([Self.stripReturns(from: item, context: context)])
-                    )
+                        CodeBlockItemListSyntax(
+                            [Self.stripReturns(from: item, context: context)]
+                        ))
                     return newBlock
                 } else {
                     return nil
@@ -159,8 +164,7 @@ final class RedundantReturn: StaticFormatRule<BasicRuleValue>, @unchecked Sendab
         _ body: CodeBlockItemListSyntax
     ) -> CodeBlockItemSyntax? {
         guard let element = body.firstAndOnly,
-              let expr = Self.expressionFromItem(element)
-        else { return nil }
+              let expr = Self.expressionFromItem(element) else { return nil }
 
         if let ifExpr = expr.as(IfExprSyntax.self) {
             return Self.allBranchesReturn(ifExpr) ? element : nil
@@ -204,7 +208,9 @@ final class RedundantReturn: StaticFormatRule<BasicRuleValue>, @unchecked Sendab
         guard let expr = Self.expressionFromItem(only) else { return false }
 
         if let ifExpr = expr.as(IfExprSyntax.self) { return Self.allBranchesReturn(ifExpr) }
-        if let switchExpr = expr.as(SwitchExprSyntax.self) { return Self.allCasesReturn(switchExpr) }
+        if let switchExpr = expr.as(SwitchExprSyntax.self) {
+            return Self.allCasesReturn(switchExpr)
+        }
 
         return false
     }
@@ -221,8 +227,9 @@ final class RedundantReturn: StaticFormatRule<BasicRuleValue>, @unchecked Sendab
         }
 
         guard let call = expr.as(FunctionCallExprSyntax.self),
-              let callee = call.calledExpression.as(DeclReferenceExprSyntax.self)
-        else { return false }
+              let callee = call.calledExpression.as(DeclReferenceExprSyntax.self) else {
+            return false
+        }
 
         return Self.neverReturningFunctions.contains(callee.baseName.text)
     }
@@ -338,11 +345,11 @@ final class RedundantReturn: StaticFormatRule<BasicRuleValue>, @unchecked Sendab
         _ body: CodeBlockItemListSyntax
     ) -> ReturnStmtSyntax? {
         guard let element = body.firstAndOnly,
-              let returnStmt = element.item.as(ReturnStmtSyntax.self)
-        else { return nil }
+              let returnStmt = element.item.as(ReturnStmtSyntax.self) else { return nil }
 
         return !returnStmt.children(viewMode: .all).isEmpty && returnStmt.expression != nil
-            ? returnStmt : nil
+            ? returnStmt
+            : nil
     }
 
     fileprivate static func rewrapReturnedExpression(

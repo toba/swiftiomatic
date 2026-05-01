@@ -50,24 +50,22 @@ final class PreferEarlyExits: StaticFormatRule<BasicRuleValue>, @unchecked Senda
 
     // MARK: - Compact pipeline
 
-    /// Diagnose on the pre-traversal node so finding source locations come from
-    /// the original tree.
+    /// Diagnose on the pre-traversal node so finding source locations come from the original tree.
     static func willEnter(_ node: CodeBlockItemListSyntax, context: Context) {
         for codeBlockItem in node {
             guard let exprStmt = codeBlockItem.item.as(ExpressionStmtSyntax.self),
-                let ifStatement = exprStmt.expression.as(IfExprSyntax.self),
-                let elseBody = ifStatement.elseBody?.as(CodeBlockSyntax.self),
-                Self.codeBlockEndsWithEarlyExit(elseBody)
-            else { continue }
+                  let ifStatement = exprStmt.expression.as(IfExprSyntax.self),
+                  let elseBody = ifStatement.elseBody?.as(CodeBlockSyntax.self),
+                  Self.codeBlockEndsWithEarlyExit(elseBody) else { continue }
             Self.diagnose(.useGuardStatement, on: ifStatement, context: context)
         }
     }
 
-    /// Replace `if/else { early-exit }` blocks with `guard ... else { ... }`.
-    /// Called from `CompactSyntaxRewriter.visit(_: CodeBlockItemListSyntax)`.
+    /// Replace `if/else { early-exit }` blocks with `guard ... else { ... }` . Called from
+    /// `CompactSyntaxRewriter.visit(_: CodeBlockItemListSyntax)` .
     static func apply(
         _ node: CodeBlockItemListSyntax,
-        context: Context
+        context _: Context
     ) -> CodeBlockItemListSyntax {
         var newItems = [CodeBlockItemSyntax]()
 
@@ -75,8 +73,7 @@ final class PreferEarlyExits: StaticFormatRule<BasicRuleValue>, @unchecked Senda
             guard let exprStmt = codeBlockItem.item.as(ExpressionStmtSyntax.self),
                   let ifStatement = exprStmt.expression.as(IfExprSyntax.self),
                   let elseBody = ifStatement.elseBody?.as(CodeBlockSyntax.self),
-                  codeBlockEndsWithEarlyExit(elseBody)
-            else {
+                  codeBlockEndsWithEarlyExit(elseBody) else {
                 newItems.append(codeBlockItem)
                 continue
             }
@@ -103,6 +100,7 @@ final class PreferEarlyExits: StaticFormatRule<BasicRuleValue>, @unchecked Senda
 
     fileprivate static func codeBlockEndsWithEarlyExit(_ codeBlock: CodeBlockSyntax) -> Bool {
         guard let lastStatement = codeBlock.statements.last else { return false }
+
         switch lastStatement.item {
             case let .stmt(stmt):
                 switch Syntax(stmt).as(SyntaxEnum.self) {
@@ -112,7 +110,6 @@ final class PreferEarlyExits: StaticFormatRule<BasicRuleValue>, @unchecked Senda
             default: return false
         }
     }
-
 }
 
 fileprivate extension Finding.Message {

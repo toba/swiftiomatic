@@ -12,7 +12,7 @@ final class PreferAnyObject: StaticFormatRule<BasicRuleValue>, @unchecked Sendab
     override static var group: ConfigurationGroup? { .types }
 
     /// Replace `class` with `AnyObject` in a protocol's inheritance clause. Called from
-    /// `CompactSyntaxRewriter.visit(_: ProtocolDeclSyntax)`.
+    /// `CompactSyntaxRewriter.visit(_: ProtocolDeclSyntax)` .
     static func apply(_ node: ProtocolDeclSyntax, context: Context) -> ProtocolDeclSyntax {
         guard let inheritanceClause = node.inheritanceClause else { return node }
 
@@ -35,8 +35,7 @@ final class PreferAnyObject: StaticFormatRule<BasicRuleValue>, @unchecked Sendab
                     "AnyObject",
                     leadingTrivia: classRestriction.classKeyword.leadingTrivia,
                     trailingTrivia: classRestriction.classKeyword.trailingTrivia
-                )
-            )
+                ))
             return inherited.with(\.type, TypeSyntax(anyObjectType))
         }
 
@@ -50,7 +49,7 @@ final class PreferAnyObject: StaticFormatRule<BasicRuleValue>, @unchecked Sendab
     }
 }
 
-extension Finding.Message {
-    fileprivate static let preferAnyObject: Finding.Message =
+fileprivate extension Finding.Message {
+    static let preferAnyObject: Finding.Message =
         "use 'AnyObject' instead of 'class' for class-constrained protocols"
 }

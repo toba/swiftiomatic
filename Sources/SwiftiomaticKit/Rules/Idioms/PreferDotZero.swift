@@ -2,16 +2,17 @@ import SwiftSyntax
 
 /// Prefer `.zero` over explicit zero-valued initializers.
 ///
-/// `CGPoint(x: 0, y: 0)`, `CGSize(width: 0, height: 0)`, `CGRect(x: 0, y: 0, width: 0, height: 0)`
-/// and similar are equivalent to the platform-provided `.zero` constant. The shorthand reads
-/// better and avoids subtle inconsistencies (e.g. `0.0` vs `0` literal kinds).
+/// `CGPoint(x: 0, y: 0)` , `CGSize(width: 0, height: 0)` ,
+/// `CGRect(x: 0, y: 0, width: 0, height: 0)` and similar are equivalent to the platform-provided
+/// `.zero` constant. The shorthand reads better and avoids subtle inconsistencies (e.g. `0.0` vs
+/// `0` literal kinds).
 ///
-/// Recognised types: `CGPoint`, `CGSize`, `CGRect`, `CGVector`, `UIEdgeInsets`, `NSEdgeInsets`,
-/// `NSPoint`, `NSSize`, `NSRect`.
+/// Recognised types: `CGPoint` , `CGSize` , `CGRect` , `CGVector` , `UIEdgeInsets` , `NSEdgeInsets`
+/// , `NSPoint` , `NSSize` , `NSRect` .
 ///
 /// Lint: A warning is raised on a fully-zero initializer.
 ///
-/// Rewrite: The call is replaced with `<Type>.zero`.
+/// Rewrite: The call is replaced with `<Type>.zero` .
 final class PreferDotZero: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
     override class var group: ConfigurationGroup? { .idioms }
     override class var defaultValue: BasicRuleValue { .init(rewrite: true, lint: .warn) }
@@ -31,7 +32,7 @@ final class PreferDotZero: StaticFormatRule<BasicRuleValue>, @unchecked Sendable
 
     static func transform(
         _ call: FunctionCallExprSyntax,
-        parent: Syntax?,
+        parent _: Syntax?,
         context: Context
     ) -> ExprSyntax {
         guard let typeName = matchedTypeName(call) else { return ExprSyntax(call) }
@@ -64,9 +65,8 @@ final class PreferDotZero: StaticFormatRule<BasicRuleValue>, @unchecked Sendable
     }
 
     private static func isZeroLiteral(_ expr: ExprSyntax) -> Bool {
-        if let intLit = expr.as(IntegerLiteralExprSyntax.self) {
-            return intLit.literal.text == "0"
-        }
+        if let intLit = expr.as(IntegerLiteralExprSyntax.self) { return intLit.literal.text == "0" }
+
         if let floatLit = expr.as(FloatLiteralExprSyntax.self) {
             // Strip trailing zeros after the dot — anything like 0, 0.0, 0.000 is zero.
             let text = floatLit.literal.text
@@ -79,8 +79,8 @@ final class PreferDotZero: StaticFormatRule<BasicRuleValue>, @unchecked Sendable
     }
 }
 
-extension Finding.Message {
-    fileprivate static func preferDotZero(type: String) -> Finding.Message {
+fileprivate extension Finding.Message {
+    static func preferDotZero(type: String) -> Finding.Message {
         "prefer '\(type).zero' over an all-zero initializer"
     }
 }

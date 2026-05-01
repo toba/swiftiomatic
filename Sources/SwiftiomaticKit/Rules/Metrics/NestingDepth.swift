@@ -1,11 +1,11 @@
-import ConfigurationKit
 import SwiftSyntax
+import ConfigurationKit
 
 /// Types and functions should not be excessively nested.
 ///
-/// Tracks nesting depth separately for types (`class`, `struct`, `enum`, `actor`,
-/// `extension`, `protocol`) and functions/initializers/subscripts. Emits a finding
-/// each time a node opens at a depth greater than the configured limit.
+/// Tracks nesting depth separately for types ( `class` , `struct` , `enum` , `actor` , `extension`
+/// , `protocol` ) and functions/initializers/subscripts. Emits a finding each time a node opens at
+/// a depth greater than the configured limit.
 final class NestingDepth: LintSyntaxRule<NestingDepthConfiguration>, @unchecked Sendable {
     override class var group: ConfigurationGroup? { .metrics }
 
@@ -14,6 +14,7 @@ final class NestingDepth: LintSyntaxRule<NestingDepthConfiguration>, @unchecked 
 
     private func enterType(anchor: Syntax) {
         typeDepth += 1
+
         if typeDepth > ruleConfig.typeLevel {
             diagnose(
                 .typeNestedTooDeep(depth: typeDepth, limit: ruleConfig.typeLevel),
@@ -26,6 +27,7 @@ final class NestingDepth: LintSyntaxRule<NestingDepthConfiguration>, @unchecked 
 
     private func enterFunction(anchor: Syntax) {
         functionDepth += 1
+
         if functionDepth > ruleConfig.functionLevel {
             diagnose(
                 .functionNestedTooDeep(
@@ -94,11 +96,11 @@ final class NestingDepth: LintSyntaxRule<NestingDepthConfiguration>, @unchecked 
     override func visitPost(_: SubscriptDeclSyntax) { leaveFunction() }
 }
 
-extension Finding.Message {
-    fileprivate static func typeNestedTooDeep(depth: Int, limit: Int) -> Finding.Message {
+fileprivate extension Finding.Message {
+    static func typeNestedTooDeep(depth: Int, limit: Int) -> Finding.Message {
         "type is nested \(depth) levels deep; limit is \(limit)"
     }
-    fileprivate static func functionNestedTooDeep(depth: Int, limit: Int) -> Finding.Message {
+    static func functionNestedTooDeep(depth: Int, limit: Int) -> Finding.Message {
         "function is nested \(depth) levels deep; limit is \(limit)"
     }
 }
@@ -107,16 +109,16 @@ extension Finding.Message {
 
 package struct NestingDepthConfiguration: SyntaxRuleValue {
     package var lint: Lint = .warn
-    /// Maximum permitted nesting depth for type declarations
-    /// (struct/class/enum/actor/protocol inside another type).
+    /// Maximum permitted nesting depth for type declarations (struct/class/enum/actor/protocol
+    /// inside another type).
     package var typeLevel: Int = 1
-    /// Maximum permitted nesting depth for nested function-like declarations
-    /// (`func`, `init`, `subscript`).
+    /// Maximum permitted nesting depth for nested function-like declarations ( `func` , `init` ,
+    /// `subscript` ).
     package var functionLevel: Int = 2
 
     package var rewrite: Bool {
         get { false }
-        set { }
+        set {}
     }
 
     package init() {}

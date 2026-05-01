@@ -4,27 +4,24 @@ import SwiftSyntax
 ///
 /// This rule fires only on class instance properties. Local variables, struct/enum members,
 /// computed properties, protocol requirements, and properties marked with one of the SwiftUI
-/// adaptor attributes (`@UIApplicationDelegateAdaptor`, `@NSApplicationDelegateAdaptor`,
-/// `@WKExtensionDelegateAdaptor`) are excluded. Properties already marked `weak` or `unowned`
+/// adaptor attributes ( `@UIApplicationDelegateAdaptor` , `@NSApplicationDelegateAdaptor` ,
+/// `@WKExtensionDelegateAdaptor` ) are excluded. Properties already marked `weak` or `unowned`
 /// pass.
 ///
-/// Lint: A class instance property named `*delegate` without a `weak`/`unowned` modifier yields
-/// a warning.
+/// Lint: A class instance property named `*delegate` without a `weak` / `unowned` modifier yields a
+/// warning.
 final class WeakDelegates: LintSyntaxRule<LintOnlyValue>, @unchecked Sendable {
     override class var group: ConfigurationGroup? { .memory }
 
-    /// Skip protocol bodies — properties declared in protocols cannot be `weak`.
-    override func visit(_: ProtocolDeclSyntax) -> SyntaxVisitorContinueKind {
-        .skipChildren
-    }
+    /// Skip protocol bodies — properties declared in protocols cannot be `weak` .
+    override func visit(_: ProtocolDeclSyntax) -> SyntaxVisitorContinueKind { .skipChildren }
 
     override func visit(_ node: VariableDeclSyntax) -> SyntaxVisitorContinueKind {
         guard node.hasDelegateSuffix,
-            !node.hasWeakOrUnownedModifier,
-            !node.hasComputedBody,
-            !node.hasIgnoredAdaptorAttribute,
-            node.isInClassBody
-        else {
+              !node.hasWeakOrUnownedModifier,
+              !node.hasComputedBody,
+              !node.hasIgnoredAdaptorAttribute,
+              node.isInClassBody else {
             return .visitChildren
         }
 
@@ -33,13 +30,13 @@ final class WeakDelegates: LintSyntaxRule<LintOnlyValue>, @unchecked Sendable {
     }
 }
 
-extension Finding.Message {
-    fileprivate static let weakDelegate: Finding.Message =
+fileprivate extension Finding.Message {
+    static let weakDelegate: Finding.Message =
         "declare 'delegate' property as 'weak' to avoid retain cycles"
 }
 
-extension VariableDeclSyntax {
-    fileprivate var hasDelegateSuffix: Bool {
+fileprivate extension VariableDeclSyntax {
+    var hasDelegateSuffix: Bool {
         bindings.allSatisfy { binding in
             guard let pattern = binding.pattern.as(IdentifierPatternSyntax.self) else {
                 return false
@@ -48,28 +45,27 @@ extension VariableDeclSyntax {
         }
     }
 
-    fileprivate var hasWeakOrUnownedModifier: Bool {
+    var hasWeakOrUnownedModifier: Bool {
         modifiers.contains { modifier in
             switch modifier.name.tokenKind {
-            case .keyword(.weak), .keyword(.unowned): true
-            default: false
+                case .keyword(.weak), .keyword(.unowned): true
+                default: false
             }
         }
     }
 
-    fileprivate var hasComputedBody: Bool {
+    var hasComputedBody: Bool {
         bindings.contains { binding in
             guard let accessorBlock = binding.accessorBlock else { return false }
             switch accessorBlock.accessors {
-            case .getter:
-                return true
-            case .accessors(let list):
-                return list.contains { $0.accessorSpecifier.tokenKind == .keyword(.get) }
+                case .getter: return true
+                case let .accessors(list):
+                    return list.contains { $0.accessorSpecifier.tokenKind == .keyword(.get) }
             }
         }
     }
 
-    fileprivate var hasIgnoredAdaptorAttribute: Bool {
+    var hasIgnoredAdaptorAttribute: Bool {
         let ignored: Set<String> = [
             "UIApplicationDelegateAdaptor",
             "NSApplicationDelegateAdaptor",
@@ -77,21 +73,18 @@ extension VariableDeclSyntax {
         ]
         return attributes.contains { element in
             guard let attr = element.as(AttributeSyntax.self),
-                let name = attr.attributeName.as(IdentifierTypeSyntax.self)
-            else { return false }
+                  let name = attr.attributeName.as(IdentifierTypeSyntax.self) else { return false }
             return ignored.contains(name.name.text)
         }
     }
 
-    /// True if this declaration appears as a member of a class body (directly or via an
-    /// extension on a class). Returns false for local variables, struct/enum/actor members,
-    /// and protocol requirements.
-    fileprivate var isInClassBody: Bool {
+    /// True if this declaration appears as a member of a class body (directly or via an extension
+    /// on a class). Returns false for local variables, struct/enum/actor members, and protocol
+    /// requirements.
+    var isInClassBody: Bool {
         var node: Syntax? = parent
         while let current = node {
-            if current.is(ClassDeclSyntax.self) {
-                return true
-            }
+            if current.is(ClassDeclSyntax.self) { return true }
             // If we hit any non-class declaration boundary, this isn't a class member.
             if current.is(StructDeclSyntax.self)
                 || current.is(EnumDeclSyntax.self)

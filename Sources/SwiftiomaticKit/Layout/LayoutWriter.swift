@@ -1,6 +1,6 @@
 import SwiftSyntax
 
-// sm:ignore-file: fileLength, functionBodyLength
+// sm:ignore fileLength, functionBodyLength
 
 /// Compact-pipeline merge of all `TokenSyntax` rewrites. Each former rule's logic is gated on
 /// `context.shouldRewrite(<RuleType>.self, at:)` so users can still toggle individual behaviors via
@@ -178,6 +178,7 @@ private func findNewlinesAroundMark(
 
     while j >= 0, j < pieces.count {
         if case .newlines = pieces[j] { return j }
+
         if pieces[j].isSpaceOrTab {
             j += step
             continue

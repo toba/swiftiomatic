@@ -11,8 +11,8 @@ final class WrapMultilineFunctionChains: StaticFormatRule<BasicRuleValue>, @unch
     override class var group: ConfigurationGroup? { .wrap }
     override class var defaultValue: BasicRuleValue { .init(rewrite: false, lint: .no) }
 
-    /// Wrap dots in a multiline call chain so each one is on its own line.
-    /// Called from `CompactSyntaxRewriter.visit(_: FunctionCallExprSyntax)`.
+    /// Wrap dots in a multiline call chain so each one is on its own line. Called from
+    /// `CompactSyntaxRewriter.visit(_: FunctionCallExprSyntax)` .
     static func apply(
         _ node: FunctionCallExprSyntax,
         context: Context
@@ -34,6 +34,7 @@ final class WrapMultilineFunctionChains: StaticFormatRule<BasicRuleValue>, @unch
         guard hasNewline else { return node }
 
         var periodsToWrap = Set<SyntaxIdentifier>()
+
         for (i, period) in periods.enumerated() {
             if period.leadingTrivia.containsNewlines { continue }
             if isTypeAccess(after: period) { continue }
@@ -47,6 +48,7 @@ final class WrapMultilineFunctionChains: StaticFormatRule<BasicRuleValue>, @unch
 
             if i + 1 < periods.count {
                 let nextPeriod = periods[i + 1]
+
                 if !nextPeriod.leadingTrivia.containsNewlines,
                    !isTypeAccess(after: nextPeriod)
                 {
@@ -58,12 +60,13 @@ final class WrapMultilineFunctionChains: StaticFormatRule<BasicRuleValue>, @unch
         let orderedToWrap = periods.filter { periodsToWrap.contains($0.id) }
         guard !orderedToWrap.isEmpty else { return node }
 
-        let indent: String =
-            periods.first { $0.leadingTrivia.containsNewlines }?.leadingTrivia.indentation ?? "    "
+        let indent: String = periods.first { $0.leadingTrivia.containsNewlines }?.leadingTrivia
+            .indentation ?? "    "
 
         Self.diagnose(.wrapChain, on: orderedToWrap[0], context: context)
 
         var resultExpr = ExprSyntax(node)
+
         for period in orderedToWrap {
             let rewriter = PeriodTriviaRewriter(
                 targetID: period.id,
@@ -95,6 +98,7 @@ final class WrapMultilineFunctionChains: StaticFormatRule<BasicRuleValue>, @unch
             )
         } else if let memberAccess = expr.as(MemberAccessExprSyntax.self) {
             periods.append(memberAccess.period)
+
             if let base = memberAccess.base {
                 collectPeriods(
                     base,
@@ -119,6 +123,7 @@ final class WrapMultilineFunctionChains: StaticFormatRule<BasicRuleValue>, @unch
 
     private static func isInnerChainCall(_ expr: ExprSyntax) -> Bool {
         guard let parent = expr.parent else { return false }
+
         if parent.as(MemberAccessExprSyntax.self) != nil {
             if let grandparent = parent.parent,
                grandparent.is(FunctionCallExprSyntax.self)
@@ -127,12 +132,10 @@ final class WrapMultilineFunctionChains: StaticFormatRule<BasicRuleValue>, @unch
                 return true
             }
         }
-        if parent.as(OptionalChainingExprSyntax.self) != nil
+        return parent.as(OptionalChainingExprSyntax.self) != nil
             || parent.as(ForceUnwrapExprSyntax.self) != nil
-        {
-            return true
-        }
-        return false
+            ? true
+            : false
     }
 
     private static func isClosingScope(_ token: TokenSyntax) -> Bool {
@@ -145,15 +148,14 @@ final class WrapMultilineFunctionChains: StaticFormatRule<BasicRuleValue>, @unch
     private static func isTypeAccess(after period: TokenSyntax) -> Bool {
         guard let next = period.nextToken(viewMode: .sourceAccurate),
               case let .identifier(name) = next.tokenKind,
-              let first = name.first, first.isUppercase
-        else { return false }
+              let first = name.first,
+              first.isUppercase else { return false }
         return true
     }
 }
 
-extension Finding.Message {
-    fileprivate static let wrapChain: Finding.Message =
-        "wrap multiline function chain consistently"
+fileprivate extension Finding.Message {
+    static let wrapChain: Finding.Message = "wrap multiline function chain consistently"
 }
 
 private final class PeriodTriviaRewriter: SyntaxRewriter {
@@ -166,7 +168,6 @@ private final class PeriodTriviaRewriter: SyntaxRewriter {
     }
 
     override func visit(_ token: TokenSyntax) -> TokenSyntax {
-        if token.id == targetID { return token.with(\.leadingTrivia, newTrivia) }
-        return token
+        token.id == targetID ? token.with(\.leadingTrivia, newTrivia) : token
     }
 }

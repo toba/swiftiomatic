@@ -1,19 +1,16 @@
 import SwiftSyntax
 
 extension AttributeListSyntax {
-    /// Returns the first `AttributeSyntax` whose simple name matches `name`, or `nil`.
+    /// Returns the first `AttributeSyntax` whose simple name matches `name` , or `nil` .
     ///
-    /// Only plain `@Name` attributes are matched. `@Module.Name` and `#if`-wrapped attributes
-    /// are ignored. Attributes with arguments (e.g. `@objc(selector:)`) ARE returned — the caller
+    /// Only plain `@Name` attributes are matched. `@Module.Name` and `#if` -wrapped attributes are
+    /// ignored. Attributes with arguments (e.g. `@objc(selector:)` ) ARE returned — the caller
     /// decides whether arguments disqualify the match.
     func attribute(named name: String) -> AttributeSyntax? {
         for element in self {
-            guard case .attribute(let attr) = element,
-                let ident = attr.attributeName.as(IdentifierTypeSyntax.self),
-                ident.name.text == name
-            else {
-                continue
-            }
+            guard case let .attribute(attr) = element,
+                  let ident = attr.attributeName.as(IdentifierTypeSyntax.self),
+                  ident.name.text == name else { continue }
             return attr
         }
         return nil
@@ -33,7 +30,7 @@ extension AttributeListSyntax {
         var removedLeadingTrivia: Trivia?
 
         for element in self {
-            if case .attribute(let attr) = element, attr.id == target.id {
+            if case let .attribute(attr) = element, attr.id == target.id {
                 removedLeadingTrivia = attr.leadingTrivia
                 continue
             }
@@ -53,7 +50,5 @@ extension AttributeListSyntax {
     /// Removes the first attribute matching `name` in place.
     ///
     /// See ``removing(named:)`` for trivia handling details.
-    mutating func remove(named name: String) {
-        self = removing(named: name)
-    }
+    mutating func remove(named name: String) { self = removing(named: name) }
 }

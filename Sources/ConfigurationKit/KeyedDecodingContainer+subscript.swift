@@ -1,14 +1,13 @@
 public import Foundation
 
-extension KeyedDecodingContainer {
-
+public extension KeyedDecodingContainer {
     // MARK: subscript
 
-    public subscript<T: Decodable>(key: Key) -> T {
+    subscript<T: Decodable>(key: Key) -> T {
         get throws { try decode(T.self, forKey: key) }
     }
 
-    public subscript<T: DecodableWithConfiguration>(
+    subscript<T: DecodableWithConfiguration>(
         key: Key,
         with configuration: T.DecodingConfiguration,
     ) -> T {
@@ -19,19 +18,19 @@ extension KeyedDecodingContainer {
 
     /// Return value of the key if it exists, otherwise return `nil`
     ///
-    /// This is different from standard `Decodable` behavior which will throw an error if the key
-    /// is not present
-    public func ifPresent<T: Decodable>(_ key: Key) throws -> T? {
+    /// This is different from standard `Decodable` behavior which will throw an error if the key is
+    /// not present
+    func ifPresent<T: Decodable>(_ key: Key) throws -> T? {
         try decodeIfPresent(T.self, forKey: key)
     }
 
     /// Return value of the key if it exists, otherwise return the `otherwise` value
-    public func ifPresent<T: Decodable>(_ key: Key, otherwise value: T) throws -> T {
+    func ifPresent<T: Decodable>(_ key: Key, otherwise value: T) throws -> T {
         try decodeIfPresent(T.self, forKey: key) ?? value
     }
 
     /// Return string value or `nil` if the key is not present or its value is an empty string
-    public func ifNotEmpty(_ key: Key) throws -> String? {
+    func ifNotEmpty(_ key: Key) throws -> String? {
         if let value = try decodeIfPresent(String.self, forKey: key) {
             value.isEmpty ? nil : value
         } else {
@@ -40,7 +39,7 @@ extension KeyedDecodingContainer {
     }
 
     /// Return the value or `nil` if an empty string is found
-    public func ifNotEmptyString<T: Decodable>(_ key: Key) throws -> T? {
+    func ifNotEmptyString<T: Decodable>(_ key: Key) throws -> T? {
         if let value = try decodeIfPresent(String.self, forKey: key), value.isEmpty {
             nil
         } else {
@@ -49,7 +48,7 @@ extension KeyedDecodingContainer {
     }
 
     /// Return `String` value of a key that may be stored as a number
-    public func maybeInt(_ key: Key) throws -> String {
+    func maybeInt(_ key: Key) throws -> String {
         if let value = try? decode(String.self, forKey: key) {
             value
         } else {
@@ -59,12 +58,12 @@ extension KeyedDecodingContainer {
 
     /// Return `String` value of a key that may be stored as a number or return `nil` if the key is
     /// not present
-    public func maybeIntIfPresent(_ key: Key) throws -> String? {
+    func maybeIntIfPresent(_ key: Key) throws -> String? {
         if contains(key) { try maybeInt(key) } else { nil }
     }
 
     /// Attempt to convert various value types to a boolean
-    public func truthLike(_ key: Key, otherwise: Bool = false) -> Bool {
+    func truthLike(_ key: Key, otherwise: Bool = false) -> Bool {
         if contains(key) {
             if let value: Bool = try? self[key] {
                 value
@@ -79,5 +78,4 @@ extension KeyedDecodingContainer {
             otherwise
         }
     }
-
 }

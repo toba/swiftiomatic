@@ -1,15 +1,15 @@
-import ConfigurationKit
 import SwiftSyntax
+import ConfigurationKit
 
 /// Function bodies should not exceed a configurable line length.
 ///
-/// Counts source lines inside the body, excluding the lines containing the
-/// opening and closing braces. Comment-only and blank lines are excluded by
-/// default; tokens on the same line still count that line.
+/// Counts source lines inside the body, excluding the lines containing the opening and closing
+/// braces. Comment-only and blank lines are excluded by default; tokens on the same line still
+/// count that line.
 ///
-/// Lint: emits `.warn` over the warning threshold and `.error` over the error
-///       threshold.
-final class FunctionBodyLength: LintSyntaxRule<FunctionBodyLengthConfiguration>, @unchecked Sendable {
+/// Lint: emits `.warn` over the warning threshold and `.error` over the error threshold.
+final class FunctionBodyLength: LintSyntaxRule<FunctionBodyLengthConfiguration>, @unchecked Sendable
+{
     override class var group: ConfigurationGroup? { .metrics }
 
     override func visit(_ node: FunctionDeclSyntax) -> SyntaxVisitorContinueKind {
@@ -36,13 +36,11 @@ final class FunctionBodyLength: LintSyntaxRule<FunctionBodyLengthConfiguration>,
 
     private func check(_ node: some SyntaxProtocol, on anchor: Syntax) {
         let count = bodyLineCount(of: node, in: context.sourceLocationConverter)
-        guard
-            let severity = metricSeverity(
-                value: count,
-                warning: ruleConfig.warning,
-                error: ruleConfig.error
-            )
-        else { return }
+        guard let severity = metricSeverity(
+            value: count,
+            warning: ruleConfig.warning,
+            error: ruleConfig.error
+        ) else { return }
         diagnose(
             .functionBodyTooLong(
                 lines: count,
@@ -54,8 +52,8 @@ final class FunctionBodyLength: LintSyntaxRule<FunctionBodyLengthConfiguration>,
     }
 }
 
-extension Finding.Message {
-    fileprivate static func functionBodyTooLong(lines: Int, limit: Int) -> Finding.Message {
+fileprivate extension Finding.Message {
+    static func functionBodyTooLong(lines: Int, limit: Int) -> Finding.Message {
         "function body has \(lines) lines; limit is \(limit)"
     }
 }
@@ -63,7 +61,7 @@ extension Finding.Message {
 // MARK: - Configuration
 
 package struct FunctionBodyLengthConfiguration: ThresholdRuleValue {
-    package var enabled: Bool = true
+    package var enabled = true
     /// Function bodies longer than this many lines emit a warning-severity finding.
     package var warning: Int = 50
     /// Function bodies longer than this many lines emit an error-severity finding.

@@ -2,23 +2,23 @@ import SwiftSyntax
 
 /// Prefer `isEmpty` over comparing `count` against zero.
 ///
-/// Checking `count == 0` or `count != 0` (or `count > 0`) is less expressive and potentially less
-/// efficient than using `isEmpty`. Collections conforming to `Collection` guarantee O(1) `isEmpty`
-/// but `count` may be O(n) for some types (e.g. lazy sequences conforming to `Collection`).
+/// Checking `count == 0` or `count != 0` (or `count > 0` ) is less expressive and potentially less
+/// efficient than using `isEmpty` . Collections conforming to `Collection` guarantee O(1) `isEmpty`
+/// but `count` may be O(n) for some types (e.g. lazy sequences conforming to `Collection` ).
 ///
-/// When the receiver is optional (`foo?.count == 0`), the replacement uses explicit boolean
-/// comparison (`foo?.isEmpty == true`) to preserve semantics.
+/// When the receiver is optional ( `foo?.count == 0` ), the replacement uses explicit boolean
+/// comparison ( `foo?.isEmpty == true` ) to preserve semantics.
 ///
-/// Lint: Using `.count == 0`, `.count != 0`, or `.count > 0` raises a warning.
+/// Lint: Using `.count == 0` , `.count != 0` , or `.count > 0` raises a warning.
 ///
-/// Rewrite: The comparison is replaced with `.isEmpty` or `!.isEmpty`.
+/// Rewrite: The comparison is replaced with `.isEmpty` or `!.isEmpty` .
 final class PreferIsEmpty: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
     override static var group: ConfigurationGroup? { .idioms }
     override static var defaultValue: BasicRuleValue { .init(rewrite: false, lint: .no) }
 
     static func transform(
         _ infixNode: InfixOperatorExprSyntax,
-        parent: Syntax?,
+        parent _: Syntax?,
         context: Context
     ) -> ExprSyntax {
         guard let binOp = infixNode.operator.as(BinaryOperatorExprSyntax.self) else {
@@ -149,13 +149,13 @@ final class PreferIsEmpty: StaticFormatRule<BasicRuleValue>, @unchecked Sendable
         }
     }
 
-    /// Returns `true` if the expression is the integer literal `0`.
+    /// Returns `true` if the expression is the integer literal `0` .
     private static func isZeroLiteral(_ expr: ExprSyntax) -> Bool {
         guard let literal = expr.as(IntegerLiteralExprSyntax.self) else { return false }
         return literal.literal.text == "0"
     }
 
-    /// Returns `true` if the member access chain contains optional chaining (`?`).
+    /// Returns `true` if the member access chain contains optional chaining ( `?` ).
     private static func hasOptionalChaining(_ memberAccess: MemberAccessExprSyntax) -> Bool {
         var current: ExprSyntax? = memberAccess.base
 

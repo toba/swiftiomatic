@@ -15,7 +15,7 @@ final class InitCoderUnavailable: StaticFormatRule<BasicRuleValue>, @unchecked S
 
     static func transform(
         _ node: InitializerDeclSyntax,
-        parent: Syntax?,
+        parent _: Syntax?,
         context: Context
     ) -> DeclSyntax {
         guard isCoderInitStub(node), !hasUnavailableAttribute(node) else { return DeclSyntax(node) }
@@ -35,17 +35,17 @@ final class InitCoderUnavailable: StaticFormatRule<BasicRuleValue>, @unchecked S
                         argument: .token(.binaryOperator("*")),
                         trailingComma: .commaToken(trailingTrivia: .space)
                     ),
-                    AvailabilityArgumentSyntax(
-                        argument: .token(.keyword(.unavailable))
-                    ),
+                    AvailabilityArgumentSyntax(argument: .token(.keyword(.unavailable))),
                 ])
             ),
             rightParen: .rightParenToken()
         )
 
-        // Prepend the attribute. Copy leading trivia (newline + indentation) from the first existing
-        // element. The existing element keeps its trivia so both lines are indented equally.
+        // Prepend the attribute. Copy leading trivia (newline + indentation) from the first
+        // existing element. The existing element keeps its trivia so both lines are indented
+        // equally.
         var newAttribute = AttributeListSyntax.Element.attribute(attribute)
+
         if let firstAttr = result.attributes.first {
             newAttribute.leadingTrivia = firstAttr.leadingTrivia
         } else if let firstModifier = result.modifiers.first {

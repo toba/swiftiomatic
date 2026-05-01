@@ -1,8 +1,8 @@
 import SwiftSyntax
 
-/// Lint inline `.sorted`/`.filter`/`.map`/`.compactMap`/`.reversed` chains in
-/// the data argument of `ForEach`. The expression is recomputed on every
-/// render — hoist into a `@State`/`@Observable` value or a computed property.
+/// Lint inline `.sorted` / `.filter` / `.map` / `.compactMap` / `.reversed` chains in the data
+/// argument of `ForEach` . The expression is recomputed on every render — hoist into a `@State` /
+/// `@Observable` value or a computed property.
 final class NoSortFilterInForEachData: LintSyntaxRule<LintOnlyValue>, @unchecked Sendable {
     override class var group: ConfigurationGroup? { .idioms }
 
@@ -19,10 +19,8 @@ final class NoSortFilterInForEachData: LintSyntaxRule<LintOnlyValue>, @unchecked
     override func visit(_ node: FunctionCallExprSyntax) -> SyntaxVisitorContinueKind {
         guard let ident = node.calledExpression.as(DeclReferenceExprSyntax.self),
               ident.baseName.text == "ForEach",
-              let firstArg = node.arguments.first
-        else {
-            return .visitChildren
-        }
+              let firstArg = node.arguments.first else { return .visitChildren }
+
         if let dataCall = firstArg.expression.as(FunctionCallExprSyntax.self),
            let member = dataCall.calledExpression.as(MemberAccessExprSyntax.self),
            Self.recomputingMethods.contains(member.declName.baseName.text)
@@ -33,8 +31,8 @@ final class NoSortFilterInForEachData: LintSyntaxRule<LintOnlyValue>, @unchecked
     }
 }
 
-extension Finding.Message {
-    fileprivate static func recomputingForEachData(_ method: String) -> Finding.Message {
+fileprivate extension Finding.Message {
+    static func recomputingForEachData(_ method: String) -> Finding.Message {
         "'.\(method)' in 'ForEach' data is recomputed on every render — hoist into a stored or computed property"
     }
 }

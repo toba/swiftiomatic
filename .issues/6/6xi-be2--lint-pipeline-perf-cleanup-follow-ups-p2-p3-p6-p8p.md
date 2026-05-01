@@ -1,15 +1,15 @@
 ---
 # 6xi-be2
 title: Lint pipeline perf & cleanup follow-ups (P2, P3, P6, P8–P14, C1, C2, C4, N1–N5, M1, M2, M4)
-status: ready
+status: review
 type: epic
 priority: high
 created_at: 2026-04-30T15:57:04Z
-updated_at: 2026-04-30T15:57:04Z
+updated_at: 2026-04-30T23:25:08Z
 sync:
     github:
         issue_number: "536"
-        synced_at: "2026-04-30T16:27:52Z"
+        synced_at: "2026-05-01T00:49:16Z"
 ---
 
 Follow-up tracker for deferred items from issue 2s8-oze (lint pipeline review). Each child captures one deferred finding with the potential performance benefit and the specific reason it was not landed in the first pass.

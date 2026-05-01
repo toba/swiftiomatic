@@ -13,7 +13,8 @@
 import SwiftSyntax
 
 extension Finding.Location {
-    /// Creates a new `Finding.Location` by converting the given `SourceLocation` from `SwiftSyntax`.
+    /// Creates a new `Finding.Location` by converting the given `SourceLocation` from `SwiftSyntax`
+    /// .
     init(_ sourceLocation: SourceLocation) {
         self.init(
             file: sourceLocation.file,

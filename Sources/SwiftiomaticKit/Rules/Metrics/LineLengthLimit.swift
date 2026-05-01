@@ -12,11 +12,13 @@ final class LineLengthLimit: LintSyntaxRule<LineLengthLimitConfiguration>, @unch
         let source = node.description
         var lineNumber = 0
         var index = source.startIndex
+
         while index < source.endIndex {
             lineNumber += 1
             let lineEnd = source[index...].firstIndex(of: "\n") ?? source.endIndex
             let line = source[index..<lineEnd]
             let length = line.count
+
             if let severity = metricSeverity(
                 value: length,
                 warning: ruleConfig.warning,
@@ -30,6 +32,7 @@ final class LineLengthLimit: LintSyntaxRule<LineLengthLimitConfiguration>, @unch
                 )
                 let category = SyntaxFindingCategory(ruleType: type(of: self))
                 let configured = context.severity(of: type(of: self))
+
                 if configured.isActive {
                     context.findingEmitter.emit(
                         .lineTooLong(length: length, limit: limit),

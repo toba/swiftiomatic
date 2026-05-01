@@ -39,6 +39,7 @@
 - `WarnRecursiveWithObservationTracking`; lint `withObservationTracking` `onChange` recursing into the enclosing function ([#584](https://github.com/toba/swiftiomatic/issues/584))
 - `PreferTypedThrowsOverResult`; lint `Result<T, E>` returns with a single do/catch ([#572](https://github.com/toba/swiftiomatic/issues/572))
 - `WarnSwapThenRemoveAll`; lint `swap(&a, &b)` followed by `a.removeAll`/`b.removeAll` ([#577](https://github.com/toba/swiftiomatic/issues/577))
+- `// sm:ignore`; unified directive replaces `// sm:ignore-file`; applies from comment to end of file (lone-line) or to the line only (trailing) ([#595](https://github.com/toba/swiftiomatic/issues/595))
 
 ### 🐞 Fixes
 

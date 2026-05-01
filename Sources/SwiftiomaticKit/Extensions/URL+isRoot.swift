@@ -12,10 +12,10 @@
 
 import Foundation
 
-extension URL {
-    /// Returns a `Bool` to indicate if the given `URL` leads to the root of a filesystem.
-    /// A non-filesystem type `URL` will always return false.
-    package var isRoot: Bool {
+package extension URL {
+    /// Returns a `Bool` to indicate if the given `URL` leads to the root of a filesystem. A
+    /// non-filesystem type `URL` will always return false.
+    var isRoot: Bool {
         guard isFileURL else { return false }
         return path == "/"
     }

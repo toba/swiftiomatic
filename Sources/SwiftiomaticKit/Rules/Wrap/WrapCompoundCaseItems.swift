@@ -2,11 +2,10 @@ import SwiftSyntax
 
 /// Comma-delimited switch case items are wrapped onto separate lines.
 ///
-/// Switch cases with multiple patterns separated by commas are expanded so each
-/// pattern appears on its own line, aligned after `case `.
+/// Switch cases with multiple patterns separated by commas are expanded so each pattern appears on
+/// its own line, aligned after `case ` .
 ///
-/// Lint: A switch case with multiple comma-separated items on a single line
-///       raises a warning.
+/// Lint: A switch case with multiple comma-separated items on a single line raises a warning.
 ///
 /// Rewrite: Each item is placed on its own line with alignment indentation.
 final class WrapCompoundCaseItems: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
@@ -16,7 +15,7 @@ final class WrapCompoundCaseItems: StaticFormatRule<BasicRuleValue>, @unchecked 
 
     static func transform(
         _ node: SwitchCaseLabelSyntax,
-        parent: Syntax?,
+        parent _: Syntax?,
         context: Context
     ) -> SwitchCaseLabelSyntax {
         let items = node.caseItems
@@ -28,7 +27,7 @@ final class WrapCompoundCaseItems: StaticFormatRule<BasicRuleValue>, @unchecked 
         for item in items where item.trailingComma != nil {
             // If the next item doesn't start on a new line, we need to wrap
             if let nextToken = item.trailingComma?.nextToken(viewMode: .sourceAccurate),
-                !nextToken.leadingTrivia.containsNewlines
+               !nextToken.leadingTrivia.containsNewlines
             {
                 needsWrapping = true
                 break
@@ -60,7 +59,7 @@ final class WrapCompoundCaseItems: StaticFormatRule<BasicRuleValue>, @unchecked 
     }
 }
 
-extension Finding.Message {
-    fileprivate static let wrapSwitchCase: Finding.Message =
+fileprivate extension Finding.Message {
+    static let wrapSwitchCase: Finding.Message =
         "wrap comma-delimited switch case items onto separate lines"
 }

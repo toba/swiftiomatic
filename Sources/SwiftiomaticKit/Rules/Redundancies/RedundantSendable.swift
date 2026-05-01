@@ -2,13 +2,13 @@ import SwiftSyntax
 
 /// Remove explicit `Sendable` conformance from non-public structs and enums.
 ///
-/// In Swift 6, the compiler automatically infers `Sendable` for structs and enums whose
-/// stored properties/associated values are all `Sendable`, as long as the type is not `public`.
+/// In Swift 6, the compiler automatically infers `Sendable` for structs and enums whose stored
+/// properties/associated values are all `Sendable` , as long as the type is not `public` .
 /// Explicitly declaring `: Sendable` on these types is redundant.
 ///
-/// This rule only flags non-public structs and enums. Classes, actors, and public types
-/// are not checked because their `Sendable` conformance is either not inferred or must
-/// be explicit for ABI stability.
+/// This rule only flags non-public structs and enums. Classes, actors, and public types are not
+/// checked because their `Sendable` conformance is either not inferred or must be explicit for ABI
+/// stability.
 ///
 /// Lint: If a redundant `Sendable` conformance is found, a lint warning is raised.
 ///
@@ -19,56 +19,48 @@ final class RedundantSendable: StaticFormatRule<BasicRuleValue>, @unchecked Send
 
     static func transform(
         _ visited: StructDeclSyntax,
-        parent: Syntax?,
+        parent _: Syntax?,
         context: Context
     ) -> DeclSyntax {
         guard !isPublicOrPackage(visited.modifiers),
-            let inheritanceClause = visited.inheritanceClause,
-            let inherited = inheritanceClause.inherited(named: "Sendable")
-        else {
+              let inheritanceClause = visited.inheritanceClause,
+              let inherited = inheritanceClause.inherited(named: "Sendable") else {
             return DeclSyntax(visited)
         }
         Self.diagnose(.removeRedundantSendable, on: inherited, context: context)
         var result = visited
         let newClause = inheritanceClause.removing(named: "Sendable")
         result.inheritanceClause = newClause
-        if newClause == nil {
-            // The entire clause was removed — ensure the member block brace has leading space.
-            result.memberBlock.leftBrace.leadingTrivia = .space
-        }
+        if newClause == nil { result.memberBlock.leftBrace.leadingTrivia = .space }
         return DeclSyntax(result)
     }
 
     static func transform(
         _ visited: EnumDeclSyntax,
-        parent: Syntax?,
+        parent _: Syntax?,
         context: Context
     ) -> DeclSyntax {
         guard !isPublicOrPackage(visited.modifiers),
-            let inheritanceClause = visited.inheritanceClause,
-            let inherited = inheritanceClause.inherited(named: "Sendable")
-        else {
+              let inheritanceClause = visited.inheritanceClause,
+              let inherited = inheritanceClause.inherited(named: "Sendable") else {
             return DeclSyntax(visited)
         }
         Self.diagnose(.removeRedundantSendable, on: inherited, context: context)
         var result = visited
         let newClause = inheritanceClause.removing(named: "Sendable")
         result.inheritanceClause = newClause
-        if newClause == nil {
-            result.memberBlock.leftBrace.leadingTrivia = .space
-        }
+        if newClause == nil { result.memberBlock.leftBrace.leadingTrivia = .space }
         return DeclSyntax(result)
     }
 
     private static func isPublicOrPackage(_ modifiers: DeclModifierListSyntax) -> Bool {
         guard let accessModifier = modifiers.accessLevelModifier,
-            case .keyword(let keyword) = accessModifier.name.tokenKind
-        else { return false }
+              case let .keyword(keyword) = accessModifier.name.tokenKind else { return false }
         return keyword == .public || keyword == .package
     }
 }
 
-extension Finding.Message {
-    fileprivate static let removeRedundantSendable: Finding.Message =
+fileprivate extension Finding.Message {
+    static let removeRedundantSendable: Finding.Message =
         "remove explicit 'Sendable'; it is inferred for non-public structs and enums"
 }

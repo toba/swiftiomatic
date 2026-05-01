@@ -13,20 +13,19 @@
 import SwiftSyntax
 
 extension TriviaPiece {
-    /// Whether this piece is a doc comment (`///` or `/** ... */`).
+    /// Whether this piece is a doc comment ( `///` or `/** ... */` ).
     var isDocComment: Bool {
         switch self {
-            case .docLineComment, .docBlockComment: return true
-            default: return false
+            case .docLineComment, .docBlockComment: true
+            default: false
         }
     }
 
     /// True if the trivia piece is unexpected text.
     var isUnexpectedText: Bool {
         switch self {
-            case .unexpectedText: return true
-            default: return false
+            case .unexpectedText: true
+            default: false
         }
     }
-
 }

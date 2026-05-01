@@ -12,36 +12,34 @@
 
 import SwiftSyntax
 
-/// If all cases of an enum are `indirect`, the entire enum should be marked `indirect`.
+/// If all cases of an enum are `indirect` , the entire enum should be marked `indirect` .
 ///
-/// Lint: If every case of an enum is `indirect`, but the enum itself is not, a lint error is
-///       raised.
+/// Lint: If every case of an enum is `indirect` , but the enum itself is not, a lint error is
+/// raised.
 ///
 /// Rewrite: Enums where all cases are `indirect` will be rewritten such that the enum is marked
-///         `indirect`, and each case is not.
+/// `indirect` , and each case is not.
 final class IndirectEnum: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
     override static var group: ConfigurationGroup? { .hoist }
 
     static func transform(
         _ node: EnumDeclSyntax,
-        parent: Syntax?,
+        parent _: Syntax?,
         context: Context
     ) -> DeclSyntax {
         let enumMembers = node.memberBlock.members
 
         guard !node.modifiers.contains(anyOf: [.indirect]),
-            case let indirectModifiers = indirectModifiersIfAllCasesIndirect(in: enumMembers),
-            !indirectModifiers.isEmpty
-        else {
-            return DeclSyntax(node)
-        }
+              case let indirectModifiers = indirectModifiersIfAllCasesIndirect(in: enumMembers),
+              !indirectModifiers.isEmpty else { return DeclSyntax(node) }
 
         let notes = indirectModifiers.map { modifier in
             Finding.Note(
                 message: .removeIndirect,
                 location: Finding.Location(
-                    modifier.startLocation(converter: context.sourceLocationConverter)
-                )
+                    modifier.startLocation(
+                        converter: context.sourceLocationConverter
+                    ))
             )
         }
         Self.diagnose(
@@ -55,24 +53,24 @@ final class IndirectEnum: StaticFormatRule<BasicRuleValue>, @unchecked Sendable 
         let newMembers = enumMembers.map {
             (member: MemberBlockItemSyntax) -> MemberBlockItemSyntax in
             guard let caseMember = member.decl.as(EnumCaseDeclSyntax.self),
-                caseMember.modifiers.contains(anyOf: [.indirect]),
-                let firstModifier = caseMember.modifiers.first
-            else {
-                return member
-            }
+                  caseMember.modifiers.contains(anyOf: [.indirect]),
+                  let firstModifier = caseMember.modifiers.first else { return member }
 
             var newCase = caseMember
             newCase.modifiers.remove(anyOf: [.indirect])
 
             var newMember = member
             newMember.decl = DeclSyntax(
-                rearrangeLeadingTrivia(firstModifier.leadingTrivia, on: newCase))
+                rearrangeLeadingTrivia(
+                    firstModifier.leadingTrivia,
+                    on: newCase
+                ))
             return newMember
         }
 
-        // If the `indirect` keyword being added would be the first token in the decl, we need to move
-        // the leading trivia from the `enum` keyword to the new modifier to preserve the existing
-        // line breaks/comments/indentation.
+        // If the `indirect` keyword being added would be the first token in the decl, we need to
+        // move the leading trivia from the `enum` keyword to the new modifier to preserve the
+        // existing line breaks/comments/indentation.
         let firstTok = node.firstToken(viewMode: .sourceAccurate)!
         let leadingTrivia: Trivia
         var newEnumDecl = node
@@ -93,7 +91,7 @@ final class IndirectEnum: StaticFormatRule<BasicRuleValue>, @unchecked Sendable 
             detail: nil
         )
 
-        newEnumDecl.modifiers = newEnumDecl.modifiers + [newModifier]
+        newEnumDecl.modifiers += [newModifier]
         newEnumDecl.memberBlock.members = MemberBlockItemListSyntax(newMembers)
         return .init(newEnumDecl)
     }
@@ -108,13 +106,10 @@ final class IndirectEnum: StaticFormatRule<BasicRuleValue>, @unchecked Sendable 
 
         for member in members {
             if let caseMember = member.decl.as(EnumCaseDeclSyntax.self) {
-                guard
-                    let indirectModifier = caseMember.modifiers.first(
-                        where: { $0.name.text == "indirect" }
-                    )
-                else {
-                    return []
+                guard let indirectModifier = caseMember.modifiers.first(where: {
+                    $0.name.text == "indirect"
                 }
+                ) else { return [] }
                 indirectModifiers.append(indirectModifier)
             }
         }
@@ -142,10 +137,10 @@ final class IndirectEnum: StaticFormatRule<BasicRuleValue>, @unchecked Sendable 
     }
 }
 
-extension Finding.Message {
-    fileprivate static func moveIndirectKeywordToEnumDecl(name: String) -> Finding.Message {
+fileprivate extension Finding.Message {
+    static func moveIndirectKeywordToEnumDecl(name: String) -> Finding.Message {
         "declare enum '\(name)' itself as indirect when all cases are indirect"
     }
 
-    fileprivate static let removeIndirect: Finding.Message = "remove 'indirect' here"
+    static let removeIndirect: Finding.Message = "remove 'indirect' here"
 }

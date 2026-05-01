@@ -23,8 +23,8 @@ private struct FailedToCreateFileError: Error {
 }
 
 package extension FileGenerator {
-    /// Generates a file at the given URL, skipping the write when
-    /// the existing content is already up to date.
+    /// Generates a file at the given URL, skipping the write when the existing content is already
+    /// up to date.
     func generateFile(at url: URL) throws {
         let content = generateContent()
 

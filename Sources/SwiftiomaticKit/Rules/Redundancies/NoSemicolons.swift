@@ -22,7 +22,7 @@ final class NoSemicolons: StaticFormatRule<BasicRuleValue>, @unchecked Sendable 
 
     static func transform(
         _ node: CodeBlockItemListSyntax,
-        parent: Syntax?,
+        parent _: Syntax?,
         context: Context
     ) -> CodeBlockItemListSyntax {
         Self.removingSemicolons(from: node, context: context, diagnose: false)
@@ -30,14 +30,14 @@ final class NoSemicolons: StaticFormatRule<BasicRuleValue>, @unchecked Sendable 
 
     static func transform(
         _ node: MemberBlockItemListSyntax,
-        parent: Syntax?,
+        parent _: Syntax?,
         context: Context
     ) -> MemberBlockItemListSyntax {
         Self.removingSemicolons(from: node, context: context, diagnose: false)
     }
 
-    // Diagnose against the pre-traversal (still-attached) node so finding
-    // source locations are accurate. The transform handles the rewrite only.
+    // Diagnose against the pre-traversal (still-attached) node so finding source locations are
+    // accurate. The transform handles the rewrite only.
     static func willEnter(_ node: CodeBlockItemListSyntax, context: Context) {
         _ = Self.removingSemicolons(from: node, context: context, diagnose: true)
     }
@@ -51,7 +51,11 @@ final class NoSemicolons: StaticFormatRule<BasicRuleValue>, @unchecked Sendable 
     fileprivate static func removingSemicolons<
         ItemType: SyntaxProtocol & WithSemicolonSyntax & Equatable,
         NodeType: SyntaxCollection
-    >(from node: NodeType, context: Context, diagnose: Bool = true) -> NodeType
+    >(
+        from node: NodeType,
+        context: Context,
+        diagnose: Bool = true
+    ) -> NodeType
         where NodeType.Element == ItemType
     {
         var newItems = Array(node)
@@ -60,8 +64,9 @@ final class NoSemicolons: StaticFormatRule<BasicRuleValue>, @unchecked Sendable 
         for (idx, item) in node.enumerated() {
             var newItem = item
 
-            guard newItem != item || item.semicolon != nil || !pendingTrivia.isEmpty
-            else { continue }
+            guard newItem != item || item.semicolon != nil || !pendingTrivia.isEmpty else {
+                continue
+            }
 
             if !pendingTrivia.isEmpty {
                 newItem.leadingTrivia = pendingTrivia + newItem.leadingTrivia
@@ -71,21 +76,25 @@ final class NoSemicolons: StaticFormatRule<BasicRuleValue>, @unchecked Sendable 
             if let semicolon = item.semicolon,
                !(idx < node.count - 1
                    && Self.isCodeBlockItem(item, containingStmtType: DoStmtSyntax.self)
-                   && Self.isCodeBlockItem(newItems[idx + 1], containingStmtType: WhileStmtSyntax.self))
+                   && Self.isCodeBlockItem(
+                       newItems[idx + 1], containingStmtType: WhileStmtSyntax.self))
             {
                 var hasNextStatement: Bool
 
                 if let nextToken = semicolon.nextToken(viewMode: .sourceAccurate),
-                   nextToken.tokenKind != .rightBrace, nextToken.tokenKind != .endOfFile,
+                   nextToken.tokenKind != .rightBrace,
+                   nextToken.tokenKind != .endOfFile,
                    !nextToken.leadingTrivia.containsNewlines
                 {
                     hasNextStatement = true
                     pendingTrivia = [.newlines(1)]
+
                     if diagnose {
                         Self.diagnose(.removeSemicolonAndMove, on: semicolon, context: context)
                     }
                 } else {
                     hasNextStatement = false
+
                     if diagnose {
                         Self.diagnose(.removeSemicolon, on: semicolon, context: context)
                     }
@@ -118,7 +127,6 @@ final class NoSemicolons: StaticFormatRule<BasicRuleValue>, @unchecked Sendable 
         }
         return false
     }
-
 }
 
 fileprivate extension Finding.Message {

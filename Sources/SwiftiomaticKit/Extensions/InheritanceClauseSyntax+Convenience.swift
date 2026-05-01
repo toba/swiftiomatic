@@ -1,11 +1,11 @@
 import SwiftSyntax
 
 extension InheritanceClauseSyntax {
-    /// Returns a copy with the inherited type matching `typeName` removed, or `nil` if the
-    /// clause becomes empty (the caller should set `inheritanceClause = nil`).
+    /// Returns a copy with the inherited type matching `typeName` removed, or `nil` if the clause
+    /// becomes empty (the caller should set `inheritanceClause = nil` ).
     ///
-    /// Matching uses `trimmedDescription` on the type, so both simple names (`Sendable`) and
-    /// qualified names (`Swift.Sendable`) work.
+    /// Matching uses `trimmedDescription` on the type, so both simple names ( `Sendable` ) and
+    /// qualified names ( `Swift.Sendable` ) work.
     ///
     /// Comma handling:
     /// - Removing the only item → returns `nil`
@@ -27,8 +27,8 @@ extension InheritanceClauseSyntax {
             items[lastIndex] = items[lastIndex].with(\.trailingComma, nil)
         }
 
-        // Transfer the removed item's trailing trivia to the new last item so that
-        // trivia following the inheritance clause (e.g. space before `{`) is preserved.
+        // Transfer the removed item's trailing trivia to the new last item so that trivia following
+        // the inheritance clause (e.g. space before `{` ) is preserved.
         items[lastIndex] = items[lastIndex].with(\.trailingTrivia, removed.trailingTrivia)
 
         // Transfer removed item's leading trivia to the new first item if we removed index 0.
@@ -39,12 +39,12 @@ extension InheritanceClauseSyntax {
         return with(\.inheritedTypes, InheritedTypeListSyntax(items))
     }
 
-    /// Returns `true` if the clause contains an inherited type matching `typeName`.
+    /// Returns `true` if the clause contains an inherited type matching `typeName` .
     func contains(named typeName: String) -> Bool {
         inheritedTypes.contains { $0.type.trimmedDescription == typeName }
     }
 
-    /// Returns the `InheritedTypeSyntax` matching `typeName`, or `nil`.
+    /// Returns the `InheritedTypeSyntax` matching `typeName` , or `nil` .
     func inherited(named typeName: String) -> InheritedTypeSyntax? {
         inheritedTypes.first { $0.type.trimmedDescription == typeName }
     }

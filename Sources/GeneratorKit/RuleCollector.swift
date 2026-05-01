@@ -10,9 +10,9 @@
 //
 //===----------------------------------------------------------------------===//
 
-import ConfigurationKit
 import Foundation
 import SwiftSyntax
+import ConfigurationKit
 
 /// Collects information about rules in the code base.
 package final class RuleCollector {
@@ -36,12 +36,10 @@ package final class RuleCollector {
     package func collectSyntaxRules(from url: URL) throws {
         try enumerateSwiftFiles(in: url) { statements in
             for statement in statements {
-                guard
-                    let rule = self.detectSyntaxRule(
-                        at: statement,
-                        fileStatements: statements
-                    )
-                else { continue }
+                guard let rule = self.detectSyntaxRule(
+                    at: statement,
+                    fileStatements: statements
+                ) else { continue }
 
                 if rule.canRewrite { self.rewritingSyntaxRules.insert(rule) }
                 self.lintingSyntaxRules.insert(rule)
@@ -59,12 +57,10 @@ package final class RuleCollector {
     package func collectLayoutRules(from url: URL) throws {
         try enumerateSwiftFiles(in: url) { statements in
             for statement in statements {
-                guard
-                    let rule = self.detectLayoutRule(
-                        at: statement,
-                        fileStatements: statements
-                    )
-                else { continue }
+                guard let rule = self.detectLayoutRule(
+                    at: statement,
+                    fileStatements: statements
+                ) else { continue }
                 self.layoutRules.append(rule)
             }
         }
@@ -77,13 +73,11 @@ package final class RuleCollector {
         fileStatements: CodeBlockItemListSyntax
     ) -> DetectedLayoutRule? {
         guard let structDecl = statement.item.as(StructDeclSyntax.self),
-            let inheritanceClause = structDecl.inheritanceClause
-        else { return nil }
+              let inheritanceClause = structDecl.inheritanceClause else { return nil }
 
         for inheritance in inheritanceClause.inheritedTypes {
             guard let identifier = inheritance.type.as(IdentifierTypeSyntax.self),
-                identifier.name.text == "LayoutRule"
-            else { continue }
+                  identifier.name.text == "LayoutRule" else { continue }
 
             let members = structDecl.memberBlock.members
 
@@ -129,18 +123,14 @@ package final class RuleCollector {
         guard let inheritanceClause = maybeInheritanceClause else { return nil }
 
         for inheritance in inheritanceClause.inheritedTypes {
-            guard let identifier = inheritance.type.as(IdentifierTypeSyntax.self) else {
-                continue
-            }
+            guard let identifier = inheritance.type.as(IdentifierTypeSyntax.self) else { continue }
 
             let canRewrite: Bool
+
             switch identifier.name.text {
-                case "LintSyntaxRule":
-                    canRewrite = false
-                case "StructuralFormatRule", "StaticFormatRule":
-                    canRewrite = true
-                default:
-                    continue
+                case "LintSyntaxRule": canRewrite = false
+                case "StructuralFormatRule", "StaticFormatRule": canRewrite = true
+                default: continue
             }
 
             // Extract the generic parameter (config type name).
@@ -153,8 +143,7 @@ package final class RuleCollector {
 
             for member in members {
                 guard let function = member.decl.as(FunctionDeclSyntax.self),
-                    function.name.text == "visit"
-                else { continue }
+                      function.name.text == "visit" else { continue }
 
                 let params = function.signature.parameterClause.parameters
                 if let firstType = params.firstAndOnly?.type.as(IdentifierTypeSyntax.self) {
@@ -162,9 +151,10 @@ package final class RuleCollector {
                 }
             }
 
-            // Detect threshold-style config (conforms to ThresholdRuleValue) so
-            // schema generation can pick the right base shape.
+            // Detect threshold-style config (conforms to ThresholdRuleValue) so schema generation
+            // can pick the right base shape.
             let isThreshold: Bool
+
             if let configTypeName {
                 isThreshold = Self.structConforms(
                     configTypeName,
@@ -177,6 +167,7 @@ package final class RuleCollector {
 
             // Extract custom properties from the configuration type.
             let customProperties: [DetectedProperty]
+
             if let configTypeName {
                 customProperties = Self.extractCustomProperties(
                     configTypeName: configTypeName,
@@ -205,25 +196,25 @@ package final class RuleCollector {
 
     // MARK: - Custom property extraction
 
-    /// Base property keys that are already handled by `ruleBase`/`lintOnlyBase`.
+    /// Base property keys that are already handled by `ruleBase` / `lintOnlyBase` .
     private static let basePropertyKeys: Set<String> = ["rewrite", "lint"]
 
-    /// Base property keys covered by `thresholdLintBase`.
+    /// Base property keys covered by `thresholdLintBase` .
     private static let thresholdBasePropertyKeys: Set<String> = ["enabled", "warning", "error"]
 
-    /// Returns true when `configTypeName` (declared in `statements`) lists
-    /// `protocolName` in its inheritance clause.
+    /// Returns true when `configTypeName` (declared in `statements` ) lists `protocolName` in its
+    /// inheritance clause.
     static func structConforms(
         _ configTypeName: String,
         to protocolName: String,
         in statements: CodeBlockItemListSyntax
     ) -> Bool {
         guard let configStruct = findStruct(named: configTypeName, in: statements),
-            let inheritance = configStruct.inheritanceClause
-        else { return false }
+              let inheritance = configStruct.inheritanceClause else { return false }
+
         for inherited in inheritance.inheritedTypes {
             if let ident = inherited.type.as(IdentifierTypeSyntax.self),
-                ident.name.text == protocolName
+               ident.name.text == protocolName
             {
                 return true
             }
@@ -246,21 +237,20 @@ package final class RuleCollector {
 
         // Collect nested enum types: name → [case raw values].
         var enumTypes: [String: [String]] = [:]
+
         for member in members {
             guard let enumDecl = member.decl.as(EnumDeclSyntax.self) else { continue }
             let cases = extractEnumCases(from: enumDecl)
-            if !cases.isEmpty {
-                enumTypes[enumDecl.name.text] = cases
-            }
+            if !cases.isEmpty { enumTypes[enumDecl.name.text] = cases }
         }
 
         // Scan stored properties for custom (non-base) ones.
         var properties: [DetectedProperty] = []
+
         for member in members {
             guard let varDecl = member.decl.as(VariableDeclSyntax.self),
-                let binding = varDecl.bindings.firstAndOnly,
-                let pattern = binding.pattern.as(IdentifierPatternSyntax.self)
-            else { continue }
+                  let binding = varDecl.bindings.firstAndOnly,
+                  let pattern = binding.pattern.as(IdentifierPatternSyntax.self) else { continue }
 
             let propertyName = pattern.identifier.text
             guard !basePropertyKeys.contains(propertyName) else { continue }
@@ -271,14 +261,12 @@ package final class RuleCollector {
             ).map { Self.normalizeDescription($0.text) }
 
             // Determine the type from the annotation or initializer.
-            guard
-                let schemaNode = schemaNode(
-                    for: binding,
-                    propertyName: propertyName,
-                    description: docComment,
-                    enumTypes: enumTypes
-                )
-            else { continue }
+            guard let schemaNode = schemaNode(
+                for: binding,
+                propertyName: propertyName,
+                description: docComment,
+                enumTypes: enumTypes
+            ) else { continue }
 
             properties.append(DetectedProperty(key: propertyName, schemaNode: schemaNode))
         }
@@ -293,7 +281,7 @@ package final class RuleCollector {
     ) -> StructDeclSyntax? {
         for statement in statements {
             if let structDecl = statement.item.as(StructDeclSyntax.self),
-                structDecl.name.text == name
+               structDecl.name.text == name
             {
                 return structDecl
             }
@@ -301,18 +289,19 @@ package final class RuleCollector {
         return nil
     }
 
-    /// Extracts all case names from a `String`-backed enum.
+    /// Extracts all case names from a `String` -backed enum.
     private static func extractEnumCases(from enumDecl: EnumDeclSyntax) -> [String] {
         // Only process enums that inherit from String (raw value enums).
         guard let inheritance = enumDecl.inheritanceClause,
-            inheritance.inheritedTypes.contains(where: {
-                $0.type.as(IdentifierTypeSyntax.self)?.name.text == "String"
-            })
-        else { return [] }
+              inheritance.inheritedTypes.contains(where: {
+                  $0.type.as(IdentifierTypeSyntax.self)?.name.text == "String"
+              }) else { return [] }
 
         var cases: [String] = []
+
         for member in enumDecl.memberBlock.members {
             guard let caseDecl = member.decl.as(EnumCaseDeclSyntax.self) else { continue }
+
             for element in caseDecl.elements {
                 // Strip backticks from keyword-escaped names like `private` → "private".
                 let name = element.name.text.trimmingCharacters(in: CharacterSet(charactersIn: "`"))
@@ -324,8 +313,8 @@ package final class RuleCollector {
 
     /// Determines the JSON Schema node for a property binding.
     ///
-    /// `description` is the extracted DocC text for the property, when present;
-    /// callers fall back to the property name if it is `nil` or empty.
+    /// `description` is the extracted DocC text for the property, when present; callers fall back
+    /// to the property name if it is `nil` or empty.
     private static func schemaNode(
         for binding: PatternBindingSyntax,
         propertyName: String,
@@ -350,7 +339,7 @@ package final class RuleCollector {
 
         // No type annotation — infer from initializer alone.
         if let intLiteral = initValue?.as(IntegerLiteralExprSyntax.self),
-            let value = Int(intLiteral.literal.text)
+           let value = Int(intLiteral.literal.text)
         {
             return .integer(description: scalarDesc, defaultValue: value)
         }
@@ -401,8 +390,8 @@ package final class RuleCollector {
 
         // Array type: `[String]`
         if let array = type.as(ArrayTypeSyntax.self),
-            let elementIdent = array.element.as(IdentifierTypeSyntax.self),
-            elementIdent.name.text == "String"
+           let elementIdent = array.element.as(IdentifierTypeSyntax.self),
+           elementIdent.name.text == "String"
         {
             return .stringArray(description: scalarDesc)
         }
@@ -410,13 +399,13 @@ package final class RuleCollector {
         // Simple identifier type
         if let ident = type.as(IdentifierTypeSyntax.self) {
             let typeName = ident.name.text
-            if typeName == "String" {
-                return .string(description: scalarDesc)
-            }
+            if typeName == "String" { return .string(description: scalarDesc) }
+
             if typeName == "Int" {
                 let defaultValue: Int
+
                 if let intLiteral = initValue?.as(IntegerLiteralExprSyntax.self),
-                    let parsed = Int(intLiteral.literal.text)
+                   let parsed = Int(intLiteral.literal.text)
                 {
                     defaultValue = parsed
                 } else {
@@ -425,8 +414,8 @@ package final class RuleCollector {
                 return .integer(description: scalarDesc, defaultValue: defaultValue)
             }
             if typeName == "Lint" {
-                // Mirrors ConfigurationSchemaGenerator.lintModeValues — `Lint`
-                // lives in ConfigurationKit so it isn't found via local enum scan.
+                // Mirrors ConfigurationSchemaGenerator.lintModeValues — `Lint` lives in
+                // ConfigurationKit so it isn't found via local enum scan.
                 return .stringEnum(
                     description: description,
                     values: ["warn", "error", "no"],
@@ -435,6 +424,7 @@ package final class RuleCollector {
             }
             if typeName == "Bool" {
                 let defaultValue: Bool
+
                 if let boolLiteral = initValue?.as(BooleanLiteralExprSyntax.self) {
                     defaultValue = boolLiteral.literal.text == "true"
                 } else {
@@ -457,9 +447,9 @@ package final class RuleCollector {
 
     /// Normalizes a doc-comment string for use as a JSON Schema description.
     ///
-    /// Joins consecutive non-blank lines into a single paragraph (separated by a space),
-    /// preserves blank lines between paragraphs, and keeps bullet-list lines (`- `, `* `,
-    /// `• `) on their own line so lists render correctly in tooltips.
+    /// Joins consecutive non-blank lines into a single paragraph (separated by a space), preserves
+    /// blank lines between paragraphs, and keeps bullet-list lines ( `- ` , `* ` , `• ` ) on their
+    /// own line so lists render correctly in tooltips.
     static func normalizeDescription(_ raw: String) -> String {
         var paragraphs: [String] = []
         var current: [String] = []
@@ -473,6 +463,7 @@ package final class RuleCollector {
 
         for rawLine in raw.split(separator: "\n", omittingEmptySubsequences: false) {
             let line = rawLine.trimmingCharacters(in: .whitespaces)
+
             if line.isEmpty {
                 flush()
                 if paragraphs.last != "" { paragraphs.append("") }
@@ -499,32 +490,31 @@ package final class RuleCollector {
     ) -> String? {
         for member in members {
             guard let varDecl = member.decl.as(VariableDeclSyntax.self),
-                let binding = varDecl.bindings.firstAndOnly,
-                let pattern = binding.pattern.as(IdentifierPatternSyntax.self),
-                pattern.identifier.text == identifier
-            else { continue }
+                  let binding = varDecl.bindings.firstAndOnly,
+                  let pattern = binding.pattern.as(IdentifierPatternSyntax.self),
+                  pattern.identifier.text == identifier else { continue }
 
             // Stored property: `static let key = "value"`
             if let initializer = binding.initializer?.value.as(StringLiteralExprSyntax.self),
-                let segment = initializer.segments.firstAndOnly?.as(StringSegmentSyntax.self)
+               let segment = initializer.segments.firstAndOnly?.as(StringSegmentSyntax.self)
             {
                 return segment.content.text
             }
 
             // Computed property: `class var key: String { "value" }`
             if let accessorBlock = binding.accessorBlock,
-                case .getter(let body) = accessorBlock.accessors
+               case let .getter(body) = accessorBlock.accessors
             {
                 // Single-expression getter
                 if let stringLiteral = body.first?.item.as(StringLiteralExprSyntax.self),
-                    let segment = stringLiteral.segments.firstAndOnly?.as(StringSegmentSyntax.self)
+                   let segment = stringLiteral.segments.firstAndOnly?.as(StringSegmentSyntax.self)
                 {
                     return segment.content.text
                 }
                 // Return statement
                 if let returnStmt = body.first?.item.as(ReturnStmtSyntax.self),
-                    let stringLiteral = returnStmt.expression?.as(StringLiteralExprSyntax.self),
-                    let segment = stringLiteral.segments.firstAndOnly?.as(StringSegmentSyntax.self)
+                   let stringLiteral = returnStmt.expression?.as(StringLiteralExprSyntax.self),
+                   let segment = stringLiteral.segments.firstAndOnly?.as(StringSegmentSyntax.self)
                 {
                     return segment.content.text
                 }
@@ -535,7 +525,7 @@ package final class RuleCollector {
 
     /// Infers the JSON Schema type for a layout rule's `defaultValue` from its AST.
     ///
-    /// - `true`/`false` → `.boolean`
+    /// - `true` / `false` → `.boolean`
     /// - Integer literal → `.integer`
     /// - `.enumCase` with matching enum in file → `.stringEnum`
     /// - Everything else (string literals) → `.string`
@@ -546,24 +536,19 @@ package final class RuleCollector {
     ) -> DetectedLayoutRule.SchemaValueType {
         for member in members {
             guard let varDecl = member.decl.as(VariableDeclSyntax.self),
-                let binding = varDecl.bindings.firstAndOnly,
-                let pattern = binding.pattern.as(IdentifierPatternSyntax.self),
-                pattern.identifier.text == identifier,
-                let initializer = binding.initializer
-            else { continue }
+                  let binding = varDecl.bindings.firstAndOnly,
+                  let pattern = binding.pattern.as(IdentifierPatternSyntax.self),
+                  pattern.identifier.text == identifier,
+                  let initializer = binding.initializer else { continue }
 
-            if initializer.value.is(BooleanLiteralExprSyntax.self) {
-                return .boolean
-            }
-            if initializer.value.is(IntegerLiteralExprSyntax.self) {
-                return .integer
-            }
+            if initializer.value.is(BooleanLiteralExprSyntax.self) { return .boolean }
+            if initializer.value.is(IntegerLiteralExprSyntax.self) { return .integer }
 
             // Check for `.enumCase` → find the enum type in the file via type annotation.
             if let memberAccess = initializer.value.as(MemberAccessExprSyntax.self),
-                let typeAnnotation = binding.typeAnnotation,
-                let typeName = typeAnnotation.type.as(IdentifierTypeSyntax.self)?.name.text,
-                let cases = findEnumCases(named: typeName, in: fileStatements)
+               let typeAnnotation = binding.typeAnnotation,
+               let typeName = typeAnnotation.type.as(IdentifierTypeSyntax.self)?.name.text,
+               let cases = findEnumCases(named: typeName, in: fileStatements)
             {
                 let defaultCase = memberAccess.declName.baseName.text
                 return .stringEnum(values: cases, defaultValue: defaultCase)
@@ -581,15 +566,14 @@ package final class RuleCollector {
     ) -> [String]? {
         for statement in statements {
             guard let enumDecl = statement.item.as(EnumDeclSyntax.self),
-                enumDecl.name.text == name
-            else { continue }
+                  enumDecl.name.text == name else { continue }
             let cases = extractEnumCases(from: enumDecl)
             return cases.isEmpty ? nil : cases
         }
         return nil
     }
 
-    /// Checks whether a rule is opt-in by detecting disabled defaults in its `defaultValue`.
+    /// Checks whether a rule is opt-in by detecting disabled defaults in its `defaultValue` .
     ///
     /// Handles three patterns:
     /// - `LintValue(rewrite: false, lint: .no)` (opt-in rewrite rules)
@@ -598,10 +582,9 @@ package final class RuleCollector {
     private static func extractIsOptIn(from members: MemberBlockItemListSyntax) -> Bool {
         for member in members {
             guard let varDecl = member.decl.as(VariableDeclSyntax.self),
-                let binding = varDecl.bindings.firstAndOnly,
-                let pattern = binding.pattern.as(IdentifierPatternSyntax.self),
-                pattern.identifier.text == "defaultValue"
-            else { continue }
+                  let binding = varDecl.bindings.firstAndOnly,
+                  let pattern = binding.pattern.as(IdentifierPatternSyntax.self),
+                  pattern.identifier.text == "defaultValue" else { continue }
 
             // Check initializer: `LintValue(rewrite: false, ...)` or `LintOnlyValue(lint: .no)`
             if let call = binding.initializer?.value.as(FunctionCallExprSyntax.self) {
@@ -610,20 +593,18 @@ package final class RuleCollector {
 
             // Check computed getter
             if let accessorBlock = binding.accessorBlock,
-                case .getter(let body) = accessorBlock.accessors
+               case let .getter(body) = accessorBlock.accessors
             {
                 if let call = body.first?.item.as(FunctionCallExprSyntax.self) {
                     return Self.isDisabledDefault(call)
                 }
                 if let returnStmt = body.first?.item.as(ReturnStmtSyntax.self),
-                    let call = returnStmt.expression?.as(FunctionCallExprSyntax.self)
+                   let call = returnStmt.expression?.as(FunctionCallExprSyntax.self)
                 {
                     return Self.isDisabledDefault(call)
                 }
                 // Multi-statement: look for `v.rewrite = false` anywhere in body
-                for item in body {
-                    if Self.isRewriteFalseAssignment(item) { return true }
-                }
+                for item in body where Self.isRewriteFalseAssignment(item) { return true }
             }
         }
         return false
@@ -631,25 +612,25 @@ package final class RuleCollector {
 
     /// Checks if a function call represents a disabled default value.
     ///
-    /// Matches `LintValue(rewrite: false, ...)` and `LintOnlyValue(lint: .no)`.
+    /// Matches `LintValue(rewrite: false, ...)` and `LintOnlyValue(lint: .no)` .
     private static func isDisabledDefault(_ call: FunctionCallExprSyntax) -> Bool {
         // `LintValue(rewrite: false, ...)`
         for arg in call.arguments {
             if arg.label?.text == "rewrite",
-                let boolLiteral = arg.expression.as(BooleanLiteralExprSyntax.self),
-                boolLiteral.literal.text == "false"
+               let boolLiteral = arg.expression.as(BooleanLiteralExprSyntax.self),
+               boolLiteral.literal.text == "false"
             {
                 return true
             }
         }
         // `LintOnlyValue(lint: .no)`
         if let callee = call.calledExpression.as(DeclReferenceExprSyntax.self),
-            callee.baseName.text == "LintOnlyValue"
+           callee.baseName.text == "LintOnlyValue"
         {
             for arg in call.arguments {
                 if arg.label?.text == "lint",
-                    let memberAccess = arg.expression.as(MemberAccessExprSyntax.self),
-                    memberAccess.declName.baseName.text == "no"
+                   let memberAccess = arg.expression.as(MemberAccessExprSyntax.self),
+                   memberAccess.declName.baseName.text == "no"
                 {
                     return true
                 }
@@ -658,7 +639,7 @@ package final class RuleCollector {
         return false
     }
 
-    /// Checks if a code block item is `v.rewrite = false`.
+    /// Checks if a code block item is `v.rewrite = false` .
     private static func isRewriteFalseAssignment(_ item: CodeBlockItemSyntax) -> Bool {
         guard let seq = item.item.as(SequenceExprSyntax.self) else { return false }
         let elements = Array(seq.elements)
@@ -666,36 +647,34 @@ package final class RuleCollector {
 
         // LHS: `v.rewrite`
         guard let memberAccess = elements[0].as(MemberAccessExprSyntax.self),
-            memberAccess.declName.baseName.text == "rewrite"
-        else { return false }
+              memberAccess.declName.baseName.text == "rewrite" else { return false }
 
         // Operator: `=`
         guard elements[1].is(AssignmentExprSyntax.self) else { return false }
 
         // RHS: `false`
         guard let boolLiteral = elements[2].as(BooleanLiteralExprSyntax.self),
-            boolLiteral.literal.text == "false"
-        else { return false }
+              boolLiteral.literal.text == "false" else { return false }
 
         return true
     }
 
     /// Extracts `group` from `static let group: ConfigurationGroup? = .someCase` in the AST.
-    private static func extractGroup(from members: MemberBlockItemListSyntax) -> ConfigurationGroup?
-    {
+    private static func extractGroup(
+        from members: MemberBlockItemListSyntax
+    ) -> ConfigurationGroup? {
         for member in members {
             guard let varDecl = member.decl.as(VariableDeclSyntax.self),
-                let binding = varDecl.bindings.firstAndOnly,
-                let pattern = binding.pattern.as(IdentifierPatternSyntax.self),
-                pattern.identifier.text == "group"
-            else { continue }
+                  let binding = varDecl.bindings.firstAndOnly,
+                  let pattern = binding.pattern.as(IdentifierPatternSyntax.self),
+                  pattern.identifier.text == "group" else { continue }
 
             let memberAccess: MemberAccessExprSyntax?
 
             if let initializer = binding.initializer?.value.as(MemberAccessExprSyntax.self) {
                 memberAccess = initializer
             } else if let accessorBlock = binding.accessorBlock,
-                case .getter(let body) = accessorBlock.accessors
+               case let .getter(body) = accessorBlock.accessors
             {
                 if let expr = body.first?.item.as(MemberAccessExprSyntax.self) {
                     memberAccess = expr

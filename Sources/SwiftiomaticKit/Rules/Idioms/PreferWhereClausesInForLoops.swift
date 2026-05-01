@@ -17,7 +17,7 @@ import SwiftSyntax
 /// Lint: `for` loops that consist of a single `if` statement yield a lint error.
 ///
 /// Rewrite: `for` loops that consist of a single `if` statement have the conditional of that
-///         statement factored out to a `where` clause.
+/// statement factored out to a `where` clause.
 final class PreferWhereClausesInForLoops: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
     override class var group: ConfigurationGroup? { .idioms }
 
@@ -27,7 +27,7 @@ final class PreferWhereClausesInForLoops: StaticFormatRule<BasicRuleValue>, @unc
 
     static func transform(
         _ node: ForStmtSyntax,
-        parent: Syntax?,
+        parent _: Syntax?,
         context: Context
     ) -> StmtSyntax {
         // Extract IfStmt node if it's the only node in the function's body.
@@ -45,8 +45,7 @@ final class PreferWhereClausesInForLoops: StaticFormatRule<BasicRuleValue>, @unc
                         forInStmt: node,
                         context: context
                     ))
-            default:
-                return StmtSyntax(node)
+            default: return StmtSyntax(node)
         }
     }
 
@@ -59,7 +58,7 @@ final class PreferWhereClausesInForLoops: StaticFormatRule<BasicRuleValue>, @unc
             case let .expressionStmt(exprStmt):
                 switch Syntax(exprStmt.expression).as(SyntaxEnum.self) {
                     case let .ifExpr(ifExpr)
-                    where ifExpr.conditions.count == 1
+                        where ifExpr.conditions.count == 1
                         && ifExpr.elseKeyword == nil
                         && forInStmt.body.statements.count == 1:
                         // Extract the condition of the IfExpr.
@@ -73,11 +72,10 @@ final class PreferWhereClausesInForLoops: StaticFormatRule<BasicRuleValue>, @unc
                             condition: condition,
                             statements: ifExpr.body.statements
                         )
-                    default:
-                        return forInStmt
+                    default: return forInStmt
                 }
             case let .guardStmt(guardStmt)
-            where guardStmt.conditions.count == 1
+                where guardStmt.conditions.count == 1
                 && guardStmt.body.statements.count == 1
                 && guardStmt.body.statements.first!.item.is(ContinueStmtSyntax.self):
                 // Extract the condition of the GuardStmt.
@@ -92,8 +90,7 @@ final class PreferWhereClausesInForLoops: StaticFormatRule<BasicRuleValue>, @unc
                     statements: CodeBlockItemListSyntax(forInStmt.body.statements.dropFirst())
                 )
 
-            default:
-                return forInStmt
+            default: return forInStmt
         }
     }
 }
@@ -127,10 +124,10 @@ private func updateWithWhereCondition(
     return result
 }
 
-extension Finding.Message {
-    fileprivate static let useWhereInsteadOfIf: Finding.Message =
+fileprivate extension Finding.Message {
+    static let useWhereInsteadOfIf: Finding.Message =
         "replace this 'if' statement with a 'where' clause"
 
-    fileprivate static let useWhereInsteadOfGuard: Finding.Message =
+    static let useWhereInsteadOfGuard: Finding.Message =
         "replace this 'guard' statement with a 'where' clause"
 }

@@ -2,12 +2,12 @@ import SwiftSyntax
 
 /// Remove `break` at the end of switch cases.
 ///
-/// In Swift, switch cases do not fall through by default. A trailing `break` at the end of a
-/// case body is therefore redundant.
+/// In Swift, switch cases do not fall through by default. A trailing `break` at the end of a case
+/// body is therefore redundant.
 ///
-/// This rule does NOT remove labeled `break` statements (e.g. `break outerLoop`), which transfer
-/// control to a specific enclosing statement. It also does not remove `break` when it is the
-/// sole statement in a case body (since at least one statement is required).
+/// This rule does NOT remove labeled `break` statements (e.g. `break outerLoop` ), which transfer
+/// control to a specific enclosing statement. It also does not remove `break` when it is the sole
+/// statement in a case body (since at least one statement is required).
 ///
 /// Lint: If a redundant `break` is found at the end of a switch case, a lint warning is raised.
 ///
@@ -17,7 +17,7 @@ final class RedundantBreak: StaticFormatRule<BasicRuleValue>, @unchecked Sendabl
 
     static func transform(
         _ visited: SwitchCaseSyntax,
-        parent: Syntax?,
+        parent _: Syntax?,
         context: Context
     ) -> SwitchCaseSyntax {
         let statements = visited.statements
@@ -25,11 +25,10 @@ final class RedundantBreak: StaticFormatRule<BasicRuleValue>, @unchecked Sendabl
         // A case must have at least one statement. If `break` is the only statement, it's required.
         guard statements.count > 1 else { return visited }
 
-        // Check if the last statement is an unlabeled `break`.
+        // Check if the last statement is an unlabeled `break` .
         guard let lastItem = statements.last,
               let breakStmt = lastItem.item.as(StmtSyntax.self)?.as(BreakStmtSyntax.self),
-              breakStmt.label == nil
-        else { return visited }
+              breakStmt.label == nil else { return visited }
 
         Self.diagnose(.removeRedundantBreak, on: breakStmt.breakKeyword, context: context)
 

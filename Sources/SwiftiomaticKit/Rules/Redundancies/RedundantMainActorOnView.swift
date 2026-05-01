@@ -1,14 +1,13 @@
 import SwiftSyntax
 
-/// Remove `@MainActor` from SwiftUI `View`, `App`, and `Scene` conformers.
+/// Remove `@MainActor` from SwiftUI `View` , `App` , and `Scene` conformers.
 ///
-/// SwiftUI implies `@MainActor` isolation on these protocols, so writing the
-/// attribute explicitly is redundant.
+/// SwiftUI implies `@MainActor` isolation on these protocols, so writing the attribute explicitly
+/// is redundant.
 ///
-/// Detection is conservative: an unqualified inheritance name `View`, `App`,
-/// or `Scene` matches. A custom protocol of the same name will be falsely
-/// flagged — match the philosophy of the rule library: prefer false positives
-/// over missed issues. Disable per-rule if needed.
+/// Detection is conservative: an unqualified inheritance name `View` , `App` , or `Scene` matches.
+/// A custom protocol of the same name will be falsely flagged — match the philosophy of the rule
+/// library: prefer false positives over missed issues. Disable per-rule if needed.
 ///
 /// Lint: A redundant `@MainActor` raises a warning.
 ///
@@ -20,7 +19,7 @@ final class RedundantMainActorOnView: StaticFormatRule<BasicRuleValue>, @uncheck
 
     static func transform(
         _ node: StructDeclSyntax,
-        parent: Syntax?,
+        parent _: Syntax?,
         context: Context
     ) -> DeclSyntax {
         guard let mainActorAttr = redundantMainActorAttribute(node) else { return DeclSyntax(node) }
@@ -28,6 +27,7 @@ final class RedundantMainActorOnView: StaticFormatRule<BasicRuleValue>, @uncheck
         var result = node
         let savedTrivia = mainActorAttr.leadingTrivia
         result.attributes = node.attributes.removing(named: "MainActor")
+
         if result.attributes.isEmpty {
             if result.modifiers.first != nil {
                 result.modifiers[result.modifiers.startIndex].leadingTrivia = savedTrivia
@@ -40,7 +40,7 @@ final class RedundantMainActorOnView: StaticFormatRule<BasicRuleValue>, @uncheck
 
     static func transform(
         _ node: ClassDeclSyntax,
-        parent: Syntax?,
+        parent _: Syntax?,
         context: Context
     ) -> DeclSyntax {
         guard let mainActorAttr = redundantMainActorAttribute(node) else { return DeclSyntax(node) }
@@ -48,6 +48,7 @@ final class RedundantMainActorOnView: StaticFormatRule<BasicRuleValue>, @uncheck
         var result = node
         let savedTrivia = mainActorAttr.leadingTrivia
         result.attributes = node.attributes.removing(named: "MainActor")
+
         if result.attributes.isEmpty {
             if result.modifiers.first != nil {
                 result.modifiers[result.modifiers.startIndex].leadingTrivia = savedTrivia
@@ -60,7 +61,7 @@ final class RedundantMainActorOnView: StaticFormatRule<BasicRuleValue>, @uncheck
 
     static func transform(
         _ node: EnumDeclSyntax,
-        parent: Syntax?,
+        parent _: Syntax?,
         context: Context
     ) -> DeclSyntax {
         guard let mainActorAttr = redundantMainActorAttribute(node) else { return DeclSyntax(node) }
@@ -68,6 +69,7 @@ final class RedundantMainActorOnView: StaticFormatRule<BasicRuleValue>, @uncheck
         var result = node
         let savedTrivia = mainActorAttr.leadingTrivia
         result.attributes = node.attributes.removing(named: "MainActor")
+
         if result.attributes.isEmpty {
             if result.modifiers.first != nil {
                 result.modifiers[result.modifiers.startIndex].leadingTrivia = savedTrivia
@@ -78,14 +80,20 @@ final class RedundantMainActorOnView: StaticFormatRule<BasicRuleValue>, @uncheck
         return DeclSyntax(result)
     }
 
-    private static func redundantMainActorAttribute(_ decl: some DeclSyntaxProtocol & WithAttributesSyntax) -> AttributeSyntax? {
+    private static func redundantMainActorAttribute(
+        _ decl: some DeclSyntaxProtocol & WithAttributesSyntax
+    ) -> AttributeSyntax? {
         guard let attr = decl.attributes.attribute(named: "MainActor") else { return nil }
         guard inherits(decl, fromAnyOf: impliedMainActorProtocols) else { return nil }
         return attr
     }
 
-    private static func inherits(_ decl: some DeclSyntaxProtocol, fromAnyOf names: Set<String>) -> Bool {
+    private static func inherits(
+        _ decl: some DeclSyntaxProtocol,
+        fromAnyOf names: Set<String>
+    ) -> Bool {
         let inheritance: InheritanceClauseSyntax?
+
         if let s = decl.as(StructDeclSyntax.self) {
             inheritance = s.inheritanceClause
         } else if let c = decl.as(ClassDeclSyntax.self) {
@@ -102,7 +110,7 @@ final class RedundantMainActorOnView: StaticFormatRule<BasicRuleValue>, @uncheck
     }
 }
 
-extension Finding.Message {
-    fileprivate static let removeRedundantMainActor: Finding.Message =
+fileprivate extension Finding.Message {
+    static let removeRedundantMainActor: Finding.Message =
         "remove redundant '@MainActor'; SwiftUI 'View', 'App', and 'Scene' are already main-actor-isolated"
 }

@@ -25,6 +25,7 @@ package enum JSONValue: Sendable, Equatable, Hashable {
 extension JSONValue: Codable {
     package init(from decoder: any Decoder) throws {
         let container = try decoder.singleValueContainer()
+
         if container.decodeNil() {
             self = .null
         } else if let v = try? container.decode(Bool.self) {
@@ -50,6 +51,7 @@ extension JSONValue: Codable {
 
     package func encode(to encoder: any Encoder) throws {
         var container = encoder.singleValueContainer()
+
         switch self {
             case let .string(v): try container.encode(v)
             case let .int(v): try container.encode(v)
@@ -145,6 +147,7 @@ extension JSONValue {
                 }
                 output += "[\n"
                 let childIndent = indent + 2
+
                 for (i, element) in elements.enumerated() {
                     output += String(repeating: " ", count: childIndent)
                     element.write(to: &output, indent: childIndent, sortBy: order)
@@ -165,14 +168,14 @@ extension JSONValue {
                     let pinnedSet = Set(pinned)
                     let pinnedPresent = pinned.filter { dict.keys.contains($0) }
                     let remaining = dict.keys.filter { !pinnedSet.contains($0) }
+
                     switch order {
                         case .length:
                             sortedKeys = pinnedPresent
                                 + remaining.sorted {
                                     $0.count < $1.count || ($0.count == $1.count && $0 < $1)
                                 }
-                        case .alphabetical:
-                            sortedKeys = pinnedPresent + remaining.sorted()
+                        case .alphabetical: sortedKeys = pinnedPresent + remaining.sorted()
                     }
                 } else {
                     switch order {
@@ -180,12 +183,12 @@ extension JSONValue {
                             sortedKeys = dict.keys.sorted {
                                 $0.count < $1.count || ($0.count == $1.count && $0 < $1)
                             }
-                        case .alphabetical:
-                            sortedKeys = dict.keys.sorted()
+                        case .alphabetical: sortedKeys = dict.keys.sorted()
                     }
                 }
                 output += "{\n"
                 let childIndent = indent + 2
+
                 for (i, key) in sortedKeys.enumerated() {
                     output += String(repeating: " ", count: childIndent)
                     output += "\""
@@ -203,6 +206,7 @@ extension JSONValue {
     private func escapeJSON(_ s: String) -> String {
         var result = ""
         result.reserveCapacity(s.count)
+
         for c in s.unicodeScalars {
             switch c {
                 case "\"": result += "\\\""

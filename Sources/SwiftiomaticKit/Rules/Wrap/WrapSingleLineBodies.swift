@@ -1,9 +1,9 @@
 import SwiftSyntax
 
-/// Per-file state for the compact-pipeline `WrapSingleLineBodies` rule. The
-/// `indentStack` tracks the baseIndent of each enclosing wrapping construct
-/// (`for` / `while` / `repeat` / `guard` / `if`) so a same-line nested
-/// construct can derive its own baseIndent when its trivia carries no newline.
+/// Per-file state for the compact-pipeline `WrapSingleLineBodies` rule. The `indentStack` tracks
+/// the baseIndent of each enclosing wrapping construct ( `for` / `while` / `repeat` / `guard` /
+/// `if` ) so a same-line nested construct can derive its own baseIndent when its trivia carries no
+/// newline.
 final class WrapSingleLineBodiesState {
     var indentStack: [String] = []
 }
@@ -56,7 +56,7 @@ extension WrapSingleLineBodies {
 
     static func transform(
         _ node: GuardStmtSyntax,
-        parent: Syntax?,
+        parent _: Syntax?,
         context: Context
     ) -> StmtSyntax {
         switch Self.mode(context: context) {
@@ -67,7 +67,7 @@ extension WrapSingleLineBodies {
 
     static func transform(
         _ node: FunctionDeclSyntax,
-        parent: Syntax?,
+        parent _: Syntax?,
         context: Context
     ) -> DeclSyntax {
         switch Self.mode(context: context) {
@@ -78,7 +78,7 @@ extension WrapSingleLineBodies {
 
     static func transform(
         _ node: InitializerDeclSyntax,
-        parent: Syntax?,
+        parent _: Syntax?,
         context: Context
     ) -> DeclSyntax {
         switch Self.mode(context: context) {
@@ -89,7 +89,7 @@ extension WrapSingleLineBodies {
 
     static func transform(
         _ node: SubscriptDeclSyntax,
-        parent: Syntax?,
+        parent _: Syntax?,
         context: Context
     ) -> DeclSyntax {
         switch Self.mode(context: context) {
@@ -100,7 +100,7 @@ extension WrapSingleLineBodies {
 
     static func transform(
         _ node: ForStmtSyntax,
-        parent: Syntax?,
+        parent _: Syntax?,
         context: Context
     ) -> StmtSyntax {
         switch Self.mode(context: context) {
@@ -111,7 +111,7 @@ extension WrapSingleLineBodies {
 
     static func transform(
         _ node: WhileStmtSyntax,
-        parent: Syntax?,
+        parent _: Syntax?,
         context: Context
     ) -> StmtSyntax {
         switch Self.mode(context: context) {
@@ -122,7 +122,7 @@ extension WrapSingleLineBodies {
 
     static func transform(
         _ node: RepeatStmtSyntax,
-        parent: Syntax?,
+        parent _: Syntax?,
         context: Context
     ) -> StmtSyntax {
         switch Self.mode(context: context) {
@@ -144,34 +144,34 @@ extension WrapSingleLineBodies {
 
     static func transform(
         _ node: AccessorDeclSyntax,
-        parent: Syntax?,
+        parent _: Syntax?,
         context: Context
     ) -> DeclSyntax {
         guard Self.mode(context: context) == .inline,
               node.accessorSpecifier.tokenKind == .keyword(.didSet)
-                  || node.accessorSpecifier.tokenKind == .keyword(.willSet)
-        else { return DeclSyntax(node) }
+                  || node.accessorSpecifier.tokenKind == .keyword(.willSet) else {
+            return DeclSyntax(node)
+        }
 
         return Self.inlineObserver(node, context: context)
     }
 
     // MARK: Wrap helpers (static)
 
-    /// Mirrors the legacy `currentIndent`/`chainBaseIndent` instance state via
-    /// a typed property on `Context`. The compact pipeline runs post-order, so a `for` /
-    /// `while` / `repeat` / `guard` / `if` whose keyword sits on the same line as
-    /// its enclosing `{` cannot derive its baseIndent from trivia. The static
-    /// `willEnter` hooks push each construct's baseIndent onto `indentStack`
-    /// before children are visited; `didExit` pops it. The wrap helpers read
+    /// Mirrors the legacy `currentIndent` / `chainBaseIndent` instance state via a typed property
+    /// on `Context` . The compact pipeline runs post-order, so a `for` / `while` / `repeat` /
+    /// `guard` / `if` whose keyword sits on the same line as its enclosing `{` cannot derive its
+    /// baseIndent from trivia. The static `willEnter` hooks push each construct's baseIndent onto
+    /// `indentStack` before children are visited; `didExit` pops it. The wrap helpers read
     /// `indentStack.last` rather than recomputing from trivia.
     fileprivate static func state(_ context: Context) -> WrapSingleLineBodiesState {
         context.wrapSingleLineBodiesState
     }
 
-    /// Computes a wrapping construct's baseIndent. Trivia wins when it contains
-    /// a newline; otherwise we synthesize from the enclosing construct's own
-    /// baseIndent (one level deeper). For else-if chains the inner `if` reuses
-    /// the outer `if`'s baseIndent (matches legacy `chainBaseIndent`).
+    /// Computes a wrapping construct's baseIndent. Trivia wins when it contains a newline;
+    /// otherwise we synthesize from the enclosing construct's own baseIndent (one level deeper).
+    /// For else-if chains the inner `if` reuses the outer `if` 's baseIndent (matches legacy
+    /// `chainBaseIndent` ).
     fileprivate static func computeBaseIndent(
         trivia: Trivia,
         isElseIf: Bool,
@@ -184,12 +184,11 @@ extension WrapSingleLineBodies {
     }
 
     fileprivate static func resolveIndent(from trivia: Trivia) -> String {
-        if trivia.containsNewlines { return trivia.indentation }
-        return ""
+        trivia.containsNewlines ? trivia.indentation : ""
     }
 
     fileprivate static func resolveVarIndent(
-        _ node: PatternBindingSyntax,
+        _: PatternBindingSyntax,
         parent: Syntax?
     ) -> String {
         if let varDecl = parent?.parent?.as(VariableDeclSyntax.self) {
@@ -406,8 +405,7 @@ extension WrapSingleLineBodies {
                 guard accessors.contains(where: { $0.body != nil }) else { return node }
 
                 guard let firstAccessor = accessors.first,
-                      !firstAccessor.leadingTrivia.containsNewlines
-                else { return node }
+                      !firstAccessor.leadingTrivia.containsNewlines else { return node }
                 let closingOnNewLine = accessorBlock.rightBrace.leadingTrivia.containsNewlines
                 guard !closingOnNewLine else { return node }
 
@@ -460,6 +458,7 @@ extension WrapSingleLineBodies {
         context: Context
     ) -> Int {
         let converter = context.sourceLocationConverter
+
         if leftBrace.leadingTrivia.containsNewlines,
            let prev = leftBrace.previousToken(viewMode: .sourceAccurate)
         {
@@ -486,6 +485,7 @@ extension WrapSingleLineBodies {
 
     fileprivate static func inliningBody(_ body: CodeBlockSyntax) -> CodeBlockSyntax {
         var result = body
+
         if result.leftBrace.leadingTrivia.containsNewlines {
             result.leftBrace = result.leftBrace.with(\.leadingTrivia, .space)
         }
@@ -515,8 +515,9 @@ extension WrapSingleLineBodies {
             context: context
         )
 
-        guard Self.fitsInline(prefixLength: prefix, bodyText: bodyText, context: context)
-        else { return ExprSyntax(node) }
+        guard Self.fitsInline(prefixLength: prefix, bodyText: bodyText, context: context) else {
+            return ExprSyntax(node)
+        }
 
         Self.diagnose(.inlineConditionalBody, on: node.body.leftBrace, context: context)
 
@@ -538,8 +539,9 @@ extension WrapSingleLineBodies {
             context: context
         )
 
-        guard Self.fitsInline(prefixLength: prefix, bodyText: bodyText, context: context)
-        else { return StmtSyntax(node) }
+        guard Self.fitsInline(prefixLength: prefix, bodyText: bodyText, context: context) else {
+            return StmtSyntax(node)
+        }
 
         Self.diagnose(.inlineConditionalBody, on: node.body.leftBrace, context: context)
 
@@ -561,8 +563,9 @@ extension WrapSingleLineBodies {
             context: context
         )
 
-        guard Self.fitsInline(prefixLength: prefix, bodyText: bodyText, context: context)
-        else { return DeclSyntax(node) }
+        guard Self.fitsInline(prefixLength: prefix, bodyText: bodyText, context: context) else {
+            return DeclSyntax(node)
+        }
 
         Self.diagnose(.inlineFunctionBody, on: body.leftBrace, context: context)
 
@@ -584,8 +587,9 @@ extension WrapSingleLineBodies {
             context: context
         )
 
-        guard Self.fitsInline(prefixLength: prefix, bodyText: bodyText, context: context)
-        else { return DeclSyntax(node) }
+        guard Self.fitsInline(prefixLength: prefix, bodyText: bodyText, context: context) else {
+            return DeclSyntax(node)
+        }
 
         Self.diagnose(.inlineFunctionBody, on: body.leftBrace, context: context)
 
@@ -612,8 +616,9 @@ extension WrapSingleLineBodies {
             context: context
         )
 
-        guard Self.fitsInline(prefixLength: prefix, bodyText: bodyText, context: context)
-        else { return DeclSyntax(node) }
+        guard Self.fitsInline(prefixLength: prefix, bodyText: bodyText, context: context) else {
+            return DeclSyntax(node)
+        }
 
         Self.diagnose(.inlineFunctionBody, on: accessorBlock.leftBrace, context: context)
 
@@ -642,8 +647,9 @@ extension WrapSingleLineBodies {
             context: context
         )
 
-        guard Self.fitsInline(prefixLength: prefix, bodyText: bodyText, context: context)
-        else { return StmtSyntax(node) }
+        guard Self.fitsInline(prefixLength: prefix, bodyText: bodyText, context: context) else {
+            return StmtSyntax(node)
+        }
 
         Self.diagnose(.inlineLoopBody, on: node.body.leftBrace, context: context)
 
@@ -665,8 +671,9 @@ extension WrapSingleLineBodies {
             context: context
         )
 
-        guard Self.fitsInline(prefixLength: prefix, bodyText: bodyText, context: context)
-        else { return StmtSyntax(node) }
+        guard Self.fitsInline(prefixLength: prefix, bodyText: bodyText, context: context) else {
+            return StmtSyntax(node)
+        }
 
         Self.diagnose(.inlineLoopBody, on: node.body.leftBrace, context: context)
 
@@ -721,6 +728,7 @@ extension WrapSingleLineBodies {
 
                 let bodyText = firstStmt.trimmedDescription
                 let varIndent = Self.resolveVarIndent(node, parent: parent)
+
                 if let varDecl = parent?.parent?.as(VariableDeclSyntax.self) {
                     let prefix = Self.prefixLength(
                         from: varDecl.bindingSpecifier,
@@ -767,8 +775,9 @@ extension WrapSingleLineBodies {
             context: context
         )
 
-        guard Self.fitsInline(prefixLength: prefix, bodyText: bodyText, context: context)
-        else { return DeclSyntax(node) }
+        guard Self.fitsInline(prefixLength: prefix, bodyText: bodyText, context: context) else {
+            return DeclSyntax(node)
+        }
 
         Self.diagnose(.inlineObserverBody, on: body.leftBrace, context: context)
 
@@ -789,8 +798,7 @@ extension WrapSingleLineBodies {
                 trivia: node.ifKeyword.leadingTrivia,
                 isElseIf: isElseIf,
                 state: state
-            )
-        )
+            ))
     }
 
     static func didExit(_: IfExprSyntax, context: Context) {
@@ -804,8 +812,7 @@ extension WrapSingleLineBodies {
                 trivia: node.guardKeyword.leadingTrivia,
                 isElseIf: false,
                 state: state
-            )
-        )
+            ))
     }
 
     static func didExit(_: GuardStmtSyntax, context: Context) {
@@ -819,8 +826,7 @@ extension WrapSingleLineBodies {
                 trivia: node.forKeyword.leadingTrivia,
                 isElseIf: false,
                 state: state
-            )
-        )
+            ))
     }
 
     static func didExit(_: ForStmtSyntax, context: Context) {
@@ -834,8 +840,7 @@ extension WrapSingleLineBodies {
                 trivia: node.whileKeyword.leadingTrivia,
                 isElseIf: false,
                 state: state
-            )
-        )
+            ))
     }
 
     static func didExit(_: WhileStmtSyntax, context: Context) {
@@ -849,8 +854,7 @@ extension WrapSingleLineBodies {
                 trivia: node.repeatKeyword.leadingTrivia,
                 isElseIf: false,
                 state: state
-            )
-        )
+            ))
     }
 
     static func didExit(_: RepeatStmtSyntax, context: Context) {

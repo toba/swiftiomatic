@@ -34,11 +34,13 @@ struct RuleMaskTests {
     converter.location(for: converter.position(ofLine: line, column: column))
   }
 
-  @Test func singleRule() {
+  // MARK: - Lone-line directives extend from their position to end-of-file.
+
+  @Test func loneDirectiveDisablesRulesUntilEOF() {
     let text =
       """
       let a = 123
-      // sm:ignore: rule1
+      // sm:ignore rule1
       let b = 456
       let c = 789
       """
@@ -47,41 +49,39 @@ struct RuleMaskTests {
 
     #expect(mask.ruleState("rule1", at: location(ofLine: 1, in: converter)) == .default)
     #expect(mask.ruleState("rule1", at: location(ofLine: 3, in: converter)) == .disabled)
-    #expect(mask.ruleState("rule1", at: location(ofLine: 4, in: converter)) == .default)
+    #expect(mask.ruleState("rule1", at: location(ofLine: 4, in: converter)) == .disabled)
   }
 
-  @Test func ignoreTwoRules() {
+  @Test func multipleDirectivesAccumulate() {
     let text =
       """
       let a = 123
-      // sm:ignore: rule1
+      // sm:ignore rule1
       let b = 456
-      // sm:ignore: rule2
+      // sm:ignore rule2
       let c = 789
-      // sm:ignore: rule1, rule2
       let d = "abc"
-      let e = "def"
       """
 
     let (mask, converter) = createMask(sourceText: text)
 
+    // rule1 disabled from line 3 onward.
     #expect(mask.ruleState("rule1", at: location(ofLine: 1, in: converter)) == .default)
     #expect(mask.ruleState("rule1", at: location(ofLine: 3, in: converter)) == .disabled)
-    #expect(mask.ruleState("rule1", at: location(ofLine: 5, in: converter)) == .default)
-    #expect(mask.ruleState("rule1", at: location(ofLine: 7, in: converter)) == .disabled)
-    #expect(mask.ruleState("rule1", at: location(ofLine: 8, in: converter)) == .default)
+    #expect(mask.ruleState("rule1", at: location(ofLine: 5, in: converter)) == .disabled)
+    #expect(mask.ruleState("rule1", at: location(ofLine: 6, in: converter)) == .disabled)
 
+    // rule2 disabled from line 5 onward.
     #expect(mask.ruleState("rule2", at: location(ofLine: 1, in: converter)) == .default)
     #expect(mask.ruleState("rule2", at: location(ofLine: 3, in: converter)) == .default)
     #expect(mask.ruleState("rule2", at: location(ofLine: 5, in: converter)) == .disabled)
-    #expect(mask.ruleState("rule2", at: location(ofLine: 7, in: converter)) == .disabled)
-    #expect(mask.ruleState("rule2", at: location(ofLine: 8, in: converter)) == .default)
+    #expect(mask.ruleState("rule2", at: location(ofLine: 6, in: converter)) == .disabled)
   }
 
   @Test func ignoreComplexRuleNames() {
     let text =
       """
-      // sm:ignore: ru_le, rule!, ru&le, rule?, rule[], rule(), rule;
+      // sm:ignore ru_le, rule!, ru&le, rule?, rule[], rule(), rule;
       let a = 123
       """
 
@@ -97,120 +97,130 @@ struct RuleMaskTests {
     #expect(mask.ruleState("default", at: location(ofLine: 2, in: converter)) == .default)
   }
 
-  @Test func duplicateNested() {
+  @Test func nestedDirectiveAlsoExtendsToEOF() {
     let text =
       """
-      // sm:ignore: rule1
+      // sm:ignore rule1
       struct Foo {
         var bar = 0
 
-        // sm:ignore: rule1
+        // sm:ignore rule4
         var baz = 0
 
-        // sm:ignore: rule4
         var bazzle = 0
-
-        var barzle = 0
       }
+      let after = 0
       """
 
     let (mask, converter) = createMask(sourceText: text)
 
+    // rule1 from top-of-file → disabled everywhere after the directive.
     #expect(mask.ruleState("rule1", at: location(ofLine: 3, column: 3, in: converter)) == .disabled)
-    #expect(mask.ruleState("rule4", at: location(ofLine: 3, column: 3, in: converter)) == .default)
-
     #expect(mask.ruleState("rule1", at: location(ofLine: 6, column: 3, in: converter)) == .disabled)
-    #expect(mask.ruleState("rule4", at: location(ofLine: 6, column: 3, in: converter)) == .default)
+    #expect(mask.ruleState("rule1", at: location(ofLine: 10, in: converter)) == .disabled)
 
-    #expect(mask.ruleState("rule1", at: location(ofLine: 9, column: 3, in: converter)) == .disabled)
-    #expect(mask.ruleState("rule4", at: location(ofLine: 9, column: 3, in: converter)) == .disabled)
-
-    #expect(mask.ruleState("rule4", at: location(ofLine: 11, column: 3, in: converter)) == .default)
+    // rule4 nested inside struct → still extends to EOF from that point.
+    #expect(mask.ruleState("rule4", at: location(ofLine: 3, column: 3, in: converter)) == .default)
+    #expect(mask.ruleState("rule4", at: location(ofLine: 6, column: 3, in: converter)) == .disabled)
+    #expect(mask.ruleState("rule4", at: location(ofLine: 8, column: 3, in: converter)) == .disabled)
+    #expect(mask.ruleState("rule4", at: location(ofLine: 10, in: converter)) == .disabled)
   }
 
-  @Test func spuriousFlags() {
-    let text1 =
+  @Test func nonMatchingDirectivesAreIgnored() {
+    // Block comments and malformed forms (e.g. `// sm:ignore:` with no rule list) don't match.
+    let text =
       """
       let a = 123
-      let b = 456 // sm:ignore: rule1
       let c = 789
-      /* sm:ignore: rule2 */
+      /* sm:ignore rule2 */
       let d = 111
       // sm:ignore:
       let b = 456
       """
 
-    let (mask1, converter1) = createMask(sourceText: text1)
+    let (mask, converter) = createMask(sourceText: text)
 
-    #expect(mask1.ruleState("rule1", at: location(ofLine: 1, in: converter1)) == .default)
-    #expect(mask1.ruleState("rule1", at: location(ofLine: 2, in: converter1)) == .default)
-    #expect(mask1.ruleState("rule1", at: location(ofLine: 3, in: converter1)) == .default)
-    #expect(mask1.ruleState("rule1", at: location(ofLine: 5, in: converter1)) == .default)
-    #expect(mask1.ruleState("rule1", at: location(ofLine: 7, in: converter1)) == .default)
+    #expect(mask.ruleState("rule1", at: location(ofLine: 1, in: converter)) == .default)
+    #expect(mask.ruleState("rule1", at: location(ofLine: 6, in: converter)) == .default)
+    #expect(mask.ruleState("rule2", at: location(ofLine: 4, in: converter)) == .default)
+  }
 
-    let text2 =
+  @Test func directiveInsideStringLiteralIsIgnored() {
+    let text =
       #"""
       let a = 123
       let b =
         """
-        // sm:ignore: rule1
+        // sm:ignore rule1
         """
       let c = 789
-      // sm:ignore: rule1
+      // sm:ignore rule1
       let d = "abc"
       """#
 
-    let (mask2, converter2) = createMask(sourceText: text2)
+    let (mask, converter) = createMask(sourceText: text)
 
-    #expect(mask2.ruleState("rule1", at: location(ofLine: 1, in: converter2)) == .default)
-    #expect(mask2.ruleState("rule1", at: location(ofLine: 6, in: converter2)) == .default)
-    #expect(mask2.ruleState("rule1", at: location(ofLine: 8, in: converter2)) == .disabled)
+    #expect(mask.ruleState("rule1", at: location(ofLine: 1, in: converter)) == .default)
+    #expect(mask.ruleState("rule1", at: location(ofLine: 6, in: converter)) == .default)
+    #expect(mask.ruleState("rule1", at: location(ofLine: 8, in: converter)) == .disabled)
   }
 
-  @Test func namelessDirectiveAffectsAllRules() {
+  // MARK: - Trailing directives are scoped to the line they sit on.
+
+  @Test func trailingIgnoreAllRules() {
     let text =
       """
       let a = 123
+      let b = 456 // sm:ignore
+      let c = 789
+      """
+
+    let (mask, converter) = createMask(sourceText: text)
+
+    #expect(mask.ruleState("rule1", at: location(ofLine: 1, in: converter)) == .default)
+    #expect(mask.ruleState("rule1", at: location(ofLine: 2, in: converter)) == .disabled)
+    #expect(mask.ruleState("anyRule", at: location(ofLine: 2, in: converter)) == .disabled)
+    #expect(mask.ruleState("rule1", at: location(ofLine: 3, in: converter)) == .default)
+  }
+
+  @Test func trailingIgnoreSpecificRules() {
+    let text =
+      """
+      let a = 123
+      let b = 456 // sm:ignore rule1, rule2
+      let c = 789
+      """
+
+    let (mask, converter) = createMask(sourceText: text)
+
+    #expect(mask.ruleState("rule1", at: location(ofLine: 1, in: converter)) == .default)
+    #expect(mask.ruleState("rule1", at: location(ofLine: 2, in: converter)) == .disabled)
+    #expect(mask.ruleState("rule2", at: location(ofLine: 2, in: converter)) == .disabled)
+    #expect(mask.ruleState("rule3", at: location(ofLine: 2, in: converter)) == .default)
+    #expect(mask.ruleState("rule1", at: location(ofLine: 3, in: converter)) == .default)
+  }
+
+  @Test func trailingIgnoreOnMember() {
+    let text =
+      """
+      struct Foo {
+        var bar = 0 // sm:ignore rule1
+        var baz = 0
+      }
+      """
+
+    let (mask, converter) = createMask(sourceText: text)
+
+    #expect(mask.ruleState("rule1", at: location(ofLine: 2, column: 3, in: converter)) == .disabled)
+    #expect(mask.ruleState("rule1", at: location(ofLine: 3, column: 3, in: converter)) == .default)
+  }
+
+  // MARK: - Top-of-file directive ignores the whole file.
+
+  @Test func namelessTopOfFileIgnoresEverything() {
+    let text =
+      """
       // sm:ignore
-      let b = 456
-      let c = 789
-      """
-
-    let (mask, converter) = createMask(sourceText: text)
-
-    #expect(mask.ruleState("rule1", at: location(ofLine: 1, in: converter)) == .default)
-    #expect(mask.ruleState("rule1", at: location(ofLine: 3, in: converter)) == .disabled)
-    #expect(mask.ruleState("TotallyMadeUpRule", at: location(ofLine: 3, in: converter)) == .disabled)
-    #expect(mask.ruleState("rule1", at: location(ofLine: 4, in: converter)) == .default)
-  }
-
-  @Test func directiveWithRulesList() {
-    let text =
-      """
-      let a = 123
-      // sm:ignore: rule1, rule2   , AnotherRule  , TheBestRule,, ,   , ,
-      let b = 456
-      let c = 789
-      """
-
-    let (mask, converter) = createMask(sourceText: text)
-
-    #expect(mask.ruleState("rule1", at: location(ofLine: 1, in: converter)) == .default)
-    #expect(mask.ruleState("rule1", at: location(ofLine: 3, in: converter)) == .disabled)
-    #expect(mask.ruleState("rule2", at: location(ofLine: 3, in: converter)) == .disabled)
-    #expect(mask.ruleState("anotherRule", at: location(ofLine: 3, in: converter)) == .disabled)
-    #expect(mask.ruleState("theBestRule", at: location(ofLine: 3, in: converter)) == .disabled)
-    #expect(mask.ruleState("totallyMadeUpRule", at: location(ofLine: 3, in: converter)) == .default)
-    #expect(mask.ruleState("rule1", at: location(ofLine: 4, in: converter)) == .default)
-  }
-
-  @Test func allRulesWholeFileIgnore() {
-    let text =
-      """
-      // This file has important contents.
-      // sm:ignore-file
-      // Everything in this file is ignored.
-
       let a = 5
       let b = 4
 
@@ -228,95 +238,30 @@ struct RuleMaskTests {
     let (mask, converter) = createMask(sourceText: text)
 
     let lineCount = text.split(separator: "\n").count
-    for i in 0..<lineCount {
-      #expect(mask.ruleState("rule1", at: location(ofLine: i, in: converter)) == .disabled)
+    for i in 1..<lineCount {
+      #expect(
+        mask.ruleState("anyRule", at: location(ofLine: i, in: converter)) == .disabled,
+        "expected disabled at line \(i)"
+      )
     }
   }
 
-  @Test func allRulesWholeFileIgnoreNestedInNode() {
+  @Test func topOfFileWithRuleList() {
     let text =
       """
-      // This file has important contents.
-      // Everything in this file is ignored.
-
+      // sm:ignore rule1, rule2, rule3
       let a = 5
       let b = 4
 
       class Foo {
-        // sm:ignore-file
         let member1 = 0
-        func foo() {
-          baz()
-        }
-      }
-
-      struct Baz {
       }
       """
 
     let (mask, converter) = createMask(sourceText: text)
 
     let lineCount = text.split(separator: "\n").count
-    for i in 0..<lineCount {
-      #expect(mask.ruleState("rule1", at: location(ofLine: i, in: converter)) == .default)
-    }
-  }
-
-  @Test func singleRuleWholeFileIgnore() {
-    let text =
-      """
-      // This file has important contents.
-      // sm:ignore-file: rule1
-      // Everything in this file is ignored.
-
-      let a = 5
-      let b = 4
-
-      class Foo {
-        let member1 = 0
-        func foo() {
-          baz()
-        }
-      }
-
-      struct Baz {
-      }
-      """
-
-    let (mask, converter) = createMask(sourceText: text)
-
-    let lineCount = text.split(separator: "\n").count
-    for i in 0..<lineCount {
-      #expect(mask.ruleState("rule1", at: location(ofLine: i, in: converter)) == .disabled)
-      #expect(mask.ruleState("rule2", at: location(ofLine: i, in: converter)) == .default)
-    }
-  }
-
-  @Test func multipleRulesWholeFileIgnore() {
-    let text =
-      """
-      // This file has important contents.
-      // sm:ignore-file: rule1, rule2, rule3
-      // Everything in this file is ignored.
-
-      let a = 5
-      let b = 4
-
-      class Foo {
-        let member1 = 0
-        func foo() {
-          baz()
-        }
-      }
-
-      struct Baz {
-      }
-      """
-
-    let (mask, converter) = createMask(sourceText: text)
-
-    let lineCount = text.split(separator: "\n").count
-    for i in 0..<lineCount {
+    for i in 1..<lineCount {
       #expect(mask.ruleState("rule1", at: location(ofLine: i, in: converter)) == .disabled)
       #expect(mask.ruleState("rule2", at: location(ofLine: i, in: converter)) == .disabled)
       #expect(mask.ruleState("rule3", at: location(ofLine: i, in: converter)) == .disabled)
@@ -324,21 +269,15 @@ struct RuleMaskTests {
     }
   }
 
-  @Test func fileAndLineIgnoresMixed() {
+  @Test func nestedDirectiveExtendsToEOFFromItsPosition() {
     let text =
       """
-      // This file has important contents.
-      // sm:ignore-file: rule1, rule2
-      // Everything in this file is ignored.
-
       let a = 5
-      // sm:ignore: rule3
       let b = 4
 
       class Foo {
-        // sm:ignore: rule3, rule4
+        // sm:ignore rule1
         let member1 = 0
-
         func foo() {
           baz()
         }
@@ -350,87 +289,84 @@ struct RuleMaskTests {
 
     let (mask, converter) = createMask(sourceText: text)
 
-    let lineCount = text.split(separator: "\n").count
-    for i in 0..<lineCount {
-      #expect(mask.ruleState("rule1", at: location(ofLine: i, in: converter)) == .disabled)
-      #expect(mask.ruleState("rule2", at: location(ofLine: i, in: converter)) == .disabled)
-      if i == 7 {
-        #expect(mask.ruleState("rule3", at: location(ofLine: i, in: converter)) == .disabled)
-        #expect(mask.ruleState("rule4", at: location(ofLine: i, in: converter)) == .default)
-      } else if i == 11 {
-        #expect(
-          mask.ruleState("rule3", at: location(ofLine: i, column: 3, in: converter)) == .disabled
-        )
-        #expect(
-          mask.ruleState("rule4", at: location(ofLine: i, column: 3, in: converter)) == .disabled
-        )
-      } else {
-        #expect(mask.ruleState("rule3", at: location(ofLine: i, in: converter)) == .default)
-        #expect(mask.ruleState("rule4", at: location(ofLine: i, in: converter)) == .default)
-      }
-    }
+    // rule1 default before the nested directive.
+    #expect(mask.ruleState("rule1", at: location(ofLine: 1, in: converter)) == .default)
+    #expect(mask.ruleState("rule1", at: location(ofLine: 4, in: converter)) == .default)
+
+    // rule1 disabled at and after the directive (line 5 onward).
+    #expect(mask.ruleState("rule1", at: location(ofLine: 6, column: 3, in: converter)) == .disabled)
+    #expect(mask.ruleState("rule1", at: location(ofLine: 12, in: converter)) == .disabled)
   }
 
-  @Test func multipleSubsetFileIgnoreDirectives() {
+  @Test func mixedTopLevelAndMidFileDirectives() {
     let text =
       """
-      // This file has important contents.
-      // sm:ignore-file: rule1
-      // sm:ignore-file: rule2
-      // Everything in this file is ignored.
-
+      // sm:ignore rule1, rule2
       let a = 5
+      // sm:ignore rule3
       let b = 4
 
       class Foo {
+        // sm:ignore rule3, rule4
         let member1 = 0
-
-        func foo() {
-          baz()
-        }
-      }
-
-      struct Baz {
       }
       """
 
     let (mask, converter) = createMask(sourceText: text)
 
     let lineCount = text.split(separator: "\n").count
-    for i in 0..<lineCount {
+    // rule1, rule2 disabled everywhere after the top directive.
+    for i in 1..<lineCount {
+      #expect(mask.ruleState("rule1", at: location(ofLine: i, in: converter)) == .disabled)
+      #expect(mask.ruleState("rule2", at: location(ofLine: i, in: converter)) == .disabled)
+    }
+    // rule3 disabled from its directive (line 3) onward.
+    #expect(mask.ruleState("rule3", at: location(ofLine: 2, in: converter)) == .default)
+    #expect(mask.ruleState("rule3", at: location(ofLine: 4, in: converter)) == .disabled)
+    #expect(mask.ruleState("rule3", at: location(ofLine: 8, column: 3, in: converter)) == .disabled)
+    // rule4 disabled from its directive (line 7) onward.
+    #expect(mask.ruleState("rule4", at: location(ofLine: 4, in: converter)) == .default)
+    #expect(mask.ruleState("rule4", at: location(ofLine: 8, column: 3, in: converter)) == .disabled)
+  }
+
+  @Test func multipleSubsetTopOfFileDirectives() {
+    let text =
+      """
+      // sm:ignore rule1
+      // sm:ignore rule2
+      let a = 5
+
+      class Foo {
+        let member1 = 0
+      }
+      """
+
+    let (mask, converter) = createMask(sourceText: text)
+
+    let lineCount = text.split(separator: "\n").count
+    for i in 1..<lineCount {
       #expect(mask.ruleState("rule1", at: location(ofLine: i, in: converter)) == .disabled)
       #expect(mask.ruleState("rule2", at: location(ofLine: i, in: converter)) == .disabled)
       #expect(mask.ruleState("rule3", at: location(ofLine: i, in: converter)) == .default)
     }
   }
 
-  @Test func subsetAndAllFileIgnoreDirectives() {
+  @Test func subsetAndAllTopOfFileDirectives() {
     let text =
       """
-      // This file has important contents.
-      // sm:ignore-file: rule1
-      // sm:ignore-file
-      // Everything in this file is ignored.
-
+      // sm:ignore rule1
+      // sm:ignore
       let a = 5
-      let b = 4
 
       class Foo {
         let member1 = 0
-
-        func foo() {
-          baz()
-        }
-      }
-
-      struct Baz {
       }
       """
 
     let (mask, converter) = createMask(sourceText: text)
 
     let lineCount = text.split(separator: "\n").count
-    for i in 0..<lineCount {
+    for i in 1..<lineCount {
       #expect(mask.ruleState("rule1", at: location(ofLine: i, in: converter)) == .disabled)
       #expect(mask.ruleState("rule2", at: location(ofLine: i, in: converter)) == .disabled)
       #expect(mask.ruleState("rule3", at: location(ofLine: i, in: converter)) == .disabled)

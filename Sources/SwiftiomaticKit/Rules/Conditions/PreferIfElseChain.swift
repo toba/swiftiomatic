@@ -1,7 +1,7 @@
 import SwiftSyntax
 
-/// Single-return `if` statements followed by a final `return` should be expressed as an
-/// `if/else` expression.
+/// Single-return `if` statements followed by a final `return` should be expressed as an `if/else`
+/// expression.
 ///
 /// When one or more `if` statements each contain only a `return` and are followed by a trailing
 /// `return` , the sequence is converted into a single `if/else if/.../else` expression.
@@ -30,19 +30,19 @@ final class PreferIfElseChain: StaticFormatRule<BasicRuleValue>, @unchecked Send
 
     static func transform(
         _ visited: CodeBlockItemListSyntax,
-        parent: Syntax?,
+        parent _: Syntax?,
         context: Context
     ) -> CodeBlockItemListSyntax {
         // The rewrite turns explicit `return` statements into bare-expression branches of an
         // if-expression. That only preserves semantics when the expression's value is the implicit
-        // return of the enclosing scope, which requires (1) the chain occupies the entire item list and
-        // (2) the list is the body of a single-expression function/closure/accessor.
+        // return of the enclosing scope, which requires (1) the chain occupies the entire item list
+        // and (2) the list is the body of a single-expression function/closure/accessor.
         guard parentAllowsImplicitReturn(visited) else { return visited }
 
         let items = Array(visited)
 
         // Guard-prefix variant: `guard <conds> else { return X }; return Y` →
-        // `if <conds> { Y } else { X }`. Restricted to the exact two-statement form so
+        // `if <conds> { Y } else { X }` . Restricted to the exact two-statement form so
         // intermediate code that depends on guard-bound names is never moved.
         if items.count == 2,
            let guardChain = tryBuildGuardChain(items: items)
@@ -90,8 +90,7 @@ final class PreferIfElseChain: StaticFormatRule<BasicRuleValue>, @unchecked Send
               let grandparent = codeBlock.parent else { return false }
 
         if grandparent.is(FunctionDeclSyntax.self) { return true }
-        if grandparent.is(AccessorDeclSyntax.self) { return true }
-        return false
+        return grandparent.is(AccessorDeclSyntax.self) ? true : false
     }
 
     // MARK: - Chain detection
@@ -125,13 +124,14 @@ final class PreferIfElseChain: StaticFormatRule<BasicRuleValue>, @unchecked Send
         guard ifBranches.count >= 1 else { return nil }
 
         // The next item must be a trailing return statement.
-        guard j < items.count, let fallbackValue = extractReturnValue(from: items[j])
-        else { return nil }
+        guard j < items.count, let fallbackValue = extractReturnValue(from: items[j]) else {
+            return nil
+        }
 
         let endIndex = j + 1
 
-        // Build the if/else chain from the bottom up. Start with the else block (the fallback return
-        // value).
+        // Build the if/else chain from the bottom up. Start with the else block (the fallback
+        // return value).
         let elseBlock = CodeBlockSyntax(
             leftBrace: .leftBraceToken(leadingTrivia: .space, trailingTrivia: .newline),
             statements: CodeBlockItemListSyntax([
@@ -156,7 +156,10 @@ final class PreferIfElseChain: StaticFormatRule<BasicRuleValue>, @unchecked Send
                     CodeBlockItemSyntax(
                         leadingTrivia: .spaces(2),
                         item: .expr(
-                            branch.value.with(\.leadingTrivia, []).with(\.trailingTrivia, [])),
+                            branch.value.with(\.leadingTrivia, []).with(
+                                \.trailingTrivia,
+                                []
+                            )),
                         trailingTrivia: .newline
                     )
                 ]),
@@ -164,10 +167,9 @@ final class PreferIfElseChain: StaticFormatRule<BasicRuleValue>, @unchecked Send
             )
 
             let isFirst = i == 0
-            let ifKeyword:
-                TokenSyntax = isFirst
-                    ? .keyword(.if, trailingTrivia: .space)
-                    : .keyword(.if, leadingTrivia: .space, trailingTrivia: .space)
+            let ifKeyword: TokenSyntax = isFirst
+                ? .keyword(.if, trailingTrivia: .space)
+                : .keyword(.if, leadingTrivia: .space, trailingTrivia: .space)
 
             let ifExpr = IfExprSyntax(
                 ifKeyword: ifKeyword,
@@ -200,12 +202,11 @@ final class PreferIfElseChain: StaticFormatRule<BasicRuleValue>, @unchecked Send
         guard items.count == 2,
               let guardStmt = extractGuardStatement(from: items[0]),
               let elseValue = singleReturnValue(from: guardStmt.body),
-              let trailingValue = extractReturnValue(from: items[1])
-        else { return nil }
+              let trailingValue = extractReturnValue(from: items[1]) else { return nil }
 
-        // Strip the trailing trivia on the last condition so the synthesized `{` placement
-        // is deterministic — the source guard's last condition typically has no trailing
-        // trivia (the space sits on `else`'s leading trivia), but in some forms it does.
+        // Strip the trailing trivia on the last condition so the synthesized `{` placement is
+        // deterministic — the source guard's last condition typically has no trailing trivia (the
+        // space sits on `else` 's leading trivia), but in some forms it does.
         let elements = Array(guardStmt.conditions)
         let normalizedConditions: ConditionElementListSyntax = {
             guard let last = elements.last else { return guardStmt.conditions }

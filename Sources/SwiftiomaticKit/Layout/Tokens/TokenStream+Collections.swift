@@ -87,6 +87,7 @@ extension TokenStream {
         for element in node {
             before(element.firstToken(viewMode: .sourceAccurate), tokens: .open)
             after(element.lastToken(viewMode: .sourceAccurate), tokens: .close)
+
             if let trailingComma = element.trailingComma {
                 closingDelimiterTokens.insert(trailingComma)
             }
@@ -120,6 +121,7 @@ extension TokenStream {
             before(element.firstToken(viewMode: .sourceAccurate), tokens: .open)
             after(element.colon, tokens: .break)
             after(element.lastToken(viewMode: .sourceAccurate), tokens: .close)
+
             if let trailingComma = element.trailingComma {
                 closingDelimiterTokens.insert(trailingComma)
             }
@@ -162,6 +164,7 @@ extension TokenStream {
         // If there are multiple trailing closures, force all the closures in the call to break.
         if !node.additionalTrailingClosures.isEmpty {
             if let closure = node.trailingClosure { forcedBreakingClosures.insert(closure.id) }
+
             for additionalTrailingClosure in node.additionalTrailingClosures {
                 forcedBreakingClosures.insert(additionalTrailingClosure.closure.id)
             }
@@ -199,6 +202,7 @@ extension TokenStream {
                         // chain doesn't fit, the chain break ( `.` rank 2) fires before the args
                         // break (rank 3) — matching documented break precedence.
                         before(calledMemberAccessExpr.period, tokens: .open)
+
                         if let rightParen = node.rightParen {
                             after(rightParen, tokens: .close)
                         } else {
@@ -285,6 +289,7 @@ extension TokenStream {
         }
 
         let shouldGroupAroundArgument = !isCompactSingleFunctionCallArgument(arguments)
+
         for argument in arguments {
             if let trailingComma = argument.trailingComma {
                 closingDelimiterTokens.insert(trailingComma)
@@ -306,6 +311,7 @@ extension TokenStream {
         if shouldGroup { before(node.firstToken(viewMode: .sourceAccurate), tokens: .open) }
 
         var additionalEndTokens = [Token]()
+
         if let colon = node.colon {
             // If we have an open delimiter following the colon, use a space instead of a
             // continuation break so that we don't awkwardly shift the delimiter down and indent it

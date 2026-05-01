@@ -43,6 +43,7 @@ final class SortDeclarations: StructuralFormatRule<BasicRuleValue>, @unchecked S
 
         var sortedRegions = [(start: Int, end: Int)]()
         var regionStart: Int?
+
         for (i, item) in items.enumerated() {
             if hasMarker(Self.beginMarker, in: item.leadingTrivia) {
                 regionStart = i
@@ -55,6 +56,7 @@ final class SortDeclarations: StructuralFormatRule<BasicRuleValue>, @unchecked S
 
         var newItems = items
         var didChange = false
+
         for region in sortedRegions.reversed() {
             let slice = items[region.start..<region.end]
             guard slice.count > 1 else { continue }
@@ -64,10 +66,9 @@ final class SortDeclarations: StructuralFormatRule<BasicRuleValue>, @unchecked S
             let sorted = slice.enumerated().sorted { lhs, rhs in
                 let lhsName = name(lhs.element) ?? ""
                 let rhsName = name(rhs.element) ?? ""
-                if lhsName != rhsName {
-                    return lhsName.localizedCompare(rhsName) == .orderedAscending
-                }
-                return lhs.offset < rhs.offset
+                return lhsName != rhsName
+                    ? lhsName.localizedCompare(rhsName) == .orderedAscending
+                    : lhs.offset < rhs.offset
             }.map(\.element)
 
             let sortedNames = sorted.compactMap(name)

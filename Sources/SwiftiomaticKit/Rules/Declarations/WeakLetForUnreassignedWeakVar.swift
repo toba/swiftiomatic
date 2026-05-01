@@ -1,12 +1,11 @@
 import SwiftSyntax
 
-/// Flag `weak var` stored properties on classes/actors that are never
-/// reassigned (SE-0481). Such properties should be `weak let`.
+/// Flag `weak var` stored properties on classes/actors that are never reassigned (SE-0481). Such
+/// properties should be `weak let` .
 ///
-/// A property is considered "never reassigned" when no descendant of the
-/// enclosing type's body contains an assignment to its name (either bare or
-/// via `self.`). Initial values and assignments inside an initializer of the
-/// same type are allowed because `let` permits init-time assignment.
+/// A property is considered "never reassigned" when no descendant of the enclosing type's body
+/// contains an assignment to its name (either bare or via `self.` ). Initial values and assignments
+/// inside an initializer of the same type are allowed because `let` permits init-time assignment.
 ///
 /// Lint-only: emitting the finding does not rewrite the declaration.
 final class WeakLetForUnreassignedWeakVar: LintSyntaxRule<LintOnlyValue>, @unchecked Sendable {
@@ -31,18 +30,15 @@ final class WeakLetForUnreassignedWeakVar: LintSyntaxRule<LintOnlyValue>, @unche
                   let binding = varDecl.bindings.first,
                   binding.accessorBlock == nil,
                   let name = binding.pattern.as(IdentifierPatternSyntax.self)?.identifier.text
-            else {
-                continue
-            }
+            else { continue }
 
             let collector = AssignmentCollector(name: name, viewMode: .sourceAccurate)
+
             for inner in memberBlock.members {
                 if inner.decl.is(InitializerDeclSyntax.self) { continue }
                 collector.walk(inner)
             }
-            if !collector.found {
-                diagnose(.preferWeakLet(name), on: varDecl.bindingSpecifier)
-            }
+            if !collector.found { diagnose(.preferWeakLet(name), on: varDecl.bindingSpecifier) }
         }
     }
 }
@@ -57,19 +53,13 @@ private final class AssignmentCollector: SyntaxVisitor {
     }
 
     override func visit(_ node: InfixOperatorExprSyntax) -> SyntaxVisitorContinueKind {
-        guard node.operator.as(AssignmentExprSyntax.self) != nil else {
-            return .visitChildren
-        }
-        if matches(node.leftOperand) {
-            found = true
-        }
+        guard node.operator.as(AssignmentExprSyntax.self) != nil else { return .visitChildren }
+        if matches(node.leftOperand) { found = true }
         return .visitChildren
     }
 
     private func matches(_ expr: ExprSyntax) -> Bool {
-        if let ident = expr.as(DeclReferenceExprSyntax.self) {
-            return ident.baseName.text == name
-        }
+        if let ident = expr.as(DeclReferenceExprSyntax.self) { return ident.baseName.text == name }
         if let member = expr.as(MemberAccessExprSyntax.self),
            let base = member.base?.as(DeclReferenceExprSyntax.self),
            base.baseName.tokenKind == .keyword(.self),
@@ -81,8 +71,8 @@ private final class AssignmentCollector: SyntaxVisitor {
     }
 }
 
-extension Finding.Message {
-    fileprivate static func preferWeakLet(_ name: String) -> Finding.Message {
+fileprivate extension Finding.Message {
+    static func preferWeakLet(_ name: String) -> Finding.Message {
         "'\(name)' is declared 'weak var' but never reassigned — prefer 'weak let' (SE-0481)"
     }
 }

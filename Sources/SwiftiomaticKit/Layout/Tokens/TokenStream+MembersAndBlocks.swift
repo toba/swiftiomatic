@@ -27,10 +27,10 @@ extension TokenStream {
         for item in node where !shouldFormatterIgnore(node: Syntax(item)) {
             before(item.firstToken(viewMode: .sourceAccurate), tokens: .open)
 
-            let newlines:
-                NewlineBehavior = item != node.last && shouldInsertNewline(basedOn: item.semicolon)
-                    ? .soft
-                    : .elective
+            let newlines: NewlineBehavior = item != node.last
+                && shouldInsertNewline(basedOn: item.semicolon)
+                ? .soft
+                : .elective
             let resetSize = item.semicolon != nil ? 1 : 0
 
             after(
@@ -175,10 +175,10 @@ extension TokenStream {
         // unclosed open tokens.
         for item in node where !shouldFormatterIgnore(node: Syntax(item)) {
             before(item.firstToken(viewMode: .sourceAccurate), tokens: .open)
-            var newlines:
-                NewlineBehavior = item != node.last && shouldInsertNewline(basedOn: item.semicolon)
-                    ? .soft
-                    : .elective
+            var newlines: NewlineBehavior = item != node.last
+                && shouldInsertNewline(basedOn: item.semicolon)
+                ? .soft
+                : .elective
             let resetSize = item.semicolon != nil ? 1 : 0
 
             // Remove blank lines between consecutive import statements.

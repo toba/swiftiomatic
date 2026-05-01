@@ -1,24 +1,21 @@
-import ConfigurationKit
 import Foundation
+import ConfigurationKit
 
 /// Generates `schema.json` by encoding a `JSONSchemaNode` tree.
 ///
-/// Rule descriptions are sourced from `RuleCollector` (extracted from DocC comments)
-/// so they stay in sync with rule implementations.
+/// Rule descriptions are sourced from `RuleCollector` (extracted from DocC comments) so they stay
+/// in sync with rule implementations.
 package final class ConfigurationSchemaGenerator: FileGenerator {
     let collector: RuleCollector
 
-    package init(collector: RuleCollector) {
-        self.collector = collector
-    }
+    package init(collector: RuleCollector) { self.collector = collector }
 
     package func generateContent() -> String {
         let schema = buildSchema()
         let encoder = JSONEncoder()
         encoder.outputFormatting = [.prettyPrinted, .sortedKeys, .withoutEscapingSlashes]
         guard let data = try? encoder.encode(schema),
-            let json = String(data: data, encoding: .utf8)
-        else {
+              let json = String(data: data, encoding: .utf8) else {
             fatalError("Failed to encode configuration schema")
         }
         return json + "\n"
@@ -43,40 +40,35 @@ package final class ConfigurationSchemaGenerator: FileGenerator {
         var schema: [String: JSONSchemaNode] = [:]
 
         schema["$schema"] = .string(description: "JSON Schema reference URL.")
-        schema["version"] = .integer(
-            description: "Configuration format version.",
-            defaultValue: 6,
-            minimum: 1
-        )
+        schema[
+            "version"] = .integer(
+                description: "Configuration format version.",
+                defaultValue: 6,
+                minimum: 1
+            )
 
         // Root-level pretty-print settings.
-        for (key, node) in rootSettingsSchema() {
-            schema[key] = node
-        }
+        for (key, node) in rootSettingsSchema() { schema[key] = node }
 
         // Config groups at root level.
-        for (key, node) in groupSchemas() {
-            schema[key] = node
-        }
+        for (key, node) in groupSchemas() { schema[key] = node }
 
         // All rules at root level (ungrouped).
         let allRules = collector.lintingSyntaxRules
             .sorted(by: { $0.configKey < $1.configKey })
-        for rule in allRules {
-            schema[rule.configKey] = ruleSchemaNode(for: rule)
-        }
+        for rule in allRules { schema[rule.configKey] = ruleSchemaNode(for: rule) }
 
         root.properties = schema
         return root
     }
 
-    /// Base schema for rewrite rules: `{ "rewrite": bool, "lint": enum }`.
+    /// Base schema for rewrite rules: `{ "rewrite": bool, "lint": enum }` .
     ///
-    /// Does not set `additionalProperties: false` because rules may define
-    /// extra configuration properties beyond these base fields.
+    /// Does not set `additionalProperties: false` because rules may define extra configuration
+    /// properties beyond these base fields.
     private static func ruleBaseSchema() -> JSONSchemaNode {
-        // No top-level description: it would override the per-rule description
-        // sibling to `allOf` in IDE hovers (Xcode, VS Code).
+        // No top-level description: it would override the per-rule description sibling to `allOf`
+        // in IDE hovers (Xcode, VS Code).
         .object(
             description: nil,
             properties: [
@@ -94,10 +86,10 @@ package final class ConfigurationSchemaGenerator: FileGenerator {
         )
     }
 
-    /// Base schema for lint-only rules: `{ "lint": enum }`.
+    /// Base schema for lint-only rules: `{ "lint": enum }` .
     ///
-    /// Does not set `additionalProperties: false` because rules may define
-    /// extra configuration properties beyond this base field.
+    /// Does not set `additionalProperties: false` because rules may define extra configuration
+    /// properties beyond this base field.
     private static func lintOnlyBaseSchema() -> JSONSchemaNode {
         .object(
             description: nil,
@@ -112,9 +104,8 @@ package final class ConfigurationSchemaGenerator: FileGenerator {
         )
     }
 
-    /// Base schema for threshold lint rules: `{ "enabled": bool, "warning": int,
-    /// "error": int }`. Severity is decided by the threshold a measured value
-    /// crosses, so there is no `lint` field.
+    /// Base schema for threshold lint rules: `{ "enabled": bool, "warning": int, "error": int }` .
+    /// Severity is decided by the threshold a measured value crosses, so there is no `lint` field.
     private static func thresholdLintBaseSchema() -> JSONSchemaNode {
         .object(
             description: nil,
@@ -124,11 +115,13 @@ package final class ConfigurationSchemaGenerator: FileGenerator {
                     defaultValue: true
                 ),
                 "warning": .integer(
-                    description: "Values at or above this threshold emit a warning-severity finding.",
+                    description:
+                        "Values at or above this threshold emit a warning-severity finding.",
                     defaultValue: 0
                 ),
                 "error": .integer(
-                    description: "Values at or above this threshold emit an error-severity finding.",
+                    description:
+                        "Values at or above this threshold emit an error-severity finding.",
                     defaultValue: 0
                 ),
             ],
@@ -136,9 +129,11 @@ package final class ConfigurationSchemaGenerator: FileGenerator {
         )
     }
 
-    private func settingSchemaNode(for setting: RuleCollector.DetectedLayoutRule) -> JSONSchemaNode
-    {
+    private func settingSchemaNode(
+        for setting: RuleCollector.DetectedLayoutRule
+    ) -> JSONSchemaNode {
         let desc = setting.description ?? setting.configKey
+
         switch setting.valueType {
             case .boolean:
                 var node = JSONSchemaNode()
@@ -150,9 +145,8 @@ package final class ConfigurationSchemaGenerator: FileGenerator {
                 node.type = "integer"
                 node.description = desc
                 return node
-            case .string:
-                return .string(description: desc)
-            case .stringEnum(let values, let defaultValue):
+            case .string: return .string(description: desc)
+            case let .stringEnum(values, defaultValue):
                 return .stringEnum(description: desc, values: values, defaultValue: defaultValue)
         }
     }
@@ -166,6 +160,7 @@ package final class ConfigurationSchemaGenerator: FileGenerator {
         node.description = desc
 
         var ref = JSONSchemaNode()
+
         if rule.isThreshold {
             ref.ref = "#/$defs/thresholdLintBase"
         } else if rule.canRewrite {
@@ -183,12 +178,10 @@ package final class ConfigurationSchemaGenerator: FileGenerator {
             }
         }
 
-        // Lint-only rules don't accept `rewrite`. `unevaluatedProperties` (not
-        // `additionalProperties`) is required so JSON Schema considers keys
-        // contributed by the `$ref` to `lintOnlyBase` and any custom properties.
-        if !rule.canRewrite {
-            node.unevaluatedProperties = false
-        }
+        // Lint-only rules don't accept `rewrite` . `unevaluatedProperties` (not
+        // `additionalProperties` ) is required so JSON Schema considers keys contributed by the
+        // `$ref` to `lintOnlyBase` and any custom properties.
+        if !rule.canRewrite { node.unevaluatedProperties = false }
 
         return node
     }
@@ -203,8 +196,8 @@ package final class ConfigurationSchemaGenerator: FileGenerator {
         return schema
     }
 
-    /// The `unit` setting uses a `oneOf` schema (spaces or tabs object) instead
-    /// of a simple type, since its value type is the `Indent` enum.
+    /// The `unit` setting uses a `oneOf` schema (spaces or tabs object) instead of a simple type,
+    /// since its value type is the `Indent` enum.
     private static func indentationUnitSchema() -> JSONSchemaNode {
         let desc = "Indentation unit: exactly one of spaces or tabs."
         var node = JSONSchemaNode()
@@ -238,6 +231,7 @@ package final class ConfigurationSchemaGenerator: FileGenerator {
 
     private func groupSchemas() -> [String: JSONSchemaNode] {
         var groupedRules: [ConfigurationGroup: [RuleCollector.DetectedSyntaxRule]] = [:]
+
         for rule in collector.lintingSyntaxRules {
             guard let group = rule.group else { continue }
             groupedRules[group, default: []].append(rule)
@@ -249,11 +243,9 @@ package final class ConfigurationSchemaGenerator: FileGenerator {
             var properties: [String: JSONSchemaNode] = [:]
 
             for setting in collector.layoutRules where setting.group == group {
-                if setting.configKey == "unit" {
-                    properties[setting.configKey] = Self.indentationUnitSchema()
-                } else {
-                    properties[setting.configKey] = settingSchemaNode(for: setting)
-                }
+                properties[setting.configKey] = setting.configKey == "unit"
+                    ? Self.indentationUnitSchema()
+                    : settingSchemaNode(for: setting)
             }
 
             if let rules = groupedRules[group] {
@@ -263,10 +255,11 @@ package final class ConfigurationSchemaGenerator: FileGenerator {
             }
 
             guard !properties.isEmpty else { continue }
-            groups[group.key.rawValue] = .object(
-                description: "\(group.key.rawValue) rule group.",
-                properties: properties
-            )
+            groups[
+                group.key.rawValue] = .object(
+                    description: "\(group.key.rawValue) rule group.",
+                    properties: properties
+                )
         }
 
         return groups

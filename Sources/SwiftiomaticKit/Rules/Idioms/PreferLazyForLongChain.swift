@@ -1,9 +1,8 @@
 import SwiftSyntax
 
-/// Lint chains of 3+ collection transforms (`.map`, `.filter`, `.compactMap`,
-/// `.flatMap`, `.prefix`, `.dropFirst`). Each step allocates an intermediate
-/// `Array`. Inserting `.lazy` at the head of the chain forwards lazily and
-/// avoids the allocations.
+/// Lint chains of 3+ collection transforms ( `.map` , `.filter` , `.compactMap` , `.flatMap` ,
+/// `.prefix` , `.dropFirst` ). Each step allocates an intermediate `Array` . Inserting `.lazy` at
+/// the head of the chain forwards lazily and avoids the allocations.
 final class PreferLazyForLongChain: LintSyntaxRule<LintOnlyValue>, @unchecked Sendable {
     override class var group: ConfigurationGroup? { .idioms }
 
@@ -21,9 +20,7 @@ final class PreferLazyForLongChain: LintSyntaxRule<LintOnlyValue>, @unchecked Se
         // Only emit on the outermost chain link to avoid duplicate findings.
         if isChainLink(node.parent) { return .visitChildren }
         let length = chainLength(of: node)
-        if length >= 3 {
-            diagnose(.preferLazyForLongChain(length), on: node)
-        }
+        if length >= 3 { diagnose(.preferLazyForLongChain(length), on: node) }
         return .visitChildren
     }
 
@@ -32,17 +29,15 @@ final class PreferLazyForLongChain: LintSyntaxRule<LintOnlyValue>, @unchecked Se
               let member = syntax.as(MemberAccessExprSyntax.self),
               let parentCall = member.parent?.as(FunctionCallExprSyntax.self),
               parentCall.calledExpression.id == member.id,
-              Self.chainableMethods.contains(member.declName.baseName.text)
-        else {
-            return false
-        }
+              Self.chainableMethods.contains(member.declName.baseName.text) else { return false }
         return true
     }
 
     /// Walks down the receiver chain counting consecutive chainable calls.
     private func chainLength(of call: FunctionCallExprSyntax) -> Int {
-        var current: ExprSyntax = ExprSyntax(call)
+        var current = ExprSyntax(call)
         var length = 0
+
         while let funcCall = current.as(FunctionCallExprSyntax.self),
               let member = funcCall.calledExpression.as(MemberAccessExprSyntax.self),
               Self.chainableMethods.contains(member.declName.baseName.text),
@@ -55,8 +50,8 @@ final class PreferLazyForLongChain: LintSyntaxRule<LintOnlyValue>, @unchecked Se
     }
 }
 
-extension Finding.Message {
-    fileprivate static func preferLazyForLongChain(_ count: Int) -> Finding.Message {
+fileprivate extension Finding.Message {
+    static func preferLazyForLongChain(_ count: Int) -> Finding.Message {
         "chain of \(count) collection transforms allocates intermediate arrays — consider '.lazy'"
     }
 }

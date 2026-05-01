@@ -20,7 +20,7 @@ final class OpaqueGenericParameters: StaticFormatRule<BasicRuleValue>, @unchecke
 
     static func transform(
         _ visited: FunctionDeclSyntax,
-        parent: Syntax?,
+        parent _: Syntax?,
         context: Context
     ) -> DeclSyntax {
         guard let genericClause = visited.genericParameterClause else { return DeclSyntax(visited) }
@@ -74,7 +74,7 @@ final class OpaqueGenericParameters: StaticFormatRule<BasicRuleValue>, @unchecke
 
     static func transform(
         _ visited: InitializerDeclSyntax,
-        parent: Syntax?,
+        parent _: Syntax?,
         context: Context
     ) -> DeclSyntax {
         guard let genericClause = visited.genericParameterClause else { return DeclSyntax(visited) }
@@ -128,7 +128,7 @@ final class OpaqueGenericParameters: StaticFormatRule<BasicRuleValue>, @unchecke
 
     static func transform(
         _ visited: SubscriptDeclSyntax,
-        parent: Syntax?,
+        parent _: Syntax?,
         context: Context
     ) -> DeclSyntax {
         guard let genericClause = visited.genericParameterClause else { return DeclSyntax(visited) }
@@ -187,7 +187,10 @@ final class OpaqueGenericParameters: StaticFormatRule<BasicRuleValue>, @unchecke
                 return element
             }
             return someType(
-                CompositionTypeSyntax(elements: CompositionTypeElementListSyntax(elements)))
+                CompositionTypeSyntax(
+                    elements: CompositionTypeElementListSyntax(
+                        elements
+                    )))
         }
 
         private func someType(_ constraint: some TypeSyntaxProtocol) -> TypeSyntax {
@@ -210,6 +213,7 @@ final class OpaqueGenericParameters: StaticFormatRule<BasicRuleValue>, @unchecke
     ) -> [TypeInfo] {
         // Collect generic type info from <...>
         var types = [TypeInfo]()
+
         for (index, param) in genericClause.parameters.enumerated() {
             var info = TypeInfo(name: param.name.text, paramIndex: index)
             if let inherited = param.inheritedType { info.conformances.append(inherited) }
@@ -217,8 +221,8 @@ final class OpaqueGenericParameters: StaticFormatRule<BasicRuleValue>, @unchecke
         }
 
         let typeNames = Set(types.map(\.name))
-        // O(1) name → index lookup; previously each `firstIndex(where: { $0.name == leftName })` was
-        // O(n), making the where-clause walk O(n × requirements).
+        // O(1) name → index lookup; previously each `firstIndex(where: { $0.name == leftName })`
+        // was O(n), making the where-clause walk O(n × requirements).
         let typeIndexByName: [String: Int] = Dictionary(
             uniqueKeysWithValues: types.enumerated().map { ($0.element.name, $0.offset) })
 
@@ -228,6 +232,7 @@ final class OpaqueGenericParameters: StaticFormatRule<BasicRuleValue>, @unchecke
                 switch requirement.requirement {
                     case let .conformanceRequirement(conf):
                         let leftName = conf.leftType.trimmedDescription
+
                         if let i = typeIndexByName[leftName] {
                             types[i].conformances.append(conf.rightType)
                             types[i].whereRequirementIndices.append(reqIndex)
@@ -235,9 +240,11 @@ final class OpaqueGenericParameters: StaticFormatRule<BasicRuleValue>, @unchecke
 
                     case let .sameTypeRequirement(same):
                         let leftName = same.leftType.trimmedDescription
+
                         if let i = typeIndexByName[leftName] {
                             if case let .type(rightType) = same.rightType {
-                                // Check if same type to `any Protocol` → replace with `any Protocol`
+                                // Check if same type to `any Protocol` → replace with
+                                // `any Protocol`
                                 if let someOrAny = rightType.as(SomeOrAnyTypeSyntax.self),
                                    someOrAny.someOrAnySpecifier.tokenKind == .keyword(.any)
                                 {
@@ -253,8 +260,8 @@ final class OpaqueGenericParameters: StaticFormatRule<BasicRuleValue>, @unchecke
                            let rightIdent = rightType.as(IdentifierTypeSyntax.self),
                            typeNames.contains(rightIdent.name.text)
                         {
-                            // The left type gets replaced with the right type's name But only if the left is a
-                            // simple generic name
+                            // The left type gets replaced with the right type's name But only if
+                            // the left is a simple generic name
                             if let i = typeIndexByName[leftName],
                                types[i].sameTypeTarget != nil
                             {
@@ -273,6 +280,7 @@ final class OpaqueGenericParameters: StaticFormatRule<BasicRuleValue>, @unchecke
 
             // Must appear exactly once in parameter types
             let countInParams = countOccurrences(of: name, in: Syntax(parameterClause))
+
             if countInParams != 1 {
                 types[i].eligible = false
                 continue
@@ -297,16 +305,14 @@ final class OpaqueGenericParameters: StaticFormatRule<BasicRuleValue>, @unchecke
             }
 
             // Must not appear in attributes/modifiers
-            for node in preamble {
-                if contains(name: name, in: node) {
-                    types[i].eligible = false
-                    break
-                }
+            for node in preamble where contains(name: name, in: node) {
+                types[i].eligible = false
+                break
             }
             guard types[i].eligible else { continue }
 
-            // Must not appear in any where clause requirement that isn't a direct conformance/equality
-            // for this type. This covers:
+            // Must not appear in any where clause requirement that isn't a direct
+            // conformance/equality for this type. This covers:
             // - T used in another type's constraint (e.g., Success == Result<T, Failure>)
             // - T.AssociatedType constraints (e.g., T.Element: Foo)
             // - Self-referential constraints (e.g., T: RoutingBehaviors<T.Dependencies>)
@@ -324,11 +330,10 @@ final class OpaqueGenericParameters: StaticFormatRule<BasicRuleValue>, @unchecke
             guard types[i].eligible else { continue }
 
             // Self-referential constraint (e.g., T: RoutingBehaviors<T.Dependencies>)
-            for conformance in types[i].conformances {
-                if contains(name: name, in: Syntax(conformance)) {
-                    types[i].eligible = false
-                    break
-                }
+            for conformance in types[i].conformances
+            where contains(name: name, in: Syntax(conformance)) {
+                types[i].eligible = false
+                break
             }
             guard types[i].eligible else { continue }
 
@@ -351,11 +356,10 @@ final class OpaqueGenericParameters: StaticFormatRule<BasicRuleValue>, @unchecke
             guard types[i].eligible else { continue }
 
             // Check for `any` existential usage in parameters
-            for param in parameterClause.parameters {
-                if containsAnyExistential(name: name, in: param.type) {
-                    types[i].eligible = false
-                    break
-                }
+            for param in parameterClause.parameters
+            where containsAnyExistential(name: name, in: param.type) {
+                types[i].eligible = false
+                break
             }
             guard types[i].eligible else { continue }
 
@@ -428,6 +432,7 @@ final class OpaqueGenericParameters: StaticFormatRule<BasicRuleValue>, @unchecke
         let newParams = result.parameters.map { param -> FunctionParameterSyntax in
             for info in eligible {
                 guard let replacement = info.replacementType() else { continue }
+
                 if let newType = replaceGenericInType(
                     param.type, name: info.name, with: replacement)
                 {
@@ -443,7 +448,9 @@ final class OpaqueGenericParameters: StaticFormatRule<BasicRuleValue>, @unchecke
     }
 
     private static func replaceGenericInType(
-        _ type: TypeSyntax, name: String, with replacement: TypeSyntax
+        _ type: TypeSyntax,
+        name: String,
+        with replacement: TypeSyntax
     ) -> TypeSyntax? {
         // Direct: T → replacement
         if let ident = type.as(IdentifierTypeSyntax.self),
@@ -532,11 +539,9 @@ final class OpaqueGenericParameters: StaticFormatRule<BasicRuleValue>, @unchecke
 
         let newReqs = remaining.enumerated().map { i, req -> GenericRequirementSyntax in
             var modified = req
-            modified.trailingComma = i < remaining.count - 1 ? .commaToken(trailingTrivia: .space)
-                : nil
-            if i == 0 {
-                modified.leadingTrivia = []
-            }
+            modified.trailingComma = i < remaining.count - 1
+                ? .commaToken(trailingTrivia: .space) : nil
+            if i == 0 { modified.leadingTrivia = [] }
             return modified
         }
 

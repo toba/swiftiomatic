@@ -1,6 +1,6 @@
 import SwiftSyntax
 
-/// Remove nil-coalescing where the right-hand side is `nil`.
+/// Remove nil-coalescing where the right-hand side is `nil` .
 ///
 /// `x ?? nil` is identical in value and type to `x` itself.
 ///
@@ -12,20 +12,17 @@ final class RedundantNilCoalescing: StaticFormatRule<BasicRuleValue>, @unchecked
 
     static func transform(
         _ node: InfixOperatorExprSyntax,
-        parent: Syntax?,
+        parent _: Syntax?,
         context: Context
     ) -> ExprSyntax {
         guard let op = node.operator.as(BinaryOperatorExprSyntax.self),
-            op.operator.tokenKind == .binaryOperator("??"),
-            node.rightOperand.is(NilLiteralExprSyntax.self)
-        else {
-            return ExprSyntax(node)
-        }
+              op.operator.tokenKind == .binaryOperator("??"),
+              node.rightOperand.is(NilLiteralExprSyntax.self) else { return ExprSyntax(node) }
 
         Self.diagnose(.removeRedundantNilCoalescing, on: op.operator, context: context)
 
-        // Strip the operator's leading space (which was the space between LHS and `??`)
-        // by clearing the LHS's trailing trivia.
+        // Strip the operator's leading space (which was the space between LHS and `??` ) by
+        // clearing the LHS's trailing trivia.
         var newLeft = node.leftOperand
         newLeft.trailingTrivia = []
         // Preserve any trailing trivia that was on the RHS `nil` (e.g. line break).
@@ -34,7 +31,7 @@ final class RedundantNilCoalescing: StaticFormatRule<BasicRuleValue>, @unchecked
     }
 }
 
-extension Finding.Message {
-    fileprivate static let removeRedundantNilCoalescing: Finding.Message =
+fileprivate extension Finding.Message {
+    static let removeRedundantNilCoalescing: Finding.Message =
         "remove redundant '?? nil'; the value is unchanged"
 }

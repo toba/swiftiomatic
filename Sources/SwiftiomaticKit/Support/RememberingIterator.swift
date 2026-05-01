@@ -10,17 +10,17 @@
 //
 //===----------------------------------------------------------------------===//
 
-/// An iterator that persistently remembers the most recent element returned by `next()`.
+/// An iterator that persistently remembers the most recent element returned by `next()` .
 struct RememberingIterator<Base: IteratorProtocol>: IteratorProtocol {
     /// The wrapped iterator.
     private var base: Base
 
     /// The element most recently returned by the `next()` method.
     ///
-    /// This value will always remain equal to the last non-nil element returned by `next()`, even if
-    /// multiple calls to `next()` are made that return nil after the iterator has been exhausted.
-    /// Therefore, this property only evaluates to `nil` if the iterator had no elements in the first
-    /// place.
+    /// This value will always remain equal to the last non-nil element returned by `next()` , even
+    /// if multiple calls to `next()` are made that return nil after the iterator has been
+    /// exhausted. Therefore, this property only evaluates to `nil` if the iterator had no elements
+    /// in the first place.
     private(set) var latestElement: Base.Element?
 
     /// Creates a new remembering iterator that wraps the specified iterator.

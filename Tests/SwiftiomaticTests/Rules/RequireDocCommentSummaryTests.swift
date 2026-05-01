@@ -19,7 +19,7 @@ import Testing
 struct BeginDocumentationCommentWithOneLineSummaryTests: RuleTesting {
   init() {
     // Reset this to false by default. Specific tests may override it.
-    RequireDocCommentSummary._forcesFallbackModeForTesting = false
+    RequireDocCommentSummary.forcesFallbackModeForTesting = false
   }
 
   @Test func docLineCommentsWithoutOneSentenceSummary() {
@@ -134,7 +134,7 @@ struct BeginDocumentationCommentWithOneLineSummaryTests: RuleTesting {
 
   @Test func approximationsOnMacOS() {
     // Verify that the fallback (non-linguistic) mode also works.
-    RequireDocCommentSummary._forcesFallbackModeForTesting = true
+    RequireDocCommentSummary.forcesFallbackModeForTesting = true
 
     assertLint(
       RequireDocCommentSummary.self,

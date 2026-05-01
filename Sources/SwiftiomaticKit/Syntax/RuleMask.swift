@@ -13,40 +13,25 @@
 import Foundation
 import SwiftSyntax
 
-/// This class takes the raw source text and scans through it searching for comments that instruct
-/// the formatter to change the status of rules for the following node. The comments may include no
-/// rule names to affect all rules, a single rule name to affect that rule, or a comma delimited
-/// list of rule names to affect a number of rules. Ignore is the only supported operation.
+/// Scans the source for `// sm:ignore` directives and records which rules are disabled in which
+/// ranges. There is a single directive grammar — the comment's position determines its scope:
 ///
-///   1. |  // sm:ignore
-///   2. |  let a = 123
-///   Ignores all rules for line 2.
+/// - A `// sm:ignore` comment on a line by itself disables rules from that comment's position
+///   through the end of the file. Placing it at the top of the file therefore ignores the whole
+///   file.
+/// - A trailing `// sm:ignore` comment on the same line as a statement (or member) disables rules
+///   only for that statement.
 ///
-///   1. |  // sm:ignore-file
-///   2. |  let a = 123
-///   3. | class Foo { }
-///   Ignores all rules for an entire file (lines 2-3).
+/// Examples:
 ///
-///   1. |  // sm:ignore: RuleName
-///   2. |  let a = 123
-///   Ignores `RuleName` for line 2.
+///   // sm:ignore                                  — ignore all rules from here to EOF
+///   // sm:ignore RuleName                         — ignore RuleName from here to EOF
+///   // sm:ignore Rule1, Rule2, ThirdRule          — ignore the listed rules from here to EOF
+///   let x = "trouble" // sm:ignore                — ignore all rules for this line only
+///   let x = 1 // sm:ignore Rule1                  — ignore Rule1 for this line only
 ///
-///   1. |  // sm:ignore: RuleName, OtherRuleName
-///   2. |  let a = 123
-///   Ignores `RuleName` and `OtherRuleName` for line 2.
-///
-///   1. |  // sm:ignore-file: RuleName
-///   2. |  let a = 123
-///   3. | class Foo { }
-///   Ignores `RuleName` for the entire file (lines 2-3).
-///
-///   1. |  // sm:ignore-file: RuleName, OtherRuleName
-///   2. |  let a = 123
-///   3. | class Foo { }
-///   Ignores `RuleName` and `OtherRuleName` for the entire file (lines 2-3).
-///
-/// The rules themselves reference RuleMask to see if it is disabled for the line it is currently
-/// examining.
+/// Rules consult `RuleMask.ruleState(_:at:)` to check whether they are disabled at the location
+/// they are currently examining.
 package final class RuleMask {
     /// Stores the source ranges in which all rules are ignored.
     private var allRulesIgnoredRanges: [SourceRange] = []
@@ -57,8 +42,8 @@ package final class RuleMask {
     /// Used to compute line numbers of syntax nodes.
     private let sourceLocationConverter: SourceLocationConverter
 
-    /// Creates a `RuleMask` that can specify whether a given rule's status is explicitly modified at
-    /// a location obtained from the `SourceLocationConverter`.
+    /// Creates a `RuleMask` that can specify whether a given rule's status is explicitly modified
+    /// at a location obtained from the `SourceLocationConverter` .
     ///
     /// Ranges in the source where rules' statuses are modified are pre-computed during init so that
     /// lookups later don't require parsing the source.
@@ -94,61 +79,41 @@ fileprivate extension SourceRange {
     }
 }
 
-/// Represents the kind of ignore directive encountered in the source.
-enum IgnoreDirective: CustomStringConvertible {
-    typealias RegexExpression = Regex<(Substring, ruleNames: Substring?)>
-
-    /// A node-level directive that disables rules for the following node and its children.
-    case node
-    /// A file-level directive that disables rules for the entire file.
-    case file
-
-    var description: String {
-        switch self {
-            case .node: "sm:ignore"
-            case .file: "sm:ignore-file"
-        }
-    }
-
-    /// Regex pattern to match an ignore directive comment.
-    /// - Captures rule names when `:` is present.
-    ///
-    /// Note: We are using a string-based regex instead of a regex literal (`#/regex/#`)
-    /// because Windows did not have full support for regex literals until Swift 5.10.
-    fileprivate func makeRegex() -> RegexExpression {
-        let pattern = #"^\s*\/\/\s*"# + description + #"(?:\s*:\s*(?<ruleNames>.+))?$"#
-        return try! Regex(pattern).matchingSemantics(.unicodeScalar)
-    }
-}
-
-/// A syntax visitor that finds `SourceRange`s of nodes that have rule status modifying comment
+/// A syntax visitor that finds `SourceRange` s of nodes that have rule status modifying comment
 /// directives. The changes requested in each comment is parsed and collected into a map to support
 /// status lookup per rule name.
 ///
 /// The rule status comment directives implementation intentionally supports exactly the same nodes
-/// as `TokenStream` to disable pretty printing. This ensures ignore comments for pretty
-/// printing and for rules are as consistent as possible.
+/// as `TokenStream` to disable pretty printing. This ensures ignore comments for pretty printing
+/// and for rules are as consistent as possible.
 private final class RuleStatusCollectionVisitor: SyntaxVisitor {
     /// Describes the possible matches for ignore directives, in comments.
     enum RuleStatusDirectiveMatch {
         /// There is a directive that applies to all rules.
         case all
 
-        /// There is a directive that applies to a number of rules. The names of the rules are provided
-        /// in `ruleNames`.
+        /// There is a directive that applies to a number of rules. The names of the rules are
+        /// provided in `ruleNames` .
         case subset(ruleNames: [String])
     }
 
-    /// Cached regex object for ignoring rules at the node.
-    private static nonisolated(unsafe) let ignoreRegex:
-        IgnoreDirective.RegexExpression = IgnoreDirective.node.makeRegex()
+    typealias RegexExpression = Regex<(Substring, ruleNames: Substring?)>
 
-    /// Cached regex object for ignoring rules at the file.
-    private static nonisolated(unsafe) let ignoreFileRegex:
-        IgnoreDirective.RegexExpression = IgnoreDirective.file.makeRegex()
+    /// Cached regex object for the unified `sm:ignore` directive.
+    ///
+    /// Note: We are using a string-based regex instead of a regex literal ( `#/regex/#` ) because
+    /// Windows did not have full support for regex literals until Swift 5.10.
+    private static nonisolated(unsafe) let ignoreRegex: RegexExpression = {
+        let pattern = #"^\s*\/\/\s*sm:ignore(?:\s+(?<ruleNames>\S.*))?$"#
+        return try! Regex(pattern).matchingSemantics(.unicodeScalar)
+    }()
 
     /// Computes source locations and ranges for syntax nodes in a source file.
     private let sourceLocationConverter: SourceLocationConverter
+
+    /// End-of-file location, captured at `SourceFileSyntax` visit. Used as the upper bound for
+    /// lone-line `sm:ignore` directives, which extend from their position to EOF.
+    private var sourceFileEnd: SourceLocation?
 
     /// Stores the source ranges in which all rules are ignored.
     var allRulesIgnoredRanges: [SourceRange] = []
@@ -164,78 +129,64 @@ private final class RuleStatusCollectionVisitor: SyntaxVisitor {
     // MARK: - Syntax Visitation Methods
 
     override func visit(_ node: SourceFileSyntax) -> SyntaxVisitorContinueKind {
-        guard let firstToken = node.firstToken(viewMode: .sourceAccurate) else {
-            return .visitChildren
-        }
-        let sourceRange = node.sourceRange(
-            converter: sourceLocationConverter,
-            afterLeadingTrivia: false,
-            afterTrailingTrivia: true
-        )
-        return appendRuleStatus(from: firstToken, of: sourceRange, using: Self.ignoreFileRegex)
+        sourceFileEnd = sourceLocationConverter.location(for: node.endPosition)
+        return .visitChildren
     }
 
     override func visit(_ node: CodeBlockItemSyntax) -> SyntaxVisitorContinueKind {
-        guard let firstToken = node.firstToken(viewMode: .sourceAccurate) else {
-            return .visitChildren
-        }
-        let sourceRange = node.sourceRange(converter: sourceLocationConverter)
-        return appendRuleStatus(from: firstToken, of: sourceRange, using: Self.ignoreRegex)
+        applyDirectives(to: Syntax(node))
+        return .visitChildren
     }
 
     override func visit(_ node: MemberBlockItemSyntax) -> SyntaxVisitorContinueKind {
-        guard let firstToken = node.firstToken(viewMode: .sourceAccurate) else {
-            return .visitChildren
-        }
-        let sourceRange = node.sourceRange(converter: sourceLocationConverter)
-        return appendRuleStatus(from: firstToken, of: sourceRange, using: Self.ignoreRegex)
+        applyDirectives(to: Syntax(node))
+        return .visitChildren
     }
 
     // MARK: - Helper Methods
 
-    /// Searches for comments on the given token that explicitly modify the status of rules and adds
-    /// them to the appropriate collection of those changes.
+    /// Scans both the leading trivia of the node's first token and the trailing trivia of its last
+    /// token for `// sm:ignore` directives, and records the appropriate source ranges.
     ///
-    /// - Parameters:
-    ///   - token: A token that may have comments that modify the status of rules.
-    ///   - sourceRange: The range covering the node to which `token` belongs. If an ignore directive
-    ///     is found among the comments, this entire range is used to ignore the specified rules.
-    ///   - regex: The regular expression used to detect ignore directives.
-    private func appendRuleStatus(
-        from token: TokenSyntax,
-        of sourceRange: SourceRange,
-        using regex: IgnoreDirective.RegexExpression
-    ) -> SyntaxVisitorContinueKind {
-        let isFirstInFile = token.previousToken(viewMode: .sourceAccurate) == nil
-        let comments = loneLineComments(in: token.leadingTrivia, isFirstToken: isFirstInFile)
+    /// - Lone-line directives (in leading trivia) get a range from the node's start through EOF.
+    /// - Trailing directives (on the same line as code) get a range scoped to the node only.
+    private func applyDirectives(to node: Syntax) {
+        guard let firstToken = node.firstToken(viewMode: .sourceAccurate),
+              let sourceFileEnd
+        else { return }
 
-        for comment in comments {
-            guard let matchResult = ruleStatusDirectiveMatch(in: comment, using: regex) else {
-                continue
-            }
-            switch matchResult {
-                case .all:
-                    allRulesIgnoredRanges.append(sourceRange)
+        let nodeStart = sourceLocationConverter.location(for: node.position)
 
-                    // All rules are ignored for the entire node and its children. Any ignore comments in the
-                    // node's children are irrelevant because all rules are suppressed by this node.
-                    return .skipChildren
-                case let .subset(ruleNames):
-                    for ruleName in ruleNames {
-                        ruleMap[ruleName, default: []].append(sourceRange)
-                    }
+        let isFirstInFile = firstToken.previousToken(viewMode: .sourceAccurate) == nil
+        for comment in loneLineComments(in: firstToken.leadingTrivia, isFirstToken: isFirstInFile) {
+            guard let match = ruleStatusDirectiveMatch(in: comment) else { continue }
+            record(match, range: SourceRange(start: nodeStart, end: sourceFileEnd))
+        }
+
+        if let lastToken = node.lastToken(viewMode: .sourceAccurate) {
+            let nodeRange = node.sourceRange(converter: sourceLocationConverter)
+            for comment in trailingLineComments(in: lastToken.trailingTrivia) {
+                guard let match = ruleStatusDirectiveMatch(in: comment) else { continue }
+                record(match, range: nodeRange)
             }
         }
-        return .visitChildren
+    }
+
+    private func record(_ match: RuleStatusDirectiveMatch, range: SourceRange) {
+        switch match {
+            case .all:
+                allRulesIgnoredRanges.append(range)
+            case let .subset(ruleNames):
+                for ruleName in ruleNames {
+                    ruleMap[ruleName, default: []].append(range)
+                }
+        }
     }
 
     /// Checks if a comment containing the given text matches a rule status directive. When it does
     /// match, its contents (e.g. list of rule names) are returned.
-    private func ruleStatusDirectiveMatch(
-        in text: String,
-        using regex: IgnoreDirective.RegexExpression
-    ) -> RuleStatusDirectiveMatch? {
-        guard let match = text.firstMatch(of: regex) else { return nil }
+    private func ruleStatusDirectiveMatch(in text: String) -> RuleStatusDirectiveMatch? {
+        guard let match = text.firstMatch(of: Self.ignoreRegex) else { return nil }
         guard let matchedRuleNames = match.output.ruleNames else { return .all }
 
         let rules = matchedRuleNames.split(separator: ",").compactMap { segment -> String? in
@@ -257,7 +208,7 @@ private final class RuleStatusCollectionVisitor: SyntaxVisitor {
     /// - Parameters:
     ///   - trivia: The trivia collection to scan for comments.
     ///   - isFirstToken: True if the trivia came from the first token in the file.
-    /// - Returns: The list of lone line comments from the trivia.
+    ///   - Returns: The list of lone line comments from the trivia.
     private func loneLineComments(in trivia: Trivia, isFirstToken: Bool) -> [String] {
         var currentComment: String?
         var lineComments = [String]()
@@ -275,11 +226,26 @@ private final class RuleStatusCollectionVisitor: SyntaxVisitor {
             }
         }
 
-        // For the first token in the file, there may not be a newline preceding the first line comment,
-        // so check for that here.
+        // For the first token in the file, there may not be a newline preceding the first line
+        // comment, so check for that here.
         if isFirstToken, let text = currentComment { lineComments.append(text) }
 
         lineComments.reverse()
         return lineComments
+    }
+
+    /// Returns line comments in trailing trivia that appear on the same line as the code (i.e.,
+    /// before any newline). These are "trailing" line comments like `let x = 1 // sm:ignore`.
+    private func trailingLineComments(in trivia: Trivia) -> [String] {
+        var comments: [String] = []
+        for piece in trivia {
+            switch piece {
+                case let .lineComment(text): comments.append(text)
+                case .carriageReturnLineFeeds, .carriageReturns, .newlines:
+                    return comments
+                default: continue
+            }
+        }
+        return comments
     }
 }

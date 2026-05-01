@@ -1,20 +1,20 @@
 import SwiftSyntax
 
-/// Convert `guard` statements in test functions to `try #require(...)`/`#expect(...)` (Swift
-/// Testing) or `try XCTUnwrap(...)`/`XCTAssert(...)` (XCTest).
+/// Convert `guard` statements in test functions to `try #require(...)` / `#expect(...)` (Swift
+/// Testing) or `try XCTUnwrap(...)` / `XCTAssert(...)` (XCTest).
 ///
 /// Guard statements in tests obscure the test intent behind control flow. Replacing them with
 /// direct assertions or unwraps makes the test linear and the failure message immediate.
 ///
 /// Lint: A warning is raised for each `guard` that can be converted.
 ///
-/// Rewrite: The `guard` is replaced with assertion/unwrap statements and `throws` is added to
-/// the signature if needed.
+/// Rewrite: The `guard` is replaced with assertion/unwrap statements and `throws` is added to the
+/// signature if needed.
 final class NoGuardInTests: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
     override class var group: ConfigurationGroup? { .testing }
     override class var defaultValue: BasicRuleValue { .init(rewrite: false, lint: .no) }
 
-    /// Per-file mutable state held as a typed lazy property on `Context`.
+    /// Per-file mutable state held as a typed lazy property on `Context` .
     final class State {
         var testContext = TestContextTracker()
         /// Stack of `(insideTestFunction, addedTryStatement)` frames pushed at function entry.
@@ -30,6 +30,7 @@ final class NoGuardInTests: StaticFormatRule<BasicRuleValue>, @unchecked Sendabl
     static func willEnter(_ node: SourceFileSyntax, context: Context) {
         let state = context.noGuardInTestsState
         state.testContext.visitSourceFile(node, context: context)
+
         for stmt in node.statements {
             if let importDecl = stmt.item.as(ImportDeclSyntax.self) {
                 state.testContext.visitImport(importDecl)
@@ -54,12 +55,13 @@ final class NoGuardInTests: StaticFormatRule<BasicRuleValue>, @unchecked Sendabl
     static func willEnter(_ node: FunctionDeclSyntax, context: Context) {
         let state = context.noGuardInTestsState
         state.functionStack.append((state.insideTestFunction, state.addedTryStatement))
+
         if state.testContext.isTestFunction(node), node.body != nil {
             state.insideTestFunction = true
             state.addedTryStatement = false
         } else {
-            // Nested or non-test function: shadow the test-function context so guards in
-            // nested helpers aren't rewritten (they belong to the inner function's scope).
+            // Nested or non-test function: shadow the test-function context so guards in nested
+            // helpers aren't rewritten (they belong to the inner function's scope).
             state.insideTestFunction = false
             state.addedTryStatement = false
         }
@@ -72,10 +74,9 @@ final class NoGuardInTests: StaticFormatRule<BasicRuleValue>, @unchecked Sendabl
         state.addedTryStatement = frame.addedTry
     }
 
-    // Don't recurse into closures — guard inside closures can't be fixed by
-    // making the outer function throw. Mirror the legacy override's
-    // short-circuit by pushing/popping `insideTestFunction = false` around
-    // the closure body in the compact pipeline.
+    // Don't recurse into closures — guard inside closures can't be fixed by making the outer
+    // function throw. Mirror the legacy override's short-circuit by pushing/popping
+    // `insideTestFunction = false` around the closure body in the compact pipeline.
     static func willEnter(_: ClosureExprSyntax, context: Context) {
         let state = context.noGuardInTestsState
         state.functionStack.append((state.insideTestFunction, state.addedTryStatement))
@@ -112,9 +113,8 @@ final class NoGuardInTests: StaticFormatRule<BasicRuleValue>, @unchecked Sendabl
         return DeclSyntax(result)
     }
 
-    /// Compact-pipeline entry point. Only runs when inside a test function
-     /// (state populated by the `willEnter(FunctionDeclSyntax,…)` hook); the
-     /// state gating mirrors the legacy override.
+    /// Compact-pipeline entry point. Only runs when inside a test function (state populated by the
+    /// `willEnter(FunctionDeclSyntax,…)` hook); the state gating mirrors the legacy override.
     static func transform(
         _ node: CodeBlockItemListSyntax,
         parent _: Syntax?,
@@ -144,15 +144,13 @@ final class NoGuardInTests: StaticFormatRule<BasicRuleValue>, @unchecked Sendabl
                 continue
             }
 
-            guard
-                let replacement = convertGuard(
-                    guardStmt,
-                    item: item,
-                    declaredNames: declaredNames,
-                    state: state,
-                    context: context
-                )
-            else {
+            guard let replacement = convertGuard(
+                guardStmt,
+                item: item,
+                declaredNames: declaredNames,
+                state: state,
+                context: context
+            ) else {
                 newItems.append(item)
                 continue
             }
@@ -180,20 +178,16 @@ final class NoGuardInTests: StaticFormatRule<BasicRuleValue>, @unchecked Sendabl
 
         for condition in conditions {
             switch condition.condition {
-                case .optionalBinding(let binding):
+                case let .optionalBinding(binding):
                     let name = binding.pattern.trimmedDescription
                     if declaredNames.contains(name) { return nil }
                     if binding.initializer?.value.containsAwait == true { return nil }
-                    if binding.initializer == nil && declaredNames.contains(name) { return nil }
-                case .matchingPattern:
-                    return nil
-                case .expression(let expr):
-                    if expr.containsAwait { return nil }
-                case .availability:
-                    return nil
+                    if binding.initializer == nil, declaredNames.contains(name) { return nil }
+                case .matchingPattern: return nil
+                case let .expression(expr): if expr.containsAwait { return nil }
+                case .availability: return nil
                 #if compiler(>=6.0)
-                    @unknown default:
-                        return nil
+                    @unknown default: return nil
                 #endif
             }
         }
@@ -212,7 +206,7 @@ final class NoGuardInTests: StaticFormatRule<BasicRuleValue>, @unchecked Sendabl
             let trivia = isFirst ? fullLeadingTrivia : .newline + indentTrivia
 
             switch condition.condition {
-                case .optionalBinding(let binding):
+                case let .optionalBinding(binding):
                     let stmt = buildUnwrapStatement(
                         from: binding,
                         useSwiftTesting: useSwiftTesting,
@@ -223,7 +217,7 @@ final class NoGuardInTests: StaticFormatRule<BasicRuleValue>, @unchecked Sendabl
                     replacements.append(codeBlockItem)
                     state.addedTryStatement = true
 
-                case .expression(let expr):
+                case let .expression(expr):
                     let assertExpr = buildAssertExpr(
                         for: expr,
                         useSwiftTesting: useSwiftTesting,
@@ -233,8 +227,7 @@ final class NoGuardInTests: StaticFormatRule<BasicRuleValue>, @unchecked Sendabl
                     codeBlockItem.leadingTrivia = trivia
                     replacements.append(codeBlockItem)
 
-                default:
-                    break
+                default: break
             }
         }
 
@@ -249,9 +242,7 @@ final class NoGuardInTests: StaticFormatRule<BasicRuleValue>, @unchecked Sendabl
             stmt.trimmedDescription.isEmpty == false
         }
 
-        if nonTrivial.count == 1, nonTrivial[0].is(ReturnStmtSyntax.self) {
-            return true
-        }
+        if nonTrivial.count == 1, nonTrivial[0].is(ReturnStmtSyntax.self) { return true }
 
         guard nonTrivial.last?.is(ReturnStmtSyntax.self) == true else { return false }
 
@@ -271,8 +262,9 @@ final class NoGuardInTests: StaticFormatRule<BasicRuleValue>, @unchecked Sendabl
         for stmt in body.statements {
             if let callExpr = extractFunctionCall(from: stmt.item) {
                 let name = callExpr.calledExpression.trimmedDescription
+
                 if name == "XCTFail" || name == "Issue.record",
-                    !callExpr.arguments.isEmpty
+                   !callExpr.arguments.isEmpty
                 {
                     return callExpr.arguments
                 }
@@ -284,9 +276,8 @@ final class NoGuardInTests: StaticFormatRule<BasicRuleValue>, @unchecked Sendabl
     private static func extractFunctionCall(
         from item: CodeBlockItemSyntax.Item
     ) -> FunctionCallExprSyntax? {
-        if let callExpr = item.as(FunctionCallExprSyntax.self) {
-            return callExpr
-        }
+        if let callExpr = item.as(FunctionCallExprSyntax.self) { return callExpr }
+
         if let exprStmt = item.as(ExpressionStmtSyntax.self) {
             return exprStmt.expression.as(FunctionCallExprSyntax.self)
         }
@@ -304,28 +295,25 @@ final class NoGuardInTests: StaticFormatRule<BasicRuleValue>, @unchecked Sendabl
         let patternText = binding.pattern.trimmedDescription
 
         let unwrapExpr: ExprSyntax
+
         if let initializer = binding.initializer {
             unwrapExpr = initializer.value.trimmed
         } else {
-            unwrapExpr = ExprSyntax(
-                DeclReferenceExprSyntax(baseName: .identifier(patternText))
-            )
+            unwrapExpr = ExprSyntax(DeclReferenceExprSyntax(baseName: .identifier(patternText)))
         }
 
         let callExpr: ExprSyntax
-        if useSwiftTesting {
-            callExpr = buildMacroCall(
+        callExpr = useSwiftTesting
+            ? buildMacroCall(
                 name: "require",
                 expression: unwrapExpr,
                 assertionMessage: assertionMessage
             )
-        } else {
-            callExpr = buildFunctionCall(
+            : buildFunctionCall(
                 name: "XCTUnwrap",
                 expression: unwrapExpr,
                 assertionMessage: assertionMessage
             )
-        }
 
         let tryExpr = TryExprSyntax(
             tryKeyword: .keyword(.try, trailingTrivia: .space),
@@ -342,9 +330,7 @@ final class NoGuardInTests: StaticFormatRule<BasicRuleValue>, @unchecked Sendabl
                 .with(\.type, $0.type.trimmed)
         }
 
-        let pattern = PatternSyntax(
-            IdentifierPatternSyntax(identifier: .identifier(patternText))
-        )
+        let pattern = PatternSyntax(IdentifierPatternSyntax(identifier: .identifier(patternText)))
 
         let patternBinding = PatternBindingSyntax(
             pattern: pattern,
@@ -352,7 +338,7 @@ final class NoGuardInTests: StaticFormatRule<BasicRuleValue>, @unchecked Sendabl
             initializer: initializerClause
         )
 
-        return VariableDeclSyntax(
+        return .init(
             bindingSpecifier: keyword.with(\.leadingTrivia, []).with(\.trailingTrivia, .space),
             bindings: PatternBindingListSyntax([patternBinding])
         )
@@ -365,28 +351,27 @@ final class NoGuardInTests: StaticFormatRule<BasicRuleValue>, @unchecked Sendabl
     ) -> ExprSyntax {
         let args = buildArgList(expression: expr.trimmed, assertionMessage: assertionMessage)
 
-        if useSwiftTesting {
-            return ExprSyntax(
+        return useSwiftTesting
+            ? ExprSyntax(
                 MacroExpansionExprSyntax(
                     pound: .poundToken(),
                     macroName: .identifier("expect"),
                     leftParen: .leftParenToken(),
                     arguments: args,
                     rightParen: .rightParenToken()
-                )
-            )
-        } else {
-            return ExprSyntax(
+                ))
+            : ExprSyntax(
                 FunctionCallExprSyntax(
                     calledExpression: ExprSyntax(
-                        DeclReferenceExprSyntax(baseName: .identifier("XCTAssert"))
-                    ),
+                        DeclReferenceExprSyntax(
+                            baseName: .identifier(
+                                "XCTAssert"
+                            ))),
                     leftParen: .leftParenToken(),
                     arguments: args,
                     rightParen: .rightParenToken()
                 )
             )
-        }
     }
 
     private static func buildArgList(
@@ -396,18 +381,12 @@ final class NoGuardInTests: StaticFormatRule<BasicRuleValue>, @unchecked Sendabl
         var args = [LabeledExprSyntax]()
 
         if let message = assertionMessage {
-            args.append(
-                LabeledExprSyntax(
-                    expression: expression,
-                    trailingComma: .commaToken()
-                )
-            )
+            args.append(LabeledExprSyntax(expression: expression, trailingComma: .commaToken()))
+
             for (i, arg) in message.enumerated() {
                 var msgArg = arg.trimmed
                 msgArg.leadingTrivia = .space
-                if i == message.count - 1 {
-                    msgArg.trailingComma = nil
-                }
+                if i == message.count - 1 { msgArg.trailingComma = nil }
                 args.append(msgArg)
             }
         } else {
@@ -429,8 +408,7 @@ final class NoGuardInTests: StaticFormatRule<BasicRuleValue>, @unchecked Sendabl
                 leftParen: .leftParenToken(),
                 arguments: buildArgList(expression: expression, assertionMessage: assertionMessage),
                 rightParen: .rightParenToken()
-            )
-        )
+            ))
     }
 
     private static func buildFunctionCall(
@@ -440,29 +418,25 @@ final class NoGuardInTests: StaticFormatRule<BasicRuleValue>, @unchecked Sendabl
     ) -> ExprSyntax {
         ExprSyntax(
             FunctionCallExprSyntax(
-                calledExpression: ExprSyntax(
-                    DeclReferenceExprSyntax(baseName: .identifier(name))
-                ),
+                calledExpression: ExprSyntax(DeclReferenceExprSyntax(baseName: .identifier(name))),
                 leftParen: .leftParenToken(),
                 arguments: buildArgList(expression: expression, assertionMessage: assertionMessage),
                 rightParen: .rightParenToken()
-            )
-        )
+            ))
     }
 
     // MARK: - Helpers
 
     private static func extractIndentation(from trivia: Trivia) -> Trivia {
         var pieces = [TriviaPiece]()
+
         for piece in trivia.pieces.reversed() {
             switch piece {
-                case .spaces, .tabs:
-                    pieces.insert(piece, at: 0)
-                default:
-                    if !pieces.isEmpty { return Trivia(pieces: pieces) }
+                case .spaces, .tabs: pieces.insert(piece, at: 0)
+                default: if !pieces.isEmpty { return Trivia(pieces: pieces) }
             }
         }
-        return Trivia(pieces: pieces)
+        return .init(pieces: pieces)
     }
 
     private static func collectDeclaredNames(
@@ -481,13 +455,13 @@ final class NoGuardInTests: StaticFormatRule<BasicRuleValue>, @unchecked Sendabl
 
 // MARK: - Helpers
 
-extension ExprSyntax {
-    fileprivate var containsAwait: Bool {
+fileprivate extension ExprSyntax {
+    var containsAwait: Bool {
         tokens(viewMode: .sourceAccurate).contains { $0.tokenKind == .keyword(.await) }
     }
 }
 
-extension Finding.Message {
-    fileprivate static let convertGuard: Finding.Message =
+fileprivate extension Finding.Message {
+    static let convertGuard: Finding.Message =
         "replace 'guard' in test with direct assertion or unwrap"
 }

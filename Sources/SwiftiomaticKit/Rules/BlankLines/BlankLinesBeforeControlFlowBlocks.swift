@@ -17,10 +17,9 @@ final class BlankLinesBeforeControlFlowBlocks: StaticFormatRule<BasicRuleValue>,
     override static var group: ConfigurationGroup? { .blankLines }
     override static var defaultValue: BasicRuleValue { .init(rewrite: false, lint: .no) }
 
-    // Diagnose against the pre-traversal (still-attached) node so finding
-    // source locations are accurate. The compact-pipeline rewrite (called
-    // from `Rewrites/Stmts/CodeBlock.swift` and `SwitchCase.swift`) handles
-    // the rewrite without diagnose.
+    // Diagnose against the pre-traversal (still-attached) node so finding source locations are
+    // accurate. The compact-pipeline rewrite (called from `Rewrites/Stmts/CodeBlock.swift` and
+    // `SwitchCase.swift` ) handles the rewrite without diagnose.
     static func willEnter(_ node: CodeBlockSyntax, context: Context) {
         _ = insertBlankLines(in: Array(node.statements), context: context, diagnose: true)
     }
@@ -29,9 +28,9 @@ final class BlankLinesBeforeControlFlowBlocks: StaticFormatRule<BasicRuleValue>,
         _ = insertBlankLines(in: Array(node.statements), context: context, diagnose: true)
     }
 
-    /// Insert a leading blank line before every multi-line control-flow statement
-    /// that doesn't already have one, respecting the `closingBraceAsBlankLine`
-    /// and `commentAsBlankLine` configuration flags.
+    /// Insert a leading blank line before every multi-line control-flow statement that doesn't
+    /// already have one, respecting the `closingBraceAsBlankLine` and `commentAsBlankLine`
+    /// configuration flags.
     static func insertBlankLines(
         in items: [CodeBlockItemSyntax],
         context: Context,
@@ -70,8 +69,7 @@ final class BlankLinesBeforeControlFlowBlocks: StaticFormatRule<BasicRuleValue>,
 
     private static func endsSolitaryBrace(_ item: CodeBlockItemSyntax) -> Bool {
         guard let lastToken = item.lastToken(viewMode: .sourceAccurate),
-              lastToken.tokenKind == .rightBrace
-        else { return false }
+              lastToken.tokenKind == .rightBrace else { return false }
         return lastToken.leadingTrivia.containsNewlines
     }
 
@@ -91,6 +89,7 @@ final class BlankLinesBeforeControlFlowBlocks: StaticFormatRule<BasicRuleValue>,
                 if let deferStmt = stmt.as(DeferStmtSyntax.self) {
                     return isMultiLineBody(deferStmt.body)
                 }
+
                 if let exprStmt = stmt.as(ExpressionStmtSyntax.self) {
                     return isMultiLineControlFlowExpr(exprStmt.expression)
                 }

@@ -32,8 +32,8 @@ final class ASCIIIdentifiers: LintSyntaxRule<LintOnlyValue>, @unchecked Sendable
     }
 }
 
-extension Finding.Message {
-    fileprivate static func nonASCIICharsNotAllowed(
+fileprivate extension Finding.Message {
+    static func nonASCIICharsNotAllowed(
         _ invalidCharacters: [String],
         _ identifierName: String
     ) -> Finding.Message {

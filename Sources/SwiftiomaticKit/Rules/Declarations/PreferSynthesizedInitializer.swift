@@ -59,8 +59,7 @@ final class PreferSynthesizedInitializer: LintSyntaxRule<LintOnlyValue>, @unchec
                   matchesAccessLevel(
                       modifiers: initializer.modifiers,
                       properties: storedProperties
-                  )
-            else { continue }
+                  ) else { continue }
 
             extraneousInitializers.append(initializer)
         }
@@ -158,8 +157,7 @@ final class PreferSynthesizedInitializer: LintSyntaxRule<LintOnlyValue>, @unchec
 
         for statement in initBody.statements {
             guard let expr = statement.item.as(InfixOperatorExprSyntax.self),
-                  expr.operator.is(AssignmentExprSyntax.self)
-            else { return false }
+                  expr.operator.is(AssignmentExprSyntax.self) else { return false }
 
             var leftName = ""
             var rightName = ""

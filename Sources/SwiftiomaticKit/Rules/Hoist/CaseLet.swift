@@ -12,18 +12,16 @@
 
 import SwiftSyntax
 
-/// Enforce consistent placement of `let`/`var` in case patterns.
+/// Enforce consistent placement of `let` / `var` in case patterns.
 ///
-/// Controlled by `Configuration.caseLet.placement`:
+/// Controlled by `Configuration.caseLet.placement` :
 ///
-/// - `eachBinding` (default): Each variable has its own `let`/`var`:
-///   `case .foo(let x, let y)`.
-/// - `outerPattern`: The `let`/`var` is hoisted to the pattern level:
-///   `case let .foo(x, y)`.
+/// - `eachBinding` (default): Each variable has its own `let` / `var` : `case .foo(let x, let y)` .
+/// - `outerPattern` : The `let` / `var` is hoisted to the pattern level: `case let .foo(x, y)` .
 ///
 /// Lint: Using the non-preferred placement yields a lint error.
 ///
-/// Rewrite: The `let`/`var` is repositioned to match the configured placement.
+/// Rewrite: The `let` / `var` is repositioned to match the configured placement.
 final class CaseLet: StaticFormatRule<CaseLetConfiguration>, @unchecked Sendable {
     override static var group: ConfigurationGroup? { .hoist }
 
@@ -31,7 +29,7 @@ final class CaseLet: StaticFormatRule<CaseLetConfiguration>, @unchecked Sendable
 
     static func transform(
         _ node: MatchingPatternConditionSyntax,
-        parent: Syntax?,
+        parent _: Syntax?,
         context: Context
     ) -> MatchingPatternConditionSyntax {
         switch context.configuration[Self.self].placement {
@@ -63,7 +61,7 @@ final class CaseLet: StaticFormatRule<CaseLetConfiguration>, @unchecked Sendable
 
     static func transform(
         _ node: SwitchCaseItemSyntax,
-        parent: Syntax?,
+        parent _: Syntax?,
         context: Context
     ) -> SwitchCaseItemSyntax {
         switch context.configuration[Self.self].placement {
@@ -97,7 +95,7 @@ final class CaseLet: StaticFormatRule<CaseLetConfiguration>, @unchecked Sendable
 
     static func transform(
         _ node: ForStmtSyntax,
-        parent: Syntax?,
+        parent _: Syntax?,
         context: Context
     ) -> StmtSyntax {
         guard node.caseKeyword != nil else { return StmtSyntax(node) }
@@ -133,13 +131,10 @@ final class CaseLet: StaticFormatRule<CaseLetConfiguration>, @unchecked Sendable
 // MARK: - Distribute (eachBinding mode)
 
 extension CaseLet {
-    private enum OptionalPatternKind {
-        case chained
-        case forced
-    }
+    private enum OptionalPatternKind { case chained, forced }
 
-    /// Wraps the given expression in the optional chaining and/or force
-    /// unwrapping expressions, as described by the specified stack.
+    /// Wraps the given expression in the optional chaining and/or force unwrapping expressions, as
+    /// described by the specified stack.
     private static func restoreOptionalChainingAndForcing(
         _ expr: ExprSyntax,
         patternStack: [(OptionalPatternKind, Trivia)]
@@ -147,44 +142,40 @@ extension CaseLet {
         var patternStack = patternStack
         var result = expr
 
-        // As we unwind the stack, wrap the expression in optional chaining
-        // or force unwrap expressions.
+        // As we unwind the stack, wrap the expression in optional chaining or force unwrap
+        // expressions.
         while let (kind, trivia) = patternStack.popLast() {
-            if kind == .chained {
-                result = ExprSyntax(
+            result = kind == .chained
+                ? ExprSyntax(
                     OptionalChainingExprSyntax(
                         expression: result,
                         trailingTrivia: trivia
-                    )
-                )
-            } else {
-                result = ExprSyntax(
+                    ))
+                : ExprSyntax(
                     ForceUnwrapExprSyntax(
                         expression: result,
                         trailingTrivia: trivia
-                    )
-                )
-            }
+                    ))
         }
 
         return result
     }
 
-    /// Returns a rewritten version of the given pattern if bindings can be moved
-    /// into bound cases.
+    /// Returns a rewritten version of the given pattern if bindings can be moved into bound cases.
     private static func distributeLetVarThroughPattern(
         _ pattern: PatternSyntax
     ) -> (ExpressionPatternSyntax, TokenSyntax)? {
         guard let bindingPattern = pattern.as(ValueBindingPatternSyntax.self),
-            let exprPattern = bindingPattern.pattern.as(ExpressionPatternSyntax.self)
-        else { return nil }
+              let exprPattern = bindingPattern.pattern.as(ExpressionPatternSyntax.self) else {
+            return nil
+        }
 
         // Grab the `let` or `var` used in the binding pattern.
         var specifier = bindingPattern.bindingSpecifier
         specifier.leadingTrivia = []
         let identifierBinder = BindIdentifiersRewriter(bindingSpecifier: specifier)
 
-        // Drill down into any optional patterns that we encounter (e.g., `case let .foo(x)?`).
+        // Drill down into any optional patterns that we encounter (e.g., `case let .foo(x)?` ).
         var patternStack: [(OptionalPatternKind, Trivia)] = []
         var expression = exprPattern.expression
 
@@ -200,10 +191,10 @@ extension CaseLet {
             }
         }
 
-        // Enum cases are written as function calls on member access expressions. The arguments
-        // are the associated values, so the `let/var` can be distributed into those.
+        // Enum cases are written as function calls on member access expressions. The arguments are
+        // the associated values, so the `let/var` can be distributed into those.
         if var functionCall = expression.as(FunctionCallExprSyntax.self),
-            functionCall.calledExpression.is(MemberAccessExprSyntax.self)
+           functionCall.calledExpression.is(MemberAccessExprSyntax.self)
         {
             var result = exprPattern
             let newArguments = identifierBinder.rewrite(functionCall.arguments)
@@ -235,9 +226,8 @@ extension CaseLet {
 // MARK: - Hoist (outerPattern mode)
 
 extension CaseLet {
-
-    /// Returns a rewritten version of the given pattern if bindings can be hoisted
-    /// to the outer pattern level.
+    /// Returns a rewritten version of the given pattern if bindings can be hoisted to the outer
+    /// pattern level.
     private static func hoistLetVarFromPattern(
         _ pattern: PatternSyntax
     ) -> (ValueBindingPatternSyntax, TokenSyntax)? {
@@ -250,7 +240,7 @@ extension CaseLet {
 
         // Enum case: .foo(let x, let y)
         if let functionCall = expression.as(FunctionCallExprSyntax.self),
-            functionCall.calledExpression.is(MemberAccessExprSyntax.self)
+           functionCall.calledExpression.is(MemberAccessExprSyntax.self)
         {
             return hoistFromArguments(functionCall.arguments, exprPattern: exprPattern)
         }
@@ -281,7 +271,7 @@ extension CaseLet {
 
                 if let existing = commonSpecifier {
                     guard existing.tokenKind == binding.bindingSpecifier.tokenKind else {
-                        return nil  // Mixed let/var
+                        return nil
                     }
                 } else {
                     commonSpecifier = binding.bindingSpecifier
@@ -326,22 +316,21 @@ extension CaseLet {
     }
 }
 
-extension Finding.Message {
-    fileprivate static func distributeLetInBoundCaseVariables(
+fileprivate extension Finding.Message {
+    static func distributeLetInBoundCaseVariables(
         _ specifier: TokenSyntax
     ) -> Finding.Message {
         "move this '\(specifier.text)' keyword inside the 'case' pattern, before each of the bound variables"
     }
 
-    fileprivate static func hoistLetFromBoundCaseVariables(
+    static func hoistLetFromBoundCaseVariables(
         _ specifier: TokenSyntax
     ) -> Finding.Message {
         "move '\(specifier.text)' keyword to precede the 'case' pattern"
     }
 }
 
-/// A syntax rewriter that converts identifier patterns to bindings
-/// with the given specifier.
+/// A syntax rewriter that converts identifier patterns to bindings with the given specifier.
 private final class BindIdentifiersRewriter: SyntaxRewriter {
     var bindingSpecifier: TokenSyntax
 
@@ -362,8 +351,8 @@ private final class BindIdentifiersRewriter: SyntaxRewriter {
     }
 }
 
-/// A syntax rewriter that removes ValueBindingPatternSyntax wrappers,
-/// leaving just the inner pattern.
+/// A syntax rewriter that removes ValueBindingPatternSyntax wrappers, leaving just the inner
+/// pattern.
 private final class UnbindIdentifiersRewriter: SyntaxRewriter {
     override func visit(_ node: PatternExprSyntax) -> ExprSyntax {
         guard let binding = node.pattern.as(ValueBindingPatternSyntax.self) else {
@@ -385,8 +374,8 @@ package struct CaseLetConfiguration: SyntaxRuleValue {
 
     package var rewrite = true
     package var lint: Lint = .warn
-    /// `eachBinding` puts `let`/`var` on each individual binding inside a
-    /// pattern; `outerPattern` hoists a single `let`/`var` to the outer pattern.
+    /// `eachBinding` puts `let` / `var` on each individual binding inside a pattern; `outerPattern`
+    /// hoists a single `let` / `var` to the outer pattern.
     package var placement: Placement = .eachBinding
 
     package init() {}

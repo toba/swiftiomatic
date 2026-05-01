@@ -17,13 +17,12 @@ import SwiftSyntax
 /// Lint: Function declarations that explicitly return `()` or `Void` will yield a lint error.
 ///
 /// Rewrite: Function declarations with explicit returns of `()` or `Void` will have their return
-///         signature stripped.
+/// signature stripped.
 final class NoVoidReturnOnFunctionSignature: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
     override class var group: ConfigurationGroup? { .types }
 
-    /// Strip an explicit `-> Void` / `-> ()` return clause from a function
-    /// signature. Called from
-    /// `CompactSyntaxRewriter.visit(_: FunctionSignatureSyntax)`.
+    /// Strip an explicit `-> Void` / `-> ()` return clause from a function signature. Called from
+    /// `CompactSyntaxRewriter.visit(_: FunctionSignatureSyntax)` .
     static func apply(
         _ node: FunctionSignatureSyntax,
         context: Context
@@ -57,8 +56,8 @@ final class NoVoidReturnOnFunctionSignature: StaticFormatRule<BasicRuleValue>, @
     }
 }
 
-extension Finding.Message {
-    fileprivate static func removeRedundantReturn(_ type: String) -> Finding.Message {
+fileprivate extension Finding.Message {
+    static func removeRedundantReturn(_ type: String) -> Finding.Message {
         "remove the explicit return type '\(type)' from this function"
     }
 }

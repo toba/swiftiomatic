@@ -18,23 +18,18 @@ import SwiftSyntax
 final class NoRetroactiveConformances: LintSyntaxRule<LintOnlyValue>, @unchecked Sendable {
     override class var group: ConfigurationGroup? { .idioms }
     override func visit(_ node: ExtensionDeclSyntax) -> SyntaxVisitorContinueKind {
-        if let inheritanceClause = node.inheritanceClause {
-            walk(inheritanceClause)
-        }
+        if let inheritanceClause = node.inheritanceClause { walk(inheritanceClause) }
         return .skipChildren
     }
-    
+
     override func visit(_ type: AttributeSyntax) -> SyntaxVisitorContinueKind {
         if let identifier = type.attributeName.as(IdentifierTypeSyntax.self) {
-            if identifier.name.text == "retroactive" {
-                diagnose(.doNotUseRetroactive, on: type)
-            }
+            if identifier.name.text == "retroactive" { diagnose(.doNotUseRetroactive, on: type) }
         }
         return .skipChildren
     }
 }
 
-extension Finding.Message {
-    fileprivate static let doNotUseRetroactive: Finding.Message =
-        "do not declare retroactive conformances"
+fileprivate extension Finding.Message {
+    static let doNotUseRetroactive: Finding.Message = "do not declare retroactive conformances"
 }

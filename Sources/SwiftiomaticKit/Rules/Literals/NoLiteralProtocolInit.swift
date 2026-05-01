@@ -1,13 +1,11 @@
 import SwiftSyntax
 
-/// Initializers declared in `ExpressibleBy*` literal protocols are intended
-/// for the compiler. Calling them directly (`Set(arrayLiteral: 1, 2)`) is
-/// almost certainly a mistake — the literal form (`[1, 2]`) is shorter,
-/// faster, and more idiomatic.
+/// Initializers declared in `ExpressibleBy*` literal protocols are intended for the compiler.
+/// Calling them directly ( `Set(arrayLiteral: 1, 2)` ) is almost certainly a mistake — the literal
+/// form ( `[1, 2]` ) is shorter, faster, and more idiomatic.
 ///
-/// Lint: When a known standard-library or Foundation type is initialized via
-/// a compiler-protocol label like `arrayLiteral`/`dictionaryLiteral`/
-/// `stringLiteral`, a warning is raised.
+/// Lint: When a known standard-library or Foundation type is initialized via a compiler-protocol
+/// label like `arrayLiteral` / `dictionaryLiteral` / `stringLiteral` , a warning is raised.
 final class NoLiteralProtocolInit: LintSyntaxRule<LintOnlyValue>, @unchecked Sendable {
     override class var group: ConfigurationGroup? { .literals }
 
@@ -17,9 +15,7 @@ final class NoLiteralProtocolInit: LintSyntaxRule<LintOnlyValue>, @unchecked Sen
         let labels = node.arguments.compactMap { $0.label?.text }
         guard !labels.isEmpty else { return .visitChildren }
 
-        guard let typeName = functionName(of: node.calledExpression) else {
-            return .visitChildren
-        }
+        guard let typeName = functionName(of: node.calledExpression) else { return .visitChildren }
 
         for entry in CompilerProtocols.all {
             if entry.types.contains(typeName), entry.argumentLabels.contains(labels) {
@@ -30,15 +26,13 @@ final class NoLiteralProtocolInit: LintSyntaxRule<LintOnlyValue>, @unchecked Sen
         return .visitChildren
     }
 
-    /// Returns the type name used in a constructor expression, accepting
-    /// both `Foo(...)` and `Foo.init(...)` shapes.
+    /// Returns the type name used in a constructor expression, accepting both `Foo(...)` and
+    /// `Foo.init(...)` shapes.
     private func functionName(of expression: ExprSyntax) -> String? {
-        if let ref = expression.as(DeclReferenceExprSyntax.self) {
-            return ref.baseName.text
-        }
+        if let ref = expression.as(DeclReferenceExprSyntax.self) { return ref.baseName.text }
         if let memberAccess = expression.as(MemberAccessExprSyntax.self),
-            let base = memberAccess.base?.as(DeclReferenceExprSyntax.self),
-            memberAccess.declName.baseName.text == "init"
+           let base = memberAccess.base?.as(DeclReferenceExprSyntax.self),
+           memberAccess.declName.baseName.text == "init"
         {
             return base.baseName.text
         }
@@ -109,8 +103,8 @@ private struct CompilerProtocols {
     ]
 }
 
-extension Finding.Message {
-    fileprivate static func literalProtocolInit(_ protocolName: String) -> Finding.Message {
+fileprivate extension Finding.Message {
+    static func literalProtocolInit(_ protocolName: String) -> Finding.Message {
         "initializers declared in compiler protocol '\(protocolName)' shouldn't be called directly"
     }
 }

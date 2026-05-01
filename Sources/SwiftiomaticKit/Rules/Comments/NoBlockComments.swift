@@ -37,7 +37,6 @@ final class NoBlockComments: LintSyntaxRule<LintOnlyValue>, @unchecked Sendable 
     }
 }
 
-extension Finding.Message {
-    fileprivate static let avoidBlockComment: Finding.Message =
-        "replace this block comment with line comments"
+fileprivate extension Finding.Message {
+    static let avoidBlockComment: Finding.Message = "replace this block comment with line comments"
 }

@@ -56,8 +56,10 @@ final class RequireParameterDocumentation: LintSyntaxRule<LintOnlyValue>, @unche
 
         // If a single sentence summary is the only documentation, parameter(s) and returns tags may
         // be omitted.
-        if docComment.briefSummary != nil, docComment.bodyNodes.isEmpty,
-           docComment.parameters.isEmpty, docComment.returns == nil
+        if docComment.briefSummary != nil,
+           docComment.bodyNodes.isEmpty,
+           docComment.parameters.isEmpty,
+           docComment.returns == nil
         {
             return .skipChildren
         }
@@ -142,6 +144,7 @@ final class RequireParameterDocumentation: LintSyntaxRule<LintOnlyValue>, @unche
 /// Iterates through every parameter of paramList and returns a list of the parameters identifiers.
 private func funcParametersIdentifiers(in paramList: FunctionParameterListSyntax) -> [String] {
     var funcParameters = [String]()
+
     for parameter in paramList {
         // If there is a label and an identifier, then the identifier ( `secondName` ) is the name
         // that should be documented. Otherwise, the label and identifier are the same, occupying

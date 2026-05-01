@@ -2,11 +2,10 @@ import SwiftSyntax
 
 /// Ensure consistent blank-line spacing among all cases in a switch statement.
 ///
-/// When some cases in a switch are separated by blank lines and others aren't, the
-/// inconsistency looks sloppy. This rule normalizes to whichever style is used by
-/// the majority of cases: if more cases have blank lines, missing ones are added;
-/// if fewer do, extra ones are removed. The last case is excluded (it's always
-/// followed by `}`).
+/// When some cases in a switch are separated by blank lines and others aren't, the inconsistency
+/// looks sloppy. This rule normalizes to whichever style is used by the majority of cases: if more
+/// cases have blank lines, missing ones are added; if fewer do, extra ones are removed. The last
+/// case is excluded (it's always followed by `}` ).
 ///
 /// Lint: If any case's spacing is inconsistent with the majority, a lint warning is raised.
 ///
@@ -15,9 +14,8 @@ final class ConsistentSwitchCaseSpacing: StaticFormatRule<BasicRuleValue>, @unch
     override static var group: ConfigurationGroup? { .blankLines }
     override static var defaultValue: BasicRuleValue { .init(rewrite: false, lint: .no) }
 
-    /// Normalize blank-line spacing among switch cases to whichever style is
-    /// used by the majority. Called from
-    /// `CompactSyntaxRewriter.visit(_: SwitchExprSyntax)`.
+    /// Normalize blank-line spacing among switch cases to whichever style is used by the majority.
+    /// Called from `CompactSyntaxRewriter.visit(_: SwitchExprSyntax)` .
     static func apply(_ node: SwitchExprSyntax, context: Context) -> SwitchExprSyntax {
         var switchExpr = node
         let cases = Array(switchExpr.cases)
@@ -28,11 +26,7 @@ final class ConsistentSwitchCaseSpacing: StaticFormatRule<BasicRuleValue>, @unch
         var withoutBlank = 0
 
         for i in 0..<(cases.count - 1) {
-            if cases[i + 1].leadingTrivia.hasBlankLine {
-                withBlank += 1
-            } else {
-                withoutBlank += 1
-            }
+            if cases[i + 1].leadingTrivia.hasBlankLine { withBlank += 1 } else { withoutBlank += 1 }
         }
 
         // Majority wins; ties favor blank lines.
@@ -70,10 +64,10 @@ final class ConsistentSwitchCaseSpacing: StaticFormatRule<BasicRuleValue>, @unch
     }
 }
 
-extension Finding.Message {
-    fileprivate static let switchSpacingAddBlankLine: Finding.Message =
+fileprivate extension Finding.Message {
+    static let switchSpacingAddBlankLine: Finding.Message =
         "add blank line between switch cases for consistency"
 
-    fileprivate static let switchSpacingRemoveBlankLine: Finding.Message =
+    static let switchSpacingRemoveBlankLine: Finding.Message =
         "remove blank line between switch cases for consistency"
 }

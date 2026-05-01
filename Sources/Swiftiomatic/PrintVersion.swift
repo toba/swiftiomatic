@@ -10,6 +10,4 @@
 //
 //===----------------------------------------------------------------------===//
 
-func printVersionInformation() {
-  print(smVersion)
-}
+func printVersionInformation() { print(smVersion) }

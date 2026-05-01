@@ -97,6 +97,7 @@ final class HoistAwait: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
 
         while let p = current {
             if p.is(AwaitExprSyntax.self) { return true }
+
             if p.is(TryExprSyntax.self)
                 || p.is(LabeledExprSyntax.self)
                 || p.is(LabeledExprListSyntax.self)

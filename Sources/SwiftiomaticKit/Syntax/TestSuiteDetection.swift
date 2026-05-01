@@ -1,9 +1,7 @@
 import SwiftSyntax
 
-/// Shared detection logic for test-related rules (`ValidateTestCases`, `TestSuiteAccessControl`,
-/// `NoForceTry`).
-
-/// The testing framework detected from imports.
+/// Shared detection logic for test-related rules ( `ValidateTestCases` , `TestSuiteAccessControl` ,
+/// `NoForceTry` ). The testing framework detected from imports.
 enum TestFramework { case xcTest, swiftTesting }
 
 /// Detects which testing framework is imported in the source file.
@@ -89,8 +87,8 @@ func hasParameterizedInit(_ memberBlock: MemberBlockSyntax) -> Bool {
 
 /// Tracks test-scope state for rules that need to know whether code is inside a test function.
 ///
-/// Used by rules like `NoForceTry`, `NoForceUnwrap`, and `NoGuardInTests` that behave differently
-/// inside test functions (e.g. auto-fixing `try!` → `try`). Compose as a stored property and
+/// Used by rules like `NoForceTry` , `NoForceUnwrap` , and `NoGuardInTests` that behave differently
+/// inside test functions (e.g. auto-fixing `try!` → `try` ). Compose as a stored property and
 /// forward visitor calls.
 ///
 /// ```swift
@@ -110,17 +108,17 @@ struct TestContextTracker {
     private(set) var importsTesting = false
     private(set) var insideXCTestCase = false
 
-    /// Call from `visit(_ node: ImportDeclSyntax)`.
+    /// Call from `visit(_ node: ImportDeclSyntax)` .
     mutating func visitImport(_ node: ImportDeclSyntax) {
         if node.path.first?.name.text == "Testing" { importsTesting = true }
     }
 
-    /// Call from `visit(_ node: SourceFileSyntax)`.
+    /// Call from `visit(_ node: SourceFileSyntax)` .
     mutating func visitSourceFile(_ node: SourceFileSyntax, context: Context) {
         setImportsXCTest(context: context, sourceFile: node)
     }
 
-    /// Call at the start of `visit(_ node: ClassDeclSyntax)`. Returns the previous value of
+    /// Call at the start of `visit(_ node: ClassDeclSyntax)` . Returns the previous value of
     /// `insideXCTestCase` — restore it in a `defer` block.
     mutating func pushClass(_ node: ClassDeclSyntax, context: Context) -> Bool {
         let was = insideXCTestCase
@@ -134,7 +132,7 @@ struct TestContextTracker {
         return was
     }
 
-    /// Restore `insideXCTestCase` to the value returned by `pushClass(_:context:)`.
+    /// Restore `insideXCTestCase` to the value returned by `pushClass(_:context:)` .
     mutating func popClass(was: Bool) { insideXCTestCase = was }
 
     /// Whether the given function declaration is a test function.

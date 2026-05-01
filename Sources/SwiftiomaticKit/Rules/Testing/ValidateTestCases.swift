@@ -2,10 +2,10 @@ import SwiftSyntax
 
 /// Ensure test methods have the correct `test` prefix or `@Test` attribute.
 ///
-/// For XCTest: functions in `XCTestCase` subclasses that look like tests get a `test` prefix.
-/// For Swift Testing: functions in test suite types get a `@Test` attribute.
+/// For XCTest: functions in `XCTestCase` subclasses that look like tests get a `test` prefix. For
+/// Swift Testing: functions in test suite types get a `@Test` attribute.
 ///
-/// A "test suite" type is one whose name ends with `Tests`, `TestCase`, or `Suite`.
+/// A "test suite" type is one whose name ends with `Tests` , `TestCase` , or `Suite` .
 ///
 /// Lint: A warning is raised for each test method missing the correct prefix or attribute.
 ///
@@ -13,9 +13,9 @@ import SwiftSyntax
 final class ValidateTestCases: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
     override class var group: ConfigurationGroup? { .testing }
 
-    override class var defaultValue: BasicRuleValue { BasicRuleValue(rewrite: false, lint: .no) }
+    override class var defaultValue: BasicRuleValue { .init(rewrite: false, lint: .no) }
 
-    /// Per-file mutable state held as a typed lazy property on `Context`.
+    /// Per-file mutable state held as a typed lazy property on `Context` .
     final class State {
         var framework: TestFramework?
         var identifierCounts = [String: Int]()
@@ -30,7 +30,7 @@ final class ValidateTestCases: StaticFormatRule<BasicRuleValue>, @unchecked Send
 
         if state.framework == .xcTest {
             for token in node.tokens(viewMode: .sourceAccurate) {
-                if case .identifier(let name) = token.tokenKind {
+                if case let .identifier(name) = token.tokenKind {
                     state.identifierCounts[name, default: 0] += 1
                 }
             }
@@ -129,13 +129,13 @@ final class ValidateTestCases: StaticFormatRule<BasicRuleValue>, @unchecked Send
 
         for member in memberBlock.members {
             guard let funcDecl = member.decl.as(FunctionDeclSyntax.self),
-                shouldAddTestAnnotation(funcDecl, framework: framework, state: state)
-            else {
+                  shouldAddTestAnnotation(funcDecl, framework: framework, state: state) else {
                 newMembers.append(member)
                 continue
             }
 
             var modifiedFunc = funcDecl
+
             switch framework {
                 case .swiftTesting:
                     modifiedFunc = addTestAttribute(to: modifiedFunc)
@@ -171,11 +171,12 @@ final class ValidateTestCases: StaticFormatRule<BasicRuleValue>, @unchecked Send
         if funcDecl.attributes.attribute(named: "objc") != nil { return false }
         if modifiers.contains(where: {
             $0.name.tokenKind == .keyword(.private) || $0.name.tokenKind == .keyword(.fileprivate)
-        }) { return false }
+        }) {
+            return false
+        }
 
         guard funcDecl.signature.parameterClause.parameters.isEmpty,
-            funcDecl.signature.returnClause == nil
-        else { return false }
+              funcDecl.signature.returnClause == nil else { return false }
 
         if hasDisabledPrefix(name) { return false }
 
@@ -212,10 +213,9 @@ final class ValidateTestCases: StaticFormatRule<BasicRuleValue>, @unchecked Send
     }
 }
 
-extension Finding.Message {
-    fileprivate static let addTestAttribute: Finding.Message =
-        "add '@Test' attribute to test function"
-    fileprivate static func addTestPrefix(name: String) -> Finding.Message {
+fileprivate extension Finding.Message {
+    static let addTestAttribute: Finding.Message = "add '@Test' attribute to test function"
+    static func addTestPrefix(name: String) -> Finding.Message {
         "add 'test' prefix to test function '\(name)'"
     }
 }

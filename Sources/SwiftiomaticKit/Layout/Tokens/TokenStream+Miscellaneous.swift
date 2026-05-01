@@ -32,8 +32,8 @@ extension TokenStream {
         return .visitChildren
     }
 
-    func visitBooleanLiteralExpr(_ node: BooleanLiteralExprSyntax) -> SyntaxVisitorContinueKind {
-        return .visitChildren
+    func visitBooleanLiteralExpr(_: BooleanLiteralExprSyntax) -> SyntaxVisitorContinueKind {
+        .visitChildren
     }
 
     func visitGenericWhereClause(_ node: GenericWhereClauseSyntax) -> SyntaxVisitorContinueKind {
@@ -54,16 +54,17 @@ extension TokenStream {
         return .visitChildren
     }
 
-    func visitIntegerLiteralExpr(_ node: IntegerLiteralExprSyntax) -> SyntaxVisitorContinueKind {
-        return .visitChildren
+    func visitIntegerLiteralExpr(_: IntegerLiteralExprSyntax) -> SyntaxVisitorContinueKind {
+        .visitChildren
     }
 
-    func visitImportPathComponent(_ node: ImportPathComponentSyntax) -> SyntaxVisitorContinueKind {
-        return .visitChildren
+    func visitImportPathComponent(_: ImportPathComponentSyntax) -> SyntaxVisitorContinueKind {
+        .visitChildren
     }
 
     func visitGenericRequirement(_ node: GenericRequirementSyntax) -> SyntaxVisitorContinueKind {
         before(node.firstToken(viewMode: .sourceAccurate), tokens: .open)
+
         if let trailingComma = node.trailingComma {
             after(trailingComma, tokens: .close, .break(.same))
         } else {
@@ -79,9 +80,9 @@ extension TokenStream {
         return .visitChildren
     }
 
-    func visitConformanceRequirement(_ node: ConformanceRequirementSyntax)
-        -> SyntaxVisitorContinueKind
-    {
+    func visitConformanceRequirement(
+        _ node: ConformanceRequirementSyntax
+    ) -> SyntaxVisitorContinueKind {
         after(node.colon, tokens: .break)
 
         return .visitChildren
@@ -97,31 +98,24 @@ extension TokenStream {
         return .visitChildren
     }
 
-    func visitOptionalChainingExpr(_ node: OptionalChainingExprSyntax) -> SyntaxVisitorContinueKind
-    {
-        return .visitChildren
+    func visitOptionalChainingExpr(_: OptionalChainingExprSyntax) -> SyntaxVisitorContinueKind {
+        .visitChildren
     }
 
-    func visitIdentifierType(_ node: IdentifierTypeSyntax) -> SyntaxVisitorContinueKind {
-        return .visitChildren
+    func visitIdentifierType(_: IdentifierTypeSyntax) -> SyntaxVisitorContinueKind {
+        .visitChildren
     }
 
-    func visitAvailabilityCondition(_ node: AvailabilityConditionSyntax)
-        -> SyntaxVisitorContinueKind
-    {
-        return .visitChildren
+    func visitAvailabilityCondition(_: AvailabilityConditionSyntax) -> SyntaxVisitorContinueKind {
+        .visitChildren
     }
 
-    func visitDiscardAssignmentExpr(_ node: DiscardAssignmentExprSyntax)
-        -> SyntaxVisitorContinueKind
-    {
-        return .visitChildren
+    func visitDiscardAssignmentExpr(_: DiscardAssignmentExprSyntax) -> SyntaxVisitorContinueKind {
+        .visitChildren
     }
 
-    func visitEditorPlaceholderExpr(_ node: EditorPlaceholderExprSyntax)
-        -> SyntaxVisitorContinueKind
-    {
-        return .visitChildren
+    func visitEditorPlaceholderExpr(_: EditorPlaceholderExprSyntax) -> SyntaxVisitorContinueKind {
+        .visitChildren
     }
 
     func visitBorrowExpr(_ node: BorrowExprSyntax) -> SyntaxVisitorContinueKind {
@@ -132,30 +126,30 @@ extension TokenStream {
     }
 
     func visitConsumeExpr(_ node: ConsumeExprSyntax) -> SyntaxVisitorContinueKind {
-        // The `consume` keyword cannot be separated from the following token or it will be parsed as
-        // an identifier.
+        // The `consume` keyword cannot be separated from the following token or it will be parsed
+        // as an identifier.
         after(node.consumeKeyword, tokens: .space)
         return .visitChildren
     }
 
     func visitCopyExpr(_ node: CopyExprSyntax) -> SyntaxVisitorContinueKind {
-        // The `copy` keyword cannot be separated from the following token or it will be parsed as an
-        // identifier.
+        // The `copy` keyword cannot be separated from the following token or it will be parsed as
+        // an identifier.
         after(node.copyKeyword, tokens: .space)
         return .visitChildren
     }
 
     func visitDiscardStmt(_ node: DiscardStmtSyntax) -> SyntaxVisitorContinueKind {
-        // The `discard` keyword cannot be separated from the following token or it will be parsed as
-        // an identifier.
+        // The `discard` keyword cannot be separated from the following token or it will be parsed
+        // as an identifier.
         after(node.discardKeyword, tokens: .space)
         return .visitChildren
     }
 
     func visitInheritanceClause(_ node: InheritanceClauseSyntax) -> SyntaxVisitorContinueKind {
-        // Normally, the open-break is placed before the open token. In this case, it's intentionally
-        // ordered differently so that the inheritance list can start on the current line and only
-        // breaks if the first item in the list would overflow the column limit.
+        // Normally, the open-break is placed before the open token. In this case, it's
+        // intentionally ordered differently so that the inheritance list can start on the current
+        // line and only breaks if the first item in the list would overflow the column limit.
         before(
             node.inheritedTypes.firstToken(viewMode: .sourceAccurate),
             tokens: .open,
@@ -169,30 +163,28 @@ extension TokenStream {
         return .visitChildren
     }
 
-    func visitPatternExpr(_ node: PatternExprSyntax) -> SyntaxVisitorContinueKind {
-        return .visitChildren
-    }
+    func visitPatternExpr(_: PatternExprSyntax) -> SyntaxVisitorContinueKind { .visitChildren }
 
-    func visitCompositionTypeElement(_ node: CompositionTypeElementSyntax)
-        -> SyntaxVisitorContinueKind
-    {
+    func visitCompositionTypeElement(
+        _ node: CompositionTypeElementSyntax
+    ) -> SyntaxVisitorContinueKind {
         before(node.ampersand, tokens: .break)
         after(node.ampersand, tokens: .space)
         return .visitChildren
     }
 
-    func visitMatchingPatternCondition(_ node: MatchingPatternConditionSyntax)
-        -> SyntaxVisitorContinueKind
-    {
+    func visitMatchingPatternCondition(
+        _ node: MatchingPatternConditionSyntax
+    ) -> SyntaxVisitorContinueKind {
         before(node.firstToken(viewMode: .sourceAccurate), tokens: .open)
         after(node.caseKeyword, tokens: .break)
         after(node.lastToken(viewMode: .sourceAccurate), tokens: .close)
         return .visitChildren
     }
 
-    func visitOptionalBindingCondition(_ node: OptionalBindingConditionSyntax)
-        -> SyntaxVisitorContinueKind
-    {
+    func visitOptionalBindingCondition(
+        _ node: OptionalBindingConditionSyntax
+    ) -> SyntaxVisitorContinueKind {
         after(node.bindingSpecifier, tokens: .break)
 
         if let typeAnnotation = node.typeAnnotation {
@@ -214,15 +206,11 @@ extension TokenStream {
                 stackedIndentationBehavior(rhs: initializer.value)
             {
                 var openTokens: [Token] = [.break(.open(kind: breakKind))]
-                if shouldGroup {
-                    openTokens.append(.open)
-                }
+                if shouldGroup { openTokens.append(.open) }
                 after(initializer.equal, tokens: openTokens)
 
                 var closeTokens: [Token] = [.break(.close(mustBreak: false), size: 0)]
-                if shouldGroup {
-                    closeTokens.append(.close)
-                }
+                if shouldGroup { closeTokens.append(.close) }
                 after(unindentingNode.lastToken(viewMode: .sourceAccurate), tokens: closeTokens)
             } else {
                 after(initializer.equal, tokens: .break(.continue))
@@ -232,23 +220,20 @@ extension TokenStream {
         return .visitChildren
     }
 
-    func visitImplicitlyUnwrappedOptionalType(_ node: ImplicitlyUnwrappedOptionalTypeSyntax)
-        -> SyntaxVisitorContinueKind
-    {
-        return .visitChildren
-    }
+    func visitImplicitlyUnwrappedOptionalType(
+        _: ImplicitlyUnwrappedOptionalTypeSyntax
+    ) -> SyntaxVisitorContinueKind { .visitChildren }
 
-    func visitDifferentiableAttributeArguments(_ node: DifferentiableAttributeArgumentsSyntax)
-        -> SyntaxVisitorContinueKind
-    {
-        // This node encapsulates the entire list of arguments in a `@differentiable(...)` attribute.
+    func visitDifferentiableAttributeArguments(
+        _ node: DifferentiableAttributeArgumentsSyntax
+    ) -> SyntaxVisitorContinueKind {
+        // This node encapsulates the entire list of arguments in a `@differentiable(...)`
+        // attribute.
         var needsBreakBeforeWhereClause = false
 
         if let diffParamsComma = node.argumentsComma {
             after(diffParamsComma, tokens: .break(.same))
         } else if node.arguments != nil {
-            // If there were diff params but no comma following them, then we have "wrt: foo where ..."
-            // and we need a break before the where clause.
             needsBreakBeforeWhereClause = true
         }
 
@@ -262,17 +247,17 @@ extension TokenStream {
         return .visitChildren
     }
 
-    func visitDifferentiabilityArguments(_ node: DifferentiabilityArgumentsSyntax)
-        -> SyntaxVisitorContinueKind
-    {
+    func visitDifferentiabilityArguments(
+        _ node: DifferentiabilityArgumentsSyntax
+    ) -> SyntaxVisitorContinueKind {
         after(node.leftParen, tokens: .break(.open, size: 0), .open)
         before(node.rightParen, tokens: .break(.close, size: 0), .close)
         return .visitChildren
     }
 
-    func visitDifferentiabilityArgument(_ node: DifferentiabilityArgumentSyntax)
-        -> SyntaxVisitorContinueKind
-    {
+    func visitDifferentiabilityArgument(
+        _ node: DifferentiabilityArgumentSyntax
+    ) -> SyntaxVisitorContinueKind {
         after(node.trailingComma, tokens: .break(.same))
         return .visitChildren
     }
@@ -303,11 +288,9 @@ extension TokenStream {
 
     func visitDifferentiabilityWithRespectToArgument(
         _ node: DifferentiabilityWithRespectToArgumentSyntax
-    )
-        -> SyntaxVisitorContinueKind
-    {
-        // This node encapsulates the `wrt:` label and value/variable in a `@differentiable`,
-        // `@derivative`, or `@transpose` attribute.
+    ) -> SyntaxVisitorContinueKind {
+        // This node encapsulates the `wrt:` label and value/variable in a `@differentiable` ,
+        // `@derivative` , or `@transpose` attribute.
         after(
             node.colon,
             tokens: .break(.continue, newlines: .elective(ignoresDiscretionary: true))

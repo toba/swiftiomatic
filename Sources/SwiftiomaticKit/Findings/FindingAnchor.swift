@@ -7,11 +7,11 @@ enum FindingAnchor {
     /// trivia.
     case start
 
-    /// The finding is anchored at the beginning of the trivia piece at the given index in the node's
-    /// leading trivia.
+    /// The finding is anchored at the beginning of the trivia piece at the given index in the
+    /// node's leading trivia.
     case leadingTrivia(Trivia.Index)
 
-    /// The finding is anchored at the beginning of the trivia piece at the given index in the node's
-    /// trailing trivia.
+    /// The finding is anchored at the beginning of the trivia piece at the given index in the
+    /// node's trailing trivia.
     case trailingTrivia(Trivia.Index)
 }

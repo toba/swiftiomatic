@@ -2,9 +2,8 @@ import SwiftSyntax
 
 /// Remove `weak` from `@IBOutlet` properties.
 ///
-/// As per Apple's recommendation, `@IBOutlet` properties should be strong. The `weak`
-/// modifier is preserved for delegate and data source outlets since those are typically
-/// owned elsewhere.
+/// As per Apple's recommendation, `@IBOutlet` properties should be strong. The `weak` modifier is
+/// preserved for delegate and data source outlets since those are typically owned elsewhere.
 ///
 /// Lint: An `@IBOutlet` property with `weak` raises a warning.
 ///
@@ -12,15 +11,13 @@ import SwiftSyntax
 final class StrongOutlets: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
     override class var group: ConfigurationGroup? { .memory }
 
-    /// Strip `weak` from `@IBOutlet` declarations (preserving it for `delegate`
-    /// / `dataSource` outlets). Called from
-    /// `CompactSyntaxRewriter.visit(_: VariableDeclSyntax)`.
+    /// Strip `weak` from `@IBOutlet` declarations (preserving it for `delegate` / `dataSource`
+    /// outlets). Called from `CompactSyntaxRewriter.visit(_: VariableDeclSyntax)` .
     static func apply(_ node: VariableDeclSyntax, context: Context) -> VariableDeclSyntax {
-        guard hasIBOutletAttribute(node), node.modifiers.contains(.weak) else {
-            return node
-        }
+        guard hasIBOutletAttribute(node), node.modifiers.contains(.weak) else { return node }
 
-        if let name = node.bindings.first?.pattern.as(IdentifierPatternSyntax.self)?.identifier.text {
+        if let name = node.bindings.first?.pattern.as(IdentifierPatternSyntax.self)?.identifier.text
+        {
             let lowercased = name.lowercased()
             if lowercased.hasSuffix("delegate") || lowercased.hasSuffix("datasource") {
                 return node
@@ -29,9 +26,7 @@ final class StrongOutlets: StaticFormatRule<BasicRuleValue>, @unchecked Sendable
 
         guard let weakModifier = node.modifiers.first(where: {
             $0.name.tokenKind == .keyword(.weak)
-        }) else {
-            return node
-        }
+        }) else { return node }
 
         Self.diagnose(.removeWeakFromOutlet, on: weakModifier.name, context: context)
 
@@ -66,7 +61,6 @@ final class StrongOutlets: StaticFormatRule<BasicRuleValue>, @unchecked Sendable
     }
 }
 
-extension Finding.Message {
-    fileprivate static let removeWeakFromOutlet: Finding.Message =
-        "remove 'weak' from @IBOutlet property"
+fileprivate extension Finding.Message {
+    static let removeWeakFromOutlet: Finding.Message = "remove 'weak' from @IBOutlet property"
 }
