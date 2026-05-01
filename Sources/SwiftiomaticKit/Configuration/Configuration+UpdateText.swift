@@ -204,6 +204,7 @@ extension Configuration {
                 insert += "\n"
             }
             insert += closeIndent
+
             return [
                 TextEdit(range: container.closeBrace..<container.closeBrace, replacement: insert)
             ]
@@ -257,7 +258,6 @@ extension Configuration {
                 // Insert after `members[predIndex]` . Ensure that member ends in a comma.
                 let pred = container.members[predIndex]
                 let needsLeadingComma = pred.trailingComma == nil
-
                 var text = ""
 
                 for item in bucket {
@@ -294,9 +294,9 @@ extension Configuration {
     /// Returns the largest index `i` in `keys` such that `keys[i]` precedes `newKey` in
     /// length+alpha order. Returns `-1` if `newKey` should sort before every existing key.
     private static func predecessorIndex(for newKey: String, among keys: [String]) -> Int {
-        var pred = -1
-        for (i, k) in keys.enumerated() where lengthLess(k, newKey) { pred = i }
-        return pred
+        var previous = -1
+        for (i, k) in keys.enumerated() where lengthLess(k, newKey) { previous = i }
+        return previous
     }
 
     /// Length-then-alpha key comparator. Mirrors `JSONValue.serialize(sortBy: .length)` .

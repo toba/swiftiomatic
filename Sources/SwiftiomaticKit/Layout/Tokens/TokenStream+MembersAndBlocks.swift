@@ -207,15 +207,24 @@ extension TokenStream {
         }
 
         // This group applies to a top-level if-stmt so that all of the bodies will have the same
-        // breaking behavior.
+        // breaking behavior. Skipped for `if` with no `else` and a body that's already a
+        // single-line single-statement in source — the wrapper's only purpose is else-chain
+        // alignment, and including it would force-break the body's `.break(.open(.block))`
+        // whenever conditions wrap, defeating the inline body.
         if let exprStmt = node.item.as(ExpressionStmtSyntax.self),
            let ifStmt = exprStmt.expression.as(IfExprSyntax.self)
         {
-            before(
-                ifStmt.conditions.firstToken(viewMode: .sourceAccurate),
-                tokens: .open(.consistent)
-            )
-            after(ifStmt.lastToken(viewMode: .sourceAccurate), tokens: .close)
+            let bodyIsInlineSingleStmt = ifStmt.body.isInlineSingleStatementBody
+                && (ifStmt.body.statements.first.map { !$0.leadingTrivia.containsNewlines } ?? false)
+                && !ifStmt.body.rightBrace.leadingTrivia.containsNewlines
+            let skip = ifStmt.elseBody == nil && bodyIsInlineSingleStmt
+            if !skip {
+                before(
+                    ifStmt.conditions.firstToken(viewMode: .sourceAccurate),
+                    tokens: .open(.consistent)
+                )
+                after(ifStmt.lastToken(viewMode: .sourceAccurate), tokens: .close)
+            }
         }
         return .visitChildren
     }

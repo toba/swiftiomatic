@@ -195,9 +195,8 @@ struct MemberAccessExprTests: LayoutTesting {
 
     let expected =
       """
-      foo.bar(
-        .someImplicitlyTypedMemberFunc(
-          a, b, c))
+      foo.bar(.someImplicitlyTypedMemberFunc(
+        a, b, c))
 
       """
 

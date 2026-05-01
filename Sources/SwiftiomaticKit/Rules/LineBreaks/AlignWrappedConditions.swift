@@ -18,7 +18,6 @@ import SwiftSyntax
 ///       let name = attr.attributeName.as(IdentifierTypeSyntax.self) else {
 /// ```
 package struct AlignWrappedConditions: LayoutRule {
-    package static let key = "alignWrappedConditions"
     package static let group: ConfigurationGroup? = .lineBreaks
     package static let description =
         "Align wrapped conditions to the column after the keyword (if/guard/while)."

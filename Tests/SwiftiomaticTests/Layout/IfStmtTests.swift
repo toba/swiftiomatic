@@ -514,10 +514,7 @@ struct IfStmtTests: LayoutTesting {
           foo: Foo,
           bar: SomeVeryLongTypeNameThatDefinitelyBreaks,
           baz: Baz
-        ) = foo(a, b, c, d)
-      {
-        return nil
-      }
+        ) = foo(a, b, c, d) { return nil }
 
       """
 
@@ -694,14 +691,30 @@ struct IfStmtTests: LayoutTesting {
         }
         if let foo = getmyfoo(),
           let bar = getmybar(),
-          foo.baz && bar.baz && someOtherCondition
-        {
-          foo()
-        }
+          foo.baz && bar.baz && someOtherCondition { foo() }
       }
 
       """
 
     assertLayout(input: input, expected: expected, linelength: 87)
+  }
+
+  /// When an `if` with multi-line conditions has a single-statement body, the body should stay
+  /// inline on the closing condition's line — mirroring guard's `attachesInlineElseToWrappedConditions`.
+  @Test func attachesInlineBodyToWrappedConditions() {
+    let input =
+      """
+      if let existing = try? String(contentsOf: url, encoding: .utf8),
+        existing == content { return }
+      """
+
+    let expected =
+      """
+      if let existing = try? String(contentsOf: url, encoding: .utf8),
+        existing == content { return }
+
+      """
+
+    assertLayout(input: input, expected: expected, linelength: 100)
   }
 }

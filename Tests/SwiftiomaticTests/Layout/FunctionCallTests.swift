@@ -403,8 +403,8 @@ struct FunctionCallTests: LayoutTesting {
 
     let expected =
       """
-      let location = Finding.Location(
-        context.sourceLocationConverter.location(for: absolute))
+      let location = Finding.Location(context.sourceLocationConverter.location(
+        for: absolute))
 
       """
 

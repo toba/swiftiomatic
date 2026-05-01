@@ -351,6 +351,7 @@ extension TokenStream {
         let expression = argumentList.first!.expression
         return expression.is(ArrayExprSyntax.self) || expression.is(DictionaryExprSyntax.self)
             || expression.is(ClosureExprSyntax.self)
+            || expression.is(FunctionCallExprSyntax.self)
     }
 
     /// Adds a grouping around certain subexpressions during `InfixOperatorExpr` visitation.

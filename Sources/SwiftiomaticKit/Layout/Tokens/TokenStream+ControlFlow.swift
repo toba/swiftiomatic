@@ -28,7 +28,25 @@ extension TokenStream {
             node.conditions.firstToken(viewMode: .sourceAccurate),
             tokens: .open(conditionsGroupStyle)
         )
-        after(node.conditions.lastToken(viewMode: .sourceAccurate), tokens: .close)
+
+        // Detect if the body is a single statement already inline in source (no newline after `{`
+        // or before `}`). When that's true and there's no `else`, we want `{ stmt }` to stay glued
+        // to the closing condition even when conditions wrap — see body-handling block below for
+        // the rationale and consistent-group-close ordering trick.
+        let bodyIsInlineSingleStmt = node.body.isInlineSingleStatementBody
+            && (node.body.statements.first.map { !$0.leadingTrivia.containsNewlines } ?? false)
+            && !node.body.rightBrace.leadingTrivia.containsNewlines
+        let attachInlineBody = node.elseBody == nil && bodyIsInlineSingleStmt
+
+        // When NOT attaching an inline body, declare the conditions consistent group's `.close`
+        // BEFORE the per-condition close breaks below. `afterMap` reverses on emit, so the group
+        // close emits AFTER those breaks — preserving the historical Apple-style behavior of
+        // dropping `{` onto its own line when conditions wrap. When attaching an inline body, the
+        // declaration order is reversed (see below) so the group close emits FIRST and pops the
+        // force-break flag before the per-condition close break is evaluated.
+        if !attachInlineBody {
+            after(node.conditions.lastToken(viewMode: .sourceAccurate), tokens: .close)
+        }
 
         after(node.ifKeyword, tokens: .space)
 
@@ -51,7 +69,31 @@ extension TokenStream {
             )
         }
 
-        arrangeBracesAndContents(of: node.body, contentsKeyPath: \.statements)
+        if attachInlineBody {
+            // Declare the consistent-group `.close` AFTER the per-condition close breaks above.
+            // `afterMap` reverses on emit, so this `.close` emits BEFORE the last condition's
+            // `.break(.close)` — popping the consistent group's force-break flag before that break
+            // is evaluated. Mirrors the trick used in `BeforeGuardConditions` and
+            // `visitSwitchCaseLabel`. Without this, when conditions wrap, the close-break inherits
+            // the force and drops `{` onto its own line, defeating the inline body.
+            after(node.conditions.lastToken(viewMode: .sourceAccurate), tokens: .close)
+
+            // Replace the default `.break(.reset)` (which force-breaks on continuation lines) with
+            // a `.same` elective break, after clearing the continuation flag. This lets `{ stmt }`
+            // stay glued to the closing condition when the inline form fits.
+            before(
+                node.body.leftBrace,
+                tokens: .printerControl(kind: .clearContinuation),
+                .break(.same, size: 1, newlines: .elective(ignoresDiscretionary: true))
+            )
+            arrangeBracesAndContents(
+                of: node.body,
+                contentsKeyPath: \.statements,
+                shouldResetBeforeLeftBrace: false
+            )
+        } else {
+            arrangeBracesAndContents(of: node.body, contentsKeyPath: \.statements)
+        }
 
         if let elseKeyword = node.elseKeyword {
             // Add a token before the else keyword. Breaking before `else` is explicitly allowed

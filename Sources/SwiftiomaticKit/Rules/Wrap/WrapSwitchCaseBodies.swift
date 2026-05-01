@@ -96,8 +96,17 @@ fileprivate extension WrapSwitchCaseBodies {
         let bodyText = node.statements.first!.trimmedDescription
         let labelText = labelText(node)
 
-        // "case .foo: body" or "default: body"
-        let totalLength = caseIndent(node).count + labelText.count + " ".count + bodyText.count
+        // The line that needs to fit is the one carrying the colon — for a multi-pattern label
+        // split across lines, that's the last line of the label (which already includes its own
+        // alignment whitespace as interior trivia preserved by `trimmedDescription`).
+        let labelLines = labelText.split(omittingEmptySubsequences: false, whereSeparator: \.isNewline)
+        let isMultiLine = labelLines.count > 1
+        let labelLastLine = labelLines.last.map(String.init) ?? labelText
+
+        // "case .foo: body" or "default: body" — for multi-line labels, drop the case indent
+        // since the last line's leading alignment is already in `labelLastLine`.
+        let leadingWidth = isMultiLine ? 0 : caseIndent(node).count
+        let totalLength = leadingWidth + labelLastLine.count + " ".count + bodyText.count
         let maxLength = context.configuration[LineLength.self]
 
         guard totalLength <= maxLength else { return node }

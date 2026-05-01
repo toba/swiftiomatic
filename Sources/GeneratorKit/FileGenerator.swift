@@ -29,10 +29,7 @@ package extension FileGenerator {
         let content = generateContent()
 
         if let existing = try? String(contentsOf: url, encoding: .utf8),
-           existing == content
-        {
-            return
-        }
+           existing == content { return }
 
         let directory = url.deletingLastPathComponent()
 

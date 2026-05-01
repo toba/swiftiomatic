@@ -97,6 +97,7 @@
 
 ### 🗜️ Tweaks
 
+- Self-lint review; dogfood Swiftiomatic on `Sources/`; reduce 293 warnings to 31 structural ([#589](https://github.com/toba/swiftiomatic/issues/589))
 - Port missing SwiftLint rules ([#308](https://github.com/toba/swiftiomatic/issues/308))
 - Align rule type names with config keys ([#441](https://github.com/toba/swiftiomatic/issues/441))
 - Rule configuration groups; rename `forcing`→`unsafety`; add `memory`; regroup ungrouped ([#440](https://github.com/toba/swiftiomatic/issues/440))

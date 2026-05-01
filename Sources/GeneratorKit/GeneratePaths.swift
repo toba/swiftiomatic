@@ -65,11 +65,12 @@ package struct GeneratePaths {
     ///
     /// Output files go to `Sources/SwiftiomaticKit/Generated/` .
     package init(packageRoot: URL) {
-        let generated = packageRoot
-            .appending(path: "Sources")
-            .appending(path: "SwiftiomaticKit")
-            .appending(path: "Generated")
-        self.init(packageRoot: packageRoot, outputDirectory: generated)
+        self.init(
+            packageRoot: packageRoot,
+            outputDirectory: packageRoot
+                .appending(path: "Sources")
+                .appending(path: "SwiftiomaticKit")
+                .appending(path: "Generated"))
     }
 
     /// Creates paths with input directories derived from `packageRoot` and output files directed to

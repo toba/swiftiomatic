@@ -249,8 +249,8 @@ struct AssignmentExprTests: LayoutTesting {
       """
     let expected =
       """
-      replacement.typeAnnotation = .init(
-        type: type.with(\\.leadingTrivia, .space).with(\\.trailingTrivia, .space))
+      replacement.typeAnnotation = .init(type: type.with(\\.leadingTrivia, .space).with(
+        \\.trailingTrivia, .space))
 
       """
     assertLayout(input: input, expected: expected, linelength: 100)

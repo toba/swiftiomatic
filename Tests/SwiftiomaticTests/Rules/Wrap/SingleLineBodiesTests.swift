@@ -1038,6 +1038,24 @@ struct SingleLineBodiesInlineTests: RuleTesting {
       configuration: inlineConfig)
   }
 
+  @Test func multiLineConditionWithTryAndBraceOnOwnLineInlines() {
+    assertFormatting(
+      WrapSingleLineBodies.self,
+      input: """
+        if let existing = try? String(contentsOf: url, encoding: .utf8),
+           existing == content
+        1️⃣{
+            return
+        }
+        """,
+      expected: """
+        if let existing = try? String(contentsOf: url, encoding: .utf8),
+           existing == content { return }
+        """,
+      findings: [FindingSpec("1️⃣", message: "place conditional body on same line as declaration")],
+      configuration: inlineConfig)
+  }
+
   @Test func multiLineConditionTooLongNotInlined() {
     var config = inlineConfig
     config[LineLength.self] = 50

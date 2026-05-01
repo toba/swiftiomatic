@@ -394,8 +394,8 @@ struct IfConfigTests: LayoutTesting {
           Text("Some text")
         }
         #if !os(tvOS)
-          .toggleStyle(
-            SwitchToggleStyle(tint: Color.blue))
+          .toggleStyle(SwitchToggleStyle(
+            tint: Color.blue))
         #endif
         .accessibilityValue(
           binding.wrappedValue == true

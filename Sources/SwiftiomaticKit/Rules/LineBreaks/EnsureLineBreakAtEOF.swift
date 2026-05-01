@@ -9,6 +9,7 @@ import SwiftSyntax
 ///
 /// Rewrite: A trailing newline is added if missing, or extra newlines are removed.
 final class EnsureLineBreakAtEOF: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
+    override class var key: String { "atEndOfFile" }
     override class var group: ConfigurationGroup? { .lineBreaks }
     override class var defaultValue: BasicRuleValue { .init(rewrite: false, lint: .no) }
 }

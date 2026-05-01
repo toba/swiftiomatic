@@ -257,6 +257,38 @@ struct WrapSwitchCaseBodiesAdaptiveTests: RuleTesting {
       configuration: adaptiveConfig)
   }
 
+  @Test func multiPatternBodyInlinesOnLastPattern() {
+    assertFormatting(
+      WrapSwitchCaseBodies.self,
+      input: """
+        switch token {
+        1️⃣case .docBlockComment,
+             .docLineComment,
+             .newlines(1),
+             .carriageReturns(1),
+             .carriageReturnLineFeeds(1),
+             .spaces,
+             .tabs:
+            false
+        }
+        """,
+      expected: """
+        switch token {
+        case .docBlockComment,
+             .docLineComment,
+             .newlines(1),
+             .carriageReturns(1),
+             .carriageReturnLineFeeds(1),
+             .spaces,
+             .tabs: false
+        }
+        """,
+      findings: [
+        FindingSpec("1️⃣", message: "place switch case body on same line as label"),
+      ],
+      configuration: adaptiveConfig)
+  }
+
   @Test func nestedIndentationInlines() {
     assertFormatting(
       WrapSwitchCaseBodies.self,

@@ -182,10 +182,11 @@ private func asciiArtLength(of string: Substring, leadingSpaces: Int) -> Int {
     if spaces.contains(where: { !$0.isWhitespace }) { return 0 }
 
     let string = string.dropFirst(leadingSpaces)
-    if string.hasPrefix(" * ") { return leadingSpaces + 3 }
-    return string.hasPrefix(" *\n")
-        ? leadingSpaces + 2
-        : 0
+    return string.hasPrefix(" * ")
+        ? leadingSpaces + 3
+        : string.hasPrefix(" *\n")
+            ? leadingSpaces + 2
+            : 0
 }
 
 /// Returns the start index of the earliest comment in the Trivia if we work backwards and skip
@@ -209,8 +210,7 @@ private func findCommentStartIndex(_ triviaArray: [TriviaPiece]) -> Array<Trivia
                  .carriageReturns(1),
                  .carriageReturnLineFeeds(1),
                  .spaces,
-                 .tabs:
-                false
+                 .tabs: false
             default: true
         }
     }) {

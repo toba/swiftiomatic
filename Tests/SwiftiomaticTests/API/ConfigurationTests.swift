@@ -153,7 +153,7 @@ struct ConfigurationTests {
           "beforeEachGenericRequirement": true,
           "betweenDeclarationAttributes": true,
           "aroundMultilineExpressionChainComponents": true,
-          "ensureLineBreakAtEOF": { "lint": "warn" }
+          "atEndOfFile": { "lint": "warn" }
         },
         "redundancies": {
           "redundantSelf": { "lint": "error" },

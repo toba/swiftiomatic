@@ -320,9 +320,7 @@ struct BinaryOperatorExprTests: LayoutTesting {
       if foo(
         bar: someValue,
         qux: anotherLongValue
-      ) == expected {
-        body()
-      }
+      ) == expected { body() }
 
       """
 

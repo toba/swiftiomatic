@@ -42,8 +42,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/toba/swiftiomatic-plugins",
       "state" : {
-        "revision" : "eaf5ba9dc2727f6fe8417f97fc496fbc60748392",
-        "version" : "1.4.1"
+        "revision" : "2928054049a5a2722b45b883db81b478a6d3b933",
+        "version" : "1.5.1"
       }
     }
   ],
