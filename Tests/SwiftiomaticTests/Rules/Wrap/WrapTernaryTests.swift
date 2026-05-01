@@ -62,4 +62,19 @@ struct WrapTernaryTests: RuleTesting {
       findings: [])
   }
 
+  /// Bug repro (issue 3aq-p4v): a ternary inside a single-line string interpolation must
+  /// not be wrapped — inserting newlines inside `\\(...)` of a single-line literal produces
+  /// invalid Swift.
+  @Test func ternaryInsideSingleLineStringInterpolationNotWrapped() {
+    assertFormatting(
+      WrapTernary.self,
+      input: #"""
+        let s = "\(result.summary.linkerErrors) linker error\(result.summary.linkerErrors == 1 ? "" : "s")"
+        """#,
+      expected: #"""
+        let s = "\(result.summary.linkerErrors) linker error\(result.summary.linkerErrors == 1 ? "" : "s")"
+        """#,
+      findings: [])
+  }
+
 }

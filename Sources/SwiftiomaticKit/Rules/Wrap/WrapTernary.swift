@@ -26,6 +26,12 @@ final class WrapTernary: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
         parent: Syntax?,
         context: Context
     ) -> ExprSyntax {
+        // Inserting newlines around `?`/`:` inside a single-line string interpolation
+        // produces invalid Swift (newlines aren't allowed inside `"\(...)"`).
+        if isInsideSingleLineStringInterpolation(parent: parent) {
+            return ExprSyntax(visited)
+        }
+
         let questionHasNewline = visited.questionMark.leadingTrivia.containsNewlines
         let colonHasNewline = visited.colon.leadingTrivia.containsNewlines
 
@@ -82,6 +88,27 @@ final class WrapTernary: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
             .split(whereSeparator: { $0.isWhitespace })
             .joined(separator: " ")
             .count
+    }
+
+    /// True if `node` is contained within an `ExpressionSegmentSyntax` whose enclosing
+    /// `StringLiteralExprSyntax` is single-line (i.e. not a `"""..."""` literal). Inserting
+    /// newlines into such a context produces invalid Swift.
+    private static func isInsideSingleLineStringInterpolation(parent: Syntax?) -> Bool {
+        var current = parent
+        while let p = current {
+            if p.is(ExpressionSegmentSyntax.self) {
+                var s: Syntax? = p.parent
+                while let sp = s {
+                    if let lit = sp.as(StringLiteralExprSyntax.self) {
+                        return lit.openingQuote.tokenKind != .multilineStringQuote
+                    }
+                    s = sp.parent
+                }
+                return true
+            }
+            current = p.parent
+        }
+        return false
     }
 
     /// True if `node` is contained within another `TernaryExprSyntax`.

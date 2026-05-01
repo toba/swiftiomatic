@@ -43,6 +43,7 @@
 
 ### 🐞 Fixes
 
+- `wrapTernary`; skip ternaries inside single-line string interpolations to avoid producing invalid Swift ([#602](https://github.com/toba/swiftiomatic/issues/602))
 - `PreferIfElseChain`; rewrite guard-return + trailing return to `if/else` expression in implicit-return positions ([#563](https://github.com/toba/swiftiomatic/issues/563))
 - `extension` where-clause; apply continuation indent when `where` wraps to its own line
 - `sm update`; respect rule sort order

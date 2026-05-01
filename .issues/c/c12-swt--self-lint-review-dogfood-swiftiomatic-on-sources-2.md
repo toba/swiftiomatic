@@ -1,15 +1,15 @@
 ---
 # c12-swt
 title: 'Self-lint review: dogfood Swiftiomatic on Sources/ (293 warnings)'
-status: in-progress
+status: completed
 type: task
 priority: normal
 created_at: 2026-04-30T23:21:23Z
-updated_at: 2026-05-01T02:00:10Z
+updated_at: 2026-05-01T17:01:54Z
 sync:
     github:
         issue_number: "589"
-        synced_at: "2026-05-01T02:12:28Z"
+        synced_at: "2026-05-01T17:11:52Z"
 ---
 
 Full Swift code review of `Sources/` (5 modules, 372 files) using the `/swift` skill checklist.
