@@ -80,6 +80,18 @@ struct ConfigurationSchemaTests {
     }
   }
 
+  /// Enum-typed config properties whose cases declare explicit raw values must emit those
+  /// raw values (not the Swift case identifiers) in the schema's `enum` and `default`.
+  @Test func enumPropertiesUseRawValuesNotCaseNames() throws {
+    let properties = try #require(schema["properties"] as? [String: Any])
+    let rule = try #require(properties["sortGetSetAccessors"] as? [String: Any])
+    let custom = try #require(rule["properties"] as? [String: Any])
+    let order = try #require(custom["order"] as? [String: Any])
+    let values = try #require(order["enum"] as? [String])
+    #expect(Set(values) == ["get_set", "set_get"])
+    #expect(order["default"] as? String == "get_set")
+  }
+
   /// The `lintOnlyBase` definition omits the `rewrite` property entirely.
   @Test func lintOnlyBaseHasNoRewriteProperty() throws {
     let defs = try #require(schema["$defs"] as? [String: Any])

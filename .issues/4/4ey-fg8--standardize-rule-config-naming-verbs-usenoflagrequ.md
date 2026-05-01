@@ -1,15 +1,15 @@
 ---
 # 4ey-fg8
 title: Standardize rule config naming verbs (use*/no*/flag*/require*)
-status: review
+status: completed
 type: task
 priority: normal
 created_at: 2026-05-01T18:40:33Z
-updated_at: 2026-05-01T18:57:31Z
+updated_at: 2026-05-01T19:46:06Z
 sync:
     github:
         issue_number: "605"
-        synced_at: "2026-05-01T19:25:15Z"
+        synced_at: "2026-05-01T19:54:41Z"
 ---
 
 Apply naming-verb consistency cleanup per agreed evaluation:

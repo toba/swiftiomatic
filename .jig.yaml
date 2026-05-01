@@ -12,10 +12,11 @@ nope:
       tools: ["Write", "Edit"]
       message: "cannot reconfigure jig directly — print desired config and user will
         edit"
-    # - name: altering-config
-    #   pattern: 'swiftiomatic.json'
-    #   tools: ["Write", "Edit"]
-    #   message: "agent may not refer to the swiftiomatic.json file — just say 'configuration'"
+    - name: altering-config
+      pattern: 'swiftiomatic.json'
+      tools: ["Write", "Edit"]
+      message: "agent may not refer to the swiftiomatic.json file — just say
+        'configuration'"
     - name: bypassing-mcp
       pattern: 'swift (build|test)'
       message: "Use xc-mcp to build and test"

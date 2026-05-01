@@ -9,29 +9,49 @@
 			"shouldGroupImports": true,
 			"includeConditionalImports": false
 		},
-        "sortModifiers": { "lint": "warn", "rewrite": true },
+		"sortModifiers": { "lint": "warn", "rewrite": true },
 		"sortSwitchCases": { "lint": "no", "rewrite": false },
 		"sortTypeAliases": { "lint": "no", "rewrite": false },
 		"sortDeclarations": { "lint": "no", "rewrite": false },
-        "sortGetSetAccessors": { "lint": "warn", "order": "get_set", "rewrite": false }
+		"sortGetSetAccessors": {
+			"lint": "warn",
+			"order": "get_set",
+			"rewrite": false
+		}
 	},
 	"wrap": {
 		"nestedCallLayout": { "lint": "no", "mode": "inline", "rewrite": true },
-        "wrapCompoundCaseItems": { "lint": "no", "rewrite": false },
-        "collapseSimpleEnums": { "lint": "no", "rewrite": true },
-        "collapseSimpleIfElse": { "lint": "no", "rewrite": true },
-        "layoutSingleLineBodies": { "lint": "no", "mode": "inline", "rewrite": true },
-        "layoutSwitchCaseBodies": { "lint": "no", "mode": "adaptive", "rewrite": true },
-        "wrapSingleLineComments": { "lint": "no", "rewrite": false },
+		"wrapCompoundCaseItems": { "lint": "no", "rewrite": false },
+		"collapseSimpleEnums": { "lint": "no", "rewrite": true },
+		"collapseSimpleIfElse": { "lint": "no", "rewrite": true },
+		"layoutSingleLineBodies": {
+			"lint": "no",
+			"mode": "inline",
+			"rewrite": true
+		},
+		"layoutSwitchCaseBodies": {
+			"lint": "no",
+			"mode": "adaptive",
+			"rewrite": true
+		},
+		"wrapSingleLineComments": { "lint": "no", "rewrite": false },
 		"wrapMultilineFunctionChains": { "lint": "no", "rewrite": false },
 		"keepReturnTypeWithSignature": true
 	},
 	"hoist": {
 		"hoistTry": { "lint": "no", "rewrite": true },
 		"hoistAwait": { "lint": "no", "rewrite": true },
-		"hoistCaseLet": { "lint": "no", "placement": "outerPattern", "rewrite": true },
+		"hoistCaseLet": {
+			"lint": "no",
+			"placement": "outerPattern",
+			"rewrite": true
+		},
 		"hoistIndirectEnum": { "lint": "no", "rewrite": true },
-        "hoistExtensionAccess": { "lint": "no", "rewrite": true, "placement": "onExtension" },
+		"hoistExtensionAccess": {
+			"lint": "no",
+			"rewrite": true,
+			"placement": "onExtension"
+		}
 	},
 	"types": {
 		"noOptionalBool": { "lint": "no" },
@@ -48,19 +68,23 @@
 	"access": {
 		"useFinalClasses": { "lint": "warn", "rewrite": false },
 		"makeStateVarsPrivate": { "lint": "no", "rewrite": true },
-		"useFilePrivateForFileLocal": { "lint": "warn", "rewrite": true, "accessLevel": "private" },
+		"useFilePrivateForFileLocal": {
+			"lint": "warn",
+			"rewrite": true,
+			"accessLevel": "private"
+		},
 		"matchExtensionAccessToMembers": { "lint": "warn", "rewrite": false }
 	},
 	"idioms": {
 		"useToggle": { "lint": "warn", "rewrite": true },
-        "useDotZero": { "lint": "warn", "rewrite": true },
-        "noVoidTernary": { "lint": "warn", "rewrite": false },
+		"useDotZero": { "lint": "warn", "rewrite": true },
+		"noVoidTernary": { "lint": "warn", "rewrite": false },
 		"noCaseNamedNone": { "lint": "no", "rewrite": false },
 		"useFileIDNotFile": { "lint": "no", "rewrite": false },
 		"useSelfNotTypeName": { "lint": "warn", "rewrite": true },
-        "noSwapThenRemoveAll": { "lint": "error" },
-        "noDropFirstInForLoop": { "lint": "no" },
-        "breakBeforeLeadingDot": { "lint": "no", "rewrite": true },
+		"noSwapThenRemoveAll": { "lint": "error" },
+		"noDropFirstInForLoop": { "lint": "no" },
+		"breakBeforeLeadingDot": { "lint": "no", "rewrite": true },
 		"useCompoundAssignment": { "lint": "warn", "rewrite": true },
 		"useStaticNotClassFunc": { "lint": "warn", "rewrite": false },
 		"useLazyForLongChainOps": { "lint": "warn" },
@@ -120,18 +144,36 @@
 			]
 		}
 	},
-	"spaces": { "spaceAroundRangeOperators": false, "spacesBeforeEndOfLineComments": 2 },
+	"spaces": {
+		"spaceAroundRangeOperators": false,
+		"spacesBeforeEndOfLineComments": 2
+	},
 	"metrics": {
 		"tupleSize": { "enabled": true, "error": 8, "warning": 3 },
-		"fileLength": { "enabled": true, "error": 2000, "warning": 1000, "ignoreCommentOnlyLines": true },
+		"fileLength": {
+			"enabled": true,
+			"error": 2000,
+			"warning": 1000,
+			"ignoreCommentOnlyLines": true
+		},
 		"nestingDepth": { "lint": "warn", "typeLevel": 2, "functionLevel": 3 },
-		"parameterCount": { "enabled": false, "error": 8, "warning": 5, "ignoresDefaultParameters": true },
+		"parameterCount": {
+			"enabled": false,
+			"error": 8,
+			"warning": 5,
+			"ignoresDefaultParameters": true
+		},
 		"typeBodyLength": { "enabled": true, "error": 2000, "warning": 500 },
 		"lineLengthLimit": { "enabled": false, "error": 200, "warning": 120 },
 		"closureBodyLength": { "enabled": true, "error": 2000, "warning": 30 },
 		"functionBodyLength": { "enabled": true, "error": 500, "warning": 100 },
 		"associatedValueCount": { "enabled": true, "error": 6, "warning": 5 },
-		"cyclomaticComplexity": { "enabled": false, "error": 20, "warning": 10, "ignoresCaseStatements": false }
+		"cyclomaticComplexity": {
+			"enabled": false,
+			"error": 20,
+			"warning": 10,
+			"ignoresCaseStatements": false
+		}
 	},
 	"swiftui": {
 		"noFormatterInViewBody": { "lint": "warn" },
@@ -173,14 +215,14 @@
 			"approachingExpirySeverity": "warn",
 			"approachingExpiryThreshold": 15
 		},
-        "useDocCommentsOnAPI": { "lint": "no", "rewrite": false },
-        "noOrphanedDocComment": { "lint": "warn" },
-        "formatSpecialComments": { "lint": "no", "rewrite": true },
-        "requireDocsOnPublicDecls": { "lint": "no" },
-        "useTripleSlashOverDocBlock": { "lint": "no", "rewrite": true },
-        "requireDocSummaryStructure": { "lint": "no" },
-        "requireParameterAndReturnDocs": { "lint": "no" },
-        "noDocCommentsInFunctionBodies": { "lint": "warn" },
+		"useDocCommentsOnAPI": { "lint": "no", "rewrite": false },
+		"noOrphanedDocComment": { "lint": "warn" },
+		"formatSpecialComments": { "lint": "no", "rewrite": true },
+		"requireDocsOnPublicDecls": { "lint": "no" },
+		"useTripleSlashOverDocBlock": { "lint": "no", "rewrite": true },
+		"requireDocSummaryStructure": { "lint": "no" },
+		"requireParameterAndReturnDocs": { "lint": "no" },
+		"noDocCommentsInFunctionBodies": { "lint": "warn" },
 		"placeDocCommentsBeforeModifiers": { "lint": "warn", "rewrite": true }
 	},
 	"generics": {
@@ -195,9 +237,9 @@
 			"lint": "error",
 			"additionalCodePoints": []
 		},
-        "noDuplicateDictionaryKeys": { "lint": "error" },
-        "useURLMacroForURLLiterals": { "lint": "no", "rewrite": false },
-        "flagEmptyCollectionLiteral": { "lint": "no", "rewrite": false },
+		"noDuplicateDictionaryKeys": { "lint": "error" },
+		"useURLMacroForURLLiterals": { "lint": "no", "rewrite": false },
+		"flagEmptyCollectionLiteral": { "lint": "no", "rewrite": false },
 		"noLiteralProtocolDirectInit": { "lint": "warn" },
 		"useEmptyArrayLiteralForArgs": { "lint": "no" },
 		"reflowMultilineStringLiterals": "never",
@@ -216,21 +258,21 @@
 		"flagRecursiveObservationTracking": { "lint": "warn" }
 	},
 	"blankLines": {
-        "maximumBlankLines": 1,
-        "treatCommentAsBlankLine": true,
-        "treatClosingBraceAsBlankLine": true,
-        "insertBlankLineAfterGuard": { "lint": "no", "rewrite": false },
-        "insertBlankLinesAroundMark": { "lint": "no", "rewrite": false },
-        "normalizeSwitchCaseSpacing": { "lint": "no", "rewrite": false },
-        "insertBlankLineAfterImports": { "lint": "no", "rewrite": true },
-        "insertBlankLineBetweenScopes": { "lint": "no", "rewrite": false },
-        "insertBlankLineAfterSwitchCase": { "lint": "no", "rewrite": false },
+		"maximumBlankLines": 1,
+		"treatCommentAsBlankLine": true,
+		"treatClosingBraceAsBlankLine": true,
+		"insertBlankLineAfterGuard": { "lint": "no", "rewrite": false },
+		"insertBlankLinesAroundMark": { "lint": "no", "rewrite": false },
+		"normalizeSwitchCaseSpacing": { "lint": "no", "rewrite": false },
+		"insertBlankLineAfterImports": { "lint": "no", "rewrite": true },
+		"insertBlankLineBetweenScopes": { "lint": "no", "rewrite": false },
+		"insertBlankLineAfterSwitchCase": { "lint": "no", "rewrite": false },
 		"insertBlankLineBeforeControlFlowBlocks": { "lint": "no", "rewrite": true }
 	},
 	"conditions": {
 		"useTernary": { "lint": "no", "rewrite": true },
-        "useEarlyExits": { "lint": "no", "rewrite": false },
-        "noYodaConditions": { "lint": "warn", "rewrite": true },
+		"useEarlyExits": { "lint": "no", "rewrite": false },
+		"noYodaConditions": { "lint": "warn", "rewrite": true },
 		"useExplicitNilCheck": { "lint": "warn", "rewrite": true },
 		"noIdenticalOperands": { "lint": "error" },
 		"useIfElseAsExpression": { "lint": "no", "rewrite": false },
@@ -242,18 +284,18 @@
 	},
 	"lineBreaks": {
 		"lineLength": 100,
-        "wrapTernaryBranches": { "lint": "warn", "rewrite": true },
-        "breakAtEndOfFile": { "lint": "no", "rewrite": false },
+		"wrapTernaryBranches": { "lint": "warn", "rewrite": true },
+		"breakAtEndOfFile": { "lint": "no", "rewrite": false },
 		"breakBeforeEachArgument": false,
 		"keepModifiersOnSameLine": { "lint": "warn", "rewrite": false },
 		"placeElseCatchOnNewLine": false,
 		"respectExistingLineBreaks": true,
-        "breakBeforeGuardConditions": false,
-        "breakBeforeMultilineBrace": { "lint": "no", "rewrite": false },
-        "breakBetweenDeclAttributes": false,
-        "breakBeforeGenericRequirement": false,
-        "breakAroundMultilineChainParts": false,
-        "breakAfterAssignToConditional": { "lint": "no", "rewrite": false }
+		"breakBeforeGuardConditions": false,
+		"breakBeforeMultilineBrace": { "lint": "no", "rewrite": false },
+		"breakBetweenDeclAttributes": false,
+		"breakBeforeGenericRequirement": false,
+		"breakAroundMultilineChainParts": false,
+		"breakAfterAssignToConditional": { "lint": "no", "rewrite": false }
 	},
 	"collections": {
 		"useMinMax": { "lint": "warn" },
@@ -278,8 +320,8 @@
 		"tabWidth": 8,
 		"indentBlankLines": false,
 		"indentSwitchCases": { "lint": "no", "rewrite": true, "style": "indented" },
-        "alignWrappedConditions": true,
-        "indentConditionalCompilationBlocks": false
+		"alignWrappedConditions": true,
+		"indentConditionalCompilationBlocks": false
 	},
 	"declarations": {
 		"requireSuperCall": {

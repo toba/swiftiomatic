@@ -1,15 +1,15 @@
 ---
 # 723-61e
 title: Make rule config keys self-describing
-status: review
+status: completed
 type: task
 priority: normal
 created_at: 2026-05-01T18:57:10Z
-updated_at: 2026-05-01T19:06:37Z
+updated_at: 2026-05-01T19:46:03Z
 sync:
     github:
         issue_number: "607"
-        synced_at: "2026-05-01T19:25:15Z"
+        synced_at: "2026-05-01T19:54:41Z"
 ---
 
 Drop short keys that depend on group prefix (BlankLines/Indentation/Wrap rules) and remove redundant explicit key overrides where they match the type-derived default. See ~/.claude/plans/adaptive-whistling-cascade.md.

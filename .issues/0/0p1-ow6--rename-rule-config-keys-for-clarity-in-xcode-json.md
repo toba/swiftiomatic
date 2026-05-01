@@ -1,15 +1,15 @@
 ---
 # 0p1-ow6
 title: Rename rule config keys for clarity in Xcode JSON editor
-status: in-progress
+status: completed
 type: task
 priority: normal
 created_at: 2026-05-01T16:55:16Z
-updated_at: 2026-05-01T17:41:07Z
+updated_at: 2026-05-01T19:45:59Z
 sync:
     github:
         issue_number: "604"
-        synced_at: "2026-05-01T18:16:41Z"
+        synced_at: "2026-05-01T19:54:41Z"
 ---
 
 ## Goal

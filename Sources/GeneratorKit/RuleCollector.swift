@@ -235,8 +235,8 @@ package final class RuleCollector {
 
         let members = configStruct.memberBlock.members
 
-        // Collect nested enum types: name → [case raw values].
-        var enumTypes: [String: [String]] = [:]
+        // Collect nested enum types: type name → cases (Swift identifier + raw value).
+        var enumTypes: [String: [EnumCase]] = [:]
 
         for member in members {
             guard let enumDecl = member.decl.as(EnumDeclSyntax.self) else { continue }
@@ -289,15 +289,20 @@ package final class RuleCollector {
         return nil
     }
 
-    /// Extracts all case names from a `String` -backed enum.
-    private static func extractEnumCases(from enumDecl: EnumDeclSyntax) -> [String] {
+    /// A case from a `String` -backed enum: its Swift identifier and its serialized raw value.
+    /// When the case has no explicit raw value, the identifier and raw value are equal.
+    typealias EnumCase = (name: String, rawValue: String)
+
+    /// Extracts all cases from a `String` -backed enum, capturing each case's Swift identifier
+    /// alongside its serialized raw value (which may differ, e.g. `case getSet = "get_set"` ).
+    private static func extractEnumCases(from enumDecl: EnumDeclSyntax) -> [EnumCase] {
         // Only process enums that inherit from String (raw value enums).
         guard let inheritance = enumDecl.inheritanceClause,
               inheritance.inheritedTypes.contains(where: {
                   $0.type.as(IdentifierTypeSyntax.self)?.name.text == "String"
               }) else { return [] }
 
-        var cases: [String] = []
+        var cases: [EnumCase] = []
 
         for member in enumDecl.memberBlock.members {
             guard let caseDecl = member.decl.as(EnumCaseDeclSyntax.self) else { continue }
@@ -305,7 +310,15 @@ package final class RuleCollector {
             for element in caseDecl.elements {
                 // Strip backticks from keyword-escaped names like `private` → "private".
                 let name = element.name.text.trimmingCharacters(in: CharacterSet(charactersIn: "`"))
-                cases.append(name)
+                let rawValue: String
+                if let literal = element.rawValue?.value.as(StringLiteralExprSyntax.self),
+                   let segment = literal.segments.firstAndOnly?.as(StringSegmentSyntax.self)
+                {
+                    rawValue = segment.content.text
+                } else {
+                    rawValue = name
+                }
+                cases.append((name: name, rawValue: rawValue))
             }
         }
         return cases
@@ -319,7 +332,7 @@ package final class RuleCollector {
         for binding: PatternBindingSyntax,
         propertyName: String,
         description: String?,
-        enumTypes: [String: [String]]
+        enumTypes: [String: [EnumCase]]
     ) -> JSONSchemaNode? {
         let initValue = binding.initializer?.value
         let defaultCase = defaultCaseName(from: initValue)
@@ -354,11 +367,14 @@ package final class RuleCollector {
         {
             return .string(description: scalarDesc, defaultValue: segment.content.text)
         }
-        if let defaultCase, let (cases, _) = enumTypes.first(where: { $1.contains(defaultCase) }) {
+        if let defaultCase,
+           let entry = enumTypes.first(where: { $1.contains(where: { $0.name == defaultCase }) }),
+           let matched = entry.value.first(where: { $0.name == defaultCase })
+        {
             return .stringEnum(
                 description: description,
-                values: enumTypes[cases]!,
-                defaultValue: defaultCase
+                values: entry.value.map(\.rawValue),
+                defaultValue: matched.rawValue
             )
         }
 
@@ -375,7 +391,7 @@ package final class RuleCollector {
         _ type: TypeSyntax,
         propertyName: String,
         description: String?,
-        enumTypes: [String: [String]],
+        enumTypes: [String: [EnumCase]],
         defaultCase: String?,
         initValue: ExprSyntax?
     ) -> JSONSchemaNode? {
@@ -439,10 +455,13 @@ package final class RuleCollector {
             }
             // Enum type — use initializer's case as default, fall back to first case.
             if let cases = enumTypes[typeName] {
+                let defaultRaw = defaultCase
+                    .flatMap { name in cases.first(where: { $0.name == name })?.rawValue }
+                    ?? cases[0].rawValue
                 return .stringEnum(
                     description: description,
-                    values: cases,
-                    defaultValue: defaultCase ?? cases[0]
+                    values: cases.map(\.rawValue),
+                    defaultValue: defaultRaw
                 )
             }
         }
@@ -555,8 +574,10 @@ package final class RuleCollector {
                let typeName = typeAnnotation.type.as(IdentifierTypeSyntax.self)?.name.text,
                let cases = findEnumCases(named: typeName, in: fileStatements)
             {
-                let defaultCase = memberAccess.declName.baseName.text
-                return .stringEnum(values: cases, defaultValue: defaultCase)
+                let defaultName = memberAccess.declName.baseName.text
+                let defaultRaw = cases.first(where: { $0.name == defaultName })?.rawValue
+                    ?? defaultName
+                return .stringEnum(values: cases.map(\.rawValue), defaultValue: defaultRaw)
             }
 
             return .string
@@ -568,7 +589,7 @@ package final class RuleCollector {
     private static func findEnumCases(
         named name: String,
         in statements: CodeBlockItemListSyntax
-    ) -> [String]? {
+    ) -> [EnumCase]? {
         for statement in statements {
             guard let enumDecl = statement.item.as(EnumDeclSyntax.self),
                   enumDecl.name.text == name else { continue }

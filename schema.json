@@ -3339,11 +3339,11 @@
           "description" : "Computed properties and subscripts that declare both `get` and `set` accessors should list them in a consistent order. The default order is `get` then `set` , matching common Swift style.\n\nConfigure via `orderGetSetAccessors.order` :\n- `\"get_set\"` (default): emit a finding when the setter precedes the getter.\n- `\"set_get\"` : emit a finding when the getter precedes the setter.\n\nLint-only: this rule does not auto-fix because reordering accessors with non-trivial bodies risks misplacing trailing comments and trivia.",
           "properties" : {
             "order" : {
-              "default" : "getSet",
-              "description" : "Required ordering for `get` / `set` accessors in computed properties and subscripts.\n\nOptions: getSet, setGet.",
+              "default" : "get_set",
+              "description" : "Required ordering for `get` / `set` accessors in computed properties and subscripts.\n\nOptions: get_set, set_get.",
               "enum" : [
-                "getSet",
-                "setGet"
+                "get_set",
+                "set_get"
               ],
               "type" : "string"
             }
@@ -3423,11 +3423,11 @@
       "description" : "Computed properties and subscripts that declare both `get` and `set` accessors should list them in a consistent order. The default order is `get` then `set` , matching common Swift style.\n\nConfigure via `orderGetSetAccessors.order` :\n- `\"get_set\"` (default): emit a finding when the setter precedes the getter.\n- `\"set_get\"` : emit a finding when the getter precedes the setter.\n\nLint-only: this rule does not auto-fix because reordering accessors with non-trivial bodies risks misplacing trailing comments and trivia.",
       "properties" : {
         "order" : {
-          "default" : "getSet",
-          "description" : "Required ordering for `get` / `set` accessors in computed properties and subscripts.\n\nOptions: getSet, setGet.",
+          "default" : "get_set",
+          "description" : "Required ordering for `get` / `set` accessors in computed properties and subscripts.\n\nOptions: get_set, set_get.",
           "enum" : [
-            "getSet",
-            "setGet"
+            "get_set",
+            "set_get"
           ],
           "type" : "string"
         }

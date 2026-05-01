@@ -19,7 +19,7 @@ let package = Package(
         // Self-hosted lint via prebuilt binary from a previous release. Breaks
         // the cycle that prevents a target from depending on a plugin in the
         // same package as the executable the plugin invokes.
-        .package(url: "https://github.com/toba/swiftiomatic-plugins", from: "2.0.0"),
+        .package(url: "https://github.com/toba/swiftiomatic-plugins", from: "3.0.0"),
     ],
     targets: [
         .target(
