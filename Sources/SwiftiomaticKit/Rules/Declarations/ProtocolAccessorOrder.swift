@@ -13,6 +13,7 @@ final class ProtocolAccessorOrder: StaticFormatRule<BasicRuleValue>, @unchecked 
 
     static func transform(
         _ node: AccessorBlockSyntax,
+        original _: AccessorBlockSyntax,
         parent: Syntax?,
         context: Context
     ) -> AccessorBlockSyntax {

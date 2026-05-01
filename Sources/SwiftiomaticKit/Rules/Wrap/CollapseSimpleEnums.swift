@@ -23,6 +23,7 @@ final class CollapseSimpleEnums: StaticFormatRule<BasicRuleValue>, @unchecked Se
 
     static func transform(
         _ recursed: EnumDeclSyntax,
+        original _: EnumDeclSyntax,
         parent _: Syntax?,
         context: Context
     ) -> DeclSyntax {

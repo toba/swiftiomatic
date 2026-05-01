@@ -15,6 +15,7 @@ final class RedundantTypedThrows: StaticFormatRule<BasicRuleValue>, @unchecked S
 
     static func transform(
         _ node: FunctionEffectSpecifiersSyntax,
+        original _: FunctionEffectSpecifiersSyntax,
         parent _: Syntax?,
         context: Context
     ) -> FunctionEffectSpecifiersSyntax {
@@ -39,6 +40,7 @@ final class RedundantTypedThrows: StaticFormatRule<BasicRuleValue>, @unchecked S
     // Function types: `() throws(any Error) -> Void`
     static func transform(
         _ funcType: FunctionTypeSyntax,
+        original _: FunctionTypeSyntax,
         parent _: Syntax?,
         context: Context
     ) -> TypeSyntax {

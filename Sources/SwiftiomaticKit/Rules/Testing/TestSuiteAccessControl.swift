@@ -29,6 +29,7 @@ final class TestSuiteAccessControl: StaticFormatRule<BasicRuleValue>, @unchecked
 
     static func transform(
         _ node: ClassDeclSyntax,
+        original _: ClassDeclSyntax,
         parent _: Syntax?,
         context: Context
     ) -> DeclSyntax {
@@ -54,6 +55,7 @@ final class TestSuiteAccessControl: StaticFormatRule<BasicRuleValue>, @unchecked
 
     static func transform(
         _ node: StructDeclSyntax,
+        original _: StructDeclSyntax,
         parent _: Syntax?,
         context: Context
     ) -> DeclSyntax {

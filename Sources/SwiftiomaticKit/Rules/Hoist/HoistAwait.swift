@@ -20,6 +20,7 @@ final class HoistAwait: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
 
     static func transform(
         _ callNode: FunctionCallExprSyntax,
+        original _: FunctionCallExprSyntax,
         parent: Syntax?,
         context: Context
     ) -> ExprSyntax {

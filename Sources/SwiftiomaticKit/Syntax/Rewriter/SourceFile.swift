@@ -46,21 +46,21 @@ func rewriteSourceFile(
     // 4. PreferEnvironmentEntry: rewrite `EnvironmentValues` extensions to use `@Entry` and remove
     //    the matched `EnvironmentKey` types.
     if context.shouldRewrite(PreferEnvironmentEntry.self, at: Syntax(result)) {
-        result = PreferEnvironmentEntry.transform(result, parent: nil, context: context)
+        result = PreferEnvironmentEntry.transform(result, original: node, parent: nil, context: context)
     }
 
     // 5. RedundantAccessControl: replace `fileprivate` with `private` in single-type files (the
     //    per-decl ACL stripping for redundant `internal` / `public` /extension-matching ACL still
     //    runs against the decl nodes via the generator-emitted dispatch).
     if context.shouldRewrite(RedundantAccessControl.self, at: Syntax(result)) {
-        result = RedundantAccessControl.transform(result, parent: nil, context: context)
+        result = RedundantAccessControl.transform(result, original: node, parent: nil, context: context)
     }
 
     // 6. URLMacro: if any `URL(string:)!` was rewritten to `#URL(...)` during the descent (recorded
     //    via `ruleState.madeReplacements` ), insert the configured module import at the top of the
     //    file.
     if context.shouldRewrite(URLMacro.self, at: Syntax(result)) {
-        result = URLMacro.transform(result, parent: nil, context: context)
+        result = URLMacro.transform(result, original: node, parent: nil, context: context)
     }
 
     return result

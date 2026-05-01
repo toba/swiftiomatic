@@ -19,6 +19,7 @@ final class WrapMultilineStatementBraces: StaticFormatRule<BasicRuleValue>, @unc
 
     static func transform(
         _ node: IfExprSyntax,
+        original _: IfExprSyntax,
         parent _: Syntax?,
         context: Context
     ) -> ExprSyntax {
@@ -35,6 +36,7 @@ final class WrapMultilineStatementBraces: StaticFormatRule<BasicRuleValue>, @unc
 
     static func transform(
         _ node: GuardStmtSyntax,
+        original _: GuardStmtSyntax,
         parent _: Syntax?,
         context: Context
     ) -> StmtSyntax {
@@ -54,6 +56,7 @@ final class WrapMultilineStatementBraces: StaticFormatRule<BasicRuleValue>, @unc
 
     static func transform(
         _ node: ForStmtSyntax,
+        original _: ForStmtSyntax,
         parent _: Syntax?,
         context: Context
     ) -> StmtSyntax {
@@ -81,6 +84,7 @@ final class WrapMultilineStatementBraces: StaticFormatRule<BasicRuleValue>, @unc
 
     static func transform(
         _ node: WhileStmtSyntax,
+        original _: WhileStmtSyntax,
         parent _: Syntax?,
         context: Context
     ) -> StmtSyntax {
@@ -103,6 +107,7 @@ final class WrapMultilineStatementBraces: StaticFormatRule<BasicRuleValue>, @unc
 
     static func transform(
         _ node: DoStmtSyntax,
+        original _: DoStmtSyntax,
         parent _: Syntax?,
         context: Context
     ) -> StmtSyntax {
@@ -122,6 +127,7 @@ final class WrapMultilineStatementBraces: StaticFormatRule<BasicRuleValue>, @unc
 
     static func transform(
         _ node: SwitchExprSyntax,
+        original _: SwitchExprSyntax,
         parent _: Syntax?,
         context: Context
     ) -> ExprSyntax {
@@ -143,6 +149,7 @@ final class WrapMultilineStatementBraces: StaticFormatRule<BasicRuleValue>, @unc
 
     static func transform(
         _ node: FunctionDeclSyntax,
+        original _: FunctionDeclSyntax,
         parent _: Syntax?,
         context: Context
     ) -> DeclSyntax {
@@ -171,6 +178,7 @@ final class WrapMultilineStatementBraces: StaticFormatRule<BasicRuleValue>, @unc
 
     static func transform(
         _ node: InitializerDeclSyntax,
+        original _: InitializerDeclSyntax,
         parent _: Syntax?,
         context: Context
     ) -> DeclSyntax {
@@ -199,6 +207,7 @@ final class WrapMultilineStatementBraces: StaticFormatRule<BasicRuleValue>, @unc
 
     static func transform(
         _ node: DeinitializerDeclSyntax,
+        original _: DeinitializerDeclSyntax,
         parent _: Syntax?,
         context: Context
     ) -> DeclSyntax {
@@ -221,6 +230,7 @@ final class WrapMultilineStatementBraces: StaticFormatRule<BasicRuleValue>, @unc
 
     static func transform(
         _ node: ClassDeclSyntax,
+        original _: ClassDeclSyntax,
         parent _: Syntax?,
         context: Context
     ) -> DeclSyntax {
@@ -237,6 +247,7 @@ final class WrapMultilineStatementBraces: StaticFormatRule<BasicRuleValue>, @unc
 
     static func transform(
         _ node: StructDeclSyntax,
+        original _: StructDeclSyntax,
         parent _: Syntax?,
         context: Context
     ) -> DeclSyntax {
@@ -253,6 +264,7 @@ final class WrapMultilineStatementBraces: StaticFormatRule<BasicRuleValue>, @unc
 
     static func transform(
         _ node: EnumDeclSyntax,
+        original _: EnumDeclSyntax,
         parent _: Syntax?,
         context: Context
     ) -> DeclSyntax {
@@ -269,6 +281,7 @@ final class WrapMultilineStatementBraces: StaticFormatRule<BasicRuleValue>, @unc
 
     static func transform(
         _ node: ActorDeclSyntax,
+        original _: ActorDeclSyntax,
         parent _: Syntax?,
         context: Context
     ) -> DeclSyntax {
@@ -285,6 +298,7 @@ final class WrapMultilineStatementBraces: StaticFormatRule<BasicRuleValue>, @unc
 
     static func transform(
         _ node: ProtocolDeclSyntax,
+        original _: ProtocolDeclSyntax,
         parent _: Syntax?,
         context: Context
     ) -> DeclSyntax {
@@ -301,6 +315,7 @@ final class WrapMultilineStatementBraces: StaticFormatRule<BasicRuleValue>, @unc
 
     static func transform(
         _ node: ExtensionDeclSyntax,
+        original _: ExtensionDeclSyntax,
         parent _: Syntax?,
         context: Context
     ) -> DeclSyntax {

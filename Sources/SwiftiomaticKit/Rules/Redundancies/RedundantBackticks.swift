@@ -52,6 +52,7 @@ final class RedundantBackticks: StaticFormatRule<BasicRuleValue>, @unchecked Sen
 
     static func transform(
         _ token: TokenSyntax,
+        original _: TokenSyntax,
         parent: Syntax?,
         context: Context
     ) -> TokenSyntax {

@@ -15,6 +15,7 @@ final class PreferToggle: StaticFormatRule<BasicRuleValue>, @unchecked Sendable 
 
     static func transform(
         _ node: InfixOperatorExprSyntax,
+        original _: InfixOperatorExprSyntax,
         parent _: Syntax?,
         context: Context
     ) -> ExprSyntax {

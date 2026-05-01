@@ -20,6 +20,7 @@ final class RedundantEscaping: StaticFormatRule<BasicRuleValue>, @unchecked Send
 
     static func transform(
         _ node: FunctionDeclSyntax,
+        original _: FunctionDeclSyntax,
         parent: Syntax?,
         context: Context
     ) -> DeclSyntax {
@@ -38,6 +39,7 @@ final class RedundantEscaping: StaticFormatRule<BasicRuleValue>, @unchecked Send
 
     static func transform(
         _ node: InitializerDeclSyntax,
+        original _: InitializerDeclSyntax,
         parent: Syntax?,
         context: Context
     ) -> DeclSyntax {

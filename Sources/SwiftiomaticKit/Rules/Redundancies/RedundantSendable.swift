@@ -19,6 +19,7 @@ final class RedundantSendable: StaticFormatRule<BasicRuleValue>, @unchecked Send
 
     static func transform(
         _ visited: StructDeclSyntax,
+        original _: StructDeclSyntax,
         parent _: Syntax?,
         context: Context
     ) -> DeclSyntax {
@@ -37,6 +38,7 @@ final class RedundantSendable: StaticFormatRule<BasicRuleValue>, @unchecked Send
 
     static func transform(
         _ visited: EnumDeclSyntax,
+        original _: EnumDeclSyntax,
         parent _: Syntax?,
         context: Context
     ) -> DeclSyntax {

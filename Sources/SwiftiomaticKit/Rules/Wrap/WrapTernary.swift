@@ -22,6 +22,7 @@ final class WrapTernary: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
 
     static func transform(
         _ visited: TernaryExprSyntax,
+        original: TernaryExprSyntax,
         parent: Syntax?,
         context: Context
     ) -> ExprSyntax {
@@ -51,11 +52,11 @@ final class WrapTernary: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
 
         var result = visited
         if !questionHasNewline {
-            Self.diagnose(.wrapTernaryBranch, on: visited.questionMark, context: context)
+            Self.diagnose(.wrapTernaryBranch, on: original.questionMark, context: context)
             result.questionMark.leadingTrivia = .newline + dropLeadingSpaces(result.questionMark.leadingTrivia)
         }
         if !colonHasNewline {
-            Self.diagnose(.wrapTernaryBranch, on: visited.colon, context: context)
+            Self.diagnose(.wrapTernaryBranch, on: original.colon, context: context)
             result.colon.leadingTrivia = .newline + dropLeadingSpaces(result.colon.leadingTrivia)
         }
         return ExprSyntax(result)

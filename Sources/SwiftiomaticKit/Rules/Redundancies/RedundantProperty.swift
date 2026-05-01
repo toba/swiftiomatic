@@ -18,6 +18,7 @@ final class RedundantProperty: StaticFormatRule<BasicRuleValue>, @unchecked Send
 
     static func transform(
         _ visited: CodeBlockItemListSyntax,
+        original _: CodeBlockItemListSyntax,
         parent _: Syntax?,
         context: Context
     ) -> CodeBlockItemListSyntax {

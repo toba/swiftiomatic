@@ -16,6 +16,7 @@ final class NoVoidTernary: StaticFormatRule<BasicRuleValue>, @unchecked Sendable
 
     static func transform(
         _ node: TernaryExprSyntax,
+        original _: TernaryExprSyntax,
         parent: Syntax?,
         context: Context
     ) -> ExprSyntax {

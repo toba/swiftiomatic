@@ -27,6 +27,7 @@ final class PreferWhereClausesInForLoops: StaticFormatRule<BasicRuleValue>, @unc
 
     static func transform(
         _ node: ForStmtSyntax,
+        original _: ForStmtSyntax,
         parent _: Syntax?,
         context: Context
     ) -> StmtSyntax {

@@ -12,6 +12,7 @@ final class RedundantNilCoalescing: StaticFormatRule<BasicRuleValue>, @unchecked
 
     static func transform(
         _ node: InfixOperatorExprSyntax,
+        original _: InfixOperatorExprSyntax,
         parent _: Syntax?,
         context: Context
     ) -> ExprSyntax {

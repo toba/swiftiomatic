@@ -103,6 +103,59 @@ struct RedundantTypeTests: RuleTesting {
     )
   }
 
+  @Test func storedPropertyBoolNotFlagged() {
+    assertFormatting(
+      RedundantType.self,
+      input: """
+        class C {
+            var testRunFailed: Bool = false
+        }
+        """,
+      expected: """
+        class C {
+            var testRunFailed: Bool = false
+        }
+        """,
+      findings: []
+    )
+  }
+
+  @Test func storedPropertyConstructorCallNotFlagged() {
+    assertFormatting(
+      RedundantType.self,
+      input: """
+        struct S {
+            let cfg: Config = Config()
+        }
+        """,
+      expected: """
+        struct S {
+            let cfg: Config = Config()
+        }
+        """,
+      findings: []
+    )
+  }
+
+  @Test func localVarBoolStillFlagged() {
+    assertFormatting(
+      RedundantType.self,
+      input: """
+        func f() {
+            var flag1️⃣: Bool = false
+        }
+        """,
+      expected: """
+        func f() {
+            var flag = false
+        }
+        """,
+      findings: [
+        FindingSpec("1️⃣", message: "remove redundant type annotation 'Bool'; it is obvious from the initializer"),
+      ]
+    )
+  }
+
   @Test func noTypeAnnotationNotFlagged() {
     assertFormatting(
       RedundantType.self,

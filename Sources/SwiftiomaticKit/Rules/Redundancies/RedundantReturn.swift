@@ -37,6 +37,7 @@ final class RedundantReturn: StaticFormatRule<BasicRuleValue>, @unchecked Sendab
 
     static func transform(
         _ node: FunctionDeclSyntax,
+        original _: FunctionDeclSyntax,
         parent _: Syntax?,
         context: Context
     ) -> DeclSyntax {
@@ -59,6 +60,7 @@ final class RedundantReturn: StaticFormatRule<BasicRuleValue>, @unchecked Sendab
 
     static func transform(
         _ node: SubscriptDeclSyntax,
+        original _: SubscriptDeclSyntax,
         parent _: Syntax?,
         context: Context
     ) -> DeclSyntax {
@@ -74,6 +76,7 @@ final class RedundantReturn: StaticFormatRule<BasicRuleValue>, @unchecked Sendab
 
     static func transform(
         _ node: PatternBindingSyntax,
+        original _: PatternBindingSyntax,
         parent _: Syntax?,
         context: Context
     ) -> PatternBindingSyntax {
@@ -89,6 +92,7 @@ final class RedundantReturn: StaticFormatRule<BasicRuleValue>, @unchecked Sendab
 
     static func transform(
         _ node: ClosureExprSyntax,
+        original _: ClosureExprSyntax,
         parent _: Syntax?,
         context: Context
     ) -> ExprSyntax {

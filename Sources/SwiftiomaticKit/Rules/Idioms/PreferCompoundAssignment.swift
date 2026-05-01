@@ -20,6 +20,7 @@ final class PreferCompoundAssignment: StaticFormatRule<BasicRuleValue>, @uncheck
 
     static func transform(
         _ infix: InfixOperatorExprSyntax,
+        original _: InfixOperatorExprSyntax,
         parent _: Syntax?,
         context: Context
     ) -> ExprSyntax {

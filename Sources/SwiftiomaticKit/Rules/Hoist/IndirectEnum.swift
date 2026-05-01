@@ -24,6 +24,7 @@ final class IndirectEnum: StaticFormatRule<BasicRuleValue>, @unchecked Sendable 
 
     static func transform(
         _ node: EnumDeclSyntax,
+        original _: EnumDeclSyntax,
         parent _: Syntax?,
         context: Context
     ) -> DeclSyntax {

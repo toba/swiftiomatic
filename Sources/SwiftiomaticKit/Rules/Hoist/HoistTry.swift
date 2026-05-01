@@ -19,6 +19,7 @@ final class HoistTry: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
 
     static func transform(
         _ callNode: FunctionCallExprSyntax,
+        original _: FunctionCallExprSyntax,
         parent: Syntax?,
         context: Context
     ) -> ExprSyntax {
@@ -83,6 +84,7 @@ final class HoistTry: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
 
     static func transform(
         _ node: AwaitExprSyntax,
+        original _: AwaitExprSyntax,
         parent: Syntax?,
         context: Context
     ) -> ExprSyntax {

@@ -22,6 +22,7 @@ final class PreferKeyPath: StaticFormatRule<BasicRuleValue>, @unchecked Sendable
 
     static func transform(
         _ callNode: FunctionCallExprSyntax,
+        original _: FunctionCallExprSyntax,
         parent _: Syntax?,
         context: Context
     ) -> ExprSyntax {

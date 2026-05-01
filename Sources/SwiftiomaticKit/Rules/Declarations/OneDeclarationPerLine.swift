@@ -121,6 +121,7 @@ final class OneDeclarationPerLine: StaticFormatRule<BasicRuleValue>, @unchecked 
 
     static func transform(
         _ node: EnumDeclSyntax,
+        original _: EnumDeclSyntax,
         parent _: Syntax?,
         context _: Context
     ) -> DeclSyntax {
@@ -174,6 +175,7 @@ final class OneDeclarationPerLine: StaticFormatRule<BasicRuleValue>, @unchecked 
 
     static func transform(
         _ node: CodeBlockItemListSyntax,
+        original _: CodeBlockItemListSyntax,
         parent _: Syntax?,
         context _: Context
     ) -> CodeBlockItemListSyntax {

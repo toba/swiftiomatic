@@ -96,6 +96,7 @@ final class NoGuardInTests: StaticFormatRule<BasicRuleValue>, @unchecked Sendabl
     /// pushed in willEnter; we read `addedTryStatement` set during child traversal.
     static func transform(
         _ node: FunctionDeclSyntax,
+        original _: FunctionDeclSyntax,
         parent _: Syntax?,
         context: Context
     ) -> DeclSyntax {
@@ -117,6 +118,7 @@ final class NoGuardInTests: StaticFormatRule<BasicRuleValue>, @unchecked Sendabl
     /// `willEnter(FunctionDeclSyntax,…)` hook); the state gating mirrors the legacy override.
     static func transform(
         _ node: CodeBlockItemListSyntax,
+        original _: CodeBlockItemListSyntax,
         parent _: Syntax?,
         context: Context
     ) -> CodeBlockItemListSyntax {

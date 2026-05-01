@@ -14,6 +14,7 @@ final class PreferFileID: StaticFormatRule<BasicRuleValue>, @unchecked Sendable 
 
     static func transform(
         _ node: MacroExpansionExprSyntax,
+        original _: MacroExpansionExprSyntax,
         parent _: Syntax?,
         context: Context
     ) -> ExprSyntax {

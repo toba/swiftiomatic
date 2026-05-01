@@ -14,6 +14,7 @@ final class FormatSpecialComments: StaticFormatRule<BasicRuleValue>, @unchecked 
 
     static func transform(
         _ token: TokenSyntax,
+        original _: TokenSyntax,
         parent _: Syntax?,
         context: Context
     ) -> TokenSyntax {

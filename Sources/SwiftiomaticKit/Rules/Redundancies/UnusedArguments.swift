@@ -22,6 +22,7 @@ final class UnusedArguments: StaticFormatRule<BasicRuleValue>, @unchecked Sendab
 
     static func transform(
         _ node: FunctionDeclSyntax,
+        original _: FunctionDeclSyntax,
         parent _: Syntax?,
         context: Context
     ) -> DeclSyntax {
@@ -57,6 +58,7 @@ final class UnusedArguments: StaticFormatRule<BasicRuleValue>, @unchecked Sendab
 
     static func transform(
         _ node: InitializerDeclSyntax,
+        original _: InitializerDeclSyntax,
         parent _: Syntax?,
         context: Context
     ) -> DeclSyntax {
@@ -85,6 +87,7 @@ final class UnusedArguments: StaticFormatRule<BasicRuleValue>, @unchecked Sendab
 
     static func transform(
         _ node: SubscriptDeclSyntax,
+        original _: SubscriptDeclSyntax,
         parent _: Syntax?,
         context: Context
     ) -> DeclSyntax {
@@ -112,6 +115,7 @@ final class UnusedArguments: StaticFormatRule<BasicRuleValue>, @unchecked Sendab
 
     static func transform(
         _ node: ClosureExprSyntax,
+        original _: ClosureExprSyntax,
         parent _: Syntax?,
         context: Context
     ) -> ExprSyntax {
@@ -175,6 +179,7 @@ final class UnusedArguments: StaticFormatRule<BasicRuleValue>, @unchecked Sendab
 
     static func transform(
         _ node: ForStmtSyntax,
+        original _: ForStmtSyntax,
         parent _: Syntax?,
         context: Context
     ) -> StmtSyntax {

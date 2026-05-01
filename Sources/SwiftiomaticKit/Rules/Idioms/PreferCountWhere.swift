@@ -13,6 +13,7 @@ final class PreferCountWhere: StaticFormatRule<BasicRuleValue>, @unchecked Senda
 
     static func transform(
         _ memberNode: MemberAccessExprSyntax,
+        original _: MemberAccessExprSyntax,
         parent: Syntax?,
         context: Context
     ) -> ExprSyntax {

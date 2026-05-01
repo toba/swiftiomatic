@@ -14,6 +14,7 @@ final class RequireFatalErrorMessage: StaticFormatRule<BasicRuleValue>, @uncheck
 
     static func transform(
         _ node: FunctionCallExprSyntax,
+        original _: FunctionCallExprSyntax,
         parent _: Syntax?,
         context: Context
     ) -> ExprSyntax {

@@ -26,6 +26,7 @@ final class RedundantViewBuilder: StaticFormatRule<BasicRuleValue>, @unchecked S
 
     static func transform(
         _ node: VariableDeclSyntax,
+        original _: VariableDeclSyntax,
         parent _: Syntax?,
         context: Context
     ) -> DeclSyntax {
@@ -53,6 +54,7 @@ final class RedundantViewBuilder: StaticFormatRule<BasicRuleValue>, @unchecked S
 
     static func transform(
         _ node: FunctionDeclSyntax,
+        original _: FunctionDeclSyntax,
         parent _: Syntax?,
         context: Context
     ) -> DeclSyntax {

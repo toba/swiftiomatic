@@ -36,6 +36,7 @@ final class PreferTernary: StaticFormatRule<BasicRuleValue>, @unchecked Sendable
 
     static func transform(
         _ visited: CodeBlockItemListSyntax,
+        original _: CodeBlockItemListSyntax,
         parent _: Syntax?,
         context: Context
     ) -> CodeBlockItemListSyntax {

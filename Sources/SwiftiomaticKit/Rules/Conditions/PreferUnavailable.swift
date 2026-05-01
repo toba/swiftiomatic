@@ -16,6 +16,7 @@ final class PreferUnavailable: StaticFormatRule<BasicRuleValue>, @unchecked Send
 
     static func transform(
         _ node: IfExprSyntax,
+        original _: IfExprSyntax,
         parent _: Syntax?,
         context: Context
     ) -> ExprSyntax {

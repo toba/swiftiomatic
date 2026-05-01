@@ -53,6 +53,7 @@ final class SwiftTestingTestCaseNames: StaticFormatRule<BasicRuleValue>, @unchec
 
     static func transform(
         _ node: FunctionDeclSyntax,
+        original _: FunctionDeclSyntax,
         parent _: Syntax?,
         context: Context
     ) -> DeclSyntax {

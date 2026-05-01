@@ -28,6 +28,7 @@ final class CollapseSimpleIfElse: StaticFormatRule<BasicRuleValue>, @unchecked S
 
     static func transform(
         _ ifNode: IfExprSyntax,
+        original _: IfExprSyntax,
         parent: Syntax?,
         context: Context
     ) -> ExprSyntax {

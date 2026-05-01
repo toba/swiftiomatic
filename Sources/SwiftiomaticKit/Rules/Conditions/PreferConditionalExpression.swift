@@ -15,6 +15,7 @@ final class PreferConditionalExpression: StaticFormatRule<BasicRuleValue>, @unch
 
     static func transform(
         _ visited: CodeBlockItemListSyntax,
+        original _: CodeBlockItemListSyntax,
         parent _: Syntax?,
         context: Context
     ) -> CodeBlockItemListSyntax {

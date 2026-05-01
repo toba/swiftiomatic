@@ -19,6 +19,7 @@ final class PreferStaticOverClassFunc: StaticFormatRule<BasicRuleValue>, @unchec
 
     static func transform(
         _ visited: ClassDeclSyntax,
+        original _: ClassDeclSyntax,
         parent _: Syntax?,
         context: Context
     ) -> DeclSyntax {

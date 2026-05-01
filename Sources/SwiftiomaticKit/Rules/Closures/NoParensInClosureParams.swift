@@ -14,6 +14,7 @@ final class NoParensInClosureParams: StaticFormatRule<BasicRuleValue>, @unchecke
 
     static func transform(
         _ node: ClosureSignatureSyntax,
+        original _: ClosureSignatureSyntax,
         parent _: Syntax?,
         context: Context
     ) -> ClosureSignatureSyntax {

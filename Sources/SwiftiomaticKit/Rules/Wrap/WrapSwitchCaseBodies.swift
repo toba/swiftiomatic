@@ -41,6 +41,7 @@ final class WrapSwitchCaseBodies: StaticFormatRule<SwitchCaseBodiesConfiguration
 
     static func transform(
         _ node: SwitchCaseSyntax,
+        original _: SwitchCaseSyntax,
         parent _: Syntax?,
         context: Context
     ) -> SwitchCaseSyntax {

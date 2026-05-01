@@ -18,6 +18,7 @@ final class WrapConditionalAssignment: StaticFormatRule<BasicRuleValue>, @unchec
 
     static func transform(
         _ node: PatternBindingSyntax,
+        original _: PatternBindingSyntax,
         parent _: Syntax?,
         context: Context
     ) -> PatternBindingSyntax {
@@ -66,6 +67,7 @@ final class WrapConditionalAssignment: StaticFormatRule<BasicRuleValue>, @unchec
 
     static func transform(
         _ node: InfixOperatorExprSyntax,
+        original _: InfixOperatorExprSyntax,
         parent _: Syntax?,
         context: Context
     ) -> ExprSyntax {

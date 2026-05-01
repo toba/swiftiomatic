@@ -16,6 +16,7 @@ final class NoYodaConditions: StaticFormatRule<BasicRuleValue>, @unchecked Senda
 
     static func transform(
         _ node: InfixOperatorExprSyntax,
+        original _: InfixOperatorExprSyntax,
         parent _: Syntax?,
         context: Context
     ) -> ExprSyntax {

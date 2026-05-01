@@ -32,6 +32,7 @@ final class PreferDotZero: StaticFormatRule<BasicRuleValue>, @unchecked Sendable
 
     static func transform(
         _ call: FunctionCallExprSyntax,
+        original _: FunctionCallExprSyntax,
         parent _: Syntax?,
         context: Context
     ) -> ExprSyntax {

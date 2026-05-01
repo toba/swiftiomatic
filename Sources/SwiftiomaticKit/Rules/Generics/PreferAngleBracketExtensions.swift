@@ -29,6 +29,7 @@ final class PreferAngleBracketExtensions: StaticFormatRule<BasicRuleValue>, @unc
 
     static func transform(
         _ visited: ExtensionDeclSyntax,
+        original _: ExtensionDeclSyntax,
         parent _: Syntax?,
         context: Context
     ) -> DeclSyntax {

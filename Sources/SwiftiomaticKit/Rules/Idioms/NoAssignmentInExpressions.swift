@@ -29,6 +29,7 @@ final class NoAssignmentInExpressions: StaticFormatRule<NoAssignmentInExpression
 
     static func transform(
         _ node: InfixOperatorExprSyntax,
+        original _: InfixOperatorExprSyntax,
         parent: Syntax?,
         context: Context
     ) -> ExprSyntax {
@@ -45,6 +46,7 @@ final class NoAssignmentInExpressions: StaticFormatRule<NoAssignmentInExpression
 
     static func transform(
         _ node: CodeBlockItemListSyntax,
+        original _: CodeBlockItemListSyntax,
         parent _: Syntax?,
         context: Context
     ) -> CodeBlockItemListSyntax {

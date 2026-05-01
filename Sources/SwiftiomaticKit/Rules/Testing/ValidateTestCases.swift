@@ -41,6 +41,7 @@ final class ValidateTestCases: StaticFormatRule<BasicRuleValue>, @unchecked Send
 
     static func transform(
         _ node: ClassDeclSyntax,
+        original _: ClassDeclSyntax,
         parent _: Syntax?,
         context: Context
     ) -> DeclSyntax {
@@ -67,6 +68,7 @@ final class ValidateTestCases: StaticFormatRule<BasicRuleValue>, @unchecked Send
 
     static func transform(
         _ node: StructDeclSyntax,
+        original _: StructDeclSyntax,
         parent _: Syntax?,
         context: Context
     ) -> DeclSyntax {
@@ -93,6 +95,7 @@ final class ValidateTestCases: StaticFormatRule<BasicRuleValue>, @unchecked Send
 
     static func transform(
         _ node: EnumDeclSyntax,
+        original _: EnumDeclSyntax,
         parent _: Syntax?,
         context: Context
     ) -> DeclSyntax {

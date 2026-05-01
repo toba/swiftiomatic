@@ -115,14 +115,16 @@ struct RedundantStaticSelfTests: RuleTesting {
     )
   }
 
-  @Test func redundantStaticSelfInNestedFunction() {
+  /// Inside a nested function in a static func, `Self.` is preserved — the nested function
+  /// is its own scope (matches upstream SwiftFormat #2518).
+  @Test func preserveSelfInNestedFunctionInsideStaticFunc() {
     assertFormatting(
       RedundantStaticSelf.self,
       input: """
         enum E {
           static func foo() {
             func bar() {
-              1️⃣Self.foo()
+              Self.foo()
             }
           }
         }
@@ -131,14 +133,11 @@ struct RedundantStaticSelfTests: RuleTesting {
         enum E {
           static func foo() {
             func bar() {
-              foo()
+              Self.foo()
             }
           }
         }
-        """,
-      findings: [
-        FindingSpec("1️⃣", message: "remove redundant 'Self.' in static context"),
-      ]
+        """
     )
   }
 
@@ -435,6 +434,85 @@ struct RedundantStaticSelfTests: RuleTesting {
       findings: [
         FindingSpec("1️⃣", message: "remove redundant 'Self.' in static context"),
       ]
+    )
+  }
+
+  // MARK: - Closures and nested funcs (upstream SwiftFormat #2518)
+
+  /// `Self.` inside a closure that lives in a static func should be preserved — the closure
+  /// is its own scope and the user's explicit `Self.` is meaningful (matches upstream behavior).
+  @Test func preserveSelfInClosureInsideStaticFunc() {
+    assertFormatting(
+      RedundantStaticSelf.self,
+      input: """
+        enum XError: Error {
+          case error(String, cause: (any Error)? = nil)
+
+          static func error(_ message: String, cause: String?) -> Self {
+            .error(message, cause: cause.map { Self.error($0) })
+          }
+        }
+        """,
+      expected: """
+        enum XError: Error {
+          case error(String, cause: (any Error)? = nil)
+
+          static func error(_ message: String, cause: String?) -> Self {
+            .error(message, cause: cause.map { Self.error($0) })
+          }
+        }
+        """
+    )
+  }
+
+  /// `Self.` directly in a static func is redundant; inside a closure within it, it is preserved.
+  @Test func removeOutsideClosurePreserveInside() {
+    assertFormatting(
+      RedundantStaticSelf.self,
+      input: """
+        enum E {
+          static func foo() {
+            1️⃣Self.bar()
+            let x = { Self.bar() }
+          }
+        }
+        """,
+      expected: """
+        enum E {
+          static func foo() {
+            bar()
+            let x = { Self.bar() }
+          }
+        }
+        """,
+      findings: [
+        FindingSpec("1️⃣", message: "remove redundant 'Self.' in static context"),
+      ]
+    )
+  }
+
+  /// `Self.` inside a nested function within a static func is preserved (matches upstream).
+  @Test func preserveSelfInNestedFuncInsideStaticFunc() {
+    assertFormatting(
+      RedundantStaticSelf.self,
+      input: """
+        enum E {
+          static func foo() {
+            func bar() {
+              Self.foo()
+            }
+          }
+        }
+        """,
+      expected: """
+        enum E {
+          static func foo() {
+            func bar() {
+              Self.foo()
+            }
+          }
+        }
+        """
     )
   }
 }

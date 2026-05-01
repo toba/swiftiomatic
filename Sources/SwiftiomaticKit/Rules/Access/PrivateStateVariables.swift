@@ -19,6 +19,7 @@ final class PrivateStateVariables: StaticFormatRule<BasicRuleValue>, @unchecked 
 
     static func transform(
         _ node: VariableDeclSyntax,
+        original _: VariableDeclSyntax,
         parent _: Syntax?,
         context: Context
     ) -> DeclSyntax {

@@ -28,6 +28,7 @@ final class UseImplicitInit: StaticFormatRule<BasicRuleValue>, @unchecked Sendab
 
     static func transform(
         _ node: PatternBindingSyntax,
+        original: PatternBindingSyntax,
         parent _: Syntax?,
         context: Context
     ) -> PatternBindingSyntax {
@@ -39,7 +40,9 @@ final class UseImplicitInit: StaticFormatRule<BasicRuleValue>, @unchecked Sendab
             let typeName = typeAnnotation.type.trimmedDescription
 
             if let rewritten = rewriteExpression(
-                initializer.value, matchingType: typeName, context: context)
+                initializer.value,
+                originalAnchor: original.initializer?.value,
+                matchingType: typeName, context: context)
             {
                 var result = node
                 var newInitializer = initializer
@@ -58,8 +61,13 @@ final class UseImplicitInit: StaticFormatRule<BasicRuleValue>, @unchecked Sendab
 
             switch accessorBlock.accessors {
                 case let .getter(body):
+                    let originalGetter: CodeBlockItemListSyntax? = {
+                        if case let .getter(b) = original.accessorBlock?.accessors { return b }
+                        return nil
+                    }()
                     if let rewritten = rewriteCodeBlockItems(
-                        body, matchingType: typeName, context: context)
+                        body, originalAnchor: originalGetter,
+                        matchingType: typeName, context: context)
                     {
                         var result = node
                         var newAccessorBlock = accessorBlock
@@ -69,6 +77,10 @@ final class UseImplicitInit: StaticFormatRule<BasicRuleValue>, @unchecked Sendab
                     }
 
                 case let .accessors(accessorList):
+                    let originalAccessorList: AccessorDeclListSyntax? = {
+                        if case let .accessors(a) = original.accessorBlock?.accessors { return a }
+                        return nil
+                    }()
                     var newAccessors = accessorList
                     var didChange = false
 
@@ -76,8 +88,15 @@ final class UseImplicitInit: StaticFormatRule<BasicRuleValue>, @unchecked Sendab
                         guard accessor.accessorSpecifier.tokenKind == .keyword(.get),
                               let body = accessor.body else { continue }
 
+                        let originalBody: CodeBlockItemListSyntax? = originalAccessorList.flatMap {
+                            let i = $0.index($0.startIndex, offsetBy: index)
+                            guard i < $0.endIndex else { return nil }
+                            return $0[i].body?.statements
+                        }
+
                         if let rewritten = rewriteCodeBlockItems(
-                            body.statements, matchingType: typeName, context: context)
+                            body.statements, originalAnchor: originalBody,
+                            matchingType: typeName, context: context)
                         {
                             var newAccessor = accessor
                             var newBody = body
@@ -106,6 +125,7 @@ final class UseImplicitInit: StaticFormatRule<BasicRuleValue>, @unchecked Sendab
 
     static func transform(
         _ node: FunctionDeclSyntax,
+        original: FunctionDeclSyntax,
         parent _: Syntax?,
         context: Context
     ) -> DeclSyntax {
@@ -114,7 +134,9 @@ final class UseImplicitInit: StaticFormatRule<BasicRuleValue>, @unchecked Sendab
 
         // Rewrite default parameter values
         if let rewrittenParams = rewriteParameterDefaults(
-            node.signature.parameterClause, context: context)
+            node.signature.parameterClause,
+            originalAnchor: original.signature.parameterClause,
+            context: context)
         {
             var newSignature = result.signature
             newSignature.parameterClause = rewrittenParams
@@ -126,7 +148,8 @@ final class UseImplicitInit: StaticFormatRule<BasicRuleValue>, @unchecked Sendab
         if let returnType = result.signature.returnClause?.type.trimmedDescription,
            let body = result.body,
            let rewritten = rewriteCodeBlockItems(
-               body.statements, matchingType: returnType, context: context)
+               body.statements, originalAnchor: original.body?.statements,
+               matchingType: returnType, context: context)
         {
             var newBody = body
             newBody.statements = rewritten
@@ -142,11 +165,14 @@ final class UseImplicitInit: StaticFormatRule<BasicRuleValue>, @unchecked Sendab
 
     static func transform(
         _ node: InitializerDeclSyntax,
+        original: InitializerDeclSyntax,
         parent _: Syntax?,
         context: Context
     ) -> DeclSyntax {
         guard let rewrittenParams = rewriteParameterDefaults(
-            node.signature.parameterClause, context: context) else { return DeclSyntax(node) }
+            node.signature.parameterClause,
+            originalAnchor: original.signature.parameterClause,
+            context: context) else { return DeclSyntax(node) }
         var result = node
         var newSignature = node.signature
         newSignature.parameterClause = rewrittenParams
@@ -158,6 +184,7 @@ final class UseImplicitInit: StaticFormatRule<BasicRuleValue>, @unchecked Sendab
 
     static func transform(
         _ node: SubscriptDeclSyntax,
+        original: SubscriptDeclSyntax,
         parent _: Syntax?,
         context: Context
     ) -> DeclSyntax {
@@ -167,8 +194,13 @@ final class UseImplicitInit: StaticFormatRule<BasicRuleValue>, @unchecked Sendab
 
         switch accessorBlock.accessors {
             case let .getter(body):
+                let originalGetter: CodeBlockItemListSyntax? = {
+                    if case let .getter(b) = original.accessorBlock?.accessors { return b }
+                    return nil
+                }()
                 if let rewritten = rewriteCodeBlockItems(
-                    body, matchingType: typeName, context: context)
+                    body, originalAnchor: originalGetter,
+                    matchingType: typeName, context: context)
                 {
                     var result = node
                     var newAccessorBlock = accessorBlock
@@ -178,6 +210,10 @@ final class UseImplicitInit: StaticFormatRule<BasicRuleValue>, @unchecked Sendab
                 }
 
             case let .accessors(accessorList):
+                let originalAccessorList: AccessorDeclListSyntax? = {
+                    if case let .accessors(a) = original.accessorBlock?.accessors { return a }
+                    return nil
+                }()
                 var newAccessors = accessorList
                 var didChange = false
 
@@ -185,8 +221,15 @@ final class UseImplicitInit: StaticFormatRule<BasicRuleValue>, @unchecked Sendab
                     guard accessor.accessorSpecifier.tokenKind == .keyword(.get),
                           let body = accessor.body else { continue }
 
+                    let originalBody: CodeBlockItemListSyntax? = originalAccessorList.flatMap {
+                        let i = $0.index($0.startIndex, offsetBy: index)
+                        guard i < $0.endIndex else { return nil }
+                        return $0[i].body?.statements
+                    }
+
                     if let rewritten = rewriteCodeBlockItems(
-                        body.statements, matchingType: typeName, context: context)
+                        body.statements, originalAnchor: originalBody,
+                        matchingType: typeName, context: context)
                     {
                         var newAccessor = accessor
                         var newBody = body
@@ -215,6 +258,7 @@ final class UseImplicitInit: StaticFormatRule<BasicRuleValue>, @unchecked Sendab
     /// Rewrites default parameter values in a parameter clause.
     private static func rewriteParameterDefaults(
         _ clause: FunctionParameterClauseSyntax,
+        originalAnchor: FunctionParameterClauseSyntax?,
         context: Context
     ) -> FunctionParameterClauseSyntax? {
         var params = clause.parameters
@@ -223,8 +267,16 @@ final class UseImplicitInit: StaticFormatRule<BasicRuleValue>, @unchecked Sendab
         for (index, param) in params.enumerated() {
             guard let defaultValue = param.defaultValue else { continue }
             let typeName = param.type.trimmedDescription
+
+            let originalDefault: ExprSyntax? = originalAnchor.flatMap {
+                let i = $0.parameters.index($0.parameters.startIndex, offsetBy: index)
+                guard i < $0.parameters.endIndex else { return nil }
+                return $0.parameters[i].defaultValue?.value
+            }
+
             guard let rewritten = rewriteExpression(
-                defaultValue.value, matchingType: typeName, context: context) else { continue }
+                defaultValue.value, originalAnchor: originalDefault,
+                matchingType: typeName, context: context) else { continue }
 
             var newParam = param
             var newDefault = defaultValue
@@ -247,14 +299,20 @@ final class UseImplicitInit: StaticFormatRule<BasicRuleValue>, @unchecked Sendab
     /// implicit returns (single expression) and explicit `return` statements.
     private static func rewriteCodeBlockItems(
         _ items: CodeBlockItemListSyntax,
+        originalAnchor: CodeBlockItemListSyntax?,
         matchingType typeName: String,
         context: Context
     ) -> CodeBlockItemListSyntax? {
         guard let lastItem = items.last else { return nil }
+        let originalLast: CodeBlockItemSyntax? = originalAnchor?.last
 
         // Extract the expression from the last item, unwrapping ExpressionStmtSyntax if needed.
         if let expr = expressionFromItem(lastItem) {
-            if let rewritten = rewriteExpression(expr, matchingType: typeName, context: context) {
+            let originalExpr: ExprSyntax? = originalLast.flatMap(expressionFromItem)
+            if let rewritten = rewriteExpression(
+                expr, originalAnchor: originalExpr,
+                matchingType: typeName, context: context)
+            {
                 var newItem = lastItem
 
                 if let exprStmt = lastItem.item.as(ExpressionStmtSyntax.self) {
@@ -272,7 +330,11 @@ final class UseImplicitInit: StaticFormatRule<BasicRuleValue>, @unchecked Sendab
         if let returnStmt = lastItem.item.as(ReturnStmtSyntax.self),
            let expr = returnStmt.expression
         {
-            if let rewritten = rewriteExpression(expr, matchingType: typeName, context: context) {
+            let originalReturnExpr: ExprSyntax? = originalLast?.item.as(ReturnStmtSyntax.self)?.expression
+            if let rewritten = rewriteExpression(
+                expr, originalAnchor: originalReturnExpr,
+                matchingType: typeName, context: context)
+            {
                 var newReturn = returnStmt
                 newReturn.expression = rewritten
                 var newItem = lastItem
@@ -294,17 +356,24 @@ final class UseImplicitInit: StaticFormatRule<BasicRuleValue>, @unchecked Sendab
     /// Returns `nil` if no rewrite applies.
     private static func rewriteExpression(
         _ expr: ExprSyntax,
+        originalAnchor: ExprSyntax?,
         matchingType typeName: String,
         context: Context
     ) -> ExprSyntax? {
         // Case A: `Type(args)` → `.init(args)` — constructor call
         if let funcCall = expr.as(FunctionCallExprSyntax.self) {
-            return rewriteFunctionCall(funcCall, matchingType: typeName, context: context)
+            return rewriteFunctionCall(
+                funcCall,
+                originalAnchor: originalAnchor?.as(FunctionCallExprSyntax.self),
+                matchingType: typeName, context: context)
         }
 
         // Case B: `Type.member` → `.member` — static member access (no call)
         if let memberAccess = expr.as(MemberAccessExprSyntax.self) {
-            return rewriteMemberAccess(memberAccess, matchingType: typeName, context: context)
+            return rewriteMemberAccess(
+                memberAccess,
+                originalAnchor: originalAnchor?.as(MemberAccessExprSyntax.self),
+                matchingType: typeName, context: context)
         }
 
         return nil
@@ -313,6 +382,7 @@ final class UseImplicitInit: StaticFormatRule<BasicRuleValue>, @unchecked Sendab
     /// Rewrites `Type(args)` → `.init(args)` or `Type.factory(args)` → `.factory(args)` .
     private static func rewriteFunctionCall(
         _ call: FunctionCallExprSyntax,
+        originalAnchor: FunctionCallExprSyntax?,
         matchingType typeName: String,
         context: Context
     ) -> ExprSyntax? {
@@ -330,10 +400,12 @@ final class UseImplicitInit: StaticFormatRule<BasicRuleValue>, @unchecked Sendab
            declRef.argumentNames == nil,
            declRef.baseName.text == typeName
         {
-            let original = call.trimmedDescription
+            let originalText = call.trimmedDescription
+            let anchor: any SyntaxProtocol =
+                originalAnchor?.calledExpression.as(DeclReferenceExprSyntax.self) ?? declRef
             Self.diagnose(
-                .useImplicitInit(original: original, replacement: dotInitDescription(call)),
-                on: declRef, context: context)
+                .useImplicitInit(original: originalText, replacement: dotInitDescription(call)),
+                on: anchor, context: context)
 
             // Build `.init(args)` — MemberAccessExpr with no base
             let dotInit = MemberAccessExprSyntax(
@@ -350,10 +422,12 @@ final class UseImplicitInit: StaticFormatRule<BasicRuleValue>, @unchecked Sendab
         if let generic = calledExpr.as(GenericSpecializationExprSyntax.self),
            generic.trimmedDescription == typeName
         {
-            let original = call.trimmedDescription
+            let originalText = call.trimmedDescription
+            let anchor: any SyntaxProtocol =
+                originalAnchor?.calledExpression.as(GenericSpecializationExprSyntax.self) ?? generic
             Self.diagnose(
-                .useImplicitInit(original: original, replacement: dotInitDescription(call)),
-                on: generic, context: context)
+                .useImplicitInit(original: originalText, replacement: dotInitDescription(call)),
+                on: anchor, context: context)
 
             let dotInit = MemberAccessExprSyntax(
                 leadingTrivia: generic.leadingTrivia,
@@ -371,20 +445,23 @@ final class UseImplicitInit: StaticFormatRule<BasicRuleValue>, @unchecked Sendab
            baseMatchesType(base, typeName: typeName),
            memberAccess.declName.baseName.tokenKind != .keyword(.`init`)
         {
-            let original = call.trimmedDescription
+            let originalText = call.trimmedDescription
             // Build `.factory(args)`
             var newMemberAccess = memberAccess
             newMemberAccess.leadingTrivia = memberAccess.base?.leadingTrivia
                 ?? memberAccess.leadingTrivia
             newMemberAccess.base = nil
 
+            let originalBase: ExprSyntax? = originalAnchor?.calledExpression
+                .as(MemberAccessExprSyntax.self)?.base
+            let anchor: any SyntaxProtocol = originalBase ?? base
             Self.diagnose(
                 .useImplicitInit(
-                    original: original,
+                    original: originalText,
                     replacement: rewrittenCallDescription(
                         call, newCalledExpression: ExprSyntax(newMemberAccess))
                 ),
-                on: base,
+                on: anchor,
                 context: context
             )
 
@@ -399,6 +476,7 @@ final class UseImplicitInit: StaticFormatRule<BasicRuleValue>, @unchecked Sendab
     /// Rewrites `Type.member` → `.member` (static property access, no function call).
     private static func rewriteMemberAccess(
         _ memberAccess: MemberAccessExprSyntax,
+        originalAnchor: MemberAccessExprSyntax?,
         matchingType typeName: String,
         context: Context
     ) -> ExprSyntax? {
@@ -406,14 +484,15 @@ final class UseImplicitInit: StaticFormatRule<BasicRuleValue>, @unchecked Sendab
               baseMatchesType(base, typeName: typeName),
               memberAccess.declName.baseName.tokenKind != .keyword(.`init`) else { return nil }
 
-        let original = memberAccess.trimmedDescription
+        let originalText = memberAccess.trimmedDescription
         var newMemberAccess = memberAccess
         newMemberAccess.leadingTrivia = base.leadingTrivia
         newMemberAccess.base = nil
         let replacement = newMemberAccess.trimmedDescription
 
+        let anchor: any SyntaxProtocol = originalAnchor?.base ?? base
         Self.diagnose(
-            .useImplicitInit(original: original, replacement: replacement), on: base,
+            .useImplicitInit(original: originalText, replacement: replacement), on: anchor,
             context: context)
         return ExprSyntax(newMemberAccess)
     }

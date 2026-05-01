@@ -26,6 +26,7 @@ final class EmptyCollectionLiteral: StaticFormatRule<BasicRuleValue>, @unchecked
 
     static func transform(
         _ node: PatternBindingSyntax,
+        original _: PatternBindingSyntax,
         parent _: Syntax?,
         context: Context
     ) -> PatternBindingSyntax {
@@ -44,6 +45,7 @@ final class EmptyCollectionLiteral: StaticFormatRule<BasicRuleValue>, @unchecked
 
     static func transform(
         _ param: FunctionParameterSyntax,
+        original _: FunctionParameterSyntax,
         parent _: Syntax?,
         context: Context
     ) -> FunctionParameterSyntax {

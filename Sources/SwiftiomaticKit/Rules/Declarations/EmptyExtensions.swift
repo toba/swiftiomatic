@@ -16,6 +16,7 @@ final class EmptyExtensions: StaticFormatRule<BasicRuleValue>, @unchecked Sendab
 
     static func transform(
         _ visited: CodeBlockItemListSyntax,
+        original _: CodeBlockItemListSyntax,
         parent _: Syntax?,
         context: Context
     ) -> CodeBlockItemListSyntax {

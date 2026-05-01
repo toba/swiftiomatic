@@ -20,6 +20,7 @@ final class OpaqueGenericParameters: StaticFormatRule<BasicRuleValue>, @unchecke
 
     static func transform(
         _ visited: FunctionDeclSyntax,
+        original _: FunctionDeclSyntax,
         parent _: Syntax?,
         context: Context
     ) -> DeclSyntax {
@@ -74,6 +75,7 @@ final class OpaqueGenericParameters: StaticFormatRule<BasicRuleValue>, @unchecke
 
     static func transform(
         _ visited: InitializerDeclSyntax,
+        original _: InitializerDeclSyntax,
         parent _: Syntax?,
         context: Context
     ) -> DeclSyntax {
@@ -128,6 +130,7 @@ final class OpaqueGenericParameters: StaticFormatRule<BasicRuleValue>, @unchecke
 
     static func transform(
         _ visited: SubscriptDeclSyntax,
+        original _: SubscriptDeclSyntax,
         parent _: Syntax?,
         context: Context
     ) -> DeclSyntax {

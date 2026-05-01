@@ -54,6 +54,7 @@ final class URLMacro: StaticFormatRule<URLMacroConfiguration>, @unchecked Sendab
 
     static func transform(
         _ node: SourceFileSyntax,
+        original _: SourceFileSyntax,
         parent _: Syntax?,
         context: Context
     ) -> SourceFileSyntax {
@@ -111,6 +112,7 @@ final class URLMacro: StaticFormatRule<URLMacroConfiguration>, @unchecked Sendab
 
     static func transform(
         _ node: ForceUnwrapExprSyntax,
+        original _: ForceUnwrapExprSyntax,
         parent _: Syntax?,
         context: Context
     ) -> ExprSyntax {

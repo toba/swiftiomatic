@@ -32,6 +32,7 @@ final class PreferFinalClasses: StaticFormatRule<BasicRuleValue>, @unchecked Sen
 
     static func transform(
         _ node: ClassDeclSyntax,
+        original _: ClassDeclSyntax,
         parent _: Syntax?,
         context: Context
     ) -> DeclSyntax {

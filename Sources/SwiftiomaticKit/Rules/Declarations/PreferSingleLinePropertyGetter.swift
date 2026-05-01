@@ -22,6 +22,7 @@ final class PreferSingleLinePropertyGetter: StaticFormatRule<BasicRuleValue>, @u
 
     static func transform(
         _ node: PatternBindingSyntax,
+        original _: PatternBindingSyntax,
         parent _: Syntax?,
         context: Context
     ) -> PatternBindingSyntax {

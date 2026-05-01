@@ -18,6 +18,7 @@ final class SimplifyGenericConstraints: StaticFormatRule<BasicRuleValue>, @unche
 
     static func transform(
         _ visited: FunctionDeclSyntax,
+        original _: FunctionDeclSyntax,
         parent _: Syntax?,
         context: Context
     ) -> DeclSyntax {
@@ -37,6 +38,7 @@ final class SimplifyGenericConstraints: StaticFormatRule<BasicRuleValue>, @unche
 
     static func transform(
         _ visited: StructDeclSyntax,
+        original _: StructDeclSyntax,
         parent _: Syntax?,
         context: Context
     ) -> DeclSyntax {
@@ -51,6 +53,7 @@ final class SimplifyGenericConstraints: StaticFormatRule<BasicRuleValue>, @unche
 
     static func transform(
         _ visited: ClassDeclSyntax,
+        original _: ClassDeclSyntax,
         parent _: Syntax?,
         context: Context
     ) -> DeclSyntax {
@@ -65,6 +68,7 @@ final class SimplifyGenericConstraints: StaticFormatRule<BasicRuleValue>, @unche
 
     static func transform(
         _ visited: EnumDeclSyntax,
+        original _: EnumDeclSyntax,
         parent _: Syntax?,
         context: Context
     ) -> DeclSyntax {
@@ -79,6 +83,7 @@ final class SimplifyGenericConstraints: StaticFormatRule<BasicRuleValue>, @unche
 
     static func transform(
         _ visited: ActorDeclSyntax,
+        original _: ActorDeclSyntax,
         parent _: Syntax?,
         context: Context
     ) -> DeclSyntax {

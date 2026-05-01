@@ -19,6 +19,7 @@ final class RedundantEnumerated: StaticFormatRule<BasicRuleValue>, @unchecked Se
 
     static func transform(
         _ node: ForStmtSyntax,
+        original _: ForStmtSyntax,
         parent _: Syntax?,
         context: Context
     ) -> StmtSyntax {

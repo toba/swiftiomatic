@@ -94,6 +94,7 @@
 - `noDataDropPrefixInLoop`; restrict to receivers tied to the loop's iteration or shrink-in-place pattern ([#594](https://github.com/toba/swiftiomatic/issues/594))
 - `assertFormatting`; add regression coverage for the bare-guard/if conditional-context fix ([#593](https://github.com/toba/swiftiomatic/issues/593))
 - `schema.json`; emit string properties that omit an explicit `type` annotation ([#596](https://github.com/toba/swiftiomatic/issues/596))
+- Misfiring `wrapTernary`/`useImplicitInit`/`redundantType`; thread `original` node through `StaticFormatRule.transform` so findings anchor in the original source's coordinate space; `redundantType` exempts stored properties on type declarations
 
 ### 🗜️ Tweaks
 

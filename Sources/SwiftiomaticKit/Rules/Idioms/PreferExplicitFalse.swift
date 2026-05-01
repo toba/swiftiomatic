@@ -22,6 +22,7 @@ final class PreferExplicitFalse: StaticFormatRule<BasicRuleValue>, @unchecked Se
 
     static func transform(
         _ node: PrefixOperatorExprSyntax,
+        original _: PrefixOperatorExprSyntax,
         parent: Syntax?,
         context: Context
     ) -> ExprSyntax {

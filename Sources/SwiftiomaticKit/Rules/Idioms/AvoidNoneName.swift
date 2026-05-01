@@ -16,6 +16,7 @@ final class AvoidNoneName: StaticFormatRule<BasicRuleValue>, @unchecked Sendable
 
     static func transform(
         _ node: EnumCaseElementSyntax,
+        original _: EnumCaseElementSyntax,
         parent _: Syntax?,
         context: Context
     ) -> EnumCaseElementSyntax {
@@ -29,6 +30,7 @@ final class AvoidNoneName: StaticFormatRule<BasicRuleValue>, @unchecked Sendable
 
     static func transform(
         _ node: VariableDeclSyntax,
+        original _: VariableDeclSyntax,
         parent _: Syntax?,
         context: Context
     ) -> DeclSyntax {

@@ -21,6 +21,7 @@ final class RedundantStaticSelf: StaticFormatRule<BasicRuleValue>, @unchecked Se
 
     static func transform(
         _ memberAccess: MemberAccessExprSyntax,
+        original _: MemberAccessExprSyntax,
         parent: Syntax?,
         context: Context
     ) -> ExprSyntax {
@@ -63,24 +64,42 @@ final class RedundantStaticSelf: StaticFormatRule<BasicRuleValue>, @unchecked Se
     /// the captured pre-recursion parent chain.
     private static func isInStaticContext(parent: Syntax?) -> Bool {
         var current = parent
+        // Track whether we have crossed a closure or nested-function boundary on the way up.
+        // If we have, an enclosing static func does NOT make this site static-context — the
+        // reference is inside its own scope and `Self.` is preserved (matches upstream
+        // SwiftFormat #2518 behavior).
+        var crossedFunctionBoundary = false
 
         while let p = current {
-            // For functions: if static/class → yes. If a direct member (parent is MemberBlock) and
-            // NOT static → this is an instance method. If nested (parent is CodeBlock), continue.
+            // Closure body — crossing it means we are inside a closure literal.
+            if p.is(ClosureExprSyntax.self) {
+                crossedFunctionBoundary = true
+            }
+
+            // For functions: if static/class → yes (unless we crossed a boundary). If a direct
+            // member (parent is MemberBlock) and NOT static → this is an instance method.
+            // Nested functions count as a boundary on the way up.
             if let funcDecl = p.as(FunctionDeclSyntax.self) {
-                if funcDecl.modifiers.contains(anyOf: [.static, .class]) { return true }
+                if funcDecl.modifiers.contains(anyOf: [.static, .class]) {
+                    return !crossedFunctionBoundary
+                }
                 // Direct member of a type — instance method, not static
                 if funcDecl.parent?.is(MemberBlockItemSyntax.self) == true { return false }
-                // Nested function — continue walking up
+                // Nested function — its body is its own scope.
+                crossedFunctionBoundary = true
             }
 
             if let varDecl = p.as(VariableDeclSyntax.self) {
-                if varDecl.modifiers.contains(anyOf: [.static, .class]) { return true }
+                if varDecl.modifiers.contains(anyOf: [.static, .class]) {
+                    return !crossedFunctionBoundary
+                }
                 if varDecl.parent?.is(MemberBlockItemSyntax.self) == true { return false }
             }
 
             if let subDecl = p.as(SubscriptDeclSyntax.self) {
-                if subDecl.modifiers.contains(anyOf: [.static, .class]) { return true }
+                if subDecl.modifiers.contains(anyOf: [.static, .class]) {
+                    return !crossedFunctionBoundary
+                }
                 if subDecl.parent?.is(MemberBlockItemSyntax.self) == true { return false }
             }
 

@@ -132,6 +132,7 @@ final class PreferSwiftTesting: StaticFormatRule<BasicRuleValue>, @unchecked Sen
 
     static func transform(
         _ node: FunctionCallExprSyntax,
+        original _: FunctionCallExprSyntax,
         parent: Syntax?,
         context: Context
     ) -> ExprSyntax {
@@ -162,6 +163,7 @@ final class PreferSwiftTesting: StaticFormatRule<BasicRuleValue>, @unchecked Sen
 
     static func transform(
         _ node: ImportDeclSyntax,
+        original _: ImportDeclSyntax,
         parent _: Syntax?,
         context: Context
     ) -> DeclSyntax {
@@ -180,6 +182,7 @@ final class PreferSwiftTesting: StaticFormatRule<BasicRuleValue>, @unchecked Sen
 
     static func transform(
         _ node: ClassDeclSyntax,
+        original _: ClassDeclSyntax,
         parent _: Syntax?,
         context: Context
     ) -> DeclSyntax {
@@ -464,6 +467,7 @@ final class PreferSwiftTesting: StaticFormatRule<BasicRuleValue>, @unchecked Sen
     /// than calling `super.visit` ).
     static func transform(
         _ node: FunctionDeclSyntax,
+        original _: FunctionDeclSyntax,
         parent _: Syntax?,
         context: Context
     ) -> DeclSyntax {

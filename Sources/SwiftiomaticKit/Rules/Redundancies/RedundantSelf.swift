@@ -281,6 +281,7 @@ final class RedundantSelf: StaticFormatRule<BasicRuleValue>, @unchecked Sendable
 
     static func transform(
         _ node: MemberAccessExprSyntax,
+        original _: MemberAccessExprSyntax,
         parent _: Syntax?,
         context: Context
     ) -> ExprSyntax {

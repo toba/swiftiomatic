@@ -15,6 +15,7 @@ final class PreferAssertionFailure: StaticFormatRule<BasicRuleValue>, @unchecked
 
     static func transform(
         _ node: FunctionCallExprSyntax,
+        original _: FunctionCallExprSyntax,
         parent _: Syntax?,
         context: Context
     ) -> ExprSyntax {

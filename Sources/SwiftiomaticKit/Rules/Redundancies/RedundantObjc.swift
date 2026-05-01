@@ -28,42 +28,49 @@ final class RedundantObjc: StaticFormatRule<BasicRuleValue>, @unchecked Sendable
 
     static func transform(
         _ node: FunctionDeclSyntax,
+        original _: FunctionDeclSyntax,
         parent _: Syntax?,
         context: Context
     ) -> DeclSyntax { DeclSyntax(removeRedundantObjc(from: node, context: context)) }
 
     static func transform(
         _ node: VariableDeclSyntax,
+        original _: VariableDeclSyntax,
         parent _: Syntax?,
         context: Context
     ) -> DeclSyntax { DeclSyntax(removeRedundantObjc(from: node, context: context)) }
 
     static func transform(
         _ node: ClassDeclSyntax,
+        original _: ClassDeclSyntax,
         parent _: Syntax?,
         context: Context
     ) -> DeclSyntax { DeclSyntax(removeRedundantObjc(from: node, context: context)) }
 
     static func transform(
         _ node: StructDeclSyntax,
+        original _: StructDeclSyntax,
         parent _: Syntax?,
         context: Context
     ) -> DeclSyntax { DeclSyntax(removeRedundantObjc(from: node, context: context)) }
 
     static func transform(
         _ node: EnumDeclSyntax,
+        original _: EnumDeclSyntax,
         parent _: Syntax?,
         context: Context
     ) -> DeclSyntax { DeclSyntax(removeRedundantObjc(from: node, context: context)) }
 
     static func transform(
         _ node: SubscriptDeclSyntax,
+        original _: SubscriptDeclSyntax,
         parent _: Syntax?,
         context: Context
     ) -> DeclSyntax { DeclSyntax(removeRedundantObjc(from: node, context: context)) }
 
     static func transform(
         _ node: InitializerDeclSyntax,
+        original _: InitializerDeclSyntax,
         parent _: Syntax?,
         context: Context
     ) -> DeclSyntax { DeclSyntax(removeRedundantObjc(from: node, context: context)) }

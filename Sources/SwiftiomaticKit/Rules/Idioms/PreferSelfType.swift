@@ -77,6 +77,7 @@ final class PreferSelfType: StaticFormatRule<BasicRuleValue>, @unchecked Sendabl
 
     static func transform(
         _ node: MemberAccessExprSyntax,
+        original _: MemberAccessExprSyntax,
         parent _: Syntax?,
         context: Context
     ) -> ExprSyntax {

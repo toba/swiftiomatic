@@ -44,6 +44,7 @@ final class NestedCallLayout: StaticFormatRule<NestedCallLayoutConfiguration>, @
 
     static func transform(
         _ node: FunctionCallExprSyntax,
+        original _: FunctionCallExprSyntax,
         parent _: Syntax?,
         context: Context
     ) -> ExprSyntax {

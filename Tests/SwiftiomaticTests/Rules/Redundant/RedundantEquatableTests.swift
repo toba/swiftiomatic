@@ -299,4 +299,102 @@ struct RedundantEquatableTests: RuleTesting {
         FindingSpec("1️⃣", message: "remove hand-written '==' operator; compiler-synthesized Equatable conformance is equivalent")
       ])
   }
+
+  // MARK: - Non-Equatable property types (upstream SwiftFormat #2503)
+
+  /// `Any.Type` defines `==` but is not `Equatable` — synthesized conformance would not compile.
+  @Test func anyTypePropertyNotFlagged() {
+    assertFormatting(
+      RedundantEquatable.self,
+      input: """
+        struct Foo: Equatable {
+            let ty: Any.Type
+
+            static func == (lhs: Self, rhs: Self) -> Bool {
+                lhs.ty == rhs.ty
+            }
+        }
+        """,
+      expected: """
+        struct Foo: Equatable {
+            let ty: Any.Type
+
+            static func == (lhs: Self, rhs: Self) -> Bool {
+                lhs.ty == rhs.ty
+            }
+        }
+        """)
+  }
+
+  /// `AnyClass` defines `==` but is not `Equatable` .
+  @Test func anyClassPropertyNotFlagged() {
+    assertFormatting(
+      RedundantEquatable.self,
+      input: """
+        struct Foo: Equatable {
+            let cls: AnyClass
+
+            static func == (lhs: Self, rhs: Self) -> Bool {
+                lhs.cls == rhs.cls
+            }
+        }
+        """,
+      expected: """
+        struct Foo: Equatable {
+            let cls: AnyClass
+
+            static func == (lhs: Self, rhs: Self) -> Bool {
+                lhs.cls == rhs.cls
+            }
+        }
+        """)
+  }
+
+  /// Tuples define `==` but do not conform to `Equatable` .
+  @Test func tuplePropertyNotFlagged() {
+    assertFormatting(
+      RedundantEquatable.self,
+      input: """
+        struct Foo: Equatable {
+            let pair: (Int, Int)
+
+            static func == (lhs: Self, rhs: Self) -> Bool {
+                lhs.pair == rhs.pair
+            }
+        }
+        """,
+      expected: """
+        struct Foo: Equatable {
+            let pair: (Int, Int)
+
+            static func == (lhs: Self, rhs: Self) -> Bool {
+                lhs.pair == rhs.pair
+            }
+        }
+        """)
+  }
+
+  /// `T.Type` metatypes do not conform to `Equatable` .
+  @Test func metatypePropertyNotFlagged() {
+    assertFormatting(
+      RedundantEquatable.self,
+      input: """
+        struct Foo: Equatable {
+            let ty: Int.Type
+
+            static func == (lhs: Self, rhs: Self) -> Bool {
+                lhs.ty == rhs.ty
+            }
+        }
+        """,
+      expected: """
+        struct Foo: Equatable {
+            let ty: Int.Type
+
+            static func == (lhs: Self, rhs: Self) -> Bool {
+                lhs.ty == rhs.ty
+            }
+        }
+        """)
+  }
 }

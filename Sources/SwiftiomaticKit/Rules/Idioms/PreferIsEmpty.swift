@@ -18,6 +18,7 @@ final class PreferIsEmpty: StaticFormatRule<BasicRuleValue>, @unchecked Sendable
 
     static func transform(
         _ infixNode: InfixOperatorExprSyntax,
+        original _: InfixOperatorExprSyntax,
         parent _: Syntax?,
         context: Context
     ) -> ExprSyntax {

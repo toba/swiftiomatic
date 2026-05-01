@@ -22,6 +22,7 @@ final class NoSemicolons: StaticFormatRule<BasicRuleValue>, @unchecked Sendable 
 
     static func transform(
         _ node: CodeBlockItemListSyntax,
+        original _: CodeBlockItemListSyntax,
         parent _: Syntax?,
         context: Context
     ) -> CodeBlockItemListSyntax {
@@ -30,6 +31,7 @@ final class NoSemicolons: StaticFormatRule<BasicRuleValue>, @unchecked Sendable 
 
     static func transform(
         _ node: MemberBlockItemListSyntax,
+        original _: MemberBlockItemListSyntax,
         parent _: Syntax?,
         context: Context
     ) -> MemberBlockItemListSyntax {

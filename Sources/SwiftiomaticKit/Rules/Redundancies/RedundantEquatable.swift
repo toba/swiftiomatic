@@ -20,6 +20,7 @@ final class RedundantEquatable: StaticFormatRule<BasicRuleValue>, @unchecked Sen
 
     static func transform(
         _ visited: StructDeclSyntax,
+        original _: StructDeclSyntax,
         parent _: Syntax?,
         context: Context
     ) -> DeclSyntax {
@@ -55,6 +56,10 @@ final class RedundantEquatable: StaticFormatRule<BasicRuleValue>, @unchecked Sen
     ) -> RemovableEquatable? {
         let storedProps = collectStoredPropertyNames(from: members)
         guard !storedProps.isEmpty else { return nil }
+
+        // Bail if any stored property has a known non-Equatable type — the synthesized
+        // conformance would not compile, and the hand-written `==` is necessary.
+        if hasNonEquatableStoredProperty(in: members) { return nil }
 
         for (index, member) in members.enumerated() {
             guard let funcDecl = member.decl.as(FunctionDeclSyntax.self),
@@ -105,6 +110,49 @@ final class RedundantEquatable: StaticFormatRule<BasicRuleValue>, @unchecked Sen
             props.insert(identPattern.identifier.text)
         }
         return props
+    }
+
+    // MARK: - Non-Equatable type detection
+
+    /// Returns `true` if any stored property has a type annotation matching a known
+    /// non-`Equatable` pattern: `Any.Type`, `T.Type` metatypes, `AnyClass`, `Any`,
+    /// tuples, or function types. These define `==` (or have one in scope) but the
+    /// compiler will not synthesize an `Equatable` conformance for a type that contains them.
+    private static func hasNonEquatableStoredProperty(
+        in members: MemberBlockItemListSyntax
+    ) -> Bool {
+        for member in members {
+            guard let varDecl = member.decl.as(VariableDeclSyntax.self),
+                  !varDecl.modifiers.contains(anyOf: [.static, .class]) else { continue }
+
+            for binding in varDecl.bindings {
+                if let type = binding.typeAnnotation?.type, isKnownNonEquatableType(type) {
+                    return true
+                }
+            }
+        }
+        return false
+    }
+
+    private static func isKnownNonEquatableType(_ type: TypeSyntax) -> Bool {
+        // `T.Type` (and `Any.Type`) — metatypes are never Equatable.
+        if type.is(MetatypeTypeSyntax.self) { return true }
+        // Function types — `(Int) -> Int` etc. are not Equatable.
+        if type.is(FunctionTypeSyntax.self) || type.is(AttributedTypeSyntax.self)
+            && type.as(AttributedTypeSyntax.self)?.baseType.is(FunctionTypeSyntax.self) == true
+        {
+            return true
+        }
+        // Tuples with 2+ elements — single-element tuples are just parenthesized types.
+        if let tuple = type.as(TupleTypeSyntax.self), tuple.elements.count >= 2 { return true }
+        // Bare identifier types: `AnyClass` , `Any` .
+        if let ident = type.as(IdentifierTypeSyntax.self) {
+            switch ident.name.text {
+                case "AnyClass", "Any": return true
+                default: break
+            }
+        }
+        return false
     }
 
     // MARK: - Equatable function detection

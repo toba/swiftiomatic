@@ -22,6 +22,7 @@ final class ConvertRegularCommentToDocC: StaticFormatRule<BasicRuleValue>, @unch
 
     static func transform(
         _ node: MemberBlockItemSyntax,
+        original _: MemberBlockItemSyntax,
         parent _: Syntax?,
         context: Context
     ) -> MemberBlockItemSyntax {
@@ -37,6 +38,7 @@ final class ConvertRegularCommentToDocC: StaticFormatRule<BasicRuleValue>, @unch
 
     static func transform(
         _ node: CodeBlockItemSyntax,
+        original _: CodeBlockItemSyntax,
         parent _: Syntax?,
         context: Context
     ) -> CodeBlockItemSyntax {

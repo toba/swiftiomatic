@@ -17,6 +17,7 @@ final class ACLConsistency: StaticFormatRule<BasicRuleValue>, @unchecked Sendabl
 
     static func transform(
         _ node: DeclModifierSyntax,
+        original _: DeclModifierSyntax,
         parent _: Syntax?,
         context: Context
     ) -> DeclModifierSyntax {

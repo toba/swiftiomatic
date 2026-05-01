@@ -17,6 +17,7 @@ final class StaticStructShouldBeEnum: StaticFormatRule<BasicRuleValue>, @uncheck
 
     static func transform(
         _ visited: StructDeclSyntax,
+        original _: StructDeclSyntax,
         parent _: Syntax?,
         context: Context
     ) -> DeclSyntax {
@@ -45,6 +46,7 @@ final class StaticStructShouldBeEnum: StaticFormatRule<BasicRuleValue>, @uncheck
 
     static func transform(
         _ visited: ClassDeclSyntax,
+        original _: ClassDeclSyntax,
         parent _: Syntax?,
         context: Context
     ) -> DeclSyntax {

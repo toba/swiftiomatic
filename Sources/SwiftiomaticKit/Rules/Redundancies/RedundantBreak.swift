@@ -17,6 +17,7 @@ final class RedundantBreak: StaticFormatRule<BasicRuleValue>, @unchecked Sendabl
 
     static func transform(
         _ visited: SwitchCaseSyntax,
+        original _: SwitchCaseSyntax,
         parent _: Syntax?,
         context: Context
     ) -> SwitchCaseSyntax {

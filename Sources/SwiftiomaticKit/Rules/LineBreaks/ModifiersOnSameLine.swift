@@ -16,6 +16,7 @@ final class ModifiersOnSameLine: StaticFormatRule<BasicRuleValue>, @unchecked Se
 
     static func transform(
         _ node: ClassDeclSyntax,
+        original _: ClassDeclSyntax,
         parent _: Syntax?,
         context: Context
     ) -> DeclSyntax {
@@ -29,6 +30,7 @@ final class ModifiersOnSameLine: StaticFormatRule<BasicRuleValue>, @unchecked Se
 
     static func transform(
         _ node: StructDeclSyntax,
+        original _: StructDeclSyntax,
         parent _: Syntax?,
         context: Context
     ) -> DeclSyntax {
@@ -42,6 +44,7 @@ final class ModifiersOnSameLine: StaticFormatRule<BasicRuleValue>, @unchecked Se
 
     static func transform(
         _ node: EnumDeclSyntax,
+        original _: EnumDeclSyntax,
         parent _: Syntax?,
         context: Context
     ) -> DeclSyntax {
@@ -55,6 +58,7 @@ final class ModifiersOnSameLine: StaticFormatRule<BasicRuleValue>, @unchecked Se
 
     static func transform(
         _ node: ActorDeclSyntax,
+        original _: ActorDeclSyntax,
         parent _: Syntax?,
         context: Context
     ) -> DeclSyntax {
@@ -68,6 +72,7 @@ final class ModifiersOnSameLine: StaticFormatRule<BasicRuleValue>, @unchecked Se
 
     static func transform(
         _ node: ProtocolDeclSyntax,
+        original _: ProtocolDeclSyntax,
         parent _: Syntax?,
         context: Context
     ) -> DeclSyntax {
@@ -81,6 +86,7 @@ final class ModifiersOnSameLine: StaticFormatRule<BasicRuleValue>, @unchecked Se
 
     static func transform(
         _ node: ExtensionDeclSyntax,
+        original _: ExtensionDeclSyntax,
         parent _: Syntax?,
         context: Context
     ) -> DeclSyntax {
@@ -96,6 +102,7 @@ final class ModifiersOnSameLine: StaticFormatRule<BasicRuleValue>, @unchecked Se
 
     static func transform(
         _ node: FunctionDeclSyntax,
+        original _: FunctionDeclSyntax,
         parent _: Syntax?,
         context: Context
     ) -> DeclSyntax {
@@ -109,6 +116,7 @@ final class ModifiersOnSameLine: StaticFormatRule<BasicRuleValue>, @unchecked Se
 
     static func transform(
         _ node: VariableDeclSyntax,
+        original _: VariableDeclSyntax,
         parent _: Syntax?,
         context: Context
     ) -> DeclSyntax {
@@ -122,6 +130,7 @@ final class ModifiersOnSameLine: StaticFormatRule<BasicRuleValue>, @unchecked Se
 
     static func transform(
         _ node: InitializerDeclSyntax,
+        original _: InitializerDeclSyntax,
         parent _: Syntax?,
         context: Context
     ) -> DeclSyntax {
@@ -135,6 +144,7 @@ final class ModifiersOnSameLine: StaticFormatRule<BasicRuleValue>, @unchecked Se
 
     static func transform(
         _ node: SubscriptDeclSyntax,
+        original _: SubscriptDeclSyntax,
         parent _: Syntax?,
         context: Context
     ) -> DeclSyntax {
@@ -148,6 +158,7 @@ final class ModifiersOnSameLine: StaticFormatRule<BasicRuleValue>, @unchecked Se
 
     static func transform(
         _ node: TypeAliasDeclSyntax,
+        original _: TypeAliasDeclSyntax,
         parent _: Syntax?,
         context: Context
     ) -> DeclSyntax {
@@ -161,6 +172,7 @@ final class ModifiersOnSameLine: StaticFormatRule<BasicRuleValue>, @unchecked Se
 
     static func transform(
         _ node: EnumCaseDeclSyntax,
+        original _: EnumCaseDeclSyntax,
         parent _: Syntax?,
         context: Context
     ) -> DeclSyntax {
@@ -174,6 +186,7 @@ final class ModifiersOnSameLine: StaticFormatRule<BasicRuleValue>, @unchecked Se
 
     static func transform(
         _ node: ImportDeclSyntax,
+        original _: ImportDeclSyntax,
         parent _: Syntax?,
         context: Context
     ) -> DeclSyntax {
@@ -187,6 +200,7 @@ final class ModifiersOnSameLine: StaticFormatRule<BasicRuleValue>, @unchecked Se
 
     static func transform(
         _ node: DeinitializerDeclSyntax,
+        original _: DeinitializerDeclSyntax,
         parent _: Syntax?,
         context: Context
     ) -> DeclSyntax {
@@ -200,6 +214,7 @@ final class ModifiersOnSameLine: StaticFormatRule<BasicRuleValue>, @unchecked Se
 
     static func transform(
         _ node: AssociatedTypeDeclSyntax,
+        original _: AssociatedTypeDeclSyntax,
         parent _: Syntax?,
         context: Context
     ) -> DeclSyntax {

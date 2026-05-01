@@ -182,6 +182,6 @@ private final class WrapTernaryHarnessRewriter: SyntaxRewriter {
     override func visit(_ node: TernaryExprSyntax) -> ExprSyntax {
         let parent = Syntax(node).parent
         let visited = super.visit(node).cast(TernaryExprSyntax.self)
-        return WrapTernary.transform(visited, parent: parent, context: context)
+        return WrapTernary.transform(visited, original: node, parent: parent, context: context)
     }
 }

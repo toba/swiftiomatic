@@ -26,6 +26,7 @@ final class NoLabelsInCasePatterns: StaticFormatRule<BasicRuleValue>, @unchecked
 
     static func transform(
         _ node: SwitchCaseLabelSyntax,
+        original _: SwitchCaseLabelSyntax,
         parent _: Syntax?,
         context: Context
     ) -> SwitchCaseLabelSyntax {

@@ -17,6 +17,7 @@ final class RedundantPattern: StaticFormatRule<BasicRuleValue>, @unchecked Senda
 
     static func transform(
         _ node: SwitchCaseItemSyntax,
+        original _: SwitchCaseItemSyntax,
         parent _: Syntax?,
         context: Context
     ) -> SwitchCaseItemSyntax {
@@ -33,6 +34,7 @@ final class RedundantPattern: StaticFormatRule<BasicRuleValue>, @unchecked Senda
 
     static func transform(
         _ node: MatchingPatternConditionSyntax,
+        original _: MatchingPatternConditionSyntax,
         parent _: Syntax?,
         context: Context
     ) -> MatchingPatternConditionSyntax {
@@ -49,6 +51,7 @@ final class RedundantPattern: StaticFormatRule<BasicRuleValue>, @unchecked Senda
 
     static func transform(
         _ node: VariableDeclSyntax,
+        original _: VariableDeclSyntax,
         parent _: Syntax?,
         context: Context
     ) -> DeclSyntax {

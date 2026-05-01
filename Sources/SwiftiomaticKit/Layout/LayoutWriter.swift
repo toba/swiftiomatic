@@ -39,14 +39,14 @@ func rewriteToken(
     // 2. FormatSpecialComments — ported. Normalizes TODO/MARK/FIXME comment formatting in leading
     //    and trailing trivia.
     if context.shouldRewrite(FormatSpecialComments.self, at: Syntax(result)) {
-        result = FormatSpecialComments.transform(result, parent: parent, context: context)
+        result = FormatSpecialComments.transform(result, original: node, parent: parent, context: context)
     }
 
     // 3. LeadingDotOperators — ported. Uses a typed property on `Context` to thread pending trivia
     //    between adjacent token visits. The static transform already handles the state plumbing
     //    correctly.
     if context.shouldRewrite(LeadingDotOperators.self, at: Syntax(result)) {
-        result = LeadingDotOperators.transform(result, parent: parent, context: context)
+        result = LeadingDotOperators.transform(result, original: node, parent: parent, context: context)
     }
 
     // 4. NestedCallLayout — NOT a token-level rewrite. The rule's `visit` overrides target
@@ -59,7 +59,7 @@ func rewriteToken(
     // 5. RedundantBackticks — ported. Strips redundant backticks from identifier tokens. Uses
     //    captured pre-recursion parent for context analysis (member access, argument label, etc.).
     if context.shouldRewrite(RedundantBackticks.self, at: Syntax(result)) {
-        result = RedundantBackticks.transform(result, parent: parent, context: context)
+        result = RedundantBackticks.transform(result, original: node, parent: parent, context: context)
     }
 
     // 5a. ReflowComments — inlined (no `static func transform` ). Reflows contiguous `//` and `///`
@@ -89,7 +89,7 @@ func rewriteToken(
     //    normalized prefixes, matching the legacy pipeline's alphabetical ordering coincidence (
     //    `Format…` < `Wrap…` ).
     if context.shouldRewrite(WrapSingleLineComments.self, at: Syntax(result)) {
-        result = WrapSingleLineComments.transform(result, parent: parent, context: context)
+        result = WrapSingleLineComments.transform(result, original: node, parent: parent, context: context)
     }
 
     return result

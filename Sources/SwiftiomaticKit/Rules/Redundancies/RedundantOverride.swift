@@ -31,6 +31,7 @@ final class RedundantOverride: StaticFormatRule<BasicRuleValue>, @unchecked Send
 
     static func transform(
         _ node: FunctionDeclSyntax,
+        original _: FunctionDeclSyntax,
         parent _: Syntax?,
         context: Context
     ) -> DeclSyntax {

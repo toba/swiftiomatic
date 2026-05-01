@@ -25,6 +25,7 @@ final class RedundantRawValues: StaticFormatRule<BasicRuleValue>, @unchecked Sen
 
     static func transform(
         _ node: EnumCaseDeclSyntax,
+        original _: EnumCaseDeclSyntax,
         parent: Syntax?,
         context: Context
     ) -> DeclSyntax {

@@ -45,6 +45,7 @@ extension WrapSingleLineBodies {
 
     static func transform(
         _ node: IfExprSyntax,
+        original _: IfExprSyntax,
         parent: Syntax?,
         context: Context
     ) -> ExprSyntax {
@@ -56,6 +57,7 @@ extension WrapSingleLineBodies {
 
     static func transform(
         _ node: GuardStmtSyntax,
+        original _: GuardStmtSyntax,
         parent _: Syntax?,
         context: Context
     ) -> StmtSyntax {
@@ -67,6 +69,7 @@ extension WrapSingleLineBodies {
 
     static func transform(
         _ node: FunctionDeclSyntax,
+        original _: FunctionDeclSyntax,
         parent _: Syntax?,
         context: Context
     ) -> DeclSyntax {
@@ -78,6 +81,7 @@ extension WrapSingleLineBodies {
 
     static func transform(
         _ node: InitializerDeclSyntax,
+        original _: InitializerDeclSyntax,
         parent _: Syntax?,
         context: Context
     ) -> DeclSyntax {
@@ -89,6 +93,7 @@ extension WrapSingleLineBodies {
 
     static func transform(
         _ node: SubscriptDeclSyntax,
+        original _: SubscriptDeclSyntax,
         parent _: Syntax?,
         context: Context
     ) -> DeclSyntax {
@@ -100,6 +105,7 @@ extension WrapSingleLineBodies {
 
     static func transform(
         _ node: ForStmtSyntax,
+        original _: ForStmtSyntax,
         parent _: Syntax?,
         context: Context
     ) -> StmtSyntax {
@@ -111,6 +117,7 @@ extension WrapSingleLineBodies {
 
     static func transform(
         _ node: WhileStmtSyntax,
+        original _: WhileStmtSyntax,
         parent _: Syntax?,
         context: Context
     ) -> StmtSyntax {
@@ -122,6 +129,7 @@ extension WrapSingleLineBodies {
 
     static func transform(
         _ node: RepeatStmtSyntax,
+        original _: RepeatStmtSyntax,
         parent _: Syntax?,
         context: Context
     ) -> StmtSyntax {
@@ -133,6 +141,7 @@ extension WrapSingleLineBodies {
 
     static func transform(
         _ node: PatternBindingSyntax,
+        original _: PatternBindingSyntax,
         parent: Syntax?,
         context: Context
     ) -> PatternBindingSyntax {
@@ -144,6 +153,7 @@ extension WrapSingleLineBodies {
 
     static func transform(
         _ node: AccessorDeclSyntax,
+        original _: AccessorDeclSyntax,
         parent _: Syntax?,
         context: Context
     ) -> DeclSyntax {

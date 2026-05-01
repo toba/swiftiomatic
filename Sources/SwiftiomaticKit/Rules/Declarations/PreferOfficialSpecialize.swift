@@ -14,6 +14,7 @@ final class PreferOfficialSpecialize: StaticFormatRule<BasicRuleValue>, @uncheck
 
     static func transform(
         _ node: AttributeSyntax,
+        original _: AttributeSyntax,
         parent _: Syntax?,
         context: Context
     ) -> AttributeSyntax {

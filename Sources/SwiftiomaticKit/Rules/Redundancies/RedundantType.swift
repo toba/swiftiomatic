@@ -26,9 +26,14 @@ final class RedundantType: StaticFormatRule<BasicRuleValue>, @unchecked Sendable
 
     static func transform(
         _ node: VariableDeclSyntax,
-        parent _: Syntax?,
+        original _: VariableDeclSyntax,
+        parent: Syntax?,
         context: Context
     ) -> DeclSyntax {
+        // Skip stored properties on a type declaration. The explicit annotation on a member
+        // is intentional — keep it for documentation value at the declaration site.
+        if isMemberStoredProperty(parent: parent) { return DeclSyntax(node) }
+
         var bindings = node.bindings
         var didChange = false
 
@@ -73,6 +78,13 @@ final class RedundantType: StaticFormatRule<BasicRuleValue>, @unchecked Sendable
         var result = node
         result.bindings = bindings
         return DeclSyntax(result)
+    }
+
+    /// Returns `true` if the variable decl lives directly inside a type body (class / struct /
+    /// actor / enum / extension / protocol). Such a decl is a stored property whose explicit type
+    /// annotation is documentation value worth preserving.
+    private static func isMemberStoredProperty(parent: Syntax?) -> Bool {
+        parent?.is(MemberBlockItemSyntax.self) ?? false
     }
 
     /// Returns `true` if the type annotation is redundant given the initializer expression.

@@ -14,6 +14,7 @@ final class PreferIsDisjoint: StaticFormatRule<BasicRuleValue>, @unchecked Senda
 
     static func transform(
         _ node: MemberAccessExprSyntax,
+        original _: MemberAccessExprSyntax,
         parent _: Syntax?,
         context: Context
     ) -> ExprSyntax {

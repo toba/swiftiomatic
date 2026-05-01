@@ -37,10 +37,15 @@ final class ConfigurationLoader: Sendable {
     /// - Throws: If an error occurred loading the configuration.
     func configuration(at url: URL) throws -> Configuration {
         let cacheKey = url.absoluteURL.standardized.path
-        if let cached = cache.withLock({ $0[cacheKey] }) { return cached }
-
-        let configuration = try Configuration(contentsOf: url)
-        cache.withLock { $0[cacheKey] = configuration }
-        return configuration
+        // Hold the lock across the load so concurrent callers for the same key don't each
+        // parse the file independently (matches upstream SwiftFormat #2521 behavior). Parsing
+        // a JSON5 config is fast and `Configuration(contentsOf:)` does not recurse into this
+        // cache, so the lock cannot deadlock.
+        return try cache.withLock { cache throws in
+            if let cached = cache[cacheKey] { return cached }
+            let configuration = try Configuration(contentsOf: url)
+            cache[cacheKey] = configuration
+            return configuration
+        }
     }
 }

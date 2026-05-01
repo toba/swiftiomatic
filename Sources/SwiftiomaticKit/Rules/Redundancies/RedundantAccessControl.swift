@@ -45,6 +45,7 @@ final class RedundantAccessControl: StaticFormatRule<BasicRuleValue>, @unchecked
 
     static func transform(
         _ node: SourceFileSyntax,
+        original _: SourceFileSyntax,
         parent _: Syntax?,
         context: Context
     ) -> SourceFileSyntax {
@@ -57,6 +58,7 @@ final class RedundantAccessControl: StaticFormatRule<BasicRuleValue>, @unchecked
 
     static func transform(
         _ node: ActorDeclSyntax,
+        original _: ActorDeclSyntax,
         parent _: Syntax?,
         context: Context
     ) -> DeclSyntax {
@@ -69,6 +71,7 @@ final class RedundantAccessControl: StaticFormatRule<BasicRuleValue>, @unchecked
 
     static func transform(
         _ node: ClassDeclSyntax,
+        original _: ClassDeclSyntax,
         parent _: Syntax?,
         context: Context
     ) -> DeclSyntax {
@@ -81,6 +84,7 @@ final class RedundantAccessControl: StaticFormatRule<BasicRuleValue>, @unchecked
 
     static func transform(
         _ node: EnumDeclSyntax,
+        original _: EnumDeclSyntax,
         parent _: Syntax?,
         context: Context
     ) -> DeclSyntax {
@@ -93,6 +97,7 @@ final class RedundantAccessControl: StaticFormatRule<BasicRuleValue>, @unchecked
 
     static func transform(
         _ node: FunctionDeclSyntax,
+        original _: FunctionDeclSyntax,
         parent _: Syntax?,
         context: Context
     ) -> DeclSyntax {
@@ -101,6 +106,7 @@ final class RedundantAccessControl: StaticFormatRule<BasicRuleValue>, @unchecked
 
     static func transform(
         _ node: InitializerDeclSyntax,
+        original _: InitializerDeclSyntax,
         parent _: Syntax?,
         context: Context
     ) -> DeclSyntax {
@@ -109,6 +115,7 @@ final class RedundantAccessControl: StaticFormatRule<BasicRuleValue>, @unchecked
 
     static func transform(
         _ node: ProtocolDeclSyntax,
+        original _: ProtocolDeclSyntax,
         parent _: Syntax?,
         context: Context
     ) -> DeclSyntax {
@@ -117,6 +124,7 @@ final class RedundantAccessControl: StaticFormatRule<BasicRuleValue>, @unchecked
 
     static func transform(
         _ node: StructDeclSyntax,
+        original _: StructDeclSyntax,
         parent _: Syntax?,
         context: Context
     ) -> DeclSyntax {
@@ -129,6 +137,7 @@ final class RedundantAccessControl: StaticFormatRule<BasicRuleValue>, @unchecked
 
     static func transform(
         _ node: SubscriptDeclSyntax,
+        original _: SubscriptDeclSyntax,
         parent _: Syntax?,
         context: Context
     ) -> DeclSyntax {
@@ -137,6 +146,7 @@ final class RedundantAccessControl: StaticFormatRule<BasicRuleValue>, @unchecked
 
     static func transform(
         _ node: TypeAliasDeclSyntax,
+        original _: TypeAliasDeclSyntax,
         parent _: Syntax?,
         context: Context
     ) -> DeclSyntax {
@@ -145,6 +155,7 @@ final class RedundantAccessControl: StaticFormatRule<BasicRuleValue>, @unchecked
 
     static func transform(
         _ node: VariableDeclSyntax,
+        original _: VariableDeclSyntax,
         parent _: Syntax?,
         context: Context
     ) -> DeclSyntax {
@@ -153,6 +164,7 @@ final class RedundantAccessControl: StaticFormatRule<BasicRuleValue>, @unchecked
 
     static func transform(
         _ node: ExtensionDeclSyntax,
+        original _: ExtensionDeclSyntax,
         parent _: Syntax?,
         context: Context
     ) -> DeclSyntax {

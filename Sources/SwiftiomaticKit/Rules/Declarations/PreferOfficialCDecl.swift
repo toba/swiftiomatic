@@ -13,6 +13,7 @@ final class PreferOfficialCDecl: StaticFormatRule<BasicRuleValue>, @unchecked Se
 
     static func transform(
         _ node: AttributeSyntax,
+        original _: AttributeSyntax,
         parent _: Syntax?,
         context: Context
     ) -> AttributeSyntax {

@@ -202,11 +202,11 @@
 	},
 	"lineBreaks": {
 		"lineLength": 100,
+		"atEndOfFile": { "lint": "no", "rewrite": false },
 		"wrapTernary": { "lint": "warn", "rewrite": true },
 		"beforeEachArgument": false,
 		"elseCatchOnNewLine": false,
 		"modifiersOnSameLine": { "lint": "warn", "rewrite": false },
-		"ensureLineBreakAtEOF": { "lint": "no", "rewrite": false },
 		"beforeGuardConditions": false,
 		"alignWrappedConditions": true,
 		"respectExistingLineBreaks": true,

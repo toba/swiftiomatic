@@ -19,6 +19,7 @@ final class RedundantClosure: StaticFormatRule<BasicRuleValue>, @unchecked Senda
 
     static func transform(
         _ callNode: FunctionCallExprSyntax,
+        original _: FunctionCallExprSyntax,
         parent: Syntax?,
         context: Context
     ) -> ExprSyntax {

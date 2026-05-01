@@ -15,6 +15,7 @@ final class InitCoderUnavailable: StaticFormatRule<BasicRuleValue>, @unchecked S
 
     static func transform(
         _ node: InitializerDeclSyntax,
+        original _: InitializerDeclSyntax,
         parent _: Syntax?,
         context: Context
     ) -> DeclSyntax {

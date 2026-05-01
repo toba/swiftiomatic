@@ -760,6 +760,7 @@ final class PreferShorthandTypeNames: StructuralFormatRule<BasicRuleValue>, @unc
 
     static func transform(
         _ node: IdentifierTypeSyntax,
+        original _: IdentifierTypeSyntax,
         parent: Syntax?,
         context: Context
     ) -> TypeSyntax {
@@ -770,6 +771,7 @@ final class PreferShorthandTypeNames: StructuralFormatRule<BasicRuleValue>, @unc
 
     static func transform(
         _ node: GenericSpecializationExprSyntax,
+        original _: GenericSpecializationExprSyntax,
         parent: Syntax?,
         context: Context
     ) -> ExprSyntax {

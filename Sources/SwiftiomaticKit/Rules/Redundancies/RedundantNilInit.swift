@@ -29,6 +29,7 @@ final class RedundantNilInit: StaticFormatRule<BasicRuleValue>, @unchecked Senda
 
     static func transform(
         _ node: VariableDeclSyntax,
+        original _: VariableDeclSyntax,
         parent: Syntax?,
         context: Context
     ) -> DeclSyntax {

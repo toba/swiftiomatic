@@ -13,6 +13,7 @@ final class NoBacktickedSelf: StaticFormatRule<BasicRuleValue>, @unchecked Senda
 
     static func transform(
         _ node: OptionalBindingConditionSyntax,
+        original _: OptionalBindingConditionSyntax,
         parent _: Syntax?,
         context: Context
     ) -> OptionalBindingConditionSyntax {

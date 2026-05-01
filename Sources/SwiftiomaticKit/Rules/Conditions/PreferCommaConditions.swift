@@ -17,6 +17,7 @@ final class PreferCommaConditions: StaticFormatRule<BasicRuleValue>, @unchecked 
 
     static func transform(
         _ visited: ConditionElementListSyntax,
+        original _: ConditionElementListSyntax,
         parent _: Syntax?,
         context: Context
     ) -> ConditionElementListSyntax {

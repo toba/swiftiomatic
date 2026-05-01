@@ -31,6 +31,7 @@ final class ExplicitNilCheck: StaticFormatRule<BasicRuleValue>, @unchecked Senda
 
     static func transform(
         _ node: ConditionElementSyntax,
+        original _: ConditionElementSyntax,
         parent _: Syntax?,
         context: Context
     ) -> ConditionElementSyntax {

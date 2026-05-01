@@ -45,6 +45,7 @@ final class PreferEnvironmentEntry: StaticFormatRule<BasicRuleValue>, @unchecked
 
     static func transform(
         _ node: SourceFileSyntax,
+        original _: SourceFileSyntax,
         parent _: Syntax?,
         context: Context
     ) -> SourceFileSyntax {

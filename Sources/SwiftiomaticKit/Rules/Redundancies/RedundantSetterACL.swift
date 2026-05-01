@@ -21,6 +21,7 @@ final class RedundantSetterACL: StaticFormatRule<BasicRuleValue>, @unchecked Sen
 
     static func transform(
         _ node: VariableDeclSyntax,
+        original _: VariableDeclSyntax,
         parent: Syntax?,
         context: Context
     ) -> DeclSyntax {

@@ -28,6 +28,7 @@ final class RedundantInit: StaticFormatRule<BasicRuleValue>, @unchecked Sendable
 
     static func transform(
         _ node: FunctionCallExprSyntax,
+        original _: FunctionCallExprSyntax,
         parent _: Syntax?,
         context: Context
     ) -> ExprSyntax {

@@ -27,6 +27,7 @@ final class RedundantOptionalBinding: StaticFormatRule<BasicRuleValue>, @uncheck
 
     static func transform(
         _ node: OptionalBindingConditionSyntax,
+        original _: OptionalBindingConditionSyntax,
         parent _: Syntax?,
         context: Context
     ) -> OptionalBindingConditionSyntax {

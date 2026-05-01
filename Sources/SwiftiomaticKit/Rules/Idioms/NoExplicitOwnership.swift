@@ -20,6 +20,7 @@ final class NoExplicitOwnership: StaticFormatRule<BasicRuleValue>, @unchecked Se
 
     static func transform(
         _ visited: FunctionDeclSyntax,
+        original _: FunctionDeclSyntax,
         parent _: Syntax?,
         context: Context
     ) -> DeclSyntax {
@@ -35,6 +36,7 @@ final class NoExplicitOwnership: StaticFormatRule<BasicRuleValue>, @unchecked Se
 
     static func transform(
         _ attributed: AttributedTypeSyntax,
+        original _: AttributedTypeSyntax,
         parent _: Syntax?,
         context: Context
     ) -> TypeSyntax {

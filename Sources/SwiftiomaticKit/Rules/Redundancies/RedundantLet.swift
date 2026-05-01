@@ -36,6 +36,7 @@ final class RedundantLet: StaticFormatRule<BasicRuleValue>, @unchecked Sendable 
 
     static func transform(
         _ visited: CodeBlockItemListSyntax,
+        original _: CodeBlockItemListSyntax,
         parent: Syntax?,
         context: Context
     ) -> CodeBlockItemListSyntax {
@@ -207,6 +208,7 @@ final class RedundantLet: StaticFormatRule<BasicRuleValue>, @unchecked Sendable 
 
     static func transform(
         _ node: LabeledExprSyntax,
+        original _: LabeledExprSyntax,
         parent _: Syntax?,
         context: Context
     ) -> LabeledExprSyntax {

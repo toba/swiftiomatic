@@ -29,6 +29,7 @@ final class CaseLet: StaticFormatRule<CaseLetConfiguration>, @unchecked Sendable
 
     static func transform(
         _ node: MatchingPatternConditionSyntax,
+        original _: MatchingPatternConditionSyntax,
         parent _: Syntax?,
         context: Context
     ) -> MatchingPatternConditionSyntax {
@@ -61,6 +62,7 @@ final class CaseLet: StaticFormatRule<CaseLetConfiguration>, @unchecked Sendable
 
     static func transform(
         _ node: SwitchCaseItemSyntax,
+        original _: SwitchCaseItemSyntax,
         parent _: Syntax?,
         context: Context
     ) -> SwitchCaseItemSyntax {
@@ -95,6 +97,7 @@ final class CaseLet: StaticFormatRule<CaseLetConfiguration>, @unchecked Sendable
 
     static func transform(
         _ node: ForStmtSyntax,
+        original _: ForStmtSyntax,
         parent _: Syntax?,
         context: Context
     ) -> StmtSyntax {

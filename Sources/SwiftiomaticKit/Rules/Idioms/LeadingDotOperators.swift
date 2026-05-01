@@ -24,6 +24,7 @@ final class LeadingDotOperators: StaticFormatRule<BasicRuleValue>, @unchecked Se
 
     static func transform(
         _ token: TokenSyntax,
+        original _: TokenSyntax,
         parent _: Syntax?,
         context: Context
     ) -> TokenSyntax {

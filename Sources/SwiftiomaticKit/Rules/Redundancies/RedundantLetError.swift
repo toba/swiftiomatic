@@ -28,6 +28,7 @@ final class RedundantLetError: StaticFormatRule<BasicRuleValue>, @unchecked Send
 
     static func transform(
         _ node: CatchClauseSyntax,
+        original _: CatchClauseSyntax,
         parent _: Syntax?,
         context: Context
     ) -> CatchClauseSyntax {
