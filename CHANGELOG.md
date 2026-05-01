@@ -43,6 +43,9 @@
 
 ### 🐞 Fixes
 
+- `SimplifyGenericConstraints`; anchor diagnostics to the original `where` clause instead of the rewritten subtree's detached position ([#615](https://github.com/toba/swiftiomatic/issues/615))
+- `wrapTernaryBranches`; skip when both `?` and `:` source lines already fit, even when an operand is a multi-line chain ([#614](https://github.com/toba/swiftiomatic/issues/614))
+- `ReflowComments`; preserve CommonMark link reference definitions (`[label]: url`) instead of merging adjacent definitions into one paragraph ([#613](https://github.com/toba/swiftiomatic/issues/613))
 - `wrapTernary`; skip ternaries inside single-line string interpolations to avoid producing invalid Swift ([#602](https://github.com/toba/swiftiomatic/issues/602))
 - `PreferIfElseChain`; rewrite guard-return + trailing return to `if/else` expression in implicit-return positions ([#563](https://github.com/toba/swiftiomatic/issues/563))
 - `extension` where-clause; apply continuation indent when `where` wraps to its own line

@@ -77,4 +77,30 @@ struct WrapTernaryBranchesTests: RuleTesting {
       findings: [])
   }
 
+  /// Bug repro (issue 83k-hv9): a ternary whose else-branch is consumed by a lower-precedence
+  /// operator (e.g. `isEmpty ? "" : "?" + map { ... }.joined(...)`) parses as
+  /// `isEmpty ? "" : ("?" + map { ... }.joined(...))`. The else branch is a multi-line chain.
+  /// The ternary itself (`isEmpty ? "" : "?"` worth of source on the line carrying `?` and `:`)
+  /// fits comfortably; the rule must not force it to wrap just because a downstream operand chain
+  /// pushed the collapsed-to-one-line description over the print width.
+  @Test func ternaryWithMultiLineRHSOperandNotWrapped() {
+    assertFormatting(
+      WrapTernaryBranches.self,
+      input: """
+        var urlEncoded: String {
+            isEmpty ? "" : "?"
+                + map { key, value in "\\(key)=\\(value.description.urlEncoded)" }
+                .joined(separator: "&")
+        }
+        """,
+      expected: """
+        var urlEncoded: String {
+            isEmpty ? "" : "?"
+                + map { key, value in "\\(key)=\\(value.description.urlEncoded)" }
+                .joined(separator: "&")
+        }
+        """,
+      findings: [])
+  }
+
 }

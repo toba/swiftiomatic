@@ -39,18 +39,32 @@ final class WrapTernaryBranches: StaticFormatRule<BasicRuleValue>, @unchecked Se
         if questionHasNewline || colonHasNewline {
             needsWrap = true
         } else {
-            let length = singleLineLength(of: visited)
             let lineLength = context.configuration[LineLength.self]
-            // Nested ternaries (those inside another ternary) only wrap when their intrinsic length
-            // exceeds the line length on its own. Their actual column after the parent wraps is
-            // not knowable here, and using the raw source column would over-wrap.
-            //
-            if hasAncestorTernary(parent: parent) {
-                needsWrap = length > lineLength
+            let converter = context.sourceLocationConverter
+
+            // If the source lines that already host `?` and `:` both fit within the print width,
+            // the ternary's operators are already on lines that don't overflow — no need to force
+            // a wrap, even if the *collapsed-to-one-line* description of the ternary is long.
+            // This matters when an operand is consumed by a lower-precedence operator that wraps
+            // independently (e.g. `cond ? a : b + multiLineChain` parses as `cond ? a : (b + …)`,
+            // making the else branch span multiple lines while `?` and `:` stay on one short line).
+            let questionLineFits = sourceLineLength(at: original.questionMark, converter: converter)
+                .map { $0 <= lineLength } ?? false
+            let colonLineFits = sourceLineLength(at: original.colon, converter: converter)
+                .map { $0 <= lineLength } ?? false
+            if questionLineFits, colonLineFits {
+                needsWrap = false
             } else {
-                let converter = context.sourceLocationConverter
-                let startCol = visited.condition.startLocation(converter: converter).column
-                needsWrap = (startCol - 1) + length > lineLength
+                let length = singleLineLength(of: visited)
+                // Nested ternaries (those inside another ternary) only wrap when their intrinsic
+                // length exceeds the line length on its own. Their actual column after the parent
+                // wraps is not knowable here, and using the raw source column would over-wrap.
+                if hasAncestorTernary(parent: parent) {
+                    needsWrap = length > lineLength
+                } else {
+                    let startCol = visited.condition.startLocation(converter: converter).column
+                    needsWrap = (startCol - 1) + length > lineLength
+                }
             }
         }
 
@@ -109,6 +123,25 @@ final class WrapTernaryBranches: StaticFormatRule<BasicRuleValue>, @unchecked Se
             current = p.parent
         }
         return false
+    }
+
+    /// Returns the UTF-8 length of the source line that contains `token` (excluding the trailing
+    /// newline). Returns `nil` if the line couldn't be measured.
+    private static func sourceLineLength(
+        at token: TokenSyntax,
+        converter: SourceLocationConverter
+    ) -> Int? {
+        let line = token.startLocation(converter: converter).line
+        let lineStart = converter.position(ofLine: line, column: 1).utf8Offset
+        let nextLineStart = converter.position(ofLine: line + 1, column: 1).utf8Offset
+        if nextLineStart > lineStart {
+            // Subtract one for the trailing newline. The pretty-print line length is character-
+            // based; for ASCII-heavy Swift source UTF-8 length is a safe upper bound.
+            return nextLineStart - lineStart - 1
+        }
+        // Last line of the file (no trailing newline) — fall back to source-file end.
+        let endOffset = token.root.endPosition.utf8Offset
+        return endOffset >= lineStart ? endOffset - lineStart : nil
     }
 
     /// True if `node` is contained within another `TernaryExprSyntax`.

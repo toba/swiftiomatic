@@ -137,6 +137,13 @@ package enum CommentReflowEngine {
                 i += 1
                 continue
             }
+            // CommonMark link reference definition (`[label]: url`). Preserve verbatim — wrapping
+            // the URL or merging adjacent definitions onto one line breaks the Markdown.
+            if isLinkReferenceDefinition(line) {
+                blocks.append(.verbatim(line: line))
+                i += 1
+                continue
+            }
             // Block quote: contiguous lines starting with ">".
             if line.hasPrefix(">") {
                 var quoted: [String] = []
@@ -167,12 +174,41 @@ package enum CommentReflowEngine {
                 if l.hasPrefix(">") { break }
                 if listMarker(l) != nil { break }
                 if fenceOpener(l) != nil { break }
+                if isLinkReferenceDefinition(l) { break }
                 paraLines.append(l.trimmingCharacters(in: .whitespaces))
                 i += 1
             }
             blocks.append(.paragraph(text: paraLines.joined(separator: " ")))
         }
         return blocks
+    }
+
+    /// Returns `true` if `line` is a CommonMark link reference definition of the form
+    /// `[label]: destination`, allowing up to 3 leading spaces of indent. These lines must remain
+    /// on their own — wrapping the destination or merging an adjacent definition into the previous
+    /// line invalidates the reference.
+    private static func isLinkReferenceDefinition(_ line: String) -> Bool {
+        var idx = line.startIndex
+        var leading = 0
+
+        while idx < line.endIndex, line[idx] == " ", leading < 3 {
+            idx = line.index(after: idx)
+            leading += 1
+        }
+        guard idx < line.endIndex, line[idx] == "[" else { return false }
+        let afterOpen = line.index(after: idx)
+        guard let closeBracket = line[afterOpen...].firstIndex(of: "]") else { return false }
+        // Label must be non-empty and contain no `[` (CommonMark forbids unescaped brackets).
+        guard closeBracket > afterOpen,
+              !line[afterOpen..<closeBracket].contains("[") else { return false }
+        let afterClose = line.index(after: closeBracket)
+        guard afterClose < line.endIndex, line[afterClose] == ":" else { return false }
+        // Must be followed by whitespace (or end of line in lazy parsers — but we require non-empty
+        // destination on the same line, which is the common case in Swift docs).
+        let afterColon = line.index(after: afterClose)
+        guard afterColon < line.endIndex, line[afterColon] == " " else { return false }
+        let dest = line[afterColon...].drop(while: { $0 == " " })
+        return !dest.isEmpty
     }
 
     /// Returns the fence string (e.g. "` ` ` " or "~~~") if ` line` opens a fenced code block.

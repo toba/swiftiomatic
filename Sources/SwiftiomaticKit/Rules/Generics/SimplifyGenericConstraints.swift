@@ -18,12 +18,13 @@ final class SimplifyGenericConstraints: StaticFormatRule<BasicRuleValue>, @unche
 
     static func transform(
         _ visited: FunctionDeclSyntax,
-        original _: FunctionDeclSyntax,
+        original: FunctionDeclSyntax,
         parent _: Syntax?,
         context: Context
     ) -> DeclSyntax {
         var result = simplifyConstraints(
             visited,
+            original: original,
             genericParamsKeyPath: \.genericParameterClause,
             whereClauseKeyPath: \.genericWhereClause,
             context: context
@@ -38,13 +39,14 @@ final class SimplifyGenericConstraints: StaticFormatRule<BasicRuleValue>, @unche
 
     static func transform(
         _ visited: StructDeclSyntax,
-        original _: StructDeclSyntax,
+        original: StructDeclSyntax,
         parent _: Syntax?,
         context: Context
     ) -> DeclSyntax {
         DeclSyntax(
             simplifyConstraints(
                 visited,
+                original: original,
                 genericParamsKeyPath: \.genericParameterClause,
                 whereClauseKeyPath: \.genericWhereClause,
                 context: context
@@ -53,13 +55,14 @@ final class SimplifyGenericConstraints: StaticFormatRule<BasicRuleValue>, @unche
 
     static func transform(
         _ visited: ClassDeclSyntax,
-        original _: ClassDeclSyntax,
+        original: ClassDeclSyntax,
         parent _: Syntax?,
         context: Context
     ) -> DeclSyntax {
         DeclSyntax(
             simplifyConstraints(
                 visited,
+                original: original,
                 genericParamsKeyPath: \.genericParameterClause,
                 whereClauseKeyPath: \.genericWhereClause,
                 context: context
@@ -68,13 +71,14 @@ final class SimplifyGenericConstraints: StaticFormatRule<BasicRuleValue>, @unche
 
     static func transform(
         _ visited: EnumDeclSyntax,
-        original _: EnumDeclSyntax,
+        original: EnumDeclSyntax,
         parent _: Syntax?,
         context: Context
     ) -> DeclSyntax {
         DeclSyntax(
             simplifyConstraints(
                 visited,
+                original: original,
                 genericParamsKeyPath: \.genericParameterClause,
                 whereClauseKeyPath: \.genericWhereClause,
                 context: context
@@ -83,13 +87,14 @@ final class SimplifyGenericConstraints: StaticFormatRule<BasicRuleValue>, @unche
 
     static func transform(
         _ visited: ActorDeclSyntax,
-        original _: ActorDeclSyntax,
+        original: ActorDeclSyntax,
         parent _: Syntax?,
         context: Context
     ) -> DeclSyntax {
         DeclSyntax(
             simplifyConstraints(
                 visited,
+                original: original,
                 genericParamsKeyPath: \.genericParameterClause,
                 whereClauseKeyPath: \.genericWhereClause,
                 context: context
@@ -98,6 +103,7 @@ final class SimplifyGenericConstraints: StaticFormatRule<BasicRuleValue>, @unche
 
     private static func simplifyConstraints<D>(
         _ decl: D,
+        original: D,
         genericParamsKeyPath: WritableKeyPath<D, GenericParameterClauseSyntax?>,
         whereClauseKeyPath: WritableKeyPath<D, GenericWhereClauseSyntax?>,
         context: Context
@@ -113,7 +119,12 @@ final class SimplifyGenericConstraints: StaticFormatRule<BasicRuleValue>, @unche
                 .map { $0.name.text }
         )
 
-        // Identify constraints to inline
+        // Identify constraints to inline. The diagnostic is anchored to the *original* (attached)
+        // conformance node so its source location maps through `context.sourceLocationConverter`
+        // (which is built from the original tree) to the correct line/column. Anchoring on the
+        // visited (rewritten) subtree gives a position relative to the detached subtree's root,
+        // which floats up to whatever earlier source line shares that byte offset.
+        let originalRequirements: [GenericRequirementSyntax] = (original[keyPath: whereClauseKeyPath]?.requirements).map(Array.init) ?? []
         var consumedIndices: Set<Int> = []
         var inlineMap: [String: TypeSyntax] = [:]
 
@@ -129,9 +140,12 @@ final class SimplifyGenericConstraints: StaticFormatRule<BasicRuleValue>, @unche
             inlineMap[leftIdent.name.text] = conformance.rightType
             consumedIndices.insert(index)
 
+            let anchor = originalRequirements.indices.contains(index)
+                ? Syntax(originalRequirements[index].requirement)
+                : Syntax(conformance)
             Self.diagnose(
                 .simplifyGenericConstraint(param: leftIdent.name.text),
-                on: conformance,
+                on: anchor,
                 context: context
             )
         }

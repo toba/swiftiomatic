@@ -459,6 +459,45 @@ struct SimplifyGenericConstraintsTests: RuleTesting {
     )
   }
 
+  @Test func findingAnchoredToWhereClauseWhenDeclPrecededByOtherContent() {
+    // Regression: the rule used to diagnose against the rewritten subtree, so the
+    // conformance node's position was relative to the detached subtree (starting at
+    // offset 0). With preceding content in the file, the recorded source location
+    // landed on whatever original-source line shared that byte offset (typealiases,
+    // doc comments, etc.) instead of the actual `where` clause.
+    assertFormatting(
+      SimplifyGenericConstraints.self,
+      input: """
+        typealias MoveRowHandler = (IndexSet, Int) -> Void
+
+        /// A list in which each item may have a child list
+        ///
+        /// Lots of preceding doc-comment content to push the struct down so that
+        /// the conformance's offset-within-subtree no longer matches its offset
+        /// in the original source.
+        struct OutlineList<Data, RowContent>: View where 1️⃣Data: RecursiveCollection, 2️⃣RowContent: View {
+            let data: Data
+        }
+        """,
+      expected: """
+        typealias MoveRowHandler = (IndexSet, Int) -> Void
+
+        /// A list in which each item may have a child list
+        ///
+        /// Lots of preceding doc-comment content to push the struct down so that
+        /// the conformance's offset-within-subtree no longer matches its offset
+        /// in the original source.
+        struct OutlineList<Data: RecursiveCollection, RowContent: View>: View {
+            let data: Data
+        }
+        """,
+      findings: [
+        FindingSpec("1️⃣", message: "constraint on 'Data' can be simplified to an inline constraint"),
+        FindingSpec("2️⃣", message: "constraint on 'RowContent' can be simplified to an inline constraint"),
+      ]
+    )
+  }
+
   @Test func whereClauseWithOnlyConcreteTypes() {
     assertFormatting(
       SimplifyGenericConstraints.self,

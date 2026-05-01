@@ -178,6 +178,29 @@ struct ReflowCommentsTests: RuleTesting {
         )
     }
 
+    @Test func preservesAdjacentLinkReferenceDefinitions() {
+        // Regression: two `[label]: url` lines were merged into one paragraph and reflowed,
+        // producing `[uiv]: ...uitextview [nsv]:` on one line, which breaks the references.
+        assertFormatting(
+            ReflowComments.self,
+            input: """
+                /// Text view for [iOS][uiv] or [MacOS][nsv]
+                ///
+                /// [uiv]: https://developer.apple.com/documentation/uikit/uitextview
+                /// [nsv]: https://developer.apple.com/documentation/appkit/nstextview
+                let x = 1
+                """,
+            expected: """
+                /// Text view for [iOS][uiv] or [MacOS][nsv]
+                ///
+                /// [uiv]: https://developer.apple.com/documentation/uikit/uitextview
+                /// [nsv]: https://developer.apple.com/documentation/appkit/nstextview
+                let x = 1
+                """,
+            configuration: config(maxWidth: 100)
+        )
+    }
+
     @Test func preservesParametersBlockIndentation() {
         assertFormatting(
             ReflowComments.self,
