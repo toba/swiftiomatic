@@ -14,21 +14,25 @@ import Foundation
 import SwiftSyntax
 
 /// Scans the source for `// sm:ignore` directives and records which rules are disabled in which
-/// ranges. There is a single directive grammar — the comment's position determines its scope:
+/// ranges. The comment's form and position determine its scope:
 ///
-/// - A `// sm:ignore` comment on a line by itself disables rules from that comment's position
-///   through the end of the file. Placing it at the top of the file therefore ignores the whole
-///   file.
-/// - A trailing `// sm:ignore` comment on the same line as a statement (or member) disables rules
-///   only for that statement.
+/// - **Bare** `// sm:ignore` on a line by itself → all rules disabled from that comment's
+///   position through end of file. Placing it at the top of the file ignores the whole file.
+/// - **`// sm:ignore Rule1, Rule2`** on a line by itself → those rules disabled for the
+///   following node and its children only.
+/// - **Trailing** `// sm:ignore` on the same line as a statement (or member) → rules disabled
+///   for that statement only.
 ///
 /// Examples:
 ///
 ///   // sm:ignore                                  — ignore all rules from here to EOF
-///   // sm:ignore RuleName                         — ignore RuleName from here to EOF
-///   // sm:ignore Rule1, Rule2, ThirdRule          — ignore the listed rules from here to EOF
+///   // sm:ignore RuleName                         — ignore RuleName for the next node only
+///   // sm:ignore Rule1, Rule2                     — ignore those rules for the next node only
 ///   let x = "trouble" // sm:ignore                — ignore all rules for this line only
 ///   let x = 1 // sm:ignore Rule1                  — ignore Rule1 for this line only
+///
+/// For backwards compatibility the legacy forms `// sm:ignore-file` and `// sm:ignore: Rule` are
+/// also accepted and behave like their unprefixed equivalents.
 ///
 /// Rules consult `RuleMask.ruleState(_:at:)` to check whether they are disabled at the location
 /// they are currently examining.
@@ -104,7 +108,10 @@ private final class RuleStatusCollectionVisitor: SyntaxVisitor {
     /// Note: We are using a string-based regex instead of a regex literal ( `#/regex/#` ) because
     /// Windows did not have full support for regex literals until Swift 5.10.
     private static nonisolated(unsafe) let ignoreRegex: RegexExpression = {
-        let pattern = #"^\s*\/\/\s*sm:ignore(?:\s+(?<ruleNames>\S.*))?$"#
+        // Accepts the canonical form `// sm:ignore [Rule1, Rule2]` and, for backwards
+        // compatibility, the legacy `sm:ignore-file` / `sm:ignore: Rule1` forms. All variants
+        // produce the same node-or-rest-of-file scope based on where the comment appears.
+        let pattern = #"^\s*\/\/\s*sm:ignore(?:-file)?(?:[\s:]+(?<ruleNames>\S.*))?$"#
         return try! Regex(pattern).matchingSemantics(.unicodeScalar)
     }()
 
@@ -148,23 +155,32 @@ private final class RuleStatusCollectionVisitor: SyntaxVisitor {
     /// Scans both the leading trivia of the node's first token and the trailing trivia of its last
     /// token for `// sm:ignore` directives, and records the appropriate source ranges.
     ///
-    /// - Lone-line directives (in leading trivia) get a range from the node's start through EOF.
-    /// - Trailing directives (on the same line as code) get a range scoped to the node only.
+    /// Scoping:
+    /// - Lone-line *bare* `// sm:ignore` (no rule names) → from the node's start through EOF.
+    ///   Place it at the top of the file to ignore the whole file.
+    /// - Lone-line `// sm:ignore Rule1, Rule2` (with rule names) → the node only. Used for
+    ///   surgical, per-rule suppression on a specific declaration or statement.
+    /// - Trailing `// sm:ignore` (on the same line as code) → the node only.
     private func applyDirectives(to node: Syntax) {
         guard let firstToken = node.firstToken(viewMode: .sourceAccurate),
               let sourceFileEnd
         else { return }
 
         let nodeStart = sourceLocationConverter.location(for: node.position)
+        let nodeRange = node.sourceRange(converter: sourceLocationConverter)
+        let restOfFileRange = SourceRange(start: nodeStart, end: sourceFileEnd)
 
         let isFirstInFile = firstToken.previousToken(viewMode: .sourceAccurate) == nil
         for comment in loneLineComments(in: firstToken.leadingTrivia, isFirstToken: isFirstInFile) {
             guard let match = ruleStatusDirectiveMatch(in: comment) else { continue }
-            record(match, range: SourceRange(start: nodeStart, end: sourceFileEnd))
+            // Bare `sm:ignore` extends to EOF; `sm:ignore Rule1, Rule2` stays node-scoped.
+            switch match {
+                case .all: record(match, range: restOfFileRange)
+                case .subset: record(match, range: nodeRange)
+            }
         }
 
         if let lastToken = node.lastToken(viewMode: .sourceAccurate) {
-            let nodeRange = node.sourceRange(converter: sourceLocationConverter)
             for comment in trailingLineComments(in: lastToken.trailingTrivia) {
                 guard let match = ruleStatusDirectiveMatch(in: comment) else { continue }
                 record(match, range: nodeRange)

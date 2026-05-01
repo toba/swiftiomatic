@@ -1,6 +1,6 @@
 import SwiftSyntax
 
-// sm:ignore functionBodyLength
+// sm:ignore-file: functionBodyLength
 
 /// Controls the layout of nested function/initializer calls where the sole argument to one call is
 /// another call.

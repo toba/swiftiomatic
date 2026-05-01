@@ -34,9 +34,9 @@ struct RuleMaskTests {
     converter.location(for: converter.position(ofLine: line, column: column))
   }
 
-  // MARK: - Lone-line directives extend from their position to end-of-file.
+  // MARK: - Named directive: scoped to the next node only.
 
-  @Test func loneDirectiveDisablesRulesUntilEOF() {
+  @Test func singleRuleScopedToNextNode() {
     let text =
       """
       let a = 123
@@ -49,10 +49,10 @@ struct RuleMaskTests {
 
     #expect(mask.ruleState("rule1", at: location(ofLine: 1, in: converter)) == .default)
     #expect(mask.ruleState("rule1", at: location(ofLine: 3, in: converter)) == .disabled)
-    #expect(mask.ruleState("rule1", at: location(ofLine: 4, in: converter)) == .disabled)
+    #expect(mask.ruleState("rule1", at: location(ofLine: 4, in: converter)) == .default)
   }
 
-  @Test func multipleDirectivesAccumulate() {
+  @Test func separateNamedDirectivesAreIndependent() {
     let text =
       """
       let a = 123
@@ -60,22 +60,24 @@ struct RuleMaskTests {
       let b = 456
       // sm:ignore rule2
       let c = 789
+      // sm:ignore rule1, rule2
       let d = "abc"
+      let e = "def"
       """
 
     let (mask, converter) = createMask(sourceText: text)
 
-    // rule1 disabled from line 3 onward.
     #expect(mask.ruleState("rule1", at: location(ofLine: 1, in: converter)) == .default)
     #expect(mask.ruleState("rule1", at: location(ofLine: 3, in: converter)) == .disabled)
-    #expect(mask.ruleState("rule1", at: location(ofLine: 5, in: converter)) == .disabled)
-    #expect(mask.ruleState("rule1", at: location(ofLine: 6, in: converter)) == .disabled)
+    #expect(mask.ruleState("rule1", at: location(ofLine: 5, in: converter)) == .default)
+    #expect(mask.ruleState("rule1", at: location(ofLine: 7, in: converter)) == .disabled)
+    #expect(mask.ruleState("rule1", at: location(ofLine: 8, in: converter)) == .default)
 
-    // rule2 disabled from line 5 onward.
     #expect(mask.ruleState("rule2", at: location(ofLine: 1, in: converter)) == .default)
     #expect(mask.ruleState("rule2", at: location(ofLine: 3, in: converter)) == .default)
     #expect(mask.ruleState("rule2", at: location(ofLine: 5, in: converter)) == .disabled)
-    #expect(mask.ruleState("rule2", at: location(ofLine: 6, in: converter)) == .disabled)
+    #expect(mask.ruleState("rule2", at: location(ofLine: 7, in: converter)) == .disabled)
+    #expect(mask.ruleState("rule2", at: location(ofLine: 8, in: converter)) == .default)
   }
 
   @Test func ignoreComplexRuleNames() {
@@ -97,33 +99,40 @@ struct RuleMaskTests {
     #expect(mask.ruleState("default", at: location(ofLine: 2, in: converter)) == .default)
   }
 
-  @Test func nestedDirectiveAlsoExtendsToEOF() {
+  @Test func nestedDirectivesScopedToTheirNode() {
     let text =
       """
       // sm:ignore rule1
       struct Foo {
         var bar = 0
 
-        // sm:ignore rule4
+        // sm:ignore rule1
         var baz = 0
 
+        // sm:ignore rule4
         var bazzle = 0
+
+        var barzle = 0
       }
-      let after = 0
       """
 
     let (mask, converter) = createMask(sourceText: text)
 
-    // rule1 from top-of-file → disabled everywhere after the directive.
+    // rule1 disabled inside struct Foo (whole struct is the next node).
     #expect(mask.ruleState("rule1", at: location(ofLine: 3, column: 3, in: converter)) == .disabled)
-    #expect(mask.ruleState("rule1", at: location(ofLine: 6, column: 3, in: converter)) == .disabled)
-    #expect(mask.ruleState("rule1", at: location(ofLine: 10, in: converter)) == .disabled)
-
-    // rule4 nested inside struct → still extends to EOF from that point.
     #expect(mask.ruleState("rule4", at: location(ofLine: 3, column: 3, in: converter)) == .default)
-    #expect(mask.ruleState("rule4", at: location(ofLine: 6, column: 3, in: converter)) == .disabled)
-    #expect(mask.ruleState("rule4", at: location(ofLine: 8, column: 3, in: converter)) == .disabled)
-    #expect(mask.ruleState("rule4", at: location(ofLine: 10, in: converter)) == .disabled)
+
+    // Nested directive on `baz`.
+    #expect(mask.ruleState("rule1", at: location(ofLine: 6, column: 3, in: converter)) == .disabled)
+    #expect(mask.ruleState("rule4", at: location(ofLine: 6, column: 3, in: converter)) == .default)
+
+    // `bazzle` covered by rule1 (struct-level) and its own rule4 directive.
+    #expect(mask.ruleState("rule1", at: location(ofLine: 9, column: 3, in: converter)) == .disabled)
+    #expect(mask.ruleState("rule4", at: location(ofLine: 9, column: 3, in: converter)) == .disabled)
+
+    // `barzle` covered by rule1 only.
+    #expect(mask.ruleState("rule1", at: location(ofLine: 11, column: 3, in: converter)) == .disabled)
+    #expect(mask.ruleState("rule4", at: location(ofLine: 11, column: 3, in: converter)) == .default)
   }
 
   @Test func nonMatchingDirectivesAreIgnored() {
@@ -215,9 +224,25 @@ struct RuleMaskTests {
     #expect(mask.ruleState("rule1", at: location(ofLine: 3, column: 3, in: converter)) == .default)
   }
 
-  // MARK: - Top-of-file directive ignores the whole file.
+  // MARK: - Bare directive: extends to end of file.
 
-  @Test func namelessTopOfFileIgnoresEverything() {
+  @Test func bareDirectiveExtendsToEOF() {
+    let text =
+      """
+      let a = 123
+      // sm:ignore
+      let b = 456
+      let c = 789
+      """
+
+    let (mask, converter) = createMask(sourceText: text)
+
+    #expect(mask.ruleState("anyRule", at: location(ofLine: 1, in: converter)) == .default)
+    #expect(mask.ruleState("anyRule", at: location(ofLine: 3, in: converter)) == .disabled)
+    #expect(mask.ruleState("anyRule", at: location(ofLine: 4, in: converter)) == .disabled)
+  }
+
+  @Test func bareDirectiveAtTopOfFileIgnoresEverything() {
     let text =
       """
       // sm:ignore
@@ -246,37 +271,14 @@ struct RuleMaskTests {
     }
   }
 
-  @Test func topOfFileWithRuleList() {
-    let text =
-      """
-      // sm:ignore rule1, rule2, rule3
-      let a = 5
-      let b = 4
-
-      class Foo {
-        let member1 = 0
-      }
-      """
-
-    let (mask, converter) = createMask(sourceText: text)
-
-    let lineCount = text.split(separator: "\n").count
-    for i in 1..<lineCount {
-      #expect(mask.ruleState("rule1", at: location(ofLine: i, in: converter)) == .disabled)
-      #expect(mask.ruleState("rule2", at: location(ofLine: i, in: converter)) == .disabled)
-      #expect(mask.ruleState("rule3", at: location(ofLine: i, in: converter)) == .disabled)
-      #expect(mask.ruleState("rule4", at: location(ofLine: i, in: converter)) == .default)
-    }
-  }
-
-  @Test func nestedDirectiveExtendsToEOFFromItsPosition() {
+  @Test func bareDirectiveNestedExtendsToEOFFromItsPosition() {
     let text =
       """
       let a = 5
       let b = 4
 
       class Foo {
-        // sm:ignore rule1
+        // sm:ignore
         let member1 = 0
         func foo() {
           baz()
@@ -289,87 +291,45 @@ struct RuleMaskTests {
 
     let (mask, converter) = createMask(sourceText: text)
 
-    // rule1 default before the nested directive.
-    #expect(mask.ruleState("rule1", at: location(ofLine: 1, in: converter)) == .default)
-    #expect(mask.ruleState("rule1", at: location(ofLine: 4, in: converter)) == .default)
+    // anyRule default before the nested bare directive.
+    #expect(mask.ruleState("anyRule", at: location(ofLine: 1, in: converter)) == .default)
+    #expect(mask.ruleState("anyRule", at: location(ofLine: 4, in: converter)) == .default)
 
-    // rule1 disabled at and after the directive (line 5 onward).
-    #expect(mask.ruleState("rule1", at: location(ofLine: 6, column: 3, in: converter)) == .disabled)
-    #expect(mask.ruleState("rule1", at: location(ofLine: 12, in: converter)) == .disabled)
+    // anyRule disabled at and after the directive (line 5 onward).
+    #expect(mask.ruleState("anyRule", at: location(ofLine: 6, column: 3, in: converter)) == .disabled)
+    #expect(mask.ruleState("anyRule", at: location(ofLine: 12, in: converter)) == .disabled)
   }
 
-  @Test func mixedTopLevelAndMidFileDirectives() {
+  // MARK: - Legacy forms (backwards compatibility).
+
+  @Test func legacyIgnoreFileFormStillAccepted() {
     let text =
       """
-      // sm:ignore rule1, rule2
+      // sm:ignore-file: rule1, rule2
       let a = 5
-      // sm:ignore rule3
       let b = 4
-
-      class Foo {
-        // sm:ignore rule3, rule4
-        let member1 = 0
-      }
       """
 
     let (mask, converter) = createMask(sourceText: text)
 
-    let lineCount = text.split(separator: "\n").count
-    // rule1, rule2 disabled everywhere after the top directive.
-    for i in 1..<lineCount {
-      #expect(mask.ruleState("rule1", at: location(ofLine: i, in: converter)) == .disabled)
-      #expect(mask.ruleState("rule2", at: location(ofLine: i, in: converter)) == .disabled)
-    }
-    // rule3 disabled from its directive (line 3) onward.
-    #expect(mask.ruleState("rule3", at: location(ofLine: 2, in: converter)) == .default)
-    #expect(mask.ruleState("rule3", at: location(ofLine: 4, in: converter)) == .disabled)
-    #expect(mask.ruleState("rule3", at: location(ofLine: 8, column: 3, in: converter)) == .disabled)
-    // rule4 disabled from its directive (line 7) onward.
-    #expect(mask.ruleState("rule4", at: location(ofLine: 4, in: converter)) == .default)
-    #expect(mask.ruleState("rule4", at: location(ofLine: 8, column: 3, in: converter)) == .disabled)
+    // Behaves like a named directive on the first node — scoped to that node.
+    #expect(mask.ruleState("rule1", at: location(ofLine: 2, in: converter)) == .disabled)
+    #expect(mask.ruleState("rule2", at: location(ofLine: 2, in: converter)) == .disabled)
   }
 
-  @Test func multipleSubsetTopOfFileDirectives() {
+  @Test func legacyColonFormStillAccepted() {
     let text =
       """
-      // sm:ignore rule1
-      // sm:ignore rule2
-      let a = 5
-
-      class Foo {
-        let member1 = 0
-      }
+      let a = 123
+      // sm:ignore: rule1
+      let b = 456
+      let c = 789
       """
 
     let (mask, converter) = createMask(sourceText: text)
 
-    let lineCount = text.split(separator: "\n").count
-    for i in 1..<lineCount {
-      #expect(mask.ruleState("rule1", at: location(ofLine: i, in: converter)) == .disabled)
-      #expect(mask.ruleState("rule2", at: location(ofLine: i, in: converter)) == .disabled)
-      #expect(mask.ruleState("rule3", at: location(ofLine: i, in: converter)) == .default)
-    }
-  }
-
-  @Test func subsetAndAllTopOfFileDirectives() {
-    let text =
-      """
-      // sm:ignore rule1
-      // sm:ignore
-      let a = 5
-
-      class Foo {
-        let member1 = 0
-      }
-      """
-
-    let (mask, converter) = createMask(sourceText: text)
-
-    let lineCount = text.split(separator: "\n").count
-    for i in 1..<lineCount {
-      #expect(mask.ruleState("rule1", at: location(ofLine: i, in: converter)) == .disabled)
-      #expect(mask.ruleState("rule2", at: location(ofLine: i, in: converter)) == .disabled)
-      #expect(mask.ruleState("rule3", at: location(ofLine: i, in: converter)) == .disabled)
-    }
+    #expect(mask.ruleState("rule1", at: location(ofLine: 1, in: converter)) == .default)
+    #expect(mask.ruleState("rule1", at: location(ofLine: 3, in: converter)) == .disabled)
+    #expect(mask.ruleState("rule1", at: location(ofLine: 4, in: converter)) == .default)
   }
 }

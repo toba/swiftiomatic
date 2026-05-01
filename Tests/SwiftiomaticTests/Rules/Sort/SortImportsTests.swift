@@ -378,12 +378,12 @@ struct SortImportsTests: RuleTesting {
         // Comment about Z
         import Z
         2️⃣import D
-        // sm:ignore
+        // sm:ignore SortImports
         // Comment about testable testA
         @testable import testA
         @testable import testZ  // trailing comment about testZ
         3️⃣@testable import testC
-        // sm:ignore
+        // sm:ignore SortImports
         @_implementationOnly import testB
         // Comment about Bar
         import enum Bar
@@ -402,14 +402,14 @@ struct SortImportsTests: RuleTesting {
         // Comment about Z
         import Z
 
-        // sm:ignore
+        // sm:ignore SortImports
         // Comment about testable testA
         @testable import testA
 
         @testable import testC
         @testable import testZ  // trailing comment about testZ
 
-        // sm:ignore
+        // sm:ignore SortImports
         @_implementationOnly import testB
 
         // Comment about Bar
@@ -537,20 +537,20 @@ struct SortImportsTests: RuleTesting {
       SortImports.self,
       input: """
         import AppKit
-        // sm:ignore
+        // sm:ignore SortImports
         import CoreLocation
         // Second CoreLocation import here.
         import CoreLocation
         // Comment about ZeeFramework.
         import ZeeFramework
-        // sm:ignore
+        // sm:ignore SortImports
         import ZeeFramework  // trailing comment
         foo()
         """,
       expected: """
         import AppKit
 
-        // sm:ignore
+        // sm:ignore SortImports
         import CoreLocation
 
         // Second CoreLocation import here.
@@ -558,7 +558,7 @@ struct SortImportsTests: RuleTesting {
         // Comment about ZeeFramework.
         import ZeeFramework
 
-        // sm:ignore
+        // sm:ignore SortImports
         import ZeeFramework  // trailing comment
 
         foo()

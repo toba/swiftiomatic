@@ -137,14 +137,19 @@ final class CommentMovingRewriter: SyntaxRewriter {
 
 /// Returns whether the given trivia includes a directive to ignore formatting for the next node.
 ///
-/// - Parameter trivia: Leading trivia for a node that the formatter supports ignoring.
-/// - Returns: Whether the trivia contains a `sm:ignore` directive.
-func isFormatterIgnorePresent(inTrivia trivia: Trivia) -> Bool {
+/// - Parameters:
+///   - trivia: Leading trivia for a node that the formatter supports ignoring.
+///   - isWholeFile: Whether to search for a whole-file ignore directive or per-node ignore.
+///     Whole-file requires the legacy `sm:ignore-file` marker (kept distinct from `sm:ignore`
+///     so that putting `sm:ignore` before a node only suppresses formatting for that node).
+/// - Returns: Whether the trivia contains the specified type of ignore directive.
+func isFormatterIgnorePresent(inTrivia trivia: Trivia, isWholeFile: Bool) -> Bool {
     func isFormatterIgnore(in commentText: String, prefix: String, suffix: String) -> Bool {
         let trimmed = commentText.dropFirst(prefix.count)
             .dropLast(suffix.count)
             .trimmingCharacters(in: .whitespaces)
-        return trimmed == "sm:ignore"
+        let pattern = isWholeFile ? "sm:ignore-file" : "sm:ignore"
+        return trimmed == pattern
     }
 
     for piece in trivia {
@@ -168,7 +173,7 @@ func isFormatterIgnorePresent(inTrivia trivia: Trivia) -> Bool {
 ///
 /// - Parameter node: A node that can be safely ignored.
 func shouldFormatterIgnore(node: Syntax) -> Bool {
-    isFormatterIgnorePresent(inTrivia: node.allPrecedingTrivia)
+    isFormatterIgnorePresent(inTrivia: node.allPrecedingTrivia, isWholeFile: false)
 }
 
 /// Returns whether the formatter should ignore the given file by printing it without changing the
@@ -177,5 +182,5 @@ func shouldFormatterIgnore(node: Syntax) -> Bool {
 ///
 /// - Parameter file: The root syntax node for a source file.
 func shouldFormatterIgnore(file: SourceFileSyntax) -> Bool {
-    isFormatterIgnorePresent(inTrivia: file.allPrecedingTrivia)
+    isFormatterIgnorePresent(inTrivia: file.allPrecedingTrivia, isWholeFile: true)
 }

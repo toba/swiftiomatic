@@ -16,7 +16,7 @@ package final class ConfigurationSchemaSwiftGenerator: FileGenerator {
         return """
             // Auto-generated — do not edit.
 
-            // sm:ignore fileLength, typeBodyLength, closureBodyLength
+            // sm:ignore-file: fileLength, typeBodyLength, closureBodyLength
 
             import Foundation
 

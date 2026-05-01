@@ -10,7 +10,7 @@
 //
 // ===----------------------------------------------------------------------===//
 
-// sm:ignore fileLength, typeBodyLength, functionBodyLength
+// sm:ignore-file: fileLength, typeBodyLength, functionBodyLength
 
 import SwiftSyntax
 

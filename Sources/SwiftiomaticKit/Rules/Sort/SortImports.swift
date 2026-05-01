@@ -119,7 +119,7 @@ final class SortImports: StructuralFormatRule<SortImportsConfiguration>, @unchec
             if atStartOfFile {
                 switch line.type {
                     case .comment:
-                        if line.description.contains(IgnoreDirective.file.description) {
+                        if line.description.contains("sm:ignore") {
                             // If the file-level ignore directive is included in the comments of the
                             // import statements, consider the comments before the file-level ignore
                             // directive as part of the fileHeader.

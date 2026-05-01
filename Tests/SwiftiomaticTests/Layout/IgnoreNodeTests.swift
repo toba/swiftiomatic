@@ -307,7 +307,7 @@ struct IgnoreNodeTests: LayoutTesting {
   @Test func ignoreWholeFile() {
     let input =
       """
-      // sm:ignore
+      // sm:ignore-file
       import Zoo
       import Aoo
       import foo
@@ -338,7 +338,7 @@ struct IgnoreNodeTests: LayoutTesting {
   @Test func ignoreWholeFileDoesNotTouchWhitespace() {
     let input =
       """
-      // sm:ignore
+      // sm:ignore-file
       /// foo bar
       \u{0020}
       // baz

@@ -1,4 +1,4 @@
-// sm:ignore noRetroactiveConformances
+// sm:ignore-file: noRetroactiveConformances
 // Range/ClosedRange need ExpressibleByArgument for swift-argument-parser; we don't own either type.
 //===----------------------------------------------------------------------===//
 //

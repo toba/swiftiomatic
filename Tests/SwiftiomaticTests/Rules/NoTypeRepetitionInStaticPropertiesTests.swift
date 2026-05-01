@@ -166,8 +166,7 @@ struct DontRepeatTypeInStaticPropertiesTests: RuleTesting {
       NoTypeRepetitionInStaticProperties.self,
       """
       struct Foo {
-        // sm:ignore NoTypeRepetitionInStaticProperties
-        static let defaultFoo: Foo
+        static let defaultFoo: Foo  // sm:ignore NoTypeRepetitionInStaticProperties
         static let 1️⃣alternateFoo: Foo
       }
       """,
