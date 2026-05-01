@@ -215,6 +215,66 @@ struct RuleMaskTests {
     #expect(mask.ruleState("rule1", at: location(ofLine: 3, column: 3, in: converter)) == .default)
   }
 
+  // MARK: - Trailing directive on any line of a multi-line statement.
+
+  @Test func trailingIgnoreOnFirstLineOfMultiLineStatement() {
+    let text =
+      """
+      let a = 0
+      if !items.contains(p) { // sm:ignore rule1
+        items.append(p)
+      }
+      let z = 0
+      """
+
+    let (mask, converter) = createMask(sourceText: text)
+
+    // Diagnosed position is on line 2 (the IfStmt).
+    #expect(mask.ruleState("rule1", at: location(ofLine: 2, in: converter)) == .disabled)
+    // Range covers the whole if (lines 2-4).
+    #expect(mask.ruleState("rule1", at: location(ofLine: 3, in: converter)) == .disabled)
+    #expect(mask.ruleState("rule1", at: location(ofLine: 4, in: converter)) == .disabled)
+    // Outside the statement: default.
+    #expect(mask.ruleState("rule1", at: location(ofLine: 1, in: converter)) == .default)
+    #expect(mask.ruleState("rule1", at: location(ofLine: 5, in: converter)) == .default)
+  }
+
+  @Test func trailingIgnoreOnLastLineOfMultiLineStatement() {
+    let text =
+      """
+      let a = 0
+      if !items.contains(p) {
+        items.append(p)
+      } // sm:ignore rule1
+      let z = 0
+      """
+
+    let (mask, converter) = createMask(sourceText: text)
+
+    #expect(mask.ruleState("rule1", at: location(ofLine: 2, in: converter)) == .disabled)
+    #expect(mask.ruleState("rule1", at: location(ofLine: 3, in: converter)) == .disabled)
+    #expect(mask.ruleState("rule1", at: location(ofLine: 4, in: converter)) == .disabled)
+    #expect(mask.ruleState("rule1", at: location(ofLine: 1, in: converter)) == .default)
+    #expect(mask.ruleState("rule1", at: location(ofLine: 5, in: converter)) == .default)
+  }
+
+  @Test func trailingIgnoreOnMemberDoesNotLeakToSiblings() {
+    // Regression guard: a trailing directive on one struct member must not extend to other
+    // members of the same struct (i.e., must not leak up to the enclosing type's range).
+    let text =
+      """
+      struct Foo {
+        var bar = 0 // sm:ignore rule1
+        var baz = 0
+      }
+      """
+
+    let (mask, converter) = createMask(sourceText: text)
+
+    #expect(mask.ruleState("rule1", at: location(ofLine: 2, column: 3, in: converter)) == .disabled)
+    #expect(mask.ruleState("rule1", at: location(ofLine: 3, column: 3, in: converter)) == .default)
+  }
+
   // MARK: - Bare directive: extends to end of file.
 
   @Test func bareDirectiveExtendsToEOF() {

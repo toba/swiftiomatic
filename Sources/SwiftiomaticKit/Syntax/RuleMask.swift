@@ -147,13 +147,15 @@ private final class RuleStatusCollectionVisitor: SyntaxVisitor {
 
     // MARK: - Helper Methods
 
-    /// Scans both the leading trivia of the node's first token and the trailing trivia of its last
-    /// token for `// sm:ignore` directives, and records the appropriate source ranges.
+    /// Scans the leading trivia of the node's first token and the trailing trivia of every token
+    /// in the node for `// sm:ignore` directives, and records the appropriate source ranges.
     ///
     /// Scoping:
     /// - Lone-line `// sm:ignore` (bare or with rule names) → from the comment's position
     ///   through end of file.
-    /// - Trailing `// sm:ignore` on the same line as code → that statement only.
+    /// - Trailing `// sm:ignore` on any line of the statement (or member) → that statement only.
+    ///   Multi-line nodes accept the directive on any line — first line, last line, or any
+    ///   interior line — to give users a natural placement next to a diagnosed expression.
     ///
     /// `FileLength` (and any other `SourceFileSyntax`-level rule) is gated at the file's end
     /// location in `Context.shouldFormat`, so a directive anywhere in the file correctly
@@ -173,12 +175,29 @@ private final class RuleStatusCollectionVisitor: SyntaxVisitor {
             record(match, range: restOfFileRange)
         }
 
-        if let lastToken = node.lastToken(viewMode: .sourceAccurate) {
-            for comment in trailingLineComments(in: lastToken.trailingTrivia) {
+        for token in node.tokens(viewMode: .sourceAccurate) {
+            // Skip tokens that belong to a nested code-block / member-block item — those are
+            // handled when that nested item is visited. Without this, a trailing directive
+            // on a struct member would leak up to the enclosing type, etc.
+            if isInsideDescendantItem(token, of: node) { continue }
+            for comment in trailingLineComments(in: token.trailingTrivia) {
                 guard let match = ruleStatusDirectiveMatch(in: comment) else { continue }
                 record(match, range: nodeRange)
             }
         }
+    }
+
+    /// True if `token` is contained in a descendant `CodeBlockItemSyntax` or
+    /// `MemberBlockItemSyntax` of `node`.
+    private func isInsideDescendantItem(_ token: TokenSyntax, of node: Syntax) -> Bool {
+        var current = Syntax(token).parent
+        while let n = current, n != node {
+            if n.is(CodeBlockItemSyntax.self) || n.is(MemberBlockItemSyntax.self) {
+                return true
+            }
+            current = n.parent
+        }
+        return false
     }
 
     private func record(_ match: RuleStatusDirectiveMatch, range: SourceRange) {

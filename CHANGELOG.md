@@ -97,6 +97,7 @@
 - `schema.json`; emit string properties that omit an explicit `type` annotation ([#596](https://github.com/toba/swiftiomatic/issues/596))
 - Misfiring `wrapTernary`/`useImplicitInit`/`redundantType`; thread `original` node through `StaticFormatRule.transform` so findings anchor in the original source's coordinate space; `redundantType` exempts stored properties on type declarations
 - Schema generator; emit raw values (e.g. `get_set`/`set_get`) instead of Swift case identifiers for enum-typed config properties ([#609](https://github.com/toba/swiftiomatic/issues/609))
+- `// sm:ignore`; trailing directive now suppresses across the whole statement when placed on the opening line (e.g. `if x { // sm:ignore Foo`), matching the prior closing-brace behavior
 
 ### 🗜️ Tweaks
 

@@ -43,15 +43,39 @@ struct Foo {
 }
 ```
 
-## Trailing directive — applies to the line only
+## Trailing directive — applies to the statement
 
 A `// sm:ignore` comment as a trailing comment on the same line as a statement
-or member disables rules just for that line:
+or member disables rules for that statement only:
 
 ```swift
 let x = "some code with trouble" // sm:ignore
 var bar = foo+baz // sm:ignore NoSemicolons
 ```
+
+For a multi-line statement, the directive may sit on **any line of the
+statement's outer scope** — that is, on tokens that belong directly to the
+statement itself, not to a nested code block. The first line (the statement's
+opening) and the last line (the closing `}`) are both valid placements:
+
+```swift
+// Suppresses across the whole if (directive on the opening line):
+if !sourceFiles.contains(path) { // sm:ignore useOrderedSetForUniqueAppend
+    sourceFiles.append(path)
+}
+
+// Suppresses across the whole if (directive on the closing brace):
+if !sourceFiles.contains(path) {
+    sourceFiles.append(path)
+} // sm:ignore useOrderedSetForUniqueAppend
+```
+
+A directive on an **interior** line — i.e., on a nested statement inside the
+body — only suppresses rules diagnosed on that nested statement, not on the
+enclosing one. A rule that diagnoses on the outer pattern (such as
+`useOrderedSetForUniqueAppend`, which fires on the entire if) won't be
+suppressed by a directive placed inside the body. Move the directive to the
+opening or closing line of the outer statement instead.
 
 ## Layout vs. source-transforming rules
 
