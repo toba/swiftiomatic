@@ -316,8 +316,18 @@ extension TokenStream {
             // If we have an open delimiter following the colon, use a space instead of a
             // continuation break so that we don't awkwardly shift the delimiter down and indent it
             // further if it wraps.
+            //
+            // The break uses `ignoresDiscretionary: true` so a user-inserted newline between the
+            // argument label and its value never *forces* a wrap. The pretty printer's normal
+            // fitting logic (including the `MinimumWrapSavings` heuristic for over-long chunks)
+            // still applies — wrapping only happens when it actually helps the line fit. Without
+            // this, an existing newline after `label:` would force the value onto its own line
+            // even when the value is itself longer than the line limit, where the wrap does
+            // nothing useful (4ym-935).
             var tokensAfterColon: [Token] = [
-                startsWithOpenDelimiter(Syntax(node.expression)) ? .space : .break
+                startsWithOpenDelimiter(Syntax(node.expression))
+                    ? .space
+                    : .break(.continue, newlines: .elective(ignoresDiscretionary: true))
             ]
 
             if leftmostMultilineStringLiteral(of: node.expression) != nil {

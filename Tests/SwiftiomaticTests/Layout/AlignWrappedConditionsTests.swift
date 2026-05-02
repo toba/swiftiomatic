@@ -132,7 +132,8 @@ struct AlignWrappedConditionsTests: LayoutTesting {
         """,
       expected: """
         guard let a = foo(),
-              let b = bar() else {
+              let b = bar()
+        else {
           return
         }
 
@@ -154,7 +155,8 @@ struct AlignWrappedConditionsTests: LayoutTesting {
       expected: """
         func foo() {
           guard let a = foo(),
-                let b = bar() else {
+                let b = bar()
+          else {
             return
           }
         }
@@ -179,7 +181,8 @@ struct AlignWrappedConditionsTests: LayoutTesting {
       expected: """
         guard
           let a = foo(),
-          let b = bar() else {
+          let b = bar()
+        else {
           return
         }
 
@@ -204,7 +207,8 @@ struct AlignWrappedConditionsTests: LayoutTesting {
         func foo() {
           guard
             let a = foo(),
-            let b = bar() else {
+            let b = bar()
+          else {
             return
           }
         }

@@ -476,7 +476,30 @@ extension LayoutSingleLineBodies {
 
     fileprivate static func canInline(_ body: CodeBlockSyntax) -> Bool {
         guard body.statements.count == 1 else { return false }
+        if Self.bodyHasComments(body) { return false }
         return !Self.isAlreadyInline(body)
+    }
+
+    /// Comments anywhere inside the body disqualify inlining — collapsing onto one line would
+    /// drop them. Leaving the body multiline preserves the comment in place.
+    fileprivate static func bodyHasComments(_ body: CodeBlockSyntax) -> Bool {
+        if body.leftBrace.trailingTrivia.hasAnyComments { return true }
+        if let first = body.statements.first {
+            if first.leadingTrivia.hasAnyComments { return true }
+        }
+        if let last = body.statements.last {
+            if last.trailingTrivia.hasAnyComments { return true }
+        }
+        return body.rightBrace.leadingTrivia.hasAnyComments
+    }
+
+    fileprivate static func accessorBlockHasComments(
+        _ block: AccessorBlockSyntax,
+        statementTrailing: Trivia
+    ) -> Bool {
+        if block.leftBrace.trailingTrivia.hasAnyComments { return true }
+        if statementTrailing.hasAnyComments { return true }
+        return block.rightBrace.leadingTrivia.hasAnyComments
     }
 
     fileprivate static func prefixLength(
@@ -636,6 +659,11 @@ extension LayoutSingleLineBodies {
         guard let firstStmt = statements.first,
               firstStmt.leadingTrivia.containsNewlines else { return DeclSyntax(node) }
 
+        if Self.accessorBlockHasComments(accessorBlock, statementTrailing: firstStmt.trailingTrivia)
+        {
+            return DeclSyntax(node)
+        }
+
         let bodyText = firstStmt.trimmedDescription
         let prefix = Self.prefixLength(
             from: node.subscriptKeyword,
@@ -752,6 +780,11 @@ extension LayoutSingleLineBodies {
                 guard statements.count == 1 else { return node }
                 guard let firstStmt = statements.first,
                       firstStmt.leadingTrivia.containsNewlines else { return node }
+
+                if Self.accessorBlockHasComments(
+                    accessorBlock,
+                    statementTrailing: firstStmt.trailingTrivia
+                ) { return node }
 
                 let bodyText = firstStmt.trimmedDescription
                 let varIndent = Self.resolveVarIndent(node, parent: parent)

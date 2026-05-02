@@ -156,6 +156,11 @@ final class DropRedundantSelf: StaticFormatRule<BasicRuleValue>, @unchecked Send
         }
         var names = Self.collectParamNames(from: node.signature.parameterClause)
         if let body = node.body { names.formUnion(Self.collectLocalNames(in: Syntax(body))) }
+        // The enclosing function's own name is in scope as a recursive reference inside its
+        // body. If `self.<name>` matches it, stripping `self.` would shadow any inherited
+        // member of the same name (e.g. `self.max` inside `func max(on:)` on an Array
+        // extension calls `Sequence.max(by:)` — bare `max` resolves to the enclosing func).
+        names.insert(node.name.text)
         state.localNameStack.append(names)
         state.implicitSelfStack.append(true)
         state.scopeFrameStack.append(true)
@@ -355,6 +360,9 @@ final class DropRedundantSelf: StaticFormatRule<BasicRuleValue>, @unchecked Send
         guard state.implicitSelfAllowed else { return ExprSyntax(node) }
         guard !state.inDynamicLookupScope else { return ExprSyntax(node) }
         guard !state.allLocalNames.contains(memberName) else { return ExprSyntax(node) }
+        if state.isReferenceType, Self.isInArgumentStringInterpolation(of: node) {
+            return ExprSyntax(node)
+        }
 
         Self.diagnose(.removeRedundantSelf, on: base, context: context)
 
@@ -433,6 +441,30 @@ final class DropRedundantSelf: StaticFormatRule<BasicRuleValue>, @unchecked Send
             current = parent.parent
         }
         return nil
+    }
+
+    /// True when `node` sits inside a string interpolation whose enclosing string literal is a
+    /// direct argument to a function call. Such literals may be wrapped by the compiler in an
+    /// implicit `@autoclosure @escaping () -> String` , which requires explicit `self.` on a
+    /// reference type. The rule has no type info, so it conservatively skips removal in this
+    /// position. Use `// sm:ignore` to override per-occurrence.
+    private static func isInArgumentStringInterpolation(of node: some SyntaxProtocol) -> Bool {
+        var current: Syntax? = node.parent
+        var sawInterpolation = false
+
+        while let parent = current {
+            if parent.is(ClosureExprSyntax.self) { return false }
+            if parent.is(ExpressionSegmentSyntax.self) { sawInterpolation = true }
+            if sawInterpolation, let str = parent.as(StringLiteralExprSyntax.self) {
+                guard let labeled = str.parent?.as(LabeledExprSyntax.self),
+                      labeled.parent?.is(LabeledExprListSyntax.self) == true,
+                      labeled.parent?.parent?.is(FunctionCallExprSyntax.self) == true
+                else { return false }
+                return true
+            }
+            current = parent.parent
+        }
+        return false
     }
 
     /// Collects all declared names in a syntax subtree without descending into nested closures,

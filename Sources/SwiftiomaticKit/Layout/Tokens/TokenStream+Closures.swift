@@ -179,10 +179,36 @@ extension TokenStream {
     }
 
     func visitExpressionSegment(_ node: ExpressionSegmentSyntax) -> SyntaxVisitorContinueKind {
-        // TODO: For now, just use the raw text of the node and don't try to format it deeper. In the
-        // future, we should find a way to format the expression but without wrapping so that at least
-        // internal whitespace is fixed.
-        appendToken(.syntax(node.description))
+        // Emit the interpolation as a single atomic `.syntax` token. We rebuild from
+        // `tokens(viewMode: .sourceAccurate)` instead of using `node.description` so that
+        // newlines in the source's whitespace trivia (e.g. a pre-split `\(\n  argument\n)`)
+        // collapse to a single space — preserving the multiline string's content lines
+        // would otherwise drop below the closing `"""` indent and produce an
+        // "Insufficient indentation" Swift compile error.
+        let toks = Array(node.tokens(viewMode: .sourceAccurate))
+        var text = ""
+        for (i, t) in toks.enumerated() {
+            if i > 0 {
+                let prev = toks[i - 1]
+                let between = prev.trailingTrivia.description + t.leadingTrivia.description
+                if between.contains(where: \.isNewline) {
+                    // Source indent across a newline carries no semantic meaning inside
+                    // an interpolation — drop it, but insert a single space if the adjacent
+                    // tokens' boundary characters would otherwise glue into one token
+                    // (e.g. `try await`, `if let`).
+                    if let p = prev.text.last, let c = t.text.first,
+                       (p.isLetter || p.isNumber || p == "_"),
+                       (c.isLetter || c.isNumber || c == "_")
+                    {
+                        text += " "
+                    }
+                } else {
+                    text += between
+                }
+            }
+            text += t.text
+        }
+        appendToken(.syntax(text))
         // Visiting children is not needed here.
         return .skipChildren
     }

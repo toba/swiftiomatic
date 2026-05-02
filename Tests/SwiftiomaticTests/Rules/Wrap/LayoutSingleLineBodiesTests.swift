@@ -1437,4 +1437,89 @@ struct SingleLineBodiesInlineTests: RuleTesting {
         """,
       configuration: inlineConfig)
   }
+
+  // MARK: - Comment preservation (issue fry-ger)
+
+  @Test func computedPropertyWithTrailingCommentNotInlined() {
+    // Inlining would drop the `// sm:ignore ...` comment, losing the suppression directive.
+    assertFormatting(
+      LayoutSingleLineBodies.self,
+      input: """
+        var body: String {
+            String(decoding: data, as: UTF8.self) // sm:ignore useFailableStringInit
+        }
+        """,
+      expected: """
+        var body: String {
+            String(decoding: data, as: UTF8.self) // sm:ignore useFailableStringInit
+        }
+        """,
+      configuration: inlineConfig)
+  }
+
+  @Test func computedPropertyWithTrailingPlainCommentNotInlined() {
+    assertFormatting(
+      LayoutSingleLineBodies.self,
+      input: """
+        var name: String {
+            "hello" // a friendly greeting
+        }
+        """,
+      expected: """
+        var name: String {
+            "hello" // a friendly greeting
+        }
+        """,
+      configuration: inlineConfig)
+  }
+
+  @Test func functionWithTrailingCommentNotInlined() {
+    assertFormatting(
+      LayoutSingleLineBodies.self,
+      input: """
+        func answer() -> Int {
+            42 // the answer
+        }
+        """,
+      expected: """
+        func answer() -> Int {
+            42 // the answer
+        }
+        """,
+      configuration: inlineConfig)
+  }
+
+  @Test func guardWithTrailingCommentNotInlined() {
+    assertFormatting(
+      LayoutSingleLineBodies.self,
+      input: """
+        guard let foo = bar else {
+            return // bail out
+        }
+        """,
+      expected: """
+        guard let foo = bar else {
+            return // bail out
+        }
+        """,
+      configuration: inlineConfig)
+  }
+
+  @Test func ifWithLeadingCommentNotInlined() {
+    assertFormatting(
+      LayoutSingleLineBodies.self,
+      input: """
+        if foo {
+            // important
+            return bar
+        }
+        """,
+      expected: """
+        if foo {
+            // important
+            return bar
+        }
+        """,
+      configuration: inlineConfig)
+  }
 }

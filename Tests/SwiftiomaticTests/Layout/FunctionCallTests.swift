@@ -252,6 +252,10 @@ struct FunctionCallTests: LayoutTesting {
   }
 
   @Test func discretionaryLineBreakAfterColon() {
+    // 4ym-935: source newlines between an argument label and its value are no
+    // longer respected. The pretty printer's normal fitting logic decides
+    // whether to wrap the value, so values stay inline with their label when
+    // they fit, and break only when the wrap actually helps fit.
     let input =
       """
       myFunc(
@@ -268,14 +272,12 @@ struct FunctionCallTests: LayoutTesting {
     let expected =
       """
       myFunc(
-        a:
-          foo,
-        b:
-          bar + baz + qux,
+        a: foo,
+        b: bar + baz
+          + qux,
         c: Very.Deeply
           .Nested.Member,
-        d:
-          Very.Deeply
+        d: Very.Deeply
           .Nested.Member
       )
 
@@ -409,5 +411,42 @@ struct FunctionCallTests: LayoutTesting {
       """
 
     assertLayout(input: input, expected: expected, linelength: 80)
+  }
+
+  // 4ym-935: when a labeled argument's value still overflows after wrapping to its
+  // own line (the value itself is longer than the available width), the wrap is
+  // pointless — keep the value inline with its label rather than indenting it.
+  @Test func labeledArgumentStaysInlineWhenWrapDoesntHelp() {
+    let input =
+      #"""
+      func outer() {
+          let currentRecordTypes = try userDatabase.read { db in
+              let namesAndSchemas = try Row.fetchAll(
+                  db,
+                  sql:
+                      "SELECT type, name, tbl_name, sql FROM sqlite_schema WHERE type = 'table' AND tbl_name IN (\(placeholders))",
+                  arguments: StatementArguments(tableNames),
+              )
+          }
+      }
+      """#
+
+    let expected =
+      #"""
+      func outer() {
+          let currentRecordTypes = try userDatabase.read { db in
+              let namesAndSchemas = try Row.fetchAll(
+                  db,
+                  sql: "SELECT type, name, tbl_name, sql FROM sqlite_schema WHERE type = 'table' AND tbl_name IN (\(placeholders))",
+                  arguments: StatementArguments(tableNames),
+              )
+          }
+      }
+
+      """#
+
+    var config = Configuration.forTesting
+    config[IndentationSetting.self] = .spaces(4)
+    assertLayout(input: input, expected: expected, linelength: 100, configuration: config)
   }
 }

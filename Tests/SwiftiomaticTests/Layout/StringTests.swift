@@ -510,6 +510,52 @@ struct StringTests: LayoutTesting {
     assertLayout(input: input, expected: input + "\n", linelength: 100, configuration: config)
   }
 
+  @Test func multilineStringWithPreSplitInterpolationKeepsValidIndent() {
+    // Regression for issue 9yv-e8j (reopened): when an interpolation `\(...)` is already
+    // split across multiple source lines (or a `\(typeName(Key\n    .self))` chain spans
+    // lines), the formatter must not emit raw newlines from inside the interpolation into
+    // the output, because subsequent string segments on those lines fall below the closing
+    // `"""` indent — producing a Swift compile error:
+    //   "Insufficient indentation of line in multi-line string literal"
+    let input =
+      #"""
+      func foo() -> String {
+        return """
+          @Dependency(\(
+            argument
+          )) has no live implementation, but was accessed from a live \
+          context.
+
+          \(dependencyDescription)
+
+          • Conform '\(typeName(Key
+              .self))' to the 'DependencyKey' protocol by providing \
+          a live implementation of your dependency.
+          """
+      }
+      """#
+
+    let expected =
+      #"""
+      func foo() -> String {
+        return """
+          @Dependency(\(argument)) has no live implementation, but was accessed from a live \
+          context.
+
+          \(dependencyDescription)
+
+          • Conform '\(typeName(Key.self))' to the 'DependencyKey' protocol by providing \
+          a live implementation of your dependency.
+          """
+      }
+
+      """#
+
+    var config = Configuration.forTesting
+    config[ReflowMultilineStringLiterals.self] = .never
+    assertLayout(input: input, expected: expected, linelength: 200, configuration: config)
+  }
+
   @Test func multilineStringInParenthesizedExpression() {
     let input =
       #"""
@@ -773,7 +819,8 @@ struct StringTests: LayoutTesting {
         let x = """
           blah
           blah
-          """.data(using: .utf8) else {
+          """.data(using: .utf8)
+      else {
         print(x)
       }
 

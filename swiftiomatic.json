@@ -15,8 +15,7 @@
 		"sortDeclarations": { "lint": "no", "rewrite": false },
 		"sortGetSetAccessors": {
 			"lint": "warn",
-			"order": "get_set",
-			"rewrite": false
+			"order": "get_set"
 		}
 	},
 	"wrap": {
@@ -191,8 +190,8 @@
 		"requireTestFnPrefixOrAttribute": { "lint": "warn", "rewrite": false }
 	},
 	"closures": {
-		"noMutableCapture": { "lint": "error" },
 		"useTrailingClosures": { "lint": "warn", "rewrite": true },
+		"noMutableInCaptureList": { "lint": "warn" },
 		"noMultiTrailingClosures": { "lint": "warn" },
 		"noParensInClosureParams": { "lint": "warn", "rewrite": true },
 		"noTrailingClosureParens": { "lint": "warn", "rewrite": true },
@@ -326,7 +325,6 @@
 	"declarations": {
 		"requireSuperCall": {
 			"lint": "no",
-			"rewrite": false,
 			"methodNames": [
 				"setUp()",
 				"tearDown()",

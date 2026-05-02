@@ -34,7 +34,7 @@ struct SplitMultipleDeclsPerLineTests: RuleTesting {
           case 3️⃣ifKeyword(String), 4️⃣forKeyword(String)
           indirect case guardKeyword, elseKeyword, 5️⃣contextualKeyword(String)
           var x: Bool
-          case leftParen, 6️⃣rightParen = ")", leftBrace, 7️⃣rightBrace = "}"
+          case leftParen, rightParen = ")", leftBrace, rightBrace = "}"
         }
         """,
       expected: """
@@ -50,10 +50,7 @@ struct SplitMultipleDeclsPerLineTests: RuleTesting {
           indirect case guardKeyword, elseKeyword
         indirect case contextualKeyword(String)
           var x: Bool
-          case leftParen
-        case rightParen = ")"
-        case leftBrace
-        case rightBrace = "}"
+          case leftParen, rightParen = ")", leftBrace, rightBrace = "}"
         }
         """,
       findings: [
@@ -62,29 +59,30 @@ struct SplitMultipleDeclsPerLineTests: RuleTesting {
         FindingSpec("3️⃣", message: "move 'ifKeyword' to its own 'case' declaration"),
         FindingSpec("4️⃣", message: "move 'forKeyword' to its own 'case' declaration"),
         FindingSpec("5️⃣", message: "move 'contextualKeyword' to its own 'case' declaration"),
-        FindingSpec("6️⃣", message: "move 'rightParen' to its own 'case' declaration"),
-        FindingSpec("7️⃣", message: "move 'rightBrace' to its own 'case' declaration"),
       ]
     )
   }
 
-  @Test func elementOrderIsPreserved() {
+  @Test func rawValueCasesArePermittedOnSameLine() {
     assertFormatting(
       SplitMultipleDeclsPerLine.self,
       input: """
         enum Foo: Int {
-          case 1️⃣a = 0, b, c, d
+          case a = 0, b, c, d
+        }
+        enum FontVariant: String {
+          case normal, smallCaps = "small-caps"
         }
         """,
       expected: """
         enum Foo: Int {
-          case a = 0
-        case b, c, d
+          case a = 0, b, c, d
+        }
+        enum FontVariant: String {
+          case normal, smallCaps = "small-caps"
         }
         """,
-      findings: [
-        FindingSpec("1️⃣", message: "move 'a' to its own 'case' declaration")
-      ]
+      findings: []
     )
   }
 
@@ -92,21 +90,21 @@ struct SplitMultipleDeclsPerLineTests: RuleTesting {
     assertFormatting(
       SplitMultipleDeclsPerLine.self,
       input: """
-        enum Foo: Int {
+        enum Foo {
           /// This should only be above `a`.
-          case 1️⃣a = 0, b, c, d
+          case 1️⃣a(Int), b, c, d
           // This should only be above `e`.
-          case e, 2️⃣f = 100
+          case e, 2️⃣f(Int)
         }
         """,
       expected: """
-        enum Foo: Int {
+        enum Foo {
           /// This should only be above `a`.
-          case a = 0
+          case a(Int)
         case b, c, d
           // This should only be above `e`.
           case e
-        case f = 100
+        case f(Int)
         }
         """,
       findings: [

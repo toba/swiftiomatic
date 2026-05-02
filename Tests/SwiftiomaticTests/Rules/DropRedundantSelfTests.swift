@@ -55,11 +55,40 @@ struct DropRedundantSelfTests: RuleTesting {
       ])
   }
 
-  @Test func removeRedundantSelfInsideStringInterpolation() {
+  @Test func keepSelfInsideStringInterpolationOfFunctionCallArg() {
+    // String literals passed as function arguments may be wrapped in an implicit
+    // `@autoclosure @escaping () -> String` , in which case Swift requires explicit
+    // `self.` on a reference type. The rule cannot tell from syntax alone, so it
+    // conservatively keeps `self.` inside string-interpolation segments that appear
+    // directly as a function-call argument when the enclosing type is a reference type.
     assertFormatting(
       DropRedundantSelf.self,
       input: """
         class Foo {
+            var bar: String?
+            func baz() {
+                print("\\(self.bar)")
+            }
+        }
+        """,
+      expected: """
+        class Foo {
+            var bar: String?
+            func baz() {
+                print("\\(self.bar)")
+            }
+        }
+        """,
+      findings: [])
+  }
+
+  @Test func removeRedundantSelfInsideStringInterpolationInValueType() {
+    // In value types, autoclosure capture isn't a concern, so `self.` is safe to strip
+    // inside string interpolations passed as function arguments.
+    assertFormatting(
+      DropRedundantSelf.self,
+      input: """
+        struct Foo {
             var bar: String?
             func baz() {
                 print("\\(1️⃣self.bar)")
@@ -67,7 +96,7 @@ struct DropRedundantSelfTests: RuleTesting {
         }
         """,
       expected: """
-        class Foo {
+        struct Foo {
             var bar: String?
             func baz() {
                 print("\\(bar)")
@@ -77,6 +106,68 @@ struct DropRedundantSelfTests: RuleTesting {
       findings: [
         FindingSpec("1️⃣", message: "remove redundant 'self.' prefix")
       ])
+  }
+
+  @Test func keepSelfWhenMemberNameMatchesEnclosingFunctionName() {
+    // Inside a method named `max(on:)`, the body calls `self.max { ... }` to invoke the
+    // inherited `Sequence.max(by:)`. Stripping `self.` makes the bare `max` ambiguous with
+    // the enclosing function (recursive reference), producing a compiler warning. The
+    // enclosing function's own name is in scope and shadows the protocol method, so
+    // `self.` must be preserved.
+    assertFormatting(
+      DropRedundantSelf.self,
+      input: """
+        public extension Array {
+            func max(on path: KeyPath<Element, some Comparable>) -> Element? {
+                self.max { $0[keyPath: path] < $1[keyPath: path] }
+            }
+        }
+        """,
+      expected: """
+        public extension Array {
+            func max(on path: KeyPath<Element, some Comparable>) -> Element? {
+                self.max { $0[keyPath: path] < $1[keyPath: path] }
+            }
+        }
+        """,
+      findings: [])
+  }
+
+  @Test func keepSelfInAutoclosureArgumentInterpolationOnReferenceType() {
+    // Repro from `bmo-7x5` : `withErrorLoggingTask` has an `@autoclosure @escaping`
+    // message parameter. The compiler wraps the string literal into an implicit
+    // escaping closure, requiring explicit `self.` on a class.
+    assertFormatting(
+      DropRedundantSelf.self,
+      input: """
+        class Document {
+            var type: Int = 0
+            func saveCitationGroup() {
+                withErrorLoggingTask(
+                    "Failed for \\(self.type) document",
+                    priority: .userInitiated
+                ) {
+                    try await self.update()
+                }
+            }
+            func update() async throws {}
+        }
+        """,
+      expected: """
+        class Document {
+            var type: Int = 0
+            func saveCitationGroup() {
+                withErrorLoggingTask(
+                    "Failed for \\(self.type) document",
+                    priority: .userInitiated
+                ) {
+                    try await self.update()
+                }
+            }
+            func update() async throws {}
+        }
+        """,
+      findings: [])
   }
 
   @Test func removeRedundantSelfInsideClassInit() {

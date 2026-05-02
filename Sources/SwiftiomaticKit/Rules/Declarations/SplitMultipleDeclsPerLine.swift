@@ -12,15 +12,17 @@
 
 import SwiftSyntax
 
-/// Each enum case with associated values or a raw value should appear in its own case declaration,
-/// and each variable declaration (except tuple destructuring) should declare only one variable.
+/// Each enum case with associated values should appear in its own case declaration, and each
+/// variable declaration (except tuple destructuring) should declare only one variable.
 ///
-/// Lint: If a single `case` declaration declares multiple cases where any has associated values or
-/// raw values, or if a variable declaration declares multiple variables, a lint error is raised.
+/// Cases with raw values are permitted to share a `case` declaration with bare cases, since each
+/// raw value is a single literal and the result remains readable on one line.
 ///
-/// Rewrite: Case declarations with associated values or raw values will be moved to their own case
-/// declarations. Variable declarations with multiple bindings will be split into individual
-/// declarations.
+/// Lint: If a single `case` declaration declares multiple cases where any has associated values, or
+/// if a variable declaration declares multiple variables, a lint error is raised.
+///
+/// Rewrite: Case declarations with associated values will be moved to their own case declarations.
+/// Variable declarations with multiple bindings will be split into individual declarations.
 final class SplitMultipleDeclsPerLine: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
     override class var group: ConfigurationGroup? { .declarations }
 
@@ -96,8 +98,7 @@ final class SplitMultipleDeclsPerLine: StaticFormatRule<BasicRuleValue>, @unchec
             guard let caseDecl = member.decl.as(EnumCaseDeclSyntax.self),
                   caseDecl.elements.count > 1 else { continue }
 
-            for element in caseDecl.elements
-            where element.parameterClause != nil || element.rawValue != nil {
+            for element in caseDecl.elements where element.parameterClause != nil {
                 Self.diagnose(
                     .moveAssociatedOrRawValueCase(name: element.name.text),
                     on: element,
@@ -139,7 +140,7 @@ final class SplitMultipleDeclsPerLine: StaticFormatRule<BasicRuleValue>, @unchec
             var collector = CaseElementCollector(basedOn: caseDecl)
 
             for element in caseDecl.elements {
-                if element.parameterClause != nil || element.rawValue != nil {
+                if element.parameterClause != nil {
                     // Diagnose emitted in willEnter against the pre-traversal node.
 
                     if let caseDeclForCollectedElements = collector.makeCaseDeclAndReset() {

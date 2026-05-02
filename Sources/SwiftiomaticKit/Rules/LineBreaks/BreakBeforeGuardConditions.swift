@@ -58,35 +58,22 @@ extension TokenStream {
             )
         }
 
-        // Close the consistent group AFTER the per-condition close breaks above. afterMap appends
-        // groups in declaration order but emits them reversed, so adding `.close` after the loop
-        // emits it BEFORE the last condition's `.break(.close)` . This pops the consistent group's
-        // force-break flag before the close break is evaluated, so the close break — and the
-        // subsequent break before `else` — see the outer (unforced) state and can stay inline when
-        // the inline body fits.
-        if node.conditions.count > 1 {
-            after(node.conditions.lastToken(viewMode: .sourceAccurate), tokens: .close)
-        }
-
-        // For an already-inline single-statement body ( `else { stmt }` ), wrap `else { stmt }` in
-        // an outer `.open(.inconsistent)` group spanning past the closing brace so the printer
-        // evaluates the inline form's length at the break point: glue to the closing condition when
-        // it fits, drop `else` to base indent when it doesn't.
+        // Place the break-before-else INSIDE the consistent conditions group so that whenever any
+        // inner condition wraps (firing the consistent group's force-break), this break also fires
+        // and pushes `else` onto its own line at base indent. When conditions all fit inline, the
+        // group never fires and the elective break stays glued, keeping `guard cond else { stmt }`
+        // on a single line.
         //
-        // For multi-line / multi-statement bodies, keep the `.reset` semantics so `else` stays
-        // visually separated from the wrapped continuation lines.
-        if node.body.isInlineSingleStatementBody {
+        // Token order before `elseKeyword` for the multi-condition path:
+        //   .break(.same)  ← inside consistent group, fires when group breaks
+        //   .close         ← closes consistent group
+        //   .open          ← opens else group
+        if node.conditions.count > 1 {
             before(
                 node.elseKeyword,
-                tokens: .printerControl(kind: .clearContinuation),
-                .break(.same, size: 1, newlines: .elective(ignoresDiscretionary: true)),
+                tokens: .break(.same, size: 1, newlines: .elective(ignoresDiscretionary: true)),
+                .close,
                 .open
-            )
-            after(node.elseKeyword, tokens: .space)
-            before(
-                node.body.leftBrace,
-                tokens: .close,
-                .printerControl(kind: .clearContinuation)
             )
         } else {
             before(
@@ -94,9 +81,10 @@ extension TokenStream {
                 tokens: .break(.reset, newlines: .elective(ignoresDiscretionary: true)),
                 .open
             )
-            after(node.elseKeyword, tokens: .space)
-            before(node.body.leftBrace, tokens: .close)
         }
+
+        after(node.elseKeyword, tokens: .space)
+        before(node.body.leftBrace, tokens: .close)
 
         arrangeBracesAndContents(
             of: node.body,

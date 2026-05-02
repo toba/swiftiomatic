@@ -459,7 +459,7 @@ package final class LayoutCoordinator {
                         let postWrapEndColumn = indentColumns + chunkAfterBreak
                         let unwrapEndColumn = outputBuffer.column + length
                         let savings = unwrapEndColumn - postWrapEndColumn
-                        breakSavesEnough = savings >= 8
+                        breakSavesEnough = savings >= configuration[MinimumWrapSavings.self]
                     } else {
                         breakSavesEnough = true
                     }

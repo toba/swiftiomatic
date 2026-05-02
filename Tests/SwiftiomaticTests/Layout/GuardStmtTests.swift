@@ -123,7 +123,8 @@ struct GuardStmtTests: LayoutTesting {
       """
       guard
         let foo = something,
-        let bar = somethingElse else {
+        let bar = somethingElse
+      else {
         body()
       }
 
@@ -197,7 +198,8 @@ struct GuardStmtTests: LayoutTesting {
       guard
         let object1 = fetchingFunc(foo),
         let object2 = fetchingFunc(bar),
-        let object3 = fetchingFunc(baz) else {
+        let object3 = fetchingFunc(baz)
+      else {
         return nil
       }
 
@@ -212,7 +214,10 @@ struct GuardStmtTests: LayoutTesting {
       guard let someObject: Foo = object as? Int else {
         return nil
       }
-      guard let someObject: (foo: Foo, bar: SomeVeryLongTypeNameThatBreaks, baz: Baz) = foo(a, b, c, d) else { return nil }
+      guard let someObject: (foo: Foo, bar: SomeVeryLongTypeNameThatBreaks, baz: Baz) = foo(a, b, c, d) else {
+        logger.error("decoding failed")
+        return nil
+      }
       """
 
     let expected =
@@ -229,7 +234,9 @@ struct GuardStmtTests: LayoutTesting {
             bar:
               SomeVeryLongTypeNameThatBreaks,
             baz: Baz
-          ) = foo(a, b, c, d) else {
+          ) = foo(a, b, c, d)
+      else {
+        logger.error("decoding failed")
         return nil
       }
 
@@ -369,7 +376,8 @@ struct GuardStmtTests: LayoutTesting {
       }
       guard veryLongConditionName
         && anotherLongCondition
-        || yetAnotherCondition else {
+        || yetAnotherCondition
+      else {
         return
       }
 
@@ -428,11 +436,10 @@ struct GuardStmtTests: LayoutTesting {
     assertLayout(input: input, expected: expected, linelength: 60)
   }
 
-  /// When `guard` conditions wrap onto continuation lines and the trailing
-  /// `else { stmt }` is already a single-statement single-line body that fits
-  /// on the same line as the closing condition, keep it attached rather than
-  /// forcing `else` down to its own line.
-  @Test func attachesInlineElseToWrappedConditions() {
+  /// When `guard` conditions wrap onto continuation lines, `else` always drops
+  /// to its own line at base indent — even if the inline `else { stmt }` form
+  /// would fit on the closing condition's line.
+  @Test func breaksElseWhenConditionsWrap() {
     let input =
       """
       guard let signature = closure.signature,
@@ -444,18 +451,18 @@ struct GuardStmtTests: LayoutTesting {
       """
       guard
         let signature = closure.signature,
-        let captureClause = signature.capture else { return false }
+        let captureClause = signature.capture
+      else { return false }
 
       """
 
     assertLayout(input: input, expected: expected, linelength: 100)
   }
 
-  /// When the inline `else { stmt }` would exceed the line length on the
-  /// closing condition's line, prefer wrapping the body inside the braces
-  /// over breaking before `else`. Keyword breaks (before `else`) are a
-  /// last-resort precedence; body wrapping fires first.
-  @Test func breaksElseWhenInlineBodyExceedsLineLength() {
+  /// When conditions wrap, `else` drops to its own line. The inline
+  /// `else { return false }` then fits on its own line at base indent, so the
+  /// body stays inline rather than wrapping further.
+  @Test func breaksElseWithInlineBodyWhenConditionsWrap() {
     let input =
       """
       guard let signature = closure.signature,
@@ -463,27 +470,23 @@ struct GuardStmtTests: LayoutTesting {
       else { return false }
       """
 
-    // Line length 60: "  let captureClause = signature.capture else {" fits,
-    // but the full inline `... else { return false }` does not, so the body
-    // wraps onto its own lines while `else {` stays glued to the condition.
     let expected =
       """
       guard
         let signature = closure.signature,
-        let captureClause = signature.capture else {
-        return false
-      }
+        let captureClause = signature.capture
+      else { return false }
 
       """
 
     assertLayout(input: input, expected: expected, linelength: 60)
   }
 
-  /// Same as `attachesInlineElseToWrappedConditions` but under the
+  /// Same as `breaksElseWhenConditionsWrap` but under the
   /// `alignWrappedConditions=true, breakBeforeGuardConditions=false` configuration:
-  /// the inline-attach behavior must apply regardless of how the conditions
-  /// themselves are indented.
-  @Test func attachesInlineElseUnderAlignedConditions() {
+  /// `else` still drops to its own line at base indent whenever conditions wrap,
+  /// regardless of the alignment column used by the conditions.
+  @Test func breaksElseUnderAlignedWrappedConditions() {
     var configuration = Configuration.forTesting
     configuration[AlignWrappedConditions.self] = true
     configuration[BreakBeforeGuardConditions.self] = false
@@ -498,17 +501,18 @@ struct GuardStmtTests: LayoutTesting {
     let expected =
       """
       guard let signature = closure.signature,
-            let captureClause = signature.capture else { return false }
+            let captureClause = signature.capture
+      else { return false }
 
       """
 
     assertLayout(input: input, expected: expected, linelength: 100, configuration: configuration)
   }
 
-  /// Under aligned conditions, when the inline body would exceed line length,
-  /// `else` must drop to base indent (column 0), not stay at the +6 alignment
-  /// column inherited from the conditions group.
-  @Test func breaksElseUnderAlignedConditionsWhenBodyTooLong() {
+  /// Under aligned wrapped conditions, `else` drops to base indent (column 0)
+  /// on its own line, not the +6 alignment column inherited from the
+  /// conditions group.
+  @Test func breaksElseUnderAlignedConditionsToBaseIndent() {
     var configuration = Configuration.forTesting
     configuration[AlignWrappedConditions.self] = true
     configuration[BreakBeforeGuardConditions.self] = false
@@ -523,19 +527,18 @@ struct GuardStmtTests: LayoutTesting {
     let expected =
       """
       guard let signature = closure.signature,
-            let captureClause = signature.capture else {
-        return false
-      }
+            let captureClause = signature.capture
+      else { return false }
 
       """
 
     assertLayout(input: input, expected: expected, linelength: 60, configuration: configuration)
   }
 
-  /// Three aligned conditions where the inline `else { stmt }` body fits on
-  /// the last condition's line. `else` must glue to the last condition rather
-  /// than dropping to its own line. Regression test for `4pf-bov`.
-  @Test func threeConditionsGlueElseWhenInlineBodyFits() {
+  /// Three aligned conditions: when conditions wrap, `else` drops to its own
+  /// line at base indent. The inline `else { return decl }` then sits on its
+  /// own line below the conditions.
+  @Test func threeConditionsBreakElseToOwnLine() {
     var configuration = Configuration.forTesting
     configuration[AlignWrappedConditions.self] = true
     configuration[BreakBeforeGuardConditions.self] = false
@@ -552,7 +555,51 @@ struct GuardStmtTests: LayoutTesting {
       """
       guard let mod = decl.modifiers.accessLevelModifier,
             mod.name.tokenKind == .keyword(.internal),
-            mod.detail == nil else { return decl }
+            mod.detail == nil
+      else { return decl }
+
+      """
+
+    assertLayout(input: input, expected: expected, linelength: 100, configuration: configuration)
+  }
+
+  /// Repro for thesis WebSocket.swift:142-145 — under
+  /// `alignWrappedConditions=true, breakBeforeGuardConditions=false` with a
+  /// 4-space indent, two wrapped conditions inside a deeply nested switch
+  /// case must drop `else` to base indent on its own line, not glue it to the
+  /// last condition.
+  @Test func breaksElseInDeeplyNestedAlignedConditions() {
+    var configuration = Configuration.forTesting
+    configuration[AlignWrappedConditions.self] = true
+    configuration[BreakBeforeGuardConditions.self] = false
+    configuration[IndentationSetting.self] = .spaces(4)
+
+    let input =
+      """
+      func receive() throws {
+          switch message {
+              case let .string(text):
+                  guard let data = text.data(using: .utf8),
+                        let message = try? decoder.decode(Incoming.self, from: data)
+                  else {
+                      throw WebSocketError.decodingError(text)
+                  }
+          }
+      }
+      """
+
+    let expected =
+      """
+      func receive() throws {
+          switch message {
+          case let .string(text):
+              guard let data = text.data(using: .utf8),
+                    let message = try? decoder.decode(Incoming.self, from: data)
+              else {
+                  throw WebSocketError.decodingError(text)
+              }
+          }
+      }
 
       """
 

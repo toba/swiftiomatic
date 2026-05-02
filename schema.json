@@ -869,7 +869,7 @@
               "$ref" : "#/$defs/ruleBase"
             }
           ],
-          "description" : "Each enum case with associated values or a raw value should appear in its own case declaration, and each variable declaration (except tuple destructuring) should declare only one variable.\n\nLint: If a single `case` declaration declares multiple cases where any has associated values or raw values, or if a variable declaration declares multiple variables, a lint error is raised.\n\nRewrite: Case declarations with associated values or raw values will be moved to their own case declarations. Variable declarations with multiple bindings will be split into individual declarations."
+          "description" : "Each enum case with associated values should appear in its own case declaration, and each variable declaration (except tuple destructuring) should declare only one variable.\n\nCases with raw values are permitted to share a `case` declaration with bare cases, since each raw value is a single literal and the result remains readable on one line.\n\nLint: If a single `case` declaration declares multiple cases where any has associated values, or if a variable declaration declares multiple variables, a lint error is raised.\n\nRewrite: Case declarations with associated values will be moved to their own case declarations. Variable declarations with multiple bindings will be split into individual declarations."
         },
         "useAtCNotUnderscoreCDecl" : {
           "allOf" : [
@@ -2028,6 +2028,10 @@
         },
         "lineLength" : {
           "description" : "Maximum line length before wrapping.",
+          "type" : "integer"
+        },
+        "minimumWrapSavings" : {
+          "description" : "Minimum columns wrapping must save before applying a continuation break whose wrapped chunk would still exceed the line length.",
           "type" : "integer"
         },
         "placeElseCatchOnNewLine" : {
@@ -3508,7 +3512,7 @@
           "$ref" : "#/$defs/ruleBase"
         }
       ],
-      "description" : "Each enum case with associated values or a raw value should appear in its own case declaration, and each variable declaration (except tuple destructuring) should declare only one variable.\n\nLint: If a single `case` declaration declares multiple cases where any has associated values or raw values, or if a variable declaration declares multiple variables, a lint error is raised.\n\nRewrite: Case declarations with associated values or raw values will be moved to their own case declarations. Variable declarations with multiple bindings will be split into individual declarations."
+      "description" : "Each enum case with associated values should appear in its own case declaration, and each variable declaration (except tuple destructuring) should declare only one variable.\n\nCases with raw values are permitted to share a `case` declaration with bare cases, since each raw value is a single literal and the result remains readable on one line.\n\nLint: If a single `case` declaration declares multiple cases where any has associated values, or if a variable declaration declares multiple variables, a lint error is raised.\n\nRewrite: Case declarations with associated values will be moved to their own case declarations. Variable declarations with multiple bindings will be split into individual declarations."
     },
     "swiftui" : {
       "additionalProperties" : false,
