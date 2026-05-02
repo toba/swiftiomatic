@@ -4,6 +4,7 @@
 
 ### ✨ Features
 
+- `noMutableInCaptureList`; replace `noMutableCapture`; flag explicit `[var]` capture-list entries instead of implicit references; matches SwiftLint's `CaptureVariableRule` semantics ([#627](https://github.com/toba/swiftiomatic/issues/627))
 - `RequireCamelCaseIdentifiers`; allow `debug_` and `unsafe_` prefixes ([#623](https://github.com/toba/swiftiomatic/issues/623))
 - `ReflowComments` rule; rewrap regular and DocC comments to line length
 - `guard ... else { stmt }`; keep inline body attached when conditions wrap ([#530](https://github.com/toba/swiftiomatic/issues/530))

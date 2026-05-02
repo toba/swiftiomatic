@@ -280,13 +280,13 @@
           "description" : "Function calls should never mix normal closure arguments and trailing closures.\n\nLint: If a function call with a trailing closure also contains a non-trailing closure argument, a lint error is raised.",
           "unevaluatedProperties" : false
         },
-        "noMutableCapture" : {
+        "noMutableInCaptureList" : {
           "allOf" : [
             {
               "$ref" : "#/$defs/lintOnlyBase"
             }
           ],
-          "description" : "Capturing a `var` *implicitly* in a closure body is a footgun: the closure silently retains the mutable binding and observes subsequent mutations through the original variable, which is almost always surprising — especially for `Sendable` hand-off across isolation boundaries.\n\nThe remedy is an explicit capture list (`{ [counter] in ... }`), which snapshots the value at closure-creation time. Explicit `[var]` captures are therefore *not* flagged: they are the documented Swift 6 idiom for value-snapshot capture and are often required to satisfy strict concurrency.\n\nThis rule is purely syntactic. It pre-scans the source file for `var` declarations (excluding `lazy var` and IUOs). Inside each closure it collects the names that shadow file-level vars (explicit captures, closure parameters, and locally-declared bindings), then flags any `DeclReferenceExpr` in the closure body that references an unshadowed file-level `var` name.\n\nLint: When a closure body references a name that matches a `var` declaration in the same file without explicitly capturing it, a warning is raised.",
+          "description" : "Listing a `var` by name in a closure capture list (`{ [counter] in ... }`) snapshots its current value at closure-creation time. Subsequent mutations through the original binding are invisible to the closure, which is almost always surprising.\n\nThis is the same rule SwiftLint emits as `capture_variable`: \"Non-constant variables should not be listed in a closure's capture list to avoid confusion about closures capturing variables at creation time.\"\n\nThe rule is purely syntactic. It pre-scans the source file for `var` declarations (excluding `lazy var`, IUOs, attributed property-wrapper bindings, and stored properties of types — those are accessed through `self`). For each closure capture-list entry, it flags the name when it matches a file-level mutable var. Skipped:\n- `[weak x]`, `[unowned x]` — reference-type lifetime captures, not value snapshots.\n- `[x = expr]` — explicit value rebinding; the author has documented intent.\n- `[self]` — never a \"var\" candidate.\n\nLint: When a closure capture list lists a name that matches a mutable `var` declaration in the same file, a warning is raised.",
           "unevaluatedProperties" : false
         },
         "noParensInClosureParams" : {
@@ -2664,13 +2664,13 @@
       "description" : "Function calls should never mix normal closure arguments and trailing closures.\n\nLint: If a function call with a trailing closure also contains a non-trailing closure argument, a lint error is raised.",
       "unevaluatedProperties" : false
     },
-    "noMutableCapture" : {
+    "noMutableInCaptureList" : {
       "allOf" : [
         {
           "$ref" : "#/$defs/lintOnlyBase"
         }
       ],
-      "description" : "Capturing a `var` *implicitly* in a closure body is a footgun: the closure silently retains the mutable binding and observes subsequent mutations through the original variable, which is almost always surprising — especially for `Sendable` hand-off across isolation boundaries.\n\nThe remedy is an explicit capture list (`{ [counter] in ... }`), which snapshots the value at closure-creation time. Explicit `[var]` captures are therefore *not* flagged: they are the documented Swift 6 idiom for value-snapshot capture and are often required to satisfy strict concurrency.\n\nThis rule is purely syntactic. It pre-scans the source file for `var` declarations (excluding `lazy var` and IUOs). Inside each closure it collects the names that shadow file-level vars (explicit captures, closure parameters, and locally-declared bindings), then flags any `DeclReferenceExpr` in the closure body that references an unshadowed file-level `var` name.\n\nLint: When a closure body references a name that matches a `var` declaration in the same file without explicitly capturing it, a warning is raised.",
+      "description" : "Listing a `var` by name in a closure capture list (`{ [counter] in ... }`) snapshots its current value at closure-creation time. Subsequent mutations through the original binding are invisible to the closure, which is almost always surprising.\n\nThis is the same rule SwiftLint emits as `capture_variable`: \"Non-constant variables should not be listed in a closure's capture list to avoid confusion about closures capturing variables at creation time.\"\n\nThe rule is purely syntactic. It pre-scans the source file for `var` declarations (excluding `lazy var`, IUOs, attributed property-wrapper bindings, and stored properties of types — those are accessed through `self`). For each closure capture-list entry, it flags the name when it matches a file-level mutable var. Skipped:\n- `[weak x]`, `[unowned x]` — reference-type lifetime captures, not value snapshots.\n- `[x = expr]` — explicit value rebinding; the author has documented intent.\n- `[self]` — never a \"var\" candidate.\n\nLint: When a closure capture list lists a name that matches a mutable `var` declaration in the same file, a warning is raised.",
       "unevaluatedProperties" : false
     },
     "noNestedWithLock" : {
