@@ -846,7 +846,7 @@ final class RewritePipeline: SyntaxRewriter {
             concrete = NoTrailingClosureParens.apply(concrete, context: context)
         }
         if context.shouldRewrite(UseTrailingClosures.self, gate: gate) {
-            concrete = UseTrailingClosures.apply(concrete, parent: parent, context: context)
+            concrete = UseTrailingClosures.apply(concrete, original: node, parent: parent, context: context)
         }
         if context.shouldRewrite(WrapMultilineFunctionChains.self, gate: gate) {
             concrete = WrapMultilineFunctionChains.apply(concrete, context: context)

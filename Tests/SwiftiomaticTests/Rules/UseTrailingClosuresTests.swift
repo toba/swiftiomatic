@@ -508,6 +508,29 @@ struct TrailingClosuresTests: RuleTesting {
       findings: [])
   }
 
+  /// Regression for fkg-tum: the finding location was being computed from the rewritten
+  /// `concrete` node (a detached subtree whose `position` is 0), so every finding reported
+  /// line 1, column 1 regardless of where the call actually appeared. The fix routes the
+  /// *original* node into `apply` so `diagnose` anchors at its real source position.
+  @Test func findingLocationUsesOriginalNodePosition() {
+    assertFormatting(UseTrailingClosures.self,
+      input: """
+        import Foundation
+
+        func use() {
+            1️⃣foo(x: 1, { print($0) })
+        }
+        """,
+      expected: """
+        import Foundation
+
+        func use() {
+            foo(x: 1) { print($0) }
+        }
+        """,
+      findings: [FindingSpec("1️⃣", message: "use trailing closure syntax")])
+  }
+
   @Test func allClosureArgumentsMadeTrailing() {
     assertFormatting(UseTrailingClosures.self,
       input: """

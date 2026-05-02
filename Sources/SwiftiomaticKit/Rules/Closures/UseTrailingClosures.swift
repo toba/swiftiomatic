@@ -30,9 +30,11 @@ final class UseTrailingClosures: StaticFormatRule<BasicRuleValue>, @unchecked Se
     ///
     /// `parent` must be the *original* parent of the node, captured before `super.visit` runs.
     /// `node.parent` is nil here because rewritten children produce a detached node, so we cannot
-    /// walk upward from the node itself.
+    /// walk upward from the node itself. `original` is the pre- `super.visit` node, used solely as
+    /// the finding anchor — `node` itself is detached and reports position 0 (line 1).
     static func apply(
         _ node: FunctionCallExprSyntax,
+        original: FunctionCallExprSyntax,
         parent: Syntax?,
         context: Context
     ) -> FunctionCallExprSyntax {
@@ -60,6 +62,7 @@ final class UseTrailingClosures: StaticFormatRule<BasicRuleValue>, @unchecked Se
         return trailingCount == 1
             ? convertSingle(
                 callNode: node,
+                original: original,
                 closureArg: closureArgs[0],
                 remainingArgs: remainingArgs,
                 funcName: funcName,
@@ -67,6 +70,7 @@ final class UseTrailingClosures: StaticFormatRule<BasicRuleValue>, @unchecked Se
             )
             : convertMultiple(
                 callNode: node,
+                original: original,
                 closureArgs: closureArgs,
                 remainingArgs: remainingArgs,
                 context: context
@@ -75,6 +79,7 @@ final class UseTrailingClosures: StaticFormatRule<BasicRuleValue>, @unchecked Se
 
     private static func convertSingle(
         callNode: FunctionCallExprSyntax,
+        original: FunctionCallExprSyntax,
         closureArg: LabeledExprSyntax,
         remainingArgs: [LabeledExprSyntax],
         funcName: String?,
@@ -88,7 +93,7 @@ final class UseTrailingClosures: StaticFormatRule<BasicRuleValue>, @unchecked Se
             return callNode
         }
 
-        Self.diagnose(.useTrailingClosure, on: callNode, context: context)
+        Self.diagnose(.useTrailingClosure, on: original, context: context)
 
         let exprTrailingTrivia = callNode.trailingTrivia
         var trailingClosure = closure.trimmed
@@ -115,6 +120,7 @@ final class UseTrailingClosures: StaticFormatRule<BasicRuleValue>, @unchecked Se
 
     private static func convertMultiple(
         callNode: FunctionCallExprSyntax,
+        original: FunctionCallExprSyntax,
         closureArgs: [LabeledExprSyntax],
         remainingArgs: [LabeledExprSyntax],
         context: Context
@@ -126,7 +132,7 @@ final class UseTrailingClosures: StaticFormatRule<BasicRuleValue>, @unchecked Se
             return callNode
         }
 
-        Self.diagnose(.useTrailingClosure, on: callNode, context: context)
+        Self.diagnose(.useTrailingClosure, on: original, context: context)
 
         var trailingClosure = firstClosure.trimmed
         trailingClosure.leadingTrivia = .space

@@ -46,6 +46,7 @@
 
 ### 🐞 Fixes
 
+- `useTrailingClosures`; anchor finding on the original pre-rewrite call instead of the detached `super.visit` result so the warning lands on the actual call site rather than line 1 ([#636](https://github.com/toba/swiftiomatic/issues/636))
 - `noMutableCapture`; gate on stored closures and skip property-wrapper vars, member-access bases, subscript writes, pure writes, and inout to eliminate false positives on inline closures ([#626](https://github.com/toba/swiftiomatic/issues/626))
 - `sm:ignore`; per-finding mask gate so directives suppress findings emitted from rules that visit an enclosing node ([#624](https://github.com/toba/swiftiomatic/issues/624))
 - Multiline string formatter mangles indentation, producing 'Insufficient indentation' error ([#625](https://github.com/toba/swiftiomatic/issues/625))
