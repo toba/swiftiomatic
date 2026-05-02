@@ -43,6 +43,7 @@
 - `WarnSwapThenRemoveAll`; lint `swap(&a, &b)` followed by `a.removeAll`/`b.removeAll` ([#577](https://github.com/toba/swiftiomatic/issues/577))
 - `// sm:ignore`; unified directive replaces `// sm:ignore-file`; applies from comment to end of file (lone-line) or to the line only (trailing) ([#595](https://github.com/toba/swiftiomatic/issues/595))
 - `// sm:ignore:next`; new directive scoped to the next line only ([#620](https://github.com/toba/swiftiomatic/issues/620))
+- `guard`/`else`; always break before `else` when conditions wrap ([#635](https://github.com/toba/swiftiomatic/issues/635))
 
 ### 🐞 Fixes
 
@@ -114,6 +115,17 @@
 - `LayoutSingleLineBodies`; else-if condition no longer wraps to a brace-on-next-line layout
 - `LayoutSingleLineBodies`; wrapped collection literal now collapses onto one line in inline mode when it fits; dictionary-literal collapse clears `key.trailingTrivia`, `colon` trivia, and `value.leadingTrivia` so odd whitespace around `:` is normalized
 - `noMutableCapture`; track shadowing from enclosing function bodies, parameters, accessors, and code blocks (not just enclosing closure signatures) so a `let` declared in an outer scope shadows an unrelated file-level `var` of the same name; exclude stored properties of types from the mutable-names set so SwiftUI views and class members aren't treated as implicit-capture candidates
+- `RemoveRedundantSelf`; preserve required `self.` in extension property accessors ([#616](https://github.com/toba/swiftiomatic/issues/616))
+- Nested call; inner call with wrapped args hugs outer call's open paren ([#597](https://github.com/toba/swiftiomatic/issues/597))
+- `dropRedundantNilCoalescing`; correct finding location instead of anchoring on doc comment or struct decl ([#632](https://github.com/toba/swiftiomatic/issues/632))
+- `DropRedundantSelf`; preserve `self.` in `@autoclosure @escaping` arguments ([#630](https://github.com/toba/swiftiomatic/issues/630))
+- Don't wrap labeled argument when wrapping doesn't help fit the line ([#631](https://github.com/toba/swiftiomatic/issues/631))
+- `DropRedundantSelf`; preserve `self.X` where `X` is the enclosing function's name ([#634](https://github.com/toba/swiftiomatic/issues/634))
+- `DropRedundantNilCoalescing`; preserve `?? nil` needed to flatten double-optional from `fetchOne` ([#633](https://github.com/toba/swiftiomatic/issues/633))
+- Single-line body rule; collapse multi-pattern case with body on next line ([#598](https://github.com/toba/swiftiomatic/issues/598))
+- `InlineBodies`; preserve trailing comment when collapsing to single line ([#628](https://github.com/toba/swiftiomatic/issues/628))
+- Single-line body rule; collapse multi-condition `if` with single-statement body ([#599](https://github.com/toba/swiftiomatic/issues/599))
+- `splitMultipleDeclsPerLine`; suppress false positive on enum case with raw value ([#629](https://github.com/toba/swiftiomatic/issues/629))
 
 ### 🗜️ Tweaks
 
@@ -171,6 +183,12 @@
 - Rename DocC comment rules for self-documenting names; `convertRegularCommentToDocC`→`useDocCommentsOnAPI`, `useTripleSlashForDocComments`→`useTripleSlashOverDocBlock`, `requireDocCommentSummary`→`requireDocSummaryStructure`, `requireParameterDocs`→`requireParameterAndReturnDocs`, `noDocCommentsInsideFunctions`→`noDocCommentsInFunctionBodies`, `flagOrphanedDocComment`→`noOrphanedDocComment`
 - `LayoutSingleLineBodies`; extract shared `shouldInlineCollection` helper so array/dict variants share precondition + length check + diagnostic emission
 - `WrapTernaryBranches.singleLineLength`; replace `split(...).joined(...).count` with a single-pass character scan that collapses whitespace runs in place
+- Split `SwiftiomaticKit` into parallelizable targets ([#566](https://github.com/toba/swiftiomatic/issues/566))
+- Review high-relevance upstream `swift-format` changes ([#600](https://github.com/toba/swiftiomatic/issues/600))
+- Make rule config keys self-describing ([#607](https://github.com/toba/swiftiomatic/issues/607))
+- Rename rule config keys for clarity in Xcode JSON editor ([#604](https://github.com/toba/swiftiomatic/issues/604))
+- Strict-mirror keys + verb re-evaluation in `wrap`/`lineBreaks`/`indentation` groups ([#608](https://github.com/toba/swiftiomatic/issues/608))
+- Standardize rule config naming verbs (`use*`/`no*`/`flag*`/`require*`) ([#605](https://github.com/toba/swiftiomatic/issues/605))
 
 ## Week of Apr 19 – Apr 25, 2026
 
