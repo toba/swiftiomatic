@@ -351,6 +351,76 @@ struct RuleMaskTests {
     #expect(mask.ruleState("anyRule", at: location(ofLine: 12, in: converter)) == .disabled)
   }
 
+  // MARK: - `:next` directive: applies only to the next statement.
+
+  @Test func nextDirectiveAppliesOnlyToNextStatement() {
+    let text =
+      """
+      let a = 123
+      // sm:ignore:next rule1
+      let b = 456
+      let c = 789
+      """
+
+    let (mask, converter) = createMask(sourceText: text)
+
+    #expect(mask.ruleState("rule1", at: location(ofLine: 1, in: converter)) == .default)
+    #expect(mask.ruleState("rule1", at: location(ofLine: 3, in: converter)) == .disabled)
+    #expect(mask.ruleState("rule1", at: location(ofLine: 4, in: converter)) == .default)
+  }
+
+  @Test func bareNextDirectiveAppliesOnlyToNextStatement() {
+    let text =
+      """
+      let a = 123
+      // sm:ignore:next
+      let b = 456
+      let c = 789
+      """
+
+    let (mask, converter) = createMask(sourceText: text)
+
+    #expect(mask.ruleState("anyRule", at: location(ofLine: 1, in: converter)) == .default)
+    #expect(mask.ruleState("anyRule", at: location(ofLine: 3, in: converter)) == .disabled)
+    #expect(mask.ruleState("anyRule", at: location(ofLine: 4, in: converter)) == .default)
+  }
+
+  @Test func nextDirectiveAppliesToWholeMultiLineStatement() {
+    let text =
+      """
+      let a = 0
+      // sm:ignore:next rule1
+      if !items.contains(p) {
+        items.append(p)
+      }
+      let z = 0
+      """
+
+    let (mask, converter) = createMask(sourceText: text)
+
+    #expect(mask.ruleState("rule1", at: location(ofLine: 1, in: converter)) == .default)
+    #expect(mask.ruleState("rule1", at: location(ofLine: 3, in: converter)) == .disabled)
+    #expect(mask.ruleState("rule1", at: location(ofLine: 4, in: converter)) == .disabled)
+    #expect(mask.ruleState("rule1", at: location(ofLine: 5, in: converter)) == .disabled)
+    #expect(mask.ruleState("rule1", at: location(ofLine: 6, in: converter)) == .default)
+  }
+
+  @Test func nextDirectiveOnMember() {
+    let text =
+      """
+      struct Foo {
+        // sm:ignore:next rule1
+        var bar = 0
+        var baz = 0
+      }
+      """
+
+    let (mask, converter) = createMask(sourceText: text)
+
+    #expect(mask.ruleState("rule1", at: location(ofLine: 3, column: 3, in: converter)) == .disabled)
+    #expect(mask.ruleState("rule1", at: location(ofLine: 4, column: 3, in: converter)) == .default)
+  }
+
   // MARK: - Top-of-file named directive: file-level scope.
 
   @Test func namedDirectiveAtTopOfFileIsFileScoped() {

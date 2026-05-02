@@ -138,13 +138,14 @@ final class CommentMovingRewriter: SyntaxRewriter {
 /// Returns whether the given trivia includes a directive to ignore formatting for the next node.
 ///
 /// - Parameter trivia: Leading trivia for a node that the formatter supports ignoring.
-/// - Returns: Whether the trivia contains a bare `sm:ignore` directive (no rule names).
+/// - Returns: Whether the trivia contains a bare `sm:ignore` (or `sm:ignore:next`) directive
+///   (no rule names).
 func isFormatterIgnorePresent(inTrivia trivia: Trivia) -> Bool {
     func isFormatterIgnore(in commentText: String, prefix: String, suffix: String) -> Bool {
         let trimmed = commentText.dropFirst(prefix.count)
             .dropLast(suffix.count)
             .trimmingCharacters(in: .whitespaces)
-        return trimmed == "sm:ignore"
+        return trimmed == "sm:ignore" || trimmed == "sm:ignore:next"
     }
 
     for piece in trivia {

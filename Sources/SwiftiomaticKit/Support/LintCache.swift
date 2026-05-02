@@ -99,18 +99,37 @@ package final class LintCache: Sendable {
 
     /// A binary-stable identifier for the rule set compiled into this `sm` .
     ///
-    /// Computed once per process from sorted rule type names. When the binary gains, loses, or
-    /// renames a rule the value changes, which combined with the per-configuration JSON hash
-    /// produces a new fingerprint and orphans every prior cache subtree.
+    /// Computed once per process from sorted rule type names plus the running executable's
+    /// (path, size, mtime). When the binary gains, loses, or renames a rule, *or* when the
+    /// executable is rebuilt with no surface change but altered rule logic, the value changes,
+    /// which combined with the per-configuration JSON hash produces a new fingerprint and
+    /// orphans every prior cache subtree.
     private static let ruleSetIdentifier: String = {
         var hasher = SHA256()
-        hasher.update(data: Data("rules.v1\n".utf8))
+        hasher.update(data: Data("rules.v2\n".utf8))
         let names = ConfigurationRegistry.allRuleTypes
             .map { String(reflecting: $0) }
             .sorted()
         for name in names {
             hasher.update(data: Data(name.utf8))
             hasher.update(data: Data([0]))
+        }
+        // Mix in the running executable's identity so that rebuilding `sm` (which can change
+        // rule logic without changing rule names) invalidates the cache. Falls back to the
+        // unmodified rule-name digest if the executable's attributes are unreadable.
+        if let exePath = CommandLine.arguments.first,
+            let attrs = try? FileManager.default.attributesOfItem(atPath: exePath)
+        {
+            hasher.update(data: Data(exePath.utf8))
+            hasher.update(data: Data([0]))
+            if let size = attrs[.size] as? NSNumber {
+                hasher.update(data: Data("\(size.uint64Value)".utf8))
+                hasher.update(data: Data([0]))
+            }
+            if let mtime = attrs[.modificationDate] as? Date {
+                hasher.update(data: Data("\(mtime.timeIntervalSince1970)".utf8))
+                hasher.update(data: Data([0]))
+            }
         }
         return hexEncode(hasher.finalize())
     }()

@@ -107,6 +107,31 @@ struct WrapTernaryBranchesTests: RuleTesting {
   /// but whose `?` and `:` both sit on a short final line — the rule must not fire.
   /// Repros from issue: `[wrapTernaryBranches] wrap ternary branch onto a new line` warning
   /// emitted at `) != nil ? valueRange : nil` even though that line easily fits.
+  /// Bug repro: a ternary whose condition is `a || b.c` where the `||` has wrapped, putting
+  /// `?` and `:` on the same short line as `.isEmpty ? .top(...) : .all(...)`. Both operators
+  /// live on a line that fits, so the rule must not fire.
+  @Test func ternaryWithMultiLineDisjunctionConditionDoesNotWrapWhenOperatorLineFits() {
+    assertFormatting(
+      WrapTernaryBranches.self,
+      input: """
+        view
+            .fieldStyle(
+                corners: isValidQuery || !matches
+                    .isEmpty ? .top(cornerRadius + 2) : .all(cornerRadius + 2),
+                isFocused: isFocused,
+            )
+        """,
+      expected: """
+        view
+            .fieldStyle(
+                corners: isValidQuery || !matches
+                    .isEmpty ? .top(cornerRadius + 2) : .all(cornerRadius + 2),
+                isFocused: isFocused,
+            )
+        """,
+      findings: [])
+  }
+
   @Test func ternaryAfterMultiLineConditionDoesNotWrapWhenOperatorLineFits() {
     assertFormatting(
       WrapTernaryBranches.self,

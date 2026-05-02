@@ -40,9 +40,11 @@
 - `PreferTypedThrowsOverResult`; lint `Result<T, E>` returns with a single do/catch ([#572](https://github.com/toba/swiftiomatic/issues/572))
 - `WarnSwapThenRemoveAll`; lint `swap(&a, &b)` followed by `a.removeAll`/`b.removeAll` ([#577](https://github.com/toba/swiftiomatic/issues/577))
 - `// sm:ignore`; unified directive replaces `// sm:ignore-file`; applies from comment to end of file (lone-line) or to the line only (trailing) ([#595](https://github.com/toba/swiftiomatic/issues/595))
+- `// sm:ignore:next`; new directive scoped to the next line only ([#620](https://github.com/toba/swiftiomatic/issues/620))
 
 ### 🐞 Fixes
 
+- `LintCache`; mix the running executable's path/size/mtime into the rule-set fingerprint so binary rebuilds invalidate stale cached findings ([#621](https://github.com/toba/swiftiomatic/issues/621))
 - `SimplifyGenericConstraints`; anchor diagnostics to the original `where` clause instead of the rewritten subtree's detached position ([#615](https://github.com/toba/swiftiomatic/issues/615))
 - `wrapTernaryBranches`; skip when both `?` and `:` source lines already fit, even when an operand is a multi-line chain ([#614](https://github.com/toba/swiftiomatic/issues/614))
 - `ReflowComments`; preserve CommonMark link reference definitions (`[label]: url`) instead of merging adjacent definitions into one paragraph ([#613](https://github.com/toba/swiftiomatic/issues/613))

@@ -14,11 +14,13 @@ import Foundation
 import SwiftSyntax
 
 /// Scans the source for `// sm:ignore` directives and records which rules are disabled in which
-/// ranges. There are two forms:
+/// ranges. There are three forms:
 ///
 /// - **Lone-line** `// sm:ignore [Rule1, Rule2]` on a line by itself → rules disabled from the
 ///   comment's position through end of file. Placing it at the top of a file therefore
 ///   disables those rules for the whole file (replaces the older `sm:ignore-file`).
+/// - **Lone-line scoped** `// sm:ignore:next [Rule1, Rule2]` on a line by itself → rules
+///   disabled only for the immediately following statement (or member).
 /// - **Trailing** `// sm:ignore [Rule1, Rule2]` on the same line as a statement (or member) →
 ///   rules disabled for that statement only.
 ///
@@ -26,6 +28,8 @@ import SwiftSyntax
 ///
 ///   // sm:ignore                                  — ignore all rules from here to EOF
 ///   // sm:ignore fileLength, typeBodyLength       — those rules off from here to EOF
+///   // sm:ignore:next                             — ignore all rules for the next statement
+///   // sm:ignore:next Rule1                       — ignore Rule1 for the next statement
 ///   let x = "trouble" // sm:ignore                — ignore all rules for this line only
 ///   let x = 1 // sm:ignore Rule1                  — ignore Rule1 for this line only
 ///
@@ -99,14 +103,14 @@ private final class RuleStatusCollectionVisitor: SyntaxVisitor {
         case subset(ruleNames: [String])
     }
 
-    typealias RegexExpression = Regex<(Substring, ruleNames: Substring?)>
+    typealias RegexExpression = Regex<(Substring, scope: Substring?, ruleNames: Substring?)>
 
     /// Cached regex object for the unified `sm:ignore` directive.
     ///
     /// Note: We are using a string-based regex instead of a regex literal ( `#/regex/#` ) because
     /// Windows did not have full support for regex literals until Swift 5.10.
     private static nonisolated(unsafe) let ignoreRegex: RegexExpression = {
-        let pattern = #"^\s*\/\/\s*sm:ignore(?:\s+(?<ruleNames>\S.*))?$"#
+        let pattern = #"^\s*\/\/\s*sm:ignore(?<scope>:next)?(?:\s+(?<ruleNames>\S.*))?$"#
         return try! Regex(pattern).matchingSemantics(.unicodeScalar)
     }()
 
@@ -171,8 +175,9 @@ private final class RuleStatusCollectionVisitor: SyntaxVisitor {
 
         let isFirstInFile = firstToken.previousToken(viewMode: .sourceAccurate) == nil
         for comment in loneLineComments(in: firstToken.leadingTrivia, isFirstToken: isFirstInFile) {
-            guard let match = ruleStatusDirectiveMatch(in: comment) else { continue }
-            record(match, range: restOfFileRange)
+            guard let (match, scope) = ruleStatusDirectiveMatch(in: comment) else { continue }
+            // `:next` scopes the directive to this single node; bare lone-line extends to EOF.
+            record(match, range: scope == .next ? nodeRange : restOfFileRange)
         }
 
         for token in node.tokens(viewMode: .sourceAccurate) {
@@ -181,7 +186,7 @@ private final class RuleStatusCollectionVisitor: SyntaxVisitor {
             // on a struct member would leak up to the enclosing type, etc.
             if isInsideDescendantItem(token, of: node) { continue }
             for comment in trailingLineComments(in: token.trailingTrivia) {
-                guard let match = ruleStatusDirectiveMatch(in: comment) else { continue }
+                guard let (match, _) = ruleStatusDirectiveMatch(in: comment) else { continue }
                 record(match, range: nodeRange)
             }
         }
@@ -211,11 +216,17 @@ private final class RuleStatusCollectionVisitor: SyntaxVisitor {
         }
     }
 
+    /// Scope of a matched directive.
+    enum DirectiveScope { case eof, next }
+
     /// Checks if a comment containing the given text matches a rule status directive. When it does
-    /// match, its contents (e.g. list of rule names) are returned.
-    private func ruleStatusDirectiveMatch(in text: String) -> RuleStatusDirectiveMatch? {
+    /// match, its contents (rule names and scope) are returned.
+    private func ruleStatusDirectiveMatch(
+        in text: String
+    ) -> (match: RuleStatusDirectiveMatch, scope: DirectiveScope)? {
         guard let match = text.firstMatch(of: Self.ignoreRegex) else { return nil }
-        guard let matchedRuleNames = match.output.ruleNames else { return .all }
+        let scope: DirectiveScope = match.output.scope != nil ? .next : .eof
+        guard let matchedRuleNames = match.output.ruleNames else { return (.all, scope) }
 
         let rules = matchedRuleNames.split(separator: ",").compactMap { segment -> String? in
             let name = segment.trimmingCharacters(in: .whitespaces)
@@ -227,7 +238,7 @@ private final class RuleStatusCollectionVisitor: SyntaxVisitor {
             // Resolve custom keys (e.g. SortImports → "imports" not "sortImports")
             return ConfigurationRegistry.typeNameToKey[derived] ?? derived
         }
-        return .subset(ruleNames: rules)
+        return (.subset(ruleNames: rules), scope)
     }
 
     /// Returns the list of line comments in the given trivia that are on a line by themselves
