@@ -39,15 +39,7 @@ final class NoMutableCapture: LintSyntaxRule<LintOnlyValue>, @unchecked Sendable
         for stmt in node.statements { localCollector.walk(stmt) }
         shadowed.formUnion(localCollector.names)
 
-        // Include shadowing from enclosing closures: their explicit captures and
-        // parameters introduce bindings visible inside this nested closure.
-        var ancestor = node.parent
-        while let current = ancestor {
-            if let enclosing = current.as(ClosureExprSyntax.self) {
-                collectClosureSignatureNames(enclosing, into: &shadowed)
-            }
-            ancestor = current.parent
-        }
+        collectEnclosingScopeNames(of: Syntax(node), into: &shadowed)
 
         let refFinder = ImplicitCaptureFinder(
             mutableNames: mutableNames,
@@ -61,6 +53,54 @@ final class NoMutableCapture: LintSyntaxRule<LintOnlyValue>, @unchecked Sendable
         }
         return .visitChildren
     }
+}
+
+/// Walks ancestors of `node` and collects names introduced by enclosing scopes
+/// (closure signatures, function parameters, function/initializer/accessor bodies,
+/// and any intervening code blocks). This is needed so that a `let` (or parameter,
+/// or for-loop binding) declared in an enclosing function body shadows an unrelated
+/// `var` of the same name elsewhere in the file — without it, every reference to a
+/// matching name inside any closure would falsely flag.
+private func collectEnclosingScopeNames(of node: Syntax, into shadowed: inout Set<String>) {
+    let scopeCollector = EnclosingScopeShadowCollector(viewMode: .sourceAccurate)
+    var ancestor = node.parent
+    while let current = ancestor {
+        if let enclosing = current.as(ClosureExprSyntax.self) {
+            collectClosureSignatureNames(enclosing, into: &shadowed)
+            for stmt in enclosing.statements { scopeCollector.walk(stmt) }
+        } else if let funcDecl = current.as(FunctionDeclSyntax.self) {
+            for param in funcDecl.signature.parameterClause.parameters {
+                let name = param.secondName ?? param.firstName
+                if name.tokenKind != .wildcard { shadowed.insert(name.text) }
+            }
+            if let body = funcDecl.body {
+                for stmt in body.statements { scopeCollector.walk(stmt) }
+            }
+        } else if let initDecl = current.as(InitializerDeclSyntax.self) {
+            for param in initDecl.signature.parameterClause.parameters {
+                let name = param.secondName ?? param.firstName
+                if name.tokenKind != .wildcard { shadowed.insert(name.text) }
+            }
+            if let body = initDecl.body {
+                for stmt in body.statements { scopeCollector.walk(stmt) }
+            }
+        } else if let accessor = current.as(AccessorDeclSyntax.self) {
+            if let params = accessor.parameters {
+                shadowed.insert(params.name.text)
+            }
+            if let body = accessor.body {
+                for stmt in body.statements { scopeCollector.walk(stmt) }
+            }
+        } else if let deinitDecl = current.as(DeinitializerDeclSyntax.self) {
+            if let body = deinitDecl.body {
+                for stmt in body.statements { scopeCollector.walk(stmt) }
+            }
+        } else if let codeBlock = current.as(CodeBlockSyntax.self) {
+            for stmt in codeBlock.statements { scopeCollector.walk(stmt) }
+        }
+        ancestor = current.parent
+    }
+    shadowed.formUnion(scopeCollector.names)
 }
 
 private func collectClosureSignatureNames(_ closure: ClosureExprSyntax, into shadowed: inout Set<String>) {
@@ -95,6 +135,10 @@ private final class MutableVarNameCollector: SyntaxVisitor {
     override func visit(_ node: VariableDeclSyntax) -> SyntaxVisitorContinueKind {
         guard node.bindingSpecifier.tokenKind == .keyword(.var) else { return .visitChildren }
         if node.modifiers.contains(.lazy) { return .visitChildren }
+        // Stored properties of types are accessed via implicit `self`, not as
+        // implicit captures. Skip any var that is a direct member of a type
+        // (struct/class/actor/enum/extension/protocol) member block.
+        if node.parent?.is(MemberBlockItemSyntax.self) == true { return .visitChildren }
 
         for binding in node.bindings {
             if let annotation = binding.typeAnnotation,
@@ -113,6 +157,41 @@ private final class MutableVarNameCollector: SyntaxVisitor {
 /// Collects identifiers introduced inside a closure body without descending into nested scopes.
 private final class ClosureLocalNameCollector: SyntaxVisitor {
     var names: Set<String> = []
+
+    override func visit(_ node: IdentifierPatternSyntax) -> SyntaxVisitorContinueKind {
+        names.insert(node.identifier.text)
+        return .visitChildren
+    }
+
+    override func visit(_ node: FunctionDeclSyntax) -> SyntaxVisitorContinueKind {
+        names.insert(node.name.text)
+        return .skipChildren
+    }
+
+    override func visit(_ node: CatchClauseSyntax) -> SyntaxVisitorContinueKind {
+        if node.catchItems.isEmpty { names.insert("error") }
+        return .visitChildren
+    }
+
+    override func visit(_: ClosureExprSyntax) -> SyntaxVisitorContinueKind { .skipChildren }
+    override func visit(_: StructDeclSyntax) -> SyntaxVisitorContinueKind { .skipChildren }
+    override func visit(_: ClassDeclSyntax) -> SyntaxVisitorContinueKind { .skipChildren }
+    override func visit(_: EnumDeclSyntax) -> SyntaxVisitorContinueKind { .skipChildren }
+    override func visit(_: ActorDeclSyntax) -> SyntaxVisitorContinueKind { .skipChildren }
+    override func visit(_: ExtensionDeclSyntax) -> SyntaxVisitorContinueKind { .skipChildren }
+}
+
+/// Collects names that shadow mutable bindings from an enclosing scope: `let`
+/// patterns, function/closure params, for-loop bindings, and `if let` / `guard let`
+/// conditions. Crucially, `var` declarations are *not* collected — those are the
+/// mutable bindings the rule is designed to detect captures of.
+private final class EnclosingScopeShadowCollector: SyntaxVisitor {
+    var names: Set<String> = []
+
+    override func visit(_ node: VariableDeclSyntax) -> SyntaxVisitorContinueKind {
+        guard node.bindingSpecifier.tokenKind == .keyword(.let) else { return .skipChildren }
+        return .visitChildren
+    }
 
     override func visit(_ node: IdentifierPatternSyntax) -> SyntaxVisitorContinueKind {
         names.insert(node.identifier.text)

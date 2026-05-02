@@ -231,6 +231,91 @@ struct NoMutableCaptureTests: RuleTesting {
     )
   }
 
+  @Test func storedPropertyOfTypeNotFlaggedInMemberClosure() {
+    // Stored `var` properties on a type (SwiftUI views, classes, structs) are
+    // accessed via implicit `self`, not implicit local capture. They must not
+    // be treated as candidates for the implicit-capture rule.
+    assertLint(
+      NoMutableCapture.self,
+      """
+      struct ToolbarView: View {
+        @Binding var editor: Editor
+        @State var disabled = false
+        @State var controlSize: ControlSize = .regular
+        var body: some View {
+          Button("Tap") {
+            print(editor, disabled, controlSize)
+          }
+        }
+      }
+      """,
+      findings: []
+    )
+  }
+
+  @Test func storedPropertyOnClassNotFlaggedInMethodClosure() {
+    assertLint(
+      NoMutableCapture.self,
+      """
+      class C {
+        var counter = 0
+        func foo() {
+          run { print(counter) }
+        }
+      }
+      """,
+      findings: []
+    )
+  }
+
+  @Test func enclosingFunctionLetShadowsUnrelatedFileVar() {
+    // `var query` exists in an unrelated scope. The closure references `query`
+    // which is bound by a `let` in the enclosing function body — should not flag.
+    assertLint(
+      NoMutableCapture.self,
+      """
+      func other() {
+        var query = ""
+      }
+      func bar() async throws {
+        let query = "SELECT"
+        try await db.write { db in
+          try #sql(query).execute(db)
+        }
+      }
+      """,
+      findings: []
+    )
+  }
+
+  @Test func enclosingFunctionParameterShadowsVar() {
+    assertLint(
+      NoMutableCapture.self,
+      """
+      func other() { var counter = 0 }
+      func bar(counter: Int) {
+        run { print(counter) }
+      }
+      """,
+      findings: []
+    )
+  }
+
+  @Test func enclosingForLoopBindingShadowsVar() {
+    assertLint(
+      NoMutableCapture.self,
+      """
+      func other() { var name = "" }
+      func bar(items: [String]) {
+        for name in items {
+          run { print(name) }
+        }
+      }
+      """,
+      findings: []
+    )
+  }
+
   @Test func weakAndUnownedCapturesNotFlagged() {
     assertLint(
       NoMutableCapture.self,

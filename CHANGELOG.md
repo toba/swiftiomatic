@@ -107,6 +107,7 @@
 - `DropRedundantSelf`; preserve `self.` in extensions on `@dynamicMemberLookup` types (`AttributedString`, `AttributedSubstring`, `ScopedAttributeContainer`, `Binding`); document the cross-module limitation
 - `LayoutSingleLineBodies`; else-if condition no longer wraps to a brace-on-next-line layout
 - `LayoutSingleLineBodies`; wrapped collection literal now collapses onto one line in inline mode when it fits; dictionary-literal collapse clears `key.trailingTrivia`, `colon` trivia, and `value.leadingTrivia` so odd whitespace around `:` is normalized
+- `noMutableCapture`; track shadowing from enclosing function bodies, parameters, accessors, and code blocks (not just enclosing closure signatures) so a `let` declared in an outer scope shadows an unrelated file-level `var` of the same name; exclude stored properties of types from the mutable-names set so SwiftUI views and class members aren't treated as implicit-capture candidates
 
 ### 🗜️ Tweaks
 
