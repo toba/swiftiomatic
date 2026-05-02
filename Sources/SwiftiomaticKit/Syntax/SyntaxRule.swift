@@ -87,6 +87,17 @@ extension SyntaxRule {
             syntaxLocation = nil
         }
 
+        // Per-finding rule-mask gate: the pipeline gates rule dispatch at the *visited* node's
+        // start location, but rules that visit an enclosing node (e.g. `ClassDeclSyntax`) and
+        // emit on inner members would otherwise bypass `// sm:ignore` directives placed on or
+        // above those members. Re-checking here at the finding's anchor lets per-member
+        // directives suppress findings emitted by class- or file-level rules.
+        if let syntaxLocation {
+            let ruleName = ConfigurationRegistry.ruleNameCache[ObjectIdentifier(Self.self)]
+                ?? Self.key
+            if context.ruleMask.ruleState(ruleName, at: syntaxLocation) == .disabled { return }
+        }
+
         let category = SyntaxFindingCategory(ruleType: Self.self)
 
         context.findingEmitter.emit(

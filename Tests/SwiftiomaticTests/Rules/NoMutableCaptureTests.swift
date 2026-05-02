@@ -154,9 +154,10 @@ struct NoMutableCaptureTests: RuleTesting {
     )
   }
 
-  @Test func nestedClosureScopeIsolated() {
-    // Outer closure has no `counter` reference; inner closure references `counter`.
-    // Inner closure should be flagged independently.
+  @Test func inlineClosureArgumentNotFlagged() {
+    // Closures passed inline as function arguments execute synchronously and
+    // never observe a mutation that hasn't happened yet — there's no snapshot
+    // footgun to warn about.
     assertLint(
       NoMutableCapture.self,
       """
@@ -164,14 +165,35 @@ struct NoMutableCaptureTests: RuleTesting {
         var counter = 0
         outer {
           inner {
-            print(1️⃣counter)
+            print(counter)
           }
         }
       }
       """,
-      findings: [
-        FindingSpec("1️⃣", message: "closure implicitly captures mutable variable 'counter'; add it to the capture list (`[counter]`) to snapshot the current value, or rename to avoid collision"),
-      ]
+      findings: []
+    )
+  }
+
+  @Test func storedClosureWithNestedInlineNotFlagged() {
+    // Outer is stored (footgun candidate) but only the bare reference at the
+    // outer-closure level is reachable for our scan — nested inline closure
+    // references still need the outer to escape to be a real footgun. We only
+    // flag the direct stored-closure references; nested inline closures inside
+    // it are out of scope (different visit walk).
+    assertLint(
+      NoMutableCapture.self,
+      """
+      func foo() {
+        var counter = 0
+        let outer = {
+          inner {
+            print(counter)
+          }
+        }
+        _ = outer
+      }
+      """,
+      findings: []
     )
   }
 
@@ -310,6 +332,160 @@ struct NoMutableCaptureTests: RuleTesting {
         for name in items {
           run { print(name) }
         }
+      }
+      """,
+      findings: []
+    )
+  }
+
+  @Test func assignmentOnlyMutationNotFlagged() {
+    // Writing to a captured var has no snapshot footgun (the rule guards against
+    // reading a stale snapshot). The suggested `[height]` fix is also impossible
+    // here — captured values are immutable, so the closure couldn't assign.
+    assertLint(
+      NoMutableCapture.self,
+      """
+      func foo() {
+        var height: CGFloat = 0
+        layoutManager.enumerateTextLayoutFragments(from: nil) { fragment in
+          height = fragment.layoutFragmentFrame.maxY
+          return false
+        }
+      }
+      """,
+      findings: []
+    )
+  }
+
+  @Test func compoundAssignmentNotFlagged() {
+    assertLint(
+      NoMutableCapture.self,
+      """
+      func foo() {
+        var total = 0
+        items.forEach { item in
+          total += item.value
+        }
+      }
+      """,
+      findings: []
+    )
+  }
+
+  @Test func inoutPassingNotFlagged() {
+    assertLint(
+      NoMutableCapture.self,
+      """
+      func foo() {
+        var result = 0
+        run { mutate(&result) }
+      }
+      """,
+      findings: []
+    )
+  }
+
+  @Test func readAfterAssignmentStillFlagged() {
+    // If the closure both writes AND reads, the read can still observe stale
+    // state through the implicit capture, so the rule should still fire on the
+    // read. Only pure-write references are exempted.
+    assertLint(
+      NoMutableCapture.self,
+      """
+      func foo() {
+        var counter = 0
+        let closure = {
+          counter = 1
+          print(1️⃣counter)
+        }
+      }
+      """,
+      findings: [
+        FindingSpec("1️⃣", message: "closure implicitly captures mutable variable 'counter'; add it to the capture list (`[counter]`) to snapshot the current value, or rename to avoid collision"),
+      ]
+    )
+  }
+
+  @Test func methodCallOnLocalVarNotFlagged() {
+    // `values.append(...)`, `addedTypes.insert(...)`, etc. are mutations through
+    // the binding. `[values]` would make the captured value immutable — the
+    // suggested fix doesn't apply. Skip when the reference is part of a member
+    // access (whether base or trailing member).
+    assertLint(
+      NoMutableCapture.self,
+      """
+      func foo() {
+        var values: [String] = []
+        run { (s: String) in
+          values.append(s)
+        }
+      }
+      """,
+      findings: []
+    )
+  }
+
+  @Test func propertyWriteOnLocalVarNotFlagged() {
+    assertLint(
+      NoMutableCapture.self,
+      """
+      func foo() {
+        var record = Record()
+        run {
+          record.parent = nil
+        }
+      }
+      """,
+      findings: []
+    )
+  }
+
+  @Test func subscriptWriteOnLocalVarNotFlagged() {
+    assertLint(
+      NoMutableCapture.self,
+      """
+      func foo() {
+        var dict: [String: Int] = [:]
+        run { (k: String, v: Int) in
+          dict[k] = v
+        }
+      }
+      """,
+      findings: []
+    )
+  }
+
+  @Test func bindablePropertyWrapperRebindingNotFlagged() {
+    // `@Bindable var styles = styles` inside a SwiftUI body is a property-wrapper
+    // rebinding, not a regular mutable local. Its runtime semantics are reference-
+    // like; closures inside the view builder must not flag references to it.
+    assertLint(
+      NoMutableCapture.self,
+      """
+      struct StylePicker: View {
+        let styles: StylesModel
+        var body: some View {
+          @Bindable var styles = styles
+          VStack {
+            if styles.showSearch {
+              Text("Searching")
+            }
+            Button("Cancel") { styles.showSearch = false }
+          }
+        }
+      }
+      """,
+      findings: []
+    )
+  }
+
+  @Test func stateLocalNotFlagged() {
+    assertLint(
+      NoMutableCapture.self,
+      """
+      func body() -> some View {
+        @State var disabled = false
+        return Button("X") { disabled.toggle() }
       }
       """,
       findings: []

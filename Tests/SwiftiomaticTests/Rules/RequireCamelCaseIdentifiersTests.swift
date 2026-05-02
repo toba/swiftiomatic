@@ -249,4 +249,35 @@ struct RequireCamelCaseIdentifiersTests: RuleTesting {
       ]
     )
   }
+
+  @Test func allowsDebugAndUnsafePrefixes() {
+    assertLint(
+      RequireCamelCaseIdentifiers.self,
+      """
+      let debug_renderTree = 1
+      var unsafe_pointerCast = 2
+      func debug_dump() {}
+      func unsafe_cast() {}
+      """,
+      findings: []
+    )
+  }
+
+  @Test func debugAndUnsafePrefixRemaindersStillChecked() {
+    assertLint(
+      RequireCamelCaseIdentifiers.self,
+      """
+      let 1️⃣debug_render_tree = 1
+      var 2️⃣unsafe_PointerCast = 2
+      let 3️⃣debug_ = 3
+      let 4️⃣Debug_renderTree = 4
+      """,
+      findings: [
+        FindingSpec("1️⃣", message: "rename the constant 'debug_render_tree' using lowerCamelCase"),
+        FindingSpec("2️⃣", message: "rename the variable 'unsafe_PointerCast' using lowerCamelCase"),
+        FindingSpec("3️⃣", message: "rename the constant 'debug_' using lowerCamelCase"),
+        FindingSpec("4️⃣", message: "rename the constant 'Debug_renderTree' using lowerCamelCase"),
+      ]
+    )
+  }
 }

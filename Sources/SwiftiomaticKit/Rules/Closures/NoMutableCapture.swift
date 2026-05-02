@@ -31,6 +31,16 @@ final class NoMutableCapture: LintSyntaxRule<LintOnlyValue>, @unchecked Sendable
 
     override func visit(_ node: ClosureExprSyntax) -> SyntaxVisitorContinueKind {
         guard !mutableNames.isEmpty else { return .visitChildren }
+        // Only flag closures that are stored in a let/var binding. The textbook
+        // implicit-capture footgun requires the closure to outlive its creation
+        // statement so that subsequent mutations to the captured var are observed
+        // when the closure later executes. Inline closures passed as function
+        // arguments (`array.forEach { ... }`, `tags.contains { ... }`, `withBytes
+        // { ... }`, etc.) execute synchronously and never observe a mutation that
+        // hasn't happened yet — there's no snapshot footgun. Limiting to bound
+        // closures eliminates a large class of false positives while preserving
+        // the real-world case the rule is named for.
+        guard isStoredInBinding(node) else { return .visitChildren }
 
         var shadowed: Set<String> = []
         collectClosureSignatureNames(node, into: &shadowed)
@@ -53,6 +63,28 @@ final class NoMutableCapture: LintSyntaxRule<LintOnlyValue>, @unchecked Sendable
         }
         return .visitChildren
     }
+}
+
+/// True when the closure is the (eventual) value of an initializer clause in a
+/// `let`/`var` binding — `let closure = { ... }`, `var closure = { ... }`. The
+/// closure may be wrapped in casts, parens, force-unwraps, etc. between the
+/// binding and itself; the wrappers are walked through.
+private func isStoredInBinding(_ closure: ClosureExprSyntax) -> Bool {
+    var current: Syntax = Syntax(closure)
+    while let parent = current.parent {
+        if let initializer = parent.as(InitializerClauseSyntax.self),
+           initializer.value.id == current.id
+        {
+            return initializer.parent?.is(PatternBindingSyntax.self) == true
+        }
+        switch parent.kind {
+            case .tupleExpr, .asExpr, .tryExpr, .awaitExpr, .forceUnwrapExpr, .optionalChainingExpr:
+                current = parent
+            default:
+                return false
+        }
+    }
+    return false
 }
 
 /// Walks ancestors of `node` and collects names introduced by enclosing scopes
@@ -139,6 +171,11 @@ private final class MutableVarNameCollector: SyntaxVisitor {
         // implicit captures. Skip any var that is a direct member of a type
         // (struct/class/actor/enum/extension/protocol) member block.
         if node.parent?.is(MemberBlockItemSyntax.self) == true { return .visitChildren }
+        // Skip vars with attributes (`@State`, `@Bindable`, `@Binding`, `@FocusState`,
+        // `@AppStorage`, etc.). These are property-wrapper bindings whose runtime
+        // semantics are reference-like, not the mutable-value snapshot footgun this
+        // rule targets. The `[name]` capture-list fix doesn't apply to them either.
+        if !node.attributes.isEmpty { return .visitChildren }
 
         for binding in node.bindings {
             if let annotation = binding.typeAnnotation,
@@ -232,17 +269,65 @@ private final class ImplicitCaptureFinder: SyntaxVisitor {
     override func visit(_: ClosureExprSyntax) -> SyntaxVisitorContinueKind { .skipChildren }
 
     override func visit(_ node: DeclReferenceExprSyntax) -> SyntaxVisitorContinueKind {
-        // Skip the trailing `.member` of a member access — `self.counter` should not flag.
-        if let memberAccess = node.parent?.as(MemberAccessExprSyntax.self),
-           memberAccess.declName.id == node.id
+        // Skip any reference that is part of a member-access expression. This covers
+        // both the trailing `.member` (`self.counter` shouldn't flag) and the base
+        // (`record.parent = x`, `values.append(...)`, `counter.next()`). The base
+        // case is critical: when a closure mutates through the binding via a method
+        // or property write, the suggested `[name]` capture is impossible — captured
+        // values are immutable. Plain bare reads (`print(counter)`) remain flagged,
+        // which is the actual snapshot footgun this rule targets.
+        if node.parent?.is(MemberAccessExprSyntax.self) == true {
+            return .visitChildren
+        }
+        // Skip the base of a subscript (`dict[key] = x`, `arr[i].thing`). Same
+        // reasoning as member access: mutation through the binding, `[name]` is
+        // impossible (captured copy is immutable).
+        if let subscriptCall = node.parent?.as(SubscriptCallExprSyntax.self),
+           subscriptCall.calledExpression.id == node.id
         {
             return .visitChildren
         }
+        // Skip pure-write references: the LHS of `=` / compound assignment, or the
+        // operand of `&` (inout). Captured values are immutable, so the rule's
+        // suggested `[name]` fix is impossible to apply for writes — and writes
+        // have no stale-snapshot footgun to begin with.
+        if isPureWrite(node) { return .visitChildren }
         let name = node.baseName.text
         if mutableNames.contains(name), !shadowed.contains(name) {
             references.append((name, node.baseName))
         }
         return .visitChildren
+    }
+
+    private func isPureWrite(_ node: DeclReferenceExprSyntax) -> Bool {
+        var current: Syntax = Syntax(node)
+        while let parent = current.parent {
+            if parent.is(TupleExprSyntax.self) || parent.is(LabeledExprSyntax.self) {
+                current = parent
+                continue
+            }
+            if let inout_ = parent.as(InOutExprSyntax.self), inout_.expression.id == current.id {
+                return true
+            }
+            if let infix = parent.as(InfixOperatorExprSyntax.self), infix.leftOperand.id == current.id {
+                if infix.operator.is(AssignmentExprSyntax.self) { return true }
+                if let opExpr = infix.operator.as(BinaryOperatorExprSyntax.self),
+                   isCompoundAssignmentOperator(opExpr.operator.text)
+                {
+                    return true
+                }
+            }
+            return false
+        }
+        return false
+    }
+
+    private func isCompoundAssignmentOperator(_ text: String) -> Bool {
+        guard text.hasSuffix("="), text.count > 1 else { return false }
+        return switch text {
+            case "==", "!=", "<=", ">=", "===", "!==": false
+            default: true
+        }
     }
 }
 

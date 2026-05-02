@@ -487,6 +487,29 @@ struct StringTests: LayoutTesting {
     assertLayout(input: input, expected: expected, linelength: 10, configuration: config)
   }
 
+  @Test func multilineStringWithInterpolationsNotMangledWithNeverReflow() {
+    // Regression for issue 9yv-e8j: with reflow=never, a multiline string with `\(...)`
+    // interpolations must not have its content reflowed and its interpolations must remain
+    // atomic — splitting an interpolation across lines produces "Insufficient indentation"
+    // errors in the resulting Swift source.
+    let input =
+      #"""
+      func foo() -> String {
+        return """
+          @Dependency(\(argument)) has no live implementation, but was accessed from a live context.
+
+          \(dependencyDescription)
+
+          • Conform '\(typeName(Key.self))' to the 'DependencyKey' protocol by providing a live implementation of your dependency.
+          """
+      }
+      """#
+
+    var config = Configuration.forTesting
+    config[ReflowMultilineStringLiterals.self] = .never
+    assertLayout(input: input, expected: input + "\n", linelength: 100, configuration: config)
+  }
+
   @Test func multilineStringInParenthesizedExpression() {
     let input =
       #"""

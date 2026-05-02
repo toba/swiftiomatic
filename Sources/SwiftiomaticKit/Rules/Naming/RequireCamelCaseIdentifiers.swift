@@ -176,6 +176,11 @@ final class RequireCamelCaseIdentifiers: LintSyntaxRule<LintOnlyValue>, @uncheck
         }
     }
 
+    /// Identifier prefixes whose `<prefix>_` form is exempt from the no-underscore rule. Anything
+    /// after the prefix must still be valid lowerCamelCase (non-empty, no further underscores,
+    /// no leading uppercase).
+    private static let allowedUnderscorePrefixes = ["debug_", "unsafe_"]
+
     private func diagnoseLowerCamelCaseViolations(
         _ identifier: TokenSyntax,
         allowUnderscores: Bool,
@@ -184,8 +189,22 @@ final class RequireCamelCaseIdentifiers: LintSyntaxRule<LintOnlyValue>, @uncheck
         guard case let .identifier(text) = identifier.tokenKind else { return }
         if text.isEmpty { return }
 
-        if (text.dropFirst().contains("_") && !allowUnderscores)
-            || ("A"..."Z").contains(text.first!)
+        let remainderToCheck: Substring
+        if !allowUnderscores,
+           let prefix = Self.allowedUnderscorePrefixes.first(where: { text.hasPrefix($0) })
+        {
+            remainderToCheck = text.dropFirst(prefix.count)
+        } else {
+            remainderToCheck = Substring(text)
+        }
+
+        guard let firstChar = remainderToCheck.first else {
+            diagnose(.nameMustBeLowerCamelCase(text, description: description), on: identifier)
+            return
+        }
+
+        if (remainderToCheck.dropFirst().contains("_") && !allowUnderscores)
+            || ("A"..."Z").contains(firstChar)
         {
             diagnose(.nameMustBeLowerCamelCase(text, description: description), on: identifier)
         }

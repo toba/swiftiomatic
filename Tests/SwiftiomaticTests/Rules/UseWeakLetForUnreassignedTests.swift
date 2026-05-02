@@ -77,6 +77,32 @@ struct UseWeakLetForUnreassignedTests: RuleTesting {
     )
   }
 
+  @Test func smIgnoreLoneLineSuppressesPerMember() {
+    assertLint(
+      UseWeakLetForUnreassigned.self,
+      """
+      class Foo {
+        var a: Int = 0
+        // sm:ignore useWeakLetForUnreassigned
+        weak var delegate: AnyObject?
+      }
+      """,
+      findings: []
+    )
+  }
+
+  @Test func smIgnoreTrailingSuppressesPerMember() {
+    assertLint(
+      UseWeakLetForUnreassigned.self,
+      """
+      class Foo {
+        weak var delegate: AnyObject? // sm:ignore useWeakLetForUnreassigned
+      }
+      """,
+      findings: []
+    )
+  }
+
   @Test func weakLetIgnored() {
     assertLint(
       UseWeakLetForUnreassigned.self,
