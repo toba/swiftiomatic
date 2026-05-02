@@ -44,6 +44,7 @@
 
 ### 🐞 Fixes
 
+- `noMutableCapture`; invert semantics to flag implicit references rather than explicit `[var]` capture lists; downgrade default severity to `warn` ([#622](https://github.com/toba/swiftiomatic/issues/622))
 - `LintCache`; mix the running executable's path/size/mtime into the rule-set fingerprint so binary rebuilds invalidate stale cached findings ([#621](https://github.com/toba/swiftiomatic/issues/621))
 - `SimplifyGenericConstraints`; anchor diagnostics to the original `where` clause instead of the rewritten subtree's detached position ([#615](https://github.com/toba/swiftiomatic/issues/615))
 - `wrapTernaryBranches`; skip when both `?` and `:` source lines already fit, even when an operand is a multi-line chain ([#614](https://github.com/toba/swiftiomatic/issues/614))

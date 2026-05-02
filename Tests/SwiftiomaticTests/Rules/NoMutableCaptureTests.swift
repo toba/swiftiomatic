@@ -4,73 +4,35 @@ import Testing
 
 @Suite
 struct NoMutableCaptureTests: RuleTesting {
-  @Test func localVarCapture() {
+  @Test func implicitLocalVarReferenceFlagged() {
     assertLint(
       NoMutableCapture.self,
       """
       func foo() {
         var counter = 0
-        let closure = { [1️⃣counter] in
-          print(counter)
+        let closure = {
+          print(1️⃣counter)
         }
         counter = 1
         closure()
       }
       """,
       findings: [
-        FindingSpec("1️⃣", message: "captured variable 'counter' is declared with 'var'; closure captures the value at creation time, not subsequent mutations"),
+        FindingSpec("1️⃣", message: "closure implicitly captures mutable variable 'counter'; add it to the capture list (`[counter]`) to snapshot the current value, or rename to avoid collision"),
       ]
     )
   }
 
-  @Test func instanceVarCapture() {
-    assertLint(
-      NoMutableCapture.self,
-      """
-      class C {
-        var iInstance: Int = 0
-        func callTest() {
-          test { [1️⃣iInstance] j in
-            print(iInstance, j)
-          }
-        }
-      }
-      """,
-      findings: [
-        FindingSpec("1️⃣", message: "captured variable 'iInstance' is declared with 'var'; closure captures the value at creation time, not subsequent mutations"),
-      ]
-    )
-  }
-
-  @Test func staticVarCapture() {
-    assertLint(
-      NoMutableCapture.self,
-      """
-      class C {
-        static var iStatic: Int = 0
-        static func callTest() {
-          test { [1️⃣iStatic] j in
-            print(iStatic, j)
-          }
-        }
-      }
-      """,
-      findings: [
-        FindingSpec("1️⃣", message: "captured variable 'iStatic' is declared with 'var'; closure captures the value at creation time, not subsequent mutations"),
-      ]
-    )
-  }
-
-  @Test func letCaptureDoesNotTrigger() {
+  @Test func explicitCaptureListIsNotFlagged() {
     assertLint(
       NoMutableCapture.self,
       """
       func foo() {
-        let j = 0
-        let c = C(1)
-        let closure = { [j, c] in
-          print(c.i, j)
+        var counter = 0
+        let closure = { [counter] in
+          print(counter)
         }
+        counter = 1
         closure()
       }
       """,
@@ -78,15 +40,47 @@ struct NoMutableCaptureTests: RuleTesting {
     )
   }
 
-  @Test func selfCaptureDoesNotTrigger() {
+  @Test func sendableHandOffWithExplicitCaptureNotFlagged() {
+    assertLint(
+      NoMutableCapture.self,
+      """
+      func foo() {
+        var groupID = 0
+        sqlite.read { [groupID] in
+          try Node.fetch(for: groupID, from: $0)
+        }
+      }
+      """,
+      findings: []
+    )
+  }
+
+  @Test func multipleExplicitCapturesNotFlagged() {
+    assertLint(
+      NoMutableCapture.self,
+      """
+      func foo() {
+        var missingTable: Int? = 0
+        var missingRecord: Int? = 0
+        var sentRecord: Int? = 0
+        state.withLock { [missingTable, missingRecord, sentRecord] in
+          if let missingTable {}
+        }
+      }
+      """,
+      findings: []
+    )
+  }
+
+  @Test func memberAccessNotFlagged() {
     assertLint(
       NoMutableCapture.self,
       """
       class C {
-        var x = 0
+        var counter = 0
         func foo() {
-          test { [self] in
-            print(x)
+          test {
+            print(self.counter)
           }
         }
       }
@@ -95,16 +89,14 @@ struct NoMutableCaptureTests: RuleTesting {
     )
   }
 
-  @Test func weakAndUnownedDoNotTrigger() {
+  @Test func letBindingNotFlagged() {
     assertLint(
       NoMutableCapture.self,
       """
-      class C {
-        var ref: AnyObject?
-        func foo() {
-          test { [weak ref, unowned other] in
-            _ = ref
-          }
+      func foo() {
+        let j = 0
+        let closure = {
+          print(j)
         }
       }
       """,
@@ -112,7 +104,78 @@ struct NoMutableCaptureTests: RuleTesting {
     )
   }
 
-  @Test func captureWithExplicitInitializerDoesNotTrigger() {
+  @Test func closureParameterShadowsVar() {
+    assertLint(
+      NoMutableCapture.self,
+      """
+      func foo() {
+        var counter = 0
+        let closure: (Int) -> Void = { counter in
+          print(counter)
+        }
+      }
+      """,
+      findings: []
+    )
+  }
+
+  @Test func localBindingShadowsVar() {
+    assertLint(
+      NoMutableCapture.self,
+      """
+      func foo() {
+        var counter = 0
+        let closure = {
+          let counter = 42
+          print(counter)
+        }
+      }
+      """,
+      findings: []
+    )
+  }
+
+  @Test func multipleImplicitReferencesFlagged() {
+    assertLint(
+      NoMutableCapture.self,
+      """
+      func foo() {
+        var a = 0
+        var b = 0
+        let closure = {
+          print(1️⃣a, 2️⃣b)
+        }
+      }
+      """,
+      findings: [
+        FindingSpec("1️⃣", message: "closure implicitly captures mutable variable 'a'; add it to the capture list (`[a]`) to snapshot the current value, or rename to avoid collision"),
+        FindingSpec("2️⃣", message: "closure implicitly captures mutable variable 'b'; add it to the capture list (`[b]`) to snapshot the current value, or rename to avoid collision"),
+      ]
+    )
+  }
+
+  @Test func nestedClosureScopeIsolated() {
+    // Outer closure has no `counter` reference; inner closure references `counter`.
+    // Inner closure should be flagged independently.
+    assertLint(
+      NoMutableCapture.self,
+      """
+      func foo() {
+        var counter = 0
+        outer {
+          inner {
+            print(1️⃣counter)
+          }
+        }
+      }
+      """,
+      findings: [
+        FindingSpec("1️⃣", message: "closure implicitly captures mutable variable 'counter'; add it to the capture list (`[counter]`) to snapshot the current value, or rename to avoid collision"),
+      ]
+    )
+  }
+
+  @Test func captureWithExplicitInitializerNotFlagged() {
     assertLint(
       NoMutableCapture.self,
       """
@@ -129,23 +192,20 @@ struct NoMutableCaptureTests: RuleTesting {
     )
   }
 
-  @Test func multipleMutableCaptures() {
+  @Test func weakAndUnownedCapturesNotFlagged() {
     assertLint(
       NoMutableCapture.self,
       """
-      func foo() {
-        var a = 0
-        var b = 0
-        let closure = { [1️⃣a, 2️⃣b] in
-          print(a, b)
+      class C {
+        var ref: AnyObject?
+        func foo() {
+          test { [weak ref] in
+            _ = ref
+          }
         }
-        closure()
       }
       """,
-      findings: [
-        FindingSpec("1️⃣", message: "captured variable 'a' is declared with 'var'; closure captures the value at creation time, not subsequent mutations"),
-        FindingSpec("2️⃣", message: "captured variable 'b' is declared with 'var'; closure captures the value at creation time, not subsequent mutations"),
-      ]
+      findings: []
     )
   }
 }

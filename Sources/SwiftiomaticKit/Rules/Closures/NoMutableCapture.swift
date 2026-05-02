@@ -1,19 +1,24 @@
 import SwiftSyntax
 
-/// Capturing a `var` by name in a closure captures its current value, not the variable. Subsequent
-/// mutations through the original binding are invisible to the closure, which is almost always
-/// surprising.
+/// Capturing a `var` *implicitly* in a closure body is a footgun: the closure silently retains the
+/// mutable binding and observes subsequent mutations through the original variable, which is almost
+/// always surprising — especially for `Sendable` hand-off across isolation boundaries.
 ///
-/// This rule is purely syntactic: it pre-scans the source file for `var` declarations (excluding
-/// `lazy var` and IUOs) and flags closure captures whose name matches any such declaration.
-/// Captures with an explicit initializer ( `[x = self.x]` ) and `weak` / `unowned` captures are not
-/// flagged.
+/// The remedy is an explicit capture list (`{ [counter] in ... }`), which snapshots the value at
+/// closure-creation time. Explicit `[var]` captures are therefore *not* flagged: they are the
+/// documented Swift 6 idiom for value-snapshot capture and are often required to satisfy strict
+/// concurrency.
 ///
-/// Lint: When a closure captures a name that matches a `var` declaration in the same file, a
-/// warning is raised.
+/// This rule is purely syntactic. It pre-scans the source file for `var` declarations (excluding
+/// `lazy var` and IUOs). Inside each closure it collects the names that shadow file-level vars
+/// (explicit captures, closure parameters, and locally-declared bindings), then flags any
+/// `DeclReferenceExpr` in the closure body that references an unshadowed file-level `var` name.
+///
+/// Lint: When a closure body references a name that matches a `var` declaration in the same file
+/// without explicitly capturing it, a warning is raised.
 final class NoMutableCapture: LintSyntaxRule<LintOnlyValue>, @unchecked Sendable {
     override class var group: ConfigurationGroup? { .closures }
-    override class var defaultValue: LintOnlyValue { .init(lint: .error) }
+    override class var defaultValue: LintOnlyValue { .init(lint: .warn) }
 
     private var mutableNames: Set<String> = []
 
@@ -24,21 +29,44 @@ final class NoMutableCapture: LintSyntaxRule<LintOnlyValue>, @unchecked Sendable
         return .visitChildren
     }
 
-    override func visit(_ node: ClosureCaptureSyntax) -> SyntaxVisitorContinueKind {
-        // `[x = self.x]` introduces a new constant; the original `x` isn't captured directly.
-        guard node.initializer == nil else { return .visitChildren }
+    override func visit(_ node: ClosureExprSyntax) -> SyntaxVisitorContinueKind {
+        guard !mutableNames.isEmpty else { return .visitChildren }
 
-        // `[weak x]` and `[unowned x]` imply reference semantics — not the bug this rule targets.
-        if let specifier = node.specifier?.specifier.text,
-           specifier == "weak" || specifier == "unowned"
-        {
-            return .visitChildren
+        var shadowed: Set<String> = []
+        if let signature = node.signature {
+            if let captureClause = signature.capture {
+                for capture in captureClause.items {
+                    shadowed.insert(capture.name.text)
+                }
+            }
+            if let paramClause = signature.parameterClause {
+                switch paramClause {
+                    case let .simpleInput(params):
+                        for param in params { shadowed.insert(param.name.text) }
+                    case let .parameterClause(clause):
+                        for param in clause.parameters {
+                            let internalName = param.secondName ?? param.firstName
+                            guard internalName.tokenKind != .wildcard else { continue }
+                            shadowed.insert(internalName.text)
+                        }
+                }
+            }
         }
 
-        let name = node.name.text
-        guard name != "self", mutableNames.contains(name) else { return .visitChildren }
+        let localCollector = ClosureLocalNameCollector(viewMode: .sourceAccurate)
+        for stmt in node.statements { localCollector.walk(stmt) }
+        shadowed.formUnion(localCollector.names)
 
-        diagnose(.mutableCapture(name), on: node.name)
+        let refFinder = ImplicitCaptureFinder(
+            mutableNames: mutableNames,
+            shadowed: shadowed,
+            viewMode: .sourceAccurate
+        )
+        for stmt in node.statements { refFinder.walk(stmt) }
+
+        for ref in refFinder.references {
+            diagnose(.implicitMutableCapture(ref.name), on: ref.token)
+        }
         return .visitChildren
     }
 }
@@ -69,8 +97,65 @@ private final class MutableVarNameCollector: SyntaxVisitor {
     }
 }
 
+/// Collects identifiers introduced inside a closure body without descending into nested scopes.
+private final class ClosureLocalNameCollector: SyntaxVisitor {
+    var names: Set<String> = []
+
+    override func visit(_ node: IdentifierPatternSyntax) -> SyntaxVisitorContinueKind {
+        names.insert(node.identifier.text)
+        return .visitChildren
+    }
+
+    override func visit(_ node: FunctionDeclSyntax) -> SyntaxVisitorContinueKind {
+        names.insert(node.name.text)
+        return .skipChildren
+    }
+
+    override func visit(_ node: CatchClauseSyntax) -> SyntaxVisitorContinueKind {
+        if node.catchItems.isEmpty { names.insert("error") }
+        return .visitChildren
+    }
+
+    override func visit(_: ClosureExprSyntax) -> SyntaxVisitorContinueKind { .skipChildren }
+    override func visit(_: StructDeclSyntax) -> SyntaxVisitorContinueKind { .skipChildren }
+    override func visit(_: ClassDeclSyntax) -> SyntaxVisitorContinueKind { .skipChildren }
+    override func visit(_: EnumDeclSyntax) -> SyntaxVisitorContinueKind { .skipChildren }
+    override func visit(_: ActorDeclSyntax) -> SyntaxVisitorContinueKind { .skipChildren }
+    override func visit(_: ExtensionDeclSyntax) -> SyntaxVisitorContinueKind { .skipChildren }
+}
+
+/// Finds bare references to file-level `var` names inside a closure body, skipping nested
+/// closures and member-access trailing names (e.g. `self.counter` does not flag `counter`).
+private final class ImplicitCaptureFinder: SyntaxVisitor {
+    let mutableNames: Set<String>
+    let shadowed: Set<String>
+    var references: [(name: String, token: TokenSyntax)] = []
+
+    init(mutableNames: Set<String>, shadowed: Set<String>, viewMode: SyntaxTreeViewMode) {
+        self.mutableNames = mutableNames
+        self.shadowed = shadowed
+        super.init(viewMode: viewMode)
+    }
+
+    override func visit(_: ClosureExprSyntax) -> SyntaxVisitorContinueKind { .skipChildren }
+
+    override func visit(_ node: DeclReferenceExprSyntax) -> SyntaxVisitorContinueKind {
+        // Skip the trailing `.member` of a member access — `self.counter` should not flag.
+        if let memberAccess = node.parent?.as(MemberAccessExprSyntax.self),
+           memberAccess.declName.id == node.id
+        {
+            return .visitChildren
+        }
+        let name = node.baseName.text
+        if mutableNames.contains(name), !shadowed.contains(name) {
+            references.append((name, node.baseName))
+        }
+        return .visitChildren
+    }
+}
+
 fileprivate extension Finding.Message {
-    static func mutableCapture(_ name: String) -> Finding.Message {
-        "captured variable '\(name)' is declared with 'var'; closure captures the value at creation time, not subsequent mutations"
+    static func implicitMutableCapture(_ name: String) -> Finding.Message {
+        "closure implicitly captures mutable variable '\(name)'; add it to the capture list (`[\(name)]`) to snapshot the current value, or rename to avoid collision"
     }
 }
