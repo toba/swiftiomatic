@@ -78,23 +78,86 @@ struct RuleMaskTests {
     #expect(mask.ruleState("rule2", at: location(ofLine: 6, in: converter)) == .disabled)
   }
 
-  @Test func ignoreComplexRuleNames() {
+  @Test func ignoreIdentifierLikeRuleNames() {
+    // Rule list parsing accepts identifier-like tokens (letters, digits, underscores) and
+    // stops at the first non-identifier token, treating the rest as a free-form comment.
     let text =
       """
-      // sm:ignore ru_le, rule!, ru&le, rule?, rule[], rule(), rule;
+      // sm:ignore ru_le, rule2, snake_case_rule
       let a = 123
       """
 
     let (mask, converter) = createMask(sourceText: text)
 
     #expect(mask.ruleState("ru_le", at: location(ofLine: 2, in: converter)) == .disabled)
-    #expect(mask.ruleState("rule!", at: location(ofLine: 2, in: converter)) == .disabled)
-    #expect(mask.ruleState("ru&le", at: location(ofLine: 2, in: converter)) == .disabled)
-    #expect(mask.ruleState("rule?", at: location(ofLine: 2, in: converter)) == .disabled)
-    #expect(mask.ruleState("rule[]", at: location(ofLine: 2, in: converter)) == .disabled)
-    #expect(mask.ruleState("rule()", at: location(ofLine: 2, in: converter)) == .disabled)
-    #expect(mask.ruleState("rule;", at: location(ofLine: 2, in: converter)) == .disabled)
+    #expect(mask.ruleState("rule2", at: location(ofLine: 2, in: converter)) == .disabled)
+    #expect(mask.ruleState("snake_case_rule", at: location(ofLine: 2, in: converter)) == .disabled)
     #expect(mask.ruleState("default", at: location(ofLine: 2, in: converter)) == .default)
+  }
+
+  // MARK: - Trailing free-form comments after the rule list.
+
+  @Test func trailingCommentWithDashSeparator() {
+    let text =
+      """
+      // sm:ignore:next noLeadingUnderscores - @DebugDescription requires this exact name
+      let _foo = 1
+      """
+
+    let (mask, converter) = createMask(sourceText: text)
+
+    #expect(
+      mask.ruleState("noLeadingUnderscores", at: location(ofLine: 2, in: converter)) == .disabled
+    )
+    // Words from the trailing comment must NOT become rule names.
+    #expect(mask.ruleState("DebugDescription", at: location(ofLine: 2, in: converter)) == .default)
+    #expect(mask.ruleState("requires", at: location(ofLine: 2, in: converter)) == .default)
+    #expect(mask.ruleState("name", at: location(ofLine: 2, in: converter)) == .default)
+  }
+
+  @Test func trailingCommentWithoutDashSeparator() {
+    let text =
+      """
+      // sm:ignore:next noLeadingUnderscores macro requires this exact name
+      let _foo = 1
+      """
+
+    let (mask, converter) = createMask(sourceText: text)
+
+    #expect(
+      mask.ruleState("noLeadingUnderscores", at: location(ofLine: 2, in: converter)) == .disabled
+    )
+    // `macro` looks identifier-like but isn't comma-separated from the rule list,
+    // so it's treated as part of the trailing comment.
+    #expect(mask.ruleState("macro", at: location(ofLine: 2, in: converter)) == .default)
+    #expect(mask.ruleState("requires", at: location(ofLine: 2, in: converter)) == .default)
+  }
+
+  @Test func trailingCommentWithMultipleRules() {
+    let text =
+      """
+      // sm:ignore:next ruleA, ruleB - because reasons go here
+      let x = 1
+      """
+
+    let (mask, converter) = createMask(sourceText: text)
+
+    #expect(mask.ruleState("ruleA", at: location(ofLine: 2, in: converter)) == .disabled)
+    #expect(mask.ruleState("ruleB", at: location(ofLine: 2, in: converter)) == .disabled)
+    #expect(mask.ruleState("because", at: location(ofLine: 2, in: converter)) == .default)
+    #expect(mask.ruleState("reasons", at: location(ofLine: 2, in: converter)) == .default)
+  }
+
+  @Test func trailingCommentOnTrailingDirective() {
+    let text =
+      """
+      let x = 1 // sm:ignore ruleA - explanation
+      """
+
+    let (mask, converter) = createMask(sourceText: text)
+
+    #expect(mask.ruleState("ruleA", at: location(ofLine: 1, in: converter)) == .disabled)
+    #expect(mask.ruleState("explanation", at: location(ofLine: 1, in: converter)) == .default)
   }
 
   @Test func nestedDirectivesEachExtendToEOF() {

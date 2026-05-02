@@ -32,6 +32,13 @@ import SwiftSyntax
 ///   // sm:ignore:next Rule1                       — ignore Rule1 for the next statement
 ///   let x = "trouble" // sm:ignore                — ignore all rules for this line only
 ///   let x = 1 // sm:ignore Rule1                  — ignore Rule1 for this line only
+///   // sm:ignore:next Rule1 explanatory comment   — Rule1 only; trailing text is ignored
+///
+/// The rule list is parsed greedily: the first token must be a valid rule identifier
+/// (matches `[A-Za-z_][A-Za-z0-9_]*`), and additional rules continue as long as a comma
+/// separates them. The first token that follows whitespace without an intervening comma
+/// — or the first non-identifier token — ends the rule list. Everything after that is
+/// treated as a free-form explanatory comment and discarded.
 ///
 /// `FileLength` and other `SourceFileSyntax`-level rules are gated at the file's end location,
 /// so a directive anywhere in the file suppresses them.
@@ -228,17 +235,55 @@ private final class RuleStatusCollectionVisitor: SyntaxVisitor {
         let scope: DirectiveScope = match.output.scope != nil ? .next : .eof
         guard let matchedRuleNames = match.output.ruleNames else { return (.all, scope) }
 
-        let rules = matchedRuleNames.split(separator: ",").compactMap { segment -> String? in
-            let name = segment.trimmingCharacters(in: .whitespaces)
-            guard !name.isEmpty else { return nil }
-            // Normalize type names (e.g. SortImports) to key format (e.g. sortImports)
-            guard let first = name.first, first.isUppercase else { return name }
-            let derived = first.lowercased() + name.dropFirst()
+        // Parse leading rule tokens. Rules continue as long as commas separate them; the
+        // first whitespace-only-separated token (or any non-identifier token) ends the list.
+        var rules: [String] = []
+        var index = matchedRuleNames.startIndex
+        var sawCommaBeforeNextToken = true  // First token doesn't need a leading comma.
+        while index < matchedRuleNames.endIndex {
+            // Consume separators (whitespace and commas) before the next token; record
+            // whether at least one comma appeared.
+            while index < matchedRuleNames.endIndex {
+                let c = matchedRuleNames[index]
+                if c == "," {
+                    sawCommaBeforeNextToken = true
+                } else if c != " " && c != "\t" {
+                    break
+                }
+                index = matchedRuleNames.index(after: index)
+            }
+            guard index < matchedRuleNames.endIndex else { break }
 
-            // Resolve custom keys (e.g. SortImports → "imports" not "sortImports")
-            return ConfigurationRegistry.typeNameToKey[derived] ?? derived
+            // After the first rule, only continue if the previous separator contained a comma.
+            if !rules.isEmpty, !sawCommaBeforeNextToken { break }
+
+            let tokenStart = index
+            while index < matchedRuleNames.endIndex {
+                let c = matchedRuleNames[index]
+                if c == " " || c == "\t" || c == "," { break }
+                index = matchedRuleNames.index(after: index)
+            }
+            let token = matchedRuleNames[tokenStart..<index]
+            guard isRuleIdentifier(token) else { break }
+            let name = String(token)
+            // Normalize type names (e.g. SortImports) to key format (e.g. sortImports).
+            if let first = name.first, first.isUppercase {
+                let derived = first.lowercased() + name.dropFirst()
+                // Resolve custom keys (e.g. SortImports → "imports" not "sortImports").
+                rules.append(ConfigurationRegistry.typeNameToKey[derived] ?? derived)
+            } else {
+                rules.append(name)
+            }
+            sawCommaBeforeNextToken = false
         }
         return (.subset(ruleNames: rules), scope)
+    }
+
+    /// True if `token` matches `[A-Za-z_][A-Za-z0-9_]*`.
+    private func isRuleIdentifier(_ token: Substring) -> Bool {
+        guard let first = token.first else { return false }
+        guard first.isLetter || first == "_" else { return false }
+        return token.dropFirst().allSatisfy { $0.isLetter || $0.isNumber || $0 == "_" }
     }
 
     /// Returns the list of line comments in the given trivia that are on a line by themselves
