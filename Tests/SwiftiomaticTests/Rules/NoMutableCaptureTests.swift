@@ -175,6 +175,45 @@ struct NoMutableCaptureTests: RuleTesting {
     )
   }
 
+  @Test func enclosingClosureExplicitCaptureShadowsInner() {
+    // Inner closure has no own capture list, but the enclosing closure explicitly
+    // captures `changes` — so `changes` inside the inner closure resolves to the
+    // outer let, not the file-level var. Should not flag.
+    assertLint(
+      NoMutableCapture.self,
+      """
+      func foo() {
+        var changes: [Int] = []
+        Task { [changes] in
+          outer {
+            inner {
+              _ = changes.map { String($0) }
+            }
+          }
+        }
+      }
+      """,
+      findings: []
+    )
+  }
+
+  @Test func enclosingClosureParameterShadowsInner() {
+    assertLint(
+      NoMutableCapture.self,
+      """
+      func foo() {
+        var counter = 0
+        outer { counter in
+          inner {
+            print(counter)
+          }
+        }
+      }
+      """,
+      findings: []
+    )
+  }
+
   @Test func captureWithExplicitInitializerNotFlagged() {
     assertLint(
       NoMutableCapture.self,

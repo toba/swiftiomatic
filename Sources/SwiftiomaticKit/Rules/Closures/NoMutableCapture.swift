@@ -33,29 +33,21 @@ final class NoMutableCapture: LintSyntaxRule<LintOnlyValue>, @unchecked Sendable
         guard !mutableNames.isEmpty else { return .visitChildren }
 
         var shadowed: Set<String> = []
-        if let signature = node.signature {
-            if let captureClause = signature.capture {
-                for capture in captureClause.items {
-                    shadowed.insert(capture.name.text)
-                }
-            }
-            if let paramClause = signature.parameterClause {
-                switch paramClause {
-                    case let .simpleInput(params):
-                        for param in params { shadowed.insert(param.name.text) }
-                    case let .parameterClause(clause):
-                        for param in clause.parameters {
-                            let internalName = param.secondName ?? param.firstName
-                            guard internalName.tokenKind != .wildcard else { continue }
-                            shadowed.insert(internalName.text)
-                        }
-                }
-            }
-        }
+        collectClosureSignatureNames(node, into: &shadowed)
 
         let localCollector = ClosureLocalNameCollector(viewMode: .sourceAccurate)
         for stmt in node.statements { localCollector.walk(stmt) }
         shadowed.formUnion(localCollector.names)
+
+        // Include shadowing from enclosing closures: their explicit captures and
+        // parameters introduce bindings visible inside this nested closure.
+        var ancestor = node.parent
+        while let current = ancestor {
+            if let enclosing = current.as(ClosureExprSyntax.self) {
+                collectClosureSignatureNames(enclosing, into: &shadowed)
+            }
+            ancestor = current.parent
+        }
 
         let refFinder = ImplicitCaptureFinder(
             mutableNames: mutableNames,
@@ -68,6 +60,27 @@ final class NoMutableCapture: LintSyntaxRule<LintOnlyValue>, @unchecked Sendable
             diagnose(.implicitMutableCapture(ref.name), on: ref.token)
         }
         return .visitChildren
+    }
+}
+
+private func collectClosureSignatureNames(_ closure: ClosureExprSyntax, into shadowed: inout Set<String>) {
+    guard let signature = closure.signature else { return }
+    if let captureClause = signature.capture {
+        for capture in captureClause.items {
+            shadowed.insert(capture.name.text)
+        }
+    }
+    if let paramClause = signature.parameterClause {
+        switch paramClause {
+            case let .simpleInput(params):
+                for param in params { shadowed.insert(param.name.text) }
+            case let .parameterClause(clause):
+                for param in clause.parameters {
+                    let internalName = param.secondName ?? param.firstName
+                    guard internalName.tokenKind != .wildcard else { continue }
+                    shadowed.insert(internalName.text)
+                }
+        }
     }
 }
 
