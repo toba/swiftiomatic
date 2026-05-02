@@ -119,6 +119,21 @@ struct IfStmtTests: LayoutTesting {
     assertLayout(input: input, expected: expected, linelength: 23)
   }
 
+  @Test func ifElseStatement_keepsInlineBraceWhenFits() {
+    let input =
+      """
+      if lineIndex < 0 {
+          lineIndex = 0
+      } else if lineIndex >= rawLineLengths.count {
+          lineIndex = rawLineLengths.count - 1
+      }
+
+      """
+    var config = Configuration()
+    config[IndentationSetting.self] = .spaces(4)
+    assertLayout(input: input, expected: input, linelength: 100, configuration: config)
+  }
+
   @Test func ifElseStatement_breakBeforeElse() {
     let input =
       """

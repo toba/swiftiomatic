@@ -15,6 +15,13 @@ import SwiftSyntax
 /// The `[weak self]` + `guard let self` pattern (SE-0365, Swift 5.8+) is handled conservatively:
 /// `self.` is kept in weak-self closures.
 ///
+/// **Known limitation (`@dynamicMemberLookup`):** when an extension or member is on a type that
+/// conforms to `@dynamicMemberLookup` in a *different* module, this rule cannot see the attribute
+/// and may strip a required `self.` (the bare name is not in scope — it resolves through the
+/// dynamic-lookup subscript). Source-local declarations and a hardcoded list of stdlib/SwiftUI
+/// types (`AttributedString`, `AttributedSubstring`, `ScopedAttributeContainer`, `Binding`) are
+/// detected; user types in other modules are not.
+///
 /// Lint: A lint warning is raised for redundant `self.` usage.
 ///
 /// Rewrite: The `self.` prefix is removed.
@@ -34,63 +41,111 @@ final class DropRedundantSelf: StaticFormatRule<BasicRuleValue>, @unchecked Send
         /// Per-scope-decl flag: did we actually push a frame on willEnter? Used so didExit only
         /// pops when willEnter pushed (some scope-decl visits early-return without pushing).
         var scopeFrameStack: [Bool] = []
+        /// Stack of "this scope's enclosing type uses dynamic-member-lookup" flags. When `true` ,
+        /// `self.<name>` may resolve via an `@dynamicMemberLookup` subscript and the bare name is
+        /// not necessarily in scope, so the rule must not strip `self.`.
+        var dynamicLookupStack: [Bool] = []
 
         var insideTypeBody: Bool { !referenceTypeStack.isEmpty }
         var isReferenceType: Bool { referenceTypeStack.last ?? false }
         var implicitSelfAllowed: Bool { implicitSelfStack.last ?? false }
+        var inDynamicLookupScope: Bool { dynamicLookupStack.last ?? false }
         var allLocalNames: Set<String> { localNameStack.reduce(into: Set()) { $0.formUnion($1) } }
+    }
+
+    /// Stdlib / framework types known to be `@dynamicMemberLookup` whose declaration we cannot
+    /// inspect from source. Extending one of these means bare member names are not in scope and
+    /// `self.` must be preserved.
+    private static let knownDynamicMemberLookupTypes: Set<String> = [
+        "AttributedString",
+        "AttributedSubstring",
+        "ScopedAttributeContainer",
+        "Binding",
+    ]
+
+    private static func hasDynamicMemberLookup(_ attrs: AttributeListSyntax) -> Bool {
+        for element in attrs {
+            guard let attr = element.as(AttributeSyntax.self),
+                  let id = attr.attributeName.as(IdentifierTypeSyntax.self)
+            else { continue }
+            if id.name.text == "dynamicMemberLookup" { return true }
+        }
+        return false
+    }
+
+    private static func extensionExtendsKnownDynamic(_ node: ExtensionDeclSyntax) -> Bool {
+        let extended = node.extendedType
+        if let id = extended.as(IdentifierTypeSyntax.self) {
+            return knownDynamicMemberLookupTypes.contains(id.name.text)
+        }
+        if let member = extended.as(MemberTypeSyntax.self) {
+            return knownDynamicMemberLookupTypes.contains(member.name.text)
+        }
+        return false
     }
 
     // MARK: - Static scope hooks
 
-    static func willEnter(_: StructDeclSyntax, context: Context) {
+    static func willEnter(_ node: StructDeclSyntax, context: Context) {
         let state = context.redundantSelfState
         state.referenceTypeStack.append(false)
+        state.dynamicLookupStack.append(hasDynamicMemberLookup(node.attributes))
     }
 
     static func didExit(_: StructDeclSyntax, context: Context) {
         let state = context.redundantSelfState
         if !state.referenceTypeStack.isEmpty { state.referenceTypeStack.removeLast() }
+        if !state.dynamicLookupStack.isEmpty { state.dynamicLookupStack.removeLast() }
     }
 
-    static func willEnter(_: EnumDeclSyntax, context: Context) {
+    static func willEnter(_ node: EnumDeclSyntax, context: Context) {
         let state = context.redundantSelfState
         state.referenceTypeStack.append(false)
+        state.dynamicLookupStack.append(hasDynamicMemberLookup(node.attributes))
     }
 
     static func didExit(_: EnumDeclSyntax, context: Context) {
         let state = context.redundantSelfState
         if !state.referenceTypeStack.isEmpty { state.referenceTypeStack.removeLast() }
+        if !state.dynamicLookupStack.isEmpty { state.dynamicLookupStack.removeLast() }
     }
 
-    static func willEnter(_: ClassDeclSyntax, context: Context) {
+    static func willEnter(_ node: ClassDeclSyntax, context: Context) {
         let state = context.redundantSelfState
         state.referenceTypeStack.append(true)
+        state.dynamicLookupStack.append(hasDynamicMemberLookup(node.attributes))
     }
 
     static func didExit(_: ClassDeclSyntax, context: Context) {
         let state = context.redundantSelfState
         if !state.referenceTypeStack.isEmpty { state.referenceTypeStack.removeLast() }
+        if !state.dynamicLookupStack.isEmpty { state.dynamicLookupStack.removeLast() }
     }
 
-    static func willEnter(_: ActorDeclSyntax, context: Context) {
+    static func willEnter(_ node: ActorDeclSyntax, context: Context) {
         let state = context.redundantSelfState
         state.referenceTypeStack.append(true)
+        state.dynamicLookupStack.append(hasDynamicMemberLookup(node.attributes))
     }
 
     static func didExit(_: ActorDeclSyntax, context: Context) {
         let state = context.redundantSelfState
         if !state.referenceTypeStack.isEmpty { state.referenceTypeStack.removeLast() }
+        if !state.dynamicLookupStack.isEmpty { state.dynamicLookupStack.removeLast() }
     }
 
-    static func willEnter(_: ExtensionDeclSyntax, context: Context) {
+    static func willEnter(_ node: ExtensionDeclSyntax, context: Context) {
         let state = context.redundantSelfState
         state.referenceTypeStack.append(true)
+        let dynamic = hasDynamicMemberLookup(node.attributes)
+            || extensionExtendsKnownDynamic(node)
+        state.dynamicLookupStack.append(dynamic)
     }
 
     static func didExit(_: ExtensionDeclSyntax, context: Context) {
         let state = context.redundantSelfState
         if !state.referenceTypeStack.isEmpty { state.referenceTypeStack.removeLast() }
+        if !state.dynamicLookupStack.isEmpty { state.dynamicLookupStack.removeLast() }
     }
 
     static func willEnter(_ node: FunctionDeclSyntax, context: Context) {
@@ -298,6 +353,7 @@ final class DropRedundantSelf: StaticFormatRule<BasicRuleValue>, @unchecked Send
 
         guard !state.implicitSelfStack.isEmpty else { return ExprSyntax(node) }
         guard state.implicitSelfAllowed else { return ExprSyntax(node) }
+        guard !state.inDynamicLookupScope else { return ExprSyntax(node) }
         guard !state.allLocalNames.contains(memberName) else { return ExprSyntax(node) }
 
         Self.diagnose(.removeRedundantSelf, on: base, context: context)

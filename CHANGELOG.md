@@ -101,6 +101,9 @@
 - Misfiring `wrapTernary`/`useImplicitInit`/`redundantType`; thread `original` node through `StaticFormatRule.transform` so findings anchor in the original source's coordinate space; `redundantType` exempts stored properties on type declarations
 - Schema generator; emit raw values (e.g. `get_set`/`set_get`) instead of Swift case identifiers for enum-typed config properties ([#609](https://github.com/toba/swiftiomatic/issues/609))
 - `// sm:ignore`; trailing directive now suppresses across the whole statement when placed on the opening line (e.g. `if x { // sm:ignore Foo`), matching the prior closing-brace behavior
+- `DropRedundantSelf`; preserve `self.` in extensions on `@dynamicMemberLookup` types (`AttributedString`, `AttributedSubstring`, `ScopedAttributeContainer`, `Binding`); document the cross-module limitation
+- `LayoutSingleLineBodies`; else-if condition no longer wraps to a brace-on-next-line layout
+- `LayoutSingleLineBodies`; wrapped collection literal now collapses onto one line in inline mode when it fits; dictionary-literal collapse clears `key.trailingTrivia`, `colon` trivia, and `value.leadingTrivia` so odd whitespace around `:` is normalized
 
 ### 🗜️ Tweaks
 
@@ -156,6 +159,8 @@
 - Audit lint-flagged IIFE patterns; simplify `preparedAcronyms` initializer ([#541](https://github.com/toba/swiftiomatic/issues/541))
 - Verify `consumeFinding` and `consumeCachedEntry` produce byte-identical output; add `LintCache` schema round-trip tests ([#553](https://github.com/toba/swiftiomatic/issues/553))
 - Rename DocC comment rules for self-documenting names; `convertRegularCommentToDocC`→`useDocCommentsOnAPI`, `useTripleSlashForDocComments`→`useTripleSlashOverDocBlock`, `requireDocCommentSummary`→`requireDocSummaryStructure`, `requireParameterDocs`→`requireParameterAndReturnDocs`, `noDocCommentsInsideFunctions`→`noDocCommentsInFunctionBodies`, `flagOrphanedDocComment`→`noOrphanedDocComment`
+- `LayoutSingleLineBodies`; extract shared `shouldInlineCollection` helper so array/dict variants share precondition + length check + diagnostic emission
+- `WrapTernaryBranches.singleLineLength`; replace `split(...).joined(...).count` with a single-pass character scan that collapses whitespace runs in place
 
 ## Week of Apr 19 – Apr 25, 2026
 

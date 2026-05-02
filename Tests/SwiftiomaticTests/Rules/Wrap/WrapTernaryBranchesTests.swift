@@ -103,4 +103,34 @@ struct WrapTernaryBranchesTests: RuleTesting {
       findings: [])
   }
 
+  /// A ternary whose condition is a multi-line function call (closing paren on its own line)
+  /// but whose `?` and `:` both sit on a short final line — the rule must not fire.
+  /// Repros from issue: `[wrapTernaryBranches] wrap ternary branch onto a new line` warning
+  /// emitted at `) != nil ? valueRange : nil` even though that line easily fits.
+  @Test func ternaryAfterMultiLineConditionDoesNotWrapWhenOperatorLineFits() {
+    assertFormatting(
+      WrapTernaryBranches.self,
+      input: """
+        func foo() -> Any? {
+            return attribute(
+                key,
+                at: index,
+                longestEffectiveRange: &valueRange,
+                in: fullRange,
+            ) != nil ? valueRange : nil
+        }
+        """,
+      expected: """
+        func foo() -> Any? {
+            return attribute(
+                key,
+                at: index,
+                longestEffectiveRange: &valueRange,
+                in: fullRange,
+            ) != nil ? valueRange : nil
+        }
+        """,
+      findings: [])
+  }
+
 }

@@ -1214,4 +1214,72 @@ struct DropRedundantSelfTests: RuleTesting {
       """
     assertFormatting(DropRedundantSelf.self, input: source, expected: source, findings: [])
   }
+
+  // MARK: - @dynamicMemberLookup
+
+  @Test func keepSelfInExtensionOnKnownDynamicMemberLookupType() {
+    // `AttributedSubstring` is `@dynamicMemberLookup` in Foundation. Bare `appKit`
+    // is not a real declaration — only `self.appKit` reaches the dynamic subscript.
+    let source = """
+      extension AttributedSubstring: PlatformAttributeAccessor {
+          var platform: PlatformAttributes {
+              self.appKit
+          }
+      }
+      """
+    assertFormatting(DropRedundantSelf.self, input: source, expected: source, findings: [])
+  }
+
+  @Test func keepSelfInTypeDeclaredDynamicMemberLookup() {
+    let source = """
+      @dynamicMemberLookup
+      struct Wrapper {
+          subscript(dynamicMember member: String) -> Int { 0 }
+          func read() -> Int {
+              self.foo
+          }
+      }
+      """
+    assertFormatting(DropRedundantSelf.self, input: source, expected: source, findings: [])
+  }
+
+  @Test func keepSelfInExtensionOnSwiftUIBinding() {
+    let source = """
+      extension Binding where Value == Int {
+          func bumped() -> Int {
+              self.wrappedValue
+          }
+      }
+      """
+    assertFormatting(DropRedundantSelf.self, input: source, expected: source, findings: [])
+  }
+
+  @Test func stillStripsInExtensionOnNormalType() {
+    // Regression guard: extension on a non-dynamic type must still strip `self.`.
+    assertFormatting(
+      DropRedundantSelf.self,
+      input: """
+        struct Foo {
+            var bar: Int = 0
+        }
+        extension Foo {
+            func baz() {
+                1️⃣self.bar = 5
+            }
+        }
+        """,
+      expected: """
+        struct Foo {
+            var bar: Int = 0
+        }
+        extension Foo {
+            func baz() {
+                bar = 5
+            }
+        }
+        """,
+      findings: [
+        FindingSpec("1️⃣", message: "remove redundant 'self.' prefix")
+      ])
+  }
 }

@@ -1332,4 +1332,109 @@ struct SingleLineBodiesInlineTests: RuleTesting {
       findings: [FindingSpec("1️⃣", message: "place function body on same line as declaration")],
       configuration: inlineConfig)
   }
+
+  // MARK: - Collection literals
+
+  @Test func wrappedArrayLiteralInlines() {
+    // Issue zbo-eta: in inline mode, a wrapped array literal whose joined form fits should
+    // collapse to a single line and drop the trailing comma.
+    assertFormatting(
+      LayoutSingleLineBodies.self,
+      input: """
+        let a = 1️⃣[
+            "id",
+            "type",
+            "within_id",
+            "position",
+            "name",
+            "value",
+            "value_type",
+        ]
+        """,
+      expected: """
+        let a = ["id", "type", "within_id", "position", "name", "value", "value_type"]
+        """,
+      findings: [FindingSpec("1️⃣", message: "place collection literal on same line as declaration")],
+      configuration: inlineConfig)
+  }
+
+  @Test func wrappedArrayLiteralStaysWrappedWhenItDoesntFit() {
+    var config = inlineConfig
+    config[LineLength.self] = 40
+    assertFormatting(
+      LayoutSingleLineBodies.self,
+      input: """
+        let a = [
+            "alpha", "beta", "gamma",
+            "delta", "epsilon", "zeta",
+        ]
+        """,
+      expected: """
+        let a = [
+            "alpha", "beta", "gamma",
+            "delta", "epsilon", "zeta",
+        ]
+        """,
+      configuration: config)
+  }
+
+  @Test func wrappedDictionaryLiteralInlines() {
+    assertFormatting(
+      LayoutSingleLineBodies.self,
+      input: """
+        let m = 1️⃣[
+            "a": 1,
+            "b": 2,
+            "c": 3,
+        ]
+        """,
+      expected: """
+        let m = ["a": 1, "b": 2, "c": 3]
+        """,
+      findings: [FindingSpec("1️⃣", message: "place collection literal on same line as declaration")],
+      configuration: inlineConfig)
+  }
+
+  @Test func dictionaryLiteralWithWhitespaceAroundColonInlines() {
+    // Issue hqy-zcl: trivia between key and `:` and between `:` and value must be cleared
+    // when collapsing, mirroring the array variant's full reset of element trivia.
+    assertFormatting(
+      LayoutSingleLineBodies.self,
+      input: """
+        let m = 1️⃣[
+            "a"
+                : 1,
+            "b"   :   2,
+        ]
+        """,
+      expected: """
+        let m = ["a": 1, "b": 2]
+        """,
+      findings: [FindingSpec("1️⃣", message: "place collection literal on same line as declaration")],
+      configuration: inlineConfig)
+  }
+
+  @Test func alreadyInlineArrayUnchanged() {
+    assertFormatting(
+      LayoutSingleLineBodies.self,
+      input: """
+        let a = ["x", "y", "z"]
+        """,
+      expected: """
+        let a = ["x", "y", "z"]
+        """,
+      configuration: inlineConfig)
+  }
+
+  @Test func emptyArrayUnchanged() {
+    assertFormatting(
+      LayoutSingleLineBodies.self,
+      input: """
+        let a: [Int] = []
+        """,
+      expected: """
+        let a: [Int] = []
+        """,
+      configuration: inlineConfig)
+  }
 }

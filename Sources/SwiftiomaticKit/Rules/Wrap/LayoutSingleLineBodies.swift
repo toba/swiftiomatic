@@ -1,9 +1,8 @@
 import SwiftSyntax
 
-/// Per-file state for the compact-pipeline `LayoutSingleLineBodies` rule. The `indentStack` tracks
-/// the baseIndent of each enclosing wrapping construct ( `for` / `while` / `repeat` / `guard` /
-/// `if` ) so a same-line nested construct can derive its own baseIndent when its trivia carries no
-/// newline.
+/// Per-file state for `LayoutSingleLineBodies`. The `indentStack` tracks the baseIndent of each
+/// enclosing wrapping construct ( `for` / `while` / `repeat` / `guard` / `if` ) so a same-line
+/// nested construct can derive its own baseIndent when its trivia carries no newline.
 final class LayoutSingleLineBodiesState {
     var indentStack: [String] = []
 }
@@ -31,7 +30,7 @@ final class LayoutSingleLineBodies: StaticFormatRule<LayoutSingleLineBodiesConfi
     override class var group: ConfigurationGroup? { .wrap }
 }
 
-// MARK: - Static transform (compact pipeline)
+// MARK: - Static transform
 
 extension LayoutSingleLineBodies {
     private static func mode(context: Context) -> LayoutSingleLineBodiesConfiguration.Mode {
@@ -151,6 +150,26 @@ extension LayoutSingleLineBodies {
     }
 
     static func transform(
+        _ node: ArrayExprSyntax,
+        original _: ArrayExprSyntax,
+        parent _: Syntax?,
+        context: Context
+    ) -> ExprSyntax {
+        guard Self.mode(context: context) == .inline else { return ExprSyntax(node) }
+        return Self.inlineArrayLiteral(node, context: context)
+    }
+
+    static func transform(
+        _ node: DictionaryExprSyntax,
+        original _: DictionaryExprSyntax,
+        parent _: Syntax?,
+        context: Context
+    ) -> ExprSyntax {
+        guard Self.mode(context: context) == .inline else { return ExprSyntax(node) }
+        return Self.inlineDictionaryLiteral(node, context: context)
+    }
+
+    static func transform(
         _ node: AccessorDeclSyntax,
         original _: AccessorDeclSyntax,
         parent _: Syntax?,
@@ -167,12 +186,11 @@ extension LayoutSingleLineBodies {
 
     // MARK: Wrap helpers (static)
 
-    /// Mirrors the legacy `currentIndent` / `chainBaseIndent` instance state via a typed property
-    /// on `Context` . The compact pipeline runs post-order, so a `for` / `while` / `repeat` /
-    /// `guard` / `if` whose keyword sits on the same line as its enclosing `{` cannot derive its
-    /// baseIndent from trivia. The static `willEnter` hooks push each construct's baseIndent onto
-    /// `indentStack` before children are visited; `didExit` pops it. The wrap helpers read
-    /// `indentStack.last` rather than recomputing from trivia.
+    /// The rewriter runs post-order, so a `for` / `while` / `repeat` / `guard` / `if` whose
+    /// keyword sits on the same line as its enclosing `{` cannot derive its baseIndent from trivia.
+    /// The static `willEnter` hooks push each construct's baseIndent onto `indentStack` before
+    /// children are visited; `didExit` pops it. The wrap helpers read `indentStack.last` rather
+    /// than recomputing from trivia.
     fileprivate static func state(_ context: Context) -> LayoutSingleLineBodiesState {
         context.layoutSingleLineBodiesState
     }
@@ -771,6 +789,115 @@ extension LayoutSingleLineBodies {
         }
     }
 
+    /// Shared precondition + length check + diagnostic for wrapped collection-literal inlining.
+    /// Returns `true` when the literal is wrapped (multiline), comment-free, and would fit on one
+    /// line — and emits the diagnostic. Each variant then performs its element-specific trivia
+    /// reset and reassembles the node.
+    fileprivate static func shouldInlineCollection<E: SyntaxProtocol>(
+        elements: [E],
+        leftBracket: TokenSyntax,
+        rightBracket: TokenSyntax,
+        render: (E) -> String,
+        context: Context
+    ) -> Bool {
+        guard !elements.isEmpty else { return false }
+        let isMultiline = elements.contains { $0.leadingTrivia.containsNewlines }
+            || rightBracket.leadingTrivia.containsNewlines
+        guard isMultiline else { return false }
+
+        // Comments anywhere inside the literal disqualify the rewrite — collapsing would lose them.
+        for element in elements {
+            if element.leadingTrivia.hasAnyComments
+                || element.trailingTrivia.hasAnyComments { return false }
+        }
+        if rightBracket.leadingTrivia.hasAnyComments { return false }
+
+        let joined = elements.map(render).joined(separator: ", ")
+        let openColumn = leftBracket
+            .startLocation(converter: context.sourceLocationConverter).column
+        let inlinedLength = openColumn - 1 + 1 + joined.count + 1
+        guard inlinedLength <= Self.maxLength(context: context) else { return false }
+
+        Self.diagnose(.inlineCollectionLiteral, on: leftBracket, context: context)
+        return true
+    }
+
+    /// Collapses a wrapped array literal onto one line when its joined form fits the print width.
+    /// The trailing comma is dropped (single-line collection literals have no trailing comma per
+    /// `multiElementCollectionTrailingCommas`'s default handling).
+    fileprivate static func inlineArrayLiteral(
+        _ node: ArrayExprSyntax,
+        context: Context
+    ) -> ExprSyntax {
+        let elements = Array(node.elements)
+        guard Self.shouldInlineCollection(
+            elements: elements,
+            leftBracket: node.leftSquare,
+            rightBracket: node.rightSquare,
+            render: { $0.expression.trimmedDescription },
+            context: context
+        ) else { return ExprSyntax(node) }
+
+        var newElements = elements
+        let lastIdx = newElements.count - 1
+        for i in newElements.indices {
+            newElements[i].leadingTrivia = []
+            newElements[i].expression = newElements[i].expression.with(\.leadingTrivia, [])
+            newElements[i].expression = newElements[i].expression.with(\.trailingTrivia, [])
+            if i == lastIdx {
+                newElements[i].trailingComma = nil
+                newElements[i].trailingTrivia = []
+            } else if let comma = newElements[i].trailingComma {
+                newElements[i].trailingComma = comma.with(\.trailingTrivia, [.spaces(1)])
+            }
+        }
+        var result = node
+        result.leftSquare = result.leftSquare.with(\.trailingTrivia, [])
+        result.elements = ArrayElementListSyntax(newElements)
+        result.rightSquare = result.rightSquare.with(\.leadingTrivia, [])
+        return ExprSyntax(result)
+    }
+
+    fileprivate static func inlineDictionaryLiteral(
+        _ node: DictionaryExprSyntax,
+        context: Context
+    ) -> ExprSyntax {
+        guard let elementList = node.content.as(DictionaryElementListSyntax.self) else {
+            return ExprSyntax(node)
+        }
+        let elements = Array(elementList)
+        guard Self.shouldInlineCollection(
+            elements: elements,
+            leftBracket: node.leftSquare,
+            rightBracket: node.rightSquare,
+            render: { "\($0.key.trimmedDescription): \($0.value.trimmedDescription)" },
+            context: context
+        ) else { return ExprSyntax(node) }
+
+        var newElements = elements
+        let lastIdx = newElements.count - 1
+        for i in newElements.indices {
+            newElements[i].leadingTrivia = []
+            newElements[i].key = newElements[i].key.with(\.leadingTrivia, [])
+            newElements[i].key = newElements[i].key.with(\.trailingTrivia, [])
+            newElements[i].colon = newElements[i].colon.with(\.leadingTrivia, [])
+            newElements[i].colon = newElements[i].colon.with(\.trailingTrivia, [.spaces(1)])
+            newElements[i].value = newElements[i].value.with(\.leadingTrivia, [])
+            newElements[i].value = newElements[i].value.with(\.trailingTrivia, [])
+            if i == lastIdx {
+                newElements[i].trailingComma = nil
+                newElements[i].trailingTrivia = []
+            } else if let comma = newElements[i].trailingComma {
+                newElements[i].trailingComma = comma.with(\.trailingTrivia, [.spaces(1)])
+            }
+        }
+        var result = node
+        result.leftSquare = result.leftSquare.with(\.trailingTrivia, [])
+        result.content = .elements(DictionaryElementListSyntax(newElements))
+        result.rightSquare = result.rightSquare.with(\.leadingTrivia, [])
+        return ExprSyntax(result)
+    }
+
     fileprivate static func inlineObserver(
         _ node: AccessorDeclSyntax,
         context: Context
@@ -796,7 +923,7 @@ extension LayoutSingleLineBodies {
     }
 }
 
-// MARK: - Compact-pipeline scope hooks
+// MARK: - Scope hooks
 
 extension LayoutSingleLineBodies {
     static func willEnter(_ node: IfExprSyntax, context: Context) {
@@ -894,6 +1021,9 @@ fileprivate extension Finding.Message {
         "place property body on same line as declaration"
 
     static let inlineObserverBody: Finding.Message = "place observer body on same line as accessor"
+
+    static let inlineCollectionLiteral: Finding.Message =
+        "place collection literal on same line as declaration"
 }
 
 // MARK: - Configuration

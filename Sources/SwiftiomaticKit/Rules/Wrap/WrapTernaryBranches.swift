@@ -98,10 +98,21 @@ final class WrapTernaryBranches: StaticFormatRule<BasicRuleValue>, @unchecked Se
     /// Returns the length of the ternary as if it were rendered on a single line — collapsing any
     /// internal newlines or multi-space runs to single spaces.
     private static func singleLineLength(of node: TernaryExprSyntax) -> Int {
-        node.trimmedDescription
-            .split(whereSeparator: { $0.isWhitespace })
-            .joined(separator: " ")
-            .count
+        // Single-pass character scan: count non-whitespace characters and collapse each run of
+        // whitespace between them to one. Avoids the per-call `split(...).joined(...)` allocations
+        // on a hot path.
+        var count = 0
+        var inWhitespaceRun = true  // start true so leading whitespace is dropped
+        for ch in node.trimmedDescription {
+            if ch.isWhitespace {
+                inWhitespaceRun = true
+            } else {
+                if inWhitespaceRun, count > 0 { count += 1 }
+                count += 1
+                inWhitespaceRun = false
+            }
+        }
+        return count
     }
 
     /// True if `node` is contained within an `ExpressionSegmentSyntax` whose enclosing

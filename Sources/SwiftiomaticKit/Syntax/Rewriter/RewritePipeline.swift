@@ -159,6 +159,28 @@ final class RewritePipeline: SyntaxRewriter {
         return DeclSyntax(concrete)
     }
 
+    override func visit(_ node: ArrayExprSyntax) -> ExprSyntax {
+        guard let gate = context.gate(for: node) else { return super.visit(node) }
+        let parent = Syntax(node).parent
+        let visited = super.visit(node)
+        guard var concrete = visited.as(ArrayExprSyntax.self) else { return visited }
+        apply(LayoutSingleLineBodies.self, to: &concrete, original: node, gate: gate) {
+            LayoutSingleLineBodies.transform($0, original: $1, parent: parent, context: $2)
+        }
+        return ExprSyntax(concrete)
+    }
+
+    override func visit(_ node: DictionaryExprSyntax) -> ExprSyntax {
+        guard let gate = context.gate(for: node) else { return super.visit(node) }
+        let parent = Syntax(node).parent
+        let visited = super.visit(node)
+        guard var concrete = visited.as(DictionaryExprSyntax.self) else { return visited }
+        apply(LayoutSingleLineBodies.self, to: &concrete, original: node, gate: gate) {
+            LayoutSingleLineBodies.transform($0, original: $1, parent: parent, context: $2)
+        }
+        return ExprSyntax(concrete)
+    }
+
     override func visit(_ node: AsExprSyntax) -> ExprSyntax {
         guard let gate = context.gate(for: node) else { return super.visit(node) }
         let runNoForceUnwrap = context.shouldRewrite(NoForceUnwrap.self, gate: gate)
