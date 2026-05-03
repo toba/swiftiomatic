@@ -34,10 +34,10 @@ final class NoCaseNamedNone: StaticFormatRule<BasicRuleValue>, @unchecked Sendab
         parent _: Syntax?,
         context: Context
     ) -> DeclSyntax {
-        let kind: String? = {
-            if node.modifiers.contains(.class) { return "class" }
-            return node.modifiers.contains(.static) ? "static" : nil
-        }()
+        let kind: String? =
+            if node.modifiers.contains(.class) { "class" }
+            else if node.modifiers.contains(.static) { "static" }
+            else { nil }
 
         if let kind {
             for binding in node.bindings {

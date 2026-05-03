@@ -45,6 +45,10 @@
 - `// sm:ignore:next`; new directive scoped to the next line only ([#620](https://github.com/toba/swiftiomatic/issues/620))
 - `guard`/`else`; always break before `else` when conditions wrap ([#635](https://github.com/toba/swiftiomatic/issues/635))
 
+### 🗜️ Tweaks
+
+- Address build warnings; replace `data(using:)` with `Data(_:.utf8)`, drop IUOs, switch IIFEs to `if`/`else` expressions, mark `Configurable` `Sendable`, discard unused `popLast` results ([#639](https://github.com/toba/swiftiomatic/issues/639))
+
 ### 🐞 Fixes
 
 - `useTrailingClosures`; anchor finding on the original pre-rewrite call instead of the detached `super.visit` result so the warning lands on the actual call site rather than line 1 ([#636](https://github.com/toba/swiftiomatic/issues/636))

@@ -99,9 +99,8 @@ final class RequireDocSummaryStructure: LintSyntaxRule<LintOnlyValue>, @unchecke
         var inlineCodeRemover = InlineCodeRemover()
         guard let docComment = DocumentationComment(extractedFrom: decl),
               let briefSummary = docComment.briefSummary,
-              let noInlineCodeSummary = inlineCodeRemover.visit(briefSummary) as? Paragraph else {
-            return
-        }
+              let noInlineCodeSummary = inlineCodeRemover.visit(briefSummary) as? Paragraph
+        else { return }
 
         // For the purposes of checking the sentence structure of the comment, we can operate on the
         // plain text; we don't need any of the styling.
@@ -158,7 +157,8 @@ final class RequireDocSummaryStructure: LintSyntaxRule<LintOnlyValue>, @unchecke
         let sentenceTerminatorIndices = tags.enumerated().filter {
             if $0.element == NLTag.openQuote {
                 isInsideQuotes = true
-            } else if $0.element == NLTag.closeQuote {
+            } else if $0.element == NLTag.closeQuote
+            {
                 isInsideQuotes = false
             }
             return !isInsideQuotes && $0.element == NLTag.sentenceTerminator

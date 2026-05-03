@@ -1,4 +1,5 @@
 // sm:ignore useFinalClasses, useStaticNotClassFunc
+
 // Subclassed by every structural format rule; `class var` is required so subclass overrides
 // dispatch through the vtable when accessed via `any SyntaxRule.Type` existentials.
 import SwiftSyntax
@@ -29,7 +30,7 @@ class StructuralFormatRule<V: SyntaxRuleValue>: SyntaxRewriter, InstanceSyntaxRu
         return configurationKey(forTypeName: name)
     }
     class var group: ConfigurationGroup? { nil }
-    class var defaultValue: V { V() }
+    class var defaultValue: V { .init() }
 
     /// Creates a new StructuralFormatRule in the given context.
     required init(context: Context) { self.context = context }

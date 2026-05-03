@@ -99,11 +99,10 @@ package struct DocumentationCommentText {
                         var index = cleaned.firstIndex(where: \.isNewline) ?? cleaned.endIndex
 
                         if hasASCIIArt {
-                            cleaned = cleaned.dropFirst(
-                                asciiArtLength(
-                                    of: cleaned,
-                                    leadingSpaces: leadingWhitespace
-                                ))
+                            cleaned = cleaned.dropFirst(asciiArtLength(
+                                of: cleaned,
+                                leadingSpaces: leadingWhitespace
+                            ))
                             index = cleaned.firstIndex(where: \.isNewline) ?? cleaned.endIndex
                         }
 
@@ -124,7 +123,8 @@ package struct DocumentationCommentText {
         // be present.
         guard let introducer,
               !lines.isEmpty,
-              let firstLineIndex = lines.firstIndex(where: { !$0.text.isEmpty }) else { return nil }
+              let firstLineIndex = lines.firstIndex(where: { !$0.text.isEmpty })
+        else { return nil }
 
         let initialIndentation = indentationDistance(of: lines[firstLineIndex].text)
         var result = ""
@@ -182,8 +182,9 @@ private func asciiArtLength(of string: Substring, leadingSpaces: Int) -> Int {
     if spaces.contains(where: { !$0.isWhitespace }) { return 0 }
 
     let string = string.dropFirst(leadingSpaces)
-    if string.hasPrefix(" * ") { return leadingSpaces + 3 }
-    return string.hasPrefix(" *\n") ? leadingSpaces + 2 : 0
+    return string.hasPrefix(" * ")
+        ? leadingSpaces + 3
+        : string.hasPrefix(" *\n") ? leadingSpaces + 2 : 0
 }
 
 /// Returns the start index of the earliest comment in the Trivia if we work backwards and skip
@@ -207,8 +208,7 @@ private func findCommentStartIndex(_ triviaArray: [TriviaPiece]) -> Array<Trivia
                  .carriageReturns(1),
                  .carriageReturnLineFeeds(1),
                  .spaces,
-                 .tabs:
-                false
+                 .tabs: false
             default: true
         }
     }) {

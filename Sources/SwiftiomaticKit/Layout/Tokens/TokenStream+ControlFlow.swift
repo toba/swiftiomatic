@@ -23,7 +23,8 @@ extension TokenStream {
         // any condition wraps, every condition wraps. With a single condition, fall back to the
         // historical `.inconsistent` group (just so breaks around/inside aren't forced).
         let conditionsGroupStyle: GroupBreakStyle = node.conditions.count > 1
-            ? .consistent : .inconsistent
+            ? .consistent
+            : .inconsistent
         before(
             node.conditions.firstToken(viewMode: .sourceAccurate),
             tokens: .open(conditionsGroupStyle)

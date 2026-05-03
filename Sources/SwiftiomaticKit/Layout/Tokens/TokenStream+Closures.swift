@@ -197,8 +197,8 @@ extension TokenStream {
                     // tokens' boundary characters would otherwise glue into one token
                     // (e.g. `try await`, `if let`).
                     if let p = prev.text.last, let c = t.text.first,
-                       (p.isLetter || p.isNumber || p == "_"),
-                       (c.isLetter || c.isNumber || c == "_")
+                       p.isLetter || p.isNumber || p == "_",
+                       c.isLetter || c.isNumber || c == "_"
                     {
                         text += " "
                     }

@@ -29,9 +29,7 @@ final class DropRedundantReturn: StaticFormatRule<BasicRuleValue>, @unchecked Se
     override static var defaultValue: BasicRuleValue { .init(rewrite: false, lint: .no) }
 
     /// Names of standard library functions that return `Never` .
-    private static let neverReturningFunctions: Set<String> = [
-        "fatalError", "preconditionFailure",
-    ]
+    private static let neverReturningFunctions: Set<String> = ["fatalError", "preconditionFailure"]
 
     // MARK: - Static transform (compact pipeline)
 
@@ -66,9 +64,8 @@ final class DropRedundantReturn: StaticFormatRule<BasicRuleValue>, @unchecked Se
     ) -> DeclSyntax {
         var subscriptDecl = node
         guard let accessorBlock = subscriptDecl.accessorBlock,
-              let transformed = Self.transformAccessorBlock(accessorBlock, context: context) else {
-            return DeclSyntax(node)
-        }
+              let transformed = Self.transformAccessorBlock(accessorBlock, context: context)
+        else { return DeclSyntax(node) }
 
         subscriptDecl.accessorBlock = transformed
         return DeclSyntax(subscriptDecl)
@@ -82,9 +79,8 @@ final class DropRedundantReturn: StaticFormatRule<BasicRuleValue>, @unchecked Se
     ) -> PatternBindingSyntax {
         var binding = node
         guard let accessorBlock = binding.accessorBlock,
-              let transformed = Self.transformAccessorBlock(accessorBlock, context: context) else {
-            return node
-        }
+              let transformed = Self.transformAccessorBlock(accessorBlock, context: context)
+        else { return node }
 
         binding.accessorBlock = transformed
         return binding
@@ -121,13 +117,14 @@ final class DropRedundantReturn: StaticFormatRule<BasicRuleValue>, @unchecked Se
         switch accessorBlock.accessors {
             case var .accessors(accessors):
                 guard var getter = accessors
-                    .filter({
+                    .first(where: {
                         $0.accessorSpecifier.tokenKind == .keyword(.get)
-                    }).first,
+                    }),
                       let getterAt = accessors.firstIndex(where: {
                           $0.accessorSpecifier.tokenKind == .keyword(.get)
                       }),
-                      let body = getter.body else { return nil }
+                      let body = getter.body
+                else { return nil }
 
                 if let returnStmt = Self.containsSingleReturn(body.statements) {
                     getter.body?.statements = Self.rewrapReturnedExpression(returnStmt)
@@ -153,10 +150,9 @@ final class DropRedundantReturn: StaticFormatRule<BasicRuleValue>, @unchecked Se
                     return newBlock
                 } else if let item = Self.containsExhaustiveReturn(getter) {
                     var newBlock = accessorBlock
-                    newBlock.accessors = .getter(
-                        CodeBlockItemListSyntax(
-                            [Self.stripReturns(from: item, context: context)]
-                        ))
+                    newBlock.accessors = .getter(CodeBlockItemListSyntax(
+                        [Self.stripReturns(from: item, context: context)]
+                    ))
                     return newBlock
                 } else {
                     return nil
@@ -168,7 +164,8 @@ final class DropRedundantReturn: StaticFormatRule<BasicRuleValue>, @unchecked Se
         _ body: CodeBlockItemListSyntax
     ) -> CodeBlockItemSyntax? {
         guard let element = body.firstAndOnly,
-              let expr = Self.expressionFromItem(element) else { return nil }
+              let expr = Self.expressionFromItem(element)
+        else { return nil }
 
         if let ifExpr = expr.as(IfExprSyntax.self) {
             return Self.allBranchesReturn(ifExpr) ? element : nil
@@ -212,6 +209,7 @@ final class DropRedundantReturn: StaticFormatRule<BasicRuleValue>, @unchecked Se
         guard let expr = Self.expressionFromItem(only) else { return false }
 
         if let ifExpr = expr.as(IfExprSyntax.self) { return Self.allBranchesReturn(ifExpr) }
+
         if let switchExpr = expr.as(SwitchExprSyntax.self) {
             return Self.allCasesReturn(switchExpr)
         }
@@ -231,9 +229,8 @@ final class DropRedundantReturn: StaticFormatRule<BasicRuleValue>, @unchecked Se
         }
 
         guard let call = expr.as(FunctionCallExprSyntax.self),
-              let callee = call.calledExpression.as(DeclReferenceExprSyntax.self) else {
-            return false
-        }
+              let callee = call.calledExpression.as(DeclReferenceExprSyntax.self)
+        else { return false }
 
         return Self.neverReturningFunctions.contains(callee.baseName.text)
     }
@@ -349,7 +346,8 @@ final class DropRedundantReturn: StaticFormatRule<BasicRuleValue>, @unchecked Se
         _ body: CodeBlockItemListSyntax
     ) -> ReturnStmtSyntax? {
         guard let element = body.firstAndOnly,
-              let returnStmt = element.item.as(ReturnStmtSyntax.self) else { return nil }
+              let returnStmt = element.item.as(ReturnStmtSyntax.self)
+        else { return nil }
 
         return !returnStmt.children(viewMode: .all).isEmpty && returnStmt.expression != nil
             ? returnStmt

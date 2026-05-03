@@ -15,7 +15,7 @@ package func configurationKey(forTypeName name: String) -> String {
 ///
 /// Both syntax rules and layout settings conform to this protocol, unifying the concept of
 /// "something in the configuration that has a key and a default."
-package protocol Configurable {
+package protocol Configurable: Sendable {
     /// The type of the default value for this item.
     associatedtype Value: Sendable & Codable & Equatable
 

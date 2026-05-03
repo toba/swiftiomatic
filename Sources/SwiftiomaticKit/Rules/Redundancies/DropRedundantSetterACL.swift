@@ -105,7 +105,7 @@ final class DropRedundantSetterACL: StaticFormatRule<BasicRuleValue>, @unchecked
                 result.bindingSpecifier.leadingTrivia = savedLeading
             }
         }
-        result.modifiers = DeclModifierListSyntax(newModifiers)
+        result.modifiers = newModifiers
         return DeclSyntax(result)
     }
 

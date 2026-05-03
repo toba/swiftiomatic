@@ -189,19 +189,16 @@ final class UseSomeForGenericParameters: StaticFormatRule<BasicRuleValue>, @unch
                 }
                 return element
             }
-            return someType(
-                CompositionTypeSyntax(
-                    elements: CompositionTypeElementListSyntax(
-                        elements
-                    )))
+            return someType(CompositionTypeSyntax(elements: CompositionTypeElementListSyntax(
+                elements
+            )))
         }
 
         private func someType(_ constraint: some TypeSyntaxProtocol) -> TypeSyntax {
-            TypeSyntax(
-                SomeOrAnyTypeSyntax(
-                    someOrAnySpecifier: .keyword(.some, trailingTrivia: .space),
-                    constraint: TypeSyntax(constraint)
-                ))
+            TypeSyntax(SomeOrAnyTypeSyntax(
+                someOrAnySpecifier: .keyword(.some, trailingTrivia: .space),
+                constraint: TypeSyntax(constraint)
+            ))
         }
     }
 
@@ -226,8 +223,8 @@ final class UseSomeForGenericParameters: StaticFormatRule<BasicRuleValue>, @unch
         let typeNames = Set(types.map(\.name))
         // O(1) name → index lookup; previously each `firstIndex(where: { $0.name == leftName })`
         // was O(n), making the where-clause walk O(n × requirements).
-        let typeIndexByName: [String: Int] = Dictionary(
-            uniqueKeysWithValues: types.enumerated().map { ($0.element.name, $0.offset) })
+        let typeIndexByName: [String: Int] = Dictionary(uniqueKeysWithValues: types.enumerated().map
+            { ($0.element.name, $0.offset) })
 
         // Collect constraints from where clause
         if let whereClause {
@@ -402,10 +399,7 @@ final class UseSomeForGenericParameters: StaticFormatRule<BasicRuleValue>, @unch
     private static func containsAnyExistential(name: String, in type: TypeSyntax) -> Bool {
         if let someOrAny = type.as(SomeOrAnyTypeSyntax.self),
            someOrAny.someOrAnySpecifier.tokenKind == .keyword(.any),
-           contains(name: name, in: Syntax(someOrAny.constraint))
-        {
-            return true
-        }
+           contains(name: name, in: Syntax(someOrAny.constraint)) { return true }
         // Recurse into children
         for child in type.children(viewMode: .sourceAccurate) {
             if let childType = child.as(TypeSyntax.self) {
@@ -471,11 +465,10 @@ final class UseSomeForGenericParameters: StaticFormatRule<BasicRuleValue>, @unch
            let inner = optional.wrappedType.as(IdentifierTypeSyntax.self),
            inner.name.text == name
         {
-            return TypeSyntax(
-                optional.with(
-                    \.wrappedType,
-                    wrapInParens(replacement, leadingTrivia: type.leadingTrivia)
-                ))
+            return TypeSyntax(optional.with(
+                \.wrappedType,
+                wrapInParens(replacement, leadingTrivia: type.leadingTrivia)
+            ))
         }
 
         // Metatype: T.Type → (replacement).Type
@@ -483,23 +476,21 @@ final class UseSomeForGenericParameters: StaticFormatRule<BasicRuleValue>, @unch
            let inner = metatype.baseType.as(IdentifierTypeSyntax.self),
            inner.name.text == name
         {
-            return TypeSyntax(
-                metatype.with(
-                    \.baseType,
-                    wrapInParens(replacement, leadingTrivia: type.leadingTrivia)
-                ))
+            return TypeSyntax(metatype.with(
+                \.baseType,
+                wrapInParens(replacement, leadingTrivia: type.leadingTrivia)
+            ))
         }
 
         return nil
     }
 
     private static func wrapInParens(_ type: TypeSyntax, leadingTrivia: Trivia) -> TypeSyntax {
-        TypeSyntax(
-            TupleTypeSyntax(
-                leftParen: .leftParenToken(leadingTrivia: leadingTrivia),
-                elements: TupleTypeElementListSyntax([TupleTypeElementSyntax(type: type)]),
-                rightParen: .rightParenToken()
-            ))
+        TypeSyntax(TupleTypeSyntax(
+            leftParen: .leftParenToken(leadingTrivia: leadingTrivia),
+            elements: TupleTypeElementListSyntax([TupleTypeElementSyntax(type: type)]),
+            rightParen: .rightParenToken()
+        ))
     }
 
     private static func rebuildGenericClause(
@@ -543,7 +534,8 @@ final class UseSomeForGenericParameters: StaticFormatRule<BasicRuleValue>, @unch
         let newReqs = remaining.enumerated().map { i, req -> GenericRequirementSyntax in
             var modified = req
             modified.trailingComma = i < remaining.count - 1
-                ? .commaToken(trailingTrivia: .space) : nil
+                ? .commaToken(trailingTrivia: .space)
+                : nil
             if i == 0 { modified.leadingTrivia = [] }
             return modified
         }

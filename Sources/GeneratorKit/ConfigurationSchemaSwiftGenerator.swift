@@ -27,9 +27,7 @@ package final class ConfigurationSchemaSwiftGenerator: FileGenerator {
                     let json = ##\"\"\"
             \(schemaJSON)
             \"\"\"##
-                    guard let data = json.data(using: .utf8) else {
-                        fatalError("Failed to encode embedded JSON Schema — regenerate with `swift run Generator`")
-                    }
+                    let data = Data(json.utf8)
                     let decoder = JSONDecoder()
                     do {
                         return try decoder.decode(JSONValue.self, from: data)

@@ -247,7 +247,7 @@ private final class RuleStatusCollectionVisitor: SyntaxVisitor {
                 let c = matchedRuleNames[index]
                 if c == "," {
                     sawCommaBeforeNextToken = true
-                } else if c != " " && c != "\t" {
+                } else if c != " ", c != "\t" {
                     break
                 }
                 index = matchedRuleNames.index(after: index)

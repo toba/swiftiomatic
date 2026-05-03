@@ -971,7 +971,7 @@ extension LayoutSingleLineBodies {
     }
 
     static func didExit(_: IfExprSyntax, context: Context) {
-        Self.state(context).indentStack.popLast()
+        _ = Self.state(context).indentStack.popLast()
     }
 
     static func willEnter(_ node: GuardStmtSyntax, context: Context) {
@@ -985,7 +985,7 @@ extension LayoutSingleLineBodies {
     }
 
     static func didExit(_: GuardStmtSyntax, context: Context) {
-        Self.state(context).indentStack.popLast()
+        _ = Self.state(context).indentStack.popLast()
     }
 
     static func willEnter(_ node: ForStmtSyntax, context: Context) {
@@ -999,7 +999,7 @@ extension LayoutSingleLineBodies {
     }
 
     static func didExit(_: ForStmtSyntax, context: Context) {
-        Self.state(context).indentStack.popLast()
+        _ = Self.state(context).indentStack.popLast()
     }
 
     static func willEnter(_ node: WhileStmtSyntax, context: Context) {
@@ -1013,7 +1013,7 @@ extension LayoutSingleLineBodies {
     }
 
     static func didExit(_: WhileStmtSyntax, context: Context) {
-        Self.state(context).indentStack.popLast()
+        _ = Self.state(context).indentStack.popLast()
     }
 
     static func willEnter(_ node: RepeatStmtSyntax, context: Context) {
@@ -1027,7 +1027,7 @@ extension LayoutSingleLineBodies {
     }
 
     static func didExit(_: RepeatStmtSyntax, context: Context) {
-        Self.state(context).indentStack.popLast()
+        _ = Self.state(context).indentStack.popLast()
     }
 }
 

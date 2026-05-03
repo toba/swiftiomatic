@@ -208,7 +208,7 @@ package final class WhitespaceLinter {
 
         // Move the offset to the first non-whitespace character.
         var adjustedUserIndex = userIndex
-        var lastUserRun: ArraySlice<UTF8.CodeUnit>!
+        var lastUserRun: ArraySlice<UTF8.CodeUnit>?
 
         for (index, userRun) in userRuns.enumerated() {
             lastUserRun = userRun
@@ -216,7 +216,7 @@ package final class WhitespaceLinter {
         }
 
         // Calculate the length of the user's line.
-        let userIndent = lastUserRun.count
+        let userIndent = lastUserRun?.count ?? 0
         var userLength = userIndent
 
         for index in adjustedUserIndex..<userText.count {
@@ -233,7 +233,7 @@ package final class WhitespaceLinter {
 
         // Move the offset to the first non-whitespace character.
         var adjustedFormattedIndex = formattedIndex
-        var lastFormattedRun: ArraySlice<UTF8.CodeUnit>!
+        var lastFormattedRun: ArraySlice<UTF8.CodeUnit>?
 
         for (index, formattedRun) in formattedRuns.enumerated() {
             lastFormattedRun = formattedRun
@@ -241,7 +241,7 @@ package final class WhitespaceLinter {
         }
 
         // Calculate the length of the formatted line.
-        let formattedIndent = lastFormattedRun.count
+        let formattedIndent = lastFormattedRun?.count ?? 0
         var formattedLength = formattedIndent
 
         for index in adjustedFormattedIndex..<formattedText.count {

@@ -148,24 +148,24 @@
 		"spacesBeforeEndOfLineComments": 2
 	},
 	"metrics": {
-		"tupleSize": { "enabled": true, "error": 8, "warning": 3 },
+		"tupleSize": { "enabled": true, "error": 8, "warning": 6 },
 		"fileLength": {
 			"enabled": true,
 			"error": 2000,
 			"warning": 1000,
 			"ignoreCommentOnlyLines": true
 		},
-		"nestingDepth": { "lint": "warn", "typeLevel": 2, "functionLevel": 3 },
+		"nestingDepth": { "lint": "warn", "typeLevel": 3, "functionLevel": 4 },
 		"parameterCount": {
 			"enabled": false,
 			"error": 8,
 			"warning": 5,
 			"ignoresDefaultParameters": true
 		},
-		"typeBodyLength": { "enabled": true, "error": 2000, "warning": 500 },
+		"typeBodyLength": { "enabled": false, "error": 2000, "warning": 500 },
 		"lineLengthLimit": { "enabled": false, "error": 200, "warning": 120 },
-		"closureBodyLength": { "enabled": true, "error": 2000, "warning": 30 },
-		"functionBodyLength": { "enabled": true, "error": 500, "warning": 100 },
+		"closureBodyLength": { "enabled": false, "error": 2000, "warning": 30 },
+		"functionBodyLength": { "enabled": false, "error": 500, "warning": 100 },
 		"associatedValueCount": { "enabled": true, "error": 6, "warning": 5 },
 		"cyclomaticComplexity": {
 			"enabled": false,
@@ -221,7 +221,7 @@
 		"useTripleSlashOverDocBlock": { "lint": "no", "rewrite": true },
 		"requireDocSummaryStructure": { "lint": "no" },
 		"requireParameterAndReturnDocs": { "lint": "no" },
-		"noDocCommentsInFunctionBodies": { "lint": "warn" },
+		"noDocCommentsInFunctionBodies": { "lint": "no" },
 		"placeDocCommentsBeforeModifiers": { "lint": "warn", "rewrite": true }
 	},
 	"generics": {

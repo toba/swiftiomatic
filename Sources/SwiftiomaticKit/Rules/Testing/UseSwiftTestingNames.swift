@@ -39,10 +39,7 @@ final class UseSwiftTestingNames: StaticFormatRule<BasicRuleValue>, @unchecked S
 
         for stmt in node.statements {
             if let importDecl = stmt.item.as(ImportDeclSyntax.self),
-               importDecl.path.first?.name.text == "Testing"
-            {
-                state.importsTesting = true
-            }
+               importDecl.path.first?.name.text == "Testing" { state.importsTesting = true }
         }
         for token in node.tokens(viewMode: .sourceAccurate) {
             if case let .identifier(name) = token.tokenKind { state.allIdentifiers.insert(name) }
@@ -59,7 +56,8 @@ final class UseSwiftTestingNames: StaticFormatRule<BasicRuleValue>, @unchecked S
     ) -> DeclSyntax {
         let state = context.swiftTestingTestCaseNamesState
         guard state.importsTesting,
-              node.hasAttribute("Test", inModule: "Testing") else { return DeclSyntax(node) }
+              node.hasAttribute("Test", inModule: "Testing")
+        else { return DeclSyntax(node) }
 
         guard case let .identifier(rawIdent) = node.name.tokenKind else { return DeclSyntax(node) }
 
@@ -75,7 +73,8 @@ final class UseSwiftTestingNames: StaticFormatRule<BasicRuleValue>, @unchecked S
             let afterTest = bareName.dropFirst(4)
             guard !afterTest.isEmpty else { return DeclSyntax(node) }
             let trimmed = afterTest.hasPrefix(" ")
-                ? String(afterTest.dropFirst()) : String(afterTest)
+                ? String(afterTest.dropFirst())
+                : String(afterTest)
             guard !trimmed.isEmpty else { return DeclSyntax(node) }
             newIdentifier = "`\(trimmed)`"
         } else {
@@ -93,11 +92,10 @@ final class UseSwiftTestingNames: StaticFormatRule<BasicRuleValue>, @unchecked S
 
         Self.diagnose(.removeTestPrefix(oldName: bareName), on: node.name, context: context)
 
-        return DeclSyntax(
-            node.with(
-                \.name,
-                node.name.with(\.tokenKind, .identifier(newIdentifier))
-            ))
+        return DeclSyntax(node.with(
+            \.name,
+            node.name.with(\.tokenKind, .identifier(newIdentifier))
+        ))
     }
 }
 

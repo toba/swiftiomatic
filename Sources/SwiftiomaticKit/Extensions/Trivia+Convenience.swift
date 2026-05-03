@@ -159,7 +159,7 @@ extension Trivia {
     func trimmingSuperfluousNewlines(fromClosingBrace: Bool) -> (Trivia, Int) {
         var trimmed = 0
         var pendingNewlineCount = 0
-        let pieces = indices.reduce([TriviaPiece]()) { partialResult, index in
+        let pieces = indices.reduce(into: [TriviaPiece]()) { partialResult, index in
             let piece = self[index]
             // Collapse consecutive newlines into a single one
             if case let .newlines(count) = piece {
@@ -168,24 +168,23 @@ extension Trivia {
                         // For the last index(newline right before the closing brace), collapse into
                         // a single newline
                         trimmed += count - 1
-                        return partialResult + [.newlines(1)]
+                        partialResult.append(.newlines(1))
                     } else {
                         pendingNewlineCount += count
-                        return partialResult
                     }
                 } else {
                     if let last = partialResult.last, last.isNewline {
                         trimmed += count
-                        return partialResult
                     } else if index == 0 {
                         // For leading trivia not associated with a closing brace, collapse the
                         // first newline into a single one
                         trimmed += count - 1
-                        return partialResult + [.newlines(1)]
+                        partialResult.append(.newlines(1))
                     } else {
-                        return partialResult + [piece]
+                        partialResult.append(piece)
                     }
                 }
+                return
             }
             // Remove spaces/tabs surrounded by newlines
             if piece.isSpaceOrTab,
@@ -194,20 +193,22 @@ extension Trivia {
                self[index - 1].isNewline,
                self[index + 1].isNewline
             {
-                return partialResult
+                return
             }
             // Handle pending newlines if there are any
             if pendingNewlineCount > 0 {
                 if index < self.count - 1 {
-                    let newlines = TriviaPiece.newlines(pendingNewlineCount)
+                    partialResult.append(.newlines(pendingNewlineCount))
                     pendingNewlineCount = 0
-                    return partialResult + [newlines] + [piece]
+                    partialResult.append(piece)
                 } else {
-                    return partialResult + [.newlines(1)] + [piece]
+                    partialResult.append(.newlines(1))
+                    partialResult.append(piece)
                 }
+                return
             }
             // Retain other trivia pieces
-            return partialResult + [piece]
+            partialResult.append(piece)
         }
 
         return (Trivia(pieces: pieces), trimmed)
