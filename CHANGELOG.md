@@ -1,5 +1,16 @@
 # Changelog
 
+## Week of May 03 – May 09, 2026
+
+### 🐞 Fixes
+
+- `DropRedundantEscaping`; taint variables propagated through tuple expressions and tuple-pattern destructuring; closures that escape via `inner(tuple: (closure, …))` or `let (local, _) = (completion, …); self.local = local` now correctly keep `@escaping`
+
+### 🗜️ Tweaks
+
+- Investigate upstream HIGH cite changes; defer `unused_imports` rule and first-class `@diagnose` (`SwiftWarningControl`) adoption to follow-ups
+- Evaluate swift-syntax 604 prerelease / Swift 6.3.1 alignment; skip both; `603.0.1` is stable and no 604-only API is needed today
+
 ## Week of Apr 26 – May 02, 2026
 
 ### ✨ Features

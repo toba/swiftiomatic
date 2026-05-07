@@ -5,12 +5,12 @@ status: draft
 type: task
 priority: normal
 created_at: 2026-04-14T22:41:28Z
-updated_at: 2026-04-14T22:48:44Z
+updated_at: 2026-05-07T16:12:02Z
 parent: c7r-77o
 sync:
     github:
         issue_number: "312"
-        synced_at: "2026-04-15T00:34:45Z"
+        synced_at: "2026-05-07T16:13:56Z"
 ---
 
 Rules from the SwiftFormat port that are unlikely to be implemented due to fundamental limitations or poor cost/benefit ratio.
@@ -28,3 +28,7 @@ Rules from the SwiftFormat port that are unlikely to be implemented due to funda
 
 
 - `markTypes` — Add `// MARK: -` comments before type declarations. 400+ lines. Purely stylistic with no perf benefit. Opinionated formatting that many teams disable. Modern IDEs already provide type navigation without MARK comments.
+
+
+
+- `unused_imports` (SwiftLint) — Detect imports whose exported symbols are never referenced in the file. Fundamentally requires a hard-coded module-symbol catalog (SwiftLint maintains one for stdlib/Foundation/etc.) that is incomplete and wrong for third-party modules. Worse: when wrong, it produces silent link-time breakage in **downstream** modules rather than local compile errors — conformance-only modules (`RegexBuilder` providing `String: RegexComponent`), macro-only modules (`Observation`, `SwiftData`), and `@_implementationOnly` / access-level-modified imports all look unused textually but are load-bearing. Near-miss documented in `gf3-hxe` (scrapped May 2): swiftiomatic was blamed for a `public import RegexBuilder` → `import RegexBuilder` rewrite that broke linking across BibTeX/CSL/ThesisApp targets; triage found Xcode's compiler-fix-it was the actual culprit, but the analysis applies — Swiftiomatic operates per-file via swift-syntax with no dependency graph, so it cannot see downstream consumers. Surfaced again 2026-05-07 via `/cite review` (SwiftLint #6631 added access-level support); we never explicitly took a position when porting, so adding it here. If revisited, hard requirements would be: lint-only (no rewrite), opinionated allowlist of conformance/macro/regex-builder modules, honor access-level modifiers + `@_implementationOnly` from day one, and an escape-hatch directive.

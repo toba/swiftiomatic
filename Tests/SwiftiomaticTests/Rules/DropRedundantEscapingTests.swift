@@ -114,6 +114,87 @@ struct DropRedundantEscapingTests: RuleTesting {
     )
   }
 
+  // Tuple taint — closure passed inside a tuple to another function escapes.
+  @Test func passedInsideTupleKeepsEscaping() {
+    assertFormatting(
+      DropRedundantEscaping.self,
+      input: """
+        func outer(closure: @escaping () -> String) {
+          inner(tuple: (closure, 42))
+        }
+        """,
+      expected: """
+        func outer(closure: @escaping () -> String) {
+          inner(tuple: (closure, 42))
+        }
+        """,
+      findings: []
+    )
+  }
+
+  // Tuple taint — destructuring binding from a tuple containing the closure
+  // taints the local, which then escapes via assignment to a non-local.
+  @Test func tupleDestructuringToNonLocalKeepsEscaping() {
+    assertFormatting(
+      DropRedundantEscaping.self,
+      input: """
+        func assignToLocal(completion: @escaping () -> Void) {
+          let (local, _) = (completion, 17)
+          self.local = local
+        }
+        """,
+      expected: """
+        func assignToLocal(completion: @escaping () -> Void) {
+          let (local, _) = (completion, 17)
+          self.local = local
+        }
+        """,
+      findings: []
+    )
+  }
+
+  // Tuple taint — whole-tuple binding then escape of the tuple.
+  @Test func wholeTupleAssignedToNonLocalKeepsEscaping() {
+    assertFormatting(
+      DropRedundantEscaping.self,
+      input: """
+        func assignToLocal(completion: @escaping () -> Void) {
+          let local = (completion, 17)
+          self.local = local
+        }
+        """,
+      expected: """
+        func assignToLocal(completion: @escaping () -> Void) {
+          let local = (completion, 17)
+          self.local = local
+        }
+        """,
+      findings: []
+    )
+  }
+
+  // Tuple taint — chained: tainted tuple destructured into a local that escapes.
+  @Test func chainedTupleDestructuringKeepsEscaping() {
+    assertFormatting(
+      DropRedundantEscaping.self,
+      input: """
+        func assignToLocal(completion: @escaping () -> Void) {
+          let local = (completion, 17)
+          let (c, n) = local
+          self.c = c
+        }
+        """,
+      expected: """
+        func assignToLocal(completion: @escaping () -> Void) {
+          let local = (completion, 17)
+          let (c, n) = local
+          self.c = c
+        }
+        """,
+      findings: []
+    )
+  }
+
   @Test func multipleAttributesPreservesAutoclosure() {
     assertFormatting(
       DropRedundantEscaping.self,

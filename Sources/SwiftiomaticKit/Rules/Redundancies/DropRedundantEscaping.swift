@@ -167,11 +167,22 @@ private final class EscapeChecker: SyntaxVisitor {
 
     override func visitPost(_ node: VariableDeclSyntax) {
         for binding in node.bindings {
-            guard let pattern = binding.pattern.as(IdentifierPatternSyntax.self) else { continue }
-            localVariables.insert(pattern.identifier.text)
+            let sourceTainted = binding.initializer.map { isTainted($0.value) } ?? false
+            registerPattern(binding.pattern, sourceTainted: sourceTainted)
+        }
+    }
 
-            if let initializer = binding.initializer, isTainted(initializer.value) {
-                taintedVariables.insert(pattern.identifier.text)
+    /// Walk a binding pattern and register every identifier as a local; if the
+    /// initializer was tainted, taint each identifier as well. Handles both
+    /// `let x = …` (IdentifierPattern) and `let (x, y) = …` (TuplePattern).
+    private func registerPattern(_ pattern: PatternSyntax, sourceTainted: Bool) {
+        if let ident = pattern.as(IdentifierPatternSyntax.self) {
+            let name = ident.identifier.text
+            localVariables.insert(name)
+            if sourceTainted { taintedVariables.insert(name) }
+        } else if let tuple = pattern.as(TuplePatternSyntax.self) {
+            for element in tuple.elements {
+                registerPattern(element.pattern, sourceTainted: sourceTainted)
             }
         }
     }
@@ -228,6 +239,9 @@ private final class EscapeChecker: SyntaxVisitor {
 
         if let ternary = expr.as(TernaryExprSyntax.self) {
             return isTainted(ternary.thenExpression) || isTainted(ternary.elseExpression)
+        }
+        if let tuple = expr.as(TupleExprSyntax.self) {
+            return tuple.elements.contains { isTainted($0.expression) }
         }
         return false
     }
