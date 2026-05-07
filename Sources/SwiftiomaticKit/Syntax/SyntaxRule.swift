@@ -98,12 +98,27 @@ extension SyntaxRule {
             if context.ruleMask.ruleState(ruleName, at: syntaxLocation) == .disabled { return }
         }
 
+        // Honour Swift's `@warn(<group>, as: …)` attribute: if the finding's
+        // anchor falls inside a region that names this rule's diagnostic
+        // group, that severity overrides the rule's configured severity.
+        // Falls back to the passed-in `severity` (the caller's resolved
+        // value) when no `@warn` region applies.
+        let effectiveSeverity: Lint
+        if let node,
+            let override = context.warningControlSeverity(of: Self.self, at: node.position)
+        {
+            effectiveSeverity = override
+        } else {
+            effectiveSeverity = severity
+        }
+        guard effectiveSeverity.isActive else { return }
+
         let category = SyntaxFindingCategory(ruleType: Self.self)
 
         context.findingEmitter.emit(
             message,
             category: category,
-            severity: severity,
+            severity: effectiveSeverity,
             location: syntaxLocation.flatMap(Finding.Location.init),
             notes: notes
         )

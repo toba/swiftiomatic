@@ -2,6 +2,10 @@
 
 ## Week of May 03 – May 09, 2026
 
+### ✨ Features
+
+- Honor Swift's `@warn(<group>, as: error|warning|ignored)` attribute (renamed `@diagnose` upstream) for per-region finding suppression and severity override; `SwiftWarningControl` integration via lazy region-tree on `Context`; matches both `dropRedundantEscaping` and `DropRedundantEscaping` group identifiers; rule disabled in config stays off ([#641](https://github.com/toba/swiftiomatic/issues/641))
+
 ### 🐞 Fixes
 
 - `DropRedundantEscaping`; taint variables propagated through tuple expressions and tuple-pattern destructuring; closures that escape via `inner(tuple: (closure, …))` or `let (local, _) = (completion, …); self.local = local` now correctly keep `@escaping`

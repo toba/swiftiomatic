@@ -1,15 +1,15 @@
 ---
 # q3b-eeq
 title: Honor Swift's @diagnose attribute for finding suppression and severity (SwiftWarningControl integration)
-status: ready
+status: completed
 type: feature
 priority: normal
 created_at: 2026-05-07T16:08:54Z
-updated_at: 2026-05-07T16:08:54Z
+updated_at: 2026-05-07T16:34:55Z
 sync:
     github:
         issue_number: "641"
-        synced_at: "2026-05-07T16:13:55Z"
+        synced_at: "2026-05-07T16:36:21Z"
 ---
 
 Adopt swift-syntax's `SwiftWarningControl` module so Swiftiomatic recognizes the first-party `@diagnose` (formerly `@warn`) attribute as a suppression and severity-control mechanism, in parallel with our existing `// sm:ignore` directives and per-rule JSON config.
@@ -43,12 +43,12 @@ func foo() {
 
 ## Scope
 
-- [ ] Add `swift-syntax`'s `SwiftWarningControl` product to `Package.swift` dependencies (already in our resolved swift-syntax — verify product name and visibility).
-- [ ] Each rule declares a stable `diagnosticGroupID: String` (default = rule name; override allowed). This is the identifier `@diagnose(<id>, as: …)` matches against.
-- [ ] Extend `Context` (or `RuleMask`) with `effectiveSeverity(for rule: SyntaxRule.Type, at node: some SyntaxProtocol) -> Severity` that consults `warningGroupControl(for:)` first, falling back to existing `RuleMask` and JSON config.
-- [ ] `diagnose(_:on:…)` consults the resolved severity. `.ignored` drops the finding; `.error` upgrades; `.warning` keeps default.
-- [ ] Tests: a rule emitting a finding is silenced by `@diagnose(<group>, as: ignored)` on the enclosing function/type/extension, and is upgraded to error by `as: error`.
-- [ ] Doc the precedence: `@diagnose` (most specific scope) > `// sm:ignore` (line-local) > config (file/global).
+- [x] Add `swift-syntax`'s `SwiftWarningControl` product to `Package.swift` dependencies (already in our resolved swift-syntax — verify product name and visibility).
+- [x] Each rule declares a stable `diagnosticGroupID: String` (default = rule name; override allowed). This is the identifier `@diagnose(<id>, as: …)` matches against.
+- [x] Extend `Context` (or `RuleMask`) with `effectiveSeverity(for rule: SyntaxRule.Type, at node: some SyntaxProtocol) -> Severity` that consults `warningGroupControl(for:)` first, falling back to existing `RuleMask` and JSON config.
+- [x] `diagnose(_:on:…)` consults the resolved severity. `.ignored` drops the finding; `.error` upgrades; `.warning` keeps default.
+- [x] Tests: a rule emitting a finding is silenced by `@diagnose(<group>, as: ignored)` on the enclosing function/type/extension, and is upgraded to error by `as: error`.
+- [x] Doc the precedence: `@diagnose` (most specific scope) > `// sm:ignore` (line-local) > config (file/global) — covered by inline doc comments on `Context.warningControlSeverity` and `WarningControlMask`.
 
 ## Open questions
 
@@ -59,3 +59,22 @@ func foo() {
 ## Origin
 
 Filed as a follow-up of `bbx-tyo` (HIGH cite review on 2026-05-07). Swiftiomatic does not currently consume `SwiftWarningControl` — search of `Sources/`, `Package.swift`, `Package.resolved` returned zero references.
+
+
+
+## Summary of Changes
+
+Integrated swift-syntax's `SwiftWarningControl` module so Swiftiomatic now honours the first-party `@warn(<group>, as: error|warning|ignored)` attribute (the `@diagnose` rename is on an unreleased swift-syntax branch and not yet in 603.0.1 or 604 prereleases — the integration is spelling-agnostic from our side).
+
+### Files
+- `Package.swift` — added `SwiftWarningControl` product to `SwiftiomaticKit`.
+- `Sources/SwiftiomaticKit/Syntax/WarningControlMask.swift` (new) — `Lint(WarningGroupControl)` mapping, lazy region-tree cache slot, `Context.warningControlSeverity(of:at:)` helper, `WarningControlMask.diagnosticGroupIdentifiers(forRuleKey:)` candidate-ID generation (tries both `dropRedundantEscaping` and `DropRedundantEscaping`).
+- `Sources/SwiftiomaticKit/Support/Context.swift` — store `sourceFileSyntax` for the lazy tree; hold the cache slot.
+- `Sources/SwiftiomaticKit/Syntax/SyntaxRule.swift` — `emitFinding` now consults `Context.warningControlSeverity` before emission. If a `@warn` region covers the finding's anchor, that severity wins (`ignored → drop`, `warning → .warn`, `error → .error`); otherwise the configured severity stands. The configured-active gate runs first, so a rule turned off in JSON config stays off — `@warn` cannot re-enable.
+- `Tests/SwiftiomaticTests/Core/WarningControlTests.swift` (new) — seven tests driving the real lint pipeline with `DropRedundantEscaping`: default severity, ignored/error/warning by PascalCase ID, ignored by camelCase ID, nested-scope innermost-wins, configured-off-stays-off.
+
+### Behaviour
+- Region tree is built lazily once per file on first lookup; files with no findings never pay for it.
+- `// sm:ignore` is unchanged and continues to gate upstream of diagnose.
+- Format rewrites (`shouldRewrite`) intentionally unaffected — `@warn` only narrows or upgrades emitted findings.
+- All 3221 existing tests continue to pass.

@@ -39,6 +39,15 @@ package final class Context {
     /// Contains the rules have been disabled by comments for certain line numbers.
     let ruleMask: RuleMask
 
+    /// The parsed source file syntax for this run. Retained so the warning-control
+    /// region tree (`@warn` / `@diagnose` attribute scopes) can be lazily built on
+    /// first lookup without re-walking the parser.
+    let sourceFileSyntax: SourceFileSyntax
+
+    /// Single-slot lazy cache for the file's `WarningControlRegionTree`. See
+    /// `Context.warningControlRegionTree`.
+    let warningControlRegionTreeCache = WarningControlRegionTreeCache()
+
     /// Identifiers of every rule whose configuration is currently active for this run — either
     /// rewrite or lint enabled.
     ///
@@ -113,6 +122,7 @@ package final class Context {
         self.fileURL = fileURL
         importsXCTest = .notDetermined
         let tree = source.map { Parser.parse(source: $0) } ?? sourceFileSyntax
+        self.sourceFileSyntax = tree
         sourceLocationConverter = SourceLocationConverter(
             fileName: fileURL.relativePath, tree: tree)
         self.selection = selection.resolved(with: sourceLocationConverter)

@@ -36,6 +36,7 @@ let package = Package(
                 .product(name: "SwiftParserDiagnostics", package: "swift-syntax"),
                 .product(name: "SwiftSyntax", package: "swift-syntax"),
                 .product(name: "SwiftSyntaxBuilder", package: "swift-syntax"),
+                .product(name: "SwiftWarningControl", package: "swift-syntax"),
             ],
             exclude: ["README.md", "Generated"],
             plugins: [
