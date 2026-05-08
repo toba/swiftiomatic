@@ -534,6 +534,15 @@
           },
           "unevaluatedProperties" : false
         },
+        "flagUnusedIgnoreDirective" : {
+          "allOf" : [
+            {
+              "$ref" : "#/$defs/lintOnlyBase"
+            }
+          ],
+          "description" : "Flags `// sm:ignore` directives whose listed rules suppressed nothing.\n\nStale ignore directives accumulate as code evolves: a rule renamed, a finding stops firing, or a typo'd rule name was never valid. This rule walks every `// sm:ignore Rule1, Rule2` directive after all other passes and emits a finding for each rule name whose hit count stayed at zero.\n\nBare `// sm:ignore` (all rules) is never flagged: proving \"no rule fired\" requires running every rule against every node in the directive's range, which would be expensive and noisy.\n\nSee issue `ekr-k5l`.",
+          "unevaluatedProperties" : false
+        },
         "formatSpecialComments" : {
           "allOf" : [
             {
@@ -1395,6 +1404,15 @@
         }
       ],
       "description" : "`Task { try ... }` silently swallows thrown errors when the error type is inferred (or written as `_` ).\n\nWithout an explicit `Failure` generic argument, a `Task` that throws an unhandled error doesn't surface the error anywhere — there is no `throws` signature on the closure call site, and the value/result of the task is usually discarded.\n\nSee: https://forums.swift.org/t/task-initializer-with-throwing-closure-swallows-error/56066\n\nLint: When a `Task { ... }` (with implicit or wildcard error type) contains an unhandled `throw` or `try` , an error is raised. Tasks whose value or result is consumed ( `let t = Task { ... }` , `Task { ... }.value` , `return Task { ... }` ) are exempt.",
+      "unevaluatedProperties" : false
+    },
+    "flagUnusedIgnoreDirective" : {
+      "allOf" : [
+        {
+          "$ref" : "#/$defs/lintOnlyBase"
+        }
+      ],
+      "description" : "Flags `// sm:ignore` directives whose listed rules suppressed nothing.\n\nStale ignore directives accumulate as code evolves: a rule renamed, a finding stops firing, or a typo'd rule name was never valid. This rule walks every `// sm:ignore Rule1, Rule2` directive after all other passes and emits a finding for each rule name whose hit count stayed at zero.\n\nBare `// sm:ignore` (all rules) is never flagged: proving \"no rule fired\" requires running every rule against every node in the directive's range, which would be expensive and noisy.\n\nSee issue `ekr-k5l`.",
       "unevaluatedProperties" : false
     },
     "formatSpecialComments" : {

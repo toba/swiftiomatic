@@ -45,12 +45,57 @@ import SwiftSyntax
 ///
 /// Rules consult `RuleMask.ruleState(_:at:)` to check whether they are disabled at the location
 /// they are currently examining.
-package final class RuleMask {
-    /// Stores the source ranges in which all rules are ignored.
-    private var allRulesIgnoredRanges: [SourceRange] = []
+/// A single `// sm:ignore` directive recorded by `RuleMask`.
+///
+/// Each directive carries its target source range (the region in which it suppresses rules),
+/// its scope (bare `// sm:ignore` covering all rules, or a `// sm:ignore Rule1, Rule2` subset),
+/// and per-rule hit counts that are stamped during `RuleMask.ruleState(_:at:)` lookups.
+///
+/// The hit counts let downstream tooling identify directives that suppress nothing — i.e.,
+/// stale or typo'd entries that can be removed. See issue `ekr-k5l`.
+package final class IgnoreDirective {
+    /// What the directive applies to.
+    package enum Scope: Equatable, Sendable {
+        /// Bare `// sm:ignore` — applies to every rule. Hit-tracking is summary-only.
+        case all
+        /// Explicit rule list — `// sm:ignore Rule1, Rule2`. Hits are tracked per rule name.
+        case subset(ruleNames: [String])
+    }
 
-    /// Map of rule names to list ranges in the source where the rule is ignored.
-    private var ruleMap: [String: [SourceRange]] = [:]
+    /// Source location of the `// sm:ignore` comment itself, used as the anchor for findings
+    /// emitted about the directive (e.g. unused-directive warnings).
+    package let location: SourceLocation
+    /// The source range over which this directive suppresses rules.
+    package let range: SourceRange
+    /// Whether the directive applies to all rules or to a named subset.
+    package let scope: Scope
+    /// Number of times this directive matched a `ruleState` lookup whose result was `.disabled`.
+    /// For `.subset` directives, see `hitsPerRule` for per-rule attribution.
+    package private(set) var totalHits: Int = 0
+    /// Per-rule hit counts. Only populated for `.subset` directives.
+    package private(set) var hitsPerRule: [String: Int] = [:]
+
+    init(location: SourceLocation, range: SourceRange, scope: Scope) {
+        self.location = location
+        self.range = range
+        self.scope = scope
+    }
+
+    fileprivate func recordHit(forRule rule: String) {
+        totalHits += 1
+        if case .subset = scope { hitsPerRule[rule, default: 0] += 1 }
+    }
+}
+
+package final class RuleMask {
+    /// All directives in source order.
+    package private(set) var directives: [IgnoreDirective] = []
+
+    /// Indices into `directives` for bare `// sm:ignore` (all-rules) directives.
+    private var allDirectiveIndices: [Int] = []
+
+    /// Indices into `directives` keyed by rule name, for subset directives that name that rule.
+    private var subsetIndicesByRule: [String: [Int]] = [:]
 
     /// Used to compute line numbers of syntax nodes.
     private let sourceLocationConverter: SourceLocationConverter
@@ -69,19 +114,32 @@ package final class RuleMask {
     private func computeIgnoredRanges(in node: Syntax) {
         let visitor = RuleStatusCollectionVisitor(sourceLocationConverter: sourceLocationConverter)
         visitor.walk(node)
-        allRulesIgnoredRanges = visitor.allRulesIgnoredRanges
-        ruleMap = visitor.ruleMap
+        directives = visitor.directives
+        for (index, directive) in directives.enumerated() {
+            switch directive.scope {
+                case .all: allDirectiveIndices.append(index)
+                case let .subset(ruleNames):
+                    for name in ruleNames { subsetIndicesByRule[name, default: []].append(index) }
+            }
+        }
     }
 
     /// Returns the `RuleState` for the given rule at the provided location.
+    ///
+    /// As a side effect, increments the hit counter on the directive responsible for any
+    /// `.disabled` result. This drives unused-directive detection (see `IgnoreDirective`).
     package func ruleState(_ rule: String, at location: SourceLocation) -> RuleState {
-        if allRulesIgnoredRanges.contains(where: { $0.contains(location) }) {
-            .disabled
-        } else if let ignoredRanges = ruleMap[rule] {
-            ignoredRanges.contains { $0.contains(location) } ? .disabled : .default
-        } else {
-            .default
+        for index in allDirectiveIndices where directives[index].range.contains(location) {
+            directives[index].recordHit(forRule: rule)
+            return .disabled
         }
+        if let candidates = subsetIndicesByRule[rule] {
+            for index in candidates where directives[index].range.contains(location) {
+                directives[index].recordHit(forRule: rule)
+                return .disabled
+            }
+        }
+        return .default
     }
 }
 
@@ -128,11 +186,8 @@ private final class RuleStatusCollectionVisitor: SyntaxVisitor {
     /// lone-line `sm:ignore` directives, which extend from their position to EOF.
     private var sourceFileEnd: SourceLocation?
 
-    /// Stores the source ranges in which all rules are ignored.
-    var allRulesIgnoredRanges: [SourceRange] = []
-
-    /// Map of rule names to list ranges in the source where the rule is ignored.
-    var ruleMap: [String: [SourceRange]] = [:]
+    /// Collected directives, in source-discovery order.
+    var directives: [IgnoreDirective] = []
 
     init(sourceLocationConverter: SourceLocationConverter) {
         self.sourceLocationConverter = sourceLocationConverter
@@ -181,10 +236,18 @@ private final class RuleStatusCollectionVisitor: SyntaxVisitor {
         let restOfFileRange = SourceRange(start: nodeStart, end: sourceFileEnd)
 
         let isFirstInFile = firstToken.previousToken(viewMode: .sourceAccurate) == nil
-        for comment in loneLineComments(in: firstToken.leadingTrivia, isFirstToken: isFirstInFile) {
+        let leadingAnchor = firstToken.position
+        for (comment, position)
+            in loneLineComments(
+                in: firstToken.leadingTrivia,
+                anchor: leadingAnchor,
+                isFirstToken: isFirstInFile
+            )
+        {
             guard let (match, scope) = ruleStatusDirectiveMatch(in: comment) else { continue }
+            let location = sourceLocationConverter.location(for: position)
             // `:next` scopes the directive to this single node; bare lone-line extends to EOF.
-            record(match, range: scope == .next ? nodeRange : restOfFileRange)
+            record(match, range: scope == .next ? nodeRange : restOfFileRange, at: location)
         }
 
         for token in node.tokens(viewMode: .sourceAccurate) {
@@ -192,9 +255,13 @@ private final class RuleStatusCollectionVisitor: SyntaxVisitor {
             // handled when that nested item is visited. Without this, a trailing directive
             // on a struct member would leak up to the enclosing type, etc.
             if isInsideDescendantItem(token, of: node) { continue }
-            for comment in trailingLineComments(in: token.trailingTrivia) {
+            let trailingAnchor = token.endPositionBeforeTrailingTrivia
+            for (comment, position)
+                in trailingLineComments(in: token.trailingTrivia, anchor: trailingAnchor)
+            {
                 guard let (match, _) = ruleStatusDirectiveMatch(in: comment) else { continue }
-                record(match, range: nodeRange)
+                let location = sourceLocationConverter.location(for: position)
+                record(match, range: nodeRange, at: location)
             }
         }
     }
@@ -212,15 +279,17 @@ private final class RuleStatusCollectionVisitor: SyntaxVisitor {
         return false
     }
 
-    private func record(_ match: RuleStatusDirectiveMatch, range: SourceRange) {
-        switch match {
-            case .all:
-                allRulesIgnoredRanges.append(range)
-            case let .subset(ruleNames):
-                for ruleName in ruleNames {
-                    ruleMap[ruleName, default: []].append(range)
-                }
-        }
+    private func record(
+        _ match: RuleStatusDirectiveMatch,
+        range: SourceRange,
+        at location: SourceLocation
+    ) {
+        let scope: IgnoreDirective.Scope =
+            switch match {
+                case .all: .all
+                case let .subset(ruleNames): .subset(ruleNames: ruleNames)
+            }
+        directives.append(IgnoreDirective(location: location, range: range, scope: scope))
     }
 
     /// Scope of a matched directive.
@@ -286,45 +355,71 @@ private final class RuleStatusCollectionVisitor: SyntaxVisitor {
         return token.dropFirst().allSatisfy { $0.isLetter || $0.isNumber || $0 == "_" }
     }
 
+    /// Returns each trivia piece paired with its absolute source position, computed by walking
+    /// from the supplied trivia anchor and accumulating piece source lengths.
+    private func piecesWithPositions(
+        in trivia: Trivia,
+        anchor: AbsolutePosition
+    ) -> [(piece: TriviaPiece, position: AbsolutePosition)] {
+        var out: [(TriviaPiece, AbsolutePosition)] = []
+        out.reserveCapacity(trivia.count)
+        var pos = anchor
+        for piece in trivia {
+            out.append((piece, pos))
+            pos = AbsolutePosition(utf8Offset: pos.utf8Offset + piece.sourceLength.utf8Length)
+        }
+        return out
+    }
+
     /// Returns the list of line comments in the given trivia that are on a line by themselves
-    /// (excluding leading whitespace).
+    /// (excluding leading whitespace), each paired with its absolute source position.
     ///
     /// - Parameters:
     ///   - trivia: The trivia collection to scan for comments.
+    ///   - anchor: Absolute position where the trivia begins (i.e. token's leading-trivia start).
     ///   - isFirstToken: True if the trivia came from the first token in the file.
-    ///   - Returns: The list of lone line comments from the trivia.
-    private func loneLineComments(in trivia: Trivia, isFirstToken: Bool) -> [String] {
-        var currentComment: String?
-        var lineComments = [String]()
+    ///   - Returns: Lone line comments paired with their absolute source positions, in source order.
+    private func loneLineComments(
+        in trivia: Trivia,
+        anchor: AbsolutePosition,
+        isFirstToken: Bool
+    ) -> [(text: String, position: AbsolutePosition)] {
+        let pieces = piecesWithPositions(in: trivia, anchor: anchor)
+        var current: (text: String, position: AbsolutePosition)?
+        var lineComments: [(String, AbsolutePosition)] = []
 
-        for piece in trivia.reversed() {
+        for (piece, position) in pieces.reversed() {
             switch piece {
-                case let .lineComment(text): currentComment = text
+                case let .lineComment(text): current = (text, position)
                 case .spaces, .tabs: break
                 case .carriageReturnLineFeeds, .carriageReturns, .newlines:
-                    if let text = currentComment {
-                        lineComments.append(text)
-                        currentComment = nil
+                    if let entry = current {
+                        lineComments.append(entry)
+                        current = nil
                     }
-                default: currentComment = nil
+                default: current = nil
             }
         }
 
         // For the first token in the file, there may not be a newline preceding the first line
         // comment, so check for that here.
-        if isFirstToken, let text = currentComment { lineComments.append(text) }
+        if isFirstToken, let entry = current { lineComments.append(entry) }
 
         lineComments.reverse()
         return lineComments
     }
 
     /// Returns line comments in trailing trivia that appear on the same line as the code (i.e.,
-    /// before any newline). These are "trailing" line comments like `let x = 1 // sm:ignore`.
-    private func trailingLineComments(in trivia: Trivia) -> [String] {
-        var comments: [String] = []
-        for piece in trivia {
+    /// before any newline), each paired with its absolute source position. These are "trailing"
+    /// line comments like `let x = 1 // sm:ignore`.
+    private func trailingLineComments(
+        in trivia: Trivia,
+        anchor: AbsolutePosition
+    ) -> [(text: String, position: AbsolutePosition)] {
+        var comments: [(String, AbsolutePosition)] = []
+        for (piece, position) in piecesWithPositions(in: trivia, anchor: anchor) {
             switch piece {
-                case let .lineComment(text): comments.append(text)
+                case let .lineComment(text): comments.append((text, position))
                 case .carriageReturnLineFeeds, .carriageReturns, .newlines:
                     return comments
                 default: continue
