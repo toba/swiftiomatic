@@ -6,6 +6,10 @@ type: bug
 priority: normal
 created_at: 2026-05-08T06:33:59Z
 updated_at: 2026-05-08T14:15:08Z
+sync:
+    github:
+        issue_number: "658"
+        synced_at: "2026-05-08T14:18:17Z"
 ---
 
 ## Repro

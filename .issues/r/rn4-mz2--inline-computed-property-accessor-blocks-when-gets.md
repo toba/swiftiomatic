@@ -6,6 +6,10 @@ type: feature
 priority: normal
 created_at: 2026-05-08T06:48:12Z
 updated_at: 2026-05-08T06:54:23Z
+sync:
+    github:
+        issue_number: "657"
+        synced_at: "2026-05-08T14:18:17Z"
 ---
 
 ## Problem

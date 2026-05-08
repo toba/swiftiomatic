@@ -20,6 +20,7 @@
 - `flagUnusedIgnoreDirective`; skip flagging known rules that never queried `RuleMask` (eliminates noise on `// sm:ignore:next noForceCast` / `useKeyPath`)
 - Lint-only mode now dispatches transform-based rules (`NoForceCast`, `UseKeyPath`); `rewrite: false, lint: .warn` configs emit findings instead of silently dropping them
 - Assignment-RHS chain precedence; bound `=`-break chunk so `try`/`await`-prefixed member chains wrap on the chain dot rather than the assignment
+- Assignment `=` no longer fires alongside chain breaks for member chains whose head has a trailing closure (e.g. SQL builder DSLs); retarget the head-call's group close before the discretionary chain dot when the chain is the RHS of `let/var =` ([#658](https://github.com/toba/swiftiomatic/issues/658))
 
 ### 🗜️ Tweaks
 
