@@ -133,6 +133,19 @@ struct LintFormatOptions: ParsableArguments {
         if !offsets.isEmpty, !lines.isEmpty {
             throw ValidationError("'--offsets' and '--lines' are mutually exclusive")
         }
+
+        // Catch typo'd subcommand invocations like `sm dump-config`, where ArgumentParser falls
+        // through to the default subcommand and interprets the unknown verb as a path argument.
+        // Without this check, the iterator silently yields nothing and the command appears to be a
+        // no-op. Throwing a ValidationError makes ArgumentParser print usage so the user sees
+        // available subcommands.
+        for path in paths where path != "-" {
+            if !FileManager.default.fileExists(atPath: path) {
+                throw ValidationError(
+                    "no such file or directory: '\(path)'. See 'sm --help' for available subcommands."
+                )
+            }
+        }
     }
 }
 

@@ -20,12 +20,14 @@ extension SwiftiomaticCommand {
     /// Dumps the tool's configuration in JSON format to standard output.
     struct DumpConfiguration: ParsableCommand {
         static let configuration = CommandConfiguration(
+            commandName: "dump-configuration",
             abstract: "Dump the configuration in JSON format to standard output",
             discussion: """
                 Without any options, dumps the default configuration. When '--effective' is set, dumps the configuration that \
                 would be used if sm was executed from the current working directory (cwd), incorporating \
                 configuration files found in the cwd or its parents, or input from the '--configuration' option.
-                """
+                """,
+            aliases: ["dump-config"]
         )
 
         /// Whether or not to dump the effective configuration.
