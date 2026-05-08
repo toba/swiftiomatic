@@ -577,4 +577,67 @@ struct ConvertStaticStructToEnumTests: RuleTesting {
       ]
     )
   }
+
+  // MARK: - swift-testing suites (issue 7dv-h5s)
+
+  @Test func swiftTestingSuiteWithTestFuncsNotConverted() {
+    assertFormatting(
+      ConvertStaticStructToEnum.self,
+      input: """
+        struct DiffTests {
+          @Test func any() {
+            #expect(true)
+          }
+          @Test func someOther() {}
+        }
+        """,
+      expected: """
+        struct DiffTests {
+          @Test func any() {
+            #expect(true)
+          }
+          @Test func someOther() {}
+        }
+        """,
+      findings: []
+    )
+  }
+
+  @Test func swiftTestingSuiteAttributedStructNotConverted() {
+    assertFormatting(
+      ConvertStaticStructToEnum.self,
+      input: """
+        @Suite
+        struct MyTests {
+          @Test func one() {}
+        }
+        """,
+      expected: """
+        @Suite
+        struct MyTests {
+          @Test func one() {}
+        }
+        """,
+      findings: []
+    )
+  }
+
+  @Test func memberWithUnknownAttributeNotConverted() {
+    // Conservative: any unrecognized attribute on a member could be a macro that
+    // synthesizes instance behavior. Don't rewrite the host type.
+    assertFormatting(
+      ConvertStaticStructToEnum.self,
+      input: """
+        struct Container {
+          @SomeMacro static let value = 0
+        }
+        """,
+      expected: """
+        struct Container {
+          @SomeMacro static let value = 0
+        }
+        """,
+      findings: []
+    )
+  }
 }

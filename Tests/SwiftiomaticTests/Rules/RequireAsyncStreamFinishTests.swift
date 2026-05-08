@@ -78,6 +78,32 @@ struct RequireAsyncStreamFinishTests: RuleTesting {
     )
   }
 
+  @Test func unfoldingInitializerNotFlagged() {
+    assertLint(
+      RequireAsyncStreamFinish.self,
+      """
+      let stream = AsyncStream(unfolding: {
+        return isDone ? nil : await source.yield()
+      })
+      """,
+      findings: []
+    )
+  }
+
+  @Test func unfoldingWithOnCancelNotFlagged() {
+    assertLint(
+      RequireAsyncStreamFinish.self,
+      """
+      let stream = AsyncThrowingStream(unfolding: {
+        try await source.yield()
+      }, onCancel: {
+        source.cancel()
+      })
+      """,
+      findings: []
+    )
+  }
+
   @Test func nonAsyncStreamCallNotFlagged() {
     assertLint(
       RequireAsyncStreamFinish.self,

@@ -919,7 +919,7 @@
               "$ref" : "#/$defs/lintOnlyBase"
             }
           ],
-          "description" : "Flag `weak var` stored properties on classes/actors that are never reassigned (SE-0481). Such properties should be `weak let` .\n\nA property is considered \"never reassigned\" when no descendant of the enclosing type's body contains an assignment to its name (either bare or via `self.` ). Initial values and assignments inside an initializer of the same type are allowed because `let` permits init-time assignment.\n\nLint-only: emitting the finding does not rewrite the declaration.",
+          "description" : "Flag `weak var` stored properties on classes/actors that are never reassigned (SE-0481). Such properties should be `weak let` .\n\nA property is considered \"never reassigned\" when no descendant of the enclosing type's body contains an assignment to its name (either bare or via `self.` ). Initial values and assignments inside an initializer of the same type are allowed because `let` permits init-time assignment.\n\nOnly `private`/`fileprivate` properties are flagged. At broader access levels (the default `internal`, `package`, `public`, `open`) reassignment may happen from outside the declaring file via `someInstance.property = …` , which the AST cannot prove absent without type resolution — so we conservatively skip those.\n\nLint-only: emitting the finding does not rewrite the declaration.",
           "unevaluatedProperties" : false
         }
       },
@@ -4351,7 +4351,7 @@
           "$ref" : "#/$defs/lintOnlyBase"
         }
       ],
-      "description" : "Flag `weak var` stored properties on classes/actors that are never reassigned (SE-0481). Such properties should be `weak let` .\n\nA property is considered \"never reassigned\" when no descendant of the enclosing type's body contains an assignment to its name (either bare or via `self.` ). Initial values and assignments inside an initializer of the same type are allowed because `let` permits init-time assignment.\n\nLint-only: emitting the finding does not rewrite the declaration.",
+      "description" : "Flag `weak var` stored properties on classes/actors that are never reassigned (SE-0481). Such properties should be `weak let` .\n\nA property is considered \"never reassigned\" when no descendant of the enclosing type's body contains an assignment to its name (either bare or via `self.` ). Initial values and assignments inside an initializer of the same type are allowed because `let` permits init-time assignment.\n\nOnly `private`/`fileprivate` properties are flagged. At broader access levels (the default `internal`, `package`, `public`, `open`) reassignment may happen from outside the declaring file via `someInstance.property = …` , which the AST cannot prove absent without type resolution — so we conservatively skip those.\n\nLint-only: emitting the finding does not rewrite the declaration.",
       "unevaluatedProperties" : false
     },
     "useWeakSelfInClosures" : {

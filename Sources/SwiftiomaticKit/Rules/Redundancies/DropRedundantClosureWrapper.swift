@@ -60,6 +60,14 @@ final class DropRedundantClosureWrapper: StaticFormatRule<BasicRuleValue>, @unch
             return ExprSyntax(callNode)
         }
 
+        // `switch`/`if`/`do` are expressions only in return, throw, or assignment-RHS positions.
+        // Removing the IIFE in argument/subscript/etc. positions would produce uncompilable code.
+        if isControlFlowExpression(innerExpr),
+           !isAssignmentLikePosition(parent)
+        {
+            return ExprSyntax(callNode)
+        }
+
         Self.diagnose(.removeRedundantClosure, on: closureExpr.leftBrace, context: context)
 
         // Replace { expr }() with expr, transferring boundary trivia
@@ -70,6 +78,23 @@ final class DropRedundantClosureWrapper: StaticFormatRule<BasicRuleValue>, @unch
     }
 
     // MARK: - Helpers
+
+    private static func isControlFlowExpression(_ expr: ExprSyntax) -> Bool {
+        expr.is(SwitchExprSyntax.self) || expr.is(IfExprSyntax.self)
+    }
+
+    private static func isAssignmentLikePosition(_ parent: Syntax?) -> Bool {
+        guard let parent else { return false }
+        if parent.is(InitializerClauseSyntax.self) { return true }
+        if parent.is(ReturnStmtSyntax.self) { return true }
+        if parent.is(ThrowStmtSyntax.self) { return true }
+        if let infix = parent.as(InfixOperatorExprSyntax.self),
+           infix.operator.is(AssignmentExprSyntax.self)
+        {
+            return true
+        }
+        return false
+    }
 
     private static func containsNeverOrThrow(_ expr: ExprSyntax) -> Bool {
         if let call = expr.as(FunctionCallExprSyntax.self),

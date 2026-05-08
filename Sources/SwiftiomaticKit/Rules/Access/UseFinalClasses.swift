@@ -32,7 +32,7 @@ final class UseFinalClasses: StaticFormatRule<BasicRuleValue>, @unchecked Sendab
 
     static func transform(
         _ node: ClassDeclSyntax,
-        original _: ClassDeclSyntax,
+        original: ClassDeclSyntax,
         parent _: Syntax?,
         context: Context
     ) -> DeclSyntax {
@@ -44,7 +44,11 @@ final class UseFinalClasses: StaticFormatRule<BasicRuleValue>, @unchecked Sendab
         let state = context.useFinalClassesState
         if state.subclassedNames.contains(node.name.text) { return DeclSyntax(node) }
 
-        Self.diagnose(.useFinalClass, on: node.classKeyword, context: context)
+        // Diagnose against the original (pre-rewrite) node so the source location
+        // resolves through the file's `SourceLocationConverter` correctly.
+        // `node` (the visited copy) is detached from the source tree once any
+        // child has been rewritten by other rules in the same pipeline pass.
+        Self.diagnose(.useFinalClass, on: original.classKeyword, context: context)
 
         var result = node
         var finalModifier = DeclModifierSyntax(name: .keyword(.final, trailingTrivia: .space))

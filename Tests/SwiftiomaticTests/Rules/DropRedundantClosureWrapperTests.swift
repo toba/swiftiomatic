@@ -279,6 +279,64 @@ struct DropRedundantClosureWrapperTests: RuleTesting {
         """)
   }
 
+  @Test func switchExpressionInArgumentPosition() {
+    assertFormatting(
+      DropRedundantClosureWrapper.self,
+      input: """
+        let batch = await nextRecordZoneChangeBatch(
+            syncEngine: {
+                switch scope {
+                    case .private: `private`
+                    case .shared: shared
+                }
+            }(),
+        )
+        """,
+      expected: """
+        let batch = await nextRecordZoneChangeBatch(
+            syncEngine: {
+                switch scope {
+                    case .private: `private`
+                    case .shared: shared
+                }
+            }(),
+        )
+        """)
+  }
+
+  @Test func ifExpressionInArgumentPosition() {
+    assertFormatting(
+      DropRedundantClosureWrapper.self,
+      input: """
+        f(x: { if cond { 1 } else { 2 } }())
+        """,
+      expected: """
+        f(x: { if cond { 1 } else { 2 } }())
+        """)
+  }
+
+  @Test func switchExpressionInInitializer() {
+    assertFormatting(
+      DropRedundantClosureWrapper.self,
+      input: """
+        let x = 1️⃣{
+            switch scope {
+                case .a: 1
+                case .b: 2
+            }
+        }()
+        """,
+      expected: """
+        let x = switch scope {
+                case .a: 1
+                case .b: 2
+            }
+        """,
+      findings: [
+        FindingSpec("1️⃣", message: "remove immediately-invoked closure; use the expression directly")
+      ])
+  }
+
   @Test func normalFunctionCallNotFlagged() {
     assertFormatting(
       DropRedundantClosureWrapper.self,

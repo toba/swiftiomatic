@@ -17,7 +17,7 @@ final class ConvertStaticStructToEnum: StaticFormatRule<BasicRuleValue>, @unchec
 
     static func transform(
         _ visited: StructDeclSyntax,
-        original _: StructDeclSyntax,
+        original: StructDeclSyntax,
         parent _: Syntax?,
         context: Context
     ) -> DeclSyntax {
@@ -29,7 +29,10 @@ final class ConvertStaticStructToEnum: StaticFormatRule<BasicRuleValue>, @unchec
             members: visited.memberBlock.members
         ) else { return DeclSyntax(visited) }
 
-        Self.diagnose(.useEnumNamespace, on: visited.name, context: context)
+        // Diagnose against the original (pre-rewrite) name so the source location
+        // resolves through the file's `SourceLocationConverter` correctly.
+        // `visited` is detached from the source tree once children have been rewritten.
+        Self.diagnose(.useEnumNamespace, on: original.name, context: context)
 
         let enumDecl = EnumDeclSyntax(
             modifiers: visited.modifiers,
@@ -46,7 +49,7 @@ final class ConvertStaticStructToEnum: StaticFormatRule<BasicRuleValue>, @unchec
 
     static func transform(
         _ visited: ClassDeclSyntax,
-        original _: ClassDeclSyntax,
+        original: ClassDeclSyntax,
         parent _: Syntax?,
         context: Context
     ) -> DeclSyntax {
@@ -62,7 +65,7 @@ final class ConvertStaticStructToEnum: StaticFormatRule<BasicRuleValue>, @unchec
             members: visited.memberBlock.members
         ) else { return DeclSyntax(visited) }
 
-        Self.diagnose(.useEnumNamespace, on: visited.name, context: context)
+        Self.diagnose(.useEnumNamespace, on: original.name, context: context)
 
         // Remove the `final` modifier, transferring its trivia to the enum keyword
         let modifiers = DeclModifierListSyntax(
@@ -105,12 +108,18 @@ final class ConvertStaticStructToEnum: StaticFormatRule<BasicRuleValue>, @unchec
         }
         if decl.is(InitializerDeclSyntax.self) { return false }
         if let varDecl = decl.as(VariableDeclSyntax.self) {
+            // Any attribute on a member could be a macro that synthesizes instance
+            // behavior on the host type (e.g. `@Test`, `@Observable`-style peers) —
+            // be conservative and don't rewrite.
+            if !varDecl.attributes.isEmpty { return false }
             return hasStaticModifier(varDecl.modifiers)
         }
         if let funcDecl = decl.as(FunctionDeclSyntax.self) {
+            if !funcDecl.attributes.isEmpty { return false }
             return hasStaticModifier(funcDecl.modifiers)
         }
         if let subDecl = decl.as(SubscriptDeclSyntax.self) {
+            if !subDecl.attributes.isEmpty { return false }
             return hasStaticModifier(subDecl.modifiers)
         }
 

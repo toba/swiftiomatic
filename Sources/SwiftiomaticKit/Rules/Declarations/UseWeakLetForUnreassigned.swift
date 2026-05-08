@@ -7,6 +7,11 @@ import SwiftSyntax
 /// contains an assignment to its name (either bare or via `self.` ). Initial values and assignments
 /// inside an initializer of the same type are allowed because `let` permits init-time assignment.
 ///
+/// Only `private`/`fileprivate` properties are flagged. At broader access levels (the default
+/// `internal`, `package`, `public`, `open`) reassignment may happen from outside the declaring
+/// file via `someInstance.property = …` , which the AST cannot prove absent without type
+/// resolution — so we conservatively skip those.
+///
 /// Lint-only: emitting the finding does not rewrite the declaration.
 final class UseWeakLetForUnreassigned: LintSyntaxRule<LintOnlyValue>, @unchecked Sendable {
     override class var group: ConfigurationGroup? { .declarations }
@@ -26,6 +31,10 @@ final class UseWeakLetForUnreassigned: LintSyntaxRule<LintOnlyValue>, @unchecked
             guard let varDecl = member.decl.as(VariableDeclSyntax.self),
                   varDecl.bindingSpecifier.tokenKind == .keyword(.var),
                   varDecl.modifiers.contains(.weak),
+                  varDecl.modifiers.contains(where: { mod in
+                      mod.name.tokenKind == .keyword(.private)
+                          || mod.name.tokenKind == .keyword(.fileprivate)
+                  }),
                   varDecl.bindings.count == 1,
                   let binding = varDecl.bindings.first,
                   binding.accessorBlock == nil,

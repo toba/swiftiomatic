@@ -9,7 +9,43 @@ struct UseWeakLetForUnreassignedTests: RuleTesting {
       UseWeakLetForUnreassigned.self,
       """
       class Foo {
-        weak 1️⃣var delegate: AnyObject?
+        private weak 1️⃣var delegate: AnyObject?
+        init(delegate: AnyObject?) {
+          self.delegate = delegate
+        }
+      }
+      """,
+      findings: [
+        FindingSpec("1️⃣", message: "'delegate' is declared 'weak var' but never reassigned — prefer 'weak let' (SE-0481)"),
+      ]
+    )
+  }
+
+  @Test func internalWeakVarNotFlagged() {
+    // Internal/public/package properties may be reassigned from outside the
+    // declaring type; only flag private/fileprivate where mutation is local.
+    assertLint(
+      UseWeakLetForUnreassigned.self,
+      """
+      class Child {
+        weak var parent: Parent?
+      }
+      class Parent {
+        init(children: [Child]) {
+          for child in children { child.parent = self }
+        }
+      }
+      """,
+      findings: []
+    )
+  }
+
+  @Test func fileprivateWeakVarFlagged() {
+    assertLint(
+      UseWeakLetForUnreassigned.self,
+      """
+      class Foo {
+        fileprivate weak 1️⃣var delegate: AnyObject?
         init(delegate: AnyObject?) {
           self.delegate = delegate
         }
@@ -56,7 +92,7 @@ struct UseWeakLetForUnreassignedTests: RuleTesting {
       UseWeakLetForUnreassigned.self,
       """
       actor Foo {
-        weak 1️⃣var delegate: AnyObject?
+        private weak 1️⃣var delegate: AnyObject?
       }
       """,
       findings: [
@@ -84,7 +120,7 @@ struct UseWeakLetForUnreassignedTests: RuleTesting {
       class Foo {
         var a: Int = 0
         // sm:ignore useWeakLetForUnreassigned
-        weak var delegate: AnyObject?
+        private weak var delegate: AnyObject?
       }
       """,
       findings: []
@@ -96,7 +132,7 @@ struct UseWeakLetForUnreassignedTests: RuleTesting {
       UseWeakLetForUnreassigned.self,
       """
       class Foo {
-        weak var delegate: AnyObject? // sm:ignore useWeakLetForUnreassigned
+        private weak var delegate: AnyObject? // sm:ignore useWeakLetForUnreassigned
       }
       """,
       findings: []
