@@ -53,4 +53,52 @@ struct FlagForEachIDSelfInViewTests: RuleTesting {
       findings: []
     )
   }
+
+  @Test func compoundKeyPathNotFlagged() {
+    assertLint(
+      FlagForEachIDSelfInView.self,
+      """
+      ForEach(Array(tags.enumerated()), id: \\.element.id) { index, tag in
+        Text(tag.name)
+      }
+      """,
+      findings: []
+    )
+  }
+
+  @Test func indicesWithIdSelfNotFlagged() {
+    assertLint(
+      FlagForEachIDSelfInView.self,
+      """
+      ForEach(citations.indices, id: \\.self) { index in
+        Text("\\(index)")
+      }
+      """,
+      findings: []
+    )
+  }
+
+  @Test func halfOpenRangeWithIdSelfNotFlagged() {
+    assertLint(
+      FlagForEachIDSelfInView.self,
+      """
+      ForEach(0..<count, id: \\.self) { index in
+        Text("\\(index)")
+      }
+      """,
+      findings: []
+    )
+  }
+
+  @Test func closedRangeWithIdSelfNotFlagged() {
+    assertLint(
+      FlagForEachIDSelfInView.self,
+      """
+      ForEach(1...n, id: \\.self) { index in
+        Text("\\(index)")
+      }
+      """,
+      findings: []
+    )
+  }
 }

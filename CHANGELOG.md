@@ -6,15 +6,22 @@
 
 - Honor Swift's `@warn(<group>, as: error|warning|ignored)` attribute (renamed `@diagnose` upstream) for per-region finding suppression and severity override; `SwiftWarningControl` integration via lazy region-tree on `Context`; matches both `dropRedundantEscaping` and `DropRedundantEscaping` group identifiers; rule disabled in config stays off ([#641](https://github.com/toba/swiftiomatic/issues/641))
 - `NestedCallLayout`; collapse wrapped multi-arg single-level calls and `MacroExpansionExprSyntax` (e.g. `#externalMacro(module:type:)`) onto one line when they fit ([#643](https://github.com/toba/swiftiomatic/issues/643))
+- `flagUnusedIgnoreDirective`; lint `// sm:ignore` directives that suppress nothing ([#644](https://github.com/toba/swiftiomatic/issues/644))
+- `// sm:ignore:next`; support multiple rules in a single directive ([#645](https://github.com/toba/swiftiomatic/issues/645))
 
 ### 🐞 Fixes
 
 - `DropRedundantEscaping`; taint variables propagated through tuple expressions and tuple-pattern destructuring; closures that escape via `inner(tuple: (closure, …))` or `let (local, _) = (completion, …); self.local = local` now correctly keep `@escaping`
+- `useForLoopNotForEach`; skip throwing non-`Sequence` `forEach` (e.g. GRDB `Cursor`) ([#646](https://github.com/toba/swiftiomatic/issues/646))
+- `flagForEachIDSelfInView`; skip false-positive on `id: \.element.id` from `.enumerated()` ([#647](https://github.com/toba/swiftiomatic/issues/647))
+- `useLazyForLongChainOps`; skip chains that already include `.lazy` (multiline receivers no longer mis-fire) ([#648](https://github.com/toba/swiftiomatic/issues/648))
+- `flagForEachIDSelfInView`; skip when collection is `*.indices` (`Range<Int>`) ([#649](https://github.com/toba/swiftiomatic/issues/649))
 
 ### 🗜️ Tweaks
 
 - Investigate upstream HIGH cite changes; defer `unused_imports` rule and first-class `@diagnose` (`SwiftWarningControl`) adoption to follow-ups
 - Evaluate swift-syntax 604 prerelease / Swift 6.3.1 alignment; skip both; `603.0.1` is stable and no 604-only API is needed today
+- `Lint pipeline perf & cleanup follow-ups`; close out epic covering P2, P3, P6, P8–P14, C1, C2, C4, N1–N5, M1, M2, M4 ([#536](https://github.com/toba/swiftiomatic/issues/536))
 
 ## Week of Apr 26 – May 02, 2026
 

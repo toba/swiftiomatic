@@ -48,6 +48,43 @@ struct UseLazyForLongChainOpsTests: RuleTesting {
     )
   }
 
+  @Test func chainAlreadyLazyNotFlagged() {
+    assertLint(
+      UseLazyForLongChainOps.self,
+      """
+      let result = items.lazy.map(\\.id).filter { $0 > 0 }.compactMap(format)
+      """,
+      findings: []
+    )
+  }
+
+  @Test func multilineChainAlreadyLazyNotFlagged() {
+    assertLint(
+      UseLazyForLongChainOps.self,
+      """
+      let suffix = OrdinalTerm.suffixPreference(for: number)
+          .lazy
+          .compactMap { self[$0] }
+          .filter { $0.matches(number) }
+          .compactMap { $0.prefer(gender: gender) }
+          .first
+      """,
+      findings: []
+    )
+  }
+
+  @Test func eagerCallsBeforeLazyStillCounted() {
+    assertLint(
+      UseLazyForLongChainOps.self,
+      """
+      let result = 1️⃣items.map(f).filter(p).compactMap(g).lazy.map(h).filter(q)
+      """,
+      findings: [
+        FindingSpec("1️⃣", message: "chain of 3 collection transforms allocates intermediate arrays — consider '.lazy'"),
+      ]
+    )
+  }
+
   @Test func twoChainsAdjacentEachReportedOnce() {
     assertLint(
       UseLazyForLongChainOps.self,

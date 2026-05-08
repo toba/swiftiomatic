@@ -25,15 +25,25 @@ final class UseLazyForLongChainOps: LintSyntaxRule<LintOnlyValue>, @unchecked Se
     }
 
     private func isChainLink(_ syntax: Syntax?) -> Bool {
-        guard let syntax,
-              let member = syntax.as(MemberAccessExprSyntax.self),
-              let parentCall = member.parent?.as(FunctionCallExprSyntax.self),
-              parentCall.calledExpression.id == member.id,
-              Self.chainableMethods.contains(member.declName.baseName.text) else { return false }
-        return true
+        // Walk up through member-access nodes (e.g., `.lazy`) that may sit between this call and
+        // an outer chainable call. The call is a chain link if any enclosing function call's
+        // receiver path passes through it via a chainable method name.
+        var node = syntax
+        while let current = node, let member = current.as(MemberAccessExprSyntax.self) {
+            if let parentCall = member.parent?.as(FunctionCallExprSyntax.self),
+               parentCall.calledExpression.id == member.id,
+               Self.chainableMethods.contains(member.declName.baseName.text)
+            {
+                return true
+            }
+            node = member.parent
+        }
+        return false
     }
 
-    /// Walks down the receiver chain counting consecutive chainable calls.
+    /// Walks down the receiver chain counting consecutive chainable calls. Calls downstream of a
+    /// `.lazy` access are already lazy and don't allocate intermediate arrays, so they're not
+    /// counted.
     private func chainLength(of call: FunctionCallExprSyntax) -> Int {
         var current = ExprSyntax(call)
         var length = 0
@@ -44,6 +54,14 @@ final class UseLazyForLongChainOps: LintSyntaxRule<LintOnlyValue>, @unchecked Se
               let receiver = member.base
         {
             length += 1
+            if let recvMember = receiver.as(MemberAccessExprSyntax.self),
+               recvMember.declName.baseName.text == "lazy"
+            {
+                length = 0
+                guard let inner = recvMember.base else { break }
+                current = inner
+                continue
+            }
             current = receiver
         }
         return length

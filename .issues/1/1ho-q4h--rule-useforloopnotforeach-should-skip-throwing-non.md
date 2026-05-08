@@ -6,6 +6,10 @@ type: bug
 priority: normal
 created_at: 2026-05-08T01:56:31Z
 updated_at: 2026-05-08T02:00:33Z
+sync:
+    github:
+        issue_number: "646"
+        synced_at: "2026-05-08T02:54:16Z"
 ---
 
 ## Symptom

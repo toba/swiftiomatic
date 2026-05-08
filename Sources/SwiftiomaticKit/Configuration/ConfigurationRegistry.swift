@@ -20,6 +20,10 @@ package extension ConfigurationRegistry {
         return map
     }()
 
+    /// Set of all known rule keys (the short JSON key form, e.g. `imports`, not `SortImports`).
+    /// Used by `RuleMask` to validate space-separated rule lists in `// sm:ignore` directives.
+    static let allRuleKeys: Set<String> = Set(allRuleTypes.map { $0.key })
+
     /// Rules organized by configuration group (values are short keys for JSON encoding).
     static let groupRules: [ConfigurationGroup: [String]] = {
         var groups: [ConfigurationGroup: [String]] = [:]

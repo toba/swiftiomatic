@@ -10,10 +10,47 @@ final class FlagForEachIDSelfInView: LintSyntaxRule<LintOnlyValue>, @unchecked S
         guard let ident = node.calledExpression.as(DeclReferenceExprSyntax.self),
               ident.baseName.text == "ForEach" else { return .visitChildren }
 
+        if let firstArg = node.arguments.first, firstArg.label == nil,
+           isIntegerIndexedReceiver(firstArg.expression)
+        {
+            return .visitChildren
+        }
+
         for arg in node.arguments where arg.label?.text == "id" {
             if isKeyPathSelf(arg.expression) { diagnose(.idSelfFragile, on: arg.expression) }
         }
         return .visitChildren
+    }
+
+    /// `<expr>.indices`, or a `Range`/`ClosedRange` literal (`a..<b`, `a...b`), or `Range(...)`.
+    /// For these, `Int` is the element type and `\.self` is the only valid id.
+    private func isIntegerIndexedReceiver(_ expr: ExprSyntax) -> Bool {
+        if let member = expr.as(MemberAccessExprSyntax.self),
+           member.declName.baseName.text == "indices"
+        {
+            return true
+        }
+        if let infix = expr.as(InfixOperatorExprSyntax.self),
+           let op = infix.operator.as(BinaryOperatorExprSyntax.self)
+        {
+            let text = op.operator.text
+            if text == "..<" || text == "..." { return true }
+        }
+        if let seq = expr.as(SequenceExprSyntax.self) {
+            for element in seq.elements {
+                if let op = element.as(BinaryOperatorExprSyntax.self) {
+                    let text = op.operator.text
+                    if text == "..<" || text == "..." { return true }
+                }
+            }
+        }
+        if let call = expr.as(FunctionCallExprSyntax.self),
+           let callee = call.calledExpression.as(DeclReferenceExprSyntax.self),
+           callee.baseName.text == "Range"
+        {
+            return true
+        }
+        return false
     }
 
     private func isKeyPathSelf(_ expr: ExprSyntax) -> Bool {

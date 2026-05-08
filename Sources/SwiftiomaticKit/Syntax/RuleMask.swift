@@ -35,10 +35,12 @@ import SwiftSyntax
 ///   // sm:ignore:next Rule1 explanatory comment   — Rule1 only; trailing text is ignored
 ///
 /// The rule list is parsed greedily: the first token must be a valid rule identifier
-/// (matches `[A-Za-z_][A-Za-z0-9_]*`), and additional rules continue as long as a comma
-/// separates them. The first token that follows whitespace without an intervening comma
-/// — or the first non-identifier token — ends the rule list. Everything after that is
-/// treated as a free-form explanatory comment and discarded.
+/// (matches `[A-Za-z_][A-Za-z0-9_]*`), and additional rules continue as long as either a
+/// comma separates them OR the next token normalizes to a known rule key (so
+/// `// sm:ignore RuleA RuleB` works for real rule names without commas). The first
+/// whitespace-separated, non-comma token that doesn't resolve to a known rule — or any
+/// non-identifier token — ends the rule list. Everything after that is treated as a
+/// free-form explanatory comment and discarded.
 ///
 /// `FileLength` and other `SourceFileSyntax`-level rules are gated at the file's end location,
 /// so a directive anywhere in the file suppresses them.
@@ -304,8 +306,11 @@ private final class RuleStatusCollectionVisitor: SyntaxVisitor {
         let scope: DirectiveScope = match.output.scope != nil ? .next : .eof
         guard let matchedRuleNames = match.output.ruleNames else { return (.all, scope) }
 
-        // Parse leading rule tokens. Rules continue as long as commas separate them; the
-        // first whitespace-only-separated token (or any non-identifier token) ends the list.
+        // Parse leading rule tokens. Rules continue as long as commas separate them, OR — for
+        // tokens after the first — as long as the next token normalizes to a known rule key.
+        // The first token that follows whitespace without a comma AND is not a known rule —
+        // or the first non-identifier token — ends the rule list. Everything after that is
+        // treated as a free-form explanatory comment and discarded.
         var rules: [String] = []
         var index = matchedRuleNames.startIndex
         var sawCommaBeforeNextToken = true  // First token doesn't need a leading comma.
@@ -323,9 +328,6 @@ private final class RuleStatusCollectionVisitor: SyntaxVisitor {
             }
             guard index < matchedRuleNames.endIndex else { break }
 
-            // After the first rule, only continue if the previous separator contained a comma.
-            if !rules.isEmpty, !sawCommaBeforeNextToken { break }
-
             let tokenStart = index
             while index < matchedRuleNames.endIndex {
                 let c = matchedRuleNames[index]
@@ -336,13 +338,22 @@ private final class RuleStatusCollectionVisitor: SyntaxVisitor {
             guard isRuleIdentifier(token) else { break }
             let name = String(token)
             // Normalize type names (e.g. SortImports) to key format (e.g. sortImports).
+            let normalized: String
             if let first = name.first, first.isUppercase {
                 let derived = first.lowercased() + name.dropFirst()
                 // Resolve custom keys (e.g. SortImports → "imports" not "sortImports").
-                rules.append(ConfigurationRegistry.typeNameToKey[derived] ?? derived)
+                normalized = ConfigurationRegistry.typeNameToKey[derived] ?? derived
             } else {
-                rules.append(name)
+                normalized = name
             }
+            // After the first rule, only continue without a comma if this token is a known
+            // rule key — otherwise it's the start of a free-form trailing comment.
+            if !rules.isEmpty, !sawCommaBeforeNextToken,
+               !ConfigurationRegistry.allRuleKeys.contains(normalized)
+            {
+                break
+            }
+            rules.append(normalized)
             sawCommaBeforeNextToken = false
         }
         return (.subset(ruleNames: rules), scope)

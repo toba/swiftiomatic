@@ -133,6 +133,64 @@ struct RuleMaskTests {
     #expect(mask.ruleState("requires", at: location(ofLine: 2, in: converter)) == .default)
   }
 
+  @Test func spaceSeparatedKnownRules() {
+    // Multiple known rule names without commas: each should be parsed as a rule.
+    // Trailing free-form text (after a non-identifier or non-rule token) is ignored.
+    let text =
+      """
+      // sm:ignore:next useWeakLetForUnreassigned noImplicitlyUnwrappedOptionals - reason
+      weak var foo: Foo!
+      """
+
+    let (mask, converter) = createMask(sourceText: text)
+
+    #expect(
+      mask.ruleState("useWeakLetForUnreassigned", at: location(ofLine: 2, in: converter)) == .disabled
+    )
+    #expect(
+      mask.ruleState("noImplicitlyUnwrappedOptionals", at: location(ofLine: 2, in: converter))
+        == .disabled
+    )
+    #expect(mask.ruleState("reason", at: location(ofLine: 2, in: converter)) == .default)
+  }
+
+  @Test func spaceSeparatedKnownRulesLoneLine() {
+    // Lone-line directives (no `:next`) also accept space-separated rule lists.
+    let text =
+      """
+      // sm:ignore useWeakLetForUnreassigned noImplicitlyUnwrappedOptionals
+      let a = 1
+      """
+
+    let (mask, converter) = createMask(sourceText: text)
+
+    #expect(
+      mask.ruleState("useWeakLetForUnreassigned", at: location(ofLine: 2, in: converter)) == .disabled
+    )
+    #expect(
+      mask.ruleState("noImplicitlyUnwrappedOptionals", at: location(ofLine: 2, in: converter))
+        == .disabled
+    )
+  }
+
+  @Test func spaceSeparatedKnownRulesTrailing() {
+    // Trailing directives also accept space-separated rule lists.
+    let text =
+      """
+      let a = 1 // sm:ignore useWeakLetForUnreassigned noImplicitlyUnwrappedOptionals
+      """
+
+    let (mask, converter) = createMask(sourceText: text)
+
+    #expect(
+      mask.ruleState("useWeakLetForUnreassigned", at: location(ofLine: 1, in: converter)) == .disabled
+    )
+    #expect(
+      mask.ruleState("noImplicitlyUnwrappedOptionals", at: location(ofLine: 1, in: converter))
+        == .disabled
+    )
+  }
+
   @Test func trailingCommentWithMultipleRules() {
     let text =
       """
