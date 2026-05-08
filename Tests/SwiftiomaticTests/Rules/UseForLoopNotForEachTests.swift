@@ -43,4 +43,27 @@ struct UseForLoopNotForEachTests: RuleTesting {
       ]
     )
   }
+
+  /// `Sequence.forEach` is `rethrows`, so `try receiver.forEach { ... }` with no
+  /// `try`/`throw` in the body must be a different (unconditionally throwing)
+  /// method — e.g. GRDB `Cursor.forEach`. Skip the rule there.
+  func testSkipsThrowingNonSequenceForEach() {
+    assertLint(
+      UseForLoopNotForEach.self,
+      """
+      try cursor.forEach { output.append($0) }
+      try cursor.forEach { row in
+        output.append(row)
+      }
+      try seq.1️⃣forEach { try transform($0) }
+      try seq.2️⃣forEach {
+        if bad { throw Err.x }
+      }
+      """,
+      findings: [
+        FindingSpec("1️⃣", message: "replace use of '.forEach { ... }' with for-in loop"),
+        FindingSpec("2️⃣", message: "replace use of '.forEach { ... }' with for-in loop"),
+      ]
+    )
+  }
 }
