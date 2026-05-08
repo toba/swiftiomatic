@@ -179,48 +179,37 @@ extension TokenStream {
     }
 
     func visitExpressionSegment(_ node: ExpressionSegmentSyntax) -> SyntaxVisitorContinueKind {
-        // Emit the interpolation as a single atomic `.syntax` token. We rebuild from
-        // `tokens(viewMode: .sourceAccurate)` instead of using `node.description` so that
-        // newlines in the source's whitespace trivia (e.g. a pre-split `\(\n  argument\n)`)
-        // collapse to a single space — preserving the multiline string's content lines
-        // would otherwise drop below the closing `"""` indent and produce an
-        // "Insufficient indentation" Swift compile error.
-        let toks = Array(node.tokens(viewMode: .sourceAccurate))
-        var text = ""
-        for (i, t) in toks.enumerated() {
-            if i > 0 {
-                let prev = toks[i - 1]
-                let between = prev.trailingTrivia.description + t.leadingTrivia.description
-                if between.contains(where: \.isNewline) {
-                    // Source indent across a newline carries no semantic meaning inside
-                    // an interpolation — drop it, but insert a single space when the adjacent
-                    // tokens would otherwise glue into a different token. Two cases:
-                    //   * identifier/number adjacency (e.g. `try await`, `if let`).
-                    //   * binary operator next to a non-operator: without whitespace on a side,
-                    //     Swift's lexer reclassifies the operator as prefix/postfix. For
-                    //     example `type\n?? outputType` collapsed to `type?? outputType`
-                    //     turns `??` into a postfix operator (right whitespace only) and
-                    //     produces a syntax error (issue ugi-3p0).
-                    let needsSpace: Bool = {
-                        if case .binaryOperator = t.tokenKind { return true }
-                        if case .binaryOperator = prev.tokenKind { return true }
-                        if let p = prev.text.last, let c = t.text.first,
-                           p.isLetter || p.isNumber || p == "_",
-                           c.isLetter || c.isNumber || c == "_"
-                        {
-                            return true
-                        }
-                        return false
-                    }()
-                    if needsSpace { text += " " }
-                } else {
-                    text += between
-                }
-            }
-            text += t.text
+        // Mirror upstream apple/swift-format: emit the interpolation's source text verbatim,
+        // which preserves the developer's intentional formatting of complex interpolations
+        // (e.g. multi-line `\(raw: foo(\n  a: ...,\n  b: ...))` in macro DeclSyntax literals)
+        // and avoids any class of token-adjacency bug from reformatting the contents.
+        //
+        // If the description spans multiple source lines, emit each line as a separate
+        // `.syntax` token with a hard `.break` between them. The break carries the surrounding
+        // multiline string's `breakKind`, which re-indents each continuation line to the
+        // segment column (≥ closing `"""` column). Without this, `.syntax` text containing
+        // raw `\n` bypasses the printer's indent state and continuation lines land at column 0
+        // — falling below the closing delimiter and producing "Insufficient indentation"
+        // (issue 9yv-e8j).
+        let description = node.description
+        if !description.contains("\n") {
+            appendToken(.syntax(description))
+            return .skipChildren
         }
-        appendToken(.syntax(text))
-        // Visiting children is not needed here.
+        let parentLiteral = node.parent?
+            .as(StringLiteralSegmentListSyntax.self)?
+            .parent?
+            .as(StringLiteralExprSyntax.self)
+        let breakKind: BreakKind = parentLiteral
+            .flatMap { pendingMultilineStringBreakKinds[$0] } ?? .same
+        let lines = description.split(separator: "\n", omittingEmptySubsequences: false)
+        appendToken(.syntax(String(lines[0])))
+        for line in lines.dropFirst() {
+            appendToken(.break(breakKind, newlines: .hard(count: 1)))
+            // Strip leading whitespace; the break's indent supplies the segment column.
+            let stripped = line.drop { $0 == " " || $0 == "\t" }
+            appendToken(.syntax(String(stripped)))
+        }
         return .skipChildren
     }
 

@@ -511,11 +511,11 @@ struct StringTests: LayoutTesting {
   }
 
   @Test func multilineStringWithPreSplitInterpolationKeepsValidIndent() {
-    // Regression for issue 9yv-e8j (reopened): when an interpolation `\(...)` is already
-    // split across multiple source lines (or a `\(typeName(Key\n    .self))` chain spans
-    // lines), the formatter must not emit raw newlines from inside the interpolation into
-    // the output, because subsequent string segments on those lines fall below the closing
-    // `"""` indent — producing a Swift compile error:
+    // Regression for issue 9yv-e8j (reopened) and uth-yru: when an interpolation `\(...)`
+    // is already split across multiple source lines (or a `\(typeName(Key\n    .self))`
+    // chain spans lines), the formatter preserves the developer's structure but re-indents
+    // each continuation line to the segment column so it stays at or above the closing
+    // `"""` column. Without that re-indent, lines fall below the closing `"""` and produce
     //   "Insufficient indentation of line in multi-line string literal"
     let input =
       #"""
@@ -539,12 +539,15 @@ struct StringTests: LayoutTesting {
       #"""
       func foo() -> String {
         return """
-          @Dependency(\(argument)) has no live implementation, but was accessed from a live \
+          @Dependency(\(
+          argument
+          )) has no live implementation, but was accessed from a live \
           context.
 
           \(dependencyDescription)
 
-          • Conform '\(typeName(Key.self))' to the 'DependencyKey' protocol by providing \
+          • Conform '\(typeName(Key
+          .self))' to the 'DependencyKey' protocol by providing \
           a live implementation of your dependency.
           """
       }
@@ -940,10 +943,12 @@ struct StringTests: LayoutTesting {
   }
 
   @Test func multilineStringPreSplitInterpolationOperatorBoundary() {
-    // Regression for issue ugi-3p0: when collapsing a pre-split interpolation across newlines,
-    // the formatter must insert whitespace between an identifier and an operator token, otherwise
-    // `type` followed by `??` collides into `type??` which Swift parses as a postfix operator
-    // (producing an "Expected ',' separator" syntax error in macro DeclSyntax literals).
+    // Regression for issue ugi-3p0 (and uth-yru refactor): a pre-split interpolation with an
+    // operator-on-new-line boundary (`type\n?? outputType`) must not produce invalid Swift.
+    // Verbatim emission of the interpolation (with continuation lines re-indented to the
+    // segment column) keeps `??` with whitespace on both sides, so the lexer parses it as
+    // binary, not postfix. Original symptom in macro DeclSyntax literals was an
+    // "Expected ',' separator" syntax error.
     let input =
       #"""
       let s = """
@@ -958,7 +963,11 @@ struct StringTests: LayoutTesting {
     let expected =
       #"""
       let s = """
-        \(raw: foo(a: bar?.baz ?? qux,b: 1))
+        \(raw: foo(
+        a: bar?.baz
+        ?? qux,
+        b: 1
+        ))
         """
 
       """#

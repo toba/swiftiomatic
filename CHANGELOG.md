@@ -31,6 +31,7 @@
 
 ### 🗜️ Tweaks
 
+- `visitExpressionSegment`; restore upstream apple/swift-format verbatim emission with per-line re-indent so multi-line interpolations preserve developer formatting and stay above the closing `"""` column; eliminates the token-adjacency heuristic surface that caused `ugi-3p0` ([#663](https://github.com/toba/swiftiomatic/issues/663))
 - Investigate upstream HIGH cite changes; defer `unused_imports` rule and first-class `@diagnose` (`SwiftWarningControl`) adoption to follow-ups ([#640](https://github.com/toba/swiftiomatic/issues/640))
 - Evaluate swift-syntax 604 prerelease / Swift 6.3.1 alignment; skip both; `603.0.1` is stable and no 604-only API is needed today ([#642](https://github.com/toba/swiftiomatic/issues/642))
 - Address build warnings ([#639](https://github.com/toba/swiftiomatic/issues/639))
