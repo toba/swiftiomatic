@@ -449,4 +449,37 @@ struct FunctionCallTests: LayoutTesting {
     config[IndentationSetting.self] = .spaces(4)
     assertLayout(input: input, expected: expected, linelength: 100, configuration: config)
   }
+
+  @Test func genericArgumentClauseCollapsesWhenItFits() {
+    let input =
+      """
+      struct Foo {
+          func bar() {
+              return Select<
+                  (repeat each C1, repeat each C2), From, (repeat each J1, repeat each J2),
+              >(
+                  isEmpty: lhs.isEmpty || rhs.isEmpty,
+                  other: 1
+              )
+          }
+      }
+      """
+
+    let expected =
+      """
+      struct Foo {
+          func bar() {
+              return Select<(repeat each C1, repeat each C2), From, (repeat each J1, repeat each J2)>(
+                  isEmpty: lhs.isEmpty || rhs.isEmpty,
+                  other: 1
+              )
+          }
+      }
+
+      """
+
+    var config = Configuration.forTesting
+    config[IndentationSetting.self] = .spaces(4)
+    assertLayout(input: input, expected: expected, linelength: 100, configuration: config)
+  }
 }

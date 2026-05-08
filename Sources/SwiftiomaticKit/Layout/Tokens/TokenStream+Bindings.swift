@@ -235,9 +235,17 @@ extension TokenStream {
     func visitGenericArgument(_ node: GenericArgumentSyntax) -> SyntaxVisitorContinueKind {
         before(node.firstToken(viewMode: .sourceAccurate), tokens: .open)
 
-        if let trailingComma = node.trailingComma {
-            after(trailingComma, tokens: .close, .break(.same))
+        let isLastInList = node.parent?.as(GenericArgumentListSyntax.self)?.last == node
+        if let trailingComma = node.trailingComma, !isLastInList {
+            after(
+                trailingComma,
+                tokens: .close,
+                .break(.same, newlines: .elective(ignoresDiscretionary: true))
+            )
         } else {
+            // Drop a trailing comma on the last argument. Combined with the elective break before
+            // `>` , this lets a wrapped `<...>` collapse cleanly when the inlined form fits.
+            if let trailingComma = node.trailingComma { ignoredTokens.insert(trailingComma) }
             after(node.lastToken(viewMode: .sourceAccurate), tokens: .close)
         }
         return .visitChildren

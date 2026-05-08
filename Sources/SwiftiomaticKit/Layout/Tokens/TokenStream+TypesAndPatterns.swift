@@ -84,8 +84,17 @@ extension TokenStream {
     func visitGenericArgumentClause(
         _ node: GenericArgumentClauseSyntax
     ) -> SyntaxVisitorContinueKind {
-        after(node.leftAngle, tokens: .break(.open, size: 0), .open)
-        before(node.rightAngle, tokens: .break(.close, size: 0), .close)
+        // Generic argument clauses ignore source-driven newlines: a wrapped `<...>` in source should
+        // collapse back to one line when the inlined form fits, instead of being preserved by
+        // `RespectExistingLineBreaks` .
+        after(
+            node.leftAngle,
+            tokens: .break(.open, size: 0, newlines: .elective(ignoresDiscretionary: true)), .open
+        )
+        before(
+            node.rightAngle,
+            tokens: .break(.close, size: 0, newlines: .elective(ignoresDiscretionary: true)), .close
+        )
         return .visitChildren
     }
 
