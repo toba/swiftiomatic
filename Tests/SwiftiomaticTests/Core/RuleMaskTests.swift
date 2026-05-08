@@ -247,6 +247,39 @@ struct RuleMaskTests {
     #expect(mask.ruleState("rule4", at: location(ofLine: 10, in: converter)) == .disabled)
   }
 
+  @Test func ignoreNextBetweenAttributeAndModifierAppliesToNode() {
+    // A `// sm:ignore:next` directive placed between a leading attribute and the modifier list
+    // (e.g. between `@MainActor` and `override`) lives in the leading trivia of an interior
+    // token of the function decl, not its first token. The mask must still apply the directive
+    // to the function decl that follows.
+    let text =
+      """
+      class C {
+        @MainActor
+        // sm:ignore:next dropRedundantThrows
+        override func setUp() async throws {
+          super.setUp()
+        }
+      }
+      """
+
+    let (mask, converter) = createMask(sourceText: text)
+
+    // Function body lives on lines 4-6; the directive should suppress the rule across the decl.
+    #expect(
+      mask.ruleState("dropRedundantThrows", at: location(ofLine: 4, column: 3, in: converter))
+        == .disabled
+    )
+    #expect(
+      mask.ruleState("dropRedundantThrows", at: location(ofLine: 5, column: 5, in: converter))
+        == .disabled
+    )
+    // Directive scope is `:next` — it must NOT extend past the function decl.
+    #expect(
+      mask.ruleState("dropRedundantThrows", at: location(ofLine: 7, in: converter)) == .default
+    )
+  }
+
   @Test func nonMatchingDirectivesAreIgnored() {
     // Block comments and malformed forms (e.g. `// sm:ignore:` with no rule list) don't match.
     let text =

@@ -648,9 +648,6 @@ final class RewritePipeline: SyntaxRewriter {
         apply(DropRedundantObjcAttribute.self, to: &concrete, original: node, gate: gate) {
             DropRedundantObjcAttribute.transform($0, original: $1, parent: parent, context: $2)
         }
-        apply(DropRedundantSendable.self, to: &concrete, original: node, gate: gate) {
-            DropRedundantSendable.transform($0, original: $1, parent: parent, context: $2)
-        }
         apply(SimplifyGenericConstraints.self, to: &concrete, original: node, gate: gate) {
             SimplifyGenericConstraints.transform($0, original: $1, parent: parent, context: $2)
         }
@@ -1595,9 +1592,6 @@ final class RewritePipeline: SyntaxRewriter {
         }
         apply(DropRedundantObjcAttribute.self, to: &concrete, original: node, gate: gate) {
             DropRedundantObjcAttribute.transform($0, original: $1, parent: parent, context: $2)
-        }
-        apply(DropRedundantSendable.self, to: &concrete, original: node, gate: gate) {
-            DropRedundantSendable.transform($0, original: $1, parent: parent, context: $2)
         }
         apply(SimplifyGenericConstraints.self, to: &concrete, original: node, gate: gate) {
             SimplifyGenericConstraints.transform($0, original: $1, parent: parent, context: $2)

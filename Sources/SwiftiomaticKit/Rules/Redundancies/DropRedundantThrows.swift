@@ -26,6 +26,12 @@ final class DropRedundantThrows: StaticFormatRule<BasicRuleValue>, @unchecked Se
               let throwsClause = effectSpecifiers.throwsClause,
               let body = node.body else { return DeclSyntax(node) }
 
+        // Without type info we can't see whether this function overrides a throwing requirement
+        // or whether external callers wrap it in `try`. Restrict the rewrite to functions that
+        // syntax alone proves are local: not `override`, and explicitly `private`/`fileprivate`.
+        guard !hasOverrideModifier(node.modifiers),
+              hasPrivateOrFileprivateModifier(node.modifiers) else { return DeclSyntax(node) }
+
         guard !containsThrowOrTry(body) else { return DeclSyntax(node) }
 
         Self.diagnose(.removeRedundantThrows, on: throwsClause, context: context)
@@ -41,6 +47,20 @@ final class DropRedundantThrows: StaticFormatRule<BasicRuleValue>, @unchecked Se
             result.signature.effectSpecifiers = newEffectSpecifiers
         }
         return DeclSyntax(result)
+    }
+
+    private static func hasPrivateOrFileprivateModifier(_ modifiers: DeclModifierListSyntax) -> Bool {
+        modifiers.contains { modifier in
+            guard case let .keyword(keyword) = modifier.name.tokenKind else { return false }
+            return keyword == .private || keyword == .fileprivate
+        }
+    }
+
+    private static func hasOverrideModifier(_ modifiers: DeclModifierListSyntax) -> Bool {
+        modifiers.contains { modifier in
+            guard case let .keyword(keyword) = modifier.name.tokenKind else { return false }
+            return keyword == .override
+        }
     }
 
     /// Returns `true` if the syntax tree contains a `throw` statement or `try` expression, stopping

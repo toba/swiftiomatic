@@ -1133,14 +1133,6 @@
       ],
       "description" : "Remove explicit `self.` where the compiler allows implicit self.\n\nIn most contexts inside type bodies, `self.` is redundant when accessing members because Swift resolves bare identifiers to instance members. This rule removes the `self.` prefix when:\n- The access is inside a type member (method, computed property, init, subscript)\n- The member name is not shadowed by a local variable, parameter, or nested function\n- The scope allows implicit self (not a closure in a reference type without capture)\n\nFor closures, implicit self is allowed per SE-0269 (Swift 5.3+) when:\n- The enclosing type is a value type (struct/enum)\n- The closure explicitly captures self: `[self]` , `[unowned self]`\n\nThe `[weak self]` + `guard let self` pattern (SE-0365, Swift 5.8+) is handled conservatively: `self.` is kept in weak-self closures.\n\n**Known limitation (`@dynamicMemberLookup`):** when an extension or member is on a type that conforms to `@dynamicMemberLookup` in a *different* module, this rule cannot see the attribute and may strip a required `self.` (the bare name is not in scope — it resolves through the dynamic-lookup subscript). Source-local declarations and a hardcoded list of stdlib/SwiftUI types (`AttributedString`, `AttributedSubstring`, `ScopedAttributeContainer`, `Binding`) are detected; user types in other modules are not.\n\nLint: A lint warning is raised for redundant `self.` usage.\n\nRewrite: The `self.` prefix is removed."
     },
-    "dropRedundantSendable" : {
-      "allOf" : [
-        {
-          "$ref" : "#/$defs/ruleBase"
-        }
-      ],
-      "description" : "Remove explicit `Sendable` conformance from non-public structs and enums.\n\nIn Swift 6, the compiler automatically infers `Sendable` for structs and enums whose stored properties/associated values are all `Sendable` , as long as the type is not `public` . Explicitly declaring `: Sendable` on these types is redundant.\n\nThis rule only flags non-public structs and enums. Classes, actors, and public types are not checked because their `Sendable` conformance is either not inferred or must be explicit for ABI stability.\n\nLint: If a redundant `Sendable` conformance is found, a lint warning is raised.\n\nRewrite: The redundant `Sendable` conformance is removed from the inheritance clause."
-    },
     "dropRedundantSetterACL" : {
       "allOf" : [
         {
@@ -3066,14 +3058,6 @@
             }
           ],
           "description" : "Remove explicit `self.` where the compiler allows implicit self.\n\nIn most contexts inside type bodies, `self.` is redundant when accessing members because Swift resolves bare identifiers to instance members. This rule removes the `self.` prefix when:\n- The access is inside a type member (method, computed property, init, subscript)\n- The member name is not shadowed by a local variable, parameter, or nested function\n- The scope allows implicit self (not a closure in a reference type without capture)\n\nFor closures, implicit self is allowed per SE-0269 (Swift 5.3+) when:\n- The enclosing type is a value type (struct/enum)\n- The closure explicitly captures self: `[self]` , `[unowned self]`\n\nThe `[weak self]` + `guard let self` pattern (SE-0365, Swift 5.8+) is handled conservatively: `self.` is kept in weak-self closures.\n\n**Known limitation (`@dynamicMemberLookup`):** when an extension or member is on a type that conforms to `@dynamicMemberLookup` in a *different* module, this rule cannot see the attribute and may strip a required `self.` (the bare name is not in scope — it resolves through the dynamic-lookup subscript). Source-local declarations and a hardcoded list of stdlib/SwiftUI types (`AttributedString`, `AttributedSubstring`, `ScopedAttributeContainer`, `Binding`) are detected; user types in other modules are not.\n\nLint: A lint warning is raised for redundant `self.` usage.\n\nRewrite: The `self.` prefix is removed."
-        },
-        "dropRedundantSendable" : {
-          "allOf" : [
-            {
-              "$ref" : "#/$defs/ruleBase"
-            }
-          ],
-          "description" : "Remove explicit `Sendable` conformance from non-public structs and enums.\n\nIn Swift 6, the compiler automatically infers `Sendable` for structs and enums whose stored properties/associated values are all `Sendable` , as long as the type is not `public` . Explicitly declaring `: Sendable` on these types is redundant.\n\nThis rule only flags non-public structs and enums. Classes, actors, and public types are not checked because their `Sendable` conformance is either not inferred or must be explicit for ABI stability.\n\nLint: If a redundant `Sendable` conformance is found, a lint warning is raised.\n\nRewrite: The redundant `Sendable` conformance is removed from the inheritance clause."
         },
         "dropRedundantSetterACL" : {
           "allOf" : [

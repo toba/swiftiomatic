@@ -35,6 +35,10 @@
 - `dropRedundantClosureWrapper`; no longer recommends switch-expression in argument position where it wouldn't compile ([#667](https://github.com/toba/swiftiomatic/issues/667))
 - `requireAsyncStreamFinish`; skip `AsyncStream(unfolding:)` which has no `finish()` API ([#668](https://github.com/toba/swiftiomatic/issues/668))
 - `requireSuiteAccessControl`; thread the un-detached `original` decl through diagnose anchors so findings land on the actual line/col when sibling rules detach the rewritten subtree ([#670](https://github.com/toba/swiftiomatic/issues/670))
+- `DropRedundantSendable`; remove rule entirely; the non-public-strip premise was unsound without type info, stripping `: Sendable` from types whose stored properties weren't actually `Sendable`
+- `DropRedundantThrows`; restrict to non-`override`, explicitly `private`/`fileprivate` functions; previously stripped `throws` from override / internal / public functions, breaking compile at `try` call sites and `@objc` overrides
+- `// sm:ignore:next`; honor directives placed in interior token leading trivia (e.g. between `@MainActor` and `override func setUp() async throws`), not just before the node's first token
+- `UseTernary`; refuse to fold when either branch is a `switch` or `if` expression; those forms are only valid in return/throw/assignment-RHS positions, never as a ternary sub-expression
 
 ### 🗜️ Tweaks
 

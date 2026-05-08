@@ -8,18 +8,77 @@ struct DropRedundantThrowsTests: RuleTesting {
     assertFormatting(
       DropRedundantThrows.self,
       input: """
-        func foo() 1️⃣throws -> Int {
+        private func foo() 1️⃣throws -> Int {
           return 42
         }
         """,
       expected: """
-        func foo() -> Int {
+        private func foo() -> Int {
           return 42
         }
         """,
       findings: [
         FindingSpec("1️⃣", message: "function is 'throws' but contains no 'throw' or 'try'; consider removing 'throws'"),
       ]
+    )
+  }
+
+  @Test func internalFunctionNotFlagged() {
+    // Default access (internal) and explicit `internal`/`public`/`package` functions are skipped:
+    // stripping `throws` is source-breaking for callers in other files that wrap calls in `try`.
+    assertFormatting(
+      DropRedundantThrows.self,
+      input: """
+        func foo() throws -> Int {
+          return 42
+        }
+        """,
+      expected: """
+        func foo() throws -> Int {
+          return 42
+        }
+        """,
+      findings: []
+    )
+  }
+
+  @Test func publicFunctionNotFlagged() {
+    assertFormatting(
+      DropRedundantThrows.self,
+      input: """
+        public func foo() throws -> Int {
+          return 42
+        }
+        """,
+      expected: """
+        public func foo() throws -> Int {
+          return 42
+        }
+        """,
+      findings: []
+    )
+  }
+
+  @Test func overrideFunctionNotFlagged() {
+    // Override may satisfy a throwing super requirement (`@objc` or otherwise);
+    // stripping `throws` makes the override illegal.
+    assertFormatting(
+      DropRedundantThrows.self,
+      input: """
+        class C {
+          private override func setUp() async throws {
+            super.setUp()
+          }
+        }
+        """,
+      expected: """
+        class C {
+          private override func setUp() async throws {
+            super.setUp()
+          }
+        }
+        """,
+      findings: []
     )
   }
 
@@ -78,14 +137,14 @@ struct DropRedundantThrowsTests: RuleTesting {
     assertFormatting(
       DropRedundantThrows.self,
       input: """
-        func foo() 1️⃣throws {
+        private func foo() 1️⃣throws {
           let closure = {
             throw MyError.failed
           }
         }
         """,
       expected: """
-        func foo() {
+        private func foo() {
           let closure = {
             throw MyError.failed
           }
@@ -118,12 +177,12 @@ struct DropRedundantThrowsTests: RuleTesting {
     assertFormatting(
       DropRedundantThrows.self,
       input: """
-        func foo() 1️⃣throws(MyError) -> Int {
+        private func foo() 1️⃣throws(MyError) -> Int {
           return 42
         }
         """,
       expected: """
-        func foo() -> Int {
+        private func foo() -> Int {
           return 42
         }
         """,

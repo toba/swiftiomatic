@@ -94,7 +94,9 @@ final class UseTernary: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
 
         // Both branches are return statements
         if let thenReturn = extractReturn(from: thenOnly),
-           let elseReturn = extractReturn(from: elseOnly)
+           let elseReturn = extractReturn(from: elseOnly),
+           !isStatementOnlyExpression(thenReturn),
+           !isStatementOnlyExpression(elseReturn)
         {
             return buildTernaryReturn(
                 item: item,
@@ -107,7 +109,9 @@ final class UseTernary: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
         // Both branches assign to the same variable
         if let (lhs, thenRHS) = extractAssignment(from: thenOnly),
            let (elseLHS, elseRHS) = extractAssignment(from: elseOnly),
-           lhs.trimmedDescription == elseLHS.trimmedDescription
+           lhs.trimmedDescription == elseLHS.trimmedDescription,
+           !isStatementOnlyExpression(thenRHS),
+           !isStatementOnlyExpression(elseRHS)
         {
             return buildTernaryAssignment(
                 item: item,
@@ -138,6 +142,11 @@ final class UseTernary: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
 
         guard let elseReturn = extractReturn(from: second) else { return nil }
 
+        // `switch` / `if` expressions are only legal in return/throw/assignment positions —
+        // never as a sub-expression of a ternary.
+        guard !isStatementOnlyExpression(thenReturn),
+              !isStatementOnlyExpression(elseReturn) else { return nil }
+
         Self.diagnose(.useTernary, on: ifExpr.ifKeyword, context: context)
 
         let ternary = buildTernaryExpr(
@@ -157,6 +166,13 @@ final class UseTernary: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
     }
 
     // MARK: - Extraction
+
+    /// `switch` and `if` expressions are only valid in return, throw, or assignment-RHS positions.
+    /// They cannot appear as a sub-expression of a ternary `?:`, so any rewrite that would put
+    /// one there must be skipped.
+    private static func isStatementOnlyExpression(_ expr: ExprSyntax) -> Bool {
+        expr.is(SwitchExprSyntax.self) || expr.is(IfExprSyntax.self)
+    }
 
     private static func extractIfExpr(from item: CodeBlockItemSyntax) -> IfExprSyntax? {
         if let exprStmt = item.item.as(ExpressionStmtSyntax.self) {

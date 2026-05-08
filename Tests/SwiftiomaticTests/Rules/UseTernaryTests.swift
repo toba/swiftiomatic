@@ -505,6 +505,87 @@ struct UseTernaryTests: RuleTesting {
                 """)
     }
 
+    @Test func doesNotConvertWhenElseReturnsSwitchExpression() {
+        // `switch` (and `if`) expressions are only legal in return/throw/assignment positions —
+        // never as a sub-expression of a ternary. Rewriting `if … return x; return switch …`
+        // into `cond ? x : switch …` produces uncompilable code.
+        assertFormatting(
+            UseTernary.self,
+            input: """
+                func matches(_ number: Int) -> Bool {
+                    if numeric < 0 { return true }
+                    return switch match {
+                    case .wholeNumber: numeric == number
+                    default: numeric == number.lastDigit
+                    }
+                }
+                """,
+            expected: """
+                func matches(_ number: Int) -> Bool {
+                    if numeric < 0 { return true }
+                    return switch match {
+                    case .wholeNumber: numeric == number
+                    default: numeric == number.lastDigit
+                    }
+                }
+                """,
+            findings: [])
+    }
+
+    @Test func doesNotConvertWhenIfBranchReturnsIfExpression() {
+        assertFormatting(
+            UseTernary.self,
+            input: """
+                func test() -> Int {
+                    if a {
+                        return if b { 1 } else { 2 }
+                    } else {
+                        return 3
+                    }
+                }
+                """,
+            expected: """
+                func test() -> Int {
+                    if a {
+                        return if b { 1 } else { 2 }
+                    } else {
+                        return 3
+                    }
+                }
+                """,
+            findings: [])
+    }
+
+    @Test func doesNotConvertAssignmentWithSwitchExpression() {
+        assertFormatting(
+            UseTernary.self,
+            input: """
+                func test() {
+                    if cond {
+                        result = 1
+                    } else {
+                        result = switch x {
+                        case .a: 1
+                        default: 2
+                        }
+                    }
+                }
+                """,
+            expected: """
+                func test() {
+                    if cond {
+                        result = 1
+                    } else {
+                        result = switch x {
+                        case .a: 1
+                        default: 2
+                        }
+                    }
+                }
+                """,
+            findings: [])
+    }
+
     @Test func doesNotConvertOptionalBinding() {
         assertFormatting(
             UseTernary.self,

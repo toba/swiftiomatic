@@ -245,25 +245,42 @@ private final class RuleStatusCollectionVisitor: SyntaxVisitor {
         let restOfFileRange = SourceRange(start: nodeStart, end: sourceFileEnd)
 
         let isFirstInFile = firstToken.previousToken(viewMode: .sourceAccurate) == nil
-        let leadingAnchor = firstToken.position
-        for (comment, position)
-            in loneLineComments(
-                in: firstToken.leadingTrivia,
-                anchor: leadingAnchor,
-                isFirstToken: isFirstInFile
-            )
-        {
-            guard let (match, scope) = ruleStatusDirectiveMatch(in: comment) else { continue }
-            let location = sourceLocationConverter.location(for: position)
-            // `:next` scopes the directive to this single node; bare lone-line extends to EOF.
-            record(match, range: scope == .next ? nodeRange : restOfFileRange, at: location)
-        }
 
         for token in node.tokens(viewMode: .sourceAccurate) {
             // Skip tokens that belong to a nested code-block / member-block item — those are
-            // handled when that nested item is visited. Without this, a trailing directive
-            // on a struct member would leak up to the enclosing type, etc.
+            // handled when that nested item is visited. Without this, a directive on a struct
+            // member would leak up to the enclosing type, etc.
             if isInsideDescendantItem(token, of: node) { continue }
+
+            // Scan lone-line comments in this token's leading trivia. Directives may sit on
+            // their own line anywhere within the node's trivia (e.g. between an attribute and
+            // the modifier list of a function decl), not just before the first token.
+            let isFirstTokenOfNode = token == firstToken
+            for (comment, position)
+                in loneLineComments(
+                    in: token.leadingTrivia,
+                    anchor: token.position,
+                    isFirstToken: isFirstTokenOfNode && isFirstInFile
+                )
+            {
+                guard let (match, scope) = ruleStatusDirectiveMatch(in: comment) else { continue }
+                let location = sourceLocationConverter.location(for: position)
+                // `:next` scopes the directive to this node; bare lone-line extends to EOF
+                // (only when the directive is in the firstToken's leading trivia, where it
+                // legitimately precedes the node — a bare directive *inside* the node's
+                // trivia is treated as scoped to the node, since "rest of file" would
+                // accidentally cover sibling nodes the user didn't target).
+                let range: SourceRange
+                if scope == .next {
+                    range = nodeRange
+                } else if isFirstTokenOfNode {
+                    range = restOfFileRange
+                } else {
+                    range = nodeRange
+                }
+                record(match, range: range, at: location)
+            }
+
             let trailingAnchor = token.endPositionBeforeTrailingTrivia
             for (comment, position)
                 in trailingLineComments(in: token.trailingTrivia, anchor: trailingAnchor)
