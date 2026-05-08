@@ -14,7 +14,7 @@ package struct Glob: Sendable {
     package init?(pattern: String) {
         let regexSource = "^" + Glob.translate(normalize(pattern)) + "$"
         guard let r = try? NSRegularExpression(pattern: regexSource) else { return nil }
-        self.regex = r
+        regex = r
     }
 
     package func matches(_ path: String) -> Bool {

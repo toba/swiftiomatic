@@ -336,7 +336,7 @@ package final class RuleCollector {
     ) -> JSONSchemaNode? {
         let initValue = binding.initializer?.value
         let defaultCase = defaultCaseName(from: initValue)
-        let scalarDesc = description?.isEmpty == false ? description! : propertyName
+        let scalarDesc = (description?.isEmpty == false ? description : nil) ?? propertyName
 
         // Try type annotation first (with initializer for the real default).
         if let typeAnnotation = binding.typeAnnotation {
@@ -395,7 +395,7 @@ package final class RuleCollector {
         defaultCase: String?,
         initValue: ExprSyntax?
     ) -> JSONSchemaNode? {
-        let scalarDesc = description?.isEmpty == false ? description! : propertyName
+        let scalarDesc = (description?.isEmpty == false ? description : nil) ?? propertyName
 
         // Optional type: `String?` or `[String]?`
         if let optional = type.as(OptionalTypeSyntax.self) {

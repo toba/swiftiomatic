@@ -42,6 +42,7 @@
 - Evaluate swift-syntax 604 prerelease / Swift 6.3.1 alignment; skip both; `603.0.1` is stable and no 604-only API is needed today ([#642](https://github.com/toba/swiftiomatic/issues/642))
 - Address build warnings ([#639](https://github.com/toba/swiftiomatic/issues/639))
 - `Lint pipeline perf & cleanup follow-ups`; close out epic covering P2, P3, P6, P8–P14, C1, C2, C4, N1–N5, M1, M2, M4 ([#536](https://github.com/toba/swiftiomatic/issues/536))
+- Address `sm lint` warnings in recently-changed source files; replace `description!` ternaries with `?? propertyName`, factor `arguments.first!` in `NestedCallLayout` behind `soleArgument(of:)`, wrap `CommentReflowEngine` block-quote ternary, drop redundant `self.` in `Glob.init?`
 
 ## Week of Apr 26 – May 02, 2026
 

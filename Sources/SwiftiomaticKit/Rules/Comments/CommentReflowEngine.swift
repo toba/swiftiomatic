@@ -154,7 +154,9 @@ package enum CommentReflowEngine {
                     let cur = lines[i]
                     if cur.hasPrefix(">") {
                         let dropped = String(cur.dropFirst())
-                        let stripped = dropped.hasPrefix(" ") ? String(dropped.dropFirst()) : dropped
+                        let stripped = dropped.hasPrefix(" ")
+                            ? String(dropped.dropFirst())
+                            : dropped
                         quoted.append(stripped)
                         i += 1
                         continue

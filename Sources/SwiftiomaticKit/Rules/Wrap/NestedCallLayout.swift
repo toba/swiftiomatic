@@ -41,6 +41,15 @@ final class NestedCallLayout: StaticFormatRule<NestedCallLayoutConfiguration>, @
         let call: FunctionCallExprSyntax
     }
 
+    /// Returns the single argument of a chain-level call. `collectChain` only adds calls whose
+    /// argument list has exactly one entry, so this is a safe invariant to assert.
+    private static func soleArgument(of call: FunctionCallExprSyntax) -> LabeledExprSyntax {
+        guard let arg = call.arguments.first else {
+            preconditionFailure("nested call chain level must have exactly one argument")
+        }
+        return arg
+    }
+
     static func transform(
         _ node: FunctionCallExprSyntax,
         original _: FunctionCallExprSyntax,
@@ -286,7 +295,7 @@ final class NestedCallLayout: StaticFormatRule<NestedCallLayoutConfiguration>, @
         var result: ExprSyntax = rebuildSingleCallInline(chain.last!.call)
 
         for level in chain.dropLast().reversed() {
-            let original = level.call.arguments.first!
+            let original = soleArgument(of: level.call)
             let arg = LabeledExprSyntax(
                 label: original.label?.with(\.leadingTrivia, []),
                 colon: original.colon,
@@ -348,7 +357,7 @@ final class NestedCallLayout: StaticFormatRule<NestedCallLayoutConfiguration>, @
 
         // Wrap each outer level inline.
         for level in chain.dropLast().reversed() {
-            let original = level.call.arguments.first!
+            let original = soleArgument(of: level.call)
             let arg = LabeledExprSyntax(
                 label: original.label?.with(\.leadingTrivia, []),
                 colon: original.colon,
@@ -382,7 +391,7 @@ final class NestedCallLayout: StaticFormatRule<NestedCallLayoutConfiguration>, @
         var innerExpr: ExprSyntax = rebuildSingleCallInline(chain.last!.call)
 
         for level in chain.dropFirst().dropLast().reversed() {
-            let original = level.call.arguments.first!
+            let original = soleArgument(of: level.call)
             let arg = LabeledExprSyntax(
                 label: original.label,
                 colon: original.colon,
@@ -399,7 +408,7 @@ final class NestedCallLayout: StaticFormatRule<NestedCallLayoutConfiguration>, @
 
         // Wrap the outermost call.
         let outermost = chain.first!.call
-        let outerOriginal = outermost.arguments.first!
+        let outerOriginal = soleArgument(of: outermost)
         let arg: LabeledExprSyntax
 
         if let label = outerOriginal.label {
@@ -568,7 +577,7 @@ final class NestedCallLayout: StaticFormatRule<NestedCallLayoutConfiguration>, @
             let currentIndent = baseIndent + String(repeating: indentUnit, count: i)
             let argIndent = currentIndent + indentUnit
 
-            let original = level.call.arguments.first!
+            let original = soleArgument(of: level.call)
             let arg: LabeledExprSyntax
 
             if let label = original.label {
