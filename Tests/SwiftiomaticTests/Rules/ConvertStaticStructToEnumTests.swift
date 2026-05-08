@@ -640,4 +640,67 @@ struct ConvertStaticStructToEnumTests: RuleTesting {
       findings: []
     )
   }
+
+  // Local types inside function bodies (e.g. test fixtures inside `@Test func`)
+  // are not namespaces — they're typically one-off fixtures whose semantics
+  // change if rewritten to enum. Skip the rule entirely for them.
+  @Test func localFixtureStructInsideTestMethodNotConverted() {
+    assertFormatting(
+      ConvertStaticStructToEnum.self,
+      input: """
+        struct DiffTests {
+          @Test func diffsNestedTypes() {
+            struct Child {
+              struct State: Equatable {}
+            }
+            struct Parent {
+              struct State: Equatable {
+                var children: [Child.State]
+              }
+            }
+            _ = Parent.self
+          }
+        }
+        """,
+      expected: """
+        struct DiffTests {
+          @Test func diffsNestedTypes() {
+            struct Child {
+              struct State: Equatable {}
+            }
+            struct Parent {
+              struct State: Equatable {
+                var children: [Child.State]
+              }
+            }
+            _ = Parent.self
+          }
+        }
+        """,
+      findings: []
+    )
+  }
+
+  @Test func localStructInsideTopLevelFunctionNotConverted() {
+    assertFormatting(
+      ConvertStaticStructToEnum.self,
+      input: """
+        func doStuff() {
+          struct LocalNamespace {
+            static let foo = 1
+          }
+          _ = LocalNamespace.foo
+        }
+        """,
+      expected: """
+        func doStuff() {
+          struct LocalNamespace {
+            static let foo = 1
+          }
+          _ = LocalNamespace.foo
+        }
+        """,
+      findings: []
+    )
+  }
 }

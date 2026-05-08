@@ -28,6 +28,12 @@
 - `ReflowComments`; blockquotes no longer lose lazy continuation lines ([#654](https://github.com/toba/swiftiomatic/issues/654))
 - `ReflowComments`; punctuation around inline code spans no longer gets space-separated ([#656](https://github.com/toba/swiftiomatic/issues/656))
 - `sm format`; preserve binary operators across newlines inside multi-line `"""` interpolations; `type\n?? outputType` no longer collapses to `type?? outputType` (Swift lexer reclassified `??` as postfix) ([#662](https://github.com/toba/swiftiomatic/issues/662))
+- `sm lint` with no arguments produces no output in project root ([#661](https://github.com/toba/swiftiomatic/issues/661))
+- `useFinalClasses`; findings collapsed to line 1 of the file; bind `original` in `transform` and resolve the lint cache's executable fingerprint via `Bundle.main.executablePath` so bare `sm` invocations pick up rebuilds instead of returning stale cached findings ([#664](https://github.com/toba/swiftiomatic/issues/664))
+- `convertStaticStructToEnum`; same location collapse and stale-cache symptom as `useFinalClasses`; resolved by the same anchor and cache-fingerprint fix ([#665](https://github.com/toba/swiftiomatic/issues/665))
+- `useWeakLetForUnreassigned`; misses cross-class assignments ([#666](https://github.com/toba/swiftiomatic/issues/666))
+- `dropRedundantClosureWrapper`; no longer recommends switch-expression in argument position where it wouldn't compile ([#667](https://github.com/toba/swiftiomatic/issues/667))
+- `requireAsyncStreamFinish`; skip `AsyncStream(unfolding:)` which has no `finish()` API ([#668](https://github.com/toba/swiftiomatic/issues/668))
 
 ### 🗜️ Tweaks
 

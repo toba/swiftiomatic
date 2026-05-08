@@ -21,6 +21,7 @@ final class ConvertStaticStructToEnum: StaticFormatRule<BasicRuleValue>, @unchec
         parent _: Syntax?,
         context: Context
     ) -> DeclSyntax {
+        guard !isLocalDeclaration(original) else { return DeclSyntax(visited) }
         guard shouldBeEnum(
             attributes: visited.attributes,
             inheritanceClause: visited.inheritanceClause,
@@ -53,6 +54,7 @@ final class ConvertStaticStructToEnum: StaticFormatRule<BasicRuleValue>, @unchec
         parent _: Syntax?,
         context: Context
     ) -> DeclSyntax {
+        guard !isLocalDeclaration(original) else { return DeclSyntax(visited) }
         // Only final classes can be converted — non-final classes might be subclassed
         let isFinal = visited.modifiers.contains { $0.name.tokenKind == .keyword(.final) }
         guard isFinal else { return DeclSyntax(visited) }
@@ -136,6 +138,20 @@ final class ConvertStaticStructToEnum: StaticFormatRule<BasicRuleValue>, @unchec
 
     private static func hasStaticModifier(_ modifiers: DeclModifierListSyntax) -> Bool {
         modifiers.contains { $0.name.tokenKind == .keyword(.static) }
+    }
+
+    /// Returns `true` when the declaration sits inside a function/closure/accessor
+    /// body (i.e. a `CodeBlockSyntax`). Local types are typically one-off fixtures
+    /// — for example, the empty struct shapes inside swift-testing `@Test` method
+    /// bodies that exist purely to exercise dump/diff output. Rewriting those to
+    /// `enum` would change the test's semantics, so leave local declarations alone.
+    private static func isLocalDeclaration(_ node: some SyntaxProtocol) -> Bool {
+        var current: Syntax? = node.parent
+        while let n = current {
+            if n.is(CodeBlockSyntax.self) { return true }
+            current = n.parent
+        }
+        return false
     }
 }
 

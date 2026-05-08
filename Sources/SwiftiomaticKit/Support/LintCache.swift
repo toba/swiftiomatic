@@ -115,9 +115,14 @@ package final class LintCache: Sendable {
             hasher.update(data: Data([0]))
         }
         // Mix in the running executable's identity so that rebuilding `sm` (which can change
-        // rule logic without changing rule names) invalidates the cache. Falls back to the
-        // unmodified rule-name digest if the executable's attributes are unreadable.
-        if let exePath = CommandLine.arguments.first,
+        // rule logic without changing rule names) invalidates the cache. Resolve the executable
+        // via `Bundle.main.executablePath` rather than `CommandLine.arguments[0]` so that bare
+        // invocations like `sm lint …` (argv[0] = "sm") still hit a real file. Without this,
+        // `attributesOfItem(atPath: "sm")` fails when cwd has no `sm` file, so size/mtime drop
+        // out of the digest, the fingerprint becomes stable across rebuilds, and stale findings
+        // from a previous build are returned.
+        if let exePath = Bundle.main.executablePath
+            ?? CommandLine.arguments.first,
             let attrs = try? FileManager.default.attributesOfItem(atPath: exePath)
         {
             hasher.update(data: Data(exePath.utf8))
