@@ -29,7 +29,7 @@ final class RequireSuiteAccessControl: StaticFormatRule<BasicRuleValue>, @unchec
 
     static func transform(
         _ node: ClassDeclSyntax,
-        original _: ClassDeclSyntax,
+        original: ClassDeclSyntax,
         parent _: Syntax?,
         context: Context
     ) -> DeclSyntax {
@@ -45,17 +45,27 @@ final class RequireSuiteAccessControl: StaticFormatRule<BasicRuleValue>, @unchec
         guard !hasParameterizedInit(node.memberBlock) else { return DeclSyntax(node) }
 
         var result = node
-        result = removePublicModifier(from: result, keyword: \.classKeyword, context: context)
+        result = removePublicModifier(
+            from: result,
+            original: original,
+            keyword: \.classKeyword,
+            context: context
+        )
         result = result.with(
             \.memberBlock,
-            rewriteMembers(result.memberBlock, framework: framework, context: context)
+            rewriteMembers(
+                result.memberBlock,
+                original: original.memberBlock,
+                framework: framework,
+                context: context
+            )
         )
         return DeclSyntax(result)
     }
 
     static func transform(
         _ node: StructDeclSyntax,
-        original _: StructDeclSyntax,
+        original: StructDeclSyntax,
         parent _: Syntax?,
         context: Context
     ) -> DeclSyntax {
@@ -71,10 +81,20 @@ final class RequireSuiteAccessControl: StaticFormatRule<BasicRuleValue>, @unchec
         guard !hasParameterizedInit(node.memberBlock) else { return DeclSyntax(node) }
 
         var result = node
-        result = removePublicModifier(from: result, keyword: \.structKeyword, context: context)
+        result = removePublicModifier(
+            from: result,
+            original: original,
+            keyword: \.structKeyword,
+            context: context
+        )
         result = result.with(
             \.memberBlock,
-            rewriteMembers(result.memberBlock, framework: framework, context: context)
+            rewriteMembers(
+                result.memberBlock,
+                original: original.memberBlock,
+                framework: framework,
+                context: context
+            )
         )
         return DeclSyntax(result)
     }
@@ -83,15 +103,30 @@ final class RequireSuiteAccessControl: StaticFormatRule<BasicRuleValue>, @unchec
 
     private static func rewriteMembers(
         _ memberBlock: MemberBlockSyntax,
+        original: MemberBlockSyntax,
         framework: TestFramework,
         context: Context
     ) -> MemberBlockSyntax {
         var newMembers = [MemberBlockItemSyntax]()
         var changed = false
+        let originalMembers = Array(original.members)
 
-        for member in memberBlock.members {
+        for (idx, member) in memberBlock.members.enumerated() {
+            // The pipeline may pass a detached `node` (rebuilt by sub-rule rewrites of
+            // children) whose absolute positions reset to 0 — emitting findings on those
+            // tokens maps the offsets onto unrelated lines of the source. The matching
+            // member from `original` is still attached to the source file and reports
+            // correct positions. Fall back to the rewritten member only if member counts
+            // diverge (defensive: no rule in this stage adds or removes members).
+            let originalDecl = idx < originalMembers.count ? originalMembers[idx].decl : nil
             if let funcDecl = member.decl.as(FunctionDeclSyntax.self) {
-                let rewritten = rewriteFunction(funcDecl, framework: framework, context: context)
+                let originalFunc = originalDecl?.as(FunctionDeclSyntax.self) ?? funcDecl
+                let rewritten = rewriteFunction(
+                    funcDecl,
+                    original: originalFunc,
+                    framework: framework,
+                    context: context
+                )
 
                 if rewritten.description != funcDecl.description {
                     newMembers.append(member.with(\.decl, DeclSyntax(rewritten)))
@@ -99,7 +134,12 @@ final class RequireSuiteAccessControl: StaticFormatRule<BasicRuleValue>, @unchec
                     continue
                 }
             } else if let varDecl = member.decl.as(VariableDeclSyntax.self) {
-                let rewritten = rewriteProperty(varDecl, context: context)
+                let originalVar = originalDecl?.as(VariableDeclSyntax.self) ?? varDecl
+                let rewritten = rewriteProperty(
+                    varDecl,
+                    original: originalVar,
+                    context: context
+                )
 
                 if rewritten.description != varDecl.description {
                     newMembers.append(member.with(\.decl, DeclSyntax(rewritten)))
@@ -107,8 +147,10 @@ final class RequireSuiteAccessControl: StaticFormatRule<BasicRuleValue>, @unchec
                     continue
                 }
             } else if let initDecl = member.decl.as(InitializerDeclSyntax.self) {
+                let originalInit = originalDecl?.as(InitializerDeclSyntax.self) ?? initDecl
                 let rewritten = removeExplicitACL(
                     from: initDecl,
+                    original: originalInit,
                     keyword: \.initKeyword,
                     context: context
                 )
@@ -128,6 +170,7 @@ final class RequireSuiteAccessControl: StaticFormatRule<BasicRuleValue>, @unchec
 
     private static func rewriteFunction(
         _ funcDecl: FunctionDeclSyntax,
+        original: FunctionDeclSyntax,
         framework: TestFramework,
         context: Context
     ) -> FunctionDeclSyntax {
@@ -151,19 +194,30 @@ final class RequireSuiteAccessControl: StaticFormatRule<BasicRuleValue>, @unchec
             {
                 return funcDecl
             }
-            return removeExplicitACL(from: funcDecl, keyword: \.funcKeyword, context: context)
+            return removeExplicitACL(
+                from: funcDecl,
+                original: original,
+                keyword: \.funcKeyword,
+                context: context
+            )
         } else {
             return modifiers.contains(where: {
                 $0.name.tokenKind == .keyword(.private)
                     || $0.name.tokenKind == .keyword(.fileprivate)
             })
                 ? funcDecl
-                : ensurePrivate(on: funcDecl, keyword: \.funcKeyword, context: context)
+                : ensurePrivate(
+                    on: funcDecl,
+                    original: original,
+                    keyword: \.funcKeyword,
+                    context: context
+                )
         }
     }
 
     private static func rewriteProperty(
         _ varDecl: VariableDeclSyntax,
+        original: VariableDeclSyntax,
         context: Context
     ) -> VariableDeclSyntax {
         let modifiers = varDecl.modifiers
@@ -176,7 +230,12 @@ final class RequireSuiteAccessControl: StaticFormatRule<BasicRuleValue>, @unchec
             $0.name.tokenKind == .keyword(.private) || $0.name.tokenKind == .keyword(.fileprivate)
         })
             ? varDecl
-            : ensurePrivate(on: varDecl, keyword: \.bindingSpecifier, context: context)
+            : ensurePrivate(
+                on: varDecl,
+                original: original,
+                keyword: \.bindingSpecifier,
+                context: context
+            )
     }
 
     // MARK: - Test Function Detection
@@ -201,18 +260,22 @@ final class RequireSuiteAccessControl: StaticFormatRule<BasicRuleValue>, @unchec
 
     private static func removePublicModifier<Decl: DeclSyntaxProtocol & WithModifiersSyntax>(
         from decl: Decl,
+        original: Decl,
         keyword: WritableKeyPath<Decl, TokenSyntax>,
         context: Context
     ) -> Decl {
         guard let publicMod = decl.modifiers.first(where: { $0.name.tokenKind == .keyword(.public) }
         ) else { return decl }
 
-        Self.diagnose(.removePublicFromTestType, on: publicMod.name, context: context)
+        let anchor = original.modifiers.first(where: { $0.name.tokenKind == .keyword(.public) })?
+            .name ?? publicMod.name
+        Self.diagnose(.removePublicFromTestType, on: anchor, context: context)
         return decl.removingModifiers([.public], keyword: keyword)
     }
 
     private static func removeExplicitACL<Decl: DeclSyntaxProtocol & WithModifiersSyntax>(
         from decl: Decl,
+        original: Decl,
         keyword: WritableKeyPath<Decl, TokenSyntax>,
         context: Context
     ) -> Decl {
@@ -223,7 +286,13 @@ final class RequireSuiteAccessControl: StaticFormatRule<BasicRuleValue>, @unchec
             return false
         }) else { return decl }
 
-        Self.diagnose(.removeACLFromTestMethod, on: aclMod.name, context: context)
+        let anchor = original.modifiers.first(where: {
+            if case let .keyword(kw) = $0.name.tokenKind {
+                return Self.aclKeywords.contains(kw) && kw != .internal
+            }
+            return false
+        })?.name ?? aclMod.name
+        Self.diagnose(.removeACLFromTestMethod, on: anchor, context: context)
 
         guard case let .keyword(kwToRemove) = aclMod.name.tokenKind else { return decl }
         return decl.removingModifiers([kwToRemove], keyword: keyword)
@@ -231,6 +300,7 @@ final class RequireSuiteAccessControl: StaticFormatRule<BasicRuleValue>, @unchec
 
     private static func ensurePrivate<Decl: DeclSyntaxProtocol & WithModifiersSyntax>(
         on decl: Decl,
+        original: Decl,
         keyword: WritableKeyPath<Decl, TokenSyntax>,
         context: Context
     ) -> Decl {
@@ -238,7 +308,13 @@ final class RequireSuiteAccessControl: StaticFormatRule<BasicRuleValue>, @unchec
             if case let .keyword(kw) = $0.name.tokenKind { return Self.aclKeywords.contains(kw) }
             return false
         }) {
-            Self.diagnose(.makePrivate, on: aclMod.name, context: context)
+            let anchor = original.modifiers.first(where: {
+                if case let .keyword(kw) = $0.name.tokenKind {
+                    return Self.aclKeywords.contains(kw)
+                }
+                return false
+            })?.name ?? aclMod.name
+            Self.diagnose(.makePrivate, on: anchor, context: context)
             var result = decl
             var newModifiers = Array(result.modifiers)
 
@@ -257,7 +333,7 @@ final class RequireSuiteAccessControl: StaticFormatRule<BasicRuleValue>, @unchec
             return result
         }
 
-        Self.diagnose(.makePrivate, on: decl[keyPath: keyword], context: context)
+        Self.diagnose(.makePrivate, on: original[keyPath: keyword], context: context)
         var result = decl
         var pm = DeclModifierSyntax(name: .keyword(.private, trailingTrivia: .space))
         pm.leadingTrivia = result[keyPath: keyword].leadingTrivia

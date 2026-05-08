@@ -1,5 +1,8 @@
+import Foundation
 @testable import SwiftiomaticKit
 import SwiftiomaticTestSupport
+import SwiftParser
+import SwiftSyntax
 import Testing
 
 @Suite
@@ -519,5 +522,63 @@ struct RequireSuiteAccessControlTests: RuleTesting {
         """,
       findings: []
     )
+  }
+
+  // MARK: - Diagnostic locations (issue hfh-zsn)
+
+  /// When the rewrite pipeline rebuilds the tree because some other rule rewrote a child,
+  /// the `node` passed to `transform` is detached and its absolute byte offsets reset to 0.
+  /// Earlier versions of this rule emitted findings on tokens of that detached subtree, so
+  /// `startLocation(converter:)` mapped tiny offsets onto the original source — usually
+  /// landing inside an `import` statement many lines before the real declaration. The fix
+  /// routes diagnose anchors through the still-attached `original` parameter so locations
+  /// stay correct under detachment.
+  @Test func diagnosticLocationSurvivesDetachment() {
+    let source = """
+      @testable import Core
+      import GRDB
+      import Testing
+      import Foundation
+
+      struct CustomFunctionTests {
+          func helper() -> Int { 0 }
+
+          @Test func basics() throws {}
+      }
+      """
+    let sourceFile = Parser.parse(source: source)
+
+    var originalStruct: StructDeclSyntax?
+    for stmt in sourceFile.statements {
+      if let s = stmt.item.as(StructDeclSyntax.self) { originalStruct = s; break }
+    }
+    let original = try! #require(originalStruct)
+    let detached = original.detached
+
+    let configuration = Configuration.forTesting(enabledRule: "requireSuiteAccessControl")
+    var findings: [Finding] = []
+    let context = makeTestContext(
+      sourceFileSyntax: sourceFile,
+      configuration: configuration,
+      selection: .infinite,
+      findingConsumer: { findings.append($0) }
+    )
+
+    RequireSuiteAccessControl.willEnter(sourceFile, context: context)
+    _ = RequireSuiteAccessControl.transform(
+      detached,
+      original: original,
+      parent: nil,
+      context: context
+    )
+
+    let helperFinding = try! #require(
+      findings.first { $0.message.text == "make test helper 'private'" }
+    )
+    let location = try! #require(helperFinding.location)
+    // `func helper()` is on line 7 of the source. The leading-trivia-skipped start of the
+    // `func` keyword is column 5 (4 spaces of indent + 1).
+    #expect(location.line == 7)
+    #expect(location.column == 5)
   }
 }

@@ -34,6 +34,7 @@
 - `useWeakLetForUnreassigned`; misses cross-class assignments ([#666](https://github.com/toba/swiftiomatic/issues/666))
 - `dropRedundantClosureWrapper`; no longer recommends switch-expression in argument position where it wouldn't compile ([#667](https://github.com/toba/swiftiomatic/issues/667))
 - `requireAsyncStreamFinish`; skip `AsyncStream(unfolding:)` which has no `finish()` API ([#668](https://github.com/toba/swiftiomatic/issues/668))
+- `requireSuiteAccessControl`; thread the un-detached `original` decl through diagnose anchors so findings land on the actual line/col when sibling rules detach the rewritten subtree ([#670](https://github.com/toba/swiftiomatic/issues/670))
 
 ### 🗜️ Tweaks
 
