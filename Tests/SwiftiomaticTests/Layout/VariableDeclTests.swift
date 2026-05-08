@@ -29,8 +29,9 @@ struct VariableDeclarationTests: LayoutTesting {
         + fourthVariable
       let y: Int = anotherVar
         + moreVar
-      let (w, z, s):
-        (Int, Double, Bool) =
+      let (
+        w, z, s
+      ): (Int, Double, Bool) =
         firstTuple + secondTuple
 
       """
@@ -132,5 +133,36 @@ struct VariableDeclarationTests: LayoutTesting {
       """
 
     assertLayout(input: input, expected: expected, linelength: 29)
+  }
+
+  @Test func genericArgWithWrappingTupleStaysGlued() {
+    let input =
+      """
+      protocol P {
+        static var pattern: Regex<(
+          Substring,
+          red: Substring,
+          green: Substring,
+          blue: Substring,
+          opacity: Substring?,
+        )> { get }
+      }
+      """
+
+    let expected =
+      """
+      protocol P {
+        static var pattern: Regex<(
+          Substring,
+          red: Substring,
+          green: Substring,
+          blue: Substring,
+          opacity: Substring?,
+        )> { get }
+      }
+
+      """
+
+    assertLayout(input: input, expected: expected, linelength: 100)
   }
 }

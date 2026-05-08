@@ -87,14 +87,41 @@ extension TokenStream {
         // Generic argument clauses ignore source-driven newlines: a wrapped `<...>` in source should
         // collapse back to one line when the inlined form fits, instead of being preserved by
         // `RespectExistingLineBreaks` .
-        after(
-            node.leftAngle,
-            tokens: .break(.open, size: 0, newlines: .elective(ignoresDiscretionary: true)), .open
-        )
-        before(
-            node.rightAngle,
-            tokens: .break(.close, size: 0, newlines: .elective(ignoresDiscretionary: true)), .close
-        )
+        //
+        // When the only generic argument is a type that brings its own paren/brace delimiters
+        // (currently: tuple types), the inner break around `<` and `>` is suppressed so the angle
+        // brackets stay glued to that inner type's opening / closing delimiter. The inner type
+        // wraps via its own `(` / `)` mechanism — matching the idiomatic source layout
+        // `Regex<(\n  ...\n)>` instead of producing a four-line `Regex<\n  (\n    ...\n  )\n>`.
+        //
+        // When the only generic argument is a type that brings its own paren / brace delimiters
+        // (currently: tuple types), the inner break around `<` and `>` is suppressed so the angle
+        // brackets stay glued to that inner type's opening / closing delimiter. The inner type
+        // wraps via its own `(` / `)` mechanism — matching the idiomatic source layout
+        // `Regex<(\n  ...\n)>` instead of producing a four-line `Regex<\n  (\n    ...\n  )\n>` .
+        let glueAngleToInnerDelimiter: Bool = {
+            guard node.arguments.count == 1,
+                  let onlyArg = node.arguments.first,
+                  case .type(let innerType) = onlyArg.argument
+            else { return false }
+            return innerType.is(TupleTypeSyntax.self)
+        }()
+
+        if glueAngleToInnerDelimiter {
+            after(node.leftAngle, tokens: .open)
+            before(node.rightAngle, tokens: .close)
+        } else {
+            after(
+                node.leftAngle,
+                tokens: .break(.open, size: 0, newlines: .elective(ignoresDiscretionary: true)),
+                .open
+            )
+            before(
+                node.rightAngle,
+                tokens: .break(.close, size: 0, newlines: .elective(ignoresDiscretionary: true)),
+                .close
+            )
+        }
         return .visitChildren
     }
 
@@ -185,9 +212,25 @@ extension TokenStream {
             // When there's a simple base (i.e. identifier), group the entire
             // `try/await <base>.<name>` sequence. This check has to happen here so that the
             // `MemberAccessExprSyntax.name` is available.
-            return base.is(DeclReferenceExprSyntax.self)
-                ? memberAccessExpr.declName.baseName.lastToken(viewMode: .sourceAccurate)
-                : connectingTokenForKeywordModifiedExpr(inSubExpr: base)
+            //
+            // Exception: when the head of the chain participates in a multi-step chain (its
+            // FunctionCall parent is the base of an outer `MemberAccessExpr` ), end the group
+            // after `base` (e.g. `try Citation` ) instead of after `<name>` (e.g.
+            // `try Citation.join` ). The .close needs to land BEFORE the first contextual chain
+            // break so that, when discretionary newlines in the source make that break
+            // `.soft(discretionary:)` , the keyword-modifier group has already closed and the
+            // soft break's `total += maxLineLength` bump doesn't inflate the chunk-length of an
+            // outer `=` (or `guard` ) break.
+            if base.is(DeclReferenceExprSyntax.self) {
+                if let headCall = memberAccessExpr.parent?.as(FunctionCallExprSyntax.self),
+                   headCall.calledExpression.id == memberAccessExpr.id,
+                   shouldRetargetChainHeadCloseForAssignmentRHS(headCall)
+                {
+                    return base.lastToken(viewMode: .sourceAccurate)
+                }
+                return memberAccessExpr.declName.baseName.lastToken(viewMode: .sourceAccurate)
+            }
+            return connectingTokenForKeywordModifiedExpr(inSubExpr: base)
         }
         return expr.is(DeclReferenceExprSyntax.self)
             ? expr.lastToken(viewMode: .sourceAccurate)

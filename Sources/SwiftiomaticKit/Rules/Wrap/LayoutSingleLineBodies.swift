@@ -828,8 +828,93 @@ extension LayoutSingleLineBodies {
                 result.accessorBlock = block
                 return result
 
-            case .accessors: return node
+            case let .accessors(accessors):
+                return Self.inlineAccessors(
+                    node,
+                    block: accessorBlock,
+                    accessors: Array(accessors),
+                    parent: parent,
+                    context: context
+                )
         }
+    }
+
+    fileprivate static func inlineAccessors(
+        _ node: PatternBindingSyntax,
+        block accessorBlock: AccessorBlockSyntax,
+        accessors: [AccessorDeclSyntax],
+        parent: Syntax?,
+        context: Context
+    ) -> PatternBindingSyntax {
+        guard !accessors.isEmpty else { return node }
+
+        for acc in accessors {
+            switch acc.accessorSpecifier.tokenKind {
+                case .keyword(.willSet), .keyword(.didSet): return node
+                default: break
+            }
+        }
+
+        let isMultiline = accessors.contains { $0.leadingTrivia.containsNewlines }
+            || accessorBlock.rightBrace.leadingTrivia.containsNewlines
+        guard isMultiline else { return node }
+
+        if accessorBlock.leftBrace.trailingTrivia.hasAnyComments { return node }
+        if accessorBlock.rightBrace.leadingTrivia.hasAnyComments { return node }
+
+        for acc in accessors {
+            guard let body = acc.body else { return node }
+            guard body.statements.count == 1 else { return node }
+            if Self.bodyHasComments(body) { return node }
+            if acc.leadingTrivia.hasAnyComments { return node }
+            if acc.trailingTrivia.hasAnyComments { return node }
+        }
+
+        let accessorTexts: [String] = accessors.map { acc in
+            var text = acc.accessorSpecifier.text
+            if let params = acc.parameters { text += params.trimmedDescription }
+            if let effects = acc.effectSpecifiers {
+                text += " " + effects.trimmedDescription
+            }
+            let bodyText = acc.body!.statements.first!.trimmedDescription
+            text += " { \(bodyText) }"
+            return text
+        }
+        let joined = accessorTexts.joined(separator: " ")
+
+        if let varDecl = parent?.parent?.as(VariableDeclSyntax.self) {
+            let prefix = Self.prefixLength(
+                from: varDecl.bindingSpecifier,
+                to: accessorBlock.leftBrace,
+                context: context
+            )
+            let total = prefix + 1 + joined.count + 2
+            guard total <= Self.maxLength(context: context) else { return node }
+        } else {
+            let varIndent = Self.resolveVarIndent(node, parent: parent)
+            let estimate = varIndent.count + node.trimmedDescription.count
+            guard estimate <= Self.maxLength(context: context) else { return node }
+        }
+
+        Self.diagnose(.inlinePropertyBody, on: accessorBlock.leftBrace, context: context)
+
+        var result = node
+        var block = accessorBlock
+        block.leftBrace = block.leftBrace.with(\.trailingTrivia, .space)
+
+        var newAccessors = accessors
+        let lastIdx = newAccessors.count - 1
+        for i in newAccessors.indices {
+            var acc = newAccessors[i]
+            acc.leadingTrivia = []
+            if let body = acc.body { acc.body = Self.inliningBody(body) }
+            acc.trailingTrivia = (i == lastIdx) ? [] : .space
+            newAccessors[i] = acc
+        }
+        block.accessors = .accessors(AccessorDeclListSyntax(newAccessors))
+        block.rightBrace = block.rightBrace.with(\.leadingTrivia, .space)
+        result.accessorBlock = block
+        return result
     }
 
     /// Shared precondition + length check + diagnostic for wrapped collection-literal inlining.

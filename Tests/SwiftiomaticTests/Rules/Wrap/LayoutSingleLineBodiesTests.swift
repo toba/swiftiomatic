@@ -1276,6 +1276,88 @@ struct SingleLineBodiesInlineTests: RuleTesting {
       configuration: inlineConfig)
   }
 
+  // MARK: - get/set accessor blocks
+
+  @Test func getSetSingleStatementAccessorsInline() {
+    assertFormatting(
+      LayoutSingleLineBodies.self,
+      input: """
+        var key: String 1️⃣{
+            get { id }
+            set { id = newValue }
+        }
+        """,
+      expected: """
+        var key: String { get { id } set { id = newValue } }
+        """,
+      findings: [FindingSpec("1️⃣", message: "place property body on same line as declaration")],
+      configuration: inlineConfig)
+  }
+
+  @Test func getSetMultilineBodiesInline() {
+    assertFormatting(
+      LayoutSingleLineBodies.self,
+      input: """
+        var key: String 1️⃣{
+            get {
+                id
+            }
+            set {
+                id = newValue
+            }
+        }
+        """,
+      expected: """
+        var key: String { get { id } set { id = newValue } }
+        """,
+      findings: [FindingSpec("1️⃣", message: "place property body on same line as declaration")],
+      configuration: inlineConfig)
+  }
+
+  @Test func getSetTooLongNotInlined() {
+    var config = inlineConfig
+    config[LineLength.self] = 30
+    assertFormatting(
+      LayoutSingleLineBodies.self,
+      input: """
+        var key: String {
+            get { id }
+            set { id = newValue }
+        }
+        """,
+      expected: """
+        var key: String {
+            get { id }
+            set { id = newValue }
+        }
+        """,
+      configuration: config)
+  }
+
+  @Test func getSetMultiStatementNotInlined() {
+    assertFormatting(
+      LayoutSingleLineBodies.self,
+      input: """
+        var key: String {
+            get { id }
+            set {
+                log()
+                id = newValue
+            }
+        }
+        """,
+      expected: """
+        var key: String {
+            get { id }
+            set {
+                log()
+                id = newValue
+            }
+        }
+        """,
+      configuration: inlineConfig)
+  }
+
   // MARK: - Indented context
 
   @Test func indentedFunctionInlines() {

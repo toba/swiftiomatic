@@ -25,12 +25,11 @@ struct PatternBindingTests: LayoutTesting {
     let expected =
       """
       let someObject: Foo = object
-      let someObject:
-        (
-          foo: Foo,
-          bar: SomeVeryLongTypeNameThatDefinitelyBreaks,
-          baz: Baz
-        ) = foo(a, b, c, d)
+      let someObject: (
+        foo: Foo,
+        bar: SomeVeryLongTypeNameThatDefinitelyBreaks,
+        baz: Baz
+      ) = foo(a, b, c, d)
 
       """
 

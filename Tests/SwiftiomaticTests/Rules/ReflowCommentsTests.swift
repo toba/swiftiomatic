@@ -263,6 +263,36 @@ struct CommentReflowEngineTests {
         #expect(!joined.contains("``\n"))
     }
 
+    @Test func tokenizerAttachesPunctuationToInlineCodeSpan() {
+        // `(`x`)` should remain a single atom — the wrapper would otherwise insert
+        // spaces around the backticks. Same for a trailing period after a closing
+        // code span.
+        #expect(
+            CommentReflowEngine.tokenize("paragraph (`withinID`) and more")
+                == ["paragraph", "(`withinID`)", "and", "more"]
+        )
+        #expect(
+            CommentReflowEngine.tokenize("see ``Foo/bar()``.")
+                == ["see", "``Foo/bar()``."]
+        )
+    }
+
+    @Test func reflowKeepsParensAroundCodeSpanTight() {
+        let r = CommentReflowEngine.reflow(
+            lines: [
+                "joins `citation_group` with `paragraph_embedded_indices` and `node` to surface each group's containing paragraph (`withinID`) and character offset within that paragraph (`characterIndex`), along with the node's `render_needed` flag. Used by ``CitationGroup/fetch(forParagraph:to:from:)`` and ``Citation/fetch(forParagraph:at:from:)``."
+            ],
+            availableWidth: 96
+        )
+        let joined = (r ?? []).joined(separator: "\n")
+        #expect(!joined.contains("( `"))
+        #expect(!joined.contains("` )"))
+        #expect(!joined.contains("`` ."))
+        #expect(joined.contains("(`withinID`)"))
+        #expect(joined.contains("(`characterIndex`)"))
+        #expect(joined.contains("``Citation/fetch(forParagraph:at:from:)``."))
+    }
+
     @Test func tokenizerKeepsMarkdownLinkAtomic() {
         let atoms = CommentReflowEngine.tokenize("see [the docs](https://x.com/a b) really")
         #expect(atoms == ["see", "[the docs](https://x.com/a b)", "really"])
@@ -311,6 +341,84 @@ struct CommentReflowEngineTests {
             availableWidth: 11
         )
         #expect(r == ["> aaa bbb", "  ccc ddd", "  eee", ">", "> fff ggg", "  hhh iii", "  jjj"])
+    }
+
+    @Test func reflowBlockQuoteLazyContinuationStaysInQuote() {
+        // CommonMark lazy continuation: lines after a `>` line that aren't blank/list/fence
+        // belong to the same blockquote paragraph. They must stay quoted on output.
+        let r = CommentReflowEngine.reflow(
+            lines: [
+                "> Note: aaa bbb ccc ddd",
+                "  eee fff ggg",
+                "  hhh iii jjj",
+            ],
+            availableWidth: 12
+        )
+        // Every output line must start with the blockquote prefix or its lazy indent.
+        #expect(r != nil)
+        for line in r ?? [] {
+            #expect(
+                line.isEmpty || line.hasPrefix("> ") || line.hasPrefix(">") || line.hasPrefix("  "),
+                "line escaped the blockquote: \(line)"
+            )
+        }
+    }
+
+    @Test func reflowBlockQuoteFromUserReportedBug() {
+        // Exact body lines from .issues/8/832-m0f. Continuation lines have 2 leading spaces
+        // (lazy continuation under "> "). They must not escape the blockquote.
+        let r = CommentReflowEngine.reflow(
+            lines: [
+                "Each type of field (subtype) has a single, associated value type",
+                "",
+                "> Developer Note: Conformance to [CodingKeyRepresentable][hck] is essential to have the `Values`",
+                "  JSON encoder produce a JavaScript object, es expected, rather than an array of [alternating",
+                "  key-value pairs][frm].",
+                ">",
+                "> A raw type of `String` is used since the type is stored as a `JSON` object key which *must*",
+                "  be a string. As long it must be a string, it might as well be descriptive.",
+                "",
+            ],
+            availableWidth: 96
+        )
+        // Find the line starting "JSON encoder" — it must NOT begin at column 0; it must
+        // remain inside the blockquote (prefixed with "  " or "> ").
+        guard let out = r else { return }  // engine reports nil if already optimal
+        for line in out where line.contains("JSON encoder") {
+            #expect(
+                line.hasPrefix("  ") || line.hasPrefix("> "),
+                "blockquote continuation escaped: \(line)"
+            )
+        }
+        for line in out where line.contains("be a string") {
+            #expect(
+                line.hasPrefix("  ") || line.hasPrefix("> "),
+                "blockquote continuation escaped: \(line)"
+            )
+        }
+    }
+
+    @Test func reflowBlockQuoteMultiParagraphWithLazyContinuation() {
+        // Two blockquote paragraphs separated by a `>` blank line. Each paragraph's
+        // continuation lines lack a leading `>` (lazy continuation). All output must
+        // remain inside the blockquote.
+        let r = CommentReflowEngine.reflow(
+            lines: [
+                "> First paragraph aaa bbb ccc",
+                "  ddd eee fff",
+                ">",
+                "> Second paragraph ggg hhh",
+                "  iii jjj kkk",
+            ],
+            availableWidth: 80
+        )
+        #expect(r != nil)
+        for line in r ?? [] {
+            #expect(
+                line.isEmpty || line.hasPrefix("> ") || line.hasPrefix(">") || line.hasPrefix("  "),
+                "line escaped the blockquote: \(line)"
+            )
+        }
     }
 
     @Test func reflowCodeFenceVerbatim() {

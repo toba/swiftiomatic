@@ -255,6 +255,64 @@ struct AssignmentExprTests: LayoutTesting {
     assertLayout(input: input, expected: expected, linelength: 55)
   }
 
+  @Test func assignmentWithChainOfTrailingClosureCalls() {
+    // Regression for issue wts-z1t: a chain whose steps each take a trailing closure
+    // (e.g. SQL builder DSL) must still receive chain-precedence treatment. The chain
+    // `.` (rank 2) must beat the `=` break (rank 4) — the head of the chain
+    // (`try Citation`) must stay on the binding line, and only the chain dots wrap.
+    let input =
+      """
+      func foo() {
+          let location = try Citation
+              .join(CitationGroup.all) { $0.groupID.eq($1.id) }
+              .where { c, _ in c.id.eq(#bind(citationID)) }
+              .select { c, g in (c.referenceID, g.projectID) }
+              .fetchOne(db)
+      }
+      """
+    let expected =
+      """
+      func foo() {
+        let location = try Citation
+          .join(CitationGroup.all) { $0.groupID.eq($1.id) }
+          .where { c, _ in c.id.eq(#bind(citationID)) }
+          .select { c, g in (c.referenceID, g.projectID) }
+          .fetchOne(db)
+      }
+
+      """
+    assertLayout(input: input, expected: expected, linelength: 100)
+  }
+
+  @Test func assignmentWithChainOfTrailingClosureCallsNoTry() {
+    // Same scenario as `assignmentWithChainOfTrailingClosureCalls` but without a `try` prefix.
+    // Goes through the non-`arrangeAssignmentBreaks` path in `visitPatternBinding` ; the fix is
+    // in `visitFunctionCallExpr` (head call's `.close` lands after `base` , not after `<name>` ,
+    // when the head participates in an outer member-access chain).
+    let input =
+      """
+      func foo() {
+          let location = Citation
+              .join(CitationGroup.all) { $0.groupID.eq($1.id) }
+              .where { c, _ in c.id.eq(#bind(citationID)) }
+              .select { c, g in (c.referenceID, g.projectID) }
+              .fetchOne(db)
+      }
+      """
+    let expected =
+      """
+      func foo() {
+        let location = Citation
+          .join(CitationGroup.all) { $0.groupID.eq($1.id) }
+          .where { c, _ in c.id.eq(#bind(citationID)) }
+          .select { c, g in (c.referenceID, g.projectID) }
+          .fetchOne(db)
+      }
+
+      """
+    assertLayout(input: input, expected: expected, linelength: 100)
+  }
+
   @Test func assignmentWithChainAsCallArgumentFitsOnOneLine() {
     // The RHS is `.init(type: chain)` where the chain
     // `type.with(\.leadingTrivia, .space).with(\.trailingTrivia, .space)` fits within the

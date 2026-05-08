@@ -212,12 +212,21 @@ extension TokenStream {
                     }
                 } else if !isKeywordModified {
                     before(base.firstToken(viewMode: .sourceAccurate), tokens: .open)
-                    after(
-                        calledMemberAccessExpr.declName.baseName.lastToken(
-                            viewMode: .sourceAccurate
-                        ),
-                        tokens: .close
-                    )
+
+                    // When this call is the head of a multi-step outer chain (its parent is a
+                    // `MemberAccessExpr` that uses this call as its base), end the group after
+                    // `base` instead of after `<name>` . The .close needs to land BEFORE the
+                    // first contextual chain break so that a discretionary newline at that dot —
+                    // which becomes a `.soft(discretionary:)` break and bumps `total` by
+                    // `maxLineLength` — doesn't inflate the chunk-length of an outer break (e.g.
+                    // the `=` break of an enclosing assignment) and force it to fire alongside
+                    // the chain breaks.
+                    let closeAfter: TokenSyntax? =
+                        shouldRetargetChainHeadCloseForAssignmentRHS(node)
+                        ? base.lastToken(viewMode: .sourceAccurate)
+                        : calledMemberAccessExpr.declName.baseName.lastToken(
+                            viewMode: .sourceAccurate)
+                    after(closeAfter, tokens: .close)
                 }
             }
         }

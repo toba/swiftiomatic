@@ -144,14 +144,26 @@ package enum CommentReflowEngine {
                 i += 1
                 continue
             }
-            // Block quote: contiguous lines starting with ">".
+            // Block quote: a `>`-prefixed line, plus any CommonMark "lazy continuation" lines
+            // that follow without a `>` prefix (non-blank, not a list / fence / link-ref).
+            // The renderer re-adds `> ` and the lazy 2-space indent on output.
             if line.hasPrefix(">") {
                 var quoted: [String] = []
 
-                while i < lines.count, lines[i].hasPrefix(">") {
-                    let dropped = String(lines[i].dropFirst())
-                    let stripped = dropped.hasPrefix(" ") ? String(dropped.dropFirst()) : dropped
-                    quoted.append(stripped)
+                while i < lines.count {
+                    let cur = lines[i]
+                    if cur.hasPrefix(">") {
+                        let dropped = String(cur.dropFirst())
+                        let stripped = dropped.hasPrefix(" ") ? String(dropped.dropFirst()) : dropped
+                        quoted.append(stripped)
+                        i += 1
+                        continue
+                    }
+                    if cur.trimmingCharacters(in: .whitespaces).isEmpty { break }
+                    if listMarker(cur) != nil { break }
+                    if fenceOpener(cur) != nil { break }
+                    if isLinkReferenceDefinition(cur) { break }
+                    quoted.append(cur.trimmingCharacters(in: .whitespaces))
                     i += 1
                 }
                 let innerBlocks = parseBlocks(quoted)
@@ -444,9 +456,8 @@ package enum CommentReflowEngine {
                     j += 1
                 }
                 if let cs = closeStart {
-                    flush()
                     let endExclusive = cs + openCount
-                    atoms.append(String(scalars[i..<endExclusive]))
+                    pending.append(String(scalars[i..<endExclusive]))
                     i = endExclusive
                     continue
                 }
@@ -454,8 +465,7 @@ package enum CommentReflowEngine {
             // Markdown link: [text](url) — atomic if balanced.
             if c == "[" {
                 if let end = matchMarkdownLink(scalars, from: i) {
-                    flush()
-                    atoms.append(String(scalars[i...end]))
+                    pending.append(String(scalars[i...end]))
                     i = end + 1
                     continue
                 }
@@ -463,18 +473,16 @@ package enum CommentReflowEngine {
             // Autolink: <scheme://...>
             if c == "<" {
                 if let end = matchAutolink(scalars, from: i) {
-                    flush()
-                    atoms.append(String(scalars[i...end]))
+                    pending.append(String(scalars[i...end]))
                     i = end + 1
                     continue
                 }
             }
             // URL: http(s)://... — read until whitespace.
             if c == "h", isURLStart(scalars, at: i) {
-                flush()
                 var j = i
                 while j < scalars.count, scalars[j] != " ", scalars[j] != "\t" { j += 1 }
-                atoms.append(String(scalars[i..<j]))
+                pending.append(String(scalars[i..<j]))
                 i = j
                 continue
             }

@@ -448,6 +448,90 @@ extension TokenStream {
         return false
     }
 
+    /// Whether the chain rooted at `call` should have its head-call group close after the chain
+    /// base (e.g. `Citation`) instead of after the head's `<name>` (e.g. `Citation.join`). This
+    /// retargeting only matters when (a) the head has a trailing closure, (b) the source has a
+    /// discretionary newline at the next chain dot — which becomes a `.soft(discretionary:)`
+    /// break that bumps `total` by `maxLineLength` and would otherwise inflate the chunk-length
+    /// of an enclosing `=` break (issue wts-z1t), and (c) the chain is the RHS of an
+    /// assignment-like binding (otherwise the head's bonded `base.<name>` layout is preferred).
+    func shouldRetargetChainHeadCloseForAssignmentRHS(
+        _ call: FunctionCallExprSyntax
+    ) -> Bool {
+        guard let trailingClosure = call.trailingClosure,
+              let outerMember = call.parent?.as(MemberAccessExprSyntax.self),
+              outerMember.base?.id == call.id
+        else { return false }
+
+        // Skip retargeting when the head's trailing closure spans multiple source lines:
+        // a multi-line head closure means the head itself wraps, and the legacy layout
+        // ( `=` break + grouped `View.Button { ... }` head) is preferred.
+        let closureHasNewline: (TriviaPiece) -> Bool = { piece in
+            switch piece {
+                case .newlines, .carriageReturns, .carriageReturnLineFeeds: return true
+                default: return false
+            }
+        }
+        let closureIsMultiline = trailingClosure.leftBrace.trailingTrivia.contains(where: closureHasNewline)
+            || trailingClosure.rightBrace.leadingTrivia.contains(where: closureHasNewline)
+            || trailingClosure.statements.contains { stmt in
+                stmt.leadingTrivia.contains(where: closureHasNewline)
+                    || stmt.trailingTrivia.contains(where: closureHasNewline)
+            }
+        if closureIsMultiline { return false }
+
+        let periodHasSourceNewline = outerMember.period.leadingTrivia.contains { piece in
+            switch piece {
+                case .newlines, .carriageReturns, .carriageReturnLineFeeds: return true
+                default: return false
+            }
+        }
+        guard periodHasSourceNewline else { return false }
+
+        var current = Syntax(call)
+        while let parent = current.parent {
+            switch parent.kind {
+                case .memberAccessExpr:
+                    if let m = parent.as(MemberAccessExprSyntax.self), m.base?.id == current.id {
+                        current = parent; continue
+                    }
+                    return false
+                case .functionCallExpr:
+                    if let f = parent.as(FunctionCallExprSyntax.self),
+                       f.calledExpression.id == current.id
+                    {
+                        current = parent; continue
+                    }
+                    return false
+                case .subscriptCallExpr:
+                    if let s = parent.as(SubscriptCallExprSyntax.self),
+                       s.calledExpression.id == current.id
+                    {
+                        current = parent; continue
+                    }
+                    return false
+                case .optionalChainingExpr,
+                     .forceUnwrapExpr,
+                     .postfixOperatorExpr,
+                     .postfixIfConfigExpr,
+                     .tryExpr,
+                     .awaitExpr,
+                     .unsafeExpr:
+                    current = parent
+                default:
+                    if parent.is(InitializerClauseSyntax.self) { return true }
+                    if let infix = parent.as(InfixOperatorExprSyntax.self),
+                       infix.operator.is(AssignmentExprSyntax.self),
+                       infix.rightOperand.id == current.id
+                    {
+                        return true
+                    }
+                    return false
+            }
+        }
+        return false
+    }
+
     /// Whether an expression should use break precedence — `ignoresDiscretionary` + open/close
     /// grouping — so the formatter prefers inner operator breaks over the enclosing break position.
     /// Used for both assignment ( `=` ) and keyword ( `guard` ) breaks.
