@@ -27,6 +27,7 @@
 - Don't wrap `Regex` generic argument with tuple type when it fits ([#655](https://github.com/toba/swiftiomatic/issues/655))
 - `ReflowComments`; blockquotes no longer lose lazy continuation lines ([#654](https://github.com/toba/swiftiomatic/issues/654))
 - `ReflowComments`; punctuation around inline code spans no longer gets space-separated ([#656](https://github.com/toba/swiftiomatic/issues/656))
+- `sm format`; preserve binary operators across newlines inside multi-line `"""` interpolations; `type\n?? outputType` no longer collapses to `type?? outputType` (Swift lexer reclassified `??` as postfix) ([#662](https://github.com/toba/swiftiomatic/issues/662))
 
 ### 🗜️ Tweaks
 

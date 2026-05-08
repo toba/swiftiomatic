@@ -193,15 +193,26 @@ extension TokenStream {
                 let between = prev.trailingTrivia.description + t.leadingTrivia.description
                 if between.contains(where: \.isNewline) {
                     // Source indent across a newline carries no semantic meaning inside
-                    // an interpolation — drop it, but insert a single space if the adjacent
-                    // tokens' boundary characters would otherwise glue into one token
-                    // (e.g. `try await`, `if let`).
-                    if let p = prev.text.last, let c = t.text.first,
-                       p.isLetter || p.isNumber || p == "_",
-                       c.isLetter || c.isNumber || c == "_"
-                    {
-                        text += " "
-                    }
+                    // an interpolation — drop it, but insert a single space when the adjacent
+                    // tokens would otherwise glue into a different token. Two cases:
+                    //   * identifier/number adjacency (e.g. `try await`, `if let`).
+                    //   * binary operator next to a non-operator: without whitespace on a side,
+                    //     Swift's lexer reclassifies the operator as prefix/postfix. For
+                    //     example `type\n?? outputType` collapsed to `type?? outputType`
+                    //     turns `??` into a postfix operator (right whitespace only) and
+                    //     produces a syntax error (issue ugi-3p0).
+                    let needsSpace: Bool = {
+                        if case .binaryOperator = t.tokenKind { return true }
+                        if case .binaryOperator = prev.tokenKind { return true }
+                        if let p = prev.text.last, let c = t.text.first,
+                           p.isLetter || p.isNumber || p == "_",
+                           c.isLetter || c.isNumber || c == "_"
+                        {
+                            return true
+                        }
+                        return false
+                    }()
+                    if needsSpace { text += " " }
                 } else {
                     text += between
                 }

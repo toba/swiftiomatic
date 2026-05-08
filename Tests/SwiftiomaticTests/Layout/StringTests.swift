@@ -939,6 +939,35 @@ struct StringTests: LayoutTesting {
     assertLayout(input: input, expected: expected, linelength: 100)
   }
 
+  @Test func multilineStringPreSplitInterpolationOperatorBoundary() {
+    // Regression for issue ugi-3p0: when collapsing a pre-split interpolation across newlines,
+    // the formatter must insert whitespace between an identifier and an operator token, otherwise
+    // `type` followed by `??` collides into `type??` which Swift parses as a postfix operator
+    // (producing an "Expected ',' separator" syntax error in macro DeclSyntax literals).
+    let input =
+      #"""
+      let s = """
+        \(raw: foo(
+          a: bar?.baz
+            ?? qux,
+          b: 1
+        ))
+        """
+      """#
+
+    let expected =
+      #"""
+      let s = """
+        \(raw: foo(a: bar?.baz ?? qux,b: 1))
+        """
+
+      """#
+
+    var config = Configuration.forTesting
+    config[ReflowMultilineStringLiterals.self] = .never
+    assertLayout(input: input, expected: expected, linelength: 200, configuration: config)
+  }
+
   @Test func multilineStringWithContinuations() {
     let input =
       ##"""
