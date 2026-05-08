@@ -214,21 +214,21 @@ struct NestedCallLayoutInlineTests: RuleTesting {
       configuration: inlineConfig)
   }
 
-  @Test func nonNestedCallUnchanged() {
+  @Test func wrappedNonNestedCallCollapsesWhenItFits() {
     assertFormatting(
       NestedCallLayout.self,
       input: """
-        let x = foo(
+        let x = 1️⃣foo(
             bar: 1,
             baz: 2
         )
         """,
       expected: """
-        let x = foo(
-            bar: 1,
-            baz: 2
-        )
+        let x = foo(bar: 1, baz: 2)
         """,
+      findings: [
+        FindingSpec("1️⃣", message: "collapse nested call to fit on one line"),
+      ],
       configuration: inlineConfig)
   }
 
@@ -353,6 +353,63 @@ struct NestedCallLayoutInlineTests: RuleTesting {
         FindingSpec("1️⃣", message: "collapse nested call to fit on one line"),
       ],
       configuration: inlineConfig)
+  }
+
+  @Test func collapsesWrappedMultiArgCall() {
+    assertFormatting(
+      NestedCallLayout.self,
+      input: """
+        let x = 1️⃣foo(
+            module: "ThesisMacroPlugin",
+            type: "SQLMacro",
+        )
+        """,
+      expected: """
+        let x = foo(module: "ThesisMacroPlugin", type: "SQLMacro")
+        """,
+      findings: [
+        FindingSpec("1️⃣", message: "collapse nested call to fit on one line"),
+      ],
+      configuration: inlineConfig)
+  }
+
+  @Test func collapsesWrappedMacroExpansion() {
+    assertFormatting(
+      NestedCallLayout.self,
+      input: """
+        let x = 1️⃣#externalMacro(
+            module: "ThesisMacroPlugin",
+            type: "SQLMacro",
+        )
+        """,
+      expected: """
+        let x = #externalMacro(module: "ThesisMacroPlugin", type: "SQLMacro")
+        """,
+      findings: [
+        FindingSpec("1️⃣", message: "collapse nested call to fit on one line"),
+      ],
+      configuration: inlineConfig)
+  }
+
+  @Test func wrappedMultiArgCallTooLongStaysWrapped() {
+    var config = inlineConfig
+    config[LineLength.self] = 40
+
+    assertFormatting(
+      NestedCallLayout.self,
+      input: """
+        let x = foo(
+            module: "ThesisMacroPlugin",
+            type: "SQLMacro",
+        )
+        """,
+      expected: """
+        let x = foo(
+            module: "ThesisMacroPlugin",
+            type: "SQLMacro",
+        )
+        """,
+      configuration: config)
   }
 
   @Test func hugsMultilineNestedCallWithDeepContent() {

@@ -68,11 +68,31 @@ final class NestedCallLayout: StaticFormatRule<NestedCallLayoutConfiguration>, @
             }
         }
 
-        // Fallback: collapse the leading newline so the sole arg hugs the opening paren,
+        // Fallback A: collapse a wrapped multi-arg single-level call onto one line if it fits.
+        // This also covers wrapped single-arg calls whose inlined form fits the line.
+        if mode == .inline,
+           let collapsed = tryCollapseCallToOneLine(node, context: context)
+        {
+            return collapsed
+        }
+
+        // Fallback B: collapse the leading newline so the sole arg hugs the opening paren,
         // re-indenting any continuation lines.
         if mode == .inline, let hugged = tryHugSingleArg(node, context: context) { return hugged }
 
         return ExprSyntax(node)
+    }
+
+    static func transform(
+        _ node: MacroExpansionExprSyntax,
+        original _: MacroExpansionExprSyntax,
+        parent _: Syntax?,
+        context: Context
+    ) -> ExprSyntax {
+        guard context.configuration[NestedCallLayout.self].mode == .inline else {
+            return ExprSyntax(node)
+        }
+        return tryCollapseMacroExpansionToOneLine(node, context: context) ?? ExprSyntax(node)
     }
 
     // MARK: - Nested Call Detection
@@ -579,6 +599,134 @@ final class NestedCallLayout: StaticFormatRule<NestedCallLayoutConfiguration>, @
         return result
             .with(\.leadingTrivia, leadingTrivia)
             .with(\.trailingTrivia, trailingTrivia)
+    }
+
+    // MARK: - Multi-arg / Macro Collapse
+
+    /// Collapses a wrapped function call onto one line when the result fits within the configured
+    /// line length. Skips calls with trailing closures or any internal comments (collapsing would
+    /// drop them).
+    private static func tryCollapseCallToOneLine(
+        _ node: FunctionCallExprSyntax,
+        context: Context
+    ) -> ExprSyntax? {
+        guard node.leftParen != nil,
+              node.rightParen != nil,
+              node.trailingClosure == nil,
+              node.additionalTrailingClosures.isEmpty,
+              !node.arguments.isEmpty,
+              callBodySpansLines(arguments: node.arguments, rightParen: node.rightParen)
+        else { return nil }
+
+        if argumentsHaveComments(node.arguments, rightParen: node.rightParen) { return nil }
+
+        let collapsed = collapseCallArguments(node)
+        let collapsedText = collapsed.trimmedDescription
+        guard !collapsedText.contains("\n") else { return nil }
+
+        let linePrefix = columnOffset(of: node)
+        let maxLength = context.configuration[LineLength.self]
+        guard linePrefix + collapsedText.count <= maxLength else { return nil }
+
+        Self.diagnose(.collapseNestedCall, on: node, context: context)
+        return ExprSyntax(collapsed)
+    }
+
+    private static func tryCollapseMacroExpansionToOneLine(
+        _ node: MacroExpansionExprSyntax,
+        context: Context
+    ) -> ExprSyntax? {
+        guard node.leftParen != nil,
+              node.rightParen != nil,
+              node.trailingClosure == nil,
+              node.additionalTrailingClosures.isEmpty,
+              !node.arguments.isEmpty,
+              callBodySpansLines(arguments: node.arguments, rightParen: node.rightParen)
+        else { return nil }
+
+        if argumentsHaveComments(node.arguments, rightParen: node.rightParen) { return nil }
+
+        let collapsed = collapseMacroArguments(node)
+        let collapsedText = collapsed.trimmedDescription
+        guard !collapsedText.contains("\n") else { return nil }
+
+        let linePrefix = columnOffset(of: node)
+        let maxLength = context.configuration[LineLength.self]
+        guard linePrefix + collapsedText.count <= maxLength else { return nil }
+
+        Self.diagnose(.collapseNestedCall, on: node, context: context)
+        return ExprSyntax(collapsed)
+    }
+
+    private static func callBodySpansLines(
+        arguments: LabeledExprListSyntax,
+        rightParen: TokenSyntax?
+    ) -> Bool {
+        for arg in arguments {
+            if arg.leadingTrivia.containsNewlines { return true }
+            if arg.trailingComma?.trailingTrivia.containsNewlines == true { return true }
+            if arg.trailingTrivia.containsNewlines { return true }
+        }
+        return rightParen?.leadingTrivia.containsNewlines == true
+    }
+
+    private static func argumentsHaveComments(
+        _ arguments: LabeledExprListSyntax,
+        rightParen: TokenSyntax?
+    ) -> Bool {
+        for arg in arguments {
+            if arg.leadingTrivia.hasAnyComments { return true }
+            if arg.trailingTrivia.hasAnyComments { return true }
+            if arg.trailingComma?.trailingTrivia.hasAnyComments == true { return true }
+        }
+        if rightParen?.leadingTrivia.hasAnyComments == true { return true }
+        return false
+    }
+
+    private static func inlinedArguments(
+        _ arguments: LabeledExprListSyntax
+    ) -> LabeledExprListSyntax {
+        var args = Array(arguments)
+        let lastIdx = args.count - 1
+        for i in args.indices {
+            args[i] = args[i]
+                .with(\.leadingTrivia, i == 0 ? [] : .space)
+                .with(\.trailingTrivia, [])
+            if i == lastIdx {
+                args[i].trailingComma = nil
+            } else if let comma = args[i].trailingComma {
+                args[i].trailingComma = comma.with(\.trailingTrivia, [])
+            }
+        }
+        return LabeledExprListSyntax(args)
+    }
+
+    private static func collapseCallArguments(
+        _ node: FunctionCallExprSyntax
+    ) -> FunctionCallExprSyntax {
+        var result = node
+        if let leftParen = result.leftParen {
+            result.leftParen = leftParen.with(\.trailingTrivia, [])
+        }
+        result.arguments = inlinedArguments(node.arguments)
+        if let rightParen = result.rightParen {
+            result.rightParen = rightParen.with(\.leadingTrivia, [])
+        }
+        return result
+    }
+
+    private static func collapseMacroArguments(
+        _ node: MacroExpansionExprSyntax
+    ) -> MacroExpansionExprSyntax {
+        var result = node
+        if let leftParen = result.leftParen {
+            result.leftParen = leftParen.with(\.trailingTrivia, [])
+        }
+        result.arguments = inlinedArguments(node.arguments)
+        if let rightParen = result.rightParen {
+            result.rightParen = rightParen.with(\.leadingTrivia, [])
+        }
+        return result
     }
 
     // MARK: - Shared Helpers

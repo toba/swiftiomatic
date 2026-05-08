@@ -1283,6 +1283,16 @@ final class RewritePipeline: SyntaxRewriter {
             as: MacroExpansionExprSyntax.self,
             gate: gate
         ) { UseFileIDNotFile.transform($0, original: $1, parent: parent, context: $2) }
+        if context.shouldRewrite(NestedCallLayout.self, gate: gate),
+           let macroExpansion = current.as(MacroExpansionExprSyntax.self)
+        {
+            current = NestedCallLayout.transform(
+                macroExpansion,
+                original: node,
+                parent: parent,
+                context: context
+            )
+        }
         return current
     }
 
