@@ -11,6 +11,7 @@ AST-accurate Swift linting, formatting, and code analysis — used from the IDE,
 - **When iterating on a fix, always pass `filter: "<TestClass>"` to `swift_package_test`** — the unfiltered suite is ~3000 tests and ~30s of test runtime on top of the build, while a filtered run is sub-second. A typical edit→test loop is ~18s filtered vs ~50s unfiltered. Only run the full suite once at the end to confirm no regressions.
 - Multiple agents work on this repo concurrently. Expect compile errors and uncommitted changes in files outside your scope — ignore them. Only modify files directly related to your current task.
 - Never git stash to dodge an error — fix it.
+- Do **not** add the `swift.org` / Apache 2.0 license header (the `//===---...===//` block referencing the Swift project authors) to new files you create. That header belongs only on files inherited from `apple/swift-format`; preserve it verbatim when editing those, but new Swiftiomatic files should start directly with their imports or doc comments.
 - On `/commit`, commit **everything** in the working tree — not just the files you touched. The user only invokes `/commit` when the whole project is ready, so leaving other agents' work uncommitted defeats the purpose. Exclude only `.claude/worktrees/` and obvious junk (build artifacts, secrets).
 
 ## Installation

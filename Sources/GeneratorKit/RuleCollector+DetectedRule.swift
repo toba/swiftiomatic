@@ -74,6 +74,7 @@ extension RuleCollector {
             case boolean
             case integer
             case string
+            case stringArray
             case stringEnum(values: [String], defaultValue: String)
         }
 

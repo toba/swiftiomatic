@@ -146,6 +146,14 @@ package final class ConfigurationSchemaGenerator: FileGenerator {
                 node.description = desc
                 return node
             case .string: return .string(description: desc)
+            case .stringArray:
+                var node = JSONSchemaNode()
+                node.type = "array"
+                node.description = desc
+                var items = JSONSchemaNode()
+                items.type = "string"
+                node.items = Indirect(items)
+                return node
             case let .stringEnum(values, defaultValue):
                 return .stringEnum(description: desc, values: values, defaultValue: defaultValue)
         }

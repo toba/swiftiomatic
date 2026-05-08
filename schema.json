@@ -1239,6 +1239,13 @@
       ],
       "description" : "Functions that return `()` or `Void` should omit the return signature.\n\nLint: Function declarations that explicitly return `()` or `Void` will yield a lint error.\n\nRewrite: Function declarations with explicit returns of `()` or `Void` will have their return signature stripped."
     },
+    "excludes" : {
+      "description" : "Glob patterns matching paths to skip during recursive walks. Supports `*`, `?`, `[…]`, and `**` (across path separators).",
+      "items" : {
+        "type" : "string"
+      },
+      "type" : "array"
+    },
     "fileHeader" : {
       "allOf" : [
         {

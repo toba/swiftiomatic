@@ -1,15 +1,15 @@
 ---
 # 09z-px0
 title: All-or-none wrap for || / && chains in if/guard/while conditions
-status: draft
+status: deferred
 type: bug
 priority: normal
 created_at: 2026-05-01T21:02:04Z
-updated_at: 2026-05-01T21:03:58Z
+updated_at: 2026-05-08T14:56:06Z
 sync:
     github:
         issue_number: "611"
-        synced_at: "2026-05-01T21:40:14Z"
+        synced_at: "2026-05-08T15:45:09Z"
 ---
 
 ## Context

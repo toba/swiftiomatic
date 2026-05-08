@@ -133,6 +133,31 @@ final class FileIteratorTests {
     let seen = allFilesSeen(iteratingOver: [tmpdir], followSymlinks: false, workingDirectory: tmpdir)
     #expect(Set(seen.map(\.relativePath)) == ["project/real1.swift", "project/real2.swift"])
   }
+
+  @Test func excludesPruneDirectoryDescendants() throws {
+    try touch("project/Generated/gen1.swift")
+    try touch("project/Generated/sub/gen2.swift")
+    let seen = allFilesSeen(
+      iteratingOver: [tmpdir],
+      followSymlinks: false,
+      excludes: ["**/Generated/**"],
+      workingDirectory: tmpdir
+    )
+    let names = Set(seen.map(\.relativePath))
+    #expect(names == ["project/real1.swift", "project/real2.swift"])
+  }
+
+  @Test func excludesSkipsMatchingFiles() throws {
+    try touch("project/Foo.generated.swift")
+    let seen = allFilesSeen(
+      iteratingOver: [tmpdir],
+      followSymlinks: false,
+      excludes: ["**/*.generated.swift"],
+      workingDirectory: tmpdir
+    )
+    #expect(!seen.contains { $0.relativePath.hasSuffix("Foo.generated.swift") })
+    #expect(seen.contains { $0.relativePath.hasSuffix("project/real1.swift") })
+  }
 }
 
 extension FileIteratorTests {
@@ -171,9 +196,10 @@ extension FileIteratorTests {
   private func allFilesSeen(
     iteratingOver urls: [URL],
     followSymlinks: Bool,
+    excludes: [String] = [],
     workingDirectory: URL = URL(fileURLWithPath: ".")
   ) -> [URL] {
-    let iterator = FileIterator(urls: urls, followSymlinks: followSymlinks, workingDirectory: workingDirectory)
+    let iterator = FileIterator(urls: urls, followSymlinks: followSymlinks, excludes: excludes, workingDirectory: workingDirectory)
     var seen: [URL] = []
     for next in iterator {
       seen.append(next)

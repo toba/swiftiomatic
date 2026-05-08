@@ -9,6 +9,9 @@
 - `flagUnusedIgnoreDirective`; lint `// sm:ignore` directives that suppress nothing ([#644](https://github.com/toba/swiftiomatic/issues/644))
 - `// sm:ignore:next`; support multiple rules in a single directive ([#645](https://github.com/toba/swiftiomatic/issues/645))
 - `LayoutSingleLineBodies`; inline mode now collapses single-statement closure bodies (`prepareDependencies { … }`)
+- Inline computed-property accessor blocks when `get`/`set` bodies are single statements ([#657](https://github.com/toba/swiftiomatic/issues/657))
+- `excludes` config option with glob support to skip folders during recursive lint/format
+- `sm lint` / `sm format`; default to recursing the cwd or directory argument without `--recursive`; auto-prune `.build`, `.git`, `DerivedData`, `node_modules`, and other known build/artifact dirs
 
 ### 🐞 Fixes
 
@@ -21,6 +24,9 @@
 - Lint-only mode now dispatches transform-based rules (`NoForceCast`, `UseKeyPath`); `rewrite: false, lint: .warn` configs emit findings instead of silently dropping them
 - Assignment-RHS chain precedence; bound `=`-break chunk so `try`/`await`-prefixed member chains wrap on the chain dot rather than the assignment
 - Assignment `=` no longer fires alongside chain breaks for member chains whose head has a trailing closure (e.g. SQL builder DSLs); retarget the head-call's group close before the discretionary chain dot when the chain is the RHS of `let/var =` ([#658](https://github.com/toba/swiftiomatic/issues/658))
+- Don't wrap `Regex` generic argument with tuple type when it fits ([#655](https://github.com/toba/swiftiomatic/issues/655))
+- `ReflowComments`; blockquotes no longer lose lazy continuation lines ([#654](https://github.com/toba/swiftiomatic/issues/654))
+- `ReflowComments`; punctuation around inline code spans no longer gets space-separated ([#656](https://github.com/toba/swiftiomatic/issues/656))
 
 ### 🗜️ Tweaks
 

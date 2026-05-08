@@ -238,29 +238,15 @@ class Frontend: @unchecked Sendable {
 
     /// Runs the linter or formatter over the inputs.
     final func run() {
-        if lintFormatOptions.paths == ["-"] {
-            processStandardInput()
-        } else if lintFormatOptions.paths.isEmpty {
-            diagnosticsEngine.emitWarning(
-                """
-                Running sm without input paths is deprecated and will be removed in the future.
+        let resolved = SwiftiomaticKit.resolveInputs(
+            rawPaths: lintFormatOptions.paths,
+            stdinIsTTY: isTTY(FileHandle.standardInput)
+        )
 
-                Please update your invocation to do either of the following:
-
-                - Pass `-` to read from stdin (e.g., `cat MyFile.swift | sm -`).
-                - Pass one or more paths to Swift source files or directories containing
-                  Swift source files. When passing directories, make sure to include the
-                  `--recursive` flag.
-
-                For more information, use the `--help` option.
-                """
-            )
-            processStandardInput()
-        } else {
-            processURLs(
-                lintFormatOptions.paths.map(URL.init(fileURLWithPath:)),
-                parallel: lintFormatOptions.parallel
-            )
+        switch resolved {
+            case .stdin: processStandardInput()
+            case let .urls(urls):
+                processURLs(urls, parallel: lintFormatOptions.parallel)
         }
     }
 
@@ -302,20 +288,42 @@ class Frontend: @unchecked Sendable {
     private func processURLs(_ urls: [URL], parallel: Bool) {
         assert(!urls.isEmpty, "processURLs(_:) should only be called when 'urls' is non-empty.")
 
+        let excludes = excludePatterns(forInputs: urls)
+
         if parallel {
             // Materialize URLs only (cheap path strings); open and read each file inside the worker
             // so peak memory stays at ~workers × file_size instead of total-source-bytes.
             let urlsToProcess = Array(
-                FileIterator(urls: urls, followSymlinks: lintFormatOptions.followSymlinks))
+                FileIterator(
+                    urls: urls,
+                    followSymlinks: lintFormatOptions.followSymlinks,
+                    excludes: excludes
+                ))
             DispatchQueue.concurrentPerform(iterations: urlsToProcess.count) { index in
                 if let file = openAndPrepareFile(at: urlsToProcess[index]) { processFile(file) }
             }
         } else {
-            FileIterator(urls: urls, followSymlinks: lintFormatOptions.followSymlinks)
-                .lazy
-                .compactMap(openAndPrepareFile)
-                .forEach(processFile)
+            FileIterator(
+                urls: urls,
+                followSymlinks: lintFormatOptions.followSymlinks,
+                excludes: excludes
+            )
+            .lazy
+            .compactMap(openAndPrepareFile)
+            .forEach(processFile)
         }
+    }
+
+    /// Loads the configuration that applies to the first input path to obtain the `excludes`
+    /// list used to prune the recursive walk. Per-file configuration is still resolved during
+    /// processing — this lookup only governs which files the iterator yields.
+    private func excludePatterns(forInputs urls: [URL]) -> [String] {
+        let anchor = urls.first ?? URL(fileURLWithPath: FileManager.default.currentDirectoryPath)
+        let configuration = configurationProvider.provide(
+            forConfigPathOrString: configurationOptions.configuration,
+            orForSwiftFileAt: anchor
+        )
+        return defaultRecursionExcludes + (configuration?[Excludes.self] ?? [])
     }
 
     /// Read and prepare the file at the given path for processing, optionally synchronizing

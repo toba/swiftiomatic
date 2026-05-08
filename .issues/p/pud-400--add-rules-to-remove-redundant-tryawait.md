@@ -1,15 +1,15 @@
 ---
 # pud-400
 title: Research adding DropRedundantTry / DropRedundantAwait rules
-status: draft
+status: deferred
 type: task
 priority: low
 created_at: 2026-05-01T21:25:06Z
-updated_at: 2026-05-01T21:32:55Z
+updated_at: 2026-05-08T14:55:45Z
 sync:
     github:
         issue_number: "612"
-        synced_at: "2026-05-01T21:40:14Z"
+        synced_at: "2026-05-08T15:45:09Z"
 ---
 
 Xcode flags `try` (and `await`) on call sites that don't actually throw (or suspend) — e.g. `fields = try ReferenceFields(from: json, with: configuration)` produces "No calls to throwing functions occur within 'try' expression." These are common after refactors and are tedious to clean up by hand.

@@ -1,17 +1,17 @@
 ---
 # qo0-blv
 title: Closure body inlines onto new line under nestedCallLayout=inline when call args wrap
-status: draft
+status: deferred
 type: bug
 priority: normal
 created_at: 2026-04-26T03:56:52Z
-updated_at: 2026-04-26T17:30:21Z
+updated_at: 2026-05-08T14:55:41Z
 blocked_by:
     - plm-kyp
 sync:
     github:
         issue_number: "442"
-        synced_at: "2026-04-26T18:08:47Z"
+        synced_at: "2026-05-08T15:45:09Z"
 ---
 
 ## Problem

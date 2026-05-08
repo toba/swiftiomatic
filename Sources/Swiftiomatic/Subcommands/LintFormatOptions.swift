@@ -118,10 +118,6 @@ struct LintFormatOptions: ParsableArguments {
     @Flag(help: .hidden) var debugDumpTokenStream = false
 
     mutating func validate() throws {
-        if recursive, paths.isEmpty {
-            throw ValidationError("'--recursive' is only valid when formatting or linting files")
-        }
-
         if assumeFilename != nil, !(paths.isEmpty || paths == ["-"]) {
             throw ValidationError("'--assume-filename' is only valid when reading from stdin")
         }
@@ -136,23 +132,6 @@ struct LintFormatOptions: ParsableArguments {
 
         if !offsets.isEmpty, !lines.isEmpty {
             throw ValidationError("'--offsets' and '--lines' are mutually exclusive")
-        }
-
-        if !paths.isEmpty, !recursive {
-            for path in paths {
-                var isDir: ObjCBool = false
-
-                if FileManager.default.fileExists(atPath: path, isDirectory: &isDir),
-                   isDir.boolValue
-                {
-                    throw ValidationError(
-                        """
-                        '\(path)' is a path to a directory, not a Swift source file.
-                        Use the '--recursive' option to handle directories.
-                        """
-                    )
-                }
-            }
         }
     }
 }

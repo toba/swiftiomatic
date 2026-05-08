@@ -1,72 +1,77 @@
 nope:
-    rules:
-        - name: git-no-verify
-          pattern: 'git\s+.*--no-verify'
-          message: "--no-verify is never allowed — fix the issue that's failing the hook instead"
-        - name: git-checkout-switch
-          pattern: 'git\s+.*(checkout|switch|stash|restore)'
-          message: "git checkout/switch not allowed — branch changes require user approval"
-        - name: altering-jig
-          pattern: 'jig.yaml'
-          tools: ["Write", "Edit"]
-          message: "cannot reconfigure jig directly — print desired config and user will edit"
-        - name: altering-config
-          pattern: 'swiftiomatic.json'
-          tools: ["Write", "Edit"]
-          message: "agent may not refer to the swiftiomatic.json file — just say 'configuration'"
-        - name: bypassing-mcp
-          pattern: 'swift (build|test)'
-          message: "Use xc-mcp to build and test"
-        - name: bypassing-mcp2
-          pattern: 'xcrun xctest'
-          message: "Use xc-mcp to build and test"
-        - name: altering-project
-          pattern: '\.(xcode|pbx)proj'
-          tools: ["Write", "Edit"]
-          message: "Project may only be modified using xc-mcp"
-        - name: incompetent-agent
-          pattern: '"\, timeout: \d{3,}\)'
-          message: "Code is bad if anything takes that long. Must user shorter timeout."
+  rules:
+    - name: git-no-verify
+      pattern: 'git\s+.*--no-verify'
+      message: "--no-verify is never allowed — fix the issue that's failing the hook instead"
+    - name: git-checkout-switch
+      pattern: 'git\s+.*(checkout|switch|stash|restore)'
+      message: "git checkout/switch not allowed — branch changes require user approval"
+    - name: altering-jig
+      pattern: "jig.yaml"
+      tools: ["Write", "Edit"]
+      message: "cannot reconfigure jig directly — print desired config and user will edit"
+    - name: altering-config
+      pattern: "swiftiomatic.json"
+      tools: ["Write", "Edit"]
+      message: "agent may not refer to the swiftiomatic.json file — just say 'configuration'"
+    - name: bypassing-mcp
+      pattern: "swift (build|test)"
+      message: "Use xc-mcp to build and test"
+    - name: bypassing-mcp2
+      pattern: "xcrun xctest"
+      message: "Use xc-mcp to build and test"
+    - name: altering-project
+      pattern: '\.(xcode|pbx)proj'
+      tools: ["Write", "Edit"]
+      message: "Project may only be modified using xc-mcp"
+    - name: incompetent-agent
+      pattern: '"\, timeout: \d{3,}\)'
+      message: "Code is bad if anything takes that long. Must user shorter timeout."
 companions:
-    brew: toba/homebrew-tap
+  brew: toba/homebrew-tap
 todo:
-    path: .issues
-    default_status: ready
-    default_type: task
-    sync:
-        github:
-            repo: toba/swiftiomatic
+  path: .issues
+  default_status: ready
+  default_type: task
+  sync:
+    github:
+      repo: toba/swiftiomatic
+  extra_statuses:
+    in-progress: true
+    deferred: true
+    draft: true
+    scrapped: true
 citations:
-    - repo: swiftlang/swift-syntax
-      branch: main
-      last_checked_sha: ac8f50bf4bd0d0a333c5abcb07a7544b431ecc66
-      last_checked_date: "2026-05-08T14:18:59Z"
-      paths:
-        high: [Sources/**/*.swift]
-        medium: [Package.swift]
-        low: [.github/**, README.md, LICENSE]
-    - repo: nicklockwood/SwiftFormat
-      branch: main
-      last_checked_sha: a5fa7a6a57abeb834df1b3fa43ea9133137d5ade
-      last_checked_date: "2026-05-08T14:18:59Z"
-      paths:
-        high: [Sources/**/*.swift]
-        medium: [Package.swift]
-        low: [.github/**, README.md, LICENSE]
-    - repo: realm/SwiftLint
-      branch: main
-      last_checked_sha: 33430347e894339216fddaae7e12606660348106
-      last_checked_date: "2026-05-08T14:18:59Z"
-      paths:
-        high: ['**/*.swift']
-        medium: [Package.swift]
-        low: [.github/**, README.md, LICENSE]
-    - repo: swiftlang/swift-format
-      branch: main
-      last_checked_sha: 4c86a1a7086b3eef3f55d2542926fa4c06fa70db
-      last_checked_date: "2026-05-08T14:18:59Z"
-      paths:
-        high: [Sources/**/*.swift]
-        medium: [Package.swift]
-        low: [.github/**, README.md, LICENSE]
+  - repo: swiftlang/swift-syntax
+    branch: main
+    last_checked_sha: ac8f50bf4bd0d0a333c5abcb07a7544b431ecc66
+    last_checked_date: "2026-05-08T14:18:59Z"
+    paths:
+      high: [Sources/**/*.swift]
+      medium: [Package.swift]
+      low: [.github/**, README.md, LICENSE]
+  - repo: nicklockwood/SwiftFormat
+    branch: main
+    last_checked_sha: a5fa7a6a57abeb834df1b3fa43ea9133137d5ade
+    last_checked_date: "2026-05-08T14:18:59Z"
+    paths:
+      high: [Sources/**/*.swift]
+      medium: [Package.swift]
+      low: [.github/**, README.md, LICENSE]
+  - repo: realm/SwiftLint
+    branch: main
+    last_checked_sha: 33430347e894339216fddaae7e12606660348106
+    last_checked_date: "2026-05-08T14:18:59Z"
+    paths:
+      high: ["**/*.swift"]
+      medium: [Package.swift]
+      low: [.github/**, README.md, LICENSE]
+  - repo: swiftlang/swift-format
+    branch: main
+    last_checked_sha: 4c86a1a7086b3eef3f55d2542926fa4c06fa70db
+    last_checked_date: "2026-05-08T14:18:59Z"
+    paths:
+      high: [Sources/**/*.swift]
+      medium: [Package.swift]
+      low: [.github/**, README.md, LICENSE]
 changelog: weekly

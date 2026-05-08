@@ -22,6 +22,10 @@ package struct FileIterator: Sequence, IteratorProtocol {
     /// will be ignored.
     private let followSymlinks: Bool
 
+    /// Glob patterns matching paths (relative to `workingDirectory`) to skip. Matching directories
+    /// are pruned (not descended into); matching files are not yielded.
+    private let excludes: [String]
+
     /// Iterator for the list of URLs.
     private var urlIterator: Array<URL>.Iterator
 
@@ -53,12 +57,41 @@ package struct FileIterator: Sequence, IteratorProtocol {
     package init(
         urls: [URL],
         followSymlinks: Bool,
+        excludes: [String] = [],
         workingDirectory: URL = .init(fileURLWithPath: ".")
     ) {
         self.workingDirectory = workingDirectory
         self.urls = urls
         urlIterator = self.urls.makeIterator()
         self.followSymlinks = followSymlinks
+        self.excludes = excludes
+    }
+
+    /// Returns candidate paths to test against exclude globs: relative to the current input
+    /// directory (preferred), relative to the working directory, and the absolute path. Trying all
+    /// three lets users write patterns like `vendor/**` regardless of whether they invoked sm from
+    /// the project root, with an absolute path, or with a relative path.
+    private func excludeCandidates(for url: URL) -> [String] {
+        let path = url.standardizedFileURL.path
+        var out: [String] = []
+        for base in [currentDirectory.standardizedFileURL, workingDirectory.standardizedFileURL] {
+            let basePath = base.path
+            guard !basePath.isEmpty, basePath != "/", path.hasPrefix(basePath) else { continue }
+            let trimmed = String(
+                path.dropFirst(basePath.count).drop(while: { $0 == "/" || $0 == #"\"# })
+            )
+            if !trimmed.isEmpty { out.append(trimmed) }
+        }
+        out.append(path)
+        return out
+    }
+
+    private func isExcluded(_ url: URL) -> Bool {
+        guard !excludes.isEmpty else { return false }
+        for candidate in excludeCandidates(for: url) {
+            if Glob.matchesAny(excludes, path: candidate) { return true }
+        }
+        return false
     }
 
     /// Iterate through the "paths" list, and emit the file paths in it. If we encounter a
@@ -74,6 +107,7 @@ package struct FileIterator: Sequence, IteratorProtocol {
                 guard let next = urlIterator.next() else { return nil }
                 guard let (next, fileType) = fileAndType(at: next, followSymlinks: followSymlinks)
                 else { continue }
+                if isExcluded(next) { continue }
 
                 switch fileType {
                     case .typeSymbolicLink: continue
@@ -100,9 +134,20 @@ package struct FileIterator: Sequence, IteratorProtocol {
 
         while output == nil {
             guard let item = dirIterator?.nextObject() as? URL else { break }
+            // Prune excluded directories before descending. The enumerator surfaces directories as
+            // intermediate results when it encounters them; skipping descendants here keeps us from
+            // walking into excluded trees like `.build/`.
+            if !excludes.isEmpty,
+               (try? item.resourceValues(forKeys: [.isDirectoryKey]).isDirectory) == true,
+               isExcluded(item)
+            {
+                dirIterator?.skipDescendants()
+                continue
+            }
             guard item.lastPathComponent.hasSuffix(fileSuffix),
                   let (item, fileType) = fileAndType(at: item, followSymlinks: followSymlinks)
             else { continue }
+            if isExcluded(item) { continue }
 
             switch fileType {
                 case .typeRegular:

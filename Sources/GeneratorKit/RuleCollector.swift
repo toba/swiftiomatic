@@ -568,6 +568,18 @@ package final class RuleCollector {
             if initializer.value.is(BooleanLiteralExprSyntax.self) { return .boolean }
             if initializer.value.is(IntegerLiteralExprSyntax.self) { return .integer }
 
+            // Array literal → currently treated as `[String]`. Other element types are not
+            // supported by the schema generator yet.
+            if initializer.value.is(ArrayExprSyntax.self) { return .stringArray }
+            // `[]` typed as `[String]` (or similar) appears as `Array<String>()` or just `[]`
+            // with type annotation. Detect via type annotation.
+            if let typeAnnotation = binding.typeAnnotation,
+               let array = typeAnnotation.type.as(ArrayTypeSyntax.self),
+               array.element.as(IdentifierTypeSyntax.self)?.name.text == "String"
+            {
+                return .stringArray
+            }
+
             // Check for `.enumCase` → find the enum type in the file via type annotation.
             if let memberAccess = initializer.value.as(MemberAccessExprSyntax.self),
                let typeAnnotation = binding.typeAnnotation,

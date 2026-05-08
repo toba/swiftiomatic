@@ -1,15 +1,15 @@
 ---
 # fjv-y9j
 title: 'if-stmt: keep inline body when conditions wrap (deferred from n6q-htv)'
-status: draft
+status: deferred
 type: feature
 priority: normal
 created_at: 2026-04-26T18:07:08Z
-updated_at: 2026-04-26T18:07:08Z
+updated_at: 2026-05-08T14:55:59Z
 sync:
     github:
         issue_number: "446"
-        synced_at: "2026-04-26T18:08:47Z"
+        synced_at: "2026-05-08T15:45:09Z"
 ---
 
 ## Problem
