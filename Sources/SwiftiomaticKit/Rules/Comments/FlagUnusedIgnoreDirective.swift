@@ -22,9 +22,18 @@ final class FlagUnusedIgnoreDirective: LintSyntaxRule<LintOnlyValue>, @unchecked
     /// Runs after every other rule has visited the file (and stamped hits on `RuleMask`'s
     /// directives). For each subset directive, emit one finding per unused rule name.
     override func visitPost(_ node: SourceFileSyntax) {
+        let queried = context.ruleMask.queriedRules
         for directive in context.ruleMask.directives {
             guard case let .subset(ruleNames) = directive.scope else { continue }
             for name in ruleNames where directive.hitsPerRule[name] == nil {
+                // Skip known rule keys that never queried the mask in this run: the rule is
+                // inactive (disabled by config, or its implementation never reaches `ruleState`),
+                // so we have no signal whether the directive is a dead hedge or a valid one.
+                // Typo'd names (not in `allRuleKeys`) are still flagged — they can't suppress
+                // anything by definition.
+                if !queried.contains(name), ConfigurationRegistry.allRuleKeys.contains(name) {
+                    continue
+                }
                 emitUnusedFinding(for: name, at: directive.location)
             }
         }

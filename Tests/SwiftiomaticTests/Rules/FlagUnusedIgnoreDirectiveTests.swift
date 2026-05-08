@@ -51,6 +51,25 @@ struct FlagUnusedIgnoreDirectiveTests: RuleTesting {
     )
   }
 
+  /// A known rule name that the run never actually queries (because it's not enabled, or its
+  /// implementation never reaches `RuleMask.ruleState`) is NOT flagged. The directive may still
+  /// be a valid hedge — we have no signal it's dead. Only typos and rules that DID run elsewhere
+  /// in the file are flagged.
+  @Test func testKnownRuleNeverQueriedNotFlagged() {
+    var config = Configuration.forTesting
+    config.disableAllRules()
+    config.enableRule(named: "flagUnusedIgnoreDirective")
+    assertLint(
+      FlagUnusedIgnoreDirective.self,
+      """
+      // sm:ignore:next noForceCast
+      let x = obj as! Foo
+      """,
+      findings: [],
+      configuration: config
+    )
+  }
+
   /// Mix of valid (suppressing) and typo'd names: only the unused name is flagged.
   @Test func testPartialUseFlagsOnlyUnused() {
     // `useForLoopNotForEach` will suppress the `.forEach` finding via the directive (real hit);

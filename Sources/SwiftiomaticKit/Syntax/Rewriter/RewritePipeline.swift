@@ -384,6 +384,9 @@ final class RewritePipeline: SyntaxRewriter {
         apply(DropUnusedArguments.self, to: &concrete, original: node, gate: gate) {
             DropUnusedArguments.transform($0, original: $1, parent: parent, context: $2)
         }
+        apply(LayoutSingleLineBodies.self, to: &concrete, original: node, gate: gate) {
+            LayoutSingleLineBodies.transform($0, original: $1, parent: parent, context: $2)
+        }
         return ExprSyntax(concrete)
     }
 

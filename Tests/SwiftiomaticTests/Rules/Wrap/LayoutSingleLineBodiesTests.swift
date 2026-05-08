@@ -1522,4 +1522,119 @@ struct SingleLineBodiesInlineTests: RuleTesting {
         """,
       configuration: inlineConfig)
   }
+
+  // MARK: - Closures
+
+  @Test func multiLineTrailingClosureInlines() {
+    assertFormatting(
+      LayoutSingleLineBodies.self,
+      input: """
+        prepareDependencies 1️⃣{
+            $0.defaultDatabase = try! AppDatabase.actual.connection
+        }
+        """,
+      expected: """
+        prepareDependencies { $0.defaultDatabase = try! AppDatabase.actual.connection }
+        """,
+      findings: [FindingSpec("1️⃣", message: "place closure body on same line")],
+      configuration: inlineConfig)
+  }
+
+  @Test func multiLineClosureWithSignatureInlines() {
+    assertFormatting(
+      LayoutSingleLineBodies.self,
+      input: """
+        let f = 1️⃣{ x in
+            return x + 1
+        }
+        """,
+      expected: """
+        let f = { x in return x + 1 }
+        """,
+      findings: [FindingSpec("1️⃣", message: "place closure body on same line")],
+      configuration: inlineConfig)
+  }
+
+  @Test func alreadyInlineClosureUnchanged() {
+    assertFormatting(
+      LayoutSingleLineBodies.self,
+      input: """
+        array.map { $0 * 2 }
+        """,
+      expected: """
+        array.map { $0 * 2 }
+        """,
+      configuration: inlineConfig)
+  }
+
+  @Test func multiStatementClosureNotInlined() {
+    assertFormatting(
+      LayoutSingleLineBodies.self,
+      input: """
+        run {
+            let x = 1
+            print(x)
+        }
+        """,
+      expected: """
+        run {
+            let x = 1
+            print(x)
+        }
+        """,
+      configuration: inlineConfig)
+  }
+
+  @Test func closureTooLongNotInlined() {
+    var config = inlineConfig
+    config[LineLength.self] = 40
+    assertFormatting(
+      LayoutSingleLineBodies.self,
+      input: """
+        run {
+            doSomethingVeryLongThatWontFitOnALine()
+        }
+        """,
+      expected: """
+        run {
+            doSomethingVeryLongThatWontFitOnALine()
+        }
+        """,
+      configuration: config)
+  }
+
+  @Test func closureWithCommentNotInlined() {
+    assertFormatting(
+      LayoutSingleLineBodies.self,
+      input: """
+        run {
+            // important
+            doIt()
+        }
+        """,
+      expected: """
+        run {
+            // important
+            doIt()
+        }
+        """,
+      configuration: inlineConfig)
+  }
+
+  @Test func closureAfterIgnoreCommentInlines() {
+    assertFormatting(
+      LayoutSingleLineBodies.self,
+      input: """
+        // sm:ignore:next noForceTry
+        prepareDependencies 1️⃣{
+            $0.defaultDatabase = try! AppDatabase.actual.connection
+        }
+        """,
+      expected: """
+        // sm:ignore:next noForceTry
+        prepareDependencies { $0.defaultDatabase = try! AppDatabase.actual.connection }
+        """,
+      findings: [FindingSpec("1️⃣", message: "place closure body on same line")],
+      configuration: inlineConfig)
+  }
 }

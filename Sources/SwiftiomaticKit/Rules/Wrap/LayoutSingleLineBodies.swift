@@ -170,6 +170,16 @@ extension LayoutSingleLineBodies {
     }
 
     static func transform(
+        _ node: ClosureExprSyntax,
+        original _: ClosureExprSyntax,
+        parent _: Syntax?,
+        context: Context
+    ) -> ExprSyntax {
+        guard Self.mode(context: context) == .inline else { return ExprSyntax(node) }
+        return Self.inlineClosure(node, context: context)
+    }
+
+    static func transform(
         _ node: AccessorDeclSyntax,
         original _: AccessorDeclSyntax,
         parent _: Syntax?,
@@ -931,6 +941,54 @@ extension LayoutSingleLineBodies {
         return ExprSyntax(result)
     }
 
+    fileprivate static func inlineClosure(
+        _ node: ClosureExprSyntax,
+        context: Context
+    ) -> ExprSyntax {
+        guard node.statements.count == 1,
+              let firstStmt = node.statements.first else { return ExprSyntax(node) }
+
+        let isMultiline =
+            firstStmt.leadingTrivia.containsNewlines
+            || node.rightBrace.leadingTrivia.containsNewlines
+            || node.leftBrace.trailingTrivia.containsNewlines
+            || (node.signature?.trailingTrivia.containsNewlines ?? false)
+        guard isMultiline else { return ExprSyntax(node) }
+
+        if node.leftBrace.trailingTrivia.hasAnyComments { return ExprSyntax(node) }
+        if let sig = node.signature {
+            if sig.leadingTrivia.hasAnyComments { return ExprSyntax(node) }
+            if sig.trailingTrivia.hasAnyComments { return ExprSyntax(node) }
+        }
+        if firstStmt.leadingTrivia.hasAnyComments { return ExprSyntax(node) }
+        if firstStmt.trailingTrivia.hasAnyComments { return ExprSyntax(node) }
+        if node.rightBrace.leadingTrivia.hasAnyComments { return ExprSyntax(node) }
+
+        let bodyText = firstStmt.trimmedDescription
+        let signatureText = node.signature.map { $0.trimmedDescription + " " } ?? ""
+        let braceEndCol = node.leftBrace
+            .endLocation(converter: context.sourceLocationConverter).column
+        let prefix = braceEndCol - 1
+        let totalLength = prefix + 1 + signatureText.count + bodyText.count + 2
+        guard totalLength <= Self.maxLength(context: context) else { return ExprSyntax(node) }
+
+        Self.diagnose(.inlineClosureBody, on: node.leftBrace, context: context)
+
+        var result = node
+        result.leftBrace = result.leftBrace.with(\.trailingTrivia, .space)
+        if let sig = result.signature {
+            result.signature = sig
+                .with(\.leadingTrivia, [])
+                .with(\.trailingTrivia, .space)
+        }
+        var items = Array(result.statements)
+        items[0].leadingTrivia = []
+        items[0].trailingTrivia = []
+        result.statements = CodeBlockItemListSyntax(items)
+        result.rightBrace = result.rightBrace.with(\.leadingTrivia, .space)
+        return ExprSyntax(result)
+    }
+
     fileprivate static func inlineObserver(
         _ node: AccessorDeclSyntax,
         context: Context
@@ -1054,6 +1112,8 @@ fileprivate extension Finding.Message {
         "place property body on same line as declaration"
 
     static let inlineObserverBody: Finding.Message = "place observer body on same line as accessor"
+
+    static let inlineClosureBody: Finding.Message = "place closure body on same line"
 
     static let inlineCollectionLiteral: Finding.Message =
         "place collection literal on same line as declaration"

@@ -159,7 +159,8 @@ package final class LintCoordinator {
             findingConsumer: findingConsumer,
             fileURL: url,
             sourceFileSyntax: syntax,
-            source: source
+            source: source,
+            isLintMode: true
         )
 
         // Drive finding emission for compact-pipeline rules (those with `static willEnter` /

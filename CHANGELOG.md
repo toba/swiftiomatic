@@ -8,6 +8,7 @@
 - `NestedCallLayout`; collapse wrapped multi-arg single-level calls and `MacroExpansionExprSyntax` (e.g. `#externalMacro(module:type:)`) onto one line when they fit ([#643](https://github.com/toba/swiftiomatic/issues/643))
 - `flagUnusedIgnoreDirective`; lint `// sm:ignore` directives that suppress nothing ([#644](https://github.com/toba/swiftiomatic/issues/644))
 - `// sm:ignore:next`; support multiple rules in a single directive ([#645](https://github.com/toba/swiftiomatic/issues/645))
+- `LayoutSingleLineBodies`; inline mode now collapses single-statement closure bodies (`prepareDependencies { … }`)
 
 ### 🐞 Fixes
 
@@ -16,11 +17,15 @@
 - `flagForEachIDSelfInView`; skip false-positive on `id: \.element.id` from `.enumerated()` ([#647](https://github.com/toba/swiftiomatic/issues/647))
 - `useLazyForLongChainOps`; skip chains that already include `.lazy` (multiline receivers no longer mis-fire) ([#648](https://github.com/toba/swiftiomatic/issues/648))
 - `flagForEachIDSelfInView`; skip when collection is `*.indices` (`Range<Int>`) ([#649](https://github.com/toba/swiftiomatic/issues/649))
+- `flagUnusedIgnoreDirective`; skip flagging known rules that never queried `RuleMask` (eliminates noise on `// sm:ignore:next noForceCast` / `useKeyPath`)
+- Lint-only mode now dispatches transform-based rules (`NoForceCast`, `UseKeyPath`); `rewrite: false, lint: .warn` configs emit findings instead of silently dropping them
+- Assignment-RHS chain precedence; bound `=`-break chunk so `try`/`await`-prefixed member chains wrap on the chain dot rather than the assignment
 
 ### 🗜️ Tweaks
 
-- Investigate upstream HIGH cite changes; defer `unused_imports` rule and first-class `@diagnose` (`SwiftWarningControl`) adoption to follow-ups
-- Evaluate swift-syntax 604 prerelease / Swift 6.3.1 alignment; skip both; `603.0.1` is stable and no 604-only API is needed today
+- Investigate upstream HIGH cite changes; defer `unused_imports` rule and first-class `@diagnose` (`SwiftWarningControl`) adoption to follow-ups ([#640](https://github.com/toba/swiftiomatic/issues/640))
+- Evaluate swift-syntax 604 prerelease / Swift 6.3.1 alignment; skip both; `603.0.1` is stable and no 604-only API is needed today ([#642](https://github.com/toba/swiftiomatic/issues/642))
+- Address build warnings ([#639](https://github.com/toba/swiftiomatic/issues/639))
 - `Lint pipeline perf & cleanup follow-ups`; close out epic covering P2, P3, P6, P8–P14, C1, C2, C4, N1–N5, M1, M2, M4 ([#536](https://github.com/toba/swiftiomatic/issues/536))
 
 ## Week of Apr 26 – May 02, 2026

@@ -236,6 +236,25 @@ struct AssignmentExprTests: LayoutTesting {
     assertLayout(input: input, expected: expected, linelength: 70)
   }
 
+  @Test func assignmentWithTryPrefixedChainRHS() {
+    // Regression: a `try chain.method()...` RHS must still receive chain-precedence
+    // treatment. Without the `KeywordModifiedExpr` unwrap in `isMemberAccessChain` and the
+    // matching open/close placement in `visitFunctionCallExpr`, the formatter wraps after
+    // `=` (rank 4) before breaking at the chain's dots (rank 2).
+    let input =
+      """
+      let result = try someBaseValue.firstMethodCall(arg).secondMethodCall(arg).thirdMethodCall(arg).finalCall()
+      """
+    let expected =
+      """
+      let result = try someBaseValue.firstMethodCall(arg)
+        .secondMethodCall(arg).thirdMethodCall(arg)
+        .finalCall()
+
+      """
+    assertLayout(input: input, expected: expected, linelength: 55)
+  }
+
   @Test func assignmentWithChainAsCallArgumentFitsOnOneLine() {
     // The RHS is `.init(type: chain)` where the chain
     // `type.with(\.leadingTrivia, .space).with(\.trailingTrivia, .space)` fits within the

@@ -62,6 +62,12 @@ package final class Context {
     /// `enabledRules` ; populated alongside it in `init` . `shouldRewrite` consults this set so a
     /// rule configured with `rewrite: false, lint: .warn` lints but never rewrites — independent of
     /// the lint-or-rewrite gate used by `shouldFormat` .
+    ///
+    /// In lint-only mode (set by `LintCoordinator` ), this set is widened to equal
+    /// `enabledRules` so that `RewritePipeline` dispatches every active rule's `transform` —
+    /// including those configured `rewrite: false, lint: .warn` — and any `Self.diagnose` calls
+    /// inside `transform` fire. The mutated tree is discarded by the lint coordinator regardless,
+    /// so widening is safe. See issue fn9-zk6.
     let rewriteEnabledRules: Set<ObjectIdentifier>
 
     // MARK: - Per-rule mutable state
@@ -107,6 +113,11 @@ package final class Context {
         .map { (titlecased: $0.capitalized, uppercased: $0.uppercased()) }
 
     /// Creates a new Context with the provided configuration, diagnostic engine, and file URL.
+    ///
+    /// - Parameter isLintMode: When `true` , `rewriteEnabledRules` is widened to equal
+    ///   `enabledRules` so transform-based rules with `rewrite: false, lint: .warn` still
+    ///   dispatch — required for findings emitted from inside `transform` to fire. Set by
+    ///   `LintCoordinator` ; the mutated tree it produces is discarded.
     package init(
         configuration: Configuration,
         operatorTable: OperatorTable,
@@ -114,7 +125,8 @@ package final class Context {
         fileURL: URL,
         selection: Selection = .infinite,
         sourceFileSyntax: SourceFileSyntax,
-        source: String? = nil
+        source: String? = nil,
+        isLintMode: Bool = false
     ) {
         self.configuration = configuration
         self.operatorTable = operatorTable
@@ -142,7 +154,10 @@ package final class Context {
             }
         }
         enabledRules = enabled
-        rewriteEnabledRules = rewriteEnabled
+        // In lint mode the rewriter's output is discarded, so widen the rewrite gate to dispatch
+        // every active rule. This lets transform-emitted findings fire for rules configured
+        // `rewrite: false, lint: .warn` — see issue fn9-zk6.
+        rewriteEnabledRules = isLintMode ? enabled : rewriteEnabled
     }
 
     /// Given a rule's name and the node it is examining, determine if the rule is disabled at this

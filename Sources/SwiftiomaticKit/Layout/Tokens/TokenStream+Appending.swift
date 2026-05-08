@@ -408,6 +408,9 @@ extension TokenStream {
     /// `foo.bar(...)` , `foo.bar(...).baz(...)` ). Used to detect method-chaining RHS expressions
     /// in assignments so the formatter prefers breaking at dots rather than after `=` .
     func isMemberAccessChain(_ expr: ExprSyntax) -> Bool {
+        if let modifiedExpr = expr.asProtocol(KeywordModifiedExprSyntax.self) {
+            return isMemberAccessChain(modifiedExpr.expression)
+        }
         if let callingExpr = expr.asProtocol(CallingExprSyntax.self) {
             return callingExpr.calledExpression.is(MemberAccessExprSyntax.self)
                 || isMemberAccessChain(callingExpr.calledExpression)

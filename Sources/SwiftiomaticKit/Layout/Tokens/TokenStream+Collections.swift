@@ -194,29 +194,30 @@ extension TokenStream {
                     && node.additionalTrailingClosures.isEmpty
                     && isPartOfOuterMemberAccessChain(node)
 
-                if !isKeywordModified {
-                    if isInOuterChain {
-                        // Place `.open` before the chain break (i.e., before the period of
-                        // `.method` ) and `.close` after the call's right paren. This extends the
-                        // chain break's chunk across the entire `.method(args)` , so when the outer
-                        // chain doesn't fit, the chain break ( `.` rank 2) fires before the args
-                        // break (rank 3) — matching documented break precedence.
-                        before(calledMemberAccessExpr.period, tokens: .open)
+                if isInOuterChain {
+                    // Place `.open` before the chain break (i.e., before the period of
+                    // `.method` ) and `.close` after the call's right paren. This extends the
+                    // chain break's chunk across the entire `.method(args)` , so when the outer
+                    // chain doesn't fit, the chain break ( `.` rank 2) fires before the args
+                    // break (rank 3) — matching documented break precedence. We still add this
+                    // group when wrapped in `try` / `await` / `unsafe` , because the
+                    // keyword-modifier group only spans the head ( `try base` ); chain-break
+                    // precedence still needs an explicit group around `.method(args)` .
+                    before(calledMemberAccessExpr.period, tokens: .open)
 
-                        if let rightParen = node.rightParen {
-                            after(rightParen, tokens: .close)
-                        } else {
-                            after(node.lastToken(viewMode: .sourceAccurate), tokens: .close)
-                        }
+                    if let rightParen = node.rightParen {
+                        after(rightParen, tokens: .close)
                     } else {
-                        before(base.firstToken(viewMode: .sourceAccurate), tokens: .open)
-                        after(
-                            calledMemberAccessExpr.declName.baseName.lastToken(
-                                viewMode: .sourceAccurate
-                            ),
-                            tokens: .close
-                        )
+                        after(node.lastToken(viewMode: .sourceAccurate), tokens: .close)
                     }
+                } else if !isKeywordModified {
+                    before(base.firstToken(viewMode: .sourceAccurate), tokens: .open)
+                    after(
+                        calledMemberAccessExpr.declName.baseName.lastToken(
+                            viewMode: .sourceAccurate
+                        ),
+                        tokens: .close
+                    )
                 }
             }
         }
