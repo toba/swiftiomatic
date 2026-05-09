@@ -69,10 +69,10 @@ extension TokenStream {
         {
             // When the type itself wraps via its own paren / brace / bracket delimiter (e.g. a
             // tuple type, function type, inline-array type, or a single-argument generic like
-            // `Regex<(...)>` ), emit a plain space after `:` instead of a continuation break so
-            // the type stays glued to the binding name and wraps via its own inner delimiter.
-            // Without this, the multi-line interior of the type would expand the `:` continuation
-            // break's chunk and force the type onto its own line.
+            // `Regex<(...)>` ), emit a plain space after `:` instead of a continuation break so the
+            // type stays glued to the binding name and wraps via its own inner delimiter. Without
+            // this, the multi-line interior of the type would expand the `:` continuation break's
+            // chunk and force the type onto its own line.
             let typeIsSelfWrapping = openingSelfWrappingDelimiter(of: typeAnnotation.type) != nil
 
             if typeIsSelfWrapping {
@@ -162,12 +162,7 @@ extension TokenStream {
         after(node.typealiasKeyword, tokens: .break)
 
         if let genericWhereClause = node.genericWhereClause {
-            before(
-                genericWhereClause.firstToken(viewMode: .sourceAccurate),
-                tokens: .break(.same),
-                .open
-            )
-            after(node.lastToken(viewMode: .sourceAccurate), tokens: .close)
+            arrangeGenericWhereClause(genericWhereClause, trailingClose: nil)
         }
         return .visitChildren
     }
@@ -186,10 +181,7 @@ extension TokenStream {
         let breakToken: Token = .break(.continue, newlines: .elective(ignoresDiscretionary: true))
 
         for specifier in node.specifiers {
-            after(
-                specifier.lastToken(viewMode: .sourceAccurate),
-                tokens: breakToken
-            )
+            after(specifier.lastToken(viewMode: .sourceAccurate), tokens: breakToken)
         }
         arrangeAttributeList(
             node.attributes,
@@ -199,10 +191,7 @@ extension TokenStream {
         )
 
         for specifier in node.lateSpecifiers {
-            after(
-                specifier.lastToken(viewMode: .sourceAccurate),
-                tokens: breakToken
-            )
+            after(specifier.lastToken(viewMode: .sourceAccurate), tokens: breakToken)
         }
 
         after(node.lastToken(viewMode: .sourceAccurate), tokens: .close)
@@ -248,6 +237,7 @@ extension TokenStream {
         before(node.firstToken(viewMode: .sourceAccurate), tokens: .open)
 
         let isLastInList = node.parent?.as(GenericArgumentListSyntax.self)?.last == node
+
         if let trailingComma = node.trailingComma, !isLastInList {
             after(
                 trailingComma,
@@ -338,12 +328,12 @@ extension TokenStream {
         .visitChildren
     }
 
-    /// Returns the opening delimiter token (e.g. `(` , `[` ) of a type that wraps via its own
-    /// paren / brace / bracket delimiter — a tuple type, function type, inline-array type, or a
-    /// single-argument generic whose only argument is itself self-wrapping. Returns `nil` for
-    /// other types. Used by `visitPatternBinding` to bound the `:` continuation break's chunk to
-    /// the prefix up to this delimiter, so the type stays glued to the binding name and wraps
-    /// via the inner delimiter instead of being pushed onto its own line.
+    /// Returns the opening delimiter token (e.g. `(` , `[` ) of a type that wraps via its own paren
+    /// / brace / bracket delimiter — a tuple type, function type, inline-array type, or a
+    /// single-argument generic whose only argument is itself self-wrapping. Returns `nil` for other
+    /// types. Used by `visitPatternBinding` to bound the `:` continuation break's chunk to the
+    /// prefix up to this delimiter, so the type stays glued to the binding name and wraps via the
+    /// inner delimiter instead of being pushed onto its own line.
     func openingSelfWrappingDelimiter(of type: TypeSyntax) -> TokenSyntax? {
         if let tuple = type.as(TupleTypeSyntax.self) { return tuple.leftParen }
         if let fn = type.as(FunctionTypeSyntax.self) { return fn.leftParen }
@@ -352,8 +342,7 @@ extension TokenStream {
            let genericClause = identType.genericArgumentClause,
            genericClause.arguments.count == 1,
            let onlyArg = genericClause.arguments.first,
-           case .type(let innerType) = onlyArg.argument
-        {
+           case let .type(innerType) = onlyArg.argument {
             return openingSelfWrappingDelimiter(of: innerType)
         }
         return nil
@@ -368,10 +357,7 @@ extension TokenStream {
         if let parent = node.parent,
            !parent.is(PatternBindingSyntax.self),
            !parent.is(OptionalBindingConditionSyntax.self),
-           !parent.is(EnumCaseElementSyntax.self)
-        {
-            after(node.equal, tokens: .break)
-        }
+           !parent.is(EnumCaseElementSyntax.self) { after(node.equal, tokens: .break) }
         return .visitChildren
     }
 }

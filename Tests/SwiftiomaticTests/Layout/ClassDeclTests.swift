@@ -228,10 +228,10 @@ struct ClassDeclTests: LayoutTesting {
         let A: Int
         let B: Double
       }
-      class MyClass<S, T>
-        where
-          S: Collection, T: ReallyLongClassName,
-          U: LongerClassName
+      class MyClass<S, T> where
+        S: Collection,
+        T: ReallyLongClassName,
+        U: LongerClassName
       {
         let A: Int
         let B: Double
@@ -271,12 +271,11 @@ struct ClassDeclTests: LayoutTesting {
         let A: Int
         let B: Double
       }
-      class MyClass<S, T>
-        where
-          S: Collection,
-          T: ReallyLongClassName,
-          U: LongerClassName,
-          W: AnotherLongClassName
+      class MyClass<S, T> where
+        S: Collection,
+        T: ReallyLongClassName,
+        U: LongerClassName,
+        W: AnotherLongClassName
       {
         let A: Int
         let B: Double
@@ -349,12 +348,11 @@ struct ClassDeclTests: LayoutTesting {
         let A: Int
         let B: Double
       }
-      class MyClass<S, T>: SuperOne, SuperTwo
-        where
-          S: Collection,
-          T: Protocol,
-          T: ReallyLongClassName,
-          U: LongerClassName
+      class MyClass<S, T>: SuperOne, SuperTwo where
+        S: Collection,
+        T: Protocol,
+        T: ReallyLongClassName,
+        U: LongerClassName
       {
         let A: Int
         let B: Double
@@ -433,7 +431,8 @@ struct ClassDeclTests: LayoutTesting {
         SomeoneElsesContainerProtocol,
         SomeFrameworkContainerProtocol
         where
-          BaseCollection: Collection, BaseCollection: P,
+          BaseCollection: Collection,
+          BaseCollection: P,
           BaseCollection.Element: Equatable,
           BaseCollection.Element: SomeOtherProtocol
       {

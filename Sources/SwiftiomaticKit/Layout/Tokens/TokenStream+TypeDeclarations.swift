@@ -88,8 +88,8 @@ extension TokenStream {
             modifiers: node.modifiers,
             typeKeyword: node.protocolKeyword,
             identifier: node.name,
-            genericParameterOrPrimaryAssociatedTypeClause:
-                node.primaryAssociatedTypeClause.map(Syntax.init),
+            genericParameterOrPrimaryAssociatedTypeClause: node.primaryAssociatedTypeClause.map(
+                Syntax.init),
             inheritanceClause: node.inheritanceClause,
             genericWhereClause: node.genericWhereClause,
             memberBlock: node.memberBlock
@@ -160,12 +160,7 @@ extension TokenStream {
         }
 
         if let genericWhereClause = node.genericWhereClause {
-            before(
-                genericWhereClause.firstToken(viewMode: .sourceAccurate),
-                tokens: .break(.continue),
-                .open
-            )
-            after(genericWhereClause.lastToken(viewMode: .sourceAccurate), tokens: .close)
+            arrangeGenericWhereClause(genericWhereClause, trailingClose: nil)
         }
         if let definition = node.definition {
             // Start the group *after* the `=` so that it all wraps onto its own line if it doesn't
@@ -208,12 +203,7 @@ extension TokenStream {
         arrangeBracesAndContents(of: memberBlock, contentsKeyPath: \.members)
 
         if let genericWhereClause {
-            before(
-                genericWhereClause.firstToken(viewMode: .sourceAccurate),
-                tokens: .break(.continue),
-                .open
-            )
-            after(memberBlock.leftBrace, tokens: .close)
+            arrangeGenericWhereClause(genericWhereClause, trailingClose: memberBlock.leftBrace)
         }
 
         let lastTokenBeforeBrace = inheritanceClause?.colon

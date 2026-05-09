@@ -196,16 +196,15 @@ struct MacroDeclTests: LayoutTesting {
         of element: Element,
         in collection: Elements
       ) -> Elements.Index? =
-        #externalMacro(module: "Foo", type: "Bar")
-        where
-          Elements.Element == Element, Element: Equatable
+        #externalMacro(module: "Foo", type: "Bar") where
+          Elements.Element == Element,
+          Element: Equatable
 
       macro index<Elements: Collection, Element>(
         of element: Element,
         in collection: Elements
       ) -> Elements.Index? =
-        #externalMacro(module: "Foo", type: "Bar")
-        where
+        #externalMacro(module: "Foo", type: "Bar") where
           Elements.Element == Element,
           Element: Equatable,
           Element: ReallyLongProtocolName
@@ -248,8 +247,7 @@ struct MacroDeclTests: LayoutTesting {
         of element: Element,
         in collection: Elements
       ) -> Elements.Index? =
-        #externalMacro(module: "Foo", type: "Bar")
-        where
+        #externalMacro(module: "Foo", type: "Bar") where
           Elements.Element == Element,
           Element: Equatable
 
@@ -257,8 +255,7 @@ struct MacroDeclTests: LayoutTesting {
         of element: Element,
         in collection: Elements
       ) -> Elements.Index? =
-        #externalMacro(module: "Foo", type: "Bar")
-        where
+        #externalMacro(module: "Foo", type: "Bar") where
           Elements.Element == Element,
           Element: Equatable,
           Element: ReallyLongProtocolName

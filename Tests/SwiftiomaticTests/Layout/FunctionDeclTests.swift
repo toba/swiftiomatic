@@ -349,10 +349,9 @@ struct FunctionDeclTests: LayoutTesting {
       public func index<Elements: Collection, Element>(
         of element: Element,
         in collection: Elements
-      ) -> Elements.Index?
-        where
-          Elements.Element == Element,
-          Element: Equatable
+      ) -> Elements.Index? where
+        Elements.Element == Element,
+        Element: Equatable
       {
         let a = 123
         let b = "abc"
@@ -361,11 +360,10 @@ struct FunctionDeclTests: LayoutTesting {
       public func index<Elements: Collection, Element>(
         of element: Element,
         in collection: Elements
-      ) -> Elements.Index?
-        where
-          Elements.Element == Element,
-          Element: Equatable,
-          Element: ReallyLongProtocolName
+      ) -> Elements.Index? where
+        Elements.Element == Element,
+        Element: Equatable,
+        Element: ReallyLongProtocolName
       {
         let a = 123
         let b = "abc"
@@ -420,10 +418,9 @@ struct FunctionDeclTests: LayoutTesting {
       public func index<Elements: Collection, Element>(
         of element: Element,
         in collection: Elements
-      ) -> Elements.Index?
-        where
-          Elements.Element == Element,
-          Element: Equatable
+      ) -> Elements.Index? where
+        Elements.Element == Element,
+        Element: Equatable
       {
         let a = 123
         let b = "abc"
@@ -432,11 +429,10 @@ struct FunctionDeclTests: LayoutTesting {
       public func index<Elements: Collection, Element>(
         of element: Element,
         in collection: Elements
-      ) -> Elements.Index?
-        where
-          Elements.Element == Element,
-          Element: Equatable,
-          Element: ReallyLongProtocolName
+      ) -> Elements.Index? where
+        Elements.Element == Element,
+        Element: Equatable,
+        Element: ReallyLongProtocolName
       {
         let a = 123
         let b = "abc"
@@ -595,12 +591,10 @@ struct FunctionDeclTests: LayoutTesting {
       >(
         of element: Element,
         in collection: Elements
-      ) -> Elements.Index?
-        where
-          Element: Foo,
-          Element: Bar,
-          Elements.Element
-            == Element
+      ) -> Elements.Index? where
+        Element: Foo,
+        Element: Bar,
+        Elements.Element == Element
       {
         let a = 123
         let b = "abc"
@@ -630,12 +624,10 @@ struct FunctionDeclTests: LayoutTesting {
       >(
         of element: Element,
         in collection: Elements
-      ) -> Elements.Index?
-        where
-          Element: Foo,
-          Element: Bar,
-          Elements.Element
-            == Element
+      ) -> Elements.Index? where
+        Element: Foo,
+        Element: Bar,
+        Elements.Element == Element
       {
         let a = 123
         let b = "abc"
@@ -907,13 +899,11 @@ struct FunctionDeclTests: LayoutTesting {
     expected =
       """
       func name<R>(_ x: Int)
-        throws -> R
-        where
+        throws -> R where
           Fooooooo == Barrrrr
 
       func name<R>(_ x: Int)
-        throws -> R
-        where
+        throws -> R where
           Fooooooo == Barrrrr
       {
         statement
@@ -970,15 +960,13 @@ struct FunctionDeclTests: LayoutTesting {
       """
       func name<R>(
         _ x: Int
-      ) throws -> R
-        where
-          Fooooooo == Barrrrr
+      ) throws -> R where
+        Fooooooo == Barrrrr
 
       func name<R>(
         _ x: Int
-      ) throws -> R
-        where
-          Fooooooo == Barrrrr
+      ) throws -> R where
+        Fooooooo == Barrrrr
       {
         statement
         statement

@@ -207,10 +207,10 @@ struct StructDeclTests: LayoutTesting {
         let A: Int
         let B: Double
       }
-      struct MyStruct<S, T>
-        where
-          S: Collection, T: ReallyLongStructName,
-          U: AnotherLongStruct
+      struct MyStruct<S, T> where
+        S: Collection,
+        T: ReallyLongStructName,
+        U: AnotherLongStruct
       {
         let A: Int
         let B: Double
@@ -250,11 +250,10 @@ struct StructDeclTests: LayoutTesting {
         let A: Int
         let B: Double
       }
-      struct MyStruct<S, T>
-        where
-          S: Collection,
-          T: ReallyLongStructName,
-          U: AnotherLongStruct
+      struct MyStruct<S, T> where
+        S: Collection,
+        T: ReallyLongStructName,
+        U: AnotherLongStruct
       {
         let A: Int
         let B: Double
@@ -296,10 +295,11 @@ struct StructDeclTests: LayoutTesting {
         let A: Int
         let B: Double
       }
-      struct MyStruct<S, T>: ProtoOne, ProtoTwo
-        where
-          S: Collection, T: Protocol, T: ReallyLongProtocolName,
-          U: LongerProtocolName
+      struct MyStruct<S, T>: ProtoOne, ProtoTwo where
+        S: Collection,
+        T: Protocol,
+        T: ReallyLongProtocolName,
+        U: LongerProtocolName
       {
         let A: Int
         let B: Double
@@ -339,12 +339,11 @@ struct StructDeclTests: LayoutTesting {
         let A: Int
         let B: Double
       }
-      struct MyStruct<S, T>: ProtoOne, ProtoTwo
-        where
-          S: Collection,
-          T: Protocol,
-          T: ReallyLongProtocolName,
-          U: LongerProtocolName
+      struct MyStruct<S, T>: ProtoOne, ProtoTwo where
+        S: Collection,
+        T: Protocol,
+        T: ReallyLongProtocolName,
+        U: LongerProtocolName
       {
         let A: Int
         let B: Double
@@ -422,7 +421,8 @@ struct StructDeclTests: LayoutTesting {
         SomeoneElsesContainerProtocol,
         SomeFrameworkContainerProtocol
         where
-          BaseCollection: Collection, BaseCollection: P,
+          BaseCollection: Collection,
+          BaseCollection: P,
           BaseCollection.Element: Equatable,
           BaseCollection.Element: SomeOtherProtocol
       {

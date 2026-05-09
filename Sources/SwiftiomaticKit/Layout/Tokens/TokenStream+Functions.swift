@@ -80,10 +80,7 @@ extension TokenStream {
             after(node.signature.lastToken(viewMode: .sourceAccurate), tokens: .close)
         }
 
-        arrangeParameterClause(
-            node.signature.parameterClause,
-            forcesBreakBeforeRightParen: hasBody
-        )
+        arrangeParameterClause(node.signature.parameterClause, forcesBreakBeforeRightParen: hasBody)
 
         // Prioritize keeping "<modifiers> init<punctuation>" together.
         let firstTokenAfterAttributes = node.modifiers.firstToken(viewMode: .sourceAccurate)
@@ -153,12 +150,7 @@ extension TokenStream {
         )
 
         if let genericWhereClause = node.genericWhereClause {
-            before(
-                genericWhereClause.firstToken(viewMode: .sourceAccurate),
-                tokens: .break(.same),
-                .open
-            )
-            after(genericWhereClause.lastToken(viewMode: .sourceAccurate), tokens: .close)
+            arrangeGenericWhereClause(genericWhereClause, trailingClose: nil)
         }
 
         before(node.returnClause.firstToken(viewMode: .sourceAccurate), tokens: .break)
@@ -223,15 +215,7 @@ extension TokenStream {
         arrangeBracesAndContents(of: body, contentsKeyPath: bodyContentsKeyPath)
 
         if let genericWhereClause {
-            before(
-                genericWhereClause.firstToken(viewMode: .sourceAccurate),
-                tokens: .break(.continue),
-                .open
-            )
-            after(
-                body?.leftBrace ?? genericWhereClause.lastToken(viewMode: .sourceAccurate),
-                tokens: .close
-            )
+            arrangeGenericWhereClause(genericWhereClause, trailingClose: body?.leftBrace)
         }
 
         after(node.lastToken(viewMode: .sourceAccurate), tokens: .close)

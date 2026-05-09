@@ -8,6 +8,7 @@
 - `NestedCallLayout`; collapse wrapped multi-arg single-level calls and `MacroExpansionExprSyntax` (e.g. `#externalMacro(module:type:)`) onto one line when they fit ([#643](https://github.com/toba/swiftiomatic/issues/643))
 - `flagUnusedIgnoreDirective`; lint `// sm:ignore` directives that suppress nothing ([#644](https://github.com/toba/swiftiomatic/issues/644))
 - `// sm:ignore:next`; support multiple rules in a single directive ([#645](https://github.com/toba/swiftiomatic/issues/645))
+- Where-clause layout; glue `where` to decl line when requirements span multiple lines (each requirement on its own line via consistent group); preserves existing two-tier layout when `where + reqs` fits on a single subsequent line
 - `LayoutSingleLineBodies`; inline mode now collapses single-statement closure bodies (`prepareDependencies { … }`)
 - Inline computed-property accessor blocks when `get`/`set` bodies are single statements ([#657](https://github.com/toba/swiftiomatic/issues/657))
 - `excludes` config option with glob support to skip folders during recursive lint/format
@@ -39,6 +40,7 @@
 - `DropRedundantThrows`; restrict to non-`override`, explicitly `private`/`fileprivate` functions; previously stripped `throws` from override / internal / public functions, breaking compile at `try` call sites and `@objc` overrides
 - `// sm:ignore:next`; honor directives placed in interior token leading trivia (e.g. between `@MainActor` and `override func setUp() async throws`), not just before the node's first token
 - `UseTernary`; refuse to fold when either branch is a `switch` or `if` expression; those forms are only valid in return/throw/assignment-RHS positions, never as a ternary sub-expression
+- `sm format`; preserve `#if false ... #endif` compilation guards instead of stripping them and exposing intentionally-disabled code to the compiler ([#672](https://github.com/toba/swiftiomatic/issues/672))
 
 ### 🗜️ Tweaks
 

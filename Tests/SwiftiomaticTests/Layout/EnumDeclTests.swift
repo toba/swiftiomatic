@@ -288,9 +288,10 @@ struct EnumDeclTests: LayoutTesting {
         case firstCase
         let B: Double
       }
-      enum MyEnum<S, T>
-        where
-          S: Collection, T: ReallyLongEnumName, U: AnotherLongEnum
+      enum MyEnum<S, T> where
+        S: Collection,
+        T: ReallyLongEnumName,
+        U: AnotherLongEnum
       {
         case firstCase
         let B: Double
@@ -330,12 +331,11 @@ struct EnumDeclTests: LayoutTesting {
         case firstCase
         let B: Double
       }
-      enum MyEnum<S, T>
-        where
-          S: Collection,
-          T: ReallyLongEnumName,
-          U: AnotherLongEnum,
-          W: AnotherReallyLongEnumName
+      enum MyEnum<S, T> where
+        S: Collection,
+        T: ReallyLongEnumName,
+        U: AnotherLongEnum,
+        W: AnotherReallyLongEnumName
       {
         case firstCase
         let B: Double
@@ -377,10 +377,12 @@ struct EnumDeclTests: LayoutTesting {
         case firstCase
         let B: Double
       }
-      enum MyEnum<S, T>: ProtoOne, ProtoTwo
-        where
-          S: Collection, T: Protocol, T: ReallyLongEnumName,
-          U: LongerEnumName, W: AnotherReallyLongEnumName
+      enum MyEnum<S, T>: ProtoOne, ProtoTwo where
+        S: Collection,
+        T: Protocol,
+        T: ReallyLongEnumName,
+        U: LongerEnumName,
+        W: AnotherReallyLongEnumName
       {
         case firstCase
         let B: Double
@@ -420,13 +422,12 @@ struct EnumDeclTests: LayoutTesting {
         case firstCase
         let B: Double
       }
-      enum MyEnum<S, T>: ProtoOne, ProtoTwo
-        where
-          S: Collection,
-          T: Protocol,
-          T: ReallyLongEnumName,
-          U: LongerEnumName,
-          W: AnotherReallyLongEnumName
+      enum MyEnum<S, T>: ProtoOne, ProtoTwo where
+        S: Collection,
+        T: Protocol,
+        T: ReallyLongEnumName,
+        U: LongerEnumName,
+        W: AnotherReallyLongEnumName
       {
         case firstCase
         let B: Double
@@ -505,7 +506,8 @@ struct EnumDeclTests: LayoutTesting {
         SomeoneElsesContainerProtocol,
         SomeFrameworkContainerProtocol
         where
-          BaseCollection: Collection, BaseCollection: P,
+          BaseCollection: Collection,
+          BaseCollection: P,
           BaseCollection.Element: Equatable,
           BaseCollection.Element: SomeOtherProtocol
       {

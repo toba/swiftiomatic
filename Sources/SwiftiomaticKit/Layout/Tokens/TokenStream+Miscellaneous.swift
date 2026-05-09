@@ -22,12 +22,7 @@ extension TokenStream {
         after(node.associatedtypeKeyword, tokens: .break)
 
         if let genericWhereClause = node.genericWhereClause {
-            before(
-                genericWhereClause.firstToken(viewMode: .sourceAccurate),
-                tokens: .break(.same),
-                .open
-            )
-            after(node.lastToken(viewMode: .sourceAccurate), tokens: .close)
+            arrangeGenericWhereClause(genericWhereClause, trailingClose: nil)
         }
         return .visitChildren
     }
@@ -42,16 +37,79 @@ extension TokenStream {
             return .skipChildren
         }
 
-        after(node.whereKeyword, tokens: .break(.open))
+        let isMultiLine = multiLineWhereClauses.contains(node.id)
+        let listConsistency: GroupBreakStyle =
+            if isMultiLine { .consistent }
+            else { genericRequirementListConsistency() }
+
+        if isMultiLine {
+            // Close the outer group from `arrangeGenericWhereClause` BEFORE emitting the forced
+            // break, so the break-before-where chunk is bounded by the `where` keyword alone —
+            // keeping `where` glued to the preceding decl token. Both tokens are emitted in a
+            // single `after()` call so afterMap reversal preserves order.
+            after(node.whereKeyword, tokens: .close, .break(.open, newlines: .soft))
+        } else {
+            after(node.whereKeyword, tokens: .break(.open))
+        }
         after(node.lastToken(viewMode: .sourceAccurate), tokens: .break(.close, size: 0))
 
         before(
             node.requirements.firstToken(viewMode: .sourceAccurate),
-            tokens: .open(genericRequirementListConsistency())
+            tokens: .open(listConsistency)
         )
         after(node.requirements.lastToken(viewMode: .sourceAccurate), tokens: .close)
 
         return .visitChildren
+    }
+
+    /// Emits the `before`/`after` tokens around a generic-where clause, choosing between two
+    /// layouts based on whether its requirements will fit on a single wrapped line:
+    ///
+    /// 1. **Single-line wrap** (default): a `.break(.continue)` precedes `where`, allowing it and
+    ///    the requirements to flow to the next line together when the parent group breaks.
+    /// 2. **Multi-line wrap**: when the requirements would not fit on a single subsequent line,
+    ///    `where` is glued to the preceding decl token and each requirement is forced onto its own
+    ///    line.
+    ///
+    /// The `trailingClose` token is the source-token AFTER which the closing `.close` of the
+    /// surrounding group should be emitted (typically the brace of the body, or the last token of
+    /// the where clause itself when there is no body).
+    func arrangeGenericWhereClause(
+        _ clause: GenericWhereClauseSyntax,
+        trailingClose: TokenSyntax?
+    ) {
+        let firstToken = clause.firstToken(viewMode: .sourceAccurate)
+
+        if shouldForceMultiLineWhereClause(clause) {
+            multiLineWhereClauses.insert(clause.id)
+            // Wrap only `where` itself in the outer group so that the break before `where` has a
+            // tiny chunk and almost never fires — keeping `where` glued to the preceding decl
+            // token. The matching `.close` and the forced newline are emitted in
+            // `visitGenericWhereClause` (in a single `after()` call so the afterMap reversal
+            // preserves their relative order).
+            before(firstToken, tokens: .break(.continue), .open)
+        } else {
+            let closeAnchor = trailingClose ?? clause.lastToken(viewMode: .sourceAccurate)
+            before(firstToken, tokens: .break(.continue), .open)
+            after(closeAnchor, tokens: .close)
+        }
+    }
+
+    /// Decides whether a generic-where clause's requirements list should be forced onto multiple
+    /// lines. The heuristic compares the rendered width of `where <requirements>` against the
+    /// available width on a wrapped line (line length minus one continuation indent). When the
+    /// where-clause text would not fit on a single subsequent line, return true so that the caller
+    /// emits the multi-line layout.
+    private func shouldForceMultiLineWhereClause(_ clause: GenericWhereClauseSyntax) -> Bool {
+        let requirementsText = clause.requirements.trimmedDescription
+        let whereWidth = "where ".count + requirementsText.count
+        let indentWidth: Int =
+            switch config[IndentationSetting.self] {
+                case let .spaces(n): n
+                case let .tabs(n): n * config[TabWidth.self]
+            }
+        let available = max(0, maxLineLength - indentWidth)
+        return whereWidth > available
     }
 
     func visitIntegerLiteralExpr(_: IntegerLiteralExprSyntax) -> SyntaxVisitorContinueKind {
@@ -233,7 +291,8 @@ extension TokenStream {
 
         if let diffParamsComma = node.argumentsComma {
             after(diffParamsComma, tokens: .break(.same))
-        } else if node.arguments != nil {
+        } else if node.arguments != nil
+        {
             needsBreakBeforeWhereClause = true
         }
 

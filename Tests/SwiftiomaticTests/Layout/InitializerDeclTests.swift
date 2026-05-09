@@ -253,7 +253,8 @@ struct InitializerDeclTests: LayoutTesting {
           element: Element,
           in collection: Elements
         ) where
-          Elements.Element == Element, Element: P,
+          Elements.Element == Element,
+          Element: P,
           Element: Equatable
         {
           let a = 123
@@ -378,7 +379,8 @@ struct InitializerDeclTests: LayoutTesting {
           in collection: Elements
         ) where
           Elements.Element == Element,
-          Element: Equatable, Element: P
+          Element: Equatable,
+          Element: P
         {
           let a = 123
           let b = "abc"

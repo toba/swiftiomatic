@@ -122,9 +122,10 @@ struct ExtensionDeclTests: LayoutTesting {
         let A: Int
         let B: Double
       }
-      extension MyExtension
-        where
-          S: Collection, T: ReallyLongExtensionName, U: AnotherLongExtension
+      extension MyExtension where
+        S: Collection,
+        T: ReallyLongExtensionName,
+        U: AnotherLongExtension
       {
         let A: Int
         let B: Double
@@ -164,12 +165,11 @@ struct ExtensionDeclTests: LayoutTesting {
         let A: Int
         let B: Double
       }
-      extension MyExtension
-        where
-          S: Collection,
-          T: ReallyLongExtensionName,
-          U: AnotherLongExtension,
-          W: AnotherReallyLongExtensionName
+      extension MyExtension where
+        S: Collection,
+        T: ReallyLongExtensionName,
+        U: AnotherLongExtension,
+        W: AnotherReallyLongExtensionName
       {
         let A: Int
         let B: Double
@@ -211,10 +211,11 @@ struct ExtensionDeclTests: LayoutTesting {
         let A: Int
         let B: Double
       }
-      extension MyExtension: ProtoOne, ProtoTwo
-        where
-          S: Collection, T: Protocol, T: ReallyLongExtensionName,
-          U: LongerExtensionName
+      extension MyExtension: ProtoOne, ProtoTwo where
+        S: Collection,
+        T: Protocol,
+        T: ReallyLongExtensionName,
+        U: LongerExtensionName
       {
         let A: Int
         let B: Double
@@ -254,12 +255,11 @@ struct ExtensionDeclTests: LayoutTesting {
         let A: Int
         let B: Double
       }
-      extension MyExtension: ProtoOne, ProtoTwo
-        where
-          S: Collection,
-          T: Protocol,
-          T: ReallyLongExtensionName,
-          U: LongerExtensionName
+      extension MyExtension: ProtoOne, ProtoTwo where
+        S: Collection,
+        T: Protocol,
+        T: ReallyLongExtensionName,
+        U: LongerExtensionName
       {
         let A: Int
         let B: Double
@@ -339,7 +339,8 @@ struct ExtensionDeclTests: LayoutTesting {
         SomeoneElsesContainerProtocol,
         SomeFrameworkContainerProtocol
         where
-          BaseCollection: Collection, BaseCollection: P,
+          BaseCollection: Collection,
+          BaseCollection: P,
           BaseCollection.Element: Equatable,
           BaseCollection.Element: SomeOtherProtocol
       {
@@ -383,6 +384,33 @@ struct ExtensionDeclTests: LayoutTesting {
     var config = Configuration.forTesting
     config[BreakBeforeGenericRequirement.self] = true
     assertLayout(input: input, expected: expected, linelength: 50, configuration: config)
+  }
+
+  @Test func extensionWhereClauseGluedWhenRequirementsWrap() {
+    // When the where-clause requirements need to wrap onto multiple lines,
+    // keep `where` glued to the decl line and break each requirement onto
+    // its own line. When all requirements fit on a single subsequent line,
+    // break before `where` and keep them together (current behavior).
+    let input =
+      """
+      public extension TableColumnExpression where Root: FTS5, Value.QueryOutput: OptionalExpressible, Value.QueryOutput.OptionalType.Wrapped: StringProtocol {
+        let A: Int
+      }
+      """
+
+    let expected =
+      """
+      public extension TableColumnExpression where
+        Root: FTS5,
+        Value.QueryOutput: OptionalExpressible,
+        Value.QueryOutput.OptionalType.Wrapped: StringProtocol
+      {
+        let A: Int
+      }
+
+      """
+
+    assertLayout(input: input, expected: expected, linelength: 100)
   }
 
   @Test func emptyExtension() {

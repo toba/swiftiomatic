@@ -165,10 +165,10 @@ struct SubscriptDeclTests: LayoutTesting {
         subscript<Elements: Collection, Element>(
           var1: Element,
           var2: Elements
-        ) -> Double
-        where
+        ) -> Double where
           Elements.Element == Element,
-          Element: Equatable, Element: P
+          Element: Equatable,
+          Element: P
         {
           return 1.23
         }
@@ -206,8 +206,7 @@ struct SubscriptDeclTests: LayoutTesting {
         subscript<Elements: Collection, Element>(
           var1: Element,
           var2: Elements
-        ) -> Double
-        where
+        ) -> Double where
           Elements.Element == Element,
           Element: Equatable,
           Element: P
@@ -421,9 +420,9 @@ struct SubscriptDeclTests: LayoutTesting {
         >(
           var1: Element,
           var2: ManyElements
-        ) -> ManyElements.Index?
-        where
-          Element: Foo, Element: Bar,
+        ) -> ManyElements.Index? where
+          Element: Foo,
+          Element: Bar,
           ManyElements.Element
             == Element
         {
@@ -471,8 +470,7 @@ struct SubscriptDeclTests: LayoutTesting {
         >(
           var1: Element,
           var2: ManyElements
-        ) -> ManyElements.Index?
-        where
+        ) -> ManyElements.Index? where
           Element: Foo,
           Element: Bar,
           ManyElements.Element

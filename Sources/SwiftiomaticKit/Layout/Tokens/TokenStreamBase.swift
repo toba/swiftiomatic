@@ -62,6 +62,11 @@ class TokenStreamBase: SyntaxVisitor {
     /// in a function call containing multiple trailing closures).
     var forcedBreakingClosures = Set<SyntaxIdentifier>()
 
+    /// Tracks generic-where clauses whose requirements list will not fit on a single subsequent
+    /// line. When set, the `where` keyword stays glued to the preceding decl token and each
+    /// requirement is forced onto its own line.
+    var multiLineWhereClauses = Set<SyntaxIdentifier>()
+
     /// Tracks whether we last considered ourselves inside the selection
     var isInsideSelection = true
 
@@ -134,12 +139,10 @@ extension TokenStream {
             appendBeforeTokens(firstToken)
         }
 
-        appendToken(
-            .verbatim(
-                Verbatim(
-                    text: node.description,
-                    indentingBehavior: indentingBehavior
-                )))
+        appendToken(.verbatim(Verbatim(
+            text: node.description,
+            indentingBehavior: indentingBehavior
+        )))
 
         if let lastToken = node.lastToken(viewMode: .sourceAccurate) {
             // Extract any comments that trail the verbatim block since they belong to the next
