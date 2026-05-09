@@ -23,6 +23,7 @@
 - `NoFirstIndexOfInForLoop`; lint quadratic `coll.firstIndex(of:)` / `firstIndex(where:)` inside `for x in coll`
 - `sm lint --reporter json`; emit findings as a stable JSON array on stdout with `{file, line, column, severity, rule, message}` per entry; `null` preserved for absent location/rule fields ([#686](https://github.com/toba/swiftiomatic/issues/686))
 - `sm format --reporter json`; emit `{changed, unchanged, skipped}` summary on stdout when run with `--in-place`; schema mirrors the lint reporter's `file` key ([#687](https://github.com/toba/swiftiomatic/issues/687))
+- `sm upgrade`; run `brew update` then `brew upgrade sm` from the CLI, reporting before/after Cellar versions and warning if Xcode's toolchain `swift-format` symlink no longer points at the Homebrew `sm` binary; `--no-update` skips the metadata refresh
 
 ### 🐞 Fixes
 
