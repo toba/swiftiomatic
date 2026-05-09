@@ -237,6 +237,25 @@ package enum CommentReflowEngine {
         return trimmed.hasPrefix(opener)
     }
 
+    /// DocC list-item keywords that must always sit at the outermost list indent — siblings of
+    /// `- Parameters:`, never nested under it. Matched case-sensitively and only when followed by
+    /// a colon (the syntax DocC actually recognizes).
+    private static let doccTopLevelKeywords: Set<String> = [
+        "Returns", "Throws", "Precondition", "Postcondition", "Requires", "Invariant",
+        "Complexity", "Important", "Note", "Warning", "Attention", "Author", "Authors",
+        "Bug", "Copyright", "Date", "Experiment", "Remark", "SeeAlso", "Since", "Tag",
+        "ToDo", "Version",
+    ]
+
+    /// Returns true if `bodyText` (a list item's text after the `- ` marker) begins with a DocC
+    /// top-level keyword followed by a colon.
+    private static func isDocCTopLevelKeyword(_ bodyText: String) -> Bool {
+        let trimmed = bodyText.drop(while: { $0 == " " })
+        guard let colon = trimmed.firstIndex(of: ":") else { return false }
+        let head = String(trimmed[..<colon])
+        return doccTopLevelKeywords.contains(head)
+    }
+
     /// Returns the list marker (incl. trailing space) and the index where the body starts within
     /// `line` , or nil if `line` is not a list item.
     private static func listMarker(_ line: String) -> (marker: String, bodyOffset: Int)? {
@@ -298,7 +317,25 @@ package enum CommentReflowEngine {
         while i < lines.count {
             let line = lines[i]
             guard let m = listMarker(line) else { break }
-            let leading = line.prefix(while: { $0 == " " }).count
+            var leading = line.prefix(while: { $0 == " " }).count
+            let bodyText = String(line[line.index(line.startIndex, offsetBy: m.bodyOffset)...])
+
+            // DocC top-level keywords (`Returns:`, `Throws:`, etc.) must sit at the outer list's
+            // indent, even if the source has them indented under a `- Parameters:` block. When
+            // we see one inside a nested list, end the nested list so the outer call picks it
+            // up. When the outer call sees one over-indented, force it to the baseline indent.
+            if isDocCTopLevelKeyword(bodyText) {
+                if let baseline = firstItemMarkerIndent, baseline > 0 {
+                    // We're inside a nested list (e.g. Parameters' children). Stop here so the
+                    // caller resumes parsing at this line at the outer indent.
+                    break
+                }
+                if let baseline = firstItemMarkerIndent, leading > baseline {
+                    // Outer list at baseline 0 saw an over-indented keyword. Treat it as a
+                    // top-level sibling rather than recursing into a nested list.
+                    leading = baseline
+                }
+            }
 
             if let baseline = firstItemMarkerIndent, leading > baseline {
                 // A more-indented marker is a nested list — handle by treating the next list as
@@ -327,12 +364,10 @@ package enum CommentReflowEngine {
             }
             if firstItemMarkerIndent == nil {
                 firstItemMarkerIndent = leading
-                let bodyText = String(line[line.index(line.startIndex, offsetBy: m.bodyOffset)...])
                 if bodyText.trimmingCharacters(in: .whitespaces) == "Parameters:" {
                     isParamBlock = true
                 }
             }
-            let bodyText = String(line[line.index(line.startIndex, offsetBy: m.bodyOffset)...])
             var item = ListItem(
                 marker: String(repeating: " ", count: leading)
                     + String(m.marker.drop(while: { $0 == " " })),
@@ -347,6 +382,15 @@ package enum CommentReflowEngine {
                 let nextLeading = next.prefix(while: { $0 == " " }).count
                 if nextLeading <= leading, listMarker(next) != nil { break }
                 if nextLeading <= leading { break }
+
+                // Even if `next` is more indented than this item's marker, a DocC top-level
+                // keyword (`Returns:`, `Throws:`, …) must not be folded into this item or its
+                // nested list — break out so the parent parser can dedent it.
+                if let nm = listMarker(next) {
+                    let nextBody = String(
+                        next[next.index(next.startIndex, offsetBy: nm.bodyOffset)...])
+                    if isDocCTopLevelKeyword(nextBody) { break }
+                }
 
                 if let nm = listMarker(next), nextLeading > leading {
                     // nested list inside this item

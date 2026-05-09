@@ -1,10 +1,10 @@
 import SwiftSyntax
 
-/// Lint elapsed-time uses of `Date()` — prefer `ContinuousClock` .
+/// Lint elapsed-time uses of `Date()` / `Date.now` — prefer `ContinuousClock` .
 ///
-/// Two patterns are flagged:
-/// - `Date().timeIntervalSince(start)`
-/// - `Date().timeIntervalSinceNow`
+/// Patterns flagged:
+/// - `Date().timeIntervalSince(start)` / `Date.now.timeIntervalSince(start)`
+/// - `Date().timeIntervalSinceNow` / `Date.now.timeIntervalSinceNow`
 ///
 /// `ContinuousClock.now` (paired with `start.duration(to: .now)` or `clock.measure { … }` ) is
 /// monotonic, allocation-free, and unaffected by wall-clock adjustments.
@@ -18,7 +18,7 @@ final class UseContinuousClockNotDate: LintSyntaxRule<LintOnlyValue>, @unchecked
         if let member = node.calledExpression.as(MemberAccessExprSyntax.self),
            member.declName.baseName.text == "timeIntervalSince",
            let base = member.base,
-           isDateInitializerCall(base)
+           isDateNowExpression(base)
         {
             diagnose(.preferContinuousClock, on: node)
         }
@@ -31,19 +31,30 @@ final class UseContinuousClockNotDate: LintSyntaxRule<LintOnlyValue>, @unchecked
         if node.parent?.is(FunctionCallExprSyntax.self) == true { return .visitChildren }
         if node.declName.baseName.text == "timeIntervalSinceNow",
            let base = node.base,
-           isDateInitializerCall(base)
+           isDateNowExpression(base)
         {
             diagnose(.preferContinuousClock, on: node)
         }
         return .visitChildren
     }
 
-    private func isDateInitializerCall(_ expr: ExprSyntax) -> Bool {
-        guard let call = expr.as(FunctionCallExprSyntax.self),
-              call.arguments.isEmpty,
-              let ident = call.calledExpression.as(DeclReferenceExprSyntax.self),
-              ident.baseName.text == "Date" else { return false }
-        return true
+    /// Matches `Date()` (zero-arg initializer call) or `Date.now` .
+    private func isDateNowExpression(_ expr: ExprSyntax) -> Bool {
+        if let call = expr.as(FunctionCallExprSyntax.self),
+           call.arguments.isEmpty,
+           let ident = call.calledExpression.as(DeclReferenceExprSyntax.self),
+           ident.baseName.text == "Date"
+        {
+            return true
+        }
+        if let member = expr.as(MemberAccessExprSyntax.self),
+           member.declName.baseName.text == "now",
+           let base = member.base?.as(DeclReferenceExprSyntax.self),
+           base.baseName.text == "Date"
+        {
+            return true
+        }
+        return false
     }
 }
 

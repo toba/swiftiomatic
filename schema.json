@@ -1360,6 +1360,15 @@
       "description" : "Warn on `ForEach(_, id: \\.self)` . SwiftUI uses `id` to diff views across updates; using `\\.self` requires the element to be both `Hashable` and stable (its hash must not change when other state changes). Prefer making the element `Identifiable` .",
       "unevaluatedProperties" : false
     },
+    "flagForEachOverIndices" : {
+      "allOf" : [
+        {
+          "$ref" : "#/$defs/lintOnlyBase"
+        }
+      ],
+      "description" : "Warn on `ForEach` whose receiver is an integer-index sequence (`<expr>.indices`, `a..<b`, `a...b`, `Range(...)`). Row identity becomes positional, so insertions and removals shift every following row's id and SwiftUI redraws (and resets `@State`) past the mutation point. Prefer `ForEach(Array(<collection>.enumerated()), id: \\.element.id)`.\n\nOrthogonal to `FlagForEachIDSelfInView`: that rule keys on the `id:` axis (`\\.self` is fragile on element collections); this rule keys on the receiver axis and ignores the `id:` argument entirely. The two rules are designed not to co-fire — the integer-indexed case is exempted from `FlagForEachIDSelfInView` and owned here.",
+      "unevaluatedProperties" : false
+    },
     "flagInvisibleCharacters" : {
       "allOf" : [
         {
@@ -1378,6 +1387,15 @@
       },
       "unevaluatedProperties" : false
     },
+    "flagMutableStaticVar" : {
+      "allOf" : [
+        {
+          "$ref" : "#/$defs/lintOnlyBase"
+        }
+      ],
+      "description" : "Flag `static var` declarations with mutable storage. Global mutable state defeats Swift 6's data-race safety; the fix is contextual (actor isolation, `Mutex`, `@TaskLocal`, or convert to a computed `static var { ... }`), so this rule is flag-only.\n\nSkips files under `Tests/` directories or named `*Tests.swift` — test fixtures often keep mutable counters by design.",
+      "unevaluatedProperties" : false
+    },
     "flagMutationDuringIteration" : {
       "allOf" : [
         {
@@ -1394,6 +1412,42 @@
         }
       ],
       "description" : "Lint `withObservationTracking { ... } onChange: { … self.f() … }` where the `onChange` closure calls the enclosing function `f()` . The pattern is a recursive re-tracker that fires forever as observed values mutate. Use the `Observations` AsyncSequence instead.",
+      "unevaluatedProperties" : false
+    },
+    "flagSupersededSwiftUI" : {
+      "allOf" : [
+        {
+          "$ref" : "#/$defs/lintOnlyBase"
+        }
+      ],
+      "description" : "Flag superseded SwiftUI / Combine-era APIs that have modern `@Observable` / navigation replacements:\n\n- `@StateObject` → `@State` with an `@Observable` type\n- `@ObservedObject` → pass `@Observable` values directly (or `@Bindable` for two-way bindings)\n- `@EnvironmentObject` → `@Environment(MyType.self)` with an `@Observable` type\n- `@Published` → unnecessary on `@Observable` types\n- `ObservableObject` conformance → `@Observable` macro\n- `NavigationView` → `NavigationStack` / `NavigationSplitView`\n\nFlag-only — fixes are contextual (the consumer must move the type to `@Observable`, choose `NavigationStack` vs `NavigationSplitView`, etc.).",
+      "unevaluatedProperties" : false
+    },
+    "flagTaskDetached" : {
+      "allOf" : [
+        {
+          "$ref" : "#/$defs/lintOnlyBase"
+        }
+      ],
+      "description" : "Flag `Task.detached(...)` calls. `Task.detached` opts out of structured concurrency: the child does not inherit the parent's actor isolation, priority, or `@TaskLocal` values, and is not awaited by the surrounding scope. In Swift 6 the supported alternatives are `@concurrent` functions (when off-actor execution is the goal) and `Task.immediateDetached` (when the goal is just to escape the current actor without an inherited task tree).\n\nFlag-only — replacing `Task.detached` requires deciding whether `@TaskLocal` inheritance, priority pinning, or cancellation-tree behavior matters at the call site.",
+      "unevaluatedProperties" : false
+    },
+    "flagTaskInMainActor" : {
+      "allOf" : [
+        {
+          "$ref" : "#/$defs/lintOnlyBase"
+        }
+      ],
+      "description" : "Flag `Task { ... }` started from a `@MainActor`-isolated context. The unstructured `Task` initializer hops off the main actor unless the body's first awaited work is itself main-actor-isolated, defeating the caller's isolation guarantee. Prefer `Task.immediate` (or `Task.immediate(priority:)`), which starts execution synchronously on the calling actor and only suspends at the first `await` that requires it.\n\nDetection walks enclosing parents looking for `@MainActor` on a function, computed property accessor, closure, type, or extension. Matches false-positive-friendly: `Task { ... }` with any priority arg form fires when the enclosing decl carries the attribute. Detached and named-static-method forms (`Task.detached`, `Task.immediate`) are not flagged here.\n\nCaveat noted in the message: a `Task` body whose first work suspends off-main is the silent-fallback case the rule is named for — the runtime drops main-actor isolation without a diagnostic, so reviewing flagged sites is worthwhile even when the body \"looks fine.\"",
+      "unevaluatedProperties" : false
+    },
+    "flagUncheckedSendable" : {
+      "allOf" : [
+        {
+          "$ref" : "#/$defs/lintOnlyBase"
+        }
+      ],
+      "description" : "Flag `@unchecked Sendable` conformances. The `@unchecked` opts out of compiler-enforced data-race safety — the type might still be safe (e.g. all storage is protected by a lock), but the conformance bypasses verification and warrants human review. SE-0470's `sending`, metatype-aware `Sendable`, or refactoring to actor isolation often eliminates the need.\n\nFlag-only — choosing the correct fix needs type information this rule doesn't have.",
       "unevaluatedProperties" : false
     },
     "flagUnhandledThrowingTask" : {
@@ -1655,6 +1709,15 @@
           ],
           "description" : "Remove explicit `borrowing` and `consuming` ownership modifiers.\n\nOwnership modifiers are an advanced feature that most code does not need. When present on function declarations (e.g. `consuming func move()` ) or parameter types (e.g. `func foo(_ bar: consuming Bar)` ), they are removed.\n\nLint: If an explicit `borrowing` or `consuming` modifier is found, a lint warning is raised.\n\nRewrite: The ownership modifier is removed."
         },
+        "noFirstIndexOfInForLoop" : {
+          "allOf" : [
+            {
+              "$ref" : "#/$defs/lintOnlyBase"
+            }
+          ],
+          "description" : "Flag `coll.firstIndex(of: ...)` (or `firstIndex(where:)`) called inside a `for x in coll` loop where the receiver matches the loop's iterated sequence — a textbook O(n²) pattern. Typical fix: enumerate the index alongside the element (`for (index, x) in coll.enumerated()`) or build a `[Element: Index]` lookup table outside the loop.\n\nReceiver matching is identifier-based and conservative: only fires when the leftmost identifier of the `firstIndex` receiver equals the leftmost identifier of the `for-in` sequence expression. Nested loops and closures introduce their own scope and are reported (or not) by their own visit.",
+          "unevaluatedProperties" : false
+        },
         "noRetroactiveConformances" : {
           "allOf" : [
             {
@@ -1711,7 +1774,7 @@
               "$ref" : "#/$defs/lintOnlyBase"
             }
           ],
-          "description" : "Lint elapsed-time uses of `Date()` — prefer `ContinuousClock` .\n\nTwo patterns are flagged:\n- `Date().timeIntervalSince(start)`\n- `Date().timeIntervalSinceNow`\n\n`ContinuousClock.now` (paired with `start.duration(to: .now)` or `clock.measure { … }` ) is monotonic, allocation-free, and unaffected by wall-clock adjustments.\n\nLint-only: autofixing requires rewriting the start-time site as well, which is outside the rule's single-node scope.",
+          "description" : "Lint elapsed-time uses of `Date()` / `Date.now` — prefer `ContinuousClock` .\n\nPatterns flagged:\n- `Date().timeIntervalSince(start)` / `Date.now.timeIntervalSince(start)`\n- `Date().timeIntervalSinceNow` / `Date.now.timeIntervalSinceNow`\n\n`ContinuousClock.now` (paired with `start.duration(to: .now)` or `clock.measure { … }` ) is monotonic, allocation-free, and unaffected by wall-clock adjustments.\n\nLint-only: autofixing requires rewriting the start-time site as well, which is outside the rule's single-node scope.",
           "unevaluatedProperties" : false
         },
         "useDotZero" : {
@@ -2512,6 +2575,15 @@
       },
       "unevaluatedProperties" : false
     },
+    "noAnyViewInForEach" : {
+      "allOf" : [
+        {
+          "$ref" : "#/$defs/lintOnlyBase"
+        }
+      ],
+      "description" : "Flag `AnyView(...)` constructed inside a `ForEach` body. Type-erasing each row defeats SwiftUI's structural identity, forces extra invalidation, and almost always indicates a missing `@ViewBuilder` helper or a `Group { ... }` with branches. Move the branching into a `@ViewBuilder` function or use `if / switch` directly inside the closure.",
+      "unevaluatedProperties" : false
+    },
     "noAssignmentInExpressions" : {
       "allOf" : [
         {
@@ -2598,6 +2670,15 @@
         }
       ],
       "description" : "Remove explicit `borrowing` and `consuming` ownership modifiers.\n\nOwnership modifiers are an advanced feature that most code does not need. When present on function declarations (e.g. `consuming func move()` ) or parameter types (e.g. `func foo(_ bar: consuming Bar)` ), they are removed.\n\nLint: If an explicit `borrowing` or `consuming` modifier is found, a lint warning is raised.\n\nRewrite: The ownership modifier is removed."
+    },
+    "noFirstIndexOfInForLoop" : {
+      "allOf" : [
+        {
+          "$ref" : "#/$defs/lintOnlyBase"
+        }
+      ],
+      "description" : "Flag `coll.firstIndex(of: ...)` (or `firstIndex(where:)`) called inside a `for x in coll` loop where the receiver matches the loop's iterated sequence — a textbook O(n²) pattern. Typical fix: enumerate the index alongside the element (`for (index, x) in coll.enumerated()`) or build a `[Element: Index]` lookup table outside the loop.\n\nReceiver matching is identifier-based and conservative: only fires when the leftmost identifier of the `firstIndex` receiver equals the leftmost identifier of the `for-in` sequence expression. Nested loops and closures introduce their own scope and are reported (or not) by their own visit.",
+      "unevaluatedProperties" : false
     },
     "noForceCast" : {
       "allOf" : [
@@ -3273,6 +3354,15 @@
       "description" : "`NotificationCenter.addObserver(forName:object:queue:using:)` returns an opaque token that must be retained to later remove the observer. Discarding the return value leaks the observer.\n\nLint: When a call to `addObserver(forName:object:queue:...)` is used as a statement (not stored, returned, or passed to another call), a warning is raised.",
       "unevaluatedProperties" : false
     },
+    "requireSubprocessTeardownSequence" : {
+      "allOf" : [
+        {
+          "$ref" : "#/$defs/lintOnlyBase"
+        }
+      ],
+      "description" : "Flag `Subprocess.run(...)` calls that omit `platformOptions:` (or pass a default `PlatformOptions()`). Without an explicit teardown sequence, a cancelled or thrown task can leak the child process — it stays alive until parent exit. The fix is to pass `PlatformOptions(teardownSequence: [...])` matching the child's signal handling.\n\nFlag-only — choosing the right teardown sequence (signals, intervals) is contextual.",
+      "unevaluatedProperties" : false
+    },
     "requireSuiteAccessControl" : {
       "allOf" : [
         {
@@ -3544,6 +3634,33 @@
           "description" : "Warn on `ForEach(_, id: \\.self)` . SwiftUI uses `id` to diff views across updates; using `\\.self` requires the element to be both `Hashable` and stable (its hash must not change when other state changes). Prefer making the element `Identifiable` .",
           "unevaluatedProperties" : false
         },
+        "flagForEachOverIndices" : {
+          "allOf" : [
+            {
+              "$ref" : "#/$defs/lintOnlyBase"
+            }
+          ],
+          "description" : "Warn on `ForEach` whose receiver is an integer-index sequence (`<expr>.indices`, `a..<b`, `a...b`, `Range(...)`). Row identity becomes positional, so insertions and removals shift every following row's id and SwiftUI redraws (and resets `@State`) past the mutation point. Prefer `ForEach(Array(<collection>.enumerated()), id: \\.element.id)`.\n\nOrthogonal to `FlagForEachIDSelfInView`: that rule keys on the `id:` axis (`\\.self` is fragile on element collections); this rule keys on the receiver axis and ignores the `id:` argument entirely. The two rules are designed not to co-fire — the integer-indexed case is exempted from `FlagForEachIDSelfInView` and owned here.",
+          "unevaluatedProperties" : false
+        },
+        "flagSupersededSwiftUI" : {
+          "allOf" : [
+            {
+              "$ref" : "#/$defs/lintOnlyBase"
+            }
+          ],
+          "description" : "Flag superseded SwiftUI / Combine-era APIs that have modern `@Observable` / navigation replacements:\n\n- `@StateObject` → `@State` with an `@Observable` type\n- `@ObservedObject` → pass `@Observable` values directly (or `@Bindable` for two-way bindings)\n- `@EnvironmentObject` → `@Environment(MyType.self)` with an `@Observable` type\n- `@Published` → unnecessary on `@Observable` types\n- `ObservableObject` conformance → `@Observable` macro\n- `NavigationView` → `NavigationStack` / `NavigationSplitView`\n\nFlag-only — fixes are contextual (the consumer must move the type to `@Observable`, choose `NavigationStack` vs `NavigationSplitView`, etc.).",
+          "unevaluatedProperties" : false
+        },
+        "noAnyViewInForEach" : {
+          "allOf" : [
+            {
+              "$ref" : "#/$defs/lintOnlyBase"
+            }
+          ],
+          "description" : "Flag `AnyView(...)` constructed inside a `ForEach` body. Type-erasing each row defeats SwiftUI's structural identity, forces extra invalidation, and almost always indicates a missing `@ViewBuilder` helper or a `Group { ... }` with branches. Move the branching into a `@ViewBuilder` function or use `if / switch` directly inside the closure.",
+          "unevaluatedProperties" : false
+        },
         "noFormatterInViewBody" : {
           "allOf" : [
             {
@@ -3744,6 +3861,15 @@
       "additionalProperties" : false,
       "description" : "unsafety rule group.",
       "properties" : {
+        "flagMutableStaticVar" : {
+          "allOf" : [
+            {
+              "$ref" : "#/$defs/lintOnlyBase"
+            }
+          ],
+          "description" : "Flag `static var` declarations with mutable storage. Global mutable state defeats Swift 6's data-race safety; the fix is contextual (actor isolation, `Mutex`, `@TaskLocal`, or convert to a computed `static var { ... }`), so this rule is flag-only.\n\nSkips files under `Tests/` directories or named `*Tests.swift` — test fixtures often keep mutable counters by design.",
+          "unevaluatedProperties" : false
+        },
         "flagMutationDuringIteration" : {
           "allOf" : [
             {
@@ -3760,6 +3886,33 @@
             }
           ],
           "description" : "Lint `withObservationTracking { ... } onChange: { … self.f() … }` where the `onChange` closure calls the enclosing function `f()` . The pattern is a recursive re-tracker that fires forever as observed values mutate. Use the `Observations` AsyncSequence instead.",
+          "unevaluatedProperties" : false
+        },
+        "flagTaskDetached" : {
+          "allOf" : [
+            {
+              "$ref" : "#/$defs/lintOnlyBase"
+            }
+          ],
+          "description" : "Flag `Task.detached(...)` calls. `Task.detached` opts out of structured concurrency: the child does not inherit the parent's actor isolation, priority, or `@TaskLocal` values, and is not awaited by the surrounding scope. In Swift 6 the supported alternatives are `@concurrent` functions (when off-actor execution is the goal) and `Task.immediateDetached` (when the goal is just to escape the current actor without an inherited task tree).\n\nFlag-only — replacing `Task.detached` requires deciding whether `@TaskLocal` inheritance, priority pinning, or cancellation-tree behavior matters at the call site.",
+          "unevaluatedProperties" : false
+        },
+        "flagTaskInMainActor" : {
+          "allOf" : [
+            {
+              "$ref" : "#/$defs/lintOnlyBase"
+            }
+          ],
+          "description" : "Flag `Task { ... }` started from a `@MainActor`-isolated context. The unstructured `Task` initializer hops off the main actor unless the body's first awaited work is itself main-actor-isolated, defeating the caller's isolation guarantee. Prefer `Task.immediate` (or `Task.immediate(priority:)`), which starts execution synchronously on the calling actor and only suspends at the first `await` that requires it.\n\nDetection walks enclosing parents looking for `@MainActor` on a function, computed property accessor, closure, type, or extension. Matches false-positive-friendly: `Task { ... }` with any priority arg form fires when the enclosing decl carries the attribute. Detached and named-static-method forms (`Task.detached`, `Task.immediate`) are not flagged here.\n\nCaveat noted in the message: a `Task` body whose first work suspends off-main is the silent-fallback case the rule is named for — the runtime drops main-actor isolation without a diagnostic, so reviewing flagged sites is worthwhile even when the body \"looks fine.\"",
+          "unevaluatedProperties" : false
+        },
+        "flagUncheckedSendable" : {
+          "allOf" : [
+            {
+              "$ref" : "#/$defs/lintOnlyBase"
+            }
+          ],
+          "description" : "Flag `@unchecked Sendable` conformances. The `@unchecked` opts out of compiler-enforced data-race safety — the type might still be safe (e.g. all storage is protected by a lock), but the conformance bypasses verification and warrants human review. SE-0470's `sending`, metatype-aware `Sendable`, or refactoring to actor isolation often eliminates the need.\n\nFlag-only — choosing the correct fix needs type information this rule doesn't have.",
           "unevaluatedProperties" : false
         },
         "noAwaitInsideWithLock" : {
@@ -3811,6 +3964,15 @@
             }
           ],
           "description" : "Lint `AsyncStream { continuation in ... }` (and `AsyncThrowingStream` ) initializer bodies that call `continuation.yield(...)` but never call `continuation.finish(...)` and never set `continuation.onTermination` .\n\nWithout termination handling the stream can leak when the consumer is cancelled — the producer keeps holding resources for a continuation that will never be drained.",
+          "unevaluatedProperties" : false
+        },
+        "requireSubprocessTeardownSequence" : {
+          "allOf" : [
+            {
+              "$ref" : "#/$defs/lintOnlyBase"
+            }
+          ],
+          "description" : "Flag `Subprocess.run(...)` calls that omit `platformOptions:` (or pass a default `PlatformOptions()`). Without an explicit teardown sequence, a cancelled or thrown task can leak the child process — it stays alive until parent exit. The fix is to pass `PlatformOptions(teardownSequence: [...])` matching the child's signal handling.\n\nFlag-only — choosing the right teardown sequence (signals, intervals) is contextual.",
           "unevaluatedProperties" : false
         },
         "useTypedCatchError" : {
@@ -3939,7 +4101,7 @@
           "$ref" : "#/$defs/lintOnlyBase"
         }
       ],
-      "description" : "Lint elapsed-time uses of `Date()` — prefer `ContinuousClock` .\n\nTwo patterns are flagged:\n- `Date().timeIntervalSince(start)`\n- `Date().timeIntervalSinceNow`\n\n`ContinuousClock.now` (paired with `start.duration(to: .now)` or `clock.measure { … }` ) is monotonic, allocation-free, and unaffected by wall-clock adjustments.\n\nLint-only: autofixing requires rewriting the start-time site as well, which is outside the rule's single-node scope.",
+      "description" : "Lint elapsed-time uses of `Date()` / `Date.now` — prefer `ContinuousClock` .\n\nPatterns flagged:\n- `Date().timeIntervalSince(start)` / `Date.now.timeIntervalSince(start)`\n- `Date().timeIntervalSinceNow` / `Date.now.timeIntervalSinceNow`\n\n`ContinuousClock.now` (paired with `start.duration(to: .now)` or `clock.measure { … }` ) is monotonic, allocation-free, and unaffected by wall-clock adjustments.\n\nLint-only: autofixing requires rewriting the start-time site as well, which is outside the rule's single-node scope.",
       "unevaluatedProperties" : false
     },
     "useCountWhere" : {

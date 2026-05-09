@@ -13,6 +13,14 @@
 - Inline computed-property accessor blocks when `get`/`set` bodies are single statements ([#657](https://github.com/toba/swiftiomatic/issues/657))
 - `excludes` config option with glob support to skip folders during recursive lint/format
 - `sm lint` / `sm format`; default to recursing the cwd or directory argument without `--recursive`; auto-prune `.build`, `.git`, `DerivedData`, `node_modules`, and other known build/artifact dirs
+- `RequireSubprocessTeardownSequence`; lint `Subprocess.run(...)` calls missing `platformOptions:` (or default `PlatformOptions()`) which orphan the child on cancellation
+- `NoAnyViewInForEach`; lint `AnyView(...)` constructed inside a `ForEach` body
+- `FlagUncheckedSendable`; review-only warning on `@unchecked Sendable` conformances
+- `FlagMutableStaticVar`; lint `static var` with mutable storage outside test files
+- `FlagSupersededSwiftUI`; lint `@StateObject`, `@ObservedObject`, `@EnvironmentObject`, `@Published`, `ObservableObject` conformance, and `NavigationView`
+- `FlagTaskInMainActor`; lint `Task { ... }` started from a `@MainActor`-isolated context; suggest `Task.immediate`
+- `FlagTaskDetached`; lint `Task.detached(...)`; suggest `@concurrent` or `Task.immediateDetached`
+- `NoFirstIndexOfInForLoop`; lint quadratic `coll.firstIndex(of:)` / `firstIndex(where:)` inside `for x in coll`
 
 ### 🐞 Fixes
 
@@ -41,6 +49,7 @@
 - `// sm:ignore:next`; honor directives placed in interior token leading trivia (e.g. between `@MainActor` and `override func setUp() async throws`), not just before the node's first token
 - `UseTernary`; refuse to fold when either branch is a `switch` or `if` expression; those forms are only valid in return/throw/assignment-RHS positions, never as a ternary sub-expression
 - `sm format`; preserve `#if false ... #endif` compilation guards instead of stripping them and exposing intentionally-disabled code to the compiler ([#672](https://github.com/toba/swiftiomatic/issues/672))
+- DocC; `- Returns:` no longer indented as a `Parameters` child
 
 ### 🗜️ Tweaks
 
@@ -50,6 +59,9 @@
 - Address build warnings ([#639](https://github.com/toba/swiftiomatic/issues/639))
 - `Lint pipeline perf & cleanup follow-ups`; close out epic covering P2, P3, P6, P8–P14, C1, C2, C4, N1–N5, M1, M2, M4 ([#536](https://github.com/toba/swiftiomatic/issues/536))
 - Address `sm lint` warnings in recently-changed source files; replace `description!` ternaries with `?? propertyName`, factor `arguments.first!` in `NestedCallLayout` behind `soleArgument(of:)`, wrap `CommentReflowEngine` block-quote ternary, drop redundant `self.` in `Glob.init?`
+- `FlagForEachOverIndices`; lint `ForEach` whose receiver is integer-indexed (`.indices`, ranges); orthogonal to `flagForEachIDSelfInView` (id-axis vs receiver-axis)
+- Audit and extend `UseContinuousClockNotDate` for elapsed-timing patterns including `Date().timeIntervalSince(start)`
+- Mechanical rule candidates from `/swift` skill review; epic closed (rules tracked individually)
 
 ## Week of Apr 26 – May 02, 2026
 

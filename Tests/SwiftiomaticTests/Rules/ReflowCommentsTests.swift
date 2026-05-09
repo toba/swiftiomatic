@@ -201,6 +201,61 @@ struct ReflowCommentsTests: RuleTesting {
         )
     }
 
+    @Test func dedentsReturnsKeywordToTopLevelAfterParametersBlock() {
+        // `- Returns:` is a top-level DocC keyword and must sit at the same indent
+        // as `- Parameters:`, not nested under it like a parameter entry.
+        assertFormatting(
+            ReflowComments.self,
+            input: """
+                1️⃣/// Returns a single value fetched from the database for a given primary key.
+                ///
+                /// - Parameters:
+                ///   - db: A database connection.
+                ///   - primaryKey: A primary key identifying a table row.
+                ///   - Returns: A single value decoded from the database.
+                func fetch() {}
+                """,
+            expected: """
+                /// Returns a single value fetched from the database for a given primary key.
+                ///
+                /// - Parameters:
+                ///   - db: A database connection.
+                ///   - primaryKey: A primary key identifying a table row.
+                /// - Returns: A single value decoded from the database.
+                func fetch() {}
+                """,
+            findings: [FindingSpec("1️⃣", message: "reflow comment to fit line length")],
+            configuration: config(maxWidth: 100)
+        )
+    }
+
+    @Test func preservesReturnsKeywordAlreadyAtTopLevel() {
+        assertFormatting(
+            ReflowComments.self,
+            input: """
+                /// Fetch a row.
+                ///
+                /// - Parameters:
+                ///   - db: A database connection.
+                ///   - primaryKey: A primary key identifying a table row.
+                /// - Returns: A single value decoded from the database.
+                /// - Throws: An error if decoding fails.
+                func fetch() {}
+                """,
+            expected: """
+                /// Fetch a row.
+                ///
+                /// - Parameters:
+                ///   - db: A database connection.
+                ///   - primaryKey: A primary key identifying a table row.
+                /// - Returns: A single value decoded from the database.
+                /// - Throws: An error if decoding fails.
+                func fetch() {}
+                """,
+            configuration: config(maxWidth: 100)
+        )
+    }
+
     @Test func preservesParametersBlockIndentation() {
         assertFormatting(
             ReflowComments.self,

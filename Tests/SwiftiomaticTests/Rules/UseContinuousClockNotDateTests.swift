@@ -49,6 +49,31 @@ struct UseContinuousClockNotDateTests: RuleTesting {
     )
   }
 
+  @Test func dateNowTimeIntervalSinceCall() {
+    assertLint(
+      UseContinuousClockNotDate.self,
+      """
+      let start = Date()
+      let elapsed = 1️⃣Date.now.timeIntervalSince(start)
+      """,
+      findings: [
+        FindingSpec("1️⃣", message: "elapsed time uses 'Date()' — prefer 'ContinuousClock.now' + 'duration(to:)' (monotonic, allocation-free)"),
+      ]
+    )
+  }
+
+  @Test func dateNowTimeIntervalSinceNowProperty() {
+    assertLint(
+      UseContinuousClockNotDate.self,
+      """
+      let elapsed = 1️⃣Date.now.timeIntervalSinceNow
+      """,
+      findings: [
+        FindingSpec("1️⃣", message: "elapsed time uses 'Date()' — prefer 'ContinuousClock.now' + 'duration(to:)' (monotonic, allocation-free)"),
+      ]
+    )
+  }
+
   @Test func continuousClockUntouched() {
     assertLint(
       UseContinuousClockNotDate.self,
