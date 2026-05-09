@@ -24,13 +24,17 @@ final class LintFrontend: Frontend, @unchecked Sendable {
         configurationOptions: ConfigurationOptions,
         lintFormatOptions: LintFormatOptions,
         treatWarningsAsErrors: Bool = false,
-        cache: LintCache?
+        cache: LintCache?,
+        additionalDiagnosticHandlers: [@Sendable (Diagnostic) -> Void] = [],
+        suppressDefaultDiagnosticPrinter: Bool = false
     ) {
         self.cache = cache
         super.init(
             configurationOptions: configurationOptions,
             lintFormatOptions: lintFormatOptions,
-            treatWarningsAsErrors: treatWarningsAsErrors
+            treatWarningsAsErrors: treatWarningsAsErrors,
+            additionalDiagnosticHandlers: additionalDiagnosticHandlers,
+            suppressDefaultDiagnosticPrinter: suppressDefaultDiagnosticPrinter
         )
     }
 

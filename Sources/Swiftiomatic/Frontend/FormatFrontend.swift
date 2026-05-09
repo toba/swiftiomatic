@@ -20,12 +20,17 @@ final class FormatFrontend: Frontend, @unchecked Sendable {
     /// Whether or not to format the Swift file in-place.
     private let inPlace: Bool
 
+    /// Optional reporter that captures per-file format outcomes for structured output.
+    let jsonReporter: JSONFormatReporter?
+
     init(
         configurationOptions: ConfigurationOptions,
         lintFormatOptions: LintFormatOptions,
-        inPlace: Bool
+        inPlace: Bool,
+        jsonReporter: JSONFormatReporter? = nil
     ) {
         self.inPlace = inPlace
+        self.jsonReporter = jsonReporter
         super.init(configurationOptions: configurationOptions, lintFormatOptions: lintFormatOptions)
     }
 
@@ -66,9 +71,16 @@ final class FormatFrontend: Frontend, @unchecked Sendable {
                     parsingDiagnosticHandler: diagnosticHandler
                 )
 
+                let bufferData = buffer.data(using: .utf8)!  // Conversion to UTF-8 cannot fail
                 if buffer != source {
-                    let bufferData = buffer.data(using: .utf8)!  // Conversion to UTF-8 cannot fail
                     try bufferData.write(to: url, options: .atomic)
+                    jsonReporter?.recordChanged(
+                        file: url.standardizedFileURL.path,
+                        bytesBefore: source.utf8.count,
+                        bytesAfter: bufferData.count
+                    )
+                } else {
+                    jsonReporter?.recordUnchanged(file: url.standardizedFileURL.path)
                 }
             } else {
                 try formatter.format(
@@ -81,6 +93,10 @@ final class FormatFrontend: Frontend, @unchecked Sendable {
                 )
             }
         } catch SwiftiomaticError.fileContainsInvalidSyntax {
+            jsonReporter?.recordSkipped(
+                file: url.standardizedFileURL.path,
+                reason: "unparsable"
+            )
             guard !lintFormatOptions.ignoreUnparsableFiles else {
                 guard !inPlace else { return }
                 stdoutStream.write(source)
@@ -89,6 +105,10 @@ final class FormatFrontend: Frontend, @unchecked Sendable {
             // Otherwise, relevant diagnostics about the problematic nodes have already been
             // emitted; we don't need to print anything else.
         } catch {
+            jsonReporter?.recordSkipped(
+                file: url.standardizedFileURL.path,
+                reason: error.localizedDescription
+            )
             diagnosticsEngine.emitError(
                 "Unable to format \(url.relativePath): \(error.localizedDescription)."
             )

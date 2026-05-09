@@ -9,6 +9,20 @@ extension Configuration {
         package var toRemove: [String]
         /// Rules found in the wrong location, with their existing values to preserve.
         package var misplaced: [Misplaced]
+        /// A schema-version bump (or insertion when the file lacks a `version` field).
+        package var versionUpdate: VersionUpdate? = nil
+
+        package struct VersionUpdate: Sendable, Equatable {
+            /// The version found in the file, or `nil` when no `version` key was present.
+            package var from: Int?
+            /// The version the file should be bumped to.
+            package var to: Int
+
+            package init(from: Int?, to: Int) {
+                self.from = from
+                self.to = to
+            }
+        }
 
         package struct Misplaced: Sendable, Equatable {
             /// The qualified key where the rule was found, e.g. `wrap.useIsEmpty` . For
@@ -20,7 +34,9 @@ extension Configuration {
             package var value: JSONValue
         }
 
-        package var hasChanges: Bool { !toAdd.isEmpty || !toRemove.isEmpty || !misplaced.isEmpty }
+        package var hasChanges: Bool {
+            !toAdd.isEmpty || !toRemove.isEmpty || !misplaced.isEmpty || versionUpdate != nil
+        }
     }
 
     /// Computes the diff between a parsed JSON config and the current rule registry.
@@ -74,10 +90,24 @@ extension Configuration {
         let foundOrMisplacedCorrect = foundCorrectKeys.union(misplaced.map(\.correctAt))
         let toAdd = validKeys.subtracting(foundOrMisplacedCorrect).sorted()
 
+        let versionUpdate: UpdateDiff.VersionUpdate? = {
+            let target = highestSupportedConfigurationVersion
+            switch root["version"] {
+                case let .int(v):
+                    return v < target ? .init(from: v, to: target) : nil
+                case .none:
+                    return .init(from: nil, to: target)
+                default:
+                    // Non-int "version" value — treat as missing so the user gets a valid one.
+                    return .init(from: nil, to: target)
+            }
+        }()
+
         return .init(
             toAdd: toAdd,
             toRemove: toRemove.sorted(),
-            misplaced: misplaced.sorted { $0.foundAt < $1.foundAt }
+            misplaced: misplaced.sorted { $0.foundAt < $1.foundAt },
+            versionUpdate: versionUpdate
         )
     }
 
@@ -101,6 +131,11 @@ extension Configuration {
         for key in diff.toAdd {
             let value = defaultValue(forQualifiedKey: key, defaults: defaults)
             insertKey(key, value: value, into: &root)
+        }
+
+        // Schema version bump.
+        if let versionUpdate = diff.versionUpdate {
+            root["version"] = .int(versionUpdate.to)
         }
     }
 

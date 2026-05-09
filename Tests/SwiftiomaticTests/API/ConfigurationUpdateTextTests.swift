@@ -415,4 +415,84 @@ struct ConfigurationUpdateTextTests {
     // Existing version unchanged.
     #expect(result.contains("\"version\": 6"))
   }
+
+  // MARK: - Version bump
+
+  @Test func bumpsSchemaVersionInPlace() throws {
+    let original = """
+      {
+        "version": 6,
+        "lineLength": 100
+      }
+      """
+
+    let diff = Configuration.UpdateDiff(
+      toAdd: [],
+      toRemove: [],
+      misplaced: [],
+      versionUpdate: .init(from: 6, to: 8)
+    )
+
+    let result = try Configuration.applyUpdateText(
+      diff, to: original, defaults: try defaultsDict()
+    )
+
+    #expect(result.contains("\"version\": 8"))
+    #expect(!result.contains("\"version\": 6"))
+    #expect(result.contains("\"lineLength\": 100"))
+    _ = try parse(result)
+  }
+
+  @Test func insertsMissingVersion() throws {
+    let original = """
+      {
+        "lineLength": 100
+      }
+      """
+
+    let diff = Configuration.UpdateDiff(
+      toAdd: [],
+      toRemove: [],
+      misplaced: [],
+      versionUpdate: .init(from: nil, to: 8)
+    )
+
+    let result = try Configuration.applyUpdateText(
+      diff, to: original, defaults: try defaultsDict()
+    )
+
+    #expect(result.contains("\"version\": 8"))
+    #expect(result.contains("\"lineLength\": 100"))
+    let dict = try parse(result)
+    #expect(dict["version"] == .int(8))
+  }
+
+  @Test func computeUpdateDetectsOutdatedSchemaVersion() throws {
+    let root = try parse("""
+      {
+        "version": 6
+      }
+      """)
+
+    let diff = Configuration.computeUpdate(for: root)
+    #expect(diff.versionUpdate?.from == 6)
+    #expect(diff.versionUpdate?.to == highestSupportedConfigurationVersion)
+  }
+
+  @Test func computeUpdateDetectsMissingSchemaVersion() throws {
+    let root = try parse("""
+      { "lineLength": 100 }
+      """)
+
+    let diff = Configuration.computeUpdate(for: root)
+    #expect(diff.versionUpdate?.from == nil)
+    #expect(diff.versionUpdate?.to == highestSupportedConfigurationVersion)
+  }
+
+  @Test func computeUpdateNoVersionChangeWhenCurrent() throws {
+    let data = try JSONEncoder().encode(Configuration())
+    let root = try JSONDecoder().decode([String: JSONValue].self, from: data)
+    let diff = Configuration.computeUpdate(for: root)
+    #expect(diff.versionUpdate == nil)
+  }
 }

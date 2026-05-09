@@ -59,6 +59,11 @@ extension Configuration {
                 layout: layout
             ))
 
+        // 4. Version bump — replace existing `"version": N` value, or insert one if missing.
+        if let versionUpdate = diff.versionUpdate {
+            edits.append(versionEdit(versionUpdate: versionUpdate, source: source, layout: layout))
+        }
+
         // Apply right-to-left.
         var result = source
 
@@ -354,6 +359,33 @@ extension Configuration {
                 replacement: insertion
             )
         }
+    }
+
+    // MARK: - Version
+
+    private static func versionEdit(
+        versionUpdate: UpdateDiff.VersionUpdate,
+        source: String,
+        layout: JSON5Scanner.ObjectLayout
+    ) -> TextEdit {
+        if let member = layout.members.first(where: { $0.key == "version" }) {
+            return TextEdit(range: member.valueRange, replacement: "\(versionUpdate.to)")
+        }
+        // No `version` key in source — insert one as the first member of the root object.
+        let indent = rootChildIndent(layout)
+        let line = "\(indent)\"version\": \(versionUpdate.to)"
+
+        if let first = layout.members.first {
+            let insertion = "\(line),\n"
+            return TextEdit(
+                range: first.fullRange.lowerBound..<first.fullRange.lowerBound,
+                replacement: insertion
+            )
+        }
+        // Empty root object — insert as the sole member.
+        let closeIndent = indentBeforeBrace(closeBrace: layout.closeBrace, source: source)
+        let insertion = "\n\(line)\n\(closeIndent)"
+        return TextEdit(range: layout.closeBrace..<layout.closeBrace, replacement: insertion)
     }
 
     // MARK: - Indentation helpers

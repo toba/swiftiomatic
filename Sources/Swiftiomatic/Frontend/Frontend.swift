@@ -221,7 +221,9 @@ class Frontend: @unchecked Sendable {
     init(
         configurationOptions: ConfigurationOptions,
         lintFormatOptions: LintFormatOptions,
-        treatWarningsAsErrors: Bool = false
+        treatWarningsAsErrors: Bool = false,
+        additionalDiagnosticHandlers: [@Sendable (Diagnostic) -> Void] = [],
+        suppressDefaultDiagnosticPrinter: Bool = false
     ) {
         self.configurationOptions = configurationOptions
         self.lintFormatOptions = lintFormatOptions
@@ -229,8 +231,13 @@ class Frontend: @unchecked Sendable {
         diagnosticPrinter = StderrDiagnosticPrinter(
             colorMode: lintFormatOptions.colorDiagnostics.map { $0 ? .on : .off } ?? .auto
         )
+        var handlers: [@Sendable (Diagnostic) -> Void] = []
+        if !suppressDefaultDiagnosticPrinter {
+            handlers.append(diagnosticPrinter.printDiagnostic)
+        }
+        handlers.append(contentsOf: additionalDiagnosticHandlers)
         diagnosticsEngine = DiagnosticsEngine(
-            diagnosticsHandlers: [diagnosticPrinter.printDiagnostic],
+            diagnosticsHandlers: handlers,
             treatWarningsAsErrors: treatWarningsAsErrors
         )
         configurationProvider = ConfigurationProvider(diagnosticsEngine: diagnosticsEngine)

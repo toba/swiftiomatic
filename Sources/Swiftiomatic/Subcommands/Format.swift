@@ -12,6 +12,7 @@
 
 import ArgumentParser
 import Foundation
+import SwiftiomaticKit
 
 extension SwiftiomaticCommand {
     /// Formats one or more files containing Swift code.
@@ -36,7 +37,21 @@ extension SwiftiomaticCommand {
         @OptionGroup()
         var formatOptions: LintFormatOptions
 
+        @Option(
+            name: .long,
+            help: """
+                Output format for run summary. `text` (default) emits no summary. `json` emits a JSON \
+                object on stdout with `changed`, `unchanged`, and `skipped` arrays. Requires \
+                `--in-place`.
+                """
+        )
+        var reporter: Reporter = .text
+
         func validate() throws {
+            if reporter == .json, !inPlace {
+                throw ValidationError("'--reporter json' requires '--in-place'")
+            }
+
             // Recursing across a directory tree (either an explicit directory argument or the
             // implicit cwd default when no paths are given) requires `--in-place`; otherwise we'd
             // concatenate every formatted file to stdout, which is almost never what the caller
@@ -70,12 +85,15 @@ extension SwiftiomaticCommand {
         }
 
         func run() throws {
+            let jsonReporter: JSONFormatReporter? = (reporter == .json) ? JSONFormatReporter() : nil
             let frontend = FormatFrontend(
                 configurationOptions: configurationOptions,
                 lintFormatOptions: formatOptions,
-                inPlace: inPlace
+                inPlace: inPlace,
+                jsonReporter: jsonReporter
             )
             frontend.run()
+            jsonReporter?.flush()
             if frontend.diagnosticsEngine.hasErrors { throw ExitCode.failure }
         }
     }

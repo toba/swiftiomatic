@@ -42,6 +42,13 @@ extension SwiftiomaticCommand {
                 return
             }
 
+            if let versionUpdate = diff.versionUpdate {
+                if let from = versionUpdate.from {
+                    print("Schema version: \(from) → \(versionUpdate.to)")
+                } else {
+                    print("Schema version: (missing) → \(versionUpdate.to)")
+                }
+            }
             if !diff.misplaced.isEmpty {
                 print("Misplaced rules (will be moved, preserving your values):")
                 for entry in diff.misplaced { print("  ! \(entry.foundAt) → \(entry.correctAt)") }
@@ -70,6 +77,9 @@ extension SwiftiomaticCommand {
 
             try updated.write(to: configURL, atomically: true, encoding: .utf8)
 
+            if let versionUpdate = diff.versionUpdate {
+                print("Bumped schema version to \(versionUpdate.to).")
+            }
             if !diff.misplaced.isEmpty {
                 print("Moved \(diff.misplaced.count) rule\(diff.misplaced.count == 1 ? "" : "s").")
             }
