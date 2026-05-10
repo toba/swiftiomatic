@@ -134,6 +134,27 @@ struct IfStmtTests: LayoutTesting {
     assertLayout(input: input, expected: input, linelength: 100, configuration: config)
   }
 
+  /// Regression test for i5s-jmy: the chain-wrapping consistent group in `visitCodeBlockItem`
+  /// spans the entire if statement (including bodies). The pretty printer sees an inline
+  /// else-if body — `} else if cond { stmt }` — sitting in a chain whose outer branch has a
+  /// multi-statement body. The outer body's mandatory soft newline forces the consistent
+  /// group, which then force-breaks every `.same` break inside it — including the inline-body
+  /// break before the inlined `{`, dropping it onto its own line. The fix in
+  /// `ifChainMixesInlineAndMultiLineBodies` skips the wrapper when the chain mixes inline
+  /// and multi-line bodies.
+  @Test func ifElseStatement_keepsInlineElseIfWhenOuterBodyIsMultiLine() {
+    let input =
+      """
+      if lineIndex >= rawLineLengths.count {
+          lineIndex = rawLineLengths.count - 1
+      } else if otherCondition { lineIndex = 0 }
+
+      """
+    var config = Configuration()
+    config[IndentationSetting.self] = .spaces(4)
+    assertLayout(input: input, expected: input, linelength: 100, configuration: config)
+  }
+
   @Test func ifElseStatement_breakBeforeElse() {
     let input =
       """

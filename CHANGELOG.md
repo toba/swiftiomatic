@@ -1,5 +1,11 @@
 # Changelog
 
+## Week of May 10 – May 16, 2026
+
+### 🐞 Fixes
+
+- `LayoutSingleLineBodies`; chain-wrapping consistent group no longer force-breaks an inlined else-if's `{` onto its own line when sibling branches in the same chain are multi-statement ([#690](https://github.com/toba/swiftiomatic/issues/690))
+
 ## Week of May 03 – May 09, 2026
 
 ### ✨ Features
