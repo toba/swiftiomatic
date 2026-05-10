@@ -53,6 +53,7 @@
 - `UseTernary`; refuse to fold when either branch is a `switch` or `if` expression; those forms are only valid in return/throw/assignment-RHS positions, never as a ternary sub-expression
 - `sm format`; preserve `#if false ... #endif` compilation guards instead of stripping them and exposing intentionally-disabled code to the compiler ([#672](https://github.com/toba/swiftiomatic/issues/672))
 - DocC; `- Returns:` no longer indented as a `Parameters` child
+- `DropRedundantReturn`; preserve explicit `return` in multi-branch if/switch bodies when the enclosing decl's return type is opaque (`some P`) or existential (`any P`); collapsing to an if/switch *expression* breaks generic-parameter inference for branch calls whose type is pinned by the contextual return type ([#689](https://github.com/toba/swiftiomatic/issues/689))
 
 ### 🗜️ Tweaks
 

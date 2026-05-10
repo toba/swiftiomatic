@@ -530,6 +530,92 @@ struct OmitReturnsTests: RuleTesting {
   }
 
   @Test
+  func opaqueReturnTypeIfElseNotTransformed() {
+    // Stripping `return` from each branch would collapse the body to an if-expression,
+    // and the contextual `some QueryExpression<QueryValue>` return type no longer flows
+    // independently into each branch — `QueryFunction`'s generic param can't be inferred.
+    // See issue c5n-gyf.
+    assertFormatting(
+      DropRedundantReturn.self,
+      input: """
+          public extension QueryExpression where QueryValue: FloatingPoint {
+            func round(
+              _ precision: (some QueryExpression<Int>)? = Int?.none
+            ) -> some QueryExpression<QueryValue> {
+              if let precision {
+                return QueryFunction("round", self, precision)
+              } else {
+                return QueryFunction("round", self)
+              }
+            }
+          }
+        """,
+      expected: """
+          public extension QueryExpression where QueryValue: FloatingPoint {
+            func round(
+              _ precision: (some QueryExpression<Int>)? = Int?.none
+            ) -> some QueryExpression<QueryValue> {
+              if let precision {
+                return QueryFunction("round", self, precision)
+              } else {
+                return QueryFunction("round", self)
+              }
+            }
+          }
+        """,
+      findings: []
+    )
+  }
+
+  @Test
+  func existentialReturnTypeIfElseNotTransformed() {
+    assertFormatting(
+      DropRedundantReturn.self,
+      input: """
+          func make(_ flag: Bool) -> any P {
+            if flag {
+              return A()
+            } else {
+              return B()
+            }
+          }
+        """,
+      expected: """
+          func make(_ flag: Bool) -> any P {
+            if flag {
+              return A()
+            } else {
+              return B()
+            }
+          }
+        """,
+      findings: []
+    )
+  }
+
+  @Test
+  func opaqueReturnTypeSingleReturnStillTransformed() {
+    // Single-expression body with explicit return is still safe — the contextual return
+    // type flows directly to the expression with or without the keyword.
+    assertFormatting(
+      DropRedundantReturn.self,
+      input: """
+          func make() -> some P {
+            1️⃣return Concrete()
+          }
+        """,
+      expected: """
+          func make() -> some P {
+            Concrete()
+          }
+        """,
+      findings: [
+        FindingSpec("1️⃣", message: "'return' can be omitted because body consists of a single expression")
+      ]
+    )
+  }
+
+  @Test
   func multiStatementBranchNotTransformed() {
     assertFormatting(
       DropRedundantReturn.self,
