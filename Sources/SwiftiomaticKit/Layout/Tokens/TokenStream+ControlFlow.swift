@@ -246,16 +246,24 @@ extension TokenStream {
         // the old (pre-SE-0276) behavior (a fixed space after the `catch` keyword).
         if node.catchItems.count > 1 {
             for catchItem in node.catchItems {
-                before(
-                    catchItem.firstToken(viewMode: .sourceAccurate),
-                    tokens: .break(.open(kind: .continuation))
-                )
+                // When the item has no pattern (it's a bare `where` clause),
+                // `WhereClauseSyntax` emits its own preceding break — skip
+                // ours to avoid duplicate whitespace.
+                if catchItem.pattern != nil {
+                    before(
+                        catchItem.firstToken(viewMode: .sourceAccurate),
+                        tokens: .break(.open(kind: .continuation))
+                    )
+                }
                 after(
                     catchItem.lastToken(viewMode: .sourceAccurate),
                     tokens: .break(.close(mustBreak: false), size: 0)
                 )
             }
-        } else {
+        } else if let onlyItem = node.catchItems.first, onlyItem.pattern != nil {
+            // Same rationale: a single bare `where` item is preceded by
+            // `WhereClauseSyntax`'s own break; emitting a space here would
+            // duplicate whitespace.
             before(node.catchItems.firstToken(viewMode: .sourceAccurate), tokens: .space)
         }
 

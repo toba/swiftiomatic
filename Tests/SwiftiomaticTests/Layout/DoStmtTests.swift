@@ -208,6 +208,39 @@ struct DoStmtTests: LayoutTesting {
     assertLayout(input: input, expected: expected, linelength: 40, configuration: config)
   }
 
+  @Test func catchWhereOnly_noBreakBeforeCatch() {
+    let input =
+      """
+      do { f() } catch where c { g() }
+      """
+
+    let expected =
+      """
+      do { f() } catch where c { g() }
+
+      """
+
+    assertLayout(input: input, expected: expected, linelength: 80)
+  }
+
+  @Test func catchWhereOnly_breakBeforeCatch() {
+    let input =
+      """
+      do { f() } catch where c { g() }
+      """
+
+    let expected =
+      """
+      do { f() }
+      catch where c { g() }
+
+      """
+
+    var config = Configuration.forTesting
+    config[PlaceElseCatchOnNewLine.self] = true
+    assertLayout(input: input, expected: expected, linelength: 80, configuration: config)
+  }
+
   @Test func catchWhere_noBreakBeforeCatch() {
     let input =
       """

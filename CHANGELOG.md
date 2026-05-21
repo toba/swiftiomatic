@@ -1,5 +1,12 @@
 # Changelog
 
+## Week of May 17 – May 23, 2026
+
+### 🐞 Fixes
+
+- Mirror upstream swift-format #1203; suppress duplicate whitespace before `where` in a bare-`where` `catch` clause (`do { … } catch where c { … }`) ([#692](https://github.com/toba/swiftiomatic/issues/692))
+- `SortImports`; preserve trailing comments that reordering pushes past the final import instead of silently dropping them ([#691](https://github.com/toba/swiftiomatic/issues/691))
+
 ## Week of May 10 – May 16, 2026
 
 ### 🐞 Fixes

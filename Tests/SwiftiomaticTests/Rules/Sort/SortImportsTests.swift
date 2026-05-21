@@ -290,6 +290,30 @@ struct SortImportsTests: RuleTesting {
     )
   }
 
+  @Test func commentBetweenImportGroupsIsPreserved() {
+    // A free-standing comment, separated from the surrounding imports by
+    // blank lines, was previously dropped entirely when the rule ran the
+    // import group through its line/trivia normalisation. Mirrors upstream
+    // swift-format #1080.
+    assertFormatting(
+      SortImports.self,
+      input: """
+        import A
+
+        // Comment
+
+        import B
+        """,
+      expected: """
+        import A
+        import B
+
+        // Comment
+        """,
+      findings: []
+    )
+  }
+
   @Test func multipleCodeBlocksPerLine() {
     assertFormatting(
       SortImports.self,
