@@ -85,14 +85,12 @@ final class CollapseSimpleEnums: StaticFormatRule<BasicRuleValue>, @unchecked Se
 // MARK: - Helpers
 
 extension CollapseSimpleEnums {
-    /// The known Swift raw-value types that disqualify an enum from collapsing.
-    private static let rawValueTypes: Set<String> = [
-        "Int", "Int8", "Int16", "Int32", "Int64",
-        "UInt", "UInt8", "UInt16", "UInt32", "UInt64",
-        "Float", "Double", "String", "Character",
-    ]
-
     /// Whether the enum can be collapsed onto a single line.
+    ///
+    /// A raw-value-typed enum (e.g. `: String` , `: Int` ) collapses too, as long as no case
+    /// assigns an explicit raw value — the bare cases carry implicit raw values either way, so
+    /// `enum E: String { case a, b }` is equivalent whether expanded or on one line. Only an
+    /// explicit `= …` assignment (caught by the element check below) blocks collapsing.
     fileprivate static func isCollapsible(_ node: EnumDeclSyntax) -> Bool {
         let members = node.memberBlock.members
         // Must have at least one member, all must be case declarations.
@@ -104,14 +102,6 @@ extension CollapseSimpleEnums {
             for element in caseDecl.elements {
                 if element.parameterClause != nil { return false }
                 if element.rawValue != nil { return false }
-            }
-        }
-
-        // Reject enums with raw-value type inheritance (e.g. `: String` , `: Int` ).
-        if let inheritance = node.inheritanceClause {
-            for inherited in inheritance.inheritedTypes {
-                let name = inherited.type.trimmedDescription
-                if Self.rawValueTypes.contains(name) { return false }
             }
         }
 

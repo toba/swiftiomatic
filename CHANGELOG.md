@@ -6,6 +6,7 @@
 
 - Mirror upstream swift-format #1203; suppress duplicate whitespace before `where` in a bare-`where` `catch` clause (`do { … } catch where c { … }`) ([#692](https://github.com/toba/swiftiomatic/issues/692))
 - `SortImports`; preserve trailing comments that reordering pushes past the final import instead of silently dropping them ([#691](https://github.com/toba/swiftiomatic/issues/691))
+- `CollapseSimpleEnums`; collapse raw-value-typed enums (`: String`, `: Int`) onto one line when no case assigns an explicit raw value, instead of refusing on the inheritance type alone ([#693](https://github.com/toba/swiftiomatic/issues/693))
 
 ## Week of May 10 – May 16, 2026
 

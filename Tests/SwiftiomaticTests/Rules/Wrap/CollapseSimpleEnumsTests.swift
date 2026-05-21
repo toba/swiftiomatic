@@ -231,22 +231,39 @@ struct CollapseSimpleEnumsTests: RuleTesting {
       ])
   }
 
-  @Test func skipsRawValueTypeEnum() {
-    // String raw value type implies raw values even without explicit assignments.
+  @Test func collapsesRawValueTypeEnumWithoutAssignments() {
+    // A raw-value-typed enum collapses as long as no case assigns an explicit raw value —
+    // the bare cases carry implicit raw values whether expanded or on one line.
     assertFormatting(
       CollapseSimpleEnums.self,
       input: """
-        enum Direction: String {
+        1️⃣enum Direction: String {
             case up
             case down
         }
         """,
       expected: """
-        enum Direction: String {
-            case up
-            case down
+        enum Direction: String { case up, down }
+        """,
+      findings: [
+        FindingSpec("1️⃣", message: "collapse simple enum onto a single line"),
+      ])
+  }
+
+  @Test func collapsesRawValueTypeEnumWithExtraConformance() {
+    assertFormatting(
+      CollapseSimpleEnums.self,
+      input: """
+        1️⃣enum ObjectType: String, SQLiteType {
+            case table, index, view, trigger
         }
-        """)
+        """,
+      expected: """
+        enum ObjectType: String, SQLiteType { case table, index, view, trigger }
+        """,
+      findings: [
+        FindingSpec("1️⃣", message: "collapse simple enum onto a single line"),
+      ])
   }
 
   @Test func collapsesNestedEnumInsideNonCollapsibleEnum() {
