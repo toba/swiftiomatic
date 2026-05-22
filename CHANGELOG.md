@@ -17,6 +17,8 @@
 - Function calls; collapse a single compact argument (array, dict, closure, or function call) onto one line when it fits, discarding source newlines the user placed after `(` or before `)` (e.g. `.starts(with: symbol.utf8.reversed())`) ([#697](https://github.com/toba/swiftiomatic/issues/697))
 - Function calls; exclude single function-call arguments containing a closure from the #697 collapse, so a closure-bearing argument (e.g. `.iOSSpecificModifier(SpecificType().onChanged { … })`) keeps its multi-line layout instead of hugging the parens ([#699](https://github.com/toba/swiftiomatic/issues/699))
 - Function calls; in a two-trailing-closure call (e.g. `With { expr } query: { … }`), leave the first closure's newline behavior discretionary so an inline single-statement body is preserved as written; 3+ closures still all break
+- Function calls; update `multipleTrailingClosures` test expectations to match the per-closure breaking behavior from #700 (each closure breaks independently when it doesn't fit) ([#701](https://github.com/toba/swiftiomatic/issues/701))
+- `for … where …` loops; when the header wraps, indent the `where` clause as a continuation and force the opening `{` onto its own line, instead of leaving `where` at the `for` indent with an inline brace ([#702](https://github.com/toba/swiftiomatic/issues/702))
 
 ## Week of May 10 – May 16, 2026
 

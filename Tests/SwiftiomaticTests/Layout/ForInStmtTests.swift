@@ -70,12 +70,13 @@ struct ForInStmtTests: LayoutTesting {
         let b = 456
       }
       for i in longerarray
-      where longerarray.isContainer() {
+        where longerarray.isContainer()
+      {
         let a = 123
         let b = 456
       }
       for i in longerarray
-      where longerarray.isContainer()
+        where longerarray.isContainer()
         && anotherCondition
       {
         let a = 123
@@ -104,7 +105,7 @@ struct ForInStmtTests: LayoutTesting {
       """
       for item
         in aVeryLargeContainerObject
-      where
+        where
         largeObject.hasProperty()
         && condition
       {
@@ -113,7 +114,7 @@ struct ForInStmtTests: LayoutTesting {
       }
       for item
         in aVeryLargeContainerObject
-      where tinyObj.hasProperty()
+        where tinyObj.hasProperty()
         && condition
       {
         let a = 123
@@ -243,7 +244,7 @@ struct ForInStmtTests: LayoutTesting {
     let expected =
       """
       for x in someCollection
-      where someTestableCondition
+        where someTestableCondition
         && x.someProperty
           + x.someSpecialProperty({
             $0.value
@@ -256,7 +257,7 @@ struct ForInStmtTests: LayoutTesting {
         let foo = someFunc()
       }
       for x in someCollection
-      where someTestableCondition
+        where someTestableCondition
         && x.someProperty
           + x.someSpecialProperty({
             // comment #0
@@ -275,6 +276,56 @@ struct ForInStmtTests: LayoutTesting {
       """
 
     assertLayout(input: input, expected: expected, linelength: 30)
+  }
+
+  // j0l-do5: when a `for ... where ...` header wraps, the `where` clause indents as a
+  // continuation of the header and the opening `{` always drops to its own line.
+  @Test func forWhereIndentsAndDropsBrace() {
+    let input =
+      """
+      for run in runs where run.fontStyle != nil || run.verticalPlacement != nil || run.prevent != nil {
+        hasFormatting = true
+        break
+      }
+      """
+
+    let expected =
+      """
+      for run in runs
+        where run.fontStyle != nil || run.verticalPlacement != nil
+        || run.prevent != nil
+      {
+        hasFormatting = true
+        break
+      }
+
+      """
+
+    assertLayout(input: input, expected: expected, linelength: 80)
+  }
+
+  // j0l-do5: a discretionary newline before `where` must also drop the brace to its own
+  // line — the brace placement is coupled to the where clause wrapping, not column fit.
+  @Test func forWhereDiscretionaryNewlineDropsBrace() {
+    let input =
+      """
+      for run in runs
+      where run.a != nil || run.b != nil {
+        body()
+      }
+      """
+
+    let expected =
+      """
+      for run in runs
+        where run.a != nil || run.b != nil
+      {
+        body()
+      }
+
+      """
+
+    assertLayout(input: input, expected: expected, linelength: 80)
   }
 
   @Test func explicitTypeAnnotation() {
@@ -476,9 +527,9 @@ struct ForInStmtTests: LayoutTesting {
     assertLayout(input: input, expected: expected, linelength: 20)
   }
 
-  // ojf-4w0: when a `for ... where ...` header wraps, the `where` clause should drop
-  // to its own line at the same indent as `for`. The opening `{` stays inline with the
-  // `where` clause when it fits.
+  // j0l-do5 (supersedes ojf-4w0): when a `for ... where ...` header wraps, the `where`
+  // clause drops to its own line indented as a continuation of the header, and the opening
+  // `{` is forced onto its own line.
   @Test func forWhereWrapsHeader() {
     let input =
       """
@@ -490,7 +541,8 @@ struct ForInStmtTests: LayoutTesting {
     let expected =
       """
       for match in regex.matches(in: text, options: [], range: range)
-      where match.numberOfRanges > 1 {
+        where match.numberOfRanges > 1
+      {
         body()
       }
 

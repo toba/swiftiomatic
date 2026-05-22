@@ -489,6 +489,11 @@ extension TokenStream {
             // further level if it also wraps.
             wherePrecedingBreak = .break(.continue)
             whereTrailingBreak = .break(.continue)
+        } else if let parent = node.parent, parent.is(ForStmtSyntax.self) {
+            // j0l-do5: a `for ... where ...` clause's break tokens and grouping are emitted by
+            // `visitForStmt`, which needs to coordinate the `in`-clause, `where`-clause, and brace
+            // together. Skip here to avoid emitting them twice.
+            return .visitChildren
         } else {
             wherePrecedingBreak = .break(.same)
             whereTrailingBreak = .break

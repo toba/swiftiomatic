@@ -148,7 +148,24 @@ extension TokenStream {
         }
 
         after(node.caseKeyword, tokens: .space)
-        before(node.inKeyword, tokens: .break)
+
+        if let whereClause = node.whereClause {
+            // j0l-do5: couple the `where` clause wrap to the brace placement. The outer
+            // `.consistent` group spans the `in <sequence> where <condition>` header tail; once it
+            // goes multi-line (because the `where` clause wraps or carries a discretionary
+            // newline), the brace's preceding reset break inherits the force-break flag and `{`
+            // drops onto its own line. The `in <sequence>` part lives in its own nested group so
+            // (a) the `in` break's chunk doesn't extend across the whole consistent group (which
+            // would make `for x in y` wrap prematurely) and (b) it isn't force-broken alongside
+            // `where`. The `where` keyword indents as a continuation of the header.
+            before(node.inKeyword, tokens: .open(.consistent), .open, .break)
+            after(node.sequence.lastToken(viewMode: .sourceAccurate), tokens: .close)
+            before(whereClause.whereKeyword, tokens: .break(.continue), .open)
+            after(whereClause.whereKeyword, tokens: .break(.continue))
+            after(whereClause.lastToken(viewMode: .sourceAccurate), tokens: .close, .close)
+        } else {
+            before(node.inKeyword, tokens: .break)
+        }
         after(node.inKeyword, tokens: .space)
 
         if let typeAnnotation = node.typeAnnotation {
