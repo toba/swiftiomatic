@@ -913,6 +913,40 @@ struct SingleLineBodiesInlineTests: RuleTesting {
       configuration: config)
   }
 
+  @Test func functionWithWrappedWhereClauseWrapsBody() {
+    assertFormatting(
+      LayoutSingleLineBodies.self,
+      input: """
+        func jsonArrayLength<Element: Codable>() -> some QueryExpression<Int>
+            where QueryValue == [Element].JSONRepresentation
+        1️⃣{ QueryFunction("json_array_length", self) }
+        """,
+      expected: """
+        func jsonArrayLength<Element: Codable>() -> some QueryExpression<Int>
+            where QueryValue == [Element].JSONRepresentation
+        {
+            QueryFunction("json_array_length", self)
+        }
+        """,
+      findings: [FindingSpec("1️⃣", message: "wrap function body onto a new line")],
+      configuration: inlineConfig)
+  }
+
+  @Test func functionWithInlineWhereClauseStillInlines() {
+    assertFormatting(
+      LayoutSingleLineBodies.self,
+      input: """
+        func foo<T>() where T: Equatable 1️⃣{
+            return 42
+        }
+        """,
+      expected: """
+        func foo<T>() where T: Equatable { return 42 }
+        """,
+      findings: [FindingSpec("1️⃣", message: "place function body on same line as declaration")],
+      configuration: inlineConfig)
+  }
+
   // MARK: - Initializers
 
   @Test func initInlines() {

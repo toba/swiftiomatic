@@ -610,10 +610,24 @@ extension LayoutSingleLineBodies {
         return StmtSyntax(result)
     }
 
+    /// A generic `where` clause wrapped onto its own line (its `where` keyword preceded by a
+    /// newline) forces the opening brace onto a separate line. Keeping an inline `{ body }` glued
+    /// to that lone brace reads poorly, so the body is wrapped onto new lines instead — even in
+    /// inline mode.
+    fileprivate static func hasWrappedGenericWhereClause(
+        _ clause: GenericWhereClauseSyntax?
+    ) -> Bool {
+        guard let clause else { return false }
+        return clause.whereKeyword.leadingTrivia.containsNewlines
+    }
+
     fileprivate static func inlineFunction(
         _ node: FunctionDeclSyntax,
         context: Context
     ) -> DeclSyntax {
+        if Self.hasWrappedGenericWhereClause(node.genericWhereClause) {
+            return Self.wrapFunction(node, context: context)
+        }
         guard let body = node.body, Self.canInline(body) else { return DeclSyntax(node) }
 
         let bodyText = Self.singleStatementText(body)
@@ -638,6 +652,9 @@ extension LayoutSingleLineBodies {
         _ node: InitializerDeclSyntax,
         context: Context
     ) -> DeclSyntax {
+        if Self.hasWrappedGenericWhereClause(node.genericWhereClause) {
+            return Self.wrapInit(node, context: context)
+        }
         guard let body = node.body, Self.canInline(body) else { return DeclSyntax(node) }
 
         let bodyText = Self.singleStatementText(body)
@@ -662,6 +679,9 @@ extension LayoutSingleLineBodies {
         _ node: SubscriptDeclSyntax,
         context: Context
     ) -> DeclSyntax {
+        if Self.hasWrappedGenericWhereClause(node.genericWhereClause) {
+            return Self.wrapSubscript(node, context: context)
+        }
         guard let accessorBlock = node.accessorBlock,
               case let .getter(statements) = accessorBlock.accessors,
               statements.count == 1 else { return DeclSyntax(node) }
