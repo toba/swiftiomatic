@@ -6,6 +6,10 @@ type: bug
 priority: normal
 created_at: 2026-05-22T22:06:55Z
 updated_at: 2026-05-22T22:14:05Z
+sync:
+    github:
+        issue_number: "701"
+        synced_at: "2026-05-22T22:17:17Z"
 ---
 
 The bj7-vtb change (keep first closure inline in 2-closure calls) broke the existing \`multipleTrailingClosures\` test in FunctionCallTests.swift (linelength: 23).
