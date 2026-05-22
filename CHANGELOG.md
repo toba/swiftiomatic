@@ -15,6 +15,7 @@
 - `if let` / `let` bindings; keep `= try` glued and break at the chain dots instead of wrapping after `=`, when a `try`/`await` member-access chain has discretionary newlines at the dots ([#695](https://github.com/toba/swiftiomatic/issues/695))
 - `DropRedundantEquatable`; descend into `#if`/`#else` blocks when collecting stored properties so a conditionally-compiled property (e.g. `#if DEBUG let base: Any.Type`) no longer hides from the rule and triggers wrongful removal of a custom `==` ([#698](https://github.com/toba/swiftiomatic/issues/698))
 - Function calls; collapse a single compact argument (array, dict, closure, or function call) onto one line when it fits, discarding source newlines the user placed after `(` or before `)` (e.g. `.starts(with: symbol.utf8.reversed())`) ([#697](https://github.com/toba/swiftiomatic/issues/697))
+- Function calls; exclude single function-call arguments containing a closure from the #697 collapse, so a closure-bearing argument (e.g. `.iOSSpecificModifier(SpecificType().onChanged { … })`) keeps its multi-line layout instead of hugging the parens ([#699](https://github.com/toba/swiftiomatic/issues/699))
 
 ## Week of May 10 – May 16, 2026
 

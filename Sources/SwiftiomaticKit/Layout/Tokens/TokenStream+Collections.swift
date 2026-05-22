@@ -284,10 +284,13 @@ extension TokenStream {
         forcesBreakBeforeRightDelimiter: Bool
     ) {
         if !arguments.isEmpty {
-            // When the single argument is itself a compact expression (array, dict, closure, or
-            // function call), ignore discretionary newlines the user placed after `(` and before
-            // `)` so the formatter can collapse the call onto one line when it fits.
+            // When the single argument is a compact function call that fits on one line, ignore
+            // discretionary newlines the user placed after `(` and before `)` so the formatter can
+            // collapse the call (e.g. `.starts(with: symbol.utf8.reversed())`). Exclude arguments
+            // that contain a closure: their bodies force multi-line layout, and dropping the
+            // discretionary newlines wrongly hugs the parens (`(SpecificType()` … `})`).
             let ignoreDiscretionary = isCompactSingleFunctionCallArgument(arguments)
+                && !containsClosureExpr(Syntax(arguments.first!.expression))
             let openNewlines: NewlineBehavior =
                 ignoreDiscretionary ? .elective(ignoresDiscretionary: true) : .elective
             let closeNewlines: NewlineBehavior =
@@ -316,6 +319,15 @@ extension TokenStream {
             }
             arrangeAsFunctionCallArgument(argument, shouldGroup: shouldGroupAroundArgument)
         }
+    }
+
+    /// Returns whether the given syntax node contains a closure expression anywhere in its subtree.
+    func containsClosureExpr(_ node: Syntax) -> Bool {
+        if node.is(ClosureExprSyntax.self) { return true }
+        for child in node.children(viewMode: .sourceAccurate) where containsClosureExpr(child) {
+            return true
+        }
+        return false
     }
 
     /// Arranges the given tuple expression element as a function call argument.
