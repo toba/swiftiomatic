@@ -1878,6 +1878,10 @@
       "additionalProperties" : false,
       "description" : "indentation rule group.",
       "properties" : {
+        "alignCommentWithAdjacentDocComment" : {
+          "description" : "alignCommentWithAdjacentDocComment",
+          "type" : "boolean"
+        },
         "alignWrappedConditions" : {
           "description" : "Align wrapped conditions to the column after the keyword (if/guard/while).",
           "type" : "boolean"

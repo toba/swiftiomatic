@@ -2,6 +2,10 @@
 
 ## Week of May 17 – May 23, 2026
 
+### ✨ Features
+
+- Indent a regular `//` comment one extra space when it directly follows a `///` doc comment, so its body aligns with the doc comment body; gated behind the new `indentation.alignCommentWithAdjacentDocComment` setting (default on) ([#696](https://github.com/toba/swiftiomatic/issues/696))
+
 ### 🐞 Fixes
 
 - Mirror upstream swift-format #1203; suppress duplicate whitespace before `where` in a bare-`where` `catch` clause (`do { … } catch where c { … }`) ([#692](https://github.com/toba/swiftiomatic/issues/692))

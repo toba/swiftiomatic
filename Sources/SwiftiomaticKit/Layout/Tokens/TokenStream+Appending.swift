@@ -243,32 +243,45 @@ extension TokenStream {
                     canMergeNewlinesIntoLastBreak = false
                     tokens.append(token)
                     return
-                case (.break(let breakKind, _, .soft(1, _, _)), .comment(let c2, _))
+                case (.break(let breakKind, _, .soft(1, _, _)), .comment(let c2, let wasEndOfLine))
                     where breakAllowsCommentMerge(breakKind)
                     && (c2.kind == .docLine || c2.kind == .line):
-                    // we are search for the pattern of [line comment] - [soft break 1] - [line
-                    // comment] where the comment type is the same; these can be merged into a
-                    // single comment
                     if let nextToLast = tokens.dropLast().last,
-                       case .comment(let c1, false) = nextToLast,
-                       c1.kind == c2.kind
+                       case .comment(let c1, false) = nextToLast
                     {
-                        var mergedComment = c1
-                        mergedComment.addText(c2.text)
-                        tokens.removeLast()  // remove the soft break
-                        // replace the original comment with the merged one
-                        tokens[tokens.count - 1] = .comment(mergedComment, wasEndOfLine: false)
+                        // we are search for the pattern of [line comment] - [soft break 1] - [line
+                        // comment] where the comment type is the same; these can be merged into a
+                        // single comment
+                        if c1.kind == c2.kind {
+                            var mergedComment = c1
+                            mergedComment.addText(c2.text)
+                            tokens.removeLast()  // remove the soft break
+                            // replace the original comment with the merged one
+                            tokens[tokens.count - 1] = .comment(mergedComment, wasEndOfLine: false)
 
-                        // need to fix lastBreakIndex because we just removed the last break
-                        lastBreakIndex = tokens.lastIndex(where: {
-                            switch $0 {
-                                case .break: true
-                                default: false
-                            }
-                        })
-                        canMergeNewlinesIntoLastBreak = false
+                            // need to fix lastBreakIndex because we just removed the last break
+                            lastBreakIndex = tokens.lastIndex(where: {
+                                switch $0 {
+                                    case .break: true
+                                    default: false
+                                }
+                            })
+                            canMergeNewlinesIntoLastBreak = false
 
-                        return
+                            return
+                        }
+
+                        // A regular `//` comment directly following a `///` doc comment is
+                        // indented one extra space so its body aligns with the doc comment body.
+                        if c1.kind == .docLine, c2.kind == .line,
+                           config[AlignCommentWithAdjacentDocComment.self]
+                        {
+                            var aligned = c2
+                            aligned.alignsWithPrecedingDocLine = true
+                            canMergeNewlinesIntoLastBreak = false
+                            tokens.append(.comment(aligned, wasEndOfLine: wasEndOfLine))
+                            return
+                        }
                     }
 
                 // If we see a pair of spaces where one or both are flexible, combine them into a

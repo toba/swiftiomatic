@@ -85,6 +85,10 @@ struct Comment: Sendable {
     var length: Int
     // what was the leading indentation, if any, that preceded this comment?
     var leadingIndent: Indent?
+    // A regular `//` comment that directly follows a `///` doc comment is indented one
+    // extra space so its body aligns with the doc comment body (whose `///` prefix is one
+    // character wider than `//`).
+    var alignsWithPrecedingDocLine = false
 
     init(kind: Kind, leadingIndent: Indent?, text: String) {
         self.kind = kind
@@ -117,8 +121,15 @@ struct Comment: Sendable {
         switch kind {
             case .line, .docLine:
                 let separator = "\n" + indent.indentation() + kind.prefix
-                let trimmedLines = text.map { $0.trimmingTrailingWhitespace() }
-                return kind.prefix + trimmedLines.joined(separator: separator)
+                var lines = text.map { $0.trimmingTrailingWhitespace() }
+                if alignsWithPrecedingDocLine {
+                    // Indent the body one extra space so it aligns with the `///` body. A standard
+                    // `// ` body has a single leading space; bump it to two. Lines that already
+                    // have two leading spaces are left untouched, which keeps the transform a fixed
+                    // point (idempotent) when re-formatting already-aligned input.
+                    lines = lines.map { $0.hasPrefix(" ") && !$0.hasPrefix("  ") ? " " + $0 : $0 }
+                }
+                return kind.prefix + lines.joined(separator: separator)
             case .block, .docBlock:
                 let separator = "\n"
 

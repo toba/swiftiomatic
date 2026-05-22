@@ -214,6 +214,71 @@ struct CommentTests: LayoutTesting {
     assertLayout(input: input, expected: expected, linelength: 45)
   }
 
+  @Test func lineCommentAfterDocCommentIndentsExtraSpace() {
+    // A regular `//` comment that directly follows a `///` doc comment gets one
+    // extra leading space so its body aligns with the doc comment body. See cv7-18e.
+    let input =
+      """
+      ///
+      /// [apl]: https://developer.apple.com/documentation/foundation/locale
+      // https://docs.citationstyles.org/en/stable/specification.html
+      let x = 1
+
+      // not after a doc comment
+      let y = 2
+
+      ///
+      /// doc
+      // first
+      // second
+      let z = 3
+      """
+
+    let expected =
+      """
+      ///
+      /// [apl]: https://developer.apple.com/documentation/foundation/locale
+      //  https://docs.citationstyles.org/en/stable/specification.html
+      let x = 1
+
+      // not after a doc comment
+      let y = 2
+
+      ///
+      /// doc
+      //  first
+      //  second
+      let z = 3
+
+      """
+
+    assertLayout(input: input, expected: expected, linelength: 100)
+  }
+
+  @Test func lineCommentAfterDocCommentAlignmentDisabled() {
+    // With the setting disabled, the `//` comment keeps its single leading space.
+    let input =
+      """
+      /// doc
+      // first
+      // second
+      let z = 3
+      """
+
+    let expected =
+      """
+      /// doc
+      // first
+      // second
+      let z = 3
+
+      """
+
+    var configuration = Configuration.forTesting
+    configuration[AlignCommentWithAdjacentDocComment.self] = false
+    assertLayout(input: input, expected: expected, linelength: 100, configuration: configuration)
+  }
+
   @Test func standaloneLineCommentsPreserveOriginalColumn() {
     // Standalone `//` comments should keep the column the author chose, not
     // be re-indented to match the surrounding scope. See nmq-t64.
@@ -1082,7 +1147,9 @@ struct CommentTests: LayoutTesting {
   }
 
   @Test func lineWithDocLineComment() {
-    // none of these should be merged if/when there is comment formatting
+    // none of these should be merged if/when there is comment formatting; a `//`
+    // comment directly following a `///` comment is indented one extra space so
+    // its body aligns with the doc comment body (see cv7-18e).
     let input =
       """
       /// Doc line comment
@@ -1093,7 +1160,17 @@ struct CommentTests: LayoutTesting {
       // Another line comment
 
       """
-    assertLayout(input: input, expected: input, linelength: 80)
+    let expected =
+      """
+      /// Doc line comment
+      //  Line comment
+      /// Doc line comment
+      //  Line comment
+
+      // Another line comment
+
+      """
+    assertLayout(input: input, expected: expected, linelength: 80)
   }
 
   @Test func nonmergeableComments() {
