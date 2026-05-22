@@ -397,4 +397,35 @@ struct DropRedundantEquatableTests: RuleTesting {
         }
         """)
   }
+
+  /// A stored property hidden inside an `#if` block must not be ignored — removing the
+  /// custom `==` would break compilation when the conditional property is non-Equatable.
+  @Test func conditionalCompilationStoredPropertyNotFlagged() {
+    assertFormatting(
+      DropRedundantEquatable.self,
+      input: """
+        struct TypeIdentifier: Hashable {
+            let id: ObjectIdentifier
+            #if DEBUG
+            let base: Any.Type
+            #endif
+
+            static func == (lhs: Self, rhs: Self) -> Bool {
+                lhs.id == rhs.id
+            }
+        }
+        """,
+      expected: """
+        struct TypeIdentifier: Hashable {
+            let id: ObjectIdentifier
+            #if DEBUG
+            let base: Any.Type
+            #endif
+
+            static func == (lhs: Self, rhs: Self) -> Bool {
+                lhs.id == rhs.id
+            }
+        }
+        """)
+  }
 }

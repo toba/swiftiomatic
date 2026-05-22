@@ -13,6 +13,8 @@
 - `CollapseSimpleEnums`; collapse raw-value-typed enums (`: String`, `: Int`) onto one line when no case assigns an explicit raw value, instead of refusing on the inheritance type alone ([#693](https://github.com/toba/swiftiomatic/issues/693))
 - `LayoutSingleLineBodies`; in inline mode, wrap a function/init/subscript body onto new lines when its generic `where` clause is wrapped onto its own line, instead of gluing an inline `{ body }` to the lone brace ([#694](https://github.com/toba/swiftiomatic/issues/694))
 - `if let` / `let` bindings; keep `= try` glued and break at the chain dots instead of wrapping after `=`, when a `try`/`await` member-access chain has discretionary newlines at the dots ([#695](https://github.com/toba/swiftiomatic/issues/695))
+- `DropRedundantEquatable`; descend into `#if`/`#else` blocks when collecting stored properties so a conditionally-compiled property (e.g. `#if DEBUG let base: Any.Type`) no longer hides from the rule and triggers wrongful removal of a custom `==` ([#698](https://github.com/toba/swiftiomatic/issues/698))
+- Function calls; collapse a single compact argument (array, dict, closure, or function call) onto one line when it fits, discarding source newlines the user placed after `(` or before `)` (e.g. `.starts(with: symbol.utf8.reversed())`) ([#697](https://github.com/toba/swiftiomatic/issues/697))
 
 ## Week of May 10 – May 16, 2026
 

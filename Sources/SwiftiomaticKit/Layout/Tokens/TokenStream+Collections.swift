@@ -284,9 +284,19 @@ extension TokenStream {
         forcesBreakBeforeRightDelimiter: Bool
     ) {
         if !arguments.isEmpty {
-            var afterLeftDelimiter: [Token] = [.break(.open, size: 0)]
+            // When the single argument is itself a compact expression (array, dict, closure, or
+            // function call), ignore discretionary newlines the user placed after `(` and before
+            // `)` so the formatter can collapse the call onto one line when it fits.
+            let ignoreDiscretionary = isCompactSingleFunctionCallArgument(arguments)
+            let openNewlines: NewlineBehavior =
+                ignoreDiscretionary ? .elective(ignoresDiscretionary: true) : .elective
+            let closeNewlines: NewlineBehavior =
+                ignoreDiscretionary ? .elective(ignoresDiscretionary: true) : .elective
+            var afterLeftDelimiter: [Token] = [.break(.open, size: 0, newlines: openNewlines)]
             var beforeRightDelimiter: [Token] = [
-                .break(.close(mustBreak: forcesBreakBeforeRightDelimiter), size: 0)
+                .break(
+                    .close(mustBreak: forcesBreakBeforeRightDelimiter), size: 0,
+                    newlines: closeNewlines)
             ]
 
             if shouldGroupAroundArgumentList(arguments) {

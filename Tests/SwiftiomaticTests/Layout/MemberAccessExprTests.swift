@@ -452,6 +452,31 @@ struct MemberAccessExprTests: LayoutTesting {
     )
   }
 
+  @Test func compactSingleFuncCallArgCollapsesWhenFits() {
+    // When a chain tail has a single labeled FunctionCallExpr argument that fits on one line,
+    // the formatter must collapse it even if the source had a discretionary newline after `(`.
+    let input =
+      """
+      utf8.reversed()
+          .drop { (48...57).contains($0) }
+          .dropFirst(3)
+          .starts(
+              with: symbol.utf8.reversed()
+          )
+      """
+
+    let expected =
+      """
+      utf8.reversed()
+        .drop { (48...57).contains($0) }
+        .dropFirst(3)
+        .starts(with: symbol.utf8.reversed())
+
+      """
+
+    assertLayout(input: input, expected: expected, linelength: 80)
+  }
+
   @Test func chainedSubscriptExprs() {
     let input =
       """

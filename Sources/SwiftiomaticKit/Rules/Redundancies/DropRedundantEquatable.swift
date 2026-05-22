@@ -79,12 +79,33 @@ final class DropRedundantEquatable: StaticFormatRule<BasicRuleValue>, @unchecked
 
     // MARK: - Stored properties
 
+    /// Members of the block plus any nested inside `#if`/`#elseif`/`#else` blocks.
+    /// Conditional-compilation branches can introduce stored properties that the
+    /// synthesized conformance must account for, so they cannot be ignored.
+    private static func expandedMembers(
+        _ members: MemberBlockItemListSyntax
+    ) -> [MemberBlockItemSyntax] {
+        var result = [MemberBlockItemSyntax]()
+        for member in members {
+            if let ifConfig = member.decl.as(IfConfigDeclSyntax.self) {
+                for clause in ifConfig.clauses {
+                    if case let .decls(nested)? = clause.elements {
+                        result.append(contentsOf: expandedMembers(nested))
+                    }
+                }
+            } else {
+                result.append(member)
+            }
+        }
+        return result
+    }
+
     private static func collectStoredPropertyNames(
         from members: MemberBlockItemListSyntax
     ) -> Set<String> {
         var props = Set<String>()
 
-        for member in members {
+        for member in expandedMembers(members) {
             guard let varDecl = member.decl.as(VariableDeclSyntax.self),
                   !varDecl.modifiers.contains(anyOf: [.static, .class]),
                   varDecl.bindings.count == 1,
@@ -121,7 +142,7 @@ final class DropRedundantEquatable: StaticFormatRule<BasicRuleValue>, @unchecked
     private static func hasNonEquatableStoredProperty(
         in members: MemberBlockItemListSyntax
     ) -> Bool {
-        for member in members {
+        for member in expandedMembers(members) {
             guard let varDecl = member.decl.as(VariableDeclSyntax.self),
                   !varDecl.modifiers.contains(anyOf: [.static, .class]) else { continue }
 
