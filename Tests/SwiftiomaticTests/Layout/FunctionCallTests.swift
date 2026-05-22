@@ -365,29 +365,20 @@ struct FunctionCallTests: LayoutTesting {
       let a = foo { abcdefg in b } c: { d in d }
       """
 
+    // With the 2-closure elective change (bj7-vtb), each trailing closure breaks based on its own
+    // content rather than all being forced. A single-statement first closure that fits stays
+    // inline; the second closure breaks independently when the line overflows.
     let expected =
       """
-      a = f {
-        b
-      } c: {
+      a = f { b } c: { d }
+      let a = f { b } c: {
         d
       }
-      let a = f {
-        b
-      } c: {
-        d
-      }
-      let a = foo { b in
-        b
-      } c: { d in
-        d
-      }
+      let a = foo { b in b
+      } c: { d in d }
       let a = foo {
-        abcdefg in
-        b
-      } c: { d in
-        d
-      }
+        abcdefg in b
+      } c: { d in d }
 
       """
 
