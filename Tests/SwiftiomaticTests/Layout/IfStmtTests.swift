@@ -753,4 +753,23 @@ struct IfStmtTests: LayoutTesting {
 
     assertLayout(input: input, expected: expected, linelength: 100)
   }
+
+  // kl7-een: `if let x = try Chain.method()...` should keep `= try` on the same line and
+  // break at the dot, not wrap immediately after `=`.
+  @Test func ifLetTryMemberChainBreaksAtDotNotAfterEqual() {
+    let input =
+      """
+      func f(db: Database) throws {
+        if let projectID = try CitationGroup
+          .where({ $0.id.equal(to: id) })
+          .select({ $0.projectID })
+          .fetchOne(db)
+        {
+          try update(for: projectID, in: db)
+        }
+      }
+      """
+
+    assertLayout(input: input, expected: input + "\n", linelength: 80)
+  }
 }

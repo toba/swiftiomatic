@@ -450,35 +450,40 @@ extension TokenStream {
 
     /// Whether the chain rooted at `call` should have its head-call group close after the chain
     /// base (e.g. `Citation`) instead of after the head's `<name>` (e.g. `Citation.join`). This
-    /// retargeting only matters when (a) the head has a trailing closure, (b) the source has a
-    /// discretionary newline at the next chain dot — which becomes a `.soft(discretionary:)`
-    /// break that bumps `total` by `maxLineLength` and would otherwise inflate the chunk-length
-    /// of an enclosing `=` break (issue wts-z1t), and (c) the chain is the RHS of an
-    /// assignment-like binding (otherwise the head's bonded `base.<name>` layout is preferred).
+    /// retargeting matters when (a) the source has a discretionary newline at the next chain dot —
+    /// which becomes a `.soft(discretionary:)` break that bumps `total` by `maxLineLength` and
+    /// would otherwise inflate the chunk-length of an enclosing `=` break (issues wts-z1t,
+    /// kl7-een) — and (b) the chain is the RHS of an assignment-like binding (otherwise the head's
+    /// bonded `base.<name>` layout is preferred). It applies whether the head's argument is a
+    /// trailing closure (e.g. `Citation.join { … }`) or a paren-wrapped closure (e.g.
+    /// `CitationGroup.where({ … })`). When the head DOES carry a trailing closure that spans
+    /// multiple source lines, the head itself wraps and the legacy layout is preferred, so we skip.
     func shouldRetargetChainHeadCloseForAssignmentRHS(
         _ call: FunctionCallExprSyntax
     ) -> Bool {
-        guard let trailingClosure = call.trailingClosure,
-              let outerMember = call.parent?.as(MemberAccessExprSyntax.self),
+        guard let outerMember = call.parent?.as(MemberAccessExprSyntax.self),
               outerMember.base?.id == call.id
         else { return false }
 
         // Skip retargeting when the head's trailing closure spans multiple source lines:
         // a multi-line head closure means the head itself wraps, and the legacy layout
         // ( `=` break + grouped `View.Button { ... }` head) is preferred.
-        let closureHasNewline: (TriviaPiece) -> Bool = { piece in
-            switch piece {
-                case .newlines, .carriageReturns, .carriageReturnLineFeeds: return true
-                default: return false
+        if let trailingClosure = call.trailingClosure {
+            let closureHasNewline: (TriviaPiece) -> Bool = { piece in
+                switch piece {
+                    case .newlines, .carriageReturns, .carriageReturnLineFeeds: return true
+                    default: return false
+                }
             }
+            let closureIsMultiline =
+                trailingClosure.leftBrace.trailingTrivia.contains(where: closureHasNewline)
+                || trailingClosure.rightBrace.leadingTrivia.contains(where: closureHasNewline)
+                || trailingClosure.statements.contains { stmt in
+                    stmt.leadingTrivia.contains(where: closureHasNewline)
+                        || stmt.trailingTrivia.contains(where: closureHasNewline)
+                }
+            if closureIsMultiline { return false }
         }
-        let closureIsMultiline = trailingClosure.leftBrace.trailingTrivia.contains(where: closureHasNewline)
-            || trailingClosure.rightBrace.leadingTrivia.contains(where: closureHasNewline)
-            || trailingClosure.statements.contains { stmt in
-                stmt.leadingTrivia.contains(where: closureHasNewline)
-                    || stmt.trailingTrivia.contains(where: closureHasNewline)
-            }
-        if closureIsMultiline { return false }
 
         let periodHasSourceNewline = outerMember.period.leadingTrivia.contains { piece in
             switch piece {

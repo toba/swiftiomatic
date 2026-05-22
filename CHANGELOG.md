@@ -8,6 +8,7 @@
 - `SortImports`; preserve trailing comments that reordering pushes past the final import instead of silently dropping them ([#691](https://github.com/toba/swiftiomatic/issues/691))
 - `CollapseSimpleEnums`; collapse raw-value-typed enums (`: String`, `: Int`) onto one line when no case assigns an explicit raw value, instead of refusing on the inheritance type alone ([#693](https://github.com/toba/swiftiomatic/issues/693))
 - `LayoutSingleLineBodies`; in inline mode, wrap a function/init/subscript body onto new lines when its generic `where` clause is wrapped onto its own line, instead of gluing an inline `{ body }` to the lone brace ([#694](https://github.com/toba/swiftiomatic/issues/694))
+- `if let` / `let` bindings; keep `= try` glued and break at the chain dots instead of wrapping after `=`, when a `try`/`await` member-access chain has discretionary newlines at the dots ([#695](https://github.com/toba/swiftiomatic/issues/695))
 
 ## Week of May 10 – May 16, 2026
 

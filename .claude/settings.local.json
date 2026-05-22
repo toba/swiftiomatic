@@ -140,5 +140,21 @@
     "xc-build",
     "xc-swift",
     "xc-debug"
-  ]
+  ],
+  "skillOverrides": {
+    "epub": "name-only",
+    "gha": "name-only",
+    "goptimize": "name-only",
+    "lldb": "name-only",
+    "lrc": "name-only",
+    "lua": "name-only",
+    "metal": "name-only",
+    "monetize": "name-only",
+    "rust-review": "name-only",
+    "sql-review": "name-only",
+    "tofu": "name-only",
+    "tui": "name-only",
+    "updater": "name-only",
+    "zed": "name-only"
+  }
 }
