@@ -161,9 +161,15 @@ extension TokenStream {
     func visitFunctionCallExpr(_ node: FunctionCallExprSyntax) -> SyntaxVisitorContinueKind {
         preVisitInsertingContextualBreaks(node)
 
-        // If there are multiple trailing closures, force all the closures in the call to break.
+        // For 3+ trailing closures force all of them to break so they each start on their own line.
+        // For exactly 2 closures (one unlabeled + one labeled), leave the first closure discretionary
+        // — if the user wrote `With { shortExpr } query: { … }` and it fits, the formatter keeps it.
         if !node.additionalTrailingClosures.isEmpty {
-            if let closure = node.trailingClosure { forcedBreakingClosures.insert(closure.id) }
+            if node.additionalTrailingClosures.count > 1,
+                let closure = node.trailingClosure
+            {
+                forcedBreakingClosures.insert(closure.id)
+            }
 
             for additionalTrailingClosure in node.additionalTrailingClosures {
                 forcedBreakingClosures.insert(additionalTrailingClosure.closure.id)

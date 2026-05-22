@@ -207,6 +207,49 @@ struct ClosureExprTests: LayoutTesting {
     assertLayout(input: input, expected: expected, linelength: 40)
   }
 
+  @Test func twoLabeledTrailingClosures() {
+    // When there are exactly two trailing closures and the first fits on one line, the formatter
+    // should leave it inline (discretionary). With 3+ closures all break.
+    let input =
+      """
+      let x = With { shortExpr } query: {
+        NodeCTE
+          .join(Other.all) { q, o in o.id.equal(to: q.id) }
+      }
+      let x = With {
+        shortExpr
+      } query: {
+        NodeCTE
+      }
+      let x = With { a } b: { c } d: {
+        longBody
+      }
+      """
+
+    let expected =
+      """
+      let x = With { shortExpr } query: {
+        NodeCTE
+          .join(Other.all) { q, o in o.id.equal(to: q.id) }
+      }
+      let x = With {
+        shortExpr
+      } query: {
+        NodeCTE
+      }
+      let x = With {
+        a
+      } b: {
+        c
+      } d: {
+        longBody
+      }
+
+      """
+
+    assertLayout(input: input, expected: expected, linelength: 80)
+  }
+
   @Test func closuresWithIfs() {
     let input =
       """
