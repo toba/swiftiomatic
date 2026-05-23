@@ -4,6 +4,7 @@
 
 ### ✨ Features
 
+- `CollapseSimpleChains` rule (off by default); collapses multi-line member-access chains onto a single line when the collapsed form fits the line length
 - Indent a regular `//` comment one extra space when it directly follows a `///` doc comment, so its body aligns with the doc comment body; gated behind the new `indentation.alignCommentWithAdjacentDocComment` setting (default on) ([#696](https://github.com/toba/swiftiomatic/issues/696))
 
 ### 🐞 Fixes
@@ -18,6 +19,7 @@
 - Function calls; exclude single function-call arguments containing a closure from the #697 collapse, so a closure-bearing argument (e.g. `.iOSSpecificModifier(SpecificType().onChanged { … })`) keeps its multi-line layout instead of hugging the parens ([#699](https://github.com/toba/swiftiomatic/issues/699))
 - Function calls; in a two-trailing-closure call (e.g. `With { expr } query: { … }`), leave the first closure's newline behavior discretionary so an inline single-statement body is preserved as written; 3+ closures still all break
 - Function calls; update `multipleTrailingClosures` test expectations to match the per-closure breaking behavior from #700 (each closure breaks independently when it doesn't fit) ([#701](https://github.com/toba/swiftiomatic/issues/701))
+- Pattern bindings; type annotation no longer wraps to its own line when the RHS is a `try`/`await`-wrapped member-access chain
 - `for … where …` loops; when the header wraps, indent the `where` clause as a continuation and force the opening `{` onto its own line, instead of leaving `where` at the `for` indent with an inline brace ([#702](https://github.com/toba/swiftiomatic/issues/702))
 
 ## Week of May 10 – May 16, 2026

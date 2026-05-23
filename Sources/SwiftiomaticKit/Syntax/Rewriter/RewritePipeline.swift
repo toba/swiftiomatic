@@ -851,6 +851,9 @@ final class RewritePipeline: SyntaxRewriter {
         if context.shouldRewrite(WrapMultilineFunctionChains.self, gate: gate) {
             concrete = WrapMultilineFunctionChains.apply(concrete, context: context)
         }
+        if context.shouldRewrite(CollapseSimpleChains.self, gate: gate) {
+            concrete = CollapseSimpleChains.apply(concrete, original: node, context: context)
+        }
         // NestedCallLayout may produce a different ExprSyntax kind.
         var resultExpr = ExprSyntax(concrete)
 

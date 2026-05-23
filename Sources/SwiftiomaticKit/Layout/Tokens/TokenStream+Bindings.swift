@@ -55,7 +55,19 @@ extension TokenStream {
         var closeAfterToken: TokenSyntax?
 
         let rhsHasInnerBreaks: Bool = node.initializer.map { initializer in
-            let expr = initializer.value
+            // Peel `try` / `await` / `unsafe` effect wrappers so the inner expression's break
+            // points are recognized; otherwise `let x: T = try foo.bar()` treats the `:` break as
+            // eager and wraps the type annotation onto its own line.
+            var expr: ExprSyntax = initializer.value
+            while true {
+                if let tryExpr = expr.as(TryExprSyntax.self) {
+                    expr = tryExpr.expression
+                } else if let awaitExpr = expr.as(AwaitExprSyntax.self) {
+                    expr = awaitExpr.expression
+                } else {
+                    break
+                }
+            }
             return expr.is(TernaryExprSyntax.self)
                 || expr.is(FunctionCallExprSyntax.self)
                 || expr.is(MemberAccessExprSyntax.self)

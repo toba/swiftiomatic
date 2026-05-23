@@ -89,6 +89,33 @@ struct PatternBindingTests: LayoutTesting {
     assertLayout(input: input, expected: expected, linelength: 80)
   }
 
+  @Test func typeAnnotationStaysOnSameLineWithTryMemberChainRHS() {
+    // The RHS is wrapped in `try`; peeling the effect wrapper lets the member-access chain's
+    // break points be recognized so the `:` continuation stays inline instead of wrapping the
+    // type annotation onto its own line.
+    let input =
+      """
+      let wasWithin:
+        [ID?] = try Node
+          .where { $0.id.in(ids) }
+          .select { $0.withinID }
+          .distinct()
+          .fetchAll(db)
+      """
+
+    let expected =
+      """
+      let wasWithin: [ID?] = try Node
+        .where { $0.id.in(ids) }
+        .select { $0.withinID }
+        .distinct()
+        .fetchAll(db)
+
+      """
+
+    assertLayout(input: input, expected: expected, linelength: 80)
+  }
+
   @Test func groupingIncludesTrailingComma() {
     let input =
       """

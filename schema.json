@@ -324,6 +324,14 @@
       },
       "type" : "object"
     },
+    "collapseSimpleChains" : {
+      "allOf" : [
+        {
+          "$ref" : "#/$defs/ruleBase"
+        }
+      ],
+      "description" : "Collapses a multi-line member-access chain onto a single line when the collapsed form fits within the configured line length.\n\n```swift // Before try SyncRemindersList .find(1) .delete(from: db)\n\n// After try SyncRemindersList.find(1).delete(from: db) ```\n\nLint: A multi-line chain where the collapsed form fits within line length raises a warning.\n\nRewrite: The chain is collapsed onto a single line."
+    },
     "collapseSimpleEnums" : {
       "allOf" : [
         {
@@ -4531,6 +4539,14 @@
       "additionalProperties" : false,
       "description" : "wrap rule group.",
       "properties" : {
+        "collapseSimpleChains" : {
+          "allOf" : [
+            {
+              "$ref" : "#/$defs/ruleBase"
+            }
+          ],
+          "description" : "Collapses a multi-line member-access chain onto a single line when the collapsed form fits within the configured line length.\n\n```swift // Before try SyncRemindersList .find(1) .delete(from: db)\n\n// After try SyncRemindersList.find(1).delete(from: db) ```\n\nLint: A multi-line chain where the collapsed form fits within line length raises a warning.\n\nRewrite: The chain is collapsed onto a single line."
+        },
         "collapseSimpleEnums" : {
           "allOf" : [
             {
