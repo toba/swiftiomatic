@@ -431,6 +431,42 @@ extension TokenStream {
         return expr.is(MemberAccessExprSyntax.self)
     }
 
+    /// Returns whether an expression is a multi-step chain that includes at least one function or
+    /// subscript call — e.g. `obj.method().prop`, `Type.where({}).fetchOne()`. Pure property chains
+    /// like `a.b.c` return false because they rarely wrap and don't cause alignment inconsistency.
+    func isMultiStepCallChain(_ expr: ExprSyntax) -> Bool {
+        if let mod = expr.asProtocol(KeywordModifiedExprSyntax.self) {
+            return isMultiStepCallChain(mod.expression)
+        }
+        if let calling = expr.asProtocol(CallingExprSyntax.self) {
+            // This node IS a call — count it if the member base is itself a chain.
+            if let member = calling.calledExpression.as(MemberAccessExprSyntax.self),
+               let base = member.base
+            {
+                return isMemberAccessChain(base)
+            }
+            return isMultiStepCallChain(calling.calledExpression)
+        }
+        if let member = expr.as(MemberAccessExprSyntax.self), let base = member.base {
+            // Pure property access: only qualifies if the base itself is a call chain.
+            return isMultiStepCallChain(base)
+        }
+        return false
+    }
+
+    /// Returns whether a condition element's value expression is a multi-step call chain (2+ steps
+    /// with at least one function/subscript call). Handles both plain expressions and
+    /// optional-binding initializers (e.g. `let x = obj.first().second()`).
+    func conditionContainsMemberChain(_ condition: ConditionElementSyntax) -> Bool {
+        switch condition.condition {
+            case let .expression(expr): return isMultiStepCallChain(expr)
+            case let .optionalBinding(binding):
+                if let value = binding.initializer?.value { return isMultiStepCallChain(value) }
+                return false
+            default: return false
+        }
+    }
+
     /// Returns whether the given function call expression participates in an outer member-access
     /// chain — that is, walking up through transparent postfix wrappers ( `?` , `!` ), the eventual
     /// parent is a `MemberAccessExpr` that uses this call as its base. In that case, the call's

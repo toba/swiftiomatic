@@ -1,5 +1,11 @@
 # Changelog
 
+## Week of May 24 – May 30, 2026
+
+### 🐞 Fixes
+
+- `guard`/`if`/`while` conditions; when `alignWrappedConditions` is true and the first condition is a multi-step call chain, wrapped chain lines and subsequent conditions now use the same continuation indent instead of mixing alignment and continuation offsets
+
 ## Week of May 17 – May 23, 2026
 
 ### ✨ Features

@@ -55,7 +55,13 @@ extension TokenStream {
         // so that continuations inside of the conditions can stack in addition to continuations
         // between the conditions. There are no breaks around the first condition because
         // if-statements look better without a break between the "if" and the first condition.
+        // When the first condition is a member-access chain, its contextual breaks fire at
+        // continuation (+4). Fall back to continuation for subsequent conditions so all wrapped
+        // lines use the same indent rather than mixing alignment(3) with continuation.
+        let firstIfConditionIsChain = node.conditions.first
+            .map { conditionContainsMemberChain($0) } == true
         let ifBreakKind: OpenBreakKind = config[AlignWrappedConditions.self]
+            && !firstIfConditionIsChain
             ? .alignment(spaces: 3)
             : .continuation
 
@@ -207,7 +213,12 @@ extension TokenStream {
         // excessive changes to previously formatted code. This has the side effect that the label +
         // `while` + tokens up to the first break in the first condition could be longer than the
         // column limit since there are no breaks between the label or while token.
+        // Same chain-consistency fix as guard: fall back to continuation when the first condition
+        // is a member-access chain so all wrapped lines use the same indent.
+        let firstWhileConditionIsChain = node.conditions.first
+            .map { conditionContainsMemberChain($0) } == true
         let whileBreakKind: OpenBreakKind = config[AlignWrappedConditions.self]
+            && !firstWhileConditionIsChain
             ? .alignment(spaces: 6)
             : .continuation
 

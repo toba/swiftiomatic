@@ -29,8 +29,15 @@ extension TokenStream {
         // condition only makes sense when the first condition stays on the `guard` line (i.e.,
         // `breakBeforeGuardConditions` is false). When conditions are expected to wrap below `guard` ,
         // fall back to the normal continuation indent.
+        // When the first condition is a member-access chain and stays inline (breakBefore=false),
+        // the chain's contextual breaks fire at continuation indent (+4). Using alignment(+6) for
+        // subsequent conditions would create a mismatch. Fall back to continuation so all wrapped
+        // lines use the same indent.
+        let firstConditionIsChain = !config[BreakBeforeGuardConditions.self]
+            && node.conditions.first.map { conditionContainsMemberChain($0) } == true
         let guardBreakKind: OpenBreakKind = config[AlignWrappedConditions.self]
             && !config[BreakBeforeGuardConditions.self]
+            && !firstConditionIsChain
             ? .alignment(spaces: 6)
             : .continuation
 

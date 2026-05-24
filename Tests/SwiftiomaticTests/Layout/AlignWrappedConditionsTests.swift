@@ -112,6 +112,29 @@ struct AlignWrappedConditionsTests: LayoutTesting {
     )
   }
 
+  /// When the first `if` condition is a member-access chain, subsequent conditions
+  /// use continuation indent (matching the chain), not the +3 alignment column.
+  @Test func ifChainFirstConditionUsesContinuationIndent() {
+    assertLayout(
+      input: """
+        if let x = obj.first().second(), let y = other() {
+          body()
+        }
+        """,
+      expected: """
+        if let x = obj.first()
+          .second(),
+          let y = other()
+        {
+          body()
+        }
+
+        """,
+      linelength: 30,
+      configuration: config
+    )
+  }
+
   // MARK: - guard
 
   /// Configuration that pairs `alignWrappedConditions = true` with
@@ -163,6 +186,26 @@ struct AlignWrappedConditionsTests: LayoutTesting {
 
         """,
       linelength: 35,
+      configuration: guardAlignConfig
+    )
+  }
+
+  /// When the first guard condition is a member-access chain, subsequent conditions
+  /// should use continuation indent (matching the chain's contextual breaks), not the
+  /// +6 alignment column — otherwise the wrapped lines are at different depths.
+  @Test func guardChainFirstConditionUsesContinuationIndent() {
+    assertLayout(
+      input: """
+        guard let x = obj.first().second(), let y = other() else { return }
+        """,
+      expected: """
+        guard let x = obj.first()
+          .second(),
+          let y = other()
+        else { return }
+
+        """,
+      linelength: 30,
       configuration: guardAlignConfig
     )
   }
@@ -237,6 +280,29 @@ struct AlignWrappedConditionsTests: LayoutTesting {
 
         """,
       linelength: 25,
+      configuration: config
+    )
+  }
+
+  /// When the first `while` condition is a member-access chain, subsequent conditions
+  /// use continuation indent (matching the chain), not the +6 alignment column.
+  @Test func whileChainFirstConditionUsesContinuationIndent() {
+    assertLayout(
+      input: """
+        while let x = obj.first().second(), !done {
+          process()
+        }
+        """,
+      expected: """
+        while let x = obj.first()
+          .second(),
+          !done
+        {
+          process()
+        }
+
+        """,
+      linelength: 30,
       configuration: config
     )
   }
