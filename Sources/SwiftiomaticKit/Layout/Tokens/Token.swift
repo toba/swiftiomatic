@@ -309,4 +309,11 @@ enum PrinterControlKind: Sendable {
     /// wrapped guard conditions and the body's `{` ) where a subsequent block-kind open break
     /// should contribute only block indent, not continuation indent on top of it.
     case clearContinuation
+
+    /// Marks the immediately-following continuation break as one that should keep its chunk inline
+    /// when wrapping it would be pointless — i.e. the chunk fits on its own line but the current
+    /// indentation pushes it past the line limit, so wrapping it to the next line still overflows
+    /// without meaningfully dedenting it. Used for labeled-argument values that are a single
+    /// over-long string literal, where wrapping below `label:` buys nothing. (lof-zqn)
+    case keepInlineIfWrapPointless
 }

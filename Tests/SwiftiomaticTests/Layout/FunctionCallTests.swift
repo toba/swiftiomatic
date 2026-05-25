@@ -441,6 +441,52 @@ struct FunctionCallTests: LayoutTesting {
     assertLayout(input: input, expected: expected, linelength: 100, configuration: config)
   }
 
+  // lof-zqn: even when the labeled value is *shorter* than the line limit on its own,
+  // if `continuationIndent + value` still overflows the wrap shifts the content by only
+  // a column or two — pointless indentation. Keep the value inline with its label.
+  @Test func labeledArgumentStaysInlineWhenWrappedLineStillOverflows() {
+    let input =
+      #"""
+      func outer() {
+          let x = try userDatabase.read { db in
+              try Row.fetchAll(
+                  db,
+                  sql:
+                      "SELECT sql_name, schema, json(table_info) AS table_info FROM \(ShadowTableSchema.sqlName)",
+              )
+              try Row.fetchAll(
+                  db,
+                  sql:
+                      "SELECT dflt_value, pk, name, \"notnull\", type FROM pragma_table_info(?)",
+                  arguments: [name],
+              )
+          }
+      }
+      """#
+
+    let expected =
+      #"""
+      func outer() {
+          let x = try userDatabase.read { db in
+              try Row.fetchAll(
+                  db,
+                  sql: "SELECT sql_name, schema, json(table_info) AS table_info FROM \(ShadowTableSchema.sqlName)",
+              )
+              try Row.fetchAll(
+                  db,
+                  sql: "SELECT dflt_value, pk, name, \"notnull\", type FROM pragma_table_info(?)",
+                  arguments: [name],
+              )
+          }
+      }
+
+      """#
+
+    var config = Configuration.forTesting
+    config[IndentationSetting.self] = .spaces(4)
+    assertLayout(input: input, expected: expected, linelength: 100, configuration: config)
+  }
+
   @Test func genericArgumentClauseCollapsesWhenItFits() {
     let input =
       """

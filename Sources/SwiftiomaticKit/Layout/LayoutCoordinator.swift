@@ -91,6 +91,11 @@ package final class LayoutCoordinator {
     /// if ``allowSuppressedDiscretionaryBreaks`` is true.
     private var isBreakingSuppressed: Bool { activeBreakSuppressionCount > 0 }
 
+    /// The column width of a single indentation unit under the current configuration.
+    private var continuationIndentUnit: Int {
+        configuration[IndentationSetting.self].length(tabWidth: configuration[TabWidth.self])
+    }
+
     /// Indicates whether discretionary breaks should still be included even if break suppression is
     /// enabled (see ``isBreakingSuppressed`` ).
     private var allowSuppressedDiscretionaryBreaks = false
@@ -98,6 +103,13 @@ package final class LayoutCoordinator {
     /// Overrides break suppression for line or doc comments, or similar cases where a line break is
     /// required. Reset after handling the break.
     private var shouldOverrideBreakSuppression = false
+
+    /// Set by a `.keepInlineIfWrapPointless` printer-control token and consumed by the next
+    /// continuation break. When set, that break only fires if wrapping the chunk to its own line
+    /// meaningfully dedents it; otherwise the over-long value (e.g. a long string-literal argument
+    /// value just below `label:`) stays inline rather than taking on indentation that doesn't help
+    /// it fit. Reset after the next break is evaluated. (lof-zqn)
+    private var keepInlineIfWrapPointless = false
 
     /// The computed indentation level, as a number of spaces, based on the state of any unclosed
     /// delimiters and whether or not the current line is a continuation line.
@@ -453,16 +465,39 @@ package final class LayoutCoordinator {
                     breakSavesEnough = true
                 } else if case .continue = kind {
                     let chunkAfterBreak = max(0, length - size)
+                    let indentColumns = currentIndentation.length(in: configuration)
+                    let postWrapEndColumn = indentColumns + chunkAfterBreak
 
                     if chunkAfterBreak > maxLineLength {
-                        let indentColumns = currentIndentation.length(in: configuration)
-                        let postWrapEndColumn = indentColumns + chunkAfterBreak
+                        // The chunk is longer than the line limit, so it overflows whether wrapped
+                        // or not. Only wrap when it saves a meaningful number of columns; otherwise
+                        // the over-long content just takes on extra indentation that doesn't help.
                         let unwrapEndColumn = outputBuffer.column + length
                         let savings = unwrapEndColumn - postWrapEndColumn
                         breakSavesEnough = savings >= configuration[MinimumWrapSavings.self]
+                    } else if keepInlineIfWrapPointless, postWrapEndColumn + continuationIndentUnit
+                        > maxLineLength
+                    {
+                        // The chunk fits on a line of its own, but the current indentation pushes it
+                        // past the limit, so wrapping it to the next line still overflows. Firing
+                        // this break also adds a continuation indent (unless we're already on a
+                        // continuation line), so the wrapped chunk lands even further right. Only
+                        // wrap when that still dedents the content by at least one indentation unit;
+                        // otherwise the wrap merely shifts an over-long value a column or two (e.g. a
+                        // long string-literal argument value just below `label:`) for no benefit.
+                        // Scoped via the printer-control flag to labeled-argument string values so
+                        // ordinary continuation breaks (assignments, `await`, key paths, …) are
+                        // unaffected. (lof-zqn)
+                        let continuationAddition = currentLineIsContinuation ? 0
+                            : continuationIndentUnit
+                        let wrappedEndColumn = postWrapEndColumn + continuationAddition
+                        let unwrapEndColumn = outputBuffer.column + length
+                        let savings = unwrapEndColumn - wrappedEndColumn
+                        breakSavesEnough = savings >= continuationIndentUnit
                     } else {
                         breakSavesEnough = true
                     }
+                    keepInlineIfWrapPointless = false
                 } else {
                     breakSavesEnough = true
                 }
@@ -552,6 +587,7 @@ package final class LayoutCoordinator {
                         }
                     case .enableBreaking: activeBreakSuppressionCount -= 1
                     case .clearContinuation: currentLineIsContinuation = false
+                    case .keepInlineIfWrapPointless: keepInlineIfWrapPointless = true
                 }
 
             case .commaDelimitedRegionStart:

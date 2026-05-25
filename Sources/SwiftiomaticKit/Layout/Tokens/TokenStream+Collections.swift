@@ -359,11 +359,23 @@ extension TokenStream {
             // this, an existing newline after `label:` would force the value onto its own line
             // even when the value is itself longer than the line limit, where the wrap does
             // nothing useful (4ym-935).
-            var tokensAfterColon: [Token] = [
+            var tokensAfterColon: [Token] = []
+
+            // When the value is a single-line string literal that's too long to fit after the
+            // label, wrapping it onto its own line still overflows and dedents it by at most a
+            // column or two — pointless. Mark the following break so the printer keeps it inline
+            // unless the wrap actually helps. (lof-zqn)
+            if let stringLiteral = node.expression.as(StringLiteralExprSyntax.self),
+                stringLiteral.openingQuote.tokenKind == .stringQuote
+            {
+                tokensAfterColon.append(.printerControl(kind: .keepInlineIfWrapPointless))
+            }
+
+            tokensAfterColon.append(
                 startsWithOpenDelimiter(Syntax(node.expression))
                     ? .space
                     : .break(.continue, newlines: .elective(ignoresDiscretionary: true))
-            ]
+            )
 
             if leftmostMultilineStringLiteral(of: node.expression) != nil {
                 tokensAfterColon.append(.break(.open(kind: .block), size: 0))
