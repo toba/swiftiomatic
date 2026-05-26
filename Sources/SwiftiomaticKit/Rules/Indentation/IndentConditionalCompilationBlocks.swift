@@ -33,11 +33,22 @@ extension TokenStream {
         // Unlike other code blocks, where we may want a single statement to be laid out on the same
         // line as a parent construct, the content of an `#if` block must always be on its own line;
         // the newline token inserted at the end enforces this.
-        if let lastElemTok = node.elements?.lastToken(viewMode: .sourceAccurate) {
+        //
+        // The closing tokens are normally attached after the last token of the body. If that last
+        // token belongs to a formatter-ignored item, however, it is never visited (its node is
+        // emitted as a single verbatim token), so an `after` group on it would be dropped and the
+        // `.open` above would be left unclosed. In that case, attach the closing tokens before the
+        // following token (the next `#elseif`/`#else`/`#endif`) instead, which is always visited.
+        if let lastElemTok = node.elements?.lastToken(viewMode: .sourceAccurate),
+           !isFormatterIgnored(lastElemTok)
+        {
             after(lastElemTok, tokens: .break(breakKindClose, newlines: .soft), .close)
         } else {
+            let tokenAfterBody = node.elements?.lastToken(viewMode: .sourceAccurate)?
+                .nextToken(viewMode: .all)
+                ?? tokenToOpenWith.nextToken(viewMode: .all)
             before(
-                tokenToOpenWith.nextToken(viewMode: .all),
+                tokenAfterBody,
                 tokens: .break(breakKindClose, newlines: .soft),
                 .close
             )

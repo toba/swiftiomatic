@@ -129,6 +129,41 @@ final class HoistCaseLet: StaticFormatRule<CaseLetConfiguration>, @unchecked Sen
         }
         return StmtSyntax(node)
     }
+
+    static func transform(
+        _ node: CatchItemSyntax,
+        original _: CatchItemSyntax,
+        parent _: Syntax?,
+        context: Context
+    ) -> CatchItemSyntax {
+        guard let pattern = node.pattern else { return node }
+
+        switch context.configuration[Self.self].placement {
+            case .eachBinding:
+                if let (replacement, specifier) = distributeLetVarThroughPattern(pattern) {
+                    Self.diagnose(
+                        .distributeLetInBoundCaseVariables(specifier),
+                        on: pattern,
+                        context: context
+                    )
+                    var result = node
+                    result.pattern = PatternSyntax(replacement)
+                    return result
+                }
+            case .outerPattern:
+                if let (replacement, specifier) = hoistLetVarFromPattern(pattern) {
+                    Self.diagnose(
+                        .hoistLetFromBoundCaseVariables(specifier),
+                        on: pattern,
+                        context: context
+                    )
+                    var result = node
+                    result.pattern = PatternSyntax(replacement)
+                    return result
+                }
+        }
+        return node
+    }
 }
 
 // MARK: - Distribute (eachBinding mode)

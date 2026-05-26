@@ -366,6 +366,38 @@ struct UseLetInEveryBoundCaseVariableTests: RuleTesting {
     )
   }
 
+  @Test func catchClause() {
+    assertFormatting(
+      HoistCaseLet.self,
+      input: """
+        do {} catch 1️⃣let Pattern.error(x, y) {}
+        do {} catch Pattern.error(x, let y) {}
+        do {} catch 2️⃣let (x, y) {}
+        do {} catch 3️⃣var Pattern.error(x, y) {}
+        """,
+      expected: """
+        do {} catch Pattern.error(let x, let y) {}
+        do {} catch Pattern.error(x, let y) {}
+        do {} catch (let x, let y) {}
+        do {} catch Pattern.error(var x, var y) {}
+        """,
+      findings: [
+        FindingSpec(
+          "1️⃣",
+          message: "move this 'let' keyword inside the 'case' pattern, before each of the bound variables"
+        ),
+        FindingSpec(
+          "2️⃣",
+          message: "move this 'let' keyword inside the 'case' pattern, before each of the bound variables"
+        ),
+        FindingSpec(
+          "3️⃣",
+          message: "move this 'var' keyword inside the 'case' pattern, before each of the bound variables"
+        ),
+      ]
+    )
+  }
+
   // MARK: - outerPattern mode (hoist)
 
   private func hoistConfig() -> Configuration {
@@ -501,6 +533,31 @@ struct UseLetInEveryBoundCaseVariableTests: RuleTesting {
         }
         """,
       findings: [],
+      configuration: hoistConfig()
+    )
+  }
+
+  @Test func hoistCatchClause() {
+    assertFormatting(
+      HoistCaseLet.self,
+      input: """
+        do {} catch 1️⃣Pattern.error(let x, let y) {}
+        do {} catch 2️⃣(let x, let y) {}
+        """,
+      expected: """
+        do {} catch let Pattern.error(x, y) {}
+        do {} catch let (x, y) {}
+        """,
+      findings: [
+        FindingSpec(
+          "1️⃣",
+          message: "move 'let' keyword to precede the 'case' pattern"
+        ),
+        FindingSpec(
+          "2️⃣",
+          message: "move 'let' keyword to precede the 'case' pattern"
+        ),
+      ],
       configuration: hoistConfig()
     )
   }

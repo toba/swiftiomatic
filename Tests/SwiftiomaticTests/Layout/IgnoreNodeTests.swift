@@ -297,6 +297,87 @@ struct IgnoreNodeTests: LayoutTesting {
     assertLayout(input: input, expected: input, linelength: 50)
   }
 
+  @Test func ignoreInConditionalCompilationBlock() {
+    // `sm:ignore` on the last element of an `#if` clause must not leave the clause's `.open`
+    // unclosed (regression for the "Too many unresolved delimiter token lengths" assertion).
+    let input =
+      """
+      #if FOO
+      // sm:ignore
+      print ( "Hi" )
+      #endif
+      """
+
+    let expected =
+      """
+      #if FOO
+        // sm:ignore
+        print ( "Hi" )
+      #endif
+
+      """
+
+    assertLayout(input: input, expected: expected, linelength: 50)
+  }
+
+  @Test func ignoreInEachConditionalCompilationClause() {
+    let input =
+      """
+      #if FOO
+      // sm:ignore
+      print ( "Hi" )
+      #elseif BAR
+      // sm:ignore
+      print ( "Bar" )
+      #else
+      // sm:ignore
+      print ( "Else" )
+      #endif
+      """
+
+    let expected =
+      """
+      #if FOO
+        // sm:ignore
+        print ( "Hi" )
+      #elseif BAR
+        // sm:ignore
+        print ( "Bar" )
+      #else
+        // sm:ignore
+        print ( "Else" )
+      #endif
+
+      """
+
+    assertLayout(input: input, expected: expected, linelength: 50)
+  }
+
+  @Test func ignoreInNestedConditionalCompilationBlock() {
+    let input =
+      """
+      #if FOO
+      #if BAR
+      // sm:ignore
+      print ( "Hi" )
+      #endif
+      #endif
+      """
+
+    let expected =
+      """
+      #if FOO
+        #if BAR
+          // sm:ignore
+          print ( "Hi" )
+        #endif
+      #endif
+
+      """
+
+    assertLayout(input: input, expected: expected, linelength: 50)
+  }
+
   @Test func ignoreWholeFileDoesNotTouchWhitespace() {
     let input =
       """

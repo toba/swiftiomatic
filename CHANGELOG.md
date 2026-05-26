@@ -2,10 +2,19 @@
 
 ## Week of May 24 – May 30, 2026
 
+### ✨ Features
+
+- `HoistCaseLet`; normalize `let`/`var` placement in `catch`-clause patterns, matching existing coverage of `switch`/`if`/`guard`/`while`/`for`-case patterns ([#709](https://github.com/toba/swiftiomatic/issues/709))
+
 ### 🐞 Fixes
 
+- Conditional compilation; fix an assertion failure (`Too many unresolved delimiter token lengths`) when a `// sm:ignore` directive is applied to the last element of an `#if`/`#elseif`/`#else` clause ([#708](https://github.com/toba/swiftiomatic/issues/708))
 - Function calls; keep a single-line string-literal argument value inline with its `label:` when wrapping it onto the next line would still overflow the line and dedent it by less than one indentation unit, instead of pointlessly pushing the string down a line ([#706](https://github.com/toba/swiftiomatic/issues/706))
 - `guard`/`if`/`while` conditions; when `alignWrappedConditions` is true and the first condition is a multi-step call chain, wrapped chain lines and subsequent conditions now use the same continuation indent instead of mixing alignment and continuation offsets
+
+### 🗜️ Tweaks
+
+- Evaluate upstream `realm/SwiftLint` rule improvements for Swiftiomatic analogues ([#707](https://github.com/toba/swiftiomatic/issues/707))
 
 ## Week of May 17 – May 23, 2026
 

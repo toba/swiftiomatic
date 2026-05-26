@@ -180,3 +180,23 @@ func shouldFormatterIgnore(node: Syntax) -> Bool {
 func shouldFormatterIgnore(file: SourceFileSyntax) -> Bool {
     isFormatterIgnorePresent(inTrivia: file.allPrecedingTrivia)
 }
+
+/// Returns whether the given token is contained within a formatter-ignored item.
+///
+/// When an item is formatter-ignored, its entire subtree is emitted as a single verbatim token and
+/// none of its tokens are visited individually. Code that wants to attach tokens after such a token
+/// (via `after(_:tokens:)`) must account for the fact that those tokens would be silently dropped.
+///
+/// - Parameter token: The token to test.
+func isFormatterIgnored(_ token: TokenSyntax) -> Bool {
+    // Only `CodeBlockItem` and `MemberBlockItem` nodes are emitted verbatim via the per-item ignore
+    // path, so those are the only ancestors that can prevent `token` from being visited.
+    var node = Syntax(token).parent
+    while let current = node {
+        if current.is(CodeBlockItemSyntax.self) || current.is(MemberBlockItemSyntax.self) {
+            return shouldFormatterIgnore(node: current)
+        }
+        node = current.parent
+    }
+    return false
+}

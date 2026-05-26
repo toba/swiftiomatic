@@ -272,6 +272,17 @@ final class RewritePipeline: SyntaxRewriter {
         return current
     }
 
+    override func visit(_ node: CatchItemSyntax) -> CatchItemSyntax {
+        guard let gate = context.gate(for: node) else { return super.visit(node) }
+        let parent = Syntax(node).parent
+        var current = super.visit(node)
+
+        if context.shouldRewrite(HoistCaseLet.self, gate: gate) {
+            current = HoistCaseLet.transform(current, original: node, parent: parent, context: context)
+        }
+        return current
+    }
+
     override func visit(_ node: ClassDeclSyntax) -> DeclSyntax {
         guard let gate = context.gate(for: node) else { return super.visit(node) }
         let parent = Syntax(node).parent
