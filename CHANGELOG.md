@@ -5,6 +5,7 @@
 ### ✨ Features
 
 - `HoistCaseLet`; normalize `let`/`var` placement in `catch`-clause patterns, matching existing coverage of `switch`/`if`/`guard`/`while`/`for`-case patterns ([#709](https://github.com/toba/swiftiomatic/issues/709))
+- `UseSwiftTestingNames`; add a `style` option with a new `rawIdentifier` mode that converts camelCase `@Test` function names into backtick raw identifiers with spaces (`testMyFeatureHasNoBugs` → `` `my feature has no bugs` ``), matching SwiftFormat's `swiftTestingTestCaseNames` ([#710](https://github.com/toba/swiftiomatic/issues/710))
 
 ### 🐞 Fixes
 

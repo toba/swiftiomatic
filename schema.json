@@ -3745,7 +3745,18 @@
               "$ref" : "#/$defs/ruleBase"
             }
           ],
-          "description" : "Remove the `test` prefix from Swift Testing `@Test` function names.\n\nIn Swift Testing, test methods are identified by the `@Test` attribute, not by a naming convention. The `test` prefix is redundant and should be removed for idiomatic Swift Testing.\n\nThe rename is skipped when:\n- The remainder after removing `test` would be empty, start with a digit, or be a Swift keyword\n- The new name would collide with an existing identifier in the same scope\n\nLint: A warning is raised for `@Test` functions with a `test` prefix.\n\nRewrite: The `test` prefix is removed and the first letter is lowercased."
+          "description" : "Normalize Swift Testing `@Test` function names according to the configured `style`.\n\nIn Swift Testing, test methods are identified by the `@Test` attribute, not by a naming convention, so the conventional `test` prefix is redundant. Two styles are offered:\n\n- `.standardIdentifier` (default) — strip the `test` prefix, producing an idiomatic camelCase\nidentifier (`testFooBar` → `fooBar`). The rename is skipped when the remainder would be empty, start with a digit, be a Swift keyword, or collide with an existing identifier in scope.\n- `.rawIdentifier` — convert the camelCase name into a backtick-wrapped raw identifier whose\nwords are space-separated and lowercased (`testFooBar` → `` `foo bar` ``). A leading `test` word is dropped. Already-backticked names are left untouched.\n\nLint: A warning is raised for `@Test` functions whose name does not match the configured style.\n\nRewrite: The function name is rewritten to the configured style.",
+          "properties" : {
+            "style" : {
+              "default" : "standardIdentifier",
+              "description" : "The identifier style to normalize `@Test` function names to.\n\nOptions: standardIdentifier, rawIdentifier.",
+              "enum" : [
+                "standardIdentifier",
+                "rawIdentifier"
+              ],
+              "type" : "string"
+            }
+          }
         },
         "useSwiftTestingNotXCTest" : {
           "allOf" : [
@@ -4400,7 +4411,18 @@
           "$ref" : "#/$defs/ruleBase"
         }
       ],
-      "description" : "Remove the `test` prefix from Swift Testing `@Test` function names.\n\nIn Swift Testing, test methods are identified by the `@Test` attribute, not by a naming convention. The `test` prefix is redundant and should be removed for idiomatic Swift Testing.\n\nThe rename is skipped when:\n- The remainder after removing `test` would be empty, start with a digit, or be a Swift keyword\n- The new name would collide with an existing identifier in the same scope\n\nLint: A warning is raised for `@Test` functions with a `test` prefix.\n\nRewrite: The `test` prefix is removed and the first letter is lowercased."
+      "description" : "Normalize Swift Testing `@Test` function names according to the configured `style`.\n\nIn Swift Testing, test methods are identified by the `@Test` attribute, not by a naming convention, so the conventional `test` prefix is redundant. Two styles are offered:\n\n- `.standardIdentifier` (default) — strip the `test` prefix, producing an idiomatic camelCase\nidentifier (`testFooBar` → `fooBar`). The rename is skipped when the remainder would be empty, start with a digit, be a Swift keyword, or collide with an existing identifier in scope.\n- `.rawIdentifier` — convert the camelCase name into a backtick-wrapped raw identifier whose\nwords are space-separated and lowercased (`testFooBar` → `` `foo bar` ``). A leading `test` word is dropped. Already-backticked names are left untouched.\n\nLint: A warning is raised for `@Test` functions whose name does not match the configured style.\n\nRewrite: The function name is rewritten to the configured style.",
+      "properties" : {
+        "style" : {
+          "default" : "standardIdentifier",
+          "description" : "The identifier style to normalize `@Test` function names to.\n\nOptions: standardIdentifier, rawIdentifier.",
+          "enum" : [
+            "standardIdentifier",
+            "rawIdentifier"
+          ],
+          "type" : "string"
+        }
+      }
     },
     "useSwiftTestingNotXCTest" : {
       "allOf" : [

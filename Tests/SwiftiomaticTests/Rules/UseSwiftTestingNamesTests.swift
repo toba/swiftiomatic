@@ -210,6 +210,91 @@ struct UseSwiftTestingNamesTests: RuleTesting {
     )
   }
 
+  // MARK: - Raw identifier mode
+
+  /// Builds a configuration that enables `UseSwiftTestingNames` in `.rawIdentifier` style.
+  private func rawIdentifierConfig() -> Configuration {
+    var config = Configuration.forTesting
+    config.disableAllRules()
+    var ruleConfig = SwiftTestingNamesConfiguration()
+    ruleConfig.rewrite = true
+    ruleConfig.lint = .warn
+    ruleConfig.style = .rawIdentifier
+    config[UseSwiftTestingNames.self] = ruleConfig
+    return config
+  }
+
+  @Test func convertsCamelCaseToRawIdentifier() {
+    assertFormatting(
+      UseSwiftTestingNames.self,
+      input: """
+        import Testing
+
+        struct MyFeatureTests {
+            @Test func 1️⃣testMyFeatureHasNoBugs() {
+                #expect(true)
+            }
+
+            @Test func 2️⃣featureWorksAsExpected() {
+                #expect(true)
+            }
+        }
+        """,
+      expected: """
+        import Testing
+
+        struct MyFeatureTests {
+            @Test func `my feature has no bugs`() {
+                #expect(true)
+            }
+
+            @Test func `feature works as expected`() {
+                #expect(true)
+            }
+        }
+        """,
+      findings: [
+        FindingSpec("1️⃣", message: "rename '@Test' function 'testMyFeatureHasNoBugs' to raw identifier '`my feature has no bugs`'"),
+        FindingSpec("2️⃣", message: "rename '@Test' function 'featureWorksAsExpected' to raw identifier '`feature works as expected`'"),
+      ],
+      configuration: rawIdentifierConfig()
+    )
+  }
+
+  @Test func rawIdentifierLeavesBacktickedAndPurelyNumericNamesAlone() {
+    assertFormatting(
+      UseSwiftTestingNames.self,
+      input: """
+        import Testing
+
+        struct MyFeatureTests {
+            @Test func `already a raw identifier`() {
+                #expect(true)
+            }
+
+            @Test func test123() {
+                #expect(true)
+            }
+        }
+        """,
+      expected: """
+        import Testing
+
+        struct MyFeatureTests {
+            @Test func `already a raw identifier`() {
+                #expect(true)
+            }
+
+            @Test func test123() {
+                #expect(true)
+            }
+        }
+        """,
+      findings: [],
+      configuration: rawIdentifierConfig()
+    )
+  }
+
   @Test func preservesNamesWithoutTestPrefix() {
     assertFormatting(
       UseSwiftTestingNames.self,
