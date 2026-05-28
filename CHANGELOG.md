@@ -12,10 +12,13 @@
 - Conditional compilation; fix an assertion failure (`Too many unresolved delimiter token lengths`) when a `// sm:ignore` directive is applied to the last element of an `#if`/`#elseif`/`#else` clause ([#708](https://github.com/toba/swiftiomatic/issues/708))
 - Function calls; keep a single-line string-literal argument value inline with its `label:` when wrapping it onto the next line would still overflow the line and dedent it by less than one indentation unit, instead of pointlessly pushing the string down a line ([#706](https://github.com/toba/swiftiomatic/issues/706))
 - `guard`/`if`/`while` conditions; when `alignWrappedConditions` is true and the first condition is a multi-step call chain, wrapped chain lines and subsequent conditions now use the same continuation indent instead of mixing alignment and continuation offsets
+- Mirror upstream swift-format #1208; `SplitMultipleDeclsPerLine` no longer leaves the `case` keyword stranded on its own line when a multi-element case declaration's elements span continuation lines
+- Function calls; a multi-step member-access chain whose base is itself a function call (e.g. `RoundedRectangle(...).strokeBorder(...)`) no longer over-indents the chain step by one continuation level when used as a single call argument with a discretionary chain newline
 
 ### 🗜️ Tweaks
 
 - Evaluate upstream `realm/SwiftLint` rule improvements for Swiftiomatic analogues ([#707](https://github.com/toba/swiftiomatic/issues/707))
+- Mirror upstream swift-format #1211; move `@_spi(...)` attributes from an extension onto its members alongside the access level when `HoistExtensionAccess` strips the explicit access level from the extension
 
 ## Week of May 17 – May 23, 2026
 

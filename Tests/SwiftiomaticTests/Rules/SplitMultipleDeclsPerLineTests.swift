@@ -142,6 +142,106 @@ struct SplitMultipleDeclsPerLineTests: RuleTesting {
     )
   }
 
+  // MARK: - Continuation lines (swift-format #1208 / #714)
+
+  @Test func elementsOnContinuationLinesAreMovedOntoCaseKeyword() {
+    // Bug: leading newline on a continuation-line element got carried into the new case
+    // declaration, producing `case\n  b(Int)` after splitting. The split must drop the leading
+    // vertical whitespace so the element stays on the same line as `case`.
+    assertFormatting(
+      SplitMultipleDeclsPerLine.self,
+      input: """
+        enum Foo {
+          case 1️⃣a(Int),
+            2️⃣b(String),
+            3️⃣c(Double)
+        }
+        """,
+      expected: """
+        enum Foo {
+          case a(Int)
+        case b(String)
+        case c(Double)
+        }
+        """,
+      findings: [
+        FindingSpec("1️⃣", message: "move 'a' to its own 'case' declaration"),
+        FindingSpec("2️⃣", message: "move 'b' to its own 'case' declaration"),
+        FindingSpec("3️⃣", message: "move 'c' to its own 'case' declaration"),
+      ]
+    )
+  }
+
+  @Test func commentBeforeElementOnContinuationLineMovesAheadOfCaseKeyword() {
+    assertFormatting(
+      SplitMultipleDeclsPerLine.self,
+      input: """
+        enum Foo {
+          case 1️⃣a(Int),
+            // This should stay with `b`.
+            2️⃣b(String)
+        }
+        """,
+      expected: """
+        enum Foo {
+          case a(Int)
+        // This should stay with `b`.
+        case b(String)
+        }
+        """,
+      findings: [
+        FindingSpec("1️⃣", message: "move 'a' to its own 'case' declaration"),
+        FindingSpec("2️⃣", message: "move 'b' to its own 'case' declaration"),
+      ]
+    )
+  }
+
+  @Test func endOfLineCommentStaysWithItsElement() {
+    assertFormatting(
+      SplitMultipleDeclsPerLine.self,
+      input: """
+        enum Foo {
+          case 1️⃣a(Int),  // a comment about 'a'
+            2️⃣b(String)
+        }
+        """,
+      expected: """
+        enum Foo {
+          case a(Int)  // a comment about 'a'
+        case b(String)
+        }
+        """,
+      findings: [
+        FindingSpec("1️⃣", message: "move 'a' to its own 'case' declaration"),
+        FindingSpec("2️⃣", message: "move 'b' to its own 'case' declaration"),
+      ]
+    )
+  }
+
+  @Test func endOfLineAndLeadingCommentsBothStayWithTheirElements() {
+    assertFormatting(
+      SplitMultipleDeclsPerLine.self,
+      input: """
+        enum Foo {
+          case 1️⃣a(Int),  // an end-of-line comment about 'a'
+            // This should stay with `b`.
+            2️⃣b(String)
+        }
+        """,
+      expected: """
+        enum Foo {
+          case a(Int)  // an end-of-line comment about 'a'
+        // This should stay with `b`.
+        case b(String)
+        }
+        """,
+      findings: [
+        FindingSpec("1️⃣", message: "move 'a' to its own 'case' declaration"),
+        FindingSpec("2️⃣", message: "move 'b' to its own 'case' declaration"),
+      ]
+    )
+  }
+
   // MARK: - Variable declarations
 
   @Test func multipleVariableBindings() {

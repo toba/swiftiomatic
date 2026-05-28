@@ -30,9 +30,10 @@ final class HoistExtensionAccess: StructuralFormatRule<ExtensionAccessControlCon
         /// The rule is currently visiting top-level declarations.
         case topLevel
 
-        /// The rule is currently inside an extension that has the given access level keyword. Used
-        /// in `onMembers` mode to add the keyword to members.
-        case insideExtension(accessKeyword: Keyword)
+        /// The rule is currently inside an extension that has the given access level keyword,
+        /// along with any `@_spi` attributes that should be moved down to each member alongside
+        /// that keyword. Used in `onMembers` mode to add the keyword to members.
+        case insideExtension(accessKeyword: Keyword, spiAttributes: [AttributeListSyntax.Element])
 
         /// The rule is currently inside an extension where members' access level is being hoisted.
         /// Used in `onExtension` mode to remove the keyword from members.
@@ -92,28 +93,37 @@ final class HoistExtensionAccess: StructuralFormatRule<ExtensionAccessControlCon
         default: return DeclSyntax(node)
         }
 
-        // We don't have to worry about maintaining a stack here; even though extensions can nest
-        // from a valid parse point of view, we ignore nested extensions because they're obviously
-        // wrong semantically (and would be an error later during compilation).
+        // An `@_spi` attribute on an extension only has an effect when the extension also has an
+        // explicit access level, and it applies to the members the same way that access level
+        // does. Move them down to the members alongside the access level. Other attributes like
+        // `@objc` or `@available` belong on the extension itself and are left untouched.
+        let spiAttributes: [AttributeListSyntax.Element] =
+            keywordToAdd != nil ? node.attributes.filter(\.isSPIAttribute) : []
+
         var result: ExtensionDeclSyntax
 
         if let keywordToAdd {
-            // Visit the children in the new state to add the keyword to the extension members.
-            state = .insideExtension(accessKeyword: keywordToAdd)
+            state = .insideExtension(accessKeyword: keywordToAdd, spiAttributes: spiAttributes)
             defer { state = .topLevel }
 
             result = super.visit(node).as(ExtensionDeclSyntax.self)!
         } else {
-            // We don't need to visit the children in this case, and we don't need to update the
-            // state.
             result = node
         }
 
-        // Finally, emit the finding (which includes notes from any rewritten members) and remove
-        // the access level keyword from the extension itself.
         diagnose(message, on: accessKeyword, notes: notesFromRewrittenMembers)
+
+        let originalLeadingTrivia = result.leadingTrivia
         result.modifiers.remove(anyOf: [keyword])
-        result.extensionKeyword.leadingTrivia = accessKeyword.leadingTrivia
+        if !spiAttributes.isEmpty {
+            result.attributes = result.attributes.filter { !$0.isSPIAttribute }
+        }
+        if let firstAttribute = result.attributes.first {
+            result.attributes[result.attributes.startIndex] =
+                firstAttribute.with(\.leadingTrivia, originalLeadingTrivia)
+        } else {
+            result.extensionKeyword.leadingTrivia = originalLeadingTrivia
+        }
         return DeclSyntax(result)
     }
 
@@ -248,11 +258,14 @@ final class HoistExtensionAccess: StructuralFormatRule<ExtensionAccessControlCon
     ) -> DeclSyntax {
         switch state {
         case .topLevel: DeclSyntax(decl)
-        case .insideExtension(let accessKeyword):
-            applyingAccessModifierIfNone(
-                accessKeyword,
-                to: decl,
-                declKeywordKeyPath: declKeywordKeyPath
+        case .insideExtension(let accessKeyword, let spiAttributes):
+            prepending(
+                spiAttributes,
+                to: applyingAccessModifierIfNone(
+                    accessKeyword,
+                    to: decl,
+                    declKeywordKeyPath: declKeywordKeyPath
+                )
             )
         case .hoistingFromExtension(let accessKeyword):
             removingAccessModifier(
@@ -261,6 +274,33 @@ final class HoistExtensionAccess: StructuralFormatRule<ExtensionAccessControlCon
                 declKeywordKeyPath: declKeywordKeyPath
             )
         }
+    }
+
+    /// Prepends the given `@_spi` attributes to the front of `decl`'s attribute list, moving the
+    /// declaration's leading trivia onto the first attribute so that leading comments, newlines,
+    /// and indentation are preserved on the line that now begins with `@_spi`.
+    private func prepending(
+        _ spiAttributes: [AttributeListSyntax.Element],
+        to decl: DeclSyntax
+    ) -> DeclSyntax {
+        guard !spiAttributes.isEmpty else { return decl }
+
+        let leadingTrivia = decl.leadingTrivia
+        guard var attributed = decl.with(\.leadingTrivia, [])
+            .asProtocol(WithAttributesSyntax.self)
+        else { return decl }
+
+        var attributesToInsert = spiAttributes.map {
+            $0.with(\.leadingTrivia, []).with(\.trailingTrivia, [.spaces(1)])
+        }
+        attributesToInsert[0] = attributesToInsert[0].with(\.leadingTrivia, leadingTrivia)
+
+        var newAttributes = attributed.attributes
+        for element in attributesToInsert.reversed() {
+            newAttributes.insert(element, at: newAttributes.startIndex)
+        }
+        attributed.attributes = newAttributes
+        return attributed.as(DeclSyntax.self) ?? decl
     }
 
     /// Adds `modifier` to `decl` if it doesn't already have an explicit access level modifier.
@@ -334,6 +374,15 @@ final class HoistExtensionAccess: StructuralFormatRule<ExtensionAccessControlCon
         }
 
         return DeclSyntax(result)
+    }
+}
+
+extension AttributeListSyntax.Element {
+    /// Whether this element is an `@_spi` attribute (for example `@_spi(Foo)`).
+    fileprivate var isSPIAttribute: Bool {
+        self.as(AttributeSyntax.self)?
+            .attributeName.as(IdentifierTypeSyntax.self)?
+            .name.text == "_spi"
     }
 }
 

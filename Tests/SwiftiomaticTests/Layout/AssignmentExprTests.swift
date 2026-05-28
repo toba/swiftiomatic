@@ -315,19 +315,18 @@ struct AssignmentExprTests: LayoutTesting {
 
   @Test func assignmentWithChainAsCallArgumentFitsOnOneLine() {
     // The RHS is `.init(type: chain)` where the chain
-    // `type.with(\.leadingTrivia, .space).with(\.trailingTrivia, .space)` fits within the
-    // indented argument body. Regression guard: the inner second `.with(...)` must NOT
-    // break its arg list one-per-line — the chain stays intact on a single line. The
-    // closing `))` collapses onto the chain line per the project's chain-fits convention
-    // (see `assignmentWithMemberAccessChain` ).
+    // `type.with(\.leadingTrivia, .space).with(\.trailingTrivia, .space)` is a multi-step
+    // chain whose base is itself a function call. Per gbg-s72, that pattern isn't treated
+    // as a "compact" hugging argument — the outer `.init(` arg list wraps normally so the
+    // chain stays intact on a single indented line, matching upstream swift-format.
     let input =
       """
       replacement.typeAnnotation = .init(type: type.with(\\.leadingTrivia, .space).with(\\.trailingTrivia, .space))
       """
     let expected =
       """
-      replacement.typeAnnotation = .init(type: type.with(\\.leadingTrivia, .space).with(
-        \\.trailingTrivia, .space))
+      replacement.typeAnnotation = .init(
+        type: type.with(\\.leadingTrivia, .space).with(\\.trailingTrivia, .space))
 
       """
     assertLayout(input: input, expected: expected, linelength: 100)

@@ -362,9 +362,30 @@ extension TokenStream {
         guard argumentList.count == 1 else { return false }
 
         let expression = argumentList.first!.expression
-        return expression.is(ArrayExprSyntax.self) || expression.is(DictionaryExprSyntax.self)
+
+        if expression.is(ArrayExprSyntax.self) || expression.is(DictionaryExprSyntax.self)
             || expression.is(ClosureExprSyntax.self)
-            || expression.is(FunctionCallExprSyntax.self)
+        {
+            return true
+        }
+
+        // gbg-s72: an inner call may be "compact" (hugging the outer paren) only when its
+        // called expression isn't a chain whose base is itself a function-call/subscript.
+        // For chains like `RoundedRectangle(...).strokeBorder(...)` the chain's dot-break
+        // needs the outer argument list to wrap normally so the indent budget stays at one
+        // continuation level past the outer paren. Otherwise both the hug and the chain
+        // continuation compound and `.strokeBorder` ends up two levels too deep.
+        if let call = expression.as(FunctionCallExprSyntax.self) {
+            if let memberAccess = call.calledExpression.as(MemberAccessExprSyntax.self),
+               let base = memberAccess.base,
+               base.asProtocol(CallingExprSyntax.self) != nil
+            {
+                return false
+            }
+            return true
+        }
+
+        return false
     }
 
     /// Adds a grouping around certain subexpressions during `InfixOperatorExpr` visitation.

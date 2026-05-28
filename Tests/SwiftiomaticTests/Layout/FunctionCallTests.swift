@@ -519,4 +519,45 @@ struct FunctionCallTests: LayoutTesting {
     config[IndentationSetting.self] = .spaces(4)
     assertLayout(input: input, expected: expected, linelength: 100, configuration: config)
   }
+
+  // gbg-s72: when a call's sole argument is itself a chain whose base is a function call
+  // (e.g. `RoundedRectangle(...).strokeBorder(...)`), the chain's dot-break should use one
+  // continuation indent past the outer call's left paren — not two. Previously the inner
+  // call was treated as "compact" (hugging the outer paren) which compounded an extra
+  // continuation level onto the chain break.
+  @Test func multiStepChainAsSingleArgumentIndentsOneLevel() {
+    let input =
+      """
+      struct MissingFigureView: View {
+          var body: some View {
+              VStack {
+                  Text("x")
+              }
+              .overlay(RoundedRectangle(cornerRadius: 6)
+                  .strokeBorder(Color.gray.opacity(0.4), style: StrokeStyle(lineWidth: 1, dash: [4])),
+              )
+          }
+      }
+      """
+
+    let expected =
+      """
+      struct MissingFigureView: View {
+          var body: some View {
+              VStack {
+                  Text("x")
+              }
+              .overlay(
+                  RoundedRectangle(cornerRadius: 6)
+                      .strokeBorder(Color.gray.opacity(0.4), style: StrokeStyle(lineWidth: 1, dash: [4])),
+              )
+          }
+      }
+
+      """
+
+    var config = Configuration.forTesting
+    config[IndentationSetting.self] = .spaces(4)
+    assertLayout(input: input, expected: expected, linelength: 100, configuration: config)
+  }
 }

@@ -60,11 +60,23 @@ final class SplitMultipleDeclsPerLine: StaticFormatRule<BasicRuleValue>, @unchec
         mutating func makeCaseDeclAndReset() -> EnumCaseDeclSyntax? {
             guard !elements.isEmpty else { return nil }
 
-            // Remove the trailing comma on the final element, if there was one.
-            elements[elements.count - 1].trailingComma = nil
+            // Remove the trailing comma on the final element, if there was one, keeping any
+            // end-of-line comment that the comma carried on the element's line.
+            Self.removeTrailingComma(from: &elements[elements.count - 1])
 
             defer { elements.removeAll() }
             return makeCaseDeclFromBasis(elements: elements)
+        }
+
+        /// Removes the trailing comma from the given element, keeping any end-of-line comment
+        /// that was attached to that comma (like `case a(Int),  // comment`) on the element so it
+        /// stays on the element's own line instead of being discarded along with the comma.
+        static func removeTrailingComma(from element: inout EnumCaseElementSyntax) {
+            let commaTrailingTrivia = element.trailingComma?.trailingTrivia ?? []
+            element.trailingComma = nil
+            if commaTrailingTrivia.hasAnyComments {
+                element.trailingTrivia = element.trailingTrivia + commaTrailingTrivia
+            }
         }
 
         /// Creates and returns a new `EnumCaseDeclSyntax` with the given elements, based on the
@@ -73,6 +85,22 @@ final class SplitMultipleDeclsPerLine: StaticFormatRule<BasicRuleValue>, @unchec
             elements: [EnumCaseElementSyntax]
         ) -> EnumCaseDeclSyntax {
             var caseDecl = basis
+
+            // The first element follows the `case` keyword. When the original wrote it on a
+            // continuation line (like `case a,\n  b`), it inherited leading whitespace, and any
+            // comment documenting it ended up in that leading trivia too. Drop the whitespace so
+            // the element sits on the same line as `case`, and hoist any documentation comment so
+            // that it precedes the newly inserted `case` keyword instead of being stranded after
+            // it.
+            var elements = elements
+            if let first = elements.first {
+                let (hoistedComments, remainder) = first.leadingTrivia.splittingLeadingComments()
+                elements[0].leadingTrivia = remainder
+                if !hoistedComments.isEmpty {
+                    caseDecl.leadingTrivia =
+                        caseDecl.leadingTrivia + hoistedComments + Trivia.newlines(1)
+                }
+            }
             caseDecl.elements = EnumCaseElementListSyntax(elements)
 
             if shouldKeepLeadingTrivia {
@@ -150,7 +178,7 @@ final class SplitMultipleDeclsPerLine: StaticFormatRule<BasicRuleValue>, @unchec
                     }
 
                     var basisElement = element
-                    basisElement.trailingComma = nil
+                    CaseElementCollector.removeTrailingComma(from: &basisElement)
                     let separatedCaseDecl = collector.makeCaseDeclFromBasis(elements: [basisElement]
                     )
 
