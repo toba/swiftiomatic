@@ -162,10 +162,17 @@ extension TokenStream {
         preVisitInsertingContextualBreaks(node)
 
         // For 3+ trailing closures force all to break so they each start on their own line.
-        // For exactly 2 closures, leave both discretionary: single-statement closures follow
-        // the user's choice; multi-statement ones still break via `node.statements.count > 1`
-        // in visitClosureExpr regardless of forcedBreakingClosures.
-        if node.additionalTrailingClosures.count > 1 {
+        // For exactly 2 closures with parenthesized arguments (e.g.
+        // `.alert(isPresented: …) { … } message: { … }`), the call header tends to be wide and
+        // the chunk-length asymmetry between break-after-`in` (just the body) and break-before-`}`
+        // (extends into the following labeled closure) leaves the first body inline while the `}`
+        // breaks — producing `{ _ in body\n}` (#84j-0l7). Force-break both in that case too.
+        // For 2 closures with no arguments (e.g. `With { expr } query: { … }`, bj7-vtb) leave
+        // both discretionary so a short first closure can stay inline.
+        let forceAllTrailingBreak =
+            node.additionalTrailingClosures.count > 1
+            || (node.additionalTrailingClosures.count == 1 && !node.arguments.isEmpty)
+        if forceAllTrailingBreak {
             if let closure = node.trailingClosure { forcedBreakingClosures.insert(closure.id) }
 
             for additionalTrailingClosure in node.additionalTrailingClosures {

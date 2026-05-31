@@ -250,6 +250,28 @@ struct ClosureExprTests: LayoutTesting {
     assertLayout(input: input, expected: expected, linelength: 80)
   }
 
+  @Test func twoTrailingClosuresWideCallHeader() {
+    // When the call header is too wide for the first closure to fit inline together with the
+    // following `} message: {`, the closure's body and closing brace must break together —
+    // not produce `{ _ in body\n} message: { ... }`.
+    let input =
+      """
+      view.alert(isPresented: $errors.alertPresented, error: errors.current) { _ in errors.actions } message: { error in Text(error.recoverySuggestion ?? "Try again later.") }
+      """
+
+    let expected =
+      """
+      view.alert(isPresented: $errors.alertPresented, error: errors.current) { _ in
+        errors.actions
+      } message: { error in
+        Text(error.recoverySuggestion ?? "Try again later.")
+      }
+
+      """
+
+    assertLayout(input: input, expected: expected, linelength: 100)
+  }
+
   @Test func closuresWithIfs() {
     let input =
       """

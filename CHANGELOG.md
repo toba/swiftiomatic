@@ -1,5 +1,11 @@
 # Changelog
 
+## Week of May 31 – Jun 06, 2026
+
+### 🐞 Fixes
+
+- Function calls; force-break both closures in a two-trailing-closure call when the call has parenthesized arguments (e.g. `.alert(isPresented: …, error: …) { _ in … } message: { … }`), instead of leaving the first closure's body inline while the closing `}` breaks; the empty-args case (`With { expr } query: { … }`) still preserves the inline first closure
+
 ## Week of May 24 – May 30, 2026
 
 ### ✨ Features
