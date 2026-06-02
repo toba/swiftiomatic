@@ -116,8 +116,7 @@ extension TokenStream {
     func visitClosureCaptureClause(
         _ node: ClosureCaptureClauseSyntax
     ) -> SyntaxVisitorContinueKind {
-        after(node.leftSquare, tokens: .break(.open, size: 0), .open)
-        before(node.rightSquare, tokens: .break(.close, size: 0), .close)
+        arrangeBlockBreaks(left: node.leftSquare, right: node.rightSquare)
         return .visitChildren
     }
 
@@ -179,19 +178,19 @@ extension TokenStream {
     }
 
     func visitExpressionSegment(_ node: ExpressionSegmentSyntax) -> SyntaxVisitorContinueKind {
-        // Mirror upstream apple/swift-format: emit the interpolation's source text verbatim,
-        // which preserves the developer's intentional formatting of complex interpolations
-        // (e.g. multi-line `\(raw: foo(\n  a: ...,\n  b: ...))` in macro DeclSyntax literals)
-        // and avoids any class of token-adjacency bug from reformatting the contents.
+        // Mirror upstream apple/swift-format: emit the interpolation's source text verbatim, which
+        // preserves the developer's intentional formatting of complex interpolations (e.g.
+        // multi-line `\(raw: foo(\n  a: ...,\n  b: ...))` in macro DeclSyntax literals) and avoids
+        // any class of token-adjacency bug from reformatting the contents.
         //
-        // If the description spans multiple source lines, emit each line as a separate
-        // `.syntax` token with a hard `.break` between them. The break carries the surrounding
-        // multiline string's `breakKind`, which re-indents each continuation line to the
-        // segment column (≥ closing `"""` column). Without this, `.syntax` text containing
-        // raw `\n` bypasses the printer's indent state and continuation lines land at column 0
-        // — falling below the closing delimiter and producing "Insufficient indentation"
-        // (issue 9yv-e8j).
+        // If the description spans multiple source lines, emit each line as a separate `.syntax`
+        // token with a hard `.break` between them. The break carries the surrounding multiline
+        // string's `breakKind`, which re-indents each continuation line to the segment column (≥
+        // closing `"""` column). Without this, `.syntax` text containing raw `\n` bypasses the
+        // printer's indent state and continuation lines land at column 0 — falling below the
+        // closing delimiter and producing "Insufficient indentation" (issue 9yv-e8j).
         let description = node.description
+
         if !description.contains("\n") {
             appendToken(.syntax(description))
             return .skipChildren
@@ -200,10 +199,12 @@ extension TokenStream {
             .as(StringLiteralSegmentListSyntax.self)?
             .parent?
             .as(StringLiteralExprSyntax.self)
-        let breakKind: BreakKind = parentLiteral
+        let breakKind: BreakKind =
+            parentLiteral
             .flatMap { pendingMultilineStringBreakKinds[$0] } ?? .same
         let lines = description.split(separator: "\n", omittingEmptySubsequences: false)
         appendToken(.syntax(String(lines[0])))
+
         for line in lines.dropFirst() {
             appendToken(.break(breakKind, newlines: .hard(count: 1)))
             // Strip leading whitespace; the break's indent supplies the segment column.

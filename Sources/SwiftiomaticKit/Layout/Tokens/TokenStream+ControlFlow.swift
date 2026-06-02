@@ -12,6 +12,12 @@
 
 import SwiftSyntax
 
+// Alignment offsets for wrapped condition/case lists — equal to keyword + trailing space so that
+// wrapped continuations line up under the first character following the keyword.
+private let ifConditionAlignment = 3       // "if " (2 + 1)
+private let whileConditionAlignment = 6    // "while " (5 + 1)
+private let caseItemAlignment = 5          // "case " (4 + 1)
+
 extension TokenStream {
     func visitLabeledStmt(_ node: LabeledStmtSyntax) -> SyntaxVisitorContinueKind {
         after(node.colon, tokens: .space)
@@ -54,15 +60,15 @@ extension TokenStream {
         // Add break groups, using open continuation breaks, around any conditions after the first
         // so that continuations inside of the conditions can stack in addition to continuations
         // between the conditions. There are no breaks around the first condition because
-        // if-statements look better without a break between the "if" and the first condition.
-        // When the first condition is a member-access chain, its contextual breaks fire at
-        // continuation (+4). Fall back to continuation for subsequent conditions so all wrapped
-        // lines use the same indent rather than mixing alignment(3) with continuation.
+        // if-statements look better without a break between the "if" and the first condition. When
+        // the first condition is a member-access chain, its contextual breaks fire at continuation
+        // (+4). Fall back to continuation for subsequent conditions so all wrapped lines use the
+        // same indent rather than mixing alignment(3) with continuation.
         let firstIfConditionIsChain = node.conditions.first
             .map { conditionContainsMemberChain($0) } == true
         let ifBreakKind: OpenBreakKind = config[AlignWrappedConditions.self]
             && !firstIfConditionIsChain
-            ? .alignment(spaces: 3)
+            ? .alignment(spaces: ifConditionAlignment)
             : .continuation
 
         for condition in node.conditions.dropFirst() {
@@ -212,14 +218,14 @@ extension TokenStream {
         // historically not break after the while token and adding such a break would cause
         // excessive changes to previously formatted code. This has the side effect that the label +
         // `while` + tokens up to the first break in the first condition could be longer than the
-        // column limit since there are no breaks between the label or while token.
-        // Same chain-consistency fix as guard: fall back to continuation when the first condition
-        // is a member-access chain so all wrapped lines use the same indent.
+        // column limit since there are no breaks between the label or while token. Same
+        // chain-consistency fix as guard: fall back to continuation when the first condition is a
+        // member-access chain so all wrapped lines use the same indent.
         let firstWhileConditionIsChain = node.conditions.first
             .map { conditionContainsMemberChain($0) } == true
         let whileBreakKind: OpenBreakKind = config[AlignWrappedConditions.self]
             && !firstWhileConditionIsChain
-            ? .alignment(spaces: 6)
+            ? .alignment(spaces: whileConditionAlignment)
             : .continuation
 
         for condition in node.conditions.dropFirst() {
@@ -274,9 +280,8 @@ extension TokenStream {
         // the old (pre-SE-0276) behavior (a fixed space after the `catch` keyword).
         if node.catchItems.count > 1 {
             for catchItem in node.catchItems {
-                // When the item has no pattern (it's a bare `where` clause),
-                // `WhereClauseSyntax` emits its own preceding break — skip
-                // ours to avoid duplicate whitespace.
+                // When the item has no pattern (it's a bare `where` clause), `WhereClauseSyntax`
+                // emits its own preceding break — skip ours to avoid duplicate whitespace.
                 if catchItem.pattern != nil {
                     before(
                         catchItem.firstToken(viewMode: .sourceAccurate),
@@ -289,9 +294,8 @@ extension TokenStream {
                 )
             }
         } else if let onlyItem = node.catchItems.first, onlyItem.pattern != nil {
-            // Same rationale: a single bare `where` item is preceded by
-            // `WhereClauseSyntax`'s own break; emitting a space here would
-            // duplicate whitespace.
+            // Same rationale: a single bare `where` item is preceded by `WhereClauseSyntax`'s own
+            // break; emitting a space here would duplicate whitespace.
             before(node.catchItems.firstToken(viewMode: .sourceAccurate), tokens: .space)
         }
 
@@ -472,12 +476,11 @@ extension TokenStream {
                     if hasOpenAlignmentBreak {
                         afterTokens.append(.break(.close(mustBreak: false), size: 0))
                     }
-                    afterTokens.append(
-                        .break(
-                            .open(kind: .alignment(spaces: 5)),
-                            size: 1,
-                            newlines: newlines
-                        ))
+                    afterTokens.append(.break(
+                        .open(kind: .alignment(spaces: caseItemAlignment)),
+                        size: 1,
+                        newlines: newlines
+                    ))
                     after(trailingComma, tokens: afterTokens)
                     hasOpenAlignmentBreak = true
                 } else {

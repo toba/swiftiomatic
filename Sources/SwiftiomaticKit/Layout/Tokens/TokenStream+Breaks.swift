@@ -135,9 +135,7 @@ extension TokenStream {
                 && config[BreakAroundMultilineChainParts.self]
             let beforeTokens: [Token] = shouldGroup
                 ? [.contextualBreakingStart, .open]
-                : [
-                    .contextualBreakingStart
-                ]
+                : [.contextualBreakingStart]
             let afterTokens: [Token] = shouldGroup
                 ? [.contextualBreakingEnd, .close]
                 : [.contextualBreakingEnd]

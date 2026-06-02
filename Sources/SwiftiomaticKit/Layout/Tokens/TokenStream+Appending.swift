@@ -63,11 +63,10 @@ extension TokenStream {
                     if index > 0 || isStartOfFile {
                         generateEnableFormattingIfNecessary(
                             position..<position + piece.sourceLength)
-                        appendToken(
-                            .comment(
-                                Comment(kind: .line, leadingIndent: leadingIndent, text: text),
-                                wasEndOfLine: false
-                            ))
+                        appendToken(.comment(
+                            Comment(kind: .line, leadingIndent: leadingIndent, text: text),
+                            wasEndOfLine: false
+                        ))
                         generateDisableFormattingIfNecessary(position + piece.sourceLength)
                         appendNewlines(.soft)
                         isStartOfFile = false
@@ -80,11 +79,10 @@ extension TokenStream {
                         let isStandaloneLeadingComment = leadingIndent != nil || isStartOfFile
                         generateEnableFormattingIfNecessary(
                             position..<position + piece.sourceLength)
-                        appendToken(
-                            .comment(
-                                Comment(kind: .block, leadingIndent: leadingIndent, text: text),
-                                wasEndOfLine: false
-                            ))
+                        appendToken(.comment(
+                            Comment(kind: .block, leadingIndent: leadingIndent, text: text),
+                            wasEndOfLine: false
+                        ))
                         generateDisableFormattingIfNecessary(position + piece.sourceLength)
                         // There is always a break after the comment to allow a discretionary
                         // newline after it.
@@ -107,11 +105,10 @@ extension TokenStream {
 
                 case let .docLineComment(text):
                     generateEnableFormattingIfNecessary(position..<position + piece.sourceLength)
-                    appendToken(
-                        .comment(
-                            Comment(kind: .docLine, leadingIndent: leadingIndent, text: text),
-                            wasEndOfLine: false
-                        ))
+                    appendToken(.comment(
+                        Comment(kind: .docLine, leadingIndent: leadingIndent, text: text),
+                        wasEndOfLine: false
+                    ))
                     generateDisableFormattingIfNecessary(position + piece.sourceLength)
                     appendNewlines(.soft)
                     isStartOfFile = false
@@ -120,11 +117,10 @@ extension TokenStream {
 
                 case let .docBlockComment(text):
                     generateEnableFormattingIfNecessary(position..<position + piece.sourceLength)
-                    appendToken(
-                        .comment(
-                            Comment(kind: .docBlock, leadingIndent: leadingIndent, text: text),
-                            wasEndOfLine: false
-                        ))
+                    appendToken(.comment(
+                        Comment(kind: .docBlock, leadingIndent: leadingIndent, text: text),
+                        wasEndOfLine: false
+                    ))
                     generateDisableFormattingIfNecessary(position + piece.sourceLength)
                     appendNewlines(.soft)
                     isStartOfFile = false
@@ -136,10 +132,7 @@ extension TokenStream {
                      let .carriageReturnLineFeeds(count):
                     if config[IndentBlankLines.self],
                        let leadingIndent,
-                       leadingIndent.count > 0
-                    {
-                        requiresNextNewline = true
-                    }
+                       leadingIndent.count > 0 { requiresNextNewline = true }
 
                     leadingIndent = .spaces(0)
                     guard !isStartOfFile else { break }
@@ -271,9 +264,10 @@ extension TokenStream {
                             return
                         }
 
-                        // A regular `//` comment directly following a `///` doc comment is
-                        // indented one extra space so its body aligns with the doc comment body.
-                        if c1.kind == .docLine, c2.kind == .line,
+                        // A regular `//` comment directly following a `///` doc comment is indented
+                        // one extra space so its body aligns with the doc comment body.
+                        if c1.kind == .docLine,
+                           c2.kind == .line,
                            config[AlignCommentWithAdjacentDocComment.self]
                         {
                             var aligned = c2
@@ -303,8 +297,7 @@ extension TokenStream {
                  .printerControl,
                  .contextualBreakingStart,
                  .enableFormatting,
-                 .disableFormatting:
-                break
+                 .disableFormatting: break
             default: canMergeNewlinesIntoLastBreak = false
         }
         tokens.append(token)
@@ -327,10 +320,9 @@ extension TokenStream {
         let argumentCount = arguments.count
 
         // If there are no arguments, there's no reason to break.
-        if argumentCount == 0 { return false }
-
-        // If there is more than one argument, we must open/close break around the whole list.
-        return argumentCount > 1 ? true : !isCompactSingleFunctionCallArgument(arguments)
+        return argumentCount == 0
+            ? false
+            : argumentCount > 1 ? true : !isCompactSingleFunctionCallArgument(arguments)
     }
 
     /// Returns whether the `reset` break before an expression's closing delimiter must break when
@@ -364,28 +356,41 @@ extension TokenStream {
         let expression = argumentList.first!.expression
 
         if expression.is(ArrayExprSyntax.self) || expression.is(DictionaryExprSyntax.self)
-            || expression.is(ClosureExprSyntax.self)
-        {
-            return true
-        }
+            || expression.is(ClosureExprSyntax.self) { return true }
 
-        // gbg-s72: an inner call may be "compact" (hugging the outer paren) only when its
-        // called expression isn't a chain whose base is itself a function-call/subscript.
-        // For chains like `RoundedRectangle(...).strokeBorder(...)` the chain's dot-break
-        // needs the outer argument list to wrap normally so the indent budget stays at one
-        // continuation level past the outer paren. Otherwise both the hug and the chain
-        // continuation compound and `.strokeBorder` ends up two levels too deep.
+        // gbg-s72: an inner call may be "compact" (hugging the outer paren) only when its called
+        // expression isn't a chain whose base is itself a function-call/subscript. For chains like
+        // `RoundedRectangle(...).strokeBorder(...)` the chain's dot-break needs the outer argument
+        // list to wrap normally so the indent budget stays at one continuation level past the outer
+        // paren. Otherwise both the hug and the chain continuation compound and `.strokeBorder`
+        // ends up two levels too deep.
         if let call = expression.as(FunctionCallExprSyntax.self) {
             if let memberAccess = call.calledExpression.as(MemberAccessExprSyntax.self),
-               let base = memberAccess.base,
-               base.asProtocol(CallingExprSyntax.self) != nil
-            {
-                return false
-            }
+                let base = memberAccess.base,
+                base.asProtocol(CallingExprSyntax.self) != nil { return false }
             return true
         }
 
         return false
+    }
+
+    /// Returns true if the call whose open paren is `leftDelimiter` is itself the sole argument of
+    /// an outer function call, and none of its own arguments contain a closure. In that case,
+    /// discretionary newlines around its `(` / `)` should be ignored so the inner call collapses
+    /// with the outer chain when the line fits (brm-7t3).
+    func isSoleCallArgumentOfOuterCall(
+        _ leftDelimiter: TokenSyntax?,
+        arguments: LabeledExprListSyntax
+    ) -> Bool {
+        guard let leftDelimiter,
+              let call = leftDelimiter.parent?.as(FunctionCallExprSyntax.self),
+              let labeledExpr = call.parent?.as(LabeledExprSyntax.self),
+              let list = labeledExpr.parent?.as(LabeledExprListSyntax.self),
+              list.count == 1,
+              list.parent?.as(FunctionCallExprSyntax.self) != nil
+        else { return false }
+        for arg in arguments where containsClosureExpr(Syntax(arg.expression)) { return false }
+        return true
     }
 
     /// Adds a grouping around certain subexpressions during `InfixOperatorExpr` visitation.
@@ -462,10 +467,7 @@ extension TokenStream {
         if let calling = expr.asProtocol(CallingExprSyntax.self) {
             // This node IS a call — count it if the member base is itself a chain.
             if let member = calling.calledExpression.as(MemberAccessExprSyntax.self),
-               let base = member.base
-            {
-                return isMemberAccessChain(base)
-            }
+                let base = member.base { return isMemberAccessChain(base) }
             return isMultiStepCallChain(calling.calledExpression)
         }
         if let member = expr.as(MemberAccessExprSyntax.self), let base = member.base {
@@ -502,15 +504,11 @@ extension TokenStream {
                 case .optionalChainingExpr,
                      .forceUnwrapExpr,
                      .postfixOperatorExpr,
-                     .postfixIfConfigExpr:
-                    current = parent
+                     .postfixIfConfigExpr: current = parent
                 case .memberAccessExpr:
                     if let memberAccess = parent.as(MemberAccessExprSyntax.self),
                        let base = memberAccess.base,
-                       base.id == current.id
-                    {
-                        return true
-                    }
+                       base.id == current.id { return true }
                     return false
                 default: return false
             }
@@ -522,10 +520,10 @@ extension TokenStream {
     /// base (e.g. `Citation`) instead of after the head's `<name>` (e.g. `Citation.join`). This
     /// retargeting matters when (a) the source has a discretionary newline at the next chain dot —
     /// which becomes a `.soft(discretionary:)` break that bumps `total` by `maxLineLength` and
-    /// would otherwise inflate the chunk-length of an enclosing `=` break (issues wts-z1t,
-    /// kl7-een) — and (b) the chain is the RHS of an assignment-like binding (otherwise the head's
-    /// bonded `base.<name>` layout is preferred). It applies whether the head's argument is a
-    /// trailing closure (e.g. `Citation.join { … }`) or a paren-wrapped closure (e.g.
+    /// would otherwise inflate the chunk-length of an enclosing `=` break (issues wts-z1t, kl7-een)
+    /// — and (b) the chain is the RHS of an assignment-like binding (otherwise the head's bonded
+    /// `base.<name>` layout is preferred). It applies whether the head's argument is a trailing
+    /// closure (e.g. `Citation.join { … }`) or a paren-wrapped closure (e.g.
     /// `CitationGroup.where({ … })`). When the head DOES carry a trailing closure that spans
     /// multiple source lines, the head itself wraps and the legacy layout is preferred, so we skip.
     func shouldRetargetChainHeadCloseForAssignmentRHS(
@@ -535,18 +533,18 @@ extension TokenStream {
               outerMember.base?.id == call.id
         else { return false }
 
-        // Skip retargeting when the head's trailing closure spans multiple source lines:
-        // a multi-line head closure means the head itself wraps, and the legacy layout
-        // ( `=` break + grouped `View.Button { ... }` head) is preferred.
+        // Skip retargeting when the head's trailing closure spans multiple source lines: a
+        // multi-line head closure means the head itself wraps, and the legacy layout ( `=` break +
+        // grouped `View.Button { ... }` head) is preferred.
         if let trailingClosure = call.trailingClosure {
             let closureHasNewline: (TriviaPiece) -> Bool = { piece in
                 switch piece {
-                    case .newlines, .carriageReturns, .carriageReturnLineFeeds: return true
-                    default: return false
+                    case .newlines, .carriageReturns, .carriageReturnLineFeeds: true
+                    default: false
                 }
             }
-            let closureIsMultiline =
-                trailingClosure.leftBrace.trailingTrivia.contains(where: closureHasNewline)
+            let closureIsMultiline = trailingClosure.leftBrace.trailingTrivia.contains(
+                where: closureHasNewline)
                 || trailingClosure.rightBrace.leadingTrivia.contains(where: closureHasNewline)
                 || trailingClosure.statements.contains { stmt in
                     stmt.leadingTrivia.contains(where: closureHasNewline)
@@ -557,32 +555,36 @@ extension TokenStream {
 
         let periodHasSourceNewline = outerMember.period.leadingTrivia.contains { piece in
             switch piece {
-                case .newlines, .carriageReturns, .carriageReturnLineFeeds: return true
-                default: return false
+                case .newlines, .carriageReturns, .carriageReturnLineFeeds: true
+                default: false
             }
         }
         guard periodHasSourceNewline else { return false }
 
         var current = Syntax(call)
+
         while let parent = current.parent {
             switch parent.kind {
                 case .memberAccessExpr:
                     if let m = parent.as(MemberAccessExprSyntax.self), m.base?.id == current.id {
-                        current = parent; continue
+                        current = parent
+                        continue
                     }
                     return false
                 case .functionCallExpr:
                     if let f = parent.as(FunctionCallExprSyntax.self),
                        f.calledExpression.id == current.id
                     {
-                        current = parent; continue
+                        current = parent
+                        continue
                     }
                     return false
                 case .subscriptCallExpr:
                     if let s = parent.as(SubscriptCallExprSyntax.self),
                        s.calledExpression.id == current.id
                     {
-                        current = parent; continue
+                        current = parent
+                        continue
                     }
                     return false
                 case .optionalChainingExpr,
@@ -591,16 +593,12 @@ extension TokenStream {
                      .postfixIfConfigExpr,
                      .tryExpr,
                      .awaitExpr,
-                     .unsafeExpr:
-                    current = parent
+                     .unsafeExpr: current = parent
                 default:
                     if parent.is(InitializerClauseSyntax.self) { return true }
                     if let infix = parent.as(InfixOperatorExprSyntax.self),
                        infix.operator.is(AssignmentExprSyntax.self),
-                       infix.rightOperand.id == current.id
-                    {
-                        return true
-                    }
+                       infix.rightOperand.id == current.id { return true }
                     return false
             }
         }
@@ -647,10 +645,7 @@ extension TokenStream {
             stackedIndentationBehavior(after: operatorExpr, rhs: rhs)
         {
             var openTokens: [Token] = [
-                .break(
-                    .open(kind: breakKind),
-                    newlines: .elective(ignoresDiscretionary: true)
-                )
+                .break(.open(kind: breakKind), newlines: .elective(ignoresDiscretionary: true))
             ]
             if shouldGroup { openTokens.append(.open) }
             after(equal, tokens: openTokens)
@@ -703,7 +698,8 @@ extension TokenStream {
     /// `obj.member = …` is not split across multiple lines.
     func isAssignmentLHS(_ expr: ExprSyntax) -> Bool {
         guard let parent = expr.parent?.as(InfixOperatorExprSyntax.self),
-              parent.leftOperand.id == expr.id else { return false }
+              parent.leftOperand.id == expr.id
+        else { return false }
         return isAssigningOperator(parent.operator)
     }
 
@@ -713,10 +709,7 @@ extension TokenStream {
         if let binOpExpr = operatorExpr.as(BinaryOperatorExprSyntax.self) {
             if let binOp = operatorTable.infixOperator(named: binOpExpr.operator.text),
                let precedenceGroup = binOp.precedenceGroup,
-               precedenceGroup == "AssignmentPrecedence"
-            {
-                return true
-            }
+               precedenceGroup == "AssignmentPrecedence" { return true }
         }
         return false
     }
@@ -728,7 +721,8 @@ extension TokenStream {
     func isComparisonOperator(_ operatorExpr: ExprSyntax) -> Bool {
         guard let binOpExpr = operatorExpr.as(BinaryOperatorExprSyntax.self),
               let binOp = operatorTable.infixOperator(named: binOpExpr.operator.text),
-              let precedenceGroup = binOp.precedenceGroup else { return false }
+              let precedenceGroup = binOp.precedenceGroup
+        else { return false }
         return precedenceGroup == "ComparisonPrecedence"
     }
 
@@ -751,10 +745,7 @@ extension TokenStream {
                 break
             }
             if let childExpr = node.as(ExprSyntax.self),
-               containsCallOrSubscriptArgList(childExpr)
-            {
-                found = true
-            }
+               containsCallOrSubscriptArgList(childExpr) { found = true }
         }
         if let call = expr.as(FunctionCallExprSyntax.self), !call.arguments.isEmpty { return true }
         if let sub = expr.as(SubscriptCallExprSyntax.self), !sub.arguments.isEmpty { return true }
@@ -876,7 +867,8 @@ extension TokenStream {
     /// returned node's `lastToken` are delimiter tokens that shouldn't be preceded by a break.
     func outermostEnclosingNode(from node: Syntax) -> Syntax? {
         guard let afterToken = node.lastToken(viewMode: .sourceAccurate)?.nextToken(viewMode: .all),
-              closingDelimiterTokens.contains(afterToken) else { return nil }
+              closingDelimiterTokens.contains(afterToken)
+        else { return nil }
         var parenthesizedExpr = afterToken.parent
         while let nextToken = parenthesizedExpr?.lastToken(viewMode: .sourceAccurate)?.nextToken(
             viewMode: .all
@@ -994,11 +986,8 @@ extension TokenStream {
         }
 
         if let leftmostExpr = leftmostExpr(
-            of: rhs,
-            ifMatching: {
-                $0.is(IfExprSyntax.self) || $0.is(SwitchExprSyntax.self)
-            }
-        ) {
+            of: rhs, ifMatching: { $0.is(IfExprSyntax.self) || $0.is(SwitchExprSyntax.self) })
+        {
             return (
                 unindentingNode: Syntax(leftmostExpr),
                 shouldReset: false,

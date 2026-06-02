@@ -93,8 +93,7 @@ extension TokenStream {
     ///   - node: A node that conforms to `BracedSyntax` .
     ///   - contentsKeyPath: A keypath describing how to get from `node` to the contents of the
     ///     node.
-    ///   - Returns: True if the collection at the node's keypath is empty and there are no
-    ///     comments.
+    /// - Returns: True if the collection at the node's keypath is empty and there are no comments.
     func areBracesCompletelyEmpty<Node: BracedSyntax, BodyContents: SyntaxCollection>(
         _ node: Node,
         contentsKeyPath: KeyPath<Node, BodyContents>
@@ -106,6 +105,14 @@ extension TokenStream {
         // iterator and check if it returns `nil` immediately.
         var contentsIterator = node[keyPath: contentsKeyPath].makeIterator()
         return contentsIterator.next() == nil && !commentPrecedesRightBrace
+    }
+
+    /// Inserts the standard open/close break-and-group pair around the contents bounded by
+    /// `left` and `right` (parens, squares, or angle brackets). The contents indent on wrap and
+    /// the closing delimiter returns to the original indent.
+    func arrangeBlockBreaks(left: TokenSyntax, right: TokenSyntax) {
+        after(left, tokens: .break(.open, size: 0), .open)
+        before(right, tokens: .break(.close, size: 0), .close)
     }
 
     /// Applies formatting to a parenthesized parameter clause (closure, enum-case, or function).
@@ -395,8 +402,7 @@ extension TokenStream {
                      .break(.continue, _, _),
                      .break(.same, _, _),
                      .break(.contextual, _, _),
-                     .open:
-                    break
+                     .open: break
                 default:
                     return index > 0
                         ? (beforeTokens[..<index], beforeTokens[index...])

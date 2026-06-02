@@ -39,11 +39,7 @@ extension TokenStream {
                     after(lhsLast, tokens: .close)
                 }
                 if let equal = binOp.lastToken(viewMode: .sourceAccurate) {
-                    arrangeAssignmentBreaks(
-                        afterEqualToken: equal,
-                        rhs: rhs,
-                        operatorExpr: binOp
-                    )
+                    arrangeAssignmentBreaks(afterEqualToken: equal, rhs: rhs, operatorExpr: binOp)
                 }
             } else if let (unindentingNode, shouldReset, breakKind, shouldGroup) =
                 stackedIndentationBehavior(after: binOp, rhs: rhs)

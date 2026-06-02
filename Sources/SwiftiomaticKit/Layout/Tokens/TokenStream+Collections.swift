@@ -44,8 +44,7 @@ extension TokenStream {
         } else if elementCount > 1 {
             // Tuples with more than one element are "true" tuples, and should indent as block
             // structures.
-            after(node.leftParen, tokens: .break(.open, size: 0), .open)
-            before(node.rightParen, tokens: .break(.close, size: 0), .close)
+            arrangeBlockBreaks(left: node.leftParen, right: node.rightParen)
 
             insertTokens(.break(.same), betweenElementsOf: node.elements)
 
@@ -75,8 +74,7 @@ extension TokenStream {
 
     func visitArrayExpr(_ node: ArrayExprSyntax) -> SyntaxVisitorContinueKind {
         if !node.elements.isEmpty || node.rightSquare.hasAnyPrecedingComment {
-            after(node.leftSquare, tokens: .break(.open, size: 0), .open)
-            before(node.rightSquare, tokens: .break(.close, size: 0), .close)
+            arrangeBlockBreaks(left: node.leftSquare, right: node.rightSquare)
         }
         return .visitChildren
     }
@@ -106,8 +104,7 @@ extension TokenStream {
             || node.content.hasAnyPrecedingComment
             || node.rightSquare.hasAnyPrecedingComment
         {
-            after(node.leftSquare, tokens: .break(.open, size: 0), .open)
-            before(node.rightSquare, tokens: .break(.close, size: 0), .close)
+            arrangeBlockBreaks(left: node.leftSquare, right: node.rightSquare)
         }
         return .visitChildren
     }
@@ -161,17 +158,17 @@ extension TokenStream {
     func visitFunctionCallExpr(_ node: FunctionCallExprSyntax) -> SyntaxVisitorContinueKind {
         preVisitInsertingContextualBreaks(node)
 
-        // For 3+ trailing closures force all to break so they each start on their own line.
-        // For exactly 2 closures with parenthesized arguments (e.g.
-        // `.alert(isPresented: …) { … } message: { … }`), the call header tends to be wide and
-        // the chunk-length asymmetry between break-after-`in` (just the body) and break-before-`}`
+        // For 3+ trailing closures force all to break so they each start on their own line. For
+        // exactly 2 closures with parenthesized arguments (e.g.
+        // `.alert(isPresented: …) { … } message: { … }`), the call header tends to be wide and the
+        // chunk-length asymmetry between break-after-`in` (just the body) and break-before-`}`
         // (extends into the following labeled closure) leaves the first body inline while the `}`
-        // breaks — producing `{ _ in body\n}` (#84j-0l7). Force-break both in that case too.
-        // For 2 closures with no arguments (e.g. `With { expr } query: { … }`, bj7-vtb) leave
-        // both discretionary so a short first closure can stay inline.
-        let forceAllTrailingBreak =
-            node.additionalTrailingClosures.count > 1
+        // breaks — producing `{ _ in body\n}` (#84j-0l7). Force-break both in that case too. For 2
+        // closures with no arguments (e.g. `With { expr } query: { … }`, bj7-vtb) leave both
+        // discretionary so a short first closure can stay inline.
+        let forceAllTrailingBreak = node.additionalTrailingClosures.count > 1
             || (node.additionalTrailingClosures.count == 1 && !node.arguments.isEmpty)
+
         if forceAllTrailingBreak {
             if let closure = node.trailingClosure { forcedBreakingClosures.insert(closure.id) }
 
@@ -205,14 +202,14 @@ extension TokenStream {
                     && isPartOfOuterMemberAccessChain(node)
 
                 if isInOuterChain {
-                    // Place `.open` before the chain break (i.e., before the period of
-                    // `.method` ) and `.close` after the call's right paren. This extends the
-                    // chain break's chunk across the entire `.method(args)` , so when the outer
-                    // chain doesn't fit, the chain break ( `.` rank 2) fires before the args
-                    // break (rank 3) — matching documented break precedence. We still add this
-                    // group when wrapped in `try` / `await` / `unsafe` , because the
-                    // keyword-modifier group only spans the head ( `try base` ); chain-break
-                    // precedence still needs an explicit group around `.method(args)` .
+                    // Place `.open` before the chain break (i.e., before the period of `.method` )
+                    // and `.close` after the call's right paren. This extends the chain break's
+                    // chunk across the entire `.method(args)` , so when the outer chain doesn't
+                    // fit, the chain break ( `.` rank 2) fires before the args break (rank 3) —
+                    // matching documented break precedence. We still add this group when wrapped in
+                    // `try` / `await` / `unsafe` , because the keyword-modifier group only spans
+                    // the head ( `try base` ); chain-break precedence still needs an explicit group
+                    // around `.method(args)` .
                     before(calledMemberAccessExpr.period, tokens: .open)
 
                     if let rightParen = node.rightParen {
@@ -225,14 +222,13 @@ extension TokenStream {
 
                     // When this call is the head of a multi-step outer chain (its parent is a
                     // `MemberAccessExpr` that uses this call as its base), end the group after
-                    // `base` instead of after `<name>` . The .close needs to land BEFORE the
-                    // first contextual chain break so that a discretionary newline at that dot —
-                    // which becomes a `.soft(discretionary:)` break and bumps `total` by
-                    // `maxLineLength` — doesn't inflate the chunk-length of an outer break (e.g.
-                    // the `=` break of an enclosing assignment) and force it to fire alongside
-                    // the chain breaks.
-                    let closeAfter: TokenSyntax? =
-                        shouldRetargetChainHeadCloseForAssignmentRHS(node)
+                    // `base` instead of after `<name>` . The .close needs to land BEFORE the first
+                    // contextual chain break so that a discretionary newline at that dot — which
+                    // becomes a `.soft(discretionary:)` break and bumps `total` by `maxLineLength`
+                    // — doesn't inflate the chunk-length of an outer break (e.g. the `=` break of
+                    // an enclosing assignment) and force it to fire alongside the chain breaks.
+                    let closeAfter: TokenSyntax? = shouldRetargetChainHeadCloseForAssignmentRHS(
+                        node)
                         ? base.lastToken(viewMode: .sourceAccurate)
                         : calledMemberAccessExpr.declName.baseName.lastToken(
                             viewMode: .sourceAccurate)
@@ -293,23 +289,29 @@ extension TokenStream {
         rightDelimiter: TokenSyntax?,
         forcesBreakBeforeRightDelimiter: Bool
     ) {
+        // When the single argument is a compact function call that fits on one line, ignore
+        // discretionary newlines the user placed after `(` and before `)` so the formatter can
+        // collapse the call (e.g. `.starts(with: symbol.utf8.reversed())`). Exclude arguments that
+        // contain a closure: their bodies force multi-line layout, and dropping the discretionary
+        // newlines wrongly hugs the parens (`(SpecificType()` … `})`).
+        //
+        // brm-7t3: also ignore when this call is itself the sole argument of an outer call — the
+        // inner call (e.g. `Color(red:green:blue:)`) collapses with its parent chain when the line
+        // fits, instead of sticking with user-supplied per-argument breaks.
+        let ignoreDiscretionary = !arguments.isEmpty
+            && ((isCompactSingleFunctionCallArgument(arguments)
+                && !containsClosureExpr(Syntax(arguments.first!.expression)))
+                || isSoleCallArgumentOfOuterCall(leftDelimiter, arguments: arguments))
+
         if !arguments.isEmpty {
-            // When the single argument is a compact function call that fits on one line, ignore
-            // discretionary newlines the user placed after `(` and before `)` so the formatter can
-            // collapse the call (e.g. `.starts(with: symbol.utf8.reversed())`). Exclude arguments
-            // that contain a closure: their bodies force multi-line layout, and dropping the
-            // discretionary newlines wrongly hugs the parens (`(SpecificType()` … `})`).
-            let ignoreDiscretionary = isCompactSingleFunctionCallArgument(arguments)
-                && !containsClosureExpr(Syntax(arguments.first!.expression))
-            let openNewlines: NewlineBehavior =
-                ignoreDiscretionary ? .elective(ignoresDiscretionary: true) : .elective
-            let closeNewlines: NewlineBehavior =
-                ignoreDiscretionary ? .elective(ignoresDiscretionary: true) : .elective
-            var afterLeftDelimiter: [Token] = [.break(.open, size: 0, newlines: openNewlines)]
+            let newlines: NewlineBehavior = ignoreDiscretionary
+                ? .elective(ignoresDiscretionary: true)
+                : .elective
+            var afterLeftDelimiter: [Token] = [.break(.open, size: 0, newlines: newlines)]
             var beforeRightDelimiter: [Token] = [
                 .break(
                     .close(mustBreak: forcesBreakBeforeRightDelimiter), size: 0,
-                    newlines: closeNewlines)
+                    newlines: newlines)
             ]
 
             if shouldGroupAroundArgumentList(arguments) {
@@ -327,7 +329,11 @@ extension TokenStream {
             if let trailingComma = argument.trailingComma {
                 closingDelimiterTokens.insert(trailingComma)
             }
-            arrangeAsFunctionCallArgument(argument, shouldGroup: shouldGroupAroundArgument)
+            arrangeAsFunctionCallArgument(
+                argument,
+                shouldGroup: shouldGroupAroundArgument,
+                ignoreDiscretionaryCommaBreaks: ignoreDiscretionary
+            )
         }
     }
 
@@ -348,7 +354,8 @@ extension TokenStream {
     ///     possible.
     func arrangeAsFunctionCallArgument(
         _ node: LabeledExprSyntax,
-        shouldGroup: Bool
+        shouldGroup: Bool,
+        ignoreDiscretionaryCommaBreaks: Bool = false
     ) {
         if shouldGroup { before(node.firstToken(viewMode: .sourceAccurate), tokens: .open) }
 
@@ -363,9 +370,9 @@ extension TokenStream {
             // argument label and its value never *forces* a wrap. The pretty printer's normal
             // fitting logic (including the `MinimumWrapSavings` heuristic for over-long chunks)
             // still applies — wrapping only happens when it actually helps the line fit. Without
-            // this, an existing newline after `label:` would force the value onto its own line
-            // even when the value is itself longer than the line limit, where the wrap does
-            // nothing useful (4ym-935).
+            // this, an existing newline after `label:` would force the value onto its own line even
+            // when the value is itself longer than the line limit, where the wrap does nothing
+            // useful (4ym-935).
             var tokensAfterColon: [Token] = []
 
             // When the value is a single-line string literal that's too long to fit after the
@@ -394,7 +401,10 @@ extension TokenStream {
 
         if let trailingComma = node.trailingComma {
             before(trailingComma, tokens: additionalEndTokens)
-            var afterTrailingComma: [Token] = [.break(.same)]
+            let commaNewlines: NewlineBehavior = ignoreDiscretionaryCommaBreaks
+                ? .elective(ignoresDiscretionary: true)
+                : .elective
+            var afterTrailingComma: [Token] = [.break(.same, newlines: commaNewlines)]
             if shouldGroup { afterTrailingComma.insert(.close, at: 0) }
             after(trailingComma, tokens: afterTrailingComma)
         } else if shouldGroup {

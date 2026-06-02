@@ -39,8 +39,7 @@ extension TokenStream {
 
         let isMultiLine = multiLineWhereClauses.contains(node.id)
         let listConsistency: GroupBreakStyle =
-            if isMultiLine { .consistent }
-            else { genericRequirementListConsistency() }
+            if isMultiLine { .consistent } else { genericRequirementListConsistency() }
 
         if isMultiLine {
             // Close the outer group from `arrangeGenericWhereClause` BEFORE emitting the forced
@@ -291,10 +290,7 @@ extension TokenStream {
 
         if let diffParamsComma = node.argumentsComma {
             after(diffParamsComma, tokens: .break(.same))
-        } else if node.arguments != nil
-        {
-            needsBreakBeforeWhereClause = true
-        }
+        } else if node.arguments != nil { needsBreakBeforeWhereClause = true }
 
         if let whereClause = node.genericWhereClause {
             if needsBreakBeforeWhereClause {

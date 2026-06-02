@@ -22,10 +22,7 @@ func isNestedInPostfixIfConfig(node: Syntax) -> Bool {
         if this?.is(LabeledExprSyntax.self) == true { return false }
 
         if this?.is(IfConfigDeclSyntax.self) == true,
-           this?.parent?.is(PostfixIfConfigExprSyntax.self) == true
-        {
-            return true
-        }
+           this?.parent?.is(PostfixIfConfigExprSyntax.self) == true { return true }
 
         this = this?.parent
     }
@@ -60,7 +57,8 @@ final class CommentMovingRewriter: SyntaxRewriter {
     }
 
     override func visit(_ node: InfixOperatorExprSyntax) -> ExprSyntax {
-        var node = super.visit(node).as(InfixOperatorExprSyntax.self)!
+        let visited = super.visit(node)
+        guard var node = visited.as(InfixOperatorExprSyntax.self) else { return visited }
         guard node.rightOperand.hasAnyPrecedingComment else { return ExprSyntax(node) }
 
         // Rearrange the comments around the operators to make it easier to break properly later.
@@ -74,8 +72,8 @@ final class CommentMovingRewriter: SyntaxRewriter {
 
         let operatorTrailingLineComment: Trivia
 
-        if operatorTrailing.hasLineComment {
-            operatorTrailingLineComment = [operatorTrailing.pieces.last!]
+        if operatorTrailing.hasLineComment, let lastPiece = operatorTrailing.pieces.last {
+            operatorTrailingLineComment = [lastPiece]
             operatorTrailing = Trivia(pieces: operatorTrailing.dropLast())
         } else {
             operatorTrailingLineComment = []
@@ -138,8 +136,8 @@ final class CommentMovingRewriter: SyntaxRewriter {
 /// Returns whether the given trivia includes a directive to ignore formatting for the next node.
 ///
 /// - Parameter trivia: Leading trivia for a node that the formatter supports ignoring.
-/// - Returns: Whether the trivia contains a bare `sm:ignore` (or `sm:ignore:next`) directive
-///   (no rule names).
+/// - Returns: Whether the trivia contains a bare `sm:ignore` (or `sm:ignore:next`) directive (no
+///   rule names).
 func isFormatterIgnorePresent(inTrivia trivia: Trivia) -> Bool {
     func isFormatterIgnore(in commentText: String, prefix: String, suffix: String) -> Bool {
         let trimmed = commentText.dropFirst(prefix.count)
@@ -192,6 +190,7 @@ func isFormatterIgnored(_ token: TokenSyntax) -> Bool {
     // Only `CodeBlockItem` and `MemberBlockItem` nodes are emitted verbatim via the per-item ignore
     // path, so those are the only ancestors that can prevent `token` from being visited.
     var node = Syntax(token).parent
+
     while let current = node {
         if current.is(CodeBlockItemSyntax.self) || current.is(MemberBlockItemSyntax.self) {
             return shouldFormatterIgnore(node: current)

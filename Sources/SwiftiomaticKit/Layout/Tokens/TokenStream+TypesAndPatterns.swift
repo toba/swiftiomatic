@@ -47,8 +47,7 @@ extension TokenStream {
     }
 
     func visitTupleType(_ node: TupleTypeSyntax) -> SyntaxVisitorContinueKind {
-        after(node.leftParen, tokens: .break(.open, size: 0), .open)
-        before(node.rightParen, tokens: .break(.close, size: 0), .close)
+        arrangeBlockBreaks(left: node.leftParen, right: node.rightParen)
         return .visitChildren
     }
 
@@ -76,17 +75,16 @@ extension TokenStream {
     }
 
     func visitFunctionType(_ node: FunctionTypeSyntax) -> SyntaxVisitorContinueKind {
-        after(node.leftParen, tokens: .break(.open, size: 0), .open)
-        before(node.rightParen, tokens: .break(.close, size: 0), .close)
+        arrangeBlockBreaks(left: node.leftParen, right: node.rightParen)
         return .visitChildren
     }
 
     func visitGenericArgumentClause(
         _ node: GenericArgumentClauseSyntax
     ) -> SyntaxVisitorContinueKind {
-        // Generic argument clauses ignore source-driven newlines: a wrapped `<...>` in source should
-        // collapse back to one line when the inlined form fits, instead of being preserved by
-        // `RespectExistingLineBreaks` .
+        // Generic argument clauses ignore source-driven newlines: a wrapped `<...>` in source
+        // should collapse back to one line when the inlined form fits, instead of being preserved
+        // by `RespectExistingLineBreaks` .
         //
         // When the only generic argument is a type that brings its own paren/brace delimiters
         // (currently: tuple types), the inner break around `<` and `>` is suppressed so the angle
@@ -102,7 +100,7 @@ extension TokenStream {
         let glueAngleToInnerDelimiter: Bool = {
             guard node.arguments.count == 1,
                   let onlyArg = node.arguments.first,
-                  case .type(let innerType) = onlyArg.argument
+                  case let .type(innerType) = onlyArg.argument
             else { return false }
             return innerType.is(TupleTypeSyntax.self)
         }()
@@ -126,8 +124,7 @@ extension TokenStream {
     }
 
     func visitTuplePattern(_ node: TuplePatternSyntax) -> SyntaxVisitorContinueKind {
-        after(node.leftParen, tokens: .break(.open, size: 0), .open)
-        before(node.rightParen, tokens: .break(.close, size: 0), .close)
+        arrangeBlockBreaks(left: node.leftParen, right: node.rightParen)
         return .visitChildren
     }
 
@@ -214,13 +211,13 @@ extension TokenStream {
             // `MemberAccessExprSyntax.name` is available.
             //
             // Exception: when the head of the chain participates in a multi-step chain (its
-            // FunctionCall parent is the base of an outer `MemberAccessExpr` ), end the group
-            // after `base` (e.g. `try Citation` ) instead of after `<name>` (e.g.
-            // `try Citation.join` ). The .close needs to land BEFORE the first contextual chain
-            // break so that, when discretionary newlines in the source make that break
-            // `.soft(discretionary:)` , the keyword-modifier group has already closed and the
-            // soft break's `total += maxLineLength` bump doesn't inflate the chunk-length of an
-            // outer `=` (or `guard` ) break.
+            // FunctionCall parent is the base of an outer `MemberAccessExpr` ), end the group after
+            // `base` (e.g. `try Citation` ) instead of after `<name>` (e.g. `try Citation.join` ).
+            // The .close needs to land BEFORE the first contextual chain break so that, when
+            // discretionary newlines in the source make that break `.soft(discretionary:)` , the
+            // keyword-modifier group has already closed and the soft break's
+            // `total += maxLineLength` bump doesn't inflate the chunk-length of an outer `=` (or
+            // `guard` ) break.
             if base.is(DeclReferenceExprSyntax.self) {
                 if let headCall = memberAccessExpr.parent?.as(FunctionCallExprSyntax.self),
                    headCall.calledExpression.id == memberAccessExpr.id,
@@ -390,10 +387,7 @@ extension TokenStream {
         if let keyPathComponents = node.parent?.as(KeyPathComponentListSyntax.self),
            let keyPathExpr = keyPathComponents.parent?.as(KeyPathExprSyntax.self),
            node == keyPathExpr.components.first,
-           keyPathExpr.root == nil
-        {
-            breakBeforePeriod = false
-        }
+           keyPathExpr.root == nil { breakBeforePeriod = false }
         if breakBeforePeriod { before(node.period, tokens: .break(.continue, size: 0)) }
         return .visitChildren
     }
@@ -420,18 +414,20 @@ extension TokenStream {
     /// the list containing it.
     func isLastKeyPathComponent(_ component: KeyPathComponentSyntax) -> Bool {
         guard let componentList = component.parent?.as(KeyPathComponentListSyntax.self),
-              let lastComponent = componentList.last else { return false }
+              let lastComponent = componentList.last
+        else { return false }
         return component == lastComponent
     }
 
     func visitTernaryExpr(_ node: TernaryExprSyntax) -> SyntaxVisitorContinueKind {
-        // Wrapping decisions for ternaries belong to the WrapTernaryBranches format rule, which inserts
-        // discretionary newlines into the leading trivia of `?` and `:` when the expression would
-        // overflow the configured line length. The pretty printer only emits the operator-relative
-        // breaks here. Using `.break(.open(kind: .continuation)) ... .break(.close)` pairs lets the
-        // wrapped branches push a continuation indent so wrapped sub-expressions (e.g. `+` chains
-        // inside a branch) align relative to the branch keyword, and keeps the breaks eligible for
-        // discretionary newlines via `RespectExistingLineBreaks` .
+        // Wrapping decisions for ternaries belong to the WrapTernaryBranches format rule, which
+        // inserts discretionary newlines into the leading trivia of `?` and `:` when the expression
+        // would overflow the configured line length. The pretty printer only emits the
+        // operator-relative breaks here. Using
+        // `.break(.open(kind: .continuation)) ... .break(.close)` pairs lets the wrapped branches
+        // push a continuation indent so wrapped sub-expressions (e.g. `+` chains inside a branch)
+        // align relative to the branch keyword, and keeps the breaks eligible for discretionary
+        // newlines via `RespectExistingLineBreaks` .
         //
         // The extra `.open` after each operator's break (matched by `.close, .close` at the end of
         // the else expression) bounds the chunk of break tokens *inside* each branch — so when the
@@ -455,12 +451,7 @@ extension TokenStream {
         } else {
             closeScopeToken = node.elseExpression.lastToken(viewMode: .sourceAccurate)
         }
-        after(
-            closeScopeToken,
-            tokens: .break(.close(mustBreak: false), size: 0),
-            .close,
-            .close
-        )
+        after(closeScopeToken, tokens: .break(.close(mustBreak: false), size: 0), .close, .close)
         return .visitChildren
     }
 

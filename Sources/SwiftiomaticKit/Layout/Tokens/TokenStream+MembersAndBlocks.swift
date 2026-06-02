@@ -186,8 +186,7 @@ extension TokenStream {
                 !shouldFormatterIgnore(node: Syntax($0))
             }),
                item.item.is(ImportDeclSyntax.self),
-               nextItem.item.is(ImportDeclSyntax.self)
-            {
+               nextItem.item.is(ImportDeclSyntax.self) {
                 newlines = .soft(count: 1, discretionary: false, maxBlankLines: 0)
             }
 
@@ -209,22 +208,23 @@ extension TokenStream {
         // This group applies to a top-level if-stmt so that all of the bodies will have the same
         // breaking behavior. Skipped for `if` with no `else` and a body that's already a
         // single-line single-statement in source — the wrapper's only purpose is else-chain
-        // alignment, and including it would force-break the body's `.break(.open(.block))`
-        // whenever conditions wrap, defeating the inline body.
+        // alignment, and including it would force-break the body's `.break(.open(.block))` whenever
+        // conditions wrap, defeating the inline body.
         //
-        // Also skipped when the chain mixes a multi-statement (or multi-line) body with an
-        // inline single-statement branch elsewhere in the chain. The consistent group spans
-        // the entire if statement including bodies; a multi-line body's mandatory soft newline
-        // makes the group too long, which then force-breaks every `.same` break inside the
-        // group — including the inline-body break before an inlined else-if's `{`, dropping it
-        // onto its own line. (See i5s-jmy.)
+        // Also skipped when the chain mixes a multi-statement (or multi-line) body with an inline
+        // single-statement branch elsewhere in the chain. The consistent group spans the entire if
+        // statement including bodies; a multi-line body's mandatory soft newline makes the group
+        // too long, which then force-breaks every `.same` break inside the group — including the
+        // inline-body break before an inlined else-if's `{`, dropping it onto its own line. (See
+        // i5s-jmy.)
         if let exprStmt = node.item.as(ExpressionStmtSyntax.self),
-           let ifStmt = exprStmt.expression.as(IfExprSyntax.self)
+            let ifStmt = exprStmt.expression.as(IfExprSyntax.self)
         {
             let bodyIsInlineSingleStmt = isInlineSingleStmtBody(ifStmt.body)
             let skipForBareIf = ifStmt.elseBody == nil && bodyIsInlineSingleStmt
             let skipForMixedChain = ifChainMixesInlineAndMultiLineBodies(ifStmt)
             let skip = skipForBareIf || skipForMixedChain
+
             if !skip {
                 before(
                     ifStmt.conditions.firstToken(viewMode: .sourceAccurate),
@@ -244,20 +244,24 @@ extension TokenStream {
 
     /// Walks the if/else-if/else chain and returns true when at least one branch has an inline
     /// single-statement body and at least one branch is multi-statement or multi-line. The
-    /// consistent wrapper around the whole chain force-breaks every `.same` break inside it
-    /// once any body wraps, which would split the inline branch's `{` onto its own line.
+    /// consistent wrapper around the whole chain force-breaks every `.same` break inside it once
+    /// any body wraps, which would split the inline branch's `{` onto its own line.
     private func ifChainMixesInlineAndMultiLineBodies(_ ifExpr: IfExprSyntax) -> Bool {
         var sawInline = false
         var sawMultiLine = false
         var current: IfExprSyntax? = ifExpr
+
         while let node = current {
-            if isInlineSingleStmtBody(node.body) { sawInline = true }
-            else { sawMultiLine = true }
+            if isInlineSingleStmtBody(node.body) { sawInline = true } else { sawMultiLine = true }
+
             switch node.elseBody {
                 case .ifExpr(let nested)?: current = nested
                 case .codeBlock(let block)?:
-                    if isInlineSingleStmtBody(block) { sawInline = true }
-                    else { sawMultiLine = true }
+                    if isInlineSingleStmtBody(block) {
+                        sawInline = true
+                    } else {
+                        sawMultiLine = true
+                    }
                     current = nil
                 case nil: current = nil
             }

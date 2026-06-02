@@ -193,10 +193,11 @@ struct MemberAccessExprTests: LayoutTesting {
         a, b, c))
       """
 
+    // brm-7t3: the inner call is the sole argument of `foo.bar(...)`, so user-supplied
+    // discretionary breaks inside its parens are dropped when the whole line fits.
     let expected =
       """
-      foo.bar(.someImplicitlyTypedMemberFunc(
-        a, b, c))
+      foo.bar(.someImplicitlyTypedMemberFunc(a, b, c))
 
       """
 
@@ -471,6 +472,33 @@ struct MemberAccessExprTests: LayoutTesting {
         .drop { (48...57).contains($0) }
         .dropFirst(3)
         .starts(with: symbol.utf8.reversed())
+
+      """
+
+    assertLayout(input: input, expected: expected, linelength: 80)
+  }
+
+  @Test func nestedMultiArgCallCollapsesWhenFits() {
+    // brm-7t3: when a function call is the sole argument of a chain-tail call and the entire
+    // line fits, drop discretionary newlines inside the inner call's parens so it collapses.
+    let input =
+      """
+      ContentView()
+          .frame(width: 800, height: 500)
+          .withTint(Color(
+              red: 0.45,
+              green: 0.6,
+              blue: 0.45
+          ))
+          .withPreviewFile()
+      """
+
+    let expected =
+      """
+      ContentView()
+        .frame(width: 800, height: 500)
+        .withTint(Color(red: 0.45, green: 0.6, blue: 0.45))
+        .withPreviewFile()
 
       """
 
