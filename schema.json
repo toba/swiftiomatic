@@ -2924,6 +2924,15 @@
       ],
       "description" : "In protocol property requirements, accessors must be declared in `get set` order. The reverse — `set get` — is legal Swift but inconsistent with the canonical form used throughout the standard library and the Swift book.\n\nLint: A finding is raised when a protocol property's accessor block lists `set` before `get` .\n\nRewrite: The accessors are reordered to `get set` ."
     },
+    "pairAcquireWithDefer" : {
+      "allOf" : [
+        {
+          "$ref" : "#/$defs/lintOnlyBase"
+        }
+      ],
+      "description" : "Flag acquire-style calls that aren't followed by a `defer { release() }` in the same scope when the scope has at least one early exit (`return` / `throw` / `break` / `continue`) after the acquire. Pairing the cleanup as a `defer` immediately after the acquire is Swift's idiomatic way to guarantee the release runs even when a later refactor introduces a new early exit. Without it, the release line at the end of the function is silently skipped.\n\nConfigurable via `pairs` (acquire + release name list). The default catalog covers well-known Apple framework pairs (lock/unlock, beginEditing/endEditing, saveGState/ restoreGState, etc.). Matching is by member-call name only — false positives on same-named methods from unrelated types are expected and can be suppressed with `// sm:ignore PairAcquireWithDefer` .\n\nFlag-only — auto-inserting the `defer` is unsafe in general because the release's arguments (`objc_sync_exit(obj)`, `os_signpost(.end, … , label)`) can't always be inferred from the acquire site.\n\nSource: https://ioscodereview.com/issues/issue-79-defer-done-right-instruments-is-back-and-wwdc-is-one-week-away/.",
+      "unevaluatedProperties" : false
+    },
     "parameterCount" : {
       "allOf" : [
         {
@@ -3406,6 +3415,15 @@
           "type" : "array"
         }
       },
+      "unevaluatedProperties" : false
+    },
+    "requireTaskName" : {
+      "allOf" : [
+        {
+          "$ref" : "#/$defs/lintOnlyBase"
+        }
+      ],
+      "description" : "Require a `name:` argument when starting a `Task` or adding work to a `TaskGroup`. Swift 6.2 (Xcode 26 / macOS 26 / iOS 26) added `name:` overloads to `Task.init`, `Task.detached`, `Task.immediate`, `Task.immediateDetached`, `TaskGroup.addTask`, and `TaskGroup.addTaskUnlessCancelled`. The name shows up in Instruments' Swift Concurrency instrument, in the Xcode debugger's task list, and in custom `Task.currentName` reads — unnamed tasks are anonymous and indistinguishable from one another there.\n\nFlag-only — the fix requires picking a meaningful name.\n\nSee https://artemnovichkov.com/blog/task-names-in-swift-concurrency.",
       "unevaluatedProperties" : false
     },
     "requireTestFnPrefixOrAttribute" : {
@@ -3980,6 +3998,15 @@
           "description" : "Lint nested `<receiver>.withLock { ... <receiver>.withLock { ... } ... }` on the same receiver. Re-entering a non-recursive lock (e.g. `Mutex` ) is a guaranteed deadlock.",
           "unevaluatedProperties" : false
         },
+        "pairAcquireWithDefer" : {
+          "allOf" : [
+            {
+              "$ref" : "#/$defs/lintOnlyBase"
+            }
+          ],
+          "description" : "Flag acquire-style calls that aren't followed by a `defer { release() }` in the same scope when the scope has at least one early exit (`return` / `throw` / `break` / `continue`) after the acquire. Pairing the cleanup as a `defer` immediately after the acquire is Swift's idiomatic way to guarantee the release runs even when a later refactor introduces a new early exit. Without it, the release line at the end of the function is silently skipped.\n\nConfigurable via `pairs` (acquire + release name list). The default catalog covers well-known Apple framework pairs (lock/unlock, beginEditing/endEditing, saveGState/ restoreGState, etc.). Matching is by member-call name only — false positives on same-named methods from unrelated types are expected and can be suppressed with `// sm:ignore PairAcquireWithDefer` .\n\nFlag-only — auto-inserting the `defer` is unsafe in general because the release's arguments (`objc_sync_exit(obj)`, `os_signpost(.end, … , label)`) can't always be inferred from the acquire site.\n\nSource: https://ioscodereview.com/issues/issue-79-defer-done-right-instruments-is-back-and-wwdc-is-one-week-away/.",
+          "unevaluatedProperties" : false
+        },
         "requireAsyncStreamFinish" : {
           "allOf" : [
             {
@@ -3996,6 +4023,15 @@
             }
           ],
           "description" : "Flag `Subprocess.run(...)` calls that omit `platformOptions:` (or pass a default `PlatformOptions()`). Without an explicit teardown sequence, a cancelled or thrown task can leak the child process — it stays alive until parent exit. The fix is to pass `PlatformOptions(teardownSequence: [...])` matching the child's signal handling.\n\nFlag-only — choosing the right teardown sequence (signals, intervals) is contextual.",
+          "unevaluatedProperties" : false
+        },
+        "requireTaskName" : {
+          "allOf" : [
+            {
+              "$ref" : "#/$defs/lintOnlyBase"
+            }
+          ],
+          "description" : "Require a `name:` argument when starting a `Task` or adding work to a `TaskGroup`. Swift 6.2 (Xcode 26 / macOS 26 / iOS 26) added `name:` overloads to `Task.init`, `Task.detached`, `Task.immediate`, `Task.immediateDetached`, `TaskGroup.addTask`, and `TaskGroup.addTaskUnlessCancelled`. The name shows up in Instruments' Swift Concurrency instrument, in the Xcode debugger's task list, and in custom `Task.currentName` reads — unnamed tasks are anonymous and indistinguishable from one another there.\n\nFlag-only — the fix requires picking a meaningful name.\n\nSee https://artemnovichkov.com/blog/task-names-in-swift-concurrency.",
           "unevaluatedProperties" : false
         },
         "useTypedCatchError" : {

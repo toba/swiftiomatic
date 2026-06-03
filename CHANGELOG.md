@@ -2,6 +2,11 @@
 
 ## Week of May 31 – Jun 06, 2026
 
+### ✨ Features
+
+- `RequireTaskName` lint rule; warns on `Task { }`, `Task.detached`, `Task.immediate`, `Task.immediateDetached`, `addTask`, and `addTaskUnlessCancelled` calls that omit the Swift 6.2 `name:` argument, so unnamed tasks don't stay anonymous in Instruments and the debugger task list
+- `PairAcquireWithDefer` lint rule; flags acquire calls (`lock`, `beginEditing`, `saveGState`, `startAccessingSecurityScopedResource`, etc.) that have no paired `defer { release() }` in the same scope when an early exit (`return` / `throw` / `break` / `continue` / unmarked `try`) follows, with a configurable pair catalog
+
 ### 🐞 Fixes
 
 - Function calls; force-break both closures in a two-trailing-closure call when the call has parenthesized arguments (e.g. `.alert(isPresented: …, error: …) { _ in … } message: { … }`), instead of leaving the first closure's body inline while the closing `}` breaks; the empty-args case (`With { expr } query: { … }`) still preserves the inline first closure
