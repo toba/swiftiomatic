@@ -11,6 +11,7 @@
 
 - Function calls; force-break both closures in a two-trailing-closure call when the call has parenthesized arguments (e.g. `.alert(isPresented: …, error: …) { _ in … } message: { … }`), instead of leaving the first closure's body inline while the closing `}` breaks; the empty-args case (`With { expr } query: { … }`) still preserves the inline first closure
 - Function calls; a nested call used as the sole argument of an outer call (e.g. `.withTint(Color(red:green:blue:))`) now collapses inline when the whole chain fits, instead of preserving user-supplied per-argument newlines that explode the inner call across 5 lines
+- `UseSwiftTestingNames`; in `rawIdentifier` mode, leave single-word `@Test` function names alone (e.g. `@Test func insert()`) instead of wrapping them in pointless backticks that `dropRedundantBackticks` would then flag at every call site
 
 ### 🗜️ Tweaks
 

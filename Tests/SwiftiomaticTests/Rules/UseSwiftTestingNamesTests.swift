@@ -295,6 +295,40 @@ struct UseSwiftTestingNamesTests: RuleTesting {
     )
   }
 
+  @Test func rawIdentifierLeavesSingleWordNamesAlone() {
+    assertFormatting(
+      UseSwiftTestingNames.self,
+      input: """
+        import Testing
+
+        struct MyFeatureTests {
+            @Test func insert() {
+                #expect(true)
+            }
+
+            @Test func lookup() {
+                #expect(true)
+            }
+        }
+        """,
+      expected: """
+        import Testing
+
+        struct MyFeatureTests {
+            @Test func insert() {
+                #expect(true)
+            }
+
+            @Test func lookup() {
+                #expect(true)
+            }
+        }
+        """,
+      findings: [],
+      configuration: rawIdentifierConfig()
+    )
+  }
+
   @Test func preservesNamesWithoutTestPrefix() {
     assertFormatting(
       UseSwiftTestingNames.self,

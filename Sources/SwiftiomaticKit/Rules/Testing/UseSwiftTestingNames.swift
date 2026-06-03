@@ -139,6 +139,9 @@ final class UseSwiftTestingNames: StaticFormatRule<SwiftTestingNamesConfiguratio
         let phrase = words.map { $0.lowercased() }.joined(separator: " ")
         // Raw identifiers may not be empty or purely numeric — require at least one letter.
         guard phrase.contains(where: { $0.isLetter }) else { return DeclSyntax(node) }
+        // A single-word phrase needs no backticks — wrapping it would just provoke
+        // `dropRedundantBackticks` at every call site. Leave the name alone.
+        guard phrase.contains(" ") else { return DeclSyntax(node) }
 
         let newIdentifier = "`\(phrase)`"
         guard newIdentifier != rawIdent else { return DeclSyntax(node) }
