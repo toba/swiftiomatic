@@ -41,7 +41,7 @@ final class CollapseSimpleEnums: StaticFormatRule<BasicRuleValue>, @unchecked Se
         }
 
         // Build the collapsed text to check line length.
-        let caseList = allElements.map(\.name.text).joined(separator: ", ")
+        let caseList = allElements.map(\.trimmedDescription).joined(separator: ", ")
         let prefix = declPrefix(recursed)
         // "prefix { case a, b, c }"
         let collapsedLength = prefix.count + " { case ".count + caseList.count + " }".count
@@ -87,10 +87,9 @@ final class CollapseSimpleEnums: StaticFormatRule<BasicRuleValue>, @unchecked Se
 extension CollapseSimpleEnums {
     /// Whether the enum can be collapsed onto a single line.
     ///
-    /// A raw-value-typed enum (e.g. `: String` , `: Int` ) collapses too, as long as no case
-    /// assigns an explicit raw value — the bare cases carry implicit raw values either way, so
-    /// `enum E: String { case a, b }` is equivalent whether expanded or on one line. Only an
-    /// explicit `= …` assignment (caught by the element check below) blocks collapsing.
+    /// Raw-value-typed enums collapse whether or not the cases assign explicit raw values — the
+    /// comma-separated form `enum E: Int { case a = 0, b = 1 }` carries the same semantics as the
+    /// expanded form. Only associated values block collapsing.
     fileprivate static func isCollapsible(_ node: EnumDeclSyntax) -> Bool {
         let members = node.memberBlock.members
         // Must have at least one member, all must be case declarations.
@@ -101,7 +100,6 @@ extension CollapseSimpleEnums {
 
             for element in caseDecl.elements {
                 if element.parameterClause != nil { return false }
-                if element.rawValue != nil { return false }
             }
         }
 

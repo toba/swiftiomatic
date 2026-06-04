@@ -12,6 +12,7 @@
 - Function calls; force-break both closures in a two-trailing-closure call when the call has parenthesized arguments (e.g. `.alert(isPresented: …, error: …) { _ in … } message: { … }`), instead of leaving the first closure's body inline while the closing `}` breaks; the empty-args case (`With { expr } query: { … }`) still preserves the inline first closure
 - Function calls; a nested call used as the sole argument of an outer call (e.g. `.withTint(Color(red:green:blue:))`) now collapses inline when the whole chain fits, instead of preserving user-supplied per-argument newlines that explode the inner call across 5 lines
 - `UseSwiftTestingNames`; in `rawIdentifier` mode, leave single-word `@Test` function names alone (e.g. `@Test func insert()`) instead of wrapping them in pointless backticks that `dropRedundantBackticks` would then flag at every call site
+- `CollapseSimpleEnums`; collapse enums with explicit raw values (e.g. `enum Priority: Int { case low = 0, high = 1 }`) instead of skipping them, so single-case forms like `@SQLEntity public enum GoalMetric: Int, CaseIterable, Sendable { case wordCount = 1 }` stay on one line ([#721](https://github.com/toba/swiftiomatic/issues/721))
 
 ### 🗜️ Tweaks
 

@@ -91,21 +91,37 @@ struct CollapseSimpleEnumsTests: RuleTesting {
         """)
   }
 
-  @Test func skipsRawValues() {
+  @Test func collapsesExplicitRawValues() {
     assertFormatting(
       CollapseSimpleEnums.self,
       input: """
-        enum Priority: Int {
+        1️⃣enum Priority: Int {
             case low = 0
             case high = 1
         }
         """,
       expected: """
-        enum Priority: Int {
-            case low = 0
-            case high = 1
+        enum Priority: Int { case low = 0, high = 1 }
+        """,
+      findings: [
+        FindingSpec("1️⃣", message: "collapse simple enum onto a single line"),
+      ])
+  }
+
+  @Test func collapsesSingleCaseWithRawValueAndAttribute() {
+    assertFormatting(
+      CollapseSimpleEnums.self,
+      input: """
+        1️⃣@SQLEntity public enum GoalMetric: Int, CaseIterable, Sendable {
+            case wordCount = 1
         }
-        """)
+        """,
+      expected: """
+        @SQLEntity public enum GoalMetric: Int, CaseIterable, Sendable { case wordCount = 1 }
+        """,
+      findings: [
+        FindingSpec("1️⃣", message: "collapse simple enum onto a single line"),
+      ])
   }
 
   @Test func skipsEnumWithMethods() {
