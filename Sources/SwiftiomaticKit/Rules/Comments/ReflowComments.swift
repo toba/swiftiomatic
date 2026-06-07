@@ -78,6 +78,16 @@ final class ReflowComments: StaticFormatRule<BasicRuleValue>, @unchecked Sendabl
                 i = lastCommentIndex + 1
                 continue
             }
+            // Skip runs that look like commented-out code. Two signals:
+            //   1. Any line contains `{` or `}` (canonical block-structured Swift / shell / etc.).
+            //   2. At least two lines start with 4+ spaces after the prefix (indented code block
+            //      without braces — Python-ish, shell pipelines, etc.).
+            // Prose rarely hits either; commented-out code almost always does. Reflowing it would
+            // mangle the structure, so leave the entire run verbatim.
+            if kind == .line, looksLikeCommentedOutCode(bodies) {
+                i = lastCommentIndex + 1
+                continue
+            }
             let prefixLen = kind.prefix.count + 1
             let effectiveColumn = max(indentString.count, layoutColumnFloor)
             let availableWidth = max(8, maxWidth - effectiveColumn - prefixLen)
@@ -159,6 +169,17 @@ final class ReflowComments: StaticFormatRule<BasicRuleValue>, @unchecked Sendabl
         if s.hasPrefix(kind.prefix) { s = s.dropFirst(kind.prefix.count) }
         if s.hasPrefix(" ") { s = s.dropFirst() }
         return String(s)
+    }
+
+    private static func looksLikeCommentedOutCode(_ bodies: [String]) -> Bool {
+        if bodies.contains(where: { $0.contains("{") || $0.contains("}") }) { return true }
+        var indented = 0
+
+        for body in bodies where body.prefix(4) == "    " {
+            indented += 1
+            if indented >= 2 { return true }
+        }
+        return false
     }
 
     private static func isDirective(_ body: String) -> Bool {

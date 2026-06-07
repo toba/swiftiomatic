@@ -278,6 +278,68 @@ struct ReflowCommentsTests: RuleTesting {
             configuration: config(maxWidth: 100)
         )
     }
+
+    // MARK: - Commented-out code detection
+
+    @Test func leavesCommentedOutCodeWithBracesUnchanged() {
+        assertFormatting(
+            ReflowComments.self,
+            input: """
+                //        ToolbarItem {
+                //            Button { x.toggle() } label: {
+                //                HStack(spacing: 6) { Image(systemName: name) }
+                //            }
+                //        }
+                let x = 1
+                """,
+            expected: """
+                //        ToolbarItem {
+                //            Button { x.toggle() } label: {
+                //                HStack(spacing: 6) { Image(systemName: name) }
+                //            }
+                //        }
+                let x = 1
+                """,
+            configuration: config(maxWidth: 60)
+        )
+    }
+
+    @Test func leavesIndentedCodeBlockWithoutBracesUnchanged() {
+        assertFormatting(
+            ReflowComments.self,
+            input: """
+                //        let a = 1
+                //        let b = 2
+                //        let c = 3
+                let x = 1
+                """,
+            expected: """
+                //        let a = 1
+                //        let b = 2
+                //        let c = 3
+                let x = 1
+                """,
+            configuration: config(maxWidth: 40)
+        )
+    }
+
+    @Test func preservesProseWithIncidentalBrace() {
+        // Brace guard is conservative: any `{` or `}` in the run leaves it verbatim, even prose.
+        assertFormatting(
+            ReflowComments.self,
+            input: """
+                // Use { to open a block and } to close it. This sentence is long enough
+                // that it would otherwise be reflowed across the available width.
+                let x = 1
+                """,
+            expected: """
+                // Use { to open a block and } to close it. This sentence is long enough
+                // that it would otherwise be reflowed across the available width.
+                let x = 1
+                """,
+            configuration: config(maxWidth: 80)
+        )
+    }
 }
 
 @Suite

@@ -1,5 +1,11 @@
 # Changelog
 
+## Week of Jun 07 – Jun 13, 2026
+
+### 🐞 Fixes
+
+- `ReflowComments`; skip the entire `//` run when it contains commented-out code (any `{` or `}`, or ≥2 lines indented 4+ spaces after the prefix), so SwiftUI snippets and similar blocks aren't reflowed and corrupted; `///` doc comments are unaffected
+
 ## Week of May 31 – Jun 06, 2026
 
 ### ✨ Features
