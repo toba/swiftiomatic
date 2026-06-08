@@ -55,6 +55,9 @@ extension TokenStream {
     }
 
     func visitLabeledExprList(_ node: LabeledExprListSyntax) -> SyntaxVisitorContinueKind {
+        if node.parent?.is(AttributeSyntax.self) == true && node.last?.trailingComma == nil {
+            return .visitChildren
+        }
         markCommaDelimitedRegion(node, isCollectionLiteral: false)
         return .visitChildren
     }

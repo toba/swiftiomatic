@@ -33,7 +33,7 @@ final class SortModifiers: StaticFormatRule<BasicRuleValue>, @unchecked Sendable
         // Mutation
         .mutating, .nonmutating,
         // Isolation
-        .nonisolated,
+        .isolated, .nonisolated,
         // Indirect
         .indirect,
         // Consuming/borrowing

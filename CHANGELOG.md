@@ -5,6 +5,9 @@
 ### 🐞 Fixes
 
 - `ReflowComments`; skip the entire `//` run when it contains commented-out code (any `{` or `}`, or ≥2 lines indented 4+ spaces after the prefix), so SwiftUI snippets and similar blocks aren't reflowed and corrupted; `///` doc comments are unaffected
+- Mirror upstream swift-format #1215; attribute argument lists no longer gain an inserted trailing comma under `multilineTrailingCommaBehavior: alwaysUsed` (e.g. `@Foo("a", "b", "c")` stays without a comma); existing trailing commas are preserved
+- `SortModifiers`; recognize the `isolated` declaration modifier (Swift 6.2) as part of the isolation slot, so `isolated public func` reorders to `public isolated func` consistently with `nonisolated`
+- `NestedCallLayout`; compute the preceding-column prefix in grapheme clusters uniformly instead of mixing `String.count` (graphemes) on tokens with UTF-8 byte length on trivia, so multi-byte characters in preceding comments or identifiers no longer over-count the column and force a needless wrap
 
 ## Week of May 31 – Jun 06, 2026
 

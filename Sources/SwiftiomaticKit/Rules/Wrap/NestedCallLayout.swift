@@ -740,35 +740,39 @@ final class NestedCallLayout: StaticFormatRule<NestedCallLayoutConfiguration>, @
 
     // MARK: - Shared Helpers
 
-    /// Returns the number of characters before this node on the same line.
+    /// Returns the number of grapheme clusters before this node on the same line.
+    ///
+    /// Counts in grapheme clusters everywhere so that multi-byte characters in tokens or trivia
+    /// (e.g. non-ASCII function names) don't inflate the column past the visible width.
     private static func columnOffset(of node: some SyntaxProtocol) -> Int {
         guard let firstToken = node.firstToken(viewMode: .sourceAccurate) else { return 0 }
-        var count = 0
 
-        // Count characters in the first token's leading trivia after the last newline.
-        for piece in firstToken.leadingTrivia.reversed() {
-            switch piece {
-                case .newlines, .carriageReturns, .carriageReturnLineFeeds: return count
-                default: count += piece.sourceLength.utf8Length
+        // Accumulate the source text on the current line that precedes the node, walking
+        // backwards and stopping at the most recent newline.
+        var lineFragment = ""
+
+        func prependStoppingAtNewline(_ text: String) -> Bool {
+            if let nlIndex = text.lastIndex(where: { $0 == "\n" || $0 == "\r" }) {
+                lineFragment = String(text[text.index(after: nlIndex)...]) + lineFragment
+                return true
             }
+            lineFragment = text + lineFragment
+            return false
         }
 
-        // Walk backward through previous tokens.
+        if prependStoppingAtNewline(firstToken.leadingTrivia.description) {
+            return lineFragment.count
+        }
+
         var token = firstToken.previousToken(viewMode: .sourceAccurate)
-
         while let t = token {
-            count += t.text.count
-            for piece in t.trailingTrivia { count += piece.sourceLength.utf8Length }
-
-            for piece in t.leadingTrivia.reversed() {
-                switch piece {
-                    case .newlines, .carriageReturns, .carriageReturnLineFeeds: return count
-                    default: count += piece.sourceLength.utf8Length
-                }
+            lineFragment = t.text + t.trailingTrivia.description + lineFragment
+            if prependStoppingAtNewline(t.leadingTrivia.description) {
+                return lineFragment.count
             }
             token = t.previousToken(viewMode: .sourceAccurate)
         }
-        return count
+        return lineFragment.count
     }
 
     /// Returns the indentation at the start of the line containing the node.

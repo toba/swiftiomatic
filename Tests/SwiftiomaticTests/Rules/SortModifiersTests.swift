@@ -163,4 +163,44 @@ struct SortModifiersTests: RuleTesting {
       findings: []
     )
   }
+
+  @Test func isolatedAfterAccessControl() {
+    assertFormatting(
+      SortModifiers.self,
+      input: """
+        @MainActor
+        class Foo {
+          1️⃣isolated public func bar() {}
+        }
+        """,
+      expected: """
+        @MainActor
+        class Foo {
+          public isolated func bar() {}
+        }
+        """,
+      findings: [
+        FindingSpec("1️⃣", message: "reorder declaration modifiers to follow canonical order"),
+      ]
+    )
+  }
+
+  @Test func isolatedAlreadyOrdered() {
+    assertFormatting(
+      SortModifiers.self,
+      input: """
+        @MainActor
+        class Foo {
+          public isolated func bar() {}
+        }
+        """,
+      expected: """
+        @MainActor
+        class Foo {
+          public isolated func bar() {}
+        }
+        """,
+      findings: []
+    )
+  }
 }
