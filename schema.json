@@ -3716,6 +3716,24 @@
           ],
           "description" : "Lint selector-based `NotificationCenter.addObserver(_:selector:name:object:)` . Prefer the closure-based `addObserver(forName:object:queue:using:)` — it returns an opaque token, doesn't require an `@objc` handler, and integrates cleanly with structured concurrency.",
           "unevaluatedProperties" : false
+        },
+        "useTypedNotificationName" : {
+          "allOf" : [
+            {
+              "$ref" : "#/$defs/lintOnlyBase"
+            }
+          ],
+          "description" : "Flag custom `Notification.Name` declarations — `extension Notification.Name { static let foo = ... }` and `Notification.Name(\"...\")` / `Notification.Name(rawValue: \"...\")` literal constructions. On macOS 26 / iOS 26+, prefer a `NotificationCenter.MainActorMessage` (or `AsyncMessage`) struct for type- and isolation-safety.\n\nFlag-only — autofix is out of scope (the producer-side `post` call carries the `userInfo` shape needed to synthesize the message struct).",
+          "unevaluatedProperties" : false
+        },
+        "useTypedSystemNotification" : {
+          "allOf" : [
+            {
+              "$ref" : "#/$defs/lintOnlyBase"
+            }
+          ],
+          "description" : "Flag uses of system notifications whose name has a typed `NotificationCenter.MainActorMessage` adapter on macOS 26 / iOS 26+. Matches `addObserver(forName:...)`, `.notifications(named:)`, `.messages(named:)`, and `post(name:...)` whose name argument matches an entry in `NotificationAPI.generatedSystemAdapters` (SDK-derived) or `NotificationAPI.foundationLegacyAdapters` (free-floating Foundation names).\n\nFlag-only — the suggested replacement (`addObserver(of:for:)` / `messages(of:)`) reshapes the surrounding call and is out of scope for an autofix.",
+          "unevaluatedProperties" : false
         }
       },
       "type" : "object"
@@ -4516,6 +4534,24 @@
         }
       ],
       "description" : "`catch let error` (or any plain identifier-pattern catch) declares a binding of inferred type `any Error` , throwing away whatever concrete type `try` could have produced. Either omit the binding (the implicit `error` constant is the same thing) or pattern-match a concrete error type with `catch let e as MyError` .\n\nLint: A warning is raised on `catch` clauses whose only catch item is a bare identifier pattern ( `let error` , `var x` , `(let error)` ) without a type cast or `where` clause. The implicit `catch {}` form is fine.",
+      "unevaluatedProperties" : false
+    },
+    "useTypedNotificationName" : {
+      "allOf" : [
+        {
+          "$ref" : "#/$defs/lintOnlyBase"
+        }
+      ],
+      "description" : "Flag custom `Notification.Name` declarations — `extension Notification.Name { static let foo = ... }` and `Notification.Name(\"...\")` / `Notification.Name(rawValue: \"...\")` literal constructions. On macOS 26 / iOS 26+, prefer a `NotificationCenter.MainActorMessage` (or `AsyncMessage`) struct for type- and isolation-safety.\n\nFlag-only — autofix is out of scope (the producer-side `post` call carries the `userInfo` shape needed to synthesize the message struct).",
+      "unevaluatedProperties" : false
+    },
+    "useTypedSystemNotification" : {
+      "allOf" : [
+        {
+          "$ref" : "#/$defs/lintOnlyBase"
+        }
+      ],
+      "description" : "Flag uses of system notifications whose name has a typed `NotificationCenter.MainActorMessage` adapter on macOS 26 / iOS 26+. Matches `addObserver(forName:...)`, `.notifications(named:)`, `.messages(named:)`, and `post(name:...)` whose name argument matches an entry in `NotificationAPI.generatedSystemAdapters` (SDK-derived) or `NotificationAPI.foundationLegacyAdapters` (free-floating Foundation names).\n\nFlag-only — the suggested replacement (`addObserver(of:for:)` / `messages(of:)`) reshapes the surrounding call and is out of scope for an autofix.",
       "unevaluatedProperties" : false
     },
     "useTypedThrowsNotResult" : {

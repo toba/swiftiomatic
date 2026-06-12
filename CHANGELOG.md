@@ -2,6 +2,10 @@
 
 ## Week of Jun 07 – Jun 13, 2026
 
+### ✨ Features
+
+- `UseTypedNotificationName` and `UseTypedSystemNotification` lint rules (Swiftui group); flag pre-OS 26 `NotificationCenter` patterns in favor of typed `NotificationCenter.MainActorMessage` adapters — custom `extension Notification.Name { … }` / `Notification.Name("…")` constructions, and uses of system notification names with shipped adapters across `addObserver(forName:)` / `notifications(named:)` / `messages(named:)` / `post(name:)`; adapter table generated from macOS + iOS SDK swiftinterfaces by `Scripts/generate-notification-adapters.sh` (121 entries) plus a hand-curated Foundation legacy-name supplement (17 free-floating `NS*` names)
+
 ### 🐞 Fixes
 
 - `ReflowComments`; skip the entire `//` run when it contains commented-out code (any `{` or `}`, or ≥2 lines indented 4+ spaces after the prefix), so SwiftUI snippets and similar blocks aren't reflowed and corrupted; `///` doc comments are unaffected
