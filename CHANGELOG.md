@@ -1,5 +1,11 @@
 # Changelog
 
+## Week of Jun 14 – Jun 20, 2026
+
+### 🐞 Fixes
+
+- Guard statements; when conditions wrap, an inline single-statement `else { stmt }` now stays glued to the closing condition when the whole `else { stmt }` fits on that line, and drops to its own line as a unit only when it doesn't; reverses the earlier "always break before `else`" behavior as a hybrid that preserves the deeply-nested non-fitting case ([#731](https://github.com/toba/swiftiomatic/issues/731))
+
 ## Week of Jun 07 – Jun 13, 2026
 
 ### ✨ Features

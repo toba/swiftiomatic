@@ -65,33 +65,64 @@ extension TokenStream {
             )
         }
 
-        // Place the break-before-else INSIDE the consistent conditions group so that whenever any
-        // inner condition wraps (firing the consistent group's force-break), this break also fires
-        // and pushes `else` onto its own line at base indent. When conditions all fit inline, the
-        // group never fires and the elective break stays glued, keeping `guard cond else { stmt }`
-        // on a single line.
-        //
-        // Token order before `elseKeyword` for the multi-condition path:
-        //   .break(.same)  ← inside consistent group, fires when group breaks
-        //   .close         ← closes consistent group
-        //   .open          ← opens else group
-        if node.conditions.count > 1 {
-            before(
-                node.elseKeyword,
-                tokens: .break(.same, size: 1, newlines: .elective(ignoresDiscretionary: true)),
-                .close,
-                .open
-            )
-        } else {
-            before(
-                node.elseKeyword,
-                tokens: .break(.reset, newlines: .elective(ignoresDiscretionary: true)),
-                .open
-            )
-        }
+        // A body that is a single statement already written inline in source ( `else { stmt }` with
+        // no newline after `{` or before `}` ) is an inline-attach candidate: we want the whole
+        // `else { stmt }` to stay glued to the closing condition when it fits, and to drop to its
+        // own line at base indent as a unit when it doesn't. (In `inline` mode `LayoutSingleLineBodies`
+        // collapses multi-line bodies first, so this also covers originally-wrapped bodies.)
+        let bodyIsInlineSingleStmt = node.body.isInlineSingleStatementBody
+            && (node.body.statements.first.map { !$0.leadingTrivia.containsNewlines } ?? false)
+            && !node.body.rightBrace.leadingTrivia.containsNewlines
 
-        after(node.elseKeyword, tokens: .space)
-        before(node.body.leftBrace, tokens: .close)
+        if node.conditions.count > 1, bodyIsInlineSingleStmt {
+            // Close the consistent conditions group BEFORE the last condition's per-condition
+            // close-break. `afterMap` reverses same-token declarations on emit, so declaring the
+            // `.close` here emits it FIRST — popping the group's force-break flag before that close
+            // break (and the break before `else` ) is evaluated. Mirrors the `if` inline-body trick
+            // in `visitIfExpr` . Without it, a wrapped condition forces `else` onto its own line.
+            after(node.conditions.lastToken(viewMode: .sourceAccurate), tokens: .close)
+
+            // Open the else group BEFORE the break so the break's chunk spans the entire
+            // `else { stmt }` (up to the matching `.close` after the right brace). The break then
+            // fires only when the whole inline form overflows — gluing `else { stmt }` to the
+            // closing condition when it fits and dropping it as a unit to base indent when it
+            // doesn't.
+            before(
+                node.elseKeyword,
+                tokens: .open,
+                .printerControl(kind: .clearContinuation),
+                .break(.same, size: 1, newlines: .elective(ignoresDiscretionary: true))
+            )
+            after(node.elseKeyword, tokens: .space)
+            after(node.body.rightBrace, tokens: .close)
+        } else {
+            // Place the break-before-else INSIDE the consistent conditions group so that whenever
+            // any inner condition wraps (firing the consistent group's force-break), this break also
+            // fires and pushes `else` onto its own line at base indent. When conditions all fit
+            // inline, the group never fires and the elective break stays glued.
+            //
+            // Token order before `elseKeyword` for the multi-condition path:
+            //   .break(.same)  ← inside consistent group, fires when group breaks
+            //   .close         ← closes consistent group
+            //   .open          ← opens else group
+            if node.conditions.count > 1 {
+                before(
+                    node.elseKeyword,
+                    tokens: .break(.same, size: 1, newlines: .elective(ignoresDiscretionary: true)),
+                    .close,
+                    .open
+                )
+            } else {
+                before(
+                    node.elseKeyword,
+                    tokens: .break(.reset, newlines: .elective(ignoresDiscretionary: true)),
+                    .open
+                )
+            }
+
+            after(node.elseKeyword, tokens: .space)
+            before(node.body.leftBrace, tokens: .close)
+        }
 
         arrangeBracesAndContents(
             of: node.body,

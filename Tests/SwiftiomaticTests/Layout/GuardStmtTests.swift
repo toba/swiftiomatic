@@ -436,10 +436,11 @@ struct GuardStmtTests: LayoutTesting {
     assertLayout(input: input, expected: expected, linelength: 60)
   }
 
-  /// When `guard` conditions wrap onto continuation lines, `else` always drops
-  /// to its own line at base indent — even if the inline `else { stmt }` form
-  /// would fit on the closing condition's line.
-  @Test func breaksElseWhenConditionsWrap() {
+  /// When `guard` conditions wrap onto continuation lines and the trailing
+  /// `else { stmt }` is a single-statement single-line body that fits on the
+  /// same line as the closing condition, keep the whole `else { stmt }` glued
+  /// rather than forcing `else` down to its own line.
+  @Test func attachesInlineElseToWrappedConditions() {
     let input =
       """
       guard let signature = closure.signature,
@@ -451,8 +452,7 @@ struct GuardStmtTests: LayoutTesting {
       """
       guard
         let signature = closure.signature,
-        let captureClause = signature.capture
-      else { return false }
+        let captureClause = signature.capture else { return false }
 
       """
 
@@ -482,11 +482,11 @@ struct GuardStmtTests: LayoutTesting {
     assertLayout(input: input, expected: expected, linelength: 60)
   }
 
-  /// Same as `breaksElseWhenConditionsWrap` but under the
+  /// Same as `attachesInlineElseToWrappedConditions` but under the
   /// `alignWrappedConditions=true, breakBeforeGuardConditions=false` configuration:
-  /// `else` still drops to its own line at base indent whenever conditions wrap,
-  /// regardless of the alignment column used by the conditions.
-  @Test func breaksElseUnderAlignedWrappedConditions() {
+  /// the inline-attach behavior must apply regardless of how the conditions
+  /// themselves are indented.
+  @Test func attachesInlineElseUnderAlignedConditions() {
     var configuration = Configuration.forTesting
     configuration[AlignWrappedConditions.self] = true
     configuration[BreakBeforeGuardConditions.self] = false
@@ -501,8 +501,7 @@ struct GuardStmtTests: LayoutTesting {
     let expected =
       """
       guard let signature = closure.signature,
-            let captureClause = signature.capture
-      else { return false }
+            let captureClause = signature.capture else { return false }
 
       """
 
@@ -535,10 +534,10 @@ struct GuardStmtTests: LayoutTesting {
     assertLayout(input: input, expected: expected, linelength: 60, configuration: configuration)
   }
 
-  /// Three aligned conditions: when conditions wrap, `else` drops to its own
-  /// line at base indent. The inline `else { return decl }` then sits on its
-  /// own line below the conditions.
-  @Test func threeConditionsBreakElseToOwnLine() {
+  /// Three aligned conditions where the inline `else { stmt }` body fits on
+  /// the last condition's line. `else` must glue to the last condition rather
+  /// than dropping to its own line. Regression test for `4pf-bov`.
+  @Test func threeConditionsGlueElseWhenInlineBodyFits() {
     var configuration = Configuration.forTesting
     configuration[AlignWrappedConditions.self] = true
     configuration[BreakBeforeGuardConditions.self] = false
@@ -555,8 +554,7 @@ struct GuardStmtTests: LayoutTesting {
       """
       guard let mod = decl.modifiers.accessLevelModifier,
             mod.name.tokenKind == .keyword(.internal),
-            mod.detail == nil
-      else { return decl }
+            mod.detail == nil else { return decl }
 
       """
 
