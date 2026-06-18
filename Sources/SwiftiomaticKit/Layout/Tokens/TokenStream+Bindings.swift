@@ -122,6 +122,8 @@ extension TokenStream {
                     initializer.equal,
                     tokens: .break(.continue, newlines: .elective(ignoresDiscretionary: true))
                 )
+
+                bracketMultilineChainBoost(expr)
             } else {
                 arrangeAssignmentBreaks(afterEqualToken: initializer.equal, rhs: expr)
             }

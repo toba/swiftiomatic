@@ -113,10 +113,10 @@ struct MemberAccessExprTests: LayoutTesting {
       let result = [
         1, 2, 3, 4, 5,
       ]
-      .filter {
-        $0 % 2 == 0
-      }
-      .map { $0 * $0 }
+          .filter {
+            $0 % 2 == 0
+          }
+          .map { $0 * $0 }
       array.filter { $0 }
         .map {
           $0 as FooBarBaz
@@ -125,10 +125,10 @@ struct MemberAccessExprTests: LayoutTesting {
       array.filter {
         $0 is FooBarBaz
       }
-      .map {
-        $0 as FooBarBaz
-      }
-      .compactMap { $0 }
+        .map {
+          $0 as FooBarBaz
+        }
+        .compactMap { $0 }
 
       """
 
@@ -242,11 +242,13 @@ struct MemberAccessExprTests: LayoutTesting {
           abc.frob()
         }
       )
-      .map { $0 }.filter { $0.isFrobbed }
+        .map { $0 }
+        .filter { $0.isFrobbed }
       myWeirdFunc(withClosure: { abc in
         abc.frob()
       })
-      .map { $0 }.filter { $0.isFrobbed }
+        .map { $0 }
+        .filter { $0.isFrobbed }
 
       """
 
@@ -306,9 +308,9 @@ struct MemberAccessExprTests: LayoutTesting {
             Image(.swiftyBird) {
               presentBirds()
             }
-            .highlight[tintColors]
+              .highlight[tintColors]
           }
-          .padding(10)
+            .padding(10)
           Text("Rabbit Rock") { Font(.serifs) }
             .backgroundColor(.red)
         }
@@ -333,13 +335,13 @@ struct MemberAccessExprTests: LayoutTesting {
             Image(.turtle) {
               presentTurtle()
             }
-            .foreground[tintColors]
+              .foreground[tintColors]
             Image(.swiftyBird) {
               presentBirds()
             }
-            .highlight[tintColors]
+              .highlight[tintColors]
           }
-          .padding(10)
+            .padding(10)
           Text("Rabbit Rock") { Font(.serifs) }
             .backgroundColor(.red)
         }
@@ -595,5 +597,61 @@ struct MemberAccessExprTests: LayoutTesting {
       linelength: 50,
       configuration: configuration
     )
+  }
+
+  // on8-mme: a member-access chain that continues a *multiline* base indents as a continuation
+  // rather than aligning flush with the statement (upstream swift-format keeps it flush). A bare
+  // expression chain indents one level; a chain bound by `return` / `throw` / assignment indents
+  // two (one for the binding continuation, one for the chain). Single-line bases are unaffected
+  // (see `chainedTrailingClosureMethods` , whose `View.Button { … }` base is a single identifier).
+  @Test func multilineBaseChainIndentsAsContinuation() {
+    let input =
+      """
+      func bare() -> some View {
+        OuterView(context: InnerContext(
+          idValue: 1, withinValue: 2, atValue: 0, styleValue: 3))
+        .padding(30)
+        .background(Rectangle())
+      }
+
+      func ret() -> some View {
+        return OuterView(context: InnerContext(
+          idValue: 1, withinValue: 2, atValue: 0, styleValue: 3))
+        .padding(30)
+        .background(Rectangle())
+      }
+
+      let assigned = OuterView(context: InnerContext(
+        idValue: 1, withinValue: 2, atValue: 0, styleValue: 3))
+      .padding(30)
+      .background(Rectangle())
+      """
+
+    let expected =
+      """
+      func bare() -> some View {
+          OuterView(context: InnerContext(
+              idValue: 1, withinValue: 2, atValue: 0, styleValue: 3))
+              .padding(30)
+              .background(Rectangle())
+      }
+
+      func ret() -> some View {
+          return OuterView(context: InnerContext(
+              idValue: 1, withinValue: 2, atValue: 0, styleValue: 3))
+                  .padding(30)
+                  .background(Rectangle())
+      }
+
+      let assigned = OuterView(context: InnerContext(
+          idValue: 1, withinValue: 2, atValue: 0, styleValue: 3))
+              .padding(30)
+              .background(Rectangle())
+
+      """
+
+    var configuration = Configuration.forTesting
+    configuration[IndentationSetting.self] = .spaces(4)
+    assertLayout(input: input, expected: expected, linelength: 80, configuration: configuration)
   }
 }

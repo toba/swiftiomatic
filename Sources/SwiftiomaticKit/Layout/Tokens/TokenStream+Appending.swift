@@ -457,6 +457,51 @@ extension TokenStream {
         return expr.is(MemberAccessExprSyntax.self)
     }
 
+    /// Returns the last token of the *leftmost base* of a top-level member-access chain — the base
+    /// of the deepest member access (e.g. `Foo(…)` 's `)` in `Foo(…).padding().background()` , the
+    /// `coder` identifier in `coder.decodeObject(…)?.intValue` ). Used to anchor the multiline-chain
+    /// indent-boost decision (on8-mme): the boost applies only when this base spans multiple lines,
+    /// a decision taken once (at this token) and applied to the whole chain rather than per-member
+    /// (which would stair-step the indent). The walk descends called-expressions and postfix
+    /// wrappers but never into call/subscript arguments, so a chain nested inside an argument
+    /// doesn't drive the outer decision. Returns `nil` when there is no chain base (e.g. a leading
+    /// `.foo` implicit-member access).
+    func chainLeftmostBaseLastToken(of expr: ExprSyntax) -> TokenSyntax? {
+        var current = expr
+        var deepestBase: ExprSyntax?
+
+        while true {
+            if let modifiedExpr = current.asProtocol(KeywordModifiedExprSyntax.self) {
+                current = modifiedExpr.expression
+            } else if let callingExpr = current.asProtocol(CallingExprSyntax.self) {
+                current = callingExpr.calledExpression
+            } else if let memberAccess = current.as(MemberAccessExprSyntax.self) {
+                guard let base = memberAccess.base else { break }
+                deepestBase = base
+                current = base
+            } else if let optionalChain = current.as(OptionalChainingExprSyntax.self) {
+                current = optionalChain.expression
+            } else if let forcedValue = current.as(ForceUnwrapExprSyntax.self) {
+                current = forcedValue.expression
+            } else {
+                break
+            }
+        }
+        return deepestBase?.lastToken(viewMode: .sourceAccurate)
+    }
+
+    /// Brackets a binding operand (a `return` / `throw` operand or assignment RHS) in a
+    /// multiline-chain indent-boost scope so its trailing `.` chain indents one extra level when the
+    /// chain's leftmost base spans multiple lines — see `LayoutCoordinator` (on8-mme). No-op unless
+    /// `expr` is a member-access chain. Independent of any surrounding `.open` group, so it composes
+    /// with each call site's own break arrangement.
+    func bracketMultilineChainBoost(_ expr: ExprSyntax) {
+        guard isMemberAccessChain(expr) else { return }
+        before(expr.firstToken(viewMode: .sourceAccurate), tokens: .multilineChainBoostStart)
+        after(expr.lastToken(viewMode: .sourceAccurate), tokens: .multilineChainBoostEnd)
+        after(chainLeftmostBaseLastToken(of: expr), tokens: .multilineChainBoostDecision)
+    }
+
     /// Returns whether an expression is a multi-step chain that includes at least one function or
     /// subscript call — e.g. `obj.method().prop`, `Type.where({}).fetchOne()`. Pure property chains
     /// like `a.b.c` return false because they rarely wrap and don't cause alignment inconsistency.
@@ -659,6 +704,7 @@ extension TokenStream {
                 after(rhs.lastToken(viewMode: .sourceAccurate), tokens: .close)
             }
         } else if canGroupBeforeBreak {
+            bracketMultilineChainBoost(rhs)
             after(
                 equal,
                 tokens: .open,

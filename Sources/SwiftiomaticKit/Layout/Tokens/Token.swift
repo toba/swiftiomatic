@@ -36,6 +36,21 @@ enum Token: Sendable {
     /// Ends a scope where `contextual` breaks have consistent behavior.
     case contextualBreakingEnd
 
+    /// Starts a scope (a binding operand: a `return` / `throw` operand or assignment RHS that is a
+    /// member-access chain) where a `contextual` break firing under `.maintain` behavior — i.e. the
+    /// chain continues a *multiline* base — should receive one extra continuation indent. This makes
+    /// `let x = Foo(…multiline…).bar()` indent the chain two levels past the statement (one for the
+    /// binding continuation, one for the chain) while a bare expression chain gets only one.
+    case multilineChainBoostStart
+
+    /// Ends a `multilineChainBoostStart` scope.
+    case multilineChainBoostEnd
+
+    /// Placed immediately before the deepest member-access `.` of the boosted chain. Arms the boost
+    /// decision: the next chain break that fires decides — based on whether the chain's leftmost
+    /// base spanned multiple lines (`.maintain` ) — whether the scope pushes its extra indent.
+    case multilineChainBoostDecision
+
     /// Turn formatting back on at the given position in the original file nil is used to indicate
     /// the rest of the file should be output
     case enableFormatting(AbsolutePosition?)

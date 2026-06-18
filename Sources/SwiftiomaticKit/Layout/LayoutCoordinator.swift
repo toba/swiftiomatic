@@ -83,6 +83,15 @@ package final class LayoutCoordinator {
     /// their corresponding end token are encountered.
     private var commaDelimitedRegionStack: [Int] = []
 
+    /// One entry per currently-open `multilineChainBoostStart` scope (a binding operand whose value
+    /// is a member-access chain). See `MultilineChainBoostScope` .
+    private var multilineChainBoostScopes: [MultilineChainBoostScope] = []
+
+    /// Armed by the `multilineChainBoostDecision` token when the chain's leftmost base spanned
+    /// multiple lines; the next firing break pushes the boost scope's extra continuation indent.
+    /// Consumed (and reset) in the break-fire path.
+    private var pendingMultilineChainBoostPush = false
+
     /// Tracks how many printer control tokens to suppress firing breaks are active.
     private var activeBreakSuppressionCount = 0
 
@@ -429,7 +438,11 @@ package final class LayoutCoordinator {
                             switch activeBreakingContext.contextualBreakingBehavior {
                                 case .unset, .continuation: isContinuationIfBreakFires = true
                                 case .maintain:
-                                    isContinuationIfBreakFires = currentLineIsContinuation
+                                    // A chain whose base spanned multiple lines still indents one
+                                    // continuation level, rather than aligning flush with the base.
+                                    // Diverges from upstream swift-format, which keeps the chain
+                                    // flush with the statement; see on8-mme.
+                                    isContinuationIfBreakFires = true
                             }
                         }
 
@@ -505,6 +518,27 @@ package final class LayoutCoordinator {
                 if !suppressBreaking, breakSavesEnough, !canFit(length) || mustBreak {
                     currentLineIsContinuation = isContinuationIfBreakFires
 
+                    // When a `multilineChainBoostDecision` has armed a push (the chain's leftmost
+                    // base spanned multiple lines), the break that moves the first `.` to its own
+                    // line pushes one real continuation-indent scope, so the whole chain — its
+                    // calls' arguments and closing delimiters included — sits one extra level deep.
+                    // A real `activeOpenBreaks` entry (rather than an ad-hoc indent addend) keeps
+                    // nested content consistent. (on8-mme)
+                    if pendingMultilineChainBoostPush, !multilineChainBoostScopes.isEmpty {
+                        activeOpenBreaks.append(
+                            ActiveOpenBreak(
+                                index: idx,
+                                kind: .continuation,
+                                lineNumber: openCloseBreakCompensatingLineNumber,
+                                contributesContinuationIndent: true,
+                                contributesBlockIndent: false,
+                                isMultilineChainBoost: true
+                            ))
+                        multilineChainBoostScopes[multilineChainBoostScopes.count - 1].pushed = true
+                        outputBuffer.currentIndentation = currentIndentation
+                    }
+                    pendingMultilineChainBoostPush = false
+
                     if case .escaped = newline {
                         outputBuffer.enqueueSpaces(size)
                         outputBuffer.write("\\")
@@ -523,6 +557,7 @@ package final class LayoutCoordinator {
                     }
                     outputBuffer.enqueueSpaces(size)
                     lastBreak = false
+                    pendingMultilineChainBoostPush = false
                 }
                 shouldOverrideBreakSuppression = false
 
@@ -589,6 +624,29 @@ package final class LayoutCoordinator {
                     case .clearContinuation: currentLineIsContinuation = false
                     case .keepInlineIfWrapPointless: keepInlineIfWrapPointless = true
                 }
+
+            case .multilineChainBoostStart:
+                multilineChainBoostScopes.append(
+                    MultilineChainBoostScope(startLineNumber: outputBuffer.lineNumber))
+
+            case .multilineChainBoostDecision:
+                // The chain's leftmost base has just been emitted. If it spanned multiple lines,
+                // arm a push so the trailing chain indents one extra level; the push is applied by
+                // the next break that fires (the break that moves the first `.` to its own line).
+                if let scope = multilineChainBoostScopes.last,
+                   outputBuffer.lineNumber != scope.startLineNumber
+                {
+                    pendingMultilineChainBoostPush = true
+                }
+
+            case .multilineChainBoostEnd:
+                let scope = multilineChainBoostScopes.popLast()
+                // If this scope pushed an extra continuation-indent break, remove it. By now the
+                // chain's own open breaks have all been closed, so the boost entry is back on top.
+                if scope?.pushed == true, activeOpenBreaks.last?.isMultilineChainBoost == true {
+                    activeOpenBreaks.removeLast()
+                }
+                pendingMultilineChainBoostPush = false
 
             case .commaDelimitedRegionStart:
                 commaDelimitedRegionStack.append(openCloseBreakCompensatingLineNumber)
@@ -683,6 +741,9 @@ package final class LayoutCoordinator {
             switch token {
                 case .contextualBreakingStart: lengths.append(0)
                 case .contextualBreakingEnd: lengths.append(0)
+                case .multilineChainBoostStart: lengths.append(0)
+                case .multilineChainBoostEnd: lengths.append(0)
+                case .multilineChainBoostDecision: lengths.append(0)
 
                 // Open tokens have lengths equal to the total of the contents of its group. The
                 // value is calculated when close tokens are encountered.
@@ -906,6 +967,18 @@ package final class LayoutCoordinator {
                 printDebugIndent()
                 print("[END BREAKING CONTEXT Idx: \(idx)]")
 
+            case .multilineChainBoostStart:
+                printDebugIndent()
+                print("[MULTILINE CHAIN BOOST START Idx: \(idx)]")
+
+            case .multilineChainBoostEnd:
+                printDebugIndent()
+                print("[MULTILINE CHAIN BOOST END Idx: \(idx)]")
+
+            case .multilineChainBoostDecision:
+                printDebugIndent()
+                print("[MULTILINE CHAIN BOOST DECISION Idx: \(idx)]")
+
             case let .enableFormatting(pos):
                 printDebugIndent()
                 print("[ENABLE FORMATTING utf8 offset: \(String(describing: pos))]")
@@ -961,6 +1034,24 @@ fileprivate extension LayoutCoordinator {
         /// given break may apply both a continuation indent and a block indent, either indent, or
         /// neither indent.
         var contributesBlockIndent: Bool
+
+        /// Whether this entry is the synthetic extra continuation indent pushed for a multiline
+        /// member-access chain in a binding operand (on8-mme). It is not created by a real
+        /// `.open` break token, so it is removed explicitly at `multilineChainBoostEnd` rather than
+        /// by a matching `.close` .
+        var isMultilineChainBoost = false
+    }
+
+    /// Tracks one binding-operand member-access-chain boost scope (on8-mme).
+    struct MultilineChainBoostScope {
+        /// The output line number when the scope opened (just before the chain's leftmost base). The
+        /// `multilineChainBoostDecision` token compares the current line against this to learn
+        /// whether the base spanned multiple lines — the sole condition for boosting.
+        let startLineNumber: Int
+
+        /// Whether this scope pushed its extra continuation-indent `ActiveOpenBreak` (removed at
+        /// `multilineChainBoostEnd` ).
+        var pushed = false
     }
 
     /// Records state of `contextualBreakingStart` tokens.

@@ -343,6 +343,7 @@ extension TokenStream {
             && !hasLeadingLineComments(expression)
 
         if canGroupBeforeBreak {
+            bracketMultilineChainBoost(expression)
             before(
                 expression.firstToken(viewMode: .sourceAccurate),
                 tokens: .open, .break(.continue, newlines: .elective(ignoresDiscretionary: true))
