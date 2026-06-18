@@ -547,11 +547,10 @@ struct FunctionCallTests: LayoutTesting {
               VStack {
                   Text("x")
               }
-                  .overlay(
-                      RoundedRectangle(cornerRadius: 6)
-                          .strokeBorder(
-                              Color.gray.opacity(0.4), style: StrokeStyle(lineWidth: 1, dash: [4])),
-                  )
+              .overlay(
+                  RoundedRectangle(cornerRadius: 6)
+                      .strokeBorder(Color.gray.opacity(0.4), style: StrokeStyle(lineWidth: 1, dash: [4])),
+              )
           }
       }
 

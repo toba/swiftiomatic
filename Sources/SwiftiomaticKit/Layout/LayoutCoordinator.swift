@@ -149,6 +149,42 @@ package final class LayoutCoordinator {
         outputBuffer.lineNumber - (outputBuffer.isAtStartOfLine ? 1 : 0)
     }
 
+    /// Whether the base that a member-access / postfix-`#if` chain continues ends with a closing
+    /// delimiter — or `#endif` — standing alone on its own rendered line. Read at the point a
+    /// chain's first break is decided: by then the base has been emitted, so the last non-empty
+    /// line of `outputBuffer.output` is the base's final line. A SwiftUI trailing-closure call
+    /// (`Button { … } label: { … }` ), a block (`HStack { … }` ), an array literal split across
+    /// lines (`[ … \n]` ), an argument list whose closing paren was forced onto its own line
+    /// (`SomeFunction(\n … \n)` ), and a postfix-`#if` ( `#endif` ) all end this way and keep their
+    /// chain flush; a base whose closing delimiter sits inline after content (`OuterView(… ))` ,
+    /// where the args wrapped but `))` stays on the value line) does not, and its chain indents one
+    /// continuation level. Matches the user-visible rule "closing brace alone on a line followed by
+    /// a `.`". (m2x-4bl)
+    private func baseEndsAloneOnLine() -> Bool {
+        let out = outputBuffer.output
+        var lineChars: [Character] = []
+        var foundContent = false
+
+        // Walk back over the output to the last line that holds any non-whitespace content,
+        // collecting that line's characters (trailing blank lines from `.same` breaks are skipped).
+        var index = out.endIndex
+        while index > out.startIndex {
+            index = out.index(before: index)
+            let character = out[index]
+            if character == "\n" {
+                if foundContent { break }
+                continue
+            }
+            if !character.isWhitespace { foundContent = true }
+            if foundContent { lineChars.append(character) }
+        }
+        guard foundContent else { return false }
+
+        let line = String(lineChars.reversed()).trimmingCharacters(in: .whitespaces)
+        if line == "#endif" { return true }
+        return line.allSatisfy { $0 == ")" || $0 == "]" || $0 == "}" }
+    }
+
     /// Creates a new PrettyPrinter with the provided formatting configuration.
     ///
     /// - Parameters:
@@ -431,6 +467,12 @@ package final class LayoutCoordinator {
                                     (closedContext.lineNumber == outputBuffer.lineNumber)
                                     ? .continuation
                                     : .maintain
+                                // Record (once, when this scope's behavior resolves) whether the
+                                // base's last rendered line is just a closing delimiter (or
+                                // `#endif` ) standing alone — the whole `.maintain` chain then makes
+                                // a single flush-vs-indent choice off that. (m2x-4bl)
+                                activeBreakingContexts[activeBreakingContexts.count - 1]
+                                    .baseEndedWithLoneClose = baseEndsAloneOnLine()
                             }
                         }
 
@@ -438,11 +480,19 @@ package final class LayoutCoordinator {
                             switch activeBreakingContext.contextualBreakingBehavior {
                                 case .unset, .continuation: isContinuationIfBreakFires = true
                                 case .maintain:
-                                    // A chain whose base spanned multiple lines still indents one
-                                    // continuation level, rather than aligning flush with the base.
-                                    // Diverges from upstream swift-format, which keeps the chain
-                                    // flush with the statement; see on8-mme.
-                                    isContinuationIfBreakFires = true
+                                    // A chain whose base wrapped its *arguments* (the base's last
+                                    // closing delimiter sits inline after content) indents one
+                                    // continuation level rather than aligning flush — a deliberate
+                                    // divergence from upstream swift-format (on8-mme). But when the
+                                    // base's last delimiter landed alone on its own line (a
+                                    // trailing-closure `}` / block `}` / array `]`), the chain stays
+                                    // flush with it, matching upstream's `currentLineIsContinuation`
+                                    // behavior (m2x-4bl). The decision is taken from the scope so all
+                                    // chain elements agree.
+                                    isContinuationIfBreakFires =
+                                        activeBreakingContext.baseEndedWithLoneClose
+                                        ? currentLineIsContinuation
+                                        : true
                             }
                         }
 
@@ -523,8 +573,11 @@ package final class LayoutCoordinator {
                     // line pushes one real continuation-indent scope, so the whole chain — its
                     // calls' arguments and closing delimiters included — sits one extra level deep.
                     // A real `activeOpenBreaks` entry (rather than an ad-hoc indent addend) keeps
-                    // nested content consistent. (on8-mme)
-                    if pendingMultilineChainBoostPush, !multilineChainBoostScopes.isEmpty {
+                    // nested content consistent. (on8-mme) Skipped when the base's last delimiter
+                    // landed alone on its own line — then the chain stays flush, no boost (m2x-4bl).
+                    if pendingMultilineChainBoostPush, !baseEndsAloneOnLine(),
+                        !multilineChainBoostScopes.isEmpty
+                    {
                         activeOpenBreaks.append(
                             ActiveOpenBreak(
                                 index: idx,
@@ -1063,6 +1116,14 @@ fileprivate extension LayoutCoordinator {
 
         /// The behavior to use when a `contextual` break fires inside of this break context.
         var contextualBreakingBehavior = BreakingBehavior.unset
+
+        /// Whether the base that preceded the chain ended with a closing delimiter (or `#endif` )
+        /// alone on its own rendered line. When true the whole `.maintain` chain stays flush with
+        /// that delimiter; when false (the base wrapped its arguments, so the delimiter sits inline
+        /// after content) it indents one continuation level. Resolved once, when this scope's
+        /// behavior is settled, so every contextual break in the scope agrees. See m2x-4bl /
+        /// on8-mme.
+        var baseEndedWithLoneClose = false
     }
 }
 

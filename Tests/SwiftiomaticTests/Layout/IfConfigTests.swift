@@ -393,15 +393,15 @@ struct IfConfigTests: LayoutTesting {
         Toggle(isOn: binding) {
           Text("Some text")
         }
-          #if !os(tvOS)
-            .toggleStyle(SwitchToggleStyle(
-              tint: Color.blue))
-          #endif
-          .accessibilityValue(
-            binding.wrappedValue == true
-              ? "On"
-              : "Off"
-          )
+        #if !os(tvOS)
+          .toggleStyle(SwitchToggleStyle(
+            tint: Color.blue))
+        #endif
+        .accessibilityValue(
+          binding.wrappedValue == true
+            ? "On"
+            : "Off"
+        )
       }
 
       """
@@ -475,9 +475,11 @@ struct IfConfigTests: LayoutTesting {
     assertLayout(input: input, expected: expected, linelength: 45)
   }
 
-  // on8-mme: a member-access / postfix-#if chain continuing a multiline base indents one level,
-  // rather than aligning flush with the statement (matches `postfixPoundIfBetweenOtherModifiers` ).
-  @Test func postfixPoundIfIndentedWhenClosingParenOnOwnLine() {
+  // m2x-4bl: a member-access / postfix-#if chain continuing a base whose closing paren sits alone
+  // on its own line stays flush with that paren, rather than indenting as a continuation. (A base
+  // whose closing delimiter is inline after wrapped arguments still indents — see
+  // `MemberAccessExprTests.multilineBaseChainIndentsAsContinuation` / on8-mme.)
+  @Test func postfixPoundIfNotIndentedIfClosingParenOnOwnLine() {
     let input =
       """
       SomeFunction(
@@ -496,10 +498,10 @@ struct IfConfigTests: LayoutTesting {
         foo,
         bar
       )
-        #if os(iOS)
-          .iOSSpecificModifier()
-        #endif
-        .commonModifier()
+      #if os(iOS)
+        .iOSSpecificModifier()
+      #endif
+      .commonModifier()
 
       """
 
@@ -524,10 +526,10 @@ struct IfConfigTests: LayoutTesting {
         foo,
         bar
       )
-        #if os(iOS)
-          .iOSSpecificModifier()
-        #endif
-        .commonModifier()
+      #if os(iOS)
+        .iOSSpecificModifier()
+      #endif
+      .commonModifier()
 
       """
 

@@ -113,10 +113,10 @@ struct MemberAccessExprTests: LayoutTesting {
       let result = [
         1, 2, 3, 4, 5,
       ]
-          .filter {
-            $0 % 2 == 0
-          }
-          .map { $0 * $0 }
+      .filter {
+        $0 % 2 == 0
+      }
+      .map { $0 * $0 }
       array.filter { $0 }
         .map {
           $0 as FooBarBaz
@@ -125,10 +125,10 @@ struct MemberAccessExprTests: LayoutTesting {
       array.filter {
         $0 is FooBarBaz
       }
-        .map {
-          $0 as FooBarBaz
-        }
-        .compactMap { $0 }
+      .map {
+        $0 as FooBarBaz
+      }
+      .compactMap { $0 }
 
       """
 
@@ -242,13 +242,11 @@ struct MemberAccessExprTests: LayoutTesting {
           abc.frob()
         }
       )
-        .map { $0 }
-        .filter { $0.isFrobbed }
+      .map { $0 }.filter { $0.isFrobbed }
       myWeirdFunc(withClosure: { abc in
         abc.frob()
       })
-        .map { $0 }
-        .filter { $0.isFrobbed }
+      .map { $0 }.filter { $0.isFrobbed }
 
       """
 
@@ -308,9 +306,9 @@ struct MemberAccessExprTests: LayoutTesting {
             Image(.swiftyBird) {
               presentBirds()
             }
-              .highlight[tintColors]
+            .highlight[tintColors]
           }
-            .padding(10)
+          .padding(10)
           Text("Rabbit Rock") { Font(.serifs) }
             .backgroundColor(.red)
         }
@@ -335,13 +333,13 @@ struct MemberAccessExprTests: LayoutTesting {
             Image(.turtle) {
               presentTurtle()
             }
-              .foreground[tintColors]
+            .foreground[tintColors]
             Image(.swiftyBird) {
               presentBirds()
             }
-              .highlight[tintColors]
+            .highlight[tintColors]
           }
-            .padding(10)
+          .padding(10)
           Text("Rabbit Rock") { Font(.serifs) }
             .backgroundColor(.red)
         }
@@ -647,6 +645,55 @@ struct MemberAccessExprTests: LayoutTesting {
           idValue: 1, withinValue: 2, atValue: 0, styleValue: 3))
               .padding(30)
               .background(Rectangle())
+
+      """
+
+    var configuration = Configuration.forTesting
+    configuration[IndentationSetting.self] = .spaces(4)
+    assertLayout(input: input, expected: expected, linelength: 80, configuration: configuration)
+  }
+
+  // m2x-4bl: a `.`-chain following a closing brace/paren that sits *alone on its own line* (a
+  // trailing-closure base like `Button { … } label: { … }` or `HStack { … }`) must stay flush
+  // with that closing delimiter, NOT indent as a continuation. This is the trailing-closure
+  // counterpart to `multilineBaseChainIndentsAsContinuation` (whose base wraps its *arguments* on
+  // a content line and so does indent). The lone closing brace returns to the base indent, so the
+  // chain aligns there.
+  @Test func chainAfterLoneClosingBraceStaysFlush() {
+    let input =
+      """
+      HStack {
+          Spacer()
+          ImportMenu("Import", type: .project)
+          Button { createFolder(nil) } label: {
+              Image(systemName: "folder.badge.plus")
+              Text("Add Folder")
+          }
+          Button { showNewProjectSheet.toggle() } label: {
+              Image(systemName: "document.badge.plus")
+              Text("Add Project")
+          }
+          .labelStyle(.iconOnly)
+      }
+      .padding()
+      """
+
+    let expected =
+      """
+      HStack {
+          Spacer()
+          ImportMenu("Import", type: .project)
+          Button { createFolder(nil) } label: {
+              Image(systemName: "folder.badge.plus")
+              Text("Add Folder")
+          }
+          Button { showNewProjectSheet.toggle() } label: {
+              Image(systemName: "document.badge.plus")
+              Text("Add Project")
+          }
+          .labelStyle(.iconOnly)
+      }
+      .padding()
 
       """
 
