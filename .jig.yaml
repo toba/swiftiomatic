@@ -45,7 +45,7 @@ citations:
     - repo: swiftlang/swift-syntax
       branch: main
       last_checked_sha: bd09469ce4da40f942c049fbe027ef445338a8f9
-      last_checked_date: "2026-06-17T00:33:22Z"
+      last_checked_date: "2026-06-17T17:00:18Z"
       paths:
         high: [Sources/**/*.swift]
         medium: [Package.swift]
@@ -53,15 +53,15 @@ citations:
     - repo: nicklockwood/SwiftFormat
       branch: main
       last_checked_sha: a5fa7a6a57abeb834df1b3fa43ea9133137d5ade
-      last_checked_date: "2026-06-17T00:33:22Z"
+      last_checked_date: "2026-06-17T17:00:18Z"
       paths:
         high: [Sources/**/*.swift]
         medium: [Package.swift]
         low: [.github/**, README.md, LICENSE]
     - repo: realm/SwiftLint
       branch: main
-      last_checked_sha: 432efc00b8ce8e3f1b16d091eda28af79cc55a11
-      last_checked_date: "2026-06-17T00:33:22Z"
+      last_checked_sha: 64b731e35cda419025868a9c5248a3bdf1b57631
+      last_checked_date: "2026-06-17T17:00:23Z"
       paths:
         high: ['**/*.swift']
         medium: [Package.swift]
@@ -69,7 +69,7 @@ citations:
     - repo: swiftlang/swift-format
       branch: main
       last_checked_sha: 68e501b91f165a31767824a1f8e4b0e6aeacd662
-      last_checked_date: "2026-06-17T00:33:22Z"
+      last_checked_date: "2026-06-17T17:00:18Z"
       paths:
         high: [Sources/**/*.swift]
         medium: [Package.swift]

@@ -4,6 +4,7 @@
 
 ### 🐞 Fixes
 
+- `IndentConditionalCompilationBlocks`; a `case` wrapped in a `#if` directly inside a `switch` now stays flush with its sibling cases when `indentConditionalCompilationBlocks` is enabled, instead of gaining an extra indentation level; the conditional-compilation indent still applies to the case body and to normal non-switch `#if` blocks ([#732](https://github.com/toba/swiftiomatic/issues/732))
 - Guard statements; when conditions wrap, an inline single-statement `else { stmt }` now stays glued to the closing condition when the whole `else { stmt }` fits on that line, and drops to its own line as a unit only when it doesn't; reverses the earlier "always break before `else`" behavior as a hybrid that preserves the deeply-nested non-fitting case ([#731](https://github.com/toba/swiftiomatic/issues/731))
 
 ## Week of Jun 07 – Jun 13, 2026

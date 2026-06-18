@@ -528,12 +528,16 @@ struct SwitchStmtTests: LayoutTesting {
       }
       """
 
+    // A `case` wrapped in a `#if` directly inside a `switch` stays flush with its sibling cases,
+    // even though IndentConditionalCompilationBlocks is enabled (the default in `forTesting`): the
+    // `#if` encloses the case's node, so the conditional-compilation indent must not apply to the
+    // case label, only to its body. See jig qrz-djm.
     let expected =
       """
       switch foo {
       #if CONDITION_A
-        case bar:
-          callForBar()
+      case bar:
+        callForBar()
       #endif
       case baz:
         callForBaz()
@@ -542,8 +546,8 @@ struct SwitchStmtTests: LayoutTesting {
       case bar2:
         callForBar()
       #if CONDITION_B
-        case baz2:
-          callForBaz()
+      case baz2:
+        callForBaz()
       #endif
       }
 

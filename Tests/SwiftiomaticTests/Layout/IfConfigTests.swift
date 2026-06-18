@@ -572,4 +572,28 @@ struct IfConfigTests: LayoutTesting {
     configuration[IndentConditionalCompilationBlocks.self] = false
     assertLayout(input: input, expected: input, linelength: 45, configuration: configuration)
   }
+
+  @Test func poundIfWrappingSwitchCaseStaysFlushWhenIndentingBlocks() {
+    // A `case` wrapped in a `#if` directly inside a `switch` must stay flush with its
+    // sibling cases even when IndentConditionalCompilationBlocks is enabled: the
+    // conditional-compilation indentation does not apply to switch-case labels, because
+    // the `#if` encloses the case's node rather than introducing a new code block.
+    let input =
+      """
+      switch type {
+      #if os(macOS)
+      case .rtf:
+        return 1
+      #endif
+      case .markdown:
+        return 2
+      default:
+        return nil
+      }
+
+      """
+    var configuration = Configuration.forTesting
+    configuration[IndentConditionalCompilationBlocks.self] = true
+    assertLayout(input: input, expected: input, linelength: 45, configuration: configuration)
+  }
 }

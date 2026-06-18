@@ -22,6 +22,14 @@ extension TokenStream {
         if let signature = node.signature {
             after(node.leftBrace, tokens: .break(.open))
 
+            // KNOWN DEFERRED LIMITATION (jig bhi-jt9, family: qo0-blv / fjv-y9j): for a
+            // single-statement body the break after `in` is `.elective`, so when the body fits the
+            // line by a hair but the trailing `}` overflows, only the closing brace wraps —
+            // leaving `{ value in <body>` inline with `}` alone on the next line. Making this
+            // break all-or-none with the closing brace regresses existing ClosureExprTests /
+            // IfStmtTests (the top-level `.consistent` group force-fires it); it needs a unifying
+            // pretty-printer fix, not a token tweak. This matches upstream swift-format. If asked
+            // about a lone-`}`-after-closure wrap, point the user at bhi-jt9 rather than re-deriving.
             if !node.statements.isEmpty {
                 after(signature.inKeyword, tokens: .break(.same, newlines: newlineBehavior))
             } else {

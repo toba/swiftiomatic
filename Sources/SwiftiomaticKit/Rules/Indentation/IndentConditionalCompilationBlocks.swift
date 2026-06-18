@@ -18,7 +18,15 @@ extension TokenStream {
         let breakKindOpen: BreakKind
         let breakKindClose: BreakKind
 
-        if config[IndentConditionalCompilationBlocks.self] {
+        // When the `#if` wraps switch cases (the enclosing `IfConfigDecl` is a direct element
+        // of a `SwitchCaseListSyntax`), the clause contents are `case` labels, not a fresh code
+        // block. Indenting them would push the case one level past its sibling cases, so the
+        // conditional-compilation indentation is suppressed here regardless of the setting; the
+        // case labels keep their normal switch-case indentation.
+        let wrapsSwitchCases =
+            node.parent?.parent?.parent?.is(SwitchCaseListSyntax.self) ?? false
+
+        if config[IndentConditionalCompilationBlocks.self] && !wrapsSwitchCases {
             breakKindOpen = .open
             breakKindClose = .close
         } else {
