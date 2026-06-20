@@ -61,6 +61,20 @@ final class NestedCallLayout: StaticFormatRule<NestedCallLayoutConfiguration>, @
 
         let mode = context.configuration[NestedCallLayout.self].mode
 
+        // SwiftUI-style modifier chains: when the outermost call's callee spans multiple lines
+        // (e.g. `Text(name)…onHover { … }.background`), the chain-rebuild strategies below
+        // mis-measure — `calledExpression.trimmedDescription` carries the whole multiline chain
+        // and `columnOffset` / `lineIndentation` anchor on the chain's first token (the chain
+        // root) rather than the modifier segment. That makes every inline strategy look too wide,
+        // so the call wrongly *expands*. Handle these calls separately, measuring only the
+        // modifier segment at its real rendered column. (prs-zf4)
+        if calleeSpansMultipleLines(node) {
+            if mode == .inline, let inlined = tryInlineModifierCallArgument(node, context: context) {
+                return inlined
+            }
+            return ExprSyntax(node)
+        }
+
         if let chain = collectChain(node), chain.count >= 2 {
             switch mode {
                 case .inline:
@@ -437,6 +451,52 @@ final class NestedCallLayout: StaticFormatRule<NestedCallLayoutConfiguration>, @
         return result
             .with(\.leadingTrivia, leadingTrivia)
             .with(\.trailingTrivia, trailingTrivia)
+    }
+
+    // MARK: - Modifier-Chain Calls
+
+    /// Returns true when the call's `calledExpression` renders across multiple lines — e.g. a
+    /// wrapped member-access modifier chain like `foo\n    .bar`. The chain-rebuild strategies
+    /// assume a single-line callee, so such calls are routed through
+    /// `tryInlineModifierCallArgument` instead. (prs-zf4)
+    private static func calleeSpansMultipleLines(_ node: FunctionCallExprSyntax) -> Bool {
+        node.calledExpression.trimmedDescription.contains("\n")
+    }
+
+    /// Collapses a modifier-chain call's argument list inline (`.method(a, b)`) when the modifier
+    /// segment fits on its own line at its real rendered column.
+    ///
+    /// Measures only this call's own segment — anchored on the member-access period — so the
+    /// multiline callee chain doesn't distort the width (which is what causes the chain-rebuild
+    /// strategies to wrongly expand the call). Returns nil when the call doesn't qualify (no
+    /// surrounding parens, no arguments, a trailing closure, internal comments, an already-inline
+    /// body, a callee that isn't a member access, or a segment that wouldn't fit). (prs-zf4)
+    private static func tryInlineModifierCallArgument(
+        _ node: FunctionCallExprSyntax,
+        context: Context
+    ) -> ExprSyntax? {
+        guard let memberAccess = node.calledExpression.as(MemberAccessExprSyntax.self),
+              node.leftParen != nil,
+              let rightParen = node.rightParen,
+              !node.arguments.isEmpty,
+              node.trailingClosure == nil,
+              node.additionalTrailingClosures.isEmpty,
+              callBodySpansLines(arguments: node.arguments, rightParen: rightParen)
+        else { return nil }
+
+        if argumentsHaveComments(node.arguments, rightParen: rightParen) { return nil }
+
+        let segment = memberAccess.period.text
+            + memberAccess.declName.trimmedDescription
+            + "(" + inlineArgText(node) + ")"
+        guard !segment.contains("\n") else { return nil }
+
+        let prefix = columnOffset(of: memberAccess.period)
+        let maxLength = context.configuration[LineLength.self]
+        guard prefix + segment.count <= maxLength else { return nil }
+
+        Self.diagnose(.collapseNestedCall, on: memberAccess.declName, context: context)
+        return ExprSyntax(collapseCallArguments(node))
     }
 
     // MARK: - Hug Fallback

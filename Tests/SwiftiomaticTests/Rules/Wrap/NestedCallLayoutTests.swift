@@ -181,6 +181,50 @@ struct NestedCallLayoutInlineTests: RuleTesting {
       configuration: inlineConfig)
   }
 
+  @Test func modifierChainCallArgumentCollapsesInline() {
+    // prs-zf4: the outer call is a SwiftUI modifier-chain element whose callee
+    // (`Text(name)...onHover {...}.background`) spans multiple lines. The single
+    // call argument must collapse inline when the modifier segment fits on its
+    // own line — previously the chain-rebuild strategies mis-measured the
+    // multiline callee and *expanded* the call instead.
+    assertFormatting(
+      NestedCallLayout.self,
+      input: """
+        Text(name)
+            .onHover { color = highlighted }
+            .1️⃣background(
+                RoundedRectangle(cornerRadius: 5).fill(color)
+            )
+            .onTapGesture { didSelect() }
+        """,
+      expected: """
+        Text(name)
+            .onHover { color = highlighted }
+            .background(RoundedRectangle(cornerRadius: 5).fill(color))
+            .onTapGesture { didSelect() }
+        """,
+      findings: [
+        FindingSpec("1️⃣", message: "collapse nested call to fit on one line"),
+      ],
+      configuration: inlineConfig)
+  }
+
+  @Test func modifierChainCallArgumentAlreadyInlineUnchanged() {
+    // prs-zf4: an already-inline modifier-chain call argument that fits must be
+    // left untouched (no spurious expansion, no finding).
+    let input = """
+      Text(name)
+          .onHover { color = highlighted }
+          .background(RoundedRectangle(cornerRadius: 5).fill(color))
+          .onTapGesture { didSelect() }
+      """
+    assertFormatting(
+      NestedCallLayout.self,
+      input: input,
+      expected: input,
+      configuration: inlineConfig)
+  }
+
   @Test func innerCallWithTrailingClosureNotCollapsed() {
     // Regression: NestedCallLayout previously rebuilt nested calls using only
     // `arguments`, silently deleting `trailingClosure` bodies. The rule must
