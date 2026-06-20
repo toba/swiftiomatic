@@ -701,4 +701,45 @@ struct MemberAccessExprTests: LayoutTesting {
     configuration[IndentationSetting.self] = .spaces(4)
     assertLayout(input: input, expected: expected, linelength: 80, configuration: configuration)
   }
+
+  // gl8-vhc: when the assignment RHS is a member-access chain wrapped in a binary op (e.g.
+  // `chain.max() ?? 1`), the chain base should stay on the `=` line and the dots wrap — not
+  // break right after `=`. Regression: an already-wrapped chain (discretionary newline at each
+  // dot) inflated the `=` break's chunk and forced a spurious break after `=`.
+  @Test func assignmentChainWithNilCoalescingKeepsBaseOnEqualLine() {
+    // Exact already-wrapped form as it sits in the source file (newlines present).
+    let input =
+      """
+      struct Foo {
+          private static func equalColumnWidths(for children: [MockNode]) -> [Double] {
+              let columns =
+                  children
+                  .filter { $0.type == .tableRow }
+                  .map(\\.children.count)
+                  .max() ?? 1
+              let count = max(columns, 1)
+              return Array(repeating: 100 / Double(count), count: count)
+          }
+      }
+      """
+
+    let expected =
+      """
+      struct Foo {
+          private static func equalColumnWidths(for children: [MockNode]) -> [Double] {
+              let columns = children
+                  .filter { $0.type == .tableRow }
+                  .map(\\.children.count)
+                  .max() ?? 1
+              let count = max(columns, 1)
+              return Array(repeating: 100 / Double(count), count: count)
+          }
+      }
+
+      """
+
+    var configuration = Configuration.forTesting
+    configuration[IndentationSetting.self] = .spaces(4)
+    assertLayout(input: input, expected: expected, linelength: 100, configuration: configuration)
+  }
 }

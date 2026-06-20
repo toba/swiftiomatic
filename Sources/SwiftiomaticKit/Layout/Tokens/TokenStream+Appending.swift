@@ -641,9 +641,21 @@ extension TokenStream {
                      .unsafeExpr: current = parent
                 default:
                     if parent.is(InitializerClauseSyntax.self) { return true }
-                    if let infix = parent.as(InfixOperatorExprSyntax.self),
-                       infix.operator.is(AssignmentExprSyntax.self),
-                       infix.rightOperand.id == current.id { return true }
+                    if let infix = parent.as(InfixOperatorExprSyntax.self) {
+                        if infix.operator.is(AssignmentExprSyntax.self),
+                           infix.rightOperand.id == current.id { return true }
+                        // The chain is the leftmost operand of a non-assignment binary op (e.g.
+                        // `chain.max() ?? fallback`). Treat the operator as transparent and keep
+                        // walking up: if the whole binary expression is itself the assignment /
+                        // binding RHS, the chain's leading dot still inflates the enclosing `=`
+                        // break's chunk, so the head group must close after `base`. Only follow the
+                        // LEFT operand — a chain on the right of the operator isn't adjacent to the
+                        // `=` and doesn't drive that break.
+                        if infix.leftOperand.id == current.id {
+                            current = parent
+                            continue
+                        }
+                    }
                     return false
             }
         }
