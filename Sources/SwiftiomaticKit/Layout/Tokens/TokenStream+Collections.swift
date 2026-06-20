@@ -306,6 +306,20 @@ extension TokenStream {
                 && !containsClosureExpr(Syntax(arguments.first!.expression)))
                 || isSoleCallArgumentOfOuterCall(leftDelimiter, arguments: arguments))
 
+        // 2q7-lql: when we ignore the user's discretionary newlines to collapse a nested call
+        // (`outer(Inner(...))`) *and the last argument carries a trailing comma*, the collapse must
+        // be all-or-nothing — either the whole call fits on one line (where the trailing comma is
+        // dropped, see LayoutCoordinator) or it stays fully wrapped with `)` on its own line. Force
+        // the break before the right delimiter in that case so a call which only *partially*
+        // collapses doesn't leave the closing paren hugging the last argument; without this the
+        // elective close break lets `)` ride up onto the final argument line while the trailing
+        // comma is still emitted, producing dangling `, )` artifacts. Only triggered by a trailing
+        // comma — without one the closing paren may hug (`for: absolute))`). The
+        // array/dictionary/closure compact-argument case is excluded so `])` / `})` keep hugging.
+        let forcesBreakBeforeRightDelimiter = forcesBreakBeforeRightDelimiter
+            || (ignoreDiscretionary && arguments.last?.trailingComma != nil
+                && !isCompactCollectionOrClosureArgument(arguments))
+
         if !arguments.isEmpty {
             let newlines: NewlineBehavior = ignoreDiscretionary
                 ? .elective(ignoresDiscretionary: true)
@@ -335,7 +349,8 @@ extension TokenStream {
             arrangeAsFunctionCallArgument(
                 argument,
                 shouldGroup: shouldGroupAroundArgument,
-                ignoreDiscretionaryCommaBreaks: ignoreDiscretionary
+                ignoreDiscretionaryCommaBreaks: ignoreDiscretionary,
+                isLastArgument: argument.id == arguments.last?.id
             )
         }
     }
@@ -358,7 +373,8 @@ extension TokenStream {
     func arrangeAsFunctionCallArgument(
         _ node: LabeledExprSyntax,
         shouldGroup: Bool,
-        ignoreDiscretionaryCommaBreaks: Bool = false
+        ignoreDiscretionaryCommaBreaks: Bool = false,
+        isLastArgument: Bool = false
     ) {
         if shouldGroup { before(node.firstToken(viewMode: .sourceAccurate), tokens: .open) }
 
@@ -407,7 +423,14 @@ extension TokenStream {
             let commaNewlines: NewlineBehavior = ignoreDiscretionaryCommaBreaks
                 ? .elective(ignoresDiscretionary: true)
                 : .elective
-            var afterTrailingComma: [Token] = [.break(.same, newlines: commaNewlines)]
+            // For the last argument the break after its trailing comma only ever sits before the
+            // closing-delimiter break, so it never needs to contribute a separating space; using
+            // size 0 keeps a collapsed call from leaving a stray space before `)` (`b: 2 )`) while
+            // still letting a discretionary/forced newline fire before the closing paren. (2q7-lql)
+            let commaBreakSize = isLastArgument ? 0 : 1
+            var afterTrailingComma: [Token] = [
+                .break(.same, size: commaBreakSize, newlines: commaNewlines)
+            ]
             if shouldGroup { afterTrailingComma.insert(.close, at: 0) }
             after(trailingComma, tokens: afterTrailingComma)
         } else if shouldGroup {

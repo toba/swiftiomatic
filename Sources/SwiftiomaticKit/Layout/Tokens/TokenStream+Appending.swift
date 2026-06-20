@@ -374,6 +374,17 @@ extension TokenStream {
         return false
     }
 
+    /// Returns true when the argument list is a single array, dictionary, or closure literal — the
+    /// "compact" arguments whose closing paren should keep hugging the literal's own closing
+    /// delimiter (`])` / `})`) rather than being forced onto its own line. (2q7-lql)
+    func isCompactCollectionOrClosureArgument(_ arguments: LabeledExprListSyntax) -> Bool {
+        guard arguments.count == 1 else { return false }
+        let expression = arguments.first!.expression
+        return expression.is(ArrayExprSyntax.self)
+            || expression.is(DictionaryExprSyntax.self)
+            || expression.is(ClosureExprSyntax.self)
+    }
+
     /// Returns true if the call whose open paren is `leftDelimiter` is itself the sole argument of
     /// an outer function call, and none of its own arguments contain a closure. In that case,
     /// discretionary newlines around its `(` / `)` should be ignored so the inner call collapses

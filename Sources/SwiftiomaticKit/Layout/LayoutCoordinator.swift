@@ -733,7 +733,14 @@ package final class LayoutCoordinator {
                         : shouldHaveTrailingComma
                     if shouldWriteComma { outputBuffer.write(",") }
                 } else if hasTrailingComma {
-                    outputBuffer.write(",")
+                    // "Kept as written": preserve the user's trailing comma — but only while the
+                    // region is still laid out across multiple lines. When the printer collapses
+                    // the region onto a single line (e.g. a nested call hugging its parent), a
+                    // trailing comma sitting immediately before the closing delimiter is a stray
+                    // artifact, so drop it. (2q7-lql)
+                    let isMultiline = whitespaceOnly
+                        || startLineNumber != openCloseBreakCompensatingLineNumber
+                    if isMultiline { outputBuffer.write(",") }
                 }
 
             case let .enableFormatting(enabledPosition):

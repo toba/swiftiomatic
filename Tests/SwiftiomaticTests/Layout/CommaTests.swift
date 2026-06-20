@@ -1194,4 +1194,66 @@ struct CommaTests: LayoutTesting {
     configuration[MultiElementCollectionTrailingCommas.self] = true
     assertLayout(input: input, expected: expected, linelength: 20, configuration: configuration)
   }
+
+  // 2q7-lql: collapsing a nested call whose inner call is the sole argument of an outer call must
+  // not strand the user's trailing commas before the closing parens (`positionOverride: nil, ), )`).
+  // When the call only partially collapses, the closing parens are forced onto their own lines so
+  // each trailing comma stays correctly followed by a newline rather than a hugging `)`.
+  @Test func nestedCallCollapseDoesNotStrandTrailingCommas() {
+    let input =
+      """
+      func f() {
+        built.append(
+          Thing(
+            from: edit.citation,
+            matchGroupIn: groupsByID,
+            matchReferenceIn: referencesByID,
+            positionOverride: nil,
+          ),
+        )
+      }
+
+      """
+
+    let expected =
+      """
+      func f() {
+        built.append(Thing(
+          from: edit.citation, matchGroupIn: groupsByID,
+          matchReferenceIn: referencesByID, positionOverride: nil,
+        ),
+        )
+      }
+
+      """
+
+    assertLayout(input: input, expected: expected, linelength: 80)
+  }
+
+  // 2q7-lql: when the nested call collapses entirely onto one line, the user's trailing comma is
+  // dropped cleanly — no stray comma and no stray space before the closing paren (`b: 2 )`).
+  @Test func nestedCallFullCollapseDropsTrailingComma() {
+    let input =
+      """
+      func f() {
+        foo(
+          Bar(
+            a: 1,
+            b: 2,
+          ),
+        )
+      }
+
+      """
+
+    let expected =
+      """
+      func f() {
+        foo(Bar(a: 1, b: 2))
+      }
+
+      """
+
+    assertLayout(input: input, expected: expected, linelength: 80)
+  }
 }
