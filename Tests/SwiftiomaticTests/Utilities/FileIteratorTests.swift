@@ -158,6 +158,38 @@ final class FileIteratorTests {
     #expect(!seen.contains { $0.relativePath.hasSuffix("Foo.generated.swift") })
     #expect(seen.contains { $0.relativePath.hasSuffix("project/real1.swift") })
   }
+
+  /// Regression coverage for the SwiftLint `/private`-firmlink exclusion bug (realm/SwiftLint
+  /// #6783). On macOS, `standardizedFileURL` strips a leading `/private` from firmlinked paths
+  /// (`/var`, `/tmp`), so an exclude *candidate* is normalized to the `/var` form. A user's
+  /// absolute exclude pattern (or `realpath`-resolved input path) frequently keeps the `/private`
+  /// form, so the two never matched and excluded files were processed anyway. `excludeCandidates`
+  /// now offers both the `/private`-stripped and `/private`-prefixed absolute forms, so an absolute
+  /// pattern matches regardless of which form it is written in.
+  @Test func excludesMatchAbsolutePatternAcrossPrivateFirmlink() throws {
+    try touch("project/Generated/gen.swift")
+
+    // `tmpdir` is the real path (typically `/private/var/...`); the firmlink form drops `/private`.
+    let privateForm = tmpdir.path
+    let firmlinkForm: String = {
+      guard privateForm.hasPrefix("/private/") else { return privateForm }
+      return String(privateForm.dropFirst("/private".count))
+    }()
+
+    for base in Set([privateForm, firmlinkForm]) {
+      let seen = allFilesSeen(
+        iteratingOver: [tmpdir],
+        followSymlinks: false,
+        excludes: ["\(base)/project/Generated/**"],
+        workingDirectory: tmpdir
+      )
+      #expect(
+        !seen.contains { $0.path.hasSuffix("gen.swift") },
+        "absolute exclude written as \(base)/... failed to exclude gen.swift"
+      )
+      #expect(seen.contains { $0.path.hasSuffix("project/real1.swift") })
+    }
+  }
 }
 
 extension FileIteratorTests {

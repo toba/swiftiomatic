@@ -1,5 +1,11 @@
 # Changelog
 
+## Week of Jun 21 – Jun 27, 2026
+
+### 🐞 Fixes
+
+- `excludes`; an absolute exclude pattern (or `realpath`-resolved input path) written in the `/private/var…` form no longer silently fails to match files under macOS firmlinks like `/var` and `/tmp`; `standardizedFileURL` strips a leading `/private` from the candidate path, so `FileIterator.excludeCandidates` now also offers the `/private`-toggled absolute form (string-only, no per-file `stat`), mirroring realm/SwiftLint #6783 ([#741](https://github.com/toba/swiftiomatic/issues/741))
+
 ## Week of Jun 14 – Jun 20, 2026
 
 ### 🐞 Fixes

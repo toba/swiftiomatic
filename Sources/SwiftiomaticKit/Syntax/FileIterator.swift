@@ -83,6 +83,16 @@ package struct FileIterator: Sequence, IteratorProtocol {
             if !trimmed.isEmpty { out.append(trimmed) }
         }
         out.append(path)
+        // On macOS, `standardizedFileURL` strips a leading `/private` from firmlinked paths
+        // (`/var`, `/tmp`), so `path` is the `/var` form. A user's absolute exclude pattern often
+        // keeps the `/private` form (e.g. a `realpath`-resolved CI workspace under `/private/var`),
+        // so offer the toggled form too — otherwise the absolute pattern silently never matches and
+        // excluded files get processed anyway (realm/SwiftLint #6783).
+        if path.hasPrefix("/private/") {
+            out.append(String(path.dropFirst("/private".count)))
+        } else if path.hasPrefix("/") {
+            out.append("/private" + path)
+        }
         return out
     }
 
