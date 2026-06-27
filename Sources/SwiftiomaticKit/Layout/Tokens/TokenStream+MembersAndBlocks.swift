@@ -14,8 +14,19 @@ import SwiftSyntax
 
 extension TokenStream {
     func visitIfConfigDecl(_ node: IfConfigDeclSyntax) -> SyntaxVisitorContinueKind {
-        // there has to be a break after an #endif
-        after(node.poundEndif, tokens: .break(.same, size: 0))
+        // There has to be a break after an #endif. An attribute-list #if keeps an elective break so
+        // the attribute can hug the following declaration; a postfix-chain #if keeps it elective
+        // only when existing line breaks are respected; everything else forces a soft newline so the
+        // #endif can't merge onto the following declaration.
+        let newlines: NewlineBehavior
+        if node.parent?.is(AttributeListSyntax.self) == true {
+            newlines = .elective
+        } else if isNestedInPostfixIfConfig(node: Syntax(node)) {
+            newlines = config[RespectExistingLineBreaks.self] ? .elective : .soft
+        } else {
+            newlines = .soft
+        }
+        after(node.poundEndif, tokens: .break(.same, size: 0, newlines: newlines))
         return .visitChildren
     }
 

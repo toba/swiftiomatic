@@ -335,6 +335,53 @@ struct RespectExistingLineBreaksTests: LayoutTesting {
     )
   }
 
+  /// A required line break after `#endif` is preserved even with `respectsExistingLineBreaks`
+  /// disabled, so an `#endif` never merges onto the following declaration. Ports the regression
+  /// guard from swift-format #1225 (fixes #1223); Swiftiomatic already kept the break, and
+  /// `visitIfConfigDecl` now emits a postfix-aware soft break to match upstream.
+  @Test func ifConfigKeepsRequiredLineBreakAfterEndif() {
+    let input =
+      """
+      #if FLAG
+      @frozen
+      #endif
+      struct S {}
+
+      switch x {
+      #if A
+      case 1: f()
+      #endif
+      #if B
+      case 2: g()
+      #endif
+      }
+      """
+
+    let expected =
+      """
+      #if FLAG
+        @frozen
+      #endif
+      struct S {}
+
+      switch x { #if A
+      case 1: f()
+      #endif
+      #if B
+      case 2: g()
+      #endif
+      }
+
+      """
+
+    assertLayout(
+      input: input,
+      expected: expected,
+      linelength: 100,
+      configuration: configuration(respectingExistingLineBreaks: false)
+    )
+  }
+
   /// Creates a new configuration with the given value for `respectsExistingLineBreaks` and default
   /// values for everything else.
   private func configuration(respectingExistingLineBreaks: Bool) -> Configuration {

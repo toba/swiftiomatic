@@ -742,4 +742,27 @@ struct MemberAccessExprTests: LayoutTesting {
     configuration[IndentationSetting.self] = .spaces(4)
     assertLayout(input: input, expected: expected, linelength: 100, configuration: configuration)
   }
+
+  /// A parenthesized ternary that is the base of an optional chain (`?.`) keeps its `?` glued to
+  /// the closing paren instead of wrapping the member onto its own line. Ports the regression guard
+  /// from swift-format #1227 (fixes #1226); Swiftiomatic's chain handling already produced the
+  /// correct layout, and `outermostEnclosingNode` is kept aligned with upstream as a safeguard.
+  @Test func optionalChainAfterParenthesizedBaseKeepsQuestionMarkAttached() {
+    let input =
+      """
+      if (a ? b : c)?.f {}
+      """
+
+    let expected =
+      """
+      if (a
+        ? b
+        : c)?.f
+      {
+      }
+
+      """
+
+    assertLayout(input: input, expected: expected, linelength: 10)
+  }
 }

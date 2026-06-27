@@ -945,6 +945,15 @@ extension TokenStream {
               closingDelimiterTokens.contains(nextToken),
               let nextExpr = nextToken.parent
         { parenthesizedExpr = nextExpr }
+        // When the parenthesized expression is the base of an optional-chaining (`?.`) or
+        // force-unwrap (`!`) postfix, climb into that postfix so its trailing `?`/`!` token is
+        // kept glued to the closing delimiter. Otherwise the postfix `?` is misread as a ternary
+        // question mark and the member break after it can fire, splitting `)?` from `.member`.
+        while let parent = parenthesizedExpr?.parent,
+              parent.is(OptionalChainingExprSyntax.self) || parent.is(ForceUnwrapExprSyntax.self),
+              parent.firstToken(viewMode: .sourceAccurate)
+                == parenthesizedExpr?.firstToken(viewMode: .sourceAccurate)
+        { parenthesizedExpr = parent }
         return parenthesizedExpr
     }
 

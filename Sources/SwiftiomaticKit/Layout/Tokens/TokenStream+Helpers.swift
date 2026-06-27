@@ -66,6 +66,12 @@ extension TokenStream {
                             )
                         }
                     }
+                    // An `#endif` ending an attribute-block element must be followed by a hard break
+                    // so the following attribute can't merge onto the `#endif` line.
+                    after(
+                        element.lastToken(viewMode: .sourceAccurate),
+                        tokens: .break(.same, newlines: .hard)
+                    )
                 } else {
                     after(element.lastToken(viewMode: .sourceAccurate), tokens: lineBreak)
                 }
@@ -74,7 +80,12 @@ extension TokenStream {
 
         var afterAttributeTokens = [Token]()
         if shouldGroup { afterAttributeTokens.append(.close) }
-        if !suppressFinalBreak { afterAttributeTokens.append(lineBreak) }
+        if !suppressFinalBreak {
+            // When the attribute list itself ends with an `#if ... #endif`, force a hard break after
+            // it so the `#endif` can't merge onto the declaration it annotates.
+            let endsWithIfConfig = attributes.last?.is(IfConfigDeclSyntax.self) ?? false
+            afterAttributeTokens.append(endsWithIfConfig ? .break(.same, newlines: .hard) : lineBreak)
+        }
 
         if !afterAttributeTokens.isEmpty {
             after(attributes.lastToken(viewMode: .sourceAccurate), tokens: afterAttributeTokens)

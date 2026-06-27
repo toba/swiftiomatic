@@ -120,10 +120,13 @@ extension TokenStream {
             )
 
             for clause in postfixIfExpr.config.clauses {
-                before(clause.poundKeyword, tokens: .break(.contextual, size: 0))
+                before(clause.poundKeyword, tokens: .break(.contextual, size: 0, newlines: .soft))
             }
-            before(postfixIfExpr.config.poundEndif, tokens: .break(.contextual, size: 0))
-            after(postfixIfExpr.config.poundEndif, tokens: .break(.same, size: 0))
+            before(
+                postfixIfExpr.config.poundEndif,
+                tokens: .break(.contextual, size: 0, newlines: .soft)
+            )
+            // The break after `#endif` is emitted by `visitIfConfigDecl`, which is postfix-aware.
 
             return insertContextualBreaks(base, isTopLevel: false)
         } else if let callingExpr = expr.asProtocol(CallingExprSyntax.self) {

@@ -4,6 +4,8 @@
 
 ### 🐞 Fixes
 
+- Mirror upstream swift-format #1225; an attribute-block `#if … @frozen … #endif` annotating a declaration no longer merges `#endif` onto the following decl (`#endif struct S {}`, collapsing non-idempotently to `#endifstruct S {}`) when `respectsExistingLineBreaks` is off; `visitIfConfigDecl` now branches the after-`#endif` newline behavior and `arrangeAttributeList` forces a hard break when an attribute list ends with an `#if` ([#743](https://github.com/toba/swiftiomatic/issues/743))
+- Mirror upstream swift-format #1227; port the `outermostEnclosingNode` fix that keeps a parenthesized ternary base's postfix `?`/`!` glued to its closing paren (`(a ? b : c)?.f`); Swiftiomatic's chain handling already produced the correct layout, so this is an upstream-alignment port with a regression guard ([#744](https://github.com/toba/swiftiomatic/issues/744))
 - `excludes`; an absolute exclude pattern (or `realpath`-resolved input path) written in the `/private/var…` form no longer silently fails to match files under macOS firmlinks like `/var` and `/tmp`; `standardizedFileURL` strips a leading `/private` from the candidate path, so `FileIterator.excludeCandidates` now also offers the `/private`-toggled absolute form (string-only, no per-file `stat`), mirroring realm/SwiftLint #6783 ([#741](https://github.com/toba/swiftiomatic/issues/741))
 
 ## Week of Jun 14 – Jun 20, 2026
