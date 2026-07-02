@@ -242,6 +242,33 @@ struct SplitMultipleDeclsPerLineTests: RuleTesting {
     )
   }
 
+  @Test func bareCaseElementsOnContinuationLinesAreNotDisturbed() {
+    // Regression (swift-format #1221): a `case` whose elements have no associated values must be
+    // left untouched, even when the elements are written on continuation lines. The rule used to
+    // reconstruct the declaration and strip the leading whitespace off the first element,
+    // collapsing `case\n  first` into `casefirst`.
+    assertFormatting(
+      SplitMultipleDeclsPerLine.self,
+      input: """
+        enum Foo {
+          case
+            first,
+            second,
+            third
+        }
+        """,
+      expected: """
+        enum Foo {
+          case
+            first,
+            second,
+            third
+        }
+        """,
+      findings: []
+    )
+  }
+
   // MARK: - Variable declarations
 
   @Test func multipleVariableBindings() {

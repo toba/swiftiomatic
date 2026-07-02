@@ -69,6 +69,26 @@ struct SortImportsTests: RuleTesting {
     )
   }
 
+  @Test func backticksAreIgnoredWhenSorting() {
+    // Regression (swift-format #1233): a raw-identifier module name must sort by its content, not
+    // by the leading backtick. `Charlie` (escaped) belongs between Bravo and Delta, so imports
+    // already in content order must not be flagged or reordered.
+    assertFormatting(
+      SortImports.self,
+      input: """
+        import Bravo
+        import `Charlie`
+        import Delta
+        """,
+      expected: """
+        import Bravo
+        import `Charlie`
+        import Delta
+        """,
+      findings: []
+    )
+  }
+
   @Test func invalidImportsOrder() {
     assertFormatting(
       SortImports.self,

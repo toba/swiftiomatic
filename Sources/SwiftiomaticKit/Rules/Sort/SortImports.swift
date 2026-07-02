@@ -307,12 +307,13 @@ final class SortImports: StructuralFormatRule<SortImportsConfiguration>, @unchec
         let sortOrder = ruleConfig.sortOrder
         let importPrecedes: (Line, Line) -> Bool =
             switch sortOrder {
-                case .alphabetical: { $0.importName.lexicographicallyPrecedes($1.importName) }
+                case .alphabetical:
+                    { $0.sortComponents.lexicographicallyPrecedes($1.sortComponents) }
                 case .length:
                     {
-                        $0.importName.count < $1.importName.count
-                            || ($0.importName.count == $1.importName.count
-                                && $0.importName.lexicographicallyPrecedes($1.importName))
+                        let lhs = $0.sortName, rhs = $1.sortName
+                        return lhs.count < rhs.count
+                            || (lhs.count == rhs.count && lhs.lexicographicallyPrecedes(rhs))
                     }
             }
 
@@ -624,6 +625,27 @@ private final class Line {
               let importDecl = importCodeBlock.item.as(ImportDeclSyntax.self) else { return "" }
         return importDecl.path.description.trimmingCharacters(in: .whitespacesAndNewlines)
     }
+
+    /// Returns the components of this line's import path with any surrounding backticks removed, so
+    /// that raw-identifier module names sort by their content rather than being grouped together
+    /// simply because they are escaped. When this line isn't an import statement, returns an empty
+    /// array. See https://github.com/swiftlang/swift-format/pull/1233.
+    var sortComponents: [Substring] {
+        guard let syntaxNode,
+              case .importCodeBlock(let importCodeBlock, _) = syntaxNode,
+              let importDecl = importCodeBlock.item.as(ImportDeclSyntax.self) else { return [] }
+        return importDecl.path.map { component in
+            var text = component.name.text[...]
+            if text.hasPrefix("`"), text.hasSuffix("`"), text.count > 2 {
+                text = text.dropFirst().dropLast()
+            }
+            return text
+        }
+    }
+
+    /// The backtick-normalized import path joined into a single string, used when sorting imports
+    /// by length so that escaping doesn't affect the measured length or tie-breaking order.
+    var sortName: String { sortComponents.joined(separator: ".") }
 
     /// Returns the first `TokenSyntax` in the code block(s) from this Line, or nil when this Line
     /// doesn't represent any code blocks (e.g. a comment or blank line).

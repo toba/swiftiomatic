@@ -36,7 +36,7 @@ final class NoAssignmentInExpressions: StaticFormatRule<NoAssignmentInExpression
         // Diagnose any assignment that isn't directly a child of a `CodeBlockItem` (which would be
         // the case if it was its own statement).
         if isAssignmentExpression(node, context: context),
-           !isStandaloneAssignmentStatement(parent: parent),
+           !isStandaloneAssignmentStatement(parent: parent, context: context),
            !isInAllowedFunction(parent: parent, context: context)
         {
             Self.diagnose(.moveAssignmentToOwnStatement, on: node, context: context)
@@ -122,14 +122,40 @@ final class NoAssignmentInExpressions: StaticFormatRule<NoAssignmentInExpression
 
     /// Returns a value indicating whether the given node is a standalone assignment statement.
     /// Walks the captured pre-recursion parent chain.
-    private static func isStandaloneAssignmentStatement(parent: Syntax?) -> Bool {
+    ///
+    /// Besides `try` / `await` / `unsafe` wrappers, this also walks up through enclosing infix
+    /// operator expressions whose operator is unknown to the operator table. Such operators are
+    /// folded using a default precedence/associativity, which can nest an assignment that would
+    /// otherwise stand alone. For example, `x = try f() ?! error` is folded as
+    /// `(x = try f()) ?! error` when `?!` is a custom operator, even though the assignment is its
+    /// own statement. See https://github.com/swiftlang/swift-format/issues/1228.
+    private static func isStandaloneAssignmentStatement(
+        parent: Syntax?,
+        context: Context
+    ) -> Bool {
         var current = parent
         while let p = current,
               p.is(TryExprSyntax.self) || p.is(AwaitExprSyntax.self) || p.is(UnsafeExprSyntax.self)
+                  || isInfixOperatorWithUnknownPrecedence(p, context: context)
         { current = p.parent }
 
         guard let p = current else { return true }
         return p.is(CodeBlockItemSyntax.self)
+    }
+
+    /// Returns a value indicating whether the given node is an infix operator expression whose
+    /// operator is not present in the operator table.
+    ///
+    /// Such operators are folded using a default precedence/associativity, so the resulting nesting
+    /// can't be trusted to reflect how the expression would actually be parsed.
+    private static func isInfixOperatorWithUnknownPrecedence(
+        _ node: Syntax,
+        context: Context
+    ) -> Bool {
+        guard let infixExpr = node.as(InfixOperatorExprSyntax.self),
+              let binaryOperator = infixExpr.operator.as(BinaryOperatorExprSyntax.self)
+        else { return false }
+        return context.operatorTable.infixOperator(named: binaryOperator.operator.text) == nil
     }
 
     /// Returns true if the infix operator expression is in the (non-closure) parameters of an

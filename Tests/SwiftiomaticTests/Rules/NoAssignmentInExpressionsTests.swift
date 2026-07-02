@@ -210,6 +210,28 @@ struct NoAssignmentInExpressionsTests: RuleTesting {
     )
   }
 
+  @Test func standaloneAssignmentWithCustomOperatorIsUnchanged() {
+    // Regression (swift-format #1228): a custom operator is absent from the operator table, so
+    // sequence folding nests `x = try f() ?! error` as `(x = try f()) ?! error`. The assignment
+    // is still its own statement and must not be diagnosed.
+    assertFormatting(
+      NoAssignmentInExpressions.self,
+      input: """
+        infix operator ?!
+        func foo() {
+          x = try f() ?! error
+        }
+        """,
+      expected: """
+        infix operator ?!
+        func foo() {
+          x = try f() ?! error
+        }
+        """,
+      findings: []
+    )
+  }
+
   @Test func assignmentExpressionsInAllowedFunctions() {
     assertFormatting(
       NoAssignmentInExpressions.self,

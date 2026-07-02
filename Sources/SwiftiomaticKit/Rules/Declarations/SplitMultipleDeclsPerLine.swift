@@ -165,6 +165,17 @@ final class SplitMultipleDeclsPerLine: StaticFormatRule<BasicRuleValue>, @unchec
                 continue
             }
 
+            // If none of the elements have associated values there is nothing to split, and we
+            // must not disturb the existing formatting or trivia (splitting would strip leading
+            // whitespace off elements written on continuation lines, collapsing
+            // `case\n  first,\n  second` onto the `case` keyword). Raw values are permitted to
+            // share a `case` declaration, so they don't force a split either.
+            // See https://github.com/swiftlang/swift-format/pull/1221.
+            guard caseDecl.elements.contains(where: { $0.parameterClause != nil }) else {
+                newMembers.append(member)
+                continue
+            }
+
             var collector = CaseElementCollector(basedOn: caseDecl)
 
             for element in caseDecl.elements {

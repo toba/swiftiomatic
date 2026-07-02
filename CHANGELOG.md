@@ -1,5 +1,11 @@
 # Changelog
 
+## Week of Jun 28 – Jul 04, 2026
+
+### 🗜️ Tweaks
+
+- Port three upstream swift-format bugfixes; `NoAssignmentInExpressions` no longer false-positives on a standalone assignment wrapped by a custom operator (`x = try f() ?! error`, swift-format #1232); `SplitMultipleDeclsPerLine` leaves bare enum cases written on continuation lines untouched instead of collapsing `case\n  first` into `casefirst` (swift-format #1221); `SortImports` ignores backticks so raw-identifier module names sort by content rather than being grouped by their escaping (swift-format #1233) ([#746](https://github.com/toba/swiftiomatic/issues/746))
+
 ## Week of Jun 21 – Jun 27, 2026
 
 ### 🐞 Fixes

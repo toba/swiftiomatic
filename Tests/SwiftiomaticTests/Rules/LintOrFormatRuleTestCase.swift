@@ -35,7 +35,7 @@ extension RuleTesting {
     let unmarkedSource = markedText.textWithoutMarkers
     let tree = Parser.parse(source: unmarkedSource, experimentalFeatures: experimentalFeatures)
     let sourceFileSyntax =
-      try! OperatorTable.standardOperators.foldAll(tree).as(SourceFileSyntax.self)!
+      OperatorTable.standardOperators.foldAll(tree) { _ in }.as(SourceFileSyntax.self)!
 
     // Force the rule to be enabled while we test it.
     let enabledRule = ConfigurationRegistry.ruleNameCache[ObjectIdentifier(type)] ?? "\(type)"
@@ -89,7 +89,7 @@ extension RuleTesting {
     let originalSource: String = markedInput.textWithoutMarkers
     let tree = Parser.parse(source: originalSource, experimentalFeatures: experimentalFeatures)
     let sourceFileSyntax =
-      try! OperatorTable.standardOperators.foldAll(tree).as(SourceFileSyntax.self)!
+      OperatorTable.standardOperators.foldAll(tree) { _ in }.as(SourceFileSyntax.self)!
 
     // Force the rule to be enabled while we test it.
     let enabledRule = ConfigurationRegistry.ruleNameCache[ObjectIdentifier(formatType)] ?? "\(formatType)"
