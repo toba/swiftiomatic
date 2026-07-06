@@ -421,6 +421,58 @@ struct UseDocCommentsOnAPITests: RuleTesting {
       ])
   }
 
+  @Test func trailingGroupHeaderNotConvertedWhenPreviousGroupPreserved() {
+    assertFormatting(UseDocCommentsOnAPI.self,
+      input: """
+        enum InfixOperator: String {
+            // Arithmetic operators
+            case plus = "+"
+            case minus = "-"
+            // Comparison operators
+            case lt = "<"
+            case gt = ">"
+            // Boolean operators
+            case and, or
+        }
+        """,
+      expected: """
+        enum InfixOperator: String {
+            // Arithmetic operators
+            case plus = "+"
+            case minus = "-"
+            // Comparison operators
+            case lt = "<"
+            case gt = ">"
+            // Boolean operators
+            case and, or
+        }
+        """,
+      findings: [])
+  }
+
+  @Test func trailingSingleCaseGroupHeaderNotConvertedWhenPreviousGroupPreserved() {
+    assertFormatting(UseDocCommentsOnAPI.self,
+      input: """
+        enum InfixOperator: String {
+            // Comparison operators
+            case lt = "<"
+            case gt = ">"
+            // Single case group
+            case and
+        }
+        """,
+      expected: """
+        enum InfixOperator: String {
+            // Comparison operators
+            case lt = "<"
+            case gt = ">"
+            // Single case group
+            case and
+        }
+        """,
+      findings: [])
+  }
+
   // MARK: - Conditional Compilation
 
   @Test func docCommentInsideIfdef() {

@@ -49,9 +49,13 @@ final class DropRedundantProperty: StaticFormatRule<BasicRuleValue>, @unchecked 
         _ returnItem: CodeBlockItemSyntax,
         context: Context
     ) -> CodeBlockItemSyntax? {
-        // First item: `let identifier = value` (no type annotation, single binding)
+        // First item: `let identifier = value` (no type annotation, single binding). Skip decls
+        // carrying modifiers or attributes (e.g. `@preconcurrency`, `nonisolated(unsafe)`) — those
+        // are part of the declaration, not the returned expression, so inlining would drop them.
         guard let varDecl = declItem.item.as(VariableDeclSyntax.self),
               varDecl.bindingSpecifier.tokenKind == .keyword(.let),
+              varDecl.modifiers.isEmpty,
+              varDecl.attributes.isEmpty,
               varDecl.bindings.count == 1,
               let binding = varDecl.bindings.first,
               let identPattern = binding.pattern.as(IdentifierPatternSyntax.self),

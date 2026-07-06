@@ -1,5 +1,13 @@
 # Changelog
 
+## Week of Jul 05 – Jul 11, 2026
+
+### 🐞 Fixes
+
+- `DropRedundantProperty`; a `let` carrying modifiers or attributes (`@preconcurrency let x = …; return x`, `nonisolated(unsafe) let …`) is no longer inlined into the `return`, which silently dropped the modifier/attribute; the `tryMerge` guard now also requires `modifiers.isEmpty` and `attributes.isEmpty` (mirrors nicklockwood/SwiftFormat `redundantVariable` #2569) ([#749](https://github.com/toba/swiftiomatic/issues/749))
+- `UseFirstWhere`; a trailing-closure `xs.filter { … }.first { … }` (or `.first(where:)`) — already the short-circuiting form — is no longer flagged as preferring `first(where:)` over `filter(_:).first`; adds the `FunctionCallExprSyntax` parent guard that `UseMinMax` already carried (surfaced by nicklockwood/SwiftFormat `preferFirstWhere` #2561) ([#748](https://github.com/toba/swiftiomatic/issues/748))
+- `UseDocCommentsOnAPI`; a regular group-header comment above the *last* case group in a blank-line-free run (`// Boolean operators` above `case and, or`) is no longer converted to a `///` doc comment; a backward-continuity scan now preserves it when an earlier member in the same run is itself a preserved group header (mirrors nicklockwood/SwiftFormat `docComments` #2557) ([#750](https://github.com/toba/swiftiomatic/issues/750))
+
 ## Week of Jun 28 – Jul 04, 2026
 
 ### 🗜️ Tweaks

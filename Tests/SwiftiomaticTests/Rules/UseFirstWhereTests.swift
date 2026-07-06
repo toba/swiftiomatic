@@ -34,6 +34,8 @@ struct UseFirstWhereTests: RuleTesting {
             _ = (myList.filter { $0 == 1 }.suffix(2)).first
             _ = collection.filter("stringCol = '3'").first
             _ = realm?.objects(User.self).filter(NSPredicate(format: "email ==[c] %@", email)).first
+            _ = planets.filter { $0.hasMoons }.first { $0.isHabitable }
+            _ = planets.filter({ $0.hasMoons }).first(where: { $0.isHabitable })
             """#,
             findings: []
         )

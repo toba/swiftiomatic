@@ -242,6 +242,40 @@ struct DropRedundantPropertyTests: RuleTesting {
         """)
   }
 
+  @Test func attributedLetNotFlagged() {
+    assertFormatting(
+      DropRedundantProperty.self,
+      input: """
+        func foo() -> Foo {
+            @preconcurrency let foo = makeFoo()
+            return foo
+        }
+        """,
+      expected: """
+        func foo() -> Foo {
+            @preconcurrency let foo = makeFoo()
+            return foo
+        }
+        """)
+  }
+
+  @Test func modifiedLetNotFlagged() {
+    assertFormatting(
+      DropRedundantProperty.self,
+      input: """
+        func makeTarget() -> Any? {
+            nonisolated(unsafe) let target = compute()
+            return target
+        }
+        """,
+      expected: """
+        func makeTarget() -> Any? {
+            nonisolated(unsafe) let target = compute()
+            return target
+        }
+        """)
+  }
+
   @Test func returnWithNoExpressionNotFlagged() {
     assertFormatting(
       DropRedundantProperty.self,

@@ -34,6 +34,7 @@ final class UseDocCommentsOnAPI: StaticFormatRule<BasicRuleValue>, @unchecked Se
     ) -> MemberBlockItemSyntax {
         guard isDocCommentableDeclaration(node.decl) else { return node }
         let isConsecutive = isFollowedByConsecutiveMember(node)
+            || isPrecededByConsecutivePreservedMember(node)
         return processTrivia(
             node,
             toDocComment: true,
@@ -53,6 +54,7 @@ final class UseDocCommentsOnAPI: StaticFormatRule<BasicRuleValue>, @unchecked Se
 
         if isAtFileScope(node) {
             let isConsecutive = isFollowedByConsecutiveCodeItem(node)
+                || isPrecededByConsecutivePreservedCodeItem(node)
             return processTrivia(
                 node,
                 toDocComment: true,
@@ -231,6 +233,70 @@ final class UseDocCommentsOnAPI: StaticFormatRule<BasicRuleValue>, @unchecked Se
             if item.id == node.id { foundSelf = true }
         }
         return false
+    }
+
+    /// Preserve the trailing group header in a run of consecutive declarations. A comment on the
+    /// *last* member of a group has nothing after it, so `isFollowedByConsecutiveMember` can't
+    /// preserve it; instead we scan backward through the uninterrupted run (no blank lines) and
+    /// preserve it when an earlier member is itself a preserved group header — i.e. it carries a
+    /// regular comment and is followed by a consecutive member.
+    private static func isPrecededByConsecutivePreservedMember(_ node: MemberBlockItemSyntax) -> Bool {
+        guard let parent = node.parent?.as(MemberBlockItemListSyntax.self) else { return false }
+        let items = Array(parent)
+        guard var idx = items.firstIndex(where: { $0.id == node.id }) else { return false }
+
+        while idx > 0 {
+            // A blank line breaks the run; the comment is no longer a continuation group header.
+            if hasBlankLineAbove(items[idx].leadingTrivia) { return false }
+            let prev = items[idx - 1]
+            if hasRegularLineComment(prev.leadingTrivia), isFollowedByConsecutiveMember(prev) {
+                return true
+            }
+            idx -= 1
+        }
+        return false
+    }
+
+    /// File-scope analogue of `isPrecededByConsecutivePreservedMember`.
+    private static func isPrecededByConsecutivePreservedCodeItem(_ node: CodeBlockItemSyntax) -> Bool {
+        guard let parent = node.parent?.as(CodeBlockItemListSyntax.self) else { return false }
+        let items = Array(parent)
+        guard var idx = items.firstIndex(where: { $0.id == node.id }) else { return false }
+
+        while idx > 0 {
+            if hasBlankLineAbove(items[idx].leadingTrivia) { return false }
+            let prev = items[idx - 1]
+            if hasRegularLineComment(prev.leadingTrivia), isFollowedByConsecutiveCodeItem(prev) {
+                return true
+            }
+            idx -= 1
+        }
+        return false
+    }
+
+    /// True when two or more newlines precede the first comment in `trivia` (or, absent any comment,
+    /// precede the declaration) — i.e. a blank line separates it from the preceding sibling.
+    private static func hasBlankLineAbove(_ trivia: Trivia) -> Bool {
+        var newlines = 0
+
+        for piece in trivia.pieces {
+            switch piece {
+                case let .newlines(n): newlines += n
+                case let .carriageReturns(n): newlines += n
+                case let .carriageReturnLineFeeds(n): newlines += n
+                case .lineComment, .blockComment, .docLineComment, .docBlockComment:
+                    return newlines >= 2
+                default: break
+            }
+        }
+        return newlines >= 2
+    }
+
+    private static func hasRegularLineComment(_ trivia: Trivia) -> Bool {
+        trivia.pieces.contains { piece in
+            if case .lineComment = piece { return true }
+            return false
+        }
     }
 }
 
