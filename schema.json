@@ -836,7 +836,7 @@
               "$ref" : "#/$defs/lintOnlyBase"
             }
           ],
-          "description" : "A computed-property or subscript setter that never reads its parameter ( `newValue` by default, or the bound name in `set(custom)` ) is almost always wrong — the assignment to the underlying storage uses some other expression, leaving the actual incoming value silently dropped.\n\nException: empty `override` setters, e.g. `override var x: T { get { ... } set {} }` , are intentional no-ops to suppress the parent class's setter.\n\nLint: When a `set` accessor's body never references its parameter name, a warning is raised.",
+          "description" : "A computed-property or subscript setter that never reads its parameter ( `newValue` by default, or the bound name in `set(custom)` ) is almost always wrong — the assignment to the underlying storage uses some other expression, leaving the actual incoming value silently dropped.\n\nException: empty setters, e.g. `set {}` , are intentional no-ops — an `override` suppressing the parent class's setter, or a protocol-extension default that must supply a settable requirement for conformers to override. Nothing is assigned, so there is nothing to get wrong.\n\nLint: When a `set` accessor's body never references its parameter name, a warning is raised.",
           "unevaluatedProperties" : false
         },
         "orderProtocolAccessors" : {
@@ -2889,7 +2889,7 @@
           "$ref" : "#/$defs/lintOnlyBase"
         }
       ],
-      "description" : "A computed-property or subscript setter that never reads its parameter ( `newValue` by default, or the bound name in `set(custom)` ) is almost always wrong — the assignment to the underlying storage uses some other expression, leaving the actual incoming value silently dropped.\n\nException: empty `override` setters, e.g. `override var x: T { get { ... } set {} }` , are intentional no-ops to suppress the parent class's setter.\n\nLint: When a `set` accessor's body never references its parameter name, a warning is raised.",
+      "description" : "A computed-property or subscript setter that never reads its parameter ( `newValue` by default, or the bound name in `set(custom)` ) is almost always wrong — the assignment to the underlying storage uses some other expression, leaving the actual incoming value silently dropped.\n\nException: empty setters, e.g. `set {}` , are intentional no-ops — an `override` suppressing the parent class's setter, or a protocol-extension default that must supply a settable requirement for conformers to override. Nothing is assigned, so there is nothing to get wrong.\n\nLint: When a `set` accessor's body never references its parameter name, a warning is raised.",
       "unevaluatedProperties" : false
     },
     "noVoidTernary" : {

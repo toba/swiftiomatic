@@ -4,8 +4,9 @@ import SwiftSyntax
 /// or the bound name in `set(custom)` ) is almost always wrong — the assignment to the underlying
 /// storage uses some other expression, leaving the actual incoming value silently dropped.
 ///
-/// Exception: empty `override` setters, e.g. `override var x: T { get { ... } set {} }` , are
-/// intentional no-ops to suppress the parent class's setter.
+/// Exception: empty setters, e.g. `set {}` , are intentional no-ops — an `override` suppressing the
+/// parent class's setter, or a protocol-extension default that must supply a settable requirement
+/// for conformers to override. Nothing is assigned, so there is nothing to get wrong.
 ///
 /// Lint: When a `set` accessor's body never references its parameter name, a warning is raised.
 final class NoUnusedSetterValue: LintSyntaxRule<LintOnlyValue>, @unchecked Sendable {
@@ -21,34 +22,16 @@ final class NoUnusedSetterValue: LintSyntaxRule<LintOnlyValue>, @unchecked Senda
         visitor.walk(body)
         guard !visitor.wasUsed else { return .visitChildren }
 
-        // Empty body in an `override` setter is intentional.
-        if body.statements.isEmpty,
-           isEnclosingDeclOverride(node)
-        {
+        // An empty setter body is an explicit no-op, not a value silently dropped into the wrong
+        // storage. This covers `override` setters that suppress a parent's, and protocol-extension
+        // default implementations that must provide a settable requirement for conformers to
+        // override. Nothing is being assigned, so there is nothing to get wrong.
+        if body.statements.isEmpty {
             return .visitChildren
         }
 
         diagnose(.unusedSetterValue(parameterName), on: node)
         return .visitChildren
-    }
-
-    private func isEnclosingDeclOverride(_ node: AccessorDeclSyntax) -> Bool {
-        var current: Syntax? = Syntax(node).parent
-
-        while let curr = current {
-            if let varDecl = curr.as(VariableDeclSyntax.self) {
-                return varDecl.modifiers.contains(where: {
-                    $0.name.tokenKind == .keyword(.override)
-                })
-            }
-            if let subscriptDecl = curr.as(SubscriptDeclSyntax.self) {
-                return subscriptDecl.modifiers.contains(where: {
-                    $0.name.tokenKind == .keyword(.override)
-                })
-            }
-            current = curr.parent
-        }
-        return false
     }
 }
 

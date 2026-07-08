@@ -102,4 +102,17 @@ struct UseContainsTests: RuleTesting {
             findings: []
         )
     }
+
+    @Test func customFirstWithValueArgumentAccepted() {
+        // A custom `first(_ element:)` that takes a value (not a `where:` closure) and returns
+        // an Index is unrelated to `first(where:) == nil`; no `contains(where:)` rewrite exists.
+        assertLint(
+            UseContains.self,
+            #"""
+            guard span.first(UInt8(ascii: ":")) == nil else { throw Err.invalidName }
+            _ = buffer.first(delimiter) != nil
+            """#,
+            findings: []
+        )
+    }
 }

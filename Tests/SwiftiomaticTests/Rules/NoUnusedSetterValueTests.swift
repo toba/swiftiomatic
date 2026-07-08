@@ -92,6 +92,36 @@ struct NoUnusedSetterValueTests: RuleTesting {
     )
   }
 
+  @Test func emptyDefaultSetterInProtocolExtensionNotFlagged() {
+    // A settable protocol requirement given a no-op default implementation must keep the empty
+    // setter to satisfy `{ get set }`; doing nothing is the intent.
+    assertLint(
+      NoUnusedSetterValue.self,
+      """
+      extension Handler {
+        var location: Location? {
+          get { nil }
+          set {}
+        }
+      }
+      """,
+      findings: []
+    )
+  }
+
+  @Test func emptyStandaloneSetterNotFlagged() {
+    assertLint(
+      NoUnusedSetterValue.self,
+      """
+      var aValue: String {
+        get { return Persister.shared.aValue }
+        set {}
+      }
+      """,
+      findings: []
+    )
+  }
+
   @Test func protocolStubsNotChecked() {
     assertLint(
       NoUnusedSetterValue.self,

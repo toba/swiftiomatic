@@ -47,6 +47,14 @@ final class NoSwapThenRemoveAll: LintSyntaxRule<LintOnlyValue>, @unchecked Senda
               let member = call.calledExpression.as(MemberAccessExprSyntax.self),
               member.declName.baseName.text == "removeAll",
               let receiver = member.base?.as(DeclReferenceExprSyntax.self) else { return nil }
+        // `keepingCapacity: true` is the deliberate allocation-reuse idiom (the canonical
+        // double-buffer cycle), not the fragile pattern this rule targets — exempt it.
+        if call.arguments.contains(where: {
+            $0.label?.text == "keepingCapacity"
+                && $0.expression.as(BooleanLiteralExprSyntax.self)?.literal.tokenKind == .keyword(.true)
+        }) {
+            return nil
+        }
         return receiver.baseName.text
     }
 }

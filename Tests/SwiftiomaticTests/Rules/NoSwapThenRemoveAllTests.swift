@@ -10,12 +10,27 @@ struct NoSwapThenRemoveAllTests: RuleTesting {
       """
       func tick() {
         swap(&current, &next)
-        1️⃣current.removeAll(keepingCapacity: true)
+        1️⃣current.removeAll()
       }
       """,
       findings: [
         FindingSpec("1️⃣", message: "'swap(&current, &next)' followed by 'current.removeAll' is the alternating-buffer pattern — fragile; consider an explicit double-buffer or 'reserveCapacity' on a single buffer"),
       ]
+    )
+  }
+
+  @Test func keepingCapacityTrueExempted() {
+    // Deliberately retaining capacity is the canonical double-buffer idiom, not the
+    // fragile alternating-buffer bug the rule targets.
+    assertLint(
+      NoSwapThenRemoveAll.self,
+      """
+      func tick() {
+        swap(&front, &back)
+        front.removeAll(keepingCapacity: true)
+      }
+      """,
+      findings: []
     )
   }
 
