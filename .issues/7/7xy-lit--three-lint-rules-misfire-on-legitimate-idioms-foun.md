@@ -5,11 +5,11 @@ status: completed
 type: bug
 priority: normal
 created_at: 2026-07-08T03:06:09Z
-updated_at: 2026-07-08T03:13:42Z
+updated_at: 2026-07-08T03:32:27Z
 sync:
     github:
         issue_number: "752"
-        synced_at: "2026-07-08T03:13:57Z"
+        synced_at: "2026-07-08T17:19:38Z"
 ---
 
 While formatting/linting a vendored copy of the xylem XML SAX parser (Span-based, non-copyable, Swift 6.2 code), three rules produced findings on idiomatic, correct code. Two are error-level, so they block a clean `sm lint`. In each case the "fix" is impossible or changes semantics, so the only recourse is `sm:ignore`. Reasonable defaults should not flag these.
@@ -68,3 +68,24 @@ Added regression tests (`keepingCapacityTrueExempted`, `customFirstWithValueArgu
 
 ## Notes
 Encountered in the Thesis project (Core/Sources/XML) vendoring github.com/thoven87/xylem @ 9881c95. All three were suppressed there with `// sm:ignore:next` + rationale.
+
+
+## 4. `useTernary` (rewrite) — turns compiling code into non-compiling code for lifetime-dependent returns
+Discovered vendoring the same parser. `useTernary` rewrites
+```swift
+switch bytes[cursor] {           // or an if/else with two returns
+    case UInt8(ascii: "<"): return try markup()
+    default: return try text()
+}
+```
+into `return bytes[cursor] == ... ? try markup() : try text()`. When the function returns a `~Escapable` / lifetime-dependent value (Swift 6.2+ `@_lifetime`, e.g. a borrowing SAX token), the **ternary form fails the borrow/lifetime checker** ("lifetime-dependent value escapes its scope") while the if/else and switch forms compile. So the format rewrite converts building code into a build error.
+
+Two problems:
+- The rewrite should not fire when either branch returns a lifetime-dependent (`~Escapable`) value — or at least be opt-out-able.
+- **`// sm:ignore:next useTernary` does NOT suppress the rewrite.** The ignore directive only affects lint reporting; `sm format` still applied the ternary rewrite. There appears to be no way to exempt a single site from a rewrite rule. Ignore directives should suppress rewrites too (that's the whole point of a per-line exemption).
+
+Workaround used: rewrote as a `switch` (which `useTernary` doesn't target). But relying on "pick a form the rewriter happens to ignore" is fragile.
+
+## Tasks (append)
+- [ ] `useTernary`: don't rewrite when a branch returns a `~Escapable`/lifetime-dependent value
+- [ ] Make `// sm:ignore[:next] <rule>` suppress rewrites during `format`, not just lint reporting

@@ -664,4 +664,43 @@ struct SwitchStmtTests: LayoutTesting {
     configuration[AlignWrappedConditions.self] = true
     assertLayout(input: input, expected: expected, linelength: 50, configuration: configuration)
   }
+
+  // 487-2dd: a multi-pattern case whose patterns each carry a trailing line comment, with the
+  // case body on the following line, must NOT absorb the body statement into the final pattern's
+  // trailing comment. The body `continue` must stay on its own line (moving it into the comment
+  // would empty the case body and produce a compile error).
+  @Test func switchCaseMultiPatternTrailingCommentsPreserveBody() {
+    let input =
+      """
+      switch scalar.value {
+      case 0x30...0x39,  // 0-9
+           0x41...0x5A,  // A-Z
+           0x61...0x7A,  // a-z
+           0x2E,  // .
+           0x2D,  // -
+           0x5F:  // _
+        continue
+      default: break
+      }
+      """
+
+    let expected =
+      """
+      switch scalar.value {
+      case 0x30...0x39,  // 0-9
+           0x41...0x5A,  // A-Z
+           0x61...0x7A,  // a-z
+           0x2E,  // .
+           0x2D,  // -
+           0x5F:  // _
+        continue
+      default: break
+      }
+
+      """
+
+    var configuration = Configuration.forTesting
+    configuration[AlignWrappedConditions.self] = true
+    assertLayout(input: input, expected: expected, linelength: 50, configuration: configuration)
+  }
 }

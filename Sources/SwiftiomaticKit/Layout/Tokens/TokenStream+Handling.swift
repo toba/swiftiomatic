@@ -128,18 +128,30 @@ extension TokenStream {
 
         if !wasLineComment { trailingCommentTokens.forEach(appendToken) }
 
+        // A trailing line comment must be glued to its token before any break that will fire a
+        // newline; otherwise the comment is pushed onto its own line (and code after it can be
+        // swallowed into the comment). Upstream extracts before non-close breaks, `printerControl`,
+        // and mandatory-breaking close breaks, but keeps the comment *after* a non-mandatory close
+        // break. That assumption fails for `AlignWrappedConditions`, which emits a
+        // non-mandatory `.break(.close)` (closing the previous item's alignment scope) immediately
+        // before the `.break(.open(.alignment))` that starts the next one: the close break still
+        // fires a newline at layout time, stranding the comment. When such a leading close break is
+        // followed by another extractable break in the same group, glue the comment before the
+        // first break so it stays end-of-line. (487-2dd)
+        let extractBeforeFirstBreak = wasLineComment
+            && afterGroups.reversed().contains { after in
+                after.contains { isExtractableForTrailingComment($0) }
+            }
+
         for after in afterGroups.reversed() {
             for afterToken in after {
                 var shouldExtractTrailingComment = false
 
                 if wasLineComment, !hasAppendedTrailingComment {
                     switch afterToken {
-                        case .break(let kind, _, _):
-                            if case let .close(mustBreak) = kind {
-                                shouldExtractTrailingComment = mustBreak
-                            } else {
-                                shouldExtractTrailingComment = true
-                            }
+                        case .break:
+                            shouldExtractTrailingComment = extractBeforeFirstBreak
+                                || isExtractableForTrailingComment(afterToken)
                         case .printerControl: shouldExtractTrailingComment = true
                         default: break
                     }
@@ -154,6 +166,19 @@ extension TokenStream {
 
         if wasLineComment, !hasAppendedTrailingComment {
             trailingCommentTokens.forEach(appendToken)
+        }
+    }
+
+    /// Whether a trailing line comment should be extracted (glued to its token) immediately before
+    /// the given after-token — i.e. the token is a break that will introduce a newline (any break
+    /// except a non-mandatory close) or a `printerControl`.
+    private func isExtractableForTrailingComment(_ token: Token) -> Bool {
+        switch token {
+            case .break(let kind, _, _):
+                if case let .close(mustBreak) = kind { return mustBreak }
+                return true
+            case .printerControl: return true
+            default: return false
         }
     }
 }
