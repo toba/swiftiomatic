@@ -131,6 +131,25 @@ struct RequireCamelCaseIdentifiersTests: RuleTesting {
     )
   }
 
+  @Test func ignoresUnderscoresInTestNamesWithSwiftTesting() {
+    // Swift Testing is a supported test library too: `test`-prefixed void methods get the same
+    // underscore exemption XCTest files receive, while non-test underscore names are still flagged.
+    assertLint(
+      RequireCamelCaseIdentifiers.self,
+      """
+      import Testing
+
+      class UnitTests {
+        func test_HappyPath_Through_GoodCode() {}
+        private func 1️⃣helperFunc_For_HappyPath_Setup() {}
+      }
+      """,
+      findings: [
+        FindingSpec("1️⃣", message: "rename the function 'helperFunc_For_HappyPath_Setup' using lowerCamelCase"),
+      ]
+    )
+  }
+
   @Test func ignoresUnderscoresInTestNamesWhenImportedConditionally() {
     assertLint(
       RequireCamelCaseIdentifiers.self,

@@ -17,7 +17,7 @@ import SwiftSyntax
 /// Certain properties (e.g. `@IBOutlet`) tied to the UI lifecycle are ignored.
 ///
 /// This rule does not apply to test code, defined as code which:
-///   * Contains the line `import XCTest`
+///   * Imports a supported test library (e.g. `XCTest` or `Testing`)
 ///   * The function is marked with `@Test` attribute
 ///
 /// TODO: Create exceptions for other UI elements (ex: viewDidLoad)
@@ -32,14 +32,16 @@ final class NoImplicitlyUnwrappedOptionals: LintSyntaxRule<LintOnlyValue>, @unch
     /// make that determination.
     override static var defaultValue: LintOnlyValue { .init(lint: .no) }
 
-    // Checks if "XCTest" is an import statement
+    // Checks whether a supported test library is imported.
     override func visit(_ node: SourceFileSyntax) -> SyntaxVisitorContinueKind {
-        setImportsXCTest(context: context, sourceFile: node)
+        setImportsAnyTestLibrary(context: context, sourceFile: node)
         return .visitChildren
     }
 
     override func visit(_ node: VariableDeclSyntax) -> SyntaxVisitorContinueKind {
-        guard context.importsXCTest == .doesNotImportXCTest else { return .skipChildren }
+        guard context.importsAnyTestLibrary == .doesNotImportTestLibrary else {
+            return .skipChildren
+        }
         // Allow implicitly unwrapping if it is in a function marked with @Test attribute.
         if node.hasTestAncestor { return .skipChildren }
         // Ignores IBOutlet variables

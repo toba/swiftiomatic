@@ -31,14 +31,14 @@ func rewriteSourceFile(
         result = ensureLineBreakAtEOF(result, context: context)
     }
 
-    // 2. NoForceTry: file-level pre-scan — populate `importsXCTest` so test classes can be
+    // 2. NoForceTry: file-level pre-scan — populate `importsAnyTestLibrary` so test classes can be
     //    identified during traversal.
     if context.shouldRewrite(NoForceTry.self, at: Syntax(result)) {
-        setImportsXCTest(context: context, sourceFile: result)
+        setImportsAnyTestLibrary(context: context, sourceFile: result)
     }
 
-    // 3. NoForceUnwrap: file-level pre-scan — populate `importsXCTest` so test classes can be
-    //    identified during traversal. Helpers in `Rewrites/Exprs/NoForceUnwrapHelpers.swift` .
+    // 3. NoForceUnwrap: file-level pre-scan — populate `importsAnyTestLibrary` so test classes can
+    //    be identified during traversal. Helpers in `Rewrites/Exprs/NoForceUnwrapHelpers.swift` .
     if context.shouldRewrite(NoForceUnwrap.self, at: Syntax(result)) {
         NoForceUnwrap.visitSourceFile(result, context: context)
     }

@@ -47,7 +47,7 @@ final class NoForceTry: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
     // MARK: - Compact-pipeline scope hooks
 
     static func willEnter(_ node: SourceFileSyntax, context: Context) {
-        setImportsXCTest(context: context, sourceFile: node)
+        setImportsAnyTestLibrary(context: context, sourceFile: node)
     }
 
     static func visitImport(_ node: ImportDeclSyntax, context: Context) {
@@ -57,7 +57,7 @@ final class NoForceTry: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
     static func willEnter(_ node: ClassDeclSyntax, context: Context) {
         let s = state(context)
         s.classStack.append(s.insideXCTestCase)
-        if context.importsXCTest == .importsXCTest,
+        if context.importsAnyTestLibrary == .importsTestLibrary,
            let inheritance = node.inheritanceClause,
            inheritance.contains(named: "XCTestCase")
         {

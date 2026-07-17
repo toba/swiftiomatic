@@ -25,7 +25,7 @@ final class RequireTestFnPrefixOrAttribute: StaticFormatRule<BasicRuleValue>, @u
 
     static func willEnter(_ node: SourceFileSyntax, context: Context) {
         let state = context.validateTestCasesState
-        setImportsXCTest(context: context, sourceFile: node)
+        setImportsAnyTestLibrary(context: context, sourceFile: node)
         state.framework = detectTestFramework(in: node)
 
         if state.framework == .xcTest {

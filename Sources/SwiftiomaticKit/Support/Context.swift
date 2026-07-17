@@ -8,9 +8,11 @@ import SwiftOperators
 /// Specifically, it is the container for the shared configuration, diagnostic consumer, and URL of
 /// the current file.
 package final class Context {
-    /// Tracks whether `XCTest` has been imported so that certain logic can be modified for files
-    /// that are known to be tests.
-    package enum XCTestImportState { case notDetermined, importsXCTest, doesNotImportXCTest }
+    /// Tracks whether a supported test library (see `supportedTestLibraryModuleNames`) has been
+    /// imported so that certain logic can be modified for files that are known to be tests.
+    package enum AnyTestImportState {
+        case notDetermined, importsTestLibrary, doesNotImportTestLibrary
+    }
 
     /// The configuration for this run of the pipeline, provided by a configuration JSON file.
     let configuration: Configuration
@@ -27,11 +29,11 @@ package final class Context {
     /// The URL of the file being linted or formatted.
     let fileURL: URL
 
-    /// Indicates whether the file is known to import XCTest.
+    /// Indicates whether the file is known to import a supported test library.
     ///
     /// The lint and rewrite pipelines drive a single `Context` per file serially, so concurrent
     /// reads/writes are not expected. If that invariant changes, this needs to become atomic.
-    package var importsXCTest: XCTestImportState
+    package var importsAnyTestLibrary: AnyTestImportState
 
     /// An object that converts `AbsolutePosition` values to `SourceLocation` values.
     package let sourceLocationConverter: SourceLocationConverter
@@ -132,7 +134,7 @@ package final class Context {
         self.operatorTable = operatorTable
         findingEmitter = FindingEmitter(consumer: findingConsumer)
         self.fileURL = fileURL
-        importsXCTest = .notDetermined
+        importsAnyTestLibrary = .notDetermined
         let tree = source.map { Parser.parse(source: $0) } ?? sourceFileSyntax
         self.sourceFileSyntax = tree
         sourceLocationConverter = SourceLocationConverter(

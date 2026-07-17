@@ -115,7 +115,7 @@ struct TestContextTracker {
 
     /// Call from `visit(_ node: SourceFileSyntax)` .
     mutating func visitSourceFile(_ node: SourceFileSyntax, context: Context) {
-        setImportsXCTest(context: context, sourceFile: node)
+        setImportsAnyTestLibrary(context: context, sourceFile: node)
     }
 
     /// Call at the start of `visit(_ node: ClassDeclSyntax)` . Returns the previous value of
@@ -123,7 +123,7 @@ struct TestContextTracker {
     mutating func pushClass(_ node: ClassDeclSyntax, context: Context) -> Bool {
         let was = insideXCTestCase
 
-        if context.importsXCTest == .importsXCTest,
+        if context.importsAnyTestLibrary == .importsTestLibrary,
            let inheritance = node.inheritanceClause,
            inheritance.contains(named: "XCTestCase")
         {

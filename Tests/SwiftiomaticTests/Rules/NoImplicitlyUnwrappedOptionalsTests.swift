@@ -49,6 +49,18 @@ struct NeverUseImplicitlyUnwrappedOptionalsTests: RuleTesting {
     )
   }
 
+  @Test func ignoreSwiftTestingCode() {
+    assertLint(
+      NoImplicitlyUnwrappedOptionals.self,
+      """
+      import Testing
+
+      var s: String!
+      """,
+      findings: []
+    )
+  }
+
   @Test func ignoreTestAttrinuteFunction() {
     assertLint(
       NoImplicitlyUnwrappedOptionals.self,

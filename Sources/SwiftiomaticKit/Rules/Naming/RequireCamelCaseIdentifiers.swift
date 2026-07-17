@@ -16,7 +16,7 @@ import SwiftSyntax
 /// the beginning of an identifier) are disallowed.
 ///
 /// This rule does not apply to test code, defined as code which:
-///   * Contains the line `import XCTest`
+///   * Imports a supported test library (e.g. `XCTest` or `Testing`)
 ///   * The function is marked with `@Test` attribute
 ///
 /// Lint: If an identifier contains underscores or begins with a capital letter, a lint error is
@@ -28,14 +28,14 @@ final class RequireCamelCaseIdentifiers: LintSyntaxRule<LintOnlyValue>, @uncheck
     private var testCaseFuncs = Set<FunctionDeclSyntax>()
 
     override func visit(_ node: SourceFileSyntax) -> SyntaxVisitorContinueKind {
-        // Tracks whether "XCTest" is imported in the source file before processing individual
-        // nodes.
-        setImportsXCTest(context: context, sourceFile: node)
+        // Tracks whether a supported test library is imported in the source file before processing
+        // individual nodes.
+        setImportsAnyTestLibrary(context: context, sourceFile: node)
         return .visitChildren
     }
 
     override func visit(_ node: ClassDeclSyntax) -> SyntaxVisitorContinueKind {
-        guard context.importsXCTest == .importsXCTest else { return .visitChildren }
+        guard context.importsAnyTestLibrary == .importsTestLibrary else { return .visitChildren }
 
         collectTestMethods(from: node.memberBlock.members, into: &testCaseFuncs)
         return .visitChildren

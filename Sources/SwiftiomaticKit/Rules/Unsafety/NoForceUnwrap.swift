@@ -155,7 +155,7 @@ final class NoForceUnwrap: StaticFormatRule<BasicRuleValue>, @unchecked Sendable
     }
 
     static func visitSourceFile(_ node: SourceFileSyntax, context: Context) {
-        setImportsXCTest(context: context, sourceFile: node)
+        setImportsAnyTestLibrary(context: context, sourceFile: node)
     }
 
     // MARK: - Class scope
@@ -163,7 +163,7 @@ final class NoForceUnwrap: StaticFormatRule<BasicRuleValue>, @unchecked Sendable
     static func pushClass(_ node: ClassDeclSyntax, context: Context) {
         let s = state(context)
         s.classStack.append(s.insideXCTestCase)
-        if context.importsXCTest == .importsXCTest,
+        if context.importsAnyTestLibrary == .importsTestLibrary,
            let inheritance = node.inheritanceClause,
            inheritance.contains(named: "XCTestCase")
         {

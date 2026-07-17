@@ -1,5 +1,11 @@
 # Changelog
 
+## Week of Jul 12 – Jul 18, 2026
+
+### 🗜️ Tweaks
+
+- `NoImplicitlyUnwrappedOptionals` and `RequireCamelCaseIdentifiers` now relax inside Swift Testing files, not just XCTest; ports upstream swift-format's `ImportsXCTestVisitor` → `ImportsAnyTestingLibrary` rework (#1244/#1247) behind an extensible `supportedTestLibraryModuleNames` list, and renames `Context.importsXCTest` → `importsAnyTestLibrary` so the field no longer reads as XCTest-only when it now matches any test library ([#754](https://github.com/toba/swiftiomatic/issues/754))
+
 ## Week of Jul 05 – Jul 11, 2026
 
 ### 🐞 Fixes

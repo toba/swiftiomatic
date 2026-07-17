@@ -2524,7 +2524,7 @@
               "$ref" : "#/$defs/lintOnlyBase"
             }
           ],
-          "description" : "All values should be written in lower camel-case ( `lowerCamelCase` ). Underscores (except at the beginning of an identifier) are disallowed.\n\nThis rule does not apply to test code, defined as code which:\n* Contains the line `import XCTest`\n* The function is marked with `@Test` attribute\n\nLint: If an identifier contains underscores or begins with a capital letter, a lint error is raised.",
+          "description" : "All values should be written in lower camel-case ( `lowerCamelCase` ). Underscores (except at the beginning of an identifier) are disallowed.\n\nThis rule does not apply to test code, defined as code which:\n* Imports a supported test library (e.g. `XCTest` or `Testing`)\n* The function is marked with `@Test` attribute\n\nLint: If an identifier contains underscores or begins with a capital letter, a lint error is raised.",
           "unevaluatedProperties" : false
         },
         "uppercaseAcronymsInIdentifiers" : {
@@ -2748,7 +2748,7 @@
           "$ref" : "#/$defs/lintOnlyBase"
         }
       ],
-      "description" : "Implicitly unwrapped optionals (e.g. `var s: String!`) are forbidden.\n\nCertain properties (e.g. `@IBOutlet`) tied to the UI lifecycle are ignored.\n\nThis rule does not apply to test code, defined as code which:\n* Contains the line `import XCTest`\n* The function is marked with `@Test` attribute\n\nTODO: Create exceptions for other UI elements (ex: viewDidLoad)\n\nLint: Declaring a property with an implicitly unwrapped type yields a lint error.",
+      "description" : "Implicitly unwrapped optionals (e.g. `var s: String!`) are forbidden.\n\nCertain properties (e.g. `@IBOutlet`) tied to the UI lifecycle are ignored.\n\nThis rule does not apply to test code, defined as code which:\n* Imports a supported test library (e.g. `XCTest` or `Testing`)\n* The function is marked with `@Test` attribute\n\nTODO: Create exceptions for other UI elements (ex: viewDidLoad)\n\nLint: Declaring a property with an implicitly unwrapped type yields a lint error.",
       "unevaluatedProperties" : false
     },
     "noLeadingUnderscores" : {
@@ -3302,7 +3302,7 @@
           "$ref" : "#/$defs/lintOnlyBase"
         }
       ],
-      "description" : "All values should be written in lower camel-case ( `lowerCamelCase` ). Underscores (except at the beginning of an identifier) are disallowed.\n\nThis rule does not apply to test code, defined as code which:\n* Contains the line `import XCTest`\n* The function is marked with `@Test` attribute\n\nLint: If an identifier contains underscores or begins with a capital letter, a lint error is raised.",
+      "description" : "All values should be written in lower camel-case ( `lowerCamelCase` ). Underscores (except at the beginning of an identifier) are disallowed.\n\nThis rule does not apply to test code, defined as code which:\n* Imports a supported test library (e.g. `XCTest` or `Testing`)\n* The function is marked with `@Test` attribute\n\nLint: If an identifier contains underscores or begins with a capital letter, a lint error is raised.",
       "unevaluatedProperties" : false
     },
     "requireDocSummaryStructure" : {
@@ -3850,7 +3850,7 @@
               "$ref" : "#/$defs/lintOnlyBase"
             }
           ],
-          "description" : "Implicitly unwrapped optionals (e.g. `var s: String!`) are forbidden.\n\nCertain properties (e.g. `@IBOutlet`) tied to the UI lifecycle are ignored.\n\nThis rule does not apply to test code, defined as code which:\n* Contains the line `import XCTest`\n* The function is marked with `@Test` attribute\n\nTODO: Create exceptions for other UI elements (ex: viewDidLoad)\n\nLint: Declaring a property with an implicitly unwrapped type yields a lint error.",
+          "description" : "Implicitly unwrapped optionals (e.g. `var s: String!`) are forbidden.\n\nCertain properties (e.g. `@IBOutlet`) tied to the UI lifecycle are ignored.\n\nThis rule does not apply to test code, defined as code which:\n* Imports a supported test library (e.g. `XCTest` or `Testing`)\n* The function is marked with `@Test` attribute\n\nTODO: Create exceptions for other UI elements (ex: viewDidLoad)\n\nLint: Declaring a property with an implicitly unwrapped type yields a lint error.",
           "unevaluatedProperties" : false
         },
         "noOptionalBool" : {
