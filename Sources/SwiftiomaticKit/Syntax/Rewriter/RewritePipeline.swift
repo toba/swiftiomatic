@@ -853,6 +853,9 @@ final class RewritePipeline: SyntaxRewriter {
         apply(RequireFatalErrorMessage.self, to: &concrete, original: node, gate: gate) {
             RequireFatalErrorMessage.transform($0, original: $1, parent: parent, context: $2)
         }
+        apply(UseScaledToFit.self, to: &concrete, original: node, gate: gate) {
+            UseScaledToFit.transform($0, original: $1, parent: parent, context: $2)
+        }
         if context.shouldRewrite(NoTrailingClosureParens.self, gate: gate) {
             concrete = NoTrailingClosureParens.apply(concrete, context: context)
         }

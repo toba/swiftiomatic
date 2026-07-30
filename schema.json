@@ -3717,6 +3717,14 @@
           "description" : "Lint selector-based `NotificationCenter.addObserver(_:selector:name:object:)` . Prefer the closure-based `addObserver(forName:object:queue:using:)` — it returns an opaque token, doesn't require an `@objc` handler, and integrates cleanly with structured concurrency.",
           "unevaluatedProperties" : false
         },
+        "useScaledToFit" : {
+          "allOf" : [
+            {
+              "$ref" : "#/$defs/ruleBase"
+            }
+          ],
+          "description" : "Prefer `.scaledToFit()` / `.scaledToFill()` over `.aspectRatio(contentMode:)` with a constant content mode.\n\nSwiftUI's `scaledToFit()` and `scaledToFill()` are exact equivalents of `aspectRatio(contentMode: .fit)` and `aspectRatio(contentMode: .fill)` respectively, and read more clearly. The rewrite only fires when the call has a single `contentMode:` argument whose value is a constant `.fit` / `.fill` (optionally spelled `ContentMode.fit` / `ContentMode.fill`). A leading ratio argument, a non-constant content mode, or a differently-typed enum base leaves the call untouched.\n\nLint: Using `aspectRatio(contentMode:)` with a constant content mode raises a warning.\n\nRewrite: `.aspectRatio(contentMode: .fit)` becomes `.scaledToFit()` and `.aspectRatio(contentMode: .fill)` becomes `.scaledToFill()`."
+        },
         "useTypedNotificationName" : {
           "allOf" : [
             {
@@ -4418,6 +4426,14 @@
       ],
       "description" : "Prefer `reduce(into:_:)` over `reduce(_:_:)` when the accumulator is a copy-on-write value type (Array, Dictionary, Set, String).\n\n`reduce(_:_:)` makes a fresh copy of the accumulator on every step; `reduce(into:_:)` mutates the seed in place.\n\nLint: warns when `reduce` 's first argument is unlabeled (so it would otherwise be `into:` ) and the seed expression names a CoW type.",
       "unevaluatedProperties" : false
+    },
+    "useScaledToFit" : {
+      "allOf" : [
+        {
+          "$ref" : "#/$defs/ruleBase"
+        }
+      ],
+      "description" : "Prefer `.scaledToFit()` / `.scaledToFill()` over `.aspectRatio(contentMode:)` with a constant content mode.\n\nSwiftUI's `scaledToFit()` and `scaledToFill()` are exact equivalents of `aspectRatio(contentMode: .fit)` and `aspectRatio(contentMode: .fill)` respectively, and read more clearly. The rewrite only fires when the call has a single `contentMode:` argument whose value is a constant `.fit` / `.fill` (optionally spelled `ContentMode.fit` / `ContentMode.fill`). A leading ratio argument, a non-constant content mode, or a differently-typed enum base leaves the call untouched.\n\nLint: Using `aspectRatio(contentMode:)` with a constant content mode raises a warning.\n\nRewrite: `.aspectRatio(contentMode: .fit)` becomes `.scaledToFit()` and `.aspectRatio(contentMode: .fill)` becomes `.scaledToFill()`."
     },
     "useSelfNotTypeName" : {
       "allOf" : [

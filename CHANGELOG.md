@@ -1,5 +1,11 @@
 # Changelog
 
+## Week of Jul 26 – Aug 01, 2026
+
+### ✨ Features
+
+- `UseScaledToFit`; a new SwiftUI format rule that rewrites `.aspectRatio(contentMode: .fit)` → `.scaledToFit()` and `.aspectRatio(contentMode: .fill)` → `.scaledToFill()` (also matching bare calls and explicit `ContentMode.fit`/`.fill`), leaving a leading ratio argument, non-constant modes, and differently-typed enum bases untouched; ports realm/SwiftLint's `legacy_swiftui_aspect_ratio` (#6609) ([#757](https://github.com/toba/swiftiomatic/issues/757))
+
 ## Week of Jul 12 – Jul 18, 2026
 
 ### 🗜️ Tweaks
