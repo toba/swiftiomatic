@@ -2301,6 +2301,22 @@
       "additionalProperties" : false,
       "description" : "memory rule group.",
       "properties" : {
+        "noUnownedCapture" : {
+          "allOf" : [
+            {
+              "$ref" : "#/$defs/lintOnlyBase"
+            }
+          ],
+          "description" : "An `unowned` capture in a closure capture list is a latent use-after-free: an `unowned` reference does not keep its referent alive and does not degrade to `nil`. If the referent is deallocated before the closure runs, accessing it crashes (`unowned` / `unowned(safe)`) or reads freed memory (`unowned(unsafe)`). Prefer `[weak x]` plus a `guard let`, which recovers cleanly.\n\nThis mirrors SwiftLint's `unowned_variable_capture` rule.\n\nSwift has three spellings, all reported by default:\n- `unowned` — sugar for `unowned(safe)`; traps deterministically after deallocation.\n- `unowned(safe)` — side-table bookkeeping; the same clean trap.\n- `unowned(unsafe)` — a raw non-retaining pointer with no trap; accessing a dangling referent is\nundefined behavior. It exists only as a hot-path escape hatch.\n\nSet `allowExplicitUnsafeUnowned` to `true` to permit `unowned(unsafe)` captures: spelling the `(unsafe)` in full is treated as a deliberate, acknowledged opt-in, so it is not reported. Bare `unowned` and `unowned(safe)` are always reported regardless of the flag.\n\nLint: A closure capture-list entry using `unowned` (or `unowned(safe)`, or — unless `allowExplicitUnsafeUnowned` is set — `unowned(unsafe)`) raises a warning.",
+          "properties" : {
+            "allowExplicitUnsafeUnowned" : {
+              "default" : false,
+              "description" : "When `true`, an explicitly-spelled `[unowned(unsafe) x]` capture is treated as a deliberate opt-in and is not reported. Bare `unowned` and `unowned(safe)` are still reported.",
+              "type" : "boolean"
+            }
+          },
+          "unevaluatedProperties" : false
+        },
         "requireAnyObjectOnDelegate" : {
           "allOf" : [
             {
@@ -2882,6 +2898,22 @@
         }
       ],
       "description" : "Function calls with no arguments and a trailing closure should not have empty parentheses.\n\nLint: If a function call with a trailing closure has an empty argument list with parentheses, a lint error is raised.\n\nRewrite: Empty parentheses in function calls with trailing closures will be removed."
+    },
+    "noUnownedCapture" : {
+      "allOf" : [
+        {
+          "$ref" : "#/$defs/lintOnlyBase"
+        }
+      ],
+      "description" : "An `unowned` capture in a closure capture list is a latent use-after-free: an `unowned` reference does not keep its referent alive and does not degrade to `nil`. If the referent is deallocated before the closure runs, accessing it crashes (`unowned` / `unowned(safe)`) or reads freed memory (`unowned(unsafe)`). Prefer `[weak x]` plus a `guard let`, which recovers cleanly.\n\nThis mirrors SwiftLint's `unowned_variable_capture` rule.\n\nSwift has three spellings, all reported by default:\n- `unowned` — sugar for `unowned(safe)`; traps deterministically after deallocation.\n- `unowned(safe)` — side-table bookkeeping; the same clean trap.\n- `unowned(unsafe)` — a raw non-retaining pointer with no trap; accessing a dangling referent is\nundefined behavior. It exists only as a hot-path escape hatch.\n\nSet `allowExplicitUnsafeUnowned` to `true` to permit `unowned(unsafe)` captures: spelling the `(unsafe)` in full is treated as a deliberate, acknowledged opt-in, so it is not reported. Bare `unowned` and `unowned(safe)` are always reported regardless of the flag.\n\nLint: A closure capture-list entry using `unowned` (or `unowned(safe)`, or — unless `allowExplicitUnsafeUnowned` is set — `unowned(unsafe)`) raises a warning.",
+      "properties" : {
+        "allowExplicitUnsafeUnowned" : {
+          "default" : false,
+          "description" : "When `true`, an explicitly-spelled `[unowned(unsafe) x]` capture is treated as a deliberate opt-in and is not reported. Bare `unowned` and `unowned(safe)` are still reported.",
+          "type" : "boolean"
+        }
+      },
+      "unevaluatedProperties" : false
     },
     "noUnusedSetterValue" : {
       "allOf" : [

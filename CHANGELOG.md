@@ -5,6 +5,7 @@
 ### ✨ Features
 
 - `UseScaledToFit`; a new SwiftUI format rule that rewrites `.aspectRatio(contentMode: .fit)` → `.scaledToFit()` and `.aspectRatio(contentMode: .fill)` → `.scaledToFill()` (also matching bare calls and explicit `ContentMode.fit`/`.fill`), leaving a leading ratio argument, non-constant modes, and differently-typed enum bases untouched; ports realm/SwiftLint's `legacy_swiftui_aspect_ratio` (#6609) ([#757](https://github.com/toba/swiftiomatic/issues/757))
+- `NoUnownedCapture`; a new memory lint rule that flags `unowned` closure captures (`[unowned self]`, `[unowned(safe) self]`, and `[unowned(unsafe) self]`), pushing toward `[weak …]` plus a guard since `unowned` neither retains its referent nor degrades to `nil`; an `allowExplicitUnsafeUnowned` option exempts an explicitly-spelled `unowned(unsafe)` as a deliberate opt-in while still flagging the bare and `(safe)` forms; ports realm/SwiftLint's `unowned_variable_capture` (#6824) ([#759](https://github.com/toba/swiftiomatic/issues/759))
 
 ## Week of Jul 12 – Jul 18, 2026
 
