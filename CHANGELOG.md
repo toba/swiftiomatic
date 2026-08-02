@@ -1,5 +1,12 @@
 # Changelog
 
+## Week of Aug 02 – Aug 08, 2026
+
+### 🐞 Fixes
+
+- `CollapseSingleLineGetter`; a `mutating get` (or any modifier-carrying accessor — `nonmutating`/`borrowing`/`consuming get`) is no longer collapsed into an implicit getter, which silently dropped the `mutating` keyword and broke compilation; the collapse guard now also requires `acc.modifier == nil` (the pinned swift-syntax 603 already exposes `AccessorDeclSyntax.modifier`, so the stale 604 TODO is gone) ([#760](https://github.com/toba/swiftiomatic/issues/760))
+- `UseImplicitInit`; stored-property default values inside a SwiftData `@Model` type are no longer rewritten to leading-dot shorthand (`MessageStatus.open` → `.open`, `UUID()` → `.init()`), which the `@Model` macro rejects since it lifts defaults into a `Schema.PropertyMetadata(defaultValue:)` call outside the declared-type context; a new `isInModelType(parent:)` guard skips only the lifted stored-property initializers, leaving computed-property bodies, default parameter values, and non-`@Model` types unaffected ([#761](https://github.com/toba/swiftiomatic/issues/761))
+
 ## Week of Jul 26 – Aug 01, 2026
 
 ### ✨ Features

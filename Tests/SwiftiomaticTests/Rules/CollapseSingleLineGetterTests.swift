@@ -30,10 +30,9 @@ struct UseSingleLinePropertyGetterTests: RuleTesting {
           get { return 0 }
           set { print("no set, only get") }
         }
-        // TODO: restore mutating get test case when swift-syntax adds modifiers to AccessorDeclSyntax (604.0.0+)
-        // var j: Int {
-        //   mutating get { return 0 }
-        // }
+        var j: Int {
+          mutating get { return 0 }
+        }
         var k: Int {
           get async {
             return 4
@@ -59,10 +58,9 @@ struct UseSingleLinePropertyGetterTests: RuleTesting {
           get { return 0 }
           set { print("no set, only get") }
         }
-        // TODO: restore mutating get test case when swift-syntax adds modifiers to AccessorDeclSyntax (604.0.0+)
-        // var j: Int {
-        //   mutating get { return 0 }
-        // }
+        var j: Int {
+          mutating get { return 0 }
+        }
         var k: Int {
           get async {
             return 4
@@ -278,6 +276,40 @@ struct UseSingleLinePropertyGetterTests: RuleTesting {
             get {
               return 1
             }
+          }
+        }
+        """
+    )
+  }
+
+  @Test func getterWithModifierShouldBePreserved() {
+    // A `mutating get` (or any modified accessor) must keep its explicit `get`
+    // block — collapsing it drops the `mutating` keyword and breaks compilation.
+    assertFormatting(
+      CollapseSingleLineGetter.self,
+      input: """
+        struct Cursor {
+          var isAtEnd: Bool {
+            mutating get {
+              skipSpaces()
+              return index >= scalars.count
+            }
+          }
+          var first: Int {
+            mutating get { advance() }
+          }
+        }
+        """,
+      expected: """
+        struct Cursor {
+          var isAtEnd: Bool {
+            mutating get {
+              skipSpaces()
+              return index >= scalars.count
+            }
+          }
+          var first: Int {
+            mutating get { advance() }
           }
         }
         """

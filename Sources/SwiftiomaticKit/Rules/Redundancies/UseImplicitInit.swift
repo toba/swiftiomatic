@@ -29,13 +29,20 @@ final class UseImplicitInit: StaticFormatRule<BasicRuleValue>, @unchecked Sendab
     static func transform(
         _ node: PatternBindingSyntax,
         original: PatternBindingSyntax,
-        parent _: Syntax?,
+        parent: Syntax?,
         context: Context
     ) -> PatternBindingSyntax {
         // Case 1: Stored property with type annotation and initializer
         // `let config: Config = Config(debug: true)` → `let config: Config = .init(debug: true)`
+        //
+        // The SwiftData `@Model` macro lifts stored-property defaults into a
+        // `Schema.PropertyMetadata(defaultValue:)` call where the declared-type context
+        // is lost, so leading-dot shorthand fails to compile. Leave initializers of
+        // stored properties inside a `@Model` type fully qualified. (Computed-property
+        // bodies and default parameter values below are not lifted, so they still apply.)
         if let typeAnnotation = node.typeAnnotation,
-           let initializer = node.initializer
+           let initializer = node.initializer,
+           !isInModelType(parent: parent)
         {
             let typeName = typeAnnotation.type.trimmedDescription
 
@@ -495,6 +502,38 @@ final class UseImplicitInit: StaticFormatRule<BasicRuleValue>, @unchecked Sendab
             .useImplicitInit(original: originalText, replacement: replacement), on: anchor,
             context: context)
         return ExprSyntax(newMemberAccess)
+    }
+
+    // MARK: - Enclosing context
+
+    /// Returns `true` if the binding is a member of a type carrying the SwiftData
+    /// `@Model` attribute. Walks the captured pre-recursion parent chain (post-recursion
+    /// `node.parent` is `nil`) up to the nearest type declaration.
+    private static func isInModelType(parent: Syntax?) -> Bool {
+        var current = parent
+        while let node = current {
+            let attributes: AttributeListSyntax? =
+                node.as(ClassDeclSyntax.self)?.attributes
+                ?? node.as(StructDeclSyntax.self)?.attributes
+                ?? node.as(ActorDeclSyntax.self)?.attributes
+                ?? node.as(EnumDeclSyntax.self)?.attributes
+                ?? node.as(ExtensionDeclSyntax.self)?.attributes
+            if let attributes {
+                // Stop at the first enclosing type declaration — a stored property
+                // lives directly in its `@Model` type, not in a nested one.
+                return hasModelAttribute(attributes)
+            }
+            current = node.parent
+        }
+        return false
+    }
+
+    /// Returns `true` if the attribute list contains `@Model` (SwiftData).
+    private static func hasModelAttribute(_ list: AttributeListSyntax) -> Bool {
+        list.contains { element in
+            guard case let .attribute(attr) = element else { return false }
+            return attr.attributeName.as(IdentifierTypeSyntax.self)?.name.text == "Model"
+        }
     }
 
     // MARK: - Type matching

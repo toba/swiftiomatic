@@ -420,4 +420,82 @@ struct UseImplicitInitTests: RuleTesting {
       ]
     )
   }
+
+  // MARK: - SwiftData @Model
+
+  /// The `@Model` macro lifts stored-property defaults into a `Schema.PropertyMetadata`
+  /// call where the declared-type context is lost, so leading-dot shorthand fails to
+  /// compile ("A default value requires a fully qualified domain named value"). The
+  /// initializer must be left fully qualified.
+  @Test func modelStoredPropertyDefaultsPreserved() {
+    assertFormatting(
+      UseImplicitInit.self,
+      input: """
+        @Model
+        public final class Issue {
+          public var id: UUID = UUID()
+          public var status: MessageStatus = MessageStatus.open
+          public var priority: Priority = Priority.normal
+          public var createdAt: Date = Date.now
+        }
+        """,
+      expected: """
+        @Model
+        public final class Issue {
+          public var id: UUID = UUID()
+          public var status: MessageStatus = MessageStatus.open
+          public var priority: Priority = Priority.normal
+          public var createdAt: Date = Date.now
+        }
+        """
+    )
+  }
+
+  /// A `@Model` class still gets shorthand in contexts the macro does not lift:
+  /// computed-property bodies and default parameter values.
+  @Test func modelNonLiftedContextsStillRewritten() {
+    assertFormatting(
+      UseImplicitInit.self,
+      input: """
+        @Model
+        public final class Issue {
+          public var status: MessageStatus = MessageStatus.open
+          var fallback: MessageStatus { 1️⃣MessageStatus.open }
+          func reset(to value: MessageStatus = 2️⃣MessageStatus.open) {}
+        }
+        """,
+      expected: """
+        @Model
+        public final class Issue {
+          public var status: MessageStatus = MessageStatus.open
+          var fallback: MessageStatus { .open }
+          func reset(to value: MessageStatus = .open) {}
+        }
+        """,
+      findings: [
+        FindingSpec("1️⃣", message: "replace 'MessageStatus.open' with '.open'"),
+        FindingSpec("2️⃣", message: "replace 'MessageStatus.open' with '.open'"),
+      ]
+    )
+  }
+
+  /// A non-`@Model` class is unaffected — stored-property defaults still get shorthand.
+  @Test func nonModelStoredPropertyStillRewritten() {
+    assertFormatting(
+      UseImplicitInit.self,
+      input: """
+        public final class Issue {
+          public var status: MessageStatus = 1️⃣MessageStatus.open
+        }
+        """,
+      expected: """
+        public final class Issue {
+          public var status: MessageStatus = .open
+        }
+        """,
+      findings: [
+        FindingSpec("1️⃣", message: "replace 'MessageStatus.open' with '.open'"),
+      ]
+    )
+  }
 }
