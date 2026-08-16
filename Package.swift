@@ -15,7 +15,9 @@ let package = Package(
     dependencies: [
         .package(url: "https://github.com/apple/swift-argument-parser.git", from: "1.2.2"),
         .package(url: "https://github.com/swiftlang/swift-markdown.git", from: "0.7.0"),
-        .package(url: "https://github.com/swiftlang/swift-syntax.git", exact: "603.0.1"),
+        // Accept any 603.x patch or minor release. swift-syntax bumps the major
+        // version for each Swift release, so 604 and later can break the API.
+        .package(url: "https://github.com/swiftlang/swift-syntax.git", "603.0.0"..<"604.0.0"),
         // Self-hosted lint via prebuilt binary from a previous release. Breaks
         // the cycle that prevents a target from depending on a plugin in the
         // same package as the executable the plugin invokes.
