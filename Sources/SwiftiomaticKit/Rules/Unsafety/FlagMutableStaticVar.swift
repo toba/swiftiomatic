@@ -5,6 +5,10 @@ import SwiftSyntax
 /// data-race safety; the fix is contextual (actor isolation, `Mutex`, `@TaskLocal`, or convert
 /// to a computed `static var { ... }`), so this rule is flag-only.
 ///
+/// Skips a declaration that a global actor already protects: the variable itself, or any
+/// enclosing type or extension, carries an attribute such as `@MainActor` . A
+/// `nonisolated static var` opts back out of that isolation, so it is still flagged.
+///
 /// Skips files under `Tests/` directories or named `*Tests.swift` — test fixtures often
 /// keep mutable counters by design.
 final class FlagMutableStaticVar: LintSyntaxRule<LintOnlyValue>, @unchecked Sendable {
@@ -14,12 +18,34 @@ final class FlagMutableStaticVar: LintSyntaxRule<LintOnlyValue>, @unchecked Send
         guard !isTestFile(context.fileURL) else { return .visitChildren }
         guard node.modifiers.contains(where: { $0.name.tokenKind == .keyword(.static) }),
               node.bindingSpecifier.tokenKind == .keyword(.var) else { return .visitChildren }
+        guard !isGlobalActorIsolated(node) else { return .visitChildren }
 
         for binding in node.bindings where isStoredBinding(binding) {
             diagnose(.mutableStaticVar, on: node.bindingSpecifier)
             return .visitChildren
         }
         return .visitChildren
+    }
+
+    /// Reports whether a global actor protects this declaration.
+    ///
+    /// `nonisolated` on the variable itself drops the enclosing isolation, so the walk stops
+    /// there and reports `false` . Otherwise the walk checks the variable's own attributes and
+    /// then every enclosing declaration for a global-actor attribute.
+    private func isGlobalActorIsolated(_ node: VariableDeclSyntax) -> Bool {
+        if node.modifiers.contains(where: { $0.name.tokenKind == .keyword(.nonisolated) }) {
+            return false
+        }
+        var current: Syntax? = Syntax(node)
+        while let candidate = current {
+            if let withAttrs = candidate.asProtocol(WithAttributesSyntax.self),
+               withAttrs.attributes.globalActorAttribute() != nil
+            {
+                return true
+            }
+            current = candidate.parent
+        }
+        return false
     }
 
     private func isStoredBinding(_ binding: PatternBindingSyntax) -> Bool {

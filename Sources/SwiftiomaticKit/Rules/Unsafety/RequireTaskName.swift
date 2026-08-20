@@ -7,6 +7,11 @@ import SwiftSyntax
 /// instrument, in the Xcode debugger's task list, and in custom `Task.currentName` reads —
 /// unnamed tasks are anonymous and indistinguishable from one another there.
 ///
+/// `addTask` and `addTaskUnlessCancelled` fire only when the call has the shape of the task-group
+/// method: the work arrives as a trailing closure or a final `operation:` argument, and every
+/// other argument carries a label the task-group method accepts. An unrelated method with the
+/// same base name stays quiet.
+///
 /// Flag-only — the fix requires picking a meaningful name.
 ///
 /// See https://artemnovichkov.com/blog/task-names-in-swift-concurrency.
@@ -41,11 +46,30 @@ final class RequireTaskName: LintSyntaxRule<LintOnlyValue>, @unchecked Sendable 
             {
                 return TaskCall(anchor: Syntax(member.declName), message: .taskStaticMissingName(name))
             }
-            if name == "addTask" || name == "addTaskUnlessCancelled" {
+            if name == "addTask" || name == "addTaskUnlessCancelled", looksLikeTaskGroupAddTask(node) {
                 return TaskCall(anchor: Syntax(member.declName), message: .addTaskMissingName(name))
             }
         }
         return nil
+    }
+
+    /// The labels `TaskGroup.addTask` accepts. Every other label means the call is some other
+    /// method that happens to share the base name.
+    private static let taskGroupLabels: Set<String> = [
+        "name", "executorPreference", "priority", "operation",
+    ]
+
+    /// Reports whether the call has the shape of `TaskGroup.addTask` .
+    ///
+    /// The receiver's type is unavailable in the syntax tree, so the check works from the
+    /// argument list instead. A task-group call passes its work as a trailing closure or as a
+    /// final `operation:` argument, and labels every other argument from a short known set.
+    private func looksLikeTaskGroupAddTask(_ node: FunctionCallExprSyntax) -> Bool {
+        let labels = node.arguments.compactMap { $0.label?.text }
+        guard labels.count == node.arguments.count else { return false }
+        guard labels.allSatisfy(Self.taskGroupLabels.contains) else { return false }
+        if node.trailingClosure != nil { return true }
+        return labels.last == "operation"
     }
 
     private func hasNameArgument(_ node: FunctionCallExprSyntax) -> Bool {

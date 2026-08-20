@@ -173,6 +173,64 @@ struct RequireTaskNameTests: RuleTesting {
     )
   }
 
+  @Test func addTaskWithForeignLabelsNotFlagged() {
+    assertLint(
+      RequireTaskName.self,
+      """
+      func go() throws {
+        let added = try service.addTask(
+          to: a.issue, title: a.title, detail: a.detail,
+          parentRef: a.parent, status: a.status ?? .ready
+        )
+        _ = added
+      }
+      """,
+      findings: []
+    )
+  }
+
+  @Test func addTaskWithoutClosureNotFlagged() {
+    assertLint(
+      RequireTaskName.self,
+      """
+      func go() {
+        queue.addTask(work)
+      }
+      """,
+      findings: []
+    )
+  }
+
+  @Test func addTaskWithOperationLabelFlagged() {
+    assertLint(
+      RequireTaskName.self,
+      """
+      func go() async {
+        await withTaskGroup(of: Void.self) { group in
+          group.1️⃣addTask(operation: work)
+        }
+      }
+      """,
+      findings: [FindingSpec("1️⃣", message: Self.addTaskMessage("addTask"))]
+    )
+  }
+
+  @Test func addTaskWithPriorityFlagged() {
+    assertLint(
+      RequireTaskName.self,
+      """
+      func go() async {
+        await withTaskGroup(of: Void.self) { group in
+          group.1️⃣addTask(priority: .high) {
+            await work()
+          }
+        }
+      }
+      """,
+      findings: [FindingSpec("1️⃣", message: Self.addTaskMessage("addTask"))]
+    )
+  }
+
   @Test func unrelatedTaskMemberNotFlagged() {
     assertLint(
       RequireTaskName.self,

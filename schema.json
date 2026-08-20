@@ -1401,7 +1401,7 @@
           "$ref" : "#/$defs/lintOnlyBase"
         }
       ],
-      "description" : "Flag `static var` declarations with mutable storage. Global mutable state defeats Swift 6's data-race safety; the fix is contextual (actor isolation, `Mutex`, `@TaskLocal`, or convert to a computed `static var { ... }`), so this rule is flag-only.\n\nSkips files under `Tests/` directories or named `*Tests.swift` — test fixtures often keep mutable counters by design.",
+      "description" : "Flag `static var` declarations with mutable storage. Global mutable state defeats Swift 6's data-race safety; the fix is contextual (actor isolation, `Mutex`, `@TaskLocal`, or convert to a computed `static var { ... }`), so this rule is flag-only.\n\nSkips a declaration that a global actor already protects: the variable itself, or any enclosing type or extension, carries an attribute such as `@MainActor` . A `nonisolated static var` opts back out of that isolation, so it is still flagged.\n\nSkips files under `Tests/` directories or named `*Tests.swift` — test fixtures often keep mutable counters by design.",
       "unevaluatedProperties" : false
     },
     "flagMutationDuringIteration" : {
@@ -3469,7 +3469,7 @@
           "$ref" : "#/$defs/lintOnlyBase"
         }
       ],
-      "description" : "Require a `name:` argument when starting a `Task` or adding work to a `TaskGroup`. Swift 6.2 (Xcode 26 / macOS 26 / iOS 26) added `name:` overloads to `Task.init`, `Task.detached`, `Task.immediate`, `Task.immediateDetached`, `TaskGroup.addTask`, and `TaskGroup.addTaskUnlessCancelled`. The name shows up in Instruments' Swift Concurrency instrument, in the Xcode debugger's task list, and in custom `Task.currentName` reads — unnamed tasks are anonymous and indistinguishable from one another there.\n\nFlag-only — the fix requires picking a meaningful name.\n\nSee https://artemnovichkov.com/blog/task-names-in-swift-concurrency.",
+      "description" : "Require a `name:` argument when starting a `Task` or adding work to a `TaskGroup`. Swift 6.2 (Xcode 26 / macOS 26 / iOS 26) added `name:` overloads to `Task.init`, `Task.detached`, `Task.immediate`, `Task.immediateDetached`, `TaskGroup.addTask`, and `TaskGroup.addTaskUnlessCancelled`. The name shows up in Instruments' Swift Concurrency instrument, in the Xcode debugger's task list, and in custom `Task.currentName` reads — unnamed tasks are anonymous and indistinguishable from one another there.\n\n`addTask` and `addTaskUnlessCancelled` fire only when the call has the shape of the task-group method: the work arrives as a trailing closure or a final `operation:` argument, and every other argument carries a label the task-group method accepts. An unrelated method with the same base name stays quiet.\n\nFlag-only — the fix requires picking a meaningful name.\n\nSee https://artemnovichkov.com/blog/task-names-in-swift-concurrency.",
       "unevaluatedProperties" : false
     },
     "requireTestFnPrefixOrAttribute" : {
@@ -3980,7 +3980,7 @@
               "$ref" : "#/$defs/lintOnlyBase"
             }
           ],
-          "description" : "Flag `static var` declarations with mutable storage. Global mutable state defeats Swift 6's data-race safety; the fix is contextual (actor isolation, `Mutex`, `@TaskLocal`, or convert to a computed `static var { ... }`), so this rule is flag-only.\n\nSkips files under `Tests/` directories or named `*Tests.swift` — test fixtures often keep mutable counters by design.",
+          "description" : "Flag `static var` declarations with mutable storage. Global mutable state defeats Swift 6's data-race safety; the fix is contextual (actor isolation, `Mutex`, `@TaskLocal`, or convert to a computed `static var { ... }`), so this rule is flag-only.\n\nSkips a declaration that a global actor already protects: the variable itself, or any enclosing type or extension, carries an attribute such as `@MainActor` . A `nonisolated static var` opts back out of that isolation, so it is still flagged.\n\nSkips files under `Tests/` directories or named `*Tests.swift` — test fixtures often keep mutable counters by design.",
           "unevaluatedProperties" : false
         },
         "flagMutationDuringIteration" : {
@@ -4103,7 +4103,7 @@
               "$ref" : "#/$defs/lintOnlyBase"
             }
           ],
-          "description" : "Require a `name:` argument when starting a `Task` or adding work to a `TaskGroup`. Swift 6.2 (Xcode 26 / macOS 26 / iOS 26) added `name:` overloads to `Task.init`, `Task.detached`, `Task.immediate`, `Task.immediateDetached`, `TaskGroup.addTask`, and `TaskGroup.addTaskUnlessCancelled`. The name shows up in Instruments' Swift Concurrency instrument, in the Xcode debugger's task list, and in custom `Task.currentName` reads — unnamed tasks are anonymous and indistinguishable from one another there.\n\nFlag-only — the fix requires picking a meaningful name.\n\nSee https://artemnovichkov.com/blog/task-names-in-swift-concurrency.",
+          "description" : "Require a `name:` argument when starting a `Task` or adding work to a `TaskGroup`. Swift 6.2 (Xcode 26 / macOS 26 / iOS 26) added `name:` overloads to `Task.init`, `Task.detached`, `Task.immediate`, `Task.immediateDetached`, `TaskGroup.addTask`, and `TaskGroup.addTaskUnlessCancelled`. The name shows up in Instruments' Swift Concurrency instrument, in the Xcode debugger's task list, and in custom `Task.currentName` reads — unnamed tasks are anonymous and indistinguishable from one another there.\n\n`addTask` and `addTaskUnlessCancelled` fire only when the call has the shape of the task-group method: the work arrives as a trailing closure or a final `operation:` argument, and every other argument carries a label the task-group method accepts. An unrelated method with the same base name stays quiet.\n\nFlag-only — the fix requires picking a meaningful name.\n\nSee https://artemnovichkov.com/blog/task-names-in-swift-concurrency.",
           "unevaluatedProperties" : false
         },
         "useTypedCatchError" : {

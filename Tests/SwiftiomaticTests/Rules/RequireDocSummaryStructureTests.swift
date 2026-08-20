@@ -178,6 +178,81 @@ struct BeginDocumentationCommentWithOneLineSummaryTests: RuleTesting {
     )
   }
 
+  @Test func cjkFullStopsTerminateSentences() {
+    assertLint(
+      RequireDocSummaryStructure.self,
+      """
+      /// 何かする関数。
+      func doSomething() {}
+
+      /// 何かする関数．
+      func doSomething2() {}
+
+      /// 何かする関数｡
+      func doSomething3() {}
+
+      /// 一つ目の文。二つ目の文。
+      1️⃣func doSomething4() {}
+
+      /// 何かする関数
+      2️⃣func doSomething5() {}
+      """,
+      findings: [
+        FindingSpec("1️⃣", message: #"add a blank comment line after this sentence: "一つ目の文。""#),
+        FindingSpec("2️⃣", message: #"terminate this sentence with a period: "何かする関数""#),
+      ]
+    )
+  }
+
+  @Test func cjkFullStopsTerminateSentencesInFallbackMode() {
+    RequireDocSummaryStructure.forcesFallbackModeForTesting = true
+
+    assertLint(
+      RequireDocSummaryStructure.self,
+      """
+      /// 何かする関数。
+      func doSomething() {}
+
+      /// 何かする関数．
+      func doSomething2() {}
+
+      /// 何かする関数｡
+      func doSomething3() {}
+
+      /// 一つ目の文。二つ目の文。
+      1️⃣func doSomething4() {}
+
+      /// 何かする関数
+      2️⃣func doSomething5() {}
+      """,
+      findings: [
+        FindingSpec("1️⃣", message: #"add a blank comment line after this sentence: "一つ目の文。""#),
+        FindingSpec("2️⃣", message: #"terminate this sentence with a period: "何かする関数""#),
+      ]
+    )
+  }
+
+  @Test func decimalPointDoesNotTerminateSentenceInFallbackMode() {
+    RequireDocSummaryStructure.forcesFallbackModeForTesting = true
+
+    assertLint(
+      RequireDocSummaryStructure.self,
+      """
+      /// Returns 3.14 as the value of pi.
+      func pi() -> Double {}
+
+      /// Returns 3.14 as the value of pi
+      1️⃣func unterminatedPi() -> Double {}
+      """,
+      findings: [
+        FindingSpec(
+          "1️⃣",
+          message: #"terminate this sentence with a period: "Returns 3.14 as the value of pi""#
+        )
+      ]
+    )
+  }
+
   @Test func sentenceTerminationInsideQuotes() {
     assertLint(
       RequireDocSummaryStructure.self,

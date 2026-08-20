@@ -96,6 +96,96 @@ struct FlagMutableStaticVarTests: RuleTesting {
     )
   }
 
+  @Test func staticVarInMainActorTypeNotFlagged() {
+    assertLint(
+      FlagMutableStaticVar.self,
+      """
+      @MainActor
+      enum AgentHost {
+        private static var host: LoopbackHost?
+      }
+      """,
+      findings: []
+    )
+  }
+
+  @Test func staticVarInMainActorExtensionNotFlagged() {
+    assertLint(
+      FlagMutableStaticVar.self,
+      """
+      @MainActor
+      extension AgentHost {
+        static var host: LoopbackHost?
+      }
+      """,
+      findings: []
+    )
+  }
+
+  @Test func staticVarInCustomGlobalActorTypeNotFlagged() {
+    assertLint(
+      FlagMutableStaticVar.self,
+      """
+      @DatabaseActor
+      enum Store {
+        static var cache: [Int] = []
+      }
+      """,
+      findings: []
+    )
+  }
+
+  @Test func staticVarWithGlobalActorAttributeNotFlagged() {
+    assertLint(
+      FlagMutableStaticVar.self,
+      """
+      enum Counter {
+        @MainActor static var count = 0
+      }
+      """,
+      findings: []
+    )
+  }
+
+  @Test func nonisolatedStaticVarInMainActorTypeFlagged() {
+    assertLint(
+      FlagMutableStaticVar.self,
+      """
+      @MainActor
+      enum AgentHost {
+        nonisolated static 1️⃣var host: LoopbackHost?
+      }
+      """,
+      findings: [FindingSpec("1️⃣", message: Self.message)]
+    )
+  }
+
+  @Test func staticVarInGlobalActorDefinitionFlagged() {
+    assertLint(
+      FlagMutableStaticVar.self,
+      """
+      @globalActor
+      actor DatabaseActor {
+        static 1️⃣var count = 0
+      }
+      """,
+      findings: [FindingSpec("1️⃣", message: Self.message)]
+    )
+  }
+
+  @Test func staticVarInPlainNestedTypeFlagged() {
+    assertLint(
+      FlagMutableStaticVar.self,
+      """
+      enum Outer {
+        @MainActor enum Inner {}
+        static 1️⃣var count = 0
+      }
+      """,
+      findings: [FindingSpec("1️⃣", message: Self.message)]
+    )
+  }
+
   @Test func classVarStoredFlagged() {
     assertLint(
       FlagMutableStaticVar.self,

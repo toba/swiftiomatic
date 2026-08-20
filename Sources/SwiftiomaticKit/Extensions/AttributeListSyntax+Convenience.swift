@@ -16,6 +16,24 @@ extension AttributeListSyntax {
         return nil
     }
 
+    /// Returns the first attribute that names a global actor, or `nil` .
+    ///
+    /// Matching is by name shape, because the syntax tree carries no type information: an
+    /// attribute qualifies when its simple name starts with an uppercase letter and ends with
+    /// `Actor` . That covers `@MainActor` and the conventional custom form (`@DatabaseActor` ).
+    /// `@globalActor` is excluded — it marks the *definition* of a global actor, and a `static`
+    /// member of that type is nonisolated.
+    func globalActorAttribute() -> AttributeSyntax? {
+        for element in self {
+            guard case let .attribute(attr) = element,
+                  let ident = attr.attributeName.as(IdentifierTypeSyntax.self) else { continue }
+            let name = ident.name.text
+            guard name.hasSuffix("Actor"), let first = name.first, first.isUppercase else { continue }
+            return attr
+        }
+        return nil
+    }
+
     /// Returns a copy with the first attribute matching `name` removed.
     ///
     /// Trivia from the removed attribute's leading position is transferred to the next kept
