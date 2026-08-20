@@ -1442,6 +1442,14 @@ final class RewritePipeline: SyntaxRewriter {
         let parent = Syntax(node).parent
         var result: ExprSyntax = super.visit(node)
 
+        // Runs before the other prefix rules: it repairs the invalid `!try foo()` that the
+        // HoistTry call transform leaves behind on the child.
+        if context.shouldRewrite(HoistTry.self, gate: gate),
+           let prefix = result.as(PrefixOperatorExprSyntax.self)
+        {
+            result = HoistTry.transform(prefix, original: node, parent: parent, context: context)
+        }
+
         if context.shouldRewrite(UseExplicitFalseInGuards.self, gate: gate),
            let prefix = result.as(PrefixOperatorExprSyntax.self)
         {

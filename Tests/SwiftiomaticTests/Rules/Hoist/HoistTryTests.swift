@@ -399,4 +399,216 @@ struct HoistTryTests: RuleTesting {
       ]
     )
   }
+
+  // MARK: - Prefix operators
+
+  @Test func hoistTryPastPrefixNot() {
+    // `!try foo()` is not valid Swift. The try has to land before the operator.
+    assertFormatting(
+      HoistTry.self,
+      input: """
+        _ = !isBlank(1️⃣try elements(json))
+        """,
+      expected: """
+        _ = try !isBlank(elements(json))
+        """,
+      findings: [
+        FindingSpec("1️⃣", message: "move 'try' to the start of the expression"),
+      ]
+    )
+  }
+
+  @Test func hoistTryPastPrefixMinus() {
+    assertFormatting(
+      HoistTry.self,
+      input: """
+        _ = -count(1️⃣try elements(json))
+        """,
+      expected: """
+        _ = try -count(elements(json))
+        """,
+      findings: [
+        FindingSpec("1️⃣", message: "move 'try' to the start of the expression"),
+      ]
+    )
+  }
+
+  @Test func tryAlreadyHoistedPastPrefixNot() {
+    // Second pass over the output of `hoistTryPastPrefixNot` : no further change.
+    assertFormatting(
+      HoistTry.self,
+      input: """
+        _ = try !isBlank(elements(json))
+        """,
+      expected: """
+        _ = try !isBlank(elements(json))
+        """,
+      findings: []
+    )
+  }
+
+  @Test func noHoistWhenPrefixOperatorSitsUnderOuterTry() {
+    assertFormatting(
+      HoistTry.self,
+      input: """
+        _ = try !isBlank(try elements(json))
+        """,
+      expected: """
+        _ = try !isBlank(try elements(json))
+        """,
+      findings: []
+    )
+  }
+
+  // MARK: - Binary operators
+
+  @Test func noHoistToTheRightOfBinaryOperator() {
+    // `1 + try count(…)` does not compile: 'try' cannot appear to the right of a
+    // non-assignment operator.
+    assertFormatting(
+      HoistTry.self,
+      input: """
+        let a = 1 + count(try elements(json))
+        """,
+      expected: """
+        let a = 1 + count(try elements(json))
+        """,
+      findings: []
+    )
+  }
+
+  @Test func noHoistToTheRightOfComparison() {
+    assertFormatting(
+      HoistTry.self,
+      input: """
+        let a = value == parse(try raw(json))
+        """,
+      expected: """
+        let a = value == parse(try raw(json))
+        """,
+      findings: []
+    )
+  }
+
+  @Test func noHoistToTheRightOfBinaryOperatorThroughPrefixOperator() {
+    assertFormatting(
+      HoistTry.self,
+      input: """
+        let a = flag || !isBlank(try elements(json))
+        """,
+      expected: """
+        let a = flag || !isBlank(try elements(json))
+        """,
+      findings: []
+    )
+  }
+
+  @Test func hoistInsideParenthesesToTheRightOfBinaryOperator() {
+    // The parentheses start a new expression, so the `try` leads it and stays valid.
+    assertFormatting(
+      HoistTry.self,
+      input: """
+        let a = 1 + (count(1️⃣try elements(json)) + 2)
+        """,
+      expected: """
+        let a = 1 + (try count(elements(json)) + 2)
+        """,
+      findings: [
+        FindingSpec("1️⃣", message: "move 'try' to the start of the expression"),
+      ]
+    )
+  }
+
+  @Test func hoistWhenTheCallIsTheLeftOperand() {
+    assertFormatting(
+      HoistTry.self,
+      input: """
+        let a = count(1️⃣try elements(json)) + 1
+        """,
+      expected: """
+        let a = try count(elements(json)) + 1
+        """,
+      findings: [
+        FindingSpec("1️⃣", message: "move 'try' to the start of the expression"),
+      ]
+    )
+  }
+
+  @Test func hoistToTheRightOfAssignment() {
+    assertFormatting(
+      HoistTry.self,
+      input: """
+        total = sum(1️⃣try elements(json))
+        """,
+      expected: """
+        total = try sum(elements(json))
+        """,
+      findings: [
+        FindingSpec("1️⃣", message: "move 'try' to the start of the expression"),
+      ]
+    )
+  }
+
+  @Test func hoistToTheRightOfCompoundAssignment() {
+    assertFormatting(
+      HoistTry.self,
+      input: """
+        total += sum(1️⃣try elements(json))
+        """,
+      expected: """
+        total += try sum(elements(json))
+        """,
+      findings: [
+        FindingSpec("1️⃣", message: "move 'try' to the start of the expression"),
+      ]
+    )
+  }
+
+  @Test func noHoistInsideACallArgumentToTheRightOfABinaryOperator() {
+    assertFormatting(
+      HoistTry.self,
+      input: """
+        let a = 1 + wrap(inner(try elements(json)))
+        """,
+      expected: """
+        let a = 1 + wrap(inner(try elements(json)))
+        """,
+      findings: []
+    )
+  }
+
+  // MARK: - Cascaded hoists (issue a48d2f57)
+
+  @Test func cascadedHoistReportsOneFinding() {
+    // The inner call hoists first, which puts `try` in front of `inner(…)` . The outer call
+    // then hoists that `try` again. The source holds one `try` , so one finding is right.
+    assertFormatting(
+      HoistTry.self,
+      input: """
+        let a = wrap(inner(1️⃣try elements(json)))
+        """,
+      expected: """
+        let a = try wrap(inner(elements(json)))
+        """,
+      findings: [
+        FindingSpec("1️⃣", message: "move 'try' to the start of the expression"),
+      ]
+    )
+  }
+
+  @Test func cascadedHoistReportsEachSourceTry() {
+    assertFormatting(
+      HoistTry.self,
+      input: """
+        let a = wrap(inner(1️⃣try elements(json)), 2️⃣try other(json))
+        """,
+      expected: """
+        let a = try wrap(inner(elements(json)), other(json))
+        """,
+      findings: [
+        FindingSpec("1️⃣", message: "move 'try' to the start of the expression"),
+        FindingSpec("2️⃣", message: "move 'try' to the start of the expression"),
+      ]
+    )
+  }
 }

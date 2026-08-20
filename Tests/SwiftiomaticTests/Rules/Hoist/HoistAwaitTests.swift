@@ -304,4 +304,39 @@ struct HoistAwaitTests: RuleTesting {
       ]
     )
   }
+
+  // MARK: - Cascaded hoists (issue a48d2f57)
+
+  @Test func cascadedHoistReportsOneFinding() {
+    // The inner call hoists first, which puts `await` in front of `inner(…)` . The outer call
+    // then hoists that `await` again. The source holds one `await` , so one finding is right.
+    assertFormatting(
+      HoistAwait.self,
+      input: """
+        let a = wrap(inner(1️⃣await elements(json)))
+        """,
+      expected: """
+        let a = await wrap(inner(elements(json)))
+        """,
+      findings: [
+        FindingSpec("1️⃣", message: "move 'await' to the start of the expression"),
+      ]
+    )
+  }
+
+  @Test func cascadedHoistReportsEachSourceAwait() {
+    assertFormatting(
+      HoistAwait.self,
+      input: """
+        let a = wrap(inner(1️⃣await elements(json)), 2️⃣await other(json))
+        """,
+      expected: """
+        let a = await wrap(inner(elements(json)), other(json))
+        """,
+      findings: [
+        FindingSpec("1️⃣", message: "move 'await' to the start of the expression"),
+        FindingSpec("2️⃣", message: "move 'await' to the start of the expression"),
+      ]
+    )
+  }
 }

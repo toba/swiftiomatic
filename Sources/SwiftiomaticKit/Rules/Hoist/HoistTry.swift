@@ -1,3 +1,4 @@
+import SwiftOperators
 import SwiftSyntax
 
 /// Move inline `try` keyword(s) to the start of the expression.
@@ -18,12 +19,18 @@ final class HoistTry: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
 
     static func transform(
         _ callNode: FunctionCallExprSyntax,
-        original _: FunctionCallExprSyntax,
+        original: FunctionCallExprSyntax,
         parent: Syntax?,
         context: Context
     ) -> ExprSyntax {
         // Check parent on the captured original-tree parent (post-recursion the node is detached).
         if isWrappedInTry(parent: parent) { return ExprSyntax(callNode) }
+
+        // Swift rejects `try` to the right of a non-assignment operator, so leave `1 + foo(try x)`
+        // alone. `original` still sits in the source tree and reports the real ancestors.
+        if isRightOfNonAssignmentOperator(original, context: context) {
+            return ExprSyntax(callNode)
+        }
 
         // Find the first plain try in arguments
         guard let firstTry = findFirstTryInArguments(callNode) else { return ExprSyntax(callNode) }
@@ -31,7 +38,14 @@ final class HoistTry: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
         // Only hoist plain `try` (not `try?` or `try!` )
         guard firstTry.questionOrExclamationMark == nil else { return ExprSyntax(callNode) }
 
-        Self.diagnose(.hoistTry, on: firstTry.tryKeyword, context: context)
+        // Anchor the finding on `original` , which still sits in the source file and reports the
+        // real position. A `try` that `original` does not carry comes from an inner hoist in this
+        // same pass, and that hoist already reported the source `try` .
+        if let sourceTry = findFirstTryInArguments(original),
+           sourceTry.questionOrExclamationMark == nil
+        {
+            Self.diagnose(.hoistTry, on: sourceTry.tryKeyword, context: context)
+        }
 
         // Strip try from all arguments
         let newArgs = callNode.arguments.map { arg -> LabeledExprSyntax in
@@ -56,6 +70,31 @@ final class HoistTry: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
         var result = ExprSyntax(tryExpr)
         result.trailingTrivia = callNode.trailingTrivia
         return result
+    }
+
+    /// Moves a hoisted `try` out of a prefix operator.
+    ///
+    /// The call transform puts `try` at the start of the call it rewrites. When the call sits
+    /// behind a prefix operator, that spot is inside the operator, and `!try foo()` does not
+    /// parse. The `try` belongs in front of the operator instead: `try !foo()` .
+    static func transform(
+        _ node: PrefixOperatorExprSyntax,
+        original _: PrefixOperatorExprSyntax,
+        parent _: Syntax?,
+        context _: Context
+    ) -> ExprSyntax {
+        guard let tryExpr = node.expression.as(TryExprSyntax.self),
+              tryExpr.questionOrExclamationMark == nil
+        else { return ExprSyntax(node) }
+
+        var newPrefix = node.with(\.expression, tryExpr.expression)
+        newPrefix.leadingTrivia = []
+
+        let newTry = TryExprSyntax(
+            tryKeyword: tryExpr.tryKeyword.with(\.leadingTrivia, node.leadingTrivia),
+            expression: ExprSyntax(newPrefix)
+        )
+        return ExprSyntax(newTry)
     }
 
     /// Compact-pipeline state: per-AwaitExpr stack of pre-recursion
@@ -160,6 +199,55 @@ final class HoistTry: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
         return nil
     }
 
+    /// Returns `true` when the hoisted `try` would land to the right of a non-assignment
+    /// operator. Swift rejects that position with "'try' cannot appear to the right of a
+    /// non-assignment operator".
+    ///
+    /// The walk follows the nodes the hoist cascades through, so it tracks where the `try` ends
+    /// up. Once the walk leaves an operand of an infix operator, the position is fixed, and only
+    /// a further infix ancestor can still invalidate it. An assignment operator accepts `try` on
+    /// its right, so the walk stops there.
+    private static func isRightOfNonAssignmentOperator(
+        _ node: some SyntaxProtocol,
+        context: Context
+    ) -> Bool {
+        var current = Syntax(node)
+        var insideOperand = false
+
+        while let parent = current.parent {
+            if let infix = parent.as(InfixOperatorExprSyntax.self) {
+                if isAssignmentOperator(infix.operator, context: context) { return false }
+                if infix.leftOperand.id != current.id { return true }
+                insideOperand = true
+                current = parent
+                continue
+            }
+
+            // The hoist moves `try` out of these nodes, so the wider expression still matters.
+            if !insideOperand,
+               parent.is(AwaitExprSyntax.self)
+                   || parent.is(PrefixOperatorExprSyntax.self)
+                   || parent.is(LabeledExprSyntax.self)
+                   || parent.is(LabeledExprListSyntax.self)
+                   || parent.is(FunctionCallExprSyntax.self)
+            {
+                current = parent
+                continue
+            }
+            return false
+        }
+        return false
+    }
+
+    /// Returns `true` for `=` and for any infix operator in the `AssignmentPrecedence` group,
+    /// such as `+=` .
+    private static func isAssignmentOperator(_ expr: ExprSyntax, context: Context) -> Bool {
+        if expr.is(AssignmentExprSyntax.self) { return true }
+        guard let binary = expr.as(BinaryOperatorExprSyntax.self) else { return false }
+        return context.operatorTable.infixOperator(named: binary.operator.text)?
+            .precedenceGroup == "AssignmentPrecedence"
+    }
+
     /// Returns `true` if the expression is wrapped in a `TryExprSyntax` ancestor. Walks the
     /// captured pre-recursion parent chain (post-recursion parent is nil).
     private static func isWrappedInTry(parent: Syntax?) -> Bool {
@@ -169,6 +257,7 @@ final class HoistTry: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
             if p.is(TryExprSyntax.self) { return true }
 
             if p.is(AwaitExprSyntax.self)
+                || p.is(PrefixOperatorExprSyntax.self)
                 || p.is(LabeledExprSyntax.self)
                 || p.is(LabeledExprListSyntax.self)
                 || p.is(FunctionCallExprSyntax.self)

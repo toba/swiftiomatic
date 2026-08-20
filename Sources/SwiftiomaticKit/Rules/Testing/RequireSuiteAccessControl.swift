@@ -16,6 +16,15 @@ final class RequireSuiteAccessControl: StaticFormatRule<BasicRuleValue>, @unchec
     /// Per-file mutable state held as a typed lazy property on `Context` .
     final class State {
         var framework: TestFramework?
+        /// Protocols declared in this file, keyed by protocol name.
+        var protocols: [String: ProtocolInfo] = [:]
+    }
+
+    /// A protocol declared in the file under format. Holds the member names it requires and the
+    /// names of the protocols it inherits.
+    struct ProtocolInfo {
+        let requirements: Set<String>
+        let inherited: [String]
     }
 
     // MARK: - Pre-scan
@@ -23,6 +32,108 @@ final class RequireSuiteAccessControl: StaticFormatRule<BasicRuleValue>, @unchec
     static func willEnter(_ node: SourceFileSyntax, context: Context) {
         let state = context.testSuiteAccessControlState
         state.framework = detectTestFramework(in: node)
+        // Every transform returns on a nil framework, so the file holds no test suite and the
+        // protocol walk has no reader.
+        state.protocols = state.framework == nil ? [:] : collectProtocols(in: node)
+    }
+
+    private static func collectProtocols(in node: SourceFileSyntax) -> [String: ProtocolInfo] {
+        let collector = ProtocolCollector(viewMode: .sourceAccurate)
+        collector.walk(node)
+        return collector.protocols
+    }
+
+    /// Records every protocol declared in the file, at any nesting level.
+    private final class ProtocolCollector: SyntaxVisitor {
+        var protocols: [String: ProtocolInfo] = [:]
+
+        override func visit(_ node: ProtocolDeclSyntax) -> SyntaxVisitorContinueKind {
+            var requirements = Set<String>()
+
+            for member in node.memberBlock.members {
+                if let varDecl = member.decl.as(VariableDeclSyntax.self) {
+                    for binding in varDecl.bindings {
+                        if let ident = binding.pattern.as(IdentifierPatternSyntax.self) {
+                            requirements.insert(ident.identifier.text)
+                        }
+                    }
+                } else if let funcDecl = member.decl.as(FunctionDeclSyntax.self) {
+                    requirements.insert(funcDecl.name.text)
+                }
+            }
+
+            var inherited = [String]()
+            if let clause = node.inheritanceClause {
+                for inheritedType in clause.inheritedTypes {
+                    inherited.append(RequireSuiteAccessControl.baseName(of: inheritedType.type))
+                }
+            }
+
+            protocols[node.name.text] = ProtocolInfo(
+                requirements: requirements,
+                inherited: inherited
+            )
+            return .visitChildren
+        }
+    }
+
+    // MARK: - Protocol Witnesses
+
+    /// The member names a type may not narrow to `private` .
+    ///
+    /// A member that witnesses a protocol requirement is read from outside the type, so the
+    /// compiler rejects `private` on it.
+    enum WitnessGuard {
+        /// Every conformance resolves to a protocol in this file, or requires no member.
+        case names(Set<String>)
+        /// A conformance is declared outside this file, so its requirements are unknown.
+        case unknown
+
+        /// Returns `true` when a member with the given name can witness a requirement.
+        ///
+        /// Pass `nil` for a binding pattern that carries no identifier, such as a tuple pattern.
+        /// A named requirement never matches one, so only `.unknown` blocks it.
+        func blocks(_ name: String?) -> Bool {
+            switch self {
+            case let .names(names): name.map(names.contains) ?? false
+            case .unknown: true
+            }
+        }
+    }
+
+    /// Conformances that add no member requirement. `XCTestCase` is a class, and a member that
+    /// overrides one of its methods carries `override` , which this rule already skips.
+    private static let requirementFreeConformances: Set<String> = [
+        "Sendable", "AnyObject", "Any", "XCTestCase",
+    ]
+
+    private static func baseName(of type: TypeSyntax) -> String {
+        if let identifier = type.as(IdentifierTypeSyntax.self) { return identifier.name.text }
+        if let member = type.as(MemberTypeSyntax.self) { return member.name.text }
+        return type.trimmedDescription
+    }
+
+    /// Resolves the conformances of a type to the member names its witnesses may use.
+    ///
+    /// Returns `.unknown` as soon as one conformance names a type this file does not declare.
+    private static func witnessGuard(
+        for inheritanceClause: InheritanceClauseSyntax?,
+        state: State
+    ) -> WitnessGuard {
+        guard let inheritanceClause else { return .names([]) }
+
+        var names = Set<String>()
+        var pending = inheritanceClause.inheritedTypes.map { baseName(of: $0.type) }
+        var seen = Set<String>()
+
+        while let name = pending.popLast() {
+            guard seen.insert(name).inserted else { continue }
+            if requirementFreeConformances.contains(name) { continue }
+            guard let info = state.protocols[name] else { return .unknown }
+            names.formUnion(info.requirements)
+            pending.append(contentsOf: info.inherited)
+        }
+        return .names(names)
     }
 
     // MARK: - Static transforms
@@ -57,6 +168,7 @@ final class RequireSuiteAccessControl: StaticFormatRule<BasicRuleValue>, @unchec
                 result.memberBlock,
                 original: original.memberBlock,
                 framework: framework,
+                witnesses: witnessGuard(for: node.inheritanceClause, state: state),
                 context: context
             )
         )
@@ -93,6 +205,7 @@ final class RequireSuiteAccessControl: StaticFormatRule<BasicRuleValue>, @unchec
                 result.memberBlock,
                 original: original.memberBlock,
                 framework: framework,
+                witnesses: witnessGuard(for: node.inheritanceClause, state: state),
                 context: context
             )
         )
@@ -105,6 +218,7 @@ final class RequireSuiteAccessControl: StaticFormatRule<BasicRuleValue>, @unchec
         _ memberBlock: MemberBlockSyntax,
         original: MemberBlockSyntax,
         framework: TestFramework,
+        witnesses: WitnessGuard,
         context: Context
     ) -> MemberBlockSyntax {
         var newMembers = [MemberBlockItemSyntax]()
@@ -125,6 +239,7 @@ final class RequireSuiteAccessControl: StaticFormatRule<BasicRuleValue>, @unchec
                     funcDecl,
                     original: originalFunc,
                     framework: framework,
+                    witnesses: witnesses,
                     context: context
                 )
 
@@ -138,6 +253,7 @@ final class RequireSuiteAccessControl: StaticFormatRule<BasicRuleValue>, @unchec
                 let rewritten = rewriteProperty(
                     varDecl,
                     original: originalVar,
+                    witnesses: witnesses,
                     context: context
                 )
 
@@ -172,6 +288,7 @@ final class RequireSuiteAccessControl: StaticFormatRule<BasicRuleValue>, @unchec
         _ funcDecl: FunctionDeclSyntax,
         original: FunctionDeclSyntax,
         framework: TestFramework,
+        witnesses: WitnessGuard,
         context: Context
     ) -> FunctionDeclSyntax {
         let modifiers = funcDecl.modifiers
@@ -201,6 +318,8 @@ final class RequireSuiteAccessControl: StaticFormatRule<BasicRuleValue>, @unchec
                 context: context
             )
         } else {
+            // A helper that witnesses a protocol requirement is read from outside the type.
+            if witnesses.blocks(funcDecl.name.text) { return funcDecl }
             return modifiers.contains(where: {
                 $0.name.tokenKind == .keyword(.private)
                     || $0.name.tokenKind == .keyword(.fileprivate)
@@ -218,6 +337,7 @@ final class RequireSuiteAccessControl: StaticFormatRule<BasicRuleValue>, @unchec
     private static func rewriteProperty(
         _ varDecl: VariableDeclSyntax,
         original: VariableDeclSyntax,
+        witnesses: WitnessGuard,
         context: Context
     ) -> VariableDeclSyntax {
         let modifiers = varDecl.modifiers
@@ -226,6 +346,12 @@ final class RequireSuiteAccessControl: StaticFormatRule<BasicRuleValue>, @unchec
             return varDecl
         }
         if varDecl.attributes.attribute(named: "objc") != nil { return varDecl }
+
+        // A property that witnesses a protocol requirement is read from outside the type.
+        let bindsWitness = varDecl.bindings.contains { binding in
+            witnesses.blocks(binding.pattern.as(IdentifierPatternSyntax.self)?.identifier.text)
+        }
+        if bindsWitness { return varDecl }
         return modifiers.contains(where: {
             $0.name.tokenKind == .keyword(.private) || $0.name.tokenKind == .keyword(.fileprivate)
         })

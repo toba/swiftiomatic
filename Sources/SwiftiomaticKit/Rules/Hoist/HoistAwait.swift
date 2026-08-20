@@ -19,7 +19,7 @@ final class HoistAwait: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
 
     static func transform(
         _ callNode: FunctionCallExprSyntax,
-        original _: FunctionCallExprSyntax,
+        original: FunctionCallExprSyntax,
         parent: Syntax?,
         context: Context
     ) -> ExprSyntax {
@@ -27,11 +27,16 @@ final class HoistAwait: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
         if isWrappedInAwait(parent: parent) { return ExprSyntax(callNode) }
 
         // Find the first await in arguments
-        guard let firstAwait = findFirstAwaitInArguments(callNode) else {
+        guard findFirstAwaitInArguments(callNode) != nil else {
             return ExprSyntax(callNode)
         }
 
-        Self.diagnose(.hoistAwait, on: firstAwait.awaitKeyword, context: context)
+        // Anchor the finding on `original` , which still sits in the source file and reports the
+        // real position. An `await` that `original` does not carry comes from an inner hoist in
+        // this same pass, and that hoist already reported the source `await` .
+        if let sourceAwait = findFirstAwaitInArguments(original) {
+            Self.diagnose(.hoistAwait, on: sourceAwait.awaitKeyword, context: context)
+        }
 
         // Strip await from all arguments
         let newArgs = callNode.arguments.map { arg -> LabeledExprSyntax in

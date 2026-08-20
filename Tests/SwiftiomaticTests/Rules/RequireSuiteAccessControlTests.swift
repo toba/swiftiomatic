@@ -524,6 +524,153 @@ struct RequireSuiteAccessControlTests: RuleTesting {
     )
   }
 
+  // MARK: - Protocol witnesses (issue 5b18)
+
+  @Test func keepsProtocolWitnessPropertyInternal() {
+    assertFormatting(
+      RequireSuiteAccessControl.self,
+      input: """
+        import Testing
+
+        protocol DocumentTestSuite {
+            var sqlite: Int { get }
+        }
+
+        struct ReversibleChangeTests: DocumentTestSuite {
+            let sqlite: Int = 0
+
+            1️⃣let scratch: Int = 0
+        }
+        """,
+      expected: """
+        import Testing
+
+        protocol DocumentTestSuite {
+            var sqlite: Int { get }
+        }
+
+        struct ReversibleChangeTests: DocumentTestSuite {
+            let sqlite: Int = 0
+
+            private let scratch: Int = 0
+        }
+        """,
+      findings: [
+        FindingSpec("1️⃣", message: "make test helper 'private'"),
+      ]
+    )
+  }
+
+  @Test func keepsProtocolWitnessFunctionInternal() {
+    assertFormatting(
+      RequireSuiteAccessControl.self,
+      input: """
+        import Testing
+
+        protocol DocumentTestSuite {
+            func makeDatabase() -> Int
+        }
+
+        struct ReversibleChangeTests: DocumentTestSuite {
+            func makeDatabase() -> Int { 0 }
+        }
+        """,
+      expected: """
+        import Testing
+
+        protocol DocumentTestSuite {
+            func makeDatabase() -> Int
+        }
+
+        struct ReversibleChangeTests: DocumentTestSuite {
+            func makeDatabase() -> Int { 0 }
+        }
+        """,
+      findings: []
+    )
+  }
+
+  @Test func keepsInheritedProtocolWitnessInternal() {
+    assertFormatting(
+      RequireSuiteAccessControl.self,
+      input: """
+        import Testing
+
+        protocol DatabaseBacked {
+            var sqlite: Int { get }
+        }
+
+        protocol DocumentTestSuite: DatabaseBacked {}
+
+        struct ReversibleChangeTests: DocumentTestSuite {
+            let sqlite: Int = 0
+        }
+        """,
+      expected: """
+        import Testing
+
+        protocol DatabaseBacked {
+            var sqlite: Int { get }
+        }
+
+        protocol DocumentTestSuite: DatabaseBacked {}
+
+        struct ReversibleChangeTests: DocumentTestSuite {
+            let sqlite: Int = 0
+        }
+        """,
+      findings: []
+    )
+  }
+
+  @Test func skipsTypeWithConformanceDeclaredOutsideTheFile() {
+    assertFormatting(
+      RequireSuiteAccessControl.self,
+      input: """
+        import Testing
+
+        struct ReversibleChangeTests: ThesisDocumentTestSuite {
+            let sqlite: Int = 0
+
+            func helper() -> Int { 0 }
+        }
+        """,
+      expected: """
+        import Testing
+
+        struct ReversibleChangeTests: ThesisDocumentTestSuite {
+            let sqlite: Int = 0
+
+            func helper() -> Int { 0 }
+        }
+        """,
+      findings: []
+    )
+  }
+
+  @Test func stillPrivatizesUnderRequirementFreeConformance() {
+    assertFormatting(
+      RequireSuiteAccessControl.self,
+      input: """
+        import Testing
+
+        struct ReversibleChangeTests: Sendable {
+            1️⃣let scratch: Int = 0
+        }
+        """,
+      expected: """
+        import Testing
+
+        struct ReversibleChangeTests: Sendable {
+            private let scratch: Int = 0
+        }
+        """,
+      findings: [
+        FindingSpec("1️⃣", message: "make test helper 'private'"),
+      ]
+    )
+  }
+
   // MARK: - Diagnostic locations (issue hfh-zsn)
 
   /// When the rewrite pipeline rebuilds the tree because some other rule rewrote a child,
@@ -533,7 +680,7 @@ struct RequireSuiteAccessControlTests: RuleTesting {
   /// landing inside an `import` statement many lines before the real declaration. The fix
   /// routes diagnose anchors through the still-attached `original` parameter so locations
   /// stay correct under detachment.
-  @Test func diagnosticLocationSurvivesDetachment() {
+  @Test func diagnosticLocationSurvivesDetachment() throws {
     let source = """
       @testable import Core
       import GRDB
@@ -552,7 +699,7 @@ struct RequireSuiteAccessControlTests: RuleTesting {
     for stmt in sourceFile.statements {
       if let s = stmt.item.as(StructDeclSyntax.self) { originalStruct = s; break }
     }
-    let original = try! #require(originalStruct)
+    let original = try #require(originalStruct)
     let detached = original.detached
 
     let configuration = Configuration.forTesting(enabledRule: "requireSuiteAccessControl")
@@ -572,10 +719,10 @@ struct RequireSuiteAccessControlTests: RuleTesting {
       context: context
     )
 
-    let helperFinding = try! #require(
+    let helperFinding = try #require(
       findings.first { $0.message.text == "make test helper 'private'" }
     )
-    let location = try! #require(helperFinding.location)
+    let location = try #require(helperFinding.location)
     // `func helper()` is on line 7 of the source. The leading-trivia-skipped start of the
     // `func` keyword is column 5 (4 spaces of indent + 1).
     #expect(location.line == 7)
