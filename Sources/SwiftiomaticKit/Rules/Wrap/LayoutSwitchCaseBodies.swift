@@ -76,8 +76,11 @@ fileprivate extension LayoutSwitchCaseBodies {
                 .newline + Trivia(stringLiteral: bodyIndent)
             )
 
-        // Ensure the colon has a clean trailing trivia (no leftover spaces).
-        result = result.withUpdatedColon(trailingTrivia: [])
+        // Ensure the colon has a clean trailing trivia (no leftover spaces). A comment after the
+        // colon stays on the label line, otherwise the rewrite deletes it.
+        result = result.withUpdatedColon(
+            trailingTrivia: throughLastComment(colonToken(node).trailingTrivia)
+        )
         result.statements = CodeBlockItemListSyntax(items)
 
         return result
@@ -92,6 +95,9 @@ fileprivate extension LayoutSwitchCaseBodies {
         guard node.statements.count == 1 else { return node }
         // Skip if already inline.
         guard !isInline(node) else { return node }
+        // Skip when a comment sits between the colon and the body. Moving the statement up would
+        // place it inside that comment and destroy it.
+        guard !hasCommentBeforeBody(node) else { return node }
 
         let bodyText = node.statements.first!.trimmedDescription
         let labelText = labelText(node)
@@ -133,6 +139,30 @@ fileprivate extension LayoutSwitchCaseBodies {
     static func isInline(_ node: SwitchCaseSyntax) -> Bool {
         guard let firstStmt = node.statements.first else { return true }
         return !firstStmt.leadingTrivia.containsNewlines
+    }
+
+    /// Whether a comment sits between the label's colon and the first statement.
+    static func hasCommentBeforeBody(_ node: SwitchCaseSyntax) -> Bool {
+        if colonToken(node).trailingTrivia.contains(where: \.isComment) { return true }
+        guard let firstStmt = node.statements.first else { return false }
+        return firstStmt.leadingTrivia.contains(where: \.isComment)
+    }
+
+    /// The prefix of `trivia` up to and including the last comment. Returns empty trivia when
+    /// there is no comment. This keeps a comment on the label line and drops the whitespace that
+    /// followed it.
+    static func throughLastComment(_ trivia: Trivia) -> Trivia {
+        let pieces = Array(trivia)
+        guard let lastComment = pieces.lastIndex(where: \.isComment) else { return [] }
+        return Trivia(pieces: Array(pieces[...lastComment]))
+    }
+
+    /// The colon token that ends the case label.
+    static func colonToken(_ node: SwitchCaseSyntax) -> TokenSyntax {
+        switch node.label {
+            case let .case(caseLabel): caseLabel.colon
+            case let .default(defaultLabel): defaultLabel.colon
+        }
     }
 
     /// The indentation of the case label.

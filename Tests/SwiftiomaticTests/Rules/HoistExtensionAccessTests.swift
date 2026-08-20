@@ -433,6 +433,131 @@ struct HoistExtensionAccessTests: RuleTesting {
     )
   }
 
+  @Test func nestedProtocolTakesAccessLevelInsteadOfItsRequirements() {
+    // A protocol's requirements implicitly have the protocol's access level and it is an error to
+    // state one explicitly, so the keyword has to land on the protocol itself.
+    assertFormatting(
+      HoistExtensionAccess.self,
+      input: """
+        1️⃣public extension Namespace {
+          2️⃣protocol Boundary: Sendable {
+            associatedtype Value
+            var name: String { get }
+            func work()
+          }
+        }
+        """,
+      expected: """
+        extension Namespace {
+          public protocol Boundary: Sendable {
+            associatedtype Value
+            var name: String { get }
+            func work()
+          }
+        }
+        """,
+      findings: [
+        FindingSpec(
+          "1️⃣",
+          message: "move this 'public' access modifier to precede each member inside this extension",
+          notes: [
+            NoteSpec("2️⃣", message: "add 'public' access modifier to this declaration")
+          ]
+        )
+      ]
+    )
+  }
+
+  @Test func nestedProtocolWithExplicitAccessLevelIsLeftAlone() {
+    assertFormatting(
+      HoistExtensionAccess.self,
+      input: """
+        1️⃣public extension Foo {
+          private protocol P {
+            func f()
+          }
+          2️⃣func g() {}
+        }
+        """,
+      expected: """
+        extension Foo {
+          private protocol P {
+            func f()
+          }
+          public func g() {}
+        }
+        """,
+      findings: [
+        FindingSpec(
+          "1️⃣",
+          message: "move this 'public' access modifier to precede each member inside this extension",
+          notes: [
+            NoteSpec("2️⃣", message: "add 'public' access modifier to this declaration")
+          ]
+        )
+      ]
+    )
+  }
+
+  @Test func nestedProtocolInPrivateExtensionBecomesFileprivate() {
+    assertFormatting(
+      HoistExtensionAccess.self,
+      input: """
+        1️⃣private extension Foo {
+          2️⃣protocol P {
+            func f()
+          }
+        }
+        """,
+      expected: """
+        extension Foo {
+          fileprivate protocol P {
+            func f()
+          }
+        }
+        """,
+      findings: [
+        FindingSpec(
+          "1️⃣",
+          message:
+            "remove this 'private' access modifier and declare each member inside this extension as 'fileprivate'",
+          notes: [
+            NoteSpec("2️⃣", message: "add 'fileprivate' access modifier to this declaration")
+          ]
+        )
+      ]
+    )
+  }
+
+  @Test func spiAttributeIsMovedToNestedProtocol() {
+    assertFormatting(
+      HoistExtensionAccess.self,
+      input: """
+        @_spi(Something) 1️⃣public extension Foo {
+          2️⃣protocol P {
+            func f()
+          }
+        }
+        """,
+      expected: """
+        extension Foo {
+          @_spi(Something) public protocol P {
+            func f()
+          }
+        }
+        """,
+      findings: [
+        FindingSpec(
+          "1️⃣",
+          message: "move this 'public' access modifier to precede each member inside this extension",
+          notes: [
+            NoteSpec("2️⃣", message: "add 'public' access modifier to this declaration")
+          ]
+        )
+      ]
+    )
+  }
+
   // MARK: - onExtension mode
 
   private func onExtensionConfig() -> Configuration {
@@ -454,6 +579,39 @@ struct HoistExtensionAccessTests: RuleTesting {
         public extension Foo {
           func bar() {}
           func baz() {}
+        }
+        """,
+      findings: [
+        FindingSpec(
+          "1️⃣",
+          message: "hoist 'public' access modifier from members to this extension",
+          notes: [
+            NoteSpec("2️⃣", message: "remove 'public' access modifier from this declaration"),
+            NoteSpec("3️⃣", message: "remove 'public' access modifier from this declaration"),
+          ]
+        )
+      ],
+      configuration: onExtensionConfig()
+    )
+  }
+
+  @Test func hoistFromNestedProtocolButNotItsRequirements() {
+    assertFormatting(
+      HoistExtensionAccess.self,
+      input: """
+        1️⃣extension Foo {
+          2️⃣public protocol P {
+            func f()
+          }
+          3️⃣public func g() {}
+        }
+        """,
+      expected: """
+        public extension Foo {
+          protocol P {
+            func f()
+          }
+          func g() {}
         }
         """,
       findings: [

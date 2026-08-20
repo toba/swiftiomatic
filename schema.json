@@ -1569,7 +1569,7 @@
               "$ref" : "#/$defs/ruleBase"
             }
           ],
-          "description" : "Controls placement of access level modifiers on extensions vs. their members.\n\nThe behavior of this rule is controlled by `Configuration.extensionAccessControl.placement` :\n\n- `onMembers` (default): Access levels on extensions are moved to individual members.\n- `onExtension` : When all members share the same access level, it is hoisted to the extension.\n\nLint: A lint error is raised when access control placement doesn't match the configuration.\n\nRewrite: Access control modifiers are moved to match the configured placement.",
+          "description" : "Controls placement of access level modifiers on extensions vs. their members.\n\nThe behavior of this rule is controlled by `Configuration.extensionAccessControl.placement` :\n\n- `onMembers` (default): Access levels on extensions are moved to individual members.\n- `onExtension` : When all members share the same access level, it is hoisted to the extension.\n\nFor a nested protocol, the access level goes on the protocol declaration itself and not on its requirements, which implicitly have the protocol's access level.\n\nLint: A lint error is raised when access control placement doesn't match the configuration.\n\nRewrite: Access control modifiers are moved to match the configured placement.",
           "properties" : {
             "placement" : {
               "default" : "onMembers",
@@ -1634,7 +1634,7 @@
           "$ref" : "#/$defs/ruleBase"
         }
       ],
-      "description" : "Controls placement of access level modifiers on extensions vs. their members.\n\nThe behavior of this rule is controlled by `Configuration.extensionAccessControl.placement` :\n\n- `onMembers` (default): Access levels on extensions are moved to individual members.\n- `onExtension` : When all members share the same access level, it is hoisted to the extension.\n\nLint: A lint error is raised when access control placement doesn't match the configuration.\n\nRewrite: Access control modifiers are moved to match the configured placement.",
+      "description" : "Controls placement of access level modifiers on extensions vs. their members.\n\nThe behavior of this rule is controlled by `Configuration.extensionAccessControl.placement` :\n\n- `onMembers` (default): Access levels on extensions are moved to individual members.\n- `onExtension` : When all members share the same access level, it is hoisted to the extension.\n\nFor a nested protocol, the access level goes on the protocol declaration itself and not on its requirements, which implicitly have the protocol's access level.\n\nLint: A lint error is raised when access control placement doesn't match the configuration.\n\nRewrite: Access control modifiers are moved to match the configured placement.",
       "properties" : {
         "placement" : {
           "default" : "onMembers",
@@ -2152,6 +2152,13 @@
         }
       ],
       "description" : "Source lines should not exceed a configurable character count.\n\nLint-only counterpart to the `lineLength` layout setting (which targets the pretty-printer's wrap point). This rule emits findings on lines that exceed `warning` / `error` thresholds.",
+      "properties" : {
+        "ignoresURLs" : {
+          "default" : true,
+          "description" : "When `true` , the characters of a URL don't count toward the line length, and the finding reports the length without them. A URL cannot wrap, so the reader has no fix for it.\n\nA URL is a bare `scheme://host/path` , a `www.` host, a Markdown link, or an autolink. A property access such as `post.id` is not a URL.",
+          "type" : "boolean"
+        }
+      },
       "unevaluatedProperties" : false
     },
     "literals" : {
@@ -2443,6 +2450,13 @@
             }
           ],
           "description" : "Source lines should not exceed a configurable character count.\n\nLint-only counterpart to the `lineLength` layout setting (which targets the pretty-printer's wrap point). This rule emits findings on lines that exceed `warning` / `error` thresholds.",
+          "properties" : {
+            "ignoresURLs" : {
+              "default" : true,
+              "description" : "When `true` , the characters of a URL don't count toward the line length, and the finding reports the length without them. A URL cannot wrap, so the reader has no fix for it.\n\nA URL is a bare `scheme://host/path` , a `www.` host, a Markdown link, or an autolink. A property access such as `post.id` is not a URL.",
+              "type" : "boolean"
+            }
+          },
           "unevaluatedProperties" : false
         },
         "nestingDepth" : {

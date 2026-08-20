@@ -510,9 +510,9 @@ package enum CommentReflowEngine {
             }
             // Markdown link: [text](url) — atomic if balanced.
             if c == "[" {
-                if let end = matchMarkdownLink(scalars, from: i) {
-                    pending.append(String(scalars[i...end]))
-                    i = end + 1
+                if let link = matchMarkdownLink(scalars, from: i) {
+                    pending.append(String(scalars[i...link.end]))
+                    i = link.end + 1
                     continue
                 }
             }
@@ -524,10 +524,9 @@ package enum CommentReflowEngine {
                     continue
                 }
             }
-            // URL: http(s)://... — read until whitespace.
-            if c == "h", isURLStart(scalars, at: i) {
-                var j = i
-                while j < scalars.count, scalars[j] != " ", scalars[j] != "\t" { j += 1 }
+            // URL: a scheme with "://" or a "www." host — read until whitespace.
+            if c.isLetter, isURLStart(scalars, at: i) {
+                let j = endOfBareURL(scalars, from: i)
                 pending.append(String(scalars[i..<j]))
                 i = j
                 continue
@@ -539,7 +538,12 @@ package enum CommentReflowEngine {
         return atoms
     }
 
-    private static func matchMarkdownLink(_ s: [Character], from i: Int) -> Int? {
+    /// Matches `[text](url)` starting at `i` . Returns the index of the first character of the
+    /// target and the index of the closing `)` .
+    private static func matchMarkdownLink(
+        _ s: [Character],
+        from i: Int
+    ) -> (targetStart: Int, end: Int)? {
         // [text](url)
         var j = i + 1
         var depth = 1
@@ -562,7 +566,7 @@ package enum CommentReflowEngine {
                 pdepth += 1
             } else if s[k] == ")" {
                 pdepth -= 1
-                if pdepth == 0 { return k }
+                if pdepth == 0 { return (targetStart: j + 2, end: k) }
             }
             k += 1
         }
@@ -582,16 +586,92 @@ package enum CommentReflowEngine {
         return j
     }
 
+    /// True when a bare URL starts at `i` .
+    ///
+    /// A bare URL needs explicit URL syntax: a scheme followed by `://` , or a `www.` host prefix.
+    /// A property access such as `post.id` carries neither, so it never qualifies. Upstream
+    /// SwiftLint added the same restriction in commit `e3f29820` , because a detector that reads
+    /// `post.id` as a host name hides a real overlong line.
     private static func isURLStart(_ s: [Character], at i: Int) -> Bool {
-        let httpChars: [Character] = ["h", "t", "t", "p"]
-        guard i + 6 <= s.count else { return false }
-        for k in 0..<4 where s[i + k] != httpChars[k] { return false }
-        // http:// or https://
-        if s[i + 4] == ":" { return s[i + 5] == "/" && s[i + 6 - 1] == "/" }
-        if i + 8 <= s.count, s[i + 4] == "s", s[i + 5] == ":" {
-            return s[i + 6] == "/" && s[i + 7] == "/"
+        guard i < s.count else { return false }
+        // www. host, with no scheme.
+        if i + 4 <= s.count,
+           s[i] == "w" || s[i] == "W",
+           s[i + 1] == "w" || s[i + 1] == "W",
+           s[i + 2] == "w" || s[i + 2] == "W",
+           s[i + 3] == "." {
+            return true
         }
-        return false
+        // scheme://
+        guard s[i].isLetter else { return false }
+        var j = i
+
+        while j < s.count, s[j].isLetter || s[j].isNumber || s[j] == "+" || s[j] == "."
+            || s[j] == "-"
+        {
+            j += 1
+        }
+        guard j + 3 <= s.count, s[j] == ":", s[j + 1] == "/", s[j + 2] == "/" else { return false }
+        return true
+    }
+
+    /// True when the character at `i` opens a word. The characters a scheme accepts are the ones
+    /// that continue a word.
+    private static func isWordStart(_ s: [Character], at i: Int) -> Bool {
+        guard i > 0 else { return true }
+        let p = s[i - 1]
+        return !(p.isLetter || p.isNumber || p == "+" || p == "." || p == "-")
+    }
+
+    /// The index one past the last character of the bare URL that starts at `i` . A bare URL runs
+    /// to the next whitespace.
+    private static func endOfBareURL(_ s: [Character], from i: Int) -> Int {
+        var j = i
+
+        while j < s.count, s[j] != " ", s[j] != "\t" { j += 1 }
+        return j
+    }
+
+    // MARK: - URL runs
+
+    /// The character ranges of the URL runs in `characters` .
+    ///
+    /// A run is a Markdown link, an autolink, or a bare URL, and it is indivisible. Every form
+    /// needs explicit URL syntax in its target: a scheme followed by `://` , or a `www.` host.
+    /// The ranges never overlap, and they are in ascending order.
+    ///
+    /// `LineLengthLimit` subtracts these ranges before it measures a line. A URL cannot wrap, so a
+    /// finding about one names no fix the reader can apply.
+    package static func urlRuns(in characters: [Character]) -> [Range<Int>] {
+        var runs: [Range<Int>] = []
+        var i = 0
+
+        while i < characters.count {
+            let c = characters[i]
+
+            if c == "[", let link = matchMarkdownLink(characters, from: i),
+               isURLStart(characters, at: link.targetStart) {
+                runs.append(i..<(link.end + 1))
+                i = link.end + 1
+                continue
+            }
+            if c == "<", let end = matchAutolink(characters, from: i),
+               isURLStart(characters, at: i + 1) {
+                runs.append(i..<(end + 1))
+                i = end + 1
+                continue
+            }
+            // Test a bare URL only at the start of a word. This keeps the scheme scan off every
+            // character of a long identifier.
+            if c.isLetter, isWordStart(characters, at: i), isURLStart(characters, at: i) {
+                let end = endOfBareURL(characters, from: i)
+                runs.append(i..<end)
+                i = end
+                continue
+            }
+            i += 1
+        }
+        return runs
     }
 }
 

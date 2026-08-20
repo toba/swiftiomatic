@@ -19,6 +19,9 @@ import SwiftSyntax
 /// - `onMembers` (default): Access levels on extensions are moved to individual members.
 /// - `onExtension` : When all members share the same access level, it is hoisted to the extension.
 ///
+/// For a nested protocol, the access level goes on the protocol declaration itself and not on its
+/// requirements, which implicitly have the protocol's access level.
+///
 /// Lint: A lint error is raised when access control placement doesn't match the configuration.
 ///
 /// Rewrite: Access control modifiers are moved to match the configured placement.
@@ -231,6 +234,15 @@ final class HoistExtensionAccess: StructuralFormatRule<ExtensionAccessControlCon
 
     override func visit(_ node: InitializerDeclSyntax) -> DeclSyntax {
         processExtensionMember(node, declKeywordKeyPath: \.initKeyword)
+    }
+
+    /// Visits a nested protocol declaration.
+    ///
+    /// Like every other member visitor, this one does not visit the protocol's children. A
+    /// protocol's requirements implicitly have the protocol's own access level, and stating one
+    /// explicitly is an error, so the access level has to land on the protocol itself.
+    override func visit(_ node: ProtocolDeclSyntax) -> DeclSyntax {
+        processExtensionMember(node, declKeywordKeyPath: \.protocolKeyword)
     }
 
     override func visit(_ node: StructDeclSyntax) -> DeclSyntax {

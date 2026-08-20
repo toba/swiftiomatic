@@ -17,7 +17,16 @@ final class LineLengthLimit: LintSyntaxRule<LineLengthLimitConfiguration>, @unch
             lineNumber += 1
             let lineEnd = source[index...].firstIndex(of: "\n") ?? source.endIndex
             let line = source[index..<lineEnd]
-            let length = line.count
+            var length = line.count
+
+            // A URL cannot wrap, so a finding whose overage comes from one names no fix. Subtract
+            // every URL run before the comparison. Only a line that is already over pays for the
+            // scan, and the reported length is the one the thresholds see.
+            if ruleConfig.ignoresURLs, length > min(ruleConfig.warning, ruleConfig.error) {
+                let characters = Array(line)
+
+                for run in CommentReflowEngine.urlRuns(in: characters) { length -= run.count }
+            }
 
             if let severity = metricSeverity(
                 value: length,
@@ -63,6 +72,12 @@ package struct LineLengthLimitConfiguration: ThresholdRuleValue {
     package var warning: Int = 120
     /// Lines longer than this many characters emit an error-severity finding.
     package var error: Int = 200
+    /// When `true` , the characters of a URL don't count toward the line length, and the finding
+    /// reports the length without them. A URL cannot wrap, so the reader has no fix for it.
+    ///
+    /// A URL is a bare `scheme://host/path` , a `www.` host, a Markdown link, or an autolink. A
+    /// property access such as `post.id` is not a URL.
+    package var ignoresURLs = true
 
     package init() {}
 
@@ -72,9 +87,10 @@ package struct LineLengthLimitConfiguration: ThresholdRuleValue {
         if let v = try c.decodeIfPresent(Bool.self, forKey: .enabled) { enabled = v }
         if let v = try c.decodeIfPresent(Int.self, forKey: .warning) { warning = v }
         if let v = try c.decodeIfPresent(Int.self, forKey: .error) { error = v }
+        if let v = try c.decodeIfPresent(Bool.self, forKey: .ignoresURLs) { ignoresURLs = v }
     }
 
     private enum CodingKeys: String, CodingKey {
-        case enabled, warning, error
+        case enabled, warning, error, ignoresURLs
     }
 }

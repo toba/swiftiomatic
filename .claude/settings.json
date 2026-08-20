@@ -1,59 +1,48 @@
 {
-  "$schema" : "https://json.schemastore.org/claude-code-settings.json",
-  "hooks" : {
-    "PostToolUse" : [
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
+  "hooks": {
+    "PostToolUse": [
       {
-        "hooks" : [
+        "hooks": [
           {
-            "command" : "if [[ \"$CLAUDE_TOOL_ARG_FILE_PATH\" == *.swift ]]; then swiftformat \"$CLAUDE_TOOL_ARG_FILE_PATH\" && swiftlint lint --fix --quiet \"$CLAUDE_TOOL_ARG_FILE_PATH\"; fi",
-            "type" : "command"
+            "command": "if [[ \"$CLAUDE_TOOL_ARG_FILE_PATH\" == *.swift ]]; then swiftformat \"$CLAUDE_TOOL_ARG_FILE_PATH\" && swiftlint lint --fix --quiet \"$CLAUDE_TOOL_ARG_FILE_PATH\"; fi",
+            "type": "command"
           }
         ],
-        "matcher" : "Edit|Write"
+        "matcher": "Edit|Write"
       }
     ],
-    "PreCompact" : [
+    "PreCompact": [
       {
-        "hooks" : [
+        "hooks": [
           {
-            "command" : "jig prime",
-            "type" : "command"
+            "command": "jig prime",
+            "type": "command"
           }
         ],
-        "matcher" : ""
+        "matcher": ""
       }
     ],
-    "PreToolUse" : [
+    "SessionStart": [
       {
-        "hooks" : [
+        "hooks": [
           {
-            "command" : "jig nope",
-            "type" : "command"
+            "command": "jig prime",
+            "type": "command"
           }
         ],
-        "matcher" : ""
+        "matcher": ""
       }
     ],
-    "SessionStart" : [
+    "UserPromptSubmit": [
       {
-        "hooks" : [
+        "hooks": [
           {
-            "command" : "jig prime",
-            "type" : "command"
+            "command": "echo 'Use xc-swift build or diagnostics'",
+            "type": "command"
           }
         ],
-        "matcher" : ""
-      }
-    ],
-    "UserPromptSubmit" : [
-      {
-        "hooks" : [
-          {
-            "command" : "echo 'Use xc-swift build or diagnostics'",
-            "type" : "command"
-          }
-        ],
-        "matcher" : "swift build"
+        "matcher": "swift build"
       }
     ]
   }

@@ -99,6 +99,23 @@ struct LayoutSwitchCaseBodiesTests: RuleTesting {
       findings: [FindingSpec("1️⃣", message: "wrap switch case body onto a new line")])
   }
 
+  @Test func inlineCaseWrapKeepsBlockCommentAfterColon() {
+    assertFormatting(
+      LayoutSwitchCaseBodies.self,
+      input: """
+        switch foo {
+        1️⃣case .bar: /* note */ print("hello")
+        }
+        """,
+      expected: """
+        switch foo {
+        case .bar: /* note */
+            print("hello")
+        }
+        """,
+      findings: [FindingSpec("1️⃣", message: "wrap switch case body onto a new line")])
+  }
+
   @Test func emptyCaseUnchanged() {
     assertFormatting(
       LayoutSwitchCaseBodies.self,
@@ -286,6 +303,82 @@ struct LayoutSwitchCaseBodiesAdaptiveTests: RuleTesting {
       findings: [
         FindingSpec("1️⃣", message: "place switch case body on same line as label"),
       ],
+      configuration: adaptiveConfig)
+  }
+
+  @Test func trailingLineCommentOnCaseStaysWrapped() {
+    assertFormatting(
+      LayoutSwitchCaseBodies.self,
+      input: """
+        switch v {
+        case 1:  // handles one
+            return "one"
+        }
+        """,
+      expected: """
+        switch v {
+        case 1:  // handles one
+            return "one"
+        }
+        """,
+      configuration: adaptiveConfig)
+  }
+
+  @Test func trailingLineCommentOnDefaultStaysWrapped() {
+    assertFormatting(
+      LayoutSwitchCaseBodies.self,
+      input: """
+        switch v {
+        case 1: return "one"
+        default:  // everything else
+            return nil
+        }
+        """,
+      expected: """
+        switch v {
+        case 1: return "one"
+        default:  // everything else
+            return nil
+        }
+        """,
+      configuration: adaptiveConfig)
+  }
+
+  @Test func commentAboveBodyStaysWrapped() {
+    assertFormatting(
+      LayoutSwitchCaseBodies.self,
+      input: """
+        switch v {
+        case 1:
+            // handles one
+            return "one"
+        }
+        """,
+      expected: """
+        switch v {
+        case 1:
+            // handles one
+            return "one"
+        }
+        """,
+      configuration: adaptiveConfig)
+  }
+
+  @Test func trailingBlockCommentOnCaseStaysWrapped() {
+    assertFormatting(
+      LayoutSwitchCaseBodies.self,
+      input: """
+        switch v {
+        case 1:  /* handles one */
+            return "one"
+        }
+        """,
+      expected: """
+        switch v {
+        case 1:  /* handles one */
+            return "one"
+        }
+        """,
       configuration: adaptiveConfig)
   }
 
