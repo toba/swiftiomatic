@@ -20,6 +20,16 @@ jobs:
     steps:
     - uses: actions/checkout@v6
 
+    # Temporary probe. The release job stalls forever on this exact download
+    # inside swift package resolve. The probe separates runner egress from
+    # SwiftPM. Remove it once the cause is known.
+    - name: Probe the binary artifact download
+      timeout-minutes: 3
+      run: |
+        curl -sS -o /dev/null -L --max-time 120 \
+          -w 'http=%{http_code} size=%{size_download} time=%{time_total}\n' \
+          https://github.com/toba/swiftiomatic/releases/download/v3.13.2/sm.artifactbundle.zip
+
     - name: Select Xcode version
       run: sudo xcode-select -s /Applications/Xcode_${{ env.XCODE_VERSION }}.app/Contents/Developer
 
