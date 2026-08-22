@@ -20,16 +20,6 @@ jobs:
     steps:
     - uses: actions/checkout@v6
 
-    # Temporary probe. The release job stalls forever on this exact download
-    # inside swift package resolve. The probe separates runner egress from
-    # SwiftPM. Remove it once the cause is known.
-    - name: Probe the binary artifact download
-      timeout-minutes: 3
-      run: |
-        curl -sS -o /dev/null -L --max-time 120 \
-          -w 'http=%{http_code} size=%{size_download} time=%{time_total}\n' \
-          https://github.com/toba/swiftiomatic/releases/download/v3.13.2/sm.artifactbundle.zip
-
     - name: Select Xcode version
       run: sudo xcode-select -s /Applications/Xcode_${{ env.XCODE_VERSION }}.app/Contents/Developer
 
@@ -47,9 +37,7 @@ jobs:
     # toba-core and toba-concurrency are private. SwiftPM clones them over
     # https with no credential, so the rewrite supplies one. A fork pull
     # request gets no secret and still fails here. Each rewrite names one
-    # repository. A rewrite of the whole toba prefix also matches the public
-    # release asset that the swiftiomatic-plugins binary target downloads, and
-    # that download then stalls with no bytes transferred.
+    # repository, which keeps the credential off every other toba URL.
     - name: Authenticate to the private toba repositories
       env:
         TOBA_TOKEN: ${{ secrets.HOMEBREW_TAP_TOKEN }}
@@ -62,9 +50,15 @@ jobs:
 
     # The cap turns a stalled artifact download into a fast failure. A stall
     # otherwise holds the runner for the full six hour job limit.
+    #
+    # The binary artifact of swiftiomatic-plugins sits on a public release, so
+    # it needs no credential. The two flags stop SwiftPM from consulting the
+    # keychain and netrc for one, because that lookup blocks on a headless
+    # runner and the download then never starts. This job only escapes the
+    # stall while the cache stays warm and holds the artifact already.
     - name: Resolve dependencies
       timeout-minutes: 10
-      run: swift package resolve
+      run: swift package resolve --disable-keychain --disable-netrc
 
     - name: Test
       run: |

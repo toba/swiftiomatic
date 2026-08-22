@@ -47,9 +47,7 @@ jobs:
 
     # toba-core and toba-concurrency are private. SwiftPM clones them over
     # https with no credential, so the rewrite supplies one. Each rewrite names
-    # one repository. A rewrite of the whole toba prefix also matches the
-    # public release asset that the swiftiomatic-plugins binary target
-    # downloads, and that download then stalls with no bytes transferred.
+    # one repository, which keeps the credential off every other toba URL.
     - name: Authenticate to the private toba repositories
       env:
         TOBA_TOKEN: ${{ secrets.HOMEBREW_TAP_TOKEN }}
