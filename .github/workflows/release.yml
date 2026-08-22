@@ -26,7 +26,10 @@ jobs:
       uses: actions/cache@v5
       with:
         path: .build
-        key: spm-release-${{ runner.os }}-xcode${{ env.XCODE_VERSION }}-${{ hashFiles('Package.swift', 'Package.resolved') }}
+        # The workflow file joins the key because a failed resolve saves a
+        # .build that holds half-cloned repositories. Editing the workflow
+        # then retires that entry instead of restoring it.
+        key: spm-release-${{ runner.os }}-xcode${{ env.XCODE_VERSION }}-${{ hashFiles('Package.swift', 'Package.resolved', '.github/workflows/release.yml') }}
         restore-keys: spm-release-${{ runner.os }}-xcode${{ env.XCODE_VERSION }}-
         save-always: true
 
@@ -34,6 +37,16 @@ jobs:
       run: |
         VERSION="${GITHUB_REF#refs/tags/v}"
         sed -i '' "s/let smVersion = \".*\"/let smVersion = \"$VERSION\"/" Sources/Swiftiomatic/Version.swift
+
+    # toba-core and toba-concurrency are private. SwiftPM clones them over
+    # https with no credential, so the rewrite supplies one.
+    - name: Authenticate to the private toba repositories
+      env:
+        TOBA_TOKEN: ${{ secrets.HOMEBREW_TAP_TOKEN }}
+      run: |
+        git config --global \
+          url."https://x-access-token:${TOBA_TOKEN}@github.com/toba/".insteadOf \
+          "https://github.com/toba/"
 
     - name: Resolve dependencies
       run: swift package resolve
