@@ -10,7 +10,9 @@ import SwiftSyntax
 ///   start with a digit, be a Swift keyword, or collide with an existing identifier in scope.
 /// - `.rawIdentifier` — convert the camelCase name into a backtick-wrapped raw identifier whose
 ///   words are space-separated and lowercased (`testFooBar` → `` `foo bar` ``). A leading `test`
-///   word is dropped. Already-backticked names are left untouched.
+///   word is dropped. Already-backticked names are left untouched, and so is a function whose
+///   `@Test` names the test explicitly (`@Test("foo bar")`). Swift Testing derives an implicit
+///   display name from a raw identifier, and it rejects a test that declares both names.
 ///
 /// Lint: A warning is raised for `@Test` functions whose name does not match the configured style.
 ///
@@ -132,6 +134,9 @@ final class UseSwiftTestingNames: StaticFormatRule<SwiftTestingNamesConfiguratio
     ) -> DeclSyntax {
         // Already a backtick raw identifier — leave it untouched.
         guard !(rawIdent.hasPrefix("`") && rawIdent.hasSuffix("`")) else { return DeclSyntax(node) }
+        // A raw identifier gives the test an implicit display name, and Swift Testing rejects a
+        // test that carries both an implicit and an explicit one.
+        guard !hasDisplayName(node) else { return DeclSyntax(node) }
 
         var words = Self.splitIdentifierWords(rawIdent)
         if words.first?.lowercased() == "test" { words.removeFirst() }
@@ -152,6 +157,20 @@ final class UseSwiftTestingNames: StaticFormatRule<SwiftTestingNamesConfiguratio
             \.name,
             node.name.with(\.tokenKind, .identifier(newIdentifier))
         ))
+    }
+
+    /// Reports whether the `@Test` attribute on `node` names the test explicitly.
+    ///
+    /// Swift Testing takes the display name from the first unlabeled argument, and only when that
+    /// argument is a string literal. `@Test(.tags(.fast))` and `@Test(arguments: [1, 2])` carry no
+    /// display name.
+    private static func hasDisplayName(_ node: FunctionDeclSyntax) -> Bool {
+        guard let attribute = node.attributes.attribute(named: "Test"),
+              let arguments = attribute.arguments?.as(LabeledExprListSyntax.self),
+              let first = arguments.first,
+              first.label == nil
+        else { return false }
+        return first.expression.is(StringLiteralExprSyntax.self)
     }
 
     /// Splits a camelCase / PascalCase identifier into its constituent words, treating underscores

@@ -329,6 +329,56 @@ struct UseSwiftTestingNamesTests: RuleTesting {
     )
   }
 
+  @Test func rawIdentifierLeavesNamesAloneWhenTestCarriesADisplayName() {
+    assertFormatting(
+      UseSwiftTestingNames.self,
+      input: """
+        import Testing
+
+        struct MyFeatureTests {
+            @Test("my feature has no bugs")
+            func testMyFeatureHasNoBugs() {
+                #expect(true)
+            }
+
+            @Test("features work", arguments: [Feature.foo])
+            func testFeatureWorks(_ feature: Feature) {
+                #expect(true)
+            }
+
+            @Test(arguments: [Feature.foo])
+            func 1️⃣testFeatureWorksUnnamed(_ feature: Feature) {
+                #expect(true)
+            }
+        }
+        """,
+      expected: """
+        import Testing
+
+        struct MyFeatureTests {
+            @Test("my feature has no bugs")
+            func testMyFeatureHasNoBugs() {
+                #expect(true)
+            }
+
+            @Test("features work", arguments: [Feature.foo])
+            func testFeatureWorks(_ feature: Feature) {
+                #expect(true)
+            }
+
+            @Test(arguments: [Feature.foo])
+            func `feature works unnamed`(_ feature: Feature) {
+                #expect(true)
+            }
+        }
+        """,
+      findings: [
+        FindingSpec("1️⃣", message: "rename '@Test' function 'testFeatureWorksUnnamed' to raw identifier '`feature works unnamed`'"),
+      ],
+      configuration: rawIdentifierConfig()
+    )
+  }
+
   @Test func preservesNamesWithoutTestPrefix() {
     assertFormatting(
       UseSwiftTestingNames.self,
