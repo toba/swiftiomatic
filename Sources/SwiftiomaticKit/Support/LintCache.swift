@@ -1,6 +1,7 @@
 import CryptoKit
 import Foundation
 import Synchronization
+import TobaConcurrency
 
 /// On-disk cache of lint findings keyed by `(file content hash, configuration fingerprint)` .
 ///
@@ -209,7 +210,7 @@ package final class LintCache: Sendable {
     /// Memoizes the result for the most recently seen `Configuration` . A different value triggers
     /// a re-encode + re-hash; a repeated value returns the cached string.
     package func fingerprint(for configuration: Configuration) -> String {
-        if let memo = lastFingerprint.withLock({ $0 }), memo.configuration == configuration {
+        if let memo = lastFingerprint(get: \.self), memo.configuration == configuration {
             return memo.fingerprint
         }
 
@@ -222,9 +223,7 @@ package final class LintCache: Sendable {
         if let json = encoded { hasher.update(data: json) }
 
         let fp = Self.hexEncode(hasher.finalize())
-        lastFingerprint.withLock {
-            $0 = FingerprintEntry(configuration: configuration, fingerprint: fp)
-        }
+        lastFingerprint(set: FingerprintEntry(configuration: configuration, fingerprint: fp))
         return fp
     }
 

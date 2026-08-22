@@ -1,5 +1,5 @@
 {
-  "originHash" : "78758a5da14fd6048f692df9c7c4ab4b3f9c0c09f87753e6a82ab53214ad4af4",
+  "originHash" : "e59fcb2d729bc40df7004ac279bb4c318a1ccb0f9fd02289683879ad7e9028ab",
   "pins" : [
     {
       "identity" : "swift-argument-parser",
@@ -17,6 +17,15 @@
       "state" : {
         "revision" : "924936d0427cb25a61169739a7660230bffa6ea6",
         "version" : "0.8.0"
+      }
+    },
+    {
+      "identity" : "swift-collections",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/apple/swift-collections",
+      "state" : {
+        "revision" : "a0cb0954ecb21e4e31b0070e6ed5674e8556685a",
+        "version" : "1.6.0"
       }
     },
     {
@@ -44,6 +53,24 @@
       "state" : {
         "revision" : "a37c19b3129c7309a31f825bcdc4ef1e7dd93822",
         "version" : "3.13.2"
+      }
+    },
+    {
+      "identity" : "toba-concurrency",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/toba/toba-concurrency",
+      "state" : {
+        "revision" : "3f50379daee893512aaa8d0b37d466cbbc54e12b",
+        "version" : "1.0.2"
+      }
+    },
+    {
+      "identity" : "toba-core",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/toba/toba-core",
+      "state" : {
+        "revision" : "fad093115f6e84cb07e50e5834d45c28541a55c3",
+        "version" : "1.4.1"
       }
     }
   ],

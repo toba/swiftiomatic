@@ -14,6 +14,7 @@ import SwiftSyntax
 import SwiftiomaticKit
 import Synchronization
 import SwiftDiagnostics
+import TobaConcurrency
 
 /// Unifies the handling of findings from the linter, parsing errors from the syntax parser, and
 /// generic errors from the frontend so that they are emitted in a uniform fashion.
@@ -29,10 +30,10 @@ final class DiagnosticsEngine: Sendable {
     private let state = Mutex(State())
 
     /// A Boolean value indicating whether any errors were emitted by the diagnostics engine.
-    var hasErrors: Bool { state.withLock { $0.hasErrors } }
+    var hasErrors: Bool { state(get: \.hasErrors) }
 
     /// A Boolean value indicating whether any warnings were emitted by the diagnostics engine.
-    var hasWarnings: Bool { state.withLock { $0.hasWarnings } }
+    var hasWarnings: Bool { state(get: \.hasWarnings) }
 
     /// Whether to upgrade all warnings to errors.
     private let treatWarningsAsErrors: Bool

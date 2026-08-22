@@ -1,5 +1,6 @@
 import Foundation
 import Synchronization
+import TobaConcurrency
 
 /// Collects lint findings as structured records and renders them as a JSON array.
 ///
@@ -59,12 +60,12 @@ public final class JSONLintReporter: Sendable {
     public init() {}
 
     public func record(_ entry: Entry) {
-        entries.withLock { $0.append(entry) }
+        entries.append(entry)
     }
 
     /// Returns the JSON array as a UTF-8 string. Always succeeds for the bound encodable shape.
     public func renderJSON() -> String {
-        let snapshot = entries.withLock { $0 }
+        let snapshot = entries(get: \.self)
         let encoder = JSONEncoder()
         encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
         let data = (try? encoder.encode(snapshot)) ?? Data("[]".utf8)
@@ -108,7 +109,7 @@ public final class JSONFormatReporter: Sendable {
         }
     }
 
-    private struct Buffer {
+    private struct Buffer: Sendable {
         var changed: [Changed] = []
         var unchanged: [String] = []
         var skipped: [Skipped] = []
@@ -133,7 +134,7 @@ public final class JSONFormatReporter: Sendable {
     }
 
     public func renderJSON() -> String {
-        let snapshot = buffer.withLock { $0 }
+        let snapshot = buffer(get: \.self)
 
         struct Report: Encodable {
             let changed: [Changed]

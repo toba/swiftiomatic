@@ -15,6 +15,7 @@ import Foundation
 import SwiftSyntax
 import NaturalLanguage
 import Synchronization
+import TobaConcurrency
 
 /// All documentation comments must begin with a one-line summary of the declaration.
 ///
@@ -29,8 +30,8 @@ final class RequireDocSummaryStructure: LintSyntaxRule<LintOnlyValue>, @unchecke
     /// This allows test runs on those platforms to test both implementations.
     private static let forcesFallbackStorage = Mutex(false)
     package static var forcesFallbackModeForTesting: Bool {
-        get { forcesFallbackStorage.withLock { $0 } }
-        set { forcesFallbackStorage.withLock { $0 = newValue } }
+        get { forcesFallbackStorage(get: \.self) }
+        set { forcesFallbackStorage(set: newValue) }
     }
 
     /// Identifies this rule as being opt-in. Well written docs on declarations are important, but
