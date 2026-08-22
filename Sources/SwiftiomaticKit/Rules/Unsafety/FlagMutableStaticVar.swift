@@ -9,15 +9,20 @@ import SwiftSyntax
 /// enclosing type or extension, carries an attribute such as `@MainActor` . A
 /// `nonisolated static var` opts back out of that isolation, so it is still flagged.
 ///
+/// Skips a `@TaskLocal` declaration. The property wrapper stores an immutable `let` and
+/// scopes every write to one task, so the declaration is already data-race-safe. The
+/// message names `@TaskLocal` as a fix, so flagging one is a contradiction.
+///
 /// Skips files under `Tests/` directories or named `*Tests.swift` — test fixtures often
 /// keep mutable counters by design.
 final class FlagMutableStaticVar: LintSyntaxRule<LintOnlyValue>, @unchecked Sendable {
     override class var group: ConfigurationGroup? { .unsafety }
 
     override func visit(_ node: VariableDeclSyntax) -> SyntaxVisitorContinueKind {
-        guard !isTestFile(context.fileURL) else { return .visitChildren }
+        guard !context.fileURL.isTestFile else { return .visitChildren }
         guard node.modifiers.contains(where: { $0.name.tokenKind == .keyword(.static) }),
               node.bindingSpecifier.tokenKind == .keyword(.var) else { return .visitChildren }
+        guard node.attributes.attribute(named: "TaskLocal") == nil else { return .visitChildren }
         guard !isGlobalActorIsolated(node) else { return .visitChildren }
 
         for binding in node.bindings where isStoredBinding(binding) {
@@ -64,13 +69,6 @@ final class FlagMutableStaticVar: LintSyntaxRule<LintOnlyValue>, @unchecked Send
                 }
                 return true
         }
-    }
-
-    private func isTestFile(_ url: URL) -> Bool {
-        let path = url.path
-        if path.contains("/Tests/") { return true }
-        let lastComponent = url.lastPathComponent
-        return lastComponent.hasSuffix("Tests.swift")
     }
 }
 

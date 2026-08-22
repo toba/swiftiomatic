@@ -1,13 +1,19 @@
+import Foundation
 import SwiftSyntax
 
 /// Lint `withObservationTracking { ... } onChange: { … self.f() … }` where the `onChange` closure
 /// calls the enclosing function `f()` . The pattern is a recursive re-tracker that fires forever as
 /// observed values mutate. Use the `Observations` AsyncSequence instead.
+///
+/// Skips files under `Tests/` directories or named `*Tests.swift` . A test that counts change
+/// notifications must re-arm the tracker to observe more than one change, and `Observations`
+/// cannot count synchronously. The pattern is deliberate there.
 final class FlagRecursiveObservationTracking: LintSyntaxRule<LintOnlyValue>, @unchecked Sendable
 {
     override class var group: ConfigurationGroup? { .unsafety }
 
     override func visit(_ node: FunctionCallExprSyntax) -> SyntaxVisitorContinueKind {
+        guard !context.fileURL.isTestFile else { return .visitChildren }
         guard let ident = node.calledExpression.as(DeclReferenceExprSyntax.self),
               ident.baseName.text == "withObservationTracking",
               let onChangeClosure = onChangeClosure(of: node),

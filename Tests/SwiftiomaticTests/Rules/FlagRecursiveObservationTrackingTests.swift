@@ -1,3 +1,4 @@
+import Foundation
 @testable import SwiftiomaticKit
 import SwiftiomaticTestSupport
 import Testing
@@ -53,6 +54,41 @@ struct FlagRecursiveObservationTrackingTests: RuleTesting {
       }
       """,
       findings: []
+    )
+  }
+
+  @Test func recursiveOnChangeInTestDirectoryNotFlagged() {
+    assertLint(
+      FlagRecursiveObservationTracking.self,
+      """
+      @Sendable func track() {
+        withObservationTracking {
+          _ = store.value
+        } onChange: {
+          notifications.withLock { $0 += 1 }
+          track()
+        }
+      }
+      """,
+      findings: [],
+      assumingFileURL: URL(fileURLWithPath: "/pkg/Core/Tests/Storage/FetchStoreTests.swift")
+    )
+  }
+
+  @Test func recursiveOnChangeInTestFileNameNotFlagged() {
+    assertLint(
+      FlagRecursiveObservationTracking.self,
+      """
+      func track() {
+        withObservationTracking {
+          _ = store.value
+        } onChange: {
+          track()
+        }
+      }
+      """,
+      findings: [],
+      assumingFileURL: URL(fileURLWithPath: "/pkg/Sources/FetchStoreTests.swift")
     )
   }
 

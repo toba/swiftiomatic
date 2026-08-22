@@ -1401,7 +1401,7 @@
           "$ref" : "#/$defs/lintOnlyBase"
         }
       ],
-      "description" : "Flag `static var` declarations with mutable storage. Global mutable state defeats Swift 6's data-race safety; the fix is contextual (actor isolation, `Mutex`, `@TaskLocal`, or convert to a computed `static var { ... }`), so this rule is flag-only.\n\nSkips a declaration that a global actor already protects: the variable itself, or any enclosing type or extension, carries an attribute such as `@MainActor` . A `nonisolated static var` opts back out of that isolation, so it is still flagged.\n\nSkips files under `Tests/` directories or named `*Tests.swift` — test fixtures often keep mutable counters by design.",
+      "description" : "Flag `static var` declarations with mutable storage. Global mutable state defeats Swift 6's data-race safety; the fix is contextual (actor isolation, `Mutex`, `@TaskLocal`, or convert to a computed `static var { ... }`), so this rule is flag-only.\n\nSkips a declaration that a global actor already protects: the variable itself, or any enclosing type or extension, carries an attribute such as `@MainActor` . A `nonisolated static var` opts back out of that isolation, so it is still flagged.\n\nSkips a `@TaskLocal` declaration. The property wrapper stores an immutable `let` and scopes every write to one task, so the declaration is already data-race-safe. The message names `@TaskLocal` as a fix, so flagging one is a contradiction.\n\nSkips files under `Tests/` directories or named `*Tests.swift` — test fixtures often keep mutable counters by design.",
       "unevaluatedProperties" : false
     },
     "flagMutationDuringIteration" : {
@@ -1419,7 +1419,7 @@
           "$ref" : "#/$defs/lintOnlyBase"
         }
       ],
-      "description" : "Lint `withObservationTracking { ... } onChange: { … self.f() … }` where the `onChange` closure calls the enclosing function `f()` . The pattern is a recursive re-tracker that fires forever as observed values mutate. Use the `Observations` AsyncSequence instead.",
+      "description" : "Lint `withObservationTracking { ... } onChange: { … self.f() … }` where the `onChange` closure calls the enclosing function `f()` . The pattern is a recursive re-tracker that fires forever as observed values mutate. Use the `Observations` AsyncSequence instead.\n\nSkips files under `Tests/` directories or named `*Tests.swift` . A test that counts change notifications must re-arm the tracker to observe more than one change, and `Observations` cannot count synchronously. The pattern is deliberate there.",
       "unevaluatedProperties" : false
     },
     "flagSupersededSwiftUI" : {
@@ -1815,7 +1815,7 @@
               "$ref" : "#/$defs/lintOnlyBase"
             }
           ],
-          "description" : "Lint chains of 3+ collection transforms ( `.map` , `.filter` , `.compactMap` , `.flatMap` , `.prefix` , `.dropFirst` ). Each step allocates an intermediate `Array` . Inserting `.lazy` at the head of the chain forwards lazily and avoids the allocations.",
+          "description" : "Lint chains of 3+ collection transforms ( `.map` , `.filter` , `.compactMap` , `.flatMap` , `.prefix` , `.dropFirst` ). Each step allocates an intermediate `Array` . Inserting `.lazy` at the head of the chain forwards lazily and avoids the allocations.\n\n`Optional` also has `.map` and `.flatMap` , and neither one allocates. `Optional` has no `.lazy` either, so the suggested fix does not compile there. The tree carries no type information, so the rule reads the receiver type from two syntactic signals. A chain that uses a method `Optional` does not have is a `Sequence` chain. A chain of `.map` and `.flatMap` alone is ambiguous, so the rule skips it when the surrounding code proves the value is an `Optional` . See ``isInOptionalContext(_:)`` for the four proofs.",
           "unevaluatedProperties" : false
         },
         "useOrderedSetForUniqueAppend" : {
@@ -3980,7 +3980,7 @@
               "$ref" : "#/$defs/lintOnlyBase"
             }
           ],
-          "description" : "Flag `static var` declarations with mutable storage. Global mutable state defeats Swift 6's data-race safety; the fix is contextual (actor isolation, `Mutex`, `@TaskLocal`, or convert to a computed `static var { ... }`), so this rule is flag-only.\n\nSkips a declaration that a global actor already protects: the variable itself, or any enclosing type or extension, carries an attribute such as `@MainActor` . A `nonisolated static var` opts back out of that isolation, so it is still flagged.\n\nSkips files under `Tests/` directories or named `*Tests.swift` — test fixtures often keep mutable counters by design.",
+          "description" : "Flag `static var` declarations with mutable storage. Global mutable state defeats Swift 6's data-race safety; the fix is contextual (actor isolation, `Mutex`, `@TaskLocal`, or convert to a computed `static var { ... }`), so this rule is flag-only.\n\nSkips a declaration that a global actor already protects: the variable itself, or any enclosing type or extension, carries an attribute such as `@MainActor` . A `nonisolated static var` opts back out of that isolation, so it is still flagged.\n\nSkips a `@TaskLocal` declaration. The property wrapper stores an immutable `let` and scopes every write to one task, so the declaration is already data-race-safe. The message names `@TaskLocal` as a fix, so flagging one is a contradiction.\n\nSkips files under `Tests/` directories or named `*Tests.swift` — test fixtures often keep mutable counters by design.",
           "unevaluatedProperties" : false
         },
         "flagMutationDuringIteration" : {
@@ -3998,7 +3998,7 @@
               "$ref" : "#/$defs/lintOnlyBase"
             }
           ],
-          "description" : "Lint `withObservationTracking { ... } onChange: { … self.f() … }` where the `onChange` closure calls the enclosing function `f()` . The pattern is a recursive re-tracker that fires forever as observed values mutate. Use the `Observations` AsyncSequence instead.",
+          "description" : "Lint `withObservationTracking { ... } onChange: { … self.f() … }` where the `onChange` closure calls the enclosing function `f()` . The pattern is a recursive re-tracker that fires forever as observed values mutate. Use the `Observations` AsyncSequence instead.\n\nSkips files under `Tests/` directories or named `*Tests.swift` . A test that counts change notifications must re-arm the tracker to observe more than one change, and `Observations` cannot count synchronously. The pattern is deliberate there.",
           "unevaluatedProperties" : false
         },
         "flagTaskDetached" : {
@@ -4426,7 +4426,7 @@
           "$ref" : "#/$defs/lintOnlyBase"
         }
       ],
-      "description" : "Lint chains of 3+ collection transforms ( `.map` , `.filter` , `.compactMap` , `.flatMap` , `.prefix` , `.dropFirst` ). Each step allocates an intermediate `Array` . Inserting `.lazy` at the head of the chain forwards lazily and avoids the allocations.",
+      "description" : "Lint chains of 3+ collection transforms ( `.map` , `.filter` , `.compactMap` , `.flatMap` , `.prefix` , `.dropFirst` ). Each step allocates an intermediate `Array` . Inserting `.lazy` at the head of the chain forwards lazily and avoids the allocations.\n\n`Optional` also has `.map` and `.flatMap` , and neither one allocates. `Optional` has no `.lazy` either, so the suggested fix does not compile there. The tree carries no type information, so the rule reads the receiver type from two syntactic signals. A chain that uses a method `Optional` does not have is a `Sequence` chain. A chain of `.map` and `.flatMap` alone is ambiguous, so the rule skips it when the surrounding code proves the value is an `Optional` . See ``isInOptionalContext(_:)`` for the four proofs.",
       "unevaluatedProperties" : false
     },
     "useMainAttributeNotMainFunc" : {

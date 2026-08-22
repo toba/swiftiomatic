@@ -1,3 +1,4 @@
+import Foundation
 @testable import SwiftiomaticKit
 import SwiftiomaticTestSupport
 import Testing
@@ -183,6 +184,43 @@ struct FlagMutableStaticVarTests: RuleTesting {
       }
       """,
       findings: [FindingSpec("1️⃣", message: Self.message)]
+    )
+  }
+
+  @Test func staticVarInTestDirectoryNotFlagged() {
+    assertLint(
+      FlagMutableStaticVar.self,
+      """
+      enum Counter {
+        static var count = 0
+      }
+      """,
+      findings: [],
+      assumingFileURL: URL(fileURLWithPath: "/pkg/Core/Tests/Storage/CounterTests.swift")
+    )
+  }
+
+  @Test func taskLocalStaticVarNotFlagged() {
+    assertLint(
+      FlagMutableStaticVar.self,
+      """
+      enum Node {
+        @TaskLocal static var orderKeyAppendCache: OrderKeyAppendCache?
+      }
+      """,
+      findings: []
+    )
+  }
+
+  @Test func taskLocalWithOtherAttributesNotFlagged() {
+    assertLint(
+      FlagMutableStaticVar.self,
+      """
+      enum Node {
+        @available(macOS 26, *) @TaskLocal static var current: Trait?
+      }
+      """,
+      findings: []
     )
   }
 

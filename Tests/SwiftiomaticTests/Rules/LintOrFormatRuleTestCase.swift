@@ -29,6 +29,7 @@ extension RuleTesting {
     findings: [FindingSpec] = [],
     configuration: Configuration? = nil,
     experimentalFeatures: Parser.ExperimentalFeatures = [],
+    assumingFileURL: URL = .init(fileURLWithPath: "/tmp/test.swift"),
     sourceLocation: TestSourceLocation = #_sourceLocation
   ) {
     let markedText = MarkedText(textWithMarkers: markedSource)
@@ -57,7 +58,7 @@ extension RuleTesting {
       syntax: sourceFileSyntax,
       source: unmarkedSource,
       operatorTable: OperatorTable.standardOperators,
-      assumingFileURL: URL(fileURLWithPath: "/tmp/test.swift")
+      assumingFileURL: assumingFileURL
     )
 
     // Check that pipeline produces the expected findings
