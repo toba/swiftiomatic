@@ -3,7 +3,8 @@ name: Release
 on:
   push:
     tags:
-      - 'v*'
+      - '[0-9]+.[0-9]+.[0-9]+'
+      - 'v[0-9]+.[0-9]+.[0-9]+'
 
 concurrency:
   group: release-${{ github.ref }}
@@ -33,10 +34,16 @@ jobs:
         restore-keys: spm-release-${{ runner.os }}-xcode${{ env.XCODE_VERSION }}-
         save-always: true
 
-    - name: Embed version
+    # A tag carries a leading "v" or omits it. Later steps read VERSION and TAG
+    # instead of slicing the ref again.
+    - name: Resolve the tag and the version
       run: |
-        VERSION="${GITHUB_REF#refs/tags/v}"
-        sed -i '' "s/let smVersion = \".*\"/let smVersion = \"$VERSION\"/" Sources/Swiftiomatic/Version.swift
+        TAG="${GITHUB_REF#refs/tags/}"
+        echo "TAG=$TAG" >> "$GITHUB_ENV"
+        echo "VERSION=${TAG#v}" >> "$GITHUB_ENV"
+
+    - name: Embed version
+      run: sed -i '' "s/let smVersion = \".*\"/let smVersion = \"$VERSION\"/" Sources/Swiftiomatic/Version.swift
 
     # toba-core and toba-concurrency are private. SwiftPM clones them over
     # https with no credential, so the rewrite supplies one.
@@ -64,11 +71,11 @@ jobs:
       run: shasum -a 256 sm-${{ github.ref_name }}-arm64.tar.gz > sm-${{ github.ref_name }}-arm64.tar.gz.sha256
 
     - name: Build artifact bundle
-      run: ./scripts/build-artifactbundle.sh "${GITHUB_REF#refs/tags/v}"
+      run: ./scripts/build-artifactbundle.sh "$VERSION"
 
     - name: Generate release notes
       run: |
-        PREV_TAG=$(git tag --sort=-v:refname | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' | sed -n '2p')
+        PREV_TAG=$(git tag --sort=-v:refname | grep -E '^v?[0-9]+\.[0-9]+\.[0-9]+$' | grep -v "^${TAG}$" | head -n 1)
         if [ -z "$PREV_TAG" ]; then
           NOTES=$(git log --pretty=format:"- %s" HEAD)
         else
