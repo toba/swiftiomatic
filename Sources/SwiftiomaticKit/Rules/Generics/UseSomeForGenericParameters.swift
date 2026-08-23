@@ -7,6 +7,10 @@ import SwiftSyntax
 /// eligible for conversion when it appears exactly once in the parameter list and is not referenced
 /// in the return type, function body, attributes, typed throws, or other generic constraints.
 ///
+/// The one appearance must also sit where `some` is spellable: the parameter type itself, or its
+/// optional or metatype sugar. A parameter that appears as a generic argument, such as
+/// `Container<T>.Nested` , binds the identity of the surrounding type and stays named.
+///
 /// Lint: A lint warning is raised when a generic parameter can be replaced with an opaque
 /// parameter.
 ///
@@ -190,15 +194,13 @@ final class UseSomeForGenericParameters: StaticFormatRule<BasicRuleValue>, @unch
                 return element
             }
             return someType(CompositionTypeSyntax(elements: CompositionTypeElementListSyntax(
-                elements
-            )))
+                elements)))
         }
 
         private func someType(_ constraint: some TypeSyntaxProtocol) -> TypeSyntax {
             TypeSyntax(SomeOrAnyTypeSyntax(
                 someOrAnySpecifier: .keyword(.some, trailingTrivia: .space),
-                constraint: TypeSyntax(constraint)
-            ))
+                constraint: TypeSyntax(constraint)))
         }
     }
 
@@ -223,8 +225,8 @@ final class UseSomeForGenericParameters: StaticFormatRule<BasicRuleValue>, @unch
         let typeNames = Set(types.map(\.name))
         // O(1) name → index lookup; previously each `firstIndex(where: { $0.name == leftName })`
         // was O(n), making the where-clause walk O(n × requirements).
-        let typeIndexByName: [String: Int] = Dictionary(uniqueKeysWithValues: types.enumerated().map
-            { ($0.element.name, $0.offset) })
+        let typeIndexByName: [String: Int] = Dictionary(
+            uniqueKeysWithValues: types.enumerated().map { ($0.element.name, $0.offset) })
 
         // Collect constraints from where clause
         if let whereClause {
@@ -331,7 +333,8 @@ final class UseSomeForGenericParameters: StaticFormatRule<BasicRuleValue>, @unch
 
             // Self-referential constraint (e.g., T: RoutingBehaviors<T.Dependencies>)
             for conformance in types[i].conformances
-            where contains(name: name, in: Syntax(conformance)) {
+                where contains(name: name, in: Syntax(conformance))
+            {
                 types[i].eligible = false
                 break
             }
@@ -357,14 +360,27 @@ final class UseSomeForGenericParameters: StaticFormatRule<BasicRuleValue>, @unch
 
             // Check for `any` existential usage in parameters
             for param in parameterClause.parameters
-            where containsAnyExistential(name: name, in: param.type) {
+                where containsAnyExistential(name: name, in: param.type)
+            {
                 types[i].eligible = false
                 break
             }
             guard types[i].eligible else { continue }
 
             // Must be able to produce a replacement type
-            if types[i].replacementType() == nil { types[i].eligible = false }
+            guard let replacement = types[i].replacementType() else {
+                types[i].eligible = false
+                continue
+            }
+
+            // The rewrite must be able to substitute at the site it occupies. A name nested inside
+            // a generic argument list or a member type reference has no opaque spelling, and
+            // dropping the parameter there would leave the name undefined.
+            let substitutable = parameterClause.parameters.contains { param in
+                contains(name: name, in: Syntax(param.type))
+                    && replaceGenericInType(param.type, name: name, with: replacement) != nil
+            }
+            if !substitutable { types[i].eligible = false }
         }
 
         return types
@@ -466,9 +482,7 @@ final class UseSomeForGenericParameters: StaticFormatRule<BasicRuleValue>, @unch
            inner.name.text == name
         {
             return TypeSyntax(optional.with(
-                \.wrappedType,
-                wrapInParens(replacement, leadingTrivia: type.leadingTrivia)
-            ))
+                \.wrappedType, wrapInParens(replacement, leadingTrivia: type.leadingTrivia)))
         }
 
         // Metatype: T.Type → (replacement).Type
@@ -477,9 +491,7 @@ final class UseSomeForGenericParameters: StaticFormatRule<BasicRuleValue>, @unch
            inner.name.text == name
         {
             return TypeSyntax(metatype.with(
-                \.baseType,
-                wrapInParens(replacement, leadingTrivia: type.leadingTrivia)
-            ))
+                \.baseType, wrapInParens(replacement, leadingTrivia: type.leadingTrivia)))
         }
 
         return nil
@@ -489,8 +501,7 @@ final class UseSomeForGenericParameters: StaticFormatRule<BasicRuleValue>, @unch
         TypeSyntax(TupleTypeSyntax(
             leftParen: .leftParenToken(leadingTrivia: leadingTrivia),
             elements: TupleTypeElementListSyntax([TupleTypeElementSyntax(type: type)]),
-            rightParen: .rightParenToken()
-        ))
+            rightParen: .rightParenToken()))
     }
 
     private static func rebuildGenericClause(

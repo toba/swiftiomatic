@@ -1519,7 +1519,7 @@
               "$ref" : "#/$defs/ruleBase"
             }
           ],
-          "description" : "Use opaque generic parameters ( `some Protocol` ) instead of named generic parameters with constraints ( `<T: Protocol>` ) where equivalent.\n\nThis rule applies to `func` , `init` , and `subscript` declarations. A generic type parameter is eligible for conversion when it appears exactly once in the parameter list and is not referenced in the return type, function body, attributes, typed throws, or other generic constraints.\n\nLint: A lint warning is raised when a generic parameter can be replaced with an opaque parameter.\n\nRewrite: The generic parameter is replaced with `some Protocol` in the parameter type."
+          "description" : "Use opaque generic parameters ( `some Protocol` ) instead of named generic parameters with constraints ( `<T: Protocol>` ) where equivalent.\n\nThis rule applies to `func` , `init` , and `subscript` declarations. A generic type parameter is eligible for conversion when it appears exactly once in the parameter list and is not referenced in the return type, function body, attributes, typed throws, or other generic constraints.\n\nThe one appearance must also sit where `some` is spellable: the parameter type itself, or its optional or metatype sugar. A parameter that appears as a generic argument, such as `Container<T>.Nested` , binds the identity of the surrounding type and stays named.\n\nLint: A lint warning is raised when a generic parameter can be replaced with an opaque parameter.\n\nRewrite: The generic parameter is replaced with `some Protocol` in the parameter type."
         }
       },
       "type" : "object"
@@ -4503,7 +4503,7 @@
           "$ref" : "#/$defs/ruleBase"
         }
       ],
-      "description" : "Use opaque generic parameters ( `some Protocol` ) instead of named generic parameters with constraints ( `<T: Protocol>` ) where equivalent.\n\nThis rule applies to `func` , `init` , and `subscript` declarations. A generic type parameter is eligible for conversion when it appears exactly once in the parameter list and is not referenced in the return type, function body, attributes, typed throws, or other generic constraints.\n\nLint: A lint warning is raised when a generic parameter can be replaced with an opaque parameter.\n\nRewrite: The generic parameter is replaced with `some Protocol` in the parameter type."
+      "description" : "Use opaque generic parameters ( `some Protocol` ) instead of named generic parameters with constraints ( `<T: Protocol>` ) where equivalent.\n\nThis rule applies to `func` , `init` , and `subscript` declarations. A generic type parameter is eligible for conversion when it appears exactly once in the parameter list and is not referenced in the return type, function body, attributes, typed throws, or other generic constraints.\n\nThe one appearance must also sit where `some` is spellable: the parameter type itself, or its optional or metatype sugar. A parameter that appears as a generic argument, such as `Container<T>.Nested` , binds the identity of the surrounding type and stays named.\n\nLint: A lint warning is raised when a generic parameter can be replaced with an opaque parameter.\n\nRewrite: The generic parameter is replaced with `some Protocol` in the parameter type."
     },
     "useStaticNotClassFunc" : {
       "allOf" : [
