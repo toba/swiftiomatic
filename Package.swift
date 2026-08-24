@@ -24,17 +24,30 @@ let package = Package(
         .package(url: "https://github.com/toba/swiftiomatic-plugins", from: "3.0.0"),
         // `AnyCodingKey` lets `Configuration` decode and encode a key it does not
         // name in an enum. The type sat in `ConfigurationKit` as a copy of this
-        // one. 1.0.0 is the floor because it is the first release, and it already
-        // declares every conformance `Configuration` relies on. The three
-        // `Platform/*.swift` files import AppKit on macOS, but each holds one
-        // `typealias` and exports no symbol, so a static link never pulls them.
-        .package(url: "https://github.com/toba/toba-core", from: "1.0.0"),
+        // one. The three `Platform/*.swift` files import AppKit on macOS, but
+        // each holds one `typealias` and exports no symbol, so a link never
+        // pulls them.
+        //
+        // 1.12.0 is the floor because it is the first release that ships the
+        // library dynamic under the name TobaCoreLibrary. A static product is
+        // absorbed into every image that links it, so two images in one process
+        // hold two type descriptors for each TobaCore type, and a conformance
+        // lookup that compares them returns a null metadata the Swift runtime
+        // dies on. The floor was 1.0.0, which already declares every conformance
+        // `Configuration` relies on.
+        .package(url: "https://github.com/toba/toba-core", from: "1.12.0"),
         // `Mutex+support` turns `withLock { $0.append(x) }` into `append(x)` and
-        // `withLock { $0 }` into `withValue`. 1.0.0 is the floor because it is
-        // the first release, and it already declares every helper this package
-        // calls. The package declares no dependency of its own and imports no
-        // UI framework, so it adds nothing to the `sm` link.
-        .package(url: "https://github.com/toba/toba-concurrency", from: "1.0.0"),
+        // `withLock { $0 }` into `withValue`. The package declares no dependency
+        // of its own and imports no UI framework, so it adds nothing to the `sm`
+        // link.
+        //
+        // 1.1.0 is the floor because it is the first release that ships the
+        // library dynamic under the name TobaConcurrencyLibrary. A static
+        // product is absorbed into every image that links it, and two type
+        // descriptors for one type make a conformance lookup return a null
+        // metadata the Swift runtime dies on. The floor was 1.0.0, which already
+        // declares every helper this package calls.
+        .package(url: "https://github.com/toba/toba-concurrency", from: "1.1.0"),
     ],
     targets: [
         .target(
@@ -46,8 +59,8 @@ let package = Package(
             dependencies: [
                 "ConfigurationKit",
                 .product(name: "Markdown", package: "swift-markdown"),
-                .product(name: "TobaConcurrency", package: "toba-concurrency"),
-                .product(name: "TobaCore", package: "toba-core"),
+                .product(name: "TobaConcurrencyLibrary", package: "toba-concurrency"),
+                .product(name: "TobaCoreLibrary", package: "toba-core"),
                 .product(name: "SwiftOperators", package: "swift-syntax"),
                 .product(name: "SwiftParser", package: "swift-syntax"),
                 .product(name: "SwiftParserDiagnostics", package: "swift-syntax"),
@@ -128,7 +141,7 @@ let package = Package(
             dependencies: [
                 "SwiftiomaticKit",
                 .product(name: "ArgumentParser", package: "swift-argument-parser"),
-                .product(name: "TobaConcurrency", package: "toba-concurrency"),
+                .product(name: "TobaConcurrencyLibrary", package: "toba-concurrency"),
                 .product(name: "SwiftDiagnostics", package: "swift-syntax"),
                 .product(name: "SwiftParser", package: "swift-syntax"),
                 .product(name: "SwiftSyntax", package: "swift-syntax"),
