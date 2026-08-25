@@ -143,12 +143,12 @@ Managed via Homebrew formula. Version is the Cellar directory name (e.g. `0.26.1
 
 ## Build Settings
 
-- swift-tools-version: 6.3, `.swiftLanguageMode(.v6)`, macOS 26+
+- swift-tools-version: 6.4, `.swiftLanguageMode(.v6)`, macOS 27+
 - macOS only — build destination: My Mac
 
 ## Code Style
 
-Use latest Swift 6.3 and SwiftUI patterns. See `/swift` skill for full reference.
+Use latest Swift 6.4 and SwiftUI patterns. See `/swift` skill for full reference.
 
 ### Swift
 

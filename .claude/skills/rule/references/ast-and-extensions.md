@@ -103,7 +103,7 @@ open func visitAny(_ node: Syntax) -> Syntax? { nil }  // dynamic dispatch escap
 
 **Order**: `visitPre` → `visitAny ?? dispatchVisit` → `visitPost`.
 
-`visitAny` can do protocol-based dispatch but fights the type system. Prefer concrete visit methods. NOTE: `SyntaxFormatRule` already overrides `visitAny` for `shouldFormat()` checks.
+`visitAny` can do protocol-based dispatch but fights the type system. Prefer concrete visit methods. No base class overrides it any more: per-node gating for a `StaticFormatRule` lives in `RewritePipeline`, and per-pass gating for a `StructuralFormatRule` lives at the `RewriteCoordinator` call site.
 
 ## Position & Location
 
@@ -308,4 +308,4 @@ Local checkout: `~/Developer/apple/swift-syntax`
 
 - **swift-syntax**: `~/Developer/apple/swift-syntax` — AST nodes, visit methods, protocols, tokens
 - **swift-format**: `~/Developer/swiftiomatic-ref/swift-format` — architecture patterns, format rule examples
-- **SwiftFormat (Lockwood)**: `~/Developer/swiftiomatic-ref/SwiftFormat` — token-based rules in `Sources/Rules/`, tests in `Tests/Rules/`
+- **SwiftFormat (Lockwood)**: `~/Developer/swiftiomatic-ref/SwiftFormat` — token-based rules in `Sources/Rules/`, tests in `Tests/Rules/`. Confirm the clone exists before citing it.

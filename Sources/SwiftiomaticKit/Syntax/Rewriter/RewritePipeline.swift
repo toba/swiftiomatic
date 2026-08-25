@@ -232,6 +232,9 @@ final class RewritePipeline: SyntaxRewriter {
         apply(UseAtSpecializeNotUnderscore.self, to: &current, original: node, gate: gate) {
             UseAtSpecializeNotUnderscore.transform($0, original: $1, parent: parent, context: $2)
         }
+        apply(UseAnyAppleOSAvailability.self, to: &current, original: node, gate: gate) {
+            UseAnyAppleOSAvailability.transform($0, original: $1, parent: parent, context: $2)
+        }
         return current
     }
 

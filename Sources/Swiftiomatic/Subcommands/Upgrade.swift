@@ -1,5 +1,8 @@
 import Foundation
 import ArgumentParser
+// resolveCellarVersion calls the RegexComponent overload of split. the import is what emits the
+// autolink record for it, because TobaCore now ships dynamic and keeps its own
+import RegexBuilder
 
 extension SwiftiomaticCommand {
     struct Upgrade: ParsableCommand {

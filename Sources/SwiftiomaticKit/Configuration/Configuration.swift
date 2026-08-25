@@ -1,4 +1,7 @@
 import Foundation
+// this module calls the RegexComponent overloads of split, contains and replacing. the import is
+// what emits the autolink record for them, because TobaCore now ships dynamic and keeps its own
+import RegexBuilder
 import TobaCore
 @_exported import ConfigurationKit
 

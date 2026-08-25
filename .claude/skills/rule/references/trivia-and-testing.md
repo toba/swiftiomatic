@@ -100,9 +100,11 @@ public override func visit(_ node: InitializerClauseSyntax) -> InitializerClause
 }
 ```
 
-## Format Rules in the LintPipeline
+## Format Rules Emit Findings During a Lint Run
 
-`SyntaxFormatRule` subclasses are also called by the `LintPipeline` via `visitIfEnabled` (return value ignored). `diagnose()` fires in both passes — no separate lint visitor needed.
+`LintCoordinator` runs `RewritePipeline(context:).rewrite(...)` and discards the rewritten tree. Every `StaticFormatRule` therefore reaches its `transform` on a lint pass too, so a `Self.diagnose(...)` call inside it fires in both passes. A format rule needs no separate lint visitor.
+
+`visitIfEnabled` in `Pipelines+Generated.swift` is the lint pipeline's own dispatch for `LintSyntaxRule` subclasses. It is not how format rules are reached.
 
 ## diagnose Target: Declaration vs Child Token
 
@@ -144,7 +146,7 @@ Both must produce identical output and findings. If the pipeline reformats diffe
 
 ## Adapt SwiftFormat Reference Tests
 
-The SwiftFormat reference at `~/Developer/swiftiomatic-ref/SwiftFormat/Tests/Rules/` has extensive edge-case tests. **Always adapt them** — they catch real bugs:
+The SwiftFormat reference at `~/Developer/swiftiomatic-ref/SwiftFormat/Tests/Rules/` has extensive edge-case tests. **Adapt them when that clone is present** — they catch real bugs. Check with `ls` first, because the clone is missing on some machines:
 
 - Double-space in partial where clause rebuilds (caught in `PreferAngleBracketExtensions`)
 - Guard conditions for `case let` patterns, `repeat while`, `try?`/`try!`

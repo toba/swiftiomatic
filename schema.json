@@ -888,6 +888,14 @@
           ],
           "description" : "Each enum case with associated values should appear in its own case declaration, and each variable declaration (except tuple destructuring) should declare only one variable.\n\nCases with raw values are permitted to share a `case` declaration with bare cases, since each raw value is a single literal and the result remains readable on one line.\n\nLint: If a single `case` declaration declares multiple cases where any has associated values, or if a variable declaration declares multiple variables, a lint error is raised.\n\nRewrite: Case declarations with associated values will be moved to their own case declarations. Variable declarations with multiple bindings will be split into individual declarations."
         },
+        "useAnyAppleOSAvailability" : {
+          "allOf" : [
+            {
+              "$ref" : "#/$defs/ruleBase"
+            }
+          ],
+          "description" : "Collapse a full five-platform `@available` list into the `anyAppleOS` domain.\n\nSwift 6.4 adds `anyAppleOS` , which stands for macOS, iOS, tvOS, watchOS and visionOS at once. Five separate clauses have to be kept in sync by hand, and one that drifts silently changes what the declaration is available on.\n\nThe rewrite fires only when all five platforms appear at the same version, and when the attribute carries nothing else. A shorter list is left alone, because it names the platforms the author chose and `anyAppleOS` would widen it. A list with `deprecated:` , `message:` , `renamed:` or `unavailable` is left alone for the same reason.\n\nLint: A five-platform `@available` list at one version raises a warning.\n\nRewrite: The five clauses collapse to a single `anyAppleOS` clause, keeping the trailing `*` ."
+        },
         "useAtCNotUnderscoreCDecl" : {
           "allOf" : [
             {
@@ -904,6 +912,15 @@
           ],
           "description" : "Replace `@_specialize` with `@specialize` .\n\n`@_specialize` was the experimental, underscore-prefixed spelling. The official `@specialize` attribute is available in Swift 6.3.\n\nLint: Using `@_specialize` raises a warning.\n\nRewrite: The attribute is replaced with `@specialize` , preserving its argument list (e.g. `where` , `exported:` , `kind:` )."
         },
+        "useBorrowAccessorNotUnderscoreRead" : {
+          "allOf" : [
+            {
+              "$ref" : "#/$defs/lintOnlyBase"
+            }
+          ],
+          "description" : "Flag a `_read` or `_modify` accessor that only exposes stored storage.\n\nSE-0507 adds the `borrow` and `mutate` accessors in Swift 6.4. Both expose stored storage without copying it, and neither runs as a coroutine, so neither pays the allocation and the extra calls that `_read` and `_modify` pay. `borrow` also lets the exposed value outlive the call, which a coroutine accessor cannot allow.\n\nThe rule fires only when the body is a single `yield` over a stored reference. A body that builds a temporary, or that runs code after the `yield` , must stay on the coroutine form. The same holds for the `read` and `modify` spellings.\n\nFlag-only. The rewrite needs the accessor kind, the `&` on a `mutate` return, and a check that the yielded storage really is stored, so it is left to the author.\n\nLint: A `_read` or `_modify` accessor whose body is one `yield` over a reference raises a warning.",
+          "unevaluatedProperties" : false
+        },
         "useMainAttributeNotMainFunc" : {
           "allOf" : [
             {
@@ -918,7 +935,7 @@
               "$ref" : "#/$defs/lintOnlyBase"
             }
           ],
-          "description" : "When possible, the synthesized `struct` initializer should be used.\n\nThis means the creation of a (non-public) memberwise initializer with the same structure as the synthesized initializer is forbidden.\n\nLint: (Non-public) memberwise initializers with the same structure as the synthesized initializer will yield a lint error.",
+          "description" : "When possible, the synthesized `struct` initializer should be used.\n\nThis means the creation of a (non-public) memberwise initializer with the same structure as the synthesized initializer is forbidden.\n\nSE-0502 changed which properties the compiler puts in that initializer. A property that is less accessible than the rest *and* carries an initial value is now left out, so it no longer drags the initializer down to its own access level. A hand-written initializer that existed only to work around that is redundant on Swift 6.4.\n\nLint: (Non-public) memberwise initializers with the same structure as the synthesized initializer will yield a lint error.",
           "unevaluatedProperties" : false
         },
         "useWeakLetForUnreassigned" : {
@@ -1413,6 +1430,15 @@
       "description" : "Lint mutation of the loop subject inside a `for-in` loop. Mutating the iterated collection while the iterator is live is undefined behavior in Swift's `Sequence` model and a frequent source of crashes for `Array` .\n\nDetection: the loop subject must be either a `DeclReferenceExprSyntax` (e.g. `for x in items` ) or a `MemberAccessExprSyntax` (e.g. `for x in self.items` ). Inside the body, any call of the form `<subject>.<mutator>(...)` where `<mutator>` is a known Array/Dictionary/ Set mutating method is flagged.",
       "unevaluatedProperties" : false
     },
+    "flagPreviewProvider" : {
+      "allOf" : [
+        {
+          "$ref" : "#/$defs/lintOnlyBase"
+        }
+      ],
+      "description" : "Flag the `PreviewProvider` family, deprecated in the OS 27 SDK.\n\nThe SDK marks `PreviewProvider` , `previewDevice(_:)` , `previewLayout(_:)` , `previewDisplayName(_:)` and `previewInterfaceOrientation(_:)` as deprecated at 27.0, yet the compiler stays silent about a conformance. Nothing catches these except a lint pass.\n\n- `PreviewProvider` conformance → the `#Preview` macro\n- `previewDisplayName(_:)` → the `#Preview(\"Name\")` label\n- `previewLayout(_:)` → `#Preview(traits: .sizeThatFitsLayout)` or `.fixedLayout(width:height:)`\n- `previewInterfaceOrientation(_:)` → `#Preview(traits: .landscapeLeft)`\n- `previewDevice(_:)` → the device picker in Xcode's canvas\n\nLint: A `PreviewProvider` conformance or a deprecated preview modifier raises a warning.",
+      "unevaluatedProperties" : false
+    },
     "flagRecursiveObservationTracking" : {
       "allOf" : [
         {
@@ -1420,6 +1446,15 @@
         }
       ],
       "description" : "Lint `withObservationTracking { ... } onChange: { … self.f() … }` where the `onChange` closure calls the enclosing function `f()` . The pattern is a recursive re-tracker that fires forever as observed values mutate. Use the `Observations` AsyncSequence instead.\n\nSkips files under `Tests/` directories or named `*Tests.swift` . A test that counts change notifications must re-arm the tracker to observe more than one change, and `Observations` cannot count synchronously. The pattern is deliberate there.",
+      "unevaluatedProperties" : false
+    },
+    "flagSupersededFrameworkAPI" : {
+      "allOf" : [
+        {
+          "$ref" : "#/$defs/lintOnlyBase"
+        }
+      ],
+      "description" : "Flag framework types the OS 27 SDK replaced wholesale.\n\n- `MXMetricManager` and its payload types → `MetricManager` . The MetricKit headers carry\n`API_DEPRECATED(\"Use MetricManager instead.\")` on the manager, the subscriber protocol and each payload type.\n- `NSBundleResourceRequest` → Background Assets. The Foundation interface marks it\n`deprecated: 27` on iOS, tvOS, watchOS and visionOS. It was never available on macOS.\n\nThe rule matches the type name wherever it appears: a conformance, an annotation, a generic argument or a static member reference such as `MXMetricManager.shared` .\n\nLint: A reference to one of these types raises a warning.",
       "unevaluatedProperties" : false
     },
     "flagSupersededSwiftUI" : {
@@ -1675,6 +1710,15 @@
           ],
           "description" : "Move leading delimiters to the end of the previous line.\n\nWhen a line starts with a comma or colon, the delimiter should instead be placed at the end of the previous line. This keeps the delimiter associated with the preceding expression rather than the following one.\n\nLint: A finding is emitted when a delimiter starts a line.\n\nRewrite: The delimiter is moved to the end of the previous line."
         },
+        "flagSupersededFrameworkAPI" : {
+          "allOf" : [
+            {
+              "$ref" : "#/$defs/lintOnlyBase"
+            }
+          ],
+          "description" : "Flag framework types the OS 27 SDK replaced wholesale.\n\n- `MXMetricManager` and its payload types → `MetricManager` . The MetricKit headers carry\n`API_DEPRECATED(\"Use MetricManager instead.\")` on the manager, the subscriber protocol and each payload type.\n- `NSBundleResourceRequest` → Background Assets. The Foundation interface marks it\n`deprecated: 27` on iOS, tvOS, watchOS and visionOS. It was never available on macOS.\n\nThe rule matches the type name wherever it appears: a conformance, an annotation, a generic argument or a static member reference such as `MXMetricManager.shared` .\n\nLint: A reference to one of these types raises a warning.",
+          "unevaluatedProperties" : false
+        },
         "noAssignmentInExpressions" : {
           "allOf" : [
             {
@@ -1767,6 +1811,24 @@
             }
           ],
           "description" : "Replace `assert(false, ...)` with `assertionFailure(...)` and `precondition(false, ...)` with `preconditionFailure(...)` .\n\nThe `Failure` variants more clearly express intent: the code path should never be reached. They also have `Never` return type, enabling the compiler to prove exhaustiveness.\n\nLint: Using `assert(false, ...)` or `precondition(false, ...)` raises a warning.\n\nRewrite: The call is replaced with the corresponding `Failure` variant, removing the `false` argument."
+        },
+        "useAsyncDeferNotTask" : {
+          "allOf" : [
+            {
+              "$ref" : "#/$defs/lintOnlyBase"
+            }
+          ],
+          "description" : "Flag an unstructured `Task` used to run async cleanup inside a `defer` .\n\nSE-0493 lets a `defer` body await, so the cleanup runs before the enclosing scope exits. The `Task` form only schedules the work, which means the scope exits first and the ordering is unspecified. A cancelled parent may also drop the task before it starts.\n\nThe rule fires only inside an `async` scope, because a `defer` in a synchronous scope still cannot await.\n\nLint: A `Task` , `Task.detached` , `Task.immediate` or `Task.immediateDetached` call at statement level in a `defer` body raises a warning.",
+          "unevaluatedProperties" : false
+        },
+        "useAsyncResultInit" : {
+          "allOf" : [
+            {
+              "$ref" : "#/$defs/lintOnlyBase"
+            }
+          ],
+          "description" : "Flag a `do` / `catch` that exists only to wrap async work in a `Result` .\n\nSE-0530 adds an async `Result.init(catching:)` , so the whole block collapses to `await Result { try await work() }` . The long form repeats the target on three lines and lets the two assignments drift apart.\n\nThe rule fires only when the `.success` value awaits. The synchronous `Result(catching:)` already existed, and a synchronous `do` / `catch` is often doing more than building a `Result` .\n\nLint: A `do` block whose last statement assigns `.success` of an awaited value, paired with a single `catch` that assigns `.failure` to the same target, raises a warning.",
+          "unevaluatedProperties" : false
         },
         "useCompoundAssignment" : {
           "allOf" : [
@@ -3719,6 +3781,15 @@
           "description" : "Warn on `ForEach` whose receiver is an integer-index sequence (`<expr>.indices`, `a..<b`, `a...b`, `Range(...)`). Row identity becomes positional, so insertions and removals shift every following row's id and SwiftUI redraws (and resets `@State`) past the mutation point. Prefer `ForEach(Array(<collection>.enumerated()), id: \\.element.id)`.\n\nOrthogonal to `FlagForEachIDSelfInView`: that rule keys on the `id:` axis (`\\.self` is fragile on element collections); this rule keys on the receiver axis and ignores the `id:` argument entirely. The two rules are designed not to co-fire — the integer-indexed case is exempted from `FlagForEachIDSelfInView` and owned here.",
           "unevaluatedProperties" : false
         },
+        "flagPreviewProvider" : {
+          "allOf" : [
+            {
+              "$ref" : "#/$defs/lintOnlyBase"
+            }
+          ],
+          "description" : "Flag the `PreviewProvider` family, deprecated in the OS 27 SDK.\n\nThe SDK marks `PreviewProvider` , `previewDevice(_:)` , `previewLayout(_:)` , `previewDisplayName(_:)` and `previewInterfaceOrientation(_:)` as deprecated at 27.0, yet the compiler stays silent about a conformance. Nothing catches these except a lint pass.\n\n- `PreviewProvider` conformance → the `#Preview` macro\n- `previewDisplayName(_:)` → the `#Preview(\"Name\")` label\n- `previewLayout(_:)` → `#Preview(traits: .sizeThatFitsLayout)` or `.fixedLayout(width:height:)`\n- `previewInterfaceOrientation(_:)` → `#Preview(traits: .landscapeLeft)`\n- `previewDevice(_:)` → the device picker in Xcode's canvas\n\nLint: A `PreviewProvider` conformance or a deprecated preview modifier raises a warning.",
+          "unevaluatedProperties" : false
+        },
         "flagSupersededSwiftUI" : {
           "allOf" : [
             {
@@ -3761,6 +3832,24 @@
             }
           ],
           "description" : "Lint selector-based `NotificationCenter.addObserver(_:selector:name:object:)` . Prefer the closure-based `addObserver(forName:object:queue:using:)` — it returns an opaque token, doesn't require an `@objc` handler, and integrates cleanly with structured concurrency.",
+          "unevaluatedProperties" : false
+        },
+        "useReadableDocument" : {
+          "allOf" : [
+            {
+              "$ref" : "#/$defs/lintOnlyBase"
+            }
+          ],
+          "description" : "Flag `FileDocument` and `ReferenceFileDocument` in favour of the OS 27 document protocols.\n\n`ReadableDocument` and `WritableDocument` replace both. The document becomes a reference type meant to carry `@Observable` , so SwiftUI stops rebuilding it on every edit, and reading and writing move off the main actor.\n\nNeither old protocol carries a deprecation attribute in the 27.0 SDK, so existing code still compiles. Treat the finding as a modernization, not as a break.\n\nMigrating means the conforming type becomes a class. `ReadableDocument` refines `AnyObject` , so a `struct FileDocument` cannot conform as it stands.\n\nLint: A conformance to `FileDocument` or `ReferenceFileDocument` raises a warning.",
+          "unevaluatedProperties" : false
+        },
+        "useReorderableNotOnMove" : {
+          "allOf" : [
+            {
+              "$ref" : "#/$defs/lintOnlyBase"
+            }
+          ],
+          "description" : "Flag `onMove(perform:)` outside a `List` or a `Form` .\n\nBefore OS 27, `onMove` only worked inside those two containers, so reordering anywhere else meant hand-rolling it on `draggable` and `dropDestination` with index arithmetic. OS 27 adds `ForEach.reorderable()` paired with `View.reorderContainer(for:move:)` , which works in any container and hands back a `ReorderDifference` to apply.\n\nInside a `List` or a `Form` , `onMove` is still the right call. The rule walks up the ancestors and stays quiet when it finds one.\n\nLint: An `onMove` call with no `List` or `Form` ancestor raises a warning.",
           "unevaluatedProperties" : false
         },
         "useScaledToFit" : {
@@ -4106,6 +4195,33 @@
           "description" : "Require a `name:` argument when starting a `Task` or adding work to a `TaskGroup`. Swift 6.2 (Xcode 26 / macOS 26 / iOS 26) added `name:` overloads to `Task.init`, `Task.detached`, `Task.immediate`, `Task.immediateDetached`, `TaskGroup.addTask`, and `TaskGroup.addTaskUnlessCancelled`. The name shows up in Instruments' Swift Concurrency instrument, in the Xcode debugger's task list, and in custom `Task.currentName` reads — unnamed tasks are anonymous and indistinguishable from one another there.\n\n`addTask` and `addTaskUnlessCancelled` fire only when the call has the shape of the task-group method: the work arrives as a trailing closure or a final `operation:` argument, and every other argument carries a label the task-group method accepts. An unrelated method with the same base name stays quiet.\n\nFlag-only — the fix requires picking a meaningful name.\n\nSee https://artemnovichkov.com/blog/task-names-in-swift-concurrency.",
           "unevaluatedProperties" : false
         },
+        "useSpanTemporaryAllocation" : {
+          "allOf" : [
+            {
+              "$ref" : "#/$defs/lintOnlyBase"
+            }
+          ],
+          "description" : "Flag `withUnsafeTemporaryAllocation` in favour of the span form added by SE-0524.\n\n`withTemporaryAllocation` yields an `inout OutputSpan` or an `inout OutputRawSpan` instead of a buffer pointer. The span tracks how many elements are initialised and deinitialises them on every exit path, including a thrown error. The unsafe form leaves that bookkeeping to the caller, and a missed `deinitialize()` leaks.\n\nLint: A call to `withUnsafeTemporaryAllocation` raises a warning.",
+          "unevaluatedProperties" : false
+        },
+        "useTaskCancellationShield" : {
+          "allOf" : [
+            {
+              "$ref" : "#/$defs/lintOnlyBase"
+            }
+          ],
+          "description" : "Flag async cleanup in a `defer` that a cancelled task may skip.\n\nA cancelled task keeps running, and the APIs it calls observe the cancellation. Cleanup that calls one of those APIs can return early and leave the resource open. SE-0504 adds `withTaskCancellationShield` , which hides the cancellation from the scope it wraps so the cleanup runs to completion.\n\n```swift defer { await withTaskCancellationShield { await connection.close() } } ```\n\n**Off by default.** Whether a given call observes cancellation is not visible at the call site, so this rule cannot tell a cleanup that needs the shield from one that does not. It fires on every awaiting `defer` . Turn it on for a codebase that wants the shield as a standing rule for cleanup, and leave it off otherwise.\n\nLint: An `await` inside a `defer` body that is not already inside a `withTaskCancellationShield` raises a warning.",
+          "unevaluatedProperties" : false
+        },
+        "useTildeSendable" : {
+          "allOf" : [
+            {
+              "$ref" : "#/$defs/lintOnlyBase"
+            }
+          ],
+          "description" : "Flag the unavailable-conformance idiom for marking a type non-`Sendable` .\n\nSE-0518 adds `~Sendable` , which says the same thing on the type itself. The two differ in one way that matters: an unavailable conformance is inherited, so no subclass can ever declare `@unchecked Sendable` . A `~Sendable` base leaves that door open for a subclass that protects its own state.\n\nLint: An `extension` marked `@available(*, unavailable)` that conforms a type to `Sendable` raises a warning.",
+          "unevaluatedProperties" : false
+        },
         "useTypedCatchError" : {
           "allOf" : [
             {
@@ -4152,6 +4268,14 @@
       ],
       "description" : "Use angle brackets ( `extension Array<Foo>` ) for generic type extensions instead of type constraints ( `extension Array where Element == Foo` ).\n\nSwift 5.7+ supports angle bracket syntax in extension declarations. When a `where` clause constrains all generic parameters of a known type to concrete types, the angle bracket form is more concise.\n\nKnown types: `Array` , `Set` , `Optional` , `Dictionary` , `Collection` , `Sequence` .\n\nLint: An extension with a `where` clause that can be replaced by angle brackets raises a warning.\n\nRewrite: The `where` clause constraints are moved into angle bracket syntax on the extended type."
     },
+    "useAnyAppleOSAvailability" : {
+      "allOf" : [
+        {
+          "$ref" : "#/$defs/ruleBase"
+        }
+      ],
+      "description" : "Collapse a full five-platform `@available` list into the `anyAppleOS` domain.\n\nSwift 6.4 adds `anyAppleOS` , which stands for macOS, iOS, tvOS, watchOS and visionOS at once. Five separate clauses have to be kept in sync by hand, and one that drifts silently changes what the declaration is available on.\n\nThe rewrite fires only when all five platforms appear at the same version, and when the attribute carries nothing else. A shorter list is left alone, because it names the platforms the author chose and `anyAppleOS` would widen it. A list with `deprecated:` , `message:` , `renamed:` or `unavailable` is left alone for the same reason.\n\nLint: A five-platform `@available` list at one version raises a warning.\n\nRewrite: The five clauses collapse to a single `anyAppleOS` clause, keeping the trailing `*` ."
+    },
     "useAnyObjectOnDelegate" : {
       "allOf" : [
         {
@@ -4167,6 +4291,24 @@
         }
       ],
       "description" : "Replace `assert(false, ...)` with `assertionFailure(...)` and `precondition(false, ...)` with `preconditionFailure(...)` .\n\nThe `Failure` variants more clearly express intent: the code path should never be reached. They also have `Never` return type, enabling the compiler to prove exhaustiveness.\n\nLint: Using `assert(false, ...)` or `precondition(false, ...)` raises a warning.\n\nRewrite: The call is replaced with the corresponding `Failure` variant, removing the `false` argument."
+    },
+    "useAsyncDeferNotTask" : {
+      "allOf" : [
+        {
+          "$ref" : "#/$defs/lintOnlyBase"
+        }
+      ],
+      "description" : "Flag an unstructured `Task` used to run async cleanup inside a `defer` .\n\nSE-0493 lets a `defer` body await, so the cleanup runs before the enclosing scope exits. The `Task` form only schedules the work, which means the scope exits first and the ordering is unspecified. A cancelled parent may also drop the task before it starts.\n\nThe rule fires only inside an `async` scope, because a `defer` in a synchronous scope still cannot await.\n\nLint: A `Task` , `Task.detached` , `Task.immediate` or `Task.immediateDetached` call at statement level in a `defer` body raises a warning.",
+      "unevaluatedProperties" : false
+    },
+    "useAsyncResultInit" : {
+      "allOf" : [
+        {
+          "$ref" : "#/$defs/lintOnlyBase"
+        }
+      ],
+      "description" : "Flag a `do` / `catch` that exists only to wrap async work in a `Result` .\n\nSE-0530 adds an async `Result.init(catching:)` , so the whole block collapses to `await Result { try await work() }` . The long form repeats the target on three lines and lets the two assignments drift apart.\n\nThe rule fires only when the `.success` value awaits. The synchronous `Result(catching:)` already existed, and a synchronous `do` / `catch` is often doing more than building a `Result` .\n\nLint: A `do` block whose last statement assigns `.success` of an awaited value, paired with a single `catch` that assigns `.failure` to the same target, raises a warning.",
+      "unevaluatedProperties" : false
     },
     "useAtCNotUnderscoreCDecl" : {
       "allOf" : [
@@ -4191,6 +4333,15 @@
         }
       ],
       "description" : "Replace `@_specialize` with `@specialize` .\n\n`@_specialize` was the experimental, underscore-prefixed spelling. The official `@specialize` attribute is available in Swift 6.3.\n\nLint: Using `@_specialize` raises a warning.\n\nRewrite: The attribute is replaced with `@specialize` , preserving its argument list (e.g. `where` , `exported:` , `kind:` )."
+    },
+    "useBorrowAccessorNotUnderscoreRead" : {
+      "allOf" : [
+        {
+          "$ref" : "#/$defs/lintOnlyBase"
+        }
+      ],
+      "description" : "Flag a `_read` or `_modify` accessor that only exposes stored storage.\n\nSE-0507 adds the `borrow` and `mutate` accessors in Swift 6.4. Both expose stored storage without copying it, and neither runs as a coroutine, so neither pays the allocation and the extra calls that `_read` and `_modify` pay. `borrow` also lets the exposed value outlive the call, which a coroutine accessor cannot allow.\n\nThe rule fires only when the body is a single `yield` over a stored reference. A body that builds a temporary, or that runs code after the `yield` , must stay on the coroutine form. The same holds for the `read` and `modify` spellings.\n\nFlag-only. The rewrite needs the accessor kind, the `&` on a `mutate` return, and a check that the yielded storage really is stored, so it is left to the author.\n\nLint: A `_read` or `_modify` accessor whose body is one `yield` over a reference raises a warning.",
+      "unevaluatedProperties" : false
     },
     "useClosureNotificationObserver" : {
       "allOf" : [
@@ -4464,6 +4615,15 @@
       "description" : "Lint the `if !collection.contains(x) { collection.append(x) }` pattern.\n\nMaintaining uniqueness in an `Array` via `contains` + `append` is O(n) per insertion. `OrderedSet` (swift-collections) preserves insertion order with O(1) average insertion and `contains` .\n\nLint-only: rewriting would change the variable's declared type, which is outside the rule's structural scope.",
       "unevaluatedProperties" : false
     },
+    "useReadableDocument" : {
+      "allOf" : [
+        {
+          "$ref" : "#/$defs/lintOnlyBase"
+        }
+      ],
+      "description" : "Flag `FileDocument` and `ReferenceFileDocument` in favour of the OS 27 document protocols.\n\n`ReadableDocument` and `WritableDocument` replace both. The document becomes a reference type meant to carry `@Observable` , so SwiftUI stops rebuilding it on every edit, and reading and writing move off the main actor.\n\nNeither old protocol carries a deprecation attribute in the 27.0 SDK, so existing code still compiles. Treat the finding as a modernization, not as a break.\n\nMigrating means the conforming type becomes a class. `ReadableDocument` refines `AnyObject` , so a `struct FileDocument` cannot conform as it stands.\n\nLint: A conformance to `FileDocument` or `ReferenceFileDocument` raises a warning.",
+      "unevaluatedProperties" : false
+    },
     "useReduceInto" : {
       "allOf" : [
         {
@@ -4471,6 +4631,15 @@
         }
       ],
       "description" : "Prefer `reduce(into:_:)` over `reduce(_:_:)` when the accumulator is a copy-on-write value type (Array, Dictionary, Set, String).\n\n`reduce(_:_:)` makes a fresh copy of the accumulator on every step; `reduce(into:_:)` mutates the seed in place.\n\nLint: warns when `reduce` 's first argument is unlabeled (so it would otherwise be `into:` ) and the seed expression names a CoW type.",
+      "unevaluatedProperties" : false
+    },
+    "useReorderableNotOnMove" : {
+      "allOf" : [
+        {
+          "$ref" : "#/$defs/lintOnlyBase"
+        }
+      ],
+      "description" : "Flag `onMove(perform:)` outside a `List` or a `Form` .\n\nBefore OS 27, `onMove` only worked inside those two containers, so reordering anywhere else meant hand-rolling it on `draggable` and `dropDestination` with index arithmetic. OS 27 adds `ForEach.reorderable()` paired with `View.reorderContainer(for:move:)` , which works in any container and hands back a `ReorderDifference` to apply.\n\nInside a `List` or a `Form` , `onMove` is still the right call. The rule walks up the ancestors and stays quiet when it finds one.\n\nLint: An `onMove` call with no `List` or `Form` ancestor raises a warning.",
       "unevaluatedProperties" : false
     },
     "useScaledToFit" : {
@@ -4504,6 +4673,15 @@
         }
       ],
       "description" : "Use opaque generic parameters ( `some Protocol` ) instead of named generic parameters with constraints ( `<T: Protocol>` ) where equivalent.\n\nThis rule applies to `func` , `init` , and `subscript` declarations. A generic type parameter is eligible for conversion when it appears exactly once in the parameter list and is not referenced in the return type, function body, attributes, typed throws, or other generic constraints.\n\nThe one appearance must also sit where `some` is spellable: the parameter type itself, or its optional or metatype sugar. A parameter that appears as a generic argument, such as `Container<T>.Nested` , binds the identity of the surrounding type and stays named.\n\nLint: A lint warning is raised when a generic parameter can be replaced with an opaque parameter.\n\nRewrite: The generic parameter is replaced with `some Protocol` in the parameter type."
+    },
+    "useSpanTemporaryAllocation" : {
+      "allOf" : [
+        {
+          "$ref" : "#/$defs/lintOnlyBase"
+        }
+      ],
+      "description" : "Flag `withUnsafeTemporaryAllocation` in favour of the span form added by SE-0524.\n\n`withTemporaryAllocation` yields an `inout OutputSpan` or an `inout OutputRawSpan` instead of a buffer pointer. The span tracks how many elements are initialised and deinitialises them on every exit path, including a thrown error. The unsafe form leaves that bookkeeping to the caller, and a missed `deinitialize()` leaks.\n\nLint: A call to `withUnsafeTemporaryAllocation` raises a warning.",
+      "unevaluatedProperties" : false
     },
     "useStaticNotClassFunc" : {
       "allOf" : [
@@ -4554,7 +4732,16 @@
           "$ref" : "#/$defs/lintOnlyBase"
         }
       ],
-      "description" : "When possible, the synthesized `struct` initializer should be used.\n\nThis means the creation of a (non-public) memberwise initializer with the same structure as the synthesized initializer is forbidden.\n\nLint: (Non-public) memberwise initializers with the same structure as the synthesized initializer will yield a lint error.",
+      "description" : "When possible, the synthesized `struct` initializer should be used.\n\nThis means the creation of a (non-public) memberwise initializer with the same structure as the synthesized initializer is forbidden.\n\nSE-0502 changed which properties the compiler puts in that initializer. A property that is less accessible than the rest *and* carries an initial value is now left out, so it no longer drags the initializer down to its own access level. A hand-written initializer that existed only to work around that is redundant on Swift 6.4.\n\nLint: (Non-public) memberwise initializers with the same structure as the synthesized initializer will yield a lint error.",
+      "unevaluatedProperties" : false
+    },
+    "useTaskCancellationShield" : {
+      "allOf" : [
+        {
+          "$ref" : "#/$defs/lintOnlyBase"
+        }
+      ],
+      "description" : "Flag async cleanup in a `defer` that a cancelled task may skip.\n\nA cancelled task keeps running, and the APIs it calls observe the cancellation. Cleanup that calls one of those APIs can return early and leave the resource open. SE-0504 adds `withTaskCancellationShield` , which hides the cancellation from the scope it wraps so the cleanup runs to completion.\n\n```swift defer { await withTaskCancellationShield { await connection.close() } } ```\n\n**Off by default.** Whether a given call observes cancellation is not visible at the call site, so this rule cannot tell a cleanup that needs the shield from one that does not. It fires on every awaiting `defer` . Turn it on for a codebase that wants the shield as a standing rule for cleanup, and leave it off otherwise.\n\nLint: An `await` inside a `defer` body that is not already inside a `withTaskCancellationShield` raises a warning.",
       "unevaluatedProperties" : false
     },
     "useTernary" : {
@@ -4564,6 +4751,15 @@
         }
       ],
       "description" : "Use ternary conditional expressions for simple if-else returns or assignments.\n\nWhen an `if` - `else` has exactly two branches, each containing a single `return` statement or a single assignment to the same variable, and the condition is a simple expression (no else-if chains), the construct is collapsed into a ternary conditional expression.\n\n```swift // Before if condition { return trueValue } else { return falseValue } // After return condition ? trueValue : falseValue\n\n// Before if condition { result = trueValue } else { result = falseValue } // After result = condition ? trueValue : falseValue ```\n\nLint: A simple if-else with single returns or same-variable assignments in both branches raises a warning.\n\nRewrite: The if-else is replaced with a ternary expression."
+    },
+    "useTildeSendable" : {
+      "allOf" : [
+        {
+          "$ref" : "#/$defs/lintOnlyBase"
+        }
+      ],
+      "description" : "Flag the unavailable-conformance idiom for marking a type non-`Sendable` .\n\nSE-0518 adds `~Sendable` , which says the same thing on the type itself. The two differ in one way that matters: an unavailable conformance is inherited, so no subclass can ever declare `@unchecked Sendable` . A `~Sendable` base leaves that door open for a subclass that protects its own state.\n\nLint: An `extension` marked `@available(*, unavailable)` that conforms a type to `Sendable` raises a warning.",
+      "unevaluatedProperties" : false
     },
     "useToggle" : {
       "allOf" : [

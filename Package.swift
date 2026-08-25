@@ -1,10 +1,10 @@
-// swift-tools-version: 6.3
+// swift-tools-version: 6.4
 
 import PackageDescription
 
 let package = Package(
     name: "swiftiomatic",
-    platforms: [.macOS(.v26)],
+    platforms: [.macOS(.v27)],
     products: [
         .executable(name: "sm", targets: ["Swiftiomatic"]),
         .library(name: "SwiftiomaticKit", targets: ["SwiftiomaticKit"]),
@@ -15,9 +15,12 @@ let package = Package(
     dependencies: [
         .package(url: "https://github.com/apple/swift-argument-parser.git", from: "1.2.2"),
         .package(url: "https://github.com/swiftlang/swift-markdown.git", from: "0.7.0"),
-        // Accept any 603.x patch or minor release. swift-syntax bumps the major
-        // version for each Swift release, so 604 and later can break the API.
-        .package(url: "https://github.com/swiftlang/swift-syntax.git", "603.0.0"..<"604.0.0"),
+        // 604 is the line that Swift 6.4 ships. It carries no stable tag yet, so
+        // the lower bound names a prerelease to bring the 604 line into range.
+        .package(
+            url: "https://github.com/swiftlang/swift-syntax.git",
+            "604.0.0-prerelease-2026-06-05"..<"605.0.0"
+        ),
         // Self-hosted lint via prebuilt binary from a previous release. Breaks
         // the cycle that prevents a target from depending on a plugin in the
         // same package as the executable the plugin invokes.
@@ -27,26 +30,13 @@ let package = Package(
         // one. The three `Platform/*.swift` files import AppKit on macOS, but
         // each holds one `typealias` and exports no symbol, so a link never
         // pulls them.
-        //
-        // 1.12.0 is the floor because it is the first release that ships the
-        // library dynamic under the name TobaCoreLibrary. A static product is
-        // absorbed into every image that links it, so two images in one process
-        // hold two type descriptors for each TobaCore type, and a conformance
-        // lookup that compares them returns a null metadata the Swift runtime
-        // dies on. The floor was 1.0.0, which already declares every conformance
-        // `Configuration` relies on.
-        .package(url: "https://github.com/toba/toba-core", from: "1.12.0"),
+        // 1.11.2 is the floor because it ships TobaCore dynamic under its own name.
+        .package(url: "https://github.com/toba/toba-core", from: "1.11.2"),
         // `Mutex+support` turns `withLock { $0.append(x) }` into `append(x)` and
         // `withLock { $0 }` into `withValue`. The package declares no dependency
         // of its own and imports no UI framework, so it adds nothing to the `sm`
         // link.
-        //
-        // 1.1.0 is the floor because it is the first release that ships the
-        // library dynamic under the name TobaConcurrencyLibrary. A static
-        // product is absorbed into every image that links it, and two type
-        // descriptors for one type make a conformance lookup return a null
-        // metadata the Swift runtime dies on. The floor was 1.0.0, which already
-        // declares every helper this package calls.
+        // 1.1.0 is the floor because it ships TobaConcurrency dynamic under its own name.
         .package(url: "https://github.com/toba/toba-concurrency", from: "1.1.0"),
     ],
     targets: [
@@ -59,8 +49,8 @@ let package = Package(
             dependencies: [
                 "ConfigurationKit",
                 .product(name: "Markdown", package: "swift-markdown"),
-                .product(name: "TobaConcurrencyLibrary", package: "toba-concurrency"),
-                .product(name: "TobaCoreLibrary", package: "toba-core"),
+                .product(name: "TobaConcurrency", package: "toba-concurrency"),
+                .product(name: "TobaCore", package: "toba-core"),
                 .product(name: "SwiftOperators", package: "swift-syntax"),
                 .product(name: "SwiftParser", package: "swift-syntax"),
                 .product(name: "SwiftParserDiagnostics", package: "swift-syntax"),
@@ -141,7 +131,7 @@ let package = Package(
             dependencies: [
                 "SwiftiomaticKit",
                 .product(name: "ArgumentParser", package: "swift-argument-parser"),
-                .product(name: "TobaConcurrencyLibrary", package: "toba-concurrency"),
+                .product(name: "TobaConcurrency", package: "toba-concurrency"),
                 .product(name: "SwiftDiagnostics", package: "swift-syntax"),
                 .product(name: "SwiftParser", package: "swift-syntax"),
                 .product(name: "SwiftSyntax", package: "swift-syntax"),

@@ -1,5 +1,5 @@
 {
-  "originHash" : "e59fcb2d729bc40df7004ac279bb4c318a1ccb0f9fd02289683879ad7e9028ab",
+  "originHash" : "a3eba52af9f53b9734bf9d50a738de8fa3ca0224108bb604df6771bcd591ccd0",
   "pins" : [
     {
       "identity" : "swift-argument-parser",
@@ -42,8 +42,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/swiftlang/swift-syntax.git",
       "state" : {
-        "revision" : "79e4b74a295b6eb74a8b585e3a39d29e70c1dbd1",
-        "version" : "603.0.2"
+        "revision" : "b90056de69eed23b3fb39ab69cf1780071dfb664",
+        "version" : "604.0.0-prerelease-2026-06-05"
       }
     },
     {
@@ -60,8 +60,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/toba/toba-concurrency",
       "state" : {
-        "revision" : "3f50379daee893512aaa8d0b37d466cbbc54e12b",
-        "version" : "1.0.2"
+        "revision" : "dc378943d792887dadac03b532353f4835897dca",
+        "version" : "1.1.0"
       }
     },
     {
@@ -69,8 +69,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/toba/toba-core",
       "state" : {
-        "revision" : "fad093115f6e84cb07e50e5834d45c28541a55c3",
-        "version" : "1.4.1"
+        "revision" : "a9db0d1734a16ab33d6e913d141b3c4dc8c6abb3",
+        "version" : "1.11.2"
       }
     }
   ],

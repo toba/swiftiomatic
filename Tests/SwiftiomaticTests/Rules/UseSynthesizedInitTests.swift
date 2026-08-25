@@ -16,6 +16,9 @@ import Testing
 
 @Suite
 struct UseSynthesizedInitializerTests: RuleTesting {
+  private static let message =
+    "remove this explicit initializer, which is identical to the compiler-synthesized initializer"
+
   @Test func memberwiseInitializerIsDiagnosed() {
     assertLint(
       UseSynthesizedInit.self,
@@ -339,9 +342,139 @@ struct UseSynthesizedInitializerTests: RuleTesting {
     )
   }
 
+  // MARK: - SE-0502: a private property with an initial value leaves the memberwise initializer
+
+  @Test func initWorkingAroundPrivateDefaultIsDiagnosed() {
+    // SE-0502 drops `count` from the memberwise initializer, because it is less accessible than
+    // the rest and carries an initial value. The synthesized initializer is therefore
+    // `init(phoneNumber:address:)` at internal, which this hand-written one duplicates.
+    assertLint(
+      UseSynthesizedInit.self,
+      """
+      struct Person {
+
+        let phoneNumber: String
+        let address: String
+        private var count = 0
+
+        1️⃣init(phoneNumber: String, address: String) {
+          self.phoneNumber = phoneNumber
+          self.address = address
+        }
+      }
+      """,
+      findings: [FindingSpec("1️⃣", message: Self.message)]
+    )
+  }
+
+  @Test func initWorkingAroundPrivateOptionalIsDiagnosed() {
+    // A private optional with no written value is still default-initialised to nil, so SE-0502
+    // drops it too.
+    assertLint(
+      UseSynthesizedInit.self,
+      """
+      struct Person {
+
+        let phoneNumber: String
+        private var cache: String?
+
+        1️⃣init(phoneNumber: String) {
+          self.phoneNumber = phoneNumber
+        }
+      }
+      """,
+      findings: [FindingSpec("1️⃣", message: Self.message)]
+    )
+  }
+
+  @Test func privateDefaultStillInInitIsNotDiagnosed() {
+    // The initializer keeps the dropped property as a parameter, so it does not match the
+    // synthesized one.
+    assertLint(
+      UseSynthesizedInit.self,
+      """
+      struct Person {
+
+        let phoneNumber: String
+        private var count = 0
+
+        init(phoneNumber: String, count: Int) {
+          self.phoneNumber = phoneNumber
+          self.count = count
+        }
+      }
+      """,
+      findings: []
+    )
+  }
+
+  @Test func privatePropertyWithoutInitialValueKeepsInitPrivate() {
+    // `address` has no initial value, so SE-0502 leaves it in and the synthesized initializer
+    // stays private. An internal initializer therefore does not match.
+    assertLint(
+      UseSynthesizedInit.self,
+      """
+      struct Person {
+
+        let phoneNumber: String
+        private let address: String
+
+        init(phoneNumber: String, address: String) {
+          self.phoneNumber = phoneNumber
+          self.address = address
+        }
+      }
+      """,
+      findings: []
+    )
+  }
+
+  @Test func allPrivatePropertiesKeepInitPrivate() {
+    // Nothing is less accessible than the rest, so nothing is dropped and the initializer is
+    // private.
+    assertLint(
+      UseSynthesizedInit.self,
+      """
+      struct Person {
+
+        private var phoneNumber: String = ""
+        private var address: String = ""
+
+        1️⃣private init(phoneNumber: String = "", address: String = "") {
+          self.phoneNumber = phoneNumber
+          self.address = address
+        }
+      }
+      """,
+      findings: [FindingSpec("1️⃣", message: Self.message)]
+    )
+  }
+
+  @Test func privateSetDetailDoesNotLowerInitLevel() {
+    // `private(set)` restricts the setter alone, so it neither lowers the initializer's access
+    // level nor drops the property.
+    assertLint(
+      UseSynthesizedInit.self,
+      """
+      struct Person {
+
+        let phoneNumber: String
+        private(set) var address: String = ""
+
+        1️⃣init(phoneNumber: String, address: String = "") {
+          self.phoneNumber = phoneNumber
+          self.address = address
+        }
+      }
+      """,
+      findings: [FindingSpec("1️⃣", message: Self.message)]
+    )
+  }
+
   @Test func defaultMemberwiseInitializerIsNotDiagnosed() {
-    // The synthesized initializer is private when any member is private, so an initializer with
-    // default access control (i.e. internal) is not equivalent to the synthesized initializer.
+    // `address` carries no initial value, so SE-0502 leaves it in the memberwise initializer and
+    // the initializer stays private. An initializer with default access control (i.e. internal) is
+    // therefore not equivalent to the synthesized one.
     assertLint(
       UseSynthesizedInit.self,
       """

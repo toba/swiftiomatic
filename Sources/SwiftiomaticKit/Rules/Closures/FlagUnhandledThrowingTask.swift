@@ -27,21 +27,11 @@ final class FlagUnhandledThrowingTask: LintSyntaxRule<LintOnlyValue>, @unchecked
     /// True if `node` is `Task { ... }` or `Task<_, _> { ... }` (or any specialization where the
     /// last generic argument is `_` , meaning the error type is inferred).
     private func isTaskWithImplicitErrorType(_ node: FunctionCallExprSyntax) -> Bool {
-        if let ref = node.calledExpression.as(DeclReferenceExprSyntax.self),
-           ref.baseName.text == "Task"
-        {
-            true
-        } else if let specialized = node.calledExpression.as(GenericSpecializationExprSyntax.self),
-           let ref = specialized.expression.as(DeclReferenceExprSyntax.self),
-           ref.baseName.text == "Task",
-           let lastArg = specialized.genericArgumentClause.arguments.last?.argument
-               .as(IdentifierTypeSyntax.self),
-           lastArg.name.text == "_"
-        {
-            true
-        } else {
-            false
-        }
+        guard let call = node.taskCall, call.factory == nil else { return false }
+        guard let arguments = call.genericArguments else { return true }
+
+        let lastArgument = arguments.arguments.last?.argument.as(IdentifierTypeSyntax.self)
+        return lastArgument?.name.text == "_"
     }
 
     /// True if the result of the Task is captured: assigned to a binding, awaited via `.value` /
@@ -60,10 +50,7 @@ final class FlagUnhandledThrowingTask: LintSyntaxRule<LintOnlyValue>, @unchecked
 
         // `executor.task = Task { ... }` (assignment in expression list)
         if let list = parent.as(ExprListSyntax.self),
-           list.contains(where: { $0.is(AssignmentExprSyntax.self) })
-        {
-            return true
-        }
+           list.contains(where: { $0.is(AssignmentExprSyntax.self) }) { return true }
 
         // `return Task { ... }`
         if parent.is(ReturnStmtSyntax.self) { return true }
@@ -73,10 +60,7 @@ final class FlagUnhandledThrowingTask: LintSyntaxRule<LintOnlyValue>, @unchecked
            let codeBlock = codeBlockItem.parent?.parent?.as(CodeBlockSyntax.self),
            codeBlock.statements.count == 1,
            let funcDecl = codeBlock.parent?.as(FunctionDeclSyntax.self),
-           funcDecl.signature.returnClause != nil
-        {
-            return true
-        }
+           funcDecl.signature.returnClause != nil { return true }
 
         return false
     }
@@ -108,10 +92,7 @@ private final class ThrowsVisitor: SyntaxVisitor {
         // `catch let x as Foo` ), it doesn't catch all.
         if let bindingPattern = lastCatch.catchItems.last?.pattern?
             .as(ValueBindingPatternSyntax.self),
-           !bindingPattern.pattern.is(IdentifierPatternSyntax.self)
-        {
-            return .visitChildren
-        }
+           !bindingPattern.pattern.is(IdentifierPatternSyntax.self) { return .visitChildren }
 
         // Walk only the catch clause; the do-body's throws are caught.
         let catchVisitor = ThrowsVisitor(viewMode: .sourceAccurate)
@@ -124,8 +105,8 @@ private final class ThrowsVisitor: SyntaxVisitor {
         if hasThrow {
             .skipChildren
         } else if let ref = node.calledExpression.as(DeclReferenceExprSyntax.self),
-           ref.baseName.text == "Result",
-           node.trailingClosure != nil
+            ref.baseName.text == "Result",
+            node.trailingClosure != nil
         {
             .skipChildren
         } else {
