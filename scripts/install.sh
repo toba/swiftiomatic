@@ -5,6 +5,11 @@ set -euo pipefail
 
 cd "$(dirname "$0")/.."
 
+# Every toba package drops its .dynamic product type when this is set, so sm
+# links as one image. The Cellar receives the binary alone, and a dynamic build
+# would abort in dyld there because no dylib sits beside it.
+export TOBA_STATIC_LINK=1
+
 # Derive version from the latest git tag (e.g. v0.27.1 → 0.27.1).
 version="$(git describe --tags --abbrev=0 2>/dev/null | sed 's/^v//')"
 if [[ -z "$version" ]]; then
@@ -34,6 +39,10 @@ fi
 
 strip -x -o "$cellar/bin/sm" "$src"
 echo "  sm → $cellar/bin/sm"
+
+# Launch the installed copy before the symlinks move to it. A failure here
+# leaves the previous version linked instead of breaking the sm command.
+./scripts/verify-release.sh "$cellar/bin/sm"
 
 # Point Homebrew's opt symlink at the new version.
 brew unlink sm 2>/dev/null || true

@@ -64,6 +64,11 @@ cp "${bin_path}" "${bundle_root}/sm-${version}-macos/bin/sm"
 chmod +x "${bundle_root}/sm-${version}-macos/bin/sm"
 cp LICENSE.txt "${bundle_root}/LICENSE.txt"
 
+# A bundle carries the executable alone, so the build behind it must be static.
+# The staged copy sits away from .build, and the launch fails there when the
+# binary still names a dylib through @rpath.
+./scripts/verify-release.sh "${bundle_root}/sm-${version}-macos/bin/sm"
+
 (cd build && zip -r -q sm.artifactbundle.zip sm.artifactbundle)
 shasum -a 256 build/sm.artifactbundle.zip | awk -v f="sm.artifactbundle.zip" '{print $1"  "f}' \
     > build/sm.artifactbundle.zip.sha256

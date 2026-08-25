@@ -20,6 +20,14 @@ jobs:
     # only hosted image that holds them. Its host still runs macOS 26.5.
     runs-on: xcode-27
 
+    # Every toba package reads TOBA_STATIC_LINK and drops its .dynamic product
+    # type when the variable is set. sm is one executable image, so a static
+    # link removes the @rpath dylibs the archive would otherwise have to carry.
+    # The variable sits on the job because SwiftPM evaluates the manifest during
+    # resolve as well as during build, and the two must agree.
+    env:
+      TOBA_STATIC_LINK: '1'
+
     steps:
     - uses: actions/checkout@v6
 
@@ -80,6 +88,15 @@ jobs:
         mkdir -p dist
         cp .build/release/sm dist/
         cd dist && tar -czvf ../sm-${{ github.ref_name }}-arm64.tar.gz *
+
+    # The extraction directory holds nothing but the archive contents, so a
+    # dylib left in .build cannot satisfy the launch. Release 4.0.0 shipped a
+    # binary that aborted in dyld, and this step is what refuses that build.
+    - name: Verify the archive launches
+      run: |
+        rm -rf verify && mkdir -p verify
+        tar -xzf sm-${{ github.ref_name }}-arm64.tar.gz -C verify
+        ./scripts/verify-release.sh verify/sm
 
     - name: Generate SHA256
       run: shasum -a 256 sm-${{ github.ref_name }}-arm64.tar.gz > sm-${{ github.ref_name }}-arm64.tar.gz.sha256

@@ -23,9 +23,14 @@ This is a fork of [apple/swift-format](https://github.com/swiftlang/swift-format
 ### Build and install
 
 ```sh
-swift build -c release
+TOBA_STATIC_LINK=1 swift build -c release
 cp .build/arm64-apple-macosx/release/sm /opt/homebrew/Cellar/sm/<version>/bin/sm
+./scripts/verify-release.sh /opt/homebrew/Cellar/sm/<version>/bin/sm
 ```
+
+**`TOBA_STATIC_LINK=1` is required.** `toba-core` and `toba-concurrency` declare their library products as `.dynamic` by default, and the Cellar receives the `sm` binary alone. Without the variable the installed binary names `@rpath/libTobaCore.dylib` and `@rpath/libTobaConcurrency.dylib`, finds neither, and aborts in `dyld` before `main`. Set the variable for `swift package resolve` too when you run it separately, because SwiftPM evaluates the manifest in both steps.
+
+`scripts/install.sh` sets the variable and runs the verification for you. Prefer it over the two commands above.
 
 Homebrew manages the symlink `/opt/homebrew/bin/sm` → `../Cellar/sm/<version>/bin/sm`.
 
