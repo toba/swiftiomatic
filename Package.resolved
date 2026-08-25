@@ -1,5 +1,5 @@
 {
-  "originHash" : "a3eba52af9f53b9734bf9d50a738de8fa3ca0224108bb604df6771bcd591ccd0",
+  "originHash" : "cfde802d9d34a68b489c0e6c6d59b4d6d4a75dab072c77d8396fa0693b54366c",
   "pins" : [
     {
       "identity" : "swift-argument-parser",
@@ -60,8 +60,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/toba/toba-concurrency",
       "state" : {
-        "revision" : "dc378943d792887dadac03b532353f4835897dca",
-        "version" : "1.1.0"
+        "revision" : "b27bb4ca36a5456f0039d60e441bf4ce1f467b1a",
+        "version" : "1.1.1"
       }
     },
     {
@@ -69,8 +69,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/toba/toba-core",
       "state" : {
-        "revision" : "a9db0d1734a16ab33d6e913d141b3c4dc8c6abb3",
-        "version" : "1.11.2"
+        "revision" : "01fa57b15b8ab56b7f0b683bf8e37c8036ce96d8",
+        "version" : "1.11.3"
       }
     }
   ],

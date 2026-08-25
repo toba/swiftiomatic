@@ -1,1 +1,1 @@
-let smVersion = "3.16.1"
+let smVersion = "4.0.1"

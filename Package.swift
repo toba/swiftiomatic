@@ -30,14 +30,14 @@ let package = Package(
         // one. The three `Platform/*.swift` files import AppKit on macOS, but
         // each holds one `typealias` and exports no symbol, so a link never
         // pulls them.
-        // 1.11.2 is the floor because it ships TobaCore dynamic under its own name.
-        .package(url: "https://github.com/toba/toba-core", from: "1.11.2"),
+        // 1.11.3 is the floor because it reads TOBA_STATIC_LINK.
+        .package(url: "https://github.com/toba/toba-core", from: "1.11.3"),
         // `Mutex+support` turns `withLock { $0.append(x) }` into `append(x)` and
         // `withLock { $0 }` into `withValue`. The package declares no dependency
         // of its own and imports no UI framework, so it adds nothing to the `sm`
         // link.
-        // 1.1.0 is the floor because it ships TobaConcurrency dynamic under its own name.
-        .package(url: "https://github.com/toba/toba-concurrency", from: "1.1.0"),
+        // 1.1.1 is the floor because it reads TOBA_STATIC_LINK.
+        .package(url: "https://github.com/toba/toba-concurrency", from: "1.1.1"),
     ],
     targets: [
         .target(
