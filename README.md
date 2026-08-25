@@ -55,7 +55,7 @@ sm format Sources/             # auto-fix in place
 sm lint Sources/               # report findings without modifying files
 sm dump-configuration          # print the resolved configuration
 sm doctor                      # diagnose installation/configuration issues
-sm link                        # install the Xcode toolchain symlink
+sm link                        # install the toolchain symlink in every installed Xcode
 sm update                      # update the configuration to the current schema version
 ```
 

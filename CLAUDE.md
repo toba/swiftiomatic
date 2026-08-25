@@ -43,13 +43,20 @@ Xcode's "Format with swift-format" (Editor menu) resolves the binary via `xcrun 
 
 This is symlinked to `/opt/homebrew/bin/sm`:
 ```sh
+sudo sm link
+```
+
+`sm link` scans `/Applications` and `~/Applications` for every `Xcode*.app` that carries a bundled toolchain, so a beta installed beside the release is linked in the same run. `--skip-beta` limits it to the release. `--target <path>` replaces the scan, and it repeats.
+
+The equivalent by hand, for one installation:
+```sh
 sudo ln -sf /opt/homebrew/bin/sm \
   /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swift-format
 ```
 
 This path is **not** SIP-protected — only `sudo` is needed, no SIP disable. After a release build + copy to the Cellar path, Xcode picks up new rules immediately via the symlink chain.
 
-**Xcode updates will overwrite the symlink** — re-run the `ln` command after updating Xcode.
+**Xcode updates will overwrite the symlink** — re-run `sm link` after updating Xcode.
 
 Three invocation paths all work through this:
 1. **Editor → "Format with swift-format"** — calls `swift-format format` on the file via stdin with `--assume-filename`, `--lines`/`--offsets`
