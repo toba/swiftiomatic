@@ -20,9 +20,14 @@ final class UseTrailingClosures: StaticFormatRule<BasicRuleValue>, @unchecked Se
     ]
 
     /// Functions that should never use trailing-closure syntax.
+    ///
+    /// `withoutActuallyEscaping(_:do:)` is here because type inference gives up on the multiple
+    /// trailing form once the closures throw or capture an inout parameter. The rewrite then turns
+    /// a compiling file into one the compiler cannot even diagnose.
     private static let neverTrailing: Set<String> = [
         "performBatchUpdates",
         "expect",
+        "withoutActuallyEscaping",
     ]
 
     /// Move trailing closure-typed arguments out of the parens. Called from

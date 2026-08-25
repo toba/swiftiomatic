@@ -144,4 +144,99 @@ struct UseBorrowAccessorNotUnderscoreReadTests: RuleTesting {
       findings: []
     )
   }
+
+  @Test func getSetAndModifyTripleNotFlagged() {
+    assertLint(
+      UseBorrowAccessorNotUnderscoreRead.self,
+      """
+      struct Wrapper {
+        var _element: Int
+        var element: Int {
+          get { _element }
+          set { _element = newValue }
+          _modify { yield &_element }
+        }
+      }
+      """,
+      findings: []
+    )
+  }
+
+  @Test func getAndReadPairNotFlagged() {
+    assertLint(
+      UseBorrowAccessorNotUnderscoreRead.self,
+      """
+      struct Wrapper {
+        var _element: Int
+        var element: Int {
+          get { _element }
+          _read { yield _element }
+        }
+      }
+      """,
+      findings: []
+    )
+  }
+
+  @Test func yieldThroughPropertyWrapperNotFlagged() {
+    assertLint(
+      UseBorrowAccessorNotUnderscoreRead.self,
+      """
+      struct Wrapper {
+        @CopyOnWrite var clauses = Clauses()
+        var columns: [Column] {
+          _modify { yield &clauses.columns }
+        }
+      }
+      """,
+      findings: []
+    )
+  }
+
+  @Test func yieldThroughComputedPropertyNotFlagged() {
+    assertLint(
+      UseBorrowAccessorNotUnderscoreRead.self,
+      """
+      struct Wrapper {
+        var storage: Clauses { Clauses() }
+        var columns: [Column] {
+          _read { yield storage.columns }
+        }
+      }
+      """,
+      findings: []
+    )
+  }
+
+  @Test func yieldOfClassMemberNotFlagged() {
+    assertLint(
+      UseBorrowAccessorNotUnderscoreRead.self,
+      """
+      final class Box {
+        var _element: Int = 0
+        var element: Int {
+          _read { yield _element }
+        }
+      }
+      """,
+      findings: []
+    )
+  }
+
+  @Test func yieldOfObservedStoredPropertyStillFlagged() {
+    assertLint(
+      UseBorrowAccessorNotUnderscoreRead.self,
+      """
+      struct Wrapper {
+        var _element: Int {
+          didSet { notify() }
+        }
+        var element: Int {
+          1️⃣_read { yield _element }
+        }
+      }
+      """,
+      findings: [FindingSpec("1️⃣", message: Self.borrow)]
+    )
+  }
 }

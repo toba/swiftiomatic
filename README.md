@@ -19,6 +19,35 @@ Configuration is JSON5. Format and lint are both per-rule, with universal layout
 
 Each rule accepts `"rewrite": true | false` (format side) and `"lint": "no" | "warn" | "error"` (lint side). Format rules default to active; lint rules default to `"warn"`.
 
+## Ignoring rules in source
+
+Suppress a rule from a comment with `// sm:ignore`. Swiftiomatic recognizes the `sm:` prefix alone, so the upstream `// swift-format-ignore` and `// swift-format-ignore-file` comments have **no effect**.
+
+A bare directive suppresses every rule. Naming rules after it suppresses only those. Both the configuration key (`useTrailingClosures`) and the type name (`UseTrailingClosures`) resolve.
+
+| Form | Scope |
+|---|---|
+| `// sm:ignore` on its own line | from that line to the end of the file |
+| `// sm:ignore:next` on its own line | the next statement or member |
+| `// sm:ignore` after code | that statement only |
+
+```swift
+// both rules off for the rest of the file
+// sm:ignore fileLength, typeBodyLength
+
+// one rule off for the call below
+// sm:ignore:next useTrailingClosures
+try withoutActuallyEscaping({ ... }, do: { ... })
+
+let x = "trouble"  // sm:ignore
+```
+
+Text after the rule list is a free-form comment: `// sm:ignore:next UseSelfNotTypeName the generic parameter shadows it`.
+
+A directive disables the pretty printer too, so the node it covers keeps its existing line breaks and indentation.
+
+On a multi-line statement, a trailing directive attaches on the opening line or the closing line. An interior line scopes it to the inner statement instead. See [Documentation/IgnoringSource.md](Documentation/IgnoringSource.md) for the full rules.
+
 ## CLI
 
 ```sh

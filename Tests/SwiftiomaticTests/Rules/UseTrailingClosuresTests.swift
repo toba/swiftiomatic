@@ -379,6 +379,29 @@ struct TrailingClosuresTests: RuleTesting {
       findings: [])
   }
 
+  @Test func withoutActuallyEscapingNotMadeTrailing() {
+    assertFormatting(UseTrailingClosures.self,
+      input: """
+        try withoutActuallyEscaping(
+          { request in
+            try dump(request, to: &stream)
+          },
+          do: { willExecute in
+            try fetch(rows, willExecute)
+          })
+        """,
+      expected: """
+        try withoutActuallyEscaping(
+          { request in
+            try dump(request, to: &stream)
+          },
+          do: { willExecute in
+            try fetch(rows, willExecute)
+          })
+        """,
+      findings: [])
+  }
+
   // MARK: - Optional Chaining
 
   @Test func optionalClosureMadeTrailing() {

@@ -2,14 +2,20 @@ import SwiftSyntax
 
 /// Prefer `Self` over `type(of: self)` .
 ///
-/// Inside a class/struct/enum/actor, `Self` refers to the current type and is fully equivalent to
-/// `type(of: self)` for any non-polymorphic dispatch. The shorthand is more concise and avoids the
-/// runtime call.
+/// Inside a struct, an enum, an actor or a final class, `Self` names the same type that
+/// `type(of: self)` returns at runtime. The shorthand is more concise and avoids the runtime call.
 ///
-/// This rule does not fire at the top level of a file (where `self` does not refer to an enclosing
-/// type) or for non- `self` arguments ( `type(of: param)` is preserved).
+/// The rule stays silent everywhere the two can differ. A subclass instance inside a non-final
+/// class body, and a conforming type inside a protocol extension, both carry a dynamic type that
+/// `Self` does not name, so replacing the call there changes which implementation runs. An
+/// extension body never states the kind of the type it extends, so every extension counts as
+/// unsafe.
 ///
-/// Lint: A warning is raised for `type(of: self)` (also `Swift.type(of: self)` ) inside a type.
+/// The rule also stays silent at the top level of a file, where `self` refers to no enclosing
+/// type, and for a non- `self` argument, where `type(of: param)` is preserved.
+///
+/// Lint: A warning is raised for `type(of: self)` (also `Swift.type(of: self)` ) inside a struct,
+/// an enum, an actor or a final class.
 ///
 /// Rewrite: The call is replaced with `Self` .
 final class UseSelfNotTypeName: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
@@ -18,60 +24,52 @@ final class UseSelfNotTypeName: StaticFormatRule<BasicRuleValue>, @unchecked Sen
 
     /// Per-file mutable state held as a typed lazy property on `Context` .
     final class State {
-        var typeDepth = 0
+        /// One entry per enclosing type or extension body. An entry is true when `Self` is
+        /// guaranteed to name the dynamic type of `self` in that body.
+        var selfNamesDynamicType: [Bool] = []
     }
 
     // MARK: - Scope hooks
 
-    static func willEnter(_: ClassDeclSyntax, context: Context) {
-        let state = context.preferSelfTypeState
-        state.typeDepth += 1
+    private static func push(_ selfNamesDynamicType: Bool, _ context: Context) {
+        context.preferSelfTypeState.selfNamesDynamicType.append(selfNamesDynamicType)
     }
 
-    static func didExit(_: ClassDeclSyntax, context: Context) {
+    /// Pops the innermost scope. A hook that runs without its paired `willEnter` leaves the stack
+    /// empty, and an unguarded `removeLast` would trap.
+    private static func pop(_ context: Context) {
         let state = context.preferSelfTypeState
-        state.typeDepth -= 1
+        if !state.selfNamesDynamicType.isEmpty { state.selfNamesDynamicType.removeLast() }
     }
 
-    static func willEnter(_: StructDeclSyntax, context: Context) {
-        let state = context.preferSelfTypeState
-        state.typeDepth += 1
+    static func willEnter(_ node: ClassDeclSyntax, context: Context) {
+        // a subclass instance has a dynamic type that `Self` does not name
+        push(node.modifiers.contains { $0.name.tokenKind == .keyword(.final) }, context)
     }
 
-    static func didExit(_: StructDeclSyntax, context: Context) {
-        let state = context.preferSelfTypeState
-        state.typeDepth -= 1
-    }
+    static func didExit(_: ClassDeclSyntax, context: Context) { pop(context) }
 
-    static func willEnter(_: EnumDeclSyntax, context: Context) {
-        let state = context.preferSelfTypeState
-        state.typeDepth += 1
-    }
+    static func willEnter(_: StructDeclSyntax, context: Context) { push(true, context) }
 
-    static func didExit(_: EnumDeclSyntax, context: Context) {
-        let state = context.preferSelfTypeState
-        state.typeDepth -= 1
-    }
+    static func didExit(_: StructDeclSyntax, context: Context) { pop(context) }
+
+    static func willEnter(_: EnumDeclSyntax, context: Context) { push(true, context) }
+
+    static func didExit(_: EnumDeclSyntax, context: Context) { pop(context) }
 
     static func willEnter(_: ActorDeclSyntax, context: Context) {
-        let state = context.preferSelfTypeState
-        state.typeDepth += 1
+        // an actor takes no subclass, so `Self` is exact
+        push(true, context)
     }
 
-    static func didExit(_: ActorDeclSyntax, context: Context) {
-        let state = context.preferSelfTypeState
-        state.typeDepth -= 1
-    }
+    static func didExit(_: ActorDeclSyntax, context: Context) { pop(context) }
 
     static func willEnter(_: ExtensionDeclSyntax, context: Context) {
-        let state = context.preferSelfTypeState
-        state.typeDepth += 1
+        // the extended type may be a protocol or a base class, and the syntax does not say which
+        push(false, context)
     }
 
-    static func didExit(_: ExtensionDeclSyntax, context: Context) {
-        let state = context.preferSelfTypeState
-        state.typeDepth -= 1
-    }
+    static func didExit(_: ExtensionDeclSyntax, context: Context) { pop(context) }
 
     // MARK: - Static transform
 
@@ -82,7 +80,7 @@ final class UseSelfNotTypeName: StaticFormatRule<BasicRuleValue>, @unchecked Sen
         context: Context
     ) -> ExprSyntax {
         let state = context.preferSelfTypeState
-        guard state.typeDepth > 0,
+        guard state.selfNamesDynamicType.last == true,
               let baseCall = node.base?.as(FunctionCallExprSyntax.self),
               isTypeOfSelfCall(baseCall) else { return ExprSyntax(node) }
 
