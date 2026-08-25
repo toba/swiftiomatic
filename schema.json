@@ -980,7 +980,7 @@
           "$ref" : "#/$defs/ruleBase"
         }
       ],
-      "description" : "Drop the parentheses around an existential or opaque type that an optional wraps.\n\nBefore SE-0521 the parentheses were load-bearing, because `any P?` did not parse. They now say nothing, and they read as a one-element tuple to anyone who has not memorised the old rule.\n\nThe rule leaves a metatype alone. In `(any P).Type` the parentheses bind the metatype, so removing them changes what the type means.\n\nLint: An optional or implicitly unwrapped optional wrapping a parenthesised `any` or `some` type raises a warning.\n\nRewrite: The parentheses are removed."
+      "description" : "Drop the parentheses around an existential or opaque type that an optional wraps.\n\nBefore SE-0521 the parentheses were load-bearing, because `any P?` did not parse. They now say nothing, and they read as a one-element tuple to anyone who has not memorised the old rule.\n\nThe rule leaves a metatype alone. In `(any P).Type` the parentheses bind the metatype, so removing them changes what the type means.\n\nIt leaves a protocol composition alone too. SE-0521 drops the parentheses for a single protocol, so `(any P & Q)?` still needs them and `any P & Q?` does not compile.\n\nLint: An optional or implicitly unwrapped optional wrapping a parenthesised `any` or `some` type raises a warning.\n\nRewrite: The parentheses are removed."
     },
     "dropRedundantAccessControl" : {
       "allOf" : [
@@ -3116,7 +3116,7 @@
               "$ref" : "#/$defs/ruleBase"
             }
           ],
-          "description" : "Drop the parentheses around an existential or opaque type that an optional wraps.\n\nBefore SE-0521 the parentheses were load-bearing, because `any P?` did not parse. They now say nothing, and they read as a one-element tuple to anyone who has not memorised the old rule.\n\nThe rule leaves a metatype alone. In `(any P).Type` the parentheses bind the metatype, so removing them changes what the type means.\n\nLint: An optional or implicitly unwrapped optional wrapping a parenthesised `any` or `some` type raises a warning.\n\nRewrite: The parentheses are removed."
+          "description" : "Drop the parentheses around an existential or opaque type that an optional wraps.\n\nBefore SE-0521 the parentheses were load-bearing, because `any P?` did not parse. They now say nothing, and they read as a one-element tuple to anyone who has not memorised the old rule.\n\nThe rule leaves a metatype alone. In `(any P).Type` the parentheses bind the metatype, so removing them changes what the type means.\n\nIt leaves a protocol composition alone too. SE-0521 drops the parentheses for a single protocol, so `(any P & Q)?` still needs them and `any P & Q?` does not compile.\n\nLint: An optional or implicitly unwrapped optional wrapping a parenthesised `any` or `some` type raises a warning.\n\nRewrite: The parentheses are removed."
         },
         "dropRedundantAccessControl" : {
           "allOf" : [

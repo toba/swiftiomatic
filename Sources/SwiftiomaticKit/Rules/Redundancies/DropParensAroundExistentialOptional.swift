@@ -8,6 +8,9 @@ import SwiftSyntax
 /// The rule leaves a metatype alone. In `(any P).Type` the parentheses bind the metatype, so
 /// removing them changes what the type means.
 ///
+/// It leaves a protocol composition alone too. SE-0521 drops the parentheses for a single protocol,
+/// so `(any P & Q)?` still needs them and `any P & Q?` does not compile.
+///
 /// Lint: An optional or implicitly unwrapped optional wrapping a parenthesised `any` or `some` type
 /// raises a warning.
 ///
@@ -51,7 +54,9 @@ final class DropParensAroundExistentialOptional: StaticFormatRule<BasicRuleValue
               only.firstName == nil,
               only.secondName == nil,
               only.ellipsis == nil,
-              only.type.is(SomeOrAnyTypeSyntax.self) else { return nil }
+              let existential = only.type.as(SomeOrAnyTypeSyntax.self),
+              // SE-0521 drops the parentheses for one protocol only; a composition still needs them
+              !existential.constraint.is(CompositionTypeSyntax.self) else { return nil }
 
         return only.type
             .with(\.leadingTrivia, tuple.leadingTrivia)

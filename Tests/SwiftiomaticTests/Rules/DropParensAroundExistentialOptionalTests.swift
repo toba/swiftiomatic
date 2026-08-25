@@ -111,6 +111,45 @@ struct DropParensAroundExistentialOptionalTests: RuleTesting {
     )
   }
 
+  @Test func compositionLeftAlone() {
+    assertFormatting(
+      DropParensAroundExistentialOptional.self,
+      input: """
+        let failure: (any Error & Sendable)? = nil
+        """,
+      expected: """
+        let failure: (any Error & Sendable)? = nil
+        """,
+      findings: []
+    )
+  }
+
+  @Test func opaqueCompositionLeftAlone() {
+    assertFormatting(
+      DropParensAroundExistentialOptional.self,
+      input: """
+        func draw(_ shape: (some Shape & Sendable)?) {}
+        """,
+      expected: """
+        func draw(_ shape: (some Shape & Sendable)?) {}
+        """,
+      findings: []
+    )
+  }
+
+  @Test func implicitlyUnwrappedCompositionLeftAlone() {
+    assertFormatting(
+      DropParensAroundExistentialOptional.self,
+      input: """
+        var shape: (any Shape & Sendable)!
+        """,
+      expected: """
+        var shape: (any Shape & Sendable)!
+        """,
+      findings: []
+    )
+  }
+
   @Test func nonExistentialSingleElementLeftAlone() {
     assertFormatting(
       DropParensAroundExistentialOptional.self,
