@@ -1129,6 +1129,22 @@ final class RewritePipeline: SyntaxRewriter {
         return ExprSyntax(concrete)
     }
 
+    override func visit(_ node: ImplicitlyUnwrappedOptionalTypeSyntax) -> TypeSyntax {
+        guard let gate = context.gate(for: node) else { return super.visit(node) }
+        let parent = Syntax(node).parent
+        var current: TypeSyntax = super.visit(node)
+        applyAsserting(
+            DropParensAroundExistentialOptional.self,
+            to: &current,
+            original: node,
+            as: ImplicitlyUnwrappedOptionalTypeSyntax.self,
+            gate: gate
+        ) {
+            DropParensAroundExistentialOptional.transform($0, original: $1, parent: parent, context: $2)
+        }
+        return current
+    }
+
     override func visit(_ node: ImportDeclSyntax) -> DeclSyntax {
         guard let gate = context.gate(for: node) else { return super.visit(node) }
         let parent = Syntax(node).parent
@@ -1409,6 +1425,22 @@ final class RewritePipeline: SyntaxRewriter {
         }
         if context.shouldRewrite(DropRedundantOptionalBinding.self, gate: gate) {
             current = DropRedundantOptionalBinding.transform(current, original: node, parent: parent, context: context)
+        }
+        return current
+    }
+
+    override func visit(_ node: OptionalTypeSyntax) -> TypeSyntax {
+        guard let gate = context.gate(for: node) else { return super.visit(node) }
+        let parent = Syntax(node).parent
+        var current: TypeSyntax = super.visit(node)
+        applyAsserting(
+            DropParensAroundExistentialOptional.self,
+            to: &current,
+            original: node,
+            as: OptionalTypeSyntax.self,
+            gate: gate
+        ) {
+            DropParensAroundExistentialOptional.transform($0, original: $1, parent: parent, context: $2)
         }
         return current
     }

@@ -156,9 +156,10 @@ final class SimplifyGenericConstraints: StaticFormatRule<BasicRuleValue>, @unche
         var newParams = Array(genericParams.parameters)
 
         for i in newParams.indices {
-            guard let constraintType = inlineMap[newParams[i].name.text] else { continue }
-            newParams[i].colon = .colonToken(trailingTrivia: .space)
-            newParams[i].inheritedType = constraintType
+            var parameter = MutableRef(&newParams[i])
+            guard let constraintType = inlineMap[parameter.value.name.text] else { continue }
+            parameter.value.colon = .colonToken(trailingTrivia: .space)
+            parameter.value.inheritedType = constraintType
                 .with(\.leadingTrivia, [])
                 .with(\.trailingTrivia, [])
         }

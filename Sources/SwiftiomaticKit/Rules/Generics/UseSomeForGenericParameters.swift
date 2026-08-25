@@ -278,40 +278,41 @@ final class UseSomeForGenericParameters: StaticFormatRule<BasicRuleValue>, @unch
 
         // Check eligibility for each type
         for i in types.indices {
-            let name = types[i].name
+            var type = MutableRef(&types[i])
+            let name = type.value.name
 
             // Must appear exactly once in parameter types
             let countInParams = countOccurrences(of: name, in: Syntax(parameterClause))
 
             if countInParams != 1 {
-                types[i].eligible = false
+                type.value.eligible = false
                 continue
             }
 
             // Must not appear in return type
             if let returnClause, contains(name: name, in: Syntax(returnClause)) {
-                types[i].eligible = false
+                type.value.eligible = false
                 continue
             }
 
             // Must not appear in body
             if let body, contains(name: name, in: body) {
-                types[i].eligible = false
+                type.value.eligible = false
                 continue
             }
 
             // Must not appear in effect specifiers (typed throws)
             if let effectSpecifiers, contains(name: name, in: Syntax(effectSpecifiers)) {
-                types[i].eligible = false
+                type.value.eligible = false
                 continue
             }
 
             // Must not appear in attributes/modifiers
             for node in preamble where contains(name: name, in: node) {
-                types[i].eligible = false
+                type.value.eligible = false
                 break
             }
-            guard types[i].eligible else { continue }
+            guard type.value.eligible else { continue }
 
             // Must not appear in any where clause requirement that isn't a direct
             // conformance/equality for this type. This covers:
@@ -321,55 +322,55 @@ final class UseSomeForGenericParameters: StaticFormatRule<BasicRuleValue>, @unch
             if let whereClause {
                 for (reqIndex, requirement) in whereClause.requirements.enumerated() {
                     // Skip requirements already assigned to this type
-                    if types[i].whereRequirementIndices.contains(reqIndex) { continue }
+                    if type.value.whereRequirementIndices.contains(reqIndex) { continue }
                     // If any unassigned requirement references this type's name, ineligible
                     if contains(name: name, in: Syntax(requirement)) {
-                        types[i].eligible = false
+                        type.value.eligible = false
                         break
                     }
                 }
             }
-            guard types[i].eligible else { continue }
+            guard type.value.eligible else { continue }
 
             // Self-referential constraint (e.g., T: RoutingBehaviors<T.Dependencies>)
-            for conformance in types[i].conformances
+            for conformance in type.value.conformances
                 where contains(name: name, in: Syntax(conformance))
             {
-                types[i].eligible = false
+                type.value.eligible = false
                 break
             }
-            guard types[i].eligible else { continue }
+            guard type.value.eligible else { continue }
 
             // Check for variadic usage in parameters
             for param in parameterClause.parameters {
                 if param.ellipsis != nil, contains(name: name, in: Syntax(param.type)) {
-                    types[i].eligible = false
+                    type.value.eligible = false
                     break
                 }
             }
-            guard types[i].eligible else { continue }
+            guard type.value.eligible else { continue }
 
             // Check for closure parameter usage
             for param in parameterClause.parameters {
                 if isClosureType(param.type), contains(name: name, in: Syntax(param.type)) {
-                    types[i].eligible = false
+                    type.value.eligible = false
                     break
                 }
             }
-            guard types[i].eligible else { continue }
+            guard type.value.eligible else { continue }
 
             // Check for `any` existential usage in parameters
             for param in parameterClause.parameters
                 where containsAnyExistential(name: name, in: param.type)
             {
-                types[i].eligible = false
+                type.value.eligible = false
                 break
             }
-            guard types[i].eligible else { continue }
+            guard type.value.eligible else { continue }
 
             // Must be able to produce a replacement type
-            guard let replacement = types[i].replacementType() else {
-                types[i].eligible = false
+            guard let replacement = type.value.replacementType() else {
+                type.value.eligible = false
                 continue
             }
 
@@ -380,7 +381,7 @@ final class UseSomeForGenericParameters: StaticFormatRule<BasicRuleValue>, @unch
                 contains(name: name, in: Syntax(param.type))
                     && replaceGenericInType(param.type, name: name, with: replacement) != nil
             }
-            if !substitutable { types[i].eligible = false }
+            if !substitutable { type.value.eligible = false }
         }
 
         return types

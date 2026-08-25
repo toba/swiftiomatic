@@ -54,6 +54,33 @@ struct SubscriptExprTests: LayoutTesting {
     assertLayout(input: input, expected: expected, linelength: 45)
   }
 
+  /// A break between `[` and its index is never the right break, whatever the width. This shape
+  /// used to produce `args[\n  i] = args[i]`, because the assignment break bounded its chunk on
+  /// the subscript's open break rather than on the right-hand side.
+  @Test func simpleIndexNeverBreaksAfterBracket() {
+    let input =
+      """
+      for i in args.indices {
+        args[i] = args[i].with(\\.leadingTrivia, i == 0 ? [] : .space).with(\\.trailingTrivia, [])
+      }
+      """
+
+    let expected =
+      """
+      for i in args.indices {
+        args[i] = args[i].with(
+          \\.leadingTrivia,
+          i == 0
+            ? []
+            : .space
+        ).with(\\.trailingTrivia, [])
+      }
+
+      """
+
+    assertLayout(input: input, expected: expected, linelength: 50)
+  }
+
   @Test func subscriptGettersWithTrailingClosures() {
     let input =
       """

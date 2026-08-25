@@ -161,6 +161,12 @@ extension TokenStream {
 
         let arguments = node.arguments
 
+        // Diverges from apple/swift-format, which arranges every subscript like a call argument
+        // list. A one-token index gains nothing from a break after `[`, and an outer break whose
+        // chunk reaches past the bracket can fire on it, splitting `args[i]` across two lines.
+        // Emitting no delimiter breaks glues the bracket to its index at every width.
+        if node.trailingClosure == nil, hasSimpleIndex(arguments) { return .visitChildren }
+
         // If there is a trailing closure, force the right bracket down to the next line so it stays
         // with the open curly brace.
         let breakBeforeRightBracket = node.trailingClosure != nil
@@ -183,6 +189,20 @@ extension TokenStream {
 
     func visitPostSubscriptCallExpr(_ node: SubscriptCallExprSyntax) {
         clearContextualBreakState(node)
+    }
+
+    /// Whether the index is one unlabelled token that no break could usefully split.
+    ///
+    /// A label, a second argument, or anything longer than a name or a literal keeps the ordinary
+    /// argument-list arrangement, so `xs[index, default: value]` still wraps.
+    private func hasSimpleIndex(_ arguments: LabeledExprListSyntax) -> Bool {
+        guard let only = arguments.first, arguments.count == 1, only.label == nil
+        else { return false }
+        let expression = only.expression
+        return expression.is(DeclReferenceExprSyntax.self)
+            || expression.is(IntegerLiteralExprSyntax.self)
+            || expression.is(StringLiteralExprSyntax.self)
+            || expression.is(MemberAccessExprSyntax.self)
     }
 
     func visitExpressionSegment(_ node: ExpressionSegmentSyntax) -> SyntaxVisitorContinueKind {

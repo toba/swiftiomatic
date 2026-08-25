@@ -974,6 +974,14 @@
       ],
       "description" : "Redundant labels are forbidden in case patterns.\n\nIn practice, *all* case pattern labels should be redundant.\n\nLint: Using a label in a case statement yields a lint error unless the label does not match the binding identifier.\n\nRewrite: Redundant labels in case patterns are removed."
     },
+    "dropParensAroundExistentialOptional" : {
+      "allOf" : [
+        {
+          "$ref" : "#/$defs/ruleBase"
+        }
+      ],
+      "description" : "Drop the parentheses around an existential or opaque type that an optional wraps.\n\nBefore SE-0521 the parentheses were load-bearing, because `any P?` did not parse. They now say nothing, and they read as a one-element tuple to anyone who has not memorised the old rule.\n\nThe rule leaves a metatype alone. In `(any P).Type` the parentheses bind the metatype, so removing them changes what the type means.\n\nLint: An optional or implicitly unwrapped optional wrapping a parenthesised `any` or `some` type raises a warning.\n\nRewrite: The parentheses are removed."
+    },
     "dropRedundantAccessControl" : {
       "allOf" : [
         {
@@ -1490,7 +1498,16 @@
           "$ref" : "#/$defs/lintOnlyBase"
         }
       ],
-      "description" : "Flag `@unchecked Sendable` conformances. The `@unchecked` opts out of compiler-enforced data-race safety — the type might still be safe (e.g. all storage is protected by a lock), but the conformance bypasses verification and warrants human review. SE-0470's `sending`, metatype-aware `Sendable`, or refactoring to actor isolation often eliminates the need.\n\nFlag-only — choosing the correct fix needs type information this rule doesn't have.",
+      "description" : "Flag `@unchecked Sendable` conformances. The `@unchecked` opts out of compiler-enforced data-race safety — the type might still be safe (e.g. all storage is protected by a lock), but the conformance bypasses verification and warrants human review. SE-0470's `sending`, metatype-aware `Sendable`, or refactoring to actor isolation often eliminates the need.\n\nFlag-only — choosing the correct fix needs type information this rule doesn't have.\n\nA subclass of a `Sendable` class cannot drop the conformance. The compiler answers a bare subclass with `must restate inherited '@unchecked Sendable' conformance`, so a warning there asks for a change that does not build. Name those superclasses in `sendableSuperclasses` and the rule leaves their subclasses alone.",
+      "properties" : {
+        "sendableSuperclasses" : {
+          "description" : "Classes whose subclasses must restate `@unchecked Sendable` , written without any generic argument list.",
+          "items" : {
+            "type" : "string"
+          },
+          "type" : "array"
+        }
+      },
       "unevaluatedProperties" : false
     },
     "flagUnhandledThrowingTask" : {
@@ -3093,6 +3110,14 @@
           ],
           "description" : "Redundant labels are forbidden in case patterns.\n\nIn practice, *all* case pattern labels should be redundant.\n\nLint: Using a label in a case statement yields a lint error unless the label does not match the binding identifier.\n\nRewrite: Redundant labels in case patterns are removed."
         },
+        "dropParensAroundExistentialOptional" : {
+          "allOf" : [
+            {
+              "$ref" : "#/$defs/ruleBase"
+            }
+          ],
+          "description" : "Drop the parentheses around an existential or opaque type that an optional wraps.\n\nBefore SE-0521 the parentheses were load-bearing, because `any P?` did not parse. They now say nothing, and they read as a one-element tuple to anyone who has not memorised the old rule.\n\nThe rule leaves a metatype alone. In `(any P).Type` the parentheses bind the metatype, so removing them changes what the type means.\n\nLint: An optional or implicitly unwrapped optional wrapping a parenthesised `any` or `some` type raises a warning.\n\nRewrite: The parentheses are removed."
+        },
         "dropRedundantAccessControl" : {
           "allOf" : [
             {
@@ -4114,7 +4139,16 @@
               "$ref" : "#/$defs/lintOnlyBase"
             }
           ],
-          "description" : "Flag `@unchecked Sendable` conformances. The `@unchecked` opts out of compiler-enforced data-race safety — the type might still be safe (e.g. all storage is protected by a lock), but the conformance bypasses verification and warrants human review. SE-0470's `sending`, metatype-aware `Sendable`, or refactoring to actor isolation often eliminates the need.\n\nFlag-only — choosing the correct fix needs type information this rule doesn't have.",
+          "description" : "Flag `@unchecked Sendable` conformances. The `@unchecked` opts out of compiler-enforced data-race safety — the type might still be safe (e.g. all storage is protected by a lock), but the conformance bypasses verification and warrants human review. SE-0470's `sending`, metatype-aware `Sendable`, or refactoring to actor isolation often eliminates the need.\n\nFlag-only — choosing the correct fix needs type information this rule doesn't have.\n\nA subclass of a `Sendable` class cannot drop the conformance. The compiler answers a bare subclass with `must restate inherited '@unchecked Sendable' conformance`, so a warning there asks for a change that does not build. Name those superclasses in `sendableSuperclasses` and the rule leaves their subclasses alone.",
+          "properties" : {
+            "sendableSuperclasses" : {
+              "description" : "Classes whose subclasses must restate `@unchecked Sendable` , written without any generic argument list.",
+              "items" : {
+                "type" : "string"
+              },
+              "type" : "array"
+            }
+          },
           "unevaluatedProperties" : false
         },
         "noAwaitInsideWithLock" : {
@@ -4193,6 +4227,33 @@
             }
           ],
           "description" : "Require a `name:` argument when starting a `Task` or adding work to a `TaskGroup`. Swift 6.2 (Xcode 26 / macOS 26 / iOS 26) added `name:` overloads to `Task.init`, `Task.detached`, `Task.immediate`, `Task.immediateDetached`, `TaskGroup.addTask`, and `TaskGroup.addTaskUnlessCancelled`. The name shows up in Instruments' Swift Concurrency instrument, in the Xcode debugger's task list, and in custom `Task.currentName` reads — unnamed tasks are anonymous and indistinguishable from one another there.\n\n`addTask` and `addTaskUnlessCancelled` fire only when the call has the shape of the task-group method: the work arrives as a trailing closure or a final `operation:` argument, and every other argument carries a label the task-group method accepts. An unrelated method with the same base name stays quiet.\n\nFlag-only — the fix requires picking a meaningful name.\n\nSee https://artemnovichkov.com/blog/task-names-in-swift-concurrency.",
+          "unevaluatedProperties" : false
+        },
+        "useContinuationNotChecked" : {
+          "allOf" : [
+            {
+              "$ref" : "#/$defs/lintOnlyBase"
+            }
+          ],
+          "description" : "Flag a checked or unsafe continuation in favour of the form added by SE-0528.\n\n`withContinuation` yields a noncopyable `Continuation` . Consuming it on `resume` makes a second resume a compile error rather than a runtime trap. A continuation the closure never resumes traps at the point of failure instead of leaking the awaiting task forever.\n\nLint: A call to `withCheckedContinuation` , `withUnsafeContinuation` , `withCheckedThrowingContinuation` or `withUnsafeThrowingContinuation` raises a warning.",
+          "unevaluatedProperties" : false
+        },
+        "useDiagnoseAttributeNotSuppressionFlag" : {
+          "allOf" : [
+            {
+              "$ref" : "#/$defs/lintOnlyBase"
+            }
+          ],
+          "description" : "Flag a module-wide diagnostic flag in a package manifest in favour of the SE-0522 attribute.\n\n`-suppress-warnings` , `-Wwarning` and `-Werror` apply to every file the target compiles, so one declaration that needs the exemption buys silence for the whole module. `@diagnose` sits on that declaration, and the next reader sees which code the exemption covers and which it does not.\n\n```swift @diagnose(DeprecatedDeclaration, as: ignored) func legacy() {} ```\n\nLint: A string literal naming one of those flags inside an `unsafeFlags` argument raises a warning.",
+          "unevaluatedProperties" : false
+        },
+        "useMutableRefForRepeatedSubscript" : {
+          "allOf" : [
+            {
+              "$ref" : "#/$defs/lintOnlyBase"
+            }
+          ],
+          "description" : "Flag a loop body that subscripts the same element repeatedly instead of binding it once.\n\nEach `xs[i]` on a mutation path is a separate get, mutate and set on the collection, and each one carries an exclusivity check. SE-0519 adds `MutableRef` , which binds the element once and mutates it in place.\n\n```swift for i in xs.indices { var element = MutableRef(&xs[i]) element.value.a = 0 element.value.b = 0 } ```\n\nThe rule stays quiet on a read-only loop, where no copy back happens and the repeated subscript costs nothing beyond the bounds check.\n\nLint: A `for` body that subscripts one base with the loop variable three or more times, and writes through at least one of them, raises a warning.",
           "unevaluatedProperties" : false
         },
         "useSpanTemporaryAllocation" : {
@@ -4377,6 +4438,15 @@
       "description" : "Prefer `contains(where:)` over `filter` -then-count/isEmpty/first patterns, and `contains(_:)` over `range(of:) != nil` .\n\n`filter` allocates an intermediate collection just to ask a yes/no question; `contains` short-circuits at the first match. Likewise, `string.contains(needle)` is clearer and faster than building a `Range` only to check it for `nil` .\n\nLint: warns on:\n- `xs.filter { ... }.count [==/!=/>] 0`\n- `xs.filter { ... }.isEmpty`\n- `xs.first(where:) [==/!=] nil` , `xs.firstIndex(where:) [==/!=] nil`\n- `s.range(of: needle) [==/!=] nil` (skipped when `options:` is supplied, e.g.\n`.regularExpression` )",
       "unevaluatedProperties" : false
     },
+    "useContinuationNotChecked" : {
+      "allOf" : [
+        {
+          "$ref" : "#/$defs/lintOnlyBase"
+        }
+      ],
+      "description" : "Flag a checked or unsafe continuation in favour of the form added by SE-0528.\n\n`withContinuation` yields a noncopyable `Continuation` . Consuming it on `resume` makes a second resume a compile error rather than a runtime trap. A continuation the closure never resumes traps at the point of failure instead of leaking the awaiting task forever.\n\nLint: A call to `withCheckedContinuation` , `withUnsafeContinuation` , `withCheckedThrowingContinuation` or `withUnsafeThrowingContinuation` raises a warning.",
+      "unevaluatedProperties" : false
+    },
     "useContinuousClockNotDate" : {
       "allOf" : [
         {
@@ -4393,6 +4463,15 @@
         }
       ],
       "description" : "Prefer `count(where:)` over `filter(_:).count` .\n\nThe `count(where:)` method (Swift 6.0+) is more expressive and avoids allocating an intermediate array just to count its elements.\n\nLint: Using `.filter { ... }.count` raises a warning suggesting `count(where:)` .\n\nRewrite: `.filter { ... }.count` is replaced with `.count(where: { ... })` ."
+    },
+    "useDiagnoseAttributeNotSuppressionFlag" : {
+      "allOf" : [
+        {
+          "$ref" : "#/$defs/lintOnlyBase"
+        }
+      ],
+      "description" : "Flag a module-wide diagnostic flag in a package manifest in favour of the SE-0522 attribute.\n\n`-suppress-warnings` , `-Wwarning` and `-Werror` apply to every file the target compiles, so one declaration that needs the exemption buys silence for the whole module. `@diagnose` sits on that declaration, and the next reader sees which code the exemption covers and which it does not.\n\n```swift @diagnose(DeprecatedDeclaration, as: ignored) func legacy() {} ```\n\nLint: A string literal naming one of those flags inside an `unsafeFlags` argument raises a warning.",
+      "unevaluatedProperties" : false
     },
     "useDocCommentsOnAPI" : {
       "allOf" : [
@@ -4595,6 +4674,15 @@
         }
       ],
       "description" : "Prefer `min()` / `max()` over `sorted().first` / `sorted().last` .\n\n`sorted()` is O(n log n); `min()` / `max()` are O(n) and avoid the intermediate sorted array.\n\nLint: warns on `xs.sorted().first` and `xs.sorted().last` (and the `sorted(by:)` variants). `sorted(byKeyPath:)` , `sorted(byKeyPath:ascending:)` , and chains where `first` / `last` is itself called as a method (e.g. `first(where:)` ) are intentionally not flagged.",
+      "unevaluatedProperties" : false
+    },
+    "useMutableRefForRepeatedSubscript" : {
+      "allOf" : [
+        {
+          "$ref" : "#/$defs/lintOnlyBase"
+        }
+      ],
+      "description" : "Flag a loop body that subscripts the same element repeatedly instead of binding it once.\n\nEach `xs[i]` on a mutation path is a separate get, mutate and set on the collection, and each one carries an exclusivity check. SE-0519 adds `MutableRef` , which binds the element once and mutates it in place.\n\n```swift for i in xs.indices { var element = MutableRef(&xs[i]) element.value.a = 0 element.value.b = 0 } ```\n\nThe rule stays quiet on a read-only loop, where no copy back happens and the repeated subscript costs nothing beyond the bounds check.\n\nLint: A `for` body that subscripts one base with the loop variable three or more times, and writes through at least one of them, raises a warning.",
       "unevaluatedProperties" : false
     },
     "useNonOptionalDataInit" : {

@@ -254,7 +254,15 @@
 		"noAwaitInsideWithLock": { "lint": "warn" },
 		"requireAsyncStreamFinish": { "lint": "warn" },
 		"flagMutationDuringIteration": { "lint": "warn" },
-		"flagRecursiveObservationTracking": { "lint": "warn" }
+		"flagRecursiveObservationTracking": { "lint": "warn" },
+		"flagUncheckedSendable": {
+			"lint": "warn",
+			"sendableSuperclasses": [
+				"LintSyntaxRule",
+				"StaticFormatRule",
+				"StructuralFormatRule"
+			]
+		}
 	},
 	"blankLines": {
 		"maximumBlankLines": 1,

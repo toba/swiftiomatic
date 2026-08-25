@@ -989,14 +989,15 @@ extension LayoutSingleLineBodies {
         var newElements = elements
         let lastIdx = newElements.count - 1
         for i in newElements.indices {
-            newElements[i].leadingTrivia = []
-            newElements[i].expression = newElements[i].expression.with(\.leadingTrivia, [])
-            newElements[i].expression = newElements[i].expression.with(\.trailingTrivia, [])
+            var element = MutableRef(&newElements[i])
+            element.value.leadingTrivia = []
+            element.value.expression = element.value.expression.with(\.leadingTrivia, [])
+            element.value.expression = element.value.expression.with(\.trailingTrivia, [])
             if i == lastIdx {
-                newElements[i].trailingComma = nil
-                newElements[i].trailingTrivia = []
-            } else if let comma = newElements[i].trailingComma {
-                newElements[i].trailingComma = comma.with(\.trailingTrivia, [.spaces(1)])
+                element.value.trailingComma = nil
+                element.value.trailingTrivia = []
+            } else if let comma = element.value.trailingComma {
+                element.value.trailingComma = comma.with(\.trailingTrivia, [.spaces(1)])
             }
         }
         var result = node
@@ -1025,18 +1026,19 @@ extension LayoutSingleLineBodies {
         var newElements = elements
         let lastIdx = newElements.count - 1
         for i in newElements.indices {
-            newElements[i].leadingTrivia = []
-            newElements[i].key = newElements[i].key.with(\.leadingTrivia, [])
-            newElements[i].key = newElements[i].key.with(\.trailingTrivia, [])
-            newElements[i].colon = newElements[i].colon.with(\.leadingTrivia, [])
-            newElements[i].colon = newElements[i].colon.with(\.trailingTrivia, [.spaces(1)])
-            newElements[i].value = newElements[i].value.with(\.leadingTrivia, [])
-            newElements[i].value = newElements[i].value.with(\.trailingTrivia, [])
+            var element = MutableRef(&newElements[i])
+            element.value.leadingTrivia = []
+            element.value.key = element.value.key.with(\.leadingTrivia, [])
+            element.value.key = element.value.key.with(\.trailingTrivia, [])
+            element.value.colon = element.value.colon.with(\.leadingTrivia, [])
+            element.value.colon = element.value.colon.with(\.trailingTrivia, [.spaces(1)])
+            element.value.value = element.value.value.with(\.leadingTrivia, [])
+            element.value.value = element.value.value.with(\.trailingTrivia, [])
             if i == lastIdx {
-                newElements[i].trailingComma = nil
-                newElements[i].trailingTrivia = []
-            } else if let comma = newElements[i].trailingComma {
-                newElements[i].trailingComma = comma.with(\.trailingTrivia, [.spaces(1)])
+                element.value.trailingComma = nil
+                element.value.trailingTrivia = []
+            } else if let comma = element.value.trailingComma {
+                element.value.trailingComma = comma.with(\.trailingTrivia, [.spaces(1)])
             }
         }
         var result = node

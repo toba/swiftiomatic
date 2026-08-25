@@ -74,4 +74,69 @@ struct FlagUncheckedSendableTests: RuleTesting {
       findings: []
     )
   }
+
+  /// The compiler refuses a subclass that drops an inherited `@unchecked Sendable`, so a warning
+  /// there asks for a change that does not compile.
+  @Test func exemptSuperclassSubclassNotFlagged() {
+    assertLint(
+      FlagUncheckedSendable.self,
+      """
+      final class HoistAwait: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {}
+      """,
+      findings: [],
+      configuration: Self.exempting("StaticFormatRule")
+    )
+  }
+
+  @Test func exemptSuperclassMatchedWithoutGenericArguments() {
+    assertLint(
+      FlagUncheckedSendable.self,
+      """
+      final class Rule: LintSyntaxRule<LintOnlyValue>, @unchecked Sendable {}
+      """,
+      findings: [],
+      configuration: Self.exempting("LintSyntaxRule")
+    )
+  }
+
+  @Test func unlistedSuperclassStillFlagged() {
+    assertLint(
+      FlagUncheckedSendable.self,
+      """
+      final class Cache: NSObject, 1️⃣@unchecked Sendable {}
+      """,
+      findings: [FindingSpec("1️⃣", message: Self.message)],
+      configuration: Self.exempting("StaticFormatRule")
+    )
+  }
+
+  @Test func rootClassStillFlaggedWhenListIsSet() {
+    assertLint(
+      FlagUncheckedSendable.self,
+      """
+      final class Cache: 1️⃣@unchecked Sendable {}
+      """,
+      findings: [FindingSpec("1️⃣", message: Self.message)],
+      configuration: Self.exempting("StaticFormatRule")
+    )
+  }
+
+  @Test func extensionStillFlaggedWhenListIsSet() {
+    assertLint(
+      FlagUncheckedSendable.self,
+      """
+      extension StaticFormatRule: 1️⃣@unchecked Sendable {}
+      """,
+      findings: [FindingSpec("1️⃣", message: Self.message)],
+      configuration: Self.exempting("StaticFormatRule")
+    )
+  }
+
+  private static func exempting(_ name: String) -> Configuration {
+    var configuration = Configuration.forTesting(enabledRule: FlagUncheckedSendable.key)
+    var value = configuration[FlagUncheckedSendable.self]
+    value.sendableSuperclasses = [name]
+    configuration[FlagUncheckedSendable.self] = value
+    return configuration
+  }
 }

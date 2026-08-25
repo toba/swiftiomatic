@@ -337,8 +337,8 @@ final class NestedCallLayout: StaticFormatRule<NestedCallLayoutConfiguration>, @
 
         for i in args.indices {
             // Remove newlines from leading trivia — just a space.
-            args[
-                i] = args[i]
+            var argument = MutableRef(&args[i])
+            argument.value = argument.value
                 .with(\.leadingTrivia, i == 0 ? [] : .space)
                 .with(\.trailingTrivia, [])
         }
@@ -758,13 +758,14 @@ final class NestedCallLayout: StaticFormatRule<NestedCallLayoutConfiguration>, @
         var args = Array(arguments)
         let lastIdx = args.count - 1
         for i in args.indices {
-            args[i] = args[i]
+            var argument = MutableRef(&args[i])
+            argument.value = argument.value
                 .with(\.leadingTrivia, i == 0 ? [] : .space)
                 .with(\.trailingTrivia, [])
             if i == lastIdx {
-                args[i].trailingComma = nil
-            } else if let comma = args[i].trailingComma {
-                args[i].trailingComma = comma.with(\.trailingTrivia, [])
+                argument.value.trailingComma = nil
+            } else if let comma = argument.value.trailingComma {
+                argument.value.trailingComma = comma.with(\.trailingTrivia, [])
             }
         }
         return LabeledExprListSyntax(args)

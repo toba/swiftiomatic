@@ -117,8 +117,8 @@ extension TupleTypeElementListSyntax: CommaSeparatedListSyntax {
 }
 
 extension SyntaxProtocol {
-    func asProtocol(_: (any CommaSeparatedListSyntax).Protocol) -> (any CommaSeparatedListSyntax)? {
-        Syntax(self).asProtocol(SyntaxProtocol.self) as? (any CommaSeparatedListSyntax)
+    func asProtocol(_: (any CommaSeparatedListSyntax).Protocol) -> any CommaSeparatedListSyntax? {
+        Syntax(self).asProtocol(SyntaxProtocol.self) as? any CommaSeparatedListSyntax
     }
     func isProtocol(_: (any CommaSeparatedListSyntax).Protocol) -> Bool {
         asProtocol((any CommaSeparatedListSyntax).self) != nil
