@@ -5,70 +5,30 @@ import SwiftSyntax
 /// "Yoda conditions" place the constant on the left ( `0 == x` ), which reads unnaturally. The
 /// conventional Swift style places the variable first ( `x == 0` ).
 ///
-/// For ordered comparisons ( `<` , `<=` , `>` , `>=` ), the operator is flipped when swapping sides
-/// so the semantics are preserved.
+/// The rule reports the comparison and never rewrites it. Swapping the operands is only sound when
+/// the operator resolves to the standard-library one, and a rule that reads one file at a time
+/// cannot resolve types. An author may declare `==` , `<` and their siblings as a `static func` on
+/// any type, with a reversed-operand overload that builds a different value. A query DSL does
+/// exactly that: `2 == team.players.count` emits `2 = COUNT(...)` and the flipped form emits
+/// `COUNT(...) = 2` . The two forms are different SQL, so the flip changes what the code does.
 ///
 /// Lint: A comparison with a constant on the left raises a warning.
-///
-/// Rewrite: The operands are swapped and the operator is flipped if necessary.
-final class NoYodaConditions: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
+final class NoYodaConditions: LintSyntaxRule<LintOnlyValue>, @unchecked Sendable {
     override class var group: ConfigurationGroup? { .conditions }
 
-    static func transform(
-        _ node: InfixOperatorExprSyntax,
-        original _: InfixOperatorExprSyntax,
-        parent _: Syntax?,
-        context: Context
-    ) -> ExprSyntax {
-        guard let binOp = node.operator.as(BinaryOperatorExprSyntax.self) else {
-            return ExprSyntax(node)
-        }
+    private static let comparisonOperators: Set<String> = ["==", "!=", "<", "<=", ">", ">="]
 
-        let op = binOp.operator.text
-        guard let flippedOp = Self.flippedOperators[op] else { return ExprSyntax(node) }
+    override func visit(_ node: InfixOperatorExprSyntax) -> SyntaxVisitorContinueKind {
+        guard let binOp = node.operator.as(BinaryOperatorExprSyntax.self),
+            Self.comparisonOperators.contains(binOp.operator.text) else { return .visitChildren }
 
         // Only fire when LHS is constant and RHS is not
-        guard isConstant(node.leftOperand), !isConstant(node.rightOperand) else {
-            return ExprSyntax(node)
-        }
+        guard Self.isConstant(node.leftOperand), !Self.isConstant(node.rightOperand)
+        else { return .visitChildren }
 
-        Self.diagnose(.yodaCondition, on: node.leftOperand, context: context)
-
-        // Swap operands, preserving each side's leading/trailing trivia position
-        var newLeft = node.rightOperand
-        var newRight = node.leftOperand
-
-        let leftLeading = node.leftOperand.leadingTrivia
-        let leftTrailing = node.leftOperand.trailingTrivia
-        let rightLeading = node.rightOperand.leadingTrivia
-        let rightTrailing = node.rightOperand.trailingTrivia
-
-        newLeft.leadingTrivia = leftLeading
-        newLeft.trailingTrivia = leftTrailing
-        newRight.leadingTrivia = rightLeading
-        newRight.trailingTrivia = rightTrailing
-
-        // Flip the operator if needed
-        let newBinOp = binOp.with(
-            \.operator,
-            binOp.operator.with(\.tokenKind, .binaryOperator(flippedOp))
-        )
-
-        var result = node
-        result.leftOperand = newLeft
-        result.operator = ExprSyntax(newBinOp)
-        result.rightOperand = newRight
-        return ExprSyntax(result)
+        diagnose(.yodaCondition, on: node.leftOperand)
+        return .visitChildren
     }
-
-    private static let flippedOperators: [String: String] = [
-        "==": "==",
-        "!=": "!=",
-        "<": ">",
-        "<=": ">=",
-        ">": "<",
-        ">=": "<=",
-    ]
 
     /// Returns `true` if the expression is a compile-time constant (literal, nil, bool, enum
     /// member).

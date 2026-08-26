@@ -1,473 +1,321 @@
-@testable import SwiftiomaticKit
-import SwiftiomaticTestSupport
 import Testing
+import SwiftiomaticTestSupport
+@testable import SwiftiomaticKit
 
 @Suite
 struct YodaConditionsTests: RuleTesting {
-  @Test func integerOnLeft() {
-    assertFormatting(
-      NoYodaConditions.self,
-      input: """
-        if 1️⃣5 == foo {}
-        """,
-      expected: """
-        if foo == 5 {}
-        """,
-      findings: [
-        FindingSpec("1️⃣", message: "place the constant on the right side of the comparison"),
-      ]
-    )
-  }
+    private static let message = "place the constant on the right side of the comparison"
 
-  @Test func nilOnLeft() {
-    assertFormatting(
-      NoYodaConditions.self,
-      input: """
-        if 1️⃣nil != bar {}
-        """,
-      expected: """
-        if bar != nil {}
-        """,
-      findings: [
-        FindingSpec("1️⃣", message: "place the constant on the right side of the comparison"),
-      ]
-    )
-  }
+    @Test func integerOnLeft() {
+        assertLint(
+            NoYodaConditions.self,
+            """
+            if 1️⃣5 == foo {}
+            """,
+            findings: [FindingSpec("1️⃣", message: Self.message)])
+    }
 
-  @Test func enumMemberOnLeft() {
-    assertFormatting(
-      NoYodaConditions.self,
-      input: """
-        if 1️⃣.default == style {}
-        """,
-      expected: """
-        if style == .default {}
-        """,
-      findings: [
-        FindingSpec("1️⃣", message: "place the constant on the right side of the comparison"),
-      ]
-    )
-  }
+    @Test func nilOnLeft() {
+        assertLint(
+            NoYodaConditions.self,
+            """
+            if 1️⃣nil != bar {}
+            """,
+            findings: [FindingSpec("1️⃣", message: Self.message)])
+    }
 
-  @Test func boolOnLeft() {
-    assertFormatting(
-      NoYodaConditions.self,
-      input: """
-        if 1️⃣true == flag {}
-        """,
-      expected: """
-        if flag == true {}
-        """,
-      findings: [
-        FindingSpec("1️⃣", message: "place the constant on the right side of the comparison"),
-      ]
-    )
-  }
+    @Test func enumMemberOnLeft() {
+        assertLint(
+            NoYodaConditions.self,
+            """
+            if 1️⃣.default == style {}
+            """,
+            findings: [FindingSpec("1️⃣", message: Self.message)])
+    }
 
-  @Test func stringOnLeft() {
-    assertFormatting(
-      NoYodaConditions.self,
-      input: """
-        if 1️⃣"hello" == greeting {}
-        """,
-      expected: """
-        if greeting == "hello" {}
-        """,
-      findings: [
-        FindingSpec("1️⃣", message: "place the constant on the right side of the comparison"),
-      ]
-    )
-  }
+    @Test func boolOnLeft() {
+        assertLint(
+            NoYodaConditions.self,
+            """
+            if 1️⃣true == flag {}
+            """,
+            findings: [FindingSpec("1️⃣", message: Self.message)])
+    }
 
-  @Test func lessThanFlipped() {
-    assertFormatting(
-      NoYodaConditions.self,
-      input: """
-        if 1️⃣0 < count {}
-        """,
-      expected: """
-        if count > 0 {}
-        """,
-      findings: [
-        FindingSpec("1️⃣", message: "place the constant on the right side of the comparison"),
-      ]
-    )
-  }
+    @Test func stringOnLeft() {
+        assertLint(
+            NoYodaConditions.self,
+            """
+            if 1️⃣"hello" == greeting {}
+            """,
+            findings: [FindingSpec("1️⃣", message: Self.message)])
+    }
 
-  @Test func greaterThanFlipped() {
-    assertFormatting(
-      NoYodaConditions.self,
-      input: """
-        if 1️⃣10 >= x {}
-        """,
-      expected: """
-        if x <= 10 {}
-        """,
-      findings: [
-        FindingSpec("1️⃣", message: "place the constant on the right side of the comparison"),
-      ]
-    )
-  }
+    @Test func lessThanReported() {
+        assertLint(
+            NoYodaConditions.self,
+            """
+            if 1️⃣0 < count {}
+            """,
+            findings: [FindingSpec("1️⃣", message: Self.message)])
+    }
 
-  @Test func constantOnRightNotModified() {
-    assertFormatting(
-      NoYodaConditions.self,
-      input: """
-        if foo == 5 {}
-        if bar != nil {}
-        if x > 0 {}
-        """,
-      expected: """
-        if foo == 5 {}
-        if bar != nil {}
-        if x > 0 {}
-        """,
-      findings: []
-    )
-  }
+    @Test func greaterThanReported() {
+        assertLint(
+            NoYodaConditions.self,
+            """
+            if 1️⃣10 >= x {}
+            """,
+            findings: [FindingSpec("1️⃣", message: Self.message)])
+    }
 
-  @Test func bothConstantsNotModified() {
-    assertFormatting(
-      NoYodaConditions.self,
-      input: """
-        if 1 == 1 {}
-        if nil == nil {}
-        """,
-      expected: """
-        if 1 == 1 {}
-        if nil == nil {}
-        """,
-      findings: []
-    )
-  }
+    @Test func constantOnRightNotReported() {
+        assertLint(
+            NoYodaConditions.self,
+            """
+            if foo == 5 {}
+            if bar != nil {}
+            if x > 0 {}
+            """)
+    }
 
-  @Test func bothVariablesNotModified() {
-    assertFormatting(
-      NoYodaConditions.self,
-      input: """
-        if foo == bar {}
-        """,
-      expected: """
-        if foo == bar {}
-        """,
-      findings: []
-    )
-  }
+    @Test func bothConstantsNotReported() {
+        assertLint(
+            NoYodaConditions.self,
+            """
+            if 1 == 1 {}
+            if nil == nil {}
+            """)
+    }
 
-  @Test func floatOnLeft() {
-    assertFormatting(
-      NoYodaConditions.self,
-      input: """
-        if 1️⃣3.14 == pi {}
-        """,
-      expected: """
-        if pi == 3.14 {}
-        """,
-      findings: [
-        FindingSpec("1️⃣", message: "place the constant on the right side of the comparison"),
-      ]
-    )
-  }
+    @Test func bothVariablesNotReported() {
+        assertLint(
+            NoYodaConditions.self,
+            """
+            if foo == bar {}
+            """)
+    }
 
-  // MARK: - Adapted from SwiftFormat reference tests
+    @Test func floatOnLeft() {
+        assertLint(
+            NoYodaConditions.self,
+            """
+            if 1️⃣3.14 == pi {}
+            """,
+            findings: [FindingSpec("1️⃣", message: Self.message)])
+    }
 
-  @Test func floatGreaterYodaCondition() {
-    assertFormatting(
-      NoYodaConditions.self,
-      input: """
-        1️⃣5.1 > foo
-        """,
-      expected: """
-        foo < 5.1
-        """,
-      findings: [
-        FindingSpec("1️⃣", message: "place the constant on the right side of the comparison"),
-      ]
-    )
-  }
+    // MARK: - The rule never rewrites
 
-  @Test func stringNotEqualYodaCondition() {
-    assertFormatting(
-      NoYodaConditions.self,
-      input: """
-        1️⃣"foo" != bar
-        """,
-      expected: """
-        bar != "foo"
-        """,
-      findings: [
-        FindingSpec("1️⃣", message: "place the constant on the right side of the comparison"),
-      ]
-    )
-  }
+    @Test func leavesAReversedOperandDSLCallAlone() {
+        // The comparison builds SQL here, not a Bool. Swapping the operands emits different SQL, so
+        // the rule reports the shape and changes nothing.
+        assertFormatting(
+            NoYodaConditions.self,
+            input: """
+                Team.having(2 == Team.players.count)
+                Team.having(2 >= Team.players.count)
+                """,
+            expected: """
+                Team.having(2 == Team.players.count)
+                Team.having(2 >= Team.players.count)
+                """)
+    }
 
-  @Test func subscriptNotTreatedAsYodaCondition() {
-    assertFormatting(
-      NoYodaConditions.self,
-      input: """
-        foo[5] != bar
-        """,
-      expected: """
-        foo[5] != bar
-        """,
-      findings: []
-    )
-  }
+    @Test func leavesAPlainComparisonAlone() {
+        assertFormatting(
+            NoYodaConditions.self,
+            input: """
+                if 5 == foo {}
+                if 0 < count {}
+                """,
+            expected: """
+                if 5 == foo {}
+                if 0 < count {}
+                """)
+    }
 
-  @Test func functionCallNotTreatedAsYodaCondition() {
-    assertFormatting(
-      NoYodaConditions.self,
-      input: """
-        foo(5) != bar
-        """,
-      expected: """
-        foo(5) != bar
-        """,
-      findings: []
-    )
-  }
+    // MARK: - Adapted from SwiftFormat reference tests
 
-  @Test func yodaConditionInSecondClauseOfIfStatement() {
-    assertFormatting(
-      NoYodaConditions.self,
-      input: """
-        if foo, 1️⃣5 != bar {}
-        """,
-      expected: """
-        if foo, bar != 5 {}
-        """,
-      findings: [
-        FindingSpec("1️⃣", message: "place the constant on the right side of the comparison"),
-      ]
-    )
-  }
+    @Test func floatGreaterYodaCondition() {
+        assertLint(
+            NoYodaConditions.self,
+            """
+            1️⃣5.1 > foo
+            """,
+            findings: [FindingSpec("1️⃣", message: Self.message)])
+    }
 
-  @Test func yodaConditionInExpression() {
-    assertFormatting(
-      NoYodaConditions.self,
-      input: """
-        let foo = 1️⃣5 < bar
-        baz()
-        """,
-      expected: """
-        let foo = bar > 5
-        baz()
-        """,
-      findings: [
-        FindingSpec("1️⃣", message: "place the constant on the right side of the comparison"),
-      ]
-    )
-  }
+    @Test func stringNotEqualYodaCondition() {
+        assertLint(
+            NoYodaConditions.self,
+            """
+            1️⃣"foo" != bar
+            """,
+            findings: [FindingSpec("1️⃣", message: Self.message)])
+    }
 
-  @Test func yodaConditionInExpressionWithTrailingClosure() {
-    assertFormatting(
-      NoYodaConditions.self,
-      input: """
-        let foo = 1️⃣5 < bar { baz() }
-        """,
-      expected: """
-        let foo = bar { baz() } > 5
-        """,
-      findings: [
-        FindingSpec("1️⃣", message: "place the constant on the right side of the comparison"),
-      ]
-    )
-  }
+    @Test func subscriptNotTreatedAsYodaCondition() {
+        assertLint(
+            NoYodaConditions.self,
+            """
+            foo[5] != bar
+            """)
+    }
 
-  @Test func yodaConditionInFunctionCall() {
-    assertFormatting(
-      NoYodaConditions.self,
-      input: """
-        foo(1️⃣5 < bar)
-        """,
-      expected: """
-        foo(bar > 5)
-        """,
-      findings: [
-        FindingSpec("1️⃣", message: "place the constant on the right side of the comparison"),
-      ]
-    )
-  }
+    @Test func functionCallNotTreatedAsYodaCondition() {
+        assertLint(
+            NoYodaConditions.self,
+            """
+            foo(5) != bar
+            """)
+    }
 
-  @Test func yodaConditionFollowedByExpression() {
-    assertFormatting(
-      NoYodaConditions.self,
-      input: """
-        1️⃣5 == foo + 6
-        """,
-      expected: """
-        foo + 6 == 5
-        """,
-      findings: [
-        FindingSpec("1️⃣", message: "place the constant on the right side of the comparison"),
-      ]
-    )
-  }
+    @Test func yodaConditionInSecondClauseOfIfStatement() {
+        assertLint(
+            NoYodaConditions.self,
+            """
+            if foo, 1️⃣5 != bar {}
+            """,
+            findings: [FindingSpec("1️⃣", message: Self.message)])
+    }
 
-  @Test func prefixExpressionYodaCondition() {
-    // true == !foo → !foo == true (true is constant, !foo is not)
-    assertFormatting(
-      NoYodaConditions.self,
-      input: """
-        1️⃣true == !foo
-        """,
-      expected: """
-        !foo == true
-        """,
-      findings: [
-        FindingSpec("1️⃣", message: "place the constant on the right side of the comparison"),
-      ]
-    )
-  }
+    @Test func yodaConditionInExpression() {
+        assertLint(
+            NoYodaConditions.self,
+            """
+            let foo = 1️⃣5 < bar
+            baz()
+            """,
+            findings: [FindingSpec("1️⃣", message: Self.message)])
+    }
 
-  @Test func constantAfterNullCoalescingNonYodaCondition() {
-    // ?? has higher precedence than <, so this is (foo.last ?? -1) < bar
-    assertFormatting(
-      NoYodaConditions.self,
-      input: """
-        foo.last ?? -1 < bar
-        """,
-      expected: """
-        foo.last ?? -1 < bar
-        """,
-      findings: []
-    )
-  }
+    @Test func yodaConditionInExpressionWithTrailingClosure() {
+        assertLint(
+            NoYodaConditions.self,
+            """
+            let foo = 1️⃣5 < bar { baz() }
+            """,
+            findings: [FindingSpec("1️⃣", message: Self.message)])
+    }
 
-  @Test func noMangleYodaConditionFollowedByAndOperator() {
-    assertFormatting(
-      NoYodaConditions.self,
-      input: """
-        1️⃣5 <= foo && foo <= 7
-        """,
-      expected: """
-        foo >= 5 && foo <= 7
-        """,
-      findings: [
-        FindingSpec("1️⃣", message: "place the constant on the right side of the comparison"),
-      ]
-    )
-  }
+    @Test func yodaConditionInFunctionCall() {
+        assertLint(
+            NoYodaConditions.self,
+            """
+            foo(1️⃣5 < bar)
+            """,
+            findings: [FindingSpec("1️⃣", message: Self.message)])
+    }
 
-  @Test func noMangleYodaConditionFollowedByOrOperator() {
-    assertFormatting(
-      NoYodaConditions.self,
-      input: """
-        1️⃣5 <= foo || foo <= 7
-        """,
-      expected: """
-        foo >= 5 || foo <= 7
-        """,
-      findings: [
-        FindingSpec("1️⃣", message: "place the constant on the right side of the comparison"),
-      ]
-    )
-  }
+    @Test func yodaConditionFollowedByExpression() {
+        assertLint(
+            NoYodaConditions.self,
+            """
+            1️⃣5 == foo + 6
+            """,
+            findings: [FindingSpec("1️⃣", message: Self.message)])
+    }
 
-  @Test func noMangleYodaConditionFollowedByParentheses() {
-    assertFormatting(
-      NoYodaConditions.self,
-      input: """
-        1️⃣0 <= (foo + bar)
-        """,
-      expected: """
-        (foo + bar) >= 0
-        """,
-      findings: [
-        FindingSpec("1️⃣", message: "place the constant on the right side of the comparison"),
-      ]
-    )
-  }
+    @Test func prefixExpressionYodaCondition() {
+        // true == !foo is reported, because true is constant and !foo is not
+        assertLint(
+            NoYodaConditions.self,
+            """
+            1️⃣true == !foo
+            """,
+            findings: [FindingSpec("1️⃣", message: Self.message)])
+    }
 
-  @Test func noMangleYodaConditionInTernary() {
-    assertFormatting(
-      NoYodaConditions.self,
-      input: """
-        let z = 1️⃣0 < y ? 3 : 4
-        """,
-      expected: """
-        let z = y > 0 ? 3 : 4
-        """,
-      findings: [
-        FindingSpec("1️⃣", message: "place the constant on the right side of the comparison"),
-      ]
-    )
-  }
+    @Test func constantAfterNullCoalescingNonYodaCondition() {
+        // ?? has higher precedence than <, so this is (foo.last ?? -1) < bar
+        assertLint(
+            NoYodaConditions.self,
+            """
+            foo.last ?? -1 < bar
+            """)
+    }
 
-  @Test func noMangleYodaConditionInTernary2() {
-    assertFormatting(
-      NoYodaConditions.self,
-      input: """
-        let z = y > 0 ? 1️⃣0 < x : 4
-        """,
-      expected: """
-        let z = y > 0 ? x > 0 : 4
-        """,
-      findings: [
-        FindingSpec("1️⃣", message: "place the constant on the right side of the comparison"),
-      ]
-    )
-  }
+    @Test func yodaConditionFollowedByAndOperator() {
+        assertLint(
+            NoYodaConditions.self,
+            """
+            1️⃣5 <= foo && foo <= 7
+            """,
+            findings: [FindingSpec("1️⃣", message: Self.message)])
+    }
 
-  @Test func noMangleYodaConditionInTernary3() {
-    assertFormatting(
-      NoYodaConditions.self,
-      input: """
-        let z = y > 0 ? 3 : 1️⃣0 < x
-        """,
-      expected: """
-        let z = y > 0 ? 3 : x > 0
-        """,
-      findings: [
-        FindingSpec("1️⃣", message: "place the constant on the right side of the comparison"),
-      ]
-    )
-  }
+    @Test func yodaConditionFollowedByOrOperator() {
+        assertLint(
+            NoYodaConditions.self,
+            """
+            1️⃣5 <= foo || foo <= 7
+            """,
+            findings: [FindingSpec("1️⃣", message: Self.message)])
+    }
 
-  @Test func keyPathNotTreatedAsYodaCondition() {
-    assertFormatting(
-      NoYodaConditions.self,
-      input: """
-        \\.foo == bar
-        """,
-      expected: """
-        \\.foo == bar
-        """,
-      findings: []
-    )
-  }
+    @Test func yodaConditionFollowedByParentheses() {
+        assertLint(
+            NoYodaConditions.self,
+            """
+            1️⃣0 <= (foo + bar)
+            """,
+            findings: [FindingSpec("1️⃣", message: Self.message)])
+    }
 
-  @Test func enumCaseLessThanEnumCase() {
-    // Both sides constant — not flagged
-    assertFormatting(
-      NoYodaConditions.self,
-      input: """
-        XCTAssertFalse(.never < .never)
-        """,
-      expected: """
-        XCTAssertFalse(.never < .never)
-        """,
-      findings: []
-    )
-  }
+    @Test func yodaConditionInTernary() {
+        assertLint(
+            NoYodaConditions.self,
+            """
+            let z = 1️⃣0 < y ? 3 : 4
+            """,
+            findings: [FindingSpec("1️⃣", message: Self.message)])
+    }
 
-  @Test func genericFunctionsInEqualityExpressions() {
-    // Function calls on LHS — not constant, not flagged
-    assertFormatting(
-      NoYodaConditions.self,
-      input: """
-        print(method<Int>() == 123)
-        print(method<Int>() == intVariable)
-        print(method<String>() == "string")
-        print(method<String>() == stringVariable)
-        """,
-      expected: """
-        print(method<Int>() == 123)
-        print(method<Int>() == intVariable)
-        print(method<String>() == "string")
-        print(method<String>() == stringVariable)
-        """,
-      findings: []
-    )
-  }
+    @Test func yodaConditionInTernaryThenBranch() {
+        assertLint(
+            NoYodaConditions.self,
+            """
+            let z = y > 0 ? 1️⃣0 < x : 4
+            """,
+            findings: [FindingSpec("1️⃣", message: Self.message)])
+    }
+
+    @Test func yodaConditionInTernaryElseBranch() {
+        assertLint(
+            NoYodaConditions.self,
+            """
+            let z = y > 0 ? 3 : 1️⃣0 < x
+            """,
+            findings: [FindingSpec("1️⃣", message: Self.message)])
+    }
+
+    @Test func keyPathNotTreatedAsYodaCondition() {
+        assertLint(
+            NoYodaConditions.self,
+            """
+            \\.foo == bar
+            """)
+    }
+
+    @Test func enumCaseLessThanEnumCase() {
+        // Both sides constant — not flagged
+        assertLint(
+            NoYodaConditions.self,
+            """
+            XCTAssertFalse(.never < .never)
+            """)
+    }
+
+    @Test func genericFunctionsInEqualityExpressions() {
+        // Function calls on LHS — not constant, not flagged
+        assertLint(
+            NoYodaConditions.self,
+            """
+            print(method<Int>() == 123)
+            print(method<Int>() == intVariable)
+            print(method<String>() == "string")
+            print(method<String>() == stringVariable)
+            """)
+    }
 }

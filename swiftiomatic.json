@@ -279,7 +279,7 @@
 	"conditions": {
 		"useTernary": { "lint": "no", "rewrite": true },
 		"useEarlyExits": { "lint": "no", "rewrite": false },
-		"noYodaConditions": { "lint": "warn", "rewrite": true },
+		"noYodaConditions": { "lint": "warn" },
 		"useExplicitNilCheck": { "lint": "warn", "rewrite": true },
 		"noIdenticalOperands": { "lint": "error" },
 		"useIfElseAsExpression": { "lint": "no", "rewrite": false },

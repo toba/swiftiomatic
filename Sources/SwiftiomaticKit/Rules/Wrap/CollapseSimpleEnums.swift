@@ -35,8 +35,7 @@ final class CollapseSimpleEnums: StaticFormatRule<BasicRuleValue>, @unchecked Se
 
         // Already on a single line — nothing to do.
         if recursed.memberBlock.members.count == 1,
-           !recursed.memberBlock.rightBrace.leadingTrivia.containsNewlines
-        {
+           !recursed.memberBlock.rightBrace.leadingTrivia.containsNewlines {
             return DeclSyntax(recursed)
         }
 
@@ -84,30 +83,32 @@ final class CollapseSimpleEnums: StaticFormatRule<BasicRuleValue>, @unchecked Se
 
 // MARK: - Helpers
 
-extension CollapseSimpleEnums {
+fileprivate extension CollapseSimpleEnums {
     /// Whether the enum can be collapsed onto a single line.
     ///
     /// Raw-value-typed enums collapse whether or not the cases assign explicit raw values — the
     /// comma-separated form `enum E: Int { case a = 0, b = 1 }` carries the same semantics as the
     /// expanded form. Only associated values block collapsing.
-    fileprivate static func isCollapsible(_ node: EnumDeclSyntax) -> Bool {
+    static func isCollapsible(_ node: EnumDeclSyntax) -> Bool {
         let members = node.memberBlock.members
         // Must have at least one member, all must be case declarations.
         guard !members.isEmpty else { return false }
 
+        // The collapse rebuilds the member block from the case elements alone, so every comment
+        // between the braces would be dropped.
+        if node.memberBlock.containsComments() { return false }
+
         for member in members {
             guard let caseDecl = member.decl.as(EnumCaseDeclSyntax.self) else { return false }
 
-            for element in caseDecl.elements {
-                if element.parameterClause != nil { return false }
-            }
+            for element in caseDecl.elements where element.parameterClause != nil { return false }
         }
 
         return true
     }
 
     /// Collects all `EnumCaseElementSyntax` from the enum's case declarations.
-    fileprivate static func collectElements(from node: EnumDeclSyntax) -> [EnumCaseElementSyntax] {
+    static func collectElements(from node: EnumDeclSyntax) -> [EnumCaseElementSyntax] {
         node.memberBlock.members.flatMap { member -> [EnumCaseElementSyntax] in
             guard let caseDecl = member.decl.as(EnumCaseDeclSyntax.self) else { return [] }
             return Array(caseDecl.elements)
@@ -115,7 +116,7 @@ extension CollapseSimpleEnums {
     }
 
     /// The text before the opening brace (e.g. "private enum Kind").
-    fileprivate static func declPrefix(_ node: EnumDeclSyntax) -> String {
+    static func declPrefix(_ node: EnumDeclSyntax) -> String {
         var text = ""
 
         for token in node.tokens(viewMode: .sourceAccurate) {

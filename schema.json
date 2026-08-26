@@ -681,10 +681,11 @@
         "noYodaConditions" : {
           "allOf" : [
             {
-              "$ref" : "#/$defs/ruleBase"
+              "$ref" : "#/$defs/lintOnlyBase"
             }
           ],
-          "description" : "Prefer the constant value on the right-hand side of comparison expressions.\n\n\"Yoda conditions\" place the constant on the left ( `0 == x` ), which reads unnaturally. The conventional Swift style places the variable first ( `x == 0` ).\n\nFor ordered comparisons ( `<` , `<=` , `>` , `>=` ), the operator is flipped when swapping sides so the semantics are preserved.\n\nLint: A comparison with a constant on the left raises a warning.\n\nRewrite: The operands are swapped and the operator is flipped if necessary."
+          "description" : "Prefer the constant value on the right-hand side of comparison expressions.\n\n\"Yoda conditions\" place the constant on the left ( `0 == x` ), which reads unnaturally. The conventional Swift style places the variable first ( `x == 0` ).\n\nThe rule reports the comparison and never rewrites it. Swapping the operands is only sound when the operator resolves to the standard-library one, and a rule that reads one file at a time cannot resolve types. An author may declare `==` , `<` and their siblings as a `static func` on any type, with a reversed-operand overload that builds a different value. A query DSL does exactly that: `2 == team.players.count` emits `2 = COUNT(...)` and the flipped form emits `COUNT(...) = 2` . The two forms are different SQL, so the flip changes what the code does.\n\nLint: A comparison with a constant on the left raises a warning.",
+          "unevaluatedProperties" : false
         },
         "useCommaNotAndInConditions" : {
           "allOf" : [
@@ -3028,10 +3029,11 @@
     "noYodaConditions" : {
       "allOf" : [
         {
-          "$ref" : "#/$defs/ruleBase"
+          "$ref" : "#/$defs/lintOnlyBase"
         }
       ],
-      "description" : "Prefer the constant value on the right-hand side of comparison expressions.\n\n\"Yoda conditions\" place the constant on the left ( `0 == x` ), which reads unnaturally. The conventional Swift style places the variable first ( `x == 0` ).\n\nFor ordered comparisons ( `<` , `<=` , `>` , `>=` ), the operator is flipped when swapping sides so the semantics are preserved.\n\nLint: A comparison with a constant on the left raises a warning.\n\nRewrite: The operands are swapped and the operator is flipped if necessary."
+      "description" : "Prefer the constant value on the right-hand side of comparison expressions.\n\n\"Yoda conditions\" place the constant on the left ( `0 == x` ), which reads unnaturally. The conventional Swift style places the variable first ( `x == 0` ).\n\nThe rule reports the comparison and never rewrites it. Swapping the operands is only sound when the operator resolves to the standard-library one, and a rule that reads one file at a time cannot resolve types. An author may declare `==` , `<` and their siblings as a `static func` on any type, with a reversed-operand overload that builds a different value. A query DSL does exactly that: `2 == team.players.count` emits `2 = COUNT(...)` and the flipped form emits `COUNT(...) = 2` . The two forms are different SQL, so the flip changes what the code does.\n\nLint: A comparison with a constant on the left raises a warning.",
+      "unevaluatedProperties" : false
     },
     "normalizeSwitchCaseSpacing" : {
       "allOf" : [

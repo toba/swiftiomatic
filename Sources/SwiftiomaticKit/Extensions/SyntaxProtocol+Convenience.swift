@@ -74,7 +74,7 @@ extension SyntaxProtocol {
     ///     returned.
     ///   - converter: The `SourceLocationConverter` that was previously initialized using the root
     ///     tree of this node.
-    ///   - Returns: The source location of the trivia piece.
+    /// - Returns: The source location of the trivia piece.
     func startLocation(
         ofLeadingTriviaAt index: Trivia.Index,
         converter: SourceLocationConverter
@@ -93,7 +93,7 @@ extension SyntaxProtocol {
     ///     returned.
     ///   - converter: The `SourceLocationConverter` that was previously initialized using the root
     ///     tree of this node.
-    ///   - Returns: The source location of the trivia piece.
+    /// - Returns: The source location of the trivia piece.
     func startLocation(
         ofTrailingTriviaAt index: Trivia.Index,
         converter: SourceLocationConverter
@@ -128,10 +128,7 @@ extension SyntaxProtocol {
     /// of the node or the trailing trivia of the previous token.
     var hasPrecedingLineComment: Bool {
         if let previousTrailingTrivia = previousToken(viewMode: .sourceAccurate)?.trailingTrivia,
-           previousTrailingTrivia.hasLineComment
-        {
-            return true
-        }
+           previousTrailingTrivia.hasLineComment { return true }
         return leadingTrivia.hasLineComment
     }
 
@@ -141,11 +138,36 @@ extension SyntaxProtocol {
     /// of the node or the trailing trivia of the previous token.
     var hasAnyPrecedingComment: Bool {
         if let previousTrailingTrivia = previousToken(viewMode: .sourceAccurate)?.trailingTrivia,
-           previousTrailingTrivia.hasAnyComments
-        {
-            return true
-        }
+           previousTrailingTrivia.hasAnyComments { return true }
         return leadingTrivia.hasAnyComments
+    }
+
+    /// Whether a comment sits anywhere in the trivia this node spans
+    ///
+    /// A rewrite that rebuilds a node from a few of its parts drops every trivia position it does
+    /// not copy forward, and a comment in one of those positions disappears with no diagnostic and
+    /// no compile error. Refuse such a rewrite when this returns `true` .
+    ///
+    /// - Parameters:
+    ///   - skippingFirstLeading: skip the leading trivia of the first token. Pass `true` when the
+    ///     rewrite copies that trivia onto its result.
+    ///   - skippingLastTrailing: skip the trailing trivia of the last token, on the same terms.
+    func containsComments(
+        skippingFirstLeading: Bool = false,
+        skippingLastTrailing: Bool = false
+    ) -> Bool {
+        let first = firstToken(viewMode: .sourceAccurate)
+        let last = lastToken(viewMode: .sourceAccurate)
+
+        for token in tokens(viewMode: .sourceAccurate) {
+            if !(skippingFirstLeading && token == first), token.leadingTrivia.hasAnyComments {
+                return true
+            }
+            if !(skippingLastTrailing && token == last), token.trailingTrivia.hasAnyComments {
+                return true
+            }
+        }
+        return false
     }
 
     /// Indicates whether the node has any function ancestor marked with `@Test` attribute.
@@ -153,10 +175,7 @@ extension SyntaxProtocol {
         var parent = self.parent
         while let existingParent = parent {
             if let functionDecl = existingParent.as(FunctionDeclSyntax.self),
-               functionDecl.hasAttribute("Test", inModule: "Testing")
-            {
-                return true
-            }
+               functionDecl.hasAttribute("Test", inModule: "Testing") { return true }
             parent = existingParent.parent
         }
         return false

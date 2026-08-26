@@ -10,309 +10,375 @@
 //
 //===----------------------------------------------------------------------===//
 
-@testable import SwiftiomaticKit
-import SwiftiomaticTestSupport
 import Testing
+import SwiftiomaticTestSupport
+@testable import SwiftiomaticKit
 
 @Suite
 struct UseSingleLinePropertyGetterTests: RuleTesting {
-  @Test func multiLinePropertyGetter() {
-    assertFormatting(
-      CollapseSingleLineGetter.self,
-      input: """
-        var g: Int { return 4 }
-        var h: Int {
-          1️⃣get {
-              return 4
-          }
-        }
-        var i: Int {
-          get { return 0 }
-          set { print("no set, only get") }
-        }
-        var j: Int {
-          mutating get { return 0 }
-        }
-        var k: Int {
-          get async {
-            return 4
-          }
-        }
-        var l: Int {
-          get throws {
-            return 4
-          }
-        }
-        var m: Int {
-          get async throws {
-            return 4
-          }
-        }
-        """,
-      expected: """
-        var g: Int { return 4 }
-        var h: Int {
-              return 4
-        }
-        var i: Int {
-          get { return 0 }
-          set { print("no set, only get") }
-        }
-        var j: Int {
-          mutating get { return 0 }
-        }
-        var k: Int {
-          get async {
-            return 4
-          }
-        }
-        var l: Int {
-          get throws {
-            return 4
-          }
-        }
-        var m: Int {
-          get async throws {
-            return 4
-          }
-        }
-        """,
-      findings: [
-        FindingSpec(
-          "1️⃣",
-          message: "remove 'get {...}' around the accessor and move its body directly into the computed property"
+    @Test func multiLinePropertyGetter() {
+        assertFormatting(
+            CollapseSingleLineGetter.self,
+            input: """
+                var g: Int { return 4 }
+                var h: Int {
+                  1️⃣get {
+                      return 4
+                  }
+                }
+                var i: Int {
+                  get { return 0 }
+                  set { print("no set, only get") }
+                }
+                var j: Int {
+                  mutating get { return 0 }
+                }
+                var k: Int {
+                  get async {
+                    return 4
+                  }
+                }
+                var l: Int {
+                  get throws {
+                    return 4
+                  }
+                }
+                var m: Int {
+                  get async throws {
+                    return 4
+                  }
+                }
+                """,
+            expected: """
+                var g: Int { return 4 }
+                var h: Int {
+                      return 4
+                }
+                var i: Int {
+                  get { return 0 }
+                  set { print("no set, only get") }
+                }
+                var j: Int {
+                  mutating get { return 0 }
+                }
+                var k: Int {
+                  get async {
+                    return 4
+                  }
+                }
+                var l: Int {
+                  get throws {
+                    return 4
+                  }
+                }
+                var m: Int {
+                  get async throws {
+                    return 4
+                  }
+                }
+                """,
+            findings: [
+                FindingSpec(
+                    "1️⃣",
+                    message:
+                        "remove 'get {...}' around the accessor and move its body directly into the computed property"
+                )
+            ]
         )
-      ]
-    )
-  }
+    }
 
-  @Test func singleLineGetterWithInlineComments() {
-    assertFormatting(
-      CollapseSingleLineGetter.self,
-      input: """
-        var x: Int {
-          // A comment
-          1️⃣get { 1 }
-        }
-        var y: Int {
-          2️⃣get { 1 } // A comment
-        }
-        var z: Int {
-          3️⃣get { 1 }
-          // A comment
-        }
-        """,
-      expected: """
-        var x: Int {
-          // A comment
-           1 
-        }
-        var y: Int {
-           1  // A comment
-        }
-        var z: Int {
-           1 
-          // A comment
-        }
-        """,
-      findings: [
-        FindingSpec(
-          "1️⃣",
-          message: "remove 'get {...}' around the accessor and move its body directly into the computed property"
-        ),
-        FindingSpec(
-          "2️⃣",
-          message: "remove 'get {...}' around the accessor and move its body directly into the computed property"
-        ),
-        FindingSpec(
-          "3️⃣",
-          message: "remove 'get {...}' around the accessor and move its body directly into the computed property"
-        ),
-      ]
-    )
-  }
-
-  @Test func multiLineGetterWithCommentsInsideBody() {
-    assertFormatting(
-      CollapseSingleLineGetter.self,
-      input: """
-        var x: Int {
-          1️⃣get {
-            // A comment
-            1
-          }
-        }
-        var x: Int {
-          2️⃣get {
-            1 // A comment
-          }
-        }
-        var x: Int {
-          3️⃣get {
-            1
-            // A comment
-          }
-        }
-        """,
-      expected: """
-        var x: Int {
-            // A comment
-            1
-        }
-        var x: Int {
-            1 // A comment
-        }
-        var x: Int {
-            1
-            // A comment
-        }
-        """,
-      findings: [
-        FindingSpec(
-          "1️⃣",
-          message: "remove 'get {...}' around the accessor and move its body directly into the computed property"
-        ),
-        FindingSpec(
-          "2️⃣",
-          message: "remove 'get {...}' around the accessor and move its body directly into the computed property"
-        ),
-        FindingSpec(
-          "3️⃣",
-          message: "remove 'get {...}' around the accessor and move its body directly into the computed property"
-        ),
-      ]
-    )
-  }
-
-  @Test func getterWithCommentsAfterGetKeyword() {
-    assertFormatting(
-      CollapseSingleLineGetter.self,
-      input: """
-        var x: Int {
-          1️⃣get // hello
-          { 1 }
-        }
-
-        var x: Int {
-          2️⃣get /* hello */ { 1 }
-        }
-        """,
-      expected: """
-        var x: Int {
-           // hello
-         1 
-        }
-
-        var x: Int {
-           /* hello */ 
-         1 
-        }
-        """,
-      findings: [
-        FindingSpec(
-          "1️⃣",
-          message: "remove 'get {...}' around the accessor and move its body directly into the computed property"
-        ),
-        FindingSpec(
-          "2️⃣",
-          message: "remove 'get {...}' around the accessor and move its body directly into the computed property"
-        ),
-      ]
-    )
-  }
-
-  @Test func getterWithCommentsAroundBracesAndBody() {
-    assertFormatting(
-      CollapseSingleLineGetter.self,
-      input: """
-        var x: Int { // A comment
-          // B comment
-          1️⃣get /* C comment */ { // D comment
-            // E comment
-            1 // F comment
-            // G comment
-          } // H comment
-          // I comment
-        }
-        """,
-      expected: """
-        var x: Int { // A comment
-          // B comment
-           /* C comment */ 
-         // D comment
-            // E comment
-            1 // F comment
-            // G comment
-           // H comment
-          // I comment
-        }
-        """,
-      findings: [
-        FindingSpec(
-          "1️⃣",
-          message: "remove 'get {...}' around the accessor and move its body directly into the computed property"
+    @Test func singleLineGetterWithInlineComments() {
+        assertFormatting(
+            CollapseSingleLineGetter.self,
+            input: """
+                var x: Int {
+                  // A comment
+                  1️⃣get { 1 }
+                }
+                var y: Int {
+                  2️⃣get { 1 } // A comment
+                }
+                var z: Int {
+                  3️⃣get { 1 }
+                  // A comment
+                }
+                """,
+            expected: """
+                var x: Int {
+                  // A comment
+                   1 
+                }
+                var y: Int {
+                   1  // A comment
+                }
+                var z: Int {
+                   1 
+                  // A comment
+                }
+                """,
+            findings: [
+                FindingSpec(
+                    "1️⃣",
+                    message:
+                        "remove 'get {...}' around the accessor and move its body directly into the computed property"
+                ),
+                FindingSpec(
+                    "2️⃣",
+                    message:
+                        "remove 'get {...}' around the accessor and move its body directly into the computed property"
+                ),
+                FindingSpec(
+                    "3️⃣",
+                    message:
+                        "remove 'get {...}' around the accessor and move its body directly into the computed property"
+                ),
+            ]
         )
-      ]
-    )
-  }
+    }
 
-  @Test func getterWithAttributedAccessorShouldBePreserved() {
-    assertFormatting(
-      CollapseSingleLineGetter.self,
-      input: """
-        struct Foo {
-          var value: Int {
-            @_lifetime(borrow self)
-            get {
-              return 1
-            }
-          }
-        }
-        """,
-      expected: """
-        struct Foo {
-          var value: Int {
-            @_lifetime(borrow self)
-            get {
-              return 1
-            }
-          }
-        }
-        """
-    )
-  }
+    @Test func multiLineGetterWithCommentsInsideBody() {
+        assertFormatting(
+            CollapseSingleLineGetter.self,
+            input: """
+                var x: Int {
+                  1️⃣get {
+                    // A comment
+                    1
+                  }
+                }
+                var x: Int {
+                  2️⃣get {
+                    1 // A comment
+                  }
+                }
+                var x: Int {
+                  3️⃣get {
+                    1
+                    // A comment
+                  }
+                }
+                """,
+            expected: """
+                var x: Int {
+                    // A comment
+                    1
+                }
+                var x: Int {
+                    1 // A comment
+                }
+                var x: Int {
+                    1
+                    // A comment
+                }
+                """,
+            findings: [
+                FindingSpec(
+                    "1️⃣",
+                    message:
+                        "remove 'get {...}' around the accessor and move its body directly into the computed property"
+                ),
+                FindingSpec(
+                    "2️⃣",
+                    message:
+                        "remove 'get {...}' around the accessor and move its body directly into the computed property"
+                ),
+                FindingSpec(
+                    "3️⃣",
+                    message:
+                        "remove 'get {...}' around the accessor and move its body directly into the computed property"
+                ),
+            ]
+        )
+    }
 
-  @Test func getterWithModifierShouldBePreserved() {
-    // A `mutating get` (or any modified accessor) must keep its explicit `get`
-    // block — collapsing it drops the `mutating` keyword and breaks compilation.
-    assertFormatting(
-      CollapseSingleLineGetter.self,
-      input: """
-        struct Cursor {
-          var isAtEnd: Bool {
-            mutating get {
-              skipSpaces()
-              return index >= scalars.count
-            }
-          }
-          var first: Int {
-            mutating get { advance() }
-          }
-        }
-        """,
-      expected: """
-        struct Cursor {
-          var isAtEnd: Bool {
-            mutating get {
-              skipSpaces()
-              return index >= scalars.count
-            }
-          }
-          var first: Int {
-            mutating get { advance() }
-          }
-        }
-        """
-    )
-  }
+    @Test func getterWithCommentsAfterGetKeyword() {
+        assertFormatting(
+            CollapseSingleLineGetter.self,
+            input: """
+                var x: Int {
+                  1️⃣get // hello
+                  { 1 }
+                }
+
+                var x: Int {
+                  2️⃣get /* hello */ { 1 }
+                }
+                """,
+            expected: """
+                var x: Int {
+                   // hello
+                 1 
+                }
+
+                var x: Int {
+                   /* hello */ 
+                 1 
+                }
+                """,
+            findings: [
+                FindingSpec(
+                    "1️⃣",
+                    message:
+                        "remove 'get {...}' around the accessor and move its body directly into the computed property"
+                ),
+                FindingSpec(
+                    "2️⃣",
+                    message:
+                        "remove 'get {...}' around the accessor and move its body directly into the computed property"
+                ),
+            ]
+        )
+    }
+
+    @Test func getterWithCommentsAroundBracesAndBody() {
+        assertFormatting(
+            CollapseSingleLineGetter.self,
+            input: """
+                var x: Int { // A comment
+                  // B comment
+                  1️⃣get /* C comment */ { // D comment
+                    // E comment
+                    1 // F comment
+                    // G comment
+                  } // H comment
+                  // I comment
+                }
+                """,
+            expected: """
+                var x: Int { // A comment
+                  // B comment
+                   /* C comment */ 
+                 // D comment
+                    // E comment
+                    1 // F comment
+                    // G comment
+                   // H comment
+                  // I comment
+                }
+                """,
+            findings: [
+                FindingSpec(
+                    "1️⃣",
+                    message:
+                        "remove 'get {...}' around the accessor and move its body directly into the computed property"
+                )
+            ]
+        )
+    }
+
+    @Test func getterWithAttributedAccessorShouldBePreserved() {
+        assertFormatting(
+            CollapseSingleLineGetter.self,
+            input: """
+                struct Foo {
+                  var value: Int {
+                    @_lifetime(borrow self)
+                    get {
+                      return 1
+                    }
+                  }
+                }
+                """,
+            expected: """
+                struct Foo {
+                  var value: Int {
+                    @_lifetime(borrow self)
+                    get {
+                      return 1
+                    }
+                  }
+                }
+                """
+        )
+    }
+
+    @Test func getterWithModifierShouldBePreserved() {
+        // A `mutating get` (or any modified accessor) must keep its explicit `get` block —
+        // collapsing it drops the `mutating` keyword and breaks compilation.
+        assertFormatting(
+            CollapseSingleLineGetter.self,
+            input: """
+                struct Cursor {
+                  var isAtEnd: Bool {
+                    mutating get {
+                      skipSpaces()
+                      return index >= scalars.count
+                    }
+                  }
+                  var first: Int {
+                    mutating get { advance() }
+                  }
+                }
+                """,
+            expected: """
+                struct Cursor {
+                  var isAtEnd: Bool {
+                    mutating get {
+                      skipSpaces()
+                      return index >= scalars.count
+                    }
+                  }
+                  var first: Int {
+                    mutating get { advance() }
+                  }
+                }
+                """
+        )
+    }
+
+    // MARK: - Ignore directives
+
+    @Test func honorsIgnoreNextDirective() {
+        assertFormatting(
+            CollapseSingleLineGetter.self,
+            input: """
+                struct Cursor {
+                  var count: Int { 0 }
+                  // sm:ignore:next collapseSingleLineGetter
+                  var isAtEnd: Bool {
+                    get {
+                      return index >= scalars.count
+                    }
+                  }
+                }
+                """,
+            expected: """
+                struct Cursor {
+                  var count: Int { 0 }
+                  // sm:ignore:next collapseSingleLineGetter
+                  var isAtEnd: Bool {
+                    get {
+                      return index >= scalars.count
+                    }
+                  }
+                }
+                """
+        )
+    }
+
+    @Test func honorsFileWideIgnoreDirective() {
+        assertFormatting(
+            CollapseSingleLineGetter.self,
+            input: """
+                // sm:ignore collapseSingleLineGetter
+                struct Cursor {
+                  var isAtEnd: Bool {
+                    get {
+                      return index >= scalars.count
+                    }
+                  }
+                }
+                """,
+            expected: """
+                // sm:ignore collapseSingleLineGetter
+                struct Cursor {
+                  var isAtEnd: Bool {
+                    get {
+                      return index >= scalars.count
+                    }
+                  }
+                }
+                """
+        )
+    }
 }

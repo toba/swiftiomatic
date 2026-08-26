@@ -76,6 +76,13 @@ final class UseTernary: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
         context: Context
     ) -> CodeBlockItemSyntax? {
         guard let ifExpr = extractIfExpr(from: item) else { return nil }
+        guard !isIgnored(item, context: context) else { return nil }
+
+        // The ternary keeps only the condition and the two branch expressions. The statement's own
+        // leading and trailing trivia carry over; every other comment would be dropped.
+        guard !item.containsComments(skippingFirstLeading: true, skippingLastTrailing: true) else {
+            return nil
+        }
 
         // Must be a simple if-else (no else-if chains)
         guard let elseBlock = ifExpr.elseBody?.as(CodeBlockSyntax.self) else { return nil }
@@ -133,6 +140,13 @@ final class UseTernary: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
     ) -> CodeBlockItemSyntax? {
         guard let ifExpr = extractIfExpr(from: first) else { return nil }
         guard ifExpr.elseBody == nil else { return nil }
+        guard !isIgnored(first, context: context) else { return nil }
+
+        // The result keeps the leading trivia of the `if` and the trailing trivia of the `return` .
+        // A comment anywhere else in the pair, including after the `if` statement's closing brace,
+        // would be dropped.
+        guard !first.containsComments(skippingFirstLeading: true),
+              !second.containsComments(skippingLastTrailing: true) else { return nil }
 
         guard let onlyCondition = ifExpr.conditions.firstAndOnly,
               case .expression = onlyCondition.condition else { return nil }
@@ -142,8 +156,8 @@ final class UseTernary: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
 
         guard let elseReturn = extractReturn(from: second) else { return nil }
 
-        // `switch` / `if` expressions are only legal in return/throw/assignment positions —
-        // never as a sub-expression of a ternary.
+        // `switch` / `if` expressions are only legal in return/throw/assignment positions — never
+        // as a sub-expression of a ternary.
         guard !isStatementOnlyExpression(thenReturn),
               !isStatementOnlyExpression(elseReturn) else { return nil }
 
@@ -167,9 +181,19 @@ final class UseTernary: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
 
     // MARK: - Extraction
 
+    /// Whether a `// sm:ignore` directive covers this statement
+    ///
+    /// The pipeline gates the rule once per statement list, at the list's start, so a directive on
+    /// any statement after the first never reaches the gate. Re-check per statement here.
+    private static func isIgnored(_ item: CodeBlockItemSyntax, context: Context) -> Bool {
+        let location = item.startLocation(converter: context.sourceLocationConverter)
+        let name = ConfigurationRegistry.ruleNameCache[ObjectIdentifier(Self.self)] ?? Self.key
+        return context.ruleMask.ruleState(name, at: location) == .disabled
+    }
+
     /// `switch` and `if` expressions are only valid in return, throw, or assignment-RHS positions.
-    /// They cannot appear as a sub-expression of a ternary `?:`, so any rewrite that would put
-    /// one there must be skipped.
+    /// They cannot appear as a sub-expression of a ternary `?:`, so any rewrite that would put one
+    /// there must be skipped.
     private static func isStatementOnlyExpression(_ expr: ExprSyntax) -> Bool {
         expr.is(SwitchExprSyntax.self) || expr.is(IfExprSyntax.self)
     }
@@ -185,7 +209,7 @@ final class UseTernary: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
     /// Extracts the expression from a `return expr` statement.
     private static func extractReturn(from item: CodeBlockItemSyntax) -> ExprSyntax? {
         if let returnStmt = item.item.as(ReturnStmtSyntax.self),
-           let expr = returnStmt.expression
+            let expr = returnStmt.expression
         {
             expr
         } else {
@@ -288,9 +312,9 @@ final class UseTernary: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
             elseExpression: elseExpr.with(\.leadingTrivia, []).with(\.trailingTrivia, []))
 
         // The synthesized ternary is built inside a CodeBlockItemList rewrite, so the
-        // SyntaxRewriter never descends into it and WrapTernaryBranches's TernaryExpr visitor never fires.
-        // Mirror its policy here using the captured anchor column so both branches wrap together
-        // when the result would exceed the line length.
+        // SyntaxRewriter never descends into it and WrapTernaryBranches's TernaryExpr visitor never
+        // fires. Mirror its policy here using the captured anchor column so both branches wrap
+        // together when the result would exceed the line length.
         let lineLength = context.configuration[LineLength.self]
         let singleLineLength = ternary.trimmedDescription
             .split(whereSeparator: { $0.isWhitespace })

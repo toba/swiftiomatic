@@ -1181,9 +1181,6 @@ final class RewritePipeline: SyntaxRewriter {
         apply(NoAssignmentInExpressions.self, to: &concrete, original: node, gate: gate) {
             NoAssignmentInExpressions.transform($0, original: $1, parent: parent, context: $2)
         }
-        apply(NoYodaConditions.self, to: &concrete, original: node, gate: gate) {
-            NoYodaConditions.transform($0, original: $1, parent: parent, context: $2)
-        }
         apply(UseCompoundAssignment.self, to: &concrete, original: node, gate: gate) {
             UseCompoundAssignment.transform($0, original: $1, parent: parent, context: $2)
         }

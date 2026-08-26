@@ -1,10 +1,9 @@
-@testable import SwiftiomaticKit
-import SwiftiomaticTestSupport
 import Testing
+import SwiftiomaticTestSupport
+@testable import SwiftiomaticKit
 
 @Suite
 struct UseTernaryTests: RuleTesting {
-
     // MARK: - Return statements
 
     @Test func convertsSimpleIfElseReturn() {
@@ -507,8 +506,8 @@ struct UseTernaryTests: RuleTesting {
 
     @Test func doesNotConvertWhenElseReturnsSwitchExpression() {
         // `switch` (and `if`) expressions are only legal in return/throw/assignment positions —
-        // never as a sub-expression of a ternary. Rewriting `if … return x; return switch …`
-        // into `cond ? x : switch …` produces uncompilable code.
+        // never as a sub-expression of a ternary. Rewriting `if … return x; return switch …` into
+        // `cond ? x : switch …` produces uncompilable code.
         assertFormatting(
             UseTernary.self,
             input: """
@@ -605,6 +604,190 @@ struct UseTernaryTests: RuleTesting {
                     } else {
                         return fallback
                     }
+                }
+                """)
+    }
+
+    // MARK: - Comments block the fold
+
+    @Test func keepsTrailingCommentOnTheFoldedIf() {
+        assertFormatting(
+            UseTernary.self,
+            input: """
+                var isInsideTransaction: Bool {
+                    if handle == nil { return false } // Support for deinit
+                    return handle > 0
+                }
+                """,
+            expected: """
+                var isInsideTransaction: Bool {
+                    if handle == nil { return false } // Support for deinit
+                    return handle > 0
+                }
+                """)
+    }
+
+    @Test func keepsCommentInsideTheThenBranch() {
+        assertFormatting(
+            UseTernary.self,
+            input: """
+                func test() -> Int {
+                    if flag {
+                        // the flag means the cache is warm
+                        return 1
+                    } else {
+                        return 0
+                    }
+                }
+                """,
+            expected: """
+                func test() -> Int {
+                    if flag {
+                        // the flag means the cache is warm
+                        return 1
+                    } else {
+                        return 0
+                    }
+                }
+                """)
+    }
+
+    @Test func keepsCommentInsideTheElseBranch() {
+        assertFormatting(
+            UseTernary.self,
+            input: """
+                func test() -> Int {
+                    if flag {
+                        return 1
+                    } else {
+                        return 0  // nothing is cached yet
+                    }
+                }
+                """,
+            expected: """
+                func test() -> Int {
+                    if flag {
+                        return 1
+                    } else {
+                        return 0  // nothing is cached yet
+                    }
+                }
+                """)
+    }
+
+    @Test func keepsCommentOnTheCondition() {
+        assertFormatting(
+            UseTernary.self,
+            input: """
+                func test() -> Int {
+                    if flag {  // set by the loader
+                        return 1
+                    } else {
+                        return 0
+                    }
+                }
+                """,
+            expected: """
+                func test() -> Int {
+                    if flag {  // set by the loader
+                        return 1
+                    } else {
+                        return 0
+                    }
+                }
+                """)
+    }
+
+    @Test func keepsCommentOnTheTrailingReturnOfAPair() {
+        assertFormatting(
+            UseTernary.self,
+            input: """
+                func test() -> Int {
+                    if flag { return 1 }
+                    // zero is the documented default
+                    return 0
+                }
+                """,
+            expected: """
+                func test() -> Int {
+                    if flag { return 1 }
+                    // zero is the documented default
+                    return 0
+                }
+                """)
+    }
+
+    // MARK: - Ignore directives
+
+    @Test func honorsIgnoreNextDirective() {
+        assertFormatting(
+            UseTernary.self,
+            input: """
+                func test() -> Int {
+                    let seed = 1
+                    // sm:ignore:next useTernary
+                    if flag {
+                        return seed
+                    } else {
+                        return 0
+                    }
+                }
+                """,
+            expected: """
+                func test() -> Int {
+                    let seed = 1
+                    // sm:ignore:next useTernary
+                    if flag {
+                        return seed
+                    } else {
+                        return 0
+                    }
+                }
+                """)
+    }
+
+    @Test func honorsFileWideIgnoreDirective() {
+        assertFormatting(
+            UseTernary.self,
+            input: """
+                // sm:ignore useTernary
+                func test() -> Int {
+                    if flag {
+                        return 1
+                    } else {
+                        return 0
+                    }
+                }
+                """,
+            expected: """
+                // sm:ignore useTernary
+                func test() -> Int {
+                    if flag {
+                        return 1
+                    } else {
+                        return 0
+                    }
+                }
+                """)
+    }
+
+    @Test func honorsIgnoreNextDirectiveOnAnIfReturnPair() {
+        assertFormatting(
+            UseTernary.self,
+            input: """
+                func test() -> Int {
+                    let seed = 1
+                    // sm:ignore:next useTernary
+                    if flag { return seed }
+                    return 0
+                }
+                """,
+            expected: """
+                func test() -> Int {
+                    let seed = 1
+                    // sm:ignore:next useTernary
+                    if flag { return seed }
+                    return 0
                 }
                 """)
     }
