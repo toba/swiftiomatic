@@ -5,9 +5,49 @@ import SwiftSyntax
 /// This file will be extended with `visit` methods in Pipelines+Generated.swift.
 extension LintPipeline {
     /// Calls the `visit` method of a rule for the given node if that rule is enabled for the node.
+    ///
+    /// - Parameter gate: The per-node gate built once by the caller. Every rule registered against
+    ///   the node shares it, so the selection test and the source-location lookup happen once per
+    ///   node rather than once per rule.
     func visitIfEnabled<V: SyntaxRuleValue, Rule: LintSyntaxRule<V>, Node: SyntaxProtocol>(
         _ visitor: (Rule) -> (Node) -> SyntaxVisitorContinueKind,
-        for node: Node
+        for node: Node,
+        gate: Context.Gate
+    ) {
+        guard context.shouldFormat(Rule.self, gate: gate) else { return }
+        let ruleID = ObjectIdentifier(Rule.self)
+        if !shouldSkipChildren.isEmpty, shouldSkipChildren[ruleID] != nil { return }
+        let rule = self.rule(Rule.self)
+        let continueKind = visitor(rule)(node)
+        if case .skipChildren = continueKind { shouldSkipChildren[ruleID] = node }
+    }
+
+    /// Calls the `visit` method of a rewrite rule for the given node if that rule is enabled.
+    ///
+    /// - Parameter gate: The per-node gate built once by the caller, as in the `LintSyntaxRule`
+    ///   overload.
+    func visitIfEnabled<V: SyntaxRuleValue, Rule: StructuralFormatRule<V>, Node: SyntaxProtocol>(
+        _ visitor: (Rule) -> (Node) -> Any,
+        for node: Node,
+        gate: Context.Gate
+    ) {
+        guard context.shouldFormat(Rule.self, gate: gate) else { return }
+
+        if !shouldSkipChildren.isEmpty,
+           shouldSkipChildren[ObjectIdentifier(Rule.self)] != nil { return }
+
+        let rule = self.rule(Rule.self)
+        _ = visitor(rule)(node)
+    }
+
+    /// Node-taking counterpart used for `SourceFileSyntax` alone.
+    ///
+    /// A file-wide rule gates at the end of the file so that a `// sm:ignore` directive anywhere in
+    /// it applies. A `Context.Gate` caches the start location, so the gate-taking overloads cannot
+    /// serve this node kind.
+    func visitIfEnabled<V: SyntaxRuleValue, Rule: LintSyntaxRule<V>>(
+        _ visitor: (Rule) -> (SourceFileSyntax) -> SyntaxVisitorContinueKind,
+        for node: SourceFileSyntax
     ) {
         guard context.shouldFormat(Rule.self, node: Syntax(node)) else { return }
         let ruleID = ObjectIdentifier(Rule.self)
@@ -17,10 +57,10 @@ extension LintPipeline {
         if case .skipChildren = continueKind { shouldSkipChildren[ruleID] = node }
     }
 
-    /// Calls the `visit` method of a rewrite rule for the given node if that rule is enabled.
-    func visitIfEnabled<V: SyntaxRuleValue, Rule: StructuralFormatRule<V>, Node: SyntaxProtocol>(
-        _ visitor: (Rule) -> (Node) -> Any,
-        for node: Node
+    /// Node-taking counterpart for a `StructuralFormatRule` on `SourceFileSyntax` .
+    func visitIfEnabled<V: SyntaxRuleValue, Rule: StructuralFormatRule<V>>(
+        _ visitor: (Rule) -> (SourceFileSyntax) -> Any,
+        for node: SourceFileSyntax
     ) {
         guard context.shouldFormat(Rule.self, node: Syntax(node)) else { return }
 

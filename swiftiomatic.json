@@ -80,6 +80,11 @@
 		"useDotZero": { "lint": "warn", "rewrite": true },
 		"noVoidTernary": { "lint": "warn", "rewrite": false },
 		"noCaseNamedNone": { "lint": "no", "rewrite": false },
+		"noEmptyBlock": {
+			"lint": "warn",
+			"checkClosureBlocks": false,
+			"allowCompactEmptyBlocks": true
+		},
 		"useFileIDNotFile": { "lint": "no", "rewrite": false },
 		"useAsyncResultInit":  { "lint" : "warn" },
 		"useSelfNotTypeName": { "lint": "warn", "rewrite": true },
@@ -120,6 +125,7 @@
 		"noLeadingUnderscores": { "lint": "warn" },
 		"requireASCIIIdentifiers": { "lint": "warn" },
 		"requireCamelCaseIdentifiers": { "lint": "warn" },
+		"requireBooleanAssertionNames": { "lint": "no" },
 		"uppercaseAcronymsInIdentifiers": {
 			"lint": "warn",
 			"rewrite": false,
@@ -147,7 +153,8 @@
 				"PNG",
 				"JPEG"
 			]
-		}
+		},
+		"requireProtocolSuffixConvention": { "lint": "no" }
 	},
 	"spaces": {
 		"spaceAroundRangeOperators": false,
@@ -187,10 +194,12 @@
 		"useReadableDocument":  { "lint" : "warn" },
 		"flagSupersededSwiftUI":  { "lint" : "warn" },
 		"noFormatterInViewBody": { "lint": "warn" },
+		"useDraggableNotOnDrag": { "lint": "warn" },
 		"flagForEachOverIndices":  { "lint" : "warn" },
 		"flagForEachIDSelfInView": { "lint": "warn" },
 		"useReorderableNotOnMove":  { "lint" : "warn" },
 		"useTypedNotificationName":  { "lint" : "warn" },
+		"useTaskModifierNotOnAppear": { "lint": "warn" },
 		"useTypedSystemNotification":  { "lint" : "warn" },
 		"useAtEntryNotEnvironmentKey": { "lint": "no", "rewrite": false },
 		"dropRedundantMainActorOnView": { "lint": "warn", "rewrite": true },
@@ -266,9 +275,11 @@
 		"noForceCast": { "lint": "warn", "rewrite": false },
 		"noForceUnwrap": { "lint": "warn", "rewrite": false },
 		"requireTaskName":  { "lint" : "warn" },
+		"useActorNotLock": { "lint": "warn" },
 		"flagTaskDetached":  { "lint" : "warn" },
 		"noNestedWithLock": { "lint": "warn" },
 		"useTildeSendable":  { "lint" : "warn" },
+		"noDropFirstOnData": { "lint": "warn" },
 		"useTypedCatchError": { "lint": "warn" },
 		"flagTaskInMainActor":  { "lint" : "warn" },
 		"flagMutableStaticVar":  { "lint" : "warn" },
@@ -299,9 +310,15 @@
 				"StructuralFormatRule"
 			]
 		},
+		"useAsyncTimerSequence": { "lint": "warn" },
+		"useSpanForStoredPointer": { "lint": "warn" },
 		"useContinuationNotChecked":  { "lint" : "warn" },
 		"useTaskCancellationShield":  { "lint" : "no" },
 		"useSpanTemporaryAllocation":  { "lint" : "warn" },
+		"useAsyncNotCompletionHandler": { "lint": "warn" },
+		"useLifetimeNotExtendedLifetime": { "lint": "warn" },
+		"useStructuredConcurrencyNotGCD": { "lint": "warn" },
+		"flagUnnecessaryNonisolatedUnsafe": { "lint": "warn" },
 		"requireSubprocessTeardownSequence":  { "lint" : "warn" },
 		"useMutableRefForRepeatedSubscript":  { "lint" : "warn" },
 		"useDiagnoseAttributeNotSuppressionFlag":  { "lint" : "warn" }

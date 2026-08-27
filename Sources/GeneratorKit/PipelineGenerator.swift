@@ -66,15 +66,25 @@ package final class PipelineGenerator: FileGenerator {
             """
 
         for (nodeType, lintRules) in collector.syntaxNodeLinters.sorted(by: { $0.key < $1.key }) {
+            // A file-wide rule gates at the end of the file, and a gate caches the start location,
+            // so SourceFileSyntax keeps the node-taking overload.
+            let usesGate = nodeType != "SourceFileSyntax"
             result += """
 
                   override func visit(_ node: \(nodeType)) -> SyntaxVisitorContinueKind {
 
                 """
 
+            if usesGate {
+                result += """
+                        guard let gate = context.gate(for: node) else { return .visitChildren }
+
+                    """
+            }
+
             for ruleName in lintRules.sorted() {
                 result += """
-                        visitIfEnabled(\(ruleName).visit, for: node)
+                        visitIfEnabled(\(ruleName).visit, for: node\(usesGate ? ", gate: gate" : ""))
 
                     """
             }

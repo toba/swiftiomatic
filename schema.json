@@ -1781,6 +1781,42 @@
           "description" : "Lint `dropFirst` / `dropLast` / `prefix` / `suffix` calls inside a loop body, when the receiver is plausibly the iterated value or a value being shrunk across iterations.\n\nOn value-typed collections like `Data` and `Array` , these methods copy the underlying storage. Calling them inside a loop on the iterated collection (or on a variable that is being whittled down each iteration) produces quadratic cost. Prefer index-based iteration ( `var idx = data.startIndex; while idx < end { ... }` ) or a single slice computed before the loop.\n\nTo avoid false positives on unrelated short String / Array slicing inside loops, the rule only fires when the receiver of the slice method is one of:\n\n- an identifier from the `for-in` sequence expression\n- a binding introduced by the `for-in` pattern\n- an identifier from a `while` loop's conditions\n- an identifier assigned to inside the loop body (typical shrink-in-place pattern)",
           "unevaluatedProperties" : false
         },
+        "noEmptyBlock" : {
+          "allOf" : [
+            {
+              "$ref" : "#/$defs/lintOnlyBase"
+            }
+          ],
+          "description" : "A block should hold a statement or a comment\n\nAn empty block does nothing, and it does not say whether that is deliberate. A reader cannot tell an intentional no-op from unfinished work. A comment inside the braces settles the question, so a block holding only a comment passes.\n\nFour kinds of block are checked, and each has its own switch: function bodies, initializer and deinitializer bodies, statement blocks ( `if` , `for` , `while` , `repeat` , `do` , `catch` , `defer` , `guard` ) and closures. Accessor bodies such as `willSet` and type bodies such as `enum E {}` are never checked.\n\nSet `allowCompactEmptyBlocks` to skip a block whose braces sit together with nothing between them, such as `func f() {}` . A spaced form like `{ }` and a multi-line form still raise a finding.\n\nLint: An empty block of an enabled kind raises a warning.",
+          "properties" : {
+            "allowCompactEmptyBlocks" : {
+              "default" : false,
+              "description" : "Whether to skip a block whose braces hold nothing at all, such as `func f() {}` . A spaced or multi-line empty block still raises a finding.",
+              "type" : "boolean"
+            },
+            "checkClosureBlocks" : {
+              "default" : true,
+              "description" : "Whether an empty closure raises a finding.",
+              "type" : "boolean"
+            },
+            "checkFunctionBodies" : {
+              "default" : true,
+              "description" : "Whether an empty `func` body raises a finding.",
+              "type" : "boolean"
+            },
+            "checkInitializerBodies" : {
+              "default" : true,
+              "description" : "Whether an empty `init` or `deinit` body raises a finding.",
+              "type" : "boolean"
+            },
+            "checkStatementBlocks" : {
+              "default" : true,
+              "description" : "Whether an empty control-flow block raises a finding, covering `if` , `for` , `while` , `repeat` , `do` , `catch` , `defer` and `guard` .",
+              "type" : "boolean"
+            }
+          },
+          "unevaluatedProperties" : false
+        },
         "noExplicitOwnershipModifiers" : {
           "allOf" : [
             {
@@ -2820,6 +2856,42 @@
         }
       ],
       "description" : "Dictionary literals with duplicate keys silently overwrite earlier values.\n\nThe Swift compiler accepts duplicate static keys but the resulting dictionary only retains the *last* value for each key — almost always a copy-paste bug.\n\nOnly static keys are checked: literals, identifiers, and member access expressions. Dynamic keys like `UUID()` or `#line` can legitimately produce distinct values at runtime and are skipped.\n\nLint: When a static key appears more than once in the same dictionary literal, every occurrence after the first is flagged.",
+      "unevaluatedProperties" : false
+    },
+    "noEmptyBlock" : {
+      "allOf" : [
+        {
+          "$ref" : "#/$defs/lintOnlyBase"
+        }
+      ],
+      "description" : "A block should hold a statement or a comment\n\nAn empty block does nothing, and it does not say whether that is deliberate. A reader cannot tell an intentional no-op from unfinished work. A comment inside the braces settles the question, so a block holding only a comment passes.\n\nFour kinds of block are checked, and each has its own switch: function bodies, initializer and deinitializer bodies, statement blocks ( `if` , `for` , `while` , `repeat` , `do` , `catch` , `defer` , `guard` ) and closures. Accessor bodies such as `willSet` and type bodies such as `enum E {}` are never checked.\n\nSet `allowCompactEmptyBlocks` to skip a block whose braces sit together with nothing between them, such as `func f() {}` . A spaced form like `{ }` and a multi-line form still raise a finding.\n\nLint: An empty block of an enabled kind raises a warning.",
+      "properties" : {
+        "allowCompactEmptyBlocks" : {
+          "default" : false,
+          "description" : "Whether to skip a block whose braces hold nothing at all, such as `func f() {}` . A spaced or multi-line empty block still raises a finding.",
+          "type" : "boolean"
+        },
+        "checkClosureBlocks" : {
+          "default" : true,
+          "description" : "Whether an empty closure raises a finding.",
+          "type" : "boolean"
+        },
+        "checkFunctionBodies" : {
+          "default" : true,
+          "description" : "Whether an empty `func` body raises a finding.",
+          "type" : "boolean"
+        },
+        "checkInitializerBodies" : {
+          "default" : true,
+          "description" : "Whether an empty `init` or `deinit` body raises a finding.",
+          "type" : "boolean"
+        },
+        "checkStatementBlocks" : {
+          "default" : true,
+          "description" : "Whether an empty control-flow block raises a finding, covering `if` , `for` , `while` , `repeat` , `do` , `catch` , `defer` and `guard` .",
+          "type" : "boolean"
+        }
+      },
       "unevaluatedProperties" : false
     },
     "noExplicitOwnershipModifiers" : {
@@ -4440,7 +4512,7 @@
               "$ref" : "#/$defs/lintOnlyBase"
             }
           ],
-          "description" : "Flag a stored property that holds an `Unsafe*Pointer` into memory the type does not own.\n\nA pointer in a parameter lives for the call. A pointer in a property lives for the whole instance, so the type can outlive the memory it points at and nothing in the signature says otherwise. `Span` and `RawSpan` carry that dependency in the type system: store a span, mark the type `~Escapable`, and annotate `init` with `@_lifetime(borrow source)`, and the compiler rejects the escape it cannot see today.\n\nThe rule stays quiet on a type that owns its memory, which it reads as a `deinit` that calls `deallocate()`. It also stays quiet on a computed property, a parameter and a local variable, because none of them outlives the call that made the pointer.\n\nLint: A stored property whose type is one of the eight `Unsafe*Pointer` types raises a warning, unless the enclosing type deallocates in `deinit`.",
+          "description" : "Flag a stored property that holds an `Unsafe*Pointer` into memory the type does not own.\n\nA pointer in a parameter lives for the call. A pointer in a property lives for the whole instance, so the type can outlive the memory it points at and nothing in the signature says otherwise. `Span` and `RawSpan` carry that dependency in the type system: store a span, mark the type `~Escapable`, and annotate `init` with `@_lifetime(borrow source)`, and the compiler rejects the escape it cannot see today.\n\nThe message follows the declaration. A buffer pointer carries its own count, so one span replaces it. A bare pointer carries none, so the message says to pair it with the count beside it. The mutable spans are named only when a member writes through the property, because a pointer that a C API hands back is often mutable in type and read-only in use.\n\nThe rule stays quiet on a type that owns its memory, which it reads as a `deinit` that calls `deallocate()`. It stays quiet on a type whose inheritance clause names a protocol or a superclass, because such a type cannot be `~Escapable`. It also stays quiet on a computed property, a parameter and a local variable, because none of them outlives the call that made the pointer.\n\nLint: A stored property whose type is one of the eight `Unsafe*Pointer` types raises a warning, unless the enclosing type deallocates in `deinit` or inherits an escapable type.",
           "unevaluatedProperties" : false
         },
         "useSpanTemporaryAllocation" : {
@@ -5009,7 +5081,7 @@
           "$ref" : "#/$defs/lintOnlyBase"
         }
       ],
-      "description" : "Flag a stored property that holds an `Unsafe*Pointer` into memory the type does not own.\n\nA pointer in a parameter lives for the call. A pointer in a property lives for the whole instance, so the type can outlive the memory it points at and nothing in the signature says otherwise. `Span` and `RawSpan` carry that dependency in the type system: store a span, mark the type `~Escapable`, and annotate `init` with `@_lifetime(borrow source)`, and the compiler rejects the escape it cannot see today.\n\nThe rule stays quiet on a type that owns its memory, which it reads as a `deinit` that calls `deallocate()`. It also stays quiet on a computed property, a parameter and a local variable, because none of them outlives the call that made the pointer.\n\nLint: A stored property whose type is one of the eight `Unsafe*Pointer` types raises a warning, unless the enclosing type deallocates in `deinit`.",
+      "description" : "Flag a stored property that holds an `Unsafe*Pointer` into memory the type does not own.\n\nA pointer in a parameter lives for the call. A pointer in a property lives for the whole instance, so the type can outlive the memory it points at and nothing in the signature says otherwise. `Span` and `RawSpan` carry that dependency in the type system: store a span, mark the type `~Escapable`, and annotate `init` with `@_lifetime(borrow source)`, and the compiler rejects the escape it cannot see today.\n\nThe message follows the declaration. A buffer pointer carries its own count, so one span replaces it. A bare pointer carries none, so the message says to pair it with the count beside it. The mutable spans are named only when a member writes through the property, because a pointer that a C API hands back is often mutable in type and read-only in use.\n\nThe rule stays quiet on a type that owns its memory, which it reads as a `deinit` that calls `deallocate()`. It stays quiet on a type whose inheritance clause names a protocol or a superclass, because such a type cannot be `~Escapable`. It also stays quiet on a computed property, a parameter and a local variable, because none of them outlives the call that made the pointer.\n\nLint: A stored property whose type is one of the eight `Unsafe*Pointer` types raises a warning, unless the enclosing type deallocates in `deinit` or inherits an escapable type.",
       "unevaluatedProperties" : false
     },
     "useSpanTemporaryAllocation" : {
