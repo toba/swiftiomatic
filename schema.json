@@ -1130,10 +1130,11 @@
     "dropRedundantOverride" : {
       "allOf" : [
         {
-          "$ref" : "#/$defs/ruleBase"
+          "$ref" : "#/$defs/lintOnlyBase"
         }
       ],
-      "description" : "Remove `override` declarations whose body only forwards identical arguments to `super` .\n\nAn override that does nothing other than `super.<name>(...)` with the same parameters (in order, with matching labels) adds no behavior.\n\nThe rule is conservative:\n- Bails out if the override has any attributes (e.g. `@available` ).\n- Bails out if any parameter has a default value (the override may be tightening defaults).\n- Bails out if the call uses a trailing closure or `try!` / `try?` (assumed to change behavior).\n- Skips overrides explicitly required by tests ( `tearDown` , `setUp` , etc.) and common\nUIKit/AppKit lifecycle methods that are typically intentional anchors.\n\nLint: A finding is raised on the `override` keyword.\n\nRewrite: The entire `override` declaration is removed, preserving surrounding trivia."
+      "description" : "Flag an `override` whose body only forwards identical arguments to `super`\n\nAn override that does nothing other than `super.<name>(...)` with the same parameters (in order, with matching labels) usually adds no behavior.\n\nThe rule reports and never rewrites. Source alone does not say whether the declaration is dead. A forwarding override can raise the access level, hold the override point open for a later edit, or exist to prove the signature still matches the superclass. Deleting one of those deletes working code, so the decision stays with the reader.\n\nThe check is conservative:\n- Skips an override that carries any attribute (e.g. `@available` ).\n- Skips an override with a defaulted parameter, because the override may tighten the default.\n- Skips a call that uses a trailing closure or `try!` / `try?` , which may change behavior.\n- Skips an override required by tests ( `tearDown` , `setUp` ) and the common UIKit and AppKit\nlifecycle methods, which are usually intentional anchors.\n\nLint: A finding is raised on the `override` keyword.",
+      "unevaluatedProperties" : false
     },
     "dropRedundantProperty" : {
       "allOf" : [
@@ -1518,6 +1519,15 @@
         }
       ],
       "description" : "`Task { try ... }` silently swallows thrown errors when the error type is inferred (or written as `_` ).\n\nWithout an explicit `Failure` generic argument, a `Task` that throws an unhandled error doesn't surface the error anywhere — there is no `throws` signature on the closure call site, and the value/result of the task is usually discarded.\n\nSee: https://forums.swift.org/t/task-initializer-with-throwing-closure-swallows-error/56066\n\nLint: When a `Task { ... }` (with implicit or wildcard error type) contains an unhandled `throw` or `try` , an error is raised. Tasks whose value or result is consumed ( `let t = Task { ... }` , `Task { ... }.value` , `return Task { ... }` ) are exempt.",
+      "unevaluatedProperties" : false
+    },
+    "flagUnnecessaryNonisolatedUnsafe" : {
+      "allOf" : [
+        {
+          "$ref" : "#/$defs/lintOnlyBase"
+        }
+      ],
+      "description" : "Flag `nonisolated(unsafe)` on a `let` the compiler already accepts.\n\n`nonisolated(unsafe)` tells the compiler to stop checking a declaration. On a `let` bound to a literal there is nothing to check, because the value is immutable and already `Sendable` . The marker then buys nothing and it silences the next real violation on that declaration.\n\nThe rule reports only a literal initializer: a number, a boolean, a string with no interpolation, or an array or dictionary of those. A `let` bound to a call keeps the marker, because the rule cannot see whether the constructed type is `Sendable` .\n\nLint: A `nonisolated(unsafe) let` whose every binding takes a literal raises a warning.",
       "unevaluatedProperties" : false
     },
     "flagUnusedIgnoreDirective" : {
@@ -2628,6 +2638,15 @@
           "description" : "All identifiers must be ASCII.\n\nLint: If an identifier contains non-ASCII characters, a lint error is raised.",
           "unevaluatedProperties" : false
         },
+        "requireBooleanAssertionNames" : {
+          "allOf" : [
+            {
+              "$ref" : "#/$defs/lintOnlyBase"
+            }
+          ],
+          "description" : "A `Bool` name should read as an assertion about the receiver.\n\nThe API Design Guidelines say a non-mutating boolean reads as an assertion at the use site, so `if session.isActive` reads and `if session.active` does not. The conventional openers are `is` , `has` , `can` , `should` and `will` .\n\nThe rule checks a property with a `Bool` annotation and a method that takes no argument and returns `Bool` . It skips an `override` , because the name belongs to the superclass. It cannot see an inferred type, so a property with no annotation raises nothing.\n\nShips off by default. The prefix list is a convention, not a compiler rule, and a codebase with its own vocabulary reports a long list of names it does not intend to change.\n\nLint: A `Bool` property or a `Bool`-returning method with no argument, whose name starts with none of the five prefixes, raises a warning.",
+          "unevaluatedProperties" : false
+        },
         "requireCamelCaseIdentifiers" : {
           "allOf" : [
             {
@@ -2635,6 +2654,15 @@
             }
           ],
           "description" : "All values should be written in lower camel-case ( `lowerCamelCase` ). Underscores (except at the beginning of an identifier) are disallowed.\n\nThis rule does not apply to test code, defined as code which:\n* Imports a supported test library (e.g. `XCTest` or `Testing`)\n* The function is marked with `@Test` attribute\n\nLint: If an identifier contains underscores or begins with a capital letter, a lint error is raised.",
+          "unevaluatedProperties" : false
+        },
+        "requireProtocolSuffixConvention" : {
+          "allOf" : [
+            {
+              "$ref" : "#/$defs/lintOnlyBase"
+            }
+          ],
+          "description" : "A protocol name should carry the suffix the guidelines give its kind.\n\nThe API Design Guidelines name a capability with `able` or `ible` , and an ongoing action with `ing` . Which one a protocol wants is a judgment about intent, and the syntax tree does not carry intent. The rule therefore works from a table of stems whose conventional Swift spelling is settled, and it reports only a name that ends in the wrong half of a pair.\n\n`Hashing` becomes `Hashable` , because the conformer *can be* hashed. `ProgressReportable` becomes `ProgressReporting` , because the conformer *does* report progress. A name outside the table raises nothing, and neither does a `struct` , a `class` or an `enum` .\n\nShips off by default. The table encodes a convention, and a codebase may hold a name that reads correctly against its own domain.\n\nLint: A protocol whose name ends in a tail the table lists raises a warning that names the conventional spelling.",
           "unevaluatedProperties" : false
         },
         "uppercaseAcronymsInIdentifiers" : {
@@ -2765,6 +2793,15 @@
         }
       ],
       "description" : "Lint `dropFirst` / `dropLast` / `prefix` / `suffix` calls inside a loop body, when the receiver is plausibly the iterated value or a value being shrunk across iterations.\n\nOn value-typed collections like `Data` and `Array` , these methods copy the underlying storage. Calling them inside a loop on the iterated collection (or on a variable that is being whittled down each iteration) produces quadratic cost. Prefer index-based iteration ( `var idx = data.startIndex; while idx < end { ... }` ) or a single slice computed before the loop.\n\nTo avoid false positives on unrelated short String / Array slicing inside loops, the rule only fires when the receiver of the slice method is one of:\n\n- an identifier from the `for-in` sequence expression\n- a binding introduced by the `for-in` pattern\n- an identifier from a `while` loop's conditions\n- an identifier assigned to inside the loop body (typical shrink-in-place pattern)",
+      "unevaluatedProperties" : false
+    },
+    "noDropFirstOnData" : {
+      "allOf" : [
+        {
+          "$ref" : "#/$defs/lintOnlyBase"
+        }
+      ],
+      "description" : "Flag `dropFirst` on a `Data` value.\n\n`Data` is a value type over a copy-on-write buffer, and `dropFirst` hands back a new `Data` . A parse loop that drops one byte per pass therefore copies the rest of the buffer on every pass, which makes the loop quadratic in the input size. Advance an index instead, or take one slice and read through it.\n\nThe rule reads the type from the source alone. It collects the names the file declares as `Data` , through a type annotation, a `Data(...)` initializer or a parameter type, and it reports a `dropFirst` whose receiver is one of them. A receiver it cannot resolve stays quiet, so `dropFirst` on a `String` or an `Array` raises nothing.\n\nLint: A `dropFirst` call on a value the file declares as `Data` raises a warning.",
       "unevaluatedProperties" : false
     },
     "noDuplicateConditions" : {
@@ -3058,6 +3095,30 @@
         }
       ],
       "description" : "Flag acquire-style calls that aren't followed by a `defer { release() }` in the same scope when the scope has at least one early exit (`return` / `throw` / `break` / `continue`) after the acquire. Pairing the cleanup as a `defer` immediately after the acquire is Swift's idiomatic way to guarantee the release runs even when a later refactor introduces a new early exit. Without it, the release line at the end of the function is silently skipped.\n\nConfigurable via `pairs` (acquire + release name list). The default catalog covers well-known Apple framework pairs (lock/unlock, beginEditing/endEditing, saveGState/ restoreGState, etc.). Matching is by member-call name only — false positives on same-named methods from unrelated types are expected and can be suppressed with `// sm:ignore PairAcquireWithDefer` .\n\nFlag-only — auto-inserting the `defer` is unsafe in general because the release's arguments (`objc_sync_exit(obj)`, `os_signpost(.end, … , label)`) can't always be inferred from the acquire site.\n\nSource: https://ioscodereview.com/issues/issue-79-defer-done-right-instruments-is-back-and-wwdc-is-one-week-away/.",
+      "properties" : {
+        "pairs" : {
+          "description" : "Pairs to check. Defaults to a catalog of well-known Apple framework acquire/release names. Configuration replaces the catalog wholesale rather than appending — set this to extend with project-specific pairs (re-listing the defaults if you want to keep them).",
+          "items" : {
+            "additionalProperties" : false,
+            "properties" : {
+              "acquire" : {
+                "description" : "acquire",
+                "type" : "string"
+              },
+              "release" : {
+                "description" : "release",
+                "type" : "string"
+              }
+            },
+            "required" : [
+              "acquire",
+              "release"
+            ],
+            "type" : "object"
+          },
+          "type" : "array"
+        }
+      },
       "unevaluatedProperties" : false
     },
     "parameterCount" : {
@@ -3259,10 +3320,11 @@
         "dropRedundantOverride" : {
           "allOf" : [
             {
-              "$ref" : "#/$defs/ruleBase"
+              "$ref" : "#/$defs/lintOnlyBase"
             }
           ],
-          "description" : "Remove `override` declarations whose body only forwards identical arguments to `super` .\n\nAn override that does nothing other than `super.<name>(...)` with the same parameters (in order, with matching labels) adds no behavior.\n\nThe rule is conservative:\n- Bails out if the override has any attributes (e.g. `@available` ).\n- Bails out if any parameter has a default value (the override may be tightening defaults).\n- Bails out if the call uses a trailing closure or `try!` / `try?` (assumed to change behavior).\n- Skips overrides explicitly required by tests ( `tearDown` , `setUp` , etc.) and common\nUIKit/AppKit lifecycle methods that are typically intentional anchors.\n\nLint: A finding is raised on the `override` keyword.\n\nRewrite: The entire `override` declaration is removed, preserving surrounding trivia."
+          "description" : "Flag an `override` whose body only forwards identical arguments to `super`\n\nAn override that does nothing other than `super.<name>(...)` with the same parameters (in order, with matching labels) usually adds no behavior.\n\nThe rule reports and never rewrites. Source alone does not say whether the declaration is dead. A forwarding override can raise the access level, hold the override point open for a later edit, or exist to prove the signature still matches the superclass. Deleting one of those deletes working code, so the decision stays with the reader.\n\nThe check is conservative:\n- Skips an override that carries any attribute (e.g. `@available` ).\n- Skips an override with a defaulted parameter, because the override may tighten the default.\n- Skips a call that uses a trailing closure or `try!` / `try?` , which may change behavior.\n- Skips an override required by tests ( `tearDown` , `setUp` ) and the common UIKit and AppKit\nlifecycle methods, which are usually intentional anchors.\n\nLint: A finding is raised on the `override` keyword.",
+          "unevaluatedProperties" : false
         },
         "dropRedundantProperty" : {
           "allOf" : [
@@ -3431,6 +3493,15 @@
       "description" : "Lint `AsyncStream { continuation in ... }` (and `AsyncThrowingStream` ) initializer bodies that call `continuation.yield(...)` but never call `continuation.finish(...)` and never set `continuation.onTermination` .\n\nWithout termination handling the stream can leak when the consumer is cancelled — the producer keeps holding resources for a continuation that will never be drained.",
       "unevaluatedProperties" : false
     },
+    "requireBooleanAssertionNames" : {
+      "allOf" : [
+        {
+          "$ref" : "#/$defs/lintOnlyBase"
+        }
+      ],
+      "description" : "A `Bool` name should read as an assertion about the receiver.\n\nThe API Design Guidelines say a non-mutating boolean reads as an assertion at the use site, so `if session.isActive` reads and `if session.active` does not. The conventional openers are `is` , `has` , `can` , `should` and `will` .\n\nThe rule checks a property with a `Bool` annotation and a method that takes no argument and returns `Bool` . It skips an `override` , because the name belongs to the superclass. It cannot see an inferred type, so a property with no annotation raises nothing.\n\nShips off by default. The prefix list is a convention, not a compiler rule, and a codebase with its own vocabulary reports a long list of names it does not intend to change.\n\nLint: A `Bool` property or a `Bool`-returning method with no argument, whose name starts with none of the five prefixes, raises a warning.",
+      "unevaluatedProperties" : false
+    },
     "requireCamelCaseIdentifiers" : {
       "allOf" : [
         {
@@ -3499,6 +3570,15 @@
         }
       ],
       "description" : "Documentation comments must be complete and valid.\n\n\"Command + Option + /\" in Xcode produces a minimal valid documentation comment.\n\nLint: Documentation comments that are incomplete (e.g. missing parameter documentation) or invalid (uses `Parameters` when there is only one parameter) will yield a lint error.",
+      "unevaluatedProperties" : false
+    },
+    "requireProtocolSuffixConvention" : {
+      "allOf" : [
+        {
+          "$ref" : "#/$defs/lintOnlyBase"
+        }
+      ],
+      "description" : "A protocol name should carry the suffix the guidelines give its kind.\n\nThe API Design Guidelines name a capability with `able` or `ible` , and an ongoing action with `ing` . Which one a protocol wants is a judgment about intent, and the syntax tree does not carry intent. The rule therefore works from a table of stems whose conventional Swift spelling is settled, and it reports only a name that ends in the wrong half of a pair.\n\n`Hashing` becomes `Hashable` , because the conformer *can be* hashed. `ProgressReportable` becomes `ProgressReporting` , because the conformer *does* report progress. A name outside the table raises nothing, and neither does a `struct` , a `class` or an `enum` .\n\nShips off by default. The table encodes a convention, and a codebase may hold a name that reads correctly against its own domain.\n\nLint: A protocol whose name ends in a tail the table lists raises a warning that names the conventional spelling.",
       "unevaluatedProperties" : false
     },
     "requireRetainOfNotificationObserver" : {
@@ -3861,6 +3941,15 @@
           "description" : "Lint selector-based `NotificationCenter.addObserver(_:selector:name:object:)` . Prefer the closure-based `addObserver(forName:object:queue:using:)` — it returns an opaque token, doesn't require an `@objc` handler, and integrates cleanly with structured concurrency.",
           "unevaluatedProperties" : false
         },
+        "useDraggableNotOnDrag" : {
+          "allOf" : [
+            {
+              "$ref" : "#/$defs/lintOnlyBase"
+            }
+          ],
+          "description" : "Flag the pre-`Transferable` drag API.\n\n`.onDrag` builds an `NSItemProvider` , which carries an untyped payload behind a type identifier string. `.draggable` takes a value whose type conforms to `Transferable` , so the compiler checks the payload and the same conformance also serves copy, paste and share.\n\nLint: A call to `.onDrag` , or a reference to `NSItemProvider` , raises a warning.",
+          "unevaluatedProperties" : false
+        },
         "useReadableDocument" : {
           "allOf" : [
             {
@@ -3886,6 +3975,15 @@
             }
           ],
           "description" : "Prefer `.scaledToFit()` / `.scaledToFill()` over `.aspectRatio(contentMode:)` with a constant content mode.\n\nSwiftUI's `scaledToFit()` and `scaledToFill()` are exact equivalents of `aspectRatio(contentMode: .fit)` and `aspectRatio(contentMode: .fill)` respectively, and read more clearly. The rewrite only fires when the call has a single `contentMode:` argument whose value is a constant `.fit` / `.fill` (optionally spelled `ContentMode.fit` / `ContentMode.fill`). A leading ratio argument, a non-constant content mode, or a differently-typed enum base leaves the call untouched.\n\nLint: Using `aspectRatio(contentMode:)` with a constant content mode raises a warning.\n\nRewrite: `.aspectRatio(contentMode: .fit)` becomes `.scaledToFit()` and `.aspectRatio(contentMode: .fill)` becomes `.scaledToFill()`."
+        },
+        "useTaskModifierNotOnAppear" : {
+          "allOf" : [
+            {
+              "$ref" : "#/$defs/lintOnlyBase"
+            }
+          ],
+          "description" : "Flag an `.onAppear` closure whose whole body is a `Task { }` .\n\n`.onAppear` is synchronous, so the only way to start async work from it is an unstructured task. That task outlives the view: nothing cancels it when the view goes away, and it keeps every value it captured alive until it finishes. The `.task` modifier starts the same work and cancels it when the view disappears.\n\nThe rule reports only the closure whose single statement is the task, because a closure that also does synchronous work does not translate to `.task` on its own.\n\nLint: An `.onAppear` whose closure body is one `Task { }` raises a warning.",
+          "unevaluatedProperties" : false
         },
         "useTypedNotificationName" : {
           "allOf" : [
@@ -4153,6 +4251,15 @@
           },
           "unevaluatedProperties" : false
         },
+        "flagUnnecessaryNonisolatedUnsafe" : {
+          "allOf" : [
+            {
+              "$ref" : "#/$defs/lintOnlyBase"
+            }
+          ],
+          "description" : "Flag `nonisolated(unsafe)` on a `let` the compiler already accepts.\n\n`nonisolated(unsafe)` tells the compiler to stop checking a declaration. On a `let` bound to a literal there is nothing to check, because the value is immutable and already `Sendable` . The marker then buys nothing and it silences the next real violation on that declaration.\n\nThe rule reports only a literal initializer: a number, a boolean, a string with no interpolation, or an array or dictionary of those. A `let` bound to a call keeps the marker, because the rule cannot see whether the constructed type is `Sendable` .\n\nLint: A `nonisolated(unsafe) let` whose every binding takes a literal raises a warning.",
+          "unevaluatedProperties" : false
+        },
         "noAwaitInsideWithLock" : {
           "allOf" : [
             {
@@ -4160,6 +4267,15 @@
             }
           ],
           "description" : "Lint `withLock { ... await ... }` — holding a lock across suspension is a blocking/deadlock hazard.\n\nThe rule fires on any function call whose callee is `<receiver>.withLock` when the trailing closure (or first closure argument) contains an `await` expression at any nesting level *outside* of nested closures (a nested `Task { }` body is a separate isolation context and doesn't hold the lock).",
+          "unevaluatedProperties" : false
+        },
+        "noDropFirstOnData" : {
+          "allOf" : [
+            {
+              "$ref" : "#/$defs/lintOnlyBase"
+            }
+          ],
+          "description" : "Flag `dropFirst` on a `Data` value.\n\n`Data` is a value type over a copy-on-write buffer, and `dropFirst` hands back a new `Data` . A parse loop that drops one byte per pass therefore copies the rest of the buffer on every pass, which makes the loop quadratic in the input size. Advance an index instead, or take one slice and read through it.\n\nThe rule reads the type from the source alone. It collects the names the file declares as `Data` , through a type annotation, a `Data(...)` initializer or a parameter type, and it reports a `dropFirst` whose receiver is one of them. A receiver it cannot resolve stays quiet, so `dropFirst` on a `String` or an `Array` raises nothing.\n\nLint: A `dropFirst` call on a value the file declares as `Data` raises a warning.",
           "unevaluatedProperties" : false
         },
         "noForceCast" : {
@@ -4202,6 +4318,30 @@
             }
           ],
           "description" : "Flag acquire-style calls that aren't followed by a `defer { release() }` in the same scope when the scope has at least one early exit (`return` / `throw` / `break` / `continue`) after the acquire. Pairing the cleanup as a `defer` immediately after the acquire is Swift's idiomatic way to guarantee the release runs even when a later refactor introduces a new early exit. Without it, the release line at the end of the function is silently skipped.\n\nConfigurable via `pairs` (acquire + release name list). The default catalog covers well-known Apple framework pairs (lock/unlock, beginEditing/endEditing, saveGState/ restoreGState, etc.). Matching is by member-call name only — false positives on same-named methods from unrelated types are expected and can be suppressed with `// sm:ignore PairAcquireWithDefer` .\n\nFlag-only — auto-inserting the `defer` is unsafe in general because the release's arguments (`objc_sync_exit(obj)`, `os_signpost(.end, … , label)`) can't always be inferred from the acquire site.\n\nSource: https://ioscodereview.com/issues/issue-79-defer-done-right-instruments-is-back-and-wwdc-is-one-week-away/.",
+          "properties" : {
+            "pairs" : {
+              "description" : "Pairs to check. Defaults to a catalog of well-known Apple framework acquire/release names. Configuration replaces the catalog wholesale rather than appending — set this to extend with project-specific pairs (re-listing the defaults if you want to keep them).",
+              "items" : {
+                "additionalProperties" : false,
+                "properties" : {
+                  "acquire" : {
+                    "description" : "acquire",
+                    "type" : "string"
+                  },
+                  "release" : {
+                    "description" : "release",
+                    "type" : "string"
+                  }
+                },
+                "required" : [
+                  "acquire",
+                  "release"
+                ],
+                "type" : "object"
+              },
+              "type" : "array"
+            }
+          },
           "unevaluatedProperties" : false
         },
         "requireAsyncStreamFinish" : {
@@ -4231,6 +4371,33 @@
           "description" : "Require a `name:` argument when starting a `Task` or adding work to a `TaskGroup`. Swift 6.2 (Xcode 26 / macOS 26 / iOS 26) added `name:` overloads to `Task.init`, `Task.detached`, `Task.immediate`, `Task.immediateDetached`, `TaskGroup.addTask`, and `TaskGroup.addTaskUnlessCancelled`. The name shows up in Instruments' Swift Concurrency instrument, in the Xcode debugger's task list, and in custom `Task.currentName` reads — unnamed tasks are anonymous and indistinguishable from one another there.\n\n`addTask` and `addTaskUnlessCancelled` fire only when the call has the shape of the task-group method: the work arrives as a trailing closure or a final `operation:` argument, and every other argument carries a label the task-group method accepts. An unrelated method with the same base name stays quiet.\n\nFlag-only — the fix requires picking a meaningful name.\n\nSee https://artemnovichkov.com/blog/task-names-in-swift-concurrency.",
           "unevaluatedProperties" : false
         },
+        "useActorNotLock" : {
+          "allOf" : [
+            {
+              "$ref" : "#/$defs/lintOnlyBase"
+            }
+          ],
+          "description" : "Flag a hand-rolled lock type.\n\nA lock protects state the compiler cannot see, so nothing checks that every access takes the lock. An actor moves the same state behind isolation the compiler enforces. When the critical section is synchronous and an actor would force the callers to become `async` , `Mutex` from the Synchronization module holds the state and the compiler still checks the access.\n\nThe rule matches the type name wherever it appears, in a type annotation as much as in a call.\n\nLint: A reference to `NSLock` , `NSRecursiveLock` , `NSConditionLock` , `os_unfair_lock` or `pthread_mutex_t` raises a warning.",
+          "unevaluatedProperties" : false
+        },
+        "useAsyncNotCompletionHandler" : {
+          "allOf" : [
+            {
+              "$ref" : "#/$defs/lintOnlyBase"
+            }
+          ],
+          "description" : "Flag a function that returns its result through a trailing completion handler.\n\nA completion handler carries the result out of band. The caller cannot `try` it, cannot cancel it, and gets no compiler check that the handler runs exactly once on every path. An `async` function returns the value on the normal path and inherits cancellation from its caller.\n\nThe rule reports only the shape a mechanical translation fits: the last parameter is `@escaping` , it is named `completion` or `completionHandler` , its type is a function type that returns `Void` , and the function is not already `async` .\n\nLint: A function with such a parameter raises a warning.",
+          "unevaluatedProperties" : false
+        },
+        "useAsyncTimerSequence" : {
+          "allOf" : [
+            {
+              "$ref" : "#/$defs/lintOnlyBase"
+            }
+          ],
+          "description" : "Flag a timer that schedules outside the task tree.\n\n`Timer.scheduledTimer` fires on a run loop, `Timer.publish` fires into a Combine pipeline, and `DispatchSource.makeTimerSource` fires on a dispatch queue. None of the three is a child of the task that made it, so cancelling that task leaves the timer running and the callback keeps its captures alive. `AsyncTimerSequence` is an async sequence, so a `for await` loop over it ends when the surrounding task is cancelled.\n\nLint: A call to `Timer.scheduledTimer` , `Timer.publish` or `DispatchSource.makeTimerSource` raises a warning.",
+          "unevaluatedProperties" : false
+        },
         "useContinuationNotChecked" : {
           "allOf" : [
             {
@@ -4249,6 +4416,15 @@
           "description" : "Flag a module-wide diagnostic flag in a package manifest in favour of the SE-0522 attribute.\n\n`-suppress-warnings` , `-Wwarning` and `-Werror` apply to every file the target compiles, so one declaration that needs the exemption buys silence for the whole module. `@diagnose` sits on that declaration, and the next reader sees which code the exemption covers and which it does not.\n\n```swift @diagnose(DeprecatedDeclaration, as: ignored) func legacy() {} ```\n\nLint: A string literal naming one of those flags inside an `unsafeFlags` argument raises a warning.",
           "unevaluatedProperties" : false
         },
+        "useLifetimeNotExtendedLifetime" : {
+          "allOf" : [
+            {
+              "$ref" : "#/$defs/lintOnlyBase"
+            }
+          ],
+          "description" : "Flag `withExtendedLifetime` in favour of the `@_lifetime` annotation added by Swift 6.3.\n\n`withExtendedLifetime` states a lifetime dependency at one call site, so every other caller has to rediscover the same rule and repeat it. `@_lifetime(borrow source)` states the dependency in the signature once, and the compiler then enforces it for every caller.\n\nLint: A call to `withExtendedLifetime` raises a warning.",
+          "unevaluatedProperties" : false
+        },
         "useMutableRefForRepeatedSubscript" : {
           "allOf" : [
             {
@@ -4258,6 +4434,15 @@
           "description" : "Flag a loop body that subscripts the same element repeatedly instead of binding it once.\n\nEach `xs[i]` on a mutation path is a separate get, mutate and set on the collection, and each one carries an exclusivity check. SE-0519 adds `MutableRef` , which binds the element once and mutates it in place.\n\n```swift for i in xs.indices { var element = MutableRef(&xs[i]) element.value.a = 0 element.value.b = 0 } ```\n\nThe rule stays quiet on a read-only loop, where no copy back happens and the repeated subscript costs nothing beyond the bounds check.\n\nLint: A `for` body that subscripts one base with the loop variable three or more times, and writes through at least one of them, raises a warning.",
           "unevaluatedProperties" : false
         },
+        "useSpanForStoredPointer" : {
+          "allOf" : [
+            {
+              "$ref" : "#/$defs/lintOnlyBase"
+            }
+          ],
+          "description" : "Flag a stored property that holds an `Unsafe*Pointer` into memory the type does not own.\n\nA pointer in a parameter lives for the call. A pointer in a property lives for the whole instance, so the type can outlive the memory it points at and nothing in the signature says otherwise. `Span` and `RawSpan` carry that dependency in the type system: store a span, mark the type `~Escapable`, and annotate `init` with `@_lifetime(borrow source)`, and the compiler rejects the escape it cannot see today.\n\nThe rule stays quiet on a type that owns its memory, which it reads as a `deinit` that calls `deallocate()`. It also stays quiet on a computed property, a parameter and a local variable, because none of them outlives the call that made the pointer.\n\nLint: A stored property whose type is one of the eight `Unsafe*Pointer` types raises a warning, unless the enclosing type deallocates in `deinit`.",
+          "unevaluatedProperties" : false
+        },
         "useSpanTemporaryAllocation" : {
           "allOf" : [
             {
@@ -4265,6 +4450,15 @@
             }
           ],
           "description" : "Flag `withUnsafeTemporaryAllocation` in favour of the span form added by SE-0524.\n\n`withTemporaryAllocation` yields an `inout OutputSpan` or an `inout OutputRawSpan` instead of a buffer pointer. The span tracks how many elements are initialised and deinitialises them on every exit path, including a thrown error. The unsafe form leaves that bookkeeping to the caller, and a missed `deinitialize()` leaks.\n\nLint: A call to `withUnsafeTemporaryAllocation` raises a warning.",
+          "unevaluatedProperties" : false
+        },
+        "useStructuredConcurrencyNotGCD" : {
+          "allOf" : [
+            {
+              "$ref" : "#/$defs/lintOnlyBase"
+            }
+          ],
+          "description" : "Flag Grand Central Dispatch and `OperationQueue` where structured concurrency fits.\n\nA dispatch queue carries no isolation the compiler can check, no cancellation, and no return channel. A task, a task group and an actor carry all three, and the compiler enforces the data isolation that a queue only documents in a comment.\n\nThe rule matches the type name wherever it appears, so it also reports a stored queue, a queue parameter and a queue in a generic argument. It stays quiet on a file that names none of the three types.\n\nLint: A reference to `DispatchQueue` , `DispatchGroup` or `OperationQueue` raises a warning.",
           "unevaluatedProperties" : false
         },
         "useTaskCancellationShield" : {
@@ -4313,6 +4507,15 @@
           "type" : "array"
         }
       }
+    },
+    "useActorNotLock" : {
+      "allOf" : [
+        {
+          "$ref" : "#/$defs/lintOnlyBase"
+        }
+      ],
+      "description" : "Flag a hand-rolled lock type.\n\nA lock protects state the compiler cannot see, so nothing checks that every access takes the lock. An actor moves the same state behind isolation the compiler enforces. When the critical section is synchronous and an actor would force the callers to become `async` , `Mutex` from the Synchronization module holds the state and the compiler still checks the access.\n\nThe rule matches the type name wherever it appears, in a type annotation as much as in a call.\n\nLint: A reference to `NSLock` , `NSRecursiveLock` , `NSConditionLock` , `os_unfair_lock` or `pthread_mutex_t` raises a warning.",
+      "unevaluatedProperties" : false
     },
     "useAllSatisfy" : {
       "allOf" : [
@@ -4364,6 +4567,15 @@
       "description" : "Flag an unstructured `Task` used to run async cleanup inside a `defer` .\n\nSE-0493 lets a `defer` body await, so the cleanup runs before the enclosing scope exits. The `Task` form only schedules the work, which means the scope exits first and the ordering is unspecified. A cancelled parent may also drop the task before it starts.\n\nThe rule fires only inside an `async` scope, because a `defer` in a synchronous scope still cannot await.\n\nLint: A `Task` , `Task.detached` , `Task.immediate` or `Task.immediateDetached` call at statement level in a `defer` body raises a warning.",
       "unevaluatedProperties" : false
     },
+    "useAsyncNotCompletionHandler" : {
+      "allOf" : [
+        {
+          "$ref" : "#/$defs/lintOnlyBase"
+        }
+      ],
+      "description" : "Flag a function that returns its result through a trailing completion handler.\n\nA completion handler carries the result out of band. The caller cannot `try` it, cannot cancel it, and gets no compiler check that the handler runs exactly once on every path. An `async` function returns the value on the normal path and inherits cancellation from its caller.\n\nThe rule reports only the shape a mechanical translation fits: the last parameter is `@escaping` , it is named `completion` or `completionHandler` , its type is a function type that returns `Void` , and the function is not already `async` .\n\nLint: A function with such a parameter raises a warning.",
+      "unevaluatedProperties" : false
+    },
     "useAsyncResultInit" : {
       "allOf" : [
         {
@@ -4371,6 +4583,15 @@
         }
       ],
       "description" : "Flag a `do` / `catch` that exists only to wrap async work in a `Result` .\n\nSE-0530 adds an async `Result.init(catching:)` , so the whole block collapses to `await Result { try await work() }` . The long form repeats the target on three lines and lets the two assignments drift apart.\n\nThe rule fires only when the `.success` value awaits. The synchronous `Result(catching:)` already existed, and a synchronous `do` / `catch` is often doing more than building a `Result` .\n\nLint: A `do` block whose last statement assigns `.success` of an awaited value, paired with a single `catch` that assigns `.failure` to the same target, raises a warning.",
+      "unevaluatedProperties" : false
+    },
+    "useAsyncTimerSequence" : {
+      "allOf" : [
+        {
+          "$ref" : "#/$defs/lintOnlyBase"
+        }
+      ],
+      "description" : "Flag a timer that schedules outside the task tree.\n\n`Timer.scheduledTimer` fires on a run loop, `Timer.publish` fires into a Combine pipeline, and `DispatchSource.makeTimerSource` fires on a dispatch queue. None of the three is a child of the task that made it, so cancelling that task leaves the timer running and the callback keeps its captures alive. `AsyncTimerSequence` is an async sequence, so a `for await` loop over it ends when the surrounding task is cancelled.\n\nLint: A call to `Timer.scheduledTimer` , `Timer.publish` or `DispatchSource.makeTimerSource` raises a warning.",
       "unevaluatedProperties" : false
     },
     "useAtCNotUnderscoreCDecl" : {
@@ -4490,6 +4711,15 @@
         }
       ],
       "description" : "Prefer `.zero` over explicit zero-valued initializers.\n\n`CGPoint(x: 0, y: 0)` , `CGSize(width: 0, height: 0)` , `CGRect(x: 0, y: 0, width: 0, height: 0)` and similar are equivalent to the platform-provided `.zero` constant. The shorthand reads better and avoids subtle inconsistencies (e.g. `0.0` vs `0` literal kinds).\n\nRecognised types: `CGPoint` , `CGSize` , `CGRect` , `CGVector` , `UIEdgeInsets` , `NSEdgeInsets` , `NSPoint` , `NSSize` , `NSRect` .\n\nLint: A warning is raised on a fully-zero initializer.\n\nRewrite: The call is replaced with `<Type>.zero` ."
+    },
+    "useDraggableNotOnDrag" : {
+      "allOf" : [
+        {
+          "$ref" : "#/$defs/lintOnlyBase"
+        }
+      ],
+      "description" : "Flag the pre-`Transferable` drag API.\n\n`.onDrag` builds an `NSItemProvider` , which carries an untyped payload behind a type identifier string. `.draggable` takes a value whose type conforms to `Transferable` , so the compiler checks the payload and the same conformance also serves copy, paste and share.\n\nLint: A call to `.onDrag` , or a reference to `NSItemProvider` , raises a warning.",
+      "unevaluatedProperties" : false
     },
     "useEarlyExits" : {
       "allOf" : [
@@ -4661,6 +4891,15 @@
       "description" : "Lint chains of 3+ collection transforms ( `.map` , `.filter` , `.compactMap` , `.flatMap` , `.prefix` , `.dropFirst` ). Each step allocates an intermediate `Array` . Inserting `.lazy` at the head of the chain forwards lazily and avoids the allocations.\n\n`Optional` also has `.map` and `.flatMap` , and neither one allocates. `Optional` has no `.lazy` either, so the suggested fix does not compile there. The tree carries no type information, so the rule reads the receiver type from two syntactic signals. A chain that uses a method `Optional` does not have is a `Sequence` chain. A chain of `.map` and `.flatMap` alone is ambiguous, so the rule skips it when the surrounding code proves the value is an `Optional` . See ``isInOptionalContext(_:)`` for the four proofs.",
       "unevaluatedProperties" : false
     },
+    "useLifetimeNotExtendedLifetime" : {
+      "allOf" : [
+        {
+          "$ref" : "#/$defs/lintOnlyBase"
+        }
+      ],
+      "description" : "Flag `withExtendedLifetime` in favour of the `@_lifetime` annotation added by Swift 6.3.\n\n`withExtendedLifetime` states a lifetime dependency at one call site, so every other caller has to rediscover the same rule and repeat it. `@_lifetime(borrow source)` states the dependency in the signature once, and the compiler then enforces it for every caller.\n\nLint: A call to `withExtendedLifetime` raises a warning.",
+      "unevaluatedProperties" : false
+    },
     "useMainAttributeNotMainFunc" : {
       "allOf" : [
         {
@@ -4764,6 +5003,15 @@
       ],
       "description" : "Use opaque generic parameters ( `some Protocol` ) instead of named generic parameters with constraints ( `<T: Protocol>` ) where equivalent.\n\nThis rule applies to `func` , `init` , and `subscript` declarations. A generic type parameter is eligible for conversion when it appears exactly once in the parameter list and is not referenced in the return type, function body, attributes, typed throws, or other generic constraints.\n\nThe one appearance must also sit where `some` is spellable: the parameter type itself, or its optional or metatype sugar. A parameter that appears as a generic argument, such as `Container<T>.Nested` , binds the identity of the surrounding type and stays named.\n\nLint: A lint warning is raised when a generic parameter can be replaced with an opaque parameter.\n\nRewrite: The generic parameter is replaced with `some Protocol` in the parameter type."
     },
+    "useSpanForStoredPointer" : {
+      "allOf" : [
+        {
+          "$ref" : "#/$defs/lintOnlyBase"
+        }
+      ],
+      "description" : "Flag a stored property that holds an `Unsafe*Pointer` into memory the type does not own.\n\nA pointer in a parameter lives for the call. A pointer in a property lives for the whole instance, so the type can outlive the memory it points at and nothing in the signature says otherwise. `Span` and `RawSpan` carry that dependency in the type system: store a span, mark the type `~Escapable`, and annotate `init` with `@_lifetime(borrow source)`, and the compiler rejects the escape it cannot see today.\n\nThe rule stays quiet on a type that owns its memory, which it reads as a `deinit` that calls `deallocate()`. It also stays quiet on a computed property, a parameter and a local variable, because none of them outlives the call that made the pointer.\n\nLint: A stored property whose type is one of the eight `Unsafe*Pointer` types raises a warning, unless the enclosing type deallocates in `deinit`.",
+      "unevaluatedProperties" : false
+    },
     "useSpanTemporaryAllocation" : {
       "allOf" : [
         {
@@ -4788,6 +5036,15 @@
         }
       ],
       "description" : "Remove `weak` from `@IBOutlet` properties.\n\nAs per Apple's recommendation, `@IBOutlet` properties should be strong. The `weak` modifier is preserved for delegate and data source outlets since those are typically owned elsewhere.\n\nLint: An `@IBOutlet` property with `weak` raises a warning.\n\nRewrite: The `weak` modifier is removed."
+    },
+    "useStructuredConcurrencyNotGCD" : {
+      "allOf" : [
+        {
+          "$ref" : "#/$defs/lintOnlyBase"
+        }
+      ],
+      "description" : "Flag Grand Central Dispatch and `OperationQueue` where structured concurrency fits.\n\nA dispatch queue carries no isolation the compiler can check, no cancellation, and no return channel. A task, a task group and an actor carry all three, and the compiler enforces the data isolation that a queue only documents in a comment.\n\nThe rule matches the type name wherever it appears, so it also reports a stored queue, a queue parameter and a queue in a generic argument. It stays quiet on a file that names none of the three types.\n\nLint: A reference to `DispatchQueue` , `DispatchGroup` or `OperationQueue` raises a warning.",
+      "unevaluatedProperties" : false
     },
     "useSwiftTestingNames" : {
       "allOf" : [
@@ -4832,6 +5089,15 @@
         }
       ],
       "description" : "Flag async cleanup in a `defer` that a cancelled task may skip.\n\nA cancelled task keeps running, and the APIs it calls observe the cancellation. Cleanup that calls one of those APIs can return early and leave the resource open. SE-0504 adds `withTaskCancellationShield` , which hides the cancellation from the scope it wraps so the cleanup runs to completion.\n\n```swift defer { await withTaskCancellationShield { await connection.close() } } ```\n\n**Off by default.** Whether a given call observes cancellation is not visible at the call site, so this rule cannot tell a cleanup that needs the shield from one that does not. It fires on every awaiting `defer` . Turn it on for a codebase that wants the shield as a standing rule for cleanup, and leave it off otherwise.\n\nLint: An `await` inside a `defer` body that is not already inside a `withTaskCancellationShield` raises a warning.",
+      "unevaluatedProperties" : false
+    },
+    "useTaskModifierNotOnAppear" : {
+      "allOf" : [
+        {
+          "$ref" : "#/$defs/lintOnlyBase"
+        }
+      ],
+      "description" : "Flag an `.onAppear` closure whose whole body is a `Task { }` .\n\n`.onAppear` is synchronous, so the only way to start async work from it is an unstructured task. That task outlives the view: nothing cancels it when the view goes away, and it keeps every value it captured alive until it finishes. The `.task` modifier starts the same work and cancels it when the view disappears.\n\nThe rule reports only the closure whose single statement is the task, because a closure that also does synchronous work does not translate to `.task` on its own.\n\nLint: An `.onAppear` whose closure body is one `Task { }` raises a warning.",
       "unevaluatedProperties" : false
     },
     "useTernary" : {

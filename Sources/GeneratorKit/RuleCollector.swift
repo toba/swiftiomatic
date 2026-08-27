@@ -36,10 +36,8 @@ package final class RuleCollector {
     package func collectSyntaxRules(from url: URL) throws {
         try enumerateSwiftFiles(in: url) { statements in
             for statement in statements {
-                guard let rule = self.detectSyntaxRule(
-                    at: statement,
-                    fileStatements: statements
-                ) else { continue }
+                guard let rule = self.detectSyntaxRule(at: statement, fileStatements: statements)
+                else { continue }
 
                 if rule.canRewrite { self.rewritingSyntaxRules.insert(rule) }
                 self.lintingSyntaxRules.insert(rule)
@@ -57,10 +55,8 @@ package final class RuleCollector {
     package func collectLayoutRules(from url: URL) throws {
         try enumerateSwiftFiles(in: url) { statements in
             for statement in statements {
-                guard let rule = self.detectLayoutRule(
-                    at: statement,
-                    fileStatements: statements
-                ) else { continue }
+                guard let rule = self.detectLayoutRule(at: statement, fileStatements: statements)
+                else { continue }
                 self.layoutRules.append(rule)
             }
         }
@@ -73,11 +69,11 @@ package final class RuleCollector {
         fileStatements: CodeBlockItemListSyntax
     ) -> DetectedLayoutRule? {
         guard let structDecl = statement.item.as(StructDeclSyntax.self),
-              let inheritanceClause = structDecl.inheritanceClause else { return nil }
+            let inheritanceClause = structDecl.inheritanceClause else { return nil }
 
         for inheritance in inheritanceClause.inheritedTypes {
             guard let identifier = inheritance.type.as(IdentifierTypeSyntax.self),
-                  identifier.name.text == "LayoutRule" else { continue }
+                identifier.name.text == "LayoutRule" else { continue }
 
             let members = structDecl.memberBlock.members
 
@@ -143,7 +139,7 @@ package final class RuleCollector {
 
             for member in members {
                 guard let function = member.decl.as(FunctionDeclSyntax.self),
-                      function.name.text == "visit" else { continue }
+                    function.name.text == "visit" else { continue }
 
                 let params = function.signature.parameterClause.parameters
                 if let firstType = params.firstAndOnly?.type.as(IdentifierTypeSyntax.self) {
@@ -214,10 +210,7 @@ package final class RuleCollector {
 
         for inherited in inheritance.inheritedTypes {
             if let ident = inherited.type.as(IdentifierTypeSyntax.self),
-               ident.name.text == protocolName
-            {
-                return true
-            }
+                ident.name.text == protocolName { return true }
         }
         return false
     }
@@ -244,34 +237,87 @@ package final class RuleCollector {
             if !cases.isEmpty { enumTypes[enumDecl.name.text] = cases }
         }
 
+        // Collect sibling struct types usable as an array element, such as the AcquireReleasePair
+        // behind PairAcquireWithDefer's pairs property.
+        var objectTypes: [String: JSONSchemaNode] = [:]
+
+        for statement in statements {
+            guard let structDecl = statement.item.as(StructDeclSyntax.self),
+                structDecl.name.text != configTypeName,
+                let node = objectSchema(for: structDecl) else { continue }
+            objectTypes[structDecl.name.text] = node
+        }
+
         // Scan stored properties for custom (non-base) ones.
         var properties: [DetectedProperty] = []
 
         for member in members {
             guard let varDecl = member.decl.as(VariableDeclSyntax.self),
-                  let binding = varDecl.bindings.firstAndOnly,
-                  let pattern = binding.pattern.as(IdentifierPatternSyntax.self) else { continue }
+                let binding = varDecl.bindings.firstAndOnly,
+                let pattern = binding.pattern.as(IdentifierPatternSyntax.self) else { continue }
 
             let propertyName = pattern.identifier.text
             guard !basePropertyKeys.contains(propertyName) else { continue }
             if isThreshold, thresholdBasePropertyKeys.contains(propertyName) { continue }
 
-            let docComment = DocumentationCommentText(
-                extractedFrom: varDecl.leadingTrivia
-            ).map { Self.normalizeDescription($0.text) }
-
             // Determine the type from the annotation or initializer.
             guard let schemaNode = schemaNode(
                 for: binding,
                 propertyName: propertyName,
-                description: docComment,
-                enumTypes: enumTypes
+                description: docComment(of: varDecl),
+                enumTypes: enumTypes,
+                objectTypes: objectTypes
             ) else { continue }
 
             properties.append(DetectedProperty(key: propertyName, schemaNode: schemaNode))
         }
 
         return properties
+    }
+
+    /// The normalized DocC text on a property declaration, or `nil` when it carries none.
+    private static func docComment(of varDecl: VariableDeclSyntax) -> String? {
+        DocumentationCommentText(extractedFrom: varDecl.leadingTrivia)
+            .map { normalizeDescription($0.text) }
+    }
+
+    /// Builds the item schema for a struct used as the element of an array-typed config property.
+    ///
+    /// A field is required when it declares no default value. Returns `nil` when the struct holds a
+    /// field the schema generator cannot type, so an unsupported shape stays out of the schema
+    /// rather than landing there half described.
+    private static func objectSchema(for structDecl: StructDeclSyntax) -> JSONSchemaNode? {
+        var properties: [String: JSONSchemaNode] = [:]
+        var required: [String] = []
+
+        for member in structDecl.memberBlock.members {
+            guard let varDecl = member.decl.as(VariableDeclSyntax.self) else { continue }
+            guard !varDecl.modifiers.contains(where: { $0.name.tokenKind == .keyword(.static) })
+            else { continue }
+            guard let binding = varDecl.bindings.firstAndOnly,
+                  binding.accessorBlock == nil,
+                  let pattern = binding.pattern.as(IdentifierPatternSyntax.self) else { continue }
+
+            let fieldName = pattern.identifier.text
+
+            // Nested object types are not resolved, so an element type never recurses.
+            guard let node = schemaNode(
+                for: binding,
+                propertyName: fieldName,
+                description: docComment(of: varDecl),
+                enumTypes: [:],
+                objectTypes: [:]
+            ) else { return nil }
+
+            properties[fieldName] = node
+            if binding.initializer == nil { required.append(fieldName) }
+        }
+
+        guard !properties.isEmpty else { return nil }
+
+        var node = JSONSchemaNode.object(description: nil, properties: properties)
+        if !required.isEmpty { node.required = required.sorted() }
+        return node
     }
 
     /// Finds a struct declaration by name in the file's top-level statements.
@@ -281,16 +327,13 @@ package final class RuleCollector {
     ) -> StructDeclSyntax? {
         for statement in statements {
             if let structDecl = statement.item.as(StructDeclSyntax.self),
-               structDecl.name.text == name
-            {
-                return structDecl
-            }
+                structDecl.name.text == name { return structDecl }
         }
         return nil
     }
 
-    /// A case from a `String` -backed enum: its Swift identifier and its serialized raw value.
-    /// When the case has no explicit raw value, the identifier and raw value are equal.
+    /// A case from a `String` -backed enum: its Swift identifier and its serialized raw value. When
+    /// the case has no explicit raw value, the identifier and raw value are equal.
     typealias EnumCase = (name: String, rawValue: String)
 
     /// Extracts all cases from a `String` -backed enum, capturing each case's Swift identifier
@@ -311,8 +354,9 @@ package final class RuleCollector {
                 // Strip backticks from keyword-escaped names like `private` → "private".
                 let name = element.name.text.trimmingCharacters(in: CharacterSet(charactersIn: "`"))
                 let rawValue: String
+
                 if let literal = element.rawValue?.value.as(StringLiteralExprSyntax.self),
-                   let segment = literal.segments.firstAndOnly?.as(StringSegmentSyntax.self)
+                    let segment = literal.segments.firstAndOnly?.as(StringSegmentSyntax.self)
                 {
                     rawValue = segment.content.text
                 } else {
@@ -332,7 +376,8 @@ package final class RuleCollector {
         for binding: PatternBindingSyntax,
         propertyName: String,
         description: String?,
-        enumTypes: [String: [EnumCase]]
+        enumTypes: [String: [EnumCase]],
+        objectTypes: [String: JSONSchemaNode]
     ) -> JSONSchemaNode? {
         let initValue = binding.initializer?.value
         let defaultCase = defaultCaseName(from: initValue)
@@ -345,6 +390,7 @@ package final class RuleCollector {
                 propertyName: propertyName,
                 description: description,
                 enumTypes: enumTypes,
+                objectTypes: objectTypes,
                 defaultCase: defaultCase,
                 initValue: initValue
             )
@@ -363,10 +409,10 @@ package final class RuleCollector {
             )
         }
         if let stringLiteral = initValue?.as(StringLiteralExprSyntax.self),
-           let segment = stringLiteral.segments.firstAndOnly?.as(StringSegmentSyntax.self)
-        {
+           let segment = stringLiteral.segments.firstAndOnly?.as(StringSegmentSyntax.self) {
             return .string(description: scalarDesc, defaultValue: segment.content.text)
         }
+
         if let defaultCase,
            let entry = enumTypes.first(where: { $1.contains(where: { $0.name == defaultCase }) }),
            let matched = entry.value.first(where: { $0.name == defaultCase })
@@ -392,6 +438,7 @@ package final class RuleCollector {
         propertyName: String,
         description: String?,
         enumTypes: [String: [EnumCase]],
+        objectTypes: [String: JSONSchemaNode],
         defaultCase: String?,
         initValue: ExprSyntax?
     ) -> JSONSchemaNode? {
@@ -404,17 +451,25 @@ package final class RuleCollector {
                 propertyName: propertyName,
                 description: description,
                 enumTypes: enumTypes,
+                objectTypes: objectTypes,
                 defaultCase: defaultCase,
                 initValue: initValue
             )
         }
 
-        // Array type: `[String]`
+        // Array type: `[String]` or an array of a struct declared in the same file
         if let array = type.as(ArrayTypeSyntax.self),
-           let elementIdent = array.element.as(IdentifierTypeSyntax.self),
-           elementIdent.name.text == "String"
+           let elementIdent = array.element.as(IdentifierTypeSyntax.self)
         {
-            return .stringArray(description: scalarDesc)
+            if elementIdent.name.text == "String" { return .stringArray(description: scalarDesc) }
+
+            if let itemNode = objectTypes[elementIdent.name.text] {
+                var node = JSONSchemaNode()
+                node.type = "array"
+                node.description = scalarDesc
+                node.items = Indirect(itemNode)
+                return node
+            }
         }
 
         // Simple identifier type
@@ -455,7 +510,8 @@ package final class RuleCollector {
             }
             // Enum type — use initializer's case as default, fall back to first case.
             if let cases = enumTypes[typeName] {
-                let defaultRaw = defaultCase
+                let defaultRaw =
+                    defaultCase
                     .flatMap { name in cases.first(where: { $0.name == name })?.rawValue }
                     ?? cases[0].rawValue
                 return .stringEnum(
@@ -514,14 +570,13 @@ package final class RuleCollector {
     ) -> String? {
         for member in members {
             guard let varDecl = member.decl.as(VariableDeclSyntax.self),
-                  let binding = varDecl.bindings.firstAndOnly,
-                  let pattern = binding.pattern.as(IdentifierPatternSyntax.self),
-                  pattern.identifier.text == identifier else { continue }
+                let binding = varDecl.bindings.firstAndOnly,
+                let pattern = binding.pattern.as(IdentifierPatternSyntax.self),
+                pattern.identifier.text == identifier else { continue }
 
             // Stored property: `static let key = "value"`
             if let initializer = binding.initializer?.value.as(StringLiteralExprSyntax.self),
-               let segment = initializer.segments.firstAndOnly?.as(StringSegmentSyntax.self)
-            {
+                let segment = initializer.segments.firstAndOnly?.as(StringSegmentSyntax.self) {
                 return segment.content.text
             }
 
@@ -531,17 +586,13 @@ package final class RuleCollector {
             {
                 // Single-expression getter
                 if let stringLiteral = body.first?.item.as(StringLiteralExprSyntax.self),
-                   let segment = stringLiteral.segments.firstAndOnly?.as(StringSegmentSyntax.self)
-                {
-                    return segment.content.text
-                }
+                    let segment = stringLiteral.segments.firstAndOnly?.as(StringSegmentSyntax.self)
+                { return segment.content.text }
                 // Return statement
                 if let returnStmt = body.first?.item.as(ReturnStmtSyntax.self),
-                   let stringLiteral = returnStmt.expression?.as(StringLiteralExprSyntax.self),
-                   let segment = stringLiteral.segments.firstAndOnly?.as(StringSegmentSyntax.self)
-                {
-                    return segment.content.text
-                }
+                    let stringLiteral = returnStmt.expression?.as(StringLiteralExprSyntax.self),
+                    let segment = stringLiteral.segments.firstAndOnly?.as(StringSegmentSyntax.self)
+                { return segment.content.text }
             }
         }
         return nil
@@ -560,10 +611,10 @@ package final class RuleCollector {
     ) -> DetectedLayoutRule.SchemaValueType {
         for member in members {
             guard let varDecl = member.decl.as(VariableDeclSyntax.self),
-                  let binding = varDecl.bindings.firstAndOnly,
-                  let pattern = binding.pattern.as(IdentifierPatternSyntax.self),
-                  pattern.identifier.text == identifier,
-                  let initializer = binding.initializer else { continue }
+                let binding = varDecl.bindings.firstAndOnly,
+                let pattern = binding.pattern.as(IdentifierPatternSyntax.self),
+                pattern.identifier.text == identifier,
+                let initializer = binding.initializer else { continue }
 
             if initializer.value.is(BooleanLiteralExprSyntax.self) { return .boolean }
             if initializer.value.is(IntegerLiteralExprSyntax.self) { return .integer }
@@ -571,20 +622,19 @@ package final class RuleCollector {
             // Array literal → currently treated as `[String]`. Other element types are not
             // supported by the schema generator yet.
             if initializer.value.is(ArrayExprSyntax.self) { return .stringArray }
-            // `[]` typed as `[String]` (or similar) appears as `Array<String>()` or just `[]`
-            // with type annotation. Detect via type annotation.
+            // `[]` typed as `[String]` (or similar) appears as `Array<String>()` or just `[]` with
+            // type annotation. Detect via type annotation.
             if let typeAnnotation = binding.typeAnnotation,
                let array = typeAnnotation.type.as(ArrayTypeSyntax.self),
-               array.element.as(IdentifierTypeSyntax.self)?.name.text == "String"
-            {
+               array.element.as(IdentifierTypeSyntax.self)?.name.text == "String" {
                 return .stringArray
             }
 
             // Check for `.enumCase` → find the enum type in the file via type annotation.
             if let memberAccess = initializer.value.as(MemberAccessExprSyntax.self),
-               let typeAnnotation = binding.typeAnnotation,
-               let typeName = typeAnnotation.type.as(IdentifierTypeSyntax.self)?.name.text,
-               let cases = findEnumCases(named: typeName, in: fileStatements)
+                let typeAnnotation = binding.typeAnnotation,
+                let typeName = typeAnnotation.type.as(IdentifierTypeSyntax.self)?.name.text,
+                let cases = findEnumCases(named: typeName, in: fileStatements)
             {
                 let defaultName = memberAccess.declName.baseName.text
                 let defaultRaw = cases.first(where: { $0.name == defaultName })?.rawValue
@@ -604,7 +654,7 @@ package final class RuleCollector {
     ) -> [EnumCase]? {
         for statement in statements {
             guard let enumDecl = statement.item.as(EnumDeclSyntax.self),
-                  enumDecl.name.text == name else { continue }
+                enumDecl.name.text == name else { continue }
             let cases = extractEnumCases(from: enumDecl)
             return cases.isEmpty ? nil : cases
         }
@@ -620,9 +670,9 @@ package final class RuleCollector {
     private static func extractIsOptIn(from members: MemberBlockItemListSyntax) -> Bool {
         for member in members {
             guard let varDecl = member.decl.as(VariableDeclSyntax.self),
-                  let binding = varDecl.bindings.firstAndOnly,
-                  let pattern = binding.pattern.as(IdentifierPatternSyntax.self),
-                  pattern.identifier.text == "defaultValue" else { continue }
+                let binding = varDecl.bindings.firstAndOnly,
+                let pattern = binding.pattern.as(IdentifierPatternSyntax.self),
+                pattern.identifier.text == "defaultValue" else { continue }
 
             // Check initializer: `LintValue(rewrite: false, ...)` or `LintOnlyValue(lint: .no)`
             if let call = binding.initializer?.value.as(FunctionCallExprSyntax.self) {
@@ -637,8 +687,7 @@ package final class RuleCollector {
                     return Self.isDisabledDefault(call)
                 }
                 if let returnStmt = body.first?.item.as(ReturnStmtSyntax.self),
-                   let call = returnStmt.expression?.as(FunctionCallExprSyntax.self)
-                {
+                    let call = returnStmt.expression?.as(FunctionCallExprSyntax.self) {
                     return Self.isDisabledDefault(call)
                 }
                 // Multi-statement: look for `v.rewrite = false` anywhere in body
@@ -656,22 +705,16 @@ package final class RuleCollector {
         for arg in call.arguments {
             if arg.label?.text == "rewrite",
                let boolLiteral = arg.expression.as(BooleanLiteralExprSyntax.self),
-               boolLiteral.literal.text == "false"
-            {
-                return true
-            }
+               boolLiteral.literal.text == "false" { return true }
         }
         // `LintOnlyValue(lint: .no)`
         if let callee = call.calledExpression.as(DeclReferenceExprSyntax.self),
-           callee.baseName.text == "LintOnlyValue"
+            callee.baseName.text == "LintOnlyValue"
         {
             for arg in call.arguments {
                 if arg.label?.text == "lint",
                    let memberAccess = arg.expression.as(MemberAccessExprSyntax.self),
-                   memberAccess.declName.baseName.text == "no"
-                {
-                    return true
-                }
+                   memberAccess.declName.baseName.text == "no" { return true }
             }
         }
         return false
@@ -703,9 +746,9 @@ package final class RuleCollector {
     ) -> ConfigurationGroup? {
         for member in members {
             guard let varDecl = member.decl.as(VariableDeclSyntax.self),
-                  let binding = varDecl.bindings.firstAndOnly,
-                  let pattern = binding.pattern.as(IdentifierPatternSyntax.self),
-                  pattern.identifier.text == "group" else { continue }
+                let binding = varDecl.bindings.firstAndOnly,
+                let pattern = binding.pattern.as(IdentifierPatternSyntax.self),
+                pattern.identifier.text == "group" else { continue }
 
             let memberAccess: MemberAccessExprSyntax?
 

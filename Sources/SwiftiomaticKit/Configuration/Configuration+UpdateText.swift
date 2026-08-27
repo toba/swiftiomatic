@@ -52,12 +52,8 @@ extension Configuration {
             insertionsByTarget[target, default: []].append((entry.correctAt, entry.value))
         }
 
-        edits.append(
-            contentsOf: insertionEdits(
-                insertionsByTarget: insertionsByTarget,
-                source: source,
-                layout: layout
-            ))
+        edits.append(contentsOf: insertionEdits(
+            insertionsByTarget: insertionsByTarget, source: source, layout: layout))
 
         // 4. Version bump — replace existing `"version": N` value, or insert one if missing.
         if let versionUpdate = diff.versionUpdate {
@@ -98,8 +94,9 @@ extension Configuration {
 
         if let groupName {
             guard let group = layout.members.first(where: { $0.key == groupName }),
-                  let nested = group.nested,
-                  let memberIndex = nested.members.firstIndex(where: { $0.key == name }) else {
+                let nested = group.nested,
+                let memberIndex = nested.members.firstIndex(where: { $0.key == name })
+            else {
                 return nil
             }
             return removalEdit(memberIndex: memberIndex, container: nested, source: source)
@@ -146,36 +143,23 @@ extension Configuration {
         for (target, items) in insertionsByTarget {
             switch target {
                 case .root:
-                    edits.append(
-                        contentsOf: insertion(
-                            into: layout,
-                            source: source,
-                            items: items,
-                            indent: rootChildIndent(layout)
-                        ))
+                    edits.append(contentsOf: insertion(
+                        into: layout, source: source, items: items, indent: rootChildIndent(layout))
+                    )
 
                 case let .group(groupName):
                     if let groupMember = layout.members.first(where: { $0.key == groupName }),
-                       let nested = groupMember.nested
+                        let nested = groupMember.nested
                     {
-                        edits.append(
-                            contentsOf: insertion(
-                                into: nested,
-                                source: source,
-                                items: items,
-                                indent: groupChildIndent(
-                                    nested, fallbackParentIndent: groupMember.indent)
-                            ))
+                        edits.append(contentsOf: insertion(
+                            into: nested, source: source, items: items,
+                            indent: groupChildIndent(
+                                nested, fallbackParentIndent: groupMember.indent)))
                     } else {
                         // Group does not yet exist — create it as a new root member with these
                         // items as its children.
-                        edits.append(
-                            createGroupEdit(
-                                groupName: groupName,
-                                items: items,
-                                source: source,
-                                layout: layout
-                            ))
+                        edits.append(createGroupEdit(
+                            groupName: groupName, items: items, source: source, layout: layout))
                     }
             }
         }
@@ -254,11 +238,9 @@ extension Configuration {
                     let key = shortKey(forQualifiedKey: item.qualifiedKey)
                     text += "\(indent)\"\(key)\": \(prettyValue(item.value, indent: indent)),\n"
                 }
-                edits.append(
-                    TextEdit(
-                        range: first.fullRange.lowerBound..<first.fullRange.lowerBound,
-                        replacement: text
-                    ))
+                edits.append(TextEdit(
+                    range: first.fullRange.lowerBound..<first.fullRange.lowerBound,
+                    replacement: text))
             } else {
                 // Insert after `members[predIndex]` . Ensure that member ends in a comma.
                 let pred = container.members[predIndex]
@@ -281,14 +263,17 @@ extension Configuration {
                     let to: String.Index = (predIndex == lastIndex)
                         ? container.closeBrace
                         : container.members[predIndex + 1].fullRange.lowerBound
+                    // `between` carries the indent of whatever follows the predecessor, so it has
+                    // to close the run of new lines rather than open it. Putting it first would add
+                    // that indent to the first inserted line and leave the close brace at column 0.
                     let between = String(source[from..<to])
-                    edits.append(TextEdit(range: from..<to, replacement: "," + between + text))
+                    let lines = text.hasSuffix("\n") ? String(text.dropLast()) : text
+                    edits.append(TextEdit(
+                        range: from..<to, replacement: "," + "\n" + lines + between))
                 } else {
-                    edits.append(
-                        TextEdit(
-                            range: pred.fullRange.upperBound..<pred.fullRange.upperBound,
-                            replacement: text
-                        ))
+                    edits.append(TextEdit(
+                        range: pred.fullRange.upperBound..<pred.fullRange.upperBound,
+                        replacement: text))
                 }
             }
         }
@@ -354,10 +339,7 @@ extension Configuration {
             return TextEdit(range: from..<to, replacement: newText)
         } else {
             let insertion = "\(groupIndent)\(body)\n"
-            return TextEdit(
-                range: layout.closeBrace..<layout.closeBrace,
-                replacement: insertion
-            )
+            return TextEdit(range: layout.closeBrace..<layout.closeBrace, replacement: insertion)
         }
     }
 
@@ -385,7 +367,7 @@ extension Configuration {
         // Empty root object — insert as the sole member.
         let closeIndent = indentBeforeBrace(closeBrace: layout.closeBrace, source: source)
         let insertion = "\n\(line)\n\(closeIndent)"
-        return TextEdit(range: layout.closeBrace..<layout.closeBrace, replacement: insertion)
+        return .init(range: layout.closeBrace..<layout.closeBrace, replacement: insertion)
     }
 
     // MARK: - Indentation helpers
@@ -505,8 +487,11 @@ extension Configuration {
         }
         let lastLine = lines.last!.trimmingCharacters(in: .whitespaces)
         let trailing = lastLine.hasSuffix(",") ? "," : ""
+        // The value is compacted on its own, without the `"key":` that precedes it, so the prefix
+        // is empty here. Emitting the separator anyway would put a second space after that colon.
+        let separator = keyPrefix.isEmpty ? "" : " "
 
-        return "\(indent)\(keyPrefix) { \(pairs.joined(separator: ", ")) }\(trailing)"
+        return "\(indent)\(keyPrefix)\(separator){ \(pairs.joined(separator: ", ")) }\(trailing)"
     }
 
     // MARK: - Default value lookup (mirrors apply path)

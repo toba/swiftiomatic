@@ -49,7 +49,7 @@ extension Configuration {
             let trimmed = line.trimmingCharacters(in: .whitespaces)
 
             // Look for a line ending with `{` that starts a potential compact object. Must be a
-            // keyed value like `"key" : {` — not a bare `{` .
+            // keyed value like `"key": {` , not a bare `{` .
             if trimmed.hasSuffix("{"), trimmed.contains("\"") {
                 // Collect lines until we find the matching `}` .
                 var objectLines = [line]
@@ -88,11 +88,11 @@ extension Configuration {
         return result.joined(separator: "\n")
     }
 
-    /// Joins multi-line object lines into a single-line `"key" : { ... }` form.
+    /// Joins multi-line object lines into a single-line `"key": { ... }` form.
     private func compactObject(_ lines: [String]) -> String {
         guard let first = lines.first else { return "" }
 
-        // Extract the indent and key portion: `  "key" : {`
+        // Extract the indent and key portion: `  "key": {`
         let indent = first.prefix(while: { $0 == " " })
         let keyPart = first.trimmingCharacters(in: .whitespaces)
         // Remove the trailing `{`

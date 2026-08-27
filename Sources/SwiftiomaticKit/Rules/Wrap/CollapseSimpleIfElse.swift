@@ -72,17 +72,25 @@ fileprivate extension CollapseSimpleIfElse {
                     current = next
                 case let .codeBlock(block):
                     if block.leftBrace.leadingTrivia.containsNewlines { return false }
-                    if block.leftBrace.trailingTrivia.containsNewlines { return false }
-                    return block.rightBrace.leadingTrivia.containsNewlines ? false : true
+                    return block.leftBrace.trailingTrivia.containsNewlines
+                        ? false
+                        : block.rightBrace.leadingTrivia.containsNewlines ? false : true
             }
         }
     }
 
-    /// Validates that every branch in the chain has exactly one statement and no comments.
+    /// Validates that every link in the chain carries one statement per branch and no comment
+    ///
+    /// The condition list counts as much as the body does. A line comment on the last condition
+    /// sits in that condition's trailing trivia, and the collapse clears that trivia, so the
+    /// comment disappears with no diagnostic and no compile error. A comment on an earlier
+    /// condition survives the clear, but one line then puts every later condition after the comment
+    /// marker.
     static func validateChain(_ node: IfExprSyntax) -> Bool {
         var current = node
 
         while true {
+            if current.conditions.containsComments() { return false }
             guard validateBody(current.body) else { return false }
 
             switch current.elseBody {
@@ -99,8 +107,9 @@ fileprivate extension CollapseSimpleIfElse {
         if hasComment(body.leftBrace.trailingTrivia) { return false }
         if hasComment(stmt.leadingTrivia) { return false }
         if hasComment(stmt.trailingTrivia) { return false }
-        if hasComment(body.rightBrace.leadingTrivia) { return false }
-        return hasComment(body.rightBrace.trailingTrivia) ? false : true
+        return hasComment(body.rightBrace.leadingTrivia)
+            ? false
+            : hasComment(body.rightBrace.trailingTrivia) ? false : true
     }
 
     static func hasComment(_ trivia: Trivia) -> Bool {

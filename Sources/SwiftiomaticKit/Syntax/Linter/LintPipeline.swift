@@ -1,6 +1,3 @@
-// sm:ignore noForceCast
-// `as! R` in `rule(_:)` is invariant-preserving: ruleCache is keyed by ObjectIdentifier(R), so the
-// cached value is by construction an R.
 import SwiftSyntax
 
 /// A syntax visitor that delegates to individual rules for linting.
@@ -28,10 +25,7 @@ extension LintPipeline {
         guard context.shouldFormat(Rule.self, node: Syntax(node)) else { return }
 
         if !shouldSkipChildren.isEmpty,
-           shouldSkipChildren[ObjectIdentifier(Rule.self)] != nil
-        {
-            return
-        }
+           shouldSkipChildren[ObjectIdentifier(Rule.self)] != nil { return }
 
         let rule = self.rule(Rule.self)
         _ = visitor(rule)(node)
@@ -61,18 +55,19 @@ extension LintPipeline {
 
         if !shouldSkipChildren.isEmpty,
            case let .some(skipNode) = shouldSkipChildren[ruleID],
-           node.id == skipNode.id
-        {
-            shouldSkipChildren.removeValue(forKey: ruleID)
-        }
+           node.id == skipNode.id { shouldSkipChildren.removeValue(forKey: ruleID) }
 
         if let cached = ruleCache[ruleID] as? Rule { visitor(cached)(node) }
     }
 
-    /// Retrieves an instance of a lint or format rule based on its type.
-    private func rule<R: InstanceSyntaxRule>(_ type: R.Type) -> R {
+    /// Retrieves an instance of a lint or format rule based on its type
+    ///
+    /// The cache is keyed by `ObjectIdentifier(R.self)` , so a stored value is an `R` by
+    /// construction. The conditional cast reads that invariant without a trap. A mismatched entry
+    /// is replaced with a fresh instance of the requested type.
+    func rule<R: InstanceSyntaxRule>(_ type: R.Type) -> R {
         let identifier = ObjectIdentifier(type)
-        if let cachedRule = ruleCache[identifier] { return cachedRule as! R }
+        if let cachedRule = ruleCache[identifier] as? R { return cachedRule }
         let rule = R(context: context)
         ruleCache[identifier] = rule
         return rule

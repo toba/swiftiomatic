@@ -41,11 +41,8 @@ extension JSONValue: Codable {
         } else if let v = try? container.decode([String: JSONValue].self) {
             self = .object(v)
         } else {
-            throw DecodingError.dataCorrupted(
-                .init(
-                    codingPath: decoder.codingPath,
-                    debugDescription: "Unsupported JSON value"
-                ))
+            throw DecodingError.dataCorrupted(.init(
+                codingPath: decoder.codingPath, debugDescription: "Unsupported JSON value"))
         }
     }
 
@@ -193,7 +190,7 @@ extension JSONValue {
                     output += String(repeating: " ", count: childIndent)
                     output += "\""
                     output += escapeJSON(key)
-                    output += "\" : "
+                    output += "\": "
                     dict[key]!.write(to: &output, indent: childIndent, sortBy: order)
                     if i < sortedKeys.count - 1 { output += "," }
                     output += "\n"

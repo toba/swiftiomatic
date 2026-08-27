@@ -1,26 +1,28 @@
 import SwiftSyntax
 
-/// Remove `override` declarations whose body only forwards identical arguments to `super` .
+/// Flag an `override` whose body only forwards identical arguments to `super`
 ///
 /// An override that does nothing other than `super.<name>(...)` with the same parameters (in order,
-/// with matching labels) adds no behavior.
+/// with matching labels) usually adds no behavior.
 ///
-/// The rule is conservative:
-/// - Bails out if the override has any attributes (e.g. `@available` ).
-/// - Bails out if any parameter has a default value (the override may be tightening defaults).
-/// - Bails out if the call uses a trailing closure or `try!` / `try?` (assumed to change behavior).
-/// - Skips overrides explicitly required by tests ( `tearDown` , `setUp` , etc.) and common
-///   UIKit/AppKit lifecycle methods that are typically intentional anchors.
+/// The rule reports and never rewrites. Source alone does not say whether the declaration is dead.
+/// A forwarding override can raise the access level, hold the override point open for a later edit,
+/// or exist to prove the signature still matches the superclass. Deleting one of those deletes
+/// working code, so the decision stays with the reader.
+///
+/// The check is conservative:
+/// - Skips an override that carries any attribute (e.g. `@available` ).
+/// - Skips an override with a defaulted parameter, because the override may tighten the default.
+/// - Skips a call that uses a trailing closure or `try!` / `try?` , which may change behavior.
+/// - Skips an override required by tests ( `tearDown` , `setUp` ) and the common UIKit and AppKit
+///   lifecycle methods, which are usually intentional anchors.
 ///
 /// Lint: A finding is raised on the `override` keyword.
-///
-/// Rewrite: The entire `override` declaration is removed, preserving surrounding trivia.
-final class DropRedundantOverride: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
+final class DropRedundantOverride: LintSyntaxRule<LintOnlyValue>, @unchecked Sendable {
     override class var group: ConfigurationGroup? { .redundancies }
-    override class var defaultValue: BasicRuleValue { .init(rewrite: false, lint: .warn) }
 
-    /// Methods that should never be flagged because their parent class implementations are
-    /// typically intentional anchors (test lifecycle, UIKit/AppKit lifecycle).
+    /// Methods that the rule never flags, because an override of one is usually an intentional
+    /// anchor (test lifecycle, UIKit and AppKit lifecycle).
     private static let excludedMethods: Set<String> = [
         "setUp", "setUpWithError", "tearDown", "tearDownWithError",
         "viewDidLoad", "viewWillAppear", "viewDidAppear",
@@ -29,25 +31,15 @@ final class DropRedundantOverride: StaticFormatRule<BasicRuleValue>, @unchecked 
         "didReceiveMemoryWarning",
     ]
 
-    static func transform(
-        _ node: FunctionDeclSyntax,
-        original _: FunctionDeclSyntax,
-        parent _: Syntax?,
-        context: Context
-    ) -> DeclSyntax {
-        guard !excludedMethods.contains(node.name.text),
-              isRedundantFunctionOverride(node) else { return DeclSyntax(node) }
+    override func visit(_ node: FunctionDeclSyntax) -> SyntaxVisitorContinueKind {
+        guard !Self.excludedMethods.contains(node.name.text),
+              Self.isRedundantFunctionOverride(node) else { return .visitChildren }
 
-        let overrideToken = node.modifiers.first(where: {
-            $0.name.tokenKind == .keyword(.override)
-        })?.name ?? node.funcKeyword
+        let overrideModifier = node.modifiers.first { $0.name.tokenKind == .keyword(.override) }
+        let anchor = overrideModifier?.name ?? node.funcKeyword
 
-        Self.diagnose(
-            .removeRedundantOverride(name: node.name.text),
-            on: overrideToken,
-            context: context
-        )
-        return removed(node)
+        diagnose(.removeRedundantOverride(name: node.name.text), on: anchor)
+        return .visitChildren
     }
 
     // MARK: - Detection
@@ -90,9 +82,7 @@ final class DropRedundantOverride: StaticFormatRule<BasicRuleValue>, @unchecked 
               member.base?.is(SuperExprSyntax.self) == true,
               member.declName.baseName.text == name,
               !params.contains(where: { $0.defaultValue != nil }),
-              params.count == call.arguments.count else {
-            return false
-        }
+              params.count == call.arguments.count else { return false }
 
         for (param, arg) in zip(params, call.arguments) {
             let expectedLabel = param.firstName.text == "_" ? "" : param.firstName.text
@@ -111,10 +101,7 @@ final class DropRedundantOverride: StaticFormatRule<BasicRuleValue>, @unchecked 
             case let .expr(expr): return unwrapCall(expr)
             case let .stmt(stmt):
                 if let returnStmt = stmt.as(ReturnStmtSyntax.self),
-                   let value = returnStmt.expression
-                {
-                    return unwrapCall(value)
-                }
+                   let value = returnStmt.expression { return unwrapCall(value) }
                 return nil
             default: return nil
         }
@@ -125,24 +112,19 @@ final class DropRedundantOverride: StaticFormatRule<BasicRuleValue>, @unchecked 
         if let awaitExpr = expr.as(AwaitExprSyntax.self) { return unwrapCall(awaitExpr.expression) }
 
         if let tryExpr = expr.as(TryExprSyntax.self) {
-            // `try!` / `try?` may change behavior — bail out.
+            // a forced or optional try may change behavior, so bail out
             guard tryExpr.questionOrExclamationMark == nil else { return nil }
             return unwrapCall(tryExpr.expression)
         }
         return nil
     }
-
-    /// Returns an empty declaration whose only contribution is the original node's trivia.
-    private static func removed(_ node: some DeclSyntaxProtocol) -> DeclSyntax {
-        let empty: DeclSyntax = ""
-        return empty
-            .with(\.leadingTrivia, node.leadingTrivia)
-            .with(\.trailingTrivia, node.trailingTrivia)
-    }
 }
 
 fileprivate extension Finding.Message {
     static func removeRedundantOverride(name: String) -> Finding.Message {
-        "remove redundant override of '\(name)'; it only forwards to super with identical arguments"
+        """
+        override of '\(name)' only forwards to super with identical arguments. \
+        Remove it when nothing depends on the declaration
+        """
     }
 }

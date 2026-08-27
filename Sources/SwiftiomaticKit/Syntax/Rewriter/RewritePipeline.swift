@@ -148,6 +148,7 @@ final class RewritePipeline: SyntaxRewriter {
         apply(SimplifyGenericConstraints.self, to: &concrete, original: node, gate: gate) {
             SimplifyGenericConstraints.transform($0, original: $1, parent: parent, context: $2)
         }
+
         if context.shouldRewrite(DropRedundantSwiftTestingSuite.self, gate: gate) {
             concrete = DropRedundantSwiftTestingSuite.removeSuite(
                 from: concrete, keyword: \.actorKeyword, context: context
@@ -259,9 +260,9 @@ final class RewritePipeline: SyntaxRewriter {
         if runHoistTry { HoistTry.willEnter(node, context: context) }
         defer { if runHoistTry { HoistTry.didExit(node, context: context) } }
         var current: ExprSyntax = super.visit(node)
-        applyAsserting(HoistTry.self, to: &current, original: node, as: AwaitExprSyntax.self, gate: gate) {
-            HoistTry.transform($0, original: $1, parent: parent, context: $2)
-        }
+        applyAsserting(
+            HoistTry.self, to: &current, original: node, as: AwaitExprSyntax.self, gate: gate
+        ) { HoistTry.transform($0, original: $1, parent: parent, context: $2) }
         return current
     }
 
@@ -281,7 +282,8 @@ final class RewritePipeline: SyntaxRewriter {
         var current = super.visit(node)
 
         if context.shouldRewrite(HoistCaseLet.self, gate: gate) {
-            current = HoistCaseLet.transform(current, original: node, parent: parent, context: context)
+            current = HoistCaseLet.transform(
+                current, original: node, parent: parent, context: context)
         }
         return current
     }
@@ -351,6 +353,7 @@ final class RewritePipeline: SyntaxRewriter {
         apply(RequireTestFnPrefixOrAttribute.self, to: &concrete, original: node, gate: gate) {
             RequireTestFnPrefixOrAttribute.transform($0, original: $1, parent: parent, context: $2)
         }
+
         if context.shouldRewrite(DropRedundantFinal.self, gate: gate) {
             concrete = DropRedundantFinal.apply(concrete, context: context)
         }
@@ -365,14 +368,16 @@ final class RewritePipeline: SyntaxRewriter {
         // ConvertStaticStructToEnum runs last because it can widen the class to an `EnumDeclSyntax`
         // .
         return context.shouldRewrite(ConvertStaticStructToEnum.self, gate: gate)
-            ? ConvertStaticStructToEnum.transform(concrete, original: node, parent: parent, context: context)
+            ? ConvertStaticStructToEnum.transform(
+                concrete, original: node, parent: parent, context: context)
             : DeclSyntax(concrete)
     }
 
     override func visit(_ node: ClosureExprSyntax) -> ExprSyntax {
         guard let gate = context.gate(for: node) else { return super.visit(node) }
         let parent = Syntax(node).parent
-        let runNamedClosureParams = context.shouldRewrite(RequireNamedClosureParams.self, gate: gate)
+        let runNamedClosureParams = context.shouldRewrite(
+            RequireNamedClosureParams.self, gate: gate)
         let runNoForceTry = context.shouldRewrite(NoForceTry.self, gate: gate)
         let runNoForceUnwrap = context.shouldRewrite(NoForceUnwrap.self, gate: gate)
         let runNoGuardInTests = context.shouldRewrite(NoGuardInTests.self, gate: gate)
@@ -414,7 +419,8 @@ final class RewritePipeline: SyntaxRewriter {
         var result = super.visit(node)
 
         if context.shouldRewrite(NoParensInClosureParams.self, gate: gate) {
-            result = NoParensInClosureParams.transform(result, original: node, parent: parent, context: context)
+            result = NoParensInClosureParams.transform(
+                result, original: node, parent: parent, context: context)
         }
         if context.shouldRewrite(UseVoidNotEmptyTuple.self, gate: gate) {
             result = UseVoidNotEmptyTuple.apply(result, context: context)
@@ -438,37 +444,46 @@ final class RewritePipeline: SyntaxRewriter {
         var result = super.visit(node)
 
         if context.shouldRewrite(RemoveEmptyExtensions.self, gate: gate) {
-            result = RemoveEmptyExtensions.transform(result, original: node, parent: parent, context: context)
+            result = RemoveEmptyExtensions.transform(
+                result, original: node, parent: parent, context: context)
         }
         if context.shouldRewrite(NoAssignmentInExpressions.self, gate: gate) {
-            result = NoAssignmentInExpressions.transform(result, original: node, parent: parent, context: context)
+            result = NoAssignmentInExpressions.transform(
+                result, original: node, parent: parent, context: context)
         }
         if context.shouldRewrite(DropSemicolons.self, gate: gate) {
-            result = DropSemicolons.transform(result, original: node, parent: parent, context: context)
+            result = DropSemicolons.transform(
+                result, original: node, parent: parent, context: context)
         }
         if context.shouldRewrite(SplitMultipleDeclsPerLine.self, gate: gate) {
-            result = SplitMultipleDeclsPerLine.transform(result, original: node, parent: parent, context: context)
+            result = SplitMultipleDeclsPerLine.transform(
+                result, original: node, parent: parent, context: context)
         }
         if context.shouldRewrite(UseIfElseAsExpression.self, gate: gate) {
-            result = UseIfElseAsExpression.transform(result, original: node, parent: parent, context: context)
+            result = UseIfElseAsExpression.transform(
+                result, original: node, parent: parent, context: context)
         }
         if context.shouldRewrite(UseIfElseNotSwitchOnBool.self, gate: gate) {
-            result = UseIfElseNotSwitchOnBool.transform(result, original: node, parent: parent, context: context)
+            result = UseIfElseNotSwitchOnBool.transform(
+                result, original: node, parent: parent, context: context)
         }
         if context.shouldRewrite(UseTernary.self, gate: gate) {
             result = UseTernary.transform(result, original: node, parent: parent, context: context)
         }
         if context.shouldRewrite(DropRedundantLet.self, gate: gate) {
-            result = DropRedundantLet.transform(result, original: node, parent: parent, context: context)
+            result = DropRedundantLet.transform(
+                result, original: node, parent: parent, context: context)
         }
         if context.shouldRewrite(DropRedundantProperty.self, gate: gate) {
-            result = DropRedundantProperty.transform(result, original: node, parent: parent, context: context)
+            result = DropRedundantProperty.transform(
+                result, original: node, parent: parent, context: context)
         }
         if context.shouldRewrite(UseEarlyExits.self, gate: gate) {
             result = UseEarlyExits.apply(result, context: context)
         }
         if context.shouldRewrite(NoGuardInTests.self, gate: gate) {
-            result = NoGuardInTests.transform(result, original: node, parent: parent, context: context)
+            result = NoGuardInTests.transform(
+                result, original: node, parent: parent, context: context)
         }
         return result
     }
@@ -479,7 +494,8 @@ final class RewritePipeline: SyntaxRewriter {
         var current = super.visit(node)
 
         if context.shouldRewrite(UseDocCommentsOnAPI.self, gate: gate) {
-            current = UseDocCommentsOnAPI.transform(current, original: node, parent: parent, context: context)
+            current = UseDocCommentsOnAPI.transform(
+                current, original: node, parent: parent, context: context)
         }
         return current
     }
@@ -490,6 +506,7 @@ final class RewritePipeline: SyntaxRewriter {
             InsertBlankLineBeforeControlFlowBlocks.willEnter(node, context: context)
         }
         var result = super.visit(node)
+
         if context.shouldRewrite(InsertBlankLineAfterGuard.self, gate: gate) {
             result = InsertBlankLineAfterGuard.apply(result, context: context)
         }
@@ -510,7 +527,8 @@ final class RewritePipeline: SyntaxRewriter {
         var current = super.visit(node)
 
         if context.shouldRewrite(UseCommaNotAndInConditions.self, gate: gate) {
-            current = UseCommaNotAndInConditions.transform(current, original: node, parent: parent, context: context)
+            current = UseCommaNotAndInConditions.transform(
+                current, original: node, parent: parent, context: context)
         }
         return current
     }
@@ -525,15 +543,13 @@ final class RewritePipeline: SyntaxRewriter {
         var result = super.visit(node)
 
         if context.shouldRewrite(UseExplicitNilCheck.self, gate: gate) {
-            result = UseExplicitNilCheck.transform(result, original: node, parent: parent, context: context)
+            result = UseExplicitNilCheck.transform(
+                result, original: node, parent: parent, context: context)
         }
         if context.shouldRewrite(NoParensAroundConditions.self, gate: gate),
            case let .expression(condition) = result.condition,
            let stripped = NoParensAroundConditions.minimalSingleExpression(
-               condition, context: context)
-        {
-            result.condition = .expression(stripped)
-        }
+               condition, context: context) { result.condition = .expression(stripped) }
         return result
     }
 
@@ -543,7 +559,8 @@ final class RewritePipeline: SyntaxRewriter {
         var current = super.visit(node)
 
         if context.shouldRewrite(MatchExtensionAccessToMembers.self, gate: gate) {
-            current = MatchExtensionAccessToMembers.transform(current, original: node, parent: parent, context: context)
+            current = MatchExtensionAccessToMembers.transform(
+                current, original: node, parent: parent, context: context)
         }
         return current
     }
@@ -595,10 +612,12 @@ final class RewritePipeline: SyntaxRewriter {
         var current: DeclSyntax = super.visit(node)
 
         applyAsserting(
-            KeepModifiersOnSameLine.self, to: &current, original: node, as: EnumCaseDeclSyntax.self, gate: gate
+            KeepModifiersOnSameLine.self, to: &current, original: node, as: EnumCaseDeclSyntax.self,
+            gate: gate
         ) { KeepModifiersOnSameLine.transform($0, original: $1, parent: parent, context: $2) }
         applyAsserting(
-            DropRedundantRawValues.self, to: &current, original: node, as: EnumCaseDeclSyntax.self, gate: gate
+            DropRedundantRawValues.self, to: &current, original: node, as: EnumCaseDeclSyntax.self,
+            gate: gate
         ) { DropRedundantRawValues.transform($0, original: $1, parent: parent, context: $2) }
 
         return current
@@ -610,7 +629,8 @@ final class RewritePipeline: SyntaxRewriter {
         var current = super.visit(node)
 
         if context.shouldRewrite(NoCaseNamedNone.self, gate: gate) {
-            current = NoCaseNamedNone.transform(current, original: node, parent: parent, context: context)
+            current = NoCaseNamedNone.transform(
+                current, original: node, parent: parent, context: context)
         }
         return current
     }
@@ -671,6 +691,7 @@ final class RewritePipeline: SyntaxRewriter {
         apply(RequireTestFnPrefixOrAttribute.self, to: &concrete, original: node, gate: gate) {
             RequireTestFnPrefixOrAttribute.transform($0, original: $1, parent: parent, context: $2)
         }
+
         if context.shouldRewrite(DropRedundantSwiftTestingSuite.self, gate: gate) {
             concrete = DropRedundantSwiftTestingSuite.removeSuite(
                 from: concrete, keyword: \.enumKeyword, context: context
@@ -726,7 +747,8 @@ final class RewritePipeline: SyntaxRewriter {
     override func visit(_ node: ForStmtSyntax) -> StmtSyntax {
         guard let gate = context.gate(for: node) else { return super.visit(node) }
         let parent = Syntax(node).parent
-        let runLayoutSingleLineBodies = context.shouldRewrite(LayoutSingleLineBodies.self, gate: gate)
+        let runLayoutSingleLineBodies = context.shouldRewrite(
+            LayoutSingleLineBodies.self, gate: gate)
         if runLayoutSingleLineBodies { LayoutSingleLineBodies.willEnter(node, context: context) }
 
         defer {
@@ -768,7 +790,8 @@ final class RewritePipeline: SyntaxRewriter {
         guard var concrete = visited.as(ForceUnwrapExprSyntax.self) else { return visited }
 
         if context.shouldRewrite(UseURLMacroForURLLiterals.self, gate: gate) {
-            let widened = UseURLMacroForURLLiterals.transform(concrete, original: node, parent: parent, context: context)
+            let widened = UseURLMacroForURLLiterals.transform(
+                concrete, original: node, parent: parent, context: context)
 
             if let stillForce = widened.as(ForceUnwrapExprSyntax.self) {
                 concrete = stillForce
@@ -802,40 +825,29 @@ final class RewritePipeline: SyntaxRewriter {
         // HoistAwait may widen `foo(await x)` to `await foo(x)` .
         if let widened = applyWidening(
             HoistAwait.self, to: &concrete, original: node, gate: gate,
-            {
-                HoistAwait.transform($0, original: $1, parent: parent, context: $2)
-            })
-        {
+            { HoistAwait.transform($0, original: $1, parent: parent, context: $2) }) {
             return widened
         }
         // HoistTry may widen `foo(try x)` to `try foo(x)` .
         if let widened = applyWidening(
             HoistTry.self, to: &concrete, original: node, gate: gate,
-            {
-                HoistTry.transform($0, original: $1, parent: parent, context: $2)
-            })
-        {
+            { HoistTry.transform($0, original: $1, parent: parent, context: $2) }) {
             return widened
         }
         apply(UseAssertionFailureNotAssertFalse.self, to: &concrete, original: node, gate: gate) {
-            UseAssertionFailureNotAssertFalse.transform($0, original: $1, parent: parent, context: $2)
+            UseAssertionFailureNotAssertFalse.transform(
+                $0, original: $1, parent: parent, context: $2)
         }
         // UseSwiftTestingNotXCTest may widen `FunctionCallExpr` to `MacroExpansionExpr` .
         if let widened = applyWidening(
             UseSwiftTestingNotXCTest.self, to: &concrete, original: node, gate: gate,
-            {
-                UseSwiftTestingNotXCTest.transform($0, original: $1, parent: parent, context: $2)
-            })
-        {
+            { UseSwiftTestingNotXCTest.transform($0, original: $1, parent: parent, context: $2) }) {
             return widened
         }
         // UseDotZero may widen the call to a `MemberAccessExpr` .
         if let widened = applyWidening(
             UseDotZero.self, to: &concrete, original: node, gate: gate,
-            {
-                UseDotZero.transform($0, original: $1, parent: parent, context: $2)
-            })
-        {
+            { UseDotZero.transform($0, original: $1, parent: parent, context: $2) }) {
             return widened
         }
         apply(UseKeyPath.self, to: &concrete, original: node, gate: gate) {
@@ -846,10 +858,7 @@ final class RewritePipeline: SyntaxRewriter {
             DropRedundantClosureWrapper.self, to: &concrete, original: node, gate: gate,
             {
                 DropRedundantClosureWrapper.transform($0, original: $1, parent: parent, context: $2)
-            })
-        {
-            return widened
-        }
+            }) { return widened }
         apply(DropRedundantInitCall.self, to: &concrete, original: node, gate: gate) {
             DropRedundantInitCall.transform($0, original: $1, parent: parent, context: $2)
         }
@@ -859,11 +868,13 @@ final class RewritePipeline: SyntaxRewriter {
         apply(UseScaledToFit.self, to: &concrete, original: node, gate: gate) {
             UseScaledToFit.transform($0, original: $1, parent: parent, context: $2)
         }
+
         if context.shouldRewrite(NoTrailingClosureParens.self, gate: gate) {
             concrete = NoTrailingClosureParens.apply(concrete, context: context)
         }
         if context.shouldRewrite(UseTrailingClosures.self, gate: gate) {
-            concrete = UseTrailingClosures.apply(concrete, original: node, parent: parent, context: context)
+            concrete = UseTrailingClosures.apply(
+                concrete, original: node, parent: parent, context: context)
         }
         if context.shouldRewrite(WrapMultilineFunctionChains.self, gate: gate) {
             concrete = WrapMultilineFunctionChains.apply(concrete, context: context)
@@ -875,7 +886,8 @@ final class RewritePipeline: SyntaxRewriter {
         var resultExpr = ExprSyntax(concrete)
 
         if context.shouldRewrite(NestedCallLayout.self, gate: gate) {
-            resultExpr = NestedCallLayout.transform(concrete, original: node, parent: parent, context: context)
+            resultExpr = NestedCallLayout.transform(
+                concrete, original: node, parent: parent, context: context)
             if let typed = resultExpr.as(FunctionCallExprSyntax.self) { concrete = typed }
         }
         // NoForceUnwrap chain-top wrapping at this call.
@@ -977,20 +989,14 @@ final class RewritePipeline: SyntaxRewriter {
         apply(LayoutSingleLineBodies.self, to: &concrete, original: node, gate: gate) {
             LayoutSingleLineBodies.transform($0, original: $1, parent: parent, context: $2)
         }
-        // UseSwiftTestingNotXCTest may widen `FunctionDecl` to `InitializerDecl` / `DeinitializerDecl` ;
-        // early-return on kind change.
+        // UseSwiftTestingNotXCTest may widen `FunctionDecl` to `InitializerDecl` /
+        // `DeinitializerDecl` ; early-return on kind change.
         if let widened = applyWidening(
             UseSwiftTestingNotXCTest.self, to: &concrete, original: node, gate: gate,
-            {
-                UseSwiftTestingNotXCTest.transform($0, original: $1, parent: parent, context: $2)
-            })
-        {
+            { UseSwiftTestingNotXCTest.transform($0, original: $1, parent: parent, context: $2) }) {
             return widened
         }
-        // DropRedundantOverride may delete `override` declarations entirely.
-        return context.shouldRewrite(DropRedundantOverride.self, gate: gate)
-            ? DropRedundantOverride.transform(concrete, original: node, parent: parent, context: context)
-            : DeclSyntax(concrete)
+        return DeclSyntax(concrete)
     }
 
     override func visit(_ node: FunctionEffectSpecifiersSyntax) -> FunctionEffectSpecifiersSyntax {
@@ -999,7 +1005,8 @@ final class RewritePipeline: SyntaxRewriter {
         var current = super.visit(node)
 
         if context.shouldRewrite(DropRedundantTypedThrows.self, gate: gate) {
-            current = DropRedundantTypedThrows.transform(current, original: node, parent: parent, context: context)
+            current = DropRedundantTypedThrows.transform(
+                current, original: node, parent: parent, context: context)
         }
         return current
     }
@@ -1010,7 +1017,8 @@ final class RewritePipeline: SyntaxRewriter {
         var current = super.visit(node)
 
         if context.shouldRewrite(FlagEmptyCollectionLiteral.self, gate: gate) {
-            current = FlagEmptyCollectionLiteral.transform(current, original: node, parent: parent, context: context)
+            current = FlagEmptyCollectionLiteral.transform(
+                current, original: node, parent: parent, context: context)
         }
         return current
     }
@@ -1018,6 +1026,7 @@ final class RewritePipeline: SyntaxRewriter {
     override func visit(_ node: FunctionSignatureSyntax) -> FunctionSignatureSyntax {
         guard let gate = context.gate(for: node) else { return super.visit(node) }
         var result = super.visit(node)
+
         if context.shouldRewrite(DropVoidReturnFromSignature.self, gate: gate) {
             result = DropVoidReturnFromSignature.apply(result, context: context)
         }
@@ -1036,6 +1045,7 @@ final class RewritePipeline: SyntaxRewriter {
         apply(DropRedundantTypedThrows.self, to: &concrete, original: node, gate: gate) {
             DropRedundantTypedThrows.transform($0, original: $1, parent: parent, context: $2)
         }
+
         if context.shouldRewrite(UseVoidNotEmptyTuple.self, gate: gate) {
             concrete = UseVoidNotEmptyTuple.apply(concrete, context: context)
         }
@@ -1054,7 +1064,8 @@ final class RewritePipeline: SyntaxRewriter {
         if context.shouldRewrite(UseShorthandTypeNames.self, gate: gate),
            let typed = result.as(GenericSpecializationExprSyntax.self)
         {
-            result = UseShorthandTypeNames.transform(typed, original: node, parent: parent, context: context)
+            result = UseShorthandTypeNames.transform(
+                typed, original: node, parent: parent, context: context)
         }
         return result
     }
@@ -1062,7 +1073,8 @@ final class RewritePipeline: SyntaxRewriter {
     override func visit(_ node: GuardStmtSyntax) -> StmtSyntax {
         guard let gate = context.gate(for: node) else { return super.visit(node) }
         let parent = Syntax(node).parent
-        let runLayoutSingleLineBodies = context.shouldRewrite(LayoutSingleLineBodies.self, gate: gate)
+        let runLayoutSingleLineBodies = context.shouldRewrite(
+            LayoutSingleLineBodies.self, gate: gate)
         if runLayoutSingleLineBodies { LayoutSingleLineBodies.willEnter(node, context: context) }
 
         defer {
@@ -1095,7 +1107,8 @@ final class RewritePipeline: SyntaxRewriter {
         if context.shouldRewrite(UseShorthandTypeNames.self, gate: gate),
            let typed = result.as(IdentifierTypeSyntax.self)
         {
-            result = UseShorthandTypeNames.transform(typed, original: node, parent: parent, context: context)
+            result = UseShorthandTypeNames.transform(
+                typed, original: node, parent: parent, context: context)
         }
         return result
     }
@@ -1103,7 +1116,8 @@ final class RewritePipeline: SyntaxRewriter {
     override func visit(_ node: IfExprSyntax) -> ExprSyntax {
         guard let gate = context.gate(for: node) else { return super.visit(node) }
         let parent = Syntax(node).parent
-        let runLayoutSingleLineBodies = context.shouldRewrite(LayoutSingleLineBodies.self, gate: gate)
+        let runLayoutSingleLineBodies = context.shouldRewrite(
+            LayoutSingleLineBodies.self, gate: gate)
         if runLayoutSingleLineBodies { LayoutSingleLineBodies.willEnter(node, context: context) }
 
         defer {
@@ -1117,6 +1131,7 @@ final class RewritePipeline: SyntaxRewriter {
         apply(UseUnavailableNotFatalError.self, to: &concrete, original: node, gate: gate) {
             UseUnavailableNotFatalError.transform($0, original: $1, parent: parent, context: $2)
         }
+
         if context.shouldRewrite(NoParensAroundConditions.self, gate: gate) {
             NoParensAroundConditions.fixKeywordTrailingTrivia(&concrete.ifKeyword.trailingTrivia)
         }
@@ -1140,7 +1155,8 @@ final class RewritePipeline: SyntaxRewriter {
             as: ImplicitlyUnwrappedOptionalTypeSyntax.self,
             gate: gate
         ) {
-            DropParensAroundExistentialOptional.transform($0, original: $1, parent: parent, context: $2)
+            DropParensAroundExistentialOptional.transform(
+                $0, original: $1, parent: parent, context: $2)
         }
         return current
     }
@@ -1164,6 +1180,7 @@ final class RewritePipeline: SyntaxRewriter {
         if context.shouldRewrite(DropRedundantSwiftTestingSuite.self, gate: gate) {
             DropRedundantSwiftTestingSuite.visitImport(concrete, context: context)
         }
+
         if context.shouldRewrite(NoForceTry.self, gate: gate) {
             NoForceTry.visitImport(concrete, context: context)
         }
@@ -1186,28 +1203,18 @@ final class RewritePipeline: SyntaxRewriter {
         }
         if let widened = applyWidening(
             UseIsEmpty.self, to: &concrete, original: node, gate: gate,
-            {
-                UseIsEmpty.transform($0, original: $1, parent: parent, context: $2)
-            })
-        {
+            { UseIsEmpty.transform($0, original: $1, parent: parent, context: $2) }) {
             return widened
         }
         if let widened = applyWidening(
             UseToggle.self, to: &concrete, original: node, gate: gate,
-            {
-                UseToggle.transform($0, original: $1, parent: parent, context: $2)
-            })
-        {
+            { UseToggle.transform($0, original: $1, parent: parent, context: $2) }) {
             return widened
         }
         if let widened = applyWidening(
             DropRedundantNilCoalescing.self, to: &concrete, original: node, gate: gate,
-            {
-                DropRedundantNilCoalescing.transform($0, original: $1, parent: parent, context: $2)
-            })
-        {
-            return widened
-        }
+            { DropRedundantNilCoalescing.transform($0, original: $1, parent: parent, context: $2) })
+        { return widened }
         apply(BreakAfterAssignToConditional.self, to: &concrete, original: node, gate: gate) {
             BreakAfterAssignToConditional.transform($0, original: $1, parent: parent, context: $2)
         }
@@ -1223,10 +1230,7 @@ final class RewritePipeline: SyntaxRewriter {
         var result = super.visit(node)
         if context.shouldRewrite(NoParensAroundConditions.self, gate: gate),
            let stripped = NoParensAroundConditions.minimalSingleExpression(
-               result.value, context: context)
-        {
-            result.value = stripped
-        }
+               result.value, context: context) { result.value = stripped }
         return result
     }
 
@@ -1300,7 +1304,8 @@ final class RewritePipeline: SyntaxRewriter {
         var current = super.visit(node)
 
         if context.shouldRewrite(DropRedundantLet.self, gate: gate) {
-            current = DropRedundantLet.transform(current, original: node, parent: parent, context: context)
+            current = DropRedundantLet.transform(
+                current, original: node, parent: parent, context: context)
         }
         return current
     }
@@ -1316,6 +1321,7 @@ final class RewritePipeline: SyntaxRewriter {
             as: MacroExpansionExprSyntax.self,
             gate: gate
         ) { UseFileIDNotFile.transform($0, original: $1, parent: parent, context: $2) }
+
         if context.shouldRewrite(NestedCallLayout.self, gate: gate),
            let macroExpansion = current.as(MacroExpansionExprSyntax.self)
         {
@@ -1335,10 +1341,12 @@ final class RewritePipeline: SyntaxRewriter {
         var current = super.visit(node)
 
         if context.shouldRewrite(HoistCaseLet.self, gate: gate) {
-            current = HoistCaseLet.transform(current, original: node, parent: parent, context: context)
+            current = HoistCaseLet.transform(
+                current, original: node, parent: parent, context: context)
         }
         if context.shouldRewrite(DropRedundantCasePattern.self, gate: gate) {
-            current = DropRedundantCasePattern.transform(current, original: node, parent: parent, context: context)
+            current = DropRedundantCasePattern.transform(
+                current, original: node, parent: parent, context: context)
         }
         return current
     }
@@ -1353,10 +1361,7 @@ final class RewritePipeline: SyntaxRewriter {
         guard var concrete = visited.as(MemberAccessExprSyntax.self) else { return visited }
         if let widened = applyWidening(
             UseCountWhere.self, to: &concrete, original: node, gate: gate,
-            {
-                UseCountWhere.transform($0, original: $1, parent: parent, context: $2)
-            })
-        {
+            { UseCountWhere.transform($0, original: $1, parent: parent, context: $2) }) {
             return widened
         }
         apply(UseIsDisjoint.self, to: &concrete, original: node, gate: gate) {
@@ -1367,18 +1372,12 @@ final class RewritePipeline: SyntaxRewriter {
         }
         if let widened = applyWidening(
             DropRedundantSelf.self, to: &concrete, original: node, gate: gate,
-            {
-                DropRedundantSelf.transform($0, original: $1, parent: parent, context: $2)
-            })
-        {
+            { DropRedundantSelf.transform($0, original: $1, parent: parent, context: $2) }) {
             return widened
         }
         if let widened = applyWidening(
             DropRedundantStaticSelf.self, to: &concrete, original: node, gate: gate,
-            {
-                DropRedundantStaticSelf.transform($0, original: $1, parent: parent, context: $2)
-            })
-        {
+            { DropRedundantStaticSelf.transform($0, original: $1, parent: parent, context: $2) }) {
             return widened
         }
         return context.shouldRewrite(NoForceUnwrap.self, gate: gate)
@@ -1396,7 +1395,8 @@ final class RewritePipeline: SyntaxRewriter {
         var current = super.visit(node)
 
         if context.shouldRewrite(DropSemicolons.self, gate: gate) {
-            current = DropSemicolons.transform(current, original: node, parent: parent, context: context)
+            current = DropSemicolons.transform(
+                current, original: node, parent: parent, context: context)
         }
         return current
     }
@@ -1407,7 +1407,8 @@ final class RewritePipeline: SyntaxRewriter {
         var current = super.visit(node)
 
         if context.shouldRewrite(UseDocCommentsOnAPI.self, gate: gate) {
-            current = UseDocCommentsOnAPI.transform(current, original: node, parent: parent, context: context)
+            current = UseDocCommentsOnAPI.transform(
+                current, original: node, parent: parent, context: context)
         }
         return current
     }
@@ -1418,10 +1419,12 @@ final class RewritePipeline: SyntaxRewriter {
         var current = super.visit(node)
 
         if context.shouldRewrite(DropBacktickedSelf.self, gate: gate) {
-            current = DropBacktickedSelf.transform(current, original: node, parent: parent, context: context)
+            current = DropBacktickedSelf.transform(
+                current, original: node, parent: parent, context: context)
         }
         if context.shouldRewrite(DropRedundantOptionalBinding.self, gate: gate) {
-            current = DropRedundantOptionalBinding.transform(current, original: node, parent: parent, context: context)
+            current = DropRedundantOptionalBinding.transform(
+                current, original: node, parent: parent, context: context)
         }
         return current
     }
@@ -1437,7 +1440,8 @@ final class RewritePipeline: SyntaxRewriter {
             as: OptionalTypeSyntax.self,
             gate: gate
         ) {
-            DropParensAroundExistentialOptional.transform($0, original: $1, parent: parent, context: $2)
+            DropParensAroundExistentialOptional.transform(
+                $0, original: $1, parent: parent, context: $2)
         }
         return current
     }
@@ -1448,23 +1452,29 @@ final class RewritePipeline: SyntaxRewriter {
         var current = super.visit(node)
 
         if context.shouldRewrite(FlagEmptyCollectionLiteral.self, gate: gate) {
-            current = FlagEmptyCollectionLiteral.transform(current, original: node, parent: parent, context: context)
+            current = FlagEmptyCollectionLiteral.transform(
+                current, original: node, parent: parent, context: context)
         }
         if context.shouldRewrite(CollapseSingleLineGetter.self, gate: gate) {
-            current = CollapseSingleLineGetter.transform(current, original: node, parent: parent, context: context)
+            current = CollapseSingleLineGetter.transform(
+                current, original: node, parent: parent, context: context)
         }
 
         if context.shouldRewrite(DropRedundantReturn.self, gate: gate) {
-            current = DropRedundantReturn.transform(current, original: node, parent: parent, context: context)
+            current = DropRedundantReturn.transform(
+                current, original: node, parent: parent, context: context)
         }
         if context.shouldRewrite(UseImplicitInit.self, gate: gate) {
-            current = UseImplicitInit.transform(current, original: node, parent: parent, context: context)
+            current = UseImplicitInit.transform(
+                current, original: node, parent: parent, context: context)
         }
         if context.shouldRewrite(BreakAfterAssignToConditional.self, gate: gate) {
-            current = BreakAfterAssignToConditional.transform(current, original: node, parent: parent, context: context)
+            current = BreakAfterAssignToConditional.transform(
+                current, original: node, parent: parent, context: context)
         }
         if context.shouldRewrite(LayoutSingleLineBodies.self, gate: gate) {
-            current = LayoutSingleLineBodies.transform(current, original: node, parent: parent, context: context)
+            current = LayoutSingleLineBodies.transform(
+                current, original: node, parent: parent, context: context)
         }
         return current
     }
@@ -1474,8 +1484,8 @@ final class RewritePipeline: SyntaxRewriter {
         let parent = Syntax(node).parent
         var result: ExprSyntax = super.visit(node)
 
-        // Runs before the other prefix rules: it repairs the invalid `!try foo()` that the
-        // HoistTry call transform leaves behind on the child.
+        // Runs before the other prefix rules: it repairs the invalid `!try foo()` that the HoistTry
+        // call transform leaves behind on the child.
         if context.shouldRewrite(HoistTry.self, gate: gate),
            let prefix = result.as(PrefixOperatorExprSyntax.self)
         {
@@ -1485,7 +1495,8 @@ final class RewritePipeline: SyntaxRewriter {
         if context.shouldRewrite(UseExplicitFalseInGuards.self, gate: gate),
            let prefix = result.as(PrefixOperatorExprSyntax.self)
         {
-            result = UseExplicitFalseInGuards.transform(prefix, original: node, parent: parent, context: context)
+            result = UseExplicitFalseInGuards.transform(
+                prefix, original: node, parent: parent, context: context)
         }
         return result
     }
@@ -1507,6 +1518,7 @@ final class RewritePipeline: SyntaxRewriter {
         apply(UseTripleSlashOverDocBlock.self, to: &concrete, original: node, gate: gate) {
             UseTripleSlashOverDocBlock.transform($0, original: $1, parent: parent, context: $2)
         }
+
         if context.shouldRewrite(UseAnyObjectOnDelegate.self, gate: gate) {
             concrete = UseAnyObjectOnDelegate.apply(concrete, context: context)
         }
@@ -1519,7 +1531,8 @@ final class RewritePipeline: SyntaxRewriter {
     override func visit(_ node: RepeatStmtSyntax) -> StmtSyntax {
         guard let gate = context.gate(for: node) else { return super.visit(node) }
         let parent = Syntax(node).parent
-        let runLayoutSingleLineBodies = context.shouldRewrite(LayoutSingleLineBodies.self, gate: gate)
+        let runLayoutSingleLineBodies = context.shouldRewrite(
+            LayoutSingleLineBodies.self, gate: gate)
 
         if context.shouldRewrite(NoParensAroundConditions.self, gate: gate) {
             NoParensAroundConditions.willEnter(node, context: context)
@@ -1662,6 +1675,7 @@ final class RewritePipeline: SyntaxRewriter {
         apply(RequireTestFnPrefixOrAttribute.self, to: &concrete, original: node, gate: gate) {
             RequireTestFnPrefixOrAttribute.transform($0, original: $1, parent: parent, context: $2)
         }
+
         if context.shouldRewrite(DropRedundantSwiftTestingSuite.self, gate: gate) {
             concrete = DropRedundantSwiftTestingSuite.removeSuite(
                 from: concrete, keyword: \.structKeyword, context: context
@@ -1673,7 +1687,8 @@ final class RewritePipeline: SyntaxRewriter {
         // ConvertStaticStructToEnum runs last because it can widen `StructDeclSyntax` to
         // `EnumDeclSyntax` .
         return context.shouldRewrite(ConvertStaticStructToEnum.self, gate: gate)
-            ? ConvertStaticStructToEnum.transform(concrete, original: node, parent: parent, context: context)
+            ? ConvertStaticStructToEnum.transform(
+                concrete, original: node, parent: parent, context: context)
             : DeclSyntax(concrete)
     }
 
@@ -1739,10 +1754,12 @@ final class RewritePipeline: SyntaxRewriter {
         var current = super.visit(node)
 
         if context.shouldRewrite(HoistCaseLet.self, gate: gate) {
-            current = HoistCaseLet.transform(current, original: node, parent: parent, context: context)
+            current = HoistCaseLet.transform(
+                current, original: node, parent: parent, context: context)
         }
         if context.shouldRewrite(DropRedundantCasePattern.self, gate: gate) {
-            current = DropRedundantCasePattern.transform(current, original: node, parent: parent, context: context)
+            current = DropRedundantCasePattern.transform(
+                current, original: node, parent: parent, context: context)
         }
         return current
     }
@@ -1753,10 +1770,12 @@ final class RewritePipeline: SyntaxRewriter {
         var current = super.visit(node)
 
         if context.shouldRewrite(DropLabelsInCasePatterns.self, gate: gate) {
-            current = DropLabelsInCasePatterns.transform(current, original: node, parent: parent, context: context)
+            current = DropLabelsInCasePatterns.transform(
+                current, original: node, parent: parent, context: context)
         }
         if context.shouldRewrite(WrapCompoundCaseItems.self, gate: gate) {
-            current = WrapCompoundCaseItems.transform(current, original: node, parent: parent, context: context)
+            current = WrapCompoundCaseItems.transform(
+                current, original: node, parent: parent, context: context)
         }
         return current
     }
@@ -1784,10 +1803,12 @@ final class RewritePipeline: SyntaxRewriter {
         var result = super.visit(node)
 
         if context.shouldRewrite(DropRedundantBreak.self, gate: gate) {
-            result = DropRedundantBreak.transform(result, original: node, parent: parent, context: context)
+            result = DropRedundantBreak.transform(
+                result, original: node, parent: parent, context: context)
         }
         if context.shouldRewrite(LayoutSwitchCaseBodies.self, gate: gate) {
-            result = LayoutSwitchCaseBodies.transform(result, original: node, parent: parent, context: context)
+            result = LayoutSwitchCaseBodies.transform(
+                result, original: node, parent: parent, context: context)
         }
         if context.shouldRewrite(InsertBlankLineBeforeControlFlowBlocks.self, gate: gate),
            let updated = InsertBlankLineBeforeControlFlowBlocks.insertBlankLines(
@@ -1815,6 +1836,7 @@ final class RewritePipeline: SyntaxRewriter {
         if context.shouldRewrite(InsertBlankLineAfterSwitchCase.self, gate: gate) {
             concrete = InsertBlankLineAfterSwitchCase.apply(concrete, context: context)
         }
+
         if context.shouldRewrite(NoParensAroundConditions.self, gate: gate),
            let stripped = NoParensAroundConditions.minimalSingleExpression(
                concrete.subject, context: context)
@@ -1829,6 +1851,7 @@ final class RewritePipeline: SyntaxRewriter {
         apply(BreakBeforeMultilineBrace.self, to: &concrete, original: node, gate: gate) {
             BreakBeforeMultilineBrace.transform($0, original: $1, parent: parent, context: $2)
         }
+
         if context.shouldRewrite(NormalizeSwitchCaseSpacing.self, gate: gate) {
             concrete = NormalizeSwitchCaseSpacing.apply(concrete, context: context)
         }
@@ -1873,18 +1896,24 @@ final class RewritePipeline: SyntaxRewriter {
         applyAsserting(
             PlaceDocCommentsBeforeModifiers.self, to: &current, original: node,
             as: TypeAliasDeclSyntax.self, gate: gate
-        ) { PlaceDocCommentsBeforeModifiers.transform($0, original: $1, parent: parent, context: $2) }
+        ) {
+            PlaceDocCommentsBeforeModifiers.transform($0, original: $1, parent: parent, context: $2)
+        }
         applyAsserting(
-            SortModifiers.self, to: &current, original: node, as: TypeAliasDeclSyntax.self, gate: gate
+            SortModifiers.self, to: &current, original: node, as: TypeAliasDeclSyntax.self,
+            gate: gate
         ) { SortModifiers.transform($0, original: $1, parent: parent, context: $2) }
         applyAsserting(
-            KeepModifiersOnSameLine.self, to: &current, original: node, as: TypeAliasDeclSyntax.self, gate: gate
+            KeepModifiersOnSameLine.self, to: &current, original: node,
+            as: TypeAliasDeclSyntax.self, gate: gate
         ) { KeepModifiersOnSameLine.transform($0, original: $1, parent: parent, context: $2) }
         applyAsserting(
-            DropRedundantAccessControl.self, to: &current, original: node, as: TypeAliasDeclSyntax.self, gate: gate
+            DropRedundantAccessControl.self, to: &current, original: node,
+            as: TypeAliasDeclSyntax.self, gate: gate
         ) { DropRedundantAccessControl.transform($0, original: $1, parent: parent, context: $2) }
         applyAsserting(
-            UseTripleSlashOverDocBlock.self, to: &current, original: node, as: TypeAliasDeclSyntax.self, gate: gate
+            UseTripleSlashOverDocBlock.self, to: &current, original: node,
+            as: TypeAliasDeclSyntax.self, gate: gate
         ) { UseTripleSlashOverDocBlock.transform($0, original: $1, parent: parent, context: $2) }
         return current
     }
@@ -1936,6 +1965,7 @@ final class RewritePipeline: SyntaxRewriter {
         apply(UseTripleSlashOverDocBlock.self, to: &concrete, original: node, gate: gate) {
             UseTripleSlashOverDocBlock.transform($0, original: $1, parent: parent, context: $2)
         }
+
         if context.shouldRewrite(UseStrongOutlets.self, gate: gate) {
             concrete = UseStrongOutlets.apply(concrete, context: context)
         }
@@ -1945,7 +1975,8 @@ final class RewritePipeline: SyntaxRewriter {
     override func visit(_ node: WhileStmtSyntax) -> StmtSyntax {
         guard let gate = context.gate(for: node) else { return super.visit(node) }
         let parent = Syntax(node).parent
-        let runLayoutSingleLineBodies = context.shouldRewrite(LayoutSingleLineBodies.self, gate: gate)
+        let runLayoutSingleLineBodies = context.shouldRewrite(
+            LayoutSingleLineBodies.self, gate: gate)
         if runLayoutSingleLineBodies { LayoutSingleLineBodies.willEnter(node, context: context) }
 
         defer {
