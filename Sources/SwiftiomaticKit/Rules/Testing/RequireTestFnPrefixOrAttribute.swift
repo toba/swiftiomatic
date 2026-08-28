@@ -11,6 +11,8 @@ import SwiftSyntax
 ///
 /// Rewrite: The `test` prefix or `@Test` attribute is added.
 final class RequireTestFnPrefixOrAttribute: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
+    static let rewriteOrder = 960
+
     override class var group: ConfigurationGroup? { .testing }
 
     override class var defaultValue: BasicRuleValue { .init(rewrite: false, lint: .no) }

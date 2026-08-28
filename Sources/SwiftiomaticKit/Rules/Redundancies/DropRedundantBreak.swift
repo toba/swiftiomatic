@@ -13,6 +13,8 @@ import SwiftSyntax
 ///
 /// Rewrite: The redundant `break` statement is removed.
 final class DropRedundantBreak: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
+    static let rewriteOrder = 70
+
     override static var group: ConfigurationGroup? { .redundancies }
 
     static func transform(

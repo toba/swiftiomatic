@@ -21,6 +21,8 @@ import SwiftSyntax
 ///
 /// Rewrite: `-> ()` is replaced with `-> Void`
 final class UseVoidNotEmptyTuple: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
+    static let rewriteOrder = 1050
+
     override class var group: ConfigurationGroup? { .types }
 
     // MARK: - Compact pipeline (willEnter diagnoses on the pre-traversal node so
@@ -42,7 +44,12 @@ final class UseVoidNotEmptyTuple: StaticFormatRule<BasicRuleValue>, @unchecked S
     }
 
     /// Replace `-> ()` with `-> Void` on a function-type signature.
-    static func apply(_ node: FunctionTypeSyntax, context _: Context) -> FunctionTypeSyntax {
+    static func transform(
+        _ node: FunctionTypeSyntax,
+        original _: FunctionTypeSyntax,
+        parent _: Syntax?,
+        context _: Context
+    ) -> FunctionTypeSyntax {
         guard let returnType = node.returnClause.type.as(TupleTypeSyntax.self),
               returnType.elements.isEmpty else { return node }
 
@@ -59,8 +66,10 @@ final class UseVoidNotEmptyTuple: StaticFormatRule<BasicRuleValue>, @unchecked S
     }
 
     /// Replace `-> ()` with `-> Void` on a closure signature.
-    static func apply(
+    static func transform(
         _ node: ClosureSignatureSyntax,
+        original _: ClosureSignatureSyntax,
+        parent _: Syntax?,
         context _: Context
     ) -> ClosureSignatureSyntax {
         guard let returnClause = node.returnClause,

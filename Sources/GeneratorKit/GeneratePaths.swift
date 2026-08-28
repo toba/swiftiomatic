@@ -42,6 +42,9 @@ package struct GeneratePaths {
     /// The generated pipelines file ( `LintPipeline` + `FormatPipeline` extensions).
     package let pipelineFile: URL
 
+    /// The generated `RewritePipeline` , the single tree walk over the node-local format rules.
+    package let rewritePipelineFile: URL
+
     /// The generated rule registry file (type arrays, default enablements, name cache).
     package let ruleRegistryFile: URL
 
@@ -56,6 +59,14 @@ package struct GeneratePaths {
 
     /// The generated Swift file embedding the JSON Schema as a string literal.
     package let configurationSchemaSwiftFile: URL
+
+    /// The hand-written `rewriteSourceFile` , which dispatches the file-level transforms over the
+    /// settled tree.
+    package let sourceFileRewriteFile: URL
+
+    /// The hand-written `rewriteToken` , which owns the token rule order because the layout writer
+    /// calls it too.
+    package let tokenRewriteFile: URL
 
     // MARK: - Initializers
 
@@ -85,8 +96,13 @@ package struct GeneratePaths {
 
         tokenFolder = layout.appending(path: "Tokens")
         rulesFolder = kit.appending(path: "Rules")
+        sourceFileRewriteFile = kit.appending(path: "Syntax")
+            .appending(path: "Rewriter")
+            .appending(path: "SourceFile.swift")
+        tokenRewriteFile = layout.appending(path: "LayoutWriter.swift")
 
         pipelineFile = outputDirectory.appending(path: "Pipelines+Generated.swift")
+        rewritePipelineFile = outputDirectory.appending(path: "RewritePipeline+Generated.swift")
         ruleRegistryFile = outputDirectory.appending(path: "ConfigurationRegistry+Generated.swift")
         ruleDocumentationFile = packageRoot.appending(path: "Documentation")
             .appending(path: "RuleDocumentation.md")

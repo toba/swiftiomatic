@@ -13,6 +13,8 @@ import SwiftSyntax
 ///
 /// Rewrite: The closure is replaced with a keyPath expression.
 final class UseKeyPath: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
+    static let rewriteOrder = 560
+
     override class var group: ConfigurationGroup? { .collections }
     override class var defaultValue: BasicRuleValue { .init(rewrite: false, lint: .no) }
 

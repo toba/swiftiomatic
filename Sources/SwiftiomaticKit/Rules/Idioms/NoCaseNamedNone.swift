@@ -11,6 +11,8 @@ import SwiftSyntax
 ///
 /// Rewrite: Not auto-fixed; renaming requires understanding the call sites.
 final class NoCaseNamedNone: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
+    static let rewriteOrder = 230
+
     override class var group: ConfigurationGroup? { .idioms }
     override class var defaultValue: BasicRuleValue { .init(rewrite: false, lint: .warn) }
 

@@ -8,6 +8,8 @@ import SwiftSyntax
 ///
 /// Rewrite: The accessors are reordered to `get set` .
 final class OrderProtocolAccessors: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
+    static let rewriteOrder = 270
+
     override class var group: ConfigurationGroup? { .declarations }
     override class var defaultValue: BasicRuleValue { .init(rewrite: false, lint: .warn) }
 

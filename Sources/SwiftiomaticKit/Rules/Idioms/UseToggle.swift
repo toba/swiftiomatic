@@ -10,6 +10,8 @@ import SwiftSyntax
 ///
 /// Rewrite: The expression is rewritten to `x.toggle()` .
 final class UseToggle: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
+    static let rewriteOrder = 920
+
     override class var group: ConfigurationGroup? { .idioms }
     override class var defaultValue: BasicRuleValue { .init(rewrite: true, lint: .warn) }
 

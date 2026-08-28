@@ -19,12 +19,16 @@ import SwiftSyntax
 /// Rewrite: Function declarations with explicit returns of `()` or `Void` will have their return
 /// signature stripped.
 final class DropVoidReturnFromSignature: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
+    static let rewriteOrder = 110
+
     override class var group: ConfigurationGroup? { .types }
 
     /// Strip an explicit `-> Void` / `-> ()` return clause from a function signature. Called from
     /// `CompactSyntaxRewriter.visit(_: FunctionSignatureSyntax)` .
-    static func apply(
+    static func transform(
         _ node: FunctionSignatureSyntax,
+        original _: FunctionSignatureSyntax,
+        parent _: Syntax?,
         context: Context
     ) -> FunctionSignatureSyntax {
         guard let returnType = node.returnClause?.type else { return node }

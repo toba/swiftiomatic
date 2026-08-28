@@ -18,6 +18,8 @@ import SwiftSyntax
 final class DropParensAroundExistentialOptional: StaticFormatRule<BasicRuleValue>,
     @unchecked Sendable
 {
+    static let rewriteOrder = 60
+
     override class var group: ConfigurationGroup? { .redundancies }
 
     static func transform(

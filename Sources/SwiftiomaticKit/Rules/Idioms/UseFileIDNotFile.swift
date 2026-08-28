@@ -9,6 +9,8 @@ import SwiftSyntax
 ///
 /// Rewrite: The macro is replaced with the preferred spelling.
 final class UseFileIDNotFile: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
+    static let rewriteOrder = 500
+
     override static var group: ConfigurationGroup? { .idioms }
     override static var defaultValue: BasicRuleValue { .init(rewrite: false, lint: .no) }
 

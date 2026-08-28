@@ -7,13 +7,17 @@ import SwiftSyntax
 ///
 /// Rewrite: Dots that share a line with a closing scope or another dot are moved to their own line.
 final class WrapMultilineFunctionChains: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
+    static let rewriteOrder = 1130
+
     override class var group: ConfigurationGroup? { .wrap }
     override class var defaultValue: BasicRuleValue { .init(rewrite: false, lint: .no) }
 
     /// Wrap dots in a multiline call chain so each one is on its own line. Called from
     /// `CompactSyntaxRewriter.visit(_: FunctionCallExprSyntax)` .
-    static func apply(
+    static func transform(
         _ node: FunctionCallExprSyntax,
+        original _: FunctionCallExprSyntax,
+        parent _: Syntax?,
         context: Context
     ) -> FunctionCallExprSyntax {
         if isInnerChainCall(ExprSyntax(node)) { return node }

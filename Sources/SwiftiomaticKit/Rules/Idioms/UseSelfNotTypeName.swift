@@ -19,6 +19,8 @@ import SwiftSyntax
 ///
 /// Rewrite: The call is replaced with `Self` .
 final class UseSelfNotTypeName: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
+    static let rewriteOrder = 660
+
     override class var group: ConfigurationGroup? { .idioms }
     override class var defaultValue: BasicRuleValue { .init(rewrite: true, lint: .warn) }
 

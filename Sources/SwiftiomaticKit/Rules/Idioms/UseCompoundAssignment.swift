@@ -13,6 +13,8 @@ import SwiftSyntax
 ///
 /// Rewrite: The expression is rewritten to `x += y` .
 final class UseCompoundAssignment: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
+    static let rewriteOrder = 440
+
     override class var group: ConfigurationGroup? { .idioms }
     override class var defaultValue: BasicRuleValue { .init(rewrite: true, lint: .warn) }
 

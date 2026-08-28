@@ -23,6 +23,8 @@ import SwiftSyntax
 ///
 /// Rewrite: The redundant initializer is removed.
 final class DropRedundantOptionalBinding: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
+    static let rewriteOrder = 90
+
     override class var group: ConfigurationGroup? { .redundancies }
 
     static func transform(

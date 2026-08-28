@@ -9,6 +9,8 @@ import SwiftSyntax
 ///
 /// Rewrite: Not auto-fixed; the message must be supplied by the author.
 final class RequireFatalErrorMessage: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
+    static let rewriteOrder = 590
+
     override class var group: ConfigurationGroup? { .idioms }
     override class var defaultValue: BasicRuleValue { .init(rewrite: false, lint: .warn) }
 

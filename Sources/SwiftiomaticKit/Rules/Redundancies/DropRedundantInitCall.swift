@@ -24,6 +24,8 @@ import SwiftSyntax
 ///
 /// Rewrite: The `.init` member access is removed, leaving the type called directly.
 final class DropRedundantInitCall: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
+    static let rewriteOrder = 580
+
     override class var group: ConfigurationGroup? { .redundancies }
 
     static func transform(

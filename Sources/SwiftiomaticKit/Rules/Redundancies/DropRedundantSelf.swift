@@ -26,6 +26,8 @@ import SwiftSyntax
 ///
 /// Rewrite: The `self.` prefix is removed.
 final class DropRedundantSelf: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
+    static let rewriteOrder = 670
+
     override class var group: ConfigurationGroup? { .redundancies }
 
     /// Per-file mutable state held as a typed lazy property on `Context` . Mirrors the three

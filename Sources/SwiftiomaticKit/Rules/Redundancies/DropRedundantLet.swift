@@ -30,6 +30,8 @@ import SwiftSyntax
 ///
 /// Rewrite: The redundant `let` / `var` keyword is removed.
 final class DropRedundantLet: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
+    static let rewriteOrder = 720
+
     override class var group: ConfigurationGroup? { .redundancies }
 
     // MARK: - Statement-level: let _ = expr → _ = expr

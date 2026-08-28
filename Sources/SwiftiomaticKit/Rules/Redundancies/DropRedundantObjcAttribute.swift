@@ -14,6 +14,8 @@ import SwiftSyntax
 ///
 /// Rewrite: The redundant `@objc` attribute is removed.
 final class DropRedundantObjcAttribute: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
+    static let rewriteOrder = 820
+
     override class var group: ConfigurationGroup? { .redundancies }
 
     /// Attributes that imply `@objc` .

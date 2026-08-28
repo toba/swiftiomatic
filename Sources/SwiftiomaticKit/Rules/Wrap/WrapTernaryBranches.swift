@@ -18,6 +18,8 @@ import SwiftSyntax
 /// If either operator already has a leading newline, the rule normalizes the other to
 /// match so the ternary always has both branches on their own lines once it wraps.
 final class WrapTernaryBranches: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
+    static let rewriteOrder = 1220
+
     override class var group: ConfigurationGroup? { .lineBreaks }
 
     static func transform(

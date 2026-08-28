@@ -18,6 +18,8 @@ import SwiftSyntax
 ///
 /// Rewrite: All semicolons will be replaced with line breaks.
 final class DropSemicolons: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
+    static let rewriteOrder = 330
+
     override class var group: ConfigurationGroup? { .redundancies }
 
     static func transform(

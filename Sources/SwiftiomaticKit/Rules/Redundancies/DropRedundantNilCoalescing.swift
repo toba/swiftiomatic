@@ -8,6 +8,8 @@ import SwiftSyntax
 ///
 /// Rewrite: The `??` operator and the `nil` right-hand side are removed.
 final class DropRedundantNilCoalescing: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
+    static let rewriteOrder = 930
+
     override class var group: ConfigurationGroup? { .redundancies }
 
     static func transform(

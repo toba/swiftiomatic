@@ -20,6 +20,8 @@ import SwiftSyntax
 ///
 /// Rewrite: In test functions, force unwraps are replaced with XCTUnwrap/#require.
 final class NoForceUnwrap: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
+    static let rewriteOrder = 1160
+
     override static var group: ConfigurationGroup? { .unsafety }
     override static var defaultValue: BasicRuleValue { .init(rewrite: false, lint: .no) }
 
@@ -78,10 +80,6 @@ final class NoForceUnwrap: StaticFormatRule<BasicRuleValue>, @unchecked Sendable
 
     static func willEnter(_ node: SourceFileSyntax, context: Context) {
         visitSourceFile(node, context: context)
-    }
-
-    static func willEnter(_ node: ImportDeclSyntax, context: Context) {
-        visitImport(node, context: context)
     }
 
     static func willEnter(_ node: ClassDeclSyntax, context: Context) {
@@ -150,8 +148,18 @@ final class NoForceUnwrap: StaticFormatRule<BasicRuleValue>, @unchecked Sendable
 
     // MARK: - File-level pre-scan
 
-    static func visitImport(_ node: ImportDeclSyntax, context: Context) {
+    /// Record an `import Testing` so later type-decl visits know the macro is in scope.
+    ///
+    /// This runs after the children are visited, because `UseSwiftTestingNotXCTest` rewrites
+    /// `import XCTest` to `import Testing` first and the flag has to read the rewritten path.
+    static func transform(
+        _ node: ImportDeclSyntax,
+        original _: ImportDeclSyntax,
+        parent _: Syntax?,
+        context: Context
+    ) -> ImportDeclSyntax {
         if node.path.first?.name.text == "Testing" { state(context).importsTesting = true }
+        return node
     }
 
     static func visitSourceFile(_ node: SourceFileSyntax, context: Context) {
@@ -440,8 +448,10 @@ final class NoForceUnwrap: StaticFormatRule<BasicRuleValue>, @unchecked Sendable
 
     /// Apply the `ForceUnwrapExpr` rewrite. Diagnostics are emitted from `willEnter` (with original
     /// tree positions) — this function only does the rewrite based on accumulated state.
-    static func rewriteForceUnwrap(
+    static func transform(
         _ node: ForceUnwrapExprSyntax,
+        original _: ForceUnwrapExprSyntax,
+        parent _: Syntax?,
         context: Context
     ) -> ExprSyntax {
         let s = state(context)
@@ -497,8 +507,10 @@ final class NoForceUnwrap: StaticFormatRule<BasicRuleValue>, @unchecked Sendable
 
     /// Apply the `AsExpr` rewrite for `as!` force casts (called only when the node is `as!` ).
     /// Diagnostics are emitted from `willEnter` .
-    static func rewriteAsExpr(
+    static func transform(
         _ node: AsExprSyntax,
+        original _: AsExprSyntax,
+        parent _: Syntax?,
         context: Context
     ) -> ExprSyntax {
         guard node.questionOrExclamationMark?.tokenKind == .exclamationMark else {
@@ -539,8 +551,10 @@ final class NoForceUnwrap: StaticFormatRule<BasicRuleValue>, @unchecked Sendable
     }
 
     /// Apply the `MemberAccessExpr` chain-top wrapping. Called after children have been visited.
-    static func rewriteMemberAccess(
+    static func transform(
         _ node: MemberAccessExprSyntax,
+        original _: MemberAccessExprSyntax,
+        parent _: Syntax?,
         context: Context
     ) -> ExprSyntax {
         let s = state(context)
@@ -569,8 +583,10 @@ final class NoForceUnwrap: StaticFormatRule<BasicRuleValue>, @unchecked Sendable
         return ExprSyntax(node)
     }
 
-    static func rewriteFunctionCallTop(
+    static func transform(
         _ node: FunctionCallExprSyntax,
+        original _: FunctionCallExprSyntax,
+        parent _: Syntax?,
         context: Context
     ) -> ExprSyntax {
         let s = state(context)
@@ -584,8 +600,10 @@ final class NoForceUnwrap: StaticFormatRule<BasicRuleValue>, @unchecked Sendable
         return ExprSyntax(node)
     }
 
-    static func rewriteSubscriptCallTop(
+    static func transform(
         _ node: SubscriptCallExprSyntax,
+        original _: SubscriptCallExprSyntax,
+        parent _: Syntax?,
         context: Context
     ) -> ExprSyntax {
         let s = state(context)
@@ -664,8 +682,10 @@ final class NoForceUnwrap: StaticFormatRule<BasicRuleValue>, @unchecked Sendable
     /// Add a `throws` clause if any force unwrap was wrapped inside the function frame. Called from
     /// `rewriteFunctionDecl` AFTER children visited but BEFORE `didExit` (which restores parent
     /// frame).
-    static func afterFunctionDecl(
+    static func transform(
         _ node: FunctionDeclSyntax,
+        original _: FunctionDeclSyntax,
+        parent _: Syntax?,
         context: Context
     ) -> FunctionDeclSyntax {
         let s = state(context)

@@ -9,6 +9,8 @@ import SwiftSyntax
 ///
 /// Rewrite: The `EnvironmentKey` type is removed and the property is replaced with `@Entry var` .
 final class UseAtEntryNotEnvironmentKey: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
+    static let rewriteOrder = 900
+
     override class var group: ConfigurationGroup? { .swiftui }
 
     override static var defaultValue: BasicRuleValue { .init(rewrite: false, lint: .no) }

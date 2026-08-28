@@ -22,6 +22,8 @@ import SwiftSyntax
 ///
 /// Rewrite: Redundant labels in case patterns are removed.
 final class DropLabelsInCasePatterns: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
+    static let rewriteOrder = 50
+
     override class var group: ConfigurationGroup? { .redundancies }
 
     static func transform(

@@ -10,6 +10,8 @@ import SwiftSyntax
 ///
 /// Rewrite: A line break is inserted after `=` .
 final class BreakAfterAssignToConditional: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
+    static let rewriteOrder = 1100
+
     override class var defaultValue: BasicRuleValue { .init(rewrite: false, lint: .no) }
     override class var group: ConfigurationGroup? { .lineBreaks }
 

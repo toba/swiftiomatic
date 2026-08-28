@@ -9,6 +9,8 @@ import SwiftSyntax
 ///
 /// Rewrite: Not auto-fixed; the receiver may not be a `Set` , so the rewrite is unsafe in general.
 final class UseIsDisjoint: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
+    static let rewriteOrder = 540
+
     override class var group: ConfigurationGroup? { .collections }
     override class var defaultValue: BasicRuleValue { .init(rewrite: false, lint: .warn) }
 

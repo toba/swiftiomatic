@@ -16,6 +16,8 @@ import SwiftSyntax
 ///
 /// Rewrite: The unused parameter or variable is replaced with `_` .
 final class DropUnusedArguments: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
+    static let rewriteOrder = 1080
+
     override class var group: ConfigurationGroup? { .redundancies }
 
     // MARK: - Functions

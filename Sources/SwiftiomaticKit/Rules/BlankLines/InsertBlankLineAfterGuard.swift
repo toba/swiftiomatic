@@ -14,12 +14,19 @@ import SwiftSyntax
 /// Rewrite: Blank lines between consecutive guards are removed. A blank line is inserted after the
 /// last guard when followed by non-guard code.
 final class InsertBlankLineAfterGuard: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
+    static let rewriteOrder = 180
+
     override static var group: ConfigurationGroup? { .blankLines }
     override static var defaultValue: BasicRuleValue { .init(rewrite: false, lint: .no) }
 
     /// Inserts blank lines after guard statements and removes blank lines between consecutive
     /// guards in the code block. Returns `node` unchanged when nothing matched.
-    static func apply(_ node: CodeBlockSyntax, context: Context) -> CodeBlockSyntax {
+    static func transform(
+        _ node: CodeBlockSyntax,
+        original _: CodeBlockSyntax,
+        parent _: Syntax?,
+        context: Context
+    ) -> CodeBlockSyntax {
         let originalStatements = Array(node.statements)
         var statements = originalStatements
         var modified = false

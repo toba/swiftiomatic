@@ -22,6 +22,8 @@ import SwiftSyntax
 ///
 /// Rewrite: The redundant type annotation is removed.
 final class DropRedundantTypeAnnotation: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
+    static let rewriteOrder = 870
+
     override class var group: ConfigurationGroup? { .redundancies }
 
     static func transform(

@@ -11,12 +11,19 @@ import SwiftSyntax
 ///
 /// Rewrite: Blank lines are added or removed to make spacing consistent.
 final class NormalizeSwitchCaseSpacing: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
+    static let rewriteOrder = 1210
+
     override static var group: ConfigurationGroup? { .blankLines }
     override static var defaultValue: BasicRuleValue { .init(rewrite: false, lint: .no) }
 
     /// Normalize blank-line spacing among switch cases to whichever style is used by the majority.
     /// Called from `CompactSyntaxRewriter.visit(_: SwitchExprSyntax)` .
-    static func apply(_ node: SwitchExprSyntax, context: Context) -> SwitchExprSyntax {
+    static func transform(
+        _ node: SwitchExprSyntax,
+        original _: SwitchExprSyntax,
+        parent _: Syntax?,
+        context: Context
+    ) -> SwitchExprSyntax {
         var switchExpr = node
         let cases = Array(switchExpr.cases)
         // Need at least 2 cases (last case is excluded from spacing decisions).

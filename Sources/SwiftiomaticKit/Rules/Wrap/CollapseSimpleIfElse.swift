@@ -23,6 +23,8 @@ import SwiftSyntax
 ///
 /// Rewrite: The chain is collapsed onto a single line.
 final class CollapseSimpleIfElse: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
+    static let rewriteOrder = 20
+
     override class var group: ConfigurationGroup? { .wrap }
     override class var defaultValue: BasicRuleValue { .init(rewrite: false, lint: .no) }
 

@@ -9,6 +9,8 @@ import SwiftSyntax
 ///
 /// Rewrite: The modifiers are reordered to match the canonical order.
 final class SortModifiers: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
+    static let rewriteOrder = 350
+
     override class var group: ConfigurationGroup? { .sort }
 
     /// Canonical modifier order. Modifiers not in this list keep their relative position after all

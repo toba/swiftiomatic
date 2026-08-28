@@ -12,6 +12,8 @@ import SwiftSyntax
 ///
 /// Rewrite: The `throws` clause is removed.
 final class DropRedundantThrows: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
+    static let rewriteOrder = 860
+
     override class var group: ConfigurationGroup? { .redundancies }
 
     override class var defaultValue: BasicRuleValue { .init(rewrite: false, lint: .no) }

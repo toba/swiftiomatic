@@ -9,12 +9,19 @@ import SwiftSyntax
 ///
 /// Rewrite: The redundant `final` modifier is removed.
 final class DropRedundantFinal: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
+    static let rewriteOrder = 970
+
     override class var group: ConfigurationGroup? { .redundancies }
     override class var defaultValue: BasicRuleValue { .init(rewrite: false, lint: .warn) }
 
     /// Strip `final` from members of a `final` class. Called from
     /// `CompactSyntaxRewriter.visit(_: ClassDeclSyntax)` .
-    static func apply(_ node: ClassDeclSyntax, context: Context) -> ClassDeclSyntax {
+    static func transform(
+        _ node: ClassDeclSyntax,
+        original _: ClassDeclSyntax,
+        parent _: Syntax?,
+        context: Context
+    ) -> ClassDeclSyntax {
         guard node.modifiers.contains(anyOf: [.final]) else { return node }
 
         var result = node

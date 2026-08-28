@@ -25,6 +25,8 @@ import SwiftSyntax
 /// these could be reevaluated.
 /// TODO: Handle floating point literals.
 final class GroupNumericLiterals: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
+    static let rewriteOrder = 140
+
     override class var group: ConfigurationGroup? { .literals }
 
     static func transform(

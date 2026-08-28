@@ -24,6 +24,8 @@ import SwiftSyntax
 ///
 /// Rewrite: The redundant `let error` pattern is removed.
 final class DropRedundantLetError: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
+    static let rewriteOrder = 80
+
     override class var group: ConfigurationGroup? { .redundancies }
 
     static func transform(

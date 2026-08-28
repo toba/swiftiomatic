@@ -11,6 +11,8 @@ import SwiftSyntax
 ///
 /// Rewrite: The closure arguments are moved to trailing closure position.
 final class UseTrailingClosures: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
+    static let rewriteOrder = 940
+
     override static var group: ConfigurationGroup? { .closures }
 
     /// Functions whose labelled trailing-closure argument is still safe to convert to a trailing
@@ -37,7 +39,7 @@ final class UseTrailingClosures: StaticFormatRule<BasicRuleValue>, @unchecked Se
     /// `node.parent` is nil here because rewritten children produce a detached node, so we cannot
     /// walk upward from the node itself. `original` is the pre- `super.visit` node, used solely as
     /// the finding anchor — `node` itself is detached and reports position 0 (line 1).
-    static func apply(
+    static func transform(
         _ node: FunctionCallExprSyntax,
         original: FunctionCallExprSyntax,
         parent: Syntax?,

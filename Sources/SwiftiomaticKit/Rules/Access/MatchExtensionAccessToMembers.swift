@@ -12,6 +12,8 @@ import SwiftSyntax
 /// Rewrite: `open` is downgraded to `public` when the parent is not also `open` ; otherwise the
 /// redundant modifier is removed entirely.
 final class MatchExtensionAccessToMembers: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
+    static let rewriteOrder = 220
+
     override class var group: ConfigurationGroup? { .access }
     override class var defaultValue: BasicRuleValue { .init(rewrite: false, lint: .warn) }
 

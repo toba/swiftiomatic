@@ -27,12 +27,12 @@ import SwiftSyntax
 /// ambiguity. Specifically, parentheses are allowed if and only if the expression contains a
 /// function call with a trailing closure.
 final class NoParensAroundConditions: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
+    static let rewriteOrder = 1030
+
     override class var group: ConfigurationGroup? { .conditions }
 
     // Diagnose against the pre-traversal node so finding source locations are accurate. The
-    // compact-pipeline rewrite calls in
-    // `Rewrites/Stmts/{ConditionElement,SwitchExpr,RepeatStmt,ReturnStmt,IfExpr,WhileStmt,GuardStmt}.swift`
-    // and `Rewrites/Exprs/InitializerClause.swift` handle the rewrite without diagnose.
+    // transform overloads below strip the parens without diagnosing again.
     static func willEnter(_ node: ConditionElementSyntax, context: Context) {
         guard case let .expression(expr) = node.condition else { return }
         _ = minimalSingleExpression(expr, context: context, diagnose: true)
@@ -56,13 +56,119 @@ final class NoParensAroundConditions: StaticFormatRule<BasicRuleValue>, @uncheck
         _ = minimalSingleExpression(node.value, context: context, diagnose: true)
     }
 
+    static func transform(
+        _ node: ConditionElementSyntax,
+        original _: ConditionElementSyntax,
+        parent _: Syntax?,
+        context: Context
+    ) -> ConditionElementSyntax {
+        guard case let .expression(condition) = node.condition,
+              let stripped = minimalSingleExpression(condition, context: context)
+        else { return node }
+        var result = node
+        result.condition = .expression(stripped)
+        return result
+    }
+
+    static func transform(
+        _ node: InitializerClauseSyntax,
+        original _: InitializerClauseSyntax,
+        parent _: Syntax?,
+        context: Context
+    ) -> InitializerClauseSyntax {
+        guard let stripped = minimalSingleExpression(node.value, context: context)
+        else { return node }
+        var result = node
+        result.value = stripped
+        return result
+    }
+
+    static func transform(
+        _ node: SwitchExprSyntax,
+        original _: SwitchExprSyntax,
+        parent _: Syntax?,
+        context: Context
+    ) -> SwitchExprSyntax {
+        guard let stripped = minimalSingleExpression(node.subject, context: context)
+        else { return node }
+        var result = node
+        result.subject = stripped
+        fixKeywordTrailingTrivia(&result.switchKeyword.trailingTrivia)
+        return result
+    }
+
+    static func transform(
+        _ node: RepeatStmtSyntax,
+        original _: RepeatStmtSyntax,
+        parent _: Syntax?,
+        context: Context
+    ) -> RepeatStmtSyntax {
+        guard let stripped = minimalSingleExpression(node.condition, context: context)
+        else { return node }
+        var result = node
+        result.condition = stripped
+        fixKeywordTrailingTrivia(&result.whileKeyword.trailingTrivia)
+        return result
+    }
+
+    static func transform(
+        _ node: ReturnStmtSyntax,
+        original _: ReturnStmtSyntax,
+        parent _: Syntax?,
+        context: Context
+    ) -> ReturnStmtSyntax {
+        guard let expression = node.expression,
+              let stripped = minimalSingleExpression(expression, context: context)
+        else { return node }
+        var result = node
+        result.expression = stripped
+        fixKeywordTrailingTrivia(&result.returnKeyword.trailingTrivia)
+        return result
+    }
+
+    // The three statements below hold no parenthesised subject of their own. Their conditions are
+    // stripped through ConditionElementSyntax, so only the keyword spacing needs repair here.
+
+    static func transform(
+        _ node: GuardStmtSyntax,
+        original _: GuardStmtSyntax,
+        parent _: Syntax?,
+        context _: Context
+    ) -> GuardStmtSyntax {
+        var result = node
+        fixKeywordTrailingTrivia(&result.guardKeyword.trailingTrivia)
+        return result
+    }
+
+    static func transform(
+        _ node: IfExprSyntax,
+        original _: IfExprSyntax,
+        parent _: Syntax?,
+        context _: Context
+    ) -> IfExprSyntax {
+        var result = node
+        fixKeywordTrailingTrivia(&result.ifKeyword.trailingTrivia)
+        return result
+    }
+
+    static func transform(
+        _ node: WhileStmtSyntax,
+        original _: WhileStmtSyntax,
+        parent _: Syntax?,
+        context _: Context
+    ) -> WhileStmtSyntax {
+        var result = node
+        fixKeywordTrailingTrivia(&result.whileKeyword.trailingTrivia)
+        return result
+    }
+
     /// Strip the wrapping single-element tuple from `original` if doing so would not introduce a
     /// parse ambiguity. Returns the inner expression with the outer parens' trivia transferred onto
     /// it, or `nil` if no stripping is possible.
     ///
     /// Emits a `removeParensAroundExpression` finding when stripping is performed and `diagnose` is
     /// `true` .
-    static func minimalSingleExpression(
+    private static func minimalSingleExpression(
         _ original: ExprSyntax,
         context: Context,
         diagnose: Bool = false
@@ -88,7 +194,7 @@ final class NoParensAroundConditions: StaticFormatRule<BasicRuleValue>, @uncheck
 
     /// Ensure the trailing trivia of a control-flow keyword has at least one space after parens are
     /// removed from the following expression.
-    static func fixKeywordTrailingTrivia(_ trivia: inout Trivia) {
+    private static func fixKeywordTrailingTrivia(_ trivia: inout Trivia) {
         guard trivia.isEmpty else { return }
         trivia = [.spaces(1)]
     }

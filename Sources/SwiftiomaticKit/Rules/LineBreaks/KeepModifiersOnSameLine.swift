@@ -10,6 +10,8 @@ import SwiftSyntax
 ///
 /// Rewrite: Newlines between modifiers and the declaration keyword are replaced with spaces.
 final class KeepModifiersOnSameLine: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
+    static let rewriteOrder = 360
+
     override class var group: ConfigurationGroup? { .lineBreaks }
 
     // MARK: - Container declarations

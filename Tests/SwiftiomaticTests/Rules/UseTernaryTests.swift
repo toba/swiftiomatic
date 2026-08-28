@@ -99,20 +99,9 @@ struct UseTernaryTests: RuleTesting {
     // MARK: - No-ops
 
     @Test func doesNotConvertElseIfChain() {
-        assertFormatting(
+        assertUnchanged(
             UseTernary.self,
-            input: """
-                func test() {
-                    if conditionA {
-                        return foo()
-                    } else if conditionB {
-                        return bar()
-                    } else {
-                        return baz()
-                    }
-                }
-                """,
-            expected: """
+            source: """
                 func test() {
                     if conditionA {
                         return foo()
@@ -126,19 +115,9 @@ struct UseTernaryTests: RuleTesting {
     }
 
     @Test func doesNotConvertMultiStatementBranch() {
-        assertFormatting(
+        assertUnchanged(
             UseTernary.self,
-            input: """
-                func test() {
-                    if condition {
-                        log("true")
-                        return foo()
-                    } else {
-                        return bar()
-                    }
-                }
-                """,
-            expected: """
+            source: """
                 func test() {
                     if condition {
                         log("true")
@@ -151,18 +130,9 @@ struct UseTernaryTests: RuleTesting {
     }
 
     @Test func doesNotConvertMixedReturnAndExpression() {
-        assertFormatting(
+        assertUnchanged(
             UseTernary.self,
-            input: """
-                func test() {
-                    if condition {
-                        return foo()
-                    } else {
-                        bar()
-                    }
-                }
-                """,
-            expected: """
+            source: """
                 func test() {
                     if condition {
                         return foo()
@@ -174,16 +144,9 @@ struct UseTernaryTests: RuleTesting {
     }
 
     @Test func doesNotConvertIfWithoutElse() {
-        assertFormatting(
+        assertUnchanged(
             UseTernary.self,
-            input: """
-                func test() {
-                    if condition {
-                        return foo()
-                    }
-                }
-                """,
-            expected: """
+            source: """
                 func test() {
                     if condition {
                         return foo()
@@ -193,18 +156,9 @@ struct UseTernaryTests: RuleTesting {
     }
 
     @Test func doesNotConvertBareReturnWithoutExpression() {
-        assertFormatting(
+        assertUnchanged(
             UseTernary.self,
-            input: """
-                func test() {
-                    if condition {
-                        return
-                    } else {
-                        return
-                    }
-                }
-                """,
-            expected: """
+            source: """
                 func test() {
                     if condition {
                         return
@@ -216,18 +170,9 @@ struct UseTernaryTests: RuleTesting {
     }
 
     @Test func doesNotConvertBareExpressions() {
-        assertFormatting(
+        assertUnchanged(
             UseTernary.self,
-            input: """
-                let x = {
-                    if condition {
-                        foo
-                    } else {
-                        bar
-                    }
-                }
-                """,
-            expected: """
+            source: """
                 let x = {
                     if condition {
                         foo
@@ -331,18 +276,9 @@ struct UseTernaryTests: RuleTesting {
     }
 
     @Test func doesNotConvertAssignmentToDifferentVariables() {
-        assertFormatting(
+        assertUnchanged(
             UseTernary.self,
-            input: """
-                func test() {
-                    if condition {
-                        x = foo()
-                    } else {
-                        y = bar()
-                    }
-                }
-                """,
-            expected: """
+            source: """
                 func test() {
                     if condition {
                         x = foo()
@@ -354,18 +290,9 @@ struct UseTernaryTests: RuleTesting {
     }
 
     @Test func doesNotConvertMixedReturnAndAssignment() {
-        assertFormatting(
+        assertUnchanged(
             UseTernary.self,
-            input: """
-                func test() {
-                    if condition {
-                        return foo()
-                    } else {
-                        result = bar()
-                    }
-                }
-                """,
-            expected: """
+            source: """
                 func test() {
                     if condition {
                         return foo()
@@ -377,18 +304,9 @@ struct UseTernaryTests: RuleTesting {
     }
 
     @Test func doesNotConvertCompoundAssignment() {
-        assertFormatting(
+        assertUnchanged(
             UseTernary.self,
-            input: """
-                func test() {
-                    if condition {
-                        result += foo()
-                    } else {
-                        result += bar()
-                    }
-                }
-                """,
-            expected: """
+            source: """
                 func test() {
                     if condition {
                         result += foo()
@@ -444,17 +362,9 @@ struct UseTernaryTests: RuleTesting {
     }
 
     @Test func doesNotConvertIfReturnWithoutTrailingReturn() {
-        assertFormatting(
+        assertUnchanged(
             UseTernary.self,
-            input: """
-                func test() {
-                    if condition {
-                        return
-                    }
-                    doSomething()
-                }
-                """,
-            expected: """
+            source: """
                 func test() {
                     if condition {
                         return
@@ -465,15 +375,9 @@ struct UseTernaryTests: RuleTesting {
     }
 
     @Test func doesNotConvertIfReturnPairWithOptionalBinding() {
-        assertFormatting(
+        assertUnchanged(
             UseTernary.self,
-            input: """
-                func test() -> Int {
-                    if let value = optional { return value }
-                    return fallback
-                }
-                """,
-            expected: """
+            source: """
                 func test() -> Int {
                     if let value = optional { return value }
                     return fallback
@@ -482,18 +386,9 @@ struct UseTernaryTests: RuleTesting {
     }
 
     @Test func doesNotConvertIfReturnPairWithMultipleStatements() {
-        assertFormatting(
+        assertUnchanged(
             UseTernary.self,
-            input: """
-                func test() -> Int {
-                    if condition {
-                        log("hi")
-                        return 1
-                    }
-                    return 0
-                }
-                """,
-            expected: """
+            source: """
                 func test() -> Int {
                     if condition {
                         log("hi")
@@ -508,9 +403,9 @@ struct UseTernaryTests: RuleTesting {
         // `switch` (and `if`) expressions are only legal in return/throw/assignment positions —
         // never as a sub-expression of a ternary. Rewriting `if … return x; return switch …` into
         // `cond ? x : switch …` produces uncompilable code.
-        assertFormatting(
+        assertUnchanged(
             UseTernary.self,
-            input: """
+            source: """
                 func matches(_ number: Int) -> Bool {
                     if numeric < 0 { return true }
                     return switch match {
@@ -518,23 +413,13 @@ struct UseTernaryTests: RuleTesting {
                     default: numeric == number.lastDigit
                     }
                 }
-                """,
-            expected: """
-                func matches(_ number: Int) -> Bool {
-                    if numeric < 0 { return true }
-                    return switch match {
-                    case .wholeNumber: numeric == number
-                    default: numeric == number.lastDigit
-                    }
-                }
-                """,
-            findings: [])
+                """)
     }
 
     @Test func doesNotConvertWhenIfBranchReturnsIfExpression() {
-        assertFormatting(
+        assertUnchanged(
             UseTernary.self,
-            input: """
+            source: """
                 func test() -> Int {
                     if a {
                         return if b { 1 } else { 2 }
@@ -542,23 +427,13 @@ struct UseTernaryTests: RuleTesting {
                         return 3
                     }
                 }
-                """,
-            expected: """
-                func test() -> Int {
-                    if a {
-                        return if b { 1 } else { 2 }
-                    } else {
-                        return 3
-                    }
-                }
-                """,
-            findings: [])
+                """)
     }
 
     @Test func doesNotConvertAssignmentWithSwitchExpression() {
-        assertFormatting(
+        assertUnchanged(
             UseTernary.self,
-            input: """
+            source: """
                 func test() {
                     if cond {
                         result = 1
@@ -569,35 +444,13 @@ struct UseTernaryTests: RuleTesting {
                         }
                     }
                 }
-                """,
-            expected: """
-                func test() {
-                    if cond {
-                        result = 1
-                    } else {
-                        result = switch x {
-                        case .a: 1
-                        default: 2
-                        }
-                    }
-                }
-                """,
-            findings: [])
+                """)
     }
 
     @Test func doesNotConvertOptionalBinding() {
-        assertFormatting(
+        assertUnchanged(
             UseTernary.self,
-            input: """
-                func test() {
-                    if let value = optional {
-                        return value
-                    } else {
-                        return fallback
-                    }
-                }
-                """,
-            expected: """
+            source: """
                 func test() {
                     if let value = optional {
                         return value
@@ -608,18 +461,64 @@ struct UseTernaryTests: RuleTesting {
                 """)
     }
 
+    // MARK: - Branches that read worse as a ternary
+
+    @Test func doesNotConvertWhenThenBranchIsABooleanLiteral() {
+        assertUnchanged(
+            UseTernary.self,
+            source: """
+                var isTestFile: Bool {
+                    if path.contains("/Tests/") { return true }
+                    return lastPathComponent.hasSuffix("Tests.swift")
+                }
+                """)
+    }
+
+    @Test func doesNotConvertWhenElseBranchIsABooleanLiteral() {
+        assertUnchanged(
+            UseTernary.self,
+            source: """
+                func test() -> Bool {
+                    if flag {
+                        return other()
+                    } else {
+                        return false
+                    }
+                }
+                """)
+    }
+
+    @Test func doesNotConvertAssignmentWithABooleanLiteralBranch() {
+        assertUnchanged(
+            UseTernary.self,
+            source: """
+                func test() {
+                    if flag {
+                        result = true
+                    } else {
+                        result = other()
+                    }
+                }
+                """)
+    }
+
+    @Test func doesNotConvertWhenABranchIsAlreadyATernary() {
+        assertUnchanged(
+            UseTernary.self,
+            source: """
+                func test() -> Int {
+                    if flag { return seed }
+                    return other ? left : right
+                }
+                """)
+    }
+
     // MARK: - Comments block the fold
 
     @Test func keepsTrailingCommentOnTheFoldedIf() {
-        assertFormatting(
+        assertUnchanged(
             UseTernary.self,
-            input: """
-                var isInsideTransaction: Bool {
-                    if handle == nil { return false } // Support for deinit
-                    return handle > 0
-                }
-                """,
-            expected: """
+            source: """
                 var isInsideTransaction: Bool {
                     if handle == nil { return false } // Support for deinit
                     return handle > 0
@@ -628,19 +527,9 @@ struct UseTernaryTests: RuleTesting {
     }
 
     @Test func keepsCommentInsideTheThenBranch() {
-        assertFormatting(
+        assertUnchanged(
             UseTernary.self,
-            input: """
-                func test() -> Int {
-                    if flag {
-                        // the flag means the cache is warm
-                        return 1
-                    } else {
-                        return 0
-                    }
-                }
-                """,
-            expected: """
+            source: """
                 func test() -> Int {
                     if flag {
                         // the flag means the cache is warm
@@ -653,18 +542,9 @@ struct UseTernaryTests: RuleTesting {
     }
 
     @Test func keepsCommentInsideTheElseBranch() {
-        assertFormatting(
+        assertUnchanged(
             UseTernary.self,
-            input: """
-                func test() -> Int {
-                    if flag {
-                        return 1
-                    } else {
-                        return 0  // nothing is cached yet
-                    }
-                }
-                """,
-            expected: """
+            source: """
                 func test() -> Int {
                     if flag {
                         return 1
@@ -676,18 +556,9 @@ struct UseTernaryTests: RuleTesting {
     }
 
     @Test func keepsCommentOnTheCondition() {
-        assertFormatting(
+        assertUnchanged(
             UseTernary.self,
-            input: """
-                func test() -> Int {
-                    if flag {  // set by the loader
-                        return 1
-                    } else {
-                        return 0
-                    }
-                }
-                """,
-            expected: """
+            source: """
                 func test() -> Int {
                     if flag {  // set by the loader
                         return 1
@@ -699,16 +570,9 @@ struct UseTernaryTests: RuleTesting {
     }
 
     @Test func keepsCommentOnTheTrailingReturnOfAPair() {
-        assertFormatting(
+        assertUnchanged(
             UseTernary.self,
-            input: """
-                func test() -> Int {
-                    if flag { return 1 }
-                    // zero is the documented default
-                    return 0
-                }
-                """,
-            expected: """
+            source: """
                 func test() -> Int {
                     if flag { return 1 }
                     // zero is the documented default
@@ -720,20 +584,9 @@ struct UseTernaryTests: RuleTesting {
     // MARK: - Ignore directives
 
     @Test func honorsIgnoreNextDirective() {
-        assertFormatting(
+        assertUnchanged(
             UseTernary.self,
-            input: """
-                func test() -> Int {
-                    let seed = 1
-                    // sm:ignore:next useTernary
-                    if flag {
-                        return seed
-                    } else {
-                        return 0
-                    }
-                }
-                """,
-            expected: """
+            source: """
                 func test() -> Int {
                     let seed = 1
                     // sm:ignore:next useTernary
@@ -747,19 +600,9 @@ struct UseTernaryTests: RuleTesting {
     }
 
     @Test func honorsFileWideIgnoreDirective() {
-        assertFormatting(
+        assertUnchanged(
             UseTernary.self,
-            input: """
-                // sm:ignore useTernary
-                func test() -> Int {
-                    if flag {
-                        return 1
-                    } else {
-                        return 0
-                    }
-                }
-                """,
-            expected: """
+            source: """
                 // sm:ignore useTernary
                 func test() -> Int {
                     if flag {
@@ -772,17 +615,9 @@ struct UseTernaryTests: RuleTesting {
     }
 
     @Test func honorsIgnoreNextDirectiveOnAnIfReturnPair() {
-        assertFormatting(
+        assertUnchanged(
             UseTernary.self,
-            input: """
-                func test() -> Int {
-                    let seed = 1
-                    // sm:ignore:next useTernary
-                    if flag { return seed }
-                    return 0
-                }
-                """,
-            expected: """
+            source: """
                 func test() -> Int {
                     let seed = 1
                     // sm:ignore:next useTernary

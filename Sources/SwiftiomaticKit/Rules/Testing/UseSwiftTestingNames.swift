@@ -18,6 +18,8 @@ import SwiftSyntax
 ///
 /// Rewrite: The function name is rewritten to the configured style.
 final class UseSwiftTestingNames: StaticFormatRule<SwiftTestingNamesConfiguration>, @unchecked Sendable {
+    static let rewriteOrder = 910
+
     override class var group: ConfigurationGroup? { .testing }
     override class var defaultValue: SwiftTestingNamesConfiguration {
         var config = SwiftTestingNamesConfiguration()

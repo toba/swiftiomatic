@@ -9,6 +9,8 @@ import SwiftSyntax
 ///
 /// Rewrite: The doc comment is moved before all attributes and modifiers.
 final class PlaceDocCommentsBeforeModifiers: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
+    static let rewriteOrder = 280
+
     override static var group: ConfigurationGroup? { .comments }
 
     // MARK: - Container types (need super.visit)

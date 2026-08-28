@@ -11,6 +11,8 @@ import SwiftSyntax
 ///
 /// Rewrite: The `private` modifier is added before the binding keyword.
 final class MakeStateVarsPrivate: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
+    static let rewriteOrder = 380
+
     override static var group: ConfigurationGroup? { .access }
     override static var defaultValue: BasicRuleValue { .init(rewrite: false, lint: .no) }
 

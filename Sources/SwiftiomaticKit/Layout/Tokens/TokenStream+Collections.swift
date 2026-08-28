@@ -341,6 +341,7 @@ extension TokenStream {
         }
 
         let shouldGroupAroundArgument = !isCompactSingleFunctionCallArgument(arguments)
+            || compactArgumentWouldStrandLabel(arguments)
 
         for argument in arguments {
             if let trailingComma = argument.trailingComma {

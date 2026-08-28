@@ -23,6 +23,8 @@ import SwiftSyntax
 ///
 /// Rewrite: The `let` / `var` is repositioned to match the configured placement.
 final class HoistCaseLet: StaticFormatRule<CaseLetConfiguration>, @unchecked Sendable {
+    static let rewriteOrder = 160
+
     override static var group: ConfigurationGroup? { .hoist }
 
     // MARK: - Visitors

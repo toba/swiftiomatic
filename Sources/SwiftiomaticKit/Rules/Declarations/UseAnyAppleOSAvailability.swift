@@ -15,6 +15,8 @@ import SwiftSyntax
 ///
 /// Rewrite: The five clauses collapse to a single `anyAppleOS` clause, keeping the trailing `*` .
 final class UseAnyAppleOSAvailability: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
+    static let rewriteOrder = 630
+
     override class var group: ConfigurationGroup? { .declarations }
 
     /// The platforms `anyAppleOS` stands for. All five must be present for the rewrite to be

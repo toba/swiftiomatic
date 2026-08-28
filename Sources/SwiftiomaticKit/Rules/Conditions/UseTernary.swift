@@ -26,11 +26,17 @@ import SwiftSyntax
 /// result = condition ? trueValue : falseValue
 /// ```
 ///
+/// The rewrite is declined when a branch is a boolean literal or is itself a ternary. A literal
+/// branch means the ternary states an `||` or an `&&` the long way. A ternary branch adds a nesting
+/// level over the if chain it replaces.
+///
 /// Lint: A simple if-else with single returns or same-variable assignments in both branches raises
 /// a warning.
 ///
 /// Rewrite: The if-else is replaced with a ternary expression.
 final class UseTernary: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
+    static let rewriteOrder = 710
+
     override class var group: ConfigurationGroup? { .conditions }
     override class var defaultValue: BasicRuleValue { .init(rewrite: false, lint: .no) }
 
@@ -103,7 +109,9 @@ final class UseTernary: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
         if let thenReturn = extractReturn(from: thenOnly),
            let elseReturn = extractReturn(from: elseOnly),
            !isStatementOnlyExpression(thenReturn),
-           !isStatementOnlyExpression(elseReturn)
+           !isStatementOnlyExpression(elseReturn),
+           !readsWorseAsTernary(thenReturn),
+           !readsWorseAsTernary(elseReturn)
         {
             return buildTernaryReturn(
                 item: item,
@@ -118,7 +126,9 @@ final class UseTernary: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
            let (elseLHS, elseRHS) = extractAssignment(from: elseOnly),
            lhs.trimmedDescription == elseLHS.trimmedDescription,
            !isStatementOnlyExpression(thenRHS),
-           !isStatementOnlyExpression(elseRHS)
+           !isStatementOnlyExpression(elseRHS),
+           !readsWorseAsTernary(thenRHS),
+           !readsWorseAsTernary(elseRHS)
         {
             return buildTernaryAssignment(
                 item: item,
@@ -161,6 +171,9 @@ final class UseTernary: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
         guard !isStatementOnlyExpression(thenReturn),
               !isStatementOnlyExpression(elseReturn) else { return nil }
 
+        guard !readsWorseAsTernary(thenReturn),
+              !readsWorseAsTernary(elseReturn) else { return nil }
+
         Self.diagnose(.useTernary, on: ifExpr.ifKeyword, context: context)
 
         let ternary = buildTernaryExpr(
@@ -196,6 +209,14 @@ final class UseTernary: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
     /// there must be skipped.
     private static func isStatementOnlyExpression(_ expr: ExprSyntax) -> Bool {
         expr.is(SwitchExprSyntax.self) || expr.is(IfExprSyntax.self)
+    }
+
+    /// Whether a branch expression makes the ternary read worse than the if it would replace.
+    ///
+    /// A boolean literal branch turns the ternary into a disguised `||` or `&&` . A ternary branch
+    /// adds a nesting level, so the result costs a line and a level over the if chain.
+    private static func readsWorseAsTernary(_ expr: ExprSyntax) -> Bool {
+        expr.is(BooleanLiteralExprSyntax.self) || expr.is(TernaryExprSyntax.self)
     }
 
     private static func extractIfExpr(from item: CodeBlockItemSyntax) -> IfExprSyntax? {

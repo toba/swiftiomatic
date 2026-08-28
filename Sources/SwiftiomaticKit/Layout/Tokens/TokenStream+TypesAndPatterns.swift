@@ -100,8 +100,7 @@ extension TokenStream {
         let glueAngleToInnerDelimiter: Bool = {
             guard node.arguments.count == 1,
                   let onlyArg = node.arguments.first,
-                  case let .type(innerType) = onlyArg.argument
-            else { return false }
+                  case let .type(innerType) = onlyArg.argument else { return false }
             return innerType.is(TupleTypeSyntax.self)
         }()
 
@@ -414,8 +413,7 @@ extension TokenStream {
     /// the list containing it.
     func isLastKeyPathComponent(_ component: KeyPathComponentSyntax) -> Bool {
         guard let componentList = component.parent?.as(KeyPathComponentListSyntax.self),
-              let lastComponent = componentList.last
-        else { return false }
+              let lastComponent = componentList.last else { return false }
         return component == lastComponent
     }
 
@@ -434,11 +432,18 @@ extension TokenStream {
         // ternary itself wraps, sub-expression breaks within a branch (e.g., the `[` / `]` breaks
         // of a single-element array literal) don't fire just because the outer ternary did. Mirrors
         // upstream apple/swift-format's `visit(_:TernaryExprSyntax)` .
+        //
+        // The close break before the colon is mandatory, unlike upstream's. It fires when it lands
+        // on a different line than the open break before the question mark, so a ternary that puts
+        // the question mark on its own line also puts the colon on its own line. Without that
+        // pairing the printer leaves the else branch trailing the then branch, and
+        // WrapTernaryBranches splits it on the next run, so one format pass leaves the file
+        // unformatted.
         before(node.questionMark, tokens: .break(.open(kind: .continuation)), .open)
         after(node.questionMark, tokens: .space)
         before(
             node.colon,
-            tokens: .break(.close(mustBreak: false), size: 0),
+            tokens: .break(.close(mustBreak: true), size: 0),
             .break(.open(kind: .continuation)),
             .open
         )

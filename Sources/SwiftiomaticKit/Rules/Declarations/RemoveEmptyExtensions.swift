@@ -12,6 +12,8 @@ import SwiftSyntax
 ///
 /// Rewrite: The entire extension declaration is removed.
 final class RemoveEmptyExtensions: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
+    static let rewriteOrder = 310
+
     override class var group: ConfigurationGroup? { .declarations }
 
     static func transform(

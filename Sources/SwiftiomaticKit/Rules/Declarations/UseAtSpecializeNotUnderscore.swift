@@ -10,6 +10,8 @@ import SwiftSyntax
 /// Rewrite: The attribute is replaced with `@specialize` , preserving its argument list (e.g.
 /// `where` , `exported:` , `kind:` ).
 final class UseAtSpecializeNotUnderscore: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
+    static let rewriteOrder = 620
+
     override class var group: ConfigurationGroup? { .declarations }
 
     static func transform(

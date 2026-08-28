@@ -14,6 +14,8 @@ import SwiftSyntax
 ///
 /// Rewrite: The conformance constraint is moved from the `where` clause to the generic parameter.
 final class SimplifyGenericConstraints: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
+    static let rewriteOrder = 890
+
     override class var group: ConfigurationGroup? { .generics }
 
     static func transform(

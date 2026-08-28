@@ -11,6 +11,8 @@ import SwiftSyntax
 ///
 /// Rewrite: The redundant pattern is removed.
 final class DropRedundantCasePattern: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
+    static let rewriteOrder = 830
+
     override class var group: ConfigurationGroup? { .redundancies }
 
     // MARK: - Switch case items: case let .foo(_, _) → case .foo

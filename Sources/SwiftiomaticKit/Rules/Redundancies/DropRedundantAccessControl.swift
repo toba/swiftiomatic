@@ -18,6 +18,8 @@ import SwiftSyntax
 /// redundant access control on extension members matching the extension's level, and redundant
 /// `fileprivate` (converted to `private` in single-type files).
 final class DropRedundantAccessControl: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
+    static let rewriteOrder = 770
+
     override class var group: ConfigurationGroup? { .redundancies }
 
     override class var defaultValue: BasicRuleValue { .init(rewrite: false, lint: .no) }

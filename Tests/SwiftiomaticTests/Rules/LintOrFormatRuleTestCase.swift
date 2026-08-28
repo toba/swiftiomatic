@@ -127,6 +127,29 @@ extension RuleTesting {
       sourceLocation: sourceLocation
     )
   }
+
+  /// Asserts that the rule leaves the source unchanged and emits no finding.
+  ///
+  /// A test written with `assertFormatting` repeats the same literal as `input` and as `expected`.
+  /// This helper takes the source once. Use `assertFormatting` when the rule changes the source, or
+  /// when it emits a finding without changing it.
+  func assertUnchanged(
+    _ formatType: (some SyntaxRule).Type,
+    source: String,
+    configuration: Configuration? = nil,
+    experimentalFeatures: Parser.ExperimentalFeatures = [],
+    sourceLocation: TestSourceLocation = #_sourceLocation
+  ) {
+    assertFormatting(
+      formatType,
+      input: source,
+      expected: MarkedText(textWithMarkers: source).textWithoutMarkers,
+      findings: [],
+      configuration: configuration,
+      experimentalFeatures: experimentalFeatures,
+      sourceLocation: sourceLocation
+    )
+  }
 }
 
 /// Returns a string containing a whitespace-insensitive representation of the given source file.

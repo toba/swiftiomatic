@@ -10,6 +10,8 @@ import SwiftSyntax
 ///
 /// Rewrite: The separate statements are merged into a conditional expression assignment.
 final class UseIfElseAsExpression: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
+    static let rewriteOrder = 520
+
     override class var group: ConfigurationGroup? { .conditions }
     override class var defaultValue: BasicRuleValue { .init(rewrite: false, lint: .no) }
 

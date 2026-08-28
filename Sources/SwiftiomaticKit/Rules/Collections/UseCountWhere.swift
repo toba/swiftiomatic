@@ -9,6 +9,8 @@ import SwiftSyntax
 ///
 /// Rewrite: `.filter { ... }.count` is replaced with `.count(where: { ... })` .
 final class UseCountWhere: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
+    static let rewriteOrder = 450
+
     override static var group: ConfigurationGroup? { .collections }
 
     static func transform(

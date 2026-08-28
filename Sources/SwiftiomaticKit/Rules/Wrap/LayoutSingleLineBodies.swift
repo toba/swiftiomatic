@@ -21,6 +21,8 @@ final class LayoutSingleLineBodiesState {
 final class LayoutSingleLineBodies: StaticFormatRule<LayoutSingleLineBodiesConfiguration>,
     @unchecked Sendable
 {
+    static let rewriteOrder = 1200
+
     override class var defaultValue: LayoutSingleLineBodiesConfiguration {
         var config = LayoutSingleLineBodiesConfiguration()
         config.rewrite = false
@@ -43,25 +45,25 @@ extension LayoutSingleLineBodies {
 
     static func transform(
         _ node: IfExprSyntax,
-        original _: IfExprSyntax,
+        original: IfExprSyntax,
         parent _: Syntax?,
         context: Context
     ) -> ExprSyntax {
         switch Self.mode(context: context) {
             case .wrap: Self.wrapIf(node, context: context)
-            case .inline: Self.inlineIf(node, context: context)
+            case .inline: Self.inlineIf(node, original: original, context: context)
         }
     }
 
     static func transform(
         _ node: GuardStmtSyntax,
-        original _: GuardStmtSyntax,
+        original: GuardStmtSyntax,
         parent _: Syntax?,
         context: Context
     ) -> StmtSyntax {
         switch Self.mode(context: context) {
             case .wrap: Self.wrapGuard(node, context: context)
-            case .inline: Self.inlineGuard(node, context: context)
+            case .inline: Self.inlineGuard(node, original: original, context: context)
         }
     }
 
@@ -115,13 +117,13 @@ extension LayoutSingleLineBodies {
 
     static func transform(
         _ node: WhileStmtSyntax,
-        original _: WhileStmtSyntax,
+        original: WhileStmtSyntax,
         parent _: Syntax?,
         context: Context
     ) -> StmtSyntax {
         switch Self.mode(context: context) {
             case .wrap: Self.wrapWhile(node, context: context)
-            case .inline: Self.inlineWhile(node, context: context)
+            case .inline: Self.inlineWhile(node, original: original, context: context)
         }
     }
 
@@ -546,8 +548,7 @@ extension LayoutSingleLineBodies {
         if Self.commentPrecedesBrace(block.leftBrace) { return true }
         if block.leftBrace.trailingTrivia.hasAnyComments { return true }
         if statementLeading.hasAnyComments { return true }
-        return statementTrailing.hasAnyComments
-            ? true : block.rightBrace.leadingTrivia.hasAnyComments
+        return statementTrailing.hasAnyComments || block.rightBrace.leadingTrivia.hasAnyComments
     }
 
     fileprivate static func prefixLength(
@@ -627,11 +628,38 @@ extension LayoutSingleLineBodies {
         return Self.inliningBody(body)
     }
 
+    /// Whether a wrapped condition list would bury the body's opening brace
+    ///
+    /// A condition list that wraps still reads as one block when every continuation line starts at
+    /// the column of the first condition. A continuation at any other column reads as a nested body,
+    /// so a brace and a body folded onto it are no longer separable from the condition.
+    ///
+    /// The conditions come from the original node, because a rewritten node carries no position in
+    /// the file.
+    ///
+    /// - Parameters:
+    ///   - conditions: the condition list of the original node
+    fileprivate static func conditionsBuryTheBrace(
+        _ conditions: ConditionElementListSyntax,
+        context: Context
+    ) -> Bool {
+        guard let first = conditions.firstToken(viewMode: .sourceAccurate) else { return false }
+        let startColumn = first.startLocation(converter: context.sourceLocationConverter).column
+
+        for token in conditions.tokens(viewMode: .sourceAccurate)
+        where token.leadingTrivia.containsNewlines {
+            if token.leadingTrivia.indentationWidth + 1 != startColumn { return true }
+        }
+        return false
+    }
+
     fileprivate static func inlineIf(
         _ node: IfExprSyntax,
+        original: IfExprSyntax,
         context: Context
     ) -> ExprSyntax {
         guard node.elseBody == nil,
+              !Self.conditionsBuryTheBrace(original.conditions, context: context),
               let body = Self.inlinedBody(
                   node.body,
                   message: .inlineConditionalBody,
@@ -645,13 +673,15 @@ extension LayoutSingleLineBodies {
 
     fileprivate static func inlineGuard(
         _ node: GuardStmtSyntax,
+        original: GuardStmtSyntax,
         context: Context
     ) -> StmtSyntax {
-        guard let body = Self.inlinedBody(
-            node.body,
-            message: .inlineConditionalBody,
-            context: context
-        ) else { return StmtSyntax(node) }
+        guard !Self.conditionsBuryTheBrace(original.conditions, context: context),
+              let body = Self.inlinedBody(
+                  node.body,
+                  message: .inlineConditionalBody,
+                  context: context
+              ) else { return StmtSyntax(node) }
 
         var result = node
         result.body = body
@@ -754,10 +784,15 @@ extension LayoutSingleLineBodies {
 
     fileprivate static func inlineWhile(
         _ node: WhileStmtSyntax,
+        original: WhileStmtSyntax,
         context: Context
     ) -> StmtSyntax {
-        guard let body = Self.inlinedBody(node.body, message: .inlineLoopBody, context: context)
-        else { return StmtSyntax(node) }
+        guard !Self.conditionsBuryTheBrace(original.conditions, context: context),
+              let body = Self.inlinedBody(
+                  node.body,
+                  message: .inlineLoopBody,
+                  context: context
+              ) else { return StmtSyntax(node) }
 
         var result = node
         result.body = body

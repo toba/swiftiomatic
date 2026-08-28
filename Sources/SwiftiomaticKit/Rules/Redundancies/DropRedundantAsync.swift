@@ -13,6 +13,8 @@ import SwiftSyntax
 ///
 /// Rewrite: The `async` specifier is removed.
 final class DropRedundantAsync: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
+    static let rewriteOrder = 780
+
     override class var defaultValue: BasicRuleValue { .init(rewrite: false, lint: .no) }
     override class var group: ConfigurationGroup? { .redundancies }
 

@@ -7,9 +7,7 @@ struct GeneratePlugin: BuildToolPlugin {
         context: PluginContext,
         target: Target
     ) async throws -> [Command] {
-        guard let sourceTarget = target as? SourceModuleTarget else {
-            return []
-        }
+        guard let sourceTarget = target as? SourceModuleTarget else { return [] }
 
         let generator = try context.tool(named: "Generator")
         let outputDir = context.pluginWorkDirectoryURL
@@ -26,14 +24,20 @@ struct GeneratePlugin: BuildToolPlugin {
 
         let inputFiles = sourceTarget.sourceFiles
             .filter { file in
-                inputDirectories.contains { dir in
-                    file.url.path().hasPrefix(dir.path())
-                }
+                inputDirectories.contains { dir in file.url.path().hasPrefix(dir.path()) }
             }
             .map(\.url)
 
+        // The dispatch audit reads the two hand-written dispatchers, so a call removed from either
+        // one has to re-run the command.
+        let dispatcherFiles = [
+            kitDir.appending(path: "Syntax/Rewriter/SourceFile.swift"),
+            kitDir.appending(path: "Layout/LayoutWriter.swift"),
+        ]
+
         let outputFiles = [
             outputDir.appending(path: "Pipelines+Generated.swift"),
+            outputDir.appending(path: "RewritePipeline+Generated.swift"),
             outputDir.appending(path: "ConfigurationRegistry+Generated.swift"),
             outputDir.appending(path: "TokenStream+Generated.swift"),
             outputDir.appending(path: "ConfigurationSchema+Generated.swift"),
@@ -43,12 +47,8 @@ struct GeneratePlugin: BuildToolPlugin {
             .buildCommand(
                 displayName: "Generate SwiftiomaticKit pipelines and registry",
                 executable: generator.url,
-                arguments: [
-                    packageDir.path(),
-                    outputDir.path(),
-                    "--skip-schema",
-                ],
-                inputFiles: inputFiles,
+                arguments: [packageDir.path(), outputDir.path(), "--skip-schema"],
+                inputFiles: inputFiles + dispatcherFiles,
                 outputFiles: outputFiles
             )
         ]

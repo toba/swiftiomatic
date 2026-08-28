@@ -30,6 +30,8 @@ import SwiftSyntax
 final class LayoutSwitchCaseBodies: StaticFormatRule<LayoutSwitchCaseBodiesConfiguration>,
     @unchecked Sendable
 {
+    static let rewriteOrder = 200
+
     override class var group: ConfigurationGroup? { .wrap }
     override class var defaultValue: LayoutSwitchCaseBodiesConfiguration {
         var config = LayoutSwitchCaseBodiesConfiguration()

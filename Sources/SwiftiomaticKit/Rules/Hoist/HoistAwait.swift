@@ -15,6 +15,8 @@ import SwiftSyntax
 ///
 /// Rewrite: `await` is removed from arguments and added to wrap the call expression.
 final class HoistAwait: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
+    static let rewriteOrder = 150
+
     override class var group: ConfigurationGroup? { .hoist }
 
     static func transform(

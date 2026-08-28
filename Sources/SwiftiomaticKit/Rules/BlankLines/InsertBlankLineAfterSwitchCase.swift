@@ -12,12 +12,19 @@ import SwiftSyntax
 ///
 /// Rewrite: Blank lines are inserted after multiline cases and removed after the last case.
 final class InsertBlankLineAfterSwitchCase: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
+    static let rewriteOrder = 190
+
     override static var group: ConfigurationGroup? { .blankLines }
     override static var defaultValue: BasicRuleValue { .init(rewrite: false, lint: .no) }
 
     /// Insert blank lines after multiline cases and strip a blank line before the closing brace.
     /// Called from `CompactSyntaxRewriter.visit(_: SwitchExprSyntax)` .
-    static func apply(_ node: SwitchExprSyntax, context: Context) -> SwitchExprSyntax {
+    static func transform(
+        _ node: SwitchExprSyntax,
+        original _: SwitchExprSyntax,
+        parent _: Syntax?,
+        context: Context
+    ) -> SwitchExprSyntax {
         var switchExpr = node
         let cases = Array(switchExpr.cases)
         guard !cases.isEmpty else { return node }

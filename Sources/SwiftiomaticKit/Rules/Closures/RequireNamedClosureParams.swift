@@ -10,6 +10,8 @@ import SwiftSyntax
 ///
 /// Rewrite: Not auto-fixed; the rule cannot pick a meaningful parameter name.
 final class RequireNamedClosureParams: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
+    static let rewriteOrder = 340
+
     override class var group: ConfigurationGroup? { .closures }
     override class var defaultValue: BasicRuleValue { .init(rewrite: false, lint: .warn) }
 
@@ -47,15 +49,22 @@ final class RequireNamedClosureParams: StaticFormatRule<BasicRuleValue>, @unchec
         if !s.stack.isEmpty { s.stack.removeLast() }
     }
 
-    /// Diagnose `$N` references at the current closure scope.
-    static func rewriteDeclReference(_ node: DeclReferenceExprSyntax, context: Context) {
+    /// Diagnose `$N` references at the current closure scope. The node is returned unchanged,
+    /// because naming the parameter is the author's choice.
+    static func transform(
+        _ node: DeclReferenceExprSyntax,
+        original _: DeclReferenceExprSyntax,
+        parent _: Syntax?,
+        context: Context
+    ) -> DeclReferenceExprSyntax {
         guard state(context).insideMultilineClosure,
-              case .dollarIdentifier = node.baseName.tokenKind else { return }
+              case .dollarIdentifier = node.baseName.tokenKind else { return node }
         Self.diagnose(
             .preferNamedClosureParam(name: node.baseName.text),
             on: node.baseName,
             context: context
         )
+        return node
     }
 }
 

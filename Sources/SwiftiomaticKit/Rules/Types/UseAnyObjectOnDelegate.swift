@@ -9,11 +9,18 @@ import SwiftSyntax
 ///
 /// Rewrite: `class` is replaced with `AnyObject` in the inheritance clause.
 final class UseAnyObjectOnDelegate: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
+    static let rewriteOrder = 990
+
     override static var group: ConfigurationGroup? { .types }
 
     /// Replace `class` with `AnyObject` in a protocol's inheritance clause. Called from
     /// `CompactSyntaxRewriter.visit(_: ProtocolDeclSyntax)` .
-    static func apply(_ node: ProtocolDeclSyntax, context: Context) -> ProtocolDeclSyntax {
+    static func transform(
+        _ node: ProtocolDeclSyntax,
+        original _: ProtocolDeclSyntax,
+        parent _: Syntax?,
+        context: Context
+    ) -> ProtocolDeclSyntax {
         guard let inheritanceClause = node.inheritanceClause else { return node }
 
         var foundViolation = false

@@ -13,6 +13,8 @@ import SwiftSyntax
 ///
 /// Rewrite: `&&` is replaced with commas, splitting the condition into separate condition elements.
 final class UseCommaNotAndInConditions: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
+    static let rewriteOrder = 430
+
     override class var group: ConfigurationGroup? { .conditions }
 
     static func transform(

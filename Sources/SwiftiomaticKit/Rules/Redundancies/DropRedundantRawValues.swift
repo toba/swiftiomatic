@@ -21,6 +21,8 @@ import SwiftSyntax
 ///
 /// Rewrite: The redundant raw value initializer is removed.
 final class DropRedundantRawValues: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
+    static let rewriteOrder = 370
+
     override class var group: ConfigurationGroup? { .redundancies }
 
     static func transform(

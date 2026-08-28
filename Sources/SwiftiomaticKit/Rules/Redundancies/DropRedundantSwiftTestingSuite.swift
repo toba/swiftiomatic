@@ -11,6 +11,8 @@ import SwiftSyntax
 ///
 /// Rewrite: The redundant `@Suite` attribute is removed.
 final class DropRedundantSwiftTestingSuite: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
+    static let rewriteOrder = 980
+
     override class var group: ConfigurationGroup? { .redundancies }
     override class var defaultValue: BasicRuleValue { .init(rewrite: false, lint: .no) }
 
@@ -19,18 +21,62 @@ final class DropRedundantSwiftTestingSuite: StaticFormatRule<BasicRuleValue>, @u
         var importsTesting = false
     }
 
-    /// Track an `import Testing` so later type-decl visits know the macro is in scope. Called from
-    /// `rewriteImportDecl` .
-    static func visitImport(_ node: ImportDeclSyntax, context: Context) {
+    /// Track an `import Testing` so later type-decl visits know the macro is in scope.
+    ///
+    /// This runs after the children are visited, because `UseSwiftTestingNotXCTest` rewrites
+    /// `import XCTest` to `import Testing` first and the flag has to read the rewritten path.
+    static func transform(
+        _ node: ImportDeclSyntax,
+        original _: ImportDeclSyntax,
+        parent _: Syntax?,
+        context: Context
+    ) -> ImportDeclSyntax {
         if node.path.first?.name.text == "Testing" {
             context.redundantSwiftTestingSuiteState.importsTesting = true
         }
+        return node
+    }
+
+    static func transform(
+        _ node: ActorDeclSyntax,
+        original _: ActorDeclSyntax,
+        parent _: Syntax?,
+        context: Context
+    ) -> ActorDeclSyntax {
+        removeSuite(from: node, keyword: \.actorKeyword, context: context)
+    }
+
+    static func transform(
+        _ node: ClassDeclSyntax,
+        original _: ClassDeclSyntax,
+        parent _: Syntax?,
+        context: Context
+    ) -> ClassDeclSyntax {
+        removeSuite(from: node, keyword: \.classKeyword, context: context)
+    }
+
+    static func transform(
+        _ node: EnumDeclSyntax,
+        original _: EnumDeclSyntax,
+        parent _: Syntax?,
+        context: Context
+    ) -> EnumDeclSyntax {
+        removeSuite(from: node, keyword: \.enumKeyword, context: context)
+    }
+
+    static func transform(
+        _ node: StructDeclSyntax,
+        original _: StructDeclSyntax,
+        parent _: Syntax?,
+        context: Context
+    ) -> StructDeclSyntax {
+        removeSuite(from: node, keyword: \.structKeyword, context: context)
     }
 
     /// Remove a no-argument `@Suite` attribute from the given type declaration. `keyword` points at
     /// the type's primary keyword (e.g. `\.classKeyword` ) so its leading trivia can absorb the
     /// attribute's trivia when no other attributes remain.
-    static func removeSuite<Decl: DeclSyntaxProtocol & WithAttributesSyntax>(
+    private static func removeSuite<Decl: DeclSyntaxProtocol & WithAttributesSyntax>(
         from node: Decl,
         keyword: WritableKeyPath<Decl, TokenSyntax>,
         context: Context

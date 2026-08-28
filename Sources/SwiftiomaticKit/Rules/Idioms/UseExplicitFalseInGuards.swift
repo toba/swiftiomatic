@@ -9,6 +9,8 @@ import SwiftSyntax
 ///
 /// Rewrite: `!expression` is replaced with `expression == false` .
 final class UseExplicitFalseInGuards: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
+    static let rewriteOrder = 480
+
     override class var group: ConfigurationGroup? { .idioms }
     override static var defaultValue: BasicRuleValue { .init(rewrite: false, lint: .no) }
 

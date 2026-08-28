@@ -9,11 +9,18 @@ import SwiftSyntax
 ///
 /// Rewrite: The `weak` modifier is removed.
 final class UseStrongOutlets: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
+    static let rewriteOrder = 1000
+
     override class var group: ConfigurationGroup? { .memory }
 
     /// Strip `weak` from `@IBOutlet` declarations (preserving it for `delegate` / `dataSource`
     /// outlets). Called from `CompactSyntaxRewriter.visit(_: VariableDeclSyntax)` .
-    static func apply(_ node: VariableDeclSyntax, context: Context) -> VariableDeclSyntax {
+    static func transform(
+        _ node: VariableDeclSyntax,
+        original _: VariableDeclSyntax,
+        parent _: Syntax?,
+        context: Context
+    ) -> VariableDeclSyntax {
         guard hasIBOutletAttribute(node), node.modifiers.contains(.weak) else { return node }
 
         if let name = node.bindings.first?.pattern.as(IdentifierPatternSyntax.self)?.identifier.text

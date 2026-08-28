@@ -14,6 +14,8 @@ import SwiftSyntax
 ///
 /// Rewrite: The call is replaced with `<Type>.zero` .
 final class UseDotZero: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
+    static let rewriteOrder = 470
+
     override class var group: ConfigurationGroup? { .idioms }
     override class var defaultValue: BasicRuleValue { .init(rewrite: true, lint: .warn) }
 

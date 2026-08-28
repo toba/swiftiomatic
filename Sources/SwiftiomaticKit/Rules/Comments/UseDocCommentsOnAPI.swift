@@ -16,6 +16,8 @@ import SwiftSyntax
 ///
 /// Rewrite: The comment style is corrected.
 final class UseDocCommentsOnAPI: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
+    static let rewriteOrder = 460
+
     override static var group: ConfigurationGroup? { .comments }
     override static var defaultValue: BasicRuleValue { .init(rewrite: false, lint: .no) }
 

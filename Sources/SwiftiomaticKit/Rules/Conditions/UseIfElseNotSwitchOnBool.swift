@@ -26,6 +26,8 @@ import SwiftSyntax
 ///
 /// Rewrite: The chain is replaced with an `if/else` expression.
 final class UseIfElseNotSwitchOnBool: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
+    static let rewriteOrder = 530
+
     override class var group: ConfigurationGroup? { .conditions }
 
     static func transform(

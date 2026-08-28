@@ -19,6 +19,8 @@ import SwiftSyntax
 ///
 /// Rewrite: Empty parentheses in function calls with trailing closures will be removed.
 final class NoTrailingClosureParens: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
+    static let rewriteOrder = 650
+
     override class var group: ConfigurationGroup? { .closures }
 
     // Diagnose against the pre-traversal node so finding source locations are accurate.
@@ -41,8 +43,10 @@ final class NoTrailingClosureParens: StaticFormatRule<BasicRuleValue>, @unchecke
 
     /// Strip empty parens before a trailing closure when the call has no arguments. Called from
     /// `CompactSyntaxRewriter.visit(_: FunctionCallExprSyntax)` .
-    static func apply(
+    static func transform(
         _ node: FunctionCallExprSyntax,
+        original _: FunctionCallExprSyntax,
+        parent _: Syntax?,
         context _: Context
     ) -> FunctionCallExprSyntax {
         guard node.arguments.isEmpty,

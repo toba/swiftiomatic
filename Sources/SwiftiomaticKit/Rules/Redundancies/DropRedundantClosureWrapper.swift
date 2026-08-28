@@ -15,6 +15,8 @@ import SwiftSyntax
 ///
 /// Rewrite: The closure wrapper and invocation are removed, leaving just the expression.
 final class DropRedundantClosureWrapper: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
+    static let rewriteOrder = 570
+
     override class var group: ConfigurationGroup? { .redundancies }
 
     static func transform(

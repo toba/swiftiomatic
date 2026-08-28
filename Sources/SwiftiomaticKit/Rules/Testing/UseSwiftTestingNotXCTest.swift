@@ -9,6 +9,19 @@ import SwiftSyntax
 /// Bails out entirely if the file contains unsupported XCTest functionality (expectations,
 /// performance tests, unknown overrides, async/throws tearDown, XCTestCase extensions).
 final class UseSwiftTestingNotXCTest: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
+    static let rewriteOrder = 440
+
+    /// This is the one rule whose position differs by node kind, so it cannot take a single
+    /// `rewriteOrder` .
+    ///
+    /// On a function it widens `FunctionDeclSyntax` to `InitializerDeclSyntax` or
+    /// `DeinitializerDeclSyntax` , so every other function rule has to have run first. On a class
+    /// it runs mid-chain, while the declaration is still a class for the rules that follow.
+    static let rewriteOrderByNode = [
+        "ClassDeclSyntax": 730,
+        "FunctionDeclSyntax": 1250,
+    ]
+
     override class var group: ConfigurationGroup? { .testing }
 
     override class var defaultValue: BasicRuleValue { .init(rewrite: false, lint: .no) }

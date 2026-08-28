@@ -18,6 +18,8 @@ import SwiftSyntax
 ///
 /// Rewrite: The redundant `@ViewBuilder` attribute is removed.
 final class DropRedundantViewBuilder: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
+    static let rewriteOrder = 880
+
     override class var group: ConfigurationGroup? { .redundancies }
 
     /// Identifies this rule as being opt-in. This rule requires SwiftUI context and may produce

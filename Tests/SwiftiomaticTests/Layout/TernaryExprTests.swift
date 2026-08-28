@@ -31,6 +31,27 @@ struct TernaryExprTests: LayoutTesting {
     assertLayout(input: input, expected: expected, linelength: 80)
   }
 
+  @Test func ternaryOnAContinuationLineSettlesInOnePass() {
+    // The source already breaks after `=`, so the line holding `?` and `:` fits and
+    // WrapTernaryBranches inserts no newline. The printer then pulls the condition back
+    // onto the `=` line and breaks before `?`. The break before `:` has to fire too,
+    // otherwise a second format pass moves `: []` down and the file needs two passes.
+    let input =
+      """
+      let spiAttributes: [AttributeListSyntax.Element] =
+        keywordToAdd != nil ? node.attributes.filter(isSPIAttribute) : []
+      """
+    let expected =
+      """
+      let spiAttributes: [AttributeListSyntax.Element] = keywordToAdd != nil
+        ? node.attributes.filter(isSPIAttribute)
+        : []
+
+      """
+
+    assertLayout(input: input, expected: expected, linelength: 100)
+  }
+
   @Test func assignmentPrefersTernaryBreaksOverEqualsBreak() {
     // Breaking after `=` is a last resort. When a ternary RHS doesn't fit, prefer
     // breaking before `?` and `:` over breaking after `=`.

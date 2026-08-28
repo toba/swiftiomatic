@@ -14,6 +14,8 @@ import SwiftSyntax
 ///
 /// Rewrite: The property declaration is removed and its value is inlined into the return statement.
 final class DropRedundantProperty: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
+    static let rewriteOrder = 730
+
     override class var group: ConfigurationGroup? { .redundancies }
 
     static func transform(

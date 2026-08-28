@@ -16,6 +16,8 @@ import SwiftSyntax
 ///
 /// Rewrite: The force-unwrapped URL initializer is replaced with the configured macro.
 final class UseURLMacroForURLLiterals: StaticFormatRule<URLMacroConfiguration>, @unchecked Sendable {
+    static let rewriteOrder = 1010
+
     override class var group: ConfigurationGroup? { .literals }
 
     override class var defaultValue: URLMacroConfiguration {

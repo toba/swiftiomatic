@@ -22,6 +22,8 @@ import SwiftSyntax
 ///
 /// Rewrite: The explicit type is replaced with a leading dot.
 final class UseImplicitInit: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
+    static let rewriteOrder = 1090
+
     override class var group: ConfigurationGroup? { .redundancies }
 
     // MARK: - Computed properties and stored properties with type annotations

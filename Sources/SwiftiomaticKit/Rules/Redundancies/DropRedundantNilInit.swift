@@ -25,6 +25,8 @@ import SwiftSyntax
 ///
 /// Rewrite: The redundant `= nil` initializer is removed.
 final class DropRedundantNilInit: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
+    static let rewriteOrder = 810
+
     override class var group: ConfigurationGroup? { .redundancies }
 
     static func transform(

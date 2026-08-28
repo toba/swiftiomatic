@@ -258,6 +258,25 @@ extension Trivia {
         return reversedPieces.reversed().joined()
     }
 
+    /// The character width of the indentation run `indentation` returns
+    ///
+    /// Use this in place of `indentation.count` . It counts the same run without building the
+    /// string, so a caller that only compares a column pays no allocation.
+    var indentationWidth: Int {
+        var width = 0
+
+        for piece in pieces.reversed() {
+            switch piece {
+                case let .spaces(n): width += n
+                case let .tabs(n): width += n
+                case .newlines, .carriageReturns, .carriageReturnLineFeeds: return width
+                // a non-whitespace piece ends the run, so anything past it is not indentation
+                default: width = 0
+            }
+        }
+        return width
+    }
+
     /// Returns a copy with trailing spaces and tabs removed.
     var trimmingTrailingWhitespace: Trivia {
         var pieces = Array(self.pieces)

@@ -9,6 +9,8 @@ import SwiftSyntax
 ///
 /// Rewrite: `throws(any Error)` is replaced with `throws` . `throws(Never)` is removed.
 final class DropRedundantTypedThrows: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
+    static let rewriteOrder = 100
+
     override class var group: ConfigurationGroup? { .redundancies }
 
     // Function declarations: `func foo() throws(any Error)`

@@ -14,6 +14,8 @@ import SwiftSyntax
 ///
 /// Rewrite: The `class` modifier is replaced with `static` .
 final class UseStaticNotClassFunc: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
+    static let rewriteOrder = 700
+
     override class var group: ConfigurationGroup? { .idioms }
     override class var defaultValue: BasicRuleValue { .init(rewrite: false, lint: .warn) }
 

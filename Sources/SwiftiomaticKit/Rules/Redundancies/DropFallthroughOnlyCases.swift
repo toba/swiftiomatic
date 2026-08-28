@@ -19,6 +19,8 @@ import SwiftSyntax
 /// Rewrite: The fall-through `case` is added as a prefix to the next case unless the next case is
 /// `default` ; in that case, the fallthrough `case` is deleted.
 final class DropFallthroughOnlyCases: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
+    static let rewriteOrder = 40
+
     override class var group: ConfigurationGroup? { .redundancies }
 
     /// Diagnose against the pre-traversal node so finding source locations are accurate.
@@ -28,7 +30,12 @@ final class DropFallthroughOnlyCases: StaticFormatRule<BasicRuleValue>, @uncheck
 
     /// Collapse `case` s whose only statement is `fallthrough` into the following case's pattern
     /// list. Called from `CompactSyntaxRewriter.visit(_: SwitchCaseListSyntax)` .
-    static func apply(_ node: SwitchCaseListSyntax, context: Context) -> SwitchCaseListSyntax {
+    static func transform(
+        _ node: SwitchCaseListSyntax,
+        original _: SwitchCaseListSyntax,
+        parent _: Syntax?,
+        context: Context
+    ) -> SwitchCaseListSyntax {
         applyImpl(node, context: context, diagnose: false)
     }
 

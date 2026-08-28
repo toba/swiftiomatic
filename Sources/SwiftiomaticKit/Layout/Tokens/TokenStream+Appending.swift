@@ -385,6 +385,25 @@ extension TokenStream {
             || expression.is(ClosureExprSyntax.self)
     }
 
+    /// Whether a compact sole argument would leave its label alone at the end of the call line.
+    ///
+    /// Without a group around the argument, the break after the left paren reaches only as far as
+    /// the break after the label's colon, so its chunk holds the label alone. The printer then keeps
+    /// the label on the call line and breaks after the colon. The group extends that first break's
+    /// chunk over the whole argument, so it fires first and the label moves down with its value.
+    ///
+    /// Only a call that carries a trailing closure and no parenthesized argument list needs the
+    /// group. Every other compact value offers the printer an early break of its own, either its own
+    /// left paren or the open delimiter that follows the colon, so the label keeps company on the
+    /// line and the hug stays worth keeping.
+    func compactArgumentWouldStrandLabel(_ arguments: LabeledExprListSyntax) -> Bool {
+        guard arguments.count == 1, let only = arguments.first, only.label != nil,
+              !startsWithOpenDelimiter(Syntax(only.expression)),
+              let call = only.expression.as(FunctionCallExprSyntax.self)
+        else { return false }
+        return call.leftParen == nil
+    }
+
     /// Returns true if the call whose open paren is `leftDelimiter` is itself the sole argument of
     /// an outer function call, and none of its own arguments contain a closure. In that case,
     /// discretionary newlines around its `(` / `)` should be ignored so the inner call collapses

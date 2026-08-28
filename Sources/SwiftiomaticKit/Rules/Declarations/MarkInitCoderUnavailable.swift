@@ -10,6 +10,8 @@ import SwiftSyntax
 ///
 /// Rewrite: The `@available(*, unavailable)` attribute is added.
 final class MarkInitCoderUnavailable: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
+    static let rewriteOrder = 300
+
     override class var group: ConfigurationGroup? { .declarations }
     override class var defaultValue: BasicRuleValue { .init(rewrite: false, lint: .no) }
 

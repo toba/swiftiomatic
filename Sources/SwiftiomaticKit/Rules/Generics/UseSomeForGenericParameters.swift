@@ -16,6 +16,8 @@ import SwiftSyntax
 ///
 /// Rewrite: The generic parameter is replaced with `some Protocol` in the parameter type.
 final class UseSomeForGenericParameters: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
+    static let rewriteOrder = 760
+
     override class var group: ConfigurationGroup? { .generics }
 
     override class var defaultValue: BasicRuleValue { .init(rewrite: false, lint: .no) }

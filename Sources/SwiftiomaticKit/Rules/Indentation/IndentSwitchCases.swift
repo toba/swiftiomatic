@@ -12,6 +12,8 @@ import SwiftSyntax
 final class IndentSwitchCases: StaticFormatRule<IndentSwitchCasesConfiguration>,
     @unchecked Sendable
 {
+    static let rewriteOrder = 1040
+
     override class var group: ConfigurationGroup? { .indentation }
 
     override class var defaultValue: IndentSwitchCasesConfiguration {
@@ -56,7 +58,12 @@ final class IndentSwitchCases: StaticFormatRule<IndentSwitchCasesConfiguration>,
 
     /// Reindent `case` labels, bodies, and the closing brace to match the configured style. Called
     /// from `CompactSyntaxRewriter.visit(_: SwitchExprSyntax)` .
-    static func apply(_ node: SwitchExprSyntax, context: Context) -> SwitchExprSyntax {
+    static func transform(
+        _ node: SwitchExprSyntax,
+        original _: SwitchExprSyntax,
+        parent _: Syntax?,
+        context: Context
+    ) -> SwitchExprSyntax {
         var switchExpr = node
         let style = context.configuration[Self.self].style
         let switchIndent = lineIndentationOf(switchExpr.switchKeyword)

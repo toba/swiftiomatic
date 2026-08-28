@@ -11,6 +11,8 @@ import SwiftSyntax
 /// Rewrite: The `guard` is replaced with assertion/unwrap statements and `throws` is added to the
 /// signature if needed.
 final class NoGuardInTests: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
+    static let rewriteOrder = 750
+
     override class var group: ConfigurationGroup? { .testing }
     override class var defaultValue: BasicRuleValue { .init(rewrite: false, lint: .no) }
 

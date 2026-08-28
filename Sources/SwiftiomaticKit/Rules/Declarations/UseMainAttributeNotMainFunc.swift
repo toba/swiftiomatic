@@ -8,6 +8,8 @@ import SwiftSyntax
 ///
 /// Rewrite: The attribute is replaced with `@main` .
 final class UseMainAttributeNotMainFunc: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
+    static let rewriteOrder = 600
+
     override class var group: ConfigurationGroup? { .declarations }
 
     static func transform(

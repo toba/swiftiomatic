@@ -15,6 +15,8 @@ import SwiftSyntax
 /// Rewrite: `.aspectRatio(contentMode: .fit)` becomes `.scaledToFit()` and
 /// `.aspectRatio(contentMode: .fill)` becomes `.scaledToFill()`.
 final class UseScaledToFit: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
+    static let rewriteOrder = 640
+
     override static var group: ConfigurationGroup? { .swiftui }
 
     static func transform(

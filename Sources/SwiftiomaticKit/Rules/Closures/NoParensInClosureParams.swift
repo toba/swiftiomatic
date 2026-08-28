@@ -10,6 +10,8 @@ import SwiftSyntax
 ///
 /// Rewrite: The parenthesized parameter list is converted to shorthand ( `x, y` ).
 final class NoParensInClosureParams: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
+    static let rewriteOrder = 250
+
     override class var group: ConfigurationGroup? { .closures }
 
     static func transform(

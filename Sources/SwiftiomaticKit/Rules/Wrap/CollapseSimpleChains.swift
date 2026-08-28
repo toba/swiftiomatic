@@ -17,12 +17,15 @@ import SwiftSyntax
 ///
 /// Rewrite: The chain is collapsed onto a single line.
 final class CollapseSimpleChains: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
+    static let rewriteOrder = 1140
+
     override class var group: ConfigurationGroup? { .wrap }
     override class var defaultValue: BasicRuleValue { .init(rewrite: false, lint: .no) }
 
-    static func apply(
+    static func transform(
         _ node: FunctionCallExprSyntax,
         original: FunctionCallExprSyntax,
+        parent _: Syntax?,
         context: Context
     ) -> FunctionCallExprSyntax {
         guard !isInnerChainCall(ExprSyntax(node)) else { return node }

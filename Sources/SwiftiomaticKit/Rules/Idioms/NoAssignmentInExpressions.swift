@@ -25,6 +25,8 @@ import SwiftSyntax
 final class NoAssignmentInExpressions: StaticFormatRule<NoAssignmentInExpressionsConfiguration>,
     @unchecked Sendable
 {
+    static let rewriteOrder = 320
+
     override class var group: ConfigurationGroup? { .idioms }
 
     static func transform(

@@ -14,6 +14,8 @@ import SwiftSyntax
 final class InsertBlankLineBeforeControlFlowBlocks: StaticFormatRule<BasicRuleValue>,
     @unchecked Sendable
 {
+    static let rewriteOrder = 210
+
     override static var group: ConfigurationGroup? { .blankLines }
     override static var defaultValue: BasicRuleValue { .init(rewrite: false, lint: .no) }
 
@@ -28,10 +30,36 @@ final class InsertBlankLineBeforeControlFlowBlocks: StaticFormatRule<BasicRuleVa
         _ = insertBlankLines(in: Array(node.statements), context: context, diagnose: true)
     }
 
+    static func transform(
+        _ node: CodeBlockSyntax,
+        original _: CodeBlockSyntax,
+        parent _: Syntax?,
+        context: Context
+    ) -> CodeBlockSyntax {
+        guard let updated = insertBlankLines(in: Array(node.statements), context: context)
+        else { return node }
+        var result = node
+        result.statements = CodeBlockItemListSyntax(updated)
+        return result
+    }
+
+    static func transform(
+        _ node: SwitchCaseSyntax,
+        original _: SwitchCaseSyntax,
+        parent _: Syntax?,
+        context: Context
+    ) -> SwitchCaseSyntax {
+        guard let updated = insertBlankLines(in: Array(node.statements), context: context)
+        else { return node }
+        var result = node
+        result.statements = CodeBlockItemListSyntax(updated)
+        return result
+    }
+
     /// Insert a leading blank line before every multi-line control-flow statement that doesn't
     /// already have one, respecting the `closingBraceAsBlankLine` and `countCommentAsBlankLine`
     /// configuration flags.
-    static func insertBlankLines(
+    private static func insertBlankLines(
         in items: [CodeBlockItemSyntax],
         context: Context,
         diagnose: Bool = false

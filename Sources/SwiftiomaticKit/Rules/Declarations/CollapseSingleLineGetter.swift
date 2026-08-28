@@ -18,6 +18,8 @@ import SwiftSyntax
 ///
 /// Rewrite: Explicit `get` blocks are rendered implicit by removing the `get` .
 final class CollapseSingleLineGetter: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
+    static let rewriteOrder = 130
+
     override class var group: ConfigurationGroup? { .declarations }
 
     static func transform(

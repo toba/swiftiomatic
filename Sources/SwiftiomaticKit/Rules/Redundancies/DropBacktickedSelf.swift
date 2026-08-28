@@ -9,6 +9,8 @@ import SwiftSyntax
 ///
 /// Rewrite: The backticks are removed.
 final class DropBacktickedSelf: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
+    static let rewriteOrder = 30
+
     override class var group: ConfigurationGroup? { .redundancies }
 
     static func transform(

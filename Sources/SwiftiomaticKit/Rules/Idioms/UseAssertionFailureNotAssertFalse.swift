@@ -11,6 +11,8 @@ import SwiftSyntax
 /// Rewrite: The call is replaced with the corresponding `Failure` variant, removing the `false`
 /// argument.
 final class UseAssertionFailureNotAssertFalse: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
+    static let rewriteOrder = 420
+
     override class var group: ConfigurationGroup? { .idioms }
 
     static func transform(

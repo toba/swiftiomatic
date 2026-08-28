@@ -15,6 +15,8 @@ import SwiftSyntax
 ///
 /// Rewrite: The `Self.` prefix is removed.
 final class DropRedundantStaticSelf: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
+    static let rewriteOrder = 680
+
     override class var group: ConfigurationGroup? { .redundancies }
 
     override class var defaultValue: BasicRuleValue { .init(rewrite: false, lint: .no) }

@@ -13,6 +13,8 @@ import SwiftSyntax
 ///
 /// Rewrite: The comparison is replaced with `.isEmpty` or `!.isEmpty` .
 final class UseIsEmpty: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
+    static let rewriteOrder = 550
+
     override static var group: ConfigurationGroup? { .collections }
     override static var defaultValue: BasicRuleValue { .init(rewrite: false, lint: .no) }
 

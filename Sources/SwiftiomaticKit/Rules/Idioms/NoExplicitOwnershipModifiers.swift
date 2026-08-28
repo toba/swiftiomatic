@@ -10,6 +10,8 @@ import SwiftSyntax
 ///
 /// Rewrite: The ownership modifier is removed.
 final class NoExplicitOwnershipModifiers: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
+    static let rewriteOrder = 390
+
     override class var group: ConfigurationGroup? { .idioms }
 
     override class var defaultValue: BasicRuleValue { .init(rewrite: false, lint: .no) }

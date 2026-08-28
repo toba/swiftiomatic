@@ -9,6 +9,8 @@ import SwiftSyntax
 ///
 /// Rewrite: The attribute is replaced with `@c` , preserving any argument list.
 final class UseAtCNotUnderscoreCDecl: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
+    static let rewriteOrder = 610
+
     override class var group: ConfigurationGroup? { .declarations }
 
     static func transform(

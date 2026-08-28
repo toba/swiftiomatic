@@ -520,6 +520,31 @@ struct FunctionCallTests: LayoutTesting {
     assertLayout(input: input, expected: expected, linelength: 100, configuration: config)
   }
 
+  // A label and its value belong on one line. When the sole argument is a call, the break after
+  // the left paren must fire before the break after the label's colon, so the label moves down
+  // with its value instead of ending the call line by itself.
+  @Test func soleLabeledCallArgumentBreaksBeforeTheLabel() {
+    let input =
+      """
+      enum T {
+          static let ruleNameCache: [ObjectIdentifier: String] = Dictionary(uniqueKeysWithValues: allRuleTypes.map { (ObjectIdentifier($0), $0.key) })
+      }
+      """
+
+    let expected =
+      """
+      enum T {
+          static let ruleNameCache: [ObjectIdentifier: String] = Dictionary(
+              uniqueKeysWithValues: allRuleTypes.map { (ObjectIdentifier($0), $0.key) })
+      }
+
+      """
+
+    var config = Configuration.forTesting
+    config[IndentationSetting.self] = .spaces(4)
+    assertLayout(input: input, expected: expected, linelength: 100, configuration: config)
+  }
+
   // gbg-s72: when a call's sole argument is itself a chain whose base is a function call
   // (e.g. `RoundedRectangle(...).strokeBorder(...)`), the chain's dot-break should use one
   // continuation indent past the outer call's left paren — not two. Previously the inner

@@ -11,6 +11,8 @@ import SwiftSyntax
 ///
 /// Rewrite: The `if` is rewritten to `if #unavailable(iOS X, *) { body }` .
 final class UseUnavailableNotFatalError: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
+    static let rewriteOrder = 1020
+
     override class var group: ConfigurationGroup? { .conditions }
     override class var defaultValue: BasicRuleValue { .init(rewrite: true, lint: .warn) }
 

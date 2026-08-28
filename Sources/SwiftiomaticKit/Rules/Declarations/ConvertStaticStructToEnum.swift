@@ -13,6 +13,8 @@ import SwiftSyntax
 ///
 /// Rewrite: The `struct` or `final class` keyword is replaced with `enum` .
 final class ConvertStaticStructToEnum: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
+    static let rewriteOrder = 1190
+
     override class var group: ConfigurationGroup? { .declarations }
 
     static func transform(

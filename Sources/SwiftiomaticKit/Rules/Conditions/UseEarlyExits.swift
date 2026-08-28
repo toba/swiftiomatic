@@ -42,6 +42,8 @@ import SwiftSyntax
 /// Rewrite: `if ... else { return/throw/break/continue }` constructs will be replaced with
 /// equivalent `guard ... else { return/throw/break/continue }` constructs.
 final class UseEarlyExits: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
+    static let rewriteOrder = 740
+
     override class var group: ConfigurationGroup? { .conditions }
 
     /// Identifies this rule as being opt-in. This rule is experimental and not yet stable enough to
@@ -63,8 +65,10 @@ final class UseEarlyExits: StaticFormatRule<BasicRuleValue>, @unchecked Sendable
 
     /// Replace `if/else { early-exit }` blocks with `guard ... else { ... }` . Called from
     /// `CompactSyntaxRewriter.visit(_: CodeBlockItemListSyntax)` .
-    static func apply(
+    static func transform(
         _ node: CodeBlockItemListSyntax,
+        original _: CodeBlockItemListSyntax,
+        parent _: Syntax?,
         context _: Context
     ) -> CodeBlockItemListSyntax {
         var newItems = [CodeBlockItemSyntax]()

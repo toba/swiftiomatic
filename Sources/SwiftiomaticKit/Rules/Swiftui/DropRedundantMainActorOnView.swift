@@ -13,6 +13,8 @@ import SwiftSyntax
 ///
 /// Rewrite: The `@MainActor` attribute is removed.
 final class DropRedundantMainActorOnView: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
+    static let rewriteOrder = 800
+
     override class var group: ConfigurationGroup? { .swiftui }
 
     private static let impliedMainActorProtocols: Set<String> = ["View", "App", "Scene"]

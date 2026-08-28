@@ -15,6 +15,8 @@ import SwiftSyntax
 ///
 /// Rewrite: The `@escaping` attribute is removed.
 final class DropRedundantEscaping: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
+    static let rewriteOrder = 1170
+
     override class var group: ConfigurationGroup? { .redundancies }
     override class var defaultValue: BasicRuleValue { .init(rewrite: false, lint: .warn) }
 

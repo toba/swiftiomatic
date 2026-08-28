@@ -25,6 +25,8 @@ import SwiftSyntax
 /// Rewrite: `func <name>() { return ... }` constructs will be replaced with equivalent
 /// `func <name>() { ... }` constructs.
 final class DropRedundantReturn: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
+    static let rewriteOrder = 840
+
     override static var group: ConfigurationGroup? { .redundancies }
     override static var defaultValue: BasicRuleValue { .init(rewrite: false, lint: .no) }
 

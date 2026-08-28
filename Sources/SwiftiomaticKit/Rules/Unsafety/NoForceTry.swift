@@ -18,6 +18,8 @@ import SwiftSyntax
 ///
 /// Rewrite: In test functions, `try!` is replaced with `try` and `throws` is added.
 final class NoForceTry: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
+    static let rewriteOrder = 1110
+
     override static var group: ConfigurationGroup? { .unsafety }
     override static var defaultValue: BasicRuleValue { .init(rewrite: false, lint: .no) }
 
@@ -50,8 +52,18 @@ final class NoForceTry: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
         setImportsAnyTestLibrary(context: context, sourceFile: node)
     }
 
-    static func visitImport(_ node: ImportDeclSyntax, context: Context) {
+    /// Record an `import Testing` so later type-decl visits know the macro is in scope.
+    ///
+    /// This runs after the children are visited, because `UseSwiftTestingNotXCTest` rewrites
+    /// `import XCTest` to `import Testing` first and the flag has to read the rewritten path.
+    static func transform(
+        _ node: ImportDeclSyntax,
+        original _: ImportDeclSyntax,
+        parent _: Syntax?,
+        context: Context
+    ) -> ImportDeclSyntax {
         if node.path.first?.name.text == "Testing" { state(context).importsTesting = true }
+        return node
     }
 
     static func willEnter(_ node: ClassDeclSyntax, context: Context) {
@@ -100,7 +112,12 @@ final class NoForceTry: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
     /// Apply the rule's `TryExpr` handler logic: diagnose / rewrite `try!` based on the current
     /// scope state. Returns the (possibly rewritten) expression — strip the `!` and convert to a
     /// regular `try` when inside a test function, leave the node alone otherwise.
-    static func rewriteTryExpr(_ node: TryExprSyntax, context: Context) -> TryExprSyntax {
+    static func transform(
+        _ node: TryExprSyntax,
+        original _: TryExprSyntax,
+        parent _: Syntax?,
+        context: Context
+    ) -> TryExprSyntax {
         guard node.questionOrExclamationMark?.tokenKind == .exclamationMark else { return node }
         let s = state(context)
 
@@ -129,8 +146,10 @@ final class NoForceTry: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
     /// Post-process a function declaration — add a `throws` clause if any `try!` was converted in
     /// this function frame. Called from `rewriteFunctionDecl` AFTER children are visited but BEFORE
     /// `didExit` fires (which restores the parent frame).
-    static func afterFunctionDecl(
+    static func transform(
         _ node: FunctionDeclSyntax,
+        original _: FunctionDeclSyntax,
+        parent _: Syntax?,
         context: Context
     ) -> FunctionDeclSyntax {
         let s = state(context)

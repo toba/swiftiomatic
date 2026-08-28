@@ -11,6 +11,8 @@ import SwiftSyntax
 ///
 /// Rewrite: The `{` is moved to a new line aligned with the closing `}` .
 final class BreakBeforeMultilineBrace: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
+    static let rewriteOrder = 1180
+
     override class var group: ConfigurationGroup? { .lineBreaks }
     override class var defaultValue: BasicRuleValue { .init(rewrite: false, lint: .no) }
 

@@ -9,6 +9,8 @@ import SwiftSyntax
 ///
 /// Rewrite: Access control is corrected.
 final class RequireSuiteAccessControl: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
+    static let rewriteOrder = 900
+
     override class var group: ConfigurationGroup? { .testing }
 
     override class var defaultValue: BasicRuleValue { .init(rewrite: false, lint: .no) }

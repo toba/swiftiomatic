@@ -23,6 +23,8 @@ import SwiftSyntax
 /// multiple lines without appearing on the same line as code, it will be replaced with multiple doc
 /// line comments.
 final class UseTripleSlashOverDocBlock: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
+    static let rewriteOrder = 950
+
     override static var group: ConfigurationGroup? { .comments }
 
     static func transform(

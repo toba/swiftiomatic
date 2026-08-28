@@ -15,6 +15,8 @@ import SwiftSyntax
 ///
 /// Rewrite: The `==` function is removed from the member block.
 final class DropRedundantEquatable: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
+    static let rewriteOrder = 790
+
     override class var defaultValue: BasicRuleValue { .init(rewrite: false, lint: .no) }
     override class var group: ConfigurationGroup? { .redundancies }
 

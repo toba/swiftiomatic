@@ -20,6 +20,8 @@ import SwiftSyntax
 /// Rewrite: Enums where all cases are `indirect` will be rewritten such that the enum is marked
 /// `indirect` , and each case is not.
 final class HoistIndirectEnum: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
+    static let rewriteOrder = 290
+
     override static var group: ConfigurationGroup? { .hoist }
 
     static func transform(

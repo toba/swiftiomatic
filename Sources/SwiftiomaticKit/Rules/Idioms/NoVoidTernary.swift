@@ -11,6 +11,8 @@ import SwiftSyntax
 ///
 /// Rewrite: Not auto-fixed; the rewrite would change formatting beyond the scope of this rule.
 final class NoVoidTernary: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
+    static let rewriteOrder = 260
+
     override class var group: ConfigurationGroup? { .idioms }
     override class var defaultValue: BasicRuleValue { .init(rewrite: false, lint: .warn) }
 

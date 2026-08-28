@@ -27,6 +27,8 @@ import SwiftSyntaxBuilder
 ///
 /// Rewrite: `let _ = expr` inside a condition list will be replaced by `expr != nil` .
 final class UseExplicitNilCheck: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
+    static let rewriteOrder = 490
+
     override class var group: ConfigurationGroup? { .conditions }
 
     static func transform(

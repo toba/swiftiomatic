@@ -37,14 +37,48 @@ let stampFile = paths.pipelineFile
     .appending(path: ".generator-fingerprint")
 let inputFingerprint = fingerprint(
     of: [paths.rulesFolder, paths.tokenFolder],
+    // The dispatch audit reads the two hand-written dispatchers, so a call removed from one has to
+    // re-run it.
+    files: [paths.sourceFileRewriteFile, paths.tokenRewriteFile],
     skipSchema: skipSchema
 )
-if let saved = try? String(contentsOf: stampFile, encoding: .utf8), saved == inputFingerprint {
-    exit(0)
-}
+// The stamp says the inputs are unchanged. It says nothing about the outputs, and the build fails
+// on a missing one, so require every file to be on disk before skipping. That covers a deleted
+// output and a run of an older generator that wrote one file fewer.
+let generatedFiles = [
+    paths.pipelineFile,
+    paths.rewritePipelineFile,
+    paths.ruleRegistryFile,
+    paths.tokenStreamStubsFile,
+    paths.configurationSchemaSwiftFile,
+] + (skipSchema ? [] : [paths.configurationSchemaFile])
+let outputsExist = generatedFiles.allSatisfy { FileManager.default.fileExists(atPath: $0.path) }
+
+if outputsExist,
+   let saved = try? String(contentsOf: stampFile, encoding: .utf8),
+   saved == inputFingerprint { exit(0) }
 
 let collector = RuleCollector()
 try await collector.collect(from: paths.rulesFolder)
+
+let rewriteHooks = RewriteHookCollector()
+try await rewriteHooks.collect(from: paths.rulesFolder)
+
+// A rule joins the rewrite pipeline by declaring an overload, so an overload nothing dispatches is
+// a silent no-op. Stop the build instead.
+let dispatchGaps = try RewriteDispatchAudit.gaps(
+    in: rewriteHooks,
+    dispatchers: RewriteDispatchAudit.handWrittenDispatchers(for: paths)
+)
+if !dispatchGaps.isEmpty {
+    let report = dispatchGaps.map { "error: \($0)\n" }.joined()
+    FileHandle.standardError.write(Data(report.utf8))
+    exit(1)
+}
+
+// Generate the node-local rewrite stage from the hooks each rule declares.
+let rewriteGenerator = RewritePipelineGenerator(collector: rewriteHooks)
+try rewriteGenerator.generateFile(at: paths.rewritePipelineFile)
 
 // Generate a file with extensions for the lint and format pipelines.
 let pipelineGenerator = PipelineGenerator(collector: collector)
@@ -73,12 +107,29 @@ try stubGenerator.generateFile(at: paths.tokenStreamStubsFile)
 // Persist the fingerprint so the next run can early-exit if inputs are unchanged.
 try? inputFingerprint.write(to: stampFile, atomically: true, encoding: .utf8)
 
-/// Computes a SHA-256 over every `.swift` file under the given roots, plus flags that affect
-/// output. Sort by path so the result is deterministic.
-private func fingerprint(of roots: [URL], skipSchema: Bool) -> String {
+/// The size and modification time of this executable, or `unknown` when neither can be read.
+///
+/// A rebuilt generator gets a new stamp, which retires the previous run's cached fingerprint.
+private func executableStamp() -> String {
+    guard let executable = Bundle.main.executableURL,
+          let attributes = try? FileManager.default.attributesOfItem(atPath: executable.path)
+    else { return "unknown" }
+
+    let size = (attributes[.size] as? Int) ?? 0
+    let modified = (attributes[.modificationDate] as? Date)?.timeIntervalSince1970 ?? 0
+    return "\(size)/\(modified)"
+}
+
+/// Computes a SHA-256 over every `.swift` file under the given roots, the named files, this
+/// executable, and the flags that affect output. Sort by path so the result is deterministic.
+///
+/// The executable counts because a change to the emitting code changes the output while every input
+/// file stays byte-identical. Without it, an edit to a generator would not reach the build.
+private func fingerprint(of roots: [URL], files extras: [URL], skipSchema: Bool) -> String {
     var hasher = SHA256()
     hasher.update(data: Data("schema=\(skipSchema)\n".utf8))
-    var files: [URL] = []
+    hasher.update(data: Data("tool=\(executableStamp())\n".utf8))
+    var files: [URL] = extras
 
     for root in roots {
         guard let enumerator = FileManager.default.enumerator(

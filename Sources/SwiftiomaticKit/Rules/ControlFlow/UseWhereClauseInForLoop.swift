@@ -19,6 +19,8 @@ import SwiftSyntax
 /// Rewrite: `for` loops that consist of a single `if` statement have the conditional of that
 /// statement factored out to a `where` clause.
 final class UseWhereClauseInForLoop: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
+    static let rewriteOrder = 1060
+
     override class var group: ConfigurationGroup? { .controlFlow }
 
     /// Identifies this rule as being opt-in. This rule is experimental and not yet stable enough to

@@ -13,6 +13,8 @@ import SwiftSyntax
 ///
 /// Rewrite: The `final` modifier is added and `open` members are converted to `public` .
 final class UseFinalClasses: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
+    static let rewriteOrder = 510
+
     override static var group: ConfigurationGroup? { .access }
     override static var defaultValue: BasicRuleValue { .init(rewrite: false, lint: .no) }
 

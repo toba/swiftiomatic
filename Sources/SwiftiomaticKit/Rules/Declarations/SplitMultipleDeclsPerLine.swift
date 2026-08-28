@@ -24,6 +24,8 @@ import SwiftSyntax
 /// Rewrite: Case declarations with associated values will be moved to their own case declarations.
 /// Variable declarations with multiple bindings will be split into individual declarations.
 final class SplitMultipleDeclsPerLine: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
+    static let rewriteOrder = 400
+
     override class var group: ConfigurationGroup? { .declarations }
 
     // MARK: - Enum cases
