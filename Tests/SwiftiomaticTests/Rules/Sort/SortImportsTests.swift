@@ -921,6 +921,21 @@ struct SortImportsTests: RuleTesting {
     )
   }
 
+  @Test func doesNotReadDocCommentTextAsFileIgnoreDirective() {
+    // A `///` comment that mentions the directive is prose, not a directive. Reading it as one
+    // moves the lines above it into the file header, and the blank line that separates the file
+    // header from the rest detaches the doc comment from its declaration.
+    let code = """
+      /// Title.
+      ///
+      ///   // sm:ignore                                  — ignore all rules from here to EOF
+      ///
+      /// Trailing paragraph.
+      struct A {}
+      """
+    assertFormatting(SortImports.self, input: code, expected: code)
+  }
+
   @Test func preservesEmptyConditionalCompilationBlock() {
     var configuration = Configuration.forTesting
     configuration[SortImports.self].includeConditionalImports = true

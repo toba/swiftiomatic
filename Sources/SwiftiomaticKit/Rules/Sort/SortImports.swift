@@ -133,7 +133,7 @@ final class SortImports: StructuralFormatRule<SortImportsConfiguration>, @unchec
             if atStartOfFile {
                 switch line.type {
                     case .comment:
-                        if line.description.contains("sm:ignore") {
+                        if line.hasIgnoreDirective {
                             // If the file-level ignore directive is included in the comments of the
                             // import statements, consider the comments before the file-level ignore
                             // directive as part of the fileHeader.
@@ -595,6 +595,19 @@ private final class Line {
         })
             ? .comment
             : .blankLine
+    }
+
+    /// Whether a comment on this line carries an `sm:ignore` directive
+    ///
+    /// Only a `//` line comment can be one, which matches what `RuleMask` scans. A `///` doc
+    /// comment that mentions the directive is prose. Reading it as a directive moves the lines
+    /// above it into the file header, and the blank line that follows the file header then detaches
+    /// the doc comment from the declaration it documents.
+    var hasIgnoreDirective: Bool {
+        leadingTrivia.contains { piece in
+            if case let .lineComment(text) = piece { return text.contains("sm:ignore") }
+            return false
+        }
     }
 
     /// Returns a fully qualified description of this line's import if it's an import statement,
