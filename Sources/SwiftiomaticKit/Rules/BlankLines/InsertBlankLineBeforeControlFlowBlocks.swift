@@ -23,22 +23,35 @@ final class InsertBlankLineBeforeControlFlowBlocks: StaticFormatRule<BasicRuleVa
     // accurate. The compact-pipeline rewrite (called from `Rewrites/Stmts/CodeBlock.swift` and
     // `SwitchCase.swift` ) handles the rewrite without diagnose.
     static func willEnter(_ node: CodeBlockSyntax, context: Context) {
-        _ = insertBlankLines(in: Array(node.statements), context: context, diagnose: true)
+        _ = insertBlankLines(
+            in: Array(node.statements),
+            indentColumn: syntacticIndentColumn(of: Syntax(node), context: context),
+            context: context,
+            diagnose: true
+        )
     }
 
     static func willEnter(_ node: SwitchCaseSyntax, context: Context) {
-        _ = insertBlankLines(in: Array(node.statements), context: context, diagnose: true)
+        _ = insertBlankLines(
+            in: Array(node.statements),
+            indentColumn: syntacticIndentColumn(of: Syntax(node), context: context),
+            context: context,
+            diagnose: true
+        )
     }
 
     static func transform(
         _ node: CodeBlockSyntax,
-        original _: CodeBlockSyntax,
+        original: CodeBlockSyntax,
         parent _: Syntax?,
         context: Context
     ) -> CodeBlockSyntax {
-        guard let updated = insertBlankLines(in: Array(node.statements), context: context) else {
-            return node
-        }
+        guard let updated = insertBlankLines(
+            in: Array(node.statements),
+            indentColumn: syntacticIndentColumn(of: Syntax(original), context: context),
+            context: context
+        ) else { return node }
+
         var result = node
         result.statements = CodeBlockItemListSyntax(updated)
         return result
@@ -46,13 +59,16 @@ final class InsertBlankLineBeforeControlFlowBlocks: StaticFormatRule<BasicRuleVa
 
     static func transform(
         _ node: SwitchCaseSyntax,
-        original _: SwitchCaseSyntax,
+        original: SwitchCaseSyntax,
         parent _: Syntax?,
         context: Context
     ) -> SwitchCaseSyntax {
-        guard let updated = insertBlankLines(in: Array(node.statements), context: context) else {
-            return node
-        }
+        guard let updated = insertBlankLines(
+            in: Array(node.statements),
+            indentColumn: syntacticIndentColumn(of: Syntax(original), context: context),
+            context: context
+        ) else { return node }
+
         var result = node
         result.statements = CodeBlockItemListSyntax(updated)
         return result
@@ -61,8 +77,13 @@ final class InsertBlankLineBeforeControlFlowBlocks: StaticFormatRule<BasicRuleVa
     /// Insert a leading blank line before every multi-line control-flow statement that doesn't
     /// already have one, respecting the `closingBraceAsBlankLine` and `countCommentAsBlankLine`
     /// configuration flags.
+    ///
+    /// - Parameters:
+    ///   - items: the statements of one block
+    ///   - indentColumn: the column the layout indents those statements to
     private static func insertBlankLines(
         in items: [CodeBlockItemSyntax],
+        indentColumn: Int,
         context: Context,
         diagnose: Bool = false
     ) -> [CodeBlockItemSyntax]? {
@@ -76,7 +97,9 @@ final class InsertBlankLineBeforeControlFlowBlocks: StaticFormatRule<BasicRuleVa
 
         for i in 1..<items.count {
             let item = items[i]
-            guard isMultiLineControlFlow(item.item) else { continue }
+            guard isMultiLineControlFlow(item, indentColumn: indentColumn, context: context) else {
+                continue
+            }
             guard !item.leadingTrivia.hasBlankLine else { continue }
             if braceIsBlank, endsSolitaryBrace(items[i - 1]) { continue }
             if commentIsBlank, item.leadingTrivia.startsWithComment { continue }
@@ -103,35 +126,60 @@ final class InsertBlankLineBeforeControlFlowBlocks: StaticFormatRule<BasicRuleVa
         return lastToken.leadingTrivia.containsNewlines
     }
 
-    private static func isMultiLineControlFlow(_ item: CodeBlockItemSyntax.Item) -> Bool {
-        switch item {
+    /// Whether a statement is control flow that occupies more than one line once the layout runs
+    ///
+    /// - Parameters:
+    ///   - item: the statement to classify
+    ///   - indentColumn: the column the layout indents the statement to
+    private static func isMultiLineControlFlow(
+        _ item: CodeBlockItemSyntax,
+        indentColumn: Int,
+        context: Context
+    ) -> Bool {
+        let expands = willExpand(item, indentColumn: indentColumn, context: context)
+
+        switch item.item {
             case let .stmt(stmt):
                 if let forStmt = stmt.as(ForStmtSyntax.self) {
-                    return isMultiLineBody(forStmt.body)
+                    return isMultiLineBody(forStmt.body, expands: expands)
                 }
                 if let whileStmt = stmt.as(WhileStmtSyntax.self) {
-                    return isMultiLineBody(whileStmt.body)
+                    return isMultiLineBody(whileStmt.body, expands: expands)
                 }
                 if let repeatStmt = stmt.as(RepeatStmtSyntax.self) {
-                    return isMultiLineBody(repeatStmt.body)
+                    return isMultiLineBody(repeatStmt.body, expands: expands)
                 }
-                if let doStmt = stmt.as(DoStmtSyntax.self) { return isMultiLineBody(doStmt.body) }
+                if let doStmt = stmt.as(DoStmtSyntax.self) {
+                    return isMultiLineBody(doStmt.body, expands: expands)
+                }
                 if let deferStmt = stmt.as(DeferStmtSyntax.self) {
-                    return isMultiLineBody(deferStmt.body)
+                    return isMultiLineBody(deferStmt.body, expands: expands)
                 }
 
                 if let exprStmt = stmt.as(ExpressionStmtSyntax.self) {
-                    return isMultiLineControlFlowExpr(exprStmt.expression)
+                    return isMultiLineControlFlowExpr(exprStmt.expression, expands: expands)
                 }
                 return false
-            case let .expr(expr): return isMultiLineControlFlowExpr(expr)
+            case let .expr(expr): return isMultiLineControlFlowExpr(expr, expands: expands)
             default: return false
         }
     }
 
-    private static func isMultiLineControlFlowExpr(_ expr: ExprSyntax) -> Bool {
+    /// Whether the layout breaks the statement across lines that the source wrote on one
+    ///
+    /// The rule runs before the pretty printer, so a body written inline still reads as one line
+    /// here even when it overflows and the printer is about to expand it. Comparing the joined
+    /// width against the line length catches that expansion. Without the comparison the blank line
+    /// only goes in on a second format call.
+    private static func willExpand(
+        _ item: CodeBlockItemSyntax,
+        indentColumn: Int,
+        context: Context
+    ) -> Bool { indentColumn + joinedWidth(of: item) > context.configuration[LineLength.self] }
+
+    private static func isMultiLineControlFlowExpr(_ expr: ExprSyntax, expands: Bool) -> Bool {
         if let ifExpr = expr.as(IfExprSyntax.self) {
-            isMultiLineBody(ifExpr.body)
+            isMultiLineBody(ifExpr.body, expands: expands)
         } else if let switchExpr = expr.as(SwitchExprSyntax.self) {
             switchExpr.rightBrace.leadingTrivia.containsNewlines
         } else {
@@ -139,8 +187,8 @@ final class InsertBlankLineBeforeControlFlowBlocks: StaticFormatRule<BasicRuleVa
         }
     }
 
-    private static func isMultiLineBody(_ body: CodeBlockSyntax) -> Bool {
-        body.rightBrace.leadingTrivia.containsNewlines
+    private static func isMultiLineBody(_ body: CodeBlockSyntax, expands: Bool) -> Bool {
+        body.rightBrace.leadingTrivia.containsNewlines || expands
     }
 }
 

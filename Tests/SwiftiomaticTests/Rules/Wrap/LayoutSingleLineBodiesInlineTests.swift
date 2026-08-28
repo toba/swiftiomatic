@@ -169,6 +169,10 @@ struct SingleLineBodiesInlineTests: RuleTesting {
             configuration: inlineConfig)
     }
 
+    /// A body too long for the line the layout can give it
+    ///
+    /// The conditions wrap and `else` drops to the statement's own indent, so the fold is measured
+    /// from column 0. The body still overflows there, which refuses the fold.
     @Test func guardTooLongNotInlined() {
         var config = inlineConfig
         config[LineLength.self] = 25
@@ -176,7 +180,7 @@ struct SingleLineBodiesInlineTests: RuleTesting {
             LayoutSingleLineBodies.self,
             source: """
                 guard let foo = bar else {
-                    return
+                    return reallyLongValue
                 }
                 """,
             configuration: config)
@@ -215,7 +219,13 @@ struct SingleLineBodiesInlineTests: RuleTesting {
             configuration: inlineConfig)
     }
 
+    /// A folded body under a condition list the layout aligns
+    ///
+    /// `AlignWrappedConditions` puts the second condition under the first, so the folded body still
+    /// reads as the statement's body rather than as part of the condition.
     @Test func multiLineConditionWithBraceOnOwnLineInlines() {
+        var config = inlineConfig
+        config[AlignWrappedConditions.self] = true
         assertFormatting(
             LayoutSingleLineBodies.self,
             input: """
@@ -232,10 +242,12 @@ struct SingleLineBodiesInlineTests: RuleTesting {
             findings: [
                 FindingSpec("1️⃣", message: "place conditional body on same line as declaration")
             ],
-            configuration: inlineConfig)
+            configuration: config)
     }
 
     @Test func multiLineConditionWithBraceOnLastConditionLineInlines() {
+        var config = inlineConfig
+        config[AlignWrappedConditions.self] = true
         assertFormatting(
             LayoutSingleLineBodies.self,
             input: """
@@ -251,7 +263,7 @@ struct SingleLineBodiesInlineTests: RuleTesting {
             findings: [
                 FindingSpec("1️⃣", message: "place conditional body on same line as declaration")
             ],
-            configuration: inlineConfig)
+            configuration: config)
     }
 
     @Test func multiLineConditionWithTryAndBraceOnOwnLineInlines() {
@@ -287,7 +299,14 @@ struct SingleLineBodiesInlineTests: RuleTesting {
             configuration: inlineConfig)
     }
 
+    /// A condition list the layout wraps to two columns
+    ///
+    /// `BreakBeforeGuardConditions` is off, so the first condition holds the `guard` line and the
+    /// second wraps to the continuation indent below it. A body folded onto that list reads as part
+    /// of the second condition, which refuses the fold.
     @Test func misalignedMultiLineGuardConditionNotInlined() {
+        var config = inlineConfig
+        config[BreakBeforeGuardConditions.self] = false
         assertUnchanged(
             LayoutSingleLineBodies.self,
             source: """
@@ -297,7 +316,7 @@ struct SingleLineBodiesInlineTests: RuleTesting {
                     return
                 }
                 """,
-            configuration: inlineConfig)
+            configuration: config)
     }
 
     @Test func multiLineConditionTooLongNotInlined() {

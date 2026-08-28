@@ -25,20 +25,8 @@ extension TokenStream {
         // Add break groups, using open continuation breaks, around conditions so that continuations
         // inside of the conditions can stack in addition to continuations between the conditions.
         // When `lineBreakBeforeGuardConditions` is false, skip the first condition (like
-        // if-statements) so it stays on the same line as `guard` . The +6 alignment under the first
-        // condition only makes sense when the first condition stays on the `guard` line (i.e.,
-        // `breakBeforeGuardConditions` is false). When conditions are expected to wrap below
-        // `guard` , fall back to the normal continuation indent. When the first condition is a
-        // member-access chain and stays inline (breakBefore=false), the chain's contextual breaks
-        // fire at continuation indent (+4). Using alignment(+6) for subsequent conditions would
-        // create a mismatch. Fall back to continuation so all wrapped lines use the same indent.
-        let firstConditionIsChain = !config[BreakBeforeGuardConditions.self]
-            && node.conditions.first.map { conditionContainsMemberChain($0) } == true
-        let guardBreakKind: OpenBreakKind = config[AlignWrappedConditions.self]
-            && !config[BreakBeforeGuardConditions.self]
-            && !firstConditionIsChain
-            ? .alignment(spaces: 6)
-            : .continuation
+        // if-statements) so it stays on the same line as `guard` .
+        let guardBreakKind = guardConditionWrapping(node.conditions, config: config).breakKind
 
         for (i, condition) in node.conditions.enumerated() {
             if i == 0, !config[BreakBeforeGuardConditions.self] { continue }

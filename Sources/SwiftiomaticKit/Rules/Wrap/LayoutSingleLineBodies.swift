@@ -246,6 +246,7 @@ extension LayoutSingleLineBodies {
         let baseIndent = Self.state(context).indentStack.last ?? ""
 
         let needsBodyWrap = node.body.bodyNeedsWrapping
+
         if needsBodyWrap {
             Self.diagnose(.wrapConditionalBody, on: original.body.leftBrace, context: context)
         }
@@ -546,6 +547,7 @@ extension LayoutSingleLineBodies {
     /// them. Leaving the body multiline preserves the comment in place.
     fileprivate static func bodyHasComments(_ body: CodeBlockSyntax) -> Bool {
         if body.leftBrace.trailingTrivia.hasAnyComments { return true }
+
         if let first = body.statements.first {
             if first.leadingTrivia.hasAnyComments { return true }
         }
@@ -688,28 +690,52 @@ extension LayoutSingleLineBodies {
         return Self.inliningBody(body)
     }
 
-    /// Whether a wrapped condition list would bury the body's opening brace
+    // Widths the layout writes around a folded conditional body. The head covers the keyword, the
+    // space after it, and everything between the last condition and the brace. The wrapped brace
+    // covers the brace line the layout writes once the condition list wraps.
+    fileprivate static let ifHeadWidth = 5  // "if " and " {"
+    fileprivate static let whileHeadWidth = 8  // "while " and " {"
+    fileprivate static let guardHeadWidth = 13  // "guard " and " else {"
+    fileprivate static let wrappedBraceWidth = 1  // "{"
+    fileprivate static let wrappedElseBraceWidth = 6  // "else {"
+
+    /// Whether the layout can put a folded conditional body on a line that fits
     ///
-    /// A condition list that wraps still reads as one block when every continuation line starts at
-    /// the column of the first condition. A continuation at any other column reads as a nested
-    /// body, so a brace and a body folded onto it are no longer separable from the condition.
+    /// Three questions decide it, and each is answered from the configuration rather than from the
+    /// column the source carries:
     ///
-    /// The conditions come from the original node, because a rewritten node carries no position in
-    /// the file.
+    /// 1. Does the whole folded statement fit on one line? Then the brace stays on the keyword line
+    ///    and the fold survives.
+    /// 2. If not, the condition list wraps. A list whose continuations sit at a column of their own
+    ///    buries the brace, because a brace folded onto that column no longer reads as separate
+    ///    from the condition. The fold is refused.
+    /// 3. Otherwise the layout drops the brace to the statement's own indent, and the fold survives
+    ///    when it fits there.
     ///
     /// - Parameters:
-    ///   - conditions: the condition list of the original node
-    fileprivate static func conditionsBuryTheBrace(
-        _ conditions: ConditionElementListSyntax,
+    ///   - conditions: the condition list as it sits in the parsed tree
+    ///   - original: the statement as it sits in the parsed tree, which carries the depth the
+    ///     layout indents it to
+    ///   - wrapping: how the layout indents the condition list once it wraps
+    ///   - headWidth: the width the keyword and the brace add on the unwrapped line
+    ///   - wrappedBraceWidth: the width of the brace line the layout writes once the list wraps
+    ///   - bodyText: the single statement the fold puts between the braces
+    fileprivate static func conditionalFoldFits(
+        conditions: ConditionElementListSyntax,
+        original: some SyntaxProtocol,
+        wrapping: ConditionWrapping,
+        headWidth: Int,
+        wrappedBraceWidth: Int,
+        bodyText: String,
         context: Context
     ) -> Bool {
-        guard let first = conditions.firstToken(viewMode: .sourceAccurate) else { return false }
-        let startColumn = first.startLocation(converter: context.sourceLocationConverter).column
+        let maxLength = Self.maxLength(context: context)
+        let indent = syntacticIndentColumn(of: Syntax(original), context: context)
+        let folded = 1 + bodyText.count + 2  // " <statement> }"
 
-        for token in conditions.tokens(viewMode: .sourceAccurate)
-            where token.leadingTrivia.containsNewlines
-        { if token.leadingTrivia.indentationWidth + 1 != startColumn { return true } }
-        return false
+        if indent + headWidth + joinedWidth(of: conditions) + folded <= maxLength { return true }
+        guard wrapping.isUniform else { return false }
+        return indent + wrappedBraceWidth + folded <= maxLength
     }
 
     fileprivate static func inlineIf(
@@ -718,16 +744,20 @@ extension LayoutSingleLineBodies {
         context: Context
     ) -> ExprSyntax {
         guard node.elseBody == nil,
-              !Self.conditionsBuryTheBrace(original.conditions, context: context),
-              let body = Self.inlinedBody(
-                  node.body,
-                  originalBrace: original.body.leftBrace,
-                  message: .inlineConditionalBody,
+              Self.canInline(node.body),
+              Self.conditionalFoldFits(
+                  conditions: original.conditions,
+                  original: original,
+                  wrapping: ifConditionWrapping(original.conditions, config: context.configuration),
+                  headWidth: Self.ifHeadWidth,
+                  wrappedBraceWidth: Self.wrappedBraceWidth,
+                  bodyText: Self.singleStatementText(node.body),
                   context: context
               ) else { return ExprSyntax(node) }
 
+        Self.diagnose(.inlineConditionalBody, on: original.body.leftBrace, context: context)
         var result = node
-        result.body = body
+        result.body = Self.inliningBody(node.body)
         return ExprSyntax(result)
     }
 
@@ -736,16 +766,23 @@ extension LayoutSingleLineBodies {
         original: GuardStmtSyntax,
         context: Context
     ) -> StmtSyntax {
-        guard !Self.conditionsBuryTheBrace(original.conditions, context: context),
-              let body = Self.inlinedBody(
-                  node.body,
-                  originalBrace: original.body.leftBrace,
-                  message: .inlineConditionalBody,
+        guard Self.canInline(node.body),
+              Self.conditionalFoldFits(
+                  conditions: original.conditions,
+                  original: original,
+                  wrapping: guardConditionWrapping(
+                      original.conditions,
+                      config: context.configuration
+                  ),
+                  headWidth: Self.guardHeadWidth,
+                  wrappedBraceWidth: Self.wrappedElseBraceWidth,
+                  bodyText: Self.singleStatementText(node.body),
                   context: context
               ) else { return StmtSyntax(node) }
 
+        Self.diagnose(.inlineConditionalBody, on: original.body.leftBrace, context: context)
         var result = node
-        result.body = body
+        result.body = Self.inliningBody(node.body)
         return StmtSyntax(result)
     }
 
@@ -862,16 +899,23 @@ extension LayoutSingleLineBodies {
         original: WhileStmtSyntax,
         context: Context
     ) -> StmtSyntax {
-        guard !Self.conditionsBuryTheBrace(original.conditions, context: context),
-              let body = Self.inlinedBody(
-                  node.body,
-                  originalBrace: original.body.leftBrace,
-                  message: .inlineLoopBody,
+        guard Self.canInline(node.body),
+              Self.conditionalFoldFits(
+                  conditions: original.conditions,
+                  original: original,
+                  wrapping: whileConditionWrapping(
+                      original.conditions,
+                      config: context.configuration
+                  ),
+                  headWidth: Self.whileHeadWidth,
+                  wrappedBraceWidth: Self.wrappedBraceWidth,
+                  bodyText: Self.singleStatementText(node.body),
                   context: context
               ) else { return StmtSyntax(node) }
 
+        Self.diagnose(.inlineLoopBody, on: original.body.leftBrace, context: context)
         var result = node
-        result.body = body
+        result.body = Self.inliningBody(node.body)
         return StmtSyntax(result)
     }
 
@@ -1156,6 +1200,7 @@ package struct LayoutSingleLineBodiesConfiguration: SyntaxRuleValue {
     package init(from decoder: any Decoder) throws {
         self.init()
         let container = try decoder.container(keyedBy: CodingKeys.self)
+
         if let rewrite = try container.decodeIfPresent(Bool.self, forKey: .rewrite) {
             self.rewrite = rewrite
         }

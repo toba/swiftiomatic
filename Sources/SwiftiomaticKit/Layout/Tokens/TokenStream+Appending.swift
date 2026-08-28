@@ -274,8 +274,8 @@ extension TokenStream {
                         }
                     }
 
-                // If we see a pair of spaces where one or both are flexible, combine them into a
-                // new token with the maximum of their counts.
+                // If we see a pair of spaces where one or both are flexible, combine them into
+                // a new token with the maximum of their counts.
                 case (.space(let first, let firstFlexible), .space(let second, let secondFlexible))
                     where firstFlexible || secondFlexible:
                     tokens[tokens.count - 1] = .space(size: max(first, second), flexible: true)
@@ -455,35 +455,6 @@ extension TokenStream {
         }
     }
 
-    /// Returns whether the given expression consists of multiple subexpressions. Certain
-    /// expressions that are known to wrap an expression, e.g. try expressions, are handled by
-    /// checking the expression that they contain.
-    func isCompoundExpression(_ expr: ExprSyntax) -> Bool {
-        if let modifiedExpr = expr.asProtocol(KeywordModifiedExprSyntax.self) {
-            return isCompoundExpression(modifiedExpr.expression)
-        }
-        switch Syntax(expr).as(SyntaxEnum.self) {
-            case .infixOperatorExpr, .ternaryExpr, .isExpr, .asExpr: return true
-            case let .tupleExpr(tupleExpr) where tupleExpr.elements.count == 1:
-                return isCompoundExpression(tupleExpr.elements.first!.expression)
-            default: return false
-        }
-    }
-
-    /// Returns whether the given expression is or begins with a member access chain (e.g.
-    /// `foo.bar(...)` , `foo.bar(...).baz(...)` ). Used to detect method-chaining RHS expressions
-    /// in assignments so the formatter prefers breaking at dots rather than after `=` .
-    func isMemberAccessChain(_ expr: ExprSyntax) -> Bool {
-        if let modifiedExpr = expr.asProtocol(KeywordModifiedExprSyntax.self) {
-            return isMemberAccessChain(modifiedExpr.expression)
-        }
-        if let callingExpr = expr.asProtocol(CallingExprSyntax.self) {
-            return callingExpr.calledExpression.is(MemberAccessExprSyntax.self)
-                || isMemberAccessChain(callingExpr.calledExpression)
-        }
-        return expr.is(MemberAccessExprSyntax.self)
-    }
-
     /// Returns the last token of the *leftmost base* of a top-level member-access chain — the base
     /// of the deepest member access (e.g. `Foo(…)` 's `)` in `Foo(…).padding().background()` , the
     /// `coder` identifier in `coder.decodeObject(…)?.intValue` ). Used to anchor the
@@ -527,39 +498,6 @@ extension TokenStream {
         before(expr.firstToken(viewMode: .sourceAccurate), tokens: .multilineChainBoostStart)
         after(expr.lastToken(viewMode: .sourceAccurate), tokens: .multilineChainBoostEnd)
         after(chainLeftmostBaseLastToken(of: expr), tokens: .multilineChainBoostDecision)
-    }
-
-    /// Returns whether an expression is a multi-step chain that includes at least one function or
-    /// subscript call — e.g. `obj.method().prop`, `Type.where({}).fetchOne()`. Pure property chains
-    /// like `a.b.c` return false because they rarely wrap and don't cause alignment inconsistency.
-    func isMultiStepCallChain(_ expr: ExprSyntax) -> Bool {
-        if let mod = expr.asProtocol(KeywordModifiedExprSyntax.self) {
-            return isMultiStepCallChain(mod.expression)
-        }
-        if let calling = expr.asProtocol(CallingExprSyntax.self) {
-            // This node IS a call — count it if the member base is itself a chain.
-            if let member = calling.calledExpression.as(MemberAccessExprSyntax.self),
-                let base = member.base { return isMemberAccessChain(base) }
-            return isMultiStepCallChain(calling.calledExpression)
-        }
-        if let member = expr.as(MemberAccessExprSyntax.self), let base = member.base {
-            // Pure property access: only qualifies if the base itself is a call chain.
-            return isMultiStepCallChain(base)
-        }
-        return false
-    }
-
-    /// Returns whether a condition element's value expression is a multi-step call chain (2+ steps
-    /// with at least one function/subscript call). Handles both plain expressions and
-    /// optional-binding initializers (e.g. `let x = obj.first().second()`).
-    func conditionContainsMemberChain(_ condition: ConditionElementSyntax) -> Bool {
-        switch condition.condition {
-            case let .expression(expr): return isMultiStepCallChain(expr)
-            case let .optionalBinding(binding):
-                if let value = binding.initializer?.value { return isMultiStepCallChain(value) }
-                return false
-            default: return false
-        }
     }
 
     /// Returns whether the given function call expression participates in an outer member-access

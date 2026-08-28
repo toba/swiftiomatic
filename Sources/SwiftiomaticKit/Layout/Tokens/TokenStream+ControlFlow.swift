@@ -12,10 +12,9 @@
 
 import SwiftSyntax
 
-// Alignment offsets for wrapped condition/case lists — equal to keyword + trailing space so that
-// wrapped continuations line up under the first character following the keyword.
-private let ifConditionAlignment = 3  // "if " (2 + 1)
-private let whileConditionAlignment = 6  // "while " (5 + 1)
+// Alignment offset for a wrapped case-item list — equal to keyword + trailing space so that wrapped
+// continuations line up under the first character following the keyword. The condition-list offsets
+// live beside the wrapping decision in ConditionWrapping.swift, which the rules read too.
 private let caseItemAlignment = 5  // "case " (4 + 1)
 
 extension TokenStream {
@@ -60,16 +59,8 @@ extension TokenStream {
         // Add break groups, using open continuation breaks, around any conditions after the first
         // so that continuations inside of the conditions can stack in addition to continuations
         // between the conditions. There are no breaks around the first condition because
-        // if-statements look better without a break between the "if" and the first condition. When
-        // the first condition is a member-access chain, its contextual breaks fire at continuation
-        // (+4). Fall back to continuation for subsequent conditions so all wrapped lines use the
-        // same indent rather than mixing alignment(3) with continuation.
-        let firstIfConditionIsChain = node.conditions.first
-            .map { conditionContainsMemberChain($0) } == true
-        let ifBreakKind: OpenBreakKind = config[AlignWrappedConditions.self]
-            && !firstIfConditionIsChain
-            ? .alignment(spaces: ifConditionAlignment)
-            : .continuation
+        // if-statements look better without a break between the "if" and the first condition.
+        let ifBreakKind = ifConditionWrapping(node.conditions, config: config).breakKind
 
         for condition in node.conditions.dropFirst() {
             before(
@@ -218,15 +209,8 @@ extension TokenStream {
         // historically not break after the while token and adding such a break would cause
         // excessive changes to previously formatted code. This has the side effect that the label +
         // `while` + tokens up to the first break in the first condition could be longer than the
-        // column limit since there are no breaks between the label or while token. Same
-        // chain-consistency fix as guard: fall back to continuation when the first condition is a
-        // member-access chain so all wrapped lines use the same indent.
-        let firstWhileConditionIsChain = node.conditions.first
-            .map { conditionContainsMemberChain($0) } == true
-        let whileBreakKind: OpenBreakKind = config[AlignWrappedConditions.self]
-            && !firstWhileConditionIsChain
-            ? .alignment(spaces: whileConditionAlignment)
-            : .continuation
+        // column limit since there are no breaks between the label or while token.
+        let whileBreakKind = whileConditionWrapping(node.conditions, config: config).breakKind
 
         for condition in node.conditions.dropFirst() {
             before(
