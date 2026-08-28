@@ -27,14 +27,6 @@ package final class RewriteCoordinator {
     /// for general use.
     package var debugOptions: DebugOptions = []
 
-    /// How many times the pipeline may run over one file before it stops looking for a fixed point
-    ///
-    /// A rule that reads the source layout can disagree with the layout the pretty printer then
-    /// produces, so one run can leave work behind. Running again until the text stops changing
-    /// makes the result independent of how the input happened to be wrapped. Source that is already
-    /// formatted costs one run, because the first result matches the input.
-    private static let maximumPasses = 3
-
     /// Creates a new Swift code formatter with the given configuration.
     ///
     /// - Parameters:
@@ -101,10 +93,10 @@ package final class RewriteCoordinator {
     /// tree manually and then call
     /// ``format(syntax:source:operatorTable:assumingFileURL:selection:to:)`` .
     ///
-    /// The result is a fixed point: formatting the output again returns it unchanged. The pipeline
-    /// repeats over its own output until the text settles, up to `maximumPasses` . A whole-file
-    /// selection is required for that, because a range selection holds offsets that the first pass
-    /// moves. Findings and parse diagnostics come from the first pass alone.
+    /// The result is a fixed point: formatting the output again returns it unchanged. One run
+    /// reaches it, because every rule decides from the configuration rather than from the layout
+    /// the source happened to carry. `FormatIdempotencyTests` pins the shapes that used to need a
+    /// second run.
     ///
     /// - Parameters:
     ///   - source: The Swift source code to be formatted.
@@ -135,36 +127,16 @@ package final class RewriteCoordinator {
         // newlines is enabled.)
         guard !source.isEmpty else { return }
 
-        // A range selection holds offsets into the text the caller passed, and the first pass moves
-        // them, so only a whole-file run may repeat. The raw tree that `disablePrettyPrint` writes
-        // is not a formatting result either, so it gets one pass as well.
-        let passLimit = selection.isInfinite && !debugOptions.contains(.disablePrettyPrint)
-            ? Self.maximumPasses
-            : 1
-        var text = source
-
-        for pass in 0..<passLimit {
-            let sourceFile = try parseAndEmitDiagnostics(
-                source: text,
-                operatorTable: .standardOperators,
-                assumingFileURL: url,
-                experimentalFeatures: experimentalFeatures,
-                // a later pass parses text this formatter wrote, so it would repeat the report
-                parsingDiagnosticHandler: pass == 0 ? parsingDiagnosticHandler : nil
-            )
-            let formatted = formatOnce(
-                syntax: sourceFile,
-                source: text,
-                operatorTable: .standardOperators,
-                assumingFileURL: url,
-                selection: selection,
-                findingConsumer: pass == 0 ? findingConsumer : nil
-            )
-            if formatted == text { break }
-            text = formatted
-        }
-
-        outputStream.write(text)
+        let sourceFile = try parseAndEmitDiagnostics(
+            source: source,
+            operatorTable: .standardOperators,
+            assumingFileURL: url,
+            experimentalFeatures: experimentalFeatures,
+            parsingDiagnosticHandler: parsingDiagnosticHandler
+        )
+        outputStream.write(formatOnce(
+            syntax: sourceFile, source: source, operatorTable: .standardOperators,
+            assumingFileURL: url, selection: selection, findingConsumer: findingConsumer))
     }
 
     /// Formats the given Swift syntax tree and writes the result to an output stream.
@@ -204,8 +176,7 @@ package final class RewriteCoordinator {
     /// Runs the pipeline and the pretty printer one time over one tree.
     ///
     /// - Parameters:
-    ///   - findingConsumer: where the findings go, or nil to drop them. A repeat pass drops them,
-    ///     because it reads text this formatter wrote rather than the source the caller passed.
+    ///   - findingConsumer: where the findings go, or nil to drop them
     /// - Returns: The formatted source.
     private func formatOnce(
         syntax: SourceFileSyntax,
