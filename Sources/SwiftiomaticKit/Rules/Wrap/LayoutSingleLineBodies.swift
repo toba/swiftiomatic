@@ -39,9 +39,7 @@ extension LayoutSingleLineBodies {
         context.configuration[Self.self].mode
     }
 
-    private static func maxLength(context: Context) -> Int {
-        context.configuration[LineLength.self]
-    }
+    static func maxLength(context: Context) -> Int { context.configuration[LineLength.self] }
 
     static func transform(
         _ node: IfExprSyntax,
@@ -429,87 +427,82 @@ extension LayoutSingleLineBodies {
             node, original: original, body: \.body, message: .wrapLoopBody, context: context))
     }
 
+    /// Puts an accessor block's elements onto their own lines, indented one level in
+    ///
+    /// Both accessor shapes wrap the same way, and they differ in the element type alone. The
+    /// caller passes the elements it holds and the closure that puts them back.
+    ///
+    /// - Parameters:
+    ///   - block: the accessor block to rewrite
+    ///   - elements: the block's elements, which the getter shape holds as statements and the
+    ///     accessor shape holds as declarations. An empty list returns the block unchanged.
+    ///   - baseIndent: the indentation of the line the enclosing declaration starts on
+    ///   - rebuild: puts the re-indented elements back into an accessors value
+    fileprivate static func wrappingAccessorBlock<E: SyntaxProtocol>(
+        _ block: AccessorBlockSyntax,
+        elements: [E],
+        baseIndent: String,
+        rebuild: ([E]) -> AccessorBlockSyntax.Accessors
+    ) -> AccessorBlockSyntax {
+        guard !elements.isEmpty else { return block }
+
+        var result = block
+        result.leftBrace = result.leftBrace.with(
+            \.trailingTrivia,
+            result.leftBrace.trailingTrivia.trimmingTrailingWhitespace
+        )
+
+        var items = elements
+        items[0].leadingTrivia = .newline + Trivia(stringLiteral: baseIndent + "    ")
+        let lastIdx = items.count - 1
+        items[lastIdx].trailingTrivia = items[lastIdx].trailingTrivia.trimmingTrailingWhitespace
+        result.accessors = rebuild(items)
+
+        result.rightBrace = result.rightBrace.with(
+            \.leadingTrivia,
+            .newline + Trivia(stringLiteral: baseIndent)
+        )
+        return result
+    }
+
     fileprivate static func wrapProperty(
         _ node: PatternBindingSyntax,
         original: PatternBindingSyntax,
         parent: Syntax?,
         context: Context
     ) -> PatternBindingSyntax {
-        guard let accessorBlock = node.accessorBlock else { return node }
-        let originalBrace = original.accessorBlock?.leftBrace
+        guard let accessorBlock = node.accessorBlock,
+              !accessorBlock.rightBrace.leadingTrivia.containsNewlines else { return node }
+
+        var result = node
 
         switch accessorBlock.accessors {
             case let .getter(statements):
-                guard !statements.isEmpty else { return node }
                 guard let firstStmt = statements.first,
                       !firstStmt.leadingTrivia.containsNewlines else { return node }
-                let closingOnNewLine = accessorBlock.rightBrace.leadingTrivia.containsNewlines
-                guard !closingOnNewLine else { return node }
 
-                Self.diagnose(.wrapPropertyBody, on: originalBrace, context: context)
-
-                let baseIndent = Self.resolveVarIndent(parent: parent)
-                let bodyIndent = baseIndent + "    "
-
-                var result = node
-                var block = accessorBlock
-
-                block.leftBrace = block.leftBrace.with(
-                    \.trailingTrivia,
-                    block.leftBrace.trailingTrivia.trimmingTrailingWhitespace
+                result.accessorBlock = Self.wrappingAccessorBlock(
+                    accessorBlock,
+                    elements: Array(statements),
+                    baseIndent: Self.resolveVarIndent(parent: parent),
+                    rebuild: { .getter(CodeBlockItemListSyntax($0)) }
                 )
-
-                var items = Array(statements)
-                items[0].leadingTrivia = .newline + Trivia(stringLiteral: bodyIndent)
-                let lastIdx = items.count - 1
-                items[lastIdx].trailingTrivia = items[lastIdx].trailingTrivia
-                    .trimmingTrailingWhitespace
-                block.accessors = .getter(CodeBlockItemListSyntax(items))
-
-                block.rightBrace = block.rightBrace.with(
-                    \.leadingTrivia,
-                    .newline + Trivia(stringLiteral: baseIndent)
-                )
-
-                result.accessorBlock = block
-                return result
 
             case let .accessors(accessors):
-                guard accessors.contains(where: { $0.body != nil }) else { return node }
-
-                guard let firstAccessor = accessors.first,
+                guard accessors.contains(where: { $0.body != nil }),
+                      let firstAccessor = accessors.first,
                       !firstAccessor.leadingTrivia.containsNewlines else { return node }
-                let closingOnNewLine = accessorBlock.rightBrace.leadingTrivia.containsNewlines
-                guard !closingOnNewLine else { return node }
 
-                Self.diagnose(.wrapPropertyBody, on: originalBrace, context: context)
-
-                let baseIndent = Self.resolveVarIndent(parent: parent)
-                let bodyIndent = baseIndent + "    "
-
-                var result = node
-                var block = accessorBlock
-
-                block.leftBrace = block.leftBrace.with(
-                    \.trailingTrivia,
-                    block.leftBrace.trailingTrivia.trimmingTrailingWhitespace
+                result.accessorBlock = Self.wrappingAccessorBlock(
+                    accessorBlock,
+                    elements: Array(accessors),
+                    baseIndent: Self.resolveVarIndent(parent: parent),
+                    rebuild: { .accessors(AccessorDeclListSyntax($0)) }
                 )
-
-                var items = Array(accessors)
-                items[0].leadingTrivia = .newline + Trivia(stringLiteral: bodyIndent)
-                let lastIdx = items.count - 1
-                items[lastIdx].trailingTrivia = items[lastIdx].trailingTrivia
-                    .trimmingTrailingWhitespace
-                block.accessors = .accessors(AccessorDeclListSyntax(items))
-
-                block.rightBrace = block.rightBrace.with(
-                    \.leadingTrivia,
-                    .newline + Trivia(stringLiteral: baseIndent)
-                )
-
-                result.accessorBlock = block
-                return result
         }
+
+        Self.diagnose(.wrapPropertyBody, on: original.accessorBlock?.leftBrace, context: context)
+        return result
     }
 
     // MARK: Inline helpers (static)
@@ -538,7 +531,7 @@ extension LayoutSingleLineBodies {
     ///   - source: the same brace in the tree the file was parsed into. Pass it when the brace is
     ///     the first token of the node under transform, because the comment then sits outside the
     ///     node and the rewritten copy has no parent to reach it through.
-    fileprivate static func commentPrecedesBrace(
+    static func commentPrecedesBrace(
         _ leftBrace: TokenSyntax,
         source: TokenSyntax? = nil
     ) -> Bool {
@@ -591,6 +584,30 @@ extension LayoutSingleLineBodies {
     ///
     /// - Parameters:
     ///   - leftBrace: the opening brace as it sits in the parsed tree
+    /// Collapses a getter accessor block onto one line
+    ///
+    /// The subscript path and the property path both end here. Neither one needs the statement list
+    /// rebuilt, so the caller passes the list it already holds.
+    ///
+    /// - Parameters:
+    ///   - block: the accessor block to collapse
+    ///   - statements: the block's single statement, in a list
+    fileprivate static func inliningGetter(
+        _ block: AccessorBlockSyntax,
+        statements: [CodeBlockItemSyntax]
+    ) -> AccessorBlockSyntax {
+        var result = block
+        result.leftBrace = result.leftBrace.with(\.trailingTrivia, .space)
+
+        var items = statements
+        items[0].leadingTrivia = []
+        items[0].trailingTrivia = []
+        result.accessors = .getter(CodeBlockItemListSyntax(items))
+
+        result.rightBrace = result.rightBrace.with(\.leadingTrivia, .space)
+        return result
+    }
+
     fileprivate static func prefixLength(
         to leftBrace: TokenSyntax,
         context: Context
@@ -791,6 +808,10 @@ extension LayoutSingleLineBodies {
         if Self.hasWrappedGenericWhereClause(node.genericWhereClause) {
             return Self.wrapSubscript(node, original: original, context: context)
         }
+        // A missing original brace refuses the inline outright, because the width measurement below
+        // reads a position and a detached token answers with a position from another part of the
+        // file. The wrap path keeps going on the same nil, since it reads no position and loses
+        // only the finding's location.
         guard let accessorBlock = node.accessorBlock,
               let originalBrace = original.accessorBlock?.leftBrace,
               case let .getter(statements) = accessorBlock.accessors,
@@ -815,14 +836,7 @@ extension LayoutSingleLineBodies {
         Self.diagnose(.inlineFunctionBody, on: originalBrace, context: context)
 
         var result = node
-        var block = accessorBlock
-        block.leftBrace = block.leftBrace.with(\.trailingTrivia, .space)
-        var items = Array(statements)
-        items[0].leadingTrivia = []
-        items[0].trailingTrivia = []
-        block.accessors = .getter(CodeBlockItemListSyntax(items))
-        block.rightBrace = block.rightBrace.with(\.leadingTrivia, .space)
-        result.accessorBlock = block
+        result.accessorBlock = Self.inliningGetter(accessorBlock, statements: Array(statements))
         return DeclSyntax(result)
     }
 
@@ -894,6 +908,8 @@ extension LayoutSingleLineBodies {
         parent: Syntax?,
         context: Context
     ) -> PatternBindingSyntax {
+        // A missing original brace refuses the inline outright, for the reason inlineSubscript
+        // records.
         guard let accessorBlock = node.accessorBlock,
               let originalBrace = original.accessorBlock?.leftBrace else { return node }
 
@@ -927,14 +943,8 @@ extension LayoutSingleLineBodies {
                 Self.diagnose(.inlinePropertyBody, on: originalBrace, context: context)
 
                 var result = node
-                var block = accessorBlock
-                block.leftBrace = block.leftBrace.with(\.trailingTrivia, .space)
-                var items = Array(statements)
-                items[0].leadingTrivia = []
-                items[0].trailingTrivia = []
-                block.accessors = .getter(CodeBlockItemListSyntax(items))
-                block.rightBrace = block.rightBrace.with(\.leadingTrivia, .space)
-                result.accessorBlock = block
+                result.accessorBlock = Self.inliningGetter(
+                    accessorBlock, statements: Array(statements))
                 return result
 
             case let .accessors(accessors):
@@ -1025,189 +1035,6 @@ extension LayoutSingleLineBodies {
         block.rightBrace = block.rightBrace.with(\.leadingTrivia, .space)
         result.accessorBlock = block
         return result
-    }
-
-    /// Whether a wrapped collection literal is multiline, comment-free, and short enough to inline
-    ///
-    /// The caller emits the finding and performs the element-specific trivia reset. Both literal
-    /// kinds route through here, so one comment guard covers both.
-    ///
-    /// - Parameters:
-    ///   - leftBracket: the opening bracket of the literal under rewrite, whose trivia the comment
-    ///     guard reads
-    ///   - originalLeftBracket: the same bracket as it sits in the parsed tree, which is what
-    ///     carries the column
-    fileprivate static func shouldInlineCollection<E: SyntaxProtocol>(
-        elements: [E],
-        leftBracket: TokenSyntax,
-        originalLeftBracket: TokenSyntax,
-        rightBracket: TokenSyntax,
-        render: (E) -> String,
-        context: Context
-    ) -> Bool {
-        guard !elements.isEmpty else { return false }
-        let isMultiline = elements.contains { $0.leadingTrivia.containsNewlines }
-            || rightBracket.leadingTrivia.containsNewlines
-        guard isMultiline else { return false }
-
-        // Comments anywhere inside the literal disqualify the rewrite — collapsing would lose them.
-        // The opening bracket's own trailing trivia counts, because a comment there sits between
-        // the bracket and the first element and the inline clears it outright.
-        if leftBracket.trailingTrivia.hasAnyComments { return false }
-        for element in elements
-            where element.leadingTrivia.hasAnyComments
-            || element.trailingTrivia.hasAnyComments
-        { return false }
-        if rightBracket.leadingTrivia.hasAnyComments { return false }
-
-        let joined = elements.map(render).joined(separator: ", ")
-        let openColumn = originalLeftBracket
-            .startLocation(converter: context.sourceLocationConverter).column
-        let inlinedLength = openColumn - 1 + 1 + joined.count + 1
-        return inlinedLength <= Self.maxLength(context: context)
-    }
-
-    /// Collapses a wrapped array literal onto one line when its joined form fits the print width.
-    /// The trailing comma is dropped (single-line collection literals have no trailing comma per
-    /// `multiElementCollectionTrailingCommas`'s default handling).
-    fileprivate static func inlineArrayLiteral(
-        _ node: ArrayExprSyntax,
-        original: ArrayExprSyntax,
-        context: Context
-    ) -> ExprSyntax {
-        let elements = Array(node.elements)
-        guard Self.shouldInlineCollection(
-            elements: elements,
-            leftBracket: node.leftSquare,
-            originalLeftBracket: original.leftSquare,
-            rightBracket: node.rightSquare,
-            render: { $0.expression.trimmedDescription },
-            context: context
-        ) else { return ExprSyntax(node) }
-
-        Self.diagnose(.inlineCollectionLiteral, on: original.leftSquare, context: context)
-
-        var newElements = elements
-        let lastIdx = newElements.count - 1
-
-        for i in newElements.indices {
-            var element = MutableRef(&newElements[i])
-            element.value.leadingTrivia = []
-            element.value.expression = element.value.expression.with(\.leadingTrivia, [])
-            element.value.expression = element.value.expression.with(\.trailingTrivia, [])
-
-            if i == lastIdx {
-                element.value.trailingComma = nil
-                element.value.trailingTrivia = []
-            } else if let comma = element.value.trailingComma {
-                element.value.trailingComma = comma.with(\.trailingTrivia, [.spaces(1)])
-            }
-        }
-        var result = node
-        result.leftSquare = result.leftSquare.with(\.trailingTrivia, [])
-        result.elements = ArrayElementListSyntax(newElements)
-        result.rightSquare = result.rightSquare.with(\.leadingTrivia, [])
-        return ExprSyntax(result)
-    }
-
-    fileprivate static func inlineDictionaryLiteral(
-        _ node: DictionaryExprSyntax,
-        original: DictionaryExprSyntax,
-        context: Context
-    ) -> ExprSyntax {
-        guard let elementList = node.content.as(DictionaryElementListSyntax.self) else {
-            return ExprSyntax(node)
-        }
-        let elements = Array(elementList)
-        guard Self.shouldInlineCollection(
-            elements: elements,
-            leftBracket: node.leftSquare,
-            originalLeftBracket: original.leftSquare,
-            rightBracket: node.rightSquare,
-            render: { "\($0.key.trimmedDescription): \($0.value.trimmedDescription)" },
-            context: context
-        ) else { return ExprSyntax(node) }
-
-        Self.diagnose(.inlineCollectionLiteral, on: original.leftSquare, context: context)
-
-        var newElements = elements
-        let lastIdx = newElements.count - 1
-
-        for i in newElements.indices {
-            var element = MutableRef(&newElements[i])
-            element.value.leadingTrivia = []
-            element.value.key = element.value.key.with(\.leadingTrivia, [])
-            element.value.key = element.value.key.with(\.trailingTrivia, [])
-            element.value.colon = element.value.colon.with(\.leadingTrivia, [])
-            element.value.colon = element.value.colon.with(\.trailingTrivia, [.spaces(1)])
-            element.value.value = element.value.value.with(\.leadingTrivia, [])
-            element.value.value = element.value.value.with(\.trailingTrivia, [])
-
-            if i == lastIdx {
-                element.value.trailingComma = nil
-                element.value.trailingTrivia = []
-            } else if let comma = element.value.trailingComma {
-                element.value.trailingComma = comma.with(\.trailingTrivia, [.spaces(1)])
-            }
-        }
-        var result = node
-        result.leftSquare = result.leftSquare.with(\.trailingTrivia, [])
-        result.content = .elements(DictionaryElementListSyntax(newElements))
-        result.rightSquare = result.rightSquare.with(\.leadingTrivia, [])
-        return ExprSyntax(result)
-    }
-
-    fileprivate static func inlineClosure(
-        _ node: ClosureExprSyntax,
-        original: ClosureExprSyntax,
-        context: Context
-    ) -> ExprSyntax {
-        guard node.statements.count == 1,
-              let firstStmt = node.statements.first else { return ExprSyntax(node) }
-
-        let isMultiline = firstStmt.leadingTrivia.containsNewlines
-            || node.rightBrace.leadingTrivia.containsNewlines
-            || node.leftBrace.trailingTrivia.containsNewlines
-            || (node.signature?.trailingTrivia.containsNewlines ?? false)
-        guard isMultiline else { return ExprSyntax(node) }
-
-        if Self.commentPrecedesBrace(node.leftBrace, source: original.leftBrace) {
-            return ExprSyntax(node)
-        }
-        if node.leftBrace.trailingTrivia.hasAnyComments { return ExprSyntax(node) }
-
-        if let sig = node.signature {
-            if sig.leadingTrivia.hasAnyComments { return ExprSyntax(node) }
-            if sig.trailingTrivia.hasAnyComments { return ExprSyntax(node) }
-        }
-        if firstStmt.leadingTrivia.hasAnyComments { return ExprSyntax(node) }
-        if firstStmt.trailingTrivia.hasAnyComments { return ExprSyntax(node) }
-        if node.rightBrace.leadingTrivia.hasAnyComments { return ExprSyntax(node) }
-
-        let bodyText = firstStmt.trimmedDescription
-        let signatureText = node.signature.map { $0.trimmedDescription + " " } ?? ""
-        let braceEndCol = original.leftBrace
-            .endLocation(converter: context.sourceLocationConverter).column
-        let prefix = braceEndCol - 1
-        let totalLength = prefix + 1 + signatureText.count + bodyText.count + 2
-        guard totalLength <= Self.maxLength(context: context) else { return ExprSyntax(node) }
-
-        Self.diagnose(.inlineClosureBody, on: original.leftBrace, context: context)
-
-        var result = node
-        result.leftBrace = result.leftBrace.with(\.trailingTrivia, .space)
-
-        if let sig = result.signature {
-            result.signature = sig
-                .with(\.leadingTrivia, [])
-                .with(\.trailingTrivia, .space)
-        }
-        var items = Array(result.statements)
-        items[0].leadingTrivia = []
-        items[0].trailingTrivia = []
-        result.statements = CodeBlockItemListSyntax(items)
-        result.rightBrace = result.rightBrace.with(\.leadingTrivia, .space)
-        return ExprSyntax(result)
     }
 
     fileprivate static func inlineObserver(
@@ -1306,11 +1133,6 @@ fileprivate extension Finding.Message {
         "place property body on same line as declaration"
 
     static let inlineObserverBody: Finding.Message = "place observer body on same line as accessor"
-
-    static let inlineClosureBody: Finding.Message = "place closure body on same line"
-
-    static let inlineCollectionLiteral: Finding.Message =
-        "place collection literal on same line as declaration"
 }
 
 // MARK: - Configuration
