@@ -23,11 +23,9 @@ final class ReflowComments: StaticFormatRule<BasicRuleValue>, @unchecked Sendabl
         var i = 0
         var changed = false
         var firstChangedIndex: Int?
-        // Conservative column floor: layout indents comments to the enclosing scope's syntactic
-        // depth regardless of source column. Without this, reflow on pass 1 budgets too much room
-        // and leaves wrapped lines that overflow once layout adds indentation, requiring a second
-        // pass to settle. See jig 5zd-wm4.
-        let layoutColumnFloor = syntacticIndentColumn(for: token, context: context)
+        // the layout indents the comment to the scope depth whatever column the trivia carries, so
+        // budgeting from the trivia column alone leaves lines that overflow after the layout runs
+        let layoutColumnFloor = syntacticIndentColumn(of: token.parent, context: context)
         // The file header (leading `//` and `/* */` comments at the very top of the file) is owned
         // by FileHeader and must not be reflowed here. Only the first token in the source file can
         // carry a header in its leading trivia; for that token, compute the header span so
@@ -189,35 +187,6 @@ final class ReflowComments: StaticFormatRule<BasicRuleValue>, @unchecked Sendabl
             "swiftlint:", "sourcery:",
         ]
         return directives.contains { trimmed.hasPrefix($0) }
-    }
-
-    /// Conservative estimate of the column the pretty printer will indent the comment to. Walks
-    /// ancestor nodes counting indent-introducing scopes and converts the depth using the
-    /// configured indentation unit. Used to floor the column so reflow budgets don't assume the
-    /// stale source-trivia column.
-    private static func syntacticIndentColumn(for token: TokenSyntax, context: Context) -> Int {
-        var depth = 0
-        var current: Syntax? = token.parent
-
-        while let node = current {
-            if node.is(CodeBlockSyntax.self)
-                || node.is(MemberBlockSyntax.self)
-                || node.is(ClosureExprSyntax.self)
-                || node.is(AccessorBlockSyntax.self)
-                || node.is(SwitchCaseSyntax.self)
-            {
-                depth += 1
-            }
-            current = node.parent
-        }
-        let unit = context.configuration[IndentationSetting.self]
-        let width: Int
-
-        switch unit {
-            case let .spaces(n): width = n
-            case let .tabs(n): width = n * context.configuration[TabWidth.self]
-        }
-        return depth * width
     }
 
     /// True when `token` is the first token in the source file — i.e. its leading trivia may

@@ -41,6 +41,15 @@ package enum Selection {
         self = lineRanges.isEmpty ? .infinite : .unresolvedLineRanges(lineRanges)
     }
 
+    /// Whether the selection covers the whole file
+    ///
+    /// A caller that re-runs over its own output needs this, because every other case holds offsets
+    /// or line numbers that the first run has already moved.
+    package var isInfinite: Bool {
+        if case .infinite = self { return true }
+        return false
+    }
+
     package func resolved(with converter: SourceLocationConverter) -> Selection {
         switch self {
             case .infinite, .ranges: return self

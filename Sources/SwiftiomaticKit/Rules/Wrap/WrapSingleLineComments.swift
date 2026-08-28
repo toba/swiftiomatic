@@ -28,13 +28,9 @@ final class WrapSingleLineComments: StaticFormatRule<BasicRuleValue>, @unchecked
         var originalIndexMap = Array(0..<pieces.count)
         var i = 0
 
-        // Conservative column floor: comments in leading trivia are re-indented by the pretty
-        // printer to the syntactic indentation of the enclosing scope, regardless of their column
-        // in the source trivia. Wrapping based on a stale source-trivia column produces lines that
-        // overflow once layout adds indentation, requiring a second pass to wrap. By taking the
-        // larger of the trivia column and the syntactic indent, the wrapped output is a fixed
-        // point. See jig 5zd-wm4.
-        let layoutColumnFloor = syntacticIndentColumn(parent: parent, context: context)
+        // the layout re-indents a comment in leading trivia to the scope depth whatever column the
+        // trivia carries, so taking the larger of the two keeps the wrap stable in one pass
+        let layoutColumnFloor = syntacticIndentColumn(of: parent, context: context)
 
         while i < pieces.count {
             switch pieces[i] {
@@ -159,36 +155,6 @@ final class WrapSingleLineComments: StaticFormatRule<BasicRuleValue>, @unchecked
     }
 
     // MARK: - Helpers
-
-    /// Returns a conservative estimate of the column the pretty printer will indent the comment to.
-    /// Walks ancestor nodes counting indent-introducing scopes (code blocks, member blocks,
-    /// closures, switch cases, accessor blocks) and converts the depth to a column count using the
-    /// configured indentation unit. The result is a lower bound on the actual layout column; using
-    /// `max(triviaColumn, this)` makes wrap decisions stable across passes.
-    private static func syntacticIndentColumn(parent: Syntax?, context: Context) -> Int {
-        var depth = 0
-        var current: Syntax? = parent
-
-        while let node = current {
-            if node.is(CodeBlockSyntax.self)
-                || node.is(MemberBlockSyntax.self)
-                || node.is(ClosureExprSyntax.self)
-                || node.is(AccessorBlockSyntax.self)
-                || node.is(SwitchCaseSyntax.self)
-            {
-                depth += 1
-            }
-            current = node.parent
-        }
-        let unit = context.configuration[IndentationSetting.self]
-        let width: Int
-
-        switch unit {
-            case let .spaces(n): width = n
-            case let .tabs(n): width = n * context.configuration[TabWidth.self]
-        }
-        return depth * width
-    }
 
     /// Returns the indentation string before the comment at the given index.
     private static func indentationBefore(index: Int, in pieces: [TriviaPiece]) -> String {
