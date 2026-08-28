@@ -1,10 +1,9 @@
-@testable import SwiftiomaticKit
-import SwiftiomaticTestSupport
 import Testing
+import SwiftiomaticTestSupport
+@testable import SwiftiomaticKit
 
 @Suite
 struct ReflowCommentsTests: RuleTesting {
-
     private func config(maxWidth: Int) -> Configuration {
         var c = Configuration.forTesting(enabledRule: ReflowComments.self.key)
         c[LineLength.self] = maxWidth
@@ -109,6 +108,35 @@ struct ReflowCommentsTests: RuleTesting {
         )
     }
 
+    @Test func preservesIndentedCodeBlockContents() {
+        assertFormatting(
+            ReflowComments.self,
+            input: """
+                /// Title.
+                ///
+                /// Four space indent block:
+                ///
+                ///     alpha beta gamma
+                ///     delta epsilon zeta
+                ///
+                /// Trailing paragraph.
+                struct A {}
+                """,
+            expected: """
+                /// Title.
+                ///
+                /// Four space indent block:
+                ///
+                ///     alpha beta gamma
+                ///     delta epsilon zeta
+                ///
+                /// Trailing paragraph.
+                struct A {}
+                """,
+            configuration: config(maxWidth: 100)
+        )
+    }
+
     @Test func leavesMARKAndTODOAlone() {
         assertFormatting(
             ReflowComments.self,
@@ -147,9 +175,9 @@ struct ReflowCommentsTests: RuleTesting {
     }
 
     @Test func preservesFileHeaderComment() {
-        // A `//` comment block at the very top of the file is the file header
-        // (license, copyright, etc.) and must be preserved verbatim, even when
-        // its lines could otherwise be redistributed to fit the width.
+        // A `//` comment block at the very top of the file is the file header (license, copyright,
+        // etc.) and must be preserved verbatim, even when its lines could otherwise be
+        // redistributed to fit the width.
         let header = """
             // Copyright (c) 2026 Example Corp.
             // Some short line.
@@ -202,8 +230,8 @@ struct ReflowCommentsTests: RuleTesting {
     }
 
     @Test func dedentsReturnsKeywordToTopLevelAfterParametersBlock() {
-        // `- Returns:` is a top-level DocC keyword and must sit at the same indent
-        // as `- Parameters:`, not nested under it like a parameter entry.
+        // `- Returns:` is a top-level DocC keyword and must sit at the same indent as
+        // `- Parameters:`, not nested under it like a parameter entry.
         assertFormatting(
             ReflowComments.self,
             input: """
@@ -344,7 +372,6 @@ struct ReflowCommentsTests: RuleTesting {
 
 @Suite
 struct CommentReflowEngineTests {
-
     @Test func tokenizerKeepsURLAtomic() {
         let atoms = CommentReflowEngine.tokenize("see https://example.com/x?y=z and more")
         #expect(atoms == ["see", "https://example.com/x?y=z", "and", "more"])
@@ -356,16 +383,16 @@ struct CommentReflowEngineTests {
     }
 
     @Test func tokenizerKeepsDocCSymbolReferenceAtomic() {
-        // DocC double-backtick symbol references must remain a single atom; otherwise
-        // the wrapper can split between the opening `` and the symbol name, inserting
-        // spaces that break Quick Help.
+        // DocC double-backtick symbol references must remain a single atom; otherwise the wrapper
+        // can split between the opening `` and the symbol name, inserting spaces that break Quick
+        // Help.
         let atoms = CommentReflowEngine.tokenize("call ``SyncEngine/deleteLocalData()`` if needed")
         #expect(atoms == ["call", "``SyncEngine/deleteLocalData()``", "if", "needed"])
     }
 
     @Test func reflowKeepsDocCSymbolReferenceWhole() {
-        // A long line containing a `` `` symbol reference must wrap around the
-        // reference, never inside it.
+        // A long line containing a `` `` symbol reference must wrap around the reference, never
+        // inside it.
         let r = CommentReflowEngine.reflow(
             lines: [
                 "if they want to clear their local data or not, implement this method, and explicitly call ``SyncEngine/deleteLocalData()`` if/when the data should be cleared."
@@ -373,23 +400,24 @@ struct CommentReflowEngineTests {
             availableWidth: 100
         )
         let joined = (r ?? []).joined(separator: "\n")
-        // The reference must appear whole on some single line — splitting inside the
-        // backticks would break Quick Help. A wrap that places the reference at the
-        // start of a new line is fine; only an interior split is wrong.
+        // The reference must appear whole on some single line — splitting inside the backticks
+        // would break Quick Help. A wrap that places the reference at the start of a new line is
+        // fine; only an interior split is wrong.
         #expect(joined.contains("``SyncEngine/deleteLocalData()``"))
         #expect(!joined.contains("``\n"))
     }
 
     @Test func tokenizerAttachesPunctuationToInlineCodeSpan() {
-        // `(`x`)` should remain a single atom — the wrapper would otherwise insert
-        // spaces around the backticks. Same for a trailing period after a closing
-        // code span.
+        // `(`x`)` should remain a single atom — the wrapper would otherwise insert spaces around
+        // the backticks. Same for a trailing period after a closing code span.
         #expect(
-            CommentReflowEngine.tokenize("paragraph (`withinID`) and more")
+            CommentReflowEngine.tokenize(
+                "paragraph (`withinID`) and more")
                 == ["paragraph", "(`withinID`)", "and", "more"]
         )
         #expect(
-            CommentReflowEngine.tokenize("see ``Foo/bar()``.")
+            CommentReflowEngine.tokenize(
+                "see ``Foo/bar()``.")
                 == ["see", "``Foo/bar()``."]
         )
     }
@@ -429,10 +457,7 @@ struct CommentReflowEngineTests {
     }
 
     @Test func reflowSplitsLongParagraphRespectingWidth() {
-        let r = CommentReflowEngine.reflow(
-            lines: ["aaa bbb ccc ddd eee fff"],
-            availableWidth: 11
-        )
+        let r = CommentReflowEngine.reflow(lines: ["aaa bbb ccc ddd eee fff"], availableWidth: 11)
         #expect(r == ["aaa bbb ccc", "ddd eee fff"])
     }
 
@@ -461,18 +486,15 @@ struct CommentReflowEngineTests {
     }
 
     @Test func reflowBlockQuoteLazyContinuationStaysInQuote() {
-        // CommonMark lazy continuation: lines after a `>` line that aren't blank/list/fence
-        // belong to the same blockquote paragraph. They must stay quoted on output.
+        // CommonMark lazy continuation: lines after a `>` line that aren't blank/list/fence belong
+        // to the same blockquote paragraph. They must stay quoted on output.
         let r = CommentReflowEngine.reflow(
-            lines: [
-                "> Note: aaa bbb ccc ddd",
-                "  eee fff ggg",
-                "  hhh iii jjj",
-            ],
+            lines: ["> Note: aaa bbb ccc ddd", "  eee fff ggg", "  hhh iii jjj"],
             availableWidth: 12
         )
         // Every output line must start with the blockquote prefix or its lazy indent.
         #expect(r != nil)
+
         for line in r ?? [] {
             #expect(
                 line.isEmpty || line.hasPrefix("> ") || line.hasPrefix(">") || line.hasPrefix("  "),
@@ -482,8 +504,8 @@ struct CommentReflowEngineTests {
     }
 
     @Test func reflowBlockQuoteFromUserReportedBug() {
-        // Exact body lines from .issues/8/832-m0f. Continuation lines have 2 leading spaces
-        // (lazy continuation under "> "). They must not escape the blockquote.
+        // Exact body lines from .issues/8/832-m0f. Continuation lines have 2 leading spaces (lazy
+        // continuation under "> "). They must not escape the blockquote.
         let r = CommentReflowEngine.reflow(
             lines: [
                 "Each type of field (subtype) has a single, associated value type",
@@ -498,9 +520,10 @@ struct CommentReflowEngineTests {
             ],
             availableWidth: 96
         )
-        // Find the line starting "JSON encoder" — it must NOT begin at column 0; it must
-        // remain inside the blockquote (prefixed with "  " or "> ").
+        // Find the line starting "JSON encoder" — it must NOT begin at column 0; it must remain
+        // inside the blockquote (prefixed with " " or "> ").
         guard let out = r else { return }  // engine reports nil if already optimal
+
         for line in out where line.contains("JSON encoder") {
             #expect(
                 line.hasPrefix("  ") || line.hasPrefix("> "),
@@ -516,9 +539,9 @@ struct CommentReflowEngineTests {
     }
 
     @Test func reflowBlockQuoteMultiParagraphWithLazyContinuation() {
-        // Two blockquote paragraphs separated by a `>` blank line. Each paragraph's
-        // continuation lines lack a leading `>` (lazy continuation). All output must
-        // remain inside the blockquote.
+        // Two blockquote paragraphs separated by a `>` blank line. Each paragraph's continuation
+        // lines lack a leading `>` (lazy continuation). All output must remain inside the
+        // blockquote.
         let r = CommentReflowEngine.reflow(
             lines: [
                 "> First paragraph aaa bbb ccc",
@@ -530,6 +553,7 @@ struct CommentReflowEngineTests {
             availableWidth: 80
         )
         #expect(r != nil)
+
         for line in r ?? [] {
             #expect(
                 line.isEmpty || line.hasPrefix("> ") || line.hasPrefix(">") || line.hasPrefix("  "),
@@ -539,8 +563,8 @@ struct CommentReflowEngineTests {
     }
 
     @Test func reflowCodeFenceVerbatim() {
-        // Surround the fence with ragged prose so the engine reports a change. The fence body
-        // must be emitted verbatim regardless of width.
+        // Surround the fence with ragged prose so the engine reports a change. The fence body must
+        // be emitted verbatim regardless of width.
         let r = CommentReflowEngine.reflow(
             lines: [
                 "aaa bbb",
@@ -557,23 +581,43 @@ struct CommentReflowEngineTests {
         #expect(r?.contains("```") == true)
     }
 
-    @Test func reflowListContinuationAlignsUnderContent() {
+    @Test func reflowIndentedCodeBlockVerbatim() {
+        // Ragged prose around the block makes the engine report a change. The indented lines keep
+        // their indentation and their line breaks, exactly as a fenced block does.
         let r = CommentReflowEngine.reflow(
-            lines: ["- aaa bbb ccc ddd eee fff"],
+            lines: [
+                "aaa bbb",
+                "ccc",
+                "",
+                "    alpha beta gamma",
+                "    delta epsilon zeta",
+                "",
+                "trailing",
+            ],
             availableWidth: 12
         )
+        #expect(r != nil)
+        #expect(r?.contains("    alpha beta gamma") == true)
+        #expect(r?.contains("    delta epsilon zeta") == true)
+    }
+
+    @Test func reflowIndentedCodeBlockDoesNotInterruptParagraph() {
+        // CommonMark starts an indented code block only after a blank line. An indented line that
+        // follows prose is a continuation of that paragraph.
+        let r = CommentReflowEngine.reflow(lines: ["aaa bbb", "    ccc ddd"], availableWidth: 80)
+        #expect(r == ["aaa bbb ccc ddd"])
+    }
+
+    @Test func reflowListContinuationAlignsUnderContent() {
+        let r = CommentReflowEngine.reflow(lines: ["- aaa bbb ccc ddd eee fff"], availableWidth: 12)
         #expect(r == ["- aaa bbb", "  ccc ddd", "  eee fff"])
     }
 
     @Test func preservesNestedBulletListIndentation() {
-        // Nested bullet list: child items should be indented by exactly the
-        // parent marker width (2 spaces for "- "), not doubled.
+        // Nested bullet list: child items should be indented by exactly the parent marker width (2
+        // spaces for "- "), not doubled.
         let r = CommentReflowEngine.reflow(
-            lines: [
-                "- parent item",
-                "  - child one",
-                "  - child two",
-            ],
+            lines: ["- parent item", "  - child one", "  - child two"],
             availableWidth: 80
         )
         #expect(r == nil || r == ["- parent item", "  - child one", "  - child two"])

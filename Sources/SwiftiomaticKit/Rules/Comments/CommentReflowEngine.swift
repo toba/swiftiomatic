@@ -31,6 +31,11 @@ package enum CommentReflowEngine {
         case blockQuote(inner: [Block])
         case verbatim(line: String)
 
+        var isBlank: Bool {
+            if case .blank = self { return true }
+            return false
+        }
+
         func render(into out: inout [String], width: Int) {
             switch self {
                 case .blank: out.append("")
@@ -110,6 +115,30 @@ package enum CommentReflowEngine {
 
         while i < lines.count {
             let line = lines[i]
+            // CommonMark indented code block: four spaces of indent, opening after a blank line or
+            // at the start of the comment. The lines carry code, so they keep their indentation and
+            // their line breaks. The fenced path already does this for the fenced form.
+            if isIndentedCodeLine(line), blocks.isEmpty || blocks.last?.isBlank == true {
+                var last = i
+                var j = i
+
+                while j < lines.count {
+                    if lines[j].trimmingCharacters(in: .whitespaces).isEmpty {
+                        j += 1
+                        continue
+                    }
+                    guard isIndentedCodeLine(lines[j]) else { break }
+                    last = j
+                    j += 1
+                }
+                // trailing blanks stop at the last content line, so the loop reads them as
+                // separators
+                for codeLine in lines[i...last] {
+                    blocks.append(.verbatim(line: codeLine.trimmingTrailingWhitespace()))
+                }
+                i = last + 1
+                continue
+            }
             // Code fence
             if let fenceMarker = fenceOpener(line) {
                 var body: [String] = []
@@ -220,6 +249,13 @@ package enum CommentReflowEngine {
         guard afterColon < line.endIndex, line[afterColon] == " " else { return false }
         let dest = line[afterColon...].drop(while: { $0 == " " })
         return !dest.isEmpty
+    }
+
+    /// True when `line` holds content behind four or more spaces, or behind a tab. CommonMark reads
+    /// such a line as an indented code block when a blank line precedes it.
+    private static func isIndentedCodeLine(_ line: String) -> Bool {
+        guard line.hasPrefix("    ") || line.hasPrefix("\t") else { return false }
+        return !line.trimmingCharacters(in: .whitespaces).isEmpty
     }
 
     /// Returns the fence string (e.g. "` ` ` " or "~~~") if ` line` opens a fenced code block.
