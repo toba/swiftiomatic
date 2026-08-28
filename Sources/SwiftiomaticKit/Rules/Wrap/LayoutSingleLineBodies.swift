@@ -50,7 +50,7 @@ extension LayoutSingleLineBodies {
         context: Context
     ) -> ExprSyntax {
         switch Self.mode(context: context) {
-            case .wrap: Self.wrapIf(node, context: context)
+            case .wrap: Self.wrapIf(node, original: original, context: context)
             case .inline: Self.inlineIf(node, original: original, context: context)
         }
     }
@@ -62,56 +62,56 @@ extension LayoutSingleLineBodies {
         context: Context
     ) -> StmtSyntax {
         switch Self.mode(context: context) {
-            case .wrap: Self.wrapGuard(node, context: context)
+            case .wrap: Self.wrapGuard(node, original: original, context: context)
             case .inline: Self.inlineGuard(node, original: original, context: context)
         }
     }
 
     static func transform(
         _ node: FunctionDeclSyntax,
-        original _: FunctionDeclSyntax,
+        original: FunctionDeclSyntax,
         parent _: Syntax?,
         context: Context
     ) -> DeclSyntax {
         switch Self.mode(context: context) {
-            case .wrap: Self.wrapFunction(node, context: context)
-            case .inline: Self.inlineFunction(node, context: context)
+            case .wrap: Self.wrapFunction(node, original: original, context: context)
+            case .inline: Self.inlineFunction(node, original: original, context: context)
         }
     }
 
     static func transform(
         _ node: InitializerDeclSyntax,
-        original _: InitializerDeclSyntax,
+        original: InitializerDeclSyntax,
         parent _: Syntax?,
         context: Context
     ) -> DeclSyntax {
         switch Self.mode(context: context) {
-            case .wrap: Self.wrapInit(node, context: context)
-            case .inline: Self.inlineInit(node, context: context)
+            case .wrap: Self.wrapInit(node, original: original, context: context)
+            case .inline: Self.inlineInit(node, original: original, context: context)
         }
     }
 
     static func transform(
         _ node: SubscriptDeclSyntax,
-        original _: SubscriptDeclSyntax,
+        original: SubscriptDeclSyntax,
         parent _: Syntax?,
         context: Context
     ) -> DeclSyntax {
         switch Self.mode(context: context) {
-            case .wrap: Self.wrapSubscript(node, context: context)
-            case .inline: Self.inlineSubscript(node, context: context)
+            case .wrap: Self.wrapSubscript(node, original: original, context: context)
+            case .inline: Self.inlineSubscript(node, original: original, context: context)
         }
     }
 
     static func transform(
         _ node: ForStmtSyntax,
-        original _: ForStmtSyntax,
+        original: ForStmtSyntax,
         parent _: Syntax?,
         context: Context
     ) -> StmtSyntax {
         switch Self.mode(context: context) {
-            case .wrap: Self.wrapFor(node, context: context)
-            case .inline: Self.inlineFor(node, context: context)
+            case .wrap: Self.wrapFor(node, original: original, context: context)
+            case .inline: Self.inlineFor(node, original: original, context: context)
         }
     }
 
@@ -122,53 +122,55 @@ extension LayoutSingleLineBodies {
         context: Context
     ) -> StmtSyntax {
         switch Self.mode(context: context) {
-            case .wrap: Self.wrapWhile(node, context: context)
+            case .wrap: Self.wrapWhile(node, original: original, context: context)
             case .inline: Self.inlineWhile(node, original: original, context: context)
         }
     }
 
     static func transform(
         _ node: RepeatStmtSyntax,
-        original _: RepeatStmtSyntax,
+        original: RepeatStmtSyntax,
         parent _: Syntax?,
         context: Context
     ) -> StmtSyntax {
         switch Self.mode(context: context) {
-            case .wrap: Self.wrapRepeat(node, context: context)
-            case .inline: Self.inlineRepeat(node, context: context)
+            case .wrap: Self.wrapRepeat(node, original: original, context: context)
+            case .inline: Self.inlineRepeat(node, original: original, context: context)
         }
     }
 
     static func transform(
         _ node: PatternBindingSyntax,
-        original _: PatternBindingSyntax,
+        original: PatternBindingSyntax,
         parent: Syntax?,
         context: Context
     ) -> PatternBindingSyntax {
         switch Self.mode(context: context) {
-            case .wrap: Self.wrapProperty(node, parent: parent, context: context)
-            case .inline: Self.inlineProperty(node, parent: parent, context: context)
+            case .wrap:
+                Self.wrapProperty(node, original: original, parent: parent, context: context)
+            case .inline:
+                Self.inlineProperty(node, original: original, parent: parent, context: context)
         }
     }
 
     static func transform(
         _ node: ArrayExprSyntax,
-        original _: ArrayExprSyntax,
+        original: ArrayExprSyntax,
         parent _: Syntax?,
         context: Context
     ) -> ExprSyntax {
         guard Self.mode(context: context) == .inline else { return ExprSyntax(node) }
-        return Self.inlineArrayLiteral(node, context: context)
+        return Self.inlineArrayLiteral(node, original: original, context: context)
     }
 
     static func transform(
         _ node: DictionaryExprSyntax,
-        original _: DictionaryExprSyntax,
+        original: DictionaryExprSyntax,
         parent _: Syntax?,
         context: Context
     ) -> ExprSyntax {
         guard Self.mode(context: context) == .inline else { return ExprSyntax(node) }
-        return Self.inlineDictionaryLiteral(node, context: context)
+        return Self.inlineDictionaryLiteral(node, original: original, context: context)
     }
 
     static func transform(
@@ -183,7 +185,7 @@ extension LayoutSingleLineBodies {
 
     static func transform(
         _ node: AccessorDeclSyntax,
-        original _: AccessorDeclSyntax,
+        original: AccessorDeclSyntax,
         parent _: Syntax?,
         context: Context
     ) -> DeclSyntax {
@@ -194,7 +196,7 @@ extension LayoutSingleLineBodies {
             return DeclSyntax(node)
         }
 
-        return Self.inlineObserver(node, context: context)
+        return Self.inlineObserver(node, original: original, context: context)
     }
 
     // MARK: Wrap helpers (static)
@@ -230,8 +232,16 @@ extension LayoutSingleLineBodies {
         return ""
     }
 
+    /// The opening brace of an `else` block in the parsed tree, or nil when the original carries no
+    /// `else` block. A finding anchors on it, so it has to come from the parsed tree.
+    fileprivate static func elseBrace(of node: IfExprSyntax) -> TokenSyntax? {
+        guard case let .codeBlock(block) = node.elseBody else { return nil }
+        return block.leftBrace
+    }
+
     fileprivate static func wrapIf(
         _ node: IfExprSyntax,
+        original: IfExprSyntax,
         context: Context
     ) -> ExprSyntax {
         // willEnter has already pushed self's baseIndent onto the stack.
@@ -239,7 +249,7 @@ extension LayoutSingleLineBodies {
 
         let needsBodyWrap = node.body.bodyNeedsWrapping
         if needsBodyWrap {
-            Self.diagnose(.wrapConditionalBody, on: node.body.leftBrace, context: context)
+            Self.diagnose(.wrapConditionalBody, on: original.body.leftBrace, context: context)
         }
 
         var result = node
@@ -250,8 +260,13 @@ extension LayoutSingleLineBodies {
                 case .ifExpr: break
                 case var .codeBlock(block):
                     let needsElseWrap = block.bodyNeedsWrapping
+
                     if needsElseWrap {
-                        Self.diagnose(.wrapConditionalBody, on: block.leftBrace, context: context)
+                        Self.diagnose(
+                            .wrapConditionalBody,
+                            on: Self.elseBrace(of: original),
+                            context: context
+                        )
                     }
                     if needsElseWrap { block = block.wrappingBody(baseIndent: baseIndent) }
                     result.elseBody = .codeBlock(block)
@@ -268,18 +283,21 @@ extension LayoutSingleLineBodies {
     ///
     /// - Parameters:
     ///   - node: the statement that owns the body
+    ///   - original: the same statement as it sits in the parsed tree, which is what the finding
+    ///     anchors on
     ///   - body: the path to the body to wrap
     ///   - message: the finding the rewrite emits
     /// - Returns: the node with a wrapped body, or the node unchanged when the body already wraps
     fileprivate static func wrappingStatement<Node: SyntaxProtocol>(
         _ node: Node,
+        original: Node,
         body: WritableKeyPath<Node, CodeBlockSyntax>,
         message: Finding.Message,
         context: Context
     ) -> Node {
         guard node[keyPath: body].bodyNeedsWrapping else { return node }
 
-        Self.diagnose(message, on: node[keyPath: body].leftBrace, context: context)
+        Self.diagnose(message, on: original[keyPath: body].leftBrace, context: context)
 
         let baseIndent = Self.state(context).indentStack.last ?? ""
         var result = node
@@ -291,18 +309,21 @@ extension LayoutSingleLineBodies {
     ///
     /// - Parameters:
     ///   - node: the declaration that owns the body
+    ///   - original: the same declaration as it sits in the parsed tree, which is what the finding
+    ///     anchors on
     ///   - body: the path to the body to wrap
     ///   - keyword: the path to the keyword whose own indentation the body indents from
     /// - Returns: the node with a wrapped body, or the node unchanged when the body already wraps
     fileprivate static func wrappingDeclaration<Node: SyntaxProtocol>(
         _ node: Node,
+        original: Node,
         body: WritableKeyPath<Node, CodeBlockSyntax?>,
         keyword: KeyPath<Node, TokenSyntax>,
         context: Context
     ) -> Node {
         guard let block = node[keyPath: body], block.bodyNeedsWrapping else { return node }
 
-        Self.diagnose(.wrapFunctionBody, on: block.leftBrace, context: context)
+        Self.diagnose(.wrapFunctionBody, on: original[keyPath: body]?.leftBrace, context: context)
 
         let baseIndent = node[keyPath: keyword].leadingTrivia.indentation
         var result = node
@@ -312,30 +333,35 @@ extension LayoutSingleLineBodies {
 
     fileprivate static func wrapGuard(
         _ node: GuardStmtSyntax,
+        original: GuardStmtSyntax,
         context: Context
     ) -> StmtSyntax {
         StmtSyntax(Self.wrappingStatement(
-            node, body: \.body, message: .wrapConditionalBody, context: context))
+            node, original: original, body: \.body, message: .wrapConditionalBody, context: context)
+        )
     }
 
     fileprivate static func wrapFunction(
         _ node: FunctionDeclSyntax,
+        original: FunctionDeclSyntax,
         context: Context
     ) -> DeclSyntax {
         DeclSyntax(Self.wrappingDeclaration(
-            node, body: \.body, keyword: \.funcKeyword, context: context))
+            node, original: original, body: \.body, keyword: \.funcKeyword, context: context))
     }
 
     fileprivate static func wrapInit(
         _ node: InitializerDeclSyntax,
+        original: InitializerDeclSyntax,
         context: Context
     ) -> DeclSyntax {
         DeclSyntax(Self.wrappingDeclaration(
-            node, body: \.body, keyword: \.initKeyword, context: context))
+            node, original: original, body: \.body, keyword: \.initKeyword, context: context))
     }
 
     fileprivate static func wrapSubscript(
         _ node: SubscriptDeclSyntax,
+        original: SubscriptDeclSyntax,
         context: Context
     ) -> DeclSyntax {
         guard let accessorBlock = node.accessorBlock,
@@ -348,7 +374,7 @@ extension LayoutSingleLineBodies {
         let closingOnNewLine = accessorBlock.rightBrace.leadingTrivia.containsNewlines
         guard !closingOnNewLine else { return DeclSyntax(node) }
 
-        Self.diagnose(.wrapFunctionBody, on: accessorBlock.leftBrace, context: context)
+        Self.diagnose(.wrapFunctionBody, on: original.accessorBlock?.leftBrace, context: context)
 
         let baseIndent = node.subscriptKeyword.leadingTrivia.indentation
         let bodyIndent = baseIndent + "    "
@@ -378,34 +404,39 @@ extension LayoutSingleLineBodies {
 
     fileprivate static func wrapFor(
         _ node: ForStmtSyntax,
+        original: ForStmtSyntax,
         context: Context
     ) -> StmtSyntax {
         StmtSyntax(Self.wrappingStatement(
-            node, body: \.body, message: .wrapLoopBody, context: context))
+            node, original: original, body: \.body, message: .wrapLoopBody, context: context))
     }
 
     fileprivate static func wrapWhile(
         _ node: WhileStmtSyntax,
+        original: WhileStmtSyntax,
         context: Context
     ) -> StmtSyntax {
         StmtSyntax(Self.wrappingStatement(
-            node, body: \.body, message: .wrapLoopBody, context: context))
+            node, original: original, body: \.body, message: .wrapLoopBody, context: context))
     }
 
     fileprivate static func wrapRepeat(
         _ node: RepeatStmtSyntax,
+        original: RepeatStmtSyntax,
         context: Context
     ) -> StmtSyntax {
         StmtSyntax(Self.wrappingStatement(
-            node, body: \.body, message: .wrapLoopBody, context: context))
+            node, original: original, body: \.body, message: .wrapLoopBody, context: context))
     }
 
     fileprivate static func wrapProperty(
         _ node: PatternBindingSyntax,
+        original: PatternBindingSyntax,
         parent: Syntax?,
         context: Context
     ) -> PatternBindingSyntax {
         guard let accessorBlock = node.accessorBlock else { return node }
+        let originalBrace = original.accessorBlock?.leftBrace
 
         switch accessorBlock.accessors {
             case let .getter(statements):
@@ -415,7 +446,7 @@ extension LayoutSingleLineBodies {
                 let closingOnNewLine = accessorBlock.rightBrace.leadingTrivia.containsNewlines
                 guard !closingOnNewLine else { return node }
 
-                Self.diagnose(.wrapPropertyBody, on: accessorBlock.leftBrace, context: context)
+                Self.diagnose(.wrapPropertyBody, on: originalBrace, context: context)
 
                 let baseIndent = Self.resolveVarIndent(parent: parent)
                 let bodyIndent = baseIndent + "    "
@@ -451,7 +482,7 @@ extension LayoutSingleLineBodies {
                 let closingOnNewLine = accessorBlock.rightBrace.leadingTrivia.containsNewlines
                 guard !closingOnNewLine else { return node }
 
-                Self.diagnose(.wrapPropertyBody, on: accessorBlock.leftBrace, context: context)
+                Self.diagnose(.wrapPropertyBody, on: originalBrace, context: context)
 
                 let baseIndent = Self.resolveVarIndent(parent: parent)
                 let bodyIndent = baseIndent + "    "
@@ -551,6 +582,15 @@ extension LayoutSingleLineBodies {
         return statementTrailing.hasAnyComments || block.rightBrace.leadingTrivia.hasAnyComments
     }
 
+    /// The number of characters that precede the opening brace on its own line
+    ///
+    /// The brace must still be attached to the tree the file was parsed into. Both readings map a
+    /// position through the source location converter, and a detached tree starts at offset 0, so a
+    /// detached brace reports a line and a column that belong to another part of the file.
+    /// `previousToken` also returns nil at a detached root, which hides the leading-newline branch.
+    ///
+    /// - Parameters:
+    ///   - leftBrace: the opening brace as it sits in the parsed tree
     fileprivate static func prefixLength(
         to leftBrace: TokenSyntax,
         context: Context
@@ -606,17 +646,20 @@ extension LayoutSingleLineBodies {
     ///
     /// - Parameters:
     ///   - body: the body to collapse. Nil for a declaration that declares none, which refuses.
+    ///   - originalBrace: the body's opening brace as it sits in the parsed tree. It carries the
+    ///     position the width measurement and the finding both need. Nil refuses the inline.
     ///   - message: the finding the rewrite emits
     ///   - suffixLength: characters that follow the closing brace, as `repeat` 's while clause has
     fileprivate static func inlinedBody(
         _ body: CodeBlockSyntax?,
+        originalBrace: TokenSyntax?,
         message: Finding.Message,
         suffixLength: Int = 0,
         context: Context
     ) -> CodeBlockSyntax? {
-        guard let body, Self.canInline(body) else { return nil }
+        guard let body, let originalBrace, Self.canInline(body) else { return nil }
 
-        let prefix = Self.prefixLength(to: body.leftBrace, context: context)
+        let prefix = Self.prefixLength(to: originalBrace, context: context)
         guard Self.fitsInline(
             prefixLength: prefix,
             bodyText: Self.singleStatementText(body),
@@ -624,7 +667,7 @@ extension LayoutSingleLineBodies {
             context: context
         ) else { return nil }
 
-        Self.diagnose(message, on: body.leftBrace, context: context)
+        Self.diagnose(message, on: originalBrace, context: context)
         return Self.inliningBody(body)
     }
 
@@ -661,6 +704,7 @@ extension LayoutSingleLineBodies {
               !Self.conditionsBuryTheBrace(original.conditions, context: context),
               let body = Self.inlinedBody(
                   node.body,
+                  originalBrace: original.body.leftBrace,
                   message: .inlineConditionalBody,
                   context: context
               ) else { return ExprSyntax(node) }
@@ -678,6 +722,7 @@ extension LayoutSingleLineBodies {
         guard !Self.conditionsBuryTheBrace(original.conditions, context: context),
               let body = Self.inlinedBody(
                   node.body,
+                  originalBrace: original.body.leftBrace,
                   message: .inlineConditionalBody,
                   context: context
               ) else { return StmtSyntax(node) }
@@ -700,13 +745,18 @@ extension LayoutSingleLineBodies {
 
     fileprivate static func inlineFunction(
         _ node: FunctionDeclSyntax,
+        original: FunctionDeclSyntax,
         context: Context
     ) -> DeclSyntax {
         if Self.hasWrappedGenericWhereClause(node.genericWhereClause) {
-            return Self.wrapFunction(node, context: context)
+            return Self.wrapFunction(node, original: original, context: context)
         }
-        guard let body = Self.inlinedBody(node.body, message: .inlineFunctionBody, context: context)
-        else { return DeclSyntax(node) }
+        guard let body = Self.inlinedBody(
+            node.body,
+            originalBrace: original.body?.leftBrace,
+            message: .inlineFunctionBody,
+            context: context
+        ) else { return DeclSyntax(node) }
 
         var result = node
         result.body = body
@@ -715,13 +765,18 @@ extension LayoutSingleLineBodies {
 
     fileprivate static func inlineInit(
         _ node: InitializerDeclSyntax,
+        original: InitializerDeclSyntax,
         context: Context
     ) -> DeclSyntax {
         if Self.hasWrappedGenericWhereClause(node.genericWhereClause) {
-            return Self.wrapInit(node, context: context)
+            return Self.wrapInit(node, original: original, context: context)
         }
-        guard let body = Self.inlinedBody(node.body, message: .inlineFunctionBody, context: context)
-        else { return DeclSyntax(node) }
+        guard let body = Self.inlinedBody(
+            node.body,
+            originalBrace: original.body?.leftBrace,
+            message: .inlineFunctionBody,
+            context: context
+        ) else { return DeclSyntax(node) }
 
         var result = node
         result.body = body
@@ -730,12 +785,14 @@ extension LayoutSingleLineBodies {
 
     fileprivate static func inlineSubscript(
         _ node: SubscriptDeclSyntax,
+        original: SubscriptDeclSyntax,
         context: Context
     ) -> DeclSyntax {
         if Self.hasWrappedGenericWhereClause(node.genericWhereClause) {
-            return Self.wrapSubscript(node, context: context)
+            return Self.wrapSubscript(node, original: original, context: context)
         }
         guard let accessorBlock = node.accessorBlock,
+              let originalBrace = original.accessorBlock?.leftBrace,
               case let .getter(statements) = accessorBlock.accessors,
               statements.count == 1 else { return DeclSyntax(node) }
 
@@ -749,13 +806,13 @@ extension LayoutSingleLineBodies {
         ) { return DeclSyntax(node) }
 
         let bodyText = firstStmt.trimmedDescription
-        let prefix = Self.prefixLength(to: accessorBlock.leftBrace, context: context)
+        let prefix = Self.prefixLength(to: originalBrace, context: context)
 
         guard Self.fitsInline(prefixLength: prefix, bodyText: bodyText, context: context) else {
             return DeclSyntax(node)
         }
 
-        Self.diagnose(.inlineFunctionBody, on: accessorBlock.leftBrace, context: context)
+        Self.diagnose(.inlineFunctionBody, on: originalBrace, context: context)
 
         var result = node
         var block = accessorBlock
@@ -771,10 +828,15 @@ extension LayoutSingleLineBodies {
 
     fileprivate static func inlineFor(
         _ node: ForStmtSyntax,
+        original: ForStmtSyntax,
         context: Context
     ) -> StmtSyntax {
-        guard let body = Self.inlinedBody(node.body, message: .inlineLoopBody, context: context)
-        else { return StmtSyntax(node) }
+        guard let body = Self.inlinedBody(
+            node.body,
+            originalBrace: original.body.leftBrace,
+            message: .inlineLoopBody,
+            context: context
+        ) else { return StmtSyntax(node) }
 
         var result = node
         result.body = body
@@ -787,8 +849,12 @@ extension LayoutSingleLineBodies {
         context: Context
     ) -> StmtSyntax {
         guard !Self.conditionsBuryTheBrace(original.conditions, context: context),
-              let body = Self.inlinedBody(node.body, message: .inlineLoopBody, context: context)
-        else { return StmtSyntax(node) }
+              let body = Self.inlinedBody(
+                  node.body,
+                  originalBrace: original.body.leftBrace,
+                  message: .inlineLoopBody,
+                  context: context
+              ) else { return StmtSyntax(node) }
 
         var result = node
         result.body = body
@@ -797,6 +863,7 @@ extension LayoutSingleLineBodies {
 
     fileprivate static func inlineRepeat(
         _ node: RepeatStmtSyntax,
+        original: RepeatStmtSyntax,
         context: Context
     ) -> StmtSyntax {
         // The inline glues the while keyword to the closing brace, which drops any comment between
@@ -808,6 +875,7 @@ extension LayoutSingleLineBodies {
         let whileClause = " while " + node.condition.trimmedDescription
         guard let body = Self.inlinedBody(
             node.body,
+            originalBrace: original.body.leftBrace,
             message: .inlineLoopBody,
             suffixLength: whileClause.count,
             context: context
@@ -822,10 +890,12 @@ extension LayoutSingleLineBodies {
 
     fileprivate static func inlineProperty(
         _ node: PatternBindingSyntax,
+        original: PatternBindingSyntax,
         parent: Syntax?,
         context: Context
     ) -> PatternBindingSyntax {
-        guard let accessorBlock = node.accessorBlock else { return node }
+        guard let accessorBlock = node.accessorBlock,
+              let originalBrace = original.accessorBlock?.leftBrace else { return node }
 
         switch accessorBlock.accessors {
             case let .getter(statements):
@@ -843,7 +913,7 @@ extension LayoutSingleLineBodies {
                 let varIndent = Self.resolveVarIndent(parent: parent)
 
                 if parent?.parent?.is(VariableDeclSyntax.self) == true {
-                    let prefix = Self.prefixLength(to: accessorBlock.leftBrace, context: context)
+                    let prefix = Self.prefixLength(to: originalBrace, context: context)
                     guard Self.fitsInline(
                         prefixLength: prefix,
                         bodyText: bodyText,
@@ -854,7 +924,7 @@ extension LayoutSingleLineBodies {
                     guard estimate <= Self.maxLength(context: context) else { return node }
                 }
 
-                Self.diagnose(.inlinePropertyBody, on: accessorBlock.leftBrace, context: context)
+                Self.diagnose(.inlinePropertyBody, on: originalBrace, context: context)
 
                 var result = node
                 var block = accessorBlock
@@ -871,6 +941,7 @@ extension LayoutSingleLineBodies {
                 return Self.inlineAccessors(
                     node,
                     block: accessorBlock,
+                    originalBrace: originalBrace,
                     accessors: Array(accessors),
                     parent: parent,
                     context: context
@@ -878,9 +949,13 @@ extension LayoutSingleLineBodies {
         }
     }
 
+    /// - Parameters:
+    ///   - originalBrace: the accessor block's opening brace as it sits in the parsed tree. It
+    ///     carries the position the width measurement and the finding both need.
     fileprivate static func inlineAccessors(
         _ node: PatternBindingSyntax,
         block accessorBlock: AccessorBlockSyntax,
+        originalBrace: TokenSyntax,
         accessors: [AccessorDeclSyntax],
         parent: Syntax?,
         context: Context
@@ -921,7 +996,7 @@ extension LayoutSingleLineBodies {
         let joined = accessorTexts.joined(separator: " ")
 
         if parent?.parent?.is(VariableDeclSyntax.self) == true {
-            let prefix = Self.prefixLength(to: accessorBlock.leftBrace, context: context)
+            let prefix = Self.prefixLength(to: originalBrace, context: context)
             let total = prefix + 1 + joined.count + 2
             guard total <= Self.maxLength(context: context) else { return node }
         } else {
@@ -930,7 +1005,7 @@ extension LayoutSingleLineBodies {
             guard estimate <= Self.maxLength(context: context) else { return node }
         }
 
-        Self.diagnose(.inlinePropertyBody, on: accessorBlock.leftBrace, context: context)
+        Self.diagnose(.inlinePropertyBody, on: originalBrace, context: context)
 
         var result = node
         var block = accessorBlock
@@ -956,9 +1031,16 @@ extension LayoutSingleLineBodies {
     ///
     /// The caller emits the finding and performs the element-specific trivia reset. Both literal
     /// kinds route through here, so one comment guard covers both.
+    ///
+    /// - Parameters:
+    ///   - leftBracket: the opening bracket of the literal under rewrite, whose trivia the comment
+    ///     guard reads
+    ///   - originalLeftBracket: the same bracket as it sits in the parsed tree, which is what
+    ///     carries the column
     fileprivate static func shouldInlineCollection<E: SyntaxProtocol>(
         elements: [E],
         leftBracket: TokenSyntax,
+        originalLeftBracket: TokenSyntax,
         rightBracket: TokenSyntax,
         render: (E) -> String,
         context: Context
@@ -979,7 +1061,7 @@ extension LayoutSingleLineBodies {
         if rightBracket.leadingTrivia.hasAnyComments { return false }
 
         let joined = elements.map(render).joined(separator: ", ")
-        let openColumn = leftBracket
+        let openColumn = originalLeftBracket
             .startLocation(converter: context.sourceLocationConverter).column
         let inlinedLength = openColumn - 1 + 1 + joined.count + 1
         return inlinedLength <= Self.maxLength(context: context)
@@ -990,18 +1072,20 @@ extension LayoutSingleLineBodies {
     /// `multiElementCollectionTrailingCommas`'s default handling).
     fileprivate static func inlineArrayLiteral(
         _ node: ArrayExprSyntax,
+        original: ArrayExprSyntax,
         context: Context
     ) -> ExprSyntax {
         let elements = Array(node.elements)
         guard Self.shouldInlineCollection(
             elements: elements,
             leftBracket: node.leftSquare,
+            originalLeftBracket: original.leftSquare,
             rightBracket: node.rightSquare,
             render: { $0.expression.trimmedDescription },
             context: context
         ) else { return ExprSyntax(node) }
 
-        Self.diagnose(.inlineCollectionLiteral, on: node.leftSquare, context: context)
+        Self.diagnose(.inlineCollectionLiteral, on: original.leftSquare, context: context)
 
         var newElements = elements
         let lastIdx = newElements.count - 1
@@ -1028,6 +1112,7 @@ extension LayoutSingleLineBodies {
 
     fileprivate static func inlineDictionaryLiteral(
         _ node: DictionaryExprSyntax,
+        original: DictionaryExprSyntax,
         context: Context
     ) -> ExprSyntax {
         guard let elementList = node.content.as(DictionaryElementListSyntax.self) else {
@@ -1037,12 +1122,13 @@ extension LayoutSingleLineBodies {
         guard Self.shouldInlineCollection(
             elements: elements,
             leftBracket: node.leftSquare,
+            originalLeftBracket: original.leftSquare,
             rightBracket: node.rightSquare,
             render: { "\($0.key.trimmedDescription): \($0.value.trimmedDescription)" },
             context: context
         ) else { return ExprSyntax(node) }
 
-        Self.diagnose(.inlineCollectionLiteral, on: node.leftSquare, context: context)
+        Self.diagnose(.inlineCollectionLiteral, on: original.leftSquare, context: context)
 
         var newElements = elements
         let lastIdx = newElements.count - 1
@@ -1100,13 +1186,13 @@ extension LayoutSingleLineBodies {
 
         let bodyText = firstStmt.trimmedDescription
         let signatureText = node.signature.map { $0.trimmedDescription + " " } ?? ""
-        let braceEndCol = node.leftBrace
+        let braceEndCol = original.leftBrace
             .endLocation(converter: context.sourceLocationConverter).column
         let prefix = braceEndCol - 1
         let totalLength = prefix + 1 + signatureText.count + bodyText.count + 2
         guard totalLength <= Self.maxLength(context: context) else { return ExprSyntax(node) }
 
-        Self.diagnose(.inlineClosureBody, on: node.leftBrace, context: context)
+        Self.diagnose(.inlineClosureBody, on: original.leftBrace, context: context)
 
         var result = node
         result.leftBrace = result.leftBrace.with(\.trailingTrivia, .space)
@@ -1126,10 +1212,15 @@ extension LayoutSingleLineBodies {
 
     fileprivate static func inlineObserver(
         _ node: AccessorDeclSyntax,
+        original: AccessorDeclSyntax,
         context: Context
     ) -> DeclSyntax {
-        guard let body = Self.inlinedBody(node.body, message: .inlineObserverBody, context: context)
-        else { return DeclSyntax(node) }
+        guard let body = Self.inlinedBody(
+            node.body,
+            originalBrace: original.body?.leftBrace,
+            message: .inlineObserverBody,
+            context: context
+        ) else { return DeclSyntax(node) }
 
         var result = node
         result.body = body
