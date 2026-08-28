@@ -41,8 +41,7 @@ final class NoOrphanedDocComment: LintSyntaxRule<LintOnlyValue>, @unchecked Send
                      .carriageReturns,
                      .carriageReturnLineFeeds,
                      .spaces,
-                     .tabs:
-                    continue
+                     .tabs: continue
                 case .lineComment, .blockComment: return true
                 default: return false
             }

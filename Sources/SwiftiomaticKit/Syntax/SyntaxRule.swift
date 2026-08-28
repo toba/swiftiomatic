@@ -88,24 +88,24 @@ extension SyntaxRule {
         }
 
         // Per-finding rule-mask gate: the pipeline gates rule dispatch at the *visited* node's
-        // start location, but rules that visit an enclosing node (e.g. `ClassDeclSyntax`) and
-        // emit on inner members would otherwise bypass `// sm:ignore` directives placed on or
-        // above those members. Re-checking here at the finding's anchor lets per-member
-        // directives suppress findings emitted by class- or file-level rules.
+        // start location, but rules that visit an enclosing node (e.g. `ClassDeclSyntax`) and emit
+        // on inner members would otherwise bypass `// sm:ignore` directives placed on or above
+        // those members. Re-checking here at the finding's anchor lets per-member directives
+        // suppress findings emitted by class- or file-level rules.
         if let syntaxLocation {
             let ruleName = ConfigurationRegistry.ruleNameCache[ObjectIdentifier(Self.self)]
                 ?? Self.key
             if context.ruleMask.ruleState(ruleName, at: syntaxLocation) == .disabled { return }
         }
 
-        // Honour Swift's `@warn(<group>, as: …)` attribute: if the finding's
-        // anchor falls inside a region that names this rule's diagnostic
-        // group, that severity overrides the rule's configured severity.
-        // Falls back to the passed-in `severity` (the caller's resolved
-        // value) when no `@warn` region applies.
+        // Honour Swift's `@warn(<group>, as: …)` attribute: if the finding's anchor falls inside a
+        // region that names this rule's diagnostic group, that severity overrides the rule's
+        // configured severity. Falls back to the passed-in `severity` (the caller's resolved value)
+        // when no `@warn` region applies.
         let effectiveSeverity: Lint
+
         if let node,
-            let override = context.warningControlSeverity(of: Self.self, at: node.position)
+           let override = context.warningControlSeverity(of: Self.self, at: node.position)
         {
             effectiveSeverity = override
         } else {

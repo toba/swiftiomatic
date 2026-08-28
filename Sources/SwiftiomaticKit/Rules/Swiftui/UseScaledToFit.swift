@@ -6,9 +6,9 @@ import SwiftSyntax
 /// SwiftUI's `scaledToFit()` and `scaledToFill()` are exact equivalents of
 /// `aspectRatio(contentMode: .fit)` and `aspectRatio(contentMode: .fill)` respectively, and read
 /// more clearly. The rewrite only fires when the call has a single `contentMode:` argument whose
-/// value is a constant `.fit` / `.fill` (optionally spelled `ContentMode.fit` / `ContentMode.fill`).
-/// A leading ratio argument, a non-constant content mode, or a differently-typed enum base leaves
-/// the call untouched.
+/// value is a constant `.fit` / `.fill` (optionally spelled `ContentMode.fit` /
+/// `ContentMode.fill`). A leading ratio argument, a non-constant content mode, or a
+/// differently-typed enum base leaves the call untouched.
 ///
 /// Lint: Using `aspectRatio(contentMode:)` with a constant content mode raises a warning.
 ///
@@ -28,6 +28,7 @@ final class UseScaledToFit: StaticFormatRule<BasicRuleValue>, @unchecked Sendabl
         // The called expression must be `<base>.aspectRatio` or a bare `aspectRatio`.
         let base: ExprSyntax?
         let calledToken: TokenSyntax
+
         if let member = node.calledExpression.as(MemberAccessExprSyntax.self) {
             guard member.declName.baseName.text == "aspectRatio" else { return ExprSyntax(node) }
             base = member.base
@@ -53,11 +54,12 @@ final class UseScaledToFit: StaticFormatRule<BasicRuleValue>, @unchecked Sendabl
         guard modeName == "fit" || modeName == "fill" else { return ExprSyntax(node) }
 
         let replacement = modeName == "fit" ? "scaledToFit" : "scaledToFill"
-        Self.diagnose(.useScaledTo(replacement, insteadOf: modeName), on: calledToken, context: context)
+        Self.diagnose(
+            .useScaledTo(replacement, insteadOf: modeName), on: calledToken, context: context)
 
         // Build `<base>.scaledToFit` (or a bare `scaledToFit`) and drop the arguments.
         let replacementName = DeclReferenceExprSyntax(baseName: .identifier(replacement))
-        let newCalled: ExprSyntax =
+        let newCalled =
             if let base {
                 ExprSyntax(MemberAccessExprSyntax(base: base.trimmed, declName: replacementName))
             } else {
@@ -77,8 +79,8 @@ final class UseScaledToFit: StaticFormatRule<BasicRuleValue>, @unchecked Sendabl
 }
 
 private extension MemberAccessExprSyntax {
-    /// A SwiftUI `ContentMode` constant: either implicit (`.fit`) or spelled `ContentMode.fit`.
-    /// A differently-typed base (e.g. `CustomMode.fit`) is not a match.
+    /// A SwiftUI `ContentMode` constant: either implicit (`.fit`) or spelled `ContentMode.fit`. A
+    /// differently-typed base (e.g. `CustomMode.fit`) is not a match.
     var isContentModeConstant: Bool {
         base == nil || base?.as(DeclReferenceExprSyntax.self)?.baseName.text == "ContentMode"
     }

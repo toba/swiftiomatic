@@ -53,7 +53,7 @@ package final class RewriteCoordinator {
     ///     will be written.
     ///   - parsingDiagnosticHandler: An optional callback that will be notified if there are any
     ///     errors when parsing the source code.
-    ///   - Throws: If an unrecoverable error occurs when formatting the code.
+    /// - Throws: If an unrecoverable error occurs when formatting the code.
     package func format<Output: TextOutputStream>(
         contentsOf url: URL,
         to outputStream: inout Output,
@@ -107,7 +107,7 @@ package final class RewriteCoordinator {
     ///     will be written.
     ///   - parsingDiagnosticHandler: An optional callback that will be notified if there are any
     ///     errors when parsing the source code.
-    ///   - Throws: If an unrecoverable error occurs when formatting the code.
+    /// - Throws: If an unrecoverable error occurs when formatting the code.
     package func format<Output: TextOutputStream>(
         source: String,
         assumingFileURL url: URL?,
@@ -159,7 +159,7 @@ package final class RewriteCoordinator {
     ///   - selection: The ranges to format
     ///   - outputStream: A value conforming to `TextOutputStream` to which the formatted output
     ///     will be written.
-    ///   - Throws: If an unrecoverable error occurs when formatting the code.
+    /// - Throws: If an unrecoverable error occurs when formatting the code.
     package func format<Output: TextOutputStream>(
         syntax: SourceFileSyntax,
         source: String,
@@ -202,17 +202,17 @@ package final class RewriteCoordinator {
     /// `StructuralFormatRule` was hoisted here in `2uk-cll` .
     ///
     /// Rules previously dispatched here as structural passes — `UseFinalClasses` ,
-    /// `UseDocCommentsOnAPI` , `NormalizeSwitchCaseSpacing` , `ReflowComments` — were
-    /// inlined into stage 1 (sessions 11–14 of `ddi-wtv` Phase 4g) and removed from this list once
-    /// their `override func visit` shells were stripped.
+    /// `UseDocCommentsOnAPI` , `NormalizeSwitchCaseSpacing` , `ReflowComments` — were inlined into
+    /// stage 1 (sessions 11–14 of `ddi-wtv` Phase 4g) and removed from this list once their
+    /// `override func visit` shells were stripped.
     private func runPipeline(_ node: Syntax, context: Context) -> Syntax {
         var current = RewritePipeline(context: context).rewrite(node)
         current = runStructuralPass(SortImports.self, on: current, context: context)
         current = runStructuralPass(InsertBlankLineAfterImports.self, on: current, context: context)
-        current = runStructuralPass(
-            UseFilePrivateForFileLocal.self, on: current, context: context)
+        current = runStructuralPass(UseFilePrivateForFileLocal.self, on: current, context: context)
         current = runStructuralPass(HoistExtensionAccess.self, on: current, context: context)
-        current = runStructuralPass(InsertBlankLineBetweenScopes.self, on: current, context: context)
+        current = runStructuralPass(
+            InsertBlankLineBetweenScopes.self, on: current, context: context)
         current = runStructuralPass(SortDeclarations.self, on: current, context: context)
         current = runStructuralPass(SortSwitchCases.self, on: current, context: context)
         current = runStructuralPass(SortTypeAliases.self, on: current, context: context)

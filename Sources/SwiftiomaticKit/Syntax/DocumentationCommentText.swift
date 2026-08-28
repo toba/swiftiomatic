@@ -100,9 +100,7 @@ package struct DocumentationCommentText {
 
                         if hasASCIIArt {
                             cleaned = cleaned.dropFirst(asciiArtLength(
-                                of: cleaned,
-                                leadingSpaces: leadingWhitespace
-                            ))
+                                of: cleaned, leadingSpaces: leadingWhitespace))
                             index = cleaned.firstIndex(where: \.isNewline) ?? cleaned.endIndex
                         }
 
@@ -123,8 +121,7 @@ package struct DocumentationCommentText {
         // be present.
         guard let introducer,
               !lines.isEmpty,
-              let firstLineIndex = lines.firstIndex(where: { !$0.text.isEmpty })
-        else { return nil }
+              let firstLineIndex = lines.firstIndex(where: { !$0.text.isEmpty }) else { return nil }
 
         let initialIndentation = indentationDistance(of: lines[firstLineIndex].text)
         var result = ""
@@ -148,10 +145,7 @@ package struct DocumentationCommentText {
 
 /// Returns the distance from the start of the string to the first non-whitespace character.
 private func indentationDistance(of text: Substring) -> Int {
-    text.distance(
-        from: text.startIndex,
-        to: text.firstIndex { !$0.isWhitespace } ?? text.endIndex
-    )
+    text.distance(from: text.startIndex, to: text.firstIndex { !$0.isWhitespace } ?? text.endIndex)
 }
 
 /// Returns the number of contiguous whitespace characters (spaces and tabs only) that precede the

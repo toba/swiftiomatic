@@ -5,8 +5,9 @@ import SwiftSyntax
 /// parsing to silently fail.
 ///
 /// The default character set is U+200B (zero-width space), U+200C (zero-width non-joiner), and
-/// U+FEFF (BOM). Configure additional code points via `flagInvisibleCharacters.additionalCodePoints`
-/// (an array of hex strings, e.g. `["00AD", "200D"]` ).
+/// U+FEFF (BOM). Configure additional code points via
+/// `flagInvisibleCharacters.additionalCodePoints` (an array of hex strings, e.g. `["00AD", "200D"]`
+/// ).
 ///
 /// Lint: When a string literal segment contains any of the configured invisible code points, an
 /// error is raised at the offending character.
@@ -26,9 +27,8 @@ final class FlagInvisibleCharacters: LintSyntaxRule<InvisibleCharactersConfigura
         for segment in node.segments {
             guard let stringSegment = segment.as(StringSegmentSyntax.self) else { continue }
             for scalar in stringSegment.content.text.unicodeScalars
-            where invalidScalars.contains(scalar) {
-                diagnose(.invisibleCharacter(name: name(for: scalar)), on: node)
-            }
+                where invalidScalars.contains(scalar)
+            { diagnose(.invisibleCharacter(name: name(for: scalar)), on: node) }
         }
         return .visitChildren
     }

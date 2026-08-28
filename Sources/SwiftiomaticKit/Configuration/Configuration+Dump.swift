@@ -13,11 +13,11 @@
 import Foundation
 @_exported import enum ConfigurationKit.KeySortOrder
 
-extension Configuration {
+package extension Configuration {
     /// Return the configuration as a JSON string with a `$schema` reference.
     ///
     /// Rule objects that fit within 100 columns are printed on a single line.
-    package func asJSONString(
+    func asJSONString(
         sortBy order: KeySortOrder = .length
     ) throws(SwiftiomaticError) -> String {
         // Encode to JSONValue, then serialize with key ordering. $schema is emitted by encode(to:),

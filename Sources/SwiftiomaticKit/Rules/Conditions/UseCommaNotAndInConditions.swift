@@ -30,7 +30,8 @@ final class UseCommaNotAndInConditions: StaticFormatRule<BasicRuleValue>, @unche
 
         for element in visited {
             guard elementHasTopLevelAnd(element),
-                  case let .expression(expr) = element.condition else {
+                  case let .expression(expr) = element.condition
+            else {
                 newElements.append(element)
                 continue
             }
@@ -52,13 +53,11 @@ final class UseCommaNotAndInConditions: StaticFormatRule<BasicRuleValue>, @unche
                 if i > 0 { conditionExpr = conditionExpr.with(\.leadingTrivia, .space) }
                 if !isLastOperand { conditionExpr = conditionExpr.with(\.trailingTrivia, []) }
 
-                newElements.append(
-                    ConditionElementSyntax(
-                        condition: .expression(conditionExpr),
-                        trailingComma: needsComma
-                            ? TokenSyntax(.comma, presence: .present)
-                            : nil
-                    ))
+                newElements.append(ConditionElementSyntax(
+                    condition: .expression(conditionExpr),
+                    trailingComma: needsComma
+                        ? TokenSyntax(.comma, presence: .present)
+                        : nil))
             }
         }
 
@@ -86,7 +85,8 @@ final class UseCommaNotAndInConditions: StaticFormatRule<BasicRuleValue>, @unche
     private static func flattenAndChain(_ expr: ExprSyntax, into operands: inout [ExprSyntax]) {
         guard let infix = expr.as(InfixOperatorExprSyntax.self),
               let binOp = infix.operator.as(BinaryOperatorExprSyntax.self),
-              binOp.operator.text == "&&" else {
+              binOp.operator.text == "&&"
+        else {
             operands.append(expr)
             return
         }

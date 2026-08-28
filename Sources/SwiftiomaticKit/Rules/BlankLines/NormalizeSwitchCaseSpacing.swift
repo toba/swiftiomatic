@@ -47,19 +47,11 @@ final class NormalizeSwitchCaseSpacing: StaticFormatRule<BasicRuleValue>, @unche
             let currentlyHasBlank = cases[nextIndex].leadingTrivia.hasBlankLine
 
             if shouldHaveBlankLines, !currentlyHasBlank {
-                Self.diagnose(
-                    .switchSpacingAddBlankLine,
-                    on: cases[nextIndex],
-                    context: context
-                )
+                Self.diagnose(.switchSpacingAddBlankLine, on: cases[nextIndex], context: context)
                 modifiedCases[nextIndex] = modifiedCases[nextIndex].prependingNewline()
                 modified = true
             } else if !shouldHaveBlankLines, currentlyHasBlank {
-                Self.diagnose(
-                    .switchSpacingRemoveBlankLine,
-                    on: cases[nextIndex],
-                    context: context
-                )
+                Self.diagnose(.switchSpacingRemoveBlankLine, on: cases[nextIndex], context: context)
                 modifiedCases[nextIndex] = modifiedCases[nextIndex].removingBlankLines()
                 modified = true
             }

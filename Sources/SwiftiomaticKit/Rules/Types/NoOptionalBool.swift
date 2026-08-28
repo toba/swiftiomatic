@@ -25,11 +25,11 @@ final class NoOptionalBool: LintSyntaxRule<LintOnlyValue>, @unchecked Sendable {
 
     override func visit(_ node: FunctionCallExprSyntax) -> SyntaxVisitorContinueKind {
         guard let member = node.calledExpression.as(MemberAccessExprSyntax.self),
-              member.declName.baseName.text == "some",
-              member.base?.as(DeclReferenceExprSyntax.self)?.baseName.text == "Optional",
-              let only = node.arguments.first,
-              node.arguments.count == 1,
-              only.expression.is(BooleanLiteralExprSyntax.self) else { return .visitChildren }
+            member.declName.baseName.text == "some",
+            member.base?.as(DeclReferenceExprSyntax.self)?.baseName.text == "Optional",
+            let only = node.arguments.first,
+            node.arguments.count == 1,
+            only.expression.is(BooleanLiteralExprSyntax.self) else { return .visitChildren }
         diagnose(.noOptionalBool, on: node)
         return .visitChildren
     }

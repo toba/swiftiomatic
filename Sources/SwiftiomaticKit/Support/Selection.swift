@@ -31,8 +31,7 @@ package enum Selection {
         } else {
             let ranges = offsetRanges.map {
                 AbsolutePosition(
-                    utf8Offset: $0.lowerBound
-                )..<AbsolutePosition(utf8Offset: $0.upperBound)
+                    utf8Offset: $0.lowerBound)..<AbsolutePosition(utf8Offset: $0.upperBound)
             }
             self = .ranges(ranges)
         }
@@ -87,9 +86,7 @@ package extension Syntax {
         switch selection {
             case .infinite: true
             case let .ranges(ranges):
-                ranges.contains {
-                    $0.lowerBound <= position && endPosition <= $0.upperBound
-                }
+                ranges.contains { $0.lowerBound <= position && endPosition <= $0.upperBound }
             case .unresolvedLineRanges:
                 preconditionFailure("Must resolve Selection before calling isInsideSelection")
         }

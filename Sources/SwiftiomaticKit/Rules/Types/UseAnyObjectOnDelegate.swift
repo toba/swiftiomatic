@@ -37,12 +37,9 @@ final class UseAnyObjectOnDelegate: StaticFormatRule<BasicRuleValue>, @unchecked
                 context: context
             )
 
-            let anyObjectType = IdentifierTypeSyntax(
-                name: .identifier(
-                    "AnyObject",
-                    leadingTrivia: classRestriction.classKeyword.leadingTrivia,
-                    trailingTrivia: classRestriction.classKeyword.trailingTrivia
-                ))
+            let anyObjectType = IdentifierTypeSyntax(name: .identifier(
+                "AnyObject", leadingTrivia: classRestriction.classKeyword.leadingTrivia,
+                trailingTrivia: classRestriction.classKeyword.trailingTrivia))
             return inherited.with(\.type, TypeSyntax(anyObjectType))
         }
 

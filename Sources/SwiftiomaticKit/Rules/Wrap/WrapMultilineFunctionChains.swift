@@ -24,11 +24,7 @@ final class WrapMultilineFunctionChains: StaticFormatRule<BasicRuleValue>, @unch
 
         var periods = [TokenSyntax]()
         var hasFunctionCall = false
-        collectPeriods(
-            ExprSyntax(node),
-            periods: &periods,
-            hasFunctionCall: &hasFunctionCall
-        )
+        collectPeriods(ExprSyntax(node), periods: &periods, hasFunctionCall: &hasFunctionCall)
         periods.reverse()
 
         guard periods.count > 1, hasFunctionCall else { return node }
@@ -103,11 +99,7 @@ final class WrapMultilineFunctionChains: StaticFormatRule<BasicRuleValue>, @unch
             periods.append(memberAccess.period)
 
             if let base = memberAccess.base {
-                collectPeriods(
-                    base,
-                    periods: &periods,
-                    hasFunctionCall: &hasFunctionCall
-                )
+                collectPeriods(base, periods: &periods, hasFunctionCall: &hasFunctionCall)
             }
         } else if let optionalChain = expr.as(OptionalChainingExprSyntax.self) {
             collectPeriods(

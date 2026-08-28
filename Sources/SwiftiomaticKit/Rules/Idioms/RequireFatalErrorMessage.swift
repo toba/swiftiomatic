@@ -28,17 +28,14 @@ final class RequireFatalErrorMessage: StaticFormatRule<BasicRuleValue>, @uncheck
 
     private static func isUnnamedFatalError(_ node: FunctionCallExprSyntax) -> Bool {
         guard let callee = node.calledExpression.as(DeclReferenceExprSyntax.self),
-              callee.baseName.text == "fatalError" else { return false }
+            callee.baseName.text == "fatalError" else { return false }
 
         if node.arguments.isEmpty { return true }
         if node.arguments.count == 1,
            let only = node.arguments.first,
            only.label == nil,
            let stringLiteral = only.expression.as(StringLiteralExprSyntax.self),
-           isEmptyStringLiteral(stringLiteral)
-        {
-            return true
-        }
+           isEmptyStringLiteral(stringLiteral) { return true }
         return false
     }
 

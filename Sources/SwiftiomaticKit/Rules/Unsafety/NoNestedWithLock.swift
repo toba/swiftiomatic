@@ -18,7 +18,7 @@ final class NoNestedWithLock: LintSyntaxRule<LintOnlyValue>, @unchecked Sendable
 
     fileprivate static func withLockReceiver(of call: FunctionCallExprSyntax) -> ExprSyntax? {
         guard let member = call.calledExpression.as(MemberAccessExprSyntax.self),
-              member.declName.baseName.text == "withLock" else { return nil }
+            member.declName.baseName.text == "withLock" else { return nil }
         return member.base
     }
 
@@ -39,10 +39,7 @@ private final class NestedWithLockCollector: SyntaxVisitor {
 
     override func visit(_ node: FunctionCallExprSyntax) -> SyntaxVisitorContinueKind {
         if let innerReceiver = NoNestedWithLock.withLockReceiver(of: node),
-           innerReceiver.trimmedDescription == receiver
-        {
-            matches.append(node)
-        }
+           innerReceiver.trimmedDescription == receiver { matches.append(node) }
         return .visitChildren
     }
 }

@@ -50,14 +50,16 @@ package struct Glob: Sendable {
         var out = ""
         let chars = Array(pattern)
         var i = 0
+
         while i < chars.count {
             let c = chars[i]
+
             switch c {
                 case "*":
                     if i + 1 < chars.count, chars[i + 1] == "*" {
-                        // `**` — match any number of path components (including zero).
-                        // Greedy `.*` is fine since we anchor with `$`.
-                        // If followed by `/`, swallow it so `**/foo` matches `foo` too.
+                        // `**` — match any number of path components (including zero). Greedy `.*`
+                        // is fine since we anchor with `$`. If followed by `/`, swallow it so
+                        // `**/foo` matches `foo` too.
                         if i + 2 < chars.count, chars[i + 2] == "/" {
                             out += "(?:.*/)?"
                             i += 3
@@ -76,6 +78,7 @@ package struct Glob: Sendable {
                     // Pass through to regex char class, rewriting leading `!` as `^`.
                     var j = i + 1
                     var body = ""
+
                     if j < chars.count, chars[j] == "!" {
                         body += "^"
                         j += 1

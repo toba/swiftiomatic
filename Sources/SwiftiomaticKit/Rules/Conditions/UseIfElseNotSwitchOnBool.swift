@@ -127,9 +127,8 @@ final class UseIfElseNotSwitchOnBool: StaticFormatRule<BasicRuleValue>, @uncheck
         guard ifBranches.count >= 1 else { return nil }
 
         // The next item must be a trailing return statement.
-        guard j < items.count, let fallbackValue = extractReturnValue(from: items[j]) else {
-            return nil
-        }
+        guard j < items.count, let fallbackValue = extractReturnValue(from: items[j])
+        else { return nil }
 
         let endIndex = j + 1
 
@@ -159,10 +158,7 @@ final class UseIfElseNotSwitchOnBool: StaticFormatRule<BasicRuleValue>, @uncheck
                     CodeBlockItemSyntax(
                         leadingTrivia: .spaces(2),
                         item: .expr(
-                            branch.value.with(\.leadingTrivia, []).with(
-                                \.trailingTrivia,
-                                []
-                            )),
+                            branch.value.with(\.leadingTrivia, []).with(\.trailingTrivia, [])),
                         trailingTrivia: .newline
                     )
                 ]),
@@ -274,8 +270,9 @@ final class UseIfElseNotSwitchOnBool: StaticFormatRule<BasicRuleValue>, @uncheck
         guard let onlyItem = body.statements.firstAndOnly else { return nil }
 
         if let returnStmt = onlyItem.item.as(ReturnStmtSyntax.self) { return returnStmt.expression }
+
         if let stmtItem = onlyItem.item.as(StmtSyntax.self),
-           let returnStmt = ReturnStmtSyntax(stmtItem)
+            let returnStmt = ReturnStmtSyntax(stmtItem)
         {
             return returnStmt.expression
         }
@@ -287,7 +284,7 @@ final class UseIfElseNotSwitchOnBool: StaticFormatRule<BasicRuleValue>, @uncheck
         if let returnStmt = item.item.as(ReturnStmtSyntax.self) {
             returnStmt.expression
         } else if let stmtItem = item.item.as(StmtSyntax.self),
-           let returnStmt = ReturnStmtSyntax(stmtItem)
+            let returnStmt = ReturnStmtSyntax(stmtItem)
         {
             returnStmt.expression
         } else {

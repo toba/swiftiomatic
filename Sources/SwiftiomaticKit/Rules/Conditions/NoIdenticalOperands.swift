@@ -17,7 +17,7 @@ final class NoIdenticalOperands: LintSyntaxRule<LintOnlyValue>, @unchecked Senda
 
     override func visit(_ node: InfixOperatorExprSyntax) -> SyntaxVisitorContinueKind {
         guard let binOp = node.operator.as(BinaryOperatorExprSyntax.self),
-              Self.comparisonOperators.contains(binOp.operator.text) else { return .visitChildren }
+            Self.comparisonOperators.contains(binOp.operator.text) else { return .visitChildren }
 
         if normalized(node.leftOperand) == normalized(node.rightOperand) {
             diagnose(.identicalOperands, on: node.leftOperand)

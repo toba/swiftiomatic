@@ -104,9 +104,8 @@ final class NoGuardInTests: StaticFormatRule<BasicRuleValue>, @unchecked Sendabl
     ) -> DeclSyntax {
         let state = context.noGuardInTestsState
         // Only proceed if this is a test function (matches what willEnter detected).
-        guard state.testContext.isTestFunction(node), node.body != nil else {
-            return DeclSyntax(node)
-        }
+        guard state.testContext.isTestFunction(node), node.body != nil
+        else { return DeclSyntax(node) }
         guard state.addedTryStatement else { return DeclSyntax(node) }
 
         var result = node
@@ -242,9 +241,7 @@ final class NoGuardInTests: StaticFormatRule<BasicRuleValue>, @unchecked Sendabl
 
     private static func isValidElseBlock(_ body: CodeBlockSyntax) -> Bool {
         let stmts = body.statements.map(\.item)
-        let nonTrivial = stmts.filter { stmt in
-            stmt.trimmedDescription.isEmpty == false
-        }
+        let nonTrivial = stmts.filter { stmt in stmt.trimmedDescription.isEmpty == false }
 
         if nonTrivial.count == 1, nonTrivial[0].is(ReturnStmtSyntax.self) { return true }
 
@@ -356,26 +353,13 @@ final class NoGuardInTests: StaticFormatRule<BasicRuleValue>, @unchecked Sendabl
         let args = buildArgList(expression: expr.trimmed, assertionMessage: assertionMessage)
 
         return useSwiftTesting
-            ? ExprSyntax(
-                MacroExpansionExprSyntax(
-                    pound: .poundToken(),
-                    macroName: .identifier("expect"),
-                    leftParen: .leftParenToken(),
-                    arguments: args,
-                    rightParen: .rightParenToken()
-                ))
-            : ExprSyntax(
-                FunctionCallExprSyntax(
-                    calledExpression: ExprSyntax(
-                        DeclReferenceExprSyntax(
-                            baseName: .identifier(
-                                "XCTAssert"
-                            ))),
-                    leftParen: .leftParenToken(),
-                    arguments: args,
-                    rightParen: .rightParenToken()
-                )
-            )
+            ? ExprSyntax(MacroExpansionExprSyntax(
+                pound: .poundToken(), macroName: .identifier("expect"),
+                leftParen: .leftParenToken(), arguments: args, rightParen: .rightParenToken()))
+            : ExprSyntax(FunctionCallExprSyntax(
+                calledExpression: ExprSyntax(DeclReferenceExprSyntax(baseName: .identifier(
+                    "XCTAssert"))), leftParen: .leftParenToken(), arguments: args,
+                rightParen: .rightParenToken()))
     }
 
     private static func buildArgList(
@@ -405,14 +389,10 @@ final class NoGuardInTests: StaticFormatRule<BasicRuleValue>, @unchecked Sendabl
         expression: ExprSyntax,
         assertionMessage: LabeledExprListSyntax?
     ) -> ExprSyntax {
-        ExprSyntax(
-            MacroExpansionExprSyntax(
-                pound: .poundToken(),
-                macroName: .identifier(name),
-                leftParen: .leftParenToken(),
-                arguments: buildArgList(expression: expression, assertionMessage: assertionMessage),
-                rightParen: .rightParenToken()
-            ))
+        ExprSyntax(MacroExpansionExprSyntax(
+            pound: .poundToken(), macroName: .identifier(name), leftParen: .leftParenToken(),
+            arguments: buildArgList(expression: expression, assertionMessage: assertionMessage),
+            rightParen: .rightParenToken()))
     }
 
     private static func buildFunctionCall(
@@ -420,13 +400,11 @@ final class NoGuardInTests: StaticFormatRule<BasicRuleValue>, @unchecked Sendabl
         expression: ExprSyntax,
         assertionMessage: LabeledExprListSyntax?
     ) -> ExprSyntax {
-        ExprSyntax(
-            FunctionCallExprSyntax(
-                calledExpression: ExprSyntax(DeclReferenceExprSyntax(baseName: .identifier(name))),
-                leftParen: .leftParenToken(),
-                arguments: buildArgList(expression: expression, assertionMessage: assertionMessage),
-                rightParen: .rightParenToken()
-            ))
+        ExprSyntax(FunctionCallExprSyntax(
+            calledExpression: ExprSyntax(DeclReferenceExprSyntax(baseName: .identifier(name))),
+            leftParen: .leftParenToken(),
+            arguments: buildArgList(expression: expression, assertionMessage: assertionMessage),
+            rightParen: .rightParenToken()))
     }
 
     // MARK: - Helpers

@@ -64,11 +64,9 @@ final class DropRedundantAccessControl: StaticFormatRule<BasicRuleValue>, @unche
         parent _: Syntax?,
         context: Context
     ) -> DeclSyntax {
-        DeclSyntax(
-            removePublicFromMembers(
-                of: removeRedundantInternal(node, keyword: \.actorKeyword, context: context),
-                context: context
-            ))
+        DeclSyntax(removePublicFromMembers(
+            of: removeRedundantInternal(node, keyword: \.actorKeyword, context: context),
+            context: context))
     }
 
     static func transform(
@@ -77,11 +75,9 @@ final class DropRedundantAccessControl: StaticFormatRule<BasicRuleValue>, @unche
         parent _: Syntax?,
         context: Context
     ) -> DeclSyntax {
-        DeclSyntax(
-            removePublicFromMembers(
-                of: removeRedundantInternal(node, keyword: \.classKeyword, context: context),
-                context: context
-            ))
+        DeclSyntax(removePublicFromMembers(
+            of: removeRedundantInternal(node, keyword: \.classKeyword, context: context),
+            context: context))
     }
 
     static func transform(
@@ -90,11 +86,9 @@ final class DropRedundantAccessControl: StaticFormatRule<BasicRuleValue>, @unche
         parent _: Syntax?,
         context: Context
     ) -> DeclSyntax {
-        DeclSyntax(
-            removePublicFromMembers(
-                of: removeRedundantInternal(node, keyword: \.enumKeyword, context: context),
-                context: context
-            ))
+        DeclSyntax(removePublicFromMembers(
+            of: removeRedundantInternal(node, keyword: \.enumKeyword, context: context),
+            context: context))
     }
 
     static func transform(
@@ -130,11 +124,9 @@ final class DropRedundantAccessControl: StaticFormatRule<BasicRuleValue>, @unche
         parent _: Syntax?,
         context: Context
     ) -> DeclSyntax {
-        DeclSyntax(
-            removePublicFromMembers(
-                of: removeRedundantInternal(node, keyword: \.structKeyword, context: context),
-                context: context
-            ))
+        DeclSyntax(removePublicFromMembers(
+            of: removeRedundantInternal(node, keyword: \.structKeyword, context: context),
+            context: context))
     }
 
     static func transform(
@@ -171,9 +163,8 @@ final class DropRedundantAccessControl: StaticFormatRule<BasicRuleValue>, @unche
         context: Context
     ) -> DeclSyntax {
         guard let extensionModifier = node.modifiers.accessLevelModifier,
-              case let .keyword(extensionKeyword) = extensionModifier.name.tokenKind else {
-            return DeclSyntax(node)
-        }
+              case let .keyword(extensionKeyword) = extensionModifier.name.tokenKind
+        else { return DeclSyntax(node) }
         let message: Finding.Message = .removeRedundantExtensionACL(
             keyword: extensionModifier.name.text)
 
@@ -208,10 +199,7 @@ final class DropRedundantAccessControl: StaticFormatRule<BasicRuleValue>, @unche
     >(of decl: Decl, context: Context) -> Decl {
         if let accessModifier = decl.modifiers.accessLevelModifier,
            case let .keyword(keyword) = accessModifier.name.tokenKind,
-           keyword == .public || keyword == .package
-        {
-            return decl
-        }
+           keyword == .public || keyword == .package { return decl }
         return rewriteMemberBlock(of: decl) { member in
             removeMatchingAccessControl(
                 from: member, matching: .public,
@@ -390,9 +378,7 @@ final class DropRedundantAccessControl: StaticFormatRule<BasicRuleValue>, @unche
 
                 if let nested = decl.as(IfConfigDeclSyntax.self) {
                     if ifConfigHasNestedTypes(nested) { return true }
-                } else if declHasNestedTypes(decl) {
-                    return true
-                }
+                } else if declHasNestedTypes(decl) { return true }
             }
         }
         return false

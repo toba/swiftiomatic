@@ -139,16 +139,10 @@ struct JSON5Scanner {
                 try lexer.advance()
             }
 
-            members.append(
-                Member(
-                    key: keyName,
-                    keyRange: keyRange,
-                    valueRange: valueStart..<valueEnd,
-                    trailingComma: trailingComma,
-                    fullRange: memberLineStart..<endOfMember,
-                    indent: indent,
-                    nested: nested
-                ))
+            members.append(Member(
+                key: keyName, keyRange: keyRange, valueRange: valueStart..<valueEnd,
+                trailingComma: trailingComma, fullRange: memberLineStart..<endOfMember,
+                indent: indent, nested: nested))
 
             lexer.skipInsignificant()
         }
@@ -576,8 +570,7 @@ extension JSON5Scanner {
                      "\u{2029}",
                      "\u{202F}",
                      "\u{205F}",
-                     "\u{3000}":
-                    true
+                     "\u{3000}": true
                 default:
                     if let s = c.unicodeScalars.first, s.value >= 0x2000, s.value <= 0x200A {
                         true

@@ -30,6 +30,7 @@ final class NoLiteralProtocolDirectInit: LintSyntaxRule<LintOnlyValue>, @uncheck
     /// `Foo.init(...)` shapes.
     private func functionName(of expression: ExprSyntax) -> String? {
         if let ref = expression.as(DeclReferenceExprSyntax.self) { return ref.baseName.text }
+
         if let memberAccess = expression.as(MemberAccessExprSyntax.self),
            let base = memberAccess.base?.as(DeclReferenceExprSyntax.self),
            memberAccess.declName.baseName.text == "init"

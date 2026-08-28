@@ -31,7 +31,8 @@ extension StringProtocol {
             let prev = index(before: end)
             let ch = self[prev]
             guard ch == " " || ch == "\n" || ch == "\t" || ch == "\r"
-                || ch == "\u{0B}" || ch == "\u{0C}" else { break }
+                || ch == "\u{0B}" || ch == "\u{0C}"
+            else { break }
             end = prev
         }
         return end == startIndex ? String() : String(self[..<end])
@@ -49,8 +50,7 @@ extension UTF8.CodeUnit {
                  UInt8(ascii: "\t"),
                  UInt8(ascii: "\r"), /*VT*/
                  0x0B, /*FF*/
-                 0x0C:
-                true
+                 0x0C: true
             default: false
         }
     }
@@ -85,9 +85,9 @@ struct Comment: Sendable {
     var length: Int
     // what was the leading indentation, if any, that preceded this comment?
     var leadingIndent: Indent?
-    // A regular `//` comment that directly follows a `///` doc comment is indented one
-    // extra space so its body aligns with the doc comment body (whose `///` prefix is one
-    // character wider than `//`).
+    // A regular `//` comment that directly follows a `///` doc comment is indented one extra space
+    // so its body aligns with the doc comment body (whose `///` prefix is one character wider than
+    // `//`).
     var alignsWithPrecedingDocLine = false
 
     init(kind: Kind, leadingIndent: Indent?, text: String) {
@@ -122,6 +122,7 @@ struct Comment: Sendable {
             case .line, .docLine:
                 let separator = "\n" + indent.indentation() + kind.prefix
                 var lines = text.map { $0.trimmingTrailingWhitespace() }
+
                 if alignsWithPrecedingDocLine {
                     // Indent the body one extra space so it aligns with the `///` body. A standard
                     // `// ` body has a single leading space; bump it to two. Lines that already
@@ -140,6 +141,7 @@ struct Comment: Sendable {
                     let hasLeading = rest.allSatisfy {
                         $0.hasPrefix(leadingIndent.text) || $0.isEmpty
                     }
+
                     if hasLeading, let first = text.first, !rest.isEmpty {
                         let indentation = indent.indentation()
                         let restStr = rest.map {

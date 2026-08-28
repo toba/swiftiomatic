@@ -23,8 +23,8 @@ final class UseToggle: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
     ) -> ExprSyntax {
         let infix = node
         guard infix.operator.is(AssignmentExprSyntax.self),
-              let prefix = infix.rightOperand.as(PrefixOperatorExprSyntax.self),
-              prefix.operator.text == "!" else { return ExprSyntax(infix) }
+            let prefix = infix.rightOperand.as(PrefixOperatorExprSyntax.self),
+            prefix.operator.text == "!" else { return ExprSyntax(infix) }
 
         let lhsText = infix.leftOperand.trimmedDescription
         let rhsInner = prefix.expression.trimmedDescription

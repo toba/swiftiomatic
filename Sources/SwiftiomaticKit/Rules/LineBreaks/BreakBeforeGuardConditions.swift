@@ -27,12 +27,11 @@ extension TokenStream {
         // When `lineBreakBeforeGuardConditions` is false, skip the first condition (like
         // if-statements) so it stays on the same line as `guard` . The +6 alignment under the first
         // condition only makes sense when the first condition stays on the `guard` line (i.e.,
-        // `breakBeforeGuardConditions` is false). When conditions are expected to wrap below `guard` ,
-        // fall back to the normal continuation indent.
-        // When the first condition is a member-access chain and stays inline (breakBefore=false),
-        // the chain's contextual breaks fire at continuation indent (+4). Using alignment(+6) for
-        // subsequent conditions would create a mismatch. Fall back to continuation so all wrapped
-        // lines use the same indent.
+        // `breakBeforeGuardConditions` is false). When conditions are expected to wrap below
+        // `guard` , fall back to the normal continuation indent. When the first condition is a
+        // member-access chain and stays inline (breakBefore=false), the chain's contextual breaks
+        // fire at continuation indent (+4). Using alignment(+6) for subsequent conditions would
+        // create a mismatch. Fall back to continuation so all wrapped lines use the same indent.
         let firstConditionIsChain = !config[BreakBeforeGuardConditions.self]
             && node.conditions.first.map { conditionContainsMemberChain($0) } == true
         let guardBreakKind: OpenBreakKind = config[AlignWrappedConditions.self]
@@ -50,10 +49,7 @@ extension TokenStream {
             // indentation (same precedence principle as assignment `=` breaks).
             if i == 0,
                case let .expression(expr) = condition.condition,
-               shouldApplyBreakPrecedence(expr)
-            {
-                continue
-            }
+               shouldApplyBreakPrecedence(expr) { continue }
 
             before(
                 condition.firstToken(viewMode: .sourceAccurate),
@@ -97,14 +93,13 @@ extension TokenStream {
             after(node.body.rightBrace, tokens: .close)
         } else {
             // Place the break-before-else INSIDE the consistent conditions group so that whenever
-            // any inner condition wraps (firing the consistent group's force-break), this break also
-            // fires and pushes `else` onto its own line at base indent. When conditions all fit
-            // inline, the group never fires and the elective break stays glued.
+            // any inner condition wraps (firing the consistent group's force-break), this break
+            // also fires and pushes `else` onto its own line at base indent. When conditions all
+            // fit inline, the group never fires and the elective break stays glued.
             //
-            // Token order before `elseKeyword` for the multi-condition path:
-            //   .break(.same)  ← inside consistent group, fires when group breaks
-            //   .close         ← closes consistent group
-            //   .open          ← opens else group
+            // Token order before `elseKeyword` for the multi-condition path: .break(.same) ← inside
+            // consistent group, fires when group breaks .close ← closes consistent group .open ←
+            // opens else group
             if node.conditions.count > 1 {
                 before(
                     node.elseKeyword,

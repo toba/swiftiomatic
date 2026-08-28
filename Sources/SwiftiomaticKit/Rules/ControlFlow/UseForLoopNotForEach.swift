@@ -41,8 +41,8 @@ final class UseForLoopNotForEach: LintSyntaxRule<LintOnlyValue>, @unchecked Send
         // `try`/`throw` in the closure body cannot be `Sequence.forEach` — it must be a
         // distinct unconditionally-throwing method, and `for x in receiver` would not compile.
         if node.parent?.is(TryExprSyntax.self) == true,
-            let closure = node.trailingClosure,
-            !ClosureThrowScanner.containsTryOrThrow(closure)
+           let closure = node.trailingClosure,
+           !ClosureThrowScanner.containsTryOrThrow(closure)
         {
             return .visitChildren
         }
@@ -52,9 +52,9 @@ final class UseForLoopNotForEach: LintSyntaxRule<LintOnlyValue>, @unchecked Send
     }
 }
 
-/// Walks a closure body looking for any `try`/`throw` token. Descends into nested
-/// closures and functions — any throwing site anywhere makes the call ambiguous
-/// (could be `Sequence.forEach` rethrowing), so the rule should still fire.
+/// Walks a closure body looking for any `try`/`throw` token. Descends into nested closures and
+/// functions — any throwing site anywhere makes the call ambiguous (could be `Sequence.forEach`
+/// rethrowing), so the rule should still fire.
 private final class ClosureThrowScanner: SyntaxVisitor {
     var found = false
 
@@ -64,12 +64,12 @@ private final class ClosureThrowScanner: SyntaxVisitor {
         return scanner.found
     }
 
-    override func visit(_ node: TryExprSyntax) -> SyntaxVisitorContinueKind {
+    override func visit(_: TryExprSyntax) -> SyntaxVisitorContinueKind {
         found = true
         return .skipChildren
     }
 
-    override func visit(_ node: ThrowStmtSyntax) -> SyntaxVisitorContinueKind {
+    override func visit(_: ThrowStmtSyntax) -> SyntaxVisitorContinueKind {
         found = true
         return .skipChildren
     }

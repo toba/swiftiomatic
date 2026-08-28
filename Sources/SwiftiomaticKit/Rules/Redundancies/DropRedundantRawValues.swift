@@ -41,9 +41,8 @@ final class DropRedundantRawValues: StaticFormatRule<BasicRuleValue>, @unchecked
         for (index, element) in elements.enumerated() {
             guard let rawValue = element.rawValue,
                   let stringLiteral = rawValue.value.as(StringLiteralExprSyntax.self),
-                  isSimpleStringLiteral(stringLiteral, matching: element.name.text) else {
-                continue
-            }
+                  isSimpleStringLiteral(stringLiteral, matching: element.name.text)
+            else { continue }
 
             Self.diagnose(
                 .removeRedundantRawValue(name: element.name.text), on: rawValue, context: context)
@@ -95,9 +94,8 @@ final class DropRedundantRawValues: StaticFormatRule<BasicRuleValue>, @unchecked
     ) -> Bool {
         // Must be a simple string with exactly one segment and no interpolation.
         guard literal.segments.count == 1,
-              let segment = literal.segments.first?.as(StringSegmentSyntax.self) else {
-            return false
-        }
+              let segment = literal.segments.first?.as(StringSegmentSyntax.self)
+        else { return false }
         return segment.content.text == text
     }
 }

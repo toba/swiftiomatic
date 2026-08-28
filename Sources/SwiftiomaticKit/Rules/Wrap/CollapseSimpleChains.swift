@@ -38,10 +38,11 @@ final class CollapseSimpleChains: StaticFormatRule<BasicRuleValue>, @unchecked S
 
         let periodIDs = Set(wrappedPeriods.map(\.id))
 
-        // Bail if any trivia in the chain contains comments or unexpected inner newlines.
-        // Also bail if the first token has a leading newline — its column would be wrong for
-        // the line-length check (e.g. `let x =\n    foo\n    .bar()`).
+        // Bail if any trivia in the chain contains comments or unexpected inner newlines. Also bail
+        // if the first token has a leading newline — its column would be wrong for the line-length
+        // check (e.g. `let x =\n    foo\n    .bar()`).
         var isFirst = true
+
         for token in ExprSyntax(node).tokens(viewMode: .sourceAccurate) {
             let leading = token.leadingTrivia
             let trailing = token.trailingTrivia
@@ -65,8 +66,8 @@ final class CollapseSimpleChains: StaticFormatRule<BasicRuleValue>, @unchecked S
 
 // MARK: - Chain Walking
 
-extension CollapseSimpleChains {
-    fileprivate static func collectPeriods(_ expr: ExprSyntax, into periods: inout [TokenSyntax]) {
+fileprivate extension CollapseSimpleChains {
+    static func collectPeriods(_ expr: ExprSyntax, into periods: inout [TokenSyntax]) {
         if let call = expr.as(FunctionCallExprSyntax.self) {
             collectPeriods(call.calledExpression, into: &periods)
         } else if let sub = expr.as(SubscriptCallExprSyntax.self) {
@@ -81,20 +82,21 @@ extension CollapseSimpleChains {
         }
     }
 
-    fileprivate static func isInnerChainCall(_ expr: ExprSyntax) -> Bool {
+    static func isInnerChainCall(_ expr: ExprSyntax) -> Bool {
         guard let parent = expr.parent else { return false }
-        // If the parent is MemberAccessExpr the chain extends above this call — bail
-        // so we don't partially collapse and leave a dangling member on the next line.
+        // If the parent is MemberAccessExpr the chain extends above this call — bail so we don't
+        // partially collapse and leave a dangling member on the next line.
         if parent.as(MemberAccessExprSyntax.self) != nil { return true }
         return parent.as(OptionalChainingExprSyntax.self) != nil
             || parent.as(ForceUnwrapExprSyntax.self) != nil
     }
 
-    fileprivate static func collapsedLength(
+    static func collapsedLength(
         of expr: ExprSyntax,
         strippingPeriods periodIDs: Set<SyntaxIdentifier>
     ) -> Int {
         var length = 0
+
         for token in expr.tokens(viewMode: .sourceAccurate) {
             let leadingLen = periodIDs.contains(token.id)
                 ? 0

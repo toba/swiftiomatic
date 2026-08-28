@@ -25,10 +25,7 @@ final class UseMainAttributeNotMainFunc: StaticFormatRule<BasicRuleValue>, @unch
 
         Self.diagnose(.useMainAttribute(replacing: name), on: node.atSign, context: context)
 
-        let newIdent = identType.with(
-            \.name,
-            identType.name.with(\.tokenKind, .identifier("main"))
-        )
+        let newIdent = identType.with(\.name, identType.name.with(\.tokenKind, .identifier("main")))
         return node.with(\.attributeName, TypeSyntax(newIdent))
     }
 }

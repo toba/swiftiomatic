@@ -39,14 +39,16 @@ func rewriteToken(
     // 2. FormatSpecialComments — ported. Normalizes TODO/MARK/FIXME comment formatting in leading
     //    and trailing trivia.
     if context.shouldRewrite(FormatSpecialComments.self, at: Syntax(result)) {
-        result = FormatSpecialComments.transform(result, original: node, parent: parent, context: context)
+        result = FormatSpecialComments.transform(
+            result, original: node, parent: parent, context: context)
     }
 
-    // 3. BreakBeforeLeadingDot — ported. Uses a typed property on `Context` to thread pending trivia
-    //    between adjacent token visits. The static transform already handles the state plumbing
-    //    correctly.
+    // 3. BreakBeforeLeadingDot — ported. Uses a typed property on `Context` to thread pending
+    //    trivia between adjacent token visits. The static transform already handles the state
+    //    plumbing correctly.
     if context.shouldRewrite(BreakBeforeLeadingDot.self, at: Syntax(result)) {
-        result = BreakBeforeLeadingDot.transform(result, original: node, parent: parent, context: context)
+        result = BreakBeforeLeadingDot.transform(
+            result, original: node, parent: parent, context: context)
     }
 
     // 4. NestedCallLayout — NOT a token-level rewrite. The rule's `visit` overrides target
@@ -59,7 +61,8 @@ func rewriteToken(
     // 5. DropRedundantBackticks — ported. Strips redundant backticks from identifier tokens. Uses
     //    captured pre-recursion parent for context analysis (member access, argument label, etc.).
     if context.shouldRewrite(DropRedundantBackticks.self, at: Syntax(result)) {
-        result = DropRedundantBackticks.transform(result, original: node, parent: parent, context: context)
+        result = DropRedundantBackticks.transform(
+            result, original: node, parent: parent, context: context)
     }
 
     // 5a. ReflowComments — inlined (no `static func transform` ). Reflows contiguous `//` and `///`
@@ -68,9 +71,9 @@ func rewriteToken(
         result = ReflowComments.reflow(result, context: context)
     }
 
-    // 6. UppercaseAcronymsInIdentifiers — inlined (no `static func transform` ). Replaces titlecased acronyms (
-    //    `Url` , `Json` ) with fully uppercased forms ( `URL` , `JSON` ) inside identifier tokens.
-    //    Pulls the configurable word list from `AcronymsConfiguration` .
+    // 6. UppercaseAcronymsInIdentifiers — inlined (no `static func transform` ). Replaces
+    //    titlecased acronyms ( `Url` , `Json` ) with fully uppercased forms ( `URL` , `JSON` )
+    //    inside identifier tokens. Pulls the configurable word list from `AcronymsConfiguration` .
     if context.shouldRewrite(UppercaseAcronymsInIdentifiers.self, at: Syntax(result)) {
         result = applyUppercaseAcronyms(result, context: context)
     }
@@ -78,8 +81,8 @@ func rewriteToken(
     // 7. WrapMultilineFunctionChains — NOT a token-level rewrite; the rule operates on
     //    `FunctionCallExprSyntax` (see
     //    `Rewrites/Exprs/FunctionCallExpr.swift::applyWrapMultilineFunctionChains` ).
-    // 8. BreakBeforeMultilineBrace — NOT a token-level rewrite. The rule's `visit` overrides
-    //    target many statement / decl nodes (IfExprSyntax, GuardStmtSyntax, FunctionDeclSyntax,
+    // 8. BreakBeforeMultilineBrace — NOT a token-level rewrite. The rule's `visit` overrides target
+    //    many statement / decl nodes (IfExprSyntax, GuardStmtSyntax, FunctionDeclSyntax,
     //    ClassDeclSyntax, …). The private `TokenStripper` is an internal helper. No-op here; the
     //    structural merges happen in Phase 4c/4d/4e.
     _ = context.shouldRewrite(BreakBeforeMultilineBrace.self, at: Syntax(result))
@@ -89,7 +92,8 @@ func rewriteToken(
     //    normalized prefixes, matching the legacy pipeline's alphabetical ordering coincidence (
     //    `Format…` < `Wrap…` ).
     if context.shouldRewrite(WrapSingleLineComments.self, at: Syntax(result)) {
-        result = WrapSingleLineComments.transform(result, original: node, parent: parent, context: context)
+        result = WrapSingleLineComments.transform(
+            result, original: node, parent: parent, context: context)
     }
 
     return result

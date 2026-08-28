@@ -146,8 +146,8 @@ package struct Configuration: Sendable, Equatable {
 
     private static let settingEntries: [SettingEntry] = LayoutRegistry.all.map { entry(for: $0) }
 
-    private static let settingsByKey: [String: SettingEntry] = Dictionary(uniqueKeysWithValues:
-            settingEntries.map { ($0.key, $0) })
+    private static let settingsByKey: [String: SettingEntry] = Dictionary(
+        uniqueKeysWithValues: settingEntries.map { ($0.key, $0) })
 
     private static let settingKeyNames: Set<String> = {
         // Only include setting keys that don't collide with group names, so group keys still fall
@@ -207,8 +207,8 @@ package struct Configuration: Sendable, Equatable {
         ruleEntry(for: $0)
     }
 
-    private static let rulesByKey: [String: RuleEntry] = Dictionary(uniqueKeysWithValues:
-            ruleEntries.map { ($0.qualifiedKey, $0) })
+    private static let rulesByKey: [String: RuleEntry] = Dictionary(
+        uniqueKeysWithValues: ruleEntries.map { ($0.qualifiedKey, $0) })
 
     // MARK: - Rule key metadata (for `sm update`)
 

@@ -32,15 +32,13 @@ final class MarkInitCoderUnavailable: StaticFormatRule<BasicRuleValue>, @uncheck
             atSign: .atSignToken(),
             attributeName: IdentifierTypeSyntax(name: .identifier("available")),
             leftParen: .leftParenToken(),
-            arguments: .availability(
-                AvailabilityArgumentListSyntax([
-                    AvailabilityArgumentSyntax(
-                        argument: .token(.binaryOperator("*")),
-                        trailingComma: .commaToken(trailingTrivia: .space)
-                    ),
-                    AvailabilityArgumentSyntax(argument: .token(.keyword(.unavailable))),
-                ])
-            ),
+            arguments: .availability(AvailabilityArgumentListSyntax([
+                AvailabilityArgumentSyntax(
+                    argument: .token(.binaryOperator("*")),
+                    trailingComma: .commaToken(trailingTrivia: .space)
+                ),
+                AvailabilityArgumentSyntax(argument: .token(.keyword(.unavailable))),
+            ])),
             rightParen: .rightParenToken()
         )
 
@@ -67,15 +65,15 @@ final class MarkInitCoderUnavailable: StaticFormatRule<BasicRuleValue>, @uncheck
     /// `fatalError(...)` .
     private static func isCoderInitStub(_ node: InitializerDeclSyntax) -> Bool {
         // Must have `required` modifier.
-        guard node.modifiers.contains(where: {
-            $0.name.tokenKind == .keyword(.required)
-        }) else { return false }
+        guard node.modifiers.contains(where: { $0.name.tokenKind == .keyword(.required) }) else {
+            return false
+        }
 
         // Must have exactly one parameter with type NSCoder.
         let params = node.signature.parameterClause.parameters
         guard params.count == 1, let param = params.first else { return false }
         guard let type = param.type.as(IdentifierTypeSyntax.self),
-              type.name.text == "NSCoder" else { return false }
+            type.name.text == "NSCoder" else { return false }
 
         // Body must have exactly one statement that calls fatalError.
         guard let body = node.body,
@@ -84,11 +82,8 @@ final class MarkInitCoderUnavailable: StaticFormatRule<BasicRuleValue>, @uncheck
 
         // The statement must be a fatalError call.
         if let funcCall = statement.item.as(FunctionCallExprSyntax.self),
-           let callee = funcCall.calledExpression.as(DeclReferenceExprSyntax.self),
-           callee.baseName.text == "fatalError"
-        {
-            return true
-        }
+            let callee = funcCall.calledExpression.as(DeclReferenceExprSyntax.self),
+            callee.baseName.text == "fatalError" { return true }
 
         return false
     }

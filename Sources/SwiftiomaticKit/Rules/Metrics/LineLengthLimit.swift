@@ -90,7 +90,5 @@ package struct LineLengthLimitConfiguration: ThresholdRuleValue {
         if let v = try c.decodeIfPresent(Bool.self, forKey: .ignoresURLs) { ignoresURLs = v }
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case enabled, warning, error, ignoresURLs
-    }
+    private enum CodingKeys: String, CodingKey { case enabled, warning, error, ignoresURLs }
 }

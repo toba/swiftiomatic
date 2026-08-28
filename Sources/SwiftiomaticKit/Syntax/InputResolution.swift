@@ -18,8 +18,6 @@ public enum ResolvedInput: Equatable, Sendable {
 ///   pipelines like `cat MyFile.swift | sm lint` keep working.
 public func resolveInputs(rawPaths: [String], stdinIsTTY: Bool) -> ResolvedInput {
     if rawPaths == ["-"] { return .stdin }
-    if rawPaths.isEmpty {
-        return stdinIsTTY ? .urls([URL(fileURLWithPath: ".")]) : .stdin
-    }
+    if rawPaths.isEmpty { return stdinIsTTY ? .urls([URL(fileURLWithPath: ".")]) : .stdin }
     return .urls(rawPaths.map(URL.init(fileURLWithPath:)))
 }

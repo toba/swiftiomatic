@@ -17,7 +17,9 @@ import SwiftSyntax
 /// Lint: A warning is raised for `@Test` functions whose name does not match the configured style.
 ///
 /// Rewrite: The function name is rewritten to the configured style.
-final class UseSwiftTestingNames: StaticFormatRule<SwiftTestingNamesConfiguration>, @unchecked Sendable {
+final class UseSwiftTestingNames: StaticFormatRule<SwiftTestingNamesConfiguration>,
+    @unchecked Sendable
+{
     static let rewriteOrder = 910
 
     override class var group: ConfigurationGroup? { .testing }
@@ -51,7 +53,7 @@ final class UseSwiftTestingNames: StaticFormatRule<SwiftTestingNamesConfiguratio
 
         for stmt in node.statements {
             if let importDecl = stmt.item.as(ImportDeclSyntax.self),
-               importDecl.path.first?.name.text == "Testing" { state.importsTesting = true }
+                importDecl.path.first?.name.text == "Testing" { state.importsTesting = true }
         }
         for token in node.tokens(viewMode: .sourceAccurate) {
             if case let .identifier(name) = token.tokenKind { state.allIdentifiers.insert(name) }
@@ -68,8 +70,7 @@ final class UseSwiftTestingNames: StaticFormatRule<SwiftTestingNamesConfiguratio
     ) -> DeclSyntax {
         let state = context.swiftTestingTestCaseNamesState
         guard state.importsTesting,
-              node.hasAttribute("Test", inModule: "Testing")
-        else { return DeclSyntax(node) }
+              node.hasAttribute("Test", inModule: "Testing") else { return DeclSyntax(node) }
 
         guard case let .identifier(rawIdent) = node.name.tokenKind else { return DeclSyntax(node) }
 
@@ -121,10 +122,8 @@ final class UseSwiftTestingNames: StaticFormatRule<SwiftTestingNamesConfiguratio
 
         Self.diagnose(.removeTestPrefix(oldName: bareName), on: node.name, context: context)
 
-        return DeclSyntax(node.with(
-            \.name,
-            node.name.with(\.tokenKind, .identifier(newIdentifier))
-        ))
+        return DeclSyntax(node.with(\.name, node.name.with(\.tokenKind, .identifier(newIdentifier)))
+        )
     }
 
     // MARK: - Raw identifier (backtick name with spaces)
@@ -153,12 +152,11 @@ final class UseSwiftTestingNames: StaticFormatRule<SwiftTestingNamesConfiguratio
         let newIdentifier = "`\(phrase)`"
         guard newIdentifier != rawIdent else { return DeclSyntax(node) }
 
-        Self.diagnose(.useRawIdentifier(oldName: rawIdent, phrase: phrase), on: node.name, context: context)
+        Self.diagnose(
+            .useRawIdentifier(oldName: rawIdent, phrase: phrase), on: node.name, context: context)
 
-        return DeclSyntax(node.with(
-            \.name,
-            node.name.with(\.tokenKind, .identifier(newIdentifier))
-        ))
+        return DeclSyntax(node.with(\.name, node.name.with(\.tokenKind, .identifier(newIdentifier)))
+        )
     }
 
     /// Reports whether the `@Test` attribute on `node` names the test explicitly.
@@ -168,16 +166,15 @@ final class UseSwiftTestingNames: StaticFormatRule<SwiftTestingNamesConfiguratio
     /// display name.
     private static func hasDisplayName(_ node: FunctionDeclSyntax) -> Bool {
         guard let attribute = node.attributes.attribute(named: "Test"),
-              let arguments = attribute.arguments?.as(LabeledExprListSyntax.self),
-              let first = arguments.first,
-              first.label == nil
-        else { return false }
+            let arguments = attribute.arguments?.as(LabeledExprListSyntax.self),
+            let first = arguments.first,
+            first.label == nil else { return false }
         return first.expression.is(StringLiteralExprSyntax.self)
     }
 
     /// Splits a camelCase / PascalCase identifier into its constituent words, treating underscores
-    /// and letter↔digit transitions as boundaries and keeping acronym runs together
-    /// (`URLSession` → `["URL", "Session"]`).
+    /// and letter↔digit transitions as boundaries and keeping acronym runs together (`URLSession` →
+    /// `["URL", "Session"]`).
     private static func splitIdentifierWords(_ identifier: String) -> [String] {
         let chars = Array(identifier)
         var words: [String] = []
@@ -185,12 +182,16 @@ final class UseSwiftTestingNames: StaticFormatRule<SwiftTestingNamesConfiguratio
 
         for (i, c) in chars.enumerated() {
             if c == "_" {
-                if !current.isEmpty { words.append(current); current = "" }
+                if !current.isEmpty {
+                    words.append(current)
+                    current = ""
+                }
                 continue
             }
             let prev = i > 0 ? chars[i - 1] : nil
             let next = i + 1 < chars.count ? chars[i + 1] : nil
             let isBoundary: Bool
+
             if let prev {
                 if c.isUppercase, prev.isLowercase || prev.isNumber {
                     isBoundary = true
@@ -206,7 +207,10 @@ final class UseSwiftTestingNames: StaticFormatRule<SwiftTestingNamesConfiguratio
             } else {
                 isBoundary = false
             }
-            if isBoundary, !current.isEmpty { words.append(current); current = "" }
+            if isBoundary, !current.isEmpty {
+                words.append(current)
+                current = ""
+            }
             current.append(c)
         }
         if !current.isEmpty { words.append(current) }

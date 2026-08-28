@@ -65,12 +65,8 @@ final class DropRedundantCasePattern: StaticFormatRule<BasicRuleValue>, @uncheck
 
         Self.diagnose(.redundantPatternBinding, on: tuplePattern, context: context)
 
-        let wildcard = WildcardPatternSyntax(
-            wildcard: .wildcardToken(
-                leadingTrivia: tuplePattern.leadingTrivia,
-                trailingTrivia: tuplePattern.trailingTrivia
-            )
-        )
+        let wildcard = WildcardPatternSyntax(wildcard: .wildcardToken(
+            leadingTrivia: tuplePattern.leadingTrivia, trailingTrivia: tuplePattern.trailingTrivia))
 
         var newBinding = binding
         newBinding.pattern = PatternSyntax(wildcard)
@@ -161,10 +157,7 @@ final class DropRedundantCasePattern: StaticFormatRule<BasicRuleValue>, @uncheck
         if let patternExpr = expr.as(PatternExprSyntax.self) {
             if patternExpr.pattern.is(WildcardPatternSyntax.self) { return true }
             if let binding = patternExpr.pattern.as(ValueBindingPatternSyntax.self),
-               binding.pattern.is(WildcardPatternSyntax.self)
-            {
-                return true
-            }
+                binding.pattern.is(WildcardPatternSyntax.self) { return true }
         }
 
         return false
@@ -178,10 +171,7 @@ final class DropRedundantCasePattern: StaticFormatRule<BasicRuleValue>, @uncheck
         if let patternExpr = expr.as(PatternExprSyntax.self) {
             if patternExpr.pattern.is(WildcardPatternSyntax.self) { return true }
             if let binding = patternExpr.pattern.as(ValueBindingPatternSyntax.self),
-               binding.pattern.is(WildcardPatternSyntax.self)
-            {
-                return true
-            }
+                binding.pattern.is(WildcardPatternSyntax.self) { return true }
         }
         return false
     }
@@ -201,9 +191,7 @@ final class DropRedundantCasePattern: StaticFormatRule<BasicRuleValue>, @uncheck
     private static func stripArguments(from call: FunctionCallExprSyntax) -> ExprSyntax {
         var result = call.calledExpression
         // Transfer trailing trivia from the closing paren
-        if let rightParen = call.rightParen {
-            result.trailingTrivia = rightParen.trailingTrivia
-        }
+        if let rightParen = call.rightParen { result.trailingTrivia = rightParen.trailingTrivia }
         return result
     }
 }

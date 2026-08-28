@@ -17,9 +17,8 @@ final class UseFirstWhere: LintSyntaxRule<LintOnlyValue>, @unchecked Sendable {
               let call = node.base?.as(FunctionCallExprSyntax.self),
               let calledMember = call.calledExpression.as(MemberAccessExprSyntax.self),
               calledMember.declName.baseName.text == "filter",
-              !call.arguments.contains(where: { $0.expression.shouldSkipFilterShortCircuit }) else {
-            return .visitChildren
-        }
+              !call.arguments.contains(where: { $0.expression.shouldSkipFilterShortCircuit })
+        else { return .visitChildren }
         diagnose(.useFirstWhere, on: calledMember.declName)
         return .visitChildren
     }
@@ -36,8 +35,7 @@ fileprivate extension ExprSyntax {
     var shouldSkipFilterShortCircuit: Bool {
         if self.is(StringLiteralExprSyntax.self) { return true }
         if let call = self.as(FunctionCallExprSyntax.self),
-           call.calledExpression.as(DeclReferenceExprSyntax.self)?.baseName.text == "NSPredicate"
-        {
+           call.calledExpression.as(DeclReferenceExprSyntax.self)?.baseName.text == "NSPredicate" {
             return true
         }
         return false

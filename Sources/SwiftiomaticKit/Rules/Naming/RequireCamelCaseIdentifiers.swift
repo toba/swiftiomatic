@@ -167,8 +167,8 @@ final class RequireCamelCaseIdentifiers: LintSyntaxRule<LintOnlyValue>, @uncheck
                 // Identify test methods using the same heuristics as XCTest: name starts with
                 // "test", has no arguments, and returns a void type.
                 if functionDecl.name.text.starts(with: "test"),
-                   functionDecl.signature.parameterClause.parameters.isEmpty,
-                   functionDecl.signature.returnClause.map(\.isVoid) ?? true
+                    functionDecl.signature.parameterClause.parameters.isEmpty,
+                    functionDecl.signature.returnClause.map(\.isVoid) ?? true
                 {
                     set.insert(functionDecl)
                 }
@@ -177,8 +177,8 @@ final class RequireCamelCaseIdentifiers: LintSyntaxRule<LintOnlyValue>, @uncheck
     }
 
     /// Identifier prefixes whose `<prefix>_` form is exempt from the no-underscore rule. Anything
-    /// after the prefix must still be valid lowerCamelCase (non-empty, no further underscores,
-    /// no leading uppercase).
+    /// after the prefix must still be valid lowerCamelCase (non-empty, no further underscores, no
+    /// leading uppercase).
     private static let allowedUnderscorePrefixes = ["debug_", "unsafe_"]
 
     private func diagnoseLowerCamelCaseViolations(
@@ -190,6 +190,7 @@ final class RequireCamelCaseIdentifiers: LintSyntaxRule<LintOnlyValue>, @uncheck
         if text.isEmpty { return }
 
         let remainderToCheck: Substring
+
         if !allowUnderscores,
            let prefix = Self.allowedUnderscorePrefixes.first(where: { text.hasPrefix($0) })
         {
@@ -246,7 +247,5 @@ fileprivate extension Finding.Message {
     static func nameMustBeLowerCamelCase(
         _ name: String,
         description: String
-    ) -> Finding.Message {
-        "rename the \(description) '\(name)' using lowerCamelCase"
-    }
+    ) -> Finding.Message { "rename the \(description) '\(name)' using lowerCamelCase" }
 }

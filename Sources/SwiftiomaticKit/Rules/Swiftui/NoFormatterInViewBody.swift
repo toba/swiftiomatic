@@ -59,10 +59,7 @@ private final class FormatterInitCollector: SyntaxVisitor {
 
     override func visit(_ node: FunctionCallExprSyntax) -> SyntaxVisitorContinueKind {
         if let ident = node.calledExpression.as(DeclReferenceExprSyntax.self),
-           types.contains(ident.baseName.text)
-        {
-            matches.append((node, ident.baseName.text))
-        }
+            types.contains(ident.baseName.text) { matches.append((node, ident.baseName.text)) }
         return .visitChildren
     }
 }

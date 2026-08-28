@@ -22,12 +22,8 @@ final class KeepModifiersOnSameLine: StaticFormatRule<BasicRuleValue>, @unchecke
         parent _: Syntax?,
         context: Context
     ) -> DeclSyntax {
-        DeclSyntax(
-            collapseModifierLines(
-                of: node,
-                keywordKeyPath: \.classKeyword,
-                context: context
-            ))
+        DeclSyntax(collapseModifierLines(of: node, keywordKeyPath: \.classKeyword, context: context)
+        )
     }
 
     static func transform(
@@ -36,12 +32,8 @@ final class KeepModifiersOnSameLine: StaticFormatRule<BasicRuleValue>, @unchecke
         parent _: Syntax?,
         context: Context
     ) -> DeclSyntax {
-        DeclSyntax(
-            collapseModifierLines(
-                of: node,
-                keywordKeyPath: \.structKeyword,
-                context: context
-            ))
+        DeclSyntax(collapseModifierLines(
+            of: node, keywordKeyPath: \.structKeyword, context: context))
     }
 
     static func transform(
@@ -50,12 +42,7 @@ final class KeepModifiersOnSameLine: StaticFormatRule<BasicRuleValue>, @unchecke
         parent _: Syntax?,
         context: Context
     ) -> DeclSyntax {
-        DeclSyntax(
-            collapseModifierLines(
-                of: node,
-                keywordKeyPath: \.enumKeyword,
-                context: context
-            ))
+        DeclSyntax(collapseModifierLines(of: node, keywordKeyPath: \.enumKeyword, context: context))
     }
 
     static func transform(
@@ -64,12 +51,8 @@ final class KeepModifiersOnSameLine: StaticFormatRule<BasicRuleValue>, @unchecke
         parent _: Syntax?,
         context: Context
     ) -> DeclSyntax {
-        DeclSyntax(
-            collapseModifierLines(
-                of: node,
-                keywordKeyPath: \.actorKeyword,
-                context: context
-            ))
+        DeclSyntax(collapseModifierLines(of: node, keywordKeyPath: \.actorKeyword, context: context)
+        )
     }
 
     static func transform(
@@ -78,12 +61,8 @@ final class KeepModifiersOnSameLine: StaticFormatRule<BasicRuleValue>, @unchecke
         parent _: Syntax?,
         context: Context
     ) -> DeclSyntax {
-        DeclSyntax(
-            collapseModifierLines(
-                of: node,
-                keywordKeyPath: \.protocolKeyword,
-                context: context
-            ))
+        DeclSyntax(collapseModifierLines(
+            of: node, keywordKeyPath: \.protocolKeyword, context: context))
     }
 
     static func transform(
@@ -92,12 +71,8 @@ final class KeepModifiersOnSameLine: StaticFormatRule<BasicRuleValue>, @unchecke
         parent _: Syntax?,
         context: Context
     ) -> DeclSyntax {
-        DeclSyntax(
-            collapseModifierLines(
-                of: node,
-                keywordKeyPath: \.extensionKeyword,
-                context: context
-            ))
+        DeclSyntax(collapseModifierLines(
+            of: node, keywordKeyPath: \.extensionKeyword, context: context))
     }
 
     // MARK: - Leaf declarations
@@ -108,12 +83,7 @@ final class KeepModifiersOnSameLine: StaticFormatRule<BasicRuleValue>, @unchecke
         parent _: Syntax?,
         context: Context
     ) -> DeclSyntax {
-        DeclSyntax(
-            collapseModifierLines(
-                of: node,
-                keywordKeyPath: \.funcKeyword,
-                context: context
-            ))
+        DeclSyntax(collapseModifierLines(of: node, keywordKeyPath: \.funcKeyword, context: context))
     }
 
     static func transform(
@@ -122,12 +92,8 @@ final class KeepModifiersOnSameLine: StaticFormatRule<BasicRuleValue>, @unchecke
         parent _: Syntax?,
         context: Context
     ) -> DeclSyntax {
-        DeclSyntax(
-            collapseModifierLines(
-                of: node,
-                keywordKeyPath: \.bindingSpecifier,
-                context: context
-            ))
+        DeclSyntax(collapseModifierLines(
+            of: node, keywordKeyPath: \.bindingSpecifier, context: context))
     }
 
     static func transform(
@@ -136,12 +102,7 @@ final class KeepModifiersOnSameLine: StaticFormatRule<BasicRuleValue>, @unchecke
         parent _: Syntax?,
         context: Context
     ) -> DeclSyntax {
-        DeclSyntax(
-            collapseModifierLines(
-                of: node,
-                keywordKeyPath: \.initKeyword,
-                context: context
-            ))
+        DeclSyntax(collapseModifierLines(of: node, keywordKeyPath: \.initKeyword, context: context))
     }
 
     static func transform(
@@ -150,12 +111,8 @@ final class KeepModifiersOnSameLine: StaticFormatRule<BasicRuleValue>, @unchecke
         parent _: Syntax?,
         context: Context
     ) -> DeclSyntax {
-        DeclSyntax(
-            collapseModifierLines(
-                of: node,
-                keywordKeyPath: \.subscriptKeyword,
-                context: context
-            ))
+        DeclSyntax(collapseModifierLines(
+            of: node, keywordKeyPath: \.subscriptKeyword, context: context))
     }
 
     static func transform(
@@ -164,12 +121,8 @@ final class KeepModifiersOnSameLine: StaticFormatRule<BasicRuleValue>, @unchecke
         parent _: Syntax?,
         context: Context
     ) -> DeclSyntax {
-        DeclSyntax(
-            collapseModifierLines(
-                of: node,
-                keywordKeyPath: \.typealiasKeyword,
-                context: context
-            ))
+        DeclSyntax(collapseModifierLines(
+            of: node, keywordKeyPath: \.typealiasKeyword, context: context))
     }
 
     static func transform(
@@ -178,12 +131,7 @@ final class KeepModifiersOnSameLine: StaticFormatRule<BasicRuleValue>, @unchecke
         parent _: Syntax?,
         context: Context
     ) -> DeclSyntax {
-        DeclSyntax(
-            collapseModifierLines(
-                of: node,
-                keywordKeyPath: \.caseKeyword,
-                context: context
-            ))
+        DeclSyntax(collapseModifierLines(of: node, keywordKeyPath: \.caseKeyword, context: context))
     }
 
     static func transform(
@@ -192,12 +140,8 @@ final class KeepModifiersOnSameLine: StaticFormatRule<BasicRuleValue>, @unchecke
         parent _: Syntax?,
         context: Context
     ) -> DeclSyntax {
-        DeclSyntax(
-            collapseModifierLines(
-                of: node,
-                keywordKeyPath: \.importKeyword,
-                context: context
-            ))
+        DeclSyntax(collapseModifierLines(
+            of: node, keywordKeyPath: \.importKeyword, context: context))
     }
 
     static func transform(
@@ -206,12 +150,8 @@ final class KeepModifiersOnSameLine: StaticFormatRule<BasicRuleValue>, @unchecke
         parent _: Syntax?,
         context: Context
     ) -> DeclSyntax {
-        DeclSyntax(
-            collapseModifierLines(
-                of: node,
-                keywordKeyPath: \.deinitKeyword,
-                context: context
-            ))
+        DeclSyntax(collapseModifierLines(
+            of: node, keywordKeyPath: \.deinitKeyword, context: context))
     }
 
     static func transform(
@@ -220,12 +160,8 @@ final class KeepModifiersOnSameLine: StaticFormatRule<BasicRuleValue>, @unchecke
         parent _: Syntax?,
         context: Context
     ) -> DeclSyntax {
-        DeclSyntax(
-            collapseModifierLines(
-                of: node,
-                keywordKeyPath: \.associatedtypeKeyword,
-                context: context
-            ))
+        DeclSyntax(collapseModifierLines(
+            of: node, keywordKeyPath: \.associatedtypeKeyword, context: context))
     }
 
     // MARK: - Helper

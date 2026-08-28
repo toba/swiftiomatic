@@ -37,10 +37,7 @@ final class UseExplicitFalseInGuards: StaticFormatRule<BasicRuleValue>, @uncheck
 
         // Skip inner ! of double negation — use captured pre-traversal parent.
         if let parentPrefix = parent?.as(PrefixOperatorExprSyntax.self),
-           parentPrefix.operator.text == "!"
-        {
-            return ExprSyntax(node)
-        }
+           parentPrefix.operator.text == "!" { return ExprSyntax(node) }
 
         // Skip #if conditions — walk the captured parent chain.
         if Self.isInsideIfConfigCondition(parent: parent) { return ExprSyntax(node) }
@@ -56,20 +53,13 @@ final class UseExplicitFalseInGuards: StaticFormatRule<BasicRuleValue>, @uncheck
         operandExpr.leadingTrivia = node.leadingTrivia
         operandExpr.trailingTrivia = []
 
-        let binOp = BinaryOperatorExprSyntax(
-            operator: .binaryOperator(
-                "==",
-                leadingTrivia: .space,
-                trailingTrivia: .space
-            ))
+        let binOp = BinaryOperatorExprSyntax(operator: .binaryOperator(
+            "==", leadingTrivia: .space, trailingTrivia: .space))
         let falseExpr = BooleanLiteralExprSyntax(literal: .keyword(.false))
 
-        var result = ExprSyntax(
-            InfixOperatorExprSyntax(
-                leftOperand: operandExpr,
-                operator: ExprSyntax(binOp),
-                rightOperand: ExprSyntax(falseExpr)
-            ))
+        var result = ExprSyntax(InfixOperatorExprSyntax(
+            leftOperand: operandExpr, operator: ExprSyntax(binOp),
+            rightOperand: ExprSyntax(falseExpr)))
         result.trailingTrivia = savedTrailingTrivia
         return result
     }
@@ -87,10 +77,7 @@ final class UseExplicitFalseInGuards: StaticFormatRule<BasicRuleValue>, @uncheck
             if let ifConfig = p.as(IfConfigClauseSyntax.self) {
                 if let condition = ifConfig.condition,
                    let prev,
-                   condition.id == prev.id || condition.id == prev.id
-                {
-                    return true
-                }
+                   condition.id == prev.id || condition.id == prev.id { return true }
                 // Even if `prev` isn't directly the condition, a PrefixOperatorExpr appearing below
                 // an IfConfigClause is necessarily within its condition.
                 return true
@@ -116,5 +103,6 @@ final class UseExplicitFalseInGuards: StaticFormatRule<BasicRuleValue>, @uncheck
 }
 
 fileprivate extension Finding.Message {
-    static let useExplicitFalseInGuards: Finding.Message = "prefer '== false' over '!' prefix negation"
+    static let useExplicitFalseInGuards: Finding.Message =
+        "prefer '== false' over '!' prefix negation"
 }

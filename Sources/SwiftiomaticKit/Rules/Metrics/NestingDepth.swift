@@ -16,10 +16,7 @@ final class NestingDepth: LintSyntaxRule<NestingDepthConfiguration>, @unchecked 
         typeDepth += 1
 
         if typeDepth > ruleConfig.typeLevel {
-            diagnose(
-                .typeNestedTooDeep(depth: typeDepth, limit: ruleConfig.typeLevel),
-                on: anchor
-            )
+            diagnose(.typeNestedTooDeep(depth: typeDepth, limit: ruleConfig.typeLevel), on: anchor)
         }
     }
 
@@ -30,10 +27,7 @@ final class NestingDepth: LintSyntaxRule<NestingDepthConfiguration>, @unchecked 
 
         if functionDepth > ruleConfig.functionLevel {
             diagnose(
-                .functionNestedTooDeep(
-                    depth: functionDepth,
-                    limit: ruleConfig.functionLevel
-                ),
+                .functionNestedTooDeep(depth: functionDepth, limit: ruleConfig.functionLevel),
                 on: anchor
             )
         }
@@ -128,7 +122,5 @@ package struct NestingDepthConfiguration: SyntaxRuleValue {
         if let v = try c.decodeIfPresent(Int.self, forKey: .functionLevel) { functionLevel = v }
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case lint, typeLevel, functionLevel
-    }
+    private enum CodingKeys: String, CodingKey { case lint, typeLevel, functionLevel }
 }

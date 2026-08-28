@@ -16,10 +16,7 @@ final class FlagExpiringTodo: LintSyntaxRule<ExpiringTodoConfiguration>, @unchec
     private enum ExpiryLevel { case approaching, expired, badFormatting }
 
     override func visit(_ token: TokenSyntax) -> SyntaxVisitorContinueKind {
-        scan(
-            trivia: token.leadingTrivia,
-            baseOffset: token.position.utf8Offset
-        )
+        scan(trivia: token.leadingTrivia, baseOffset: token.position.utf8Offset)
         scan(
             trivia: token.trailingTrivia,
             baseOffset: token.endPositionBeforeTrailingTrivia.utf8Offset
@@ -42,15 +39,15 @@ final class FlagExpiringTodo: LintSyntaxRule<ExpiringTodoConfiguration>, @unchec
                 case let .lineComment(t),
                      let .blockComment(t),
                      let .docLineComment(t),
-                     let .docBlockComment(t):
-                    text = t
+                     let .docBlockComment(t): text = t
                 default: continue
             }
             let nsText = text as NSString
             let range = NSRange(location: 0, length: nsText.length)
 
             for match in regex.matches(in: text, options: [], range: range)
-            where match.numberOfRanges > 1 {
+                where match.numberOfRanges > 1
+            {
                 let dateRange = match.range(at: 1)
                 guard dateRange.location != NSNotFound else { continue }
 
@@ -61,10 +58,8 @@ final class FlagExpiringTodo: LintSyntaxRule<ExpiringTodoConfiguration>, @unchec
                       let severity = severity(for: level, config: config) else { continue }
 
                 let absolute = AbsolutePosition(utf8Offset: pieceOffset + dateRange.location)
-                let location = Finding.Location(
-                    context.sourceLocationConverter.location(
-                        for: absolute
-                    ))
+                let location = Finding.Location(context.sourceLocationConverter.location(
+                    for: absolute))
                 let category = SyntaxFindingCategory(ruleType: type(of: self))
                 let configured = context.severity(of: type(of: self))
                 guard configured.isActive else { return }

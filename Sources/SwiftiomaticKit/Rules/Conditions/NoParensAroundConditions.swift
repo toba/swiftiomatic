@@ -76,8 +76,9 @@ final class NoParensAroundConditions: StaticFormatRule<BasicRuleValue>, @uncheck
         parent _: Syntax?,
         context: Context
     ) -> InitializerClauseSyntax {
-        guard let stripped = minimalSingleExpression(node.value, context: context)
-        else { return node }
+        guard let stripped = minimalSingleExpression(node.value, context: context) else {
+            return node
+        }
         var result = node
         result.value = stripped
         return result
@@ -89,8 +90,9 @@ final class NoParensAroundConditions: StaticFormatRule<BasicRuleValue>, @uncheck
         parent _: Syntax?,
         context: Context
     ) -> SwitchExprSyntax {
-        guard let stripped = minimalSingleExpression(node.subject, context: context)
-        else { return node }
+        guard let stripped = minimalSingleExpression(node.subject, context: context) else {
+            return node
+        }
         var result = node
         result.subject = stripped
         fixKeywordTrailingTrivia(&result.switchKeyword.trailingTrivia)
@@ -103,8 +105,9 @@ final class NoParensAroundConditions: StaticFormatRule<BasicRuleValue>, @uncheck
         parent _: Syntax?,
         context: Context
     ) -> RepeatStmtSyntax {
-        guard let stripped = minimalSingleExpression(node.condition, context: context)
-        else { return node }
+        guard let stripped = minimalSingleExpression(node.condition, context: context) else {
+            return node
+        }
         var result = node
         result.condition = stripped
         fixKeywordTrailingTrivia(&result.whileKeyword.trailingTrivia)

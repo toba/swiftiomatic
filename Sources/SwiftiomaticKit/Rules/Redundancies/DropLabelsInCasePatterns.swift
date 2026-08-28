@@ -36,7 +36,8 @@ final class DropLabelsInCasePatterns: StaticFormatRule<BasicRuleValue>, @uncheck
 
         for item in node.caseItems {
             guard var exprPattern = item.pattern.as(ExpressionPatternSyntax.self),
-                  var funcCall = exprPattern.expression.as(FunctionCallExprSyntax.self) else {
+                var funcCall = exprPattern.expression.as(FunctionCallExprSyntax.self)
+            else {
                 newCaseItems.append(item)
                 continue
             }

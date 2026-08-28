@@ -29,9 +29,7 @@ final class HoistAwait: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
         if isWrappedInAwait(parent: parent) { return ExprSyntax(callNode) }
 
         // Find the first await in arguments
-        guard findFirstAwaitInArguments(callNode) != nil else {
-            return ExprSyntax(callNode)
-        }
+        guard findFirstAwaitInArguments(callNode) != nil else { return ExprSyntax(callNode) }
 
         // Anchor the finding on `original` , which still sits in the source file and reports the
         // real position. An `await` that `original` does not carry comes from an inner hoist in
@@ -89,10 +87,7 @@ final class HoistAwait: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
         for arg in call.arguments {
             if let awaitExpr = arg.expression.as(AwaitExprSyntax.self) { return awaitExpr }
             if let tryExpr = arg.expression.as(TryExprSyntax.self),
-               let awaitExpr = tryExpr.expression.as(AwaitExprSyntax.self)
-            {
-                return awaitExpr
-            }
+                let awaitExpr = tryExpr.expression.as(AwaitExprSyntax.self) { return awaitExpr }
         }
         return nil
     }

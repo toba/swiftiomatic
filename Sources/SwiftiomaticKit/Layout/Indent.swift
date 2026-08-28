@@ -29,11 +29,9 @@ package enum Indent: Hashable, Codable, Sendable {
         let tabsCount = try container.decodeIfPresent(Int.self, forKey: .tabs)
 
         if spacesCount != nil, tabsCount != nil {
-            throw DecodingError.dataCorrupted(
-                DecodingError.Context(
-                    codingPath: decoder.codingPath,
-                    debugDescription: "Only one of \"tabs\" or \"spaces\" may be specified"
-                ))
+            throw DecodingError.dataCorrupted(DecodingError.Context(
+                codingPath: decoder.codingPath,
+                debugDescription: "Only one of \"tabs\" or \"spaces\" may be specified"))
         }
         if let spacesCount {
             self = .spaces(spacesCount)
@@ -44,11 +42,9 @@ package enum Indent: Hashable, Codable, Sendable {
             return
         }
 
-        throw DecodingError.dataCorrupted(
-            DecodingError.Context(
-                codingPath: decoder.codingPath,
-                debugDescription: "One of \"tabs\" or \"spaces\" must be specified"
-            ))
+        throw DecodingError.dataCorrupted(DecodingError.Context(
+            codingPath: decoder.codingPath,
+            debugDescription: "One of \"tabs\" or \"spaces\" must be specified"))
     }
 
     package func encode(to encoder: Encoder) throws {

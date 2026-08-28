@@ -39,11 +39,7 @@ final class InsertBlankLineAfterSwitchCase: StaticFormatRule<BasicRuleValue>, @u
             let nextIndex = i + 1
             guard !cases[nextIndex].leadingTrivia.hasBlankLine else { continue }
 
-            Self.diagnose(
-                .insertBlankLineAfterCase,
-                on: switchCase.label,
-                context: context
-            )
+            Self.diagnose(.insertBlankLineAfterCase, on: switchCase.label, context: context)
             modifiedCases[nextIndex] = modifiedCases[nextIndex].prependingNewline()
             modified = true
         }

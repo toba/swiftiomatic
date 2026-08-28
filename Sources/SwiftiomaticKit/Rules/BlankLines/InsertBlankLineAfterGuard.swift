@@ -32,7 +32,8 @@ final class InsertBlankLineAfterGuard: StaticFormatRule<BasicRuleValue>, @unchec
         var modified = false
 
         for i in 0..<originalStatements.count
-        where originalStatements[i].item.is(GuardStmtSyntax.self) {
+            where originalStatements[i].item.is(GuardStmtSyntax.self)
+        {
             let nextIndex = i + 1
             guard nextIndex < originalStatements.count else { continue }
 
@@ -42,11 +43,7 @@ final class InsertBlankLineAfterGuard: StaticFormatRule<BasicRuleValue>, @unchec
 
             if nextIsConsecutiveGuard {
                 guard nextStmt.leadingTrivia.hasBlankLine else { continue }
-                Self.diagnose(
-                    .removeBlankLineBetweenGuards,
-                    on: nextStmt.item,
-                    context: context
-                )
+                Self.diagnose(.removeBlankLineBetweenGuards, on: nextStmt.item, context: context)
                 var modifiedNext = nextStmt
                 modifiedNext.leadingTrivia = nextStmt.leadingTrivia.replacingFirstNewlines(with: 1)
                 statements[nextIndex] = modifiedNext

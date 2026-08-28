@@ -57,7 +57,8 @@ final class NoDocCommentsInFunctionBodies: LintSyntaxRule<LintOnlyValue>, @unche
             switch trivia[index] {
                 case .docLineComment, .docBlockComment:
                     let anchor: FindingAnchor = isLeading
-                        ? .leadingTrivia(index) : .trailingTrivia(index)
+                        ? .leadingTrivia(index)
+                        : .trailingTrivia(index)
                     diagnose(.localDocComment, on: token, anchor: anchor)
                 default: continue
             }

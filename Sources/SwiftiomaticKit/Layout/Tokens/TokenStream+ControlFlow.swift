@@ -14,9 +14,9 @@ import SwiftSyntax
 
 // Alignment offsets for wrapped condition/case lists — equal to keyword + trailing space so that
 // wrapped continuations line up under the first character following the keyword.
-private let ifConditionAlignment = 3       // "if " (2 + 1)
-private let whileConditionAlignment = 6    // "while " (5 + 1)
-private let caseItemAlignment = 5          // "case " (4 + 1)
+private let ifConditionAlignment = 3  // "if " (2 + 1)
+private let whileConditionAlignment = 6  // "while " (5 + 1)
+private let caseItemAlignment = 5  // "case " (4 + 1)
 
 extension TokenStream {
     func visitLabeledStmt(_ node: LabeledStmtSyntax) -> SyntaxVisitorContinueKind {
@@ -478,10 +478,8 @@ extension TokenStream {
                         afterTokens.append(.break(.close(mustBreak: false), size: 0))
                     }
                     afterTokens.append(.break(
-                        .open(kind: .alignment(spaces: caseItemAlignment)),
-                        size: 1,
-                        newlines: newlines
-                    ))
+                        .open(kind: .alignment(spaces: caseItemAlignment)), size: 1,
+                        newlines: newlines))
                     after(trailingComma, tokens: afterTokens)
                     hasOpenAlignmentBreak = true
                 } else {

@@ -1,4 +1,5 @@
 // sm:ignore useFinalClasses, useStaticNotClassFunc
+
 // Subclassed by every lint rule; `class var` is required so subclass overrides dispatch through
 // the vtable when accessed via `any SyntaxRule.Type` existentials.
 import Foundation
@@ -12,8 +13,8 @@ class LintSyntaxRule<V: SyntaxRuleValue>: SyntaxVisitor, InstanceSyntaxRule, @un
     /// The context in which the rule is executed.
     let context: Context
 
-    // class var so subclass overrides dispatch correctly through the vtable
-    // when accessed via protocol existentials (any SyntaxRule.Type).
+    // class var so subclass overrides dispatch correctly through the vtable when accessed via
+    // protocol existentials (any SyntaxRule.Type).
     class var key: String {
         let name = String("\(self)".split(separator: ".").last ?? "")
         return configurationKey(forTypeName: name)

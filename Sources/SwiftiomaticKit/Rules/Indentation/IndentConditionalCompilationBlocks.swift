@@ -18,15 +18,14 @@ extension TokenStream {
         let breakKindOpen: BreakKind
         let breakKindClose: BreakKind
 
-        // When the `#if` wraps switch cases (the enclosing `IfConfigDecl` is a direct element
-        // of a `SwitchCaseListSyntax`), the clause contents are `case` labels, not a fresh code
-        // block. Indenting them would push the case one level past its sibling cases, so the
+        // When the `#if` wraps switch cases (the enclosing `IfConfigDecl` is a direct element of a
+        // `SwitchCaseListSyntax`), the clause contents are `case` labels, not a fresh code block.
+        // Indenting them would push the case one level past its sibling cases, so the
         // conditional-compilation indentation is suppressed here regardless of the setting; the
         // case labels keep their normal switch-case indentation.
-        let wrapsSwitchCases =
-            node.parent?.parent?.parent?.is(SwitchCaseListSyntax.self) ?? false
+        let wrapsSwitchCases = node.parent?.parent?.parent?.is(SwitchCaseListSyntax.self) ?? false
 
-        if config[IndentConditionalCompilationBlocks.self] && !wrapsSwitchCases {
+        if config[IndentConditionalCompilationBlocks.self], !wrapsSwitchCases {
             breakKindOpen = .open
             breakKindClose = .close
         } else {
@@ -55,11 +54,7 @@ extension TokenStream {
             let tokenAfterBody = node.elements?.lastToken(viewMode: .sourceAccurate)?
                 .nextToken(viewMode: .all)
                 ?? tokenToOpenWith.nextToken(viewMode: .all)
-            before(
-                tokenAfterBody,
-                tokens: .break(breakKindClose, newlines: .soft),
-                .close
-            )
+            before(tokenAfterBody, tokens: .break(breakKindClose, newlines: .soft), .close)
         }
 
         if !isNestedInPostfixIfConfig(node: Syntax(node)), let condition = node.condition {

@@ -72,7 +72,8 @@ final class UseShorthandTypeNames: StructuralFormatRule<BasicRuleValue>, @unchec
                 guard let arguments = exactlyTwoChildren(of: genericArgumentList),
                       case (.type(let type0Argument), .type(let type1Argument)) = (
                           arguments.0.argument, arguments.1.argument
-                      ) else {
+                      )
+                else {
                     newNode = nil
                     break
                 }
@@ -165,7 +166,8 @@ final class UseShorthandTypeNames: StructuralFormatRule<BasicRuleValue>, @unchec
                 guard let arguments = exactlyTwoChildren(of: genericArgumentList),
                       case (.type(let type0Argument), .type(let type1Argument)) = (
                           arguments.0.argument, arguments.1.argument
-                      ) else {
+                      )
+                else {
                     newNode = nil
                     break
                 }
@@ -346,10 +348,7 @@ final class UseShorthandTypeNames: StructuralFormatRule<BasicRuleValue>, @unchec
             default: wrappedTypeExpr.leadingTrivia = leadingTrivia
         }
 
-        return OptionalChainingExprSyntax(
-            expression: wrappedTypeExpr,
-            questionMark: questionMark
-        )
+        return OptionalChainingExprSyntax(expression: wrappedTypeExpr, questionMark: questionMark)
     }
 
     /// Returns the given type wrapped in parentheses.
@@ -390,9 +389,9 @@ final class UseShorthandTypeNames: StructuralFormatRule<BasicRuleValue>, @unchec
                     argumentNames: nil
                 )
 
-                // If the type has a generic argument clause, we need to construct a `SpecializeExpr` to
-                // wrap the identifier and the generic arguments. Otherwise, we can return just the
-                // `IdentifierExpr` itself.
+                // If the type has a generic argument clause, we need to construct a
+                // `SpecializeExpr` to wrap the identifier and the generic arguments. Otherwise, we
+                // can return just the `IdentifierExpr` itself.
                 if let genericArgumentClause = simpleTypeIdentifier.genericArgumentClause {
                     let newGenericArgumentClause = visit(genericArgumentClause)
                     let result = GenericSpecializationExprSyntax(
@@ -494,13 +493,9 @@ final class UseShorthandTypeNames: StructuralFormatRule<BasicRuleValue>, @unchec
             guard let elementExpr = expressionRepresentation(of: typeElement.type) else {
                 return nil
             }
-            exprElements.append(
-                LabeledExprSyntax(
-                    label: typeElement.firstName,
-                    colon: typeElement.colon,
-                    expression: elementExpr,
-                    trailingComma: typeElement.trailingComma
-                ))
+            exprElements.append(LabeledExprSyntax(
+                label: typeElement.firstName, colon: typeElement.colon, expression: elementExpr,
+                trailingComma: typeElement.trailingComma))
         }
         return LabeledExprListSyntax(exprElements)
     }
@@ -521,10 +516,7 @@ final class UseShorthandTypeNames: StructuralFormatRule<BasicRuleValue>, @unchec
             elements: parameterExprs,
             rightParen: rightParen
         )
-        let arrowExpr = ArrowExprSyntax(
-            effectSpecifiers: effectSpecifiers,
-            arrow: arrow
-        )
+        let arrowExpr = ArrowExprSyntax(effectSpecifiers: effectSpecifiers, arrow: arrow)
         return InfixOperatorExprSyntax(
             leftOperand: tupleExpr,
             operator: arrowExpr,
@@ -561,8 +553,7 @@ final class UseShorthandTypeNames: StructuralFormatRule<BasicRuleValue>, @unchec
                      .keyword(.unsafeAddress),
                      .keyword(.unsafeMutableAddress),
                      .keyword(._read),
-                     .keyword(._modify):
-                    return false
+                     .keyword(._modify): return false
                 default: return true
             }
         }
@@ -577,9 +568,7 @@ final class UseShorthandTypeNames: StructuralFormatRule<BasicRuleValue>, @unchec
     private func isTypeOfUninitializedStoredVar(_ node: IdentifierTypeSyntax) -> Bool {
         if let typeAnnotation = node.parent?.as(TypeAnnotationSyntax.self),
            let patternBinding = nearestAncestor(
-               of: typeAnnotation,
-               type: PatternBindingSyntax.self
-           ),
+               of: typeAnnotation, type: PatternBindingSyntax.self),
            isStoredProperty(patternBinding),
            patternBinding.initializer == nil,
            let variableDecl = nearestAncestor(of: patternBinding, type: VariableDeclSyntax.self),
@@ -644,10 +633,7 @@ final class UseShorthandTypeNames: StructuralFormatRule<BasicRuleValue>, @unchec
         // void *value*).
         for arg in node.genericArgumentClause.arguments {
             if case let .type(typeArg) = arg.argument,
-               !hasValidExpressionRepresentation(typeArg)
-            {
-                return
-            }
+               !hasValidExpressionRepresentation(typeArg) { return }
         }
         Self.diagnose(.useTypeShorthand(type: name), on: expression, context: context)
     }
@@ -709,8 +695,7 @@ final class UseShorthandTypeNames: StructuralFormatRule<BasicRuleValue>, @unchec
                  .classRestrictionType,
                  .namedOpaqueReturnType,
                  .packExpansionType,
-                 .suppressedType:
-                return true
+                 .suppressedType: return true
             default: return true
         }
     }
@@ -739,8 +724,7 @@ final class UseShorthandTypeNames: StructuralFormatRule<BasicRuleValue>, @unchec
                      .keyword(.unsafeAddress),
                      .keyword(.unsafeMutableAddress),
                      .keyword(._read),
-                     .keyword(._modify):
-                    return false
+                     .keyword(._modify): return false
                 default: return true
             }
         }

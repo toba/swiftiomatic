@@ -1,8 +1,8 @@
 import SwiftSyntax
 
 /// Flag `Subprocess.run(...)` calls that omit `platformOptions:` (or pass a default
-/// `PlatformOptions()`). Without an explicit teardown sequence, a cancelled or thrown task
-/// can leak the child process — it stays alive until parent exit. The fix is to pass
+/// `PlatformOptions()`). Without an explicit teardown sequence, a cancelled or thrown task can leak
+/// the child process — it stays alive until parent exit. The fix is to pass
 /// `PlatformOptions(teardownSequence: [...])` matching the child's signal handling.
 ///
 /// Flag-only — choosing the right teardown sequence (signals, intervals) is contextual.
@@ -11,11 +11,12 @@ final class RequireSubprocessTeardownSequence: LintSyntaxRule<LintOnlyValue>, @u
 
     override func visit(_ node: FunctionCallExprSyntax) -> SyntaxVisitorContinueKind {
         guard let member = node.calledExpression.as(MemberAccessExprSyntax.self),
-              member.declName.baseName.text == "run",
-              let base = member.base?.as(DeclReferenceExprSyntax.self),
-              base.baseName.text == "Subprocess" else { return .visitChildren }
+            member.declName.baseName.text == "run",
+            let base = member.base?.as(DeclReferenceExprSyntax.self),
+            base.baseName.text == "Subprocess" else { return .visitChildren }
 
-        if let platformOptions = node.arguments.first(where: { $0.label?.text == "platformOptions" }) {
+        if let platformOptions = node.arguments.first(where: { $0.label?.text == "platformOptions" }
+        ) {
             if isDefaultPlatformOptions(platformOptions.expression) {
                 diagnose(.subprocessDefaultPlatformOptions, on: platformOptions)
             }

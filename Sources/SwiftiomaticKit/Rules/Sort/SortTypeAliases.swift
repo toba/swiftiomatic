@@ -88,11 +88,8 @@ final class SortTypeAliases: StructuralFormatRule<BasicRuleValue>, @unchecked Se
                 ampersand = nil
             }
 
-            newElements.append(
-                CompositionTypeElementSyntax(
-                    type: TypeSyntax(newType),
-                    ampersand: ampersand
-                ))
+            newElements.append(CompositionTypeElementSyntax(
+                type: TypeSyntax(newType), ampersand: ampersand))
         }
 
         var newComposition = composition

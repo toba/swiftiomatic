@@ -71,10 +71,7 @@ final class NoForceTry: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
         s.classStack.append(s.insideXCTestCase)
         if context.importsAnyTestLibrary == .importsTestLibrary,
            let inheritance = node.inheritanceClause,
-           inheritance.contains(named: "XCTestCase")
-        {
-            s.insideXCTestCase = true
-        }
+           inheritance.contains(named: "XCTestCase") { s.insideXCTestCase = true }
     }
 
     static func didExit(_: ClassDeclSyntax, context: Context) {

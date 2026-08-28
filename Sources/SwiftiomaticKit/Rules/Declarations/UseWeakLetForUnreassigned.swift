@@ -8,9 +8,9 @@ import SwiftSyntax
 /// inside an initializer of the same type are allowed because `let` permits init-time assignment.
 ///
 /// Only `private`/`fileprivate` properties are flagged. At broader access levels (the default
-/// `internal`, `package`, `public`, `open`) reassignment may happen from outside the declaring
-/// file via `someInstance.property = …` , which the AST cannot prove absent without type
-/// resolution — so we conservatively skip those.
+/// `internal`, `package`, `public`, `open`) reassignment may happen from outside the declaring file
+/// via `someInstance.property = …` , which the AST cannot prove absent without type resolution — so
+/// we conservatively skip those.
 ///
 /// Lint-only: emitting the finding does not rewrite the declaration.
 final class UseWeakLetForUnreassigned: LintSyntaxRule<LintOnlyValue>, @unchecked Sendable {
@@ -29,16 +29,16 @@ final class UseWeakLetForUnreassigned: LintSyntaxRule<LintOnlyValue>, @unchecked
     private func check(memberBlock: MemberBlockSyntax) {
         for member in memberBlock.members {
             guard let varDecl = member.decl.as(VariableDeclSyntax.self),
-                  varDecl.bindingSpecifier.tokenKind == .keyword(.var),
-                  varDecl.modifiers.contains(.weak),
-                  varDecl.modifiers.contains(where: { mod in
-                      mod.name.tokenKind == .keyword(.private)
-                          || mod.name.tokenKind == .keyword(.fileprivate)
-                  }),
-                  varDecl.bindings.count == 1,
-                  let binding = varDecl.bindings.first,
-                  binding.accessorBlock == nil,
-                  let name = binding.pattern.as(IdentifierPatternSyntax.self)?.identifier.text
+                varDecl.bindingSpecifier.tokenKind == .keyword(.var),
+                varDecl.modifiers.contains(.weak),
+                varDecl.modifiers.contains(where: { mod in
+                    mod.name.tokenKind == .keyword(.private)
+                        || mod.name.tokenKind == .keyword(.fileprivate)
+                }),
+                varDecl.bindings.count == 1,
+                let binding = varDecl.bindings.first,
+                binding.accessorBlock == nil,
+                let name = binding.pattern.as(IdentifierPatternSyntax.self)?.identifier.text
             else { continue }
 
             let collector = AssignmentCollector(name: name, viewMode: .sourceAccurate)
@@ -72,10 +72,7 @@ private final class AssignmentCollector: SyntaxVisitor {
         if let member = expr.as(MemberAccessExprSyntax.self),
            let base = member.base?.as(DeclReferenceExprSyntax.self),
            base.baseName.tokenKind == .keyword(.self),
-           member.declName.baseName.text == name
-        {
-            return true
-        }
+           member.declName.baseName.text == name { return true }
         return false
     }
 }

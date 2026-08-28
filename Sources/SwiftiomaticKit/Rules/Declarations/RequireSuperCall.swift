@@ -31,9 +31,7 @@ final class RequireSuperCall: LintSyntaxRule<RequireSuperCallConfiguration>, @un
 
         if count == 0 {
             diagnose(.missingSuperCall(resolved), on: node.name)
-        } else if count > 1 {
-            diagnose(.multipleSuperCalls(resolved), on: node.name)
-        }
+        } else if count > 1 { diagnose(.multipleSuperCalls(resolved), on: node.name) }
 
         return .visitChildren
     }
@@ -66,12 +64,9 @@ private final class SuperCallCounter: SyntaxVisitor {
 
     override func visit(_ node: FunctionCallExprSyntax) -> SyntaxVisitorContinueKind {
         if let memberAccess = node.calledExpression.as(MemberAccessExprSyntax.self),
-           let base = memberAccess.base?.as(SuperExprSyntax.self),
-           base.superKeyword.tokenKind == .keyword(.super),
-           memberAccess.declName.baseName.text == targetName
-        {
-            count += 1
-        }
+            let base = memberAccess.base?.as(SuperExprSyntax.self),
+            base.superKeyword.tokenKind == .keyword(.super),
+            memberAccess.declName.baseName.text == targetName { count += 1 }
         return .visitChildren
     }
 }

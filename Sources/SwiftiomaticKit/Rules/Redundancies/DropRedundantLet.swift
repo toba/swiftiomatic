@@ -49,9 +49,10 @@ final class DropRedundantLet: StaticFormatRule<BasicRuleValue>, @unchecked Senda
 
         for item in visited {
             guard let varDecl = item.item.as(VariableDeclSyntax.self),
-                  isRedundantLetDecl(varDecl),
-                  let binding = varDecl.bindings.first,
-                  let initializer = binding.initializer else {
+                isRedundantLetDecl(varDecl),
+                let binding = varDecl.bindings.first,
+                let initializer = binding.initializer
+            else {
                 newItems.append(item)
                 continue
             }
@@ -60,12 +61,9 @@ final class DropRedundantLet: StaticFormatRule<BasicRuleValue>, @unchecked Senda
             changed = true
 
             // Build: _ = expr
-            let discardExpr = DiscardAssignmentExprSyntax(
-                wildcard: .wildcardToken(
-                    leadingTrivia: varDecl.leadingTrivia,
-                    trailingTrivia: binding.pattern.trailingTrivia
-                )
-            )
+            let discardExpr = DiscardAssignmentExprSyntax(wildcard: .wildcardToken(
+                leadingTrivia: varDecl.leadingTrivia, trailingTrivia: binding.pattern.trailingTrivia
+            ))
             let infixExpr = InfixOperatorExprSyntax(
                 leftOperand: ExprSyntax(discardExpr),
                 operator: ExprSyntax(AssignmentExprSyntax(equal: initializer.equal)),
@@ -122,10 +120,7 @@ final class DropRedundantLet: StaticFormatRule<BasicRuleValue>, @unchecked Senda
             if let closure = p.as(ClosureExprSyntax.self) { return isResultBuilderClosure(closure) }
             // Accessor body on a property → check for @ViewBuilder or `some View` return type
             if let accessor = p.as(AccessorDeclSyntax.self),
-               isResultBuilderAccessor(accessor)
-            {
-                return true
-            }
+               isResultBuilderAccessor(accessor) { return true }
             // Stop at type/extension boundaries — not a result builder context
             if p.is(ClassDeclSyntax.self) || p.is(StructDeclSyntax.self)
                 || p.is(EnumDeclSyntax.self) || p.is(ActorDeclSyntax.self)
@@ -166,10 +161,7 @@ final class DropRedundantLet: StaticFormatRule<BasicRuleValue>, @unchecked Senda
             // Conservative: any closure passed as argument could be a result builder
             if let call = arg.parent?.parent?.as(FunctionCallExprSyntax.self),
                let memberAccess = call.calledExpression.as(MemberAccessExprSyntax.self),
-               memberAccess.declName.baseName.text.first?.isUppercase == true
-            {
-                return true
-            }
+               memberAccess.declName.baseName.text.first?.isUppercase == true { return true }
         }
 
         // Macro expansion: `#Preview { ... }`
@@ -188,20 +180,14 @@ final class DropRedundantLet: StaticFormatRule<BasicRuleValue>, @unchecked Senda
         for attribute in property.attributes {
             if let attr = attribute.as(AttributeSyntax.self),
                let name = attr.attributeName.as(IdentifierTypeSyntax.self)?.name.text,
-               name.hasSuffix("Builder") || name == "ViewBuilder"
-            {
-                return true
-            }
+               name.hasSuffix("Builder") || name == "ViewBuilder" { return true }
         }
 
         // Check for `some View` return type
         if let binding = property.bindings.first,
            let typeAnnotation = binding.typeAnnotation,
            let someType = typeAnnotation.type.as(SomeOrAnyTypeSyntax.self),
-           someType.constraint.description.contains("View")
-        {
-            return true
-        }
+           someType.constraint.description.contains("View") { return true }
 
         return false
     }
@@ -221,8 +207,8 @@ final class DropRedundantLet: StaticFormatRule<BasicRuleValue>, @unchecked Senda
         // Note: after child-first rewriter traversal, `WildcardPatternSyntax` type checks can fail
         // on the reconstructed node. Use `trimmedDescription == "_"` as a robust check.
         guard let patExpr = node.expression.as(PatternExprSyntax.self),
-              let binding = patExpr.pattern.as(ValueBindingPatternSyntax.self),
-              binding.pattern.trimmedDescription == "_" else { return node }
+            let binding = patExpr.pattern.as(ValueBindingPatternSyntax.self),
+            binding.pattern.trimmedDescription == "_" else { return node }
 
         Self.diagnose(
             .removeRedundantLetInCasePattern, on: binding.bindingSpecifier, context: context)

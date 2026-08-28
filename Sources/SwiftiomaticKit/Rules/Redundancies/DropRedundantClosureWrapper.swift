@@ -27,9 +27,9 @@ final class DropRedundantClosureWrapper: StaticFormatRule<BasicRuleValue>, @unch
     ) -> ExprSyntax {
         // Must be a closure called with no arguments: `{ ... }()`
         guard let closureExpr = callNode.calledExpression.as(ClosureExprSyntax.self),
-              callNode.arguments.isEmpty,
-              callNode.additionalTrailingClosures.isEmpty,
-              closureExpr.signature == nil else { return ExprSyntax(callNode) }
+            callNode.arguments.isEmpty,
+            callNode.additionalTrailingClosures.isEmpty,
+            closureExpr.signature == nil else { return ExprSyntax(callNode) }
 
         // Must have exactly one statement
         guard let onlyItem = closureExpr.statements.firstAndOnly else {
@@ -40,7 +40,7 @@ final class DropRedundantClosureWrapper: StaticFormatRule<BasicRuleValue>, @unch
         let innerExpr: ExprSyntax
 
         if let returnStmt = onlyItem.item.as(ReturnStmtSyntax.self),
-           let returnExpr = returnStmt.expression
+            let returnExpr = returnStmt.expression
         {
             innerExpr = returnExpr
         } else if let exprStmt = onlyItem.item.as(ExpressionStmtSyntax.self) {
@@ -65,10 +65,7 @@ final class DropRedundantClosureWrapper: StaticFormatRule<BasicRuleValue>, @unch
         // `switch`/`if`/`do` are expressions only in return, throw, or assignment-RHS positions.
         // Removing the IIFE in argument/subscript/etc. positions would produce uncompilable code.
         if isControlFlowExpression(innerExpr),
-           !isAssignmentLikePosition(parent)
-        {
-            return ExprSyntax(callNode)
-        }
+           !isAssignmentLikePosition(parent) { return ExprSyntax(callNode) }
 
         Self.diagnose(.removeRedundantClosure, on: closureExpr.leftBrace, context: context)
 
@@ -91,10 +88,7 @@ final class DropRedundantClosureWrapper: StaticFormatRule<BasicRuleValue>, @unch
         if parent.is(ReturnStmtSyntax.self) { return true }
         if parent.is(ThrowStmtSyntax.self) { return true }
         if let infix = parent.as(InfixOperatorExprSyntax.self),
-           infix.operator.is(AssignmentExprSyntax.self)
-        {
-            return true
-        }
+           infix.operator.is(AssignmentExprSyntax.self) { return true }
         return false
     }
 
@@ -109,10 +103,7 @@ final class DropRedundantClosureWrapper: StaticFormatRule<BasicRuleValue>, @unch
         for child in expr.children(viewMode: .sourceAccurate) {
             if child.is(ThrowStmtSyntax.self) { return true }
             if let childExpr = child.as(ExprSyntax.self),
-               containsNeverOrThrow(childExpr)
-            {
-                return true
-            }
+               containsNeverOrThrow(childExpr) { return true }
         }
         return false
     }

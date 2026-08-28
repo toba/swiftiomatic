@@ -21,9 +21,7 @@ final class RequireWeakDelegates: LintSyntaxRule<LintOnlyValue>, @unchecked Send
               !node.hasWeakOrUnownedModifier,
               !node.hasComputedBody,
               !node.hasIgnoredAdaptorAttribute,
-              node.isInClassBody else {
-            return .visitChildren
-        }
+              node.isInClassBody else { return .visitChildren }
 
         diagnose(.weakDelegate, on: node.bindingSpecifier)
         return .visitChildren

@@ -89,10 +89,7 @@ final class WrapSingleLineComments: StaticFormatRule<BasicRuleValue>, @unchecked
         guard changed, let anchorOrigIdx = firstCommentOriginalIndex else { return token }
 
         // Use the original trivia index for anchor
-        let triviaIdx = originalTrivia.index(
-            originalTrivia.startIndex,
-            offsetBy: anchorOrigIdx
-        )
+        let triviaIdx = originalTrivia.index(originalTrivia.startIndex, offsetBy: anchorOrigIdx)
         Self.diagnose(.wrapComment, on: token, context: context, anchor: .leadingTrivia(triviaIdx))
 
         return token.with(\.leadingTrivia, Trivia(pieces: pieces))
@@ -129,12 +126,7 @@ final class WrapSingleLineComments: StaticFormatRule<BasicRuleValue>, @unchecked
             return WrapResult(didChange: false, advance: 1, originalIndex: 0)
         }
 
-        let wrapped = wrapComment(
-            text: text,
-            prefix: prefix,
-            column: column,
-            maxWidth: maxWidth
-        )
+        let wrapped = wrapComment(text: text, prefix: prefix, column: column, maxWidth: maxWidth)
         guard wrapped.count > 1 else {
             return WrapResult(didChange: false, advance: 1, originalIndex: 0)
         }

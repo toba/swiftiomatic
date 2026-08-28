@@ -56,9 +56,9 @@ final class UseEarlyExits: StaticFormatRule<BasicRuleValue>, @unchecked Sendable
     static func willEnter(_ node: CodeBlockItemListSyntax, context: Context) {
         for codeBlockItem in node {
             guard let exprStmt = codeBlockItem.item.as(ExpressionStmtSyntax.self),
-                  let ifStatement = exprStmt.expression.as(IfExprSyntax.self),
-                  let elseBody = ifStatement.elseBody?.as(CodeBlockSyntax.self),
-                  Self.codeBlockEndsWithEarlyExit(elseBody) else { continue }
+                let ifStatement = exprStmt.expression.as(IfExprSyntax.self),
+                let elseBody = ifStatement.elseBody?.as(CodeBlockSyntax.self),
+                Self.codeBlockEndsWithEarlyExit(elseBody) else { continue }
             Self.diagnose(.useGuardStatement, on: ifStatement, context: context)
         }
     }
@@ -75,9 +75,10 @@ final class UseEarlyExits: StaticFormatRule<BasicRuleValue>, @unchecked Sendable
 
         for codeBlockItem in node {
             guard let exprStmt = codeBlockItem.item.as(ExpressionStmtSyntax.self),
-                  let ifStatement = exprStmt.expression.as(IfExprSyntax.self),
-                  let elseBody = ifStatement.elseBody?.as(CodeBlockSyntax.self),
-                  codeBlockEndsWithEarlyExit(elseBody) else {
+                let ifStatement = exprStmt.expression.as(IfExprSyntax.self),
+                let elseBody = ifStatement.elseBody?.as(CodeBlockSyntax.self),
+                codeBlockEndsWithEarlyExit(elseBody)
+            else {
                 newItems.append(codeBlockItem)
                 continue
             }

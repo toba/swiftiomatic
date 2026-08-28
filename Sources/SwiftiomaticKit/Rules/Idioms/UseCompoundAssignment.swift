@@ -27,12 +27,11 @@ final class UseCompoundAssignment: StaticFormatRule<BasicRuleValue>, @unchecked 
         context: Context
     ) -> ExprSyntax {
         guard infix.operator.is(AssignmentExprSyntax.self),
-              let rhsInfix = infix.rightOperand.as(InfixOperatorExprSyntax.self),
-              let rhsBinOp = rhsInfix.operator.as(BinaryOperatorExprSyntax.self),
-              Self.supportedOperators.contains(rhsBinOp.operator.text),
-              infix.leftOperand.trimmedDescription == rhsInfix.leftOperand.trimmedDescription else {
-            return ExprSyntax(infix)
-        }
+            let rhsInfix = infix.rightOperand.as(InfixOperatorExprSyntax.self),
+            let rhsBinOp = rhsInfix.operator.as(BinaryOperatorExprSyntax.self),
+            Self.supportedOperators.contains(rhsBinOp.operator.text),
+            infix.leftOperand.trimmedDescription == rhsInfix.leftOperand.trimmedDescription
+        else { return ExprSyntax(infix) }
 
         Self.diagnose(
             .useCompoundAssignment(op: rhsBinOp.operator.text),

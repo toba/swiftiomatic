@@ -6,18 +6,17 @@ import SwiftSyntax
 /// observed values mutate. Use the `Observations` AsyncSequence instead.
 ///
 /// Skips files under `Tests/` directories or named `*Tests.swift` . A test that counts change
-/// notifications must re-arm the tracker to observe more than one change, and `Observations`
-/// cannot count synchronously. The pattern is deliberate there.
-final class FlagRecursiveObservationTracking: LintSyntaxRule<LintOnlyValue>, @unchecked Sendable
-{
+/// notifications must re-arm the tracker to observe more than one change, and `Observations` cannot
+/// count synchronously. The pattern is deliberate there.
+final class FlagRecursiveObservationTracking: LintSyntaxRule<LintOnlyValue>, @unchecked Sendable {
     override class var group: ConfigurationGroup? { .unsafety }
 
     override func visit(_ node: FunctionCallExprSyntax) -> SyntaxVisitorContinueKind {
         guard !context.fileURL.isTestFile else { return .visitChildren }
         guard let ident = node.calledExpression.as(DeclReferenceExprSyntax.self),
-              ident.baseName.text == "withObservationTracking",
-              let onChangeClosure = onChangeClosure(of: node),
-              let enclosingName = enclosingFunctionName(of: node) else { return .visitChildren }
+            ident.baseName.text == "withObservationTracking",
+            let onChangeClosure = onChangeClosure(of: node),
+            let enclosingName = enclosingFunctionName(of: node) else { return .visitChildren }
         let collector = NameUseCollector(name: enclosingName, viewMode: .sourceAccurate)
         collector.walk(onChangeClosure.statements)
         if collector.found {
@@ -28,9 +27,8 @@ final class FlagRecursiveObservationTracking: LintSyntaxRule<LintOnlyValue>, @un
 
     private func onChangeClosure(of call: FunctionCallExprSyntax) -> ClosureExprSyntax? {
         for additional in call.additionalTrailingClosures where additional.label.text == "onChange"
-        {
-            return additional.closure
-        }
+        { return additional.closure }
+
         for arg in call.arguments where arg.label?.text == "onChange" {
             if let closure = arg.expression.as(ClosureExprSyntax.self) { return closure }
         }

@@ -26,12 +26,8 @@ final class NoExplicitOwnershipModifiers: StaticFormatRule<BasicRuleValue>, @unc
         parent _: Syntax?,
         context: Context
     ) -> DeclSyntax {
-        DeclSyntax(
-            removingOwnershipModifier(
-                from: visited,
-                keywordKeyPath: \.funcKeyword,
-                context: context
-            ))
+        DeclSyntax(removingOwnershipModifier(
+            from: visited, keywordKeyPath: \.funcKeyword, context: context))
     }
 
     // MARK: - Type specifiers (e.g. `consuming Foo` in parameter types)
@@ -53,9 +49,9 @@ final class NoExplicitOwnershipModifiers: StaticFormatRule<BasicRuleValue>, @unc
 
         // Diagnose each ownership specifier.
         for index in ownershipIndices {
-            if case let .simpleTypeSpecifier(simple) = attributed.specifiers[
-                attributed.specifiers.index(attributed.specifiers.startIndex, offsetBy: index)
-            ] {
+            if case let .simpleTypeSpecifier(simple) = attributed.specifiers[attributed.specifiers
+                    .index(attributed.specifiers.startIndex, offsetBy: index)]
+            {
                 Self.diagnose(
                     .removeOwnershipModifier(keyword: simple.specifier.text),
                     on: simple.specifier,

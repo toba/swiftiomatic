@@ -1,8 +1,8 @@
 import Foundation
 import SwiftSyntax
 
-/// Shared detection logic for test-related rules ( `RequireTestFnPrefixOrAttribute` , `RequireSuiteAccessControl` ,
-/// `NoForceTry` ). The testing framework detected from imports.
+/// Shared detection logic for test-related rules ( `RequireTestFnPrefixOrAttribute` ,
+/// `RequireSuiteAccessControl` , `NoForceTry` ). The testing framework detected from imports.
 enum TestFramework { case xcTest, swiftTesting }
 
 /// Detects which testing framework is imported in the source file.
@@ -68,9 +68,8 @@ func isTestSuite(
     if framework == .xcTest {
         guard let inheritance = inheritanceClause else { return false }
         let types = Array(inheritance.inheritedTypes)
-        guard types.count == 1, types[0].type.trimmedDescription == "XCTestCase" else {
-            return false
-        }
+        guard types.count == 1, types[0].type.trimmedDescription == "XCTestCase"
+        else { return false }
         return true
     }
 
@@ -98,8 +97,8 @@ private extension String {
 
     /// Whether `word` appears as its own capitalized word inside a camel-case identifier.
     ///
-    /// A word ends where the next capital starts or where the identifier ends, so `Base` matches
-    /// in `BaseTests` and not in `BaseballTests`.
+    /// A word ends where the next capital starts or where the identifier ends, so `Base` matches in
+    /// `BaseTests` and not in `BaseballTests`.
     func containsCapitalizedWord(_ word: String) -> Bool {
         var searchStart = startIndex
 
@@ -167,10 +166,7 @@ struct TestContextTracker {
 
         if context.importsAnyTestLibrary == .importsTestLibrary,
            let inheritance = node.inheritanceClause,
-           inheritance.contains(named: "XCTestCase")
-        {
-            insideXCTestCase = true
-        }
+           inheritance.contains(named: "XCTestCase") { insideXCTestCase = true }
         return was
     }
 

@@ -17,10 +17,7 @@ final class UseSwiftTestingNotXCTest: StaticFormatRule<BasicRuleValue>, @uncheck
     /// On a function it widens `FunctionDeclSyntax` to `InitializerDeclSyntax` or
     /// `DeinitializerDeclSyntax` , so every other function rule has to have run first. On a class
     /// it runs mid-chain, while the declaration is still a class for the rules that follow.
-    static let rewriteOrderByNode = [
-        "ClassDeclSyntax": 730,
-        "FunctionDeclSyntax": 1250,
-    ]
+    static let rewriteOrderByNode = ["ClassDeclSyntax": 730, "FunctionDeclSyntax": 1250]
 
     override class var group: ConfigurationGroup? { .testing }
 
@@ -63,8 +60,8 @@ final class UseSwiftTestingNotXCTest: StaticFormatRule<BasicRuleValue>, @uncheck
 
         for stmt in node.statements {
             if let classDecl = stmt.item.as(ClassDeclSyntax.self),
-               let inheritance = classDecl.inheritanceClause,
-               inheritance.contains(named: "XCTestCase")
+                let inheritance = classDecl.inheritanceClause,
+                inheritance.contains(named: "XCTestCase")
             {
                 state.xcTestCaseClassNames.insert(classDecl.name.text)
             }
@@ -89,10 +86,7 @@ final class UseSwiftTestingNotXCTest: StaticFormatRule<BasicRuleValue>, @uncheck
         guard state.hasXCTestImport, !state.bailOut else { return }
         state.insideXCTestCaseStack.append(state.insideXCTestCase)
         if let inheritance = node.inheritanceClause,
-           inheritance.contains(named: "XCTestCase")
-        {
-            state.insideXCTestCase = true
-        }
+           inheritance.contains(named: "XCTestCase") { state.insideXCTestCase = true }
     }
 
     static func didExit(_: ClassDeclSyntax, context: Context) {
@@ -263,47 +257,30 @@ final class UseSwiftTestingNotXCTest: StaticFormatRule<BasicRuleValue>, @uncheck
                 return convertSingleValueAssert(
                     args, originalNode: originalNode, context: context
                 ) { expr in
-                    ExprSyntax(
-                        PrefixOperatorExprSyntax(
-                            operator: .prefixOperator("!"),
-                            expression: wrapInParensIfNeeded(expr)
-                        ))
+                    ExprSyntax(PrefixOperatorExprSyntax(
+                        operator: .prefixOperator("!"), expression: wrapInParensIfNeeded(expr)))
                 }
 
             case "XCTAssertNil":
                 return convertSingleValueAssert(
                     args, originalNode: originalNode, context: context
                 ) { expr in
-                    ExprSyntax(
-                        InfixOperatorExprSyntax(
-                            leftOperand: wrapInParensIfNeeded(expr),
-                            operator: ExprSyntax(
-                                BinaryOperatorExprSyntax(
-                                    operator: .binaryOperator(
-                                        "==",
-                                        leadingTrivia: .space,
-                                        trailingTrivia: .space
-                                    ))),
-                            rightOperand: ExprSyntax(NilLiteralExprSyntax())
-                        ))
+                    ExprSyntax(InfixOperatorExprSyntax(
+                        leftOperand: wrapInParensIfNeeded(expr),
+                        operator: ExprSyntax(BinaryOperatorExprSyntax(operator: .binaryOperator(
+                            "==", leadingTrivia: .space, trailingTrivia: .space))),
+                        rightOperand: ExprSyntax(NilLiteralExprSyntax())))
                 }
 
             case "XCTAssertNotNil":
                 return convertSingleValueAssert(
                     args, originalNode: originalNode, context: context
                 ) { expr in
-                    ExprSyntax(
-                        InfixOperatorExprSyntax(
-                            leftOperand: wrapInParensIfNeeded(expr),
-                            operator: ExprSyntax(
-                                BinaryOperatorExprSyntax(
-                                    operator: .binaryOperator(
-                                        "!=",
-                                        leadingTrivia: .space,
-                                        trailingTrivia: .space
-                                    ))),
-                            rightOperand: ExprSyntax(NilLiteralExprSyntax())
-                        ))
+                    ExprSyntax(InfixOperatorExprSyntax(
+                        leftOperand: wrapInParensIfNeeded(expr),
+                        operator: ExprSyntax(BinaryOperatorExprSyntax(operator: .binaryOperator(
+                            "!=", leadingTrivia: .space, trailingTrivia: .space))),
+                        rightOperand: ExprSyntax(NilLiteralExprSyntax())))
                 }
 
             case "XCTAssertEqual":
@@ -342,24 +319,16 @@ final class UseSwiftTestingNotXCTest: StaticFormatRule<BasicRuleValue>, @uncheck
         var expectArgs = [LabeledExprSyntax]()
 
         if args.count == 2 {
-            expectArgs.append(
-                LabeledExprSyntax(
-                    expression: value,
-                    trailingComma: .commaToken(trailingTrivia: .space)
-                ))
+            expectArgs.append(LabeledExprSyntax(
+                expression: value, trailingComma: .commaToken(trailingTrivia: .space)))
             expectArgs.append(LabeledExprSyntax(expression: args[1].expression.trimmed))
         } else {
             expectArgs.append(LabeledExprSyntax(expression: value))
         }
 
-        return ExprSyntax(
-            MacroExpansionExprSyntax(
-                pound: .poundToken(),
-                macroName: .identifier("expect"),
-                leftParen: .leftParenToken(),
-                arguments: LabeledExprListSyntax(expectArgs),
-                rightParen: .rightParenToken()
-            ))
+        return ExprSyntax(MacroExpansionExprSyntax(
+            pound: .poundToken(), macroName: .identifier("expect"), leftParen: .leftParenToken(),
+            arguments: LabeledExprListSyntax(expectArgs), rightParen: .rightParenToken()))
     }
 
     private static func convertComparisonAssert(
@@ -376,40 +345,24 @@ final class UseSwiftTestingNotXCTest: StaticFormatRule<BasicRuleValue>, @uncheck
 
         Self.diagnose(.convertAssertion, on: originalNode.calledExpression, context: context)
 
-        let comparison = ExprSyntax(
-            InfixOperatorExprSyntax(
-                leftOperand: lhs,
-                operator: ExprSyntax(
-                    BinaryOperatorExprSyntax(
-                        operator: .binaryOperator(
-                            op,
-                            leadingTrivia: .space,
-                            trailingTrivia: .space
-                        ))),
-                rightOperand: rhs
-            ))
+        let comparison = ExprSyntax(InfixOperatorExprSyntax(
+            leftOperand: lhs,
+            operator: ExprSyntax(BinaryOperatorExprSyntax(operator: .binaryOperator(
+                op, leadingTrivia: .space, trailingTrivia: .space))), rightOperand: rhs))
 
         var expectArgs = [LabeledExprSyntax]()
 
         if args.count == 3 {
-            expectArgs.append(
-                LabeledExprSyntax(
-                    expression: comparison,
-                    trailingComma: .commaToken(trailingTrivia: .space)
-                ))
+            expectArgs.append(LabeledExprSyntax(
+                expression: comparison, trailingComma: .commaToken(trailingTrivia: .space)))
             expectArgs.append(LabeledExprSyntax(expression: args[2].expression.trimmed))
         } else {
             expectArgs.append(LabeledExprSyntax(expression: comparison))
         }
 
-        return ExprSyntax(
-            MacroExpansionExprSyntax(
-                pound: .poundToken(),
-                macroName: .identifier("expect"),
-                leftParen: .leftParenToken(),
-                arguments: LabeledExprListSyntax(expectArgs),
-                rightParen: .rightParenToken()
-            ))
+        return ExprSyntax(MacroExpansionExprSyntax(
+            pound: .poundToken(), macroName: .identifier("expect"), leftParen: .leftParenToken(),
+            arguments: LabeledExprListSyntax(expectArgs), rightParen: .rightParenToken()))
     }
 
     private static func convertXCTFail(
@@ -431,13 +384,9 @@ final class UseSwiftTestingNotXCTest: StaticFormatRule<BasicRuleValue>, @uncheck
             callArgs.append(LabeledExprSyntax(expression: msgArg.expression.trimmed))
         }
 
-        return ExprSyntax(
-            FunctionCallExprSyntax(
-                calledExpression: ExprSyntax(issueRecord),
-                leftParen: .leftParenToken(),
-                arguments: LabeledExprListSyntax(callArgs),
-                rightParen: .rightParenToken()
-            ))
+        return ExprSyntax(FunctionCallExprSyntax(
+            calledExpression: ExprSyntax(issueRecord), leftParen: .leftParenToken(),
+            arguments: LabeledExprListSyntax(callArgs), rightParen: .rightParenToken()))
     }
 
     private static func convertXCTUnwrap(
@@ -452,24 +401,17 @@ final class UseSwiftTestingNotXCTest: StaticFormatRule<BasicRuleValue>, @uncheck
         var requireArgs = [LabeledExprSyntax]()
 
         if args.count == 2 {
-            requireArgs.append(
-                LabeledExprSyntax(
-                    expression: args[0].expression.trimmed,
-                    trailingComma: .commaToken(trailingTrivia: .space)
-                ))
+            requireArgs.append(LabeledExprSyntax(
+                expression: args[0].expression.trimmed,
+                trailingComma: .commaToken(trailingTrivia: .space)))
             requireArgs.append(LabeledExprSyntax(expression: args[1].expression.trimmed))
         } else {
             requireArgs.append(LabeledExprSyntax(expression: args[0].expression.trimmed))
         }
 
-        return ExprSyntax(
-            MacroExpansionExprSyntax(
-                pound: .poundToken(),
-                macroName: .identifier("require"),
-                leftParen: .leftParenToken(),
-                arguments: LabeledExprListSyntax(requireArgs),
-                rightParen: .rightParenToken()
-            ))
+        return ExprSyntax(MacroExpansionExprSyntax(
+            pound: .poundToken(), macroName: .identifier("require"), leftParen: .leftParenToken(),
+            arguments: LabeledExprListSyntax(requireArgs), rightParen: .rightParenToken()))
     }
 
     // MARK: - Compact-pipeline FunctionDecl transform
@@ -485,9 +427,8 @@ final class UseSwiftTestingNotXCTest: StaticFormatRule<BasicRuleValue>, @uncheck
         context: Context
     ) -> DeclSyntax {
         let state = context.preferSwiftTestingState
-        guard state.hasXCTestImport, !state.bailOut, state.insideXCTestCase else {
-            return DeclSyntax(node)
-        }
+        guard state.hasXCTestImport, !state.bailOut, state.insideXCTestCase
+        else { return DeclSyntax(node) }
 
         let name = node.name.text
 
@@ -500,10 +441,7 @@ final class UseSwiftTestingNotXCTest: StaticFormatRule<BasicRuleValue>, @uncheck
         if name.hasPrefix("test"),
            node.signature.parameterClause.parameters.isEmpty,
            node.signature.returnClause == nil,
-           !node.modifiers.contains(.static)
-        {
-            return Self.convertTestMethodStatic(node)
-        }
+           !node.modifiers.contains(.static) { return Self.convertTestMethodStatic(node) }
 
         return DeclSyntax(node)
     }
@@ -512,9 +450,7 @@ final class UseSwiftTestingNotXCTest: StaticFormatRule<BasicRuleValue>, @uncheck
     /// `super.visit` ); the legacy form's post-recursion logic is preserved.
     private static func convertSetUpStatic(_ node: FunctionDeclSyntax) -> DeclSyntax {
         var result = node
-        result.modifiers = result.modifiers.filter {
-            $0.name.tokenKind != .keyword(.override)
-        }
+        result.modifiers = result.modifiers.filter { $0.name.tokenKind != .keyword(.override) }
 
         if var body = result.body {
             body.statements = Self.removeSuperCall(
@@ -525,10 +461,7 @@ final class UseSwiftTestingNotXCTest: StaticFormatRule<BasicRuleValue>, @uncheck
         let initDecl = InitializerDeclSyntax(
             attributes: result.attributes,
             modifiers: result.modifiers,
-            initKeyword: .keyword(
-                .`init`,
-                leadingTrivia: node.leadingTrivia,
-                trailingTrivia: []),
+            initKeyword: .keyword(.`init`, leadingTrivia: node.leadingTrivia, trailingTrivia: []),
             signature: result.signature,
             body: result.body)
 
@@ -537,9 +470,7 @@ final class UseSwiftTestingNotXCTest: StaticFormatRule<BasicRuleValue>, @uncheck
 
     private static func convertTearDownStatic(_ node: FunctionDeclSyntax) -> DeclSyntax {
         var result = node
-        result.modifiers = result.modifiers.filter {
-            $0.name.tokenKind != .keyword(.override)
-        }
+        result.modifiers = result.modifiers.filter { $0.name.tokenKind != .keyword(.override) }
 
         if var body = result.body {
             body.statements = Self.removeSuperCall(from: body.statements, methodName: "tearDown")
@@ -578,12 +509,8 @@ final class UseSwiftTestingNotXCTest: StaticFormatRule<BasicRuleValue>, @uncheck
         result.funcKeyword = result.funcKeyword.with(\.leadingTrivia, [])
 
         var attrList = [AttributeListSyntax.Element]()
-        attrList.append(
-            AttributeListSyntax.Element(
-                testAttr.with(
-                    \.atSign,
-                    .atSignToken(leadingTrivia: funcTrivia)
-                )))
+        attrList.append(AttributeListSyntax.Element(testAttr.with(
+            \.atSign, .atSignToken(leadingTrivia: funcTrivia))))
 
         for attr in result.attributes { attrList.append(attr) }
 
@@ -613,8 +540,8 @@ final class UseSwiftTestingNotXCTest: StaticFormatRule<BasicRuleValue>, @uncheck
             if let classDecl = stmt.item.as(ClassDeclSyntax.self) {
                 for member in classDecl.memberBlock.members {
                     if let funcDecl = member.decl.as(FunctionDeclSyntax.self),
-                       funcDecl.name.text == "tearDown",
-                       funcDecl.modifiers.contains(.override)
+                        funcDecl.name.text == "tearDown",
+                        funcDecl.modifiers.contains(.override)
                     {
                         let effects = funcDecl.signature.effectSpecifiers
                         if effects?.asyncSpecifier != nil || effects?.throwsClause != nil {
@@ -623,7 +550,7 @@ final class UseSwiftTestingNotXCTest: StaticFormatRule<BasicRuleValue>, @uncheck
                     }
 
                     if let funcDecl = member.decl.as(FunctionDeclSyntax.self),
-                       funcDecl.modifiers.contains(.override)
+                        funcDecl.modifiers.contains(.override)
                     {
                         let name = funcDecl.name.text
                         let supported = ["setUp", "setUpWithError", "tearDown"]
@@ -692,14 +619,10 @@ final class UseSwiftTestingNotXCTest: StaticFormatRule<BasicRuleValue>, @uncheck
         expr.is(InfixOperatorExprSyntax.self)
             || expr.is(IsExprSyntax.self)
             || expr.is(TryExprSyntax.self)
-            ? ExprSyntax(
-                TupleExprSyntax(
-                    leftParen: .leftParenToken(),
-                    elements: LabeledExprListSyntax([
-                        LabeledExprSyntax(expression: expr)
-                    ]),
-                    rightParen: .rightParenToken()
-                ))
+            ? ExprSyntax(TupleExprSyntax(
+                leftParen: .leftParenToken(),
+                elements: LabeledExprListSyntax([LabeledExprSyntax(expression: expr)]),
+                rightParen: .rightParenToken()))
             : expr
     }
 }

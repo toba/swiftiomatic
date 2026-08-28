@@ -5,7 +5,8 @@ import SwiftSyntax
 ///
 /// Lint: When a call to `addObserver(forName:object:queue:...)` is used as a statement (not stored,
 /// returned, or passed to another call), a warning is raised.
-final class RequireRetainOfNotificationObserver: LintSyntaxRule<LintOnlyValue>, @unchecked Sendable {
+final class RequireRetainOfNotificationObserver: LintSyntaxRule<LintOnlyValue>, @unchecked Sendable
+{
     override class var group: ConfigurationGroup? { .memory }
     override class var defaultValue: LintOnlyValue { .init(lint: .no) }
 
@@ -19,7 +20,7 @@ final class RequireRetainOfNotificationObserver: LintSyntaxRule<LintOnlyValue>, 
     /// True if `node` is a call of the form `<expr>.addObserver(forName:object:queue:...)` .
     private func isAddObserverCall(_ node: FunctionCallExprSyntax) -> Bool {
         guard let memberAccess = node.calledExpression.as(MemberAccessExprSyntax.self),
-              memberAccess.declName.baseName.text == "addObserver" else { return false }
+            memberAccess.declName.baseName.text == "addObserver" else { return false }
         let labels = node.arguments.map { $0.label?.text }
         return labels.starts(with: ["forName", "object", "queue"])
     }
@@ -51,10 +52,7 @@ final class RequireRetainOfNotificationObserver: LintSyntaxRule<LintOnlyValue>, 
         // Subscript usage: `dict[key] = <call>` puts the call in an ExprListSyntax with an
         // AssignmentExpr.
         if let list = parent.as(ExprListSyntax.self),
-           list.contains(where: { $0.is(AssignmentExprSyntax.self) })
-        {
-            return true
-        }
+           list.contains(where: { $0.is(AssignmentExprSyntax.self) }) { return true }
 
         // `_ = nc.addObserver(...)` is intentionally an unsuppressed warning. Other parents
         // (CodeBlockItem) are statement positions: result is discarded.

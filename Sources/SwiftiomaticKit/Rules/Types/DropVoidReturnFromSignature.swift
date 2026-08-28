@@ -37,21 +37,13 @@ final class DropVoidReturnFromSignature: StaticFormatRule<BasicRuleValue>, @unch
            identifierType.name.text == "Void",
            identifierType.genericArgumentClause?.arguments.isEmpty ?? true
         {
-            Self.diagnose(
-                .removeRedundantReturn("Void"),
-                on: identifierType,
-                context: context
-            )
+            Self.diagnose(.removeRedundantReturn("Void"), on: identifierType, context: context)
             var result = node
             result.returnClause = nil
             return result
         }
         if let tupleType = returnType.as(TupleTypeSyntax.self), tupleType.elements.isEmpty {
-            Self.diagnose(
-                .removeRedundantReturn("()"),
-                on: tupleType,
-                context: context
-            )
+            Self.diagnose(.removeRedundantReturn("()"), on: tupleType, context: context)
             var result = node
             result.returnClause = nil
             return result

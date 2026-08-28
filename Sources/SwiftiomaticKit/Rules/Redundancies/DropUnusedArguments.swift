@@ -136,20 +136,17 @@ final class DropUnusedArguments: StaticFormatRule<BasicRuleValue>, @unchecked Se
                     guard !isNameUsed(name, in: result.statements) else { continue }
 
                     Self.diagnose(.unusedClosureArgument(name), on: param.name, context: context)
-                    newParams[
-                        i] = param.with(
-                            \.name,
-                            .wildcardToken(
-                                leadingTrivia: param.name.leadingTrivia,
-                                trailingTrivia: param.name.trailingTrivia))
+                    newParams[i] = param.with(
+                        \.name,
+                        .wildcardToken(
+                            leadingTrivia: param.name.leadingTrivia,
+                            trailingTrivia: param.name.trailingTrivia))
                     changed = true
                 }
 
                 guard changed else { return ExprSyntax(node) }
-                signature.parameterClause = .simpleInput(
-                    ClosureShorthandParameterListSyntax(
-                        newParams
-                    ))
+                signature.parameterClause = .simpleInput(ClosureShorthandParameterListSyntax(
+                    newParams))
                 result.signature = signature
                 return ExprSyntax(result)
 
@@ -204,12 +201,9 @@ final class DropUnusedArguments: StaticFormatRule<BasicRuleValue>, @unchecked Se
 
             Self.diagnose(
                 .unusedForLoopVariable(name), on: identPattern.identifier, context: context)
-            result.pattern = PatternSyntax(
-                WildcardPatternSyntax(
-                    wildcard: .wildcardToken(
-                        leadingTrivia: identPattern.identifier.leadingTrivia,
-                        trailingTrivia: identPattern.identifier.trailingTrivia
-                    )))
+            result.pattern = PatternSyntax(WildcardPatternSyntax(wildcard: .wildcardToken(
+                leadingTrivia: identPattern.identifier.leadingTrivia,
+                trailingTrivia: identPattern.identifier.trailingTrivia)))
             return StmtSyntax(result)
         } else if let tuplePattern = result.pattern.as(TuplePatternSyntax.self) {
             var elements = Array(tuplePattern.elements)
@@ -225,24 +219,17 @@ final class DropUnusedArguments: StaticFormatRule<BasicRuleValue>, @unchecked Se
                 guard !usedInBody, !usedInWhere else { continue }
 
                 Self.diagnose(.unusedForLoopVariable(name), on: ident.identifier, context: context)
-                elements[
-                    i] = element.with(
-                        \.pattern,
-                        PatternSyntax(
-                            WildcardPatternSyntax(
-                                wildcard: .wildcardToken(
-                                    leadingTrivia: ident.identifier.leadingTrivia,
-                                    trailingTrivia: ident.identifier.trailingTrivia
-                                ))))
+                elements[i] = element.with(
+                    \.pattern,
+                    PatternSyntax(WildcardPatternSyntax(wildcard: .wildcardToken(
+                        leadingTrivia: ident.identifier.leadingTrivia,
+                        trailingTrivia: ident.identifier.trailingTrivia))))
                 changed = true
             }
 
             guard changed else { return visited }
-            result.pattern = PatternSyntax(
-                tuplePattern.with(
-                    \.elements,
-                    TuplePatternElementListSyntax(elements)
-                ))
+            result.pattern = PatternSyntax(tuplePattern.with(
+                \.elements, TuplePatternElementListSyntax(elements)))
             return StmtSyntax(result)
         }
 
@@ -261,17 +248,15 @@ final class DropUnusedArguments: StaticFormatRule<BasicRuleValue>, @unchecked Se
         if hasShorthandBinding(name, in: syntax) { return true }
 
         for token in syntax.tokens(viewMode: .sourceAccurate)
-        where matchesIdentifier(token, name: name) {
+            where matchesIdentifier(token, name: name)
+        {
             // Must be DeclReferenceExprSyntax.baseName
             guard let declRef = token.parent?.as(DeclReferenceExprSyntax.self),
                   declRef.baseName.id == token.id else { continue }
 
             // Exclude member access position (foo.bar — bar is not a variable use)
             if let memberAccess = declRef.parent?.as(MemberAccessExprSyntax.self),
-               memberAccess.declName.id == declRef.id
-            {
-                continue
-            }
+               memberAccess.declName.id == declRef.id { continue }
 
             // Check if shadowed by a local declaration
             if isShadowed(ref: declRef, name: name, boundaryID: boundaryID) { continue }
@@ -291,10 +276,7 @@ final class DropUnusedArguments: StaticFormatRule<BasicRuleValue>, @unchecked Se
             if let binding = child.as(OptionalBindingConditionSyntax.self),
                binding.initializer == nil,
                let ident = binding.pattern.as(IdentifierPatternSyntax.self),
-               ident.identifier.text == name
-            {
-                return true
-            }
+               ident.identifier.text == name { return true }
             if hasShorthandBinding(name, in: child) { return true }
         }
         return false
@@ -358,8 +340,7 @@ final class DropUnusedArguments: StaticFormatRule<BasicRuleValue>, @unchecked Se
 
             // If-expression: conditions shadow inside the body
             if let ifExpr = parent.as(IfExprSyntax.self),
-               current.id == Syntax(ifExpr.body).id
-            {
+               current.id == Syntax(ifExpr.body).id {
                 for cond in ifExpr.conditions where conditionBinds(name, in: cond) { return true }
             }
 
@@ -500,8 +481,7 @@ final class DropUnusedArguments: StaticFormatRule<BasicRuleValue>, @unchecked Se
         if let secondName = param.secondName {
             if param.firstName.text == "_" {
                 // `_ name:` → `_:`
-                result.firstName = param.firstName.with(
-                    \.trailingTrivia, secondName.trailingTrivia)
+                result.firstName = param.firstName.with(\.trailingTrivia, secondName.trailingTrivia)
                 result.secondName = nil
             } else {
                 // `label name:` → `label _:`
@@ -535,8 +515,7 @@ final class DropUnusedArguments: StaticFormatRule<BasicRuleValue>, @unchecked Se
         if let secondName = param.secondName {
             if param.firstName.text == "_" {
                 // `_ name:` → `_:`
-                result.firstName = param.firstName.with(
-                    \.trailingTrivia, secondName.trailingTrivia)
+                result.firstName = param.firstName.with(\.trailingTrivia, secondName.trailingTrivia)
                 result.secondName = nil
             } else {
                 // `label name:` → `label _:`

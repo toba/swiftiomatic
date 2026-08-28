@@ -66,12 +66,7 @@ final class PlaceDocCommentsBeforeModifiers: StaticFormatRule<BasicRuleValue>, @
         parent _: Syntax?,
         context: Context
     ) -> DeclSyntax {
-        DeclSyntax(
-            moveDocComments(
-                in: node,
-                keywordKeyPath: \.extensionKeyword,
-                context: context
-            ))
+        DeclSyntax(moveDocComments(in: node, keywordKeyPath: \.extensionKeyword, context: context))
     }
 
     // MARK: - Leaf declarations
@@ -91,12 +86,7 @@ final class PlaceDocCommentsBeforeModifiers: StaticFormatRule<BasicRuleValue>, @
         parent _: Syntax?,
         context: Context
     ) -> DeclSyntax {
-        DeclSyntax(
-            moveDocComments(
-                in: node,
-                keywordKeyPath: \.bindingSpecifier,
-                context: context
-            ))
+        DeclSyntax(moveDocComments(in: node, keywordKeyPath: \.bindingSpecifier, context: context))
     }
 
     static func transform(
@@ -105,12 +95,7 @@ final class PlaceDocCommentsBeforeModifiers: StaticFormatRule<BasicRuleValue>, @
         parent _: Syntax?,
         context: Context
     ) -> DeclSyntax {
-        DeclSyntax(
-            moveDocComments(
-                in: node,
-                keywordKeyPath: \.typealiasKeyword,
-                context: context
-            ))
+        DeclSyntax(moveDocComments(in: node, keywordKeyPath: \.typealiasKeyword, context: context))
     }
 
     static func transform(
@@ -128,12 +113,7 @@ final class PlaceDocCommentsBeforeModifiers: StaticFormatRule<BasicRuleValue>, @
         parent _: Syntax?,
         context: Context
     ) -> DeclSyntax {
-        DeclSyntax(
-            moveDocComments(
-                in: node,
-                keywordKeyPath: \.subscriptKeyword,
-                context: context
-            ))
+        DeclSyntax(moveDocComments(in: node, keywordKeyPath: \.subscriptKeyword, context: context))
     }
 
     // MARK: - Core logic
@@ -178,18 +158,12 @@ final class PlaceDocCommentsBeforeModifiers: StaticFormatRule<BasicRuleValue>, @
         if hasAttributes {
             var attrs = result.attributes
             let idx = attrs.startIndex
-            attrs[idx].leadingTrivia = insertDocBlock(
-                collectedDoc,
-                into: attrs[idx].leadingTrivia
-            )
+            attrs[idx].leadingTrivia = insertDocBlock(collectedDoc, into: attrs[idx].leadingTrivia)
             result.attributes = attrs
         } else {
             var mods = result.modifiers
             let idx = mods.startIndex
-            mods[idx].leadingTrivia = insertDocBlock(
-                collectedDoc,
-                into: mods[idx].leadingTrivia
-            )
+            mods[idx].leadingTrivia = insertDocBlock(collectedDoc, into: mods[idx].leadingTrivia)
             result.modifiers = mods
         }
 

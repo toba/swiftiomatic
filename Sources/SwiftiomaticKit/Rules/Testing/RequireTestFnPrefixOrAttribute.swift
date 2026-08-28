@@ -134,7 +134,8 @@ final class RequireTestFnPrefixOrAttribute: StaticFormatRule<BasicRuleValue>, @u
 
         for member in memberBlock.members {
             guard let funcDecl = member.decl.as(FunctionDeclSyntax.self),
-                  shouldAddTestAnnotation(funcDecl, framework: framework, state: state) else {
+                shouldAddTestAnnotation(funcDecl, framework: framework, state: state)
+            else {
                 newMembers.append(member)
                 continue
             }
@@ -174,6 +175,7 @@ final class RequireTestFnPrefixOrAttribute: StaticFormatRule<BasicRuleValue>, @u
         if modifiers.contains(where: { $0.name.tokenKind == .keyword(.override) }) { return false }
         if modifiers.contains(where: { $0.name.tokenKind == .keyword(.static) }) { return false }
         if funcDecl.attributes.attribute(named: "objc") != nil { return false }
+
         if modifiers.contains(where: {
             $0.name.tokenKind == .keyword(.private) || $0.name.tokenKind == .keyword(.fileprivate)
         }) {

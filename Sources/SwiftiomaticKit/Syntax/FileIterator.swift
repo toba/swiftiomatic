@@ -77,12 +77,14 @@ package struct FileIterator: Sequence, IteratorProtocol {
     private func excludeCandidates(for url: URL) -> [String] {
         let path = url.standardizedFileURL.path
         var out: [String] = []
+
         for base in [currentDirectory.standardizedFileURL, workingDirectory.standardizedFileURL] {
             let basePath = base.path
             guard !basePath.isEmpty, basePath != "/", path.hasPrefix(basePath) else { continue }
             let trimmed = String(
-                path.dropFirst(basePath.count).drop(while: { $0 == "/" || $0 == #"\"# })
-            )
+                path.dropFirst(basePath.count).drop(
+                    while: { $0 == "/" || $0 == #"\"# }
+                ))
             if !trimmed.isEmpty { out.append(trimmed) }
         }
         out.append(path)
@@ -93,17 +95,15 @@ package struct FileIterator: Sequence, IteratorProtocol {
         // excluded files get processed anyway (realm/SwiftLint #6783).
         if path.hasPrefix("/private/") {
             out.append(String(path.dropFirst("/private".count)))
-        } else if path.hasPrefix("/") {
-            out.append("/private" + path)
-        }
+        } else if path.hasPrefix("/") { out.append("/private" + path) }
         return out
     }
 
     private func isExcluded(_ url: URL) -> Bool {
         guard !excludes.isEmpty else { return false }
-        for candidate in excludeCandidates(for: url) {
-            if Glob.matchesAny(excludes, path: candidate) { return true }
-        }
+        for candidate in excludeCandidates(for: url)
+            where Glob.matchesAny(excludes, path: candidate)
+        { return true }
         return false
     }
 
@@ -158,7 +158,7 @@ package struct FileIterator: Sequence, IteratorProtocol {
                 continue
             }
             guard item.lastPathComponent.hasSuffix(fileSuffix),
-                  let (item, fileType) = fileAndType(at: item, followSymlinks: followSymlinks)
+                let (item, fileType) = fileAndType(at: item, followSymlinks: followSymlinks)
             else { continue }
             if isExcluded(item) { continue }
 
@@ -174,10 +174,9 @@ package struct FileIterator: Sequence, IteratorProtocol {
 
                     if !workingDirectory.isRoot, path.hasPrefix(workingDirectory.path) {
                         relativePath = String(
-                            path.dropFirst(workingDirectory.path.count).drop(while: {
-                                $0 == "/" || $0 == #"\"#
-                            })
-                        )
+                            path.dropFirst(workingDirectory.path.count).drop(
+                                while: { $0 == "/" || $0 == #"\"# }
+                            ))
                     } else {
                         relativePath = path
                     }
@@ -203,9 +202,9 @@ package struct FileIterator: Sequence, IteratorProtocol {
 /// - Parameters:
 ///   - url: The URL to get the file and type of.
 ///   - followSymlinks: Whether to follow symlinks.
-///   - Returns: The actual URL and type of the file at the given URL, or `nil` if the file does not
-///     exist or is not a supported file type. If `followSymlinks` is `true` , the returned URL may
-///     be different from the given URL; otherwise, it will be the same.
+/// - Returns: The actual URL and type of the file at the given URL, or `nil` if the file does not
+///   exist or is not a supported file type. If `followSymlinks` is `true` , the returned URL may be
+///   different from the given URL; otherwise, it will be the same.
 private func fileAndType(at url: URL, followSymlinks: Bool) -> (URL, FileAttributeType)? {
     func typeOfFile(at url: URL) -> FileAttributeType? {
         // We cannot use `URL.resourceValues(forKeys:)` here because it appears to behave
@@ -229,9 +228,8 @@ private func fileAndType(at url: URL, followSymlinks: Bool) -> (URL, FileAttribu
     {
         url = URL(fileURLWithPath: destination, relativeTo: url)
         // If this URL is in the visited set, we must have a symlink cycle. Ignore it gracefully.
-        guard !visited.contains(url.absoluteString), let newType = typeOfFile(at: url) else {
-            return nil
-        }
+        guard !visited.contains(url.absoluteString), let newType = typeOfFile(at: url)
+        else { return nil }
         visited.insert(url.absoluteString)
         fileType = newType
     }

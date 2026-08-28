@@ -65,8 +65,7 @@ extension TokenStream {
                             position..<position + piece.sourceLength)
                         appendToken(.comment(
                             Comment(kind: .line, leadingIndent: leadingIndent, text: text),
-                            wasEndOfLine: false
-                        ))
+                            wasEndOfLine: false))
                         generateDisableFormattingIfNecessary(position + piece.sourceLength)
                         appendNewlines(.soft)
                         isStartOfFile = false
@@ -81,8 +80,7 @@ extension TokenStream {
                             position..<position + piece.sourceLength)
                         appendToken(.comment(
                             Comment(kind: .block, leadingIndent: leadingIndent, text: text),
-                            wasEndOfLine: false
-                        ))
+                            wasEndOfLine: false))
                         generateDisableFormattingIfNecessary(position + piece.sourceLength)
                         // There is always a break after the comment to allow a discretionary
                         // newline after it.
@@ -107,8 +105,7 @@ extension TokenStream {
                     generateEnableFormattingIfNecessary(position..<position + piece.sourceLength)
                     appendToken(.comment(
                         Comment(kind: .docLine, leadingIndent: leadingIndent, text: text),
-                        wasEndOfLine: false
-                    ))
+                        wasEndOfLine: false))
                     generateDisableFormattingIfNecessary(position + piece.sourceLength)
                     appendNewlines(.soft)
                     isStartOfFile = false
@@ -119,8 +116,7 @@ extension TokenStream {
                     generateEnableFormattingIfNecessary(position..<position + piece.sourceLength)
                     appendToken(.comment(
                         Comment(kind: .docBlock, leadingIndent: leadingIndent, text: text),
-                        wasEndOfLine: false
-                    ))
+                        wasEndOfLine: false))
                     generateDisableFormattingIfNecessary(position + piece.sourceLength)
                     appendNewlines(.soft)
                     isStartOfFile = false
@@ -388,19 +384,21 @@ extension TokenStream {
     /// Whether a compact sole argument would leave its label alone at the end of the call line.
     ///
     /// Without a group around the argument, the break after the left paren reaches only as far as
-    /// the break after the label's colon, so its chunk holds the label alone. The printer then keeps
-    /// the label on the call line and breaks after the colon. The group extends that first break's
-    /// chunk over the whole argument, so it fires first and the label moves down with its value.
+    /// the break after the label's colon, so its chunk holds the label alone. The printer then
+    /// keeps the label on the call line and breaks after the colon. The group extends that first
+    /// break's chunk over the whole argument, so it fires first and the label moves down with its
+    /// value.
     ///
     /// Only a call that carries a trailing closure and no parenthesized argument list needs the
-    /// group. Every other compact value offers the printer an early break of its own, either its own
-    /// left paren or the open delimiter that follows the colon, so the label keeps company on the
-    /// line and the hug stays worth keeping.
+    /// group. Every other compact value offers the printer an early break of its own, either its
+    /// own left paren or the open delimiter that follows the colon, so the label keeps company on
+    /// the line and the hug stays worth keeping.
     func compactArgumentWouldStrandLabel(_ arguments: LabeledExprListSyntax) -> Bool {
-        guard arguments.count == 1, let only = arguments.first, only.label != nil,
+        guard arguments.count == 1,
+              let only = arguments.first,
+              only.label != nil,
               !startsWithOpenDelimiter(Syntax(only.expression)),
-              let call = only.expression.as(FunctionCallExprSyntax.self)
-        else { return false }
+              let call = only.expression.as(FunctionCallExprSyntax.self) else { return false }
         return call.leftParen == nil
     }
 
@@ -417,8 +415,7 @@ extension TokenStream {
               let labeledExpr = call.parent?.as(LabeledExprSyntax.self),
               let list = labeledExpr.parent?.as(LabeledExprListSyntax.self),
               list.count == 1,
-              list.parent?.as(FunctionCallExprSyntax.self) != nil
-        else { return false }
+              list.parent?.as(FunctionCallExprSyntax.self) != nil else { return false }
         for arg in arguments where containsClosureExpr(Syntax(arg.expression)) { return false }
         return true
     }
@@ -489,13 +486,13 @@ extension TokenStream {
 
     /// Returns the last token of the *leftmost base* of a top-level member-access chain — the base
     /// of the deepest member access (e.g. `Foo(…)` 's `)` in `Foo(…).padding().background()` , the
-    /// `coder` identifier in `coder.decodeObject(…)?.intValue` ). Used to anchor the multiline-chain
-    /// indent-boost decision (on8-mme): the boost applies only when this base spans multiple lines,
-    /// a decision taken once (at this token) and applied to the whole chain rather than per-member
-    /// (which would stair-step the indent). The walk descends called-expressions and postfix
-    /// wrappers but never into call/subscript arguments, so a chain nested inside an argument
-    /// doesn't drive the outer decision. Returns `nil` when there is no chain base (e.g. a leading
-    /// `.foo` implicit-member access).
+    /// `coder` identifier in `coder.decodeObject(…)?.intValue` ). Used to anchor the
+    /// multiline-chain indent-boost decision (on8-mme): the boost applies only when this base spans
+    /// multiple lines, a decision taken once (at this token) and applied to the whole chain rather
+    /// than per-member (which would stair-step the indent). The walk descends called-expressions
+    /// and postfix wrappers but never into call/subscript arguments, so a chain nested inside an
+    /// argument doesn't drive the outer decision. Returns `nil` when there is no chain base (e.g. a
+    /// leading `.foo` implicit-member access).
     func chainLeftmostBaseLastToken(of expr: ExprSyntax) -> TokenSyntax? {
         var current = expr
         var deepestBase: ExprSyntax?
@@ -521,10 +518,10 @@ extension TokenStream {
     }
 
     /// Brackets a binding operand (a `return` / `throw` operand or assignment RHS) in a
-    /// multiline-chain indent-boost scope so its trailing `.` chain indents one extra level when the
-    /// chain's leftmost base spans multiple lines — see `LayoutCoordinator` (on8-mme). No-op unless
-    /// `expr` is a member-access chain. Independent of any surrounding `.open` group, so it composes
-    /// with each call site's own break arrangement.
+    /// multiline-chain indent-boost scope so its trailing `.` chain indents one extra level when
+    /// the chain's leftmost base spans multiple lines — see `LayoutCoordinator` (on8-mme). No-op
+    /// unless `expr` is a member-access chain. Independent of any surrounding `.open` group, so it
+    /// composes with each call site's own break arrangement.
     func bracketMultilineChainBoost(_ expr: ExprSyntax) {
         guard isMemberAccessChain(expr) else { return }
         before(expr.firstToken(viewMode: .sourceAccurate), tokens: .multilineChainBoostStart)
@@ -605,8 +602,7 @@ extension TokenStream {
         _ call: FunctionCallExprSyntax
     ) -> Bool {
         guard let outerMember = call.parent?.as(MemberAccessExprSyntax.self),
-              outerMember.base?.id == call.id
-        else { return false }
+              outerMember.base?.id == call.id else { return false }
 
         // Skip retargeting when the head's trailing closure spans multiple source lines: a
         // multi-line head closure means the head itself wraps, and the legacy layout ( `=` break +
@@ -671,9 +667,10 @@ extension TokenStream {
                      .unsafeExpr: current = parent
                 default:
                     if parent.is(InitializerClauseSyntax.self) { return true }
+
                     if let infix = parent.as(InfixOperatorExprSyntax.self) {
                         if infix.operator.is(AssignmentExprSyntax.self),
-                           infix.rightOperand.id == current.id { return true }
+                            infix.rightOperand.id == current.id { return true }
                         // The chain is the leftmost operand of a non-assignment binary op (e.g.
                         // `chain.max() ?? fallback`). Treat the operator as transparent and keep
                         // walking up: if the whole binary expression is itself the assignment /
@@ -786,8 +783,7 @@ extension TokenStream {
     /// `obj.member = …` is not split across multiple lines.
     func isAssignmentLHS(_ expr: ExprSyntax) -> Bool {
         guard let parent = expr.parent?.as(InfixOperatorExprSyntax.self),
-              parent.leftOperand.id == expr.id
-        else { return false }
+              parent.leftOperand.id == expr.id else { return false }
         return isAssigningOperator(parent.operator)
     }
 
@@ -809,8 +805,7 @@ extension TokenStream {
     func isComparisonOperator(_ operatorExpr: ExprSyntax) -> Bool {
         guard let binOpExpr = operatorExpr.as(BinaryOperatorExprSyntax.self),
               let binOp = operatorTable.infixOperator(named: binOpExpr.operator.text),
-              let precedenceGroup = binOp.precedenceGroup
-        else { return false }
+              let precedenceGroup = binOp.precedenceGroup else { return false }
         return precedenceGroup == "ComparisonPrecedence"
     }
 
@@ -955,8 +950,7 @@ extension TokenStream {
     /// returned node's `lastToken` are delimiter tokens that shouldn't be preceded by a break.
     func outermostEnclosingNode(from node: Syntax) -> Syntax? {
         guard let afterToken = node.lastToken(viewMode: .sourceAccurate)?.nextToken(viewMode: .all),
-              closingDelimiterTokens.contains(afterToken)
-        else { return nil }
+              closingDelimiterTokens.contains(afterToken) else { return nil }
         var parenthesizedExpr = afterToken.parent
         while let nextToken = parenthesizedExpr?.lastToken(viewMode: .sourceAccurate)?.nextToken(
             viewMode: .all
@@ -965,13 +959,15 @@ extension TokenStream {
               let nextExpr = nextToken.parent
         { parenthesizedExpr = nextExpr }
         // When the parenthesized expression is the base of an optional-chaining (`?.`) or
-        // force-unwrap (`!`) postfix, climb into that postfix so its trailing `?`/`!` token is
-        // kept glued to the closing delimiter. Otherwise the postfix `?` is misread as a ternary
+        // force-unwrap (`!`) postfix, climb into that postfix so its trailing `?`/`!` token is kept
+        // glued to the closing delimiter. Otherwise the postfix `?` is misread as a ternary
         // question mark and the member break after it can fire, splitting `)?` from `.member`.
         while let parent = parenthesizedExpr?.parent,
               parent.is(OptionalChainingExprSyntax.self) || parent.is(ForceUnwrapExprSyntax.self),
-              parent.firstToken(viewMode: .sourceAccurate)
-                == parenthesizedExpr?.firstToken(viewMode: .sourceAccurate)
+              parent.firstToken(
+                  viewMode: .sourceAccurate
+              )
+                  == parenthesizedExpr?.firstToken(viewMode: .sourceAccurate)
         { parenthesizedExpr = parent }
         return parenthesizedExpr
     }

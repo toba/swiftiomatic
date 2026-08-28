@@ -13,16 +13,16 @@ final class SortGetSetAccessors: LintSyntaxRule<AccessorOrderConfiguration>, @un
     override class var group: ConfigurationGroup? { .sort }
 
     override func visit(_ node: AccessorBlockSyntax) -> SyntaxVisitorContinueKind {
-        guard let actualOrder = order(of: node), actualOrder != ruleConfig.order else {
-            return .visitChildren
-        }
+        guard let actualOrder = order(of: node), actualOrder != ruleConfig.order
+        else { return .visitChildren }
         guard case let .accessors(accessors) = node.accessors,
               let firstAccessor = accessors.first else { return .visitChildren }
 
         let isSubscript = node.parent?.as(SubscriptDeclSyntax.self) != nil
 
         diagnose(
-            .orderGetSetAccessors(expected: ruleConfig.order, isSubscript: isSubscript), on: firstAccessor)
+            .orderGetSetAccessors(expected: ruleConfig.order, isSubscript: isSubscript),
+            on: firstAccessor)
 
         return .visitChildren
     }
@@ -59,10 +59,7 @@ fileprivate extension Finding.Message {
 // MARK: - Configuration
 
 package struct AccessorOrderConfiguration: SyntaxRuleValue {
-    package enum Order: String, Codable, Sendable {
-        case getSet = "get_set"
-        case setGet = "set_get"
-    }
+    package enum Order: String, Codable, Sendable { case getSet = "get_set", setGet = "set_get" }
 
     package var rewrite = false
     package var lint: Lint = .warn

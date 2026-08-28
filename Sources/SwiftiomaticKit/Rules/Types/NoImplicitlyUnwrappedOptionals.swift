@@ -46,7 +46,7 @@ final class NoImplicitlyUnwrappedOptionals: LintSyntaxRule<LintOnlyValue>, @unch
         if node.hasTestAncestor { return .skipChildren }
         // Ignores IBOutlet variables
         for attribute in node.attributes
-        where (attribute.as(AttributeSyntax.self))?.attributeName.as(IdentifierTypeSyntax.self)?
+            where (attribute.as(AttributeSyntax.self))?.attributeName.as(IdentifierTypeSyntax.self)?
             .name.text == "IBOutlet"
         { return .skipChildren }
         // Finds type annotation for variable(s)

@@ -139,10 +139,8 @@ extension TokenStream {
             appendBeforeTokens(firstToken)
         }
 
-        appendToken(.verbatim(Verbatim(
-            text: node.description,
-            indentingBehavior: indentingBehavior
-        )))
+        appendToken(.verbatim(Verbatim(text: node.description, indentingBehavior: indentingBehavior)
+            ))
 
         if let lastToken = node.lastToken(viewMode: .sourceAccurate) {
             // Extract any comments that trail the verbatim block since they belong to the next

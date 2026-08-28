@@ -10,9 +10,9 @@ import SwiftSyntax
 /// Lint: If a MARK comment is missing a blank line before or after it, a lint warning is raised.
 ///
 /// Rewrite: Blank lines are inserted around MARK comments. The compact pipeline calls
-/// `applyInsertBlankLinesAroundMark` directly from `Rewrites/Tokens/TokenRewrites.swift` . This class
-/// only exists so the rule is registered (configuration key, group, default value). It has no visit
-/// / transform / willEnter / didExit methods — `RuleCollector` allows that.
+/// `applyInsertBlankLinesAroundMark` directly from `Rewrites/Tokens/TokenRewrites.swift` . This
+/// class only exists so the rule is registered (configuration key, group, default value). It has no
+/// visit / transform / willEnter / didExit methods — `RuleCollector` allows that.
 final class InsertBlankLinesAroundMark: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
     override static var group: ConfigurationGroup? { .blankLines }
     override static var defaultValue: BasicRuleValue { .init(rewrite: false, lint: .no) }

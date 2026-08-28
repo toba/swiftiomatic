@@ -55,23 +55,23 @@ final class DropRedundantProperty: StaticFormatRule<BasicRuleValue>, @unchecked 
         // carrying modifiers or attributes (e.g. `@preconcurrency`, `nonisolated(unsafe)`) — those
         // are part of the declaration, not the returned expression, so inlining would drop them.
         guard let varDecl = declItem.item.as(VariableDeclSyntax.self),
-              varDecl.bindingSpecifier.tokenKind == .keyword(.let),
-              varDecl.modifiers.isEmpty,
-              varDecl.attributes.isEmpty,
-              varDecl.bindings.count == 1,
-              let binding = varDecl.bindings.first,
-              let identPattern = binding.pattern.as(IdentifierPatternSyntax.self),
-              binding.typeAnnotation == nil,
-              let initializer = binding.initializer else { return nil }
+            varDecl.bindingSpecifier.tokenKind == .keyword(.let),
+            varDecl.modifiers.isEmpty,
+            varDecl.attributes.isEmpty,
+            varDecl.bindings.count == 1,
+            let binding = varDecl.bindings.first,
+            let identPattern = binding.pattern.as(IdentifierPatternSyntax.self),
+            binding.typeAnnotation == nil,
+            let initializer = binding.initializer else { return nil }
 
         let name = identPattern.identifier.text
 
         // Second item: `return <same identifier>`
         guard let returnStmt = returnItem.item.as(ReturnStmtSyntax.self),
-              let returnExpr = returnStmt.expression,
-              let declRef = returnExpr.as(DeclReferenceExprSyntax.self),
-              declRef.baseName.text == name,
-              declRef.argumentNames == nil else { return nil }
+            let returnExpr = returnStmt.expression,
+            let declRef = returnExpr.as(DeclReferenceExprSyntax.self),
+            declRef.baseName.text == name,
+            declRef.argumentNames == nil else { return nil }
 
         Self.diagnose(.removeRedundantProperty(name: name), on: varDecl, context: context)
 

@@ -42,12 +42,8 @@ final class UseWhereClauseInForLoop: StaticFormatRule<BasicRuleValue>, @unchecke
 
         switch firstStatement.item {
             case let .stmt(statement):
-                return StmtSyntax(
-                    diagnoseAndUpdateForInStatement(
-                        firstStmt: statement,
-                        forInStmt: node,
-                        context: context
-                    ))
+                return StmtSyntax(diagnoseAndUpdateForInStatement(
+                    firstStmt: statement, forInStmt: node, context: context))
             default: return StmtSyntax(node)
         }
     }
@@ -115,10 +111,7 @@ private func updateWithWhereCondition(
         leadingTrivia: whereLeadingTrivia,
         trailingTrivia: .spaces(1)
     )
-    let whereClause = WhereClauseSyntax(
-        whereKeyword: whereKeyword,
-        condition: condition
-    )
+    let whereClause = WhereClauseSyntax(whereKeyword: whereKeyword, condition: condition)
 
     // Replace the where clause and extract the body from the IfStmt.
     var result = node

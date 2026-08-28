@@ -92,10 +92,7 @@ final class DropRedundantNilInit: StaticFormatRule<BasicRuleValue>, @unchecked S
         // `Optional<T>` syntax
         if let identifierType = type.as(IdentifierTypeSyntax.self),
            identifierType.name.text == "Optional",
-           identifierType.genericArgumentClause != nil
-        {
-            return true
-        }
+           identifierType.genericArgumentClause != nil { return true }
 
         return false
     }

@@ -72,17 +72,12 @@ fileprivate extension LayoutSwitchCaseBodies {
 
         // Put statements on a new line with body indentation.
         var items = Array(result.statements)
-        items[
-            0] = items[0].with(
-                \.leadingTrivia,
-                .newline + Trivia(stringLiteral: bodyIndent)
-            )
+        items[0] = items[0].with(\.leadingTrivia, .newline + Trivia(stringLiteral: bodyIndent))
 
         // Ensure the colon has a clean trailing trivia (no leftover spaces). A comment after the
         // colon stays on the label line, otherwise the rewrite deletes it.
-        result = result.withUpdatedColon(
-            trailingTrivia: throughLastComment(colonToken(node).trailingTrivia)
-        )
+        result = result.withUpdatedColon(trailingTrivia: throughLastComment(
+            colonToken(node).trailingTrivia))
         result.statements = CodeBlockItemListSyntax(items)
 
         return result
@@ -107,12 +102,13 @@ fileprivate extension LayoutSwitchCaseBodies {
         // The line that needs to fit is the one carrying the colon — for a multi-pattern label
         // split across lines, that's the last line of the label (which already includes its own
         // alignment whitespace as interior trivia preserved by `trimmedDescription`).
-        let labelLines = labelText.split(omittingEmptySubsequences: false, whereSeparator: \.isNewline)
+        let labelLines = labelText.split(
+            omittingEmptySubsequences: false, whereSeparator: \.isNewline)
         let isMultiLine = labelLines.count > 1
         let labelLastLine = labelLines.last.map(String.init) ?? labelText
 
-        // "case .foo: body" or "default: body" — for multi-line labels, drop the case indent
-        // since the last line's leading alignment is already in `labelLastLine`.
+        // "case .foo: body" or "default: body" — for multi-line labels, drop the case indent since
+        // the last line's leading alignment is already in `labelLastLine`.
         let leadingWidth = isMultiLine ? 0 : caseIndent(node).count
         let totalLength = leadingWidth + labelLastLine.count + " ".count + bodyText.count
         let maxLength = context.configuration[LineLength.self]
@@ -150,13 +146,13 @@ fileprivate extension LayoutSwitchCaseBodies {
         return firstStmt.leadingTrivia.contains(where: \.isComment)
     }
 
-    /// The prefix of `trivia` up to and including the last comment. Returns empty trivia when
-    /// there is no comment. This keeps a comment on the label line and drops the whitespace that
-    /// followed it.
+    /// The prefix of `trivia` up to and including the last comment. Returns empty trivia when there
+    /// is no comment. This keeps a comment on the label line and drops the whitespace that followed
+    /// it.
     static func throughLastComment(_ trivia: Trivia) -> Trivia {
         let pieces = Array(trivia)
         guard let lastComment = pieces.lastIndex(where: \.isComment) else { return [] }
-        return Trivia(pieces: Array(pieces[...lastComment]))
+        return .init(pieces: Array(pieces[...lastComment]))
     }
 
     /// The colon token that ends the case label.

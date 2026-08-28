@@ -25,10 +25,7 @@ final class UseAtCNotUnderscoreCDecl: StaticFormatRule<BasicRuleValue>, @uncheck
 
         Self.diagnose(.useCAttribute, on: node.atSign, context: context)
 
-        let newIdent = identType.with(
-            \.name,
-            identType.name.with(\.tokenKind, .identifier("c"))
-        )
+        let newIdent = identType.with(\.name, identType.name.with(\.tokenKind, .identifier("c")))
         return node.with(\.attributeName, TypeSyntax(newIdent))
     }
 }

@@ -12,9 +12,9 @@
 
 import SwiftSyntax
 
-/// The module names whose import marks a file as test code for the purposes of the test-gated
-/// rules (`NoForceTry`, `NoForceUnwrap`, `NoImplicitlyUnwrappedOptionals`,
-/// `RequireCamelCaseIdentifiers`, …).
+/// The module names whose import marks a file as test code for the purposes of the test-gated rules
+/// (`NoForceTry`, `NoForceUnwrap`, `NoImplicitlyUnwrappedOptionals`, `RequireCamelCaseIdentifiers`,
+/// …).
 ///
 /// Extensible: add a module here and every test-gated rule treats files importing it as test code.
 let supportedTestLibraryModuleNames = ["XCTest", "Testing"]

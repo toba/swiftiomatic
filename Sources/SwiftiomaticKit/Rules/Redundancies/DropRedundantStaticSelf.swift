@@ -66,21 +66,19 @@ final class DropRedundantStaticSelf: StaticFormatRule<BasicRuleValue>, @unchecke
     /// the captured pre-recursion parent chain.
     private static func isInStaticContext(parent: Syntax?) -> Bool {
         var current = parent
-        // Track whether we have crossed a closure or nested-function boundary on the way up.
-        // If we have, an enclosing static func does NOT make this site static-context — the
-        // reference is inside its own scope and `Self.` is preserved (matches upstream
-        // SwiftFormat #2518 behavior).
+        // Track whether we have crossed a closure or nested-function boundary on the way up. If we
+        // have, an enclosing static func does NOT make this site static-context — the reference is
+        // inside its own scope and `Self.` is preserved (matches upstream SwiftFormat #2518
+        // behavior).
         var crossedFunctionBoundary = false
 
         while let p = current {
             // Closure body — crossing it means we are inside a closure literal.
-            if p.is(ClosureExprSyntax.self) {
-                crossedFunctionBoundary = true
-            }
+            if p.is(ClosureExprSyntax.self) { crossedFunctionBoundary = true }
 
             // For functions: if static/class → yes (unless we crossed a boundary). If a direct
-            // member (parent is MemberBlock) and NOT static → this is an instance method.
-            // Nested functions count as a boundary on the way up.
+            // member (parent is MemberBlock) and NOT static → this is an instance method. Nested
+            // functions count as a boundary on the way up.
             if let funcDecl = p.as(FunctionDeclSyntax.self) {
                 if funcDecl.modifiers.contains(anyOf: [.static, .class]) {
                     return !crossedFunctionBoundary

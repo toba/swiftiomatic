@@ -13,7 +13,9 @@ import SwiftSyntax
 /// `applyUppercaseAcronyms` directly from `Rewrites/Tokens/TokenRewrites.swift` . This class only
 /// exists so the rule is registered (configuration key, group, default value). It has no visit /
 /// transform / willEnter / didExit methods — `RuleCollector` allows that.
-final class UppercaseAcronymsInIdentifiers: StaticFormatRule<AcronymsConfiguration>, @unchecked Sendable {
+final class UppercaseAcronymsInIdentifiers: StaticFormatRule<AcronymsConfiguration>,
+    @unchecked Sendable
+{
     override static var group: ConfigurationGroup? { .naming }
     override static var defaultValue: AcronymsConfiguration {
         var config = AcronymsConfiguration()

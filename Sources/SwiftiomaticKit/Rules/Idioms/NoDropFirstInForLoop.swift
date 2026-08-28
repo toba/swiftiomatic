@@ -56,12 +56,10 @@ final class NoDropFirstInForLoop: LintSyntaxRule<LintOnlyValue>, @unchecked Send
         for hit in collector.matches { diagnose(.copyingSliceInLoop(hit.method), on: hit.call) }
     }
 
-    /// Walks `node` collecting every leaf identifier reference (e.g. `arr` from
-    /// `arr.dropFirst()` , `data` from `!data.isEmpty` ).
+    /// Walks `node` collecting every leaf identifier reference (e.g. `arr` from `arr.dropFirst()` ,
+    /// `data` from `!data.isEmpty` ).
     private func collectIdentifiers(in node: Syntax, into names: inout Set<String>) {
-        if let ref = node.as(DeclReferenceExprSyntax.self) {
-            names.insert(ref.baseName.text)
-        }
+        if let ref = node.as(DeclReferenceExprSyntax.self) { names.insert(ref.baseName.text) }
         for child in node.children(viewMode: .sourceAccurate) {
             collectIdentifiers(in: child, into: &names)
         }
@@ -103,12 +101,9 @@ private final class CopyingSliceCollector: SyntaxVisitor {
 
     override func visit(_ node: FunctionCallExprSyntax) -> SyntaxVisitorContinueKind {
         if let member = node.calledExpression.as(MemberAccessExprSyntax.self),
-           methods.contains(member.declName.baseName.text),
-           let receiver = leftmostIdentifier(of: member.base),
-           tracked.contains(receiver)
-        {
-            matches.append((node, member.declName.baseName.text))
-        }
+            methods.contains(member.declName.baseName.text),
+            let receiver = leftmostIdentifier(of: member.base),
+            tracked.contains(receiver) { matches.append((node, member.declName.baseName.text)) }
         return .visitChildren
     }
 
@@ -136,8 +131,8 @@ private final class CopyingSliceCollector: SyntaxVisitor {
 }
 
 /// Collects identifier names that appear as the LHS of a top-level assignment ( `x = ...` ,
-/// `x.y = ...` ) inside the visited body. Used to recognise the shrink-in-place pattern
-/// ( `data = data.dropFirst()` ) where the iterated value is mutated in the loop body.
+/// `x.y = ...` ) inside the visited body. Used to recognise the shrink-in-place pattern (
+/// `data = data.dropFirst()` ) where the iterated value is mutated in the loop body.
 private final class AssignedIdentifierCollector: SyntaxVisitor {
     var names: Set<String> = []
 

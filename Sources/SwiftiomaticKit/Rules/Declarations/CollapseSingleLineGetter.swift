@@ -35,8 +35,8 @@ final class CollapseSingleLineGetter: StaticFormatRule<BasicRuleValue>, @uncheck
               accessors.count == 1,
               acc.accessorSpecifier.tokenKind == .keyword(.get),
               acc.attributes.isEmpty,
-              // Preserve any accessor modifier (`mutating`/`nonmutating`/`borrowing`/
-              // `consuming` get) — collapsing would drop it and break compilation.
+              // Preserve any accessor modifier (`mutating`/`nonmutating`/`borrowing`/ `consuming`
+              // get) — collapsing would drop it and break compilation.
               acc.modifier == nil,
               acc.effectSpecifiers == nil else { return node }
 

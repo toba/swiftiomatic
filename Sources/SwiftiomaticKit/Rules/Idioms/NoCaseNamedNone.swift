@@ -37,14 +37,13 @@ final class NoCaseNamedNone: StaticFormatRule<BasicRuleValue>, @unchecked Sendab
         context: Context
     ) -> DeclSyntax {
         let kind: String? =
-            if node.modifiers.contains(.class) { "class" }
-            else if node.modifiers.contains(.static) { "static" }
-            else { nil }
+            if node.modifiers.contains(.class) { "class" } else if node.modifiers.contains(.static)
+            { "static" } else { nil }
 
         if let kind {
             for binding in node.bindings {
                 guard let pattern = binding.pattern.as(IdentifierPatternSyntax.self),
-                      isNoneIdentifier(pattern.identifier) else { continue }
+                    isNoneIdentifier(pattern.identifier) else { continue }
                 Self.diagnose(
                     .avoidNoneStaticMember(kind: kind),
                     on: pattern.identifier,

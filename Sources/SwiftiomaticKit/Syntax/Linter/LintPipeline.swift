@@ -42,8 +42,8 @@ extension LintPipeline {
 
     /// Node-taking counterpart used for `SourceFileSyntax` alone.
     ///
-    /// The generated dispatchers call this shape for the file node. It resolves the same location
-    /// a `Context.Gate` would, so the two paths agree.
+    /// The generated dispatchers call this shape for the file node. It resolves the same location a
+    /// `Context.Gate` would, so the two paths agree.
     func visitIfEnabled<V: SyntaxRuleValue, Rule: LintSyntaxRule<V>>(
         _ visitor: (Rule) -> (SourceFileSyntax) -> SyntaxVisitorContinueKind,
         for node: SourceFileSyntax

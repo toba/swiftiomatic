@@ -28,7 +28,7 @@ final class RemoveEmptyExtensions: StaticFormatRule<BasicRuleValue>, @unchecked 
 
         for (index, item) in visited.enumerated() {
             if let ext = item.item.as(ExtensionDeclSyntax.self),
-               isRemovableEmptyExtension(ext)
+                isRemovableEmptyExtension(ext)
             {
                 Self.diagnose(
                     .removeEmptyExtension(name: ext.extendedType.trimmedDescription),

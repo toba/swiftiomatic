@@ -32,9 +32,9 @@ final class ConvertStaticStructToEnum: StaticFormatRule<BasicRuleValue>, @unchec
             members: visited.memberBlock.members
         ) else { return DeclSyntax(visited) }
 
-        // Diagnose against the original (pre-rewrite) name so the source location
-        // resolves through the file's `SourceLocationConverter` correctly.
-        // `visited` is detached from the source tree once children have been rewritten.
+        // Diagnose against the original (pre-rewrite) name so the source location resolves through
+        // the file's `SourceLocationConverter` correctly. `visited` is detached from the source
+        // tree once children have been rewritten.
         Self.diagnose(.useEnumNamespace, on: original.name, context: context)
 
         let enumDecl = EnumDeclSyntax(
@@ -111,10 +111,11 @@ final class ConvertStaticStructToEnum: StaticFormatRule<BasicRuleValue>, @unchec
             return true
         }
         if decl.is(InitializerDeclSyntax.self) { return false }
+
         if let varDecl = decl.as(VariableDeclSyntax.self) {
-            // Any attribute on a member could be a macro that synthesizes instance
-            // behavior on the host type (e.g. `@Test`, `@Observable`-style peers) —
-            // be conservative and don't rewrite.
+            // Any attribute on a member could be a macro that synthesizes instance behavior on the
+            // host type (e.g. `@Test`, `@Observable`-style peers) — be conservative and don't
+            // rewrite.
             if !varDecl.attributes.isEmpty { return false }
             return hasStaticModifier(varDecl.modifiers)
         }
@@ -142,13 +143,14 @@ final class ConvertStaticStructToEnum: StaticFormatRule<BasicRuleValue>, @unchec
         modifiers.contains { $0.name.tokenKind == .keyword(.static) }
     }
 
-    /// Returns `true` when the declaration sits inside a function/closure/accessor
-    /// body (i.e. a `CodeBlockSyntax`). Local types are typically one-off fixtures
-    /// — for example, the empty struct shapes inside swift-testing `@Test` method
-    /// bodies that exist purely to exercise dump/diff output. Rewriting those to
-    /// `enum` would change the test's semantics, so leave local declarations alone.
+    /// Returns `true` when the declaration sits inside a function/closure/accessor body (i.e. a
+    /// `CodeBlockSyntax`). Local types are typically one-off fixtures — for example, the empty
+    /// struct shapes inside swift-testing `@Test` method bodies that exist purely to exercise
+    /// dump/diff output. Rewriting those to `enum` would change the test's semantics, so leave
+    /// local declarations alone.
     private static func isLocalDeclaration(_ node: some SyntaxProtocol) -> Bool {
         var current: Syntax? = node.parent
+
         while let n = current {
             if n.is(CodeBlockSyntax.self) { return true }
             current = n.parent

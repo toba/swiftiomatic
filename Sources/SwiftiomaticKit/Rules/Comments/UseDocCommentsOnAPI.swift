@@ -3,14 +3,13 @@ import SwiftSyntax
 /// Promote regular comments on API declarations to doc comments (`//` → `///`).
 ///
 /// Comments immediately before type declarations, properties, methods, and other API-level
-/// constructs use `///` doc comment syntax. The rule will also demote a `///` to `//` in two
-/// narrow cases that would otherwise produce a misleading doc comment: when a blank line
-/// separates the comment from the declaration (orphaned), and on non-function nested
-/// declarations inside function bodies.
+/// constructs use `///` doc comment syntax. The rule will also demote a `///` to `//` in two narrow
+/// cases that would otherwise produce a misleading doc comment: when a blank line separates the
+/// comment from the declaration (orphaned), and on non-function nested declarations inside function
+/// bodies.
 ///
-/// For broader policing of doc comments inside function bodies, see
-/// `NoDocCommentsInFunctionBodies` (lint-only). For orphaned `///` not attached to any decl,
-/// see `NoOrphanedDocComment`.
+/// For broader policing of doc comments inside function bodies, see `NoDocCommentsInFunctionBodies`
+/// (lint-only). For orphaned `///` not attached to any decl, see `NoOrphanedDocComment`.
 ///
 /// Lint: When a comment style does not match the surrounding context.
 ///
@@ -64,12 +63,7 @@ final class UseDocCommentsOnAPI: StaticFormatRule<BasicRuleValue>, @unchecked Se
                 context: context
             )
         } else if decl.is(FunctionDeclSyntax.self) {
-            return processTrivia(
-                node,
-                toDocComment: true,
-                preserveRegular: false,
-                context: context
-            )
+            return processTrivia(node, toDocComment: true, preserveRegular: false, context: context)
         } else {
             return processTrivia(
                 node,
@@ -242,7 +236,9 @@ final class UseDocCommentsOnAPI: StaticFormatRule<BasicRuleValue>, @unchecked Se
     /// preserve it; instead we scan backward through the uninterrupted run (no blank lines) and
     /// preserve it when an earlier member is itself a preserved group header — i.e. it carries a
     /// regular comment and is followed by a consecutive member.
-    private static func isPrecededByConsecutivePreservedMember(_ node: MemberBlockItemSyntax) -> Bool {
+    private static func isPrecededByConsecutivePreservedMember(
+        _ node: MemberBlockItemSyntax
+    ) -> Bool {
         guard let parent = node.parent?.as(MemberBlockItemListSyntax.self) else { return false }
         let items = Array(parent)
         guard var idx = items.firstIndex(where: { $0.id == node.id }) else { return false }
@@ -260,7 +256,9 @@ final class UseDocCommentsOnAPI: StaticFormatRule<BasicRuleValue>, @unchecked Se
     }
 
     /// File-scope analogue of `isPrecededByConsecutivePreservedMember`.
-    private static func isPrecededByConsecutivePreservedCodeItem(_ node: CodeBlockItemSyntax) -> Bool {
+    private static func isPrecededByConsecutivePreservedCodeItem(
+        _ node: CodeBlockItemSyntax
+    ) -> Bool {
         guard let parent = node.parent?.as(CodeBlockItemListSyntax.self) else { return false }
         let items = Array(parent)
         guard var idx = items.firstIndex(where: { $0.id == node.id }) else { return false }
@@ -276,8 +274,9 @@ final class UseDocCommentsOnAPI: StaticFormatRule<BasicRuleValue>, @unchecked Se
         return false
     }
 
-    /// True when two or more newlines precede the first comment in `trivia` (or, absent any comment,
-    /// precede the declaration) — i.e. a blank line separates it from the preceding sibling.
+    /// True when two or more newlines precede the first comment in `trivia` (or, absent any
+    /// comment, precede the declaration) — i.e. a blank line separates it from the preceding
+    /// sibling.
     private static func hasBlankLineAbove(_ trivia: Trivia) -> Bool {
         var newlines = 0
 

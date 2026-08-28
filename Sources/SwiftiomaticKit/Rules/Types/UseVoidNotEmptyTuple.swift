@@ -32,7 +32,7 @@ final class UseVoidNotEmptyTuple: StaticFormatRule<BasicRuleValue>, @unchecked S
 
     static func willEnter(_ node: FunctionTypeSyntax, context: Context) {
         guard let returnType = node.returnClause.type.as(TupleTypeSyntax.self),
-              returnType.elements.isEmpty else { return }
+            returnType.elements.isEmpty else { return }
         Self.diagnose(.returnVoid, on: returnType, context: context)
     }
 
@@ -51,7 +51,7 @@ final class UseVoidNotEmptyTuple: StaticFormatRule<BasicRuleValue>, @unchecked S
         context _: Context
     ) -> FunctionTypeSyntax {
         guard let returnType = node.returnClause.type.as(TupleTypeSyntax.self),
-              returnType.elements.isEmpty else { return node }
+            returnType.elements.isEmpty else { return node }
 
         if hasNonWhitespaceTrivia(returnType.leftParen, at: .trailing)
             || hasNonWhitespaceTrivia(returnType.rightParen, at: .leading)
@@ -99,6 +99,7 @@ final class UseVoidNotEmptyTuple: StaticFormatRule<BasicRuleValue>, @unchecked S
             switch piece {
                 case .blockComment, .docBlockComment, .docLineComment, .unexpectedText, .lineComment
                 :
+
                     return true
                 default: break
             }

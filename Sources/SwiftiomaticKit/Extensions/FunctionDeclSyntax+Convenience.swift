@@ -15,8 +15,7 @@ import SwiftSyntax
 extension FunctionDeclSyntax {
     /// Constructs a name for a function that includes parameter labels, i.e. `foo(_:bar:)` .
     var fullDeclName: String {
-        let params = signature.parameterClause.parameters.map { param in
-            "\(param.firstName.text):"
+        let params = signature.parameterClause.parameters.map { param in "\(param.firstName.text):"
         }
         return "\(name.text)(\(params.joined()))"
     }
@@ -32,11 +31,8 @@ extension FunctionDeclSyntax {
         guard signature.effectSpecifiers?.throwsClause == nil else { return self }
 
         var result = self
-        let throwsClause = ThrowsClauseSyntax(
-            throwsSpecifier: .keyword(
-                .throws,
-                trailingTrivia: []
-            ))
+        let throwsClause = ThrowsClauseSyntax(throwsSpecifier: .keyword(.throws, trailingTrivia: [])
+        )
 
         if var effectSpecifiers = result.signature.effectSpecifiers {
             // Has async but no throws — insert throws after async, transfer body's leading trivia.

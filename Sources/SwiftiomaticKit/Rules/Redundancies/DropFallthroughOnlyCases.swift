@@ -35,9 +35,7 @@ final class DropFallthroughOnlyCases: StaticFormatRule<BasicRuleValue>, @uncheck
         original _: SwitchCaseListSyntax,
         parent _: Syntax?,
         context: Context
-    ) -> SwitchCaseListSyntax {
-        applyImpl(node, context: context, diagnose: false)
-    }
+    ) -> SwitchCaseListSyntax { applyImpl(node, context: context, diagnose: false) }
 
     private static func applyImpl(
         _ node: SwitchCaseListSyntax,
@@ -69,21 +67,11 @@ final class DropFallthroughOnlyCases: StaticFormatRule<BasicRuleValue>, @uncheck
                 }
 
                 if canMergeWithPreviousCases(switchCase) {
-                    newChildren.append(
-                        .switchCase(
-                            mergedCases(
-                                fallThroughOnlyCases + [switchCase],
-                                context: context,
-                                diagnose: diagnose
-                            )))
+                    newChildren.append(.switchCase(mergedCases(
+                        fallThroughOnlyCases + [switchCase], context: context, diagnose: diagnose)))
                 } else {
-                    newChildren.append(
-                        .switchCase(
-                            mergedCases(
-                                fallThroughOnlyCases,
-                                context: context,
-                                diagnose: diagnose
-                            )))
+                    newChildren.append(.switchCase(mergedCases(
+                        fallThroughOnlyCases, context: context, diagnose: diagnose)))
                     newChildren.append(.switchCase(switchCase))
                 }
 
@@ -109,7 +97,8 @@ final class DropFallthroughOnlyCases: StaticFormatRule<BasicRuleValue>, @uncheck
     private static func containsValueBindingPattern(_ node: Syntax) -> Bool {
         if node.is(ValueBindingPatternSyntax.self) { return true }
         for child in node.children(viewMode: .sourceAccurate)
-        where containsValueBindingPattern(child) { return true }
+            where containsValueBindingPattern(child)
+        { return true }
         return false
     }
 

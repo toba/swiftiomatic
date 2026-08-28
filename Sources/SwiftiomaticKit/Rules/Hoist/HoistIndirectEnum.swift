@@ -39,10 +39,8 @@ final class HoistIndirectEnum: StaticFormatRule<BasicRuleValue>, @unchecked Send
         let notes = indirectModifiers.map { modifier in
             Finding.Note(
                 message: .removeIndirect,
-                location: Finding.Location(
-                    modifier.startLocation(
-                        converter: context.sourceLocationConverter
-                    ))
+                location: Finding.Location(modifier.startLocation(
+                    converter: context.sourceLocationConverter))
             )
         }
         Self.diagnose(
@@ -56,18 +54,15 @@ final class HoistIndirectEnum: StaticFormatRule<BasicRuleValue>, @unchecked Send
         let newMembers = enumMembers.map {
             (member: MemberBlockItemSyntax) -> MemberBlockItemSyntax in
             guard let caseMember = member.decl.as(EnumCaseDeclSyntax.self),
-                  caseMember.modifiers.contains(anyOf: [.indirect]),
-                  let firstModifier = caseMember.modifiers.first else { return member }
+                caseMember.modifiers.contains(anyOf: [.indirect]),
+                let firstModifier = caseMember.modifiers.first else { return member }
 
             var newCase = caseMember
             newCase.modifiers.remove(anyOf: [.indirect])
 
             var newMember = member
-            newMember.decl = DeclSyntax(
-                rearrangeLeadingTrivia(
-                    firstModifier.leadingTrivia,
-                    on: newCase
-                ))
+            newMember.decl = DeclSyntax(rearrangeLeadingTrivia(
+                firstModifier.leadingTrivia, on: newCase))
             return newMember
         }
 

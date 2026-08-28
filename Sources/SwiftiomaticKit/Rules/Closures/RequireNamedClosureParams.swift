@@ -34,13 +34,9 @@ final class RequireNamedClosureParams: StaticFormatRule<BasicRuleValue>, @unchec
     static func willEnter(_ node: ClosureExprSyntax, context: Context) {
         let converter = context.sourceLocationConverter
         let startLine = converter
-            .location(
-                for: node.leftBrace.positionAfterSkippingLeadingTrivia
-            ).line
+            .location(for: node.leftBrace.positionAfterSkippingLeadingTrivia).line
         let endLine = converter
-            .location(
-                for: node.rightBrace.endPositionBeforeTrailingTrivia
-            ).line
+            .location(for: node.rightBrace.endPositionBeforeTrailingTrivia).line
         state(context).stack.append(startLine != endLine)
     }
 

@@ -2,13 +2,12 @@ import SwiftSyntax
 
 /// Flags `// sm:ignore` directives whose listed rules suppressed nothing.
 ///
-/// Stale ignore directives accumulate as code evolves: a rule renamed, a finding stops firing,
-/// or a typo'd rule name was never valid. This rule walks every `// sm:ignore Rule1, Rule2`
-/// directive after all other passes and emits a finding for each rule name whose hit count
-/// stayed at zero.
+/// Stale ignore directives accumulate as code evolves: a rule renamed, a finding stops firing, or a
+/// typo'd rule name was never valid. This rule walks every `// sm:ignore Rule1, Rule2` directive
+/// after all other passes and emits a finding for each rule name whose hit count stayed at zero.
 ///
-/// Bare `// sm:ignore` (all rules) is never flagged: proving "no rule fired" requires running
-/// every rule against every node in the directive's range, which would be expensive and noisy.
+/// Bare `// sm:ignore` (all rules) is never flagged: proving "no rule fired" requires running every
+/// rule against every node in the directive's range, which would be expensive and noisy.
 ///
 /// See issue `ekr-k5l`.
 final class FlagUnusedIgnoreDirective: LintSyntaxRule<LintOnlyValue>, @unchecked Sendable {
@@ -17,20 +16,22 @@ final class FlagUnusedIgnoreDirective: LintSyntaxRule<LintOnlyValue>, @unchecked
     /// Empty pre-visit: needed only to register this rule on `SourceFileSyntax` in the generated
     /// pipeline (the rule collector keys dispatch off `visit`, not `visitPost`). All work happens
     /// in `visitPost`, after every other rule has stamped its hits on `RuleMask`.
-    override func visit(_ node: SourceFileSyntax) -> SyntaxVisitorContinueKind { .visitChildren }
+    override func visit(_: SourceFileSyntax) -> SyntaxVisitorContinueKind { .visitChildren }
 
     /// Runs after every other rule has visited the file (and stamped hits on `RuleMask`'s
     /// directives). For each subset directive, emit one finding per unused rule name.
-    override func visitPost(_ node: SourceFileSyntax) {
+    override func visitPost(_: SourceFileSyntax) {
         let queried = context.ruleMask.queriedRules
+
         for directive in context.ruleMask.directives {
             guard case let .subset(ruleNames) = directive.scope else { continue }
+
             for name in ruleNames where directive.hitsPerRule[name] == nil {
                 // Skip known rule keys that never queried the mask in this run: the rule is
                 // inactive (disabled by config, or its implementation never reaches `ruleState`),
-                // so we have no signal whether the directive is a dead hedge or a valid one.
-                // Typo'd names (not in `allRuleKeys`) are still flagged — they can't suppress
-                // anything by definition.
+                // so we have no signal whether the directive is a dead hedge or a valid one. Typo'd
+                // names (not in `allRuleKeys`) are still flagged — they can't suppress anything by
+                // definition.
                 if !queried.contains(name), ConfigurationRegistry.allRuleKeys.contains(name) {
                     continue
                 }

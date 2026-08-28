@@ -16,9 +16,10 @@ extension TokenStream {
     func visitIfConfigDecl(_ node: IfConfigDeclSyntax) -> SyntaxVisitorContinueKind {
         // There has to be a break after an #endif. An attribute-list #if keeps an elective break so
         // the attribute can hug the following declaration; a postfix-chain #if keeps it elective
-        // only when existing line breaks are respected; everything else forces a soft newline so the
-        // #endif can't merge onto the following declaration.
+        // only when existing line breaks are respected; everything else forces a soft newline so
+        // the #endif can't merge onto the following declaration.
         let newlines: NewlineBehavior
+
         if node.parent?.is(AttributeListSyntax.self) == true {
             newlines = .elective
         } else if isNestedInPostfixIfConfig(node: Syntax(node)) {
@@ -197,7 +198,8 @@ extension TokenStream {
                 !shouldFormatterIgnore(node: Syntax($0))
             }),
                item.item.is(ImportDeclSyntax.self),
-               nextItem.item.is(ImportDeclSyntax.self) {
+               nextItem.item.is(ImportDeclSyntax.self)
+            {
                 newlines = .soft(count: 1, discretionary: false, maxBlankLines: 0)
             }
 

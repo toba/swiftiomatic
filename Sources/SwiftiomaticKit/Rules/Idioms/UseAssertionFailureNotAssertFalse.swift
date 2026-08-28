@@ -10,7 +10,8 @@ import SwiftSyntax
 ///
 /// Rewrite: The call is replaced with the corresponding `Failure` variant, removing the `false`
 /// argument.
-final class UseAssertionFailureNotAssertFalse: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
+final class UseAssertionFailureNotAssertFalse: StaticFormatRule<BasicRuleValue>, @unchecked Sendable
+{
     static let rewriteOrder = 420
 
     override class var group: ConfigurationGroup? { .idioms }
@@ -51,8 +52,7 @@ final class UseAssertionFailureNotAssertFalse: StaticFormatRule<BasicRuleValue>,
         // Fix up the first remaining argument: remove its label's leading trivia artifacts and
         // remove any leading comma trivia
         if !newArguments.isEmpty {
-            newArguments[
-                0] = newArguments[0]
+            newArguments[0] = newArguments[0]
                 .with(\.leadingTrivia, firstArg.expression.leadingTrivia)
         }
 

@@ -1,5 +1,5 @@
-import SwiftOperators
 import SwiftSyntax
+import SwiftOperators
 
 /// Move inline `try` keyword(s) to the start of the expression.
 ///
@@ -77,8 +77,8 @@ final class HoistTry: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
     /// Moves a hoisted `try` out of a prefix operator.
     ///
     /// The call transform puts `try` at the start of the call it rewrites. When the call sits
-    /// behind a prefix operator, that spot is inside the operator, and `!try foo()` does not
-    /// parse. The `try` belongs in front of the operator instead: `try !foo()` .
+    /// behind a prefix operator, that spot is inside the operator, and `!try foo()` does not parse.
+    /// The `try` belongs in front of the operator instead: `try !foo()` .
     static func transform(
         _ node: PrefixOperatorExprSyntax,
         original _: PrefixOperatorExprSyntax,
@@ -86,8 +86,7 @@ final class HoistTry: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
         context _: Context
     ) -> ExprSyntax {
         guard let tryExpr = node.expression.as(TryExprSyntax.self),
-              tryExpr.questionOrExclamationMark == nil
-        else { return ExprSyntax(node) }
+            tryExpr.questionOrExclamationMark == nil else { return ExprSyntax(node) }
 
         var newPrefix = node.with(\.expression, tryExpr.expression)
         newPrefix.leadingTrivia = []
@@ -147,9 +146,8 @@ final class HoistTry: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
         originalTrailingTrivia: Trivia
     ) -> ExprSyntax {
         guard !hadTryBefore,
-              let tryExpr = awaitNode.expression.as(TryExprSyntax.self) else {
-            return ExprSyntax(awaitNode)
-        }
+              let tryExpr = awaitNode.expression.as(TryExprSyntax.self)
+        else { return ExprSyntax(awaitNode) }
 
         // Move try outside await
         var newAwait = awaitNode.with(\.expression, tryExpr.expression)
@@ -193,22 +191,19 @@ final class HoistTry: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
             if let tryExpr = arg.expression.as(TryExprSyntax.self) { return tryExpr }
 
             if let awaitExpr = arg.expression.as(AwaitExprSyntax.self),
-               let tryExpr = awaitExpr.expression.as(TryExprSyntax.self)
-            {
-                return tryExpr
-            }
+                let tryExpr = awaitExpr.expression.as(TryExprSyntax.self) { return tryExpr }
         }
         return nil
     }
 
-    /// Returns `true` when the hoisted `try` would land to the right of a non-assignment
-    /// operator. Swift rejects that position with "'try' cannot appear to the right of a
-    /// non-assignment operator".
+    /// Returns `true` when the hoisted `try` would land to the right of a non-assignment operator.
+    /// Swift rejects that position with "'try' cannot appear to the right of a non-assignment
+    /// operator".
     ///
-    /// The walk follows the nodes the hoist cascades through, so it tracks where the `try` ends
-    /// up. Once the walk leaves an operand of an infix operator, the position is fixed, and only
-    /// a further infix ancestor can still invalidate it. An assignment operator accepts `try` on
-    /// its right, so the walk stops there.
+    /// The walk follows the nodes the hoist cascades through, so it tracks where the `try` ends up.
+    /// Once the walk leaves an operand of an infix operator, the position is fixed, and only a
+    /// further infix ancestor can still invalidate it. An assignment operator accepts `try` on its
+    /// right, so the walk stops there.
     private static func isRightOfNonAssignmentOperator(
         _ node: some SyntaxProtocol,
         context: Context
@@ -241,8 +236,8 @@ final class HoistTry: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
         return false
     }
 
-    /// Returns `true` for `=` and for any infix operator in the `AssignmentPrecedence` group,
-    /// such as `+=` .
+    /// Returns `true` for `=` and for any infix operator in the `AssignmentPrecedence` group, such
+    /// as `+=` .
     private static func isAssignmentOperator(_ expr: ExprSyntax, context: Context) -> Bool {
         if expr.is(AssignmentExprSyntax.self) { return true }
         guard let binary = expr.as(BinaryOperatorExprSyntax.self) else { return false }

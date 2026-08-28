@@ -369,9 +369,7 @@ final class BreakBeforeMultilineBrace: StaticFormatRule<BasicRuleValue>, @unchec
         guard trimmed != prevToken.trailingTrivia else { return }
 
         let rewritten = TokenStripper(targetID: prevToken.id, newTrailing: trimmed)
-            .rewrite(
-                Syntax(decl)
-            )
+            .rewrite(Syntax(decl))
         decl = rewritten.cast(D.self)
     }
 
@@ -396,9 +394,7 @@ final class BreakBeforeMultilineBrace: StaticFormatRule<BasicRuleValue>, @unchec
         let trimmed = prevToken.trailingTrivia.trimmingTrailingWhitespace
         guard trimmed != prevToken.trailingTrivia else { return }
         node = TokenStripper(targetID: prevToken.id, newTrailing: trimmed)
-            .rewrite(
-                Syntax(node)
-            ).cast(N.self)
+            .rewrite(Syntax(node)).cast(N.self)
     }
 }
 

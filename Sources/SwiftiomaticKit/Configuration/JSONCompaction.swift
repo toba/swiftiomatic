@@ -85,6 +85,7 @@ enum JSONCompaction {
         // second space after the colon that precedes it.
         let separator = keyPrefix.isEmpty ? "" : " "
 
-        return "\(indent)\(keyPrefix)\(separator){ \(pairs.joined(separator: ", ")) }\(trailingComma)"
+        return
+            "\(indent)\(keyPrefix)\(separator){ \(pairs.joined(separator: ", ")) }\(trailingComma)"
     }
 }

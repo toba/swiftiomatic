@@ -29,11 +29,7 @@ final class RequireParameterAndReturnDocs: LintSyntaxRule<LintOnlyValue>, @unche
     override class var defaultValue: LintOnlyValue { .init(lint: .no) }
 
     override func visit(_ node: InitializerDeclSyntax) -> SyntaxVisitorContinueKind {
-        checkFunctionLikeDocumentation(
-            DeclSyntax(node),
-            name: "init",
-            signature: node.signature
-        )
+        checkFunctionLikeDocumentation(DeclSyntax(node), name: "init", signature: node.signature)
     }
 
     override func visit(_ node: FunctionDeclSyntax) -> SyntaxVisitorContinueKind {
@@ -59,10 +55,7 @@ final class RequireParameterAndReturnDocs: LintSyntaxRule<LintOnlyValue>, @unche
         if docComment.briefSummary != nil,
            docComment.bodyNodes.isEmpty,
            docComment.parameters.isEmpty,
-           docComment.returns == nil
-        {
-            return .skipChildren
-        }
+           docComment.returns == nil { return .skipChildren }
 
         validateThrows(
             signature.effectSpecifiers?.throwsClause?.throwsSpecifier,
@@ -70,12 +63,7 @@ final class RequireParameterAndReturnDocs: LintSyntaxRule<LintOnlyValue>, @unche
             throwsDescription: docComment.throws,
             node: node
         )
-        validateReturn(
-            returnClause,
-            name: name,
-            returnsDescription: docComment.returns,
-            node: node
-        )
+        validateReturn(returnClause, name: name, returnsDescription: docComment.returns, node: node)
         let funcParameters = funcParametersIdentifiers(in: signature.parameterClause.parameters)
 
         // If the documentation of the parameters is wrong 'docCommentInfo' won't parse the
@@ -110,10 +98,7 @@ final class RequireParameterAndReturnDocs: LintSyntaxRule<LintOnlyValue>, @unche
             diagnose(.removeReturnComment(funcName: name), on: node)
         } else if let returnClause, returnsDescription == nil {
             if let returnTypeIdentifier = returnClause.type.as(IdentifierTypeSyntax.self),
-               returnTypeIdentifier.name.text == "Never"
-            {
-                return
-            }
+                returnTypeIdentifier.name.text == "Never" { return }
             diagnose(.documentReturnValue(funcName: name), on: returnClause)
         }
     }

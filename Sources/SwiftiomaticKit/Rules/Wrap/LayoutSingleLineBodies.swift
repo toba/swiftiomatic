@@ -631,8 +631,8 @@ extension LayoutSingleLineBodies {
     /// Whether a wrapped condition list would bury the body's opening brace
     ///
     /// A condition list that wraps still reads as one block when every continuation line starts at
-    /// the column of the first condition. A continuation at any other column reads as a nested body,
-    /// so a brace and a body folded onto it are no longer separable from the condition.
+    /// the column of the first condition. A continuation at any other column reads as a nested
+    /// body, so a brace and a body folded onto it are no longer separable from the condition.
     ///
     /// The conditions come from the original node, because a rewritten node carries no position in
     /// the file.
@@ -647,9 +647,8 @@ extension LayoutSingleLineBodies {
         let startColumn = first.startLocation(converter: context.sourceLocationConverter).column
 
         for token in conditions.tokens(viewMode: .sourceAccurate)
-        where token.leadingTrivia.containsNewlines {
-            if token.leadingTrivia.indentationWidth + 1 != startColumn { return true }
-        }
+            where token.leadingTrivia.containsNewlines
+        { if token.leadingTrivia.indentationWidth + 1 != startColumn { return true } }
         return false
     }
 
@@ -788,11 +787,8 @@ extension LayoutSingleLineBodies {
         context: Context
     ) -> StmtSyntax {
         guard !Self.conditionsBuryTheBrace(original.conditions, context: context),
-              let body = Self.inlinedBody(
-                  node.body,
-                  message: .inlineLoopBody,
-                  context: context
-              ) else { return StmtSyntax(node) }
+              let body = Self.inlinedBody(node.body, message: .inlineLoopBody, context: context)
+        else { return StmtSyntax(node) }
 
         var result = node
         result.body = body

@@ -134,13 +134,12 @@ package struct DocumentationComment {
 
         for child in list.children {
             guard let listItem = child as? ListItem,
-                  let firstText = listItem.child(through: [
-                      (0, Paragraph.self),
-                      (0, Text.self),
-                  ]) as? Text,
+                  let firstText = listItem.child(through: [(0, Paragraph.self), (0, Text.self)])
+                      as? Text,
                   firstText.string.trimmingCharacters(in: .whitespaces)
                       .lowercased()
-                      == "parameters:" else {
+                      == "parameters:"
+            else {
                 unprocessedChildren.append(child.detachedFromParent)
                 continue
             }
@@ -174,7 +173,8 @@ package struct DocumentationComment {
         for child in list.children {
             guard let listItem = child as? ListItem,
                   let paramField = parameterField(
-                      extractedFrom: listItem, expectParameterLabel: true) else {
+                      extractedFrom: listItem, expectParameterLabel: true)
+            else {
                 unprocessedChildren.append(child.detachedFromParent)
                 continue
             }
@@ -219,7 +219,8 @@ package struct DocumentationComment {
                   case var rewriter = SimpleFieldMarkupRewriter(origin: listItem),
                   listItem.accept(&rewriter) as? ListItem != nil,
                   let name = rewriter.fieldName,
-                  let paragraph = rewriter.paragraph else {
+                  let paragraph = rewriter.paragraph
+            else {
                 unprocessedChildren.append(child)
                 continue
             }

@@ -50,7 +50,7 @@ package final class LintCoordinator {
     ///   - url: The URL of the file containing the code to format.
     ///   - parsingDiagnosticHandler: An optional callback that will be notified if there are any
     ///     errors when parsing the source code.
-    ///   - Throws: If an unrecoverable error occurs when formatting the code.
+    /// - Throws: If an unrecoverable error occurs when formatting the code.
     package func lint(
         contentsOf url: URL,
         parsingDiagnosticHandler: ((Diagnostic, SourceLocation) -> Void)? = nil
@@ -94,7 +94,7 @@ package final class LintCoordinator {
     ///     spelling defined in the compiler's `Features.def` file.
     ///   - parsingDiagnosticHandler: An optional callback that will be notified if there are any
     ///     errors when parsing the source code.
-    ///   - Throws: If an unrecoverable error occurs when formatting the code.
+    /// - Throws: If an unrecoverable error occurs when formatting the code.
     package func lint(
         source: String,
         assumingFileURL url: URL,
@@ -137,7 +137,7 @@ package final class LintCoordinator {
     ///     This must be the same operator table that was used to fold the expressions in the
     ///     `syntax` argument.
     ///   - url: A file URL denoting the filename/path that should be assumed for this syntax tree.
-    ///   - Throws: If an unrecoverable error occurs when formatting the code.
+    /// - Throws: If an unrecoverable error occurs when formatting the code.
     package func lint(
         syntax: SourceFileSyntax,
         source: String,

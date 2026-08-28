@@ -32,8 +32,8 @@ final class UseIsEmpty: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
 
         // Normal form: expr.count <op> 0
         if let memberAccess = infixNode.leftOperand.as(MemberAccessExprSyntax.self),
-           memberAccess.declName.baseName.text == "count",
-           isZeroLiteral(infixNode.rightOperand)
+            memberAccess.declName.baseName.text == "count",
+            isZeroLiteral(infixNode.rightOperand)
         {
             if let result = transformCountComparison(
                 infixNode: infixNode,
@@ -47,8 +47,8 @@ final class UseIsEmpty: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
 
         // Yoda form: 0 <op> expr.count
         if let memberAccess = infixNode.rightOperand.as(MemberAccessExprSyntax.self),
-           memberAccess.declName.baseName.text == "count",
-           isZeroLiteral(infixNode.leftOperand)
+            memberAccess.declName.baseName.text == "count",
+            isZeroLiteral(infixNode.leftOperand)
         {
             // Flip the operator for yoda comparison
             let flippedOp: String
@@ -110,12 +110,8 @@ final class UseIsEmpty: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
         if isOptionalChain {
             // foo?.isEmpty == true / foo?.isEmpty != true
             let compOp = wantIsEmpty ? "==" : "!="
-            let newBinOp = BinaryOperatorExprSyntax(
-                operator: .binaryOperator(
-                    compOp,
-                    leadingTrivia: .space,
-                    trailingTrivia: .space
-                ))
+            let newBinOp = BinaryOperatorExprSyntax(operator: .binaryOperator(
+                compOp, leadingTrivia: .space, trailingTrivia: .space))
             let trueExpr = BooleanLiteralExprSyntax(literal: .keyword(.true))
             let result = InfixOperatorExprSyntax(
                 leftOperand: ExprSyntax(isEmptyAccess),
@@ -144,10 +140,7 @@ final class UseIsEmpty: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
                 trailingTrivia: [],
                 presence: .present
             )
-            let prefixExpr = PrefixOperatorExprSyntax(
-                operator: bangToken,
-                expression: isEmptyExpr
-            )
+            let prefixExpr = PrefixOperatorExprSyntax(operator: bangToken, expression: isEmptyExpr)
             return ExprSyntax(prefixExpr)
         }
     }

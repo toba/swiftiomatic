@@ -101,7 +101,7 @@ final class UseFilePrivateForFileLocal: StructuralFormatRule<
     ///   - modifiers: The modifier list of the declaration (i.e., `decl.modifiers` ).
     ///   - factory: A reference to the `decl` 's `withModifiers` instance method that is called to
     ///     rewrite the node if needed.
-    ///   - Returns: A new node if the modifiers were rewritten, or the original node if not.
+    /// - Returns: A new node if the modifiers were rewritten, or the original node if not.
     private func rewrittenDecl<DeclType: DeclSyntaxProtocol & WithModifiersSyntax>(
         _ decl: DeclType
     ) -> DeclType {
@@ -150,10 +150,7 @@ fileprivate extension Finding.Message {
 // MARK: - Configuration
 
 package struct FileScopedDeclarationPrivacyConfiguration: SyntaxRuleValue {
-    package enum AccessLevel: String, Codable, Sendable {
-        case `private`
-        case `fileprivate`
-    }
+    package enum AccessLevel: String, Codable, Sendable { case `private`, `fileprivate` }
 
     package var rewrite = true
     package var lint: Lint = .warn

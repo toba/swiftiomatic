@@ -12,7 +12,8 @@ import SwiftSyntax
 /// raised.
 ///
 /// Rewrite: A blank line is inserted after the declaration.
-final class InsertBlankLineBetweenScopes: StructuralFormatRule<BasicRuleValue>, @unchecked Sendable {
+final class InsertBlankLineBetweenScopes: StructuralFormatRule<BasicRuleValue>, @unchecked Sendable
+{
     override static var group: ConfigurationGroup? { .blankLines }
     override static var defaultValue: BasicRuleValue { .init(rewrite: false, lint: .no) }
 
@@ -25,10 +26,7 @@ final class InsertBlankLineBetweenScopes: StructuralFormatRule<BasicRuleValue>, 
     override func visit(_ node: MemberBlockSyntax) -> MemberBlockSyntax {
         let visited = super.visit(node)
         var result = visited
-        result.members = ensureBlankLines(
-            inMembers: visited.members,
-            diagnosing: node.members
-        )
+        result.members = ensureBlankLines(inMembers: visited.members, diagnosing: node.members)
         return result
     }
 

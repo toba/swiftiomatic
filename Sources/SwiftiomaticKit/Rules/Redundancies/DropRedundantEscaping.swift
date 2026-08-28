@@ -26,9 +26,8 @@ final class DropRedundantEscaping: StaticFormatRule<BasicRuleValue>, @unchecked 
         parent: Syntax?,
         context: Context
     ) -> DeclSyntax {
-        guard !isInsideProtocol(parent: parent), let body = node.body else {
-            return DeclSyntax(node)
-        }
+        guard !isInsideProtocol(parent: parent), let body = node.body
+        else { return DeclSyntax(node) }
         guard let rewritten = rewriteParameterClause(
             node.signature.parameterClause,
             body: body.statements,
@@ -45,9 +44,8 @@ final class DropRedundantEscaping: StaticFormatRule<BasicRuleValue>, @unchecked 
         parent: Syntax?,
         context: Context
     ) -> DeclSyntax {
-        guard !isInsideProtocol(parent: parent), let body = node.body else {
-            return DeclSyntax(node)
-        }
+        guard !isInsideProtocol(parent: parent), let body = node.body
+        else { return DeclSyntax(node) }
         guard let rewritten = rewriteParameterClause(
             node.signature.parameterClause,
             body: body.statements,
@@ -66,9 +64,8 @@ final class DropRedundantEscaping: StaticFormatRule<BasicRuleValue>, @unchecked 
         var changed = false
         let newParams = clause.parameters.map { param -> FunctionParameterSyntax in
             guard let attributedType = param.type.as(AttributedTypeSyntax.self),
-                  let escapingAttr = escapingAttribute(in: attributedType.attributes) else {
-                return param
-            }
+                let escapingAttr = escapingAttribute(in: attributedType.attributes)
+            else { return param }
             let paramName = (param.secondName ?? param.firstName).text
             let isAutoclosure = hasAttribute(named: "autoclosure", in: attributedType.attributes)
             let checker = EscapeChecker(
@@ -89,10 +86,7 @@ final class DropRedundantEscaping: StaticFormatRule<BasicRuleValue>, @unchecked 
             let newAttributes = AttributeListSyntax(
                 attributedType.attributes.compactMap { element -> AttributeListSyntax.Element? in
                     if case let .attribute(attr) = element,
-                       attributeName(of: attr) == "escaping"
-                    {
-                        return nil
-                    }
+                       attributeName(of: attr) == "escaping" { return nil }
                     return element
                 }
             )
@@ -174,9 +168,9 @@ private final class EscapeChecker: SyntaxVisitor {
         }
     }
 
-    /// Walk a binding pattern and register every identifier as a local; if the
-    /// initializer was tainted, taint each identifier as well. Handles both
-    /// `let x = …` (IdentifierPattern) and `let (x, y) = …` (TuplePattern).
+    /// Walk a binding pattern and register every identifier as a local; if the initializer was
+    /// tainted, taint each identifier as well. Handles both `let x = …` (IdentifierPattern) and
+    /// `let (x, y) = …` (TuplePattern).
     private func registerPattern(_ pattern: PatternSyntax, sourceTainted: Bool) {
         if let ident = pattern.as(IdentifierPatternSyntax.self) {
             let name = ident.identifier.text
@@ -195,7 +189,8 @@ private final class EscapeChecker: SyntaxVisitor {
 
     override func visitPost(_ node: FunctionCallExprSyntax) {
         for argument in node.arguments
-        where isTainted(argument.expression) || calleeIsTainted(argument.expression) {
+            where isTainted(argument.expression) || calleeIsTainted(argument.expression)
+        {
             doesEscape = true
             return
         }
@@ -209,19 +204,15 @@ private final class EscapeChecker: SyntaxVisitor {
             return
         }
         if let parentKind = node.parent?.kind,
-           parentKind == .arrayElement || parentKind == .dictionaryElement
-        {
-            doesEscape = true
-        }
+           parentKind == .arrayElement || parentKind == .dictionaryElement { doesEscape = true }
     }
 
     override func visitPost(_ node: InfixOperatorExprSyntax) {
-        guard node.operator.is(AssignmentExprSyntax.self), isTainted(node.rightOperand) else {
-            return
-        }
+        guard node.operator.is(AssignmentExprSyntax.self), isTainted(node.rightOperand)
+        else { return }
 
         if let leftRef = node.leftOperand.as(DeclReferenceExprSyntax.self),
-           localVariables.contains(leftRef.baseName.text)
+            localVariables.contains(leftRef.baseName.text)
         {
             taintedVariables.insert(leftRef.baseName.text)
         } else {
@@ -234,8 +225,7 @@ private final class EscapeChecker: SyntaxVisitor {
             return taintedVariables.contains(ref.baseName.text)
         }
         if let optChain = expr.as(OptionalChainingExprSyntax.self),
-           let ref = optChain.expression.as(DeclReferenceExprSyntax.self)
-        {
+           let ref = optChain.expression.as(DeclReferenceExprSyntax.self) {
             return taintedVariables.contains(ref.baseName.text)
         }
 

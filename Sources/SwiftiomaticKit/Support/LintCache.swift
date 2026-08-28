@@ -100,11 +100,11 @@ package final class LintCache: Sendable {
 
     /// A binary-stable identifier for the rule set compiled into this `sm` .
     ///
-    /// Computed once per process from sorted rule type names plus the running executable's
-    /// (path, size, mtime). When the binary gains, loses, or renames a rule, *or* when the
-    /// executable is rebuilt with no surface change but altered rule logic, the value changes,
-    /// which combined with the per-configuration JSON hash produces a new fingerprint and
-    /// orphans every prior cache subtree.
+    /// Computed once per process from sorted rule type names plus the running executable's (path,
+    /// size, mtime). When the binary gains, loses, or renames a rule, *or* when the executable is
+    /// rebuilt with no surface change but altered rule logic, the value changes, which combined
+    /// with the per-configuration JSON hash produces a new fingerprint and orphans every prior
+    /// cache subtree.
     private static let ruleSetIdentifier: String = {
         var hasher = SHA256()
         hasher.update(data: Data("rules.v2\n".utf8))
@@ -115,19 +115,20 @@ package final class LintCache: Sendable {
             hasher.update(data: Data(name.utf8))
             hasher.update(data: Data([0]))
         }
-        // Mix in the running executable's identity so that rebuilding `sm` (which can change
-        // rule logic without changing rule names) invalidates the cache. Resolve the executable
-        // via `Bundle.main.executablePath` rather than `CommandLine.arguments[0]` so that bare
+        // Mix in the running executable's identity so that rebuilding `sm` (which can change rule
+        // logic without changing rule names) invalidates the cache. Resolve the executable via
+        // `Bundle.main.executablePath` rather than `CommandLine.arguments[0]` so that bare
         // invocations like `sm lint …` (argv[0] = "sm") still hit a real file. Without this,
-        // `attributesOfItem(atPath: "sm")` fails when cwd has no `sm` file, so size/mtime drop
-        // out of the digest, the fingerprint becomes stable across rebuilds, and stale findings
-        // from a previous build are returned.
+        // `attributesOfItem(atPath: "sm")` fails when cwd has no `sm` file, so size/mtime drop out
+        // of the digest, the fingerprint becomes stable across rebuilds, and stale findings from a
+        // previous build are returned.
         if let exePath = Bundle.main.executablePath
             ?? CommandLine.arguments.first,
-            let attrs = try? FileManager.default.attributesOfItem(atPath: exePath)
+           let attrs = try? FileManager.default.attributesOfItem(atPath: exePath)
         {
             hasher.update(data: Data(exePath.utf8))
             hasher.update(data: Data([0]))
+
             if let size = attrs[.size] as? NSNumber {
                 hasher.update(data: Data("\(size.uint64Value)".utf8))
                 hasher.update(data: Data([0]))
@@ -274,8 +275,7 @@ package final class LintCache: Sendable {
             fileKey: fileKey(absolutePath: absolutePath, contentHash: contentHash)
         )
         let directory = url.deletingLastPathComponent()
-        try? FileManager.default.createDirectory(
-            at: directory, withIntermediateDirectories: true)
+        try? FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
 
         let encoded = coders.withLock { try? $0.recordEncoder.encode(record) }
         guard let data = encoded else { return }

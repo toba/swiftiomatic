@@ -38,9 +38,10 @@ enum Token: Sendable {
 
     /// Starts a scope (a binding operand: a `return` / `throw` operand or assignment RHS that is a
     /// member-access chain) where a `contextual` break firing under `.maintain` behavior — i.e. the
-    /// chain continues a *multiline* base — should receive one extra continuation indent. This makes
-    /// `let x = Foo(…multiline…).bar()` indent the chain two levels past the statement (one for the
-    /// binding continuation, one for the chain) while a bare expression chain gets only one.
+    /// chain continues a *multiline* base — should receive one extra continuation indent. This
+    /// makes `let x = Foo(…multiline…).bar()` indent the chain two levels past the statement (one
+    /// for the binding continuation, one for the chain) while a bare expression chain gets only
+    /// one.
     case multilineChainBoostStart
 
     /// Ends a `multilineChainBoostStart` scope.

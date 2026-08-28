@@ -10,7 +10,7 @@ extension Configuration {
         /// Rules found in the wrong location, with their existing values to preserve.
         package var misplaced: [Misplaced]
         /// A schema-version bump (or insertion when the file lacks a `version` field).
-        package var versionUpdate: VersionUpdate? = nil
+        package var versionUpdate: VersionUpdate?
 
         package struct VersionUpdate: Sendable, Equatable {
             /// The version found in the file, or `nil` when no `version` key was present.
@@ -25,8 +25,8 @@ extension Configuration {
         }
 
         package struct Misplaced: Sendable, Equatable {
-            /// The qualified key where the rule was found, e.g. `wrap.useIsEmpty` . For
-            /// ungrouped rules placed at root, this is the bare key.
+            /// The qualified key where the rule was found, e.g. `wrap.useIsEmpty` . For ungrouped
+            /// rules placed at root, this is the bare key.
             package var foundAt: String
             /// The canonical qualified key for the rule, e.g. `collections.useIsEmpty` .
             package var correctAt: String
@@ -75,11 +75,7 @@ extension Configuration {
                 let groupSettingKeys = settingKeys(inGroup: groupKey)
 
                 for (childKey, childValue) in groupDict where !groupSettingKeys.contains(childKey) {
-                    classify(
-                        shortKey: childKey,
-                        foundAt: "\(key).\(childKey)",
-                        value: childValue
-                    )
+                    classify(shortKey: childKey, foundAt: "\(key).\(childKey)", value: childValue)
                 }
                 continue
             }
@@ -93,10 +89,8 @@ extension Configuration {
         let versionUpdate: UpdateDiff.VersionUpdate? = {
             let target = highestSupportedConfigurationVersion
             switch root["version"] {
-                case let .int(v):
-                    return v < target ? .init(from: v, to: target) : nil
-                case .none:
-                    return .init(from: nil, to: target)
+                case let .int(v): return v < target ? .init(from: v, to: target) : nil
+                case .none: return .init(from: nil, to: target)
                 default:
                     // Non-int "version" value — treat as missing so the user gets a valid one.
                     return .init(from: nil, to: target)
@@ -134,9 +128,7 @@ extension Configuration {
         }
 
         // Schema version bump.
-        if let versionUpdate = diff.versionUpdate {
-            root["version"] = .int(versionUpdate.to)
-        }
+        if let versionUpdate = diff.versionUpdate { root["version"] = .int(versionUpdate.to) }
     }
 
     // MARK: - JSON dict mutations

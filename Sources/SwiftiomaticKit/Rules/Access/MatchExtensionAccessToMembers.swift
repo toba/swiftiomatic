@@ -63,7 +63,8 @@ fileprivate extension DeclModifierSyntax {
                 return true
             case .keyword(.internal) where parentModifiers?.effectiveAccessKeyword == nil:
                 guard let nominalExtension =
-                    nearestNominalParent.nearestNominalExtensionDeclParent() else { return false }
+                    nearestNominalParent.nearestNominalExtensionDeclParent()
+                else { return false }
                 return nominalExtension.declModifiers?.containsPrivateOrFileprivate == true
             case .keyword(.public)
                 where parentModifiers?.containsPrivateOrFileprivate == true
@@ -71,7 +72,8 @@ fileprivate extension DeclModifierSyntax {
                 return true
             case .keyword(.public) where parentModifiers?.effectiveAccessKeyword == nil:
                 guard let nominalExtension =
-                    nearestNominalParent.nearestNominalExtensionDeclParent() else { return true }
+                    nearestNominalParent.nearestNominalExtensionDeclParent()
+                else { return true }
                 return nominalExtension.declModifiers?.contains(.public) == false
                     && nominalExtension.declModifiers?.contains(.open) == false
             case .keyword(.open) where parentModifiers?.contains(.open) == false: return true

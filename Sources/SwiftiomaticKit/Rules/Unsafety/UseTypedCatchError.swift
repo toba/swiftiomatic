@@ -12,9 +12,8 @@ final class UseTypedCatchError: LintSyntaxRule<LintOnlyValue>, @unchecked Sendab
     override class var group: ConfigurationGroup? { .unsafety }
 
     override func visit(_ node: CatchClauseSyntax) -> SyntaxVisitorContinueKind {
-        guard let item = node.catchItems.only, item.isPlainIdentifierPattern else {
-            return .visitChildren
-        }
+        guard let item = node.catchItems.only, item.isPlainIdentifierPattern
+        else { return .visitChildren }
         diagnose(.useTypedCatchError, on: node.catchKeyword)
         return .visitChildren
     }
@@ -44,8 +43,7 @@ fileprivate extension CatchItemSyntax {
            tuple.elements.count == 1,
            let element = tuple.elements.first,
            let inner = element.expression.as(PatternExprSyntax.self),
-           let valueBinding = inner.pattern.as(ValueBindingPatternSyntax.self)
-        {
+           let valueBinding = inner.pattern.as(ValueBindingPatternSyntax.self) {
             return valueBinding.pattern.is(IdentifierPatternSyntax.self)
         }
         return false

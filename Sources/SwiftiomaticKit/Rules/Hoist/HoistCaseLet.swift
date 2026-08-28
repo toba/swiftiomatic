@@ -186,16 +186,8 @@ extension HoistCaseLet {
         // expressions.
         while let (kind, trivia) = patternStack.popLast() {
             result = kind == .chained
-                ? ExprSyntax(
-                    OptionalChainingExprSyntax(
-                        expression: result,
-                        trailingTrivia: trivia
-                    ))
-                : ExprSyntax(
-                    ForceUnwrapExprSyntax(
-                        expression: result,
-                        trailingTrivia: trivia
-                    ))
+                ? ExprSyntax(OptionalChainingExprSyntax(expression: result, trailingTrivia: trivia))
+                : ExprSyntax(ForceUnwrapExprSyntax(expression: result, trailingTrivia: trivia))
         }
 
         return result
@@ -206,9 +198,8 @@ extension HoistCaseLet {
         _ pattern: PatternSyntax
     ) -> (ExpressionPatternSyntax, TokenSyntax)? {
         guard let bindingPattern = pattern.as(ValueBindingPatternSyntax.self),
-              let exprPattern = bindingPattern.pattern.as(ExpressionPatternSyntax.self) else {
-            return nil
-        }
+              let exprPattern = bindingPattern.pattern.as(ExpressionPatternSyntax.self)
+        else { return nil }
 
         // Grab the `let` or `var` used in the binding pattern.
         var specifier = bindingPattern.bindingSpecifier
@@ -365,9 +356,7 @@ fileprivate extension Finding.Message {
 
     static func hoistLetFromBoundCaseVariables(
         _ specifier: TokenSyntax
-    ) -> Finding.Message {
-        "move '\(specifier.text)' keyword to precede the 'case' pattern"
-    }
+    ) -> Finding.Message { "move '\(specifier.text)' keyword to precede the 'case' pattern" }
 }
 
 /// A syntax rewriter that converts identifier patterns to bindings with the given specifier.
@@ -407,10 +396,7 @@ private final class UnbindIdentifiersRewriter: SyntaxRewriter {
 // MARK: - Configuration
 
 package struct CaseLetConfiguration: SyntaxRuleValue {
-    package enum Placement: String, Codable, Sendable {
-        case eachBinding
-        case outerPattern
-    }
+    package enum Placement: String, Codable, Sendable { case eachBinding, outerPattern }
 
     package var rewrite = true
     package var lint: Lint = .warn

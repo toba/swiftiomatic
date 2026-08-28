@@ -16,12 +16,9 @@ final class UseContinuousClockNotDate: LintSyntaxRule<LintOnlyValue>, @unchecked
 
     override func visit(_ node: FunctionCallExprSyntax) -> SyntaxVisitorContinueKind {
         if let member = node.calledExpression.as(MemberAccessExprSyntax.self),
-           member.declName.baseName.text == "timeIntervalSince",
-           let base = member.base,
-           isDateNowExpression(base)
-        {
-            diagnose(.preferContinuousClock, on: node)
-        }
+            member.declName.baseName.text == "timeIntervalSince",
+            let base = member.base,
+            isDateNowExpression(base) { diagnose(.preferContinuousClock, on: node) }
         return .visitChildren
     }
 
@@ -31,10 +28,7 @@ final class UseContinuousClockNotDate: LintSyntaxRule<LintOnlyValue>, @unchecked
         if node.parent?.is(FunctionCallExprSyntax.self) == true { return .visitChildren }
         if node.declName.baseName.text == "timeIntervalSinceNow",
            let base = node.base,
-           isDateNowExpression(base)
-        {
-            diagnose(.preferContinuousClock, on: node)
-        }
+           isDateNowExpression(base) { diagnose(.preferContinuousClock, on: node) }
         return .visitChildren
     }
 
@@ -43,17 +37,11 @@ final class UseContinuousClockNotDate: LintSyntaxRule<LintOnlyValue>, @unchecked
         if let call = expr.as(FunctionCallExprSyntax.self),
            call.arguments.isEmpty,
            let ident = call.calledExpression.as(DeclReferenceExprSyntax.self),
-           ident.baseName.text == "Date"
-        {
-            return true
-        }
+           ident.baseName.text == "Date" { return true }
         if let member = expr.as(MemberAccessExprSyntax.self),
            member.declName.baseName.text == "now",
            let base = member.base?.as(DeclReferenceExprSyntax.self),
-           base.baseName.text == "Date"
-        {
-            return true
-        }
+           base.baseName.text == "Date" { return true }
         return false
     }
 }

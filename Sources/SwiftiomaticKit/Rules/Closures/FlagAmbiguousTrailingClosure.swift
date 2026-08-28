@@ -28,10 +28,8 @@ final class FlagAmbiguousTrailingClosure: LintSyntaxRule<LintOnlyValue>, @unchec
                 notes: decls.dropFirst().map { decl in
                     Finding.Note(
                         message: .otherAmbiguousOverloadHere(decl.fullDeclName),
-                        location: Finding.Location(
-                            decl.name.startLocation(
-                                converter: self.context.sourceLocationConverter
-                            ))
+                        location: Finding.Location(decl.name.startLocation(
+                            converter: self.context.sourceLocationConverter))
                     )
                 }
             )

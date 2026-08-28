@@ -46,10 +46,10 @@ final class UseFinalClasses: StaticFormatRule<BasicRuleValue>, @unchecked Sendab
         let state = context.useFinalClassesState
         if state.subclassedNames.contains(node.name.text) { return DeclSyntax(node) }
 
-        // Diagnose against the original (pre-rewrite) node so the source location
-        // resolves through the file's `SourceLocationConverter` correctly.
-        // `node` (the visited copy) is detached from the source tree once any
-        // child has been rewritten by other rules in the same pipeline pass.
+        // Diagnose against the original (pre-rewrite) node so the source location resolves through
+        // the file's `SourceLocationConverter` correctly. `node` (the visited copy) is detached
+        // from the source tree once any child has been rewritten by other rules in the same
+        // pipeline pass.
         Self.diagnose(.useFinalClass, on: original.classKeyword, context: context)
 
         var result = node
@@ -91,8 +91,7 @@ final class UseFinalClasses: StaticFormatRule<BasicRuleValue>, @unchecked Sendab
                     case let .docLineComment(text),
                          let .docBlockComment(text),
                          let .lineComment(text),
-                         let .blockComment(text):
-                        text
+                         let .blockComment(text): text
                     default: nil
                 }
             }

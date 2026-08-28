@@ -10,12 +10,14 @@ import SwiftSyntax
 /// non-literal expressions are left alone. The `URL(string:relativeTo:)` and
 /// `URL(fileURLWithPath:)` initializers are not affected.
 ///
-/// Requires configuration via `useURLMacroForURLLiterals.macroName` and `useURLMacroForURLLiterals.moduleName` .
+/// Requires configuration via `useURLMacroForURLLiterals.macroName` and
+/// `useURLMacroForURLLiterals.moduleName` .
 ///
 /// Lint: A warning is raised for each `URL(string: "...")!` that can be converted.
 ///
 /// Rewrite: The force-unwrapped URL initializer is replaced with the configured macro.
-final class UseURLMacroForURLLiterals: StaticFormatRule<URLMacroConfiguration>, @unchecked Sendable {
+final class UseURLMacroForURLLiterals: StaticFormatRule<URLMacroConfiguration>, @unchecked Sendable
+{
     static let rewriteOrder = 1010
 
     override class var group: ConfigurationGroup? { .literals }
@@ -44,7 +46,7 @@ final class UseURLMacroForURLLiterals: StaticFormatRule<URLMacroConfiguration>, 
 
         for stmt in node.statements {
             if let importDecl = stmt.item.as(ImportDeclSyntax.self),
-               importDecl.path.first?.name.text == moduleName
+                importDecl.path.first?.name.text == moduleName
             {
                 state.hasModuleImport = true
                 break
@@ -128,9 +130,7 @@ final class UseURLMacroForURLLiterals: StaticFormatRule<URLMacroConfiguration>, 
 
         // Called expression must be `URL`
         guard let declRef = call.calledExpression.as(DeclReferenceExprSyntax.self),
-              declRef.baseName.text == "URL" else {
-            return ExprSyntax(node)
-        }
+            declRef.baseName.text == "URL" else { return ExprSyntax(node) }
 
         // Must have exactly one argument labeled `string:`
         let args = Array(call.arguments)
@@ -140,7 +140,7 @@ final class UseURLMacroForURLLiterals: StaticFormatRule<URLMacroConfiguration>, 
 
         // The argument value must be a simple string literal (no interpolation)
         guard let stringLiteral = args[0].expression.as(StringLiteralExprSyntax.self),
-              isSimpleStringLiteral(stringLiteral) else { return ExprSyntax(node) }
+            isSimpleStringLiteral(stringLiteral) else { return ExprSyntax(node) }
 
         Self.diagnose(.replaceWithURLMacro, on: node, context: context)
 

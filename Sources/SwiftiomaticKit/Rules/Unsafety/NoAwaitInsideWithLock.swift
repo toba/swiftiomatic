@@ -12,7 +12,7 @@ final class NoAwaitInsideWithLock: LintSyntaxRule<LintOnlyValue>, @unchecked Sen
 
     override func visit(_ node: FunctionCallExprSyntax) -> SyntaxVisitorContinueKind {
         guard let member = node.calledExpression.as(MemberAccessExprSyntax.self),
-              member.declName.baseName.text == "withLock" else { return .visitChildren }
+            member.declName.baseName.text == "withLock" else { return .visitChildren }
 
         let closure: ClosureExprSyntax?
 

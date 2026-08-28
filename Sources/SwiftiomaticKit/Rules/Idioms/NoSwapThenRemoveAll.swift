@@ -23,9 +23,9 @@ final class NoSwapThenRemoveAll: LintSyntaxRule<LintOnlyValue>, @unchecked Senda
 
     private func swapInOutCall(_ item: CodeBlockItemSyntax) -> FunctionCallExprSyntax? {
         guard let expr = item.item.as(FunctionCallExprSyntax.self),
-              let ident = expr.calledExpression.as(DeclReferenceExprSyntax.self),
-              ident.baseName.text == "swap",
-              expr.arguments.count == 2 else { return nil }
+            let ident = expr.calledExpression.as(DeclReferenceExprSyntax.self),
+            ident.baseName.text == "swap",
+            expr.arguments.count == 2 else { return nil }
         return expr
     }
 
@@ -44,18 +44,18 @@ final class NoSwapThenRemoveAll: LintSyntaxRule<LintOnlyValue>, @unchecked Senda
 
     private func removeAllReceiverName(_ item: CodeBlockItemSyntax) -> String? {
         guard let call = item.item.as(FunctionCallExprSyntax.self),
-              let member = call.calledExpression.as(MemberAccessExprSyntax.self),
-              member.declName.baseName.text == "removeAll",
-              let receiver = member.base?.as(DeclReferenceExprSyntax.self) else { return nil }
+            let member = call.calledExpression.as(MemberAccessExprSyntax.self),
+            member.declName.baseName.text == "removeAll",
+            let receiver = member.base?.as(DeclReferenceExprSyntax.self) else { return nil }
         // `keepingCapacity: true` is the deliberate allocation-reuse idiom (the canonical
         // double-buffer cycle), not the fragile pattern this rule targets — exempt it.
-        if call.arguments.contains(where: {
+        return call.arguments.contains(where: {
             $0.label?.text == "keepingCapacity"
-                && $0.expression.as(BooleanLiteralExprSyntax.self)?.literal.tokenKind == .keyword(.true)
-        }) {
-            return nil
-        }
-        return receiver.baseName.text
+                && $0.expression.as(BooleanLiteralExprSyntax.self)?.literal
+                    .tokenKind == .keyword(.true)
+        })
+            ? nil
+            : receiver.baseName.text
     }
 }
 

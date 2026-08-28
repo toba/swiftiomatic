@@ -52,9 +52,10 @@ fileprivate extension ExprSyntax {
             if let identifier = call.calledExpression.cowIdentifierExpr {
                 return identifier.isCopyOnWriteTypeName
             }
+
             if let member = call.calledExpression.as(MemberAccessExprSyntax.self),
-               member.declName.baseName.text == "init",
-               let identifier = member.base?.cowIdentifierExpr
+                member.declName.baseName.text == "init",
+                let identifier = member.base?.cowIdentifierExpr
             {
                 return identifier.isCopyOnWriteTypeName
             }

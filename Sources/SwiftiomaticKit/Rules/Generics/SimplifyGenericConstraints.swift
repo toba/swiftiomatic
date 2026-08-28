@@ -45,14 +45,9 @@ final class SimplifyGenericConstraints: StaticFormatRule<BasicRuleValue>, @unche
         parent _: Syntax?,
         context: Context
     ) -> DeclSyntax {
-        DeclSyntax(
-            simplifyConstraints(
-                visited,
-                original: original,
-                genericParamsKeyPath: \.genericParameterClause,
-                whereClauseKeyPath: \.genericWhereClause,
-                context: context
-            ))
+        DeclSyntax(simplifyConstraints(
+            visited, original: original, genericParamsKeyPath: \.genericParameterClause,
+            whereClauseKeyPath: \.genericWhereClause, context: context))
     }
 
     static func transform(
@@ -61,14 +56,9 @@ final class SimplifyGenericConstraints: StaticFormatRule<BasicRuleValue>, @unche
         parent _: Syntax?,
         context: Context
     ) -> DeclSyntax {
-        DeclSyntax(
-            simplifyConstraints(
-                visited,
-                original: original,
-                genericParamsKeyPath: \.genericParameterClause,
-                whereClauseKeyPath: \.genericWhereClause,
-                context: context
-            ))
+        DeclSyntax(simplifyConstraints(
+            visited, original: original, genericParamsKeyPath: \.genericParameterClause,
+            whereClauseKeyPath: \.genericWhereClause, context: context))
     }
 
     static func transform(
@@ -77,14 +67,9 @@ final class SimplifyGenericConstraints: StaticFormatRule<BasicRuleValue>, @unche
         parent _: Syntax?,
         context: Context
     ) -> DeclSyntax {
-        DeclSyntax(
-            simplifyConstraints(
-                visited,
-                original: original,
-                genericParamsKeyPath: \.genericParameterClause,
-                whereClauseKeyPath: \.genericWhereClause,
-                context: context
-            ))
+        DeclSyntax(simplifyConstraints(
+            visited, original: original, genericParamsKeyPath: \.genericParameterClause,
+            whereClauseKeyPath: \.genericWhereClause, context: context))
     }
 
     static func transform(
@@ -93,14 +78,9 @@ final class SimplifyGenericConstraints: StaticFormatRule<BasicRuleValue>, @unche
         parent _: Syntax?,
         context: Context
     ) -> DeclSyntax {
-        DeclSyntax(
-            simplifyConstraints(
-                visited,
-                original: original,
-                genericParamsKeyPath: \.genericParameterClause,
-                whereClauseKeyPath: \.genericWhereClause,
-                context: context
-            ))
+        DeclSyntax(simplifyConstraints(
+            visited, original: original, genericParamsKeyPath: \.genericParameterClause,
+            whereClauseKeyPath: \.genericWhereClause, context: context))
     }
 
     private static func simplifyConstraints<D>(
@@ -126,14 +106,15 @@ final class SimplifyGenericConstraints: StaticFormatRule<BasicRuleValue>, @unche
         // (which is built from the original tree) to the correct line/column. Anchoring on the
         // visited (rewritten) subtree gives a position relative to the detached subtree's root,
         // which floats up to whatever earlier source line shares that byte offset.
-        let originalRequirements: [GenericRequirementSyntax] = (original[keyPath: whereClauseKeyPath]?.requirements).map(Array.init) ?? []
+        let originalRequirements: [GenericRequirementSyntax] =
+            (original[keyPath: whereClauseKeyPath]?.requirements).map(Array.init) ?? []
         var consumedIndices: Set<Int> = []
         var inlineMap: [String: TypeSyntax] = [:]
 
         for (index, requirement) in whereClause.requirements.enumerated() {
             guard let conformance = requirement.requirement.as(ConformanceRequirementSyntax.self),
-                  let leftIdent = conformance.leftType.as(IdentifierTypeSyntax.self),
-                  paramNames.contains(leftIdent.name.text) else { continue }
+                let leftIdent = conformance.leftType.as(IdentifierTypeSyntax.self),
+                paramNames.contains(leftIdent.name.text) else { continue }
 
             // Skip if param already has an inline constraint or we already have one queued
             guard !paramsWithInheritance.contains(leftIdent.name.text),

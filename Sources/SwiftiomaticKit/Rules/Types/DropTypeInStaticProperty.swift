@@ -26,11 +26,10 @@ final class DropTypeInStaticProperty: LintSyntaxRule<LintOnlyValue>, @unchecked 
     /// name (excluding possible namespace prefixes, like `NS` or `UI` ) as a suffix.
     override func visit(_ node: VariableDeclSyntax) -> SyntaxVisitorContinueKind {
         guard node.modifiers.contains(anyOf: [.class, .static]),
-              let typeName = Syntax(node).containingDeclName,
-              let variableTypeName = node.typeName,
-              typeName.hasSuffix(variableTypeName) || variableTypeName == "Self" else {
-            return .visitChildren
-        }
+            let typeName = Syntax(node).containingDeclName,
+            let variableTypeName = node.typeName,
+            typeName.hasSuffix(variableTypeName) || variableTypeName == "Self"
+        else { return .visitChildren }
 
         // the final component of the top type `A.B.C.D` is what we want `D` .
         let lastTypeName = typeName.components(separatedBy: ".").last!

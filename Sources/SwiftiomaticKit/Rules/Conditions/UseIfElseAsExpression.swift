@@ -52,11 +52,11 @@ final class UseIfElseAsExpression: StaticFormatRule<BasicRuleValue>, @unchecked 
     ) -> CodeBlockItemSyntax? {
         // First item: property with type annotation and no initializer
         guard let varDecl = declItem.item.as(VariableDeclSyntax.self),
-              varDecl.bindings.count == 1,
-              let binding = varDecl.bindings.first,
-              let identPattern = binding.pattern.as(IdentifierPatternSyntax.self),
-              binding.typeAnnotation != nil,
-              binding.initializer == nil else { return nil }
+            varDecl.bindings.count == 1,
+            let binding = varDecl.bindings.first,
+            let identPattern = binding.pattern.as(IdentifierPatternSyntax.self),
+            binding.typeAnnotation != nil,
+            binding.initializer == nil else { return nil }
 
         let name = identPattern.identifier.text
 
@@ -66,10 +66,7 @@ final class UseIfElseAsExpression: StaticFormatRule<BasicRuleValue>, @unchecked 
 
         // Skip if there are comments between the declaration and the conditional
         if let firstToken = condExpr.firstToken(viewMode: .sourceAccurate),
-           firstToken.leadingTrivia.hasAnyComments
-        {
-            return nil
-        }
+           firstToken.leadingTrivia.hasAnyComments { return nil }
 
         let conditionalExpr: ExprSyntax
 
@@ -226,9 +223,7 @@ final class UseIfElseAsExpression: StaticFormatRule<BasicRuleValue>, @unchecked 
         {
             var value = infixExpr.rightOperand
             value.leadingTrivia = onlyItem.leadingTrivia
-            return CodeBlockItemListSyntax([
-                CodeBlockItemSyntax(item: .expr(value))
-            ])
+            return CodeBlockItemListSyntax([CodeBlockItemSyntax(item: .expr(value))])
         }
 
         // Nested if/switch: recurse (expression already carries its own trivia)

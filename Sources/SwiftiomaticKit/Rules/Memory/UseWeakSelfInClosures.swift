@@ -13,8 +13,7 @@ final class UseWeakSelfInClosures: LintSyntaxRule<LintOnlyValue>, @unchecked Sen
 
     override func visit(_ node: TokenSyntax) -> SyntaxVisitorContinueKind {
         if case .keyword(.unowned) = node.tokenKind,
-           node.parent?.is(ClosureCaptureSpecifierSyntax.self) == true
-        {
+           node.parent?.is(ClosureCaptureSpecifierSyntax.self) == true {
             diagnose(.useWeakSelfInClosures, on: node)
         }
         return .visitChildren

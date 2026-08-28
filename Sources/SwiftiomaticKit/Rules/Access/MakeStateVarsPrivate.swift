@@ -60,9 +60,8 @@ final class MakeStateVarsPrivate: StaticFormatRule<BasicRuleValue>, @unchecked S
     private static func hasAttribute(named name: String, on node: VariableDeclSyntax) -> Bool {
         node.attributes.contains { element in
             guard let attr = element.as(AttributeSyntax.self),
-                  let attrName = attr.attributeName.as(IdentifierTypeSyntax.self) else {
-                return false
-            }
+                  let attrName = attr.attributeName.as(IdentifierTypeSyntax.self)
+            else { return false }
             return attrName.name.text == name
         }
     }

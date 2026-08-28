@@ -56,7 +56,7 @@ private final class MutationCollector: SyntaxVisitor {
 
     override func visit(_ node: FunctionCallExprSyntax) -> SyntaxVisitorContinueKind {
         guard let member = node.calledExpression.as(MemberAccessExprSyntax.self),
-              let base = member.base else { return .visitChildren }
+            let base = member.base else { return .visitChildren }
         let name = member.declName.baseName.text
         if mutators.contains(name), base.trimmedDescription == subject {
             matches.append((node, name))

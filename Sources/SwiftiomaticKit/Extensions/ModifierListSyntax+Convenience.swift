@@ -21,8 +21,7 @@ extension DeclModifierListSyntax {
                      .keyword(.private),
                      .keyword(.fileprivate),
                      .keyword(.internal),
-                     .keyword(.package):
-                    return modifier
+                     .keyword(.package): return modifier
                 default: continue
             }
         }
@@ -127,8 +126,7 @@ extension DeclSyntax {
                 DeclSyntax(d.removingModifiers(keywords, keyword: \.classKeyword))
             case let .structDecl(d):
                 DeclSyntax(d.removingModifiers(keywords, keyword: \.structKeyword))
-            case let .enumDecl(d):
-                DeclSyntax(d.removingModifiers(keywords, keyword: \.enumKeyword))
+            case let .enumDecl(d): DeclSyntax(d.removingModifiers(keywords, keyword: \.enumKeyword))
             case let .protocolDecl(d):
                 DeclSyntax(d.removingModifiers(keywords, keyword: \.protocolKeyword))
             case let .typeAliasDecl(d):

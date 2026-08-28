@@ -4,12 +4,12 @@ import SwiftSyntax
 /// `.prefix` , `.dropFirst` ). Each step allocates an intermediate `Array` . Inserting `.lazy` at
 /// the head of the chain forwards lazily and avoids the allocations.
 ///
-/// `Optional` also has `.map` and `.flatMap` , and neither one allocates. `Optional` has no
-/// `.lazy` either, so the suggested fix does not compile there. The tree carries no type
-/// information, so the rule reads the receiver type from two syntactic signals. A chain that
-/// uses a method `Optional` does not have is a `Sequence` chain. A chain of `.map` and
-/// `.flatMap` alone is ambiguous, so the rule skips it when the surrounding code proves the
-/// value is an `Optional` . See ``isInOptionalContext(_:)`` for the four proofs.
+/// `Optional` also has `.map` and `.flatMap` , and neither one allocates. `Optional` has no `.lazy`
+/// either, so the suggested fix does not compile there. The tree carries no type information, so
+/// the rule reads the receiver type from two syntactic signals. A chain that uses a method
+/// `Optional` does not have is a `Sequence` chain. A chain of `.map` and `.flatMap` alone is
+/// ambiguous, so the rule skips it when the surrounding code proves the value is an `Optional` .
+/// See ``isInOptionalContext(_:)`` for the four proofs.
 final class UseLazyForLongChainOps: LintSyntaxRule<LintOnlyValue>, @unchecked Sendable {
     override class var group: ConfigurationGroup? { .idioms }
 
@@ -41,17 +41,15 @@ final class UseLazyForLongChainOps: LintSyntaxRule<LintOnlyValue>, @unchecked Se
     }
 
     private func isChainLink(_ syntax: Syntax?) -> Bool {
-        // Walk up through member-access nodes (e.g., `.lazy`) that may sit between this call and
-        // an outer chainable call. The call is a chain link if any enclosing function call's
-        // receiver path passes through it via a chainable method name.
+        // Walk up through member-access nodes (e.g., `.lazy`) that may sit between this call and an
+        // outer chainable call. The call is a chain link if any enclosing function call's receiver
+        // path passes through it via a chainable method name.
         var node = syntax
+
         while let current = node, let member = current.as(MemberAccessExprSyntax.self) {
             if let parentCall = member.parent?.as(FunctionCallExprSyntax.self),
                parentCall.calledExpression.id == member.id,
-               Self.chainableMethods.contains(member.declName.baseName.text)
-            {
-                return true
-            }
+               Self.chainableMethods.contains(member.declName.baseName.text) { return true }
             node = member.parent
         }
         return false
@@ -78,6 +76,7 @@ final class UseLazyForLongChainOps: LintSyntaxRule<LintOnlyValue>, @unchecked Se
             guard Self.chainableMethods.contains(name) else { break }
             length += 1
             if !Self.isOptionalMethod(name) { isOptionalCompatible = false }
+
             if let recvMember = receiver.as(MemberAccessExprSyntax.self),
                recvMember.declName.baseName.text == "lazy"
             {
@@ -94,10 +93,10 @@ final class UseLazyForLongChainOps: LintSyntaxRule<LintOnlyValue>, @unchecked Se
 
     /// Reports whether the surrounding code proves the chain produces an `Optional` .
     ///
-    /// Four forms prove it: the chain is returned from a function whose return type is
-    /// `Optional` , the chain is the left operand of `??` , the chain initializes a binding
-    /// annotated `Optional` , or the chain initializes an `if let` or `guard let` binding.
-    /// Anything else reports `false` , which keeps the finding.
+    /// Four forms prove it: the chain is returned from a function whose return type is `Optional` ,
+    /// the chain is the left operand of `??` , the chain initializes a binding annotated `Optional`
+    /// , or the chain initializes an `if let` or `guard let` binding. Anything else reports `false`
+    /// , which keeps the finding.
     private func isInOptionalContext(_ call: FunctionCallExprSyntax) -> Bool {
         var child = Syntax(call)
         var current = call.parent
@@ -109,15 +108,15 @@ final class UseLazyForLongChainOps: LintSyntaxRule<LintOnlyValue>, @unchecked Se
                 current = node.parent
                 continue
             }
-            // The initializer clause holds the chain. Keep `child` on the chain itself, because
-            // the binding below compares against `initializer.value`.
+            // The initializer clause holds the chain. Keep `child` on the chain itself, because the
+            // binding below compares against `initializer.value`.
             if node.is(InitializerClauseSyntax.self) {
                 current = node.parent
                 continue
             }
             if let infix = node.as(InfixOperatorExprSyntax.self) {
                 guard let op = infix.operator.as(BinaryOperatorExprSyntax.self),
-                      op.operator.text == "??" else { return false }
+                    op.operator.text == "??" else { return false }
                 return infix.leftOperand.id == child.id
             }
             if let returnStmt = node.as(ReturnStmtSyntax.self) {
@@ -144,6 +143,7 @@ final class UseLazyForLongChainOps: LintSyntaxRule<LintOnlyValue>, @unchecked Se
 
         while let cursor = current {
             if cursor.is(ClosureExprSyntax.self) { return false }
+
             if let funcDecl = cursor.as(FunctionDeclSyntax.self) {
                 return isOptionalType(funcDecl.signature.returnClause?.type)
             }

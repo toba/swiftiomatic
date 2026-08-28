@@ -22,9 +22,8 @@ final class NoParensInClosureParams: StaticFormatRule<BasicRuleValue>, @unchecke
     ) -> ClosureSignatureSyntax {
         guard let clause = node.parameterClause?.as(ClosureParameterClauseSyntax.self),
               !clause.parameters.isEmpty,
-              clause.parameters.allSatisfy({ $0.type == nil && $0.attributes.isEmpty }) else {
-            return node
-        }
+              clause.parameters.allSatisfy({ $0.type == nil && $0.attributes.isEmpty })
+        else { return node }
 
         Self.diagnose(.removeClosureParamParens, on: clause, context: context)
 

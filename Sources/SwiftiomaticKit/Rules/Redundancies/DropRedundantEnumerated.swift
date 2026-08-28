@@ -26,16 +26,16 @@ final class DropRedundantEnumerated: StaticFormatRule<BasicRuleValue>, @unchecke
         context: Context
     ) -> StmtSyntax {
         guard let tuple = node.pattern.as(TuplePatternSyntax.self),
-              tuple.elements.count == 2,
-              let first = tuple.elements.first,
-              let second = tuple.elements.last,
-              let call = node.sequence.as(FunctionCallExprSyntax.self),
-              let member = call.calledExpression.as(MemberAccessExprSyntax.self),
-              let base = member.base,
-              member.declName.baseName.text == "enumerated",
-              call.arguments.isEmpty,
-              call.trailingClosure == nil,
-              call.additionalTrailingClosures.isEmpty else { return StmtSyntax(node) }
+            tuple.elements.count == 2,
+            let first = tuple.elements.first,
+            let second = tuple.elements.last,
+            let call = node.sequence.as(FunctionCallExprSyntax.self),
+            let member = call.calledExpression.as(MemberAccessExprSyntax.self),
+            let base = member.base,
+            member.declName.baseName.text == "enumerated",
+            call.arguments.isEmpty,
+            call.trailingClosure == nil,
+            call.additionalTrailingClosures.isEmpty else { return StmtSyntax(node) }
 
         let firstUnused = first.pattern.is(WildcardPatternSyntax.self)
         let secondUnused = second.pattern.is(WildcardPatternSyntax.self)

@@ -148,14 +148,11 @@ final class UseTrailingClosures: StaticFormatRule<BasicRuleValue>, @unchecked Se
 
         for arg in closureArgs.dropFirst() {
             guard let closure = arg.expression.as(ClosureExprSyntax.self),
-                  let label = arg.label else { continue }
+                let label = arg.label else { continue }
 
-            additionalElements.append(
-                MultipleTrailingClosureElementSyntax(
-                    label: .identifier(label.text, leadingTrivia: .space),
-                    colon: .colonToken(trailingTrivia: .space),
-                    closure: closure.trimmed
-                ))
+            additionalElements.append(MultipleTrailingClosureElementSyntax(
+                label: .identifier(label.text, leadingTrivia: .space),
+                colon: .colonToken(trailingTrivia: .space), closure: closure.trimmed))
         }
 
         var result = callNode

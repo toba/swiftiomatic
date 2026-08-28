@@ -37,7 +37,8 @@ struct Verbatim: Sendable {
         // If we have no lines left (or none with any content), just initialize everything empty and
         // exit.
         guard !originalLines.isEmpty,
-              let index = originalLines.firstIndex(where: { !$0.isEmpty }) else {
+              let index = originalLines.firstIndex(where: { !$0.isEmpty })
+        else {
             lines = []
             leadingWhitespaceCounts = []
             return
@@ -60,9 +61,7 @@ struct Verbatim: Sendable {
         leadingWhitespaceCounts = originalLines.map {
             max(numberOfLeadingSpaces(in: $0) - firstLineLeadingSpaceCount, 0)
         }
-        lines = originalLines.map {
-            $0.trimmingCharacters(in: Self.spacesOnly)
-        }
+        lines = originalLines.map { $0.trimmingCharacters(in: Self.spacesOnly) }
     }
 
     /// Returns the length that the pretty printer should use when determining layout for this

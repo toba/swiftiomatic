@@ -82,8 +82,8 @@ final class UseUnavailableNotFatalError: StaticFormatRule<BasicRuleValue>, @unch
         // availability condition somewhere in its conditions disqualifies the rewrite.
         for item in elseBlock.statements {
             if let exprStmt = item.item.as(ExpressionStmtSyntax.self),
-               let ifExpr = exprStmt.expression.as(IfExprSyntax.self),
-               hasAvailabilityCondition(ifExpr)
+                let ifExpr = exprStmt.expression.as(IfExprSyntax.self),
+                hasAvailabilityCondition(ifExpr)
             {
                 return true
             }

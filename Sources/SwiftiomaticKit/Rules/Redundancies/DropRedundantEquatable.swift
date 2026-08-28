@@ -28,7 +28,8 @@ final class DropRedundantEquatable: StaticFormatRule<BasicRuleValue>, @unchecked
     ) -> DeclSyntax {
         guard let inheritanceClause = visited.inheritanceClause,
               inheritanceClause.contains(named: "Equatable")
-                  || inheritanceClause.contains(named: "Hashable") else {
+                  || inheritanceClause.contains(named: "Hashable")
+        else {
             return DeclSyntax(visited)
         }
 
@@ -59,13 +60,13 @@ final class DropRedundantEquatable: StaticFormatRule<BasicRuleValue>, @unchecked
         let storedProps = collectStoredPropertyNames(from: members)
         guard !storedProps.isEmpty else { return nil }
 
-        // Bail if any stored property has a known non-Equatable type — the synthesized
-        // conformance would not compile, and the hand-written `==` is necessary.
+        // Bail if any stored property has a known non-Equatable type — the synthesized conformance
+        // would not compile, and the hand-written `==` is necessary.
         if hasNonEquatableStoredProperty(in: members) { return nil }
 
         for (index, member) in members.enumerated() {
             guard let funcDecl = member.decl.as(FunctionDeclSyntax.self),
-                  isEquatableOperator(funcDecl) else { continue }
+                isEquatableOperator(funcDecl) else { continue }
 
             // Skip functions with attributes (e.g., @usableFromInline, @inlinable)
             guard funcDecl.attributes.isEmpty else { return nil }
@@ -82,12 +83,13 @@ final class DropRedundantEquatable: StaticFormatRule<BasicRuleValue>, @unchecked
     // MARK: - Stored properties
 
     /// Members of the block plus any nested inside `#if`/`#elseif`/`#else` blocks.
-    /// Conditional-compilation branches can introduce stored properties that the
-    /// synthesized conformance must account for, so they cannot be ignored.
+    /// Conditional-compilation branches can introduce stored properties that the synthesized
+    /// conformance must account for, so they cannot be ignored.
     private static func expandedMembers(
         _ members: MemberBlockItemListSyntax
     ) -> [MemberBlockItemSyntax] {
         var result = [MemberBlockItemSyntax]()
+
         for member in members {
             if let ifConfig = member.decl.as(IfConfigDeclSyntax.self) {
                 for clause in ifConfig.clauses {
@@ -109,12 +111,11 @@ final class DropRedundantEquatable: StaticFormatRule<BasicRuleValue>, @unchecked
 
         for member in expandedMembers(members) {
             guard let varDecl = member.decl.as(VariableDeclSyntax.self),
-                  !varDecl.modifiers.contains(anyOf: [.static, .class]),
-                  varDecl.bindings.count == 1,
-                  let binding = varDecl.bindings.first,
-                  let identPattern = binding.pattern.as(IdentifierPatternSyntax.self) else {
-                continue
-            }
+                !varDecl.modifiers.contains(anyOf: [.static, .class]),
+                varDecl.bindings.count == 1,
+                let binding = varDecl.bindings.first,
+                let identPattern = binding.pattern.as(IdentifierPatternSyntax.self)
+            else { continue }
 
             // Skip computed properties (getter or explicit get/set)
             if let accessorBlock = binding.accessorBlock {
@@ -137,16 +138,16 @@ final class DropRedundantEquatable: StaticFormatRule<BasicRuleValue>, @unchecked
 
     // MARK: - Non-Equatable type detection
 
-    /// Returns `true` if any stored property has a type annotation matching a known
-    /// non-`Equatable` pattern: `Any.Type`, `T.Type` metatypes, `AnyClass`, `Any`,
-    /// tuples, or function types. These define `==` (or have one in scope) but the
-    /// compiler will not synthesize an `Equatable` conformance for a type that contains them.
+    /// Returns `true` if any stored property has a type annotation matching a known non-`Equatable`
+    /// pattern: `Any.Type`, `T.Type` metatypes, `AnyClass`, `Any`, tuples, or function types. These
+    /// define `==` (or have one in scope) but the compiler will not synthesize an `Equatable`
+    /// conformance for a type that contains them.
     private static func hasNonEquatableStoredProperty(
         in members: MemberBlockItemListSyntax
     ) -> Bool {
         for member in expandedMembers(members) {
             guard let varDecl = member.decl.as(VariableDeclSyntax.self),
-                  !varDecl.modifiers.contains(anyOf: [.static, .class]) else { continue }
+                !varDecl.modifiers.contains(anyOf: [.static, .class]) else { continue }
 
             for binding in varDecl.bindings {
                 if let type = binding.typeAnnotation?.type, isKnownNonEquatableType(type) {
@@ -161,8 +162,9 @@ final class DropRedundantEquatable: StaticFormatRule<BasicRuleValue>, @unchecked
         // `T.Type` (and `Any.Type`) — metatypes are never Equatable.
         if type.is(MetatypeTypeSyntax.self) { return true }
         // Function types — `(Int) -> Int` etc. are not Equatable.
-        if type.is(FunctionTypeSyntax.self) || type.is(AttributedTypeSyntax.self)
-            && type.as(AttributedTypeSyntax.self)?.baseType.is(FunctionTypeSyntax.self) == true
+        if type.is(FunctionTypeSyntax.self)
+            || type.is(AttributedTypeSyntax.self)
+                && type.as(AttributedTypeSyntax.self)?.baseType.is(FunctionTypeSyntax.self) == true
         {
             return true
         }
@@ -212,7 +214,7 @@ final class DropRedundantEquatable: StaticFormatRule<BasicRuleValue>, @unchecked
         let expr: ExprSyntax
 
         if let returnStmt = onlyItem.item.as(ReturnStmtSyntax.self),
-           let returnExpr = returnStmt.expression
+            let returnExpr = returnStmt.expression
         {
             expr = returnExpr
         } else if let exprStmt = onlyItem.item.as(ExpressionStmtSyntax.self) {
@@ -238,16 +240,15 @@ final class DropRedundantEquatable: StaticFormatRule<BasicRuleValue>, @unchecked
         // lhs.prop == rhs.prop
         if binOp.operator.text == "==" {
             guard let lhsAccess = infixExpr.leftOperand.as(MemberAccessExprSyntax.self),
-                  let lhsBase = lhsAccess.base?.as(DeclReferenceExprSyntax.self),
-                  let rhsAccess = infixExpr.rightOperand.as(MemberAccessExprSyntax.self),
-                  let rhsBase = rhsAccess.base?.as(DeclReferenceExprSyntax.self) else {
-                return false
-            }
+                let lhsBase = lhsAccess.base?.as(DeclReferenceExprSyntax.self),
+                let rhsAccess = infixExpr.rightOperand.as(MemberAccessExprSyntax.self),
+                let rhsBase = rhsAccess.base?.as(DeclReferenceExprSyntax.self) else { return false }
 
             let lhsName = lhsBase.baseName.text
             let rhsName = rhsBase.baseName.text
             guard (lhsName == "lhs" && rhsName == "rhs")
-                || (lhsName == "rhs" && rhsName == "lhs") else { return false }
+                || (lhsName == "rhs" && rhsName == "lhs")
+            else { return false }
 
             let lhsProp = lhsAccess.declName.baseName.text
             let rhsProp = rhsAccess.declName.baseName.text

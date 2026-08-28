@@ -113,10 +113,7 @@ final class DropRedundantBackticks: StaticFormatRule<BasicRuleValue>, @unchecked
             // Contextual keywords like `actor` need backticks in declaration name position
             // (variable binding, function name) where the parser would see them as keywords.
             if Self.contextualKeywordsInDeclPosition.contains(bareName),
-               isDeclarationName(token, parent: parent)
-            {
-                return true
-            }
+                isDeclarationName(token, parent: parent) { return true }
 
             return false
         }
@@ -127,10 +124,7 @@ final class DropRedundantBackticks: StaticFormatRule<BasicRuleValue>, @unchecked
 
         // `Self` and `Any` in type annotation position don't need backticks.
         if bareName == "Self" || bareName == "Any",
-           isInTypeAnnotationOrReturnPosition(parent: parent)
-        {
-            return false
-        }
+           isInTypeAnnotationOrReturnPosition(parent: parent) { return false }
 
         // All other reserved keywords need backticks.
         return true
@@ -147,18 +141,12 @@ final class DropRedundantBackticks: StaticFormatRule<BasicRuleValue>, @unchecked
            declRef.baseName.id == token.id
         {
             if let memberAccess = declRef.parent?.as(MemberAccessExprSyntax.self),
-               memberAccess.declName.id == declRef.id
-            {
-                return true
-            }
+               memberAccess.declName.id == declRef.id { return true }
             if declRef.parent?.is(KeyPathPropertyComponentSyntax.self) == true { return true }
         }
         // Type member access: Foo.Type, Foo.Protocol
         if let memberType = parent?.as(MemberTypeSyntax.self),
-           memberType.name.id == token.id
-        {
-            return true
-        }
+           memberType.name.id == token.id { return true }
         return false
     }
 

@@ -80,7 +80,5 @@ package struct TypeBodyLengthConfiguration: ThresholdRuleValue {
         if let v = try c.decodeIfPresent(Int.self, forKey: .error) { error = v }
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case enabled, warning, error
-    }
+    private enum CodingKeys: String, CodingKey { case enabled, warning, error }
 }

@@ -38,10 +38,10 @@ final class UseImplicitInit: StaticFormatRule<BasicRuleValue>, @unchecked Sendab
         // `let config: Config = Config(debug: true)` → `let config: Config = .init(debug: true)`
         //
         // The SwiftData `@Model` macro lifts stored-property defaults into a
-        // `Schema.PropertyMetadata(defaultValue:)` call where the declared-type context
-        // is lost, so leading-dot shorthand fails to compile. Leave initializers of
-        // stored properties inside a `@Model` type fully qualified. (Computed-property
-        // bodies and default parameter values below are not lifted, so they still apply.)
+        // `Schema.PropertyMetadata(defaultValue:)` call where the declared-type context is lost, so
+        // leading-dot shorthand fails to compile. Leave initializers of stored properties inside a
+        // `@Model` type fully qualified. (Computed-property bodies and default parameter values
+        // below are not lifted, so they still apply.)
         if let typeAnnotation = node.typeAnnotation,
            let initializer = node.initializer,
            !isInModelType(parent: parent)
@@ -74,6 +74,7 @@ final class UseImplicitInit: StaticFormatRule<BasicRuleValue>, @unchecked Sendab
                         if case let .getter(b) = original.accessorBlock?.accessors { return b }
                         return nil
                     }()
+
                     if let rewritten = rewriteCodeBlockItems(
                         body, originalAnchor: originalGetter,
                         matchingType: typeName, context: context)
@@ -181,7 +182,8 @@ final class UseImplicitInit: StaticFormatRule<BasicRuleValue>, @unchecked Sendab
         guard let rewrittenParams = rewriteParameterDefaults(
             node.signature.parameterClause,
             originalAnchor: original.signature.parameterClause,
-            context: context) else { return DeclSyntax(node) }
+            context: context)
+        else { return DeclSyntax(node) }
         var result = node
         var newSignature = node.signature
         newSignature.parameterClause = rewrittenParams
@@ -207,6 +209,7 @@ final class UseImplicitInit: StaticFormatRule<BasicRuleValue>, @unchecked Sendab
                     if case let .getter(b) = original.accessorBlock?.accessors { return b }
                     return nil
                 }()
+
                 if let rewritten = rewriteCodeBlockItems(
                     body, originalAnchor: originalGetter,
                     matchingType: typeName, context: context)
@@ -285,14 +288,14 @@ final class UseImplicitInit: StaticFormatRule<BasicRuleValue>, @unchecked Sendab
 
             guard let rewritten = rewriteExpression(
                 defaultValue.value, originalAnchor: originalDefault,
-                matchingType: typeName, context: context) else { continue }
+                matchingType: typeName, context: context)
+            else { continue }
 
             var newParam = param
             var newDefault = defaultValue
             newDefault.value = rewritten
             newParam.defaultValue = newDefault
-            params = params.with(
-                \.[params.index(params.startIndex, offsetBy: index)], newParam)
+            params = params.with(\.[params.index(params.startIndex, offsetBy: index)], newParam)
             didChange = true
         }
 
@@ -318,6 +321,7 @@ final class UseImplicitInit: StaticFormatRule<BasicRuleValue>, @unchecked Sendab
         // Extract the expression from the last item, unwrapping ExpressionStmtSyntax if needed.
         if let expr = expressionFromItem(lastItem) {
             let originalExpr: ExprSyntax? = originalLast.flatMap(expressionFromItem)
+
             if let rewritten = rewriteExpression(
                 expr, originalAnchor: originalExpr,
                 matchingType: typeName, context: context)
@@ -337,9 +341,11 @@ final class UseImplicitInit: StaticFormatRule<BasicRuleValue>, @unchecked Sendab
 
         // Explicit return statement
         if let returnStmt = lastItem.item.as(ReturnStmtSyntax.self),
-           let expr = returnStmt.expression
+            let expr = returnStmt.expression
         {
-            let originalReturnExpr: ExprSyntax? = originalLast?.item.as(ReturnStmtSyntax.self)?.expression
+            let originalReturnExpr: ExprSyntax? = originalLast?.item.as(ReturnStmtSyntax.self)?
+                .expression
+
             if let rewritten = rewriteExpression(
                 expr, originalAnchor: originalReturnExpr,
                 matchingType: typeName, context: context)
@@ -410,8 +416,8 @@ final class UseImplicitInit: StaticFormatRule<BasicRuleValue>, @unchecked Sendab
            declRef.baseName.text == typeName
         {
             let originalText = call.trimmedDescription
-            let anchor: any SyntaxProtocol =
-                originalAnchor?.calledExpression.as(DeclReferenceExprSyntax.self) ?? declRef
+            let anchor: any SyntaxProtocol = originalAnchor?.calledExpression.as(
+                DeclReferenceExprSyntax.self) ?? declRef
             Self.diagnose(
                 .useImplicitInit(original: originalText, replacement: dotInitDescription(call)),
                 on: anchor, context: context)
@@ -432,8 +438,8 @@ final class UseImplicitInit: StaticFormatRule<BasicRuleValue>, @unchecked Sendab
            generic.trimmedDescription == typeName
         {
             let originalText = call.trimmedDescription
-            let anchor: any SyntaxProtocol =
-                originalAnchor?.calledExpression.as(GenericSpecializationExprSyntax.self) ?? generic
+            let anchor: any SyntaxProtocol = originalAnchor?.calledExpression.as(
+                GenericSpecializationExprSyntax.self) ?? generic
             Self.diagnose(
                 .useImplicitInit(original: originalText, replacement: dotInitDescription(call)),
                 on: anchor, context: context)
@@ -508,21 +514,22 @@ final class UseImplicitInit: StaticFormatRule<BasicRuleValue>, @unchecked Sendab
 
     // MARK: - Enclosing context
 
-    /// Returns `true` if the binding is a member of a type carrying the SwiftData
-    /// `@Model` attribute. Walks the captured pre-recursion parent chain (post-recursion
-    /// `node.parent` is `nil`) up to the nearest type declaration.
+    /// Returns `true` if the binding is a member of a type carrying the SwiftData `@Model`
+    /// attribute. Walks the captured pre-recursion parent chain (post-recursion `node.parent` is
+    /// `nil`) up to the nearest type declaration.
     private static func isInModelType(parent: Syntax?) -> Bool {
         var current = parent
+
         while let node = current {
-            let attributes: AttributeListSyntax? =
-                node.as(ClassDeclSyntax.self)?.attributes
+            let attributes: AttributeListSyntax? = node.as(ClassDeclSyntax.self)?.attributes
                 ?? node.as(StructDeclSyntax.self)?.attributes
                 ?? node.as(ActorDeclSyntax.self)?.attributes
                 ?? node.as(EnumDeclSyntax.self)?.attributes
                 ?? node.as(ExtensionDeclSyntax.self)?.attributes
+
             if let attributes {
-                // Stop at the first enclosing type declaration — a stored property
-                // lives directly in its `@Model` type, not in a nested one.
+                // Stop at the first enclosing type declaration — a stored property lives directly
+                // in its `@Model` type, not in a nested one.
                 return hasModelAttribute(attributes)
             }
             current = node.parent

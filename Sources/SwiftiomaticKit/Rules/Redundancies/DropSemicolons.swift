@@ -125,10 +125,7 @@ final class DropSemicolons: StaticFormatRule<BasicRuleValue>, @unchecked Sendabl
     ) -> Bool {
         if let codeBlockItem = node.as(CodeBlockItemSyntax.self),
            case let .stmt(stmt) = codeBlockItem.item,
-           stmt.is(stmtType)
-        {
-            return true
-        }
+           stmt.is(stmtType) { return true }
         return false
     }
 }

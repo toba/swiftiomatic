@@ -147,7 +147,8 @@ final class UseSynthesizedInit: LintSyntaxRule<LintOnlyValue>, @unchecked Sendab
             if propertyID.identifier.text != parameter.firstName.text
                 || propertyType.description.trimmingCharacters(
                     in: .whitespaces
-                ) != parameter.type.description.trimmingCharacters(in: .whitespacesAndNewlines) {
+                ) != parameter.type.description.trimmingCharacters(in: .whitespacesAndNewlines)
+            {
                 return false
             }
         }

@@ -45,8 +45,7 @@ extension TokenStream {
         // far, returning true if there were no tokens at all in the stream (which would mean there
         // was a discretionary newline at the beginning of the file).
         if let beforeTokens = beforeMap[token],
-           let foundBreakFirst = isBreakMoreRecentThanNonbreakingContent(beforeTokens)
-        {
+           let foundBreakFirst = isBreakMoreRecentThanNonbreakingContent(beforeTokens) {
             return foundBreakFirst
         }
         return isBreakMoreRecentThanNonbreakingContent(tokens) ?? true

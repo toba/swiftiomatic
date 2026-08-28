@@ -11,8 +11,8 @@ import SwiftSyntax
 /// extension body never states the kind of the type it extends, so every extension counts as
 /// unsafe.
 ///
-/// The rule also stays silent at the top level of a file, where `self` refers to no enclosing
-/// type, and for a non- `self` argument, where `type(of: param)` is preserved.
+/// The rule also stays silent at the top level of a file, where `self` refers to no enclosing type,
+/// and for a non- `self` argument, where `type(of: param)` is preserved.
 ///
 /// Lint: A warning is raised for `type(of: self)` (also `Swift.type(of: self)` ) inside a struct,
 /// an enum, an actor or a final class.

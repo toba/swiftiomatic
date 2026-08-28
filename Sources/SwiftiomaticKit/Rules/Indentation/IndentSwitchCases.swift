@@ -142,11 +142,10 @@ final class IndentSwitchCases: StaticFormatRule<IndentSwitchCasesConfiguration>,
 
         for j in 0..<stmts.count {
             let stmt = stmts[j]
-            modifiedStmts[
-                j] = stmt.with(
-                    \.leadingTrivia,
-                    replaceIndentation(in: stmt.leadingTrivia, with: bodyIndent)
-                )
+            modifiedStmts[j] = stmt.with(
+                \.leadingTrivia,
+                replaceIndentation(in: stmt.leadingTrivia, with: bodyIndent)
+            )
         }
         result.statements = CodeBlockItemListSyntax(modifiedStmts)
         return result

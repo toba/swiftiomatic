@@ -48,9 +48,8 @@ final class DropRedundantOptionalBinding: StaticFormatRule<BasicRuleValue>, @unc
         result.initializer = nil
         // Clean up trailing trivia: the pattern identifier had trailing trivia (space before `=` ).
         // Replace with the initializer value's trailing trivia.
-        result.pattern = PatternSyntax(
-            identifierPattern.with(\.identifier.trailingTrivia, initializer.value.trailingTrivia)
-        )
+        result.pattern = PatternSyntax(identifierPattern.with(
+            \.identifier.trailingTrivia, initializer.value.trailingTrivia))
 
         return result
     }

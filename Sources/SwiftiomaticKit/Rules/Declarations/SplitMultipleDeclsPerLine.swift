@@ -70,15 +70,13 @@ final class SplitMultipleDeclsPerLine: StaticFormatRule<BasicRuleValue>, @unchec
             return makeCaseDeclFromBasis(elements: elements)
         }
 
-        /// Removes the trailing comma from the given element, keeping any end-of-line comment
-        /// that was attached to that comma (like `case a(Int),  // comment`) on the element so it
-        /// stays on the element's own line instead of being discarded along with the comma.
+        /// Removes the trailing comma from the given element, keeping any end-of-line comment that
+        /// was attached to that comma (like `case a(Int),  // comment`) on the element so it stays
+        /// on the element's own line instead of being discarded along with the comma.
         static func removeTrailingComma(from element: inout EnumCaseElementSyntax) {
             let commaTrailingTrivia = element.trailingComma?.trailingTrivia ?? []
             element.trailingComma = nil
-            if commaTrailingTrivia.hasAnyComments {
-                element.trailingTrivia = element.trailingTrivia + commaTrailingTrivia
-            }
+            if commaTrailingTrivia.hasAnyComments { element.trailingTrivia += commaTrailingTrivia }
         }
 
         /// Creates and returns a new `EnumCaseDeclSyntax` with the given elements, based on the
@@ -95,12 +93,14 @@ final class SplitMultipleDeclsPerLine: StaticFormatRule<BasicRuleValue>, @unchec
             // that it precedes the newly inserted `case` keyword instead of being stranded after
             // it.
             var elements = elements
+
             if let first = elements.first {
                 let (hoistedComments, remainder) = first.leadingTrivia.splittingLeadingComments()
                 elements[0].leadingTrivia = remainder
+
                 if !hoistedComments.isEmpty {
-                    caseDecl.leadingTrivia =
-                        caseDecl.leadingTrivia + hoistedComments + Trivia.newlines(1)
+                    caseDecl.leadingTrivia = caseDecl.leadingTrivia + hoistedComments
+                        + Trivia.newlines(1)
                 }
             }
             caseDecl.elements = EnumCaseElementListSyntax(elements)
@@ -126,7 +126,7 @@ final class SplitMultipleDeclsPerLine: StaticFormatRule<BasicRuleValue>, @unchec
     static func willEnter(_ node: EnumDeclSyntax, context: Context) {
         for member in node.memberBlock.members {
             guard let caseDecl = member.decl.as(EnumCaseDeclSyntax.self),
-                  caseDecl.elements.count > 1 else { continue }
+                caseDecl.elements.count > 1 else { continue }
 
             for element in caseDecl.elements where element.parameterClause != nil {
                 Self.diagnose(
@@ -141,7 +141,7 @@ final class SplitMultipleDeclsPerLine: StaticFormatRule<BasicRuleValue>, @unchec
     static func willEnter(_ node: CodeBlockItemListSyntax, context: Context) {
         for codeBlockItem in node {
             guard let varDecl = codeBlockItem.item.as(VariableDeclSyntax.self),
-                  varDecl.bindings.count > 1 else { continue }
+                varDecl.bindings.count > 1 else { continue }
             Self.diagnose(
                 .onlyOneVariableDeclaration(specifier: varDecl.bindingSpecifier.text),
                 on: varDecl,
@@ -162,17 +162,18 @@ final class SplitMultipleDeclsPerLine: StaticFormatRule<BasicRuleValue>, @unchec
             // If it's not a case declaration, or it's a case declaration with only one element,
             // leave it alone.
             guard let caseDecl = member.decl.as(EnumCaseDeclSyntax.self),
-                  caseDecl.elements.count > 1 else {
+                caseDecl.elements.count > 1
+            else {
                 newMembers.append(member)
                 continue
             }
 
-            // If none of the elements have associated values there is nothing to split, and we
-            // must not disturb the existing formatting or trivia (splitting would strip leading
+            // If none of the elements have associated values there is nothing to split, and we must
+            // not disturb the existing formatting or trivia (splitting would strip leading
             // whitespace off elements written on continuation lines, collapsing
             // `case\n  first,\n  second` onto the `case` keyword). Raw values are permitted to
-            // share a `case` declaration, so they don't force a split either.
-            // See https://github.com/swiftlang/swift-format/pull/1221.
+            // share a `case` declaration, so they don't force a split either. See
+            // https://github.com/swiftlang/swift-format/pull/1221.
             guard caseDecl.elements.contains(where: { $0.parameterClause != nil }) else {
                 newMembers.append(member)
                 continue
@@ -229,7 +230,8 @@ final class SplitMultipleDeclsPerLine: StaticFormatRule<BasicRuleValue>, @unchec
 
         for codeBlockItem in node {
             guard let varDecl = codeBlockItem.item.as(VariableDeclSyntax.self),
-                  varDecl.bindings.count > 1 else {
+                varDecl.bindings.count > 1
+            else {
                 // Children already visited by the combined rewriter; no manual recursion needed.
                 newItems.append(codeBlockItem)
                 continue
@@ -238,10 +240,7 @@ final class SplitMultipleDeclsPerLine: StaticFormatRule<BasicRuleValue>, @unchec
             // Diagnose emitted in willEnter against the pre-traversal node. Children already
             // visited by the combined rewriter — trust the post-traversal input.
             var splitter = VariableDeclSplitter {
-                CodeBlockItemSyntax(
-                    item: .decl(DeclSyntax($0)),
-                    semicolon: nil
-                )
+                CodeBlockItemSyntax(item: .decl(DeclSyntax($0)), semicolon: nil)
             }
             newItems.append(contentsOf: splitter.nodes(bySplitting: varDecl))
         }
@@ -253,10 +252,7 @@ final class SplitMultipleDeclsPerLine: StaticFormatRule<BasicRuleValue>, @unchec
         _ node: CodeBlockItemSyntax
     ) -> Bool {
         if let varDecl = node.item.as(VariableDeclSyntax.self),
-           varDecl.bindings.count > 1
-        {
-            return true
-        }
+            varDecl.bindings.count > 1 { return true }
         return false
     }
 }

@@ -41,9 +41,7 @@ final class UseTripleSlashOverDocBlock: StaticFormatRule<BasicRuleValue>, @unche
         original _: EnumDeclSyntax,
         parent _: Syntax?,
         context: Context
-    ) -> DeclSyntax {
-        convertDocBlockCommentToDocLineComment(DeclSyntax(node), context: context)
-    }
+    ) -> DeclSyntax { convertDocBlockCommentToDocLineComment(DeclSyntax(node), context: context) }
 
     static func transform(
         _ node: InitializerDeclSyntax,
@@ -77,9 +75,7 @@ final class UseTripleSlashOverDocBlock: StaticFormatRule<BasicRuleValue>, @unche
         original _: ClassDeclSyntax,
         parent _: Syntax?,
         context: Context
-    ) -> DeclSyntax {
-        convertDocBlockCommentToDocLineComment(DeclSyntax(node), context: context)
-    }
+    ) -> DeclSyntax { convertDocBlockCommentToDocLineComment(DeclSyntax(node), context: context) }
 
     static func transform(
         _ node: VariableDeclSyntax,
@@ -95,9 +91,7 @@ final class UseTripleSlashOverDocBlock: StaticFormatRule<BasicRuleValue>, @unche
         original _: StructDeclSyntax,
         parent _: Syntax?,
         context: Context
-    ) -> DeclSyntax {
-        convertDocBlockCommentToDocLineComment(DeclSyntax(node), context: context)
-    }
+    ) -> DeclSyntax { convertDocBlockCommentToDocLineComment(DeclSyntax(node), context: context) }
 
     static func transform(
         _ node: ProtocolDeclSyntax,

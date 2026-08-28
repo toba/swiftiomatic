@@ -11,14 +11,12 @@ final class RequireAsyncStreamFinish: LintSyntaxRule<LintOnlyValue>, @unchecked 
 
     override func visit(_ node: FunctionCallExprSyntax) -> SyntaxVisitorContinueKind {
         guard let ident = node.calledExpression.as(DeclReferenceExprSyntax.self),
-              ident.baseName.text == "AsyncStream" || ident.baseName.text == "AsyncThrowingStream"
+            ident.baseName.text == "AsyncStream" || ident.baseName.text == "AsyncThrowingStream"
         else { return .visitChildren }
 
         // Skip the pull-based `AsyncStream(unfolding:)` / `AsyncStream(unfolding:onCancel:)`
         // initializers — they have no continuation and terminate by returning `nil`.
-        if node.arguments.first?.label?.text == "unfolding" {
-            return .visitChildren
-        }
+        if node.arguments.first?.label?.text == "unfolding" { return .visitChildren }
 
         let closure: ClosureExprSyntax?
 
@@ -61,11 +59,8 @@ private final class ContinuationUsageScanner: SyntaxVisitor {
 
     override func visit(_ node: InfixOperatorExprSyntax) -> SyntaxVisitorContinueKind {
         if node.operator.is(AssignmentExprSyntax.self),
-           let member = node.leftOperand.as(MemberAccessExprSyntax.self),
-           member.declName.baseName.text == "onTermination"
-        {
-            hasOnTermination = true
-        }
+            let member = node.leftOperand.as(MemberAccessExprSyntax.self),
+            member.declName.baseName.text == "onTermination" { hasOnTermination = true }
         return .visitChildren
     }
 }

@@ -49,19 +49,16 @@ final class DropRedundantReturn: StaticFormatRule<BasicRuleValue>, @unchecked Se
             Self.diagnose(.omitReturnStatement, on: returnStmt, context: context)
         } else if let item = Self.containsExhaustiveReturn(body.statements) {
             // Stripping `return` from every branch collapses the body into an if/switch
-            // *expression*. When the function's declared return type is opaque (`some P`)
-            // or existential (`any P`), the contextual return type no longer flows
-            // independently into each branch — so a generic call in a branch whose
-            // generic parameter would be pinned by that contextual type fails to type-check.
-            // The explicit `return` keyword is cheap; preserve it to keep inference sound.
+            // *expression*. When the function's declared return type is opaque (`some P`) or
+            // existential (`any P`), the contextual return type no longer flows independently into
+            // each branch — so a generic call in a branch whose generic parameter would be pinned
+            // by that contextual type fails to type-check. The explicit `return` keyword is cheap;
+            // preserve it to keep inference sound.
             if let returnType = funcDecl.signature.returnClause?.type,
-               Self.typeUsesOpaqueOrExistential(TypeSyntax(returnType))
-            {
-                return DeclSyntax(node)
-            }
-            funcDecl.body?.statements = CodeBlockItemListSyntax(
-                [Self.stripReturns(from: item, context: context)]
-            )
+               Self.typeUsesOpaqueOrExistential(TypeSyntax(returnType)) { return DeclSyntax(node) }
+            funcDecl.body?.statements = CodeBlockItemListSyntax([
+                Self.stripReturns(from: item, context: context)
+            ])
         } else {
             return DeclSyntax(node)
         }
@@ -81,8 +78,7 @@ final class DropRedundantReturn: StaticFormatRule<BasicRuleValue>, @unchecked Se
                   accessorBlock,
                   returnType: TypeSyntax(subscriptDecl.returnClause.type),
                   context: context
-              )
-        else { return DeclSyntax(node) }
+              ) else { return DeclSyntax(node) }
 
         subscriptDecl.accessorBlock = transformed
         return DeclSyntax(subscriptDecl)
@@ -100,8 +96,7 @@ final class DropRedundantReturn: StaticFormatRule<BasicRuleValue>, @unchecked Se
                   accessorBlock,
                   returnType: binding.typeAnnotation?.type,
                   context: context
-              )
-        else { return node }
+              ) else { return node }
 
         binding.accessorBlock = transformed
         return binding
@@ -119,9 +114,9 @@ final class DropRedundantReturn: StaticFormatRule<BasicRuleValue>, @unchecked Se
             closureExpr.statements = Self.rewrapReturnedExpression(returnStmt)
             Self.diagnose(.omitReturnStatement, on: returnStmt, context: context)
         } else if let item = Self.containsExhaustiveReturn(closureExpr.statements) {
-            closureExpr.statements = CodeBlockItemListSyntax(
-                [Self.stripReturns(from: item, context: context)]
-            )
+            closureExpr.statements = CodeBlockItemListSyntax([
+                Self.stripReturns(from: item, context: context)
+            ])
         } else {
             return ExprSyntax(node)
         }
@@ -140,23 +135,21 @@ final class DropRedundantReturn: StaticFormatRule<BasicRuleValue>, @unchecked Se
 
         switch accessorBlock.accessors {
             case var .accessors(accessors):
-                guard var getter = accessors
-                    .first(where: {
-                        $0.accessorSpecifier.tokenKind == .keyword(.get)
-                    }),
+                guard var getter =
+                    accessors
+                    .first(where: { $0.accessorSpecifier.tokenKind == .keyword(.get) }),
                       let getterAt = accessors.firstIndex(where: {
                           $0.accessorSpecifier.tokenKind == .keyword(.get)
                       }),
-                      let body = getter.body
-                else { return nil }
+                      let body = getter.body else { return nil }
 
                 if let returnStmt = Self.containsSingleReturn(body.statements) {
                     getter.body?.statements = Self.rewrapReturnedExpression(returnStmt)
                     Self.diagnose(.omitReturnStatement, on: returnStmt, context: context)
                 } else if let item = Self.containsExhaustiveReturn(body.statements), !opaqueReturn {
-                    getter.body?.statements = CodeBlockItemListSyntax(
-                        [Self.stripReturns(from: item, context: context)]
-                    )
+                    getter.body?.statements = CodeBlockItemListSyntax([
+                        Self.stripReturns(from: item, context: context)
+                    ])
                 } else {
                     return nil
                 }
@@ -174,9 +167,9 @@ final class DropRedundantReturn: StaticFormatRule<BasicRuleValue>, @unchecked Se
                     return newBlock
                 } else if let item = Self.containsExhaustiveReturn(getter), !opaqueReturn {
                     var newBlock = accessorBlock
-                    newBlock.accessors = .getter(CodeBlockItemListSyntax(
-                        [Self.stripReturns(from: item, context: context)]
-                    ))
+                    newBlock.accessors = .getter(CodeBlockItemListSyntax([
+                        Self.stripReturns(from: item, context: context)
+                    ]))
                     return newBlock
                 } else {
                     return nil
@@ -185,11 +178,9 @@ final class DropRedundantReturn: StaticFormatRule<BasicRuleValue>, @unchecked Se
     }
 
     fileprivate static func typeUsesOpaqueOrExistential(_ type: TypeSyntax) -> Bool {
-        for token in type.tokens(viewMode: .sourceAccurate) {
-            if token.tokenKind == .keyword(.some) || token.tokenKind == .keyword(.any) {
-                return true
-            }
-        }
+        for token in type.tokens(viewMode: .sourceAccurate)
+            where token.tokenKind == .keyword(.some) || token.tokenKind == .keyword(.any)
+        { return true }
         return false
     }
 
@@ -197,8 +188,7 @@ final class DropRedundantReturn: StaticFormatRule<BasicRuleValue>, @unchecked Se
         _ body: CodeBlockItemListSyntax
     ) -> CodeBlockItemSyntax? {
         guard let element = body.firstAndOnly,
-              let expr = Self.expressionFromItem(element)
-        else { return nil }
+              let expr = Self.expressionFromItem(element) else { return nil }
 
         if let ifExpr = expr.as(IfExprSyntax.self) {
             return Self.allBranchesReturn(ifExpr) ? element : nil
@@ -379,8 +369,7 @@ final class DropRedundantReturn: StaticFormatRule<BasicRuleValue>, @unchecked Se
         _ body: CodeBlockItemListSyntax
     ) -> ReturnStmtSyntax? {
         guard let element = body.firstAndOnly,
-              let returnStmt = element.item.as(ReturnStmtSyntax.self)
-        else { return nil }
+              let returnStmt = element.item.as(ReturnStmtSyntax.self) else { return nil }
 
         return !returnStmt.children(viewMode: .all).isEmpty && returnStmt.expression != nil
             ? returnStmt

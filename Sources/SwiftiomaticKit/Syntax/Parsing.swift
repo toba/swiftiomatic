@@ -35,7 +35,7 @@ import SwiftParserDiagnostics
 ///     compiler's `Features.def` file.
 ///   - parsingDiagnosticHandler: An optional callback that will be notified if there are any errors
 ///     when parsing the source code.
-///   - Throws: If an unrecoverable error occurs when formatting the code.
+/// - Throws: If an unrecoverable error occurs when formatting the code.
 func parseAndEmitDiagnostics(
     source: String,
     operatorTable: OperatorTable,
@@ -53,10 +53,9 @@ func parseAndEmitDiagnostics(
     }
     var source = source
     let sourceFile = source.withUTF8 { sourceBytes in
-        operatorTable.foldAll(
-            Parser.parse(source: sourceBytes, experimentalFeatures: experimentalFeaturesSet)
-        ) { _ in }
-        .as(SourceFileSyntax.self)!
+        operatorTable.foldAll(Parser.parse(
+            source: sourceBytes, experimentalFeatures: experimentalFeaturesSet)) { _ in }
+            .as(SourceFileSyntax.self)!
     }
     let diagnostics = ParseDiagnosticsGenerator.diagnostics(for: sourceFile)
     var hasErrors = false

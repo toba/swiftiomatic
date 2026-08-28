@@ -68,7 +68,7 @@ final class FlagEmptyCollectionLiteral: StaticFormatRule<BasicRuleValue>, @unche
     /// empty collection literal. Return a type of the collection.
     static func isRewritable(_ initializer: InitializerClauseSyntax) -> TypeSyntax? {
         guard let initCall = initializer.value.as(FunctionCallExprSyntax.self),
-              initCall.arguments.isEmpty else { return nil }
+            initCall.arguments.isEmpty else { return nil }
 
         if let arrayLiteral = initCall.calledExpression.as(ArrayExprSyntax.self) {
             return getLiteralType(arrayLiteral)
@@ -122,10 +122,7 @@ final class FlagEmptyCollectionLiteral: StaticFormatRule<BasicRuleValue>, @unche
             replacement.pattern = node.pattern.with(\.trailingTrivia, [])
             // Add explicit type annotation: ': [<Type>]`
             replacement.typeAnnotation = .init(
-                type: type.with(\.leadingTrivia, .space).with(
-                    \.trailingTrivia,
-                    .space
-                ))
+                type: type.with(\.leadingTrivia, .space).with(\.trailingTrivia, .space))
         }
 
         let initializer = node.initializer!

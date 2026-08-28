@@ -240,9 +240,7 @@ private final class PointerWriteFinder: SyntaxVisitor {
         if let member = expression.as(MemberAccessExprSyntax.self) {
             guard let base = member.base else { return nil }
             guard base.as(DeclReferenceExprSyntax.self)?.baseName.tokenKind == .keyword(.self)
-            else {
-                return indirection(of: base).map { $0 + 1 }
-            }
+            else { return indirection(of: base).map { $0 + 1 } }
             return member.declName.baseName.text == property ? 0 : nil
         }
         if let call = expression.as(SubscriptCallExprSyntax.self) {

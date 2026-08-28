@@ -42,7 +42,7 @@ final class UseAngleBracketsOnExtensions: StaticFormatRule<BasicRuleValue>, @unc
 
         // Extended type must be a simple identifier (no angle brackets already)
         guard let extendedIdent = visited.extendedType.as(IdentifierTypeSyntax.self),
-              extendedIdent.genericArgumentClause == nil else { return DeclSyntax(visited) }
+            extendedIdent.genericArgumentClause == nil else { return DeclSyntax(visited) }
 
         let typeName = extendedIdent.name.text
 
@@ -57,7 +57,7 @@ final class UseAngleBracketsOnExtensions: StaticFormatRule<BasicRuleValue>, @unc
 
         for (index, requirement) in whereClause.requirements.enumerated() {
             guard let sameType = requirement.requirement.as(SameTypeRequirementSyntax.self),
-                  let leftIdent = sameType.leftType.as(IdentifierTypeSyntax.self) else { continue }
+                let leftIdent = sameType.leftType.as(IdentifierTypeSyntax.self) else { continue }
 
             if requiredParams.contains(leftIdent.name.text),
                case let .type(rightType) = sameType.rightType
@@ -68,9 +68,7 @@ final class UseAngleBracketsOnExtensions: StaticFormatRule<BasicRuleValue>, @unc
         }
 
         // All required params must be constrained
-        guard paramTypes.count == requiredParams.count else {
-            return DeclSyntax(visited)
-        }
+        guard paramTypes.count == requiredParams.count else { return DeclSyntax(visited) }
 
         Self.diagnose(
             .useAngleBracketSyntax(type: typeName),

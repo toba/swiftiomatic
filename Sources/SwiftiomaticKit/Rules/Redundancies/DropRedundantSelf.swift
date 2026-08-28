@@ -68,8 +68,7 @@ final class DropRedundantSelf: StaticFormatRule<BasicRuleValue>, @unchecked Send
     private static func hasDynamicMemberLookup(_ attrs: AttributeListSyntax) -> Bool {
         for element in attrs {
             guard let attr = element.as(AttributeSyntax.self),
-                  let id = attr.attributeName.as(IdentifierTypeSyntax.self)
-            else { continue }
+                  let id = attr.attributeName.as(IdentifierTypeSyntax.self) else { continue }
             if id.name.text == "dynamicMemberLookup" { return true }
         }
         return false
@@ -77,6 +76,7 @@ final class DropRedundantSelf: StaticFormatRule<BasicRuleValue>, @unchecked Send
 
     private static func extensionExtendsKnownDynamic(_ node: ExtensionDeclSyntax) -> Bool {
         let extended = node.extendedType
+
         if let id = extended.as(IdentifierTypeSyntax.self) {
             return knownDynamicMemberLookupTypes.contains(id.name.text)
         }
@@ -158,10 +158,10 @@ final class DropRedundantSelf: StaticFormatRule<BasicRuleValue>, @unchecked Send
         }
         var names = Self.collectParamNames(from: node.signature.parameterClause)
         if let body = node.body { names.formUnion(Self.collectLocalNames(in: Syntax(body))) }
-        // The enclosing function's own name is in scope as a recursive reference inside its
-        // body. If `self.<name>` matches it, stripping `self.` would shadow any inherited
-        // member of the same name (e.g. `self.max` inside `func max(on:)` on an Array
-        // extension calls `Sequence.max(by:)` — bare `max` resolves to the enclosing func).
+        // The enclosing function's own name is in scope as a recursive reference inside its body.
+        // If `self.<name>` matches it, stripping `self.` would shadow any inherited member of the
+        // same name (e.g. `self.max` inside `func max(on:)` on an Array extension calls
+        // `Sequence.max(by:)` — bare `max` resolves to the enclosing func).
         names.insert(node.name.text)
         state.localNameStack.append(names)
         state.implicitSelfStack.append(true)
@@ -354,9 +354,8 @@ final class DropRedundantSelf: StaticFormatRule<BasicRuleValue>, @unchecked Send
 
         let memberName = node.declName.baseName.text
         guard memberName != "init",
-              !DropRedundantBackticks.swiftKeywords.contains(memberName) else {
-            return ExprSyntax(node)
-        }
+              !DropRedundantBackticks.swiftKeywords.contains(memberName)
+        else { return ExprSyntax(node) }
 
         guard !state.implicitSelfStack.isEmpty else { return ExprSyntax(node) }
         guard state.implicitSelfAllowed else { return ExprSyntax(node) }
@@ -436,8 +435,7 @@ final class DropRedundantSelf: StaticFormatRule<BasicRuleValue>, @unchecked Send
 
         while let parent = current {
             if let binding = parent.as(PatternBindingSyntax.self),
-               let ident = binding.pattern.as(IdentifierPatternSyntax.self)
-            {
+               let ident = binding.pattern.as(IdentifierPatternSyntax.self) {
                 return ident.identifier.text
             }
             current = parent.parent
@@ -457,6 +455,7 @@ final class DropRedundantSelf: StaticFormatRule<BasicRuleValue>, @unchecked Send
         while let parent = current {
             if parent.is(ClosureExprSyntax.self) { return false }
             if parent.is(ExpressionSegmentSyntax.self) { sawInterpolation = true }
+
             if sawInterpolation, let str = parent.as(StringLiteralExprSyntax.self) {
                 guard let labeled = str.parent?.as(LabeledExprSyntax.self),
                       labeled.parent?.is(LabeledExprListSyntax.self) == true,

@@ -1,14 +1,14 @@
 import SwiftSyntax
 
-/// Flag `coll.firstIndex(of: ...)` (or `firstIndex(where:)`) called inside a `for x in coll`
-/// loop where the receiver matches the loop's iterated sequence — a textbook O(n²) pattern.
-/// Typical fix: enumerate the index alongside the element (`for (index, x) in coll.enumerated()`)
-/// or build a `[Element: Index]` lookup table outside the loop.
+/// Flag `coll.firstIndex(of: ...)` (or `firstIndex(where:)`) called inside a `for x in coll` loop
+/// where the receiver matches the loop's iterated sequence — a textbook O(n²) pattern. Typical fix:
+/// enumerate the index alongside the element (`for (index, x) in coll.enumerated()`) or build a
+/// `[Element: Index]` lookup table outside the loop.
 ///
-/// Receiver matching is identifier-based and conservative: only fires when the leftmost
-/// identifier of the `firstIndex` receiver equals the leftmost identifier of the `for-in`
-/// sequence expression. Nested loops and closures introduce their own scope and are
-/// reported (or not) by their own visit.
+/// Receiver matching is identifier-based and conservative: only fires when the leftmost identifier
+/// of the `firstIndex` receiver equals the leftmost identifier of the `for-in` sequence expression.
+/// Nested loops and closures introduce their own scope and are reported (or not) by their own
+/// visit.
 final class NoFirstIndexOfInForLoop: LintSyntaxRule<LintOnlyValue>, @unchecked Sendable {
     override class var group: ConfigurationGroup? { .idioms }
 
@@ -18,14 +18,13 @@ final class NoFirstIndexOfInForLoop: LintSyntaxRule<LintOnlyValue>, @unchecked S
         }
         let collector = FirstIndexCallCollector(receiver: sequenceName, viewMode: .sourceAccurate)
         collector.walk(node.body.statements)
-        for hit in collector.matches {
-            diagnose(.firstIndexInForLoop(hit.method), on: hit.anchor)
-        }
+        for hit in collector.matches { diagnose(.firstIndexInForLoop(hit.method), on: hit.anchor) }
         return .visitChildren
     }
 
     private func leftmostIdentifier(of expr: ExprSyntax) -> String? {
         if let ref = expr.as(DeclReferenceExprSyntax.self) { return ref.baseName.text }
+
         if let member = expr.as(MemberAccessExprSyntax.self), let base = member.base {
             return leftmostIdentifier(of: base)
         }
@@ -47,9 +46,9 @@ private final class FirstIndexCallCollector: SyntaxVisitor {
 
     override func visit(_ node: FunctionCallExprSyntax) -> SyntaxVisitorContinueKind {
         if let member = node.calledExpression.as(MemberAccessExprSyntax.self),
-           member.declName.baseName.text == "firstIndex",
-           let baseName = leftmostIdentifier(of: member.base),
-           baseName == receiver
+            member.declName.baseName.text == "firstIndex",
+            let baseName = leftmostIdentifier(of: member.base),
+            baseName == receiver
         {
             matches.append((member.declName.baseName, member.declName.baseName.text))
         }

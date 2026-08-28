@@ -111,9 +111,7 @@ struct LayoutBuffer {
             writeRaw(currentIndentation.indentation())
             column = currentIndentation.length(tabWidth: tabWidth)
             isAtStartOfLine = false
-        } else if pendingSpaces > 0 {
-            writeRaw(SpacePadding.spaces(pendingSpaces))
-        }
+        } else if pendingSpaces > 0 { writeRaw(SpacePadding.spaces(pendingSpaces)) }
         writeRaw(text)
         consecutiveNewlineCount = 0
         pendingSpaces = 0

@@ -49,8 +49,7 @@ final class ReflowComments: StaticFormatRule<BasicRuleValue>, @unchecked Sendabl
                          .tabs,
                          .newlines,
                          .carriageReturns,
-                         .carriageReturnLineFeeds:
-                        j += 1
+                         .carriageReturnLineFeeds: j += 1
                     default:
                         if commentKind(of: pieces[j]) == kind {
                             lastCommentIndex = j

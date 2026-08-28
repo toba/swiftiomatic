@@ -47,9 +47,9 @@ final class UseExplicitNilCheck: StaticFormatRule<BasicRuleValue>, @unchecked Se
                     .useExplicitNilComparison, on: optionalBindingCondition, context: context)
 
                 // Since we're moving the initializer value from the RHS to the LHS of an
-                // expression/pattern, preserve the relative position of the trailing trivia. Similarly,
-                // preserve the leading trivia of the original node, since that token is being removed
-                // entirely.
+                // expression/pattern, preserve the relative position of the trailing trivia.
+                // Similarly, preserve the leading trivia of the original node, since that token is
+                // being removed entirely.
                 var value = initializerClause.value
                 let trailingTrivia = value.trailingTrivia
                 value.trailingTrivia = [.spaces(1)]
@@ -102,22 +102,20 @@ final class UseExplicitNilCheck: StaticFormatRule<BasicRuleValue>, @unchecked Se
             case .tryExpr, .ternaryExpr: return addingParentheses(to: expr)
 
             case .infixOperatorExpr:
-                // There's no public API in SwiftSyntax to get the relationship between two precedence
-                // groups. Until that exists, here's a workaround I'm only mildly ashamed of: we reparse
-                // "\(expr) != nil" and then fold it. If the top-level node is anything but an
-                // `InfixOperatorExpr` whose operator is `!=` and whose RHS is `nil` , then it parsed
-                // incorrectly and we need to add parentheses around `expr` .
+                // There's no public API in SwiftSyntax to get the relationship between two
+                // precedence groups. Until that exists, here's a workaround I'm only mildly ashamed
+                // of: we reparse "\(expr) != nil" and then fold it. If the top-level node is
+                // anything but an `InfixOperatorExpr` whose operator is `!=` and whose RHS is `nil`
+                // , then it parsed incorrectly and we need to add parentheses around `expr` .
                 //
-                // Note that we could also cover the `tryExpr` and `ternaryExpr` cases above with this,
-                // but this reparsing trick is going to be slower so we should avoid it whenever we can.
+                // Note that we could also cover the `tryExpr` and `ternaryExpr` cases above with
+                // this, but this reparsing trick is going to be slower so we should avoid it
+                // whenever we can.
                 let reparsedExpr = "\(expr) != nil" as ExprSyntax
                 if let infixExpr = reparsedExpr.as(InfixOperatorExprSyntax.self),
                    let binOp = infixExpr.operator.as(BinaryOperatorExprSyntax.self),
                    binOp.operator.text == "!=",
-                   infixExpr.rightOperand.is(NilLiteralExprSyntax.self)
-                {
-                    return expr
-                }
+                   infixExpr.rightOperand.is(NilLiteralExprSyntax.self) { return expr }
                 return addingParentheses(to: expr)
 
             default: return expr

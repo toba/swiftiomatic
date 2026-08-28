@@ -36,8 +36,9 @@ final class InsertBlankLineBeforeControlFlowBlocks: StaticFormatRule<BasicRuleVa
         parent _: Syntax?,
         context: Context
     ) -> CodeBlockSyntax {
-        guard let updated = insertBlankLines(in: Array(node.statements), context: context)
-        else { return node }
+        guard let updated = insertBlankLines(in: Array(node.statements), context: context) else {
+            return node
+        }
         var result = node
         result.statements = CodeBlockItemListSyntax(updated)
         return result
@@ -49,8 +50,9 @@ final class InsertBlankLineBeforeControlFlowBlocks: StaticFormatRule<BasicRuleVa
         parent _: Syntax?,
         context: Context
     ) -> SwitchCaseSyntax {
-        guard let updated = insertBlankLines(in: Array(node.statements), context: context)
-        else { return node }
+        guard let updated = insertBlankLines(in: Array(node.statements), context: context) else {
+            return node
+        }
         var result = node
         result.statements = CodeBlockItemListSyntax(updated)
         return result

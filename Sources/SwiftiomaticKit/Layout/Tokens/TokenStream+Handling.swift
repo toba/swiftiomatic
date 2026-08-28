@@ -132,10 +132,10 @@ extension TokenStream {
         // newline; otherwise the comment is pushed onto its own line (and code after it can be
         // swallowed into the comment). Upstream extracts before non-close breaks, `printerControl`,
         // and mandatory-breaking close breaks, but keeps the comment *after* a non-mandatory close
-        // break. That assumption fails for `AlignWrappedConditions`, which emits a
-        // non-mandatory `.break(.close)` (closing the previous item's alignment scope) immediately
-        // before the `.break(.open(.alignment))` that starts the next one: the close break still
-        // fires a newline at layout time, stranding the comment. When such a leading close break is
+        // break. That assumption fails for `AlignWrappedConditions`, which emits a non-mandatory
+        // `.break(.close)` (closing the previous item's alignment scope) immediately before the
+        // `.break(.open(.alignment))` that starts the next one: the close break still fires a
+        // newline at layout time, stranding the comment. When such a leading close break is
         // followed by another extractable break in the same group, glue the comment before the
         // first break so it stays end-of-line. (487-2dd)
         let extractBeforeFirstBreak = wasLineComment

@@ -158,14 +158,9 @@ final class RequireDocSummaryStructure: LintSyntaxRule<LintOnlyValue>, @unchecke
         let sentenceTerminatorIndices = tags.enumerated().filter {
             if $0.element == NLTag.openQuote {
                 isInsideQuotes = true
-            } else if $0.element == NLTag.closeQuote
-            {
-                isInsideQuotes = false
-            }
+            } else if $0.element == NLTag.closeQuote { isInsideQuotes = false }
             return !isInsideQuotes && $0.element == NLTag.sentenceTerminator
-        }.map {
-            tokenRanges[$0.offset].lowerBound
-        }
+        }.map { tokenRanges[$0.offset].lowerBound }
 
         var previous = text.startIndex
 
@@ -217,13 +212,10 @@ final class RequireDocSummaryStructure: LintSyntaxRule<LintOnlyValue>, @unchecke
             // the text, so that decimal points and abbreviations stay inside the sentence they
             // belong to. The CJK full stops are not written with a following space, so they always
             // end a sentence.
-            if text[index] == "." && next != text.endIndex && text[next] != " " {
-                continue
-            }
+            if text[index] == ".", next != text.endIndex, text[next] != " " { continue }
 
             sentences.append(
-                String(text[sentenceStart..<next]).trimmingCharacters(in: .whitespaces)
-            )
+                String(text[sentenceStart..<next]).trimmingCharacters(in: .whitespaces))
             sentenceStart = next
         }
 

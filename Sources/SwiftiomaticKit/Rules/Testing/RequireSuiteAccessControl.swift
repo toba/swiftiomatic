@@ -65,6 +65,7 @@ final class RequireSuiteAccessControl: StaticFormatRule<BasicRuleValue>, @unchec
             }
 
             var inherited = [String]()
+
             if let clause = node.inheritanceClause {
                 for inheritedType in clause.inheritedTypes {
                     inherited.append(RequireSuiteAccessControl.baseName(of: inheritedType.type))
@@ -93,12 +94,12 @@ final class RequireSuiteAccessControl: StaticFormatRule<BasicRuleValue>, @unchec
 
         /// Returns `true` when a member with the given name can witness a requirement.
         ///
-        /// Pass `nil` for a binding pattern that carries no identifier, such as a tuple pattern.
-        /// A named requirement never matches one, so only `.unknown` blocks it.
+        /// Pass `nil` for a binding pattern that carries no identifier, such as a tuple pattern. A
+        /// named requirement never matches one, so only `.unknown` blocks it.
         func blocks(_ name: String?) -> Bool {
             switch self {
-            case let .names(names): name.map(names.contains) ?? false
-            case .unknown: true
+                case let .names(names): name.map(names.contains) ?? false
+                case .unknown: true
             }
         }
     }
@@ -228,13 +229,14 @@ final class RequireSuiteAccessControl: StaticFormatRule<BasicRuleValue>, @unchec
         let originalMembers = Array(original.members)
 
         for (idx, member) in memberBlock.members.enumerated() {
-            // The pipeline may pass a detached `node` (rebuilt by sub-rule rewrites of
-            // children) whose absolute positions reset to 0 — emitting findings on those
-            // tokens maps the offsets onto unrelated lines of the source. The matching
-            // member from `original` is still attached to the source file and reports
-            // correct positions. Fall back to the rewritten member only if member counts
-            // diverge (defensive: no rule in this stage adds or removes members).
+            // The pipeline may pass a detached `node` (rebuilt by sub-rule rewrites of children)
+            // whose absolute positions reset to 0 — emitting findings on those tokens maps the
+            // offsets onto unrelated lines of the source. The matching member from `original` is
+            // still attached to the source file and reports correct positions. Fall back to the
+            // rewritten member only if member counts diverge (defensive: no rule in this stage adds
+            // or removes members).
             let originalDecl = idx < originalMembers.count ? originalMembers[idx].decl : nil
+
             if let funcDecl = member.decl.as(FunctionDeclSyntax.self) {
                 let originalFunc = originalDecl?.as(FunctionDeclSyntax.self) ?? funcDecl
                 let rewritten = rewriteFunction(
@@ -447,15 +449,14 @@ final class RequireSuiteAccessControl: StaticFormatRule<BasicRuleValue>, @unchec
             var newModifiers = Array(result.modifiers)
 
             if let idx = newModifiers.firstIndex(where: { $0.id == aclMod.id }) {
-                newModifiers[
-                    idx] = newModifiers[idx].with(
-                        \.name,
-                        .keyword(
-                            .private,
-                            leadingTrivia: aclMod.name.leadingTrivia,
-                            trailingTrivia: aclMod.name.trailingTrivia
-                        )
+                newModifiers[idx] = newModifiers[idx].with(
+                    \.name,
+                    .keyword(
+                        .private,
+                        leadingTrivia: aclMod.name.leadingTrivia,
+                        trailingTrivia: aclMod.name.trailingTrivia
                     )
+                )
             }
             result.modifiers = DeclModifierListSyntax(newModifiers)
             return result

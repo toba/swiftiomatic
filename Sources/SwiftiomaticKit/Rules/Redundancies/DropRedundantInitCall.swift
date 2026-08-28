@@ -35,9 +35,9 @@ final class DropRedundantInitCall: StaticFormatRule<BasicRuleValue>, @unchecked 
         context: Context
     ) -> ExprSyntax {
         guard let memberAccess = node.calledExpression.as(MemberAccessExprSyntax.self),
-              memberAccess.declName.baseName.tokenKind == .keyword(.`init`),
-              memberAccess.declName.argumentNames == nil,
-              let base = memberAccess.base else { return ExprSyntax(node) }
+            memberAccess.declName.baseName.tokenKind == .keyword(.`init`),
+            memberAccess.declName.argumentNames == nil,
+            let base = memberAccess.base else { return ExprSyntax(node) }
 
         // Only fire when the base is a simple type reference or another member access (e.g.
         // `Module.Type` ), not when it's `.init()` (no base) which is shorthand inference syntax.

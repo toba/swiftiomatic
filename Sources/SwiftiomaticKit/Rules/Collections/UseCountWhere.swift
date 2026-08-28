@@ -23,8 +23,7 @@ final class UseCountWhere: StaticFormatRule<BasicRuleValue>, @unchecked Sendable
         // calledExpression), skip — uses the captured pre-recursion parent since the post-visit
         // node is detached.
         if let parentCall = parent?.as(FunctionCallExprSyntax.self),
-           parentCall.calledExpression.id == ExprSyntax(memberNode).id
-        {
+           parentCall.calledExpression.id == ExprSyntax(memberNode).id {
             return ExprSyntax(memberNode)
         }
 
@@ -34,9 +33,7 @@ final class UseCountWhere: StaticFormatRule<BasicRuleValue>, @unchecked Sendable
         // Base must be a .filter call
         guard let filterCall = memberNode.base?.as(FunctionCallExprSyntax.self),
               let filterAccess = filterCall.calledExpression.as(MemberAccessExprSyntax.self),
-              filterAccess.declName.baseName.text == "filter" else {
-            return ExprSyntax(memberNode)
-        }
+              filterAccess.declName.baseName.text == "filter" else { return ExprSyntax(memberNode) }
 
         // Extract the closure (trailing or inline single arg)
         let closure: ClosureExprSyntax

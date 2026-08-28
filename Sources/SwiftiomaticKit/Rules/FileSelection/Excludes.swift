@@ -8,11 +8,12 @@
 /// - `*` — matches any run of characters except `/`
 /// - `?` — matches any single character except `/`
 /// - `[abc]` / `[a-z]` — character class
-/// - `**` — matches any number of path components (including zero), only when used as a whole
-///   path component
+/// - `**` — matches any number of path components (including zero), only when used as a whole path
+///   component
 ///
 /// Examples: `.build/**`, `**/Generated/**`, `vendor/**`, `**/*.generated.swift`.
 package struct Excludes: LayoutRule {
-    package static let description = "Glob patterns matching paths to skip during recursive walks. Supports `*`, `?`, `[…]`, and `**` (across path separators)."
+    package static let description =
+        "Glob patterns matching paths to skip during recursive walks. Supports `*`, `?`, `[…]`, and `**` (across path separators)."
     package static let defaultValue: [String] = []
 }

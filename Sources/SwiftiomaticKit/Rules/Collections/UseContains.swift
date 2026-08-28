@@ -51,16 +51,15 @@ final class UseContains: LintSyntaxRule<LintOnlyValue>, @unchecked Sendable {
         guard ["==", "!="].contains(opText),
               node.rightOperand.is(NilLiteralExprSyntax.self),
               let leftCall = node.leftOperand.as(FunctionCallExprSyntax.self),
-              let leftMember = leftCall.calledExpression.as(MemberAccessExprSyntax.self) else {
-            return .visitChildren
-        }
+              let leftMember = leftCall.calledExpression.as(MemberAccessExprSyntax.self)
+        else { return .visitChildren }
 
         let methodName = leftMember.declName.baseName.text
 
-        // Pattern 3: first(where:) / firstIndex(where:) <op> nil.
-        // Only the closure form (trailing closure or a `where:` argument) is the rewritable
-        // antipattern. A custom `first(_ element:)` that takes a value — e.g. `Span.first(byte)`
-        // returning an Index — is unrelated, and its receiver may not offer `contains(where:)`.
+        // Pattern 3: first(where:) / firstIndex(where:) <op> nil. Only the closure form (trailing
+        // closure or a `where:` argument) is the rewritable antipattern. A custom
+        // `first(_ element:)` that takes a value — e.g. `Span.first(byte)` returning an Index — is
+        // unrelated, and its receiver may not offer `contains(where:)`.
         if methodName == "first" || methodName == "firstIndex" {
             let hasClosureArgument = leftCall.trailingClosure != nil
                 || leftCall.arguments.first?.label?.text == "where"

@@ -51,13 +51,8 @@ final class FindingEmitter {
     ) {
         guard let consumer = self.consumer else { return }
 
-        consumer(
-            Finding(
-                category: category,
-                message: message,
-                severity: severity,
-                location: location,
-                notes: notes
-            ))
+        consumer(Finding(
+            category: category, message: message, severity: severity, location: location,
+            notes: notes))
     }
 }

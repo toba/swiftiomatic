@@ -24,8 +24,7 @@ final class NoVoidTernary: StaticFormatRule<BasicRuleValue>, @unchecked Sendable
     ) -> ExprSyntax {
         if isStandaloneStatementTernary(node, parent: parent),
            node.thenExpression.is(FunctionCallExprSyntax.self),
-           node.elseExpression.is(FunctionCallExprSyntax.self)
-        {
+           node.elseExpression.is(FunctionCallExprSyntax.self) {
             Self.diagnose(.noVoidTernary, on: node.questionMark, context: context)
         }
         return ExprSyntax(node)

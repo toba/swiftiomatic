@@ -204,7 +204,8 @@ package final class WhitespaceLinter {
     ) {
         // Only run this check at the start of a line.
         guard (userRuns.count > 1 && formattedRuns.count > 1)
-            || (userRuns.count == 1 && formattedRuns.count == 1 && userIndex == 0) else { return }
+            || (userRuns.count == 1 && formattedRuns.count == 1 && userIndex == 0)
+        else { return }
 
         let lengthLimit = context.configuration[LineLength.self]
 
@@ -341,8 +342,8 @@ package final class WhitespaceLinter {
     /// - Parameters:
     ///   - offset: The printable character offset within the string.
     ///   - data: The input string.
-    ///   - Returns: A slice of `data` that covers the contiguous whitespace starting at the given
-    ///     index.
+    /// - Returns: A slice of `data` that covers the contiguous whitespace starting at the given
+    ///   index.
     private func contiguousWhitespace(
         startingAt offset: Int,
         in data: [UTF8.CodeUnit]

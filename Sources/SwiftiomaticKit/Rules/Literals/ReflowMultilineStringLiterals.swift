@@ -81,7 +81,7 @@ extension TokenStream {
             ? { segment in
                 self.emitMultilineSegmentTextTokens(breakKind: breakKind, segment: segment)
             }
-            : // For single line strings we don't allow line breaks, so emit the string as a single
+            :  // For single line strings we don't allow line breaks, so emit the string as a single
             // `.syntax` token
             { segment in self.appendToken(.syntax(String(segment))) }
 

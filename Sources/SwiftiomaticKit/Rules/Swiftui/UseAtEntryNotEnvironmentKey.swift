@@ -200,12 +200,12 @@ final class UseAtEntryNotEnvironmentKey: StaticFormatRule<BasicRuleValue>, @unch
         var capturedMatched = matchedKeys
         let newMembers = extDecl.memberBlock.members.map { member -> MemberBlockItemSyntax in
             guard let varDecl = member.decl.as(VariableDeclSyntax.self),
-                  let rewritten = rewriteEnvironmentProperty(
-                      varDecl,
-                      environmentKeys: environmentKeys,
-                      matchedKeys: &capturedMatched,
-                      context: context
-                  ) else { return member }
+                let rewritten = rewriteEnvironmentProperty(
+                    varDecl,
+                    environmentKeys: environmentKeys,
+                    matchedKeys: &capturedMatched,
+                    context: context
+                ) else { return member }
             var result = member
             result.decl = DeclSyntax(rewritten)
             return result
@@ -306,12 +306,8 @@ final class UseAtEntryNotEnvironmentKey: StaticFormatRule<BasicRuleValue>, @unch
 
         let entryAttr = AttributeSyntax(
             atSign: .atSignToken(leadingTrivia: savedTrivia),
-            attributeName: IdentifierTypeSyntax(
-                name: TokenSyntax(
-                    .identifier("Entry"),
-                    trailingTrivia: .space,
-                    presence: .present
-                ))
+            attributeName: IdentifierTypeSyntax(name: TokenSyntax(
+                .identifier("Entry"), trailingTrivia: .space, presence: .present))
         )
 
         var elements = Array(result.attributes)

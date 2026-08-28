@@ -8,7 +8,7 @@ final class UseClosureNotificationObserver: LintSyntaxRule<LintOnlyValue>, @unch
 
     override func visit(_ node: FunctionCallExprSyntax) -> SyntaxVisitorContinueKind {
         guard let member = node.calledExpression.as(MemberAccessExprSyntax.self),
-              member.declName.baseName.text == "addObserver" else { return .visitChildren }
+            member.declName.baseName.text == "addObserver" else { return .visitChildren }
         let labels = node.arguments.map { $0.label?.text }
         // selector form: (_, selector:, name:, object:)
         guard labels.count == 4,

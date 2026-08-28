@@ -11,12 +11,12 @@ final class UseNonOptionalDataInit: LintSyntaxRule<LintOnlyValue>, @unchecked Se
 
     override func visit(_ node: FunctionCallExprSyntax) -> SyntaxVisitorContinueKind {
         guard let member = node.calledExpression.as(MemberAccessExprSyntax.self),
-              member.declName.baseName.text == "data",
-              node.arguments.count == 1,
-              let only = node.arguments.first,
-              only.label?.text == "using",
-              let encoding = only.expression.as(MemberAccessExprSyntax.self),
-              encoding.declName.baseName.text == "utf8" else { return .visitChildren }
+            member.declName.baseName.text == "data",
+            node.arguments.count == 1,
+            let only = node.arguments.first,
+            only.label?.text == "using",
+            let encoding = only.expression.as(MemberAccessExprSyntax.self),
+            encoding.declName.baseName.text == "utf8" else { return .visitChildren }
         diagnose(.useNonOptionalDataInit, on: member.declName)
         return .visitChildren
     }

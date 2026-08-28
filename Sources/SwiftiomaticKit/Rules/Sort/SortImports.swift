@@ -37,18 +37,18 @@ final class SortImports: StructuralFormatRule<SortImportsConfiguration>, @unchec
         var newNode = node
         newNode.statements = orderImports(in: node.statements)
 
-        // A shebang line ends with a newline that is stored as leading trivia on
-        // the first statement. Reordering can treat that newline (and any blank
-        // lines right after it) as leading blank lines of the file header and
-        // drop them, which pulls the following comment or import up onto the
-        // shebang line. Put the leading newlines back so the shebang keeps its
-        // own line.
+        // A shebang line ends with a newline that is stored as leading trivia on the first
+        // statement. Reordering can treat that newline (and any blank lines right after it) as
+        // leading blank lines of the file header and drop them, which pulls the following comment
+        // or import up onto the shebang line. Put the leading newlines back so the shebang keeps
+        // its own line.
         if node.shebang != nil, !newNode.statements.isEmpty {
             let original = leadingNewlineCount(of: node.statements)
             let updated = leadingNewlineCount(of: newNode.statements)
+
             if updated < original {
-                newNode.statements.leadingTrivia =
-                    .newlines(original - updated) + newNode.statements.leadingTrivia
+                newNode.statements.leadingTrivia = .newlines(original - updated)
+                    + newNode.statements.leadingTrivia
             }
         }
         return newNode
@@ -174,12 +174,8 @@ final class SortImports: StructuralFormatRule<SortImportsConfiguration>, @unchec
                 }
 
                 ifConfigDecl.clauses = IfConfigClauseListSyntax(newClauses)
-                line.syntaxNode = .ifConfigCodeBlock(
-                    CodeBlockItemSyntax(
-                        item: .decl(
-                            DeclSyntax(
-                                ifConfigDecl
-                            ))))
+                line.syntaxNode = .ifConfigCodeBlock(CodeBlockItemSyntax(item: .decl(DeclSyntax(
+                    ifConfigDecl))))
             }
 
             if ruleConfig.shouldGroupImports {
@@ -311,7 +307,8 @@ final class SortImports: StructuralFormatRule<SortImportsConfiguration>, @unchec
                     { $0.sortComponents.lexicographicallyPrecedes($1.sortComponents) }
                 case .length:
                     {
-                        let lhs = $0.sortName, rhs = $1.sortName
+                        let lhs = $0.sortName
+                        let rhs = $1.sortName
                         return lhs.count < rhs.count
                             || (lhs.count == rhs.count && lhs.lexicographicallyPrecedes(rhs))
                     }
@@ -338,7 +335,8 @@ final class SortImports: StructuralFormatRule<SortImportsConfiguration>, @unchec
                         // trailing comments. Any extra comments must go on a new line, and would be
                         // grouped with the next import.
                         guard !duplicateLine.import.trailingTrivia.isEmpty,
-                              !line.trailingTrivia.isEmpty else {
+                              !line.trailingTrivia.isEmpty
+                        else {
                             duplicateLine.comments.append(contentsOf: commentBuffer)
                             commentBuffer = []
                             // Keep the Line that has the trailing comment, if there is one.
@@ -381,12 +379,10 @@ final class SortImports: StructuralFormatRule<SortImportsConfiguration>, @unchec
     }
 }
 
-/// Returns the number of newlines at the very start of the statement list's
-/// leading trivia, or zero if it does not start with one.
+/// Returns the number of newlines at the very start of the statement list's leading trivia, or zero
+/// if it does not start with one.
 private func leadingNewlineCount(of statements: CodeBlockItemListSyntax) -> Int {
-    if case .newlines(let count)? = statements.leadingTrivia.pieces.first {
-        return count
-    }
+    if case .newlines(let count)? = statements.leadingTrivia.pieces.first { return count }
     return 0
 }
 
@@ -506,14 +502,14 @@ private func convertToCodeBlockItems(lines: [Line]) -> [CodeBlockItemSyntax] {
         }
     }
 
-    // If trivia accumulated past the last syntax node (a trailing comment that
-    // reordering pushed past the final import), attach it to the last code
-    // block item's trailing trivia so it isn't silently dropped. Strip the
-    // synthesised trailing newlines first so the output doesn't gain spurious
-    // blank lines.
+    // If trivia accumulated past the last syntax node (a trailing comment that reordering pushed
+    // past the final import), attach it to the last code block item's trailing trivia so it isn't
+    // silently dropped. Strip the synthesised trailing newlines first so the output doesn't gain
+    // spurious blank lines.
     while let last = pendingLeadingTrivia.last, case .newlines = last {
         pendingLeadingTrivia.removeLast()
     }
+
     if Trivia(pieces: pendingLeadingTrivia).hasAnyComments, !output.isEmpty {
         let lastIndex = output.index(before: output.endIndex)
         var lastItem = output[lastIndex]
@@ -740,10 +736,7 @@ package struct SortImportsConfiguration: SyntaxRuleValue {
     /// first, ties broken alphabetically).
     package var sortOrder: SortOrder = .alphabetical
 
-    package enum SortOrder: String, Sendable, Codable, Equatable {
-        case alphabetical
-        case length
-    }
+    package enum SortOrder: String, Sendable, Codable, Equatable { case alphabetical, length }
 
     package init() {}
 

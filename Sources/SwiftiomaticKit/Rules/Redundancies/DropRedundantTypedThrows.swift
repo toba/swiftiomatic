@@ -55,9 +55,8 @@ final class DropRedundantTypedThrows: StaticFormatRule<BasicRuleValue>, @uncheck
         if trimmed == "any Error" {
             Self.diagnose(.replaceAnyErrorWithThrows, on: throwsClause, context: context)
             let simplified = simplifyToPlainThrows(throwsClause)
-            return TypeSyntax(
-                funcType.with(\.effectSpecifiers, effectSpecifiers.with(\.throwsClause, simplified))
-            )
+            return TypeSyntax(funcType.with(
+                \.effectSpecifiers, effectSpecifiers.with(\.throwsClause, simplified)))
         }
 
         if trimmed == "Never" {

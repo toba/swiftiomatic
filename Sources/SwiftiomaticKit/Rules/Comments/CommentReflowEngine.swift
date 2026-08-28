@@ -39,12 +39,8 @@ package enum CommentReflowEngine {
                     out.append(contentsOf: body)
                     if let close { out.append(close) }
                 case let .paragraph(text):
-                    out.append(
-                        contentsOf: wrapParagraph(
-                            text: text,
-                            width: width,
-                            continuation: ""
-                        ))
+                    out.append(contentsOf: wrapParagraph(text: text, width: width, continuation: "")
+                    )
                 case .list(let items, _):
                     for item in items {
                         let marker = item.marker  // e.g. "- " or "  - " or "1. "
@@ -144,14 +140,15 @@ package enum CommentReflowEngine {
                 i += 1
                 continue
             }
-            // Block quote: a `>`-prefixed line, plus any CommonMark "lazy continuation" lines
-            // that follow without a `>` prefix (non-blank, not a list / fence / link-ref).
-            // The renderer re-adds `> ` and the lazy 2-space indent on output.
+            // Block quote: a `>`-prefixed line, plus any CommonMark "lazy continuation" lines that
+            // follow without a `>` prefix (non-blank, not a list / fence / link-ref). The renderer
+            // re-adds `> ` and the lazy 2-space indent on output.
             if line.hasPrefix(">") {
                 var quoted: [String] = []
 
                 while i < lines.count {
                     let cur = lines[i]
+
                     if cur.hasPrefix(">") {
                         let dropped = String(cur.dropFirst())
                         let stripped = dropped.hasPrefix(" ")
@@ -238,8 +235,8 @@ package enum CommentReflowEngine {
     }
 
     /// DocC list-item keywords that must always sit at the outermost list indent — siblings of
-    /// `- Parameters:`, never nested under it. Matched case-sensitively and only when followed by
-    /// a colon (the syntax DocC actually recognizes).
+    /// `- Parameters:`, never nested under it. Matched case-sensitively and only when followed by a
+    /// colon (the syntax DocC actually recognizes).
     private static let doccTopLevelKeywords: Set<String> = [
         "Returns", "Throws", "Precondition", "Postcondition", "Requires", "Invariant",
         "Complexity", "Important", "Note", "Warning", "Attention", "Author", "Authors",
@@ -321,9 +318,9 @@ package enum CommentReflowEngine {
             let bodyText = String(line[line.index(line.startIndex, offsetBy: m.bodyOffset)...])
 
             // DocC top-level keywords (`Returns:`, `Throws:`, etc.) must sit at the outer list's
-            // indent, even if the source has them indented under a `- Parameters:` block. When
-            // we see one inside a nested list, end the nested list so the outer call picks it
-            // up. When the outer call sees one over-indented, force it to the baseline indent.
+            // indent, even if the source has them indented under a `- Parameters:` block. When we
+            // see one inside a nested list, end the nested list so the outer call picks it up. When
+            // the outer call sees one over-indented, force it to the baseline indent.
             if isDocCTopLevelKeyword(bodyText) {
                 if let baseline = firstItemMarkerIndent, baseline > 0 {
                     // We're inside a nested list (e.g. Parameters' children). Stop here so the
@@ -353,11 +350,8 @@ package enum CommentReflowEngine {
                     return copy
                 }
                 if !items.isEmpty {
-                    items[items.count - 1].nested.append(
-                        .list(
-                            items: nested,
-                            parameterBlock: false
-                        ))
+                    items[items.count - 1].nested.append(.list(items: nested, parameterBlock: false)
+                    )
                 }
                 i += consumed
                 continue
@@ -383,9 +377,9 @@ package enum CommentReflowEngine {
                 if nextLeading <= leading, listMarker(next) != nil { break }
                 if nextLeading <= leading { break }
 
-                // Even if `next` is more indented than this item's marker, a DocC top-level
-                // keyword (`Returns:`, `Throws:`, …) must not be folded into this item or its
-                // nested list — break out so the parent parser can dedent it.
+                // Even if `next` is more indented than this item's marker, a DocC top-level keyword
+                // (`Returns:`, `Throws:`, …) must not be folded into this item or its nested list —
+                // break out so the parent parser can dedent it.
                 if let nm = listMarker(next) {
                     let nextBody = String(
                         next[next.index(next.startIndex, offsetBy: nm.bodyOffset)...])
@@ -599,15 +593,14 @@ package enum CommentReflowEngine {
            s[i] == "w" || s[i] == "W",
            s[i + 1] == "w" || s[i + 1] == "W",
            s[i + 2] == "w" || s[i + 2] == "W",
-           s[i + 3] == "." {
-            return true
-        }
+           s[i + 3] == "." { return true }
         // scheme://
         guard s[i].isLetter else { return false }
         var j = i
 
-        while j < s.count, s[j].isLetter || s[j].isNumber || s[j] == "+" || s[j] == "."
-            || s[j] == "-"
+        while j < s.count,
+              s[j].isLetter || s[j].isNumber || s[j] == "+" || s[j] == "."
+                  || s[j] == "-"
         {
             j += 1
         }
@@ -637,8 +630,8 @@ package enum CommentReflowEngine {
     /// The character ranges of the URL runs in `characters` .
     ///
     /// A run is a Markdown link, an autolink, or a bare URL, and it is indivisible. Every form
-    /// needs explicit URL syntax in its target: a scheme followed by `://` , or a `www.` host.
-    /// The ranges never overlap, and they are in ascending order.
+    /// needs explicit URL syntax in its target: a scheme followed by `://` , or a `www.` host. The
+    /// ranges never overlap, and they are in ascending order.
     ///
     /// `LineLengthLimit` subtracts these ranges before it measures a line. A URL cannot wrap, so a
     /// finding about one names no fix the reader can apply.
@@ -649,14 +642,18 @@ package enum CommentReflowEngine {
         while i < characters.count {
             let c = characters[i]
 
-            if c == "[", let link = matchMarkdownLink(characters, from: i),
-               isURLStart(characters, at: link.targetStart) {
+            if c == "[",
+               let link = matchMarkdownLink(characters, from: i),
+               isURLStart(characters, at: link.targetStart)
+            {
                 runs.append(i..<(link.end + 1))
                 i = link.end + 1
                 continue
             }
-            if c == "<", let end = matchAutolink(characters, from: i),
-               isURLStart(characters, at: i + 1) {
+            if c == "<",
+               let end = matchAutolink(characters, from: i),
+               isURLStart(characters, at: i + 1)
+            {
                 runs.append(i..<(end + 1))
                 i = end + 1
                 continue

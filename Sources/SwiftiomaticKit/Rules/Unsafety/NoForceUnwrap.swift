@@ -173,10 +173,7 @@ final class NoForceUnwrap: StaticFormatRule<BasicRuleValue>, @unchecked Sendable
         s.classStack.append(s.insideXCTestCase)
         if context.importsAnyTestLibrary == .importsTestLibrary,
            let inheritance = node.inheritanceClause,
-           inheritance.contains(named: "XCTestCase")
-        {
-            s.insideXCTestCase = true
-        }
+           inheritance.contains(named: "XCTestCase") { s.insideXCTestCase = true }
     }
 
     static func popClass(context: Context) {
@@ -245,9 +242,7 @@ final class NoForceUnwrap: StaticFormatRule<BasicRuleValue>, @unchecked Sendable
 
         let isTop = isChainTop(originalNode)
         s.chainTopStack.append(isTop)
-        s.chainContextStack.append(
-            isTop ? classifyChainTopContext(originalNode) : .propagate
-        )
+        s.chainContextStack.append(isTop ? classifyChainTopContext(originalNode) : .propagate)
 
         // Emit findings here (during willEnter, with original positions). The legacy rule
         // diagnoses/skips inside its `visit(_:)` BEFORE recursing — we mirror that timing so
@@ -270,10 +265,7 @@ final class NoForceUnwrap: StaticFormatRule<BasicRuleValue>, @unchecked Sendable
 
         // Skip if parent is `try!` (handled by NoForceTry).
         if let parentTry = node.parent?.as(TryExprSyntax.self),
-           parentTry.questionOrExclamationMark?.tokenKind == .exclamationMark
-        {
-            return
-        }
+           parentTry.questionOrExclamationMark?.tokenKind == .exclamationMark { return }
 
         if s.insideTestFunction {
             if s.closureDepth > 0 || s.stringInterpolationDepth > 0 { return }
@@ -368,15 +360,9 @@ final class NoForceUnwrap: StaticFormatRule<BasicRuleValue>, @unchecked Sendable
         if parent.is(OptionalChainingExprSyntax.self) { return false }
 
         if let funcCall = parent.as(FunctionCallExprSyntax.self),
-           funcCall.calledExpression.id == node.id
-        {
-            return false
-        }
+           funcCall.calledExpression.id == node.id { return false }
         if let subscriptCall = parent.as(SubscriptCallExprSyntax.self),
-           subscriptCall.calledExpression.id == node.id
-        {
-            return false
-        }
+           subscriptCall.calledExpression.id == node.id { return false }
         return true
     }
 
@@ -429,17 +415,11 @@ final class NoForceUnwrap: StaticFormatRule<BasicRuleValue>, @unchecked Sendable
 
     static func findForceCast(in expr: ExprSyntax) -> AsExprSyntax? {
         if let asExpr = expr.as(AsExprSyntax.self),
-           asExpr.questionOrExclamationMark?.tokenKind == .exclamationMark
-        {
-            return asExpr
-        }
+           asExpr.questionOrExclamationMark?.tokenKind == .exclamationMark { return asExpr }
 
         for child in expr.children(viewMode: .sourceAccurate) {
             if let childExpr = child.as(ExprSyntax.self),
-               let found = findForceCast(in: childExpr)
-            {
-                return found
-            }
+               let found = findForceCast(in: childExpr) { return found }
         }
         return nil
     }
@@ -472,37 +452,31 @@ final class NoForceUnwrap: StaticFormatRule<BasicRuleValue>, @unchecked Sendable
                         state: s
                     )
                 case .noWrap:
-                    return ExprSyntax(
-                        OptionalChainingExprSyntax(
-                            expression: node.expression,
-                            questionMark: .postfixQuestionMarkToken(
-                                leadingTrivia: node.exclamationMark.leadingTrivia,
-                                trailingTrivia: node.exclamationMark.trailingTrivia
-                            )
-                        ))
+                    return ExprSyntax(OptionalChainingExprSyntax(
+                        expression: node.expression,
+                        questionMark: .postfixQuestionMarkToken(
+                            leadingTrivia: node.exclamationMark.leadingTrivia,
+                            trailingTrivia: node.exclamationMark.trailingTrivia
+                        )))
                 case .propagate:
                     s.chainNeedsWrapping = true
-                    return ExprSyntax(
-                        OptionalChainingExprSyntax(
-                            expression: node.expression,
-                            questionMark: .postfixQuestionMarkToken(
-                                leadingTrivia: node.exclamationMark.leadingTrivia,
-                                trailingTrivia: node.exclamationMark.trailingTrivia
-                            )
-                        ))
+                    return ExprSyntax(OptionalChainingExprSyntax(
+                        expression: node.expression,
+                        questionMark: .postfixQuestionMarkToken(
+                            leadingTrivia: node.exclamationMark.leadingTrivia,
+                            trailingTrivia: node.exclamationMark.trailingTrivia
+                        )))
             }
         }
 
         // Not chain top: convert to optional chain, signal upward.
         s.chainNeedsWrapping = true
-        return ExprSyntax(
-            OptionalChainingExprSyntax(
-                expression: node.expression,
-                questionMark: .postfixQuestionMarkToken(
-                    leadingTrivia: node.exclamationMark.leadingTrivia,
-                    trailingTrivia: node.exclamationMark.trailingTrivia
-                )
-            ))
+        return ExprSyntax(OptionalChainingExprSyntax(
+            expression: node.expression,
+            questionMark: .postfixQuestionMarkToken(
+                leadingTrivia: node.exclamationMark.leadingTrivia,
+                trailingTrivia: node.exclamationMark.trailingTrivia
+            )))
     }
 
     /// Apply the `AsExpr` rewrite for `as!` force casts (called only when the node is `as!` ).
@@ -629,9 +603,7 @@ final class NoForceUnwrap: StaticFormatRule<BasicRuleValue>, @unchecked Sendable
             case .wrap:
                 s.addedTryExpression = true
                 s.chainNeedsWrapping = false
-                return wrapInUnwrap(
-                    expr, trailingTrivia: expr.trailingTrivia, state: s
-                )
+                return wrapInUnwrap(expr, trailingTrivia: expr.trailingTrivia, state: s)
             case .noWrap:
                 s.chainNeedsWrapping = false
                 return expr
@@ -646,35 +618,19 @@ final class NoForceUnwrap: StaticFormatRule<BasicRuleValue>, @unchecked Sendable
     ) -> ExprSyntax {
         let innerExpr = expr.trimmed
         let callExpr: ExprSyntax = s.importsTesting
-            ? ExprSyntax(
-                MacroExpansionExprSyntax(
-                    pound: .poundToken(),
-                    macroName: .identifier("require"),
-                    leftParen: .leftParenToken(),
-                    arguments: LabeledExprListSyntax([
-                        LabeledExprSyntax(expression: innerExpr)
-                    ]),
-                    rightParen: .rightParenToken(trailingTrivia: trailingTrivia)
-                ))
-            : ExprSyntax(
-                FunctionCallExprSyntax(
-                    calledExpression: ExprSyntax(
-                        DeclReferenceExprSyntax(
-                            baseName: .identifier(
-                                "XCTUnwrap"
-                            ))),
-                    leftParen: .leftParenToken(),
-                    arguments: LabeledExprListSyntax([
-                        LabeledExprSyntax(expression: innerExpr)
-                    ]),
-                    rightParen: .rightParenToken(trailingTrivia: trailingTrivia)
-                ))
+            ? ExprSyntax(MacroExpansionExprSyntax(
+                pound: .poundToken(), macroName: .identifier("require"),
+                leftParen: .leftParenToken(),
+                arguments: LabeledExprListSyntax([LabeledExprSyntax(expression: innerExpr)]),
+                rightParen: .rightParenToken(trailingTrivia: trailingTrivia)))
+            : ExprSyntax(FunctionCallExprSyntax(
+                calledExpression: ExprSyntax(DeclReferenceExprSyntax(baseName: .identifier(
+                    "XCTUnwrap"))), leftParen: .leftParenToken(),
+                arguments: LabeledExprListSyntax([LabeledExprSyntax(expression: innerExpr)]),
+                rightParen: .rightParenToken(trailingTrivia: trailingTrivia)))
 
-        return ExprSyntax(
-            TryExprSyntax(
-                tryKeyword: .keyword(.try, trailingTrivia: .space),
-                expression: callExpr
-            ))
+        return ExprSyntax(TryExprSyntax(
+            tryKeyword: .keyword(.try, trailingTrivia: .space), expression: callExpr))
     }
 
     // MARK: - FunctionDecl post-process

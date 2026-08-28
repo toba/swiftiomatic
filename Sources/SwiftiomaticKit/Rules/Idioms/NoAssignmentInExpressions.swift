@@ -69,8 +69,8 @@ final class NoAssignmentInExpressions: StaticFormatRule<NoAssignmentInExpression
 
                     // Move the leading trivia from the `return` statement to the new assignment
                     // statement, since that's a more sensible place than between the two.
-                    var assignmentItem = CodeBlockItemSyntax(
-                        item: .expr(ExprSyntax(assignmentExpr)))
+                    var assignmentItem = CodeBlockItemSyntax(item: .expr(ExprSyntax(assignmentExpr))
+                    )
                     assignmentItem.leadingTrivia = returnStmt.leadingTrivia
                         + returnStmt.returnKeyword.trailingTrivia.withoutLeadingSpaces()
                         + assignmentExpr.leadingTrivia
@@ -100,9 +100,8 @@ final class NoAssignmentInExpressions: StaticFormatRule<NoAssignmentInExpression
         context: Context
     ) -> InfixOperatorExprSyntax? {
         guard let returnExpr = returnStmt.expression,
-              let infixOperatorExpr = returnExpr.as(InfixOperatorExprSyntax.self) else {
-            return nil
-        }
+              let infixOperatorExpr = returnExpr.as(InfixOperatorExprSyntax.self)
+        else { return nil }
         return isAssignmentExpression(infixOperatorExpr, context: context)
             ? infixOperatorExpr
             : nil
@@ -169,8 +168,7 @@ final class NoAssignmentInExpressions: StaticFormatRule<NoAssignmentInExpression
         while let p = current {
             if p.is(CodeBlockItemSyntax.self) { break }
             if let functionCallExpr = p.as(FunctionCallExprSyntax.self),
-               allowedFunctions.contains(functionCallExpr.calledExpression.trimmedDescription)
-            {
+               allowedFunctions.contains(functionCallExpr.calledExpression.trimmedDescription) {
                 return true
             }
             current = p.parent

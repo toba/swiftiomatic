@@ -56,7 +56,7 @@ final class InsertBlankLineAfterImports: StructuralFormatRule<BasicRuleValue>, @
             if statement.item.is(ImportDeclSyntax.self) {
                 lastImportIndex = index
             } else if let ifConfig = statement.item.as(IfConfigDeclSyntax.self),
-               containsOnlyImports(ifConfig)
+                containsOnlyImports(ifConfig)
             {
                 lastImportIndex = index
             } else {

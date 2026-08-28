@@ -87,9 +87,8 @@ final class DropRedundantObjcAttribute: StaticFormatRule<BasicRuleValue>, @unche
         // Must have at least one attribute that implies `@objc` .
         guard decl.attributes.contains(where: { element in
             guard case let .attribute(attr) = element,
-                  let name = attr.attributeName.as(IdentifierTypeSyntax.self)?.name.text else {
-                return false
-            }
+                  let name = attr.attributeName.as(IdentifierTypeSyntax.self)?.name.text
+            else { return false }
             return Self.implyingAttributes.contains(name)
         }) else { return decl }
 

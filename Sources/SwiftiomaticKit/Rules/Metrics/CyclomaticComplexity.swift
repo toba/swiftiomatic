@@ -25,9 +25,7 @@ final class CyclomaticComplexity: LintSyntaxRule<CyclomaticComplexityConfigurati
     }
 
     private func evaluate(body: CodeBlockSyntax, anchor: Syntax) {
-        let visitor = ComplexityVisitor(
-            ignoresCaseStatements: ruleConfig.ignoresCaseStatements
-        )
+        let visitor = ComplexityVisitor(ignoresCaseStatements: ruleConfig.ignoresCaseStatements)
         visitor.walk(body)
         let complexity = visitor.complexity
 

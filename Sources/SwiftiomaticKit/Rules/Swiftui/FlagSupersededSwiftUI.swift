@@ -19,6 +19,7 @@ final class FlagSupersededSwiftUI: LintSyntaxRule<LintOnlyValue>, @unchecked Sen
         guard let ident = node.attributeName.as(IdentifierTypeSyntax.self) else {
             return .visitChildren
         }
+
         switch ident.name.text {
             case "StateObject": diagnose(.stateObject, on: node)
             case "ObservedObject": diagnose(.observedObject, on: node)
@@ -51,7 +52,7 @@ final class FlagSupersededSwiftUI: LintSyntaxRule<LintOnlyValue>, @unchecked Sen
 
     override func visit(_ node: FunctionCallExprSyntax) -> SyntaxVisitorContinueKind {
         if let ident = node.calledExpression.as(DeclReferenceExprSyntax.self),
-           ident.baseName.text == "NavigationView"
+            ident.baseName.text == "NavigationView"
         {
             diagnose(.navigationView, on: node.calledExpression)
         }
@@ -59,7 +60,7 @@ final class FlagSupersededSwiftUI: LintSyntaxRule<LintOnlyValue>, @unchecked Sen
     }
 
     private func flagObservableObject(
-        on node: some SyntaxProtocol,
+        on _: some SyntaxProtocol,
         inheritance: InheritanceClauseSyntax?
     ) {
         guard let inheritance,

@@ -149,8 +149,7 @@ final class FileHeader: StructuralFormatRule<FileHeaderConfiguration>, @unchecke
                      .tabs,
                      .carriageReturns,
                      .carriageReturnLineFeeds,
-                     .formfeeds:
-                    result.removeFirst()
+                     .formfeeds: result.removeFirst()
                 default: return result
             }
         }

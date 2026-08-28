@@ -69,9 +69,8 @@ final class DropRedundantSetterACL: StaticFormatRule<BasicRuleValue>, @unchecked
         in modifiers: DeclModifierListSyntax
     ) -> DeclModifierSyntax? {
         modifiers.first { mod in
-            guard mod.detail == nil, case let .keyword(kw) = mod.name.tokenKind else {
-                return false
-            }
+            guard mod.detail == nil, case let .keyword(kw) = mod.name.tokenKind
+            else { return false }
             return Self.accessKeywords.contains(kw)
         }
     }

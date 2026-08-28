@@ -32,8 +32,8 @@ final class DropRedundantTypeAnnotation: StaticFormatRule<BasicRuleValue>, @unch
         parent: Syntax?,
         context: Context
     ) -> DeclSyntax {
-        // Skip stored properties on a type declaration. The explicit annotation on a member
-        // is intentional — keep it for documentation value at the declaration site.
+        // Skip stored properties on a type declaration. The explicit annotation on a member is
+        // intentional — keep it for documentation value at the declaration site.
         if isMemberStoredProperty(parent: parent) { return DeclSyntax(node) }
 
         var bindings = node.bindings
@@ -186,23 +186,16 @@ final class DropRedundantTypeAnnotation: StaticFormatRule<BasicRuleValue>, @unch
     private static func simpleTypeName(from expr: ExprSyntax) -> String? {
         // `Foo(...)` — DeclReferenceExpr with no argument names
         if let declRef = expr.as(DeclReferenceExprSyntax.self),
-           declRef.argumentNames == nil
-        {
-            return declRef.baseName.text
-        }
+           declRef.argumentNames == nil { return declRef.baseName.text }
 
         // `Foo.init(...)` — MemberAccessExpr where declName is `init`
         if let memberAccess = expr.as(MemberAccessExprSyntax.self),
            memberAccess.declName.baseName.tokenKind == .keyword(.`init`),
-           let base = memberAccess.base
-        {
-            return base.trimmedDescription
-        }
+           let base = memberAccess.base { return base.trimmedDescription }
 
         // `Module.Foo(...)` — MemberAccessExpr where declName is the type
         if let memberAccess = expr.as(MemberAccessExprSyntax.self),
-           memberAccess.declName.baseName.tokenKind != .keyword(.`init`)
-        {
+           memberAccess.declName.baseName.tokenKind != .keyword(.`init`) {
             return memberAccess.trimmedDescription
         }
 

@@ -18,12 +18,12 @@ final class NoSortFilterInForEach: LintSyntaxRule<LintOnlyValue>, @unchecked Sen
 
     override func visit(_ node: FunctionCallExprSyntax) -> SyntaxVisitorContinueKind {
         guard let ident = node.calledExpression.as(DeclReferenceExprSyntax.self),
-              ident.baseName.text == "ForEach",
-              let firstArg = node.arguments.first else { return .visitChildren }
+            ident.baseName.text == "ForEach",
+            let firstArg = node.arguments.first else { return .visitChildren }
 
         if let dataCall = firstArg.expression.as(FunctionCallExprSyntax.self),
-           let member = dataCall.calledExpression.as(MemberAccessExprSyntax.self),
-           Self.recomputingMethods.contains(member.declName.baseName.text)
+            let member = dataCall.calledExpression.as(MemberAccessExprSyntax.self),
+            Self.recomputingMethods.contains(member.declName.baseName.text)
         {
             diagnose(.recomputingForEachData(member.declName.baseName.text), on: dataCall)
         }

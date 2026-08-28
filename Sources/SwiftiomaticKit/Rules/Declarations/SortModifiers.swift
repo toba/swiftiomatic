@@ -163,8 +163,7 @@ final class SortModifiers: StaticFormatRule<BasicRuleValue>, @unchecked Sendable
         // The first modifier in the new list should get the leading trivia from the original first
         // modifier (newline + indentation).
         let originalLeadingTrivia = modifiers.first!.leadingTrivia
-        reordered[
-            0] = reordered[0]
+        reordered[0] = reordered[0]
             .with(\.leadingTrivia, originalLeadingTrivia)
 
         // Non-first modifiers should have a single space as leading trivia (removing any original

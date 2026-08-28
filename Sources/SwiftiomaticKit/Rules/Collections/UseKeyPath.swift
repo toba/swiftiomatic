@@ -157,10 +157,8 @@ final class UseKeyPath: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
         let components = chain.map { name in
             KeyPathComponentSyntax(
                 period: .periodToken(),
-                component: .property(
-                    KeyPathPropertyComponentSyntax(
-                        declName: DeclReferenceExprSyntax(baseName: .identifier(name))
-                    ))
+                component: .property(KeyPathPropertyComponentSyntax(declName:
+                        DeclReferenceExprSyntax(baseName: .identifier(name))))
             )
         }
 

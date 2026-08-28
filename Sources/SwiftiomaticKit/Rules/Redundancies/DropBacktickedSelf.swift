@@ -21,11 +21,11 @@ final class DropBacktickedSelf: StaticFormatRule<BasicRuleValue>, @unchecked Sen
     ) -> OptionalBindingConditionSyntax {
         // Match: let `self` = self
         guard let identifierPattern = node.pattern.as(IdentifierPatternSyntax.self),
-              case let .identifier(text) = identifierPattern.identifier.tokenKind,
-              text == "`self`",
-              let initializer = node.initializer,
-              let declRef = initializer.value.as(DeclReferenceExprSyntax.self),
-              declRef.baseName.tokenKind == .keyword(.self) else { return node }
+            case let .identifier(text) = identifierPattern.identifier.tokenKind,
+            text == "`self`",
+            let initializer = node.initializer,
+            let declRef = initializer.value.as(DeclReferenceExprSyntax.self),
+            declRef.baseName.tokenKind == .keyword(.self) else { return node }
 
         Self.diagnose(
             .removeBackticksAroundSelf, on: identifierPattern.identifier, context: context)

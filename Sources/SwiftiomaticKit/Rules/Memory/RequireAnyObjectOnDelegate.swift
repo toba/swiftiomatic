@@ -13,9 +13,10 @@ final class RequireAnyObjectOnDelegate: LintSyntaxRule<LintOnlyValue>, @unchecke
 
     override func visit(_ node: ProtocolDeclSyntax) -> SyntaxVisitorContinueKind {
         guard node.name.text.hasSuffix("Delegate"),
-              !node.hasObjCAttribute,
-              !node.isClassRestricted,
-              !node.inheritsFromObjectOrDelegate else {
+            !node.hasObjCAttribute,
+            !node.isClassRestricted,
+            !node.inheritsFromObjectOrDelegate
+        else {
             return .visitChildren
         }
 
@@ -44,22 +45,19 @@ fileprivate extension ProtocolDeclSyntax {
     }
 
     var isClassRestricted: Bool {
-        inheritanceClause?.inheritedTypes.contains {
-            $0.type.is(ClassRestrictionTypeSyntax.self)
-        } ?? false
+        inheritanceClause?.inheritedTypes.contains { $0.type.is(ClassRestrictionTypeSyntax.self) }
+            ?? false
     }
 
     var inheritsFromObjectOrDelegate: Bool {
         if inheritanceClause?.inheritedTypes.contains(where: { $0.type.isObjectOrDelegate }) == true
-        {
-            return true
-        }
+        { return true }
         guard let requirements = genericWhereClause?.requirements else { return false }
 
         return requirements.contains { requirement in
             guard let conformance = requirement.requirement.as(ConformanceRequirementSyntax.self),
-                  let leftID = conformance.leftType.as(IdentifierTypeSyntax.self),
-                  leftID.name.text == "Self" else { return false }
+                let leftID = conformance.leftType.as(IdentifierTypeSyntax.self),
+                leftID.name.text == "Self" else { return false }
             return conformance.rightType.isObjectOrDelegate
         }
     }
