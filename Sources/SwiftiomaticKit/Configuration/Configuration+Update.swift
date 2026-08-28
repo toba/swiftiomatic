@@ -171,7 +171,10 @@ extension Configuration {
         }
     }
 
-    private static func defaultValue(
+    /// The default value for a rule, read out of an encoded default `Configuration` .
+    ///
+    /// Shared with `applyUpdateText` , which needs the same value when it inserts a key as text.
+    static func defaultValue(
         forQualifiedKey key: String,
         defaults: [String: JSONValue]
     ) -> JSONValue {

@@ -15,9 +15,8 @@ package final class ConfigurationSchemaGenerator: FileGenerator {
         let encoder = JSONEncoder()
         encoder.outputFormatting = [.prettyPrinted, .sortedKeys, .withoutEscapingSlashes]
         guard let data = try? encoder.encode(schema),
-              let json = String(data: data, encoding: .utf8) else {
-            fatalError("Failed to encode configuration schema")
-        }
+              let json = String(data: data, encoding: .utf8)
+        else { fatalError("Failed to encode configuration schema") }
         return json + "\n"
     }
 
@@ -40,12 +39,11 @@ package final class ConfigurationSchemaGenerator: FileGenerator {
         var schema: [String: JSONSchemaNode] = [:]
 
         schema["$schema"] = .string(description: "JSON Schema reference URL.")
-        schema[
-            "version"] = .integer(
-                description: "Configuration format version.",
-                defaultValue: 6,
-                minimum: 1
-            )
+        schema["version"] = .integer(
+            description: "Configuration format version.",
+            defaultValue: 6,
+            minimum: 1
+        )
 
         // Root-level pretty-print settings.
         for (key, node) in rootSettingsSchema() { schema[key] = node }
@@ -132,28 +130,13 @@ package final class ConfigurationSchemaGenerator: FileGenerator {
     private func settingSchemaNode(
         for setting: RuleCollector.DetectedLayoutRule
     ) -> JSONSchemaNode {
-        let desc = setting.description ?? setting.configKey
+        let desc = setting.documentation ?? setting.configKey
 
         switch setting.valueType {
-            case .boolean:
-                var node = JSONSchemaNode()
-                node.type = "boolean"
-                node.description = desc
-                return node
-            case .integer:
-                var node = JSONSchemaNode()
-                node.type = "integer"
-                node.description = desc
-                return node
+            case .boolean: return .boolean(description: desc)
+            case .integer: return .integer(description: desc)
             case .string: return .string(description: desc)
-            case .stringArray:
-                var node = JSONSchemaNode()
-                node.type = "array"
-                node.description = desc
-                var items = JSONSchemaNode()
-                items.type = "string"
-                node.items = Indirect(items)
-                return node
+            case .stringArray: return .stringArray(description: desc)
             case let .stringEnum(values, defaultValue):
                 return .stringEnum(description: desc, values: values, defaultValue: defaultValue)
         }
@@ -162,7 +145,7 @@ package final class ConfigurationSchemaGenerator: FileGenerator {
     private static let lintModeValues = ["warn", "error", "no"]
 
     private func ruleSchemaNode(for rule: RuleCollector.DetectedSyntaxRule) -> JSONSchemaNode {
-        let desc = rule.description ?? (rule.canRewrite ? "Format rule." : "Lint rule.")
+        let desc = rule.documentation ?? (rule.canRewrite ? "Format rule." : "Lint rule.")
 
         var node = JSONSchemaNode()
         node.description = desc
@@ -245,29 +228,31 @@ package final class ConfigurationSchemaGenerator: FileGenerator {
             groupedRules[group, default: []].append(rule)
         }
 
+        var groupedSettings: [ConfigurationGroup: [RuleCollector.DetectedLayoutRule]] = [:]
+
+        for setting in collector.layoutRules {
+            guard let group = setting.group else { continue }
+            groupedSettings[group, default: []].append(setting)
+        }
+
         var groups: [String: JSONSchemaNode] = [:]
 
-        for group in ConfigurationGroup.Key.allCases.map({ ConfigurationGroup($0) }) {
+        for group in ConfigurationGroup.allCases {
             var properties: [String: JSONSchemaNode] = [:]
 
-            for setting in collector.layoutRules where setting.group == group {
+            for setting in groupedSettings[group] ?? [] {
                 properties[setting.configKey] = setting.configKey == "unit"
                     ? Self.indentationUnitSchema()
                     : settingSchemaNode(for: setting)
             }
 
-            if let rules = groupedRules[group] {
-                for rule in rules.sorted(by: { $0.configKey < $1.configKey }) {
-                    properties[rule.configKey] = ruleSchemaNode(for: rule)
-                }
+            for rule in (groupedRules[group] ?? []).sorted(by: { $0.configKey < $1.configKey }) {
+                properties[rule.configKey] = ruleSchemaNode(for: rule)
             }
 
             guard !properties.isEmpty else { continue }
-            groups[
-                group.key.rawValue] = .object(
-                    description: "\(group.key.rawValue) rule group.",
-                    properties: properties
-                )
+            let name = group.rawValue
+            groups[name] = .object(description: "\(name) rule group.", properties: properties)
         }
 
         return groups

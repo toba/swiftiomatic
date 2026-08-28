@@ -38,4 +38,18 @@ package extension ConfigurationRegistry {
         allRuleTypes.compactMap { type in
             type.group != nil ? type.qualifiedKey : nil
         })
+
+    /// Storage keys for every rule and every layout setting, keyed by type identity.
+    ///
+    /// `Configurable.qualifiedKey` derives its result from the type name on each access, which
+    /// costs a metatype interpolation, a split, and a regex replacement. `Configuration` reads a
+    /// setting once per token while laying out a file, so the subscript takes the key from here
+    /// and falls back to the derivation only for a type the registry does not list.
+    static let qualifiedKeyCache: [ObjectIdentifier: String] = {
+        var map: [ObjectIdentifier: String] = [:]
+        map.reserveCapacity(allRuleTypes.count + allSettingTypes.count)
+        for type in allRuleTypes { map[ObjectIdentifier(type)] = type.qualifiedKey }
+        for type in allSettingTypes { map[ObjectIdentifier(type)] = type.qualifiedKey }
+        return map
+    }()
 }

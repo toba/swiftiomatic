@@ -23,9 +23,7 @@ extension CodeBlockSyntax {
         if leftBrace.trailingTrivia.hasAnyComments { return false }
         if first.leadingTrivia.hasAnyComments { return false }
         if first.trailingTrivia.hasAnyComments { return false }
-        return rightBrace.leadingTrivia.hasAnyComments
-            ? false
-            : true
+        return !rightBrace.leadingTrivia.hasAnyComments
     }
 
     /// Whether this code block's content needs to be wrapped onto new lines. Returns `true` if the

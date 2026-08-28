@@ -69,7 +69,7 @@ public final class JSONLintReporter: Sendable {
         let encoder = JSONEncoder()
         encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
         let data = (try? encoder.encode(snapshot)) ?? Data("[]".utf8)
-        return String(decoding: data, as: UTF8.self)
+        return String(bytes: data, encoding: .utf8) ?? "[]"
     }
 
     /// Writes the JSON array to standard output, terminated with a newline.
@@ -152,7 +152,7 @@ public final class JSONFormatReporter: Sendable {
         encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
         encoder.keyEncodingStrategy = .convertToSnakeCase
         let data = (try? encoder.encode(report)) ?? Data("{}".utf8)
-        return String(decoding: data, as: UTF8.self)
+        return String(bytes: data, encoding: .utf8) ?? "{}"
     }
 
     public func flush() {

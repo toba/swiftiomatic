@@ -116,14 +116,14 @@ package final class WhitespaceLinter {
         var formattedRunsIterator = RememberingIterator(formattedRuns.makeIterator())
 
         if userRuns.count == 1, formattedRuns.count == 1 {
-            let userRun = userRunsIterator.next()!
-            let formattedRun = formattedRunsIterator.next()!
-
             // If there was only a single whitespace run in each input, then that means there
             // weren't any newlines. Therefore, we're looking at inter-token spacing, unless the
             // whitespace runs preceded the first token in the file (i.e., offset == 0), in which
             // case we ignore it here and handle it as an indentation check below.
-            if userIndex > 0 {
+            if let userRun = userRunsIterator.next(),
+               let formattedRun = formattedRunsIterator.next(),
+               userIndex > 0
+            {
                 checkForSpacingErrors(
                     userIndex: userIndex,
                     userRun: userRun,
@@ -165,10 +165,12 @@ package final class WhitespaceLinter {
             // a token, so we check it for leading indentation violations.
             while formattedRunsIterator.next() != nil {}
 
-            if let lastFormattedRun = formattedRunsIterator.latestElement {
+            if let lastFormattedRun = formattedRunsIterator.latestElement,
+               let lastUserRun = userRunsIterator.latestElement
+            {
                 checkForIndentationErrors(
                     userIndex: userIndex,
-                    userRun: userRunsIterator.latestElement!,
+                    userRun: lastUserRun,
                     formattedRun: lastFormattedRun
                 )
             }

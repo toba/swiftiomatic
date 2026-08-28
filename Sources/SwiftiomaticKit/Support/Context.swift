@@ -2,6 +2,7 @@ import Foundation
 import SwiftParser
 import SwiftSyntax
 import SwiftOperators
+@_spi(ExperimentalLanguageFeatures) import SwiftWarningControl
 
 /// Context contains the bits that each formatter and linter will need access to.
 ///
@@ -41,35 +42,38 @@ package final class Context {
     /// Contains the rules have been disabled by comments for certain line numbers.
     let ruleMask: RuleMask
 
-    /// The parsed source file syntax for this run. Retained so the warning-control
-    /// region tree (`@warn` / `@diagnose` attribute scopes) can be lazily built on
-    /// first lookup without re-walking the parser.
+    /// The parsed source file syntax for this run. Retained so the warning-control region tree
+    /// (`@warn` / `@diagnose` attribute scopes) can be lazily built on first lookup without
+    /// re-walking the parser.
     let sourceFileSyntax: SourceFileSyntax
 
-    /// Single-slot lazy cache for the file's `WarningControlRegionTree`. See
-    /// `Context.warningControlRegionTree`.
-    let warningControlRegionTreeCache = WarningControlRegionTreeCache()
+    /// The file's `@warn` attribute scopes, built on first lookup.
+    ///
+    /// The walk is single-pass and only runs when a rule reaches `warningControlSeverity(of:at:)` ,
+    /// which happens when it emits a finding.
+    lazy var warningControlRegionTree: WarningControlRegionTree =
+        sourceFileSyntax.warningGroupControlRegionTree()
 
     /// Identifiers of every rule whose configuration is currently active for this run — either
     /// rewrite or lint enabled.
     ///
-    /// Computed once per `Context` from `Configuration.isActive(rule:)` . `shouldFormat` uses
-    /// this set to short-circuit disabled rules before paying for the per-node `startLocation`
+    /// Computed once per `Context` from `Configuration.isActive(rule:)` . `shouldFormat` uses this
+    /// set to short-circuit disabled rules before paying for the per-node `startLocation`
     /// + `ruleMask.ruleState` work — which is the bulk of the per-rule per-node cost when ~half
     /// the rules are off. `shouldRewrite` consults the narrower `rewriteEnabledRules` so a rule
     /// configured with `rewrite: false, lint: .warn` lints without rewriting.
     let enabledRules: Set<ObjectIdentifier>
 
-    /// Identifiers of every rule whose `rewrite` flag is currently active. Subset of
-    /// `enabledRules` ; populated alongside it in `init` . `shouldRewrite` consults this set so a
-    /// rule configured with `rewrite: false, lint: .warn` lints but never rewrites — independent of
-    /// the lint-or-rewrite gate used by `shouldFormat` .
+    /// Identifiers of every rule whose `rewrite` flag is currently active. Subset of `enabledRules`
+    /// ; populated alongside it in `init` . `shouldRewrite` consults this set so a rule configured
+    /// with `rewrite: false, lint: .warn` lints but never rewrites — independent of the
+    /// lint-or-rewrite gate used by `shouldFormat` .
     ///
-    /// In lint-only mode (set by `LintCoordinator` ), this set is widened to equal
-    /// `enabledRules` so that `RewritePipeline` dispatches every active rule's `transform` —
-    /// including those configured `rewrite: false, lint: .warn` — and any `Self.diagnose` calls
-    /// inside `transform` fire. The mutated tree is discarded by the lint coordinator regardless,
-    /// so widening is safe. See issue fn9-zk6.
+    /// In lint-only mode (set by `LintCoordinator` ), this set is widened to equal `enabledRules`
+    /// so that `RewritePipeline` dispatches every active rule's `transform` — including those
+    /// configured `rewrite: false, lint: .warn` — and any `Self.diagnose` calls inside `transform`
+    /// fire. The mutated tree is discarded by the lint coordinator regardless, so widening is safe.
+    /// See issue fn9-zk6.
     let rewriteEnabledRules: Set<ObjectIdentifier>
 
     // MARK: - Per-rule mutable state
@@ -98,18 +102,17 @@ package final class Context {
     lazy var validateTestCasesState = RequireTestFnPrefixOrAttribute.State()
     lazy var layoutSingleLineBodiesState = LayoutSingleLineBodiesState()
 
-    /// Pre-built `(titlecased, uppercased)` pairs for `UppercaseAcronymsInIdentifiers` , sorted longest-first so
-    /// longer acronyms match before shorter substrings. Computed once per file; reused for every
-    /// identifier token visited.
+    /// Pre-built `(titlecased, uppercased)` pairs for `UppercaseAcronymsInIdentifiers` , sorted
+    /// longest-first so longer acronyms match before shorter substrings. Computed once per file;
+    /// reused for every identifier token visited.
     ///
     /// Lazy so a config that disables `UppercaseAcronymsInIdentifiers` never pays the
     /// `uppercased() + sorted + map` cost. The single access site (
     /// `LayoutWriter.applyUppercaseAcronyms` ) is gated by
-    /// `context.shouldRewrite(UppercaseAcronymsInIdentifiers.self, ...)` , so when the rule is disabled this
-    /// lazy var is never realized.
-    lazy var preparedAcronyms: [(titlecased: String, uppercased: String)] = configuration[
-        UppercaseAcronymsInIdentifiers.self
-    ].words
+    /// `context.shouldRewrite(UppercaseAcronymsInIdentifiers.self, ...)` , so when the rule is
+    /// disabled this lazy var is never realized.
+    lazy var preparedAcronyms: [(titlecased: String, uppercased: String)] =
+        configuration[UppercaseAcronymsInIdentifiers.self].words
         .filter { $0.count >= 2 }
         .sorted { $0.count > $1.count }
         .map { (titlecased: $0.capitalized, uppercased: $0.uppercased()) }
@@ -117,9 +120,9 @@ package final class Context {
     /// Creates a new Context with the provided configuration, diagnostic engine, and file URL.
     ///
     /// - Parameter isLintMode: When `true` , `rewriteEnabledRules` is widened to equal
-    ///   `enabledRules` so transform-based rules with `rewrite: false, lint: .warn` still
-    ///   dispatch — required for findings emitted from inside `transform` to fire. Set by
-    ///   `LintCoordinator` ; the mutated tree it produces is discarded.
+    ///   `enabledRules` so transform-based rules with `rewrite: false, lint: .warn` still dispatch
+    ///   — required for findings emitted from inside `transform` to fire. Set by `LintCoordinator`
+    ///   ; the mutated tree it produces is discarded.
     package init(
         configuration: Configuration,
         operatorTable: OperatorTable,
@@ -148,8 +151,10 @@ package final class Context {
         var rewriteEnabled: Set<ObjectIdentifier> = []
         enabled.reserveCapacity(ConfigurationRegistry.allRuleTypes.count)
         rewriteEnabled.reserveCapacity(ConfigurationRegistry.allRuleTypes.count)
+
         for ruleType in ConfigurationRegistry.allRuleTypes
-        where configuration.isActive(rule: ruleType) {
+            where configuration.isActive(rule: ruleType)
+        {
             enabled.insert(ObjectIdentifier(ruleType))
             if configuration.isRewriteActive(rule: ruleType) {
                 rewriteEnabled.insert(ObjectIdentifier(ruleType))
@@ -162,8 +167,42 @@ package final class Context {
         rewriteEnabledRules = isLintMode ? enabled : rewriteEnabled
     }
 
+    /// The location a gate check reads for `node` .
+    ///
+    /// A file-wide rule attached to `SourceFileSyntax` (such as `FileLength` ) gates at the end of
+    /// the file, so a `// sm:ignore` directive anywhere in the file covers it. Every other rule
+    /// gates at its node's start, so a mid-file directive suppresses the following node and
+    /// everything after it, as documented.
+    @inline(__always)
+    func gateLocation(for node: Syntax) -> SourceLocation {
+        node.is(SourceFileSyntax.self)
+            ? node.endLocation(converter: sourceLocationConverter)
+            : node.startLocation(converter: sourceLocationConverter)
+    }
+
+    /// Whether `rule` belongs to `enabled` and no `// sm:ignore` directive masks it at `location` .
+    ///
+    /// Stays generic on `R` so a disabled rule costs one set probe. Binding the rule to
+    /// `any SyntaxRule.Type` here would add an existential metatype conversion to every gate check
+    /// on every node.
+    @inline(__always)
+    func isUnmasked<R: SyntaxRule>(
+        _ rule: R.Type,
+        in enabled: Set<ObjectIdentifier>,
+        at location: @autoclosure () -> SourceLocation
+    ) -> Bool {
+        let identifier = ObjectIdentifier(rule)
+        guard enabled.contains(identifier) else { return false }
+        let ruleName = ConfigurationRegistry.ruleNameCache[identifier] ?? rule.key
+        return ruleMask.ruleState(ruleName, at: location()) == .default
+    }
+
     /// Given a rule's name and the node it is examining, determine if the rule is disabled at this
     /// location or not. Also makes sure the entire node is contained inside any selection.
+    ///
+    /// Forwards to the existential overload on purpose. `R` binds to the static call-site type, so
+    /// reading the key off `R` directly would name the base class when the caller holds a rule as
+    /// its base type.
     func shouldFormat<R: SyntaxRule>(_ rule: R.Type, node: Syntax) -> Bool {
         shouldFormat(ruleType: rule, node: node)
     }
@@ -176,31 +215,17 @@ package final class Context {
     func shouldFormat(ruleType rule: any SyntaxRule.Type, node: Syntax) -> Bool {
         guard enabledRules.contains(ObjectIdentifier(rule)) else { return false }
         guard node.isInsideSelection(selection) else { return false }
-        // For file-wide rules attached to `SourceFileSyntax` (e.g. `FileLength`), gate at the
-        // end of file so any `// sm:ignore` directive in the file — at top or mid-file — covers
-        // the gate check. All other rules gate at their node's start, so a mid-file directive
-        // only suppresses the *following* node and beyond, as documented.
-        let loc =
-            node.is(SourceFileSyntax.self)
-                ? node.endLocation(converter: sourceLocationConverter)
-                : node.startLocation(converter: sourceLocationConverter)
         let ruleName = ConfigurationRegistry.ruleNameCache[ObjectIdentifier(rule)] ?? rule.key
-        return ruleMask.ruleState(ruleName, at: loc) == .default
+        return ruleMask.ruleState(ruleName, at: gateLocation(for: node)) == .default
     }
 
-    /// Rewrite-path entry point for the gate check. Returns whether the rule should rewrite on
-    /// this node, consulting `RuleMask` ( `// sm:ignore` ) and the per-rule `rewrite` flag via
-    /// `rewriteEnabledRules` . A rule configured with `rewrite: false, lint: .warn` will lint
-    /// (via `shouldFormat` ) but skip rewriting here.
+    /// Rewrite-path entry point for the gate check. Returns whether the rule should rewrite on this
+    /// node, consulting `RuleMask` ( `// sm:ignore` ) and the per-rule `rewrite` flag via
+    /// `rewriteEnabledRules` . A rule configured with `rewrite: false, lint: .warn` will lint (via
+    /// `shouldFormat` ) but skip rewriting here.
     func shouldRewrite<R: SyntaxRule>(_ rule: R.Type, at node: Syntax) -> Bool {
-        guard rewriteEnabledRules.contains(ObjectIdentifier(rule)) else { return false }
         guard node.isInsideSelection(selection) else { return false }
-        let loc =
-            node.is(SourceFileSyntax.self)
-                ? node.endLocation(converter: sourceLocationConverter)
-                : node.startLocation(converter: sourceLocationConverter)
-        let ruleName = ConfigurationRegistry.ruleNameCache[ObjectIdentifier(rule)] ?? rule.key
-        return ruleMask.ruleState(ruleName, at: loc) == .default
+        return isUnmasked(rule, in: rewriteEnabledRules, at: gateLocation(for: node))
     }
 
     /// Returns the configured lint severity for the given rule type.

@@ -23,12 +23,26 @@ package struct Glob: Sendable {
         return regex.firstMatch(in: s, range: range) != nil
     }
 
+    /// Compiles each pattern once, dropping the ones that do not translate to a valid regex.
+    ///
+    /// Compile a pattern list once and match against the result. Building a `Glob` compiles an
+    /// `NSRegularExpression` , so compiling inside a directory walk repeats that work for every
+    /// pattern on every path.
+    package static func compile(_ patterns: [String]) -> [Glob] {
+        patterns.compactMap { Glob(pattern: $0) }
+    }
+
+    /// Returns `true` if `path` matches any of the compiled patterns.
+    package static func matchesAny(_ globs: [Glob], path: String) -> Bool {
+        globs.contains { $0.matches(path) }
+    }
+
     /// Returns `true` if `path` matches any of the patterns. Invalid patterns are skipped.
+    ///
+    /// Compiles every pattern on each call. Prefer `compile(_:)` plus `matchesAny(_:path:)` when
+    /// the same patterns are matched against more than one path.
     package static func matchesAny(_ patterns: [String], path: String) -> Bool {
-        for pattern in patterns {
-            if let glob = Glob(pattern: pattern), glob.matches(path) { return true }
-        }
-        return false
+        matchesAny(compile(patterns), path: path)
     }
 
     /// Translates a glob pattern to a regex body (no anchors).

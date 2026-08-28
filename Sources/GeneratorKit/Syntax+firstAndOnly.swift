@@ -12,7 +12,7 @@
 
 import SwiftSyntax
 
-public extension SyntaxCollection {
+package extension SyntaxCollection {
     /// The first element in the syntax collection if it is the *only* element, or nil otherwise.
     var firstAndOnly: Element? {
         var iterator = makeIterator()

@@ -117,12 +117,15 @@ private struct KeyedContainer<Key: CodingKey>: KeyedEncodingContainerProtocol {
     var codingPath: [CodingKey]
 
     private func write(_ key: String, _ value: JSONValue) {
-        if case var .object(dict) = storage.value {
-            dict[key] = value
-            storage.value = .object(dict)
-        } else {
+        guard case var .object(dict) = storage.value else {
             storage.value = .object([key: value])
+            return
         }
+        // Drop the storage's own reference before mutating, so the dictionary buffer is uniquely
+        // referenced and the write happens in place instead of copying.
+        storage.value = .null
+        dict[key] = value
+        storage.value = .object(dict)
     }
 
     mutating func encodeNil(forKey key: Key) { write(key.stringValue, .null) }

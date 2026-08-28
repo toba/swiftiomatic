@@ -41,8 +41,5 @@ extension BasicRuleValue: Codable {
         try container.encode(lint, forKey: .lint)
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case rewrite
-        case lint
-    }
+    private enum CodingKeys: String, CodingKey { case rewrite, lint }
 }

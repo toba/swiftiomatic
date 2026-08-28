@@ -18,9 +18,19 @@ import SwiftSyntax
 package final class LayoutCoordinator {
     private let context: Context
     private var configuration: Configuration { context.configuration }
-    private let maxLineLength: Int
     private var tokens: [Token]
     private var source: String
+
+    // Layout settings read once in `init` . A configuration lookup derives its key from the type
+    // name on every access, and `emitToken` reads several of these per token.
+    private let maxLineLength: Int
+    private let indentation: Indent
+    private let tabWidth: Int
+    private let indentBlankLines: Bool
+    private let minimumWrapSavings: Int
+    private let breakAroundMultilineChainParts: Bool
+    private let trailingCommaBehavior: MultilineTrailingCommaBehavior
+    private let collectionTrailingCommas: Bool
 
     /// Keep track of where formatting was disabled in the original source
     ///
@@ -101,9 +111,7 @@ package final class LayoutCoordinator {
     private var isBreakingSuppressed: Bool { activeBreakSuppressionCount > 0 }
 
     /// The column width of a single indentation unit under the current configuration.
-    private var continuationIndentUnit: Int {
-        configuration[IndentationSetting.self].length(tabWidth: configuration[TabWidth.self])
-    }
+    private var continuationIndentUnit: Int { indentation.length(tabWidth: tabWidth) }
 
     /// Indicates whether discretionary breaks should still be included even if break suppression is
     /// enabled (see ``isBreakingSuppressed`` ).
@@ -123,7 +131,6 @@ package final class LayoutCoordinator {
     /// The computed indentation level, as a number of spaces, based on the state of any unclosed
     /// delimiters and whether or not the current line is a continuation line.
     private var currentIndentation: [Indent] {
-        let indentation = configuration[IndentationSetting.self]
         var totalIndentation: [Indent] = activeOpenBreaks.flatMap { open -> [Indent] in
             if case let .alignment(spaces) = open.kind, open.contributesContinuationIndent {
                 return [.spaces(spaces)]
@@ -132,9 +139,7 @@ package final class LayoutCoordinator {
                 + (open.contributesContinuationIndent ? 1 : 0)
             return Array(repeating: indentation, count: count)
         }
-        if currentLineIsContinuation {
-            totalIndentation.append(configuration[IndentationSetting.self])
-        }
+        if currentLineIsContinuation { totalIndentation.append(indentation) }
         return totalIndentation
     }
 
@@ -168,9 +173,11 @@ package final class LayoutCoordinator {
         // Walk back over the output to the last line that holds any non-whitespace content,
         // collecting that line's characters (trailing blank lines from `.same` breaks are skipped).
         var index = out.endIndex
+
         while index > out.startIndex {
             index = out.index(before: index)
             let character = out[index]
+
             if character == "\n" {
                 if foundContent { break }
                 continue
@@ -181,8 +188,9 @@ package final class LayoutCoordinator {
         guard foundContent else { return false }
 
         let line = String(lineChars.reversed()).trimmingCharacters(in: .whitespaces)
-        if line == "#endif" { return true }
-        return line.allSatisfy { $0 == ")" || $0 == "]" || $0 == "}" }
+        return line == "#endif"
+            ? true
+            : line.allSatisfy { $0 == ")" || $0 == "]" || $0 == "}" }
     }
 
     /// Creates a new PrettyPrinter with the provided formatting configuration.
@@ -210,6 +218,13 @@ package final class LayoutCoordinator {
             operatorTable: context.operatorTable
         )
         maxLineLength = configuration[LineLength.self]
+        indentation = configuration[IndentationSetting.self]
+        tabWidth = configuration[TabWidth.self]
+        indentBlankLines = configuration[IndentBlankLines.self]
+        minimumWrapSavings = configuration[MinimumWrapSavings.self]
+        breakAroundMultilineChainParts = configuration[BreakAroundMultilineChainParts.self]
+        trailingCommaBehavior = configuration[MultilineTrailingCommaBehaviorSetting.self]
+        collectionTrailingCommas = configuration[MultiElementCollectionTrailingCommas.self]
         self.printTokenStream = printTokenStream
             || ProcessInfo.processInfo.environment["SM_DUMP_TOKENS"] == "1"
         self.whitespaceOnly = whitespaceOnly
@@ -236,10 +251,8 @@ package final class LayoutCoordinator {
 
         switch token {
             case .contextualBreakingStart:
-                activeBreakingContexts.append(
-                    ActiveBreakingContext(
-                        lineNumber: outputBuffer.lineNumber
-                    ))
+                activeBreakingContexts.append(ActiveBreakingContext(
+                    lineNumber: outputBuffer.lineNumber))
                 // Discard the last finished breaking context to keep it from effecting breaks
                 // inside of the new context. The discarded context has already either had an impact
                 // on the contextual break after it or there was no relevant contextual break, so
@@ -315,14 +328,10 @@ package final class LayoutCoordinator {
                         let contributesContinuationIndent = currentLineIsContinuation
                             || continuationBreakWillFire
 
-                        activeOpenBreaks.append(
-                            ActiveOpenBreak(
-                                index: idx,
-                                kind: openKind,
-                                lineNumber: currentLineNumber,
-                                contributesContinuationIndent: contributesContinuationIndent,
-                                contributesBlockIndent: openKind == .block
-                            ))
+                        activeOpenBreaks.append(ActiveOpenBreak(
+                            index: idx, kind: openKind, lineNumber: currentLineNumber,
+                            contributesContinuationIndent: contributesContinuationIndent,
+                            contributesBlockIndent: openKind == .block))
 
                         continuationStack.append(currentLineIsContinuation)
 
@@ -443,7 +452,7 @@ package final class LayoutCoordinator {
                         // is used when the previous context includes a multiline trailing closure
                         // or multiline function argument list.
                         if let lastBreakingContext = lastEndedBreakingContext {
-                            if configuration[BreakAroundMultilineChainParts.self] {
+                            if breakAroundMultilineChainParts {
                                 mustBreak = lastBreakingContext.lineNumber
                                     != outputBuffer.lineNumber
                             }
@@ -469,8 +478,8 @@ package final class LayoutCoordinator {
                                     : .maintain
                                 // Record (once, when this scope's behavior resolves) whether the
                                 // base's last rendered line is just a closing delimiter (or
-                                // `#endif` ) standing alone — the whole `.maintain` chain then makes
-                                // a single flush-vs-indent choice off that. (m2x-4bl)
+                                // `#endif` ) standing alone — the whole `.maintain` chain then
+                                // makes a single flush-vs-indent choice off that. (m2x-4bl)
                                 activeBreakingContexts[activeBreakingContexts.count - 1]
                                     .baseEndedWithLoneClose = baseEndsAloneOnLine()
                             }
@@ -489,8 +498,8 @@ package final class LayoutCoordinator {
                                     // flush with it, matching upstream's `currentLineIsContinuation`
                                     // behavior (m2x-4bl). The decision is taken from the scope so all
                                     // chain elements agree.
-                                    isContinuationIfBreakFires =
-                                        activeBreakingContext.baseEndedWithLoneClose
+                                    isContinuationIfBreakFires = activeBreakingContext
+                                        .baseEndedWithLoneClose
                                         ? currentLineIsContinuation
                                         : true
                             }
@@ -528,7 +537,7 @@ package final class LayoutCoordinator {
                     breakSavesEnough = true
                 } else if case .continue = kind {
                     let chunkAfterBreak = max(0, length - size)
-                    let indentColumns = currentIndentation.length(in: configuration)
+                    let indentColumns = currentIndentation.length(tabWidth: tabWidth)
                     let postWrapEndColumn = indentColumns + chunkAfterBreak
 
                     if chunkAfterBreak > maxLineLength {
@@ -537,21 +546,23 @@ package final class LayoutCoordinator {
                         // the over-long content just takes on extra indentation that doesn't help.
                         let unwrapEndColumn = outputBuffer.column + length
                         let savings = unwrapEndColumn - postWrapEndColumn
-                        breakSavesEnough = savings >= configuration[MinimumWrapSavings.self]
-                    } else if keepInlineIfWrapPointless, postWrapEndColumn + continuationIndentUnit
-                        > maxLineLength
+                        breakSavesEnough = savings >= minimumWrapSavings
+                    } else if keepInlineIfWrapPointless,
+                       postWrapEndColumn + continuationIndentUnit
+                           > maxLineLength
                     {
-                        // The chunk fits on a line of its own, but the current indentation pushes it
-                        // past the limit, so wrapping it to the next line still overflows. Firing
-                        // this break also adds a continuation indent (unless we're already on a
-                        // continuation line), so the wrapped chunk lands even further right. Only
-                        // wrap when that still dedents the content by at least one indentation unit;
-                        // otherwise the wrap merely shifts an over-long value a column or two (e.g. a
-                        // long string-literal argument value just below `label:`) for no benefit.
-                        // Scoped via the printer-control flag to labeled-argument string values so
-                        // ordinary continuation breaks (assignments, `await`, key paths, …) are
-                        // unaffected. (lof-zqn)
-                        let continuationAddition = currentLineIsContinuation ? 0
+                        // The chunk fits on a line of its own, but the current indentation pushes
+                        // it past the limit, so wrapping it to the next line still overflows.
+                        // Firing this break also adds a continuation indent (unless we're already
+                        // on a continuation line), so the wrapped chunk lands even further right.
+                        // Only wrap when that still dedents the content by at least one indentation
+                        // unit; otherwise the wrap merely shifts an over-long value a column or two
+                        // (e.g. a long string-literal argument value just below `label:`) for no
+                        // benefit. Scoped via the printer-control flag to labeled-argument string
+                        // values so ordinary continuation breaks (assignments, `await`, key paths,
+                        // …) are unaffected. (lof-zqn)
+                        let continuationAddition = currentLineIsContinuation
+                            ? 0
                             : continuationIndentUnit
                         let wrappedEndColumn = postWrapEndColumn + continuationAddition
                         let unwrapEndColumn = outputBuffer.column + length
@@ -574,19 +585,17 @@ package final class LayoutCoordinator {
                     // calls' arguments and closing delimiters included — sits one extra level deep.
                     // A real `activeOpenBreaks` entry (rather than an ad-hoc indent addend) keeps
                     // nested content consistent. (on8-mme) Skipped when the base's last delimiter
-                    // landed alone on its own line — then the chain stays flush, no boost (m2x-4bl).
-                    if pendingMultilineChainBoostPush, !baseEndsAloneOnLine(),
-                        !multilineChainBoostScopes.isEmpty
+                    // landed alone on its own line — then the chain stays flush, no boost
+                    // (m2x-4bl).
+                    if pendingMultilineChainBoostPush,
+                       !baseEndsAloneOnLine(),
+                       !multilineChainBoostScopes.isEmpty
                     {
-                        activeOpenBreaks.append(
-                            ActiveOpenBreak(
-                                index: idx,
-                                kind: .continuation,
-                                lineNumber: openCloseBreakCompensatingLineNumber,
-                                contributesContinuationIndent: true,
-                                contributesBlockIndent: false,
-                                isMultilineChainBoost: true
-                            ))
+                        activeOpenBreaks.append(ActiveOpenBreak(
+                            index: idx, kind: .continuation,
+                            lineNumber: openCloseBreakCompensatingLineNumber,
+                            contributesContinuationIndent: true, contributesBlockIndent: false,
+                            isMultilineChainBoost: true))
                         multilineChainBoostScopes[multilineChainBoostScopes.count - 1].pushed = true
                         outputBuffer.currentIndentation = currentIndentation
                     }
@@ -596,10 +605,7 @@ package final class LayoutCoordinator {
                         outputBuffer.enqueueSpaces(size)
                         outputBuffer.write("\\")
                     }
-                    outputBuffer.writeNewlines(
-                        newline,
-                        shouldIndentBlankLines: configuration[IndentBlankLines.self]
-                    )
+                    outputBuffer.writeNewlines(newline, shouldIndentBlankLines: indentBlankLines)
                     lastBreak = true
                 } else {
                     // If the heuristic above suppressed a break that would have otherwise fired,
@@ -616,9 +622,7 @@ package final class LayoutCoordinator {
 
             // Print out the number of spaces according to the size, and adjust spaceRemaining.
             case .space(let size, _):
-                if configuration[IndentBlankLines.self], outputBuffer.isAtStartOfLine {
-                    outputBuffer.write("")
-                }
+                if indentBlankLines, outputBuffer.isAtStartOfLine { outputBuffer.write("") }
                 outputBuffer.enqueueSpaces(size)
 
             // Print any indentation required, followed by the text content of the syntax token.
@@ -647,16 +651,13 @@ package final class LayoutCoordinator {
                 let preserveColumn = comment.kind == .line && !wasEndOfLine
                     && outputBuffer.isAtStartOfLine
                     && comment.leadingIndent == .spaces(0)
-                    && currentIndentation.length(in: configuration) > 0
+                    && currentIndentation.length(tabWidth: tabWidth) > 0
                     && looksLikeCommentedOutCode
                 let savedIndent = outputBuffer.currentIndentation
                 if preserveColumn { outputBuffer.currentIndentation = [] }
                 let printIndent: [Indent] = preserveColumn ? [] : currentIndentation
-                outputBuffer.write(
-                    comment.print(
-                        indent: printIndent,
-                        shouldIndentBlankLines: configuration[IndentBlankLines.self]
-                    ))
+                outputBuffer.write(comment.print(
+                    indent: printIndent, shouldIndentBlankLines: indentBlankLines))
                 if preserveColumn { outputBuffer.currentIndentation = savedIndent }
 
             case let .verbatim(verbatim):
@@ -679,16 +680,15 @@ package final class LayoutCoordinator {
                 }
 
             case .multilineChainBoostStart:
-                multilineChainBoostScopes.append(
-                    MultilineChainBoostScope(startLineNumber: outputBuffer.lineNumber))
+                multilineChainBoostScopes.append(MultilineChainBoostScope(
+                    startLineNumber: outputBuffer.lineNumber))
 
             case .multilineChainBoostDecision:
                 // The chain's leftmost base has just been emitted. If it spanned multiple lines,
                 // arm a push so the trailing chain indents one extra level; the push is applied by
                 // the next break that fires (the break that moves the first `.` to its own line).
                 if let scope = multilineChainBoostScopes.last,
-                   outputBuffer.lineNumber != scope.startLineNumber
-                {
+                   outputBuffer.lineNumber != scope.startLineNumber {
                     pendingMultilineChainBoostPush = true
                 }
 
@@ -764,9 +764,7 @@ package final class LayoutCoordinator {
                 if let nonWhitespace = text.rangeOfCharacter(
                     from: CharacterSet.whitespaces.inverted,
                     options: .backwards
-                ) {
-                    text = String(text[..<nonWhitespace.upperBound])
-                }
+                ) { text = String(text[..<nonWhitespace.upperBound]) }
 
                 self.disabledPosition = nil
                 outputBuffer.writeVerbatimAfterEnablingFormatting(text)
@@ -780,7 +778,7 @@ package final class LayoutCoordinator {
     /// Indicates whether the current line can fit a string of the given length. If no length is
     /// given, it indicates whether the current line can accommodate *any* text.
     private func canFit(_ length: Int = 1) -> Bool {
-        let spaceRemaining = configuration[LineLength.self] - outputBuffer.column
+        let spaceRemaining = maxLineLength - outputBuffer.column
         return outputBuffer.isAtStartOfLine || length <= spaceRemaining
     }
 
@@ -938,11 +936,10 @@ package final class LayoutCoordinator {
     /// Returns whether trailing comma insertion or removal should be performed for the given
     /// comma-delimited region, or `nil` to keep as written.
     private func shouldHandleCommaDelimitedRegion(isCollection: Bool) -> Bool? {
-        switch configuration[MultilineTrailingCommaBehaviorSetting.self] {
+        switch trailingCommaBehavior {
             case .alwaysUsed: true
             case .neverUsed: false
-            case .keptAsWritten:
-                isCollection ? configuration[MultiElementCollectionTrailingCommas.self] : nil
+            case .keptAsWritten: isCollection ? collectionTrailingCommas : nil
         }
     }
 
@@ -1096,16 +1093,16 @@ fileprivate extension LayoutCoordinator {
         var contributesBlockIndent: Bool
 
         /// Whether this entry is the synthetic extra continuation indent pushed for a multiline
-        /// member-access chain in a binding operand (on8-mme). It is not created by a real
-        /// `.open` break token, so it is removed explicitly at `multilineChainBoostEnd` rather than
-        /// by a matching `.close` .
+        /// member-access chain in a binding operand (on8-mme). It is not created by a real `.open`
+        /// break token, so it is removed explicitly at `multilineChainBoostEnd` rather than by a
+        /// matching `.close` .
         var isMultilineChainBoost = false
     }
 
     /// Tracks one binding-operand member-access-chain boost scope (on8-mme).
     struct MultilineChainBoostScope {
-        /// The output line number when the scope opened (just before the chain's leftmost base). The
-        /// `multilineChainBoostDecision` token compares the current line against this to learn
+        /// The output line number when the scope opened (just before the chain's leftmost base).
+        /// The `multilineChainBoostDecision` token compares the current line against this to learn
         /// whether the base spanned multiple lines — the sole condition for boosting.
         let startLineNumber: Int
 

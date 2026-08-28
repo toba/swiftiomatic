@@ -12,3 +12,5 @@ Sources/SwiftiomaticKit/Generated/
 *.o
 *.swiftdeps
 *.swiftmodule
+# Benchmark baselines key on a machine id, so they never transfer between machines.
+.benchmarkBaselines/

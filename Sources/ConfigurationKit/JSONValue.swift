@@ -6,6 +6,15 @@ package enum KeySortOrder: String, Sendable, CaseIterable {
     case length
     /// Sort alphabetically (lexicographic).
     case alphabetical
+
+    /// Orders two keys under this order. `Configuration+UpdateText` reuses it so a rewritten config
+    /// file keeps the order `serialize(sortBy:)` produced.
+    package func precedes(_ lhs: String, _ rhs: String) -> Bool {
+        switch self {
+            case .length: lhs.count < rhs.count || (lhs.count == rhs.count && lhs < rhs)
+            case .alphabetical: lhs < rhs
+        }
+    }
 }
 
 /// A JSON value suitable for schema validation, configuration encoding, and any context that needs
@@ -121,7 +130,7 @@ package extension JSONValue {
 
 extension JSONValue {
     /// Serialize to a pretty-printed JSON string with keys ordered by `sortBy` .
-    public func serialize(sortBy order: KeySortOrder = .length) -> String {
+    package func serialize(sortBy order: KeySortOrder = .length) -> String {
         var output = ""
         write(to: &output, indent: 0, sortBy: order)
         return output
@@ -165,23 +174,9 @@ extension JSONValue {
                     let pinnedSet = Set(pinned)
                     let pinnedPresent = pinned.filter { dict.keys.contains($0) }
                     let remaining = dict.keys.filter { !pinnedSet.contains($0) }
-
-                    switch order {
-                        case .length:
-                            sortedKeys = pinnedPresent
-                                + remaining.sorted {
-                                    $0.count < $1.count || ($0.count == $1.count && $0 < $1)
-                                }
-                        case .alphabetical: sortedKeys = pinnedPresent + remaining.sorted()
-                    }
+                    sortedKeys = pinnedPresent + remaining.sorted(by: order.precedes)
                 } else {
-                    switch order {
-                        case .length:
-                            sortedKeys = dict.keys.sorted {
-                                $0.count < $1.count || ($0.count == $1.count && $0 < $1)
-                            }
-                        case .alphabetical: sortedKeys = dict.keys.sorted()
-                    }
+                    sortedKeys = dict.keys.sorted(by: order.precedes)
                 }
                 output += "{\n"
                 let childIndent = indent + 2

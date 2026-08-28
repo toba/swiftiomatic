@@ -298,7 +298,13 @@ extension JSON5Scanner {
         }
 
         func peek() -> Token { current }
-        func matches(_ kinds: TokenKind...) -> Bool { kinds.contains(current.kind) }
+
+        // Fixed-arity overloads, because a variadic parameter allocates an array per call and the
+        // skip loops test once per trivia token.
+        func matches(_ kind: TokenKind) -> Bool { current.kind == kind }
+        func matches(_ first: TokenKind, _ second: TokenKind) -> Bool {
+            current.kind == first || current.kind == second
+        }
 
         /// Throws unless the current token has one of `kinds` , then returns it without advancing.
         func expect(_ kinds: TokenKind...) throws(JSON5Scanner.Error) -> Token {
@@ -324,7 +330,14 @@ extension JSON5Scanner {
 
         /// Skips whitespace, newlines, and comments (line + block).
         mutating func skipInsignificant() {
-            while matches(.whitespace, .newline, .lineComment, .blockComment) { try? advance() }
+            while isInsignificant(current.kind) { try? advance() }
+        }
+
+        private func isInsignificant(_ kind: TokenKind) -> Bool {
+            switch kind {
+                case .whitespace, .newline, .lineComment, .blockComment: true
+                default: false
+            }
         }
 
         /// Skips horizontal whitespace and inline line comments — used between a value and its

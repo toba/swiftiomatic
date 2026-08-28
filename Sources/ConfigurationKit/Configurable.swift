@@ -42,5 +42,5 @@ package extension Configurable {
     static var description: String { key }
 
     /// Fully qualified key: `group.key` for grouped items, bare `key` otherwise.
-    static var qualifiedKey: String { if let group { "\(group.key).\(key)" } else { key } }
+    static var qualifiedKey: String { if let group { "\(group.rawValue).\(key)" } else { key } }
 }

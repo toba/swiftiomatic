@@ -32,11 +32,9 @@ package struct GeneratePaths {
     /// The package root directory.
     package let packageRoot: URL
 
-    /// The directory containing rule implementations to scan.
-    package let syntaxRulesFolder: URL
-
-    /// The directory containing layout setting descriptors to scan.
-    package let layoutRulesFolder: URL
+    /// The directory containing every rule implementation to scan. Syntax rules and layout setting
+    /// descriptors share one tree, and each collector picks out its kind by inheritance.
+    package let rulesFolder: URL
 
     /// The directory containing `TokenStream+*.swift` token stream extension files.
     package let tokenFolder: URL
@@ -84,13 +82,9 @@ package struct GeneratePaths {
         let sources = packageRoot.appending(path: "Sources")
         let kit = sources.appending(path: "SwiftiomaticKit")
         let layout = kit.appending(path: "Layout")
-        let rules = kit.appending(path: "Rules")
 
         tokenFolder = layout.appending(path: "Tokens")
-        // Layout and syntax rules now share a single unified `Rules/` tree. Each collector picks
-        // out its kind by inheritance.
-        layoutRulesFolder = rules
-        syntaxRulesFolder = rules
+        rulesFolder = kit.appending(path: "Rules")
 
         pipelineFile = outputDirectory.appending(path: "Pipelines+Generated.swift")
         ruleRegistryFile = outputDirectory.appending(path: "ConfigurationRegistry+Generated.swift")

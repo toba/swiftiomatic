@@ -42,9 +42,8 @@ extension LintPipeline {
 
     /// Node-taking counterpart used for `SourceFileSyntax` alone.
     ///
-    /// A file-wide rule gates at the end of the file so that a `// sm:ignore` directive anywhere in
-    /// it applies. A `Context.Gate` caches the start location, so the gate-taking overloads cannot
-    /// serve this node kind.
+    /// The generated dispatchers call this shape for the file node. It resolves the same location
+    /// a `Context.Gate` would, so the two paths agree.
     func visitIfEnabled<V: SyntaxRuleValue, Rule: LintSyntaxRule<V>>(
         _ visitor: (Rule) -> (SourceFileSyntax) -> SyntaxVisitorContinueKind,
         for node: SourceFileSyntax

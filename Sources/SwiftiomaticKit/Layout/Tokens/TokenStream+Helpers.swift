@@ -66,8 +66,8 @@ extension TokenStream {
                             )
                         }
                     }
-                    // An `#endif` ending an attribute-block element must be followed by a hard break
-                    // so the following attribute can't merge onto the `#endif` line.
+                    // An `#endif` ending an attribute-block element must be followed by a hard
+                    // break so the following attribute can't merge onto the `#endif` line.
                     after(
                         element.lastToken(viewMode: .sourceAccurate),
                         tokens: .break(.same, newlines: .hard)
@@ -80,11 +80,15 @@ extension TokenStream {
 
         var afterAttributeTokens = [Token]()
         if shouldGroup { afterAttributeTokens.append(.close) }
+
         if !suppressFinalBreak {
-            // When the attribute list itself ends with an `#if ... #endif`, force a hard break after
-            // it so the `#endif` can't merge onto the declaration it annotates.
+            // When the attribute list itself ends with an `#if ... #endif`, force a hard break
+            // after it so the `#endif` can't merge onto the declaration it annotates.
             let endsWithIfConfig = attributes.last?.is(IfConfigDeclSyntax.self) ?? false
-            afterAttributeTokens.append(endsWithIfConfig ? .break(.same, newlines: .hard) : lineBreak)
+            afterAttributeTokens.append(
+                endsWithIfConfig
+                    ? .break(.same, newlines: .hard)
+                    : lineBreak)
         }
 
         if !afterAttributeTokens.isEmpty {
@@ -118,9 +122,9 @@ extension TokenStream {
         return contentsIterator.next() == nil && !commentPrecedesRightBrace
     }
 
-    /// Inserts the standard open/close break-and-group pair around the contents bounded by
-    /// `left` and `right` (parens, squares, or angle brackets). The contents indent on wrap and
-    /// the closing delimiter returns to the original indent.
+    /// Inserts the standard open/close break-and-group pair around the contents bounded by `left`
+    /// and `right` (parens, squares, or angle brackets). The contents indent on wrap and the
+    /// closing delimiter returns to the original indent.
     func arrangeBlockBreaks(left: TokenSyntax, right: TokenSyntax) {
         after(left, tokens: .break(.open, size: 0), .open)
         before(right, tokens: .break(.close, size: 0), .close)

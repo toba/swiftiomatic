@@ -1,37 +1,33 @@
 import Foundation
 import SwiftSyntax
 
-/// Scans `TokenStream+*.swift` extension files to discover visit methods that need forwarding stubs
-/// in the generated `TokenStream` subclass.
-package final class SyntaxVisitorOverrideCollector {
+/// Scans Swift files for `extension TokenStream` visit methods that need forwarding stubs in the
+/// generated `TokenStream` subclass.
+package final class TokenStreamExtensionCollector {
     var overrides = [DetectedOverride]()
 
     package init() {}
 
-    /// Scans all `TokenStream+*.swift` files in the given directory for visit methods.
-    package func collect(from directory: URL) throws {
-        try enumerateSwiftStatements(
-            in: directory,
-            filter: { $0.hasPrefix("TokenStream+") }
-        ) { statement in
-            collectOverrides(from: statement)
+    /// Scans a directory for `extension TokenStream` visit methods, appending to any already found.
+    ///
+    /// - Parameters:
+    ///   - directory: The directory to scan.
+    ///   - filter: Optional predicate on the file base name. Pass
+    ///     `{ $0.hasPrefix("TokenStream+") }` for the token folder, and omit it for a tree where
+    ///     the extensions sit beside other code.
+    package func collect(
+        from directory: URL,
+        filter: (@Sendable (String) -> Bool)? = nil
+    ) async throws {
+        try await enumerateSwiftStatements(in: directory, filter: filter) { statement in
+            self.collectOverrides(from: statement)
         }
-        overrides.sort()
-    }
-
-    /// Scans all Swift files in the given directory for `extension TokenStream` visit methods.
-    /// Unlike `collect(from:)` , this has no filename filter.
-    package func collectExtensions(from directory: URL) throws {
-        try enumerateSwiftStatements(in: directory) { statement in
-            collectOverrides(from: statement)
-        }
-
         overrides.sort()
     }
 
     private func collectOverrides(from statement: CodeBlockItemSyntax) {
         guard let extensionDecl = statement.item.as(ExtensionDeclSyntax.self),
-              extensionDecl.extendedType.as(IdentifierTypeSyntax.self)?.name.text == "TokenStream"
+            extensionDecl.extendedType.as(IdentifierTypeSyntax.self)?.name.text == "TokenStream"
         else { return }
 
         for member in extensionDecl.memberBlock.members {
@@ -74,8 +70,8 @@ package final class SyntaxVisitorOverrideCollector {
 
 // MARK: - Support
 
-extension SyntaxVisitorOverrideCollector {
-    /// A single visit or visitPost method found in a TSC extension.
+extension TokenStreamExtensionCollector {
+    /// A single visit or visitPost method found in a TokenStream extension.
     struct DetectedOverride: Comparable {
         /// Whether this is a `visitPost` override (void return) vs a `visit` override.
         let isPost: Bool

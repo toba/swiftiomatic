@@ -21,9 +21,9 @@ extension RuleCollector {
         /// The custom key from `static let key = "..."` , or `nil` to derive from `typeName` .
         var customKey: String? { get }
 
-        /// The description of the rule, extracted from the rule class or struct DocC comment with
-        /// `DocumentationCommentText(extractedFrom:)` .
-        var description: String? { get }
+        /// The rule's DocC comment, normalized into schema description text by
+        /// `DocumentationCommentText.normalized(from:)` .
+        var documentation: String? { get }
         /// The config group this rule belongs to, or `nil` if ungrouped.
         var group: ConfigurationGroup? { get }
         /// The config key for this rule (custom if set, otherwise camelCase type name).
@@ -43,7 +43,7 @@ extension RuleCollector {
         let group: ConfigurationGroup?
         let typeName: String
         let customKey: String?
-        let description: String?
+        let documentation: String?
 
         /// Indicates whether the rule can rewrite code (all rules can lint).
         let canRewrite: Bool
@@ -61,10 +61,6 @@ extension RuleCollector {
         /// Custom properties beyond `rewrite` / `lint` (or `enabled` / `warning` / `error` for
         /// threshold rules) on the configuration type.
         var customProperties: [DetectedProperty] = []
-
-        // Hashable/Equatable based on typeName only — customProperties are metadata.
-        static func == (lhs: Self, rhs: Self) -> Bool { lhs.typeName == rhs.typeName }
-        func hash(into hasher: inout Hasher) { hasher.combine(typeName) }
     }
 
     /// Information about a detected layout rule.
@@ -81,12 +77,9 @@ extension RuleCollector {
         let group: ConfigurationGroup?
         let typeName: String
         let customKey: String?
-        let description: String?
+        let documentation: String?
         /// The JSON Schema type of this setting's value.
         let valueType: SchemaValueType
-
-        static func == (lhs: Self, rhs: Self) -> Bool { lhs.typeName == rhs.typeName }
-        func hash(into hasher: inout Hasher) { hasher.combine(typeName) }
     }
 }
 
@@ -96,4 +89,9 @@ extension RuleCollector.DetectedRule {
         if let customKey { return customKey }
         return configurationKey(forTypeName: typeName)
     }
+
+    // A rule type name is unique across the code base, so it stands in for the whole value.
+    // Everything else on these types is metadata derived from the same declaration.
+    static func == (lhs: Self, rhs: Self) -> Bool { lhs.typeName == rhs.typeName }
+    func hash(into hasher: inout Hasher) { hasher.combine(typeName) }
 }

@@ -15,22 +15,20 @@ let package = Package(
     dependencies: [
         .package(url: "https://github.com/apple/swift-argument-parser.git", from: "1.2.2"),
         .package(url: "https://github.com/swiftlang/swift-markdown.git", from: "0.7.0"),
-        // 604 is the line that Swift 6.4 ships. It carries no stable tag yet, so
-        // the lower bound names a prerelease to bring the 604 line into range.
+        // 604 is the line that Swift 6.4 ships. It carries no stable tag yet, so the lower bound
+        // names a prerelease to bring the 604 line into range.
         .package(
             url: "https://github.com/swiftlang/swift-syntax.git",
             "604.0.0-prerelease-2026-06-05"..<"605.0.0"
         ),
-        // Self-hosted lint via prebuilt binary from a previous release. Breaks
-        // the cycle that prevents a target from depending on a plugin in the
-        // same package as the executable the plugin invokes.
+        // Self-hosted lint via prebuilt binary from a previous release. Breaks the cycle that
+        // prevents a target from depending on a plugin in the same package as the executable the
+        // plugin invokes.
         .package(url: "https://github.com/toba/swiftiomatic-plugins", from: "3.0.0"),
-        // `AnyCodingKey` lets `Configuration` decode and encode a key it does not
-        // name in an enum. The type sat in `ConfigurationKit` as a copy of this
-        // one. The three `Platform/*.swift` files import AppKit on macOS, but
-        // each holds one `typealias` and exports no symbol, so a link never
-        // pulls them.
-        // 1.11.3 is the floor because it reads TOBA_STATIC_LINK.
+        // `AnyCodingKey` lets `Configuration` decode and encode a key it does not name in an enum.
+        // The type sat in `ConfigurationKit` as a copy of this one. The three `Platform/*.swift`
+        // files import AppKit on macOS, but each holds one `typealias` and exports no symbol, so a
+        // link never pulls them. 1.11.3 is the floor because it reads TOBA_STATIC_LINK.
         .package(url: "https://github.com/toba/toba-core", from: "1.11.3"),
         // `Mutex+support` turns `withLock { $0.append(x) }` into `append(x)` and
         // `withLock { $0 }` into `withValue`. The package declares no dependency
@@ -38,12 +36,11 @@ let package = Package(
         // link.
         // 1.1.1 is the floor because it reads TOBA_STATIC_LINK.
         .package(url: "https://github.com/toba/toba-concurrency", from: "1.1.1"),
+        // Benchmarks only. No `sm` target depends on it, so it never links.
+        .package(url: "https://github.com/ordo-one/benchmark", from: "1.36.2"),
     ],
     targets: [
-        .target(
-            name: "ConfigurationKit",
-            exclude: ["README.md"]
-        ),
+        .target(name: "ConfigurationKit", exclude: ["README.md"]),
         .target(
             name: "SwiftiomaticKit",
             dependencies: [
@@ -100,12 +97,8 @@ let package = Package(
         ),
         .plugin(
             name: "Lint Source Code",
-            capability: .command(
-                intent: .custom(
-                    verb: "lint-source-code",
-                    description: "Lint source code for a specified target."
-                )
-            ),
+            capability: .command(intent: .custom(
+                verb: "lint-source-code", description: "Lint source code for a specified target.")),
             dependencies: [.target(name: "Swiftiomatic")],
             path: "Plugins/LintPlugin"
         ),
@@ -122,10 +115,7 @@ let package = Package(
             path: "Plugins/GeneratePlugin"
         ),
         .executableTarget(
-            name: "Generator",
-            dependencies: ["GeneratorKit"],
-            exclude: ["README.md"]
-        ),
+            name: "Generator", dependencies: ["GeneratorKit"], exclude: ["README.md"]),
         .executableTarget(
             name: "Swiftiomatic",
             dependencies: [
@@ -137,9 +127,21 @@ let package = Package(
                 .product(name: "SwiftSyntax", package: "swift-syntax"),
             ],
             exclude: ["README.md"],
-            plugins: [
-                .plugin(name: "SwiftiomaticBuildToolPlugin", package: "swiftiomatic-plugins"),
-            ]
+            plugins: [.plugin(name: "SwiftiomaticBuildToolPlugin", package: "swiftiomatic-plugins")]
+        ),
+        // Needs `-Xswiftc -enable-testing` because it uses `@testable`.
+        .executableTarget(
+            name: "SwiftiomaticBenchmarks",
+            dependencies: [
+                "SwiftiomaticKit",
+                .product(name: "Benchmark", package: "benchmark"),
+                .product(name: "SwiftOperators", package: "swift-syntax"),
+                .product(name: "SwiftParser", package: "swift-syntax"),
+                .product(name: "SwiftSyntax", package: "swift-syntax"),
+            ],
+            path: "Benchmarks/SwiftiomaticBenchmarks",
+            exclude: ["README.md"],
+            plugins: [.plugin(name: "BenchmarkPlugin", package: "benchmark")]
         ),
         .testTarget(
             name: "SwiftiomaticPerformanceTests",

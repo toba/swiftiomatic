@@ -1,11 +1,11 @@
 import Foundation
 
 /// Generates `TokenStream+Generated.swift` , a final subclass of `TokenStreamBase` containing only
-/// the `override func visit/visitPost` forwarding stubs discovered by `TokenStreamStubCollector` .
+/// the `override func visit/visitPost` forwarding stubs found by `TokenStreamExtensionCollector` .
 package final class TokenStreamStubGenerator: FileGenerator {
-    let collector: SyntaxVisitorOverrideCollector
+    let collector: TokenStreamExtensionCollector
 
-    package init(collector: SyntaxVisitorOverrideCollector) { self.collector = collector }
+    package init(collector: TokenStreamExtensionCollector) { self.collector = collector }
 
     package func generateContent() -> String {
         var result = """

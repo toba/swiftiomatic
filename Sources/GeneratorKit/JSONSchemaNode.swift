@@ -48,39 +48,41 @@ struct JSONSchemaNode: Codable {
 // MARK: - Convenience constructors
 
 extension JSONSchemaNode {
-    static func boolean(description: String, defaultValue: Bool) -> JSONSchemaNode {
+    /// A node of `type` carrying `description` and an optional literal default.
+    private static func scalar(
+        _ type: String,
+        _ description: String,
+        _ defaultValue: JSONValue? = nil
+    ) -> JSONSchemaNode {
         var node = JSONSchemaNode()
-        node.type = "boolean"
+        node.type = type
         node.description = description
-        node.defaultValue = .bool(defaultValue)
+        node.defaultValue = defaultValue
         return node
+    }
+
+    static func boolean(description: String, defaultValue: Bool? = nil) -> JSONSchemaNode {
+        scalar("boolean", description, defaultValue.map(JSONValue.bool))
     }
 
     static func integer(
         description: String,
-        defaultValue: Int,
+        defaultValue: Int? = nil,
         minimum: Int? = nil
     ) -> JSONSchemaNode {
-        var node = JSONSchemaNode()
-        node.type = "integer"
-        node.description = description
-        node.defaultValue = .int(defaultValue)
+        var node = scalar("integer", description, defaultValue.map(JSONValue.int))
         node.minimum = minimum
         return node
     }
 
-    static func string(description: String) -> JSONSchemaNode {
-        var node = JSONSchemaNode()
-        node.type = "string"
-        node.description = description
-        return node
+    static func string(description: String, defaultValue: String? = nil) -> JSONSchemaNode {
+        scalar("string", description, defaultValue.map(JSONValue.string))
     }
 
-    static func string(description: String, defaultValue: String) -> JSONSchemaNode {
-        var node = JSONSchemaNode()
-        node.type = "string"
-        node.description = description
-        node.defaultValue = .string(defaultValue)
+    /// An array node whose elements match `items` .
+    static func array(description: String, items: JSONSchemaNode) -> JSONSchemaNode {
+        var node = scalar("array", description)
+        node.items = Indirect(items)
         return node
     }
 
@@ -121,17 +123,11 @@ extension JSONSchemaNode {
         return node
     }
 
-    static func stringArray(
-        description: String,
-        defaultValue: [String]? = nil
-    ) -> JSONSchemaNode {
-        var node = JSONSchemaNode()
-        node.type = "array"
-        node.description = description
+    static func stringArray(description: String) -> JSONSchemaNode {
+        // The item node carries no description, so the emitted schema stays as it was before the
+        // convenience constructors landed.
         var itemNode = JSONSchemaNode()
         itemNode.type = "string"
-        node.items = Indirect(itemNode)
-        if let defaultValue { node.defaultValue = .array(defaultValue.map { .string($0) }) }
-        return node
+        return .array(description: description, items: itemNode)
     }
 }

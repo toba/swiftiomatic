@@ -36,7 +36,7 @@ let stampFile = paths.pipelineFile
     .deletingLastPathComponent()
     .appending(path: ".generator-fingerprint")
 let inputFingerprint = fingerprint(
-    of: [paths.syntaxRulesFolder, paths.layoutRulesFolder, paths.tokenFolder],
+    of: [paths.rulesFolder, paths.tokenFolder],
     skipSchema: skipSchema
 )
 if let saved = try? String(contentsOf: stampFile, encoding: .utf8), saved == inputFingerprint {
@@ -44,8 +44,7 @@ if let saved = try? String(contentsOf: stampFile, encoding: .utf8), saved == inp
 }
 
 let collector = RuleCollector()
-try collector.collectSyntaxRules(from: paths.syntaxRulesFolder)
-try collector.collectLayoutRules(from: paths.layoutRulesFolder)
+try await collector.collect(from: paths.rulesFolder)
 
 // Generate a file with extensions for the lint and format pipelines.
 let pipelineGenerator = PipelineGenerator(collector: collector)
@@ -65,9 +64,9 @@ try schemaSwiftGenerator.generateFile(at: paths.configurationSchemaSwiftFile)
 
 // Generate TokenStream forwarding stubs from TokenStream+*.swift extensions and any extension
 // TokenStream blocks co-located with layout rules.
-let stubCollector = SyntaxVisitorOverrideCollector()
-try stubCollector.collect(from: paths.tokenFolder)
-try stubCollector.collectExtensions(from: paths.layoutRulesFolder)
+let stubCollector = TokenStreamExtensionCollector()
+try await stubCollector.collect(from: paths.tokenFolder, filter: { $0.hasPrefix("TokenStream+") })
+try await stubCollector.collect(from: paths.rulesFolder)
 let stubGenerator = TokenStreamStubGenerator(collector: stubCollector)
 try stubGenerator.generateFile(at: paths.tokenStreamStubsFile)
 
@@ -85,7 +84,8 @@ private func fingerprint(of roots: [URL], skipSchema: Bool) -> String {
         guard let enumerator = FileManager.default.enumerator(
             at: root,
             includingPropertiesForKeys: nil,
-            options: [.skipsHiddenFiles]) else { continue }
+            options: [.skipsHiddenFiles])
+        else { continue }
         for case let url as URL in enumerator where url.pathExtension == "swift" {
             files.append(url)
         }

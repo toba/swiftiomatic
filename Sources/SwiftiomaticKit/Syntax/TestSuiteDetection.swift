@@ -1,3 +1,4 @@
+import Foundation
 import SwiftSyntax
 
 /// Shared detection logic for test-related rules ( `RequireTestFnPrefixOrAttribute` , `RequireSuiteAccessControl` ,
@@ -54,12 +55,14 @@ func isTestSuite(
     // Skip open types (base classes)
     if modifiers.contains(where: { $0.name.tokenKind == .keyword(.open) }) { return false }
 
-    // Skip types with "Base" in name
-    if name.contains("Base") { return false }
+    // Skip types whose name carries Base as its own word. A substring test also rejected
+    // BaseballTests.
+    if name.containsCapitalizedWord("Base") { return false }
 
-    // Skip types with "base" or "subclass" in doc comments
+    // Skip types documented as a base class or as something to subclass. A substring test also
+    // rejected every suite whose documentation mentions a database.
     let triviaText = leadingTrivia.description.lowercased()
-    if triviaText.contains("base") || triviaText.contains("subclass") { return false }
+    if triviaText.containsWord("base") || triviaText.containsWord("subclass") { return false }
 
     // For XCTest: must be a class with exactly XCTestCase conformance
     if framework == .xcTest {
@@ -73,6 +76,45 @@ func isTestSuite(
 
     // For Swift Testing: type name must end with a test suffix
     return testSuiteSuffixes.contains(where: { name.hasSuffix($0) })
+}
+
+private extension String {
+    /// Whether `word` appears bounded by non-alphanumeric characters.
+    ///
+    /// Both operands are lowercased by the caller.
+    func containsWord(_ word: String) -> Bool {
+        var searchStart = startIndex
+
+        while let found = range(of: word, range: searchStart..<endIndex) {
+            let beforeIsLetter = found.lowerBound > startIndex
+                && self[index(before: found.lowerBound)].isLetterOrDigit
+            let afterIsLetter = found.upperBound < endIndex
+                && self[found.upperBound].isLetterOrDigit
+            if !beforeIsLetter, !afterIsLetter { return true }
+            searchStart = index(after: found.lowerBound)
+        }
+        return false
+    }
+
+    /// Whether `word` appears as its own capitalized word inside a camel-case identifier.
+    ///
+    /// A word ends where the next capital starts or where the identifier ends, so `Base` matches
+    /// in `BaseTests` and not in `BaseballTests`.
+    func containsCapitalizedWord(_ word: String) -> Bool {
+        var searchStart = startIndex
+
+        while let found = range(of: word, range: searchStart..<endIndex) {
+            let afterStartsNewWord = found.upperBound == endIndex
+                || !self[found.upperBound].isLowercase
+            if afterStartsNewWord { return true }
+            searchStart = index(after: found.lowerBound)
+        }
+        return false
+    }
+}
+
+private extension Character {
+    var isLetterOrDigit: Bool { isLetter || isNumber }
 }
 
 /// Returns `true` if the member block contains an initializer with parameters.

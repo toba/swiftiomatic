@@ -12,34 +12,28 @@ extension Context {
 
     /// Builds a gate for `node` , or returns `nil` when the node falls outside the active selection
     /// (in which case no rule should run).
+    ///
+    /// The cached location comes from `gateLocation(for:)` , so a file-wide rule on
+    /// `SourceFileSyntax` gates at the end of the file exactly as the node-taking entry points do.
     @inline(__always)
     func gate(for node: some SyntaxProtocol) -> Gate? {
         let s = Syntax(node)
         guard s.isInsideSelection(selection) else { return nil }
-        return Gate(node: s, location: s.startLocation(converter: sourceLocationConverter))
+        return Gate(node: s, location: gateLocation(for: s))
     }
 
     /// Gate-aware variant of `shouldRewrite(_:at:)` . Skips the per-call `isInsideSelection`
     /// traversal and `startLocation` work by reusing the values cached on the gate.
     @inline(__always)
     func shouldRewrite<R: SyntaxRule>(_ rule: R.Type, gate: Gate) -> Bool {
-        guard rewriteEnabledRules.contains(ObjectIdentifier(rule)) else { return false }
-        let name = ConfigurationRegistry.ruleNameCache[ObjectIdentifier(rule)] ?? rule.key
-        return ruleMask.ruleState(name, at: gate.location) == .default
+        isUnmasked(rule, in: rewriteEnabledRules, at: gate.location)
     }
 
     /// Gate-aware variant of `shouldFormat(_:node:)` used by `LintPipeline` . Reuses the location
     /// cached on the gate, and stays generic on `R` so a disabled rule costs one set probe instead
     /// of the existential metatype conversion `shouldFormat(ruleType:node:)` pays per call.
-    ///
-    /// Not valid for `SourceFileSyntax` . File-wide rules gate at the end of the file so that a
-    /// `// sm:ignore` directive anywhere in it applies, and a `Gate` always caches the start
-    /// location. `LintPipeline` keeps the node-taking entry point for that one node kind.
     @inline(__always)
     func shouldFormat<R: SyntaxRule>(_ rule: R.Type, gate: Gate) -> Bool {
-        let identifier = ObjectIdentifier(rule)
-        guard enabledRules.contains(identifier) else { return false }
-        let name = ConfigurationRegistry.ruleNameCache[identifier] ?? rule.key
-        return ruleMask.ruleState(name, at: gate.location) == .default
+        isUnmasked(rule, in: enabledRules, at: gate.location)
     }
 }

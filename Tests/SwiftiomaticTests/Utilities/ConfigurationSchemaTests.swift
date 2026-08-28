@@ -17,23 +17,18 @@ import GeneratorKit
 @Suite
 struct ConfigurationSchemaTests {
     /// Collecting the rules parses every rule and layout source file. Swift Testing builds one
-    /// suite instance per test, so the generated JSON is held here and produced once per run.
-    private static let json: String = {
-        do {
-            let collector = RuleCollector()
-            try collector.collectSyntaxRules(from: GeneratePaths.filePath.syntaxRulesFolder)
-            try collector.collectLayoutRules(from: GeneratePaths.filePath.layoutRulesFolder)
-            return ConfigurationSchemaGenerator(collector: collector).generateContent()
-        } catch {
-            Issue.record("rule collection failed: \(error)")
-            return "{}"
-        }
-    }()
+    /// suite instance per test, so the work runs in a shared task and every test awaits the same
+    /// result.
+    private static let json = Task<String, any Error> {
+        let collector = RuleCollector()
+        try await collector.collect(from: GeneratePaths.filePath.rulesFolder)
+        return ConfigurationSchemaGenerator(collector: collector).generateContent()
+    }
 
     private let schema: [String: Any]
 
-    init() throws {
-        let parsed = try JSONSerialization.jsonObject(with: Data(Self.json.utf8))
+    init() async throws {
+        let parsed = try await JSONSerialization.jsonObject(with: Data(Self.json.value.utf8))
         schema = (parsed as? [String: Any]) ?? [:]
     }
 

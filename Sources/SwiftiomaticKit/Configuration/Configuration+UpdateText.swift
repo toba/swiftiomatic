@@ -96,9 +96,7 @@ extension Configuration {
             guard let group = layout.members.first(where: { $0.key == groupName }),
                 let nested = group.nested,
                 let memberIndex = nested.members.firstIndex(where: { $0.key == name })
-            else {
-                return nil
-            }
+            else { return nil }
             return removalEdit(memberIndex: memberIndex, container: nested, source: source)
         } else {
             guard let memberIndex = layout.members.firstIndex(where: { $0.key == qualifiedKey })
@@ -289,9 +287,9 @@ extension Configuration {
         return previous
     }
 
-    /// Length-then-alpha key comparator. Mirrors `JSONValue.serialize(sortBy: .length)` .
+    /// Length-then-alpha key comparator, shared with `JSONValue.serialize(sortBy: .length)` .
     private static func lengthLess(_ a: String, _ b: String) -> Bool {
-        a.count < b.count || (a.count == b.count && a < b)
+        KeySortOrder.length.precedes(a, b)
     }
 
     /// Edit that creates a brand-new group at the end of root and seeds it with `items` as its
@@ -422,91 +420,8 @@ extension Configuration {
         var lines = raw.components(separatedBy: "\n")
         for i in 1..<lines.count { lines[i] = indent + lines[i] }
         let reindented = lines.joined(separator: "\n")
-        return compactSmallObjectsForInsertion(reindented)
-    }
-
-    /// Mirrors `Configuration+Dump.compactSmallObjects` for a single inserted value: collapse small
-    /// scalar-only objects onto a single line when they fit within 100 columns.
-    private static func compactSmallObjectsForInsertion(_ json: String) -> String {
-        let maxWidth = 100
-        let lines = json.components(separatedBy: "\n")
-        var result: [String] = []
-        var i = 0
-
-        while i < lines.count {
-            let line = lines[i]
-            let trimmed = line.trimmingCharacters(in: .whitespaces)
-
-            if trimmed.hasSuffix("{") {
-                var objectLines = [line]
-                var depth = 1
-                var j = i + 1
-                var hasNested = false
-
-                while j < lines.count, depth > 0 {
-                    let inner = lines[j].trimmingCharacters(in: .whitespaces)
-
-                    if inner.contains("{") {
-                        depth += 1
-                        hasNested = true
-                    }
-                    if inner.contains("}") { depth -= 1 }
-                    objectLines.append(lines[j])
-                    j += 1
-                }
-                if !hasNested, depth == 0 {
-                    let compact = compactObject(objectLines)
-
-                    if compact.count <= maxWidth {
-                        result.append(compact)
-                        i = j
-                        continue
-                    }
-                }
-            }
-            result.append(line)
-            i += 1
-        }
-        return result.joined(separator: "\n")
-    }
-
-    private static func compactObject(_ lines: [String]) -> String {
-        guard let first = lines.first else { return "" }
-
-        let indent = first.prefix(while: { $0 == " " })
-        let firstTrimmed = first.trimmingCharacters(in: .whitespaces)
-        let keyPrefix = String(firstTrimmed.dropLast()).trimmingCharacters(in: .whitespaces)
-        var pairs: [String] = []
-
-        for line in lines.dropFirst().dropLast() {
-            let trimmed = line.trimmingCharacters(in: .whitespaces)
-            let clean = trimmed.hasSuffix(",")
-                ? String(trimmed.dropLast())
-                : trimmed
-            if !clean.isEmpty { pairs.append(clean) }
-        }
-        let lastLine = lines.last!.trimmingCharacters(in: .whitespaces)
-        let trailing = lastLine.hasSuffix(",") ? "," : ""
-        // The value is compacted on its own, without the `"key":` that precedes it, so the prefix
-        // is empty here. Emitting the separator anyway would put a second space after that colon.
-        let separator = keyPrefix.isEmpty ? "" : " "
-
-        return "\(indent)\(keyPrefix)\(separator){ \(pairs.joined(separator: ", ")) }\(trailing)"
-    }
-
-    // MARK: - Default value lookup (mirrors apply path)
-
-    private static func defaultValue(
-        forQualifiedKey key: String,
-        defaults: [String: JSONValue]
-    ) -> JSONValue {
-        let (group, name) = key.qualifiedKeyParts
-        if let group, case let .object(groupDict) = defaults[group] {
-            return groupDict[name] ?? .object([:])
-        }
-        if group == nil, let value = defaults[key] { return value }
-
-        return .object([:])
+        return JSONCompaction.compactSmallObjects(
+            in: reindented, maxWidth: 100, requiringQuotedKey: false)
     }
 
     private static func shortKey(forQualifiedKey key: String) -> String {

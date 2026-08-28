@@ -45,14 +45,7 @@ extension DeclModifierListSyntax {
     }
 
     /// Removes any of the modifiers in the given set from the modifier list, mutating it in-place.
-    mutating func remove(anyOf keywords: Set<Keyword>) {
-        self = filter {
-            switch $0.name.tokenKind {
-                case let .keyword(keyword): !keywords.contains(keyword)
-                default: true
-            }
-        }
-    }
+    mutating func remove(anyOf keywords: Set<Keyword>) { self = removing(anyOf: keywords) }
 
     /// Returns a copy of the modifier list with any of the modifiers in the given set removed.
     func removing(anyOf keywords: Set<Keyword>) -> DeclModifierListSyntax {
@@ -146,6 +139,8 @@ extension DeclSyntax {
                 DeclSyntax(d.removingModifiers(keywords, keyword: \.subscriptKeyword))
             case let .actorDecl(d):
                 DeclSyntax(d.removingModifiers(keywords, keyword: \.actorKeyword))
+            case let .extensionDecl(d):
+                DeclSyntax(d.removingModifiers(keywords, keyword: \.extensionKeyword))
             default: self
         }
     }

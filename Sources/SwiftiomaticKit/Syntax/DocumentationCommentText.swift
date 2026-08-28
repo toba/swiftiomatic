@@ -108,7 +108,7 @@ package struct DocumentationCommentText {
 
                         // Don't add an unnecessary blank line at the end when `*/` is on its own
                         // line.
-                        guard cleaned.firstIndex(where: { !$0.isWhitespace }) != nil else { break }
+                        guard cleaned.contains(where: { !$0.isWhitespace }) else { break }
 
                         let line = cleaned.prefix(upTo: index)
                         lines.append(Line(line))

@@ -65,10 +65,13 @@ package final class PipelineGenerator: FileGenerator {
 
             """
 
+        let rewriterNames = Set(collector.rewritingSyntaxRules.map(\.typeName))
+
         for (nodeType, lintRules) in collector.syntaxNodeLinters.sorted(by: { $0.key < $1.key }) {
             // A file-wide rule gates at the end of the file, and a gate caches the start location,
             // so SourceFileSyntax keeps the node-taking overload.
             let usesGate = nodeType != "SourceFileSyntax"
+            let sortedRules = lintRules.sorted()
             result += """
 
                   override func visit(_ node: \(nodeType)) -> SyntaxVisitorContinueKind {
@@ -82,7 +85,7 @@ package final class PipelineGenerator: FileGenerator {
                     """
             }
 
-            for ruleName in lintRules.sorted() {
+            for ruleName in sortedRules {
                 result += """
                         visitIfEnabled(\(ruleName).visit, for: node\(usesGate ? ", gate: gate" : ""))
 
@@ -97,9 +100,8 @@ package final class PipelineGenerator: FileGenerator {
                   override func visitPost(_ node: \(nodeType)) {
 
                 """
-            let rewriterNames = Set(collector.rewritingSyntaxRules.map { $0.typeName })
 
-            for ruleName in lintRules.sorted() {
+            for ruleName in sortedRules {
                 if rewriterNames.contains(ruleName) {
                     result += """
                             onVisitPost(rule: \(ruleName).self, for: node)

@@ -1,8 +1,8 @@
+import TobaCore
 import Foundation
 // this module calls the RegexComponent overloads of split, contains and replacing. the import is
 // what emits the autolink record for them, because TobaCore now ships dynamic and keeps its own
 import RegexBuilder
-import TobaCore
 @_exported import ConfigurationKit
 
 /// Holds the complete set of configured values and defaults.
@@ -29,7 +29,7 @@ package struct Configuration: Sendable, Equatable {
     /// instead of silently returning the default, which would hide the bug.
     package subscript<C: Configurable>(_: C.Type = C.self) -> C.Value {
         get {
-            let key = C.group.map { "\($0.key).\(C.key)" } ?? C.key
+            let key = Self.storageKey(for: C.self)
             guard let stored = values[key] else { return C.defaultValue }
             guard let typed = stored as? C.Value else {
                 preconditionFailure(
@@ -39,10 +39,21 @@ package struct Configuration: Sendable, Equatable {
             }
             return typed
         }
-        set {
-            let key = C.group.map { "\($0.key).\(C.key)" } ?? C.key
-            values[key] = newValue
-        }
+        set { values[Self.storageKey(for: C.self)] = newValue }
+    }
+
+    /// The storage key for a configurable type, read from the registry's memo.
+    ///
+    /// Deriving the key costs a metatype interpolation and a regex replacement, and the layout pass
+    /// reads a setting once per token. The fallback covers a type the registry does not list, such
+    /// as one a test declares.
+    private static func storageKey<C: Configurable>(for _: C.Type) -> String {
+        ConfigurationRegistry.qualifiedKeyCache[ObjectIdentifier(C.self)] ?? C.qualifiedKey
+    }
+
+    /// Existential counterpart to `storageKey(for:)` , for a rule held as `any SyntaxRule.Type` .
+    private static func storageKey(for rule: any SyntaxRule.Type) -> String {
+        ConfigurationRegistry.qualifiedKeyCache[ObjectIdentifier(rule)] ?? rule.qualifiedKey
     }
 
     /// Returns whether the given rule is active, using existential dispatch on the runtime
@@ -58,18 +69,19 @@ package struct Configuration: Sendable, Equatable {
     /// This helper avoids that footgun by going through `any SyntaxRule.Type` , whose member access
     /// dispatches on the runtime metatype.
     func isActive(rule: any SyntaxRule.Type) -> Bool {
-        let qualified = rule.group.map { "\($0.key).\(rule.key)" } ?? rule.key
-        if let stored = values[qualified] as? any SyntaxRuleValue { return stored.isActive }
-        return rule.defaultIsActive
+        storedValue(for: rule)?.isActive ?? rule.defaultIsActive
     }
 
     /// Returns whether the given rule's rewrite path is enabled. Mirrors `isActive(rule:)` but
     /// consults only the `rewrite` flag, so a rule with `rewrite: false, lint: .warn` reports
     /// findings without rewriting.
     func isRewriteActive(rule: any SyntaxRule.Type) -> Bool {
-        let qualified = rule.group.map { "\($0.key).\(rule.key)" } ?? rule.key
-        if let stored = values[qualified] as? any SyntaxRuleValue { return stored.isRewriteActive }
-        return rule.defaultRewriteActive
+        storedValue(for: rule)?.isRewriteActive ?? rule.defaultRewriteActive
+    }
+
+    /// The configured value for a rule, or `nil` when the file left the rule at its default.
+    private func storedValue(for rule: any SyntaxRule.Type) -> any SyntaxRuleValue? {
+        values[Self.storageKey(for: rule)] as? any SyntaxRuleValue
     }
 
     // MARK: - Layout setting registry
@@ -123,7 +135,7 @@ package struct Configuration: Sendable, Equatable {
             let codecs = codingClosures(for: D.self)
             return .init(
                 key: D.key,
-                groupKey: D.group?.key,
+                groupKey: D.group,
                 decode: codecs.decode,
                 encode: codecs.encode,
                 isEqual: codecs.isEqual
@@ -134,8 +146,8 @@ package struct Configuration: Sendable, Equatable {
 
     private static let settingEntries: [SettingEntry] = LayoutRegistry.all.map { entry(for: $0) }
 
-    private static let settingsByKey: [String: SettingEntry] = Dictionary(
-        uniqueKeysWithValues: settingEntries.map { ($0.key, $0) })
+    private static let settingsByKey: [String: SettingEntry] = Dictionary(uniqueKeysWithValues:
+            settingEntries.map { ($0.key, $0) })
 
     private static let settingKeyNames: Set<String> = {
         // Only include setting keys that don't collide with group names, so group keys still fall
@@ -170,7 +182,7 @@ package struct Configuration: Sendable, Equatable {
             return .init(
                 key: R.key,
                 qualifiedKey: R.qualifiedKey,
-                groupKey: R.group?.key,
+                groupKey: R.group,
                 decode: codecs.decode,
                 encode: codecs.encode,
                 disable: { config in
@@ -195,35 +207,34 @@ package struct Configuration: Sendable, Equatable {
         ruleEntry(for: $0)
     }
 
-    private static let rulesByKey: [String: RuleEntry] = Dictionary(
-        uniqueKeysWithValues: ruleEntries.map { ($0.qualifiedKey, $0) })
+    private static let rulesByKey: [String: RuleEntry] = Dictionary(uniqueKeysWithValues:
+            ruleEntries.map { ($0.qualifiedKey, $0) })
 
     // MARK: - Rule key metadata (for `sm update`)
 
     /// All valid rule qualified keys ( `group.key` or bare `key` ).
-    package static var allRuleQualifiedKeys: Set<String> { Set(ruleEntries.map(\.qualifiedKey)) }
+    package static let allRuleQualifiedKeys: Set<String> = Set(ruleEntries.map(\.qualifiedKey))
 
     /// Maps each rule's short key to its canonical qualified key. If two rules share a short key
     /// (different groups), one is chosen arbitrarily.
-    package static var qualifiedKeyByShortKey: [String: String] {
+    package static let qualifiedKeyByShortKey: [String: String] = {
         var map: [String: String] = [:]
         for entry in ruleEntries { map[entry.key] = entry.qualifiedKey }
         return map
-    }
+    }()
 
     /// All keys that are settings or meta fields (not rules or groups), regardless of whether
     /// they're currently grouped or ungrouped.
-    package static var allSettingAndMetaKeys: Set<String> {
+    package static let allSettingAndMetaKeys: Set<String> = {
         var keys = Set(settingEntries.map(\.key))
         keys.insert("version")
         keys.insert("$schema")
         return keys
-    }
+    }()
 
     /// All configuration group key names.
-    package static var groupKeyNames: Set<String> {
-        Set(ConfigurationGroup.Key.allCases.map(\.rawValue))
-    }
+    package static let groupKeyNames: Set<String> = Set(ConfigurationGroup.Key.allCases.map(
+        \.rawValue))
 
     /// Setting keys that live inside a given group (not rules).
     package static func settingKeys(inGroup group: ConfigurationGroup.Key) -> Set<String> {
@@ -270,7 +281,7 @@ package struct Configuration: Sendable, Equatable {
             atPath: candidateDirectory.path,
             isDirectory: &isDirectory
         ),
-           isDirectory.boolValue
+            isDirectory.boolValue
         {
             candidateDirectory.appendPathComponent("placeholder")
         }
@@ -353,7 +364,7 @@ extension Configuration: Codable {
                 }
 
                 // Decode rules within the group.
-                if let mappings = ConfigurationRegistry.groupRules[ConfigurationGroup(groupKey)] {
+                if let mappings = ConfigurationRegistry.groupRules[groupKey] {
                     for rule in mappings {
                         let ruleKey = AnyCodingKey(rule)
                         guard groupContainer.contains(ruleKey) else { continue }
@@ -389,15 +400,15 @@ extension Configuration: Codable {
 
         // Encode ungrouped rules.
         for entry in Self.ruleEntries.sorted(by: { $0.key < $1.key })
-        where !ConfigurationRegistry.groupManagedRules.contains(entry.qualifiedKey) {
+            where !ConfigurationRegistry.groupManagedRules.contains(entry.qualifiedKey)
+        {
             try entry.encode(self, &root, AnyCodingKey(entry.key))
         }
 
         // Encode config groups.
-        for group in ConfigurationGroup.Key.allCases {
-            let configurationGroup = ConfigurationGroup(group)
+        for group in ConfigurationGroup.allCases {
             let groupSettings = Self.settingEntries.filter { $0.groupKey == group }
-            let groupRuleNames = ConfigurationRegistry.groupRules[configurationGroup] ?? []
+            let groupRuleNames = ConfigurationRegistry.groupRules[group] ?? []
 
             guard !groupSettings.isEmpty || !groupRuleNames.isEmpty else { continue }
 

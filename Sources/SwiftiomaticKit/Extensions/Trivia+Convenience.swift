@@ -13,14 +13,7 @@
 import SwiftSyntax
 
 extension Trivia {
-    var hasAnyComments: Bool {
-        contains {
-            switch $0 {
-                case .lineComment, .docLineComment, .blockComment, .docBlockComment: true
-                default: false
-            }
-        }
-    }
+    var hasAnyComments: Bool { contains(where: Trivia.isCommentPiece) }
 
     /// Returns whether the trivia contains at least 1 `lineComment` .
     var hasLineComment: Bool {
@@ -33,8 +26,7 @@ extension Trivia {
     /// Returns this set of trivia, without any leading spaces.
     func withoutLeadingSpaces() -> Trivia { .init(pieces: pieces.drop(while: \.isSpaceOrTab)) }
 
-    /// Returns whether the given trivia piece is vertical or horizontal whitespace (a newline,
-    /// form feed, space, or tab).
+    /// Returns whether the given trivia piece is a comment of any kind.
     private static func isCommentPiece(_ piece: TriviaPiece) -> Bool {
         switch piece {
             case .lineComment, .docLineComment, .blockComment, .docBlockComment: true
@@ -68,11 +60,6 @@ extension Trivia {
         let hoisted = throughLastComment.drop(while: Trivia.isWhitespace)
         let remainder = pieces[(lastCommentIndex + 1)...].drop(while: Trivia.isWhitespace)
         return (Trivia(pieces: Array(hoisted)), Trivia(pieces: Array(remainder)))
-    }
-
-    func withoutTrailingSpaces() -> Trivia {
-        guard let lastNonSpaceIndex = pieces.lastIndex(where: \.isSpaceOrTab) else { return self }
-        return .init(pieces: self[..<lastNonSpaceIndex])
     }
 
     /// Returns this trivia, excluding the last newline and anything following it.
@@ -253,19 +240,22 @@ extension Trivia {
 
     /// Extracts the indentation string (spaces/tabs) after the last newline.
     var indentation: String {
-        var indent = ""
+        // Collect the run in reverse, then reverse once. Prepending to a string reallocates on
+        // every piece.
+        var reversedPieces: [String] = []
         var foundNewline = false
+
         for piece in pieces.reversed() {
             if foundNewline { break }
 
             switch piece {
-                case let .spaces(n): indent = String(repeating: " ", count: n) + indent
-                case let .tabs(n): indent = String(repeating: "\t", count: n) + indent
+                case let .spaces(n): reversedPieces.append(SpacePadding.spaces(n))
+                case let .tabs(n): reversedPieces.append(String(repeating: "\t", count: n))
                 case .newlines, .carriageReturns, .carriageReturnLineFeeds: foundNewline = true
-                default: indent = ""
+                default: reversedPieces.removeAll()
             }
         }
-        return indent
+        return reversedPieces.reversed().joined()
     }
 
     /// Returns a copy with trailing spaces and tabs removed.

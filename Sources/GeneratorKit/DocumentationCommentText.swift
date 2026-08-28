@@ -10,6 +10,7 @@
 //
 //===----------------------------------------------------------------------===//
 
+import Foundation
 import SwiftSyntax
 
 /// The text contents of a documentation comment extracted from trivia.
@@ -101,17 +102,14 @@ struct DocumentationCommentText {
                         var index = cleaned.firstIndex(where: \.isNewline) ?? cleaned.endIndex
 
                         if hasASCIIArt {
-                            cleaned = cleaned.dropFirst(
-                                asciiArtLength(
-                                    of: cleaned,
-                                    leadingSpaces: leadingWhitespace
-                                ))
+                            cleaned = cleaned.dropFirst(asciiArtLength(
+                                of: cleaned, leadingSpaces: leadingWhitespace))
                             index = cleaned.firstIndex(where: \.isNewline) ?? cleaned.endIndex
                         }
 
                         // Don't add an unnecessary blank line at the end when `*/` is on its own
                         // line.
-                        guard cleaned.firstIndex(where: { !$0.isWhitespace }) != nil else { break }
+                        guard cleaned.contains(where: { !$0.isWhitespace }) else { break }
 
                         let line = cleaned.prefix(upTo: index)
                         lines.append(Line(line))
@@ -146,12 +144,49 @@ struct DocumentationCommentText {
     }
 }
 
+extension DocumentationCommentText {
+    /// The doc comment in `trivia` , normalized for use as a JSON Schema description. Returns `nil`
+    /// when the trivia carries no doc comment.
+    static func normalized(from trivia: Trivia) -> String? {
+        DocumentationCommentText(extractedFrom: trivia).map { normalize($0.text) }
+    }
+
+    /// Joins consecutive non-blank lines into a single paragraph (separated by a space), preserves
+    /// blank lines between paragraphs, and keeps bullet-list lines ( `- ` , `* ` , `• ` ) on their
+    /// own line so lists render correctly in tooltips.
+    static func normalize(_ raw: String) -> String {
+        var paragraphs: [String] = []
+        var current: [String] = []
+
+        func flush() {
+            if !current.isEmpty {
+                paragraphs.append(current.joined(separator: " "))
+                current.removeAll()
+            }
+        }
+
+        for rawLine in raw.split(separator: "\n", omittingEmptySubsequences: false) {
+            let line = rawLine.trimmingCharacters(in: .whitespaces)
+
+            if line.isEmpty {
+                flush()
+                if paragraphs.last != "" { paragraphs.append("") }
+            } else if line.hasPrefix("- ") || line.hasPrefix("* ") || line.hasPrefix("• ") {
+                flush()
+                paragraphs.append(line)
+            } else {
+                current.append(line)
+            }
+        }
+        flush()
+        while paragraphs.last == "" { paragraphs.removeLast() }
+        return paragraphs.joined(separator: "\n")
+    }
+}
+
 /// Returns the distance from the start of the string to the first non-whitespace character.
 private func indentationDistance(of text: Substring) -> Int {
-    text.distance(
-        from: text.startIndex,
-        to: text.firstIndex { !$0.isWhitespace } ?? text.endIndex
-    )
+    text.distance(from: text.startIndex, to: text.firstIndex { !$0.isWhitespace } ?? text.endIndex)
 }
 
 /// Returns the number of contiguous whitespace characters (spaces and tabs only) that precede the

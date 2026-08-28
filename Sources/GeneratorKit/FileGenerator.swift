@@ -18,10 +18,6 @@ package protocol FileGenerator {
     func generateContent() -> String
 }
 
-private struct FailedToCreateFileError: Error {
-    let url: URL
-}
-
 package extension FileGenerator {
     /// Generates a file at the given URL, skipping the write when the existing content is already
     /// up to date.
@@ -33,10 +29,7 @@ package extension FileGenerator {
 
         let directory = url.deletingLastPathComponent()
 
-        try? FileManager.default.createDirectory(
-            at: directory,
-            withIntermediateDirectories: true
-        )
+        try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
 
         try content.write(to: url, atomically: true, encoding: .utf8)
     }

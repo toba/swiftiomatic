@@ -25,20 +25,6 @@ extension Lint {
 }
 
 extension Context {
-    /// The lazily-computed region tree of `@warn` attribute scopes for this
-    /// file. Built on first access, then memoised on `Context`. The tree
-    /// walk is single-pass and only happens when at least one rule actually
-    /// reaches `warningControlSeverity(of:at:)` — i.e. when emitting a
-    /// finding or otherwise consulting the resolved severity.
-    var warningControlRegionTree: WarningControlRegionTree {
-        if let cached = warningControlRegionTreeCache.value {
-            return cached.tree
-        }
-        let tree = sourceFileSyntax.warningGroupControlRegionTree()
-        warningControlRegionTreeCache.value = .init(tree: tree)
-        return tree
-    }
-
     /// Returns a `Lint` severity overridden by an enclosing `@warn(<group>, as: …)`
     /// attribute, or `nil` if no such attribute scope applies. Rules consult
     /// this and only fall back to their configured severity when the result
@@ -57,6 +43,8 @@ extension Context {
         return nil
     }
 }
+
+// MARK: - Support
 
 /// Internal namespace for warning-control resolution helpers.
 enum WarningControlMask {
@@ -77,15 +65,3 @@ enum WarningControlMask {
     }
 }
 
-/// Single-slot lazy cache for the file's `WarningControlRegionTree`.
-///
-/// `Context` is constructed fresh per file by the lint and rewrite
-/// coordinators, so this ref-typed slot is effectively immutable after first
-/// fill within a per-file pipeline run.
-final class WarningControlRegionTreeCache {
-    struct Slot {
-        let tree: WarningControlRegionTree
-    }
-    var value: Slot?
-    init() {}
-}

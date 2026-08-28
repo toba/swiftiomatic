@@ -24,7 +24,10 @@ package struct FileIterator: Sequence, IteratorProtocol {
 
     /// Glob patterns matching paths (relative to `workingDirectory`) to skip. Matching directories
     /// are pruned (not descended into); matching files are not yielded.
-    private let excludes: [String]
+    ///
+    /// Compiled once in `init` . Every entry in the walk is tested against the whole list, so
+    /// compiling per test would rebuild each pattern's regex thousands of times.
+    private let excludes: [Glob]
 
     /// Iterator for the list of URLs.
     private var urlIterator: Array<URL>.Iterator
@@ -64,7 +67,7 @@ package struct FileIterator: Sequence, IteratorProtocol {
         self.urls = urls
         urlIterator = self.urls.makeIterator()
         self.followSymlinks = followSymlinks
-        self.excludes = excludes
+        self.excludes = Glob.compile(excludes)
     }
 
     /// Returns candidate paths to test against exclude globs: relative to the current input
