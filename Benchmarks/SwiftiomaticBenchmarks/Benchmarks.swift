@@ -1,10 +1,9 @@
 import Benchmark
+import TobaBenchmark
 
 /// Registration point the `BenchmarkPlugin` generated runner calls
 ///
-/// Each area registers its own benchmarks. Read the figures from a release run, because this target
-/// measures optimized code and a debug build inflates dictionary and existential costs enough to
-/// misreport where the time goes.
+/// Each area registers its own benchmarks.
 ///
 /// The target uses `@testable`, so a run needs the testing flag:
 ///
@@ -12,11 +11,7 @@ import Benchmark
 /// swift package -Xswiftc -enable-testing benchmark
 /// ```
 let benchmarks: @Sendable () -> Void = {
-    Benchmark.defaultConfiguration = .init(
-        metrics: [.wallClock, .mallocCountTotal],
-        warmupIterations: 3,
-        maxDuration: .seconds(5)
-    )
+    Benchmark.defaultConfiguration = BenchmarkRun.defaultConfiguration()
 
     registerLintBenchmarks()
     registerFormatBenchmarks()
@@ -26,23 +21,23 @@ let benchmarks: @Sendable () -> Void = {
 
 /// Tolerances a comparison allows before it reports a regression
 ///
-/// These bound the deviation between two runs. They are not ceilings on the figures themselves.
-/// `swift package benchmark thresholds update` records the ceilings separately.
-///
-/// Each is computed rather than stored, because `BenchmarkThresholds` is not `Sendable` and a
-/// stored static property of a non-`Sendable` type is global mutable state.
-///
-/// Every band names `mallocCountTotal` as well as `wallClock`. A metric left out of the dictionary
-/// falls back to a zero tolerance, and an allocation count that moves by one then fails the run.
+/// The name shadows `TobaBenchmark.Tolerance` inside this file, so each builder call below names
+/// the module.
 enum Tolerance {
     /// For the end-to-end paths, which measured under 7% deviation across ten iterations
     static var steady: [BenchmarkMetric: BenchmarkThresholds] {
-        [.wallClock: .init(relative: [.p50: 10.0, .p90: 15.0]), .mallocCountTotal: allocations]
+        [
+            .wallClock: TobaBenchmark.Tolerance.wallClock(p50: 10.0, p90: 15.0),
+            .mallocCountTotal: allocations,
+        ]
     }
 
     /// For the short walks and the dispatch probes, where per-iteration variance is larger
     static var noisy: [BenchmarkMetric: BenchmarkThresholds] {
-        [.wallClock: .init(relative: [.p50: 25.0, .p90: 35.0]), .mallocCountTotal: allocations]
+        [
+            .wallClock: TobaBenchmark.Tolerance.wallClock(p50: 25.0, p90: 35.0),
+            .mallocCountTotal: allocations,
+        ]
     }
 
     /// Allocation counts hold steady across a run, so this is tight on purpose.
@@ -51,6 +46,6 @@ enum Tolerance {
     /// names the cache benchmarks build. The relative band still catches a real jump in a benchmark
     /// that allocates little.
     private static var allocations: BenchmarkThresholds {
-        .init(relative: [.p50: 5.0, .p90: 5.0], absolute: [.p50: 1_000, .p90: 1_000])
+        TobaBenchmark.Tolerance.drift(count: 1_000)
     }
 }

@@ -1,5 +1,5 @@
 {
-  "originHash" : "518b60aa2e3ab7b4cae8974f1faad9ca5053d1759046daf95926a0cc1bd30839",
+  "originHash" : "5fbc9ae4f2a89aef1943a193ffccd1f685c9f9d8faeffd027bd8e0e9af8947d1",
   "pins" : [
     {
       "identity" : "benchmark",
@@ -116,6 +116,15 @@
       "state" : {
         "revision" : "a27a07300cf4ae322e0079ca0a475c5583dd575f",
         "version" : "0.0.2"
+      }
+    },
+    {
+      "identity" : "toba-benchmark",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/toba/toba-benchmark",
+      "state" : {
+        "revision" : "2f3442bfe4b75bbd70b79581ee780d4b04aec1ed",
+        "version" : "1.1.0"
       }
     },
     {

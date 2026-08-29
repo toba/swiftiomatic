@@ -38,6 +38,8 @@ let package = Package(
         .package(url: "https://github.com/toba/toba-concurrency", from: "1.1.1"),
         // Benchmarks only. No `sm` target depends on it, so it never links.
         .package(url: "https://github.com/ordo-one/benchmark", from: "1.36.2"),
+        // Benchmarks only. Vends the run length and the threshold bands every suite shares.
+        .package(url: "https://github.com/toba/toba-benchmark", from: "1.0.0"),
     ],
     targets: [
         .target(name: "ConfigurationKit", exclude: ["README.md"]),
@@ -135,6 +137,7 @@ let package = Package(
             dependencies: [
                 "SwiftiomaticKit",
                 .product(name: "Benchmark", package: "benchmark"),
+                .product(name: "TobaBenchmark", package: "toba-benchmark"),
                 .product(name: "SwiftOperators", package: "swift-syntax"),
                 .product(name: "SwiftParser", package: "swift-syntax"),
                 .product(name: "SwiftSyntax", package: "swift-syntax"),
