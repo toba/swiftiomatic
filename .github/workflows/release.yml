@@ -56,14 +56,15 @@ jobs:
     - name: Embed version
       run: sed -i '' "s/let smVersion = \".*\"/let smVersion = \"$VERSION\"/" Sources/Swiftiomatic/Version.swift
 
-    # toba-core and toba-concurrency are private. SwiftPM clones them over
-    # https with no credential, so the rewrite supplies one. Each rewrite names
-    # one repository, which keeps the credential off every other toba URL.
+    # Every toba dependency of this manifest is private. SwiftPM clones them
+    # over https with no credential, so the rewrite supplies one. Each rewrite
+    # names one repository, which keeps the credential off every other toba
+    # URL. Add a repository here whenever the manifest gains a toba dependency.
     - name: Authenticate to the private toba repositories
       env:
         TOBA_TOKEN: ${{ secrets.HOMEBREW_TAP_TOKEN }}
       run: |
-        for repo in toba-core toba-concurrency; do
+        for repo in toba-core toba-concurrency toba-benchmark; do
           git config --global \
             url."https://x-access-token:${TOBA_TOKEN}@github.com/toba/${repo}".insteadOf \
             "https://github.com/toba/${repo}"

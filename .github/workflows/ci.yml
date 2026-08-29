@@ -37,15 +37,16 @@ jobs:
         restore-keys: spm-debug-${{ runner.os }}-xcode${{ env.XCODE_VERSION }}-
         save-always: true
 
-    # toba-core and toba-concurrency are private. SwiftPM clones them over
-    # https with no credential, so the rewrite supplies one. A fork pull
+    # Every toba dependency of this manifest is private. SwiftPM clones them
+    # over https with no credential, so the rewrite supplies one. A fork pull
     # request gets no secret and still fails here. Each rewrite names one
-    # repository, which keeps the credential off every other toba URL.
+    # repository, which keeps the credential off every other toba URL. Add a
+    # repository here whenever the manifest gains a toba dependency.
     - name: Authenticate to the private toba repositories
       env:
         TOBA_TOKEN: ${{ secrets.HOMEBREW_TAP_TOKEN }}
       run: |
-        for repo in toba-core toba-concurrency; do
+        for repo in toba-core toba-concurrency toba-benchmark; do
           git config --global \
             url."https://x-access-token:${TOBA_TOKEN}@github.com/toba/${repo}".insteadOf \
             "https://github.com/toba/${repo}"
