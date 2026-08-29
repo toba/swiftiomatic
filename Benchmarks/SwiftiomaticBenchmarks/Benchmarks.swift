@@ -42,10 +42,10 @@ enum Tolerance {
 
     /// Allocation counts hold steady across a run, so this is tight on purpose.
     ///
-    /// The absolute band covers the counts that shift with the iteration number, such as the file
-    /// names the cache benchmarks build. The relative band still catches a real jump in a benchmark
-    /// that allocates little.
+    /// The band covers the counts that shift with the iteration number, such as the file names the
+    /// cache benchmarks build. A percentage beside it would catch nothing extra and would fail a
+    /// benchmark that allocates little, where a move of one is a large fraction of the recording.
     private static var allocations: BenchmarkThresholds {
-        TobaBenchmark.Tolerance.drift(count: 1_000)
+        TobaBenchmark.Tolerance.fixed(count: 1_000)
     }
 }
