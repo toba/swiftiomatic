@@ -548,7 +548,7 @@
               "$ref" : "#/$defs/lintOnlyBase"
             }
           ],
-          "description" : "Flags `// sm:ignore` directives whose listed rules suppressed nothing.\n\nStale ignore directives accumulate as code evolves: a rule renamed, a finding stops firing, or a typo'd rule name was never valid. This rule walks every `// sm:ignore Rule1, Rule2` directive after all other passes and emits a finding for each rule name whose hit count stayed at zero.\n\nBare `// sm:ignore` (all rules) is never flagged: proving \"no rule fired\" requires running every rule against every node in the directive's range, which would be expensive and noisy.\n\nSee issue `ekr-k5l`.",
+          "description" : "Flags `// sm:ignore` directives whose listed rules suppressed nothing.\n\nStale ignore directives accumulate as code evolves: a rule renamed, a finding stops firing, or a typo'd rule name was never valid. This rule walks every `// sm:ignore Rule1, Rule2` directive after all other passes and emits a finding for each rule name whose hit count stayed at zero.\n\nBare `// sm:ignore` (all rules) is never flagged: proving \"no rule fired\" requires running every rule against every node in the directive's range, which would be expensive and noisy.\n\nA rule that never consults `RuleMask` in a run yields no hit either way, so the finding needs a second signal: whether the run dispatches the rule at all. `Context.dispatches(_:)` answers it, which keeps a directive quiet when the configuration disables the rule and flags one when the rule runs and the file holds no node it visits.\n\nSee issue `ekr-k5l`.",
           "unevaluatedProperties" : false
         },
         "formatSpecialComments" : {
@@ -1053,7 +1053,7 @@
           "$ref" : "#/$defs/ruleBase"
         }
       ],
-      "description" : "Remove `@escaping` from closure parameters that demonstrably do not escape.\n\n`@escaping` is required only when a closure parameter outlives the function call. This rule uses a flow-insensitive escape check: a closure escapes if it (or a value tainted by it) is returned, assigned to a non-local variable, passed to another function, or referenced inside a nested closure.\n\nThe analysis is deliberately conservative — when escape can't be ruled out, the rule stays silent. Protocol requirements, autoclosure-only edge cases, and parameters referenced inside nested closures are all assumed to escape.\n\nLint: A finding is raised at the `@escaping` attribute.\n\nRewrite: The `@escaping` attribute is removed."
+      "description" : "Remove `@escaping` from closure parameters that demonstrably do not escape.\n\n`@escaping` is required only when a closure parameter outlives the function call. This rule uses a flow-insensitive escape check: a closure escapes if it (or a value tainted by it) is returned, assigned to a non-local variable, passed to another function, or referenced inside a nested scope or an `async let` initializer.\n\nThe analysis is deliberately conservative — when escape can't be ruled out, the rule stays silent. Protocol requirements, autoclosure-only edge cases, and parameters referenced inside nested closures are all assumed to escape.\n\nLint: A finding is raised at the `@escaping` attribute.\n\nRewrite: The `@escaping` attribute is removed."
     },
     "dropRedundantFinal" : {
       "allOf" : [
@@ -1536,7 +1536,7 @@
           "$ref" : "#/$defs/lintOnlyBase"
         }
       ],
-      "description" : "Flags `// sm:ignore` directives whose listed rules suppressed nothing.\n\nStale ignore directives accumulate as code evolves: a rule renamed, a finding stops firing, or a typo'd rule name was never valid. This rule walks every `// sm:ignore Rule1, Rule2` directive after all other passes and emits a finding for each rule name whose hit count stayed at zero.\n\nBare `// sm:ignore` (all rules) is never flagged: proving \"no rule fired\" requires running every rule against every node in the directive's range, which would be expensive and noisy.\n\nSee issue `ekr-k5l`.",
+      "description" : "Flags `// sm:ignore` directives whose listed rules suppressed nothing.\n\nStale ignore directives accumulate as code evolves: a rule renamed, a finding stops firing, or a typo'd rule name was never valid. This rule walks every `// sm:ignore Rule1, Rule2` directive after all other passes and emits a finding for each rule name whose hit count stayed at zero.\n\nBare `// sm:ignore` (all rules) is never flagged: proving \"no rule fired\" requires running every rule against every node in the directive's range, which would be expensive and noisy.\n\nA rule that never consults `RuleMask` in a run yields no hit either way, so the finding needs a second signal: whether the run dispatches the rule at all. `Context.dispatches(_:)` answers it, which keeps a directive quiet when the configuration disables the rule and flags one when the rule runs and the file holds no node it visits.\n\nSee issue `ekr-k5l`.",
       "unevaluatedProperties" : false
     },
     "formatSpecialComments" : {
@@ -3323,7 +3323,7 @@
               "$ref" : "#/$defs/ruleBase"
             }
           ],
-          "description" : "Remove `@escaping` from closure parameters that demonstrably do not escape.\n\n`@escaping` is required only when a closure parameter outlives the function call. This rule uses a flow-insensitive escape check: a closure escapes if it (or a value tainted by it) is returned, assigned to a non-local variable, passed to another function, or referenced inside a nested closure.\n\nThe analysis is deliberately conservative — when escape can't be ruled out, the rule stays silent. Protocol requirements, autoclosure-only edge cases, and parameters referenced inside nested closures are all assumed to escape.\n\nLint: A finding is raised at the `@escaping` attribute.\n\nRewrite: The `@escaping` attribute is removed."
+          "description" : "Remove `@escaping` from closure parameters that demonstrably do not escape.\n\n`@escaping` is required only when a closure parameter outlives the function call. This rule uses a flow-insensitive escape check: a closure escapes if it (or a value tainted by it) is returned, assigned to a non-local variable, passed to another function, or referenced inside a nested scope or an `async let` initializer.\n\nThe analysis is deliberately conservative — when escape can't be ruled out, the rule stays silent. Protocol requirements, autoclosure-only edge cases, and parameters referenced inside nested closures are all assumed to escape.\n\nLint: A finding is raised at the `@escaping` attribute.\n\nRewrite: The `@escaping` attribute is removed."
         },
         "dropRedundantFinal" : {
           "allOf" : [

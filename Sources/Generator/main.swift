@@ -85,7 +85,7 @@ let pipelineGenerator = PipelineGenerator(collector: collector)
 try pipelineGenerator.generateFile(at: paths.pipelineFile)
 
 // Generate the unified rule registry (type arrays, defaults, name cache).
-let registryGenerator = ConfigurationGenerator(collector: collector)
+let registryGenerator = ConfigurationGenerator(collector: collector, rewriteHooks: rewriteHooks)
 try registryGenerator.generateFile(at: paths.ruleRegistryFile)
 
 // Generate the JSON Schema for configuration files.
@@ -137,6 +137,7 @@ private func fingerprint(of roots: [URL], files extras: [URL], skipSchema: Bool)
             includingPropertiesForKeys: nil,
             options: [.skipsHiddenFiles])
         else { continue }
+
         for case let url as URL in enumerator where url.pathExtension == "swift" {
             files.append(url)
         }

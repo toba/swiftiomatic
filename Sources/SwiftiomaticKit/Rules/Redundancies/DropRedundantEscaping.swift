@@ -5,7 +5,7 @@ import SwiftSyntax
 /// `@escaping` is required only when a closure parameter outlives the function call. This rule uses
 /// a flow-insensitive escape check: a closure escapes if it (or a value tainted by it) is returned,
 /// assigned to a non-local variable, passed to another function, or referenced inside a nested
-/// closure.
+/// scope or an `async let` initializer.
 ///
 /// The analysis is deliberately conservative — when escape can't be ruled out, the rule stays
 /// silent. Protocol requirements, autoclosure-only edge cases, and parameters referenced inside
@@ -56,25 +56,46 @@ final class DropRedundantEscaping: StaticFormatRule<BasicRuleValue>, @unchecked 
         return DeclSyntax(result)
     }
 
+    /// Drop `@escaping` from every parameter the escape check clears.
+    ///
+    /// One `EscapeChecker` covers the whole parameter clause, so the body is walked once however
+    /// many parameters carry the attribute.
+    ///
+    /// - Returns: The rewritten clause, or `nil` when no parameter changed
     private static func rewriteParameterClause(
         _ clause: FunctionParameterClauseSyntax,
         body: CodeBlockItemListSyntax,
         context: Context
     ) -> FunctionParameterClauseSyntax? {
+        var candidates: Set<String> = []
+        var autoclosures: Set<String> = []
+
+        for param in clause.parameters {
+            guard let attributedType = param.type.as(AttributedTypeSyntax.self),
+                attribute(named: "escaping", in: attributedType.attributes) != nil else { continue }
+            let name = (param.secondName ?? param.firstName).text
+            candidates.insert(name)
+
+            if attribute(named: "autoclosure", in: attributedType.attributes) != nil {
+                autoclosures.insert(name)
+            }
+        }
+        guard !candidates.isEmpty else { return nil }
+
+        let checker = EscapeChecker(
+            candidates: candidates,
+            autoclosures: autoclosures,
+            viewMode: .sourceAccurate
+        )
+        checker.walk(body)
+
         var changed = false
         let newParams = clause.parameters.map { param -> FunctionParameterSyntax in
             guard let attributedType = param.type.as(AttributedTypeSyntax.self),
-                let escapingAttr = escapingAttribute(in: attributedType.attributes)
+                let escapingAttr = attribute(named: "escaping", in: attributedType.attributes)
             else { return param }
             let paramName = (param.secondName ?? param.firstName).text
-            let isAutoclosure = hasAttribute(named: "autoclosure", in: attributedType.attributes)
-            let checker = EscapeChecker(
-                paramName: paramName,
-                isAutoclosure: isAutoclosure,
-                viewMode: .sourceAccurate
-            )
-            checker.walk(body)
-            guard !checker.doesEscape else { return param }
+            guard !checker.escapedParameters.contains(paramName) else { return param }
 
             Self.diagnose(
                 .removeRedundantEscaping(name: paramName),
@@ -83,13 +104,10 @@ final class DropRedundantEscaping: StaticFormatRule<BasicRuleValue>, @unchecked 
             )
 
             var newAttributedType = attributedType
-            let newAttributes = AttributeListSyntax(
-                attributedType.attributes.compactMap { element -> AttributeListSyntax.Element? in
-                    if case let .attribute(attr) = element,
-                       attributeName(of: attr) == "escaping" { return nil }
-                    return element
-                }
-            )
+            let newAttributes = attributedType.attributes.filter { element in
+                guard case let .attribute(attr) = element else { return true }
+                return attr.id != escapingAttr.id
+            }
             newAttributedType.attributes = newAttributes
 
             var newParam = param
@@ -105,19 +123,15 @@ final class DropRedundantEscaping: StaticFormatRule<BasicRuleValue>, @unchecked 
         return clause.with(\.parameters, FunctionParameterListSyntax(newParams))
     }
 
-    private static func escapingAttribute(in list: AttributeListSyntax) -> AttributeSyntax? {
+    private static func attribute(
+        named name: String,
+        in list: AttributeListSyntax
+    ) -> AttributeSyntax? {
         for element in list {
             guard case let .attribute(attr) = element else { continue }
-            if attributeName(of: attr) == "escaping" { return attr }
+            if attributeName(of: attr) == name { return attr }
         }
         return nil
-    }
-
-    private static func hasAttribute(named name: String, in list: AttributeListSyntax) -> Bool {
-        list.contains { element in
-            guard case let .attribute(attr) = element else { return false }
-            return attributeName(of: attr) == name
-        }
     }
 
     private static func attributeName(of attr: AttributeSyntax) -> String? {
@@ -137,117 +151,155 @@ final class DropRedundantEscaping: StaticFormatRule<BasicRuleValue>, @unchecked 
 
 // MARK: - Escape Analysis
 
-/// Conservative escape checker: tracks the parameter name (and any local variables tainted by it)
-/// and reports an escape when a tainted value is returned, assigned to a non-local variable, passed
-/// to another function, or referenced inside a nested closure.
+/// Conservative escape checker: tracks a set of candidate parameters (and any local variables
+/// tainted by one) and reports a parameter as escaping when a value it taints is returned, assigned
+/// to a non-local variable, passed to another function, or referenced inside a nested scope or an
+/// `async let` initializer.
 private final class EscapeChecker: SyntaxVisitor {
-    private var taintedVariables: Set<String>
-    private var localVariables: Set<String> = []
-    private var insideNestedClosure = 0
-    private(set) var doesEscape = false
-    private let isAutoclosure: Bool
+    /// Names each candidate parameter taints, keyed by the parameter name.
+    private var taintedVariables: [String: Set<String>]
+    private var localVariables: Set<String>
+    private let autoclosures: Set<String>
+    private var insideNestedScope = 0
+    private var insideAsyncLet = 0
+    private(set) var escapedParameters: Set<String> = []
 
-    init(paramName: String, isAutoclosure: Bool, viewMode: SyntaxTreeViewMode) {
-        taintedVariables = [paramName]
-        localVariables = [paramName]
-        self.isAutoclosure = isAutoclosure
+    init(candidates: Set<String>, autoclosures: Set<String>, viewMode: SyntaxTreeViewMode) {
+        taintedVariables = candidates.reduce(into: [:]) { $0[$1] = [$1] }
+        localVariables = candidates
+        self.autoclosures = autoclosures
         super.init(viewMode: viewMode)
     }
 
     override func visit(_: ClosureExprSyntax) -> SyntaxVisitorContinueKind {
-        insideNestedClosure += 1
+        insideNestedScope += 1
         return .visitChildren
     }
 
-    override func visitPost(_: ClosureExprSyntax) { insideNestedClosure -= 1 }
+    override func visitPost(_: ClosureExprSyntax) { insideNestedScope -= 1 }
+
+    // the walk starts at the body, so only a local function reaches these two
+    override func visit(_: FunctionDeclSyntax) -> SyntaxVisitorContinueKind {
+        insideNestedScope += 1
+        return .visitChildren
+    }
+
+    override func visitPost(_: FunctionDeclSyntax) { insideNestedScope -= 1 }
+
+    override func visit(_ node: VariableDeclSyntax) -> SyntaxVisitorContinueKind {
+        if Self.isAsyncLet(node) { insideAsyncLet += 1 }
+        return .visitChildren
+    }
 
     override func visitPost(_ node: VariableDeclSyntax) {
+        if Self.isAsyncLet(node) { insideAsyncLet -= 1 }
+
         for binding in node.bindings {
-            let sourceTainted = binding.initializer.map { isTainted($0.value) } ?? false
-            registerPattern(binding.pattern, sourceTainted: sourceTainted)
+            let sources = binding.initializer.map { taintSources(of: $0.value) } ?? []
+            registerPattern(binding.pattern, sources: sources)
         }
     }
 
-    /// Walk a binding pattern and register every identifier as a local; if the initializer was
-    /// tainted, taint each identifier as well. Handles both `let x = …` (IdentifierPattern) and
-    /// `let (x, y) = …` (TuplePattern).
-    private func registerPattern(_ pattern: PatternSyntax, sourceTainted: Bool) {
+    private static func isAsyncLet(_ node: VariableDeclSyntax) -> Bool {
+        node.modifiers.contains { $0.name.tokenKind == .keyword(.async) }
+    }
+
+    /// Walk a binding pattern and register every identifier as a local; taint each identifier for
+    /// every parameter that tainted the initializer. Handles both `let x = …` (IdentifierPattern)
+    /// and `let (x, y) = …` (TuplePattern).
+    private func registerPattern(_ pattern: PatternSyntax, sources: Set<String>) {
         if let ident = pattern.as(IdentifierPatternSyntax.self) {
             let name = ident.identifier.text
             localVariables.insert(name)
-            if sourceTainted { taintedVariables.insert(name) }
+            for source in sources { taintedVariables[source]?.insert(name) }
         } else if let tuple = pattern.as(TuplePatternSyntax.self) {
-            for element in tuple.elements {
-                registerPattern(element.pattern, sourceTainted: sourceTainted)
-            }
+            for element in tuple.elements { registerPattern(element.pattern, sources: sources) }
         }
     }
 
     override func visitPost(_ node: ReturnStmtSyntax) {
-        if let expr = node.expression, isTainted(expr) { doesEscape = true }
+        guard let expr = node.expression else { return }
+        escapedParameters.formUnion(taintSources(of: expr))
     }
 
     override func visitPost(_ node: FunctionCallExprSyntax) {
-        for argument in node.arguments
-            where isTainted(argument.expression) || calleeIsTainted(argument.expression)
-        {
-            doesEscape = true
-            return
+        for argument in node.arguments {
+            escapedParameters.formUnion(taintSources(of: argument.expression))
+            escapedParameters.formUnion(autoclosureCallSources(of: argument.expression))
         }
     }
 
     override func visitPost(_ node: DeclReferenceExprSyntax) {
-        guard isTainted(ExprSyntax(node)) else { return }
+        let sources = taintSources(of: ExprSyntax(node))
+        guard !sources.isEmpty else { return }
 
-        if insideNestedClosure > 0 {
-            doesEscape = true
+        // a nested scope and an async let child task both outlive the call
+        if insideNestedScope > 0 || insideAsyncLet > 0 {
+            escapedParameters.formUnion(sources)
             return
         }
         if let parentKind = node.parent?.kind,
-           parentKind == .arrayElement || parentKind == .dictionaryElement { doesEscape = true }
+           parentKind == .arrayElement || parentKind == .dictionaryElement {
+            escapedParameters.formUnion(sources)
+        }
     }
 
     override func visitPost(_ node: InfixOperatorExprSyntax) {
-        guard node.operator.is(AssignmentExprSyntax.self), isTainted(node.rightOperand)
-        else { return }
+        guard node.operator.is(AssignmentExprSyntax.self) else { return }
+        let sources = taintSources(of: node.rightOperand)
+        guard !sources.isEmpty else { return }
 
         if let leftRef = node.leftOperand.as(DeclReferenceExprSyntax.self),
             localVariables.contains(leftRef.baseName.text)
         {
-            taintedVariables.insert(leftRef.baseName.text)
+            for source in sources { taintedVariables[source]?.insert(leftRef.baseName.text) }
         } else {
-            doesEscape = true
+            escapedParameters.formUnion(sources)
         }
     }
 
-    private func isTainted(_ expr: ExprSyntax) -> Bool {
+    /// The candidate parameters whose taint reaches this expression.
+    private func taintSources(of expr: ExprSyntax) -> Set<String> {
         if let ref = expr.as(DeclReferenceExprSyntax.self) {
-            return taintedVariables.contains(ref.baseName.text)
+            return sources(tainting: ref.baseName.text)
         }
+
         if let optChain = expr.as(OptionalChainingExprSyntax.self),
            let ref = optChain.expression.as(DeclReferenceExprSyntax.self) {
-            return taintedVariables.contains(ref.baseName.text)
+            return sources(tainting: ref.baseName.text)
         }
 
         if let ternary = expr.as(TernaryExprSyntax.self) {
-            return isTainted(ternary.thenExpression) || isTainted(ternary.elseExpression)
+            return taintSources(of: ternary.thenExpression)
+                .union(taintSources(of: ternary.elseExpression))
         }
+
         if let tuple = expr.as(TupleExprSyntax.self) {
-            return tuple.elements.contains { isTainted($0.expression) }
+            return tuple.elements.reduce(into: Set<String>()) {
+                $0.formUnion(taintSources(of: $1.expression))
+            }
         }
-        return false
+        return []
     }
 
-    /// For autoclosure parameters, calling the parameter (e.g. `body()` ) does not escape it — but
-    /// the result might still be propagated. This mirrors SwiftLint's autoclosure carve-out.
-    private func calleeIsTainted(_ expr: ExprSyntax) -> Bool {
-        guard isAutoclosure,
-              let call = expr.as(FunctionCallExprSyntax.self),
+    private func sources(tainting name: String) -> Set<String> {
+        var result: Set<String> = []
+
+        for (parameter, tainted) in taintedVariables where tainted.contains(name) {
+            result.insert(parameter)
+        }
+        return result
+    }
+
+    /// For an autoclosure parameter, calling it (e.g. `body()`) does not escape it, but the result
+    /// might still be propagated. This mirrors SwiftLint's autoclosure carve-out.
+    private func autoclosureCallSources(of expr: ExprSyntax) -> Set<String> {
+        guard let call = expr.as(FunctionCallExprSyntax.self),
               call.arguments.isEmpty,
               call.trailingClosure == nil,
               call.additionalTrailingClosures.isEmpty,
-              let ref = call.calledExpression.as(DeclReferenceExprSyntax.self) else { return false }
-        return taintedVariables.contains(ref.baseName.text)
+              let ref = call.calledExpression.as(DeclReferenceExprSyntax.self) else { return [] }
+        return sources(tainting: ref.baseName.text).intersection(autoclosures)
     }
 }
 

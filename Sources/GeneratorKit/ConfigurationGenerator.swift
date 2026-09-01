@@ -18,12 +18,17 @@ import ConfigurationKit
 /// `Rule` existential.
 package final class ConfigurationGenerator: FileGenerator {
     let collector: RuleCollector
+    let rewriteHooks: RewriteHookCollector
 
-    package init(collector: RuleCollector) { self.collector = collector }
+    package init(collector: RuleCollector, rewriteHooks: RewriteHookCollector) {
+        self.collector = collector
+        self.rewriteHooks = rewriteHooks
+    }
 
     package func generateContent() -> String {
         let sortedRules = collector.lintingSyntaxRules.sorted(by: { $0.typeName < $1.typeName })
         let sortedSettings = collector.layoutRules.sorted(by: { $0.typeName < $1.typeName })
+        let dispatched = dispatchedRuleTypeNames(in: sortedRules)
 
         var result = fileHeader
         result += "package enum ConfigurationRegistry {\n\n"
@@ -38,10 +43,37 @@ package final class ConfigurationGenerator: FileGenerator {
         result += "    /// All known rule types.\n"
         result += "    static let allRuleTypes: [any SyntaxRule.Type] = [\n"
         for rule in sortedRules { result += "        \(rule.typeName).self,\n" }
+        result += "    ]\n\n"
+
+        // Rules a pipeline dispatches per node
+        result += "    /// Rule types the lint pipeline or the rewrite pipeline dispatches on a\n"
+        result += "    /// syntax node. A rule outside this list reaches source only from the\n"
+        result += "    /// layout stage, which a lint run never executes.\n"
+        result += "    static let nodeDispatchedRuleTypes: [any SyntaxRule.Type] = [\n"
+        for typeName in dispatched { result += "        \(typeName).self,\n" }
         result += "    ]\n"
 
         result += "}\n"
         return result
+    }
+
+    /// Type names of the rules a pipeline dispatches per node, sorted.
+    ///
+    /// A rule joins the lint pipeline by overriding `visit` for a node kind, and the rewrite
+    /// pipeline by declaring a `transform` , `willEnter` or `didExit` hook for one. A rule with
+    /// neither is consulted from the layout stage instead.
+    private func dispatchedRuleTypeNames(
+        in rules: [RuleCollector.DetectedSyntaxRule]
+    ) -> [String] {
+        var hooked = Set(rewriteHooks.unorderedHooks.map(\.rule))
+
+        for hooks in rewriteHooks.hooksByNode.values {
+            for hook in hooks { hooked.insert(hook.rule) }
+        }
+        return rules
+            .filter { !$0.visitedNodes.isEmpty || hooked.contains($0.typeName) }
+            .map(\.typeName)
+            .sorted()
     }
 
     private var fileHeader: String {

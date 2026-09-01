@@ -9,6 +9,11 @@ import SwiftSyntax
 /// Bare `// sm:ignore` (all rules) is never flagged: proving "no rule fired" requires running every
 /// rule against every node in the directive's range, which would be expensive and noisy.
 ///
+/// A rule that never consults `RuleMask` in a run yields no hit either way, so the finding needs a
+/// second signal: whether the run dispatches the rule at all. `Context.dispatches(_:)` answers it,
+/// which keeps a directive quiet when the configuration disables the rule and flags one when the
+/// rule runs and the file holds no node it visits.
+///
 /// See issue `ekr-k5l`.
 final class FlagUnusedIgnoreDirective: LintSyntaxRule<LintOnlyValue>, @unchecked Sendable {
     override class var group: ConfigurationGroup? { .comments }
@@ -27,15 +32,18 @@ final class FlagUnusedIgnoreDirective: LintSyntaxRule<LintOnlyValue>, @unchecked
             guard case let .subset(ruleNames) = directive.scope else { continue }
 
             for name in ruleNames where directive.hitsPerRule[name] == nil {
-                // Skip known rule keys that never queried the mask in this run: the rule is
-                // inactive (disabled by config, or its implementation never reaches `ruleState`),
-                // so we have no signal whether the directive is a dead hedge or a valid one. Typo'd
-                // names (not in `allRuleKeys`) are still flagged — they can't suppress anything by
-                // definition.
-                if !queried.contains(name), ConfigurationRegistry.allRuleKeys.contains(name) {
+                guard let ruleType = ConfigurationRegistry.ruleTypesByKey[name] else {
+                    // A name no rule answers to suppresses nothing by definition
+                    emitUnusedFinding(for: name, at: directive.location)
                     continue
                 }
-                emitUnusedFinding(for: name, at: directive.location)
+                // A rule that consulted the mask elsewhere in the file ran and still recorded no
+                // hit here, so the directive is dead. A rule that consulted it nowhere is dead only
+                // when this run dispatches it. Otherwise the configuration switches it off, or the
+                // layout stage owns it, and the directive may be a valid hedge.
+                if queried.contains(name) || context.dispatches(ruleType) {
+                    emitUnusedFinding(for: name, at: directive.location)
+                }
             }
         }
     }

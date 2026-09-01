@@ -156,6 +156,7 @@ package final class Context {
             where configuration.isActive(rule: ruleType)
         {
             enabled.insert(ObjectIdentifier(ruleType))
+
             if configuration.isRewriteActive(rule: ruleType) {
                 rewriteEnabled.insert(ObjectIdentifier(ruleType))
             }
@@ -230,4 +231,20 @@ package final class Context {
 
     /// Returns the configured lint severity for the given rule type.
     func severity<R: SyntaxRule>(of _: R.Type) -> Lint { configuration[R.self].lint }
+
+    /// Whether this run reaches `rule` at every node of the kinds it visits.
+    ///
+    /// True means a `// sm:ignore` directive naming the rule had its chance to record a hit, so a
+    /// directive that recorded none suppressed nothing. False means the configuration switches the
+    /// rule off, or the layout stage owns it and a lint run never reaches that stage. See
+    /// `FlagUnusedIgnoreDirective` , the one caller.
+    ///
+    /// The gate reads `rewriteEnabledRules` because that set equals `enabledRules` in lint mode,
+    /// which is the only mode that emits findings. A format run answers `false` for a rule with
+    /// `rewrite: false` , which under-reports rather than over-reports.
+    func dispatches(_ rule: any SyntaxRule.Type) -> Bool {
+        let identifier = ObjectIdentifier(rule)
+        return rewriteEnabledRules.contains(identifier)
+            && ConfigurationRegistry.nodeDispatchedRuleIDs.contains(identifier)
+    }
 }

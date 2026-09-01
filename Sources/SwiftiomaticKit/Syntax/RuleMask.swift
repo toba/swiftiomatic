@@ -95,10 +95,10 @@ package final class RuleMask {
     /// All directives in source order.
     package private(set) var directives: [IgnoreDirective] = []
 
-    /// Rule keys that were queried via `ruleState` at least once during this run. A rule whose
-    /// configuration disables it entirely (or whose implementation never consults the mask) will
-    /// not appear here — `FlagUnusedIgnoreDirective` uses this set to avoid flagging directives
-    /// that list a known but inactive rule, where the directive may still be a valid hedge.
+    /// Rule keys that were queried via `ruleState` at least once during this run. A rule the
+    /// configuration disables does not appear here, and neither does one whose visited node kinds
+    /// are absent from the file. `FlagUnusedIgnoreDirective` reads the set as proof that a rule
+    /// ran, and asks `Context.dispatches(_:)` about the rules it does not find here.
     package private(set) var queriedRules: Set<String> = []
 
     /// Indices into `directives` for bare `// sm:ignore` (all-rules) directives.

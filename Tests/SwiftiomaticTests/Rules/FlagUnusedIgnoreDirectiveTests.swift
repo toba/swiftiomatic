@@ -51,10 +51,8 @@ struct FlagUnusedIgnoreDirectiveTests: RuleTesting {
     )
   }
 
-  /// A known rule name that the run never actually queries (because it's not enabled, or its
-  /// implementation never reaches `RuleMask.ruleState`) is NOT flagged. The directive may still
-  /// be a valid hedge — we have no signal it's dead. Only typos and rules that DID run elsewhere
-  /// in the file are flagged.
+  /// A known rule the configuration disables is NOT flagged. The rule never runs, so the directive
+  /// may still be a valid hedge for a run that enables it.
   @Test func testKnownRuleNeverQueriedNotFlagged() {
     var config = Configuration.forTesting
     config.disableAllRules()
@@ -64,6 +62,53 @@ struct FlagUnusedIgnoreDirectiveTests: RuleTesting {
       """
       // sm:ignore:next noForceCast
       let x = obj as! Foo
+      """,
+      findings: [],
+      configuration: config
+    )
+  }
+
+  /// An active rule that the pipelines dispatch is flagged even when the file holds no node of the
+  /// kind it visits. `UseUnavailableNotFatalError` transforms `IfExprSyntax` alone, so a file with
+  /// no `if` never queries the mask for it, yet the directive still suppresses nothing.
+  @Test func testActiveRuleWithNoMatchingNodeIsFlagged() {
+    var config = Configuration.forTesting
+    config.disableAllRules()
+    config.enableRule(named: "flagUnusedIgnoreDirective")
+    config.enableRule(named: "useUnavailableNotFatalError")
+    assertLint(
+      FlagUnusedIgnoreDirective.self,
+      """
+      1️⃣// sm:ignore:next useUnavailableNotFatalError
+      func aliased() -> Int {
+        fatalError("export API")
+      }
+      """,
+      findings: [
+        FindingSpec(
+          "1️⃣",
+          message:
+            "'// sm:ignore' lists 'useUnavailableNotFatalError' but it suppresses nothing here; "
+            + "remove it"
+        ),
+      ],
+      configuration: config
+    )
+  }
+
+  /// A rule the layout stage owns is never flagged during a lint run. `ReflowComments` reaches
+  /// source only from the pretty printer, which `sm lint` does not run, so the directive may still
+  /// suppress a rewrite that a format run would make.
+  @Test func testLayoutStageRuleNotFlagged() {
+    var config = Configuration.forTesting
+    config.disableAllRules()
+    config.enableRule(named: "flagUnusedIgnoreDirective")
+    config.enableRule(named: "reflowComments")
+    assertLint(
+      FlagUnusedIgnoreDirective.self,
+      """
+      // sm:ignore:next reflowComments
+      let x = 1
       """,
       findings: [],
       configuration: config

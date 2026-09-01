@@ -24,6 +24,15 @@ package extension ConfigurationRegistry {
     /// Used by `RuleMask` to validate space-separated rule lists in `// sm:ignore` directives.
     static let allRuleKeys: Set<String> = Set(allRuleTypes.map { $0.key })
 
+    /// Lookup from a rule's short key to its type, the reverse of `ruleNameCache` . Used by
+    /// `FlagUnusedIgnoreDirective` to resolve the names a `// sm:ignore` directive lists.
+    internal static let ruleTypesByKey: [String: any SyntaxRule.Type] = Dictionary(
+        uniqueKeysWithValues: allRuleTypes.map { ($0.key, $0) })
+
+    /// Identities of the rules a pipeline dispatches per node, for `Context.dispatches(_:)` .
+    static let nodeDispatchedRuleIDs: Set<ObjectIdentifier> = Set(nodeDispatchedRuleTypes.map(
+        ObjectIdentifier.init))
+
     /// Rules organized by configuration group (values are short keys for JSON encoding).
     static let groupRules: [ConfigurationGroup: [String]] = {
         var groups: [ConfigurationGroup: [String]] = [:]
