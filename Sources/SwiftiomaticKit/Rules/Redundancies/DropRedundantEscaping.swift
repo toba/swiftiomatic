@@ -11,6 +11,10 @@ import SwiftSyntax
 /// silent. Protocol requirements, autoclosure-only edge cases, and parameters referenced inside
 /// nested closures are all assumed to escape.
 ///
+/// A member of a conforming type keeps `@escaping` whenever it may witness a requirement that
+/// declares it. The body of a witness can look non-escaping on its own, and a witness that drops
+/// the attribute no longer satisfies the requirement. See `Witness` and `FileDeclarationIndex` .
+///
 /// Lint: A finding is raised at the `@escaping` attribute.
 ///
 /// Rewrite: The `@escaping` attribute is removed.
@@ -28,9 +32,18 @@ final class DropRedundantEscaping: StaticFormatRule<BasicRuleValue>, @unchecked 
     ) -> DeclSyntax {
         guard !isInsideProtocol(parent: parent), let body = node.body
         else { return DeclSyntax(node) }
+        let isOverride = node.modifiers.contains { $0.name.tokenKind == .keyword(.override) }
+        let witness: Witness = isOverride
+            ? .override
+            : .function(
+                name: node.name.text,
+                parameterCount: node.signature.parameterClause.parameters.count
+            )
         guard let rewritten = rewriteParameterClause(
             node.signature.parameterClause,
             body: body.statements,
+            witness: witness,
+            parent: parent,
             context: context
         ) else { return DeclSyntax(node) }
         var result = node
@@ -49,6 +62,8 @@ final class DropRedundantEscaping: StaticFormatRule<BasicRuleValue>, @unchecked 
         guard let rewritten = rewriteParameterClause(
             node.signature.parameterClause,
             body: body.statements,
+            witness: .initializer(parameterCount: node.signature.parameterClause.parameters.count),
+            parent: parent,
             context: context
         ) else { return DeclSyntax(node) }
         var result = node
@@ -59,26 +74,39 @@ final class DropRedundantEscaping: StaticFormatRule<BasicRuleValue>, @unchecked 
     /// Drop `@escaping` from every parameter the escape check clears.
     ///
     /// One `EscapeChecker` covers the whole parameter clause, so the body is walked once however
-    /// many parameters carry the attribute.
+    /// many parameters carry the attribute. A parameter a requirement protects never reaches the
+    /// checker.
     ///
+    /// - Parameters:
+    ///   - witness: What the function may witness, which decides the protected positions
+    ///   - parent: The node's parent, used to find the type the function belongs to
     /// - Returns: The rewritten clause, or `nil` when no parameter changed
     private static func rewriteParameterClause(
         _ clause: FunctionParameterClauseSyntax,
         body: CodeBlockItemListSyntax,
+        witness: Witness,
+        parent: Syntax?,
         context: Context
     ) -> FunctionParameterClauseSyntax? {
+        var attributed: [Int: (name: String, isAutoclosure: Bool)] = [:]
+
+        for (position, param) in clause.parameters.enumerated() {
+            guard let attributes = param.type.as(AttributedTypeSyntax.self)?.attributes,
+                  attributes.attribute(named: "escaping") != nil else { continue }
+            attributed[position] = (
+                name: (param.secondName ?? param.firstName).text,
+                isAutoclosure: attributes.attribute(named: "autoclosure") != nil
+            )
+        }
+        guard !attributed.isEmpty else { return nil }
+
+        let protected = protectedPositions(witness: witness, parent: parent, context: context)
         var candidates: Set<String> = []
         var autoclosures: Set<String> = []
 
-        for param in clause.parameters {
-            guard let attributedType = param.type.as(AttributedTypeSyntax.self),
-                attribute(named: "escaping", in: attributedType.attributes) != nil else { continue }
-            let name = (param.secondName ?? param.firstName).text
-            candidates.insert(name)
-
-            if attribute(named: "autoclosure", in: attributedType.attributes) != nil {
-                autoclosures.insert(name)
-            }
+        for (position, param) in attributed where !protected.covers(position) {
+            candidates.insert(param.name)
+            if param.isAutoclosure { autoclosures.insert(param.name) }
         }
         guard !candidates.isEmpty else { return nil }
 
@@ -90,12 +118,14 @@ final class DropRedundantEscaping: StaticFormatRule<BasicRuleValue>, @unchecked 
         checker.walk(body)
 
         var changed = false
-        let newParams = clause.parameters.map { param -> FunctionParameterSyntax in
+        let newParams = clause.parameters.enumerated().map {
+            position, param -> FunctionParameterSyntax in
             guard let attributedType = param.type.as(AttributedTypeSyntax.self),
-                let escapingAttr = attribute(named: "escaping", in: attributedType.attributes)
+                let escapingAttr = attributedType.attributes.attribute(named: "escaping")
             else { return param }
             let paramName = (param.secondName ?? param.firstName).text
-            guard !checker.escapedParameters.contains(paramName) else { return param }
+            guard !protected.covers(position),
+                  !checker.escapedParameters.contains(paramName) else { return param }
 
             Self.diagnose(
                 .removeRedundantEscaping(name: paramName),
@@ -123,21 +153,6 @@ final class DropRedundantEscaping: StaticFormatRule<BasicRuleValue>, @unchecked 
         return clause.with(\.parameters, FunctionParameterListSyntax(newParams))
     }
 
-    private static func attribute(
-        named name: String,
-        in list: AttributeListSyntax
-    ) -> AttributeSyntax? {
-        for element in list {
-            guard case let .attribute(attr) = element else { continue }
-            if attributeName(of: attr) == name { return attr }
-        }
-        return nil
-    }
-
-    private static func attributeName(of attr: AttributeSyntax) -> String? {
-        attr.attributeName.as(IdentifierTypeSyntax.self)?.name.text
-    }
-
     private static func isInsideProtocol(parent: Syntax?) -> Bool {
         var current = parent
 
@@ -146,6 +161,132 @@ final class DropRedundantEscaping: StaticFormatRule<BasicRuleValue>, @unchecked 
             current = node.parent
         }
         return false
+    }
+}
+
+// MARK: - Witness Analysis
+
+extension DropRedundantEscaping {
+    /// What a function or an initializer may witness.
+    ///
+    /// An `override` answers a superclass signature this file often does not hold, so it protects
+    /// every parameter.
+    private enum Witness {
+        case function(name: String, parameterCount: Int)
+        case initializer(parameterCount: Int)
+        case override
+
+        /// The requirement this witness answers, or `nil` when no requirement can name it
+        var requirementKey: FileDeclarationIndex.RequirementKey? {
+            switch self {
+                case let .function(name, parameterCount):
+                    FileDeclarationIndex.RequirementKey(name: name, parameterCount: parameterCount)
+                case let .initializer(parameterCount):
+                    FileDeclarationIndex.RequirementKey(
+                        name: "init", parameterCount: parameterCount)
+                case .override: nil
+            }
+        }
+    }
+
+    /// Parameter positions that keep `@escaping` whatever the escape check finds.
+    private enum ProtectedPositions {
+        case none
+        case some(Set<Int>)
+        case all
+
+        func covers(_ position: Int) -> Bool {
+            switch self {
+                case .none: false
+                case let .some(positions): positions.contains(position)
+                case .all: true
+            }
+        }
+    }
+
+    /// Where a declaration sits, from the point of view of conformance.
+    private enum Ownership {
+        /// A top-level or local declaration, which witnesses nothing
+        case free
+        /// A member of a type whose conformance list this file holds
+        case member(conformances: [String])
+        /// A member of a type this file does not declare, so its conformances stay invisible
+        case unresolved
+    }
+
+    /// Conformances whose requirements take no closure parameter. A member of a type that conforms
+    /// only to these cannot witness an `@escaping` requirement through them.
+    private static let closureFreeConformances: Set<String> = [
+        "AnyObject", "BitwiseCopyable", "CaseIterable", "Codable", "Comparable", "Copyable",
+        "CustomDebugStringConvertible", "CustomStringConvertible", "Decodable", "Encodable",
+        "Equatable", "Error", "Escapable", "Hashable", "Identifiable", "RawRepresentable",
+        "Sendable",
+    ]
+
+    /// The positions `witness` protects.
+    ///
+    /// The walk starts at the conformance list of the owning type and follows every inherited name
+    /// this file declares. A name the file does not declare protects every position, because the
+    /// requirement it carries is unreadable from here.
+    private static func protectedPositions(
+        witness: Witness,
+        parent: Syntax?,
+        context: Context
+    ) -> ProtectedPositions {
+        guard let key = witness.requirementKey else { return .all }
+        let index = context.fileDeclarationIndex
+
+        switch ownership(parent: parent, index: index) {
+            case .free: return .none
+            case .unresolved: return .all
+            case let .member(conformances):
+                var positions: Set<Int> = []
+                var pending = conformances
+                var seen: Set<String> = []
+
+                while let name = pending.popLast() {
+                    guard seen.insert(name).inserted else { continue }
+                    if closureFreeConformances.contains(name) { continue }
+
+                    if let entry = index.protocols[name] {
+                        positions.formUnion(entry.requirements[key] ?? [])
+                        pending.append(contentsOf: entry.inherited)
+                        continue
+                    }
+                    guard let inherited = index.conformances[name] else { return .all }
+                    pending.append(contentsOf: inherited)
+                }
+                return positions.isEmpty ? .none : .some(positions)
+        }
+    }
+
+    /// The nearest enclosing type context of `parent` .
+    ///
+    /// A function, an initializer, an accessor or a closure between the declaration and the type
+    /// makes the declaration local, and a local declaration witnesses nothing.
+    private static func ownership(parent: Syntax?, index: FileDeclarationIndex) -> Ownership {
+        var current = parent
+
+        while let node = current {
+            switch node.as(SyntaxEnum.self) {
+                case .functionDecl,
+                     .initializerDecl,
+                     .deinitializerDecl,
+                     .accessorDecl,
+                     .closureExpr,
+                     .subscriptDecl: return .free
+                case .structDecl, .classDecl, .enumDecl, .actorDecl:
+                    let name = node.asProtocol(NamedDeclSyntax.self)?.name.text ?? ""
+                    return .member(conformances: index.conformances[name] ?? [])
+                case let .extensionDecl(decl):
+                    // an extension of a type declared elsewhere hides that type's conformances
+                    guard let name = decl.extendedType.simpleName,
+                          index.concreteTypes.contains(name) else { return .unresolved }
+                    return .member(conformances: index.conformances[name] ?? [])
+                default: current = node.parent
+            }
+        }
+        return .free
     }
 }
 

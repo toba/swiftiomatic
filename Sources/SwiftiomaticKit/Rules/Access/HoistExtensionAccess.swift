@@ -102,6 +102,14 @@ final class HoistExtensionAccess: StructuralFormatRule<ExtensionAccessControlCon
             ? node.attributes.filter(\.isSPIAttribute)
             : []
 
+        // Swift refuses a public member in an extension whose where-clause names an SPI
+        // declaration, so the grant stays where it is. The diagnostic reads "cannot use struct 'X'
+        // in an extension with public or '@usableFromInline' members; it is SPI". Extending an SPI
+        // type carries no such restriction, so only the where-clause is examined.
+        if !spiAttributes.isEmpty, whereClauseMayNameSPIType(node.genericWhereClause) {
+            return DeclSyntax(node)
+        }
+
         var result: ExtensionDeclSyntax
 
         if let keywordToAdd {
@@ -121,6 +129,7 @@ final class HoistExtensionAccess: StructuralFormatRule<ExtensionAccessControlCon
         if !spiAttributes.isEmpty {
             result.attributes = result.attributes.filter { !$0.isSPIAttribute }
         }
+
         if let firstAttribute = result.attributes.first {
             result.attributes[result.attributes.startIndex] = firstAttribute.with(
                 \.leadingTrivia, originalLeadingTrivia)
@@ -128,6 +137,26 @@ final class HoistExtensionAccess: StructuralFormatRule<ExtensionAccessControlCon
             result.extensionKeyword.leadingTrivia = originalLeadingTrivia
         }
         return DeclSyntax(result)
+    }
+
+    // MARK: - SPI constraint guard
+
+    /// Whether any type the where-clause names may carry an `@_spi` grant.
+    ///
+    /// A name this file declares without a grant is safe. Every other name is unresolved and counts
+    /// as unsafe, because the declaration may sit in another file or another module. A generic
+    /// parameter such as `T` resolves nowhere either, so an extension constrained on one keeps its
+    /// grant.
+    private func whereClauseMayNameSPIType(_ clause: GenericWhereClauseSyntax?) -> Bool {
+        guard let clause else { return false }
+        let index = context.fileDeclarationIndex
+
+        // `Self` names the extended type, which Swift allows even when it is SPI
+        for name in TypeNameCollector.names(in: clause) where name != "Self" {
+            if index.spiNames.contains(name) { return true }
+            if !index.declaredNames.contains(name) { return true }
+        }
+        return false
     }
 
     // MARK: - onExtension mode (hoist access from members to extension)
@@ -382,6 +411,29 @@ final class HoistExtensionAccess: StructuralFormatRule<ExtensionAccessControlCon
         }
 
         return DeclSyntax(result)
+    }
+}
+
+// MARK: - File lookups
+
+/// Collects every type name a syntax node mentions.
+private final class TypeNameCollector: SyntaxVisitor {
+    private var names: Set<String> = []
+
+    static func names(in node: some SyntaxProtocol) -> Set<String> {
+        let collector = TypeNameCollector(viewMode: .sourceAccurate)
+        collector.walk(node)
+        return collector.names
+    }
+
+    override func visit(_ node: IdentifierTypeSyntax) -> SyntaxVisitorContinueKind {
+        names.insert(node.name.text)
+        return .visitChildren
+    }
+
+    override func visit(_ node: MemberTypeSyntax) -> SyntaxVisitorContinueKind {
+        names.insert(node.name.text)
+        return .visitChildren
     }
 }
 

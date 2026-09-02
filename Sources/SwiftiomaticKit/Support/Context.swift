@@ -102,6 +102,12 @@ package final class Context {
     lazy var validateTestCasesState = RequireTestFnPrefixOrAttribute.State()
     lazy var layoutSingleLineBodiesState = LayoutSingleLineBodiesState()
 
+    /// What this file declares, keyed by simple name, built on first lookup.
+    ///
+    /// Shared by every rule that has to resolve a name against the file rather than against the
+    /// module, so the walk happens once however many rules read it. See `FileDeclarationIndex` .
+    lazy var fileDeclarationIndex = FileDeclarationIndex(file: sourceFileSyntax)
+
     /// Pre-built `(titlecased, uppercased)` pairs for `UppercaseAcronymsInIdentifiers` , sorted
     /// longest-first so longer acronyms match before shorter substrings. Computed once per file;
     /// reused for every identifier token visited.

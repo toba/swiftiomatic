@@ -10,980 +10,1147 @@
 //
 //===----------------------------------------------------------------------===//
 
-@testable import SwiftiomaticKit
-import SwiftiomaticTestSupport
 import Testing
+import SwiftiomaticTestSupport
+@testable import SwiftiomaticKit
 
 @Suite
 struct HoistExtensionAccessTests: RuleTesting {
-  @Test func extensionDeclarationAccessLevel() {
-    assertFormatting(
-      HoistExtensionAccess.self,
-      input: """
-        1️⃣public extension Foo {
-          2️⃣var x: Bool
-          // Comment 1
-          internal var y: Bool
-          // Comment 2
-          3️⃣static var z: Bool
-          // Comment 3
-          4️⃣static func someFunc() {}
-          5️⃣init() {}
-          6️⃣subscript(index: Int) -> Element {}
-          7️⃣class SomeClass {}
-          8️⃣struct SomeStruct {}
-          9️⃣enum SomeEnum {}
-          🔟typealias Foo = Bar
-        }
-        """,
-      expected: """
-        extension Foo {
-          public var x: Bool
-          // Comment 1
-          internal var y: Bool
-          // Comment 2
-          public static var z: Bool
-          // Comment 3
-          public static func someFunc() {}
-          public init() {}
-          public subscript(index: Int) -> Element {}
-          public class SomeClass {}
-          public struct SomeStruct {}
-          public enum SomeEnum {}
-          public typealias Foo = Bar
-        }
-        """,
-      findings: [
-        FindingSpec(
-          "1️⃣",
-          message: "move this 'public' access modifier to precede each member inside this extension",
-          notes: [
-            NoteSpec("2️⃣", message: "add 'public' access modifier to this declaration"),
-            NoteSpec("3️⃣", message: "add 'public' access modifier to this declaration"),
-            NoteSpec("4️⃣", message: "add 'public' access modifier to this declaration"),
-            NoteSpec("5️⃣", message: "add 'public' access modifier to this declaration"),
-            NoteSpec("6️⃣", message: "add 'public' access modifier to this declaration"),
-            NoteSpec("7️⃣", message: "add 'public' access modifier to this declaration"),
-            NoteSpec("8️⃣", message: "add 'public' access modifier to this declaration"),
-            NoteSpec("9️⃣", message: "add 'public' access modifier to this declaration"),
-            NoteSpec("🔟", message: "add 'public' access modifier to this declaration"),
-          ]
+    @Test func extensionDeclarationAccessLevel() {
+        assertFormatting(
+            HoistExtensionAccess.self,
+            input: """
+                1️⃣public extension Foo {
+                  2️⃣var x: Bool
+                  // Comment 1
+                  internal var y: Bool
+                  // Comment 2
+                  3️⃣static var z: Bool
+                  // Comment 3
+                  4️⃣static func someFunc() {}
+                  5️⃣init() {}
+                  6️⃣subscript(index: Int) -> Element {}
+                  7️⃣class SomeClass {}
+                  8️⃣struct SomeStruct {}
+                  9️⃣enum SomeEnum {}
+                  🔟typealias Foo = Bar
+                }
+                """,
+            expected: """
+                extension Foo {
+                  public var x: Bool
+                  // Comment 1
+                  internal var y: Bool
+                  // Comment 2
+                  public static var z: Bool
+                  // Comment 3
+                  public static func someFunc() {}
+                  public init() {}
+                  public subscript(index: Int) -> Element {}
+                  public class SomeClass {}
+                  public struct SomeStruct {}
+                  public enum SomeEnum {}
+                  public typealias Foo = Bar
+                }
+                """,
+            findings: [
+                FindingSpec(
+                    "1️⃣",
+                    message:
+                        "move this 'public' access modifier to precede each member inside this extension",
+                    notes: [
+                        NoteSpec("2️⃣", message: "add 'public' access modifier to this declaration"),
+                        NoteSpec("3️⃣", message: "add 'public' access modifier to this declaration"),
+                        NoteSpec("4️⃣", message: "add 'public' access modifier to this declaration"),
+                        NoteSpec("5️⃣", message: "add 'public' access modifier to this declaration"),
+                        NoteSpec("6️⃣", message: "add 'public' access modifier to this declaration"),
+                        NoteSpec("7️⃣", message: "add 'public' access modifier to this declaration"),
+                        NoteSpec("8️⃣", message: "add 'public' access modifier to this declaration"),
+                        NoteSpec("9️⃣", message: "add 'public' access modifier to this declaration"),
+                        NoteSpec("🔟", message: "add 'public' access modifier to this declaration"),
+                    ]
+                )
+            ]
         )
-      ]
-    )
-  }
+    }
 
-  @Test func removeRedundantInternal() {
-    assertFormatting(
-      HoistExtensionAccess.self,
-      input: """
-        1️⃣internal extension Bar {
-          var a: Int
-          var b: Int
-        }
-        """,
-      expected: """
-        extension Bar {
-          var a: Int
-          var b: Int
-        }
-        """,
-      findings: [
-        FindingSpec("1️⃣", message: "remove this redundant 'internal' access modifier from this extension")
-      ]
-    )
-  }
-
-  @Test func preservesCommentOnRemovedModifier() {
-    assertFormatting(
-      HoistExtensionAccess.self,
-      input: """
-        /// This doc comment should stick around.
-        1️⃣public extension Foo {
-          3️⃣func f() {}
-          // This should not change.
-          4️⃣func g() {}
-        }
-
-        /// So should this one.
-        2️⃣internal extension Foo {
-          func f() {}
-          // This should not change.
-          func g() {}
-        }
-        """,
-      expected: """
-        /// This doc comment should stick around.
-        extension Foo {
-          public func f() {}
-          // This should not change.
-          public func g() {}
-        }
-
-        /// So should this one.
-        extension Foo {
-          func f() {}
-          // This should not change.
-          func g() {}
-        }
-        """,
-      findings: [
-        FindingSpec(
-          "1️⃣",
-          message: "move this 'public' access modifier to precede each member inside this extension",
-          notes: [
-            NoteSpec("3️⃣", message: "add 'public' access modifier to this declaration"),
-            NoteSpec("4️⃣", message: "add 'public' access modifier to this declaration"),
-          ]
-        ),
-        FindingSpec("2️⃣", message: "remove this redundant 'internal' access modifier from this extension"),
-      ]
-    )
-  }
-
-  @Test func packageAccessLevel() {
-    assertFormatting(
-      HoistExtensionAccess.self,
-      input: """
-        1️⃣package extension Foo {
-          2️⃣func f() {}
-        }
-        """,
-      expected: """
-        extension Foo {
-          package func f() {}
-        }
-        """,
-      findings: [
-        FindingSpec(
-          "1️⃣",
-          message: "move this 'package' access modifier to precede each member inside this extension",
-          notes: [
-            NoteSpec("2️⃣", message: "add 'package' access modifier to this declaration")
-          ]
+    @Test func removeRedundantInternal() {
+        assertFormatting(
+            HoistExtensionAccess.self,
+            input: """
+                1️⃣internal extension Bar {
+                  var a: Int
+                  var b: Int
+                }
+                """,
+            expected: """
+                extension Bar {
+                  var a: Int
+                  var b: Int
+                }
+                """,
+            findings: [
+                FindingSpec(
+                    "1️⃣",
+                    message: "remove this redundant 'internal' access modifier from this extension")
+            ]
         )
-      ]
-    )
-  }
+    }
 
-  @Test func privateIsEffectivelyFileprivate() {
-    assertFormatting(
-      HoistExtensionAccess.self,
-      input: """
-        1️⃣private extension Foo {
-          2️⃣func f() {}
-        }
-        """,
-      expected: """
-        extension Foo {
-          fileprivate func f() {}
-        }
-        """,
-      findings: [
-        FindingSpec(
-          "1️⃣",
-          message:
-            "remove this 'private' access modifier and declare each member inside this extension as 'fileprivate'",
-          notes: [
-            NoteSpec("2️⃣", message: "add 'fileprivate' access modifier to this declaration")
-          ]
+    @Test func preservesCommentOnRemovedModifier() {
+        assertFormatting(
+            HoistExtensionAccess.self,
+            input: """
+                /// This doc comment should stick around.
+                1️⃣public extension Foo {
+                  3️⃣func f() {}
+                  // This should not change.
+                  4️⃣func g() {}
+                }
+
+                /// So should this one.
+                2️⃣internal extension Foo {
+                  func f() {}
+                  // This should not change.
+                  func g() {}
+                }
+                """,
+            expected: """
+                /// This doc comment should stick around.
+                extension Foo {
+                  public func f() {}
+                  // This should not change.
+                  public func g() {}
+                }
+
+                /// So should this one.
+                extension Foo {
+                  func f() {}
+                  // This should not change.
+                  func g() {}
+                }
+                """,
+            findings: [
+                FindingSpec(
+                    "1️⃣",
+                    message:
+                        "move this 'public' access modifier to precede each member inside this extension",
+                    notes: [
+                        NoteSpec("3️⃣", message: "add 'public' access modifier to this declaration"),
+                        NoteSpec("4️⃣", message: "add 'public' access modifier to this declaration"),
+                    ]
+                ),
+                FindingSpec(
+                    "2️⃣",
+                    message: "remove this redundant 'internal' access modifier from this extension"),
+            ]
         )
-      ]
-    )
-  }
+    }
 
-  @Test func extensionWithAnnotation() {
-    assertFormatting(
-      HoistExtensionAccess.self,
-      input: """
-        /// This extension has a comment.
-        @objc 1️⃣public extension Foo {
-        }
-        """,
-      expected: """
-        /// This extension has a comment.
-        @objc extension Foo {
-        }
-        """,
-      findings: [
-        FindingSpec("1️⃣", message: "move this 'public' access modifier to precede each member inside this extension")
-      ]
-    )
-  }
-
-  @Test func preservesInlineAnnotationsBeforeAddedAccessLevelModifiers() {
-    assertFormatting(
-      HoistExtensionAccess.self,
-      input: """
-        /// This extension has a comment.
-        1️⃣public extension Foo {
-          /// This property has a doc comment.
-          2️⃣@objc var x: Bool { get { return true }}
-          // This property has a developer comment.
-          3️⃣@objc static var z: Bool { get { return false }}
-          /// This static function has a doc comment.
-          4️⃣@objc static func someStaticFunc() {}
-          5️⃣@objc init(with foo: Foo) {}
-          6️⃣@objc func someOtherFunc() {}
-          7️⃣@objc class SomeClass : NSObject {}
-          8️⃣@objc typealias SomeType = SomeOtherType
-          9️⃣@objc enum SomeEnum : Int {
-            case SomeInt = 32
-          }
-        }
-        """,
-      expected: """
-        /// This extension has a comment.
-        extension Foo {
-          /// This property has a doc comment.
-          @objc public var x: Bool { get { return true }}
-          // This property has a developer comment.
-          @objc public static var z: Bool { get { return false }}
-          /// This static function has a doc comment.
-          @objc public static func someStaticFunc() {}
-          @objc public init(with foo: Foo) {}
-          @objc public func someOtherFunc() {}
-          @objc public class SomeClass : NSObject {}
-          @objc public typealias SomeType = SomeOtherType
-          @objc public enum SomeEnum : Int {
-            case SomeInt = 32
-          }
-        }
-        """,
-      findings: [
-        FindingSpec(
-          "1️⃣",
-          message: "move this 'public' access modifier to precede each member inside this extension",
-          notes: [
-            NoteSpec("2️⃣", message: "add 'public' access modifier to this declaration"),
-            NoteSpec("3️⃣", message: "add 'public' access modifier to this declaration"),
-            NoteSpec("4️⃣", message: "add 'public' access modifier to this declaration"),
-            NoteSpec("5️⃣", message: "add 'public' access modifier to this declaration"),
-            NoteSpec("6️⃣", message: "add 'public' access modifier to this declaration"),
-            NoteSpec("7️⃣", message: "add 'public' access modifier to this declaration"),
-            NoteSpec("8️⃣", message: "add 'public' access modifier to this declaration"),
-            NoteSpec("9️⃣", message: "add 'public' access modifier to this declaration"),
-          ]
+    @Test func packageAccessLevel() {
+        assertFormatting(
+            HoistExtensionAccess.self,
+            input: """
+                1️⃣package extension Foo {
+                  2️⃣func f() {}
+                }
+                """,
+            expected: """
+                extension Foo {
+                  package func f() {}
+                }
+                """,
+            findings: [
+                FindingSpec(
+                    "1️⃣",
+                    message:
+                        "move this 'package' access modifier to precede each member inside this extension",
+                    notes: [
+                        NoteSpec("2️⃣", message: "add 'package' access modifier to this declaration")
+                    ]
+                )
+            ]
         )
-      ]
-    )
-  }
+    }
 
-  @Test func preservesMultiLineAnnotationsBeforeAddedAccessLevelModifiers() {
-    assertFormatting(
-      HoistExtensionAccess.self,
-      input: """
-        /// This extension has a comment.
-        1️⃣public extension Foo {
-          /// This property has a doc comment.
-          2️⃣@available(iOS 13, *)
-          var x: Bool { get { return true }}
-          // This property has a developer comment.
-          3️⃣@available(iOS 13, *)
-          static var z: Bool { get { return false }}
-          // This static function has a developer comment.
-          4️⃣@objc(someStaticFunction)
-          static func someStaticFunc() {}
-          5️⃣@objc(initWithFoo:)
-          init(with foo: Foo) {}
-          6️⃣@objc
-          func someOtherFunc() {}
-          7️⃣@objc
-          class SomeClass : NSObject {}
-          8️⃣@available(iOS 13, *)
-          typealias SomeType = SomeOtherType
-          9️⃣@objc
-          enum SomeEnum : Int {
-            case SomeInt = 32
-          }
-
-          // This is a doc comment for a multi-argument method.
-          @objc(
-            doSomethingThatIsVeryComplicatedWithThisFoo:
-            forGoodMeasureUsingThisBar:
-            andApplyingThisBaz:
-          )
-          public func doSomething(_ foo : Foo, bar : Bar, baz : Baz) {}
-        }
-        """,
-      expected: """
-        /// This extension has a comment.
-        extension Foo {
-          /// This property has a doc comment.
-          @available(iOS 13, *)
-          public var x: Bool { get { return true }}
-          // This property has a developer comment.
-          @available(iOS 13, *)
-          public static var z: Bool { get { return false }}
-          // This static function has a developer comment.
-          @objc(someStaticFunction)
-          public static func someStaticFunc() {}
-          @objc(initWithFoo:)
-          public init(with foo: Foo) {}
-          @objc
-          public func someOtherFunc() {}
-          @objc
-          public class SomeClass : NSObject {}
-          @available(iOS 13, *)
-          public typealias SomeType = SomeOtherType
-          @objc
-          public enum SomeEnum : Int {
-            case SomeInt = 32
-          }
-
-          // This is a doc comment for a multi-argument method.
-          @objc(
-            doSomethingThatIsVeryComplicatedWithThisFoo:
-            forGoodMeasureUsingThisBar:
-            andApplyingThisBaz:
-          )
-          public func doSomething(_ foo : Foo, bar : Bar, baz : Baz) {}
-        }
-        """,
-      findings: [
-        FindingSpec(
-          "1️⃣",
-          message: "move this 'public' access modifier to precede each member inside this extension",
-          notes: [
-            NoteSpec("2️⃣", message: "add 'public' access modifier to this declaration"),
-            NoteSpec("3️⃣", message: "add 'public' access modifier to this declaration"),
-            NoteSpec("4️⃣", message: "add 'public' access modifier to this declaration"),
-            NoteSpec("5️⃣", message: "add 'public' access modifier to this declaration"),
-            NoteSpec("6️⃣", message: "add 'public' access modifier to this declaration"),
-            NoteSpec("7️⃣", message: "add 'public' access modifier to this declaration"),
-            NoteSpec("8️⃣", message: "add 'public' access modifier to this declaration"),
-            NoteSpec("9️⃣", message: "add 'public' access modifier to this declaration"),
-          ]
+    @Test func privateIsEffectivelyFileprivate() {
+        assertFormatting(
+            HoistExtensionAccess.self,
+            input: """
+                1️⃣private extension Foo {
+                  2️⃣func f() {}
+                }
+                """,
+            expected: """
+                extension Foo {
+                  fileprivate func f() {}
+                }
+                """,
+            findings: [
+                FindingSpec(
+                    "1️⃣",
+                    message:
+                        "remove this 'private' access modifier and declare each member inside this extension as 'fileprivate'",
+                    notes: [
+                        NoteSpec(
+                            "2️⃣", message: "add 'fileprivate' access modifier to this declaration")
+                    ]
+                )
+            ]
         )
-      ]
-    )
-  }
+    }
 
-  @Test func ifConfigMembers() {
-    assertFormatting(
-      HoistExtensionAccess.self,
-      input: """
-        1️⃣public extension Foo {
-          #if os(macOS)
-            2️⃣var x: Bool
-          #else
-            3️⃣var y: String
-          #endif
-        }
-        """,
-      expected: """
-        extension Foo {
-          #if os(macOS)
-            public var x: Bool
-          #else
-            public var y: String
-          #endif
-        }
-        """,
-      findings: [
-        FindingSpec(
-          "1️⃣",
-          message: "move this 'public' access modifier to precede each member inside this extension",
-          notes: [
-            NoteSpec("2️⃣", message: "add 'public' access modifier to this declaration"),
-            NoteSpec("3️⃣", message: "add 'public' access modifier to this declaration"),
-          ]
+    @Test func extensionWithAnnotation() {
+        assertFormatting(
+            HoistExtensionAccess.self,
+            input: """
+                /// This extension has a comment.
+                @objc 1️⃣public extension Foo {
+                }
+                """,
+            expected: """
+                /// This extension has a comment.
+                @objc extension Foo {
+                }
+                """,
+            findings: [
+                FindingSpec(
+                    "1️⃣",
+                    message:
+                        "move this 'public' access modifier to precede each member inside this extension"
+                )
+            ]
         )
-      ]
-    )
-  }
+    }
 
-  @Test func nestedExtensionsAreIgnored() {
-    assertFormatting(
-      HoistExtensionAccess.self,
-      input: """
-        1️⃣public extension Foo {
-          2️⃣var x: Bool
-          extension Bar {
-            var y: String
-          }
-          private extension Baz {
-            var y: String
-          }
-          3️⃣var z: Float
-        }
-        """,
-      expected: """
-        extension Foo {
-          public var x: Bool
-          extension Bar {
-            var y: String
-          }
-          private extension Baz {
-            var y: String
-          }
-          public var z: Float
-        }
-        """,
-      findings: [
-        FindingSpec(
-          "1️⃣",
-          message: "move this 'public' access modifier to precede each member inside this extension",
-          notes: [
-            NoteSpec("2️⃣", message: "add 'public' access modifier to this declaration"),
-            NoteSpec("3️⃣", message: "add 'public' access modifier to this declaration"),
-          ]
+    @Test func preservesInlineAnnotationsBeforeAddedAccessLevelModifiers() {
+        assertFormatting(
+            HoistExtensionAccess.self,
+            input: """
+                /// This extension has a comment.
+                1️⃣public extension Foo {
+                  /// This property has a doc comment.
+                  2️⃣@objc var x: Bool { get { return true }}
+                  // This property has a developer comment.
+                  3️⃣@objc static var z: Bool { get { return false }}
+                  /// This static function has a doc comment.
+                  4️⃣@objc static func someStaticFunc() {}
+                  5️⃣@objc init(with foo: Foo) {}
+                  6️⃣@objc func someOtherFunc() {}
+                  7️⃣@objc class SomeClass : NSObject {}
+                  8️⃣@objc typealias SomeType = SomeOtherType
+                  9️⃣@objc enum SomeEnum : Int {
+                    case SomeInt = 32
+                  }
+                }
+                """,
+            expected: """
+                /// This extension has a comment.
+                extension Foo {
+                  /// This property has a doc comment.
+                  @objc public var x: Bool { get { return true }}
+                  // This property has a developer comment.
+                  @objc public static var z: Bool { get { return false }}
+                  /// This static function has a doc comment.
+                  @objc public static func someStaticFunc() {}
+                  @objc public init(with foo: Foo) {}
+                  @objc public func someOtherFunc() {}
+                  @objc public class SomeClass : NSObject {}
+                  @objc public typealias SomeType = SomeOtherType
+                  @objc public enum SomeEnum : Int {
+                    case SomeInt = 32
+                  }
+                }
+                """,
+            findings: [
+                FindingSpec(
+                    "1️⃣",
+                    message:
+                        "move this 'public' access modifier to precede each member inside this extension",
+                    notes: [
+                        NoteSpec("2️⃣", message: "add 'public' access modifier to this declaration"),
+                        NoteSpec("3️⃣", message: "add 'public' access modifier to this declaration"),
+                        NoteSpec("4️⃣", message: "add 'public' access modifier to this declaration"),
+                        NoteSpec("5️⃣", message: "add 'public' access modifier to this declaration"),
+                        NoteSpec("6️⃣", message: "add 'public' access modifier to this declaration"),
+                        NoteSpec("7️⃣", message: "add 'public' access modifier to this declaration"),
+                        NoteSpec("8️⃣", message: "add 'public' access modifier to this declaration"),
+                        NoteSpec("9️⃣", message: "add 'public' access modifier to this declaration"),
+                    ]
+                )
+            ]
         )
-      ]
-    )
-  }
+    }
 
-  @Test func nestedProtocolTakesAccessLevelInsteadOfItsRequirements() {
-    // A protocol's requirements implicitly have the protocol's access level and it is an error to
-    // state one explicitly, so the keyword has to land on the protocol itself.
-    assertFormatting(
-      HoistExtensionAccess.self,
-      input: """
-        1️⃣public extension Namespace {
-          2️⃣protocol Boundary: Sendable {
-            associatedtype Value
-            var name: String { get }
-            func work()
-          }
-        }
-        """,
-      expected: """
-        extension Namespace {
-          public protocol Boundary: Sendable {
-            associatedtype Value
-            var name: String { get }
-            func work()
-          }
-        }
-        """,
-      findings: [
-        FindingSpec(
-          "1️⃣",
-          message: "move this 'public' access modifier to precede each member inside this extension",
-          notes: [
-            NoteSpec("2️⃣", message: "add 'public' access modifier to this declaration")
-          ]
+    @Test func preservesMultiLineAnnotationsBeforeAddedAccessLevelModifiers() {
+        assertFormatting(
+            HoistExtensionAccess.self,
+            input: """
+                /// This extension has a comment.
+                1️⃣public extension Foo {
+                  /// This property has a doc comment.
+                  2️⃣@available(iOS 13, *)
+                  var x: Bool { get { return true }}
+                  // This property has a developer comment.
+                  3️⃣@available(iOS 13, *)
+                  static var z: Bool { get { return false }}
+                  // This static function has a developer comment.
+                  4️⃣@objc(someStaticFunction)
+                  static func someStaticFunc() {}
+                  5️⃣@objc(initWithFoo:)
+                  init(with foo: Foo) {}
+                  6️⃣@objc
+                  func someOtherFunc() {}
+                  7️⃣@objc
+                  class SomeClass : NSObject {}
+                  8️⃣@available(iOS 13, *)
+                  typealias SomeType = SomeOtherType
+                  9️⃣@objc
+                  enum SomeEnum : Int {
+                    case SomeInt = 32
+                  }
+
+                  // This is a doc comment for a multi-argument method.
+                  @objc(
+                    doSomethingThatIsVeryComplicatedWithThisFoo:
+                    forGoodMeasureUsingThisBar:
+                    andApplyingThisBaz:
+                  )
+                  public func doSomething(_ foo : Foo, bar : Bar, baz : Baz) {}
+                }
+                """,
+            expected: """
+                /// This extension has a comment.
+                extension Foo {
+                  /// This property has a doc comment.
+                  @available(iOS 13, *)
+                  public var x: Bool { get { return true }}
+                  // This property has a developer comment.
+                  @available(iOS 13, *)
+                  public static var z: Bool { get { return false }}
+                  // This static function has a developer comment.
+                  @objc(someStaticFunction)
+                  public static func someStaticFunc() {}
+                  @objc(initWithFoo:)
+                  public init(with foo: Foo) {}
+                  @objc
+                  public func someOtherFunc() {}
+                  @objc
+                  public class SomeClass : NSObject {}
+                  @available(iOS 13, *)
+                  public typealias SomeType = SomeOtherType
+                  @objc
+                  public enum SomeEnum : Int {
+                    case SomeInt = 32
+                  }
+
+                  // This is a doc comment for a multi-argument method.
+                  @objc(
+                    doSomethingThatIsVeryComplicatedWithThisFoo:
+                    forGoodMeasureUsingThisBar:
+                    andApplyingThisBaz:
+                  )
+                  public func doSomething(_ foo : Foo, bar : Bar, baz : Baz) {}
+                }
+                """,
+            findings: [
+                FindingSpec(
+                    "1️⃣",
+                    message:
+                        "move this 'public' access modifier to precede each member inside this extension",
+                    notes: [
+                        NoteSpec("2️⃣", message: "add 'public' access modifier to this declaration"),
+                        NoteSpec("3️⃣", message: "add 'public' access modifier to this declaration"),
+                        NoteSpec("4️⃣", message: "add 'public' access modifier to this declaration"),
+                        NoteSpec("5️⃣", message: "add 'public' access modifier to this declaration"),
+                        NoteSpec("6️⃣", message: "add 'public' access modifier to this declaration"),
+                        NoteSpec("7️⃣", message: "add 'public' access modifier to this declaration"),
+                        NoteSpec("8️⃣", message: "add 'public' access modifier to this declaration"),
+                        NoteSpec("9️⃣", message: "add 'public' access modifier to this declaration"),
+                    ]
+                )
+            ]
         )
-      ]
-    )
-  }
+    }
 
-  @Test func nestedProtocolWithExplicitAccessLevelIsLeftAlone() {
-    assertFormatting(
-      HoistExtensionAccess.self,
-      input: """
-        1️⃣public extension Foo {
-          private protocol P {
-            func f()
-          }
-          2️⃣func g() {}
-        }
-        """,
-      expected: """
-        extension Foo {
-          private protocol P {
-            func f()
-          }
-          public func g() {}
-        }
-        """,
-      findings: [
-        FindingSpec(
-          "1️⃣",
-          message: "move this 'public' access modifier to precede each member inside this extension",
-          notes: [
-            NoteSpec("2️⃣", message: "add 'public' access modifier to this declaration")
-          ]
+    @Test func ifConfigMembers() {
+        assertFormatting(
+            HoistExtensionAccess.self,
+            input: """
+                1️⃣public extension Foo {
+                  #if os(macOS)
+                    2️⃣var x: Bool
+                  #else
+                    3️⃣var y: String
+                  #endif
+                }
+                """,
+            expected: """
+                extension Foo {
+                  #if os(macOS)
+                    public var x: Bool
+                  #else
+                    public var y: String
+                  #endif
+                }
+                """,
+            findings: [
+                FindingSpec(
+                    "1️⃣",
+                    message:
+                        "move this 'public' access modifier to precede each member inside this extension",
+                    notes: [
+                        NoteSpec("2️⃣", message: "add 'public' access modifier to this declaration"),
+                        NoteSpec("3️⃣", message: "add 'public' access modifier to this declaration"),
+                    ]
+                )
+            ]
         )
-      ]
-    )
-  }
+    }
 
-  @Test func nestedProtocolInPrivateExtensionBecomesFileprivate() {
-    assertFormatting(
-      HoistExtensionAccess.self,
-      input: """
-        1️⃣private extension Foo {
-          2️⃣protocol P {
-            func f()
-          }
-        }
-        """,
-      expected: """
-        extension Foo {
-          fileprivate protocol P {
-            func f()
-          }
-        }
-        """,
-      findings: [
-        FindingSpec(
-          "1️⃣",
-          message:
-            "remove this 'private' access modifier and declare each member inside this extension as 'fileprivate'",
-          notes: [
-            NoteSpec("2️⃣", message: "add 'fileprivate' access modifier to this declaration")
-          ]
+    @Test func nestedExtensionsAreIgnored() {
+        assertFormatting(
+            HoistExtensionAccess.self,
+            input: """
+                1️⃣public extension Foo {
+                  2️⃣var x: Bool
+                  extension Bar {
+                    var y: String
+                  }
+                  private extension Baz {
+                    var y: String
+                  }
+                  3️⃣var z: Float
+                }
+                """,
+            expected: """
+                extension Foo {
+                  public var x: Bool
+                  extension Bar {
+                    var y: String
+                  }
+                  private extension Baz {
+                    var y: String
+                  }
+                  public var z: Float
+                }
+                """,
+            findings: [
+                FindingSpec(
+                    "1️⃣",
+                    message:
+                        "move this 'public' access modifier to precede each member inside this extension",
+                    notes: [
+                        NoteSpec("2️⃣", message: "add 'public' access modifier to this declaration"),
+                        NoteSpec("3️⃣", message: "add 'public' access modifier to this declaration"),
+                    ]
+                )
+            ]
         )
-      ]
-    )
-  }
+    }
 
-  @Test func spiAttributeIsMovedToNestedProtocol() {
-    assertFormatting(
-      HoistExtensionAccess.self,
-      input: """
-        @_spi(Something) 1️⃣public extension Foo {
-          2️⃣protocol P {
-            func f()
-          }
-        }
-        """,
-      expected: """
-        extension Foo {
-          @_spi(Something) public protocol P {
-            func f()
-          }
-        }
-        """,
-      findings: [
-        FindingSpec(
-          "1️⃣",
-          message: "move this 'public' access modifier to precede each member inside this extension",
-          notes: [
-            NoteSpec("2️⃣", message: "add 'public' access modifier to this declaration")
-          ]
+    @Test func nestedProtocolTakesAccessLevelInsteadOfItsRequirements() {
+        // A protocol's requirements implicitly have the protocol's access level and it is an error
+        // to state one explicitly, so the keyword has to land on the protocol itself.
+        assertFormatting(
+            HoistExtensionAccess.self,
+            input: """
+                1️⃣public extension Namespace {
+                  2️⃣protocol Boundary: Sendable {
+                    associatedtype Value
+                    var name: String { get }
+                    func work()
+                  }
+                }
+                """,
+            expected: """
+                extension Namespace {
+                  public protocol Boundary: Sendable {
+                    associatedtype Value
+                    var name: String { get }
+                    func work()
+                  }
+                }
+                """,
+            findings: [
+                FindingSpec(
+                    "1️⃣",
+                    message:
+                        "move this 'public' access modifier to precede each member inside this extension",
+                    notes: [
+                        NoteSpec("2️⃣", message: "add 'public' access modifier to this declaration")
+                    ]
+                )
+            ]
         )
-      ]
-    )
-  }
+    }
 
-  // MARK: - onExtension mode
-
-  private func onExtensionConfig() -> Configuration {
-    var config = Configuration.forTesting(enabledRule: HoistExtensionAccess.self.key)
-    config[HoistExtensionAccess.self].placement = .onExtension
-    return config
-  }
-
-  @Test func hoistPublicToExtension() {
-    assertFormatting(
-      HoistExtensionAccess.self,
-      input: """
-        1️⃣extension Foo {
-          2️⃣public func bar() {}
-          3️⃣public func baz() {}
-        }
-        """,
-      expected: """
-        public extension Foo {
-          func bar() {}
-          func baz() {}
-        }
-        """,
-      findings: [
-        FindingSpec(
-          "1️⃣",
-          message: "hoist 'public' access modifier from members to this extension",
-          notes: [
-            NoteSpec("2️⃣", message: "remove 'public' access modifier from this declaration"),
-            NoteSpec("3️⃣", message: "remove 'public' access modifier from this declaration"),
-          ]
+    @Test func nestedProtocolWithExplicitAccessLevelIsLeftAlone() {
+        assertFormatting(
+            HoistExtensionAccess.self,
+            input: """
+                1️⃣public extension Foo {
+                  private protocol P {
+                    func f()
+                  }
+                  2️⃣func g() {}
+                }
+                """,
+            expected: """
+                extension Foo {
+                  private protocol P {
+                    func f()
+                  }
+                  public func g() {}
+                }
+                """,
+            findings: [
+                FindingSpec(
+                    "1️⃣",
+                    message:
+                        "move this 'public' access modifier to precede each member inside this extension",
+                    notes: [
+                        NoteSpec("2️⃣", message: "add 'public' access modifier to this declaration")
+                    ]
+                )
+            ]
         )
-      ],
-      configuration: onExtensionConfig()
-    )
-  }
+    }
 
-  @Test func hoistFromNestedProtocolButNotItsRequirements() {
-    assertFormatting(
-      HoistExtensionAccess.self,
-      input: """
-        1️⃣extension Foo {
-          2️⃣public protocol P {
-            func f()
-          }
-          3️⃣public func g() {}
-        }
-        """,
-      expected: """
-        public extension Foo {
-          protocol P {
-            func f()
-          }
-          func g() {}
-        }
-        """,
-      findings: [
-        FindingSpec(
-          "1️⃣",
-          message: "hoist 'public' access modifier from members to this extension",
-          notes: [
-            NoteSpec("2️⃣", message: "remove 'public' access modifier from this declaration"),
-            NoteSpec("3️⃣", message: "remove 'public' access modifier from this declaration"),
-          ]
+    @Test func nestedProtocolInPrivateExtensionBecomesFileprivate() {
+        assertFormatting(
+            HoistExtensionAccess.self,
+            input: """
+                1️⃣private extension Foo {
+                  2️⃣protocol P {
+                    func f()
+                  }
+                }
+                """,
+            expected: """
+                extension Foo {
+                  fileprivate protocol P {
+                    func f()
+                  }
+                }
+                """,
+            findings: [
+                FindingSpec(
+                    "1️⃣",
+                    message:
+                        "remove this 'private' access modifier and declare each member inside this extension as 'fileprivate'",
+                    notes: [
+                        NoteSpec(
+                            "2️⃣", message: "add 'fileprivate' access modifier to this declaration")
+                    ]
+                )
+            ]
         )
-      ],
-      configuration: onExtensionConfig()
-    )
-  }
+    }
 
-  @Test func hoistFileprivateToExtension() {
-    assertFormatting(
-      HoistExtensionAccess.self,
-      input: """
-        1️⃣extension Foo {
-          2️⃣fileprivate var x: Int { 1 }
-          3️⃣fileprivate var y: Int { 2 }
-        }
-        """,
-      expected: """
-        fileprivate extension Foo {
-          var x: Int { 1 }
-          var y: Int { 2 }
-        }
-        """,
-      findings: [
-        FindingSpec(
-          "1️⃣",
-          message: "hoist 'fileprivate' access modifier from members to this extension",
-          notes: [
-            NoteSpec("2️⃣", message: "remove 'fileprivate' access modifier from this declaration"),
-            NoteSpec("3️⃣", message: "remove 'fileprivate' access modifier from this declaration"),
-          ]
+    @Test func spiAttributeIsMovedToNestedProtocol() {
+        assertFormatting(
+            HoistExtensionAccess.self,
+            input: """
+                @_spi(Something) 1️⃣public extension Foo {
+                  2️⃣protocol P {
+                    func f()
+                  }
+                }
+                """,
+            expected: """
+                extension Foo {
+                  @_spi(Something) public protocol P {
+                    func f()
+                  }
+                }
+                """,
+            findings: [
+                FindingSpec(
+                    "1️⃣",
+                    message:
+                        "move this 'public' access modifier to precede each member inside this extension",
+                    notes: [
+                        NoteSpec("2️⃣", message: "add 'public' access modifier to this declaration")
+                    ]
+                )
+            ]
         )
-      ],
-      configuration: onExtensionConfig()
-    )
-  }
+    }
 
-  @Test func hoistPackageToExtension() {
-    assertFormatting(
-      HoistExtensionAccess.self,
-      input: """
-        1️⃣extension Foo {
-          2️⃣package func bar() {}
-        }
-        """,
-      expected: """
-        package extension Foo {
-          func bar() {}
-        }
-        """,
-      findings: [
-        FindingSpec(
-          "1️⃣",
-          message: "hoist 'package' access modifier from members to this extension",
-          notes: [
-            NoteSpec("2️⃣", message: "remove 'package' access modifier from this declaration"),
-          ]
+    // MARK: - onExtension mode
+
+    private func onExtensionConfig() -> Configuration {
+        var config = Configuration.forTesting(enabledRule: HoistExtensionAccess.self.key)
+        config[HoistExtensionAccess.self].placement = .onExtension
+        return config
+    }
+
+    @Test func hoistPublicToExtension() {
+        assertFormatting(
+            HoistExtensionAccess.self,
+            input: """
+                1️⃣extension Foo {
+                  2️⃣public func bar() {}
+                  3️⃣public func baz() {}
+                }
+                """,
+            expected: """
+                public extension Foo {
+                  func bar() {}
+                  func baz() {}
+                }
+                """,
+            findings: [
+                FindingSpec(
+                    "1️⃣",
+                    message: "hoist 'public' access modifier from members to this extension",
+                    notes: [
+                        NoteSpec(
+                            "2️⃣", message: "remove 'public' access modifier from this declaration"),
+                        NoteSpec(
+                            "3️⃣", message: "remove 'public' access modifier from this declaration"),
+                    ]
+                )
+            ],
+            configuration: onExtensionConfig()
         )
-      ],
-      configuration: onExtensionConfig()
-    )
-  }
+    }
 
-  @Test func mixedAccessLevelsNotHoisted() {
-    assertFormatting(
-      HoistExtensionAccess.self,
-      input: """
-        extension Foo {
-          public func bar() {}
-          private func baz() {}
-        }
-        """,
-      expected: """
-        extension Foo {
-          public func bar() {}
-          private func baz() {}
-        }
-        """,
-      findings: [],
-      configuration: onExtensionConfig()
-    )
-  }
-
-  @Test func noExplicitAccessNotHoisted() {
-    assertFormatting(
-      HoistExtensionAccess.self,
-      input: """
-        extension Foo {
-          func bar() {}
-          func baz() {}
-        }
-        """,
-      expected: """
-        extension Foo {
-          func bar() {}
-          func baz() {}
-        }
-        """,
-      findings: [],
-      configuration: onExtensionConfig()
-    )
-  }
-
-  @Test func privateNotHoisted() {
-    assertFormatting(
-      HoistExtensionAccess.self,
-      input: """
-        extension Foo {
-          private func bar() {}
-          private func baz() {}
-        }
-        """,
-      expected: """
-        extension Foo {
-          private func bar() {}
-          private func baz() {}
-        }
-        """,
-      findings: [],
-      configuration: onExtensionConfig()
-    )
-  }
-
-  @Test func internalNotHoisted() {
-    assertFormatting(
-      HoistExtensionAccess.self,
-      input: """
-        extension Foo {
-          internal func bar() {}
-          internal func baz() {}
-        }
-        """,
-      expected: """
-        extension Foo {
-          internal func bar() {}
-          internal func baz() {}
-        }
-        """,
-      findings: [],
-      configuration: onExtensionConfig()
-    )
-  }
-
-  @Test func extensionAlreadyHasAccessLevelUnchanged() {
-    assertFormatting(
-      HoistExtensionAccess.self,
-      input: """
-        public extension Foo {
-          func bar() {}
-        }
-        """,
-      expected: """
-        public extension Foo {
-          func bar() {}
-        }
-        """,
-      findings: [],
-      configuration: onExtensionConfig()
-    )
-  }
-
-  @Test func hoistPreservesOtherModifiers() {
-    assertFormatting(
-      HoistExtensionAccess.self,
-      input: """
-        1️⃣extension Foo {
-          2️⃣@objc public static func bar() {}
-          3️⃣@objc public func baz() {}
-        }
-        """,
-      expected: """
-        public extension Foo {
-          @objc static func bar() {}
-          @objc func baz() {}
-        }
-        """,
-      findings: [
-        FindingSpec(
-          "1️⃣",
-          message: "hoist 'public' access modifier from members to this extension",
-          notes: [
-            NoteSpec("2️⃣", message: "remove 'public' access modifier from this declaration"),
-            NoteSpec("3️⃣", message: "remove 'public' access modifier from this declaration"),
-          ]
+    @Test func hoistFromNestedProtocolButNotItsRequirements() {
+        assertFormatting(
+            HoistExtensionAccess.self,
+            input: """
+                1️⃣extension Foo {
+                  2️⃣public protocol P {
+                    func f()
+                  }
+                  3️⃣public func g() {}
+                }
+                """,
+            expected: """
+                public extension Foo {
+                  protocol P {
+                    func f()
+                  }
+                  func g() {}
+                }
+                """,
+            findings: [
+                FindingSpec(
+                    "1️⃣",
+                    message: "hoist 'public' access modifier from members to this extension",
+                    notes: [
+                        NoteSpec(
+                            "2️⃣", message: "remove 'public' access modifier from this declaration"),
+                        NoteSpec(
+                            "3️⃣", message: "remove 'public' access modifier from this declaration"),
+                    ]
+                )
+            ],
+            configuration: onExtensionConfig()
         )
-      ],
-      configuration: onExtensionConfig()
-    )
-  }
+    }
 
-  @Test func protocolConformanceExtensionNotHoisted() {
-    assertFormatting(
-      HoistExtensionAccess.self,
-      input: """
-        extension JSONValue: Codable {
-          package init(from decoder: any Decoder) throws {}
-          package func encode(to encoder: any Encoder) throws {}
-        }
-        """,
-      expected: """
-        extension JSONValue: Codable {
-          package init(from decoder: any Decoder) throws {}
-          package func encode(to encoder: any Encoder) throws {}
-        }
-        """,
-      findings: [],
-      configuration: onExtensionConfig()
-    )
-  }
-
-  @Test func ifConfigBlocksPreventsHoist() {
-    assertFormatting(
-      HoistExtensionAccess.self,
-      input: """
-        extension Foo {
-          #if os(macOS)
-            public func bar() {}
-          #endif
-        }
-        """,
-      expected: """
-        extension Foo {
-          #if os(macOS)
-            public func bar() {}
-          #endif
-        }
-        """,
-      findings: [],
-      configuration: onExtensionConfig()
-    )
-  }
-
-  // MARK: - @_spi attribute handling (swift-format #1211 / fixes #714)
-
-  @Test func spiAttributeIsMovedToMembers() {
-    // An `@_spi` attribute on an extension applies to the members the same way the access level
-    // does, so it has to move down to each member alongside the access level keyword.
-    assertFormatting(
-      HoistExtensionAccess.self,
-      input: """
-        @_spi(Something) 1️⃣public extension Foo {
-          2️⃣var bar: String { "" }
-        }
-        """,
-      expected: """
-        extension Foo {
-          @_spi(Something) public var bar: String { "" }
-        }
-        """,
-      findings: [
-        FindingSpec(
-          "1️⃣",
-          message: "move this 'public' access modifier to precede each member inside this extension",
-          notes: [
-            NoteSpec("2️⃣", message: "add 'public' access modifier to this declaration")
-          ]
+    @Test func hoistFileprivateToExtension() {
+        assertFormatting(
+            HoistExtensionAccess.self,
+            input: """
+                1️⃣extension Foo {
+                  2️⃣fileprivate var x: Int { 1 }
+                  3️⃣fileprivate var y: Int { 2 }
+                }
+                """,
+            expected: """
+                fileprivate extension Foo {
+                  var x: Int { 1 }
+                  var y: Int { 2 }
+                }
+                """,
+            findings: [
+                FindingSpec(
+                    "1️⃣",
+                    message: "hoist 'fileprivate' access modifier from members to this extension",
+                    notes: [
+                        NoteSpec(
+                            "2️⃣",
+                            message: "remove 'fileprivate' access modifier from this declaration"),
+                        NoteSpec(
+                            "3️⃣",
+                            message: "remove 'fileprivate' access modifier from this declaration"),
+                    ]
+                )
+            ],
+            configuration: onExtensionConfig()
         )
-      ]
-    )
-  }
+    }
 
-  @Test func multipleSPIAttributesAreMovedToMembers() {
-    assertFormatting(
-      HoistExtensionAccess.self,
-      input: """
-        @_spi(Foo) @_spi(Bar) 1️⃣public extension Baz {
-          2️⃣func f() {}
-          3️⃣func g() {}
-        }
-        """,
-      expected: """
-        extension Baz {
-          @_spi(Foo) @_spi(Bar) public func f() {}
-          @_spi(Foo) @_spi(Bar) public func g() {}
-        }
-        """,
-      findings: [
-        FindingSpec(
-          "1️⃣",
-          message: "move this 'public' access modifier to precede each member inside this extension",
-          notes: [
-            NoteSpec("2️⃣", message: "add 'public' access modifier to this declaration"),
-            NoteSpec("3️⃣", message: "add 'public' access modifier to this declaration"),
-          ]
+    @Test func hoistPackageToExtension() {
+        assertFormatting(
+            HoistExtensionAccess.self,
+            input: """
+                1️⃣extension Foo {
+                  2️⃣package func bar() {}
+                }
+                """,
+            expected: """
+                package extension Foo {
+                  func bar() {}
+                }
+                """,
+            findings: [
+                FindingSpec(
+                    "1️⃣",
+                    message: "hoist 'package' access modifier from members to this extension",
+                    notes: [
+                        NoteSpec(
+                            "2️⃣", message: "remove 'package' access modifier from this declaration")
+                    ]
+                )
+            ],
+            configuration: onExtensionConfig()
         )
-      ]
-    )
-  }
+    }
 
-  @Test func spiAttributeMovesButOtherAttributesStayOnExtension() {
-    // `@objc` belongs on the extension and should be left in place, while `@_spi` moves down to
-    // the members.
-    assertFormatting(
-      HoistExtensionAccess.self,
-      input: """
-        @objc @_spi(Something) 1️⃣public extension Foo {
-          2️⃣func f() {}
-        }
-        """,
-      expected: """
-        @objc extension Foo {
-          @_spi(Something) public func f() {}
-        }
-        """,
-      findings: [
-        FindingSpec(
-          "1️⃣",
-          message: "move this 'public' access modifier to precede each member inside this extension",
-          notes: [
-            NoteSpec("2️⃣", message: "add 'public' access modifier to this declaration")
-          ]
+    @Test func mixedAccessLevelsNotHoisted() {
+        assertFormatting(
+            HoistExtensionAccess.self,
+            input: """
+                extension Foo {
+                  public func bar() {}
+                  private func baz() {}
+                }
+                """,
+            expected: """
+                extension Foo {
+                  public func bar() {}
+                  private func baz() {}
+                }
+                """,
+            findings: [],
+            configuration: onExtensionConfig()
         )
-      ]
-    )
-  }
+    }
 
-  @Test func spiAttributeIsPlacedBeforeExistingMemberAttributes() {
-    assertFormatting(
-      HoistExtensionAccess.self,
-      input: """
-        @_spi(Something) 1️⃣public extension Foo {
-          /// This member has a doc comment.
-          2️⃣@objc var bar: String { "" }
-        }
-        """,
-      expected: """
-        extension Foo {
-          /// This member has a doc comment.
-          @_spi(Something) @objc public var bar: String { "" }
-        }
-        """,
-      findings: [
-        FindingSpec(
-          "1️⃣",
-          message: "move this 'public' access modifier to precede each member inside this extension",
-          notes: [
-            NoteSpec("2️⃣", message: "add 'public' access modifier to this declaration")
-          ]
+    @Test func noExplicitAccessNotHoisted() {
+        assertFormatting(
+            HoistExtensionAccess.self,
+            input: """
+                extension Foo {
+                  func bar() {}
+                  func baz() {}
+                }
+                """,
+            expected: """
+                extension Foo {
+                  func bar() {}
+                  func baz() {}
+                }
+                """,
+            findings: [],
+            configuration: onExtensionConfig()
         )
-      ]
-    )
-  }
+    }
 
-  @Test func spiAttributePreservedOnExtensionWhenAccessLevelIsRedundant() {
-    // When the access level is `internal` it is simply removed and the members are left
-    // untouched, so a `@_spi` attribute has nothing to attach to and stays on the extension.
-    assertFormatting(
-      HoistExtensionAccess.self,
-      input: """
-        @_spi(Something) 1️⃣internal extension Foo {
-          func f() {}
-        }
-        """,
-      expected: """
-        @_spi(Something) extension Foo {
-          func f() {}
-        }
-        """,
-      findings: [
-        FindingSpec(
-          "1️⃣",
-          message: "remove this redundant 'internal' access modifier from this extension"
+    @Test func privateNotHoisted() {
+        assertFormatting(
+            HoistExtensionAccess.self,
+            input: """
+                extension Foo {
+                  private func bar() {}
+                  private func baz() {}
+                }
+                """,
+            expected: """
+                extension Foo {
+                  private func bar() {}
+                  private func baz() {}
+                }
+                """,
+            findings: [],
+            configuration: onExtensionConfig()
         )
-      ]
-    )
-  }
+    }
+
+    @Test func internalNotHoisted() {
+        assertFormatting(
+            HoistExtensionAccess.self,
+            input: """
+                extension Foo {
+                  internal func bar() {}
+                  internal func baz() {}
+                }
+                """,
+            expected: """
+                extension Foo {
+                  internal func bar() {}
+                  internal func baz() {}
+                }
+                """,
+            findings: [],
+            configuration: onExtensionConfig()
+        )
+    }
+
+    @Test func extensionAlreadyHasAccessLevelUnchanged() {
+        assertFormatting(
+            HoistExtensionAccess.self,
+            input: """
+                public extension Foo {
+                  func bar() {}
+                }
+                """,
+            expected: """
+                public extension Foo {
+                  func bar() {}
+                }
+                """,
+            findings: [],
+            configuration: onExtensionConfig()
+        )
+    }
+
+    @Test func hoistPreservesOtherModifiers() {
+        assertFormatting(
+            HoistExtensionAccess.self,
+            input: """
+                1️⃣extension Foo {
+                  2️⃣@objc public static func bar() {}
+                  3️⃣@objc public func baz() {}
+                }
+                """,
+            expected: """
+                public extension Foo {
+                  @objc static func bar() {}
+                  @objc func baz() {}
+                }
+                """,
+            findings: [
+                FindingSpec(
+                    "1️⃣",
+                    message: "hoist 'public' access modifier from members to this extension",
+                    notes: [
+                        NoteSpec(
+                            "2️⃣", message: "remove 'public' access modifier from this declaration"),
+                        NoteSpec(
+                            "3️⃣", message: "remove 'public' access modifier from this declaration"),
+                    ]
+                )
+            ],
+            configuration: onExtensionConfig()
+        )
+    }
+
+    @Test func protocolConformanceExtensionNotHoisted() {
+        assertFormatting(
+            HoistExtensionAccess.self,
+            input: """
+                extension JSONValue: Codable {
+                  package init(from decoder: any Decoder) throws {}
+                  package func encode(to encoder: any Encoder) throws {}
+                }
+                """,
+            expected: """
+                extension JSONValue: Codable {
+                  package init(from decoder: any Decoder) throws {}
+                  package func encode(to encoder: any Encoder) throws {}
+                }
+                """,
+            findings: [],
+            configuration: onExtensionConfig()
+        )
+    }
+
+    @Test func ifConfigBlocksPreventsHoist() {
+        assertFormatting(
+            HoistExtensionAccess.self,
+            input: """
+                extension Foo {
+                  #if os(macOS)
+                    public func bar() {}
+                  #endif
+                }
+                """,
+            expected: """
+                extension Foo {
+                  #if os(macOS)
+                    public func bar() {}
+                  #endif
+                }
+                """,
+            findings: [],
+            configuration: onExtensionConfig()
+        )
+    }
+
+    // MARK: - @_spi attribute handling (swift-format #1211 / fixes #714)
+
+    @Test func spiAttributeIsMovedToMembers() {
+        // An `@_spi` attribute on an extension applies to the members the same way the access level
+        // does, so it has to move down to each member alongside the access level keyword.
+        assertFormatting(
+            HoistExtensionAccess.self,
+            input: """
+                @_spi(Something) 1️⃣public extension Foo {
+                  2️⃣var bar: String { "" }
+                }
+                """,
+            expected: """
+                extension Foo {
+                  @_spi(Something) public var bar: String { "" }
+                }
+                """,
+            findings: [
+                FindingSpec(
+                    "1️⃣",
+                    message:
+                        "move this 'public' access modifier to precede each member inside this extension",
+                    notes: [
+                        NoteSpec("2️⃣", message: "add 'public' access modifier to this declaration")
+                    ]
+                )
+            ]
+        )
+    }
+
+    @Test func multipleSPIAttributesAreMovedToMembers() {
+        assertFormatting(
+            HoistExtensionAccess.self,
+            input: """
+                @_spi(Foo) @_spi(Bar) 1️⃣public extension Baz {
+                  2️⃣func f() {}
+                  3️⃣func g() {}
+                }
+                """,
+            expected: """
+                extension Baz {
+                  @_spi(Foo) @_spi(Bar) public func f() {}
+                  @_spi(Foo) @_spi(Bar) public func g() {}
+                }
+                """,
+            findings: [
+                FindingSpec(
+                    "1️⃣",
+                    message:
+                        "move this 'public' access modifier to precede each member inside this extension",
+                    notes: [
+                        NoteSpec("2️⃣", message: "add 'public' access modifier to this declaration"),
+                        NoteSpec("3️⃣", message: "add 'public' access modifier to this declaration"),
+                    ]
+                )
+            ]
+        )
+    }
+
+    @Test func spiAttributeMovesButOtherAttributesStayOnExtension() {
+        // `@objc` belongs on the extension and should be left in place, while `@_spi` moves down to
+        // the members.
+        assertFormatting(
+            HoistExtensionAccess.self,
+            input: """
+                @objc @_spi(Something) 1️⃣public extension Foo {
+                  2️⃣func f() {}
+                }
+                """,
+            expected: """
+                @objc extension Foo {
+                  @_spi(Something) public func f() {}
+                }
+                """,
+            findings: [
+                FindingSpec(
+                    "1️⃣",
+                    message:
+                        "move this 'public' access modifier to precede each member inside this extension",
+                    notes: [
+                        NoteSpec("2️⃣", message: "add 'public' access modifier to this declaration")
+                    ]
+                )
+            ]
+        )
+    }
+
+    @Test func spiAttributeIsPlacedBeforeExistingMemberAttributes() {
+        assertFormatting(
+            HoistExtensionAccess.self,
+            input: """
+                @_spi(Something) 1️⃣public extension Foo {
+                  /// This member has a doc comment.
+                  2️⃣@objc var bar: String { "" }
+                }
+                """,
+            expected: """
+                extension Foo {
+                  /// This member has a doc comment.
+                  @_spi(Something) @objc public var bar: String { "" }
+                }
+                """,
+            findings: [
+                FindingSpec(
+                    "1️⃣",
+                    message:
+                        "move this 'public' access modifier to precede each member inside this extension",
+                    notes: [
+                        NoteSpec("2️⃣", message: "add 'public' access modifier to this declaration")
+                    ]
+                )
+            ]
+        )
+    }
+
+    @Test func spiAttributePreservedOnExtensionWhenAccessLevelIsRedundant() {
+        // When the access level is `internal` it is simply removed and the members are left
+        // untouched, so a `@_spi` attribute has nothing to attach to and stays on the extension.
+        assertFormatting(
+            HoistExtensionAccess.self,
+            input: """
+                @_spi(Something) 1️⃣internal extension Foo {
+                  func f() {}
+                }
+                """,
+            expected: """
+                @_spi(Something) extension Foo {
+                  func f() {}
+                }
+                """,
+            findings: [
+                FindingSpec(
+                    "1️⃣",
+                    message: "remove this redundant 'internal' access modifier from this extension"
+                )
+            ]
+        )
+    }
+
+    // MARK: - SPI-constrained extensions
+
+    // Swift rejects a public member of an extension whose where-clause names an SPI type, so the
+    // grant has to stay on the extension.
+    @Test func spiGrantStaysOnExtensionConstrainedOnSPIType() {
+        assertFormatting(
+            HoistExtensionAccess.self,
+            input: """
+                @_spi(Testing) public struct ImmediateScheduler: Scheduler {}
+
+                @_spi(Testing) public extension Scheduler where Self == ImmediateScheduler {
+                  static var immediate: ImmediateScheduler { .init() }
+                }
+                """,
+            expected: """
+                @_spi(Testing) public struct ImmediateScheduler: Scheduler {}
+
+                @_spi(Testing) public extension Scheduler where Self == ImmediateScheduler {
+                  static var immediate: ImmediateScheduler { .init() }
+                }
+                """,
+            findings: []
+        )
+    }
+
+    // The constraint names a type no visible file declares, so the rule cannot rule out a grant.
+    @Test func spiGrantStaysWhenConstraintTypeIsUnresolved() {
+        assertFormatting(
+            HoistExtensionAccess.self,
+            input: """
+                @_spi(Testing) public extension Scheduler where Self == UnknownScheduler {
+                  static var immediate: UnknownScheduler { .init() }
+                }
+                """,
+            expected: """
+                @_spi(Testing) public extension Scheduler where Self == UnknownScheduler {
+                  static var immediate: UnknownScheduler { .init() }
+                }
+                """,
+            findings: []
+        )
+    }
+
+    // The constraint names a type this file declares without a grant, so the member may be public.
+    @Test func spiGrantMovesWhenConstraintTypeIsNotSPI() {
+        assertFormatting(
+            HoistExtensionAccess.self,
+            input: """
+                public struct ImmediateScheduler {}
+
+                @_spi(Testing) 1️⃣public extension Scheduler where Self == ImmediateScheduler {
+                  2️⃣static var immediate: ImmediateScheduler { .init() }
+                }
+                """,
+            expected: """
+                public struct ImmediateScheduler {}
+
+                extension Scheduler where Self == ImmediateScheduler {
+                  @_spi(Testing) public static var immediate: ImmediateScheduler { .init() }
+                }
+                """,
+            findings: [
+                FindingSpec(
+                    "1️⃣",
+                    message:
+                        "move this 'public' access modifier to precede each member inside this extension",
+                    notes: [
+                        NoteSpec("2️⃣", message: "add 'public' access modifier to this declaration")
+                    ]
+                )
+            ]
+        )
+    }
+
+    // Extending an SPI type carries no restriction, so the grant still moves to the members.
+    @Test func spiGrantMovesForExtensionOfSPIType() {
+        assertFormatting(
+            HoistExtensionAccess.self,
+            input: """
+                @_spi(Testing) public struct ImmediateScheduler {}
+
+                @_spi(Testing) 1️⃣public extension ImmediateScheduler {
+                  2️⃣func describe() -> String { "" }
+                }
+                """,
+            expected: """
+                @_spi(Testing) public struct ImmediateScheduler {}
+
+                extension ImmediateScheduler {
+                  @_spi(Testing) public func describe() -> String { "" }
+                }
+                """,
+            findings: [
+                FindingSpec(
+                    "1️⃣",
+                    message:
+                        "move this 'public' access modifier to precede each member inside this extension",
+                    notes: [
+                        NoteSpec("2️⃣", message: "add 'public' access modifier to this declaration")
+                    ]
+                )
+            ]
+        )
+    }
+
+    // The guard covers an extension that carries a grant. A plain public extension still moves.
+    @Test func constrainedExtensionWithoutGrantStillMoves() {
+        assertFormatting(
+            HoistExtensionAccess.self,
+            input: """
+                1️⃣public extension Box where T: Equatable {
+                  2️⃣func describe() -> String { "" }
+                }
+                """,
+            expected: """
+                extension Box where T: Equatable {
+                  public func describe() -> String { "" }
+                }
+                """,
+            findings: [
+                FindingSpec(
+                    "1️⃣",
+                    message:
+                        "move this 'public' access modifier to precede each member inside this extension",
+                    notes: [
+                        NoteSpec("2️⃣", message: "add 'public' access modifier to this declaration")
+                    ]
+                )
+            ]
+        )
+    }
 }

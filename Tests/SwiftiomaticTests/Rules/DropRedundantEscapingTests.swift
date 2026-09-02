@@ -311,6 +311,289 @@ struct DropRedundantEscapingTests: RuleTesting {
         )
     }
 
+    // A witness that drops the attribute no longer satisfies the requirement.
+    @Test func sameFileProtocolWitnessKeepsEscaping() {
+        assertFormatting(
+            DropRedundantEscaping.self,
+            input: """
+                protocol Scheduler {
+                  func schedule(_ action: @escaping @Sendable () -> Void)
+                }
+
+                struct InlineScheduler: Scheduler {
+                  func schedule(_ action: @escaping @Sendable () -> Void) {
+                    action()
+                  }
+                }
+                """,
+            expected: """
+                protocol Scheduler {
+                  func schedule(_ action: @escaping @Sendable () -> Void)
+                }
+
+                struct InlineScheduler: Scheduler {
+                  func schedule(_ action: @escaping @Sendable () -> Void) {
+                    action()
+                  }
+                }
+                """,
+            findings: []
+        )
+    }
+
+    // The requirement lives in another file, so the witness cannot be checked.
+    @Test func unknownConformanceKeepsEscaping() {
+        assertFormatting(
+            DropRedundantEscaping.self,
+            input: """
+                struct InlineScheduler: Scheduler {
+                  func schedule(_ action: @escaping () -> Void) {
+                    action()
+                  }
+                }
+                """,
+            expected: """
+                struct InlineScheduler: Scheduler {
+                  func schedule(_ action: @escaping () -> Void) {
+                    action()
+                  }
+                }
+                """,
+            findings: []
+        )
+    }
+
+    // An inherited protocol carries the requirement.
+    @Test func inheritedRequirementKeepsEscaping() {
+        assertFormatting(
+            DropRedundantEscaping.self,
+            input: """
+                protocol Base {
+                  func schedule(_ action: @escaping () -> Void)
+                }
+
+                protocol Scheduler: Base {}
+
+                struct InlineScheduler: Scheduler {
+                  func schedule(_ action: @escaping () -> Void) {
+                    action()
+                  }
+                }
+                """,
+            expected: """
+                protocol Base {
+                  func schedule(_ action: @escaping () -> Void)
+                }
+
+                protocol Scheduler: Base {}
+
+                struct InlineScheduler: Scheduler {
+                  func schedule(_ action: @escaping () -> Void) {
+                    action()
+                  }
+                }
+                """,
+            findings: []
+        )
+    }
+
+    // An extension of the same file adds the conformance the witness answers.
+    @Test func conformanceFromExtensionKeepsEscaping() {
+        assertFormatting(
+            DropRedundantEscaping.self,
+            input: """
+                protocol Scheduler {
+                  func schedule(_ action: @escaping () -> Void)
+                }
+
+                struct InlineScheduler {
+                  func schedule(_ action: @escaping () -> Void) {
+                    action()
+                  }
+                }
+
+                extension InlineScheduler: Scheduler {}
+                """,
+            expected: """
+                protocol Scheduler {
+                  func schedule(_ action: @escaping () -> Void)
+                }
+
+                struct InlineScheduler {
+                  func schedule(_ action: @escaping () -> Void) {
+                    action()
+                  }
+                }
+
+                extension InlineScheduler: Scheduler {}
+                """,
+            findings: []
+        )
+    }
+
+    // The extended type is declared in another file, so its conformances are invisible.
+    @Test func extensionOfUnknownTypeKeepsEscaping() {
+        assertFormatting(
+            DropRedundantEscaping.self,
+            input: """
+                extension InlineScheduler {
+                  func schedule(_ action: @escaping () -> Void) {
+                    action()
+                  }
+                }
+                """,
+            expected: """
+                extension InlineScheduler {
+                  func schedule(_ action: @escaping () -> Void) {
+                    action()
+                  }
+                }
+                """,
+            findings: []
+        )
+    }
+
+    // An override answers a superclass signature that is not visible here.
+    @Test func overrideKeepsEscaping() {
+        assertFormatting(
+            DropRedundantEscaping.self,
+            input: """
+                class InlineScheduler: BaseScheduler {
+                  override func schedule(_ action: @escaping () -> Void) {
+                    action()
+                  }
+                }
+                """,
+            expected: """
+                class InlineScheduler: BaseScheduler {
+                  override func schedule(_ action: @escaping () -> Void) {
+                    action()
+                  }
+                }
+                """,
+            findings: []
+        )
+    }
+
+    @Test func protocolInitializerWitnessKeepsEscaping() {
+        assertFormatting(
+            DropRedundantEscaping.self,
+            input: """
+                protocol Scheduler {
+                  init(_ action: @escaping () -> Void)
+                }
+
+                struct InlineScheduler: Scheduler {
+                  init(_ action: @escaping () -> Void) {
+                    action()
+                  }
+                }
+                """,
+            expected: """
+                protocol Scheduler {
+                  init(_ action: @escaping () -> Void)
+                }
+
+                struct InlineScheduler: Scheduler {
+                  init(_ action: @escaping () -> Void) {
+                    action()
+                  }
+                }
+                """,
+            findings: []
+        )
+    }
+
+    // A conformance whose requirements take no closure leaves the rule free to act.
+    @Test func closureFreeConformanceStillFlagged() {
+        assertFormatting(
+            DropRedundantEscaping.self,
+            input: """
+                struct InlineScheduler: Sendable {
+                  func schedule(_ action: 1️⃣@escaping () -> Void) {
+                    action()
+                  }
+                }
+                """,
+            expected: """
+                struct InlineScheduler: Sendable {
+                  func schedule(_ action: () -> Void) {
+                    action()
+                  }
+                }
+                """,
+            findings: [
+                FindingSpec(
+                    "1️⃣", message: "remove '@escaping' from 'action'; the closure does not escape")
+            ]
+        )
+    }
+
+    @Test func typeWithoutConformanceStillFlagged() {
+        assertFormatting(
+            DropRedundantEscaping.self,
+            input: """
+                struct InlineScheduler {
+                  func schedule(_ action: 1️⃣@escaping () -> Void) {
+                    action()
+                  }
+                }
+                """,
+            expected: """
+                struct InlineScheduler {
+                  func schedule(_ action: () -> Void) {
+                    action()
+                  }
+                }
+                """,
+            findings: [
+                FindingSpec(
+                    "1️⃣", message: "remove '@escaping' from 'action'; the closure does not escape")
+            ]
+        )
+    }
+
+    // No requirement carries this name, so the method witnesses nothing.
+    @Test func unmatchedRequirementNameStillFlagged() {
+        assertFormatting(
+            DropRedundantEscaping.self,
+            input: """
+                protocol Scheduler {
+                  func enqueue(_ action: @escaping () -> Void)
+                }
+
+                struct InlineScheduler: Scheduler {
+                  func enqueue(_ action: @escaping () -> Void) {
+                    store(action)
+                  }
+
+                  func schedule(_ action: 1️⃣@escaping () -> Void) {
+                    action()
+                  }
+                }
+                """,
+            expected: """
+                protocol Scheduler {
+                  func enqueue(_ action: @escaping () -> Void)
+                }
+
+                struct InlineScheduler: Scheduler {
+                  func enqueue(_ action: @escaping () -> Void) {
+                    store(action)
+                  }
+
+                  func schedule(_ action: () -> Void) {
+                    action()
+                  }
+                }
+                """,
+            findings: [
+                FindingSpec(
+                    "1️⃣", message: "remove '@escaping' from 'action'; the closure does not escape")
+            ]
+        )
+    }
+
     @Test func multipleAttributesPreservesAutoclosure() {
         assertFormatting(
             DropRedundantEscaping.self,
