@@ -1,4 +1,6 @@
 {
-  "mallocCountTotal" : 58120,
-  "wallClock" : 16605183
+  "instructions" : 212598783,
+  "mallocCountTotal" : 58106,
+  "syscalls" : 2,
+  "wallClock" : 17973247
 }

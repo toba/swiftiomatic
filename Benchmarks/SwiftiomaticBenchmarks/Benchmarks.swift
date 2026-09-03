@@ -11,7 +11,9 @@ import TobaBenchmark
 /// swift package -Xswiftc -enable-testing benchmark
 /// ```
 let benchmarks: @Sendable () -> Void = {
-    Benchmark.defaultConfiguration = BenchmarkRun.defaultConfiguration()
+    Benchmark.defaultConfiguration = BenchmarkRun.defaultConfiguration(metrics: [
+        .wallClock, .instructions, .syscalls, .mallocCountTotal,
+    ])
 
     registerLintBenchmarks()
     registerFormatBenchmarks()
@@ -28,6 +30,8 @@ enum Tolerance {
     static var steady: [BenchmarkMetric: BenchmarkThresholds] {
         [
             .wallClock: TobaBenchmark.Tolerance.wallClock(p50: 10.0, p90: 15.0),
+            .instructions: instructions,
+            .syscalls: TobaBenchmark.Tolerance.fixed(count: 200),
             .mallocCountTotal: allocations,
         ]
     }
@@ -36,8 +40,16 @@ enum Tolerance {
     static var noisy: [BenchmarkMetric: BenchmarkThresholds] {
         [
             .wallClock: TobaBenchmark.Tolerance.wallClock(p50: 25.0, p90: 35.0),
+            .instructions: instructions,
+            .syscalls: TobaBenchmark.Tolerance.fixed(count: 200),
             .mallocCountTotal: allocations,
         ]
+    }
+
+    /// The second gate. It holds far tighter than the clock across a run, and it catches a change
+    /// that moves work without moving an allocation.
+    private static var instructions: BenchmarkThresholds {
+        TobaBenchmark.Tolerance.relative(p50: 3.0, p90: 3.0)
     }
 
     /// Allocation counts hold steady across a run, so this is tight on purpose.

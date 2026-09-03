@@ -54,6 +54,25 @@ package final class Context {
     lazy var warningControlRegionTree: WarningControlRegionTree =
         sourceFileSyntax.warningGroupControlRegionTree()
 
+    /// One `FreeFunctionIndex` per tree, built on first lookup.
+    ///
+    /// Keyed by the root rather than held as one value, because `sourceFileSyntax` is a tree of
+    /// this object's own when the initializer is given source text. An index records a scope as a
+    /// node identity, so it only answers for the tree it was built from.
+    private var freeFunctionIndexes: [SyntaxIdentifier: FreeFunctionIndex] = [:]
+
+    /// The functions in `root` that a bare-name call reaches
+    ///
+    /// The rules that follow a loop into the helpers it calls read this. The index depends on the
+    /// tree alone, so building one per loop would walk the whole file once per loop.
+    func freeFunctions(in root: Syntax) -> FreeFunctionIndex {
+        if let cached = freeFunctionIndexes[root.id] { return cached }
+
+        let index = FreeFunctionIndex(root: root)
+        freeFunctionIndexes[root.id] = index
+        return index
+    }
+
     /// Identifiers of every rule whose configuration is currently active for this run — either
     /// rewrite or lint enabled.
     ///

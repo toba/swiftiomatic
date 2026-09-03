@@ -20,13 +20,6 @@ final class UseDocCommentsOnAPI: StaticFormatRule<BasicRuleValue>, @unchecked Se
     override static var group: ConfigurationGroup? { .comments }
     override static var defaultValue: BasicRuleValue { .init(rewrite: false, lint: .no) }
 
-    /// Directive prefixes that should never be converted.
-    private static let directivePrefixes = [
-        "MARK:", "TODO:", "FIXME:", "HACK:", "WARNING:",
-        "swiftformat:", "swiftlint:", "sourcery:",
-        "sm-ignore",
-    ]
-
     static func transform(
         _ node: MemberBlockItemSyntax,
         original _: MemberBlockItemSyntax,
@@ -179,7 +172,7 @@ final class UseDocCommentsOnAPI: StaticFormatRule<BasicRuleValue>, @unchecked Se
             guard case let .lineComment(text) = piece else { continue }
             let body = text.dropFirst(2).drop(while: { $0 == " " })
 
-            if directivePrefixes.contains(where: { body.hasPrefix($0) }) { return true }
+            if CommentDirective.matches(body) { return true }
         }
         return false
     }
@@ -247,6 +240,7 @@ final class UseDocCommentsOnAPI: StaticFormatRule<BasicRuleValue>, @unchecked Se
             // A blank line breaks the run; the comment is no longer a continuation group header.
             if hasBlankLineAbove(items[idx].leadingTrivia) { return false }
             let prev = items[idx - 1]
+
             if hasRegularLineComment(prev.leadingTrivia), isFollowedByConsecutiveMember(prev) {
                 return true
             }
@@ -266,6 +260,7 @@ final class UseDocCommentsOnAPI: StaticFormatRule<BasicRuleValue>, @unchecked Se
         while idx > 0 {
             if hasBlankLineAbove(items[idx].leadingTrivia) { return false }
             let prev = items[idx - 1]
+
             if hasRegularLineComment(prev.leadingTrivia), isFollowedByConsecutiveCodeItem(prev) {
                 return true
             }

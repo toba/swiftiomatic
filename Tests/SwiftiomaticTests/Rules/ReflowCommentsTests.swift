@@ -152,6 +152,75 @@ struct ReflowCommentsTests: RuleTesting {
         )
     }
 
+    @Test func leavesPeripheryDirectiveOnItsOwnLine() {
+        assertFormatting(
+            ReflowComments.self,
+            input: """
+                struct S {
+                    // https://hexdocs.pm/ex_unicode/Unicode.Category.QuoteMarks.html
+                    // periphery:ignore - reference table
+                    static let openQuotes: Set<Int> = [1, 2]
+                }
+                """,
+            expected: """
+                struct S {
+                    // https://hexdocs.pm/ex_unicode/Unicode.Category.QuoteMarks.html
+                    // periphery:ignore - reference table
+                    static let openQuotes: Set<Int> = [1, 2]
+                }
+                """,
+            configuration: config(maxWidth: 100)
+        )
+    }
+
+    @Test func keepsBlankLineBetweenLineCommentParagraphs() {
+        assertFormatting(
+            ReflowComments.self,
+            input: """
+                struct S {
+                    // First paragraph of prose that says one thing.
+
+                    // Second paragraph of prose that says another thing entirely.
+                    static let other = 1
+                }
+                """,
+            expected: """
+                struct S {
+                    // First paragraph of prose that says one thing.
+
+                    // Second paragraph of prose that says another thing entirely.
+                    static let other = 1
+                }
+                """,
+            configuration: config(maxWidth: 100)
+        )
+    }
+
+    @Test func reflowsEachLineCommentParagraphOnItsOwn() {
+        assertFormatting(
+            ReflowComments.self,
+            input: """
+                struct S {
+                    1️⃣// First paragraph that is quite long and will need to wrap because it exceeds the configured width by a wide margin.
+
+                    // Second paragraph.
+                    static let other = 1
+                }
+                """,
+            expected: """
+                struct S {
+                    // First paragraph that is quite long and will need to wrap because it exceeds the configured
+                    // width by a wide margin.
+
+                    // Second paragraph.
+                    static let other = 1
+                }
+                """,
+            findings: [FindingSpec("1️⃣", message: "reflow comment to fit line length")],
+            configuration: config(maxWidth: 100)
+        )
+    }
+
     @Test func reflowsCommentIndentedInsideType() {
         assertFormatting(
             ReflowComments.self,
@@ -503,7 +572,7 @@ struct CommentReflowEngineTests {
         }
     }
 
-    @Test func reflowBlockQuoteFromUserReportedBug() {
+    @Test func reflowBlockQuoteFromUserReportedBug() throws {
         // Exact body lines from .issues/8/832-m0f. Continuation lines have 2 leading spaces (lazy
         // continuation under "> "). They must not escape the blockquote.
         let r = CommentReflowEngine.reflow(
@@ -522,7 +591,7 @@ struct CommentReflowEngineTests {
         )
         // Find the line starting "JSON encoder" — it must NOT begin at column 0; it must remain
         // inside the blockquote (prefixed with " " or "> ").
-        guard let out = r else { return }  // engine reports nil if already optimal
+        let out = try #require(r)
 
         for line in out where line.contains("JSON encoder") {
             #expect(

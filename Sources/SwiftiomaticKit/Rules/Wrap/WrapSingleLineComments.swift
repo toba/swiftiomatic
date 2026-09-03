@@ -234,7 +234,7 @@ final class WrapSingleLineComments: StaticFormatRule<BasicRuleValue>, @unchecked
         let directives = [
             "MARK:", "TODO:", "FIXME:", "WARNING:", "NOTE:", "HACK:",
             "sm:ignore", "swift-format-ignore",
-            "swiftlint:", "sourcery:",
+            "swiftlint:", "sourcery:", "periphery:",
         ]
         return directives.contains { body.hasPrefix($0) }
     }

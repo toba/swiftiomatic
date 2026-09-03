@@ -119,6 +119,18 @@ struct WrapSingleLineCommentsTests: RuleTesting {
       configuration: config(maxWidth: 20))
   }
 
+  @Test func peripheryDirectiveNotWrapped() {
+    assertFormatting(
+      WrapSingleLineComments.self,
+      input: """
+        // periphery:ignore - reference table kept for the Unicode categories
+        """,
+      expected: """
+        // periphery:ignore - reference table kept for the Unicode categories
+        """,
+      configuration: config(maxWidth: 40))
+  }
+
   // MARK: - Long URLs should not wrap
 
   @Test func commentWithLongURLNotWrapped() {

@@ -41,15 +41,21 @@ final class ReflowComments: StaticFormatRule<BasicRuleValue>, @unchecked Sendabl
             var runEnd = i
             var lastCommentIndex = i
             var j = i + 1
+            // a blank line ends the run, so two paragraphs reflow apart and the empty line between
+            // them survives
+            var newlinesSinceComment = 0
             scan: while j < pieces.count {
                 switch pieces[j] {
-                    case .spaces,
-                         .tabs,
-                         .newlines,
-                         .carriageReturns,
-                         .carriageReturnLineFeeds: j += 1
+                    case .spaces, .tabs: j += 1
+                    case let .newlines(n),
+                         let .carriageReturns(n),
+                         let .carriageReturnLineFeeds(n):
+                        newlinesSinceComment += n
+                        if newlinesSinceComment > 1 { break scan }
+                        j += 1
                     default:
                         if commentKind(of: pieces[j]) == kind {
+                            newlinesSinceComment = 0
                             lastCommentIndex = j
                             runEnd = j
                             j += 1
@@ -60,12 +66,10 @@ final class ReflowComments: StaticFormatRule<BasicRuleValue>, @unchecked Sendabl
             }
             let indentString = indentationBefore(index: runStart, in: pieces)
             var bodies: [String] = []
-            var commentIndices: [Int] = []
 
             for k in runStart...runEnd where commentKind(of: pieces[k]) != nil {
                 let text = commentText(pieces[k]) ?? ""
                 bodies.append(stripPrefix(text, kind: kind))
-                commentIndices.append(k)
             }
             if bodies.contains(where: { isDirective($0) }) {
                 i = lastCommentIndex + 1
@@ -100,6 +104,7 @@ final class ReflowComments: StaticFormatRule<BasicRuleValue>, @unchecked Sendabl
             for (idx, body) in reflowed.enumerated() {
                 if idx > 0 {
                     replacement.append(.newlines(1))
+
                     if !indentString.isEmpty {
                         replacement.append(contentsOf: indentTrivia(indentString))
                     }
@@ -180,13 +185,7 @@ final class ReflowComments: StaticFormatRule<BasicRuleValue>, @unchecked Sendabl
     }
 
     private static func isDirective(_ body: String) -> Bool {
-        let trimmed = body.trimmingCharacters(in: .whitespaces)
-        let directives = [
-            "MARK:", "TODO:", "FIXME:", "WARNING:", "NOTE:", "HACK:",
-            "sm:ignore", "swift-format-ignore",
-            "swiftlint:", "sourcery:",
-        ]
-        return directives.contains { trimmed.hasPrefix($0) }
+        CommentDirective.matches(body.trimmingCharacters(in: .whitespaces))
     }
 
     /// True when `token` is the first token in the source file — i.e. its leading trivia may

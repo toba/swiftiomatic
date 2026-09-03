@@ -1,5 +1,6 @@
 import Benchmark
 import Foundation
+import TobaBenchmark
 @testable import SwiftiomaticKit
 
 /// Sizes `LintCache.store` against the lint it follows
@@ -14,43 +15,43 @@ import Foundation
 func registerLintCacheBenchmarks() {
     registerMedianLintBenchmark()
 
-    Benchmark(
-        "CacheStoreCleanRecord",
-        configuration: .init(thresholds: Tolerance.steady),
-        closure: { benchmark in
-            var iteration = 0
-            benchmark.startMeasurement()
-            for _ in 0..<storesPerBatch {
-                iteration += 1
-                sharedCache.store(
-                    absolutePath: "/tmp/benchmark/file\(iteration).swift",
-                    contentHash: "hash\(iteration)",
-                    fingerprint: fingerprint,
-                    record: cleanRecord
-                )
-            }
-        },
-        setup: { warmCacheDirectory() },
-        teardown: { removeCacheDirectory() }
-    )
-
-    Benchmark(
+    registerStoreBenchmark("CacheStoreCleanRecord", paths: cleanPaths, record: cleanRecord)
+    registerStoreBenchmark(
         "CacheStoreRecordWithFindings",
-        configuration: .init(thresholds: Tolerance.steady),
+        paths: findingPaths,
+        record: recordWithFindings
+    )
+}
+
+/// Registers one benchmark that stores `record` under each of `paths`
+///
+/// Both store benchmarks measure the same loop. Building them here keeps the measured region in one
+/// place, so an edit to it cannot reach one benchmark and miss the other.
+///
+/// - Parameters:
+///   - name: The benchmark name the threshold files key on
+///   - paths: The absolute paths the loop stores under, one per measured store
+///   - record: The record every store in the loop writes
+private func registerStoreBenchmark(
+    _ name: String,
+    paths: [String],
+    record: LintCache.Record
+) {
+    Benchmark(
+        name,
+        configuration: .init(warmupIterations: storeWarmupCount, thresholds: Tolerance.steady),
         closure: { benchmark in
-            var iteration = 0
             benchmark.startMeasurement()
-            for _ in 0..<storesPerBatch {
-                iteration += 1
+            for index in 0..<storesPerBatch {
                 sharedCache.store(
-                    absolutePath: "/tmp/benchmark/found\(iteration).swift",
-                    contentHash: "hash\(iteration)",
+                    absolutePath: paths[index],
+                    contentHash: contentHashes[index],
                     fingerprint: fingerprint,
-                    record: recordWithFindings
+                    record: record
                 )
             }
         },
-        setup: { warmCacheDirectory() },
+        setup: { prepareFixtures() },
         teardown: { removeCacheDirectory() }
     )
 }
@@ -59,9 +60,35 @@ func registerLintCacheBenchmarks() {
 /// divide the figure by this count when quoting a per-store cost.
 private let storesPerBatch = 100
 
+/// Warmup iterations both store benchmarks run before the first sample
+///
+/// The cost per iteration climbs over the first ten to fifteen iterations, then holds. The first
+/// pass over the path list creates each file. Every later pass renames a temporary file over an
+/// existing one, which unlinks the replaced inode, and that costs more than a create.
+///
+/// The run length the suite inherits gives one warmup on a short pass, which leaves all ten samples
+/// on the climb. `CacheStoreCleanRecord` then read a p90 of 715653119 against 778043391 from a
+/// 500-sample pass, a gap of 8.7% against a 3% band. The deep pass held p25 through p90 inside 2%,
+/// which is the plateau. Twenty warmups put every sample there at either pass length.
+private let storeWarmupCount = max(BenchmarkRun.warmupCount, 20)
+
 /// Fixed stand-in for the configuration fingerprint. `store` only uses it to pick a subdirectory,
 /// so the real hash adds nothing to what is measured here.
 private let fingerprint = String(repeating: "a", count: 64)
+
+/// Paths the clean-record benchmark stores under
+///
+/// Building a name from the loop index inside the measured region makes the cost of an iteration
+/// depend on how many digits the index carries, so the figure describes the pass length rather than
+/// the write. These lists hold every name the loop needs, and `prepareFixtures` builds them before
+/// the first measured iteration.
+private let cleanPaths = (0..<storesPerBatch).map { "/tmp/benchmark/file\($0).swift" }
+
+/// Paths the findings-record benchmark stores under
+private let findingPaths = (0..<storesPerBatch).map { "/tmp/benchmark/found\($0).swift" }
+
+/// Content hashes both benchmarks pair with their paths
+private let contentHashes = (0..<storesPerBatch).map { "hash\($0)" }
 
 private let cacheRoot = URL(fileURLWithPath: NSTemporaryDirectory())
     .appendingPathComponent("SwiftiomaticBenchmarkCache")
@@ -84,9 +111,14 @@ private let recordWithFindings = LintCache.Record(
     }
 )
 
-/// Writes one record so the measured iterations read the steady state, where every file after the
-/// first finds the fingerprint subdirectory already present.
-private func warmCacheDirectory() {
+/// Builds the name lists and writes one record, so the measured iterations read the steady state
+///
+/// Every file after the first finds the fingerprint subdirectory already present. Touching each
+/// name list here runs its one-time initialization outside the measured region.
+private func prepareFixtures() {
+    blackHole(cleanPaths)
+    blackHole(findingPaths)
+    blackHole(contentHashes)
     sharedCache.store(
         absolutePath: "/tmp/benchmark/warm.swift",
         contentHash: "warm",

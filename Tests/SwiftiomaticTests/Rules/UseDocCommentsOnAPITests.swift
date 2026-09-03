@@ -290,6 +290,23 @@ struct UseDocCommentsOnAPITests: RuleTesting {
       findings: [])
   }
 
+  @Test func peripheryDirectiveNotConverted() {
+    assertFormatting(UseDocCommentsOnAPI.self,
+      input: """
+        struct S {
+          // periphery:ignore - reference table
+          static let openQuotes: Set<Int> = [1, 2]
+        }
+        """,
+      expected: """
+        struct S {
+          // periphery:ignore - reference table
+          static let openQuotes: Set<Int> = [1, 2]
+        }
+        """,
+      findings: [])
+  }
+
   @Test func commentAfterTodoNotConverted() {
     assertFormatting(UseDocCommentsOnAPI.self,
       input: """

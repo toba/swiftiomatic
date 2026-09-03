@@ -1834,6 +1834,15 @@
           "description" : "Flag `coll.firstIndex(of: ...)` (or `firstIndex(where:)`) called inside a `for x in coll` loop where the receiver matches the loop's iterated sequence — a textbook O(n²) pattern. Typical fix: enumerate the index alongside the element (`for (index, x) in coll.enumerated()`) or build a `[Element: Index]` lookup table outside the loop.\n\nReceiver matching is identifier-based and conservative: only fires when the leftmost identifier of the `firstIndex` receiver equals the leftmost identifier of the `for-in` sequence expression. Nested loops and closures introduce their own scope and are reported (or not) by their own visit.",
           "unevaluatedProperties" : false
         },
+        "noRadixInitInLoop" : {
+          "allOf" : [
+            {
+              "$ref" : "#/$defs/lintOnlyBase"
+            }
+          ],
+          "description" : "Lint `FixedWidthInteger(_:radix:)` on a slice inside a loop\n\nThe initializer parses a sign, validates every digit against the radix and returns an optional, and it does all of that on each call. A 256-entry lookup table reads the same digit with one load, so a loop that calls the initializer per byte pays the parser once per byte for nothing.\n\nThe sign is a correctness argument as well as a cost one. The initializer accepts a leading `+` or `-`, so a reader built on it read `\"+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1\"` as a valid `UUID` for as long as it stood.\n\nA helper function the loop calls counts as part of the loop, because a cost behind a call is still paid once per iteration. A parse of a whole string is not covered, because the slice is what marks the per-byte read.\n\nLint: A radix initializer whose text argument is a slice, inside a loop, raises a warning.",
+          "unevaluatedProperties" : false
+        },
         "noRetroactiveConformances" : {
           "allOf" : [
             {
@@ -1859,6 +1868,15 @@
             }
           ],
           "description" : "Don't use a ternary expression to call void-returning functions.\n\n`condition ? doA() : doB()` reads as if it produces a value, but when both branches return `Void` it's effectively a hidden if/else with strictly worse readability. Use a proper `if` / `else` statement instead.\n\nLint: A warning is raised when a ternary appears as a statement and both branches are call expressions.\n\nRewrite: Not auto-fixed; the rewrite would change formatting beyond the scope of this rule."
+        },
+        "noWrappedAppendBuffer" : {
+          "allOf" : [
+            {
+              "$ref" : "#/$defs/lintOnlyBase"
+            }
+          ],
+          "description" : "Lint a local buffer that `append` fills in a loop and a second buffer then copies\n\nThe pattern allocates twice and writes the same bytes twice, and neither cost buys anything. The wrapper knows the count before the loop starts, so the loop can write into it directly.\n\n```swift var data = Bytes() // append loop self = Data(data) ```\n\nThe rule fires only when the array has no other use. An array that is returned, or handed to any caller other than the wrapper, is doing its job and the second buffer is that caller's business. A fill with no loop is also silent, because one copy of a finished buffer is a different cost from a copy per step.\n\nThe rule reads each reference once, from the pipeline's own walk, and holds one scope frame per statement list that declares a candidate. Walking each statement list separately would read a nested statement once per list around it.\n\nLint: A local `var` that `append` fills inside a loop, and that nothing reads except a wrapping initializer or a fixed-size tuple, raises a warning.",
+          "unevaluatedProperties" : false
         },
         "requireFatalErrorMessage" : {
           "allOf" : [
@@ -1984,6 +2002,15 @@
             }
           ],
           "description" : "Lint functions returning `Result<T, E>` whose body is a single `do { return .success(...) } catch { return .failure(...) }` . The pattern is mechanical — `throws(E) -> T` expresses the same contract more directly.",
+          "unevaluatedProperties" : false
+        },
+        "useUTF8ViewForByteParsing" : {
+          "allOf" : [
+            {
+              "$ref" : "#/$defs/lintOnlyBase"
+            }
+          ],
+          "description" : "Lint a `String.Index` walk whose slices feed a byte-level parse\n\n`index(_:offsetBy:)` is grapheme-aware, so each step decodes the boundaries it passes, and each slice it feeds carries a reference back to the parent string. A reader of hex digits, or of any other fixed-width ASCII form, needs neither. `withUTF8` makes the storage contiguous and hands the reader a `Span<UInt8>`, so the same digits are read in one pass with no slice.\n\n```swift var hex = hex guard let raw = hex.withUTF8({ UUID.rawBytes(parsingHex: $0.span) }) else { return nil } ```\n\nProse parsing over a `String` is a legitimate grapheme walk, so the rule fires only when one string is both walked by `index(_:offsetBy:)` and sliced into a fixed-width integer initializer inside the same loop. A slice that goes anywhere else stays silent, and so does a single walk outside a loop.\n\nA helper function the loop calls counts as part of the loop, because a cost behind a call is still paid once per iteration.\n\nLint: A loop that walks a string with `index(_:offsetBy:)` and parses slices of that same string into an integer raises a warning.",
           "unevaluatedProperties" : false
         }
       },
@@ -3067,6 +3094,15 @@
       "description" : "The playground literals ( `#colorLiteral` , `#fileLiteral` , and `#imageLiteral` ) are forbidden.\n\nLint: Using a playground literal will yield a lint error with a suggestion of an API to replace it.",
       "unevaluatedProperties" : false
     },
+    "noRadixInitInLoop" : {
+      "allOf" : [
+        {
+          "$ref" : "#/$defs/lintOnlyBase"
+        }
+      ],
+      "description" : "Lint `FixedWidthInteger(_:radix:)` on a slice inside a loop\n\nThe initializer parses a sign, validates every digit against the radix and returns an optional, and it does all of that on each call. A 256-entry lookup table reads the same digit with one load, so a loop that calls the initializer per byte pays the parser once per byte for nothing.\n\nThe sign is a correctness argument as well as a cost one. The initializer accepts a leading `+` or `-`, so a reader built on it read `\"+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1\"` as a valid `UUID` for as long as it stood.\n\nA helper function the loop calls counts as part of the loop, because a cost behind a call is still paid once per iteration. A parse of a whole string is not covered, because the slice is what marks the per-byte read.\n\nLint: A radix initializer whose text argument is a slice, inside a loop, raises a warning.",
+      "unevaluatedProperties" : false
+    },
     "noRetroactiveConformances" : {
       "allOf" : [
         {
@@ -3134,6 +3170,15 @@
         }
       ],
       "description" : "Don't use a ternary expression to call void-returning functions.\n\n`condition ? doA() : doB()` reads as if it produces a value, but when both branches return `Void` it's effectively a hidden if/else with strictly worse readability. Use a proper `if` / `else` statement instead.\n\nLint: A warning is raised when a ternary appears as a statement and both branches are call expressions.\n\nRewrite: Not auto-fixed; the rewrite would change formatting beyond the scope of this rule."
+    },
+    "noWrappedAppendBuffer" : {
+      "allOf" : [
+        {
+          "$ref" : "#/$defs/lintOnlyBase"
+        }
+      ],
+      "description" : "Lint a local buffer that `append` fills in a loop and a second buffer then copies\n\nThe pattern allocates twice and writes the same bytes twice, and neither cost buys anything. The wrapper knows the count before the loop starts, so the loop can write into it directly.\n\n```swift var data = Bytes() // append loop self = Data(data) ```\n\nThe rule fires only when the array has no other use. An array that is returned, or handed to any caller other than the wrapper, is doing its job and the second buffer is that caller's business. A fill with no loop is also silent, because one copy of a finished buffer is a different cost from a copy per step.\n\nThe rule reads each reference once, from the pipeline's own walk, and holds one scope frame per statement list that declares a candidate. Walking each statement list separately would read a nested statement once per list around it.\n\nLint: A local `var` that `append` fills inside a loop, and that nothing reads except a wrapping initializer or a fixed-size tuple, raises a warning.",
+      "unevaluatedProperties" : false
     },
     "noYodaConditions" : {
       "allOf" : [
@@ -5266,6 +5311,15 @@
           "type" : "string"
         }
       }
+    },
+    "useUTF8ViewForByteParsing" : {
+      "allOf" : [
+        {
+          "$ref" : "#/$defs/lintOnlyBase"
+        }
+      ],
+      "description" : "Lint a `String.Index` walk whose slices feed a byte-level parse\n\n`index(_:offsetBy:)` is grapheme-aware, so each step decodes the boundaries it passes, and each slice it feeds carries a reference back to the parent string. A reader of hex digits, or of any other fixed-width ASCII form, needs neither. `withUTF8` makes the storage contiguous and hands the reader a `Span<UInt8>`, so the same digits are read in one pass with no slice.\n\n```swift var hex = hex guard let raw = hex.withUTF8({ UUID.rawBytes(parsingHex: $0.span) }) else { return nil } ```\n\nProse parsing over a `String` is a legitimate grapheme walk, so the rule fires only when one string is both walked by `index(_:offsetBy:)` and sliced into a fixed-width integer initializer inside the same loop. A slice that goes anywhere else stays silent, and so does a single walk outside a loop.\n\nA helper function the loop calls counts as part of the loop, because a cost behind a call is still paid once per iteration.\n\nLint: A loop that walks a string with `index(_:offsetBy:)` and parses slices of that same string into an integer raises a warning.",
+      "unevaluatedProperties" : false
     },
     "useUnavailableNotFatalError" : {
       "allOf" : [
