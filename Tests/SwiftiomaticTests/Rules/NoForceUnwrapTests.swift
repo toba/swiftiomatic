@@ -13,13 +13,13 @@ struct NoForceUnwrapTests: RuleTesting {
       input: """
         func someFunc() -> Int {
           var a = getInt()
-          var b = 1️⃣a as! Int
-          let c = 2️⃣(someValue())!
-          let d = 3️⃣String(a)!
+          var b = a as! Int
+          let c = 1️⃣(someValue())!
+          let d = 2️⃣String(a)!
           let regex = try! NSRegularExpression(pattern: "a*b+c?")
-          let e = /*comment about stuff*/ 4️⃣[1: a, 2: b, 3: c][4]!
-          var f = 5️⃣a as! /*comment about this type*/ FooBarType
-          return 6️⃣a!
+          let e = /*comment about stuff*/ 3️⃣[1: a, 2: b, 3: c][4]!
+          var f = a as! /*comment about this type*/ FooBarType
+          return 4️⃣a!
         }
         """,
       expected: """
@@ -35,12 +35,10 @@ struct NoForceUnwrapTests: RuleTesting {
         }
         """,
       findings: [
-        FindingSpec("1️⃣", message: "do not force cast to 'Int'"),
-        FindingSpec("2️⃣", message: "do not force unwrap '(someValue())'"),
-        FindingSpec("3️⃣", message: "do not force unwrap 'String(a)'"),
-        FindingSpec("4️⃣", message: "do not force unwrap '[1: a, 2: b, 3: c][4]'"),
-        FindingSpec("5️⃣", message: "do not force cast to 'FooBarType'"),
-        FindingSpec("6️⃣", message: "do not force unwrap 'a'"),
+        FindingSpec("1️⃣", message: "do not force unwrap '(someValue())'"),
+        FindingSpec("2️⃣", message: "do not force unwrap 'String(a)'"),
+        FindingSpec("3️⃣", message: "do not force unwrap '[1: a, 2: b, 3: c][4]'"),
+        FindingSpec("4️⃣", message: "do not force unwrap 'a'"),
       ]
     )
   }
@@ -684,6 +682,81 @@ struct NoForceUnwrapTests: RuleTesting {
     )
   }
 
+  // MARK: - Closure body positions
+
+  /// A closure body starts a new statement scope. The enclosing call must not hide the force
+  /// unwrap written inside it.
+  @Test func forceUnwrapInClosurePassedAsArgumentIsReported() {
+    assertFormatting(
+      NoForceUnwrap.self,
+      input: """
+        func outer() {
+            someFunction {
+                let value = 1️⃣myOptional!
+            }
+        }
+        """,
+      expected: """
+        func outer() {
+            someFunction {
+                let value = myOptional!
+            }
+        }
+        """,
+      findings: [
+        FindingSpec("1️⃣", message: "do not force unwrap 'myOptional'"),
+      ]
+    )
+  }
+
+  @Test func forceUnwrapInImmediatelyInvokedClosureIsReported() {
+    assertFormatting(
+      NoForceUnwrap.self,
+      input: """
+        let value = {
+            return 1️⃣myOptional!
+        }()
+        """,
+      expected: """
+        let value = {
+            return myOptional!
+        }()
+        """,
+      findings: [
+        FindingSpec("1️⃣", message: "do not force unwrap 'myOptional'"),
+      ]
+    )
+  }
+
+  /// The rewrite cannot run inside a closure, because `try` does not propagate out of one. The
+  /// finding still has to appear.
+  @Test func forceUnwrapInClosureInsideTestFunctionIsReportedNotRewritten() {
+    assertFormatting(
+      NoForceUnwrap.self,
+      input: """
+        import Testing
+
+        @Test func something() {
+            someFunction {
+                let value = 1️⃣myOptional!
+            }
+        }
+        """,
+      expected: """
+        import Testing
+
+        @Test func something() {
+            someFunction {
+                let value = myOptional!
+            }
+        }
+        """,
+      findings: [
+        FindingSpec("1️⃣", message: "do not force unwrap 'myOptional'"),
+      ]
+    )
+  }
+
   // MARK: - Test helper is not updated
 
   @Test func testHelperIsNotUpdated() {
@@ -777,22 +850,16 @@ struct NoForceUnwrapTests: RuleTesting {
 
   // MARK: - Ignore test code (XCTest import — non-test functions)
 
-  @Test func ignoreTestCode() {
-    assertFormatting(
+  /// A force cast outside a test function belongs to `NoForceCast`. This rule reports nothing,
+  /// because a second finding named the same defect twice under two rule ids.
+  @Test func forceCastOutsideTestFunctionIsLeftToNoForceCast() {
+    assertUnchanged(
       NoForceUnwrap.self,
-      input: """
-        import XCTest
-
-        var b = 1️⃣a as! Int
-        """,
-      expected: """
+      source: """
         import XCTest
 
         var b = a as! Int
-        """,
-      findings: [
-        FindingSpec("1️⃣", message: "do not force cast to 'Int'"),
-      ]
+        """
     )
   }
 

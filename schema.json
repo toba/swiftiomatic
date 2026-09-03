@@ -2925,7 +2925,7 @@
           "$ref" : "#/$defs/ruleBase"
         }
       ],
-      "description" : "Force-try ( `try!` ) is forbidden.\n\nIn test functions, `try!` is auto-fixed to `try` and `throws` is added to the function signature if needed.\n\nIn non-test code, `try!` is diagnosed but not rewritten.\n\nTest functions are:\n- Functions annotated with `@Test` (Swift Testing)\n- Functions named `test*()` with no parameters inside `XCTestCase` subclasses\n\n`try!` inside closures or nested functions is left alone because the enclosing test function's `throws` does not propagate into those scopes.\n\nLint: A warning is raised for each `try!` .\n\nRewrite: In test functions, `try!` is replaced with `try` and `throws` is added."
+      "description" : "Force-try ( `try!` ) is forbidden.\n\nIn test functions, `try!` is auto-fixed to `try` and `throws` is added to the function signature if needed.\n\nIn non-test code, `try!` is diagnosed but not rewritten.\n\nTest functions are:\n- Functions annotated with `@Test` (Swift Testing)\n- Functions named `test*()` with no parameters inside `XCTestCase` subclasses\n\nA `try!` inside a closure or a nested function is reported but never rewritten, because the enclosing test function's `throws` does not propagate into those scopes.\n\nLint: A warning is raised for each `try!` , wherever it sits.\n\nRewrite: In test functions, `try!` is replaced with `try` and `throws` is added."
     },
     "noForceUnwrap" : {
       "allOf" : [
@@ -2933,7 +2933,7 @@
           "$ref" : "#/$defs/ruleBase"
         }
       ],
-      "description" : "Force-unwraps are strongly discouraged and must be documented.\n\nIn test functions, force unwraps are auto-fixed:\n- `foo!` becomes `try XCTUnwrap(foo)` (XCTest) or `try #require(foo)` (Swift Testing)\n- `foo as! Bar` becomes `try XCTUnwrap(foo as? Bar)` or `try #require(foo as? Bar)`\n- `throws` is added to the function signature if needed\n\nIn non-test code, force unwraps are diagnosed but not rewritten.\n\nTest functions are:\n- Functions annotated with `@Test` (Swift Testing)\n- Functions named `test*()` with no parameters inside `XCTestCase` subclasses\n\nForce unwraps in closures, nested functions, and string interpolation are left alone because `try` cannot propagate out of those scopes.\n\nLint: A warning is raised for each force unwrap.\n\nRewrite: In test functions, force unwraps are replaced with XCTUnwrap/#require."
+      "description" : "Force-unwraps are strongly discouraged and must be documented.\n\nIn test functions, force unwraps are auto-fixed:\n- `foo!` becomes `try XCTUnwrap(foo)` (XCTest) or `try #require(foo)` (Swift Testing)\n- `foo as! Bar` becomes `try XCTUnwrap(foo as? Bar)` or `try #require(foo as? Bar)`\n- `throws` is added to the function signature if needed\n\nIn non-test code, force unwraps are diagnosed but not rewritten.\n\nTest functions are:\n- Functions annotated with `@Test` (Swift Testing)\n- Functions named `test*()` with no parameters inside `XCTestCase` subclasses\n\nA force unwrap in a closure, a nested function or a string interpolation is reported but never rewritten, because `try` cannot propagate out of those scopes.\n\nA force cast is reported by `NoForceCast` alone, except in a test function where this rule rewrites it.\n\nLint: A warning is raised for each force unwrap, wherever it sits.\n\nRewrite: In test functions, force unwraps are replaced with XCTUnwrap/#require."
     },
     "noFormatterInViewBody" : {
       "allOf" : [
@@ -4364,7 +4364,7 @@
               "$ref" : "#/$defs/ruleBase"
             }
           ],
-          "description" : "Force-try ( `try!` ) is forbidden.\n\nIn test functions, `try!` is auto-fixed to `try` and `throws` is added to the function signature if needed.\n\nIn non-test code, `try!` is diagnosed but not rewritten.\n\nTest functions are:\n- Functions annotated with `@Test` (Swift Testing)\n- Functions named `test*()` with no parameters inside `XCTestCase` subclasses\n\n`try!` inside closures or nested functions is left alone because the enclosing test function's `throws` does not propagate into those scopes.\n\nLint: A warning is raised for each `try!` .\n\nRewrite: In test functions, `try!` is replaced with `try` and `throws` is added."
+          "description" : "Force-try ( `try!` ) is forbidden.\n\nIn test functions, `try!` is auto-fixed to `try` and `throws` is added to the function signature if needed.\n\nIn non-test code, `try!` is diagnosed but not rewritten.\n\nTest functions are:\n- Functions annotated with `@Test` (Swift Testing)\n- Functions named `test*()` with no parameters inside `XCTestCase` subclasses\n\nA `try!` inside a closure or a nested function is reported but never rewritten, because the enclosing test function's `throws` does not propagate into those scopes.\n\nLint: A warning is raised for each `try!` , wherever it sits.\n\nRewrite: In test functions, `try!` is replaced with `try` and `throws` is added."
         },
         "noForceUnwrap" : {
           "allOf" : [
@@ -4372,7 +4372,7 @@
               "$ref" : "#/$defs/ruleBase"
             }
           ],
-          "description" : "Force-unwraps are strongly discouraged and must be documented.\n\nIn test functions, force unwraps are auto-fixed:\n- `foo!` becomes `try XCTUnwrap(foo)` (XCTest) or `try #require(foo)` (Swift Testing)\n- `foo as! Bar` becomes `try XCTUnwrap(foo as? Bar)` or `try #require(foo as? Bar)`\n- `throws` is added to the function signature if needed\n\nIn non-test code, force unwraps are diagnosed but not rewritten.\n\nTest functions are:\n- Functions annotated with `@Test` (Swift Testing)\n- Functions named `test*()` with no parameters inside `XCTestCase` subclasses\n\nForce unwraps in closures, nested functions, and string interpolation are left alone because `try` cannot propagate out of those scopes.\n\nLint: A warning is raised for each force unwrap.\n\nRewrite: In test functions, force unwraps are replaced with XCTUnwrap/#require."
+          "description" : "Force-unwraps are strongly discouraged and must be documented.\n\nIn test functions, force unwraps are auto-fixed:\n- `foo!` becomes `try XCTUnwrap(foo)` (XCTest) or `try #require(foo)` (Swift Testing)\n- `foo as! Bar` becomes `try XCTUnwrap(foo as? Bar)` or `try #require(foo as? Bar)`\n- `throws` is added to the function signature if needed\n\nIn non-test code, force unwraps are diagnosed but not rewritten.\n\nTest functions are:\n- Functions annotated with `@Test` (Swift Testing)\n- Functions named `test*()` with no parameters inside `XCTestCase` subclasses\n\nA force unwrap in a closure, a nested function or a string interpolation is reported but never rewritten, because `try` cannot propagate out of those scopes.\n\nA force cast is reported by `NoForceCast` alone, except in a test function where this rule rewrites it.\n\nLint: A warning is raised for each force unwrap, wherever it sits.\n\nRewrite: In test functions, force unwraps are replaced with XCTUnwrap/#require."
         },
         "noNestedWithLock" : {
           "allOf" : [

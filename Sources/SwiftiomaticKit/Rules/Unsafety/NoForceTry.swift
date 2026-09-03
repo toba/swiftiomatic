@@ -11,10 +11,10 @@ import SwiftSyntax
 /// - Functions annotated with `@Test` (Swift Testing)
 /// - Functions named `test*()` with no parameters inside `XCTestCase` subclasses
 ///
-/// `try!` inside closures or nested functions is left alone because the enclosing test function's
-/// `throws` does not propagate into those scopes.
+/// A `try!` inside a closure or a nested function is reported but never rewritten, because the
+/// enclosing test function's `throws` does not propagate into those scopes.
 ///
-/// Lint: A warning is raised for each `try!` .
+/// Lint: A warning is raised for each `try!` , wherever it sits.
 ///
 /// Rewrite: In test functions, `try!` is replaced with `try` and `throws` is added.
 final class NoForceTry: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
@@ -25,8 +25,7 @@ final class NoForceTry: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
 
     /// Per-file mutable state held as a typed lazy property on `Context` .
     final class State {
-        var importsTesting = false
-        var insideXCTestCase = false
+        var testContext = TestContextTracker()
         /// Saved `insideXCTestCase` per nested class.
         var classStack: [Bool] = []
         /// Whether the innermost enclosing function is a test function.
@@ -36,11 +35,8 @@ final class NoForceTry: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
         var convertedForceTry = false
         /// Saved `(insideTestFunction, convertedForceTry)` per nested function.
         var functionStack: [(Bool, Bool)] = []
-        /// Number of function declarations currently on the stack — used so the `TryExpr` handler
-        /// can tell apart "top-level try" from "try inside a non-test function".
-        var functionDepth = 0
-        /// Number of closure expressions currently on the stack. Legacy didn't recurse into
-        /// closures; we mimic by bailing when this is non-zero.
+        /// Number of closure expressions currently on the stack. A non-zero depth blocks the
+        /// rewrite, because `try` cannot propagate out of a closure.
         var closureDepth = 0
     }
 
@@ -49,7 +45,7 @@ final class NoForceTry: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
     // MARK: - Compact-pipeline scope hooks
 
     static func willEnter(_ node: SourceFileSyntax, context: Context) {
-        setImportsAnyTestLibrary(context: context, sourceFile: node)
+        state(context).testContext.visitSourceFile(node, context: context)
     }
 
     /// Record an `import Testing` so later type-decl visits know the macro is in scope.
@@ -62,29 +58,25 @@ final class NoForceTry: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
         parent _: Syntax?,
         context: Context
     ) -> ImportDeclSyntax {
-        if node.path.first?.name.text == "Testing" { state(context).importsTesting = true }
+        state(context).testContext.visitImport(node)
         return node
     }
 
     static func willEnter(_ node: ClassDeclSyntax, context: Context) {
         let s = state(context)
-        s.classStack.append(s.insideXCTestCase)
-        if context.importsAnyTestLibrary == .importsTestLibrary,
-           let inheritance = node.inheritanceClause,
-           inheritance.contains(named: "XCTestCase") { s.insideXCTestCase = true }
+        s.classStack.append(s.testContext.pushClass(node, context: context))
     }
 
     static func didExit(_: ClassDeclSyntax, context: Context) {
         let s = state(context)
-        if let was = s.classStack.popLast() { s.insideXCTestCase = was }
+        if let was = s.classStack.popLast() { s.testContext.popClass(was: was) }
     }
 
     static func willEnter(_ node: FunctionDeclSyntax, context: Context) {
         let s = state(context)
         s.functionStack.append((s.insideTestFunction, s.convertedForceTry))
-        s.insideTestFunction = isTestFunction(node, state: s)
+        s.insideTestFunction = s.testContext.isTestFunction(node)
         s.convertedForceTry = false
-        s.functionDepth += 1
     }
 
     static func didExit(_: FunctionDeclSyntax, context: Context) {
@@ -94,7 +86,6 @@ final class NoForceTry: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
             s.insideTestFunction = wasInside
             s.convertedForceTry = wasConverted
         }
-        s.functionDepth -= 1
     }
 
     static func willEnter(_: ClosureExprSyntax, context: Context) {
@@ -111,18 +102,24 @@ final class NoForceTry: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
     /// regular `try` when inside a test function, leave the node alone otherwise.
     static func transform(
         _ node: TryExprSyntax,
-        original _: TryExprSyntax,
+        original: TryExprSyntax,
         parent _: Syntax?,
         context: Context
     ) -> TryExprSyntax {
         guard node.questionOrExclamationMark?.tokenKind == .exclamationMark else { return node }
         let s = state(context)
 
-        // Legacy didn't recurse into closures — preserve that opacity.
-        if s.closureDepth > 0 { return node }
+        // anchor on the original tree; the rewritten node detaches once a child changes
+        let anchor = original.tryKeyword
+
+        // a closure body cannot propagate try to the enclosing test function, so report and stop
+        if s.closureDepth > 0 {
+            Self.diagnose(.doNotForceTry, on: anchor, context: context)
+            return node
+        }
 
         if s.insideTestFunction {
-            Self.diagnose(.replaceForceTry, on: node.tryKeyword, context: context)
+            Self.diagnose(.replaceForceTry, on: anchor, context: context)
             s.convertedForceTry = true
 
             let bangTrailingTrivia = node.questionOrExclamationMark?.trailingTrivia ?? .space
@@ -131,12 +128,7 @@ final class NoForceTry: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
                 .with(\.tryKeyword, node.tryKeyword.with(\.trailingTrivia, bangTrailingTrivia))
         }
 
-        // Inside a non-test function — legacy never visited this. Match by skipping the diagnostic.
-        // Top-level (functionDepth == 0) try! is syntactically rare but legacy would have diagnosed
-        // it.
-        if s.functionDepth == 0 {
-            Self.diagnose(.doNotForceTry, on: node.tryKeyword, context: context)
-        }
+        Self.diagnose(.doNotForceTry, on: anchor, context: context)
         return node
     }
 
@@ -154,20 +146,6 @@ final class NoForceTry: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
         return node.signature.effectSpecifiers?.throwsClause != nil
             ? node
             : node.addingThrowsClause()
-    }
-
-    /// Returns true when the function declaration is a Swift Testing `@Test` or an `XCTestCase`
-    /// `test*()` method.
-    private static func isTestFunction(_ node: FunctionDeclSyntax, state: State) -> Bool {
-        if state.importsTesting, node.hasAttribute("Test", inModule: "Testing") { return true }
-
-        if state.insideXCTestCase {
-            let name = node.name.text
-            return name.hasPrefix("test")
-                && node.signature.parameterClause.parameters.isEmpty
-                && node.signature.returnClause == nil
-        }
-        return false
     }
 }
 

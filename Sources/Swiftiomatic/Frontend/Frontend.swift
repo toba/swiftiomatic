@@ -68,6 +68,40 @@ class Frontend: @unchecked Sendable {
             return "at `\(path)`: \(context.debugDescription)"
         }
 
+        /// Reports a `--configuration` value the tool can use for neither a path nor configuration
+        /// data.
+        ///
+        /// The check runs once before any input is opened, so one bad value produces one diagnostic
+        /// instead of one per file.
+        ///
+        /// - Parameter value: The raw string the caller passed to `--configuration` , or `nil` .
+        /// - Returns: `true` when the value is usable or absent.
+        func validate(configurationArgument value: String?) -> Bool {
+            guard let value else { return true }
+            return !emitFailure(ConfigurationArgument(value))
+        }
+
+        /// Reports a classified `--configuration` value the tool cannot use.
+        ///
+        /// - Returns: `true` when the value named a failure, so the caller stops.
+        private func emitFailure(_ argument: ConfigurationArgument) -> Bool {
+            switch argument {
+                case .file, .inlineJSON: return false
+
+                case let .unreadableFile(path):
+                    diagnosticsEngine.emitError(
+                        "Unable to read configuration: no readable file at \(path)"
+                    )
+                    return true
+
+                case let .malformed(error):
+                    diagnosticsEngine.emitError(
+                        "Unable to read configuration: \(descriptionForConfigurationError(error))"
+                    )
+                    return true
+            }
+        }
+
         /// Returns the configuration that applies to the given `.swift` source file, when an
         /// explicit configuration path is also perhaps provided.
         ///
@@ -76,7 +110,8 @@ class Frontend: @unchecked Sendable {
         /// - Parameters:
         ///   - pathOrString: A string containing either the path to a configuration file that will
         ///     be loaded, JSON configuration data directly, or `nil` to try to infer it from
-        ///     `swiftFileURL` .
+        ///     `swiftFileURL` . Inline JSON is validated and then ignored, because Xcode sends its
+        ///     own configuration this way and the project file has to win.
         ///   - swiftFileURL: The path to a `.swift` file, which will be used to infer the path to
         ///     the configuration file if `configurationFilePath` is nil.
         ///
@@ -91,23 +126,31 @@ class Frontend: @unchecked Sendable {
             orForSwiftFileAt swiftFileURL: URL?
         ) -> Configuration? {
             if let pathOrString {
-                // Only honor --configuration when it points to an actual file on disk. Xcode passes
-                // inline JSON via --configuration which overrides the project config — silently
-                // ignore inline JSON so swiftiomatic.json is always used.
-                let configurationFileURL = URL(fileURLWithPath: pathOrString)
+                let argument = ConfigurationArgument(pathOrString)
 
-                if FileManager.default.isReadableFile(atPath: configurationFileURL.path) {
-                    do {
-                        return try configurationLoader.configuration(at: configurationFileURL)
-                    } catch {
-                        diagnosticsEngine.emitError(
-                            "Unable to read configuration: \(descriptionForConfigurationError(error))"
-                        )
+                switch argument {
+                    case let .file(url):
+                        do {
+                            return try configurationLoader.configuration(at: url)
+                        } catch {
+                            diagnosticsEngine.emitError(
+                                "Unable to read configuration: \(descriptionForConfigurationError(error))"
+                            )
+                            return nil
+                        }
+
+                    case .inlineJSON:
+                        // Xcode sends its own editor settings this way, and honoring them would
+                        // override the project config on every Editor menu format. Fall through to
+                        // discover swiftiomatic.json from the file path.
+                        break
+
+                    case .unreadableFile, .malformed:
+                        // Falling through here would hand the caller the discovered configuration
+                        // and a zero exit, which reads as a clean run over a typo.
+                        _ = emitFailure(argument)
                         return nil
-                    }
                 }
-                // Inline JSON string — fall through to discover swiftiomatic.json from the file
-                // path.
             }
 
             // If no explicit configuration file path was given but a `.swift` source file path was
@@ -116,10 +159,7 @@ class Frontend: @unchecked Sendable {
             if let swiftFileURL {
                 do {
                     if let configuration = try configurationLoader.configuration(
-                        forPath: swiftFileURL)
-                    {
-                        return configuration
-                    }
+                        forPath: swiftFileURL) { return configuration }
                     // Fall through to the default return at the end of the function.
                 } catch {
                     diagnosticsEngine.emitError(
@@ -232,9 +272,7 @@ class Frontend: @unchecked Sendable {
             colorMode: lintFormatOptions.colorDiagnostics.map { $0 ? .on : .off } ?? .auto
         )
         var handlers: [@Sendable (Diagnostic) -> Void] = []
-        if !suppressDefaultDiagnosticPrinter {
-            handlers.append(diagnosticPrinter.printDiagnostic)
-        }
+        if !suppressDefaultDiagnosticPrinter { handlers.append(diagnosticPrinter.printDiagnostic) }
         handlers.append(contentsOf: additionalDiagnosticHandlers)
         diagnosticsEngine = DiagnosticsEngine(
             diagnosticsHandlers: handlers,
@@ -245,6 +283,10 @@ class Frontend: @unchecked Sendable {
 
     /// Runs the linter or formatter over the inputs.
     final func run() {
+        guard configurationProvider.validate(
+            configurationArgument: configurationOptions.configuration
+        ) else { return }
+
         let resolved = SwiftiomaticKit.resolveInputs(
             rawPaths: lintFormatOptions.paths,
             stdinIsTTY: isTTY(FileHandle.standardInput)
@@ -252,8 +294,7 @@ class Frontend: @unchecked Sendable {
 
         switch resolved {
             case .stdin: processStandardInput()
-            case let .urls(urls):
-                processURLs(urls, parallel: lintFormatOptions.parallel)
+            case let .urls(urls): processURLs(urls, parallel: lintFormatOptions.parallel)
         }
     }
 
@@ -300,12 +341,8 @@ class Frontend: @unchecked Sendable {
         if parallel {
             // Materialize URLs only (cheap path strings); open and read each file inside the worker
             // so peak memory stays at ~workers × file_size instead of total-source-bytes.
-            let urlsToProcess = Array(
-                FileIterator(
-                    urls: urls,
-                    followSymlinks: lintFormatOptions.followSymlinks,
-                    excludes: excludes
-                ))
+            let urlsToProcess = Array(FileIterator(
+                urls: urls, followSymlinks: lintFormatOptions.followSymlinks, excludes: excludes))
             DispatchQueue.concurrentPerform(iterations: urlsToProcess.count) { index in
                 if let file = openAndPrepareFile(at: urlsToProcess[index]) { processFile(file) }
             }
@@ -321,9 +358,9 @@ class Frontend: @unchecked Sendable {
         }
     }
 
-    /// Loads the configuration that applies to the first input path to obtain the `excludes`
-    /// list used to prune the recursive walk. Per-file configuration is still resolved during
-    /// processing — this lookup only governs which files the iterator yields.
+    /// Loads the configuration that applies to the first input path to obtain the `excludes` list
+    /// used to prune the recursive walk. Per-file configuration is still resolved during processing
+    /// — this lookup only governs which files the iterator yields.
     private func excludePatterns(forInputs urls: [URL]) -> [String] {
         let anchor = urls.first ?? URL(fileURLWithPath: FileManager.default.currentDirectoryPath)
         let configuration = configurationProvider.provide(

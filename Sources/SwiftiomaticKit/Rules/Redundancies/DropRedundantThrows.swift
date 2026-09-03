@@ -31,8 +31,9 @@ final class DropRedundantThrows: StaticFormatRule<BasicRuleValue>, @unchecked Se
         // Without type info we can't see whether this function overrides a throwing requirement or
         // whether external callers wrap it in `try`. Restrict the rewrite to functions that syntax
         // alone proves are local: not `override`, and explicitly `private`/`fileprivate`.
-        guard !hasOverrideModifier(node.modifiers),
-              hasPrivateOrFileprivateModifier(node.modifiers) else { return DeclSyntax(node) }
+        guard !node.modifiers.contains(.override),
+              node.modifiers.contains(anyOf: [.private, .fileprivate])
+        else { return DeclSyntax(node) }
 
         guard !containsThrowOrTry(body) else { return DeclSyntax(node) }
 
@@ -43,36 +44,20 @@ final class DropRedundantThrows: StaticFormatRule<BasicRuleValue>, @unchecked Se
 
         var result = node
 
-        if newEffectSpecifiers.asyncSpecifier == nil, newEffectSpecifiers.throwsClause == nil {
-            result.signature.effectSpecifiers = nil
-        } else {
-            result.signature.effectSpecifiers = newEffectSpecifiers
-        }
+        result.signature.effectSpecifiers = newEffectSpecifiers.asyncSpecifier == nil
+            ? nil
+            : newEffectSpecifiers
         return DeclSyntax(result)
     }
 
-    private static func hasPrivateOrFileprivateModifier(
-        _ modifiers: DeclModifierListSyntax
-    ) -> Bool {
-        modifiers.contains { modifier in
-            guard case let .keyword(keyword) = modifier.name.tokenKind else { return false }
-            return keyword == .private || keyword == .fileprivate
-        }
-    }
-
-    private static func hasOverrideModifier(_ modifiers: DeclModifierListSyntax) -> Bool {
-        modifiers.contains { modifier in
-            guard case let .keyword(keyword) = modifier.name.tokenKind else { return false }
-            return keyword == .override
-        }
-    }
-
-    /// Returns `true` if the syntax tree contains a `throw` statement or `try` expression, stopping
-    /// at nested function/closure boundaries.
+    /// Returns `true` if the syntax tree contains a `throw` statement, a `try` expression or a
+    /// `for try await` loop, stopping at nested function/closure boundaries.
     private static func containsThrowOrTry(_ node: some SyntaxProtocol) -> Bool {
         for child in node.children(viewMode: .sourceAccurate) {
             if child.is(FunctionDeclSyntax.self) || child.is(ClosureExprSyntax.self) { continue }
             if child.is(ThrowStmtSyntax.self) || child.is(TryExprSyntax.self) { return true }
+            // for try await carries the try as a bare token, never as a try expression
+            if let forStmt = child.as(ForStmtSyntax.self), forStmt.tryKeyword != nil { return true }
             if containsThrowOrTry(child) { return true }
         }
         return false

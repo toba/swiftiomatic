@@ -92,6 +92,42 @@ final class NoGuardInTests: StaticFormatRule<BasicRuleValue>, @unchecked Sendabl
         state.addedTryStatement = frame.addedTry
     }
 
+    /// Report every `guard` in the list the rewrite would convert.
+    ///
+    /// The finding is emitted here rather than from `transform` , because `transform` receives the
+    /// list after the children are rewritten. A rewritten node detaches from the parsed file, so
+    /// its absolute offset indexes a different point of the original text and the location
+    /// converter names the wrong line.
+    static func willEnter(_ node: CodeBlockItemListSyntax, context: Context) {
+        guard context.noGuardInTestsState.insideTestFunction else { return }
+
+        for guardStmt in convertibleGuards(in: node).values {
+            Self.diagnose(.convertGuard, on: guardStmt.guardKeyword, context: context)
+        }
+    }
+
+    /// The `guard` statements of one list the rewrite converts, keyed by their position in it.
+    ///
+    /// `willEnter` reports what this walk finds, and `transform` rewrites it. The names the
+    /// preceding statements bind decide convertibility, so one walk serves both. Two walks drift,
+    /// and the reported set then stops matching the rewritten set.
+    private static func convertibleGuards(
+        in node: CodeBlockItemListSyntax
+    ) -> [Int: GuardStmtSyntax] {
+        var declaredNames = Set<String>()
+        var found = [Int: GuardStmtSyntax]()
+
+        for (index, item) in node.enumerated() {
+            collectDeclaredNames(from: item, into: &declaredNames)
+
+            guard let guardStmt = item.item.as(GuardStmtSyntax.self),
+                isConvertible(guardStmt, declaredNames: declaredNames) else { continue }
+
+            found[index] = guardStmt
+        }
+        return found
+    }
+
     // MARK: - Static transforms
 
     /// Wraps the original `visit(FunctionDeclSyntax)` post-recursion logic. State has already been
@@ -109,6 +145,7 @@ final class NoGuardInTests: StaticFormatRule<BasicRuleValue>, @unchecked Sendabl
         guard state.addedTryStatement else { return DeclSyntax(node) }
 
         var result = node
+
         if result.signature.effectSpecifiers?.throwsClause == nil {
             result = result.addingThrowsClause()
         }
@@ -132,75 +169,64 @@ final class NoGuardInTests: StaticFormatRule<BasicRuleValue>, @unchecked Sendabl
         _ node: CodeBlockItemListSyntax,
         context: Context
     ) -> CodeBlockItemListSyntax {
+        let convertible = convertibleGuards(in: node)
+        guard !convertible.isEmpty else { return node }
+
         let state = context.noGuardInTestsState
-        let items = Array(node)
         var newItems = [CodeBlockItemSyntax]()
-        var changed = false
 
-        var declaredNames = Set<String>()
-
-        for item in items {
-            collectDeclaredNames(from: item, into: &declaredNames)
-
-            guard let guardStmt = item.item.as(GuardStmtSyntax.self) else {
+        for (index, item) in node.enumerated() {
+            guard let guardStmt = convertible[index] else {
                 newItems.append(item)
                 continue
             }
-
-            guard let replacement = convertGuard(
-                guardStmt,
-                item: item,
-                declaredNames: declaredNames,
-                state: state,
-                context: context
-            ) else {
-                newItems.append(item)
-                continue
-            }
-
-            newItems.append(contentsOf: replacement)
-            changed = true
+            newItems.append(contentsOf: convertGuard(guardStmt, item: item, state: state))
         }
-
-        guard changed else { return node }
         return CodeBlockItemListSyntax(newItems)
     }
 
     // MARK: - Guard analysis and conversion
 
-    private static func convertGuard(
+    /// Whether the rewrite can replace this `guard` with assertions.
+    ///
+    /// - Parameters:
+    ///   - guard: The statement to test.
+    ///   - declaredNames: The names the preceding statements of the same block already bind. A
+    ///     `guard` that rebinds one of them cannot become a `let` .
+    private static func isConvertible(
         _ guard: GuardStmtSyntax,
-        item: CodeBlockItemSyntax,
-        declaredNames: Set<String>,
-        state: State,
-        context: Context
-    ) -> [CodeBlockItemSyntax]? {
-        guard isValidElseBlock(`guard`.body) else { return nil }
+        declaredNames: Set<String>
+    ) -> Bool {
+        guard isValidElseBlock(`guard`.body) else { return false }
 
-        let conditions = Array(`guard`.conditions)
-
-        for condition in conditions {
+        for condition in `guard`.conditions {
             switch condition.condition {
                 case let .optionalBinding(binding):
                     let name = binding.pattern.trimmedDescription
-                    if declaredNames.contains(name) { return nil }
-                    if binding.initializer?.value.containsAwait == true { return nil }
-                    if binding.initializer == nil, declaredNames.contains(name) { return nil }
-                case .matchingPattern: return nil
-                case let .expression(expr): if expr.containsAwait { return nil }
-                case .availability: return nil
+                    if declaredNames.contains(name) { return false }
+                    if binding.initializer?.value.containsAwait == true { return false }
+                case .matchingPattern: return false
+                case let .expression(expr): if expr.containsAwait { return false }
+                case .availability: return false
                 #if compiler(>=6.0)
-                    @unknown default: return nil
+                    @unknown default: return false
                 #endif
             }
         }
+        return true
+    }
 
+    /// Build the statements that replace a `guard` `convertibleGuards(in:)` already accepted.
+    private static func convertGuard(
+        _ guard: GuardStmtSyntax,
+        item: CodeBlockItemSyntax,
+        state: State
+    ) -> [CodeBlockItemSyntax] {
+        let conditions = Array(`guard`.conditions)
         let assertionMessage = extractAssertionMessage(from: `guard`.body)
         let useSwiftTesting = state.testContext.importsTesting
         let fullLeadingTrivia = item.leadingTrivia
         let indentTrivia = extractIndentation(from: fullLeadingTrivia)
-
-        Self.diagnose(.convertGuard, on: `guard`.guardKeyword, context: context)
 
         var replacements = [CodeBlockItemSyntax]()
 
@@ -265,10 +291,7 @@ final class NoGuardInTests: StaticFormatRule<BasicRuleValue>, @unchecked Sendabl
                 let name = callExpr.calledExpression.trimmedDescription
 
                 if name == "XCTFail" || name == "Issue.record",
-                   !callExpr.arguments.isEmpty
-                {
-                    return callExpr.arguments
-                }
+                   !callExpr.arguments.isEmpty { return callExpr.arguments }
             }
         }
         return nil

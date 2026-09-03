@@ -1751,4 +1751,51 @@ struct NoGuardInTestsTests: RuleTesting {
       findings: []
     )
   }
+
+  // MARK: - Finding location
+
+  /// Jig issue `d1f36c67`: the finding was anchored on the rewritten tree. A rewritten node
+  /// detaches from the parsed file, so its offset named a line far from the `guard`. The nested
+  /// `guard` here forces that detachment for the outer statement list.
+  @Test func reportsTheGuardOwnLineAfterAnEarlierRewrite() {
+    assertFormatting(
+      NoGuardInTests.self,
+      input: """
+        import XCTest
+
+        class TestCase: XCTestCase {
+            func test_something() {
+                if condition {
+                    1️⃣guard let inner = optionalInner else {
+                        return
+                    }
+                    print(inner)
+                }
+                2️⃣guard let outer = optionalOuter else {
+                    return
+                }
+                print(outer)
+            }
+        }
+        """,
+      expected: """
+        import XCTest
+
+        class TestCase: XCTestCase {
+            func test_something() throws {
+                if condition {
+                    let inner = try XCTUnwrap(optionalInner)
+                    print(inner)
+                }
+                let outer = try XCTUnwrap(optionalOuter)
+                print(outer)
+            }
+        }
+        """,
+      findings: [
+        FindingSpec("1️⃣", message: "replace 'guard' in test with direct assertion or unwrap"),
+        FindingSpec("2️⃣", message: "replace 'guard' in test with direct assertion or unwrap"),
+      ]
+    )
+  }
 }

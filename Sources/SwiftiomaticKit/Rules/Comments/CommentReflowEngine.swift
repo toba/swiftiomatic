@@ -27,7 +27,7 @@ package enum CommentReflowEngine {
         case blank
         case codeFence(open: String, body: [String], close: String?)
         case paragraph(text: String)
-        case list(items: [ListItem], parameterBlock: Bool)
+        case list(items: [ListItem])
         case blockQuote(inner: [Block])
         case verbatim(line: String)
 
@@ -44,17 +44,15 @@ package enum CommentReflowEngine {
                     out.append(contentsOf: body)
                     if let close { out.append(close) }
                 case let .paragraph(text):
-                    out.append(contentsOf: wrapParagraph(text: text, width: width, continuation: "")
-                    )
-                case .list(let items, _):
+                    out.append(contentsOf: wrapParagraph(text: text, width: width))
+                case let .list(items):
                     for item in items {
                         let marker = item.marker  // e.g. "- " or "  - " or "1. "
                         let continuation = String(repeating: " ", count: marker.count)
                         let firstLineLeading = marker
                         let wrapped = wrapParagraph(
                             text: item.text,
-                            width: max(8, width - marker.count),
-                            continuation: ""
+                            width: max(8, width - marker.count)
                         )
 
                         if wrapped.isEmpty {
@@ -81,21 +79,11 @@ package enum CommentReflowEngine {
                 case let .blockQuote(inner):
                     var nestedOut: [String] = []
                     for b in inner { b.render(into: &nestedOut, width: max(8, width - 2)) }
-                    // First line of each contiguous non-blank run gets "> ", continuation lines get
-                    // lazy indent (" "). Blank separator lines keep "> " (rendered as ">").
-                    var pendingFirst = true
-
-                    for line in nestedOut {
-                        if line.isEmpty {
-                            out.append(">")
-                            pendingFirst = true
-                        } else if pendingFirst {
-                            out.append("> " + line)
-                            pendingFirst = false
-                        } else {
-                            out.append("  " + line)
-                        }
-                    }
+                    // every line carries the marker, and a blank separator renders as ">".
+                    // CommonMark accepts a lazy continuation for a paragraph alone, so a fence
+                    // whose body lines drop the marker leaks out of the quote and never closes
+                    // inside it
+                    for line in nestedOut { out.append(line.isEmpty ? ">" : "> " + line) }
                 case let .verbatim(line): out.append(line)
             }
         }
@@ -171,9 +159,12 @@ package enum CommentReflowEngine {
             }
             // Block quote: a `>`-prefixed line, plus any CommonMark "lazy continuation" lines that
             // follow without a `>` prefix (non-blank, not a list / fence / link-ref). The renderer
-            // re-adds `> ` and the lazy 2-space indent on output.
+            // re-adds `> ` on every output line.
             if line.hasPrefix(">") {
                 var quoted: [String] = []
+                // a fence that opens inside the quote runs to its closer, so an unmarked line
+                // between the two is fence body rather than the end of the quote
+                var openFence: String?
 
                 while i < lines.count {
                     let cur = lines[i]
@@ -183,15 +174,25 @@ package enum CommentReflowEngine {
                         let stripped = dropped.hasPrefix(" ")
                             ? String(dropped.dropFirst())
                             : dropped
+                        updateFenceState(stripped, &openFence)
                         quoted.append(stripped)
                         i += 1
                         continue
                     }
-                    if cur.trimmingCharacters(in: .whitespaces).isEmpty { break }
-                    if listMarker(cur) != nil { break }
-                    if fenceOpener(cur) != nil { break }
-                    if isLinkReferenceDefinition(cur) { break }
-                    quoted.append(cur.trimmingCharacters(in: .whitespaces))
+                    if openFence == nil {
+                        if cur.trimmingCharacters(in: .whitespaces).isEmpty { break }
+                        if listMarker(cur) != nil { break }
+                        if fenceOpener(cur) != nil { break }
+                        if isLinkReferenceDefinition(cur) { break }
+                        quoted.append(cur.trimmingCharacters(in: .whitespaces))
+                        i += 1
+                        continue
+                    }
+                    // strip only the lazy indent the renderer used to emit, so the code keeps its
+                    // own indentation
+                    let body = cur.hasPrefix("  ") ? String(cur.dropFirst(2)) : cur
+                    updateFenceState(body, &openFence)
+                    quoted.append(body.trimmingTrailingWhitespace())
                     i += 1
                 }
                 let innerBlocks = parseBlocks(quoted)
@@ -200,8 +201,8 @@ package enum CommentReflowEngine {
             }
             // List (incl. `- Parameters:` block)
             if listMarker(line) != nil {
-                let (items, consumed, isParamBlock) = parseList(lines, startingAt: i)
-                blocks.append(.list(items: items, parameterBlock: isParamBlock))
+                let (items, consumed) = parseList(lines, startingAt: i)
+                blocks.append(.list(items: items))
                 i += consumed
                 continue
             }
@@ -270,6 +271,17 @@ package enum CommentReflowEngine {
         return trimmed.hasPrefix(opener)
     }
 
+    /// Tracks whether a fence is open across the lines of a block quote.
+    ///
+    /// - Parameters:
+    ///   - line: One line of quoted content, with the `>` marker already removed
+    ///   - openFence: The marker of the fence now open, or `nil` when no fence is open
+    private static func updateFenceState(_ line: String, _ openFence: inout String?) {
+        if let marker = openFence {
+            if isFenceCloser(line, opener: marker) { openFence = nil }
+        } else if let marker = fenceOpener(line) { openFence = marker }
+    }
+
     /// DocC list-item keywords that must always sit at the outermost list indent — siblings of
     /// `- Parameters:`, never nested under it. Matched case-sensitively and only when followed by a
     /// colon (the syntax DocC actually recognizes).
@@ -336,15 +348,13 @@ package enum CommentReflowEngine {
     }
 
     /// Parses a contiguous list starting at `start` . List ends on blank line or non-list line at
-    /// the same or lesser indentation. Returns the parsed items, lines consumed, and whether this
-    /// list is a `- Parameters:` block (its first item's text is exactly "Parameters:").
+    /// the same or lesser indentation. Returns the parsed items and the lines consumed.
     private static func parseList(
         _ lines: [String],
         startingAt start: Int
-    ) -> (items: [ListItem], consumed: Int, parameterBlock: Bool) {
+    ) -> (items: [ListItem], consumed: Int) {
         var items: [ListItem] = []
         var i = start
-        var isParamBlock = false
         var firstItemMarkerIndent: Int?
 
         while i < lines.count {
@@ -375,7 +385,7 @@ package enum CommentReflowEngine {
                 // nested under the previous item via continuation lines below. For simplicity we
                 // fold it into the previous item's `nested` blocks.
                 let nestedStart = i
-                let (rawNested, consumed, _) = parseList(lines, startingAt: nestedStart)
+                let (rawNested, consumed) = parseList(lines, startingAt: nestedStart)
                 // Strip leading whitespace from nested item markers; the parent's `continuation`
                 // prefix is the sole authoritative source of indentation when rendering nested
                 // blocks. Without this, the original leading spaces would compound with the
@@ -385,19 +395,11 @@ package enum CommentReflowEngine {
                     copy.marker = String(item.marker.drop(while: { $0 == " " }))
                     return copy
                 }
-                if !items.isEmpty {
-                    items[items.count - 1].nested.append(.list(items: nested, parameterBlock: false)
-                    )
-                }
+                if !items.isEmpty { items[items.count - 1].nested.append(.list(items: nested)) }
                 i += consumed
                 continue
             }
-            if firstItemMarkerIndent == nil {
-                firstItemMarkerIndent = leading
-                if bodyText.trimmingCharacters(in: .whitespaces) == "Parameters:" {
-                    isParamBlock = true
-                }
-            }
+            if firstItemMarkerIndent == nil { firstItemMarkerIndent = leading }
             var item = ListItem(
                 marker: String(repeating: " ", count: leading)
                     + String(m.marker.drop(while: { $0 == " " })),
@@ -422,16 +424,15 @@ package enum CommentReflowEngine {
                     if isDocCTopLevelKeyword(nextBody) { break }
                 }
 
-                if let nm = listMarker(next), nextLeading > leading {
+                if listMarker(next) != nil, nextLeading > leading {
                     // nested list inside this item
-                    let (rawNested, consumed, _) = parseList(lines, startingAt: i)
+                    let (rawNested, consumed) = parseList(lines, startingAt: i)
                     let nested = rawNested.map { item -> ListItem in
                         var copy = item
                         copy.marker = String(item.marker.drop(while: { $0 == " " }))
                         return copy
                     }
-                    item.nested.append(.list(items: nested, parameterBlock: false))
-                    _ = nm
+                    item.nested.append(.list(items: nested))
                     i += consumed
                     continue
                 }
@@ -441,18 +442,14 @@ package enum CommentReflowEngine {
             }
             items.append(item)
         }
-        return (items, i - start, isParamBlock)
+        return (items, i - start)
     }
 
     // MARK: - Atom-aware paragraph wrap
 
     /// Greedy word-wrap for a paragraph, respecting unbreakable atoms (URLs, inline code, Markdown
     /// links, autolinks). Atoms larger than `width` get their own line and are allowed to overflow.
-    fileprivate static func wrapParagraph(
-        text: String,
-        width: Int,
-        continuation _: String
-    ) -> [String] {
+    fileprivate static func wrapParagraph(text: String, width: Int) -> [String] {
         let atoms = tokenize(text)
         guard !atoms.isEmpty else { return [] }
         var lines: [String] = []
@@ -479,7 +476,7 @@ package enum CommentReflowEngine {
     /// links, autolinks). Whitespace is the separator and is dropped.
     package static func tokenize(_ text: String) -> [String] {
         var atoms: [String] = []
-        let scalars = Array(text)
+        let characters = Array(text)
         var i = 0
         var pending = ""
         func flush() {
@@ -488,8 +485,8 @@ package enum CommentReflowEngine {
                 pending = ""
             }
         }
-        while i < scalars.count {
-            let c = scalars[i]
+        while i < characters.count {
+            let c = characters[i]
 
             if c == " " || c == "\t" {
                 flush()
@@ -505,7 +502,7 @@ package enum CommentReflowEngine {
                 var openCount = 0
                 var k = i
 
-                while k < scalars.count, scalars[k] == "`" {
+                while k < characters.count, characters[k] == "`" {
                     openCount += 1
                     k += 1
                 }
@@ -513,12 +510,12 @@ package enum CommentReflowEngine {
                 var j = k
                 var closeStart: Int?
 
-                while j < scalars.count {
-                    if scalars[j] == "`" {
+                while j < characters.count {
+                    if characters[j] == "`" {
                         var run = 0
                         var m = j
 
-                        while m < scalars.count, scalars[m] == "`" {
+                        while m < characters.count, characters[m] == "`" {
                             run += 1
                             m += 1
                         }
@@ -533,31 +530,31 @@ package enum CommentReflowEngine {
                 }
                 if let cs = closeStart {
                     let endExclusive = cs + openCount
-                    pending.append(String(scalars[i..<endExclusive]))
+                    pending.append(String(characters[i..<endExclusive]))
                     i = endExclusive
                     continue
                 }
             }
             // Markdown link: [text](url) — atomic if balanced.
             if c == "[" {
-                if let link = matchMarkdownLink(scalars, from: i) {
-                    pending.append(String(scalars[i...link.end]))
+                if let link = matchMarkdownLink(characters, from: i) {
+                    pending.append(String(characters[i...link.end]))
                     i = link.end + 1
                     continue
                 }
             }
             // Autolink: <scheme://...>
             if c == "<" {
-                if let end = matchAutolink(scalars, from: i) {
-                    pending.append(String(scalars[i...end]))
+                if let end = matchAutolink(characters, from: i) {
+                    pending.append(String(characters[i...end]))
                     i = end + 1
                     continue
                 }
             }
             // URL: a scheme with "://" or a "www." host — read until whitespace.
-            if c.isLetter, isURLStart(scalars, at: i) {
-                let j = endOfBareURL(scalars, from: i)
-                pending.append(String(scalars[i..<j]))
+            if c.isLetter, isURLStart(characters, at: i) {
+                let j = endOfBareURL(characters, from: i)
+                pending.append(String(characters[i..<j]))
                 i = j
                 continue
             }
@@ -637,9 +634,7 @@ package enum CommentReflowEngine {
         while j < s.count,
               s[j].isLetter || s[j].isNumber || s[j] == "+" || s[j] == "."
                   || s[j] == "-"
-        {
-            j += 1
-        }
+        { j += 1 }
         guard j + 3 <= s.count, s[j] == ":", s[j + 1] == "/", s[j + 2] == "/" else { return false }
         return true
     }

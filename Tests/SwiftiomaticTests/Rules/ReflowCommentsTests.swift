@@ -474,7 +474,7 @@ struct CommentReflowEngineTests {
             lines: ["> Note: some very long line that has to wrap"],
             availableWidth: 20
         )
-        #expect(r == ["> Note: some very", "  long line that has", "  to wrap"])
+        #expect(r == ["> Note: some very", "> long line that has", "> to wrap"])
     }
 
     @Test func reflowBlockQuoteMultiParagraphKeepsBlankSeparator() {
@@ -482,7 +482,7 @@ struct CommentReflowEngineTests {
             lines: ["> aaa bbb ccc ddd eee", ">", "> fff ggg hhh iii jjj"],
             availableWidth: 11
         )
-        #expect(r == ["> aaa bbb", "  ccc ddd", "  eee", ">", "> fff ggg", "  hhh iii", "  jjj"])
+        #expect(r == ["> aaa bbb", "> ccc ddd", "> eee", ">", "> fff ggg", "> hhh iii", "> jjj"])
     }
 
     @Test func reflowBlockQuoteLazyContinuationStaysInQuote() {
@@ -559,6 +559,71 @@ struct CommentReflowEngineTests {
                 line.isEmpty || line.hasPrefix("> ") || line.hasPrefix(">") || line.hasPrefix("  "),
                 "line escaped the blockquote: \(line)"
             )
+        }
+    }
+
+    @Test func reflowBlockQuoteFenceIsAlreadyOptimal() {
+        // A fence needs the blockquote marker on every line, so a well-formed callout is already
+        // optimal and the engine reports no change.
+        let r = CommentReflowEngine.reflow(
+            lines: [
+                "> Tip: Name the macros once instead of on every assertion:",
+                ">",
+                "> ```swift",
+                "> @Suite(.macros([\"stringify\": StringifyMacro.self]))",
+                "> struct StringifyTests {",
+                ">     let value = 1",
+                "> }",
+                "> ```",
+            ],
+            availableWidth: 96
+        )
+        #expect(r == nil)
+    }
+
+    @Test func reflowBlockQuoteRestoresMarkerOnFenceBody() {
+        // The lazy two-space indent is valid for a paragraph and invalid for a fence: the code
+        // leaks out of the callout and the fence never closes inside it.
+        let r = CommentReflowEngine.reflow(
+            lines: [
+                "> Tip: Name the macros once instead of on every assertion:",
+                ">",
+                "> ```swift",
+                "  @Suite(.macros([\"stringify\": StringifyMacro.self]))",
+                "  struct StringifyTests {",
+                "      let value = 1",
+                "  }",
+                "  ```",
+            ],
+            availableWidth: 96
+        )
+        #expect(
+            r == [
+                "> Tip: Name the macros once instead of on every assertion:",
+                ">",
+                "> ```swift",
+                "> @Suite(.macros([\"stringify\": StringifyMacro.self]))",
+                "> struct StringifyTests {",
+                ">     let value = 1",
+                "> }",
+                "> ```",
+            ]
+        )
+    }
+
+    @Test func reflowBlockQuoteWrappedParagraphKeepsMarker() {
+        // A re-split paragraph keeps the marker on the overflow line rather than the lazy indent.
+        let r = CommentReflowEngine.reflow(
+            lines: [
+                "> Tip: Use the `.macros(_:indentationWidth:record:)` suite trait to name the",
+                "> macros once instead of on every assertion:",
+            ],
+            availableWidth: 40
+        )
+        #expect(r != nil)
+
+        for line in r ?? [] {
+            #expect(line.hasPrefix("> "), "line lost the blockquote marker: \(line)")
         }
     }
 

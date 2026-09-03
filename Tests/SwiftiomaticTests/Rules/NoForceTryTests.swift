@@ -43,7 +43,7 @@ struct NoForceTryTests: RuleTesting {
     )
   }
 
-  @Test func allowForceTryInTestCode() {
+  @Test func reportForceTryInNonTestMethodBody() {
     assertFormatting(
       NoForceTry.self,
       input: """
@@ -51,7 +51,7 @@ struct NoForceTryTests: RuleTesting {
 
         class TestCase: XCTestCase {
             func something() {
-                let document = try! Document(path: "important.data")
+                let document = 1️⃣try! Document(path: "important.data")
             }
         }
         """,
@@ -64,7 +64,61 @@ struct NoForceTryTests: RuleTesting {
             }
         }
         """,
-      findings: []
+      findings: [
+        FindingSpec("1️⃣", message: "do not use force try"),
+      ]
+    )
+  }
+
+  /// The four positions of jig issue `f87c4eb1`: a function body, a returned expression, a method
+  /// body, and a closure body. None of them reported before the fix.
+  @Test func reportForceTryInEveryPosition() {
+    assertFormatting(
+      NoForceTry.self,
+      input: """
+        func inFunctionBody() {
+            _ = 1️⃣try! mayThrow()
+        }
+
+        func inFunctionBodyReturned() -> Int {
+            return 2️⃣try! mayThrow()
+        }
+
+        struct S {
+            func inMethodBody() -> Int {
+                3️⃣try! mayThrow()
+            }
+        }
+
+        let inClosureBody = {
+            4️⃣try! mayThrow()
+        }
+        """,
+      expected: """
+        func inFunctionBody() {
+            _ = try! mayThrow()
+        }
+
+        func inFunctionBodyReturned() -> Int {
+            return try! mayThrow()
+        }
+
+        struct S {
+            func inMethodBody() -> Int {
+                try! mayThrow()
+            }
+        }
+
+        let inClosureBody = {
+            try! mayThrow()
+        }
+        """,
+      findings: [
+        FindingSpec("1️⃣", message: "do not use force try"),
+        FindingSpec("2️⃣", message: "do not use force try"),
+        FindingSpec("3️⃣", message: "do not use force try"),
+        FindingSpec("4️⃣", message: "do not use force try"),
+      ]
     )
   }
 
@@ -77,7 +131,7 @@ struct NoForceTryTests: RuleTesting {
         @Test func someFunc() {
           let document = 1️⃣try! Document(path: "important.data")
           func nestedFunc() {
-            let x = try! someThrowingFunction()
+            let x = 2️⃣try! someThrowingFunction()
           }
         }
         """,
@@ -93,6 +147,7 @@ struct NoForceTryTests: RuleTesting {
         """,
       findings: [
         FindingSpec("1️⃣", message: "replace 'try!' with 'try' in test function; use 'throws' on the test method instead"),
+        FindingSpec("2️⃣", message: "do not use force try"),
       ]
     )
   }
@@ -129,11 +184,11 @@ struct NoForceTryTests: RuleTesting {
         import Testing
 
         func something() {
-            try! somethingThatThrows()
+            1️⃣try! somethingThatThrows()
         }
 
         func test_something() {
-            try! somethingThatThrows()
+            2️⃣try! somethingThatThrows()
         }
         """,
       expected: """
@@ -147,7 +202,10 @@ struct NoForceTryTests: RuleTesting {
             try! somethingThatThrows()
         }
         """,
-      findings: []
+      findings: [
+        FindingSpec("1️⃣", message: "do not use force try"),
+        FindingSpec("2️⃣", message: "do not use force try"),
+      ]
     )
   }
 
@@ -231,7 +289,7 @@ struct NoForceTryTests: RuleTesting {
 
         @Test func something() {
             someFunction {
-                try! somethingThatThrows()
+                1️⃣try! somethingThatThrows()
             }
         }
         """,
@@ -244,7 +302,9 @@ struct NoForceTryTests: RuleTesting {
             }
         }
         """,
-      findings: []
+      findings: [
+        FindingSpec("1️⃣", message: "do not use force try"),
+      ]
     )
   }
 
@@ -284,7 +344,7 @@ struct NoForceTryTests: RuleTesting {
         @Test func something() {
             doSomething {
                 if condition {
-                    try! somethingThatThrows()
+                    1️⃣try! somethingThatThrows()
                 }
             }
         }
@@ -300,7 +360,9 @@ struct NoForceTryTests: RuleTesting {
             }
         }
         """,
-      findings: []
+      findings: [
+        FindingSpec("1️⃣", message: "do not use force try"),
+      ]
     )
   }
 
@@ -313,7 +375,7 @@ struct NoForceTryTests: RuleTesting {
         @Test func something() {
             func nestedFunction() {
                 if condition {
-                    try! somethingThatThrows()
+                    1️⃣try! somethingThatThrows()
                 }
             }
         }
@@ -329,7 +391,9 @@ struct NoForceTryTests: RuleTesting {
             }
         }
         """,
-      findings: []
+      findings: [
+        FindingSpec("1️⃣", message: "do not use force try"),
+      ]
     )
   }
 
@@ -370,7 +434,7 @@ struct NoForceTryTests: RuleTesting {
 
         class TestCase: XCTestCase {
             func testHelper(arg: Bool) {
-                try! somethingThatThrows(with: arg)
+                1️⃣try! somethingThatThrows(with: arg)
             }
         }
         """,
@@ -383,7 +447,9 @@ struct NoForceTryTests: RuleTesting {
             }
         }
         """,
-      findings: []
+      findings: [
+        FindingSpec("1️⃣", message: "do not use force try"),
+      ]
     )
   }
 
@@ -395,11 +461,11 @@ struct NoForceTryTests: RuleTesting {
 
         class TestCase: XCTestCase {
             func something() {
-                try! somethingThatThrows()
+                1️⃣try! somethingThatThrows()
             }
 
             func testHelper() -> String {
-                try! generateString()
+                2️⃣try! generateString()
             }
         }
         """,
@@ -416,7 +482,10 @@ struct NoForceTryTests: RuleTesting {
             }
         }
         """,
-      findings: []
+      findings: [
+        FindingSpec("1️⃣", message: "do not use force try"),
+        FindingSpec("2️⃣", message: "do not use force try"),
+      ]
     )
   }
 }
