@@ -169,12 +169,52 @@ package final class LintCache: Sendable {
     /// Creates a cache rooted at the given directory. The directory is created on first write.
     package init(root: URL) { self.root = root }
 
-    /// Convenience: a cache rooted under `<cwd>/.build/sm-lint-cache/` if `.build` exists, else
-    /// under `<cwd>/.build/sm-lint-cache/` anyway (the directory is created on demand).
-    package convenience init() {
-        let cwd = URL(fileURLWithPath: FileManager.default.currentDirectoryPath)
-        self.init(root: cwd.appendingPathComponent(".build/sm-lint-cache", isDirectory: true))
+    /// Creates a cache at the root that ``defaultRoot(startingAt:)`` resolves for `startPath` .
+    ///
+    /// - Parameter startPath: A file or directory the run touches. Defaults to the working
+    ///   directory.
+    package convenience init(startingAt startPath: String? = nil) {
+        self.init(root: Self.defaultRoot(
+            startingAt: startPath ?? FileManager.default.currentDirectoryPath))
     }
+
+    /// Resolves the cache root for a run that starts at the given file or directory
+    ///
+    /// Walks up to the nearest `Package.swift` and answers `<package root>/.build/sm-lint-cache` .
+    /// One repository then holds one cache, and the rooted `/.build` ignore rule every package
+    /// already carries covers it. A run started deep inside `Sources/` writes to the package root,
+    /// not beside the file it lints.
+    ///
+    /// Without a `Package.swift` above the start path no ignore rule covers any candidate inside
+    /// the tree, so the cache goes to the user cache directory instead.
+    package static func defaultRoot(startingAt startPath: String) -> URL {
+        var directory = URL(fileURLWithPath: startPath).standardizedFileURL
+        var isDirectory: ObjCBool = false
+        let exists = FileManager.default.fileExists(
+            atPath: directory.path, isDirectory: &isDirectory
+        )
+        if !exists || !isDirectory.boolValue { directory = directory.deletingLastPathComponent() }
+
+        while true {
+            let manifest = directory.appendingPathComponent("Package.swift", isDirectory: false)
+
+            if FileManager.default.fileExists(atPath: manifest.path) {
+                return directory.appendingPathComponent(".build/sm-lint-cache", isDirectory: true)
+            }
+            let parent = directory.deletingLastPathComponent().standardizedFileURL
+            if parent.path == directory.path { break }
+            directory = parent
+        }
+
+        return userCacheRoot
+    }
+
+    /// Fallback root under the user cache directory, used when no package encloses the run.
+    private static let userCacheRoot: URL = {
+        let caches = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask).first
+            ?? FileManager.default.temporaryDirectory
+        return caches.appendingPathComponent("sm/lint-cache", isDirectory: true)
+    }()
 
     /// SHA-256 of file content, hex-encoded.
     package static func contentHash(of source: String) -> String {

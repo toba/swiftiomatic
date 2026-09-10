@@ -15,10 +15,7 @@ import ArgumentParser
 import SwiftiomaticKit
 
 /// Output format for diagnostics emitted by `lint` and `format` subcommands.
-enum Reporter: String, ExpressibleByArgument, CaseIterable, Sendable {
-    case text
-    case json
-}
+enum Reporter: String, ExpressibleByArgument, CaseIterable, Sendable { case text, json }
 
 extension SwiftiomaticCommand {
     /// Emits style diagnostics for one or more files containing Swift code.
@@ -43,9 +40,9 @@ extension SwiftiomaticCommand {
         @Flag(
             name: .long,
             help: """
-                Disable the on-disk lint cache. By default, lint findings are cached under \
-                .build/sm-lint-cache/ keyed by file content hash and configuration fingerprint, so \
-                unchanged files skip re-linting on the next run.
+                Disable the on-disk lint cache. By default, lint findings are cached under the \
+                enclosing package's .build/sm-lint-cache/ keyed by file content hash and \
+                configuration fingerprint, so unchanged files skip re-linting on the next run.
                 """
         )
         var noCache = false
@@ -61,28 +58,29 @@ extension SwiftiomaticCommand {
         var reporter: Reporter = .text
 
         func run() throws {
-            let cache: LintCache? = (noCache || LintCache.disabledByEnvironment) ? nil : LintCache()
+            // the cache root follows the first real input, so a run started outside the package
+            // still writes to that package's .build rather than to the working directory
+            let startPath = lintOptions.paths.first { $0 != "-" }
+            let cache: LintCache? = (noCache || LintCache.disabledByEnvironment)
+                ? nil
+                : LintCache(startingAt: startPath)
 
             let jsonReporter: JSONLintReporter? = (reporter == .json) ? JSONLintReporter() : nil
             let extraHandlers: [@Sendable (Diagnostic) -> Void] = jsonReporter.map { reporter in
-                [{ diagnostic in
-                    let severity: String =
-                        switch diagnostic.severity {
-                            case .error: "error"
-                            case .warning: "warning"
-                            case .note: "note"
-                        }
-                    reporter.record(
-                        JSONLintReporter.Entry(
-                            file: diagnostic.location?.file,
-                            line: diagnostic.location?.line,
-                            column: diagnostic.location?.column,
-                            severity: severity,
-                            rule: diagnostic.category,
-                            message: diagnostic.message
-                        )
-                    )
-                }]
+                [
+                    { diagnostic in
+                        let severity =
+                            switch diagnostic.severity {
+                                case .error: "error"
+                                case .warning: "warning"
+                                case .note: "note"
+                            }
+                        reporter.record(JSONLintReporter.Entry(
+                            file: diagnostic.location?.file, line: diagnostic.location?.line,
+                            column: diagnostic.location?.column, severity: severity,
+                            rule: diagnostic.category, message: diagnostic.message))
+                    }
+                ]
             } ?? []
 
             let frontend = LintFrontend(
