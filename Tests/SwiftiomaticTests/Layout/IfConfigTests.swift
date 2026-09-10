@@ -436,6 +436,74 @@ struct IfConfigTests: LayoutTesting {
     assertLayout(input: input, expected: expected, linelength: 45)
   }
 
+  // A modifier guarded by a postfix #if belongs to the chain above it, so it keeps the chain's
+  // indentation when IndentConditionalCompilationBlocks is off. Dropping it to the enclosing
+  // statement's column reads as if the modifier applied to the statement instead.
+  @Test func postfixPoundIfBetweenOtherModifiersNotIndented() {
+    let input =
+      """
+      EmptyView()
+        .padding([.vertical])
+      #if os(iOS)
+        .iOSSpecificModifier()
+        .anotherIOSSpecificModifier()
+      #endif
+        .commonModifier()
+      """
+
+    let expected =
+      """
+      EmptyView()
+        .padding([.vertical])
+        #if os(iOS)
+        .iOSSpecificModifier()
+        .anotherIOSSpecificModifier()
+        #endif
+        .commonModifier()
+
+      """
+
+    var config = Configuration.forTesting
+    config[IndentConditionalCompilationBlocks.self] = false
+    assertLayout(input: input, expected: expected, linelength: 45, configuration: config)
+  }
+
+  @Test func postfixPoundIfEndingChainInBodyNotIndented() {
+    let input =
+      """
+      struct Badge: View {
+        var body: some View {
+          Text("id")
+            .padding(.horizontal, 6)
+            #if canImport(AppKit)
+            .onTapGesture()
+            #endif
+        }
+      }
+
+      """
+
+    var config = Configuration.forTesting
+    config[IndentConditionalCompilationBlocks.self] = false
+    assertLayout(input: input, expected: input, linelength: 45, configuration: config)
+  }
+
+  @Test func postfixPoundIfAroundPropertyMemberNotIndented() {
+    let input =
+      """
+      EmptyView()
+        .padding([.vertical])
+        #if os(iOS)
+        .someProperty
+        #endif
+
+      """
+
+    var config = Configuration.forTesting
+    config[IndentConditionalCompilationBlocks.self] = false
+    assertLayout(input: input, expected: input, linelength: 45, configuration: config)
+  }
+
   @Test func postfixPoundIfWithTypeInModifier() {
     let input =
       """

@@ -97,6 +97,7 @@ extension TokenStream {
             if let base = memberAccessExpr.base {
                 (hasCompoundExpression, _) = insertContextualBreaks(base, isTopLevel: false)
             }
+
             if isTopLevel {
                 before(expr.firstToken(viewMode: .sourceAccurate), tokens: .contextualBreakingStart)
                 after(expr.lastToken(viewMode: .sourceAccurate), tokens: .contextualBreakingEnd)
@@ -145,26 +146,21 @@ extension TokenStream {
 
             if let calledMemberAccessExpr = calledExpression.as(MemberAccessExprSyntax.self) {
                 if calledMemberAccessExpr.base != nil {
-                    if isNestedInPostfixIfConfig(node: Syntax(calledMemberAccessExpr)) {
-                        before(
-                            calledMemberAccessExpr.period,
-                            tokens: [
-                                .break(
-                                    .same, size: 0,
-                                    newlines: .elective(
-                                        ignoresDiscretionary: false, maxBlankLines: 0))
-                            ])
-                    } else {
-                        before(
-                            calledMemberAccessExpr.period,
-                            tokens: [
-                                .break(
-                                    .contextual, size: 0,
-                                    newlines: .elective(
-                                        ignoresDiscretionary: false, maxBlankLines: 0))
-                            ]
-                        )
-                    }
+                    // A maintaining break applies only inside an indented postfix #if clause, whose
+                    // own open break already supplies the level. Every other chain element carries
+                    // its own continuation indentation, or the modifier drops to the enclosing
+                    // statement's column.
+                    let clauseSuppliesIndent = config[IndentConditionalCompilationBlocks.self]
+                        && isNestedInPostfixIfConfig(node: Syntax(calledMemberAccessExpr))
+
+                    before(
+                        calledMemberAccessExpr.period,
+                        tokens: [
+                            .break(
+                                clauseSuppliesIndent ? .same : .contextual, size: 0,
+                                newlines: .elective(ignoresDiscretionary: false, maxBlankLines: 0))
+                        ]
+                    )
                 }
                 before(calledMemberAccessExpr.period, tokens: beforeTokens)
                 after(expr.lastToken(viewMode: .sourceAccurate), tokens: afterTokens)
@@ -205,9 +201,7 @@ extension TokenStream {
         isCollectionLiteral: Bool
     ) {
         if let lastElement = node.last {
-            if let trailingComma = lastElement.trailingComma {
-                ignoredTokens.insert(trailingComma)
-            }
+            if let trailingComma = lastElement.trailingComma { ignoredTokens.insert(trailingComma) }
             before(
                 node.first?.firstToken(viewMode: .sourceAccurate),
                 tokens: .commaDelimitedRegionStart

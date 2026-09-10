@@ -24,10 +24,20 @@ extension TokenStream {
         // conditional-compilation indentation is suppressed here regardless of the setting; the
         // case labels keep their normal switch-case indentation.
         let wrapsSwitchCases = node.parent?.parent?.parent?.is(SwitchCaseListSyntax.self) ?? false
+        let continuesPostfixChain = isNestedInPostfixIfConfig(node: Syntax(node))
 
         if config[IndentConditionalCompilationBlocks.self], !wrapsSwitchCases {
             breakKindOpen = .open
             breakKindClose = .close
+        } else if continuesPostfixChain {
+            // A modifier guarded by a postfix #if continues the chain above it, so the break into
+            // the clause body carries the chain's continuation indentation. A same break would
+            // clear that indentation and drop the modifier to the enclosing statement's column. The
+            // break before the closing #elseif, #else or #endif stays the same kind, because the
+            // contextual break that insertContextualBreaks already emits before each of those
+            // tokens sets their column.
+            breakKindOpen = .contextual
+            breakKindClose = .same
         } else {
             breakKindOpen = .same
             breakKindClose = .same
@@ -57,7 +67,7 @@ extension TokenStream {
             before(tokenAfterBody, tokens: .break(breakKindClose, newlines: .soft), .close)
         }
 
-        if !isNestedInPostfixIfConfig(node: Syntax(node)), let condition = node.condition {
+        if !continuesPostfixChain, let condition = node.condition {
             before(
                 condition.firstToken(viewMode: .sourceAccurate),
                 tokens: .printerControl(kind: .disableBreaking(allowDiscretionary: true))
