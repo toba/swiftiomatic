@@ -113,6 +113,7 @@ package final class Context {
     lazy var preferSelfTypeState = UseSelfNotTypeName.State()
     lazy var preferSwiftTestingState = UseSwiftTestingNotXCTest.State()
     lazy var redundantAccessControlState = DropRedundantAccessControl.State()
+    lazy var redundantBackticksState = DropRedundantBackticks.State()
     lazy var redundantSelfState = DropRedundantSelf.State()
     lazy var redundantSwiftTestingSuiteState = DropRedundantSwiftTestingSuite.State()
     lazy var swiftTestingTestCaseNamesState = UseSwiftTestingNames.State()

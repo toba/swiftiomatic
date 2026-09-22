@@ -4,6 +4,11 @@ import SwiftSyntax
 /// `.prefix` , `.dropFirst` ). Each step allocates an intermediate `Array` . Inserting `.lazy` at
 /// the head of the chain forwards lazily and avoids the allocations.
 ///
+/// A shorter chain allocates too when a single-pass operation consumes it. `xs.map { … }.min()`
+/// builds an array that `min()` walks once and throws away, so the rule also lints a one-link or
+/// two-link chain that feeds `min` , `max` , `reduce` , `joined(separator:)` , `contains` ,
+/// `allSatisfy` , or `first(where:)` .
+///
 /// `Optional` also has `.map` and `.flatMap` , and neither one allocates. `Optional` has no `.lazy`
 /// either, so the suggested fix does not compile there. The tree carries no type information, so
 /// the rule reads the receiver type from two syntactic signals. A chain that uses a method
@@ -30,14 +35,56 @@ final class UseLazyForLongChainOps: LintSyntaxRule<LintOnlyValue>, @unchecked Se
         name == "map" || name == "flatMap"
     }
 
+    /// `Sequence` operations that walk their receiver once and never materialize it, so a transform
+    /// feeding one of them needs no intermediate array.
+    ///
+    /// `sorted()` and `reversed()` are absent on purpose. Each one has to materialize its receiver,
+    /// so `.lazy` buys nothing there. `first` counts only as `first(where:)` , which the call check
+    /// below enforces, because the `first` property belongs to `Collection` rather than `Sequence` .
+    private static let singlePassConsumers: Set<String> = [
+        "min", "max", "reduce", "joined", "contains", "allSatisfy", "first",
+    ]
+
     override func visit(_ node: FunctionCallExprSyntax) -> SyntaxVisitorContinueKind {
         // Only emit on the outermost chain link to avoid duplicate findings.
         if isChainLink(node.parent) { return .visitChildren }
         let chain = chainShape(of: node)
-        guard chain.length >= 3 else { return .visitChildren }
-        if chain.isOptionalCompatible, isInOptionalContext(node) { return .visitChildren }
-        diagnose(.useLazyForLongChainOps(chain.length), on: node)
+
+        if chain.length >= 3 {
+            if chain.isOptionalCompatible, isInOptionalContext(node) { return .visitChildren }
+            diagnose(.useLazyForLongChainOps(chain.length), on: node)
+            return .visitChildren
+        }
+        if let consumer = singlePassConsumer(of: node) {
+            diagnose(.useLazyBeforeSinglePassConsumer(consumer), on: node)
+        }
         return .visitChildren
+    }
+
+    /// Reports the name of the single-pass operation `call` invokes, when a short allocating
+    /// transform chain feeds it.
+    ///
+    /// A chain of three or more transforms already reports through
+    /// ``useLazyForLongChainOps(_:)`` , so only a one-link or two-link chain qualifies here.
+    /// The consumer also settles the receiver type: `Optional` declares none of these operations,
+    /// so the chain is a `Sequence` chain and `.lazy` compiles.
+    private func singlePassConsumer(of call: FunctionCallExprSyntax) -> String? {
+        guard let member = call.calledExpression.as(MemberAccessExprSyntax.self) else { return nil }
+        let name = member.declName.baseName.text
+        guard Self.singlePassConsumers.contains(name) else { return nil }
+
+        // A lazy sequence resolves a bare `joined()` to the overload that flattens a sequence of
+        // sequences, so the result stops being a `String` . `joined(separator:)` returns a `String`
+        // either way.
+        if name == "joined", call.arguments.isEmpty { return nil }
+
+        guard let receiver = member.base?.as(FunctionCallExprSyntax.self) else { return nil }
+
+        // A `.lazy` inside the chain resets the length to zero, so a zero length here means the
+        // chain allocates nothing.
+        let chain = chainShape(of: receiver)
+        guard chain.length >= 1, chain.length <= 2 else { return nil }
+        return name
     }
 
     private func isChainLink(_ syntax: Syntax?) -> Bool {
@@ -170,5 +217,9 @@ final class UseLazyForLongChainOps: LintSyntaxRule<LintOnlyValue>, @unchecked Se
 fileprivate extension Finding.Message {
     static func useLazyForLongChainOps(_ count: Int) -> Finding.Message {
         "chain of \(count) collection transforms allocates intermediate arrays — consider '.lazy'"
+    }
+
+    static func useLazyBeforeSinglePassConsumer(_ consumer: String) -> Finding.Message {
+        "collection transforms before '\(consumer)' allocate an intermediate array — consider '.lazy'"
     }
 }

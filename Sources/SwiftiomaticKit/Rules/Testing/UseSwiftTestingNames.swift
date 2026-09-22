@@ -6,13 +6,19 @@ import SwiftSyntax
 /// convention, so the conventional `test` prefix is redundant. Two styles are offered:
 ///
 /// - `.standardIdentifier` (default) — strip the `test` prefix, producing an idiomatic camelCase
-///   identifier (`testFooBar` → `fooBar`). The rename is skipped when the remainder would be empty,
-///   start with a digit, be a Swift keyword, or collide with an existing identifier in scope.
+///   identifier (`testFooBar` → `fooBar`). A backticked name keeps its backticks only when it
+///   carries a space (`` `test foo bar` `` → `` `foo bar` ``); otherwise it becomes a plain
+///   identifier (`` `testFooBar` `` → `fooBar`). The rename is skipped when the remainder would be
+///   empty, start with a digit, be a Swift keyword, or collide with an existing identifier in
+///   scope.
 /// - `.rawIdentifier` — convert the camelCase name into a backtick-wrapped raw identifier whose
 ///   words are space-separated and lowercased (`testFooBar` → `` `foo bar` ``). A leading `test`
-///   word is dropped. Already-backticked names are left untouched, and so is a function whose
-///   `@Test` names the test explicitly (`@Test("foo bar")`). Swift Testing derives an implicit
-///   display name from a raw identifier, and it rejects a test that declares both names.
+///   word is dropped. A backticked name is rewritten too when it carries spaces or single
+///   underscores (`` `test_foo_bar` `` → `` `foo bar` ``), and it loses its backticks when one word
+///   remains. A backticked camelCase name and a name with a double underscore are left untouched,
+///   and so is a function whose `@Test` names the test explicitly (`@Test("foo bar")`). Swift
+///   Testing derives an implicit display name from a raw identifier, and it rejects a test that
+///   declares both names.
 ///
 /// Lint: A warning is raised for `@Test` functions whose name does not match the configured style.
 ///
@@ -99,14 +105,22 @@ final class UseSwiftTestingNames: StaticFormatRule<SwiftTestingNamesConfiguratio
 
         let newIdentifier: String
 
-        if isBackticked {
-            let afterTest = bareName.dropFirst(4)
-            guard !afterTest.isEmpty else { return DeclSyntax(node) }
-            let trimmed = afterTest.hasPrefix(" ")
-                ? String(afterTest.dropFirst())
-                : String(afterTest)
+        if isBackticked, bareName.dropFirst(4).hasPrefix(" ") {
+            // `test feature works` stays a raw identifier. Only the leading word is redundant.
+            let trimmed = String(bareName.dropFirst(5))
             guard !trimmed.isEmpty else { return DeclSyntax(node) }
             newIdentifier = "`\(trimmed)`"
+        } else if isBackticked {
+            // `testFeature` and `test_feature` carry no space, so the name becomes a plain
+            // identifier once the prefix and any leading underscore go.
+            var remainder = String(bareName.dropFirst(4))
+            while remainder.hasPrefix("_") { remainder = String(remainder.dropFirst()) }
+            guard let first = remainder.first, first.isLetter else { return DeclSyntax(node) }
+            remainder = first.lowercased() + remainder.dropFirst()
+            guard remainder.isBareIdentifier else { return DeclSyntax(node) }
+            if Self.swiftKeywords.contains(remainder) { return DeclSyntax(node) }
+            if state.allIdentifiers.contains(remainder) { return DeclSyntax(node) }
+            newIdentifier = remainder
         } else {
             let afterTest = bareName.dropFirst(4)
             guard !afterTest.isEmpty, let first = afterTest.first else { return DeclSyntax(node) }
@@ -114,16 +128,15 @@ final class UseSwiftTestingNames: StaticFormatRule<SwiftTestingNamesConfiguratio
 
             let remainder = first.lowercased() + afterTest.dropFirst()
             if Self.swiftKeywords.contains(remainder) { return DeclSyntax(node) }
-            if state.allIdentifiers.contains(remainder), remainder != bareName {
-                return DeclSyntax(node)
-            }
+            if state.allIdentifiers.contains(remainder) { return DeclSyntax(node) }
             newIdentifier = remainder
         }
 
-        Self.diagnose(.removeTestPrefix(oldName: bareName), on: node.name, context: context)
-
-        return DeclSyntax(node.with(\.name, node.name.with(\.tokenKind, .identifier(newIdentifier)))
-        )
+        return rename(
+            node,
+            to: newIdentifier,
+            message: .removeTestPrefix(oldName: bareName),
+            context: context)
     }
 
     // MARK: - Raw identifier (backtick name with spaces)
@@ -133,30 +146,88 @@ final class UseSwiftTestingNames: StaticFormatRule<SwiftTestingNamesConfiguratio
         rawIdent: String,
         context: Context
     ) -> DeclSyntax {
-        // Already a backtick raw identifier — leave it untouched.
-        guard !(rawIdent.hasPrefix("`") && rawIdent.hasSuffix("`")) else { return DeclSyntax(node) }
         // A raw identifier gives the test an implicit display name, and Swift Testing rejects a
         // test that carries both an implicit and an explicit one.
         guard !hasDisplayName(node) else { return DeclSyntax(node) }
 
-        var words = Self.splitIdentifierWords(rawIdent)
+        let isBackticked = rawIdent.hasPrefix("`") && rawIdent.hasSuffix("`")
+        let bareName = isBackticked ? String(rawIdent.dropFirst().dropLast()) : rawIdent
+
+        if isBackticked, bareName.contains(" ") {
+            // A name that already carries spaces is a raw identifier phrase. Only a leading
+            // `test` word is redundant, and the case of every other word is the author's choice.
+            guard let phrase = Self.droppingLeadingTestWord(bareName) else {
+                return DeclSyntax(node)
+            }
+            return rename(
+                node,
+                to: "`\(phrase)`",
+                message: .useRawIdentifier(oldName: bareName, phrase: phrase),
+                context: context)
+        }
+
+        // A backticked camelCase name carries no separator to split on, and a double underscore
+        // marks a name the author spells deliberately. Leave both alone.
+        if isBackticked, !bareName.contains("_") || bareName.contains("__") {
+            return DeclSyntax(node)
+        }
+
+        var words = Self.splitIdentifierWords(bareName)
         if words.first?.lowercased() == "test" { words.removeFirst() }
 
         let phrase = words.map { $0.lowercased() }.joined(separator: " ")
         // Raw identifiers may not be empty or purely numeric — require at least one letter.
         guard phrase.contains(where: { $0.isLetter }) else { return DeclSyntax(node) }
-        // A single-word phrase needs no backticks — wrapping it would just provoke
-        // `dropRedundantBackticks` at every call site. Leave the name alone.
-        guard phrase.contains(" ") else { return DeclSyntax(node) }
+
+        guard phrase.contains(" ") else {
+            // A single-word phrase needs no backticks. An unbackticked name already has that
+            // form, so only a backticked one changes.
+            guard isBackticked,
+                  phrase.isBareIdentifier,
+                  !Self.swiftKeywords.contains(phrase),
+                  !context.swiftTestingTestCaseNamesState.allIdentifiers.contains(phrase)
+            else { return DeclSyntax(node) }
+
+            return rename(
+                node,
+                to: phrase,
+                message: .useIdentifier(oldName: bareName, newName: phrase),
+                context: context)
+        }
 
         let newIdentifier = "`\(phrase)`"
         guard newIdentifier != rawIdent else { return DeclSyntax(node) }
 
-        Self.diagnose(
-            .useRawIdentifier(oldName: rawIdent, phrase: phrase), on: node.name, context: context)
+        return rename(
+            node,
+            to: newIdentifier,
+            message: .useRawIdentifier(oldName: bareName, phrase: phrase),
+            context: context)
+    }
 
-        return DeclSyntax(node.with(\.name, node.name.with(\.tokenKind, .identifier(newIdentifier)))
-        )
+    /// Drops a leading `test` word from a space-separated raw identifier phrase.
+    ///
+    /// Returns `nil` when the first word is not `test` , or when no word with a letter follows it.
+    private static func droppingLeadingTestWord(_ phrase: String) -> String? {
+        var words = phrase.split(separator: " ").map(String.init)
+        guard words.first?.lowercased() == "test" else { return nil }
+        words.removeFirst()
+
+        let remainder = words.joined(separator: " ")
+        guard remainder.contains(where: { $0.isLetter }) else { return nil }
+        return remainder
+    }
+
+    /// Emits `message` and returns `node` with `newIdentifier` as its name.
+    private static func rename(
+        _ node: FunctionDeclSyntax,
+        to newIdentifier: String,
+        message: Finding.Message,
+        context: Context
+    ) -> DeclSyntax {
+        Self.diagnose(message, on: node.name, context: context)
+        return DeclSyntax(
+            node.with(\.name, node.name.with(\.tokenKind, .identifier(newIdentifier))))
     }
 
     /// Reports whether the `@Test` attribute on `node` names the test explicitly.
@@ -225,6 +296,10 @@ fileprivate extension Finding.Message {
 
     static func useRawIdentifier(oldName: String, phrase: String) -> Finding.Message {
         "rename '@Test' function '\(oldName)' to raw identifier '`\(phrase)`'"
+    }
+
+    static func useIdentifier(oldName: String, newName: String) -> Finding.Message {
+        "rename '@Test' function '\(oldName)' to '\(newName)'"
     }
 }
 

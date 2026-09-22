@@ -13,6 +13,10 @@ import SwiftSyntax
 ///
 /// Rewrite: The backticks are removed.
 final class DropRedundantBackticks: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
+    /// Only places the `willEnter` pre-scan. The token transform is dispatched by hand from
+    /// `LayoutWriter` , which the generator skips for `TokenSyntax` .
+    static let rewriteOrder = 1230
+
     override class var group: ConfigurationGroup? { .redundancies }
 
     /// Swift reserved keywords that always require backticks when used as identifiers (unless in a
@@ -50,6 +54,23 @@ final class DropRedundantBackticks: StaticFormatRule<BasicRuleValue>, @unchecked
     /// Identifiers that should never have backticks removed.
     private static let neverUnescaped: Set<String> = ["_", "$"]
 
+    /// Per-file state held as a typed lazy property on `Context` .
+    final class State {
+        var importsTesting = false
+    }
+
+    // MARK: - Pre-scan
+
+    /// Records whether the file imports `Testing` , so the per-token check below reads a flag
+    /// instead of walking the file again for every `@Test` function.
+    static func willEnter(_ node: SourceFileSyntax, context: Context) {
+        for stmt in node.statements
+        where stmt.item.as(ImportDeclSyntax.self)?.path.first?.name.text == "Testing" {
+            context.redundantBackticksState.importsTesting = true
+            return
+        }
+    }
+
     static func transform(
         _ token: TokenSyntax,
         original _: TokenSyntax,
@@ -64,7 +85,7 @@ final class DropRedundantBackticks: StaticFormatRule<BasicRuleValue>, @unchecked
         let bareName = String(text.dropFirst().dropLast())
 
         // Raw identifiers (contain spaces, non-identifier characters) always need backticks.
-        guard isValidBareIdentifier(bareName) else { return token }
+        guard bareName.isBareIdentifier else { return token }
 
         // `_` and `$` always need backticks.
         guard !Self.neverUnescaped.contains(bareName) else { return token }
@@ -72,7 +93,7 @@ final class DropRedundantBackticks: StaticFormatRule<BasicRuleValue>, @unchecked
         // A Swift Testing `@Test` function keeps the backticks around its name. The author writes
         // them on purpose, and `UseSwiftTestingNames` produces such a name in the raw-identifier
         // style.
-        guard !isSwiftTestingTestName(token, parent: parent) else { return token }
+        guard !isSwiftTestingTestName(token, parent: parent, context: context) else { return token }
 
         guard !backticksRequired(for: bareName, token: token, parent: parent) else { return token }
 
@@ -137,16 +158,16 @@ final class DropRedundantBackticks: StaticFormatRule<BasicRuleValue>, @unchecked
 
     /// Token is the name of a `@Test` function in a file that imports `Testing` .
     ///
-    /// The attribute check runs first, so the import scan costs nothing for an ordinary function.
-    private static func isSwiftTestingTestName(_ token: TokenSyntax, parent: Syntax?) -> Bool {
-        guard let funcDecl = parent?.as(FunctionDeclSyntax.self),
-              funcDecl.name.id == token.id,
-              funcDecl.hasAttribute("Test", inModule: "Testing") else { return false }
-
-        guard let sourceFile = parent?.root.as(SourceFileSyntax.self) else { return false }
-        return sourceFile.statements.contains { stmt in
-            stmt.item.as(ImportDeclSyntax.self)?.path.first?.name.text == "Testing"
-        }
+    /// ``willEnter(_:context:)`` records the import, so this reads a flag.
+    private static func isSwiftTestingTestName(
+        _ token: TokenSyntax,
+        parent: Syntax?,
+        context: Context
+    ) -> Bool {
+        guard context.redundantBackticksState.importsTesting,
+              let funcDecl = parent?.as(FunctionDeclSyntax.self),
+              funcDecl.name.id == token.id else { return false }
+        return funcDecl.hasAttribute("Test", inModule: "Testing")
     }
 
     // MARK: - Position checks
@@ -272,16 +293,6 @@ final class DropRedundantBackticks: StaticFormatRule<BasicRuleValue>, @unchecked
             current = p.parent
         }
         return false
-    }
-
-    /// Checks if a bare name is a valid Swift identifier (no spaces, starts with letter/underscore,
-    /// etc).
-    private static func isValidBareIdentifier(_ name: String) -> Bool {
-        guard let first = name.unicodeScalars.first else { return false }
-        guard first == "_" || first.properties.isXIDStart else { return false }
-        return name.unicodeScalars.dropFirst().allSatisfy {
-            $0 == "_" || $0.properties.isXIDContinue
-        }
     }
 }
 

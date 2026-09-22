@@ -210,6 +210,75 @@ struct UseSwiftTestingNamesTests: RuleTesting {
     )
   }
 
+  @Test func convertsBacktickedNamesWithoutSpacesToPlainIdentifiers() {
+    assertFormatting(
+      UseSwiftTestingNames.self,
+      input: """
+        import Testing
+
+        struct MyFeatureTests {
+            @Test func 1️⃣`testFeature`() {
+                #expect(true)
+            }
+
+            @Test func 2️⃣`test_works_as_expected`() {
+                #expect(true)
+            }
+        }
+        """,
+      expected: """
+        import Testing
+
+        struct MyFeatureTests {
+            @Test func feature() {
+                #expect(true)
+            }
+
+            @Test func works_as_expected() {
+                #expect(true)
+            }
+        }
+        """,
+      findings: [
+        FindingSpec("1️⃣", message: "remove 'test' prefix from '@Test' function 'testFeature'"),
+        FindingSpec("2️⃣", message: "remove 'test' prefix from '@Test' function 'test_works_as_expected'"),
+      ]
+    )
+  }
+
+  @Test func leavesBacktickedTestNameAloneWhenNothingFollowsThePrefix() {
+    assertFormatting(
+      UseSwiftTestingNames.self,
+      input: """
+        import Testing
+
+        struct MyFeatureTests {
+            @Test func `test`() {
+                #expect(true)
+            }
+
+            @Test func `test_`() {
+                #expect(true)
+            }
+        }
+        """,
+      expected: """
+        import Testing
+
+        struct MyFeatureTests {
+            @Test func `test`() {
+                #expect(true)
+            }
+
+            @Test func `test_`() {
+                #expect(true)
+            }
+        }
+        """,
+      findings: []
+    )
+  }
+
   // MARK: - Raw identifier mode
 
   /// Builds a configuration that enables `UseSwiftTestingNames` in `.rawIdentifier` style.
@@ -375,6 +444,142 @@ struct UseSwiftTestingNamesTests: RuleTesting {
       findings: [
         FindingSpec("1️⃣", message: "rename '@Test' function 'testFeatureWorksUnnamed' to raw identifier '`feature works unnamed`'"),
       ],
+      configuration: rawIdentifierConfig()
+    )
+  }
+
+  @Test func rawIdentifierDropsTestWordFromBacktickedPhrase() {
+    assertFormatting(
+      UseSwiftTestingNames.self,
+      input: """
+        import Testing
+
+        struct MyFeatureTests {
+            @Test func 1️⃣`test feature works as expected`() {
+                #expect(true)
+            }
+
+            @Test func 2️⃣`Test Feature Works`() {
+                #expect(true)
+            }
+        }
+        """,
+      expected: """
+        import Testing
+
+        struct MyFeatureTests {
+            @Test func `feature works as expected`() {
+                #expect(true)
+            }
+
+            @Test func `Feature Works`() {
+                #expect(true)
+            }
+        }
+        """,
+      findings: [
+        FindingSpec("1️⃣", message: "rename '@Test' function 'test feature works as expected' to raw identifier '`feature works as expected`'"),
+        FindingSpec("2️⃣", message: "rename '@Test' function 'Test Feature Works' to raw identifier '`Feature Works`'"),
+      ],
+      configuration: rawIdentifierConfig()
+    )
+  }
+
+  @Test func rawIdentifierSplitsBacktickedNamesWithUnderscores() {
+    assertFormatting(
+      UseSwiftTestingNames.self,
+      input: """
+        import Testing
+
+        struct MyFeatureTests {
+            @Test func 1️⃣`my_test_name`() {
+                #expect(true)
+            }
+
+            @Test func 2️⃣`test_feature_works`() {
+                #expect(true)
+            }
+        }
+        """,
+      expected: """
+        import Testing
+
+        struct MyFeatureTests {
+            @Test func `my test name`() {
+                #expect(true)
+            }
+
+            @Test func `feature works`() {
+                #expect(true)
+            }
+        }
+        """,
+      findings: [
+        FindingSpec("1️⃣", message: "rename '@Test' function 'my_test_name' to raw identifier '`my test name`'"),
+        FindingSpec("2️⃣", message: "rename '@Test' function 'test_feature_works' to raw identifier '`feature works`'"),
+      ],
+      configuration: rawIdentifierConfig()
+    )
+  }
+
+  @Test func rawIdentifierDropsBackticksWhenOneWordRemains() {
+    assertFormatting(
+      UseSwiftTestingNames.self,
+      input: """
+        import Testing
+
+        struct MyFeatureTests {
+            @Test func 1️⃣`test_feature`() {
+                #expect(true)
+            }
+        }
+        """,
+      expected: """
+        import Testing
+
+        struct MyFeatureTests {
+            @Test func feature() {
+                #expect(true)
+            }
+        }
+        """,
+      findings: [
+        FindingSpec("1️⃣", message: "rename '@Test' function 'test_feature' to 'feature'"),
+      ],
+      configuration: rawIdentifierConfig()
+    )
+  }
+
+  @Test func rawIdentifierLeavesDoubleUnderscoreAndCamelCaseBacktickedNamesAlone() {
+    assertFormatting(
+      UseSwiftTestingNames.self,
+      input: """
+        import Testing
+
+        struct MyFeatureTests {
+            @Test func `feature__works`() {
+                #expect(true)
+            }
+
+            @Test func `featureWorks`() {
+                #expect(true)
+            }
+        }
+        """,
+      expected: """
+        import Testing
+
+        struct MyFeatureTests {
+            @Test func `feature__works`() {
+                #expect(true)
+            }
+
+            @Test func `featureWorks`() {
+                #expect(true)
+            }
+        }
+        """,
+      findings: [],
       configuration: rawIdentifierConfig()
     )
   }

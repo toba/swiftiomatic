@@ -15,12 +15,10 @@ let package = Package(
     dependencies: [
         .package(url: "https://github.com/apple/swift-argument-parser.git", from: "1.2.2"),
         .package(url: "https://github.com/swiftlang/swift-markdown.git", from: "0.7.0"),
-        // 604 is the line that Swift 6.4 ships. It carries no stable tag yet, so the lower bound
-        // names a prerelease to bring the 604 line into range.
-        .package(
-            url: "https://github.com/swiftlang/swift-syntax.git",
-            "604.0.0-prerelease-2026-06-05"..<"605.0.0"
-        ),
+        // 604 is the line that Swift 6.4 ships, and it now carries a stable tag. Stay on it. The
+        // 605 line targets the next Swift release, so its parser accepts syntax that the 6.4
+        // compiler rejects.
+        .package(url: "https://github.com/swiftlang/swift-syntax.git", from: "604.0.0"),
         // Self-hosted lint via prebuilt binary from a previous release. Breaks the cycle that
         // prevents a target from depending on a plugin in the same package as the executable the
         // plugin invokes.
