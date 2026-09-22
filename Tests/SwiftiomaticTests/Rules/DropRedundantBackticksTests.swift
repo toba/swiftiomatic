@@ -619,6 +619,78 @@ struct DropRedundantBackticksTests: RuleTesting {
     )
   }
 
+  // MARK: - Swift Testing @Test names
+
+  @Test func keepBackticksOnSwiftTestingTestName() {
+    assertFormatting(
+      DropRedundantBackticks.self,
+      input: """
+        import Testing
+
+        @Test func `my test name`() {}
+        @Test func `myTestName`() {}
+        """,
+      expected: """
+        import Testing
+
+        @Test func `my test name`() {}
+        @Test func `myTestName`() {}
+        """,
+      findings: []
+    )
+  }
+
+  @Test func keepBackticksOnQualifiedSwiftTestingTestName() {
+    assertFormatting(
+      DropRedundantBackticks.self,
+      input: """
+        import Testing
+
+        @Testing.Test func `myTestName`() {}
+        """,
+      expected: """
+        import Testing
+
+        @Testing.Test func `myTestName`() {}
+        """,
+      findings: []
+    )
+  }
+
+  @Test func removeBackticksOnPlainFunctionInSwiftTestingFile() {
+    assertFormatting(
+      DropRedundantBackticks.self,
+      input: """
+        import Testing
+
+        func 1️⃣`helper`() {}
+        """,
+      expected: """
+        import Testing
+
+        func helper() {}
+        """,
+      findings: [
+        FindingSpec("1️⃣", message: "remove unnecessary backticks around 'helper'"),
+      ]
+    )
+  }
+
+  @Test func removeBackticksOnTestNameWithoutTestingImport() {
+    assertFormatting(
+      DropRedundantBackticks.self,
+      input: """
+        @Test func 1️⃣`myTestName`() {}
+        """,
+      expected: """
+        @Test func myTestName() {}
+        """,
+      findings: [
+        FindingSpec("1️⃣", message: "remove unnecessary backticks around 'myTestName'"),
+      ]
+    )
+  }
+
   @Test func noBackticksNotFlagged() {
     assertFormatting(
       DropRedundantBackticks.self,

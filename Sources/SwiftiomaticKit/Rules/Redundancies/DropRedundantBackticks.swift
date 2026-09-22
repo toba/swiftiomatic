@@ -69,6 +69,11 @@ final class DropRedundantBackticks: StaticFormatRule<BasicRuleValue>, @unchecked
         // `_` and `$` always need backticks.
         guard !Self.neverUnescaped.contains(bareName) else { return token }
 
+        // A Swift Testing `@Test` function keeps the backticks around its name. The author writes
+        // them on purpose, and `UseSwiftTestingNames` produces such a name in the raw-identifier
+        // style.
+        guard !isSwiftTestingTestName(token, parent: parent) else { return token }
+
         guard !backticksRequired(for: bareName, token: token, parent: parent) else { return token }
 
         Self.diagnose(.removeRedundantBackticks(name: bareName), on: token, context: context)
@@ -128,6 +133,20 @@ final class DropRedundantBackticks: StaticFormatRule<BasicRuleValue>, @unchecked
 
         // All other reserved keywords need backticks.
         return true
+    }
+
+    /// Token is the name of a `@Test` function in a file that imports `Testing` .
+    ///
+    /// The attribute check runs first, so the import scan costs nothing for an ordinary function.
+    private static func isSwiftTestingTestName(_ token: TokenSyntax, parent: Syntax?) -> Bool {
+        guard let funcDecl = parent?.as(FunctionDeclSyntax.self),
+              funcDecl.name.id == token.id,
+              funcDecl.hasAttribute("Test", inModule: "Testing") else { return false }
+
+        guard let sourceFile = parent?.root.as(SourceFileSyntax.self) else { return false }
+        return sourceFile.statements.contains { stmt in
+            stmt.item.as(ImportDeclSyntax.self)?.path.first?.name.text == "Testing"
+        }
     }
 
     // MARK: - Position checks
