@@ -83,6 +83,88 @@ struct ReflowCommentsTests: RuleTesting {
         )
     }
 
+    // MARK: - Tables
+
+    @Test func preservesMarkdownTableRows() {
+        // A table row carries its meaning in its line break. Joining two rows destroys the table.
+        assertFormatting(
+            ReflowComments.self,
+            input: """
+                1️⃣/// Distance past which the ranking stops carrying
+                /// signal.
+                ///
+                /// | pair | distance | |
+                /// |---|---|---|
+                /// | recipe, cooking | 0.883 | related |
+                /// | approach, methodology | 1.005 | related |
+                /// | method, cooking | 1.174 | not |
+                let x = 1.15
+                """,
+            expected: """
+                /// Distance past which the ranking stops carrying signal.
+                ///
+                /// | pair | distance | |
+                /// |---|---|---|
+                /// | recipe, cooking | 0.883 | related |
+                /// | approach, methodology | 1.005 | related |
+                /// | method, cooking | 1.174 | not |
+                let x = 1.15
+                """,
+            findings: [FindingSpec("1️⃣", message: "reflow comment to fit line length")],
+            configuration: config(maxWidth: 100)
+        )
+    }
+
+    @Test func doesNotJoinParagraphOntoTable() {
+        // The paragraph before the table must not absorb the header row.
+        assertFormatting(
+            ReflowComments.self,
+            input: """
+                1️⃣/// Lead paragraph
+                /// that is ragged.
+                /// | pair | distance |
+                /// |---|---|
+                /// | a | 1 |
+                let x = 1
+                """,
+            expected: """
+                /// Lead paragraph that is ragged.
+                /// | pair | distance |
+                /// |---|---|
+                /// | a | 1 |
+                let x = 1
+                """,
+            findings: [FindingSpec("1️⃣", message: "reflow comment to fit line length")],
+            configuration: config(maxWidth: 100)
+        )
+    }
+
+    @Test func preservesOverlongTableRow() {
+        // A row wider than the limit still keeps its line. Wrapping it would break the table.
+        assertFormatting(
+            ReflowComments.self,
+            input: """
+                1️⃣/// Title that is
+                /// ragged.
+                ///
+                /// | column one | column two |
+                /// |---|---|
+                /// | a very long cell value that runs past the configured column limit | another long cell value here |
+                let x = 1
+                """,
+            expected: """
+                /// Title that is ragged.
+                ///
+                /// | column one | column two |
+                /// |---|---|
+                /// | a very long cell value that runs past the configured column limit | another long cell value here |
+                let x = 1
+                """,
+            findings: [FindingSpec("1️⃣", message: "reflow comment to fit line length")],
+            configuration: config(maxWidth: 100)
+        )
+    }
+
     // MARK: - Code fences
 
     @Test func preservesCodeFenceContents() {

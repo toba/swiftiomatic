@@ -145,6 +145,33 @@ struct WrapSingleLineCommentsTests: RuleTesting {
       configuration: config(maxWidth: 40))
   }
 
+  // MARK: - Markdown tables should not wrap
+
+  @Test func markdownTableRowNotWrapped() {
+    // A row carries its meaning in its own line. Wrapping one row destroys the table.
+    assertFormatting(
+      WrapSingleLineComments.self,
+      input: """
+        /// | recipe, cooking | 0.883 | related |
+        """,
+      expected: """
+        /// | recipe, cooking | 0.883 | related |
+        """,
+      configuration: config(maxWidth: 20))
+  }
+
+  @Test func markdownTableSeparatorRowNotWrapped() {
+    assertFormatting(
+      WrapSingleLineComments.self,
+      input: """
+        /// |---|---|---|---|---|---|---|
+        """,
+      expected: """
+        /// |---|---|---|---|---|---|---|
+        """,
+      configuration: config(maxWidth: 20))
+  }
+
   // MARK: - No-ops
 
   @Test func shortCommentUnchanged() {

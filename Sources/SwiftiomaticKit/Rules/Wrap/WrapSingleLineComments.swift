@@ -122,6 +122,10 @@ final class WrapSingleLineComments: StaticFormatRule<BasicRuleValue>, @unchecked
             return WrapResult(didChange: false, advance: 1, originalIndex: 0)
         }
 
+        guard !isMarkdownTableRow(text, prefix: prefix) else {
+            return WrapResult(didChange: false, advance: 1, originalIndex: 0)
+        }
+
         let wrapped = wrapComment(text: text, prefix: prefix, column: column, maxWidth: maxWidth)
         guard wrapped.count > 1 else {
             return WrapResult(didChange: false, advance: 1, originalIndex: 0)
@@ -226,6 +230,16 @@ final class WrapSingleLineComments: StaticFormatRule<BasicRuleValue>, @unchecked
         guard lines.last != continuationPrefix else { return [text] }
 
         return lines
+    }
+
+    /// Returns `true` if the comment body is a row of a Markdown table.
+    ///
+    /// A row carries its meaning in its own line. Wrapping one row destroys the table, and the
+    /// damage shows only in rendered documentation.
+    private static func isMarkdownTableRow(_ text: String, prefix: String) -> Bool {
+        var body = text.dropFirst(prefix.count)
+        if body.hasPrefix(" ") { body = body.dropFirst() }
+        return CommentReflowEngine.isTableLine(String(body))
     }
 
     /// Returns `true` if the comment is a directive that should not be wrapped.

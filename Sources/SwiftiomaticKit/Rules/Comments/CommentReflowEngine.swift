@@ -150,6 +150,16 @@ package enum CommentReflowEngine {
                 i += 1
                 continue
             }
+            // Markdown table. Each row carries its meaning in its own line, so the run stays
+            // verbatim. Joining two rows destroys the table, and wrapping one row past the column
+            // limit does the same.
+            if isTableLine(line) {
+                while i < lines.count, isTableLine(lines[i]) {
+                    blocks.append(.verbatim(line: lines[i].trimmingTrailingWhitespace()))
+                    i += 1
+                }
+                continue
+            }
             // CommonMark link reference definition (`[label]: url`). Preserve verbatim — wrapping
             // the URL or merging adjacent definitions onto one line breaks the Markdown.
             if isLinkReferenceDefinition(line) {
@@ -184,6 +194,7 @@ package enum CommentReflowEngine {
                         if listMarker(cur) != nil { break }
                         if fenceOpener(cur) != nil { break }
                         if isLinkReferenceDefinition(cur) { break }
+                        if isTableLine(cur) { break }
                         quoted.append(cur.trimmingCharacters(in: .whitespaces))
                         i += 1
                         continue
@@ -216,6 +227,7 @@ package enum CommentReflowEngine {
                 if listMarker(l) != nil { break }
                 if fenceOpener(l) != nil { break }
                 if isLinkReferenceDefinition(l) { break }
+                if isTableLine(l) { break }
                 paraLines.append(l.trimmingCharacters(in: .whitespaces))
                 i += 1
             }
@@ -250,6 +262,23 @@ package enum CommentReflowEngine {
         guard afterColon < line.endIndex, line[afterColon] == " " else { return false }
         let dest = line[afterColon...].drop(while: { $0 == " " })
         return !dest.isEmpty
+    }
+
+    /// True when `line` is a row of a Markdown table.
+    ///
+    /// A row starts with a `|` behind up to three spaces of indent. The check covers the header
+    /// row, the `|---|` separator row, and every body row, because all three share that shape.
+    package static func isTableLine(_ line: String) -> Bool {
+        var idx = line.startIndex
+        var leading = 0
+
+        while idx < line.endIndex, line[idx] == " ", leading < 3 {
+            idx = line.index(after: idx)
+            leading += 1
+        }
+        guard idx < line.endIndex, line[idx] == "|" else { return false }
+        // A lone `|` is not a row. A row needs content after the first delimiter.
+        return !line[line.index(after: idx)...].trimmingCharacters(in: .whitespaces).isEmpty
     }
 
     /// True when `line` holds content behind four or more spaces, or behind a tab. CommonMark reads
@@ -414,6 +443,8 @@ package enum CommentReflowEngine {
                 let nextLeading = next.prefix(while: { $0 == " " }).count
                 if nextLeading <= leading, listMarker(next) != nil { break }
                 if nextLeading <= leading { break }
+                // A table row must not fold into the item text, which would destroy the table.
+                if isTableLine(next) { break }
 
                 // Even if `next` is more indented than this item's marker, a DocC top-level keyword
                 // (`Returns:`, `Throws:`, …) must not be folded into this item or its nested list —
