@@ -107,7 +107,8 @@ final class DiagnosticsEngine: Sendable {
                 Diagnostic(
                     severity: .note,
                     location: note.location.map(Diagnostic.Location.init),
-                    message: "\(note.message)"
+                    message: "\(note.message)",
+                    origin: .ruleNote("\(finding.category)")
                 ))
         }
     }
@@ -134,7 +135,8 @@ final class DiagnosticsEngine: Sendable {
                 Diagnostic(
                     severity: .note,
                     location: note.location.map { Diagnostic.Location($0.asFindingLocation) },
-                    message: note.message
+                    message: note.message,
+                    origin: .ruleNote(cached.category)
                 ))
         }
     }
@@ -165,7 +167,8 @@ final class DiagnosticsEngine: Sendable {
             severity: severity,
             location: Diagnostic.Location(location),
             category: nil,
-            message: message.message
+            message: message.message,
+            origin: .parser
         )
     }
 

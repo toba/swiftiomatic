@@ -48,6 +48,11 @@ extension SwiftiomaticCommand {
         var reporter: Reporter = .text
 
         func validate() throws {
+            if reporter == .sarif {
+                throw ValidationError(
+                    "'--reporter sarif' is only supported by 'lint'. Use 'text' or 'json' with 'format'."
+                )
+            }
             if reporter == .json, !inPlace {
                 throw ValidationError("'--reporter json' requires '--in-place'")
             }

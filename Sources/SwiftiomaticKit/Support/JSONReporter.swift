@@ -77,18 +77,11 @@ public final class JSONLintReporter: Sendable {
 
     /// Returns the JSON array as a UTF-8 string. Always succeeds for the bound encodable shape.
     public func renderJSON() -> String {
-        let snapshot = entries(get: \.self)
-        let encoder = JSONEncoder()
-        encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
-        let data = (try? encoder.encode(snapshot)) ?? Data("[]".utf8)
-        return String(bytes: data, encoding: .utf8) ?? "[]"
+        encodePrettyJSON(entries(get: \.self), fallback: "[]")
     }
 
     /// Writes the JSON array to standard output, terminated with a newline.
-    public func flush() {
-        FileHandle.standardOutput.write(Data(renderJSON().utf8))
-        FileHandle.standardOutput.write(Data([0x0A]))
-    }
+    public func flush() { writeLineToStandardOutput(renderJSON()) }
 }
 
 /// Collects per-file format outcomes and renders them as a JSON summary.
@@ -158,15 +151,8 @@ public final class JSONFormatReporter: Sendable {
             skipped: snapshot.skipped
         )
 
-        let encoder = JSONEncoder()
-        encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
-        encoder.keyEncodingStrategy = .convertToSnakeCase
-        let data = (try? encoder.encode(report)) ?? Data("{}".utf8)
-        return String(bytes: data, encoding: .utf8) ?? "{}"
+        return encodePrettyJSON(report, fallback: "{}", keyEncodingStrategy: .convertToSnakeCase)
     }
 
-    public func flush() {
-        FileHandle.standardOutput.write(Data(renderJSON().utf8))
-        FileHandle.standardOutput.write(Data([0x0A]))
-    }
+    public func flush() { writeLineToStandardOutput(renderJSON()) }
 }

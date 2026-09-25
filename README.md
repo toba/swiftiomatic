@@ -59,6 +59,30 @@ sm link                        # install the toolchain symlink in every installe
 sm update                      # update the configuration to the current schema version
 ```
 
+### Reporters
+
+`sm lint --reporter` selects the output format:
+
+| Value | Output |
+|---|---|
+| `text` | Human-readable diagnostics on stderr (default) |
+| `json` | A JSON array of findings on stdout |
+| `sarif` | A [SARIF 2.1.0](https://docs.oasis-open.org/sarif/sarif/v2.1.0/sarif-v2.1.0.html) log on stdout |
+
+In a SARIF log, each result has the rule name as its `ruleId`. A parser diagnostic has the `ruleId` `parser`. A tool diagnostic, such as a file that cannot be read, has the `ruleId` `tool`. A file inside the working directory gets a URI relative to `%SRCROOT%`.
+
+`sm format` accepts `text` and `json` only.
+
+GitHub code scanning shows SARIF results as annotations on the pull request diff:
+
+```yaml
+- run: sm lint --recursive --reporter sarif Sources > sm.sarif || true
+- uses: github/codeql-action/upload-sarif@v3
+  with:
+    sarif_file: sm.sarif
+    category: sm
+```
+
 ## Installation
 
 Build and install:

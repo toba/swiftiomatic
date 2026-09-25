@@ -17,7 +17,7 @@ import SwiftiomaticKit
 /// the message, allowing diagnostic printers that want to print those values separately to do so.
 struct Diagnostic {
     /// The severity of the diagnostic.
-    enum Severity { case note, warning, error }
+    enum Severity: String { case note, warning, error }
 
     /// Represents the location of a diagnostic.
     struct Location {
@@ -45,6 +45,18 @@ struct Diagnostic {
         }
     }
 
+    /// The part of `sm` that produced the diagnostic.
+    enum Origin: Equatable {
+        /// A lint finding. `category` holds the rule name.
+        case rule
+        /// A note that belongs to a finding from the named rule.
+        case ruleNote(String)
+        /// A diagnostic from the Swift parser.
+        case parser
+        /// A diagnostic from the tool itself, such as a file that cannot be read.
+        case tool
+    }
+
     /// The severity of the diagnostic.
     var severity: Severity
 
@@ -57,13 +69,26 @@ struct Diagnostic {
     /// The message text associated with the diagnostic.
     var message: String
 
+    /// The part of `sm` that produced the diagnostic.
+    var origin: Origin
+
     var description: String { if let category { "[\(category)] \(message)" } else { message } }
 
     /// Creates a new diagnostic with the given severity, location, optional category, and message.
-    init(severity: Severity, location: Location?, category: String? = nil, message: String) {
+    ///
+    /// When `origin` is nil, a diagnostic with a category is a `.rule` diagnostic and a diagnostic
+    /// without one is a `.tool` diagnostic.
+    init(
+        severity: Severity,
+        location: Location?,
+        category: String? = nil,
+        message: String,
+        origin: Origin? = nil
+    ) {
         self.severity = severity
         self.location = location
         self.category = category
         self.message = message
+        self.origin = origin ?? (category == nil ? .tool : .rule)
     }
 }

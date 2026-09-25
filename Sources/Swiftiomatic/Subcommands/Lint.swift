@@ -15,7 +15,9 @@ import ArgumentParser
 import SwiftiomaticKit
 
 /// Output format for diagnostics emitted by `lint` and `format` subcommands.
-enum Reporter: String, ExpressibleByArgument, CaseIterable, Sendable { case text, json }
+///
+/// `sarif` is valid only for `lint`.
+enum Reporter: String, ExpressibleByArgument, CaseIterable, Sendable { case text, json, sarif }
 
 extension SwiftiomaticCommand {
     /// Emits style diagnostics for one or more files containing Swift code.
@@ -52,7 +54,7 @@ extension SwiftiomaticCommand {
             help: """
                 Output format for diagnostics. `text` (default) writes human-readable diagnostics to \
                 stderr. `json` suppresses the text output and writes a JSON array of findings to \
-                stdout.
+                stdout. `sarif` suppresses the text output and writes a SARIF 2.1.0 log to stdout.
                 """
         )
         var reporter: Reporter = .text
@@ -66,22 +68,40 @@ extension SwiftiomaticCommand {
                 : LintCache(startingAt: startPath)
 
             let jsonReporter: JSONLintReporter? = (reporter == .json) ? JSONLintReporter() : nil
-            let extraHandlers: [@Sendable (Diagnostic) -> Void] = jsonReporter.map { reporter in
-                [
-                    { diagnostic in
-                        let severity =
-                            switch diagnostic.severity {
-                                case .error: "error"
-                                case .warning: "warning"
-                                case .note: "note"
-                            }
-                        reporter.record(JSONLintReporter.Entry(
-                            file: diagnostic.location?.file, line: diagnostic.location?.line,
-                            column: diagnostic.location?.column, severity: severity,
-                            rule: diagnostic.category, message: diagnostic.message))
-                    }
-                ]
-            } ?? []
+            let sarifReporter: SARIFLintReporter? =
+                (reporter == .sarif) ? SARIFLintReporter(toolVersion: smVersion) : nil
+
+            var extraHandlers: [@Sendable (Diagnostic) -> Void] = []
+
+            if let jsonReporter {
+                extraHandlers.append { diagnostic in
+                    jsonReporter.record(JSONLintReporter.Entry(
+                        file: diagnostic.location?.file, line: diagnostic.location?.line,
+                        column: diagnostic.location?.column, severity: diagnostic.severity.rawValue,
+                        rule: diagnostic.category, message: diagnostic.message))
+                }
+            }
+            if let sarifReporter {
+                extraHandlers.append { diagnostic in
+                    let level: SARIFLintReporter.Level =
+                        switch diagnostic.severity {
+                            case .error: .error
+                            case .warning: .warning
+                            case .note: .note
+                        }
+                    let ruleID =
+                        switch diagnostic.origin {
+                            case .rule: diagnostic.category ?? SARIFLintReporter.toolRuleID
+                            case .ruleNote(let rule): rule
+                            case .parser: SARIFLintReporter.parserRuleID
+                            case .tool: SARIFLintReporter.toolRuleID
+                        }
+                    sarifReporter.record(SARIFLintReporter.Entry(
+                        file: diagnostic.location?.file, line: diagnostic.location?.line,
+                        column: diagnostic.location?.column, level: level,
+                        ruleID: ruleID, message: diagnostic.message))
+                }
+            }
 
             let frontend = LintFrontend(
                 configurationOptions: configurationOptions,
@@ -89,10 +109,11 @@ extension SwiftiomaticCommand {
                 treatWarningsAsErrors: strict,
                 cache: cache,
                 additionalDiagnosticHandlers: extraHandlers,
-                suppressDefaultDiagnosticPrinter: jsonReporter != nil
+                suppressDefaultDiagnosticPrinter: reporter != .text
             )
             frontend.run()
             jsonReporter?.flush()
+            sarifReporter?.flush()
 
             if frontend.diagnosticsEngine.hasErrors { throw ExitCode.failure }
         }
